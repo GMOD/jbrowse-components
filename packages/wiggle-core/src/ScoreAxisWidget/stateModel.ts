@@ -6,7 +6,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * #stateModel ScoreAxisWidget
- * Drawer widget editing one display's value scale, `scales.y`. The display is
+ * Drawer widget editing one display's value scale, its `encoding.y`. The display is
  * a safe reference, so hiding its track or closing its view empties it rather
  * than leaving the widget writing to a dead node.
  */

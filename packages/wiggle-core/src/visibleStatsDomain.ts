@@ -58,7 +58,7 @@ export interface VisibleStatsDomainSpec<
   /** `ScoreScaleMixin`'s resolved bounds; `undefined` autoscales that end */
   bounds: readonly [number | undefined, number | undefined]
   scaleType: string
-  /** whether a linear or symlog domain reaches 0 (`scales.y.zero`) */
+  /** whether a linear or symlog domain reaches 0 (the y scale's `zero`) */
   zero: boolean
 }
 

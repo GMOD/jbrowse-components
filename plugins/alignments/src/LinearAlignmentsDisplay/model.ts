@@ -842,7 +842,7 @@ export default function stateModelFactory(
                 widenRangeToRules(
                   computeVisibleCoverageDomain({
                     stats,
-                    quantile: self.domainQuantile,
+                    quantile: self.fenceQuantile,
                     entries,
                   }),
                   self.scoreRules.map(rule => rule.value),

@@ -14,6 +14,7 @@ import {
   renderingOf,
 } from '../renderingTypes.ts'
 import { wiggleFeatureWidgetData } from './wiggleHitTest.ts'
+import { WIGGLE_Y_PATHS } from './wiggleYPaths.ts'
 
 import type {
   LineInterpolation,
@@ -26,6 +27,7 @@ import type {
   extentConfigSchemaFields,
 } from './extentConfigSchemaFields.ts'
 import type { wiggleConfigSchemaFields } from './wiggleConfigSchemaFields.ts'
+import type { wiggleEncodingConfigSchema } from './wiggleEncodingConfigSchema.ts'
 import type { wiggleMarkConfigSchema } from './wiggleMarkConfigSchema.ts'
 import type { ConfigModelForFields } from '@jbrowse/core/configuration'
 import type { Region } from '@jbrowse/core/util'
@@ -37,6 +39,7 @@ type WiggleCommonConfigModel = ConfigModelForFields<
   typeof wiggleConfigSchemaFields &
     ReturnType<typeof extentConfigSchemaFields> & {
       mark: typeof wiggleMarkConfigSchema
+      encoding: typeof wiggleEncodingConfigSchema
     }
 >
 
@@ -74,7 +77,7 @@ export const RESOLUTION_STEP = 2
  * Used by LinearWiggleDisplay and gccontent's two GC displays.
  */
 export function WiggleCommonMixin() {
-  return YFieldConfigMixin()
+  return YFieldConfigMixin(WIGGLE_Y_PATHS)
     .views(self => ({
       /**
        * #getter
@@ -202,7 +205,7 @@ export function WiggleCommonMixin() {
        * #getter
        * Scores the axis must reach whatever the data does, so a rule drawn at
        * one stays on it. `[]` here and overridden by the display that draws
-       * `scales.y.rules`.
+       * `encoding.y.rules`.
        */
       get scoreRuleValues(): number[] {
         return []
@@ -232,7 +235,7 @@ export function WiggleCommonMixin() {
             widenRangeToRules(
               autoscaleDomainFromStats({
                 stats,
-                quantile: self.domainQuantile,
+                quantile: self.fenceQuantile,
                 zero: self.axisReachesZero,
                 field: self.summaryField,
                 extent: self.effectiveExtent,
@@ -320,7 +323,7 @@ export function WiggleCommonMixin() {
        * `minScore`, `maxScore`) or any feature field.
        */
       setY(field: string) {
-        setConf(confNode(self), 'y', field)
+        setConf(confNode(self), ['encoding', 'y', 'field'], field)
       },
       /**
        * #action

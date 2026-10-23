@@ -15,6 +15,7 @@ function create(snap: Record<string, unknown>) {
 
 const COLOR = ['encoding', 'color'] as const
 const SCALE = [...COLOR, 'scale'] as const
+const Y = ['encoding', 'y'] as const
 
 test('value is the constant, and a bare color is refused with its spelling', () => {
   const conf = create({ encoding: { color: { value: 'green' } } })
@@ -112,24 +113,77 @@ test("v4's rendering names load as the mark they draw, and an unknown one as the
   ).toBe('point')
 })
 
-test('the old cross hatch and tick flags land on the scale, beside a scale the config writes', () => {
+test('the old cross hatch flag lands on the axis beside a channel the config writes, and minimal ticks go', () => {
+  const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
   const conf = create({
     displayCrossHatches: true,
     minimalTicks: true,
-    scales: { y: { type: 'log', minimalTicks: false } },
+    encoding: { y: { scale: { type: 'log' } } },
   })
-  expect(readConfObject(conf, ['scales', 'y', 'grid'])).toBe(true)
-  expect(readConfObject(conf, ['scales', 'y', 'type'])).toBe('log')
-  expect(readConfObject(conf, ['scales', 'y', 'minimalTicks'])).toBe(false)
+  expect(readConfObject(conf, [...Y, 'axis', 'grid'])).toBe(true)
+  expect(readConfObject(conf, [...Y, 'scale', 'type'])).toBe('log')
+  expect(warn).not.toHaveBeenCalled()
+  warn.mockRestore()
+})
+
+test("an early v5 scales.y and y land on encoding.y under the channel's names", () => {
+  const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
+  const conf = create({
+    y: 'maxScore',
+    scales: {
+      y: {
+        type: 'symlog',
+        domainMin: 1,
+        domainQuantile: 1,
+        symlogConstant: 2,
+        autoscaleGroup: 'depth',
+        title: 'signal',
+        grid: true,
+        minimalTicks: true,
+        rules: [30],
+      },
+    },
+  })
+  expect(readConfObject(conf, [...Y, 'field'])).toBe('maxScore')
+  expect(readConfObject(conf, [...Y, 'scale', 'type'])).toBe('symlog')
+  expect(readConfObject(conf, [...Y, 'scale', 'domainMin'])).toBe(1)
+  expect(readConfObject(conf, [...Y, 'scale', 'fenceQuantile'])).toBe(1)
+  expect(readConfObject(conf, [...Y, 'scale', 'constant'])).toBe(2)
+  expect(readConfObject(conf, [...Y, 'scale', 'group'])).toBe('depth')
+  expect(readConfObject(conf, [...Y, 'axis', 'title'])).toBe('signal')
+  expect(readConfObject(conf, [...Y, 'axis', 'grid'])).toBe(true)
+  expect(conf.encoding.y.rules.map(r => readConfObject(r, 'value'))).toEqual([
+    30,
+  ])
+  expect(warn).not.toHaveBeenCalled()
+  warn.mockRestore()
+})
+
+test('a v5 scales.y beats the v4 keys it overlaps', () => {
+  const conf = create({
+    scaleType: 'log',
+    displayCrossHatches: false,
+    autoscale: 'local',
+    scales: { y: { type: 'linear', grid: true, domainQuantile: 0.9 } },
+  })
+  expect(readConfObject(conf, [...Y, 'scale', 'type'])).toBe('linear')
+  expect(readConfObject(conf, [...Y, 'axis', 'grid'])).toBe(true)
+  expect(readConfObject(conf, [...Y, 'scale', 'fenceQuantile'])).toBe(0.9)
+})
+
+test('a bare encoding.y is the field, and the fence starts at 0.99', () => {
+  const conf = create({ encoding: { y: 'minScore' } })
+  expect(readConfObject(conf, [...Y, 'field'])).toBe('minScore')
+  expect(readConfObject(conf, [...Y, 'scale', 'fenceQuantile'])).toBe(0.99)
 })
 
 describe('the slots v4 declared on the display', () => {
   const y = (
     snap: Record<string, unknown>,
-    slot: 'domainMin' | 'domainMax' | 'type' | 'domainQuantile',
-  ) => readConfObject(create(snap), ['scales', 'y', slot])
+    slot: 'domainMin' | 'domainMax' | 'type' | 'fenceQuantile',
+  ) => readConfObject(create(snap), [...Y, 'scale', slot])
 
-  test('a fixed range and a log scale reach scales.y, with no warning', () => {
+  test('a fixed range and a log scale reach encoding.y, with no warning', () => {
     const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
     const v4 = { minScore: 0, maxScore: 50, scaleType: 'log' }
     expect(y(v4, 'domainMin')).toBe(0)
@@ -146,7 +200,7 @@ describe('the slots v4 declared on the display', () => {
   })
 
   test('autoscale follows the extremes, as v4 did', () => {
-    expect(y({ autoscale: 'local' }, 'domainQuantile')).toBe(1)
+    expect(y({ autoscale: 'local' }, 'fenceQuantile')).toBe(1)
   })
 
   test('a slot with no successor is let go without a warning', () => {
@@ -194,14 +248,14 @@ test.each([
   ],
 ])('v4’s %j is y %s, extent %s', (v4, y, extent) => {
   const conf = create(v4)
-  expect(readConfObject(conf, 'y')).toBe(y)
+  expect(readConfObject(conf, [...Y, 'field'])).toBe(y)
   expect(readConfObject(conf, 'extent')).toBe(extent)
 })
 
 test('a v4 renderers block keeps its color beside its summary mode', () => {
   const conf = create({
-    renderers: { XYPlotRenderer: { summaryScoreMode: 'avg', color: 'red' } },
+    renderers: { XYPlotRenderer: { summaryScoreMode: 'max', color: 'red' } },
   })
-  expect(readConfObject(conf, 'y')).toBe('score')
+  expect(readConfObject(conf, [...Y, 'field'])).toBe('maxScore')
   expect(readConfObject(conf, [...COLOR, 'value'])).toBe('red')
 })

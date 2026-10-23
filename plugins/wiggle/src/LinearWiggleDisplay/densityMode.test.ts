@@ -105,6 +105,6 @@ it('titles the density key with the scale title, the axis it replaces', () => {
   const display = makeDisplay()
   display.setMark('span')
   expect(display.scoreColorScale?.title).toBe('Score')
-  setConf(display, ['scales', 'y', 'title'], 'phyloP')
+  setConf(display, ['encoding', 'y', 'axis', 'title'], 'phyloP')
   expect(display.scoreColorScale?.title).toBe('phyloP')
 })

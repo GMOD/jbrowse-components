@@ -74,9 +74,9 @@ export const MARK_RULES = {
   'ramp-domain': 'warning',
   /** A linear, log or symlog color whose `scale.range` lists one color, which paints every value alike. */
   'ramp-range': 'warning',
-  /** A scale's `domainMax` below its `domainMin`: a color ramp's, a width's or `scales.y`'s. */
+  /** A scale's `domainMax` below its `domainMin`: a color ramp's, a width's or the y axis's. */
   'domain-ends': 'warning',
-  /** A color ramp's or `scales.y`'s `domainQuantile` outside 0.5 to 1, a percent among them. */
+  /** A color ramp's `domainQuantile` or the y axis's `fenceQuantile` outside 0.5 to 1, a percent among them. */
   'domain-quantile': 'warning',
   /** A log scale's `domainMin` at or below 0, which a log scale cannot represent, so the end floors above it. */
   'log-floor': 'warning',
@@ -195,9 +195,14 @@ export interface RowsSnapshot {
   field?: unknown
 }
 
-/** The display's `scales` as a config snapshot holds it: the value scale's ends. */
-export interface ScalesSnapshot {
-  y?: ScaleEnds
+/**
+ * The display's value axis as a config snapshot holds it: its scale's ends,
+ * the setting holding that scale and the slot its fence is spelt by.
+ */
+export interface AxisSnapshot {
+  where: string
+  fence: string
+  ends: ScaleEnds
 }
 
 /** A `size` or `strokeWidth` as a config snapshot holds it. */
@@ -820,7 +825,7 @@ function ownProblems(
  * the field its sections stack by and the steps each section runs; under one,
  * a rowless mark stands on each section's first row by design. `transform` is
  * the display's own steps. `rows` is the field each value of which takes one
- * row, and `scales` the axis every mark's `y` reads through. An `undefined`
+ * row, and `axis` the scale every mark's `y` reads through. An `undefined`
  * mark or step is one the caller could not read, such as one a file's schema
  * refuses: it keeps its index, so the others are reported where they are, and
  * is checked for nothing.
@@ -830,13 +835,13 @@ export interface PlotSnapshot {
   transform?: Steps
   facet?: FacetSnapshot
   rows?: RowsSnapshot
-  scales?: ScalesSnapshot
+  axis?: AxisSnapshot
 }
 
 /**
  * Every rule a plot breaks. The display's step lists are checked as a mark's
  * are and reported with no mark, under `transform` and `facet.transform`, and
- * so are `scales.y`'s ends. A file's own spelling goes through the schema's
+ * so are the axis's ends. A file's own spelling goes through the schema's
  * lift first, which `jbrowse validate` does from the generated manifest.
  */
 export function markProblems({
@@ -844,7 +849,7 @@ export function markProblems({
   facet,
   transform = [],
   rows,
-  scales,
+  axis,
 }: PlotSnapshot): MarkProblem[] {
   const faceted = named(facet?.field)
   const drawsRows = named(rows?.field) && !faceted
@@ -873,9 +878,12 @@ export function markProblems({
         ]
       : []),
     ...stepProblems(facet?.transform ?? [], 'facet.transform'),
-    ...scaleEndProblems(scales?.y ?? {}).map(({ rule, slot, message }) =>
-      found(rule, `scales.y.${slot}`, message),
-    ),
+    ...(axis
+      ? scaleEndProblems(axis.ends, { fence: axis.fence }).map(
+          ({ rule, slot, message }) =>
+            found(rule, `${axis.where}.${slot}`, message),
+        )
+      : []),
     ...(faceted
       ? transform.flatMap((step, i) =>
           step?.type === 'pileup'

@@ -6,7 +6,9 @@ const base = { type: 'LinearWiggleDisplay', displayId: 'test' }
 
 test('scales.y clips at the 99th percentile by default', () => {
   const config = configSchema.create(base)
-  expect(readConfObject(config, ['scales', 'y', 'domainQuantile'])).toBe(0.99)
+  expect(
+    readConfObject(config, ['encoding', 'y', 'scale', 'fenceQuantile']),
+  ).toBe(0.99)
 })
 
 test('the rows shorthand reads as one row per subtrack', () => {

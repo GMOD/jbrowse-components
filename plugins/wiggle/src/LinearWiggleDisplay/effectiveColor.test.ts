@@ -325,12 +325,12 @@ test('a gradient on a line keys its ramp and raises no notice', () => {
   expect(display.notices).toEqual([])
 })
 
-test("the corner notice reads scales.y's ends by the color ramp's rule", () => {
+test("the corner notice reads the y scale's ends by the color ramp's rule", () => {
   const { display } = createTestEnvironment({
-    displayConfig: { scales: { y: { domainQuantile: 99 } } },
+    displayConfig: { encoding: { y: { scale: { fenceQuantile: 99 } } } },
   }).createDisplay()
   expect(display.notices).toEqual([
-    'scales.y.domainQuantile: domainQuantile is a fraction from 0.5 to 1, not a percent: 1 follows the extremes and 0.99 clips the outermost 1% at each end; above 1 reads as 1 and below 0.5 as 0.5',
+    'encoding.y.scale.fenceQuantile: fenceQuantile is a fraction from 0.5 to 1, not a percent: 1 follows the extremes and 0.99 clips the outermost 1% at each end; above 1 reads as 1 and below 0.5 as 0.5',
   ])
 })
 

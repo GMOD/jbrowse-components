@@ -291,7 +291,7 @@ function pathMembersOf(node: AnyConfigurationModel) {
 // Every sub-schema under `node` whose options `holds`, by path, at any depth
 // and not below one that does: a color channel's `fieldPresets` at
 // `encoding.color` or `pileup.bases.encoding.color`, a value axis's
-// `scaleFence` at `scales.y` or `coverage.encoding.y.scale`.
+// `scaleFence` at `encoding.y.scale` or `coverage.encoding.y.scale`.
 function nodesWith(
   node: AnyConfigurationModel,
   path: string,

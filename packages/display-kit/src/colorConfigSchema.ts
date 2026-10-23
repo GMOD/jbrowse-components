@@ -484,7 +484,7 @@ export const colorDomainEndsSlots = {
  * loaded values: 1 spans their extremes, and below it each end is clipped at
  * that quantile of the values on its side of 0, so one spike no longer takes
  * the whole ramp and a ramp over GC spans the data rather than starting at 0.
- * `scales.y.domainQuantile` names a looser rule, fencing an end at twice the
+ * A y scale's `fenceQuantile` names a looser rule, fencing an end at twice the
  * span its quantile draws, since an axis wants headroom past a spike and the
  * key shows what a saturated color stands for.
  */

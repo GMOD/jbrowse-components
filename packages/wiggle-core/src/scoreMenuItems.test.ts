@@ -3,19 +3,42 @@ import { types } from '@jbrowse/mobx-state-tree'
 
 import { ScoreScaleMixin } from './ScoreScaleMixin.ts'
 import { makeScoreAxisMenuItem } from './scoreMenuItems.ts'
-import { scalesSchema, valueScaleSchema } from './valueScaleConfigSchema.ts'
+import { yEncodingSchema } from './yEncodingConfigSchema.ts'
+import { yFieldChannelSchema } from './yFieldChannelConfigSchema.ts'
 
+import type { YScalePaths } from './yScalePaths.ts'
 import type { ValueScale } from '@jbrowse/display-ui'
 
+const Y = ['encoding', 'y'] as const
+const PATHS = {
+  members: {
+    type: [...Y, 'scale', 'type'],
+    zero: [...Y, 'scale', 'zero'],
+    domainMin: [...Y, 'scale', 'domainMin'],
+    domainMax: [...Y, 'scale', 'domainMax'],
+    fence: [...Y, 'scale', 'fenceQuantile'],
+    constant: [...Y, 'scale', 'constant'],
+    group: [...Y, 'scale', 'group'],
+    title: [...Y, 'axis', 'title'],
+    grid: [...Y, 'axis', 'grid'],
+    rules: [...Y, 'rules'],
+  },
+  reset: [
+    [...Y, 'scale'],
+    [...Y, 'axis'],
+    [...Y, 'rules'],
+  ],
+} as const satisfies YScalePaths
+
 const testConfigSchema = ConfigurationSchema('TestScoreDisplay', {
-  scales: scalesSchema(valueScaleSchema({ domainQuantile: 0.99 })),
+  encoding: yEncodingSchema(yFieldChannelSchema({ fenceQuantile: 0.99 })),
 })
 
 function makeDisplay(defaultScoreDomain?: [number, number]) {
   return types
     .compose(
       'TestScoreDisplay',
-      ScoreScaleMixin(),
+      ScoreScaleMixin(PATHS),
       types.model({ id: 'd1', configuration: testConfigSchema }),
     )
     .views(() => ({
@@ -68,11 +91,11 @@ describe('the Y axis row', () => {
 
 test('Clip outliers re-ticks at the quantile its untick wrote over, not the default', () => {
   const display = makeDisplay()
-  display.setDomainQuantile(0.95)
-  display.setDomainQuantile(1)
-  expect(display.clipQuantile).toBe(0.95)
-  display.setDomainQuantile(display.clipQuantile)
-  expect(display.domainQuantile).toBe(0.95)
+  display.setFenceQuantile(0.95)
+  display.setFenceQuantile(1)
+  expect(display.clipFenceQuantile).toBe(0.95)
+  display.setFenceQuantile(display.clipFenceQuantile)
+  expect(display.fenceQuantile).toBe(0.95)
 })
 
 // The reference lines are a member of the scale, offered where a scale the
@@ -82,7 +105,7 @@ describe('scoreRulesDrawn', () => {
     types
       .compose(
         'TestRuledDisplay',
-        ScoreScaleMixin(),
+        ScoreScaleMixin(PATHS),
         types.model({ configuration: testConfigSchema }),
       )
       .views(() => ({

@@ -35,7 +35,7 @@ export interface WiggleDisplayViewsHost extends WiggleRenderStateModel {
   maxGapMultiple: number
   resolution: number
   yField: string
-  /** `scales.y.title`, empty where it names none. */
+  /** `encoding.y.axis.title`, empty where it names none. */
   scaleTitle: string
 }
 

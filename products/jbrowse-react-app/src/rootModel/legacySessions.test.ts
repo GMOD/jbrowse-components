@@ -390,7 +390,7 @@ test("a hosted config's overlaid multi-wiggle opens overlaid", async () => {
   expect(display.renderingType).toBe('xyplot')
 })
 
-test('a v4 wiggle display keeps the scale and colors a reader set', async () => {
+test('a v4 wiggle display keeps the scale, field, grid and colors a reader set', async () => {
   const { display } = await load(
     v4Session('QuantitativeTrack', 'bw', {
       type: 'LinearWiggleDisplay',
@@ -399,13 +399,17 @@ test('a v4 wiggle display keeps the scale and colors a reader set', async () => 
       autoscale: 'localsd',
       constraints: { min: 1 },
       posColor: 'green',
+      summaryScoreMode: 'max',
+      displayCrossHatches: true,
       rendererTypeNameState: 'line',
     }),
   )
   expect(display.renderingType).toBe('line')
-  expect(getConf(display, ['scales', 'y', 'type'])).toBe('log')
-  expect(getConf(display, ['scales', 'y', 'domainQuantile'])).toBe(1)
-  expect(getConf(display, ['scales', 'y', 'domainMin'])).toBe(1)
+  expect(getConf(display, ['encoding', 'y', 'scale', 'type'])).toBe('log')
+  expect(getConf(display, ['encoding', 'y', 'scale', 'fenceQuantile'])).toBe(1)
+  expect(getConf(display, ['encoding', 'y', 'scale', 'domainMin'])).toBe(1)
+  expect(getConf(display, ['encoding', 'y', 'field'])).toBe('maxScore')
+  expect(getConf(display, ['encoding', 'y', 'axis', 'grid'])).toBe(true)
   expect(getConf(display, ['encoding', 'color', 'scale', 'range'])).toEqual([
     '#e01e26',
     'green',

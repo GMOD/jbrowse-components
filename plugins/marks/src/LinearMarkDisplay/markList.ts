@@ -107,7 +107,7 @@ export interface MarkRenderState extends MarkFrame {
   /** The display's one y scale, which every valued mark is placed through. */
   domainY: [number, number]
   scaleTypeY: MarkValueScaleType
-  /** `scales.y.symlogConstant` resolved against `domainY`, as the axis resolves it. */
+  /** `encoding.y.scale.constant` resolved against `domainY`, as the axis resolves it. */
   symlogConstantY: number
   /** Mark `i`'s color scale, a ramp or a threshold, undefined where its color is neither. */
   colorScales: (MarkColorScale | undefined)[]

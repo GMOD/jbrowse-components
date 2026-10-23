@@ -4,6 +4,7 @@ import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import { MAX_COLOR_CUTS } from '@jbrowse/render-core/shaders/markColorConsts'
 
 import { configSchemaFactory } from './configSchema.ts'
+import { markPlotSettingsOf } from './markPlot.ts'
 import { MARK_RULES, markProblems, problemText } from './markProblems.ts'
 import { MAX_THRESHOLD_CUTS } from './markVocabulary.ts'
 
@@ -12,7 +13,6 @@ import type {
   MarkProblem,
   MarkSnapshot,
   RowsSnapshot,
-  ScalesSnapshot,
   StepSnapshot,
 } from './markProblems.ts'
 
@@ -25,26 +25,28 @@ function problemsOf(
   facet?: unknown,
   transform?: unknown[],
   rows?: unknown,
-  scales?: unknown,
+  yScale?: unknown,
 ): MarkProblem[] {
+  const conf = schema.create({
+    displayId: 'd',
+    marks,
+    ...(facet ? { facet } : {}),
+    ...(transform ? { transform } : {}),
+    ...(rows ? { rows } : {}),
+    ...(yScale ? { encoding: { y: { scale: yScale } } } : {}),
+  })
   const snap: {
     marks?: MarkSnapshot[]
     facet?: FacetSnapshot
     transform?: StepSnapshot[]
     rows?: RowsSnapshot
-    scales?: ScalesSnapshot
-  } = getSnapshot(
-    schema.create({
-      displayId: 'd',
-      marks,
-      ...(facet ? { facet } : {}),
-      ...(transform ? { transform } : {}),
-      ...(rows ? { rows } : {}),
-      ...(scales ? { scales } : {}),
-    }),
-  )
+  } = getSnapshot(conf)
   const lifted = snap.marks ?? []
-  const problems = markProblems({ ...snap, marks: lifted })
+  const problems = markProblems({
+    ...snap,
+    marks: lifted,
+    axis: markPlotSettingsOf(conf).axis,
+  })
   for (const { rule } of problems) {
     reached.add(rule)
   }
@@ -56,9 +58,9 @@ function found(
   facet?: unknown,
   transform?: unknown[],
   rows?: unknown,
-  scales?: unknown,
+  yScale?: unknown,
 ) {
-  return problemsOf(marks, facet, transform, rows, scales).map(
+  return problemsOf(marks, facet, transform, rows, yScale).map(
     p => `${p.level} ${p.rule} mark ${p.mark} ${p.slot}`,
   )
 }
@@ -959,22 +961,23 @@ test('a facet or rows field the display steps leave unwritten is named', () => {
   ).toEqual([])
 })
 
-test("scales.y and a width read their ends by the color ramp's one rule", () => {
+test("the y scale and a width read their ends by the color ramp's one rule", () => {
   const bar = [{ mark: 'bar', encoding: { y: 'score' } }]
   const y = (ends: Record<string, number>) =>
-    found(bar, undefined, undefined, undefined, { y: ends })
+    found(bar, undefined, undefined, undefined, ends)
   expect(y({ domainMin: 0, domainMax: 10 })).toEqual([])
   expect(y({ domainMin: 10, domainMax: 0 })).toEqual([
-    'warning domain-ends mark undefined scales.y.domainMax',
+    'warning domain-ends mark undefined encoding.y.scale.domainMax',
   ])
-  expect(y({ domainQuantile: 99 })).toEqual([
-    'warning domain-quantile mark undefined scales.y.domainQuantile',
+  expect(y({ fenceQuantile: 99 })).toEqual([
+    'warning domain-quantile mark undefined encoding.y.scale.fenceQuantile',
   ])
   expect(
     found(bar, undefined, undefined, undefined, {
-      y: { type: 'log', domainMin: 0 },
+      type: 'log',
+      domainMin: 0,
     }),
-  ).toEqual(['warning log-floor mark undefined scales.y.domainMin'])
+  ).toEqual(['warning log-floor mark undefined encoding.y.scale.domainMin'])
   expect(
     found([
       {

@@ -101,7 +101,7 @@ export const wiggleColorSchema = ConfigurationSchema(
      * The scale from the score to a color. `threshold` paints each band
      * between two of its cuts, solid, on every mark; `linear` runs `range`,
      * else `scheme`, else viridis across the y domain through
-     * `scales.y.type`, with `domainMid` at the middle stop, coloring each bar,
+     * `encoding.y.scale.type`, with `domainMid` at the middle stop, coloring each bar,
      * point and density cell by its score; a one-color `range` paints flat,
      * so one color is `value`. With `type` unset, `range` is the pair about
      * the `origin`: a threshold on bars, points and lines, and on a heatmap a

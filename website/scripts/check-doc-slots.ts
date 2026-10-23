@@ -256,7 +256,7 @@ function assertInventoryParsed(
 ) {
   const problems: string[] = []
   const canaries: [string, string][] = [
-    ['scales.y.type', 'stringEnum'], // linked spelling, dotted name
+    ['marks.encoding.shape.value', 'stringEnum'], // linked spelling, dotted name
     ['displayMode', 'stringEnum'], // bare spelling
     ['field', 'string'], // bare, non-enum
     ['height', 'number'], // linked, non-enum

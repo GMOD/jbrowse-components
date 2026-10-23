@@ -127,6 +127,7 @@ test("each display's plot settings", () => {
       'rows',
     ],
     LinearManhattanDisplay: [
+      'encoding',
       'facet',
       'filter',
       'legend',
@@ -134,10 +135,10 @@ test("each display's plot settings", () => {
       'origin',
       'rowColor',
       'rows',
-      'scales',
       'transform',
     ],
     LinearMarkDisplay: [
+      'encoding',
       'facet',
       'filter',
       'legend',
@@ -145,7 +146,6 @@ test("each display's plot settings", () => {
       'origin',
       'rowColor',
       'rows',
-      'scales',
       'transform',
     ],
     LinearMultiRowFeatureDisplay: [
@@ -174,9 +174,7 @@ test("each display's plot settings", () => {
       'origin',
       'rowColor',
       'rows',
-      'scales',
       'size',
-      'y',
     ],
     MultiWaySyntenyDisplay: [
       'encoding',

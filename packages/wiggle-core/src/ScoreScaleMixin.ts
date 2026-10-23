@@ -9,38 +9,11 @@ import { clipQuantileOf } from '@jbrowse/core/util/quantileExtent'
 import { rulesABand } from '@jbrowse/display-ui/axisPlacement'
 
 import { ScoreAxisMixin } from './ScoreAxisMixin.ts'
-import { SCALES_Y_PATHS } from './yScalePaths.ts'
 import { confNodeAt, readYMember, yRuleNodes } from './yScaleRead.ts'
 
-import type { scalesSchema } from './valueScaleConfigSchema.ts'
 import type { YMember, YScalePaths } from './yScalePaths.ts'
-import type {
-  AnyConfigurationModel,
-  ConfigModelForFields,
-  ConfigurationSchemaForModel,
-  ConfigurationSlotPath,
-} from '@jbrowse/core/configuration'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { ValueScaleRule } from '@jbrowse/display-ui'
-
-/**
- * The whole of what `ScoreScaleMixin` needs a composing display to be: a
- * `scales` object holding the `y` the value-scale factory built. Exported
- * because it is the mixin's contract and `ScoreScaleMixin.test.ts` pins it:
- * widen it and the `@ts-expect-error`s there go unused.
- */
-export interface ScoreScaleHost {
-  configuration: ConfigModelForFields<{
-    scales: ReturnType<typeof scalesSchema>
-  }>
-}
-
-export type ScoreScaleHostPath = ConfigurationSlotPath<
-  ConfigurationSchemaForModel<ScoreScaleHost['configuration']>
->
-
-// A mistyped segment in the default map fails here, since the reads below go
-// through `readonly string[]` and no longer check the names themselves.
-Object.values(SCALES_Y_PATHS.members) satisfies readonly ScoreScaleHostPath[]
 
 // The mixin composes onto a display that declares the scale, not the other way
 // round, so its own `self` isn't typed with it.
@@ -68,7 +41,7 @@ function writeAxis(
 ) {
   setConf(
     { configuration: confOf(self) },
-    [...paths.members[member]!] as never,
+    [...paths.members[member]] as never,
     value,
   )
   persistTrackConfigNow(self)
@@ -77,13 +50,13 @@ function writeAxis(
 /**
  * #stateModel ScoreScaleMixin
  * #category display
- * #crossCuttingMixin Value scale, written in `scales.y` or a `YScalePaths` map's paths (the coverage band's `coverage.encoding.y`). `valueScaleSchema` / `scalesSchema` / `yChannelSchema`. Brings `ScoreAxisMixin` plus `scaleType` / `scaleZero` / `domainQuantile` / `clipQuantile` / `symlogConstant` / `manual*` and their setters, i.e. the whole `ScoreScaleModel` interface the Y axis row and its drawer widget consume
+ * #crossCuttingMixin Value scale, read and written at a `YScalePaths` map's paths (`encoding.y`, the coverage band's `coverage.encoding.y`). `yChannelSchema` / `yFieldChannelSchema`. Brings `ScoreAxisMixin` plus `scaleType` / `scaleZero` / `fenceQuantile` / `clipFenceQuantile` / `symlogConstant` / `manual*` and their setters, i.e. the whole `ScoreScaleModel` interface the Y axis row and its drawer widget consume
  *
  * The value scale of every quantitative display: wiggle and the mark
- * display, Manhattan among them, declare `scales.y` through
- * {@link valueScaleSchema}, and the alignments, LGVSynteny and MAF coverage
- * band `coverage.encoding.y` through {@link yChannelSchema}; each composes
- * this with the map to its members. It backs
+ * display, Manhattan among them, declare `encoding.y`, and the alignments,
+ * LGVSynteny and MAF coverage band `coverage.encoding.y`, each through
+ * {@link yChannelSchema}; each composes this with the map to its members. It
+ * backs
  * {@link ScoreAxisMixin}'s three overridable members off that object and adds
  * the setters that write it, so composing this is how a display satisfies
  * {@link ScoreScaleModel} in `scoreMenuItems.ts` — the interface the Y axis
@@ -94,10 +67,10 @@ function writeAxis(
  * `WiggleCommonMixin` — the alignments coverage band shares this scale but
  * none of the rest.
  */
-export function ScoreScaleMixin(paths: YScalePaths = SCALES_Y_PATHS) {
+export function ScoreScaleMixin(paths: YScalePaths) {
   return ScoreAxisMixin()
     .volatile(() => ({
-      unclippedQuantile: undefined as number | undefined,
+      unclippedFenceQuantile: undefined as number | undefined,
     }))
     .views(self => ({
       /**
@@ -119,7 +92,7 @@ export function ScoreScaleMixin(paths: YScalePaths = SCALES_Y_PATHS) {
        * The y scale's fence quantile: what an unpinned end follows, 1 the
        * extremes and below it that quantile of each sign.
        */
-      get domainQuantile(): number {
+      get fenceQuantile(): number {
         return readY(self, paths, 'fence')
       },
       /**
@@ -128,9 +101,9 @@ export function ScoreScaleMixin(paths: YScalePaths = SCALES_Y_PATHS) {
        * wrote over, else the scale's own default where that is below 1, else
        * 0.99.
        */
-      get clipQuantile(): number {
+      get clipFenceQuantile(): number {
         return (
-          self.unclippedQuantile ??
+          self.unclippedFenceQuantile ??
           clipQuantileOf(
             getSlotDefinition(
               confNodeAt(confOf(self), paths.members.fence.slice(0, -1)),
@@ -184,13 +157,6 @@ export function ScoreScaleMixin(paths: YScalePaths = SCALES_Y_PATHS) {
       },
       /**
        * #getter
-       * The y axis' minimal ticks, `false` where the display has none
-       */
-      get minimalTicks(): boolean {
-        return readY(self, paths, 'minimalTicks') ?? false
-      },
-      /**
-       * #getter
        * Whether this display draws the y scale's rules, which is whether the
        * Y axis panel offers Include 0 and the reference lines: a scale it places y through
        * rules a band for them to cross, which a density plot's color-mapped
@@ -231,9 +197,9 @@ export function ScoreScaleMixin(paths: YScalePaths = SCALES_Y_PATHS) {
       /**
        * #action
        */
-      setDomainQuantile(quantile: number) {
-        if (!(quantile < 1) && self.domainQuantile < 1) {
-          self.unclippedQuantile = self.domainQuantile
+      setFenceQuantile(quantile: number) {
+        if (!(quantile < 1) && self.fenceQuantile < 1) {
+          self.unclippedFenceQuantile = self.fenceQuantile
         }
         writeAxis(self, paths, 'fence', quantile)
       },
@@ -277,11 +243,13 @@ export function ScoreScaleMixin(paths: YScalePaths = SCALES_Y_PATHS) {
        */
       resetYScale() {
         const base = baseDisplayConfig(self as never)
+        const conf = confOf(self)
         for (const path of paths.reset) {
           setConf(
-            { configuration: confOf(self) },
+            { configuration: conf },
             [...path] as never,
-            valueAt(base, path) ?? {},
+            valueAt(base, path) ??
+              (Array.isArray(confNodeAt(conf, path)) ? [] : {}),
           )
         }
         persistTrackConfigNow(self)

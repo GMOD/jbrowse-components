@@ -7,12 +7,11 @@ import type { YScaleTicks } from '@jbrowse/display-ui/yScaleTicks'
 
 // Builds Y-axis tick positions for a wiggle-family display: tick values come
 // from d3's scale.ticks(4) at normal heights, or fall back to the domain
-// endpoints for short tracks / when the user opts into minimal ticks.
+// endpoints for short tracks.
 export function computeYTicks(opts: {
   height: number
   domain: [number, number] | number[] | undefined
   scaleType: string
-  minimalTicks: boolean
   offset?: number
   /**
    * Raw config value for symlog; `0` means "derive from the domain". Passed
@@ -26,7 +25,6 @@ export function computeYTicks(opts: {
     height,
     domain,
     scaleType,
-    minimalTicks,
     offset = YSCALEBAR_LABEL_OFFSET,
     symlogConstant,
   } = opts
@@ -60,8 +58,7 @@ export function computeYTicks(opts: {
     symlogConstant,
     nice: false,
   })
-  const values =
-    height < 100 || minimalTicks ? [domainMin, domainMax] : scale.ticks(4)
+  const values = height < 100 ? [domainMin, domainMax] : scale.ticks(4)
   return {
     items: values.map(v => ({ value: v, y: scale(v) })),
     yTop,

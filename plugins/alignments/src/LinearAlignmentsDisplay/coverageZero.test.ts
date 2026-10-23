@@ -67,8 +67,10 @@ test('a v5 scales.y lands on the coverage axis, minimalTicks let go', () => {
   expect(display.minScoreBound).toBe(5)
   expect(display.symlogConstant).toBe(2)
   expect(display.autoscaleGroup).toBe('depth')
-  expect(display.domainQuantile).toBe(0.99)
+  expect(display.fenceQuantile).toBe(0.99)
   expect(display.grid).toBe(true)
-  expect(display.minimalTicks).toBe(false)
+  expect(display.configuration.coverage.encoding.y.axis).not.toHaveProperty(
+    'minimalTicks',
+  )
   expect(display.scoreRules).toEqual([{ value: 30 }])
 })

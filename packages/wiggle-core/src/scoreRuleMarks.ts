@@ -70,7 +70,7 @@ export function scoreRuleMarks({
  * falls outside it, though the rule's position above the data is what the reader needs to see
  * in that view, and a dropped rule leaves no visible trace.
  *
- * Applied to the raw range, before `getNiceDomain` takes the `scales.y`
+ * Applied to the raw range, before `getNiceDomain` takes the y scale's
  * domain bounds. Those still win: a rule outside an explicitly bounded axis
  * is one the config asked not to be shown, and it drops as before.
  */

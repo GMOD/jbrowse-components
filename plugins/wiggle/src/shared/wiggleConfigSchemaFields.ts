@@ -1,27 +1,6 @@
-import { DEFAULT_CLIP_QUANTILE } from '@jbrowse/core/util/quantileExtent'
-import {
-  DEFAULT_GAP_BREAK_MULTIPLE,
-  scalesSchema,
-  yFieldConfigSchemaFields,
-  valueScaleSchema,
-} from '@jbrowse/wiggle-core'
-
-/**
- * The wiggle family's value scale. A function rather than a member of the
- * table below because the doc generator recovers a spread slot table by
- * reading its object literal, and a member built by a call is not one — every
- * wiggle slot left the config pages the once it was in there.
- */
-export function wiggleValueScale() {
-  return scalesSchema(
-    valueScaleSchema({
-      domainQuantile: DEFAULT_CLIP_QUANTILE,
-    }),
-  )
-}
+import { DEFAULT_GAP_BREAK_MULTIPLE } from '@jbrowse/wiggle-core'
 
 export const wiggleConfigSchemaFields = {
-  ...yFieldConfigSchemaFields,
   /**
    * #slot
    */

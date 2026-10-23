@@ -103,6 +103,6 @@ test('the grid setter reaches the coverage axis, and the menu offers the widget'
 test('the autoscaled top reaches a pile-up until outliers are clipped', () => {
   const display = coverageDisplay(10, 1000)
   expect(coverageAxis(display).domain[1]).toBeGreaterThanOrEqual(1000)
-  display.setDomainQuantile(display.clipQuantile)
+  display.setFenceQuantile(display.clipFenceQuantile)
   expect(coverageAxis(display).domain[1]).toBeLessThan(100)
 })

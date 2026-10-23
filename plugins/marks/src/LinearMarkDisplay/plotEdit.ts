@@ -5,7 +5,6 @@ import {
   stepWrites,
   stepsOutput,
 } from '@jbrowse/core/util/stepOutputs'
-import { SCALES_Y_PATHS } from '@jbrowse/wiggle-core'
 
 import { AUTO_BIN } from './autoBin.ts'
 import {
@@ -18,6 +17,7 @@ import {
   DEFAULT_WINDOW_FRAME,
   isWindowFrame,
 } from './markVocabulary.ts'
+import { MARK_Y_PATHS } from './markYPaths.ts'
 
 import type { DraftMark } from './markEdit.ts'
 import type { MarkPlot } from './markPlot.ts'
@@ -109,7 +109,7 @@ export const AXIS_MEMBERS = [
 ] as const satisfies readonly YMember[]
 export type AxisMember = (typeof AXIS_MEMBERS)[number]
 
-const Y_PATHS: YScalePaths = SCALES_Y_PATHS
+const Y_PATHS: YScalePaths = MARK_Y_PATHS
 
 function valueAt(plot: Snapshot, path: readonly string[]) {
   return path.reduce<unknown>(

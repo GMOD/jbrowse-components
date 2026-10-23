@@ -20,9 +20,9 @@ test.each([
     /^encoding\.color\.scale\.range: 2 threshold cuts make 3 intervals/,
   ],
   [
-    'scales.y ends reversed',
-    { scales: { y: { domainMin: 9, domainMax: 1 } } },
-    /^scales\.y\.domainMax: domainMax is below domainMin/,
+    'y scale ends reversed',
+    { encoding: { y: { scale: { domainMin: 9, domainMax: 1 } } } },
+    /^encoding\.y\.scale\.domainMax: domainMax is below domainMin/,
   ],
   [
     'a ninth threshold cut, past what the shader reads',

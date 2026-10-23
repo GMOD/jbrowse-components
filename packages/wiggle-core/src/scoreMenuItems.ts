@@ -21,8 +21,8 @@ import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 export interface ScoreScaleModel extends IStateTreeNode {
   scaleType: string
   scaleZero: boolean
-  domainQuantile: number
-  clipQuantile: number
+  fenceQuantile: number
+  clipFenceQuantile: number
   manualMinScore: number | undefined
   manualMaxScore: number | undefined
   minScoreBound: number | undefined
@@ -34,7 +34,7 @@ export interface ScoreScaleModel extends IStateTreeNode {
   setScaleZero: (zero: boolean) => void
   setMinScore: (n?: number) => void
   setMaxScore: (n?: number) => void
-  setDomainQuantile: (quantile: number) => void
+  setFenceQuantile: (quantile: number) => void
 }
 
 // The reference-lines half, apart for the same reason: a display draws its
@@ -75,7 +75,7 @@ function caption(self: ScoreScaleModel) {
 
 /**
  * The one track-menu row for a value scale. It opens the drawer widget that
- * edits `scales.y` live — scale type, range, 0, outlier clipping, the axis a
+ * edits `encoding.y` live — scale type, range, 0, outlier clipping, the axis a
  * group shares, grid and reference lines — so the track redraws beside it.
  */
 export function makeScoreAxisMenuItem(

@@ -129,7 +129,6 @@ describe.each(CASES)('$name', ({ scaleType, raw, height, symlogConstant }) => {
       height,
       domain,
       scaleType,
-      minimalTicks: false,
       offset,
       symlogConstant,
     })!
@@ -157,7 +156,6 @@ describe.each(CASES)('$name', ({ scaleType, raw, height, symlogConstant }) => {
         height,
         domain,
         scaleType,
-        minimalTicks: false,
         offset,
         symlogConstant,
       })!
@@ -228,7 +226,6 @@ describe('a raw, un-niced domain', () => {
       height: 200,
       domain,
       scaleType: 'log',
-      minimalTicks: false,
     })!
     for (const { value } of ticks.items) {
       expect(value).toBeGreaterThanOrEqual(domain[0])
@@ -241,7 +238,6 @@ describe('a raw, un-niced domain', () => {
       height: 200,
       domain,
       scaleType,
-      minimalTicks: false,
     })!
     const box = axisPlotBox(200, 5)
     const normalize = makeScoreNormalizer(
@@ -290,7 +286,6 @@ describe('clampStrokeInsideAxis', () => {
       height: rowHeight,
       domain: niced('linear', [0, 100]),
       scaleType: 'linear',
-      minimalTicks: false,
       offset: 0,
     })!
     for (const { y } of ticks.items) {

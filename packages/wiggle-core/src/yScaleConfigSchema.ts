@@ -1,7 +1,7 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 
-import { VALUE_SCALE_TYPES } from './valueScaleConfigSchema.ts'
+export const VALUE_SCALE_TYPES = ['linear', 'log', 'symlog'] as const
 
 export interface YScaleOptions {
   /** `scale.fenceQuantile`'s default: 1 follows the extremes, 0.99 fences a spike */
@@ -39,12 +39,14 @@ export function yScaleSchema({
        * and floors the domain above them; `symlog` is log-like away from zero
        * and linear through it.
        */
+      // #region stringEnumSlot
       type: {
         type: 'stringEnum',
         model: types.enumeration('YScaleType', [...VALUE_SCALE_TYPES]),
         defaultValue: 'linear',
         description: VALUE_SCALE_TYPES.join(' or '),
       },
+      // #endregion
       /**
        * #slot
        * The bottom of the axis. Unset autoscales that end to the loaded
@@ -80,8 +82,10 @@ export function yScaleSchema({
        * would stretch the axis past twice the span this quantile of the
        * values draws stops at that fence, and the bars past it show the red
        * clip strip. Each end's quantile is measured among the values on its
-       * side of 0. A color ramp's `domainQuantile` clips at the quantile
-       * itself instead. The axis panel's "Clip extreme outliers" toggles it.
+       * side of 0. The wiggle display starts at `0.99`, fencing a spike, and
+       * the mark display and coverage band at `1`, the extremes. A color
+       * ramp's `domainQuantile` clips at the quantile itself instead. The axis
+       * panel's "Clip extreme outliers" toggles it.
        */
       fenceQuantile: {
         type: 'number',

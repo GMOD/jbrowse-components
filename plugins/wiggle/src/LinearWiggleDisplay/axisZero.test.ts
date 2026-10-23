@@ -30,9 +30,9 @@ function makeDisplay(displayConfig: Record<string, unknown> = {}) {
 
 test('the axis reaches 0 by default, and spans the values with zero off', () => {
   expect(makeDisplay().domain).toEqual([0, 60])
-  expect(makeDisplay({ scales: { y: { zero: false } } }).domain).toEqual([
-    30, 60,
-  ])
+  expect(
+    makeDisplay({ encoding: { y: { scale: { zero: false } } } }).domain,
+  ).toEqual([30, 60])
 })
 
 test('the score menu toggle writes the slot', () => {

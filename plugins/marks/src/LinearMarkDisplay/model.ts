@@ -126,6 +126,7 @@ import {
 } from './markRequest.ts'
 import { markSizePx, pxChannelOf, readsValue } from './markSpecs.ts'
 import { DEFAULT_POINT_DIAMETER_PX } from './markVocabulary.ts'
+import { MARK_Y_PATHS } from './markYPaths.ts'
 import { sharedKeyNotice, sharedKeysOf } from './pinDistinct.ts'
 import { defaultPlot } from './plotDefault.ts'
 import {
@@ -263,7 +264,7 @@ export function stateModelFactory(
           TreeSidebarMixin(),
           RowHeightMixin(),
         ),
-        ScoreScaleMixin(),
+        ScoreScaleMixin(MARK_Y_PATHS),
         LegendMixin(),
         ContextMenuMixin<MarkDisplayContextMenuInfo>(),
         StoredHoverMixin<MarkHitInfo>(sameMarkHit),
@@ -950,7 +951,7 @@ export function stateModelFactory(
         /**
          * #getter
          * [min, max] over the `y` of every mark drawing at this zoom, through
-         * the autoscale mode `scales.y` names, widened to every rule the scale
+         * the fence `encoding.y.scale` names, widened to every rule the scale
          * declares and to the origin whenever a bar mark draws, or undefined
          * before any valued mark loads
          */
@@ -958,7 +959,7 @@ export function stateModelFactory(
           const indices = self.drawingMarkIndices
           const folded = new Set(indices)
           const types = indices.map(i => self.markTypes[i]!)
-          const { origin, domainQuantile, drawnKeys, scaleType } = self
+          const { origin, fenceQuantile, drawnKeys, scaleType } = self
           const reached = [
             ...self.scoreRules.map(rule => rule.value),
             ...(types.includes('bar') ? [origin] : []),
@@ -983,7 +984,7 @@ export function stateModelFactory(
               widenRangeToRules(
                 autoscaleDomainFromSpans({
                   stats,
-                  quantile: domainQuantile,
+                  quantile: fenceQuantile,
                   zero: self.axisReachesZero,
                   spans: layerSpans(entries, drawnKeys),
                 }),
@@ -1045,12 +1046,11 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * The one y scale the chrome draws the axis from — `scales.y` resolved:
+         * The one y scale the chrome draws the axis from — `encoding.y` resolved:
          * its type, its domain autoscaled where it pins nothing, its title as
          * the caption and its rules. Every mark reads the same pair.
          */
         get valueScales(): ValueScale[] {
-          const { minimalTicks } = self
           const height = self.height
           const pointInset = this.valueInsetPx
           // One band per row where the marks stand in rows or a pinned
@@ -1088,7 +1088,6 @@ export function stateModelFactory(
               left: self.sidebarPanel
                 ? sidebarPanelWidth(self.sidebarPanel)
                 : 0,
-              minimalTicks,
               caption: self.scaleTitle,
               rules: self.scoreRules,
               grid: self.grid,
@@ -1405,7 +1404,7 @@ export function stateModelFactory(
          * #method
          * The rule list over a config, as lines. It replaces the schema's
          * rules rather than adding to them, since it checks the colors and
-         * `scales.y` itself.
+         * `encoding.y` itself.
          */
         configProblemsOf(conf: AnyConfigurationModel): string[] {
           return markProblems(markPlotSettingsOf(conf)).map(problemText)

@@ -65,7 +65,7 @@ test('a log axis under bars is not pulled toward an origin it cannot reach', () 
   const domainOf = (mark: string) => {
     const { display } = createTestEnvironment({
       marks: [{ mark, encoding: { y: 'score' } }],
-      scales: { y: { type: 'log' } },
+      encoding: { y: { scale: { type: 'log' } } },
     }).createDisplay()
     display.setRpcData(
       0,

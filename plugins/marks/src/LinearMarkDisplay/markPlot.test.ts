@@ -35,7 +35,13 @@ function lift(plot: MarkPlot, conf = declared()) {
 describe('the mark display plot', () => {
   it('holds the grammar slots the mark schema declares', () => {
     expect(plotKeysOf(declared())).toEqual(
-      expect.arrayContaining(['marks', 'transform', 'facet', 'rows', 'scales']),
+      expect.arrayContaining([
+        'marks',
+        'transform',
+        'facet',
+        'rows',
+        'encoding',
+      ]),
     )
   })
 

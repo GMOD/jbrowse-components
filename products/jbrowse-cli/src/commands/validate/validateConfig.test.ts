@@ -617,18 +617,20 @@ describe('validateConfig', () => {
       ])
     })
 
-    it("checks scales.y's ends by the color ramp's rule, once on a mark display", () => {
-      const scales = { y: { domainMin: 10, domainMax: 1, domainQuantile: 99 } }
-      const at = 'tracks[0].displays[0].scales.y'
+    it("checks a y scale's ends by the color ramp's rule, once on a mark display", () => {
+      const encoding = {
+        y: { scale: { domainMin: 10, domainMax: 1, fenceQuantile: 99 } },
+      }
+      const at = 'tracks[0].displays[0].encoding.y.scale'
       expect(
         found({
           type: 'QuantitativeTrack',
           adapter: { type: 'BigWigAdapter', uri: 'x.bw' },
-          displays: [{ type: 'LinearWiggleDisplay', scales }],
+          displays: [{ type: 'LinearWiggleDisplay', encoding }],
         }),
       ).toEqual([
         `domain-ends ${at}.domainMax`,
-        `domain-quantile ${at}.domainQuantile`,
+        `domain-quantile ${at}.fenceQuantile`,
       ])
       expect(
         found({
@@ -638,13 +640,13 @@ describe('validateConfig', () => {
             {
               type: 'LinearMarkDisplay',
               marks: [{ mark: 'bar', encoding: { y: 'score' } }],
-              scales,
+              encoding,
             },
           ],
         }),
       ).toEqual([
         `domain-ends ${at}.domainMax`,
-        `domain-quantile ${at}.domainQuantile`,
+        `domain-quantile ${at}.fenceQuantile`,
       ])
       const coverage = 'tracks[0].displays[0].coverage.encoding.y.scale'
       expect(

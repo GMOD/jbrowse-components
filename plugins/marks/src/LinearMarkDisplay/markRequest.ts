@@ -87,7 +87,7 @@ export function encodingOf(
     // position crosses as the field alone.
     x2: x2.chrom ? { chrom: x2.chrom, pos: x2.pos } : x2.pos,
     // The field alone: the worker reads a value, and the scale it is read
-    // through is the display's `scales.y`. Shipping that scale would put the
+    // through is the display's `encoding.y`. Shipping that scale would put the
     // axis type and its bounds in the fetch's inputs, so a menu toggle
     // between linear and log would refetch every region to no effect.
     y: reads('y') && y ? y : undefined,

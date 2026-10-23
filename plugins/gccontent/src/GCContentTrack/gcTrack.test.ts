@@ -198,7 +198,7 @@ test("v4's GC display settings land on the adapter, and a bare sequence adapter 
   })
   const [display] = conf.displays
   expect(display.type).toBe('LinearWiggleDisplay')
-  expect(readConfObject(display, 'y')).toBe('score')
+  expect(readConfObject(display, ['encoding', 'y', 'field'])).toBe('score')
 })
 
 test('displayDefaults GC settings land on the adapter too', () => {

@@ -14,7 +14,11 @@ import { trackHeightConfigSchemaFields } from '@jbrowse/display-kit/trackHeightC
 import { types } from '@jbrowse/mobx-state-tree'
 import { rowHeightConfigSchemaFields } from '@jbrowse/tree-sidebar/rowHeightConfigSchemaFields'
 import { treeSidebarConfigSchemaFields } from '@jbrowse/tree-sidebar/treeSidebarConfigSchemaFields'
-import { scalesSchema, valueScaleSchema } from '@jbrowse/wiggle-core'
+import {
+  retiredScalesSpelling,
+  yChannelSchema,
+  yEncodingSchema,
+} from '@jbrowse/wiggle-core'
 
 import { markColorSchema, markLegendOptions } from './markColorConfigSchema.ts'
 import { markDefSchema } from './markDefConfigSchema.ts'
@@ -23,8 +27,10 @@ import { markLocusSchema } from './markLocusConfigSchema.ts'
 import { markSizeSchema } from './markSizeConfigSchema.ts'
 import { markTransformStep } from './markTransformConfigSchema.ts'
 import { DEFAULT_TEXT_FIELD, MARK_TYPES, markTypeOf } from './markVocabulary.ts'
+import { MARK_Y_PATHS } from './markYPaths.ts'
 
 import type { MarkDefSnapshot } from './markVocabulary.ts'
+import type { ConfigurationSlotPath } from '@jbrowse/core/configuration'
 import type { Instance, SnapshotIn } from '@jbrowse/mobx-state-tree'
 
 export { MARK_TYPES } from './markVocabulary.ts'
@@ -202,7 +208,7 @@ const markEncodingSchema = ConfigurationSchema(
      * draws nothing and the track shows a corner notice, while a text with
      * neither stands at the apex of a link drawn between its two ends, or in
      * the middle of its band where none is. The scale it is read through is
-     * the display's `scales.y`.
+     * the display's `encoding.y`.
      */
     y: {
       type: 'featureField',
@@ -463,12 +469,17 @@ export function configSchemaFactory() {
           'per-row height in px under rows, scrolling the rows that do not fit; 0 (the default) fits the rows to the plot instead, dividing it between them',
       }),
       /**
-       * #slot scales
-       * The scales the marks are read through, owned by the display rather
-       * than by a mark: `y` alone, and every mark's `encoding.y` shares it.
-       * The same object the wiggle family declares.
+       * #slot encoding
+       * The channels the marks are read through, owned by the display rather
+       * than by a mark: `y` alone, a [YChannel](../ychannel) every mark's
+       * `encoding.y` shares. It names no field, since each mark names its
+       * own, so a bare string here is refused.
+       * #example
+       * ```js
+       * { encoding: { y: { scale: { type: 'log' }, axis: { title: 'depth' } } } }
+       * ```
        */
-      scales: scalesSchema(valueScaleSchema()),
+      encoding: yEncodingSchema(yChannelSchema()),
       /**
        * #slot origin
        * The value bars grow from. The axis widens to include it whenever a
@@ -508,11 +519,18 @@ export function configSchemaFactory() {
     {
       explicitlyTyped: true,
       explicitIdentifier: 'displayId',
-      retired: retiredBaseDisplaySpellings,
+      retired: {
+        scales: retiredScalesSpelling(MARK_Y_PATHS.members),
+        ...retiredBaseDisplaySpellings,
+      },
       preProcessSnapshot: checkMarks,
     },
   )
 }
+
+Object.values(MARK_Y_PATHS.members) satisfies readonly ConfigurationSlotPath<
+  ReturnType<typeof configSchemaFactory>
+>[]
 
 export type LinearMarkDisplayConfigModel = ReturnType<
   typeof configSchemaFactory

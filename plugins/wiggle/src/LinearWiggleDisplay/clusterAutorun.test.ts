@@ -55,7 +55,7 @@ describe('MultiLinearWiggleDisplay declarative runClustering', () => {
 
   it('on a log axis with no scores loaded runs without waiting on a domain', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment({
-      displayConfig: { scales: { y: { type: 'log' } } },
+      displayConfig: { encoding: { y: { scale: { type: 'log' } } } },
     })
     mockRpcCall.mockImplementation((_sid: string, method: string) =>
       Promise.resolve(
@@ -79,7 +79,7 @@ describe('MultiLinearWiggleDisplay declarative runClustering', () => {
 
   it('on a log axis waits for the domain while scores are loaded', () => {
     const { createDisplay } = createTestEnvironment({
-      displayConfig: { scales: { y: { type: 'log' } } },
+      displayConfig: { encoding: { y: { scale: { type: 'log' } } } },
     })
     const { display } = createDisplay()
     const scored = makeMultiWiggleData('a', 'b')[0]!

@@ -263,7 +263,10 @@ describe('the schema', () => {
     config.tracks[0]!.displays = [
       { type: 'LinearBasicDisplay', outlineColor: null, height: null },
       { type: 'LinearAlignmentsDisplay', encoding: { color: null } },
-      { type: 'LinearWiggleDisplay', scales: { y: { domainMin: null } } },
+      {
+        type: 'LinearWiggleDisplay',
+        encoding: { y: { scale: { domainMin: null } } },
+      },
     ]
     expect(schemaProblems(config)).toEqual([])
   })

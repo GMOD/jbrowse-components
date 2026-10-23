@@ -491,7 +491,7 @@ function keyTitle(written: string | undefined, loaded: MarkRegionData) {
 }
 
 // Unset derives, text is the text, and the empty string is a key the author
-// wants bare, the three states `scales.y.title` has.
+// wants bare, the three states `encoding.y.axis.title` has.
 test('a color key is titled with its field until title names it, and "" leaves it bare', () => {
   const scores = region(table(['1', '2']))
   expect(keyTitle(undefined, scores)).toBe('score')

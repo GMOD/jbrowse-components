@@ -223,7 +223,7 @@ function stateModelFactory() {
       /**
        * #method
        * The problems in a config that cannot be drawn as written: by default
-       * the schema's rules over its color objects and `scales.y`, the ones
+       * the schema's rules over its color objects and value axes, the ones
        * `jbrowse validate` runs. A display with additional rules overrides it.
        * `plotProblems` asks it of a draft and `notices` of the live config,
        * so Edit plot and the corner never disagree.
@@ -286,7 +286,7 @@ function stateModelFactory() {
        * then writes the matching config slot. A key naming a channel (`facet`,
        * `color`, `rows`, any object declaring `writes: 'whole'`) replaces the
        * whole object, its shorthand lifted by that schema, and `null` clears
-       * it; any other object, `scales` among them, names members inside it and
+       * it; any other object, `encoding` among them, names members inside it and
        * leaves the rest. Keys that are not slots
        * come back in `unapplied` as `{ key, reason }`, so a caller can tell a
        * misspelling from a key that has an action instead of a slot.

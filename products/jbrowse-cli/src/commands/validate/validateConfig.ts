@@ -577,7 +577,11 @@ function checkMarkDisplay(
       slots,
     ),
     rows: isRecord(rows) ? rows : undefined,
-    scales: axis ? { y: scaleEndsOf(name => axis.ends[name]) } : undefined,
+    axis: axis && {
+      where: axis.where,
+      fence: axis.fence,
+      ends: scaleEndsOf(name => axis.ends[name], axis.fence),
+    },
   })) {
     pushOnce(report, {
       level,
@@ -589,7 +593,7 @@ function checkMarkDisplay(
 }
 
 // A problem the color and scale rules and the mark rule list both reach, such
-// as scales.y's ends on a mark display, is reported once.
+// as the y axis's ends on a mark display, is reported once.
 function pushOnce(report: Report, problem: Problem) {
   if (
     !report.problems.some(
@@ -600,7 +604,7 @@ function pushOnce(report: Report, problem: Problem) {
   }
 }
 
-// Each value axis's ends under `slot`, at any depth (`scales.y`,
+// Each value axis's ends under `slot`, at any depth (`encoding.y.scale`,
 // `coverage.encoding.y.scale`): the node whose schema names a `scaleFence`.
 function valueAxesOf(
   written: unknown,

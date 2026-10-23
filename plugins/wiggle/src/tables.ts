@@ -16,7 +16,6 @@ import {
   resolveRowColors,
 } from '@jbrowse/tree-sidebar/rowColorScale'
 import {
-  SCALES_Y_PATHS,
   computeAutoscaleDomain,
   readYMember,
   summaryFieldOf,
@@ -48,6 +47,7 @@ import {
   wiggleSharesPanel,
 } from './shared/wiggleColor.ts'
 import { centerLinksToPrevious } from './shared/wiggleComponentUtils.ts'
+import { WIGGLE_Y_PATHS } from './shared/wiggleYPaths.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
@@ -76,7 +76,7 @@ export interface WiggleTablesArgs {
   /**
    * The display's config as a track's `displays` entry writes it for a
    * `LinearWiggleDisplay`: `mark`, `y`, `extent`, `origin`, `color`,
-   * `scales`, `rows`, `resolution` and the rest of its slots. Unset reads the default display.
+   * `encoding`, `rows`, `resolution` and the rest of its slots. Unset reads the default display.
    */
   display?: Record<string, unknown>
   /**
@@ -101,7 +101,7 @@ export interface WiggleTablesArgs {
  * paint order (the plotted summary, and under a min-max extent the tinted max and
  * min bands, or a line's min-to-max `band`), each mark in the color it paints
  * and reaching down to `low`, the band's min or the origin bars grow from; `domain`, the score axis the
- * display autoscales to under `scales.y`; `rules`, the reference lines it
+ * display autoscales to under `encoding.y`; `rules`, the reference lines it
  * draws; and `ramps`, the color bar its key shows where one ramp paints every
  * row (`rampKeyOf`). For a host that draws them itself, such as R through V8. The
  * adapters must be registered on `pluginManager` (`registerWiggleAdapters`).
@@ -137,7 +137,7 @@ export async function wiggleTables(
       RESOLUTION_MAX,
       Math.max(RESOLUTION_MIN, readConfObject(conf, 'resolution')),
     ),
-    yField: readConfObject(conf, 'y'),
+    yField: readConfObject(conf, ['encoding', 'y', 'field']),
     statusCallback: () => {},
   }
   if (args.regions.length === 0) {
@@ -152,7 +152,9 @@ export async function wiggleTables(
     readConfObject(conf, ['mark', 'interpolate']),
   )
   const density = renderingType === 'density'
-  const summaryField = summaryFieldOf(readConfObject(conf, 'y'))
+  const summaryField = summaryFieldOf(
+    readConfObject(conf, ['encoding', 'y', 'field']),
+  )
   const extent: string = density ? 'none' : readConfObject(conf, 'extent')
   const origin: number = readConfObject(conf, 'origin')
   const setting = wiggleColorSettingOf(conf.encoding.color)
@@ -161,15 +163,15 @@ export async function wiggleTables(
     origin,
   )
 
-  const scaleType: string = readYMember(conf, SCALES_Y_PATHS, 'type')
-  const zero = readYMember(conf, SCALES_Y_PATHS, 'zero') && !density
-  const rules = yRuleNodes(conf, SCALES_Y_PATHS).map(rule => ({
+  const scaleType: string = readYMember(conf, WIGGLE_Y_PATHS, 'type')
+  const zero = readYMember(conf, WIGGLE_Y_PATHS, 'zero') && !density
+  const rules = yRuleNodes(conf, WIGGLE_Y_PATHS).map(rule => ({
     value: readConfObject(rule, 'value'),
     color: cssColorToHex(readConfObject(rule, 'color') ?? DEFAULT_RULE_COLOR),
     label: readConfObject(rule, 'label'),
   }))
   const range = computeAutoscaleDomain(
-    readYMember(conf, SCALES_Y_PATHS, 'fence'),
+    readYMember(conf, WIGGLE_Y_PATHS, 'fence'),
     summaryField,
     results.flatMap((result, i) =>
       result.sources.map(source => ({
@@ -189,9 +191,9 @@ export async function wiggleTables(
           density ? [] : rules.map(r => r.value),
         ),
         bounds: [
-          readYMember(conf, SCALES_Y_PATHS, 'domainMin') ??
+          readYMember(conf, WIGGLE_Y_PATHS, 'domainMin') ??
             data.valueDomain?.[0],
-          readYMember(conf, SCALES_Y_PATHS, 'domainMax') ??
+          readYMember(conf, WIGGLE_Y_PATHS, 'domainMax') ??
             data.valueDomain?.[1],
         ],
         scaleType,
@@ -202,7 +204,7 @@ export async function wiggleTables(
   const symlogConstant = resolveSymlogConstant(
     domain[0],
     domain[1],
-    readYMember(conf, SCALES_Y_PATHS, 'constant'),
+    readYMember(conf, WIGGLE_Y_PATHS, 'constant'),
   )
 
   const rowLayout = !!rowsSettingOf({
@@ -238,9 +240,9 @@ export async function wiggleTables(
           scoreRampScale(
             domain,
             scaleType,
-            readYMember(conf, SCALES_Y_PATHS, 'constant'),
+            readYMember(conf, WIGGLE_Y_PATHS, 'constant'),
             { rampLut, rampMid },
-            readYMember(conf, SCALES_Y_PATHS, 'title') || 'Score',
+            readYMember(conf, WIGGLE_Y_PATHS, 'title') || 'Score',
           ),
         )
       : undefined

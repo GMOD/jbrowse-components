@@ -460,7 +460,11 @@ test("the display's y scale is the axis: its type and its pinned ends", () => {
     [{ mark: 'bar', encoding: { y: 'score' } }],
     REGION,
     'BedAdapter',
-    { scales: { y: { type: 'log', domainMin: 1, domainMax: 1000 } } },
+    {
+      encoding: {
+        y: { scale: { type: 'log', domainMin: 1, domainMax: 1000 } },
+      },
+    },
   )
   const { display } = createDisplay()
   expect(display.scaleType).toBe('log')
@@ -486,13 +490,13 @@ test('nothing declared is the linear autoscaled form it always was', () => {
 // A spiky distribution is what tells the quantiles apart: 1 spends the whole
 // axis on the one outlier, a quantile below it clips it and leaves the
 // baseline readable.
-test('the domain quantile scales.y names is the one the domain takes', () => {
+test('the fence encoding.y names is the one the domain takes', () => {
   const spiky = [...Array.from({ length: 99 }, () => 2), 1000]
   const local = createTestEnvironment(
     [{ mark: 'bar', encoding: { y: 'score' } }],
     REGION,
     'BedAdapter',
-    { scales: { y: { domainQuantile: 1 } } },
+    { encoding: { y: { scale: { fenceQuantile: 1 } } } },
   ).createDisplay().display
   local.setRpcData(0, result([{ y: spiky }]), REGION)
   expect(local.domain![1]).toBe(1000)
@@ -501,7 +505,7 @@ test('the domain quantile scales.y names is the one the domain takes', () => {
     [{ mark: 'bar', encoding: { y: 'score' } }],
     REGION,
     'BedAdapter',
-    { scales: { y: { domainQuantile: 0.99 } } },
+    { encoding: { y: { scale: { fenceQuantile: 0.99 } } } },
   ).createDisplay().display
   clipped.setRpcData(0, result([{ y: spiky }]), REGION)
   expect(clipped.domain![1]).toBeLessThan(10)
@@ -540,7 +544,7 @@ test('one end of the declared domain pins and the other autoscales', () => {
     [{ mark: 'bar', encoding: { y: 'score' } }],
     REGION,
     'BedAdapter',
-    { scales: { y: { domainMax: 50 } } },
+    { encoding: { y: { scale: { domainMax: 50 } } } },
   )
   const { display } = createDisplay()
   expect(display.minScoreBound).toBeUndefined()
@@ -558,26 +562,26 @@ test("pinning the current range lands on the display's scale", () => {
   display.setMinScore(drawn[0])
   display.setMaxScore(drawn[1])
   expect([
-    display.conf.scales.y.domainMin,
-    display.conf.scales.y.domainMax,
+    display.conf.encoding.y.scale.domainMin,
+    display.conf.encoding.y.scale.domainMax,
   ]).toEqual(drawn)
   expect(display.hasManualScoreBounds).toBe(true)
 })
 
-test('the score menu edits scales.y, the one place the axis is written', () => {
+test('the score menu edits encoding.y, the one place the axis is written', () => {
   const { createDisplay } = createTestEnvironment([
     { mark: 'bar', encoding: { y: 'score' } },
     { mark: 'point', encoding: { y: 'other' } },
   ])
   const { display } = createDisplay()
   display.setMaxScore(200)
-  expect(display.conf.scales.y.domainMax).toBe(200)
+  expect(display.conf.encoding.y.scale.domainMax).toBe(200)
   expect(display.maxScoreBound).toBe(200)
   display.setScaleType('log')
-  expect(display.conf.scales.y.type).toBe('log')
+  expect(display.conf.encoding.y.scale.type).toBe('log')
   expect(display.scaleType).toBe('log')
   display.setMaxScore(undefined)
-  expect(display.conf.scales.y.domainMax).toBeUndefined()
+  expect(display.conf.encoding.y.scale.domainMax).toBeUndefined()
   expect(display.hasManualScoreBounds).toBe(false)
 })
 
@@ -658,7 +662,7 @@ test('a rule widens the axis to reach it and lands on its own value', () => {
     REGION,
     'BedAdapter',
     {
-      scales: {
+      encoding: {
         y: { rules: [20, { value: 5, color: 'red', label: 'suggestive' }] },
       },
     },
@@ -684,7 +688,7 @@ test('a rule at zero is a rule, and a pinned end that excludes one drops it', ()
     [{ mark: 'point', encoding: { y: 'log_ratio' } }],
     REGION,
     'BedAdapter',
-    { scales: { y: { rules: [0, 100], domainMax: 10 } } },
+    { encoding: { y: { scale: { domainMax: 10 }, rules: [0, 100] } } },
   )
   const { display } = createDisplay()
   display.setRpcData(0, result([{ y: [2, 8] }]), REGION)
@@ -698,7 +702,12 @@ test('a rule on a log axis sits where the log places its value', () => {
     REGION,
     'BedAdapter',
     {
-      scales: { y: { type: 'log', domainMin: 1, domainMax: 100, rules: [10] } },
+      encoding: {
+        y: {
+          scale: { type: 'log', domainMin: 1, domainMax: 100 },
+          rules: [10],
+        },
+      },
     },
   )
   const { display } = createDisplay()
@@ -711,7 +720,7 @@ test('a rule on a log axis sits where the log places its value', () => {
 // the bars from the render state; both are far from the 1 the bars once took.
 test.each([
   ['derived from the domain, 0.05', {}],
-  ['configured, 5', { symlogConstant: 5 }],
+  ['configured, 5', { constant: 5 }],
 ])(
   'a symlog axis ticks each value at the height its bar reaches, its constant %s',
   (_label, constant) => {
@@ -720,13 +729,15 @@ test.each([
       REGION,
       'BedAdapter',
       {
-        scales: {
+        encoding: {
           y: {
-            type: 'symlog',
-            domainMin: -20,
-            domainMax: 50,
+            scale: {
+              type: 'symlog',
+              domainMin: -20,
+              domainMax: 50,
+              ...constant,
+            },
             rules: [7],
-            ...constant,
           },
         },
       },
@@ -759,7 +770,7 @@ test('a rule in a banded plot is placed in the band every row repeats', () => {
     [{ mark: 'bar', encoding: { y: 'score' } }],
     REGION,
     'BedAdapter',
-    { facet: 'source', scales: { y: { rules: [4] } } },
+    { facet: 'source', encoding: { y: { rules: [4] } } },
   )
   const { display } = createDisplay()
   display.setRpcData(
@@ -791,7 +802,7 @@ test('the axis carries only the caption title writes, at every zoom', () => {
       multiscale,
       REGION,
       'BedAdapter',
-      { scales: { y } },
+      { encoding: { y: { axis: y } } },
     ).createDisplay()
     view.zoomTo(2)
     const zoomedIn = display.valueScales[0]!.caption
@@ -808,7 +819,7 @@ test('the axis carries only the caption title writes, at every zoom', () => {
 test('two fields, or an expression, leave the axis untitled until title names it', () => {
   const caption = (marks: unknown[], y: Record<string, unknown> = {}) =>
     createTestEnvironment(marks, REGION, 'BedAdapter', {
-      scales: { y },
+      encoding: { y: { axis: y } },
     }).createDisplay().display.valueScales[0]!.caption
   const expression = [{ mark: 'bar', encoding: { y: 'jexl:feature.score*2' } }]
   expect(caption(expression)).toBe('')
@@ -828,13 +839,13 @@ test('an unset or empty title leaves the axis bare, and a reset returns it there
   const marks = [{ mark: 'bar', encoding: { y: 'score' } }]
   const titled = (y: Record<string, unknown>) =>
     createTestEnvironment(marks, REGION, 'BedAdapter', {
-      scales: { y },
+      encoding: { y: { axis: y } },
     }).createDisplay().display
   expect(titled({}).valueScales[0]!.caption).toBe('')
   expect(titled({ title: '' }).valueScales[0]!.caption).toBe('')
   const display = titled({ title: 'score' })
   expect(display.valueScales[0]!.caption).toBe('score')
-  setConf(display, ['scales', 'y', 'title'], undefined)
+  setConf(display, ['encoding', 'y', 'axis', 'title'], undefined)
   expect(display.valueScales[0]!.caption).toBe('')
 })
 
@@ -843,7 +854,7 @@ test('a banded plot carries its one caption, which the chrome draws once', () =>
     [{ mark: 'bar', encoding: { y: 'score' } }],
     REGION,
     'BedAdapter',
-    { facet: 'source', scales: { y: { title: 'score' } } },
+    { facet: 'source', encoding: { y: { axis: { title: 'score' } } } },
   )
   const { display } = createDisplay()
   display.setRpcData(
@@ -912,17 +923,17 @@ test('a key an encoding channel does not declare is named as the config loads', 
       REGION,
       'BedAdapter',
       {
-        scales: { y: { min: 0 } },
+        encoding: { y: { scale: { min: 0 } } },
       },
     ),
-  ).toEqual(['ValueScale does not declare min: loading without it'])
+  ).toEqual(['YScale does not declare min: loading without it'])
   expect(
     namedOnLoad(
       [{ mark: 'bar', encoding: { y: 'score' } }],
       REGION,
       'BedAdapter',
       {
-        scales: { y: { rules: [{ value: 5, colour: 'red' }] } },
+        encoding: { y: { rules: [{ value: 5, colour: 'red' }] } },
       },
     ),
   ).toEqual(['ValueScaleRule does not declare colour: loading without it'])
@@ -3223,24 +3234,26 @@ test('the plot an agent reads carries its axis, and a draft reports before it la
     [{ mark: 'bar', encoding: { y: 'score' } }],
     REGION,
     'BedAdapter',
-    { scales: { y: { type: 'log', title: 'Score' } } },
+    { encoding: { y: { scale: { type: 'log' }, axis: { title: 'Score' } } } },
   ).createDisplay()
   const plot = structuredClone(display.plot) as {
     marks: { mark: string; encoding: { y?: string } }[]
-    scales: { y: { type: string } }
+    encoding: { y: { scale: { type: string } } }
   }
-  expect(plot.scales).toEqual({ y: { type: 'log', title: 'Score' } })
+  expect(plot.encoding).toEqual({
+    y: { scale: { type: 'log' }, axis: { title: 'Score' } },
+  })
   plot.marks[0]!.encoding = {}
   expect(display.plotProblems(plot)).toEqual([
     'mark 0 encoding.y: a bar stands at a value, and names no y field while no step before it writes one — a coverage, or an aggregate with one op — so it draws nothing',
   ])
   expect(display.conf.marks[0]!.encoding.y).toBe('score')
   plot.marks[0]!.encoding = { y: 'count' }
-  plot.scales.y.type = 'linear'
+  plot.encoding.y.scale.type = 'linear'
   expect(display.plotProblems(plot)).toEqual([])
   display.applyPlot(plot)
   expect(display.conf.marks[0]!.encoding.y).toBe('count')
-  expect(display.conf.scales.y.type).toBe('linear')
+  expect(display.conf.encoding.y.scale.type).toBe('linear')
   expect(() => display.plotProblems({ marks: [{ mark: 'area' }] })).toThrow(
     'marks.0.mark is "area"',
   )

@@ -89,14 +89,14 @@ test('an agent reads a plot as JSON, checks a draft, and applies it to two track
   expect(Object.keys(slots.transform!.items!.oneOf!)).toEqual(
     expect.arrayContaining(['filter', 'bin', 'aggregate', 'coverage', 'mate']),
   )
-  expect(slots.scales).toMatchObject({
-    type: 'Scales',
-    slots: { y: { type: 'ValueScale' } },
+  expect(slots.encoding).toMatchObject({
+    type: 'YEncoding',
+    slots: { y: { type: 'YChannel' } },
   })
 
   const plot = structuredClone(a.plot) as {
     marks: Record<string, unknown>[]
-    scales?: unknown
+    encoding?: unknown
   }
   plot.marks.push({
     mark: 'bar',
@@ -106,14 +106,16 @@ test('an agent reads a plot as JSON, checks a draft, and applies it to two track
     ],
     minBpPerPx: 100,
   })
-  plot.scales = { y: { autoscaleGroup: 'shared', title: 'Score' } }
+  plot.encoding = {
+    y: { scale: { group: 'shared' }, axis: { title: 'Score' } },
+  }
   expect(a.plotProblems(plot)).toEqual([])
   a.applyPlot(plot)
   b.applyPlot(plot)
   expect(b.plot).toEqual(a.plot)
   expect(a.plot).toMatchObject({
     marks: [{ encoding: { y: 'score' } }, { minBpPerPx: 100 }],
-    scales: { y: { autoscaleGroup: 'shared', title: 'Score' } },
+    encoding: { y: { scale: { group: 'shared' }, axis: { title: 'Score' } } },
   })
   expect(a.autoscaleGroup).toBe('shared')
 })

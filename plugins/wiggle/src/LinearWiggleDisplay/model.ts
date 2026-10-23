@@ -384,7 +384,7 @@ export default function stateModelFactory(
       /**
        * #getter
        * Overrides WiggleCommonMixin's empty base, so the axis reaches a
-       * rule of `scales.y.rules` even where the visible data does not.
+       * rule of `encoding.y.rules` even where the visible data does not.
        *
        * Empty in density, where no rule is drawn: the domain is spent on the
        * color ramp there, so widening it stretches the ramp over a range
@@ -538,7 +538,6 @@ export default function stateModelFactory(
             scaleType: self.scaleType,
             height: tickHeight,
             offset: yTop - self.rowsTopOffset,
-            minimalTicks: self.minimalTicks,
             symlogConstant: self.symlogConstant,
             bandTops: self.isDensityMode
               ? []

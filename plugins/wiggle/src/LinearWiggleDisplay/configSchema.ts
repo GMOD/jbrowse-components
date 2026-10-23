@@ -8,21 +8,21 @@ import {
   treeSidebarConfigSchemaFields,
 } from '@jbrowse/tree-sidebar/treeSidebarConfigSchemaFields'
 import {
-  SCALES_Y_PATHS,
   retiredAxisSpellings,
   retiredScaleSpellings,
+  retiredScalesSpelling,
 } from '@jbrowse/wiggle-core'
 
 import { extentConfigSchemaFields } from '../shared/extentConfigSchemaFields.ts'
 import { quantitativeRowsConfigSchema } from '../shared/quantitativeRowsConfigSchema.ts'
-import {
-  wiggleConfigSchemaFields,
-  wiggleValueScale,
-} from '../shared/wiggleConfigSchemaFields.ts'
+import { wiggleConfigSchemaFields } from '../shared/wiggleConfigSchemaFields.ts'
 import { wiggleEncodingConfigSchema } from '../shared/wiggleEncodingConfigSchema.ts'
 import { wiggleMarkConfigSchema } from '../shared/wiggleMarkConfigSchema.ts'
+import { WIGGLE_Y_PATHS } from '../shared/wiggleYPaths.ts'
 import { WIGGLE_MARK_NAMES, markOf } from '../util.ts'
 import { retiredConfigSpellings } from './retired.ts'
+
+import type { ConfigurationSlotPath } from '@jbrowse/core/configuration'
 
 /**
  * #config LinearWiggleDisplay
@@ -85,8 +85,10 @@ import { retiredConfigSpellings } from './retired.ts'
  *   adapter: { type: 'BigWigAdapter', uri: 'https://example.com/coverage.bw' },
  *   displayDefaults: {
  *     height: 200,
- *     scales: { y: { type: 'log' } },
- *     encoding: { color: { value: 'darkgreen' } },
+ *     encoding: {
+ *       y: { scale: { type: 'log' } },
+ *       color: { value: 'darkgreen' },
+ *     },
  *   },
  * }
  * ```
@@ -151,11 +153,13 @@ const linearWiggleDisplayConfigSchema = ConfigurationSchema(
     ...trackHeightConfigSchemaFields(),
     /**
      * #slot encoding
-     * The channels the marks paint through: `encoding.color`, one CSS color
-     * in `value`, or the score through a `scale` — `threshold` for solid
-     * bands, `linear` for a gradient. Unset, it is the pos/neg pair about the
-     * `origin`, which a heatmap fades to from white there, and several
-     * sources in one plot box each paint their row color.
+     * The channels the marks paint through. `encoding.color` is one CSS
+     * color in `value`, or the score through a `scale` — `threshold` for
+     * solid bands, `linear` for a gradient; unset, it is the pos/neg pair
+     * about the `origin`, which a heatmap fades to from white there, and
+     * several sources in one plot box each paint their row color.
+     * `encoding.y` is the field plotted and the value axis it is drawn
+     * through: `field`, `scale`, `axis` and `rules`.
      * #example
      * ```json
      * {
@@ -163,25 +167,15 @@ const linearWiggleDisplayConfigSchema = ConfigurationSchema(
      *   "encoding": { "color": { "scale": { "type": "threshold", "domain": [2] } } }
      * }
      * ```
-     */
-    encoding: wiggleEncodingConfigSchema,
-    ...wiggleConfigSchemaFields,
-    /**
-     * #slot scales
-     * The y scale the plot is drawn through: `type`, `domainMin`,
-     * `domainMax`, `domainQuantile`, `symlogConstant`
-     * and `rules`, the reference lines drawn across it. The density rendering
-     * draws no rule and does not widen to one: it spends color on the score
-     * and has no axis to rule.
-     * #example
      * ```json
      * {
      *   "type": "LinearWiggleDisplay",
-     *   "scales": { "y": { "rules": [{ "value": 30, "label": "2 copies" }, 15] } }
+     *   "encoding": { "y": { "rules": [{ "value": 30, "label": "2 copies" }, 15] } }
      * }
      * ```
      */
-    scales: wiggleValueScale(),
+    encoding: wiggleEncodingConfigSchema,
+    ...wiggleConfigSchemaFields,
     /**
      * #slot legend
      * The key: density's score color ramp, a threshold's bands, or the
@@ -199,9 +193,11 @@ const linearWiggleDisplayConfigSchema = ConfigurationSchema(
     explicitlyTyped: true,
     explicitIdentifier: 'displayId',
     retired: {
+      scales: retiredScalesSpelling(WIGGLE_Y_PATHS.members),
+      y: field => ({ encoding: { y: { field } } }),
       ...retiredBaseDisplaySpellings,
-      ...retiredAxisSpellings(SCALES_Y_PATHS.members),
-      ...retiredScaleSpellings(SCALES_Y_PATHS.members),
+      ...retiredAxisSpellings(WIGGLE_Y_PATHS.members),
+      ...retiredScaleSpellings(WIGGLE_Y_PATHS.members),
       ...retiredConfigSpellings,
       defaultRendering: rendering => {
         const mark =
@@ -218,6 +214,10 @@ const linearWiggleDisplayConfigSchema = ConfigurationSchema(
     },
   },
 )
+
+Object.values(WIGGLE_Y_PATHS.members) satisfies readonly ConfigurationSlotPath<
+  typeof linearWiggleDisplayConfigSchema
+>[]
 
 export default linearWiggleDisplayConfigSchema
 

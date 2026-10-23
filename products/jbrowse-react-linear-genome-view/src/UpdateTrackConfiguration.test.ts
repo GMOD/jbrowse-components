@@ -276,8 +276,8 @@ test('an edit to a shown catalog track reaches the session snapshot', async () =
 // which is what a reload or a share link hands the next session.
 describe('a reset of an admin-set slot survives a reload', () => {
   const FST = 'fst'
-  const RULES = ['scales', 'y', 'rules'] as const
-  const DOMAIN_MAX = ['scales', 'y', 'domainMax'] as const
+  const RULES = ['encoding', 'y', 'rules'] as const
+  const DOMAIN_MAX = ['encoding', 'y', 'scale', 'domainMax'] as const
 
   function fstTrack(extra: Record<string, unknown>) {
     return {
@@ -290,14 +290,16 @@ describe('a reset of an admin-set slot survives a reload', () => {
     }
   }
   const rulesBase = fstTrack({
-    displayDefaults: { scales: { y: { domainMax: 50, rules: [0.295] } } },
+    displayDefaults: {
+      encoding: { y: { scale: { domainMax: 50 }, rules: [0.295] } },
+    },
   })
   const rulesDelta = {
     trackId: FST,
     displays: [
       {
         displayId: `${FST}-LinearManhattanDisplay`,
-        scales: { y: { rules: null } },
+        encoding: { y: { rules: null } },
       },
     ],
   }
@@ -383,7 +385,7 @@ describe('a reset of an admin-set slot survives a reload', () => {
       description: 'admin description',
       displayDefaults: {
         origin: 9,
-        scales: { y: { domainMax: 50 } },
+        encoding: { y: { scale: { domainMax: 50 } } },
       },
     })
     const state = createViewState({ assembly, tracks: [base] })
@@ -422,7 +424,7 @@ describe('a reset of an admin-set slot survives a reload', () => {
       displays: [
         {
           displayId: `${FST}-LinearManhattanDisplay`,
-          scales: { y: { domainMax: 20 } },
+          encoding: { y: { scale: { domainMax: 20 } } },
         },
       ],
     })

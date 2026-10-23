@@ -3,9 +3,11 @@ import { types } from '@jbrowse/mobx-state-tree'
 import { act, fireEvent, render, screen } from '@testing-library/react'
 
 import { ScoreScaleMixin } from '../ScoreScaleMixin.ts'
-import { scalesSchema, valueScaleSchema } from '../valueScaleConfigSchema.ts'
+import { yEncodingSchema } from '../yEncodingConfigSchema.ts'
+import { yFieldChannelSchema } from '../yFieldChannelConfigSchema.ts'
 import ScoreAxisWidget from './ScoreAxisWidget.tsx'
 
+import type { YScalePaths } from '../yScalePaths.ts'
 import type { ScoreAxisWidgetModel } from './stateModel.ts'
 import type { ValueScale } from '@jbrowse/display-ui'
 
@@ -14,14 +16,35 @@ jest.mock('@jbrowse/core/util/baseDisplayConfig', () => ({
   baseDisplayConfig: () => mockBase,
 }))
 
+const Y = ['encoding', 'y'] as const
+const PATHS = {
+  members: {
+    type: [...Y, 'scale', 'type'],
+    zero: [...Y, 'scale', 'zero'],
+    domainMin: [...Y, 'scale', 'domainMin'],
+    domainMax: [...Y, 'scale', 'domainMax'],
+    fence: [...Y, 'scale', 'fenceQuantile'],
+    constant: [...Y, 'scale', 'constant'],
+    group: [...Y, 'scale', 'group'],
+    title: [...Y, 'axis', 'title'],
+    grid: [...Y, 'axis', 'grid'],
+    rules: [...Y, 'rules'],
+  },
+  reset: [
+    [...Y, 'scale'],
+    [...Y, 'axis'],
+    [...Y, 'rules'],
+  ],
+} as const satisfies YScalePaths
+
 const configSchema = ConfigurationSchema('TestAxisDisplay', {
-  scales: scalesSchema(valueScaleSchema({ domainQuantile: 0.99 })),
+  encoding: yEncodingSchema(yFieldChannelSchema({ fenceQuantile: 0.99 })),
 })
 
 const Display = types
   .compose(
     'TestAxisDisplay',
-    ScoreScaleMixin(),
+    ScoreScaleMixin(PATHS),
     types.model({ id: 'd1', configuration: configSchema }),
   )
   .views(() => ({
@@ -78,7 +101,7 @@ test('each control writes the scale at once and saves it to the session', () => 
 
   expect(box('Clip extreme outliers').checked).toBe(true)
   fireEvent.click(box('Clip extreme outliers'))
-  expect(display.domainQuantile).toBe(1)
+  expect(display.fenceQuantile).toBe(1)
 
   fireEvent.click(box('Grid lines'))
   expect(display.grid).toBe(true)
@@ -92,22 +115,27 @@ test('a setter called off the panel, as a menu or an agent does, saves too', () 
   expect(persists).toBe(2)
 })
 
-test('Reset to defaults puts every scale member back and saves', () => {
-  const { display } = open()
+test('Reset to defaults puts every scale member back, keeps the field, and saves', () => {
+  const { display } = open({
+    configuration: { encoding: { y: { field: 'maxScore' } } },
+  })
   display.setMinScore(3)
   display.setScaleType('log')
   display.setGrid(true)
+  display.setScoreRules([5])
   persists = 0
   fireEvent.click(screen.getByRole('button', { name: 'Reset to defaults' }))
   expect(display.manualMinScore).toBeUndefined()
   expect(display.scaleType).toBe('linear')
   expect(display.grid).toBe(false)
-  expect(display.domainQuantile).toBe(0.99)
+  expect(display.scoreRules).toEqual([])
+  expect(display.fenceQuantile).toBe(0.99)
+  expect(display.configuration.encoding.y.field).toBe('maxScore')
   expect(persists).toBe(1)
 })
 
 test('Reset to defaults returns to the base config, not past it', () => {
-  mockBase = { scales: { y: { domainMax: 9 } } }
+  mockBase = { encoding: { y: { scale: { domainMax: 9 } } } }
   const { display } = open()
   display.setMinScore(3)
   display.setMaxScore(50)
@@ -144,7 +172,7 @@ test('a typed min writes once the typing pauses, and on blur', () => {
 test('text that is not a number is held back rather than read as auto', () => {
   jest.useFakeTimers()
   const { display } = open({
-    configuration: { scales: { y: { domainMin: 5 } } },
+    configuration: { encoding: { y: { scale: { domainMin: 5 } } } },
   })
   fireEvent.change(field('Min'), { target: { value: 'abc' } })
   act(() => {
@@ -155,7 +183,11 @@ test('text that is not a number is held back rather than read as auto', () => {
 })
 
 test('with both ends set, 0 and clipping grey out and say why', () => {
-  open({ configuration: { scales: { y: { domainMin: 0, domainMax: 10 } } } })
+  open({
+    configuration: {
+      encoding: { y: { scale: { domainMin: 0, domainMax: 10 } } },
+    },
+  })
   expect(box('Include 0').disabled).toBe(true)
   expect(box('Clip extreme outliers').disabled).toBe(true)
   screen.getByText(/Both ends are set/)
@@ -171,7 +203,7 @@ test('signed log says what it keeps that log does not', () => {
 })
 
 test('a log axis has no 0 to include', () => {
-  open({ configuration: { scales: { y: { type: 'log' } } } })
+  open({ configuration: { encoding: { y: { scale: { type: 'log' } } } } })
   expect(box('Include 0').disabled).toBe(true)
   screen.getByText('A log axis has no 0')
 })

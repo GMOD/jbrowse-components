@@ -1,3 +1,4 @@
+import { scaleEndsOf } from '@jbrowse/core/util/colorScale'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
 import type {
@@ -5,7 +6,6 @@ import type {
   MarkSnapshot,
   PlotSnapshot,
   RowsSnapshot,
-  ScalesSnapshot,
   StepSnapshot,
 } from './markProblems.ts'
 import type { AnyConfigurationModel, Plot } from '@jbrowse/core/configuration'
@@ -53,6 +53,20 @@ export function markPlotSettingsOf(
     transform: (snapshot.transform ?? []) as StepSnapshot[],
     facet: snapshot.facet as FacetSnapshot | undefined,
     rows: snapshot.rows as RowsSnapshot | undefined,
-    scales: snapshot.scales as ScalesSnapshot | undefined,
+    axis: {
+      where: 'encoding.y.scale',
+      fence: 'fenceQuantile',
+      ends: scaleEndsOf(
+        name =>
+          asRecord(asRecord(asRecord(snapshot.encoding)?.y)?.scale)?.[name],
+        'fenceQuantile',
+      ),
+    },
   }
+}
+
+function asRecord(value: unknown) {
+  return value && typeof value === 'object'
+    ? (value as Record<string, unknown>)
+    : undefined
 }

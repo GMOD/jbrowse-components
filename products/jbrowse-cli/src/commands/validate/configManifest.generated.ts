@@ -7381,78 +7381,63 @@ export const configManifest: ConfigManifest = {
                 }
               },
               "impliedField": "score"
-            }
-          ],
-          "schema": "WiggleEncoding",
-          "writes": "members"
-        },
-        {
-          "name": "y",
-          "type": "string"
-        },
-        {
-          "name": "resolution",
-          "type": "number"
-        },
-        {
-          "name": "origin",
-          "type": "number"
-        },
-        {
-          "name": "size",
-          "type": "(number | undefined)"
-        },
-        {
-          "name": "maxGapMultiple",
-          "type": "number"
-        },
-        {
-          "name": "scales",
-          "type": "ScalesConfigurationSchema",
-          "subSlots": [
+            },
             {
               "name": "y",
-              "type": "ValueScaleConfigurationSchema",
+              "type": "YFieldChannelConfigurationSchema",
               "subSlots": [
                 {
-                  "name": "type",
-                  "type": "ValueScaleType"
+                  "name": "scale",
+                  "type": "YScaleConfigurationSchema",
+                  "subSlots": [
+                    {
+                      "name": "type",
+                      "type": "YScaleType"
+                    },
+                    {
+                      "name": "domainMin",
+                      "type": "(number | undefined)"
+                    },
+                    {
+                      "name": "domainMax",
+                      "type": "(number | undefined)"
+                    },
+                    {
+                      "name": "zero",
+                      "type": "boolean"
+                    },
+                    {
+                      "name": "fenceQuantile",
+                      "type": "number"
+                    },
+                    {
+                      "name": "constant",
+                      "type": "number"
+                    },
+                    {
+                      "name": "group",
+                      "type": "(string | undefined)"
+                    }
+                  ],
+                  "schema": "YScale",
+                  "writes": "members",
+                  "scaleFence": "fenceQuantile"
                 },
                 {
-                  "name": "domainMin",
-                  "type": "(number | undefined)"
-                },
-                {
-                  "name": "domainMax",
-                  "type": "(number | undefined)"
-                },
-                {
-                  "name": "zero",
-                  "type": "boolean"
-                },
-                {
-                  "name": "autoscaleGroup",
-                  "type": "(string | undefined)"
-                },
-                {
-                  "name": "symlogConstant",
-                  "type": "number"
-                },
-                {
-                  "name": "domainQuantile",
-                  "type": "number"
-                },
-                {
-                  "name": "grid",
-                  "type": "boolean"
-                },
-                {
-                  "name": "minimalTicks",
-                  "type": "boolean"
-                },
-                {
-                  "name": "title",
-                  "type": "(string | undefined)"
+                  "name": "axis",
+                  "type": "YAxisConfigurationSchema",
+                  "subSlots": [
+                    {
+                      "name": "title",
+                      "type": "(string | undefined)"
+                    },
+                    {
+                      "name": "grid",
+                      "type": "boolean"
+                    }
+                  ],
+                  "schema": "YAxis",
+                  "writes": "members"
                 },
                 {
                   "name": "rules",
@@ -7475,15 +7460,37 @@ export const configManifest: ConfigManifest = {
                   "shorthand": {
                     "number": "value"
                   }
+                },
+                {
+                  "name": "field",
+                  "type": "string"
                 }
               ],
-              "schema": "ValueScale",
+              "schema": "YFieldChannel",
               "writes": "members",
-              "scaleFence": "domainQuantile"
+              "shorthand": {
+                "string": "field"
+              }
             }
           ],
-          "schema": "Scales",
+          "schema": "WiggleEncoding",
           "writes": "members"
+        },
+        {
+          "name": "resolution",
+          "type": "number"
+        },
+        {
+          "name": "origin",
+          "type": "number"
+        },
+        {
+          "name": "size",
+          "type": "(number | undefined)"
+        },
+        {
+          "name": "maxGapMultiple",
+          "type": "number"
         },
         {
           "name": "legend",
@@ -7523,6 +7530,8 @@ export const configManifest: ConfigManifest = {
         }
       ],
       "legacyKeys": [
+        "scales",
+        "y",
         "maxFeatureScreenDensity",
         "maxDisplayedBpPerPx",
         "fetchSizeLimit",
@@ -7547,6 +7556,7 @@ export const configManifest: ConfigManifest = {
         "maxDisplayedBpPerPx",
         "fetchSizeLimit",
         "mouseover",
+        "minimalTicks",
         "numStdDev",
         "inverted"
       ],
@@ -8785,52 +8795,65 @@ export const configManifest: ConfigManifest = {
           "type": "number"
         },
         {
-          "name": "scales",
-          "type": "ScalesConfigurationSchema",
+          "name": "encoding",
+          "type": "YEncodingConfigurationSchema",
           "subSlots": [
             {
               "name": "y",
-              "type": "ValueScaleConfigurationSchema",
+              "type": "YChannelConfigurationSchema",
               "subSlots": [
                 {
-                  "name": "type",
-                  "type": "ValueScaleType"
+                  "name": "scale",
+                  "type": "YScaleConfigurationSchema",
+                  "subSlots": [
+                    {
+                      "name": "type",
+                      "type": "YScaleType"
+                    },
+                    {
+                      "name": "domainMin",
+                      "type": "(number | undefined)"
+                    },
+                    {
+                      "name": "domainMax",
+                      "type": "(number | undefined)"
+                    },
+                    {
+                      "name": "zero",
+                      "type": "boolean"
+                    },
+                    {
+                      "name": "fenceQuantile",
+                      "type": "number"
+                    },
+                    {
+                      "name": "constant",
+                      "type": "number"
+                    },
+                    {
+                      "name": "group",
+                      "type": "(string | undefined)"
+                    }
+                  ],
+                  "schema": "YScale",
+                  "writes": "members",
+                  "scaleFence": "fenceQuantile"
                 },
                 {
-                  "name": "domainMin",
-                  "type": "(number | undefined)"
-                },
-                {
-                  "name": "domainMax",
-                  "type": "(number | undefined)"
-                },
-                {
-                  "name": "zero",
-                  "type": "boolean"
-                },
-                {
-                  "name": "autoscaleGroup",
-                  "type": "(string | undefined)"
-                },
-                {
-                  "name": "symlogConstant",
-                  "type": "number"
-                },
-                {
-                  "name": "domainQuantile",
-                  "type": "number"
-                },
-                {
-                  "name": "grid",
-                  "type": "boolean"
-                },
-                {
-                  "name": "minimalTicks",
-                  "type": "boolean"
-                },
-                {
-                  "name": "title",
-                  "type": "(string | undefined)"
+                  "name": "axis",
+                  "type": "YAxisConfigurationSchema",
+                  "subSlots": [
+                    {
+                      "name": "title",
+                      "type": "(string | undefined)"
+                    },
+                    {
+                      "name": "grid",
+                      "type": "boolean"
+                    }
+                  ],
+                  "schema": "YAxis",
+                  "writes": "members"
                 },
                 {
                   "name": "rules",
@@ -8855,12 +8878,11 @@ export const configManifest: ConfigManifest = {
                   }
                 }
               ],
-              "schema": "ValueScale",
-              "writes": "members",
-              "scaleFence": "domainQuantile"
+              "schema": "YChannel",
+              "writes": "members"
             }
           ],
-          "schema": "Scales",
+          "schema": "YEncoding",
           "writes": "members"
         },
         {
@@ -8927,6 +8949,7 @@ export const configManifest: ConfigManifest = {
         }
       ],
       "legacyKeys": [
+        "scales",
         "maxFeatureScreenDensity",
         "maxDisplayedBpPerPx",
         "mouseover",
@@ -9460,52 +9483,65 @@ export const configManifest: ConfigManifest = {
           "type": "number"
         },
         {
-          "name": "scales",
-          "type": "ScalesConfigurationSchema",
+          "name": "encoding",
+          "type": "YEncodingConfigurationSchema",
           "subSlots": [
             {
               "name": "y",
-              "type": "ValueScaleConfigurationSchema",
+              "type": "YChannelConfigurationSchema",
               "subSlots": [
                 {
-                  "name": "type",
-                  "type": "ValueScaleType"
+                  "name": "scale",
+                  "type": "YScaleConfigurationSchema",
+                  "subSlots": [
+                    {
+                      "name": "type",
+                      "type": "YScaleType"
+                    },
+                    {
+                      "name": "domainMin",
+                      "type": "(number | undefined)"
+                    },
+                    {
+                      "name": "domainMax",
+                      "type": "(number | undefined)"
+                    },
+                    {
+                      "name": "zero",
+                      "type": "boolean"
+                    },
+                    {
+                      "name": "fenceQuantile",
+                      "type": "number"
+                    },
+                    {
+                      "name": "constant",
+                      "type": "number"
+                    },
+                    {
+                      "name": "group",
+                      "type": "(string | undefined)"
+                    }
+                  ],
+                  "schema": "YScale",
+                  "writes": "members",
+                  "scaleFence": "fenceQuantile"
                 },
                 {
-                  "name": "domainMin",
-                  "type": "(number | undefined)"
-                },
-                {
-                  "name": "domainMax",
-                  "type": "(number | undefined)"
-                },
-                {
-                  "name": "zero",
-                  "type": "boolean"
-                },
-                {
-                  "name": "autoscaleGroup",
-                  "type": "(string | undefined)"
-                },
-                {
-                  "name": "symlogConstant",
-                  "type": "number"
-                },
-                {
-                  "name": "domainQuantile",
-                  "type": "number"
-                },
-                {
-                  "name": "grid",
-                  "type": "boolean"
-                },
-                {
-                  "name": "minimalTicks",
-                  "type": "boolean"
-                },
-                {
-                  "name": "title",
-                  "type": "(string | undefined)"
+                  "name": "axis",
+                  "type": "YAxisConfigurationSchema",
+                  "subSlots": [
+                    {
+                      "name": "title",
+                      "type": "(string | undefined)"
+                    },
+                    {
+                      "name": "grid",
+                      "type": "boolean"
+                    }
+                  ],
+                  "schema": "YAxis",
+                  "writes": "members"
                 },
                 {
                   "name": "rules",
@@ -9530,12 +9566,11 @@ export const configManifest: ConfigManifest = {
                   }
                 }
               ],
-              "schema": "ValueScale",
-              "writes": "members",
-              "scaleFence": "domainQuantile"
+              "schema": "YChannel",
+              "writes": "members"
             }
           ],
-          "schema": "Scales",
+          "schema": "YEncoding",
           "writes": "members"
         },
         {
@@ -9602,6 +9637,7 @@ export const configManifest: ConfigManifest = {
         }
       ],
       "legacyKeys": [
+        "scales",
         "maxFeatureScreenDensity",
         "maxDisplayedBpPerPx",
         "mouseover",

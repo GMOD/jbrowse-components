@@ -44,9 +44,9 @@ test.each([
   ['whiskers', 'score', 'min-max'],
 ])(
   'a v4 session’s summaryScoreMode %s is y %s, extent %s',
-  (mode, y, extent) => {
+  (mode, field, extent) => {
     expect(retiredState.lift({ summaryScoreMode: mode })).toMatchObject({
-      y,
+      encoding: { y: { field } },
       extent,
     })
     expect(retiredState.keys).toContain('summaryScoreMode')

@@ -455,7 +455,7 @@ describe('the plot as a whole', () => {
     expect(written).toHaveBeenCalledWith(
       writes({
         facet: { field: 'strand' },
-        scales: { y: { title: 'Score', domainMax: 10 } },
+        encoding: { y: { scale: { domainMax: 10 }, axis: { title: 'Score' } } },
       }),
     )
   })
@@ -463,27 +463,31 @@ describe('the plot as a whole', () => {
   it('clears an axis end, which autoscales again', () => {
     const { apply, written } = setup({
       ...BAR,
-      scales: { y: { title: 'Score', domainMin: 0, grid: true } },
+      encoding: {
+        y: { scale: { domainMin: 0 }, axis: { title: 'Score', grid: true } },
+      },
     })
     fireEvent.change(screen.getByTestId('axis-domainMin'), {
       target: { value: '' },
     })
     fireEvent.click(apply())
     expect(written).toHaveBeenCalledWith({
-      scales: { y: { title: 'Score', grid: true } },
+      encoding: { y: { axis: { title: 'Score', grid: true } } },
     })
   })
 
   it('reads a lone space as an emptied axis end, not as 0', () => {
     const { apply, written } = setup({
       ...BAR,
-      scales: { y: { title: 'Score', domainMin: -3 } },
+      encoding: { y: { scale: { domainMin: -3 }, axis: { title: 'Score' } } },
     })
     fireEvent.change(screen.getByTestId('axis-domainMin'), {
       target: { value: ' ' },
     })
     fireEvent.click(apply())
-    expect(written).toHaveBeenCalledWith({ scales: { y: { title: 'Score' } } })
+    expect(written).toHaveBeenCalledWith({
+      encoding: { y: { axis: { title: 'Score' } } },
+    })
   })
 
   it('holds a partly typed number without writing it', () => {
@@ -496,7 +500,7 @@ describe('the plot as a whole', () => {
     fireEvent.change(min, { target: { value: '-0.5' } })
     fireEvent.click(apply())
     expect(written).toHaveBeenCalledWith({
-      scales: { y: { domainMin: -0.5 } },
+      encoding: { y: { scale: { domainMin: -0.5 } } },
     })
   })
 

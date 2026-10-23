@@ -68,7 +68,7 @@ test('one line per slot path and enum member, rooted at the registered type', ()
 
 test('the published schema lists a nested slot, a retired key and an enum member', () => {
   const paths = new Set(slotPaths(configJsonSchema))
-  expect(paths).toContain('LinearWiggleDisplay.scales.y.domainMin')
+  expect(paths).toContain('LinearWiggleDisplay.encoding.y.scale.domainMin')
   expect(paths).toContain('LinearAlignmentsDisplay.facet.domain')
   expect(paths).toContain('CytobandAdapter.cytobandsLocation')
   expect(paths).toContain('LinearWiggleDisplay.mark=bar')

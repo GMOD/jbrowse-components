@@ -119,7 +119,7 @@ function lowQuantileOf(a: Float32Array, n: number, quantile: number) {
  * that quantile of the values on its side of 0, so one spike takes neither
  * the axis nor the ramp, and a sparse tail of the other sign keeps its
  * extreme. An axis that starts at 0 adds it itself. Under 0.5 reads as 0.5,
- * where the ends meet rather than cross. `scales.y.domainQuantile` and a
+ * where the ends meet rather than cross. A y scale's `fenceQuantile` and a
  * color's `domainQuantile` both name it. `[Infinity, -Infinity]` where
  * nothing is finite.
  *

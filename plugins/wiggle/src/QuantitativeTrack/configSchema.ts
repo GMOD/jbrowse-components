@@ -38,8 +38,10 @@ import type PluginManager from '@jbrowse/core/PluginManager'
  *     uri: 'https://example.com/coverage.bw',
  *   },
  *   displayDefaults: {
- *     scales: { y: { type: 'log' } },
- *     encoding: { color: { value: 'darkgreen' } },
+ *     encoding: {
+ *       y: { scale: { type: 'log' } },
+ *       color: { value: 'darkgreen' },
+ *     },
  *   },
  * }
  * ```

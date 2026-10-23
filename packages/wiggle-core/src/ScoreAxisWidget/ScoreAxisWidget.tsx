@@ -11,7 +11,7 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { VALUE_SCALE_TYPES } from '../valueScaleConfigSchema.ts'
+import { VALUE_SCALE_TYPES } from '../yScaleConfigSchema.ts'
 import RangeFields from './RangeFields.tsx'
 import ReferenceLines from './ReferenceLines.tsx'
 import ResetAxisButton from './ResetAxisButton.tsx'
@@ -49,7 +49,7 @@ const AxisEditor = observer(function AxisEditor({
   onReset: () => void
 }) {
   const { classes } = useStyles()
-  const { scaleType, manualMinScore, manualMaxScore, domainQuantile } = display
+  const { scaleType, manualMinScore, manualMaxScore, fenceQuantile } = display
   const bothPinned =
     manualMinScore !== undefined && manualMaxScore !== undefined
   const zeroBlocker =
@@ -97,10 +97,10 @@ const AxisEditor = observer(function AxisEditor({
         ) : null}
         <LabeledCheckbox
           label="Clip extreme outliers"
-          checked={domainQuantile < 1}
+          checked={fenceQuantile < 1}
           disabled={bothPinned}
           onChange={on => {
-            display.setDomainQuantile(on ? display.clipQuantile : 1)
+            display.setFenceQuantile(on ? display.clipFenceQuantile : 1)
           }}
         />
         <FormHelperText>

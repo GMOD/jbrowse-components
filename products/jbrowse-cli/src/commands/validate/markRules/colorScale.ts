@@ -377,13 +377,13 @@ export interface ScaleProblem {
 
 /**
  * The members a quantitative scale's ends are read by, as a color ramp,
- * `scales.y` and a mark's width spell them alike.
+ * a y scale and a mark's width spell them alike.
  */
 export interface ScaleEnds {
   domainMin?: number
   domainMax?: number
   domainQuantile?: number
-  /** the scale's kind, `scales.y.type` or a color's `scale.type`, where it bears on the ends */
+  /** the scale's kind, a y scale's `type` or a color's `scale.type`, where it bears on the ends */
   type?: string
 }
 
@@ -394,8 +394,8 @@ export interface ScaleEnds {
  * open end follows is clamped; and a log scale's `domainMin` at or below 0,
  * which no log scale can hold, so the end floors above it. `reverse` is whether
  * the scale turns round by a member of its own, which is then the spelling to
- * point at. `fence` names the quantile's slot: a ramp's and `scales.y`'s
- * `domainQuantile`, `encoding.y.scale`'s `fenceQuantile`.
+ * point at. `fence` names the quantile's slot: a ramp's `domainQuantile`, a y
+ * scale's `fenceQuantile`.
  */
 export function scaleEndProblems(
   { domainMin, domainMax, domainQuantile, type }: ScaleEnds,

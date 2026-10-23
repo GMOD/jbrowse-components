@@ -34,14 +34,14 @@ test('a BigWig region comes back as the wiggle display scales and colors it', as
 
   const pinned = await engine.wiggle({
     ...SIGNED_BIGWIG,
-    display: { scales: { y: { domainMin: -50, domainMax: 300 } } },
+    display: { encoding: { y: { scale: { domainMin: -50, domainMax: 300 } } } },
   })
   expect(pinned.domain).toEqual([-50, 300])
 
   const ruled = await engine.wiggle({
     ...SIGNED_BIGWIG,
     display: {
-      scales: {
+      encoding: {
         y: {
           rules: [{ value: 0 }, { value: 500, color: 'red', label: 'gain' }],
         },

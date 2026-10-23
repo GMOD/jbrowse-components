@@ -22,7 +22,7 @@ import type { ValueScale, YAxis } from '@jbrowse/display-ui'
  * and a composing display overrides them, so the bounds, the "is anything
  * pinned" question, the ticks and the cross-hatches derive the same way
  * wherever the declaration lives. {@link ScoreScaleMixin} is the one composer
- * in the tree, backing them with the `scales.y` object every quantitative
+ * in the tree, backing them with the `encoding.y` object every quantitative
  * display declares; the split stays because the derived half is what a display
  * writing its scale down somewhere else would answer.
  *
@@ -43,7 +43,7 @@ export function ScoreAxisMixin() {
       },
       /**
        * #getter
-       * Overridable: where `scales.y.zero` is written down, whether an
+       * Overridable: where the y scale's `zero` is written down, whether an
        * autoscaled linear or symlog axis reaches 0.
        */
       get scaleZero(): boolean {
@@ -201,7 +201,6 @@ export function ScoreAxisMixin() {
               offset: scale.offset,
               domain,
               scaleType: scale.scaleType,
-              minimalTicks: scale.minimalTicks ?? false,
               symlogConstant: scale.symlogConstant,
             })
           if (!domain || !ticks) {

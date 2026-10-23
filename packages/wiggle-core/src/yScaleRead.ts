@@ -1,17 +1,16 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 
-import type { ValueScaleRuleConfig } from './valueScaleConfigSchema.ts'
+import type { ValueScaleRuleConfig } from './yChannelConfigSchema.ts'
 import type { YMember, YScalePaths } from './yScalePaths.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
-/** One y scale member's setting, unset where the map has no path for it. */
+/** One y scale member's setting. */
 export function readYMember(
   conf: AnyConfigurationModel,
   paths: YScalePaths,
   member: YMember,
 ): any {
-  const path = paths.members[member]
-  return path && readConfObject(conf, [...path])
+  return readConfObject(conf, [...paths.members[member]])
 }
 
 /** The config node a path ends on, for what a snapshot read cannot give. */

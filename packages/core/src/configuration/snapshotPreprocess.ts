@@ -155,8 +155,8 @@ function underWritten(written: unknown, lifted: unknown): unknown {
  * The snapshot with each spelling `retired` names rewritten: a lift's members
  * take the old key's place, and what the snapshot already spells wins, member
  * by member inside an object, since writing the current name is the stronger
- * statement — so a retired flag lifting into `scales.y` lands beside a
- * `scales.y` the snapshot writes. The old key goes whether or not it carried a
+ * statement — so a retired flag lifting into `encoding.y` lands beside an
+ * `encoding.y` the snapshot writes. The old key goes whether or not it carried a
  * value, so a `closed` schema never meets it, and a member a lift produces
  * that no slot takes goes with it: a v4 `renderer` block carried settings
  * the display has no slot for, and they were dropped then too. Where two

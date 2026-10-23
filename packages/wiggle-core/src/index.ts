@@ -2,19 +2,17 @@ export {
   retiredAxisSpellings,
   retiredScaleSpellings,
   retiredScalesSpelling,
-  scalesSchema,
   valueScaleOf,
-  valueScaleSchema,
-} from './valueScaleConfigSchema.ts'
+} from './retiredYScale.ts'
 export { yChannelSchema } from './yChannelConfigSchema.ts'
-export type { YChannelConfigSchema } from './yChannelConfigSchema.ts'
-export type { YScaleOptions } from './yScaleConfigSchema.ts'
+export { yEncodingSchema } from './yEncodingConfigSchema.ts'
+export { yFieldChannelSchema } from './yFieldChannelConfigSchema.ts'
 export type {
-  ScalesConfigSchema,
-  ValueScaleConfigSchema,
-  ValueScaleOptions,
   ValueScaleRuleConfig,
-} from './valueScaleConfigSchema.ts'
+  YChannelConfigSchema,
+} from './yChannelConfigSchema.ts'
+export type { YFieldChannelConfigSchema } from './yFieldChannelConfigSchema.ts'
+export type { YScaleOptions } from './yScaleConfigSchema.ts'
 
 export { getNiceDomain, getNiceScale, getScale } from './scale.ts'
 export type { ScaleOpts } from './scale.ts'
@@ -99,14 +97,12 @@ export type {
 } from './scoreMenuItems.ts'
 export { ScoreAxisMixin } from './ScoreAxisMixin.ts'
 export { ScoreScaleMixin } from './ScoreScaleMixin.ts'
-export { SCALES_Y_PATHS } from './yScalePaths.ts'
 export { readYMember, yRuleNodes } from './yScaleRead.ts'
 export type { YMember, YScalePaths } from './yScalePaths.ts'
-export type { ScoreScaleHost, ScoreScaleHostPath } from './ScoreScaleMixin.ts'
 export { WiggleScoreConfigMixin } from './WiggleScoreConfigMixin.ts'
 export type { WiggleScoreConfigHost } from './WiggleScoreConfigMixin.ts'
 export { YFieldConfigMixin } from './YFieldConfigMixin.ts'
-export { yFieldConfigSchemaFields } from './yFieldConfigSchemaFields.ts'
+export type { YFieldConfigHost } from './YFieldConfigMixin.ts'
 export {
   DEFAULT_SCORE_FIELD,
   SUMMARY_FIELDS,

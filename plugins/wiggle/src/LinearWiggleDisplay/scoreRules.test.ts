@@ -39,7 +39,7 @@ function makeDisplay(
   data = makeData(),
 ) {
   const { createDisplay } = createTestEnvironment({
-    displayConfig: { ...displayConfig, scales: { y: { rules } } },
+    displayConfig: { ...displayConfig, encoding: { y: { rules } } },
   })
   const { display, view } = createDisplay()
   view.setCoarseDynamicBlocks(view.dynamicBlocks, view.bpPerPx)
@@ -96,7 +96,7 @@ it('leaves an explicitly bounded axis alone', () => {
 it('a rule written after load redraws and rescales', () => {
   const display = makeDisplay([])
   expect(ruleMarksOf(display)).toEqual([])
-  setConf(display, ['scales', 'y', 'rules'], [90])
+  setConf(display, ['encoding', 'y', 'rules'], [90])
   expect(display.domain).toEqual([0, 90])
   expect(ruleMarksOf(display)).toHaveLength(1)
 })
@@ -175,10 +175,10 @@ it('rules every row of a faceted track, in the row its ticks were built in', () 
   expect(ruleMarksOf(display)[0]!.y).toBeCloseTo((yTop + yBottom) / 2, 6)
 })
 
-it('captions the axis with scales.y.title and grids it with scales.y.grid', () => {
+it('captions the axis with encoding.y.axis.title and grids it with encoding.y.axis.grid', () => {
   const display = makeDisplay([])
   expect(display.axes[0]).toMatchObject({ caption: '', grid: false })
-  setConf(display, ['scales', 'y', 'title'], 'log2 ratio')
-  setConf(display, ['scales', 'y', 'grid'], true)
+  setConf(display, ['encoding', 'y', 'axis', 'title'], 'log2 ratio')
+  setConf(display, ['encoding', 'y', 'axis', 'grid'], true)
   expect(display.axes[0]).toMatchObject({ caption: 'log2 ratio', grid: true })
 })

@@ -1,10 +1,5 @@
 import { trackFields } from './fields.ts'
 
-function scalePaths(value: unknown, displayType: string) {
-  const steps = trackFields.scales!(value, { noun: 'read', displayType })
-  return (Array.isArray(steps) ? steps : [steps]).map(step => step?.path)
-}
-
 test('a row height is the shared Row height menu, with each display its presets', () => {
   const path = (value: number, displayType: string) => {
     const step = trackFields.rowHeight!(value, { noun: 'row', displayType })
@@ -28,11 +23,38 @@ test('an autoscale group is the axis widget of the display it is on', () => {
     ),
   ).toEqual(['Track menu → Coverage axis... → Share axis with'])
   expect(
-    scalePaths({ y: { autoscaleGroup: 'depth' } }, 'LinearWiggleDisplay'),
+    stepPaths(
+      'encoding.y',
+      { scale: { group: 'depth' } },
+      'LinearWiggleDisplay',
+    ),
   ).toEqual(['Track menu → Y axis... → Share axis with'])
 })
 
-test("a y channel's scale and axis members are the same axis widget rows as scales.y's", () => {
+test("wiggle's encoding.y is the bin summary and the axis rows, the mark display's the axis rows", () => {
+  expect(stepPaths('encoding.y', 'maxScore', 'LinearWiggleDisplay')).toEqual([
+    'Track menu → Resolution → Bin summary → Maximum',
+  ])
+  expect(
+    stepPaths(
+      'encoding.y',
+      { field: 'minScore', axis: { grid: true } },
+      'LinearWiggleDisplay',
+    ),
+  ).toEqual([
+    'Track menu → Resolution → Bin summary → Minimum',
+    'Track menu → Y axis... → Grid lines (checked)',
+  ])
+  expect(
+    stepPaths(
+      'encoding.y',
+      { scale: { type: 'log' } },
+      'LinearMarkDisplay',
+    ),
+  ).toEqual(['Track menu → Y axis... → Scale → Log'])
+})
+
+test("a y channel's scale and axis members are axis widget rows", () => {
   expect(
     stepPaths(
       'coverage.encoding.y',

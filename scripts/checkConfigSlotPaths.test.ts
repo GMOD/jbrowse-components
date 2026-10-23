@@ -30,7 +30,7 @@ test('a freeze writes the baseline a check then holds the schema to', () => {
   expect(run().stdout).toMatch('nothing to check')
 
   expect(run('--freeze').status).toBe(0)
-  expect(lines()).toContain('LinearWiggleDisplay.scales.y.domainMin')
+  expect(lines()).toContain('LinearWiggleDisplay.encoding.y.scale.domainMin')
   expect(lines()).toContain('LinearGenomeView.loc')
   expect(run().status).toBe(0)
 

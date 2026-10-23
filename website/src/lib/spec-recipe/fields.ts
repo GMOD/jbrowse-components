@@ -116,7 +116,7 @@ export interface FieldContext {
 }
 
 // A recipe answers with several steps where one spec key stands over several
-// independent controls, the way `scales` holds the whole value axis.
+// independent controls, the way `encoding.y` holds the whole value axis.
 export type FieldRecipe = (
   value: unknown,
   context: FieldContext,
@@ -815,18 +815,7 @@ interface YMembers {
   rules?: unknown
 }
 
-// `scales.y`, every member flat
-function scalesYMembers(value: unknown): YMembers | undefined {
-  const y = asRecord(asRecord(value)?.y)
-  return y && {
-    ...y,
-    fence: y.domainQuantile,
-    group: y.autoscaleGroup,
-  }
-}
-
-// a y channel, `coverage.encoding.y`: the ends under `scale`, the guides
-// under `axis`
+// a y channel: the ends under `scale`, the guides under `axis`
 function channelYMembers(value: unknown): YMembers | undefined {
   const y = asRecord(value)
   const scale = asRecord(y?.scale) ?? {}
@@ -1832,17 +1821,22 @@ export const trackFields: Record<string, FieldRecipe> = {
           path: `${TRACK_MENU} → Show... → Gene labels (${value ? 'checked' : 'unchecked'})`,
         }
       : undefined,
-  scales: yStep(scalesYMembers),
   'coverage.encoding.y': yStep(channelYMembers),
-  y: (value, context) =>
-    context.displayType === 'LinearWiggleDisplay'
-      ? fromTable('Resolution → Bin summary', BIN_SUMMARIES)(value, context)
-      : undefined,
-  'encoding.y': (value, { displayType }) =>
-    displayType === 'LinearMafDisplay' &&
-    (value === 'identity' || asRecord(value)?.field === 'identity')
-      ? { path: `${TRACK_MENU} → Plot type → Identity X-Y plot` }
-      : undefined,
+  'encoding.y': (value, context) => {
+    const field = typeof value === 'string' ? value : asRecord(value)?.field
+    if (context.displayType === 'LinearMafDisplay') {
+      return field === 'identity'
+        ? { path: `${TRACK_MENU} → Plot type → Identity X-Y plot` }
+        : undefined
+    }
+    const steps = [
+      context.displayType === 'LinearWiggleDisplay'
+        ? fromTable('Resolution → Bin summary', BIN_SUMMARIES)(field, context)
+        : undefined,
+      yStep(channelYMembers)(value, context),
+    ].flatMap(step => (step === undefined ? [] : step))
+    return steps.length ? steps : undefined
+  },
   'conservation.show': (value, { displayType }) =>
     typeof value === 'boolean' && displayType === 'LinearMafDisplay'
       ? {

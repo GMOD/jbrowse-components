@@ -162,8 +162,8 @@ export const hicColorConfigSchema = ConfigurationSchema(
          * The value an unset `domainMax` follows: the loaded counts' quantile,
          * `0.95` so faint off-diagonal contacts read, or at `1` their maximum.
          * The track menu's "Emphasize faint contacts" toggles it. Every color
-         * ramp reads the word this way; `scales.y` reads it as an outlier
-         * fence.
+         * ramp reads the word this way; a y scale's `fenceQuantile` is an
+         * outlier fence.
          */
         domainQuantile: {
           type: 'number',

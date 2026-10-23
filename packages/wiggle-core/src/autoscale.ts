@@ -289,7 +289,7 @@ export function autoscaleDomainFromStats({
 /**
  * #api
  * The score domain of the visible feature arrays, following `quantile` as
- * `scales.y.domainQuantile` says, its outliers fenced for an axis that
+ * `encoding.y.scale.fenceQuantile` says, its outliers fenced for an axis that
  * reaches 0 under `zero`.
  */
 export function computeAutoscaleDomain(
