@@ -41,8 +41,9 @@ Git history has each landing.
      wiggle and mark displays, and the `y` lift on wiggle and MAF. Until then
      `jbrowse validate` warns on an old `scales`, in a display entry or a
      `displayDefaults`.
-   - **ggjbrowse:** re-pin with `check-against-jbrowse.sh`, and respell
-     `R/wiggle.R`, `test-alignments.R` and its tests.
+   - **ggjbrowse:** its unpushed `pass-b-respell` branch respells
+     `encoding.y`, `legend.show` and `encoding.color` and re-pins the engine
+     at 2079403dbe; it waits on a push.
    - **Demos:** `demos/{cgiab,dtu,read_marks}/config.json` are respelled and
      not deployed (`scripts/deploy-demo.sh`).
    - The unlanded `chat-request-evals` branch writes 8 `scales.y` lines in
