@@ -333,15 +333,13 @@ displays — and the band cannot drift from the display it stands in for.
   because `OverlayCanvas` is `pointerEvents: none`), and
   `breakendSplitViewMenuItem`.
 
-## How wide a cell draws: `variantCellSpanPx`
+## How wide a cell draws
 
-Three geometries must agree — the insertion mark, the cells' hover box and
-their click target. The box is the cell united with the marker wherever the
-mark's own gate (`insertionMarkerDraws`, unsnapped, floored at `MIN_CELL_PX`)
-draws one, so it reads no pan phase and the legend asks the painter's question. The **lane** is no longer
-one of them: its marks, their hover box and their click target are
-plugin-canvas's layout (see "Bands above the rows"), and its hit test resolves
-two overlapping marks by paint order.
+A cell is its record's reference span floored at `MIN_CELL_PX`, insertions
+included, and its hover box and click target are the cell mark's own ink. The
+**lane**'s marks, their hover box and their click target are plugin-canvas's
+layout (see "Bands above the rows"), and its hit test resolves two overlapping
+marks by paint order.
 
 **Edges go in in RECORD order, `toX(start)` then `toX(end)`** — never sorted,
 never pre-snapped. `snappedCellLeftPx` hangs the 2px floor off the record's
@@ -350,14 +348,10 @@ in `packages/render-core/CLAUDE.md`). Snapping first puts both edges of a
 sub-pixel record on one pixel, making a pivot comparison a no-op in the exact
 case it exists for.
 
-**`insertionsWiden` has no default on purpose** — implicitly defaulted, cells
-drew a 2px SNP while the lane drew a 40px bar.
-
 **The band does not widen an insertion at all.** A plugin-canvas box is its
 reference span, and that plugin has no insertion-length glyph — its own
-`LinearVariantDisplay` draws a 65 kb `<INS>` as a 2px box too. So in this
-display the length lives in the cells' marker only. Fixing it belongs there, in
-a glyph both displays would get, not in a second painter here.
+`LinearVariantDisplay` draws a 65 kb `<INS>` as a 2px box too. The cell and
+lane hovers name the inserted bp (`buildVariantHit`, `buildVariantLaneHit`).
 
 ## Connectors and allele counting
 
