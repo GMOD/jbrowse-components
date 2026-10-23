@@ -371,22 +371,24 @@ describe('validateConfig', () => {
   })
 
   // The filter slot sat on the shared base schema, so every linear display
-  // published it and only three read it. An alignments track declaring one
-  // validated, loaded, and filtered nothing.
+  // published it and only three read it. A track declaring one on a display
+  // that reads none validated, loaded, and filtered nothing.
   it('reports filter on a display that reads no filters', () => {
-    const onAlignments = baseConfig()
-    onAlignments.tracks[0] = {
-      ...onAlignments.tracks[0]!,
+    const onWiggle = baseConfig()
+    onWiggle.tracks[0] = {
+      ...onWiggle.tracks[0]!,
+      type: 'QuantitativeTrack',
+      adapter: { type: 'BigWigAdapter', uri: 'x.bw' },
       // @ts-expect-error not a slot on this display
       displays: [
         {
-          type: 'LinearAlignmentsDisplay',
+          type: 'LinearWiggleDisplay',
           displayId: 'd',
-          filter: ["jexl:get(feature,'flags')==99"],
+          filter: ["jexl:get(feature,'score')>1"],
         },
       ],
     }
-    expect(errorsOf(onAlignments).map(e => e.where)).toEqual([
+    expect(errorsOf(onWiggle).map(e => e.where)).toEqual([
       'tracks[0].displays[0].filter',
     ])
 

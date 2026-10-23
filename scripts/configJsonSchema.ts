@@ -127,6 +127,7 @@ export interface Deps {
   ) => Partial<Record<'string' | 'number' | 'list', string>>
   /** The CSS named colors, as the painters' table spells them. */
   cssColorNames: readonly string[]
+  expressionCharacters: string
   isType: (thing: unknown) => boolean
   isArrayType: (type: MstType) => boolean
   isMapType: (type: MstType) => boolean
@@ -975,6 +976,10 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
   }
   defs.FeatureField = {
     type: 'string',
+    anyOf: [
+      { pattern: '^jexl:' },
+      { not: { pattern: deps.expressionCharacters } },
+    ],
     description:
       'A field the display reads off each feature: a name, a dotted path into a structured field (`INFO.SVTYPE`), or a `jexl:` expression over `feature`, which the display evaluates per feature.',
   }

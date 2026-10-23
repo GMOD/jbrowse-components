@@ -22,7 +22,8 @@ import type { LinearMultiSampleVariantDisplayModel } from './model.ts'
 //   from `baseLinearDisplayConfigSchema`, so a track config declaring filters
 //   was read by nothing;
 // - it did not prefix, so a bare filter reached `stringToJexlExpression`,
-//   which throws. A bare string in the `filter` list now names a field.
+//   which throws. The `filter` list refuses one, and a bare string that
+//   holds no expression names a field.
 //
 // The LD display was the third participant until it stopped reading genotypes:
 // it draws a file of already-computed pairs and has no features to filter.
@@ -70,6 +71,13 @@ describe.each(CASES)('%s jexl filters', (_name, createDisplay) => {
     expect(predicatesOf(display.configuration.filter)).toEqual([
       { field: 'name', equal: true },
     ])
+  })
+
+  it('refuses an expression written without its prefix', () => {
+    const { display } = createDisplay()
+    expect(() => {
+      setConf(display.configuration, 'filter', ["get(feature,'name')=='BRCA1'"])
+    }).toThrow(/reads as an expression/)
   })
 
   it('keeps the site fields through an expression write', () => {

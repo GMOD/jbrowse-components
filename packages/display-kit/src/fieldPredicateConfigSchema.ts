@@ -38,14 +38,11 @@ export const fieldPredicateConfigSchema = ConfigurationSchema(
     /**
      * #slot
      */
-    // A callback slot, so a `jexl:` field is taken as written; readers take
-    // the snapshot, which never evaluates it
     field: {
-      type: 'string',
+      type: 'featureField',
       defaultValue: '',
       description:
         'the field tested, as the display names its fields, or a jexl: expression computed per feature',
-      contextVariable: ['feature'],
     },
     /**
      * #slot

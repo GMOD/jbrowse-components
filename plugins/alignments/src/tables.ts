@@ -868,6 +868,11 @@ function filterOf(conf: DisplayConf) {
   return mergeFilter(predicatesOf(conf.filter))
 }
 
+// the config a table reports: the display's, its filter as it applied
+function resolvedConfig(conf: DisplayConf): Record<string, unknown> {
+  return { ...fullConfSnapshot(conf), filter: filterOf(conf) }
+}
+
 function readConnectionTables(
   conf: DisplayConf,
   dataByGroup: ReadonlyMap<string, ReadonlyMap<number, WorkerPileupData>>,
@@ -1549,7 +1554,7 @@ export async function alignmentTables(
       featureHeight,
       featureSpacing: featureSpacingForHeight(featureHeight),
     },
-    config: { ...fullConfSnapshot(conf), filter: filterOf(conf) },
+    config: resolvedConfig(conf),
     warnings: layoutWarnings({
       sortField: readConfObject(conf.sort, 'field'),
       sortColumn,

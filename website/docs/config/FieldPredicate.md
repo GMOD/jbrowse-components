@@ -42,7 +42,7 @@ Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot typ
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
-| <span id="slot-field">**field**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | the field tested, as the display names its fields, or a jexl: expression computed per feature<br>_callback args:_ `feature` |
+| <span id="slot-field">**field**</span><br>[`featureField`](/docs/config_guides/slot_types#featurefield) = <code>''</code> | the field tested, as the display names its fields, or a jexl: expression computed per feature |
 | <span id="slot-equal">**equal**</span><br>[`maybeFrozen`](/docs/config_guides/slot_types#the-maybe-types) | the value must equal this |
 | <span id="slot-lt">**lt**</span><br>[`maybeNumber`](/docs/config_guides/slot_types#the-maybe-types) | the value must be below this |
 | <span id="slot-lte">**lte**</span><br>[`maybeNumber`](/docs/config_guides/slot_types#the-maybe-types) | the value must be at most this |

@@ -170,6 +170,16 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     },
     "FeatureField": {
       "type": "string",
+      "anyOf": [
+        {
+          "pattern": "^jexl:"
+        },
+        {
+          "not": {
+            "pattern": "[()=<>!&|]"
+          }
+        }
+      ],
       "description": "A field the display reads off each feature: a name, a dotted path into a structured field (\`INFO.SVTYPE\`), or a \`jexl:\` expression over \`feature\`, which the display evaluates per feature."
     },
     "CssColor": {
@@ -4747,7 +4757,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         {
           "description": "Shorthand for \`{ \\"field\\": ..., \\"equal\\": true }\`.",
           "default": "",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/FeatureField",
           "type": "string"
         },
         {
@@ -4762,7 +4772,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 "type": "null"
               },
               "else": {
-                "$ref": "#/$defs/StringOrJexl"
+                "$ref": "#/$defs/FeatureField"
               }
             },
             "equal": {

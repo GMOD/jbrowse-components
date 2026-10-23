@@ -14,6 +14,22 @@ export function isJexl(str: unknown): str is string {
   return typeof str === 'string' && str.startsWith(JEXL_PREFIX)
 }
 
+/**
+ * The characters an expression nearly always holds and a field name never
+ * does, so a string holding one with no `jexl:` prefix is an expression
+ * missing its prefix.
+ */
+export const EXPRESSION_CHARACTERS = /[()=<>!&|]/
+
+/** Whether `value` is an expression written without its `jexl:` prefix. */
+export function isBareExpression(value: unknown): value is string {
+  return (
+    typeof value === 'string' &&
+    !isJexl(value) &&
+    EXPRESSION_CHARACTERS.test(value)
+  )
+}
+
 /** Add the `jexl:` prefix unless the string already carries it. */
 export function ensureJexlPrefix(code: string) {
   return isJexl(code) ? code : `${JEXL_PREFIX}${code}`

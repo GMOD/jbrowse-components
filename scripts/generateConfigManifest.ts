@@ -90,6 +90,7 @@ import {
 } from '@jbrowse/core/configuration'
 import assemblyConfigSchemaFactory from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
 import { CSS_COLOR_NAMES } from '@jbrowse/core/util/color'
+import { EXPRESSION_CHARACTERS } from '@jbrowse/core/util/jexlStrings'
 import { FileLocation } from '@jbrowse/core/util/types/mst'
 import {
   getSnapshot,
@@ -700,6 +701,7 @@ const schema = buildConfigJsonSchema({
   unionOf: getConfigurationSchemaUnion,
   shorthandTargetsOf: shorthandTargets,
   cssColorNames: CSS_COLOR_NAMES,
+  expressionCharacters: EXPRESSION_CHARACTERS.source,
   isType,
   isArrayType,
   isMapType,

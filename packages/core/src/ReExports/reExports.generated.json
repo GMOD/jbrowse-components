@@ -3292,8 +3292,10 @@
     "@jbrowse/core/util/jexlStrings": {
       "package": "@jbrowse/core",
       "names": [
+        "EXPRESSION_CHARACTERS",
         "JEXL_PREFIX",
         "ensureJexlPrefix",
+        "isBareExpression",
         "isJexl",
         "stringToJexlExpression"
       ],

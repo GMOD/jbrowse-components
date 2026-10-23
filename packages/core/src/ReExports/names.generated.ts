@@ -329,7 +329,7 @@ const names: Record<string, string[]> = {
   '@jbrowse/core/util/isTextEntryFocused': ['isTextEntryFocused'],
   '@jbrowse/core/util/jexl': ['default'],
   '@jbrowse/core/util/jexlFilters': ['baseJexlFilters', 'configuredJexlFilters', 'filterExpressionsOf', 'filterFieldNarrowing', 'jexlFilterNarrowing', 'retiredFilterState', 'writeJexlFilters'],
-  '@jbrowse/core/util/jexlStrings': ['JEXL_PREFIX', 'ensureJexlPrefix', 'isJexl', 'stringToJexlExpression'],
+  '@jbrowse/core/util/jexlStrings': ['EXPRESSION_CHARACTERS', 'JEXL_PREFIX', 'ensureJexlPrefix', 'isBareExpression', 'isJexl', 'stringToJexlExpression'],
   '@jbrowse/core/util/layouts': ['GranularRectLayout', 'placeRect'],
   '@jbrowse/core/util/layouts/GranularRectLayout': ['default'],
   '@jbrowse/core/util/layouts/placeRect': ['placeRect'],

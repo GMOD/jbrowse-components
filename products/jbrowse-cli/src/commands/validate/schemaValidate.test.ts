@@ -378,7 +378,7 @@ describe('the schema', () => {
     alignments.tracks[0]!.displays = [
       {
         type: 'LinearAlignmentsDisplay',
-        filter: { tagFilter: { tag: 'HP', value: '1' } },
+        facet: { field: 'strand', domain: ['-', '+'] },
       },
     ]
     expect(schemaProblems(alignments)).toEqual([])
