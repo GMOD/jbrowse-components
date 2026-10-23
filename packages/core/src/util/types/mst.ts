@@ -1,6 +1,6 @@
 import { types } from '@jbrowse/mobx-state-tree'
 
-import { isJexl } from '../jexlStrings.ts'
+import { isBareExpression, isJexl } from '../jexlStrings.ts'
 
 import type { SnapshotIn } from '@jbrowse/mobx-state-tree'
 
@@ -125,6 +125,19 @@ export const JexlExpressionString = types.refinement(
   isJexl,
   value =>
     `${JSON.stringify(value)} is not an expression: one is written with its prefix, as "jexl:get(feature,'score') > 10"`,
+)
+
+/**
+ * The field a filter entry tests: a name, or a `jexl:` expression. An
+ * expression written without its prefix is refused, since read as a name it
+ * matches no feature and the filter drops them all.
+ */
+export const PredicateField = types.refinement(
+  'PredicateField',
+  types.string,
+  value => !isBareExpression(value),
+  value =>
+    `${JSON.stringify(value)} reads as an expression, not a field: write it with its prefix, as "jexl:${String(value)}"`,
 )
 
 export { ElementId, createElementId } from './ElementId.ts'

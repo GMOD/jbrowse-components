@@ -297,7 +297,12 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
   function unwrap(type: MstType) {
     let cur = type
     let jexl = false
-    let named: 'CssColor' | 'CssColorEntry' | 'SamTagField' | undefined
+    let named:
+      | 'CssColor'
+      | 'CssColorEntry'
+      | 'SamTagField'
+      | 'PredicateField'
+      | undefined
     for (let i = 0; i < 16; i++) {
       if (cur.name === 'JexlString') {
         jexl = true
@@ -305,7 +310,8 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
       if (
         cur.name === 'CssColor' ||
         cur.name === 'CssColorEntry' ||
-        cur.name === 'SamTagField'
+        cur.name === 'SamTagField' ||
+        cur.name === 'PredicateField'
       ) {
         named = cur.name
       }
@@ -976,12 +982,17 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
   }
   defs.FeatureField = {
     type: 'string',
+    description:
+      'A field the display reads off each feature: a name, a dotted path into a structured field (`INFO.SVTYPE`), or a `jexl:` expression over `feature`, which the display evaluates per feature.',
+  }
+  defs.PredicateField = {
+    type: 'string',
     anyOf: [
       { pattern: '^jexl:' },
       { not: { pattern: deps.expressionCharacters } },
     ],
     description:
-      'A field the display reads off each feature: a name, a dotted path into a structured field (`INFO.SVTYPE`), or a `jexl:` expression over `feature`, which the display evaluates per feature.',
+      'The field a filter entry tests: a name, a dotted path (`flags.DUP`, `tags.HP`), or a `jexl:` expression over `feature`. An expression needs its prefix.',
   }
   const colorForms = cssColorForms(deps.cssColorNames)
   defs.CssColor = {

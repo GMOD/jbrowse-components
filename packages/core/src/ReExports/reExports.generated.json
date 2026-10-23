@@ -3959,6 +3959,7 @@
         "JexlExpressionString",
         "LocalPathLocation",
         "NoAssemblyRegion",
+        "PredicateField",
         "Region",
         "UriLocation",
         "UriLocationRaw",

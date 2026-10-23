@@ -1,4 +1,5 @@
 import { ConfigurationSchema, plotList } from '@jbrowse/core/configuration'
+import { PredicateField } from '@jbrowse/core/util/types/mst'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -40,6 +41,7 @@ export const fieldPredicateConfigSchema = ConfigurationSchema(
      */
     field: {
       type: 'featureField',
+      model: PredicateField,
       defaultValue: '',
       description:
         'the field tested, as the display names its fields, or a jexl: expression computed per feature',

@@ -3151,7 +3151,7 @@ export const configManifest: ConfigManifest = {
           "subSlots": [
             {
               "name": "field",
-              "type": "FeatureField"
+              "type": "PredicateField"
             },
             {
               "name": "equal",
@@ -3221,7 +3221,7 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "field",
-              "type": "FeatureField"
+              "type": "string"
             },
             {
               "name": "scale",
@@ -3310,7 +3310,7 @@ export const configManifest: ConfigManifest = {
           "subSlots": [
             {
               "name": "field",
-              "type": "FeatureField"
+              "type": "string"
             },
             {
               "name": "sort",
@@ -3335,11 +3335,11 @@ export const configManifest: ConfigManifest = {
           "subSlots": [
             {
               "name": "name",
-              "type": "FeatureField"
+              "type": "string"
             },
             {
               "name": "description",
-              "type": "FeatureField"
+              "type": "string"
             }
           ],
           "schema": "CanvasFeatureLabels",
@@ -3486,7 +3486,7 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "field",
-              "type": "FeatureField"
+              "type": "string"
             }
           ],
           "schema": "Rows",
@@ -3497,7 +3497,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "clusterField",
-          "type": "FeatureField"
+          "type": "string"
         },
         {
           "name": "color",
@@ -3509,7 +3509,7 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "field",
-              "type": "FeatureField"
+              "type": "string"
             },
             {
               "name": "scale",
@@ -3637,7 +3637,7 @@ export const configManifest: ConfigManifest = {
           "subSlots": [
             {
               "name": "field",
-              "type": "FeatureField"
+              "type": "string"
             },
             {
               "name": "sort",
@@ -3732,7 +3732,7 @@ export const configManifest: ConfigManifest = {
           "subSlots": [
             {
               "name": "field",
-              "type": "FeatureField"
+              "type": "PredicateField"
             },
             {
               "name": "equal",
@@ -3774,7 +3774,7 @@ export const configManifest: ConfigManifest = {
           "subSlots": [
             {
               "name": "field",
-              "type": "FeatureField"
+              "type": "string"
             },
             {
               "name": "sort",
@@ -4354,7 +4354,7 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "field",
-              "type": "FeatureField"
+              "type": "string"
             },
             {
               "name": "scale",
@@ -4546,7 +4546,7 @@ export const configManifest: ConfigManifest = {
           "subSlots": [
             {
               "name": "field",
-              "type": "FeatureField"
+              "type": "PredicateField"
             },
             {
               "name": "equal",
@@ -4588,7 +4588,7 @@ export const configManifest: ConfigManifest = {
           "subSlots": [
             {
               "name": "field",
-              "type": "FeatureField"
+              "type": "string"
             },
             {
               "name": "sort",
@@ -5100,7 +5100,7 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "field",
-              "type": "FeatureField"
+              "type": "string"
             },
             {
               "name": "scale",
@@ -5338,7 +5338,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "text",
-          "type": "FeatureField"
+          "type": "string"
         },
         {
           "name": "inlineLaneNames",
@@ -5413,7 +5413,7 @@ export const configManifest: ConfigManifest = {
                   "subSlots": [
                     {
                       "name": "x",
-                      "type": "FeatureField"
+                      "type": "string"
                     },
                     {
                       "name": "x2",
@@ -5421,11 +5421,11 @@ export const configManifest: ConfigManifest = {
                       "subSlots": [
                         {
                           "name": "pos",
-                          "type": "FeatureField"
+                          "type": "string"
                         },
                         {
                           "name": "chrom",
-                          "type": "FeatureField"
+                          "type": "string"
                         }
                       ],
                       "schema": "MarkLocus",
@@ -5436,11 +5436,11 @@ export const configManifest: ConfigManifest = {
                     },
                     {
                       "name": "y",
-                      "type": "FeatureField"
+                      "type": "string"
                     },
                     {
                       "name": "row",
-                      "type": "FeatureField"
+                      "type": "string"
                     },
                     {
                       "name": "color",
@@ -5452,7 +5452,7 @@ export const configManifest: ConfigManifest = {
                         },
                         {
                           "name": "field",
-                          "type": "FeatureField"
+                          "type": "string"
                         },
                         {
                           "name": "scale",
@@ -5542,7 +5542,7 @@ export const configManifest: ConfigManifest = {
                         },
                         {
                           "name": "field",
-                          "type": "FeatureField"
+                          "type": "string"
                         },
                         {
                           "name": "scale",
@@ -5584,7 +5584,7 @@ export const configManifest: ConfigManifest = {
                     },
                     {
                       "name": "text",
-                      "type": "FeatureField"
+                      "type": "string"
                     },
                     {
                       "name": "size",
@@ -5596,7 +5596,7 @@ export const configManifest: ConfigManifest = {
                         },
                         {
                           "name": "field",
-                          "type": "FeatureField"
+                          "type": "string"
                         },
                         {
                           "name": "scale",
@@ -5763,7 +5763,7 @@ export const configManifest: ConfigManifest = {
           "subSlots": [
             {
               "name": "field",
-              "type": "FeatureField"
+              "type": "PredicateField"
             },
             {
               "name": "equal",
@@ -5833,7 +5833,7 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "field",
-              "type": "FeatureField"
+              "type": "string"
             },
             {
               "name": "scale",
@@ -5922,7 +5922,7 @@ export const configManifest: ConfigManifest = {
           "subSlots": [
             {
               "name": "field",
-              "type": "FeatureField"
+              "type": "string"
             },
             {
               "name": "sort",
@@ -5947,11 +5947,11 @@ export const configManifest: ConfigManifest = {
           "subSlots": [
             {
               "name": "name",
-              "type": "FeatureField"
+              "type": "string"
             },
             {
               "name": "description",
-              "type": "FeatureField"
+              "type": "string"
             }
           ],
           "schema": "CanvasFeatureLabels",
@@ -6037,7 +6037,7 @@ export const configManifest: ConfigManifest = {
           "subSlots": [
             {
               "name": "field",
-              "type": "FeatureField"
+              "type": "PredicateField"
             },
             {
               "name": "equal",
@@ -6152,7 +6152,7 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "field",
-              "type": "FeatureField"
+              "type": "string"
             },
             {
               "name": "scale",
@@ -6234,7 +6234,7 @@ export const configManifest: ConfigManifest = {
           "subSlots": [
             {
               "name": "field",
-              "type": "FeatureField"
+              "type": "string"
             },
             {
               "name": "sort",
@@ -6620,7 +6620,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "y",
-          "type": "FeatureField"
+          "type": "string"
         },
         {
           "name": "resolution",
@@ -7426,7 +7426,7 @@ export const configManifest: ConfigManifest = {
               "subSlots": [
                 {
                   "name": "x",
-                  "type": "FeatureField"
+                  "type": "string"
                 },
                 {
                   "name": "x2",
@@ -7434,11 +7434,11 @@ export const configManifest: ConfigManifest = {
                   "subSlots": [
                     {
                       "name": "pos",
-                      "type": "FeatureField"
+                      "type": "string"
                     },
                     {
                       "name": "chrom",
-                      "type": "FeatureField"
+                      "type": "string"
                     }
                   ],
                   "schema": "MarkLocus",
@@ -7449,11 +7449,11 @@ export const configManifest: ConfigManifest = {
                 },
                 {
                   "name": "y",
-                  "type": "FeatureField"
+                  "type": "string"
                 },
                 {
                   "name": "row",
-                  "type": "FeatureField"
+                  "type": "string"
                 },
                 {
                   "name": "color",
@@ -7465,7 +7465,7 @@ export const configManifest: ConfigManifest = {
                     },
                     {
                       "name": "field",
-                      "type": "FeatureField"
+                      "type": "string"
                     },
                     {
                       "name": "scale",
@@ -7555,7 +7555,7 @@ export const configManifest: ConfigManifest = {
                     },
                     {
                       "name": "field",
-                      "type": "FeatureField"
+                      "type": "string"
                     },
                     {
                       "name": "scale",
@@ -7597,7 +7597,7 @@ export const configManifest: ConfigManifest = {
                 },
                 {
                   "name": "text",
-                  "type": "FeatureField"
+                  "type": "string"
                 },
                 {
                   "name": "size",
@@ -7609,7 +7609,7 @@ export const configManifest: ConfigManifest = {
                     },
                     {
                       "name": "field",
-                      "type": "FeatureField"
+                      "type": "string"
                     },
                     {
                       "name": "scale",
@@ -7673,7 +7673,7 @@ export const configManifest: ConfigManifest = {
           "subSlots": [
             {
               "name": "field",
-              "type": "FeatureField"
+              "type": "string"
             },
             {
               "name": "sort",
@@ -7724,7 +7724,7 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "field",
-              "type": "FeatureField"
+              "type": "string"
             }
           ],
           "schema": "Rows",
@@ -7877,7 +7877,7 @@ export const configManifest: ConfigManifest = {
           "subSlots": [
             {
               "name": "field",
-              "type": "FeatureField"
+              "type": "PredicateField"
             },
             {
               "name": "equal",
@@ -8003,7 +8003,7 @@ export const configManifest: ConfigManifest = {
               "subSlots": [
                 {
                   "name": "x",
-                  "type": "FeatureField"
+                  "type": "string"
                 },
                 {
                   "name": "x2",
@@ -8011,11 +8011,11 @@ export const configManifest: ConfigManifest = {
                   "subSlots": [
                     {
                       "name": "pos",
-                      "type": "FeatureField"
+                      "type": "string"
                     },
                     {
                       "name": "chrom",
-                      "type": "FeatureField"
+                      "type": "string"
                     }
                   ],
                   "schema": "MarkLocus",
@@ -8026,11 +8026,11 @@ export const configManifest: ConfigManifest = {
                 },
                 {
                   "name": "y",
-                  "type": "FeatureField"
+                  "type": "string"
                 },
                 {
                   "name": "row",
-                  "type": "FeatureField"
+                  "type": "string"
                 },
                 {
                   "name": "color",
@@ -8042,7 +8042,7 @@ export const configManifest: ConfigManifest = {
                     },
                     {
                       "name": "field",
-                      "type": "FeatureField"
+                      "type": "string"
                     },
                     {
                       "name": "scale",
@@ -8132,7 +8132,7 @@ export const configManifest: ConfigManifest = {
                     },
                     {
                       "name": "field",
-                      "type": "FeatureField"
+                      "type": "string"
                     },
                     {
                       "name": "scale",
@@ -8174,7 +8174,7 @@ export const configManifest: ConfigManifest = {
                 },
                 {
                   "name": "text",
-                  "type": "FeatureField"
+                  "type": "string"
                 },
                 {
                   "name": "size",
@@ -8186,7 +8186,7 @@ export const configManifest: ConfigManifest = {
                     },
                     {
                       "name": "field",
-                      "type": "FeatureField"
+                      "type": "string"
                     },
                     {
                       "name": "scale",
@@ -8242,7 +8242,7 @@ export const configManifest: ConfigManifest = {
           "subSlots": [
             {
               "name": "field",
-              "type": "FeatureField"
+              "type": "string"
             },
             {
               "name": "sort",
@@ -8293,7 +8293,7 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "field",
-              "type": "FeatureField"
+              "type": "string"
             }
           ],
           "schema": "Rows",
@@ -8446,7 +8446,7 @@ export const configManifest: ConfigManifest = {
           "subSlots": [
             {
               "name": "field",
-              "type": "FeatureField"
+              "type": "PredicateField"
             },
             {
               "name": "equal",

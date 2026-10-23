@@ -1,11 +1,7 @@
 import { types } from '@jbrowse/mobx-state-tree'
 
 import { isCssColor } from '../util/cssColorParse.ts'
-import {
-  isBareExpression,
-  isJexl,
-  stringToJexlExpression,
-} from '../util/jexlStrings.ts'
+import { isJexl, stringToJexlExpression } from '../util/jexlStrings.ts'
 import { FileLocation, JexlExpressionString } from '../util/types/mst.ts'
 import { isCallbackValue } from './slotValueUtils.ts'
 
@@ -82,16 +78,7 @@ const slotTypes = {
   text: { model: types.string, fallbackDefault: '' },
   // a field the display reads per feature; its `jexl:` expression is the
   // display's to evaluate, never the reader's
-  featureField: {
-    model: types.refinement(
-      'FeatureField',
-      types.string,
-      value => !isBareExpression(value),
-      value =>
-        `${JSON.stringify(value)} reads as an expression, not a field: write it with its prefix, as "jexl:${String(value)}"`,
-    ),
-    fallbackDefault: '',
-  },
+  featureField: { model: types.string, fallbackDefault: '' },
   fileLocation: {
     model: FileLocation,
     fallbackDefault: {

@@ -170,6 +170,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     },
     "FeatureField": {
       "type": "string",
+      "description": "A field the display reads off each feature: a name, a dotted path into a structured field (\`INFO.SVTYPE\`), or a \`jexl:\` expression over \`feature\`, which the display evaluates per feature."
+    },
+    "PredicateField": {
+      "type": "string",
       "anyOf": [
         {
           "pattern": "^jexl:"
@@ -180,7 +184,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         }
       ],
-      "description": "A field the display reads off each feature: a name, a dotted path into a structured field (\`INFO.SVTYPE\`), or a \`jexl:\` expression over \`feature\`, which the display evaluates per feature."
+      "description": "The field a filter entry tests: a name, a dotted path (\`flags.DUP\`, \`tags.HP\`), or a \`jexl:\` expression over \`feature\`. An expression needs its prefix."
     },
     "CssColor": {
       "type": "string",
@@ -4757,7 +4761,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         {
           "description": "Shorthand for \`{ \\"field\\": ..., \\"equal\\": true }\`.",
           "default": "",
-          "$ref": "#/$defs/FeatureField",
+          "$ref": "#/$defs/PredicateField",
           "type": "string"
         },
         {
@@ -4772,7 +4776,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 "type": "null"
               },
               "else": {
-                "$ref": "#/$defs/FeatureField"
+                "$ref": "#/$defs/PredicateField"
               }
             },
             "equal": {
