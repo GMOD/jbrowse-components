@@ -1,16 +1,22 @@
 ---
 id: sashimi
 title: Sashimi
-description: "The alignments display's sashimi setting: the splice-junction arcs, over the coverage band or in a strip below it, and in that strip alone while coverage.show is off."
+description: "The alignments display's sashimi setting: the junction arcs, over the coverage band or in a strip below it, and in that strip alone while coverage.show is off."
 sidebar_label: Display -> Sashimi
 ---
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `alignments` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearAlignmentsDisplay/sashimiConfigSchema.ts).
 
-The alignments display's `sashimi` setting: the splice-junction arcs, over
-the coverage band or in a strip below it, and in that strip alone while
-`coverage.show` is off. Which junctions draw is the display's `filter`, by
-its `junction` fields.
+The alignments display's `sashimi` setting: the junction arcs, over the
+coverage band or in a strip below it, and in that strip alone while
+`coverage.show` is off. The band counts each splice junction from the reads'
+N gaps and each same-reference join of a split read's segments by its class
+(`junction.class`: `deletion`, `duplication`, which a circRNA back-splice
+is, or `inversion`), once per pair of read-adjacent segments as the read
+arcs count support. A split junction always takes its class's read-arc
+color, though `readConnections` paints its own split arcs grey under the
+`insertSize` color field. Which junctions draw is the display's `filter`,
+by its `junction` fields.
 
 ## Example usage
 
@@ -21,6 +27,7 @@ its `junction` fields.
   filter: [
     { field: 'junction.reads', gte: 5 },
     { field: 'junction.canonical', equal: true },
+    { field: 'junction.class', oneOf: ['splice', 'duplication'] },
   ],
 }
 ```
