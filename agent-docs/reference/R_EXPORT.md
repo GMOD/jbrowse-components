@@ -108,3 +108,12 @@ color) land in the script header.
   run from `products/jbrowse-web`), a volvox view, the menu item, `Rscript` on the download, the figure beside
   a screenshot. The live path is where the normalized adapter config,
   aliases and `blob:` files differ from a fixture.
+
+## Declined (2026-10-11 simplicity review)
+
+- Moving `settingNotes` into ggjbrowse as reader warnings, so direct R users
+  hear about a `mateRefName` color too.
+- Writing `inset` into the reader's tables and dropping `jbrowse_layer`'s
+  `rows`/`finish`: it puts a drawing detail in the data.
+- Dropping `on_axis()` from the top of the `autoplot` methods: `arc_top()` reads
+  `x$arcs` directly, and removing it changed the arc band.
