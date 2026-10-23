@@ -549,7 +549,18 @@ LGVSynteny and MAF displays at `coverage.encoding.y`.
   end left unset autoscales.
 - Code that reads a retired slot with `getConf` needs updating. The model's
   `domainQuantile`, `setDomainQuantile` and `clipQuantile` are `fenceQuantile`,
-  `setFenceQuantile` and `clipFenceQuantile`.
+  `setFenceQuantile` and `clipFenceQuantile`, and its volatile
+  `unclippedQuantile` is `unclippedFenceQuantile`.
+- `@jbrowse/wiggle-core` no longer exports `scalesSchema`, `valueScaleSchema`,
+  `SCALES_Y_PATHS`, `yFieldConfigSchemaFields`, or the types
+  `ScalesConfigSchema`, `ValueScaleConfigSchema`, `ValueScaleOptions`,
+  `ScoreScaleHost` and `ScoreScaleHostPath`. A schema declares its y through
+  `yChannelSchema`, `yFieldChannelSchema` or `yEncodingSchema`.
+- `ScoreScaleMixin`, `WiggleScoreConfigMixin` and `YFieldConfigMixin` take a
+  required `YScalePaths` map naming where each y member lives;
+  `COVERAGE_Y_PATHS` from `@jbrowse/alignments-core/coverageBandConfigSchema` is
+  the coverage band's.
+- `minimalTicks` left display-ui's `ValueScale` and `computeYTicks`' options.
 
 ## An embedded view's track catalog is plain configs
 

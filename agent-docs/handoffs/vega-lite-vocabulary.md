@@ -30,17 +30,20 @@ Git history has each landing.
    channel"): wiggle's a `YFieldChannel`, the mark display's and Manhattan's a
    `YChannel` under `YEncoding`, the coverage band's at `coverage.encoding.y`.
    Each display's `YScalePaths` map sits beside its schema. What stays open:
-   - **jb2hubs** (Colin authorizes the respell): `hubtools/src/wiggleDisplay.ts`
-     and `alfaPopulations.ts` write `scales.y`. `enhanceConfig.ts`'s
-     `WIGGLE_DERIVED_KEYS` and `COLOR_DERIVED_KEYS` both own `encoding` now, so
-     a step taking one set whole drops the other's members. A host that
-     predates `encoding.y` boots and loses the scale settings.
+   - **jb2hubs, first** (deferred; Colin authorizes the respell): its output
+     must keep older hosts booting, and a host that predates `encoding.y`
+     boots and loses the scale settings. `hubtools/src/wiggleDisplay.ts` and
+     `alfaPopulations.ts` write `scales.y`. `enhanceConfig.ts`'s
+     `WIGGLE_DERIVED_KEYS` is `y`, `extent`, `aggregate` and `scales` today;
+     once jb2hubs respells, it and `COLOR_DERIVED_KEYS` both own `encoding`,
+     so a step taking one set whole drops the other's members.
    - **Before the hosted configs regenerate:** an old `trackConfigDeltas`
      delta loses to a base that writes the same member in the new spelling, so
      the regeneration needs a session migration for deltas first.
    - **Then delete the lifts:** `retiredScalesSpelling` on the alignments, MAF,
      wiggle and mark displays, and the `y` lift on wiggle and MAF. Until then
-     the CLI judges no old-shape `scales.y`.
+     `jbrowse validate` warns on an old `scales`, in a display entry or a
+     `displayDefaults`, but judges no ends inside it.
    - **ggjbrowse:** re-pin with `check-against-jbrowse.sh`, and respell
      `R/wiggle.R`, `test-alignments.R` and its tests.
    - **Demos:** `demos/{cgiab,dtu,read_marks}/config.json` are respelled and
