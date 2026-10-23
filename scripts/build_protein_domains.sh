@@ -95,7 +95,7 @@ jb add-track genes.gff3.gz --trackId genes --name Genes -a "$ASM" \
   --load copy --force --out "$APP"
 jb add-track pfam.bed.gz --trackId pfam_domains --name "Pfam domains" \
   -a "$ASM" --load copy --force --out "$APP" \
-  --config '{"adapter":{"disableGeneHeuristic":true},"displayDefaults":{"encoding":{"color":"name"}}}'
+  --config '{"adapter":{"disableGeneHeuristic":true},"displayDefaults":{"encoding":{"color":{"field":"name","legend":{"title":"Pfam family"}}}}}'
 jb text-index --tracks genes --attributes Name,gene --force --out "$APP"
 
 echo

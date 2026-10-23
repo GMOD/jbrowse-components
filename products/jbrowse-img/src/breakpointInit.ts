@@ -34,9 +34,8 @@ type CategoryOf = (trackId: string, opts: string[]) => Category
  * The pleasant side effect is that the common case needs no shell quoting at
  * all, since neither locstring contains a space.
  *
- * `standardizeArgv` keeps only the first value of the last `--loc`, so the
- * repeated form is invisible downstream of it; this is why the entries are read
- * from `argv`. The tokens of one flag are joined rather than taking `vals[0]`,
+ * `standardizeArgv` leaves a repeatable `--loc` to the entries, so they are
+ * read from `argv`. The tokens of one flag are joined rather than taking `vals[0]`,
  * so an unquoted `--loc chr1:1-100 chr1:5-6` means the same as the quoted form
  * instead of silently dropping the second window.
  */

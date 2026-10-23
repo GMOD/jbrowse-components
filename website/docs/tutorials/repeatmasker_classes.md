@@ -70,8 +70,8 @@ golden-path and GenArk hubs store the repeat class in different places:
   [](/docs/user_guides/multirow_feature_track#when-the-category-is-not-a-column)
   works through it.
 
-In both cases JBrowse builds the rows from the values in the loaded region, so a
-window with no satellite repeats has no satellite row.
+In both cases JBrowse builds the rows from the values in the window, so a window
+with no satellite repeats has no satellite row.
 
 ## Switching hg38's RepeatMasker track to one row per class
 
@@ -155,9 +155,7 @@ the default. A bare `{ "type": "LinearBasicDisplay" }` ahead of it keeps the
 packed form as the default and leaves the rows one menu click away.
 
 The rows come from the classes in the file, so a class `rowColor` leaves out
-still gets a row, as `Unknown` does in the figures. JBrowse also fetches past
-the view's edges, so a row can be empty on screen: the figures' `LTR?` row holds
-a repeat just past the right edge.
+still gets a row, as `Unknown` does in the figures.
 
 ## Serving your own RepeatMasker output
 

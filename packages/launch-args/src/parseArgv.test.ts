@@ -177,7 +177,19 @@ test('standardizeArgv: --loc keeps every region, a repeat or stray value throws'
     /--genome takes one value, so "height:100" applies to nothing/,
   )
   expect(std('--fasta ref.fa aliases:a.txt').fasta).toBe('ref.fa')
-  expect(std('--loc a:1-2 --loc b:1-2', { repeatable: ['loc'] }).loc).toBe(
-    'b:1-2',
+})
+
+test('standardizeArgv leaves a repeatable flag to the entries', () => {
+  const rest = standardizeArgv(
+    parseArgv('--loc a:1-2 --loc b:1-2 --track t height:9'.split(' ')),
+    [],
+    { repeatable: ['loc', 'track'] },
   )
+  expect(rest).not.toHaveProperty('loc')
+  expect(rest).not.toHaveProperty('track')
+})
+
+test('the last of a repeated modifier wins', () => {
+  expect(modifierValue(['name:a', 'height:9', 'name:b'], 'name')).toBe('b')
+  expect(modifierValue(['height:9'], 'name')).toBeUndefined()
 })

@@ -209,6 +209,42 @@ const TreeSidebar = observer(function TreeSidebar({
     closeMenu()
   }
 
+  // Rendered on both paths, so a tree going stale while the menu is open
+  // leaves it open, rather than hiding it and reopening it at the old anchor
+  // when the tree returns.
+  const menu = (
+    <Menu
+      open={!!menuAnchor}
+      onClose={closeMenu}
+      anchorReference="anchorPosition"
+      anchorPosition={
+        menuAnchor ? { top: menuAnchor.y, left: menuAnchor.x } : undefined
+      }
+    >
+      {model.rowFocus?.length ? (
+        <MenuItem
+          onClick={() => {
+            applyFilter(undefined)
+          }}
+        >
+          Clear subtree filter
+        </MenuItem>
+      ) : null}
+      {menuAnchor ? (
+        // Disabled where it would hide nothing (`subtreeCoversEveryRow`), not
+        // hidden, so the count still answers "how many are under here".
+        <MenuItem
+          disabled={subtreeCoversEveryRow(menuAnchor.names, sources.length)}
+          onClick={() => {
+            applyFilter(menuAnchor.names)
+          }}
+        >
+          Show only subtree ({menuAnchor.names.length} rows)
+        </MenuItem>
+      ) : null}
+    </Menu>
+  )
+
   // the same gate `treeSidebarOffset` reserves the gutter under, so the
   // painting and the space kept for it cannot come apart
   if (!treeIsShowing(model) || !sources.length) {
@@ -217,12 +253,15 @@ const TreeSidebar = observer(function TreeSidebar({
     // for the same reason the panel is: it is text in the gutter. The filter
     // chip is here too: a focus outlives the tree that set it.
     return (
-      <TrackOverlayPortal>
-        <GutterLayer top={top}>
-          <StaleTreeHint model={model} top={innerTop} />
-          <RowFocusHint model={model} rowsTop={innerTop} />
-        </GutterLayer>
-      </TrackOverlayPortal>
+      <>
+        <TrackOverlayPortal>
+          <GutterLayer top={top}>
+            <StaleTreeHint model={model} top={innerTop} />
+            <RowFocusHint model={model} rowsTop={innerTop} />
+          </GutterLayer>
+        </TrackOverlayPortal>
+        {menu}
+      </>
     )
   }
 
@@ -318,42 +357,7 @@ const TreeSidebar = observer(function TreeSidebar({
           vertical
         />
       </GutterLayer>
-      <Menu
-        open={!!menuAnchor}
-        onClose={closeMenu}
-        anchorReference="anchorPosition"
-        anchorPosition={
-          menuAnchor ? { top: menuAnchor.y, left: menuAnchor.x } : undefined
-        }
-      >
-        {model.rowFocus?.length ? (
-          <MenuItem
-            onClick={() => {
-              applyFilter(undefined)
-            }}
-          >
-            Clear subtree filter
-          </MenuItem>
-        ) : null}
-        {menuAnchor ? (
-          // Disabled where it would hide nothing (`subtreeCoversEveryRow` says
-          // why), rather than hidden, so the count still answers "how many are
-          // under here" — which is what a reader clicks the root to find out.
-          //
-          // "rows", not "samples": three of the four consumers do not have
-          // samples. They are subtracks (multi-wiggle), row groups (multi-row
-          // features) and genomes (maf), and rows is the word the rest of this
-          // package uses for all of them.
-          <MenuItem
-            disabled={subtreeCoversEveryRow(menuAnchor.names, sources.length)}
-            onClick={() => {
-              applyFilter(menuAnchor.names)
-            }}
-          >
-            Show only subtree ({menuAnchor.names.length} rows)
-          </MenuItem>
-        ) : null}
-      </Menu>
+      {menu}
     </>
   )
 })

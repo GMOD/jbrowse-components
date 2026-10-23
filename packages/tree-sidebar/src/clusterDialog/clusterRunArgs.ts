@@ -6,6 +6,14 @@ import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import type { ClusterRunArgs } from './types.ts'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
+/** The visible blocks on the track's genomes, which a dialog run clusters. */
+export function clusterRunRegions(model: IStateTreeNode) {
+  const onTrack = onTrackAssembly(model)
+  return containingLgv(model).dynamicBlocks.contentBlocks.filter(b =>
+    onTrack(b.assemblyName),
+  )
+}
+
 /**
  * The dialog's half of `ClusterRunArgs`: the RPC host, the session id and the
  * visible blocks on the track's genomes, joined to the handles the tab in play created. Thrown rather
@@ -16,9 +24,7 @@ export function resolveClusterRunArgs(
   model: IStateTreeNode,
   handles: Pick<ClusterRunArgs, 'signal' | 'statusCallback'>,
 ): ClusterRunArgs {
-  const view = containingLgv(model)
-  const onTrack = onTrackAssembly(model)
-  if (!view.initialized) {
+  if (!containingLgv(model).initialized) {
     throw new Error(
       'The view is not initialized yet, please wait and try again',
     )
@@ -26,9 +32,7 @@ export function resolveClusterRunArgs(
   return {
     rpcManager: getRpcHost(model).rpcManager,
     sessionId: getRpcSessionId(model),
-    regions: view.dynamicBlocks.contentBlocks.filter(b =>
-      onTrack(b.assemblyName),
-    ),
+    regions: clusterRunRegions(model),
     ...handles,
   }
 }
