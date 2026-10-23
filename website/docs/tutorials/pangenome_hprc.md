@@ -70,19 +70,19 @@ same files for a graph of your own.
 
 ## Launching tracks from the HPRC page
 
-Open the [HPRC page](https://genomes.jbrowse.org/pangenomes/hprc). Click an
-**Examples** entry, or type a gene symbol or a region such as
-`chr6:32,510,001-32,600,000` into the **Gene or region** box and press **Show**.
-The page draws a map of the window: GRCh38's genes, then one row per structural
-form the haplotypes fall into, commonest first, each with its share of the
-haplotypes aligned there.
+Open the [HPRC page](https://genomes.jbrowse.org/pangenomes/hprc), which opens
+on its first example. Click another **Examples** entry, or type a gene symbol or
+a region such as `chr6:32,510,001-32,600,000` into the **Gene or region** box
+and press **Show**. The page draws a map of the window: GRCh38's genes, then one
+row per structural form the haplotypes fall into, commonest first, each with its
+share of the haplotypes aligned there.
 
 <Figure caption="The HPRC page's map of its HLA / MHC example. The boxed button opens the window in JBrowse." src="/img/pangenome/genomes_hprc_loci.png" />
 
 **Open in JBrowse** opens the window in a JBrowse tab. Clicking a row draws that
 form's largest change as a graph under the map, cut from the graph's haplotype
 walks, and the button then opens that form's haplotype as a lane. **More about
-this window** counts the forms, names a haplotype for each, and lists every
+this window** unfolds a table of each change with its carriers, and every
 launch:
 
 - **Graph**: the region drawn as a graph, with the structural variants each
@@ -92,10 +92,29 @@ launch:
 - **BandageJS**: the same haplotypes' walks in
   [BandageJS](https://jbrowse.org/demos/bandagejs/)
 
-A window over 150 kb offers the graph alone. The page keeps the window in its
-address, so a link such as
+A window up to 150 kb wide adds two rows under the genes in every launch: the
+[known alleles](#a-known-allele-cfhr3-cfhr1) in it, and the
+[GWAS Catalog](https://www.ebi.ac.uk/gwas/)'s hits. A window over 150 kb offers
+the graph alone. The page keeps the window in its address, so a link such as
 [`?region=chr6:32,510,001-32,600,000`](https://genomes.jbrowse.org/pangenomes/hprc/?region=chr6%3A32%2C510%2C001-32%2C600%2C000)
 opens the same map.
+
+## A known allele: CFHR3–CFHR1 {#a-known-allele-cfhr3-cfhr1}
+
+Some windows hold an allele with a published story. Click the **CFH / CFHR**
+example. Above the map, the page names the **CFHR3–CFHR1 deletion**, says what
+it does, counts its carriers in the panel (138 of the 462 haplotypes) and cites
+[Hughes et al. 2006](https://doi.org/10.1038/ng1890), who tied it to a lower
+risk of age-related macular degeneration. The map calls the change by the same
+name.
+
+Press **Open in JBrowse**. Under the genes:
+
+- **Known alleles** spans the deletion and names it
+- **GWAS Catalog (NHGRI-EBI)** marks the trait associations in the window. Click
+  a hit for its trait, paper and p-value; the two advanced age-related macular
+  degeneration hits sit one on either side of the deletion
+- the matrix under the graph marks the deletion in each carrier's row
 
 ## What the graph and the page do not show {#limits}
 
@@ -113,9 +132,9 @@ other loci, a picture that looks simple or empty is often one of these cases:
   exists in the assembly and the graph leaves it out.
 - **The VCF has no record for the largest events.** HPRC drops the biggest sites
   from the VCF and keeps the smaller sites nested inside them, so the
-  **Variants** launch cannot show the UGT2B17 deletion. The page's table
-  restores those sites from the release's unfiltered VCF and summarises each
-  form in its Structure column.
+  **Variants** launch cannot show the UGT2B17 deletion. The page's map reads
+  each haplotype's forms from the graph itself, so it draws the deletion and
+  names it.
 - **Only the examples are checked.** A gene or region you type can still land
   where the graph is a thread or the VCF is blank, and the page will offer the
   launch anyway.
@@ -140,12 +159,12 @@ overview and writes the `coarse` slot.
 ## The C4 locus as a graph
 
 Click the **HLA / MHC** example on the HPRC page, then **Open in JBrowse**. The
-Graph launch opens three tracks: genes, the graph in the force-directed layout,
-and under it a matrix of the structural variants each haplotype has, one row per
-haplotype. Then:
+Graph launch opens genes, the GWAS Catalog's hits, the graph in the
+force-directed layout, and under it a matrix of the structural variants each
+haplotype has, one row per haplotype. Then:
 
-- Hide the variant matrix in the track selector, leaving the genes over the
-  graph.
+- Hide the GWAS Catalog and the variant matrix in the track selector, leaving
+  the genes over the graph.
 - Type `C4A` in the location box, pick the chr6 hit, and zoom out twice to take
   in _C4B_.
 

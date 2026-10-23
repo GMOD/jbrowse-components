@@ -248,6 +248,12 @@ form of polledness to a 202 bp duplication and insertion on chromosome 1, which
 OMIA, the Online Mendelian Inheritance in Animals database, curates as OMIA
 000483-9913.[^friesian]
 
+The portal page's **POLLED** example tells this story: it names the Celtic
+polled allele above the map, and each launch opens a **Known alleles** row and
+OMIA's records under the genes. Every launch up to 150 kb wide on the portal
+carries the OMIA row.
+
+To add OMIA to your own JBrowse,
 [`build_omia_cattle_variants.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_omia_cattle_variants.sh)
 writes `omia_cattle_variants.gff3.gz` from OMIA's nightly database dump. It
 keeps the cattle records published on ARS-UCD1.2 or ARS-UCD1.3, which share

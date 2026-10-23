@@ -144,7 +144,11 @@ variants under 10 kb folded into the reference. Type
 C57BL/6J has a multi-exon deletion at _Nnt_ (nicotinamide nucleotide
 transhydrogenase) that abolishes the protein and makes C57BL/6J mice glucose
 intolerant. **GRCm39 is C57BL/6J**, so the backbone of this graph, the reference
-path, is the strain with the deletion.
+path, is the strain with the deletion. The portal's **Nnt** example names the
+deletion above its map and cites
+[Toye et al. 2005](https://doi.org/10.1007/s00125-005-1680-z). Its map calls the
+other strains' insertion "intact Nnt", and each launch from it opens a **Known
+alleles** row over the site.
 
 <Figure caption="Nnt with the RefSeq genes and the bubbles track above the force-directed graph track. The haloed node beside Nnt is labelled as an insertion." src="/img/pangenome/graph_mouse_nnt_halos.png" />
 
