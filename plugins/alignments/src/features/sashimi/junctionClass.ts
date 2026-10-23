@@ -16,6 +16,14 @@ export function splitClassOf(code: number): ArcSplitCategory | undefined {
   return SPLIT_JUNCTION_CLASSES[code - 1]
 }
 
+/** What the tooltip, feature widget and junction key call a split junction. */
+export const SPLIT_JUNCTION_NAMES: Record<ArcSplitCategory, string> = {
+  splitForward: 'Split junction (deletion-type)',
+  splitBack: 'Split junction (duplication-type)',
+  splitInvLL: 'Split junction (inversion, LL-type)',
+  splitInvRR: 'Split junction (inversion, RR-type)',
+}
+
 /** A split class's `sashimiClass` code. */
 export function splitClassCode(split: ArcSplitCategory) {
   return SPLIT_JUNCTION_CLASSES.indexOf(split) + 1

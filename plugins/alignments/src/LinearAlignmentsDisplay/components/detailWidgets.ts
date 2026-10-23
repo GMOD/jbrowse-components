@@ -5,8 +5,10 @@ import {
 } from '@jbrowse/alignments-core'
 import { openFeatureWidget } from '@jbrowse/core/util'
 
-import { ARC_SPLIT_LABELS } from '../../features/arcs/arcSplitCategory.ts'
-import { junctionClass } from '../../features/sashimi/junctionClass.ts'
+import {
+  SPLIT_JUNCTION_NAMES,
+  junctionClass,
+} from '../../features/sashimi/junctionClass.ts'
 import { spliceMotifLabel } from '../../features/sashimi/motif.ts'
 import { getModificationCallName } from '../../shared/modificationData.ts'
 import { getCigarTypeLabel, isInterbaseType } from '../../shared/types.ts'
@@ -137,7 +139,7 @@ export function openSashimiWidget(
     split
       ? {
           ...location,
-          name: ARC_SPLIT_LABELS[split],
+          name: SPLIT_JUNCTION_NAMES[split],
           type: `split_${junctionClass(split)}`,
         }
       : {

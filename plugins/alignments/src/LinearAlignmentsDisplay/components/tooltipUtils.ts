@@ -10,11 +10,11 @@ import {
 import { toLocale } from '@jbrowse/core/util'
 import { hiddenSegmentsNote } from '@jbrowse/sv-core'
 
-import { ARC_SPLIT_LABELS } from '../../features/arcs/arcSplitCategory.ts'
 import {
   ARC_SHAPE_FLAT,
   isUnplacedArcShape,
 } from '../../features/arcs/shapes.ts'
+import { SPLIT_JUNCTION_NAMES } from '../../features/sashimi/junctionClass.ts'
 import { spliceMotifLabel } from '../../features/sashimi/motif.ts'
 import { classifyInsertSize } from '../../shared/insertSizeStats.ts'
 import { nextRefAt } from '../../shared/readNextRefs.ts'
@@ -393,7 +393,7 @@ export function formatSashimiTooltip(
   const { start, end, count, strand, refName, motif, split } = junction
   return {
     type: 'sashimi',
-    name: split ? ARC_SPLIT_LABELS[split] : 'Intron/Skip',
+    name: split ? SPLIT_JUNCTION_NAMES[split] : 'Intron/Skip',
     start,
     end,
     score: count,
