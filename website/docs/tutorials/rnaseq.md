@@ -17,6 +17,7 @@ extra files or configuration. We:
 - color and group the reads by first-of-pair strand at the surfeit locus
 - load a long-read alignment, and STAR, regtools and portcullis junction tables,
   as tracks
+- draw a circular RNA's back-splice from split reads
 
 ## Prerequisites
 
@@ -221,6 +222,40 @@ the same assembly:
 ```
 
 <Figure caption="IsoSeq isoforms over ACTB." src="/img/rnaseq/longread_isoseq.png" />
+
+## Circular RNA: back-splice junctions
+
+A circular RNA joins the end of an exon back to the start of an upstream one. A
+short read across that joint aligns in two pieces, and the aligner writes the
+second piece into the read's `SA` tag. JBrowse counts each read whose later
+piece lies upstream of its earlier one, and draws that back-splice as a purple
+arc under the coverage, below the ordinary splice arcs.[^dna]
+
+STAR writes those `SA` tags only in chimeric mode. With its defaults it
+soft-clips the joint, and no back-splice arc appears:
+
+```bash
+# WithinBAM writes each chimeric piece as a supplementary record with an SA tag;
+#   Junctions also writes Chimeric.out.junction, STAR's own back-splice table
+# chimSegmentMin: the shortest piece of a read that counts as its own segment
+STAR --genomeDir star_index --readFilesIn r1.fq.gz r2.fq.gz \
+  --readFilesCommand gzip -dc --outSAMtype BAM SortedByCoordinate \
+  --chimOutType WithinBAM SoftClip Junctions \
+  --chimSegmentMin 15 --chimJunctionOverhangMin 15
+```
+
+The
+[circRNA demo](https://jbrowse.org/code/jb2/main/?config=https://jbrowse.org/demos/circrna/config.json)
+holds HeLa RNA-seq treated with RNase R, which digests linear RNA and leaves the
+circles, aligned that way on hg38, and STAR's own back-splice table beside it.
+At _ZKSCAN1_ the circle spans two exons:
+
+<Figure caption="ZKSCAN1: the STAR back-splice table above the reads, then a splice arc over the coverage and the back-splice arc under it." src="/img/circrna/zkscan1_backsplice.png" links="Open this view=circrna/zkscan1_backsplice" />
+
+[^dna]:
+    JBrowse looks for back-splices only in a window holding a spliced read, so a
+    tandem duplication's split reads in DNA sequencing, which join the same way,
+    draw no arc.
 
 ## Loading STAR, regtools and portcullis junction tables
 

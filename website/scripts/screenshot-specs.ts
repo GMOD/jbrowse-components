@@ -21,6 +21,7 @@ import { alphagenomeSpecs } from './specs/alphagenome.ts'
 import { annotationSpecs } from './specs/annotation.ts'
 import { bigwigSpecs } from './specs/bigwig.ts'
 import { cancerSvSpecs } from './specs/cancer_sv.ts'
+import { circrnaSpecs } from './specs/circrna.ts'
 import { circularSpecs } from './specs/circular.ts'
 import { cnv1000gSpecs } from './specs/cnv1000g.ts'
 import { cookbookSpecs } from './specs/cookbook.ts'
@@ -98,6 +99,7 @@ export const specs: ScreenshotSpec[] = [
   ...annotationSpecs,
   ...variantsSpecs,
   ...dtuSpecs,
+  ...circrnaSpecs,
   ...bigwigSpecs,
   ...genomesBasicsSpecs,
   ...genomesPangenomeSpecs,
