@@ -1,6 +1,6 @@
 ---
 name: vega-lite-vocabulary
-description: "ADR-238's migration of every display's settings to Vega-Lite's words (predicate filter, channel object under encoding, mark, axis, legend: null, coord, data, render). Landed: the predicate compiler and the synteny views' filter and mark. Open: the channel object, the other filter families, guides, layout and the writers, concept by concept across the app. Read before adding or renaming any display or view setting."
+description: "ADR-238's migration of every display's settings to Vega-Lite's words (predicate filter, channel object under encoding, mark, axis, legend: null, coord, data, render). Landed: the predicate compiler, every display's and view's filter, and the synteny views' mark. Open: the channel object, the band layers' thresholds, guides, layout and the writers, concept by concept across the app. Read before adding or renaming any display or view setting."
 ---
 
 # Vega-Lite vocabulary: what is left
@@ -20,6 +20,13 @@ spelling, not a new house word. That means no new `min*`, `max*`, `show*` or
 
 - `@jbrowse/core/util/fieldPredicate`: the predicate compiler over typed
   lanes, and display-kit's `FieldPredicate` schema.
+- Every display's `filter`, one predicate list (ADR-240 steps 3a and 3b):
+  alignments and LGVSynteny merge with their defaults by field; canvas's
+  gene category is the `geneLike` field; the multi-sample variant
+  thresholds are `minorAlleleFrequency` and `missingness`; the mark
+  display's field tests reach the worker as a `predicates` filter step.
+  An expression entry (a bare `jexl:` string) holds on a truthy value. The
+  costs are rows of measurement `field-predicate-read-filter`.
 - The linear synteny, dotplot and circular views' `filter`, a predicate list
   that replaced `minAlignmentLength`, `minIdentity` and `hideUnlabelled`
   (`SyntenyFilterMixin`, `filterLanes.ts`).
@@ -120,53 +127,10 @@ Move a concept everywhere in one pass, so it never has two spellings at once:
      fits the one-glyph row displays and not the mark display, whose `y` is
      the value every mark folds into one scale and whose rows each hold a plot
      of it; there the band is Vega-Lite's `row` channel with a shared `y`.
-2. **The other filter families as predicate lists**: alignments, canvas,
-   variant, MAF and junction/connection rows. The compiler fuses flag bits
-   (`bits` lanes) and measures 1.5x the hand-written flag and MAPQ test alone,
-   about 2 ns a read against 359 ns of BAM decode (measurement
-   `field-predicate-read-filter`). Before the alignments filter moves onto
-   it, A/B the whole fetch on `1000x.shortread.bam` on ada; a loss in
-   seconds there keeps the hand-written path behind the same config.
-   The same pass moves each band's layer thresholds into its layers'
-   `filter` (ADR-238 "Layers inside a part"): `coverage.alleles`,
-   `coverage.interbase`, the modification layer.
-   **Claimed 2026-10-22, built on an unlanded branch**: every display's
-   `filter` is one predicate list, landing as one fast-forward.
-   - **Built:** the alignments and LGVSynteny lists (ADR-240 steps 3a, 3b,
-     merge by field), then canvas (`genes` is the `geneLike` field), mark,
-     and multi-sample variant (`minorAlleleFrequency` gte and
-     `missingness` lte, compiled per fetch by `compileSiteFilter`).
-     PlotExamples, typecheck, lint and the touched packages' suites pass.
-     The MAF display has no filter slot to move.
-   - **The gate:** the whole-fetch A/B on ada over `1000x.shortread.bam`
-     found no cost (130.4 vs 129.5 ms), so alignments has no hand-written
-     fallback.
-   - **Blocks landing:** the mark display's worker `FilterStep` takes only
-     `expr`, so `plotRequest` sends only the list's `jexl:` entries and a
-     field entry on a mark display filters nothing. Give `FilterStep` a
-     predicate form.
-   - **Blocks landing:** a `jexl:` entry is `{ field, equal: true }`, and
-     `coerce` admits only `true` or `'true'`, so an expression that returns a
-     truthy non-boolean (`get(feature,'name')`) now drops every feature.
-     Either test a bare expression entry for truthiness or say so where the
-     slot is documented.
-   - **Writers still on the object form:** `test_data/config_demo.json`
-     (`genes: "only"`), the multiway, orthofinder, pangenome_hprc and
-     ld_human tutorials, `config_guides/variant_track.md`,
-     `website/src/lib/spec-recipe`, `website/scripts/specs`,
-     `scripts/build_lct_ld.sh`, the jbrowse-img, tables and
-     react-linear-genome-view tests, `browser-tests/multiway-lanegenes-probe`,
-     and ggjbrowse's R docs (`R/features.R`, `R/variants.R`,
-     `R/synteny.R`). Then `pnpm autogen` for the generated config and model
-     docs.
-   - **Still to do:** benchmark the variant site test and the canvas `jexl:`
-     computed field, or say why they aren't hot. Check store plugins for the
-     removed exports (`featureFilterConfigSchema`'s schema,
-     `variantFilterConfigSchema`, `filterMembersNarrowing`, `baseFilterOf`,
-     `passesSiteThresholds`, canvas's `WorkerFeatureFilter` type)
-     (`reference/PLUGIN_ABI_STABILITY.md`). Run `pnpm verify --full`. Push a
-     ggjbrowse engine rebuilt from the landed commit along with the landing,
-     or the R export test stays red.
+2. **The band layers' thresholds as layer filters** (ADR-240 step 3c):
+   `coverage.alleles`, `coverage.interbase` and the modification layer, each
+   into its layer's `filter` (ADR-238 "Layers inside a part"), percents
+   becoming fractions.
 3. **Legends, with step 1**: Vega-Lite gives each channel its own `legend`,
    so `legend.show` on the channel takes over every display's `showLegend`.
 4. **Wiggle's `resolution` and Hi-C's `resolutionBias`** under `data`, each
