@@ -569,6 +569,11 @@ range through the host's synchronous `jbrowseHost.readRange(url, start, end)`.
   splits code points rather than graphemes, which only changes where a label
   truncates on a combining sequence or an emoji join. Node's `vm` context
   keeps `Intl`, so the bundle test deletes it.
+- **R's V8 has no Unicode property tables either**, so `\p{L}` in a regex
+  fails to compile and the bundle never loads. jexl's lexer uses it from 7.1.
+  `build-bundle.mjs` rewrites `\p{L}` and `\p{M}` there to explicit ranges
+  and throws if the lexer stops using them. Node's `vm` accepts `\p{L}`, so
+  `bundle.test.ts` greps the bundle text for it.
 - **The test that matters runs the bundle in an empty `node:vm` context**,
   which has no web globals, as V8 in R has none (`bundle.test.ts`). A shim
   removed turns it red.

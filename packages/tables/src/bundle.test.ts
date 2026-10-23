@@ -107,6 +107,11 @@ test('the bundle is printable ASCII and ES2020', () => {
   expect(() => parse(code, { ecmaVersion: 2020 })).not.toThrow()
 })
 
+// Node's vm compiles \p{L}, R's V8 does not, so only the text can show it.
+test('the bundle has no Unicode property escapes', () => {
+  expect(code).not.toMatch(/\\p\{/)
+})
+
 test('the bundle carries no UI', () => {
   expect(code).not.toMatch(/node_modules\/\.pnpm\/@mui\+/)
 })
