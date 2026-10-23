@@ -126,6 +126,7 @@ An older config may still write these. Each loads without an error, and `jbrowse
 | `maxScore` | moved into a current slot |
 | `numStdDev` | ignored |
 | `inverted` | ignored |
+| `color` | moved into a current slot |
 | `renderers` | moved into a current slot |
 | `summaryScoreMode` | moved into a current slot |
 | `defaultRendering` | moved into a current slot |

@@ -12670,6 +12670,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "minimalTicks": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "color": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
       }
     },
@@ -13791,6 +13795,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
         "inverted": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "color": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
@@ -16142,6 +16150,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 },
                 {
                   "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/color"
+                },
+                {
+                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/color"
                 }
               ]
             },
@@ -17372,7 +17383,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "$ref": "#/$defs/LinearVariantDisplaySlots/properties/hideSourceFeatures"
             },
             "color": {
-              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/color"
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearVariantDisplaySlots/properties/color"
+                },
+                {
+                  "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/color"
+                }
+              ]
             },
             "showDescriptions": {
               "$ref": "#/$defs/LinearVariantDisplaySlots/properties/showDescriptions"
@@ -18155,6 +18173,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "inverted": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/inverted"
             },
+            "color": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/color"
+            },
             "renderers": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/renderers"
             },
@@ -18560,6 +18581,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "inverted": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/inverted"
             },
+            "color": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/color"
+            },
             "renderers": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/renderers"
             },
@@ -18859,6 +18883,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "inverted": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/inverted"
+            },
+            "color": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/color"
             },
             "renderers": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/renderers"

@@ -311,8 +311,7 @@ test('a paste keeps the picks of rows it does not name', () => {
   const model = fakeModel({
     rowColorSetting: {
       field: 'name',
-      domain: ['a', 'unshown'],
-      range: ['#f00', '#0f0'],
+      scale: { domain: ['a', 'unshown'], range: ['#f00', '#0f0'] },
     },
     rowPaletteDeals: false,
   })
@@ -330,8 +329,11 @@ test('a label paste leaves an attribute coloring chosen', () => {
   const model = fakeModel({
     editableSources: GROUPED,
     rowColorFields: ['group'],
-    rowColorSetting: { field: 'group', domain: [], range: [] },
-    baseRowColor: { field: 'name', domain: ['unshown'], range: ['#0f0'] },
+    rowColorSetting: { field: 'group', scale: { domain: [], range: [] } },
+    baseRowColor: {
+      field: 'name',
+      scale: { domain: ['unshown'], range: ['#0f0'] },
+    },
   })
   setup(model)
   paste('name,label\na,Ay')

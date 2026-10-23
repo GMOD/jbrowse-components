@@ -12273,6 +12273,10 @@
         "minimalTicks": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "color": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
       }
     },
@@ -13343,6 +13347,10 @@
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
         "inverted": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "color": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
@@ -15635,6 +15643,9 @@
                 },
                 {
                   "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/color"
+                },
+                {
+                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/color"
                 }
               ]
             },
@@ -16840,7 +16851,14 @@
               "$ref": "#/$defs/LinearVariantDisplaySlots/properties/hideSourceFeatures"
             },
             "color": {
-              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/color"
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearVariantDisplaySlots/properties/color"
+                },
+                {
+                  "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/color"
+                }
+              ]
             },
             "showDescriptions": {
               "$ref": "#/$defs/LinearVariantDisplaySlots/properties/showDescriptions"
@@ -17607,6 +17625,9 @@
             "inverted": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/inverted"
             },
+            "color": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/color"
+            },
             "renderers": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/renderers"
             },
@@ -18004,6 +18025,9 @@
             "inverted": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/inverted"
             },
+            "color": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/color"
+            },
             "renderers": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/renderers"
             },
@@ -18295,6 +18319,9 @@
             },
             "inverted": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/inverted"
+            },
+            "color": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/color"
             },
             "renderers": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/renderers"

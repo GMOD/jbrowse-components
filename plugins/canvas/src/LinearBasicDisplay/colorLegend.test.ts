@@ -211,7 +211,7 @@ describe('derived color key', () => {
   it('names only the values a feature in view paints, not the fetch buffer past it', () => {
     const { createDisplay } = createTestEnvironment()
     const { display, view } = createDisplay()
-    display.applyPlot({ color: { field: 'domain' } })
+    display.applyPlot({ encoding: { color: { field: 'domain' } } })
     const offScreen = Math.ceil(view.pxToBp(view.width + 100).coord0)
     display.setRpcData(
       0,

@@ -6890,7 +6890,8 @@ export const configManifest: ConfigManifest = {
         "scaleType",
         "inverted",
         "numStdDev",
-        "minimalTicks"
+        "minimalTicks",
+        "color"
       ],
       "droppedKeys": [
         "maxFeatureScreenDensity",
@@ -7428,6 +7429,7 @@ export const configManifest: ConfigManifest = {
         "maxScore",
         "numStdDev",
         "inverted",
+        "color",
         "renderers",
         "summaryScoreMode",
         "defaultRendering",
