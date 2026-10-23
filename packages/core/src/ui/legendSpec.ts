@@ -80,6 +80,9 @@ export interface LegendSection {
   // when it has an `onItemClick`; without this the section stays inert text
   // even beside one that acts.
   focusesRows?: boolean
+  // Set where the rows are too many to read as a key: the legend draws this one
+  // line ("Pfam family · 34 values") in place of the title and rows.
+  summary?: string
 }
 
 // What a display says about its colors, once. `FloatingLegend` renders this on
@@ -109,55 +112,72 @@ export function legendEntries(spec: LegendSpec): ColorLegendEntry[] {
   return [
     ...(spec.title ? [{ key: 'legend-title', label: spec.title }] : []),
     ...sections.flatMap(section => [
-      ...(titled && section.title
-        ? [{ key: `${section.id}-title`, label: section.title }]
-        : []),
+      ...(section.summary !== undefined
+        ? [{ key: `${section.id}-summary`, label: section.summary }]
+        : titled && section.title
+          ? [{ key: `${section.id}-title`, label: section.title }]
+          : []),
       ...(section.note === undefined
         ? []
         : [{ key: `${section.id}-note`, label: section.note }]),
-      ...section.items.map((item, idx) => ({
-        key: `${section.id}-${idx}`,
-        label: item.label,
-        color: item.color,
-        swatches: item.swatches,
-        hidden: item.hidden,
-        gradient: item.gradient,
-      })),
+      ...(section.summary === undefined ? section.items : []).map(
+        (item, idx) => ({
+          key: `${section.id}-${idx}`,
+          label: item.label,
+          color: item.color,
+          swatches: item.swatches,
+          hidden: item.hidden,
+          gradient: item.gradient,
+        }),
+      ),
     ]),
   ]
 }
 
 /**
- * How many rows a color key may have and still be one. Past this it is a list
- * of every row, which is the thing a key exists instead of.
+ * How many rows a color key may list. Past this a list is longer than a reader
+ * can scan, so a display that decides (`derivedColorScale`) summarizes its key
+ * on one line (`legendSummary`) rather than listing every row.
  */
 export const MAX_LEGEND_ITEMS = 20
 
+// Bound on the legend candidate list one region's worker ships, so a track with
+// a name per feature ships a prefix rather than every feature.
+export const MAX_LEGEND_CANDIDATES = 1024
+
 /**
- * Whether a key built from these items is worth the rows it costs, for a
- * display that has to *decide* — one whose key is only sometimes the thing
- * naming its colors, and which therefore asks before drawing.
- *
- * Two questions, and both have drawn a useless key on a real track:
- *
- * - **Short enough to read?** A list longer than a reader can scan is worse
- *   than whatever it was going to explain. Ask this of the collapsed items, not
- *   of the row count — a cohort track's key is one row per group, so 4,390
- *   cells in nine cell types is nine rows and passes, while the same cells
- *   ungrouped are 4,390 and do not.
- * - **Does it distinguish anything?** A key maps colors to names, so it needs
- *   more than one color to map. Items that all share one — every swatch having
- *   resolved to the same fallback, which is what a track carrying no identity
- *   color produces — spend rows over the plot to say nothing. This is why
- *   `LegendItem.color` should be resolved before it gets here: an unresolved
- *   `undefined` compares equal to every other `undefined` only by accident.
- *
- * Displays whose key is unconditional (alignments, variants) don't need this;
- * their vocabulary is always worth naming.
+ * Whether a key over these items maps more than one color. Items that all
+ * share one — every swatch having resolved to the same fallback, which is what
+ * a track carrying no identity color produces — spend rows over the plot to say
+ * nothing, so a display that decides draws no key. Resolve `LegendItem.color`
+ * before asking: an unresolved `undefined` equals every other only by accident.
+ */
+export function legendDistinguishesColors(
+  items: readonly { color?: string }[],
+) {
+  return new Set(items.map(i => i.color)).size > 1
+}
+
+/**
+ * @deprecated a display past `maxItems` summarizes its key rather than dropping
+ * it; ask `legendDistinguishesColors` and compare the length yourself.
  */
 export function legendIsReadable(
   items: LegendItem[],
   maxItems = MAX_LEGEND_ITEMS,
 ) {
-  return items.length <= maxItems && new Set(items.map(i => i.color)).size > 1
+  return items.length <= maxItems && legendDistinguishesColors(items)
+}
+
+/**
+ * The one line a key too long to list draws: its title and value count, which
+ * reads as a floor from `floor` up, where a worker may have stopped listing.
+ */
+export function legendSummary(
+  title: string | undefined,
+  count: number,
+  floor = Infinity,
+) {
+  const values = `${count}${count >= floor ? '+' : ''} ${count === 1 ? 'value' : 'values'}`
+  return title ? `${title} · ${values}` : values
 }

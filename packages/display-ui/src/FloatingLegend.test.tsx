@@ -1,4 +1,4 @@
-import { fireEvent, render } from '@testing-library/react'
+import { fireEvent, render, within } from '@testing-library/react'
 
 import FloatingLegend from './FloatingLegend.tsx'
 
@@ -291,5 +291,61 @@ describe('FloatingLegend', () => {
       />,
     )
     expect(container.querySelectorAll('[class*="Mui"]')).toHaveLength(0)
+  })
+})
+
+describe('a summarized section', () => {
+  const summarized = [
+    { id: 'pfam', items: items(34), summary: 'Pfam family · 34 values' },
+  ]
+
+  it('draws one line until clicked, then every row', () => {
+    const { getByText, queryByText } = render(
+      <FloatingLegend sections={summarized} maxItems={12} />,
+    )
+    expect(queryByText('item0')).toBeNull()
+    fireEvent.click(getByText('Pfam family · 34 values'))
+    expect(getByText('item33')).toBeTruthy()
+    expect(queryByText(/Show .* more/)).toBeNull()
+    fireEvent.click(getByText('Pfam family · 34 values'))
+    expect(queryByText('item0')).toBeNull()
+  })
+
+  it('stands in for the section title beside other sections', () => {
+    const { getByText, queryByText } = render(
+      <FloatingLegend
+        sections={[
+          { ...summarized[0]!, title: 'Pfam family' },
+          { id: 'b', title: 'Strand', items: items(2) },
+        ]}
+      />,
+    )
+    expect(getByText('Pfam family · 34 values')).toBeTruthy()
+    expect(queryByText('Pfam family')).toBeNull()
+  })
+})
+
+describe('the close button', () => {
+  const rowPadding = (label: string, el: HTMLElement) =>
+    getComputedStyle(within(el).getByText(label).parentElement!).paddingRight
+
+  it('is cleared by the title line alone', () => {
+    const { getByText, baseElement } = render(
+      <FloatingLegend
+        title="Type"
+        sections={one(items(2))}
+        onDismiss={jest.fn()}
+      />,
+    )
+    expect(getComputedStyle(getByText('Type')).paddingRight).toBe('13px')
+    expect(rowPadding('item0', baseElement)).not.toBe('13px')
+  })
+
+  it('is cleared by the first row where there is no title', () => {
+    const { baseElement } = render(
+      <FloatingLegend sections={one(items(2))} onDismiss={jest.fn()} />,
+    )
+    expect(rowPadding('item0', baseElement)).toBe('13px')
+    expect(rowPadding('item1', baseElement)).not.toBe('13px')
   })
 })

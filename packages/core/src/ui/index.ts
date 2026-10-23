@@ -152,8 +152,10 @@ export { measureLegendText } from './measureLegendText.ts'
 export { LegendSwatchGlyph } from './LegendSwatchGlyph.tsx'
 export {
   MAX_LEGEND_ITEMS,
+  legendDistinguishesColors,
   legendEntries,
   legendIsReadable,
+  legendSummary,
   legendSwatches,
   nonEmptyLegendSections,
 } from './legendSpec.ts'

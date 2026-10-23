@@ -346,7 +346,7 @@ test("a 25-state chromHMM model's key lists every state", () => {
   ).toHaveLength(25)
 })
 
-test('too many distinct labels is treated as non-categorical', () => {
+test('lists every color, however many, for the display to summarize', () => {
   const n = 40
   const many = regionData({
     featureStarts: Uint32Array.from({ length: n }, (_, i) => i * 10),
@@ -367,10 +367,10 @@ test('too many distinct labels is treated as non-categorical', () => {
       rowIndexByValue: new Map([['E001', 0]]),
       rowColorsByIndex: [undefined],
     }),
-  ).toEqual([])
+  ).toHaveLength(n)
 })
 
-test('a candidate list truncated at the cap still reads non-categorical', () => {
+test('a candidate list truncated at the cap lists what the worker shipped', () => {
   const n = 5000
   const capped = regionData({
     featureStarts: Uint32Array.from({ length: n }, (_, i) => i * 10),
@@ -392,5 +392,5 @@ test('a candidate list truncated at the cap still reads non-categorical', () => 
       rowIndexByValue: new Map([['E001', 0]]),
       rowColorsByIndex: [undefined],
     }),
-  ).toEqual([])
+  ).toHaveLength(capped.legendCandidates.length)
 })

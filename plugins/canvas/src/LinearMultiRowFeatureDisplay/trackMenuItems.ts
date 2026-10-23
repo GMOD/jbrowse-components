@@ -5,6 +5,7 @@ import { checkboxItem, radioItems, withHint } from '@jbrowse/core/ui/menuItems'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import { getDialogHost } from '@jbrowse/core/util'
 import { STRAND_FIELD } from '@jbrowse/core/util/categoricalField'
+import { MAX_LEGEND_ENTRIES } from '@jbrowse/core/util/legendCandidates'
 import { legendCheckboxItem } from '@jbrowse/display-kit/LegendMixin'
 import {
   colorByMenuItem,
@@ -108,14 +109,15 @@ function multiRowNarrowings(self: MultiRowMenuSelf): Reversibles {
   }
 }
 
-// The submenu survives an empty legend as long as anything is hidden:
-// `buildColorLegend` gives up past MAX_LEGEND_ENTRIES distinct colors, and
-// `hiddenCategories` stays in the session and re-applies when the count drops
-// back, so without this the hiding would have no visible cause and no way out.
+// A key too long to list (past MAX_LEGEND_ENTRIES colors) offers no toggles,
+// a menu of every feature being no use, but the submenu stays while anything is hidden: without it the hiding would
+// have no visible cause and no way out.
 function categoriesMenuItems(self: MultiRowMenuSelf): MenuItem[] {
   const hidden = self.activeHiddenCategories.length
   const hiddenSet = self.hiddenCategorySet
-  const toggles = self.colorLegend.map(entry =>
+  const listed =
+    self.colorLegend.length > MAX_LEGEND_ENTRIES ? [] : self.colorLegend
+  const toggles = listed.map(entry =>
     checkboxItem(entry.label, !entryHidden(entry, hiddenSet), () => {
       self.toggleCategory(entry.values)
     }),

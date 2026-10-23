@@ -1,4 +1,4 @@
-import { colorScaleIsEmpty, legendSpecOf } from './colorScale.ts'
+import { colorScaleIsEmpty, legendSpecOf, summarizePast } from './colorScale.ts'
 import { legendEntries } from './legendSpec.ts'
 
 import type { CategoricalScale, RampScale } from './colorScale.ts'
@@ -227,5 +227,45 @@ test("a note carries into the section and the export's rows", () => {
   expect(legendEntries({ sections })[0]).toEqual({
     key: 'svType-note',
     label: 'read this',
+  })
+})
+
+describe('a key too long to list', () => {
+  const families: CategoricalScale = {
+    kind: 'categorical',
+    id: 'pfam',
+    title: 'Pfam family',
+    entries: [{ value: 'PF0', label: 'PF0', color: '#000' }],
+    summarize: { values: 34 },
+  }
+
+  test('draws one line naming its title and the values painted', () => {
+    const spec = legendSpecOf([families])
+    expect(spec.title).toBeUndefined()
+    expect(legendEntries(spec)).toEqual([
+      { key: 'pfam-summary', label: 'Pfam family · 34 values' },
+    ])
+  })
+
+  test('beside another scale, its line stands in for the section title', () => {
+    const labels = legendEntries(legendSpecOf([families, svType])).map(
+      e => e.label,
+    )
+    expect(labels.slice(0, 2)).toEqual(['Pfam family · 34 values', 'SV type'])
+  })
+
+  test('counts the values its swatch rows name, past the bound', () => {
+    const entries = [
+      ...Array.from({ length: 20 }, (_, i) => ({
+        value: `PF${i}`,
+        label: `PF${i}`,
+        color: '#000',
+      })),
+      { value: 'a', values: ['a', 'b'], label: 'a, b', color: '#fff' },
+      { value: '', label: '(no value)', color: '#ccc', missing: true },
+      { value: '', label: 'a note' },
+    ]
+    expect(summarizePast(entries.slice(0, 20))).toEqual({})
+    expect(summarizePast(entries)).toEqual({ summarize: { values: 22 } })
   })
 })

@@ -8,8 +8,11 @@ import {
   BaseDisplay,
   preprocessTrackConfigSnapshot,
 } from '@jbrowse/core/pluggableElementTypes'
-import { legendIsReadable, pushLaunchViewMenuItem } from '@jbrowse/core/ui'
-import { colorScaleIsEmpty } from '@jbrowse/core/ui/colorScale'
+import {
+  legendDistinguishesColors,
+  pushLaunchViewMenuItem,
+} from '@jbrowse/core/ui'
+import { colorScaleIsEmpty, summarizePast } from '@jbrowse/core/ui/colorScale'
 import { featureDefaultColor } from '@jbrowse/core/ui/palette'
 import {
   animationAllowed,
@@ -2303,7 +2306,7 @@ export function stateModelFactory(
       /**
        * #getter
        * keys every lane, over the settled window, or the anchor lane alone
-       * where every lane's values would overflow the key
+       * where every lane's values are too many to list
        */
       get geneColorScales(): ColorScale[] {
         const hitsByRow = self.laneStack.lanes.map((_lane, row) =>
@@ -2327,13 +2330,14 @@ export function stateModelFactory(
             )
           }
           const items = isJexl(encoding) ? laneColorKey(hits, onScreen) : []
-          return legendIsReadable(items, MAX_LEGEND_ENTRIES)
+          return legendDistinguishesColors(items)
             ? [
                 {
                   kind: 'categorical',
                   id: 'genes',
                   title: title ?? 'Gene colors',
                   entries: items,
+                  ...summarizePast(items, MAX_LEGEND_ENTRIES),
                 },
               ]
             : []

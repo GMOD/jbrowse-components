@@ -1,4 +1,3 @@
-import { MAX_LEGEND_ITEMS } from '@jbrowse/core/ui/legendSpec'
 import { NO_VALUE_LABEL } from '@jbrowse/core/util/categoricalField'
 import { dealRowColors } from '@jbrowse/display-kit/colorConfigSchema'
 
@@ -169,8 +168,7 @@ export function rowColorKeyValue(row: RowSource, key: RowColorKeyInputs) {
 
 /**
  * The row color key over `rows`, the rows in source order: an entry
- * per value some row carries with a color, in deal order, at most
- * `MAX_LEGEND_ITEMS` and then a "+N more" note, then "(no value)" in the
+ * per value some row carries with a color, in deal order, then "(no value)" in the
  * color of the first colored row with no value, and a trailing "Other" in
  * the `scale.unknown` color where a row took it.
  */
@@ -207,10 +205,8 @@ export function rowColorKeyEntries(
     field === 'name'
       ? [...listed.values()]
       : [...key.dealt.keys()].flatMap(value => listed.get(value) ?? [])
-  const more = entries.length - MAX_LEGEND_ITEMS
   return [
-    ...entries.slice(0, MAX_LEGEND_ITEMS),
-    ...(more > 0 ? [{ value: '', label: `+${more} more` }] : []),
+    ...entries,
     ...(noValue ? [noValue] : []),
     ...(other && unknown
       ? [{ value: OTHER_VALUE, label: 'Other', color: unknown }]

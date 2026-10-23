@@ -1502,9 +1502,11 @@
         "getInputWidth",
         "hoverBoxStyle",
         "launchTargetsMenuItem",
+        "legendDistinguishesColors",
         "legendEntries",
         "legendIsReadable",
         "legendSpecOf",
+        "legendSummary",
         "legendSwatches",
         "makeSizeMenu",
         "makeSizeSubMenu",
@@ -1645,7 +1647,8 @@
         "colorScaleIsEmpty",
         "legendSpecOf",
         "missingRowLast",
-        "rampLabels"
+        "rampLabels",
+        "summarizePast"
       ],
       "worker": "real"
     },
@@ -1842,9 +1845,12 @@
     "@jbrowse/core/ui/legendSpec": {
       "package": "@jbrowse/core",
       "names": [
+        "MAX_LEGEND_CANDIDATES",
         "MAX_LEGEND_ITEMS",
+        "legendDistinguishesColors",
         "legendEntries",
         "legendIsReadable",
+        "legendSummary",
         "legendSwatches",
         "nonEmptyLegendSections"
       ],

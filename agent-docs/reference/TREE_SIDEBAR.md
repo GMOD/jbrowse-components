@@ -207,8 +207,8 @@ only in a shared panel. By `name` on stacked rows the labels are the key. `rowCo
 one entry per value some row carries with a color, in deal order (pairs first,
 then first seen over the rows in source order, so a focus never re-ranks or drops
 one); the empty value has none, even under a `''` pair. Past
-`MAX_LEGEND_ITEMS` it stops and adds one colorless "+N more", which
-`FloatingLegend` leaves inert. A set `scale.unknown` adds one trailing "Other"
+`MAX_LEGEND_ITEMS` entries the scale is `summarize`d: the key draws one line,
+"Group · 34 values", and lists the rows on a click. A set `scale.unknown` adds one trailing "Other"
 in that color for the rows that took it; a `scale.unknown` of `''` adds
 nothing. The scale declares `focusesRows`, and the mixin's `focusLegendEntry` answers it: a click focuses
 the rows `rowColorKeyValue` lists under the entry, out of `editableSources`, so

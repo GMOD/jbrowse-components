@@ -270,10 +270,8 @@ describe('multi-row track menu', () => {
   })
 
   it('keeps a way back when the legend itself has gone away', () => {
-    // buildColorLegend gives up past MAX_LEGEND_ENTRIES distinct colors, so a
-    // region loading in can take the color key and every toggle with it away
-    // from a user who has already hidden something — and the hidden set stays
-    // in the session and re-applies later.
+    // A key with no listed colors offers no toggles, while the hidden set
+    // stays in the session.
     const items = buildMultiRowTrackMenuItems(
       makeSelf({ colorLegend: [], activeHiddenCategories: ['quiescent'] }),
     )

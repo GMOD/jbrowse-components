@@ -127,7 +127,8 @@ export const DOSAGE_NOTE = 'Pale: het, full: hom'
 // (`derivedColorScale`) from the values painted, each drawn at het and hom
 // dosage where lightness carries it. The absent-data rows follow whatever that
 // key says, and their colors count toward its one-color test, so a lone
-// field row beside the reference grey still keys.
+// field row beside the reference grey still keys. A summarized key counts
+// only the field's values.
 function recordFieldScale(
   field: CategoricalField,
   inputs: VariantLegendInputs,
@@ -135,7 +136,7 @@ function recordFieldScale(
   const color = (key: string) => recordKeyColor(field, key)
   const shaded = inputs.unit !== 'haplotype' && inputs.shadeByDosage
   const absent = absentDataEntries(inputs)
-  const rows = derivedColorScale(
+  const [derived] = derivedColorScale(
     [inputs.paintedDomain],
     painted =>
       everyRowPaints(
@@ -152,11 +153,13 @@ function recordFieldScale(
         : undefined,
       besides: absent.flatMap(e => e.color ?? []),
     },
-  ).flatMap(scale => scale.entries)
+  )
+  const rows = derived?.entries ?? []
   return {
     kind: 'categorical',
     id: 'recordField',
     title: keyTitle(inputs, field.field),
+    ...(derived?.summarize ? { summarize: derived.summarize } : {}),
     entries: [
       ...rows,
       ...(shaded && rows.length > 0 ? [entry(DOSAGE_NOTE)] : []),

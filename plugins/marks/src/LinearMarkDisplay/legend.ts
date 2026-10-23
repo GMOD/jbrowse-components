@@ -95,8 +95,7 @@ export function keySettingOf(
 
 // Values past which a numeric field drawn as categories has stopped being a
 // vocabulary. A numeric field genuinely used as one — a rank, a copy number, a
-// tier — has a handful of values; past eight the author meant a color scale,
-// and the hint stands in for the key where `legendIsReadable` drops it.
+// tier — has a handful of values; past eight the author meant a color scale.
 const NUMERIC_KEY_HINT_ROWS = 8
 
 const NUMERIC_KEY_HINT =

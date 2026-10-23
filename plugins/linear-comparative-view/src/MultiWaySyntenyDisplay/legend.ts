@@ -57,7 +57,7 @@ export function laneColorKey(
 
 /**
  * The gene key over every lane's hits, or over the anchor lane's alone where
- * every lane's would overflow it. Across 44 strains each strain's private
+ * every lane's is too long to list. Across 44 strains each strain's private
  * genes take a row and blow the bound, while a haplotype's are the genes worth
  * keying.
  */
@@ -66,7 +66,15 @@ export function stackGeneKey(
   keyOf: (hits: GlyphHit[]) => ColorScale[],
 ) {
   const every = keyOf(hitsByRow.flat())
-  return every.length > 0 ? every : keyOf([...(hitsByRow[0] ?? [])])
+  if (every.length > 0 && !every.some(isSummarized)) {
+    return every
+  }
+  const anchor = keyOf([...(hitsByRow[0] ?? [])])
+  return anchor.length > 0 ? anchor : every
+}
+
+function isSummarized(scale: ColorScale) {
+  return scale.kind === 'categorical' && scale.summarize !== undefined
 }
 
 export function laneFieldKey(

@@ -5,10 +5,12 @@ import {
   setConf,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
+import { summarizePast } from '@jbrowse/core/ui/colorScale'
 import { featureDefaultColor } from '@jbrowse/core/ui/palette'
 import { assembleLocString, getSession } from '@jbrowse/core/util'
 import { isAbortException } from '@jbrowse/core/util/aborting'
 import { abgrToCssRgba, cssColorToABGR } from '@jbrowse/core/util/colorBits'
+import { MAX_LEGEND_ENTRIES } from '@jbrowse/core/util/legendCandidates'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import ColorWritesMixin from '@jbrowse/display-kit/ColorWritesMixin'
 import FacetWritesMixin from '@jbrowse/display-kit/FacetWritesMixin'
@@ -99,7 +101,7 @@ import type {
 import type { RowGroup } from './rowSources.ts'
 import type { RowCountByField } from './rowsFields.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
-import type { ColorScale } from '@jbrowse/core/ui/colorScale'
+import type { CategoricalEntry, ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { Region } from '@jbrowse/core/util'
 import type { FacetSetting } from '@jbrowse/display-kit/facetConfigSchema'
 import type {
@@ -116,6 +118,10 @@ import type {
   UnlistedRowsSort,
 } from '@jbrowse/tree-sidebar'
 import type React from 'react'
+
+function listedOrSummarized(entries: CategoricalEntry[]) {
+  return { entries, ...summarizePast(entries, MAX_LEGEND_ENTRIES) }
+}
 
 export type { MultiRowContextMenuInfo, MultiRowHit } from './hitTesting.ts'
 
@@ -695,13 +701,15 @@ export default function stateModelFactory(
               id: 'features',
               title: self.colorKeyTitle ?? 'Feature colors',
               domain: field ? field.domain : self.colorSetting.scale.domain,
-              entries: self.colorLegend.map(e => ({
-                value: e.values[0]!,
-                values: e.values,
-                label: e.label,
-                color: abgrToCssRgba(e.color),
-                hidden: entryHidden(e, hidden),
-              })),
+              ...listedOrSummarized(
+                self.colorLegend.map(e => ({
+                  value: e.values[0]!,
+                  values: e.values,
+                  label: e.label,
+                  color: abgrToCssRgba(e.color),
+                  hidden: entryHidden(e, hidden),
+                })),
+              ),
             },
             ...self.rowColorScales,
           ].filter(scale => scale.kind === 'ramp' || scale.entries.length > 0)

@@ -1,4 +1,5 @@
 import { getConf, setConf } from '@jbrowse/core/configuration'
+import { summarizePast } from '@jbrowse/core/ui/colorScale'
 import { capitalizeFirst, persistTrackConfigNow } from '@jbrowse/core/util'
 import { baseDisplayConfig } from '@jbrowse/core/util/baseDisplayConfig'
 import { pairedColorsOf } from '@jbrowse/display-kit/colorConfigSchema'
@@ -764,7 +765,8 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
        * #getter
        * The row color key, which every display spreads into its
        * `colorScales`: one scale titled by the `rowColor` field, or none
-       * where it has no entries. Its entries (`rowColorKeyEntries`) show
+       * where it has no entries, summarized past `MAX_LEGEND_ITEMS`. Its
+       * entries (`rowColorKeyEntries`) show
        * where the labels cannot name the colors: by a field, or by
        * name in a shared panel. By name on stacked rows the labels are the
        * key.
@@ -795,6 +797,7 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
                 title: field ? capitalizeFirst(field) : self.rowNoun,
                 focusesRows: true,
                 entries,
+                ...summarizePast(entries),
               },
             ]
           : []

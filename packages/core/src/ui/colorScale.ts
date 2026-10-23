@@ -1,5 +1,10 @@
 import { groupKeyComparator } from '../util/groupKeys.ts'
 import { formatScore } from '../util/numericUtils.ts'
+import {
+  MAX_LEGEND_CANDIDATES,
+  MAX_LEGEND_ITEMS,
+  legendSummary,
+} from './legendSpec.ts'
 
 import type {
   LegendItem,
@@ -58,6 +63,10 @@ export interface CategoricalScale {
   // Above the rows rather than among them, because the rows are what it is
   // about and a long list collapses them.
   note?: string
+  // More entries than a key can list (`summarizePast`): the legend draws one
+  // line naming the title and these many values, and lists the rows only on
+  // request.
+  summarize?: { values: number }
 }
 
 /** One stop of a continuous ramp, `offset` in `[0, 1]`. */
@@ -145,7 +154,40 @@ function sectionOf(scale: ColorScale, lone: boolean): LegendSection {
     note: scale.note,
     items,
     focusesRows: scale.focusesRows,
+    ...(scale.summarize
+      ? {
+          summary: legendSummary(
+            scale.title,
+            scale.summarize.values,
+            MAX_LEGEND_CANDIDATES,
+          ),
+        }
+      : {}),
   }
+}
+
+/**
+ * A key's `summarize` where its entries run past `maxItems`, counting the
+ * values its swatch rows name; nothing where they fit.
+ */
+export function summarizePast(
+  entries: readonly CategoricalEntry[],
+  maxItems = MAX_LEGEND_ITEMS,
+): { summarize?: { values: number } } {
+  return entries.length > maxItems
+    ? { summarize: { values: paintedValueCount(entries) } }
+    : {}
+}
+
+// The values a key's swatch rows name, its notes and its no-value row aside.
+function paintedValueCount(entries: readonly CategoricalEntry[]) {
+  let count = 0
+  for (const e of entries) {
+    if (!e.missing && (e.color !== undefined || e.swatches?.length)) {
+      count += e.values?.length ?? 1
+    }
+  }
+  return count
 }
 
 /**
@@ -156,14 +198,16 @@ function sectionOf(scale: ColorScale, lone: boolean): LegendSection {
  *
  * A lone scale names itself: section titles draw only beside other sections,
  * so a lone categorical scale's title becomes the box's (a field's name over
- * its values) and a lone ramp's goes on its row. Empty scales are
+ * its values) and a lone ramp's goes on its row; a summarized scale's goes
+ * in its summary line. Empty scales are
  * dropped first, so one waiting for data does not leave its sibling untitled.
  */
 export function legendSpecOf(scales: ColorScale[]): LegendSpec {
   const drawn = scales.filter(scale => !colorScaleIsEmpty(scale))
   const lone = drawn.length === 1 ? drawn[0] : undefined
   return {
-    title: lone?.kind === 'categorical' ? lone.title : undefined,
+    title:
+      lone?.kind === 'categorical' && !lone.summarize ? lone.title : undefined,
     sections: drawn.map(scale => sectionOf(scale, lone !== undefined)),
   }
 }

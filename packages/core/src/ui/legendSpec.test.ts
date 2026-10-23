@@ -1,4 +1,4 @@
-import { legendEntries } from './legendSpec.ts'
+import { legendEntries, legendSummary } from './legendSpec.ts'
 
 const READS = { id: 'reads', title: 'Read colors', items: [{ label: 'A' }] }
 const ARCS = { id: 'arcs', title: 'Arc colors', items: [{ label: 'B' }] }
@@ -109,4 +109,10 @@ test('hidden travels with the item, not with the label', () => {
     ['Group', undefined],
     ['Wolf', undefined],
   ])
+})
+
+test('a summary counts values, as a floor where a worker may have stopped', () => {
+  expect(legendSummary('Pfam family', 34)).toBe('Pfam family · 34 values')
+  expect(legendSummary(undefined, 1)).toBe('1 value')
+  expect(legendSummary('Name', 1024, 1024)).toBe('Name · 1024+ values')
 })

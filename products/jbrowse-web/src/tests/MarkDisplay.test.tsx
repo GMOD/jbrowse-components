@@ -91,7 +91,7 @@ test('bars from a BED score column, colored by name, with the key on screen', as
   const el = await findDisplayPainted('mark-display', { timeout })
   expect(el.dataset.displayId).toBe('mark_bars-marks')
   // by name, not strand: every volvox-bed12 feature is on +, and a one-color
-  // key is one legendIsReadable drops
+  // key is one legendDistinguishesColors drops
   const legend = await findByTestId('floating-legend', {}, { timeout })
   await waitFor(() => {
     expect(legend.textContent).toContain('EDEN.3')

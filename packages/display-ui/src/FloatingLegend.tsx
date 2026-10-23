@@ -38,10 +38,11 @@ const useStyles = makeStyles()(theme => ({
     // right in both themes and against a dark track.
     border: `1px solid ${theme.palette.divider}`,
     borderRadius: 3,
-    padding: 3,
+    padding: '2px 3px',
     display: 'flex',
     flexDirection: 'column',
     fontSize: 10,
+    lineHeight: `${ROW_HEIGHT}px`,
     zIndex: 100,
     // the default; `maxWidth` overrides it per display
     // portaled into the TrackContainer's above-the-masks overlay node, which is
@@ -53,23 +54,27 @@ const useStyles = makeStyles()(theme => ({
   // A plain <button> with a `×` glyph, not MUI: displays render this legend
   // directly, behind neither bring-your-own seam. See DISPLAYCHROME.md, "The
   // bring-your-own seams".
+  // Paper behind the glyph, as rows scroll under it.
   closeButton: {
     position: 'absolute',
     top: 0,
     right: 0,
+    zIndex: 1,
     font: 'inherit',
     lineHeight: 1,
-    padding: '1px 3px',
+    padding: '2px 3px',
     border: 0,
-    background: 'none',
+    borderRadius: 3,
+    backgroundColor: theme.palette.background.paper,
     color: theme.palette.text.secondary,
     cursor: 'pointer',
     '&:hover': {
       color: theme.palette.text.primary,
     },
   },
-  withClose: {
-    paddingRight: 20,
+  // Only the key's first line runs under the close button.
+  clearsClose: {
+    paddingRight: CLOSE_CLEARANCE,
   },
   // A key taller than its display scrolls here. The platform may hide an
   // overlay scrollbar, so `moreBelow` names the entries past the fold.
@@ -81,7 +86,7 @@ const useStyles = makeStyles()(theme => ({
   moreBelow: {
     font: 'inherit',
     flexShrink: 0,
-    marginTop: 2,
+    marginTop: 1,
     padding: '1px 0 0',
     border: 0,
     borderTop: `1px solid ${theme.palette.divider}`,
@@ -96,17 +101,36 @@ const useStyles = makeStyles()(theme => ({
   topTitle: {
     fontWeight: 'bold',
     whiteSpace: 'nowrap',
-    marginBottom: 2,
+    marginBottom: 1,
   },
   section: {
     '&:not(:last-child)': {
-      marginBottom: 4,
+      marginBottom: 3,
     },
   },
   sectionHeader: {
     display: 'flex',
     alignItems: 'center',
-    marginBottom: 2,
+    marginBottom: 1,
+  },
+  // A key too long to list: one line that lists the rows on a click.
+  summary: {
+    font: 'inherit',
+    padding: 0,
+    border: 0,
+    background: 'none',
+    color: 'inherit',
+    textAlign: 'left',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    cursor: 'pointer',
+    '&:hover': {
+      textDecoration: 'underline',
+    },
+  },
+  disclosure: {
+    color: theme.palette.accent,
   },
   sectionTitle: {
     fontWeight: 'bold',
@@ -119,7 +143,7 @@ const useStyles = makeStyles()(theme => ({
   sectionNote: {
     color: theme.palette.text.secondary,
     whiteSpace: 'normal',
-    marginBottom: 2,
+    marginBottom: 1,
   },
   sectionClose: {
     font: 'inherit',
@@ -137,10 +161,6 @@ const useStyles = makeStyles()(theme => ({
   item: {
     display: 'flex',
     alignItems: 'center',
-    marginBottom: 1,
-    '&:last-child': {
-      marginBottom: 0,
-    },
   },
   // A row that acts: the same layout, as a plain button (see `closeButton`
   // for why not Material's), so a key naming groups of rows can focus one.
@@ -160,7 +180,7 @@ const useStyles = makeStyles()(theme => ({
   swatches: {
     display: 'flex',
     gap: 2,
-    marginRight: 6,
+    marginRight: 4,
     flexShrink: 0,
   },
   label: {
@@ -195,9 +215,8 @@ const useStyles = makeStyles()(theme => ({
   // that mattered
   toggle: {
     font: 'inherit',
-    fontSize: 10,
     display: 'block',
-    marginTop: 2,
+    marginTop: 1,
     padding: 0,
     border: 0,
     background: 'none',
@@ -214,8 +233,12 @@ const DEFAULT_MAX_ITEMS = 12
 const DEFAULT_MAX_WIDTH = 200
 const GRADIENT_BAR_WIDTH = 100
 
-// Side of one swatch box.
-const SWATCH = 12
+// Side of one swatch box, as the export draws it (`LEGEND_SWATCH`).
+const SWATCH = 10
+// One line of text or swatches.
+const ROW_HEIGHT = 12
+// What the first line leaves free for the close button.
+const CLOSE_CLEARANCE = 13
 
 // The spec itself lives in core beside SvgColorLegend, so the export legends can
 // flatten the very value this component renders (see legendEntries). Re-exported
@@ -247,13 +270,15 @@ function gradientCss({ stops }: LegendGradient, paper: string) {
 const GradientRow = observer(function GradientRow({
   label,
   gradient,
+  className,
 }: {
   label: string
   gradient: LegendGradient
+  className?: string
 }) {
   const { classes, theme } = useStyles()
   return (
-    <div className={classes.gradientRow} data-legend-count={1}>
+    <div className={cx(classes.gradientRow, className)} data-legend-count={1}>
       {label ? <div className={classes.label}>{label}</div> : null}
       <div
         className={classes.gradientBar}
@@ -281,10 +306,12 @@ const LegendItemList = observer(function LegendItemList({
   items,
   maxItems,
   onItemClick,
+  firstRowClass,
 }: {
   items: LegendItem[]
   maxItems: number
   onItemClick?: (item: LegendItem) => void
+  firstRowClass?: string
 }) {
   const { classes } = useStyles()
   const [expanded, setExpanded] = useState(false)
@@ -305,6 +332,7 @@ const LegendItemList = observer(function LegendItemList({
               key={`${item.label}-${i}`}
               label={item.label}
               gradient={item.gradient}
+              className={i === 0 ? firstRowClass : undefined}
             />
           )
         }
@@ -327,7 +355,11 @@ const LegendItemList = observer(function LegendItemList({
             <span className={classes.label}>{item.label}</span>
           </>
         )
-        const itemClass = cx(classes.item, item.hidden && classes.hiddenItem)
+        const itemClass = cx(
+          classes.item,
+          item.hidden && classes.hiddenItem,
+          i === 0 && firstRowClass,
+        )
         return onItemClick && legendSwatches(item).length > 0 ? (
           <button
             // eslint-disable-next-line @eslint-react/no-array-index-key
@@ -366,6 +398,85 @@ const LegendItemList = observer(function LegendItemList({
         </button>
       ) : null}
     </>
+  )
+})
+
+// One vocabulary: its header where titles show, its note, and its rows — or,
+// for a `summary` section, that one line, which lists the rows on a click.
+const LegendSectionView = observer(function LegendSectionView({
+  section,
+  multiSection,
+  maxItems,
+  firstLineClass,
+  onDismissSection,
+  onItemClick,
+}: {
+  section: LegendSection
+  multiSection: boolean
+  maxItems: number
+  firstLineClass?: string
+  onDismissSection?: (id: string) => void
+  onItemClick?: (item: LegendItem) => void
+}) {
+  const { classes } = useStyles()
+  const [listed, setListed] = useState(false)
+  const { summary, title, note } = section
+  const heading =
+    summary === undefined ? (
+      multiSection && title ? (
+        <span className={classes.sectionTitle}>{title}</span>
+      ) : null
+    ) : (
+      <button
+        type="button"
+        className={classes.summary}
+        aria-expanded={listed}
+        title={listed ? 'Hide the values' : 'List every value'}
+        data-legend-count={1}
+        onClick={() => {
+          setListed(!listed)
+        }}
+      >
+        {summary}{' '}
+        <span className={classes.disclosure}>{listed ? '▾' : '▸'}</span>
+      </button>
+    )
+  const showRows = summary === undefined || listed
+  return (
+    <div className={classes.section}>
+      {heading ? (
+        <div className={cx(classes.sectionHeader, firstLineClass)}>
+          {heading}
+          {multiSection && onDismissSection ? (
+            <Tooltip title={`Hide ${title ?? 'section'}`}>
+              <button
+                type="button"
+                className={classes.sectionClose}
+                aria-label={`Hide ${title ?? 'section'}`}
+                onClick={() => {
+                  onDismissSection(section.id)
+                }}
+              >
+                ×
+              </button>
+            </Tooltip>
+          ) : null}
+        </div>
+      ) : null}
+      {note ? (
+        <div className={cx(classes.sectionNote, !heading && firstLineClass)}>
+          {note}
+        </div>
+      ) : null}
+      {showRows ? (
+        <LegendItemList
+          items={section.items}
+          maxItems={summary === undefined ? maxItems : Infinity}
+          onItemClick={onItemClick}
+          firstRowClass={heading || note ? undefined : firstLineClass}
+        />
+      ) : null}
+    </div>
   )
 })
 
@@ -430,7 +541,8 @@ function useEntriesBelow(scroller: HTMLDivElement | null) {
 // sample-grouping colors on the multi-sample variant display). Section titles
 // and per-section close buttons only appear when there is more than one
 // section, so a single-scheme legend is just its rows. `title` is a heading
-// for the whole box, shown regardless of section count.
+// for the whole box, shown regardless of section count. A section with a
+// `summary` draws that one line, which lists its rows on a click.
 //
 // `onItemClick` makes the rows of a section declaring `focusesRows` act —
 // clicking an entry focuses the rows it names. A section coloring features or
@@ -485,7 +597,7 @@ const FloatingLegend = observer(function FloatingLegend({
   return (
     <TrackOverlayPortal>
       <div
-        className={cx(classes.legend, onDismiss && classes.withClose)}
+        className={classes.legend}
         style={{
           top,
           right,
@@ -521,43 +633,31 @@ const FloatingLegend = observer(function FloatingLegend({
           </Tooltip>
         ) : null}
         <div ref={setScroller} className={classes.scroller}>
-          {title ? <div className={classes.topTitle}>{title}</div> : null}
-          {nonEmpty.map(section => (
-            <div key={section.id} className={classes.section}>
-              {multiSection && section.title ? (
-                <div className={classes.sectionHeader}>
-                  <span className={classes.sectionTitle}>{section.title}</span>
-                  {onDismissSection ? (
-                    <Tooltip title={`Hide ${section.title}`}>
-                      <button
-                        type="button"
-                        className={classes.sectionClose}
-                        aria-label={`Hide ${section.title}`}
-                        onClick={() => {
-                          onDismissSection(section.id)
-                        }}
-                      >
-                        ×
-                      </button>
-                    </Tooltip>
-                  ) : null}
-                </div>
-              ) : null}
-              {section.note ? (
-                <div className={classes.sectionNote}>{section.note}</div>
-              ) : null}
-              <LegendItemList
-                items={section.items}
-                maxItems={maxItems}
-                onItemClick={
-                  onItemClick && section.focusesRows
-                    ? item => {
-                        onItemClick(item, section)
-                      }
-                    : undefined
-                }
-              />
+          {title ? (
+            <div
+              className={cx(classes.topTitle, onDismiss && classes.clearsClose)}
+            >
+              {title}
             </div>
+          ) : null}
+          {nonEmpty.map((section, i) => (
+            <LegendSectionView
+              key={section.id}
+              section={section}
+              multiSection={multiSection}
+              maxItems={maxItems}
+              firstLineClass={
+                onDismiss && !title && i === 0 ? classes.clearsClose : undefined
+              }
+              onDismissSection={onDismissSection}
+              onItemClick={
+                onItemClick && section.focusesRows
+                  ? item => {
+                      onItemClick(item, section)
+                    }
+                  : undefined
+              }
+            />
           ))}
         </div>
         {below > 0 && scroller ? (

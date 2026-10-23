@@ -1,3 +1,4 @@
+import { MAX_LEGEND_ITEMS } from '../ui/legendSpec.ts'
 import { NO_VALUE_LABEL, categoricalField } from './categoricalField.ts'
 import {
   MAX_LEGEND_CANDIDATES,
@@ -123,35 +124,16 @@ describe('unionLegendCandidates', () => {
     ).toEqual([{ values: ['Quies'], color: GREEN }])
   })
 
-  test('past the entry bar there is no categorical key to show', () => {
+  test('keeps every color, however many', () => {
     const candidates = collect(
       Array.from(
         { length: MAX_LEGEND_ENTRIES + 1 },
         (_, i) => [0, `gene${i}`, 0xff000000 + i] as [number, string, number],
       ),
     )
-    expect(unionLegendCandidates([candidates], allRowsPaint)).toEqual([])
-    // and the bar is the caller's to set
-    expect(unionLegendCandidates([candidates], allRowsPaint, 2)).toEqual([])
-  })
-
-  test('pulls regions lazily, and stops once there is no key to find', () => {
-    const lists = [
-      collect([
-        [0, 'TssA', RED],
-        [0, 'Quies', GREEN],
-      ]),
-      collect([[0, 'Enh', BLUE]]),
-    ]
-    let pulled = 0
-    function* regions() {
-      for (const list of lists) {
-        pulled++
-        yield list
-      }
-    }
-    expect(unionLegendCandidates(regions(), allRowsPaint, 1)).toEqual([])
-    expect(pulled).toBe(1)
+    expect(unionLegendCandidates([candidates], allRowsPaint)).toHaveLength(
+      MAX_LEGEND_ENTRIES + 1,
+    )
   })
 })
 
@@ -264,6 +246,27 @@ describe('derivedColorScale', () => {
         field: thresholdField('score', { domain: ['1', '2'] }),
       }),
     ).toEqual([])
+  })
+
+  test(`summarizes past ${MAX_LEGEND_ITEMS} rows rather than dropping the key`, () => {
+    const many = (n: number) =>
+      derivedColorScale(
+        [
+          collect(
+            Array.from(
+              { length: n },
+              (_, i) =>
+                [0, `fam${i}`, 0xff000000 + i] as [number, string, number],
+            ),
+          ),
+        ],
+        allRowsPaint,
+        { id: 'color', field: categoricalField('family') },
+      )
+    expect(many(MAX_LEGEND_ITEMS)[0]!.summarize).toBeUndefined()
+    const [scale] = many(34)
+    expect(scale!.summarize).toEqual({ values: 34 })
+    expect(scale!.entries).toHaveLength(34)
   })
 
   test('is no scale at all where every row is one color', () => {

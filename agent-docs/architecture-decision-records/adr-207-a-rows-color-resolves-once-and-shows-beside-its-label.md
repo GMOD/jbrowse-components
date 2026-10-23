@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "Row color on the multi-row feature, multi-sample variant, wiggle, MAF and mark displays is one channel resolved once: `TreeSidebarMixin.resolvedRowColors` gives each row its `rowColor` entry (a `name` pair, or its attribute value's dealt color), else its file's own `color`, else a palette color by name where `rowPaletteDeals`. The palette deals row names only where the rows share one panel (`sharesPanel`, a multi-subtrack wiggle overlay); stacked rows are named by their labels. Attributes always deal, from tableau10 then re-lit laps, and an empty value takes no color. A row's color shows as a 4 px bar beside its label, and on the marks only where `rowColorPaintsMarks`. `rowGroups` tags a row's `group` and carries no color. One mixin key (`rowColorScales`) shows for an attribute or a shared panel, 20 entries then \"+N more\". One shared dialog opens from `rowArrangementMenuItem`. Deletes `rowGroups[].color`, `colorRowLabels`, `labelColor`, `identityChannel`, every per-display deal, wiggle's per-subtrack palette switch, three legend paths and four dialog wrappers. Amends ADR-160 and ADR-164"
+summary: "Row color on the multi-row feature, multi-sample variant, wiggle, MAF and mark displays is one channel resolved once: `TreeSidebarMixin.resolvedRowColors` gives each row its `rowColor` entry (a `name` pair, or its attribute value's dealt color), else its file's own `color`, else a palette color by name where `rowPaletteDeals`. The palette deals row names only where the rows share one panel (`sharesPanel`, a multi-subtrack wiggle overlay); stacked rows are named by their labels. Attributes always deal, from tableau10 then re-lit laps, and an empty value takes no color. A row's color shows as a 4 px bar beside its label, and on the marks only where `rowColorPaintsMarks`. `rowGroups` tags a row's `group` and carries no color. One mixin key (`rowColorScales`) shows for an attribute or a shared panel, 20 entries then \"+N more\" (amended 2026-10-22: past 20, one summary line that lists every entry on a click). One shared dialog opens from `rowArrangementMenuItem`. Deletes `rowGroups[].color`, `colorRowLabels`, `labelColor`, `identityChannel`, every per-display deal, wiggle's per-subtrack palette switch, three legend paths and four dialog wrappers. Amends ADR-160 and ADR-164"
 ---
 
 # ADR-207: A row's color resolves once and shows beside its label
@@ -53,7 +53,8 @@ grammar rather than from what shipped.
   group's color is `rowColor: { field: 'group', domain, range }`.
 - **One key**, shown for an attribute or a shared panel, at any row height,
   listing at most 20 values in deal order and then "+N more", with "Other" for
-  an `unknown` color; a click focuses the rows. By name on stacked rows there
+  an `unknown` color; a click focuses the rows. Amended 2026-10-22: past 20,
+  one line naming the field and the count, which lists every entry on a click. By name on stacked rows there
   is no key: the labels are the key.
 - **One dialog.** `rowArrangementMenuItem` opens the shared `SetColorDialog`
   over the model; wiggle passes its own opener for its plot colors. A display

@@ -1,4 +1,9 @@
-import { MAX_LEGEND_ITEMS, legendIsReadable } from '../ui/legendSpec.ts'
+import { summarizePast } from '../ui/colorScale.ts'
+import {
+  MAX_LEGEND_CANDIDATES,
+  MAX_LEGEND_ITEMS,
+  legendDistinguishesColors,
+} from '../ui/legendSpec.ts'
 import { OTHER_VALUES_LABEL } from './categoricalField.ts'
 import { abgrToCssRgba, cssColorToABGR } from './colorBits.ts'
 
@@ -24,18 +29,12 @@ export interface LegendEntry {
   color: number
 }
 
-// How many distinct colors a derived key may name and still BE a key. Past this
-// the data is not a categorical vocabulary (a track keyed by unique per-feature
-// names), and a list of every feature is the thing a key exists instead of.
-//
-// A different question from `legendIsReadable`'s lower bar, which asks whether a
-// key a display already has is worth the rows it costs.
+// The longer list the multi-row and multi-way gene keys allow before
+// summarizing, `MAX_LEGEND_ITEMS` being every other display's: their rows name
+// features, and a locus's genes run past twenty.
 export const MAX_LEGEND_ENTRIES = 30
 
-// Bound on the candidate list one region ships. Far above MAX_LEGEND_ENTRIES, so
-// a vocabulary that is categorical at all crosses whole, and a track with a name
-// per feature ships a prefix that reads the same way it would have.
-export const MAX_LEGEND_CANDIDATES = 1024
+export { MAX_LEGEND_CANDIDATES } from '../ui/legendSpec.ts'
 
 /**
  * Accumulator for the distinct (row, value, color) combinations a packer walks
@@ -75,14 +74,10 @@ export interface LegendCandidateSource {
  * order. Keyed by color rather than by value because hiding a category hides
  * features BY color, so two values sharing one color are one row that names
  * both; a value met in two colors stays with the first.
- *
- * `[]` when there are more than `maxEntries` distinct colors, where the data is
- * not a categorical vocabulary. `regions` is consumed lazily.
  */
 export function unionLegendCandidates<T>(
   regions: Iterable<T>,
   resolve: (region: T) => LegendCandidateSource,
-  maxEntries = MAX_LEGEND_ENTRIES,
 ) {
   const rows = new Map<number, LegendEntry>()
   const seenValues = new Set<string>()
@@ -98,9 +93,6 @@ export function unionLegendCandidates<T>(
         row.values.push(value)
       } else {
         rows.set(color, { values: [value], color })
-        if (rows.size > maxEntries) {
-          return []
-        }
       }
     }
   }
@@ -128,15 +120,17 @@ export function everyRowPaints(
 /**
  * The one categorical key a color channel derives from what a worker painted:
  * the union above over the loaded regions, each row a painted color naming
- * every value in it through `field` and ordered by it, and nothing where the
- * rows would say nothing (`legendIsReadable`). A display resolving its own colors hands the
+ * every value in it through `field` and ordered by it. Past `maxItems` rows
+ * the scale is `summarize`d, and where every row is one color
+ * (`legendDistinguishesColors`) there is no key. A display resolving its own
+ * colors hands the
  * candidates its packer recorded; one resolved by `encodeFeatures` hands the
  * entries of the scale tables that came back. Either way the key lists what
  * the painting holds, and a `closed` field's domain besides once anything
  * painted. `title` heads it in place of the field's name, `''` heading
  * nothing, and `swatches` draws a row as something other than its color's box.
  * `besides` are the colors of rows a display lists beside these, which the
- * one-color test counts and the length test does not.
+ * one-color test counts and the summary threshold does not.
  */
 export function derivedColorScale<T>(
   regions: Iterable<T>,
@@ -145,7 +139,7 @@ export function derivedColorScale<T>(
     id,
     field,
     title = field.field,
-    maxItems,
+    maxItems = MAX_LEGEND_ITEMS,
     swatches,
     besides = [],
   }: {
@@ -192,14 +186,10 @@ export function derivedColorScale<T>(
     field.compare(a.value, b.value),
   )
   const beside = besides.map(color => ({
-    label: '',
     color: abgrToCssRgba(cssColorToABGR(color)),
   }))
   return painted.length > 0 &&
-    legendIsReadable(
-      [...entries, ...beside],
-      (maxItems ?? MAX_LEGEND_ITEMS) + beside.length,
-    )
+    legendDistinguishesColors([...entries, ...beside])
     ? [
         {
           kind: 'categorical',
@@ -209,6 +199,7 @@ export function derivedColorScale<T>(
           entries: swatches
             ? entries.map(row => ({ ...row, swatches: swatches(row) }))
             : entries,
+          ...summarizePast(entries, maxItems),
         },
       ]
     : []

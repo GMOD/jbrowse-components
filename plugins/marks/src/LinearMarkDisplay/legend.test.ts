@@ -85,7 +85,7 @@ test('a long key over values that are not numbers carries no hint', () => {
   expect(noteOf(table(TEN.map(v => `type${v}`)))).toBeUndefined()
 })
 
-test('the hint stands in for a numeric key too long to draw', () => {
+test('the hint goes under the summary of a numeric key too long to list', () => {
   const sixty = Array.from({ length: 60 }, (_, i) => `${i}`)
   expect(
     legendEntries(
@@ -94,7 +94,7 @@ test('the hint stands in for a numeric key too long to draw', () => {
       ),
     ).map(e => e.label),
   ).toEqual([
-    'score',
+    'score · 60 values',
     expect.stringMatching(/numeric values drawn as categories/),
   ])
 })
