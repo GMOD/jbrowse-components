@@ -459,7 +459,7 @@ Load a pairwise jcvi MCScan run as gene-level and block-level synteny tracks, an
 
 Page: https://jbrowse.org/jb2/docs/tutorials/mcscan_synteny_grape_peach/
 
-- https://jbrowse.org/code/jb2/main/test_data/config_dotplot.json
+- https://jbrowse.org/demos/grape_peach_cacao/config.json
 
 ## Methylation (long-read)
 
