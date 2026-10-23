@@ -262,6 +262,90 @@ describe('a guide tree the display supplies', () => {
   })
 })
 
+describe('a tree the config supplies in `rows.tree`', () => {
+  const TREE = '((a,b),c);'
+  const named = (names: string[]) => names.map(name => ({ name }))
+
+  function makeSupplied() {
+    return types
+      .compose(
+        'SuppliedTreeDisplay',
+        TreeSidebarMixin(),
+        types.model({
+          type: types.literal('SuppliedTreeDisplay'),
+          configuration: configSchema,
+        }),
+      )
+      .views(() => ({
+        get discoveredRows() {
+          return named(['a', 'b', 'c'])
+        },
+      }))
+      .create({
+        type: 'SuppliedTreeDisplay',
+        configuration: { rows: { tree: TREE } },
+      })
+  }
+
+  it('rotates under an order some rotation lists', () => {
+    const display = makeSupplied()
+    expect(display.rowOrderWillDropTree(named(['c', 'b', 'a']))).toBe(false)
+    display.setRowOrder(named(['c', 'b', 'a']))
+    expect(display.rowTree).toBe(TREE)
+    expect(getLeafNames(display.parsedTree!)).toEqual(['c', 'b', 'a'])
+  })
+
+  it('drops under an order no rotation lists', () => {
+    const display = makeSupplied()
+    expect(display.rowOrderWillDropTree(named(['a', 'c', 'b']))).toBe(true)
+    display.setRowOrder(named(['a', 'c', 'b']))
+    expect(display.rowTree).toBeUndefined()
+  })
+})
+
+// A focus naming a sample keeps its haplotype rows (`keptRows`), so the tree
+// narrows to the same leaves.
+describe('a focus written against a row alias', () => {
+  const HAPLOTYPES = ['A HP0', 'A HP1', 'B HP0', 'B HP1']
+
+  it('narrows the tree to the rows it keeps', () => {
+    const display = types
+      .compose(
+        'AliasTreeDisplay',
+        TreeSidebarMixin(),
+        types.model({
+          type: types.literal('AliasTreeDisplay'),
+          configuration: configSchema,
+        }),
+      )
+      .views(() => ({
+        get discoveredRows() {
+          return HAPLOTYPES.map(name => ({ name }))
+        },
+        get rowAlias() {
+          return (name: string) => name.split(' ')[0]
+        },
+        get effectiveRowHeight() {
+          return 10
+        },
+      }))
+      .create({
+        type: 'AliasTreeDisplay',
+        configuration: {
+          rows: {
+            sort: HAPLOTYPES,
+            tree: "(('A HP0':1,'A HP1':1):1,('B HP0':1,'B HP1':1):1);",
+            treeProvenance: { regions: [] },
+            kept: ['A'],
+          },
+        },
+      })
+    expect(display.sources.map(r => r.name)).toEqual(['A HP0', 'A HP1'])
+    expect(getLeafNames(display.root!)).toEqual(['A HP0', 'A HP1'])
+    expect(display.hierarchy).toBeDefined()
+  })
+})
+
 describe('a dialog submit after a region adds a row', () => {
   function makeGrowing() {
     return types
