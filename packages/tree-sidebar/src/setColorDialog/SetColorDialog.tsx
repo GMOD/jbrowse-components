@@ -7,7 +7,12 @@ import { pairedColorsOf } from '@jbrowse/display-kit/colorConfigSchema'
 import { Button, DialogActions, DialogContent } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { rowColorMembers, samePairs, withPair } from '../rowColorChoice.ts'
+import {
+  rowColorMembers,
+  samePairs,
+  withPair,
+  withPairs,
+} from '../rowColorChoice.ts'
 import { resolveRowColors, rowFieldValue } from '../rowColorScale.ts'
 import { IDENTITY_FIELDS } from '../sourcesGridUtils.ts'
 import BulkEditPanel from './BulkEditPanel.tsx'
@@ -228,16 +233,15 @@ export default observer(function SetColorDialog<S extends RowSource>({
           }))}
           onClose={next => {
             if (next) {
-              const pasted = next.flatMap(({ name, rowColor }) =>
-                rowColor && isCssColor(rowColor)
-                  ? [[name, rowColor] as const]
-                  : [],
-              )
-              const picked = {
-                ...eachRow,
-                domain: pasted.map(([name]) => name),
-                range: pasted.map(([, color]) => color),
+              const pairs = new Map(pairedColorsOf(eachRow))
+              for (const { name, rowColor } of next) {
+                if (rowColor && isCssColor(rowColor)) {
+                  pairs.set(name, rowColor)
+                } else {
+                  pairs.delete(name)
+                }
               }
+              const picked = withPairs(eachRow, pairs)
               if (!samePairs(picked, eachRow)) {
                 setEachRow(picked)
               }

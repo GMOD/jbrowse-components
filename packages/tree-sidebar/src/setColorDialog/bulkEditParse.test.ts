@@ -1,4 +1,5 @@
 import {
+  ignoredColumns,
   mergeParsedRows,
   parseRowsByName,
   toCSV,
@@ -87,47 +88,44 @@ describe('parseRowsByName', () => {
 
 describe('mergeParsedRows', () => {
   const layout = [
-    { name: 'HG1', color: 'red', source: 'HG1' },
-    { name: 'HG2', color: 'blue', source: 'HG2' },
+    { name: 'HG1', label: 'one', rowColor: 'red', group: 'GBR' },
+    { name: 'HG2', label: 'two', rowColor: 'blue', group: 'CHS' },
   ]
-  const byName = new Map([['HG1', { name: 'HG1', pop: 'GBR' }]])
 
-  it('patches parsed fields over existing rows, preserving name', () => {
+  it('sets the label and rowColor columns, and nothing else', () => {
+    const byName = new Map([
+      ['HG1', { name: 'HG1', label: 'uno', group: 'YRI' }],
+    ])
     expect(mergeParsedRows(layout, byName, false)).toEqual([
-      { name: 'HG1', color: 'red', source: 'HG1', pop: 'GBR' },
-      { name: 'HG2', color: 'blue', source: 'HG2' },
+      { name: 'HG1', label: 'uno', rowColor: 'red', group: 'GBR' },
+      layout[1],
     ])
   })
 
-  // A blank cell must unset the field rather than set it to '': consumers fill
-  // unset fields with `??` synthesis (the overlay color palette), which '' would
-  // satisfy and silently defeat.
   it('unsets fields whose pasted cell is blank', () => {
     const merged = mergeParsedRows(
       layout,
-      new Map([['HG1', { name: 'HG1', color: '' }]]),
+      new Map([['HG1', { name: 'HG1', rowColor: '' }]]),
       false,
     )
-    expect(merged[0]!.color).toBeUndefined()
+    expect(merged[0]!.rowColor).toBeUndefined()
   })
 
-  // Regression: "Copy current as CSV" round-tripped through Update rows used to
-  // turn every unset color into '', collapsing overlay mode's per-track palette
-  // to a single default color.
-  it('round-trips toCSV through Update rows without setting blank colors', () => {
+  it('round-trips toCSV through Update rows', () => {
     const rows = [
-      { name: 'HG1', source: 'HG1', color: undefined, group: 'GBR' },
-      { name: 'HG2', source: 'HG2', color: '#ff0000', group: 'CHS' },
+      { name: 'HG1', label: undefined, rowColor: undefined, group: 'GBR' },
+      { name: 'HG2', label: 'two', rowColor: '#ff0000', group: 'CHS' },
     ]
-    const merged = mergeParsedRows(rows, parseRowsByName(toCSV(rows)), false)
-    expect(merged[0]!.color).toBeUndefined()
-    expect(merged[1]!.color).toBe('#ff0000')
+    expect(mergeParsedRows(rows, parseRowsByName(toCSV(rows)), false)).toEqual(
+      rows,
+    )
   })
 
-  it('drops existing fields for matched rows when replace=true', () => {
+  it('clears the label and rowColor the paste omits when replace=true', () => {
+    const byName = new Map([['HG1', { name: 'HG1', label: 'uno' }]])
     expect(mergeParsedRows(layout, byName, true)).toEqual([
-      { name: 'HG1', pop: 'GBR' },
-      { name: 'HG2', color: 'blue', source: 'HG2' }, // unmatched → unchanged
+      { name: 'HG1', label: 'uno', rowColor: undefined, group: 'GBR' },
+      layout[1],
     ])
   })
 
@@ -220,5 +218,18 @@ describe('toCSV', () => {
       color: '',
       group: 'normal',
     })
+  })
+})
+
+describe('ignoredColumns', () => {
+  const layout = [{ name: 'HG1', group: 'GBR', label: 'one' }]
+
+  it('names a column whose pasted value would change a row', () => {
+    const byName = parseRowsByName('name,group,label\nHG1,YRI,uno')
+    expect(ignoredColumns(layout, byName)).toEqual(['group'])
+  })
+
+  it('passes a column pasted back unchanged', () => {
+    expect(ignoredColumns(layout, parseRowsByName(toCSV(layout)))).toEqual([])
   })
 })

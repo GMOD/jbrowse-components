@@ -1,3 +1,4 @@
+import { rowFieldValue } from '../rowColorScale.ts'
 import { IDENTITY_FIELDS, allFieldNames } from '../sourcesGridUtils.ts'
 
 // Detect the primary delimiter from the first line (whichever of tab/comma
@@ -102,20 +103,14 @@ export function parseRowsByName(val: string): ParsedRows {
   )
 }
 
-// An empty cell means "unset this field", not "set it to the empty string".
-// Consumers synthesize defaults with `??` (e.g. multi-wiggle's overlay color
-// palette in sourcesLogic.ts), which a '' would satisfy and thereby defeat —
-// round-tripping "Copy current as CSV" through Update rows would otherwise turn
-// every unset color into a set-but-blank one and collapse the palette.
-function unsetBlanks(patch: Record<string, string>) {
-  return Object.fromEntries(
-    Object.entries(patch).map(([k, v]) => [k, v === '' ? undefined : v]),
-  )
-}
+/** The fields a paste sets, since they are what the dialog's Submit writes. */
+export const BULK_EDIT_FIELDS: readonly string[] = ['label', 'rowColor']
 
-// Join parsed rows (by name) onto the dialog's rows. A row the paste does not
-// name is kept unchanged; replace=true starts a matched row from {} so only
-// pasted fields survive, which the submit reads as a label or color cleared.
+/**
+ * The dialog's rows with the paste's `BULK_EDIT_FIELDS` joined on by name, a
+ * blank cell unsetting its field. A row the paste does not name is kept
+ * unchanged; `replace` also unsets a field the paste has no column for.
+ */
 export function mergeParsedRows<S extends { name: string }>(
   currLayout: S[],
   byName: ParsedRows,
@@ -126,12 +121,43 @@ export function mergeParsedRows<S extends { name: string }>(
     if (!patch) {
       return record
     }
-    return {
-      ...(replace ? {} : record),
-      ...unsetBlanks(patch),
-      name: record.name,
-    } as S
+    const next: Record<string, unknown> = { ...record }
+    for (const field of BULK_EDIT_FIELDS) {
+      if (Object.hasOwn(patch, field)) {
+        next[field] = patch[field] || undefined
+      } else if (replace) {
+        next[field] = undefined
+      }
+    }
+    return next as S
   })
+}
+
+/**
+ * The pasted columns outside `BULK_EDIT_FIELDS` holding a value that differs
+ * from a matched row's, which a paste does not apply.
+ */
+export function ignoredColumns(
+  currLayout: readonly { name: string }[],
+  byName: ParsedRows,
+): string[] {
+  const rows = new Map(currLayout.map(row => [row.name, row]))
+  const ignored = new Set<string>()
+  for (const [name, patch] of byName) {
+    const row = rows.get(name)
+    if (row) {
+      for (const [field, value] of Object.entries(patch)) {
+        if (
+          field !== 'name' &&
+          !BULK_EDIT_FIELDS.includes(field) &&
+          value !== rowFieldValue(row, field)
+        ) {
+          ignored.add(field)
+        }
+      }
+    }
+  }
+  return [...ignored]
 }
 
 // Names present in the paste but absent from the current layout.

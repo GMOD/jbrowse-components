@@ -255,7 +255,7 @@ describe('Each row', () => {
     setup(model)
 
     fireEvent.click(screen.getByText('Bulk row editor'))
-    fireEvent.change(screen.getByPlaceholderText(/^name,rowColor/), {
+    fireEvent.change(screen.getByPlaceholderText(/^name,label,rowColor/), {
       target: { value: 'name,rowColor\nb,#00ff00\na,reddish' },
     })
     fireEvent.click(screen.getByRole('button', { name: 'Update rows' }))
@@ -280,7 +280,7 @@ test('a pasted color column replaces the picks', () => {
   setup(model)
 
   fireEvent.click(screen.getByText('Bulk row editor'))
-  fireEvent.change(screen.getByPlaceholderText(/^name,rowColor/), {
+  fireEvent.change(screen.getByPlaceholderText(/^name,label,rowColor/), {
     target: { value: 'name,rowColor\na,\nb,#00ff00' },
   })
   fireEvent.click(screen.getByRole('button', { name: 'Update rows' }))
@@ -291,6 +291,58 @@ test('a pasted color column replaces the picks', () => {
     domain: ['b'],
     range: ['#00ff00'],
   })
+})
+
+function paste(text: string) {
+  fireEvent.click(screen.getByText('Bulk row editor'))
+  fireEvent.change(screen.getByPlaceholderText(/^name,label,rowColor/), {
+    target: { value: text },
+  })
+}
+
+test('a paste keeps the picks of rows it does not name', () => {
+  const model = fakeModel({
+    rowColorSetting: {
+      field: 'name',
+      domain: ['a', 'unshown'],
+      range: ['#f00', '#0f0'],
+    },
+    rowPaletteDeals: false,
+  })
+  setup(model)
+  paste('name,label\nb,Bee')
+  fireEvent.click(screen.getByRole('button', { name: 'Update rows' }))
+  fireEvent.click(screen.getByText('Submit'))
+
+  const [rows, rowColor] = submitted(model)
+  expect(rows.find(row => row.name === 'b')?.label).toBe('Bee')
+  expect(rowColor).toBeUndefined()
+})
+
+test('a label paste leaves an attribute coloring chosen', () => {
+  const model = fakeModel({
+    editableSources: GROUPED,
+    rowColorFields: ['group'],
+    rowColorSetting: { field: 'group', domain: [], range: [] },
+    baseRowColor: { field: 'name', domain: ['unshown'], range: ['#0f0'] },
+  })
+  setup(model)
+  paste('name,label\na,Ay')
+  fireEvent.click(screen.getByRole('button', { name: 'Update rows' }))
+  fireEvent.click(screen.getByText('Submit'))
+
+  expect(submitted(model)[1]).toBeUndefined()
+})
+
+test('a pasted column the dialog does not write warns and changes nothing', () => {
+  const model = fakeModel({ editableSources: GROUPED })
+  setup(model)
+  paste('name,group\na,g2')
+  expect(screen.getByText(/changes to group will be ignored/)).toBeVisible()
+  fireEvent.click(screen.getByRole('button', { name: 'Update rows' }))
+  fireEvent.click(screen.getByText('Submit'))
+
+  expect(submitted(model)[0].find(row => row.name === 'a')?.group).toBe('g1')
 })
 
 describe('colored by an attribute', () => {
