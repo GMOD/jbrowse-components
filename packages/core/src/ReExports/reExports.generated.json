@@ -3281,6 +3281,7 @@
     "@jbrowse/core/util/jexlDiagnostics": {
       "package": "@jbrowse/core",
       "names": [
+        "expressionKind",
         "jexlProblemText",
         "jexlProblems",
         "registeredFunctions"

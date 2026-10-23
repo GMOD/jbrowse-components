@@ -328,7 +328,7 @@ const names: Record<string, string[]> = {
   '@jbrowse/core/util/isoformRank': ['DEFAULT_CANONICAL_TRANSCRIPTS', 'featureIsoformReader', 'isCanonicalTranscriptsHost', 'isCodingIsoform', 'isoformScorer', 'rankIsoforms', 'serializedIsoformReader'],
   '@jbrowse/core/util/isTextEntryFocused': ['isTextEntryFocused'],
   '@jbrowse/core/util/jexl': ['default'],
-  '@jbrowse/core/util/jexlDiagnostics': ['jexlProblemText', 'jexlProblems', 'registeredFunctions'],
+  '@jbrowse/core/util/jexlDiagnostics': ['expressionKind', 'jexlProblemText', 'jexlProblems', 'registeredFunctions'],
   '@jbrowse/core/util/jexlFilters': ['baseJexlFilters', 'configuredJexlFilters', 'filterExpressionsOf', 'filterFieldNarrowing', 'jexlFilterNarrowing', 'retiredFilterState', 'writeJexlFilters'],
   '@jbrowse/core/util/jexlStrings': ['EXPRESSION_CHARACTERS', 'JEXL_PREFIX', 'ensureJexlPrefix', 'isBareExpression', 'isJexl', 'stringToJexlExpression'],
   '@jbrowse/core/util/layouts': ['GranularRectLayout', 'placeRect'],
