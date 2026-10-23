@@ -1,20 +1,23 @@
 import {
-  getConf,
   getSlotDefinition,
   readConfObject,
   setConf,
 } from '@jbrowse/core/configuration'
+import { baseDisplayConfig } from '@jbrowse/core/util/baseDisplayConfig'
 import { persistTrackConfigNow } from '@jbrowse/core/util/mstUtils'
 import { clipQuantileOf } from '@jbrowse/core/util/quantileExtent'
 import { rulesABand } from '@jbrowse/display-ui/axisPlacement'
 
 import { ScoreAxisMixin } from './ScoreAxisMixin.ts'
+import { SCALES_Y_PATHS } from './yScalePaths.ts'
 
 import type {
   ValueScaleRuleConfig,
   scalesSchema,
 } from './valueScaleConfigSchema.ts'
+import type { YMember, YScalePaths } from './yScalePaths.ts'
 import type {
+  AnyConfigurationModel,
   ConfigModelForFields,
   ConfigurationSchemaForModel,
   ConfigurationSlotPath,
@@ -33,23 +36,52 @@ export interface ScoreScaleHost {
   }>
 }
 
-// The mixin composes onto a display that declares this, not the other way
-// round, so its own `self` isn't typed with it. Cast once, narrowed to the
-// factory's schema rather than `AnyConfigurationModel`, which is what keeps the
-// member names below checked.
-const confNode = (self: object) => self as ScoreScaleHost
+export type ScoreScaleHostPath = ConfigurationSlotPath<
+  ConfigurationSchemaForModel<ScoreScaleHost['configuration']>
+>
+
+// A mistyped segment in the default map fails here, since the reads below go
+// through `readonly string[]` and no longer check the names themselves.
+Object.values(SCALES_Y_PATHS.members) satisfies readonly ScoreScaleHostPath[]
+
+// The mixin composes onto a display that declares the scale, not the other way
+// round, so its own `self` isn't typed with it.
+const confOf = (self: object) =>
+  (self as { configuration: AnyConfigurationModel }).configuration
+
+function readY(self: object, paths: YScalePaths, member: YMember) {
+  const path = paths.members[member]
+  return path && readConfObject(confOf(self), [...path])
+}
+
+// the config node a path ends on, for what a snapshot read cannot give
+function nodeAt(conf: AnyConfigurationModel, path: readonly string[]) {
+  return path.reduce<unknown>(
+    (node, segment) => (node as Record<string, unknown>)[segment],
+    conf,
+  ) as AnyConfigurationModel
+}
+
+function valueAt(root: unknown, path: readonly string[]) {
+  return path.reduce(
+    (node, segment) => (node as Record<string, unknown> | undefined)?.[segment],
+    root,
+  )
+}
 
 // writeAxis saves the track to the session at once, so each axis edit is its
 // own undo step whichever caller makes it (ADR-157).
-type AxisPath = Extract<
-  ConfigurationSlotPath<
-    ConfigurationSchemaForModel<ScoreScaleHost['configuration']>
-  >,
-  readonly ['scales', 'y', string]
->
-
-function writeAxis(self: object, slot: AxisPath[2], value: unknown) {
-  setConf(confNode(self), ['scales', 'y', slot] as AxisPath, value)
+function writeAxis(
+  self: object,
+  paths: YScalePaths,
+  member: YMember,
+  value: unknown,
+) {
+  setConf(
+    { configuration: confOf(self) },
+    [...paths.members[member]!] as never,
+    value,
+  )
   persistTrackConfigNow(self)
 }
 
@@ -71,7 +103,7 @@ function writeAxis(self: object, slot: AxisPath[2], value: unknown) {
  * `WiggleCommonMixin` — the alignments coverage band shares this scale but
  * none of the rest.
  */
-export function ScoreScaleMixin() {
+export function ScoreScaleMixin(paths: YScalePaths = SCALES_Y_PATHS) {
   return ScoreAxisMixin()
     .volatile(() => ({
       unclippedQuantile: undefined as number | undefined,
@@ -81,7 +113,7 @@ export function ScoreScaleMixin() {
        * #getter
        */
       get scaleType(): string {
-        return getConf(confNode(self), ['scales', 'y', 'type'])
+        return readY(self, paths, 'type')
       },
       /**
        * #getter
@@ -89,7 +121,7 @@ export function ScoreScaleMixin() {
        * 0.
        */
       get scaleZero(): boolean {
-        return getConf(confNode(self), ['scales', 'y', 'zero'])
+        return readY(self, paths, 'zero')
       },
       /**
        * #getter
@@ -97,7 +129,7 @@ export function ScoreScaleMixin() {
        * extremes and below it that quantile of each sign.
        */
       get domainQuantile(): number {
-        return getConf(confNode(self), ['scales', 'y', 'domainQuantile'])
+        return readY(self, paths, 'fence')
       },
       /**
        * #getter
@@ -110,8 +142,8 @@ export function ScoreScaleMixin() {
           self.unclippedQuantile ??
           clipQuantileOf(
             getSlotDefinition(
-              confNode(self).configuration.scales.y,
-              'domainQuantile',
+              nodeAt(confOf(self), paths.members.fence.slice(0, -1)),
+              paths.members.fence.at(-1)!,
             ).defaultValue,
           )
         )
@@ -122,52 +154,49 @@ export function ScoreScaleMixin() {
        * `resolveSymlogConstant` once the domain is known.
        */
       get symlogConstant(): number {
-        return getConf(confNode(self), ['scales', 'y', 'symlogConstant'])
+        return readY(self, paths, 'constant')
       },
       /**
        * #getter
        * The lower bound the config pins, `undefined` where it pins none.
        */
       get manualMinScore(): number | undefined {
-        return getConf(confNode(self), ['scales', 'y', 'domainMin'])
+        return readY(self, paths, 'domainMin')
       },
       /**
        * #getter
        * The upper bound the config pins, `undefined` where it pins none.
        */
       get manualMaxScore(): number | undefined {
-        return getConf(confNode(self), ['scales', 'y', 'domainMax'])
+        return readY(self, paths, 'domainMax')
       },
       /**
        * #getter
        * `scales.y.autoscaleGroup`, `undefined` while it names none.
        */
       get autoscaleGroup(): string | undefined {
-        return (
-          getConf(confNode(self), ['scales', 'y', 'autoscaleGroup']) ||
-          undefined
-        )
+        return readY(self, paths, 'group') || undefined
       },
       /**
        * #getter
        * `scales.y.title`, `''` while unset
        */
       get scaleTitle(): string {
-        return getConf(confNode(self), ['scales', 'y', 'title']) ?? ''
+        return readY(self, paths, 'title') ?? ''
       },
       /**
        * #getter
        * `scales.y.grid`
        */
       get grid(): boolean {
-        return getConf(confNode(self), ['scales', 'y', 'grid'])
+        return readY(self, paths, 'grid')
       },
       /**
        * #getter
        * `scales.y.minimalTicks`
        */
       get minimalTicks(): boolean {
-        return getConf(confNode(self), ['scales', 'y', 'minimalTicks'])
+        return readY(self, paths, 'minimalTicks') ?? false
       },
       /**
        * #getter
@@ -185,7 +214,10 @@ export function ScoreScaleMixin() {
        * its default, and a rule at 0 is one.
        */
       get scoreRules(): ValueScaleRule[] {
-        const { rules } = confNode(self).configuration.scales.y
+        const rules = nodeAt(
+          confOf(self),
+          paths.members.rules,
+        ) as unknown as ValueScaleRuleConfig[]
         return rules.map((rule: ValueScaleRuleConfig) => {
           const label = readConfObject(rule, 'label')
           const color = readConfObject(rule, 'color')
@@ -202,13 +234,13 @@ export function ScoreScaleMixin() {
        * #action
        */
       setScaleType(scaleType: string) {
-        writeAxis(self, 'type', scaleType)
+        writeAxis(self, paths, 'type', scaleType)
       },
       /**
        * #action
        */
       setScaleZero(zero: boolean) {
-        writeAxis(self, 'zero', zero)
+        writeAxis(self, paths, 'zero', zero)
       },
       /**
        * #action
@@ -217,31 +249,31 @@ export function ScoreScaleMixin() {
         if (!(quantile < 1) && self.domainQuantile < 1) {
           self.unclippedQuantile = self.domainQuantile
         }
-        writeAxis(self, 'domainQuantile', quantile)
+        writeAxis(self, paths, 'fence', quantile)
       },
       /**
        * #action
        */
       setMinScore(val?: number) {
-        writeAxis(self, 'domainMin', val)
+        writeAxis(self, paths, 'domainMin', val)
       },
       /**
        * #action
        */
       setMaxScore(val?: number) {
-        writeAxis(self, 'domainMax', val)
+        writeAxis(self, paths, 'domainMax', val)
       },
       /**
        * #action
        */
       setAutoscaleGroup(group?: string) {
-        writeAxis(self, 'autoscaleGroup', group)
+        writeAxis(self, paths, 'group', group)
       },
       /**
        * #action
        */
       setGrid(grid: boolean) {
-        writeAxis(self, 'grid', grid)
+        writeAxis(self, paths, 'grid', grid)
       },
       /**
        * #action
@@ -249,7 +281,24 @@ export function ScoreScaleMixin() {
        * takes: a number, or `{ value, color, label }`.
        */
       setScoreRules(rules: (number | ValueScaleRule)[]) {
-        writeAxis(self, 'rules', rules)
+        writeAxis(self, paths, 'rules', rules)
+      },
+      /**
+       * #action
+       * Back to what the config.json says, or to what a session-owned track
+       * was added with, so an admin's declared axis survives a reset; slots the
+       * base leaves unset take their defaults.
+       */
+      resetYScale() {
+        const base = baseDisplayConfig(self as never)
+        for (const path of paths.reset) {
+          setConf(
+            { configuration: confOf(self) },
+            [...path] as never,
+            valueAt(base, path) ?? {},
+          )
+        }
+        persistTrackConfigNow(self)
       },
     }))
 }

@@ -9,6 +9,11 @@ import ScoreAxisWidget from './ScoreAxisWidget.tsx'
 import type { ScoreAxisWidgetModel } from './stateModel.ts'
 import type { ValueScale } from '@jbrowse/display-ui'
 
+let mockBase: Record<string, unknown> = {}
+jest.mock('@jbrowse/core/util/baseDisplayConfig', () => ({
+  baseDisplayConfig: () => mockBase,
+}))
+
 const configSchema = ConfigurationSchema('TestAxisDisplay', {
   scales: scalesSchema(valueScaleSchema({ domainQuantile: 0.99 })),
 })
@@ -85,6 +90,31 @@ test('a setter called off the panel, as a menu or an agent does, saves too', () 
   display.setMinScore(3)
   display.setAutoscaleGroup('g1')
   expect(persists).toBe(2)
+})
+
+test('Reset to defaults puts every scale member back and saves', () => {
+  const { display } = open()
+  display.setMinScore(3)
+  display.setScaleType('log')
+  display.setGrid(true)
+  persists = 0
+  fireEvent.click(screen.getByRole('button', { name: 'Reset to defaults' }))
+  expect(display.manualMinScore).toBeUndefined()
+  expect(display.scaleType).toBe('linear')
+  expect(display.grid).toBe(false)
+  expect(display.domainQuantile).toBe(0.99)
+  expect(persists).toBe(1)
+})
+
+test('Reset to defaults returns to the base config, not past it', () => {
+  mockBase = { scales: { y: { domainMax: 9 } } }
+  const { display } = open()
+  display.setMinScore(3)
+  display.setMaxScore(50)
+  fireEvent.click(screen.getByRole('button', { name: 'Reset to defaults' }))
+  expect(display.manualMinScore).toBeUndefined()
+  expect(display.manualMaxScore).toBe(9)
+  mockBase = {}
 })
 
 test('shows the values in view the axis is drawn from', () => {

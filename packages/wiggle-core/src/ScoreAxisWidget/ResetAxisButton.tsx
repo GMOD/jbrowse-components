@@ -1,19 +1,7 @@
-import { setConf } from '@jbrowse/core/configuration'
-import { baseDisplayConfig } from '@jbrowse/core/util/baseDisplayConfig'
-import { persistTrackConfigNow } from '@jbrowse/core/util/mstUtils'
 import { Button } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import type { ScoreAxisDisplay } from './types.ts'
-
-// Back to what the config.json says, or to what a session-owned track was
-// added with, so an admin's declared axis survives a reset; slots the base
-// leaves unset take their defaults.
-export function resetAxis(display: ScoreAxisDisplay) {
-  const base = baseDisplayConfig(display).scales as { y?: unknown } | undefined
-  setConf(display.configuration, ['scales', 'y'], base?.y ?? {})
-  persistTrackConfigNow(display)
-}
 
 const ResetAxisButton = observer(function ResetAxisButton({
   display,
@@ -28,7 +16,7 @@ const ResetAxisButton = observer(function ResetAxisButton({
         variant="outlined"
         size="small"
         onClick={() => {
-          resetAxis(display)
+          display.resetYScale()
           onReset()
         }}
       >

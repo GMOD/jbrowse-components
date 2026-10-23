@@ -1,6 +1,6 @@
 import { getConf, setConf } from '@jbrowse/core/configuration'
 
-import type { ScoreScaleHost } from './ScoreScaleMixin.ts'
+import type { ScoreScaleHost, ScoreScaleHostPath } from './ScoreScaleMixin.ts'
 import type { HostChecksSlotNames } from '@jbrowse/core/configuration'
 
 // Typecheck-only, the way `extensionPoints.test.ts` asserts its guarantee: an
@@ -21,4 +21,12 @@ test('the host type checks the member names the mixin reads and writes through i
     setConf(host, ['scales', 'y', 'domainMinn'], 0)
   }
   expect([scoreScalePin, read, write]).toHaveLength(3)
+})
+
+test('a map path the host schema lacks fails the typecheck', () => {
+  const paths = [
+    // @ts-expect-error
+    ['scales', 'y', 'domainMinn'] as const satisfies ScoreScaleHostPath,
+  ]
+  expect(paths).toHaveLength(1)
 })

@@ -30,42 +30,27 @@ Git history has each landing.
    LGVSynteny inherits), MAF, wiggle and the mark display (which Manhattan
    inherits, with the mark display's defaults). Land in this order, each green
    on its own:
-   1. **A per-display `YScalePaths` map, no config path changes.** The type
-      `YScalePaths<Schema>` lives in `packages/wiggle-core/src/yScalePaths.ts`
-      with type imports only, and each display's map beside its own config
-      schema, written `as const satisfies YScalePaths<ItsSchema>`.
-      - `members` maps each of `type`, `zero`, `domainMin`, `domainMax`,
-        `fence`, `constant`, `group`, `title`, `grid`, `minimalTicks`
-        (optional, since 1.2 drops it from the coverage band) and `rules` to a
-        config path, all still under `['scales', 'y']`. `reset` lists the
-        sub-objects a reset rewrites, since resetting `encoding.y` on wiggle
-        would also revert the plotted field.
-      - `ScoreScaleMixin(paths)` takes it. Wiggle is a fourth composer, through
-        `WiggleCommonMixin`, `YFieldConfigMixin` and `WiggleScoreConfigMixin`,
-        all zero-argument factories; give the parameter a default of wiggle's
-        map for this commit. The test models in `ScoreAxisWidget.test.tsx` and
-        `scoreMenuItems.test.ts` call it too.
-      - **Reads lose their name checks.** A read through `paths.members.x` is
-        a `readonly string[]`, so `ScoreScaleHost` widens to
-        `AnyConfigurationModel` and `getConf` returns `any`. `satisfies` still
-        catches a mistyped path of two or more segments, not `zero` mapped to
-        the `grid` path. `pnpm check-config-read-types` counts only
-        string-literal slot arguments, so it cannot see this. Replace the
-        `@ts-expect-error` pins in `ScoreScaleMixin.test.ts` and
-        `WiggleScoreConfigMixin.test.ts` with a pin on a misspelled map path.
-      - **Model side reads the map:** `ScoreScaleMixin.ts`, `plotEdit.ts`'s
-        `AXIS_MEMBERS` and both tables exports, each importing its own display's
-        map. `WiggleScoreConfigMixin.ts` only passes it through. The mixin's
-        two direct node reads (`clipQuantile`, `scoreRules`) need a local
-        `confNodeAt`, since `getConf.ts`'s `writeConfPath` is private. The
-        mixin gains a `resetYScale()` action that walks `reset`, and
-        `ResetAxisButton` calls it.
+   1. **Landed:** `ScoreScaleMixin(paths)` takes a `YScalePaths` map
+      (`packages/wiggle-core/src/yScalePaths.ts`, default `SCALES_Y_PATHS`),
+      reads and writes every member through it, and owns `resetYScale()`,
+      which walks the map's `reset` list. The four displays still use the
+      default, so no config path moved. A map path the host schema lacks fails
+      the typecheck (`ScoreScaleHostPath`), and a mistyped member-to-slot
+      pairing, such as `zero` mapped to the `grid` path, does not.
+      `1.2` builds each display's own map, beside its config schema, written
+      `as const satisfies`.
+   2. **The shared coverage band** (`coverageBandConfigSchema`) gains
+      `encoding.y`, so alignments, MAF and LGVSynteny move together, MAF's `y`
+      with them (a `y` → `encoding.y.field` lift). The commit also does what a
+      second shape makes observable, which 1.1 left out:
+      - **Model side:** `plotEdit.ts`'s `AXIS_MEMBERS` and both tables exports
+        read their display's map.
       - **Config side finds the scale by a schema option**, as `channelsOf`
         finds color through `fieldPresets`: the node that holds the scale's
-        ends carries the option. Core's `plot.ts` walks for it, labelling the
-        notice with the walked path, and `plot.test.ts`'s `PlotTestAxis`
-        fixture gains it. A name match would put a plugin's string in core, and
-        a shape match would report ramps twice (`colorProblems` already runs
+        ends carries it. Core's `plot.ts` walks for it, labelling the notice
+        with the walked path, and `plot.test.ts`'s `PlotTestAxis` fixture gains
+        it. A name match would put a plugin's string in core, and a shape match
+        would report ramps twice (`colorProblems` already runs
         `scaleEndProblems` on them). The generator emits the option into the
         manifest (`SlotEntry` gains a field), and the CLI walks `subSlots` for
         it in `checkScaleSlots` and `checkMarkDisplay`. The spec-recipe's
@@ -77,27 +62,22 @@ Git history has each landing.
         `retiredAxisSpellings` become functions of the map; the three spread
         sites are alignments `retired.ts`, wiggle `configSchema.ts` and wiggle
         `retired.ts`.
-      - Gate: `pnpm verify --full`, `pnpm check-config-read-types`, then
-        `npx jest` on `ScoreScaleMixin`, `WiggleScoreConfigMixin`,
-        `scoreMenuItems`, `ScoreAxisWidget`, `plot`, `plotEdit`,
-        `validateConfig`, `markDisplays`, both `retired` tests and the
-        spec-recipe's `trackFieldSteps`. About 25 files and 350 to 450 lines.
-   2. **The shared coverage band** (`coverageBandConfigSchema`) gains
-      `encoding.y`, so alignments, MAF and LGVSynteny move together, MAF's `y`
-      with them (a `y` → `encoding.y.field` lift). The commit renames schema
-      members only; the model names (`domainQuantile`, `setDomainQuantile`,
-      `clipQuantile`, `unclippedQuantile`) are shared by all four displays and
-      wait for commit 3. `scaleEndProblems` takes the slot name as an argument
-      instead of hard-coding `domainQuantile`, and `scaleEndsOf` reads both
-      spellings, so the corner notice and the CLI name a key the schema has.
-      Core and the CLI recognise two shapes in this window, the old scale
-      whose `y` holds the ends and the new channel whose `y.scale` does, and
-      the schema option marks whichever node holds them. The coverage band
-      drops `minimalTicks`. Each display declares a `scales` lift, and every
-      in-repo writer is respelled. Gate: `pnpm verify --full --all`, the
-      schema tests with `ConfigSlotDefaults -u` reviewed, both
-      `legacySessions` tests and the `retired` tests. About 40 to 80 files
-      plus regenerated manifests.
+      - **Schema members only:** the model names (`domainQuantile`,
+        `setDomainQuantile`, `clipQuantile`, `unclippedQuantile`) are shared by
+        all four displays and wait for commit 3. `scaleEndProblems` takes the
+        slot name as an argument instead of hard-coding `domainQuantile`, and
+        `scaleEndsOf` reads both spellings, so the corner notice and the CLI
+        name a key the schema has. Core and the CLI recognise two shapes in
+        this window, the old scale whose `y` holds the ends and the new channel
+        whose `y.scale` does, and the schema option marks whichever node holds
+        them.
+      - The coverage band drops `minimalTicks`. Each display declares a
+        `scales` lift, and every in-repo writer is respelled.
+      - Gate: `pnpm verify --full --all`, the schema tests with
+        `ConfigSlotDefaults -u` reviewed, both `legacySessions` tests, the
+        `retired` tests, `plotEdit`, `validateConfig`, `markDisplays` and the
+        spec-recipe's `trackFieldSteps`. About 40 to 80 files plus regenerated
+        manifests.
    3. **Wiggle, the mark display and Manhattan** (its `plotExamples.ts` writes
       `{ "scales": null }`). The y channel becomes a factory, since the fence
       defaults to 0.99 on wiggle and 1 elsewhere and the coverage band's

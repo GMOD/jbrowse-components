@@ -10,4 +10,5 @@ export type ScoreAxisDisplay = ScoreScaleModel &
     configuration: AnyConfigurationModel
     grid: boolean
     setGrid: (grid: boolean) => void
+    resetYScale: () => void
   }

@@ -70,3 +70,4 @@ From [ScoreAxisMixin](../scoreaxismixin): <span id="getter-defaultscoredomain">[
 | <span id="action-setautoscalegroup">**setAutoscaleGroup**</span><br><code>(group?: string &#124; undefined) =&gt; void</code> |  |
 | <span id="action-setgrid">**setGrid**</span><br><code>(grid: boolean) =&gt; void</code> |  |
 | <span id="action-setscorerules">**setScoreRules**</span><br><code>(rules: (number &#124; ValueScaleRule)[]) =&gt; void</code> | Replaces `scales.y.rules` whole, each entry in a form the config takes: a number, or `{ value, color, label }`. |
+| <span id="action-resetyscale">**resetYScale**</span><br><code>() =&gt; void</code> | Back to what the config.json says, or to what a session-owned track was added with, so an admin's declared axis survives a reset; slots the base leaves unset take their defaults. |
