@@ -1,0 +1,102 @@
+{
+  "assemblies": [
+    {
+      "name": "hg38",
+      "aliases": ["GRCh38"],
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "hg38-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "BgzipFastaAdapter",
+          "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz"
+        }
+      },
+      "refNameAliases": {
+        "adapter": {
+          "type": "RefNameAliasAdapter",
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt"
+        }
+      },
+      "geneticCodes": {
+        "chrM": 2
+      }
+    }
+  ],
+  "tracks": [
+    {
+      "type": "FeatureTrack",
+      "trackId": "ncbi_refseq_genes",
+      "name": "NCBI RefSeq genes",
+      "assemblyNames": ["hg38"],
+      "category": ["Genes"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "uri": "https://jbrowse.org/genomes/GRCh38/ncbi_refseq/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz"
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "hela_rnaser_backsplice",
+      "name": "HeLa RNase R+ back-splice junctions (STAR chimeric)",
+      "assemblyNames": ["hg38"],
+      "category": ["circRNA"],
+      "adapter": {
+        "type": "BedTabixAdapter",
+        "uri": "https://jbrowse.org/demos/circrna/SRR1636985.backsplice.bed.gz"
+      },
+      "displays": [
+        {
+          "type": "LinearMarkDisplay",
+          "displayId": "hela_rnaser_backsplice-LinearMarkDisplay",
+          "marks": [
+            {
+              "mark": "link",
+              "encoding": {
+                "strokeWidth": {
+                  "field": "score",
+                  "scale": { "type": "log", "range": [1, 8] }
+                }
+              }
+            },
+            {
+              "mark": "text",
+              "encoding": { "text": "score" },
+              "maxBpPerPx": 50
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "hela_rnaser_reads",
+      "name": "HeLa RNase R+ RNA-seq (SRR1636985)",
+      "assemblyNames": ["hg38"],
+      "category": ["circRNA"],
+      "adapter": {
+        "type": "BamAdapter",
+        "uri": "https://jbrowse.org/demos/circrna/SRR1636985.slice.bam"
+      },
+      "displayDefaults": {
+        "height": 400,
+        "sashimi": { "labels": { "show": true } },
+        "readConnections": { "show": true }
+      }
+    }
+  ],
+  "defaultSession": {
+    "name": "circHIPK3",
+    "views": [
+      {
+        "type": "LinearGenomeView",
+        "assembly": "hg38",
+        "loc": "chr11:33,284,000-33,290,000",
+        "tracks": [
+          "ncbi_refseq_genes",
+          "hela_rnaser_backsplice",
+          "hela_rnaser_reads"
+        ]
+      }
+    ]
+  }
+}
