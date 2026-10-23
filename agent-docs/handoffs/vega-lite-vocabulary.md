@@ -1,6 +1,6 @@
 ---
 name: vega-lite-vocabulary
-description: "ADR-238's migration of every display's settings to Vega-Lite's words (predicate filter, channel object under encoding, mark, axis, legend: null, coord, data, render). Landed: the predicate compiler and the synteny views' filter and mark. Open: the channel object, the other filter families, guides, layout and the writers, concept by concept across the app. Read before adding or renaming any display or view setting."
+description: "ADR-238's migration of every display's settings to Vega-Lite's words (predicate filter, channel object under encoding, mark, axis, legend: null, coord, data, render). Landed: the predicate compiler, the synteny views' filter and mark, and the color channel object (Pass A). Open: encoding.y (Pass B), the other filter families, guides, layout and the writers, concept by concept across the app. Read before adding or renaming any display or view setting."
 ---
 
 # Vega-Lite vocabulary: what is left
@@ -93,27 +93,26 @@ Move a concept everywhere in one pass, so it never has two spellings at once:
        quantile (ADR-240's table amended: no slot type holds `{ quantile }`,
        and `scale.quantile` reads as d3's `type: 'quantile'`). A bare string
        inside `encoding` is a field, as on the mark display.
-       **Pass A built 2026-10-22, not yet landed.** Every display's color is
+       **Pass A landed 2026-10-22.** Every display's color is
        `encoding.color: { value, field, scale: {…}, legend: {…} }`, read
        nested with no converter; `showLegend` is a display-wide
-       `legend.show`; `ordinal` and `names` replace `categorical` and
-       `labels` in config and code; a missing value's color is
-       `scale.invalid` (Vega-Lite's word), `scale.unknown` keeps d3's
-       "not in the domain"; `baseColor` is `pileup.bases`,
+       `legend.show`, the circular view's included; `ordinal` and `names`
+       replace `categorical` and `labels`; a missing value's color is
+       `scale.invalid`, and `scale.unknown` keeps d3's "not in the domain"
+       (ADR-240 amended); `baseColor` is `pileup.bases`,
        `readConnections` has its own `encoding` with `strokeWidth`, the
-       ribbons a `ribbons.encoding.color` part, the synteny views'
-       color and opacity sit under the view's `encoding`, and stroked
-       marks take `strokeWidth`. Deprecated lifts in display-kit's
-       `retiredSettings.ts` (`liftFlatColor`) cover what hosted jb2hubs
-       configs write. To land: rerun autogen; check each old
-       ConfigSlotDefaults path's value against its new path, then `-u`;
-       `pnpm verify --full` and the website typecheck; confirm
-       jbrowse-img's `configuredDisplay.test.ts`; a cold review; rebase.
-       Then file ADR-242 for the channel object (or amend ADR-240's
-       Surface to `ordinal`/`invalid`), and respell jb2hubs, ggjbrowse
-       and the graph plugin's `LinearGraphDisplay`. Open: a synteny
-       view's bare `encoding.color: 'grey'` reads as a field instead of
-       being refused (`comparativeTables.ts` `viewColorSettings`).
+       ribbons a `ribbons.encoding.color` part, the synteny views' color
+       and opacity sit under the view's `encoding`, and stroked marks
+       take `strokeWidth`. Deprecated lifts (`liftFlatColor` and
+       `retiredDisplayColor` in display-kit's `retiredSettings.ts`, the
+       multi-sample variant display's `retired`, `liftViewColor` in
+       `liftSyntenyViewSettings.ts`) cover what hosted jb2hubs configs
+       write, and go once those configs regenerate (Writers below). Left
+       open: wiggle's v4 `posColor` and `negColor` config keys have no
+       lift, since `retired` lifts each key alone and the two fill one
+       `scale.range`; a `rowColor`, `MarkShape`, `opacity`, `size` or
+       `strokeWidth` written as a bare color name reads as a field, as it
+       did before the pass.
      - Step 0 landed as
        [ADR-241](../architecture-decision-records/adr-241-a-color-object-is-unset-a-value-or-a-field.md):
        a color object is unset, a `value` or a `field`, and the field a write
@@ -153,8 +152,10 @@ Move a concept everywhere in one pass, so it never has two spellings at once:
    **ADR-240 steps 3a and 3b claimed 2026-10-22**: the alignments and
    LGVSynteny `filter` as one predicate list, with amendment 1's merge by
    field.
-3. **Legends, with step 1**: Vega-Lite gives each channel its own `legend`,
-   so `legend.show` on the channel takes over every display's `showLegend`.
+3. **Legends, with step 1**: Vega-Lite gives each channel its own `legend`.
+   Pass A moved every display's `showLegend` to a display-wide `legend.show`
+   and each channel's `title` and `descending` under its `legend`; a
+   channel's own `legend.show` waits on ADR-240's open call 1.
 4. **Wiggle's `resolution` and Hi-C's `resolutionBias`** under `data`, each
    in its own units (ADR-238's amendment); the comparative `lodMode` is done.
    Settle one direction in the same pass: wiggle's `resolution` grows finer,
@@ -204,6 +205,15 @@ Move a concept everywhere in one pass, so it never has two spellings at once:
   `autoplot` take the layer `show` parts. Its published `dog10k_lof` page
   still shows `domain` until a re-knit, which waits on the Dog10K callset
   host's certificate.
+- **ggjbrowse, jb2hubs and the graph plugin after Pass A:** ggjbrowse's docs
+  and examples spell `color` flat (`display = list(color =
+  list(field = "strand"))`, `R/alignments.R`, `R/synteny.R`); jb2hubs writes a
+  display's flat `color` (`hubtools/src/fieldColor.ts`), the multi-sample
+  variant display's (`pangenomeLinks.ts`), a mark color's
+  `scale: 'categorical'` (`alfaPopulations.ts`) and the synteny view's
+  `color` (`orthologSearchUtils.ts`); the graph plugin's
+  `LinearGraphDisplay` keeps its own `color`. Respell each, then drop the
+  deprecated lifts the Pass A bullet names.
 - **jb2hubs:** its row orders write `sort` beside `domain` (`rowOrder.ts`,
   `repeatClassDisplay.ts`), `domain` for the released hosts and Desktop
   installs that predate `sort`. Display-kit's `retiredOrderSpelling` stays
