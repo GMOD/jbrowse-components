@@ -327,6 +327,29 @@ export function declaredSnapshot(
 }
 
 /**
+ * The keys of `snapshot` that `type` declares, by any spelling it lifts, plus
+ * comment keys. A key whose lift throws counts as declared, so the write
+ * reports the throw.
+ */
+export function membersDeclaredBy(
+  type: IAnyType,
+  snapshot: Record<string, unknown>,
+) {
+  return Object.keys(snapshot).filter(key => {
+    if (COMMENT_KEY.test(key)) {
+      return true
+    }
+    try {
+      return (
+        Object.keys(declaredSnapshot(type, { [key]: snapshot[key] })).length > 0
+      )
+    } catch {
+      return true
+    }
+  })
+}
+
+/**
  * #api core/configuration
  * A snapshot as a write to `type` admits it: the lift and checks `setConf`
  * applies, so a dialog or a validator rejects what an edit would reject, an

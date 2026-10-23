@@ -111,6 +111,77 @@ describe('collectDisplayOverrides', () => {
   })
 })
 
+const Axis = ConfigurationSchema(
+  'Axis',
+  {
+    tree: { type: 'boolean', defaultValue: true },
+    labels: { type: 'boolean', defaultValue: true },
+  },
+  { closed: true, retired: { showTree: tree => ({ tree }) } },
+)
+const AxisWithGrid = ConfigurationSchema(
+  'AxisWithGrid',
+  { grid: { type: 'boolean', defaultValue: false } },
+  { baseConfiguration: Axis },
+)
+const axisSchemas = new Map<string, AnyConfigurationSchemaType>([
+  ['GridDisplay', ConfigurationSchema('GridDisplay', { axis: AxisWithGrid })],
+  ['GridlessDisplay', ConfigurationSchema('GridlessDisplay', { axis: Axis })],
+])
+
+describe('a namespace value splits by member across displays', () => {
+  test('each display gets the members its namespace declares', () => {
+    const { overrides, unknownKeys, refused } = collectDisplayOverrides(
+      { axis: { tree: false, grid: true } },
+      axisSchemas,
+    )
+    expect(overrides.get('GridDisplay')).toEqual({
+      axis: { tree: false, grid: true },
+    })
+    expect(overrides.get('GridlessDisplay')).toEqual({ axis: { tree: false } })
+    expect(unknownKeys).toEqual([])
+    expect(refused).toEqual([])
+  })
+
+  test('a retired member name still counts as declared', () => {
+    const { overrides } = collectDisplayOverrides(
+      { axis: { showTree: false, grid: true } },
+      axisSchemas,
+    )
+    expect(overrides.get('GridlessDisplay')).toEqual({
+      axis: { showTree: false },
+    })
+  })
+
+  test('a gridless track still takes the members it declares', () => {
+    const { overrides, unknownKeys, refused } = collectDisplayOverrides(
+      { axis: { grid: true, tree: false } },
+      new Map([['GridlessDisplay', axisSchemas.get('GridlessDisplay')!]]),
+    )
+    expect(overrides.get('GridlessDisplay')).toEqual({ axis: { tree: false } })
+    expect(unknownKeys).toEqual(['axis.grid'])
+    expect(refused).toEqual([])
+  })
+
+  test('a member no display declares is reported', () => {
+    const { overrides, unknownKeys } = collectDisplayOverrides(
+      { axis: { tree: false, gird: true } },
+      axisSchemas,
+    )
+    expect(overrides.get('GridDisplay')).toEqual({ axis: { tree: false } })
+    expect(unknownKeys).toEqual(['axis.gird'])
+  })
+
+  test('a declared member every display refuses is refused', () => {
+    const { overrides, refused } = collectDisplayOverrides(
+      { axis: { tree: 'no', grid: true } },
+      axisSchemas,
+    )
+    expect(overrides.size).toBe(0)
+    expect(refused.map(r => r.key)).toEqual(['axis'])
+  })
+})
+
 describe('mergeOverridesIntoDisplays', () => {
   test('a display with no entry gets none', () => {
     expect(

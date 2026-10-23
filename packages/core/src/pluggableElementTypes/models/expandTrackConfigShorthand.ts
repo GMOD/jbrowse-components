@@ -1,6 +1,11 @@
-import { mergeConfSettings } from '../../configuration/getConf.ts'
+import {
+  mergeConfSettings,
+  writesWholeAt,
+} from '../../configuration/getConf.ts'
 import { getConfigurationSchemaMetadata } from '../../configuration/schemaRegistry.ts'
+import { isBareConfigurationSchemaType } from '../../configuration/schemaTypes.ts'
 import { slotValueRefusal } from '../../configuration/slotFacade.ts'
+import { membersDeclaredBy } from '../../configuration/snapshotPreprocess.ts'
 import { isPlainObject } from '../../util/objectUtils.ts'
 
 import type PluginManager from '../../PluginManager.ts'
@@ -13,10 +18,29 @@ export interface DisplaySnapshot {
 }
 
 /**
+ * The members of `value` a display's namespace slot `key` declares, or
+ * undefined where the slot is no namespace or `value` no object: a namespace
+ * takes the members it declares and leaves the rest to its sibling displays.
+ */
+function namespaceMembers(
+  schema: AnyConfigurationSchemaType,
+  key: string,
+  value: unknown,
+) {
+  const entry = getConfigurationSchemaMetadata(schema)?.definition[key]
+  return isBareConfigurationSchemaType(entry) &&
+    !writesWholeAt(schema, [key]) &&
+    isPlainObject(value)
+    ? membersDeclaredBy(entry, value)
+    : undefined
+}
+
+/**
  * What one display would do with a shorthand setting: the members it would
- * write, or why it will not take it. `undefined` means the display has no
- * member of that name and no retired spelling of one, so it is not a candidate
- * and the key is not its business.
+ * write, or why it will not take it, and for a namespace the members of the
+ * value it declares. `undefined` means the display has no member of that name
+ * and no retired spelling of one, so it is not a candidate and the key is not
+ * its business.
  */
 function verdictOf(
   schema: AnyConfigurationSchemaType,
@@ -25,12 +49,20 @@ function verdictOf(
 ) {
   const meta = getConfigurationSchemaMetadata(schema)
   const retired = meta?.options.retired?.[key]
+  const declares = retired ? undefined : namespaceMembers(schema, key, value)
+  if (declares?.length === 0) {
+    return { declares }
+  }
+  const placed =
+    declares && isPlainObject(value)
+      ? Object.fromEntries(declares.map(member => [member, value[member]]))
+      : value
   let members
   try {
     members = retired
       ? retired(value)
       : meta?.definition[key]
-        ? { [key]: value }
+        ? { [key]: placed }
         : undefined
   } catch (e) {
     return { refusal: e instanceof Error ? e.message : String(e) }
@@ -44,7 +76,7 @@ function verdictOf(
   const refusal = Object.entries(members)
     .map(([name, member]) => slotValueRefusal(schema, name, member))
     .find(reason => reason !== undefined)
-  return refusal === undefined ? { members } : { refusal }
+  return refusal === undefined ? { members, declares } : { refusal, declares }
 }
 
 /**
@@ -52,9 +84,11 @@ function verdictOf(
  * whose member of that name takes its value: `color: 'red'` reaches every
  * display with a color, `color: { field: 'type' }` only those whose color
  * maps a field, and a spelling a display retired reaches that display as the
- * members it became. `reached` names the displays each key went to. A key no
- * display knows is an `unknownKeys` entry, and one every display that knows it
- * refuses a `refused` entry carrying each reason.
+ * members it became. A namespace's object splits by member, so each display
+ * gets the members its namespace declares. `reached` names the displays each
+ * key went to. A key, or a namespace member, no display knows is an
+ * `unknownKeys` entry, and one every display that knows it refuses a
+ * `refused` entry carrying each reason.
  */
 export function collectDisplayOverrides(
   displaySettings: Record<string, unknown>,
@@ -70,13 +104,26 @@ export function collectDisplayOverrides(
       return verdict ? [{ name, ...verdict }] : []
     })
     const targets = verdicts.filter(v => v.members)
+    const refusals = verdicts.filter(v => v.refusal !== undefined)
+    const split = verdicts.filter(v => v.declares)
     if (verdicts.length === 0) {
       unknownKeys.push(key)
-    } else if (targets.length === 0) {
+    } else if (targets.length === 0 && refusals.length > 0) {
       refused.push({
         key,
-        reasons: verdicts.map(v => `${v.name}: ${v.refusal}`),
+        reasons: refusals.map(v => `${v.name}: ${v.refusal}`),
       })
+    }
+    if (
+      isPlainObject(value) &&
+      split.length > 0 &&
+      !targets.some(t => !t.declares)
+    ) {
+      unknownKeys.push(
+        ...Object.keys(value)
+          .filter(member => !split.some(v => v.declares?.includes(member)))
+          .map(member => `${key}.${member}`),
+      )
     }
     for (const { name, members } of targets) {
       overrides.set(
