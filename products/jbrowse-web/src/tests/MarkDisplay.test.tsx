@@ -196,9 +196,9 @@ test('points with the shape a scale over a field, and the key drawing each shape
     p.getAttribute('d'),
   )
   expect(paths).toEqual([
-    'M0 0L12 0L6 12Z',
-    'M6 0L12 6L6 12L0 6Z',
-    'M12 6A6 6 0 1 0 0 6A6 6 0 1 0 12 6Z',
+    'M0 0L10 0L5 10Z',
+    'M5 0L10 5L5 10L0 5Z',
+    'M10 5A5 5 0 1 0 0 5A5 5 0 1 0 10 5Z',
   ])
 }, 30000)
 
