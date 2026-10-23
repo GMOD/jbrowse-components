@@ -607,7 +607,7 @@ export const dog10kSpecs: ScreenshotSpec[] = [
     name: 'dog10k-rnase1-insertion',
     url: lgvSession(DOG_CONFIG, {
       assembly: 'UU_Cfam_GSD_1.0',
-      // The gene is 1.4 kb; a wider window makes it and the marker slivers.
+      // The gene is 1.4 kb; a wider window makes it a sliver.
       loc: 'chr15:18,161,500-18,167,000',
       tracks: [
         // LOC106557526 spans the window, so the gene track needs two rows.
@@ -656,7 +656,7 @@ export const dog10kSpecs: ScreenshotSpec[] = [
           trackId: 'dog10k_rnase1_svs',
           loc: 'chr15:18,164,072-18,164,074',
           fracY: 0.62,
-          dx: -30,
+          dx: -8,
           dy: 0,
         },
       },
