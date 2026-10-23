@@ -1074,9 +1074,8 @@ test('config is the display’s resolved config, the slots the call set and the 
       color: { field: 'strand' },
     },
   })
-  expect(t.config.filter).toEqual([
-    expect.objectContaining({ field: 'junction.reads', gte: 5 }),
-  ])
+  expect(t.config.filter).toContainEqual({ field: 'junction.reads', gte: 5 })
+  expect(t.config.filter).toContainEqual({ field: 'flags.DUP', equal: false })
   expect((t.config.color as { field: string }).field).toBe('strand')
   expect(t.config.coverage).toMatchObject({ height: 45, show: true })
   const display = { height: 150 }

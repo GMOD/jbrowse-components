@@ -1549,7 +1549,7 @@ export async function alignmentTables(
       featureHeight,
       featureSpacing: featureSpacingForHeight(featureHeight),
     },
-    config: fullConfSnapshot(conf),
+    config: { ...fullConfSnapshot(conf), filter: filterOf(conf) },
     warnings: layoutWarnings({
       sortField: readConfObject(conf.sort, 'field'),
       sortColumn,
