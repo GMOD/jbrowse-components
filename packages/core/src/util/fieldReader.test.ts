@@ -1,4 +1,4 @@
-import { fieldReader } from './fieldReader.ts'
+import { fieldReader, plainFieldName } from './fieldReader.ts'
 import createJexlInstance from './jexl.ts'
 import SimpleFeature from './simpleFeature.ts'
 
@@ -40,4 +40,30 @@ test('a jexl expression reads over feature, and one that does not compile throws
     'deletion!',
   )
   expect(() => fieldReader('jexl:feature.type ==', jexl)).toThrow()
+})
+
+test.each([
+  ['score', 'score'],
+  ['INFO.DP', undefined],
+  ['jexl:feature.score', 'score'],
+  ["jexl:feature['score']", 'score'],
+  ["jexl:get(feature, 'score')", 'score'],
+  ["jexl:get(feature, 'parent')", 'parent'],
+  ['jexl:feature.parent', undefined],
+  ['jexl:feature.uniqueId', undefined],
+  ['jexl:feature.INFO.DP', undefined],
+  ["jexl:feature['INFO.DP']", undefined],
+  ['jexl:feature[0]', undefined],
+  ['jexl:feature[key]', undefined],
+  ['jexl:score', undefined],
+  ['jexl:feature.score * 2', undefined],
+  ["jexl:get(feature, 'a', 'b')", undefined],
+  ['jexl:feature.', undefined],
+])('plainFieldName(%p) is %p', (ref, name) => {
+  expect(plainFieldName(ref)).toBe(name)
+})
+
+test('a jexl ref that only reads a field reads it as the name does', () => {
+  expect(fieldReader('jexl:feature.type', jexl)(variant)).toBe('deletion')
+  expect(fieldReader('jexl:feature.type', undefined)(variant)).toBe('deletion')
 })

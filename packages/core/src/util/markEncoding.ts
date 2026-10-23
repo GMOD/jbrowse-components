@@ -14,7 +14,7 @@ import { MISCONFIGURED_COLOR, NO_CATEGORY_COLOR } from './color/index.ts'
 import { cssColorToABGR, packAbgr } from './colorBits.ts'
 import { rampDomain, rampLutOf } from './colorRamp.ts'
 import { asTable, numberReaderOf, readerOf } from './featureTable.ts'
-import { fieldReader, isPlainFieldRef } from './fieldReader.ts'
+import { fieldReader, plainFieldName } from './fieldReader.ts'
 import Flatbush from './flatbush/index.ts'
 import { valueText } from './groupKeys.ts'
 import { isJexl, stringToJexlExpression } from './jexlStrings.ts'
@@ -174,8 +174,9 @@ function channelReader(
   if (typeof ref === 'function') {
     return i => ref(table.row(i))
   }
-  if (isPlainFieldRef(ref)) {
-    return readerOf(table.column(ref))
+  const name = plainFieldName(ref)
+  if (name !== undefined) {
+    return readerOf(table.column(name))
   }
   const read = fieldReader(ref, jexl)
   return i => read(table.row(i))
@@ -189,10 +190,7 @@ function textChannelReader(
   jexl: JexlInstance | undefined,
 ): RowReader<string> {
   const read = channelReader(table, ref, jexl)
-  const column =
-    typeof ref !== 'function' && isPlainFieldRef(ref)
-      ? table.column(ref)
-      : undefined
+  const column = plainColumn(table, ref)
   return column?.kind === 'number' && column.values instanceof Float32Array
     ? i => {
         const v = read(i)
@@ -208,8 +206,9 @@ function numberChannelReader(
   ref: FieldRef | ChannelReader,
   jexl: JexlInstance | undefined,
 ): RowReader<number> {
-  if (typeof ref !== 'function' && isPlainFieldRef(ref)) {
-    return numberReaderOf(table.column(ref))
+  const column = plainColumn(table, ref)
+  if (column) {
+    return numberReaderOf(column)
   }
   const read = channelReader(table, ref, jexl)
   return i => numericValue(read(i))
@@ -298,11 +297,13 @@ function numberSource(
 }
 
 function laneOf(table: FeatureTable, ref: FieldRef | ChannelReader) {
-  if (typeof ref === 'function' || !isPlainFieldRef(ref)) {
-    return undefined
-  }
-  const column = table.column(ref)
-  return column.kind === 'number' ? column : undefined
+  const column = plainColumn(table, ref)
+  return column?.kind === 'number' ? column : undefined
+}
+
+function plainColumn(table: FeatureTable, ref: FieldRef | ChannelReader) {
+  const name = typeof ref === 'function' ? undefined : plainFieldName(ref)
+  return name === undefined ? undefined : table.column(name)
 }
 
 // A stacked row reads as `Number` reads it, where a quantitative channel reads
@@ -530,10 +531,7 @@ function paintCategories<T>(
     }
     return r
   }
-  const column =
-    typeof ref !== 'function' && isPlainFieldRef(ref)
-      ? table.column(ref)
-      : undefined
+  const column = plainColumn(table, ref)
   let met: Iterable<string>
   if (column?.kind === 'category') {
     const { codes, labels } = column

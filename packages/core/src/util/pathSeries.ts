@@ -3,7 +3,7 @@
 // encoded and an instance's index names the same row in both. Imported by
 // relative path only.
 import { numberReaderOf, readerOf, selectRows } from './featureTable.ts'
-import { fieldReader, isPlainFieldRef } from './fieldReader.ts'
+import { fieldReader, plainFieldName } from './fieldReader.ts'
 import { groupKey, groupedStartOrder } from './stepTables.ts'
 import { DEFAULT_WINDOW_FRAME } from './windowStep.ts'
 
@@ -14,8 +14,9 @@ import type { FieldRef, PathSpec, TransformStep } from './markEncodingTypes.ts'
 type RowEncoding = FieldRef | ArrayLike<number> | undefined
 
 function reader(table: FeatureTable, ref: FieldRef, jexl?: JexlInstance) {
-  if (isPlainFieldRef(ref)) {
-    return readerOf(table.column(ref))
+  const name = plainFieldName(ref)
+  if (name !== undefined) {
+    return readerOf(table.column(name))
   }
   const read = fieldReader(ref, jexl)
   return (i: number) => read(table.row(i))

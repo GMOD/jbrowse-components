@@ -2,7 +2,7 @@
 // start order. Imported by relative path only.
 import { aggregateFieldName } from './aggregateFieldName.ts'
 import { numberReaderOf, readerOf, withColumns } from './featureTable.ts'
-import { isPlainFieldRef } from './fieldReader.ts'
+import { plainFieldName } from './fieldReader.ts'
 import {
   groupRows,
   groupedStartOrder,
@@ -168,11 +168,12 @@ export function windowStep(
   step: WindowStep,
 ): Staged {
   const { groupby = [], ops, frame = DEFAULT_WINDOW_FRAME } = step
-  const keyed = groupby.some(field => !isPlainFieldRef(field))
-  const reads = groupby.map(field =>
+  const names = groupby.map(plainFieldName)
+  const keyed = names.includes(undefined)
+  const reads = groupby.map((field, g) =>
     keyed
       ? stepReader(table, field, 'a window')
-      : readerOf(table.column(field)),
+      : readerOf(table.column(names[g]!)),
   )
   const { groupOf, firstRow } = groupRows(table.length, bounds, reads, !keyed)
   const { order, groupStart } = windowOrder(table, groupOf, firstRow.length)

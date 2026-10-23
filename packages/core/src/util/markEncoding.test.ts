@@ -1078,8 +1078,10 @@ test('a caller whose channels are readers or field names needs no jexl instance'
   const r = encodeFeatures(features, { y: f => Number(f.get('score')) }, ['y'])
   expect([...r.y]).toEqual([10, 40, 25])
   expect(() =>
-    encodeFeatures(features, { y: 'jexl:feature.score' }, ['y']),
+    encodeFeatures(features, { y: 'jexl:feature.score * 2' }, ['y']),
   ).toThrow(/jexl/)
+  const bare = encodeFeatures(features, { y: 'jexl:feature.score' }, ['y'])
+  expect([...bare.y]).toEqual([10, 40, 25])
 })
 
 test('a categorical table says whether every key it met was a number', () => {

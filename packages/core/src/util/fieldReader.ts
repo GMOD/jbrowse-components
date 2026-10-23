@@ -1,4 +1,6 @@
-import { isJexl, stringToJexlExpression } from './jexlStrings.ts'
+import { Jexl, analyze } from '@jbrowse/jexl'
+
+import { JEXL_PREFIX, isJexl, stringToJexlExpression } from './jexlStrings.ts'
 import { buildJexlContext } from './simpleFeature.ts'
 
 import type { JexlInstance } from './jexlStrings.ts'
@@ -17,6 +19,10 @@ export function fieldReader(
 ): (feature: Feature) => unknown {
   const path = ref.includes('.') ? ref.split('.') : undefined
   const rests = path?.map((_, i) => path.slice(i).join('.'))
+  const name = plainFieldName(ref)
+  if (name !== undefined) {
+    return feature => feature.get(name)
+  }
   if (isJexl(ref)) {
     if (!jexl) {
       throw new Error(`a jexl: field needs a jexl instance (${ref})`)
@@ -40,6 +46,47 @@ export function fieldReader(
  */
 export function isPlainFieldRef(ref: string) {
   return !ref.includes('.') && !isJexl(ref)
+}
+
+const parser = new Jexl()
+
+// jexlFeatureProxy answers these itself, so `feature.parent` is no field read
+const PROXIED = new Set(['parent', 'uniqueId', 'get', 'toJSON'])
+
+/**
+ * #api
+ * The field a ref reads by name: a plain ref itself, or the one field a
+ * `jexl:` ref reads as `feature.score`, `feature['score']` or
+ * `get(feature, 'score')` do, so such an expression takes a plain name's
+ * columnar path.
+ */
+export function plainFieldName(ref: string) {
+  if (!ref.startsWith(JEXL_PREFIX)) {
+    return ref.includes('.') ? undefined : ref
+  }
+  let ast
+  try {
+    ast = parser.parse(ref.slice(JEXL_PREFIX.length))
+  } catch {
+    return undefined
+  }
+  if (!ast) {
+    return undefined
+  }
+  const viaGet = ast.type === 'FunctionCall' && ast.name === 'get'
+  const { bare, reads } = analyze(ast, { accessors: { get: [] } })
+  const [read] = reads
+  const name = read?.path[0]
+  return (bare || viaGet) &&
+    reads.length === 1 &&
+    read?.root === 'feature' &&
+    !read.dynamic &&
+    read.path.length === 1 &&
+    typeof name === 'string' &&
+    !name.includes('.') &&
+    (viaGet || !PROXIED.has(name))
+    ? name
+    : undefined
 }
 
 function readPath(

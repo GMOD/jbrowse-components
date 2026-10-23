@@ -19,7 +19,7 @@ import {
   withColumns,
 } from './featureTable.ts'
 import { compilePredicates } from './fieldPredicate.ts'
-import { fieldReader, isPlainFieldRef } from './fieldReader.ts'
+import { fieldReader, plainFieldName } from './fieldReader.ts'
 import { isJexl, stringToJexlExpression } from './jexlStrings.ts'
 import SimpleFeature, { buildJexlContext } from './simpleFeature.ts'
 import {
@@ -530,7 +530,8 @@ function flattenList(
 
 function flatten(staged: Staged, step: FlattenStep): Staged {
   const { field = DEFAULT_FLATTEN_FIELD } = step
-  const column = isPlainFieldRef(field) ? staged.table.column(field) : undefined
+  const name = plainFieldName(field)
+  const column = name === undefined ? undefined : staged.table.column(name)
   return column?.kind === 'list'
     ? flattenList(staged, step, field, column)
     : flattenValues(staged, step)
@@ -847,11 +848,12 @@ function binIntervals(
 function aggregate({ table, bounds }: Staged, step: AggregateStep): Staged {
   const { groupby = [], ops } = step
   const n = table.length
-  const keyed = groupby.some(field => !isPlainFieldRef(field))
-  const reads = groupby.map(field =>
+  const names = groupby.map(plainFieldName)
+  const keyed = names.includes(undefined)
+  const reads = groupby.map((field, g) =>
     keyed
       ? stepReader(table, field, 'an aggregate')
-      : readerOf(table.column(field)),
+      : readerOf(table.column(names[g]!)),
   )
   const { groupOf, firstRow, sectionOf } = groupRows(n, bounds, reads, !keyed)
   const groups = firstRow.length
@@ -1315,7 +1317,8 @@ export function facetLayers(
   // key's rows arrive together, as a multi-source adapter's do.
   let runs = 0
   let keyOfRow: () => Uint32Array
-  const column = isPlainFieldRef(field) ? table.column(field) : undefined
+  const name = plainFieldName(field)
+  const column = name === undefined ? undefined : table.column(name)
   if (column?.kind === 'category') {
     // Counted per code, and a label's key filed once, in arrival order; the
     // row-by-row keys are read only for a table that needs reordering.
@@ -1395,11 +1398,12 @@ export function facetLayers(
   )
   const placed = layers.map(({ row }, l) => {
     const out = layered[l]!
+    const rowName = row === undefined ? undefined : plainFieldName(row)
     const readRow =
       row === undefined
         ? undefined
-        : isPlainFieldRef(row)
-          ? readerOf(out.table.column(row))
+        : rowName !== undefined
+          ? readerOf(out.table.column(rowName))
           : (() => {
               const r = fieldReader(row, jexl)
               return (i: number) => r(out.table.row(i))
@@ -1477,13 +1481,14 @@ export function runTransforms(
  * of it.
  */
 function partitionPoint(steps: readonly TransformStep[], field: FieldRef) {
-  if (!isPlainFieldRef(field)) {
+  const name = plainFieldName(field)
+  if (name === undefined) {
     return steps.length
   }
   let at = steps.length
   while (at > 0) {
     const step = steps[at - 1]!
-    if (!isRowwise(step) || stepWrites(step).some(w => w.field === field)) {
+    if (!isRowwise(step) || stepWrites(step).some(w => w.field === name)) {
       break
     }
     at--

@@ -963,12 +963,24 @@ test('a jexl: field on a step names the step and points at formula', () => {
       [
         {
           type: 'aggregate',
-          ops: [{ op: 'mean', field: 'jexl:feature.score' }],
+          ops: [{ op: 'mean', field: 'jexl:feature.score * 2' }],
         },
       ],
       jexl,
     ),
   ).toThrow(/an aggregate field is a name or a dotted path.*formula/)
+  expect(
+    runTransforms(
+      VARIANTS,
+      [
+        {
+          type: 'aggregate',
+          ops: [{ op: 'mean', field: 'jexl:feature.score' }],
+        },
+      ],
+      jexl,
+    ).length,
+  ).toBe(1)
   expect(() =>
     runTransforms(VARIANTS, [{ type: 'bin', step: 10, field: 'jexl:1' }], jexl),
   ).toThrow(/a bin field is a name or a dotted path.*formula/)

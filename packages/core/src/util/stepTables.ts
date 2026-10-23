@@ -10,7 +10,7 @@ import {
   readerOf,
   valueAt,
 } from './featureTable.ts'
-import { fieldReader, isPlainFieldRef } from './fieldReader.ts'
+import { fieldReader, plainFieldName } from './fieldReader.ts'
 import { isJexl } from './jexlStrings.ts'
 import { numericValue } from './numericValue.ts'
 
@@ -82,13 +82,14 @@ export abstract class FannedTable extends DerivedTable {
 // a path walks each row, chosen once per step. A computed field is a `formula`
 // step's to make.
 export function stepReader(table: FeatureTable, ref: string, step: string) {
+  const name = plainFieldName(ref)
+  if (name !== undefined) {
+    return readerOf(table.column(name))
+  }
   if (isJexl(ref)) {
     throw new Error(
       `${step} field is a name or a dotted path, and a formula step in front computes one (${ref})`,
     )
-  }
-  if (isPlainFieldRef(ref)) {
-    return readerOf(table.column(ref))
   }
   const read = fieldReader(ref, undefined)
   return (i: number) => read(table.row(i))
@@ -99,8 +100,9 @@ export function stepNumberReader(
   ref: string,
   step: string,
 ) {
-  if (isPlainFieldRef(ref) && !isJexl(ref)) {
-    return numberReaderOf(table.column(ref))
+  const name = plainFieldName(ref)
+  if (name !== undefined) {
+    return numberReaderOf(table.column(name))
   }
   const read = stepReader(table, ref, step)
   return (i: number) => numericValue(read(i))
