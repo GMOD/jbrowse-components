@@ -1,13 +1,13 @@
 ---
 name: launch-args
-description: "One command-line grammar for jbrowse-img, jb2capture and JBrowse Desktop, in @jbrowse/launch-args. Landed: bare data files, the shared ADR-077 format table, Desktop opening 'jbrowse-desktop ref.fa reads.bam --loc ...', --genome, --view (view settings by their session-spec names), format-family track flags, batch --sites, genome modifiers in place of --aliases/--cytobands, jb2capture on the shared grammar (track settings, --view, data files refused), jb2export's read filter through the launch snapshot, Desktop opening synteny and dotplot views in jb2export's comparative grammar, every track modifier in Desktop and capture through a session spec track entry's `modifiers`. jb2export and all three tools stacking --genome rows from their hosted configs. Open: what of img's write path can still leave its live view."
+description: How the shared launch grammar of jb2export, jb2capture and JBrowse Desktop is built in @jbrowse/launch-args (files, the bare-file rule, --view, --genome, track modifiers, the comparative views), and the traps in it. Read before adding a command-line flag or track modifier to any of the three.
+kind: spec
 ---
 
 # Launch arguments: one grammar for img, capture and Desktop
 
-Started 2026-10-20 (GMOD/jbrowse-components#4303). The goal is docs that can
-say "do this with jb2export, and launch Desktop the same way". None of the
-packages is released, so breaking changes are fine.
+One command-line grammar for jbrowse-img (jb2export), jb2capture and JBrowse
+Desktop, in `@jbrowse/launch-args` (GMOD/jbrowse-components#4303).
 
 ## Where it lives
 
@@ -93,24 +93,23 @@ packages is released, so breaking changes are fine.
   checkouts of the same commit** (about 450 px on `yeast_synteny`). A baseline
   shoot run inside the branch's checkout matches; compare there.
 
-## Next, in order
+## Declined: img through `loadSessionSpec`
 
-1. **img renders through `loadSessionSpec`**: mostly declined. A spec track
-   entry and `applyDisplayOpts` already meet at `view.launchTrack(trackId, {},
-   snapshot)`, and the read filter rides in on that snapshot. What stays:
-   - `loadSessionSpec` itself: its `setSession` replaces the session a
-     `--session` or `--defaultSession` supplied.
-   - the LGV launch blob's `tracks`: `sort:` takes its pivot from the view
-     centre after navigation, and the blob opens its tracks straight after
-     navigating.
-   - `writeMembers` and the tag append, until something reads a track's
-     configured display before the open. Core's `resolveTrackDisplayChoice`
-     holds that logic (display pick, stub displays, `displayDefaults`), needs
-     a view, and is not exported.
-   - `navToLocOrGene`, the refseq and highlight steps, and the read-backs
-     (links, alt counts, manifest).
-   - Breakpoint panels still write `filterTag:` over the configured tags,
-     where a linear view adds to them.
+A spec track entry and `applyDisplayOpts` already meet at
+`view.launchTrack(trackId, {}, snapshot)`, and the read filter rides in on that
+snapshot. jb2export keeps its own path for:
+
+- `loadSessionSpec` itself: its `setSession` replaces the session a `--session`
+  or `--defaultSession` supplied.
+- the LGV launch blob's `tracks`: `sort:` takes its pivot from the view centre
+  after navigation, and the blob opens its tracks straight after navigating.
+- `writeMembers` and the tag append. Core's `resolveTrackDisplayChoice` holds
+  the display pick, stub displays and `displayDefaults`, needs a view, and is
+  not exported.
+- `navToLocOrGene`, the refseq and highlight steps, and the read-backs (links,
+  alt counts, manifest).
+- breakpoint panels, which write `filterTag:` over the configured tags where a
+  linear view adds to them.
 
 ## Comparative grammar decisions (2026-10-21)
 
