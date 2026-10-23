@@ -328,8 +328,8 @@ The approach is described in
 
 ## Citations
 
-- Broz P, Dixit VM. Inflammasomes: mechanism of assembly, regulation and
-  signalling. _Nat Rev Immunol_ 2016.
+- Broz and Dixit (2016).
+  [Inflammasomes: mechanism of assembly, regulation and signalling](https://doi.org/10.1038/nri.2016.58)
 
 [^constructs]:
     Some of these crystals carry engineered mutations. In the TP53 figure, 2J1X

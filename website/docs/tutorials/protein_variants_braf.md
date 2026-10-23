@@ -118,11 +118,9 @@ kinase domain. The ATP binding site ends upstream, at Asp594 of the DFG motif.
 
 ## Citations
 
-- Haling JR, Sudhamsu J, Yen I, Sideris S, et al. Structure of the BRAF-MEK
-  complex reveals a kinase activity independent role for BRAF in MAPK signaling.
-  _Cancer Cell_ 2014;26:402-413. https://doi.org/10.1016/j.ccr.2014.07.007
-- Davies H, Bignell GR, Cox C, et al. Mutations of the BRAF gene in human
-  cancer. _Nature_ 2002;417:949-954. https://doi.org/10.1038/nature00766
-- Landrum MJ, Lee JM, Benson M, et al. ClinVar: improving access to variant
-  interpretations and supporting evidence. _Nucleic Acids Res_ 2018.
-  https://doi.org/10.1093/nar/gkx1153
+- Haling et al. (2014).
+  [Structure of the BRAF-MEK complex reveals a kinase activity independent role for BRAF in MAPK signaling](https://doi.org/10.1016/j.ccr.2014.07.007)
+- Davies et al. (2002).
+  [Mutations of the BRAF gene in human cancer](https://doi.org/10.1038/nature00766)
+- Landrum et al. (2018).
+  [ClinVar: improving access to variant interpretations and supporting evidence](https://doi.org/10.1093/nar/gkx1153)

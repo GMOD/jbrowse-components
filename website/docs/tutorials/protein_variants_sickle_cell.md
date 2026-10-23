@@ -194,19 +194,19 @@ domains and sites.
 
 <Figure src="/img/protein/hbb_domains_three_views.png" caption="HBB in three linked views: the genome's GWAS, 1000 Genomes and domain tracks, the alignment's rows and the 2HBS cartoon, colored by the alignment's domains. On the structure a cartoon color marks a domain and side-chain sticks mark a site." />
 
-The numbered callouts follow rs334 from a statistic to a mechanism, one view at
-a time:
+The callouts follow rs334 from a statistic to a mechanism, one view at a time:
 
-1. the GWAS records tie the allele to malaria and to haemolytic anaemia and
-   kidney disease: one copy protects against severe malaria, and two copies
-   cause sickle cell disease
-2. nearly every 1000 Genomes carrier has one copy, the protected genotype
-3. the alignment and the domain track mark no heme-binding or tetramer-interface
-   site at Glu6, which sits on the protein's surface[^domain]
-4. on the structure, the hydrophobic valine 6 of the second tetramer's chain H
-   fills a pocket of Phe85 and Leu88 on the first tetramer's chain B.
-   Deoxygenated haemoglobin S stacks into fibres through this contact, and the
-   fibres bend red cells into sickles
+- the GWAS records tie the allele to malaria and to haemolytic anaemia and
+  kidney disease: one copy protects against severe malaria, and two copies cause
+  sickle cell disease
+- in the 1000 Genomes track, nearly every carrier has one copy, the protected
+  genotype
+- the alignment and the domain track mark no heme-binding or tetramer-interface
+  site at Glu6, which sits on the protein's surface[^domain]
+- on the structure, the hydrophobic valine 6 of the second tetramer's chain H
+  fills a pocket of Phe85 and Leu88 on the first tetramer's chain B.
+  Deoxygenated haemoglobin S stacks into fibres through this contact, and the
+  fibres bend red cells into sickles
 
 [^domain]:
     The Hb-beta-like domain, NCBI's cd08925, starts at the transcript's residue
@@ -251,11 +251,9 @@ Each step on this page works on any gene the protein browser opens:
 
 ## Citations
 
-- Harrington DJ, Adachi K, Royer WE Jr. The high resolution crystal structure of
-  deoxyhemoglobin S. _J Mol Biol_ 1997. https://doi.org/10.1006/jmbi.1997.1279
-- Byrska-Bishop M, Evani US, Zhao X, et al. High-coverage whole-genome
-  sequencing of the expanded 1000 Genomes Project cohort including 602 trios.
-  _Cell_ 2022. https://doi.org/10.1016/j.cell.2022.08.004
-- Sollis E, Mosaku A, Abid A, et al. The NHGRI-EBI GWAS Catalog: knowledgebase
-  and deposition resource. _Nucleic Acids Res_ 2023.
-  https://doi.org/10.1093/nar/gkac1010
+- Harrington et al. (1997).
+  [The high resolution crystal structure of deoxyhemoglobin S](https://doi.org/10.1006/jmbi.1997.1279)
+- Byrska-Bishop et al. (2022).
+  [High-coverage whole-genome sequencing of the expanded 1000 Genomes Project cohort including 602 trios](https://doi.org/10.1016/j.cell.2022.08.004)
+- Sollis et al. (2023).
+  [The NHGRI-EBI GWAS Catalog: knowledgebase and deposition resource](https://doi.org/10.1093/nar/gkac1010)

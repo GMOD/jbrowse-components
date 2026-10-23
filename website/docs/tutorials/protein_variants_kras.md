@@ -128,9 +128,7 @@ the hovered residue as a vertical line.
 
 ## Citations
 
-- Canon J, Rex K, Saiki AY, et al. The clinical KRAS(G12C) inhibitor AMG 510
-  drives anti-tumour immunity. _Nature_ 2019;575:217-223.
-  https://doi.org/10.1038/s41586-019-1694-1
-- Landrum MJ, Lee JM, Benson M, et al. ClinVar: improving access to variant
-  interpretations and supporting evidence. _Nucleic Acids Res_ 2018.
-  https://doi.org/10.1093/nar/gkx1153
+- Canon et al. (2019).
+  [The clinical KRAS(G12C) inhibitor AMG 510 drives anti-tumour immunity](https://doi.org/10.1038/s41586-019-1694-1)
+- Landrum et al. (2018).
+  [ClinVar: improving access to variant interpretations and supporting evidence](https://doi.org/10.1093/nar/gkx1153)

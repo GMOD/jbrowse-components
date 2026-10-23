@@ -713,7 +713,7 @@ export const proteinVariantSpecs: ScreenshotSpec[] = [
     annotations: [
       {
         type: 'text',
-        text: '1  One copy protects against malaria; two copies cause sickle cell disease',
+        text: 'One copy protects against malaria; two cause sickle cell disease',
         fontSize: HBB_FONT_SIZE,
         maxWidth: 300,
         leader: true,
@@ -723,7 +723,7 @@ export const proteinVariantSpecs: ScreenshotSpec[] = [
       },
       {
         type: 'text',
-        text: '2  Carriers nearly all have one copy, the genotype that protects',
+        text: 'Sickle allele carriers, nearly all with one copy',
         fontSize: HBB_FONT_SIZE,
         maxWidth: 300,
         leader: true,
@@ -733,7 +733,7 @@ export const proteinVariantSpecs: ScreenshotSpec[] = [
       },
       {
         type: 'text',
-        text: '3  No heme or interface site at glutamate 6, which sits on the surface',
+        text: 'No heme or interface site at glutamate 6',
         fontSize: HBB_FONT_SIZE,
         maxWidth: 340,
         leader: true,
@@ -749,7 +749,7 @@ export const proteinVariantSpecs: ScreenshotSpec[] = [
       },
       {
         type: 'text',
-        text: '4  Valine 6 of one tetramer docks into a pocket on the other, the contact that strings haemoglobin S into fibres',
+        text: 'Valine 6 docks into a pocket on the next tetramer, stringing haemoglobin S into fibres',
         fontSize: HBB_FONT_SIZE,
         maxWidth: 420,
         leader: true,

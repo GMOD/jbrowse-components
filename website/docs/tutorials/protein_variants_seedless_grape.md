@@ -106,9 +106,7 @@ The protein view takes a model of your own as well:
 
 ## Citations
 
-- Royo C, Torres-Pérez R, Mauri N, et al. The major origin of seedless grapes is
-  associated with a missense mutation in the MADS-box gene VviAGL11. _Plant
-  Physiol_ 2018;177:1234-1253. https://doi.org/10.1104/pp.18.00259
-- Varadi M, Bertoni D, Magana P, et al. AlphaFold Protein Structure Database in
-  2024: providing structure coverage for over 214 million protein sequences.
-  _Nucleic Acids Res_ 2024. https://doi.org/10.1093/nar/gkad1011
+- Royo et al. (2018).
+  [The major origin of seedless grapes is associated with a missense mutation in the MADS-box gene VviAGL11](https://doi.org/10.1104/pp.18.00259)
+- Varadi et al. (2024).
+  [AlphaFold Protein Structure Database in 2024: providing structure coverage for over 214 million protein sequences](https://doi.org/10.1093/nar/gkad1011)

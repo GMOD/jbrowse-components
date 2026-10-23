@@ -63,8 +63,8 @@ browser's linked session. Open it on _TP53_ with structure 1TUP:
   label...** and type `R248` or `R273`
 
 The link names no residue. With `residue=248` in it, the protein browser opens
-the seed alignment of p53's Pfam family, a few dozen distant relatives, in place
-of _TP53_'s orthologs.
+the seed alignment of p53's Pfam family, distant relatives, in place of _TP53_'s
+orthologs.
 
 Hover codon 248 on the gene. The protein view's header reads the residue in both
 the genome and the crystal, and 1TUP lights the residue in each of its three
@@ -119,6 +119,5 @@ sits in none of the sites and away from the DNA.
 
 ## Citations
 
-- Cho Y, Gorina S, Jeffrey PD, Pavletich NP. Crystal structure of a p53 tumor
-  suppressor-DNA complex: understanding tumorigenic mutations. _Science_
-  1994;265:346-355. https://doi.org/10.1126/science.8023157
+- Cho et al. (1994).
+  [Crystal structure of a p53 tumor suppressor-DNA complex: understanding tumorigenic mutations](https://doi.org/10.1126/science.8023157)

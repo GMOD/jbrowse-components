@@ -98,8 +98,7 @@ letters: glutamate in the dog genome, lysine in the crystal.
 ## Slicing SOD1 out of Dog10K
 
 The Dog10K callset has a tabix index, so `bcftools` reads one gene over HTTP.
-This keeps the genotypes and drops the rest, which leaves a file of a few tens
-of kilobytes:
+This keeps the genotypes and drops the rest:
 
 ```bash
 SNVS=https://kiddlabshare.med.umich.edu/dog10K/SNP_and_indel_calls_2021-10-17/AutoAndXPAR.SNPs.vqsr99.vcf.gz
@@ -168,27 +167,6 @@ first region is 30 bp of the upstream intron, around an SNV at chr31:27,122,819.
 
 <Figure src="/img/protein/sod1_dog10k.png" caption="Dog10K genotypes under SOD1, one row per canid, colored down the left edge by category." />
 
-## Counting E40K carriers by category
-
-The command below joins each animal's genotype at chr31:27,123,057 to its
-category in `samples.tsv` and prints carriers, then animals, per category:
-
-```bash
-bcftools query -r chr31:27123057 -f '[%SAMPLE\t%GT\n]' dog10k_sod1.vcf.gz \
-  | awk -F'\t' 'NR == FNR { cat[$1] = $2; next }
-      { n[cat[$1]]++; if ($2 ~ /1/) carriers[cat[$1]]++ }
-      END { for (c in n) print c, carriers[c] + 0, n[c] }' samples.tsv - \
-  | sort
-```
-
-```text
-Breed_Dogs 165 1593
-Coyote 0 4
-Mixed/Other 3 18
-Village_Dogs 30 309
-Wolf 0 63
-```
-
 ## See also
 
 - [](/docs/tutorials/protein_variants_sickle_cell)
@@ -204,15 +182,9 @@ Wolf 0 63
 
 ## Citations
 
-- Awano T, Johnson GS, Wade CM, et al. Genome-wide association analysis reveals
-  a SOD1 mutation in canine degenerative myelopathy that resembles amyotrophic
-  lateral sclerosis. _Proc Natl Acad Sci U S A_ 2009.
-  https://doi.org/10.1073/pnas.0812297106
-- Hashimoto K, Watanabe S, Akutsu M, et al. Intrinsic structural vulnerability
-  in the hydrophobic core induces species-specific aggregation of canine SOD1
-  with degenerative myelopathy-linked E40K mutation. _J Biol Chem_ 2023.
-  https://doi.org/10.1016/j.jbc.2023.104798
-- Meadows JRS, Kidd JM, Wang GD, et al. Genome sequencing of 2000 canids by the
-  Dog10K consortium advances the understanding of demography, genome function
-  and architecture. _Genome Biol_ 2023.
-  https://doi.org/10.1186/s13059-023-03023-7
+- Awano et al. (2009).
+  [Genome-wide association analysis reveals a SOD1 mutation in canine degenerative myelopathy that resembles amyotrophic lateral sclerosis](https://doi.org/10.1073/pnas.0812297106)
+- Hashimoto et al. (2023).
+  [Intrinsic structural vulnerability in the hydrophobic core induces species-specific aggregation of canine SOD1 with degenerative myelopathy-linked E40K mutation](https://doi.org/10.1016/j.jbc.2023.104798)
+- Meadows et al. (2023).
+  [Genome sequencing of 2000 canids by the Dog10K consortium advances the understanding of demography, genome function and architecture](https://doi.org/10.1186/s13059-023-03023-7)

@@ -85,13 +85,12 @@ once:
 hmmpress Pfam-A.hmm
 ```
 
-<!-- from: scripts/build_protein_domains.sh -->
-
 ```bash
 # --cut_ga: each Pfam family's curated gathering threshold, the cutoff InterPro
-# uses, in place of one E-value for every family. A whole insect proteome takes
-# an hour or two.
-hmmscan --cut_ga --cpu 16 --noali --domtblout pfam.domtblout Pfam-A.hmm proteins.fa >/dev/null
+# uses, in place of one E-value for every family. hmmscan keeps about two cores
+# busy whatever --cpu asks for, so the build script splits proteins.fa into
+# chunks and scans them at once.
+hmmscan --cut_ga --cpu 2 --noali --domtblout pfam.domtblout Pfam-A.hmm proteins.fa >/dev/null
 ```
 
 An annotation pipeline that already ran InterProScan has the same calls in its
@@ -155,7 +154,7 @@ The track draws one copy of each domain per isoform, and a domain crossing an
 intron as blocks joined like the exons above it. Clicking a domain shows its
 transcript, accession and residue range.
 
-<Figure src="/img/protein_domains/vav.png" caption="Honey bee vav: the four RefSeq isoforms over the Pfam domains they encode, colored by family. The top isoform skips the exon encoding CH, so CH has three copies where the other domains have four." />
+<Figure src="/img/protein_domains/vav.png" caption="Honey bee vav: its RefSeq isoforms over the Pfam domains they encode, colored by family. The top isoform skips the exon encoding CH, so CH has one copy fewer than the other domains." />
 
 ## Reproduce it end to end
 
@@ -163,7 +162,8 @@ transcript, accession and residue range.
 runs every step above on your own genome FASTA and GFF3. The script:
 
 1. Translates each transcript's CDS with gffread.
-2. Downloads and presses the Pfam library once, then calls domains with hmmscan.
+2. Downloads and presses the Pfam library once, then calls domains with hmmscan,
+   on chunks of the proteins at once.
 3. Places the domains on the exons with `jbrowse make-protein-features`.
 4. Builds a JBrowse with the genome, the genes and the domain track.
 
@@ -174,7 +174,7 @@ npx --yes serve protein_domains_build/jbrowse2       # then open the printed URL
 ```
 
 The script reads `genome.fa` and `genes.gff3` plain or gzipped, and
-`THREADS=32 bash build_protein_domains.sh ...` gives hmmscan more cores.
+`THREADS=32 bash build_protein_domains.sh ...` scans more chunks at once.
 
 ## See also
 

@@ -15,8 +15,10 @@
 # Usage:    bash scripts/build_protein_domains.sh genome.fa genes.gff3 [outdir]
 #
 # Pfam-A.hmm (about 1.5 GB pressed) downloads into the output directory once.
-# hmmscan over a whole insect proteome takes an hour or two on 16 cores; set
-# THREADS to change the core count.
+# hmmscan keeps about two cores busy whatever --cpu asks for, so the script
+# splits the proteins into THREADS/2 chunks and scans them at once; a whole
+# insect proteome took about a quarter hour on 18 cores. THREADS sets the
+# core count.
 set -euo pipefail
 
 if [ $# -lt 2 ]; then
@@ -81,10 +83,21 @@ if [ ! -f Pfam-A.hmm.h3m ]; then
   hmmpress Pfam-A.hmm
 fi
 
+JOBS=$((THREADS / 2 > 1 ? THREADS / 2 : 1))
+rm -f chunk.*.fa chunk.*.domtblout
+awk -v n="$JOBS" '/^>/ { i = (i + 1) % n } { print > ("chunk." i ".fa") }' proteins.fa
+
 # --cut_ga: Pfam's curated per-family gathering threshold, the cutoff InterPro
 # uses, in place of one E-value for every family
-hmmscan --cut_ga --cpu "$THREADS" --noali --domtblout pfam.domtblout \
-  Pfam-A.hmm proteins.fa >/dev/null
+pids=()
+for chunk in chunk.*.fa; do
+  hmmscan --cut_ga --cpu 2 --noali --domtblout "${chunk%.fa}.domtblout" \
+    Pfam-A.hmm "$chunk" >/dev/null &
+  pids+=($!)
+done
+for pid in "${pids[@]}"; do wait "$pid"; done
+cat chunk.*.domtblout >pfam.domtblout
+rm -f chunk.*.fa chunk.*.domtblout
 
 jb make-protein-features genes.gff3 pfam.domtblout --out pfam.bed.gz
 
