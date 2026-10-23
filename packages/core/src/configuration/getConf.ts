@@ -258,7 +258,12 @@ export function applyConfSettings(
   const conf = isConfigurationModel(target) ? target : target.configuration
   const meta = getConfigurationSchemaMetadata(conf)
   const values = meta
-    ? preProcessSnapshotWith(meta, settings, { routesUndeclared: true })
+    ? preProcessSnapshotWith(meta, settings, {
+        routesUndeclared: true,
+        base: meta.options.retiredMembers
+          ? (getSnapshot(conf) as Record<string, unknown>)
+          : undefined,
+      })
     : settings
   const report: ConfSettingsReport = { applied: [], undeclared: {}, failed: [] }
   for (const [key, value] of Object.entries(values)) {

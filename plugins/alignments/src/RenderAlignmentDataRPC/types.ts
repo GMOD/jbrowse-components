@@ -42,7 +42,6 @@ export interface RenderAlignmentDataArgs extends GatedFetchArgs {
   // The pileup's low-frequency mismatch/indel fade is unaffected (frequencies
   // are computed from the full depth sweep regardless). Defaults true.
   showCoverage?: boolean
-  // `coverage.interbase.filter`, resolved: which positions earn a triangle.
   interbaseIndicators?: InterbaseIndicatorRule
   // Whether the reply carries the splice junctions and fetches their motifs:
   // `coverage.show || sashimi.show`, so with coverage shown a sashimi toggle

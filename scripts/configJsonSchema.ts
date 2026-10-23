@@ -40,6 +40,7 @@ export interface SchemaMetadata {
     shorthand?: string | readonly string[]
     closed?: boolean
     retired?: Record<string, unknown>
+    retiredMembers?: Record<string, { names: readonly string[] }>
     shorthandWith?: Record<string, unknown>
     preProcessSnapshot?: (snap: unknown) => unknown
     requires?: {
@@ -360,7 +361,11 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
 
   // A plain MST type as JSON Schema. A registered config schema or state model
   // comes back as a $ref; anything else is inlined, to a depth.
-  function mstSchema(raw: MstType, depth: number): JsonSchema {
+  function mstSchema(
+    raw: MstType,
+    depth: number,
+    retiredMembers: readonly string[] = [],
+  ): JsonSchema {
     if (raw === deps.fileLocation) {
       return ref('FileLocation')
     }
@@ -375,7 +380,9 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
     const meta = deps.metadataOf(raw)
     if (meta) {
       const restated = restatedDefName(meta)
-      return restated ? ref(restated) : configObject(raw, meta, depth)
+      return restated && retiredMembers.length === 0
+        ? ref(restated)
+        : configObject(raw, meta, depth, undefined, retiredMembers)
     }
     const { type, jexl, named } = unwrap(raw)
     if (jexl) {
@@ -645,7 +652,13 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
           ),
         )
       } else if (deps.isType(entry)) {
-        properties[slot] = resettable(mstSchema(entry as MstType, depth + 1))
+        properties[slot] = resettable(
+          mstSchema(
+            entry as MstType,
+            depth + 1,
+            meta.options.retiredMembers?.[slot]?.names,
+          ),
+        )
       }
     }
     return properties
@@ -827,13 +840,16 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
     meta: SchemaMetadata,
     depth: number,
     defName?: string,
+    retiredMembers: readonly string[] = [],
   ): JsonSchema {
     const name = type.name.replace(/ConfigurationSchema$/, '')
     const forms = liftedForms(meta)
     const slots = slotTable(meta, depth)
     const properties = {
       ...Object.fromEntries(
-        Object.keys(meta.options.retired ?? {}).map(key => [key, LEGACY]),
+        [...Object.keys(meta.options.retired ?? {}), ...retiredMembers].map(
+          key => [key, LEGACY],
+        ),
       ),
       ...identityOf(meta, name),
       ...slots,

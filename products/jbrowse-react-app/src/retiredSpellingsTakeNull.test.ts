@@ -32,6 +32,14 @@ function retiredSpellings(pluginManager: PluginManager) {
     for (const [key, lift] of Object.entries(meta.options.retired ?? {})) {
       found.push([`${meta.name}.${key}`, lift])
     }
+    for (const [key, { names, lift }] of Object.entries(
+      meta.options.retiredMembers ?? {},
+    )) {
+      found.push([
+        `${meta.name}.${key}`,
+        () => lift(Object.fromEntries(names.map(name => [name, null])), {}),
+      ])
+    }
     for (const member of Object.values(meta.definition)) {
       walk(member)
     }

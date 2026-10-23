@@ -103,6 +103,25 @@ describe('extractModifications', () => {
     expect(out.map(m => m.modType)).toEqual(['m'])
   })
 
+  test('a strict threshold hides the call at it, a non-strict one keeps it', () => {
+    const feature = new SimpleFeature({
+      ...makeFeature().toJSON(),
+      tags: { MM: 'C+m,0;A+a,0;', ML: [230, 127] },
+    })
+    const atCall = (127 + 0.5) / 2.56
+    const drawn = (thresholdStrict: boolean) =>
+      drive(
+        feature,
+        {
+          type: 'modifications',
+          modifications: { threshold: atCall, thresholdStrict },
+        },
+        { start: 0, end: Number.MAX_SAFE_INTEGER } as Region,
+      ).map(m => m.modType)
+    expect(drawn(false)).toEqual(['m', 'a'])
+    expect(drawn(true)).toEqual(['m'])
+  })
+
   test('shownModifications allow-list renders only the listed type but still detects all', () => {
     const { out, detected } = run({
       type: 'modifications',

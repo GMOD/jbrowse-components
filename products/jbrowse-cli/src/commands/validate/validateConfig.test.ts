@@ -295,6 +295,41 @@ describe('validateConfig', () => {
     }
   })
 
+  it('warns rather than errors on a namespace member a lift moves out', () => {
+    const config = baseConfig()
+    config.tracks[0] = {
+      ...config.tracks[0]!,
+      // @ts-expect-error the betas' modification thresholds
+      displays: [
+        {
+          type: 'LinearAlignmentsDisplay',
+          modifications: { threshold: 50, cytosineContext: 'CHG' },
+          pileup: { readHeight: 3 },
+        },
+      ],
+    }
+    expect(errorsOf(config)).toEqual([])
+    const warnings = warningsOf(config)
+    expect(warnings.map(w => w.where).toSorted()).toEqual([
+      'tracks[0].displays[0].modifications.cytosineContext',
+      'tracks[0].displays[0].modifications.threshold',
+      'tracks[0].displays[0].pileup.readHeight',
+    ])
+    for (const { message } of warnings) {
+      expect(message).toContain('legacy key')
+    }
+  })
+
+  it('accepts a retired namespace member in displayDefaults', () => {
+    const config = baseConfig()
+    config.tracks[0] = {
+      ...config.tracks[0]!,
+      // @ts-expect-error the betas' modification threshold
+      displayDefaults: { modifications: { threshold: 50 } },
+    }
+    expect(errorsOf(config)).toEqual([])
+  })
+
   // The same rewrites, from the validator's side: a warning naming the current
   // spelling, never an error, because the app loads every one of these.
   it('warns rather than errors on a retired-type rendering value', () => {

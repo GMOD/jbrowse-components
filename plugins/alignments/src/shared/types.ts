@@ -36,6 +36,7 @@ export interface ModificationColorBy {
   // shows up; the menu turns the layer off in place of an empty list.
   shownModifications?: readonly string[]
   threshold?: number
+  thresholdStrict?: boolean
   // cytosine context for `unmodified: 'all'`; absent means CpG. CHG/CHH
   // support plant methylation. Only consumed when filling (getMethBins) or in
   // bisulfite mode.

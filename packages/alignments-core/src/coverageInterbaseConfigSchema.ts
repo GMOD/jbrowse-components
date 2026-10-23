@@ -1,6 +1,10 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import { lowerBoundOf, predicatesOf } from '@jbrowse/core/util/fieldPredicate'
+import { floorOf, predicatesOf } from '@jbrowse/core/util/fieldPredicate'
 import { fieldPredicateList } from '@jbrowse/display-kit/fieldPredicateConfigSchema'
+
+import { layerFilterProblems } from './layerFilterProblems.ts'
+
+import type { Floor } from '@jbrowse/core/util/fieldPredicate'
 
 /**
  * #config CoverageInterbase
@@ -36,9 +40,10 @@ export const coverageInterbaseConfigSchema = ConfigurationSchema(
      * #slot filter
      * Which positions get an indicator triangle, by `depth`, the reads
      * covering the position, and `fraction`, its insertions and clips as a
-     * share of that depth. Unwritten, a field keeps its default, `depth` at
-     * least 8 and `fraction` above 0.3; an entry naming a field with no test,
-     * `{ field: 'depth' }`, drops that field's default.
+     * share of that depth, each a floor written `gte` or `gt`. Unwritten, a
+     * field keeps its default, `depth` at least 8 and `fraction` above 0.3;
+     * an entry naming a field with no test, `{ field: 'depth' }`, drops that
+     * field's default.
      */
     filter: fieldPredicateList(),
   },
@@ -47,29 +52,33 @@ export const coverageInterbaseConfigSchema = ConfigurationSchema(
 
 /** The depth and share a position needs for an indicator triangle. */
 export interface InterbaseIndicatorRule {
-  minDepth: number
-  minFraction: number
+  depth: Floor
+  fraction: Floor
 }
 
 export const DEFAULT_INTERBASE_INDICATOR_RULE: InterbaseIndicatorRule = {
-  minDepth: 8,
-  minFraction: 0.3,
+  depth: { min: 8, strict: false },
+  fraction: { min: 0.3, strict: true },
 }
+
+const NO_FLOOR: Floor = { min: 0, strict: false }
 
 /** The rule an `interbase.filter` list states, each field over its default. */
 export function interbaseIndicatorRuleOf(
   filter: unknown,
 ): InterbaseIndicatorRule {
   const predicates = predicatesOf(filter)
-  const bound = (field: string, fallback: number) =>
+  const floor = (field: 'depth' | 'fraction') =>
     predicates.some(p => p.field === field)
-      ? (lowerBoundOf(predicates, field) ?? 0)
-      : fallback
-  return {
-    minDepth: bound('depth', DEFAULT_INTERBASE_INDICATOR_RULE.minDepth),
-    minFraction: bound(
-      'fraction',
-      DEFAULT_INTERBASE_INDICATOR_RULE.minFraction,
-    ),
-  }
+      ? (floorOf(predicates, field) ?? NO_FLOOR)
+      : DEFAULT_INTERBASE_INDICATOR_RULE[field]
+  return { depth: floor('depth'), fraction: floor('fraction') }
+}
+
+/** The `interbase.filter` entries the triangle rule cannot apply. */
+export function interbaseFilterProblems(filter: unknown) {
+  return layerFilterProblems('coverage.interbase.filter', filter, {
+    depth: { tests: ['gte', 'gt'] },
+    fraction: { tests: ['gte', 'gt'], max: 1 },
+  })
 }

@@ -24,8 +24,14 @@ exports[`a cluster run lands its tree with provenance, and a reset restores the 
   "rowTree": "(mm10,(hg38,panTro4));",
   "rpcProps": {
     "interbaseIndicators": {
-      "minDepth": 8,
-      "minFraction": 0.3,
+      "depth": {
+        "min": 8,
+        "strict": false,
+      },
+      "fraction": {
+        "min": 0.3,
+        "strict": true,
+      },
     },
     "rowFocus": undefined,
   },
@@ -92,8 +98,14 @@ exports[`a cluster run lands its tree with provenance, and a reset restores the 
   "rowTree": "((hg38,panTro4),mm10);",
   "rpcProps": {
     "interbaseIndicators": {
-      "minDepth": 8,
-      "minFraction": 0.3,
+      "depth": {
+        "min": 8,
+        "strict": false,
+      },
+      "fraction": {
+        "min": 0.3,
+        "strict": true,
+      },
     },
     "rowFocus": undefined,
   },
@@ -147,8 +159,14 @@ exports[`a cluster run rotates towards the declared order 1`] = `
   "rowTree": "((panTro4,hg38),mm10);",
   "rpcProps": {
     "interbaseIndicators": {
-      "minDepth": 8,
-      "minFraction": 0.3,
+      "depth": {
+        "min": 8,
+        "strict": false,
+      },
+      "fraction": {
+        "min": 0.3,
+        "strict": true,
+      },
     },
     "rowFocus": undefined,
   },
@@ -202,8 +220,14 @@ exports[`a declared order leads with no tree 1`] = `
   "rowTree": undefined,
   "rpcProps": {
     "interbaseIndicators": {
-      "minDepth": 8,
-      "minFraction": 0.3,
+      "depth": {
+        "min": 8,
+        "strict": false,
+      },
+      "fraction": {
+        "min": 0.3,
+        "strict": true,
+      },
     },
     "rowFocus": undefined,
   },
@@ -253,8 +277,14 @@ exports[`a declared order rotates a supplied tree 1`] = `
   "rowTree": "((hg38,panTro4),mm10);",
   "rpcProps": {
     "interbaseIndicators": {
-      "minDepth": 8,
-      "minFraction": 0.3,
+      "depth": {
+        "min": 8,
+        "strict": false,
+      },
+      "fraction": {
+        "min": 0.3,
+        "strict": true,
+      },
     },
     "rowFocus": undefined,
   },
@@ -308,8 +338,14 @@ exports[`a declared order rotates a supplied tree 2`] = `
   "rowTree": "((hg38,panTro4),mm10);",
   "rpcProps": {
     "interbaseIndicators": {
-      "minDepth": 8,
-      "minFraction": 0.3,
+      "depth": {
+        "min": 8,
+        "strict": false,
+      },
+      "fraction": {
+        "min": 0.3,
+        "strict": true,
+      },
     },
     "rowFocus": undefined,
   },
@@ -363,8 +399,14 @@ exports[`a dialog recolor over an adapter color, in place 1`] = `
   "rowTree": undefined,
   "rpcProps": {
     "interbaseIndicators": {
-      "minDepth": 8,
-      "minFraction": 0.3,
+      "depth": {
+        "min": 8,
+        "strict": false,
+      },
+      "fraction": {
+        "min": 0.3,
+        "strict": true,
+      },
     },
     "rowFocus": undefined,
   },
@@ -414,8 +456,14 @@ exports[`a dialog reorder to a rotation keeps the supplied tree beside a relabel
   "rowTree": "((hg38,panTro4),mm10);",
   "rpcProps": {
     "interbaseIndicators": {
-      "minDepth": 8,
-      "minFraction": 0.3,
+      "depth": {
+        "min": 8,
+        "strict": false,
+      },
+      "fraction": {
+        "min": 0.3,
+        "strict": true,
+      },
     },
     "rowFocus": undefined,
   },
@@ -469,8 +517,14 @@ exports[`a dialog reorder to a rotation keeps the supplied tree beside a relabel
   "rowTree": "((hg38,panTro4),mm10);",
   "rpcProps": {
     "interbaseIndicators": {
-      "minDepth": 8,
-      "minFraction": 0.3,
+      "depth": {
+        "min": 8,
+        "strict": false,
+      },
+      "fraction": {
+        "min": 0.3,
+        "strict": true,
+      },
     },
     "rowFocus": undefined,
   },
@@ -529,8 +583,14 @@ exports[`a discovered row joins after a reorder 1`] = `
   "rowTree": undefined,
   "rpcProps": {
     "interbaseIndicators": {
-      "minDepth": 8,
-      "minFraction": 0.3,
+      "depth": {
+        "min": 8,
+        "strict": false,
+      },
+      "fraction": {
+        "min": 0.3,
+        "strict": true,
+      },
     },
     "rowFocus": undefined,
   },
@@ -588,8 +648,14 @@ exports[`a focus narrows the rows and the fetch key 1`] = `
   "rowTree": "((hg38,panTro4),mm10);",
   "rpcProps": {
     "interbaseIndicators": {
-      "minDepth": 8,
-      "minFraction": 0.3,
+      "depth": {
+        "min": 8,
+        "strict": false,
+      },
+      "fraction": {
+        "min": 0.3,
+        "strict": true,
+      },
     },
     "rowFocus": [
       "hg38",
@@ -643,8 +709,14 @@ exports[`a focus narrows the rows and the fetch key 2`] = `
   "rowTree": "((hg38,panTro4),mm10);",
   "rpcProps": {
     "interbaseIndicators": {
-      "minDepth": 8,
-      "minFraction": 0.3,
+      "depth": {
+        "min": 8,
+        "strict": false,
+      },
+      "fraction": {
+        "min": 0.3,
+        "strict": true,
+      },
     },
     "rowFocus": [
       "hg38",
@@ -695,8 +767,14 @@ exports[`a focus narrows the rows and the fetch key 3`] = `
   "rowTree": "((hg38,panTro4),mm10);",
   "rpcProps": {
     "interbaseIndicators": {
-      "minDepth": 8,
-      "minFraction": 0.3,
+      "depth": {
+        "min": 8,
+        "strict": false,
+      },
+      "fraction": {
+        "min": 0.3,
+        "strict": true,
+      },
     },
     "rowFocus": undefined,
   },
@@ -753,8 +831,14 @@ exports[`a focused cluster run keeps the hidden row after the clade 1`] = `
   "rowTree": "(panTro4,hg38);",
   "rpcProps": {
     "interbaseIndicators": {
-      "minDepth": 8,
-      "minFraction": 0.3,
+      "depth": {
+        "min": 8,
+        "strict": false,
+      },
+      "fraction": {
+        "min": 0.3,
+        "strict": true,
+      },
     },
     "rowFocus": [
       "hg38",
@@ -805,8 +889,14 @@ exports[`a focused cluster run keeps the hidden row after the clade 2`] = `
   "rowTree": "(panTro4,hg38);",
   "rpcProps": {
     "interbaseIndicators": {
-      "minDepth": 8,
-      "minFraction": 0.3,
+      "depth": {
+        "min": 8,
+        "strict": false,
+      },
+      "fraction": {
+        "min": 0.3,
+        "strict": true,
+      },
     },
     "rowFocus": undefined,
   },
@@ -859,8 +949,14 @@ exports[`a reorder no rotation of the supplied tree produces drops it, and a res
   "rowTree": undefined,
   "rpcProps": {
     "interbaseIndicators": {
-      "minDepth": 8,
-      "minFraction": 0.3,
+      "depth": {
+        "min": 8,
+        "strict": false,
+      },
+      "fraction": {
+        "min": 0.3,
+        "strict": true,
+      },
     },
     "rowFocus": undefined,
   },
@@ -910,8 +1006,14 @@ exports[`a reorder no rotation of the supplied tree produces drops it, and a res
   "rowTree": "((hg38,panTro4),mm10);",
   "rpcProps": {
     "interbaseIndicators": {
-      "minDepth": 8,
-      "minFraction": 0.3,
+      "depth": {
+        "min": 8,
+        "strict": false,
+      },
+      "fraction": {
+        "min": 0.3,
+        "strict": true,
+      },
     },
     "rowFocus": undefined,
   },
@@ -965,8 +1067,14 @@ exports[`a supplied guide tree leads the rows 1`] = `
   "rowTree": "((hg38,panTro4),mm10);",
   "rpcProps": {
     "interbaseIndicators": {
-      "minDepth": 8,
-      "minFraction": 0.3,
+      "depth": {
+        "min": 8,
+        "strict": false,
+      },
+      "fraction": {
+        "min": 0.3,
+        "strict": true,
+      },
     },
     "rowFocus": undefined,
   },
@@ -1020,8 +1128,14 @@ exports[`adapter labels and colors are the rows own 1`] = `
   "rowTree": undefined,
   "rpcProps": {
     "interbaseIndicators": {
-      "minDepth": 8,
-      "minFraction": 0.3,
+      "depth": {
+        "min": 8,
+        "strict": false,
+      },
+      "fraction": {
+        "min": 0.3,
+        "strict": true,
+      },
     },
     "rowFocus": undefined,
   },
@@ -1071,8 +1185,14 @@ exports[`hiding the reference row prunes it from the rows and the tree 1`] = `
   "rowTree": "((hg38,panTro4),mm10);",
   "rpcProps": {
     "interbaseIndicators": {
-      "minDepth": 8,
-      "minFraction": 0.3,
+      "depth": {
+        "min": 8,
+        "strict": false,
+      },
+      "fraction": {
+        "min": 0.3,
+        "strict": true,
+      },
     },
     "rowFocus": undefined,
   },
@@ -1124,8 +1244,14 @@ exports[`hiding the reference row prunes it from the rows and the tree 2`] = `
   "rowTree": "((hg38,panTro4),mm10);",
   "rpcProps": {
     "interbaseIndicators": {
-      "minDepth": 8,
-      "minFraction": 0.3,
+      "depth": {
+        "min": 8,
+        "strict": false,
+      },
+      "fraction": {
+        "min": 0.3,
+        "strict": true,
+      },
     },
     "rowFocus": [
       "hg38",
@@ -1171,8 +1297,14 @@ exports[`sort at a column orders the rows by base and drops the supplied tree 1`
   "rowTree": undefined,
   "rpcProps": {
     "interbaseIndicators": {
-      "minDepth": 8,
-      "minFraction": 0.3,
+      "depth": {
+        "min": 8,
+        "strict": false,
+      },
+      "fraction": {
+        "min": 0.3,
+        "strict": true,
+      },
     },
     "rowFocus": undefined,
   },

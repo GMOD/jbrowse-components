@@ -163,7 +163,10 @@ export function extractModifications(
         // unmethylated color (with prob = 1-prob = the unmodified confidence);
         // default mode hides calls below the threshold and always paints the mod
         // color at full prob. `isMeth` unifies both without an intermediate alloc.
-        if (twoColor || prob >= modThreshold) {
+        if (
+          twoColor ||
+          (mods?.thresholdStrict ? prob > modThreshold : prob >= modThreshold)
+        ) {
           const isMeth = !twoColor || prob > 0.5
           modificationsData.push({
             readIndex,

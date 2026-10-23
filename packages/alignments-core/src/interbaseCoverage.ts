@@ -11,6 +11,8 @@
  * a reader to pick the wrong one of. `interbaseSegments.ts` is the decode side,
  * used by the hit test and by tests.
  */
+import { passesFloor } from '@jbrowse/core/util/fieldPredicate'
+
 import { interbaseDepthAt } from './coverageDownsampling.ts'
 import { DEFAULT_INTERBASE_INDICATOR_RULE } from './coverageInterbaseConfigSchema.ts'
 import {
@@ -68,7 +70,7 @@ function indicatorTypeFor(
   position: number,
   coverageDepths: Float32Array,
   coverageStartPos: number,
-  { minDepth, minFraction }: InterbaseIndicatorRule,
+  rule: InterbaseIndicatorRule,
 ) {
   const total = entry.insertion + entry.softclip + entry.hardclip
   const localDepth = interbaseDepthAt(
@@ -77,7 +79,10 @@ function indicatorTypeFor(
     position,
   )
   let dominantType = 0
-  if (localDepth >= minDepth && total > localDepth * minFraction) {
+  if (
+    passesFloor(localDepth, rule.depth) &&
+    passesFloor(total / localDepth, rule.fraction)
+  ) {
     dominantType = 1
     let dominantCount = entry.insertion
     if (entry.softclip > dominantCount) {

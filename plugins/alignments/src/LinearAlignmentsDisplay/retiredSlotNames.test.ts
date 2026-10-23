@@ -106,23 +106,6 @@ test('a beta coverage.minAlleleFraction lifts into the alleles filter', () => {
   ])
 })
 
-test('beta modifications thresholds lift into pileup.bases.filter', () => {
-  const conf = create({
-    modifications: {
-      threshold: 50,
-      cytosineContext: 'CHG',
-      shownModifications: ['a'],
-      unmodified: 'all',
-    },
-  })
-  expect(predicatesOf(conf.pileup.bases.filter)).toEqual([
-    { field: 'probability', gte: 0.5 },
-    { field: 'context', oneOf: ['CHG'] },
-    { field: 'code', oneOf: ['a'] },
-  ])
-  expect(readConfObject(conf, ['modifications', 'unmodified'])).toBe('all')
-})
-
 test("a display's own v4 read size beats its renderer's", () => {
   const conf = create({
     featureHeight: 3,

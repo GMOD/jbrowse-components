@@ -5,7 +5,10 @@ import {
   coverageDepthDomain,
   hitCoverageBand,
 } from '@jbrowse/alignments-core'
-import { COVERAGE_Y_PATHS } from '@jbrowse/alignments-core/coverageBandConfigSchema'
+import {
+  COVERAGE_Y_PATHS,
+  coverageLayerProblems,
+} from '@jbrowse/alignments-core/coverageBandConfigSchema'
 import {
   ConfigurationReference,
   getConf,
@@ -1421,8 +1424,9 @@ export default function stateModelFactory(
           /**
            * #method
            * The schema's rules, then what the rows cannot paint as written: a
-           * codon color with no reading frames, and a range on a field that
-           * paints the theme's colors.
+           * coverage layer filter test its layer does not make, a codon color
+           * with no reading frames, and a range on a field that paints the
+           * theme's colors.
            */
           configProblemsOf(conf: AnyConfigurationModel): string[] {
             const colorField: MafColorField = readConfObject(conf, [
@@ -1438,6 +1442,7 @@ export default function stateModelFactory(
             ])
             return [
               ...superConfigProblemsOf(conf),
+              ...coverageLayerProblems(conf.coverage),
               ...(colorField === 'codon' && !self.framesAdapterConfig
                 ? [
                     'encoding.color.field: codon needs a framesAdapter on the MAF adapter to define reading frames, so the rows paint the mismatches',

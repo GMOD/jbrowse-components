@@ -1,4 +1,8 @@
-import { interbaseIndicatorRuleOf } from './coverageInterbaseConfigSchema.ts'
+import { alleleFilterProblems } from './coverageAllelesConfigSchema.ts'
+import {
+  interbaseFilterProblems,
+  interbaseIndicatorRuleOf,
+} from './coverageInterbaseConfigSchema.ts'
 import { computeInterbaseCoverage } from './interbaseCoverage.ts'
 import { readInterbaseSegments } from './interbaseSegments.ts'
 
@@ -147,7 +151,10 @@ describe('computeInterbaseCoverage (indicator triangles)', () => {
     }))
     const shallow = cov(new Float32Array(20).fill(7), 7)
     const rule = interbaseIndicatorRuleOf([{ field: 'depth', gte: 4 }])
-    expect(rule).toEqual({ minDepth: 4, minFraction: 0.3 })
+    expect(rule).toEqual({
+      depth: { min: 4, strict: false },
+      fraction: { min: 0.3, strict: true },
+    })
     expect(
       computeInterbaseCoverage(insertions, [], [], shallow, rule)
         .indicatorCount,
@@ -161,9 +168,52 @@ describe('computeInterbaseCoverage (indicator triangles)', () => {
         .indicatorCount,
     ).toBe(0)
     expect(interbaseIndicatorRuleOf([{ field: 'depth' }])).toEqual({
-      minDepth: 0,
-      minFraction: 0.3,
+      depth: { min: 0, strict: false },
+      fraction: { min: 0.3, strict: true },
     })
+  })
+
+  it('honors gt and gte as written, the default at depth 8 and above 0.3', () => {
+    const insertions = (n: number) =>
+      Array.from({ length: n }, () => ({ position: 105, length: 5 }))
+    const count = (n: number, depth: number, filter?: unknown) =>
+      computeInterbaseCoverage(
+        insertions(n),
+        [],
+        [],
+        cov(new Float32Array(20).fill(depth), depth),
+        filter === undefined ? undefined : interbaseIndicatorRuleOf(filter),
+      ).indicatorCount
+    expect(count(5, 8)).toBe(1)
+    expect(count(5, 8, [{ field: 'depth', gt: 8 }])).toBe(0)
+    expect(count(5, 9, [{ field: 'depth', gt: 8 }])).toBe(1)
+    expect(count(3, 10)).toBe(0)
+    expect(count(3, 10, [{ field: 'fraction', gte: 0.3 }])).toBe(1)
+    expect(count(3, 10, [{ field: 'fraction', gt: 0.3 }])).toBe(0)
+    expect(
+      interbaseIndicatorRuleOf([
+        { field: 'fraction', gte: 0.3 },
+        { field: 'fraction', gt: 0.3 },
+      ]).fraction,
+    ).toEqual({ min: 0.3, strict: true })
+  })
+
+  it('names a test the triangle rule cannot apply', () => {
+    expect(
+      interbaseFilterProblems([
+        { field: 'depth', gt: 8 },
+        { field: 'fraction', gte: 0.2 },
+      ]),
+    ).toEqual([])
+    expect(interbaseFilterProblems([{ field: 'depth', lte: 4 }])).toEqual([
+      'coverage.interbase.filter: depth takes gte or gt, not {"field":"depth","lte":4}',
+    ])
+    expect(interbaseFilterProblems([{ field: 'fraction', gt: 30 }])).toEqual([
+      'coverage.interbase.filter: fraction runs from 0 to 1, not {"field":"fraction","gt":30}',
+    ])
+    expect(alleleFilterProblems([{ field: 'fraction', gt: 0.2 }])).toEqual([
+      'coverage.alleles.filter: fraction takes gte, not {"field":"fraction","gt":0.2}',
+    ])
   })
 
   it('stacks one segment per non-empty type, accumulating yOffset', () => {

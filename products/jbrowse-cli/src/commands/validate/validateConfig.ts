@@ -132,7 +132,7 @@ function warnSlots(
       if (isRecord(item)) {
         warnSlots(
           item,
-          { slots: slot.subSlots },
+          { slots: slot.subSlots, legacyKeys: slot.legacyKeys },
           `${where}.${slot.name}${suffix}`,
           report,
         )

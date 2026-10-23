@@ -5,6 +5,7 @@ export {
 } from './configurationSchema.ts'
 export type {
   ConfigurationSchemaDefinition,
+  RetiredMembers,
   RetiredSpelling,
 } from './configurationSchema.ts'
 export {

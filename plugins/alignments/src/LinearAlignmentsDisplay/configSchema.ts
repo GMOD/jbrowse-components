@@ -1,6 +1,6 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
-import { liftModificationThresholds } from '../shared/basesFilter.ts'
+import { retiredModificationMembers } from '../shared/basesFilter.ts'
 import { alignmentsModificationsConfigSchema } from './alignmentsModificationsConfigSchema.ts'
 import { baseLinearAlignmentsDisplayConfigSchema } from './baseConfigSchema.ts'
 import { readsPileupConfigSchema } from './readsPileupConfigSchema.ts'
@@ -130,7 +130,7 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
        */
       baseConfiguration: baseLinearAlignmentsDisplayConfigSchema,
       explicitlyTyped: true,
-      preProcessSnapshot: liftModificationThresholds,
+      retiredMembers: { modifications: retiredModificationMembers },
     },
   )
 }

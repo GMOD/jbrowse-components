@@ -18,20 +18,26 @@ export interface DisplaySnapshot {
 }
 
 /**
- * The members of `value` a display's namespace slot `key` declares, or
- * undefined where the slot is no namespace or `value` no object: a namespace
- * takes the members it declares and leaves the rest to its sibling displays.
+ * The members of `value` a display's namespace slot `key` declares or
+ * retires (`retiredMembers`), or undefined where the slot is no namespace or
+ * `value` no object: a namespace takes those members and leaves the rest to
+ * its sibling displays.
  */
 function namespaceMembers(
   schema: AnyConfigurationSchemaType,
   key: string,
   value: unknown,
 ) {
-  const entry = getConfigurationSchemaMetadata(schema)?.definition[key]
+  const meta = getConfigurationSchemaMetadata(schema)
+  const entry = meta?.definition[key]
+  const retired = meta?.options.retiredMembers?.[key]?.names ?? []
   return isBareConfigurationSchemaType(entry) &&
     !writesWholeAt(schema, [key]) &&
     isPlainObject(value)
-    ? membersDeclaredBy(entry, value)
+    ? [
+        ...membersDeclaredBy(entry, value),
+        ...retired.filter(name => Object.hasOwn(value, name)),
+      ]
     : undefined
 }
 

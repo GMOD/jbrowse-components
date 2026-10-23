@@ -55,3 +55,50 @@ test('a delta in the current spelling comes back by identity', () => {
   }
   expect(respell(base, delta)).toBe(delta)
 })
+
+const membersDisplay = ConfigurationSchema(
+  'MembersDisplay',
+  { band, opacity: { type: 'number', defaultValue: 1 } },
+  {
+    explicitlyTyped: true,
+    explicitIdentifier: 'displayId',
+    retiredMembers: {
+      band: {
+        names: ['alpha'],
+        lift: ({ alpha }, _written, under) => ({
+          opacity: alpha ?? under?.opacity,
+        }),
+      },
+    },
+  },
+)
+
+test('a retired member lift reads the base display the delta lands on', () => {
+  const respellMembers = deltaInCurrentSpelling({
+    displayTypes: new Map([['MembersDisplay', {}]]),
+    getDisplayType: () => ({ configSchema: membersDisplay }),
+  } as unknown as PluginManager)
+  const membersBase = {
+    trackId: 't',
+    displays: [{ type: 'MembersDisplay', displayId: 'd', opacity: 0.3 }],
+  }
+  expect(
+    respellMembers(membersBase, {
+      trackId: 't',
+      displays: [{ displayId: 'd', band: { alpha: null } }],
+    }),
+  ).toEqual({
+    trackId: 't',
+    displays: [{ displayId: 'd', band: {}, opacity: 0.3 }],
+  })
+  expect(
+    respellMembers(membersBase, {
+      trackId: 't',
+      displays: [
+        { type: 'MembersDisplay', displayId: 'other', band: { alpha: null } },
+      ],
+    }).displays,
+  ).toEqual([
+    { type: 'MembersDisplay', displayId: 'other', band: {}, opacity: 0.3 },
+  ])
+})

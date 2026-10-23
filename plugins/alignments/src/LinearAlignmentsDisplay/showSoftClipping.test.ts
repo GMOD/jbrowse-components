@@ -662,13 +662,28 @@ describe('alignments readConnections (arcs)', () => {
   })
 })
 
+test('a layer filter test its layer does not make is a notice', () => {
+  const { display } = createDisplay({
+    coverage: {
+      interbase: { filter: [{ field: 'depth', lte: 4 }] },
+      alleles: { filter: [{ field: 'fraction', gt: 0.2 }] },
+    },
+    pileup: { bases: { filter: [{ field: 'probability', gte: 50 }] } },
+  })
+  expect(display.configNotices).toEqual([
+    'coverage.interbase.filter: depth takes gte or gt, not {"field":"depth","lte":4}',
+    'coverage.alleles.filter: fraction takes gte, not {"field":"fraction","gt":0.2}',
+    'pileup.bases.filter: probability runs from 0 to 1, not {"field":"probability","gte":50}',
+  ])
+})
+
 test('the interbase filter reaches the worker, each field over its default', () => {
   const { display } = createDisplay({
     coverage: { interbase: { filter: [{ field: 'depth', gte: 2 }] } },
   })
   expect(display.rpcProps().interbaseIndicators).toEqual({
-    minDepth: 2,
-    minFraction: 0.3,
+    depth: { min: 2, strict: false },
+    fraction: { min: 0.3, strict: true },
   })
   display.setCoverageMinAlleleFraction(0.05)
   expect(display.coverageMinAlleleFraction).toBe(0.05)

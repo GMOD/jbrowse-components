@@ -6,6 +6,8 @@ import {
 } from '@jbrowse/core/util/fieldPredicate'
 import { fieldPredicateList } from '@jbrowse/display-kit/fieldPredicateConfigSchema'
 
+import { layerFilterProblems } from './layerFilterProblems.ts'
+
 import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
 
 const FRACTION = 'fraction'
@@ -31,7 +33,8 @@ export const coverageAllelesConfigSchema = ConfigurationSchema(
   {
     /**
      * #slot filter
-     * Entries on `fraction`, 0 to 1. Empty colors every mismatch,
+     * Entries on `fraction`, a floor from 0 to 1 written `gte`, the one
+     * test the band's draw makes. Empty colors every mismatch,
      * sequencing errors included. Distinct from `pileup.fadeLowFrequency`,
      * which fades the pileup's marks by the same share through a
      * depth-dependent threshold.
@@ -56,4 +59,11 @@ export function withAlleleFloor(
     FRACTION,
     fraction > 0 ? fraction : undefined,
   )
+}
+
+/** The `alleles.filter` entries the band's draw cannot apply. */
+export function alleleFilterProblems(filter: unknown) {
+  return layerFilterProblems('coverage.alleles.filter', filter, {
+    [FRACTION]: { tests: ['gte'], max: 1 },
+  })
 }

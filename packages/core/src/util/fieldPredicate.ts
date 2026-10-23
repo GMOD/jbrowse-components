@@ -332,6 +332,48 @@ export function lowerBoundOf(
 }
 
 /**
+ * A floor on one number: a value passes at `min` itself unless `strict`.
+ */
+export interface Floor {
+  min: number
+  strict: boolean
+}
+
+/**
+ * The tightest floor the predicates put on `field`, `gt` beating a `gte` of
+ * the same bound, or undefined where none names one.
+ */
+export function floorOf(
+  predicates: readonly FieldPredicate[],
+  field: string,
+): Floor | undefined {
+  let floor: Floor | undefined
+  for (const p of predicates) {
+    if (p.field === field) {
+      for (const [min, strict] of [
+        [p.gte, false],
+        [p.gt, true],
+      ] as const) {
+        if (
+          min !== undefined &&
+          (floor === undefined ||
+            min > floor.min ||
+            (min === floor.min && strict))
+        ) {
+          floor = { min, strict }
+        }
+      }
+    }
+  }
+  return floor
+}
+
+/** Whether `value` clears `floor`. */
+export function passesFloor(value: number, { min, strict }: Floor) {
+  return strict ? value > min : value >= min
+}
+
+/**
  * The predicate list with `field`'s lower bound set to `gte`, or removed with
  * undefined; a predicate left testing nothing drops out. What a slider on one
  * field writes.

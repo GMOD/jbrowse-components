@@ -1,19 +1,29 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
-import { coverageAllelesConfigSchema } from './coverageAllelesConfigSchema.ts'
+import {
+  alleleFilterProblems,
+  coverageAllelesConfigSchema,
+} from './coverageAllelesConfigSchema.ts'
 import { coverageEncodingConfigSchema } from './coverageEncodingConfigSchema.ts'
-import { coverageInterbaseConfigSchema } from './coverageInterbaseConfigSchema.ts'
+import {
+  coverageInterbaseConfigSchema,
+  interbaseFilterProblems,
+} from './coverageInterbaseConfigSchema.ts'
 
 import type { YScalePaths } from '@jbrowse/wiggle-core'
 
 export {
+  alleleFilterProblems,
   alleleFloorOf,
   withAlleleFloor,
 } from './coverageAllelesConfigSchema.ts'
 export {
   DEFAULT_INTERBASE_INDICATOR_RULE,
+  interbaseFilterProblems,
   interbaseIndicatorRuleOf,
 } from './coverageInterbaseConfigSchema.ts'
+export { layerFilterProblems } from './layerFilterProblems.ts'
+export type { LayerFilterField } from './layerFilterProblems.ts'
 export type { InterbaseIndicatorRule } from './coverageInterbaseConfigSchema.ts'
 
 /**
@@ -100,3 +110,14 @@ export const COVERAGE_Y_PATHS = {
   },
   reset: [Y],
 } as const satisfies YScalePaths
+
+/** The coverage band's layer filter entries its layers cannot apply. */
+export function coverageLayerProblems(coverage: {
+  interbase: { filter: unknown }
+  alleles: { filter: unknown }
+}) {
+  return [
+    ...interbaseFilterProblems(coverage.interbase.filter),
+    ...alleleFilterProblems(coverage.alleles.filter),
+  ]
+}

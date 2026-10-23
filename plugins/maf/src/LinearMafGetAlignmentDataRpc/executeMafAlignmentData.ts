@@ -20,7 +20,6 @@ export interface LinearMafGetAlignmentDataArgs extends BaseMafRpcArgs {
   // scores) only the genomes it draws. No order travels with it: rows name
   // their species and the client places them (see `placeMafRegionData`).
   rowFocus?: string[]
-  // `coverage.interbase.filter`, resolved: which positions earn a triangle.
   interbaseIndicators?: InterbaseIndicatorRule
 }
 

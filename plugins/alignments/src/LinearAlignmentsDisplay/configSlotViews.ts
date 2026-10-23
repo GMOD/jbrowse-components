@@ -1,5 +1,6 @@
 import {
   alleleFloorOf,
+  coverageLayerProblems,
   interbaseIndicatorRuleOf,
   withAlleleFloor,
 } from '@jbrowse/alignments-core/coverageBandConfigSchema'
@@ -39,7 +40,10 @@ import {
   withFields,
 } from '../shared/alignmentsFilter.ts'
 import { arcColorFieldOf } from '../shared/arcColorOptions.ts'
-import { modificationFiltersOf } from '../shared/basesFilter.ts'
+import {
+  basesFilterProblems,
+  modificationFiltersOf,
+} from '../shared/basesFilter.ts'
 import { facetUnitNotices } from '../shared/groupFeatures.ts'
 import { sortOf, sortProblems } from './alignmentsSortConfigSchema.ts'
 import {
@@ -109,7 +113,8 @@ export function writtenFilterOf(
 /**
  * What a config says beside the schema's rules that the reads cannot draw as
  * written: a per-base `encoding.color.field`, levels a field does not have,
- * a `facet` the `unit` cannot group by, and a column `sort` with no `pos`.
+ * a `facet` the `unit` cannot group by, a column `sort` with no `pos`, and a
+ * layer filter test its layer does not make.
  */
 export function alignmentsConfigProblems(
   conf: BaseLinearAlignmentsDisplayConfigModel,
@@ -125,6 +130,8 @@ export function alignmentsConfigProblems(
     ),
     ...sortProblems(conf.sort),
     ...filterProblems(writtenFilterOf(conf)),
+    ...coverageLayerProblems(conf.coverage),
+    ...basesFilterProblems(readsConfOf(conf)?.pileup.bases.filter),
     ...(readsConfOf(conf)
       ? []
       : writtenFilterOf(conf)

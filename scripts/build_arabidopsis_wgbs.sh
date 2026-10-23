@@ -140,8 +140,11 @@ for t in cfg["tracks"]:
         t["displays"] = [{
             "type": "LinearAlignmentsDisplay",
             "displayId": "arabidopsis_wgbs-LinearAlignmentsDisplay",
-            "pileup": {"bases": {"show": True, "encoding": {"color": "bisulfite"}}},
-            "modifications": {"cytosineContext": "CG"},
+            "pileup": {"bases": {
+                "show": True,
+                "encoding": {"color": "bisulfite"},
+                "filter": [{"field": "context", "oneOf": ["CG"]}],
+            }},
         }]
 cfg["defaultSession"] = {
     "name": "Arabidopsis WGBS (bisulfite / EM-seq)",
