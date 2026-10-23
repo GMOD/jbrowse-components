@@ -45,6 +45,10 @@ function makeModel(
     effectiveFacet: undefined,
     groupOrder: [],
     setFacetSort: jest.fn(),
+    showSashimi: false,
+    setShowSashimi: jest.fn(),
+    showSashimiCounts: false,
+    setShowSashimiCounts: jest.fn(),
     ...overrides,
   }
 }

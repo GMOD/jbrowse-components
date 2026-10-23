@@ -10,7 +10,6 @@ import {
 import { baseLayerOfField, tagColorFor } from '../../shared/alignmentsColor.ts'
 import {
   ARC_COLOR_OPTIONS,
-  SAME_AS_READS_HELP,
   SAME_AS_READS_LABEL,
 } from '../../shared/arcColorOptions.ts'
 import { radioColorFieldOptions } from '../../shared/colorFieldOptions.ts'
@@ -81,14 +80,6 @@ interface ColorByMenuOptions {
   // The MM/ML modification submenu plus reference-based bisulfite.
   includeModifications?: boolean
   colorOptions?: ColorFieldOption[]
-  // Read-connection coloring lives here rather than in the Read connections
-  // menu — it's a rare setting and colors belong together. Omitted (like every
-  // other section here) when nothing paints it: no arcs, read cloud or
-  // connectors. The caller passes `undefined` in that case.
-  arcColor?: {
-    own: ArcColorField | ''
-    setField: (field: ArcColorField | '') => void
-  }
 }
 
 // Derived from the shared COLOR_SCHEMES registry (single source of menu
@@ -133,20 +124,24 @@ function colorRadio(
         })
 }
 
-// The per-base layer draws over whatever fills the reads, so its rows are a
-// radio group of their own with a way back to none.
-function baseLayerItems(
+// The per-base layer draws over whatever fills the reads, so its radios are a
+// group of their own, in a submenu so Color by... ticks one row.
+function perBaseItem(
   model: AnyColorByModel,
   options: ColorFieldOption[],
   mods: ModificationsModel | undefined,
-): MenuItem[] {
-  return [
-    radioItem('None', model.baseLayer === undefined, () => {
-      model.setBaseLayer()
-    }),
-    ...options.map(o => colorRadio(model, o)),
-    ...(mods ? modificationsItems(mods) : []),
-  ]
+): MenuItem {
+  return {
+    label: 'Per-base coloring',
+    type: 'subMenu',
+    subMenu: [
+      radioItem('None', model.baseLayer === undefined, () => {
+        model.setBaseLayer()
+      }),
+      ...options.map(o => colorRadio(model, o)),
+      ...(mods ? modificationsItems(mods) : []),
+    ],
+  }
 }
 
 function tagColorScaleOf({
@@ -238,17 +233,17 @@ function modificationsItems(model: ModificationsModel): MenuItem[] {
   ]
 }
 
-function arcColorItem(
-  arcColor: NonNullable<ColorByMenuOptions['arcColor']>,
-): MenuItem {
+/** The arcs, read cloud and connectors' own color field, for "Advanced". */
+export function getReadConnectionsColorItem(arcColor: {
+  own: ArcColorField | ''
+  setField: (field: ArcColorField | '') => void
+}): MenuItem {
   return {
-    label: 'Arc color',
+    label: 'Read connections color',
     type: 'subMenu',
-    helpText:
-      'How the paired-end arcs, the read cloud and the connectors over the pileup are colored by insert size and/or pair orientation, to surface structural-variant signal (deletions, inversions, duplications, insertions).',
     subMenu: radioItems(
       [
-        { value: '', label: SAME_AS_READS_LABEL, helpText: SAME_AS_READS_HELP },
+        { value: '' as const, label: SAME_AS_READS_LABEL },
         ...ARC_COLOR_OPTIONS,
       ],
       arcColor.own,
@@ -266,7 +261,6 @@ export function getColorByMenuItem(
     includeTagOption,
     includePairedEnd,
     includeModifications,
-    arcColor,
   } = options
   const mods = includeModifications ? modModel(model) : undefined
   const readOptions = colorOptions.filter(
@@ -275,12 +269,6 @@ export function getColorByMenuItem(
   const layerOptions = colorOptions.filter(
     o => baseLayerOfField(o.field) !== undefined,
   )
-  // Everything above the header picks the read fill scheme — the radios and the
-  // Paired end / Modifications / Bisulfite submenus alike. Below it the arcs
-  // and read cloud take their own field. Both render as a submenu arrow, so one
-  // header carries the distinction. Absent when the arcs are off, so a curated
-  // menu (synteny) stays a plain radio list.
-  const refinements = arcColor ? [arcColorItem(arcColor)] : []
   return colorByMenuItem({
     blocks: [
       {
@@ -291,16 +279,11 @@ export function getColorByMenuItem(
           solidColorItem(paintsConstant(model), () => {
             model.pickSolidColor()
           }),
+          ...(layerOptions.length > 0 || mods
+            ? [perBaseItem(model, layerOptions, mods)]
+            : []),
         ],
       },
-      {
-        header: 'Per-base coloring',
-        rows:
-          layerOptions.length > 0 || mods
-            ? baseLayerItems(model, layerOptions, mods)
-            : [],
-      },
     ],
-    additional: refinements,
   })
 }

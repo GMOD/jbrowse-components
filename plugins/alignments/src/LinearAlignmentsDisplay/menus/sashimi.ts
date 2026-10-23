@@ -1,7 +1,6 @@
 import { makeSizeSubMenu } from '@jbrowse/core/ui'
 import { radioItems, toggleItem } from '@jbrowse/core/ui/menuItems'
 import { categoryFilterItem } from '@jbrowse/display-kit/categoryFilter'
-import AltRouteIcon from '@mui/icons-material/AltRoute'
 
 import { DEFAULT_MIN_SASHIMI_READS } from '../../shared/alignmentsFilter.ts'
 
@@ -16,7 +15,7 @@ const SASHIMI_PLACEMENT_OPTIONS: { value: SashimiPlacement; label: string }[] =
     { value: 'down', label: 'Below coverage' },
   ]
 
-interface SashimiModel {
+export interface SashimiModel {
   showSashimi: boolean
   setShowSashimi: (show: boolean) => void
   showSashimiCounts: boolean
@@ -36,27 +35,20 @@ interface SashimiPlacementModel {
   setSashimiPlacement: (placement: SashimiPlacement) => void
 }
 
-// Checkboxes only, as in "Read connections": the junction filters live in
-// "Filter by..." and the placement in "Advanced".
-export function getSashimiMenuItem(model: SashimiModel) {
-  const subMenu: MenuItem[] = [
-    toggleItem('Show sashimi arcs', model.showSashimi, show => {
+/** The arcs' rows in "Show...": the arcs, and their counts while they draw. */
+export function sashimiShowItems(model: SashimiModel): MenuItem[] {
+  return [
+    toggleItem('Sashimi arcs', model.showSashimi, show => {
       model.setShowSashimi(show)
     }),
     ...(model.showSashimi
       ? [
-          toggleItem('Show read counts', model.showSashimiCounts, show => {
+          toggleItem('Sashimi read counts', model.showSashimiCounts, show => {
             model.setShowSashimiCounts(show)
           }),
         ]
       : []),
   ]
-  return {
-    label: 'Sashimi arcs',
-    icon: AltRouteIcon,
-    type: 'subMenu' as const,
-    subMenu,
-  }
 }
 
 /** The `filter` rows on junctions, for "Filter by...", while the arcs draw. */

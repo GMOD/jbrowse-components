@@ -1,6 +1,6 @@
 import { displayPainted } from '@jbrowse/browser-test-utils'
 
-import { heightModeLabel } from '../../../packages/display-kit/src/heightMode.ts'
+import { FIT_TO_TRACK_LABEL } from '../../../plugins/alignments/src/LinearAlignmentsDisplay/menus/compactnessPresets.ts'
 import {
   DEMO_CONFIG,
   HG002_NANOPORE_HP_TRACK,
@@ -35,8 +35,6 @@ export const VOLVOX_SV_CRAM_ADAPTER = {
     locationType: 'UriLocation',
   },
 }
-
-const FIT_LABEL = heightModeLabel('fit', 'read')
 
 // Built by scripts/build_hsv1_demo.sh.
 const HSV1_CONFIG = 'https://jbrowse.org/demos/hsv1/config.json'
@@ -949,11 +947,11 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     viewportHeight: 560,
     actions: [
       { type: 'click', selector: '[data-testid="track_menu_icon"]' },
-      ...menuCascade(['Read height', FIT_LABEL]),
+      ...menuCascade(['Read height', FIT_TO_TRACK_LABEL]),
     ],
     annotations: [
       { type: 'box', anchor: { text: 'Read height' } },
-      { type: 'box', anchor: { text: FIT_LABEL } },
+      { type: 'box', anchor: { text: FIT_TO_TRACK_LABEL } },
     ],
   },
 

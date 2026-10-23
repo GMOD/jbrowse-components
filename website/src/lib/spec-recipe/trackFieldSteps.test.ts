@@ -163,6 +163,18 @@ test('read connections are the band checkboxes', () => {
   ).toEqual(['Track menu → Read connections → Read arcs (unchecked)'])
 })
 
+test('alignments fit is a Read height radio and autogrow an Advanced checkbox', () => {
+  expect(stepPaths('heightMode', 'fit', 'LinearAlignmentsDisplay')).toEqual([
+    'Track menu → Row height → Fit to track height',
+  ])
+  expect(stepPaths('heightMode', 'grow', 'LinearAlignmentsDisplay')).toEqual([
+    'Track menu → Advanced → Autogrow track height (checked)',
+  ])
+  expect(stepPaths('heightMode', 'fit', 'LinearBasicDisplay')).toEqual([
+    'Track menu → Feature height → Track sizing → Fit row height to track height',
+  ])
+})
+
 test("a filter list's entries are the rows that write them", () => {
   expect(
     stepPaths('filter', ['jexl:feature.score > 5'], 'LinearBasicDisplay'),

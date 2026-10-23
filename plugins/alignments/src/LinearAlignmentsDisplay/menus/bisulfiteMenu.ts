@@ -39,8 +39,6 @@ export function bisulfiteItem(model: BisulfiteModel): MenuItem {
 
   return {
     label: 'Bisulfite / EM-seq',
-    helpText:
-      'Reference-based methylation read from C→T conversion; needs no MM/ML tags. Methylated cytosines paint red, by cytosine context — turn on "Show unmethylated" to paint the converted sites blue as well.',
     subMenu: [
       ...radioItems<CytosineContext>(
         cytosineContextOptions,
@@ -52,17 +50,9 @@ export function bisulfiteItem(model: BisulfiteModel): MenuItem {
       ...(isBis
         ? [
             DIVIDER,
-            checkboxItem(
-              'Show unmethylated (blue)',
-              twoColor,
-              () => {
-                setBisulfite({ unmodified: twoColor ? 'hidden' : 'calls' })
-              },
-              {
-                helpText:
-                  'When on, the unmethylated (converted) sites paint blue as well as the methylated ones painting red. Off by default, so a track reads as presence/absence of methylation rather than a red/blue mix on every read.',
-              },
-            ),
+            checkboxItem('Show unmethylated (blue)', twoColor, () => {
+              setBisulfite({ unmodified: twoColor ? 'hidden' : 'calls' })
+            }),
           ]
         : []),
     ],

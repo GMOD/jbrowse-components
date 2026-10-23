@@ -94,8 +94,6 @@ export function interbaseIndicatorsMenuItem(model: {
       disabled: !model.showCoverage,
       disabledHelpText:
         'Interbase marks are drawn in the coverage band — turn on "Show... → Coverage" first',
-      helpText:
-        'Mark what occupies no reference base, insertions and on reads their clipping, with a between-base tick in the coverage band.',
     },
   )
 }

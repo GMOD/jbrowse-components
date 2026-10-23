@@ -1,4 +1,4 @@
-export { getColorByMenuItem } from './colorBy.ts'
+export { getColorByMenuItem, getReadConnectionsColorItem } from './colorBy.ts'
 export { getContextMenuItems, getHitMenuItems } from './contextMenu.ts'
 export {
   copyFeatureInfo,
@@ -9,6 +9,7 @@ export {
   NORMAL_PITCH,
   featureSpacingForHeight,
   getFeatureHeightMenuItem,
+  getTrackSizingItems,
 } from './featureSize.ts'
 export { getFiltersMenuItems } from './filters.ts'
 export {
@@ -29,9 +30,5 @@ export {
   getReadConnectionsMenuItem,
 } from './readConnections.ts'
 export { getReadsMenuItems } from './reads.ts'
-export {
-  getJunctionFilterItems,
-  getSashimiMenuItem,
-  getSashimiPlacementItems,
-} from './sashimi.ts'
+export { getJunctionFilterItems, getSashimiPlacementItems } from './sashimi.ts'
 export { getGroupByMenuItem, getSortMenuItem } from './sortGroup.ts'

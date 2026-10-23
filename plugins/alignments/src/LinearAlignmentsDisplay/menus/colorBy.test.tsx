@@ -61,8 +61,8 @@ function subMenuOf(item: MenuItem | undefined) {
   return item && 'subMenu' in item ? resolveSubMenu(item) : []
 }
 
-// Flatten the Color by... menu one level so both top-level scheme radios and the
-// nested "Paired end" radios are reachable by label. These specs describe the
+// Flatten the Color by... menu so the scheme radios and those nested under
+// "Paired end" and "Per-base coloring" are reachable by label. These specs describe the
 // alignments display's menu, which opts into every section — a caller that opts
 // out is covered by the curation tests below.
 function allItems(
@@ -76,7 +76,13 @@ function allItems(
       ...opts,
     }),
   )
-  return top.flatMap(i => ('subMenu' in i ? [i, ...resolveSubMenu(i)] : [i]))
+  return flatten(top)
+}
+
+function flatten(items: MenuItem[]): MenuItem[] {
+  return items.flatMap(i =>
+    'subMenu' in i ? [i, ...flatten(resolveSubMenu(i))] : [i],
+  )
 }
 
 function byLabel(
@@ -140,6 +146,22 @@ function clickRadio(model: Model, label: string) {
   item.onClick({})
 }
 
+// The bisulfite rows by name: "CHG" also names a cytosine context in the
+// modifications submenu.
+function bisulfiteRow(model: Model, label: string) {
+  return subMenuOf(byLabel(model, 'Bisulfite / EM-seq')).find(
+    i => 'label' in i && i.label === label,
+  )
+}
+
+function clickBisulfite(model: Model, label: string) {
+  const item = bisulfiteRow(model, label)
+  if (!item || !('onClick' in item)) {
+    throw new Error(`no clickable bisulfite "${label}"`)
+  }
+  item.onClick({})
+}
+
 const BY_TYPE = 'One color per modification type'
 const TWO_COLOR =
   'One color per type, plus low-probability & unmodified in blue'
@@ -173,7 +195,7 @@ describe('color by modifications menu', () => {
     clickRadio(model, BY_TYPE)
     expect(model.modificationSettings).toMatchObject(refined)
 
-    clickRadio(model, 'CHG')
+    clickBisulfite(model, 'CHG')
     expect(model.baseLayer).toEqual({
       type: 'bisulfite',
       modifications: expect.objectContaining({
@@ -194,16 +216,16 @@ describe('color by modifications menu', () => {
       type: 'modifications',
       modifications: { unmodified: 'all' },
     }
-    clickRadio(model, 'CHG')
-    const unmethylated = byLabel(model, 'Show unmethylated (blue)')
+    clickBisulfite(model, 'CHG')
+    const unmethylated = bisulfiteRow(model, 'Show unmethylated (blue)')
     expect(
       unmethylated && 'checked' in unmethylated && unmethylated.checked,
     ).toBe(true)
     clickRadio(model, TWO_COLOR)
     expect(model.modificationSettings.unmodified).toBe('all')
 
-    clickRadio(model, 'CHH')
-    clickRadio(model, 'Show unmethylated (blue)')
+    clickBisulfite(model, 'CHH')
+    clickBisulfite(model, 'Show unmethylated (blue)')
     expect(model.modificationSettings.unmodified).toBe('hidden')
   })
 
@@ -416,23 +438,27 @@ describe('color by menu curation', () => {
     subMenuOf(getColorByMenuItem(makeModel(), opts)).map(i =>
       'label' in i ? i.label : '',
     )
+  const deepLabelsFor = (opts: Parameters<typeof getColorByMenuItem>[1]) =>
+    flatten(subMenuOf(getColorByMenuItem(makeModel(), opts))).map(i =>
+      'label' in i ? i.label : '',
+    )
 
   test('paired-end and modification sections are absent unless opted into', () => {
-    const labels = labelsFor({})
+    const labels = deepLabelsFor({})
     expect(labels).not.toContain('Paired end')
     expect(labels).not.toContain('Bisulfite / EM-seq')
     expect(labels).not.toContain('Tag...')
   })
 
   test('each section is opted into independently', () => {
-    expect(labelsFor({ includePairedEnd: true })).toContain('Paired end')
-    expect(labelsFor({ includePairedEnd: true })).not.toContain(
+    expect(deepLabelsFor({ includePairedEnd: true })).toContain('Paired end')
+    expect(deepLabelsFor({ includePairedEnd: true })).not.toContain(
       'Bisulfite / EM-seq',
     )
-    expect(labelsFor({ includeModifications: true })).toContain(
+    expect(deepLabelsFor({ includeModifications: true })).toContain(
       'Bisulfite / EM-seq',
     )
-    expect(labelsFor({ includeModifications: true })).not.toContain(
+    expect(deepLabelsFor({ includeModifications: true })).not.toContain(
       'Paired end',
     )
   })
@@ -457,6 +483,18 @@ describe('color by menu curation', () => {
   // Everything behind the scheme is already wired for a BAM (the worker reads
   // the mate refName off next_ref, readFillColors bakes it, the legend names its
   // empty bucket "No mate"); it just had no row to reach it from.
+  // One radio group in the top menu, so one row reads as ticked: the per-base
+  // layer's radios sit in their own submenu.
+  test('per-base coloring is a submenu, not a second radio group', () => {
+    const model = makeModel()
+    model.baseLayer = { type: 'modifications' }
+    const top = subMenuOf(
+      getColorByMenuItem(model, { includeModifications: true }),
+    )
+    expect(top.filter(i => 'checked' in i && i.checked)).toHaveLength(1)
+    expect(top.some(i => i.type === 'subHeader')).toBe(false)
+  })
+
   test('mate chromosome is reachable from the paired-end submenu', () => {
     const model = makeModel()
     // clickRadio throws if the row isn't there or isn't clickable, so reaching

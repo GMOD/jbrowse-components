@@ -3,8 +3,8 @@ import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
 import { DEFAULT_MIN_SASHIMI_READS } from '../../shared/alignmentsFilter.ts'
 import {
   getJunctionFilterItems,
-  getSashimiMenuItem,
   getSashimiPlacementItems,
+  sashimiShowItems,
 } from './sashimi.ts'
 
 import type { JunctionFilter } from '../../shared/types.ts'
@@ -53,18 +53,13 @@ function click(items: MenuItem[], label: string) {
   row.onClick()
 }
 
-describe('sashimi menu', () => {
-  test('only the toggle shows until sashimi arcs are on', () => {
-    expect(labelsOf(resolveSubMenu(getSashimiMenuItem(makeModel())))).toEqual([
-      'Show sashimi arcs',
-    ])
-  })
-
-  test('is checkboxes only, with no "?"', () => {
+describe('sashimi rows in Show...', () => {
+  test('the counts appear only while the arcs draw', () => {
     const model = makeModel()
+    expect(labelsOf(sashimiShowItems(model))).toEqual(['Sashimi arcs'])
     model.showSashimi = true
-    const rows = resolveSubMenu(getSashimiMenuItem(model))
-    expect(labelsOf(rows)).toEqual(['Show sashimi arcs', 'Show read counts'])
+    const rows = sashimiShowItems(model)
+    expect(labelsOf(rows)).toEqual(['Sashimi arcs', 'Sashimi read counts'])
     expect(rows.every(i => 'checked' in i && !('helpText' in i))).toBe(true)
   })
 })

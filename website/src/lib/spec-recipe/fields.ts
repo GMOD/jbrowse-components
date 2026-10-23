@@ -1,5 +1,8 @@
 import { rowLabels } from '../../../../plugins/linear-genome-view/src/MultiLevelRubberband/rowLabel.ts'
-import { COMPACTNESS_PRESETS } from '../../../../plugins/alignments/src/LinearAlignmentsDisplay/menus/compactnessPresets.ts'
+import {
+  COMPACTNESS_PRESETS,
+  FIT_TO_TRACK_LABEL,
+} from '../../../../plugins/alignments/src/LinearAlignmentsDisplay/menus/compactnessPresets.ts'
 import {
   COLOR_FIELDS,
   alignmentsColorEncoding,
@@ -68,8 +71,8 @@ import {
 //
 // `growMaxHeight` is reported for a third reason, and it is the one the Settings
 // paragraph above forbids papering over: it is a config slot with no control at
-// all. The size submenu's 'Track sizing' radios pick the MODE (`heightMode`);
-// nothing in the UI edits the ceiling that mode grows to. A figure needs it when
+// all. The menus pick the MODE (`heightMode`); nothing in the UI edits the
+// ceiling that mode grows to. A figure needs it when
 // its own read height pushes the track past the 800px default, which is a spec
 // concern rather than something a reader would click, so the honest answer is
 // the JSON tab.
@@ -263,7 +266,7 @@ const modificationsStep: FieldRecipe = value => {
   )
   return [
     {
-      path: `${TRACK_MENU} → Color by... → Modifications → ${
+      path: `${TRACK_MENU} → Color by... → Per-base coloring → Modifications → ${
         mods.unmodified === 'calls' || mods.unmodified === 'all'
           ? MODIFICATION_TWO_COLOR
           : MODIFICATION_BY_TYPE
@@ -275,7 +278,7 @@ const modificationsStep: FieldRecipe = value => {
     ...(context
       ? [
           {
-            path: `${TRACK_MENU} → Color by... → Bisulfite / EM-seq → ${context.label}`,
+            path: `${TRACK_MENU} → Color by... → Per-base coloring → Bisulfite / EM-seq → ${context.label}`,
             note: 'Under the bisulfite color field only.',
           },
         ]
@@ -861,7 +864,7 @@ const FILTER_MENU_DISPLAYS = new Set([
   'LinearMultiSampleVariantDisplay',
 ])
 
-// The radios inside the alignments display's 'Arc color' submenu, imported so a
+// The radios inside the alignments display's 'Read connections color' submenu, imported so a
 // renamed radio changes this table with it.
 const ARC_COLORS: Record<string, string> = Object.fromEntries([
   ['', SAME_AS_READS_LABEL],
@@ -982,8 +985,7 @@ const SUBFEATURE_LABELS: Record<string, string> = Object.fromEntries(
 
 // The canvas display titles its size submenu 'Feature height' whatever the
 // track holds, while getFeatureHeightMenuItem — the alignments display and
-// LGVSyntenyDisplay — titles it after the track's noun. Both group the sizing
-// radios under the same 'Track sizing' subheader.
+// LGVSyntenyDisplay — titles it after the track's noun.
 // An entry whose display is unknown keeps the noun form.
 const heightMenu = (noun: string, displayType?: string) =>
   displayType && CANVAS_DISPLAYS.has(displayType)
@@ -1704,7 +1706,7 @@ export const trackFields: Record<string, FieldRecipe> = {
     const field = channelOf(value)?.field
     const label = typeof field === 'string' ? ARC_COLORS[field] : undefined
     return label && displayType === 'LinearAlignmentsDisplay'
-      ? { path: `${TRACK_MENU} → Color by... → Arc color → ${label}` }
+      ? { path: `${TRACK_MENU} → Advanced → Read connections color → ${label}` }
       : undefined
   },
   sort: (value, { displayType, noun }) => {
@@ -1846,8 +1848,9 @@ export const trackFields: Record<string, FieldRecipe> = {
   // names its preset without a second table to keep in sync
   featureHeight: readHeightStep,
   'pileup.readHeight': readHeightStep,
-  // 'Track sizing' is a subheader inside the same submenu as the size presets
-  // A triangle display's `heightMode` is the one shared fitToHeightCheckboxItem
+  // The canvas display's 'Track sizing' radios sit under a subheader in its
+  // size submenu; the alignments display's fit is a Read height radio and its
+  // autogrow a checkbox in Advanced. A triangle display's `heightMode` is the one shared fitToHeightCheckboxItem
   // in a Layout submenu, so the path is the same for each.
   heightMode: (value, { noun, displayType }) => {
     if (displayType && TRIANGLE_DISPLAYS.has(displayType)) {
@@ -1857,6 +1860,15 @@ export const trackFields: Record<string, FieldRecipe> = {
             note: 'Squashes the triangle vertically to fill the track instead of drawing square bins at its natural half-the-view-width height. Unchecked keeps square bins, which fits when the feature of interest sits nearer the diagonal than the track is tall.',
           }
         : undefined
+    }
+    if (!(displayType && CANVAS_DISPLAYS.has(displayType))) {
+      return value === 'fit'
+        ? { path: `${heightMenu(noun, displayType)} → ${FIT_TO_TRACK_LABEL}` }
+        : value === 'grow' || value === 'fixed'
+          ? {
+              path: `${TRACK_MENU} → Advanced → Autogrow track height (${value === 'grow' ? 'checked' : 'unchecked'})`,
+            }
+          : undefined
     }
     const option = getHeightModeOptions(noun).find(o => o.value === value)
     return option
@@ -1925,7 +1937,7 @@ export const trackFields: Record<string, FieldRecipe> = {
   // histogram wants: the arcs are strand-colored too, from the XS/TS tag, and
   // outdraw it.
   'sashimi.show': checkbox(
-    'Sashimi arcs → Show sashimi arcs',
+    'Show... → Sashimi arcs',
     'Hides the splice-junction arcs and keeps the coverage band underneath them.',
   ),
   // Same label in the same submenu on both displays that have the slot: the
@@ -1952,7 +1964,7 @@ export const trackFields: Record<string, FieldRecipe> = {
   showForward: checkbox('Show... → Forward'),
   showReverse: checkbox('Show... → Reverse'),
   showTranslation: checkbox('Show... → Translation'),
-  'sashimi.labels': layerCheckbox('Sashimi arcs → Show read counts'),
+  'sashimi.labels': layerCheckbox('Show... → Sashimi read counts'),
   'readConnections.placement': fromTable(
     'Advanced → Read connections placement',
     READ_CONNECTIONS_PLACEMENT,
@@ -1962,7 +1974,7 @@ export const trackFields: Record<string, FieldRecipe> = {
     'Unchecked, the band keeps only the pairs that carry a category — an abnormal insert size or orientation, or a split junction — which on deep coverage is the difference between a readable band and a solid mass.',
   ),
   'pileup.maxLayoutHeight': numberField(n => ({
-    path: `${TRACK_MENU} → Read height → Set max layout height... → ${n}`,
+    path: `${TRACK_MENU} → Advanced → Set max layout height... → ${n}`,
   })),
   mark: markStep,
   extent: value =>

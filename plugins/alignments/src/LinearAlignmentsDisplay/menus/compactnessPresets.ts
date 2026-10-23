@@ -31,3 +31,6 @@ export function featureSpacingForHeight(height: number) {
 export const NORMAL_PITCH =
   COMPACTNESS_PRESETS.normal.readHeight +
   featureSpacingForHeight(COMPACTNESS_PRESETS.normal.readHeight)
+
+/** The Read height radio that fits the read height to the track. */
+export const FIT_TO_TRACK_LABEL = 'Fit to track height'

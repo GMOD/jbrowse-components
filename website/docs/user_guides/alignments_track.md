@@ -114,12 +114,13 @@ call density doubles as a chromatin-accessibility readout.
 ### Bisulfite and EM-seq
 
 Bisulfite (WGBS) and EM-seq reads have no MM/ML tags; methylation is in the C→T
-conversion itself. **Color by → Bisulfite / EM-seq** reads it off the aligned
-bases against the reference, so a plain BAM from a bisulfite-aware aligner
-colors without a methylation caller. Methylated cytosines paint red, **Show
-unmethylated (blue)** paints the converted sites too, and the same submenu picks
-the CG, CHG or CHH context, which plant genomes methylate in all three. The
-[bisulfite tutorial](/docs/tutorials/bisulfite) runs it on _Arabidopsis_ data.
+conversion itself. **Color by... → Per-base coloring → Bisulfite / EM-seq**
+reads it off the aligned bases against the reference, so a plain BAM from a
+bisulfite-aware aligner colors without a methylation caller. Methylated
+cytosines paint red, **Show unmethylated (blue)** paints the converted sites
+too, and the same submenu picks the CG, CHG or CHH context, which plant genomes
+methylate in all three. The [bisulfite tutorial](/docs/tutorials/bisulfite) runs
+it on _Arabidopsis_ data.
 
 ### Pair orientation and insert size
 
@@ -234,26 +235,23 @@ See [SV channels](/docs/user_guides/sv_visualization#sv-channels).
 
 ## Read height and track sizing
 
-The track menu's **Read height** submenu sets how tall each read is drawn and
-how the track absorbs more reads than fit. The presets are Normal, Compact and
-Super-compact, plus **Custom...** for an exact pixel height.
+The track menu's **Read height** submenu sets how tall each read is drawn. The
+presets are Normal, Compact and Super-compact, plus **Custom...** for an exact
+pixel height.
 
 <Figure caption="The same reads at a compact feature height." src="/img/alignments/compact.png" />
 
-**Track sizing** in the same submenu has three modes, each label naming what
-happens to the read height, then to the track height:
+A pileup taller than the track scrolls. Two settings change that:
 
-- Fixed read height + fixed track height - the pileup scrolls when it overflows
-- Fixed read height + autogrow track height - the track grows to hold the reads,
-  up to
+- **Read height → Fit to track height** derives the read height from the track
+  height so the whole pileup fits, shrinking as coverage deepens. Picking a
+  preset drops back to it
+- **Advanced → Autogrow track height** grows the track to hold the reads, up to
   [growMaxHeight](/docs/config/linearalignmentsdisplay#slot-growmaxheight), past
   which it scrolls again. Real sequencing depth passes that ceiling quickly, so
   raise the slot to keep growing
-- Fit read height to track height - the read height is derived from the track
-  height so the whole pileup fits, shrinking as coverage deepens. No preset
-  reads as selected while fitting; picking one drops back to fixed
 
-<Figure src="/img/alignments/height_mode_fit.png" caption="The Read height submenu with Fit read height to track height selected." />
+<Figure src="/img/alignments/height_mode_fit.png" caption="The Read height submenu with Fit to track height selected." />
 
 Fit mode adapts to how much room a pileup has: drag the track taller or shorter
 and the reads re-fit. Reads draw no taller than the Normal preset and no smaller
@@ -328,7 +326,7 @@ non-canonical. The motif shows in the arc's tooltip, and a junction with no
 strand-tagged reads takes the strand its motif implies, so untagged STAR output
 still colors by strand. This needs a sequence adapter on the assembly.
 
-The track menu's **Sashimi arcs** submenu turns them on and off, and **Show read
+**Show... → Sashimi arcs** turns them on and off, and **Show... → Sashimi read
 counts** prints each junction's supporting-read count on its arc. While the arcs
 draw:
 
@@ -340,9 +338,10 @@ draw:
 - **Filter by... → Min reads at a junction** drops the junctions with fewer
   reads than the slider's value
 - **Advanced → Sashimi placement** splits the arcs above/below the coverage row
-  See the [RNA-seq tutorial](/docs/tutorials/rnaseq). When one junction peak
-  dominates the coverage histogram, **Coverage axis... → Scale → Log** keeps the
-  shallower junctions visible.
+
+See the [RNA-seq tutorial](/docs/tutorials/rnaseq). When one junction peak
+dominates the coverage histogram, **Coverage axis... → Scale → Log** keeps the
+shallower junctions visible.
 
 <Figure caption="Sashimi arcs over B2M RNA-seq with read-support labels on and coverage on a log scale." src="/img/alignments_track_arcs.png" />
 
@@ -365,10 +364,10 @@ region either side of a breakpoint shows the connection as one curve.
 Interchromosomal arcs draw in one color, since insert size and orientation mean
 nothing across chromosomes.
 
-**Color by... → Arc color** picks what colors the arcs and the read cloud:
-insert size, pair orientation, or both. **Same as reads**, the default, takes
-the read color when the read color is one of those three, and paints insert size
-and orientation under any other read color. The
+**Advanced → Read connections color** picks what colors the arcs and the read
+cloud: insert size, pair orientation, or both. **Same as reads**, the default,
+takes the read color when the read color is one of those three, and paints
+insert size and orientation under any other read color. The
 [`readConnections.encoding.color`](/docs/config/readconnectionsencoding/#slot-color)
 holds the choice, `""` meaning same as reads.
 

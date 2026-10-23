@@ -13,7 +13,6 @@ import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { SimpleFeature, getSession } from '@jbrowse/core/util'
 import { moveSectionOnto } from '@jbrowse/display-kit/groupByMenu'
-import { heightModeLabel } from '@jbrowse/display-kit/heightMode'
 import { autorun } from 'mobx'
 
 import {
@@ -77,6 +76,8 @@ function region(displayedRegionIndex: number) {
 // makes it name an assembly (`assemblyNames` derives from them) — needed by
 // anything resolving a refName against it. Off by default: most cases here
 // exercise menu/action coupling that never looks at a region.
+const ARC_COLOR = 'Read connections color'
+
 function createDisplay({ withRegions = false } = {}) {
   console.warn = jest.fn()
   const { baseSession, mount } = bootAlignmentsDisplay()
@@ -401,28 +402,25 @@ describe('setUnit color scheme preservation', () => {
   })
 })
 
-// The "Arc color" entry under "Color by..." is omitted (not greyed-out) when no
-// read-connection overlay is active — the caller passes `arcColor: undefined` so
-// arcColorSection drops it, matching every other conditional section in the
-// menu. Guards against reintroducing the always-shown disabled stub.
-
-describe('Arc color menu visibility', () => {
+// The "Read connections color" row under "Advanced" is omitted (not greyed out)
+// while nothing paints its field.
+describe('Read connections color menu visibility', () => {
   test('hidden when no read-connection overlay is active', () => {
     const display = createDisplay()
     display.setDrawnReadConnections('off')
-    expect(hasMenuItem(display.trackMenuItems(), 'Arc color')).toBe(false)
+    expect(hasMenuItem(display.trackMenuItems(), ARC_COLOR)).toBe(false)
   })
 
   test('shown for read arcs', () => {
     const display = createDisplay()
     display.setDrawnReadConnections('arc')
-    expect(hasMenuItem(display.trackMenuItems(), 'Arc color')).toBe(true)
+    expect(hasMenuItem(display.trackMenuItems(), ARC_COLOR)).toBe(true)
   })
 
   test('shown for read cloud', () => {
     const display = createDisplay()
     display.setDrawnReadConnections('cloud')
-    expect(hasMenuItem(display.trackMenuItems(), 'Arc color')).toBe(true)
+    expect(hasMenuItem(display.trackMenuItems(), ARC_COLOR)).toBe(true)
   })
 
   // The connectors over the pileup paint the same field, so the row that
@@ -431,12 +429,12 @@ describe('Arc color menu visibility', () => {
     const display = createDisplay()
     display.setDrawnReadConnections('off')
     display.setShowConnectors(true)
-    expect(hasMenuItem(display.trackMenuItems(), 'Arc color')).toBe(true)
+    expect(hasMenuItem(display.trackMenuItems(), ARC_COLOR)).toBe(true)
     // a chain's links inside one region paint a fixed color, not this field
     display.setShowConnectors(false)
     display.setUnit('chain')
     expect(display.view.displayedRegions.length).toBeLessThan(2)
-    expect(hasMenuItem(display.trackMenuItems(), 'Arc color')).toBe(false)
+    expect(hasMenuItem(display.trackMenuItems(), ARC_COLOR)).toBe(false)
   })
 })
 
@@ -463,11 +461,11 @@ describe('arc color follows the reads unless it names its own field', () => {
     expect(display.readConnectionsColorField).toBe('insertSize')
   })
 
-  test('the Arc color radios write the field, Same as reads the empty one', () => {
+  test('the color radios write the field, Same as reads the empty one', () => {
     const display = createDisplay()
     display.setDrawnReadConnections('arc')
     display.colorByField('insertSize')
-    const arcMenu = () => menuSubItems(display.trackMenuItems(), 'Arc color')
+    const arcMenu = () => menuSubItems(display.trackMenuItems(), ARC_COLOR)
     clickMenuItem(arcMenu(), 'Pair orientation')
     expect(display.readConnectionsColorField).toBe('pairOrientation')
     expect(findMenuItem(arcMenu(), 'Same as reads')).toMatchObject({
@@ -499,56 +497,23 @@ describe('pileup-only menus grey out when the pileup is hidden', () => {
     expect(item?.disabledHelpText).toBeTruthy()
   })
 
-  // The size presets and the row cap need rows to act on; the "Track sizing"
-  // modes do not — grow sizes the TRACK, and with the pileup off it collapses
-  // the track to its coverage band, which is exactly when you want it. So the
-  // gate is per row, and "Read height" itself stays open to reach them.
-  //
-  // Scoped to that submenu rather than searched from the root: 'Normal' is also
-  // a Color by... scheme, and the root-first search would answer with that one.
-  function readHeightRow(
-    display: ReturnType<typeof createDisplay>,
-    label: string,
-  ) {
-    return findMenuItem(
-      menuSubItems(display.trackMenuItems(), 'Read height'),
-      label,
-    )
-  }
-
-  test.each(['Normal', 'Compact', 'Custom...', 'Set max layout height...'])(
-    'Read height row %s greys out with the pileup hidden',
-    label => {
-      const display = createDisplay()
-      display.setShowPileup(true)
-      expect(readHeightRow(display, label)?.disabled).toBeFalsy()
-
-      display.setShowPileup(false)
-      const item = readHeightRow(display, label)
-      expect(item?.disabled).toBe(true)
-      expect(item?.disabledHelpText).toBeTruthy()
-    },
-  )
-
-  test.each([
-    // from the shared builder, so this can't drift from the rendered wording
-    heightModeLabel('fixed', 'read'),
-    heightModeLabel('grow', 'read'),
-    heightModeLabel('fit', 'read'),
-  ])('Track sizing row %s stays live with the pileup hidden', label => {
+  // Every Read height row needs rows to act on. Autogrow does not — grow sizes
+  // the TRACK, and with the pileup off it collapses the track to its coverage
+  // band — so it stays in "Advanced" while the row cap leaves.
+  test('Read height greys out with the pileup hidden, autogrow stays', () => {
     const display = createDisplay()
-    display.setShowPileup(false)
-    const item = readHeightRow(display, label)
-    expect(item).toBeDefined()
-    expect(item?.disabled).toBeFalsy()
-  })
-
-  test('Read height itself stays open so those rows are reachable', () => {
-    const display = createDisplay()
-    display.setShowPileup(false)
+    display.setShowPileup(true)
     expect(
       findMenuItem(display.trackMenuItems(), 'Read height')?.disabled,
     ).toBeFalsy()
+
+    display.setShowPileup(false)
+    const item = findMenuItem(display.trackMenuItems(), 'Read height')
+    expect(item?.disabled).toBe(true)
+    expect(item?.disabledHelpText).toBeTruthy()
+    const advanced = menuSubItems(display.trackMenuItems(), 'Advanced')
+    expect(hasMenuItem(advanced, 'Autogrow track height')).toBe(true)
+    expect(hasMenuItem(advanced, 'Set max layout height...')).toBe(false)
   })
 
   test.each(['Group by...', 'Filter by...'])(
@@ -563,19 +528,21 @@ describe('pileup-only menus grey out when the pileup is hidden', () => {
   )
 })
 
-// "Show..." is the longest submenu in the track menu, so it is kept to one kind
-// of row: a long list is hard to scan when the rows aren't alike, not when there
-// are many. The row cap was the one action among the checkboxes, and it is
-// sizing, so it closes "Read height" — beside the read size and the
-// fixed/grow/fit modes — instead.
+// Each submenu holds one kind of row: a long list is hard to scan when the rows
+// aren't alike, not when there are many. The row cap is an action, so it sits
+// in "Advanced" with the other rarely changed sizing control.
 describe('the row cap sits with the other sizing controls', () => {
-  test('"Read height" offers it and "Show..." does not', () => {
+  test('"Advanced" offers it and "Show..." and "Read height" do not', () => {
     const display = createDisplay()
     const items = display.trackMenuItems()
-    const show = menuSubItems(items, 'Show...')
-    const height = menuSubItems(items, 'Read height')
-    expect(hasMenuItem(height, 'Set max layout height...')).toBe(true)
-    expect(hasMenuItem(show, 'Set max layout height...')).toBe(false)
+    for (const menu of ['Show...', 'Read height']) {
+      expect(
+        hasMenuItem(menuSubItems(items, menu), 'Set max layout height...'),
+      ).toBe(false)
+    }
+    expect(
+      hasMenuItem(menuSubItems(items, 'Advanced'), 'Set max layout height...'),
+    ).toBe(true)
   })
 
   test('"Show..." is checkboxes end to end', () => {
@@ -2072,7 +2039,7 @@ describe('chain-strand framing: the gate, the bake and the key agree', () => {
   })
 })
 
-describe('rows the connection and sashimi menus hand to other menus', () => {
+describe('rows the layer menus hand to other menus', () => {
   function labelsUnder(
     display: ReturnType<typeof createDisplay>,
     menu: string,
@@ -2082,13 +2049,18 @@ describe('rows the connection and sashimi menus hand to other menus', () => {
     )
   }
 
+  const TRACK_SIZING = ['Autogrow track height', 'Set max layout height...']
+
   test('reach "Filter by..." and "Advanced" once their layer draws', () => {
     const display = createDisplay()
     display.setShowSashimi(false)
     expect(labelsUnder(display, 'Filter by...')).not.toContain(
       'Inter-chromosomal pairs',
     )
-    expect(labelsUnder(display, 'Advanced')).toEqual(['Edit plot...'])
+    expect(labelsUnder(display, 'Advanced')).toEqual([
+      'Edit plot...',
+      ...TRACK_SIZING,
+    ])
 
     display.setDrawnReadConnections('arc')
     display.setShowSashimi(true)
@@ -2103,9 +2075,22 @@ describe('rows the connection and sashimi menus hand to other menus', () => {
     )
     expect(labelsUnder(display, 'Advanced')).toEqual([
       'Edit plot...',
+      ...TRACK_SIZING,
+      'Read connections color',
       'Read connections placement',
       'Read connections line width',
       'Sashimi placement',
     ])
+  })
+
+  test('the sashimi toggles sit in "Show..."', () => {
+    const display = createDisplay()
+    display.setShowSashimi(true)
+    expect(labelsUnder(display, 'Show...')).toEqual(
+      expect.arrayContaining(['Sashimi arcs', 'Sashimi read counts']),
+    )
+    expect(hasMenuItem(display.trackMenuItems(), 'Sashimi placement')).toBe(
+      true,
+    )
   })
 })

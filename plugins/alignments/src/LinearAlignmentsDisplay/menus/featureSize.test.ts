@@ -1,10 +1,14 @@
 import { bootAlignmentsDisplay, clickMenuItem } from '../testUtils.ts'
 import {
   COMPACTNESS_PRESETS,
+  FIT_TO_TRACK_LABEL,
   NORMAL_PITCH,
   featureSpacingForHeight,
   getFeatureHeightMenuItem,
+  getTrackSizingItems,
 } from './featureSize.ts'
+
+import type { MenuItem } from '@jbrowse/core/ui'
 
 test('featureSpacingForHeight: 1px gap only once the body clears 3px', () => {
   expect(featureSpacingForHeight(1)).toBe(0)
@@ -58,4 +62,42 @@ test('the Custom row hands the dialog the display noun', () => {
     title: 'Custom feature height',
     label: 'Feature height (px)',
   })
+})
+
+function checkedLabels(items: MenuItem[]) {
+  return items.flatMap(i =>
+    'checked' in i && i.checked && 'label' in i ? [i.label] : [],
+  )
+}
+
+// Fit derives the size, so it is the fifth choice of one radio group rather
+// than a mode in a second group beside the sizes.
+test('fit to track height is one more read height radio', () => {
+  const { display } = createDisplay()
+  const rows = () => getFeatureHeightMenuItem(display, 'read').subMenu
+  expect(rows()).toHaveLength(5)
+  clickMenuItem(rows(), FIT_TO_TRACK_LABEL)
+  expect(display.heightMode).toBe('fit')
+  expect(checkedLabels(rows())).toEqual([FIT_TO_TRACK_LABEL])
+  clickMenuItem(rows(), COMPACTNESS_PRESETS.compact.label)
+  expect(display.heightMode).toBe('fixed')
+  expect(checkedLabels(rows())).toEqual([COMPACTNESS_PRESETS.compact.label])
+})
+
+test('autogrow toggles grow against fixed, and the row cap needs rows', () => {
+  const { display } = createDisplay()
+  const rows = (gate = {}) => getTrackSizingItems(display, gate)
+  clickMenuItem(rows(), 'Autogrow track height')
+  expect(display.heightMode).toBe('grow')
+  clickMenuItem(rows(), 'Autogrow track height')
+  expect(display.heightMode).toBe('fixed')
+  expect(rows().map(i => 'label' in i && i.label)).toEqual([
+    'Autogrow track height',
+    'Set max layout height...',
+  ])
+  expect(
+    rows({ disabled: true, disabledHelpText: 'no pileup' }).map(
+      i => 'label' in i && i.label,
+    ),
+  ).toEqual(['Autogrow track height'])
 })

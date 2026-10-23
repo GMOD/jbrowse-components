@@ -11,6 +11,7 @@ import {
   colorFieldOptions,
   getColorByMenuItem,
   getFeatureHeightMenuItem,
+  getTrackSizingItems,
   getFiltersMenuItems,
   getHitMenuItems,
   getSortMenuItem,
@@ -270,6 +271,10 @@ function stateModelFactory(schema: LGVSyntenyDisplayConfigModel) {
       // per-setting curation (which color schemes, which sort modes, which
       // layers) is what makes this synteny's menu rather than a copy.
       trackMenuItems() {
+        const pileupGate = {
+          disabled: !self.showPileup,
+          disabledHelpText: `Turn on "Show... → Alignments" to change ${self.featureNoun} height`,
+        }
         return [
           // Paired-end and modification/bisulfite coloring are deliberately
           // not opted into: a PAF block has no mate pair and no basecaller
@@ -282,7 +287,7 @@ function stateModelFactory(schema: LGVSyntenyDisplayConfigModel) {
               label: 'Query',
             }),
           }),
-          ...editPlotMenuItems(self),
+          ...editPlotMenuItems(self, getTrackSizingItems(self, pileupGate)),
           // No base pair / tag: a PAF block has no per-base sequence to sort a
           // column by, and no SAM tags.
           getSortMenuItem(self, {
@@ -296,10 +301,7 @@ function stateModelFactory(schema: LGVSyntenyDisplayConfigModel) {
           // Same submenu the synteny view and dotplot show, from one source, so
           // the three surfaces can't word the same setting differently
           ...lodMenuItems(self),
-          getFeatureHeightMenuItem(self, self.featureNoun, {
-            disabled: !self.showPileup,
-            disabledHelpText: `Turn on "Show... → Alignments" to change ${self.featureNoun} height`,
-          }),
+          getFeatureHeightMenuItem(self, self.featureNoun, pileupGate),
         ] satisfies MenuItem[]
       },
     }))

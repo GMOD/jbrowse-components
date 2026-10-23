@@ -8,6 +8,7 @@ import {
   hiddenGroupsItems,
   sectionOrderResetItems,
 } from './groupByMenu.ts'
+import { sashimiShowItems } from './sashimi.ts'
 
 import type { AlignmentsUnit } from '../constants.ts'
 import type {
@@ -15,10 +16,15 @@ import type {
   HiddenGroupsModel,
   SectionOrderMenuModel,
 } from './groupByMenu.ts'
+import type { SashimiModel } from './sashimi.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 
 interface ReadsModel
-  extends CollapseSectionsModel, HiddenGroupsModel, SectionOrderMenuModel {
+  extends
+    CollapseSectionsModel,
+    HiddenGroupsModel,
+    SectionOrderMenuModel,
+    SashimiModel {
   showLegend: boolean
   setShowLegend: (show: boolean) => void
   showCoverage: boolean
@@ -36,8 +42,7 @@ interface ReadsModel
   setFadeLowBaseQuality: (value: boolean) => void
 }
 
-// Visibility of the rendering layers. Sashimi and read-connection controls live
-// in their own menus.
+// Visibility of the rendering layers. Read connections live in their own menu.
 //
 // **Layers only.** Which reads exist is "Filter by...": the read categories
 // drop reads in the worker rather than hiding drawn ones. What is left here is
@@ -80,20 +85,9 @@ export function getReadsMenuItems(model: ReadsModel) {
     ...collapseSectionsItems(model),
     ...hiddenGroupsItems(model),
     ...sectionOrderResetItems(model),
-    toggleItem(
-      'Mismatches',
-      model.showMismatches,
-      show => {
-        model.setShowMismatches(show)
-      },
-      {
-        helpText:
-          'Uncheck to hide how each read differs from the reference — ' +
-          'mismatched bases, insertion markers and deletion bars. Intron ' +
-          'lines stay: a spliced read is drawn as separate exon blocks, so ' +
-          'the line joining them is what says they are one read.',
-      },
-    ),
+    toggleItem('Mismatches', model.showMismatches, show => {
+      model.setShowMismatches(show)
+    }),
     toggleItem(
       'Fade low quality mismatches',
       model.fadeLowBaseQuality,
@@ -110,6 +104,7 @@ export function getReadsMenuItems(model: ReadsModel) {
     // `renderers/interbaseNeedsCoverage.test.ts` is the A/B that the toggle
     // draws nothing with the band hidden.
     interbaseIndicatorsMenuItem(model),
+    ...sashimiShowItems(model),
     legendCheckboxItem(model),
   ] satisfies MenuItem[])
 }

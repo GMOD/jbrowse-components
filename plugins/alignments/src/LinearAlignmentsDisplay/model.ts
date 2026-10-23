@@ -182,10 +182,11 @@ import {
   getJunctionFilterItems,
   getReadConnectionsBandItems,
   getReadConnectionsMenuItem,
+  getReadConnectionsColorItem,
   getReadsMenuItems,
-  getSashimiMenuItem,
   getSashimiPlacementItems,
   getSortMenuItem,
+  getTrackSizingItems,
 } from './menus/index.ts'
 import {
   NO_QUALITY_SPAN,
@@ -3572,33 +3573,15 @@ export default function stateModelFactory(
          * Track menu items
          */
         trackMenuItems() {
+          const pileupGate = {
+            disabled: !self.showPileup,
+            disabledHelpText: 'Turn on Show... → Pileup to change read height',
+          }
           return [
             getColorByMenuItem(self, {
               includeTagOption: true,
               includePairedEnd: true,
               includeModifications: true,
-              // Offered wherever a connection paints this field: the arcs,
-              // the read cloud, the connectors over the pileup, and a chain's
-              // links between displayed regions. A chain's links inside one
-              // region paint a fixed color.
-              arcColor:
-                self.drawnReadConnections === 'off' &&
-                !self.showConnectors &&
-                !(
-                  self.unit === 'chain' && self.view.displayedRegions.length > 1
-                )
-                  ? undefined
-                  : {
-                      own: getConf(self, [
-                        'readConnections',
-                        'encoding',
-                        'color',
-                        'field',
-                      ]),
-                      setField: (field: ArcColorField | '') => {
-                        self.setReadConnectionsColorField(field)
-                      },
-                    },
             }),
             getSortMenuItem(self, {
               disabledHelpText: self.sortReadsBlockedReason,
@@ -3612,15 +3595,32 @@ export default function stateModelFactory(
             }),
             getGroupByMenuItem(self),
             ...getReadsMenuItems(self),
-            getFeatureHeightMenuItem(self, self.featureNoun, {
-              disabled: !self.showPileup,
-              disabledHelpText:
-                'Turn on Show... → Pileup to change read height',
-            }),
+            getFeatureHeightMenuItem(self, self.featureNoun, pileupGate),
             ...getCoverageMenuItems(self),
             getReadConnectionsMenuItem(self),
-            getSashimiMenuItem(self),
             ...editPlotMenuItems(self, [
+              ...getTrackSizingItems(self, pileupGate),
+              // Wherever a connection paints this field: the arcs, the read
+              // cloud, the connectors over the pileup, and a chain's links
+              // between displayed regions. A chain's links inside one region
+              // paint a fixed color.
+              ...(self.drawnReadConnections === 'off' &&
+              !self.showConnectors &&
+              !(self.unit === 'chain' && self.view.displayedRegions.length > 1)
+                ? []
+                : [
+                    getReadConnectionsColorItem({
+                      own: getConf(self, [
+                        'readConnections',
+                        'encoding',
+                        'color',
+                        'field',
+                      ]),
+                      setField: (field: ArcColorField | '') => {
+                        self.setReadConnectionsColorField(field)
+                      },
+                    }),
+                  ]),
               ...getReadConnectionsBandItems(self),
               ...getSashimiPlacementItems(self),
             ]),

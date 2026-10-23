@@ -105,8 +105,8 @@ assembly:
 
 **File → Open track...** also opens the file by URL and infers the `.bai`.
 
-**Color by... → Modifications** in the track menu paints each read with its 5mC
-calls, in one of two modes:
+**Color by... → Per-base coloring → Modifications** in the track menu paints
+each read with its 5mC calls, in one of two modes:
 
 - **One color per modification type** paints the positions the MM tag reports as
   modified
