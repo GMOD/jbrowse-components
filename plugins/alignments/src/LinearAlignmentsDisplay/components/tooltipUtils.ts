@@ -60,6 +60,7 @@ export interface ModificationTooltipPayload extends ModificationHitResult {
 
 export interface SashimiTooltipPayload {
   type: 'sashimi'
+  backSplice: boolean
   start: number
   end: number
   score: number
@@ -389,10 +390,12 @@ export function formatSashimiTooltip(junction: {
   strand: number
   refName: string
   motif: number
+  backSplice: boolean
 }): SashimiTooltipPayload {
-  const { start, end, count, strand, refName, motif } = junction
+  const { start, end, count, strand, refName, motif, backSplice } = junction
   return {
     type: 'sashimi',
+    backSplice,
     start,
     end,
     score: count,

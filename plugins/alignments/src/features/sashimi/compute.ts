@@ -36,6 +36,7 @@ export interface JunctionReference {
 export function computeSashimiJunctions(
   gaps: CoverageGap[],
   reference?: JunctionReference,
+  backSplices?: ReadonlyMap<string, { start: number; end: number; n: number }>,
 ) {
   const junctions = new Map<
     string,
@@ -63,7 +64,8 @@ export function computeSashimiJunctions(
     j.total++
   }
 
-  const n = junctions.size
+  const back = backSplices ? [...backSplices.values()] : []
+  const n = junctions.size + back.length
   const sashimiX1 = new Uint32Array(n)
   const sashimiX2 = new Uint32Array(n)
   const sashimiCounts = new Uint32Array(n)
@@ -71,6 +73,7 @@ export function computeSashimiJunctions(
   const sashimiRev = new Uint32Array(n)
   const sashimiDonors = new Uint8Array(n)
   const sashimiAcceptors = new Uint8Array(n)
+  const sashimiBack = new Uint8Array(n)
 
   let i = 0
   for (const j of junctions.values()) {
@@ -91,6 +94,15 @@ export function computeSashimiJunctions(
     sashimiAcceptors[i] = acceptor
     i++
   }
+  for (const j of back) {
+    sashimiX1[i] = j.start
+    sashimiX2[i] = j.end
+    sashimiCounts[i] = j.n
+    sashimiDonors[i] = DINUCLEOTIDE_UNKNOWN
+    sashimiAcceptors[i] = DINUCLEOTIDE_UNKNOWN
+    sashimiBack[i] = 1
+    i++
+  }
 
   return {
     sashimiX1,
@@ -100,5 +112,6 @@ export function computeSashimiJunctions(
     sashimiRev,
     sashimiDonors,
     sashimiAcceptors,
+    sashimiBack,
   }
 }

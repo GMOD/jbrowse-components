@@ -447,6 +447,7 @@ function junctionData(junctions: [number, number, number][]): PileupDataResult {
     sashimiRev: new Uint32Array(junctions.length),
     sashimiDonors: new Uint8Array(junctions.length),
     sashimiAcceptors: new Uint8Array(junctions.length),
+    sashimiBack: new Uint8Array(junctions.length),
   })
 }
 

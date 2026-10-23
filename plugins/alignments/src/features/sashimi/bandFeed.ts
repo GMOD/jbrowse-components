@@ -120,6 +120,12 @@ function strandColor(strand: number, colors: SashimiColors) {
   )
 }
 
+const BACK_SPLICE_COLOR = normalizedRgbToABGR(
+  0x9e / 255,
+  0x2e / 255,
+  0xb0 / 255,
+)
+
 export interface SashimiBandFeedInput {
   junctions: readonly MergedJunction[]
   /** By `junctionKey`: the junctions the layout sent to the strip below coverage. */
@@ -160,7 +166,9 @@ export function buildSashimiBandFeeds({
       side.x2Region.push(far)
       side.y.push(sashimiArcHeightFraction(Math.abs(j.end - j.start)))
       side.size.push(sashimiStrokeWidth(j.count))
-      side.color.push(strandColor(j.strand, colors))
+      side.color.push(
+        j.backSplice ? BACK_SPLICE_COLOR : strandColor(j.strand, colors),
+      )
       side.hits.push(j)
     }
   }

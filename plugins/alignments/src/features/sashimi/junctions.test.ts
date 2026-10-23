@@ -42,6 +42,7 @@ function region(refName: string, junctions: Spec[]): RegionJunctions {
       sashimiAcceptors: new Uint8Array(
         details.map(d => dinucleotide(d.acceptor)),
       ),
+      sashimiBack: new Uint8Array(junctions.length),
     },
   }
 }
@@ -79,6 +80,7 @@ describe('mergeJunctions', () => {
         count: 8,
         strand: 1,
         motif: 0,
+        backSplice: false,
       },
     ])
   })
@@ -155,6 +157,7 @@ describe('mergeJunctions', () => {
           count: 40,
           strand: 0,
           motif: SPLICE_MOTIF_NON_CANONICAL,
+          backSplice: false,
         },
       ])
     }

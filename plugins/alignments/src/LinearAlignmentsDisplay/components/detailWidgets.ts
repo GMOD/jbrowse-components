@@ -121,6 +121,7 @@ export function openSashimiWidget(
     count: number
     strand: number
     motif: number
+    backSplice: boolean
   },
   groupKey: string,
 ) {
@@ -129,8 +130,8 @@ export function openSashimiWidget(
     // Named like its siblings (openIndicatorWidget, openCigarWidget) so the
     // widget has a heading; without one it opened titled by nothing, leaving the
     // bare `type: 'skip'` to explain what had been clicked.
-    name: 'Splice junction',
-    type: 'skip',
+    name: junction.backSplice ? 'Back-splice junction' : 'Splice junction',
+    type: junction.backSplice ? 'back_splice' : 'skip',
     refName: junction.refName,
     start: junction.start,
     end: junction.end,

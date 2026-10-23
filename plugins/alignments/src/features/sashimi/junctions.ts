@@ -58,6 +58,7 @@ export interface MergedJunction {
   count: number
   strand: number
   motif: number
+  backSplice: boolean
 }
 
 // The same junction mid-merge, before the two motif halves are a motif and the
@@ -73,6 +74,7 @@ interface JunctionAccumulator {
   rev: number
   donor: number
   acceptor: number
+  backSplice: boolean
 }
 
 // Which strand tints a junction whose reads disagree. Only tagged reads vote:
@@ -107,6 +109,7 @@ export type SashimiFields = Pick<
   | 'sashimiRev'
   | 'sashimiDonors'
   | 'sashimiAcceptors'
+  | 'sashimiBack'
 >
 
 export interface RegionJunctions {
@@ -158,6 +161,7 @@ function accumulateJunctions(regions: Iterable<RegionJunctions>) {
       sashimiRev,
       sashimiDonors,
       sashimiAcceptors,
+      sashimiBack,
     } = data
     for (let i = 0; i < sashimiX1.length; i++) {
       const count = sashimiCounts[i]!
@@ -165,7 +169,8 @@ function accumulateJunctions(regions: Iterable<RegionJunctions>) {
       const acceptor = sashimiAcceptors[i]!
       const start = sashimiX1[i]!
       const end = sashimiX2[i]!
-      const key = junctionKey(refName, start, end)
+      const backSplice = sashimiBack[i] === 1
+      const key = `${junctionKey(refName, start, end)}${backSplice ? ':back' : ''}`
       const prev = out.get(key)
       if (prev === undefined) {
         out.set(key, {
@@ -178,6 +183,7 @@ function accumulateJunctions(regions: Iterable<RegionJunctions>) {
           rev: sashimiRev[i]!,
           donor,
           acceptor,
+          backSplice,
         })
       } else {
         // A dinucleotide is a property of the coordinate, so every copy that
@@ -221,6 +227,7 @@ export function mergeJunctions(
     rev,
     donor,
     acceptor,
+    backSplice,
   } of accumulateJunctions(regions).values()) {
     const motif = classifyEncodedSpliceMotif(donor, acceptor)
     if (
@@ -233,8 +240,9 @@ export function mergeJunctions(
         start,
         end,
         count,
-        strand: junctionStrand(fwd, rev, motif),
+        strand: backSplice ? 0 : junctionStrand(fwd, rev, motif),
         motif,
+        backSplice,
       })
     }
   }
@@ -313,16 +321,24 @@ export function downJunctionKeys(
   junctions: Iterable<MergedJunction>,
   placement: SashimiPlacement,
 ): ReadonlySet<string> {
-  if (placement === 'up') {
-    return NO_DOWN_KEYS
-  }
   const out = new Set<string>()
+  const linear: MergedJunction[] = []
+  for (const j of junctions) {
+    if (j.backSplice) {
+      out.add(j.key)
+    } else {
+      linear.push(j)
+    }
+  }
+  if (placement === 'up') {
+    return out.size > 0 ? out : NO_DOWN_KEYS
+  }
   if (placement === 'down') {
-    for (const j of junctions) {
+    for (const j of linear) {
       out.add(j.key)
     }
   } else {
-    for (const perRef of byRefName(junctions).values()) {
+    for (const perRef of byRefName(linear).values()) {
       for (const j of autoDownKeys(perRef)) {
         out.add(j.key)
       }

@@ -7,6 +7,7 @@ import { rpcResult } from '@jbrowse/core/util/librpc'
 import { detectSimplexModifications } from '@jbrowse/modifications-utils'
 
 import { computeReadBaseCounts } from '../features/modCoverage/readBaseCounts.ts'
+import { computeBackSpliceJunctions } from '../features/sashimi/backSplice.ts'
 import { buildAlignmentDetailArrays } from '../shared/buildAlignmentDetailArrays.ts'
 import { buildBaseFeatureData } from '../shared/buildBaseFeatureData.ts'
 import { buildBaseReadArrays } from '../shared/buildBaseReadArrays.ts'
@@ -56,6 +57,8 @@ interface GroupContext {
   // The region's reference bases, for the junctions' splice motifs. Fetched
   // once for the whole fetch and only when some group carries a skip gap.
   junctionReference: JunctionReference | undefined
+  // Whether any read in the fetch is spliced, i.e. this is RNA-seq
+  spliced: boolean
   detectedSimplexModifications: ReadonlySet<string>
   // One insert-size color scale for every section, from the sample before the
   // category filters (see computePairedInsertSizeStats).
@@ -115,6 +118,7 @@ async function buildGroupResult(
     junctions,
     modCoverage,
     junctionReference,
+    spliced,
     detectedSimplexModifications,
     insertSizeStats,
     statusCallback,
@@ -188,6 +192,14 @@ async function buildGroupResult(
     junctions,
     modCoverage,
     junctionReference,
+    backSplices: spliced
+      ? computeBackSpliceJunctions(
+          region.refName,
+          features,
+          suppAlignments,
+          clipAtStart,
+        )
+      : undefined,
     statusCallback,
     signal,
   })
@@ -379,15 +391,12 @@ export async function executeRenderAlignmentData({
         ? 'bisulfite'
         : 'modifications'
 
-  // Splice motifs need the reference under every junction. A spliced read is
-  // the one signal that this is RNA-seq, so a DNA-seq fetch never reads
-  // sequence here; bisulfite already fetched the same span, so reuse it.
-  if (
-    junctions &&
-    regionSequence === undefined &&
-    sequenceAdapter &&
-    extractions.some(e => e.gaps.some(g => g.type === 'skip'))
-  ) {
+  // A spliced read is the one signal that this is RNA-seq: splice motifs and
+  // back-splices are read only then, so a DNA-seq fetch reads no sequence here
+  // and a tandem duplication's split reads draw no back-splice. Bisulfite
+  // already fetched the same span, so reuse it.
+  const spliced = extractions.some(e => e.gaps.some(g => g.type === 'skip'))
+  if (junctions && regionSequence === undefined && sequenceAdapter && spliced) {
     const result = await fetchReferenceSequence({
       pluginManager,
       sessionId,
@@ -411,6 +420,7 @@ export async function executeRenderAlignmentData({
     junctions,
     modCoverage,
     junctionReference,
+    spliced,
     detectedSimplexModifications,
     insertSizeStats,
     statusCallback,
