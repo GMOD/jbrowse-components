@@ -134,7 +134,7 @@ test('the override still carries the inherited alignments fields', async () => {
   expect(Object.keys(display.rpcProps())).toEqual(
     expect.arrayContaining([
       'sortTag',
-      'filterBy',
+      'filter',
       'colorBy',
       'showSoftClipping',
       'showCoverage',
@@ -143,7 +143,7 @@ test('the override still carries the inherited alignments fields', async () => {
   expect(display.rpcProps()).toMatchObject({
     sortTag: undefined,
     colorBy: undefined,
-    filterBy: expect.anything(),
+    filter: expect.anything(),
     showSoftClipping: expect.any(Boolean),
     showCoverage: expect.any(Boolean),
   })
