@@ -358,9 +358,12 @@ renderer.
 `rowAxisConfigSchema` is the matching `axis` object (`tree` / `branchLength` /
 `labels` / `width`), one sub-schema every row display declares, so a display
 cannot ship three of the four. `rowAxisWithGridConfigSchema` adds `grid`, the
-row separators, on the three displays that draw them. The declared row order is not in it: every row display declares a `rows` object, and
-the mixin reads its `sort` as `rowSort`. **The mixin declares the accessors over those slots**, so a display
-composes both halves or neither. Hand-written `getConf` / `setConf` one-liners
+row separators, on the three displays that draw them.
+
+- The declared row order is not in `axis`: every row display declares a `rows`
+  object, and the mixin reads its `sort` as `rowSort`.
+- **The mixin declares the accessors over those slots**, so a display composes
+  both halves or neither. Hand-written `getConf` / `setConf` one-liners
 beside slots this package's own code reads are how the labels toggle came to be
 spelled `showSidebarLabels` on one display and silently ignore its config.
 `showRowLabelsMenuItem` is the row, and `treeSidebarShowMenuItems` the two tree

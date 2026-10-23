@@ -1,6 +1,6 @@
 ---
 name: vega-lite-vocabulary
-description: "ADR-238's migration of every display's settings to Vega-Lite's words. Landed: the predicate compiler and every filter, the synteny views' mark, axis, coord and data words, the alignments and MAF parts, the color channel (Pass A) and the y channel (Pass B). Open: Pass B's jb2hubs, ggjbrowse and lift cleanup, the band layers' filters, the tree sidebar's axis, the comparative indels part, and the writers. Read before adding or renaming any display or view setting."
+description: "ADR-238's migration of every display's settings to Vega-Lite's words. Landed: the predicate compiler and every filter, the synteny views' mark, axis, coord and data words, the alignments and MAF parts, the color channel (Pass A), the y channel (Pass B), wiggle and Hi-C `data`, and the tree sidebar's axis. Open: Pass B's jb2hubs, ggjbrowse and lift cleanup, the band layers' filters, the comparative indels part, and the writers. Read before adding or renaming any display or view setting."
 ---
 
 # Vega-Lite vocabulary: what is left
@@ -70,8 +70,12 @@ Layout, the multi-way leftovers and settings with no step are in
   `liftFlatColor` and `retiredDisplayColor`, the multi-sample variant
   display's `retired`, `liftViewColor`, `retiredOrderSpelling` (when
   jb2hubs' `HOST_VERSIONS` floor reads `sort`), the y channel's lifts
-  (item 1), Hi-C's `resolutionBias` and `selectedNormalization` lifts, and
-  wiggle's `resolution` lift and `retiredState` key.
+  (item 1), Hi-C's `resolutionBias` and `selectedNormalization` lifts,
+  wiggle's `resolution` lift and `retiredState` key, and the tree
+  sidebar's: `showTree`, `showBranchLength`, `showRowLabels`,
+  `showRowSeparators` and `treeAreaWidth` on each row display, the
+  multi-sample variant display's `showSidebarLabels`, and display-kit's
+  `liftRetiredRowState`.
 - **jb2hubs:** its unpushed branch `synteny-mark-interpolate` writes the
   synteny view's `mark: { interpolate: 'bump' }` for `drawCurves: true`. Row
   orders write `domain` beside `sort` for released hosts.

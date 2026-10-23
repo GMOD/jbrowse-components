@@ -571,7 +571,8 @@ configure the guide down the left of their rows as `axis`, beside `rows`
 - `showTree` is `axis.tree`, `showBranchLength` is `axis.branchLength`,
   `showRowLabels` is `axis.labels` and `treeAreaWidth` is `axis.width`.
 - `showRowSeparators` is `axis.grid`, on every one of them but MAF and the mark
-  display.
+  display. That `axis.grid` draws lines between rows; `encoding.y.axis.grid`
+  draws value gridlines, and a view's `axis.grid` draws ruler gridlines.
 - **A config or session in the old spellings lifts when it loads.** Code that
   reads one with `getConf` needs updating; the model getters keep their names.
 - `@jbrowse/tree-sidebar` exports `rowAxisConfigSchema` and

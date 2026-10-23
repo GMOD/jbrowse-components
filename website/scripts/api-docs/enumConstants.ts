@@ -100,10 +100,9 @@ const slotFieldsIndex = new Map<string, [string, string][] | null>()
 // A mixin's slots are shared in their types and defaults while their
 // descriptions genuinely differ per display — a MAF row is a species, a
 // multi-wiggle row a subtrack — so the shared table takes the sentences as
-// arguments. The const form above cannot express that, and every such factory
-// was therefore invisible here: the tree sidebar's factory alone once took
-// three toggles off **five** display pages while all five schemas really
-// declared them.
+// arguments. The const form above cannot express that, so without this arm
+// every such factory's slots would drop off the pages of the displays that
+// spread it.
 //
 // A factory's recorded slot sources still name its parameters
 // (`description: tree`), so the pairs are only meaningful once a call site's
