@@ -565,8 +565,17 @@ export function colorChannelOptions(
 export function colorScaleOptions(name: string) {
   return {
     closed: true,
-    preProcessSnapshot: (snap: Record<string, unknown> | undefined) =>
-      normalizeChannel(snap, name),
+    preProcessSnapshot: (
+      snap: Record<string, unknown> | string | undefined,
+    ) => {
+      // the flat color's `scale: 'ordinal'`, written inside the channel
+      if (typeof snap === 'string') {
+        throw new Error(
+          `${name} is an object: write ${name}: { "type": ${JSON.stringify(snap)} }`,
+        )
+      }
+      return normalizeChannel(snap, name)
+    },
   }
 }
 

@@ -40,47 +40,57 @@ function display(conf: { displays: AnyConfigurationModel[] }, type: string) {
   return found
 }
 
+const VALUE = ['encoding', 'color', 'value']
+
 test('displayDefaults shorthand color lands on the LinearBasicDisplay', () => {
   // the object form (displayDefaults: {...}) was expanded to the array form
   // during hydration; the color routed to the display that defines a `color` slot
   const conf = hydrateTrack('gff3tabix_genes_shorthand_color')
-  expect(
-    readConfObject(display(conf, 'LinearBasicDisplay'), ['color', 'value']),
-  ).toBe('#6a3d9a')
+  expect(readConfObject(display(conf, 'LinearBasicDisplay'), VALUE)).toBe(
+    '#6a3d9a',
+  )
 })
 
 test('one track-wide color reaches every variant display', () => {
   const conf = hydrateTrack('volvox_filtered_vcf_shorthand')
-  expect(
-    readConfObject(display(conf, 'LinearVariantDisplay'), ['color', 'value']),
-  ).toBe('#1f78b4')
-  expect(
-    readConfObject(display(conf, 'ChordVariantDisplay'), ['color', 'value']),
-  ).toBe('#1f78b4')
   // the multi-sample displays' cell color is a color object too, so a
   // track-wide color paints their alt cells
-  expect(
-    readConfObject(display(conf, 'LinearMultiSampleVariantDisplay'), [
-      'color',
-      'value',
-    ]),
-  ).toBe('#1f78b4')
+  for (const type of [
+    'LinearVariantDisplay',
+    'ChordVariantDisplay',
+    'LinearMultiSampleVariantDisplay',
+  ]) {
+    expect(readConfObject(display(conf, type), VALUE)).toBe('#1f78b4')
+  }
 })
+
+function hydrate(type: string, displayDefaults: Record<string, unknown>) {
+  const pluginManager = makePluginManager()
+  return pluginManager.getTrackType(type).configSchema.create(
+    {
+      trackId: 'routed',
+      type,
+      assemblyNames: ['volvox'],
+      adapter:
+        type === 'VariantTrack'
+          ? { type: 'VcfAdapter', uri: 'volvox.filtered.vcf' }
+          : { type: 'Gff3Adapter', uri: 'volvox.gff3' },
+      displayDefaults,
+    },
+    { pluginManager },
+  ) as AnyConfigurationModel & { displays: AnyConfigurationModel[] }
+}
+
+function colorOf(conf: { displays: AnyConfigurationModel[] }, type: string) {
+  return getSnapshot(display(conf, type).encoding.color)
+}
 
 // Every variant display reads a field of its color, so one track-wide setting
 // colors the single-variant marks, the genotype cells and the chords alike.
 test('a variant color field reaches every variant display', () => {
-  const pluginManager = makePluginManager()
-  const conf = pluginManager.getTrackType('VariantTrack').configSchema.create(
-    {
-      trackId: 'routed_vcf',
-      type: 'VariantTrack',
-      assemblyNames: ['volvox'],
-      adapter: { type: 'VcfAdapter', uri: 'volvox.filtered.vcf' },
-      displayDefaults: { color: { field: 'svType' } },
-    },
-    { pluginManager },
-  ) as AnyConfigurationModel & { displays: AnyConfigurationModel[] }
+  const conf = hydrate('VariantTrack', {
+    encoding: { color: { field: 'svType' } },
+  })
   for (const type of [
     'LinearVariantDisplay',
     'LinearMultiSampleVariantDisplay',
@@ -90,25 +100,17 @@ test('a variant color field reaches every variant display', () => {
   }
 })
 
-// A FeatureTrack's feature and multi-row displays take a FeatureColor and its
-// Manhattan display a ManhattanColor. A value goes to the displays that take it.
-function hydrateFeatureTrack(displayDefaults: Record<string, unknown>) {
-  const pluginManager = makePluginManager()
-  return pluginManager.getTrackType('FeatureTrack').configSchema.create(
-    {
-      trackId: 'routed',
-      type: 'FeatureTrack',
-      assemblyNames: ['volvox'],
-      adapter: { type: 'Gff3Adapter', uri: 'volvox.gff3' },
-      displayDefaults,
-    },
-    { pluginManager },
-  ) as AnyConfigurationModel & { displays: AnyConfigurationModel[] }
-}
-
-function colorOf(conf: { displays: AnyConfigurationModel[] }, type: string) {
-  return getSnapshot(display(conf, type).color)
-}
+// jb2hubs' hosted configs still write a display's flat `color`, which the
+// displays that retired it lift (`retiredDisplayColor`)
+test('the flat color hosted hub configs write reaches the displays that lift it', () => {
+  const conf = hydrate('VariantTrack', { color: { field: 'svType' } })
+  for (const type of [
+    'LinearVariantDisplay',
+    'LinearMultiSampleVariantDisplay',
+  ]) {
+    expect(colorOf(conf, type)).toEqual({ field: 'svType' })
+  }
+})
 
 // `r2` is a field the GWAS adapter joins, so `{ field: 'r2' }` is a field
 // like any other to the routing and reaches the feature display, where it
@@ -116,13 +118,13 @@ function colorOf(conf: { displays: AnyConfigurationModel[] }, type: string) {
 test.each(['type', 'r2'])(
   'a color field %s reaches the displays whose color is an object',
   field => {
-    const conf = hydrateFeatureTrack({ color: { field } })
+    const conf = hydrate('FeatureTrack', { encoding: { color: { field } } })
     expect(colorOf(conf, 'LinearBasicDisplay')).toEqual({ field })
   },
 )
 
-test('a color no display takes fails the load, naming every reason', () => {
-  expect(() => hydrateFeatureTrack({ color: { scale: 'ordinal' } })).toThrow(
-    /no display of a FeatureTrack takes displayDefaults\.color \(LinearBasicDisplay: /,
-  )
+test('the flat scale string inside the channel fails the load, naming the object to write', () => {
+  expect(() =>
+    hydrate('FeatureTrack', { encoding: { color: { scale: 'ordinal' } } }),
+  ).toThrow('write encoding.color.scale: { "type": "ordinal" }')
 })

@@ -183,7 +183,9 @@ export function nestedSettings(entries: Record<string, unknown>) {
     if (key === 'readConnections' && typeof value === 'string') {
       Object.assign(
         band(key),
-        value === 'off' ? { show: false } : { show: true, mark: value },
+        value === 'off'
+          ? { show: false }
+          : { show: true, mark: value === 'cloud' ? 'rule' : 'link' },
       )
     } else if (path.length === 0) {
       // a copy, which a later dotted member is written into rather than the
