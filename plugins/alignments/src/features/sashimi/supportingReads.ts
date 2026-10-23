@@ -18,6 +18,20 @@ export interface LaneJunction {
   split?: ArcSplitCategory
 }
 
+/** Whether two hovers name one junction, so a mousemove along it rewrites nothing. */
+export function sameLaneJunction(a?: LaneJunction, b?: LaneJunction) {
+  return (
+    a === b ||
+    (a !== undefined &&
+      b !== undefined &&
+      a.groupKey === b.groupKey &&
+      a.refName === b.refName &&
+      a.start === b.start &&
+      a.end === b.end &&
+      a.split === b.split)
+  )
+}
+
 type ReadFields = Pick<
   WorkerPileupData,
   | 'gapPositions'

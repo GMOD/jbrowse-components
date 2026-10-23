@@ -2096,3 +2096,28 @@ describe('rows the layer menus hand to other menus', () => {
     )
   })
 })
+
+describe('setHoverState', () => {
+  test('a mousemove along one junction keeps the hovered junction', () => {
+    const display = createDisplay()
+    const hover = (start: number) => {
+      display.setHoverState({
+        overCigarItem: false,
+        featureIdUnderMouse: undefined,
+        mouseoverExtraInformation: undefined,
+        hoveredJunction: {
+          groupKey: '',
+          refName: 'ctgA',
+          start,
+          end: 500,
+          split: 'splitBack',
+        },
+        highlightedChainReadIds: [],
+      })
+      return display.hoveredJunction
+    }
+    const first = hover(100)
+    expect(hover(100)).toBe(first)
+    expect(hover(200)).not.toBe(first)
+  })
+})

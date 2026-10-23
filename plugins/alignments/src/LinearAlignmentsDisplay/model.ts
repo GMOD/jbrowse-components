@@ -77,7 +77,10 @@ import { connectorStyler } from '../features/linkedReads/connectorStyle.ts'
 import { buildSashimiBandFeeds } from '../features/sashimi/bandFeed.ts'
 import { visibleRegionJunctions } from '../features/sashimi/computeOverlay.ts'
 import { mergeJunctions } from '../features/sashimi/junctions.ts'
-import { junctionSupportingReadSlots } from '../features/sashimi/supportingReads.ts'
+import {
+  junctionSupportingReadSlots,
+  sameLaneJunction,
+} from '../features/sashimi/supportingReads.ts'
 import { arcSlotCategory } from '../shaders/palettes.ts'
 import {
   writtenReadCategoryColors,
@@ -3412,10 +3415,13 @@ export default function stateModelFactory(
             self.mouseoverExtraInformation = state.mouseoverExtraInformation
             self.hoverCoverageBand = state.hoverCoverageBand
             self.hoveredArcHighlight = state.hoveredArcHighlight
-            self.hoveredJunction = state.hoveredJunction
-            // Write only on a real change: assigning an equal array replaces
-            // the MST node and invalidates `hoverInk`, an O(reads) rebuild per
-            // mousemove along a chain.
+            // Write only on a real change: a fresh junction or an equal array
+            // invalidates `hoverInk`, an O(reads) rebuild per mousemove.
+            if (
+              !sameLaneJunction(self.hoveredJunction, state.hoveredJunction)
+            ) {
+              self.hoveredJunction = state.hoveredJunction
+            }
             if (
               !sameStrings(
                 self.highlightedChainReadIds,
