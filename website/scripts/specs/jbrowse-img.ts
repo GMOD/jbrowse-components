@@ -136,6 +136,20 @@ export const jbrowseImgSpecs: CliSpec[] = [
     '1400',
   ]),
 
+  cliSpec('hosted_synteny', [
+    'synteny',
+    '--genome',
+    'hg38',
+    'loc:chr7:27000000-27300000',
+    '--genome',
+    'mm39',
+    'loc:chr6:52000000-52300000',
+    '--view',
+    'mark.interpolate=bump',
+    '--width',
+    '1400',
+  ]),
+
   cliSpec('grape_peach_synteny', [
     'synteny',
     '--chromSizes',

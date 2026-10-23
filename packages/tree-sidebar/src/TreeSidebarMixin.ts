@@ -28,7 +28,7 @@ import {
 } from './rowColorChoice.ts'
 import {
   ROW_COLOR_SCALE_ID,
-  dealtValueColors,
+  dealValueColors,
   resolveRowColors,
   rowColorKeyEntries,
   rowColorKeyValue,
@@ -206,7 +206,7 @@ export interface ClusterRun {
  * in the bands `rowBanding` names.
  *
  * A row's color is `resolvedRowColors`: its `rowColor` entry (a `name` pair,
- * or the color `dealtRowColors` deals its attribute value), else the row's
+ * or the color `dealtValueColors` deals its field's value), else the row's
  * `color`, else the row palette's color by name where `rowPaletteDeals`. The
  * sidebar draws it as a bar beside the row's label, and a display paints its
  * marks in it where `rowColorPaintsMarks`. Its key is `rowColorScales`, and a
@@ -325,7 +325,7 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
       },
       /**
        * #getter
-       * The `rowColor` object: the row attribute whose values take colors,
+       * The `rowColor` object: the row field whose values take colors,
        * `name` where it names none, and the values with an assigned color.
        */
       get rowColorSetting(): RowColorSetting {
@@ -336,7 +336,7 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
        * The `rowColor` object this display's base declares, which a reset
        * returns to and "is this the reader's" compares against.
        */
-      get baseRowColor(): RowColorSetting {
+      get baseRowColorSetting(): RowColorSetting {
         return liftRowColor(baseDisplayConfig(self).rowColor)
       },
       /**
@@ -344,7 +344,7 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
        * The `rows.sort` this display's base declares: the order a display
        * whose rows are values found on features lists them in.
        */
-      get baseRowDomain(): readonly string[] {
+      get baseRowSort(): readonly string[] {
         const base = (baseDisplayConfig(self).rows ?? {}) as {
           sort?: string[]
         }
@@ -391,7 +391,7 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
       },
       /**
        * #getter
-       * Overridable hook: the attribute the rows stack in bands by and the
+       * Overridable hook: the field the rows stack in bands by and the
        * bands listed first, or undefined, the default, for no bands.
        */
       get rowBanding(): RowBanding | undefined {
@@ -493,7 +493,7 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
       /**
        * #method
        * Overridable hook: the band a row stacks in while `rowBanding` is set,
-       * by default its value of the banding attribute, '' for none.
+       * by default its value of the banding field, '' for none.
        */
       rowBand(row: S): string {
         const banding = self.rowBanding
@@ -555,8 +555,8 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
       },
       /**
        * #getter
-       * Overridable hook: the row attributes a reader can color the rows by,
-       * offered beside None and Each row. By default every attribute a row
+       * Overridable hook: the row fields a reader can color the rows by,
+       * offered beside None and Each row. By default every field a row
        * has but its name, label and colors.
        */
       get rowColorFields(): readonly string[] {
@@ -600,7 +600,7 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
       },
       /**
        * #method
-       * Overridable hook: the values of row attribute `field` the config
+       * Overridable hook: the values of the row field `field` the config
        * declares, which the palette deals first, in this order, whether or
        * not a loaded row carries them, so a row arriving later moves no
        * color. None by default.
@@ -612,14 +612,14 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
     .views(self => ({
       /**
        * #method
-       * The color each value takes under `setting` (`dealtValueColors`),
+       * The color each value takes under `setting` (`dealValueColors`),
        * which the arrangement dialog shows before it writes the setting.
        */
-      dealtRowColorsFor(
+      dealtValueColorsFor(
         setting: RowColorSnapshot,
       ): ReadonlyMap<string, string> {
         const lifted = liftRowColor(setting)
-        return dealtValueColors(
+        return dealValueColors(
           lifted,
           () => self.rowColorDealRows,
           self.rowPaletteDeals,
@@ -635,11 +635,11 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
        * `rowColorResetTarget` has anything to write. A choice of row color
        * source is no arrangement, so it is never custom.
        */
-      get rowStylingIsCustom(): boolean {
+      get rowColorIsCustom(): boolean {
         return (
           rowColorResetTarget(
             self.rowColorSetting,
-            self.baseRowColor,
+            self.baseRowColorSetting,
             self.rowPaletteDeals,
           ) !== undefined
         )
@@ -647,8 +647,8 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
       /**
        * #getter
        * The choice of what colors the rows, as the arrangement dialog and a menu
-       * offer it: '' for none dealt, `name` for a palette color each, or an
-       * attribute.
+       * offer it: '' for none dealt, `name` for a palette color each, or a
+       * field.
        */
       get rowColorChoice(): string {
         return rowColorChoiceOf(self.rowColorSetting, self.rowPaletteDeals)
@@ -661,15 +661,15 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
       rowColorFor(choice: string): RowColorSetting {
         return startingRowColor(
           choice,
-          [self.rowColorSetting, self.baseRowColor],
+          [self.rowColorSetting, self.baseRowColorSetting],
           self.rowPaletteDeals,
         )
       },
       /**
        * #getter
-       * The attribute that colors the rows, or '' for `name`.
+       * The field that colors the rows, or '' for `name`.
        */
-      get rowColorAttribute(): string {
+      get rowColorField(): string {
         const { field } = self.rowColorSetting
         return field === 'name' ? '' : field
       },
@@ -678,17 +678,17 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
        * The color each value of the config's `rowColor` field takes, listed
        * pairs first and then in the order dealt.
        */
-      get dealtRowColors(): ReadonlyMap<string, string> {
-        return self.dealtRowColorsFor(self.rowColorSetting)
+      get dealtValueColors(): ReadonlyMap<string, string> {
+        return self.dealtValueColorsFor(self.rowColorSetting)
       },
     }))
     .views(self => ({
       /**
        * #getter
-       * The attributes a reader can color the rows by: `rowColorFields`, and
+       * The fields a reader can color the rows by: `rowColorFields`, and
        * the current one where the rows lack it, so it still shows as chosen.
        */
-      get rowColorAttributesOffered(): readonly string[] {
+      get rowColorFieldsOffered(): readonly string[] {
         const current = self.rowColorChoice
         return current === '' ||
           current === 'name' ||
@@ -706,7 +706,7 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
         return resolveRowColors(
           self.expandedRows,
           self.rowColorSetting.field,
-          self.dealtRowColors,
+          self.dealtValueColors,
           self.rowAlias,
         )
       },
@@ -721,7 +721,7 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
         const live = liveArrangement(self)
         const base = baseArrangement(self)
         return (
-          self.rowStylingIsCustom ||
+          self.rowColorIsCustom ||
           ORDER_MEMBERS.some(
             member =>
               !compareStructural(present(live[member]), present(base[member])),
@@ -754,7 +754,7 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
         return {
           setting,
           pairs: pairedColorsOf(setting.scale),
-          dealt: self.dealtRowColors,
+          dealt: self.dealtValueColors,
           resolved: self.resolvedRowColors,
         }
       },
@@ -765,17 +765,17 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
        * The row color key, which every display spreads into its
        * `colorScales`: one scale titled by the `rowColor` field, or none
        * where it has no entries. Its entries (`rowColorKeyEntries`) show
-       * where the labels cannot name the colors: by an attribute, or by
+       * where the labels cannot name the colors: by a field, or by
        * name in a shared panel. By name on stacked rows the labels are the
        * key.
        */
       get rowColorScales(): CategoricalScale[] {
-        const attribute = self.rowColorAttribute
-        if (!attribute && !self.sharesPanel) {
+        const field = self.rowColorField
+        if (!field && !self.sharesPanel) {
           return []
         }
         const labels = new Map(
-          attribute
+          field
             ? []
             : self.editableSources.map(row => [
                 row.name,
@@ -792,7 +792,7 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
               {
                 kind: 'categorical',
                 id: ROW_COLOR_SCALE_ID,
-                title: attribute ? capitalizeFirst(attribute) : self.rowNoun,
+                title: field ? capitalizeFirst(field) : self.rowNoun,
                 focusesRows: true,
                 entries,
               },
@@ -1194,7 +1194,7 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
           }
           const target = rowColorResetTarget(
             self.rowColorSetting,
-            self.baseRowColor,
+            self.baseRowColorSetting,
             self.rowPaletteDeals,
           )
           if (target) {
@@ -1205,7 +1205,7 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
         /**
          * #action
          * Color the rows by `choice`, as a menu picks it: '' for None,
-         * `name` for Each row, or an attribute, starting from `rowColorFor`.
+         * `name` for Each row, or a field, starting from `rowColorFor`.
          * A pick of the current choice writes nothing.
          */
         setRowColorChoice(choice: string) {

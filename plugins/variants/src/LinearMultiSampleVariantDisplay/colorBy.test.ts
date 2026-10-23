@@ -28,9 +28,9 @@ describe('multi-sample variant colorBy', () => {
   it('colors rows by attribute and writes it onto the config', () => {
     const model = makeModel()
     model.setSources(sources)
-    model.setRowColorField('population')
+    model.setRowColorChoice('population')
 
-    expect(model.rowColorAttribute).toBe('population')
+    expect(model.rowColorField).toBe('population')
     expect(readConfObject(model.configuration, ['rowColor', 'field'])).toBe(
       'population',
     )
@@ -49,7 +49,7 @@ describe('multi-sample variant colorBy', () => {
       const model = createTestEnvironment({ displayConfig }).createDisplay()
         .display
       model.setSources(sources)
-      model.setRowColorField('sex')
+      model.setRowColorChoice('sex')
       return Object.fromEntries(model.resolvedRowColors)
     }
     expect(
@@ -65,7 +65,7 @@ describe('multi-sample variant colorBy', () => {
     expect(model.sources.map(s => s.name)).toEqual(['HG002', 'HG001', 'HG003'])
 
     // both channels resolve on the same read, so one cannot displace the other
-    model.setRowColorField('sex')
+    model.setRowColorChoice('sex')
     expect(model.sources.map(s => s.name)).toEqual(['HG002', 'HG001', 'HG003'])
   })
 
@@ -75,10 +75,10 @@ describe('multi-sample variant colorBy', () => {
     const model = makeModel()
     model.setSources(sources)
     model.facetByField('population')
-    model.setRowColorField('population')
-    model.setRowColorField('')
+    model.setRowColorChoice('population')
+    model.setRowColorChoice('')
 
-    expect(model.rowColorAttribute).toBe('')
+    expect(model.rowColorField).toBe('')
     expect(model.sources.map(s => s.name)).toEqual(['HG002', 'HG001', 'HG003'])
     expect(model.sources.some(s => s.rowColor)).toBe(false)
   })
@@ -89,17 +89,17 @@ describe('multi-sample variant colorBy', () => {
   it('wins over a samplesTsv color column, and hands it back when cleared', () => {
     const model = makeModel()
     model.setSources(sources.map(s => ({ ...s, color: 'rebeccapurple' })))
-    model.setRowColorField('population')
+    model.setRowColorChoice('population')
     expect(model.sources.some(s => s.rowColor === 'rebeccapurple')).toBe(false)
 
-    model.setRowColorField('')
+    model.setRowColorChoice('')
     expect(model.sources.every(s => s.rowColor === 'rebeccapurple')).toBe(true)
   })
 
   it('writes no arrangement at all', () => {
     const model = makeModel()
     model.setSources(sources)
-    model.setRowColorField('population')
+    model.setRowColorChoice('population')
 
     expect(model.rowSort).toEqual([])
     expect(model.rowArrangementIsCustom).toBe(false)
@@ -110,7 +110,7 @@ describe('multi-sample variant colorBy', () => {
   it('keeps each row its color when a subtree filter hides the rest', () => {
     const model = makeModel()
     model.setSources(sources)
-    model.setRowColorField('population')
+    model.setRowColorChoice('population')
     const before = new Map(model.sources.map(s => [s.name, s.rowColor]))
 
     model.setRowFocus(['HG002'])
@@ -131,9 +131,9 @@ describe('multi-sample variant colorBy', () => {
     expect(model.sources[0]!.rowColor).toBe('#123456')
     expect(model.sources[1]!.rowColor).toBeUndefined()
 
-    model.setRowColorField('population')
+    model.setRowColorChoice('population')
     expect(model.rowColorChoice).toBe('population')
-    model.setRowColorField('')
+    model.setRowColorChoice('')
     expect(model.rowColorChoice).toBe('')
     expect(model.sources.some(s => s.rowColor)).toBe(false)
   })

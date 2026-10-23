@@ -147,6 +147,6 @@ describe('a row per subtrack deals no palette', () => {
 it('a reorder writes no color', () => {
   const display = makeDisplay({ rows: false })
   display.applyRowEdits([...display.editableSources].reverse())
-  expect(display.rowStylingIsCustom).toBe(false)
+  expect(display.rowColorIsCustom).toBe(false)
   expect(display.markSources.map(s => s.color)).toEqual([...TABLEAU].reverse())
 })

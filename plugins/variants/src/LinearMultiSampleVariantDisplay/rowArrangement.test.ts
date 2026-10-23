@@ -35,7 +35,7 @@ function rowNames(display: { sources: { name: string }[] }) {
 describe('recoloring does not disturb the arrangement', () => {
   it('keeps a clustered order and its tree when coloring by a sample attribute', () => {
     const display = clusteredDisplay()
-    display.setRowColorField('population')
+    display.setRowColorChoice('population')
 
     expect(rowNames(display)).toEqual(['S2', 'S0', 'S1'])
     expect(display.rowTree).toBe(CLUSTERED_TREE)
@@ -46,8 +46,8 @@ describe('recoloring does not disturb the arrangement', () => {
 
   it('clearing the coloring strips the palette without resetting the order', () => {
     const display = clusteredDisplay()
-    display.setRowColorField('population')
-    display.setRowColorField('')
+    display.setRowColorChoice('population')
+    display.setRowColorChoice('')
 
     expect(rowNames(display)).toEqual(['S2', 'S0', 'S1'])
     expect(display.rowTree).toBe(CLUSTERED_TREE)
@@ -68,7 +68,7 @@ describe('recoloring does not disturb the arrangement', () => {
       tree: '(((S2 HP0,S2 HP1),(S0 HP0,S0 HP1)),(S1 HP0,S1 HP1));',
     })
 
-    display.setRowColorField('population')
+    display.setRowColorChoice('population')
 
     expect(rowNames(display)).toEqual(haplotypes.map(s => s.name))
     expect(display.hierarchy).toBeDefined()
@@ -287,7 +287,7 @@ describe('the config `domain` seeds the sample order', () => {
   it('does not re-seed a dragged order on a recolor', () => {
     const display = domainDisplay(['S2'])
     display.setRowOrder([{ name: 'S1' }, { name: 'S0' }, { name: 'S2' }])
-    display.setRowColorField('population')
+    display.setRowColorChoice('population')
 
     expect(rowNames(display)).toEqual(['S1', 'S0', 'S2'])
     expect(display.rowArrangementIsCustom).toBe(true)
@@ -298,7 +298,7 @@ describe('the config `domain` seeds the sample order', () => {
     const clustered = [{ name: 'S1' }, { name: 'S0' }, { name: 'S2' }]
     const tree = '((S1,S0),S2);'
     display.setRowOrder(clustered, { tree })
-    display.setRowColorField('population')
+    display.setRowColorChoice('population')
 
     expect(rowNames(display)).toEqual(['S1', 'S0', 'S2'])
     expect(display.rowTree).toBe(tree)
@@ -360,11 +360,11 @@ describe('a rendering-mode switch renames the rows', () => {
   it('keeps the configured coloring on the renamed rows', () => {
     const { display } = createTestEnvironment().createDisplay()
     display.setSources(SOURCES)
-    display.setRowColorField('population')
+    display.setRowColorChoice('population')
 
     display.setUnit('haplotype')
 
-    expect(display.rowColorAttribute).toBe('population')
+    expect(display.rowColorField).toBe('population')
     expect(display.sources.every(s => s.rowColor)).toBe(true)
     const byName = Object.fromEntries(
       display.sources.map(s => [s.name, s.rowColor]),
@@ -403,7 +403,7 @@ describe('an adapter swap to a new cohort', () => {
   it('resets a stale arrangement, its tree and its subtree filter', () => {
     const display = clusteredDisplay()
     display.setRowFocus(['S2', 'S0'])
-    display.setRowColorField('population')
+    display.setRowColorChoice('population')
 
     const cohortB = [
       { name: 'T0', population: 'EAS' },
@@ -461,7 +461,7 @@ describe('sorting by genotype keeps what the arrangement put on the rows', () =>
   // swatch went blank, while the menu still showed Population ticked.
   it('keeps the colorBy palette through a sort', () => {
     const display = sortableDisplay()
-    display.setRowColorField('population')
+    display.setRowColorChoice('population')
     const before = new Map(display.sources.map(s => [s.name, s.rowColor]))
     expect([...before.values()].every(Boolean)).toBe(true)
 
@@ -490,7 +490,7 @@ describe('sorting by genotype keeps what the arrangement put on the rows', () =>
         S2: 2,
       },
     } as unknown as Parameters<typeof display.setCellData>[0])
-    display.setRowColorField('population')
+    display.setRowColorChoice('population')
     const before = new Map(display.sources.map(s => [s.name, s.rowColor]))
     expect(display.sources).toHaveLength(6)
     expect([...before.values()].every(Boolean)).toBe(true)

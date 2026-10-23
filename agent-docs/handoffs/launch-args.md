@@ -1,6 +1,6 @@
 ---
 name: launch-args
-description: "One command-line grammar for jbrowse-img, jb2capture and JBrowse Desktop, in @jbrowse/launch-args. Landed: bare data files, the shared ADR-077 format table, Desktop opening 'jbrowse-desktop ref.fa reads.bam --loc ...', --genome, --view (view settings by their session-spec names), format-family track flags, batch --sites, genome modifiers in place of --aliases/--cytobands, jb2capture on the shared grammar (track settings, --view, data files refused), jb2export's read filter through the launch snapshot, Desktop opening synteny and dotplot views in jb2export's comparative grammar, every track modifier in Desktop and capture through a session spec track entry's `modifiers`. Open: what of img's write path can still leave its live view, comparative views on hosted genomes."
+description: "One command-line grammar for jbrowse-img, jb2capture and JBrowse Desktop, in @jbrowse/launch-args. Landed: bare data files, the shared ADR-077 format table, Desktop opening 'jbrowse-desktop ref.fa reads.bam --loc ...', --genome, --view (view settings by their session-spec names), format-family track flags, batch --sites, genome modifiers in place of --aliases/--cytobands, jb2capture on the shared grammar (track settings, --view, data files refused), jb2export's read filter through the launch snapshot, Desktop opening synteny and dotplot views in jb2export's comparative grammar, every track modifier in Desktop and capture through a session spec track entry's `modifiers`. jb2export and Desktop stacking --genome rows from their hosted configs. Open: what of img's write path can still leave its live view, hosted comparative views in jb2capture."
 ---
 
 # Launch arguments: one grammar for img, capture and Desktop
@@ -111,10 +111,12 @@ packages is released, so breaking changes are fine.
      (links, alt counts, manifest).
    - Breakpoint panels still write `filterTag:` over the configured tags,
      where a linear view adds to them.
-2. **Comparative views on hosted genomes.** Desktop and jb2export stack
-   genomes built from files only; `--genome hg38 --genome mm39 --chain ...`
-   (or a `--config` holding both) has no grammar yet, and jb2export reaches a
-   config's comparison tracks only through `--spec`.
+2. **Hosted comparative views in jb2capture.** jb2export and Desktop stack
+   `--genome` rows (`hostedGenomes.ts`); capture refuses a second `--genome`.
+   It could fetch the configs as `catalog.ts` does and send the picked
+   assemblies and tracks as a spec's `sessionAssemblies`/`sessionTracks`.
+   Still open everywhere: `--track` choosing a hosted gap's comparison, and
+   gene-name `loc:` on a hosted row, which needs its text search.
 
 ## Comparative grammar decisions (2026-10-21)
 
@@ -140,3 +142,7 @@ packages is released, so breaking changes are fine.
   name is its config identifier and MST refuses a reference two assemblies
   share. A repeat row takes `loc:`, and throws on `aliases:` or `cytobands:`
   that differ from the first row's.
+- A `--genome` is a row whose assembly and comparisons come from its hosted
+  config; the apps take those pieces, never the whole config. A config holds
+  the liftOvers its genome is the target of, so a pair is usually hosted in
+  both directions, and a gap takes one, the upper row's config first.

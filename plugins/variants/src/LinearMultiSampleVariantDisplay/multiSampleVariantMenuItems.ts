@@ -70,13 +70,13 @@ function rowColorItems(self: LinearMultiSampleVariantDisplayModel): MenuItem[] {
   return [
     '',
     ...(current === 'name' ? ['name'] : []),
-    ...self.rowColorAttributesOffered,
+    ...self.rowColorFieldsOffered,
   ].map(choice => ({
     label: rowColorChoiceLabel(choice),
     type: 'radio' as const,
     checked: current === choice,
     onClick: () => {
-      self.setRowColorField(choice)
+      self.setRowColorChoice(choice)
     },
   }))
 }
@@ -308,7 +308,7 @@ export function variantTrackMenuItems(
         {
           header: 'Samples',
           rows:
-            self.rowColorAttributesOffered.length || self.rowColorChoice
+            self.rowColorFieldsOffered.length || self.rowColorChoice
               ? rowColorItems(self)
               : [],
         },

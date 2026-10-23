@@ -12,7 +12,7 @@ import { scaleTypeCode } from '@jbrowse/render-core/scoreScale'
 import { orderRowsByDomain } from '@jbrowse/tree-sidebar/arrangeRows'
 import { rowColorSettingOf } from '@jbrowse/tree-sidebar/rowColorChoice'
 import {
-  dealtValueColors,
+  dealValueColors,
   resolveRowColors,
 } from '@jbrowse/tree-sidebar/rowColorScale'
 import {
@@ -221,7 +221,7 @@ export async function wiggleTables(
   const rowColors = resolveRowColors(
     sources,
     rowColor.field,
-    dealtValueColors(rowColor, () => data.sources, paletteDeals),
+    dealValueColors(rowColor, () => data.sources, paletteDeals),
     undefined,
   )
   const markSources = wiggleMarkSources(

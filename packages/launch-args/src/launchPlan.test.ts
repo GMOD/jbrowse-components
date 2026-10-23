@@ -137,13 +137,13 @@ test('two files with one basename both open', () => {
 
 test('a plan with no genome, or a second one in a linear view, says so', () => {
   expect(() => plan('reads.bam')).toThrow(/Name a genome/)
-  expect(() => plan('ref.fa --genome hg38')).toThrow(
-    /ref\.fa is a genome, and --genome names one too/,
-  )
   expect(() => plan('--genome hg38 --config c.json')).toThrow(/not both/)
   expect(() => plan('ref.fa --assembly hg38')).toThrow(/--assembly picks/)
   const lgv = (line: string) =>
     launchPlan(parseArgv(line.split(' ')), '/work', 'LinearGenomeView')
+  expect(() => lgv('ref.fa --genome hg38')).toThrow(
+    /ref\.fa is a genome, and --genome names one too/,
+  )
   expect(() => lgv('ref.fa other.2bit')).toThrow(/other\.2bit is a genome/)
   expect(() => lgv('ref.fa a_b.paf')).toThrow(
     /a_b\.paf compares two genomes, which a linear view does not show/,
@@ -218,8 +218,29 @@ describe('comparative plans', () => {
       anyPlan('a.fa b.fa reads.bam height:9 --loc chr1 --track genes')
         .unapplied,
     ).toEqual(['/work/reads.bam height:9', '--loc chr1', '--track genes'])
-    expect(() => anyPlan('--genome hg38 a.fa b.fa')).toThrow(
-      /A synteny view opens on genome files/,
+    expect(() => anyPlan('--config c.json a.fa b.fa')).toThrow(
+      /A synteny view opens one row per genome, and --config names a config/,
     )
+  })
+
+  test('a --genome is a hosted row, which the app fetches', () => {
+    expect(
+      anyPlan('--genome hg38 loc:chr7:1-5000000 --genome mm39 b.fa mm39_b.paf'),
+    ).toMatchObject({
+      type: 'LinearSyntenyView',
+      assemblies: [{ name: 'b.fa' }],
+      hosted: [
+        { name: 'hg38', config: 'https://jbrowse.org/ucsc/hg38/config.json' },
+        { name: 'mm39', config: 'https://jbrowse.org/ucsc/mm39/config.json' },
+      ],
+      views: [
+        { assembly: 'hg38', loc: 'chr7:1-5000000' },
+        { assembly: 'mm39' },
+        { assembly: 'b.fa' },
+      ],
+      tracks: [{ trackId: 'mm39_b.paf', assemblyNames: ['mm39', 'b.fa'] }],
+      unapplied: [],
+    })
+    expect(anyPlan('--genome hg38 reads.bam').type).toBe('LinearGenomeView')
   })
 })

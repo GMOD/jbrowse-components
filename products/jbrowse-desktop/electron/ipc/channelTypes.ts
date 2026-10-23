@@ -114,6 +114,7 @@ export interface LinearLaunchPlanJson {
 export interface ComparativeLaunchPlanJson {
   type: 'LinearSyntenyView' | 'DotplotView'
   assemblies: AssemblyJson[]
+  hosted: { name: string; config: string }[]
   views: { assembly: string; loc?: string }[]
   view: Record<string, unknown>
   tracks: TrackJson[]

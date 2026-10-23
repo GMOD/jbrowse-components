@@ -52,7 +52,7 @@ test('a reorder writes the declared pairs back in their own order', () => {
   display.applyRowEdits([c!, a!, b!, none!])
   expect(display.rowSort).toEqual(['c', 'a', 'b', ''])
   expect(display.configuration.rowColor.scale.domain).toEqual(['c', 'a'])
-  expect(display.rowStylingIsCustom).toBe(false)
+  expect(display.rowColorIsCustom).toBe(false)
   expect(display.rowLabels).toEqual({})
 })
 
@@ -62,7 +62,7 @@ test('a recolor is custom until a reset returns the declared colors', () => {
     scale: { domain: ['c', 'a', 'b'], range: ['#0f0', '#00f', '#f00'] },
   })
   expect(pairedColorsOf(display.rowColorSetting.scale).get('b')).toBe('#f00')
-  expect(display.rowStylingIsCustom).toBe(true)
+  expect(display.rowColorIsCustom).toBe(true)
   expect(display.rowArrangementIsCustom).toBe(true)
 
   display.resetRowArrangement()
@@ -203,12 +203,12 @@ test('rowColor by group deals in rowGroups order, whichever rows have loaded', (
   }).createDisplay()
   display.setRpcData(0, rows(['a', 'b']), ctgA)
   const AB = rowPaletteColorAt(1)
-  expect(Object.fromEntries(display.dealtRowColors)).toEqual({
+  expect(Object.fromEntries(display.dealtValueColors)).toEqual({
     C: rowPaletteColorAt(0),
     AB,
   })
   display.setRpcData(1, rows(['c']), ctgA)
-  expect(display.dealtRowColors.get('AB')).toBe(AB)
+  expect(display.dealtValueColors.get('AB')).toBe(AB)
   expect(display.rowColorScales[0]?.entries.map(e => e.label)).toEqual([
     'C',
     'AB',
@@ -223,7 +223,7 @@ test('a rowGroups entry with an empty group deals the ungrouped rows nothing', (
       { match: '^[ab]$', group: 'AB' },
     ],
   })
-  expect(Object.fromEntries(display.dealtRowColors)).toEqual({
+  expect(Object.fromEntries(display.dealtValueColors)).toEqual({
     AB: rowPaletteColorAt(0),
   })
   expect(display.sources.find(s => s.name === 'c')?.rowColor).toBeUndefined()
@@ -259,7 +259,7 @@ test('a row with no group takes no color from the deal', () => {
   const dealt = loaded({ rowColor: 'group', ...GROUPS })
   expect(dealt.sources[3]!.name).toBe('')
   expect(dealt.sources[3]!.rowColor).toBeUndefined()
-  expect(dealt.dealtRowColors.has('')).toBe(false)
+  expect(dealt.dealtValueColors.has('')).toBe(false)
   expect(dealt.rowColorsByIndex[3]).toBeUndefined()
 
   const unknown = loaded({

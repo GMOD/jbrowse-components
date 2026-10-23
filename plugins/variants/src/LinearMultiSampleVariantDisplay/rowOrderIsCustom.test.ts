@@ -9,7 +9,7 @@ const SOURCES = [
 
 function colored() {
   const { display } = createTestEnvironment().createDisplay()
-  display.setRowColorField('population')
+  display.setRowColorChoice('population')
   display.setSources(SOURCES)
   return display
 }
@@ -58,7 +58,7 @@ test('a reorder is custom, and the reset clears it', () => {
 
 test('a second color-by still writes no order', () => {
   const display = colored()
-  display.setRowColorField('super_pop')
+  display.setRowColorChoice('super_pop')
 
   expect(display.rowSort).toEqual([])
   expect(display.rowArrangementIsCustom).toBe(false)
@@ -68,7 +68,7 @@ test('a second color-by still writes no order', () => {
 // it started from, with no reset to offer.
 test('None after a color-by is the config it started from', () => {
   const display = colored()
-  display.setRowColorField('')
+  display.setRowColorChoice('')
 
   expect(display.rowArrangementIsCustom).toBe(false)
   expect(getSnapshot(display.configuration).rowColor).toBeUndefined()
@@ -82,10 +82,10 @@ test('None over a configured color-by is no custom arrangement', () => {
     displayConfig: { rowColor: 'population' },
   }).createDisplay()
   display.setSources(SOURCES)
-  display.setRowColorField('')
-  expect(display.rowColorAttribute).toBe('')
+  display.setRowColorChoice('')
+  expect(display.rowColorField).toBe('')
   expect(display.rowArrangementIsCustom).toBe(false)
 
-  display.setRowColorField('population')
-  expect(display.rowColorSetting).toEqual(display.baseRowColor)
+  display.setRowColorChoice('population')
+  expect(display.rowColorSetting).toEqual(display.baseRowColorSetting)
 })

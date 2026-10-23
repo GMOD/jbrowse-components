@@ -2,7 +2,8 @@ import { addRelativeUris } from '@jbrowse/core/util/addRelativeUris'
 import { fetchHub } from '@jbrowse/core/util/fetchHub'
 import { isUrl } from '@jbrowse/launch-args'
 
-import type { Config } from './types.ts'
+import type { Assembly, Config } from './types.ts'
+import type { HostedConfig } from '@jbrowse/launch-args'
 
 // genomes.jbrowse.org hosts a self-contained config.json per assembly: the
 // assembly (remote 2bit sequence, refNameAliases, cytobands, geneticCodes) plus
@@ -31,6 +32,23 @@ async function fetchConfig(url: string) {
   const config = (await res.json()) as Config
   addRelativeUris(config, new URL(url))
   return config
+}
+
+/** Each of a comparative view's `--genome` configs, keyed by its name. */
+export async function fetchHostedGenomes(names: string[]) {
+  return new Map<string, HostedConfig<Assembly>>(
+    await Promise.all(
+      names.map(
+        async name =>
+          [
+            name,
+            (await fetchHub(name, {
+              signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+            })) as unknown as HostedConfig<Assembly>,
+          ] as const,
+      ),
+    ),
+  )
 }
 
 // Fetch the config object when it must come off the network: a --genome token

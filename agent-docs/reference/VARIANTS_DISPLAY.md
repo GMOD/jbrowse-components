@@ -213,15 +213,15 @@ is the row's own `color`, which `resolvedRowColors` falls back to.
 channel bound to a variable beats a per-row constant. `TreeSidebarMixin` deals
 the attribute's values first seen first over the rows in source order, so a focus
 or the phased expansion recolors nothing, and `rowColorPaintsMarks` is false,
-since the cells paint by genotype. `setRowColorField` is the mixin's
-`setRowColorChoice`: a pick starts from the colors the current object or the
+since the cells paint by genotype. Its `setRowColorChoice` is the mixin's, then a
+warning for a field no sample carries: a pick starts from the colors the current object or the
 config gives that choice (`startingRowColor`), and '' is None,
 `{ field: 'name' }`. The menu's Samples group offers None and the attributes
 and ticks the dialog's choice (`rowColorChoice`), Each row included; the dialog
 picks a value's color under an attribute and a sample's under Each row
 (ADR-209). A reset returns `rowColor` by tree-sidebar's `rowColorResetTarget`,
 which keeps the choice, so a Color by survives it and a mode switch. The
-missing-attribute warning reads the mixin's `rowColorAttribute`.
+missing-attribute warning reads the mixin's `rowColorField`.
 The flip ADR-160 names puts the row's own color ahead of the palette here too.
 
 **The `facet` bands win over a cluster tree** (tree-sidebar's "A tree per

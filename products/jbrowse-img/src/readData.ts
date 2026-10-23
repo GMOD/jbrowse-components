@@ -9,6 +9,7 @@ import {
   fileTrack,
   genomeAssembly,
   hasComparativeArgs,
+  hostedComparative,
   isGenomeFlag,
   modifierValue,
   uniqueId,
@@ -17,8 +18,8 @@ import {
 import { makeMultiWiggleTrackConfig, syntenyTrackTypes } from './makeConfigs.ts'
 import { STDIN_ARG, readTextInput } from './util.ts'
 
-import type { Config, OpenTrack, Opts, Track } from './types.ts'
-import type { Entry } from '@jbrowse/launch-args'
+import type { Assembly, Config, OpenTrack, Opts, Track } from './types.ts'
+import type { Entry, HostedConfig } from '@jbrowse/launch-args'
 
 // how to name an input in an error message
 function inputName(file: string) {
@@ -129,6 +130,7 @@ export function readData(
     argv = [],
   }: Opts,
   configObject?: Config,
+  hostedConfigs: ReadonlyMap<string, HostedConfig<Assembly>> = new Map(),
 ) {
   // the genome a linear view opens on: --fasta (a library caller passes it bare),
   // or a bare genome file
@@ -201,7 +203,7 @@ export function readData(
       )
     } else if (comparative) {
       throw new Error(
-        "a comparison file sits between two genome files, and the config (--config or --genome) names its own genomes; pass genome files, or a --spec naming the config's comparison tracks",
+        "a comparative view stacks genome files and --genome names, and --config names its own genomes; pass those, or a --spec naming the config's comparison tracks",
       )
     }
     if (asm) {
@@ -219,10 +221,21 @@ export function readData(
   // single linear assembly from the genome (trackId 'refseq' for --refseq).
   else if (comparative) {
     const comparative = buildComparative(argv)
-    configData.assemblies = comparative.assemblies
-    configData.assembly = comparative.assemblies[0]!
+    const hosted = hostedComparative(
+      comparative.rows,
+      comparative.syntenyTracks,
+      hostedConfigs,
+    )
+    const assemblies = [
+      ...comparative.assemblies,
+      ...hosted.assemblies.map(expandAssemblySequence),
+    ]
+    configData.assemblies = assemblies
+    configData.assembly =
+      assemblies.find(a => a.name === comparative.rows[0]?.assembly) ??
+      assemblies[0]
     configData.comparativeRows = comparative.rows
-    syntenyTracks = comparative.syntenyTracks
+    syntenyTracks = [...comparative.syntenyTracks, ...hosted.tracks]
   } else if (genome) {
     const { assembly, unused } = genomeAssembly(genome[0], genome[1], 'refseq')
     if (unused.length) {

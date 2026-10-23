@@ -28,7 +28,7 @@ const AUTO = 'Automatic — click to set a custom color'
 
 // A deal of each value of the setting's field: its listed values take their
 // range color, the rest `unknown`, or the palette in first-seen order where
-// it deals, as `dealtValueColors` does.
+// it deals, as `dealValueColors` does.
 function previewOf(rows: Src[], paletteDeals: boolean) {
   return (snapshot: RowColorSnapshot) => {
     const setting = liftRowColor(snapshot)
@@ -65,7 +65,7 @@ const EMPTY: RowColorSetting = {
 
 interface FakeOptions extends Partial<TreeLayoutModel<Src>> {
   rowColorSetting?: RowColorSetting
-  baseRowColor?: RowColorSetting
+  baseRowColorSetting?: RowColorSetting
   rowColorFields?: string[]
 }
 
@@ -73,7 +73,7 @@ interface FakeOptions extends Partial<TreeLayoutModel<Src>> {
 // base and the attributes on offer as the mixin derives them.
 function fakeModel({
   rowColorSetting = EMPTY,
-  baseRowColor = EMPTY,
+  baseRowColorSetting = EMPTY,
   rowColorFields = [],
   ...overrides
 }: FakeOptions = {}): TreeLayoutModel<Src> {
@@ -89,20 +89,20 @@ function fakeModel({
     resetRowArrangement: jest.fn(),
     rowOrderWillDropTree: jest.fn(() => false),
     rowColorChoice: current,
-    rowColorAttributesOffered:
+    rowColorFieldsOffered:
       current === '' || current === 'name' || rowColorFields.includes(current)
         ? rowColorFields
         : [...rowColorFields, current],
     rowColorFor: choice =>
       startingRowColor(
         choice,
-        [rowColorSetting, baseRowColor],
+        [rowColorSetting, baseRowColorSetting],
         rowPaletteDeals,
       ),
     rowPaletteDeals,
     rowAlias: undefined,
     internalRowFields: [],
-    dealtRowColorsFor: previewOf(editableSources, rowPaletteDeals),
+    dealtValueColorsFor: previewOf(editableSources, rowPaletteDeals),
     ...overrides,
   }
 }
@@ -330,7 +330,7 @@ test('a label paste leaves an attribute coloring chosen', () => {
     editableSources: GROUPED,
     rowColorFields: ['group'],
     rowColorSetting: { field: 'group', scale: { domain: [], range: [] } },
-    baseRowColor: {
+    baseRowColorSetting: {
       field: 'name',
       scale: { domain: ['unshown'], range: ['#0f0'] },
     },
@@ -487,7 +487,7 @@ describe('the colors a choice starts from', () => {
       editableSources: GROUPED,
       rowColorFields: ['group'],
       rowColorSetting: { ...EMPTY, scale: { ...EMPTY.scale, unknown: '' } },
-      baseRowColor: {
+      baseRowColorSetting: {
         field: 'group',
         scale: { domain: ['g2'], range: ['#abcdef'], unknown: '#cccccc' },
       },

@@ -665,6 +665,7 @@ describe('a command-line plan', () => {
       {
         type: 'LinearSyntenyView',
         assemblies,
+        hosted: [],
         views: [{ assembly: 'a.fa', loc: 'chr1' }, { assembly: 'b.fa' }],
         view: { mark: { interpolate: 'bump' } },
         tracks: [paf],
@@ -684,6 +685,65 @@ describe('a command-line plan', () => {
             mark: { interpolate: 'bump' },
             views: [{ assembly: 'a.fa', loc: 'chr1' }, { assembly: 'b.fa' }],
             tracks: ['a_b.paf'],
+          },
+        ],
+      },
+      pluginManager,
+    )
+  })
+
+  test('a hosted pair takes its assemblies and one comparison from the configs', async () => {
+    const liftOver = (target: string, query: string) => ({
+      trackId: `${target}_to_${query}_liftOver`,
+      type: 'SyntenyTrack',
+      assemblyNames: [target, query],
+    })
+    const hosted = {
+      'https://x.test/hg38.json': {
+        assemblies: [{ name: 'hg38', sequence: {} }],
+        tracks: [liftOver('hg38', 'mm39'), { trackId: 'genes' }],
+      },
+      'https://x.test/mm39.json': {
+        assemblies: [{ name: 'mm39', sequence: {} }],
+        tracks: [liftOver('mm39', 'hg38')],
+      },
+    }
+    const d = {
+      ...deps(),
+      fetchConfig: jest
+        .fn()
+        .mockImplementation((url: keyof typeof hosted) =>
+          Promise.resolve(hosted[url]),
+        ),
+    }
+    await launchFromPlan(
+      {
+        type: 'DotplotView',
+        assemblies: [],
+        hosted: [
+          { name: 'hg38', config: 'https://x.test/hg38.json' },
+          { name: 'mm39', config: 'https://x.test/mm39.json' },
+        ],
+        views: [{ assembly: 'hg38', loc: 'chr7' }, { assembly: 'mm39' }],
+        view: {},
+        tracks: [],
+        unapplied: [],
+      },
+      d,
+    )
+    expect(d.createPluginManager).toHaveBeenCalledWith(undefined)
+    expect(mockLoadSessionSpec).toHaveBeenCalledWith(
+      {
+        sessionAssemblies: [
+          { name: 'hg38', sequence: {} },
+          { name: 'mm39', sequence: {} },
+        ],
+        sessionTracks: [liftOver('hg38', 'mm39')],
+        views: [
+          {
+            type: 'DotplotView',
+            views: [{ assembly: 'hg38', loc: 'chr7' }, { assembly: 'mm39' }],
+            tracks: ['hg38_to_mm39_liftOver'],
           },
         ],
       },

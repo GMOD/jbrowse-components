@@ -155,6 +155,33 @@ describe('buildComparative', () => {
   })
 })
 
+describe('buildComparative with --genome', () => {
+  test('a hosted genome is a row named as given, listed once', () => {
+    const data = buildComparative(
+      entries('--genome hg38 loc:chr1 --genome mm39 --genome hg38'),
+    )
+    expect(data.hosted).toEqual(['hg38', 'mm39'])
+    expect(data.assemblies).toEqual([])
+    expect(data.rows).toEqual([
+      { assembly: 'hg38', loc: 'chr1' },
+      { assembly: 'mm39' },
+      { assembly: 'hg38' },
+    ])
+  })
+
+  test('a hosted genome takes loc: alone, and no file takes its name', () => {
+    expect(() =>
+      buildComparative(entries('--genome hg38 aliases:a.txt b.fa')),
+    ).toThrow('--genome hg38 takes loc:, not aliases:a.txt')
+    expect(() =>
+      buildComparative(entries('--genome mm39 mm39.chrom.sizes')),
+    ).toThrow(/--genome mm39 and mm39\.chrom\.sizes are both named mm39/)
+    expect(() =>
+      buildComparative(entries('mm39.chrom.sizes --genome mm39')),
+    ).toThrow(/mm39\.chrom\.sizes and --genome mm39 are both named mm39/)
+  })
+})
+
 describe('comparativeRole', () => {
   test("an Object.prototype member's name is no comparison flag", () => {
     expect(comparativeRole(['toString', ['x']])).toBeUndefined()

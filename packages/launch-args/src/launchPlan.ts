@@ -77,12 +77,20 @@ export interface LinearLaunchPlan extends PlanBase {
   show: ShowTrack[]
 }
 
-/** A synteny view or dotplot of genomes built from files. */
+/** A synteny view or dotplot of genome files and hosted genomes. */
 export interface ComparativeLaunchPlan extends PlanBase {
   type: 'LinearSyntenyView' | 'DotplotView'
-  /** top row first, which is a dotplot's x axis */
+  /** the genomes built from files */
   assemblies: Assembly[]
-  /** one row per genome, as a session spec's comparative view lists them */
+  /**
+   * each `--genome` and its hosted config, which the app fetches and hands to
+   * `hostedComparative`
+   */
+  hosted: { name: string; config: string }[]
+  /**
+   * one row per genome, as a session spec's comparative view lists them; the
+   * top row is a dotplot's x axis
+   */
   views: { assembly: string; loc?: string }[]
   /** the comparison files' tracks, each between the genomes it compares */
   tracks: Track[]
@@ -215,10 +223,9 @@ function comparativePlan(
   type: ComparativeLaunchPlan['type'],
 ): ComparativeLaunchPlan {
   const viewName = VIEW_NAMES[type]
-  const hosted = entries.find(([key]) => key === 'genome' || key === 'config')
-  if (hosted) {
+  if (entries.some(([key]) => key === 'config')) {
     throw new Error(
-      `${viewName} opens on genome files, one per row, and --${hosted[0]} names a config; pass FASTA, 2bit or .chrom.sizes files`,
+      `${viewName} opens one row per genome, and --config names a config; pass --genome names or FASTA, 2bit or .chrom.sizes files`,
     )
   }
   const data = buildComparative(entries)
@@ -235,6 +242,7 @@ function comparativePlan(
   return {
     type,
     assemblies: data.assemblies,
+    hosted: data.hosted.map(name => ({ name, config: genomeConfigUrl(name) })),
     views: data.rows,
     tracks: data.syntenyTracks,
     view: viewSettings(givenOnce(entries, 'view') ?? []),
@@ -269,7 +277,7 @@ function linearPlan(
   const roles = resolved.map(comparativeRole)
   const comparison = resolved.find((_, i) => roles[i] === 'synteny')
   const [genomeFile, otherGenome] = resolved.filter(
-    (_, i) => roles[i] === 'genome',
+    ([key], i) => roles[i] === 'genome' && key !== 'genome',
   )
   const genomePath = genomeFile?.[1][0]
   if (comparison) {

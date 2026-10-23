@@ -292,12 +292,12 @@ test('rows: a reorder keeps the declared rowColor as it was', async () => {
       scale: { domain: ['Grain3', 'Grain1'], range: ['#0f0', '#00f'] },
     },
   })
-  expect(display.rowStylingIsCustom).toBe(false)
+  expect(display.rowColorIsCustom).toBe(false)
   const [g1, g2, g3, g4] = display.editableSources
   display.applyRowEdits([g1!, g3!, g2!, g4!])
   expect(display.configuration.rowColor.scale.domain).toEqual([
     'Grain3',
     'Grain1',
   ])
-  expect(display.rowStylingIsCustom).toBe(false)
+  expect(display.rowColorIsCustom).toBe(false)
 })

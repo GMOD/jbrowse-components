@@ -479,7 +479,7 @@ describe('resolvedRowColors', () => {
 
   it('deals no name a turn to a row carrying its own color', () => {
     const display = makeRowDisplay({}, { rows: OWN, shared: true })
-    expect(Object.fromEntries(display.dealtRowColors)).toEqual({
+    expect(Object.fromEntries(display.dealtValueColors)).toEqual({
       a: p(0),
       c: p(1),
     })
@@ -643,7 +643,7 @@ describe('the row palette', () => {
   it('offers the attributes the rows carry, and previews a setting', () => {
     const display = makePalette()
     expect(display.rowColorFields).toEqual(['group'])
-    const preview = display.dealtRowColorsFor({
+    const preview = display.dealtValueColorsFor({
       field: 'group',
       scale: { domain: ['y'], range: ['#abcdef'] },
     })
@@ -759,7 +759,7 @@ describe('a dialog submit of the row colors', () => {
       scale: { unknown: '' },
     })
     expect(display.resolvedRowColors.size).toBe(0)
-    expect(display.rowStylingIsCustom).toBe(false)
+    expect(display.rowColorIsCustom).toBe(false)
     display.resetRowArrangement()
     expect(display.rowColorChoice).toBe('')
   })
@@ -770,7 +770,7 @@ describe('a dialog submit of the row colors', () => {
       field: 'name',
       scale: { domain: ['b'], range: ['#123456'] },
     })
-    expect(display.rowStylingIsCustom).toBe(true)
+    expect(display.rowColorIsCustom).toBe(true)
     display.resetRowArrangement()
     expect(pairedColorsOf(display.rowColorSetting.scale).size).toBe(0)
     expect(display.resolvedRowColors.size).toBe(3)
@@ -779,12 +779,12 @@ describe('a dialog submit of the row colors', () => {
   it('counts a value recolor as custom, and a reset keeps the color by', () => {
     const display = makeGrouped()
     display.applyRowEdits(display.editableSources, { field: 'group' })
-    expect(display.rowStylingIsCustom).toBe(false)
+    expect(display.rowColorIsCustom).toBe(false)
     display.applyRowEdits(display.editableSources, {
       field: 'group',
       scale: { domain: ['y'], range: ['#abcdef'] },
     })
-    expect(display.rowStylingIsCustom).toBe(true)
+    expect(display.rowColorIsCustom).toBe(true)
     display.resetRowArrangement()
     expect(display.rowColorChoice).toBe('group')
     expect(display.resolvedRowColors.get('b')).toBe(p(1))
