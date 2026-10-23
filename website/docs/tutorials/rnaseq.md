@@ -230,7 +230,7 @@ short read across that joint aligns in two pieces, and the aligner writes the
 second piece into the read's `SA` tag. The sashimi band counts split-read
 junctions beside the N-gap splices, one arc per junction, and colors each by its
 class. A back-splice is a duplication-type split, drawn in the teal of an RL
-pair. **Sashimi arcs → Show split-read junctions** turns them off.
+pair. **Show... → Sashimi split-read junctions** turns them off.
 
 STAR writes those `SA` tags only in chimeric mode. With its defaults it
 soft-clips the joint, and no back-splice arc appears:
