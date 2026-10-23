@@ -43,7 +43,7 @@ Git history has each landing.
      `displayDefaults`.
    - **ggjbrowse:** its unpushed `pass-b-respell` branch respells
      `encoding.y`, `legend.show` and `encoding.color` and re-pins the engine
-     at 2079403dbe; it waits on a push.
+     at a main commit carrying `encoding.y`; it waits on a push.
    - **Demos:** `demos/{cgiab,dtu,read_marks}/config.json` are respelled and
      not deployed (`scripts/deploy-demo.sh`).
    - The unlanded `chat-request-evals` branch writes 8 `scales.y` lines in
