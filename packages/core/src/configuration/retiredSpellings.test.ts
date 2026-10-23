@@ -102,3 +102,11 @@ test('a subclass adds a spelling without dropping its base’s', () => {
   expect(readConfObject(conf, 'size')).toBe(9)
   expect(readConfObject(conf, 'weight')).toBe(4)
 })
+
+test('a retired name written null resets the member it lifts onto', () => {
+  const conf = schema.create({ type: 'Marker', size: 9, color: 'red' })
+  applyConfSettings(conf, { diameter: null, renderer: null })
+  expect(readConfObject(conf, 'size')).toBe(2)
+  expect(readConfObject(conf, 'color')).toBe('red')
+  expect(lift({ diameter: null })).toEqual({ size: null })
+})

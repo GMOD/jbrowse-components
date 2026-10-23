@@ -210,11 +210,22 @@ function withMemberShorthandsLifted(
   return out
 }
 
+function asReset(lifted: Record<string, unknown>): Record<string, unknown> {
+  return Object.fromEntries(
+    Object.entries(lifted).map(([key, value]) => [
+      key,
+      isPlainObject(value) ? asReset(value) : null,
+    ]),
+  )
+}
+
 /**
  * `liftRetiredSpellings` over a map directly, for a lift that uncovers a
  * retired name one level down, as a v4 `renderer` block carries a `color1`.
  * Applying the same map twice costs nothing, since a lift deletes the name it
  * reads. `takes` says which lifted members land; every one does unless given.
+ * A retired name written `null` resets each member its lift of `null` names,
+ * as `null` on the current name would.
  */
 export function applyRetiredSpellings(
   retired: Record<string, RetiredSpelling>,
@@ -230,7 +241,9 @@ export function applyRetiredSpellings(
     delete out[key]
   }
   for (const key of present.filter(key => snapshot[key] !== undefined)) {
-    const lifted = retired[key]!(snapshot[key])
+    const value = snapshot[key]
+    const lifted =
+      value === null ? asReset(retired[key]!(null)) : retired[key]!(value)
     for (const [name, value] of Object.entries(lifted)) {
       if (takes(name)) {
         out[name] = underWritten(out[name], value)
@@ -281,8 +294,8 @@ export function preProcessSnapshotWith(
       ? {}
       : bare !== snapshot
         ? (bare as Record<string, unknown>)
-        : nullMembersAsUnset(snapshot as Record<string, unknown>)
-  const named = liftRetiredSpellings(schema, lifted)
+        : (snapshot as Record<string, unknown>)
+  const named = nullMembersAsUnset(liftRetiredSpellings(schema, lifted))
   const processed = preProcessSnapshot ? preProcessSnapshot(named) : named
   if (closed && !routesUndeclared && isOwnSnapshot(schema, processed)) {
     checkUndeclaredKeys(schema, processed)

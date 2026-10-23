@@ -200,6 +200,9 @@ const linearWiggleDisplayConfigSchema = ConfigurationSchema(
       ...retiredScaleSpellings(WIGGLE_Y_PATHS.members),
       ...retiredConfigSpellings,
       defaultRendering: rendering => {
+        if (rendering === null) {
+          return { mark: null }
+        }
         const mark =
           markOf(String(rendering)) ??
           WIGGLE_MARK_NAMES.find(name => name === rendering)
