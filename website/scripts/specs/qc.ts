@@ -31,8 +31,7 @@ const SMN_HIGHLIGHT = [
 // no Umap setting shows the block, so that frame uses gnomAD coverage.
 const mappabilityTrack = {
   trackId: 'hg38-umap100Quantitative',
-  encoding: { y: { scale: { domainMin: 0, domainMax: 1 } } },
-  y: 'minScore',
+  encoding: { y: { field: 'minScore', scale: { domainMin: 0, domainMax: 1 } } },
   extent: 'none' as const,
   height: 70,
 }

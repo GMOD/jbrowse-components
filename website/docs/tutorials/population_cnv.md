@@ -393,9 +393,9 @@ Three things shape the store:
   level's size before allocating it and exits if it will not fit.
 - **Summary levels** above the finest store the minimum and maximum of the bins
   they average alongside the mean.
-  [`y`](/docs/config/linearwiggledisplay/#slot-y) picks which a view draws, so
-  an amplification narrower than a bin is visible as `maxScore` and averaged
-  away as `score`.
+  [`encoding.y.field`](/docs/config/yfieldchannel/#slot-field) picks which a
+  view draws, so an amplification narrower than a bin is visible as `maxScore`
+  and averaged away as `score`.
 
 The output is a folder of files, which any static host with CORS enabled can
 serve to a track. The plugin's

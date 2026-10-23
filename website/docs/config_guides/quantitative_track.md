@@ -101,11 +101,11 @@ lists them with their config pages.
 ## Any numeric column of a feature file
 
 The wiggle display also draws on a `FeatureTrack`: name it in the track's
-`displays`, and [`y`](/docs/config/linearwiggledisplay/#slot-y) picks the column
-it plots, as a mark's `encoding.y` does. The default `score` reads the BED score
-column, or whatever the adapter's `scoreColumn` rewrote it to; an explicit field
-name reaches a raw column of the file instead, so a BED with a `coverage` column
-plots as a signal without a conversion to bedGraph:
+`displays`, and [`encoding.y.field`](/docs/config/yfieldchannel/#slot-field)
+picks the column it plots, as a mark's `encoding.y` does. The default `score`
+reads the BED score column, or whatever the adapter's `scoreColumn` rewrote it
+to; an explicit field name reaches a raw column of the file instead, so a BED
+with a `coverage` column plots as a signal without a conversion to bedGraph:
 
 ```json addtrack
 {
@@ -117,7 +117,9 @@ plots as a signal without a conversion to bedGraph:
     "type": "BedTabixAdapter",
     "uri": "https://yourhost/coverage.bed.gz"
   },
-  "displays": [{ "type": "LinearWiggleDisplay", "y": "coverage" }]
+  "displays": [
+    { "type": "LinearWiggleDisplay", "encoding": { "y": "coverage" } }
+  ]
 }
 ```
 

@@ -73,14 +73,14 @@ has no 0. Density mode offers neither Include 0 nor the guides.
 Zoomed out, JBrowse reads precomputed summary bins from a BigWig, and
 **Resolution → Bin summary** selects which of a bin's stored statistics is
 drawn: **Minimum**, **Maximum** or **Mean**, which write
-[`y`](/docs/config/linearwiggledisplay/#slot-y) as `minScore`, `maxScore` or
-`score`. **Show min and max** draws the bin's min to max around it
+[`encoding.y.field`](/docs/config/yfieldchannel/#slot-field) as `minScore`,
+`maxScore` or `score`. **Show min and max** draws the bin's min to max around it
 ([`extent`](/docs/config/linearwiggledisplay/#slot-extent)): a bar plot nests
 the darker bar inside the lighter min-to-max range, and a line plot fills min to
 max as a translucent band behind the line, stepped or interpolated to match it.
 Density mode draws no min and max, since it maps score to color. Where the
 source serves raw values, such as a bedGraph or a BigWig zoomed all the way in,
-the three are one number and neither setting changes anything. A `y` naming
+the three are one number and neither setting changes anything. A field naming
 another field of the features hides **Bin summary**, since that field has no
 stored min or max.
 

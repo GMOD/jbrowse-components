@@ -219,11 +219,13 @@ export const ldSpecs: ScreenshotSpec[] = [
               trackId: 'kgp_lct_fst',
               mark: 'point',
               encoding: {
-                y: { scale: { domainMin: 0.1, domainMax: 0.5 } },
+                y: {
+                  field: 'maxScore',
+                  scale: { domainMin: 0.1, domainMax: 0.5 },
+                },
                 color: { value: '#0068d1' },
               },
               size: 2,
-              y: 'maxScore',
               extent: 'none',
               height: 140,
             },
@@ -306,11 +308,13 @@ export const ldSpecs: ScreenshotSpec[] = [
               trackId: 'kgp_lct_fst_scan',
               mark: 'point',
               encoding: {
-                y: { scale: { domainMin: 0.1, domainMax: 0.5 } },
+                y: {
+                  field: 'maxScore',
+                  scale: { domainMin: 0.1, domainMax: 0.5 },
+                },
                 color: { value: '#0068d1' },
               },
               size: 2,
-              y: 'maxScore',
               extent: 'none',
               // Matches ld/lct_pooled_vs_panel's Fst axis, so the peak sits at
               // the same height in both.

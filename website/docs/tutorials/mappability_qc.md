@@ -111,9 +111,13 @@ The Umap config holds the **Minimum** score mode and the 0 to 1 axis:
     {
       "type": "LinearWiggleDisplay",
       "displayId": "hg38-umap100Quantitative-LinearWiggleDisplay",
-      "y": "minScore",
       "extent": "none",
-      "encoding": { "y": { "scale": { "domainMin": 0, "domainMax": 1 } } }
+      "encoding": {
+        "y": {
+          "field": "minScore",
+          "scale": { "domainMin": 0, "domainMax": 1 }
+        }
+      }
     }
   ]
 }
