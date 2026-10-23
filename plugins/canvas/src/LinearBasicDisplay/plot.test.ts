@@ -150,7 +150,7 @@ test('an expression that does not compile is a problem, named by setting', () =>
       filter: ['jexl:feature.score >'],
     }),
   ).toEqual([
-    expect.stringMatching(/^encoding\.color: /),
+    expect.stringMatching(/^encoding\.color\.value: /),
     expect.stringMatching(/^filter: /),
   ])
   expect(

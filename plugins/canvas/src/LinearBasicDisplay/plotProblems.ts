@@ -1,10 +1,14 @@
 import { predicatesOf } from '@jbrowse/core/util/fieldPredicate'
-import { isJexl, stringToJexlExpression } from '@jbrowse/core/util/jexlStrings'
+import {
+  jexlProblemText,
+  jexlProblems,
+} from '@jbrowse/core/util/jexlDiagnostics'
+import { isJexl } from '@jbrowse/core/util/jexlStrings'
 
 import type { FeatureFacet } from './facet.ts'
 import type { Plot } from '@jbrowse/core/configuration'
 import type { ColorSlots } from '@jbrowse/core/util/colorScale'
-import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
+import type { JexlChecker } from '@jbrowse/core/util/jexlDiagnostics'
 
 /**
  * A facet as the plot writes it, its field alone while it lists no order and
@@ -30,30 +34,63 @@ export function colorOf(color: unknown): ColorSlots {
     : ((color as ColorSlots | undefined) ?? {})
 }
 
-function colorExpression(encoding: unknown) {
-  const { color } = (encoding ?? {}) as { color?: unknown }
-  const { field, value } = colorOf(color)
-  return field ?? value
+interface Expression {
+  setting: string
+  code: unknown
 }
 
-/** A draft's `jexl:` color or filter that does not compile, by setting. */
-export function plotJexlProblems(draft: Plot, jexl: JexlInstance) {
-  const expressions = [
-    { setting: 'encoding.color', code: colorExpression(draft.encoding) },
-    ...predicatesOf(draft.filter).map(p => ({
-      setting: 'filter',
-      code: p.field,
-    })),
-  ]
-  return expressions.flatMap(({ setting, code }) => {
-    if (!isJexl(code)) {
-      return []
-    }
-    try {
-      stringToJexlExpression(code, jexl)
-      return []
-    } catch (e) {
-      return [`${setting}: ${e}`]
-    }
+function membersOf(value: unknown): Record<string, unknown> {
+  return typeof value === 'object' && value !== null
+    ? (value as Record<string, unknown>)
+    : {}
+}
+
+function membersAt(value: unknown, setting: string, keys: readonly string[]) {
+  const members = membersOf(value)
+  return keys.map(key => ({ setting: `${setting}.${key}`, code: members[key] }))
+}
+
+function channelExpressions(encoding: unknown): Expression[] {
+  return Object.entries(membersOf(encoding)).flatMap(([channel, spec]) => {
+    const setting = `encoding.${channel}`
+    return typeof spec === 'string'
+      ? [{ setting, code: spec }]
+      : membersAt(spec, setting, ['field', 'value', 'chrom', 'pos'])
   })
+}
+
+function transformExpressions(transform: unknown): Expression[] {
+  return Array.isArray(transform)
+    ? transform.flatMap((step, i) =>
+        membersAt(step, `transform[${i}]`, ['expr']),
+      )
+    : []
+}
+
+/** Every `jexl:` string a plot holds, by the setting holding it. */
+export function plotJexlExpressions(draft: Plot) {
+  const { encoding, facet, filter, transform, labels } = draft
+  return [
+    ...channelExpressions(encoding),
+    typeof facet === 'string'
+      ? { setting: 'facet', code: facet }
+      : { setting: 'facet.field', code: membersOf(facet).field },
+    ...predicatesOf(filter).map(p => ({ setting: 'filter', code: p.field })),
+    ...transformExpressions(transform),
+    ...membersAt(labels, 'labels', ['name', 'description']),
+  ].filter((entry): entry is { setting: string; code: string } =>
+    isJexl(entry.code),
+  )
+}
+
+/**
+ * A draft's `jexl:` expression that does not parse or calls a function
+ * `jexl` does not register, by setting.
+ */
+export function plotJexlProblems(draft: Plot, jexl: JexlChecker) {
+  return plotJexlExpressions(draft).flatMap(({ setting, code }) =>
+    jexlProblems(code, jexl)
+      .filter(problem => problem.severity === 'error')
+      .map(problem => jexlProblemText(setting, problem)),
+  )
 }
