@@ -124,7 +124,8 @@ Display slots go on a display entry: `"displays": [{ "type": "LinearMultiSampleV
 | <span id="slot-filter">**filter**</span><br>[FieldPredicate](../fieldpredicate) | The variants the display draws, a list of [](/docs/config/fieldpredicate) entries a site must all pass: a field of the record's own, a `jexl:` expression that must hold, `minorAlleleFrequency`, the share of its called alleles the second most frequent one makes up, and `missingness`, the share of its alleles uncalled. `[{ field: "minorAlleleFrequency", gte: 0.05 }]` drops the rare variants; a site with no called allele draws nothing whatever the list says. |
 | <span id="slot-axis">**axis**</span><br>[RowAxisWithGrid](../rowaxiswithgrid) | The guide down the left of the sample rows: the clustering tree, each sample's name and the lines between rows. |
 | <span id="slot-rows">**rows**</span><br>[SampleRows](../samplerows) | The rows are the file's samples, and the object is the arrangement a reader gives them, each member by row name: a sample in allele-count mode, a haplotype (`"<sample> HP<n>"`) in phased mode, where a sample name stands for all of its haplotypes. The samples `sort` lists come first and the rest keep the file's order; a facet groups within it. Written whole, as every display's `rows` is. |
-| <span id="slot-showtooltips">**showTooltips**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | Show the hover tooltip naming the genotype, the sample and the record under the pointer. Off, the crosshairs, the highlighted cell and the cross-display `session.hovered` channel stay. |
+| <span id="slot-tooltip">**tooltip**</span><br>[SampleTooltip sub-schema](#slot-tooltipshow) | The hover tooltip naming the genotype, the sample and the record under the pointer. Off, the crosshairs, the highlighted cell and the cross-display `session.hovered` channel stay. |
+| <span id="slot-tooltipshow">**tooltip.show**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | show the hover tooltip over the genotype rows; the crosshairs and the hover highlight stay either way |
 | <span id="slot-unit">**unit**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (sample, haplotype) = <code>'sample'</code> | The unit one row draws: 'sample' colors each row by allele dosage, 'haplotype' draws one row per phased haplotype |
 | <span id="slot-encoding">**encoding**</span><br>[VariantCellEncoding](../variantcellencoding) | The genotype cells' channels: `encoding.color`, the hue of every cell with an alt allele. |
 | <span id="slot-shadebydosage">**shadeByDosage**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | Compose the cell hue with the genotype's alt dosage — the fraction of its called alleles that are non-reference — so a homozygote paints the hue itself and a heterozygote a lighter version of it. Off paints each alt cell its flat hue. |
@@ -150,6 +151,7 @@ An older config may still write these. Each loads without an error, and `jbrowse
 | `maxDisplayedBpPerPx` | ignored |
 | `mouseover` | ignored |
 | `jexlFilters` | moved into a current slot |
+| `showTooltips` | moved into a current slot |
 | `renderingMode` | moved into a current slot |
 | `showSidebarLabels` | moved into a current slot |
 | `showTree` | moved into a current slot |

@@ -745,7 +745,7 @@ export function stateModelFactory(
          * hovered-cell highlight and `hoveredFeature` keep working with it off.
          */
         get showTooltips(): boolean {
-          return getConf(self, 'showTooltips')
+          return getConf(self, ['tooltip', 'show'])
         },
 
         /**
@@ -926,7 +926,7 @@ export function stateModelFactory(
            * #action
            */
           setShowTooltips(arg: boolean) {
-            setConf(self, 'showTooltips', arg)
+            setConf(self, ['tooltip', 'show'], arg)
           },
           /**
            * #action
@@ -1408,7 +1408,7 @@ export function stateModelFactory(
          * #getter
          * The hovered thing as the tooltip table reads it: the record's fields
          * over the hovered row's sample metadata. A lane hover names no row and
-         * is the record's fields alone. Undefined with `showTooltips` off.
+         * is the record's fields alone. Undefined with `tooltip.show` off.
          */
         get hoveredTooltipSource() {
           const { hoveredFeature, sourceMap } = self

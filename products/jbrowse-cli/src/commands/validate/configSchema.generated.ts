@@ -12052,6 +12052,27 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         }
       ]
     },
+    "SampleTooltip": {
+      "title": "SampleTooltip",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "show": {
+          "description": "show the hover tooltip over the genotype rows; the crosshairs and the hover highlight stay either way.",
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
     "VariantCellColorScale": {
       "title": "VariantCellColorScale",
       "type": "object",
@@ -12377,14 +12398,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/SampleRows"
           }
         },
-        "showTooltips": {
-          "description": "show the hover tooltip over the genotype rows; the crosshairs and the hover highlight stay either way.",
-          "default": true,
+        "tooltip": {
           "if": {
             "type": "null"
           },
           "else": {
-            "type": "boolean"
+            "$ref": "#/$defs/SampleTooltip"
           }
         },
         "unit": {
@@ -12486,6 +12505,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
         "jexlFilters": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "showTooltips": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
@@ -17450,8 +17473,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 }
               ]
             },
-            "showTooltips": {
-              "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/showTooltips"
+            "tooltip": {
+              "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/tooltip"
             },
             "unit": {
               "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/unit"
@@ -17477,6 +17500,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "variants": {
               "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/variants"
+            },
+            "showTooltips": {
+              "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/showTooltips"
             },
             "renderingMode": {
               "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/renderingMode"

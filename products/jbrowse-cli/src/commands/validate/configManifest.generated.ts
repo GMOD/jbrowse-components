@@ -6853,8 +6853,16 @@ export const configManifest: ConfigManifest = {
           }
         },
         {
-          "name": "showTooltips",
-          "type": "boolean"
+          "name": "tooltip",
+          "type": "SampleTooltipConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "show",
+              "type": "boolean"
+            }
+          ],
+          "schema": "SampleTooltip",
+          "writes": "members"
         },
         {
           "name": "unit",
@@ -7042,6 +7050,7 @@ export const configManifest: ConfigManifest = {
         "maxDisplayedBpPerPx",
         "mouseover",
         "jexlFilters",
+        "showTooltips",
         "renderingMode",
         "showSidebarLabels",
         "showTree",

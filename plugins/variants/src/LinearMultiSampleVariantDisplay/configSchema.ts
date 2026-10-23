@@ -182,17 +182,26 @@ export default function configSchemaFactory() {
        */
       rows: sampleRowsConfigSchema,
       /**
-       * #slot
-       * Show the hover tooltip naming the genotype, the sample and the record
+       * #slot tooltip
+       * The hover tooltip naming the genotype, the sample and the record
        * under the pointer. Off, the crosshairs, the highlighted cell and the
        * cross-display `session.hovered` channel stay.
        */
-      showTooltips: {
-        type: 'boolean',
-        defaultValue: true,
-        description:
-          'show the hover tooltip over the genotype rows; the crosshairs and the hover highlight stay either way',
-      },
+      tooltip: ConfigurationSchema(
+        'SampleTooltip',
+        {
+          /**
+           * #slot tooltip.show
+           */
+          show: {
+            type: 'boolean',
+            defaultValue: true,
+            description:
+              'show the hover tooltip over the genotype rows; the crosshairs and the hover highlight stay either way',
+          },
+        },
+        { closed: true },
+      ),
       /**
        * #slot
        */
@@ -300,6 +309,7 @@ export default function configSchemaFactory() {
       // `encoding.color` has no member for, and carried the wiggle scale slots
       // the matrix never read.
       retired: {
+        showTooltips: show => ({ tooltip: { show } }),
         renderingMode: (v: unknown) => ({
           unit: v === 'phased' ? 'haplotype' : 'sample',
         }),

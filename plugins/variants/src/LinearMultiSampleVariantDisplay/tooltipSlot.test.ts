@@ -1,14 +1,15 @@
-import { getConf } from '@jbrowse/core/configuration'
+import { getConf, readConfObject } from '@jbrowse/core/configuration'
 import { resolveSubMenu, staysOpenOnClick } from '@jbrowse/core/ui'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
+import configSchemaF from './configSchema.ts'
 import { createTestEnvironment as createMatrixTestEnvironment } from './matrix/testEnv.ts'
 import { createTestEnvironment } from './testEnv.ts'
 
 import type { MenuItem } from '@jbrowse/core/ui'
 
-// `showTooltips` was a display prop before the multi-sample rewrite, came back
-// as a config slot, and is the only hover affordance the checkbox reaches: the
+// The tooltip was a display prop before the multi-sample rewrite, came back
+// as the `tooltip.show` config slot, and is the only hover affordance the checkbox reaches: the
 // crosshairs, the hovered-cell highlight and the cross-display `hoveredFeature`
 // channel all read `hoveredFeature`, which stays written either way.
 
@@ -43,7 +44,7 @@ describe('showTooltips', () => {
     const display = regularDisplay()
     // both halves: an unbuilt harness config reads every slot as undefined, so
     // the getter agreeing with `getConf` is what says the slot is resolving
-    expect(getConf(display, 'showTooltips')).toBe(true)
+    expect(getConf(display, ['tooltip', 'show'])).toBe(true)
     expect(display.showTooltips).toBe(true)
   })
 
@@ -62,9 +63,9 @@ describe('showTooltips', () => {
   it('writes the config slot, so it survives into the session', () => {
     const display = regularDisplay()
     display.setShowTooltips(false)
-    expect(getConf(display, 'showTooltips')).toBe(false)
+    expect(getConf(display, ['tooltip', 'show'])).toBe(false)
     expect(getSnapshot(display.configuration)).toMatchObject({
-      showTooltips: false,
+      tooltip: { show: false },
     })
   })
 
@@ -80,4 +81,13 @@ describe('showTooltips', () => {
       expect(tooltipItem(display.trackMenuItems()).checked).toBe(false)
     }
   })
+})
+
+test('a written showTooltips lands on tooltip.show', () => {
+  const conf = configSchemaF().create({
+    type: 'LinearMultiSampleVariantDisplay',
+    displayId: 'tooltips-off',
+    showTooltips: false,
+  })
+  expect(readConfObject(conf, ['tooltip', 'show'])).toBe(false)
 })
