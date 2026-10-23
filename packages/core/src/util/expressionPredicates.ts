@@ -1,6 +1,6 @@
-import { Jexl, conditions } from '@jbrowse/jexl'
+import { conditions } from '@jbrowse/jexl'
 
-import { stripJexlPrefix } from './jexlFilterFields.ts'
+import { FEATURE_ROW, parseJexl } from './jexlSyntax.ts'
 import { PROXY_NAMES } from './simpleFeature.ts'
 
 import type { FieldPredicate } from './fieldPredicate.ts'
@@ -8,8 +8,6 @@ import type { Condition } from '@jbrowse/jexl'
 
 /** The typed lane a field has: one number per row, or a label code per row. */
 export type TypedLane = 'number' | 'labels'
-
-const parser = new Jexl()
 
 const BOUND = { '<': 'lt', '<=': 'lte', '>': 'gt', '>=': 'gte' } as const
 
@@ -64,13 +62,8 @@ export function expressionPredicates(
   expr: string,
   laneOf: (field: string) => TypedLane | undefined,
 ): FieldPredicate[] | undefined {
-  let ast
-  try {
-    ast = parser.parse(stripJexlPrefix(expr))
-  } catch {
-    return undefined
-  }
-  const list = conditions(ast, { row: 'feature', accessors: { get: [] } })
+  const ast = parseJexl(expr)
+  const list = ast && conditions(ast, FEATURE_ROW)
   const predicates = list?.map(c => predicateOf(c, laneOf))
   return predicates?.every(p => p !== undefined) ? predicates : undefined
 }

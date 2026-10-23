@@ -1,8 +1,15 @@
-import { Jexl, JexlSyntaxError, check } from '@jbrowse/jexl'
+import { JexlSyntaxError, check } from '@jbrowse/jexl'
 
 import { stripJexlPrefix } from './jexlFilterFields.ts'
+import { FEATURE_ROW, parseJexl } from './jexlSyntax.ts'
 
-import type { FieldSchema, Severity, Signature, Type } from '@jbrowse/jexl'
+import type {
+  FieldSchema,
+  Jexl,
+  Severity,
+  Signature,
+  Type,
+} from '@jbrowse/jexl'
 
 export interface JexlProblem {
   severity: Severity
@@ -60,12 +67,9 @@ export function jexlProblems(
   return check(ast, {
     schema,
     functions: registeredFunctions(jexl),
-    accessors: { get: [] },
-    row: 'feature',
+    ...FEATURE_ROW,
   }).diagnostics.map(({ severity, message }) => ({ severity, message }))
 }
-
-const parser = new Jexl()
 
 function kindOf(type: Type): 'numeric' | 'categorical' | 'unknown' {
   switch (type.kind) {
@@ -92,12 +96,8 @@ function kindOf(type: Type): 'numeric' | 'categorical' | 'unknown' {
  * is numeric, `` `${feature.type}!` `` categorical, `feature.score` unknown.
  */
 export function expressionKind(text: string) {
-  try {
-    const ast = parser.parse(stripJexlPrefix(text.trim()))
-    return ast ? kindOf(check(ast, { row: 'feature' }).type) : 'unknown'
-  } catch {
-    return 'unknown'
-  }
+  const ast = parseJexl(text)
+  return ast ? kindOf(check(ast, FEATURE_ROW).type) : 'unknown'
 }
 
 /** A problem as one line, `where` naming the line or setting it is in. */

@@ -1,6 +1,7 @@
-import { Jexl, analyze } from '@jbrowse/jexl'
+import { analyze } from '@jbrowse/jexl'
 
 import { JEXL_PREFIX, isJexl, stringToJexlExpression } from './jexlStrings.ts'
+import { FEATURE_ROW, parseJexl } from './jexlSyntax.ts'
 import { PROXY_NAMES, buildJexlContext } from './simpleFeature.ts'
 
 import type { JexlInstance } from './jexlStrings.ts'
@@ -48,23 +49,13 @@ export function isPlainFieldRef(ref: string) {
   return !ref.includes('.') && !isJexl(ref)
 }
 
-const parser = new Jexl()
-
-function parsed(ref: string) {
-  try {
-    return parser.parse(ref.slice(JEXL_PREFIX.length))
-  } catch {
-    return undefined
-  }
-}
-
 /**
  * #api
  * Whether a `jexl:` ref answers the same for every feature: it reads no
  * variable and calls no function, as `jexl:'red'` does.
  */
 export function isConstantJexl(ref: string) {
-  const ast = isJexl(ref) ? parsed(ref) : undefined
+  const ast = isJexl(ref) ? parseJexl(ref) : undefined
   if (!ast) {
     return false
   }
@@ -83,12 +74,12 @@ export function plainFieldName(ref: string) {
   if (!ref.startsWith(JEXL_PREFIX)) {
     return ref.includes('.') ? undefined : ref
   }
-  const ast = parsed(ref)
+  const ast = parseJexl(ref)
   if (!ast) {
     return undefined
   }
   const viaGet = ast.type === 'FunctionCall' && ast.name === 'get'
-  const { bare, reads } = analyze(ast, { accessors: { get: [] } })
+  const { bare, reads } = analyze(ast, FEATURE_ROW)
   const [read] = reads
   const name = read?.path[0]
   return (bare || viaGet) &&
