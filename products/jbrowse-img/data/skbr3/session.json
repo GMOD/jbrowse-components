@@ -10,8 +10,11 @@
             "trackId": "ngmlr_cov",
             "height": 275,
             "resolution": 25,
-            "scales": {
-              "y": { "domainMin": 0, "domainMax": 200, "grid": true }
+            "encoding": {
+              "y": {
+                "scale": { "domainMin": 0, "domainMax": 200 },
+                "axis": { "grid": true }
+              }
             },
             "mark": "point"
           }

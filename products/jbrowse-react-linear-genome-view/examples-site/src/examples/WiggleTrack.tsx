@@ -15,8 +15,10 @@ export default function WiggleTrack() {
           displayDefaults: {
             mark: 'bar',
             height: 150,
-            encoding: { color: { value: '#a05195' } },
-            scales: { y: { domainMin: 0, domainMax: 1000 } },
+            encoding: {
+              y: { scale: { domainMin: 0, domainMax: 1000 } },
+              color: { value: '#a05195' },
+            },
           },
         },
       ]}

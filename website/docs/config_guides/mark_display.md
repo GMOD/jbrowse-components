@@ -79,16 +79,16 @@ one.
 | the ramp's middle stop at a value | `scale_fill_gradient2(midpoint)` | `"scale": {"domainMid"}` | `scale.domainMid` on the color |
 | a color per interval of a number | `cut()` into `scale_fill_manual(values)` | `"scale": {"type": "threshold", "domain", "range"}` | `"scale": {"type": "threshold"}`, `domain` holding the cuts |
 | a shape per category | `aes(shape = svType)` | `"shape": {"field": "svType"}` | `"shape": {"field": "svType", "scale": {"type": "ordinal"}}` |
-| a log axis | `scale_y_log10()` | `"y": {"scale": {"type": "log"}}` | `"scales": {"y": {"type": "log"}}` |
-| a log-like axis through zero | `scale_y_continuous(transform = "pseudo_log")` | `"y": {"scale": {"type": "symlog", "constant"}}` | `"scales": {"y": {"type": "symlog", "symlogConstant"}}` |
-| fixed axis ends | `coord_cartesian(ylim)` | `"scale": {"domain": [lo, hi]}` | `domainMin` and `domainMax` on `scales.y` |
-| one axis over a faceted plot | `facet_*(scales = "fixed")` | the default | always: every section and row reads the display's one `scales.y` |
-| one axis over several tracks | | `"resolve": {"scale": {"y": "shared"}}` on a concatenation | `scales.y.autoscaleGroup` |
-| an axis caption | `labs(y = "…")` | `"axis": {"title"}` | `scales.y.title` |
+| a log axis | `scale_y_log10()` | `"y": {"scale": {"type": "log"}}` | `"encoding": {"y": {"scale": {"type": "log"}}}` |
+| a log-like axis through zero | `scale_y_continuous(transform = "pseudo_log")` | `"y": {"scale": {"type": "symlog", "constant"}}` | `"encoding": {"y": {"scale": {"type": "symlog", "constant"}}}` |
+| fixed axis ends | `coord_cartesian(ylim)` | `"scale": {"domain": [lo, hi]}` | `domainMin` and `domainMax` on `encoding.y.scale` |
+| one axis over a faceted plot | `facet_*(scales = "fixed")` | the default | always: every section and row reads the display's one `encoding.y` |
+| one axis over several tracks | | `"resolve": {"scale": {"y": "shared"}}` on a concatenation | `encoding.y.scale.group` |
+| an axis caption | `labs(y = "…")` | `"axis": {"title"}` | `encoding.y.axis.title` |
 | a key heading | `labs(fill = "…")` | `"legend": {"title"}` | `legend.title` on the color |
 | which values the key lists | `scale_fill_manual(breaks)` | `"legend": {"values"}` | `legend.values` on the color or shape |
 | a stepped key, highest first | `guide_legend(reverse = TRUE)` | | `legend.descending` on a threshold color |
-| a horizontal line at a value | `geom_hline(yintercept)` | `"mark": "rule"` with a `datum` | `scales.y.rules` |
+| a horizontal line at a value | `geom_hline(yintercept)` | `"mark": "rule"` with a `datum` | `encoding.y.rules` |
 | a histogram | `geom_histogram(binwidth)` | `{"bin": {"step"}}` then `{"aggregate": [{"op": "count"}]}` | `{"type": "bin", "step"}` then `{"type": "aggregate", "ops": [{"op": "count"}]}` |
 | a summary per bin | `stat_summary_bin(fun = mean)` | `bin` then `aggregate` with `"op": "mean"` | `bin` then `aggregate` with `"op": "mean"` |
 | keep some of the rows | `filter()` before the plot | `{"filter": …}` | `{"type": "filter", "expr": …}`, or the display's `filter` |
@@ -109,7 +109,7 @@ Two names mean something else here. Vega-Lite's `row` is a facet channel; on
 this display `encoding.row` is the band a feature stands in, the integer a
 `pileup` step writes, and the facet is the display's `facet`. A positional
 channel is a bare field here, where Vega-Lite's has a scale, because the y scale
-is the display's `scales.y` and every mark reads one axis. The display has no
+is the display's `encoding.y` and every mark reads one axis. The display has no
 stacked bar and no `opacity` channel; every bar rises from the baseline. A
 point's diameter is `encoding.size`, and a rule's, line's or link's stroke is
 `encoding.strokeWidth`, Vega-Lite's word: a number of px, or on a link a field
@@ -119,17 +119,17 @@ mapped to a width.
 
 Each mark's `encoding` maps feature fields to the channels its type reads:
 
-| Channel       | Read by                                | Value                                                                                                                                                                                                                                                       |
-| ------------- | -------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `x`           | every mark                             | a field holding the left edge in bp; `start` by default                                                                                                                                                                                                     |
-| `x2`          | every mark                             | the right edge; `end` by default                                                                                                                                                                                                                            |
-| `y`           | `bar`, `point`, `rule`, `line`, `text` | the field plotted on the score axis, read through the display's `scales.y` (below); a feature whose value is not a finite number is skipped. A `text` may leave it empty and stand at the apex of a link between its two ends, or in the middle of its band |
-| `row`         | every mark                             | an integer field naming the band the mark stands in, from 0; missing is 0, and left empty it follows the last `pileup` step before it, in the mark's, the facet's or the display's                                                                          |
-| `color`       | every mark                             | a field through a scale (below), or a constant `{ "value": … }` holding a CSS color or a jexl callback returning one; a bare string is a field                                                                                                              |
-| `shape`       | `point`                                | `circle`, `triangle-down`, `diamond` or `square`, a jexl callback returning one, or a categorical scale (below)                                                                                                                                             |
-| `size`        | `point`                                | a number of px, the point's diameter                                                                                                                                                                                                                        |
-| `strokeWidth` | `rule`, `line`, `link`                 | a number of px, a rule's thickness, a line's width or a link's stroke; or, on a link, a field read through a linear or log scale into a px range (below)                                                                                                    |
-| `text`        | `text`                                 | the field printed, `name` by default; a feature with nothing there prints nothing                                                                                                                                                                           |
+| Channel       | Read by                                | Value                                                                                                                                                                                                                                                         |
+| ------------- | -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `x`           | every mark                             | a field holding the left edge in bp; `start` by default                                                                                                                                                                                                       |
+| `x2`          | every mark                             | the right edge; `end` by default                                                                                                                                                                                                                              |
+| `y`           | `bar`, `point`, `rule`, `line`, `text` | the field plotted on the score axis, read through the display's `encoding.y` (below); a feature whose value is not a finite number is skipped. A `text` may leave it empty and stand at the apex of a link between its two ends, or in the middle of its band |
+| `row`         | every mark                             | an integer field naming the band the mark stands in, from 0; missing is 0, and left empty it follows the last `pileup` step before it, in the mark's, the facet's or the display's                                                                            |
+| `color`       | every mark                             | a field through a scale (below), or a constant `{ "value": … }` holding a CSS color or a jexl callback returning one; a bare string is a field                                                                                                                |
+| `shape`       | `point`                                | `circle`, `triangle-down`, `diamond` or `square`, a jexl callback returning one, or a categorical scale (below)                                                                                                                                               |
+| `size`        | `point`                                | a number of px, the point's diameter                                                                                                                                                                                                                          |
+| `strokeWidth` | `rule`, `line`, `link`                 | a number of px, a rule's thickness, a line's width or a link's stroke; or, on a link, a field read through a linear or log scale into a px range (below)                                                                                                      |
+| `text`        | `text`                                 | the field printed, `name` by default; a feature with nothing there prints nothing                                                                                                                                                                             |
 
 A field name is read directly from the feature (`score`, `strand`, or any column
 a BED `columnNames` or a GFF attribute names). A `jexl:` expression over
@@ -145,40 +145,40 @@ field read, so reach for it where no field holds the value you want to plot.
 ## The value scale
 
 A mark's `y` names a field; the scale it is read through belongs to the display,
-which declares it once as `scales.y`:
+which declares it once as `encoding.y`:
 
 ```json
 "displays": [
   {
     "type": "LinearMarkDisplay",
-    "scales": { "y": { "type": "log", "domainMin": 1, "domainMax": 1000 } },
+    "encoding": { "y": { "scale": { "type": "log", "domainMin": 1, "domainMax": 1000 } } },
     "marks": [{ "mark": "bar", "encoding": { "y": "score" } }]
   }
 ]
 ```
 
-`type` is `linear` (the default), `log` or `symlog`, which reads like `log` away
-from zero and stays linear through it, so values reaching or crossing 0 keep
-their place; `symlogConstant` sets how wide that linear region is. An end left
-unset autoscales over the loaded regions, and
-[`domainQuantile`](/docs/config/valuescale/#slot-scalesydomainquantile) fences
-its outliers. The axis, its ticks, its grid lines and the bars read this one
+`scale.type` is `linear` (the default), `log` or `symlog`, which reads like
+`log` away from zero and stays linear through it, so values reaching or crossing
+0 keep their place; `scale.constant` sets how wide that linear region is. An end
+left unset autoscales over the loaded regions, and
+[`scale.fenceQuantile`](/docs/config/yscale/#slot-fencequantile) fences its
+outliers. The axis, its ticks, its grid lines and the bars read this one
 declaration, and so does the **Y axis...** panel.
 
 Every mark drawing at the current zoom folds into that one domain, the way a
 grammar of graphics gives one scale per aesthetic. With a multiscale pair
 (below) only one mark draws, so the axis is that mark's.
 
-`autoscaleGroup` shares the axis across tracks: every track in the view naming
-the same group autoscales over all of their data, so a plot and a wiggle or
-coverage track stay comparable as the view moves. An end pinned on one track
-applies to that track alone. **Share axis with** in the **Y axis...** panel
-writes it.
+`scale.group` shares the axis across tracks: every track in the view naming the
+same group autoscales over all of their data, so a plot and a wiggle or coverage
+track stay comparable as the view moves. An end pinned on one track applies to
+that track alone. **Share axis with** in the **Y axis...** panel writes it.
 
 ### Reference lines and the axis title
 
-`scales.y` also holds the two guides a reader checks a plot against: `rules`,
-horizontal lines at chosen values, and `title`, the caption beside the axis.
+`encoding.y` also holds the two guides a reader checks a plot against: `rules`,
+horizontal lines at chosen values, and `axis.title`, the caption beside the
+axis.
 
 ```json addtrack
 {
@@ -191,9 +191,9 @@ horizontal lines at chosen values, and `title`, the caption beside the axis.
     {
       "type": "LinearMarkDisplay",
       "displayId": "association-LinearMarkDisplay",
-      "scales": {
+      "encoding": {
         "y": {
-          "title": "-log10 p",
+          "axis": { "title": "-log10 p" },
           "rules": [{ "value": 7.3, "color": "red", "label": "p = 5e-8" }, 5]
         }
       },
@@ -263,15 +263,16 @@ were split on, so a color over it names each row:
 ```
 
 `facet` in place of `rows` gives each category a labelled section with a chip to
-hide it by. Every row and section reads the display's one `scales.y`, so the
+hide it by. Every row and section reads the display's one `encoding.y`, so the
 heights compare.
 
 ## Two quantities
 
 A coverage run in the hundreds and a per-read mapping quality in the tens cannot
 be read off one axis, and the display draws only one. Write them as two tracks,
-one display and one `scales.y` per track, so each axis has the field it measures
-and the reader can stack the tracks in whatever order the comparison needs.
+one display and one `encoding.y` per track, so each axis has the field it
+measures and the reader can stack the tracks in whatever order the comparison
+needs.
 
 Where the two quantities answer the same question at different zooms, one track
 still does it: give each mark a zoom range and they never draw together.
@@ -911,8 +912,8 @@ fetch per region:
 
 A mark outside its range is off entirely (not drawn, not hovered, and out of the
 y-axis, the legend and the row count), so the axis at each zoom is the drawing
-mark's. `scales.y.title` holds at every zoom, so a pair plotting two quantities
-takes a title covering both, or none.
+mark's. `encoding.y.axis.title` holds at every zoom, so a pair plotting two
+quantities takes a title covering both, or none.
 
 ### A bin that follows the zoom
 
@@ -960,8 +961,8 @@ each reported under its id:
 | `threshold-range` | warning | A threshold `scale.range` not one color longer than its cuts. |
 | `ramp-domain` | warning | A `scale.domain` on a linear, log or symlog color, whose ends are `scale.domainMin` and `scale.domainMax`. |
 | `ramp-range` | warning | A linear, log or symlog color whose `scale.range` lists one color, which paints every value alike. |
-| `domain-ends` | warning | A scale's `domainMax` below its `domainMin`: a color ramp's, a width's or `scales.y`'s. |
-| `domain-quantile` | warning | A color ramp's or `scales.y`'s `domainQuantile` outside 0.5 to 1, a percent among them. |
+| `domain-ends` | warning | A scale's `domainMax` below its `domainMin`: a color ramp's, a width's or the y axis's. |
+| `domain-quantile` | warning | A color ramp's `domainQuantile` or the y axis's `fenceQuantile` outside 0.5 to 1, a percent among them. |
 | `log-floor` | warning | A log scale's `domainMin` at or below 0, which a log scale cannot represent, so the end floors above it. |
 | `field-spells-constant` | warning | A color's or a shape's `field` spelling a CSS color or a shape name, which is a constant written `{ value }`. |
 | `names-domain` | warning | A color's or a shape's `scale.names` naming values its `scale.domain` does not list, or no ordinal scale's. |
@@ -1029,7 +1030,7 @@ what a config file is refused for.
 With no `marks` at all a display plots `score` as bars, links a record to the
 other end it names, or opens the dialog where the fields supply neither.
 
-The **Y axis...** row opens the panel that writes `scales.y` as you change it:
+The **Y axis...** row opens the panel that writes `encoding.y` as you change it:
 scale type, min and max, Include 0, outlier clipping, grid lines and reference
 lines. Beside it, **Point size**, the legend toggle, and **Filter by...**, whose
 jexl runs in the worker before the encoding, so a filtered feature is neither

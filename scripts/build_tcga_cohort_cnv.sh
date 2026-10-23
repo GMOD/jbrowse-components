@@ -307,7 +307,7 @@ cfg['tracks'] += [
                 'as': 'group',
             }],
             'rows': {'field': 'group'},
-            'scales': {'y': {'domainMin': -70, 'domainMax': 70, 'title': '% of tumors'}},
+            'encoding': {'y': {'scale': {'domainMin': -70, 'domainMax': 70}, 'axis': {'title': '% of tumors'}}},
             'marks': [{
                 'mark': 'bar',
                 'encoding': {

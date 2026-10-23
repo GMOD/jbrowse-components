@@ -462,18 +462,19 @@ and deletions of the cancer karyotype are visible:
 
 ```bash
 jb2export --loc all --fasta https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz \
-  --bigwig https://jbrowse.org/genomes/hg19/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam.regions.bw scales.y.type=log mark=point resolution=100 height:400 color:purple scales.y.domainMin=1 scales.y.domainMax=1024 \
+  --bigwig https://jbrowse.org/genomes/hg19/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam.regions.bw encoding.y.scale.type=log mark=point resolution=100 height:400 color:purple encoding.y.scale.domainMin=1 encoding.y.scale.domainMax=1024 \
   --width 1900 --out skbr3_cov.png
 ```
 
 ![SKBR3 read coverage genome-wide on a log scale](https://jbrowse.org/jb2-figures/jbrowse-img/skbr3_cov.20b477a3ce08.png)
 
 The axis clips outliers by default, stopping short of a spike that would flatten
-the rest of the view; `scales.y.domainQuantile=1` follows the extremes instead:
+the rest of the view; `encoding.y.scale.fenceQuantile=1` follows the extremes
+instead:
 
 ```bash
 jb2export --loc all \
-  --bigwig coverage.bw scales.y.domainQuantile=1 mark=point resolution=100 height:400 color:purple \
+  --bigwig coverage.bw encoding.y.scale.fenceQuantile=1 mark=point resolution=100 height:400 color:purple \
   --assembly hg19 \
   --config data/config.json
 ```
@@ -772,27 +773,27 @@ to both. `facet=<field>` stacks the track into one labelled section per value:
 
 **BigWig tracks**
 
-A BigWig's score axis is the `scales.y` setting. A BAM/CRAM track's coverage
+A BigWig's score axis is the `encoding.y` setting. A BAM/CRAM track's coverage
 band spells its axis `coverage.encoding.y`, where
 `coverage.encoding.y.scale.type=log` is the usual setting for RNA-seq. `mark`
 names how the scores draw: `bar`, `point`, `line` or `span`.
 
-| Write                                           | Description                              |
-| ----------------------------------------------- | ---------------------------------------- |
-| `scales.y.domainMin=0` `scales.y.domainMax=100` | Manual score range                       |
-| `scales.y.type=log`                             | Scale type (`linear`, `log` or `symlog`) |
-| `scales.y.grid=true`                            | Draw gridlines                           |
-| `mark=point`                                    | `bar`, `point`, `line` or `span`         |
-| `resolution=100`                                | BigWig resolution multiplier             |
-| `color:purple`                                  | Fill color (any CSS color)               |
+| Write                                                           | Description                              |
+| --------------------------------------------------------------- | ---------------------------------------- |
+| `encoding.y.scale.domainMin=0` `encoding.y.scale.domainMax=100` | Manual score range                       |
+| `encoding.y.scale.type=log`                                     | Scale type (`linear`, `log` or `symlog`) |
+| `encoding.y.axis.grid=true`                                     | Draw gridlines                           |
+| `mark=point`                                                    | `bar`, `point`, `line` or `span`         |
+| `resolution=100`                                                | BigWig resolution multiplier             |
+| `color:purple`                                                  | Fill color (any CSS color)               |
 
 Two tracks read against each other need one axis, and an image has no menu to
-open, so give both the same `scales.y.autoscaleGroup` and they share a domain:
+open, so give both the same `encoding.y.scale.group` and they share a domain:
 
 ```bash
 jb2export --fasta ref.fa \
-  --bigwig tumor.bw scales.y.autoscaleGroup=cov height:120 \
-  --bigwig normal.bw scales.y.autoscaleGroup=cov height:120 \
+  --bigwig tumor.bw encoding.y.scale.group=cov height:120 \
+  --bigwig normal.bw encoding.y.scale.group=cov height:120 \
   --loc chr17:7,660,000-7,690,000 --out pair.svg
 ```
 

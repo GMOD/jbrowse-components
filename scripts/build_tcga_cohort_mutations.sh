@@ -192,7 +192,7 @@ cfg['tracks'].append({
     },
     'displayDefaults': {
         'height': 260,
-        'scales': {'y': {'domainMin': 0, 'domainMax': 100}},
+        'encoding': {'y': {'scale': {'domainMin': 0, 'domainMax': 100}}},
         'showRowSeparators': True,
     },
 })

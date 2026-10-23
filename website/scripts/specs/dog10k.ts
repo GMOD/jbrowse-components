@@ -239,8 +239,11 @@ const CEA_ROWS = arrangedSamples(
 // axes.
 const FST_DOMAIN_MAX = 0.8
 const FST_AXIS = {
-  scales: {
-    y: { domainMin: 0, domainMax: FST_DOMAIN_MAX, title: 'Hudson Fst' },
+  encoding: {
+    y: {
+      scale: { domainMin: 0, domainMax: FST_DOMAIN_MAX },
+      axis: { title: 'Hudson Fst' },
+    },
   },
 }
 
@@ -277,9 +280,9 @@ const fstCallout = (
 // belongs to its window size, and the 20 kb and per-site lanes are other
 // distributions.
 const FST_AXIS_RULED = {
-  scales: {
+  encoding: {
     y: {
-      ...FST_AXIS.scales.y,
+      ...FST_AXIS.encoding.y,
       // A rule naming no color draws in the chrome's grey.
       rules: [
         { value: 0.295, color: 'rgb(200,60,60)', label: '99.9th percentile' },

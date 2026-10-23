@@ -66,7 +66,12 @@ export const scrnaSpecs: ScreenshotSpec[] = [
             oneTranscriptPerGene,
             {
               trackId: 'pbmc5k_scrna_pseudobulk_hg38',
-              scales: { y: { type: 'log', title: 'CPM', domainMin: 1 } },
+              encoding: {
+                y: {
+                  scale: { type: 'log', domainMin: 1 },
+                  axis: { title: 'CPM' },
+                },
+              },
               height: 405,
             },
           ],
@@ -98,7 +103,7 @@ export const scrnaSpecs: ScreenshotSpec[] = [
             {
               trackId: 'pbmc5k_scrna_percell_hg38',
               type: 'LinearWiggleDisplay',
-              scales: { y: { domainMin: 0, domainMax: 2 } },
+              encoding: { y: { scale: { domainMin: 0, domainMax: 2 } } },
               height: 620,
             },
           ],

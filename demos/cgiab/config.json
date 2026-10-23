@@ -240,7 +240,7 @@
           "mark": "point",
           "extent": "none",
           "size": 1,
-          "scales": { "y": { "domainMin": -2, "domainMax": 2 } },
+          "encoding": { "y": { "scale": { "domainMin": -2, "domainMax": 2 } } },
           "height": 120
         }
       ]
@@ -263,9 +263,12 @@
           "type": "LinearWiggleDisplay",
           "displayId": "HG008-T_bicseq2-LinearWiggleDisplay",
           "mark": "line",
-          "encoding": { "color": { "value": "#0068d1" } },
-          "scales": {
-            "y": { "domainMin": -2, "domainMax": 1.5, "grid": true }
+          "encoding": {
+            "y": {
+              "scale": { "domainMin": -2, "domainMax": 1.5 },
+              "axis": { "grid": true }
+            },
+            "color": { "value": "#0068d1" }
           },
           "height": 90
         }
@@ -291,7 +294,7 @@
           "displayId": "HG008-T_baf-LinearWiggleDisplay",
           "mark": "point",
           "size": 1,
-          "scales": { "y": { "domainMin": 0, "domainMax": 1 } },
+          "encoding": { "y": { "scale": { "domainMin": 0, "domainMax": 1 } } },
           "height": 120
         }
       ]
@@ -313,7 +316,9 @@
         {
           "type": "LinearWiggleDisplay",
           "displayId": "HG008-T_coverage_perbase-LinearWiggleDisplay",
-          "scales": { "y": { "domainMin": 0, "domainMax": 100 } },
+          "encoding": {
+            "y": { "scale": { "domainMin": 0, "domainMax": 100 } }
+          },
           "height": 120
         }
       ]

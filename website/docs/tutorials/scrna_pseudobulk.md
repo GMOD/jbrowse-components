@@ -197,16 +197,18 @@ as `pbmc5k_scrna_pseudobulk_hg38`:
   },
   "displayDefaults": {
     "mark": "bar",
-    "scales": { "y": { "type": "log", "title": "CPM" } },
+    "encoding": {
+      "y": { "scale": { "type": "log" }, "axis": { "title": "CPM" } }
+    },
     "height": 330
   }
 }
 ```
 
-In [grammar-of-graphics](/docs/config_guides/mark_display) terms, `scales.y` is
-the y scale, and its `log` type keeps the dim rows readable: _LYZ_ in monocytes
-sits an order of magnitude above _IL7R_ in CD4 T cells, and the rows share one
-axis.
+In [grammar-of-graphics](/docs/config_guides/mark_display) terms, `encoding.y`
+is the y scale, and its `log` type keeps the dim rows readable: _LYZ_ in
+monocytes sits an order of magnitude above _IL7R_ in CD4 T cells, and the rows
+share one axis.
 
 Take the row order and colors from the single-cell object, so related lineages
 stay adjacent and each row keeps its cluster's UMAP color.
@@ -274,7 +276,7 @@ points at a store with the same layout, built by the reproduce script below:
   },
   "displayDefaults": {
     "mark": "span",
-    "scales": { "y": { "domainMin": 0, "domainMax": 2 } },
+    "encoding": { "y": { "scale": { "domainMin": 0, "domainMax": 2 } } },
     "height": 420
   }
 }

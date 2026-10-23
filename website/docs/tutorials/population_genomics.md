@@ -271,7 +271,7 @@ bedGraphToBigWig pi_ratio_In2Lt.bedgraph dm6.chrom.sizes pi_ratio_In2Lt.bw
 In [grammar-of-graphics](/docs/config_guides/mark_display) terms,
 `encoding.color` is a color scale: the score mapped through `scale.domain` to a
 `scale.range` of colors. Here a `threshold` scale colors each bin by its side of
-zero, and `scales.y` pins the y scale to ±1.5:
+zero, and `encoding.y` pins the y scale to ±1.5:
 
 ```json addtrack
 {
@@ -285,6 +285,10 @@ zero, and `scales.y` pins the y scale to ±1.5:
   },
   "displayDefaults": {
     "encoding": {
+      "y": {
+        "scale": { "domainMin": -1.5, "domainMax": 1.5 },
+        "axis": { "title": "log2 ratio" }
+      },
       "color": {
         "scale": {
           "type": "threshold",
@@ -294,9 +298,6 @@ zero, and `scales.y` pins the y scale to ±1.5:
         },
         "legend": { "title": "π, In(2L)t vs standard" }
       }
-    },
-    "scales": {
-      "y": { "domainMin": -1.5, "domainMax": 1.5, "title": "log2 ratio" }
     }
   }
 }

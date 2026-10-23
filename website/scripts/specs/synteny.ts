@@ -409,7 +409,7 @@ const ECOLI_IDENTITY_TRACK = {
       displayId: 'ecoli_ava_identity-LinearMarkDisplay',
       rows: 'mate.assemblyName',
       filter: ["jexl:feature.mate.assemblyName != 'K12'"],
-      scales: { y: { zero: false } },
+      encoding: { y: { scale: { zero: false } } },
       marks: [{ mark: 'rule', encoding: { y: 'identity', strokeWidth: 2 } }],
     },
   ],

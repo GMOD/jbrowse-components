@@ -98,7 +98,7 @@ export const circularSpecs: ScreenshotSpec[] = [
           tracks: [
             {
               trackId: 'ngmlr_cov',
-              scales: { y: { type: 'log' } },
+              encoding: { y: { scale: { type: 'log' } } },
               height: 80,
             },
             'breast_cancer_sniffles_hg19_traonly_tabix',
@@ -129,7 +129,7 @@ export const circularSpecs: ScreenshotSpec[] = [
             {
               trackId: 'colo829_coverage_pair',
               rows: { field: 'source', sort: ['Tumor', 'Normal'] },
-              scales: { y: { domainMin: 0, domainMax: 100 } },
+              encoding: { y: { scale: { domainMin: 0, domainMax: 100 } } },
               height: 140,
             },
             'truthset_somaticSVs_COLO829',

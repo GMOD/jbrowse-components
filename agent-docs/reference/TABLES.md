@@ -431,7 +431,7 @@ layer encoder (`buildSourceRenderData`):
 - The sources stack in the order `rows.sort` gives them
   (`orderRowsByDomain`, the tree sidebar's own rule), each on its `row`
   under a row layout and all on row 0 in a shared panel.
-- `domain`, `scaleType` and `symlogConstant` are the axis `scales.y`
+- `domain`, `scaleType` and `symlogConstant` are the axis `encoding.y`
   resolves to, and `rules` the reference lines it draws.
 - `ramps` holds the score's color bar where one ramp paints every row
   (`scoreGradientPaints`, the display's own rule): density, or a declared

@@ -180,16 +180,16 @@ in the other.
   "displayDefaults": {
     "height": 120,
     "encoding": {
+      "y": { "scale": { "domainMin": -100, "domainMax": 100 } },
       "color": {
         "scale": { "type": "threshold", "range": ["#2166ac", "#b2182b"] }
       }
-    },
-    "scales": { "y": { "domainMin": -100, "domainMax": 100 } }
+    }
   }
 }
 ```
 
-`scales.y`'s `domainMin` and `domainMax`
+`encoding.y`'s `domainMin` and `domainMax`
 ([display options](/docs/config_guides/quantitative_track#display-options)) pin
 the axis, so a bar means the same fraction wherever you navigate. Place the
 track above the stack, so that each peak sits over a stripe:
@@ -244,8 +244,11 @@ signal's column name:
         "field": "subtype",
         "sort": ["HR+/HER2-", "HER2+", "triple-negative", "unknown"]
       },
-      "scales": {
-        "y": { "domainMin": -70, "domainMax": 70, "title": "% of tumors" }
+      "encoding": {
+        "y": {
+          "scale": { "domainMin": -70, "domainMax": 70 },
+          "axis": { "title": "% of tumors" }
+        }
       },
       "marks": [
         {

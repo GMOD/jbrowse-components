@@ -385,7 +385,7 @@ six bigWigs as a row each, on one axis from 0 to 1:
   },
   "displayDefaults": {
     "height": 300,
-    "scales": { "y": { "domainMin": 0, "domainMax": 1 } }
+    "encoding": { "y": { "scale": { "domainMin": 0, "domainMax": 1 } } }
   }
 }
 ```

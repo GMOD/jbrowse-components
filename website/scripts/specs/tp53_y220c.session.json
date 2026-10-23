@@ -1589,20 +1589,9 @@
           "size": 11,
           "legend": { "show": false },
           "encoding": {
-            "color": {
-              "scale": {
-                "type": "threshold",
-                "domain": [0],
-                "range": ["#4f8fc6", "#c51b1b"],
-                "names": ["p53 works (score ≤ 0)", "p53 broken (score > 0)"]
-              }
-            }
-          },
-          "scales": {
             "y": {
-              "domainMin": -2,
-              "domainMax": 3.0,
-              "title": "loss of function ↑",
+              "scale": { "domainMin": -2, "domainMax": 3.0 },
+              "axis": { "title": "loss of function ↑" },
               "rules": [
                 {
                   "value": 0,
@@ -1610,6 +1599,14 @@
                   "color": "#555555"
                 }
               ]
+            },
+            "color": {
+              "scale": {
+                "type": "threshold",
+                "domain": [0],
+                "range": ["#4f8fc6", "#c51b1b"],
+                "names": ["p53 works (score ≤ 0)", "p53 broken (score > 0)"]
+              }
             }
           }
         }

@@ -398,7 +398,9 @@ gene copy):
       }
     ]
   },
-  "displayDefaults": { "scales": { "y": { "domainMin": 0, "domainMax": 10 } } }
+  "displayDefaults": {
+    "encoding": { "y": { "scale": { "domainMin": 0, "domainMax": 10 } } }
+  }
 }
 ```
 

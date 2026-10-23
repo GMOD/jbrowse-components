@@ -34,8 +34,8 @@ const LADDER_TRACK = pageTrack('tutorials/population_cnv.md', 'pur_cnv_ladder')
 export const CN_HEATMAP_SETTINGS = {
   mark: 'span',
   origin: 2,
-  scales: { y: { domainMin: 0, domainMax: 4 } },
   encoding: {
+    y: { scale: { domainMin: 0, domainMax: 4 } },
     color: {
       scale: { range: ['#2166ac', '#b2182b'] },
       legend: { title: 'Copy number' },

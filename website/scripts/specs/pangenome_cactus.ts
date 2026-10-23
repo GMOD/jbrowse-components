@@ -197,7 +197,7 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
               type: 'LinearWiggleDisplay',
               displayId: 'ecoli_depth_by_builder-display',
               // Autoscale fits each row to its own max and erases the doubling.
-              scales: { y: { domainMin: 0, domainMax: 10 } },
+              encoding: { y: { scale: { domainMin: 0, domainMax: 10 } } },
             },
           ],
         },
@@ -337,7 +337,7 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
               trackId: 'ecoli_cactus_pav_odgi_colors',
               // A 0-1 domain keeps every present base fully saturated.
               mark: 'span',
-              scales: { y: { domainMin: 0, domainMax: 1 } },
+              encoding: { y: { scale: { domainMin: 0, domainMax: 1 } } },
               // The raster's 40px per row.
               height: 160,
             },

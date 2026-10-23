@@ -190,9 +190,9 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
             {
               trackId: 'ecoli_pggb_depth',
               height: 150,
-              scales: {
+              encoding: {
                 y: {
-                  title: 'paths',
+                  axis: { title: 'paths' },
                   rules: [
                     { value: 5, label: 'all five strains' },
                     { value: 1, label: 'K12 alone' },

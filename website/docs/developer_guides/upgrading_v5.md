@@ -77,9 +77,9 @@ plugin naming one of these fails the lookup. These went in v5, alongside
   `WiggleGetMultiRegionQuantitativeStats`. There is no separate stats round trip
   any more: `RenderMultiWiggleData` returns the per-region score arrays and the
   display derives the domain from them, which also makes the percentile clip
-  (`scales.y.domainQuantile`) possible. The adapter methods those two called,
-  `getRegionQuantitativeStats` and `getMultiRegionQuantitativeStats`, are gone
-  from `BaseFeatureDataAdapter` as well; `scoresToStats` from
+  (`encoding.y.scale.fenceQuantile`) possible. The adapter methods those two
+  called, `getRegionQuantitativeStats` and `getMultiRegionQuantitativeStats`,
+  are gone from `BaseFeatureDataAdapter` as well; `scoresToStats` from
   `@jbrowse/core/util/stats` computes the same from an adapter's `getFeatures`.
 - `RenderWiggleData`. `RenderMultiWiggleData` serves every quantitative adapter
   now that there is one quantitative display; an adapter handing back typed
@@ -523,31 +523,33 @@ Config slots were also renamed. End-user JSON migrates automatically, but plugin
 code that reads a renamed slot directly — `getConf(self, 'color1')` — needs
 updating.
 
-## The value scale is one `scales.y` object
+## The value scale is one `encoding.y` object
 
-Every quantitative display (wiggle, the alignments coverage band and the mark
-display, which Manhattan now is) configures its value axis as one sub-schema.
-`scaleType` is `scales.y.type`, `minScore` and `maxScore` are
-`scales.y.domainMin` and `scales.y.domainMax`, `symlogConstant` keeps its name
-inside `scales.y`, and `autoscale` is one number, `domainQuantile`:
-`localpercentile` is `0.99` and every other value is `1`, the extremes.
+Every quantitative display configures its value axis as Vega-Lite's `encoding.y`
+([](/docs/config/ychannel)): the wiggle display and the mark display, which
+Manhattan now is, at `encoding.y`, and the coverage band of the alignments,
+LGVSynteny and MAF displays at `coverage.encoding.y`.
 
-**A v4 config or session lifts these spellings when it loads**, along with
-`displayCrossHatches` as `scales.y.grid` and `minimalTicks` as
-`scales.y.minimalTicks`. `numStdDev` and `inverted` have no successor and are
-dropped, and so is `numQuantile`. Code that reads a retired slot with `getConf`
-needs updating. The `Number.MIN_VALUE`/`MAX_VALUE` sentinels went away: an end
-left unset autoscales.
-
-[](/docs/config/valuescale) lists the members each display has.
-
-The coverage band of the alignments, LGVSynteny and MAF displays writes its axis
-as Vega-Lite's `coverage.encoding.y` instead ([](/docs/config/ychannel)):
-`scale` holds `type`, `domainMin`, `domainMax`, `zero`, `fenceQuantile` (was
-`domainQuantile`), `constant` (was `symlogConstant`) and `group` (was
-`autoscaleGroup`), `axis` holds `title` and `grid`, and `rules` sits beside
-them. `minimalTicks` went. MAF's `y` is `encoding.y`. A config or session
-writing `scales.y` on these displays, or MAF's `y`, lifts when it loads.
+- `scale` holds `type`, `domainMin`, `domainMax`, `zero`, `fenceQuantile`,
+  `constant` and `group`; `axis` holds `title` and `grid`; `rules` sits beside
+  them.
+- The wiggle display's plotted field is `encoding.y.field` (was `y`), and a bare
+  string there is the field. MAF's `y` is `encoding.y`. The mark display's
+  display-level `encoding.y` names no field, since each mark names its own.
+- v4's `scaleType` is `scale.type`, `minScore` and `maxScore` are
+  `scale.domainMin` and `scale.domainMax`, and `autoscale` is one number,
+  `scale.fenceQuantile`: `localpercentile` is `0.99` and every other value is
+  `1`, the extremes. `displayCrossHatches` is `axis.grid`.
+- Earlier v5 betas wrote `scales.y`, with `domainQuantile` for `fenceQuantile`,
+  `symlogConstant` for `constant`, `autoscaleGroup` for `group`, and `title` and
+  `grid` beside the scale members.
+- **A config or session in any of these spellings lifts when it loads.**
+  `minimalTicks`, `numStdDev`, `inverted` and `numQuantile` have no successor
+  and are dropped. The `Number.MIN_VALUE`/`MAX_VALUE` sentinels went away: an
+  end left unset autoscales.
+- Code that reads a retired slot with `getConf` needs updating. The model's
+  `domainQuantile`, `setDomainQuantile` and `clipQuantile` are `fenceQuantile`,
+  `setFenceQuantile` and `clipFenceQuantile`.
 
 ## An embedded view's track catalog is plain configs
 

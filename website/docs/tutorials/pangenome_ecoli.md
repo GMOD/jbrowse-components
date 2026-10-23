@@ -395,9 +395,9 @@ The config draws reference lines at the strain count and at 1:
     "uri": "ecoli_pggb_depth.bw"
   },
   "displayDefaults": {
-    "scales": {
+    "encoding": {
       "y": {
-        "title": "paths",
+        "axis": { "title": "paths" },
         "rules": [
           { "value": 5, "label": "all five strains" },
           { "value": 1, "label": "K12 alone" }

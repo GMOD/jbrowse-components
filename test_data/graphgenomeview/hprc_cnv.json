@@ -49,13 +49,8 @@
       "displayDefaults": {
         "mark": "span",
         "origin": 2,
-        "scales": {
-          "y": {
-            "domainMin": 0,
-            "domainMax": 4
-          }
-        },
         "encoding": {
+          "y": { "scale": { "domainMin": 0, "domainMax": 4 } },
           "color": {
             "scale": { "range": ["#2166ac", "#b2182b"] }
           }

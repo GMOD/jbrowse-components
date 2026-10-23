@@ -19,7 +19,7 @@ NA12878's reads on chromosome 20 we:
 
 The plots use JBrowse's mark display, which maps feature fields to plot
 channels. In [grammar-of-graphics](/docs/config_guides/mark_display) terms, a
-`mark` is the shape drawn and `scales.y` the y scale. The mark display is
+`mark` is the shape drawn and `encoding.y` the y scale. The mark display is
 experimental and its config shape may change.
 
 ## Prerequisites
@@ -90,7 +90,7 @@ callset records one copy of a 3.9 kb deletion in NA12878.
   "displays": [
     {
       "type": "LinearMarkDisplay",
-      "scales": { "y": { "title": "Read depth" } },
+      "encoding": { "y": { "axis": { "title": "Read depth" } } },
       "marks": [
         {
           "mark": "bar",
@@ -125,7 +125,7 @@ the mapping quality, which colors the points.
   "displays": [
     {
       "type": "LinearMarkDisplay",
-      "scales": { "y": { "title": "Insert size (bp)" } },
+      "encoding": { "y": { "axis": { "title": "Insert size (bp)" } } },
       "marks": [
         {
           "mark": "point",
@@ -202,7 +202,7 @@ it:
   "displays": [
     {
       "type": "LinearMarkDisplay",
-      "scales": { "y": { "title": "Insert size (bp)" } },
+      "encoding": { "y": { "axis": { "title": "Insert size (bp)" } } },
       "marks": [
         {
           "mark": "point",
@@ -239,8 +239,11 @@ it:
   "displays": [
     {
       "type": "LinearMarkDisplay",
-      "scales": {
-        "y": { "domainMin": 0, "domainMax": 60, "title": "Pairs per bin" }
+      "encoding": {
+        "y": {
+          "scale": { "domainMin": 0, "domainMax": 60 },
+          "axis": { "title": "Pairs per bin" }
+        }
       },
       "marks": [
         {

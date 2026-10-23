@@ -186,7 +186,7 @@ Declined on 2026-09-30: track- or view-level facets, and a free y per section.
   every part drawing junctions or connections reads them: the sashimi arcs and the
   tables engine's junctions, and the arcs, the read cloud and the curved
   connectors over the pileup.
-- **`scales.y.rules` draws fixed lines.** A `rule` layer with a constant `y`,
+- **`encoding.y.rules` draws fixed lines.** A `rule` layer with a constant `y`,
   taking a zoom range and a per-row value, waits on a plot that needs either;
   the CNV figures carry no reference line, since their keys name the level.
 - **One checker per display, `configProblemsOf(conf)`, answers both Edit plot

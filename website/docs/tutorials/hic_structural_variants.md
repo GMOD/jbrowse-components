@@ -256,7 +256,7 @@ the same set most. ENCODE publishes that call for every experiment as a
 [compartment eigenvector and a set of subcompartment classes](/docs/user_guides/hic_track#compartments-and-subcompartments).
 
 We load each line's eigenvector, a score per bin whose sign marks the
-compartment, as a bigWig. Both tracks pin `scales.y`, the y scale, to one
+compartment, as a bigWig. Both tracks pin `encoding.y`, the y scale, to one
 symmetric range, so they compare directly and 0, where the compartment flips,
 sits in the middle of each:
 
@@ -267,7 +267,9 @@ sits in the middle of each:
   "uri": "https://encode-public.s3.amazonaws.com/2021/10/28/5b488af0-df49-4b9b-9feb-8ad671b7eaef/ENCFF661LPK.bigWig",
   "assemblyNames": ["hg38"],
   "displayDefaults": {
-    "scales": { "y": { "domainMin": -0.012, "domainMax": 0.012 } }
+    "encoding": {
+      "y": { "scale": { "domainMin": -0.012, "domainMax": 0.012 } }
+    }
   }
 }
 ```

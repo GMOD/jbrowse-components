@@ -449,7 +449,7 @@ export const bigwigSpecs: ScreenshotSpec[] = [
           mark: 'span',
           // Most cells sit at copy number 2, so the default 99th-percentile
           // clip clamps the amplifications near 2.2.
-          scales: { y: { domainQuantile: 1 } },
+          encoding: { y: { scale: { fenceQuantile: 1 } } },
           // a dendrogram would imply a phylogeny
           showTree: false,
         },

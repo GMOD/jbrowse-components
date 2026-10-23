@@ -317,7 +317,7 @@ the same group:
   "uri": "https://jbrowse.org/demos/dtu/ENCFF565QRM.liver.plus.bigWig",
   "assemblyNames": ["hg38"],
   "displayDefaults": {
-    "scales": { "y": { "autoscaleGroup": "coverage" } }
+    "encoding": { "y": { "scale": { "group": "coverage" } } }
   }
 }
 ```
@@ -331,7 +331,7 @@ The other three tracks differ in their id, name and file:
   "uri": "https://jbrowse.org/demos/dtu/ENCFF253OSP.liver.minus.bigWig",
   "assemblyNames": ["hg38"],
   "displayDefaults": {
-    "scales": { "y": { "autoscaleGroup": "coverage" } }
+    "encoding": { "y": { "scale": { "group": "coverage" } } }
   }
 }
 ```
@@ -343,7 +343,7 @@ The other three tracks differ in their id, name and file:
   "uri": "https://jbrowse.org/demos/dtu/ENCFF007ZBY.muscle.plus.bigWig",
   "assemblyNames": ["hg38"],
   "displayDefaults": {
-    "scales": { "y": { "autoscaleGroup": "coverage" } }
+    "encoding": { "y": { "scale": { "group": "coverage" } } }
   }
 }
 ```
@@ -355,7 +355,7 @@ The other three tracks differ in their id, name and file:
   "uri": "https://jbrowse.org/demos/dtu/ENCFF518WGP.muscle.minus.bigWig",
   "assemblyNames": ["hg38"],
   "displayDefaults": {
-    "scales": { "y": { "autoscaleGroup": "coverage" } }
+    "encoding": { "y": { "scale": { "group": "coverage" } } }
   }
 }
 ```

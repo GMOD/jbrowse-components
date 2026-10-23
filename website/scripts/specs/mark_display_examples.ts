@@ -103,7 +103,7 @@ const TRACKS = {
     ],
   }),
   alu_histogram: aluTrack('alu_histogram', 'Alu copies per bin', {
-    scales: { y: { title: 'Copies per bin' } },
+    encoding: { y: { axis: { title: 'Copies per bin' } } },
     marks: [
       {
         mark: 'bar',
@@ -116,7 +116,7 @@ const TRACKS = {
     ],
   }),
   alu_mean: aluTrack('alu_mean', 'Mean Alu divergence per bin', {
-    scales: { y: { title: 'Mean divergence' } },
+    encoding: { y: { axis: { title: 'Mean divergence' } } },
     marks: [
       {
         mark: 'bar',
@@ -158,9 +158,9 @@ const TRACKS = {
     ],
   }),
   alu_rules: aluTrack('alu_rules', 'Alu divergence, with rules', {
-    scales: {
+    encoding: {
       y: {
-        title: 'Divergence, per mille',
+        axis: { title: 'Divergence, per mille' },
         rules: [{ value: 80, color: '#d73027', label: 'young' }, 150],
       },
     },
@@ -212,7 +212,12 @@ const TRACKS = {
         type: 'LinearMarkDisplay',
         displayId: 'hpylori_identity-LinearMarkDisplay',
         legend: { show: false },
-        scales: { y: { domainMin: 0.5, domainMax: 1, title: 'Identity' } },
+        encoding: {
+          y: {
+            scale: { domainMin: 0.5, domainMax: 1 },
+            axis: { title: 'Identity' },
+          },
+        },
         marks: [
           {
             mark: 'rule',
@@ -256,7 +261,12 @@ const TRACKS = {
         type: 'LinearMarkDisplay',
         displayId: 'pur_cnv_rows-LinearMarkDisplay',
         rows: 'source',
-        scales: { y: { domainMin: 0, domainMax: 10, title: 'Copies' } },
+        encoding: {
+          y: {
+            scale: { domainMin: 0, domainMax: 10 },
+            axis: { title: 'Copies' },
+          },
+        },
         marks: [
           {
             mark: 'bar',

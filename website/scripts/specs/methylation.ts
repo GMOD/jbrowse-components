@@ -132,7 +132,12 @@ const ARABIDOPSIS_CONTEXT_LANES = [
   {
     trackId: 'arabidopsis_methyldackel',
     mark: 'bar',
-    scales: { y: { domainMin: 0, domainMax: 100, title: '% methylated' } },
+    encoding: {
+      y: {
+        scale: { domainMin: 0, domainMax: 100 },
+        axis: { title: '% methylated' },
+      },
+    },
     height: 170,
   },
 ]

@@ -205,7 +205,7 @@ export const cookbookSpecs: ScreenshotSpec[] = [
               mark: 'line',
               // Per-row autoscale fills every row with its own plateau and hides
               // the copy-number differences; 5 leaves headroom above 4.
-              scales: { y: { domainMin: 0, domainMax: 5 } },
+              encoding: { y: { scale: { domainMin: 0, domainMax: 5 } } },
             },
           ],
         },

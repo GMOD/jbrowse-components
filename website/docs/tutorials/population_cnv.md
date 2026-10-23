@@ -112,8 +112,8 @@ copy of a duplicated sequence. The config lists two of the panel's 104 PUR
   "displayDefaults": {
     "mark": "span",
     "origin": 2,
-    "scales": { "y": { "domainMin": 0, "domainMax": 4 } },
     "encoding": {
+      "y": { "scale": { "domainMin": 0, "domainMax": 4 } },
       "color": {
         "scale": { "range": ["#2166ac", "#b2182b"] },
         "legend": { "title": "Copy number" }
@@ -126,7 +126,7 @@ copy of a duplicated sequence. The config lists two of the panel's 104 PUR
 The [`bigWigs`](/docs/config/multiwiggleadapter/#slot-bigwigs) shorthand takes a
 plain list of absolute URLs and names each subtrack from its filename. In
 [grammar-of-graphics](/docs/config_guides/mark_display) terms, `encoding.color`
-is a color scale and `scales.y` the y scale, which these settings turn into a
+is a color scale and `encoding.y` the y scale, which these settings turn into a
 copy-number heatmap:
 
 - [`mark`](/docs/config/linearwiggledisplay/#slot-mark) `span` gives each sample
@@ -135,8 +135,8 @@ copy-number heatmap:
   the diploid baseline, and [`encoding.color`](/docs/config/wigglecolor/)'s
   `scale.range` names the two colors it fades to: losses toward the first, gains
   toward the second.
-- [`scales.y.domainMin`](/docs/config/valuescale/#slot-scalesydomainmin) and
-  [`scales.y.domainMax`](/docs/config/valuescale/#slot-scalesydomainmax) pin the
+- [`encoding.y.scale.domainMin`](/docs/config/yscale/#slot-domainmin) and
+  [`encoding.y.scale.domainMax`](/docs/config/yscale/#slot-domainmax) pin the
   scale, so two copies are the same color in every window. Keep the bounds
   **symmetric around the origin**, because the ramp divides both sides by the
   longer one: 0 to 4 lets both extremes saturate, and gains past 4 clamp.
@@ -199,8 +199,11 @@ plateau lines up with a copy count:
   },
   "displayDefaults": {
     "mark": "line",
-    "scales": {
-      "y": { "domainMin": 0, "domainMax": 10, "title": "Copy number" }
+    "encoding": {
+      "y": {
+        "scale": { "domainMin": 0, "domainMax": 10 },
+        "axis": { "title": "Copy number" }
+      }
     }
   }
 }
@@ -300,8 +303,8 @@ With the plugin loaded, the adapter's `uri` names the store:
   "displayDefaults": {
     "mark": "span",
     "origin": 2,
-    "scales": { "y": { "domainMin": 0, "domainMax": 4 } },
     "encoding": {
+      "y": { "scale": { "domainMin": 0, "domainMax": 4 } },
       "color": {
         "scale": { "range": ["#2166ac", "#b2182b"] },
         "legend": { "title": "Copy number" }

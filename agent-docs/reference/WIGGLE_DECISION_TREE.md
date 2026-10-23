@@ -30,15 +30,15 @@ plugins draw a wiggle-shaped axis against it.
   per-feature array each end reads comes from the summary `y` names and the
   resolved extent — a min-max extent spreads the ends across the min and max
   arrays, none takes both from the summary's one array.
-- `domainQuantile` at 1 takes the visible extremes; below it each end is
+- `encoding.y.scale.fenceQuantile` at 1 takes the visible extremes; below it each end is
   clipped to that quantile of the values on its side of 0 (`quantileExtent`,
   the rule a color ramp's `scale.domainQuantile` reads too), and a linear or
-  symlog axis then reaches 0 while `scales.y.zero` is on; a density row, which
+  symlog axis then reaches 0 while `encoding.y.scale.zero` is on; a density row, which
   has no axis, spans its values either way.
 - The domain is then widened to reach any score a rule is drawn at, and clamped
-  by `scales.y`'s `domainMin` and `domainMax`. **A set bound wins; an unset one
+  by `encoding.y.scale`'s `domainMin` and `domainMax`. **A set bound wins; an unset one
   autoscales that end.**
-- The scale type (`scales.y.type`) builds the axis, and symlog's constant is
+- The scale type (`encoding.y.scale.type`) builds the axis, and symlog's constant is
   resolved from the domain by both the axis and the renderer.
 
 A display whose scores are bounded by construction overrides the default

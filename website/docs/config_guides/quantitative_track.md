@@ -21,15 +21,15 @@ either, through `displayDefaults`.
   },
   "displayDefaults": {
     "mark": "line",
-    "scales": { "y": { "type": "log" } }
+    "encoding": { "y": { "scale": { "type": "log" } } }
   }
 }
 ```
 
 ## Display options
 
-The axis is one object, [`scales.y`](/docs/config/valuescale), the color is one
-object, [`encoding.color`](/docs/config/wiggleencoding/#slot-color), and
+The axis is one object, [`encoding.y`](/docs/config/yfieldchannel), the color is
+one object, [`encoding.color`](/docs/config/wiggleencoding/#slot-color), and
 [`rows`](/docs/config/linearwiggledisplay/#slot-rows) decides the layout; all
 three are [`LinearWiggleDisplay`](/docs/config/linearwiggledisplay) slots and
 all three go through `displayDefaults`.
@@ -42,9 +42,9 @@ A line's [`mark.interpolate`](/docs/config/wigglemark/#slot-interpolate) is
 `step` or `linear`: `"mark": { "type": "line", "interpolate": "linear" }`.
 
 Reference lines belong to the axis object too.
-[`scales.y.rules`](/docs/config/valuescale/#slot-scalesyrules) draws a dashed
-line across the plot at each value, a bare number or `{ value, color, label }`,
-in every row of a track on `rows`:
+[`encoding.y.rules`](/docs/config/yfieldchannel/#slot-rules) draws a dashed line
+across the plot at each value, a bare number or `{ value, color, label }`, in
+every row of a track on `rows`:
 
 ```json addtrack
 {
@@ -53,9 +53,7 @@ in every row of a track on `rows`:
   "uri": "https://yourhost/tumor_depth.bw",
   "assemblyNames": ["hg19"],
   "displayDefaults": {
-    "scales": {
-      "y": { "rules": [{ "value": 30, "label": "2 copies" }, 15] }
-    }
+    "encoding": { "y": { "rules": [{ "value": 30, "label": "2 copies" }, 15] } }
   }
 }
 ```

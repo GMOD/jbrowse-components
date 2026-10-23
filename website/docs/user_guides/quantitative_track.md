@@ -41,17 +41,17 @@ axis...**, and on a density plot, which maps score to color, **Score range...**.
 - **Scale** - linear, log or signed log; signed log keeps zero and negative
   scores.
 - **Min** and **Max** pin either end of the axis
-  ([`scales.y.domainMin`](/docs/config/valuescale/#slot-scalesydomainmin)); a
-  field left empty follows the data in view, and the values in view are shown
-  beneath them. A bar past a pinned end is cut at the edge with a red strip, so
-  typing a min above a dip zooms onto the rest.
-- **Include 0** ([`scales.y.zero`](/docs/config/valuescale/#slot-scalesyzero)),
+  ([`encoding.y.scale.domainMin`](/docs/config/yscale/#slot-domainmin)); a field
+  left empty follows the data in view, and the values in view are shown beneath
+  them. A bar past a pinned end is cut at the edge with a red strip, so typing a
+  min above a dip zooms onto the rest.
+- **Include 0** ([`encoding.y.scale.zero`](/docs/config/yscale/#slot-zero)),
   ticked by default, extends an empty end to 0, so a bar always shows its whole
   height. Unticked, the axis spans the lowest to highest value in view, so a GC
   track whose region holds 30 to 60% draws 30 to 60. Values that already reach
   or cross 0 draw the same either way.
 - **Clip extreme outliers**
-  ([`scales.y.domainQuantile`](/docs/config/valuescale/#slot-scalesydomainquantile)),
+  ([`encoding.y.scale.fenceQuantile`](/docs/config/yscale/#slot-fencequantile)),
   ticked by default, keeps one spike from flattening the rest. The axis runs to
   the lowest and highest value in view unless one would stretch it past twice
   the height the other 99% of values need; that end stops there, and the bars
@@ -59,8 +59,8 @@ axis...**, and on a density plot, which maps score to color, **Score range...**.
   takes any quantile, `0.95` for a tighter fence.
 - **Share axis with** ticks the other tracks in the view that share this one's
   axis, which then autoscales over all of their data as you pan and zoom
-  ([`scales.y.autoscaleGroup`](/docs/config/valuescale/#slot-scalesyautoscalegroup)).
-  A coverage band, a mark display and a Manhattan plot take the same group.
+  ([`encoding.y.scale.group`](/docs/config/yscale/#slot-group)). A coverage
+  band, a mark display and a Manhattan plot take the same group.
 - **Grid lines** rule the plot at every tick, and **Reference lines** draw a
   dashed line at each value you add, each with an optional label and color.
 

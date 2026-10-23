@@ -180,8 +180,11 @@ as labeled rows, the Aggregate methylation track in the figure below.
   },
   "displayDefaults": {
     "mark": "bar",
-    "scales": {
-      "y": { "domainMin": 0, "domainMax": 100, "title": "% methylated" }
+    "encoding": {
+      "y": {
+        "scale": { "domainMin": 0, "domainMax": 100 },
+        "axis": { "title": "% methylated" }
+      }
     }
   }
 }

@@ -21,18 +21,13 @@
           "rows": "source",
           "legend": { "show": false },
           "encoding": {
+            "y": { "scale": { "domainMin": 0, "domainMax": 1 } },
             "color": {
               "scale": {
                 "type": "linear",
                 "range": ["#2c7bb6", "#ffffff", "#d7191c"],
                 "domainMid": 0.5
               }
-            }
-          },
-          "scales": {
-            "y": {
-              "domainMin": 0,
-              "domainMax": 1
             }
           }
         },
@@ -314,18 +309,13 @@
           "size": 9,
           "legend": { "show": false },
           "encoding": {
+            "y": { "scale": { "domainMin": -1.6, "domainMax": 2.2 } },
             "color": {
               "scale": {
                 "type": "threshold",
                 "domain": [0],
                 "range": ["#4f8fc6", "#c51b1b"]
               }
-            }
-          },
-          "scales": {
-            "y": {
-              "domainMin": -1.6,
-              "domainMax": 2.2
             }
           }
         }

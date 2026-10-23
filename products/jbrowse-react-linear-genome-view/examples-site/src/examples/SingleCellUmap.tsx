@@ -249,7 +249,7 @@ function tracks(cells: Cells) {
       displayDefaults: {
         mark: 'span',
         height: 420,
-        scales: { y: { domainMin: 0, domainMax: 4 } },
+        encoding: { y: { scale: { domainMin: 0, domainMax: 4 } } },
       },
     },
   ]

@@ -144,11 +144,7 @@
         {
           "type": "LinearManhattanDisplay",
           "displayId": "bxd_gwas_coatcolor_mm10-LinearManhattanDisplay",
-          "scales": {
-            "y": {
-              "title": "LOD"
-            }
-          }
+          "encoding": { "y": { "axis": { "title": "LOD" } } }
         }
       ]
     }

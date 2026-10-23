@@ -180,15 +180,15 @@ inherits the base's value and the slot is never unset. State
 `frozen` and `maybeFrozen` hold arbitrary JSON. The value is not deeply
 reactive, and reads are typed `any` — the structure is the caller's to assert.
 
-For enums, use `type: 'stringEnum'` and add a `model` field. The value scale's
+For enums, use `type: 'stringEnum'` and add a `model` field. The y scale's
 `type` member:
 
-<!-- include: packages/wiggle-core/src/valueScaleConfigSchema.ts#stringEnumSlot -->
+<!-- include: packages/wiggle-core/src/yScaleConfigSchema.ts#stringEnumSlot -->
 
 ```ts
 type: {
   type: 'stringEnum',
-  model: types.enumeration('ValueScaleType', [...VALUE_SCALE_TYPES]),
+  model: types.enumeration('YScaleType', [...VALUE_SCALE_TYPES]),
   defaultValue: 'linear',
   description: VALUE_SCALE_TYPES.join(' or '),
 },

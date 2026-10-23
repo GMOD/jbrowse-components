@@ -20,7 +20,7 @@ disagree today.
 ## Equivalent today, by hand
 
 - Autoscale glue in wiggle's and alignments coverage's tables, which ignores
-  `scales.y.autoscaleGroup`.
+  `encoding.y.scale.group`.
 - Variants row colors (`variants/src/tables.ts:726-756`) and four canvas
   carry-overs (`canvas/src/tables.ts:377, 402-404, 465-471`).
 

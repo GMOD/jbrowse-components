@@ -241,7 +241,7 @@ sed -e "s|@ASSEMBLY@|$ASM|g" -e "s|@SAMPLE@|$SAMPLE|g" -e "s|@CHROM@|$CHROM|g" -
     {
       "type": "LinearMarkDisplay",
       "displayId": "@SAMPLE@_@CHROM@_pair_counts-LinearMarkDisplay",
-      "scales": { "y": { "domainMin": 0, "domainMax": 60 } },
+      "encoding": { "y": { "scale": { "domainMin": 0, "domainMax": 60 } } },
       "marks": [
         {
           "mark": "bar",

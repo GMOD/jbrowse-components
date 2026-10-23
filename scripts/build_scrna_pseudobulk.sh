@@ -674,7 +674,7 @@ track = {
     "adapter": {"type": "MultiWiggleAdapter", "subadapters": sources},
     "displayDefaults": {
         "mark": "bar",
-        "scales": {"y": {"type": "log", "title": "CPM"}},
+        "encoding": {"y": {"scale": {"type": "log"}, "axis": {"title": "CPM"}}},
         "height": 330,
     },
 }

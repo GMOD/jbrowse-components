@@ -218,11 +218,13 @@ export const ldSpecs: ScreenshotSpec[] = [
             {
               trackId: 'kgp_lct_fst',
               mark: 'point',
-              encoding: { color: { value: '#0068d1' } },
+              encoding: {
+                y: { scale: { domainMin: 0.1, domainMax: 0.5 } },
+                color: { value: '#0068d1' },
+              },
               size: 2,
               y: 'maxScore',
               extent: 'none',
-              scales: { y: { domainMin: 0.1, domainMax: 0.5 } },
               height: 140,
             },
             // The 2019 deCODE map, counted off crossovers. HapMap and hg38's
@@ -234,7 +236,7 @@ export const ldSpecs: ScreenshotSpec[] = [
             // "Recomb. deCODE Avg" reads as a setting.
             {
               trackId: 'decode_recomb',
-              scales: { y: { domainMin: 0, domainMax: 100 } },
+              encoding: { y: { scale: { domainMin: 0, domainMax: 100 } } },
               height: 80,
             },
             // 200 cuts the panel block's apex and keeps both of its edges.
@@ -303,13 +305,15 @@ export const ldSpecs: ScreenshotSpec[] = [
             {
               trackId: 'kgp_lct_fst_scan',
               mark: 'point',
-              encoding: { color: { value: '#0068d1' } },
+              encoding: {
+                y: { scale: { domainMin: 0.1, domainMax: 0.5 } },
+                color: { value: '#0068d1' },
+              },
               size: 2,
               y: 'maxScore',
               extent: 'none',
               // Matches ld/lct_pooled_vs_panel's Fst axis, so the peak sits at
               // the same height in both.
-              scales: { y: { domainMin: 0.1, domainMax: 0.5 } },
               height: 230,
             },
           ],

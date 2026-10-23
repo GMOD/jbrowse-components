@@ -237,11 +237,10 @@ and key names live. The config below sets them in the track:
   "displays": [
     {
       "type": "LinearMarkDisplay",
-      "scales": {
+      "encoding": {
         "y": {
-          "domainMin": -1.5,
-          "domainMax": 1.5,
-          "title": "AluY share, log2"
+          "scale": { "domainMin": -1.5, "domainMax": 1.5 },
+          "axis": { "title": "AluY share, log2" }
         }
       },
       "marks": [

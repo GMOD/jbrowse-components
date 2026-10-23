@@ -302,13 +302,14 @@ is the percent identity plot [PipMaker](https://doi.org/10.1101/gr.10.4.577)
 drew for a pair of genomes. In
 [grammar-of-graphics](/docs/config_guides/mark_display) terms, the config below
 writes it out: `rows` assigns one row per `mate.assemblyName`, `filter` drops
-records, `scales.y` is the y scale, and the `mark` is the shape drawn. Three
+records, `encoding.y` is the y scale, and the `mark` is the shape drawn. Three
 details to read:
 
 - `identity` comes from minimap2's `de` divergence tag
 - `filter` drops K-12's alignments to itself, which otherwise take a separate
   row
-- `scales.y.zero` is `false`, so the autoscaled axis spans the identities alone
+- `encoding.y.scale.zero` is `false`, so the autoscaled axis spans the
+  identities alone
 
 **Advanced → Edit plot...** in the same menu shows these keys as text and
 applies edits live.
@@ -330,7 +331,7 @@ applies edits live.
       "displayId": "ecoli_ava_identity-LinearMarkDisplay",
       "rows": "mate.assemblyName",
       "filter": ["jexl:feature.mate.assemblyName != 'K12'"],
-      "scales": { "y": { "zero": false } },
+      "encoding": { "y": { "scale": { "zero": false } } },
       "marks": [
         { "mark": "rule", "encoding": { "y": "identity", "strokeWidth": 2 } }
       ]

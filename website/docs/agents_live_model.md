@@ -193,31 +193,31 @@ arcs are `applyDisplaySettings({ readConnections: { show: true } })` and
 A display's grammar settings are its plot: `display.plot` lists them by slot
 name, and `display.plotKeys` names the ones that display's config declares a
 plot setting. The common ones are `facet`, `encoding`, `rows`, `rowColor`,
-`unit`, `y`, `scales` and `filter`, and a mark display adds `marks` and
-`transform`. A change is a copy edited and handed back:
-`structuredClone(display.plot)`, edited as any object, then
-`display.plotProblems(draft)`, which throws what a config file would be refused
-for and lists what the display cannot draw, and
+`unit` and `filter`, and a mark display adds `marks` and `transform`. A change
+is a copy edited and handed back: `structuredClone(display.plot)`, edited as any
+object, then `display.plotProblems(draft)`, which throws what a config file
+would be refused for and lists what the display cannot draw, and
 `track.applyDisplaySettings(draft)`, the one write for every display setting.
 The draft patches the plot: a setting left out stays, and `null` resets one. An
 object binding a field (`encoding.color`, `rowColor`, `pileup.bases`, `facet`,
 `rows`, `sort`, a mark's encodings) is replaced whole; any other object
-(`filter`, `scales`, a band) takes the members written, and a `null` member
-resets that member. A string is the one-value form, the facet's field or the
-color's field, and an object spells the rest out: `facet: { field, sort }`
-orders the sections, `color: { field, scale: { domain, range } }` under
-`encoding` hands the `scale.domain` values the `scale.range` colors in order. A
-field is a feature attribute, a dotted path such as `INFO.SVTYPE`, or `strand`;
-an alignments track's facet field is a read dimension (`pairOrientation`,
-`mapq`, ...) or a tag (`tags.HP`). The `filter` is a list of `jexl:`
-expressions, such as `["jexl:feature.type == 'gene'"]`.
+(`filter`, `encoding`, `encoding.y`, a band) takes the members written, and a
+`null` member resets that member. A string is the one-value form, the facet's
+field or the color's field, and an object spells the rest out:
+`facet: { field, sort }` orders the sections,
+`color: { field, scale: { domain, range } }` under `encoding` hands the
+`scale.domain` values the `scale.range` colors in order. A field is a feature
+attribute, a dotted path such as `INFO.SVTYPE`, or `strand`; an alignments
+track's facet field is a read dimension (`pairOrientation`, `mapq`, ...) or a
+tag (`tags.HP`). The `filter` is a list of `jexl:` expressions, such as
+`["jexl:feature.type == 'gene'"]`.
 
 "Advanced → Edit plot..." in the track menu shows a display's plot as text.
 
 The `LinearMarkDisplay` on any feature, alignments, variant or quantitative
 track draws a plot specified as in ggplot2: `marks` (layers, each a `mark` with
 an `encoding` over feature fields and its `transform` steps), `transform`,
-`facet`, `rows` and `scales`, all in its `plot`. The same plot applied to
+`facet`, `rows` and `encoding.y`, all in its `plot`. The same plot applied to
 another track's mark display draws the same thing there. The docs topic `plots`
 is the whole vocabulary, with the ggplot2 and Vega-Lite name for each idea.
 

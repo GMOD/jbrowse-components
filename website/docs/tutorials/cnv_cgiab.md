@@ -200,12 +200,10 @@ total read counts and HG008-T is hypodiploid.
   },
   "displayDefaults": {
     "mark": "bar",
-    "scales": {
+    "encoding": {
       "y": {
-        "domainMin": -2,
-        "domainMax": 2,
-        "grid": true,
-        "title": "log2 tumor/normal"
+        "scale": { "domainMin": -2, "domainMax": 2 },
+        "axis": { "grid": true, "title": "log2 tumor/normal" }
       }
     }
   }
@@ -361,7 +359,7 @@ makes the adapter fetch raw per-site values at the zoom levels of these figures:
   "displayDefaults": {
     "mark": "point",
     "size": 1,
-    "scales": { "y": { "domainMin": 0, "domainMax": 1 } }
+    "encoding": { "y": { "scale": { "domainMin": 0, "domainMax": 1 } } }
   }
 }
 ```
@@ -460,7 +458,12 @@ outputs for each sample's CRAM; swap in yours:
   "displayDefaults": {
     "mark": "bar",
     "extent": "none",
-    "scales": { "y": { "domainMin": 0, "domainMax": 80, "grid": false } },
+    "encoding": {
+      "y": {
+        "scale": { "domainMin": 0, "domainMax": 80 },
+        "axis": { "grid": false }
+      }
+    },
     "height": 280
   }
 }

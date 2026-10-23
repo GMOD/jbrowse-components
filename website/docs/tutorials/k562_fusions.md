@@ -255,8 +255,11 @@ The build script lifts the breakends to hg38 and adds both as tracks:
   "uri": "K562_cn.bw",
   "assemblyNames": ["hg38"],
   "displayDefaults": {
-    "scales": {
-      "y": { "domainMin": 0, "domainMax": 8, "title": "copy ratio (DepMap)" }
+    "encoding": {
+      "y": {
+        "scale": { "domainMin": 0, "domainMax": 8 },
+        "axis": { "title": "copy ratio (DepMap)" }
+      }
     }
   }
 }

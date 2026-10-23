@@ -901,6 +901,10 @@
         "mark": "point",
         "size": 11,
         "encoding": {
+          "y": {
+            "scale": { "domainMin": -2.6, "domainMax": 0.8 },
+            "axis": { "title": "Function score" }
+          },
           "color": {
             "scale": {
               "type": "threshold",
@@ -909,13 +913,6 @@
               "names": ["BRCA1 broken", "In between", "BRCA1 works"]
             },
             "legend": { "title": "Function score" }
-          }
-        },
-        "scales": {
-          "y": {
-            "domainMin": -2.6,
-            "domainMax": 0.8,
-            "title": "Function score"
           }
         }
       }

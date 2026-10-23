@@ -134,10 +134,9 @@ a linear or log scale into a range of pixels:
 The compartment eigenvector is a BigWig, drawn as a
 [quantitative track](/docs/config_guides/quantitative_track) in two colors
 around zero. Pin
-[`scales.y.domainMin`](/docs/config/valuescale/#slot-scalesydomainmin) and
-[`domainMax`](/docs/config/valuescale/#slot-scalesydomainmax) when two of these
-tracks are read against each other, so neither autoscales to that track's
-extremes; the
+[`encoding.y.scale.domainMin`](/docs/config/yscale/#slot-domainmin) and
+[`domainMax`](/docs/config/yscale/#slot-domainmax) when two of these tracks are
+read against each other, so neither autoscales to that track's extremes; the
 [user guide](/docs/user_guides/hic_track#compartments-and-subcompartments)
 covers the sign check that goes with it:
 
@@ -148,7 +147,7 @@ covers the sign check that goes with it:
   "uri": "https://encode-public.s3.amazonaws.com/2021/10/28/5b488af0-df49-4b9b-9feb-8ad671b7eaef/ENCFF661LPK.bigWig",
   "assemblyNames": ["hg38"],
   "displayDefaults": {
-    "scales": { "y": { "domainMin": -0.03, "domainMax": 0.03 } }
+    "encoding": { "y": { "scale": { "domainMin": -0.03, "domainMax": 0.03 } } }
   }
 }
 ```

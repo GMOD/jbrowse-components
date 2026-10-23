@@ -198,7 +198,7 @@ it.
     {
       "type": "LinearMarkDisplay",
       "displayId": "alu_histogram-LinearMarkDisplay",
-      "scales": { "y": { "title": "Copies per bin" } },
+      "encoding": { "y": { "axis": { "title": "Copies per bin" } } },
       "marks": [
         {
           "mark": "bar",
@@ -234,7 +234,7 @@ The histogram's bins show `mean` over the column in place of the count.
     {
       "type": "LinearMarkDisplay",
       "displayId": "alu_mean-LinearMarkDisplay",
-      "scales": { "y": { "title": "Mean divergence" } },
+      "encoding": { "y": { "axis": { "title": "Mean divergence" } } },
       "marks": [
         {
           "mark": "bar",
@@ -363,7 +363,7 @@ overlap. `maxBpPerPx` stops the labels once the view is too wide to read them.
 
 ## Reference lines and an axis title
 
-`scales.y` holds the guides a reader checks a plot against: `rules`, lines at
+`encoding.y` holds the guides a reader checks a plot against: `rules`, lines at
 chosen values, and `title`, the caption beside the axis.
 
 ```json addtrack config=https://jbrowse.org/demos/gene_density/config.json loc=chr1:151,000,000-151,030,000
@@ -380,9 +380,9 @@ chosen values, and `title`, the caption beside the axis.
     {
       "type": "LinearMarkDisplay",
       "displayId": "alu_rules-LinearMarkDisplay",
-      "scales": {
+      "encoding": {
         "y": {
-          "title": "Divergence, per mille",
+          "axis": { "title": "Divergence, per mille" },
           "rules": [{ "value": 80, "color": "#d73027", "label": "young" }, 150]
         }
       },
@@ -469,7 +469,12 @@ similarity...** in the track menu.
       "type": "LinearMarkDisplay",
       "displayId": "pur_cnv_rows-LinearMarkDisplay",
       "rows": "source",
-      "scales": { "y": { "domainMin": 0, "domainMax": 10, "title": "Copies" } },
+      "encoding": {
+        "y": {
+          "scale": { "domainMin": 0, "domainMax": 10 },
+          "axis": { "title": "Copies" }
+        }
+      },
       "marks": [
         {
           "mark": "bar",
@@ -510,8 +515,11 @@ the axis already reads the color.
       "type": "LinearMarkDisplay",
       "displayId": "hpylori_identity-LinearMarkDisplay",
       "legend": { "show": false },
-      "scales": {
-        "y": { "domainMin": 0.5, "domainMax": 1, "title": "Identity" }
+      "encoding": {
+        "y": {
+          "scale": { "domainMin": 0.5, "domainMax": 1 },
+          "axis": { "title": "Identity" }
+        }
       },
       "marks": [
         {

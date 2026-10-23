@@ -411,7 +411,9 @@ A `tracks` entry is a trackId string, or an object with initial display state:
         {
           "trackId": "my_wiggle_track",
           "displaySnapshot": {
-            "scales": { "y": { "domainMin": 0, "domainMax": 100 } }
+            "encoding": {
+              "y": { "scale": { "domainMin": 0, "domainMax": 100 } }
+            }
           }
         }
       ]
@@ -422,8 +424,8 @@ A `tracks` entry is a trackId string, or an object with initial display state:
 
 - `displaySnapshot` takes anything the display's menu offers: `type` to pick a
   display, `height`, `encoding.color` (a field, or a `value` holding a CSS color
-  or a `jexl:` expression), `scales.y` on a quantitative track
-  ([](/docs/config/valuescale)), `forceLoad` to render past the "too much data"
+  or a `jexl:` expression), `encoding.y` on a quantitative track
+  ([](/docs/config/ychannel)), `forceLoad` to render past the "too much data"
   gate ([](/docs/config/baselineardisplay/#slot-forceload)).
 - `trackSnapshot` sets track state such as `pinned: true`.
 - Any other key on the object is a display setting, so

@@ -220,7 +220,7 @@ Manhattan score ([GWAS track guide](/docs/config_guides/gwas_track)):
     "scoreColumn": "lod"
   },
   "displayDefaults": {
-    "scales": { "y": { "title": "LOD" } }
+    "encoding": { "y": { "axis": { "title": "LOD" } } }
   }
 }
 ```

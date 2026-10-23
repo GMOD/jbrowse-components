@@ -183,7 +183,7 @@ draws the window across its extent, `encoding.strokeWidth` px thick.
           "encoding": { "y": "fst", "color": "population" }
         }
       ],
-      "scales": { "y": { "rules": [0.25] } }
+      "encoding": { "y": { "rules": [0.25] } }
     }
   ]
 }

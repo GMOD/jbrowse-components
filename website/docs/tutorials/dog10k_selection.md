@@ -120,9 +120,9 @@ draws.
     "scoreColumn": "fst"
   },
   "displayDefaults": {
-    "scales": {
+    "encoding": {
       "y": {
-        "title": "Hudson Fst",
+        "axis": { "title": "Hudson Fst" },
         "rules": [
           {
             "value": 0.295,
@@ -138,7 +138,7 @@ draws.
 
 Opening the assembly with no location shows all of its regions at once, so the
 display lays the autosomes out side by side. The red line is a rule on
-`scales.y`, the y scale; **Y axis... → Reference lines** adds one to a track
+`encoding.y`, the y scale; **Y axis... → Reference lines** adds one to a track
 already open.
 
 Rerunning the same script over one region rebins it, which is the lower half of
@@ -156,12 +156,12 @@ WINDOW=20000 REGIONS=chr15:40600000-42600000 \
 <Figure caption="Top: Fst between toy/small and giant breeds across the autosomes. Bottom: the IGF1 region rebinned to 20 kb, the band marking the window from the top half." src="/img/dog10k-size-fst-scan.png" links="Whole genome=dog10k-size-fst-scan-genome,IGF1 window=dog10k-size-fst-scan-igf1" />
 
 Fst has no p-value, so the cutoff is a
-[reference line](/docs/config/valuescale/#slot-scalesyrules) at the 99.9th
-percentile of the scan's windows, which the build script prints beside the
-ranked windows.[^drift] The percentile depends on the window size, so a rebinned
-scan needs a new one. The tallest labelled peak, on chr10, is _HMGA2_, one of
-the six variants [Rimbault et al. 2013](https://doi.org/10.1101/gr.157339.113)
-fit to about half the size variation across breeds.
+[reference line](/docs/config/ychannel/#slot-rules) at the 99.9th percentile of
+the scan's windows, which the build script prints beside the ranked
+windows.[^drift] The percentile depends on the window size, so a rebinned scan
+needs a new one. The tallest labelled peak, on chr10, is _HMGA2_, one of the six
+variants [Rimbault et al. 2013](https://doi.org/10.1101/gr.157339.113) fit to
+about half the size variation across breeds.
 
 ## Slicing the IGF1 window out of the SNV callset
 

@@ -13,7 +13,7 @@ shared shapes.
 ## Scales
 
 **A positional channel is a field and the value scale is the plot's.** The
-display's `scales.y` is the one value scale; every mark's `encoding.y` names a
+display's `encoding.y` is the one value scale; every mark's `encoding.y` names a
 field read through it, and the Y axis panel's Min and Max write there
 ([ADR-141](../architecture-decision-records/adr-141-one-y-scale-the-displays.md),
 [ADR-142](../architecture-decision-records/adr-142-one-value-scale-object.md)).

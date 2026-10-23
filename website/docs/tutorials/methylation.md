@@ -226,7 +226,12 @@ one scale, so an unmethylated row stays flat:
   },
   "displayDefaults": {
     "mark": "bar",
-    "scales": { "y": { "domainMin": 0, "domainMax": 100, "title": "% 5mC" } }
+    "encoding": {
+      "y": {
+        "scale": { "domainMin": 0, "domainMax": 100 },
+        "axis": { "title": "% 5mC" }
+      }
+    }
   }
 }
 ```
@@ -281,7 +286,12 @@ _SNRPN_, each in a row with its raw values under a moving average:
       "rows": "source",
       "legend": { "show": false },
       "fetchSizeLimit": 5000000,
-      "scales": { "y": { "domainMin": 0, "domainMax": 100, "title": "% 5mC" } },
+      "encoding": {
+        "y": {
+          "scale": { "domainMin": 0, "domainMax": 100 },
+          "axis": { "title": "% 5mC" }
+        }
+      },
       "marks": [
         {
           "mark": "point",

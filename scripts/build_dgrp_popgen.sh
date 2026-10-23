@@ -254,9 +254,9 @@ cat > "$APP"/config.json <<'JSON'
               "names": ["inverted lower", "inverted higher"]
             },
             "legend": { "title": "π, In(2L)t vs standard" }
-          }
-        },
-        "scales": { "y": { "domainMin": -1.5, "domainMax": 1.5, "title": "log2 ratio" } }
+          },
+          "y": { "scale": { "domainMin": -1.5, "domainMax": 1.5 }, "axis": { "title": "log2 ratio" } }
+        }
       }
     },
     {

@@ -306,8 +306,8 @@ const rhdPanel = (sortRowsBy?: RowSortSpec) =>
             // Symmetric about the diploid origin; see cnv1000g's
             // CN_HEATMAP_SETTINGS.
             origin: 2,
-            scales: { y: { domainMin: 0, domainMax: 4 } },
             encoding: {
+              y: { scale: { domainMin: 0, domainMax: 4 } },
               color: {
                 scale: { range: ['#2166ac', '#b2182b'] },
                 legend: { title: 'Copy number' },
