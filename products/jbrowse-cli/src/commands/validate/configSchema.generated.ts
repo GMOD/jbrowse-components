@@ -4741,43 +4741,95 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "unevaluatedProperties": false
     },
-    "BasicFeatureFilter": {
-      "title": "BasicFeatureFilter",
+    "FieldPredicate": {
+      "title": "FieldPredicate",
       "anyOf": [
         {
-          "description": "Shorthand for \`{ \\"expressions\\": ... }\`.",
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/JexlExpression"
-          }
+          "description": "Shorthand for \`{ \\"field\\": ..., \\"equal\\": true }\`.",
+          "default": "",
+          "$ref": "#/$defs/StringOrJexl",
+          "type": "string"
         },
         {
-          "title": "BasicFeatureFilter",
+          "title": "FieldPredicate",
           "type": "object",
           "x-closed": true,
           "properties": {
-            "expressions": {
-              "description": "jexl: expressions a feature must pass to be drawn.",
+            "field": {
+              "description": "the field tested, as the display names its fields, or a jexl: expression computed per feature.",
+              "default": "",
               "if": {
                 "type": "null"
               },
               "else": {
-                "type": "array",
-                "items": {
-                  "$ref": "#/$defs/JexlExpression"
+                "$ref": "#/$defs/StringOrJexl"
+              }
+            },
+            "equal": {
+              "description": "the value must equal this. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "not": {
+                  "$ref": "#/$defs/JexlString"
                 }
               }
             },
-            "genes": {
-              "description": "only, exclude, or unset for unfiltered: gene-like top-level features.",
+            "lt": {
+              "description": "the value must be below this.",
               "if": {
                 "type": "null"
               },
               "else": {
-                "enum": [
-                  "only",
-                  "exclude"
-                ]
+                "type": "number"
+              }
+            },
+            "lte": {
+              "description": "the value must be at most this.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "number"
+              }
+            },
+            "gt": {
+              "description": "the value must be above this.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "number"
+              }
+            },
+            "gte": {
+              "description": "the value must be at least this.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "number"
+              }
+            },
+            "oneOf": {
+              "description": "the value must be one of these. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "not": {
+                  "$ref": "#/$defs/JexlString"
+                }
+              }
+            },
+            "valid": {
+              "description": "true admits only records with a value for the field, false only those without.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "boolean"
               }
             }
           },
@@ -5161,7 +5213,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "null"
           },
           "else": {
-            "$ref": "#/$defs/BasicFeatureFilter"
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/FieldPredicate"
+            }
           }
         },
         "mouseover": {
@@ -6009,94 +6064,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "^_+comment": {}
       },
       "unevaluatedProperties": false
-    },
-    "FieldPredicate": {
-      "title": "FieldPredicate",
-      "type": "object",
-      "x-closed": true,
-      "properties": {
-        "field": {
-          "description": "the field tested, as the display names its fields.",
-          "default": "",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "$ref": "#/$defs/PlainString"
-          }
-        },
-        "equal": {
-          "description": "the value must equal this. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "not": {
-              "$ref": "#/$defs/JexlString"
-            }
-          }
-        },
-        "lt": {
-          "description": "the value must be below this.",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "number"
-          }
-        },
-        "lte": {
-          "description": "the value must be at most this.",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "number"
-          }
-        },
-        "gt": {
-          "description": "the value must be above this.",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "number"
-          }
-        },
-        "gte": {
-          "description": "the value must be at least this.",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "number"
-          }
-        },
-        "oneOf": {
-          "description": "the value must be one of these. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "not": {
-              "$ref": "#/$defs/JexlString"
-            }
-          }
-        },
-        "valid": {
-          "description": "true admits only records with a value for the field, false only those without.",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "boolean"
-          }
-        }
-      },
-      "patternProperties": {
-        "^_+comment": {}
-      },
-      "additionalProperties": false
     },
     "AlignmentsSort": {
       "title": "AlignmentsSort",
@@ -7327,18 +7294,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
-        "drawInter": {
-          "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
-        },
-        "drawLongRange": {
-          "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
-        },
-        "filterBy": {
-          "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
-        },
         "pileupDisplay": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
@@ -8395,18 +8350,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
         "colorBy": {
-          "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
-        },
-        "drawInter": {
-          "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
-        },
-        "drawLongRange": {
-          "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
-        },
-        "filterBy": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
@@ -10756,41 +10699,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "unevaluatedProperties": false
     },
-    "FeatureFilter": {
-      "title": "FeatureFilter",
-      "anyOf": [
-        {
-          "description": "Shorthand for \`{ \\"expressions\\": ... }\`.",
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/JexlExpression"
-          }
-        },
-        {
-          "title": "FeatureFilter",
-          "type": "object",
-          "x-closed": true,
-          "properties": {
-            "expressions": {
-              "description": "jexl: expressions a feature must pass to be drawn.",
-              "if": {
-                "type": "null"
-              },
-              "else": {
-                "type": "array",
-                "items": {
-                  "$ref": "#/$defs/JexlExpression"
-                }
-              }
-            }
-          },
-          "patternProperties": {
-            "^_+comment": {}
-          },
-          "additionalProperties": false
-        }
-      ]
-    },
     "LinearVariantDisplaySlots": {
       "type": "object",
       "properties": {
@@ -10853,7 +10761,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "null"
           },
           "else": {
-            "$ref": "#/$defs/FeatureFilter"
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/FieldPredicate"
+            }
           }
         },
         "mouseover": {
@@ -11080,61 +10991,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "^_+comment": {}
       },
       "unevaluatedProperties": false
-    },
-    "VariantFilter": {
-      "title": "VariantFilter",
-      "anyOf": [
-        {
-          "description": "Shorthand for \`{ \\"expressions\\": ... }\`.",
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/JexlExpression"
-          }
-        },
-        {
-          "title": "VariantFilter",
-          "type": "object",
-          "x-closed": true,
-          "properties": {
-            "expressions": {
-              "description": "jexl: expressions a feature must pass to be drawn.",
-              "if": {
-                "type": "null"
-              },
-              "else": {
-                "type": "array",
-                "items": {
-                  "$ref": "#/$defs/JexlExpression"
-                }
-              }
-            },
-            "minMinorAlleleFrequency": {
-              "description": "a variant draws only with a minor allele frequency of at least this; 0 keeps every variant.",
-              "default": 0,
-              "if": {
-                "type": "null"
-              },
-              "else": {
-                "type": "number"
-              }
-            },
-            "maxMissingness": {
-              "description": "a variant draws only with at most this share of its alleles uncalled; 1 keeps every variant.",
-              "default": 1,
-              "if": {
-                "type": "null"
-              },
-              "else": {
-                "type": "number"
-              }
-            }
-          },
-          "patternProperties": {
-            "^_+comment": {}
-          },
-          "additionalProperties": false
-        }
-      ]
     },
     "SampleRows": {
       "title": "SampleRows",
@@ -11485,7 +11341,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "null"
           },
           "else": {
-            "$ref": "#/$defs/VariantFilter"
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/FieldPredicate"
+            }
           }
         },
         "rowHeight": {
@@ -11667,10 +11526,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
         "jexlFilters": {
-          "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
-        },
-        "minorAlleleFrequencyFilter": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
@@ -13974,7 +13829,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "null"
           },
           "else": {
-            "$ref": "#/$defs/FeatureFilter"
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/FieldPredicate"
+            }
           }
         },
         "maxFeatureScreenDensity": {
@@ -14192,7 +14050,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "null"
           },
           "else": {
-            "$ref": "#/$defs/FeatureFilter"
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/FieldPredicate"
+            }
           }
         },
         "maxFeatureScreenDensity": {
@@ -15543,15 +15404,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "colorBy": {
               "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/colorBy"
             },
-            "drawInter": {
-              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/drawInter"
-            },
-            "drawLongRange": {
-              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/drawLongRange"
-            },
-            "filterBy": {
-              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/filterBy"
-            },
             "pileupDisplay": {
               "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/pileupDisplay"
             },
@@ -16310,9 +16162,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "variants": {
               "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/variants"
-            },
-            "minorAlleleFrequencyFilter": {
-              "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/minorAlleleFrequencyFilter"
             },
             "renderingMode": {
               "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/renderingMode"
@@ -18675,15 +18524,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "colorBy": {
               "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/colorBy"
-            },
-            "drawInter": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/drawInter"
-            },
-            "drawLongRange": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/drawLongRange"
-            },
-            "filterBy": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/filterBy"
             },
             "pileupDisplay": {
               "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/pileupDisplay"

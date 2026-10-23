@@ -982,13 +982,6 @@ config schema's `retired`:
 ```typescript
 export const retiredConfigSpellings: Record<string, RetiredSpelling> = {
   colorBy: colorSlotsOf,
-  drawInter: v =>
-    v === false ? { filter: { connections: { interchrom: 'exclude' } } } : {},
-  drawLongRange: v =>
-    v === false
-      ? { filter: { connections: { offscreenMates: 'exclude' } } }
-      : {},
-  filterBy: filter => ({ filter }),
   jexlFilters: () => ({}),
   pileupDisplay: block => subDisplaySlotsOf(block, 'pileup'),
   snpCoverageDisplay: block => subDisplaySlotsOf(block, 'coverage'),

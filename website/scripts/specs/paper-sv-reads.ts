@@ -36,9 +36,10 @@ const bamTrack = (trackId: string, name: string, uri: string) => ({
 })
 
 const connections = {
-  filter: {
-    connections: { interchrom: 'exclude', offscreenMates: 'exclude' },
-  },
+  filter: [
+    { field: 'connection.interchrom', equal: false },
+    { field: 'connection.offscreen', equal: false },
+  ],
   coverage: { height: 60 },
   forceLoad: true,
 }

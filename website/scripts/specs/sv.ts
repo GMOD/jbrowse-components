@@ -647,14 +647,12 @@ export const svSpecs: ScreenshotSpec[] = [
                 // One ~1.2 kb dome; at 130 the arc dwarfed the reads.
                 height: 60,
               },
-              filter: {
-                connections: {
-                  // Drops these reads' cross-chromosome and far-flank
-                  // supplementaries, leaving the local inversion arc.
-                  interchrom: 'exclude',
-                  offscreenMates: 'exclude',
-                },
-              },
+              // Drops these reads' cross-chromosome and far-flank
+              // supplementaries, leaving the local inversion arc.
+              filter: [
+                { field: 'connection.interchrom', equal: false },
+                { field: 'connection.offscreen', equal: false },
+              ],
               coverage: { height: 70 },
               // The "Not split" section runs out of rows before a taller box
               // does.

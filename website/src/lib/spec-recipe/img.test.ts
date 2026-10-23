@@ -49,7 +49,10 @@ test("a track's band and filter members reach the command nested", () => {
             {
               trackId: 'reads',
               coverage: { height: 90 },
-              filter: { split: 'only', junctions: { minReads: 3 } },
+              filter: [
+                { field: 'split', equal: true },
+                { field: 'junction.reads', gte: 3 },
+              ],
             },
           ],
         },
@@ -59,7 +62,7 @@ test("a track's band and filter members reach the command nested", () => {
     1500,
   )!
   expect(command).toContain(
-    `--track reads '{"coverage":{"height":90},"filter":{"split":"only","junctions":{"minReads":3}}}'`,
+    `--track reads '{"coverage":{"height":90},"filter":[{"field":"split","equal":true},{"field":"junction.reads","gte":3}]}'`,
   )
 })
 

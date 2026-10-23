@@ -3036,9 +3036,14 @@
       "package": "@jbrowse/core",
       "names": [
         "compilePredicates",
+        "isExpressionEntry",
         "lowerBoundOf",
+        "predicatesOf",
+        "replaceField",
         "testsSomething",
-        "withLowerBound"
+        "upperBoundOf",
+        "withLowerBound",
+        "withUpperBound"
       ],
       "worker": "real"
     },
@@ -3274,13 +3279,13 @@
     "@jbrowse/core/util/jexlFilters": {
       "package": "@jbrowse/core",
       "names": [
-        "baseFilterOf",
         "baseJexlFilters",
         "configuredJexlFilters",
         "filterExpressionsOf",
-        "filterMembersNarrowing",
+        "filterFieldNarrowing",
         "jexlFilterNarrowing",
-        "retiredFilterState"
+        "retiredFilterState",
+        "writeJexlFilters"
       ],
       "worker": "real"
     },
@@ -4132,7 +4137,9 @@
       "package": "@jbrowse/display-kit",
       "names": [
         "CATEGORY_FILTERS",
-        "categoryFilterItem"
+        "categoryEntries",
+        "categoryFilterItem",
+        "categoryOf"
       ],
       "worker": "real"
     },
@@ -4394,7 +4401,6 @@
     "@jbrowse/display-kit/featureFilterConfigSchema": {
       "package": "@jbrowse/display-kit",
       "names": [
-        "featureFilterConfigSchema",
         "retiredFilterSpelling"
       ],
       "worker": "real"
@@ -4431,7 +4437,7 @@
       "package": "@jbrowse/display-kit",
       "names": [
         "fieldPredicateConfigSchema",
-        "predicatesOf"
+        "fieldPredicateList"
       ],
       "worker": "real"
     },

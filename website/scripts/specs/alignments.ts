@@ -102,7 +102,7 @@ function strandSpecificSpec(): ScreenshotSpec {
             height: 120,
           },
           pileup: { maxLayoutHeight: 2000 },
-          filter: { junctions: { minReads: 3 } },
+          filter: [{ field: 'junction.reads', gte: 3 }],
           // RPL7A runs ~100x the surfeit genes, which flatten on a linear axis
           scales: { y: { type: 'log' } },
           height: 330,
@@ -1000,7 +1000,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
           trackId: 'Pairend_StrandSpecific_51mer_Human_hg19',
           coverage: { height: 120 },
           pileup: { maxLayoutHeight: 2000 },
-          filter: { junctions: { minReads: 3 } },
+          filter: [{ field: 'junction.reads', gte: 3 }],
           height: 460,
         },
       ],
@@ -1025,13 +1025,9 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
           coverage: {
             height: 120,
           },
-          filter: {
-            junctions: {
-              // ACTB's forward-strand arcs are 1-2 read aligner noise; its
-              // real junctions have 4 or more
-              minReads: 3,
-            },
-          },
+          // ACTB's forward-strand arcs are 1-2 read aligner noise; its real
+          // junctions have 4 or more
+          filter: [{ field: 'junction.reads', gte: 3 }],
           height: 420,
         },
       ],
@@ -1081,7 +1077,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
           trackId: 'Pairend_StrandSpecific_51mer_Human_hg19',
           pileup: { readHeight: 3, maxLayoutHeight: 2000 },
           coverage: { height: 120 },
-          filter: { junctions: { minReads: 3 } },
+          filter: [{ field: 'junction.reads', gte: 3 }],
           height: 420,
           ...display,
         },
@@ -1110,7 +1106,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
       {
         suffix: 'canonical_only',
         display: {
-          filter: { junctions: { nonCanonical: 'exclude' } },
+          filter: [{ field: 'junction.canonical', equal: true }],
         },
       },
     ] as const

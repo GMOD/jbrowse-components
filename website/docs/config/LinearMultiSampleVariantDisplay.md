@@ -121,7 +121,7 @@ Display slots go on a display entry: `"displays": [{ "type": "LinearMultiSampleV
 | <span id="slot-height">**height**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>200</code> | Starting height in pixels for the whole display, including any band above the rows; drag-resizable, and the rows divide what is left while row height is on auto-fit |
 | <span id="slot-variantlayout">**variantLayout**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (genomic, columns) = <code>'genomic'</code> | `'genomic'` draws each variant across the bases it covers; `'columns'` draws one equal-width column per variant in view, with a line tying each column to its position. Columns keep variants a few bases apart readable at any zoom, at the cost of their lengths. The LD display takes the same slot for the same choice. |
 | <span id="slot-linezoneheight">**lineZoneHeight**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>20</code> | Height of the band of connector lines above the columns, spent only in the `'columns'` layout.<br>_advanced_ |
-| <span id="slot-filter">**filter**</span><br>[VariantFilter](../variantfilter) | The variants the display draws: the jexl `expressions`, a minimum minor allele frequency and a maximum missingness. |
+| <span id="slot-filter">**filter**</span><br>[FieldPredicate](../fieldpredicate) | The variants the display draws, a list of [](/docs/config/fieldpredicate) entries a site must all pass: a field of the record's own, a `jexl:` expression that must hold, `minorAlleleFrequency`, the share of its called alleles the second most frequent one makes up, and `missingness`, the share of its alleles uncalled. `[{ field: "minorAlleleFrequency", gte: 0.05 }]` drops the rare variants; a site with no called allele draws nothing whatever the list says. |
 | <span id="slot-rows">**rows**</span><br>[SampleRows](../samplerows) | The rows are the file's samples, and the object is the arrangement a reader gives them, each member by row name: a sample in allele-count mode, a haplotype (`"<sample> HP<n>"`) in phased mode, where a sample name stands for all of its haplotypes. The samples `domain` lists come first and the rest keep the file's order; a facet groups within it. Written whole, as every display's `rows` is. |
 | <span id="slot-showtooltips">**showTooltips**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | Show the hover tooltip naming the genotype, the sample and the record under the pointer. Off, the crosshairs, the highlighted cell and the cross-display `session.hovered` channel stay. |
 | <span id="slot-unit">**unit**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (sample, haplotype) = <code>'sample'</code> | The unit one row draws: 'sample' colors each row by allele dosage, 'haplotype' draws one row per phased haplotype |
@@ -154,7 +154,6 @@ An older config may still write these. Each loads without an error, and `jbrowse
 | `maxDisplayedBpPerPx` | ignored |
 | `mouseover` | ignored |
 | `jexlFilters` | moved into a current slot |
-| `minorAlleleFrequencyFilter` | moved into a current slot |
 | `renderingMode` | moved into a current slot |
 | `showSidebarLabels` | moved into a current slot |
 | `showReferenceAlleles` | moved into a current slot |

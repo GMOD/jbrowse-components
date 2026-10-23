@@ -305,13 +305,9 @@ export const featuresSpecs: ScreenshotSpec[] = [
               sashimi: {
                 placement: 'auto',
               },
-              filter: {
-                junctions: {
-                  // PTEN's 8 real introns carry 446-717 reads each and the
-                  // loudest noise junction 99; the cutoff sits mid-gap.
-                  minReads: 200,
-                },
-              },
+              // PTEN's 8 real introns carry 446-717 reads each and the
+              // loudest noise junction 99; the cutoff sits mid-gap.
+              filter: [{ field: 'junction.reads', gte: 200 }],
             },
           ],
         },

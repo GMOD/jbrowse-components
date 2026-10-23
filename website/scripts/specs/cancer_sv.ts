@@ -802,12 +802,10 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
             show: true,
             height: 90,
           },
-          filter: {
-            split: 'only',
-            connections: {
-              offscreenMates: 'exclude',
-            },
-          },
+          filter: [
+            { field: 'split', equal: true },
+            { field: 'connection.offscreen', equal: false },
+          ],
           unit: 'chain',
           color: { field: 'pairOrientation' },
           showLegend: true,

@@ -208,7 +208,6 @@ export const variantsSpecs: ScreenshotSpec[] = [
               type: 'LinearMultiSampleVariantDisplay',
               variantLayout: 'columns',
               height: 300,
-              filter: [],
             },
             {
               trackId: 'potato_missingness_01',

@@ -142,9 +142,6 @@ An older config may still write these. Each loads without an error, and `jbrowse
 | `mouseover` | ignored |
 | `jexlFilters` | ignored |
 | `colorBy` | moved into a current slot |
-| `drawInter` | moved into a current slot |
-| `drawLongRange` | moved into a current slot |
-| `filterBy` | moved into a current slot |
 | `pileupDisplay` | moved into a current slot |
 | `snpCoverageDisplay` | moved into a current slot |
 | `defaultRendering` | ignored |

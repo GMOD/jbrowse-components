@@ -615,7 +615,9 @@ escape, measured at 1.5x to 2.0x native per feature (MARK_ENCODING.md
 
 ## FilterStep
 
-Keep the features a `jexl:` expression over `feature` admits.
+Keep the features a `jexl:` expression over `feature` admits, or the ones
+that pass every field predicate of `predicates` (ADR-238), Vega-Lite's two
+forms of its `filter` transform.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
 

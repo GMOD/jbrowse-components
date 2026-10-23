@@ -32,11 +32,7 @@ const chrome = (height: number, { hideAppBar }: Chrome) => ({
 const reads = {
   trackId: READS,
   pileup: { readHeight: 1 },
-  filter: {
-    connections: {
-      offscreenMates: 'exclude',
-    },
-  },
+  filter: [{ field: 'connection.offscreen', equal: false }],
   height: 200,
   forceLoad: true,
 }

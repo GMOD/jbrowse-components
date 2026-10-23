@@ -3147,21 +3147,44 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "filter",
-          "type": "BasicFeatureFilterConfigurationSchema",
+          "type": "FieldPredicateConfigurationSchema[]",
           "subSlots": [
             {
-              "name": "expressions",
-              "type": "JexlExpression[]"
+              "name": "field",
+              "type": "(JexlString | string)"
             },
             {
-              "name": "genes",
-              "type": "(CategoryFilter | undefined)"
+              "name": "equal",
+              "type": "((string | number | boolean) | undefined)"
+            },
+            {
+              "name": "lt",
+              "type": "(number | undefined)"
+            },
+            {
+              "name": "lte",
+              "type": "(number | undefined)"
+            },
+            {
+              "name": "gt",
+              "type": "(number | undefined)"
+            },
+            {
+              "name": "gte",
+              "type": "(number | undefined)"
+            },
+            {
+              "name": "oneOf",
+              "type": "((string | number | boolean)[] | undefined)"
+            },
+            {
+              "name": "valid",
+              "type": "(boolean | undefined)"
             }
           ],
-          "schema": "BasicFeatureFilter",
-          "writes": "members",
+          "schema": "FieldPredicate",
           "shorthand": {
-            "list": "expressions"
+            "string": "field"
           }
         },
         {
@@ -3709,7 +3732,7 @@ export const configManifest: ConfigManifest = {
           "subSlots": [
             {
               "name": "field",
-              "type": "string"
+              "type": "(JexlString | string)"
             },
             {
               "name": "equal",
@@ -3740,7 +3763,10 @@ export const configManifest: ConfigManifest = {
               "type": "(boolean | undefined)"
             }
           ],
-          "schema": "FieldPredicate"
+          "schema": "FieldPredicate",
+          "shorthand": {
+            "string": "field"
+          }
         },
         {
           "name": "facet",
@@ -4239,9 +4265,6 @@ export const configManifest: ConfigManifest = {
         "mouseover",
         "jexlFilters",
         "colorBy",
-        "drawInter",
-        "drawLongRange",
-        "filterBy",
         "pileupDisplay",
         "snpCoverageDisplay",
         "defaultRendering",
@@ -4523,7 +4546,7 @@ export const configManifest: ConfigManifest = {
           "subSlots": [
             {
               "name": "field",
-              "type": "string"
+              "type": "(JexlString | string)"
             },
             {
               "name": "equal",
@@ -4554,7 +4577,10 @@ export const configManifest: ConfigManifest = {
               "type": "(boolean | undefined)"
             }
           ],
-          "schema": "FieldPredicate"
+          "schema": "FieldPredicate",
+          "shorthand": {
+            "string": "field"
+          }
         },
         {
           "name": "facet",
@@ -4995,9 +5021,6 @@ export const configManifest: ConfigManifest = {
         "mouseover",
         "jexlFilters",
         "colorBy",
-        "drawInter",
-        "drawLongRange",
-        "filterBy",
         "pileupDisplay",
         "snpCoverageDisplay",
         "defaultRendering",
@@ -5736,17 +5759,44 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "filter",
-          "type": "FeatureFilterConfigurationSchema",
+          "type": "FieldPredicateConfigurationSchema[]",
           "subSlots": [
             {
-              "name": "expressions",
-              "type": "JexlExpression[]"
+              "name": "field",
+              "type": "(JexlString | string)"
+            },
+            {
+              "name": "equal",
+              "type": "((string | number | boolean) | undefined)"
+            },
+            {
+              "name": "lt",
+              "type": "(number | undefined)"
+            },
+            {
+              "name": "lte",
+              "type": "(number | undefined)"
+            },
+            {
+              "name": "gt",
+              "type": "(number | undefined)"
+            },
+            {
+              "name": "gte",
+              "type": "(number | undefined)"
+            },
+            {
+              "name": "oneOf",
+              "type": "((string | number | boolean)[] | undefined)"
+            },
+            {
+              "name": "valid",
+              "type": "(boolean | undefined)"
             }
           ],
-          "schema": "FeatureFilter",
-          "writes": "members",
+          "schema": "FieldPredicate",
           "shorthand": {
-            "list": "expressions"
+            "string": "field"
           }
         },
         {
@@ -5983,25 +6033,44 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "filter",
-          "type": "VariantFilterConfigurationSchema",
+          "type": "FieldPredicateConfigurationSchema[]",
           "subSlots": [
             {
-              "name": "expressions",
-              "type": "JexlExpression[]"
+              "name": "field",
+              "type": "(JexlString | string)"
             },
             {
-              "name": "minMinorAlleleFrequency",
-              "type": "number"
+              "name": "equal",
+              "type": "((string | number | boolean) | undefined)"
             },
             {
-              "name": "maxMissingness",
-              "type": "number"
+              "name": "lt",
+              "type": "(number | undefined)"
+            },
+            {
+              "name": "lte",
+              "type": "(number | undefined)"
+            },
+            {
+              "name": "gt",
+              "type": "(number | undefined)"
+            },
+            {
+              "name": "gte",
+              "type": "(number | undefined)"
+            },
+            {
+              "name": "oneOf",
+              "type": "((string | number | boolean)[] | undefined)"
+            },
+            {
+              "name": "valid",
+              "type": "(boolean | undefined)"
             }
           ],
-          "schema": "VariantFilter",
-          "writes": "members",
+          "schema": "FieldPredicate",
           "shorthand": {
-            "list": "expressions"
+            "string": "field"
           }
         },
         {
@@ -6213,7 +6282,6 @@ export const configManifest: ConfigManifest = {
         "maxDisplayedBpPerPx",
         "mouseover",
         "jexlFilters",
-        "minorAlleleFrequencyFilter",
         "renderingMode",
         "showSidebarLabels",
         "showReferenceAlleles",
@@ -7805,17 +7873,44 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "filter",
-          "type": "FeatureFilterConfigurationSchema",
+          "type": "FieldPredicateConfigurationSchema[]",
           "subSlots": [
             {
-              "name": "expressions",
-              "type": "JexlExpression[]"
+              "name": "field",
+              "type": "(JexlString | string)"
+            },
+            {
+              "name": "equal",
+              "type": "((string | number | boolean) | undefined)"
+            },
+            {
+              "name": "lt",
+              "type": "(number | undefined)"
+            },
+            {
+              "name": "lte",
+              "type": "(number | undefined)"
+            },
+            {
+              "name": "gt",
+              "type": "(number | undefined)"
+            },
+            {
+              "name": "gte",
+              "type": "(number | undefined)"
+            },
+            {
+              "name": "oneOf",
+              "type": "((string | number | boolean)[] | undefined)"
+            },
+            {
+              "name": "valid",
+              "type": "(boolean | undefined)"
             }
           ],
-          "schema": "FeatureFilter",
-          "writes": "members",
+          "schema": "FieldPredicate",
           "shorthand": {
-            "list": "expressions"
+            "string": "field"
           }
         }
       ],
@@ -8347,17 +8442,44 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "filter",
-          "type": "FeatureFilterConfigurationSchema",
+          "type": "FieldPredicateConfigurationSchema[]",
           "subSlots": [
             {
-              "name": "expressions",
-              "type": "JexlExpression[]"
+              "name": "field",
+              "type": "(JexlString | string)"
+            },
+            {
+              "name": "equal",
+              "type": "((string | number | boolean) | undefined)"
+            },
+            {
+              "name": "lt",
+              "type": "(number | undefined)"
+            },
+            {
+              "name": "lte",
+              "type": "(number | undefined)"
+            },
+            {
+              "name": "gt",
+              "type": "(number | undefined)"
+            },
+            {
+              "name": "gte",
+              "type": "(number | undefined)"
+            },
+            {
+              "name": "oneOf",
+              "type": "((string | number | boolean)[] | undefined)"
+            },
+            {
+              "name": "valid",
+              "type": "(boolean | undefined)"
             }
           ],
-          "schema": "FeatureFilter",
-          "writes": "members",
+          "schema": "FieldPredicate",
           "shorthand": {
-            "list": "expressions"
+            "string": "field"
           }
         }
       ],
