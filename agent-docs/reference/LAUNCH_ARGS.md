@@ -114,7 +114,7 @@ snapshot. jb2export keeps its own path for:
 ## Comparative grammar decisions (2026-10-21)
 
 - Both apps run launch-args' `comparative.ts`, which replaces jb2export's
-  `comparativeArgs.ts` and `makeSyntenyTrackConfig`. The comparison
+  `comparativeArgs.ts` and its synteny track builder. The comparison
   adapter comes from the format table (ADR-077); the query/target orientation
   is a table keyed by adapter type.
 - With no subcommand word, a second genome or a comparison file opens a
