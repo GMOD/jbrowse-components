@@ -1,11 +1,8 @@
 import type { ClusterMatrix, NumericRow } from './clusterMatrix.ts'
 
-// A row name is an arbitrary string from somebody's data file, and it goes into
-// the script as an R single-quoted literal — so `o'brien` (a name the newick
-// half already quotes, see `newick.ts`) closed the string early and the whole
-// `rownames(...)` line became an R syntax error. The user only finds that out in
-// R, several steps from the dialog that wrote it. Backslash first, or escaping
-// the quote would then escape its own escape.
+// A row name goes into the script as an R single-quoted literal, so `o'brien`
+// must not close the string early. Backslash first, or escaping the quote would
+// then escape its own escape.
 function quoteRName(name: string) {
   return `'${name.replaceAll('\\', '\\\\').replaceAll("'", "\\'")}'`
 }

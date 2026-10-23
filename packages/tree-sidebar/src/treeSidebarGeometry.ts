@@ -54,10 +54,8 @@ interface TreeSidebarGeometryModel extends TreeShowingModel {
 }
 
 // Is a dendrogram occupying the gutter? The gate is the **positioned** tree,
-// never `clusterTree`: a tree that no longer describes the rows on screen is
-// deliberately not positioned (see `computeClusterHierarchy`), and for a
-// display whose `sources` are regrouped downstream of `layout` that state is
-// permanent rather than transient.
+// never `rowTree`: a tree that no longer describes the rows on screen is
+// deliberately not positioned (see `computeClusterHierarchy`).
 //
 // Callable on its own because the answer decides two things that must not
 // disagree — whether the tree draws, and whether the labels beside it are
