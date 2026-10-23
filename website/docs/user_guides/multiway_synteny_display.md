@@ -53,10 +53,9 @@ The view's gridlines stop at the anchor, the one lane they fit.
 - Hover a ribbon to light the same alignment or ortholog group in every lane it
   reaches.
 - Click a ribbon to open its details; click empty canvas to clear the outline.
-- **Show... → Ribbons across gaps** joins a gene to the next lane that places it
-  when the lane between places nothing. Off, a sparse lane mid-stack cuts every
-  chain running through it. A track whose ribbons all join the anchor does not
-  offer it.
+- A ribbon joins a gene to the next lane that places it when the lane between
+  places nothing, so a sparse lane mid-stack cuts no chain. A track whose
+  ribbons all join the anchor draws each gutter against the anchor instead.
 
 ## Choosing and ordering lanes
 
