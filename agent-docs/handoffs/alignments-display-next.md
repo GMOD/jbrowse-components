@@ -1,6 +1,6 @@
 ---
 name: alignments-display-next
-description: "What is left of the 2026-10-22 LinearAlignmentsDisplay review now that ADR-240's open calls 2 and 3 are closed: the quality fade as opacity (step 2b), the internal ColorBy scheme object, and ggjbrowse's stale published pages. The other ADR-240 steps are ordered in vega-lite-vocabulary.md."
+description: "What is left of the 2026-10-22 LinearAlignmentsDisplay review now that ADR-240's open calls 2 and 3 are closed: the quality fade as opacity (step 2b), the internal ColorBy scheme object, and ggjbrowse's dog10k_lof page, blocked on its data host's expired certificate. The other ADR-240 steps are ordered in vega-lite-vocabulary.md."
 ---
 
 # LinearAlignmentsDisplay: next steps
@@ -33,7 +33,7 @@ starting it.
 
 ## ggjbrowse
 
-- Its published tutorial pages still show `showSoftClipping` and
-  `mark = "cloud"` until they are re-knit at a new `tutorials/JBROWSE_COMPONENTS`
-  pin (memory `a-config-rename-reaches-ggjbrowse`). `pileup.connectors` joins
-  them.
+- `dog10k_lof` is the one tutorial page not re-knit at the 2026-10-23 pin:
+  its callset host, kiddlabshare.med.umich.edu, serves an expired TLS
+  certificate, so the knit and ggjbrowse's Docs CI fail on it. Re-knit it with
+  `Rscript scripts/tutorials.R dog10k_lof` once the certificate is renewed.
