@@ -40,7 +40,8 @@ Each item needs a call before work. Check the ADR-238 spelling first.
 - Canvas: `showLabels`, `showOutline`, the three `max*FeatureDensity`
   settings, and the flat `connectorColor`, `utrColor` and `outlineColor`.
 - LD: `showLabels`.
-- Multi-sample variants: `showTooltips`, `showInsertionGlyphs`, `showLabels`.
+- Multi-sample variants: `showLabels`, and `showInsertionGlyphs`, which sizes
+  insertion cells rather than showing them, so `{ show }` would misname it.
 - Mark display: `marks[].minBpPerPx` and `maxBpPerPx`, although ADR-238 says
   `view.bpPerPx` replaces every zoom gate. The predicate input does not exist
   yet, and building it for two rarely written bounds waits on a second use.
