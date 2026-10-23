@@ -27,19 +27,18 @@ test('the curated color schemes are the four synteny ones', () => {
   ).toEqual(['Strand', 'Mapping quality', 'Query', 'Solid color...'])
 })
 
-function customHeightDisabled(display: ReturnType<typeof createDisplay>) {
-  const custom = subMenu(
-    display.trackMenuItems() as MenuItem[],
-    'Feature height',
-  ).find(i => 'label' in i && i.label === 'Custom...')
-  return custom && 'disabled' in custom ? custom.disabled : undefined
+function featureHeightDisabled(display: ReturnType<typeof createDisplay>) {
+  const item = (display.trackMenuItems() as MenuItem[]).find(
+    i => 'label' in i && i.label === 'Feature height',
+  )
+  return item && 'disabled' in item ? item.disabled : undefined
 }
 
-test('the feature height sizes grey out while the alignments are hidden', () => {
+test('the feature height menu greys out while the alignments are hidden', () => {
   const display = createDisplay()
-  expect(customHeightDisabled(display)).toBe(false)
+  expect(featureHeightDisabled(display)).toBe(false)
   display.setShowPileup(false)
-  expect(customHeightDisabled(display)).toBe(true)
+  expect(featureHeightDisabled(display)).toBe(true)
 })
 
 // `strand` paints only while the channel names neither a field nor a
