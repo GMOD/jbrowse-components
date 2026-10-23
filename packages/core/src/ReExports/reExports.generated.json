@@ -3051,7 +3051,9 @@
       "package": "@jbrowse/core",
       "names": [
         "fieldReader",
-        "isPlainFieldRef"
+        "isConstantJexl",
+        "isPlainFieldRef",
+        "plainFieldName"
       ],
       "worker": "real"
     },

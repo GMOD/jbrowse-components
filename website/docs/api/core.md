@@ -723,6 +723,20 @@ import { isBreakend } from '@jbrowse/core/util/svAlt'
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/svAlt.ts)
 
+## isConstantJexl
+
+Whether a `jexl:` ref answers the same for every feature: it reads no
+variable and calls no function, as `jexl:'red'` does.
+
+```js
+import { isConstantJexl } from '@jbrowse/core/util/fieldReader'
+
+// type signature
+(ref: string) => boolean
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/fieldReader.ts)
+
 ## isMissing
 
 Whether a field has no value: absent, empty, or a VCF's `AF=.`, which
@@ -1081,6 +1095,22 @@ sharing a row. The answer is the input in start order, so a `span`
 encoding `row` stacks it. Under a facet it packs each section separately.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
+
+## plainFieldName
+
+The field a ref reads by name: a plain ref itself, or the one field a
+`jexl:` ref reads as `feature.score`, `feature['score']` or
+`get(feature, 'score')` do, so such an expression takes a plain name's
+columnar path.
+
+```js
+import { plainFieldName } from '@jbrowse/core/util/fieldReader'
+
+// type signature
+(ref: string) => string | undefined
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/fieldReader.ts)
 
 ## quantileExtent
 
