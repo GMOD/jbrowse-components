@@ -16,7 +16,7 @@ const DELETION = 'chr20:32,925,000-32,955,000'
 const geneTrack = {
   trackId: 'ncbi_refseq_hg38',
   height: 50,
-  filter: { genes: 'only' },
+  filter: ['geneLike'],
   geneGlyphMode: 'longestCoding',
 }
 

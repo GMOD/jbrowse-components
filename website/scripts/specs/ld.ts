@@ -205,7 +205,7 @@ export const ldSpecs: ScreenshotSpec[] = [
             {
               trackId: 'hg38-ncbiRefSeqCurated',
               height: 60,
-              filter: { genes: 'only' },
+              filter: ['geneLike'],
             },
             // The axis starts at 0.1: almost all of the ~81,000 sites sit under
             // 0.05, and a 0 floor buries rs4988235 in a saturated bar. The
@@ -294,7 +294,7 @@ export const ldSpecs: ScreenshotSpec[] = [
               trackId: 'hg38-ncbiRefSeqCurated',
               displayMode: 'collapsed',
               height: 40,
-              filter: { genes: 'only' },
+              filter: ['geneLike'],
             },
             {
               trackId: 'kgp_lct_fst_scan',
@@ -466,7 +466,7 @@ export const ldSpecs: ScreenshotSpec[] = [
             {
               trackId: 'hg38-ncbiRefSeqCurated',
               height: 60,
-              filter: { genes: 'only' },
+              filter: ['geneLike'],
             },
             {
               trackId: 'hg38-clinvarMain',
@@ -563,7 +563,7 @@ export const ldSpecs: ScreenshotSpec[] = [
             {
               trackId: 'hg38-ncbiRefSeqCurated',
               height: 60,
-              filter: { genes: 'only' },
+              filter: ['geneLike'],
             },
             {
               trackId: 'hg38-clinvarMain',

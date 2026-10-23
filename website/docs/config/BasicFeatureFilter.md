@@ -14,7 +14,7 @@ the gene-like features as a category.
 ## Example usage
 
 ```js
-{ type: 'LinearBasicDisplay', filter: { genes: 'only' } }
+{ type: 'LinearBasicDisplay', filter: ['geneLike'] }
 ```
 
 ## Related links

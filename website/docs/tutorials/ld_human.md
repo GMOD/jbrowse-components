@@ -267,7 +267,7 @@ columns and point `samplesTsvLocation` at it:
       "variantLayout": "columns",
       "unit": "haplotype",
       "rowColor": "population",
-      "filter": { "minMinorAlleleFrequency": 0.35 },
+      "filter": [{ "field": "minorAlleleFrequency", "gte": 0.35 }],
       "forceLoad": true,
       "height": 700
     }

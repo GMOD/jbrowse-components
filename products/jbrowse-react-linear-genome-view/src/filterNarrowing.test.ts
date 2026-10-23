@@ -44,7 +44,7 @@ test('a filter the config declares counts nothing, and the clear returns to it',
           {
             type: 'LinearBasicDisplay',
             displayId: `${TRACK_ID}-LinearBasicDisplay`,
-            filter: { genes: 'only' },
+            filter: ['geneLike'],
           },
         ],
       },

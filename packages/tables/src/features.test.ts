@@ -55,11 +55,11 @@ test("the display filter's gene category splits the features", async () => {
   const all = await engine.features({ ...GFF3, display: GROW })
   const genes = await engine.features({
     ...GFF3,
-    display: { ...GROW, filter: { genes: 'only' } },
+    display: { ...GROW, filter: ['geneLike'] },
   })
   const rest = await engine.features({
     ...GFF3,
-    display: { ...GROW, filter: { genes: 'exclude' } },
+    display: { ...GROW, filter: [{ field: 'geneLike', equal: false }] },
   })
   expect(genes.features.type).toContain('gene')
   expect(genes.features.type).not.toContain('contig')

@@ -399,7 +399,7 @@ cfg['tracks'] += [
             # This lane still reads genotypes, so unlike the LD tracks above
             # it keeps both: the floor is a control a reader can move, and the
             # gate has a real byte estimate to trip on.
-            'filter': {'minMinorAlleleFrequency': maf},
+            'filter': [{'field': 'minorAlleleFrequency', 'gte': maf}],
             'forceLoad': True,
             'height': 700,
         }],

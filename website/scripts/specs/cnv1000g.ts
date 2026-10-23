@@ -96,7 +96,7 @@ export const cnv1000gSpecs: ScreenshotSpec[] = [
         {
           trackId: GENE_TRACK,
           displayMode: 'compact',
-          // Gene records only: `genes: 'only'` admits pseudogenes and leaves
+          // Gene records only: `geneLike` admits pseudogenes and leaves
           // the extra rows that overflow 80px.
           filter: ["jexl:feature.type=='gene'"],
           height: 80,

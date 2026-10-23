@@ -50,8 +50,8 @@ function featureDisplayOf(entry?: TrackConfigEntry) {
 }
 
 /**
- * The jexl `filter.expressions` the gene track's own feature display admits
- * features by, so the lane drops what that track drops. Its `genes` category
+ * The `jexl:` expressions of the gene track's own `filter`, which it admits
+ * features by, so the lane drops what that track drops. Its `geneLike` test
  * stays the track's: the lane draws the genes alone whatever it says. Takes a
  * preprocessed entry.
  */

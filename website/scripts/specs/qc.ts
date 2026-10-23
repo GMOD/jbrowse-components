@@ -49,7 +49,7 @@ const gnomadCoverageTrack = (height = 70, extent?: string) => ({
 const geneTrack = (height: number, onlyGenes: boolean) => ({
   trackId: 'hg38-ncbiRefSeqCurated',
   height,
-  ...(onlyGenes ? { filter: { genes: 'only' } } : {}),
+  ...(onlyGenes ? { filter: ['geneLike'] } : {}),
   // HIDE_ISOFORM_CHIP removes the "Longest isoform" chip this raises; a
   // session spec cannot arrive with the chip dismissed.
   geneGlyphMode: 'longestCoding',
@@ -344,7 +344,7 @@ export const qcSpecs: ScreenshotSpec[] = [
               tracks: [
                 {
                   trackId: 'hg38-genes',
-                  filter: { genes: 'only' },
+                  filter: ['geneLike'],
                   // With every transcript, GTF2H2's ~25 grow this lane past
                   // 400 px and push the ribbon band out of frame.
                   geneGlyphMode: 'longestCoding',
@@ -360,7 +360,7 @@ export const qcSpecs: ScreenshotSpec[] = [
               tracks: [
                 {
                   trackId: 'hs1-genes',
-                  filter: { genes: 'only' },
+                  filter: ['geneLike'],
                   geneGlyphMode: 'longestCoding',
                   // A session spec silently drops the legacy
                   // `showDescriptions: false`.

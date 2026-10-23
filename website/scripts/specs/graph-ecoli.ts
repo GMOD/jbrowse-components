@@ -257,7 +257,7 @@ const PAA_SAKAI_WINDOW = 'chr:1,901,000-2,061,000'
 function strainGeneLane(trackId: string) {
   return {
     trackId,
-    filter: { genes: 'only' },
+    filter: ['geneLike'],
     displayMode: 'compact',
     // what the old `showDescriptions: false` resolved to; 'name' changes the
     // figure
@@ -486,7 +486,7 @@ function graphContextPartSpecs(): ScreenshotSpec[] {
           tracks: [
             {
               trackId: 'K12_genes',
-              filter: { genes: 'only' },
+              filter: ['geneLike'],
               displayMode: 'compact',
               // the retired `showDescriptions: false` resolved to 'auto'
               showLabels: 'auto',

@@ -87,8 +87,8 @@ export interface ConfigurationSchemaOptions<
    * type takes it, so `color: "red"` and `color: { value: "red" }` are one
    * config, and `rules: [5]` is `rules: [{ value: 5 }]`; or two slots taking
    * different forms, so a width's `size: 3` is `{ value: 3 }` and
-   * `size: "score"` is `{ field: "score" }`. A list slot takes a list, as a
-   * filter's `["jexl:…"]` is `{ expressions: [...] }`. Applied before
+   * `size: "score"` is `{ field: "score" }`. A list's entries lift one by
+   * one, as a filter's `"jexl:…"` is `{ field: "jexl:…", equal: true }`. Applied before
    * `preProcessSnapshot`, on every path a snapshot arrives by; the JSON schema,
    * `describeSlots` and the config editor read it here. A schema declaring one
    * declares `writes` too.

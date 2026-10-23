@@ -151,7 +151,7 @@ export function crossoverHighlights(opts: TrioCrossover): Annotation[] {
 const TRIO_GENE_LANE = {
   trackId: 'ncbi_refseq_109_hg38_latest',
   displayMode: 'compact',
-  filter: { genes: 'only' },
+  filter: ['geneLike'],
   // Was `showDescriptions: false`, which migrates to 'auto'. Pinning 'name'
   // would change the figure; leave that to whoever regenerates it.
   showLabels: 'auto',

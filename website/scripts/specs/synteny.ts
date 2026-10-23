@@ -60,7 +60,7 @@ export function hpyloriSyntenyWithGenes({
 }: { geneColor?: { field: string } } = {}) {
   const geneTrack = (trackId: string) => ({
     trackId,
-    filter: { genes: 'only' },
+    filter: ['geneLike'],
     // a key per panel lists a different subset and covers the right-edge genes
     ...(geneColor ? { color: geneColor, showLegend: false } : {}),
   })
@@ -172,7 +172,7 @@ const CHRY_P_PALINDROME_WINDOW = 'chrY:22,330,000-22,810,000'
 // them to chrY, without which this lane draws nothing.
 const CHRY_GENE_LANE = {
   trackId: 'hs1_chrY_genes',
-  filter: { genes: 'only' },
+  filter: ['geneLike'],
   geneGlyphMode: 'longestCoding',
   displayMode: 'compact',
   // 'auto' adds RefSeq's sentence-long descriptions at this density
@@ -218,7 +218,7 @@ function tnnt3Session(
               {
                 trackId: 'hs1-genes',
                 geneGlyphMode: 'longestCoding',
-                filter: { genes: 'only' },
+                filter: ['geneLike'],
               },
             ],
             trackLabels: 'offset',
@@ -479,7 +479,7 @@ const ECOLI_MAF_ROWS = sessionSpec(
         tracks: [
           {
             trackId: 'K12_genes',
-            filter: { genes: 'only' },
+            filter: ['geneLike'],
             displayMode: 'compact',
           },
           // at the default height each strain row is too thin to aim a drag at
@@ -506,7 +506,7 @@ const GRASSES_RICE_LANES = sessionSpec(
         tracks: [
           {
             trackId: 'rice_genes',
-            filter: { genes: 'only' },
+            filter: ['geneLike'],
             displayMode: 'compact',
           },
           {
@@ -532,7 +532,7 @@ const LGV_TRACK_ZOOM_SESSION = sessionSpec(
         tracks: [
           {
             trackId: 'GCF_030704535.1-ncbiRefSeq',
-            filter: { genes: 'only' },
+            filter: ['geneLike'],
             displayMode: 'compact',
             showLabels: 'auto',
           },
@@ -852,7 +852,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
                 tracks: [
                   {
                     trackId: 'GCF_000346465.2-ncbiRefSeq',
-                    filter: { genes: 'only' },
+                    filter: ['geneLike'],
                     displayMode: 'compact',
                     showLabels: 'auto',
                   },
@@ -864,7 +864,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
                 tracks: [
                   {
                     trackId: 'GCF_030704535.1-ncbiRefSeq',
-                    filter: { genes: 'only' },
+                    filter: ['geneLike'],
                     displayMode: 'compact',
                     showLabels: 'auto',
                   },
@@ -876,7 +876,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
                 tracks: [
                   {
                     trackId: 'GCF_000208745.1-ncbiRefSeq',
-                    filter: { genes: 'only' },
+                    filter: ['geneLike'],
                     displayMode: 'compact',
                     showLabels: 'auto',
                   },
@@ -928,7 +928,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
             tracks: [
               {
                 trackId: 'GCF_030704535.1-ncbiRefSeq',
-                filter: { genes: 'only' },
+                filter: ['geneLike'],
                 displayMode: 'compact',
                 showLabels: 'auto',
               },
@@ -967,7 +967,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
             tracks: [
               {
                 trackId: 'GCF_030704535.1-ncbiRefSeq',
-                filter: { genes: 'only' },
+                filter: ['geneLike'],
                 displayMode: 'compact',
                 showLabels: 'auto',
               },
@@ -1010,7 +1010,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
             tracks: [
               {
                 trackId: 'GCF_030704535.1-ncbiRefSeq',
-                filter: { genes: 'only' },
+                filter: ['geneLike'],
                 displayMode: 'compact',
                 showLabels: 'auto',
               },
@@ -1124,7 +1124,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
             tracks: [
               {
                 trackId: 'human_genes',
-                filter: { genes: 'only' },
+                filter: ['geneLike'],
                 displayMode: 'compact',
               },
               {
@@ -1157,7 +1157,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
             tracks: [
               {
                 trackId: 'tomato_genes',
-                filter: { genes: 'only' },
+                filter: ['geneLike'],
                 displayMode: 'compact',
                 // Ensembl's tomato GFF3 names every gene by a bare Solyc id
                 showLabels: 'none',
@@ -1192,7 +1192,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
             tracks: [
               {
                 trackId: 'melanogaster_genes',
-                filter: { genes: 'only' },
+                filter: ['geneLike'],
                 displayMode: 'compact',
               },
               {
@@ -1956,7 +1956,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
                 tracks: [
                   {
                     trackId: 'sorghum_genes',
-                    filter: { genes: 'only' },
+                    filter: ['geneLike'],
                     displayMode: 'compact',
                     showLabels: 'none',
                     height: 40,
@@ -1969,7 +1969,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
                 tracks: [
                   {
                     trackId: 'rice_genes',
-                    filter: { genes: 'only' },
+                    filter: ['geneLike'],
                     displayMode: 'compact',
                     showLabels: 'none',
                     height: 40,
@@ -1982,7 +1982,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
                 tracks: [
                   {
                     trackId: 'maize_genes',
-                    filter: { genes: 'only' },
+                    filter: ['geneLike'],
                     displayMode: 'compact',
                     showLabels: 'none',
                     height: 40,
@@ -2155,7 +2155,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
               tracks: [
                 {
                   trackId: 'K12_genes',
-                  filter: { genes: 'only' },
+                  filter: ['geneLike'],
                   displayMode: 'compact',
                   showLabels: 'auto',
                 },
@@ -2167,7 +2167,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
               tracks: [
                 {
                   trackId: 'Sakai_genes',
-                  filter: { genes: 'only' },
+                  filter: ['geneLike'],
                   displayMode: 'compact',
                   showLabels: 'auto',
                 },
@@ -2234,7 +2234,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
           tracks: [
             {
               trackId: 'K12_genes',
-              filter: { genes: 'only' },
+              filter: ['geneLike'],
               displayMode: 'compact',
               showLabels: 'auto',
             },
@@ -2482,7 +2482,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
               tracks: [
                 {
                   trackId: `${GRAPE}-ncbiRefSeq`,
-                  filter: { genes: 'only' },
+                  filter: ['geneLike'],
                   displayMode: 'compact',
                   showLabels: 'auto',
                   height: 70,
@@ -2495,7 +2495,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
               tracks: [
                 {
                   trackId: `${PEACH}-ncbiRefSeq`,
-                  filter: { genes: 'only' },
+                  filter: ['geneLike'],
                   displayMode: 'compact',
                   showLabels: 'auto',
                   height: 70,
@@ -2531,7 +2531,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
               tracks: [
                 {
                   trackId: `${GRAPE}-ncbiRefSeq`,
-                  filter: { genes: 'only' },
+                  filter: ['geneLike'],
                   displayMode: 'compact',
                   showLabels: 'auto',
                   height: 70,
@@ -2544,7 +2544,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
               tracks: [
                 {
                   trackId: `${PEACH}-ncbiRefSeq`,
-                  filter: { genes: 'only' },
+                  filter: ['geneLike'],
                   displayMode: 'compact',
                   showLabels: 'auto',
                   height: 70,
@@ -3418,7 +3418,7 @@ export const syntenyVideoFixtures = {
           tracks: [
             {
               trackId: 'GCF_030704535.1-ncbiRefSeq',
-              filter: { genes: 'only' },
+              filter: ['geneLike'],
               displayMode: 'compact',
               showLabels: 'auto',
             },

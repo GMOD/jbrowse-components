@@ -187,7 +187,7 @@ export const popgenSpecs: ScreenshotSpec[] = [
               // A gene lane cuts cleanly only at a multiple of its ~28.6 px row
               // pitch.
               height: 115,
-              filter: { genes: 'only' },
+              filter: ['geneLike'],
               // Name-only featureHighlights pin the match to the top row;
               // otherwise Cyp6g1 sits seven rows down a wall of CG numbers.
               featureHighlights: [

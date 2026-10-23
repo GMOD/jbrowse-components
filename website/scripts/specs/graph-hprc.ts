@@ -244,7 +244,7 @@ function abca7View({
         ? [
             {
               trackId: 'hg38_ncbiRefSeq_ucsc',
-              filter: { genes: 'only' },
+              filter: ['geneLike'],
               displayMode: 'compact',
               height: 40,
             },
@@ -734,7 +734,7 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
           tracks: [
             {
               trackId: 'hg38_ncbiRefSeq_ucsc',
-              filter: { genes: 'only' },
+              filter: ['geneLike'],
               displayMode: 'compact',
               height: 40,
             },

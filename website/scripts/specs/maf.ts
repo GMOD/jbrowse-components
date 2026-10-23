@@ -300,7 +300,7 @@ export const mafSpecs: ScreenshotSpec[] = [
             {
               trackId: 'ncbi_genes_hg38_ucsc',
               geneGlyphMode: 'longestCoding',
-              filter: { genes: 'only' },
+              filter: ['geneLike'],
             },
             {
               trackId: 'hg38.multiz470way',
@@ -390,7 +390,7 @@ export const mafSpecs: ScreenshotSpec[] = [
             {
               trackId: 'ncbi_genes_hg38_ucsc',
               geneGlyphMode: 'longestCoding',
-              filter: { genes: 'only' },
+              filter: ['geneLike'],
             },
             {
               trackId: 'hg38.multiz470way',
@@ -439,7 +439,7 @@ export const mafSpecs: ScreenshotSpec[] = [
   // C4B, and the caption is about copy number across C4A and C4B.
   //
   // The UCSC NCBI RefSeq GFF3 names genes by symbol; the MANE bigBed names
-  // them by NM_ accession. `genes: 'only'` keeps its many recombination
+  // them by NM_ accession. The `geneLike` filter keeps its many recombination
   // and enhancer regions out of the lane.
   {
     mode: 'url' as const,
@@ -455,7 +455,7 @@ export const mafSpecs: ScreenshotSpec[] = [
           tracks: [
             {
               trackId: 'ncbi_genes_hg38_ucsc',
-              filter: { genes: 'only' },
+              filter: ['geneLike'],
               geneGlyphMode: 'longestCoding',
               heightMode: 'grow',
             },

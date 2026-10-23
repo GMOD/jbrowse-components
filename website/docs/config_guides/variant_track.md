@@ -96,7 +96,7 @@ default display, so preset its slots in a `displays` array; they are listed on
     {
       "type": "LinearMultiSampleVariantDisplay",
       "referenceDrawingMode": "draw",
-      "filter": { "minMinorAlleleFrequency": 0.05 },
+      "filter": [{ "field": "minorAlleleFrequency", "gte": 0.05 }],
       "showRowLabels": true,
       "unit": "sample"
     }
@@ -109,9 +109,10 @@ default display, so preset its slots in a `displays` array; they are listed on
   keeps overlapping variants readable
 - **`unit`** is `sample` (one row per sample, darker for homozygous) or
   `haplotype` (one row per haplotype)
-- **`filter`** holds `minMinorAlleleFrequency` and `maxMissingness`, which hide
-  variants below an allele-frequency floor or above a no-call ceiling, beside
-  the jexl `expressions`
+- **`filter`** is a list of [field tests](/docs/config/fieldpredicate):
+  `minorAlleleFrequency` with `gte` hides variants below an allele-frequency
+  floor, `missingness` with `lte` hides those above a no-call ceiling, and a
+  `jexl:` string is an expression a variant must pass
 
 ### Coloring cells by the variant
 

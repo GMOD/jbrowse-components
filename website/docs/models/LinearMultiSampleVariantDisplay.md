@@ -25,7 +25,7 @@ displays: [
     unit: 'haplotype',
     rowColor: 'population',
     rows: { sort: ['NA12878', 'NA12891'] },
-    filter: { minMinorAlleleFrequency: 0.05 },
+    filter: [{ field: 'minorAlleleFrequency', gte: 0.05 }],
   },
 ]
 ```

@@ -241,7 +241,7 @@ export const featuresSpecs: ScreenshotSpec[] = [
           trackId: 'ncbi_genes_enterovirus_d',
           // fits the gene row and all 12 stacked mature peptides
           height: 220,
-          filter: { genes: 'only' },
+          filter: ['geneLike'],
         },
       ],
     }),

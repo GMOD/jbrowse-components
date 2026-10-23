@@ -42,18 +42,18 @@ its name, and the genome's `aliases:` file reconciles the `1` / `chr1` /
 <!-- jb2export: 1 -->
 
 ```bash
-jb2export https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz aliases:https://jbrowse.org/genomes/hg19/hg19_aliases.txt https://s3.amazonaws.com/jbrowse.org/genomes/hg19/ncbi_refseq/GRCh37_latest_genomic.sort.gff.gz '{"filter":{"genes":"only"}}' \
+jb2export https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz aliases:https://jbrowse.org/genomes/hg19/hg19_aliases.txt https://s3.amazonaws.com/jbrowse.org/genomes/hg19/ncbi_refseq/GRCh37_latest_genomic.sort.gff.gz '{"filter":["geneLike"]}' \
   --bigbed https://jbrowse.org/genomes/hg19/clinGen/clinGenGeneDisease.bb \
   --bigwig https://hgdownload.soe.ucsc.edu/goldenpath/hg19/phyloP100way/hg19.100way.phyloP100way.bw \
   --cram https://s3.amazonaws.com/jbrowse.org/genomes/hg19/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.cram \
   --loc 1:19,190,000-19,240,000 --width 1200 --out 1.png
 ```
 
-The `'{"filter":{"genes":"only"}}'` after the GFF is a raw-JSON per-track
-override (any display setting can be set this way). NCBI RefSeq GFFs have
-non-gene support features (`region`, `match`, `biological_region`) that would
-otherwise render as unnamed rows above the genes; the `filter`'s
-`"genes":"only"` keeps the track to gene/transcript features.
+The `'{"filter":["geneLike"]}'` after the GFF is a raw-JSON per-track override
+(any display setting can be set this way). NCBI RefSeq GFFs have non-gene
+support features (`region`, `match`, `biological_region`) that would otherwise
+render as unnamed rows above the genes; the `filter`'s `geneLike` entry keeps
+the track to gene/transcript features.
 
 ## Basic usage
 
@@ -584,14 +584,14 @@ to base level, it shows the DNA bases and the six-frame translation (green start
 codons, red stops). This human example zooms into a `TP53` intron/CDS boundary.
 The intron thins to a connector line, the coding exon begins as a solid CDS
 block, and the block's edge lines up with a specific reference base and reading
-frame. The `filter`'s `"genes":"only"` keeps the RefSeq track to its gene
+frame. The `filter`'s `geneLike` entry keeps the RefSeq track to its gene
 features:
 
 <!-- jb2export: gene_track -->
 
 ```bash
 jb2export --genome hg38 \
-  --track hg38-ncbiRefSeqCurated height:60 '{"filter":{"genes":"only"},"geneGlyphMode":"longestCoding"}' \
+  --track hg38-ncbiRefSeqCurated height:60 '{"filter":["geneLike"],"geneGlyphMode":"longestCoding"}' \
   --refseq --loc chr17:7,675,018-7,675,098 --width 1500 --out gene_track.png
 ```
 

@@ -456,7 +456,7 @@ export const tcgaSpecs: ScreenshotSpec[] = [
 
   // Two siblings of this figure failed. `runClustering: true` squashed the
   // matrix below the tree sidebar's height, and the dendrogram testid appears
-  // before the matrix redraws. `filter.minMinorAlleleFrequency: 0.01` left four
+  // before the matrix redraws. A `minorAlleleFrequency` floor of 0.01 left four
   // wide columns that read as variants the whole cohort carries.
   {
     mode: 'url' as const,

@@ -2,7 +2,7 @@ import { DEMO_CONFIG, lgvSession } from '../screenshot-spec-helpers.ts'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 
-// Without `genes: 'only'`, GENCODE's region features paint a bar above the genes
+// Without the `geneLike` filter, GENCODE's region features paint a bar above the genes
 export const annotationSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
@@ -17,7 +17,7 @@ export const annotationSpecs: ScreenshotSpec[] = [
         },
         {
           trackId: 'gencode_47',
-          filter: { genes: 'only' },
+          filter: ['geneLike'],
           height: 170,
         },
       ],

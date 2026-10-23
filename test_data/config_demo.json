@@ -232,7 +232,7 @@
       "displays": [
         {
           "type": "LinearBasicDisplay",
-          "filter": { "genes": "only" }
+          "filter": ["geneLike"]
         }
       ]
     },
@@ -291,7 +291,7 @@
       "displays": [
         {
           "type": "LinearBasicDisplay",
-          "filter": { "genes": "only" }
+          "filter": ["geneLike"]
         }
       ]
     },
@@ -1115,7 +1115,7 @@
       "displays": [
         {
           "type": "LinearBasicDisplay",
-          "filter": { "genes": "only" }
+          "filter": ["geneLike"]
         }
       ]
     },
@@ -1141,7 +1141,7 @@
       "displays": [
         {
           "type": "LinearBasicDisplay",
-          "filter": { "genes": "only" }
+          "filter": ["geneLike"]
         }
       ]
     },
@@ -1154,7 +1154,7 @@
       "displays": [
         {
           "type": "LinearBasicDisplay",
-          "filter": { "genes": "only" }
+          "filter": ["geneLike"]
         }
       ],
       "adapter": {
@@ -4609,7 +4609,7 @@
       "displays": [
         {
           "type": "LinearBasicDisplay",
-          "filter": { "genes": "only" }
+          "filter": ["geneLike"]
         }
       ]
     },
@@ -5320,7 +5320,7 @@
       "displays": [
         {
           "type": "LinearBasicDisplay",
-          "filter": { "genes": "only" }
+          "filter": ["geneLike"]
         }
       ]
     },

@@ -30,8 +30,8 @@ function fakeView() {
 
 test("a feature track's filter object rides in on the snapshot", async () => {
   const { view, calls } = fakeView()
-  await applyDisplayOpts(view, 't', 'feature', ['{"filter":{"genes":"only"}}'])
-  expect(calls[0]).toEqual({ filter: { genes: 'only' } })
+  await applyDisplayOpts(view, 't', 'feature', ['{"filter":["geneLike"]}'])
+  expect(calls[0]).toEqual({ filter: ['geneLike'] })
 })
 
 // A read filter in the open snapshot would replace the configured list, so it

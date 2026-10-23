@@ -55,10 +55,10 @@ takes a full column no matter how many of its genotypes are no-calls.
 
 <Figure src="/img/variants/potato_missingness.png" caption="One tetraploid VCF twice as a genotype matrix. Top: the default missingness ceiling. Bottom: a 0.1 ceiling." />
 
-The two filters can be preset so the track loads already filtered, with the
-[`minMinorAlleleFrequency`](/docs/config/variantfilter/#slot-minminorallelefrequency)
-and [`maxMissingness`](/docs/config/variantfilter/#slot-maxmissingness) members
-of the display's `filter`. See
+The two filters can be preset so the track loads already filtered, with
+`{ "field": "minorAlleleFrequency", "gte": … }` and
+`{ "field": "missingness", "lte": … }` entries in the display's
+[`filter`](/docs/config/fieldpredicate) list. See
 [configuring default display settings](/docs/config_guides/variant_track#configuring-default-display-settings).
 
 ## Rows: per sample or per haplotype

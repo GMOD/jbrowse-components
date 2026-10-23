@@ -492,13 +492,13 @@ make a transcript, and UCSC's format definition calls them exons; thickness
 marks whether the transcript codes. Those features now parse as `transcript`
 with `exon` children, the way a coding BED12 always has.
 
-For a site, the feature reports a type where it reported none, so `filter.genes`
-counts it as a gene, the hover readout numbers its exons and gives an HGVS `n.`
-coordinate, "Get sequence" offers the spliced cDNA, "Collapse introns" is
-offered on it, and "Save track data" round-trips it byte-exact where it used to
-demote the record to BED6, with one row per block and the name and the score
-dropped. The feature-details panel stops listing the six raw columns the
-promotion consumes (`thickStart`, `thickEnd`, `blockCount`, `blockSizes`,
+For a site, the feature reports a type where it reported none, so the `geneLike`
+filter field counts it as a gene, the hover readout numbers its exons and gives
+an HGVS `n.` coordinate, "Get sequence" offers the spliced cDNA, "Collapse
+introns" is offered on it, and "Save track data" round-trips it byte-exact where
+it used to demote the record to BED6, with one row per block and the name and
+the score dropped. The feature-details panel stops listing the six raw columns
+the promotion consumes (`thickStart`, `thickEnd`, `blockCount`, `blockSizes`,
 `blockStarts`, `chromStarts`), as it has always done for a coding BED12. The
 drawing does not change, because the same glyph already drew both.
 

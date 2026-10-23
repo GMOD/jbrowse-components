@@ -67,7 +67,7 @@ try {
           {
             trackId: 'GCF_030704535.1-ncbiRefSeq',
             type: 'LinearBasicDisplay',
-            filter: { genes: 'only' },
+            filter: ['geneLike'],
             displayMode: 'compact',
             showLabels: 'auto',
           },

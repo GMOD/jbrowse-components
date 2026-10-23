@@ -213,17 +213,16 @@ that allele. We'll add it to the graph launch's session:
     {
       "type": "LinearMultiSampleVariantDisplay",
       "unit": "haplotype",
-      "filter": { "expressions": ["jexl:alleleLength(feature)>=50"] }
+      "filter": ["jexl:alleleLength(feature)>=50"]
     }
   ]
 }
 ```
 
 - `unit: "haplotype"` draws one row per haplotype.
-- `filter.expressions` drops records, and `alleleLength(feature)>=50` keeps
-  alleles of 50 bp and up, the size of the bubbles minigraph draws.
-  `alleleLength` is the length of the record's longest allele, so it counts an
-  insertion's inserted bases.
+- `filter` drops records, and `alleleLength(feature)>=50` keeps alleles of 50 bp
+  and up, the size of the bubbles minigraph draws. `alleleLength` is the length
+  of the record's longest allele, so it counts an insertion's inserted bases.
 - `fetchSizeLimit` raises the download cap past
   [its default](/docs/config/vcftabixadapter/#slot-fetchsizelimit). The VCF
   spells out each inserted allele, which puts the MHC class II window over the

@@ -448,7 +448,7 @@ rice gene track:
           {
             "trackId": "rice_genes",
             "type": "LinearBasicDisplay",
-            "filter": { "genes": "only" },
+            "filter": ["geneLike"],
             "displayMode": "compact"
           },
           {

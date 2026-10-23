@@ -145,7 +145,7 @@ const WRAP = 78
 
 // A spec's args are argv, i.e. already through the shell. Printing them raw
 // gives a command that breaks when pasted — the per-track JSON overrides
-// (`{"filter":{"genes":"only"}}`) are the ones that matter, since bash reads the
+// (`{"filter":["geneLike"]}`) are the ones that matter, since bash reads the
 // braces and quotes. Quote anything outside the set that is safe bare; URLs,
 // locstrings and `key:value` track modifiers all stay unquoted.
 const SHELL_SAFE = /^[A-Za-z0-9_@%+=:,./-]+$/

@@ -244,11 +244,11 @@ test('per-base quality paints each aligned base on its read through the ramp', a
   expect(colorsOf.get(scores[0]!)).not.toEqual(colorsOf.get(scores.at(-1)!))
 })
 
-test('the display\u2019s filter object keeps the reads it keeps', async () => {
+test('the display\u2019s filter list keeps the reads it keeps', async () => {
   const all = await engine.alignments(BAM)
   const reverse = await engine.alignments({
     ...BAM,
-    display: { filter: { flagInclude: 16 } },
+    display: { filter: [{ field: 'flags.REVERSE', equal: true }] },
   })
   expect(reverse.reads.strand.every(s => s === -1)).toBe(true)
   expect(reverse.reads.name.length).toBeGreaterThan(0)
@@ -1021,14 +1021,14 @@ test('a junction says whether the display shows it, its arc height and its strok
   const floor = Math.max(...count)
   const t = await engine.alignments({
     ...SPLICED,
-    display: { filter: { junctions: { minReads: floor } } },
+    display: { filter: [{ field: 'junction.reads', gte: floor }] },
   })
   expect(t.junctions.count).toEqual(count)
   expect(t.junctions.shown).toEqual(count.map(c => c >= floor))
   expect(t.junctions.shown).toContain(false)
   const hidden = await engine.alignments({
     ...SPLICED,
-    display: { filter: { junctions: { nonCanonical: 'exclude' } } },
+    display: { filter: [{ field: 'junction.canonical', equal: true }] },
   })
   expect(hidden.junctions.shown).toEqual(
     all.junctions.motif.map(m => m !== 'non-canonical'),
@@ -1070,11 +1070,13 @@ test('config is the display’s resolved config, the slots the call set and the 
   const t = await engine.alignments({
     ...BAM,
     display: {
-      filter: { junctions: { minReads: 5 } },
+      filter: [{ field: 'junction.reads', gte: 5 }],
       color: { field: 'strand' },
     },
   })
-  expect(t.config.filter).toMatchObject({ junctions: { minReads: 5 } })
+  expect(t.config.filter).toEqual([
+    expect.objectContaining({ field: 'junction.reads', gte: 5 }),
+  ])
   expect((t.config.color as { field: string }).field).toBe('strand')
   expect(t.config.coverage).toMatchObject({ height: 45, show: true })
   const display = { height: 150 }

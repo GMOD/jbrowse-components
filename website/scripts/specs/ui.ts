@@ -328,7 +328,7 @@ const rhdPanel = (sortRowsBy?: RowSortSpec) =>
             trackId: 'ncbi_refseq_hg38',
             height: 120,
             showLabels: 'name',
-            filter: { genes: 'only' },
+            filter: ['geneLike'],
           },
         ],
       },
@@ -420,7 +420,7 @@ export const uiSpecs: ScreenshotSpec[] = [
       tracks: [
         {
           trackId: 'gff3tabix_genes',
-          filter: { genes: 'only' },
+          filter: ['geneLike'],
         },
       ],
     }),
@@ -553,7 +553,7 @@ export const uiSpecs: ScreenshotSpec[] = [
               trackId: 'ncbi_refseq_109_hg38',
               height: 140,
               showLabels: 'name',
-              filter: { genes: 'only' },
+              filter: ['geneLike'],
               heightMode: 'fit',
             },
           ],
@@ -589,7 +589,7 @@ export const uiSpecs: ScreenshotSpec[] = [
               trackId: 'ncbi_refseq_109_hg38',
               height: 140,
               showLabels: 'name',
-              filter: { genes: 'only' },
+              filter: ['geneLike'],
               heightMode: 'fit',
             },
           ],
@@ -645,13 +645,13 @@ export const uiSpecs: ScreenshotSpec[] = [
           tracks: [
             {
               trackId: 'ncbi_refseq_109_hg38',
-              // `genes: 'only'` alone stacks a dozen RHD transcripts and
+              // The `geneLike` filter alone stacks a dozen RHD transcripts and
               // pushes the coverage off; `longestCoding` plus 'grow' keeps RHD
               // in frame.
               heightMode: 'grow',
               geneGlyphMode: 'longestCoding',
               showLabels: 'name',
-              filter: { genes: 'only' },
+              filter: ['geneLike'],
             },
             ...['HG00113', 'HG00096', 'HG00097'].map(s => ({
               trackId: `${s}.final`,
