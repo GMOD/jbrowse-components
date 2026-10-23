@@ -75,7 +75,8 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  *
  * #example
  * RNA-seq — sashimi arcs placed to avoid crossings, labelled with their read
- * counts, dropping junctions under five reads and the non-canonical ones:
+ * counts, dropping junctions under five reads, the non-canonical ones and the
+ * split-read joins:
  * ```js
  * {
  *   type: 'AlignmentsTrack',
@@ -89,6 +90,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  *     filter: [
  *       { field: 'junction.reads', gte: 5 },
  *       { field: 'junction.canonical', equal: true },
+ *       { field: 'junction.source', equal: 'gap' },
  *     ],
  *   },
  * }

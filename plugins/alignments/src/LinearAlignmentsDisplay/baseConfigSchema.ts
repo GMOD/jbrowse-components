@@ -65,8 +65,10 @@ export const baseLinearAlignmentsDisplayConfigSchema = ConfigurationSchema(
      * so coverage counts only the reads they pass: `flags.UNMAP` and the
      * other samtools flag names, `mapq` (MAPQ 255, none reported, passes a
      * floor), `name`, `tags.HP` and any other tag, and the read categories
-     * `spliced`, `svSignal`, `alone` and `split`. `junction.reads` and
-     * `junction.canonical` test the splice junctions, and
+     * `spliced`, `svSignal`, `alone` and `split`. `junction.reads`,
+     * `junction.canonical`, `junction.class` (`splice` for an N gap, or a
+     * split read's `deletion`, `duplication` or `inversion`) and
+     * `junction.source` (`gap` or `split`) test the sashimi junctions, and
      * `connection.interchrom`, `connection.offscreen` and `breakpoint.reads`
      * the connections the arcs, the read cloud and the connectors draw.
      *

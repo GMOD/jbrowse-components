@@ -7,10 +7,13 @@ import { sashimiLabelsConfigSchema } from './sashimiLabelsConfigSchema.ts'
 /**
  * #config Sashimi
  * #category display
- * The alignments display's `sashimi` setting: the splice-junction arcs, over
- * the coverage band or in a strip below it, and in that strip alone while
- * `coverage.show` is off. Which junctions draw is the display's `filter`, by
- * its `junction` fields.
+ * The alignments display's `sashimi` setting: the junction arcs, over the
+ * coverage band or in a strip below it, and in that strip alone while
+ * `coverage.show` is off. The band counts each splice junction from the reads'
+ * N gaps and each same-reference join of a split read's segments by its class
+ * (`junction.class`: `deletion`, `duplication`, which a circRNA back-splice
+ * is, or `inversion`). Which junctions draw is the display's `filter`, by its
+ * `junction` fields.
  *
  * #example
  * ```js
@@ -20,6 +23,7 @@ import { sashimiLabelsConfigSchema } from './sashimiLabelsConfigSchema.ts'
  *   filter: [
  *     { field: 'junction.reads', gte: 5 },
  *     { field: 'junction.canonical', equal: true },
+ *     { field: 'junction.class', oneOf: ['splice', 'duplication'] },
  *   ],
  * }
  * ```

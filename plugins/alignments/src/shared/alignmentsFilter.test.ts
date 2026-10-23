@@ -136,6 +136,56 @@ describe('the junction and connection tests', () => {
   })
 
   test.each([
+    [[{ field: 'junction.class', equal: 'duplication' }], ['duplication']],
+    [
+      [{ field: 'junction.class', oneOf: ['splice', 'inversion'] }],
+      ['splice', 'inversion'],
+    ],
+    [
+      [{ field: 'junction.source', equal: 'split' }],
+      ['deletion', 'duplication', 'inversion'],
+    ],
+    [
+      [
+        { field: 'junction.source', equal: 'split' },
+        { field: 'junction.class', oneOf: ['splice', 'deletion'] },
+      ],
+      ['deletion'],
+    ],
+    [[{ field: 'junction.class' }], undefined],
+  ])(
+    'junction.class and junction.source lower to classes: %j',
+    (written, classes) => {
+      expect(junctionFilterOf(merged(written)).classes).toEqual(classes)
+    },
+  )
+
+  test.each([
+    [{ classes: ['splice' as const, 'duplication' as const] }],
+    [{ classes: [] }],
+  ])('a junction class write reads back: %j', patch => {
+    const list = merged(withFields([], junctionEntries(patch)))
+    expect(junctionFilterOf(list)).toMatchObject(patch)
+  })
+
+  test('a class write of every class, or none, writes nothing', () => {
+    expect(
+      withFields(
+        [{ field: 'junction.source', equal: 'gap' }],
+        junctionEntries({ classes: undefined }),
+      ),
+    ).toEqual([])
+    expect(
+      withFields(
+        [],
+        junctionEntries({
+          classes: ['splice', 'deletion', 'duplication', 'inversion'],
+        }),
+      ),
+    ).toEqual([])
+  })
+
+  test.each([
     [{ interchrom: 'exclude' as const }],
     [{ offscreenMates: 'only' as const }],
     [{ minInterchromReads: 1 }],
@@ -262,11 +312,16 @@ describe('problems', () => {
         { field: 'junction.reads', lte: 4 },
         { field: 'connection.interchrom', equal: 'yes' },
         { field: 'breakpoint.reads' },
+        { field: 'junction.class', oneOf: ['splice', 'duplication'] },
+        { field: 'junction.class', equal: 'backsplice' },
+        { field: 'junction.source', gte: 1 },
       ]).map(p => p.split(',')[0]),
     ).toEqual([
       'filter: no field "flags.NOPE" on an alignment',
       'filter: junction.reads takes a floor (gte or gt)',
       'filter: connection.interchrom takes equal: true or false',
+      'filter: junction.class takes equal or oneOf of splice',
+      'filter: junction.source takes equal or oneOf of gap',
     ])
   })
 })
@@ -276,7 +331,11 @@ test('the object form lifts member by member', () => {
     predicatesOfFilterObject({
       minMapq: 20,
       svSignal: 'only',
-      junctions: { minReads: 5, nonCanonical: 'exclude' },
+      junctions: {
+        minReads: 5,
+        nonCanonical: 'exclude',
+        classes: ['splice', 'duplication'],
+      },
       connections: { interchrom: 'exclude', minInterchromReads: 1 },
     }),
   ).toEqual([
@@ -284,6 +343,7 @@ test('the object form lifts member by member', () => {
     { field: 'svSignal', equal: true },
     { field: 'junction.reads', gte: 5 },
     { field: 'junction.canonical', equal: true },
+    { field: 'junction.class', oneOf: ['splice', 'duplication'] },
     { field: 'connection.interchrom', equal: false },
     { field: 'breakpoint.reads' },
   ])

@@ -9,8 +9,14 @@ import {
   categoryOf,
 } from '@jbrowse/display-kit/categoryFilter'
 
+import {
+  JUNCTION_CLASSES,
+  JUNCTION_SOURCES,
+  junctionSource,
+} from '../features/sashimi/junctionClass.ts'
 import { TAG_FIELD_PREFIX } from './facetLabels.ts'
 
+import type { JunctionClass } from '../features/sashimi/junctionClass.ts'
 import type {
   CategoryFilter,
   ConnectionFilter,
@@ -43,6 +49,8 @@ const MAPQ_FIELD = 'mapq'
 
 const JUNCTION_READS = 'junction.reads'
 const JUNCTION_CANONICAL = 'junction.canonical'
+const JUNCTION_CLASS = 'junction.class'
+const JUNCTION_SOURCE = 'junction.source'
 const CONNECTION_INTERCHROM = 'connection.interchrom'
 const CONNECTION_OFFSCREEN = 'connection.offscreen'
 const BREAKPOINT_READS = 'breakpoint.reads'
@@ -54,6 +62,11 @@ const ROW_CATEGORY_FIELDS = new Set([
   JUNCTION_CANONICAL,
   CONNECTION_INTERCHROM,
   CONNECTION_OFFSCREEN,
+])
+// and a closed vocabulary its values, by `equal` or `oneOf`
+const ROW_VALUE_FIELDS = new Map<string, readonly string[]>([
+  [JUNCTION_CLASS, JUNCTION_CLASSES],
+  [JUNCTION_SOURCE, JUNCTION_SOURCES],
 ])
 
 function isTagField(field: string) {
@@ -200,12 +213,35 @@ export function floorEntries(field: string, min: number): FieldPredicate[] {
 
 // ---- the main thread's rows ----
 
-/** The splice junctions drawn, as the sashimi and tables code test them. */
+function junctionClassLane(
+  field: string,
+): PredicateLane<JunctionClass> | undefined {
+  return field === JUNCTION_CLASS
+    ? { kind: 'get', get: c => c }
+    : field === JUNCTION_SOURCE
+      ? { kind: 'get', get: junctionSource }
+      : undefined
+}
+
+// The `junction.class` and `junction.source` entries as the classes they
+// admit, undefined when they test nothing.
+function junctionClassesOf(predicates: readonly FieldPredicate[]) {
+  const admits = compilePredicates(
+    predicates.filter(
+      p => p.field === JUNCTION_CLASS || p.field === JUNCTION_SOURCE,
+    ),
+    junctionClassLane,
+  )
+  return admits && JUNCTION_CLASSES.filter(admits)
+}
+
+/** The junctions drawn, as the sashimi and tables code test them. */
 export function junctionFilterOf(
   predicates: readonly FieldPredicate[],
 ): JunctionFilter {
   const canonical = categoryOf(predicates, JUNCTION_CANONICAL)
   return {
+    classes: junctionClassesOf(predicates),
     minReads: countFloorOf(predicates, JUNCTION_READS) ?? 1,
     nonCanonical:
       canonical === 'only'
@@ -216,10 +252,14 @@ export function junctionFilterOf(
   }
 }
 
-/** `junctionFilterOf`'s two members as the entries they are. */
+/**
+ * `junctionFilterOf`'s members as the entries they are. `classes` writes
+ * `junction.class` and clears `junction.source`, whose reading it folds in.
+ */
 export function junctionEntries(
   patch: Partial<JunctionFilter>,
 ): Record<string, FieldPredicate[]> {
+  const { classes } = patch
   return {
     ...(patch.minReads === undefined
       ? {}
@@ -234,6 +274,16 @@ export function junctionEntries(
                 ? 'only'
                 : undefined,
           ),
+        }
+      : {}),
+    ...('classes' in patch
+      ? {
+          [JUNCTION_CLASS]:
+            classes === undefined ||
+            JUNCTION_CLASSES.every(c => classes.includes(c))
+              ? []
+              : [{ field: JUNCTION_CLASS, oneOf: [...classes] }],
+          [JUNCTION_SOURCE]: [],
         }
       : {}),
   }
@@ -462,6 +512,23 @@ export function filterProblems(written: readonly FieldPredicate[]): string[] {
           ]
         : []
     }
+    const vocabulary = ROW_VALUE_FIELDS.get(field)
+    if (vocabulary) {
+      const values = [
+        ...(p.equal === undefined ? [] : [p.equal]),
+        ...(p.oneOf ?? []),
+      ]
+      return p.lt !== undefined ||
+        p.lte !== undefined ||
+        p.gt !== undefined ||
+        p.gte !== undefined ||
+        p.valid !== undefined ||
+        values.some(v => typeof v !== 'string' || !vocabulary.includes(v))
+        ? [
+            `filter: ${field} takes equal or oneOf of ${vocabulary.join(', ')}, not ${JSON.stringify(p)}`,
+          ]
+        : []
+    }
     return isReadField(field)
       ? []
       : [`filter: no field ${JSON.stringify(field)} on an alignment`]
@@ -506,7 +573,7 @@ const OBJECT_MEMBERS: Record<string, readonly string[] | undefined> = {
   svSignal: undefined,
   alone: undefined,
   split: undefined,
-  junctions: ['minReads', 'nonCanonical'],
+  junctions: ['minReads', 'nonCanonical', 'classes'],
   connections: ['interchrom', 'offscreenMates', 'minInterchromReads'],
 }
 
@@ -536,6 +603,12 @@ function given(object: Record<string, unknown>, key: string) {
 
 function categoryOrUnset(v: unknown): CategoryFilter | undefined {
   return isCategory(v) ? v : undefined
+}
+
+function junctionClassListOrUnset(v: unknown) {
+  return Array.isArray(v)
+    ? JUNCTION_CLASSES.filter(c => v.includes(c))
+    : undefined
 }
 
 /**
@@ -613,6 +686,9 @@ export function filterPatchOfObject(
         : {}),
       ...(given(junctions, 'nonCanonical')
         ? { nonCanonical: categoryOrUnset(junctions.nonCanonical) }
+        : {}),
+      ...(given(junctions, 'classes')
+        ? { classes: junctionClassListOrUnset(junctions.classes) }
         : {}),
     }),
   )
