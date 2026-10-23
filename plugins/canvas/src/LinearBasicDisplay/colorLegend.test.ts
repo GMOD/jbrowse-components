@@ -18,6 +18,33 @@ import { createTestEnvironment } from './testEnv.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { RampScale } from '@jbrowse/core/ui/colorScale'
 
+const noSection = [{ strand: undefined, groupKey: undefined }]
+
+// What the worker's walk ships: the field's values, each carried by one box of
+// its own feature in view, in the section its record files under.
+function paintedData(
+  values: string[],
+  rows: { strand: undefined; groupKey: string | undefined }[] = noSection,
+  field = 'biotype',
+) {
+  return makeFeatureData({
+    ...packFixtureRects(values.map(() => ({ startBp: 0, endBp: 10 }))),
+    rectColorValues: Uint32Array.from(values, (_, i) => i + 1),
+    flatbushItems: values.map((_, i) =>
+      makeFlatbushItem({ featureId: `f${i}`, groupKey: rows[i]?.groupKey }),
+    ),
+    colorValues: {
+      field,
+      values,
+      painted: values.map((_, i) => ({
+        rowIndex: rows.length > 1 ? i : 0,
+        valueIndex: i,
+      })),
+      rows,
+    },
+  })
+}
+
 describe('the color key', () => {
   it('is no scale while no field paints', () => {
     const { createDisplay } = createTestEnvironment()
@@ -44,17 +71,7 @@ describe('the color key', () => {
     display.applyPlot({ color: { field: 'repClass' } })
     display.setRpcData(
       0,
-      makeFeatureData({
-        colorValues: {
-          field: 'repClass',
-          values: ['SINE', 'LINE'],
-          painted: [
-            { rowIndex: 0, valueIndex: 0 },
-            { rowIndex: 0, valueIndex: 1 },
-          ],
-          rows: [{ strand: undefined, groupKey: undefined }],
-        },
-      }),
+      paintedData(['SINE', 'LINE'], noSection, 'repClass'),
       { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 10_000 },
     )
     expect(display.showLegend).toBe(true)
@@ -105,28 +122,6 @@ describe('derived color key', () => {
     refName: 'ctgA',
     start: 0,
     end: 10_000,
-  }
-
-  const noSection = [{ strand: undefined, groupKey: undefined }]
-
-  // What the worker's walk ships: the field's values, each a box carried, in
-  // the section its record files under.
-  function paintedData(
-    values: string[],
-    rows: { strand: undefined; groupKey: string | undefined }[] = noSection,
-    field = 'biotype',
-  ) {
-    return makeFeatureData({
-      colorValues: {
-        field,
-        values,
-        painted: values.map((_, i) => ({
-          rowIndex: rows.length > 1 ? i : 0,
-          valueIndex: i,
-        })),
-        rows,
-      },
-    })
   }
 
   // Three records, one per biotype, each in its own section.
@@ -209,6 +204,33 @@ describe('derived color key', () => {
     display.facetByField('biotype')
     display.hideGroup('lncRNA')
     expect(keyValues(display)).toEqual(['protein_coding', 'snoRNA'])
+  })
+
+  it('names only the values a feature in view paints, not the fetch buffer past it', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display, view } = createDisplay()
+    display.applyPlot({ color: { field: 'domain' } })
+    const offScreen = Math.ceil(view.pxToBp(view.width + 100).coord0)
+    display.setRpcData(
+      0,
+      {
+        ...paintedData(['SH2', 'RhoGEF', 'Torsin'], noSection, 'domain'),
+        flatbushItems: [
+          makeFlatbushItem({ featureId: 'sh2' }),
+          makeFlatbushItem({ featureId: 'rhogef' }),
+          makeFlatbushItem({
+            featureId: 'torsin',
+            startBp: offScreen,
+            endBp: offScreen + 10,
+          }),
+        ],
+      },
+      ctgA,
+    )
+    expect(display.legendSpec.sections[0]?.items.map(i => i.value)).toEqual([
+      'RhoGEF',
+      'SH2',
+    ])
   })
 
   it('names strand values as strands', () => {

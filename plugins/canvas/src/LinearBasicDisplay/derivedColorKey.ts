@@ -4,6 +4,7 @@ import { fieldColorCandidates } from '../shared/fieldColorCandidates.ts'
 
 import type {
   ColorValues,
+  FeatureDataResult,
   SectionStamp,
 } from '../RenderFeatureDataRPC/rpcTypes.ts'
 import type { featureColorViews } from '../shared/featureColorViews.ts'
@@ -32,6 +33,40 @@ export function derivedColorKey(
     }),
     { id: 'color', field: order, title },
   )
+}
+
+/**
+ * `data` with its color values narrowed to those a box of an `onScreen`
+ * feature paints, so a key names what the window shows rather than what the
+ * fetch's buffer beyond it loaded. `values` stays whole: the deal of colors
+ * reads it, and a value scrolling into view keeps the color it had.
+ */
+export function onScreenColorValues<
+  T extends Pick<
+    FeatureDataResult,
+    'colorValues' | 'rectColorValues' | 'rectFeatureIndices' | 'flatbushItems'
+  >,
+>(data: T, onScreen: ReadonlySet<string>): T {
+  const { colorValues, rectColorValues, rectFeatureIndices, flatbushItems } =
+    data
+  if (!colorValues) {
+    return data
+  }
+  const shown = new Set<number>()
+  for (let i = 0; i < rectColorValues.length; i++) {
+    const value = rectColorValues[i]!
+    const item = flatbushItems[rectFeatureIndices[i]!]
+    if (value > 0 && item && onScreen.has(item.featureId)) {
+      shown.add(value - 1)
+    }
+  }
+  return {
+    ...data,
+    colorValues: {
+      ...colorValues,
+      painted: colorValues.painted.filter(p => shown.has(p.valueIndex)),
+    },
+  }
 }
 
 type FeatureColors = Pick<

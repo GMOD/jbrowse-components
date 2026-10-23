@@ -78,7 +78,7 @@ import {
   resolveOutlineColor,
   resolveRegionColors,
 } from './components/resolveRegionColors.ts'
-import { featureColorKey } from './derivedColorKey.ts'
+import { featureColorKey, onScreenColorValues } from './derivedColorKey.ts'
 import { facetField, featureGroupSections, sectionIdsOf } from './facet.ts'
 import { featureContextMenuItems } from './featureContextMenu.ts'
 import { FeatureHighlightModel } from './featureHighlight.ts'
@@ -1576,19 +1576,27 @@ export default function baseStateModelFactory(
         const { facet, hiddenGroupKeys, categoricalColorField } = self
         const sectionOf =
           facet && hiddenGroupKeys.size > 0 ? sectionIdsOf(facet) : undefined
-        return featureColorKey(self, [...self.rpcDataMap.values()], {
-          isHidden:
-            sectionOf &&
-            (section => hiddenGroupKeys.has(sectionOf(section).key)),
-          order:
-            facet && facet.field === categoricalColorField?.field
-              ? scale => ({
-                  ...facetField(facet),
-                  label: scale.label,
-                  unknown: scale.unknown,
-                })
-              : undefined,
-        })
+        const onScreen = self.onScreenFeatureIds
+        const regions = [...self.rpcDataMap.values()]
+        return featureColorKey(
+          self,
+          onScreen
+            ? regions.map(data => onScreenColorValues(data, onScreen))
+            : regions,
+          {
+            isHidden:
+              sectionOf &&
+              (section => hiddenGroupKeys.has(sectionOf(section).key)),
+            order:
+              facet && facet.field === categoricalColorField?.field
+                ? scale => ({
+                    ...facetField(facet),
+                    label: scale.label,
+                    unknown: scale.unknown,
+                  })
+                : undefined,
+          },
+        )
       },
       /**
        * #method
