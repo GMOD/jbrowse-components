@@ -56,8 +56,9 @@ export const hicVideos: VideoSpec[] = [
     //    takes 5 kb, which is what the figure gets at 1500; any wider and it
     //    takes 2 kb, and 2 kb over this window is the red speckle the page warns
     //    about two sections up. Should the first take come back as speckle,
-    //    `resolutionBias: 1` on both matrices steps it back to the figure's 5 kb
-    //    — the slot the page already sends a reader to for exactly this.
+    //    `data: { resolution: -1 }` on both matrices steps it back to the
+    //    figure's 5 kb — the slot the page already sends a reader to for
+    //    exactly this.
     //
     // The app stands at 1118px, and the caption chip's strip goes under it:
     // the payoff is the K562 matrix's lower middle, where chr9 meets chr22.

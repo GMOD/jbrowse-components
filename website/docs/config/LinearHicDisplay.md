@@ -12,7 +12,7 @@ genome view, at a bin size that follows the zoom.
 
 ## Example usage
 
-A log color scale, one step coarser than the zoom picks, through the
+A log color scale, one binsize coarser than the zoom picks, through the
 `displayDefaults` shorthand. See the
 [Hi-C track guide](/docs/config_guides/hic_track) for the rest:
 
@@ -25,7 +25,7 @@ A log color scale, one step coarser than the zoom picks, through the
   adapter: { type: 'HicAdapter', uri: 'https://example.com/contacts.hic' },
   displayDefaults: {
     encoding: { color: { scale: { type: 'symlog' } } },
-    resolutionBias: 1,
+    data: { resolution: -1 },
   },
 }
 ```
@@ -50,8 +50,7 @@ Display slots go on a display entry: `"displays": [{ "type": "LinearHicDisplay",
 | --- | --- |
 | <span id="slot-encoding">**encoding**</span><br>[HicEncoding](../hicencoding) | The channels the bins paint through: `encoding.color`, the scale from count to color. |
 | <span id="slot-legend">**legend**</span><br>[HiddenLegend](../hiddenlegend) | The color ramp's key, off until asked for. |
-| <span id="slot-resolutionbias">**resolutionBias**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>0</code> | steps from the zoom-picked binsize: -1 one finer, +1 one coarser, 0 follows the zoom |
-| <span id="slot-selectednormalization">**selectedNormalization**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>'KR'</code> | preferred matrix normalization (KR, SCALE, VC, VC_SQRT, NONE); a scheme the file lacks falls back to one it has |
+| <span id="slot-data">**data**</span><br>[HicData](../hicdata) | What the fetch reads, a [](/docs/config/hicdata) object: `resolution` steps the binsize from the zoom's pick, `normalization` names the matrix normalization. |
 | <span id="slot-height">**height**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>300</code> | default height for the Hi-C track |
 | <span id="slot-heightmode">**heightMode**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) = <code>'fixed'</code> | fixed draws square cells at the triangle's natural half-width height; fit squashes it to fill the display height |
 
@@ -69,3 +68,5 @@ An older config may still write these. Each loads without an error, and `jbrowse
 | `jexlFilters` | moved into a current slot |
 | `renderer` | ignored |
 | `showResolutionControls` | ignored |
+| `resolutionBias` | moved into a current slot |
+| `selectedNormalization` | moved into a current slot |

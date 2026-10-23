@@ -178,6 +178,7 @@ const BAND_OBJECTS = new Set([
   'alignments',
   'legend',
   'ribbons',
+  'data',
 ])
 
 // A band's `show` and `mark` are the "Read arcs" and "Read cloud" checkboxes,

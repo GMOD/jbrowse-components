@@ -414,12 +414,12 @@ describe('score settings', () => {
   test('a whole-setting slot write joins the snapshot', () => {
     const { snap } = buildDisplaySnapshot('wiggle', [
       'mark=point',
-      'resolution=100',
+      'origin=5',
       'color:purple',
     ])
     expect(snap).toEqual({
       mark: 'point',
-      resolution: 100,
+      origin: 5,
       encoding: { color: { value: 'purple' } },
     })
   })

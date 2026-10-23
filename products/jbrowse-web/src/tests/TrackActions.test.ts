@@ -49,7 +49,7 @@ test('showTrack with unknown id returns undefined', async () => {
 
 test('showTrack passes displayInitialSnapshot state to the display', async () => {
   const view = await getView()
-  const track = view.showTrack(TRACK_ID, {}, { resolution: 5 })
+  const track = view.showTrack(TRACK_ID, {}, { data: { resolution: 5 } })
   expect(track).toBeDefined()
   expect(track!.displays[0]!.resolution).toBe(5)
 })
@@ -60,7 +60,7 @@ test('showTrack passes displayInitialSnapshot state to the display', async () =>
 // perfectly correct call — so only a key whose WRITE THREW may raise a toast.
 test('a correct displayInitialSnapshot raises no notification', async () => {
   const { session, view } = await getTestSession()
-  await view.launchTrack(TRACK_ID, {}, { resolution: 5, height: 123 })
+  await view.launchTrack(TRACK_ID, {}, { data: { resolution: 5 }, height: 123 })
   expect(session.snackbarMessages).toHaveLength(0)
 })
 

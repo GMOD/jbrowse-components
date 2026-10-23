@@ -52,3 +52,10 @@ test.each([
     expect(retiredState.keys).toContain('summaryScoreMode')
   },
 )
+
+test('a v4 session’s resolution is data.resolution', () => {
+  expect(retiredState.lift({ resolution: 5 })).toMatchObject({
+    data: { resolution: 5 },
+  })
+  expect(retiredState.lift({ resolution: 5 })).not.toHaveProperty('resolution')
+})

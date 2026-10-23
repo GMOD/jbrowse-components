@@ -260,7 +260,7 @@ export const bigwigSpecs: ScreenshotSpec[] = [
         {
           trackId: 'colo_tumor',
           mark: 'point',
-          resolution: 5,
+          data: { resolution: 5 },
           extent: 'none',
         },
       ],

@@ -9,7 +9,7 @@
           {
             "trackId": "ngmlr_cov",
             "height": 275,
-            "resolution": 25,
+            "data": { "resolution": 25 },
             "encoding": {
               "y": {
                 "scale": { "domainMin": 0, "domainMax": 200 },

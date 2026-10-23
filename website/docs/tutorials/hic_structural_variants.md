@@ -72,9 +72,8 @@ ENCODE publishes both as annotation files derived from the matrix:
   [HiCCUPS](https://github.com/aidenlab/juicer/wiki/HiCCUPS), also a BEDPE.
 
 Over a wide window the triangle can render as red speckle. If a Hi-C track looks
-like noise, change
-[`resolutionBias`](/docs/config/linearhicdisplay/#slot-resolutionbias) first,
-which steps to coarser bins
+like noise, change [`data.resolution`](/docs/config/hicdata/#slot-resolution)
+first, where a negative value steps to coarser bins
 ([adjusting resolution](/docs/user_guides/hic_track#adjusting-resolution)).
 
 ## Loading the GRCh38 assembly
@@ -104,7 +103,7 @@ The `.hic` files are tens of GB, and JBrowse requests only the bins on screen.
   "uri": "https://encode-public.s3.amazonaws.com/2021/10/28/4d332729-3463-4782-b33c-76e4fa8ff72a/ENCFF080DPJ.hic",
   "assemblyNames": ["hg38"],
   "displayDefaults": {
-    "selectedNormalization": "NONE"
+    "data": { "normalization": "NONE" }
   }
 }
 ```
@@ -116,7 +115,7 @@ The `.hic` files are tens of GB, and JBrowse requests only the bins on screen.
   "uri": "https://encode-public.s3.amazonaws.com/2021/10/28/6f0cc163-86c7-4a68-baac-65af90f5a90d/ENCFF053VBX.hic",
   "assemblyNames": ["hg38"],
   "displayDefaults": {
-    "selectedNormalization": "NONE"
+    "data": { "normalization": "NONE" }
   }
 }
 ```
@@ -186,8 +185,7 @@ and an amplified fusion is such a difference, so balancing hides it. Re-run the
 scan with `NORM=INTER_SCALE` and _ABL1_×_BCR_ drops off the top of the table.
 Balanced matrices suit domains and loops and raw counts suit rearrangements, so
 both Hi-C tracks here set
-[`selectedNormalization`](/docs/config/linearhicdisplay/#slot-selectednormalization)
-to `NONE`.
+[`data.normalization`](/docs/config/hicdata/#slot-normalization) to `NONE`.
 
 The scan prints a ranked list for the control below the one for the case. The
 top bin in the control list is hot in both GM12878 and K562, so it is a

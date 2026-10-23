@@ -24,7 +24,7 @@ function matrix(trackId: string, height: number) {
     trackId,
     height,
     encoding: { color: { scale: { type: 'linear', domainQuantile: 0.95 } } },
-    selectedNormalization: 'NONE',
+    data: { normalization: 'NONE' },
     // 'fit' squashes the whole ~990px wedge and spends half the frame on the
     // empty corner below the data; the fusion apex sits ~280px down unsquashed.
     heightMode: 'fixed',

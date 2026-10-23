@@ -48,7 +48,7 @@ Dotplot1DView
 LinearSyntenyViewHelper
 TimeTraveller
 
-# model members with no description (1314)
+# model members with no description (1312)
 # fix: write a sentence under the member’s #property/#volatile/#getter/#method/#action tag
 AddTrackModel.adapterHint
 AddTrackModel.altAssemblyName
@@ -824,10 +824,8 @@ LinearHicDisplay.canStepResolutionFiner
 LinearHicDisplay.effectiveResolution
 LinearHicDisplay.renderState
 LinearHicDisplay.renderSvg
-LinearHicDisplay.resetResolutionBias
-LinearHicDisplay.resolutionBias
+LinearHicDisplay.resetResolution
 LinearHicDisplay.scaleType
-LinearHicDisplay.selectedNormalization
 LinearHicDisplay.setColorFollowsPercentile
 LinearHicDisplay.setFileInfo
 LinearHicDisplay.setSelectedNormalization

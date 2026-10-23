@@ -67,7 +67,7 @@ const CASES: Case[] = [
     reversed: false,
   },
   {
-    // two resolutionBias steps finer: cells are ~0.09 px, the finest the UI can
+    // two data.resolution steps finer: cells are ~0.09 px, the finest the UI can
     // reach, so the stored coordinate is the largest multiple of binWidth
     name: 'sub-pixel bins at 248 Mb',
     res: 250,

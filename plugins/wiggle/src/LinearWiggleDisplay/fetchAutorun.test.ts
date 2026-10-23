@@ -1,3 +1,4 @@
+import { getConf } from '@jbrowse/core/configuration'
 import { abgrBlue, abgrGreen, abgrRed } from '@jbrowse/core/util/colorBits'
 import { getMembers } from '@jbrowse/mobx-state-tree'
 import { waitFor } from '@testing-library/react'
@@ -82,6 +83,7 @@ describe('LinearWiggleDisplay SettingsInvalidate autorun', () => {
 
     const callsBefore = mockRpcCall.mock.calls.length
     display.setResolution(5)
+    expect(getConf(display, ['data', 'resolution'])).toBe(5)
     jest.advanceTimersByTime(400)
     await jest.runAllTimersAsync()
 

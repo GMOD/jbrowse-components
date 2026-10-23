@@ -1,3 +1,4 @@
+import { specTrackSettings } from './decode.ts'
 import { trackFields } from './fields.ts'
 
 test('a row height is the shared Row height menu, with each display its presets', () => {
@@ -257,4 +258,27 @@ test("a filter list's entries are the rows that write them", () => {
   expect(
     stepPaths('filter', [{ field: 'mapq', gte: 20 }], 'LinearAlignmentsDisplay'),
   ).toEqual(['Track menu → Filter by... → Edit filters...'])
+})
+
+test('data flattens member by member, and each display reads its own resolution', () => {
+  expect(
+    specTrackSettings({
+      trackId: 'hic',
+      type: 'LinearHicDisplay',
+      data: { resolution: -2, normalization: 'NONE' },
+    }),
+  ).toEqual([
+    ['type', 'LinearHicDisplay'],
+    ['data.resolution', -2],
+    ['data.normalization', 'NONE'],
+  ])
+  const note = (displayType: string) => {
+    const step = trackFields['data.resolution']!(-2, { noun: 'row', displayType })
+    return Array.isArray(step) ? undefined : step?.note
+  }
+  expect(note('LinearHicDisplay')).toContain('Click Coarser 2 times')
+  expect(note('LinearWiggleDisplay')).toContain('this figure uses')
+  expect(stepPaths('data.normalization', 'NONE', 'LinearHicDisplay')).toEqual([
+    'Track menu → Normalization → NONE',
+  ])
 })

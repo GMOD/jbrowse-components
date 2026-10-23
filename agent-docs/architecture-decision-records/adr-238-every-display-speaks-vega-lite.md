@@ -165,7 +165,7 @@ its only value scale is `coverage.encoding.y`.
   twice the span its quantile draws, measured per side of 0 (ADR-208).
 - **`rules`** sits on `encoding.y`, not in `axis`: reference lines are values
   in the scale's domain, drawn across every band the scale rules.
-- **`minimalTicks`** is cut with the move, and `tickCount` is not added.
+- **`minimalTicks`** is cut with the move.
 - **Writes** merge member by member on `encoding.y`, while a color, shape or
   size channel writes whole. A reset rewrites `scale`, `axis` and `rules`, not
   `field`, since `setConf` on a sub-schema path replaces the whole object.
@@ -215,6 +215,15 @@ its only value scale is `coverage.encoding.y`.
   (points per pixel) and Hi-C's `resolutionBias` (steps from the zoom-chosen
   bin) measure other things, so each family's stage settles its own spelling
   rather than giving one number three meanings.
+  Amended 2026-10-23, reversing the 2026-10-20 split: `data.resolution` takes
+  three meanings, one per family.
+  - `SyntenyData`: `'auto' | 'fine' | 'coarse'`, the stored tier.
+  - `WiggleData`: points per pixel, default 1.
+  - `HicData`: binsize steps from the zoom's pick, default 0. Larger is finer
+    as wiggle's is, so the old `resolutionBias` flips sign.
+
+  Hi-C's `selectedNormalization` is `data.normalization`. BigWigAdapter's
+  `resolutionMultiplier` is an adapter slot and keeps growing coarser.
 - **Render:** `render.antialias`, `true`, `false` or unset to follow the data, replaces
   `fadeThinAlignmentsMode`. Amended 2026-10-20: `pileup.fadeLowFrequency`
   stays apart, since it fades a sub-pixel mark by the share of reads carrying

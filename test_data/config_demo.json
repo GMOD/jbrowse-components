@@ -2032,7 +2032,7 @@
         "uri": "https://encode-public.s3.amazonaws.com/2021/10/28/6f0cc163-86c7-4a68-baac-65af90f5a90d/ENCFF053VBX.hic"
       },
       "displayDefaults": {
-        "selectedNormalization": "NONE"
+        "data": { "normalization": "NONE" }
       }
     },
     {
@@ -2046,7 +2046,7 @@
         "uri": "https://encode-public.s3.amazonaws.com/2021/10/28/4d332729-3463-4782-b33c-76e4fa8ff72a/ENCFF080DPJ.hic"
       },
       "displayDefaults": {
-        "selectedNormalization": "NONE"
+        "data": { "normalization": "NONE" }
       }
     },
     {
@@ -2064,7 +2064,7 @@
         }
       },
       "displayDefaults": {
-        "selectedNormalization": "NONE",
+        "data": { "normalization": "NONE" },
         "encoding": { "color": "observed/control" }
       }
     },

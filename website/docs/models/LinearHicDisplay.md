@@ -28,7 +28,7 @@ alike share one scale, and runs one binsize coarser than the zoom picks:
       encoding: {
         color: { scale: { type: 'symlog', domainMax: 500 } },
       },
-      resolutionBias: 1,
+      data: { resolution: -1 },
     },
   ],
 }
@@ -87,13 +87,13 @@ From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`sc
 | Member | Description |
 | --- | --- |
 | <span id="getter-availablenormalizations">**availableNormalizations**</span><br><code>string[] &#124; undefined</code> |  |
-| <span id="getter-availableresolutions">**availableResolutions**</span><br><code>number[] &#124; undefined</code> | Smallest first, so a negative `resolutionBias` is always finer. |
+| <span id="getter-availableresolutions">**availableResolutions**</span><br><code>number[] &#124; undefined</code> | Smallest first, so a positive `data.resolution` is always finer. |
 | <span id="getter-hascontrol">**hasControl**</span><br><code>boolean</code> | Whether the adapter names a control, which observed/control needs. |
-| <span id="getter-resolutionbias">**resolutionBias**</span><br><code>number</code> |  |
+| <span id="getter-resolutionsteps">**resolutionSteps**</span><br><code>number</code> | `data.resolution`: binsizes finer than the zoom's pick. |
 | <span id="getter-colorquantile">**colorQuantile**</span><br><code>number</code> | `encoding.color.scale.domainQuantile`: the quantile of the loaded counts an unset `domainMax` follows, their maximum at 1. |
 | <span id="getter-colorfollowspercentile">**colorFollowsPercentile**</span><br><code>boolean</code> | Whether an unset `encoding.color.scale.domainMax` saturates at `colorQuantile` rather than the counts' maximum. |
 | <span id="getter-saturationquantile">**saturationQuantile**</span><br><code>number</code> | The quantile "Emphasize faint contacts" saturates at: `colorQuantile` while it clips, else the one ticking it writes. Each fetch asks the worker for this one whichever is drawn, so the toggle reselects nothing. |
-| <span id="getter-selectednormalization">**selectedNormalization**</span><br><code>string</code> |  |
+| <span id="getter-selectednormalization">**selectedNormalization**</span><br><code>string</code> | `data.normalization`, the one asked for. |
 | <span id="getter-colorfield">**colorField**</span><br><code>"observed" &#124; "observed/control" &#124; "observed/expected"</code> | `encoding.color.field`, what the fetch asks the worker to put in each cell. |
 | <span id="getter-paintedcolorfield">**paintedColorField**</span><br><code>"observed" &#124; "observed/control" &#124; "observed/expected"</code> | The field the loaded cells are: observed/expected falls back to the counts where the file has no expected values at the binsize. |
 | <span id="getter-hasresolutions">**hasResolutions**</span><br><code>boolean</code> | Whether the binsize list has arrived; every resolution control gates on it. |
@@ -106,7 +106,7 @@ From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`sc
 | <span id="getter-colormidnorm">**colorMidNorm**</span><br><code>number</code> | Where `encoding.color.scale.domainMid` sits on the normalized ramp, 0.5 unset, so a diverging scheme centres on it and equal distances from it take equal colors. |
 | <span id="getter-autoresolutionidx">**autoResolutionIdx**</span><br><code>number</code> | The binsize index auto mode picks: the largest at most 2 bp/px, about half a bin per pixel, else the finest. |
 | <span id="getter-colorscales">**colorScales**</span><br><code>ColorScale[]</code> | The count ramp, once there is a domain to span. The ends are where the ramp paints them, and a top below the largest loaded count reads `≥`. The title names the loaded binsize, so a figure carries it, unless `encoding.color.legend.title` replaces it. |
-| <span id="getter-effectiveresolutionidx">**effectiveResolutionIdx**</span><br><code>number</code> | The index in effect after `resolutionBias`, clamped so a bias set at another zoom cannot index out of range. |
+| <span id="getter-effectiveresolutionidx">**effectiveResolutionIdx**</span><br><code>number</code> | The index in effect after `resolutionSteps`, clamped so steps set at another zoom cannot index out of range. |
 | <span id="getter-valuelabel">**valueLabel**</span><br><code>string</code> | What the tooltip calls a bin's value. |
 | <span id="getter-effectiveresolution">**effectiveResolution**</span><br><code>number &#124; undefined</code> |  |
 | <span id="getter-canstepresolutionfiner">**canStepResolutionFiner**</span><br><code>boolean</code> |  |
@@ -176,7 +176,7 @@ From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`rendering
 | <span id="action-setcolorfollowspercentile">**setColorFollowsPercentile**</span><br><code>(f: boolean) =&gt; void</code> |  |
 | <span id="action-setselectednormalization">**setSelectedNormalization**</span><br><code>(f: string) =&gt; void</code> |  |
 | <span id="action-setfileinfo">**setFileInfo**</span><br><code>(read: AdapterRead&lt;HicFileInfo&gt;) =&gt; void</code> |  |
-| <span id="action-resetresolutionbias">**resetResolutionBias**</span><br><code>() =&gt; void</code> |  |
+| <span id="action-resetresolution">**resetResolution**</span><br><code>() =&gt; void</code> |  |
 | <span id="action-setresolutionidx">**setResolutionIdx**</span><br><code>(idx: number) =&gt; void</code> | Lock to `availableResolutions[idx]`, clamped, stored as an offset from the auto pick so the choice keeps its meaning across zoom. |
 | <span id="action-setresolution">**setResolution**</span><br><code>(binSize: number) =&gt; void</code> | Lock to a binsize the file offers; any other is ignored. |
 | <span id="action-stepresolution">**stepResolution**</span><br><code>(delta: number) =&gt; void</code> |  |

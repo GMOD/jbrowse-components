@@ -26,6 +26,13 @@ test('value is the constant, and a bare color is refused with its spelling', () 
   )
 })
 
+test('the points per pixel are data.resolution, the old top-level spelling lifting there', () => {
+  expect(readConfObject(create({}), ['data', 'resolution'])).toBe(1)
+  for (const snap of [{ data: { resolution: 4 } }, { resolution: 4 }]) {
+    expect(readConfObject(create(snap), ['data', 'resolution'])).toBe(4)
+  }
+})
+
 test("v4's display color is the channel's constant", () => {
   const conf = create({ color: 'darkgreen' })
   expect(readConfObject(conf, [...COLOR, 'value'])).toBe('darkgreen')

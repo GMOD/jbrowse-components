@@ -582,6 +582,8 @@ exports[`every registered schema slot default 1`] = `
     "utrColor": "maybeColor = undefined",
   },
   "display: LinearHicDisplay": {
+    "data.normalization": "string = "KR"",
+    "data.resolution": "number = 0",
     "encoding.color.field": "stringEnum = "observed" of ["observed","observed/expected","observed/control"]",
     "encoding.color.legend.title": "maybeString = undefined",
     "encoding.color.scale.domainMax": "maybeNumber = undefined",
@@ -594,8 +596,6 @@ exports[`every registered schema slot default 1`] = `
     "height": "number = 300",
     "heightMode": "stringEnum = "fixed" of ["fixed","fit"]",
     "legend.show": "boolean = false",
-    "resolutionBias": "number = 0",
-    "selectedNormalization": "string = "KR"",
   },
   "display: LinearMafDisplay": {
     "alignments.frames.show": "boolean = false",
@@ -847,6 +847,7 @@ exports[`every registered schema slot default 1`] = `
     "showOutline": "boolean = false",
   },
   "display: LinearWiggleDisplay": {
+    "data.resolution": "number = 1",
     "encoding.color.legend.title": "maybeString = undefined",
     "encoding.color.scale.domain": "stringArray = []",
     "encoding.color.scale.domainMid": "maybeNumber = undefined",
@@ -873,7 +874,6 @@ exports[`every registered schema slot default 1`] = `
     "mark.type": "stringEnum = "bar" of ["bar","point","line","span"]",
     "maxGapMultiple": "number = 0",
     "origin": "number = 0",
-    "resolution": "number = 1",
     "rowColor.field": "string = "name"",
     "rowColor.scale.domain": "stringArray = []",
     "rowColor.scale.range": "colorArray = []",

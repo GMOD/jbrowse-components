@@ -1126,6 +1126,18 @@ function resolutionLabel(n: number) {
   return n >= 1 ? `${n}×` : `1/${Math.round(1 / n)}×`
 }
 
+function resolutionStep(n: number, displayType: string | undefined): FieldStep {
+  return displayType === 'LinearHicDisplay'
+    ? {
+        path: `${TRACK_MENU} → Resolution`,
+        note: `Click ${n > 0 ? `Finer ${n}` : `Coarser ${-n}`} time${Math.abs(n) === 1 ? '' : 's'}; the caption between the buttons reads the binsize. The steps count from the zoom's binsize, so they keep tracking zoom, and Reset returns to auto. Coarser is what turns a sparse speckled matrix into visible domain blocks.`,
+      }
+    : {
+        path: `${TRACK_MENU} → Resolution`,
+        note: `Step with Coarser and Finer, 2× per click; the caption between them reads the current bin size. Higher fetches finer bins, and this figure uses ${resolutionLabel(n)}.`,
+      }
+}
+
 const checkbox = (label: string, note?: string): FieldRecipe => {
   return value =>
     typeof value === 'boolean'
@@ -1564,18 +1576,11 @@ export const trackFields: Record<string, FieldRecipe> = {
           note: 'Saturates the color scale at the 95th percentile instead of the maximum, so faint off-diagonal contacts read more strongly.',
         }
       : undefined,
-  selectedNormalization: (value, { displayType }) =>
+  'data.normalization': (value, { displayType }) =>
     typeof value === 'string' && isHicOnlyField(displayType)
       ? {
           path: `${TRACK_MENU} → Normalization → ${value}`,
           note: 'The submenu lists only the schemes the file actually carries, and ticks the one the loaded matrix has rather than the one requested. NONE is raw observed counts, which is what a rearrangement needs — matrix balancing divides an amplified fusion back out.',
-        }
-      : undefined,
-  resolutionBias: (value, { displayType }) =>
-    typeof value === 'number' && isHicOnlyField(displayType)
-      ? {
-          path: `${TRACK_MENU} → Resolution → ${value < 0 ? `Finer x${-value}` : `Coarser x${value}`}`,
-          note: 'A signed offset from the zoom-derived binsize, not an absolute one, so it keeps tracking zoom. Reset returns to auto. Positive is coarser, which is what turns a sparse speckled matrix into visible domain blocks.',
         }
       : undefined,
   variantLayout: (value, { displayType }) =>
@@ -2054,10 +2059,8 @@ export const trackFields: Record<string, FieldRecipe> = {
   // two buttons either side of the current bin size (ResolutionStepper) — so
   // the path stops at the submenu and the note names what is in it, the same
   // way coverageHeight's does for a drag handle.
-  resolution: numberField(n => ({
-    path: `${TRACK_MENU} → Resolution`,
-    note: `Step with Coarser and Finer, 2× per click; the caption between them reads the current bin size. Higher fetches finer bins, and this figure uses ${resolutionLabel(n)}.`,
-  })),
+  'data.resolution': (value, { displayType }) =>
+    typeof value === 'number' ? resolutionStep(value, displayType) : undefined,
   'coverage.height': numberField(() => ({
     path: 'Drag the bottom edge of the coverage band to resize it.',
   })),

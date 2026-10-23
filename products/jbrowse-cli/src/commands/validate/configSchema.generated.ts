@@ -13469,6 +13469,27 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "additionalProperties": false
     },
+    "WiggleData": {
+      "title": "WiggleData",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "resolution": {
+          "description": "points per pixel the fetch asks a tiered file for: 1 is one per pixel, larger is finer and smaller is coarser. Clamped to the range the Resolution menu offers, so a value outside it reads as the nearest end.",
+          "default": 1,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
     "LinearWiggleDisplaySlots": {
       "type": "object",
       "properties": {
@@ -13514,14 +13535,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/WiggleEncoding"
           }
         },
-        "resolution": {
-          "description": "points per pixel the fetch asks a tiered file for: 1 is one per pixel, larger is finer and smaller is coarser. Clamped to the range the Resolution menu offers, so a value outside it reads as the nearest end.",
-          "default": 1,
+        "data": {
           "if": {
             "type": "null"
           },
           "else": {
-            "type": "number"
+            "$ref": "#/$defs/WiggleData"
           }
         },
         "origin": {
@@ -13693,6 +13712,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
         "summaryScoreMode": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "resolution": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
@@ -14531,6 +14554,37 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "additionalProperties": false
     },
+    "HicData": {
+      "title": "HicData",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "resolution": {
+          "description": "binsizes finer than the zoom picks: 1 one finer, -1 one coarser, 0 follows the zoom.",
+          "default": 0,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
+        },
+        "normalization": {
+          "description": "preferred matrix normalization (KR, SCALE, VC, VC_SQRT, NONE); a scheme the file lacks falls back to one it has.",
+          "default": "KR",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
     "LinearHicDisplaySlots": {
       "type": "object",
       "properties": {
@@ -14573,24 +14627,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/HiddenLegend"
           }
         },
-        "resolutionBias": {
-          "description": "steps from the zoom-picked binsize: -1 one finer, +1 one coarser, 0 follows the zoom.",
-          "default": 0,
+        "data": {
           "if": {
             "type": "null"
           },
           "else": {
-            "type": "number"
-          }
-        },
-        "selectedNormalization": {
-          "description": "preferred matrix normalization (KR, SCALE, VC, VC_SQRT, NONE); a scheme the file lacks falls back to one it has.",
-          "default": "KR",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "$ref": "#/$defs/PlainString"
+            "$ref": "#/$defs/HicData"
           }
         },
         "maxFeatureScreenDensity": {
@@ -14618,6 +14660,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
         "showResolutionControls": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "resolutionBias": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "selectedNormalization": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
@@ -16213,8 +16263,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "mark": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/mark"
             },
-            "resolution": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/resolution"
+            "data": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/data"
             },
             "origin": {
               "anyOf": [
@@ -16283,6 +16333,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "summaryScoreMode": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/summaryScoreMode"
+            },
+            "resolution": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/resolution"
             },
             "defaultRendering": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/defaultRendering"
@@ -17967,8 +18020,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 }
               ]
             },
-            "resolution": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/resolution"
+            "data": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/data"
             },
             "origin": {
               "anyOf": [
@@ -18137,6 +18190,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "summaryScoreMode": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/summaryScoreMode"
+            },
+            "resolution": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/resolution"
             },
             "defaultRendering": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/defaultRendering"
@@ -18382,8 +18438,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 }
               ]
             },
-            "resolution": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/resolution"
+            "data": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/data"
             },
             "origin": {
               "anyOf": [
@@ -18552,6 +18608,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "summaryScoreMode": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/summaryScoreMode"
+            },
+            "resolution": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/resolution"
             },
             "defaultRendering": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/defaultRendering"
@@ -18769,8 +18828,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "encoding": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/encoding"
             },
-            "resolution": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/resolution"
+            "data": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/data"
             },
             "origin": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/origin"
@@ -18855,6 +18914,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "summaryScoreMode": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/summaryScoreMode"
+            },
+            "resolution": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/resolution"
             },
             "defaultRendering": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/defaultRendering"
@@ -19431,11 +19493,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "legend": {
               "$ref": "#/$defs/LinearHicDisplaySlots/properties/legend"
             },
-            "resolutionBias": {
-              "$ref": "#/$defs/LinearHicDisplaySlots/properties/resolutionBias"
-            },
-            "selectedNormalization": {
-              "$ref": "#/$defs/LinearHicDisplaySlots/properties/selectedNormalization"
+            "data": {
+              "$ref": "#/$defs/LinearHicDisplaySlots/properties/data"
             },
             "maxFeatureScreenDensity": {
               "$ref": "#/$defs/LinearHicDisplaySlots/properties/maxFeatureScreenDensity"
@@ -19457,6 +19516,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "showResolutionControls": {
               "$ref": "#/$defs/LinearHicDisplaySlots/properties/showResolutionControls"
+            },
+            "resolutionBias": {
+              "$ref": "#/$defs/LinearHicDisplaySlots/properties/resolutionBias"
+            },
+            "selectedNormalization": {
+              "$ref": "#/$defs/LinearHicDisplaySlots/properties/selectedNormalization"
             }
           },
           "patternProperties": {

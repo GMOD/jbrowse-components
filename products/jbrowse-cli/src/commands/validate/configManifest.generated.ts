@@ -7521,8 +7521,16 @@ export const configManifest: ConfigManifest = {
           "writes": "members"
         },
         {
-          "name": "resolution",
-          "type": "number"
+          "name": "data",
+          "type": "WiggleDataConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "resolution",
+              "type": "number"
+            }
+          ],
+          "schema": "WiggleData",
+          "writes": "members"
         },
         {
           "name": "origin",
@@ -7592,6 +7600,7 @@ export const configManifest: ConfigManifest = {
         "color",
         "renderers",
         "summaryScoreMode",
+        "resolution",
         "defaultRendering",
         "lineWidth"
       ],
@@ -8288,12 +8297,20 @@ export const configManifest: ConfigManifest = {
           "writes": "members"
         },
         {
-          "name": "resolutionBias",
-          "type": "number"
-        },
-        {
-          "name": "selectedNormalization",
-          "type": "string"
+          "name": "data",
+          "type": "HicDataConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "resolution",
+              "type": "number"
+            },
+            {
+              "name": "normalization",
+              "type": "string"
+            }
+          ],
+          "schema": "HicData",
+          "writes": "members"
         }
       ],
       "legacyKeys": [
@@ -8303,7 +8320,9 @@ export const configManifest: ConfigManifest = {
         "mouseover",
         "jexlFilters",
         "renderer",
-        "showResolutionControls"
+        "showResolutionControls",
+        "resolutionBias",
+        "selectedNormalization"
       ],
       "droppedKeys": [
         "maxFeatureScreenDensity",

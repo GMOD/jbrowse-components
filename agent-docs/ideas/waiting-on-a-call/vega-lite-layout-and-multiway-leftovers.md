@@ -23,10 +23,6 @@ Each item needs a call before work. Check the ADR-238 spelling first.
   not a layout word. Wiggle's `size`, which doubles as a line's width, has the
   same gap.
 - The circle draws no ruler flags, so an `axis.labels` there is a new feature.
-- `data.resolution` has three directions: wiggle's `resolution` grows finer,
-  Hi-C's `resolutionBias` and BigWigAdapter's `resolutionMultiplier` grow
-  coarser. Settle one in the same pass as Hi-C's `data` move, which also takes
-  `selectedNormalization` as `data.normalization`.
 
 ## Multi-way display
 

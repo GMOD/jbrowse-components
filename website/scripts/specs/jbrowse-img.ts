@@ -524,7 +524,7 @@ export const jbrowseImgSpecs: CliSpec[] = [
     'https://jbrowse.org/genomes/hg19/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam.regions.bw',
     'encoding.y.scale.type=log',
     'mark=point',
-    'resolution=100',
+    'data.resolution=100',
     'height:400',
     'color:purple',
     'encoding.y.scale.domainMin=1',

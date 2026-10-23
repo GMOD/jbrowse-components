@@ -4,6 +4,7 @@ import { retiredBaseDisplaySpellings } from '@jbrowse/display-kit/configSchema'
 import { hiddenLegendConfigSchema } from '@jbrowse/display-kit/hiddenLegendConfigSchema'
 import { trackHeightConfigSchemaFields } from '@jbrowse/display-kit/trackHeightConfigSchemaFields'
 
+import { hicDataConfigSchema } from './hicDataConfigSchema.ts'
 import { hicEncodingConfigSchema } from './hicEncodingConfigSchema.ts'
 
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -15,7 +16,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * genome view, at a bin size that follows the zoom.
  *
  * #example
- * A log color scale, one step coarser than the zoom picks, through the
+ * A log color scale, one binsize coarser than the zoom picks, through the
  * `displayDefaults` shorthand. See the
  * [Hi-C track guide](/docs/config_guides/hic_track) for the rest:
  * ```js
@@ -27,7 +28,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  *   adapter: { type: 'HicAdapter', uri: 'https://example.com/contacts.hic' },
  *   displayDefaults: {
  *     encoding: { color: { scale: { type: 'symlog' } } },
- *     resolutionBias: 1,
+ *     data: { resolution: -1 },
  *   },
  * }
  * ```
@@ -53,23 +54,12 @@ const HicTrackConfigFactory = () => {
        */
       legend: hiddenLegendConfigSchema,
       /**
-       * #slot
+       * #slot data
+       * What the fetch reads, a [](/docs/config/hicdata) object: `resolution`
+       * steps the binsize from the zoom's pick, `normalization` names the
+       * matrix normalization.
        */
-      resolutionBias: {
-        type: 'number',
-        defaultValue: 0,
-        description:
-          'steps from the zoom-picked binsize: -1 one finer, +1 one coarser, 0 follows the zoom',
-      },
-      /**
-       * #slot
-       */
-      selectedNormalization: {
-        type: 'string',
-        defaultValue: 'KR',
-        description:
-          'preferred matrix normalization (KR, SCALE, VC, VC_SQRT, NONE); a scheme the file lacks falls back to one it has',
-      },
+      data: hicDataConfigSchema,
     },
     {
       explicitlyTyped: true,
@@ -85,6 +75,8 @@ const HicTrackConfigFactory = () => {
         ...retiredBaseDisplaySpellings,
         renderer: () => ({}),
         showResolutionControls: () => ({}),
+        resolutionBias: bias => ({ data: { resolution: -Number(bias) } }),
+        selectedNormalization: normalization => ({ data: { normalization } }),
       },
     },
   )

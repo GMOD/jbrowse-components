@@ -121,7 +121,7 @@ test('wiggle score modifiers all produce a valid display snapshot', async () => 
           'encoding.y.scale.domainMax=50',
           'color:red',
           'encoding.y.axis.grid=true',
-          'resolution=10',
+          'data.resolution=10',
           'height:200',
         ],
       ],

@@ -18,12 +18,12 @@ digraph hic_request {
   auto   [label="autoResolutionIdx"]
   finest [label="the finest binsize"]
 
-  bias [label="+ resolutionBias, clamped"]
+  bias [label="- data.resolution, clamped"]
   auto -> bias  finest -> bias
   bias -> effective
   effective [label="effectiveResolution", style=bold]
 
-  selected [label="selectedNormalization"]
+  selected [label="data.normalization"]
   offered [label="the file offers it"]
   selected -> offered
   offered -> active   [label=" yes"]

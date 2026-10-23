@@ -40,23 +40,19 @@ Git history has each landing.
    - **Then delete the lifts:** `retiredScalesSpelling` on the alignments, MAF,
      wiggle and mark displays, and the `y` lift on wiggle and MAF. Until then
      `jbrowse validate` warns on an old `scales`, in a display entry or a
-     `displayDefaults`, but judges no ends inside it.
+     `displayDefaults`.
    - **ggjbrowse:** re-pin with `check-against-jbrowse.sh`, and respell
      `R/wiggle.R`, `test-alignments.R` and its tests.
    - **Demos:** `demos/{cgiab,dtu,read_marks}/config.json` are respelled and
      not deployed (`scripts/deploy-demo.sh`).
    - The unlanded `chat-request-evals` branch writes 8 `scales.y` lines in
      `scripts/agent-evals/tasks.ts`.
-   - Wiggle's v4 display-level `posColor` and `negColor` keys have no lift.
-   - **Not decided:** `tickCount`, which the y channel cut with `minimalTicks`.
 2. **The band layers' thresholds as layer filters** (ADR-240 step 3c):
    `coverage.alleles`, `coverage.interbase` and the modification layer, each
    into its layer's `filter`, percents becoming fractions.
 3. **The tree sidebar's `axis`** beside `rows` (`showTree`, `showBranchLength`,
    `showRowLabels`, `showRowSeparators`, `treeAreaWidth`), on wiggle, MAF, the
    mark display, the multi-sample variant display and multi-row canvas.
-4. **`data`:** wiggle's `resolution` and Hi-C's `resolutionBias` and
-   `selectedNormalization`, each in its own units.
 5. **The comparative `indels` part** takes over `cigarMode` and `drawCigar`,
    after the alignments `show` parts.
 6. **The height step** (ADR-240 step 4): `pileup.readHeight` becomes

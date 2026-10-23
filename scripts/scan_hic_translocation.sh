@@ -32,7 +32,7 @@
 # that same bin is fifteenth of the pair's 55,376, behind low-mappability bins
 # elsewhere on chr9 and chr22 that have nothing to do with the fusion and that
 # the control scores at zero. The same applies to the browser: both HicTracks in
-# config_demo.json set `selectedNormalization: NONE`.
+# config_demo.json set `data.normalization: NONE`.
 #
 # A balanced dump is also only available where the file stores a normalization
 # vector, which on these two is 25 kb and coarser -- `NORM=INTER_SCALE RES=10000`

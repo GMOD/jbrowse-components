@@ -76,7 +76,7 @@ export interface WiggleTablesArgs {
   /**
    * The display's config as a track's `displays` entry writes it for a
    * `LinearWiggleDisplay`: `mark`, `extent`, `origin`, `encoding`, `rows`,
-   * `resolution` and the rest of its slots. Unset reads the default display.
+   * `data` and the rest of its slots. Unset reads the default display.
    */
   display?: Record<string, unknown>
   /**
@@ -135,7 +135,7 @@ export async function wiggleTables(
     bpPerPx,
     resolution: Math.min(
       RESOLUTION_MAX,
-      Math.max(RESOLUTION_MIN, readConfObject(conf, 'resolution')),
+      Math.max(RESOLUTION_MIN, readConfObject(conf, ['data', 'resolution'])),
     ),
     yField: readConfObject(conf, ['encoding', 'y', 'field']),
     statusCallback: () => {},

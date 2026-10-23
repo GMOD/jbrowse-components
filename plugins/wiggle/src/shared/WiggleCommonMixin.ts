@@ -27,6 +27,7 @@ import type {
   extentConfigSchemaFields,
 } from './extentConfigSchemaFields.ts'
 import type { wiggleConfigSchemaFields } from './wiggleConfigSchemaFields.ts'
+import type { wiggleDataConfigSchema } from './wiggleDataConfigSchema.ts'
 import type { wiggleEncodingConfigSchema } from './wiggleEncodingConfigSchema.ts'
 import type { wiggleMarkConfigSchema } from './wiggleMarkConfigSchema.ts'
 import type { ConfigModelForFields } from '@jbrowse/core/configuration'
@@ -40,6 +41,7 @@ type WiggleCommonConfigModel = ConfigModelForFields<
     ReturnType<typeof extentConfigSchemaFields> & {
       mark: typeof wiggleMarkConfigSchema
       encoding: typeof wiggleEncodingConfigSchema
+      data: typeof wiggleDataConfigSchema
     }
 >
 
@@ -88,7 +90,10 @@ export function WiggleCommonMixin() {
       get resolution(): number {
         return Math.min(
           RESOLUTION_MAX,
-          Math.max(RESOLUTION_MIN, getConf(confNode(self), 'resolution')),
+          Math.max(
+            RESOLUTION_MIN,
+            getConf(confNode(self), ['data', 'resolution']),
+          ),
         )
       },
       /**
@@ -294,7 +299,7 @@ export function WiggleCommonMixin() {
       setResolution(res: number) {
         setConf(
           confNode(self),
-          'resolution',
+          ['data', 'resolution'],
           Math.min(RESOLUTION_MAX, Math.max(RESOLUTION_MIN, res)),
         )
       },

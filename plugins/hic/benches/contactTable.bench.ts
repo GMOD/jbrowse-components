@@ -7,7 +7,7 @@
 // off `model.hitTest`, the first time the cursor lands on the track after each
 // fetch. A Chrome profile of a pan-with-cursor-on-track measured 217ms of
 // main-thread self time there. The index's own comment sizes a full-width
-// triangle at ~300k contacts and two `resolutionBias` steps at ~4.5M.
+// triangle at ~300k contacts and two `data.resolution` steps finer at ~4.5M.
 //
 // THREE ARMS, in the order they were written.
 //

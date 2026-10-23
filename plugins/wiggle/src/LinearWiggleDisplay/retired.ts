@@ -86,7 +86,7 @@ export const retiredTypes: RetiredDisplayType[] = [
   { type: 'LinearGCContentTrackDisplay' },
 ]
 
-const SAME_NAME = ['displayCrossHatches', 'resolution']
+const SAME_NAME = ['displayCrossHatches']
 
 // v4's two colors are the pair about the origin, which bars draw solid either
 // side of it and a density plot fades to from white, as v4's renderers did.
@@ -136,7 +136,10 @@ const V4_RENDERERS = ['XYPlotRenderer', 'LinePlotRenderer', 'DensityRenderer']
  * v4's `color` and `renderers` block, as the display's `retired` reads them:
  * the colors become `encoding.color` and the block's `summaryScoreMode`
  * `encoding.y.field` and `extent`, and everything else in it is let go. The
- * scale slots beside it are `retiredScaleSpellings`.
+ * scale slots beside it are `retiredScaleSpellings`, and `resolution` moves
+ * under `data`. A display-level `posColor` and `negColor` get no lift: v4
+ * read them only from a renderer block and from session state, which both
+ * lift the pair together, and ignored them on a display entry.
  */
 export const retiredConfigSpellings = {
   color: (color: unknown) => colorOf({ color }),
@@ -159,6 +162,7 @@ export const retiredConfigSpellings = {
     )
   },
   summaryScoreMode: summaryOf,
+  resolution: (resolution: unknown) => ({ data: { resolution } }),
 }
 
 // `rendererTypeNameState` is the plot a reader picked, which on a multi
@@ -173,6 +177,7 @@ export const retiredState: RetiredDisplayState = {
     'posColor',
     'negColor',
     'summaryScoreMode',
+    'resolution',
     ...SAME_NAME,
     ...RETIRED_ROW_STATE_KEYS,
   ],
@@ -184,6 +189,9 @@ export const retiredState: RetiredDisplayState = {
       valueScaleOf(WIGGLE_Y_PATHS.members)(instance),
       colorOf(instance),
       summaryOf(instance.summaryScoreMode),
+      instance.resolution === undefined
+        ? {}
+        : { data: { resolution: instance.resolution } },
       Object.fromEntries(
         SAME_NAME.filter(k => instance[k] !== undefined).map(k => [
           k,

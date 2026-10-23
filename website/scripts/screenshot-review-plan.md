@@ -230,7 +230,7 @@ tolerance ball for "did this figure move".
     (`LinearHicDisplay`'s `availableResolutions`). So a file carrying one
     resolution degrades rather than breaks when zoomed: it keeps drawing that
     binsize and the stepper offers no finer step. This is also the mechanism
-    `resolutionBias` biases.
+    `data.resolution` steps from.
   - **These files are enormous and almost all of it is resolution you never
     draw.** The GM12878 whole-genome source is 1.72 GB, and its sibling intact
     file is **74 GB** across 18 resolutions down to 1 bp.
@@ -248,10 +248,10 @@ tolerance ball for "did this figure move".
   - **The auto-picked binsize is usually too fine to see anything.** The rule is
     the largest binsize `<= 2*bpPerPx`, which over a 2.4 Mb view lands on 2 kb;
     at 2 kb every bin is nearly empty and the matrix renders as red speckle with
-    no domain edges. `resolutionBias: 2` steps to 10 kb and the blocks appear.
-    Every Hi-C figure wants this — if a matrix "looks like noise", it is this
-    before it is the data. And `useLogScale` is the opposite of a fix on a deep
-    file: it pushes every bin to the top of the ramp and returns solid red.
+    no domain edges. `data: { resolution: -2 }` steps to 10 kb and the blocks
+    appear. Every Hi-C figure wants this — if a matrix "looks like noise", it is
+    this before it is the data. And `useLogScale` is the opposite of a fix on a
+    deep file: it pushes every bin to the top of the ramp and returns solid red.
   - **`heightMode: 'fit'` is usually the wrong reflex.** A pair's contacts are
     drawn at depth `|x2-x1|/2`, so with two 2 Mb windows the cross-block apex is
     ~280 css px down, not the ~990 px the full wedge is tall. Squashing spent
@@ -268,7 +268,7 @@ tolerance ball for "did this figure move".
     the junction bin where K562 has 161,282. Separately, `INTER_SCALE` moves the
     K562 peak off the fusion entirely and onto a mapping artifact present in
     both lines: matrix balancing divides out per-bin coverage, and an amplified
-    fusion IS per-bin coverage. Both tracks pin `selectedNormalization: NONE`.
+    fusion IS per-bin coverage. Both tracks pin `data.normalization: NONE`.
     `scripts/scan_hic_translocation.sh` prints all of these numbers.
   - **BEDPE gotchas that fail silently, both hit in one figure.** (1) A contact
     domain has both mates set to the same interval, so as a link mark the arc

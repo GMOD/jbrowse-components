@@ -708,7 +708,8 @@ function checkChannels(
 // What the display's color channels and its value scale say together that it
 // cannot draw as written: its schema's fieldPresets stand in for the plugin
 // code the CLI does not run, and every quantitative scale's ends answer to
-// one rule.
+// one rule. The ends inside an old `scales.y` go unjudged: its legacy-key
+// warning already asks for the respelling these rules read.
 function checkScaleSlots(
   display: Record<string, unknown>,
   slots: SlotEntry[],

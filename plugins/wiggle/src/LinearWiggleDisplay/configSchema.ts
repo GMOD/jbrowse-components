@@ -16,6 +16,7 @@ import {
 import { extentConfigSchemaFields } from '../shared/extentConfigSchemaFields.ts'
 import { quantitativeRowsConfigSchema } from '../shared/quantitativeRowsConfigSchema.ts'
 import { wiggleConfigSchemaFields } from '../shared/wiggleConfigSchemaFields.ts'
+import { wiggleDataConfigSchema } from '../shared/wiggleDataConfigSchema.ts'
 import { wiggleEncodingConfigSchema } from '../shared/wiggleEncodingConfigSchema.ts'
 import { wiggleMarkConfigSchema } from '../shared/wiggleMarkConfigSchema.ts'
 import { WIGGLE_Y_PATHS } from '../shared/wiggleYPaths.ts'
@@ -175,6 +176,12 @@ const linearWiggleDisplayConfigSchema = ConfigurationSchema(
      * ```
      */
     encoding: wiggleEncodingConfigSchema,
+    /**
+     * #slot data
+     * What the fetch reads, a [](/docs/config/wiggledata) object: `resolution`
+     * is the points per pixel asked of a tiered file.
+     */
+    data: wiggleDataConfigSchema,
     ...wiggleConfigSchemaFields,
     /**
      * #slot legend

@@ -34,7 +34,7 @@ interface HicMenuSelf extends IStateTreeNode {
   activeNormalization: string
   appliedNormalization: string
   effectiveResolution: number | undefined
-  resolutionBias: number
+  resolutionSteps: number
   setLogScale: (log: boolean) => void
   setColorFollowsPercentile: (f: boolean) => void
   setShowLegend: (f: boolean) => void
@@ -42,7 +42,7 @@ interface HicMenuSelf extends IStateTreeNode {
   setColorScheme: (scheme: ColorSchemeName) => void
   setSelectedNormalization: (s: string) => void
   stepResolution: (delta: number) => void
-  resetResolutionBias: () => void
+  resetResolution: () => void
 }
 
 const NORM_HELP: Record<string, string> = {
@@ -65,7 +65,7 @@ function resolutionMenuItems(self: HicMenuSelf): MenuItem[] {
                 : getBpDisplayStr(self.effectiveResolution),
             finerDisabled: !self.canStepResolutionFiner,
             coarserDisabled: !self.canStepResolutionCoarser,
-            resetDisabled: self.resolutionBias === 0,
+            resetDisabled: self.resolutionSteps === 0,
           }),
           onFiner: () => {
             self.stepResolution(-1)
@@ -74,7 +74,7 @@ function resolutionMenuItems(self: HicMenuSelf): MenuItem[] {
             self.stepResolution(1)
           },
           onReset: () => {
-            self.resetResolutionBias()
+            self.resetResolution()
           },
           resetTitle: 'Back to auto (tracks zoom)',
         }),

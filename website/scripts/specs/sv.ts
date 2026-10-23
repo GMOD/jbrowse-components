@@ -436,7 +436,7 @@ export const svSpecs: ScreenshotSpec[] = [
               rows: '',
               // BigWig zoom levels are discrete, so a lower resolution may not
               // add detail.
-              resolution: 50,
+              data: { resolution: 50 },
               size: 1,
               // Pinned: the outlier fence leaves a spike half the axis and
               // flattens the steps.
@@ -1083,7 +1083,7 @@ export const svSpecs: ScreenshotSpec[] = [
                   axis: { grid: true },
                 },
               },
-              resolution: 8,
+              data: { resolution: 8 },
               height: 200,
             },
             {
@@ -1271,7 +1271,7 @@ export const svSpecs: ScreenshotSpec[] = [
               },
               extent: 'none',
               size: 1,
-              resolution: 10,
+              data: { resolution: 10 },
               height: 180,
             },
             {
@@ -1397,7 +1397,7 @@ export const svSpecs: ScreenshotSpec[] = [
                   axis: { grid: false },
                 },
               },
-              resolution: 10,
+              data: { resolution: 10 },
               height: 280,
             },
             {
@@ -1447,7 +1447,7 @@ export const svSpecs: ScreenshotSpec[] = [
               extent: 'none',
               size: 3,
               height: 140,
-              resolution: 10,
+              data: { resolution: 10 },
             },
             {
               trackId: 'hg008_baf',
@@ -1499,7 +1499,7 @@ export const svSpecs: ScreenshotSpec[] = [
               extent: 'none',
               size: 1,
               height: 140,
-              resolution: 10,
+              data: { resolution: 10 },
             },
             {
               trackId: 'hg008_baf',
@@ -1572,7 +1572,7 @@ export const svSpecs: ScreenshotSpec[] = [
                   axis: { grid: true },
                 },
               },
-              resolution: 8,
+              data: { resolution: 8 },
               height: 200,
             },
             {

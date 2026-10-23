@@ -470,7 +470,7 @@ and deletions of the cancer karyotype are visible:
 
 ```bash
 jb2export --loc all --fasta https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz \
-  --bigwig https://jbrowse.org/genomes/hg19/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam.regions.bw encoding.y.scale.type=log mark=point resolution=100 height:400 color:purple encoding.y.scale.domainMin=1 encoding.y.scale.domainMax=1024 \
+  --bigwig https://jbrowse.org/genomes/hg19/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam.regions.bw encoding.y.scale.type=log mark=point data.resolution=100 height:400 color:purple encoding.y.scale.domainMin=1 encoding.y.scale.domainMax=1024 \
   --width 1900 --out skbr3_cov.png
 ```
 
@@ -482,7 +482,7 @@ instead:
 
 ```bash
 jb2export --loc all \
-  --bigwig coverage.bw encoding.y.scale.fenceQuantile=1 mark=point resolution=100 height:400 color:purple \
+  --bigwig coverage.bw encoding.y.scale.fenceQuantile=1 mark=point data.resolution=100 height:400 color:purple \
   --assembly hg19 \
   --config data/config.json
 ```
@@ -792,7 +792,7 @@ names how the scores draw: `bar`, `point`, `line` or `span`.
 | `encoding.y.scale.type=log`                                     | Scale type (`linear`, `log` or `symlog`) |
 | `encoding.y.axis.grid=true`                                     | Draw gridlines                           |
 | `mark=point`                                                    | `bar`, `point`, `line` or `span`         |
-| `resolution=100`                                                | BigWig resolution multiplier             |
+| `data.resolution=100`                                           | Points per pixel the fetch asks for      |
 | `color:purple`                                                  | Fill color (any CSS color)               |
 
 Two tracks read against each other need one axis, and an image has no menu to

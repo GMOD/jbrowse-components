@@ -108,7 +108,7 @@ interface HicFileInfo {
  *       encoding: {
  *         color: { scale: { type: 'symlog', domainMax: 500 } },
  *       },
- *       resolutionBias: 1,
+ *       data: { resolution: -1 },
  *     },
  *   ],
  * }
@@ -159,7 +159,7 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
       },
       /**
        * #getter
-       * Smallest first, so a negative `resolutionBias` is always finer.
+       * Smallest first, so a positive `data.resolution` is always finer.
        */
       get availableResolutions(): number[] | undefined {
         return readFor(self, self.fileInfo)?.resolutions
@@ -173,9 +173,10 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
       },
       /**
        * #getter
+       * `data.resolution`: binsizes finer than the zoom's pick.
        */
-      get resolutionBias(): number {
-        return getConf(self, 'resolutionBias')
+      get resolutionSteps(): number {
+        return getConf(self, ['data', 'resolution'])
       },
       /**
        * #getter
@@ -212,9 +213,10 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
       },
       /**
        * #getter
+       * `data.normalization`, the one asked for.
        */
       get selectedNormalization(): string {
-        return getConf(self, 'selectedNormalization')
+        return getConf(self, ['data', 'normalization'])
       },
       /**
        * #getter
@@ -400,7 +402,7 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
       },
       /**
        * #getter
-       * The index in effect after `resolutionBias`, clamped so a bias set at
+       * The index in effect after `resolutionSteps`, clamped so steps set at
        * another zoom cannot index out of range.
        */
       get effectiveResolutionIdx(): number {
@@ -410,7 +412,7 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
               0,
               Math.min(
                 avail.length - 1,
-                self.autoResolutionIdx + self.resolutionBias,
+                self.autoResolutionIdx - self.resolutionSteps,
               ),
             )
           : -1
@@ -568,7 +570,7 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
        * #action
        */
       setSelectedNormalization(f: string) {
-        setConf(self, 'selectedNormalization', f)
+        setConf(self, ['data', 'normalization'], f)
       },
       /**
        * #action
@@ -579,8 +581,8 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
       /**
        * #action
        */
-      resetResolutionBias() {
-        setConf(self, 'resolutionBias', 0)
+      resetResolution() {
+        setConf(self, ['data', 'resolution'], 0)
       },
       /**
        * #action
@@ -591,7 +593,11 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
         const avail = self.availableResolutions
         if (avail?.length) {
           const clamped = Math.max(0, Math.min(avail.length - 1, idx))
-          setConf(self, 'resolutionBias', clamped - self.autoResolutionIdx)
+          setConf(
+            self,
+            ['data', 'resolution'],
+            self.autoResolutionIdx - clamped,
+          )
         }
       },
     }))

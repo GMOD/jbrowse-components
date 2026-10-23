@@ -37,7 +37,7 @@ shows what each does to the picture:
   "uri": "https://jbrowse.org/genomes/hg19/intra_nofrag_30.hic",
   "assemblyNames": ["hg19"],
   "displayDefaults": {
-    "selectedNormalization": "KR",
+    "data": { "normalization": "KR" },
     "encoding": {
       "color": { "scale": { "type": "log", "scheme": "viridis" } }
     },
@@ -46,14 +46,14 @@ shows what each does to the picture:
 }
 ```
 
-- **[`selectedNormalization`](/docs/config/linearhicdisplay/#slot-selectednormalization)**
-  names the matrix-balancing scheme (`KR`, `SCALE`, `VC`, `VC_SQRT`, `NONE`).
-  JBrowse resolves it against what the file provides, so a scheme the file lacks
-  falls back with no error
+- **[`data.normalization`](/docs/config/hicdata/#slot-normalization)** names the
+  matrix-balancing scheme (`KR`, `SCALE`, `VC`, `VC_SQRT`, `NONE`). JBrowse
+  resolves it against what the file provides, so a scheme the file lacks falls
+  back with no error
   ([normalization](/docs/user_guides/hic_track#normalization))
-- **[`resolutionBias`](/docs/config/linearhicdisplay/#slot-resolutionbias)** is
-  a signed offset from the zoom-derived binsize, so the choice survives zooming:
-  negative is finer, positive coarser
+- **[`data.resolution`](/docs/config/hicdata/#slot-resolution)** is a signed
+  offset from the zoom-derived binsize, so the choice survives zooming: positive
+  is finer, negative coarser
 - **[`encoding.color.scale.domainMax`](/docs/config/hiccolor/#slot-domainmax)**
   pins the count the color scale saturates at. Unset, it follows the loaded
   counts, so two tracks given the same number share one scale

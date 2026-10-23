@@ -1125,12 +1125,16 @@ test('config is the display’s resolved config, the slots the call set and the 
   const display = { height: 150 }
   const others = [
     [await engine.features({ ...GFF3, display }), 'heightMode', 'fit'],
-    [await engine.wiggle({ ...SIGNED_BIGWIG, display }), 'resolution', 1],
+    [
+      await engine.wiggle({ ...SIGNED_BIGWIG, display }),
+      'data',
+      { resolution: 1 },
+    ],
     [await engine.variants({ ...DOG_VCF, display }), 'showTree', true],
   ] as const
   for (const [tables, slot, value] of others) {
     expect(tables.config.height).toBe(150)
-    expect(tables.config[slot]).toBe(value)
+    expect(tables.config[slot]).toEqual(value)
   }
 })
 

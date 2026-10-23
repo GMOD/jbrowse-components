@@ -31,7 +31,7 @@ function baseSelf() {
     activeNormalization: 'KR',
     appliedNormalization: 'KR',
     effectiveResolution: 25000 as number | undefined,
-    resolutionBias: 0,
+    resolutionSteps: 0,
     setLogScale: jest.fn(),
     setColorFollowsPercentile: jest.fn(),
     setShowLegend: jest.fn(),
@@ -39,7 +39,7 @@ function baseSelf() {
     setColorScheme: jest.fn(),
     setSelectedNormalization: jest.fn(),
     stepResolution: jest.fn(),
-    resetResolutionBias: jest.fn(),
+    resetResolution: jest.fn(),
   }
 }
 
