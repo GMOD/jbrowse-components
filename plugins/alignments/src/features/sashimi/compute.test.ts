@@ -1,4 +1,5 @@
 import { computeSashimiJunctions } from './compute.ts'
+import { splitClassCode } from './junctionClass.ts'
 import { mergeJunctions } from './junctions.ts'
 import {
   DINUCLEOTIDE_UNKNOWN,
@@ -56,6 +57,23 @@ test('emits one arc per junction, counting reads on every strand', () => {
   expect([...sashimiCounts]).toEqual([25])
   expect([...sashimiFwd]).toEqual([20])
   expect([...sashimiRev]).toEqual([3])
+})
+
+test('emits the split junctions after the N gaps, each with its class', () => {
+  const back = splitClassCode('splitBack')
+  const { sashimiX1, sashimiX2, sashimiCounts, sashimiClass, sashimiDonors } =
+    computeSashimiJunctions(
+      skips(rep(4, 100, 1100, 1)),
+      undefined,
+      new Map([
+        ['100:1100:2', { start: 100, end: 1100, splitClass: back, n: 3 }],
+      ]),
+    )
+  expect([...sashimiX1]).toEqual([100, 100])
+  expect([...sashimiX2]).toEqual([1100, 1100])
+  expect([...sashimiCounts]).toEqual([4, 3])
+  expect([...sashimiClass]).toEqual([0, back])
+  expect(sashimiDonors[1]).toBe(DINUCLEOTIDE_UNKNOWN)
 })
 
 test('keeps distinct junctions apart', () => {

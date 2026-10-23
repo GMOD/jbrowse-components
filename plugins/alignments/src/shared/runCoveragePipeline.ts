@@ -18,8 +18,8 @@ import {
 } from './modTooltipIndex.ts'
 import { packCoverageAreaForGpu } from './packCoverageArea.ts'
 
-import type { computeBackSpliceJunctions } from '../features/sashimi/backSplice.ts'
 import type { JunctionReference } from '../features/sashimi/compute.ts'
+import type { SplitJunction } from '../features/sashimi/splitJunctions.ts'
 import type { StrandBaseCounts } from './calculateModificationCounts.ts'
 import type {
   FeatureData,
@@ -46,8 +46,6 @@ import type { Region, StatusCallback } from '@jbrowse/core/util'
  */
 export type ModCoverageKind = 'modifications' | 'bisulfite'
 
-type BackSplices = ReturnType<typeof computeBackSpliceJunctions>
-
 export async function runCoveragePipeline({
   features,
   gaps,
@@ -66,7 +64,7 @@ export async function runCoveragePipeline({
   junctions = true,
   modCoverage,
   junctionReference,
-  backSplices,
+  splitJunctions,
   statusCallback,
   signal,
 }: {
@@ -91,7 +89,7 @@ export async function runCoveragePipeline({
   // Reference bases for the junctions' splice motifs; fetched by the executor
   // only when the region carries a skip gap, so DNA-seq never pays for it.
   junctionReference?: JunctionReference
-  backSplices?: BackSplices
+  splitJunctions?: ReadonlyMap<string, SplitJunction>
   statusCallback: StatusCallback | undefined
   signal?: AbortSignal
 }) {
@@ -142,14 +140,14 @@ export async function runCoveragePipeline({
         simplexModifications,
         modCoverage,
         junctionReference,
-        backSplices,
+        splitJunctions,
       })
     : {
         ...emptyCoverageBand(),
         sashimi: computeSashimiJunctions(
           junctions ? gaps : [],
           junctionReference,
-          junctions ? backSplices : undefined,
+          splitJunctions,
         ),
       }
 
@@ -188,7 +186,7 @@ function computeCoverageBand({
   simplexModifications,
   modCoverage,
   junctionReference,
-  backSplices,
+  splitJunctions,
 }: {
   coverage: ReturnType<typeof computeCoverage>
   mismatchArrays: Parameters<typeof computeFrequenciesAndThresholds>[0]
@@ -202,7 +200,7 @@ function computeCoverageBand({
   simplexModifications: ReadonlySet<string>
   modCoverage?: ModCoverageKind
   junctionReference?: JunctionReference
-  backSplices?: BackSplices
+  splitJunctions?: ReadonlyMap<string, SplitJunction>
 }) {
   const snpCoverage = computeSNPCoverage(
     mismatchArrays.mismatchPositions,
@@ -230,7 +228,11 @@ function computeCoverageBand({
 
   const modTooltip =
     buildModTooltipIndex(modifications) ?? emptyModTooltipIndex()
-  const sashimi = computeSashimiJunctions(gaps, junctionReference, backSplices)
+  const sashimi = computeSashimiJunctions(
+    gaps,
+    junctionReference,
+    splitJunctions,
+  )
 
   const coverageAreaPacked = packCoverageAreaForGpu(
     coverage,

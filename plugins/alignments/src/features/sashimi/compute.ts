@@ -1,5 +1,6 @@
 import { DINUCLEOTIDE_UNKNOWN, spliceMotifDinucleotides } from './motif.ts'
 
+import type { SplitJunction } from './splitJunctions.ts'
 import type { CoverageGap } from '@jbrowse/alignments-core'
 
 // The reference bases the junction motifs are read from, absent when the
@@ -30,13 +31,17 @@ export interface JunctionReference {
 // resolved, and a region holding only one end can settle neither. Both decisions
 // are `mergeJunctions`', once every region has contributed what it saw.
 //
+// Split-read junctions arrive already counted (`computeSplitJunctions`) and
+// ship after the skip gaps' with their class in `sashimiClass`; they read no
+// motif.
+//
 // Worker-side compute. SVG-overlay geometry (`projectSashimiArcs`) lives in
 // `./computeOverlay.ts` (intentionally SVG-only — see
 // reference/LINEAR_ALIGNMENTS_DISPLAY.md).
 export function computeSashimiJunctions(
   gaps: CoverageGap[],
   reference?: JunctionReference,
-  backSplices?: ReadonlyMap<string, { start: number; end: number; n: number }>,
+  splitJunctions?: ReadonlyMap<string, SplitJunction>,
 ) {
   const junctions = new Map<
     string,
@@ -64,8 +69,7 @@ export function computeSashimiJunctions(
     j.total++
   }
 
-  const back = backSplices ? [...backSplices.values()] : []
-  const n = junctions.size + back.length
+  const n = junctions.size + (splitJunctions?.size ?? 0)
   const sashimiX1 = new Uint32Array(n)
   const sashimiX2 = new Uint32Array(n)
   const sashimiCounts = new Uint32Array(n)
@@ -73,7 +77,7 @@ export function computeSashimiJunctions(
   const sashimiRev = new Uint32Array(n)
   const sashimiDonors = new Uint8Array(n)
   const sashimiAcceptors = new Uint8Array(n)
-  const sashimiBack = new Uint8Array(n)
+  const sashimiClass = new Uint8Array(n)
 
   let i = 0
   for (const j of junctions.values()) {
@@ -94,13 +98,13 @@ export function computeSashimiJunctions(
     sashimiAcceptors[i] = acceptor
     i++
   }
-  for (const j of back) {
+  for (const j of splitJunctions?.values() ?? []) {
     sashimiX1[i] = j.start
     sashimiX2[i] = j.end
     sashimiCounts[i] = j.n
     sashimiDonors[i] = DINUCLEOTIDE_UNKNOWN
     sashimiAcceptors[i] = DINUCLEOTIDE_UNKNOWN
-    sashimiBack[i] = 1
+    sashimiClass[i] = j.splitClass
     i++
   }
 
@@ -112,6 +116,6 @@ export function computeSashimiJunctions(
     sashimiRev,
     sashimiDonors,
     sashimiAcceptors,
-    sashimiBack,
+    sashimiClass,
   }
 }

@@ -1,5 +1,6 @@
 import { isValidTag } from '@jbrowse/core/util'
 
+import type { JunctionClass } from '../features/sashimi/junctionClass.ts'
 import type { CategoryFilter } from '@jbrowse/display-kit/categoryFilter'
 import type { CytosineContext } from '@jbrowse/modifications-utils'
 
@@ -176,6 +177,8 @@ export interface JunctionFilter {
   // A junction whose motif was never read off the reference is canonical here,
   // since only a known motif is evidence against it.
   nonCanonical?: CategoryFilter
+  // The `junction.class` values drawn, every one when unset
+  classes?: readonly JunctionClass[]
 }
 
 /** The connections the display draws: its `connection` and `breakpoint` filter fields, read as `connectionFilter`. */

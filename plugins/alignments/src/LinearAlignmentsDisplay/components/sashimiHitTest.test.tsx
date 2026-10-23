@@ -24,7 +24,7 @@ function junction(start: number, end: number, count = 5): MergedJunction {
     count,
     strand: 1,
     motif: 0,
-    backSplice: false,
+    split: undefined,
   }
 }
 

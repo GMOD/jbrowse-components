@@ -10,6 +10,7 @@ import {
 import { toLocale } from '@jbrowse/core/util'
 import { hiddenSegmentsNote } from '@jbrowse/sv-core'
 
+import { ARC_SPLIT_LABELS } from '../../features/arcs/arcSplitCategory.ts'
 import {
   ARC_SHAPE_FLAT,
   isUnplacedArcShape,
@@ -27,6 +28,7 @@ import type { PartnerLocus } from '../../features/arcs/arcTypes.ts'
 import type { ArcHit, TickHit } from '../../features/arcs/bandFeed.ts'
 import type { ConnectorHit } from '../../features/linkedReads/connectorFeed.ts'
 import type { ModificationHitResult } from '../../features/modification/hitTest.ts'
+import type { MergedJunction } from '../../features/sashimi/junctions.ts'
 import type { CigarHitResult } from '../../shared/hitTestTypes.ts'
 import type { InsertSizeBand } from '../../shared/insertSizeStats.ts'
 import type { ReadColorCategory } from '../colorUtils.ts'
@@ -60,11 +62,13 @@ export interface ModificationTooltipPayload extends ModificationHitResult {
 
 export interface SashimiTooltipPayload {
   type: 'sashimi'
-  backSplice: boolean
+  // 'Intron/Skip', or a split junction's read-arc label
+  name: string
   start: number
   end: number
   score: number
-  strand: string
+  // absent for a split junction, which no transcript strand votes on
+  strand?: string
   refName: string
   // 'GT-AG (canonical)' / 'GC-AG (canonical)' / 'AT-AC (canonical)' /
   // 'non-canonical'; absent when neither end was ever read off the reference
@@ -383,25 +387,23 @@ export function formatModificationTooltip(
 
 // The hover of a junction the sashimi marks' hit test found
 // (`resolveSashimiHover`).
-export function formatSashimiTooltip(junction: {
-  start: number
-  end: number
-  count: number
-  strand: number
-  refName: string
-  motif: number
-  backSplice: boolean
-}): SashimiTooltipPayload {
-  const { start, end, count, strand, refName, motif, backSplice } = junction
+export function formatSashimiTooltip(
+  junction: Omit<MergedJunction, 'key'>,
+): SashimiTooltipPayload {
+  const { start, end, count, strand, refName, motif, split } = junction
   return {
     type: 'sashimi',
-    backSplice,
+    name: split ? ARC_SPLIT_LABELS[split] : 'Intron/Skip',
     start,
     end,
     score: count,
-    strand: strand === 1 ? '+' : strand === -1 ? '-' : 'unknown',
     refName,
-    motif: spliceMotifLabel(motif),
+    ...(split
+      ? {}
+      : {
+          strand: strand === 1 ? '+' : strand === -1 ? '-' : 'unknown',
+          motif: spliceMotifLabel(motif),
+        }),
   }
 }
 

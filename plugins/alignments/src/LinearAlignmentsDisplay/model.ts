@@ -211,6 +211,7 @@ import type {
   RowCap,
   WorkerPileupData,
 } from '../RenderAlignmentDataRPC/types'
+import type { ArcSplitCategory } from '../features/arcs/arcSplitCategory.ts'
 import type { ArcBandFeed } from '../features/arcs/bandFeed.ts'
 import type { ArcsByGroupResult } from '../features/arcs/compute.ts'
 import type { BezierArcScope } from '../features/linkedReads/computeOverlay.ts'
@@ -2310,16 +2311,18 @@ export default function stateModelFactory(
 
           /**
            * #getter
-           * The junction strands drawn, one key row each. Read off the merged
-           * junctions rather than the projected arcs, so a pan does not rebuild
-           * the legend.
+           * The splice junction strands drawn, one key row each. Read off the
+           * merged junctions rather than the projected arcs, so a pan does not
+           * rebuild the legend. A split junction has no transcript strand.
            */
           get sashimiLegendStrands(): ReadonlySet<number> {
             const strands = new Set<number>()
             if (self.showLegend) {
               for (const sec of this.sashimiJunctionSections) {
                 for (const j of sec.junctions) {
-                  strands.add(j.strand)
+                  if (!j.split) {
+                    strands.add(j.strand)
+                  }
                 }
               }
             }
@@ -2327,8 +2330,26 @@ export default function stateModelFactory(
           },
 
           /**
+           * #getter
+           * The split junction classes drawn, one key row each.
+           */
+          get sashimiLegendSplitClasses(): ReadonlySet<ArcSplitCategory> {
+            const classes = new Set<ArcSplitCategory>()
+            if (self.showLegend) {
+              for (const sec of this.sashimiJunctionSections) {
+                for (const j of sec.junctions) {
+                  if (j.split) {
+                    classes.add(j.split)
+                  }
+                }
+              }
+            }
+            return classes
+          },
+
+          /**
            * #method
-           * The slots of the reads in the junction's lane whose skip gap it is.
+           * The slots of the reads in the junction's lane that support it.
            */
           sashimiSupportingReadSlots(junction: LaneJunction) {
             const sec = self.renderSections.find(
@@ -2342,6 +2363,7 @@ export default function stateModelFactory(
                     data,
                   })),
                   junction,
+                  self.canonicalRefName,
                 )
               : []
           },
@@ -2508,6 +2530,7 @@ export default function stateModelFactory(
               sashimiLegendItems: sashimiLegendItems(
                 self.sashimiLegendStrands,
                 theme.alignmentFill,
+                { classes: self.sashimiLegendSplitClasses, palette },
               ),
             })
           },

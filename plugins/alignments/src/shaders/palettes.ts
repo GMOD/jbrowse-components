@@ -64,7 +64,10 @@ export function arcSlotCategory(
  * color, declared colors included: nothing else tells a duplication-type
  * junction from a deletion-type one, or the two ends of an inversion apart.
  */
-export function arcCategoryColor(c: ColorPalette, category: ArcCategory) {
+export function arcCategoryColor(
+  c: Pick<ColorPalette, 'readCategoryColors'>,
+  category: ArcCategory,
+) {
   return c.readCategoryColors[
     isArcSplitCategory(category)
       ? category === 'splitForward'

@@ -151,7 +151,7 @@ export function baseWorkerPileupData(numReads: number): WorkerPileupData {
     sashimiRev: new Uint32Array(0),
     sashimiDonors: new Uint8Array(0),
     sashimiAcceptors: new Uint8Array(0),
-    sashimiBack: new Uint8Array(0),
+    sashimiClass: new Uint8Array(0),
     numInsertions: 0,
     numSoftclips: 0,
     numHardclips: 0,

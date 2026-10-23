@@ -164,24 +164,17 @@ const AlignmentsTooltip = observer(function AlignmentsTooltip({
       )
     }
     case 'sashimi': {
-      const { start, end, score, strand, refName, motif, backSplice } =
-        tooltipData
+      const { name, start, end, score, strand, refName, motif } = tooltipData
       return (
         <BaseTooltip clientPoint={{ x, y }}>
           <div className={classes.tooltipContent}>
             <div>
-              <strong>{backSplice ? 'Back-splice' : 'Intron/Skip'}</strong>
+              <strong>{name}</strong>
             </div>
             <div>Location: {formatLocationRange(refName, start, end)}</div>
             <div>Length: {toLocale(end - start)} bp</div>
             <div>Reads supporting junction: {score}</div>
-            {backSplice ? (
-              <div>
-                Split reads joining a downstream end to an upstream start
-              </div>
-            ) : (
-              <div>Strand: {strand}</div>
-            )}
+            {strand ? <div>Strand: {strand}</div> : null}
             {motif ? <div>Splice motif: {motif}</div> : null}
           </div>
         </BaseTooltip>

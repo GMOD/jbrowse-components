@@ -287,7 +287,7 @@ export interface WorkerPileupData {
   sashimiRev: Uint32Array // of those, reads tagged reverse-strand
   sashimiDonors: Uint8Array // encoded donor dinucleotide (features/sashimi/motif.ts)
   sashimiAcceptors: Uint8Array // encoded acceptor dinucleotide
-  sashimiBack: Uint8Array // 1 for a back-splice off split reads, 0 for an N gap
+  sashimiClass: Uint8Array // 0 for an N gap, else a split class (features/sashimi/junctionClass.ts)
 
   // All detected modification types in this region (detected during feature processing)
   detectedModifications: string[]

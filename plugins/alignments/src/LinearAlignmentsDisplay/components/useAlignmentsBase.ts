@@ -404,13 +404,19 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
   function hoverStateForResult(result: MarkHitResult): HoverState {
     switch (result.type) {
       case 'sashimi': {
-        const { refName, start, end } = result.junction
+        const { refName, start, end, split } = result.junction
         return {
           overCigarItem: true,
           featureIdUnderMouse: undefined,
           mouseoverExtraInformation: result.tooltip,
           hoveredArcHighlight: result.highlight,
-          hoveredJunction: { groupKey: result.groupKey, refName, start, end },
+          hoveredJunction: {
+            groupKey: result.groupKey,
+            refName,
+            start,
+            end,
+            split,
+          },
           highlightedChainReadIds: [],
         }
       }

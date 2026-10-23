@@ -22,6 +22,7 @@
 // as regions scroll in and out of view.
 
 import { passesCategory } from '../../shared/readCategoryFilters.ts'
+import { junctionClass, splitClassOf } from './junctionClass.ts'
 import {
   classifyEncodedSpliceMotif,
   DINUCLEOTIDE_UNKNOWN,
@@ -31,6 +32,7 @@ import {
 
 import type { WorkerPileupData } from '../../RenderAlignmentDataRPC/types.ts'
 import type { JunctionFilter } from '../../shared/types.ts'
+import type { ArcSplitCategory } from '../arcs/arcSplitCategory.ts'
 
 // Sashimi placement, owned here because it selects the assignment algorithm
 // below (the display imports it via constants.ts): 'up' draws every arc over the
@@ -44,9 +46,18 @@ export type SashimiPlacement = (typeof SASHIMI_PLACEMENTS)[number]
 // mismatch between them is not expressible. refName is part of the key because
 // two chromosomes on screen at once (a fusion view) share nothing but a bp
 // number line — without it, chr1:10k-50k and chr2:30k-70k read as one junction's
-// worth of interleaving and reserved a strip no arc was ever bound for.
-export function junctionKey(refName: string, start: number, end: number) {
-  return `${refName}:${start}:${end}`
+// worth of interleaving and reserved a strip no arc was ever bound for. A
+// split junction keys its class too, so a split read's deletion and an N gap
+// over the same span stay two junctions.
+export function junctionKey(
+  refName: string,
+  start: number,
+  end: number,
+  split?: ArcSplitCategory,
+) {
+  return split
+    ? `${refName}:${start}:${end}:${split}`
+    : `${refName}:${start}:${end}`
 }
 
 // One junction, merged across every region that re-emitted it.
@@ -58,7 +69,8 @@ export interface MergedJunction {
   count: number
   strand: number
   motif: number
-  backSplice: boolean
+  /** The split class of a junction counted from split reads, undefined for an N gap. */
+  split: ArcSplitCategory | undefined
 }
 
 // The same junction mid-merge, before the two motif halves are a motif and the
@@ -74,7 +86,7 @@ interface JunctionAccumulator {
   rev: number
   donor: number
   acceptor: number
-  backSplice: boolean
+  split: ArcSplitCategory | undefined
 }
 
 // Which strand tints a junction whose reads disagree. Only tagged reads vote:
@@ -109,7 +121,7 @@ export type SashimiFields = Pick<
   | 'sashimiRev'
   | 'sashimiDonors'
   | 'sashimiAcceptors'
-  | 'sashimiBack'
+  | 'sashimiClass'
 >
 
 export interface RegionJunctions {
@@ -161,7 +173,7 @@ function accumulateJunctions(regions: Iterable<RegionJunctions>) {
       sashimiRev,
       sashimiDonors,
       sashimiAcceptors,
-      sashimiBack,
+      sashimiClass,
     } = data
     for (let i = 0; i < sashimiX1.length; i++) {
       const count = sashimiCounts[i]!
@@ -169,8 +181,8 @@ function accumulateJunctions(regions: Iterable<RegionJunctions>) {
       const acceptor = sashimiAcceptors[i]!
       const start = sashimiX1[i]!
       const end = sashimiX2[i]!
-      const backSplice = sashimiBack[i] === 1
-      const key = `${junctionKey(refName, start, end)}${backSplice ? ':back' : ''}`
+      const split = splitClassOf(sashimiClass[i]!)
+      const key = junctionKey(refName, start, end, split)
       const prev = out.get(key)
       if (prev === undefined) {
         out.set(key, {
@@ -183,7 +195,7 @@ function accumulateJunctions(regions: Iterable<RegionJunctions>) {
           rev: sashimiRev[i]!,
           donor,
           acceptor,
-          backSplice,
+          split,
         })
       } else {
         // A dinucleotide is a property of the coordinate, so every copy that
@@ -206,15 +218,27 @@ function accumulateJunctions(regions: Iterable<RegionJunctions>) {
   return out
 }
 
-// What the merge drops: junctions under the read-support floor, and those the
-// `nonCanonical` category filters, a junction's motif being non-canonical only
-// where it is known to be none of GT-AG / GC-AG / AT-AC. An unread motif counts
-// as canonical, so `nonCanonical: 'only'` drops it: with no sequence adapter
-// every junction goes, and with one, any junction whose donor or acceptor lies
-// past the fetched reference.
+// What the merge drops: junctions under the read-support floor, those of a
+// class `classes` leaves out, and those the `nonCanonical` category filters, a
+// junction's motif being non-canonical only where it is known to be none of
+// GT-AG / GC-AG / AT-AC. An unread motif counts as canonical, so
+// `nonCanonical: 'only'` drops it: with no sequence adapter every junction
+// goes, and with one, any junction whose donor or acceptor lies past the
+// fetched reference. A split junction reads no motif, so it is canonical here.
+export function passesJunctionFilter(
+  j: Pick<MergedJunction, 'count' | 'motif' | 'split'>,
+  { minReads, nonCanonical, classes }: JunctionFilter,
+) {
+  return (
+    j.count >= minReads &&
+    (!classes || classes.includes(junctionClass(j.split))) &&
+    passesCategory(isNonCanonicalSpliceMotif(j.motif), nonCanonical)
+  )
+}
+
 export function mergeJunctions(
   regions: Iterable<RegionJunctions>,
-  { minReads, nonCanonical }: JunctionFilter,
+  filter: JunctionFilter,
 ) {
   const out = new Map<string, MergedJunction>()
   for (const {
@@ -227,22 +251,19 @@ export function mergeJunctions(
     rev,
     donor,
     acceptor,
-    backSplice,
+    split,
   } of accumulateJunctions(regions).values()) {
     const motif = classifyEncodedSpliceMotif(donor, acceptor)
-    if (
-      count >= minReads &&
-      passesCategory(isNonCanonicalSpliceMotif(motif), nonCanonical)
-    ) {
+    if (passesJunctionFilter({ count, motif, split }, filter)) {
       out.set(key, {
         key,
         refName,
         start,
         end,
         count,
-        strand: backSplice ? 0 : junctionStrand(fwd, rev, motif),
+        strand: split ? 0 : junctionStrand(fwd, rev, motif),
         motif,
-        backSplice,
+        split,
       })
     }
   }
@@ -321,24 +342,16 @@ export function downJunctionKeys(
   junctions: Iterable<MergedJunction>,
   placement: SashimiPlacement,
 ): ReadonlySet<string> {
-  const out = new Set<string>()
-  const linear: MergedJunction[] = []
-  for (const j of junctions) {
-    if (j.backSplice) {
-      out.add(j.key)
-    } else {
-      linear.push(j)
-    }
-  }
   if (placement === 'up') {
-    return out.size > 0 ? out : NO_DOWN_KEYS
+    return NO_DOWN_KEYS
   }
+  const out = new Set<string>()
   if (placement === 'down') {
-    for (const j of linear) {
+    for (const j of junctions) {
       out.add(j.key)
     }
   } else {
-    for (const perRef of byRefName(linear).values()) {
+    for (const perRef of byRefName(junctions).values()) {
       for (const j of autoDownKeys(perRef)) {
         out.add(j.key)
       }

@@ -1,6 +1,8 @@
 import { normalizedRgbToABGR } from '@jbrowse/core/util/colorBits'
 
-import type { PaletteColors } from '../../shaders/colors.ts'
+import { arcCategoryColor } from '../../shaders/palettes.ts'
+
+import type { ColorPalette } from '../../shaders/colors.ts'
 import type { RegionInfo } from '../arcs/arcTypes.ts'
 import type { MergedJunction } from './junctions.ts'
 import type { LinkChannels } from '@jbrowse/render-core/marks'
@@ -104,27 +106,24 @@ function regionFinder(displayed: readonly RegionInfo[]) {
 const none = () => undefined
 
 export type SashimiColors = Pick<
-  PaletteColors,
-  'colorFwdStrand' | 'colorRevStrand' | 'colorPairLR'
+  ColorPalette,
+  'colorFwdStrand' | 'colorRevStrand' | 'colorPairLR' | 'readCategoryColors'
 >
 
-// A junction is tinted like the reads supporting it, and an unstranded one
-// takes the unpaired-read grey.
-function strandColor(strand: number, colors: SashimiColors) {
+// A splice junction is tinted like the reads supporting it, and an unstranded
+// one takes the unpaired-read grey. A split junction takes the color the read
+// arc over the same join paints.
+function junctionColor(j: MergedJunction, colors: SashimiColors) {
   return normalizedRgbToABGR(
-    ...(strand === 1
-      ? colors.colorFwdStrand
-      : strand === -1
-        ? colors.colorRevStrand
-        : colors.colorPairLR),
+    ...(j.split
+      ? arcCategoryColor(colors, j.split)
+      : j.strand === 1
+        ? colors.colorFwdStrand
+        : j.strand === -1
+          ? colors.colorRevStrand
+          : colors.colorPairLR),
   )
 }
-
-const BACK_SPLICE_COLOR = normalizedRgbToABGR(
-  0x9e / 255,
-  0x2e / 255,
-  0xb0 / 255,
-)
 
 export interface SashimiBandFeedInput {
   junctions: readonly MergedJunction[]
@@ -166,9 +165,7 @@ export function buildSashimiBandFeeds({
       side.x2Region.push(far)
       side.y.push(sashimiArcHeightFraction(Math.abs(j.end - j.start)))
       side.size.push(sashimiStrokeWidth(j.count))
-      side.color.push(
-        j.backSplice ? BACK_SPLICE_COLOR : strandColor(j.strand, colors),
-      )
+      side.color.push(junctionColor(j, colors))
       side.hits.push(j)
     }
   }

@@ -40,7 +40,7 @@ function seedJunctions(display: LinearAlignmentsDisplayModel) {
     sashimiRev: new Uint32Array([0, 12]),
     sashimiDonors: new Uint8Array([encodeDinucleotide('GT'), 0]),
     sashimiAcceptors: new Uint8Array([encodeDinucleotide('AG'), 0]),
-    sashimiBack: new Uint8Array([0, 0]),
+    sashimiClass: new Uint8Array([0, 0]),
     sashimiCounts: new Uint32Array([40, 12]),
   }
   display.setRpcData(

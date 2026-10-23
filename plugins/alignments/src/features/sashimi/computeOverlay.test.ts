@@ -31,7 +31,7 @@ function makeData(counts: number[]): PileupDataResult {
     sashimiRev: new Uint32Array(n),
     sashimiDonors: new Uint8Array(n),
     sashimiAcceptors: new Uint8Array(n),
-    sashimiBack: new Uint8Array(n),
+    sashimiClass: new Uint8Array(n),
   })
 }
 
@@ -98,7 +98,7 @@ test('wider junctions get taller arcs (span-scaled nesting)', () => {
     sashimiRev: new Uint32Array([0, 0, 0]),
     sashimiDonors: new Uint8Array([0, 0, 0]),
     sashimiAcceptors: new Uint8Array([0, 0, 0]),
-    sashimiBack: new Uint8Array([0, 0, 0]),
+    sashimiClass: new Uint8Array([0, 0, 0]),
   })
   const arcs = computeSashimiArcs(baseOpts(data, 0))
   expect(arcs[0]!.y).toBeLessThan(arcs[1]!.y)
@@ -119,7 +119,7 @@ const deepestDownArc = () => {
     sashimiRev: new Uint32Array([0]),
     sashimiDonors: new Uint8Array([0]),
     sashimiAcceptors: new Uint8Array([0]),
-    sashimiBack: new Uint8Array([0]),
+    sashimiClass: new Uint8Array([0]),
   })
   return computeSashimiArcs({
     ...baseOpts(data, 0),
@@ -151,7 +151,7 @@ test('the up band spends its whole height on the arc, clearance-free', () => {
     sashimiRev: new Uint32Array([0]),
     sashimiDonors: new Uint8Array([0]),
     sashimiAcceptors: new Uint8Array([0]),
-    sashimiBack: new Uint8Array([0]),
+    sashimiClass: new Uint8Array([0]),
   })
   const arc = computeSashimiArcs({
     ...baseOpts(data, 0),
@@ -196,7 +196,7 @@ test('suppresses the count label on sub-pixel-narrow junctions', () => {
     sashimiRev: new Uint32Array([0, 0]),
     sashimiDonors: new Uint8Array([0, 0]),
     sashimiAcceptors: new Uint8Array([0, 0]),
-    sashimiBack: new Uint8Array([0, 0]),
+    sashimiClass: new Uint8Array([0, 0]),
   })
   const arcs = computeSashimiArcs(baseOpts(data, 0))
   expect(arcs[0]!.label).toBeUndefined()
@@ -214,7 +214,7 @@ test('suppresses the count label when the digits, not the span, overflow', () =>
     sashimiRev: new Uint32Array([0, 0]),
     sashimiDonors: new Uint8Array([0, 0]),
     sashimiAcceptors: new Uint8Array([0, 0]),
-    sashimiBack: new Uint8Array([0, 0]),
+    sashimiClass: new Uint8Array([0, 0]),
   })
   const arcs = computeSashimiArcs(baseOpts(data, 0))
   const showByStart = new Map(arcs.map(a => [a.start, a.label !== undefined]))
@@ -240,7 +240,7 @@ test('places each arc on the side its junction key was assigned', () => {
     sashimiRev: new Uint32Array([0, 0, 0]),
     sashimiDonors: new Uint8Array([0, 0, 0]),
     sashimiAcceptors: new Uint8Array([0, 0, 0]),
-    sashimiBack: new Uint8Array([0, 0, 0]),
+    sashimiClass: new Uint8Array([0, 0, 0]),
   })
   const arcs = computeSashimiArcs({
     ...baseOpts(data, 0),
@@ -281,7 +281,7 @@ test('dedupes a junction shared across same-refName regions (collapsed introns)'
     sashimiRev: new Uint32Array([0]),
     sashimiDonors: new Uint8Array([0]),
     sashimiAcceptors: new Uint8Array([0]),
-    sashimiBack: new Uint8Array([0]),
+    sashimiClass: new Uint8Array([0]),
   })
   const region1 = makePileupDataResult({
     sashimiX1: new Uint32Array([100]),
@@ -291,7 +291,7 @@ test('dedupes a junction shared across same-refName regions (collapsed introns)'
     sashimiRev: new Uint32Array([0]),
     sashimiDonors: new Uint8Array([0]),
     sashimiAcceptors: new Uint8Array([0]),
-    sashimiBack: new Uint8Array([0]),
+    sashimiClass: new Uint8Array([0]),
   })
   const arcs = computeSashimiArcs({
     ...baseOpts(region0, 0),
@@ -323,7 +323,7 @@ test('a shared junction whose copies disagree on strand still renders once', () 
       sashimiRev: new Uint32Array([strand === -1 ? count : 0]),
       sashimiDonors: new Uint8Array([0]),
       sashimiAcceptors: new Uint8Array([0]),
-      sashimiBack: new Uint8Array([0]),
+      sashimiClass: new Uint8Array([0]),
     })
   const arcs = computeSashimiArcs({
     ...baseOpts(region(5, -1), 0),
@@ -368,7 +368,7 @@ describe('a count label whose apex is outside the box is culled', () => {
       sashimiRev: new Uint32Array([0]),
       sashimiDonors: new Uint8Array([0]),
       sashimiAcceptors: new Uint8Array([0]),
-      sashimiBack: new Uint8Array([0]),
+      sashimiClass: new Uint8Array([0]),
     })
 
   // the test region draws 1px per bp from x 0, so a bp IS a screen x

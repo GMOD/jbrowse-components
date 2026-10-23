@@ -5,6 +5,8 @@ import {
 } from '@jbrowse/alignments-core'
 import { openFeatureWidget } from '@jbrowse/core/util'
 
+import { ARC_SPLIT_LABELS } from '../../features/arcs/arcSplitCategory.ts'
+import { junctionClass } from '../../features/sashimi/junctionClass.ts'
 import { spliceMotifLabel } from '../../features/sashimi/motif.ts'
 import { getModificationCallName } from '../../shared/modificationData.ts'
 import { getCigarTypeLabel, isInterbaseType } from '../../shared/types.ts'
@@ -14,6 +16,7 @@ import { sashimiFeatureId } from './sashimiArcs.ts'
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 import type { IndicatorHitResult } from '../../features/indicator/types.ts'
 import type { ModificationHitResult } from '../../features/modification/hitTest.ts'
+import type { MergedJunction } from '../../features/sashimi/junctions.ts'
 import type { CigarHitResult } from '../../shared/hitTestTypes.ts'
 import type { CoverageBin } from './positionStats.ts'
 import type { CoverageRow } from '@jbrowse/alignments-core'
@@ -114,33 +117,37 @@ export function openCoverageWidget(
 
 export function openSashimiWidget(
   model: IAnyStateTreeNode,
-  junction: {
-    start: number
-    end: number
-    refName: string
-    count: number
-    strand: number
-    motif: number
-    backSplice: boolean
-  },
+  junction: Omit<MergedJunction, 'key'>,
   groupKey: string,
 ) {
-  openFeatureWidget(model, {
+  const { split } = junction
+  const location = {
     uniqueId: sashimiFeatureId(groupKey, junction),
-    // Named like its siblings (openIndicatorWidget, openCigarWidget) so the
-    // widget has a heading; without one it opened titled by nothing, leaving the
-    // bare `type: 'skip'` to explain what had been clicked.
-    name: junction.backSplice ? 'Back-splice junction' : 'Splice junction',
-    type: junction.backSplice ? 'back_splice' : 'skip',
     refName: junction.refName,
     start: junction.start,
     end: junction.end,
     score: junction.count,
-    strand: junction.strand,
-    ...(spliceMotifLabel(junction.motif) === undefined
-      ? {}
-      : { splice_motif: spliceMotifLabel(junction.motif) }),
-  })
+  }
+  const motif = spliceMotifLabel(junction.motif)
+  // Named like its siblings (openIndicatorWidget, openCigarWidget) so the
+  // widget has a heading; without one it opened titled by nothing, leaving the
+  // bare `type: 'skip'` to explain what had been clicked.
+  openFeatureWidget(
+    model,
+    split
+      ? {
+          ...location,
+          name: ARC_SPLIT_LABELS[split],
+          type: `split_${junctionClass(split)}`,
+        }
+      : {
+          ...location,
+          name: 'Splice junction',
+          type: 'skip',
+          strand: junction.strand,
+          ...(motif === undefined ? {} : { splice_motif: motif }),
+        },
+  )
 }
 
 // Per-read modification details, parallel to openCigarWidget for a mismatch.

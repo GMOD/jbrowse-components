@@ -2,7 +2,10 @@ import {
   sashimiBandsOf,
   sashimiLabels,
 } from '../../LinearAlignmentsDisplay/renderers/sashimiMarks.ts'
-import { makeTestRenderState } from '../../LinearAlignmentsDisplay/testUtils.ts'
+import {
+  makeTestPalette,
+  makeTestRenderState,
+} from '../../LinearAlignmentsDisplay/testUtils.ts'
 import { SASHIMI_SIDES, buildSashimiBandFeeds } from './bandFeed.ts'
 import { visibleRegionJunctions } from './computeOverlay.ts'
 import { mergeJunctions } from './junctions.ts'
@@ -40,6 +43,7 @@ const COLORS = {
   colorFwdStrand: [1, 0, 0],
   colorRevStrand: [0, 0, 1],
   colorPairLR: [0.5, 0.5, 0.5],
+  readCategoryColors: makeTestPalette().readCategoryColors,
 } satisfies Parameters<typeof buildSashimiBandFeeds>[0]['colors']
 
 // The view's region table for regions laid out left to right, a reversed one

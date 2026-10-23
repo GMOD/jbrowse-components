@@ -1391,7 +1391,7 @@ describe('sashimi score filter releases the reserved band', () => {
               sashimiRev: new Uint32Array([0, 0]),
               sashimiDonors: new Uint8Array([0, 0]),
               sashimiAcceptors: new Uint8Array([0, 0]),
-              sashimiBack: new Uint8Array([0, 0]),
+              sashimiClass: new Uint8Array([0, 0]),
               sashimiCounts: new Uint32Array([20, 2]),
             },
           },
@@ -1479,7 +1479,7 @@ describe('sashimi score filter releases the reserved band', () => {
       sashimiRev: new Uint32Array([0]),
       sashimiDonors: new Uint8Array([0]),
       sashimiAcceptors: new Uint8Array([0]),
-      sashimiBack: new Uint8Array([0]),
+      sashimiClass: new Uint8Array([0]),
       sashimiCounts: new Uint32Array([20]),
     })
     // interleaving as bare numbers (10k < 30k < 50k < 70k), but one per chrom

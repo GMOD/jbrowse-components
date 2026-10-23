@@ -1,3 +1,4 @@
+import { splitClassCode } from './junctionClass.ts'
 import { downJunctionKeys, junctionKey, mergeJunctions } from './junctions.ts'
 import {
   DINUCLEOTIDE_UNKNOWN,
@@ -6,6 +7,7 @@ import {
 } from './motif.ts'
 
 import type { CategoryFilter, JunctionFilter } from '../../shared/types.ts'
+import type { ArcSplitCategory } from '../arcs/arcSplitCategory.ts'
 import type { RegionJunctions, SashimiPlacement } from './junctions.ts'
 
 // [start, end, count] per junction, plus whatever this test cares about of the
@@ -16,6 +18,7 @@ interface JunctionDetail {
   rev?: number
   donor?: string
   acceptor?: string
+  split?: ArcSplitCategory
 }
 type Spec = [number, number, number] | [number, number, number, JunctionDetail]
 
@@ -42,7 +45,9 @@ function region(refName: string, junctions: Spec[]): RegionJunctions {
       sashimiAcceptors: new Uint8Array(
         details.map(d => dinucleotide(d.acceptor)),
       ),
-      sashimiBack: new Uint8Array(junctions.length),
+      sashimiClass: new Uint8Array(
+        details.map(d => (d.split ? splitClassCode(d.split) : 0)),
+      ),
     },
   }
 }
@@ -80,7 +85,7 @@ describe('mergeJunctions', () => {
         count: 8,
         strand: 1,
         motif: 0,
-        backSplice: false,
+        split: undefined,
       },
     ])
   })
@@ -157,7 +162,7 @@ describe('mergeJunctions', () => {
           count: 40,
           strand: 0,
           motif: SPLICE_MOTIF_NON_CANONICAL,
-          backSplice: false,
+          split: undefined,
         },
       ])
     }
@@ -217,6 +222,73 @@ describe('mergeJunctions', () => {
     ]) {
       expect([...mergeJunctions(regions, keep()).values()][0]!.count).toBe(30)
     }
+  })
+})
+
+describe('split junctions', () => {
+  test('an N gap and a split read over one span stay two junctions', () => {
+    const merged = mergeJunctions(
+      [
+        region('chr1', [
+          [100, 500, 6, { fwd: 6 }],
+          [100, 500, 3, { split: 'splitForward' }],
+        ]),
+      ],
+      keep(),
+    )
+    expect(
+      [...merged.values()].map(j => [j.key, j.count, j.strand, j.split]),
+    ).toEqual([
+      ['chr1:100:500', 6, 1, undefined],
+      ['chr1:100:500:splitForward', 3, 0, 'splitForward'],
+    ])
+  })
+
+  test('each split class keys its own junction', () => {
+    const merged = mergeJunctions(
+      [
+        region('chr1', [
+          [100, 500, 2, { split: 'splitInvLL' }],
+          [100, 500, 4, { split: 'splitInvRR' }],
+        ]),
+      ],
+      keep(),
+    )
+    expect([...merged.keys()]).toEqual([
+      junctionKey('chr1', 100, 500, 'splitInvLL'),
+      junctionKey('chr1', 100, 500, 'splitInvRR'),
+    ])
+  })
+
+  test('the class filter keeps the classes it names', () => {
+    const regions = [
+      region('chr1', [
+        [100, 500, 6],
+        [200, 900, 3, { split: 'splitBack' }],
+        [300, 400, 3, { split: 'splitForward' }],
+      ]),
+    ]
+    const drawn = (classes?: JunctionFilter['classes']) => [
+      ...mergeJunctions(regions, { minReads: 0, classes }).keys(),
+    ]
+    expect(drawn()).toHaveLength(3)
+    expect(drawn(['splice', 'duplication'])).toEqual([
+      'chr1:100:500',
+      'chr1:200:900:splitBack',
+    ])
+    expect(drawn([])).toEqual([])
+  })
+
+  test('a split junction follows the placement like any other', () => {
+    const regions = [
+      region('chr1', [
+        [100, 500, 20],
+        [300, 700, 2, { split: 'splitBack' }],
+      ]),
+    ]
+    expect(down(regions, 'up').size).toBe(0)
+    expect([...down(regions, 'auto')]).toEqual(['chr1:300:700:splitBack'])
+    expect(down(regions, 'down').size).toBe(2)
   })
 })
 

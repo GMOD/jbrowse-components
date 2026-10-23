@@ -57,7 +57,7 @@ function junctions(
     sashimiAcceptors: new Uint8Array(
       specs.map(() => (acceptor ? encodeDinucleotide('AG') : 0)),
     ),
-    sashimiBack: new Uint8Array(specs.length),
+    sashimiClass: new Uint8Array(specs.length),
   })
 }
 

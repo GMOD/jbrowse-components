@@ -21,6 +21,7 @@ import {
   getArcLegendItems,
   getReadDisplayLegendItems,
   sashimiLegendItems,
+  sashimiLegendTitle,
 } from './legendUtils.ts'
 import { splitSchemeForTest } from './splitSchemeForTest.ts'
 import { CHAIN_FRAME_REV, CHAIN_SUPP_PRESENT } from './types.ts'
@@ -1380,6 +1381,31 @@ describe('sashimiLegendItems', () => {
     expect(sashimiLegendItems(new Set([0]), { pairLR: '#b0b0b0' })).toEqual([
       { color: '#b0b0b0', label: 'Transcript strand unknown' },
     ])
+  })
+
+  test('keys each split class drawn as the read arcs key it', () => {
+    const palette = makeTestPalette()
+    const items = sashimiLegendItems(
+      new Set([1]),
+      { pairLR: '#d3d3d3' },
+      {
+        classes: new Set(['splitBack', 'splitForward']),
+        palette,
+      },
+    )
+    const arcRows = getArcLegendItems(
+      new Set(['splitForward', 'splitBack']),
+      palette,
+      false,
+    )
+    expect(items.map(i => i.label)).toEqual([
+      'Forward transcript strand',
+      'Split read (deletion-type)',
+      'Split read (duplication-type)',
+    ])
+    expect(items.slice(1)).toEqual(arcRows)
+    expect(sashimiLegendTitle(items)).toBe('Junctions')
+    expect(sashimiLegendTitle(items.slice(0, 1))).toBe('Splice junctions')
   })
 
   test('lands in its own section', () => {

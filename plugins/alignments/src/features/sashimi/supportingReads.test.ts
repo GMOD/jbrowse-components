@@ -13,7 +13,13 @@ function region(gaps: [number, number, number, number][]) {
   })
 }
 
-const JUNCTION = { groupKey: 'g', refName: 'chr1', start: 100, end: 500 }
+const JUNCTION = {
+  groupKey: 'g',
+  refName: 'chr1',
+  start: 100,
+  end: 500,
+  split: undefined,
+}
 const slot = (displayedRegionIndex: number, idx: number) => ({
   displayedRegionIndex,
   groupKey: 'g',
@@ -56,4 +62,34 @@ test('finds a read in every region of its refName, and in no other', () => {
       JUNCTION,
     ),
   ).toEqual([slot(0, 0), slot(1, 0)])
+})
+
+test('a split junction lights the reads whose segments join across it', () => {
+  const data = makePileupDataResult({
+    readPositions: new Uint32Array([
+      33286412, 33286470, 33287468, 33287511, 1000, 1058, 33286412, 33286470,
+    ]),
+    readStrands: new Int8Array([1, 1, 1, 1]),
+    readFlags: new Uint16Array([0, 0x800, 0, 0x100]),
+    readClipAtStart: new Uint32Array([43, 0, 0, 43]),
+    readSuppAlignments: [
+      '11,33287469,+,43M58S,255,0;',
+      '11,33286413,+,43S58M,255,0;',
+      '11,5001,+,58S43M,255,0;',
+      '11,33287469,+,43M58S,255,0;',
+    ],
+  })
+  expect(
+    junctionSupportingReadSlots(
+      [{ displayedRegionIndex: 0, refName: 'chr11', data }],
+      {
+        groupKey: 'g',
+        refName: 'chr11',
+        start: 33286412,
+        end: 33287511,
+        split: 'splitBack',
+      },
+      refName => `chr${refName}`,
+    ),
+  ).toEqual([slot(0, 0), slot(0, 1)])
 })

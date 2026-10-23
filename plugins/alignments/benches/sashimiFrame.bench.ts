@@ -309,6 +309,7 @@ function regionData(junctions: Junction[]) {
     sashimiRev,
     sashimiDonors,
     sashimiAcceptors,
+    sashimiClass: new Uint8Array(n),
   } as unknown as WorkerPileupData
 }
 
