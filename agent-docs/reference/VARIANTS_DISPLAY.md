@@ -75,10 +75,14 @@ Each channel carries one variable through one scale.
 - **`dosage` is over CALLED alleles**, so `1/2` is a hom and `0/2` a het, and
   `./1` is a full dose on the one haplotype that was called. A wholly uncalled
   genotype is the no-call category, never a blend into it.
-- **One ramp for every mode**, bounded by a fixed pale ceiling so a het in a
-  class color still reads as that class. Full dosage is the hue itself, which
-  is also what makes a legend swatch and a hom cell the same color. The
-  `shadeByDosage` slot turns it off.
+- **One ramp for every mode**, in OKLCH: a lower dosage lifts the hue's
+  lightness by a fixed step, holding hue and chroma, below a pale ceiling.
+  Full dosage is the hue itself, which is also what makes a legend swatch and
+  a hom cell the same color. The `shadeByDosage` slot turns it off.
+- **The step is the same for every hue.** An HSL lift
+  toward a ceiling moved the SV classes' hets by OKLab ΔE 0.08 (inversion
+  orange) to 0.31 (insertion purple), and raised the purple's chroma until
+  its het (`#ff0cff`) outshone its hom.
 - **The main thread paints the hue and the shade (ADR-203).** The worker reads
   what the hue needs off each variant (`cellHueOf`'s `read`: a field's value as
   text, or a `jexl:` callback's color) and ships it beside each cell's

@@ -1,3 +1,6 @@
+import { similarColors } from '@jbrowse/core/ui/colors'
+import { cssColorToNormalizedRgb } from '@jbrowse/core/util/colorBits'
+import { UNIVERSAL_FIELD_PRESETS } from '@jbrowse/core/util/colorScale'
 import { colord } from '@jbrowse/core/util/colord'
 
 import { ALT_HUE, HET_DOSAGE, cellFill, shadeByDosage } from './cellFill.ts'
@@ -13,7 +16,25 @@ jest.mock('@jbrowse/core/util/colord', () => {
   return { ...actual, colord: jest.fn(actual.colord) }
 })
 
-const hex = (css: string) => colord(css).toHex()
+// Ottosson's sRGB -> OKLab, independent of core's D50 route
+function oklch(css: string): [number, number, number] {
+  const [r, g, b] = cssColorToNormalizedRgb(css).map(v =>
+    v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4,
+  ) as [number, number, number]
+  const l = Math.cbrt(0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b)
+  const m = Math.cbrt(0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b)
+  const s = Math.cbrt(0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b)
+  const L = 0.2104542553 * l + 0.793617785 * m - 0.0040720468 * s
+  const A = 1.9779984951 * l - 2.428592205 * m + 0.4505937099 * s
+  const B = 0.0259040371 * l + 0.7827717662 * m - 0.808675766 * s
+  return [L, Math.hypot(A, B), ((Math.atan2(B, A) * 180) / Math.PI + 360) % 360]
+}
+
+const SV_AND_IMPACT_COLORS = [
+  ...UNIVERSAL_FIELD_PRESETS.svType.scale.range,
+  ...UNIVERSAL_FIELD_PRESETS.impact.scale.range,
+  ALT_HUE,
+]
 
 describe('shadeByDosage', () => {
   it('full dosage is the hue itself, by identity', () => {
@@ -21,26 +42,38 @@ describe('shadeByDosage', () => {
     expect(shadeByDosage('#d32f2f', 1)).toBe('#d32f2f')
   })
 
-  it("keeps the default mode's hom and het where they have always been", () => {
-    expect(hex(shadeByDosage(ALT_HUE, 1))).toBe(hex('hsl(200,50%,30%)'))
-    expect(hex(shadeByDosage(ALT_HUE, 0.5))).toBe(hex('hsl(200,50%,55%)'))
+  it("paints the default mode's het the blue it was under the HSL ramp", () => {
+    expect(
+      similarColors(shadeByDosage(ALT_HUE, HET_DOSAGE), 'hsl(200,50%,55%)'),
+    ).toBe(true)
+    expect(shadeByDosage(ALT_HUE, HET_DOSAGE)).toBe('#539fc6')
   })
 
-  it('lifts lightness and nothing else, so a class color stays that class', () => {
-    const tier = '#d32f2f'
-    const het = colord(shadeByDosage(tier, 0.5)).toHsl()
-    const hom = colord(tier).toHsl()
-    expect(het.h).toBeCloseTo(hom.h, 0)
-    expect(het.s).toBeCloseTo(hom.s, 0)
-    expect(het.l).toBeGreaterThan(hom.l)
+  it('lifts every class color by one lightness step, holding its hue', () => {
+    for (const hue of SV_AND_IMPACT_COLORS) {
+      const [l, c, h] = oklch(hue)
+      const [hetL, , hetH] = oklch(shadeByDosage(hue, HET_DOSAGE))
+      expect(hetL).toBeCloseTo(Math.min(l + 0.209, 0.94), 2)
+      if (c > 0.02) {
+        const turn = Math.abs(hetH - h) % 360
+        expect(Math.min(turn, 360 - turn)).toBeLessThan(2)
+      }
+    }
   })
 
-  it('is bounded: no dosage washes a hue past the pale ceiling', () => {
-    for (const hue of ['#d32f2f', '#fbc02d', '#9e9e9e', ALT_HUE]) {
+  // the HSL ramp painted the insertion purple's het #ff0cff, louder than its hom
+  it('never raises chroma, so a dark class color cannot turn neon', () => {
+    for (const hue of SV_AND_IMPACT_COLORS) {
+      expect(oklch(shadeByDosage(hue, HET_DOSAGE))[1]).toBeLessThanOrEqual(
+        oklch(hue)[1] + 0.002,
+      )
+    }
+  })
+
+  it('stops short of white at any dosage', () => {
+    for (const hue of ['#fbc02d', '#ff7f00', '#17becf', ALT_HUE]) {
       for (const dosage of [0, 0.25, 1 / 3, 0.5, 0.75, 1]) {
-        expect(
-          colord(shadeByDosage(hue, dosage)).toHsl().l,
-        ).toBeLessThanOrEqual(80.5)
+        expect(oklch(shadeByDosage(hue, dosage))[0]).toBeLessThanOrEqual(0.945)
       }
     }
   })
@@ -52,10 +85,9 @@ describe('shadeByDosage', () => {
     )
   })
 
-  it('leaves a hue already lighter than the ceiling alone', () => {
-    expect(hex(shadeByDosage('hsl(200,50%,90%)', 0))).toBe(
-      hex('hsl(200,50%,90%)'),
-    )
+  it('leaves a hue already lighter than the ceiling as light as it was', () => {
+    const pale = 'hsl(200,50%,97%)'
+    expect(oklch(shadeByDosage(pale, 0))[0]).toBeCloseTo(oklch(pale)[0], 2)
   })
 
   it('parses a hue once: the repeat is the memo, not a second parse', () => {
@@ -65,11 +97,6 @@ describe('shadeByDosage', () => {
     parse.mockClear()
     expect(shadeByDosage(hue, 0.5)).toBe(first)
     expect(parse).not.toHaveBeenCalled()
-  })
-
-  it('keeps the default hom and het hexes', () => {
-    expect(hex(shadeByDosage(ALT_HUE, 1))).toBe('#265973')
-    expect(shadeByDosage(ALT_HUE, 0.5)).toBe('#539fc6')
   })
 })
 

@@ -1,3 +1,4 @@
+import { relight } from '@jbrowse/core/util/color'
 import { colord } from '@jbrowse/core/util/colord'
 
 /**
@@ -12,14 +13,18 @@ import { colord } from '@jbrowse/core/util/colord'
  * channel is ever asked to carry both.
  */
 
-/** Default mode's constant alt hue, at full dosage. */
-export const ALT_HUE = 'hsl(200,50%,30%)'
+/**
+ * Default mode's constant alt hue, at full dosage: the blue whose het is
+ * `hsl(200,50%,55%)`.
+ */
+export const ALT_HUE = '#006084'
 
-// Where a dosage of zero would land. The ramp interpolates lightness between
-// the hue's own lightness (full dosage) and this ceiling, so a hue already
-// lighter than it is left alone and no class color can wash out past a fixed
-// bound.
-const PALE_LIGHTNESS = 80
+// The OKLCH lightness a dosage of zero would add, so a diploid het lifts by half
+// of it. A fixed step, so every class color moves by the same visible amount.
+const LIFT_AT_ZERO_DOSAGE = 0.42
+
+// The lightest a lifted fill gets, so a light hue's het stops short of white.
+const PALE_CEILING = 0.94
 
 // (hue, dosage) -> the shaded fill. A parse and a re-format cost ~3 microseconds,
 // and the cell loops' per-site memo resets per feature, so every het site paid
@@ -30,9 +35,8 @@ const shadedByHue = new Map<string, string>()
 
 /**
  * One ramp for every mode: full dosage is the hue itself, and a lower dosage
- * lifts its lightness toward {@link PALE_LIGHTNESS} in proportion. A diploid het
- * of the default hue comes out at `hsl(200,50%,55%)` and its hom at
- * `hsl(200,50%,30%)`, which is where they have always been.
+ * lifts its OKLCH lightness in proportion, holding hue and chroma, up to
+ * {@link PALE_CEILING}.
  */
 export function shadeByDosage(hue: string, dosage: number) {
   if (dosage >= 1) {
@@ -41,9 +45,14 @@ export function shadeByDosage(hue: string, dosage: number) {
   const key = `${hue}|${dosage}`
   let fill = shadedByHue.get(key)
   if (fill === undefined) {
-    const { h, s, l, a } = colord(hue).toHsl()
-    const lifted = l + (1 - dosage) * Math.max(0, PALE_LIGHTNESS - l)
-    fill = colord({ h, s, l: lifted }).alpha(a).toHex()
+    const alpha = colord(hue).alpha()
+    const lifted = relight(
+      hue,
+      (1 - dosage) * LIFT_AT_ZERO_DOSAGE,
+      1,
+      PALE_CEILING,
+    )
+    fill = alpha < 1 ? colord(lifted).alpha(alpha).toHex() : lifted
     shadedByHue.set(key, fill)
   }
   return fill

@@ -184,18 +184,24 @@ function oklchToHex(lightness: number, chroma: number, hue: number) {
  * @param lightnessShift - added to its OKLCH lightness (which is 0 - 1)
  * @param chromaScale - multiplies its OKLCH chroma; the result is reduced at
  *  constant hue if that lands out of gamut
+ * @param maxLightness - the lightest a shift may land; the shift leaves a
+ *  color already lighter than this at its own lightness
  * @returns A CSS hex color string
  */
 export function relight(
   color: string,
   lightnessShift: number,
   chromaScale = 1,
+  maxLightness = 1,
 ) {
   const [lightness, chroma, hue] = convert.xyzd50ToOklch(
     ...convert.srgbToXyzd50(...cssColorToNormalizedRgb(color)),
   )
   return oklchToHex(
-    Math.max(0, Math.min(1, lightness + lightnessShift)),
+    Math.max(
+      0,
+      Math.min(Math.max(lightness, maxLightness), lightness + lightnessShift),
+    ),
     chroma * chromaScale,
     hue,
   )
