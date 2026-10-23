@@ -35,9 +35,8 @@ Each item needs a call before work. Check the ADR-238 spelling first.
 - `hideUnlabelled` becomes a `ribbons.filter` entry `{ field, valid: true }`,
   `showGeneLabels` becomes `genes.labels.show`, and `showLaneTicks` becomes
   `axis.show`, which should then gate the anchor rule's ticks too.
-- `bridgeSkippedLanes` as `mark.invalid` conflicts with ADR-238's Rejected row
-  on one-behaviour flags, which cut `showIntraviewLinks`. Keep or cut it
-  first. `impliedUTRs` sits in the same row.
+- `impliedUTRs` sits in ADR-238's Rejected row on one-behaviour flags, which
+  cut `showIntraviewLinks` and `bridgeSkippedLanes`.
 - `splitStrands` and `inlineLaneNames` change layout and have no spelling.
 - Off-screen mate marks honor only the `length` filter, since the worker sends
   no attribute lanes with the mates.

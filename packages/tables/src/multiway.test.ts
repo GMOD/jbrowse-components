@@ -186,12 +186,6 @@ test('a gene table joins a gene across a lane that lacks it', async () => {
   expect(t.ribbons.alpha[bridged[0]!]).toBeLessThan(t.ribbons.alpha[0]!)
   const g2 = t.ribbons.group.indexOf('g2')
   expect(t.ribbons.color[g2]).toBe(t.legend.color[1])
-
-  const unbridged = await engine.multiway({
-    ...GENE_BLOCKS,
-    display: { bridgeSkippedLanes: false },
-  })
-  expect(unbridged.ribbons.bridge).not.toContain(true)
 })
 
 test('a star of pairwise files draws each lane against the anchor', async () => {

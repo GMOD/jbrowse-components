@@ -479,7 +479,6 @@ export function buildRibbonGeometry({
   hideUnlabelled = false,
   paint,
   drawCurves,
-  bridgeSkippedLanes,
   rowsVsAnchor = false,
 }: {
   stack: LaneStack
@@ -491,7 +490,6 @@ export function buildRibbonGeometry({
   hideUnlabelled?: boolean
   paint?: SyntenyColorPaint
   drawCurves: boolean
-  bridgeSkippedLanes: boolean
   /** each gutter draws its lower lane against the anchor, as a star source states it */
   rowsVsAnchor?: boolean
 }): RibbonGeometry {
@@ -547,8 +545,7 @@ export function buildRibbonGeometry({
     ] of upper.placements) {
       let toRow = row + 1
       let far = lower.placements.get(key)
-      const bridging =
-        !rowsVsAnchor && bridgeSkippedLanes && groupSpansLanes(group)
+      const bridging = !rowsVsAnchor && groupSpansLanes(group)
       while (!far && bridging && toRow + 1 < lanes.length) {
         far = lanes[++toRow]!.placements.get(key)
       }

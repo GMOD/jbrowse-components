@@ -48,7 +48,7 @@ Dotplot1DView
 LinearSyntenyViewHelper
 TimeTraveller
 
-# model members with no description (1316)
+# model members with no description (1314)
 # fix: write a sentence under the member’s #property/#volatile/#getter/#method/#action tag
 AddTrackModel.adapterHint
 AddTrackModel.altAssemblyName
@@ -1048,7 +1048,6 @@ MultiWaySyntenyDisplay.bandCell
 MultiWaySyntenyDisplay.bandCellOn
 MultiWaySyntenyDisplay.beginDescribingLanes
 MultiWaySyntenyDisplay.boxColors
-MultiWaySyntenyDisplay.bridgeSkippedLanes
 MultiWaySyntenyDisplay.canReanchor
 MultiWaySyntenyDisplay.chooseLanes
 MultiWaySyntenyDisplay.clearHoveredFeature
@@ -1143,7 +1142,6 @@ MultiWaySyntenyDisplay.selectFeature
 MultiWaySyntenyDisplay.selectHovered
 MultiWaySyntenyDisplay.selectedFeatureId
 MultiWaySyntenyDisplay.selectionInk
-MultiWaySyntenyDisplay.setBridgeSkippedLanes
 MultiWaySyntenyDisplay.setFeatures
 MultiWaySyntenyDisplay.setGeneTextField
 MultiWaySyntenyDisplay.setHideUnlabelled

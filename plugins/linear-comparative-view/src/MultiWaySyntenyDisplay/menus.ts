@@ -83,9 +83,6 @@ export interface MultiWayMenuModel extends LaneHeaderModel, LaneSelectionModel {
   setInlineLaneNames: (flag: boolean) => void
   interpolate: RibbonInterpolation
   setInterpolate: (interpolate: RibbonInterpolation) => void
-  bridgeSkippedLanes: boolean
-  setBridgeSkippedLanes: (flag: boolean) => void
-  rowsVsAnchor: boolean
   showLegend: boolean
   setShowLegend: (flag: boolean) => void
   hasLegendKey: boolean
@@ -257,19 +254,6 @@ export function showSubMenuItems(model: MultiWayMenuModel): MenuItem[] {
     toggleItem('Curved lines', model.interpolate === 'bump', v => {
       model.setInterpolate(v ? 'bump' : 'linear')
     }),
-    ...(model.rowsVsAnchor
-      ? []
-      : [
-          toggleItem(
-            'Ribbons across gaps',
-            model.bridgeSkippedLanes,
-            model.setBridgeSkippedLanes,
-            {
-              helpText:
-                'Join a gene to the next lane down that places it when the lane between places nothing for it. Off, a sparse lane cuts every chain running through it.',
-            },
-          ),
-        ]),
     ...showHiddenItems(model.hiddenLanes.length, 'lane', () => {
       model.showHiddenLanes()
     }),

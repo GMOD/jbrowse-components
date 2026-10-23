@@ -120,8 +120,8 @@ export interface MultiWayTablesArgs {
    * them: `ribbons.encoding.color` (a field such as `'strand'`, or the color
    * channel's slots such as `{ value: 'grey' }`), `ribbons.mark.interpolate`,
    * `rows` (`sort`, the lanes that stack first, and `kept`, the lanes drawn),
-   * `hideUnlabelled`, `bridgeSkippedLanes`, `splitStrands`,
-   * `showGeneLabels`, `inlineLaneNames` and `height`, the stack's px.
+   * `hideUnlabelled`, `splitStrands`, `showGeneLabels`, `inlineLaneNames`
+   * and `height`, the stack's px.
    */
   display?: {
     ribbons?: {
@@ -130,7 +130,6 @@ export interface MultiWayTablesArgs {
     }
     rows?: { sort?: string[]; kept?: string[] }
     hideUnlabelled?: boolean
-    bridgeSkippedLanes?: boolean
     splitStrands?: boolean
     showGeneLabels?: boolean
     inlineLaneNames?: boolean
@@ -197,7 +196,6 @@ function readDisplay(slots: MultiWayTablesArgs['display'] = {}) {
     kept: readConfObject(conf, ['rows', 'kept']),
     hideUnlabelled: readConfObject(conf, 'hideUnlabelled'),
     curves: readConfObject(conf, ['ribbons', 'mark', 'interpolate']) === 'bump',
-    bridgeSkippedLanes: readConfObject(conf, 'bridgeSkippedLanes'),
     splitStrands: readConfObject(conf, 'splitStrands'),
     showGeneLabels: readConfObject(conf, 'showGeneLabels'),
     inlineLaneNames: readConfObject(conf, 'inlineLaneNames'),
@@ -600,7 +598,6 @@ export async function multiwayTables(
     hideUnlabelled: settings.hideUnlabelled,
     paint: settings.paint,
     drawCurves: settings.curves,
-    bridgeSkippedLanes: settings.bridgeSkippedLanes,
     rowsVsAnchor,
   })
 

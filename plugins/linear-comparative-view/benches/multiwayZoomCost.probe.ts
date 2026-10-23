@@ -286,7 +286,6 @@ for (let step = 0; step < 19; step++, span *= 1.35) {
       laneLinks: undefined,
       ribbonColor: 'rgba(130,130,130,0.3)',
       drawCurves: false,
-      bridgeSkippedLanes: true,
     })
   })
   const tTicks = ms(() => {

@@ -164,8 +164,8 @@ already does at cohort scale. Give the cut a sample set (`keepHaplotypes` →
 the shared nodes — with the cut holding only the chosen set that is nearly
 attribution-free — and route carriage questions to the matrix.
 
-**Ribbons across a skipped lane in the stacked view.** The display bridges a
-lane that places nothing for a group (`bridgeSkippedLanes`). The stacked
+**Ribbons across a skipped lane in the stacked view.** The display always bridges
+a lane that places nothing for a group. The stacked
 `LinearSyntenyView` has the same gap and no such fix: a level is defined as the
 gap between `views[level]` and `views[level + 1]` in ten files, so a track that
 joins row 0 to row 2 across row 1 is a level with a span, not a setting.

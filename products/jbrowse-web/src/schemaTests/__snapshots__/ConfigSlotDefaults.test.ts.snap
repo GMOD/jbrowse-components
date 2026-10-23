@@ -892,7 +892,6 @@ exports[`every registered schema slot default 1`] = `
     "treeAreaWidth": "number = 80",
   },
   "display: MultiWaySyntenyDisplay": {
-    "bridgeSkippedLanes": "boolean = true",
     "data.resolution": "stringEnum = "auto" of ["auto","fine","coarse"]",
     "encoding.color.field": "featureField = """,
     "encoding.color.legend.title": "maybeString = undefined",

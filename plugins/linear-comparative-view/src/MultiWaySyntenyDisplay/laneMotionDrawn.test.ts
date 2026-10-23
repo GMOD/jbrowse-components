@@ -455,7 +455,6 @@ test('a ribbon the old frame drew wide is kept for a move that starts magnified'
       laneLinks: undefined,
       ribbonColor: 'grey',
       drawCurves: false,
-      bridgeSkippedLanes: false,
     })
     const cell = cells.get('ribbons:1')!
     return cell.kind === 'ribbons' ? cell.data.instanceCount : -1

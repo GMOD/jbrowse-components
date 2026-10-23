@@ -99,7 +99,6 @@ From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`sc
 | <span id="getter-ribbonpaint">**ribbonPaint**</span><br><code>SyntenyColorPaint</code> |  |
 | <span id="getter-hideunlabelled">**hideUnlabelled**</span><br><code>boolean</code> |  |
 | <span id="getter-interpolate">**interpolate**</span><br><code>"bump" &#124; "linear"</code> | The curve every ribbon side takes, `ribbons.mark.interpolate`. |
-| <span id="getter-bridgeskippedlanes">**bridgeSkippedLanes**</span><br><code>boolean</code> |  |
 | <span id="getter-showlaneticks">**showLaneTicks**</span><br><code>boolean</code> |  |
 | <span id="getter-splitstrands">**splitStrands**</span><br><code>boolean</code> |  |
 | <span id="getter-showgenelabels">**showGeneLabels**</span><br><code>boolean</code> |  |
@@ -308,7 +307,6 @@ From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`rendering
 | <span id="action-setselectedlanes">**setSelectedLanes**</span><br><code>(names: readonly string[] &#124; undefined) =&gt; void</code> | writes `rows.kept`; undefined restores `configuredLanes`, or every lane |
 | <span id="action-setribboncolorfield">**setRibbonColorField**</span><br><code>(field: string) =&gt; void</code> |  |
 | <span id="action-setdomain">**setDomain**</span><br><code>(domain: string[]) =&gt; void</code> | takes the whole pinned order, empty meaning densest-first; merge a partial one with `mergeDomain` first |
-| <span id="action-setbridgeskippedlanes">**setBridgeSkippedLanes**</span><br><code>(flag: boolean) =&gt; void</code> |  |
 | <span id="action-setribboncolordomain">**setRibbonColorDomain**</span><br><code>(domain: string[]) =&gt; void</code> |  |
 | <span id="action-sethideunlabelled">**setHideUnlabelled**</span><br><code>(flag: boolean) =&gt; void</code> |  |
 | <span id="action-setinterpolate">**setInterpolate**</span><br><code>(interpolate: "bump" &#124; "linear") =&gt; void</code> |  |

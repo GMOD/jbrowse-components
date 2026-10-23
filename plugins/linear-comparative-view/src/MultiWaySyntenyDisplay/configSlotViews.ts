@@ -71,10 +71,6 @@ export function configSlotViews(self: ConfigSlotSelf) {
       return getConf(self, ['ribbons', 'mark', 'interpolate'])
     },
     /** #getter */
-    get bridgeSkippedLanes(): boolean {
-      return getConf(self, 'bridgeSkippedLanes')
-    },
-    /** #getter */
     get showLaneTicks(): boolean {
       return getConf(self, 'showLaneTicks')
     },
@@ -149,10 +145,6 @@ export function configSlotActions(self: ConfigSlotSelf) {
     setDomain(domain: string[]) {
       setConf(self, ['rows', 'sort'], domain)
       persistTrackConfigNow(self)
-    },
-    /** #action */
-    setBridgeSkippedLanes(flag: boolean) {
-      setConf(self, 'bridgeSkippedLanes', flag)
     },
     /** #action */
     setRibbonColorDomain(domain: string[]) {

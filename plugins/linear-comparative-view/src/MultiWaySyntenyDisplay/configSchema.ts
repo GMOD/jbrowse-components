@@ -137,15 +137,6 @@ export function configSchemaFactory() {
         defaultValue: [],
       },
       /**
-       * #slot
-       */
-      bridgeSkippedLanes: {
-        type: 'boolean',
-        description:
-          'join a group across a lane that places nothing for it, to the next lane down that does. A ribbon otherwise joins adjacent lanes only, so a sparse lane mid-stack cuts every chain running through it',
-        defaultValue: true,
-      },
-      /**
        * #slot legend
        * The color key: the anchor lane's drawn gene colors, and what
        * `ribbons.encoding.color` paints — the strand colors, the identity
@@ -226,6 +217,7 @@ export function configSchemaFactory() {
         drawCurves: (curves: unknown) => ({
           ribbons: { mark: { interpolate: curves ? 'bump' : 'linear' } },
         }),
+        bridgeSkippedLanes: () => ({}),
       },
     },
   )

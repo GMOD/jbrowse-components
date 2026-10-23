@@ -177,7 +177,6 @@ describe('the ribbons', () => {
       laneLinks: undefined,
       ribbonColor: 'grey',
       drawCurves: false,
-      bridgeSkippedLanes: false,
     })
     expect(targets.map(t => t.label)).toEqual(['grape chr1:501..600'])
   })
@@ -194,7 +193,6 @@ describe('the ribbons', () => {
       laneLinks: undefined,
       ribbonColor: 'rgba(130,130,130,0.3)',
       drawCurves: false,
-      bridgeSkippedLanes: false,
     })
     expect(layers.map(l => l.key)).toEqual(['ribbons:0'])
     const data = ribbonData(cells, 'ribbons:0')
@@ -234,7 +232,6 @@ describe('the ribbons', () => {
       laneLinks: undefined,
       ribbonColor: 'grey',
       drawCurves: false,
-      bridgeSkippedLanes: false,
     })
     expect(targets).toHaveLength(1)
     expect(ribbonData(cells, 'ribbons:0').instanceFeatureIdx[0]).toBe(0)
@@ -249,20 +246,12 @@ describe('the ribbons', () => {
       ],
       assemblyNames: ['grape', 'peach', 'cacao'],
     })
-    const build = (bridgeSkippedLanes: boolean) =>
-      buildRibbonGeometry({
-        stack: s,
-        laneLinks: undefined,
-        ribbonColor: 'rgba(130,130,130,0.4)',
-        drawCurves: false,
-        bridgeSkippedLanes,
-      })
-    const off = build(false)
-    expect(off.layers.map(l => l.key)).toEqual(['ribbons:0', 'ribbons:1'])
-    expect(ribbonData(off.cells, 'ribbons:0').instanceCount).toBe(1)
-    expect(ribbonData(off.cells, 'ribbons:1').instanceCount).toBe(0)
-
-    const { cells, layers, groupTarget } = build(true)
+    const { cells, layers, groupTarget } = buildRibbonGeometry({
+      stack: s,
+      laneLinks: undefined,
+      ribbonColor: 'rgba(130,130,130,0.4)',
+      drawCurves: false,
+    })
     expect(layers.map(l => l.key)).toEqual([
       'ribbons:0',
       'ribbons:0>2',
@@ -323,7 +312,6 @@ describe('the ribbons', () => {
       laneLinks: new Map([['peach|cacao', { links: [link], ops: NO_OPS }]]),
       ribbonColor: 'grey',
       drawCurves: false,
-      bridgeSkippedLanes: true,
     })
     expect(s.lanes[1]!.placements.has('r2')).toBe(false)
     expect(s.lanes[2]!.placements.has('r2')).toBe(true)
@@ -364,7 +352,6 @@ describe('the ribbons', () => {
       ]),
       ribbonColor: 'grey',
       drawCurves: false,
-      bridgeSkippedLanes: false,
     })
     const data = ribbonData(cells, 'ribbons:1')
     expect([...data.kinds]).toEqual([KIND_BASE, KIND_BASE])
@@ -406,7 +393,6 @@ describe('the ribbons', () => {
       ]),
       ribbonColor: 'grey',
       drawCurves: false,
-      bridgeSkippedLanes: false,
     })
     const data = ribbonData(cells, 'ribbons:1')
     const mark = [...data.kinds].indexOf(KIND_BASE_TILE)
@@ -467,7 +453,6 @@ describe('the ribbons', () => {
       ]),
       ribbonColor: 'grey',
       drawCurves: false,
-      bridgeSkippedLanes: false,
     })
     const data = ribbonData(cells, 'ribbons:1')
     // each mark is its cluster's 3 mismatched bp, not the 21 bp they spread over
@@ -502,7 +487,6 @@ describe('the ribbons', () => {
       laneLinks: undefined,
       ribbonColor: 'grey',
       drawCurves: false,
-      bridgeSkippedLanes: false,
     })
     const data = ribbonData(cells, 'ribbons:0')
     expect([...data.kinds]).toEqual([KIND_BASE, KIND_BASE])
@@ -571,7 +555,6 @@ describe('the ribbons', () => {
             laneLinks: undefined,
             ribbonColor: 'grey',
             drawCurves: false,
-            bridgeSkippedLanes: false,
           }).cells,
           'ribbons:0',
         )
@@ -601,7 +584,6 @@ describe('the ribbons', () => {
       ribbonColor: 'rgba(130,130,130,0.4)',
       ribbonColorField: 'strand',
       drawCurves: false,
-      bridgeSkippedLanes: false,
     })
     const data = ribbonData(cells, 'ribbons:0')
     const alpha = Math.round(0.4 * 255)
@@ -625,7 +607,6 @@ describe('the ribbons', () => {
       ribbonColor: 'rgba(130,130,130,0.4)',
       ribbonColorField: 'strand',
       drawCurves: false,
-      bridgeSkippedLanes: false,
     })
     const data = ribbonData(cells, 'ribbons:0')
     const crossed = (i: number) =>
@@ -652,7 +633,6 @@ describe('the ribbons', () => {
       ribbonColorField: 'strand',
       paint: { range: ['gold', 'black'] },
       drawCurves: false,
-      bridgeSkippedLanes: false,
     })
     const data = ribbonData(cells, 'ribbons:0')
     const alpha = Math.round(0.4 * 255)
@@ -676,7 +656,6 @@ describe('the ribbons', () => {
       ribbonColor: 'rgba(130,130,130,0.4)',
       ribbonColorField: 'identity',
       drawCurves: false,
-      bridgeSkippedLanes: false,
     })
     const data = ribbonData(cells, 'ribbons:0')
     const alpha = Math.round(0.4 * 255)
@@ -711,7 +690,6 @@ describe('the ribbons', () => {
         group: { labels: ['B1', 'A1a'], colors: { A1a: '#4DB5E3' } },
       },
       drawCurves: false,
-      bridgeSkippedLanes: false,
     })
     const data = ribbonData(cells, 'ribbons:0')
     const alpha = Math.round(0.4 * 255)
@@ -732,7 +710,6 @@ describe('the ribbons', () => {
         },
         hideUnlabelled: true,
         drawCurves: false,
-        bridgeSkippedLanes: false,
       }).cells,
       'ribbons:0',
     )
@@ -770,7 +747,6 @@ describe('the ribbons', () => {
             ks: { min: 0.2, max: 1.6 },
           },
           drawCurves: false,
-          bridgeSkippedLanes: false,
         }).cells,
         'ribbons:0',
       ).colors
@@ -814,7 +790,6 @@ describe('the ribbons', () => {
           group: { labels: ['P', 'C'], colors: { P: '#f00', C: '#00f' } },
         },
         drawCurves: false,
-        bridgeSkippedLanes: false,
       })
       const alpha = Math.round(0.4 * 255)
       const drawn = (key: string) => {
@@ -856,7 +831,6 @@ describe('the ribbons', () => {
       laneLinks: undefined,
       ribbonColor: 'grey',
       drawCurves: false,
-      bridgeSkippedLanes: false,
     })
     expect(ribbonData(cells, 'ribbons:0').instanceCount).toBe(0)
   })
@@ -883,7 +857,6 @@ describe('the ribbons', () => {
       laneLinks: new Map([['peach|cacao', { links: [link], ops: NO_OPS }]]),
       ribbonColor: 'grey',
       drawCurves: true,
-      bridgeSkippedLanes: false,
     })
     const data = ribbonData(cells, 'ribbons:1')
     expect(data.instanceCount).toBe(2)
@@ -928,7 +901,6 @@ describe('a gene a table states in two rows, one per half', () => {
       laneLinks: undefined,
       ribbonColor: 'grey',
       drawCurves: false,
-      bridgeSkippedLanes: false,
     })
     const data = ribbonData(cells, 'ribbons:1')
     return Array.from({ length: data.instanceCount }, (_, i) => [
@@ -956,7 +928,6 @@ describe('a gene a table states in two rows, one per half', () => {
       laneLinks: undefined,
       ribbonColor: 'grey',
       drawCurves: false,
-      bridgeSkippedLanes: false,
     })
     expect(ribbonData(cells, 'ribbons:0').instanceCount).toBe(2)
   })
@@ -996,7 +967,6 @@ describe('a gene a table states in two rows, one per half', () => {
       laneLinks: undefined,
       ribbonColor: 'grey',
       drawCurves: false,
-      bridgeSkippedLanes: false,
     })
     expect(ribbonData(cells, 'ribbons:1').instanceCount).toBe(2)
   })
@@ -1018,7 +988,6 @@ describe('a source stating each lane against the anchor alone', () => {
       laneLinks: undefined,
       ribbonColor: 'grey',
       drawCurves: false,
-      bridgeSkippedLanes: false,
       rowsVsAnchor,
     })
     return ['ribbons:0', 'ribbons:1'].map(key => {
@@ -1067,7 +1036,6 @@ test('the runs of one clipped record draw one ribbon each', () => {
     laneLinks: undefined,
     ribbonColor: 'rgba(130,130,130,0.3)',
     drawCurves: false,
-    bridgeSkippedLanes: false,
   })
   const data = ribbonData(cells, 'ribbons:0')
   expect(data.instanceCount).toBe(2)
@@ -1133,7 +1101,6 @@ describe('the band cell', () => {
     laneLinks: undefined,
     ribbonColor: 'grey',
     drawCurves: false,
-    bridgeSkippedLanes: false,
   }).layers.map(({ yTop, height }) => [yTop, yTop + height] as const)
   const bandsOn = (page: string) =>
     buildBandCell({
@@ -1484,7 +1451,6 @@ test('a lane-pair link across a deletion both lanes carry leaves the gap open', 
     ]),
     ribbonColor: 'grey',
     drawCurves: false,
-    bridgeSkippedLanes: false,
   })
   const data = ribbonData(cells, 'ribbons:1')
   const drawn = Array.from({ length: data.instanceCount }, (_, i) =>

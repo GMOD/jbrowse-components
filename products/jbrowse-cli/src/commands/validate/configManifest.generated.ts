@@ -5860,10 +5860,6 @@ export const configManifest: ConfigManifest = {
           "type": "string[]"
         },
         {
-          "name": "bridgeSkippedLanes",
-          "type": "boolean"
-        },
-        {
           "name": "legend",
           "type": "LegendConfigurationSchema",
           "subSlots": [
@@ -6295,13 +6291,15 @@ export const configManifest: ConfigManifest = {
         "maxDisplayedBpPerPx",
         "mouseover",
         "jexlFilters",
-        "drawCurves"
+        "drawCurves",
+        "bridgeSkippedLanes"
       ],
       "droppedKeys": [
         "maxFeatureScreenDensity",
         "maxDisplayedBpPerPx",
         "fetchSizeLimit",
-        "mouseover"
+        "mouseover",
+        "bridgeSkippedLanes"
       ],
       "stateModelProps": [
         "id",

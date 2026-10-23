@@ -11318,16 +11318,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             }
           }
         },
-        "bridgeSkippedLanes": {
-          "description": "join a group across a lane that places nothing for it, to the next lane down that does. A ribbon otherwise joins adjacent lanes only, so a sparse lane mid-stack cuts every chain running through it.",
-          "default": true,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "boolean"
-          }
-        },
         "legend": {
           "if": {
             "type": "null"
@@ -11414,6 +11404,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
         "drawCurves": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "bridgeSkippedLanes": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
@@ -19930,9 +19924,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "laneGeneTracks": {
               "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/laneGeneTracks"
             },
-            "bridgeSkippedLanes": {
-              "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/bridgeSkippedLanes"
-            },
             "showLaneTicks": {
               "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/showLaneTicks"
             },
@@ -19953,6 +19944,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "drawCurves": {
               "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/drawCurves"
+            },
+            "bridgeSkippedLanes": {
+              "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/bridgeSkippedLanes"
             },
             "marks": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/marks"

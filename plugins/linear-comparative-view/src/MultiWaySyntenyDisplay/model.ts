@@ -2052,7 +2052,6 @@ export function stateModelFactory(
           hideUnlabelled: self.hideUnlabelled,
           paint: self.ribbonPaint,
           drawCurves: self.interpolate === 'bump',
-          bridgeSkippedLanes: self.bridgeSkippedLanes,
           rowsVsAnchor: self.rowsVsAnchor,
         })
       },

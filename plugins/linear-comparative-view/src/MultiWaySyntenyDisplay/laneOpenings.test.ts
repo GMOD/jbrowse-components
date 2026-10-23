@@ -358,7 +358,6 @@ describe('a deletion the lane carries against the anchor', () => {
       ]),
       ribbonColor: 'grey',
       drawCurves: false,
-      bridgeSkippedLanes: false,
     })
     const rowOf = (name: string) => LANES.indexOf(name) + 1
     const underNonCarrier = ribbonSpans(cells, `ribbons:${rowOf('HG00099.1')}`)

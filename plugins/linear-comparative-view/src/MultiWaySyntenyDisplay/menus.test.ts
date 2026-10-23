@@ -178,9 +178,6 @@ function trackModel({
     setSplitStrands: () => {},
     interpolate: 'linear' as const,
     setInterpolate: () => {},
-    bridgeSkippedLanes: true,
-    rowsVsAnchor: false,
-    setBridgeSkippedLanes: () => {},
     showLegend: true,
     setShowLegend: () => {},
     hasLegendKey,
@@ -215,15 +212,7 @@ test('the track menu is Color by, Lanes and Show', () => {
     'Lane names on the gene row',
     'Split strands',
     'Curved lines',
-    'Ribbons across gaps',
   ])
-})
-
-test('a source reading each lane against its anchor offers no bridging', () => {
-  const { model } = trackModel()
-  expect(
-    labelsOf(showSubMenuItems({ ...model, rowsVsAnchor: true })),
-  ).not.toContain('Ribbons across gaps')
 })
 
 test('Color by offers the synteny view modes a lane stack paints', () => {
@@ -321,8 +310,8 @@ test('Show offers the legend only when something is keyed, and the hidden lanes 
     hiddenLanes: ['peach', 'cacao'],
   })
   const show = showSubMenuItems(model)
-  expect(labelsOf(show).slice(6)).toEqual(['Show 2 hidden lanes', 'Legend'])
-  click(show[6])
+  expect(labelsOf(show).slice(5)).toEqual(['Show 2 hidden lanes', 'Legend'])
+  click(show[5])
   expect(calls).toEqual(['show hidden'])
 })
 

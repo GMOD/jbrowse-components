@@ -833,6 +833,18 @@ test.each([
   },
 )
 
+test('a written bridgeSkippedLanes loads silently and drops', () => {
+  const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
+  const conf = configSchemaFactory().create({
+    type: 'MultiWaySyntenyDisplay',
+    displayId: 'd',
+    bridgeSkippedLanes: false,
+  })
+  expect(warn).not.toHaveBeenCalled()
+  warn.mockRestore()
+  expect('bridgeSkippedLanes' in getSnapshot(conf)).toBe(false)
+})
+
 describe('the anchor lane pair stays ordered', () => {
   function withGroup() {
     const display = createDisplay()
