@@ -36,4 +36,5 @@ starting it.
 - `dog10k_lof` is the one tutorial page not re-knit at the 2026-10-23 pin:
   its callset host, kiddlabshare.med.umich.edu, serves an expired TLS
   certificate, so the knit and ggjbrowse's Docs CI fail on it. Re-knit it with
-  `Rscript scripts/tutorials.R dog10k_lof` once the certificate is renewed.
+  ggjbrowse's tutorials script, naming `dog10k_lof`, once the certificate
+  is renewed.
