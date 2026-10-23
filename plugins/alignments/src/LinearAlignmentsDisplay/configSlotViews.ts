@@ -161,7 +161,7 @@ export function requireReadsConf(self: ConfigSlotSelf) {
 }
 
 function strokeWidthSettingOf(self: ConfigSlotSelf): StrokeWidthSetting {
-  const path = ['readConnections', 'encoding', 'strokeWidth']
+  const path = ['readConnections', 'encoding', 'strokeWidth'] as const
   return {
     value: getConf(self, [...path, 'value']),
     field: getConf(self, [...path, 'field']),
