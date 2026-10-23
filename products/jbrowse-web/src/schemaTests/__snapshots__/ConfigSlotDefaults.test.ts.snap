@@ -360,13 +360,9 @@ exports[`every registered schema slot default 1`] = `
     "name": "string = "nameOfConnection"",
   },
   "display: ChordSyntenyDisplay": {
-    "colorHover": "color = "rgba(85,85,85,0.6)"",
-    "colorSelected": "color = "rgba(0,0,0,0.6)"",
     "mark.depth": "number = 0.9",
   },
   "display: ChordVariantDisplay": {
-    "colorHover": "color = "#555"",
-    "colorSelected": "color = "black"",
     "encoding.color.field": "featureField = """,
     "encoding.color.legend.title": "maybeString = undefined",
     "encoding.color.scale.domain": "stringArray = []",
@@ -376,7 +372,7 @@ exports[`every registered schema slot default 1`] = `
     "encoding.color.scale.unknown": "maybeColor = undefined",
     "encoding.color.value": "color = "rgb(255,133,0)"",
     "mark.depth": "number = 0.9",
-    "onChordClick": "boolean = false",
+    "onChordClick": "maybeString = undefined",
     "opacity": "number = 0.32",
   },
   "display: DotplotDisplay": {},

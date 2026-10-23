@@ -4605,7 +4605,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "onChordClick",
-          "type": "(JexlString | boolean)"
+          "type": "(JexlString | (string | undefined))"
         },
         {
           "name": "encoding",
@@ -4686,21 +4686,21 @@ export const configManifest: ConfigManifest = {
         {
           "name": "opacity",
           "type": "number"
-        },
-        {
-          "name": "colorSelected",
-          "type": "(JexlString | CssColor)"
-        },
-        {
-          "name": "colorHover",
-          "type": "(JexlString | CssColor)"
         }
       ],
       "legacyKeys": [
         "strokeColor",
         "strokeColorSelected",
         "strokeColorHover",
+        "colorSelected",
+        "colorHover",
         "renderer"
+      ],
+      "droppedKeys": [
+        "strokeColorSelected",
+        "strokeColorHover",
+        "colorSelected",
+        "colorHover"
       ],
       "stateModelProps": [
         "id",
@@ -4730,14 +4730,6 @@ export const configManifest: ConfigManifest = {
           ],
           "schema": "ChordMark",
           "writes": "members"
-        },
-        {
-          "name": "colorSelected",
-          "type": "(JexlString | CssColor)"
-        },
-        {
-          "name": "colorHover",
-          "type": "(JexlString | CssColor)"
         }
       ],
       "stateModelProps": [

@@ -1,4 +1,5 @@
 import PluginManager from '@jbrowse/core/PluginManager'
+import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { SimpleFeature } from '@jbrowse/core/util'
 import { render } from '@testing-library/react'
 
@@ -248,7 +249,9 @@ test('selecting the second record of a breakend pair draws the chord the pair sh
   )
   const paths = [...container.querySelectorAll('path')]
   expect(paths.map(p => p.dataset.testid)).toEqual(['chord-a'])
-  expect(paths[0]!.getAttribute('stroke')).toBe('#000000')
+  expect(paths[0]!.getAttribute('stroke')).toBe(
+    resolvePalette().highlight.main.toLowerCase(),
+  )
 })
 
 test('a pair hovered through one record and selected through the other draws its chord once, hovered', () => {

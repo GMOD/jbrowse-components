@@ -5,44 +5,36 @@ import { chordEncodingConfigSchema } from './chordEncodingConfigSchema.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
-const STROKE_SLOTS = {
-  strokeColorSelected: 'colorSelected',
-  strokeColorHover: 'colorHover',
-} as const
-
 const restingColor = (value: unknown) => ({ encoding: { color: { value } } })
 
 // v4 spelt the chord colors `strokeColor*`, on the display or inside its
 // `renderer`, and session tracks in share links still carry both.
+const dropped = () => ({})
+
+// The hover and selection colors went to the shape's own color and the
+// theme's highlight.
 const retired = {
   strokeColor: restingColor,
-  ...Object.fromEntries(
-    Object.entries(STROKE_SLOTS).map(([old, name]) => [
-      old,
-      (value: unknown) => ({ [name]: value }),
-    ]),
-  ),
+  strokeColorSelected: dropped,
+  strokeColorHover: dropped,
+  colorSelected: dropped,
+  colorHover: dropped,
 }
 
 /**
- * The same names inside a `renderer`, which is not declared retired: the track
- * config's legacy-renderer lift hoists a renderer's props onto the entry, and
- * consuming `renderer` before that lift would drop every renderer prop that is
- * not a color. Read here instead, where that lift has already run, so an entry
- * created straight from a v4 snapshot still finds them. `retired` runs first,
- * so the display's own spelling wins.
+ * A v4 `strokeColor` inside a `renderer`, which is not declared retired: the
+ * track config's legacy-renderer lift hoists a renderer's props onto the
+ * entry, and consuming `renderer` before that lift would drop every renderer
+ * prop that is not a color. Read here instead, where that lift has already
+ * run, so an entry created straight from a v4 snapshot still finds it.
+ * `retired` runs first, so the display's own spelling wins.
  */
-function liftRendererStrokeSlots(snap: Record<string, unknown>) {
+function liftRendererStrokeColor(snap: Record<string, unknown>) {
   const { renderer, ...rest } = snap
   if (!renderer || typeof renderer !== 'object') {
     return 'renderer' in snap ? rest : snap
   }
   const inner = renderer as Record<string, unknown>
-  for (const [old, name] of Object.entries(STROKE_SLOTS)) {
-    if (rest[name] === undefined && inner[old] !== undefined) {
-      rest[name] = inner[old]
-    }
-  }
   return rest.encoding === undefined && inner.strokeColor !== undefined
     ? { ...rest, ...restingColor(inner.strokeColor) }
     : rest
@@ -56,8 +48,8 @@ function liftRendererStrokeSlots(snap: Record<string, unknown>) {
  * #example
  * The circular-view display for a `VariantTrack` of structural variants;
  * translocations are drawn as chords across the circle. `encoding.color` is
- * the chord's resting color, a constant or a field of the record with a key, and
- * `colorHover` and `colorSelected` its hovered and selected ones:
+ * the chord's resting color, a constant or a field of the record with a key; a
+ * hovered chord darkens it and a selected one takes the theme's highlight:
  * ```js
  * {
  *   type: 'VariantTrack',
@@ -74,7 +66,6 @@ function liftRendererStrokeSlots(snap: Record<string, unknown>) {
  *       displayId: 'sv-ChordVariantDisplay',
  *       encoding: { color: 'svType' },
  *       opacity: 0.45,
- *       colorHover: '#555',
  *     },
  *   ],
  * }
@@ -94,10 +85,9 @@ function configSchemaF(_pluginManager: PluginManager) {
        * #slot
        */
       onChordClick: {
-        type: 'boolean',
+        type: 'maybeString',
         description:
-          "a jexl callback run when a chord is clicked, in place of opening the record's details",
-        defaultValue: false,
+          "a jexl callback run when a chord is clicked, in place of opening the record's details; unset opens the details",
         contextVariable: ['feature', 'track'],
       },
       /**
@@ -115,31 +105,12 @@ function configSchemaF(_pluginManager: PluginManager) {
           "the alpha every resting chord draws at, over its color's own",
         defaultValue: 0.32,
       },
-      /**
-       * #slot
-       */
-      colorSelected: {
-        type: 'color',
-        description: 'the line color of a chord that has been selected',
-        defaultValue: 'black',
-        contextVariable: ['feature'],
-      },
-      /**
-       * #slot
-       */
-      colorHover: {
-        type: 'color',
-        description:
-          'the line color of a chord that is being hovered over with the mouse',
-        defaultValue: '#555',
-        contextVariable: ['feature'],
-      },
     },
     {
       explicitIdentifier: 'displayId',
       explicitlyTyped: true,
       retired,
-      preProcessSnapshot: liftRendererStrokeSlots,
+      preProcessSnapshot: liftRendererStrokeColor,
     },
   )
 }

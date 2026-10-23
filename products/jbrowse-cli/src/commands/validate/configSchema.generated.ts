@@ -8205,13 +8205,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "onChordClick": {
-          "description": "a jexl callback run when a chord is clicked, in place of opening the record's details.",
-          "default": false,
+          "description": "a jexl callback run when a chord is clicked, in place of opening the record's details; unset opens the details.",
           "if": {
             "type": "null"
           },
           "else": {
-            "$ref": "#/$defs/BooleanOrJexl"
+            "$ref": "#/$defs/StringOrJexl"
           }
         },
         "encoding": {
@@ -8232,26 +8231,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "number"
           }
         },
-        "colorSelected": {
-          "description": "the line color of a chord that has been selected.",
-          "default": "black",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "$ref": "#/$defs/CssColorOrJexl"
-          }
-        },
-        "colorHover": {
-          "description": "the line color of a chord that is being hovered over with the mouse.",
-          "default": "#555",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "$ref": "#/$defs/CssColorOrJexl"
-          }
-        },
         "strokeColor": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
@@ -8261,6 +8240,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
         "strokeColorHover": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "colorSelected": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "colorHover": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
@@ -8304,26 +8291,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           },
           "else": {
             "$ref": "#/$defs/ChordMark"
-          }
-        },
-        "colorSelected": {
-          "description": "the fill color of a ribbon that has been selected.",
-          "default": "rgba(0,0,0,0.6)",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "$ref": "#/$defs/CssColorOrJexl"
-          }
-        },
-        "colorHover": {
-          "description": "the fill color of a ribbon that is being hovered over with the mouse.",
-          "default": "rgba(85,85,85,0.6)",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "$ref": "#/$defs/CssColorOrJexl"
           }
         }
       }
@@ -17013,12 +16980,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "opacity": {
               "$ref": "#/$defs/ChordVariantDisplaySlots/properties/opacity"
             },
-            "colorSelected": {
-              "$ref": "#/$defs/ChordVariantDisplaySlots/properties/colorSelected"
-            },
-            "colorHover": {
-              "$ref": "#/$defs/ChordVariantDisplaySlots/properties/colorHover"
-            },
             "strokeColor": {
               "$ref": "#/$defs/ChordVariantDisplaySlots/properties/strokeColor"
             },
@@ -17027,6 +16988,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "strokeColorHover": {
               "$ref": "#/$defs/ChordVariantDisplaySlots/properties/strokeColorHover"
+            },
+            "colorSelected": {
+              "$ref": "#/$defs/ChordVariantDisplaySlots/properties/colorSelected"
+            },
+            "colorHover": {
+              "$ref": "#/$defs/ChordVariantDisplaySlots/properties/colorHover"
             },
             "renderer": {
               "anyOf": [
@@ -19520,12 +19487,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "properties": {
             "mark": {
               "$ref": "#/$defs/ChordSyntenyDisplaySlots/properties/mark"
-            },
-            "colorSelected": {
-              "$ref": "#/$defs/ChordSyntenyDisplaySlots/properties/colorSelected"
-            },
-            "colorHover": {
-              "$ref": "#/$defs/ChordSyntenyDisplaySlots/properties/colorHover"
             },
             "renderer": {
               "anyOf": [

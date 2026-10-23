@@ -31,7 +31,6 @@ import type PluginManager from '@jbrowse/core/PluginManager'
  *     {
  *       type: 'ChordSyntenyDisplay',
  *       displayId: 'volvox_self-ChordSyntenyDisplay',
- *       colorHover: 'rgba(0,0,0,0.5)',
  *     },
  *   ],
  * }
@@ -47,25 +46,6 @@ function configSchemaF(_pluginManager: PluginManager) {
        * [](/docs/config/chordmark) object
        */
       mark: chordMarkConfigSchema,
-      /**
-       * #slot
-       */
-      colorSelected: {
-        type: 'color',
-        description: 'the fill color of a ribbon that has been selected',
-        defaultValue: 'rgba(0,0,0,0.6)',
-        contextVariable: ['feature'],
-      },
-      /**
-       * #slot
-       */
-      colorHover: {
-        type: 'color',
-        description:
-          'the fill color of a ribbon that is being hovered over with the mouse',
-        defaultValue: 'rgba(85,85,85,0.6)',
-        contextVariable: ['feature'],
-      },
     },
     {
       explicitIdentifier: 'displayId',

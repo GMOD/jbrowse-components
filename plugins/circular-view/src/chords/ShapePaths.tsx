@@ -1,4 +1,5 @@
-import { readConfObject } from '@jbrowse/core/configuration'
+import { usePalette } from '@jbrowse/core/ui/PaletteContext'
+import { alpha, darken } from '@jbrowse/core/ui/palette'
 import { getFillProps, getStrokeProps } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
@@ -14,20 +15,20 @@ function testId(shape: Shape) {
   return `${shape.kind}-${shape.feature.id()}`
 }
 
-function paintProps(
-  display: ShapeDisplayModel,
-  shape: Shape,
-  state: ShapeState,
-) {
-  const { feature } = shape
+// A hover darkens the shape's own color, as the linear synteny view's does,
+// since that color is the data; a selection takes the theme's highlight.
+const HOVER_DARKEN = 0.3
+
+function paintProps(shape: Shape, state: ShapeState, highlight: string) {
+  const own = shape.kind === 'ribbon' ? shape.fill : shape.stroke
   const color =
     state === 'resting'
       ? undefined
-      : (readConfObject(
-          display.configuration,
-          state === 'hovered' ? 'colorHover' : 'colorSelected',
-          { feature },
-        ) as string)
+      : state === 'hovered'
+        ? darken(own, HOVER_DARKEN)
+        : shape.kind === 'ribbon'
+          ? alpha(highlight, 0.6)
+          : highlight
   return shape.kind === 'ribbon'
     ? color === undefined
       ? { fill: shape.fill }
@@ -79,6 +80,7 @@ const ShapePaths = observer(function ShapePaths({
   only: 'highlighted' | 'all'
 }) {
   const { radiusPx, bezierRadius, highlightedFeatureIdSet } = display
+  const palette = usePalette()
   // a hover and a selection say where the reader's pointer was, so the export
   // draws every shape resting
   const drawn: readonly { shape: Shape; state: ShapeState }[] =
@@ -111,7 +113,7 @@ const ShapePaths = observer(function ShapePaths({
             data-testid={testId(shape)}
             d={shapePath(shape, radiusPx, bezierRadius)}
             opacity={opacity === 1 ? undefined : opacity}
-            {...paintProps(display, shape, state)}
+            {...paintProps(shape, state, palette.highlight.main)}
           >
             <title>{display.shapeLabel(shape.feature)}</title>
           </path>

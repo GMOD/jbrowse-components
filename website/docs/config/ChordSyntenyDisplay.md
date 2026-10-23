@@ -34,7 +34,6 @@ are the hovered and selected fills:
     {
       type: 'ChordSyntenyDisplay',
       displayId: 'volvox_self-ChordSyntenyDisplay',
-      colorHover: 'rgba(0,0,0,0.5)',
     },
   ],
 }
@@ -64,5 +63,3 @@ Display slots go on a display entry: `"displays": [{ "type": "ChordSyntenyDispla
 | Slot | Description |
 | --- | --- |
 | <span id="slot-mark">**mark**</span><br>[ChordMark](../chordmark) | How far each chord curves toward the center, a [](/docs/config/chordmark) object |
-| <span id="slot-colorselected">**colorSelected**</span><br>[`color`](/docs/config_guides/slot_types#color) = <code>'rgba(0,0,0,0.6)'</code> | the fill color of a ribbon that has been selected<br>_callback args:_ `feature` |
-| <span id="slot-colorhover">**colorHover**</span><br>[`color`](/docs/config_guides/slot_types#color) = <code>'rgba(85,85,85,0.6)'</code> | the fill color of a ribbon that is being hovered over with the mouse<br>_callback args:_ `feature` |
