@@ -74,7 +74,7 @@ export const ldColorConfigSchema = ConfigurationSchema(
           type: 'linear, the one scale; unset is linear',
         }),
         /**
-         * #slot scheme
+         * #slot scale.scheme
          */
         scheme: {
           type: 'maybeStringEnum',
@@ -83,7 +83,7 @@ export const ldColorConfigSchema = ConfigurationSchema(
             "the named ramp the statistic runs across; unset is the field's own, reds for r2 and blues for dprime",
         },
         /**
-         * #slot reverse
+         * #slot scale.reverse
          * Unset turns round a scheme dark at its low end, since an unpainted
          * cell is the page behind the matrix.
          */
@@ -93,7 +93,7 @@ export const ldColorConfigSchema = ConfigurationSchema(
             "turns the scheme's ramp round; unset reverses a scheme dark at its low end",
         },
         /**
-         * #slot domainMin
+         * #slot scale.domainMin
          */
         domainMin: {
           type: 'maybeNumber',
@@ -101,7 +101,7 @@ export const ldColorConfigSchema = ConfigurationSchema(
             'the value the bottom color paints, everything below it too; unset is 0',
         },
         /**
-         * #slot domainMax
+         * #slot scale.domainMax
          */
         domainMax: {
           type: 'maybeNumber',

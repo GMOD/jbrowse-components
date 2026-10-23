@@ -157,7 +157,7 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
       /**
        * #slot facet
        * One labelled section of the track per value of a field: `"strand"`,
-       * or `{ field, domain }` with the order its sections stack in.
+       * or `{ field, sort }` with the order its sections stack in.
        */
       facet: sectionFacetConfigSchema,
       /**

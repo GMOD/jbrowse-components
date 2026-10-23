@@ -174,7 +174,7 @@ export default function configSchemaFactory() {
        * The rows are the file's samples, and the object is the arrangement a
        * reader gives them, each member by row name: a sample in allele-count
        * mode, a haplotype (`"<sample> HP<n>"`) in phased mode, where a sample
-       * name stands for all of its haplotypes. The samples `domain` lists come
+       * name stands for all of its haplotypes. The samples `sort` lists come
        * first and the rest keep the file's order; a facet groups within it.
        * Written whole, as every display's `rows` is.
        */
@@ -240,7 +240,7 @@ export default function configSchemaFactory() {
        * #slot facet
        * A sample-metadata attribute (a column in the adapter's
        * samplesTsvLocation, e.g. `"population"`) whose values each take a
-       * band of rows; or `{ field, domain }`, the listed values banding
+       * band of rows; or `{ field, sort }`, the listed values banding
        * first and the rest sorted. Unset, the rows keep their existing order.
        *
        * The band is applied when the rows are read, over whatever order the

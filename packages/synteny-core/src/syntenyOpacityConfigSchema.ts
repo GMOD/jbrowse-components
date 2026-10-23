@@ -111,7 +111,7 @@ export const syntenyOpacityConfigSchema = ConfigurationSchema(
          */
         ...colorDomainSlot({ domain: 'labels, or threshold cut points' }),
         /**
-         * #slot range
+         * #slot scale.range
          * The opacities, 0 to 1: a number column's at `domainMin` and
          * `domainMax`, a text column's per `domain` label, a threshold's per
          * interval, one more than the cuts. Empty fades a number column from 0.3
@@ -123,7 +123,7 @@ export const syntenyOpacityConfigSchema = ConfigurationSchema(
           description: 'opacities along the domain',
         },
         /**
-         * #slot domainMin
+         * #slot scale.domainMin
          * The value a number column is faintest at; unset, the measurement's
          * own floor or the least value seen.
          */
@@ -132,7 +132,7 @@ export const syntenyOpacityConfigSchema = ConfigurationSchema(
           description: 'value at the faintest end; unset follows the field',
         },
         /**
-         * #slot domainMax
+         * #slot scale.domainMax
          * The value a number column is most opaque at; unset, the measurement's
          * own ceiling or the greatest value seen.
          */

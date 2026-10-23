@@ -428,7 +428,7 @@ export function configSchemaFactory() {
       /**
        * #slot facet
        * Labelled sections, one per value of a field, each as tall as its
-       * steps pack it: `"HP"`, or `{ field, domain, transform }` with the
+       * steps pack it: `"HP"`, or `{ field, sort, transform }` with the
        * order the sections stack in and the steps each runs before any mark's,
        * a per-section `pileup` among them. A chip names each section and hides
        * it. Split after `transform` and before any mark's own steps.

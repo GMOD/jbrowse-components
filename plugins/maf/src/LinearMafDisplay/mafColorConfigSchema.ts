@@ -121,7 +121,7 @@ export const mafColorConfigSchema = ConfigurationSchema(
         }),
         ...colorNamesSlot,
         /**
-         * #slot scheme
+         * #slot scale.scheme
          */
         scheme: {
           type: 'maybeStringEnum',
@@ -130,7 +130,7 @@ export const mafColorConfigSchema = ConfigurationSchema(
             "the named ramp identity runs along; unset is redgreyblue, and range's colors, where it lists any, win over it",
         },
         /**
-         * #slot reverse
+         * #slot scale.reverse
          */
         reverse: {
           type: 'boolean',
@@ -139,7 +139,7 @@ export const mafColorConfigSchema = ConfigurationSchema(
             'turns the identity ramp round, so its last color paints the low end',
         },
         /**
-         * #slot domainMin
+         * #slot scale.domainMin
          */
         domainMin: {
           type: 'maybeNumber',
@@ -147,14 +147,14 @@ export const mafColorConfigSchema = ConfigurationSchema(
             "the identity the ramp's low end paints, 0 to 1; unset is 0, and 0.7 spreads the ramp over close relatives",
         },
         /**
-         * #slot domainMax
+         * #slot scale.domainMax
          */
         domainMax: {
           type: 'maybeNumber',
           description: "the identity the ramp's high end paints; unset is 1",
         },
         /**
-         * #slot domainMid
+         * #slot scale.domainMid
          */
         domainMid: {
           type: 'maybeNumber',

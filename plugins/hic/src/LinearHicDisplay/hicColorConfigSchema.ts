@@ -108,7 +108,7 @@ export const hicColorConfigSchema = ConfigurationSchema(
       'HicColorScale',
       {
         /**
-         * #slot type
+         * #slot scale.type
          */
         type: {
           type: 'maybeStringEnum',
@@ -117,7 +117,7 @@ export const hicColorConfigSchema = ConfigurationSchema(
             "linear; symlog, d3's log(1 + count), which the Log scale toggle writes: it lifts sparse long-range bins off the floor and leaves only 0 transparent; or log, log2 of the count from a pinned domainMin or else 1, every bin at or below which draws transparent. Unset is the field's own, linear for observed",
         },
         /**
-         * #slot scheme
+         * #slot scale.scheme
          */
         scheme: {
           type: 'maybeStringEnum',
@@ -126,7 +126,7 @@ export const hicColorConfigSchema = ConfigurationSchema(
             "the named ramp the field runs across; unset is the field's own, juicebox for count, which fades from transparent to red",
         },
         /**
-         * #slot reverse
+         * #slot scale.reverse
          * Unset turns round a scheme dark at its low end, since an unpainted
          * bin is the page behind the matrix.
          */
@@ -136,21 +136,21 @@ export const hicColorConfigSchema = ConfigurationSchema(
             "turns the scheme's ramp round; unset reverses a scheme dark at its low end",
         },
         /**
-         * #slot domainMid
+         * #slot scale.domainMid
          * The value the ramp's middle stop sits at, so a diverging scheme
          * centres on it and equal distances from it take equal colors; unset,
          * the stops spread evenly across the domain.
          */
         domainMid: colorRampSlots.domainMid,
         /**
-         * #slot domainMin
+         * #slot scale.domainMin
          */
         domainMin: {
           type: 'maybeNumber',
           description: 'the bottom of the scale; unset is 0',
         },
         /**
-         * #slot domainMax
+         * #slot scale.domainMax
          */
         domainMax: {
           type: 'maybeNumber',
@@ -158,7 +158,7 @@ export const hicColorConfigSchema = ConfigurationSchema(
             "the top of the scale's domain; unset follows the loaded counts",
         },
         /**
-         * #slot domainQuantile
+         * #slot scale.domainQuantile
          * The value an unset `domainMax` follows: the loaded counts' quantile,
          * `0.95` so faint off-diagonal contacts read, or at `1` their maximum.
          * The track menu's "Emphasize faint contacts" toggles it. Every color

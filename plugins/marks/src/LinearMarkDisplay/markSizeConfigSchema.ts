@@ -60,7 +60,7 @@ export const markSizeSchema = ConfigurationSchema(
       'MarkSizeScale',
       {
         /**
-         * #slot type
+         * #slot scale.type
          * `linear` or `log` between `domainMin` and `domainMax`.
          */
         type: {
@@ -70,7 +70,7 @@ export const markSizeSchema = ConfigurationSchema(
           description: 'linear or log',
         },
         /**
-         * #slot domainMin
+         * #slot scale.domainMin
          * The value the thinnest width stands at; unset, the loaded regions'
          * own least.
          */
@@ -79,7 +79,7 @@ export const markSizeSchema = ConfigurationSchema(
           description: 'value at the thinnest width; unset follows the regions',
         },
         /**
-         * #slot domainMax
+         * #slot scale.domainMax
          * The value the widest width stands at; unset, the loaded regions'
          * own greatest.
          */
@@ -88,7 +88,7 @@ export const markSizeSchema = ConfigurationSchema(
           description: 'value at the widest width; unset follows the regions',
         },
         /**
-         * #slot range
+         * #slot scale.range
          * The px at each end of the domain, thinnest first. Empty is 1 to 6.
          */
         range: {
