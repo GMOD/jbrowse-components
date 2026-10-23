@@ -100,7 +100,7 @@ describe('mateRefName extraction', () => {
   })
 })
 
-// A field `color` paints from a value per read is read as a facet keys its
+// A field `encoding.color` paints from a value per read is read as a facet keys its
 // section, so a path reaches into the feature and a read dimension's name
 // paints the dimension's own values rather than an attribute nobody sets.
 describe('attribute color extraction', () => {

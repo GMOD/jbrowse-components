@@ -25,8 +25,10 @@ function arrangedSamples(rows: SampleRow[]) {
     ...(tinted.length
       ? {
           rowColor: {
-            domain: tinted.map(r => r.name),
-            range: tinted.map(r => r.color!),
+            scale: {
+              domain: tinted.map(r => r.name),
+              range: tinted.map(r => r.color!),
+            },
           },
         }
       : {}),
@@ -344,7 +346,7 @@ function fgf4SyntenySession(parent: string, retro: Record<string, string>) {
         // op, and the perspective flip swaps D<->I, so one 532 bp gap drew in
         // two colors depending on stacking order.
         cigarMode: 'matches',
-        opacity: 0.45,
+        encoding: { opacity: 0.45 },
         // Level 0 is retro-CFA18 against the parent, level 1 the parent against
         // retro-CFA12.
         tracks: [['dog10k_fgf4_retro_cfa18'], ['dog10k_fgf4_retro_cfa12']],
@@ -730,7 +732,7 @@ export const dog10kSpecs: ScreenshotSpec[] = [
           trackId: 'dog10k_size_fst_igf1_20kb',
           height: FST_LANE_H,
           // At 9 px the rules merge into a band.
-          marks: [{ mark: 'rule', encoding: { y: 'score', size: 6 } }],
+          marks: [{ mark: 'rule', encoding: { y: 'score', strokeWidth: 6 } }],
           ...FST_AXIS,
         },
       ],

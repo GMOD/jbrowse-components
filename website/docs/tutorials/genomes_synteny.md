@@ -60,9 +60,9 @@ ribbon settings:
 - **CIGAR indels** → **Transparent indels** leaves insertions and deletions
   inside each block as see-through gaps
 
-The palette button in the same header sets the ribbons' `color`, a color scale
-that maps a field to colors. **Strand** paints each block by its orientation;
-the figures below use it.
+The palette button in the same header sets the view's `encoding.color`, a color
+scale that maps a field to colors. **Strand** paints each block by its
+orientation; the figures below use it.
 
 <Figure src="/img/genomes_synteny/ribbon_settings.png" links="As it opens=genomes_synteny/ribbons_default,Curved + transparent indels=genomes_synteny/ribbons_curved" caption="The TNNT3 comparison before and after the two ribbon settings, with their menu open on top." />
 

@@ -87,7 +87,10 @@ const ViewControls = observer(function ViewControls() {
         trackId: 'hg38_phylop',
         name: 'phyloP 100-way conservation',
         uri: 'https://hgdownload.soe.ucsc.edu/goldenpath/hg38/phyloP100way/hg38.phyloP100way.bw',
-        displayDefaults: { height: 100, color: '#3a7ca5' },
+        displayDefaults: {
+          height: 100,
+          encoding: { color: { value: '#3a7ca5' } },
+        },
       },
       {
         trackId: 'hg38_genes',

@@ -352,7 +352,7 @@ export interface AlignmentsContextMenuInfo extends ContextMenuAnchor {
  *     {
  *       type: 'LinearAlignmentsDisplay',
  *       displayId: 'methylation-LinearAlignmentsDisplay',
- *       baseColor: 'modifications',
+ *       pileup: { bases: { show: true, encoding: { color: 'modifications' } } },
  *       modifications: { unmodified: 'all' },
  *     },
  *   ],
@@ -950,7 +950,7 @@ export default function stateModelFactory(
 
           /**
            * #getter
-           * `color.labels` against the read buckets and values it names, which
+           * `encoding.color.scale.names` against the read buckets and values it names, which
            * every key row, hover and connection curve names a bucket by.
            */
           get declaredReadLabels(): DeclaredReadLabels {
@@ -2346,7 +2346,7 @@ export default function stateModelFactory(
         function colorsIn(theme: JBrowsePalette) {
           return buildColorPaletteFromPalette(theme, {
             declared: writtenReadCategoryColors(
-              self.colorSetting.value,
+              self.colorSetting,
               self.colorEncoding,
             ),
           })
@@ -2445,7 +2445,7 @@ export default function stateModelFactory(
 
           /**
            * #method
-           * The read palette over `theme`, with the category colors `color`
+           * The read palette over `theme`, with the category colors `encoding.color`
            * sets, and the read connections and splice junctions colored from
            * it, each joined to its laid-out section. The SVG export passes the
            * theme it renders with. Each member is its own computed, so while
@@ -2582,7 +2582,7 @@ export default function stateModelFactory(
             chainMode: self.unit === 'chain',
             showLinkedReadLines: self.showLinkedReadLines,
             collapseSections: self.collapseSections,
-            readConnectionsLineWidth: self.readConnectionsLineWidth,
+            readConnectionsStrokeScale: self.readConnectionsStrokeScale,
             arcsYDomainBp: this.arcsYDomainBp,
             linkRegions: this.linkRegions,
           }
@@ -2838,7 +2838,7 @@ export default function stateModelFactory(
         /**
          * #method
          * Fields that invalidate the fetched data, every one worker-bound.
-         * Arc-only fields (`readConnections.color` and `.filter`) are
+         * Arc-only fields (`readConnections.encoding.color` and `.filter`) are
          * not here: `arcsResult` reads them and they need no refetch. Non-tag
          * sort changes and tag coloring (`readFillColors`, baked in
          * `laidOutByGroup`) stay main-thread. It is defined in a separate views
@@ -3122,19 +3122,19 @@ export default function stateModelFactory(
 
           /**
            * #action
-           * Draw a per-base layer over the reads, or none. The read fill is
+           * Draw a per-base layer over the reads, or none: writes
+           * `pileup.bases.show` and its channel's field. The read fill is
            * `colorByField`'s and stays as it is.
            */
           setBaseLayer(layer?: BaseLayer) {
             if (!compareStructural(layer, self.baseLayer)) {
               const conf = requireReadsConf(self)
+              const color = conf.pileup.bases.encoding.color
+              setConf(conf, ['pileup', 'bases', 'show'], layer !== undefined)
               setConf(
                 conf,
-                'baseColor',
-                colorForField(
-                  writtenColorOf(conf.baseColor),
-                  layer?.type ?? '',
-                ),
+                ['pileup', 'bases', 'encoding', 'color'],
+                colorForField(writtenColorOf(color), layer?.type ?? ''),
               )
               if (layer?.modifications) {
                 setConf(conf, 'modifications', layer.modifications)
@@ -3585,7 +3585,12 @@ export default function stateModelFactory(
                 )
                   ? undefined
                   : {
-                      own: getConf(self, ['readConnections', 'color', 'field']),
+                      own: getConf(self, [
+                        'readConnections',
+                        'encoding',
+                        'color',
+                        'field',
+                      ]),
                       setField: (field: ArcColorField | '') => {
                         self.setReadConnectionsColorField(field)
                       },

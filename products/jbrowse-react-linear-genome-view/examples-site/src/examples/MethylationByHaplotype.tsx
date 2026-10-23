@@ -39,7 +39,9 @@ export default function MethylationByHaplotype() {
               type: 'LinearAlignmentsDisplay',
               height: 360,
               facet: 'tags.HP',
-              baseColor: { field: 'modifications' },
+              pileup: {
+                bases: { show: true, encoding: { color: 'modifications' } },
+              },
               modifications: { unmodified: 'all' },
             },
           },

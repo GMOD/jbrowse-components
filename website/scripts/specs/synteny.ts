@@ -62,7 +62,9 @@ export function hpyloriSyntenyWithGenes({
     trackId,
     filter: ['geneLike'],
     // a key per panel lists a different subset and covers the right-edge genes
-    ...(geneColor ? { color: geneColor, showLegend: false } : {}),
+    ...(geneColor
+      ? { encoding: { color: geneColor }, legend: { show: false } }
+      : {}),
   })
   return sessionSpec(HPYLORI_CONFIG, {
     views: [
@@ -198,7 +200,7 @@ function tnnt3Session(
     views: [
       {
         type: 'LinearSyntenyView',
-        color: { field: 'strand' },
+        encoding: { color: 'strand' },
         tracks: [['hg38_hs1_synteny']],
         ...view,
         views: [
@@ -296,7 +298,7 @@ function tnnt3StarSession() {
           {
             trackId: 'hg38_liftOver_multiway',
             rows: { sort: lanes, kept: lanes },
-            ribbonColor: { field: 'strand' },
+            ribbons: { encoding: { color: 'strand' } },
             height: (lanes.length + 1) * 60,
           },
         ],
@@ -408,7 +410,7 @@ const ECOLI_IDENTITY_TRACK = {
       rows: 'mate.assemblyName',
       filter: ["jexl:feature.mate.assemblyName != 'K12'"],
       scales: { y: { zero: false } },
-      marks: [{ mark: 'rule', encoding: { y: 'identity', size: 2 } }],
+      marks: [{ mark: 'rule', encoding: { y: 'identity', strokeWidth: 2 } }],
     },
   ],
 }
@@ -708,7 +710,7 @@ export function ecoliOneVsAllUrl(levelHeight: number) {
         tracks: ['ecoli_ava'],
         mark: { interpolate: 'linear' },
         // matches the lanes, which color by strand
-        color: { field: 'strand' },
+        encoding: { color: 'strand' },
         filter: [{ field: 'length', gte: 10000 }],
         collapseEmptyRows: true,
         levelHeights: [levelHeight, levelHeight, levelHeight, levelHeight],
@@ -793,9 +795,8 @@ export const syntenySpecs: ScreenshotSpec[] = [
           type: 'LinearSyntenyView',
           tracks: ['grape_peach_synteny_mcscan'],
           mark: { interpolate: 'linear' },
-          color: { field: 'query' },
+          encoding: { color: 'query', opacity: 0.8 },
           // the launch init reads levelHeights, not a `levels` snapshot
-          opacity: 0.8,
           levelHeights: [360],
           autoDiagonalize: true,
           views: [{ assembly: 'peach' }, { assembly: 'grape' }],
@@ -823,7 +824,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
               { assembly: 'GCF_030704535.1' },
             ],
             tracks: ['grape_peach_cacao_blocks'],
-            color: { field: 'reference' },
+            encoding: { color: 'reference' },
             autoDiagonalize: true,
             collapseEmptyRows: true,
           },
@@ -885,7 +886,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
             ],
             tracks: ['grape_peach_cacao_blocks'],
             mark: { interpolate: 'bump' },
-            color: { field: 'syntenicDepth' },
+            encoding: { color: 'syntenicDepth' },
           },
         ],
       },
@@ -1027,7 +1028,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
                     'tomato',
                   ],
                 },
-                ribbonColor: { field: 'strand' },
+                ribbons: { encoding: { color: 'strand' } },
                 height: 340,
               },
             ],
@@ -1092,13 +1093,17 @@ export const syntenySpecs: ScreenshotSpec[] = [
               type: 'MultiWaySyntenyDisplay',
               rows: { sort: ['NCTC86', 'CFT073', 'Sakai', 'IAI39'] },
               height: 340,
-              color: {
-                field:
-                  "jexl:feature.name && (startsWith(feature.name,'paa') || startsWith(feature.name,'fea') || feature.name == 'tynA') ? 'island' : 'other'",
-                domain: ['island', 'other'],
-                range: ['#d62728', 'goldenrod'],
-                labels: ['feaR, tynA, paa operon', 'other genes'],
-                title: 'K-12 island genes',
+              encoding: {
+                color: {
+                  field:
+                    "jexl:feature.name && (startsWith(feature.name,'paa') || startsWith(feature.name,'fea') || feature.name == 'tynA') ? 'island' : 'other'",
+                  scale: {
+                    domain: ['island', 'other'],
+                    range: ['#d62728', 'goldenrod'],
+                    names: ['feaR, tynA, paa operon', 'other genes'],
+                  },
+                  legend: { title: 'K-12 island genes' },
+                },
               },
             },
           ],
@@ -1229,7 +1234,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
             tracks: [
               {
                 trackId: 'primate_orthologs',
-                ribbonColor: { field: 'strand' },
+                ribbons: { encoding: { color: 'strand' } },
                 height: 620,
               },
             ],
@@ -1266,7 +1271,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
             tracks: [
               {
                 trackId: 'primate_orthologs',
-                ribbonColor: { field: 'strand' },
+                ribbons: { encoding: { color: 'strand' } },
                 height: 620,
               },
             ],
@@ -1298,10 +1303,9 @@ export const syntenySpecs: ScreenshotSpec[] = [
               },
             ],
             tracks: [['primate_orthologs']],
-            color: { field: 'target' },
+            encoding: { color: 'target', opacity: 1 },
             autoDiagonalize: true,
             levelHeights: [300],
-            opacity: 1,
           },
         ],
       },
@@ -1336,7 +1340,9 @@ export const syntenySpecs: ScreenshotSpec[] = [
               height: 1500,
               // strand color here mostly shows deposit orientation and drowns
               // the gene colors
-              ribbonColor: 'rgba(130,130,130,0.3)',
+              ribbons: {
+                encoding: { color: { value: 'rgba(130,130,130,0.3)' } },
+              },
             },
           ],
         },
@@ -1360,7 +1366,9 @@ export const syntenySpecs: ScreenshotSpec[] = [
             {
               trackId: 'ecoli_orthologs',
               height: 1500,
-              ribbonColor: 'rgba(130,130,130,0.3)',
+              ribbons: {
+                encoding: { color: { value: 'rgba(130,130,130,0.3)' } },
+              },
             },
           ],
         },
@@ -1384,7 +1392,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
             'hg38-ncbiRefSeq',
             {
               trackId: 'hg38_liftover_multiway',
-              ribbonColor: { field: 'strand' },
+              ribbons: { encoding: { color: 'strand' } },
               rows: { sort: HG38_VERTEBRATES_TREE_ORDER },
               height: 600,
             },
@@ -1460,7 +1468,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
             },
           ],
           tracks: ['amylase_adjacent'],
-          color: { field: 'strand' },
+          encoding: { color: 'strand' },
           mark: { interpolate: 'bump' },
           levelHeights: [110, 110, 110, 110],
         },
@@ -1493,9 +1501,11 @@ export const syntenySpecs: ScreenshotSpec[] = [
             { assembly: 'Ler', loc: 'Chr4:1-6,000,000' },
           ],
           tracks: [['syri_pangenome']],
-          color: { field: 'syri', domain: SYRI_TYPES },
+          encoding: {
+            color: { field: 'syri', scale: { domain: SYRI_TYPES } },
+            opacity: 0.9,
+          },
           mark: { interpolate: 'bump' },
-          opacity: 0.9,
           render: { antialias: false },
           collapseEmptyRows: true,
           levelHeights: [260],
@@ -1516,9 +1526,11 @@ export const syntenySpecs: ScreenshotSpec[] = [
           type: 'LinearSyntenyView',
           views: SYRI_ACCESSIONS.map(assembly => ({ assembly })),
           tracks: ['syri_pangenome'],
-          color: { field: 'syri', domain: SYRI_TYPES },
+          encoding: {
+            color: { field: 'syri', scale: { domain: SYRI_TYPES } },
+            opacity: 0.9,
+          },
           mark: { interpolate: 'bump' },
-          opacity: 0.9,
           render: { antialias: false },
           collapseEmptyRows: true,
           levelHeights: SYRI_ACCESSIONS.slice(1).map(() => 150),
@@ -1597,7 +1609,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
             'hg38-ncbiRefSeq',
             {
               trackId: 'hg38_liftover_multiway',
-              ribbonColor: { field: 'strand' },
+              ribbons: { encoding: { color: 'strand' } },
               rows: { sort: HG38_VERTEBRATES_TREE_ORDER },
               height: 600,
             },
@@ -1656,8 +1668,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
               },
             ],
             tracks: [['primate_orthologs']],
-            color: { field: 'dnds' },
-            opacity: 0.95,
+            encoding: { color: 'dnds', opacity: 0.95 },
             mark: { interpolate: 'bump' },
           },
         ],
@@ -1722,11 +1733,12 @@ export const syntenySpecs: ScreenshotSpec[] = [
             { assembly: 'oat', displayedRegionNames: OAT_HOMOEOLOG_GROUPS },
           ],
           tracks: ['oat_homoeologs'],
-          color: {
-            field: 'ds',
-            domainMin: 0,
-            domainMax: 0.25,
-            title: 'dS',
+          encoding: {
+            color: {
+              field: 'ds',
+              scale: { domainMin: 0, domainMax: 0.25 },
+              legend: { title: 'dS' },
+            },
           },
         },
       ],
@@ -1754,7 +1766,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
               { assembly: 'zebrafish' },
             ],
             tracks: ['vertebrates_orthogroups'],
-            color: { field: 'reference' },
+            encoding: { color: 'reference', opacity: 0.3 },
             // The gar-zebrafish band stays scrambled whatever the ordering:
             // past the teleost duplication a gar chromosome maps to two.
             autoDiagonalize: true,
@@ -1763,7 +1775,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
             levelHeights: [180, 180, 180, 180],
             // Alpha follows collinearity: these scattered links vanish at the
             // grasses' 0.15.
-            opacity: 0.3,
             mark: { interpolate: 'linear' },
           },
         ],
@@ -1803,12 +1814,11 @@ export const syntenySpecs: ScreenshotSpec[] = [
               { assembly: 'coffee' },
             ],
             tracks: ['solanaceae_orthogroups'],
-            color: { field: 'reference' },
+            encoding: { color: 'reference', opacity: 0.2 },
             autoDiagonalize: true,
             coord: { ratio: 1 },
             collapseEmptyRows: true,
             levelHeights: [180, 180, 180, 180],
-            opacity: 0.2,
             mark: { interpolate: 'linear' },
           },
         ],
@@ -1840,13 +1850,12 @@ export const syntenySpecs: ScreenshotSpec[] = [
               { assembly: 'virilis' },
             ],
             tracks: ['drosophila_orthogroups'],
-            color: { field: 'reference' },
+            encoding: { color: 'reference', opacity: 0.15 },
             autoDiagonalize: true,
             diagonalizeAnchorRow: 1,
             coord: { ratio: 1 },
             collapseEmptyRows: true,
             levelHeights: [150, 150, 150, 150, 150, 150],
-            opacity: 0.15,
             mark: { interpolate: 'linear' },
           },
         ],
@@ -1876,13 +1885,12 @@ export const syntenySpecs: ScreenshotSpec[] = [
               { assembly: 'virilis' },
             ],
             tracks: ['drosophila_blocks'],
-            color: { field: 'reference' },
+            encoding: { color: 'reference', opacity: 0.5 },
             autoDiagonalize: true,
             diagonalizeAnchorRow: 1,
             coord: { ratio: 1 },
             collapseEmptyRows: true,
             levelHeights: [150, 150, 150, 150, 150, 150],
-            opacity: 0.5,
             mark: { interpolate: 'linear' },
           },
         ],
@@ -1910,13 +1918,12 @@ export const syntenySpecs: ScreenshotSpec[] = [
               { assembly: 'setaria' },
             ],
             tracks: ['grasses_orthogroups'],
-            color: { field: 'reference' },
+            encoding: { color: 'reference', opacity: 0.15 },
             autoDiagonalize: true,
             coord: { ratio: 1 },
             collapseEmptyRows: true,
             levelHeights: [180, 180, 180, 180],
             // at the 0.2 default the hairline links saturate into one wash
-            opacity: 0.15,
             // curved bundles braid mid-band and stop pointing at a partner
             mark: { interpolate: 'linear' },
           },
@@ -1993,12 +2000,11 @@ export const syntenySpecs: ScreenshotSpec[] = [
             tracks: ['grasses_orthogroups'],
             // 'target' colors the bottom band by maize chromosome; 'reference'
             // paints one color when each row holds one or two chromosomes
-            color: { field: 'target' },
+            encoding: { color: 'target', opacity: 0.65 },
             // curves knot where the two fans meet on maize 5's side
             mark: { interpolate: 'linear' },
             // at 1 a crossing shows only the last ribbon; at 0.35 the top band
             // washes out
-            opacity: 0.65,
             // the bottom band's crossings are unavoidable and need the room
             levelHeights: [190, 500],
           },
@@ -2028,14 +2034,13 @@ export const syntenySpecs: ScreenshotSpec[] = [
               { assembly: 'timopheevii' },
             ],
             tracks: ['wheat_orthogroups'],
-            color: { field: 'reference' },
+            encoding: { color: 'reference', opacity: 0.15 },
             autoDiagonalize: true,
             // fit-to-width stretches tauschii's 7 chromosomes over wheat's 21
             // and fans a clean 1:1 D-genome map
             coord: { ratio: 1 },
             collapseEmptyRows: true,
             levelHeights: [170, 170, 170, 170, 170],
-            opacity: 0.15,
             mark: { interpolate: 'linear' },
           },
         ],
@@ -2091,14 +2096,13 @@ export const syntenySpecs: ScreenshotSpec[] = [
             tracks: [['wheat_orthogroups']],
             // 'reference' paints the whole figure one color: every link lands
             // on 4A
-            color: { field: 'query' },
+            encoding: { color: 'query', opacity: 0.5 },
             // the order along 4A is the finding; diagonalizing rewrites it
             autoDiagonalize: false,
             // no coord.ratio: a shared bp/px draws 4A a sixth of the frame wide
             collapseEmptyRows: true,
             levelHeights: [430],
             // at 0.15 the two translocated bundles read as smoke
-            opacity: 0.5,
             mark: { interpolate: 'linear' },
           },
         ],
@@ -2242,7 +2246,9 @@ export const syntenySpecs: ScreenshotSpec[] = [
             {
               trackId: 'ecoli_minigraph_segments',
               type: 'LinearBasicDisplay',
-              color: referencePositionColor(PAA_COLOR_DOMAIN),
+              encoding: {
+                color: { value: referencePositionColor(PAA_COLOR_DOMAIN) },
+              },
               height: 70,
             },
             {
@@ -2555,7 +2561,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
           tracks: [['grape_peach_anchors']],
           mark: { interpolate: 'linear' },
           levelHeights: [220],
-          color: { field: 'syntenicDepth' },
+          encoding: { color: 'syntenicDepth' },
         },
       ],
     }),
@@ -2576,8 +2582,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
           filter: [{ field: 'length', gte: 500000 }],
           mark: { interpolate: 'linear' },
           autoDiagonalize: true,
-          color: { field: 'query' },
-          opacity: 0.4,
+          encoding: { color: 'query', opacity: 0.4 },
           levelHeights: [350],
           views: [{ assembly: 'hs1' }, { assembly: 'mm39' }],
         },
@@ -2900,7 +2905,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
         'hs1',
       ],
       {
-        ribbonColor: { field: 'strand' },
+        ribbons: { encoding: { color: 'strand' } },
         showGeneLabels: false,
         height: 6 * 60,
       },
@@ -3317,11 +3322,10 @@ export const syntenySpecs: ScreenshotSpec[] = [
         {
           type: 'LinearSyntenyView',
           tracks: ['hs1_chrY_self'],
-          color: { field: 'strand' },
+          encoding: { color: 'strand', opacity: 0.4 },
           mark: { interpolate: 'bump' },
           cigarMode: 'matches',
           filter: [{ field: 'length', gte: 100000 }],
-          opacity: 0.4,
           levelHeights: [220],
           collapseEmptyRows: true,
           views: [

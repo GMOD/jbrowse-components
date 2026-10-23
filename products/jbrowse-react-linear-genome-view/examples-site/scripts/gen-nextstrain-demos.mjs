@@ -607,7 +607,9 @@ function buildConfig({ assembly, slug, geneFeats, seq, genomesCram }) {
           {
             type: 'LinearBasicDisplay',
             displayId: `${assembly}-nextstrain-color-display`,
-            color: "jexl:get(feature,'fill') || 'black'",
+            encoding: {
+              color: { value: "jexl:get(feature,'fill') || 'black'" },
+            },
           },
         ],
       },

@@ -370,7 +370,7 @@ cat > session.json <<'JSON'
       "displayName": "Hexaploid oat against itself, colored by dN/dS",
       "views": [{ "assembly": "oat" }, { "assembly": "oat" }],
       "tracks": ["oat_homoeologs"],
-      "color": { "field": "dnds" }
+      "encoding": { "color": "dnds" }
     }
   ]
 }

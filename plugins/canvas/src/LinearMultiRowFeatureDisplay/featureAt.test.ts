@@ -390,8 +390,7 @@ describe('featureAt', () => {
         ),
       )
       display.applyRowEdits([{ name: 'a' }, { name: 'b' }], {
-        domain: ['a'],
-        range: ['green'],
+        scale: { domain: ['a'], range: ['green'] },
       })
       display.toggleCategory(['cat1'])
 

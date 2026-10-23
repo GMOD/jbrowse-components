@@ -94,7 +94,7 @@ const ARMS: {
     name: 'scale-color',
     encoding: {
       y: 'score',
-      color: { field: 'strand', scale: 'categorical' },
+      color: { field: 'strand', scale: 'ordinal' },
     },
   },
   {
@@ -125,7 +125,7 @@ const ARMS: {
     encoding: {
       y: 'score',
       color: 'red',
-      shape: { field: 'strand', scale: 'categorical' },
+      shape: { field: 'strand', scale: 'ordinal' },
     },
   },
   {

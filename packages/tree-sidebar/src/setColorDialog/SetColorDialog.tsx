@@ -7,7 +7,12 @@ import { pairedColorsOf } from '@jbrowse/display-kit/colorConfigSchema'
 import { Button, DialogActions, DialogContent } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { rowColorMembers, samePairs, withPair } from '../rowColorChoice.ts'
+import {
+  rowColorMembers,
+  samePairs,
+  withPair,
+  withPairs,
+} from '../rowColorChoice.ts'
 import { resolveRowColors, rowFieldValue } from '../rowColorScale.ts'
 import { IDENTITY_FIELDS } from '../sourcesGridUtils.ts'
 import BulkEditPanel from './BulkEditPanel.tsx'
@@ -117,10 +122,6 @@ export default observer(function SetColorDialog<S extends RowSource>({
   onEditAsJson,
 }: SetColorDialogProps<S>) {
   const { classes } = useStyles()
-  const openedOn = () => ({
-    rows: model.editableSources,
-    choice: model.rowColorChoice,
-  })
   // Undefined until a swatch is touched, so a reset re-reads the model rather
   // than restoring a pair snapshotted before it.
   const [plotPair, setPlotPair] = useState<{
@@ -128,9 +129,9 @@ export default observer(function SetColorDialog<S extends RowSource>({
     below: string
   }>()
   const [showBulkEditor, setShowBulkEditor] = useState(false)
-  const [opened, setOpened] = useState(openedOn)
-  const [currLayout, setCurrLayout] = useState(opened.rows)
-  const [choice, setChoice] = useState(opened.choice)
+  const [currLayout, setCurrLayout] = useState(model.editableSources)
+  const [openedChoice, setOpenedChoice] = useState(model.rowColorChoice)
+  const [choice, setChoice] = useState(openedChoice)
   // The `rowColor` object each choice the reader edited in this sitting
   // writes; an unedited one writes what it starts from.
   const [drafts, setDrafts] = useState<
@@ -145,7 +146,7 @@ export default observer(function SetColorDialog<S extends RowSource>({
   const editDraft = (next: (current: RowColorSetting) => RowColorSetting) => {
     setDrafts({ ...drafts, [choice]: next(setting) })
   }
-  const pairs = pairedColorsOf(setting)
+  const pairs = pairedColorsOf(setting.scale)
   const dealt = model.dealtRowColorsFor(setting)
   const colors = resolveRowColors(
     currLayout,
@@ -180,7 +181,7 @@ export default observer(function SetColorDialog<S extends RowSource>({
 
   // An untouched panel writes no color object, so the config's own stands
   // whatever the panel can spell.
-  const colorTouched = choice !== opened.choice || Object.hasOwn(drafts, choice)
+  const colorTouched = choice !== openedChoice || Object.hasOwn(drafts, choice)
 
   // The row color goes first: a plot color can change whether the palette
   // deals, which the written object was chosen under.
@@ -210,10 +211,9 @@ export default observer(function SetColorDialog<S extends RowSource>({
   // Drop custom settings and re-seed the grid from the model's persisted state.
   const resetToModel = () => {
     model.resetRowArrangement()
-    const next = openedOn()
-    setOpened(next)
-    setCurrLayout(next.rows)
-    setChoice(next.choice)
+    setCurrLayout(model.editableSources)
+    setOpenedChoice(model.rowColorChoice)
+    setChoice(model.rowColorChoice)
     setDrafts({})
     setPlotPair(undefined)
   }
@@ -224,20 +224,19 @@ export default observer(function SetColorDialog<S extends RowSource>({
         <BulkEditPanel
           currLayout={currLayout.map(row => ({
             ...row,
-            rowColor: pairedColorsOf(eachRow).get(row.name),
+            rowColor: pairedColorsOf(eachRow.scale).get(row.name),
           }))}
           onClose={next => {
             if (next) {
-              const pasted = next.flatMap(({ name, rowColor }) =>
-                rowColor && isCssColor(rowColor)
-                  ? [[name, rowColor] as const]
-                  : [],
-              )
-              const picked = {
-                ...eachRow,
-                domain: pasted.map(([name]) => name),
-                range: pasted.map(([, color]) => color),
+              const pairs = new Map(pairedColorsOf(eachRow.scale))
+              for (const { name, rowColor } of next) {
+                if (rowColor && isCssColor(rowColor)) {
+                  pairs.set(name, rowColor)
+                } else {
+                  pairs.delete(name)
+                }
               }
+              const picked = withPairs(eachRow, pairs)
               if (!samePairs(picked, eachRow)) {
                 setEachRow(picked)
               }
@@ -288,9 +287,12 @@ export default observer(function SetColorDialog<S extends RowSource>({
                     choice === ''
                       ? undefined
                       : {
-                          color: setting.unknown,
+                          color: setting.scale.unknown,
                           onChange: unknown => {
-                            editDraft(s => ({ ...s, unknown }))
+                            editDraft(s => ({
+                              ...s,
+                              scale: { ...s.scale, unknown },
+                            }))
                           },
                         }
                   }
@@ -300,7 +302,10 @@ export default observer(function SetColorDialog<S extends RowSource>({
                     editDraft(s => withPair(s, value, color))
                   }}
                   onClear={() => {
-                    editDraft(s => ({ ...s, domain: [], range: [] }))
+                    editDraft(s => ({
+                      ...s,
+                      scale: { ...s.scale, domain: [], range: [] },
+                    }))
                   }}
                 />
 

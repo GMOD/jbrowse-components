@@ -13,25 +13,13 @@ import {
   colorFieldOf,
   pinnedInsertSizeBand,
 } from './alignmentsColor.ts'
+import { colorSettingOf } from './colorSettingFixture.ts'
 import { FACET_LABELS } from './facetLabels.ts'
 
-import type { AlignmentsColorSetting } from './alignmentsColor.ts'
+import type { ColorSlots } from '@jbrowse/core/util/colorScale'
 
-const UNSET: AlignmentsColorSetting = {
-  value: undefined,
-  field: '',
-  scale: undefined,
-  domain: [],
-  range: [],
-  scheme: undefined,
-  reverse: false,
-  domainMin: undefined,
-  domainMax: undefined,
-  domainMid: undefined,
-}
-
-function readFill(field: string, scale?: AlignmentsColorSetting['scale']) {
-  return colorByOf(alignmentsColorEncoding({ ...UNSET, field, scale }))
+function readFill(field: string) {
+  return colorByOf(alignmentsColorEncoding(colorSettingOf({ field })))
 }
 
 describe('colorByOf', () => {
@@ -74,26 +62,32 @@ describe('colorByOf', () => {
 })
 
 describe('baseLayerOf', () => {
+  const shown = (field: string) => ({ show: true, field })
+
   test('every per-base field selects the layer of its name', () => {
     for (const field of BASE_COLOR_FIELDS) {
-      expect(baseLayerOf(field)?.type).toBe(field)
+      expect(baseLayerOf(shown(field))?.type).toBe(field)
     }
   })
 
   test('only the modification layers carry the modification settings', () => {
     const settings = { threshold: 50 }
-    expect(baseLayerOf('modifications', settings)).toEqual({
+    expect(baseLayerOf(shown('modifications'), settings)).toEqual({
       type: 'modifications',
       modifications: settings,
     })
-    expect(baseLayerOf('baseQuality', settings)).toEqual({
+    expect(baseLayerOf(shown('baseQuality'), settings)).toEqual({
       type: 'baseQuality',
     })
   })
 
   test('no field or a read field draws no layer', () => {
-    expect(baseLayerOf('')).toBeUndefined()
-    expect(baseLayerOf('strand')).toBeUndefined()
+    expect(baseLayerOf(shown(''))).toBeUndefined()
+    expect(baseLayerOf(shown('strand'))).toBeUndefined()
+  })
+
+  test('a named field draws nothing while the layer is hidden', () => {
+    expect(baseLayerOf({ show: false, field: 'modifications' })).toBeUndefined()
   })
 })
 
@@ -108,17 +102,18 @@ describe('bodyColorScheme', () => {
 })
 
 describe('a Color by pick over the written color', () => {
-  const hp: AlignmentsColorSetting = {
-    ...UNSET,
+  const hp: ColorSlots = {
     field: 'tags.HP',
-    domain: ['1', '2'],
-    range: ['red', 'blue'],
+    scale: { domain: ['1', '2'], range: ['red', 'blue'] },
   }
 
   test('the plain fill drops the field, and re-picking the parked one restores it', () => {
     expect(colorForField(hp, '').field).toBeUndefined()
     const back = colorForField({}, 'tags.HP', parkedColorOf(hp))
-    expect(back).toMatchObject({ field: 'tags.HP', range: ['red', 'blue'] })
+    expect(back).toMatchObject({
+      field: 'tags.HP',
+      scale: { range: ['red', 'blue'] },
+    })
   })
 
   test('a new field starts from no order or range and keeps the constant', () => {
@@ -130,17 +125,21 @@ describe('a Color by pick over the written color', () => {
 })
 
 describe('pinnedInsertSizeBand', () => {
-  const band = (over: Partial<AlignmentsColorSetting>) =>
-    pinnedInsertSizeBand(alignmentsColorEncoding({ ...UNSET, ...over }))
+  const band = (over: ColorSlots) =>
+    pinnedInsertSizeBand(alignmentsColorEncoding(colorSettingOf(over)))
 
   test('two cuts under an insert-size field pin the band', () => {
-    expect(band({ field: 'insertSize', domain: ['150', '600'] })).toEqual({
+    expect(
+      band({ field: 'insertSize', scale: { domain: ['150', '600'] } }),
+    ).toEqual({
       lower: 150,
       upper: 600,
     })
-    expect(band({ field: 'strand', domain: ['150', '600'] })).toBeUndefined()
     expect(
-      band({ field: 'insertSize', domain: ['150', '150'] }),
+      band({ field: 'strand', scale: { domain: ['150', '600'] } }),
+    ).toBeUndefined()
+    expect(
+      band({ field: 'insertSize', scale: { domain: ['150', '150'] } }),
     ).toBeUndefined()
   })
 })

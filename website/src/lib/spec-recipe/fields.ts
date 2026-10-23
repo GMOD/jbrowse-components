@@ -131,6 +131,15 @@ function asString(value: unknown): string | undefined {
   return typeof value === 'string' ? value : undefined
 }
 
+// A channel as written: a bare string is the field, an object the channel.
+function channelOf(value: unknown): Record<string, unknown> | undefined {
+  return typeof value === 'string' ? { field: value } : asRecord(value)
+}
+
+function scaleOf(channel: Record<string, unknown> | undefined) {
+  return asRecord(channel?.scale) ?? {}
+}
+
 // A scheme's registry `menu.label` doubles as the text on its menu row only for
 // `kind: 'radio'`. The three `kind: 'special'` schemes each open a submenu the
 // registry spells differently — it names them for the legend, not the menu — so
@@ -151,25 +160,29 @@ const MODIFICATION_BY_TYPE = 'One color per modification type'
 const MODIFICATION_TWO_COLOR =
   'One color per type, plus low-probability & unmodified in blue'
 
-// The members a spec's `color` leaves out, so the two slots a recipe reads go
-// through the display's own setting → encoding → scheme path rather than a
-// second reading of the same rule here.
+// The members a spec's `encoding.color` leaves out, so the field a recipe
+// reads goes through the display's own setting → encoding → scheme path rather
+// than a second reading of the same rule here.
 const UNSET_COLOR = {
   value: undefined,
-  domain: [],
-  range: [],
-  scheme: undefined,
-  reverse: false,
-  domainMin: undefined,
-  domainMax: undefined,
-  domainMid: undefined,
+  scale: {
+    type: undefined,
+    domain: [],
+    range: [],
+    scheme: undefined,
+    reverse: false,
+    domainMin: undefined,
+    domainMax: undefined,
+    domainMid: undefined,
+  },
+  legend: {},
 }
 
-// The alignments displays' `color` object: the field names the scheme
+// The alignments displays' `encoding.color`: the field names the scheme
 // (`colorByOf`), and a scheme's place in the menu is COLOR_SCHEMES'. A declared
 // scale has no menu row, and neither has a feature attribute or a constant.
 function alignmentsColorStep(value: unknown): FieldStep | undefined {
-  const color = asRecord(value)
+  const color = channelOf(value)
   if (!color) {
     return undefined
   }
@@ -177,7 +190,6 @@ function alignmentsColorStep(value: unknown): FieldStep | undefined {
     alignmentsColorEncoding({
       ...UNSET_COLOR,
       field: asString(color.field) ?? '',
-      scale: undefined,
     }),
   )
   if (colorBy.type === 'normal' || colorBy.attribute !== undefined) {
@@ -192,8 +204,9 @@ function alignmentsColorStep(value: unknown): FieldStep | undefined {
       : []),
     SPECIAL_COLOR_MENUS[colorBy.type] ?? menu.label,
   ].join(' → ')
+  const scale = scaleOf(color)
   const declared =
-    asList(color.domain) ?? asList(color.range) ?? asString(color.scale)
+    asList(scale.domain) ?? asList(scale.range) ?? asString(scale.type)
   return {
     path: colorBy.tag ? `${path} → enter tag "${colorBy.tag}"` : path,
     note: declared
@@ -202,13 +215,16 @@ function alignmentsColorStep(value: unknown): FieldStep | undefined {
   }
 }
 
-// The alignments displays' `baseColor`: the per-base layer's row in the same
-// Color by... menu. The two modification rows are submenus, whose radio the
-// sibling `modifications` slot settles (`modificationsStep`).
-const baseColorStep: FieldRecipe = value => {
-  const layer = baseLayerOf(
-    asString(value) ?? asString(asRecord(value)?.field) ?? '',
-  )
+// The alignments displays' `pileup.bases`: the per-base layer's row in the
+// same Color by... menu. The two modification rows are submenus, whose radio
+// the sibling `modifications` slot settles (`modificationsStep`).
+const basesStep: FieldRecipe = value => {
+  const bases = asRecord(value)
+  const color = channelOf(asRecord(bases?.encoding)?.color)
+  const layer = baseLayerOf({
+    show: bases?.show === true,
+    field: asString(color?.field) ?? '',
+  })
   if (!layer) {
     return undefined
   }
@@ -226,15 +242,15 @@ const baseColorStep: FieldRecipe = value => {
 // displays' when the field is one only they paint; `strand` reads the same on
 // the feature display's menu.
 function namesAlignmentsColor(value: unknown) {
-  const field = asString(asRecord(value)?.field) ?? ''
+  const field = asString(channelOf(value)?.field) ?? ''
   return (
     facetTag(field) !== undefined ||
     (field !== 'strand' && (COLOR_FIELDS as readonly string[]).includes(field))
   )
 }
 
-// The `modifications` slot beside `baseColor: 'modifications'` or
-// `'bisulfite'`: which radio inside that submenu the figure picked.
+// The `modifications` slot beside a `pileup.bases` color of `modifications`
+// or `bisulfite`: which radio inside that submenu the figure picked.
 const modificationsStep: FieldRecipe = value => {
   const mods = asRecord(value)
   if (!mods) {
@@ -333,12 +349,12 @@ const SYNTENY_COLOR_MODES: Record<string, string> = Object.fromEntries(
 
 const SOLID_COLOR = 'Solid color...'
 
-// A synteny color object (the views' `color`, the multi-way display's
-// `ribbonColor`) as the Color by row that writes it: Solid color... for a
-// constant, the string shorthand or `value` on the object, else the radio of
-// the field it names, `''` for Default.
+// A synteny color channel (the views' `encoding.color`, the multi-way
+// display's `ribbons.encoding.color`) as the Color by row that writes it: Solid
+// color... for a `value` with no field, else the radio of the field it names,
+// `''` for Default.
 function syntenyColorField(value: unknown) {
-  const color = typeof value === 'string' ? { value } : asRecord(value)
+  const color = channelOf(value)
   if (!color) {
     return undefined
   }
@@ -363,14 +379,15 @@ const MULTI_SAMPLE_VARIANT_DISPLAYS = new Set([
 ])
 
 // Mirrors the canvas display's own `colorByMode` getter (colorViews.ts), which
-// is what decides which of the "Color by..." radios reads as checked: a
-// `color.field` of `strand` is 'strand', any other field is 'attribute', and
-// with no field painting it is 'default', whatever `color.value` holds.
+// is what decides which of the "Color by..." radios reads as checked: an
+// `encoding.color.field` of `strand` is 'strand', any other field is
+// 'attribute', and with no field painting it is 'default', whatever
+// `encoding.color.value` holds.
 //
-// Three displays take a `color`, and the submenu is the same one on two of
-// them: LinearVariantDisplay is built on the same canvas base model, so its
-// 'Solid color...' and 'Attribute...' rows open the identical dialogs and write
-// the identical strings. It only swaps the radio list — no Strand row (variants
+// Three displays take an `encoding.color`, and the submenu is the same one on
+// two of them: LinearVariantDisplay is built on the same canvas base model, so
+// its 'Solid color...' and 'Attribute...' rows open the identical dialogs and
+// write the identical strings. It only swaps the radio list — no Strand row (variants
 // have no strand) and two one-click presets in its place, from its own
 // colorBySubMenuItems.
 //
@@ -388,9 +405,9 @@ const VARIANT_COLOR_PRESETS: Record<string, string> = {
   'jexl:impactColor(feature)': 'Consequence impact',
 }
 
-// The same two presets as the fields both variant displays' `color` names
-// them by (IMPACT_FIELD, SV_TYPE_FIELD), and the phase set the multi-sample
-// displays add (PHASE_SET_FIELD).
+// The same two presets as the fields both variant displays' `encoding.color`
+// names them by (IMPACT_FIELD, SV_TYPE_FIELD), and the phase set the
+// multi-sample displays add (PHASE_SET_FIELD).
 const VARIANT_PRESET_FIELDS: Record<string, string> = {
   svType: 'SV type',
   impact: 'Consequence impact',
@@ -402,8 +419,8 @@ const VARIANT_CELL_PRESET_FIELDS: Record<string, string> = {
 
 /**
  * The displays composing the canvas base display, which is where the two
- * channel objects and the dialogs that write them live: `color` under Color
- * by... and `facet` under Group by..., with Sections for the drawn order.
+ * channel objects and the dialogs that write them live: `encoding.color` under
+ * Color by... and `facet` under Group by..., with Sections for the drawn order.
  * `LinearVariantDisplay` is on the same base as `LinearBasicDisplay` and
  * renames its vocabulary, so every channel step below is a step in one of
  * those menus and one list gates them all.
@@ -422,12 +439,10 @@ function hasChannelMenus(displayType: string | undefined) {
   return displayType !== undefined && CHANNEL_MENU_DISPLAYS.has(displayType)
 }
 
-// The Manhattan display's `color` object: its Color by... submenu picks the
-// scale, and a field is typed into the Field... dialog. The order and colors
-// the values take have no menu row, and a field under `none` waits unread.
-// The canvas displays' `color` object: a string is the constant, and
-// `{ field, domain, range }` a field through a range. The dialog names the
-// field; the order and colors it spends are the JSON the same dialog opens.
+// The canvas displays' `encoding.color`: `{ value }` is the constant, and a
+// field, bare or beside a `scale` with `domain` and `range`, a field through
+// a range. The dialog names the field; the order and colors it spends are the
+// JSON the same dialog opens.
 function colorStep(
   value: unknown,
   context: FieldContext,
@@ -437,16 +452,16 @@ function colorStep(
     return mafColorStep(value)
   }
   if (displayType === 'MultiWaySyntenyDisplay') {
-    const geneColor = asRecord(value)
-    return asList(geneColor?.domain) || asList(geneColor?.range)
+    const geneScale = scaleOf(channelOf(value))
+    return asList(geneScale.domain) || asList(geneScale.range)
       ? {
           path: `${TRACK_MENU} → Advanced → Edit plot...`,
-          note: 'The Color by... radios paint a gene by cluster, name or strand. A field expression with its own domain and range is the color object, which Edit plot takes as text.',
+          note: 'The Color by... radios paint a gene by cluster, name or strand. A field expression with its own scale domain and range is the color channel, which Edit plot takes as text.',
         }
       : undefined
   }
   if (displayType === 'ChordVariantDisplay') {
-    return typeof value === 'string'
+    return asString(asRecord(value)?.value) !== undefined
       ? {
           path: `${TRACK_MENU} → Settings → color`,
           note: 'The chord color. No menu writes it, so it is set on the config like the other per-feature color expressions.',
@@ -460,21 +475,23 @@ function colorStep(
   ) {
     return alignmentsColorStep(value)
   }
-  const scale = asRecord(value)
+  const color = channelOf(value)
+  const scale = scaleOf(color)
   if (displayType && MULTI_SAMPLE_VARIANT_DISPLAYS.has(displayType)) {
-    return scale ? variantCellColorStep(scale) : undefined
+    return color ? variantCellColorStep(color) : undefined
   }
-  if (scale && displayType === 'LinearHicDisplay') {
+  if (color && displayType === 'LinearHicDisplay') {
     return hicColorStep(scale)
   }
   if (displayType === 'LinearWiggleDisplay') {
     const editor = `${TRACK_MENU} → ${ROW_ARRANGEMENT_EDITORS.LinearWiggleDisplay}`
     // Two swatches say a constant and a two-sided cut. A ramp, several cuts or
     // a color per source is more than they can express, and Edit plot is
-    // where the whole object goes.
-    return !scale ||
-      (scale.field === 'score' &&
-        scale.scale === 'threshold' &&
+    // where the whole channel goes. The field unset is the score.
+    const constant = color?.field === undefined && !asRecord(color?.scale)
+    return constant ||
+      ((color?.field ?? 'score') === 'score' &&
+        scale.type === 'threshold' &&
         (asList(scale.domain) ?? []).length <= 1)
       ? {
           path: `${editor} → the plot color swatches`,
@@ -482,12 +499,12 @@ function colorStep(
         }
       : {
           path: `${TRACK_MENU} → Advanced → Edit plot...`,
-          note: 'More than two swatches can say, so Edit plot writes the whole color object.',
+          note: 'More than two swatches can say, so Edit plot writes the whole color channel.',
         }
   }
-  if (scale) {
-    const field = asString(scale.field)
-    if (!field || !hasChannelMenus(displayType)) {
+  const field = asString(color?.field)
+  if (field) {
+    if (!hasChannelMenus(displayType)) {
       return undefined
     }
     const colorBy = `${TRACK_MENU} → Color by...`
@@ -505,13 +522,15 @@ function colorStep(
       ? { path: `${colorBy} → Strand` }
       : { path: `${colorBy} → Attribute... → ${field}` }
   }
-  return constantColorStep(value, context)
+  return asRecord(color?.scale)
+    ? undefined
+    : constantColorStep(color?.value, context)
 }
 
-// The MAF display's `color`: a field named bare or as `{ field }`, each one a
-// Color by... row.
+// The MAF display's `encoding.color`: a field named bare or as `{ field }`,
+// each one a Color by... row.
 function mafColorStep(value: unknown): FieldStep | undefined {
-  const field = typeof value === 'string' ? value : asString(asRecord(value)?.field)
+  const field = asString(channelOf(value)?.field)
   const label =
     field !== undefined && field in MAF_COLOR_FIELD_LABELS
       ? MAF_COLOR_FIELD_LABELS[field as keyof typeof MAF_COLOR_FIELD_LABELS]
@@ -519,9 +538,9 @@ function mafColorStep(value: unknown): FieldStep | undefined {
   return label ? { path: `${MAF_COLOR_BY} → ${label}` } : undefined
 }
 
-// The multi-sample variant displays' cell `color`: a preset field has its own
-// row under Cells, and any other field is typed into Field..., its cut points
-// beside it.
+// The multi-sample variant displays' cell `encoding.color`: a preset field has
+// its own row under Cells, and any other field is typed into Field..., its cut
+// points beside it.
 function variantCellColorStep(
   color: Record<string, unknown>,
 ): FieldStep | undefined {
@@ -534,23 +553,24 @@ function variantCellColorStep(
   if (preset) {
     return { path: `${cells} → ${preset}` }
   }
-  const cuts = color.scale === 'threshold' ? asList(color.domain) : undefined
+  const scale = scaleOf(color)
+  const cuts = scale.type === 'threshold' ? asList(scale.domain) : undefined
   return {
     path: `${cells} → Field... → ${field}`,
     note: cuts ? `Cut points: ${cuts.join(', ')}.` : undefined,
   }
 }
 
-function hicColorStep(color: Record<string, unknown>): FieldStep | undefined {
-  const scheme = asString(color.scheme)
+function hicColorStep(scale: Record<string, unknown>): FieldStep | undefined {
+  const scheme = asString(scale.scheme)
   const schemeStep = scheme
     ? `${TRACK_MENU} → Color scheme → ${capitalizeFirst(scheme)}`
     : undefined
-  if (color.scale === undefined) {
+  if (scale.type === undefined) {
     return schemeStep ? { path: schemeStep } : undefined
   }
   return {
-    path: `${TRACK_MENU} → Color scheme → Log scale (${color.scale === 'log' ? 'checked' : 'unchecked'})`,
+    path: `${TRACK_MENU} → Color scheme → Log scale (${scale.type === 'log' ? 'checked' : 'unchecked'})`,
     note: schemeStep ? `Then ${schemeStep}.` : undefined,
   }
 }
@@ -590,7 +610,8 @@ function constantColorStep(
 
 // The multi-sample variant displays' row tint: a sample attribute, named from
 // one menu row over whichever metadata columns the track carries. A row-keyed
-// `domain` and `range` is each row's own swatch in the arrangement dialog.
+// `scale.domain` and `scale.range` is each row's own swatch in the arrangement
+// dialog.
 function rowColorStep(
   value: unknown,
   { displayType }: FieldContext,
@@ -607,7 +628,7 @@ function rowColorStep(
     }
   }
   const editor = displayType ? ROW_ARRANGEMENT_EDITORS[displayType] : undefined
-  return editor && asList(asRecord(value)?.domain)
+  return editor && asList(scaleOf(asRecord(value)).domain)
     ? {
         path: `${TRACK_MENU} → ${editor}`,
         note: 'The grid in that dialog has a Color column: set a color on each row you want tinted.',
@@ -708,8 +729,8 @@ const CIGAR_MODES: Record<string, string> = Object.fromEntries(
   CIGAR_MODE_OPTIONS.map(o => [o.value, o.label]),
 )
 
-// The MAF display's `color` is its Color by... radio, whose labels are
-// imported, and `y` its Plot type radio.
+// The MAF display's `encoding.color` is its Color by... radio, whose labels
+// are imported, and `y` its Plot type radio.
 const MAF_COLOR_BY = `${TRACK_MENU} → Color by...`
 
 // The displays whose menu carries tree-sidebar's shared "Row height" submenu,
@@ -1467,8 +1488,8 @@ const graphTrackFields: Record<string, FieldRecipe> = Object.fromEntries(
 
 export const trackFields: Record<string, FieldRecipe> = {
   ...graphTrackFields,
-  color: colorStep,
-  baseColor: baseColorStep,
+  'encoding.color': colorStep,
+  'pileup.bases': basesStep,
   modifications: modificationsStep,
   rowColor: rowColorStep,
   facet: facetStep,
@@ -1676,8 +1697,8 @@ export const trackFields: Record<string, FieldRecipe> = {
           note: 'Its tooltip reads "Drag to resize arcs area"; there is no menu entry for the height.',
         }
       : undefined,
-  'readConnections.color': (value, { displayType }) => {
-    const field = asRecord(value)?.field
+  'readConnections.encoding.color': (value, { displayType }) => {
+    const field = channelOf(value)?.field
     const label = typeof field === 'string' ? ARC_COLORS[field] : undefined
     return label && displayType === 'LinearAlignmentsDisplay'
       ? { path: `${TRACK_MENU} → Color by... → Arc color → ${label}` }
@@ -1696,7 +1717,7 @@ export const trackFields: Record<string, FieldRecipe> = {
         }
       : undefined
   },
-  showLegend: (value, { displayType }) =>
+  'legend.show': (value, { displayType }) =>
     typeof value === 'boolean' &&
     displayType &&
     SHOW_LEGEND_DISPLAYS.has(displayType)
@@ -1722,7 +1743,7 @@ export const trackFields: Record<string, FieldRecipe> = {
           note: 'Offered only once the reads are grouped, since it is what the groups collapse into.',
         }
       : undefined,
-  ribbonColor: (value, { displayType }) => {
+  'ribbons.encoding.color': (value, { displayType }) => {
     const label = syntenyColorLabel(syntenyColorField(value))
     return label && displayType === 'MultiWaySyntenyDisplay'
       ? { path: `${TRACK_MENU} → Color by... → Ribbons → ${label}` }
@@ -2104,18 +2125,15 @@ function colorMenuPath(viewType: string | undefined) {
 
 export const viewFields: Record<string, FieldRecipe> = {
   // the constant has the slider; of the fields, only identity has a toggle
-  opacity: (value, { viewType }) => {
-    const field =
-      typeof value === 'string'
-        ? value
-        : typeof value === 'object' && value !== null && 'field' in value
-          ? value.field
-          : undefined
-    if (typeof value === 'number') {
+  'encoding.opacity': (value, { viewType }) => {
+    const channel = channelOf(value)
+    const field = channel?.field
+    const constant = typeof value === 'number' ? value : channel?.value
+    if (typeof constant === 'number') {
       const path = settingsPath(viewType, 'Opacity')
       return path
         ? {
-            path: `${path} → drag to ${value}`,
+            path: `${path} → drag to ${constant}`,
             note: 'Lower values let dense overlapping ribbons show through each other.',
           }
         : undefined
@@ -2226,7 +2244,7 @@ export const viewFields: Record<string, FieldRecipe> = {
         }
       : undefined
   },
-  color: (value, { viewType }) => {
+  'encoding.color': (value, { viewType }) => {
     const mode = syntenyColorField(value)
     const label = syntenyColorLabel(mode)
     const menu = colorMenuPath(viewType)
@@ -2242,13 +2260,15 @@ export const viewFields: Record<string, FieldRecipe> = {
         }
       : undefined
   },
-  showLegend: (value, { viewType }) =>
-    typeof value === 'boolean' && viewType === 'CircularView'
+  legend: (value, { viewType }) => {
+    const { show } = asRecord(value) ?? {}
+    return typeof show === 'boolean' && viewType === 'CircularView'
       ? {
-          path: `View menu → Show legend (${checked(value)})`,
+          path: `View menu → Show legend (${checked(show)})`,
           note: 'Offered once the view has a track.',
         }
-      : undefined,
+      : undefined
+  },
   // a view's `axis` guide: `grid` carries the ruler's ticks across the
   // plot, `labels` numbers them
   axis: (value, { viewType }) => {

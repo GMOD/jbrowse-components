@@ -70,7 +70,7 @@ test('asks how the tag colors only where the caller passes a scale', () => {
 })
 
 test('submits the coloring picked, opening on the one in use', () => {
-  const { onSubmit } = renderDialog('NM', 'categorical')
+  const { onSubmit } = renderDialog('NM', 'ordinal')
   expect(screen.getByLabelText('A color per value')).toBeChecked()
   fireEvent.click(screen.getByLabelText('A gradient over numbers'))
   fireEvent.click(screen.getByText('Submit'))

@@ -198,9 +198,9 @@ _Avena_ species and its C subgenome from a more distant one, so A-D pairs are
 the control: they diverged most recently.
 
 In [grammar-of-graphics](/docs/config_guides/mark_display) terms, the dotplot's
-`color` is a color scale, here the `ds` field mapped to a ramp. The session pins
-the ramp's ends with `domainMin` and `domainMax`, so a color means one dS
-wherever the view goes; the menu has no field for them:
+`encoding.color` is a color scale, here the `ds` field mapped to a ramp. The
+session pins the ramp's ends with `scale.domainMin` and `scale.domainMax`, so a
+color means one dS wherever the view goes; the menu has no field for them:
 
 ```json session config=https://jbrowse.org/demos/oat_homoeologs/config.json
 {
@@ -240,11 +240,12 @@ wherever the view goes; the menu has no field for them:
           }
         ],
         "tracks": ["oat_homoeologs"],
-        "color": {
-          "field": "ds",
-          "domainMin": 0,
-          "domainMax": 0.25,
-          "title": "dS"
+        "encoding": {
+          "color": {
+            "field": "ds",
+            "scale": { "domainMin": 0, "domainMax": 0.25 },
+            "legend": { "title": "dS" }
+          }
         }
       }
     ]

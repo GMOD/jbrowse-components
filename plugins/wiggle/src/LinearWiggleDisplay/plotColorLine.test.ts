@@ -1,3 +1,5 @@
+import { plotWrites } from '@jbrowse/core/configuration'
+
 import { WIGGLE_NEG_COLOR_DEFAULT, WIGGLE_POS_COLOR_DEFAULT } from '../util.ts'
 import { plotColorEdit, plotColorOf } from './plotColorLine.ts'
 import { createTestEnvironment, makeSource } from './testEnv.ts'
@@ -10,13 +12,13 @@ import type { WiggleMark } from '../util.ts'
 function makeDisplay({
   names = ['a', 'b'],
   rows = true,
-  color,
+  encoding,
   origin,
   mark,
 }: {
   names?: string[]
   rows?: boolean
-  color?: Record<string, unknown> | string
+  encoding?: { color: Record<string, unknown> }
   origin?: number
   mark?: WiggleMark
 } = {}) {
@@ -28,8 +30,8 @@ function makeDisplay({
     { sources: names.map(makeSource) },
     view.displayedRegions[0],
   )
-  if (color !== undefined) {
-    display.applyPlot({ color })
+  if (encoding !== undefined) {
+    display.applyPlot({ encoding })
   }
   if (origin !== undefined) {
     display.setOrigin(origin)
@@ -48,7 +50,9 @@ function lineOf(display: ReturnType<typeof makeDisplay>) {
 // the colors the plot paints have not moved.
 function roundTrips(display: ReturnType<typeof makeDisplay>) {
   const before = lineOf(display)
-  display.applyPlot({ color: plotColorOf(display).edit(before) })
+  display.applyPlot({
+    encoding: { color: plotColorOf(display).edit(before) },
+  })
   return { before, after: lineOf(display) }
 }
 
@@ -63,7 +67,9 @@ describe('what the line reads out', () => {
   })
 
   it('shows one color twice for a constant, which is what a flat plot is', () => {
-    expect(lineOf(makeDisplay({ color: '#C8B414' }))).toEqual({
+    expect(
+      lineOf(makeDisplay({ encoding: { color: { value: '#C8B414' } } })),
+    ).toEqual({
       above: '#C8B414',
       below: '#C8B414',
       cut: 0,
@@ -73,10 +79,8 @@ describe('what the line reads out', () => {
 
   it('reads a threshold pair out in the order the range holds it', () => {
     const display = makeDisplay({
-      color: {
-        field: 'score',
-        scale: 'threshold',
-        range: ['#2166ac', '#b2182b'],
+      encoding: {
+        color: { scale: { type: 'threshold', range: ['#2166ac', '#b2182b'] } },
       },
     })
 
@@ -95,7 +99,7 @@ describe('what the line reads out', () => {
       lineOf(
         makeDisplay({
           origin: 2,
-          color: { field: 'score', scale: 'threshold', domain: ['5'] },
+          encoding: { color: { scale: { type: 'threshold', domain: ['5'] } } },
         }),
       ).cut,
     ).toBe(5)
@@ -108,11 +112,15 @@ describe('what the line reads out', () => {
     expect(display.scoreGradientPaints).toBe(true)
     expect(lineOf(display)).toMatchObject({ mode: 'edit', cut: 0 })
     display.applyPlot({
-      color: plotColorOf(display).edit({ above: '#b2182b', below: '#2166ac' }),
+      encoding: {
+        color: plotColorOf(display).edit({
+          above: '#b2182b',
+          below: '#2166ac',
+        }),
+      },
     })
-    expect(display.colorSetting).toMatchObject({
-      field: 'score',
-      scale: undefined,
+    expect(display.colorSetting.scale).toMatchObject({
+      type: undefined,
       range: ['#2166ac', '#b2182b'],
       domainMid: undefined,
     })
@@ -123,10 +131,8 @@ describe('what the line reads out', () => {
   it('edits a threshold heatmap as the two sides of its cut', () => {
     const display = makeDisplay({
       mark: 'span',
-      color: {
-        field: 'score',
-        scale: 'threshold',
-        range: ['#2166ac', '#b2182b'],
+      encoding: {
+        color: { scale: { type: 'threshold', range: ['#2166ac', '#b2182b'] } },
       },
     })
     expect(display.scoreGradientPaints).toBe(false)
@@ -138,7 +144,7 @@ describe('what the line reads out', () => {
 describe('what the line declines to edit, and why', () => {
   it('reads out a ramp without offering to replace it', () => {
     const display = makeDisplay({
-      color: { field: 'score', scale: 'linear', scheme: 'viridis' },
+      encoding: { color: { scale: { type: 'linear', scheme: 'viridis' } } },
     })
 
     expect(lineOf(display)).toMatchObject({
@@ -158,11 +164,14 @@ describe('what the line declines to edit, and why', () => {
   // the middle.
   it('reads out a multi-cut threshold without offering to replace it', () => {
     const display = makeDisplay({
-      color: {
-        field: 'score',
-        scale: 'threshold',
-        domain: ['2', '5', '8'],
-        range: ['#111111', '#222222', '#333333', '#444444'],
+      encoding: {
+        color: {
+          scale: {
+            type: 'threshold',
+            domain: ['2', '5', '8'],
+            range: ['#111111', '#222222', '#333333', '#444444'],
+          },
+        },
       },
     })
 
@@ -175,26 +184,23 @@ describe('what the line declines to edit, and why', () => {
 })
 
 describe('what a swatch writes', () => {
-  it('writes the string form where both sides are one color', () => {
+  it('writes the constant where both sides are one color', () => {
     const display = makeDisplay()
 
     expect(
       plotColorEdit(display.colorSetting, { above: 'green', below: 'green' }),
-    ).toBe('green')
+    ).toEqual({ value: 'green' })
   })
 
   it('parts a constant into a pair when the sides differ', () => {
-    const display = makeDisplay({ color: '#C8B414' })
+    const display = makeDisplay({ encoding: { color: { value: '#C8B414' } } })
 
     expect(
       plotColorEdit(display.colorSetting, {
         above: '#C8B414',
         below: '#123456',
       }),
-    ).toEqual({
-      field: 'score',
-      range: ['#123456', '#C8B414'],
-    })
+    ).toEqual({ scale: { range: ['#123456', '#C8B414'] } })
   })
 
   // What the nine shipped threshold figures hold: a range and no domain. A
@@ -203,10 +209,8 @@ describe('what a swatch writes', () => {
   it('leaves an undeclared cut undeclared, so it keeps following the origin', () => {
     const display = makeDisplay({
       origin: 2,
-      color: {
-        field: 'score',
-        scale: 'threshold',
-        range: ['#2166ac', '#b2182b'],
+      encoding: {
+        color: { scale: { type: 'threshold', range: ['#2166ac', '#b2182b'] } },
       },
     })
 
@@ -214,21 +218,20 @@ describe('what a swatch writes', () => {
       above: '#b2182b',
       below: '#2166ac',
     })
-    expect(written).not.toHaveProperty('domain')
+    expect(written.scale).not.toHaveProperty('domain')
 
-    display.applyPlot({ color: written })
+    display.applyPlot({ encoding: { color: written } })
     display.setOrigin(3)
     expect(lineOf(display).cut).toBe(3)
   })
 
-  it("keeps the key's title and labels", () => {
+  it("keeps the key's title and names", () => {
     const display = makeDisplay({
-      color: {
-        field: 'score',
-        scale: 'threshold',
-        domain: ['2'],
-        labels: ['loss', 'gain'],
-        title: 'log2 ratio',
+      encoding: {
+        color: {
+          scale: { type: 'threshold', domain: ['2'], names: ['loss', 'gain'] },
+          legend: { title: 'log2 ratio' },
+        },
       },
     })
 
@@ -237,39 +240,43 @@ describe('what a swatch writes', () => {
         above: '#b2182b',
         below: '#2166ac',
       }),
-    ).toMatchObject({ labels: ['loss', 'gain'], title: 'log2 ratio' })
+    ).toMatchObject({
+      scale: { names: ['loss', 'gain'] },
+      legend: { title: 'log2 ratio' },
+    })
   })
 
   it('parks a declared cut under one color, and parts at it again', () => {
     const display = makeDisplay({
-      color: {
-        field: 'score',
-        scale: 'threshold',
-        domain: ['2'],
-        labels: ['loss', 'gain'],
-        title: 'log2 ratio',
+      encoding: {
+        color: {
+          scale: { type: 'threshold', domain: ['2'], names: ['loss', 'gain'] },
+          legend: { title: 'log2 ratio' },
+        },
       },
     })
 
-    const flat = plotColorOf(display).edit({ above: 'green', below: 'green' })
-    display.parkColor('color', display.colorSetting, flat)
-    display.applyPlot({ color: flat })
+    const { edit, parkable } = plotColorOf(display)
+    const flat = edit({ above: 'green', below: 'green' })
+    display.parkColor('color', parkable, flat)
+    display.applyPlot({ encoding: { color: flat } })
     expect(lineOf(display)).toMatchObject({ above: 'green', below: 'green' })
     expect(
       plotColorOf(display).edit({ above: '#b2182b', below: '#2166ac' }),
     ).toEqual({
-      field: 'score',
-      scale: 'threshold',
-      domain: ['2'],
-      range: ['#2166ac', '#b2182b'],
-      labels: ['loss', 'gain'],
-      title: 'log2 ratio',
+      scale: {
+        type: 'threshold',
+        domain: ['2'],
+        range: ['#2166ac', '#b2182b'],
+        names: ['loss', 'gain'],
+      },
+      legend: { title: 'log2 ratio' },
     })
   })
 
   it('keeps a declared cut', () => {
     const display = makeDisplay({
-      color: { field: 'score', scale: 'threshold', domain: ['2'] },
+      encoding: { color: { scale: { type: 'threshold', domain: ['2'] } } },
     })
 
     expect(
@@ -278,10 +285,11 @@ describe('what a swatch writes', () => {
         below: '#2166ac',
       }),
     ).toEqual({
-      field: 'score',
-      scale: 'threshold',
-      domain: ['2'],
-      range: ['#2166ac', '#b2182b'],
+      scale: {
+        type: 'threshold',
+        domain: ['2'],
+        range: ['#2166ac', '#b2182b'],
+      },
     })
   })
 })
@@ -291,21 +299,21 @@ describe('what a swatch writes', () => {
 describe('a round trip changes nothing', () => {
   it.each([
     ['nothing written', {}],
-    ['a constant', { color: '#C8B414' }],
+    ['a constant', { encoding: { color: { value: '#C8B414' } } }],
     [
       'a threshold pair',
       {
-        color: {
-          field: 'score',
-          scale: 'threshold',
-          range: ['#2166ac', '#b2182b'],
+        encoding: {
+          color: {
+            scale: { type: 'threshold', range: ['#2166ac', '#b2182b'] },
+          },
         },
       },
     ],
     [
       'a threshold pair about a declared cut',
       {
-        color: { field: 'score', scale: 'threshold', domain: ['2'] },
+        encoding: { color: { scale: { type: 'threshold', domain: ['2'] } } },
         origin: 2,
       },
     ],
@@ -313,10 +321,10 @@ describe('a round trip changes nothing', () => {
       'a threshold pair in density',
       {
         mark: 'span' as const,
-        color: {
-          field: 'score',
-          scale: 'threshold',
-          range: ['#2166ac', '#b2182b'],
+        encoding: {
+          color: {
+            scale: { type: 'threshold', range: ['#2166ac', '#b2182b'] },
+          },
         },
       },
     ],
@@ -325,4 +333,26 @@ describe('a round trip changes nothing', () => {
 
     expect(after).toEqual(before)
   })
+})
+
+// A channel the swatches wrote, written back unchanged, compares equal to its
+// own snapshot, so an untouched dialog adds no session edit.
+test.each([
+  { value: '#C8B414' },
+  { scale: { type: 'threshold', range: ['#2166ac', '#b2182b'] } },
+  { scale: { range: ['#2166ac', '#b2182b'] }, legend: { title: 'log2' } },
+  {
+    scale: {
+      type: 'threshold',
+      domain: ['2'],
+      range: ['#2166ac', '#b2182b'],
+      names: ['loss', 'gain'],
+    },
+  },
+])('writing back %j writes nothing', color => {
+  const display = makeDisplay({ encoding: { color } })
+  const { line, edit } = plotColorOf(display)
+  expect(
+    plotWrites(display.configuration, { encoding: { color: edit(line) } }),
+  ).toEqual({})
 })

@@ -180,8 +180,8 @@ test("LD coloring makes the default plot LocusZoom's, as the add-track workflow 
       encoding: {
         field: 'r2',
         scale: 'threshold',
-        domain: LD_COLOR.domain,
-        range: LD_COLOR.range,
+        domain: LD_COLOR.scale.domain,
+        range: LD_COLOR.scale.range,
       },
     },
     { kind: 'constant', color: cssColorToABGR(LD_INDEX_COLOR) },
@@ -236,7 +236,10 @@ test.each([
         mark: 'point',
         encoding: {
           y: 'score',
-          shape: { field: 'svtype', domain: ['INS'], range: ['triangle-down'] },
+          shape: {
+            field: 'svtype',
+            scale: { domain: ['INS'], range: ['triangle-down'] },
+          },
         },
       },
     ],
@@ -289,7 +292,7 @@ test('LD coloring leaves every other mark and member where it was', () => {
   const [partners, index, labels] = marksOf(display)
   expect(partners).toMatchObject({
     encoding: {
-      color: { value: 'green', field: 'r2', scale: 'threshold' },
+      color: { value: 'green', field: 'r2', scale: { type: 'threshold' } },
       size: { value: 6 },
     },
   })

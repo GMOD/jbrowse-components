@@ -149,7 +149,7 @@ The Umap config holds the **Minimum** score mode and the 0 to 1 axis:
 Then add the NA12878 reads. The CRAM needs its `.crai` beside it and decodes
 against hg38; for your own sample, swap the `uri`. In
 [grammar-of-graphics](/docs/config_guides/mark_display) terms, the track's
-`color` is a color scale on the `mapq` field:
+`encoding.color` is a color scale on the `mapq` field:
 
 ```json addtrack loc=chr5:70,889,000-70,989,000
 {
@@ -157,7 +157,7 @@ against hg38; for your own sample, swap the `uri`. In
   "name": "NA12878, 30x Illumina (1000 Genomes)",
   "uri": "https://s3.amazonaws.com/1000genomes/1000G_2504_high_coverage/data/ERR3239334/NA12878.final.cram",
   "assemblyNames": ["hg38"],
-  "displayDefaults": { "color": { "field": "mapq" } }
+  "displayDefaults": { "encoding": { "color": "mapq" } }
 }
 ```
 
@@ -177,7 +177,7 @@ Zoom the read view to the SMN cassette, `chr5:70,889,000-70,989,000`.
 <Figure src="/img/qc/smn1_evidence.png" caption="The SMN cassette with one read per row, colored by mapping quality." links="Open this view=qc/smn1_evidence" />
 
 Dark blue is MAPQ 0; yellow is MAPQ 30 and above. **Advanced → Edit plot...** on
-the reads track shows this `color` as text and applies edits live.
+the reads track shows this `encoding.color` as text and applies edits live.
 
 ## Does T2T-CHM13 resolve the SMN duplication?
 

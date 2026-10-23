@@ -990,7 +990,9 @@ export const retiredConfigSpellings: Record<string, RetiredSpelling> = {
   ...retiredScaleSpellings,
   multiTicks: () => ({}),
   jitter: () => ({}),
-  lineWidth: v => ({ readConnections: { lineWidth: v } }),
+  lineWidth: v => ({
+    readConnections: { encoding: { strokeWidth: { value: v } } },
+  }),
   featureHeight: v => ({ pileup: { readHeight: v } }),
   maxHeight: v => ({ pileup: { maxLayoutHeight: v } }),
   hideSmallIndels: () => ({}),

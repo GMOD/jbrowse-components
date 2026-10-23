@@ -22,7 +22,7 @@ to draw, which keeps an assembly's alt/unplaced contigs off the circle:
   type: 'CircularView',
   assembly: 'hg38',
   displayedRegionNames: ['chr1', 'chr2', 'chr3'],
-  tracks: [{ trackId: 'my-sv-vcf', color: 'red' }],
+  tracks: [{ trackId: 'my-sv-vcf', encoding: { color: { value: 'red' } } }],
 }
 ```
 
@@ -58,7 +58,7 @@ Each section ends with the members a composed model contributes, linked to the p
 | <span id="property-hideverticalresizehandle">**hideVerticalResizeHandle**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>hideVerticalResizeHandle: types.stripDefault(types.boolean, fal…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>hideVerticalResizeHandle: types.stripDefault(types.boolean, false)</code></pre></dialog></span> | chrome switch, for an embed that drives the view itself |
 | <span id="property-hidetrackselectorbutton">**hideTrackSelectorButton**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>hideTrackSelectorButton: types.stripDefault(types.boolean, fals…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>hideTrackSelectorButton: types.stripDefault(types.boolean, false)</code></pre></dialog></span> | chrome switch, for an embed that drives the view itself |
 | <span id="property-disableimportform">**disableImportForm**</span><br><code>disableImportForm: types.stripDefault(types.boolean, false)</code> | never show the import form, even on an error, for an embed that picks the assembly itself (the SV inspector) |
-| <span id="property-showlegend">**showLegend**</span><br><code>showLegend: types.stripDefault(types.boolean, false)</code> | a key naming each track's ring, chords or ribbons in the corner |
+| <span id="property-legend">**legend**</span><br><code>legend: types.stripDefault(hiddenLegendConfigSchema, {})</code> | the key naming each track's ring, chords or ribbons in the corner, a [](/docs/config/hiddenlegend) object: `{ show: true }` draws it |
 | <span id="property-height">**height**</span><br><code>height: types.stripDefault(types.number, defaultHeight)</code> | the view's height in px, which sizes the fitted circle. Left at its default in a multi-view session, the view opens square to its width |
 | <span id="property-displayedregions">**displayedRegions**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>displayedRegions: types.stripDefault(types.frozen&lt;Region[]&gt;(),…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>displayedRegions: types.stripDefault(types.frozen&lt;Region[]&gt;(), [])</code></pre></dialog></span> | the regions the circle lays out, one arc each, in this order. `displayedRegionNames` names the same thing by refName and is the shorter form. |
 | <span id="property-minimumradiuspx">**minimumRadiusPx**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>minimumRadiusPx: types.stripDefault( types.number, defaultMinim…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>minimumRadiusPx: types.stripDefault(&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;types.number,&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;defaultMinimumRadiusPx,&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;)</code></pre></dialog></span> | how far out the circle may zoom, as the smallest radius it shrinks to; it is what caps bpPerPx |
@@ -69,13 +69,11 @@ Each section ends with the members a composed model contributes, linked to the p
 | <span id="property-launch">**launch**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>launch: types.frozen&lt;LaunchInput&lt;CircularViewCommands&gt; &#124; undefi…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>launch: types.frozen&lt;LaunchInput&lt;CircularViewCommands&gt; &#124; undefined&gt;()</code></pre></dialog></span> | the launch keys still to apply, moved here by `preProcessSnapshot` and cleared once applied; not written by hand |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>9 inherited properties from 6 models</summary>
+<summary>8 inherited properties from 5 models</summary>
 
 From [SyntenyFadeMixin](../syntenyfademixin): <span id="property-render">[`render`](../syntenyfademixin#property-render)</span>
 
-From [SyntenyColorsMixin](../syntenycolorsmixin): <span id="property-opacity">[`opacity`](../syntenycolorsmixin#property-opacity)</span>
-
-From [TrackColorsMixin](../trackcolorsmixin): <span id="property-color">[`color`](../trackcolorsmixin#property-color)</span>, <span id="property-trackcolors">[`trackColors`](../trackcolorsmixin#property-trackcolors)</span>
+From [TrackColorsMixin](../trackcolorsmixin): <span id="property-encoding">[`encoding`](../trackcolorsmixin#property-encoding)</span>, <span id="property-trackcolors">[`trackColors`](../trackcolorsmixin#property-trackcolors)</span>
 
 From [ParkedColorMixin](../parkedcolormixin): <span id="property-parkedcolors">[`parkedColors`](../parkedcolormixin#property-parkedcolors)</span>
 
@@ -120,6 +118,7 @@ From [BaseViewModel](../baseviewmodel): <span id="volatile-width">[`width`](../b
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
+| <span id="getter-showlegend">**showLegend**</span><br><code>boolean</code> | `legend.show`: whether the key draws |
 | <span id="getter-owntracks">**ownTracks**</span><br><code>any[]</code> | the tracks this view holds itself, for the census |
 | <span id="getter-width">**width**</span><br><code>number</code> |  |
 | <span id="getter-circleregions">**circleRegions**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(Region &#124; { circular: boolean; assemblyName: string; refName: s…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(Region &#124; { circular: boolean; assemblyName: string; refName: string; start: number; end: number; reversed?: boolean &#124; undefined; })[]</code></pre></dialog></span> | `displayedRegions`, each marked `circular` where it is a whole sequence its assembly lists in `circularRefNames` |

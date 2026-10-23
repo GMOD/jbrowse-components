@@ -96,7 +96,7 @@ function strandSpecificSpec(): ScreenshotSpec {
         },
         {
           trackId: 'Pairend_StrandSpecific_51mer_Human_hg19',
-          color,
+          encoding: { color },
           coverage: {
             // a log axis prints a tick per power of two; below 120 they overlap
             height: 120,
@@ -236,8 +236,8 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
                 height: 100,
               },
               coverage: { height: 100 },
-              color: { field: 'insertSizeAndOrientation' },
-              showLegend: true,
+              encoding: { color: 'insertSizeAndOrientation' },
+              legend: { show: true },
               height: 600,
               forceLoad: true,
             },
@@ -319,7 +319,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
           // this window
           forceLoad: true,
           facet: 'strand',
-          color: { field: 'strand' },
+          encoding: { color: 'strand' },
           pileup: {
             // nearly every read takes its own row; at 2 px the pileups push the
             // bands out of frame
@@ -356,7 +356,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
               trackId: 'hg002_nanopore_hp',
               forceLoad: true,
               facet: 'strand',
-              color: { field: 'strand' },
+              encoding: { color: 'strand' },
               pileup: {
                 // ~12 reads a strand: at 3 px each pileup draws as a solid stripe
                 readHeight: 9,
@@ -609,7 +609,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
       tracks: [
         {
           trackId: 'hic_gm12878_encode',
-          color: { scale: 'linear' },
+          encoding: { color: { scale: { type: 'linear' } } },
           height: 700,
         },
       ],
@@ -634,7 +634,13 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
       assembly: 'hg19',
       loc: 'chr8:52,000,000-56,200,000',
       trackLabels: 'offset',
-      tracks: [{ trackId: 'hic', color: { domainQuantile }, height: 330 }],
+      tracks: [
+        {
+          trackId: 'hic',
+          encoding: { color: { scale: { domainQuantile } } },
+          height: 330,
+        },
+      ],
     }),
     // the label anchors to the track's bottom, so the whole display must fit
     viewportHeight: 544,
@@ -673,8 +679,8 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
       tracks: [
         {
           trackId: 'hic',
-          color: 'observed/expected',
-          showLegend: true,
+          encoding: { color: 'observed/expected' },
+          legend: { show: true },
         },
       ],
     }),
@@ -693,7 +699,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
       tracks: [
         {
           trackId: 'hic',
-          showLegend: true,
+          legend: { show: true },
         },
       ],
     }),
@@ -738,12 +744,16 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
             'cpgisland_ucsc_hg38',
             {
               trackId: 'human_chr20_mod_call_5mC_5hmC_CG_cram_modifications',
-              baseColor: { field: 'modifications' },
+              pileup: {
+                bases: { show: true, encoding: { color: 'modifications' } },
+              },
               forceLoad: true,
             },
             {
               trackId: 'human_chr20_mod_call_5mC_5hmC_CG_cram',
-              baseColor: { field: 'modifications' },
+              pileup: {
+                bases: { show: true, encoding: { color: 'modifications' } },
+              },
               modifications: { unmodified: 'all' },
               forceLoad: true,
             },
@@ -805,7 +815,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
               height: 500,
               forceLoad: true,
               facet: 'tags.HP',
-              color: { field: 'tags.HP' },
+              encoding: { color: 'tags.HP' },
             },
           ],
         },
@@ -1173,7 +1183,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
           // grouping on raw read strand sends the two mates of a pair to
           // opposite sections in this stranded paired-end library
           facet: 'firstOfPairStrand',
-          color: { field: 'firstOfPairStrand' },
+          encoding: { color: 'firstOfPairStrand' },
           pileup: { readHeight: 3 },
           sashimi: { show: false },
           coverage: { height: 110 },

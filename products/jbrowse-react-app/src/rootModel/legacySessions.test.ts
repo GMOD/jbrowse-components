@@ -185,7 +185,7 @@ test('a v4 pileup display on a config.json track keeps its settings', async () =
     }),
   )
   expect(display.type).toBe('LinearAlignmentsDisplay')
-  expect(getConf(display, ['color', 'field'])).toBe('strand')
+  expect(getConf(display, ['encoding', 'color', 'field'])).toBe('strand')
   expect(getConf(display, ['coverage', 'show'])).toBe(false)
   expect(display.height).toBe(333)
 })
@@ -198,7 +198,7 @@ test('a v4 pileup display keeps its settings on a config.json that still spells 
       colorBySetting: { type: 'strand' },
     }),
   )
-  expect(getConf(display, ['color', 'field'])).toBe('strand')
+  expect(getConf(display, ['encoding', 'color', 'field'])).toBe('strand')
   expect(getConf(display, ['coverage', 'show'])).toBe(false)
 })
 
@@ -232,7 +232,7 @@ test('a v4 multi-wiggle display opens as rows, in its order and colors', async (
   expect(display.renderingType).toBe('density')
   expect(display.rowSort).toEqual(['b', 'a'])
   expect(display.rowLabels).toEqual({ a: 'A sample' })
-  expect(getConf(display, ['rowColor', 'range'])).toEqual(['red'])
+  expect(getConf(display, ['rowColor', 'scale', 'range'])).toEqual(['red'])
 })
 
 // A v4 multi-bigwig the user added themselves is a session track, so the entry
@@ -406,7 +406,10 @@ test('a v4 wiggle display keeps the scale and colors a reader set', async () => 
   expect(getConf(display, ['scales', 'y', 'type'])).toBe('log')
   expect(getConf(display, ['scales', 'y', 'domainQuantile'])).toBe(1)
   expect(getConf(display, ['scales', 'y', 'domainMin'])).toBe(1)
-  expect(getConf(display, ['color', 'range'])).toEqual(['#e01e26', 'green'])
+  expect(getConf(display, ['encoding', 'color', 'scale', 'range'])).toEqual([
+    '#e01e26',
+    'green',
+  ])
 })
 
 test('a v4 clustered multi-sample variant display loads with its order, tree and filters', async () => {
@@ -425,7 +428,7 @@ test('a v4 clustered multi-sample variant display loads with its order, tree and
   expect(display.rowSort).toEqual(['HG00097', 'HG00096'])
   expect(getConf(display, ['rows', 'tree'])).toBe('(HG00097:1,HG00096:1);')
   expect(getConf(display, ['rows', 'kept'])).toEqual(['HG00097'])
-  expect(getConf(display, ['rowColor', 'domain'])).toEqual([])
+  expect(getConf(display, ['rowColor', 'scale', 'domain'])).toEqual([])
 })
 
 function wiggleSlots(display: Parameters<typeof getConf>[0]) {

@@ -1,3 +1,5 @@
+import { liftFlatColor } from '@jbrowse/display-kit/retiredSettings'
+
 // v4.3.0's synteny `colorBy` modes and the field each paints now; `default`
 // paints no field
 const V4_FIELDS: Record<string, string | undefined> = {
@@ -15,28 +17,51 @@ function isSnap(value: unknown): value is Snap {
   return value !== null && typeof value === 'object' && !Array.isArray(value)
 }
 
+// `channel` under `encoding`, unless the snapshot already writes one
+function withChannel(snap: Snap, channel: string, value: unknown) {
+  const encoding = isSnap(snap.encoding) ? snap.encoding : {}
+  return value === undefined || encoding[channel] !== undefined
+    ? snap
+    : { ...snap, encoding: { ...encoding, [channel]: value } }
+}
+
+/**
+ * @deprecated The view's `color` before `encoding.color`, which jb2hubs'
+ * desktop links still write, a bare string being the constant. Goes once
+ * jb2hubs writes `encoding.color`.
+ */
+function liftViewColor(snap: Snap) {
+  if (!('color' in snap)) {
+    return snap
+  }
+  const { color, ...rest } = snap
+  return withChannel(
+    rest,
+    'color',
+    color === undefined ? undefined : liftFlatColor(color, 'value'),
+  )
+}
+
 function liftColorBy(snap: Snap) {
   if (!('colorBy' in snap)) {
     return snap
   }
   const { colorBy, ...rest } = snap
   const field = typeof colorBy === 'string' ? V4_FIELDS[colorBy] : undefined
-  return {
-    ...rest,
-    color: rest.color ?? (field === undefined ? undefined : { field }),
-  }
+  return withChannel(rest, 'color', field === undefined ? undefined : { field })
 }
 
-// `alpha` is the constant of the `opacity` object
+// `alpha` is the constant of `encoding.opacity`
 function liftAlpha(snap: Snap) {
   if (!('alpha' in snap)) {
     return snap
   }
   const { alpha, ...rest } = snap
-  return {
-    ...rest,
-    opacity: rest.opacity ?? (typeof alpha === 'number' ? alpha : undefined),
-  }
+  return withChannel(
+    rest,
+    'opacity',
+    typeof alpha === 'number' ? alpha : undefined,
+  )
 }
 
 // `minAlignmentLength` is a `filter` lower bound on `length`. On the view itself it is
@@ -81,7 +106,7 @@ const DISPLAY_SETTINGS = ['colorBy', 'alpha', 'minAlignmentLength'] as const
  * and dotplot views name as their launch keys' `passThrough` so a validator
  * accepts them.
  */
-export const LIFTED_VIEW_KEYS = ['colorBy', 'alpha'] as const
+export const LIFTED_VIEW_KEYS = ['colorBy', 'alpha', 'color'] as const
 
 /**
  * #api
@@ -108,13 +133,16 @@ function liftDisplaySettings(snap: Snap) {
  * #api
  * A linear synteny or dotplot view snapshot's v4.3.0 settings, lifted onto the
  * view: `colorBy` (a mode string), `alpha` and `minAlignmentLength` sat on each
- * synteny display, and land as `color`, `opacity` and a `filter` predicate
- * on `length`.
+ * synteny display, and land as `encoding.color`, `encoding.opacity` and a
+ * `filter` predicate on `length`.
  * An older genomes-portal launch link puts the mode string on the view
- * itself, which lifts the same way.
+ * itself, which lifts the same way, and a jb2hubs desktop link writes the
+ * view's `color`, which lands as `encoding.color`.
  */
 export function liftSyntenyViewSettings(snap: Snap | undefined) {
   return snap
-    ? liftMinLength(liftAlpha(liftColorBy(liftDisplaySettings(snap))))
+    ? liftMinLength(
+        liftAlpha(liftColorBy(liftViewColor(liftDisplaySettings(snap)))),
+      )
     : snap
 }

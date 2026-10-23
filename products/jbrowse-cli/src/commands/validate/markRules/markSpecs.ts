@@ -12,15 +12,26 @@ import type {
 } from './markVocabulary.ts'
 
 /** An encoding channel a mark reads, besides `x` and `x2`. */
-export type MarkChannel = 'y' | 'row' | 'color' | 'shape' | 'text' | 'size'
+export type MarkChannel =
+  | 'y'
+  | 'row'
+  | 'color'
+  | 'shape'
+  | 'text'
+  | 'size'
+  | 'strokeWidth'
+
+/** The channel holding a mark's px: a point's `size`, a stroked mark's `strokeWidth`. */
+export type PxChannel = Extract<MarkChannel, 'size' | 'strokeWidth'>
 
 /**
- * A lane the worker fills: a channel, a quantitative color's raw values, a
- * categorical color's keys, the point painter's code for a `shape`, the
- * sequence a far `x2` lies on, or the hit index.
+ * A lane the worker fills: a channel, a quantitative color's raw values, an
+ * ordinal color's keys, the point painter's code for a `shape`, a link's
+ * stroke width in the `size` lane the worker names it by, the sequence a far
+ * `x2` lies on, or the hit index.
  */
 export type MarkLane =
-  | Exclude<MarkChannel, 'shape'>
+  | Exclude<MarkChannel, 'shape' | 'strokeWidth'>
   | 'colorValue'
   | 'colorKey'
   | 'glyph'
@@ -52,13 +63,14 @@ export interface MarkSpec {
    */
   readonly farFoot?: boolean
   /**
-   * What `encoding.size` is to the mark: `constant` reads its number alone,
-   * a point's diameter or a rule's thickness; `channel` reads a field too,
-   * through the `size` lane. Absent, the mark draws no size.
+   * The channel whose number is the mark's px: a point's `size`, its
+   * diameter, or a stroked mark's `strokeWidth`. A mark listing it among
+   * `channels` reads a field there too, through the `size` lane. Absent, the
+   * mark draws no width.
    */
-  readonly size?: 'constant' | 'channel'
-  /** The px a mark reading `size` draws at where its encoding writes no number. */
-  readonly defaultSizePx?: number
+  readonly px?: PxChannel
+  /** The px a mark draws at where its `px` channel writes no number. */
+  readonly defaultPx?: number
   /**
    * Whether the mark strokes through its instances in order, and so asks for
    * the series each one belongs to.
@@ -90,22 +102,22 @@ export const MARK_SPECS = {
     channels: ['y', 'row', 'color', 'shape'],
     value: 'required',
     hit: 'index',
-    size: 'constant',
-    defaultSizePx: DEFAULT_POINT_DIAMETER_PX,
+    px: 'size',
+    defaultPx: DEFAULT_POINT_DIAMETER_PX,
   },
   rule: {
     channels: ['y', 'row', 'color'],
     value: 'required',
     hit: 'rows',
-    size: 'constant',
-    defaultSizePx: DEFAULT_POINT_DIAMETER_PX,
+    px: 'strokeWidth',
+    defaultPx: DEFAULT_POINT_DIAMETER_PX,
   },
   line: {
     channels: ['y', 'row', 'color'],
     value: 'required',
     hit: 'rows',
-    size: 'constant',
-    defaultSizePx: DEFAULT_LINE_WIDTH_PX,
+    px: 'strokeWidth',
+    defaultPx: DEFAULT_LINE_WIDTH_PX,
     path: true,
     members: ['interpolate', 'gapBp'],
     interpolations: ['step', 'linear'],
@@ -122,12 +134,12 @@ export const MARK_SPECS = {
     hit: false,
   },
   link: {
-    channels: ['y', 'row', 'color', 'size'],
+    channels: ['y', 'row', 'color', 'strokeWidth'],
     value: 'optional',
     hit: 'index',
     farFoot: true,
-    size: 'channel',
-    defaultSizePx: DEFAULT_LINK_STROKE_PX,
+    px: 'strokeWidth',
+    defaultPx: DEFAULT_LINK_STROKE_PX,
     members: ['interpolate'],
     interpolations: ['dome', 'arc', 'linear'],
   },
@@ -147,12 +159,17 @@ export function plotsValue(type: MarkType) {
   return specOf(type).value !== 'none'
 }
 
+/** The channel holding a mark type's px, `size` or `strokeWidth`, if it draws one. */
+export function pxChannelOf(type: MarkType): PxChannel | undefined {
+  return specOf(type).px
+}
+
 /**
- * A mark's size in px: the number its `encoding.size` writes, else its type's
- * default, and 0 for a type that draws no size.
+ * A mark's px: the number its `px` channel writes, else its type's default,
+ * and 0 for a type that draws no width.
  */
 export function markSizePx(type: MarkType, written: number | undefined) {
-  return written ?? specOf(type).defaultSizePx ?? 0
+  return written ?? specOf(type).defaultPx ?? 0
 }
 
 /**
@@ -191,7 +208,9 @@ export function markLanes(
         ? ['glyph']
         : channel === 'color'
           ? colorLanes
-          : [channel],
+          : channel === 'strokeWidth'
+            ? ['size']
+            : [channel],
     ),
     ...(spec.farFoot ? (['x2Ref'] as const) : []),
     ...(spec.path ? (['series'] as const) : []),

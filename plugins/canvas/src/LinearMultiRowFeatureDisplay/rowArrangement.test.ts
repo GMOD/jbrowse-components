@@ -139,8 +139,7 @@ describe('repartitioning', () => {
     display.setRpcData(0, regionData(['a', 'b'], ['sample', 'clade']), ctgA)
     display.setRowOrder([{ name: 'b' }, { name: 'a' }], { tree: '(b,a);' })
     display.applyRowEdits([{ name: 'b' }, { name: 'a' }], {
-      domain: ['b'],
-      range: ['#00f'],
+      scale: { domain: ['b'], range: ['#00f'] },
     })
     display.setHiddenCategories(['a'])
 
@@ -152,7 +151,7 @@ describe('repartitioning', () => {
     expect(display.hierarchy).toBeUndefined()
     expect(display.hiddenCategories).toEqual(['a'])
     expect(display.rowSort).toEqual(['b', 'a'])
-    expect(pairedColorsOf(display.rowColorSetting).get('b')).toBe('#00f')
+    expect(pairedColorsOf(display.rowColorSetting.scale).get('b')).toBe('#00f')
     expect(display.rowTree).toBe('(b,a);')
   })
 
@@ -234,15 +233,17 @@ describe('a reorder over the rows a window holds', () => {
   it('drops the tree only when a shown row moves', () => {
     const display = declared()
     display.setRpcData(0, regionData(['b', 'd'], [], 'sample'), ctgA)
-    display.setRowOrder([{ name: 'd' }, { name: 'b' }], { tree: '(d,b);' })
+    display.setRowOrder([{ name: 'd' }, { name: 'b' }], {
+      tree: '(d,b);',
+      provenance: { regions: [{ refName: 'ctgA', start: 0, end: 100 }] },
+    })
     expect(display.rowSort).toEqual(['d', 'b', 'a', 'c'])
     expect(display.rowOrderWillDropTree([{ name: 'd' }, { name: 'b' }])).toBe(
       false,
     )
 
     display.applyRowEdits([{ name: 'd' }, { name: 'b' }], {
-      domain: ['d'],
-      range: ['#f00'],
+      scale: { domain: ['d'], range: ['#f00'] },
     })
     expect(display.rowTree).toBe('(d,b);')
 

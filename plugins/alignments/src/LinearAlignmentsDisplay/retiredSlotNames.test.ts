@@ -86,16 +86,30 @@ test("a display's own v4 read size beats its renderer's", () => {
   expect(readConfObject(conf, ['pileup', 'maxLayoutHeight'])).toBe(900)
 })
 
-// The reads' `color` reads a bare string as a constant, so the arcs' color
-// refuses one rather than read it as a field
-test('readConnections.color takes { field }, never a bare string', () => {
-  expect(() => create({ readConnections: { color: 'insertSize' } })).toThrow(
-    'readConnections.color takes { "field": "insertSize" }',
-  )
+// A bare string inside `encoding` is the field, on the arcs as on the reads
+test('readConnections.encoding.color reads a bare string as its field', () => {
+  const path = ['readConnections', 'encoding', 'color', 'field'] as const
   expect(
     readConfObject(
-      create({ readConnections: { color: { field: 'insertSize' } } }),
-      ['readConnections', 'color', 'field'],
+      create({ readConnections: { encoding: { color: 'insertSize' } } }),
+      path,
     ),
   ).toBe('insertSize')
+  expect(
+    readConfObject(
+      create({
+        readConnections: { encoding: { color: { field: 'insertSize' } } },
+      }),
+      path,
+    ),
+  ).toBe('insertSize')
+})
+
+test('readConnections.encoding.strokeWidth reads a bare number as its value', () => {
+  expect(
+    readConfObject(
+      create({ readConnections: { encoding: { strokeWidth: 2 } } }),
+      ['readConnections', 'encoding', 'strokeWidth', 'value'],
+    ),
+  ).toBe(2)
 })

@@ -133,10 +133,10 @@ tabix -p gff genes.gff.gz
 ```
 
 In [grammar-of-graphics](/docs/config_guides/mark_display) terms, the gene
-track's `facet` splits it into a section per `strand`, and its `color` is a
-color scale mapping the GFF3 `type` field to colors. The name label falls back
-through the GFF3 attributes, so a record with no `gene` or `product`, like the
-D-loop, takes its `gbkey`:
+track's `facet` splits it into a section per `strand`, and its `encoding.color`
+is a color scale mapping the GFF3 `type` field to colors. The name label falls
+back through the GFF3 attributes, so a record with no `gene` or `product`, like
+the D-loop, takes its `gbkey`:
 
 ```json addtrack
 {
@@ -153,7 +153,7 @@ D-loop, takes its `gbkey`:
       "name": "jexl:feature.gene || feature.product || feature.name || feature.gbkey || feature.id"
     },
     "facet": { "field": "strand" },
-    "color": { "field": "type" },
+    "encoding": { "color": "type" },
     "height": 250
   }
 }
@@ -173,7 +173,7 @@ sequence's name and length in the middle:
       {
         "type": "CircularView",
         "assembly": "human_mito",
-        "showLegend": true,
+        "legend": { "show": true },
         "tracks": ["mito_genes"]
       }
     ]

@@ -57,12 +57,12 @@ test('a legend toggle is the same Show... row on every display that has a legend
     'LinearMultiSampleVariantDisplay',
     'LinearMarkDisplay',
   ]) {
-    expect(stepPaths('showLegend', false, displayType)).toEqual([
+    expect(stepPaths('legend.show', false, displayType)).toEqual([
       'Track menu → Show... → Legend (unchecked)',
     ])
   }
-  expect(stepPaths('showLegend', true, undefined)).toEqual([])
-  expect(stepPaths('showLegend', true, 'LinearArcDisplay')).toEqual([])
+  expect(stepPaths('legend.show', true, undefined)).toEqual([])
+  expect(stepPaths('legend.show', true, 'LinearArcDisplay')).toEqual([])
 })
 
 test('the variant lane toggle is a multi-sample Show... row', () => {
@@ -80,7 +80,7 @@ test('branch lengths are the toggle beside Tree', () => {
 })
 
 test('a row color table is the arrangement dialog, and a column name stays a Samples row', () => {
-  const table = { domain: ['a', 'b'], range: ['#111', '#222'] }
+  const table = { scale: { domain: ['a', 'b'], range: ['#111', '#222'] } }
   expect(stepPaths('rowColor', table, 'LinearMultiRowFeatureDisplay')).toEqual([
     'Track menu → Edit colors/arrangement...',
   ])
@@ -135,13 +135,13 @@ test('marks are added in the plot editor of the mark and Manhattan displays', ()
 test('a gene color with its own scale is typed into the multi-way plot editor', () => {
   expect(
     stepPaths(
-      'color',
-      { field: 'jexl:feature.name', domain: ['a'], range: ['red'] },
+      'encoding.color',
+      { field: 'jexl:feature.name', scale: { domain: ['a'], range: ['red'] } },
       'MultiWaySyntenyDisplay',
     ),
   ).toEqual(['Track menu → Advanced → Edit plot...'])
   expect(
-    stepPaths('color', { field: 'strand' }, 'MultiWaySyntenyDisplay'),
+    stepPaths('encoding.color', 'strand', 'MultiWaySyntenyDisplay'),
   ).toEqual([])
 })
 

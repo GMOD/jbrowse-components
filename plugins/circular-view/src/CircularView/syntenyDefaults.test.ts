@@ -84,9 +84,9 @@ describe('a two-genome circle', () => {
   }, 40000)
 
   test('keeps a color its launch chose', async () => {
-    const { circle } = await launch({ color: { field: 'strand' } })
+    const { circle } = await launch({ encoding: { color: 'strand' } })
     expect(circle.colorField).toBe('strand')
-    const constant = await launch({ color: 'grey' })
+    const constant = await launch({ encoding: { color: { value: 'grey' } } })
     expect(constant.circle.colorField).toBe('')
   }, 40000)
 
@@ -169,7 +169,7 @@ test('a declared ramp reaches the chords and the key', async () => {
 // A twist on the circle is against arcs whose direction nothing draws, so the
 // color is the only strand cue.
 test('strand keys its two colors', async () => {
-  const { circle } = await launch({ color: { field: 'strand' } })
+  const { circle } = await launch({ encoding: { color: 'strand' } })
   expect(
     circle.legendSpec.sections.flatMap(s => s.items.map(item => item.label)),
   ).toEqual(['forward', 'reverse'])

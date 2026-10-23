@@ -420,7 +420,8 @@ function trackNames(tracks: readonly RExportTrack[]) {
 
 /** What the figure cannot show of a track whose settings ggjbrowse reads. */
 function settingNotes(track: RExportTrack) {
-  const color = track.display.color as { field?: string } | undefined
+  const { color } =
+    (track.display.encoding as { color?: { field?: string } } | undefined) ?? {}
   return [
     ...(color?.field === 'mateRefName'
       ? [

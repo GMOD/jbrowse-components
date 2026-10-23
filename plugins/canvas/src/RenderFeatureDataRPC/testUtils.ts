@@ -20,7 +20,7 @@ import type {
   FloatingLabelsDataMap,
   SubfeatureInfo,
 } from './rpcTypes.ts'
-import type { ColorSetting } from '@jbrowse/display-kit/colorConfigSchema'
+import type { ColorScaleSetting } from '@jbrowse/display-kit/colorConfigSchema'
 
 // `floatingLabelsData` is a Map in the render contract, but a fixture reads far
 // better as a literal keyed by feature id.
@@ -275,15 +275,14 @@ export function makeFeatureData(
  */
 export function paintThroughColor(
   data: Pick<FeatureDataResult, 'colorValues'> & Partial<FeatureDataResult>,
-  color: Partial<ColorSetting> & { field: string },
+  color: { field: string; scale?: Partial<ColorScaleSetting> },
 ) {
   const field = colorFieldOf(
     colorEncodingOf({
       value: undefined,
-      scale: undefined,
-      domain: [],
-      range: [],
-      ...color,
+      field: color.field,
+      scale: { type: undefined, domain: [], range: [], ...color.scale },
+      legend: {},
     }),
   )!
   const resolved = resolveRegionColors(

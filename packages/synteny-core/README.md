@@ -113,14 +113,14 @@ an assumed white, so the key matches what is on screen.
 ### carriedSyntenySettings
 
 What a view holding `SyntenyColorsMixin` hands the view it opens on the same
-alignments: the color it paints by, which a view on its default scheme leaves to
-the new view's default, the pinned track colors and the `filter`. Opacity keeps
-each view's default, since a linear ribbon, a dotplot point and a circle's
-ribbon draw at different densities.
+alignments: the `encoding.color` it paints by, which a view on its default
+scheme leaves to the new view's default, the pinned track colors and the
+`filter`. `encoding.opacity` keeps each view's default, since a linear ribbon, a
+dotplot point and a circle's ribbon draw at different densities.
 
 ```js
 // type signature
-(view: SyntenyColorsModel) => { trackColors: IKeyValueMap<string>; filter: ModelSnapshotType<Record<string, any>>[]; color?: ModelSnapshotType<Record<string, any>> | undefined; }
+(view: SyntenyColorsModel) => { trackColors: IKeyValueMap<string>; filter: ModelSnapshotType<Record<string, any>>[]; encoding?: { color: ModelSnapshotType<Record<string, any>>; } | undefined; }
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/SyntenyColorsMixin.ts)
@@ -161,12 +161,12 @@ follows it once a row has no value; chips are blended over the band's ground by
 the view's alpha, so the key matches the on-screen composited ribbon colors,
 subject to `legendChipColor`'s legibility floor; a mode with no fixed key (a
 color per sequence name) is a note row saying so. A threshold keys its bins as
-chips. `title` is `color.title` as written: unset keeps the field's own heading,
-`''` draws none.
+chips. `title` is `legend.title` as written: unset keeps the field's own
+heading, `''` draws none.
 
 ```js
 // type signature
-(field: string, { alpha, title, ...opts }?: { pointBased?: boolean | undefined; cigarOps?: number | undefined; trackChips?: ColorChip[] | undefined; attributeRanges?: Record<string, AttributeRange> | undefined; hideUnlabelled?: boolean | undefined; missingColor?: string | undefined; labels?: readonly string[] | undefined; descending?: boolean | undefined; paint?: SyntenyColorPaint | undefined; } & { alpha?: number | undefined; title?: string | undefined; }) => ColorScale[]
+(field: string, { alpha, title, ...opts }?: { pointBased?: boolean | undefined; cigarOps?: number | undefined; trackChips?: ColorChip[] | undefined; attributeRanges?: Record<string, AttributeRange> | undefined; hideUnlabelled?: boolean | undefined; missingColor?: string | undefined; names?: readonly string[] | undefined; descending?: boolean | undefined; paint?: SyntenyColorPaint | undefined; } & { alpha?: number | undefined; title?: string | undefined; }) => ColorScale[]
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/colorLegend.ts)
@@ -214,8 +214,8 @@ With this interface the compiler checks those calls again.
 ### createOpacityFunction
 
 Each feature's fade, 0 to 1, as a share of `opacityLevel`; undefined while
-`opacity` draws its constant. A feature with no value for the field draws at the
-level.
+`encoding.opacity` draws its constant. A feature with no value for the field
+draws at the level.
 
 `viewRanges` is the domain a number column fades across, the view's accumulated
 one as the color ramp's is, and `fetchRanges` the fetch's own, whose label lists
@@ -315,7 +315,7 @@ them.
 
 ```js
 // type signature
-readonly[('colorBy', 'alpha')]
+readonly[('colorBy', 'alpha', 'color')]
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/liftSyntenyViewSettings.ts)
@@ -324,9 +324,10 @@ readonly[('colorBy', 'alpha')]
 
 A linear synteny or dotplot view snapshot's v4.3.0 settings, lifted onto the
 view: `colorBy` (a mode string), `alpha` and `minAlignmentLength` sat on each
-synteny display, and land as `color`, `opacity` and a `filter` predicate on
-`length`. An older genomes-portal launch link puts the mode string on the view
-itself, which lifts the same way.
+synteny display, and land as `encoding.color`, `encoding.opacity` and a `filter`
+predicate on `length`. An older genomes-portal launch link puts the mode string
+on the view itself, which lifts the same way, and a jb2hubs desktop link writes
+the view's `color`, which lands as `encoding.color`.
 
 ```js
 // type signature
@@ -382,9 +383,9 @@ header.
 
 ### opacityFadeOf
 
-The part of `opacity` the color pass reads: undefined for the constant, else the
-mapping with `range` as shares of its most opaque entry, so a mapping scaled
-alike at both ends answers the same.
+The part of `encoding.opacity` the color pass reads: undefined for the constant,
+else the mapping with `scale.range` as shares of its most opaque entry, so a
+mapping scaled alike at both ends answers the same.
 
 ```js
 // type signature
@@ -420,10 +421,10 @@ Under a field it moves the field's most opaque end.
 
 ### opacityRangeAt
 
-`range` rescaled so the mapping's most opaque end equals `value`, keeping each
-entry's share of it. A threshold or a text column with no range written draws
-every bin at the level, so it gets one `value` per bin rather than the number
-column's default fade.
+`scale.range` rescaled so the mapping's most opaque end equals `value`, keeping
+each entry's share of it. A threshold or a text column with no range written
+draws every bin at the level, so it gets one `value` per bin rather than the
+number column's default fade.
 
 ```js
 // type signature
@@ -434,12 +435,12 @@ column's default fade.
 
 ### paintedField
 
-The field a synteny color object paints by, or `''` while it names none. Read
-through the one resolver every display's color object goes through.
+The field a synteny color channel paints by, or `''` while it names none. Read
+through the one resolver every display's color channel goes through.
 
 ```js
 // type signature
-({ value, scale, field, domain, }: SyntenyColorSnapshot) => string
+({ value, scale, field, }: SyntenyColorSnapshot) => string
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/syntenyColorBy.ts)
@@ -474,7 +475,7 @@ view's own dialog.
 How a numeric field paints under `paint`: a preset measurement through its
 preset, and a column a track declares on a viridis ramp over the span seen,
 labelled with the actual numbers, the honest reading when nothing declares what
-the column's range is supposed to be. A written `scale` names a ramp or a
+the column's range is supposed to be. A written `scale.type` names a ramp or a
 threshold's bins either way. Undefined for the constant, a structural field and
 a text column.
 
@@ -488,12 +489,12 @@ a text column.
 ### strandLevels
 
 Each strand's color under `paint`, forward then reverse: the universal strand
-preset's, or `range`'s in `domain` order where the color object writes them, and
-the name `labels` gives it, if any.
+preset's, or `range`'s in `domain` order where the channel writes them, and the
+name `names` gives it, if any.
 
 ```js
 // type signature
-({ domain, range }: SyntenyColorPaint, labels?: readonly string[]) => { value: "-1" | "1"; color: string; label: string | undefined; }[]
+({ domain, range }: SyntenyColorPaint, names?: readonly string[]) => { value: "-1" | "1"; color: string; label: string | undefined; }[]
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/colorRamps.ts)
@@ -506,19 +507,19 @@ displays.
 
 ```js
 // type signature
-{ readonly mapq: {…}; readonly identity: {…}; readonly dnds: { readonly scale: "linear"; readonly domainMin: 0; readonly domainMax: 2; readonly domainMid: 1; readonly scheme: "redyellowblue"; readonly reverse: true; readonly title: "dN/dS"; }; readonly syntenicDepth: { readonly scale: "threshold"; readonly domain: readonly ["2", "3"]; readonly range: readonly ["#bdbdbd", "#fdae6b", "#e6550d"]; readonly labels: readonly ["One-to-one", "Shared by 2 genes", "Shared by 3 or more"]; readonly title: "Syntenic depth"; }; }
+{ readonly mapq: {…}; readonly identity: {…}; readonly dnds: { readonly scale: {…}; readonly legend: { readonly title: "dN/dS"; }; }; readonly syntenicDepth: { readonly scale: { readonly type: "threshold"; readonly domain: readonly ["2", "3"]; readonly range: readonly ["#bdbdbd", "#fdae6b", "#e6550d"]; readonly names: readonly ["One-to-one", "Shared by 2 genes", "Shared by 3 or more"]; }; readonly legend: { readonly title: "Syntenic depth"; }; }; }
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/colorRamps.ts)
 
 ### syntenyColorFor
 
-The color object that paints by `field`, written over `current`: display-kit's
+The color channel that paints by `field`, written over `current`: display-kit's
 `colorForField`, the rule every display's Color by pick writes by.
 
 ```js
 // type signature
-(field: string, current: SyntenyColorSnapshot) => SyntenyColorSnapshot
+(field: string, current: SyntenyColorSnapshot) => ColorSlots
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/syntenyColorBy.ts)

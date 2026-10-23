@@ -116,14 +116,14 @@ export interface MultiWayTablesArgs {
   hidden?: string[]
   /**
    * The display's settings, as a `MultiWaySyntenyDisplay` config writes
-   * them: `ribbonColor` (a CSS color, or the color object's slots such as
-   * `{ field: 'strand' }`), `rows` (`sort`, the lanes that stack first,
+   * them: `ribbons.encoding.color` (a field such as `'strand'`, or the color
+   * channel's slots such as `{ value: 'grey' }`), `rows` (`sort`, the lanes that stack first,
    * and `kept`, the lanes drawn), `hideUnlabelled`, `drawCurves`,
    * `bridgeSkippedLanes`, `splitStrands`, `showGeneLabels`,
    * `inlineLaneNames` and `height`, the stack's px.
    */
   display?: {
-    ribbonColor?: ColorArg
+    ribbons?: { encoding?: { color?: ColorArg } }
     rows?: { sort?: string[]; kept?: string[] }
     hideUnlabelled?: boolean
     drawCurves?: boolean
@@ -174,33 +174,22 @@ function shownGroups(groups: MultiWayGroup[], axis: ComparativeAxis) {
 const displayConfigSchema = configSchemaFactory()
 
 /** The display's settings as its own config reads them, defaults included. */
-function readDisplay({
-  ribbonColor,
-  ...slots
-}: MultiWayTablesArgs['display'] = {}) {
+function readDisplay(slots: MultiWayTablesArgs['display'] = {}) {
   const conf = displayConfigSchema.create({
     type: 'MultiWaySyntenyDisplay',
     displayId: SESSION,
     ...slots,
-    ...(ribbonColor === undefined
-      ? {}
-      : {
-          ribbonColor:
-            typeof ribbonColor === 'string'
-              ? { value: ribbonColor }
-              : ribbonColor,
-        }),
   })
-  const color = conf.ribbonColor
+  const color = conf.ribbons.encoding.color
   const setting = colorSnapshotOf(color)
   return {
     ...paintedRibbonColor(setting),
     paint: colorPaintOf(color),
-    domain: readConfObject(color, 'domain'),
-    range: readConfObject(color, 'range'),
-    labels: setting.labels,
-    title: setting.title,
-    descending: readConfObject(color, 'descending'),
+    domain: setting.scale.domain,
+    range: setting.scale.range,
+    names: setting.scale.names,
+    title: setting.legend.title,
+    descending: setting.legend.descending,
     rowsSort: readConfObject(conf, ['rows', 'sort']),
     kept: readConfObject(conf, ['rows', 'kept']),
     hideUnlabelled: readConfObject(conf, 'hideUnlabelled'),
@@ -716,7 +705,7 @@ export async function multiwayTables(
         domain: settings.domain,
         hideUnlabelled: settings.hideUnlabelled,
         slotColor: settings.value,
-        labels: settings.labels,
+        names: settings.names,
         title: settings.title,
         descending: settings.descending,
         paint: settings.paint,

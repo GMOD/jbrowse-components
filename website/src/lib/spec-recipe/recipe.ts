@@ -19,6 +19,7 @@ import {
   specTrackId,
   specTrackSettings,
   specTracks,
+  viewSettingEntries,
 } from './decode.ts'
 import {
   IGNORED_FIELDS,
@@ -462,7 +463,9 @@ function viewSteps(
   }
 
   const viewFieldSteps = fieldSteps(
-    Object.entries(view).filter(([field]) => !(form && field in launchFields)),
+    viewSettingEntries(view).filter(
+      ([field]) => !(form && field in launchFields),
+    ),
     viewFields,
     { noun: 'feature', viewType: view.type },
   )

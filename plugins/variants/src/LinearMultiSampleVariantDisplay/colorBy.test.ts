@@ -125,8 +125,7 @@ describe('multi-sample variant colorBy', () => {
     expect(model.rowPaletteDeals).toBe(false)
     expect(model.rowColorChoice).toBe('')
     model.applyRowEdits(model.editableSources, {
-      domain: ['HG001'],
-      range: ['#123456'],
+      scale: { domain: ['HG001'], range: ['#123456'] },
     })
     expect(model.rowColorChoice).toBe('name')
     expect(model.sources[0]!.rowColor).toBe('#123456')
@@ -157,7 +156,9 @@ test('the Samples menu ticks a configured attribute the samples lack', () => {
 
 test('the Samples menu ticks Each row where the dialog picked sample colors', () => {
   const { display } = createTestEnvironment({
-    displayConfig: { rowColor: { domain: ['HG001'], range: ['#f00'] } },
+    displayConfig: {
+      rowColor: { scale: { domain: ['HG001'], range: ['#f00'] } },
+    },
   }).createDisplay()
   display.setSources([{ name: 'HG001', population: 'EUR' }])
   const colorBy = display

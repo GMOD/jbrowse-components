@@ -7,8 +7,8 @@ guide_category: Core configuration
 A track is a `trackId`, a `uri` and the `assemblyNames` it sits on; JBrowse
 reads the track type and adapter off the file's extension. Write `type` and
 `adapter` out when the extension does not say enough, and put appearance
-settings (`color`, `height`, etc.) in a `displayDefaults` object, which JBrowse
-routes to the right display.
+settings (`encoding`, `height`, etc.) in a `displayDefaults` object, which
+JBrowse routes to the right display.
 
 A complete `config.json` with one assembly and one BigBed track, showing where a
 track sits:
@@ -95,15 +95,18 @@ slot by that name takes the value:
     "type": "VcfTabixAdapter",
     "uri": "https://yourhost/file.vcf.gz"
   },
-  "displayDefaults": { "color": "green", "height": 200 }
+  "displayDefaults": {
+    "encoding": { "color": { "value": "green" } },
+    "height": 200
+  }
 }
 ```
 
-- **A name reaches every display that takes the value.** `color: "green"` paints
-  the linear, multi-sample and circular (chord) displays alike, and `height`
-  sets all of them; `color: { "field": "type" }` reaches only the displays whose
-  `color` paints by a field, and a value no display takes fails the track's
-  load, naming why.
+- **A name reaches every display that takes the value.**
+  `"color": { "value": "green" }` paints the linear, multi-sample and circular
+  (chord) displays alike, and `height` sets all of them; `"color": "type"`
+  reaches only the displays whose `encoding.color` paints by a field, and a
+  value no display takes fails the track's load, naming why.
 - **A name no display defines is ignored**, with a console warning so typos show
   up.
 
@@ -126,7 +129,7 @@ it names itself.
     {
       "type": "LinearBasicDisplay",
       "height": 200,
-      "color": { "field": "strand" }
+      "encoding": { "color": "strand" }
     }
   ]
 }

@@ -25,8 +25,10 @@ function arrangementConfig({ field = 'sample', domain, colors }: Arrangement) {
     ...(colors
       ? {
           rowColor: {
-            domain: Object.keys(colors),
-            range: Object.values(colors),
+            scale: {
+              domain: Object.keys(colors),
+              range: Object.values(colors),
+            },
           },
         }
       : {}),
@@ -58,8 +60,7 @@ const ROW_GROUPS: RowGroup[] = [
 
 const BY_GROUP = {
   field: 'group',
-  domain: ['Kids', 'Parents'],
-  range: ['#e41a1c', '#377eb8'],
+  scale: { domain: ['Kids', 'Parents'], range: ['#e41a1c', '#377eb8'] },
 }
 
 const REGIONS = [{ ...ctgA, end: 1000 }]
@@ -171,7 +172,10 @@ test('a color entry paints its row, the rest the default color', () => {
 })
 
 test('a color slot paints the blocks, so a color entry paints none', () => {
-  const display = loaded({ colors: { dad: '#00ff00' } }, { color: 'steelblue' })
+  const display = loaded(
+    { colors: { dad: '#00ff00' } },
+    { encoding: { color: { value: 'steelblue' } } },
+  )
   expect(derived(display)).toMatchSnapshot()
 })
 
@@ -254,7 +258,7 @@ test('dialog edits reorder, relabel and recolor, and a reset returns to the seed
   const [s10, dad, mom, s2, unanswered] = display.editableSources
   display.applyRowEdits(
     [{ ...mom!, label: 'Mother' }, unanswered!, s2!, dad!, s10!],
-    { domain: ['s2'], range: ['#0000ff'] },
+    { scale: { domain: ['s2'], range: ['#0000ff'] } },
   )
   expect(derived(display)).toMatchSnapshot()
   expect(display.editableSources.find(s => s.name === 's2')?.rowColor).toBe(
@@ -288,8 +292,7 @@ test('a repartition keeps the arrangement, idle under rows it does not name', as
   await clusterRun(display, '((dad,s2),(mom,s10));')
   const [a, b, ...rest] = display.editableSources
   display.applyRowEdits([b!, { ...a!, label: 'First' }, ...rest], {
-    domain: [a!.name],
-    range: ['#0000ff'],
+    scale: { domain: [a!.name], range: ['#0000ff'] },
   })
   display.setRowFocus(['dad', 'mom'])
   display.setHiddenCategories(['x'])

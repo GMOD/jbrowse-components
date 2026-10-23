@@ -111,18 +111,22 @@ export const ALT_ALLELE_COLOR = 'rgb(60,65,72)'
 // Shared so the pggb and Minigraph-Cactus pages answer in the same colors. An
 // rGFA has no `SM:Z:` tag, so its segments paint the no-value grey.
 export const STRAINS_PER_SEGMENT_DISPLAY = {
-  color: {
-    field: 'sampleCount',
-    domain: ['5', '4', '3', '2', '1'],
-    range: ['#bdbdbd', '#fed976', '#feb24c', '#fd8d3c', '#e31a1c'],
-    labels: [
-      'All 5 strains (core)',
-      '4 strains',
-      '3 strains',
-      '2 strains',
-      '1 strain (private)',
-    ],
-    title: 'Strains',
+  encoding: {
+    color: {
+      field: 'sampleCount',
+      scale: {
+        domain: ['5', '4', '3', '2', '1'],
+        range: ['#bdbdbd', '#fed976', '#feb24c', '#fd8d3c', '#e31a1c'],
+        names: [
+          'All 5 strains (core)',
+          '4 strains',
+          '3 strains',
+          '2 strains',
+          '1 strain (private)',
+        ],
+      },
+      legend: { title: 'Strains' },
+    },
   },
 }
 

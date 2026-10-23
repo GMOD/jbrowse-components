@@ -602,14 +602,54 @@ function scalesOf(scales: Record<string, unknown>) {
   return isRecord(y) ? { y: scaleEndsOf(name => y[name]) } : {}
 }
 
-function declaredMembers(written: Record<string, unknown>, slot: SlotEntry) {
-  const declared = new Set((slot.subSlots ?? []).map(s => s.name))
-  return Object.fromEntries(
-    Object.entries(written).filter(([key]) => declared.has(key)),
-  )
+// A written channel's member by path, a bare string being its field. A
+// member its schema does not declare reads as unset, as the display reads it.
+function channelMember(
+  written: unknown,
+  slot: SlotEntry,
+  path: readonly string[],
+): unknown {
+  let at: unknown = typeof written === 'string' ? { field: written } : written
+  let entry: SlotEntry | undefined = slot
+  for (const key of path) {
+    entry = entry?.subSlots?.find(s => s.name === key)
+    at = entry && isRecord(at) ? at[key] : undefined
+  }
+  return at
 }
 
-// What the display's color objects and its value scale say together that it
+// Each color channel under `slot`, at any depth (`encoding.color`,
+// `pileup.bases.encoding.color`), judged under its schema's fieldPresets.
+function checkChannels(
+  written: unknown,
+  slot: SlotEntry,
+  where: string,
+  warn: (at: string, problem: ScaleProblem) => void,
+) {
+  if (slot.fieldPresets) {
+    for (const problem of colorProblems(
+      withImpliedField(
+        colorSlotsOf(path =>
+          path.length === 1 && path[0] === 'field'
+            ? (channelMember(written, slot, path) ?? slot.fieldDefault)
+            : channelMember(written, slot, path),
+        ),
+        slot.impliedField,
+      ),
+      slot.fieldPresets,
+    )) {
+      warn(where, problem)
+    }
+    return
+  }
+  if (isRecord(written)) {
+    for (const sub of slot.subSlots ?? []) {
+      checkChannels(written[sub.name], sub, `${where}.${sub.name}`, warn)
+    }
+  }
+}
+
+// What the display's color channels and its value scale say together that it
 // cannot draw as written: its schema's fieldPresets stand in for the plugin
 // code the CLI does not run, and every quantitative scale's ends answer to
 // one rule.
@@ -633,26 +673,11 @@ function checkScaleSlots(
   }
   for (const slot of slots) {
     const written = lifted[slot.name]
-    if (!isRecord(written)) {
+    if (written === undefined) {
       continue
     }
-    const members = declaredMembers(written, slot)
-    if (slot.fieldPresets) {
-      for (const problem of colorProblems(
-        withImpliedField(
-          colorSlotsOf(name =>
-            name === 'field'
-              ? (members.field ?? slot.fieldDefault)
-              : members[name],
-          ),
-          slot.impliedField,
-        ),
-        slot.fieldPresets,
-      )) {
-        warn(`${where}.${slot.name}`, problem)
-      }
-    }
-    const { y } = members
+    checkChannels(written, slot, `${where}.${slot.name}`, warn)
+    const y = isRecord(written) ? written.y : undefined
     if (slot.name === 'scales' && isRecord(y)) {
       for (const problem of scaleEndProblems(scaleEndsOf(name => y[name]))) {
         warn(`${where}.scales.y`, problem)

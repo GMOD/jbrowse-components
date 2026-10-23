@@ -29,14 +29,6 @@ export const triangleMatrixConfigSchemaFields = {
   /**
    * #slot
    */
-  showLegend: {
-    type: 'boolean',
-    defaultValue: false,
-    description: 'show the color scale legend',
-  },
-  /**
-   * #slot
-   */
   heightMode: {
     type: 'stringEnum',
     model: types.enumeration('TriangleHeightMode', [...TRIANGLE_HEIGHT_MODES]),

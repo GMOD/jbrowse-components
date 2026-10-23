@@ -26,21 +26,21 @@ display:
 
 | Display                                                               | Settings                                                                                                                               |
 | --------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
-| Alignments display (`LinearAlignmentsDisplay`)                        | `unit`, `filter`, `facet`, `sort`, `color`, `scales`, `coverage`, `pileup`, `readConnections`, `baseColor`, `modifications`, `sashimi` |
+| Alignments display (`LinearAlignmentsDisplay`)                        | `unit`, `filter`, `facet`, `sort`, `encoding`, `scales`, `legend`, `coverage`, `pileup`, `readConnections`, `modifications`, `sashimi` |
 | Chord synteny display (`ChordSyntenyDisplay`)                         | `mark`                                                                                                                                 |
-| Chord variant display (`ChordVariantDisplay`)                         | `mark`, `color`                                                                                                                        |
-| Feature display (`LinearBasicDisplay`)                                | `filter`, `color`, `facet`, `labels`                                                                                                   |
-| Hi-C contact matrix display (`LinearHicDisplay`)                      | `color`                                                                                                                                |
-| LD heatmap display (`LDTrackDisplay`)                                 | `color`                                                                                                                                |
-| MAF display (`LinearMafDisplay`)                                      | `color`, `y`, `rows`, `rowColor`, `coverage`, `alignments`, `scales`, `conservation`                                                   |
-| Manhattan plot display (`LinearManhattanDisplay`)                     | `marks`, `transform`, `facet`, `rows`, `rowColor`, `scales`, `origin`, `filter`                                                        |
-| Marks (`LinearMarkDisplay`)                                           | `marks`, `transform`, `facet`, `rows`, `rowColor`, `scales`, `origin`, `filter`                                                        |
-| Multi-row feature display (painting) (`LinearMultiRowFeatureDisplay`) | `rows`, `color`, `rowColor`, `facet`                                                                                                   |
-| Multi-sample variant display (`LinearMultiSampleVariantDisplay`)      | `filter`, `rows`, `unit`, `color`, `rowColor`, `facet`, `variants`                                                                     |
-| Multi-way synteny display (`MultiWaySyntenyDisplay`)                  | `color`, `rows`, `ribbonColor`, `text`, `laneLayers`                                                                                   |
-| Synteny alignments display (`LGVSyntenyDisplay`)                      | `unit`, `filter`, `facet`, `sort`, `color`, `scales`, `coverage`, `pileup`, `readConnections`                                          |
-| Variant display (`LinearVariantDisplay`)                              | `filter`, `color`, `facet`, `labels`                                                                                                   |
-| Wiggle display (`LinearWiggleDisplay`)                                | `mark`, `rows`, `rowColor`, `color`, `y`, `origin`, `size`, `scales`, `extent`                                                         |
+| Chord variant display (`ChordVariantDisplay`)                         | `mark`, `encoding`                                                                                                                     |
+| Feature display (`LinearBasicDisplay`)                                | `filter`, `legend`, `encoding`, `facet`, `labels`                                                                                      |
+| Hi-C contact matrix display (`LinearHicDisplay`)                      | `encoding`, `legend`                                                                                                                   |
+| LD heatmap display (`LDTrackDisplay`)                                 | `encoding`, `legend`                                                                                                                   |
+| MAF display (`LinearMafDisplay`)                                      | `encoding`, `y`, `rows`, `rowColor`, `legend`, `coverage`, `alignments`, `scales`, `conservation`                                      |
+| Manhattan plot display (`LinearManhattanDisplay`)                     | `marks`, `transform`, `facet`, `rows`, `rowColor`, `scales`, `origin`, `legend`, `filter`                                              |
+| Marks (`LinearMarkDisplay`)                                           | `marks`, `transform`, `facet`, `rows`, `rowColor`, `scales`, `origin`, `legend`, `filter`                                              |
+| Multi-row feature display (painting) (`LinearMultiRowFeatureDisplay`) | `rows`, `encoding`, `rowColor`, `legend`, `facet`                                                                                      |
+| Multi-sample variant display (`LinearMultiSampleVariantDisplay`)      | `filter`, `rows`, `unit`, `encoding`, `legend`, `rowColor`, `facet`, `variants`                                                        |
+| Multi-way synteny display (`MultiWaySyntenyDisplay`)                  | `encoding`, `rows`, `ribbons`, `legend`, `text`, `laneLayers`                                                                          |
+| Synteny alignments display (`LGVSyntenyDisplay`)                      | `unit`, `filter`, `facet`, `sort`, `encoding`, `scales`, `legend`, `coverage`, `pileup`, `readConnections`                             |
+| Variant display (`LinearVariantDisplay`)                              | `filter`, `legend`, `encoding`, `facet`, `labels`                                                                                      |
+| Wiggle display (`LinearWiggleDisplay`)                                | `mark`, `rows`, `rowColor`, `encoding`, `y`, `origin`, `size`, `scales`, `legend`, `extent`                                            |
 
 <!-- END GENERATED PLOT_SETTINGS -->
 
@@ -48,9 +48,9 @@ Two of them split a track by a field: `facet` stacks labelled sections, one per
 value, and `rows` draws one row per value, which a tree can order.
 
 The circular view's chord displays have a plot too: `mark`, how deeply each
-chord curves, and on the variant display `color`. Their Edit plot row is under
-the view menu's Tracks entry, since a track on the circle has no label to hang a
-menu off.
+chord curves, and on the variant display `encoding.color`. Their Edit plot row
+is under the view menu's Tracks entry, since a track on the circle has no label
+to hang a menu off.
 
 The Config reference link opens the display's page in the
 [config reference](/docs/config_guide), which spells out each setting's members.
@@ -62,7 +62,7 @@ the text with its example laid over the current settings, so you can read what
 it changes before applying it. For a feature track:
 
 ```json
-{ "facet": "strand", "color": { "field": "type" } }
+{ "facet": "strand", "encoding": { "color": "type" } }
 ```
 
 stacks one section per strand and colors each feature by its type.
@@ -73,8 +73,8 @@ stacks one section per strand and colors each feature by its type.
   default.
 - An example lands over the plot as it stands and changes only what it names, so
   an example writing a `filter` list keeps the filter's other tests in the text.
-- A string is a setting's one-value form, such as a facet's field or a constant
-  color.
+- A string is a setting's one-value form, such as a facet's field or a color's
+  field.
 
 The line under the text lists which settings applying would set or reset, and
 Apply is disabled while the text is something the track's config would refuse,

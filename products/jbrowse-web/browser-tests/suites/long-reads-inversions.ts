@@ -117,7 +117,7 @@ const suite: TestSuite = {
           trackId: 'volvox-simple-inv-paired.bam',
           displaySnapshot: {
             readConnections: { show: true, mark: 'rule' },
-            color: { field: 'pairOrientation' },
+            encoding: { color: { field: 'pairOrientation' } },
           },
         },
       ],

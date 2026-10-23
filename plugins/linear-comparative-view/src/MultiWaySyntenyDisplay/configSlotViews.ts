@@ -29,8 +29,9 @@ export function configSlotViews(self: ConfigSlotSelf) {
     },
     /** #getter */
     get ribbonColor(): string {
-      return paintedRibbonColor(colorSnapshotOf(self.configuration.ribbonColor))
-        .value
+      return paintedRibbonColor(
+        colorSnapshotOf(self.configuration.ribbons.encoding.color),
+      ).value
     },
     /**
      * #getter
@@ -42,16 +43,17 @@ export function configSlotViews(self: ConfigSlotSelf) {
     },
     /** #getter */
     get ribbonColorField(): string {
-      return paintedRibbonColor(colorSnapshotOf(self.configuration.ribbonColor))
-        .field
+      return paintedRibbonColor(
+        colorSnapshotOf(self.configuration.ribbons.encoding.color),
+      ).field
     },
     /** #getter */
     get ribbonColorDomain(): string[] {
-      return getConf(self, ['ribbonColor', 'domain'])
+      return getConf(self, ['ribbons', 'encoding', 'color', 'scale', 'domain'])
     },
     /** #getter */
     get ribbonPaint(): SyntenyColorPaint {
-      return colorPaintOf(self.configuration.ribbonColor)
+      return colorPaintOf(self.configuration.ribbons.encoding.color)
     },
     /** #getter */
     get hideUnlabelled(): boolean {
@@ -103,7 +105,7 @@ export function configSlotViews(self: ConfigSlotSelf) {
     /** #getter */
     get geneColorSettings(): GeneColorSettings {
       return {
-        color: colorSnapshotOf(self.configuration.color),
+        color: colorSnapshotOf(self.configuration.encoding.color),
         utrColor: self.configuration.utrColor,
       }
     },
@@ -113,14 +115,15 @@ export function configSlotViews(self: ConfigSlotSelf) {
     },
     /**
      * #getter
-     * `''` while `color.value` paints
+     * `''` while `encoding.color.value` paints
      */
     get geneColorField(): string {
       return colorFieldOf(this.geneColorEncoding)?.field ?? ''
     },
     /**
      * #getter
-     * the constant `color.value` holds, undefined for none or a `jexl:` one
+     * the constant `encoding.color.value` holds, undefined for none or a
+     * `jexl:` one
      */
     get geneSolidColor(): string | undefined {
       const raw = this.geneColorSettings.color.value
@@ -146,7 +149,7 @@ export function configSlotActions(self: ConfigSlotSelf) {
     },
     /** #action */
     setRibbonColorDomain(domain: string[]) {
-      setConf(self, ['ribbonColor', 'domain'], domain)
+      setConf(self, ['ribbons', 'encoding', 'color', 'scale', 'domain'], domain)
     },
     /** #action */
     setHideUnlabelled(flag: boolean) {

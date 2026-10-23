@@ -29,7 +29,7 @@ function makeModel() {
     pickDefaultColor() {},
     pickSolidColor() {},
     parkColor() {},
-    // Mirrors the display: the layer is the `baseColor` field, its settings
+    // Mirrors the display: the layer is the `pileup.bases` field, its settings
     // the `modifications` slot, which outlives a switch to another layer.
     layerType: undefined as BaseLayerType | undefined,
     modificationSettings: {} as ModificationColorBy,

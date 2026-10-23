@@ -13,50 +13,75 @@ function create(snap: Record<string, unknown>) {
   })
 }
 
-test('a bare color is the constant', () => {
-  const conf = create({ color: 'green' })
-  expect(readConfObject(conf, ['color', 'value'])).toBe('green')
-  expect(readConfObject(conf, ['color', 'field'])).toBeUndefined()
+const COLOR = ['encoding', 'color'] as const
+const SCALE = [...COLOR, 'scale'] as const
+
+test('value is the constant, and a bare color is refused with its spelling', () => {
+  const conf = create({ encoding: { color: { value: 'green' } } })
+  expect(readConfObject(conf, [...COLOR, 'value'])).toBe('green')
+  expect(() => create({ encoding: { color: 'green' } })).toThrow(
+    'write encoding.color: { "value": "green" }',
+  )
 })
 
-// A subtrack's color is `rowColor`'s, so `source` is no color field.
-test('the field is score, and any other name is refused', () => {
-  expect(
-    readConfObject(create({ color: { field: 'score' } }), ['color', 'field']),
-  ).toBe('score')
-  expect(() => create({ color: { field: 'source' } })).toThrow()
-  expect(() => create({ color: { field: 'pvalue' } })).toThrow()
+test("v4's display color is the channel's constant", () => {
+  const conf = create({ color: 'darkgreen' })
+  expect(readConfObject(conf, [...COLOR, 'value'])).toBe('darkgreen')
 })
 
-test('the object carries the scale and the slots it reads', () => {
+// The channel colors the score it plots, and a subtrack's color is
+// `rowColor`'s, so it names no field at all.
+test('the channel takes no field', () => {
+  for (const field of ['score', 'source']) {
+    expect(() =>
+      refusingUndeclaredKeys(() => create({ encoding: { color: { field } } })),
+    ).toThrow('WiggleColor takes')
+  }
+})
+
+test('the channel carries the scale and the slots it reads', () => {
   const conf = create({
-    color: {
-      field: 'score',
-      scale: 'threshold',
-      domain: [2],
-      range: ['#2166ac', '#b2182b'],
+    encoding: {
+      color: {
+        scale: {
+          type: 'threshold',
+          domain: [2],
+          range: ['#2166ac', '#b2182b'],
+          names: ['loss', 'gain'],
+        },
+        legend: { title: 'log2 ratio' },
+      },
     },
   })
-  expect(readConfObject(conf, ['color', 'scale'])).toBe('threshold')
-  expect(readConfObject(conf, ['color', 'domain'])).toEqual(['2'])
-  expect(readConfObject(conf, ['color', 'range'])).toEqual([
+  expect(readConfObject(conf, [...SCALE, 'type'])).toBe('threshold')
+  expect(readConfObject(conf, [...SCALE, 'domain'])).toEqual(['2'])
+  expect(readConfObject(conf, [...SCALE, 'range'])).toEqual([
     '#2166ac',
     '#b2182b',
   ])
+  expect(readConfObject(conf, [...SCALE, 'names'])).toEqual(['loss', 'gain'])
+  expect(readConfObject(conf, [...COLOR, 'legend', 'title'])).toBe('log2 ratio')
 })
 
 test('a write refuses an undeclared key by name', () => {
   expect(() =>
     refusingUndeclaredKeys(() =>
-      create({ color: { field: 'score', pivot: 2 } }),
+      create({ encoding: { color: { scale: { pivot: 2 } } } }),
     ),
-  ).toThrow('WiggleColor takes')
+  ).toThrow('WiggleColorScale takes')
 })
 
 test('a scale the display does not paint is refused', () => {
   expect(() =>
-    create({ color: { field: 'score', scale: 'ordinal' } }),
+    create({ encoding: { color: { scale: { type: 'ordinal' } } } }),
   ).toThrow()
+})
+
+test('the legend is on unless the config turns it off', () => {
+  expect(readConfObject(create({}), ['legend', 'show'])).toBe(true)
+  expect(
+    readConfObject(create({ legend: { show: false } }), ['legend', 'show']),
+  ).toBe(false)
 })
 
 test("v4's rendering names load as the mark they draw, and an unknown one as the default", () => {
@@ -137,21 +162,24 @@ describe('the slots v4 declared on the display', () => {
     const conf = create({
       renderers: { DensityRenderer: { posColor: 'red', negColor: 'blue' } },
     })
-    expect(readConfObject(conf, ['color', 'scale'])).toBeUndefined()
-    expect(readConfObject(conf, ['color', 'range'])).toEqual(['blue', 'red'])
+    expect(readConfObject(conf, [...SCALE, 'type'])).toBeUndefined()
+    expect(readConfObject(conf, [...SCALE, 'range'])).toEqual(['blue', 'red'])
   })
 
   test("a v4 DensityRenderer's one color is the pair it faded to", () => {
     const conf = create({ renderers: { DensityRenderer: { color: 'green' } } })
-    expect(readConfObject(conf, ['color', 'value'])).toBeUndefined()
-    expect(readConfObject(conf, ['color', 'range'])).toEqual(['green', 'green'])
+    expect(readConfObject(conf, [...COLOR, 'value'])).toBeUndefined()
+    expect(readConfObject(conf, [...SCALE, 'range'])).toEqual([
+      'green',
+      'green',
+    ])
   })
 
   test("a renderers block gives the display its renderer's color", () => {
     const conf = create({
       renderers: { XYPlotRenderer: { color: 'purple', filled: false } },
     })
-    expect(readConfObject(conf, ['color', 'value'])).toBe('purple')
+    expect(readConfObject(conf, [...COLOR, 'value'])).toBe('purple')
   })
 })
 
@@ -175,5 +203,5 @@ test('a v4 renderers block keeps its color beside its summary mode', () => {
     renderers: { XYPlotRenderer: { summaryScoreMode: 'avg', color: 'red' } },
   })
   expect(readConfObject(conf, 'y')).toBe('score')
-  expect(readConfObject(conf, ['color', 'value'])).toBe('red')
+  expect(readConfObject(conf, [...COLOR, 'value'])).toBe('red')
 })

@@ -5,11 +5,19 @@ import { createDisplay } from './testEnv.ts'
 
 // A synteny block has no introns, basecaller tags or qualities, so the schema
 // stops at the alignments base and the shared model answers these off.
-test('the schema declares no sashimi, baseColor or modifications', () => {
+test('the schema declares no sashimi, pileup.bases or modifications', () => {
   const definition = getConfigurationSchemaDefinition(configSchemaF())!
-  for (const slot of ['sashimi', 'baseColor', 'modifications']) {
+  for (const slot of ['sashimi', 'modifications']) {
     expect(definition).not.toHaveProperty(slot)
   }
+  const partOf = (name: string) =>
+    getConfigurationSchemaDefinition(
+      definition[name] as Parameters<
+        typeof getConfigurationSchemaDefinition
+      >[0],
+    )!
+  expect(partOf('pileup')).not.toHaveProperty('bases')
+  expect(partOf('pileup')).toHaveProperty('mismatches')
 })
 
 // The filter list is the alignments display's, so a junction field is a

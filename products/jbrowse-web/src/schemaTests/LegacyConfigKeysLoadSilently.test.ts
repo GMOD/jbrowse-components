@@ -306,7 +306,11 @@ test.each([
   ['LinearAlignmentsDisplay', ['coverage', 'height'], 40],
   ['LinearSNPCoverageDisplay', ['scales', 'y', 'domainMin'], 0],
   ['LinearSNPCoverageDisplay', ['scales', 'y', 'domainMax'], 100],
-  ['LinearReadArcsDisplay', ['readConnections', 'lineWidth'], 1],
+  [
+    'LinearReadArcsDisplay',
+    ['readConnections', 'encoding', 'strokeWidth', 'value'],
+    1,
+  ],
   ['LinearReadCloudDisplay', ['pileup', 'mismatches', 'show'], false],
   ['MultiLinearVariantDisplay', 'showRowLabels', true],
   ['MultiLinearVariantDisplay', 'referenceDrawingMode', 'draw'],

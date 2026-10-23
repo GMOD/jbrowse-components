@@ -8,7 +8,7 @@ import stateModelFactory from './model.ts'
 import type { LinearVariantDisplayModel } from './model.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 
-function createDisplay() {
+function createDisplay(displayConfig?: Record<string, unknown>) {
   return createDisplayTestEnvironment<LinearVariantDisplayModel>({
     trackType: 'VariantTrack',
     adapter: { name: 'TestAdapter', configOnly: true },
@@ -16,6 +16,7 @@ function createDisplay() {
     configSchema: pm => configSchemaF(pm),
     stateModel: (_pm, schema) => stateModelFactory(schema),
     viewModel: linearGenomeViewStateModelFactory,
+    displayConfig,
   }).createDisplay().display
 }
 
@@ -49,7 +50,7 @@ test('Consequence impact paints the impact field through its preset', () => {
   expect(display.colorsByConsequenceImpact).toBe(true)
   expect(display.colorEncoding).toMatchObject({
     field: 'impact',
-    scale: 'categorical',
+    scale: 'ordinal',
   })
   expect(display.colorKeyTitle).toBe('Consequence impact')
 })
@@ -71,7 +72,7 @@ test('SV type paints the svType field, which a VCF record carries', () => {
   clickRow(display, 'SV type')
   expect(display.colorEncoding).toMatchObject({
     field: 'svType',
-    scale: 'categorical',
+    scale: 'ordinal',
   })
   expect(display.colorKeyTitle).toBe('SV type')
 })
@@ -82,6 +83,18 @@ test('the worker reads the impact field as it reads any other', () => {
   const { color } = display.rpcProps().displayConfig
   expect(color.field).toBe('impact')
   expect(color.value).toBeUndefined()
+})
+
+// The worker evaluates a `jexl:` value itself, so it must reach the payload
+// raw beside the field, from `encoding.color`.
+test('the worker payload carries encoding.color raw', () => {
+  const display = createDisplay({
+    encoding: { color: { value: "jexl:'#123456'", field: 'type' } },
+  })
+  expect(display.rpcProps().displayConfig.color).toEqual({
+    value: "jexl:'#123456'",
+    field: 'type',
+  })
 })
 
 test('Default parks the preset, whose values the worker still reads', () => {

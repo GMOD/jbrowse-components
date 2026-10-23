@@ -98,8 +98,13 @@ const ColorAndGroupByAField = observer(function ColorAndGroupByAField() {
         displayDefaults: {
           height: 220,
           geneGlyphMode: 'longestCoding',
-          color: { field: 'gene_biotype', domain: domains.gene_biotype },
-          showLegend: false,
+          encoding: {
+            color: {
+              field: 'gene_biotype',
+              scale: { domain: domains.gene_biotype },
+            },
+          },
+          legend: { show: false },
         },
       },
     ],

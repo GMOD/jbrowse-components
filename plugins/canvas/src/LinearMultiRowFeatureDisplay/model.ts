@@ -359,11 +359,11 @@ export default function stateModelFactory(
       /**
        * #getter
        * Whether each feature paints its own color, black included, through
-       * a fieldless identity `color`.
+       * a fieldless identity `encoding.color`.
        */
       get paintsItemRgb(): boolean {
         const { scale, field, value } = self.writtenColor
-        return scale === 'identity' && !field && value === undefined
+        return scale?.type === 'identity' && !field && value === undefined
       },
       /**
        * #getter
@@ -614,7 +614,7 @@ export default function stateModelFactory(
           ? identity
           : buildColorLegend(regions, {
               field: self.paintedColorField,
-              domain: self.colorSetting.domain,
+              domain: self.colorSetting.scale.domain,
               rowIndexByValue: self.rowIndexByValue,
               rowColorsByIndex: self.rowColorsByIndex,
             })
@@ -694,7 +694,7 @@ export default function stateModelFactory(
               kind: 'categorical' as const,
               id: 'features',
               title: self.colorKeyTitle ?? 'Feature colors',
-              domain: field ? field.domain : self.colorSetting.domain,
+              domain: field ? field.domain : self.colorSetting.scale.domain,
               entries: self.colorLegend.map(e => ({
                 value: e.values[0]!,
                 values: e.values,
@@ -969,11 +969,14 @@ export default function stateModelFactory(
         /**
          * #action
          * Color by's itemRgb: each feature its file's color, through a
-         * fieldless identity `color`, so a black triple paints black.
+         * fieldless identity `encoding.color`, so a black triple paints
+         * black.
          */
         colorByItemRgb() {
           if (!self.paintsItemRgb) {
-            setConf(self, 'color', { scale: 'identity' })
+            setConf(self, ['encoding', 'color'], {
+              scale: { type: 'identity' },
+            })
           }
         },
         /**

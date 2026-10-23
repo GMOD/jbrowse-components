@@ -1,7 +1,9 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import { colorConfigSchema } from '@jbrowse/display-kit/colorConfigSchema'
 import baseLinearDisplayConfigSchema from '@jbrowse/display-kit/configSchema'
 import { facetConfigSchema } from '@jbrowse/display-kit/facetConfigSchema'
+import { featureEncodingConfigSchema } from '@jbrowse/display-kit/featureEncodingConfigSchema'
+import { legendConfigSchema } from '@jbrowse/display-kit/legendConfigSchema'
+import { retiredDisplayColor } from '@jbrowse/display-kit/retiredSettings'
 import { rowColorConfigSchema } from '@jbrowse/display-kit/rowColorConfigSchema'
 import { rowsConfigSchema } from '@jbrowse/display-kit/rowsConfigSchema'
 import { types } from '@jbrowse/mobx-state-tree'
@@ -47,19 +49,21 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  *       displayId: 'ancestry_painting-LinearMultiRowFeatureDisplay',
  *       rows: { field: 'sample', sort: ['HG00097', 'HG00096'] },
  *       rowColor: {
- *         domain: ['HG00096', 'HG00097'],
- *         range: ['#4e79a7', '#f28e2b'],
+ *         scale: {
+ *           domain: ['HG00096', 'HG00097'],
+ *           range: ['#4e79a7', '#f28e2b'],
+ *         },
  *       },
  *     },
  *   ],
  * }
  * ```
  * Omit `rowColor` entirely and the blocks paint in the default block color.
- * A row `rowColor` does not name paints the same way, unless `unknown` gives
- * unnamed rows a color. A feature's `itemRgb` colors it with
- * no configuration at all, and `color.scale: 'identity'` names it in the key.
- * To color per feature off some other attribute, set the `color` slot to a
- * `jexl:` expression reading it.
+ * A row `rowColor` does not name paints the same way, unless `scale.unknown`
+ * gives unnamed rows a color. A feature's `itemRgb` colors it with no
+ * configuration at all, and `encoding.color.scale.type: 'identity'` names it
+ * in the key. To color per feature off some other attribute, set
+ * `encoding.color.value` to a `jexl:` expression reading it.
  * Omit `rows.sort` and the rows sort by value.
  */
 export default function configSchemaF() {
@@ -94,7 +98,7 @@ export default function configSchemaF() {
        * #slot
        * Feature attribute whose value each row is clustered on, and which
        * "Sort rows by ... here" orders by at a column; `auto` (the default)
-       * takes the attribute the `color` slot reads, else `name`, and an empty
+       * takes the attribute `encoding.color` reads, else `name`, and an empty
        * string compares presence alone — which bins each row covers. A
        * `jexl:` expression derives the value.
        *
@@ -107,50 +111,60 @@ export default function configSchemaF() {
         type: 'featureField',
         defaultValue: 'auto',
         description:
-          "feature attribute the rows cluster and sort on, or a jexl expression deriving one. 'auto' = the attribute the color slot reads, else name; empty = presence alone",
+          "feature attribute the rows cluster and sort on, or a jexl expression deriving one. 'auto' = the attribute encoding.color reads, else name; empty = presence alone",
       },
       /**
-       * #slot color
-       * Each block's fill, the FeatureColor object: a CSS color or `jexl:`
-       * callback in `value`, or a field whose values each take a color
-       * through a scale, with a key. Unset, a feature's itemRgb paints it
-       * if it has one, else `rowColor` paints its row's blocks, else the
-       * default block color does. `scale: 'identity'` keeps each feature's
-       * color and names the `domain` colors in the key, which is how a file's itemRgb
-       * states get their names.
+       * #slot encoding
+       * The blocks' channels: `encoding.color`, each block's fill, the
+       * FeatureColor channel: a CSS color or `jexl:` callback in `value`, or a
+       * field whose values each take a color through `scale`, with a key.
+       * Unset, a feature's itemRgb paints it if it has one, else `rowColor`
+       * paints its row's blocks, else the default block color does.
+       * `scale.type: 'identity'` keeps each feature's color and names the
+       * `scale.domain` colors in the key, which is how a file's itemRgb states
+       * get their names.
        *
        * #example
        * ```js
        * {
-       *   color: {
-       *     field: 'segmean',
-       *     scale: 'threshold',
-       *     domain: [-1, -0.3, 0.3, 1],
-       *     range: ['#2166ac', '#92c5de', '#f7f7f7', '#f4a582', '#b2182b'],
-       *     labels: ['Deep loss', 'Loss', 'Balanced', 'Gain', 'Amplification'],
+       *   encoding: {
+       *     color: {
+       *       field: 'segmean',
+       *       scale: {
+       *         type: 'threshold',
+       *         domain: [-1, -0.3, 0.3, 1],
+       *         range: ['#2166ac', '#92c5de', '#f7f7f7', '#f4a582', '#b2182b'],
+       *         names: ['Deep loss', 'Loss', 'Balanced', 'Gain', 'Amplification'],
+       *       },
+       *     },
        *   },
        * }
        * ```
        * ```js
        * {
-       *   color: {
-       *     scale: 'identity',
-       *     domain: ['rgb(227,26,28)', 'rgb(31,120,180)', 'rgb(170,170,170)'],
-       *     labels: ['Maternal', 'Paternal', 'Unknown'],
+       *   encoding: {
+       *     color: {
+       *       scale: {
+       *         type: 'identity',
+       *         domain: ['rgb(227,26,28)', 'rgb(31,120,180)', 'rgb(170,170,170)'],
+       *         names: ['Maternal', 'Paternal', 'Unknown'],
+       *       },
+       *     },
        *   },
        * }
        * ```
        */
-      color: colorConfigSchema,
+      encoding: featureEncodingConfigSchema,
       /**
        * #slot rowColor
-       * A color per row, by value, as `domain`/`range` pairs: the bar beside
-       * the row's label, and the row's blocks while no `color` or itemRgb
-       * colors them. The arrangement dialog writes it.
+       * A color per row, by value, as `scale.domain`/`scale.range` pairs:
+       * the bar beside the row's label, and the row's blocks while no
+       * `encoding.color` or itemRgb colors them. The arrangement dialog
+       * writes it.
        *
        * #example
        * ```js
-       * { rowColor: { domain: ['HG00096'], range: ['#4e79a7'] } }
+       * { rowColor: { scale: { domain: ['HG00096'], range: ['#4e79a7'] } } }
        * ```
        */
       rowColor: rowColorConfigSchema,
@@ -167,16 +181,11 @@ export default function configSchemaF() {
       },
       ...rowSeparatorsConfigSchemaFields(),
       /**
-       * #slot
-       * Show the categorical color key, which appears only in per-feature color
-       * mode — elsewhere the sidebar labels are already the key.
+       * #slot legend
+       * The color key, which appears only while a field paints the blocks —
+       * elsewhere the sidebar labels are already the key.
        */
-      showLegend: {
-        type: 'boolean',
-        description:
-          'show the categorical color key for per-feature coloring. Defaults to on',
-        defaultValue: true,
-      },
+      legend: legendConfigSchema,
       /**
        * #slot
        * An array of `{ match, group }` tagging each row with the `group` of
@@ -193,8 +202,10 @@ export default function configSchemaF() {
        * ],
        * rowColor: {
        *   field: 'group',
-       *   domain: ['Wolf', 'Coyote'],
-       *   range: ['rgb(27,120,55)', 'rgb(224,130,20)'],
+       *   scale: {
+       *     domain: ['Wolf', 'Coyote'],
+       *     range: ['rgb(27,120,55)', 'rgb(224,130,20)'],
+       *   },
        * },
        * ```
        */
@@ -235,6 +246,7 @@ export default function configSchemaF() {
        */
       baseConfiguration: baseLinearDisplayConfigSchema,
       explicitlyTyped: true,
+      retired: retiredDisplayColor,
     },
   )
 }

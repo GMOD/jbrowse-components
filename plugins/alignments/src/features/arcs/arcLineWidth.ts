@@ -15,7 +15,7 @@ import type { LinkSizeScale } from '@jbrowse/render-core/marks'
 // 1 -> 2 reads is as visible a step as 16 -> 32.
 //
 // A SINGLE READ KEEPS THE CONFIGURED WIDTH, which is what makes this safe to
-// turn on for every existing figure: `readConnectionsLineWidth` is still
+// turn on for every existing figure: the stroke scale's first `range` px is
 // exactly what a support-1 arc draws, so a view whose arcs are all singletons
 // is pixel-identical to what it was before coalescing existed.
 export const ARC_WIDTH_PER_DOUBLING = 0.55
@@ -42,5 +42,45 @@ export function arcStrokeScale(baseWidth: number): LinkSizeScale {
     domain: [1, 2 ** ((ARC_WIDTH_MAX_SCALE - 1) / ARC_WIDTH_PER_DOUBLING)],
     scale: 'log',
     range: [baseWidth, ARC_WIDTH_MAX_SCALE * baseWidth],
+  }
+}
+
+/** The read connections' `encoding.strokeWidth` as written. */
+export interface StrokeWidthSetting {
+  value: number | undefined
+  field: string | undefined
+  scale: { type: 'log' | 'linear'; range: readonly string[] }
+}
+
+function pxRange(range: readonly string[]): [number, number] | undefined {
+  const [thin, wide] = range.map(Number)
+  return range.length === 2 &&
+    thin !== undefined &&
+    wide !== undefined &&
+    Number.isFinite(thin) &&
+    Number.isFinite(wide)
+    ? [thin, wide]
+    : undefined
+}
+
+/**
+ * The link mark's size scale `encoding.strokeWidth` draws: a written `value`
+ * while no field is written strokes every connection at it; otherwise `reads`
+ * maps through `scale`, its `range` the px at one read and at the support the
+ * default curve stops rising at.
+ */
+export function strokeWidthScale({
+  value,
+  field,
+  scale,
+}: StrokeWidthSetting): LinkSizeScale {
+  if (!field && value !== undefined) {
+    return { domain: [1, 2], scale: 'linear', range: [value, value] }
+  }
+  const curve = arcStrokeScale(1)
+  return {
+    domain: curve.domain,
+    scale: scale.type,
+    range: pxRange(scale.range) ?? curve.range,
   }
 }

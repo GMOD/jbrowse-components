@@ -104,8 +104,8 @@ interface TreeSidebarMenuModel extends BranchLengthMenuModel {
 
 // Shared "Tree" toggle. Disabled until there is a tree to show — a
 // clustering run's, or the guide phylogeny a MAF adapter supplies — so it is
-// never a no-op: `treeIsShowing` gates the gutter on the positioned tree, and
-// with no `clusterTree` flipping `showTree` draws nothing either way.
+// never a no-op: with no `rowTree`, flipping `showTree` draws nothing either
+// way.
 export function showTreeSidebarMenuItem(self: TreeSidebarMenuModel): MenuItem {
   return toggleItem(TREE_SIDEBAR_LABEL, self.showTree, self.setShowTree, {
     disabled: !self.rowTree,
@@ -165,17 +165,10 @@ export interface RowOrderMenuModel {
 // "Reset row order", or nothing when the rows are still in discovered order —
 // spread, don't insert.
 //
-// Gated on `rowOrderIsCustom` (the mixin's "has `layout` moved off what the
-// config alone produces") rather than on `clusterTree`, and so deliberately NOT
-// in the clustering submenu: three things write the order — a clustering run,
-// the colors/arrangement dialog, and the right-click sort — and only the first
-// leaves a tree behind, so an item filed under "Clustering" undoes one of them
-// while looking like it undoes all three. `clearLayout` resets any of them.
-//
-// Single-sourced here for the same reason as the subtree filter above: each
-// display offers it from both its track menu and its context menu, so spelled
-// out per call site it was four copies held together by a comment asserting
-// they were one action.
+// Gated on `rowArrangementIsCustom` rather than on `rowTree`, and so not in
+// the clustering submenu: a clustering run, the arrangement dialog and the
+// right-click sort all write the order, only the first leaves a tree, and
+// `resetRowArrangement` undoes any of them.
 export function resetRowOrderMenuItems(self: RowOrderMenuModel): MenuItem[] {
   return self.rowArrangementIsCustom
     ? [
@@ -271,11 +264,7 @@ function withRowCountGate(runItem: NormalMenuItem, rowCount: number) {
 //
 // The tree-display toggles are deliberately NOT here: they are visibility
 // settings and sit in "Show..." with the rest (`treeSidebarShowMenuItems`).
-// Nor is undoing a run. A display that clusters also writes its row order from
-// an arrangement dialog and a right-click sort, and only a run leaves a
-// `clusterTree` — so a reset filed under "Clustering" and gated on that tree
-// undoes one of the three and looks like it undoes all of them. It belongs
-// top-level, gated on `rowOrderIsCustom` (`resetRowOrderMenuItems`).
+// Nor is undoing a run, which is `resetRowOrderMenuItems`, top-level.
 //
 // `rowCount` is the list the run would cluster, and the run row's "needs at
 // least two rows" gate comes from here — the way `sortRowsHereMenuItem` owns

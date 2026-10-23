@@ -1,8 +1,10 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import { colorConfigSchema } from '@jbrowse/display-kit/colorConfigSchema'
 import baseLinearDisplayConfigSchema from '@jbrowse/display-kit/configSchema'
+import { featureEncodingConfigSchema } from '@jbrowse/display-kit/featureEncodingConfigSchema'
 import { fieldPredicateList } from '@jbrowse/display-kit/fieldPredicateConfigSchema'
 import { heightModeConfigSchemaFields } from '@jbrowse/display-kit/heightModeConfigSchemaFields'
+import { legendConfigSchema } from '@jbrowse/display-kit/legendConfigSchema'
+import { retiredDisplayColor } from '@jbrowse/display-kit/retiredSettings'
 import { sectionFacetConfigSchema } from '@jbrowse/display-kit/sectionFacetConfigSchema'
 import { types } from '@jbrowse/mobx-state-tree'
 
@@ -74,16 +76,12 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
         advanced: true,
       },
       /**
-       * #slot
-       * show the display's color key when it has one: the key a `color`
-       * field derives, or a variant track's consequence-impact / SV-type
-       * presets.
+       * #slot legend
+       * The display's color key, when it has one: the key an
+       * `encoding.color` field derives, or a variant track's
+       * consequence-impact / SV-type presets.
        */
-      showLegend: {
-        type: 'boolean',
-        description: 'show the color key. Defaults to on',
-        defaultValue: true,
-      },
+      legend: legendConfigSchema,
       /**
        * #slot
        */
@@ -115,12 +113,11 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
         advanced: true,
       },
       /**
-       * #slot color
-       * The main fill of each feature: a CSS color or a jexl expression
-       * (`"goldenrod"`, `"jexl:…"`), or `{ field, domain, range }` to paint
-       * each value of a field in a `range` color, with a key.
+       * #slot encoding
+       * The channels the features paint through: `encoding.color`, each
+       * feature's main fill.
        */
-      color: colorConfigSchema,
+      encoding: featureEncodingConfigSchema,
       /**
        * #slot
        */
@@ -201,7 +198,7 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
        */
       baseConfiguration: baseLinearDisplayConfigSchema,
       explicitlyTyped: true,
-      retired: basicRetired,
+      retired: { ...basicRetired, ...retiredDisplayColor },
       preProcessSnapshot: snap => migrateBasicConfigSnapshot(snap),
     },
   )

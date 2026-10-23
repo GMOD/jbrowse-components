@@ -4,11 +4,11 @@ import type { PlotExample } from '@jbrowse/core/configuration'
 // into INFO, or one of the `impact` and `svType` presets.
 export const VARIANT_PLOT_EXAMPLES: PlotExample[] = [
   {
-    plot: '{ "color": { "field": "type" } }',
+    plot: '{ "encoding": { "color": "type" } }',
     description: 'one color per variant class: SNV, deletion, insertion',
   },
   {
-    plot: '{ "color": { "field": "INFO.CLNSIG" } }',
+    plot: '{ "encoding": { "color": "INFO.CLNSIG" } }',
     description: 'one color per ClinVar significance',
   },
   {
@@ -16,7 +16,7 @@ export const VARIANT_PLOT_EXAMPLES: PlotExample[] = [
     description: 'site quality above 30',
   },
   {
-    plot: '{ "facet": null, "color": null }',
+    plot: '{ "facet": null, "encoding": { "color": null } }',
     description: 'ungrouped, default color',
   },
 ]

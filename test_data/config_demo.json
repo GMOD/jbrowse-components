@@ -199,9 +199,10 @@
         "mark": "span",
         "origin": 2,
         "scales": { "y": { "domainMin": 0, "domainMax": 4 } },
-        "color": {
-          "field": "score",
-          "range": ["#2166ac", "#b2182b"]
+        "encoding": {
+          "color": {
+            "scale": { "range": ["#2166ac", "#b2182b"] }
+          }
         }
       }
     },
@@ -257,7 +258,11 @@
         {
           "type": "LinearBasicDisplay",
           "displayId": "jexl_callbacks_demo_hg19-LinearBasicDisplay",
-          "color": "jexl:{CDS:'#d62728',exon:'#2ca02c',gene:'#1f77b4',mRNA:'#9467bd'}[feature.type] || 'gray'",
+          "encoding": {
+            "color": {
+              "value": "jexl:{CDS:'#d62728',exon:'#2ca02c',gene:'#1f77b4',mRNA:'#9467bd'}[feature.type] || 'gray'"
+            }
+          },
           "mouseover": "jexl:`${feature.name} [${feature.type}] ${feature.start}-${feature.end}`"
         }
       ]
@@ -493,42 +498,46 @@
               "iPS DF 19.11 Cells"
             ]
           },
-          "color": {
-            "scale": "identity",
-            "domain": [
-              "rgb(255,0,0)",
-              "rgb(255,69,0)",
-              "rgb(50,205,50)",
-              "rgb(0,128,0)",
-              "rgb(0,100,0)",
-              "rgb(194,225,5)",
-              "rgb(255,255,0)",
-              "rgb(102,205,170)",
-              "rgb(138,145,208)",
-              "rgb(205,92,92)",
-              "rgb(233,150,122)",
-              "rgb(189,183,107)",
-              "rgb(128,128,128)",
-              "rgb(192,192,192)",
-              "rgb(255,255,255)"
-            ],
-            "labels": [
-              "1 Active TSS",
-              "2 Flanking active TSS",
-              "3 Transcribed 5'/3' flank",
-              "4 Strong transcription",
-              "5 Weak transcription",
-              "6 Genic enhancer",
-              "7 Enhancer",
-              "8 ZNF genes / repeats",
-              "9 Heterochromatin",
-              "10 Bivalent TSS",
-              "11 Flanking bivalent",
-              "12 Bivalent enhancer",
-              "13 Repressed Polycomb",
-              "14 Weak repressed Polycomb",
-              "15 Quiescent / low"
-            ]
+          "encoding": {
+            "color": {
+              "scale": {
+                "type": "identity",
+                "domain": [
+                  "rgb(255,0,0)",
+                  "rgb(255,69,0)",
+                  "rgb(50,205,50)",
+                  "rgb(0,128,0)",
+                  "rgb(0,100,0)",
+                  "rgb(194,225,5)",
+                  "rgb(255,255,0)",
+                  "rgb(102,205,170)",
+                  "rgb(138,145,208)",
+                  "rgb(205,92,92)",
+                  "rgb(233,150,122)",
+                  "rgb(189,183,107)",
+                  "rgb(128,128,128)",
+                  "rgb(192,192,192)",
+                  "rgb(255,255,255)"
+                ],
+                "names": [
+                  "1 Active TSS",
+                  "2 Flanking active TSS",
+                  "3 Transcribed 5'/3' flank",
+                  "4 Strong transcription",
+                  "5 Weak transcription",
+                  "6 Genic enhancer",
+                  "7 Enhancer",
+                  "8 ZNF genes / repeats",
+                  "9 Heterochromatin",
+                  "10 Bivalent TSS",
+                  "11 Flanking bivalent",
+                  "12 Bivalent enhancer",
+                  "13 Repressed Polycomb",
+                  "14 Weak repressed Polycomb",
+                  "15 Quiescent / low"
+                ]
+              }
+            }
           },
           "rowGroups": [
             {
@@ -610,48 +619,50 @@
           ],
           "rowColor": {
             "field": "group",
-            "domain": [
-              "Adipose",
-              "Blood & T-cell",
-              "Brain",
-              "Digestive",
-              "ENCODE2012",
-              "ES-deriv",
-              "ESC",
-              "Epithelial",
-              "HSC & B-cell",
-              "Heart",
-              "IMR90",
-              "Mesench",
-              "Muscle",
-              "Myosat",
-              "Neurosph",
-              "Other",
-              "Sm. Muscle",
-              "Thymus",
-              "iPSC"
-            ],
-            "range": [
-              "#AF5B39",
-              "#55A354",
-              "#C5912B",
-              "#C58DAA",
-              "#000000",
-              "#4178AE",
-              "#924965",
-              "#FF9D0C",
-              "#678C69",
-              "#D56F80",
-              "#E41A1C",
-              "#B65C73",
-              "#C2655D",
-              "#E67326",
-              "#FFD924",
-              "#999999",
-              "#F182BC",
-              "#DAB92E",
-              "#69608A"
-            ]
+            "scale": {
+              "domain": [
+                "Adipose",
+                "Blood & T-cell",
+                "Brain",
+                "Digestive",
+                "ENCODE2012",
+                "ES-deriv",
+                "ESC",
+                "Epithelial",
+                "HSC & B-cell",
+                "Heart",
+                "IMR90",
+                "Mesench",
+                "Muscle",
+                "Myosat",
+                "Neurosph",
+                "Other",
+                "Sm. Muscle",
+                "Thymus",
+                "iPSC"
+              ],
+              "range": [
+                "#AF5B39",
+                "#55A354",
+                "#C5912B",
+                "#C58DAA",
+                "#000000",
+                "#4178AE",
+                "#924965",
+                "#FF9D0C",
+                "#678C69",
+                "#D56F80",
+                "#E41A1C",
+                "#B65C73",
+                "#C2655D",
+                "#E67326",
+                "#FFD924",
+                "#999999",
+                "#F182BC",
+                "#DAB92E",
+                "#69608A"
+              ]
+            }
           },
           "height": 700
         }
@@ -911,17 +922,21 @@
         }
       },
       "displayDefaults": {
-        "color": {
-          "field": "INFO.CLNSIG",
-          "domain": [
-            "Benign",
-            "Likely_benign",
-            "Uncertain_significance",
-            "Pathogenic",
-            "Likely_pathogenic",
-            "Conflicting_interpretations_of_pathogenicity"
-          ],
-          "range": ["blue", "deepskyblue", "gray", "red", "orange", "brown"]
+        "encoding": {
+          "color": {
+            "field": "INFO.CLNSIG",
+            "scale": {
+              "domain": [
+                "Benign",
+                "Likely_benign",
+                "Uncertain_significance",
+                "Pathogenic",
+                "Likely_pathogenic",
+                "Conflicting_interpretations_of_pathogenicity"
+              ],
+              "range": ["blue", "deepskyblue", "gray", "red", "orange", "brown"]
+            }
+          }
         }
       }
     },
@@ -948,17 +963,28 @@
         {
           "type": "LinearVariantDisplay",
           "displayId": "clinvar_ncbi_hg38-LinearVariantDisplay",
-          "color": {
-            "field": "INFO.CLNSIG",
-            "domain": [
-              "Benign",
-              "Likely_benign",
-              "Uncertain_significance",
-              "Pathogenic",
-              "Likely_pathogenic",
-              "Conflicting_interpretations_of_pathogenicity"
-            ],
-            "range": ["blue", "deepskyblue", "gray", "red", "orange", "brown"]
+          "encoding": {
+            "color": {
+              "field": "INFO.CLNSIG",
+              "scale": {
+                "domain": [
+                  "Benign",
+                  "Likely_benign",
+                  "Uncertain_significance",
+                  "Pathogenic",
+                  "Likely_pathogenic",
+                  "Conflicting_interpretations_of_pathogenicity"
+                ],
+                "range": [
+                  "blue",
+                  "deepskyblue",
+                  "gray",
+                  "red",
+                  "orange",
+                  "brown"
+                ]
+              }
+            }
           }
         },
         {
@@ -1862,7 +1888,7 @@
               "mark": "link",
               "encoding": {
                 "color": { "value": "#a65628" },
-                "size": 2
+                "strokeWidth": 2
               },
               "transform": [{ "type": "mate" }]
             }
@@ -2039,7 +2065,7 @@
       },
       "displayDefaults": {
         "selectedNormalization": "NONE",
-        "color": "observed/control"
+        "encoding": { "color": "observed/control" }
       }
     },
     {
@@ -2087,7 +2113,7 @@
               "mark": "link",
               "encoding": {
                 "color": { "value": "#8b1a1a" },
-                "size": 2
+                "strokeWidth": 2
               },
               "transform": [{ "type": "mate" }]
             }
@@ -3927,7 +3953,10 @@
             {
               "mark": "link",
               "encoding": {
-                "size": { "field": "score", "scale": "log", "range": [1, 8] }
+                "strokeWidth": {
+                  "field": "score",
+                  "scale": { "type": "log", "range": [1, 8] }
+                }
               }
             }
           ]
@@ -4515,18 +4544,19 @@
             {
               "mark": "link",
               "encoding": {
-                "size": {
+                "strokeWidth": {
                   "field": "score",
-                  "scale": "log",
-                  "range": [1, 8]
+                  "scale": { "type": "log", "range": [1, 8] }
                 },
                 "color": {
                   "field": "known_junction",
-                  "scale": "categorical",
-                  "domain": ["1", "0"],
-                  "range": ["#377eb8", "#e41a1c"],
-                  "labels": ["annotated", "novel"],
-                  "title": "RefSeq"
+                  "scale": {
+                    "type": "ordinal",
+                    "domain": ["1", "0"],
+                    "range": ["#377eb8", "#e41a1c"],
+                    "names": ["annotated", "novel"]
+                  },
+                  "legend": { "title": "RefSeq" }
                 }
               }
             },
@@ -5021,7 +5051,7 @@
         {
           "type": "LinearMultiSampleVariantDisplay",
           "displayId": "1000g_chr1_snpeff_consequence-LinearMultiSampleVariantDisplay",
-          "color": { "field": "impact" }
+          "encoding": { "color": "impact" }
         }
       ],
       "assemblyNames": ["hg19"]
@@ -5075,15 +5105,17 @@
             "field": "parenthap",
             "sort": ["Father hap1", "Father hap2", "Mother hap1", "Mother hap2"]
           },
-          "showLegend": false,
+          "legend": { "show": false },
           "rowColor": {
-            "domain": [
-              "Father hap1",
-              "Father hap2",
-              "Mother hap1",
-              "Mother hap2"
-            ],
-            "range": ["#2e6da4", "#8ec3e8", "#d1495b", "#f4a698"]
+            "scale": {
+              "domain": [
+                "Father hap1",
+                "Father hap2",
+                "Mother hap1",
+                "Mother hap2"
+              ],
+              "range": ["#2e6da4", "#8ec3e8", "#d1495b", "#f4a698"]
+            }
           },
           "height": 80
         }
@@ -5418,7 +5450,7 @@
         {
           "type": "LinearMultiSampleVariantDisplay",
           "displayId": "hgsvc_sv_chr1_snpeff_consequence-LinearMultiSampleVariantDisplay",
-          "color": { "field": "impact" }
+          "encoding": { "color": "impact" }
         }
       ],
       "assemblyNames": ["hg38"]

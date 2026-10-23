@@ -71,10 +71,10 @@ test('a numeric key a reader can still scan carries no hint', () => {
   expect(noteOf(table(['1', '2', '3'], true))).toBeUndefined()
 })
 
-test('a numeric key its breaks narrow to a handful of rows carries no hint', () => {
+test('a numeric key its legend.values narrow to a handful of rows carries no hint', () => {
   const [key] = markColorScales(
     buildMarkLegend([region(table(TEN, true))], undefined, () => ({
-      breaks: ['1', '5', '10'],
+      values: ['1', '5', '10'],
     })),
   )
   expect(key?.kind === 'categorical' && key.note).toBeFalsy()
@@ -132,7 +132,7 @@ test('a hovered value names its interval and its gap as the key does', () => {
   const [section] = buildMarkLegend(
     [region({ ...thresholdTable(), missing: true })],
     undefined,
-    () => ({ labels: ['low', 'mid', 'high'], missingLabel: 'untested' }),
+    () => ({ names: ['low', 'mid', 'high'], missingLabel: 'untested' }),
   )
   expect(valueRow(section!, 0.7)?.label).toBe('high')
   expect(valueRow(section!, Number.NaN, true)?.label).toBe('untested')
@@ -531,7 +531,7 @@ test('two marks over one declaration share a key only under one title', () => {
 })
 
 // The names are the config's, never the worker's: a color crosses the wire
-// without its `labels`, so renaming a row refetches nothing.
+// without its `names`, so renaming a row refetches nothing.
 test('a key and a hover name a domain value by the label the color lists for it', () => {
   const labelled: ColorScaleTable = {
     kind: 'categorical',
@@ -544,7 +544,7 @@ test('a key and a hover name a domain value by the label the color lists for it'
     ],
   }
   const sections = buildMarkLegend([region(labelled)], undefined, () => ({
-    labels: ['Loss', 'Gain'],
+    names: ['Loss', 'Gain'],
   }))
   const [key] = markColorScales(sections)
   expect(key?.kind === 'categorical' && key.entries.map(e => e.label)).toEqual([
@@ -554,7 +554,7 @@ test('a key and a hover name a domain value by the label the color lists for it'
   ])
   expect(categoryLabel(sections[0], 0xff0000ff)).toBe('Loss')
   const cut = buildMarkLegend([region(thresholdTable())], undefined, () => ({
-    labels: ['weak', 'moderate', 'strong'],
+    names: ['weak', 'moderate', 'strong'],
   }))
   expect(rowLabels(markColorScales(cut))).toEqual([
     ['weak', 'moderate', 'strong'],
@@ -590,7 +590,7 @@ function rowLabels(scales: ColorScale[]) {
 
 // LocusZoom's key, from the grammar: the r² bins highest first ending in the
 // row it names, and the diamond alone in a key of its own.
-test('a key lists the values its breaks name, highest first where it descends, and names its no-value row', () => {
+test('a key lists the values its legend.values name, highest first where it descends, and names its no-value row', () => {
   const r2: ColorScaleTable = { ...thresholdTable(), missing: true }
   expect(
     rowLabels(
@@ -612,8 +612,8 @@ test('a key lists the values its breaks name, highest first where it descends, a
     rowLabels(
       markColorScales(
         buildMarkLegend([roles], undefined, () => ({
-          breaks: ['index'],
-          labels: ['Index SNP'],
+          values: ['index'],
+          names: ['Index SNP'],
         })),
       ),
     ),
@@ -653,12 +653,12 @@ test('a hover names the no-value row as the key does', () => {
   ).toBe('untested')
 })
 
-test('a categorical color key lists its breaks in their order', () => {
+test('an ordinal color key lists its legend.values in their order', () => {
   expect(
     rowLabels(
       markColorScales(
         buildMarkLegend([region(table(['1', '2', '3']))], undefined, () => ({
-          breaks: ['3', '1'],
+          values: ['3', '1'],
         })),
       ),
     ),

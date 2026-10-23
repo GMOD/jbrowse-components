@@ -109,7 +109,7 @@ test('a row display on a session track resets to the arrangement it was added wi
     type: 'LinearWiggleDisplay',
     displayId,
     rows: { sort: ['c', 'a'], labels: { c: 'Third' } },
-    rowColor: { domain: ['a'], range: ['red'] },
+    rowColor: { scale: { domain: ['a'], range: ['red'] } },
   }
   const session = sessionWith({
     type: 'MultiQuantitativeTrack',

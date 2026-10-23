@@ -198,20 +198,42 @@ test('a channel the mark does not read waits unread', () => {
   ).toEqual(['warning unread-channel mark 0 encoding.shape'])
 })
 
-test('a size on a mark that draws no shape waits unread, and a point or a rule reads a number alone', () => {
+test('a width on a mark that draws none waits unread, and a point or a rule reads a number alone', () => {
   expect(found([{ mark: 'span', encoding: { size: 8 } }])).toEqual([
     'warning unread-size mark 0 encoding.size',
+  ])
+  expect(found([{ mark: 'span', encoding: { strokeWidth: 8 } }])).toEqual([
+    'warning unread-size mark 0 encoding.strokeWidth',
   ])
   expect(found([{ mark: 'point', encoding: { y: 'score', size: 8 } }])).toEqual(
     [],
   )
-  expect(found([{ mark: 'link', encoding: { size: 3 } }])).toEqual([])
+  expect(found([{ mark: 'link', encoding: { strokeWidth: 3 } }])).toEqual([])
   expect(
-    found([{ mark: 'rule', encoding: { y: 'score', size: 'score' } }]),
-  ).toEqual(['warning unread-channel mark 0 encoding.size.field'])
+    found([{ mark: 'rule', encoding: { y: 'score', strokeWidth: 'score' } }]),
+  ).toEqual(['warning unread-channel mark 0 encoding.strokeWidth.field'])
   expect(
-    found([{ mark: 'link', encoding: { size: { value: 3, field: 'score' } } }]),
+    found([
+      {
+        mark: 'link',
+        encoding: { strokeWidth: { value: 3, field: 'score' } },
+      },
+    ]),
   ).toEqual([])
+})
+
+// Vega-Lite's `size` is a point's and `strokeWidth` a stroked mark's, so the
+// other one on either type is named rather than read.
+test("a stroked mark's size and a point's strokeWidth name the width channel the type reads", () => {
+  expect(found([{ mark: 'link', encoding: { size: 3 } }])).toEqual([
+    'warning unread-channel mark 0 encoding.size',
+  ])
+  expect(found([{ mark: 'rule', encoding: { y: 'score', size: 3 } }])).toEqual([
+    'warning unread-channel mark 0 encoding.size',
+  ])
+  expect(
+    found([{ mark: 'point', encoding: { y: 'score', strokeWidth: 3 } }]),
+  ).toEqual(['warning unread-channel mark 0 encoding.strokeWidth'])
 })
 
 test('an interpolate on a mark that joins nothing waits unread', () => {
@@ -533,9 +555,9 @@ test('every channel reading a field the steps unmade is named, and the facet fie
     'warning unwritten-field mark 0 encoding.color.field',
   ])
   expect(
-    problemsOf([depth({ color: { field: 'name', scale: 'categorical' } })]).map(
-      problemText,
-    ),
+    problemsOf([
+      depth({ color: { field: 'name', scale: { type: 'ordinal' } } }),
+    ]).map(problemText),
   ).toEqual([
     'mark 0 encoding.color.field: reads "name", which no step before it writes; they leave refName, start, end, coverage',
   ])
@@ -690,17 +712,17 @@ test('threshold cuts written high to low are told which way they are read', () =
       mark: 'point',
       encoding: {
         y: 'score',
-        color: { field: 'pip', scale: 'threshold', domain },
+        color: { field: 'pip', scale: { type: 'threshold', domain } },
       },
     },
   ]
   expect(found(cuts([0.1, 0.5]))).toEqual([])
   expect(found(cuts(['0.5', '0.1']))).toEqual([
-    'warning threshold-cuts mark 0 encoding.color.domain',
+    'warning threshold-cuts mark 0 encoding.color.scale.domain',
   ])
   expect(found(cuts(['low', 'high']))).toHaveLength(1)
   expect(found(cuts(['0.5', '0.5']))).toEqual([
-    'warning threshold-cuts mark 0 encoding.color.domain',
+    'warning threshold-cuts mark 0 encoding.color.scale.domain',
   ])
 })
 
@@ -713,15 +735,17 @@ test('a threshold past the cuts the GPU holds is told where the rest paint', () 
         y: 'score',
         color: {
           field: 'score',
-          scale: 'threshold',
-          domain: Array.from({ length: n }, (_, i) => String(i)),
+          scale: {
+            type: 'threshold',
+            domain: Array.from({ length: n }, (_, i) => String(i)),
+          },
         },
       },
     },
   ]
   expect(found(threshold(MAX_THRESHOLD_CUTS))).toEqual([])
   expect(found(threshold(MAX_THRESHOLD_CUTS + 1))).toEqual([
-    'warning threshold-cut-count mark 0 encoding.color.domain',
+    'warning threshold-cut-count mark 0 encoding.color.scale.domain',
   ])
 })
 
@@ -731,29 +755,35 @@ test('a cut that is no number counts toward no cut-count, as it paints no band',
       mark: 'point',
       encoding: {
         y: 'score',
-        color: { field: 'score', scale: 'threshold', domain },
+        color: { field: 'score', scale: { type: 'threshold', domain } },
       },
     },
   ]
   const eight = Array.from({ length: MAX_THRESHOLD_CUTS }, (_, i) => String(i))
   expect(found(colored([...eight, 'x']))).not.toContain(
-    'warning threshold-cut-count mark 0 encoding.color.domain',
+    'warning threshold-cut-count mark 0 encoding.color.scale.domain',
   )
 })
 
 test('a threshold naming no cut is told it paints one color', () => {
   const noCuts = {
     mark: 'point',
-    encoding: { y: 'score', color: { field: 'pip', scale: 'threshold' } },
+    encoding: {
+      y: 'score',
+      color: { field: 'pip', scale: { type: 'threshold' } },
+    },
   }
   expect(found([noCuts])).toEqual([
-    'warning threshold-no-cuts mark 0 encoding.color.domain',
+    'warning threshold-no-cuts mark 0 encoding.color.scale.domain',
   ])
   expect(
     found([
       {
         mark: 'point',
-        encoding: { y: 'score', color: { field: 'pip', scale: 'categorical' } },
+        encoding: {
+          y: 'score',
+          color: { field: 'pip', scale: { type: 'ordinal' } },
+        },
       },
     ]),
   ).toEqual([])
@@ -765,71 +795,76 @@ test('a threshold range with other than one color per interval is named', () => 
       mark: 'point',
       encoding: {
         y: 'score',
-        color: { field: 'pip', scale: 'threshold', domain: [0.1, 0.5], range },
+        color: {
+          field: 'pip',
+          scale: { type: 'threshold', domain: [0.1, 0.5], range },
+        },
       },
     },
   ]
   expect(found(colors([]))).toEqual([])
   expect(found(colors(['red', 'orange', 'blue']))).toEqual([])
   expect(found(colors(['red', 'blue']))).toEqual([
-    'warning threshold-range mark 0 encoding.color.range',
+    'warning threshold-range mark 0 encoding.color.scale.range',
   ])
   expect(found(colors(['red', 'orange', 'blue', 'green']))).toHaveLength(1)
 })
 
-test('labels name the domain values of a categorical color', () => {
-  const labelled = (color: Record<string, unknown>) => [
+test('names name the domain values of an ordinal color', () => {
+  const named = (scale: Record<string, unknown>) => [
     {
       mark: 'bar',
-      encoding: { y: 'score', color: { field: 'type', ...color } },
+      encoding: { y: 'score', color: { field: 'type', scale } },
     },
   ]
-  expect(found(labelled({ domain: ['a'], labels: ['A'] }))).toEqual([])
-  expect(found(labelled({ labels: ['A'] }))).toEqual([
-    'warning labels-domain mark 0 encoding.color.labels',
+  expect(found(named({ domain: ['a'], names: ['A'] }))).toEqual([])
+  expect(found(named({ names: ['A'] }))).toEqual([
+    'warning names-domain mark 0 encoding.color.scale.names',
   ])
 })
 
-test('unknown with no domain paints every value of a categorical color', () => {
-  const colored = (color: Record<string, unknown>) => [
+test('unknown with no domain paints every value of an ordinal color', () => {
+  const colored = (scale: Record<string, unknown>) => [
     {
       mark: 'bar',
-      encoding: { y: 'score', color: { field: 'type', ...color } },
+      encoding: { y: 'score', color: { field: 'type', scale } },
     },
   ]
   expect(found(colored({ domain: ['a'], unknown: 'grey' }))).toEqual([])
   expect(found(colored({ unknown: 'grey' }))).toEqual([
-    'warning unknown-domain mark 0 encoding.color.unknown',
+    'warning unknown-domain mark 0 encoding.color.scale.unknown',
   ])
-  expect(found(colored({ scale: 'linear', unknown: 'grey' }))).toEqual([
-    'warning unknown-scale mark 0 encoding.color.unknown',
+  expect(found(colored({ type: 'linear', unknown: 'grey' }))).toEqual([
+    'warning unknown-scale mark 0 encoding.color.scale.unknown',
   ])
 })
 
-test('labels name the domain values of a shape, and a constant shape names none', () => {
+test('names name the domain values of a shape, and a constant shape names none', () => {
   const shaped = (shape: unknown) => [
     { mark: 'point', encoding: { y: 'score', shape } },
   ]
   expect(
-    found(shaped({ field: 'type', domain: ['a'], labels: ['A'] })),
+    found(shaped({ field: 'type', scale: { domain: ['a'], names: ['A'] } })),
   ).toEqual([])
-  expect(found(shaped({ field: 'type', labels: ['A'] }))).toEqual([
-    'warning labels-domain mark 0 encoding.shape.labels',
+  expect(found(shaped({ field: 'type', scale: { names: ['A'] } }))).toEqual([
+    'warning names-domain mark 0 encoding.shape.scale.names',
   ])
-  expect(found(shaped({ value: 'diamond', labels: ['A'] }))).toEqual([
-    'warning labels-domain mark 0 encoding.shape.labels',
+  expect(found(shaped({ value: 'diamond', scale: { names: ['A'] } }))).toEqual([
+    'warning names-domain mark 0 encoding.shape.scale.names',
   ])
   expect(found(shaped({ value: 'diamond' }))).toEqual([])
 })
 
+// A load refuses a color written as the field, which the schema can tell
+// from a field; a shape name it cannot, so the rule list names that one.
 test('a field spelling a color or a shape is a constant written bare', () => {
   const encoded = (encoding: Record<string, unknown>) => [
     { mark: 'point', encoding: { y: 'score', ...encoding } },
   ]
   for (const color of ['red', 'SteelBlue', '#f00', 'rgb(0,0,255)']) {
-    expect(found(encoded({ color }))).toEqual([
-      'warning field-spells-constant mark 0 encoding.color.field',
-    ])
+    expect(() => found(encoded({ color }))).toThrow(
+      `encoding.color: "${color}" is a color, and a bare string is the field`,
+    )
   }
   expect(found(encoded({ shape: { field: 'diamond' } }))).toEqual([
     'warning field-spells-constant mark 0 encoding.shape.field',
@@ -841,40 +876,40 @@ test('a field spelling a color or a shape is a constant written bare', () => {
 })
 
 test('a ramp reads its ends, not a domain, and leaves an end open on any mark', () => {
-  const ramp = (mark: string, color: Record<string, unknown>) => [
+  const ramp = (mark: string, scale: Record<string, unknown>) => [
     {
       mark,
       encoding: {
         ...(mark === 'span' ? {} : { y: 'score' }),
-        color: { field: 'score', scale: 'linear', ...color },
+        color: { field: 'score', scale: { type: 'linear', ...scale } },
       },
     },
   ]
   expect(found(ramp('bar', { domainMin: 0, domainMax: 10 }))).toEqual([])
   expect(found(ramp('bar', { domainMin: 0 }))).toEqual([])
   expect(found(ramp('bar', { domain: ['0', '10'] }))).toEqual([
-    'warning ramp-domain mark 0 encoding.color.domain',
+    'warning ramp-domain mark 0 encoding.color.scale.domain',
   ])
   expect(found(ramp('bar', { range: ['red'] }))).toEqual([
-    'warning ramp-range mark 0 encoding.color.range',
+    'warning ramp-range mark 0 encoding.color.scale.range',
   ])
   expect(found(ramp('bar', { domainMin: 10, domainMax: 0 }))).toEqual([
-    'warning domain-ends mark 0 encoding.color.domainMax',
+    'warning domain-ends mark 0 encoding.color.scale.domainMax',
   ])
   expect(found(ramp('bar', { domainQuantile: 99 }))).toEqual([
-    'warning domain-quantile mark 0 encoding.color.domainQuantile',
+    'warning domain-quantile mark 0 encoding.color.scale.domainQuantile',
   ])
-  expect(found(ramp('bar', { scale: 'log', domainMin: 0 }))).toEqual([
-    'warning log-floor mark 0 encoding.color.domainMin',
+  expect(found(ramp('bar', { type: 'log', domainMin: 0 }))).toEqual([
+    'warning log-floor mark 0 encoding.color.scale.domainMin',
   ])
-  expect(found(ramp('bar', { scale: 'log', domainMin: 1 }))).toEqual([])
+  expect(found(ramp('bar', { type: 'log', domainMin: 1 }))).toEqual([])
   expect(found(ramp('span', {}))).toEqual([])
-  const text = (color: Record<string, unknown>) => [
+  const text = (scale: Record<string, unknown>) => [
     {
       mark: 'text',
       encoding: {
         text: 'name',
-        color: { field: 'score', scale: 'linear', ...color },
+        color: { field: 'score', scale: { type: 'linear', ...scale } },
       },
     },
   ]
@@ -944,10 +979,15 @@ test("scales.y and a width read their ends by the color ramp's one rule", () => 
     found([
       {
         mark: 'link',
-        encoding: { size: { field: 'score', domainMin: 9, domainMax: 1 } },
+        encoding: {
+          strokeWidth: {
+            field: 'score',
+            scale: { domainMin: 9, domainMax: 1 },
+          },
+        },
       },
     ]),
-  ).toEqual(['warning domain-ends mark 0 encoding.size.domainMax'])
+  ).toEqual(['warning domain-ends mark 0 encoding.strokeWidth.scale.domainMax'])
 })
 
 // A written range used to make an unset scale linear, so emptying it in the
@@ -958,7 +998,10 @@ test('a range under an unset scale is categorical, whatever it lists', () => {
       mark: 'bar',
       encoding: {
         y: 'score',
-        color: { field: 'svtype', range: ['white', 'red'], domain: ['0'] },
+        color: {
+          field: 'svtype',
+          scale: { range: ['white', 'red'], domain: ['0'] },
+        },
       },
     },
   ]
@@ -1028,7 +1071,7 @@ test("a shape's labels over a field with an order of its own name that order", (
         mark: 'point',
         encoding: {
           y: 'score',
-          shape: { field: 'strand', labels: ['Fwd', 'Rev', 'None'] },
+          shape: { field: 'strand', scale: { names: ['Fwd', 'Rev', 'None'] } },
         },
       },
     ]),
@@ -1042,9 +1085,9 @@ test('a field spelling a color in any CSS syntax is a constant written bare', ()
     'lab(50% 40 59)',
     'color(srgb 1 0 0)',
   ]) {
-    expect(found([{ mark: 'bar', encoding: { y: 'score', color } }])).toEqual([
-      'warning field-spells-constant mark 0 encoding.color.field',
-    ])
+    expect(() =>
+      found([{ mark: 'bar', encoding: { y: 'score', color } }]),
+    ).toThrow('is a color, and a bare string is the field')
   }
 })
 
@@ -1071,8 +1114,12 @@ test('breaks and labels take the numbers a domain takes', () => {
         mark: 'point',
         encoding: {
           y: 'score',
-          color: { field: 'strand', breaks: [1, -1], labels: [1, 2] },
-          shape: { field: 'strand', breaks: [1, -1] },
+          color: {
+            field: 'strand',
+            scale: { names: [1, 2] },
+            legend: { values: [1, -1] },
+          },
+          shape: { field: 'strand', legend: { values: [1, -1] } },
         },
       },
     ]),

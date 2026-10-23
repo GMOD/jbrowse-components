@@ -6,7 +6,7 @@ guide_category: Track types
 ---
 
 A `VariantTrack` with a `VcfTabixAdapter` handles single- and multi-sample VCFs.
-Color variants with a `jexl:` expression on the display's `color` slot, and
+Color variants with a `jexl:` expression on the display's `encoding.color`, and
 reach for the multi-sample or LD displays for cohort data.
 
 ```json addtrack
@@ -27,14 +27,14 @@ The `uri` shorthand resolves a sibling `.tbi`; add `"csi": true` for a `.csi`
 
 ## Coloring variants
 
-`color` takes a `jexl:` expression over the record. INFO fields parse as arrays,
-so `feature.INFO.SVTYPE[0]` is the first value; the
+`encoding.color` takes a `jexl:` expression over the record. INFO fields parse
+as arrays, so `feature.INFO.SVTYPE[0]` is the first value; the
 [cookbook](/docs/cookbook#variant-tracks) has the SV-type lookup table and a
 `filter` example.
 
 ### Helper functions for jexl color expressions
 
-The variants plugin registers these for `color` and `filter`:
+The variants plugin registers these for `encoding.color` and `filter`:
 
 <!-- JEXL_CATEGORY variant-functions START -->
 
@@ -44,7 +44,7 @@ jexl: missingness(feature) // fraction of alleles with no call, so ./1 counts ha
 jexl: impact(feature) // HIGH, MODERATE, LOW or MODIFIER, from SnpEff ANN / VEP CSQ
 jexl: consequence(feature) // e.g. missense_variant, from the same annotation — the MOST SEVERE one alone
 jexl: 'missense_variant' in consequences(feature) // every consequence term on the record, across all transcripts (bcftools INFO/CSQ ~ "missense_variant")
-jexl: impactColor(feature) // the color `color: { field: 'impact' }` paints the variant's most severe tier
+jexl: impactColor(feature) // the color `encoding: { color: 'impact' }` paints the variant's most severe tier
 jexl: alleleLength(feature) >= 50 // longest allele in bp, so an insertion is not measured by its reference span
 jexl: svType(feature) == 'DEL' // SV class, read off a symbolic ALT before falling back to INFO/SVTYPE (bcftools INFO/SVTYPE)
 jexl: nAlt(feature) == 1 // ALT alleles the record declares, i.e. biallelic-only (bcftools N_ALT)
@@ -54,8 +54,8 @@ jexl: genotypeCount(feature, 'het') > 0 // samples in a genotype class — ref, 
 <!-- JEXL_CATEGORY variant-functions END -->
 
 With those functions available, a track colors by allele frequency with no
-preprocessing. A `jexl:` expression as the `color` object's `field` computes the
-value, and a `threshold` scale bins it, with a key naming each bin:
+preprocessing. A `jexl:` expression as the `encoding.color` object's `field`
+computes the value, and a `threshold` scale bins it, with a key naming each bin:
 
 ```json addtrack
 {
@@ -64,12 +64,16 @@ value, and a `threshold` scale bins it, with a key naming each bin:
   "uri": "https://yourhost/file.vcf.gz",
   "assemblyNames": ["hg38"],
   "displayDefaults": {
-    "color": {
-      "field": "jexl:maf(feature)",
-      "scale": "threshold",
-      "domain": [0.01, 0.05],
-      "range": ["#ccc", "#74a9cf", "#045a8d"],
-      "title": "Minor allele frequency"
+    "encoding": {
+      "color": {
+        "field": "jexl:maf(feature)",
+        "scale": {
+          "type": "threshold",
+          "domain": [0.01, 0.05],
+          "range": ["#ccc", "#74a9cf", "#045a8d"]
+        },
+        "legend": { "title": "Minor allele frequency" }
+      }
     }
   }
 }
@@ -116,9 +120,9 @@ default display, so preset its slots in a `displays` array; they are listed on
 
 ### Coloring cells by the variant
 
-`color` paints every cell with an alt allele by the variant itself. A CSS color
-or a jexl expression paints every alt cell of a variant, the
-[helper functions](#helper-functions-for-jexl-color-expressions) included. A
+`encoding.color` paints every cell with an alt allele by the variant itself. A
+`value`, a CSS color or a jexl expression, paints every alt cell of a variant,
+the [helper functions](#helper-functions-for-jexl-color-expressions) included. A
 `field` gives each of its values a color, with a key. Three fields are the track
 menu's **Color by...** presets: `impact` for
 [consequence impact](/docs/user_guides/multivariant_track#coloring-by-consequence-impact-snpeffvep-annotations),
@@ -137,25 +141,29 @@ default alt color.
   "displays": [
     {
       "type": "LinearMultiSampleVariantDisplay",
-      "color": { "field": "impact" }
+      "encoding": { "color": "impact" }
     }
   ]
 }
 ```
 
-A number cuts into ranges with a `threshold` scale: `domain` lists the cut
-points and `range` one color per range, one more than the cuts. Allele frequency
-split into ultra-rare, rare, low-frequency and common:
+A number cuts into ranges with a `threshold` scale: `scale.domain` lists the cut
+points and `scale.range` one color per range, one more than the cuts. Allele
+frequency split into ultra-rare, rare, low-frequency and common:
 
 ```json
 "displays": [
   {
     "type": "LinearMultiSampleVariantDisplay",
-    "color": {
-      "field": "INFO.AF",
-      "scale": "threshold",
-      "domain": [0.001, 0.01, 0.05],
-      "range": ["#b2182b", "#ef8a62", "#67a9cf", "#2166ac"]
+    "encoding": {
+      "color": {
+        "field": "INFO.AF",
+        "scale": {
+          "type": "threshold",
+          "domain": [0.001, 0.01, 0.05],
+          "range": ["#b2182b", "#ef8a62", "#67a9cf", "#2166ac"]
+        }
+      }
     }
   }
 ]
@@ -233,9 +241,9 @@ happens in `plink` when it writes the table. The
 
 ### Which metric, and how far to thin
 
-[`color.field`](/docs/config/ldcolor/#slot-field) switches between two reads of
-the same block, `r2` on a red ramp and `dprime` on a blue one unless
-`color.scheme` names another:
+[`encoding.color.field`](/docs/config/ldcolor/#slot-field) switches between two
+reads of the same block, `r2` on a red ramp and `dprime` on a blue one unless
+`encoding.color.scale.scheme` names another:
 
 - **D'** measures whether recombination has been seen between two markers, so it
   saturates near 1 wherever no recombinant haplotype has turned up. It recovers

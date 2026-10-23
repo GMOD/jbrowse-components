@@ -1,13 +1,13 @@
 ---
 id: variantcellcolor
 title: VariantCellColor
-description: "The multi-sample variant display's color setting: the hue of every genotype cell with an alt allele, which shadeByDosage then lightens for a heterozygote. Unset, the cells paint the genotype colors."
+description: "The multi-sample variant display's encoding.color: the hue of every genotype cell with an alt allele, which shadeByDosage then lightens for a heterozygote. Unset, the cells paint the genotype colors."
 sidebar_label: Display -> VariantCellColor
 ---
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `variants` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/LinearMultiSampleVariantDisplay/cellColorConfigSchema.ts).
 
-The multi-sample variant display's `color` setting: the hue of every
+The multi-sample variant display's `encoding.color`: the hue of every
 genotype cell with an alt allele, which `shadeByDosage` then lightens for a
 heterozygote. Unset, the cells paint the genotype colors. A CSS color or
 `jexl:` callback in `value` paints every alt cell of a variant; a `field`
@@ -16,22 +16,26 @@ gives each of its values a color with a key. Three fields are presets:
 structural-variant class; `phaseSet`, the FORMAT PS block, in phased mode.
 Any other field is read off the record — `INFO.CLNSIG`, `QUAL`, or a
 `jexl:` expression — and a numeric one cut into intervals by a `threshold`
-scale. A string is the constant.
+scale. A string is the field.
 
 ## Example usage
 
 ```js
-{ type: 'LinearMultiSampleVariantDisplay', color: { field: 'impact' } }
+{ type: 'LinearMultiSampleVariantDisplay', encoding: { color: 'impact' } }
 ```
 
 ```js
 {
   type: 'LinearMultiSampleVariantDisplay',
-  color: {
-    field: 'INFO.AF',
-    scale: 'threshold',
-    domain: [0.001, 0.01, 0.05],
-    range: ['#b2182b', '#ef8a62', '#67a9cf', '#2166ac'],
+  encoding: {
+    color: {
+      field: 'INFO.AF',
+      scale: {
+        type: 'threshold',
+        domain: [0.001, 0.01, 0.05],
+        range: ['#b2182b', '#ef8a62', '#67a9cf', '#2166ac'],
+      },
+    },
   },
 }
 ```
@@ -44,10 +48,12 @@ A setting written to it replaces it whole, since its members are alternatives: a
 | Slot | Description |
 | --- | --- |
 | <span id="slot-value">**value**</span><br>[`maybeColor`](/docs/config_guides/slot_types#the-maybe-types) | A CSS color, or a jexl callback over `feature` returning one, for every alt cell of the variant. Unset, the cells paint the genotype colors.<br>_callback args:_ `feature` |
+| <span id="slot-scale">**scale**</span><br>[VariantCellColorScale sub-schema](#slot-scaletype) | How the field's values map to colors, Vega-Lite's scale object. |
+| <span id="slot-legend">**legend**</span><br>[VariantCellColorLegend sub-schema](#slot-legendtitle) | The key this channel draws. |
 | <span id="slot-field">**field**</span><br>[`featureField`](/docs/config_guides/slot_types#featurefield) = <code>''</code> | impact, the most severe SnpEff/VEP consequence tier; svType, the structural-variant class; phaseSet, the FORMAT PS block in phased mode; or any record field, INFO.CLNSIG say, or a jexl expression over feature, whose values each paint one range color with a key. A record with no value keeps the default alt color |
-| <span id="slot-scale">**scale**</span><br>[`maybeStringEnum`](/docs/config_guides/slot_types#the-maybe-types) | categorical a range color per value of field; threshold a range color per interval between the cut points in domain; unset follows field |
-| <span id="slot-domain">**domain**</span><br>[`stringArray`](/docs/config_guides/slot_types#stringarray) of strings or numbers = <code>[]</code> | the values that take the range first, in order; under threshold, the ascending cut points, a value on a cut taking the interval above it |
-| <span id="slot-range">**range**</span><br>[`colorArray`](/docs/config_guides/slot_types#colorarray) = <code>[]</code> | CSS colors the domain takes, in order, continuing into the default palette past its end; under threshold one per interval, one more than the cuts |
-| <span id="slot-unknown">**unknown**</span><br>[`maybeColor`](/docs/config_guides/slot_types#the-maybe-types) | color for a value missing from domain: unset takes the next palette color where the display deals one, a color paints that color, "" adds no color from this setting, so a row keeps the color it already has, a variant cell takes the alt hue and a feature the no-value grey |
-| <span id="slot-labels">**labels**</span><br>[`stringArray`](/docs/config_guides/slot_types#stringarray) of strings or numbers = <code>[]</code> | key label for each domain value, one each in order, or under threshold for each interval from the lowest; a value past the end of the list shows its name |
-| <span id="slot-title">**title**</span><br>[`maybeString`](/docs/config_guides/slot_types#the-maybe-types) | key title; unset keeps the display's own heading, "" draws none |
+| <span id="slot-scaletype">**scale.type**</span><br>[`maybeStringEnum`](/docs/config_guides/slot_types#the-maybe-types) | ordinal a range color per value of field; threshold a range color per interval between the cut points in domain; unset follows field |
+| <span id="slot-scaledomain">**scale.domain**</span><br>[`stringArray`](/docs/config_guides/slot_types#stringarray) = <code>[]</code> | the values that take the range first, in order; under threshold, the ascending cut points, a value on a cut taking the interval above it |
+| <span id="slot-scalerange">**scale.range**</span><br>[`colorArray`](/docs/config_guides/slot_types#colorarray) = <code>[]</code> | CSS colors the domain takes, in order, continuing into the default palette past its end; under threshold one per interval, one more than the cuts |
+| <span id="slot-scaleunknown">**scale.unknown**</span><br>[`maybeColor`](/docs/config_guides/slot_types#the-maybe-types) | color for a value missing from domain: unset takes the next palette color where the display deals one, a color paints that color, "" adds no color from this setting, so a row keeps the color it already has, a variant cell takes the alt hue and a feature the no-value grey |
+| <span id="slot-scalenames">**scale.names**</span><br>[`stringArray`](/docs/config_guides/slot_types#stringarray) = <code>[]</code> | key name for each domain value, one each in order, or under threshold for each interval from the lowest; a value past the end of the list shows its own |
+| <span id="slot-legendtitle">**legend.title**</span><br>[`maybeString`](/docs/config_guides/slot_types#the-maybe-types) | key title; unset keeps the display's own heading, "" draws none |

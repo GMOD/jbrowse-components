@@ -253,11 +253,12 @@ print('%d painted segments across the %d animals of the panel'
 # uses, and the two have drifted before, so print the blocks to paste rather
 # than leaving them to be remembered.
 print()
-print('color for the copy-number displays:')
+print('encoding.color for the copy-number displays:')
 painted = sorted({min(CN_CAP, r[2]) for r in rows})
-print(json.dumps({'scale': 'identity', 'title': 'Copy number',
-                  'domain': ['rgb(%s)' % cn_color(cn) for cn in painted],
-                  'labels': [cn_label(cn) for cn in painted]}, indent=2))
+print(json.dumps({'scale': {'type': 'identity',
+                            'domain': ['rgb(%s)' % cn_color(cn) for cn in painted],
+                            'names': [cn_label(cn) for cn in painted]},
+                  'legend': {'title': 'Copy number'}}, indent=2))
 print('rows domain for the panel display:')
 print(json.dumps(order, indent=2))
 PY

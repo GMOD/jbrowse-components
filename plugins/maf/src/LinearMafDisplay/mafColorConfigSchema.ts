@@ -1,7 +1,15 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { MEASURE_FIELD_PRESETS } from '@jbrowse/core/util/colorScale'
 import { COLOR_SCHEMES } from '@jbrowse/core/util/colorSchemes'
-import { normalizeChannel } from '@jbrowse/display-kit/colorConfigSchema'
+import {
+  colorChannelOptions,
+  colorDomainSlot,
+  colorLegendOptions,
+  colorNamesSlot,
+  colorRangeSlot,
+  colorScaleOptions,
+  colorTitleSlot,
+} from '@jbrowse/display-kit/colorConfigSchema'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import {
@@ -22,63 +30,63 @@ const BASE_KEYS = ['A', 'C', 'G', 'T', 'N', 'gap'] as const
  */
 export const MAF_FIELD_PRESETS = {
   mismatch: {
-    scale: 'categorical',
-    domain: [...BASE_KEYS, 'match'],
-    title: 'Mismatch to reference',
+    scale: { type: 'ordinal', domain: [...BASE_KEYS, 'match'] },
+    legend: { title: 'Mismatch to reference' },
   },
   base: {
-    scale: 'categorical',
-    domain: BASE_KEYS,
-    title: 'Base',
+    scale: { type: 'ordinal', domain: BASE_KEYS },
+    legend: { title: 'Base' },
   },
   identity: {
     ...MEASURE_FIELD_PRESETS.identity,
-    title: 'Per-base identity to reference',
+    legend: { title: 'Per-base identity to reference' },
   },
   chromosome: {
-    scale: 'categorical',
-    domain: SOURCE_CHROM_PALETTE.map((_, rank) => String(rank)),
-    range: SOURCE_CHROM_PALETTE,
-    labels: SOURCE_CHROM_RANK_LABELS,
-    title: 'Source chromosome',
+    scale: {
+      type: 'ordinal',
+      domain: SOURCE_CHROM_PALETTE.map((_, rank) => String(rank)),
+      range: SOURCE_CHROM_PALETTE,
+      names: SOURCE_CHROM_RANK_LABELS,
+    },
+    legend: { title: 'Source chromosome' },
   },
   codon: {
-    scale: 'categorical',
-    domain: ['nonsyn', 'syn', 'stop'],
-    labels: ['Nonsynonymous', 'Synonymous', 'Stop gained'],
-    title: 'Codon change',
+    scale: {
+      type: 'ordinal',
+      domain: ['nonsyn', 'syn', 'stop'],
+      names: ['Nonsynonymous', 'Synonymous', 'Stop gained'],
+    },
+    legend: { title: 'Codon change' },
   },
-} as const satisfies FieldPresets<'categorical' | 'linear'> &
+} as const satisfies FieldPresets<'ordinal' | 'linear'> &
   Record<MafColorField, unknown>
 
 /**
  * #config MafColor
  * #category display
- * The MAF display's `color` setting colors each species row's aligned cells
+ * The MAF display's `encoding.color` colors each species row's aligned cells
  * by one field.
  * `mismatch` paints a base only where it differs from the reference,
  * `base` every base, `identity` the mean identity to the reference along a
  * ramp, `chromosome` each block by the rank of its source chromosome within
  * the row, and `codon` each codon by its amino-acid change, given an
  * `framesAdapter`. A string is the field. Each field has one scale:
- * `identity` runs from `domainMin` 0 to `domainMax` 1 along the
+ * `identity` runs from `scale.domainMin` 0 to `scale.domainMax` 1 along the
  * `redgreyblue` scheme, as every display's identity does, and the others are
- * categorical. The bases and the
- * codons paint the theme's colors. The slots are the shared color object's,
- * so `jbrowse validate` and "Edit plot..." judge them as they judge any other
- * display's.
+ * ordinal. The bases and the codons paint the theme's colors. The slots are
+ * the shared color channel's, so `jbrowse validate` and "Edit plot..." judge
+ * them as they judge any other display's.
  *
  * #example
  * ```js
- * { type: 'LinearMafDisplay', color: 'identity' }
- * ```
- * ```js
- * { type: 'LinearMafDisplay', color: 'identity', y: 'identity' }
+ * { type: 'LinearMafDisplay', encoding: { color: 'identity' } }
  * ```
  * ```js
  * {
  *   type: 'LinearMafDisplay',
- *   color: { field: 'identity', domainMin: 0.7, scheme: 'viridis' },
+ *   encoding: {
+ *     color: { field: 'identity', scale: { domainMin: 0.7, scheme: 'viridis' } },
+ *   },
  * }
  * ```
  */
@@ -96,89 +104,76 @@ export const mafColorConfigSchema = ConfigurationSchema(
         'field to color each cell by: mismatch, base, identity, chromosome or codon',
     },
     /**
-     * #slot domain
+     * #slot scale
+     * How the field's values map to colors, Vega-Lite's scale object. Each
+     * field has one scale type, so the object names none.
      */
-    domain: {
-      type: 'stringArray',
-      defaultValue: [],
-      description:
-        'the values the key lists, in order: under chromosome each rank from 0, the main source chromosome; under codon nonsyn, syn and stop',
-    },
+    scale: ConfigurationSchema(
+      'MafColorScale',
+      {
+        ...colorDomainSlot({
+          domain:
+            'the values the key lists, in order: under chromosome each rank from 0, the main source chromosome; under codon nonsyn, syn and stop',
+        }),
+        ...colorRangeSlot({
+          range:
+            "CSS colors: under chromosome one per rank from the main source chromosome, the last painting every rank past it; under identity the ramp's stops, winning over scheme; the bases and the codons paint the theme's colors",
+        }),
+        ...colorNamesSlot,
+        /**
+         * #slot scheme
+         */
+        scheme: {
+          type: 'maybeStringEnum',
+          model: types.enumeration('ColorScheme', [...COLOR_SCHEMES]),
+          description:
+            "the named ramp identity runs along; unset is redgreyblue, and range's colors, where it lists any, win over it",
+        },
+        /**
+         * #slot reverse
+         */
+        reverse: {
+          type: 'boolean',
+          defaultValue: false,
+          description:
+            'turns the identity ramp round, so its last color paints the low end',
+        },
+        /**
+         * #slot domainMin
+         */
+        domainMin: {
+          type: 'maybeNumber',
+          description:
+            "the identity the ramp's low end paints, 0 to 1; unset is 0, and 0.7 spreads the ramp over close relatives",
+        },
+        /**
+         * #slot domainMax
+         */
+        domainMax: {
+          type: 'maybeNumber',
+          description: "the identity the ramp's high end paints; unset is 1",
+        },
+        /**
+         * #slot domainMid
+         */
+        domainMid: {
+          type: 'maybeNumber',
+          description:
+            "the value the ramp's middle stop sits at, so a diverging ramp centres somewhere other than the middle of the domain, both sides on one scale: the farther end of the domain reaches its end color and equal distances from the middle take equal colors; unset, the stops are evenly spaced across it",
+        },
+      },
+      colorScaleOptions('encoding.color.scale'),
+    ),
     /**
-     * #slot range
+     * #slot legend
+     * The key this channel draws; an unset `title` is the field's own
+     * heading.
      */
-    range: {
-      type: 'colorArray',
-      defaultValue: [],
-      description:
-        "CSS colors: under chromosome one per rank from the main source chromosome, the last painting every rank past it; under identity the ramp's stops, winning over scheme; the bases and the codons paint the theme's colors",
-    },
-    /**
-     * #slot labels
-     */
-    labels: {
-      type: 'stringArray',
-      defaultValue: [],
-      description:
-        'key label for each domain value, one each in order; a value past the end of the list shows its name',
-    },
-    /**
-     * #slot title
-     */
-    title: {
-      type: 'maybeString',
-      description:
-        'key title; unset is the field\'s own heading, "" draws none',
-    },
-    /**
-     * #slot scheme
-     */
-    scheme: {
-      type: 'maybeStringEnum',
-      model: types.enumeration('ColorScheme', [...COLOR_SCHEMES]),
-      description:
-        "the named ramp identity runs along; unset is redgreyblue, and range's colors, where it lists any, win over it",
-    },
-    /**
-     * #slot reverse
-     */
-    reverse: {
-      type: 'boolean',
-      defaultValue: false,
-      description:
-        'turns the identity ramp round, so its last color paints the low end',
-    },
-    /**
-     * #slot domainMin
-     */
-    domainMin: {
-      type: 'maybeNumber',
-      description:
-        "the identity the ramp's low end paints, 0 to 1; unset is 0, and 0.7 spreads the ramp over close relatives",
-    },
-    /**
-     * #slot domainMax
-     */
-    domainMax: {
-      type: 'maybeNumber',
-      description: "the identity the ramp's high end paints; unset is 1",
-    },
-    /**
-     * #slot domainMid
-     */
-    domainMid: {
-      type: 'maybeNumber',
-      description:
-        "the value the ramp's middle stop sits at, so a diverging ramp centres somewhere other than the middle of the domain, both sides on one scale: the farther end of the domain reaches its end color and equal distances from the middle take equal colors; unset, the stops are evenly spaced across it",
-    },
+    legend: ConfigurationSchema(
+      'MafColorLegend',
+      { ...colorTitleSlot },
+      colorLegendOptions,
+    ),
   },
-  {
-    shorthand: 'field',
-    writes: 'whole',
-    plot: true,
-    closed: true,
-    fieldPresets: MAF_FIELD_PRESETS,
-    preProcessSnapshot: (snap: Record<string, unknown> | undefined) =>
-      normalizeChannel(snap, 'color'),
-  },
+  colorChannelOptions('encoding.color', MAF_FIELD_PRESETS),
 )

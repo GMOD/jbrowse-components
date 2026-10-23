@@ -47,7 +47,7 @@ import type { AlignmentData } from '@jbrowse/core/util/diagonalizeRegions'
 import type { Region } from '@jbrowse/core/util/types'
 import type { AttributeRange } from '@jbrowse/synteny-core'
 
-// what a ribbon paints under the view's default mode, at the view's `opacity`
+// what a ribbon paints under the view's default mode, at the view's `encoding.opacity`
 const DEFAULT_ABGR = cssColorToABGR('rgb(70,130,180)')
 
 function defaultAbgr(value: string | undefined) {
@@ -215,7 +215,7 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
       },
       /**
        * #getter
-       * each alignment's packed color under the view's `color`, by its place
+       * each alignment's packed color under the view's `encoding.color`, by its place
        * in `features`. A chromosome mode paints the ideogram color of the
        * chromosome it joins, so a ribbon matches the arc it leaves; a label
        * the view hides paints at zero alpha
@@ -267,8 +267,8 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
       /**
        * #getter
        * the fill opacity every resting ribbon draws at, the view's
-       * `opacityLevel`; a ribbon's own color alpha (a `color.value`'s, an
-       * `opacity` field's fade) rides its lane
+       * `opacityLevel`; a ribbon's own color alpha (an `encoding.color.value`'s,
+       * an `encoding.opacity` field's fade) rides its lane
        */
       get shapeAlpha() {
         return self.view.opacityLevel

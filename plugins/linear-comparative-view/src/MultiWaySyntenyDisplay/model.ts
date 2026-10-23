@@ -564,19 +564,19 @@ export function stateModelFactory(
         },
         /** #action */
         setRibbonColorField(field: string) {
-          const { ribbonColor } = self.configuration
+          const ribbonColor = self.configuration.ribbons.encoding.color
           if (
             field !== paintedRibbonColor(colorSnapshotOf(ribbonColor)).field
           ) {
             setConf(self, 'hideUnlabelled', false)
           }
-          const written = writtenColorOf(self.configuration.ribbonColor)
+          const written = writtenColorOf(ribbonColor)
           const next =
             field === ''
               ? colorForValue(written, undefined)
-              : colorForField(written, field, self.parkedColorOf('ribbonColor'))
-          self.parkColor('ribbonColor', written, next)
-          setConf(self, 'ribbonColor', next)
+              : colorForField(written, field, self.parkedColorOf('ribbons'))
+          self.parkColor('ribbons', written, next)
+          setConf(self, ['ribbons', 'encoding', 'color'], next)
           self.seenAttributeRanges = {}
           observeRibbonFeatures(self.fetchedFeatures?.features ?? [])
           for (const { links } of self.laneLinks.held?.values() ?? []) {
@@ -696,14 +696,14 @@ export function stateModelFactory(
         return orderAttributeLabels(
           self.seenAttributeRanges,
           self.ribbonColorDomain,
-          getConf(self, ['ribbonColor', 'range']),
+          getConf(self, ['ribbons', 'encoding', 'color', 'scale', 'range']),
         )
       },
     }))
     .views(self => ({
       /**
        * #getter
-       * The slots a categorical gene color deals its values into.
+       * The slots an ordinal gene color deals its values into.
        */
       get geneColorSlots() {
         return heldColorSlots(self, self.geneColorEncoding)
@@ -2314,7 +2314,7 @@ export function stateModelFactory(
         )
         const onScreen: Span = [0, self.canvasWidthPx]
         const encoding = self.geneColorEncoding
-        const { title } = self.geneColorSettings.color
+        const { title } = self.geneColorSettings.color.legend
         const field = colorFieldOf(encoding, self.geneColorSlots)
         const keyOf = (hits: GlyphHit[]): ColorScale[] => {
           if (field) {
@@ -2347,10 +2347,12 @@ export function stateModelFactory(
        * Paint every ribbon `value`, undefined returning to the strand colors.
        */
       setRibbonColorValue(value: string | undefined) {
-        const written = writtenColorOf(self.configuration.ribbonColor)
+        const written = writtenColorOf(
+          self.configuration.ribbons.encoding.color,
+        )
         const next = colorForValue(written, value)
-        self.parkColor('ribbonColor', written, next)
-        setConf(self, 'ribbonColor', next)
+        self.parkColor('ribbons', written, next)
+        setConf(self, ['ribbons', 'encoding', 'color'], next)
       },
       /**
        * #action
@@ -2358,7 +2360,9 @@ export function stateModelFactory(
        */
       openRibbonSolidColorDialog() {
         const written: string | undefined = getConf(self, [
-          'ribbonColor',
+          'ribbons',
+          'encoding',
+          'color',
           'value',
         ])
         getSession(self).queueDialog(handleClose => [
@@ -2411,9 +2415,27 @@ export function stateModelFactory(
               domain: self.ribbonColorDomain,
               hideUnlabelled: self.hideUnlabelled,
               slotColor: self.ribbonColor,
-              labels: getConf(self, ['ribbonColor', 'labels']),
-              title: getConf(self, ['ribbonColor', 'title']),
-              descending: getConf(self, ['ribbonColor', 'descending']),
+              names: getConf(self, [
+                'ribbons',
+                'encoding',
+                'color',
+                'scale',
+                'names',
+              ]),
+              title: getConf(self, [
+                'ribbons',
+                'encoding',
+                'color',
+                'legend',
+                'title',
+              ]),
+              descending: getConf(self, [
+                'ribbons',
+                'encoding',
+                'color',
+                'legend',
+                'descending',
+              ]),
               paint: self.ribbonPaint,
               against: self.rowsVsAnchor ? self.anchorAssemblyName : undefined,
             },

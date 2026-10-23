@@ -14,7 +14,7 @@
             "trackId": "snca-residues",
             "type": "LinearBasicDisplay",
             "height": 28,
-            "color": "jexl:get(feature,'color')"
+            "encoding": { "color": { "value": "jexl:get(feature,'color')" } }
           },
           {
             "trackId": "snca-mane",

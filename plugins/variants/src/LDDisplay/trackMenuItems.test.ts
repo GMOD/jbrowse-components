@@ -158,7 +158,7 @@ test('the scheme submenu offers every named scheme, the painted one ticked', () 
 })
 
 describe('on a display', () => {
-  test('a metric radio writes color.field, and plot reads it back', () => {
+  test('a metric radio writes encoding.color.field, and plot reads it back', () => {
     const { display } = createTestEnvironment().createDisplay()
     const dprime = subMenuOf(display.trackMenuItems(), 'LD metric')!.find(
       i => labelOf(i) === "D' (normalized D)",
@@ -166,17 +166,19 @@ describe('on a display', () => {
     if ('onClick' in dprime) {
       dprime.onClick()
     }
-    expect(readConfObject(display.configuration, ['color', 'field'])).toBe(
-      'dprime',
-    )
-    expect(display.plot).toEqual({ color: 'dprime' })
+    expect(
+      readConfObject(display.configuration, ['encoding', 'color', 'field']),
+    ).toBe('dprime')
+    expect(display.plot).toEqual({ encoding: { color: 'dprime' } })
     expect(display.rpcProps().ldMetric).toBe('dprime')
   })
 
   test('a scheme pick leaves reverse to follow it', () => {
     const { display } = createTestEnvironment().createDisplay()
     display.setColorScheme('viridis')
-    expect(display.plot).toEqual({ color: { scheme: 'viridis' } })
+    expect(display.plot).toEqual({
+      encoding: { color: { scale: { scheme: 'viridis' } } },
+    })
     expect(display.colorReverse).toBe(true)
   })
 

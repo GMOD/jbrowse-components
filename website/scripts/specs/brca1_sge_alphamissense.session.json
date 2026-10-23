@@ -19,12 +19,15 @@
           "type": "LinearWiggleDisplay",
           "mark": "span",
           "rows": "source",
-          "showLegend": false,
-          "color": {
-            "field": "score",
-            "scale": "linear",
-            "range": ["#2c7bb6", "#ffffff", "#d7191c"],
-            "domainMid": 0.5
+          "legend": { "show": false },
+          "encoding": {
+            "color": {
+              "scale": {
+                "type": "linear",
+                "range": ["#2c7bb6", "#ffffff", "#d7191c"],
+                "domainMid": 0.5
+              }
+            }
           },
           "scales": {
             "y": {
@@ -497,12 +500,15 @@
           "displayId": "brca1_sge_missense-LinearWiggleDisplay",
           "mark": "point",
           "size": 9,
-          "showLegend": false,
-          "color": {
-            "field": "score",
-            "scale": "linear",
-            "domainMid": -1.0,
-            "range": ["#d7191c", "#d9d9d9", "#2c7bb6"]
+          "legend": { "show": false },
+          "encoding": {
+            "color": {
+              "scale": {
+                "type": "linear",
+                "domainMid": -1,
+                "range": ["#d7191c", "#d9d9d9", "#2c7bb6"]
+              }
+            }
           },
           "scales": {
             "y": {

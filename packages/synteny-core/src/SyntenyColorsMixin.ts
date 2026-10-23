@@ -1,6 +1,6 @@
-import { getConf, readConfObject } from '@jbrowse/core/configuration'
+import { getConf, readConfObject, setConf } from '@jbrowse/core/configuration'
 import { stableIdentityComputed } from '@jbrowse/display-kit/stableIdentityComputed'
-import { cast, getSnapshot, types } from '@jbrowse/mobx-state-tree'
+import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
 import { TrackColorsMixin } from './TrackColorsMixin.ts'
 import { colorableColumns } from './attributeChannels.ts'
@@ -11,7 +11,6 @@ import {
   opacityMapsField,
   opacityRangeAt,
 } from './opacityChannel.ts'
-import { syntenyOpacityConfigSchema } from './syntenyOpacityConfigSchema.ts'
 
 import type { ComparativeTrackModel } from './lodTier.ts'
 import type {
@@ -24,8 +23,9 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * #stateModel SyntenyColorsMixin
  *
  * The color settings every view drawing synteny tracks shares — the linear
- * synteny view, the dotplot and the circular view: `TrackColorsMixin`'s color
- * object and palette, the `opacity` object and the `filter`, over the tracks
+ * synteny view, the dotplot and the circular view: `TrackColorsMixin`'s
+ * `encoding` and palette, the `encoding.opacity` it fades by and the
+ * `filter`, over the tracks
  * the view draws. A view supplies `syntenyTracks()`,
  * its opacity default and, optionally, the field it paints by until told
  * otherwise.
@@ -37,23 +37,8 @@ export function SyntenyColorsMixin({
   defaultOpacity: number
   defaultColorField?: string
 }) {
-  return types
-    .compose(
-      'SyntenyColorsMixin',
-      TrackColorsMixin({ defaultColorField }),
-      types.model({
-        /**
-         * #property
-         * The opacity every alignment draws at, a
-         * [](/docs/config/syntenyopacity) object: a number for all of them,
-         * or a field each alignment has, read into opacities, `{ field: "identity" }`
-         * or a column the tracks declare. Unset, the view's default: low on
-         * the synteny view for dense whole-genome hairballs, opaque on the
-         * dotplot.
-         */
-        opacity: types.stripDefault(syntenyOpacityConfigSchema, {}),
-      }),
-    )
+  return TrackColorsMixin({ defaultColorField })
+    .named('SyntenyColorsMixin')
     .views(() => ({
       /**
        * #method
@@ -67,28 +52,29 @@ export function SyntenyColorsMixin({
       // structural, so a slider drag that scales a field's range alike at
       // both ends hands the color pass the same fade and recolors nothing
       const fade = stableIdentityComputed(() =>
-        opacityFadeOf(readOpacity(self.opacity)),
+        opacityFadeOf(readOpacity(self.encoding.opacity)),
       )
       return {
         /**
          * #getter
-         * The constant opacity a reset returns to.
+         * The constant opacity a reset returns to: low on the synteny view
+         * for dense whole-genome hairballs, opaque on the dotplot.
          */
         get defaultOpacity() {
           return defaultOpacity
         },
         /**
          * #getter
-         * The `opacity` object as its snapshot holds it.
+         * `encoding.opacity` as its snapshot holds it.
          */
         get opacitySetting(): SyntenyOpacitySnapshot {
-          return readOpacity(self.opacity)
+          return readOpacity(self.encoding.opacity)
         },
         /**
          * #getter
          * What the color pass fades each alignment by: the field's mapping with
-         * its range as shares of `opacityLevel`, or undefined while `opacity`
-         * draws its constant, so the slider recolors nothing either way.
+         * its range as shares of `opacityLevel`, or undefined while
+         * `encoding.opacity` draws its constant, so the slider recolors nothing either way.
          */
         get opacityFade(): SyntenyOpacitySnapshot | undefined {
           return fade.get()
@@ -107,7 +93,8 @@ export function SyntenyColorsMixin({
         },
         /**
          * #getter
-         * The field `opacity` fades by, `''` while it draws its constant.
+         * The field `encoding.opacity` fades by, `''` while it draws its
+         * constant.
          */
         get opacityField() {
           const setting = this.opacitySetting
@@ -155,14 +142,19 @@ export function SyntenyColorsMixin({
        */
       setOpacity(value: number) {
         const setting = self.opacitySetting
-        if (opacityMapsField(setting)) {
-          self.opacity = cast({
-            ...setting,
-            range: opacityRangeAt(setting, value, self.attributeRanges),
-          })
-        } else {
-          self.opacity = cast({ ...setting, value })
-        }
+        setConf(
+          self.encoding,
+          'opacity',
+          opacityMapsField(setting)
+            ? {
+                ...setting,
+                scale: {
+                  ...setting.scale,
+                  range: opacityRangeAt(setting, value, self.attributeRanges),
+                },
+              }
+            : { ...setting, value },
+        )
       },
       /**
        * #action
@@ -171,13 +163,17 @@ export function SyntenyColorsMixin({
        */
       setOpacityField(field: string) {
         const level = self.opacityLevel
-        self.opacity = cast(
+        setConf(
+          self.encoding,
+          'opacity',
           field
             ? {
                 field,
-                range: DEFAULT_NUMERIC_OPACITY_RANGE.map(n =>
-                  String(n * level),
-                ),
+                scale: {
+                  range: DEFAULT_NUMERIC_OPACITY_RANGE.map(n =>
+                    String(n * level),
+                  ),
+                },
               }
             : level === defaultOpacity
               ? {}
@@ -190,14 +186,17 @@ export function SyntenyColorsMixin({
 function readOpacity(
   opacity: Instance<SyntenyOpacityConfigModel>,
 ): SyntenyOpacitySnapshot {
+  const { scale } = opacity
   return {
     value: readConfObject(opacity, 'value'),
     field: readConfObject(opacity, 'field'),
-    scale: readConfObject(opacity, 'scale'),
-    domain: readConfObject(opacity, 'domain'),
-    range: readConfObject(opacity, 'range'),
-    domainMin: readConfObject(opacity, 'domainMin'),
-    domainMax: readConfObject(opacity, 'domainMax'),
+    scale: {
+      type: readConfObject(scale, 'type'),
+      domain: readConfObject(scale, 'domain'),
+      range: readConfObject(scale, 'range'),
+      domainMin: readConfObject(scale, 'domainMin'),
+      domainMax: readConfObject(scale, 'domainMax'),
+    },
   }
 }
 
@@ -208,17 +207,18 @@ export interface SyntenyColorsModel extends Instance<
 /**
  * #api
  * What a view holding `SyntenyColorsMixin` hands the view it opens on the same
- * alignments: the color it paints by, which a view on its default scheme
- * leaves to the new view's default, the pinned track colors and the
- * `filter`. Opacity keeps each view's default, since a
- * linear ribbon, a dotplot point and a circle's ribbon draw at different
- * densities.
+ * alignments: the `encoding.color` it paints by, which a view on its default
+ * scheme leaves to the new view's default, the pinned track colors and the
+ * `filter`. `encoding.opacity` keeps each view's default, since a linear
+ * ribbon, a dotplot point and a circle's ribbon draw at different densities.
  */
 export function carriedSyntenySettings(view: SyntenyColorsModel) {
   const { trackColors, filter } = getSnapshot(view)
   const paintsDefault = view.colorField === '' && view.colorValue === undefined
   return {
-    ...(paintsDefault ? {} : { color: getSnapshot(view.color) }),
+    ...(paintsDefault
+      ? {}
+      : { encoding: { color: getSnapshot(view.encoding.color) } }),
     trackColors,
     filter,
   }

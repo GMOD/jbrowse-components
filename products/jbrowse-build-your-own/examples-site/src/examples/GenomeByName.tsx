@@ -22,7 +22,10 @@ const GenomeByName = observer(function GenomeByName() {
         trackId: 'my_phylop',
         name: 'phyloP 100-way conservation',
         uri: 'https://jbrowse.org/demos/phylop/hg38.phyloP100way.brca1.bw',
-        displayDefaults: { height: 80, color: '#3a7ca5' },
+        displayDefaults: {
+          height: 80,
+          encoding: { color: { value: '#3a7ca5' } },
+        },
       },
     ],
     view: {

@@ -1,4 +1,8 @@
-import { wigglePairOf } from '../shared/wiggleColor.ts'
+import { withImpliedField } from '@jbrowse/core/util/colorScale'
+import { definedColor } from '@jbrowse/display-kit/colorConfigSchema'
+
+import { wigglePairOf, wiggleColorWritten } from '../shared/wiggleColor.ts'
+import { WIGGLE_IMPLIED_FIELD } from '../shared/wiggleColorConfigSchema.ts'
 
 import type { ResolvedWiggleColor } from '../shared/wiggleColor.ts'
 import type { ColorSlots } from '@jbrowse/core/util/colorScale'
@@ -60,37 +64,41 @@ export function plotColorLine(
 
 /**
  * What a swatch writes: the pair about the `origin` (`wigglePairOf`). A
- * written threshold stays a threshold, and an unset scale stays the pair every
- * mark draws in its own idiom. On bars, one color on both sides is a flat
- * plot, the string form, and a pair written over it takes back the cut, labels
- * and title `parked` holds. On a heatmap the pair stays a pair, fading from
- * white to the one color.
+ * written threshold stays a threshold, and an unset `scale.type` stays the
+ * pair every mark draws in its own idiom. On bars, one color on both sides is
+ * a flat plot, `{ value }`, and a pair written over it takes back the cut,
+ * names and title `parked` holds. On a heatmap the pair stays a pair, fading
+ * from white to the one color.
  *
  * A channel replaces its setting whole, and the members this drops are the
- * ones a pair does not read: `scheme` and `reverse`, and a ramp is where the
- * line is not editable. A declared cut and `domainMid` survive, and an
- * undeclared one stays undeclared — writing either here would pin at the
- * `origin` every config that had been following it.
+ * ones a pair does not read: `scale.scheme` and `scale.reverse`, and a ramp
+ * is where the line is not editable. A declared cut and `scale.domainMid`
+ * survive, and an undeclared one stays undeclared — writing either here would
+ * pin at the `origin` every config that had been following it.
  */
 export function plotColorEdit(
   written: ColorSetting,
   { above, below }: { above: string; below: string },
   heatmapPair = false,
-  parked?: Partial<ColorSetting>,
-): string | Partial<ColorSetting> {
+  parked?: ColorSlots,
+): ColorSlots {
   if (above === below && !heatmapPair) {
-    return above
+    return { value: above }
   }
-  const color = written.field || !parked ? written : { ...written, ...parked }
-  return {
-    field: 'score',
-    ...(color.scale === 'threshold' ? { scale: 'threshold' } : {}),
-    ...(color.domain.length ? { domain: [...color.domain] } : {}),
-    ...(color.domainMid === undefined ? {} : { domainMid: color.domainMid }),
-    range: [below, above],
-    ...(color.labels?.length ? { labels: [...color.labels] } : {}),
-    ...(color.title === undefined ? {} : { title: color.title }),
-  }
+  const scaleWritten =
+    written.value === undefined && wiggleColorWritten(written)
+  const { scale, legend }: ColorSlots =
+    scaleWritten || !parked ? written : { ...written, ...parked }
+  return definedColor({
+    scale: {
+      type: scale.type === 'threshold' ? 'threshold' : undefined,
+      domain: scale.domain?.length ? scale.domain : undefined,
+      domainMid: scale.domainMid,
+      range: [below, above],
+      names: scale.names?.length ? scale.names : undefined,
+    },
+    legend: { title: legend.title },
+  })
 }
 
 /**
@@ -115,11 +123,8 @@ export function plotColorOf(model: {
   return {
     line,
     edit: (next: { above: string; below: string }) =>
-      plotColorEdit(
-        model.colorSetting,
-        next,
-        heatmapPair,
-        model.parkedColor as Partial<ColorSetting> | undefined,
-      ),
+      plotColorEdit(model.colorSetting, next, heatmapPair, model.parkedColor),
+    /** The channel as `parkColor` holds it, its implied `score` named. */
+    parkable: withImpliedField(model.colorSetting, WIGGLE_IMPLIED_FIELD),
   }
 }

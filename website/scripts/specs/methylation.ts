@@ -44,12 +44,14 @@ function wgbsContextTrack(
     },
     display: {
       trackId: `arabidopsis_wgbs_${context.toLowerCase()}`,
-      baseColor: { field: 'bisulfite' },
       modifications: { cytosineContext: context },
       coverage: {
         show: false,
       },
-      pileup: { readHeight: 3 },
+      pileup: {
+        readHeight: 3,
+        bases: { show: true, encoding: { color: 'bisulfite' } },
+      },
       heightMode: 'fixed',
       height: 90,
       ...displayOverrides,
@@ -153,7 +155,7 @@ const snrpnReadsPanel = ({ grouped = false, unmarked = true } = {}) =>
         height: 320,
         forceLoad: true,
         ...(grouped ? { facet: 'tags.HP' } : {}),
-        baseColor: { field: 'modifications' },
+        pileup: { bases: { show: true, encoding: { color: 'modifications' } } },
         modifications: { unmodified: unmarked ? 'all' : 'hidden' },
       },
     ],
@@ -189,10 +191,12 @@ export const bisulfiteVideoFixtures = {
       ...ARABIDOPSIS_CONTEXT_LANES,
       {
         trackId: 'arabidopsis_wgbs',
-        baseColor: { field: 'bisulfite' },
         modifications: { cytosineContext: 'CG' },
         coverage: { show: false },
-        pileup: { readHeight: 5 },
+        pileup: {
+          readHeight: 5,
+          bases: { show: true, encoding: { color: 'bisulfite' } },
+        },
         heightMode: 'fixed',
         height: 200,
       },
@@ -306,21 +310,25 @@ export const methylationSpecs: ScreenshotSpec[] = [
               // Past the BAM byte budget; without forceLoad both lanes banner.
               forceLoad: true,
               // The basecaller also emits 5mC/5hmC; the allow-list keeps 6mA.
-              baseColor: { field: 'modifications' },
               modifications: { shownModifications: ['a'] },
               // displayMode is not a slot on this display; fixed height and
               // readHeight make the rows compact.
               heightMode: 'fixed',
-              pileup: { readHeight: 3 },
-              showLegend: true,
+              pileup: {
+                readHeight: 3,
+                bases: { show: true, encoding: { color: 'modifications' } },
+              },
+              legend: { show: true },
             },
             {
               trackId: 'PBA15131-nanopore',
               forceLoad: true,
-              baseColor: { field: 'modifications' },
               modifications: { shownModifications: ['a'] },
               heightMode: 'fixed',
-              pileup: { readHeight: 3 },
+              pileup: {
+                readHeight: 3,
+                bases: { show: true, encoding: { color: 'modifications' } },
+              },
             },
           ],
         },
@@ -482,7 +490,9 @@ export const methylationSpecs: ScreenshotSpec[] = [
               height: 460,
               forceLoad: true,
               facet: 'tags.HP',
-              baseColor: { field: 'modifications' },
+              pileup: {
+                bases: { show: true, encoding: { color: 'modifications' } },
+              },
               modifications: { unmodified: 'all' },
             },
           ],

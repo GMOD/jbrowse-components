@@ -94,14 +94,15 @@ interface CellDataBase {
   // means one is in the fetched cell data rather than that the data could
   // produce one. Merged across every fetched region, which at genomic
   // positions is wider than the viewport. A secondary alt counts whether or not
-  // a `color` hue repaints it; the key lists it under the genotype colors
-  // alone.
+  // an `encoding.color` hue repaints it; the key lists it under the genotype
+  // colors alone.
   hasSecondaryAlt: boolean
   hasAltWithoutPhaseSet: boolean
   hasUnphased: boolean
   hasNoCall: boolean
-  // The `color` the worker read each variant's `colorValues` for, so a payload
-  // read for another field is never painted through the current one's scale.
+  // The `encoding.color` the worker read each variant's `colorValues` for, so
+  // a payload read for another field is never painted through the current
+  // one's scale.
   colorRead: CellHueRead
   // Whether any visible variant carries a SnpEff/VEP annotation, gating the
   // "Color by...→Consequence impact" menu option.

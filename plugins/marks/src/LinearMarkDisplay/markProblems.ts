@@ -53,9 +53,9 @@ export type MarkProblemLevel = 'error' | 'warning'
 export const MARK_RULES = {
   /** A bar, point, rule or line naming no `y`, with no step before it writing one it reads by default. */
   'mark-without-value': 'error',
-  /** A channel the mark's type does not read, such as `y` on a `span` or a size field on a point. */
+  /** A channel the mark's type does not read, such as `y` on a `span`, a `size` on a rule, whose width is `strokeWidth`, or a size field on a point. */
   'unread-channel': 'warning',
-  /** An `encoding.size` on a mark that draws no point, rule or line and strokes no link. */
+  /** An `encoding.size` or `encoding.strokeWidth` on a mark that draws no point, rule or line and strokes no link. */
   'unread-size': 'warning',
   /** A `mark` member its type does not read: an `interpolate` off a line or a link, a `height` off a span, a `gapBp` off a line. */
   'unread-mark-member': 'warning',
@@ -67,11 +67,11 @@ export const MARK_RULES = {
   'threshold-no-cuts': 'warning',
   /** A threshold color naming more cuts than it paints, so a value past the eighth takes the ninth color. */
   'threshold-cut-count': 'warning',
-  /** A threshold `range` not one color longer than its cuts. */
+  /** A threshold `scale.range` not one color longer than its cuts. */
   'threshold-range': 'warning',
-  /** A `domain` on a linear, log or symlog color, whose ends are `domainMin` and `domainMax`. */
+  /** A `scale.domain` on a linear, log or symlog color, whose ends are `scale.domainMin` and `scale.domainMax`. */
   'ramp-domain': 'warning',
-  /** A linear, log or symlog color whose `range` lists one color, which paints every value alike. */
+  /** A linear, log or symlog color whose `scale.range` lists one color, which paints every value alike. */
   'ramp-range': 'warning',
   /** A scale's `domainMax` below its `domainMin`: a color ramp's, a width's or `scales.y`'s. */
   'domain-ends': 'warning',
@@ -81,11 +81,11 @@ export const MARK_RULES = {
   'log-floor': 'warning',
   /** A color's or a shape's `field` spelling a CSS color or a shape name, which is a constant written `{ value }`. */
   'field-spells-constant': 'warning',
-  /** A color's or a shape's `labels` naming values its `domain` does not list, or no categorical scale's. */
-  'labels-domain': 'warning',
-  /** A categorical color's `unknown` with no `domain`, so it paints every value. */
+  /** A color's or a shape's `scale.names` naming values its `scale.domain` does not list, or no ordinal scale's. */
+  'names-domain': 'warning',
+  /** An ordinal color's `scale.unknown` with no `scale.domain`, so it paints every value. */
   'unknown-domain': 'warning',
-  /** An `unknown` on a color painting through no categorical scale, so nothing reads it. */
+  /** A `scale.unknown` on a color painting through no ordinal scale, so nothing reads it. */
   'unknown-scale': 'warning',
   /** A `minBpPerPx` not below the mark's `maxBpPerPx`, so the mark never draws. */
   'empty-zoom-range': 'error',
@@ -199,6 +199,12 @@ export interface ScalesSnapshot {
   y?: ScaleEnds
 }
 
+/** A `size` or `strokeWidth` as a config snapshot holds it. */
+type WidthSnapshot =
+  | number
+  | string
+  | { value?: number; field?: string; scale?: ScaleEnds }
+
 /**
  * One entry of a `marks` list as a config snapshot holds it, defaults left
  * off. A type alias, which a `Record<string, unknown>` reader takes.
@@ -215,7 +221,8 @@ export type MarkSnapshot = {
     color?: ColorSlots
     shape?: unknown
     text?: string
-    size?: number | string | ({ value?: number; field?: string } & ScaleEnds)
+    size?: WidthSnapshot
+    strokeWidth?: WidthSnapshot
   }
   transform?: StepSnapshot[]
 }
@@ -280,9 +287,9 @@ function colorScaleOf({ scale, field = '' }: ColorSlots) {
   )
 }
 
-type SizeSnapshot = NonNullable<NonNullable<MarkSnapshot['encoding']>['size']>
+const PX_CHANNELS = ['size', 'strokeWidth'] as const
 
-function sizeFieldOf(size: SizeSnapshot | undefined) {
+function sizeFieldOf(size: WidthSnapshot | undefined) {
   return typeof size === 'string'
     ? size
     : typeof size === 'object'
@@ -337,28 +344,31 @@ function constantAsFieldProblems(
   ]
 }
 
-function shapeLabelProblems(shape: unknown): OwnProblem[] {
+function shapeNameProblems(shape: unknown): OwnProblem[] {
   if (typeof shape !== 'object' || shape === null) {
     return []
   }
-  const { field = '', scale, domain = [], labels = [] } = shape as ColorSlots
-  // an unwritten domain pairs the labels with the field's own order, as the
+  const { field = '', scale } = shape as ColorSlots
+  const { domain = [], names = [] } = scale ?? {}
+  // an unwritten domain pairs the names with the field's own order, as the
   // key and the worker do
   const order =
-    domain.length > 0 ? domain : (universalPresetOf(field)?.domain ?? [])
+    domain.length > 0 ? domain : (universalPresetOf(field)?.scale.domain ?? [])
   const named =
-    paintedScale({ scale, field }, 'categorical') === 'categorical'
-      ? order.length
-      : 0
-  return labels.length > named
+    paintedScale({ scale, field }, 'ordinal') === 'ordinal' ? order.length : 0
+  return names.length > named
     ? [
         found(
-          'labels-domain',
-          'encoding.shape.labels',
-          `labels names one domain value each, and ${labels.length} ${labels.length === 1 ? 'label names' : 'labels name'} ${named}: a label past them names nothing`,
+          'names-domain',
+          'encoding.shape.scale.names',
+          `names gives one domain value each its name, and ${names.length} ${names.length === 1 ? 'name meets' : 'names meet'} ${named}: a name past them names nothing`,
         ),
       ]
     : []
+}
+
+function typeReads(spec: MarkSpec, channel: MarkChannel) {
+  return spec.channels.includes(channel)
 }
 
 function drawTogether(a: MarkSnapshot, b: MarkSnapshot) {
@@ -587,13 +597,21 @@ function stepProblems(steps: Steps, list = 'transform') {
 
 // Each field a mark's channels read besides `y`, by the slot naming it: the
 // channels its type reads, a color's or a shape's field where it is a scale,
-// a text's field as its default leaves it, and a link's size field.
+// a text's field as its default leaves it, and a link's stroke width field.
 function channelFields(
   mark: MarkSnapshot,
   spec: MarkSpec,
 ): [slot: string, field: string][] {
   const encoding = mark.encoding ?? {}
-  const { x, x2, row, color = {}, shape, text = DEFAULT_TEXT_FIELD } = encoding
+  const {
+    x,
+    x2,
+    row,
+    color = {},
+    shape,
+    text = DEFAULT_TEXT_FIELD,
+    strokeWidth,
+  } = encoding
   const reads = (channel: MarkChannel) => spec.channels.includes(channel)
   const named: [string, string | undefined][] = [
     ['encoding.x', x],
@@ -609,8 +627,8 @@ function channelFields(
     ['encoding.shape.field', reads('shape') ? fieldOf(shape) : undefined],
     ['encoding.text', reads('text') ? text : undefined],
     [
-      'encoding.size.field',
-      spec.size === 'channel' ? sizeFieldOf(encoding.size) : undefined,
+      'encoding.strokeWidth.field',
+      reads('strokeWidth') ? sizeFieldOf(strokeWidth) : undefined,
     ],
   ]
   return named.flatMap(([slot, field]) =>
@@ -641,33 +659,44 @@ function ownProblems(
     )
   }
   const spec: MarkSpec = MARK_SPECS[type]
-  const channels = new Set<string>(['x', 'x2', 'size', ...spec.channels])
+  const { px } = spec
+  const channels = new Set<string>([
+    'x',
+    'x2',
+    ...spec.channels,
+    ...(px ? [px] : []),
+  ])
+  const pxChannels: readonly string[] = PX_CHANNELS
   for (const channel of writtenChannels(mark.encoding)) {
     if (!channels.has(channel)) {
       problems.push(
-        found(
-          'unread-channel',
-          `encoding.${channel}`,
-          `a ${type} does not read ${channel}`,
-        ),
+        !pxChannels.includes(channel)
+          ? found(
+              'unread-channel',
+              `encoding.${channel}`,
+              `a ${type} does not read ${channel}`,
+            )
+          : px
+            ? found(
+                'unread-channel',
+                `encoding.${channel}`,
+                `a ${type} reads its width from ${px}, not ${channel}`,
+              )
+            : found(
+                'unread-size',
+                `encoding.${channel}`,
+                `a ${type} draws no point, rule or line and strokes no link, so it reads no ${channel}`,
+              ),
       )
     }
   }
-  const size = mark.encoding?.size
-  if (!unwritten(size) && spec.size === undefined) {
-    problems.push(
-      found(
-        'unread-size',
-        'encoding.size',
-        `a ${type} draws no point, rule or line and strokes no link, so it reads no size`,
-      ),
-    )
-  } else if (spec.size === 'constant' && sizeFieldOf(size)) {
+  const width = px ? mark.encoding?.[px] : undefined
+  if (px && !typeReads(spec, px) && sizeFieldOf(width)) {
     problems.push(
       found(
         'unread-channel',
-        'encoding.size.field',
-        `a ${type} reads its size as a number, and only a link maps a field to it`,
+        `encoding.${px}.field`,
+        `a ${type} reads its ${px} as a number, and only a link maps a field to its stroke width`,
       ),
     )
   }
@@ -710,35 +739,36 @@ function ownProblems(
   )) {
     problems.push(found(rule, `encoding.color.${slot}`, message))
   }
-  if (
-    colorScaleOf(color) === 'threshold' &&
-    (color.domain ?? []).length === 0
-  ) {
+  const cuts = color.scale?.domain ?? []
+  if (colorScaleOf(color) === 'threshold' && cuts.length === 0) {
     problems.push(
       found(
         'threshold-no-cuts',
-        'encoding.color.domain',
+        'encoding.color.scale.domain',
         'a threshold names its cut points in domain, and with none every value paints the first color',
       ),
     )
   }
-  const cutCount = (color.domain ?? []).filter(cut =>
-    Number.isFinite(Number(cut)),
-  ).length
+  const cutCount = cuts.filter(cut => Number.isFinite(Number(cut))).length
   if (colorScaleOf(color) === 'threshold' && cutCount > MAX_THRESHOLD_CUTS) {
     problems.push(
       found(
         'threshold-cut-count',
-        'encoding.color.domain',
+        'encoding.color.scale.domain',
         `a threshold paints ${MAX_THRESHOLD_CUTS} cuts, and these ${cutCount} leave a value past the ${MAX_THRESHOLD_CUTS}th in the ${MAX_THRESHOLD_CUTS + 1}th color`,
       ),
     )
   }
-  problems.push(...shapeLabelProblems(mark.encoding?.shape))
+  problems.push(...shapeNameProblems(mark.encoding?.shape))
   problems.push(...constantAsFieldProblems(mark.encoding))
-  if (typeof size === 'object') {
-    for (const { rule, slot, message } of scaleEndProblems(size)) {
-      problems.push(found(rule, `encoding.size.${slot}`, message))
+  for (const channel of PX_CHANNELS) {
+    const written = mark.encoding?.[channel]
+    if (typeof written === 'object') {
+      for (const { rule, slot, message } of scaleEndProblems(
+        written.scale ?? {},
+      )) {
+        problems.push(found(rule, `encoding.${channel}.scale.${slot}`, message))
+      }
     }
   }
   const { minBpPerPx = 0, maxBpPerPx = 0 } = mark

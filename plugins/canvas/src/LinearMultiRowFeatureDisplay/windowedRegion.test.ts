@@ -52,7 +52,7 @@ function setup() {
   const { display, view } = createTestEnvironment({
     displayConfig: {
       rows: { field: 'transcript' },
-      color: { field: 'domain' },
+      encoding: { color: { field: 'domain' } },
     },
   }).createDisplay()
   const onScreen = Math.floor(view.pxToBp(100).coord0)

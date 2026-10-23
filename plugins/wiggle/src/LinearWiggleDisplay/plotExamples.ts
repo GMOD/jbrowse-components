@@ -1,10 +1,10 @@
 export const PLOT_EXAMPLES = [
   {
-    plot: '{ "color": { "field": "score", "scale": "threshold", "domain": [2], "range": ["#2166ac", "#b2182b"] } }',
+    plot: '{ "encoding": { "color": { "scale": { "type": "threshold", "domain": [2], "range": ["#2166ac", "#b2182b"] } } } }',
     description: 'blue below 2, red at or above it',
   },
   {
-    plot: '{ "color": { "field": "score", "scale": "linear", "scheme": "viridis" } }',
+    plot: '{ "encoding": { "color": { "scale": { "type": "linear", "scheme": "viridis" } } } }',
     description: 'viridis from the bottom of the axis to the top',
   },
   {
@@ -16,7 +16,7 @@ export const PLOT_EXAMPLES = [
     description: 'one row per subtrack, with the sidebar',
   },
   {
-    plot: '{ "rows": null, "color": null }',
+    plot: '{ "rows": null, "encoding": { "color": null } }',
     description: 'one shared plot, default color',
   },
 ]

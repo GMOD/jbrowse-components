@@ -144,9 +144,10 @@ it as MAF's `maxRowsHeight` does, so its rows stay legible.
 **Status:** Accepted.
 
 Every `rpcProps()` field is an RPC cache key, so a change fires
-`SettingsInvalidate` and every visible region refetches. `color.value`,
-`utrColor` and `connectorColor` are per-feature jexl callbacks only the worker
-can evaluate, so editing one re-downloads and re-parses every region. Theme
+`SettingsInvalidate` and every visible region refetches.
+`encoding.color.value`, `utrColor` and `connectorColor` are per-feature jexl
+callbacks only the worker can evaluate, so editing one re-downloads and
+re-parses every region. Theme
 colors leave as color classes and the color scale resolves on the main thread
 (ADR-167). `pickDisplayConfig` reads `WORKER_READS`, so a slot reaches the worker
 only by joining the type.

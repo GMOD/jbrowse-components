@@ -12,13 +12,14 @@ import {
 import { predicatesOf } from '@jbrowse/core/util/fieldPredicate'
 import {
   colorEncodingOf,
+  colorSnapshotOf,
   paintedColorEncoding,
   pairedColorsOf,
 } from '@jbrowse/display-kit/colorConfigSchema'
 import { facetSettingOf } from '@jbrowse/display-kit/facetConfigSchema'
 import { arrangeRows, bandRows } from '@jbrowse/tree-sidebar/arrangeRows'
 import { keptRows } from '@jbrowse/tree-sidebar/clusterUtils'
-import { liftRowColor } from '@jbrowse/tree-sidebar/rowColorChoice'
+import { rowColorSettingOf } from '@jbrowse/tree-sidebar/rowColorChoice'
 import {
   dealtValueColors,
   resolveRowColors,
@@ -92,7 +93,7 @@ export interface VariantTablesArgs {
   regions?: VariantRegion[]
   /**
    * The display's config as a track's `displays` entry writes it for a
-   * `LinearMultiSampleVariantDisplay`: `color`, `unit` (`'allele'` or
+   * `LinearMultiSampleVariantDisplay`: `encoding`, `unit` (`'allele'` or
    * `'haplotype'`), `filter` (a predicate list, `minorAlleleFrequency` and
    * `missingness` among its fields), `referenceDrawingMode`, `shadeByDosage`, the
    * arrangement `rows` and `facet` and the rest of its slots. Unset reads the
@@ -168,18 +169,10 @@ export async function variantTables(
     type: 'LinearMultiSampleVariantDisplay',
     displayId: 'tables',
   })
-  const colorSetting = {
-    value: readConfObject(conf.color, 'value'),
-    field: readConfObject(conf.color, 'field'),
-    scale: readConfObject(conf.color, 'scale'),
-    domain: readConfObject(conf.color, 'domain'),
-    range: readConfObject(conf.color, 'range'),
-    labels: readConfObject(conf.color, 'labels'),
-    title: readConfObject(conf.color, 'title'),
-  }
+  const colorSetting = colorSnapshotOf(conf.encoding.color)
   const encoding = colorEncodingOf(colorSetting)
   const slots: HeldSlots | undefined =
-    typeof encoding === 'object' && encoding.scale === 'categorical'
+    typeof encoding === 'object' && encoding.scale === 'ordinal'
       ? new Map()
       : undefined
   const cellHue = cellHueOf(
@@ -374,7 +367,8 @@ export async function variantTables(
     shadeByDosage: shade,
     color: encoding,
     colorSlots: slots,
-    colorTitle: withPreset(colorSetting, CATEGORICAL_FIELD_PRESETS).title,
+    colorTitle: withPreset(colorSetting, CATEGORICAL_FIELD_PRESETS).legend
+      .title,
   })
   return {
     variants,
@@ -719,19 +713,14 @@ function rowColorsOf(
   drawn: readonly ProcessedSource[],
   rowAlias: RowAlias,
 ) {
-  const setting = liftRowColor({
-    field: readConfObject(conf.rowColor, 'field'),
-    domain: readConfObject(conf.rowColor, 'domain'),
-    range: readConfObject(conf.rowColor, 'range'),
-    unknown: readConfObject(conf.rowColor, 'unknown'),
-  })
+  const setting = rowColorSettingOf(conf.rowColor)
   const dealt = dealtValueColors(setting, () => dealRows, false)
   const resolved = resolveRowColors(dealRows, setting.field, dealt, rowAlias)
   const attribute = setting.field === 'name' ? '' : setting.field
   const entries = attribute
     ? rowColorKeyEntries(
         dealRows,
-        { setting, pairs: pairedColorsOf(setting), dealt, resolved },
+        { setting, pairs: pairedColorsOf(setting.scale), dealt, resolved },
         name => name,
       )
     : []

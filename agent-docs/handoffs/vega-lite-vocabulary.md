@@ -1,6 +1,6 @@
 ---
 name: vega-lite-vocabulary
-description: "ADR-238's migration of every display's settings to Vega-Lite's words (predicate filter, channel object under encoding, mark, axis, legend: null, coord, data, render). Landed: the predicate compiler, every display's and view's filter, and the synteny views' mark. Open: the channel object, the band layers' thresholds, guides, layout and the writers, concept by concept across the app. Read before adding or renaming any display or view setting."
+description: "ADR-238's migration of every display's settings to Vega-Lite's words (predicate filter, channel object under encoding, mark, axis, legend: null, coord, data, render). Landed: the predicate compiler, every display's and view's filter, the synteny views' mark, and the color channel object (Pass A). Open: encoding.y (Pass B), the band layers' thresholds, guides, layout and the writers, concept by concept across the app. Read before adding or renaming any display or view setting."
 ---
 
 # Vega-Lite vocabulary: what is left
@@ -100,7 +100,26 @@ Move a concept everywhere in one pass, so it never has two spellings at once:
        quantile (ADR-240's table amended: no slot type holds `{ quantile }`,
        and `scale.quantile` reads as d3's `type: 'quantile'`). A bare string
        inside `encoding` is a field, as on the mark display.
-       **Pass A claimed 2026-10-22.**
+       **Pass A landed 2026-10-22.** Every display's color is
+       `encoding.color: { value, field, scale: {…}, legend: {…} }`, read
+       nested with no converter; `showLegend` is a display-wide
+       `legend.show`, the circular view's included; `ordinal` and `names`
+       replace `categorical` and `labels`; a missing value's color is
+       `scale.invalid`, and `scale.unknown` keeps d3's "not in the domain"
+       (ADR-240 amended); `baseColor` is `pileup.bases`,
+       `readConnections` has its own `encoding` with `strokeWidth`, the
+       ribbons a `ribbons.encoding.color` part, the synteny views' color
+       and opacity sit under the view's `encoding`, and stroked marks
+       take `strokeWidth`. Deprecated lifts (`liftFlatColor` and
+       `retiredDisplayColor` in display-kit's `retiredSettings.ts`, the
+       multi-sample variant display's `retired`, `liftViewColor` in
+       `liftSyntenyViewSettings.ts`) cover what hosted jb2hubs configs
+       write, and go once those configs regenerate (Writers below). Left
+       open: wiggle's v4 `posColor` and `negColor` config keys have no
+       lift, since `retired` lifts each key alone and the two fill one
+       `scale.range`; a `rowColor`, `MarkShape`, `opacity`, `size` or
+       `strokeWidth` written as a bare color name reads as a field, as it
+       did before the pass.
      - Step 0 landed as
        [ADR-241](../architecture-decision-records/adr-241-a-color-object-is-unset-a-value-or-a-field.md):
        a color object is unset, a `value` or a `field`, and the field a write
@@ -131,8 +150,10 @@ Move a concept everywhere in one pass, so it never has two spellings at once:
    `coverage.alleles`, `coverage.interbase` and the modification layer, each
    into its layer's `filter` (ADR-238 "Layers inside a part"), percents
    becoming fractions.
-3. **Legends, with step 1**: Vega-Lite gives each channel its own `legend`,
-   so `legend.show` on the channel takes over every display's `showLegend`.
+3. **Legends, with step 1**: Vega-Lite gives each channel its own `legend`.
+   Pass A moved every display's `showLegend` to a display-wide `legend.show`
+   and each channel's `title` and `descending` under its `legend`; a
+   channel's own `legend.show` waits on ADR-240's open call 1.
 4. **Wiggle's `resolution` and Hi-C's `resolutionBias`** under `data`, each
    in its own units (ADR-238's amendment); the comparative `lodMode` is done.
    Settle one direction in the same pass: wiggle's `resolution` grows finer,
@@ -182,6 +203,15 @@ Move a concept everywhere in one pass, so it never has two spellings at once:
   `autoplot` take the layer `show` parts. Its published `dog10k_lof` page
   still shows `domain` until a re-knit, which waits on the Dog10K callset
   host's certificate.
+- **ggjbrowse, jb2hubs and the graph plugin after Pass A:** ggjbrowse's docs
+  and examples spell `color` flat (`display = list(color =
+  list(field = "strand"))`, `R/alignments.R`, `R/synteny.R`); jb2hubs writes a
+  display's flat `color` (`hubtools/src/fieldColor.ts`), the multi-sample
+  variant display's (`pangenomeLinks.ts`), a mark color's
+  `scale: 'categorical'` (`alfaPopulations.ts`) and the synteny view's
+  `color` (`orthologSearchUtils.ts`); the graph plugin's
+  `LinearGraphDisplay` keeps its own `color`. Respell each, then drop the
+  deprecated lifts the Pass A bullet names.
 - **jb2hubs:** its row orders write `sort` beside `domain` (`rowOrder.ts`,
   `repeatClassDisplay.ts`), `domain` for the released hosts and Desktop
   installs that predate `sort`. Display-kit's `retiredOrderSpelling` stays

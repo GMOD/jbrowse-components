@@ -95,13 +95,13 @@ the load and names the slot.
 
 A CSS color: a hex string (`#f00`), an `rgb()`/`rgba()` or `hsl()` value, a
 named color, or a BED color triple (`255,0,0`). The empty string `""` means no
-color, as in a `rowColor.unknown` that gives unlisted rows none. Many color
-slots also accept a [`jexl:` callback](/docs/config_guides/jexl) for
+color, as in a `rowColor.scale.unknown` that gives unlisted rows none. Many
+color slots also accept a [`jexl:` callback](/docs/config_guides/jexl) for
 [per-feature coloring](/docs/config_guides/customizing_feature_colors).
 
 ## colorArray
 
-A list of CSS colors, e.g. a color scale's `range`. An entry that is not a
+A list of CSS colors, e.g. a color's `scale.range`. An entry that is not a
 color, the empty string included, fails the load and names the slot.
 
 ## frozen
@@ -123,7 +123,7 @@ the prefix accepts, plus one more state: **unset**.
 An unset slot holds no value, so the display decides what to do from the data in
 front of it. Unset differs from every value the slot could hold, including one
 that looks like the display's usual choice. A `maybeString` left unset is
-therefore not the empty string: a color key's `title` keeps the display's own
+therefore not the empty string: a color's `legend.title` keeps the display's own
 heading while unset, and `""` is a key with no heading.
 
 ## See also

@@ -3,29 +3,19 @@ import { colorScaleIsEmpty, legendSpecOf } from '@jbrowse/core/ui/colorScale'
 import { toggleItem } from '@jbrowse/core/ui/menuItems'
 import { types } from '@jbrowse/mobx-state-tree'
 
+import type { legendConfigSchema } from './legendConfigSchema.ts'
 import type { ConfigModelForFields } from '@jbrowse/core/configuration'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { LegendSpec } from '@jbrowse/core/ui/legendSpec'
 import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 
 /**
- * The slot this mixin reads, restated rather than moved into a shared field
- * table: the composing schemas disagree about the default (off for a Hi-C
- * color scale, on for a variant genotype key) and each describes a different
- * legend. Only the type is common, and typing it is all the cast needs.
- *
- * A runtime value rather than a bare type so `RestatedMixinSlots.test.ts` in
- * jbrowse-web can compare it against the real declarations — a restatement
- * nothing compares to the thing it restates is a copy, and copies drift.
+ * The whole of what `LegendMixin` needs a composing display to be: a `legend`
+ * declared as `legendConfigSchema` or `hiddenLegendConfigSchema`.
  */
-export const legendMixinSlots = {
-  showLegend: { type: 'boolean', defaultValue: false },
-} as const
-
-type LegendConfigModel = ConfigModelForFields<typeof legendMixinSlots>
-
-/** The whole of what `LegendMixin` needs a composing display to be. */
-export type LegendConfHost = { configuration: LegendConfigModel }
+export interface LegendConfHost {
+  configuration: ConfigModelForFields<{ legend: typeof legendConfigSchema }>
+}
 
 // The mixin's own `self` is the model it declares, so it cannot see the
 // `configuration` the concrete display supplies — every display composing this
@@ -40,14 +30,13 @@ function shownLegendSpec(scales: ColorScale[], dismissed: string[]) {
 /**
  * #stateModel LegendMixin
  * #category display
- * #crossCuttingMixin The legend, whole. A display declares the color scales it paints with (`colorScales`, a getter hook, and `colorScalesIn` where they follow the theme) and the mixin derives the key from them (`legendSpec`, and `legendSpecIn` for the SVG export, through `legendSpecOf`), keeps the `showLegend` slot's getter and setter, dismisses sections one at a time (`dismissLegendSection`, undone by re-showing the legend), and answers whether there is a key to offer (`hasLegendKey`). `DisplayChrome` draws the on-screen key and the exporting view the exported one, in a gutter right of the plot, so a display places neither
+ * #crossCuttingMixin The legend, whole. A display declares the color scales it paints with (`colorScales`, a getter hook, and `colorScalesIn` where they follow the theme) and the mixin derives the key from them (`legendSpec`, and `legendSpecIn` for the SVG export, through `legendSpecOf`), keeps the `legend.show` slot's getter and setter (`showLegend`, `setShowLegend`), dismisses sections one at a time (`dismissLegendSection`, undone by re-showing the legend), and answers whether there is a key to offer (`hasLegendKey`). `DisplayChrome` draws the on-screen key and the exporting view the exported one, in a gutter right of the plot, so a display places neither
  *
  * A key derived from the scales the painter resolves colors through lists only
  * colors that were painted. A legend hand-built from a second copy of the rules
- * can list a color nothing painted. The config slot stays per display: the
- * composing schemas default it differently (a Hi-C color scale is off by
- * default, a variant genotype key on) and describe different legends, so
- * this mixin supplies the accessors over the slot and never the slot.
+ * can list a color nothing painted. Each display declares the `legend` slot,
+ * `legendConfigSchema` or `hiddenLegendConfigSchema` by its default, so this
+ * mixin supplies the accessors over it and never the slot.
  */
 export default function LegendMixin() {
   return types
@@ -56,7 +45,7 @@ export default function LegendMixin() {
       /**
        * #volatile
        * Ids of the scales whose section the reader closed; cleared
-       * when the whole legend is shown again. Volatile where `showLegend` is
+       * when the whole legend is shown again. Volatile where `legend.show` is
        * config: which sections a reader collapsed in one sitting is not how
        * the track is configured.
        */
@@ -68,7 +57,7 @@ export default function LegendMixin() {
        * Whether the legend is drawn.
        */
       get showLegend(): boolean {
-        return getConf(confNode(self), 'showLegend')
+        return getConf(confNode(self), ['legend', 'show'])
       },
       /**
        * #getter
@@ -139,7 +128,7 @@ export default function LegendMixin() {
        * closed inside it.
        */
       setShowLegend(arg: boolean) {
-        setConf(confNode(self), 'showLegend', arg)
+        setConf(confNode(self), ['legend', 'show'], arg)
         if (arg) {
           self.dismissedLegendSections = []
         }

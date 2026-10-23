@@ -497,9 +497,9 @@ for trackId, name in names.items():
             # r2 rather than D': see the r2-vs-D' ratio columns in the probe
             # table. D' is brighter inside the span but also tints the
             # background, so r2 delineates the block far more sharply.
-            'color': {'field': 'r2'},
+            'encoding': {'color': 'r2'},
             'variantLayout': 'genomic',
-            'showLegend': True,
+            'legend': {'show': True},
             'height': 360,
         }],
     })

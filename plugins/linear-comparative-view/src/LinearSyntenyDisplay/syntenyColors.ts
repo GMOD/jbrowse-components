@@ -97,7 +97,7 @@ export function computeSyntenyColors({
   // the view's `color.value`: what the match blocks paint under the default
   // mode in place of the red, when set
   valueColor?: string
-  // the view's `opacity`, whose field fades each ribbon and its indels
+  // the view's `encoding.opacity`, whose field fades each ribbon and its indels
   opacity?: SyntenyOpacitySnapshot
   // `axis.grid`, a color decision since the geometry always carries the ticks.
   // A tick is the ruler continued through its ribbon, so no scheme paints it,
@@ -115,7 +115,7 @@ export function computeSyntenyColors({
   filter?: readonly FieldPredicate[]
   filterExtras?: FilterExtras
   hiddenFeatures?: ReadonlySet<number>
-  // what the view's `color` declares over a field's own scale
+  // what the view's `encoding.color.scale` declares over a field's own scale
   paint?: SyntenyColorPaint
 }) {
   const { kinds, instanceFeatureIdx, instanceCount } = instanceData

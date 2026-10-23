@@ -141,7 +141,12 @@ test.each([
   ['CRAM', CRAM],
   [
     'modBAM',
-    { ...METHYLATED, display: { baseColor: { field: 'modifications' } } },
+    {
+      ...METHYLATED,
+      display: {
+        pileup: { bases: { show: true, encoding: { color: 'modifications' } } },
+      },
+    },
   ],
 ])(
   'the bundle answers a %s as the engine does, in a bare host',

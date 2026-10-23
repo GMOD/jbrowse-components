@@ -9,7 +9,7 @@ import type { DotplotViewCommands } from './types.ts'
 // where a built track snapshot is state. `highlight` is a launch key only: the
 // entries land on the session's list.
 //
-// Everything else a spec can write is a declared property: `color`, `opacity`,
+// Everything else a spec can write is a declared property: `encoding`,
 // `filter`, `data`, … . MST restores those natively, so none of
 // them is a launch key. The older spellings the view's own preProcessSnapshot
 // converts pass through.

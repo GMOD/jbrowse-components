@@ -97,21 +97,29 @@ export function mergeDisplayDefaults({
   const fromJson = displayDefaults
     ? parseJsonFlag(displayDefaults, '--displayDefaults')
     : {}
+  const existing = (configObj?.displayDefaults ?? {}) as Record<string, unknown>
   const typed: Record<string, unknown> = {}
-  if (color !== undefined) {
-    typed.color = color
-  }
   if (height !== undefined) {
     const asNumber = Number(height)
     typed.height = Number.isNaN(asNumber) ? height : asNumber
   }
-  const existing = (configObj?.displayDefaults ?? {}) as Record<string, unknown>
   const merged = deepMerge(deepMerge(existing, fromJson), typed)
+  // the constant replaces the color whole, a field written before it included
+  if (color !== undefined) {
+    merged.encoding = { ...encodingOf(merged), color: { value: color } }
+  }
   if (Object.keys(merged).length === 0) {
     return undefined
   }
   checkDisplayDefaultKeys(merged, trackType)
   return merged
+}
+
+function encodingOf(settings: Record<string, unknown>) {
+  const { encoding } = settings
+  return encoding && typeof encoding === 'object'
+    ? (encoding as Record<string, unknown>)
+    : {}
 }
 
 // An unknown track type accepts everything: it is a plugin's, and this manifest

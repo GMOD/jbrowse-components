@@ -17,6 +17,7 @@ import type { TreeLayoutModel } from './SetColorDialog.tsx'
 
 interface Src {
   name: string
+  label?: string
   color?: string
   rowColor?: string
   group?: string
@@ -32,12 +33,14 @@ function previewOf(rows: Src[], paletteDeals: boolean) {
   return (snapshot: RowColorSnapshot) => {
     const setting = liftRowColor(snapshot)
     const colors = new Map<string, string>()
-    setting.domain.forEach((value, i) => colors.set(value, setting.range[i]!))
+    setting.scale.domain.forEach((value, i) =>
+      colors.set(value, setting.scale.range[i]!),
+    )
     const deals =
-      setting.unknown !== '' &&
+      setting.scale.unknown !== '' &&
       (setting.field !== 'name' ||
         paletteDeals ||
-        setting.unknown !== undefined)
+        setting.scale.unknown !== undefined)
     let next = 0
     for (const row of rows) {
       const value =
@@ -45,14 +48,20 @@ function previewOf(rows: Src[], paletteDeals: boolean) {
           ? row.name
           : String((row as unknown as Record<string, unknown>)[setting.field])
       if (deals && !colors.has(value)) {
-        colors.set(value, setting.unknown ?? PALETTE[next++ % PALETTE.length]!)
+        colors.set(
+          value,
+          setting.scale.unknown ?? PALETTE[next++ % PALETTE.length]!,
+        )
       }
     }
     return colors
   }
 }
 
-const EMPTY: RowColorSetting = { field: 'name', domain: [], range: [] }
+const EMPTY: RowColorSetting = {
+  field: 'name',
+  scale: { domain: [], range: [] },
+}
 
 interface FakeOptions extends Partial<TreeLayoutModel<Src>> {
   rowColorSetting?: RowColorSetting
@@ -191,8 +200,7 @@ describe('Each row', () => {
 
     expect(submitted(model)[1]).toEqual({
       field: 'name',
-      domain: ['b'],
-      range: ['rgb(0, 255, 0)'],
+      scale: { domain: ['b'], range: ['rgb(0, 255, 0)'] },
     })
   })
 
@@ -200,9 +208,7 @@ describe('Each row', () => {
     const model = fakeModel({
       rowColorSetting: {
         field: 'name',
-        domain: ['a'],
-        range: ['#f00'],
-        unknown: '#cccccc',
+        scale: { domain: ['a'], range: ['#f00'], unknown: '#cccccc' },
       },
     })
     setup(model)
@@ -210,7 +216,10 @@ describe('Each row', () => {
     fireEvent.click(screen.getByText('Clear row colors'))
     fireEvent.click(screen.getByText('Submit'))
 
-    expect(submitted(model)[1]).toEqual({ field: 'name', unknown: '#cccccc' })
+    expect(submitted(model)[1]).toEqual({
+      field: 'name',
+      scale: { unknown: '#cccccc' },
+    })
   })
 
   test('Other none leaves the rows no pick names uncolored', () => {
@@ -223,9 +232,7 @@ describe('Each row', () => {
 
     expect(submitted(model)[1]).toEqual({
       field: 'name',
-      domain: ['b'],
-      range: ['rgb(0, 255, 0)'],
-      unknown: '',
+      scale: { domain: ['b'], range: ['rgb(0, 255, 0)'], unknown: '' },
     })
   })
 
@@ -245,8 +252,7 @@ describe('Each row', () => {
 
     expect(submitted(model)[1]).toEqual({
       field: 'name',
-      domain: ['b'],
-      range: ['rgb(0, 255, 0)'],
+      scale: { domain: ['b'], range: ['rgb(0, 255, 0)'] },
     })
   })
 
@@ -255,7 +261,7 @@ describe('Each row', () => {
     setup(model)
 
     fireEvent.click(screen.getByText('Bulk row editor'))
-    fireEvent.change(screen.getByPlaceholderText(/^name,rowColor/), {
+    fireEvent.change(screen.getByPlaceholderText(/^name,label,rowColor/), {
       target: { value: 'name,rowColor\nb,#00ff00\na,reddish' },
     })
     fireEvent.click(screen.getByRole('button', { name: 'Update rows' }))
@@ -264,8 +270,7 @@ describe('Each row', () => {
 
     expect(submitted(model)[1]).toEqual({
       field: 'name',
-      domain: ['b'],
-      range: ['#00ff00'],
+      scale: { domain: ['b'], range: ['#00ff00'] },
     })
   })
 })
@@ -274,13 +279,16 @@ describe('Each row', () => {
 // drops that pick.
 test('a pasted color column replaces the picks', () => {
   const model = fakeModel({
-    rowColorSetting: { field: 'name', domain: ['a'], range: ['#f00'] },
+    rowColorSetting: {
+      field: 'name',
+      scale: { domain: ['a'], range: ['#f00'] },
+    },
     rowPaletteDeals: false,
   })
   setup(model)
 
   fireEvent.click(screen.getByText('Bulk row editor'))
-  fireEvent.change(screen.getByPlaceholderText(/^name,rowColor/), {
+  fireEvent.change(screen.getByPlaceholderText(/^name,label,rowColor/), {
     target: { value: 'name,rowColor\na,\nb,#00ff00' },
   })
   fireEvent.click(screen.getByRole('button', { name: 'Update rows' }))
@@ -288,9 +296,62 @@ test('a pasted color column replaces the picks', () => {
 
   expect(submitted(model)[1]).toEqual({
     field: 'name',
-    domain: ['b'],
-    range: ['#00ff00'],
+    scale: { domain: ['b'], range: ['#00ff00'] },
   })
+})
+
+function paste(text: string) {
+  fireEvent.click(screen.getByText('Bulk row editor'))
+  fireEvent.change(screen.getByPlaceholderText(/^name,label,rowColor/), {
+    target: { value: text },
+  })
+}
+
+test('a paste keeps the picks of rows it does not name', () => {
+  const model = fakeModel({
+    rowColorSetting: {
+      field: 'name',
+      scale: { domain: ['a', 'unshown'], range: ['#f00', '#0f0'] },
+    },
+    rowPaletteDeals: false,
+  })
+  setup(model)
+  paste('name,label\nb,Bee')
+  fireEvent.click(screen.getByRole('button', { name: 'Update rows' }))
+  fireEvent.click(screen.getByText('Submit'))
+
+  const [rows, rowColor] = submitted(model)
+  expect(rows.find(row => row.name === 'b')?.label).toBe('Bee')
+  expect(rowColor).toBeUndefined()
+})
+
+test('a label paste leaves an attribute coloring chosen', () => {
+  const model = fakeModel({
+    editableSources: GROUPED,
+    rowColorFields: ['group'],
+    rowColorSetting: { field: 'group', scale: { domain: [], range: [] } },
+    baseRowColor: {
+      field: 'name',
+      scale: { domain: ['unshown'], range: ['#0f0'] },
+    },
+  })
+  setup(model)
+  paste('name,label\na,Ay')
+  fireEvent.click(screen.getByRole('button', { name: 'Update rows' }))
+  fireEvent.click(screen.getByText('Submit'))
+
+  expect(submitted(model)[1]).toBeUndefined()
+})
+
+test('a pasted column the dialog does not write warns and changes nothing', () => {
+  const model = fakeModel({ editableSources: GROUPED })
+  setup(model)
+  paste('name,group\na,g2')
+  expect(screen.getByText(/changes to group will be ignored/)).toBeVisible()
+  fireEvent.click(screen.getByRole('button', { name: 'Update rows' }))
+  fireEvent.click(screen.getByText('Submit'))
+
+  expect(submitted(model)[0].find(row => row.name === 'a')?.group).toBe('g1')
 })
 
 describe('colored by an attribute', () => {
@@ -300,8 +361,7 @@ describe('colored by an attribute', () => {
       rowColorFields: ['group'],
       rowColorSetting: {
         field: 'group',
-        domain: ['g2'],
-        range: ['#abcdef'],
+        scale: { domain: ['g2'], range: ['#abcdef'] },
       },
     })
 
@@ -341,8 +401,7 @@ describe('colored by an attribute', () => {
     fireEvent.click(screen.getByText('Submit'))
     expect(submitted(model)[1]).toEqual({
       field: 'group',
-      domain: ['g2'],
-      range: ['rgb(0, 255, 0)'],
+      scale: { domain: ['g2'], range: ['rgb(0, 255, 0)'] },
     })
   })
 
@@ -362,7 +421,10 @@ describe('colored by an attribute', () => {
     choose('None')
     fireEvent.click(screen.getByText('Submit'))
 
-    expect(submitted(model)[1]).toEqual({ field: 'name', unknown: '' })
+    expect(submitted(model)[1]).toEqual({
+      field: 'name',
+      scale: { unknown: '' },
+    })
   })
 
   test('Clear keeps the Other color the config sets', () => {
@@ -371,9 +433,7 @@ describe('colored by an attribute', () => {
       rowColorFields: ['group'],
       rowColorSetting: {
         field: 'group',
-        domain: ['g2'],
-        range: ['#abcdef'],
-        unknown: '',
+        scale: { domain: ['g2'], range: ['#abcdef'], unknown: '' },
       },
     })
     setup(model)
@@ -381,7 +441,10 @@ describe('colored by an attribute', () => {
     fireEvent.click(screen.getByText('Clear Group colors'))
     fireEvent.click(screen.getByText('Submit'))
 
-    expect(submitted(model)[1]).toEqual({ field: 'group', unknown: '' })
+    expect(submitted(model)[1]).toEqual({
+      field: 'group',
+      scale: { unknown: '' },
+    })
   })
 })
 
@@ -390,7 +453,7 @@ describe('None', () => {
     setup(
       fakeModel({
         editableSources: [{ name: 'a', color: '#00ff00' }, { name: 'b' }],
-        rowColorSetting: { ...EMPTY, unknown: '' },
+        rowColorSetting: { ...EMPTY, scale: { ...EMPTY.scale, unknown: '' } },
       }),
     )
     expect(pressed('None')).toBe('true')
@@ -423,12 +486,10 @@ describe('the colors a choice starts from', () => {
     fakeModel({
       editableSources: GROUPED,
       rowColorFields: ['group'],
-      rowColorSetting: { ...EMPTY, unknown: '' },
+      rowColorSetting: { ...EMPTY, scale: { ...EMPTY.scale, unknown: '' } },
       baseRowColor: {
         field: 'group',
-        domain: ['g2'],
-        range: ['#abcdef'],
-        unknown: '#cccccc',
+        scale: { domain: ['g2'], range: ['#abcdef'], unknown: '#cccccc' },
       },
     })
 
@@ -446,9 +507,7 @@ describe('the colors a choice starts from', () => {
 
     expect(submitted(model)[1]).toEqual({
       field: 'group',
-      domain: ['g2'],
-      range: ['#abcdef'],
-      unknown: '#cccccc',
+      scale: { domain: ['g2'], range: ['#abcdef'], unknown: '#cccccc' },
     })
   })
 
@@ -469,9 +528,11 @@ describe('the colors a choice starts from', () => {
 
     expect(submitted(model)[1]).toEqual({
       field: 'group',
-      domain: ['g2', 'g1'],
-      range: ['#abcdef', 'rgb(0, 255, 0)'],
-      unknown: '#cccccc',
+      scale: {
+        domain: ['g2', 'g1'],
+        range: ['#abcdef', 'rgb(0, 255, 0)'],
+        unknown: '#cccccc',
+      },
     })
   })
 })
@@ -624,9 +685,7 @@ describe('the Other rows swatch on a stacked display', () => {
     fakeModel({
       rowColorSetting: {
         field: 'name',
-        domain: ['a'],
-        range: ['#f00'],
-        unknown: '#cccccc',
+        scale: { domain: ['a'], range: ['#f00'], unknown: '#cccccc' },
       },
       rowPaletteDeals: false,
     })
@@ -645,9 +704,11 @@ describe('the Other rows swatch on a stacked display', () => {
 
     expect(submitted(model)[1]).toEqual({
       field: 'name',
-      domain: ['a', 'b'],
-      range: ['#f00', 'rgb(0, 255, 0)'],
-      unknown: '#cccccc',
+      scale: {
+        domain: ['a', 'b'],
+        range: ['#f00', 'rgb(0, 255, 0)'],
+        unknown: '#cccccc',
+      },
     })
   })
 
@@ -660,9 +721,7 @@ describe('the Other rows swatch on a stacked display', () => {
     fireEvent.click(screen.getByText('Submit'))
     expect(submitted(model)[1]).toEqual({
       field: 'name',
-      domain: ['a'],
-      range: ['#f00'],
-      unknown: 'rgb(0, 0, 255)',
+      scale: { domain: ['a'], range: ['#f00'], unknown: 'rgb(0, 0, 255)' },
     })
   })
 
@@ -675,8 +734,7 @@ describe('the Other rows swatch on a stacked display', () => {
 
     expect(submitted(model)[1]).toEqual({
       field: 'name',
-      domain: ['a'],
-      range: ['#f00'],
+      scale: { domain: ['a'], range: ['#f00'] },
     })
   })
 })
@@ -687,8 +745,7 @@ test('an attribute lists Other values with the rows no pair names, and colors th
     rowColorFields: ['group'],
     rowColorSetting: {
       field: 'group',
-      domain: ['g2'],
-      range: ['#abcdef'],
+      scale: { domain: ['g2'], range: ['#abcdef'] },
     },
   })
   setup(model)
@@ -701,9 +758,11 @@ test('an attribute lists Other values with the rows no pair names, and colors th
 
   expect(submitted(model)[1]).toEqual({
     field: 'group',
-    domain: ['g2'],
-    range: ['#abcdef'],
-    unknown: 'rgb(153, 153, 153)',
+    scale: {
+      domain: ['g2'],
+      range: ['#abcdef'],
+      unknown: 'rgb(153, 153, 153)',
+    },
   })
 })
 
@@ -718,8 +777,7 @@ test('the value table lists the values in the order the key does', () => {
     rowColorFields: ['group'],
     rowColorSetting: {
       field: 'group',
-      domain: ['g2'],
-      range: ['#abcdef'],
+      scale: { domain: ['g2'], range: ['#abcdef'] },
     },
   })
   setup(model)
@@ -738,8 +796,7 @@ describe('the Other values swatch', () => {
       rowColorFields: ['group'],
       rowColorSetting: {
         field: 'group',
-        domain: ['g2'],
-        range: ['#abcdef'],
+        scale: { domain: ['g2'], range: ['#abcdef'] },
       },
       rowPaletteDeals: false,
     })
@@ -805,9 +862,7 @@ describe('the Other values swatch', () => {
 
     expect(submitted(model)[1]).toEqual({
       field: 'group',
-      domain: ['g2'],
-      range: ['#abcdef'],
-      unknown: '',
+      scale: { domain: ['g2'], range: ['#abcdef'], unknown: '' },
     })
   })
 
@@ -817,9 +872,7 @@ describe('the Other values swatch', () => {
       rowColorFields: ['group'],
       rowColorSetting: {
         field: 'group',
-        domain: [],
-        range: [],
-        unknown: '',
+        scale: { domain: [], range: [], unknown: '' },
       },
     })
     setup(model)

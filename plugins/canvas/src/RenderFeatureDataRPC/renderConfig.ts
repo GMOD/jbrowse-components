@@ -55,11 +55,15 @@ export function workerColorOf({
   value,
   field,
   scale,
-}: Partial<Pick<ColorSetting, 'value' | 'field' | 'scale'>>): WorkerColor {
+}: {
+  value?: ColorSetting['value']
+  field?: string
+  scale?: { type?: string }
+}): WorkerColor {
   return {
     value,
     field: field ?? '',
-    ...(scale === IDENTITY_SCALE ? { itemRgbOn: true } : {}),
+    ...(scale?.type === IDENTITY_SCALE ? { itemRgbOn: true } : {}),
   }
 }
 
@@ -192,6 +196,7 @@ export function pickDisplayConfig(snapshot: Record<string, unknown>) {
   for (const key of DISPLAY_CONFIG_KEYS) {
     picked[key] = source[key]
   }
-  picked.color = workerColorOf(source.color ?? {})
+  const encoding = source.encoding as { color?: object } | undefined
+  picked.color = workerColorOf(encoding?.color ?? {})
   return picked as unknown as SettingsDisplayConfig
 }

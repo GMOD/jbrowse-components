@@ -187,8 +187,8 @@ annotation, add one per genome from a bgzipped, tabix-indexed GFF3
 One `SyntenyTrack` names every assembly, and `blockAssemblies` and
 `bedLocations` hold one entry per table column, in the order the helper printed.
 In [grammar-of-graphics](/docs/config_guides/mark_display) terms, the display's
-`color` is a color scale, and `{ "field": "cluster" }` maps each gene's ortholog
-group, named by its gene symbol, to a color:
+`encoding.color` is a color scale, and the `cluster` field maps each gene's
+ortholog group, named by its gene symbol, to a color:
 
 - A conserved gene is one color down the whole stack, and a lane missing it
   breaks the column.
@@ -238,7 +238,7 @@ group, named by its gene symbol, to a color:
   "displays": [
     {
       "type": "MultiWaySyntenyDisplay",
-      "color": { "field": "cluster" }
+      "encoding": { "color": "cluster" }
     }
   ]
 }
@@ -267,7 +267,7 @@ orientation. The session below opens the _TP53_ neighbourhood:
           {
             "trackId": "primate_orthologs",
             "type": "MultiWaySyntenyDisplay",
-            "ribbonColor": { "field": "strand" },
+            "ribbons": { "encoding": { "color": "strand" } },
             "height": 620
           }
         ]

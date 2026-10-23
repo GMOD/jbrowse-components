@@ -10,6 +10,7 @@ import {
   colorByOf,
   writtenReadCategoryColors,
 } from '../shared/alignmentsColor.ts'
+import { colorSettingOf } from '../shared/colorSettingFixture.ts'
 import { getReadDisplayLegendItems } from '../shared/legendUtils.ts'
 import {
   READ_COLOR_CATEGORY,
@@ -26,27 +27,14 @@ import {
 import { makeTestRenderState } from './testUtils.ts'
 
 import type { ColorPalette } from '../shaders/colors.ts'
-import type { AlignmentsColorSetting } from '../shared/alignmentsColor.ts'
 import type { ReadColorCategory, SwatchCategory } from './colorUtils.ts'
+import type { ColorSlots } from '@jbrowse/core/util/colorScale'
 
-const UNSET: AlignmentsColorSetting = {
-  value: undefined,
-  field: '',
-  scale: undefined,
-  domain: [],
-  range: [],
-  scheme: undefined,
-  reverse: false,
-  domainMin: undefined,
-  domainMax: undefined,
-  domainMid: undefined,
-}
-
-function paletteFor(color: Partial<AlignmentsColorSetting>) {
-  const setting = { ...UNSET, ...color }
+function paletteFor(color: ColorSlots) {
+  const setting = colorSettingOf(color)
   return buildColorPaletteFromPalette(resolvePalette({}), {
     declared: writtenReadCategoryColors(
-      setting.value,
+      setting,
       alignmentsColorEncoding(setting),
     ),
   })
@@ -88,8 +76,7 @@ function everyPathPaints(palette: ColorPalette, category: SwatchCategory) {
 describe('a declared range on a preset field', () => {
   const palette = paletteFor({
     field: 'pairOrientation',
-    domain: ['RR'],
-    range: ['#d95f02'],
+    scale: { domain: ['RR'], range: ['#d95f02'] },
   })
 
   test('paints RR its color and leaves LR at its default on every backend', () => {
@@ -104,8 +91,7 @@ describe('a declared range on a preset field', () => {
   test("an LR override reaches the arc band's baseline under pair orientation only", () => {
     const lr = paletteFor({
       field: 'pairOrientation',
-      domain: ['LR'],
-      range: ['#1b9e77'],
+      scale: { domain: ['LR'], range: ['#1b9e77'] },
     })
     const baseline = (field: 'pairOrientation' | 'insertSize') =>
       rgb255(buildArcColorPalette(lr, field)[0]!)
@@ -131,34 +117,41 @@ describe('a declared range on a preset field', () => {
 test('an orientation field names its mate and chain levels', () => {
   const palette = paletteFor({
     field: 'pairOrientation',
-    domain: ['interchrom', 'unmappedMate', 'splitInverted', 'segmentInverted'],
-    range: ['#ff0000', '#00ff00', '#0000ff', '#ffff00'],
+    scale: {
+      domain: [
+        'interchrom',
+        'unmappedMate',
+        'splitInverted',
+        'segmentInverted',
+      ],
+      range: ['#ff0000', '#00ff00', '#0000ff', '#ffff00'],
+    },
   })
   expect(everyPathPaints(palette, 'interchrom')[0]).toBe('rgb(255,0,0)')
   expect(everyPathPaints(palette, 'unmappedMate')[0]).toBe('rgb(0,255,0)')
   expect(everyPathPaints(palette, 'splitInversion')[0]).toBe('rgb(0,0,255)')
   expect(everyPathPaints(palette, 'revStrand')[0]).toBe('rgb(255,255,0)')
   expect(
-    alignmentsColorProblems({
-      ...UNSET,
-      field: 'insertSizeAndOrientation',
-      scale: 'categorical',
-      domain: ['interchrom', 'splitSameStrand'],
-    }),
+    alignmentsColorProblems(
+      colorSettingOf({
+        field: 'insertSizeAndOrientation',
+        scale: { type: 'ordinal', domain: ['interchrom', 'splitSameStrand'] },
+      }),
+    ),
   ).toEqual([])
 })
 
 describe('the five levels that share the neutral default', () => {
-  const LEVELS: [Partial<AlignmentsColorSetting>, SwatchCategory][] = [
-    [{ field: 'pairOrientation', domain: ['LR'] }, 'pairLR'],
-    [{ field: 'pairOrientation', domain: [''] }, 'noOrientation'],
+  const LEVELS: [ColorSlots, SwatchCategory][] = [
+    [{ field: 'pairOrientation', scale: { domain: ['LR'] } }, 'pairLR'],
+    [{ field: 'pairOrientation', scale: { domain: [''] } }, 'noOrientation'],
     [
-      { field: 'insertSize', scale: 'categorical', domain: ['normal'] },
+      { field: 'insertSize', scale: { type: 'ordinal', domain: ['normal'] } },
       'normalInsert',
     ],
-    [{ field: 'tags.HP', domain: [''] }, 'noTagValue'],
+    [{ field: 'tags.HP', scale: { domain: [''] } }, 'noTagValue'],
     [
-      { field: 'mapq', scale: 'categorical', domain: ['255'] },
+      { field: 'mapq', scale: { type: 'ordinal', domain: ['255'] } },
       'mapqUnavailable',
     ],
   ]
@@ -171,7 +164,10 @@ describe('the five levels that share the neutral default', () => {
   })
 
   test.each(LEVELS)('%o overrides %s alone', (color, category) => {
-    const palette = paletteFor({ ...color, range: ['#1b9e77'] })
+    const palette = paletteFor({
+      ...color,
+      scale: { ...color.scale, range: ['#1b9e77'] },
+    })
     for (const [, other] of LEVELS) {
       expect([other, everyPathPaints(palette, other)]).toEqual([
         other,
@@ -183,7 +179,7 @@ describe('the five levels that share the neutral default', () => {
   test('a threshold range over insert size colors the three bins', () => {
     const palette = paletteFor({
       field: 'insertSize',
-      range: ['#000000', '#888888', '#ffffff'],
+      scale: { range: ['#000000', '#888888', '#ffffff'] },
     })
     expect(
       (['shortInsert', 'normalInsert', 'longInsert'] as const).map(c =>
@@ -195,8 +191,8 @@ describe('the five levels that share the neutral default', () => {
 
 describe('a domain that names no level says so', () => {
   // the schema's rules, then the reads' own, as the display's notice lists them
-  const notices = (color: Partial<AlignmentsColorSetting>) => {
-    const setting = { ...UNSET, ...color }
+  const notices = (color: ColorSlots) => {
+    const setting = colorSettingOf(color)
     return [
       ...colorNotices(setting, ALIGNMENTS_FIELD_PRESETS),
       ...alignmentsColorProblems(setting),
@@ -205,24 +201,30 @@ describe('a domain that names no level says so', () => {
 
   test("strand's levels are 1 and -1, so '+' names none", () => {
     expect(
-      notices({ field: 'strand', domain: ['+', '-'], range: ['#f00', '#00f'] }),
+      notices({
+        field: 'strand',
+        scale: { domain: ['+', '-'], range: ['#f00', '#00f'] },
+      }),
     ).toEqual([
-      'color.domain: "+" names no level of strand, whose levels are 1, -1',
-      'color.domain: "-" names no level of strand, whose levels are 1, -1',
+      'encoding.color.scale.domain: "+" names no level of strand, whose levels are 1, -1',
+      'encoding.color.scale.domain: "-" names no level of strand, whose levels are 1, -1',
     ])
   })
 
   test('a level under the threshold insert size reads as a cut point', () => {
     expect(
-      notices({ field: 'insertSize', domain: ['normal'], range: ['#1b9e77'] }),
+      notices({
+        field: 'insertSize',
+        scale: { domain: ['normal'], range: ['#1b9e77'] },
+      }),
     ).toContain(
-      'color.domain: names a level of insertSize (short, normal, long, unmappedMate, interchrom), which a threshold scale reads as a cut point; scale: "categorical" colors the levels',
+      'encoding.color.scale.domain: names a level of insertSize (short, normal, long, unmappedMate, interchrom), which a threshold scale reads as a cut point; scale.type: "ordinal" colors the levels',
     )
   })
 
   test('a per-base field names the layer that draws it', () => {
     expect(notices({ field: 'modifications' })).toEqual([
-      'color.field: modifications is drawn a cell per base, which baseColor paints over the reads',
+      'encoding.color.field: modifications is drawn a cell per base, which pileup.bases paints over the reads',
     ])
     expect(notices({ field: 'baseQuality' })).toHaveLength(1)
   })
@@ -231,29 +233,43 @@ describe('a domain that names no level says so', () => {
     '%s colors nothing and names the facet',
     field => {
       expect(notices({ field })).toEqual([
-        `color.field: ${field} colors nothing, since reads keep their arcs' colors; facet: "${field}" sections the reads by it`,
+        `encoding.color.field: ${field} colors nothing, since reads keep their arcs' colors; facet: "${field}" sections the reads by it`,
       ])
-      expect(colorByOf(alignmentsColorEncoding({ ...UNSET, field }))).toEqual({
+      expect(
+        colorByOf(alignmentsColorEncoding(colorSettingOf({ field }))),
+      ).toEqual({
         type: 'normal',
       })
     },
   )
 
   test('a level the field has, or a tag value, passes', () => {
-    expect(notices({ field: 'pairOrientation', domain: ['RR'] })).toEqual([])
-    expect(notices({ field: 'tags.HP', domain: ['x'] })).toEqual([])
+    expect(
+      notices({ field: 'pairOrientation', scale: { domain: ['RR'] } }),
+    ).toEqual([])
+    expect(notices({ field: 'tags.HP', scale: { domain: ['x'] } })).toEqual([])
   })
 
-  test("labels with no domain name the field's own levels", () => {
-    expect(notices({ field: 'strand', labels: ['Fwd', 'Rev'] })).toEqual([])
+  test("names with no domain name the field's own levels", () => {
     expect(
-      notices({ field: 'insertSize', labels: ['Short', 'Ok', 'Long'] }),
+      notices({ field: 'strand', scale: { names: ['Fwd', 'Rev'] } }),
     ).toEqual([])
-    expect(notices({ field: 'strand', labels: ['a', 'b', 'c'] })).toEqual([
-      'color.labels: labels names one value each, and 3 labels name 2 values: a label past them names nothing',
+    expect(
+      notices({
+        field: 'insertSize',
+        scale: { names: ['Short', 'Ok', 'Long'] },
+      }),
+    ).toEqual([])
+    expect(
+      notices({ field: 'strand', scale: { names: ['a', 'b', 'c'] } }),
+    ).toEqual([
+      'encoding.color.scale.names: names gives one value each its name in the key, and 3 names meet 2 values: a name past them names nothing',
     ])
     expect(
-      notices({ field: 'pairOrientation', domain: ['RR'], labels: ['a', 'b'] }),
+      notices({
+        field: 'pairOrientation',
+        scale: { domain: ['RR'], names: ['a', 'b'] },
+      }),
     ).toHaveLength(1)
   })
 })
@@ -263,21 +279,34 @@ test('nothing declared, or a range over an open field, leaves the defaults', () 
     DEFAULT.readCategoryColors,
   )
   expect(
-    paletteFor({ field: 'tags.HP', range: ['#ff0000'] }).readCategoryColors,
+    paletteFor({ field: 'tags.HP', scale: { range: ['#ff0000'] } })
+      .readCategoryColors,
   ).toEqual(DEFAULT.readCategoryColors)
 })
 
-describe('color.value fills the reads no field colors', () => {
+describe('value fills the reads no field colors, scale.invalid the reads with no value', () => {
   const STEEL = 'rgb(70,130,180)'
   const neutral = categorySwatchColor('pairLR', DEFAULT)
 
-  test('the plain read, a tag scheme before its bake, and a read with no value', () => {
+  test('value paints the plain read and no read a field colors', () => {
     const palette = paletteFor({ value: 'steelblue', field: 'tags.HP' })
     expect(uniformColor(palette, 'plain')).toBe(STEEL)
+    expect(uniformColor(palette, 'tag')).toBe(uniformColor(DEFAULT, 'tag'))
+    expect(everyPathPaints(palette, 'noTagValue')).toEqual(
+      new Array(3).fill(neutral),
+    )
+  })
+
+  test('scale.invalid paints a tag scheme before its bake and a read with no value', () => {
+    const palette = paletteFor({
+      field: 'tags.HP',
+      scale: { invalid: 'steelblue' },
+    })
     expect(uniformColor(palette, 'tag')).toBe(STEEL)
     expect(everyPathPaints(palette, 'noTagValue')).toEqual(
       new Array(3).fill(STEEL),
     )
+    expect(uniformColor(palette, 'plain')).toBe(uniformColor(DEFAULT, 'plain'))
   })
 
   test('the read connections and the other neutral buckets keep the theme', () => {
@@ -298,14 +327,12 @@ describe('color.value fills the reads no field colors', () => {
     }
   })
 
-  test("a declared '' level colors the no-value read over value", () => {
+  test("a declared '' level colors the no-value read over scale.invalid", () => {
     const palette = paletteFor({
-      value: 'steelblue',
       field: 'tags.HP',
-      domain: [''],
-      range: ['#1b9e77'],
+      scale: { invalid: 'steelblue', domain: [''], range: ['#1b9e77'] },
     })
     expect(categorySwatchColor('noTagValue', palette)).toBe('rgb(27,158,119)')
-    expect(uniformColor(palette, 'plain')).toBe(STEEL)
+    expect(uniformColor(palette, 'tag')).toBe(STEEL)
   })
 })

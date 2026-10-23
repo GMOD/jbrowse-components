@@ -1,24 +1,28 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 import { chordMarkConfigSchema } from '../../chords/chordMarkConfigSchema.ts'
-import { chordColorConfigSchema } from './chordColorConfigSchema.ts'
+import { chordEncodingConfigSchema } from './chordEncodingConfigSchema.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
 const STROKE_SLOTS = {
-  strokeColor: 'color',
   strokeColorSelected: 'colorSelected',
   strokeColorHover: 'colorHover',
 } as const
 
+const restingColor = (value: unknown) => ({ encoding: { color: { value } } })
+
 // v4 spelt the chord colors `strokeColor*`, on the display or inside its
 // `renderer`, and session tracks in share links still carry both.
-const retired = Object.fromEntries(
-  Object.entries(STROKE_SLOTS).map(([old, name]) => [
-    old,
-    (value: unknown) => ({ [name]: value }),
-  ]),
-)
+const retired = {
+  strokeColor: restingColor,
+  ...Object.fromEntries(
+    Object.entries(STROKE_SLOTS).map(([old, name]) => [
+      old,
+      (value: unknown) => ({ [name]: value }),
+    ]),
+  ),
+}
 
 /**
  * The same names inside a `renderer`, which is not declared retired: the track
@@ -39,7 +43,9 @@ function liftRendererStrokeSlots(snap: Record<string, unknown>) {
       rest[name] = inner[old]
     }
   }
-  return rest
+  return rest.encoding === undefined && inner.strokeColor !== undefined
+    ? { ...rest, ...restingColor(inner.strokeColor) }
+    : rest
 }
 
 /**
@@ -49,8 +55,8 @@ function liftRendererStrokeSlots(snap: Record<string, unknown>) {
  *
  * #example
  * The circular-view display for a `VariantTrack` of structural variants;
- * translocations are drawn as chords across the circle. `color` is the
- * chord's resting color, a constant or a field of the record with a key, and
+ * translocations are drawn as chords across the circle. `encoding.color` is
+ * the chord's resting color, a constant or a field of the record with a key, and
  * `colorHover` and `colorSelected` its hovered and selected ones:
  * ```js
  * {
@@ -66,7 +72,7 @@ function liftRendererStrokeSlots(snap: Record<string, unknown>) {
  *     {
  *       type: 'ChordVariantDisplay',
  *       displayId: 'sv-ChordVariantDisplay',
- *       color: { field: 'svType' },
+ *       encoding: { color: 'svType' },
  *       opacity: 0.45,
  *       colorHover: '#555',
  *     },
@@ -95,12 +101,11 @@ function configSchemaF(_pluginManager: PluginManager) {
         contextVariable: ['feature', 'track', 'pluginManager'],
       },
       /**
-       * #slot color
-       * The line color of each resting chord: a CSS color or `jexl:`
-       * callback, or a field of the record, `svType` say, whose values each
-       * take a color with a key on the circle.
+       * #slot encoding
+       * The channels each resting chord paints through: `encoding.color`,
+       * its line color.
        */
-      color: chordColorConfigSchema,
+      encoding: chordEncodingConfigSchema,
       /**
        * #slot
        */

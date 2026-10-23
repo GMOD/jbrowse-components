@@ -96,7 +96,7 @@ test('the circle and the linear synteny view open each other with their color', 
   const view = await circle(session, {
     displayedRegionNames: { A: ['a1'] },
     tracks: ['aln', 'genesA'],
-    color: { field: 'query' },
+    encoding: { color: 'query' },
     filter: [{ field: 'length', gte: 50 }],
   })
   view.openInLinearSyntenyView()
@@ -135,7 +135,7 @@ test('the dotplot opens a circle of its two genomes with its color', async () =>
   const dotplot = await session.launchView('DotplotView', {
     views: [{ assembly: 'A' }, { assembly: 'B' }],
     tracks: ['aln'],
-    color: { field: 'target' },
+    encoding: { color: 'target' },
   })
   dotplot.setWidth(800)
   await when(() => dotplot.assemblyNames.length === 2, { timeout: 30000 })

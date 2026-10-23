@@ -17,10 +17,8 @@ const LIFTOVER = 'hg38ToMm39_liftover'
 const DENSITY_RING = {
   trackId: 'hg38ToMm39_gene_density',
   mark: 'span',
-  color: {
-    field: 'score',
-    scale: 'linear',
-    range: ['#ffffff', '#d95f02'],
+  encoding: {
+    color: { scale: { type: 'linear', range: ['#ffffff', '#d95f02'] } },
   },
   height: 40,
 }
@@ -96,7 +94,7 @@ export const circularSpecs: ScreenshotSpec[] = [
           type: 'CircularView',
           assembly: 'hg19',
           height: 780,
-          showLegend: true,
+          legend: { show: true },
           tracks: [
             {
               trackId: 'ngmlr_cov',
@@ -169,8 +167,8 @@ export const circularSpecs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'circular_synteny/color_by_strand',
     url: circularSyntenyView(CHROMOSOMES, [LIFTOVER], {
-      color: { field: 'strand' },
-      showLegend: true,
+      encoding: { color: 'strand' },
+      legend: { show: true },
     }),
     ...circularSyntenyReady,
   },
@@ -179,7 +177,7 @@ export const circularSpecs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'circular_synteny/rings',
     url: circularSyntenyView(CHROMOSOMES, [DENSITY_RING, LIFTOVER], {
-      showLegend: true,
+      legend: { show: true },
     }),
     readySelector: displayPainted('circular-ring-canvas'),
     readyTimeout: 180000,
@@ -194,7 +192,7 @@ export const circularSpecs: ScreenshotSpec[] = [
       ['chr1', 'chr2', 'chrX'],
       [DENSITY_RING, LIFTOVER],
       {
-        showLegend: true,
+        legend: { show: true },
       },
     ),
     readySelector: displayPainted('circular-ring-canvas'),
@@ -210,7 +208,7 @@ export const circularSpecs: ScreenshotSpec[] = [
       ['chr1', 'chr2', 'chrX'],
       [DENSITY_RING, LIFTOVER],
       {
-        showLegend: true,
+        legend: { show: true },
       },
     ),
     readySelector: displayPainted('circular-ring-canvas'),
@@ -256,8 +254,8 @@ export const circularSpecs: ScreenshotSpec[] = [
           },
           height: 780,
           filter: [{ field: 'length', gte: 100000 }],
-          color: { field: 'strand' },
-          showLegend: true,
+          encoding: { color: 'strand' },
+          legend: { show: true },
           tracks: ['hg38ToPanTro6_liftover'],
         },
       ],
@@ -275,8 +273,8 @@ export const circularSpecs: ScreenshotSpec[] = [
           assembly: ['CO92', 'KIM'],
           height: 780,
           filter: [{ field: 'length', gte: 5000 }],
-          color: { field: 'strand' },
-          showLegend: true,
+          encoding: { color: 'strand' },
+          legend: { show: true },
           tracks: ['KIM_to_CO92'],
         },
       ],

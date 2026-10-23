@@ -13,25 +13,36 @@ function createDisplay() {
 test.each([
   [
     'cuts out of order',
-    { color: { field: 'tags.NM', scale: 'threshold', domain: ['5', '1'] } },
-    /^color\.domain: threshold cuts are distinct numbers/,
+    {
+      encoding: {
+        color: {
+          field: 'tags.NM',
+          scale: { type: 'threshold', domain: ['5', '1'] },
+        },
+      },
+    },
+    /^encoding\.color\.scale\.domain: threshold cuts are distinct numbers/,
   ],
   [
     'a range short of its cuts',
     {
-      color: {
-        field: 'tags.NM',
-        scale: 'threshold',
-        domain: ['1', '5'],
-        range: ['red'],
+      encoding: {
+        color: {
+          field: 'tags.NM',
+          scale: { type: 'threshold', domain: ['1', '5'], range: ['red'] },
+        },
       },
     },
-    /^color\.range: 2 threshold cuts make 3 intervals/,
+    /^encoding\.color\.scale\.range: 2 threshold cuts make 3 intervals/,
   ],
   [
-    'labels past the preset strand domain',
-    { color: { field: 'strand', labels: ['a', 'b', 'c'] } },
-    /^color\.labels: labels names one value each, and 3 labels name 2 values/,
+    'names past the preset strand domain',
+    {
+      encoding: {
+        color: { field: 'strand', scale: { names: ['a', 'b', 'c'] } },
+      },
+    },
+    /^encoding\.color\.scale\.names: names gives one value each its name in the key, and 3 names meet 2 values/,
   ],
 ])(
   "%s: a draft's problems are the notice it shows once applied",

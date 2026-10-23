@@ -15,7 +15,10 @@ index resolves automatically. Coloring, height, and filtering are slots on the
   "name": "My Alignments",
   "assemblyNames": ["hg19"],
   "adapter": { "type": "BamAdapter", "uri": "https://yourhost/file.bam" },
-  "displayDefaults": { "color": { "field": "pairOrientation" }, "height": 250 }
+  "displayDefaults": {
+    "encoding": { "color": "pairOrientation" },
+    "height": 250
+  }
 }
 ```
 
@@ -25,16 +28,16 @@ index resolves automatically. Coloring, height, and filtering are slots on the
 - **CRAM decodes against the reference**, and both adapters take their
   `sequenceAdapter` from the enclosing assembly, so the track names none
   ([](/docs/config/bamadapter), [](/docs/config/cramadapter))
-- **`color`, `height`, `filter`, the coverage band's `scales.y` and the four
-  bands, `coverage`, `pileup`, `sashimi` and `readConnections`,** are
+- **`encoding.color`, `height`, `filter`, the coverage band's `scales.y` and the
+  four bands, `coverage`, `pileup`, `sashimi` and `readConnections`,** are
   [`LinearAlignmentsDisplay`](/docs/config/linearalignmentsdisplay) slots; each
   band object holds whether it draws and its height, and
   [`filter`](/docs/config/baselinearalignmentsdisplay/#slot-filter) is one list
   of field tests on the reads, the junctions and the connections. Reads draw
   gray with mismatches marked until
-  [`color`](/docs/config/linearalignmentsdisplay/#slot-color) names a field —
-  `strand`, `pairOrientation`, `insertSize` or `tags.XX` — and
-  [`baseColor`](/docs/config/linearalignmentsdisplay/#slot-basecolor) draws
+  [`encoding.color`](/docs/config/linearalignmentsdisplay/#slot-color) names a
+  field — `strand`, `pairOrientation`, `insertSize` or `tags.XX` — and
+  [`pileup.bases`](/docs/config/linearalignmentsdisplay/#slot-basecolor) draws
   modifications or base quality over them; the
   [cookbook](/docs/cookbook#alignments-tracks) has the coloring, grouping and
   flag-filter recipe
@@ -42,8 +45,8 @@ index resolves automatically. Coloring, height, and filtering are slots on the
   is**, a read or a chain of a read with its mate and split segments;
   [`facet`](/docs/config/linearalignmentsdisplay/#slot-facet) stacks one
   labelled section per value of a read field (`pairOrientation`, `tags.HP`); and
-  [`readConnections.color`](/docs/config/readconnections/#slot-color) picks the
-  pair field the read-connection arcs paint when it is not the reads'
+  [`readConnections.encoding.color`](/docs/config/readconnections/#slot-color)
+  picks the pair field the read-connection arcs paint when it is not the reads'
 
 [Applying display settings](/docs/tutorials/display_settings) opens a track in a
 given state from a link or an embedded view.

@@ -192,7 +192,7 @@ down the tree from human, the apes first and the cow last.
           {
             "trackId": "hg38_liftover_multiway",
             "type": "MultiWaySyntenyDisplay",
-            "ribbonColor": { "field": "strand" },
+            "ribbons": { "encoding": { "color": "strand" } },
             "rows": {
               "sort": [
                 "panTro6",
@@ -214,9 +214,9 @@ down the tree from human, the apes first and the cow last.
 }
 ```
 
-The ribbons color by strand, the default `ribbonColor` (**Color by... →
-Strand**, under **Ribbons** in the track menu). Each ribbon takes the strand of
-the chain record that placed it, red where the lane runs the same way as hg38
+The ribbons color by strand, the default `ribbons.encoding.color` (**Color by...
+→ Strand**, under **Ribbons** in the track menu). Each ribbon takes the strand
+of the chain record that placed it, red where the lane runs the same way as hg38
 and blue where it runs reversed.
 
 Around _TP53_ every lane but gorilla places the whole window from one chain,

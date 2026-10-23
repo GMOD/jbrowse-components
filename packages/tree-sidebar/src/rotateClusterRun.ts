@@ -13,7 +13,7 @@ import { writeNewick } from './writeNewick.ts'
  *
  * **A run's output, before it becomes state.** Rotating where the tree is
  * parsed instead would rotate a restored session's dendrogram without touching
- * the `layout` saved beside it — a session clustered under one domain and
+ * the `rows.sort` saved beside it — a session clustered under one domain and
  * reopened under another would draw no tree at all.
  *
  * Returns the run untouched when there is nothing to compose: no domain, no

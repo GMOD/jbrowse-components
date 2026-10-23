@@ -47,7 +47,10 @@ test('a line asks for its series, split by a categorical color, and a stated gap
   const ramp = markLayerRequest(
     markOf({
       mark: 'line',
-      encoding: { y: 'score', color: { field: 'score', scale: 'linear' } },
+      encoding: {
+        y: 'score',
+        color: { field: 'score', scale: { type: 'linear' } },
+      },
     }),
     {},
     1,

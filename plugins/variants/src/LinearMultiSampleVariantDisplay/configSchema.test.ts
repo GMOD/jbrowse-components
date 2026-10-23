@@ -1,5 +1,5 @@
 import PluginManager from '@jbrowse/core/PluginManager'
-import { readConfObject } from '@jbrowse/core/configuration'
+import { applyConfSettings, readConfObject } from '@jbrowse/core/configuration'
 import { predicatesOf } from '@jbrowse/core/util/fieldPredicate'
 import CanvasPlugin from '@jbrowse/plugin-canvas'
 import LinearGenomeViewPlugin from '@jbrowse/plugin-linear-genome-view'
@@ -201,4 +201,58 @@ describe('the display config schema', () => {
       expect(predicatesOf(config.filter)).toEqual([])
     })
   })
+})
+
+describe('rows', () => {
+  const configSchema = configSchemaFactory()
+
+  it('is the sample rows object, written whole', () => {
+    const config = configSchema.create({
+      type: 'LinearMultiSampleVariantDisplay',
+      displayId: 'test-rows-1',
+      rows: { sort: ['b', 'a'], tree: '(b,a);', labels: { a: 'A' } },
+    })
+    expect(readConfObject(config, ['rows', 'field'])).toBe('sample')
+    applyConfSettings(config, { rows: { sort: ['a', 'b'] } })
+    expect(readConfObject(config, ['rows', 'sort'])).toEqual(['a', 'b'])
+    expect(readConfObject(config, ['rows', 'tree'])).toBeUndefined()
+    expect(readConfObject(config, ['rows', 'labels'])).toEqual({})
+    expect(() =>
+      configSchema.create({
+        type: 'LinearMultiSampleVariantDisplay',
+        displayId: 'test-rows-2',
+        rows: 'HP',
+      }),
+    ).toThrow(/SampleRowsField/)
+  })
+})
+
+describe('rowColor config object', () => {
+  const configSchema = configSchemaFactory()
+
+  it('colors by the rows themselves by default', () => {
+    const config = configSchema.create({
+      type: 'LinearMultiSampleVariantDisplay',
+      displayId: 'test-colorby-1',
+    })
+    expect(readConfObject(config, ['rowColor', 'field'])).toBe('name')
+  })
+
+  it('can be set to a metadata attribute name', () => {
+    const config = configSchema.create({
+      type: 'LinearMultiSampleVariantDisplay',
+      displayId: 'test-colorby-2',
+      rowColor: 'population',
+    })
+    expect(readConfObject(config, ['rowColor', 'field'])).toBe('population')
+  })
+})
+
+test('the flat color hosted hub configs write lifts to encoding.color', () => {
+  const config = configSchemaFactory().create({
+    type: 'LinearMultiSampleVariantDisplay',
+    displayId: 'test-flat-color',
+    color: { field: 'svType' },
+  })
+  expect(readConfObject(config, ['encoding', 'color', 'field'])).toBe('svType')
 })

@@ -28,8 +28,10 @@ test('a PAF comes back as the synteny band lays out and colors it', async () => 
     axis: { grid: false },
     render: {},
     height: 100,
-    color: { field: '' },
-    opacity: { value: 0.25, field: '' },
+    encoding: {
+      color: { field: '' },
+      opacity: { value: 0.25, field: '' },
+    },
   })
 
   const kinds = new Set(t.ribbons.kind)
@@ -79,8 +81,7 @@ test('the view settings color by strand, set the opacity and hide short blocks',
   const t = await engine.synteny({
     ...INV_INDELS,
     view: {
-      color: { field: 'strand' },
-      opacity: 0.6,
+      encoding: { color: { field: 'strand' }, opacity: 0.6 },
       filter: [{ field: 'length', gte: 400 }],
       axis: { grid: true },
     },
@@ -105,7 +106,10 @@ test('the view settings color by strand, set the opacity and hide short blocks',
   expect(t.ribbons.kind).toContain('marker')
   expect(t.legend.label.slice(0, 2)).toEqual(['forward', 'reverse'])
 
-  const grey = await engine.synteny({ ...INV_INDELS, view: { color: 'grey' } })
+  const grey = await engine.synteny({
+    ...INV_INDELS,
+    view: { encoding: { color: { value: 'grey' } } },
+  })
   expect(new Set(grey.alignments.color)).toEqual(new Set(['#808080']))
 })
 
@@ -146,7 +150,7 @@ test('a block whose mate the other row does not show is listed off screen', asyn
   const below = await engine.synteny({
     ...CONTIG_SWAP,
     query: { regions: [{ refName: 'ctgC', start: 0, end: 1000 }], width: 800 },
-    view: { color: { field: 'query' } },
+    view: { encoding: { color: { field: 'query' } } },
   })
   expect(below.offscreen.axis).toEqual(['target'])
   expect(below.offscreen.chrom).toEqual(['ctgB'])
@@ -170,23 +174,23 @@ test('the strip names a mate contig in its ribbon color only where the ribbons k
   expect(grey.offscreen.color).toEqual(['#000000'])
   const byQuery = await engine.synteny({
     ...narrow,
-    view: { color: { field: 'query' } },
+    view: { encoding: { color: { field: 'query' } } },
   })
   expect(byQuery.offscreen.color).toEqual(['#000000'])
   const byTarget = await engine.synteny({
     ...narrow,
-    view: { color: { field: 'target' } },
+    view: { encoding: { color: { field: 'target' } } },
   })
   const hashed = byTarget.offscreen.color[0]
   expect(hashed).not.toBe('#000000')
   const ordered = await engine.synteny({
     ...narrow,
-    view: { color: { field: 'target' } },
+    view: { encoding: { color: { field: 'target' } } },
     target: { ...narrow.target, refNames: ['ctgC', 'ctgB'] },
   })
   const both = await engine.synteny({
     ...CONTIG_SWAP,
-    view: { color: { field: 'target' } },
+    view: { encoding: { color: { field: 'target' } } },
     target: {
       regions: [
         { refName: 'ctgC', start: 0, end: 1000 },
@@ -207,7 +211,7 @@ test('the strip names a mate contig in its ribbon color only where the ribbons k
 test('identity keys as a ramp from 0% to 100%, and mapq as chips', async () => {
   const t = await engine.synteny({
     ...INV_INDELS,
-    view: { color: { field: 'identity' } },
+    view: { encoding: { color: { field: 'identity' } } },
   })
   expect(t.legend.label).toEqual([])
   expect(t.ramps).toHaveLength(1)
@@ -225,7 +229,7 @@ test('identity keys as a ramp from 0% to 100%, and mapq as chips', async () => {
 
   const mapq = await engine.synteny({
     ...INV_INDELS,
-    view: { color: { field: 'mapq' } },
+    view: { encoding: { color: { field: 'mapq' } } },
   })
   expect(mapq.ramps).toEqual([])
   expect(mapq.legend.label.length).toBeGreaterThan(1)
@@ -233,7 +237,7 @@ test('identity keys as a ramp from 0% to 100%, and mapq as chips', async () => {
     (
       await engine.dotplot({
         ...INV_INDELS_DOTPLOT,
-        view: { color: { field: 'identity' } },
+        view: { encoding: { color: { field: 'identity' } } },
       })
     ).ramps,
   )
@@ -258,7 +262,7 @@ test('a PAF comes back as the dotplot lays out and colors it', async () => {
     filter: [],
     drawCigar: true,
     lineWidth: 2.5,
-    opacity: { value: 1 },
+    encoding: { opacity: { value: 1 } },
   })
   for (let i = 0; i < t.alignments.strand.length; i++) {
     expect(t.alignments.xStart[i]).toBeLessThan(t.alignments.xEnd[i]!)
@@ -266,7 +270,7 @@ test('a PAF comes back as the dotplot lays out and colors it', async () => {
   }
   const plain = await engine.dotplot({
     ...INV_INDELS_DOTPLOT,
-    view: { drawCigar: false, color: { field: 'strand' } },
+    view: { drawCigar: false, encoding: { color: { field: 'strand' } } },
   })
   expect(plain.segments.op).toEqual(new Array(7).fill('match'))
   expect(new Set(plain.segments.color).size).toBe(2)

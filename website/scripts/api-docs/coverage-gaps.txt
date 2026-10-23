@@ -5,9 +5,10 @@
 # Adding a name here is a coverage regression; removing one is the win. Each
 # section names the tag that clears it.
 
-# configs with no #example (9)
+# configs with no #example (10)
 # fix: add an #example to the type’s #config JSDoc
 BamIndex
+HiddenLegend
 HierarchicalConfigSchema
 JBrowseConfiguration
 JBrowseRootConfig
@@ -47,7 +48,7 @@ Dotplot1DView
 LinearSyntenyViewHelper
 TimeTraveller
 
-# model members with no description (1321)
+# model members with no description (1319)
 # fix: write a sentence under the member’s #property/#volatile/#getter/#method/#action tag
 AddTrackModel.adapterHint
 AddTrackModel.altAssemblyName
@@ -573,7 +574,6 @@ LinearAlignmentsDisplay.mouseoverExtraInformation
 LinearAlignmentsDisplay.overCigarItem
 LinearAlignmentsDisplay.pileupMaxLayoutHeight
 LinearAlignmentsDisplay.readConnectionsHeight
-LinearAlignmentsDisplay.readConnectionsLineWidth
 LinearAlignmentsDisplay.readConnectionsMark
 LinearAlignmentsDisplay.readConnectionsPlacement
 LinearAlignmentsDisplay.readIdIndexMap
@@ -593,7 +593,6 @@ LinearAlignmentsDisplay.setFadeLowBaseQuality
 LinearAlignmentsDisplay.setJunctionFilter
 LinearAlignmentsDisplay.setPileupMaxLayoutHeight
 LinearAlignmentsDisplay.setReadConnectionsHeight
-LinearAlignmentsDisplay.setReadConnectionsLineWidth
 LinearAlignmentsDisplay.setReadConnectionsPlacement
 LinearAlignmentsDisplay.setSashimiHeight
 LinearAlignmentsDisplay.setSashimiPlacement

@@ -172,7 +172,7 @@ test('group draws per-section sashimi arcs', async () => {
       // Both strand groups yield their own band, in stacking order. Only the
       // reverse one draws arcs: spliced.bam carries 1739 junction reads on the
       // reverse strand and exactly one on the forward strand, and a lone read
-      // is below the default filter.junctions.minReads of 2. Asserting each section by
+      // is below the default `junction.reads` floor of 2. Asserting each section by
       // key (rather than just "some section has arcs") is what pins arcs to the
       // group whose reads produced them.
       expect(display.sashimiJunctionSections.length).toBe(2)
@@ -197,7 +197,7 @@ test('group draws per-section sashimi arcs', async () => {
 }, 90000)
 
 // The forward strand's empty band above is the score filter at work, not a dead
-// per-section pipeline — dropping filter.junctions.minReads to 0 surfaces that group's
+// per-section pipeline — dropping the `junction.reads` floor to 0 surfaces that group's
 // lone single-read junction (ctgA:23074, 87M6023N13M) in the forward section
 // and nowhere else. Without this, a regression that dropped a group's junctions
 // on the floor entirely would still satisfy the test above.

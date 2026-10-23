@@ -351,7 +351,7 @@ test('--config replaces an array and merges displayDefaults key by key', async (
       '--assemblyNames',
       'a,b',
       '--config',
-      '{"assemblyNames":["c"],"displayDefaults":{"color":{"field":"name"},"height":50}}',
+      '{"assemblyNames":["c"],"displayDefaults":{"encoding":{"color":{"field":"name"}},"height":50}}',
       '--displayDefaults',
       '{"mouseover":"jexl:feature.name"}',
       '--height',
@@ -361,7 +361,7 @@ test('--config replaces an array and merges displayDefaults key by key', async (
     const track = readConf(ctx).tracks[0]
     expect(track.assemblyNames).toEqual(['c'])
     expect(track.displayDefaults).toEqual({
-      color: { field: 'name' },
+      encoding: { color: { field: 'name' } },
       mouseover: 'jexl:feature.name',
       height: 200,
     })
@@ -382,20 +382,20 @@ test('--color, --height, and --displayDefaults merge into displayDefaults', asyn
       '--height',
       '200',
       '--displayDefaults',
-      '{"mouseover":"jexl:feature.name","color":"green"}',
+      '{"mouseover":"jexl:feature.name","encoding":{"color":{"value":"green"}}}',
     ])
 
     // typed --color wins over the color in --displayDefaults, --height parses to
     // a number, and the unrelated mouseover is preserved
     expect(readConf(ctx).tracks[0].displayDefaults).toEqual({
       mouseover: 'jexl:feature.name',
-      color: 'jexl:feature.strand==1?"blue":"red"',
+      encoding: { color: { value: 'jexl:feature.strand==1?"blue":"red"' } },
       height: 200,
     })
   })
 })
 
-// An alignments display's `color` takes a string as the constant read fill, so
+// An alignments display's `encoding.color.value` is the constant read fill, so
 // --color means the same thing on a BAM as on a GFF.
 test('--color on an alignments track paints every read', async () => {
   await runInTmpDir(async ctx => {
@@ -410,7 +410,9 @@ test('--color on an alignments track paints every read', async () => {
       'red',
     ])
 
-    expect(readConf(ctx).tracks[0].displayDefaults).toEqual({ color: 'red' })
+    expect(readConf(ctx).tracks[0].displayDefaults).toEqual({
+      encoding: { color: { value: 'red' } },
+    })
   })
 })
 
@@ -448,7 +450,9 @@ test('a plugin track type accepts any displayDefaults key', async () => {
       'red',
     ])
 
-    expect(readConf(ctx).tracks[0].displayDefaults).toEqual({ color: 'red' })
+    expect(readConf(ctx).tracks[0].displayDefaults).toEqual({
+      encoding: { color: { value: 'red' } },
+    })
   })
 })
 

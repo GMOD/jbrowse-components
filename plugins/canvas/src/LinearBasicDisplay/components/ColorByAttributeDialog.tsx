@@ -44,7 +44,7 @@ const ColorByAttributeDialog = observer(function ColorByAttributeDialog({
           onClick={() => {
             model.openPlotDialog(
               trimmed && trimmed !== model.colorField
-                ? { color: { field: trimmed } }
+                ? { encoding: { color: { field: trimmed } } }
                 : undefined,
             )
             handleClose()

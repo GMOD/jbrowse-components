@@ -80,15 +80,19 @@ test('an explicit author value wins over the band a retired type implies', () =>
   })
 })
 
+function bases(field: string) {
+  return { bases: { show: true, encoding: { color: { field } } } }
+}
+
 test.each([
-  [{ type: 'strand' }, { color: { field: 'strand' } }],
-  [{ type: 'mappingQuality' }, { color: { field: 'mapq' } }],
-  [{ type: 'tag', tag: 'HP' }, { color: { field: 'tags.HP' } }],
-  [{ type: 'perBaseLettering' }, { baseColor: { field: 'base' } }],
+  [{ type: 'strand' }, { encoding: { color: { field: 'strand' } } }],
+  [{ type: 'mappingQuality' }, { encoding: { color: { field: 'mapq' } } }],
+  [{ type: 'tag', tag: 'HP' }, { encoding: { color: { field: 'tags.HP' } } }],
+  [{ type: 'perBaseLettering' }, { pileup: bases('base') }],
   [
     { type: 'methylation' },
     {
-      baseColor: { field: 'modifications' },
+      pileup: bases('modifications'),
       modifications: { unmodified: 'all' },
     },
   ],
@@ -98,7 +102,7 @@ test.each([
       modifications: { isolatedModification: 'm', threshold: 10 },
     },
     {
-      baseColor: { field: 'modifications' },
+      pileup: bases('modifications'),
       modifications: { shownModifications: ['m'], threshold: 10 },
     },
   ],
@@ -124,7 +128,7 @@ test('a v4 colorBy reaches the display through displayDefaults too', () => {
     (out.displays as Record<string, unknown>[]).find(
       d => d.type === 'LinearAlignmentsDisplay',
     ),
-  ).toMatchObject({ color: { field: 'pairOrientation' } })
+  ).toMatchObject({ encoding: { color: { field: 'pairOrientation' } } })
 })
 
 test('lifts the settings off the pre-4.x nested sub-nodes', () => {
@@ -139,7 +143,7 @@ test('lifts the settings off the pre-4.x nested sub-nodes', () => {
       SNPCoverageDisplay: { type: 'LinearSNPCoverageDisplay' },
     }),
   ).toEqual({
-    baseColor: { field: 'modifications' },
+    pileup: bases('modifications'),
     // 1536 keeps unmapped reads, which the default 1540 drops
     filter: [{ field: 'flags.UNMAP' }],
   })
@@ -159,7 +163,7 @@ test('lifts the released *Setting spelling, which wins over the bare one', () =>
       hideMismatchesSetting: true,
     }),
   ).toEqual({
-    color: { field: 'insertSizeAndOrientation' },
+    encoding: { color: { field: 'insertSizeAndOrientation' } },
     // the default masks, so nothing to write
     filter: [],
     pileup: { maxLayoutHeight: 900, mismatches: { show: false } },
@@ -240,6 +244,23 @@ test('a v4 sort carries into sort by its v5 name, counted from 0', () => {
       sortedBy: { type: 'Start location', pos: 5, refName: 'ctgA' },
     }),
   ).toEqual({})
+})
+
+test("a v4.3.0 display's showLegend state lifts to legend.show", () => {
+  expect(retiredState.lift({ showLegend: true })).toEqual({
+    legend: { show: true },
+  })
+  expect(retiredState.lift({ PileupDisplay: { showLegend: false } })).toEqual({
+    legend: { show: false },
+  })
+})
+
+test('a v4 arc lineWidth strokes every connection at it', () => {
+  expect(
+    alignmentsEntries([{ type: 'LinearReadArcsDisplay', lineWidth: 3 }]),
+  ).toMatchObject([
+    { readConnections: { encoding: { strokeWidth: { value: 3 } } } },
+  ])
 })
 
 test('an instance with only live props lifts nothing', () => {

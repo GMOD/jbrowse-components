@@ -28,19 +28,21 @@ function served(metric: LDMetric): LDDataResult {
   }
 }
 
-function painting(color: Record<string, unknown>) {
+function painting({ field, ...scale }: Case) {
   const { display } = createDisplay()
-  display.applyPlot({ color })
+  display.applyPlot({ encoding: { color: { field, scale } } })
   return display
 }
 
-const CASES: {
+interface Case {
   field: LDMetric
   scheme?: ColorSchemeName
   reverse?: boolean
   domainMin?: number
   domainMax?: number
-}[] = [
+}
+
+const CASES: Case[] = [
   { field: 'r2' },
   { field: 'dprime' },
   { field: 'r2', scheme: 'viridis' },
@@ -52,7 +54,7 @@ const CASES: {
 
 test.each(CASES)('paints what the shared ramp does: %j', color => {
   const display = painting(color)
-  const scheme = color.scheme ?? LD_FIELD_PRESETS[color.field].scheme
+  const scheme = color.scheme ?? LD_FIELD_PRESETS[color.field].scale.scheme
   const reverse = color.reverse ?? darkAtLowEnd(scheme)
   const shared = continuousColorScale(display.colorEncoding, [0, 1])
   expect(display.colorScheme).toBe(scheme)
@@ -89,7 +91,7 @@ test('the encoding is the one object every surface reads', () => {
 // screen through a metric switch's refetch: both keep the hue of what they are.
 test('the served metric picks the preset, whatever the config asks for', () => {
   const { display } = createDisplay()
-  setConf(display, ['color', 'field'], 'dprime')
+  setConf(display, ['encoding', 'color', 'field'], 'dprime')
   display.setRpcData(served('r2'))
   expect(display.colorField).toBe('dprime')
   expect(display.rpcProps().ldMetric).toBe('dprime')
@@ -110,7 +112,12 @@ test("picking the field's own scheme leaves it following the field", () => {
   const { display } = createDisplay()
   display.setColorScheme('reds')
   expect(
-    readConfObject(display.configuration, ['color', 'scheme']),
+    readConfObject(display.configuration, [
+      'encoding',
+      'color',
+      'scale',
+      'scheme',
+    ]),
   ).toBeUndefined()
   display.setLDMetric('dprime')
   expect(display.colorScheme).toBe('blues')
@@ -123,7 +130,12 @@ test("on a file serving only D', picking reds paints reds", () => {
   expect(display.colorScheme).toBe('reds')
   display.setColorScheme('blues')
   expect(
-    readConfObject(display.configuration, ['color', 'scheme']),
+    readConfObject(display.configuration, [
+      'encoding',
+      'color',
+      'scale',
+      'scheme',
+    ]),
   ).toBeUndefined()
 })
 
@@ -135,8 +147,8 @@ test('the ramp texture follows only the scheme and its direction', () => {
   expect(deps).toContain('colorScheme')
   expect(deps).toContain('colorReverse')
   expect(getDependencyTree(display, 'colorRamp').dependencies).toHaveLength(2)
-  setConf(display, ['color', 'domainMax'], 0.5)
-  setConf(display, ['color', 'domainMin'], 0.1)
+  setConf(display, ['encoding', 'color', 'scale', 'domainMax'], 0.5)
+  setConf(display, ['encoding', 'color', 'scale', 'domainMin'], 0.1)
   display.setRpcData(served('r2'))
   expect(display.colorRamp).toBe(ramp)
   dispose()
@@ -146,9 +158,9 @@ test('a v4 track whose display spells ldMetric loads its color', () => {
   const { display } = createTestEnvironment({
     displayConfig: { ldMetric: 'dprime' },
   }).createDisplay()
-  expect(readConfObject(display.configuration, ['color', 'field'])).toBe(
-    'dprime',
-  )
+  expect(
+    readConfObject(display.configuration, ['encoding', 'color', 'field']),
+  ).toBe('dprime')
   expect(display.colorScheme).toBe('blues')
   expect(display.rpcProps().ldMetric).toBe('dprime')
 })

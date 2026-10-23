@@ -35,10 +35,10 @@ export type IdentityPlot = 'heatmap' | 'xyplot'
  */
 const STEPS = 100
 
-/** The identity ramp as `color` declares it while its field is identity. */
+/** The identity ramp as `encoding.color` declares it while its field is identity. */
 export type IdentityRamp = Omit<ContinuousRef, 'field' | 'scale'>
 
-const DEFAULT_IDENTITY_RAMP: IdentityRamp = MAF_FIELD_PRESETS.identity
+const DEFAULT_IDENTITY_RAMP: IdentityRamp = MAF_FIELD_PRESETS.identity.scale
 
 const MAX_KEY_STOPS = 9
 

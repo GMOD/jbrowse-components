@@ -1,4 +1,5 @@
 import { resolveSubMenu } from '@jbrowse/core/ui'
+import { onPatch } from '@jbrowse/mobx-state-tree'
 import { SCALE_TYPE_LOG } from '@jbrowse/render-core/scoreScale'
 
 import { INSTANCE_STRIDE_WORDS } from './components/shaders/hic.iface.generated.ts'
@@ -61,7 +62,7 @@ function subMenu(items: MenuItem[], label: string) {
 test('observed/expected paints a log ramp diverging at 1, red where enriched', () => {
   const { display } = createDisplay()
   display.setColorField('observed/expected')
-  expect(display.plot).toEqual({ color: 'observed/expected' })
+  expect(display.plot).toEqual({ encoding: { color: 'observed/expected' } })
   expect(display.rpcProps().field).toBe('observed/expected')
   expect(display.colorEncoding).toMatchObject({
     scale: 'log',
@@ -130,4 +131,14 @@ test('hover reads a ratio expected count off its pair run', () => {
   expect(
     expectedOf(payload('observed'), { ...item, region2Idx: 1 }),
   ).toBeUndefined()
+})
+
+test('picking the field already painted writes nothing', () => {
+  const { display } = createDisplay()
+  display.setColorScheme('viridis')
+  const patches: unknown[] = []
+  const dispose = onPatch(display.configuration, p => patches.push(p))
+  display.setColorField('observed')
+  dispose()
+  expect(patches).toEqual([])
 })

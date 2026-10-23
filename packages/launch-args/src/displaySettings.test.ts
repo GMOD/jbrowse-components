@@ -14,13 +14,13 @@ describe('alignments modifiers', () => {
     })
   })
 
-  test('color:tag and color:attribute point at color.field', () => {
+  test('color:tag and color:attribute point at encoding.color.field', () => {
     expect(() => buildDisplaySnapshot('alignments', ['color:tag:XS'])).toThrow(
-      /color\.field=tags\.<TAG>/,
+      /encoding\.color\.field=tags\.<TAG>/,
     )
     expect(() =>
       buildDisplaySnapshot('feature', ['color:attribute:gene_biotype']),
-    ).toThrow(/color\.field=<name>/)
+    ).toThrow(/encoding\.color\.field=<name>/)
   })
 
   test('height parses a number', () => {
@@ -271,13 +271,13 @@ describe('feature modifiers', () => {
 describe('alignments settings a static export cannot reach any other way', () => {
   test('display-chrome settings are slot writes, band members wait for the display', () => {
     const { snap } = buildDisplaySnapshot('alignments', [
-      'showLegend=true',
+      'showOutline=false',
+      'legend.show=true',
       'pileup.maxLayoutHeight=4000',
-      'filter.junctions.minReads=3',
       'sashimi.height=120',
-      'readConnections.color.field=insertSize',
+      'readConnections.encoding.color.field=insertSize',
     ])
-    expect(snap).toEqual({ showLegend: true })
+    expect(snap).toEqual({ showOutline: false })
   })
 
   // Both land in one `filter`, so they compose with the flag masks and tag
@@ -417,7 +417,11 @@ describe('score settings', () => {
       'resolution=100',
       'color:purple',
     ])
-    expect(snap).toEqual({ mark: 'point', resolution: 100, color: 'purple' })
+    expect(snap).toEqual({
+      mark: 'point',
+      resolution: 100,
+      encoding: { color: { value: 'purple' } },
+    })
   })
 
   test('a member of the value scale waits for the display', () => {
@@ -429,25 +433,26 @@ describe('score settings', () => {
   })
 })
 
-// Every display but hic answers `color:` through its own `color` slot, so the
-// routing question is what lands there: a field object where the category names
-// fields, the string otherwise. The multi-sample variant displays' `colorBy` is
-// a sample-attribute string, so the {type, tag} object this used to write was
-// dropped as an unknown MST key or rejected as a bad slot value.
+// Every display but hic answers `color:` through its own `encoding.color`
+// channel, so the routing question is what lands there: the field where the
+// category names fields, the constant `{ value }` otherwise. The multi-sample
+// variant displays' `colorBy` is a sample-attribute string, so the {type, tag}
+// object this used to write was dropped as an unknown MST key or rejected as a
+// bad slot value.
 describe('color routing', () => {
   test('color names a field on alignments and a solid color on wiggle', () => {
     expect(buildDisplaySnapshot('alignments', ['color:strand']).snap).toEqual({
-      color: { field: 'strand' },
+      encoding: { color: 'strand' },
     })
     expect(buildDisplaySnapshot('wiggle', ['color:purple']).snap).toEqual({
-      color: 'purple',
+      encoding: { color: { value: 'purple' } },
     })
   })
 
   test('color names a facet dimension as a read field', () => {
     expect(
       buildDisplaySnapshot('alignments', ['color:mateAssembly']).snap,
-    ).toEqual({ color: { field: 'mateAssembly' } })
+    ).toEqual({ encoding: { color: 'mateAssembly' } })
   })
 
   test('baseColor draws over the reads, so it combines with a read color', () => {
@@ -457,13 +462,21 @@ describe('color routing', () => {
         'baseColor:methylation',
       ]).snap,
     ).toEqual({
-      color: { field: 'mapq' },
-      baseColor: { field: 'modifications' },
+      encoding: { color: 'mapq' },
+      pileup: { bases: { show: true, encoding: { color: 'modifications' } } },
       modifications: { unmodified: 'all' },
     })
     expect(
-      buildDisplaySnapshot('alignments', ['baseColor:baseQuality']).snap,
-    ).toEqual({ baseColor: { field: 'baseQuality' } })
+      buildDisplaySnapshot('alignments', [
+        'featureHeight:compact',
+        'baseColor:baseQuality',
+      ]).snap,
+    ).toEqual({
+      pileup: {
+        readHeight: 3,
+        bases: { show: true, encoding: { color: 'baseQuality' } },
+      },
+    })
   })
 
   test('a per-base name on color: says which modifier draws it', () => {
@@ -487,68 +500,83 @@ describe('color routing', () => {
     expect(
       buildDisplaySnapshot('alignments', [
         'color:mapq',
-        'color.domain=1,2',
+        'encoding.color.scale.domain=1,2',
         'modifications.threshold=50',
         'showOutline=false',
       ]).snap,
-    ).toEqual({ color: { field: 'mapq' }, showOutline: false })
+    ).toEqual({ encoding: { color: 'mapq' }, showOutline: false })
   })
 
   test('a JSON option merges into what earlier options wrote', () => {
     expect(
       buildDisplaySnapshot('alignments', [
-        'color:mapq',
-        '{"color":{"range":["rgb(1,2,3)"]},"height":300}',
+        'color:purple',
+        '{"encoding":{"color":{"scale":{"range":["rgb(1,2,3)"]}}},"height":300}',
       ]).snap,
     ).toEqual({
-      color: { field: 'mapq', range: ['rgb(1,2,3)'] },
+      encoding: {
+        color: { value: 'purple', scale: { range: ['rgb(1,2,3)'] } },
+      },
       height: 300,
     })
   })
 
   test('anything else on alignments is a CSS color for every read', () => {
     expect(buildDisplaySnapshot('alignments', ['color:purple']).snap).toEqual({
-      color: 'purple',
+      encoding: { color: { value: 'purple' } },
     })
   })
 
-  // The canvas displays take a CSS color or a jexl in the same `color` slot the
-  // wiggle display uses — never a colorBy object, which is what used to be
-  // written for them and dropped as an unknown MST key.
+  // The canvas displays take a CSS color or a jexl as the same `{ value }`
+  // the wiggle display uses — never a colorBy object, which is what used to
+  // be written for them and dropped as an unknown MST key.
   test('color sets a solid color on the canvas-based displays', () => {
     for (const category of ['feature', 'variant'] as const) {
       const { snap } = buildDisplaySnapshot(category, ['color:red'])
-      expect(snap).toEqual({ color: 'red' })
+      expect(snap).toEqual({ encoding: { color: { value: 'red' } } })
     }
   })
 
   test('color:strand names the field the canvas displays color by', () => {
     for (const category of ['feature', 'variant'] as const) {
       expect(buildDisplaySnapshot(category, ['color:strand']).snap).toEqual({
-        color: { field: 'strand' },
+        encoding: { color: 'strand' },
       })
     }
     // wiggle has no strand notion — 'strand' stays a literal color there
-    expect(buildDisplaySnapshot('wiggle', ['color:strand']).snap.color).toBe(
-      'strand',
-    )
+    expect(
+      buildDisplaySnapshot('wiggle', ['color:strand']).snap.encoding?.color,
+    ).toEqual({ value: 'strand' })
   })
 
-  test("a color field picked over another's object keeps none of its scale", () => {
+  test("a color field picked over another's channel keeps none of its scale", () => {
     expect(
       buildDisplaySnapshot('alignments', [
-        '{"color":{"field":"mapq","domain":[0,60]}}',
+        '{"encoding":{"color":{"field":"mapq","scale":{"domain":[0,60]}}}}',
         'color:strand',
-      ]).snap.color,
-    ).toEqual({ field: 'strand' })
+      ]).snap.encoding?.color,
+    ).toBe('strand')
+  })
+
+  test('the field already named keeps its scale, and a new field keeps the constant', () => {
+    const scaled =
+      '{"encoding":{"color":{"field":"mapq","scale":{"domain":[0,60]}}}}'
+    expect(
+      buildDisplaySnapshot('alignments', [scaled, 'color:mapq']).snap.encoding
+        ?.color,
+    ).toEqual({ field: 'mapq', scale: { domain: [0, 60] } })
+    expect(
+      buildDisplaySnapshot('alignments', ['color:purple', 'color:strand']).snap
+        .encoding?.color,
+    ).toEqual({ value: 'purple', field: 'strand' })
   })
 
   test('color names the ramp on a hic track, and refuses what is not a scheme', () => {
-    const opts = ['color:viridis', 'color.reverse=true']
+    const opts = ['color:viridis', 'encoding.color.scale.reverse=true']
     expect(buildDisplaySnapshot('hic', opts).snap).toEqual({})
     expect(memberWrites('hic', opts)).toEqual([
-      'color.scheme=viridis',
-      'color.reverse=true',
+      'encoding.color.scale.scheme=viridis',
+      'encoding.color.scale.reverse=true',
     ])
     expect(memberWrites('alignments', ['color:strand'])).toEqual([])
     expect(() => buildDisplaySnapshot('hic', ['color:red'])).toThrow(
@@ -620,9 +648,9 @@ describe('display type selection', () => {
 
 test('a {...} token is merged as raw JSON', () => {
   const { snap } = buildDisplaySnapshot('alignments', [
-    '{"color":{"field":"strand"}}',
+    '{"encoding":{"color":"strand"}}',
   ])
-  expect(snap.color).toEqual({ field: 'strand' })
+  expect(snap.encoding?.color).toBe('strand')
 })
 
 test('an unknown modifier throws, naming the known ones', () => {
@@ -669,7 +697,7 @@ test('checkModifiers refuses only what no kind of track takes', () => {
       'featureHeight:compact',
       'sort:base',
       'filterTag:RG',
-      'color.field=type',
+      'encoding.color.field=type',
       'arcs:up',
       'name:x',
     ])

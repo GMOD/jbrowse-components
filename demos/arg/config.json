@@ -180,14 +180,17 @@
           ],
           "rowColor": {
             "field": "group",
-            "domain": ["A", "B"],
-            "range": ["#0072b2", "#e69f00"]
+            "scale": { "domain": ["A", "B"], "range": ["#0072b2", "#e69f00"] }
           },
-          "color": {
-            "value": "jexl:get(feature,'color')",
-            "scale": "identity",
-            "domain": ["#0072b2", "#e69f00"],
-            "labels": ["relatives mostly A", "relatives mostly B"]
+          "encoding": {
+            "color": {
+              "value": "jexl:get(feature,'color')",
+              "scale": {
+                "type": "identity",
+                "domain": ["#0072b2", "#e69f00"],
+                "names": ["relatives mostly A", "relatives mostly B"]
+              }
+            }
           }
         }
       ]

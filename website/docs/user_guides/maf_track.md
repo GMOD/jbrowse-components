@@ -75,16 +75,17 @@ _which_ genomes diverge in a region:
 per-species wiggle. The two menus combine: bars colored by identity take the
 heatmap's ramp, and bars under any other coloring draw in one color.
 
-In a display config **Color by...** is `color` (`mismatch`, `base`, `identity`,
-and the `chromosome` and `codon` options below) and the X-Y plot is
+In a display config **Color by...** is `encoding.color` (`mismatch`, `base`,
+`identity`, and the `chromosome` and `codon` options below) and the X-Y plot is
 `y: "identity"`.
 
 The heatmap's ramp runs from 0 to 100% identity, and
-[`color`](/docs/config/mafcolor) can move it. Close relatives all sit near its
-blue end, so `color: { field: "identity", domainMin: 0.7 }` spreads the ramp
-over 70 to 100%, where they differ; `scheme`, `reverse` and `domainMid` change
-the ramp itself. The source-chromosome colors below take a `range`, one color
-per rank.
+[`encoding.color`](/docs/config/mafcolor) can move it. Close relatives all sit
+near its blue end, so
+`"color": { "field": "identity", "scale": { "domainMin": 0.7 } }` spreads the
+ramp over 70 to 100%, where they differ; `scale.scheme`, `scale.reverse` and
+`scale.domainMid` change the ramp itself. The source-chromosome colors below
+take a `scale.range`, one color per rank.
 
 The heatmap and the X-Y plot draw only while you are zoomed out past base level.
 Zooming in to base level swaps them back for the base coloring, since a single

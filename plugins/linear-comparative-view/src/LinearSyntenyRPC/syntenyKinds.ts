@@ -5,7 +5,7 @@ import {
 } from '../LinearSyntenyDisplay/shaders/syntenyTypes.generated.ts'
 
 // Per-instance kind tag. Determines how the color for an instance is derived
-// from the parent feature's strand/refName/featureIdx and the view's current `color`
+// from the parent feature's strand/refName/featureIdx and the view's current `encoding.color`
 // scheme. Emitted by the worker once during geometry build; colors are
 // recomputed on the main thread whenever the color changes, so a color-scheme
 // toggle never triggers an RPC refetch.

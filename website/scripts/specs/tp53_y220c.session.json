@@ -1587,13 +1587,16 @@
           "displayId": "tp53-sge-LinearWiggleDisplay",
           "mark": "point",
           "size": 11,
-          "showLegend": false,
-          "color": {
-            "field": "score",
-            "scale": "threshold",
-            "domain": [0],
-            "range": ["#4f8fc6", "#c51b1b"],
-            "labels": ["p53 works (score ≤ 0)", "p53 broken (score > 0)"]
+          "legend": { "show": false },
+          "encoding": {
+            "color": {
+              "scale": {
+                "type": "threshold",
+                "domain": [0],
+                "range": ["#4f8fc6", "#c51b1b"],
+                "names": ["p53 works (score ≤ 0)", "p53 broken (score > 0)"]
+              }
+            }
           },
           "scales": {
             "y": {

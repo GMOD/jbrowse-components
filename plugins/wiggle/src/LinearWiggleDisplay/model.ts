@@ -19,7 +19,6 @@ import MultiRegionDisplayMixin from '@jbrowse/display-kit/MultiRegionDisplayMixi
 import ParkedColorMixin from '@jbrowse/display-kit/ParkedColorMixin'
 import StoredHoverMixin from '@jbrowse/display-kit/StoredHoverMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
-import { colorSettingOf } from '@jbrowse/display-kit/colorConfigSchema'
 import { fetchAllRegions } from '@jbrowse/display-kit/fetchEachRegion'
 import {
   editPlotMenuItems,
@@ -62,6 +61,7 @@ import {
   wiggleMarkColoring,
   wiggleMarkSources,
   wiggleColorProblems,
+  wiggleColorSettingOf,
   wiggleSharesPanel,
 } from '../shared/wiggleColor.ts'
 import { getRowHeight, getRowTop } from '../shared/wiggleComponentUtils.ts'
@@ -203,18 +203,11 @@ export default function stateModelFactory(
 
       /**
        * #getter
-       * The `color` object as written, `value` undefined while nothing names
-       * a color and the layout decides (`effectiveColor`).
+       * The `encoding.color` channel as written, `value` undefined while
+       * nothing names a color and the layout decides (`effectiveColor`).
        */
       get colorSetting(): ColorSetting {
-        const { color } = self.configuration
-        const setting = colorSettingOf(color)
-        return {
-          ...setting,
-          field: setting.field ?? '',
-          labels: readConfObject(color, 'labels'),
-          title: readConfObject(color, 'title'),
-        }
+        return wiggleColorSettingOf(self.configuration.encoding.color)
       },
 
       /**
@@ -618,13 +611,13 @@ export default function stateModelFactory(
         }
         const { posColor, negColor, innerColors } = self.wiggleColor
         const colors = [negColor, ...innerColors, posColor]
-        const { labels, title } = self.colorSetting
+        const { scale, legend } = self.colorSetting
         const spans = thresholdLabels(cuts)
-        const names = keyNames(spans, labels)
+        const names = keyNames(spans, scale.names ?? [])
         return {
           kind: 'categorical',
           id: 'threshold',
-          title: title ?? 'score',
+          title: legend.title ?? 'score',
           entries: spans.map((span, i) => ({
             value: span,
             label: names.get(span) ?? span,
@@ -651,7 +644,7 @@ export default function stateModelFactory(
        * where no row color shows.
        */
       get colorScales(): ColorScale[] {
-        const { title } = self.colorSetting
+        const { title } = self.colorSetting.legend
         const scales: ColorScale[] = []
         if (self.scoreColorScale) {
           scales.push({
@@ -703,7 +696,7 @@ export default function stateModelFactory(
           return [
             ...superConfigProblemsOf(conf),
             ...wiggleColorProblems(
-              colorSettingOf(conf.color),
+              wiggleColorSettingOf(own.encoding.color),
               renderingOf(
                 readConfObject(own, ['mark', 'type']),
                 readConfObject(own, ['mark', 'interpolate']),

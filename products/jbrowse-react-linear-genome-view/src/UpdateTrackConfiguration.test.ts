@@ -116,14 +116,16 @@ test('an edit handed in as its config is written records only the edit', () => {
 })
 
 // A color object's members are alternatives, so a pick replaces the base's
-// whole rather than leaving its domain under the new field.
+// whole rather than leaving its scale.domain under the new field.
 test('a color pick stores the whole object and resolves without the base members', () => {
   const colored = {
     ...track,
     displays: [
       {
         ...track.displays[0],
-        color: { field: 'type', domain: ['gene', 'mRNA'] },
+        encoding: {
+          color: { field: 'type', scale: { domain: ['gene', 'mRNA'] } },
+        },
       },
     ],
   }
@@ -131,16 +133,20 @@ test('a color pick stores the whole object and resolves without the base members
   const session = state.session as unknown as DeltaSession
   session.updateTrackConfiguration({
     ...colored,
-    displays: [{ ...colored.displays[0], color: { field: 'strand' } }],
+    displays: [
+      { ...colored.displays[0], encoding: { color: { field: 'strand' } } },
+    ],
   })
   expect(session.trackConfigDeltas[TRACK_ID]!.displays).toEqual([
-    { displayId: DISPLAY_ID, color: { field: 'strand' } },
+    { displayId: DISPLAY_ID, encoding: { color: { field: 'strand' } } },
   ])
   const resolved = session.tracks.find(t => t.trackId === TRACK_ID)!
   const { displays } = hydratedSnapshot(state, resolved) as {
-    displays: { displayId: string; color?: unknown }[]
+    displays: { displayId: string; encoding?: { color?: unknown } }[]
   }
-  expect(displays.find(d => d.displayId === DISPLAY_ID)!.color).toEqual({
+  expect(
+    displays.find(d => d.displayId === DISPLAY_ID)!.encoding?.color,
+  ).toEqual({
     field: 'strand',
   })
 })
@@ -156,7 +162,9 @@ test.each(['applyPlot', 'applyDisplaySettings'] as const)(
       displays: [
         {
           ...track.displays[0],
-          color: { field: 'type', domain: ['gene', 'mRNA'] },
+          encoding: {
+            color: { field: 'type', scale: { domain: ['gene', 'mRNA'] } },
+          },
         },
       ],
     }
@@ -170,13 +178,13 @@ test.each(['applyPlot', 'applyDisplaySettings'] as const)(
     const display = view.getTrack(TRACK_ID)!.displays[0] as unknown as {
       configuration: AnyConfigurationModel
     } & Record<typeof write, (draft: Record<string, unknown>) => unknown>
-    display[write]({ color: { field: 'strand' } })
-    expect(getSnapshot(display.configuration.color)).toEqual({
+    display[write]({ encoding: { color: { field: 'strand' } } })
+    expect(getSnapshot(display.configuration.encoding.color)).toEqual({
       field: 'strand',
     })
     await waitFor(() => {
       expect(session.trackConfigDeltas[TRACK_ID]?.displays).toEqual([
-        { displayId: DISPLAY_ID, color: { field: 'strand' } },
+        { displayId: DISPLAY_ID, encoding: { color: { field: 'strand' } } },
       ])
     })
   },
@@ -465,7 +473,7 @@ test('a desktop export diffs a hub track and assembly through their schemas', ()
         height: 100,
       },
     ],
-    displayDefaults: { color: 'purple' },
+    displayDefaults: { encoding: { color: { value: 'purple' } } },
   }
   const hubAssembly = {
     name: 'volvox',

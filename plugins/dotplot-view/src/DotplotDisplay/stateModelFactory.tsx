@@ -199,7 +199,7 @@ export function stateModelFactory(configSchema: DotplotDisplayConfigSchema) {
       },
       /**
        * #getter
-       * Where a refName sits in whichever axis' assembly `color` names —
+       * Where a refName sits in whichever axis' assembly `encoding.color` names —
        * `Assembly.getRefNamePosition`, alias-aware — which the
        * chromosome-painting modes hand the palette out by. Undefined for every
        * other mode, and while the assembly is still loading — the color

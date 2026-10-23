@@ -21,13 +21,16 @@ const IMPACT_PRESET = UNIVERSAL_FIELD_PRESETS.impact
 export const UNANNOTATED_IMPACT = IMPACT_PRESET.missing
 
 const IMPACT_COLOR: Record<string, string> = Object.fromEntries(
-  IMPACT_PRESET.domain.map((tier, i) => [tier, IMPACT_PRESET.range[i]!]),
+  IMPACT_PRESET.scale.domain.map((tier, i) => [
+    tier,
+    IMPACT_PRESET.scale.range[i]!,
+  ]),
 )
 
 const NO_IMPACT_COLOR = IMPACT_COLOR[UNANNOTATED_IMPACT]!
 
 /** The impact tiers in descending severity, with the colors the preset paints. */
-export const IMPACT_TIERS = IMPACT_PRESET.domain
+export const IMPACT_TIERS = IMPACT_PRESET.scale.domain
   .filter(tier => tier !== UNANNOTATED_IMPACT)
   .map(tier => ({ tier, color: IMPACT_COLOR[tier]! }))
 
@@ -135,7 +138,7 @@ export function getVariantConsequences(feature: Feature) {
 
 /**
  * A CSS color for the variant's most severe impact tier, for use as a
- * per-feature `color` jexl.
+ * per-feature `encoding.color.value` jexl.
  */
 export function getVariantImpactColor(feature: Feature) {
   return getImpactColor(getVariantImpact(feature))

@@ -45,10 +45,11 @@ export function isDataFile(token: string) {
  *   `value`. A bare `-` is stdin, so it is a value.
  * - The token after a flag is its value, except after a flag in `booleans`,
  *   which takes only `true` or `false`.
- * - Later tokens are the entry's modifiers (`height:100`, `color.field=tags.HP`,
- *   `{"json":1}`), until a token that names a data file, which opens a
- *   {@link FILE_FLAG} entry of its own. So `--loc chr1:1-100 reads.bam` keeps
- *   both, and `reads.bam height:100` gives the file its modifier.
+ * - Later tokens are the entry's modifiers (`height:100`,
+ *   `encoding.color.field=tags.HP`, `{"json":1}`), until a token that names a
+ *   data file, which opens a {@link FILE_FLAG} entry of its own. So
+ *   `--loc chr1:1-100 reads.bam` keeps both, and `reads.bam height:100` gives
+ *   the file its modifier.
  * - A bare token before any flag that is not a data file throws; it used to be
  *   dropped without a word.
  */
@@ -97,15 +98,13 @@ export function splitModifier(token: string): [string, string] | undefined {
   return i > 0 ? [token.slice(0, i), token.slice(i + 1)] : undefined
 }
 
-// The value of the first `key:value` modifier in `tokens` matching `key`.
+/**
+ * The value of a `key:value` modifier in `tokens`. The last one given wins, as
+ * with the display modifiers, so a script overrides a shared list by
+ * appending to it.
+ */
 export function modifierValue(tokens: string[], key: string) {
-  for (const token of tokens) {
-    const split = splitModifier(token)
-    if (split?.[0] === key) {
-      return split[1]
-    }
-  }
-  return undefined
+  return tokens.map(splitModifier).findLast(split => split?.[0] === key)?.[1]
 }
 
 /** `--loc`'s tokens, which together name the regions of one view. */
@@ -126,9 +125,12 @@ export function extraValuesMessage(flag: string, extra: string[]) {
  *
  * - `--loc` takes all its tokens, so `--loc chr1:1-100 chr2:1-100` names the
  *   regions a quoted `--loc` does.
- * - A flag in `repeatable` may repeat, and one in `withModifiers` takes
- *   modifiers after its value; their values come from the parsed entries. Any
- *   other flag given twice, or followed by a token it has no use for, throws.
+ * - A flag in `repeatable` may repeat and so has no single value here; the
+ *   caller reads it from the entries.
+ * - A flag in `withModifiers` takes modifiers after its value, which the
+ *   caller reads from the entries too.
+ * - Any other flag given twice, or followed by a token it has no use for,
+ *   throws.
  */
 export function standardizeArgv(
   args: Entry[],
@@ -143,7 +145,9 @@ export function standardizeArgv(
   for (const [key, vals] of args) {
     if (key === FILE_FLAG || trackTypes.includes(key)) {
       trackList.push([key, vals])
-    } else if (Object.hasOwn(rest, key) && !repeatable.includes(key)) {
+    } else if (repeatable.includes(key)) {
+      continue
+    } else if (Object.hasOwn(rest, key)) {
       throw new Error(`--${key} is given more than once`)
     } else if (key === 'loc') {
       rest[key] = locValue(vals) ?? true

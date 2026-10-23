@@ -1,14 +1,13 @@
+import type { FieldPreset } from './markRules/colorScale.ts'
+
 // Shape of the generated config manifest (configManifest.generated.ts), which
 // scripts/generateConfigManifest.ts reads out of the live ConfigurationSchema
 // objects. Declared here rather than inferred from the generated file so the
 // generator and the validator agree on a contract, and a generator change that
 // drops a field is a type error rather than a silent behaviour change.
 
-/** One field's defaults in a color object's `fieldPresets`. */
-export interface FieldPresetEntry {
-  scale: string
-  [member: string]: unknown
-}
+/** One field's defaults in a color channel's `fieldPresets`, a partial channel (core's `FieldPreset`). */
+export type FieldPresetEntry = FieldPreset<string>
 
 export interface SlotEntry {
   name: string

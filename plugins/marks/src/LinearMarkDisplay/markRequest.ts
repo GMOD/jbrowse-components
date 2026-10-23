@@ -41,6 +41,7 @@ import type {
   LayerRequest,
   PathSpec,
   ShapeEncoding,
+  SizeRef,
   MarkEncoding,
   TransformStep,
 } from '@jbrowse/core/util/markEncoding'
@@ -53,7 +54,7 @@ export function encodingOf(
   mark: MarkConfig,
   filled: StepChannels = {},
 ): MarkEncoding {
-  const { x, shape, text, size } = mark.encoding
+  const { x, shape, text, strokeWidth } = mark.encoding
   const y = mark.encoding.y || filled.y
   const row = mark.encoding.row || filled.row
   const spec: MarkSpec = MARK_SPECS[mark.mark.type]
@@ -74,9 +75,11 @@ export function encodingOf(
       ? shape.value
       : {
           field: shape.field,
-          scale: 'categorical',
-          range: shape.range.length > 0 ? [...shape.range] : undefined,
-          domain: shape.domain.length > 0 ? [...shape.domain] : undefined,
+          scale: 'ordinal',
+          range:
+            shape.scale.range.length > 0 ? [...shape.scale.range] : undefined,
+          domain:
+            shape.scale.domain.length > 0 ? [...shape.scale.domain] : undefined,
         }
   return {
     x,
@@ -94,27 +97,26 @@ export function encodingOf(
     color: wireColorOf(markColorOf(mark, filled)),
     ...(reads('shape') ? { shape: shapeEncoding } : {}),
     ...(reads('text') && text ? { text } : {}),
-    ...(reads('size') && size.field !== ''
-      ? {
-          size: {
-            field: size.field,
-            scale: size.scale,
-            ...(size.domainMin === undefined
-              ? {}
-              : { domainMin: size.domainMin }),
-            ...(size.domainMax === undefined
-              ? {}
-              : { domainMax: size.domainMax }),
-            ...(size.range.length === 2
-              ? {
-                  range: [Number(size.range[0]), Number(size.range[1])] as [
-                    number,
-                    number,
-                  ],
-                }
-              : {}),
-          },
-        }
+    // A link's stroke width crosses as the worker's `size`, the lane it
+    // fills.
+    ...(reads('strokeWidth') && strokeWidth.field !== ''
+      ? { size: sizeRefOf(strokeWidth) }
+      : {}),
+  }
+}
+
+function sizeRefOf({
+  field,
+  scale,
+}: MarkConfig['encoding']['strokeWidth']): SizeRef {
+  const { type, domainMin, domainMax, range } = scale
+  return {
+    field,
+    scale: type,
+    ...(domainMin === undefined ? {} : { domainMin }),
+    ...(domainMax === undefined ? {} : { domainMax }),
+    ...(range.length === 2
+      ? { range: [Number(range[0]), Number(range[1])] as [number, number] }
       : {}),
   }
 }
@@ -306,7 +308,7 @@ export function markEntryOf(
  * One mark's worker request at `bpPerPx`: its encoding, its steps, and the
  * lanes its type reads. A mark that may plot a value but names none asks for
  * no `y` lane, so the worker fills no zeros for it to stand at; the same for
- * a size no field feeds.
+ * a stroke width no field feeds.
  */
 export function markLayerRequest(
   mark: MarkConfig,
@@ -323,7 +325,7 @@ export function markLayerRequest(
   const lanes = markLanes(mark.mark.type, colorLanesOf(color)).filter(
     lane =>
       (lane !== 'y' || marksValue(mark, channels)) &&
-      (lane !== 'size' || mark.encoding.size.field !== ''),
+      (lane !== 'size' || mark.encoding.strokeWidth.field !== ''),
   )
   return {
     encoding: encodingOf(mark, channels),
@@ -337,7 +339,7 @@ function specOfMark(mark: MarkConfig): MarkSpec {
   return MARK_SPECS[mark.mark.type]
 }
 
-// A path's series split by its categorical color's field, as a Vega-Lite line
+// A path's series split by its ordinal color's field, as a Vega-Lite line
 // is, and the gap it breaks at where the mark writes one.
 function pathOf(mark: MarkConfig, color: ColorSource): PathSpec {
   return {

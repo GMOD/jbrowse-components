@@ -581,7 +581,7 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
       /**
        * #getter
        * Main-thread-computed per-instance colors. Recomputes whenever
-       * the view's `color`, featureData, or instanceData descriptors change — this is
+       * the view's `encoding.color`, featureData, or instanceData descriptors change — this is
        * the gpuProps half of the rpcProps/gpuProps split. Color changes
        * flow through here without touching the RPC.
        *

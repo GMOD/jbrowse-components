@@ -1,15 +1,16 @@
 ---
 id: syntenycolorsmixin
 title: SyntenyColorsMixin
-description: "The color settings every view drawing synteny tracks shares — the linear synteny view, the dotplot and the circular view: TrackColorsMixin's color object and palette, the opacity object and the…"
+description: "The color settings every view drawing synteny tracks shares — the linear synteny view, the dotplot and the circular view: TrackColorsMixin's encoding and palette, the encoding.opacity it fades by and…"
 sidebar_label: Mixin -> SyntenyColorsMixin
 ---
 
 Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/SyntenyColorsMixin.ts).
 
 The color settings every view drawing synteny tracks shares — the linear
-synteny view, the dotplot and the circular view: `TrackColorsMixin`'s color
-object and palette, the `opacity` object and the `filter`, over the tracks
+synteny view, the dotplot and the circular view: `TrackColorsMixin`'s
+`encoding` and palette, the `encoding.opacity` it fades by and the
+`filter`, over the tracks
 the view draws. A view supplies `syntenyTracks()`,
 its opacity default and, optionally, the field it paints by until told
 otherwise.
@@ -18,15 +19,10 @@ Each section ends with the members a composed model contributes, linked to the p
 
 ## Properties
 
-<!-- prettier-ignore -->
-| Member | Description |
-| --- | --- |
-| <span id="property-opacity">**opacity**</span><br><code>opacity: types.stripDefault(syntenyOpacityConfigSchema, {})</code> | The opacity every alignment draws at, a [](/docs/config/syntenyopacity) object: a number for all of them, or a field each alignment has, read into opacities, `{ field: "identity" }` or a column the tracks declare. Unset, the view's default: low on the synteny view for dense whole-genome hairballs, opaque on the dotplot. |
-
 <details class="inherited-members" data-pagefind-ignore>
 <summary>4 inherited properties from 3 models</summary>
 
-From [TrackColorsMixin](../trackcolorsmixin): <span id="property-color">[`color`](../trackcolorsmixin#property-color)</span>, <span id="property-trackcolors">[`trackColors`](../trackcolorsmixin#property-trackcolors)</span>
+From [TrackColorsMixin](../trackcolorsmixin): <span id="property-encoding">[`encoding`](../trackcolorsmixin#property-encoding)</span>, <span id="property-trackcolors">[`trackColors`](../trackcolorsmixin#property-trackcolors)</span>
 
 From [ParkedColorMixin](../parkedcolormixin): <span id="property-parkedcolors">[`parkedColors`](../parkedcolormixin#property-parkedcolors)</span>
 
@@ -48,11 +44,11 @@ From [TrackColorsMixin](../trackcolorsmixin): <span id="volatile-seenattributera
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="getter-defaultopacity">**defaultOpacity**</span><br><code>number</code> | The constant opacity a reset returns to. |
-| <span id="getter-opacitysetting">**opacitySetting**</span><br><code>SyntenyOpacitySnapshot</code> | The `opacity` object as its snapshot holds it. |
-| <span id="getter-opacityfade">**opacityFade**</span><br><code>SyntenyOpacitySnapshot &#124; undefined</code> | What the color pass fades each alignment by: the field's mapping with its range as shares of `opacityLevel`, or undefined while `opacity` draws its constant, so the slider recolors nothing either way. |
+| <span id="getter-defaultopacity">**defaultOpacity**</span><br><code>number</code> | The constant opacity a reset returns to: low on the synteny view for dense whole-genome hairballs, opaque on the dotplot. |
+| <span id="getter-opacitysetting">**opacitySetting**</span><br><code>SyntenyOpacitySnapshot</code> | `encoding.opacity` as its snapshot holds it. |
+| <span id="getter-opacityfade">**opacityFade**</span><br><code>SyntenyOpacitySnapshot &#124; undefined</code> | What the color pass fades each alignment by: the field's mapping with its range as shares of `opacityLevel`, or undefined while `encoding.opacity` draws its constant, so the slider recolors nothing either way. |
 | <span id="getter-opacitylevel">**opacityLevel**</span><br><code>number</code> | The opacity every alignment draws at before a field's fade: the shader's uniform (`opacityLevel`). |
-| <span id="getter-opacityfield">**opacityField**</span><br><code>string</code> | The field `opacity` fades by, `''` while it draws its constant. |
+| <span id="getter-opacityfield">**opacityField**</span><br><code>string</code> | The field `encoding.opacity` fades by, `''` while it draws its constant. |
 
 <details class="inherited-members" data-pagefind-ignore>
 <summary>18 inherited getters from 3 models</summary>

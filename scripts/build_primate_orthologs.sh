@@ -186,7 +186,7 @@ config = {
         'displays': [{
             'type': 'MultiWaySyntenyDisplay',
             'displayId': 'primate_orthologs-MultiWaySyntenyDisplay',
-            'color': {'field': 'cluster'},
+            'encoding': {'color': 'cluster'},
         }],
     }],
     'defaultSession': {

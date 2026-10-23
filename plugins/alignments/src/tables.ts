@@ -35,7 +35,10 @@ import {
 import { withPreset } from '@jbrowse/core/util/colorScale'
 import { predicatesOf } from '@jbrowse/core/util/fieldPredicate'
 import { facetSettingOf } from '@jbrowse/display-kit/facetConfigSchema'
-import { SCALE_TYPE_LOG } from '@jbrowse/render-core/scoreScale'
+import {
+  SCALE_TYPE_LINEAR,
+  SCALE_TYPE_LOG,
+} from '@jbrowse/render-core/scoreScale'
 import { linkStrokeWidthPx } from '@jbrowse/render-core/shaders/linkMark'
 import { LINK_SIZE_SCALED } from '@jbrowse/render-core/shaders/linkMarkConsts'
 import {
@@ -94,7 +97,7 @@ import {
   ARC_COLOR_INTERCHROM,
   arcColorSlot,
 } from './features/arcs/arcColors.ts'
-import { arcStrokeScale } from './features/arcs/arcLineWidth.ts'
+import { strokeWidthScale } from './features/arcs/arcLineWidth.ts'
 import {
   arcsToRegionResult,
   regionIndexOf,
@@ -255,17 +258,17 @@ export interface AlignmentTablesArgs {
   regions?: AlignmentRegion[]
   /**
    * The display's config as a track's `displays` entry writes it for a
-   * `LinearAlignmentsDisplay`. The tables read its `color`, `filter`,
-   * `baseColor`, `modifications`, `sort` and `facet` objects, and its four
-   * bands: `coverage`, `pileup`, `sashimi` and `readConnections`, each with
-   * its own `show`. `filter` holds the tests on reads, on junctions
-   * (`filter.junctions`) and on connections (`filter.connections`). Unset
+   * `LinearAlignmentsDisplay`. The tables read its `encoding.color`,
+   * `filter`, `modifications`, `sort` and `facet` objects, and its four
+   * bands: `coverage`, `pileup` (with `pileup.bases`), `sashimi` and
+   * `readConnections`, each with its own `show`. `filter` holds the tests on reads, on junctions
+   * (the `junction` filter fields) and on connections (the `connection` fields). Unset
    * reads the default display.
    */
   display?: Record<string, unknown>
   /**
    * The assembly's contigs in its own order, spelled as the file spells them,
-   * which `color: { field: "mateRefName" }` deals its palette by: a read's
+   * which `encoding.color: "mateRefName"` deals its palette by: a read's
    * mate reference is matched as written, where the browser canonicalizes it
    * through the assembly first. Unset, the file header's order stands in.
    */
@@ -398,9 +401,8 @@ function positionIn(refNames: readonly string[]): RefNamePosition {
   return refName => position.get(refName)
 }
 
-/** The display's per-base layer, from its `baseColor` and `modifications` objects. */
+/** The display's per-base layer, from its `pileup.bases` and `modifications` objects. */
 function baseLayerFor(conf: DisplayConf) {
-  const base = conf.baseColor
   const mods = conf.modifications
   const settings: ModificationColorBy = {
     threshold: readConfObject(mods, 'threshold'),
@@ -408,11 +410,23 @@ function baseLayerFor(conf: DisplayConf) {
     cytosineContext: readConfObject(mods, 'cytosineContext'),
     shownModifications: readConfObject(mods, 'shownModifications'),
   }
-  return baseLayerOf(readConfObject(base, 'field'), settings)
+  return baseLayerOf(
+    {
+      show: readConfObject(conf, ['pileup', 'bases', 'show']),
+      field: readConfObject(conf, [
+        'pileup',
+        'bases',
+        'encoding',
+        'color',
+        'field',
+      ]),
+    },
+    settings,
+  )
 }
 
 /**
- * The display's color pipeline over its laid-out sections: the `color` object
+ * The display's color pipeline over its laid-out sections: `encoding.color`
  * resolved as the display resolves it, the worker's reads baked through one
  * scale and classified into the same buckets, each painted the color the
  * display paints it, and the key the display shows beside them.
@@ -426,7 +440,7 @@ function colorReads(
   refNamePosition: RefNamePosition | undefined,
   overlaps: 'chain' | undefined,
 ) {
-  const { labels, title, ...setting } = alignmentsColorSnapshotOf(node)
+  const setting = alignmentsColorSnapshotOf(node)
   const encoding = alignmentsColorEncoding(setting)
   const colorBy = colorByOf(encoding)
   const band = pinnedInsertSizeBand(encoding)
@@ -456,7 +470,7 @@ function colorReads(
     bakedScale,
   })
   const palette = buildColorPaletteFromPalette(resolvePalette(), {
-    declared: writtenReadCategoryColors(setting.value, encoding),
+    declared: writtenReadCategoryColors(setting, encoding),
   })
   const sections = new Map(
     [...colored].map(([key, map]) => [
@@ -482,7 +496,7 @@ function colorReads(
       ),
     ]),
   )
-  const declared = declaredReadLabels(encoding, labels ?? [])
+  const declared = declaredReadLabels(encoding, setting.scale.names ?? [])
   const presentTagValues = !isBakedScheme(colorBy)
     ? undefined
     : colorBy.type === 'mapq'
@@ -513,15 +527,9 @@ function colorReads(
     bakedScale,
     sectionOrder: keySectionOrder(facet, colorBy),
     labels: declared,
-    descending: withPreset(
-      { ...setting, descending: readConfObject(node, 'descending') },
-      ALIGNMENTS_FIELD_PRESETS,
-    ).descending,
+    descending: withPreset(setting, ALIGNMENTS_FIELD_PRESETS).legend.descending,
   }).filter(item => item.color !== undefined)
-  const colorTitle = withPreset(
-    { ...setting, title },
-    ALIGNMENTS_FIELD_PRESETS,
-  ).title
+  const colorTitle = withPreset(setting, ALIGNMENTS_FIELD_PRESETS).legend.title
   const ramps = colorRampScales({
     colorBy,
     baseLayer,
@@ -720,7 +728,7 @@ function interbase(d: WorkerPileupData, paint: MarkColors) {
  * merges them: each once, with its supporting-read count, the strand its
  * reads' tags or its splice motif give it (0 where neither says), and the
  * motif where the reference was read. Every junction, down to a single
- * read, with `shown` false where the display's `filter.junctions` hides it; a
+ * read, with `shown` false where the display's `junction` filter fields hide it; a
  * junction whose motif was never read counts as canonical, as the display
  * counts it. `arcHeight` is the apex as a fraction
  * of the band and `strokeWidth` the stroke in px, the sashimi marks' own.
@@ -887,7 +895,7 @@ function readConnectionTables(
   )
   const cloud = mode === 'cloud'
   const colorField = arcColorFieldOf(
-    readConfObject(band, ['color', 'field']),
+    readConfObject(band, ['encoding', 'color', 'field']),
     colors.readField,
   )
   const result =
@@ -909,16 +917,27 @@ function readConnectionTables(
   const slotColor = buildArcColorPalette(colors.palette, colorField).map(
     normalizedRgbToHex,
   )
-  const lineWidth: number = readConfObject(band, 'lineWidth')
-  const stroke = arcStrokeScale(lineWidth)
+  const stroke = strokeWidthScale({
+    value: readConfObject(band, ['encoding', 'strokeWidth', 'value']),
+    field: readConfObject(band, ['encoding', 'strokeWidth', 'field']),
+    scale: {
+      type: readConfObject(band, ['encoding', 'strokeWidth', 'scale', 'type']),
+      range: readConfObject(band, [
+        'encoding',
+        'strokeWidth',
+        'scale',
+        'range',
+      ]),
+    },
+  })
   const widthOf = (support: number) =>
     linkStrokeWidthPx(
       support,
       LINK_SIZE_SCALED,
-      lineWidth,
+      stroke.range[0],
       stroke.domain[0],
       stroke.domain[1],
-      SCALE_TYPE_LOG,
+      stroke.scale === 'log' ? SCALE_TYPE_LOG : SCALE_TYPE_LINEAR,
       stroke.range[0],
       stroke.range[1],
       DPR_PAST_THE_ANTIALIASING_FLOOR,
@@ -1228,7 +1247,7 @@ function coverageScale(
  * filters, lays out and colors them, as tables: the worker's reads,
  * mismatches, gaps, insertions, clips, modifications, per-base qualities,
  * coverage and splice junctions, each read on the row the display's pileup
- * layout gives it and in the color the display's `color` object paints it,
+ * layout gives it and in the color the display's `encoding.color` paints it,
  * with the key the display shows: `legend`, and `ramps`, its color bars
  * (`rampKeyOf`). Under a `facet` each section lays out separately, every row
  * has a `section`, and `sections` lists them in stacking order;
@@ -1285,7 +1304,7 @@ export async function alignmentTables(
     displayId: 'tables',
   })
   const colorBy = colorByOf(
-    alignmentsColorEncoding(alignmentsColorSettingOf(conf.color)),
+    alignmentsColorEncoding(alignmentsColorSettingOf(conf.encoding.color)),
   )
   const baseLayer = baseLayerFor(conf)
   const { layoutOrder, sortColumn } = sortOf(
@@ -1404,7 +1423,7 @@ export async function alignmentTables(
     featureHeight,
   })
   const colors = colorReads(
-    conf.color,
+    conf.encoding.color,
     baseLayer,
     laidByGroup,
     chain ? { chainMode: true, framesChainStrand } : {},

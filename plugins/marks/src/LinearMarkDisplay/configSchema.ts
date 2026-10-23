@@ -1,11 +1,12 @@
 import { ConfigurationSchema, plotList } from '@jbrowse/core/configuration'
 import { SHAPE_NAMES } from '@jbrowse/core/util/shapeNames'
 import {
-  normalizeChannel,
+  colorScaleOptions,
   paintedScale,
 } from '@jbrowse/display-kit/colorConfigSchema'
 import { retiredBaseDisplaySpellings } from '@jbrowse/display-kit/configSchema'
 import { fieldPredicateList } from '@jbrowse/display-kit/fieldPredicateConfigSchema'
+import { legendConfigSchema } from '@jbrowse/display-kit/legendConfigSchema'
 import { regionTooLargeConfigSchemaFields } from '@jbrowse/display-kit/regionTooLargeConfigSchemaFields'
 import { rowColorConfigSchema } from '@jbrowse/display-kit/rowColorConfigSchema'
 import { rowsConfigSchema } from '@jbrowse/display-kit/rowsConfigSchema'
@@ -15,7 +16,7 @@ import { rowHeightConfigSchemaFields } from '@jbrowse/tree-sidebar/rowHeightConf
 import { treeSidebarConfigSchemaFields } from '@jbrowse/tree-sidebar/treeSidebarConfigSchemaFields'
 import { scalesSchema, valueScaleSchema } from '@jbrowse/wiggle-core'
 
-import { markColorSchema } from './markColorConfigSchema.ts'
+import { markColorSchema, markLegendOptions } from './markColorConfigSchema.ts'
 import { markDefSchema } from './markDefConfigSchema.ts'
 import { markFacetSchema } from './markFacetConfigSchema.ts'
 import { markLocusSchema } from './markLocusConfigSchema.ts'
@@ -29,15 +30,15 @@ import type { Instance, SnapshotIn } from '@jbrowse/mobx-state-tree'
 export { MARK_TYPES } from './markVocabulary.ts'
 export type { MarkType } from './markVocabulary.ts'
 
-const MARK_SHAPE_SCALES = ['categorical'] as const
+const MARK_SHAPE_SCALES = ['ordinal'] as const
 export type MarkShapeScale = (typeof MARK_SHAPE_SCALES)[number]
 
-/** The scale a mark's shape is drawn through: `categorical` beside a `field`. */
+/** The scale a mark's shape is drawn through: `ordinal` beside a `field`. */
 export function markShapeScale(shape: {
-  scale: MarkShapeScale | undefined
+  scale: { type: MarkShapeScale | undefined }
   field: string
 }) {
-  return paintedScale(shape, 'categorical')
+  return paintedScale(shape, 'ordinal')
 }
 
 const markShapeSchema = ConfigurationSchema(
@@ -58,7 +59,7 @@ const markShapeSchema = ConfigurationSchema(
     },
     /**
      * #slot marks.encoding.shape.field
-     * The feature field a categorical scale reads — or a jexl expression over
+     * The feature field an ordinal scale reads — or a jexl expression over
      * `feature`, which is slower per feature and so the opt-in.
      */
     field: {
@@ -68,81 +69,104 @@ const markShapeSchema = ConfigurationSchema(
     },
     /**
      * #slot marks.encoding.shape.scale
-     * `categorical` hands a shape from `range` to each distinct value of
-     * `field`. Unset beside a `field`, it is `categorical`.
+     * How the field's values map to shapes, Vega-Lite's scale object.
      */
-    scale: {
-      type: 'maybeStringEnum',
-      model: types.enumeration('MarkShapeScale', [...MARK_SHAPE_SCALES]),
-      description: 'categorical; unset follows field',
-    },
+    scale: ConfigurationSchema(
+      'MarkShapeScale',
+      {
+        /**
+         * #slot marks.encoding.shape.scale.type
+         * `ordinal` hands a shape from `range` to each distinct value of
+         * `field`. Unset beside a `field`, it is `ordinal`.
+         */
+        type: {
+          type: 'maybeStringEnum',
+          model: types.enumeration('MarkShapeScaleType', [
+            ...MARK_SHAPE_SCALES,
+          ]),
+          description: 'ordinal; unset follows field',
+        },
+        /**
+         * #slot marks.encoding.shape.scale.range
+         * The shape names an ordinal scale hands out, in order. Empty is
+         * `circle`, `triangle-down`, `diamond`; `square` draws only where
+         * listed.
+         */
+        range: {
+          type: 'stringEnumArray',
+          model: types.enumeration('ShapeName', [...SHAPE_NAMES]),
+          defaultValue: [],
+          description: 'shape names, in order',
+        },
+        /**
+         * #slot marks.encoding.shape.scale.domain
+         * The values in legend order, walking `range` from the first entry;
+         * left empty, each value derives its shape from itself, so every
+         * region agrees.
+         */
+        domain: {
+          type: 'stringArray',
+          defaultValue: [],
+          description: 'category order',
+        },
+        /**
+         * #slot marks.encoding.shape.scale.names
+         * The key's name for each `domain` value, one each in order; a value
+         * past the end of the list shows its name.
+         */
+        names: {
+          type: 'stringArray',
+          defaultValue: [],
+          description: 'key names for the domain values, in order',
+        },
+      },
+      colorScaleOptions('encoding.shape.scale'),
+    ),
     /**
-     * #slot marks.encoding.shape.range
-     * The shape names a categorical scale hands out, in order. Empty is
-     * `circle`, `triangle-down`, `diamond`; `square` draws only where listed.
+     * #slot marks.encoding.shape.legend
+     * The key this channel's scale draws.
      */
-    range: {
-      type: 'stringEnumArray',
-      model: types.enumeration('ShapeName', [...SHAPE_NAMES]),
-      defaultValue: [],
-      description: 'shape names, in order',
-    },
-    /**
-     * #slot marks.encoding.shape.domain
-     * The values in legend order, walking `range` from the first entry;
-     * left empty, each value derives its shape from itself, so every region
-     * agrees.
-     */
-    domain: {
-      type: 'stringArray',
-      defaultValue: [],
-      description: 'category order',
-    },
-    /**
-     * #slot marks.encoding.shape.title
-     * The heading of the key a categorical scale draws, naming what the
-     * shape marks. Unset, the key is titled with `field`; `""` is a key with
-     * no title.
-     */
-    title: {
-      type: 'maybeString',
-      description: 'key title; unset follows field, "" draws none',
-    },
-    /**
-     * #slot marks.encoding.shape.labels
-     * The key's name for each `domain` value, one each in order; a value past
-     * the end of the list shows its name.
-     */
-    labels: {
-      type: 'stringArray',
-      defaultValue: [],
-      description: 'key names for the domain values, in order',
-    },
-    /**
-     * #slot marks.encoding.shape.breaks
-     * The values the key lists, in this order; empty lists every value the
-     * loaded regions met. A value left out still takes its shape.
-     */
-    breaks: {
-      type: 'stringArray',
-      defaultValue: [],
-      description: 'values the key lists; empty lists every value met',
-    },
-    /**
-     * #slot marks.encoding.shape.missingLabel
-     * The key's name for a feature with nothing in `field`; unset is
-     * "(no value)".
-     */
-    missingLabel: {
-      type: 'maybeString',
-      description: 'key row for a feature with no value',
-    },
+    legend: ConfigurationSchema(
+      'MarkShapeLegend',
+      {
+        /**
+         * #slot marks.encoding.shape.legend.title
+         * The heading of the key an ordinal scale draws, naming what the
+         * shape marks. Unset, the key is titled with `field`; `""` is a key
+         * with no title.
+         */
+        title: {
+          type: 'maybeString',
+          description: 'key title; unset follows field, "" draws none',
+        },
+        /**
+         * #slot marks.encoding.shape.legend.values
+         * The values the key lists, in this order; empty lists every value
+         * the loaded regions met. A value left out still takes its shape.
+         */
+        values: {
+          type: 'stringArray',
+          defaultValue: [],
+          description: 'values the key lists; empty lists every value met',
+        },
+        /**
+         * #slot marks.encoding.shape.legend.missingLabel
+         * The key's name for a feature with nothing in `field`; unset is
+         * "(no value)". Vega-Lite's legend has no such member, so it keeps
+         * its JBrowse name.
+         */
+        missingLabel: {
+          type: 'maybeString',
+          description: 'key row for a feature with no value',
+        },
+      },
+      markLegendOptions,
+    ),
   },
   {
     shorthand: 'field',
     writes: 'whole',
     closed: true,
-    preProcessSnapshot: snap => normalizeChannel(snap, 'shape'),
   },
 )
 
@@ -200,18 +224,17 @@ const markEncodingSchema = ConfigurationSchema(
     },
     /**
      * #slot marks.encoding.color
-     * The mark's color: a field through a categorical or continuous scale,
-     * written bare or as an object with the scale's members, or a constant
-     * `{ value }`, a CSS color or a jexl callback returning one. A scale is
-     * what the legend describes.
+     * The mark's color: a field through an ordinal or continuous `scale`,
+     * written bare or as an object, or a constant `{ value }`, a CSS color or
+     * a jexl callback returning one. `legend` shapes the key the scale draws.
      */
     color: markColorSchema,
     /**
      * #slot marks.encoding.shape
-     * For a point mark: a field through a categorical scale over `circle`,
+     * For a point mark: a field through an ordinal scale over `circle`,
      * `triangle-down` and `diamond`, written bare or as an object, or a
      * constant `{ value }`, one of those names, `square`, or a jexl callback
-     * returning one. A scale is what the legend describes.
+     * returning one. `legend` shapes the key the scale draws.
      */
     shape: markShapeSchema,
     /**
@@ -226,13 +249,18 @@ const markEncodingSchema = ConfigurationSchema(
     },
     /**
      * #slot marks.encoding.size
-     * The mark's size in px: a number is a point's diameter, a rule's
-     * thickness, a line's width or a link's stroke; a field, which a link alone reads, goes
-     * through a linear or log scale into a stroke width, `range` the px at
-     * each end of the domain. The track menu's Point size writes every point
-     * mark's number.
+     * A point's diameter in px. The track menu's Point size writes every
+     * point mark's number.
      */
     size: markSizeSchema,
+    /**
+     * #slot marks.encoding.strokeWidth
+     * A stroked mark's width in px, Vega-Lite's stroke width: a rule's or a
+     * line's thickness, or a link's stroke; a field, which a link alone
+     * reads, goes through a linear or log `scale` into a width, `scale.range`
+     * the px at each end of the domain.
+     */
+    strokeWidth: markSizeSchema,
   },
   { closed: true },
 )
@@ -352,7 +380,10 @@ export function markListSchema(defaults: SnapshotIn<typeof markSchema>[]) {
  *       marks: [
  *         {
  *           mark: 'bar',
- *           encoding: { y: 'score', color: { field: 'strand', scale: 'categorical' } },
+ *           encoding: {
+ *             y: 'score',
+ *             color: { field: 'strand', scale: { type: 'ordinal' } },
+ *           },
  *           maxBpPerPx: 100,
  *         },
  *         {
@@ -420,7 +451,7 @@ export function configSchemaFactory() {
        * #slot rowColor
        * The bar beside each row's label; the marks keep their color. Under
        * the default field `name`, a row's value paired with a color in
-       * `domain`/`range`, which the arrangement dialog writes.
+       * `scale.domain`/`scale.range`, which the arrangement dialog writes.
        */
       rowColor: rowColorConfigSchema,
       ...treeSidebarConfigSchemaFields({
@@ -460,15 +491,11 @@ export function configSchemaFactory() {
         advanced: true,
       },
       /**
-       * #slot showLegend
-       * Draw the color key for every mark whose color is a scale. Defaults to
-       * on.
+       * #slot legend
+       * The key for every mark whose color or shape is a scale; `show`
+       * defaults to on.
        */
-      showLegend: {
-        type: 'boolean',
-        defaultValue: true,
-        description: 'draw the color key',
-      },
+      legend: legendConfigSchema,
       /**
        * #slot filter
        * The features the display draws, a list of

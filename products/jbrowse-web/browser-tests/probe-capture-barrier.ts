@@ -51,7 +51,7 @@ const spec = {
       tracks: [
         {
           trackId: 'volvox_alignments',
-          displaySnapshot: { color: { field: 'strand' } },
+          displaySnapshot: { encoding: { color: { field: 'strand' } } },
         },
       ],
     },

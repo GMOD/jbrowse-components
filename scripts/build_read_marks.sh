@@ -167,10 +167,12 @@ sed -e "s|@ASSEMBLY@|$ASM|g" -e "s|@SAMPLE@|$SAMPLE|g" -e "s|\"@ADAPTER@\"|$ADAP
             "y": "template_length",
             "color": {
               "field": "score",
-              "scale": "linear",
-              "domainMin": 0,
-              "domainMax": 60,
-              "range": ["#bdbdbd", "#1f4e9a"]
+              "scale": {
+                "type": "linear",
+                "domainMin": 0,
+                "domainMax": 60,
+                "range": ["#bdbdbd", "#1f4e9a"]
+              }
             }
           }
         }
@@ -208,10 +210,12 @@ sed -e "s|@ASSEMBLY@|$ASM|g" -e "s|@SAMPLE@|$SAMPLE|g" -e "s|@CHROM@|$CHROM|g" -
             "y": "tlen",
             "color": {
               "field": "score",
-              "scale": "linear",
-              "domainMin": 0,
-              "domainMax": 60,
-              "range": ["#bdbdbd", "#1f4e9a"]
+              "scale": {
+                "type": "linear",
+                "domainMin": 0,
+                "domainMax": 60,
+                "range": ["#bdbdbd", "#1f4e9a"]
+              }
             }
           }
         }
@@ -246,7 +250,7 @@ sed -e "s|@ASSEMBLY@|$ASM|g" -e "s|@SAMPLE@|$SAMPLE|g" -e "s|@CHROM@|$CHROM|g" -
             { "type": "bin", "step": "auto" },
             { "type": "aggregate", "ops": [{ "op": "count" }] }
           ],
-          "encoding": { "y": "count", "color": "#d62728" }
+          "encoding": { "y": "count", "color": { "value": "#d62728" } }
         }
       ]
     }

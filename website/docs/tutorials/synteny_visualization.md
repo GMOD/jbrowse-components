@@ -214,10 +214,10 @@ NZ_CP011330v1:1,238,100-1,258,100
 
 NCBI reuses standardized gene symbols across bacterial strains, so the symbol is
 effectively an ortholog id. In
-[grammar-of-graphics](/docs/config_guides/mark_display) terms, a track's `color`
-is a color scale, a `field` mapped to colors. Pick **Color by... →
-Attribute...** on each gene track's menu and enter `gene` as the field. An
-ortholog is one color down all the panels, and features with no `gene` value
+[grammar-of-graphics](/docs/config_guides/mark_display) terms, a track's
+`encoding.color` is a color scale, a `field` mapped to colors. Pick **Color
+by... → Attribute...** on each gene track's menu and enter `gene` as the field.
+An ortholog is one color down all the panels, and features with no `gene` value
 (most genes here have only a locus tag) stay grey. Inside the inversion, _rsmA_
 and _rlmN_ trade places in J99. **Advanced → Edit plot...** in the same menu
 shows the setting as text and applies edits live.
@@ -244,7 +244,7 @@ The config below is the same setting on the hub's gene track:
   },
   "displayDefaults": {
     "filter": ["geneLike"],
-    "color": { "field": "gene" }
+    "encoding": { "color": "gene" }
   }
 }
 ```

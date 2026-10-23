@@ -55,15 +55,17 @@
           "displayId": "ukb_mcv_sv_gwas-LinearManhattanDisplay",
           "height": 250,
           "marks": [
-            { "mark": "rule", "encoding": { "y": "score", "size": 2 } },
+            { "mark": "rule", "encoding": { "y": "score", "strokeWidth": 2 } },
             {
               "mark": "point",
               "encoding": {
                 "y": "score",
                 "shape": {
                   "field": "svtype",
-                  "domain": ["INS"],
-                  "range": ["triangle-down", "circle"]
+                  "scale": {
+                    "domain": ["INS"],
+                    "range": ["triangle-down", "circle"]
+                  }
                 }
               }
             }

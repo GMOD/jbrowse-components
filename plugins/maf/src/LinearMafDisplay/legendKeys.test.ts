@@ -105,7 +105,7 @@ describe('each row rendering keys itself from what it paints', () => {
       const palette = resolvePalette()
       const items = getCodonLegendItems(palette, {
         domain: ['stop'],
-        labels: ['Stop'],
+        names: ['Stop'],
       })
       expect(items.map(i => i.label)).toEqual([
         'Stop',
@@ -123,7 +123,7 @@ describe('each row rendering keys itself from what it paints', () => {
   })
 })
 
-// maf was the last row display with no `showLegend` at all: the key drew
+// maf was the last row display with no `legend.show` at all: the key drew
 // whatever the reader thought of it, and `FloatingLegend`'s close button had
 // nothing to write.
 describe('the color key is dismissible, like every other row display', () => {

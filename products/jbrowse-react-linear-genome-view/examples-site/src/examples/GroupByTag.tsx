@@ -22,7 +22,7 @@ export default function GroupByTag() {
             displaySnapshot: {
               type: 'LinearAlignmentsDisplay',
               height: 400,
-              color: { field: 'tags.HP' },
+              encoding: { color: 'tags.HP' },
               facet: 'tags.HP',
             },
           },

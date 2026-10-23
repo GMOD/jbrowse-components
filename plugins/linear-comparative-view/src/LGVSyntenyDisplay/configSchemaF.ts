@@ -2,8 +2,8 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { baseLinearAlignmentsDisplayConfigSchema } from '@jbrowse/plugin-alignments'
 import { syntenyDataConfigSchema } from '@jbrowse/synteny-core'
 
-import { lgvSyntenyColorConfigSchema } from './lgvSyntenyColorConfigSchema.ts'
 import { lgvSyntenyCoverageConfigSchema } from './lgvSyntenyCoverageConfigSchema.ts'
+import { lgvSyntenyEncodingConfigSchema } from './lgvSyntenyEncodingConfigSchema.ts'
 import { lgvSyntenySortConfigSchema } from './lgvSyntenySortConfigSchema.ts'
 
 /**
@@ -11,7 +11,7 @@ import { lgvSyntenySortConfigSchema } from './lgvSyntenySortConfigSchema.ts'
  * Draws a `SyntenyTrack`'s alignments in a linear genome view, stacked and
  * colored the way an alignments display draws reads. It has the alignments
  * display's bands and settings but the sashimi band, the `junction` filter
- * fields, `baseColor` and `modifications`: a synteny block has no introns,
+ * fields, `pileup.bases` and `modifications`: a synteny block has no introns,
  * basecaller tags or qualities.
  *
  * #example
@@ -50,11 +50,12 @@ export default function configSchemaF() {
        */
       data: syntenyDataConfigSchema,
       /**
-       * #slot color
-       * The alignments displays' `color` object with `field` defaulting to
-       * `strand`, where the base display paints the plain fill.
+       * #slot encoding
+       * The alignments displays' `encoding` with `color` painting `strand`
+       * while it names neither a field nor a constant, where the base
+       * display paints the plain fill.
        */
-      color: lgvSyntenyColorConfigSchema,
+      encoding: lgvSyntenyEncodingConfigSchema,
       /**
        * #slot coverage
        * The alignments displays' `coverage` band with `show` defaulting to

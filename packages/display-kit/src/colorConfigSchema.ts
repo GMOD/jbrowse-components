@@ -23,7 +23,7 @@ import { COLOR_SCHEMES } from '@jbrowse/core/util/colorSchemes'
 import { isCssColor } from '@jbrowse/core/util/cssColorParse'
 import { isJexl } from '@jbrowse/core/util/jexlStrings'
 import { thresholdField } from '@jbrowse/core/util/thresholdScale'
-import { types } from '@jbrowse/mobx-state-tree'
+import { isStateTreeNode, types } from '@jbrowse/mobx-state-tree'
 
 import type {
   AnyConfigurationModel,
@@ -59,7 +59,7 @@ export type {
 } from '@jbrowse/core/util/colorScale'
 
 /** The scales of a color object whose field takes a range color per value. */
-export const CATEGORICAL_COLOR_SCALES = ['categorical'] as const
+export const CATEGORICAL_COLOR_SCALES = ['ordinal'] as const
 
 /** The scales of a color object whose field paints one of a set of colors: a range color per value, or per bin. */
 export const DISCRETE_COLOR_SCALES = [
@@ -75,34 +75,48 @@ export const FEATURE_COLOR_SCALES = [
   IDENTITY_SCALE,
 ] as const
 
-/**
- * A color object as written: the members every one declares, and the ones a
- * linear or log scale adds on the displays that declare them.
- */
-export interface ColorSetting {
-  value: string | undefined
-  field: string
-  scale: ColorScaleName | undefined
+/** A channel's `scale` as read off its node, each member its default where unwritten. */
+export interface ColorScaleSetting {
+  type: ColorScaleName | undefined
   domain: readonly string[]
   range: readonly string[]
+  names?: readonly string[]
   scheme?: ColorSchemeName | undefined
   reverse?: boolean
   domainMin?: number | undefined
   domainMax?: number | undefined
   domainMid?: number | undefined
   domainQuantile?: number
-  labels?: readonly string[]
-  title?: string | undefined
-  descending?: boolean
   unknown?: string | undefined
+  invalid?: string | undefined
 }
 
-const PAINTED_SLOTS = [
-  'field',
-  'scale',
+/** A channel's `legend` as read off its node. */
+export interface ColorLegendSetting {
+  title?: string | undefined
+  descending?: boolean
+}
+
+/**
+ * A color channel as read off its node: the constant, the field, the scale
+ * and the key, the members a display declares and their defaults.
+ */
+export interface ColorSetting {
+  value: string | undefined
+  field: string
+  scale: ColorScaleSetting
+  legend: ColorLegendSetting
+}
+
+// What paints, as opposed to what the key names: `names` and `legend` are
+// read only by `colorSnapshotOf`, so renaming a key entry re-reads nothing
+// that paints.
+const PAINTED_SCALE_SLOTS = [
+  'type',
   'domain',
   'range',
   'unknown',
+  'invalid',
   'scheme',
   'reverse',
   'domainMin',
@@ -111,35 +125,67 @@ const PAINTED_SLOTS = [
   'domainQuantile',
 ] as const
 
-type PaintedSlot = 'value' | (typeof PAINTED_SLOTS)[number]
+type PaintedScaleSlot = (typeof PAINTED_SCALE_SLOTS)[number]
 
 type SchemaOf<C> = ConfigurationSchemaForModel<C>
 
-/** The members {@link colorSettingOf} reads off `C`: the painted ones its schema declares. */
-export type ColorSettingOf<C> = {
-  [
-    K in PaintedSlot & ConfigurationSlotName<SchemaOf<C>>
-  ]: ConfigurationSlotValue<SchemaOf<C>, K>
+type SlotsOf<N, K extends string> = {
+  [S in K & ConfigurationSlotName<SchemaOf<N>>]: ConfigurationSlotValue<
+    SchemaOf<N>,
+    S
+  >
+}
+
+type PartOf<C, K extends string> = C extends Record<K, infer N> ? N : never
+
+/**
+ * The members {@link colorSettingOf} reads off `C`: the painted ones its
+ * schema declares, or every one where `C` is an untyped node.
+ */
+export type ColorSettingOf<C> = 0 extends 1 & C
+  ? ColorSetting
+  : SlotsOf<C, 'value' | 'field'> & {
+      scale: SlotsOf<PartOf<C, 'scale'>, PaintedScaleSlot>
+      legend: ColorLegendSetting
+    }
+
+function partOf(node: AnyConfigurationModel, name: 'scale' | 'legend') {
+  const part: unknown = node[name]
+  return isStateTreeNode(part) ? (part as AnyConfigurationModel) : undefined
+}
+
+function slotsOf(
+  node: AnyConfigurationModel | undefined,
+  names: readonly string[],
+) {
+  const out: Record<string, unknown> = {}
+  if (node) {
+    for (const name of names) {
+      if (name in node) {
+        out[name] = readConfObject(node, name)
+      }
+    }
+  }
+  return out
 }
 
 /**
- * A color object's painted members as written, the ones its schema declares:
+ * A color channel's painted members as written, the ones its schema declares:
  * `value` raw, so a `jexl:` callback reaches the display unevaluated, then the
- * field and every scale member. A display that reads the key's `labels` or
- * `title` spreads them on top, so renaming a key entry re-reads nothing that
- * paints.
+ * field and every painted scale member. A display that reads the key's
+ * `scale.names` or `legend` spreads them on top (`colorSnapshotOf`), so
+ * renaming a key entry re-reads nothing that paints.
  */
 export function colorSettingOf<C extends AnyConfigurationModel>(
   color: C,
 ): ColorSettingOf<C> {
   const node: AnyConfigurationModel = color
-  const setting: Record<string, unknown> = { value: node.value }
-  for (const slot of PAINTED_SLOTS) {
-    if (slot in node) {
-      setting[slot] = readConfObject(node, slot)
-    }
-  }
-  return setting as ColorSettingOf<C>
+  return {
+    value: node.value,
+    ...slotsOf(node, ['field']),
+    scale: slotsOf(partOf(node, 'scale'), PAINTED_SCALE_SLOTS),
+    legend: {},
+  } as unknown as ColorSettingOf<C>
 }
 
 /**
@@ -152,20 +198,32 @@ export function impliedFieldOf(
   return getConfigurationSchemaMetadata(color)?.options.impliedField
 }
 
-/** {@link colorSettingOf} with the key's `labels` and `title` spread on top. */
+/** {@link colorSettingOf} with the key's `scale.names` and `legend` spread on top. */
 export function colorSnapshotOf<C extends AnyConfigurationModel>(color: C) {
+  const setting = colorSettingOf(color)
   const node: AnyConfigurationModel = color
-  const labels: readonly string[] | undefined = readConfObject(node, 'labels')
-  const title: string | undefined = readConfObject(node, 'title')
-  return { ...colorSettingOf(color), labels, title }
+  return {
+    ...setting,
+    scale: {
+      ...setting.scale,
+      ...(slotsOf(partOf(node, 'scale'), ['names']) as {
+        names?: readonly string[]
+      }),
+    },
+    legend: slotsOf(partOf(node, 'legend'), [
+      'title',
+      'descending',
+    ]) as ColorLegendSetting,
+  }
 }
 
 /**
- * What every channel object checks on the way in, `name` being the setting's
- * key: a `domain` or `range` is a list, and a `domain`, `breaks` or `labels`
- * written as numbers is carried as strings. No combination of slots is refused, since the config
- * editor writes one slot at a time: a `domain` with no `field` waits unread
- * until a field paints again.
+ * What every scale checks on the way in, `name` being its setting's path: a
+ * `domain` or `range` is a list, and a `domain`, `names` or `values` written
+ * as numbers is carried as strings. No combination of slots is refused, since
+ * the config editor writes one slot at a time: a `domain` with no `field`
+ * waits unread until a field paints again. The row and facet objects check
+ * their own `sort` and `hidden` the same way.
  */
 export function normalizeChannel(
   snap: Record<string, unknown> = {},
@@ -177,7 +235,7 @@ export function normalizeChannel(
     }
   }
   const out = { ...snap }
-  for (const key of ['domain', 'sort', 'breaks', 'labels', 'hidden']) {
+  for (const key of ['domain', 'sort', 'names', 'values', 'hidden']) {
     if (Array.isArray(out[key])) {
       out[key] = out[key].map(String)
     }
@@ -186,29 +244,18 @@ export function normalizeChannel(
 }
 
 /**
- * The mapping half of a color object, spread beside the display's own
- * `value` slot: the field, and the scale it reads through. `scales` are the
- * members the display can paint. `fieldType` is `featureField` where the
- * display reads the field off each feature, a `jexl:` expression included,
- * and `string` where it names one of the display's own dimensions.
+ * A channel's field. `fieldType` is `featureField` where the display reads
+ * the field off each feature, a `jexl:` expression included, and `string`
+ * where it names one of the display's own dimensions.
  */
-export function colorChannelSlots<
-  S extends ColorScaleName,
-  F extends 'featureField' | 'string',
->({
-  scales,
-  scaleName,
+export function colorFieldSlot<F extends 'featureField' | 'string'>({
   field,
   fieldType,
   fieldDefault = '',
-  scale = 'unset follows field',
 }: {
-  scales: readonly S[]
-  scaleName: string
   field: string
   fieldType: F
   fieldDefault?: string
-  scale?: string
 }) {
   return {
     field: {
@@ -216,15 +263,29 @@ export function colorChannelSlots<
       defaultValue: fieldDefault,
       description: field,
     },
-    scale: {
+  } as const
+}
+
+/** A scale's `type`: the members of `scales` the display can paint. */
+export function colorScaleTypeSlot<S extends ColorScaleName>({
+  scales,
+  scaleName,
+  type = 'unset follows field',
+}: {
+  scales: readonly S[]
+  scaleName: string
+  type?: string
+}) {
+  return {
+    type: {
       type: 'maybeStringEnum',
       model: types.enumeration(scaleName, [...scales]),
-      description: scale,
+      description: type,
     },
   } as const
 }
 
-/** The values that matter to a categorical or threshold scale, in order. */
+/** The values that matter to an ordinal or threshold scale, in order. */
 export function colorDomainSlot({
   domain = 'values that take the range first, in order',
 }: {
@@ -271,12 +332,12 @@ export const colorUnknownSlot = {
 } as const
 
 /** The key's name for each `domain` value, one each in order. */
-export const colorLabelsSlot = {
-  labels: {
+export const colorNamesSlot = {
+  names: {
     type: 'stringArray',
     defaultValue: [],
     description:
-      'key label for each domain value, one each in order, or under threshold for each interval from the lowest; a value past the end of the list shows its name',
+      'key name for each domain value, one each in order, or under threshold for each interval from the lowest; a value past the end of the list shows its own',
   },
 } as const
 
@@ -460,7 +521,25 @@ function refuseFieldAsConstant(
 }
 
 /**
- * A color object's options: a bare string is its `value`, an undeclared key
+ * A color where a channel's field goes is the constant its writer meant, as a
+ * bare string inside `encoding` is the field, so it is refused with the
+ * spelling of one rather than as a field no feature carries.
+ */
+function refuseConstantAsField(
+  snap: Record<string, unknown> | undefined,
+  name: string,
+) {
+  const field = snap?.field
+  if (typeof field === 'string' && !isJexl(field) && isCssColor(field)) {
+    throw new Error(
+      `${name}: "${field}" is a color, and a bare string is the field. To paint every feature it, write ${name}: { "value": "${field}" }`,
+    )
+  }
+  return snap
+}
+
+/**
+ * A color channel's options: a bare string is its `field`, an undeclared key
  * is refused, and `impliedField` is the field the object maps while it names
  * neither a field nor a constant. A default on the `field` slot cannot stand
  * in for it: `{ value: 'red' }` would then paint the field.
@@ -471,16 +550,40 @@ export function colorChannelOptions(
   { impliedField }: { impliedField?: string } = {},
 ) {
   return {
-    shorthand: 'value',
+    shorthand: 'field' as const,
     writes: 'whole' as const,
     plot: true,
     closed: true,
     fieldPresets,
     ...(impliedField ? { impliedField } : {}),
-    preProcessSnapshot: (snap: Record<string, unknown> | undefined) =>
-      normalizeChannel(refuseFieldAsConstant(snap, name), name),
+    preProcessSnapshot: (snap: Record<string, unknown> = {}) =>
+      refuseConstantAsField(refuseFieldAsConstant(snap, name), name) ?? {},
   }
 }
+
+/** A channel's `scale` sub-object's options, `name` its setting's path. */
+export function colorScaleOptions(name: string) {
+  return {
+    closed: true,
+    preProcessSnapshot: (
+      snap: Record<string, unknown> | string | undefined,
+    ) => {
+      // the flat color's `scale: 'ordinal'`, written inside the channel
+      if (typeof snap === 'string') {
+        throw new Error(
+          `${name} is an object: write ${name}: { "type": ${JSON.stringify(snap)} }`,
+        )
+      }
+      return normalizeChannel(snap, name)
+    },
+  }
+}
+
+/** A channel's `legend` sub-object's options. */
+export const colorLegendOptions = { closed: true } as const
+
+/** A display's `encoding`, the namespace its channels sit in. */
+export const encodingOptions = { closed: true, plot: true } as const
 
 function listed(values: readonly string[]) {
   return values.length > 0 ? [...values] : undefined
@@ -491,9 +594,9 @@ function listed(values: readonly string[]) {
  * written one or its field preset's, sampled one color per interval from end
  * to end. Without a scheme the display's own default colors stand.
  */
-function thresholdRange(color: ColorSetting) {
-  const listedRange = listed(color.range)
-  const { domain, scheme, reverse } = color
+function thresholdRange(scale: ColorScaleSetting) {
+  const listedRange = listed(scale.range)
+  const { domain, scheme, reverse } = scale
   return (
     listedRange ??
     (domain.length > 0 && scheme !== undefined
@@ -508,42 +611,42 @@ function thresholdRange(color: ColorSetting) {
 export type FieldColorEncoding = Exclude<ColorEncoding, string>
 
 /**
- * What any display's color object paints: its `value` while it names no
- * field, which is `undefined` on an object whose `value` may be unset, else the field through the scale it paints through, its
- * preset's where it writes none, with the members that scale reads under the
- * names the config spells them, the preset's where the config leaves one
- * unwritten. Each scale answers one fixed set of keys, absent members
- * `undefined`, so a fetch key built over it compares alike whichever members a
- * config happens to write.
+ * What any display's color channel paints: its `value` while it names no
+ * field, which is `undefined` on a channel whose `value` may be unset, else
+ * the field through the scale it paints through, its preset's where it writes
+ * none, with the members that scale reads, the preset's where the config
+ * leaves one unwritten. Each scale answers one fixed set of keys, absent
+ * members `undefined`, so a fetch key built over it compares alike whichever
+ * members a config happens to write.
  */
 export function colorEncodingOf<V extends string | undefined>(
   written: ColorSetting & { value: V },
   presets: FieldPresets = CATEGORICAL_FIELD_PRESETS,
 ): V | FieldColorEncoding {
   const color = withPreset(written, presets)
-  const { field } = color
+  const { field, scale: s } = color
   const scale = paintedScale(color, fieldScaleOf(presets, field))
   switch (scale) {
     case 'none':
     case 'identity':
       return color.value
-    case 'categorical':
+    case 'ordinal':
       return {
         field,
         scale,
-        domain: listed(color.domain),
-        range: listed(color.range),
-        labels: listed(color.labels ?? []),
-        unknown: color.unknown,
+        domain: listed(s.domain),
+        range: listed(s.range),
+        names: listed(s.names ?? []),
+        unknown: s.unknown,
       }
     case 'threshold':
       return {
         field,
         scale,
-        domain: [...color.domain],
-        range: thresholdRange(color),
-        labels: listed(color.labels ?? []),
-        descending: color.descending,
+        domain: [...s.domain],
+        range: thresholdRange(s),
+        names: listed(s.names ?? []),
+        descending: color.legend.descending,
       }
     case 'linear':
     case 'log':
@@ -551,13 +654,13 @@ export function colorEncodingOf<V extends string | undefined>(
       return {
         field,
         scale,
-        domainMin: color.domainMin,
-        domainMax: color.domainMax,
-        domainMid: color.domainMid,
-        range: listed(color.range),
-        scheme: color.scheme,
-        reverse: color.reverse ?? false,
-        domainQuantile: color.domainQuantile,
+        domainMin: s.domainMin,
+        domainMax: s.domainMax,
+        domainMid: s.domainMid,
+        range: listed(s.range),
+        scheme: s.scheme,
+        reverse: s.reverse ?? false,
+        domainQuantile: s.domainQuantile,
       }
   }
 }
@@ -568,15 +671,21 @@ export function colorEncodingOf<V extends string | undefined>(
  * low end, since an unpainted cell is the page behind the matrix.
  */
 export function matrixColorEncodingOf(
-  written: Omit<ColorSetting, 'value' | 'domain' | 'range'>,
+  written: Omit<ColorSetting, 'value' | 'scale'> & {
+    scale: Omit<ColorScaleSetting, 'domain' | 'range'>
+  },
   presets: FieldPresets,
 ): ContinuousRef {
   const encoding = colorEncodingOf(
-    { ...written, value: undefined, domain: [], range: [] },
+    {
+      ...written,
+      value: undefined,
+      scale: { ...written.scale, domain: [], range: [] },
+    },
     presets,
   ) as ContinuousRef
   const { scheme } = encoding
-  return written.reverse === undefined && scheme !== undefined
+  return written.scale.reverse === undefined && scheme !== undefined
     ? { ...encoding, reverse: darkAtLowEnd(scheme) }
     : encoding
 }
@@ -588,11 +697,11 @@ export function matrixColorEncodingOf(
 export function paintedColorEncoding(
   encoding: ColorEncoding | undefined,
 ): ColorEncoding | undefined {
-  if (typeof encoding !== 'object' || !('labels' in encoding)) {
+  if (typeof encoding !== 'object' || !('names' in encoding)) {
     return encoding
   }
   const {
-    labels: _labels,
+    names: _names,
     descending: _descending,
     ...painted
   } = encoding as typeof encoding & { descending?: boolean }
@@ -600,97 +709,122 @@ export function paintedColorEncoding(
 }
 
 /**
- * The rows an identity scale's key lists: each `domain` color, named by its
- * `labels` entry. Only while each feature paints a color of its own — `value`
- * unset, so a file's itemRgb, or a `jexl:` callback — since a constant paints
- * no color for the key to name.
+ * The rows an identity scale's key lists: each `scale.domain` color, named by
+ * its `scale.names` entry. Only while each feature paints a color of its own
+ * — `value` unset, so a file's itemRgb, or a `jexl:` callback — since a
+ * constant paints no color for the key to name.
  */
-export function identityKeyEntries({
-  scale,
-  value,
-  domain,
-  labels = [],
-}: ColorSetting) {
+export function identityKeyEntries({ scale, value }: ColorSetting) {
   if (
-    scale !== IDENTITY_SCALE ||
+    scale.type !== IDENTITY_SCALE ||
     (value !== undefined && !isCallbackValue(value))
   ) {
     return []
   }
-  const names = keyNames(domain, labels)
-  return domain.map(color => ({
+  const names = keyNames(scale.domain, scale.names ?? [])
+  return scale.domain.map(color => ({
     value: color,
     label: names.get(color) ?? color,
     color,
   }))
 }
 
-/** What a FeatureColor paints, each field through its preset where `scale` is unset. */
+/** What a FeatureColor paints, each field through its preset where `scale.type` is unset. */
 export function featureColorEncoding(color: ColorSetting) {
   return colorEncodingOf(color, FEATURE_FIELD_PRESETS)
 }
 
-function definedMembers(color: object) {
-  return Object.fromEntries(
-    Object.entries(color)
+function definedOf(part: object | undefined) {
+  const out = Object.fromEntries(
+    Object.entries(part ?? {})
       .filter(([, v]) => v !== undefined)
       .map(([k, v]) => [k, Array.isArray(v) ? [...v] : v]),
+  )
+  return Object.keys(out).length > 0 ? out : undefined
+}
+
+/**
+ * `color` with its unset members dropped, and a `scale` or `legend` left
+ * empty dropped too, so it compares alike with the snapshot of the object it
+ * writes.
+ */
+export function definedColor(color: ColorSlots): ColorSlots {
+  const { scale, legend, ...rest } = color
+  return (
+    definedOf({
+      ...rest,
+      scale: definedOf(scale),
+      legend: definedOf(legend),
+    }) ?? {}
   )
 }
 
 /**
  * The color object a Color by pick writes over `current`. `''` drops the field
- * and its members, leaving `value`, and a fieldless identity scale, which
- * paints each feature's own color, black included; the field already named
- * keeps its members; the field `parked` holds (`parkedColorOf`) takes its
- * members back; a new field keeps only `value`.
+ * and its scale and key, leaving `value`, and a fieldless identity scale,
+ * which paints each feature's own color, black included; the field already
+ * named keeps its scale and key; the field `parked` holds (`parkedColorOf`)
+ * takes them back; a new field keeps only `value`.
  */
 export function colorForField(
   current: ColorSlots,
   field: string,
   parked?: ColorSlots,
-) {
+): ColorSlots {
   const { value } = current
   if (field === '') {
     const cleared = withoutField(current)
-    return cleared.scale === IDENTITY_SCALE
-      ? definedMembers({ ...cleared, scale: undefined })
+    return cleared.scale?.type === IDENTITY_SCALE
+      ? definedColor({
+          ...cleared,
+          scale: { ...cleared.scale, type: undefined },
+        })
       : cleared
   }
   if (field === current.field) {
-    return definedMembers(current)
+    return definedColor(current)
   }
-  return definedMembers(
+  return definedColor(
     field === parked?.field ? { ...parked, value } : { value, field },
   )
 }
 
 function withoutField(current: ColorSlots) {
-  return definedMembers(current.field ? { value: current.value } : current)
+  return definedColor(current.field ? { value: current.value } : current)
 }
 
 /**
- * The field a pick takes off `color`, with its members, for `colorForField`
- * to give back; undefined while `color` names no field.
+ * The field a pick takes off `color`, with its scale and key, for
+ * `colorForField` to give back; undefined while `color` names no field.
  */
 export function parkedColorOf({
   value: _value,
   ...members
 }: ColorSlots): ColorSlots | undefined {
-  return members.field ? definedMembers(members) : undefined
+  return members.field ? definedColor(members) : undefined
 }
 
 /**
  * The color object a scheme pick writes over `current`: the ramp named,
- * unset where it is `defaultScheme`, the one the object paints with anyway, and
- * `reverse` and `range` dropped, since either would turn or replace the ramp
- * picked.
+ * unset where it is `defaultScheme`, the one the object paints with anyway,
+ * and `scale.reverse` and `scale.range` dropped, since either would turn or
+ * replace the ramp picked.
  */
-export function colorForScheme<
-  C extends { scheme?: string; reverse?: boolean; range?: readonly unknown[] },
->(current: C, scheme: string, defaultScheme?: string) {
-  const { scheme: _scheme, reverse: _reverse, range: _range, ...kept } = current
-  return scheme === defaultScheme ? kept : { ...kept, scheme }
+export function colorForScheme(
+  current: ColorSlots,
+  scheme: string,
+  defaultScheme?: string,
+): ColorSlots {
+  const {
+    scheme: _scheme,
+    reverse: _reverse,
+    range: _range,
+    ...kept
+  } = current.scale ?? {}
+  return definedColor({
+    ...current,
+    scale: scheme === defaultScheme ? kept : { ...kept, scheme },
+  })
 }
 
 /**
@@ -698,24 +832,27 @@ export function colorForScheme<
  * undefined returning to each feature's own color, and the field goes, since a
  * written field paints over any constant.
  */
-export function colorForValue(current: ColorSlots, value: string | undefined) {
-  return definedMembers({ ...withoutField(current), value })
+export function colorForValue(
+  current: ColorSlots,
+  value: string | undefined,
+): ColorSlots {
+  return definedColor({ ...withoutField(current), value })
 }
 
 /**
- * A categorical encoding's field as every categorical channel keys, orders,
- * names and paints it, dealing its colors into `held` (`heldColorSlots`), or
+ * An ordinal encoding's field as every ordinal channel keys, orders, names
+ * and paints it, dealing its colors into `held` (`heldColorSlots`), or
  * `undefined` for any other encoding.
  */
 export function categoricalColorField(
   encoding: ColorEncoding | undefined,
   held?: HeldSlots,
 ) {
-  return typeof encoding === 'object' && encoding.scale === 'categorical'
+  return typeof encoding === 'object' && encoding.scale === 'ordinal'
     ? categoricalField(encoding.field, {
         domain: encoding.domain?.map(String),
         range: encoding.range,
-        labels: encoding.labels,
+        labels: encoding.names,
         held,
         unknown: encoding.unknown,
       })
@@ -723,10 +860,9 @@ export function categoricalColorField(
 }
 
 /**
- * The field a categorical or threshold encoding paints through, keyed,
- * ordered, named and colored as every categorical channel reads one — a
- * threshold's values filed under their bins — or `undefined` for any other
- * encoding.
+ * The field an ordinal or threshold encoding paints through, keyed, ordered,
+ * named and colored as every ordinal channel reads one — a threshold's values
+ * filed under their bins — or `undefined` for any other encoding.
  */
 export function colorFieldOf(
   encoding: ColorEncoding | undefined,
@@ -736,7 +872,7 @@ export function colorFieldOf(
     ? thresholdField(encoding.field, {
         domain: encoding.domain?.map(String),
         range: encoding.range,
-        labels: encoding.labels,
+        labels: encoding.names,
       })
     : categoricalColorField(encoding, held)
 }
@@ -744,62 +880,75 @@ export function colorFieldOf(
 /**
  * #config FeatureColor
  * #category display
- * The canvas feature displays' `color` setting: a CSS color or `jexl:`
- * callback in `value`, or a field whose values each take a range color,
- * whose numbers each take the color of the interval between cut points they
- * fall in, or whose numbers run along a color ramp, with a key. A string is
- * the constant; the object binds the field, which paints wherever one is
- * written. `scale: "identity"` keeps each feature's color, whether a file's itemRgb or
- * what a `value` callback returns, and names the colors `domain` lists in the
- * key. Like UCSC's `itemRgb on`, it paints an itemRgb of `0,0,0` or `0` black,
- * which otherwise reads as no color, and reads a comma-free itemRgb as a packed
- * integer.
+ * The canvas feature displays' `encoding.color`: a CSS color or `jexl:`
+ * callback in `value`, or a field whose values each take a range color, whose
+ * numbers each take the color of the interval between cut points they fall
+ * in, or whose numbers run along a color ramp, with a key. A string is the
+ * field; a written field always paints. `scale.type: "identity"` keeps each
+ * feature's color, whether a file's itemRgb or what a `value` callback
+ * returns, and names the colors `scale.domain` lists in the key. Like UCSC's
+ * `itemRgb on`, it paints an itemRgb of `0,0,0` or `0` black, which otherwise
+ * reads as no color, and reads a comma-free itemRgb as a packed integer.
  *
  * #example
  * ```js
- * { type: 'LinearBasicDisplay', color: 'goldenrod' }
+ * { type: 'LinearBasicDisplay', encoding: { color: { value: 'goldenrod' } } }
  * ```
  * ```js
  * {
  *   type: 'LinearBasicDisplay',
- *   color: { field: 'gene_biotype', range: ['#1f77b4', '#ff7f0e'] },
- * }
- * ```
- * ```js
- * {
- *   type: 'LinearBasicDisplay',
- *   color: {
- *     field: 'type',
- *     domain: ['prophage', 'plasmid'],
- *     range: ['#d95f02', '#1b9e77'],
- *     unknown: '#cccccc',
+ *   encoding: {
+ *     color: { field: 'gene_biotype', scale: { range: ['#1f77b4', '#ff7f0e'] } },
  *   },
  * }
  * ```
  * ```js
  * {
  *   type: 'LinearBasicDisplay',
- *   color: {
- *     field: 'score',
- *     scale: 'threshold',
- *     domain: [0.5, 0.9],
- *     range: ['#c6dbef', '#6baed6', '#08519c'],
+ *   encoding: {
+ *     color: {
+ *       field: 'type',
+ *       scale: {
+ *         domain: ['prophage', 'plasmid'],
+ *         range: ['#d95f02', '#1b9e77'],
+ *         unknown: '#cccccc',
+ *       },
+ *     },
  *   },
  * }
  * ```
  * ```js
  * {
  *   type: 'LinearBasicDisplay',
- *   color: { field: 'score', scheme: 'viridis', domainMin: 0 },
+ *   encoding: {
+ *     color: {
+ *       field: 'score',
+ *       scale: {
+ *         type: 'threshold',
+ *         domain: [0.5, 0.9],
+ *         range: ['#c6dbef', '#6baed6', '#08519c'],
+ *       },
+ *     },
+ *   },
+ * }
+ * ```
+ * ```js
+ * {
+ *   type: 'LinearBasicDisplay',
+ *   encoding: { color: { field: 'score', scale: { scheme: 'viridis', domainMin: 0 } } },
  * }
  * ```
  * ```js
  * {
  *   type: 'LinearMultiRowFeatureDisplay',
- *   color: {
- *     scale: 'identity',
- *     domain: ['rgb(255,0,0)', 'rgb(0,128,0)'],
- *     labels: ['Active TSS', 'Strong transcription'],
+ *   encoding: {
+ *     color: {
+ *       scale: {
+ *         type: 'identity',
+ *         domain: ['rgb(255,0,0)', 'rgb(0,128,0)'],
+ *         names: ['Active TSS', 'Strong transcription'],
+ *       },
+ *     },
  *   },
  * }
  * ```
@@ -809,38 +958,56 @@ export const colorConfigSchema = ConfigurationSchema(
   {
     /**
      * #slot value
-     * A CSS color, or a jexl callback over `feature` returning one. Writing
-     * `color: "red"` or `color: "jexl:…"` lands here. Unset, a feature's own
-     * BED itemRgb paints it if it has one, else goldenrod.
+     * A CSS color, or a jexl callback over `feature` returning one. Unset, a
+     * feature's own BED itemRgb paints it if it has one, else goldenrod.
      */
     value: {
       type: 'maybeColor',
       description: 'CSS color or jexl callback',
       contextVariable: ['feature'],
     },
-    ...colorChannelSlots({
-      scales: FEATURE_COLOR_SCALES,
-      scaleName: 'FeatureColorScale',
+    ...colorFieldSlot({
       fieldType: 'featureField',
       field:
-        "a feature field, or a jexl expression over feature, whose values each take one range color, with a key; a transcript and its parts paint the transcript's value, or its gene's where the transcript has none; strand paints forward tomato and reverse cornflowerblue unless domain or range says otherwise",
-      scale:
-        "categorical a range color per value of field; threshold a range color per interval between the cut points in domain; linear or log a color along a ramp from domainMin to domainMax; identity paints each feature's own color, as an object with no field does, except that an itemRgb of 0,0,0 or 0 paints black and a comma-free one reads as a packed integer, and the key names the colors in domain; unset is linear for score and categorical for any other field",
+        "a feature field, or a jexl expression over feature, whose values each take one range color, with a key; a transcript and its parts paint the transcript's value, or its gene's where the transcript has none; strand paints forward tomato and reverse cornflowerblue unless scale.domain or scale.range says otherwise",
     }),
-    ...colorDomainSlot({
-      domain:
-        'the values that take the range first, in order; a value left out takes a color no listed value or value met before it paints, the first time the track shows it, and keeps it. Under threshold, the ascending cut points, a value on a cut taking the interval above it. Under identity, the CSS colors the key names, in order',
-    }),
-    ...colorRangeSlot({
-      range:
-        "CSS colors the domain takes, in order, continuing into the default palette past its end; under threshold one per interval, one more than the cuts; under linear or log the ramp's stops, winning over scheme",
-    }),
-    ...colorUnknownSlot,
-    ...colorLabelsSlot,
-    ...colorRampSlots,
-    ...colorDomainEndsSlots,
-    ...colorDomainQuantileSlot,
-    ...colorTitleSlot,
+    /**
+     * #slot scale
+     * How the field's values map to colors, Vega-Lite's scale object.
+     */
+    scale: ConfigurationSchema(
+      'FeatureColorScale',
+      {
+        ...colorScaleTypeSlot({
+          scales: FEATURE_COLOR_SCALES,
+          scaleName: 'FeatureColorScaleType',
+          type: "ordinal a range color per value of field; threshold a range color per interval between the cut points in domain; linear or log a color along a ramp from domainMin to domainMax; identity paints each feature's own color, as a channel with no field does, except that an itemRgb of 0,0,0 or 0 paints black and a comma-free one reads as a packed integer, and the key names the colors in domain; unset is linear for score and ordinal for any other field",
+        }),
+        ...colorDomainSlot({
+          domain:
+            'the values that take the range first, in order; a value left out takes a color no listed value or value met before it paints, the first time the track shows it, and keeps it. Under threshold, the ascending cut points, a value on a cut taking the interval above it. Under identity, the CSS colors the key names, in order',
+        }),
+        ...colorRangeSlot({
+          range:
+            "CSS colors the domain takes, in order, continuing into the default palette past its end; under threshold one per interval, one more than the cuts; under linear or log the ramp's stops, winning over scheme",
+        }),
+        ...colorUnknownSlot,
+        ...colorNamesSlot,
+        ...colorRampSlots,
+        ...colorDomainEndsSlots,
+        ...colorDomainQuantileSlot,
+      },
+      colorScaleOptions('encoding.color.scale'),
+    ),
+    /**
+     * #slot legend
+     * The key this channel draws.
+     */
+    legend: ConfigurationSchema(
+      'FeatureColorLegend',
+      { ...colorTitleSlot },
+      colorLegendOptions,
+    ),
   },
-  colorChannelOptions('color', FEATURE_FIELD_PRESETS),
+  colorChannelOptions('encoding.color', FEATURE_FIELD_PRESETS),
 )

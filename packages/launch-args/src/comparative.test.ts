@@ -114,6 +114,35 @@ describe('buildComparative', () => {
     expect(data.syntenyTracks[0]?.assemblyNames).toEqual(['a.fa', 'a.fa'])
   })
 
+  test('a self-comparison is one file however its path is spelled', () => {
+    expect(
+      buildComparative(entries('./a.fa a_a.paf a.fa')).assemblies,
+    ).toHaveLength(1)
+    expect(() =>
+      buildComparative(
+        entries('https://x.test/a.fa a_a.paf https://y.test/a.fa'),
+      ),
+    ).toThrow(/both named a\.fa/)
+  })
+
+  test('a repeat row restates its genome, never changes it', () => {
+    const data = buildComparative(
+      entries('a.fa aliases:al.txt a_a.paf a.fa aliases:./al.txt loc:chr2'),
+    )
+    expect(data.assemblies[0]!.refNameAliases?.adapter).toMatchObject({
+      location: { localPath: 'al.txt' },
+    })
+    expect(data.rows[1]).toEqual({ assembly: 'a.fa', loc: 'chr2' })
+    for (const line of [
+      'a.fa aliases:al.txt a_a.paf a.fa aliases:other.txt',
+      'a.fa a_a.paf a.fa cytobands:bands.txt',
+    ]) {
+      expect(() => buildComparative(entries(line))).toThrow(
+        /repeats a\.fa, which takes its aliases: and cytobands: on its first row/,
+      )
+    }
+  })
+
   test('a URL names its genome and comparison without the query', () => {
     const data = buildComparative(
       entries('https://x.test/a.fa?t=1 https://x.test/a_b.paf?t=1 b.fa'),

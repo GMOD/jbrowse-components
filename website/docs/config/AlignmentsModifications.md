@@ -19,7 +19,7 @@ the basecaller listed it or not, which is the methylation view.
 ```js
 {
   type: 'LinearAlignmentsDisplay',
-  baseColor: 'modifications',
+  pileup: { bases: { show: true, encoding: { color: 'modifications' } } },
   modifications: { unmodified: 'all', cytosineContext: 'CHG' },
 }
 ```
@@ -27,7 +27,7 @@ the basecaller listed it or not, which is the methylation view.
 ```js
 {
   type: 'LinearAlignmentsDisplay',
-  baseColor: 'modifications',
+  pileup: { bases: { show: true, encoding: { color: 'modifications' } } },
   modifications: { shownModifications: ['a'], threshold: 50 },
 }
 ```

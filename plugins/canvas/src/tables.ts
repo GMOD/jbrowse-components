@@ -495,7 +495,7 @@ export async function featureTables(
         )
   const palette = resolvePalette()
   const colors = featureColorViews({
-    conf: { color: conf.color },
+    conf: { encoding: { color: conf.encoding.color } },
     rpcDataMap: new Map(raws.map((raw, i) => [i, raw])),
   })
   const resolved = resolveMapColors(laid, palette, colors.fieldPalette)

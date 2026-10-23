@@ -605,7 +605,7 @@ describe('the ribbons', () => {
     })
     const data = ribbonData(cells, 'ribbons:0')
     const alpha = Math.round(0.4 * 255)
-    const [forward, reverse] = UNIVERSAL_FIELD_PRESETS.strand.range
+    const [forward, reverse] = UNIVERSAL_FIELD_PRESETS.strand.scale.range
     expect(data.colors[0]).toBe(withAbgrAlpha(cssColorToABGR(forward), alpha))
     expect(data.colors[1]).toBe(withAbgrAlpha(cssColorToABGR(reverse), alpha))
   })
@@ -633,7 +633,7 @@ describe('the ribbons', () => {
       Math.sign(data.bp3[i]! - data.bp4[i]!)
     expect([crossed(0), crossed(1)]).toEqual([true, false])
     const alpha = Math.round(0.4 * 255)
-    const [forward, reverse] = UNIVERSAL_FIELD_PRESETS.strand.range
+    const [forward, reverse] = UNIVERSAL_FIELD_PRESETS.strand.scale.range
     expect(data.colors[0]).toBe(withAbgrAlpha(cssColorToABGR(forward), alpha))
     expect(data.colors[1]).toBe(withAbgrAlpha(cssColorToABGR(reverse), alpha))
   })

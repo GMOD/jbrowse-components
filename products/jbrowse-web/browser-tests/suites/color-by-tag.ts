@@ -6,7 +6,10 @@ import type { TestSuite } from '../types.ts'
 const colorTrack = (
   field: string,
   trackId = 'volvox_alignments',
-): LgvTrack => ({ trackId, displaySnapshot: { color: { field } } })
+): LgvTrack => ({
+  trackId,
+  displaySnapshot: { encoding: { color: { field } } },
+})
 
 const suite: TestSuite = {
   name: 'Alignments Color Schemes',

@@ -1,8 +1,8 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
-import { alignmentsBaseColorConfigSchema } from './alignmentsBaseColorConfigSchema.ts'
 import { alignmentsModificationsConfigSchema } from './alignmentsModificationsConfigSchema.ts'
 import { baseLinearAlignmentsDisplayConfigSchema } from './baseConfigSchema.ts'
+import { readsPileupConfigSchema } from './readsPileupConfigSchema.ts'
 import { sashimiConfigSchema } from './sashimiConfigSchema.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -16,7 +16,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * pileup. Each band is one object, `coverage`, `sashimi`, `readConnections`
  * and `pileup`, holding whether it draws and its height; the settings every
  * band shares sit beside them: `filter`, one list of the read, junction and
- * connection tests, `unit`, `facet`, `sort` and `color`.
+ * connection tests, `unit`, `facet`, `sort`, `encoding` and `legend`.
  *
  * #example
  * Minimal BAM track — no display override needed for defaults. See the
@@ -36,7 +36,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * CRAM colored by CpG methylation (modBAM MM/ML tags). The `displayDefaults`
  * object shorthand applies settings without spelling out the display `type` or
  * `displayId` — equivalent to `displays: [{ type: 'LinearAlignmentsDisplay',
- * displayId: '...', color: ... }]`. See
+ * displayId: '...', pileup: ... }]`. See
  * [configuring displays](/docs/config_guides/tracks#configuring-displays):
  * ```js
  * {
@@ -46,7 +46,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  *   assemblyNames: ['hg38'],
  *   adapter: { type: 'CramAdapter', uri: 'https://example.com/sample.cram' },
  *   displayDefaults: {
- *     baseColor: { field: 'modifications' },
+ *     pileup: { bases: { show: true, encoding: { color: 'modifications' } } },
  *     modifications: { unmodified: 'all' },
  *   },
  * }
@@ -66,7 +66,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  *   displayDefaults: {
  *     height: 400,
  *     unit: 'chain',
- *     color: { field: 'pairOrientation' },
+ *     encoding: { color: 'pairOrientation' },
  *     pileup: { softClips: { show: true } },
  *     readConnections: { show: true },
  *   },
@@ -99,20 +99,20 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
     'LinearAlignmentsDisplay',
     {
       /**
-       * #slot baseColor
-       * The per-base layer drawn over the reads, whatever fills them:
-       * `{ field: "modifications" }`, `"bisulfite"`, `"baseQuality"` or
-       * `"base"`.
+       * #slot pileup
+       * The stacked reads, with the per-base layer drawn over them,
+       * whatever fills them: `bases: { show: true, encoding: { color:
+       * "modifications" } }`, `"bisulfite"`, `"baseQuality"` or `"base"`.
        */
-      baseColor: alignmentsBaseColorConfigSchema,
+      pileup: readsPileupConfigSchema,
       /**
        * #slot modifications
        * Settings for the `modifications` and `bisulfite` color fields:
        * `threshold` (percent, default 10), `unmodified`,
        * `cytosineContext` and `shownModifications`.
        */
-      // Beside `baseColor` rather than inside it: a color object is written
-      // whole, so a menu pick of `baseColor: 'bisulfite'` would reset these.
+      // Beside `pileup.bases` rather than inside its channel: a channel is
+      // written whole, so a menu pick of `bisulfite` would reset these.
       modifications: alignmentsModificationsConfigSchema,
       /**
        * #slot sashimi

@@ -75,8 +75,8 @@ export function isSlotPathOption(opt: string) {
 }
 
 /**
- * Whether a slot write names a member of a setting, `color.field=…`, rather
- * than a whole setting, `height=…`.
+ * Whether a slot write names a member of a setting, `encoding.color.field=…`,
+ * rather than a whole setting, `height=…`.
  */
 export function isMemberWrite(opt: string) {
   return isSlotPathOption(opt) && opt.slice(0, opt.indexOf('=')).includes('.')
@@ -84,8 +84,8 @@ export function isMemberWrite(opt: string) {
 
 /**
  * Merge `patch` into `target`, object into object and anything else replacing
- * what was there, so `color.field=…` and `color.range=…` fill one object in
- * either order.
+ * what was there, so `encoding.color.field=…` and
+ * `encoding.color.scale.range=…` fill one object in either order.
  */
 export function mergeSettings(
   target: Record<string, unknown>,
@@ -112,7 +112,10 @@ export interface SlotWrite {
   value: unknown
 }
 
-/** `color.range=tan,teal` and `marks.0.encoding.y=score`, read apart. */
+/**
+ * `encoding.color.scale.range=tan,teal` and `marks.0.encoding.y=score`, read
+ * apart.
+ */
 export function slotWrite(opt: string): SlotWrite {
   const eq = opt.indexOf('=')
   const segments = opt.slice(0, eq).split('.')

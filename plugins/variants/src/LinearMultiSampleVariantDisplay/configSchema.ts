@@ -2,6 +2,8 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import baseLinearDisplayConfigSchema from '@jbrowse/display-kit/configSchema'
 import { facetConfigSchema } from '@jbrowse/display-kit/facetConfigSchema'
 import { fieldPredicateList } from '@jbrowse/display-kit/fieldPredicateConfigSchema'
+import { legendConfigSchema } from '@jbrowse/display-kit/legendConfigSchema'
+import { retiredDisplayColor } from '@jbrowse/display-kit/retiredSettings'
 import { rowColorConfigSchema } from '@jbrowse/display-kit/rowColorConfigSchema'
 import { sampleRowsConfigSchema } from '@jbrowse/display-kit/sampleRowsConfigSchema'
 import { types } from '@jbrowse/mobx-state-tree'
@@ -15,7 +17,7 @@ import {
   MULTI_SAMPLE_VARIANT_DISPLAY,
   VARIANT_UNITS,
 } from '../shared/constants.ts'
-import { cellColorConfigSchema } from './cellColorConfigSchema.ts'
+import { cellEncodingConfigSchema } from './cellEncodingConfigSchema.ts'
 import { variantsBandConfigSchema } from './variantsBandConfigSchema.ts'
 
 /**
@@ -202,13 +204,11 @@ export default function configSchemaFactory() {
         plot: true,
       },
       /**
-       * #slot color
-       * The hue of every genotype cell with an alt allele: unset, the genotype
-       * colors; a CSS color or `jexl:` callback; or a field, one of the
-       * `impact`, `svType` and `phaseSet` presets or any record field, whose
-       * values each take a color with a key.
+       * #slot encoding
+       * The genotype cells' channels: `encoding.color`, the hue of every cell
+       * with an alt allele.
        */
-      color: cellColorConfigSchema,
+      encoding: cellEncodingConfigSchema,
       /**
        * #slot
        * Compose the cell hue with the genotype's alt dosage — the fraction of
@@ -223,17 +223,12 @@ export default function configSchemaFactory() {
           "shade each alt cell by the fraction of its called alleles that are non-reference, so a homozygote is darker than a heterozygote; off paints every alt cell the mode's flat hue",
       },
       /**
-       * #slot
-       * Whether to draw the floating legend over the display. It is clipped to
-       * the display's own bounds, so turn it off to size a short display to its
-       * rows rather than to its key.
+       * #slot legend
+       * The floating key over the display. It is clipped to the display's own
+       * bounds, so turn it off to size a short display to its rows rather
+       * than to its key.
        */
-      showLegend: {
-        type: 'boolean',
-        description:
-          'Whether to show the floating legend over the display; turn it off to size a short display to its rows rather than to its key. Defaults to on',
-        defaultValue: true,
-      },
+      legend: legendConfigSchema,
       /**
        * #slot rowColor
        * The bar beside each row's label: a sample-metadata attribute whose
@@ -300,9 +295,9 @@ export default function configSchemaFactory() {
       baseConfiguration: baseLinearDisplayConfigSchema,
       explicitlyTyped: true,
       // v4's two multi-sample displays spelt the sidebar labels and the
-      // reference-allele paint as booleans, named a color scheme the `color`
-      // object has no member for, and carried the wiggle scale slots the
-      // matrix never read.
+      // reference-allele paint as booleans, named a color scheme
+      // `encoding.color` has no member for, and carried the wiggle scale slots
+      // the matrix never read.
       retired: {
         renderingMode: (v: unknown) => ({
           unit: v === 'phased' ? 'haplotype' : 'sample',
@@ -319,6 +314,7 @@ export default function configSchemaFactory() {
         inverted: () => ({}),
         numStdDev: () => ({}),
         minimalTicks: () => ({}),
+        ...retiredDisplayColor,
       },
       preProcessSnapshot: liftMinorAlleleFrequencyFilter,
     },

@@ -1,5 +1,6 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { retiredBaseDisplaySpellings } from '@jbrowse/display-kit/configSchema'
+import { legendConfigSchema } from '@jbrowse/display-kit/legendConfigSchema'
 import { rowColorConfigSchema } from '@jbrowse/display-kit/rowColorConfigSchema'
 import { trackHeightConfigSchemaFields } from '@jbrowse/display-kit/trackHeightConfigSchemaFields'
 import {
@@ -13,11 +14,11 @@ import {
 
 import { extentConfigSchemaFields } from '../shared/extentConfigSchemaFields.ts'
 import { quantitativeRowsConfigSchema } from '../shared/quantitativeRowsConfigSchema.ts'
-import { wiggleColorSchema } from '../shared/wiggleColorConfigSchema.ts'
 import {
   wiggleConfigSchemaFields,
   wiggleValueScale,
 } from '../shared/wiggleConfigSchemaFields.ts'
+import { wiggleEncodingConfigSchema } from '../shared/wiggleEncodingConfigSchema.ts'
 import { wiggleMarkConfigSchema } from '../shared/wiggleMarkConfigSchema.ts'
 import { WIGGLE_MARK_NAMES, markOf } from '../util.ts'
 import { retiredConfigSpellings } from './retired.ts'
@@ -84,7 +85,7 @@ import { retiredConfigSpellings } from './retired.ts'
  *   displayDefaults: {
  *     height: 200,
  *     scales: { y: { type: 'log' } },
- *     color: 'darkgreen',
+ *     encoding: { color: { value: 'darkgreen' } },
  *   },
  * }
  * ```
@@ -133,23 +134,24 @@ const linearWiggleDisplayConfigSchema = ConfigurationSchema(
     rows: quantitativeRowsConfigSchema,
     /**
      * #slot rowColor
-     * The color a reader set on a named subtrack, as `domain`/`range` pairs,
-     * ahead of the adapter's color and the palette: its plot while `color` is
-     * unset, and otherwise, or under a score gradient, the tint beside its
-     * label.
+     * The color a reader set on a named subtrack, as `scale.domain` and
+     * `scale.range` pairs, ahead of the adapter's color and the palette: its
+     * plot while `encoding.color` is unset, and otherwise, or under a score
+     * gradient, the tint beside its label.
      * #example
      * ```json
      * {
      *   "type": "LinearWiggleDisplay",
-     *   "rowColor": { "domain": ["tumor"], "range": ["#b2182b"] }
+     *   "rowColor": { "scale": { "domain": ["tumor"], "range": ["#b2182b"] } }
      * }
      * ```
      */
     rowColor: rowColorConfigSchema,
     ...trackHeightConfigSchemaFields(),
     /**
-     * #slot color
-     * One CSS color, or `score` through a scale — `threshold` for solid
+     * #slot encoding
+     * The channels the marks paint through: `encoding.color`, one CSS color
+     * in `value`, or the score through a `scale` — `threshold` for solid
      * bands, `linear` for a gradient. Unset, it is the pos/neg pair about the
      * `origin`, which a heatmap fades to from white there, and several
      * sources in one plot box each paint their row color.
@@ -157,11 +159,11 @@ const linearWiggleDisplayConfigSchema = ConfigurationSchema(
      * ```json
      * {
      *   "type": "LinearWiggleDisplay",
-     *   "color": { "field": "score", "scale": "threshold", "domain": [2] }
+     *   "encoding": { "color": { "scale": { "type": "threshold", "domain": [2] } } }
      * }
      * ```
      */
-    color: wiggleColorSchema,
+    encoding: wiggleEncodingConfigSchema,
     ...wiggleConfigSchemaFields,
     /**
      * #slot scales
@@ -180,14 +182,11 @@ const linearWiggleDisplayConfigSchema = ConfigurationSchema(
      */
     scales: wiggleValueScale(),
     /**
-     * #slot
+     * #slot legend
+     * The key: density's score color ramp, a threshold's bands, or the
+     * source colors where several share one plot.
      */
-    showLegend: {
-      type: 'boolean',
-      description:
-        "Draw the key: density's score color ramp, or the source colors where several share one plot. Defaults to on",
-      defaultValue: true,
-    },
+    legend: legendConfigSchema,
     ...extentConfigSchemaFields({ extent: 'min-max' }),
     ...treeSidebarConfigSchemaFields({
       tree: 'Show the subtrack clustering tree in the sidebar',

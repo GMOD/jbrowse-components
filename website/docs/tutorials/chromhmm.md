@@ -187,9 +187,9 @@ JBrowse finds the `.bed.gz.tbi` beside the file. In
   sort by value
 
 JBrowse paints each feature with its `itemRgb`. The
-[`color`](/docs/config/linearmultirowfeaturedisplay/#slot-color) slot is a color
-scale that overrides this, mapping the values of a `field` through its `domain`
-to its `range`. The adapter needs
+[`encoding.color`](/docs/config/linearmultirowfeaturedisplay/#slot-color) slot
+is a color scale that overrides this, mapping the values of a `field` through
+its `scale.domain` to its `scale.range`. The adapter needs
 [`columnNames`](/docs/config/bedtabixadapter/#slot-columnnames) only for a file
 without a defline.
 
@@ -209,8 +209,8 @@ JBrowse builds the key from the state colors, one entry per distinct color,
 labeled with the first state name seen in it. States that share a color merge
 into one entry, so in the Broad 15-state model `4_Strong_Enhancer` shares its
 entry with `5_`. An identity
-[`color`](/docs/config/linearmultirowfeaturedisplay/#slot-color) scale keeps the
-file's colors and relabels them in the key.
+[`encoding.color`](/docs/config/linearmultirowfeaturedisplay/#slot-color) scale
+keeps the file's colors and relabels them in the key.
 
 Most of any segmentation is quiescent or heterochromatic. The track menu has
 these actions for reading the rest:
@@ -230,14 +230,14 @@ The
 [Roadmap Epigenomics](https://egg2.wustl.edu/roadmap/web_portal/chr_state_learning.html)
 15-state segmentations of the Roadmap epigenomes merge the same way, into one
 track and one fetch. Their state names are mnemonics (`12_EnhBiv`,
-`14_ReprPCWk`), so this track labels its colors with `scale: "identity"`: the
-file's `itemRgb` still paints each block, and `labels` spells out the fifteen
-`domain` colors in order. The merged file is hosted, so the track loads as it
-stands. The track omits three settings the PAX5 figure uses: a `rows.sort`
-naming every epigenome, grouped by tissue, and the `rowGroups` and `rowColor`
-built later in this section that color the label bars. The hosted demo config,
-https://jbrowse.org/code/jb2/main/test_data/config_demo.json, has the track with
-all three:
+`14_ReprPCWk`), so this track labels its colors with `scale.type: "identity"`:
+the file's `itemRgb` still paints each block, and `scale.names` spells out the
+fifteen `scale.domain` colors in order. The merged file is hosted, so the track
+loads as it stands. The track omits three settings the PAX5 figure uses: a
+`rows.sort` naming every epigenome, grouped by tissue, and the `rowGroups` and
+`rowColor` built later in this section that color the label bars. The hosted
+demo config, https://jbrowse.org/code/jb2/main/test_data/config_demo.json, has
+the track with all three:
 
 ```json addtrack loc=chr9:34,700,000-38,420,000
 {
@@ -251,42 +251,46 @@ all three:
     {
       "type": "LinearMultiRowFeatureDisplay",
       "rows": "cellType",
-      "color": {
-        "scale": "identity",
-        "domain": [
-          "rgb(255,0,0)",
-          "rgb(255,69,0)",
-          "rgb(50,205,50)",
-          "rgb(0,128,0)",
-          "rgb(0,100,0)",
-          "rgb(194,225,5)",
-          "rgb(255,255,0)",
-          "rgb(102,205,170)",
-          "rgb(138,145,208)",
-          "rgb(205,92,92)",
-          "rgb(233,150,122)",
-          "rgb(189,183,107)",
-          "rgb(128,128,128)",
-          "rgb(192,192,192)",
-          "rgb(255,255,255)"
-        ],
-        "labels": [
-          "1 Active TSS",
-          "2 Flanking active TSS",
-          "3 Transcribed 5'/3' flank",
-          "4 Strong transcription",
-          "5 Weak transcription",
-          "6 Genic enhancer",
-          "7 Enhancer",
-          "8 ZNF genes / repeats",
-          "9 Heterochromatin",
-          "10 Bivalent TSS",
-          "11 Flanking bivalent",
-          "12 Bivalent enhancer",
-          "13 Repressed Polycomb",
-          "14 Weak repressed Polycomb",
-          "15 Quiescent / low"
-        ]
+      "encoding": {
+        "color": {
+          "scale": {
+            "type": "identity",
+            "domain": [
+              "rgb(255,0,0)",
+              "rgb(255,69,0)",
+              "rgb(50,205,50)",
+              "rgb(0,128,0)",
+              "rgb(0,100,0)",
+              "rgb(194,225,5)",
+              "rgb(255,255,0)",
+              "rgb(102,205,170)",
+              "rgb(138,145,208)",
+              "rgb(205,92,92)",
+              "rgb(233,150,122)",
+              "rgb(189,183,107)",
+              "rgb(128,128,128)",
+              "rgb(192,192,192)",
+              "rgb(255,255,255)"
+            ],
+            "names": [
+              "1 Active TSS",
+              "2 Flanking active TSS",
+              "3 Transcribed 5'/3' flank",
+              "4 Strong transcription",
+              "5 Weak transcription",
+              "6 Genic enhancer",
+              "7 Enhancer",
+              "8 ZNF genes / repeats",
+              "9 Heterochromatin",
+              "10 Bivalent TSS",
+              "11 Flanking bivalent",
+              "12 Bivalent enhancer",
+              "13 Repressed Polycomb",
+              "14 Weak repressed Polycomb",
+              "15 Quiescent / low"
+            ]
+          }
+        }
       },
       "height": 700
     }
@@ -395,8 +399,10 @@ this:
   "facet": "group",
   "rowColor": {
     "field": "group",
-    "domain": ["Adipose", "Heart"],
-    "range": ["#AF5B39", "#D56F80"]
+    "scale": {
+      "domain": ["Adipose", "Heart"],
+      "range": ["#AF5B39", "#D56F80"]
+    }
   }
 }
 ```
@@ -409,7 +415,8 @@ metacharacters in the names:
 jq -R -s 'split("\n")[1:-1] | map(split("\t")) | group_by(.[1])
   | { rowGroups: map({ match: ("^(" + (map(.[4] | gsub("(?<c>[.()+*?\\[\\]^$|\\\\{}])"; "\\" + .c)) | join("|")) + ")$"),
                        group: .[0][1] }),
-      rowColor: { field: "group", domain: map(.[0][1]), range: map(.[0][2]) } }' EID_metadata.tab > tissues.json
+      rowColor: { field: "group",
+                  scale: { domain: map(.[0][1]), range: map(.[0][2]) } } }' EID_metadata.tab > tissues.json
 ```
 
 Merge the two keys of `tissues.json` into the display. The build script also

@@ -47,7 +47,7 @@ const connections = {
 const illuminaPairs = {
   ...connections,
   readConnections: { placement: 'down' },
-  color: { field: 'insertSizeAndOrientation' },
+  encoding: { color: 'insertSizeAndOrientation' },
 }
 
 // What a band of a track is, hung from the track's own label as the
@@ -142,7 +142,7 @@ const readEvidence = ({
                 transform: [{ type: 'mate' }],
                 encoding: {
                   x2: { chrom: 'mate.refName', pos: 'mate.start' },
-                  size: 2,
+                  strokeWidth: 2,
                 },
               },
             ],
@@ -165,10 +165,10 @@ const readEvidence = ({
             },
             unit: 'chain',
             // paints each split segment by its strand against its molecule
-            color: { field: 'pairOrientation' },
+            encoding: { color: 'pairOrientation' },
             height: connectorCurves ? 345 : 195,
             facet: 'split',
-            showLegend: true,
+            legend: { show: true },
           },
           {
             ...illuminaPairs,
@@ -197,7 +197,7 @@ const readEvidence = ({
               height: 200,
             },
             height: 215,
-            showLegend: true,
+            legend: { show: true },
           },
         ],
       },

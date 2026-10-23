@@ -71,20 +71,22 @@ export const retiredTypes: RetiredDisplayType[] = [
 // side of it and a density plot fades to from white, as v4's renderers did.
 function colorOf({ color, posColor, negColor }: DisplayEntry) {
   return typeof color === 'string'
-    ? { color }
+    ? { encoding: { color: { value: color } } }
     : typeof posColor === 'string' || typeof negColor === 'string'
       ? {
-          color: {
-            field: 'score',
-            domain: [],
-            range: [
-              typeof negColor === 'string'
-                ? negColor
-                : WIGGLE_NEG_COLOR_DEFAULT,
-              typeof posColor === 'string'
-                ? posColor
-                : WIGGLE_POS_COLOR_DEFAULT,
-            ],
+          encoding: {
+            color: {
+              scale: {
+                range: [
+                  typeof negColor === 'string'
+                    ? negColor
+                    : WIGGLE_NEG_COLOR_DEFAULT,
+                  typeof posColor === 'string'
+                    ? posColor
+                    : WIGGLE_POS_COLOR_DEFAULT,
+                ],
+              },
+            },
           },
         }
       : {}
@@ -110,11 +112,13 @@ function summaryOf(mode: unknown) {
 const V4_RENDERERS = ['XYPlotRenderer', 'LinePlotRenderer', 'DensityRenderer']
 
 /**
- * v4's `renderers` block, as the display's `retired` reads it: its colors
- * become `color` and its `summaryScoreMode` `y` and `extent`, and
- * everything else in it is let go. The scale slots beside it are `retiredScaleSpellings`.
+ * v4's `color` and `renderers` block, as the display's `retired` reads them:
+ * the colors become `encoding.color` and the block's `summaryScoreMode` `y` and
+ * `extent`, and everything else in it is let go. The scale slots beside it are
+ * `retiredScaleSpellings`.
  */
 export const retiredConfigSpellings = {
+  color: (color: unknown) => colorOf({ color }),
   renderers: (renderers: unknown) => {
     const block = isRecord(renderers) ? renderers : {}
     const named = V4_RENDERERS.map(name => block[name]).filter(isRecord)
@@ -128,7 +132,7 @@ export const retiredConfigSpellings = {
             ? colorOf({ posColor: r.color, negColor: r.color })
             : colorOf(r),
         )
-        .find(lifted => 'color' in lifted),
+        .find(lifted => 'encoding' in lifted),
     }
   },
   summaryScoreMode: summaryOf,

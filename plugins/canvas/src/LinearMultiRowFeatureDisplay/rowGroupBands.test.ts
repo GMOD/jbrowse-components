@@ -94,7 +94,7 @@ test('a band keeps its rows in their arranged order, so a sort survives', () => 
 test('a recolored row stays in its band', () => {
   const display = banded(['COLL000001', 'CLUPGR000001', 'CLUPRU000001'], {
     rowGroups: [WOLF],
-    rowColor: { domain: ['CLUPGR000001'], range: ['rebeccapurple'] },
+    rowColor: { scale: { domain: ['CLUPGR000001'], range: ['rebeccapurple'] } },
   })
   expect(drawn(display)).toEqual(['CLUPGR000001', 'CLUPRU000001', 'COLL000001'])
 })
@@ -123,7 +123,10 @@ test('facet group bands, and rowColor by group colors every group but none', () 
     ],
     {
       rowGroups: [WOLF, VILLAGE],
-      rowColor: { field: 'group', domain: ['Village dog'], range: ['#123456'] },
+      rowColor: {
+        field: 'group',
+        scale: { domain: ['Village dog'], range: ['#123456'] },
+      },
     },
   )
   expect(display.sources).toEqual([

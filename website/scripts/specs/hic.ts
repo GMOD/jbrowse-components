@@ -23,7 +23,7 @@ function matrix(trackId: string, height: number) {
   return {
     trackId,
     height,
-    color: { scale: 'linear', domainQuantile: 0.95 },
+    encoding: { color: { scale: { type: 'linear', domainQuantile: 0.95 } } },
     selectedNormalization: 'NONE',
     // 'fit' squashes the whole ~990px wedge and spends half the frame on the
     // empty corner below the data; the fusion apex sits ~280px down unsquashed.
@@ -129,7 +129,7 @@ export const hicSpecs: ScreenshotSpec[] = [
           trackId: 'hic_k562_over_gm12878',
           height: 380,
           heightMode: 'fixed',
-          showLegend: true,
+          legend: { show: true },
         },
       ],
     }),

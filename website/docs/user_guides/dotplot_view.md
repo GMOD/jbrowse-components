@@ -36,11 +36,12 @@ below uses the second:
   numbers an alignment has, identity and mapping quality among them, sit under
   **Color by value**. Each option has a description of what it colors. A text
   column there paints one color per label, and a label keeps its color as others
-  arrive. The view's `color.domain` lists labels that take the palette in order
-  and lead the legend. With more than one alignment file plotted together,
-  **Distinct color per track** gives each track a separate color, and **Track
-  colors** below it pins the color for one track at a time. On a plot whose
-  blocks are all a single pixel wide, reach for **Min length** first.
+  arrive. The view's `encoding.color.scale.domain` lists labels that take the
+  palette in order and lead the legend. With more than one alignment file
+  plotted together, **Distinct color per track** gives each track a separate
+  color, and **Track colors** below it pins the color for one track at a time.
+  On a plot whose blocks are all a single pixel wide, reach for **Min length**
+  first.
 - **Min length**, in the settings menu, drops alignments shorter than the slider
   value. Divergent genomes align in many short fragments, and hiding them is
   usually what makes the syntenic blocks visible.

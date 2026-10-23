@@ -63,7 +63,7 @@ From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`sc
 | <span id="getter-view">**view**</span><br><code><a href="../lineargenomeview">LinearGenomeView</a></code> |  |
 | <span id="getter-prefersoffset">**prefersOffset**</span><br><code>boolean</code> |  |
 | <span id="getter-linezoneheight">**lineZoneHeight**</span><br><code>number</code> |  |
-| <span id="getter-colorfield">**colorField**</span><br><code>LDMetric</code> | `color.field`, the statistic the fetch asks the file for. |
+| <span id="getter-colorfield">**colorField**</span><br><code>LDMetric</code> | `encoding.color.field`, the statistic the fetch asks the file for. |
 | <span id="getter-showverticalguides">**showVerticalGuides**</span><br><code>boolean</code> |  |
 | <span id="getter-showlabels">**showLabels**</span><br><code>boolean</code> |  |
 | <span id="getter-tickheight">**tickHeight**</span><br><code>number</code> |  |
@@ -140,7 +140,7 @@ From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`rendering
 | --- | --- |
 | <span id="action-setfocalsnp">**setFocalSnp**</span><br><code>(snp: LDSnp &#124; undefined) =&gt; void</code> |  |
 | <span id="action-setlinezoneheight">**setLineZoneHeight**</span><br><code>(n: number) =&gt; void</code> |  |
-| <span id="action-setldmetric">**setLDMetric**</span><br><code>(metric: LDMetric) =&gt; void</code> | `color.field`, the statistic the cells are, which refetches. |
+| <span id="action-setldmetric">**setLDMetric**</span><br><code>(metric: LDMetric) =&gt; void</code> | `encoding.color.field`, the statistic the cells are, which refetches. |
 | <span id="action-setshowverticalguides">**setShowVerticalGuides**</span><br><code>(show: boolean) =&gt; void</code> |  |
 | <span id="action-setshowlabels">**setShowLabels**</span><br><code>(show: boolean) =&gt; void</code> |  |
 | <span id="action-setvariantlayout">**setVariantLayout**</span><br><code>(value: "columns" &#124; "genomic") =&gt; void</code> |  |

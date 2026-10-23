@@ -276,9 +276,9 @@ export function subtreeCoversEveryRow(
 // name at draw time. Any disagreement therefore draws the whole dendrogram
 // against rows it does not name.
 //
-// This is a *derived* check on purpose. `setLayout` clears a stale
-// `clusterTree` for the writes that go through it, but rows also move without
-// any layout write at all: a discovered row set growing as regions load
+// This is a *derived* check on purpose. `setRowOrder` drops a stale
+// `rows.tree` for the writes that go through it, but rows also move without
+// any order write at all: a discovered row set growing as regions load
 // (multi-row features, multi-wiggle), a phased expansion switching on when the
 // ploidy arrives (multi-sample variants). One check where the tree is
 // positioned covers all of them, and covers whatever the next one turns out to

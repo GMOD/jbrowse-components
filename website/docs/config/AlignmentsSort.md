@@ -17,7 +17,7 @@ paired reads the aligner did not call concordant, each with both ends placed
 above MAPQ 0, as the `svSignal` filter counts it). A column sort ranks the
 reads over one base, `pos` (0-based) on `refName`, by `strand`, `base`,
 `mapq` (highest first), `pairOrientation` (the abnormal orientations over
-LR), a SAM tag (`tags.HP`, spelt as `color` and `facet` spell one), or the
+LR), a SAM tag (`tags.HP`, spelt as `encoding.color` and `facet` spell one), or the
 `insertion`, `softclip` or `hardclip` there, or up to `within` bases either
 side; the reads not over it lay out by position. On another chromosome a
 column sort orders by position.

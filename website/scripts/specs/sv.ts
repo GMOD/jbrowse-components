@@ -236,16 +236,18 @@ const HG008_BICSEQ2_LANE = {
 // The subclonal lane's palette, so the page's two copy-number lanes read alike.
 const BENCHMARK_CNV_COLOR = {
   field: 'total_copy_number',
-  scale: 'threshold',
-  domain: [1, 2, 3, 4],
-  range: ['#2166ac', '#92c5de', '#e0e0e0', '#f4a582', '#b2182b'],
-  labels: ['CN 0', 'CN 1', 'CN 2', 'CN 3', 'CN 4+'],
-  title: 'Copy number',
+  scale: {
+    type: 'threshold',
+    domain: [1, 2, 3, 4],
+    range: ['#2166ac', '#92c5de', '#e0e0e0', '#f4a582', '#b2182b'],
+    names: ['CN 0', 'CN 1', 'CN 2', 'CN 3', 'CN 4+'],
+  },
+  legend: { title: 'Copy number' },
 }
 // Below 120 px the key clips CN 4+.
 const benchmarkCnvLane = (trackId = 'hg008t_somatic_cnv') => ({
   trackId,
-  color: BENCHMARK_CNV_COLOR,
+  encoding: { color: BENCHMARK_CNV_COLOR },
   height: 120,
 })
 
@@ -472,7 +474,7 @@ export const svSpecs: ScreenshotSpec[] = [
               height: 400,
               forceLoad: true,
               facet: 'tags.HP',
-              color: { field: 'tags.HP' },
+              encoding: { color: 'tags.HP' },
             },
           ],
         },
@@ -536,8 +538,8 @@ export const svSpecs: ScreenshotSpec[] = [
               // the discordant reads land at the bottom of the layout, where a
               // short track scrolls them away.
               heightMode: 'grow',
-              color: { field: 'pairOrientation' },
-              showLegend: true,
+              encoding: { color: 'pairOrientation' },
+              legend: { show: true },
             },
           ],
         },
@@ -601,7 +603,7 @@ export const svSpecs: ScreenshotSpec[] = [
               },
               coverage: { height: 60 },
               facet: 'pairOrientation',
-              showLegend: true,
+              legend: { show: true },
               // The five bands' own stack. A taller box pads the frame from
               // inside, which neither size report sees.
               height: 800,
@@ -657,8 +659,8 @@ export const svSpecs: ScreenshotSpec[] = [
               // The "Not split" section runs out of rows before a taller box
               // does.
               height: 620,
-              color: { field: 'pairOrientation' },
-              showLegend: true,
+              encoding: { color: 'pairOrientation' },
+              legend: { show: true },
               // `facet: 'split'` works in chain mode because split defines a
               // chain key.
               facet: 'split',
@@ -813,7 +815,7 @@ export const svSpecs: ScreenshotSpec[] = [
               // window.
               trackId: 'hg008_depth',
               mark: 'bar',
-              color: '#0068d1',
+              encoding: { color: { value: '#0068d1' } },
               extent: 'none',
               scales: { y: { domainMin: 0, domainMax: 140, grid: true } },
               height: 180,
@@ -1160,7 +1162,7 @@ export const svSpecs: ScreenshotSpec[] = [
             {
               trackId: 'hg008_depth',
               mark: 'bar',
-              color: '#0068d1',
+              encoding: { color: { value: '#0068d1' } },
               extent: 'none',
               scales: { y: { domainMin: 0, domainMax: 140 } },
               height: 110,
@@ -1248,7 +1250,7 @@ export const svSpecs: ScreenshotSpec[] = [
               trackId: 'hg008_depth',
               // Pinned: the outlier fence's spike room flattens the arm step.
               mark: 'point',
-              color: '#0068d1',
+              encoding: { color: { value: '#0068d1' } },
               extent: 'none',
               size: 1,
               resolution: 10,
@@ -1419,7 +1421,7 @@ export const svSpecs: ScreenshotSpec[] = [
             {
               trackId: 'hg008_depth',
               mark: 'point',
-              color: '#0068d1',
+              encoding: { color: { value: '#0068d1' } },
               extent: 'none',
               size: 3,
               height: 140,
@@ -1468,7 +1470,7 @@ export const svSpecs: ScreenshotSpec[] = [
             {
               trackId: 'hg008_depth',
               mark: 'point',
-              color: '#0068d1',
+              encoding: { color: { value: '#0068d1' } },
               extent: 'none',
               size: 1,
               height: 140,

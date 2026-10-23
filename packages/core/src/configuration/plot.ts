@@ -270,34 +270,64 @@ function membersOf(node: AnyConfigurationModel) {
   return (name: string): unknown =>
     name === 'value'
       ? (node as unknown as Record<string, unknown>).value
-      : readConfObject(node, name)
+      : name in node
+        ? readConfObject(node, name)
+        : undefined
+}
+
+// A member by its path into `node`'s sub-schemas, unset where one is missing.
+function pathMembersOf(node: AnyConfigurationModel) {
+  return (path: readonly string[]): unknown => {
+    const [head = '', ...rest] = path
+    if (rest.length === 0) {
+      return membersOf(node)(head)
+    }
+    const sub = subConfOf(node, head)
+    return sub ? pathMembersOf(sub)(rest) : undefined
+  }
+}
+
+// Every color channel under `node`, by path: a sub-schema declaring
+// `fieldPresets`, at any depth, as `encoding.color` or
+// `pileup.bases.encoding.color` sit.
+function channelsOf(
+  node: AnyConfigurationModel,
+  path: string,
+): [string, AnyConfigurationModel][] {
+  const meta = getConfigurationSchemaMetadata(node)
+  if (meta?.options.fieldPresets) {
+    return [[path, node]]
+  }
+  return Object.keys(meta?.definition ?? {}).flatMap(key => {
+    const sub = subConfOf(node, key)
+    return sub ? channelsOf(sub, `${path}.${key}`) : []
+  })
 }
 
 /**
- * What a lifted plot's color objects and `scales.y` say together that the
- * display cannot draw as written, as corner-notice lines: each color object
- * under its schema's `fieldPresets`, as `jbrowse validate` judges it.
+ * What a lifted plot's color channels and `scales.y` say together that the
+ * display cannot draw as written, as corner-notice lines: each channel under
+ * its schema's `fieldPresets`, as `jbrowse validate` judges it.
  */
 export function schemaPlotProblems(lifted: AnyConfigurationModel): string[] {
   return plotKeysOf(lifted).flatMap(key => {
     const node = subConfOf(lifted, key)
-    const options = node
-      ? getConfigurationSchemaMetadata(node)?.options
-      : undefined
-    const presets = options?.fieldPresets
     const y = key === 'scales' && node ? subConfOf(node, 'y') : undefined
     return [
-      ...(node && presets
-        ? noticeLines(
-            key,
-            colorProblems(
-              withImpliedField(
-                colorSlotsOf(membersOf(node)),
-                options.impliedField,
+      ...(node
+        ? channelsOf(node, key).flatMap(([path, channel]) => {
+            const { options } = getConfigurationSchemaMetadata(channel)!
+            return noticeLines(
+              path,
+              colorProblems(
+                withImpliedField(
+                  colorSlotsOf(pathMembersOf(channel)),
+                  options.impliedField,
+                ),
+                options.fieldPresets!,
               ),
-              presets,
-            ),
-          )
+            )
+          })
         : []),
       ...(y
         ? noticeLines('scales.y', scaleEndProblems(scaleEndsOf(membersOf(y))))

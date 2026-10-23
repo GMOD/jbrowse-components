@@ -183,8 +183,7 @@ test('a dialog reorder to a rotation keeps the supplied tree beside a relabel an
   const display = loaded({ tree: true })
   const [hg38, panTro4, mm10] = display.editableSources
   display.applyRowEdits([{ ...mm10!, label: 'House mouse' }, hg38!, panTro4!], {
-    domain: ['panTro4'],
-    range: ['#123456'],
+    scale: { domain: ['panTro4'], range: ['#123456'] },
   })
   expect(derived(display)).toMatchSnapshot()
   display.resetRowArrangement()
@@ -194,8 +193,7 @@ test('a dialog reorder to a rotation keeps the supplied tree beside a relabel an
 test('a dialog recolor over an adapter color, in place', () => {
   const display = loaded()
   display.applyRowEdits(display.editableSources, {
-    domain: ['hg38'],
-    range: ['#00ff00'],
+    scale: { domain: ['hg38'], range: ['#00ff00'] },
   })
   expect(derived(display)).toMatchSnapshot()
 })

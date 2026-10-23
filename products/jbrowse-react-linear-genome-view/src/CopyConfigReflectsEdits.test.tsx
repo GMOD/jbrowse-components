@@ -60,7 +60,7 @@ async function editedColor() {
     expect(view.getTrack(TRACK_ID)).toBeTruthy()
   })
   const shown = view.getTrack(TRACK_ID)
-  setConf(shown.displays[0], 'color', 'rgb(1,2,3)')
+  setConf(shown.displays[0], ['encoding', 'color'], { value: 'rgb(1,2,3)' })
   return { session: state.session, shown }
 }
 
@@ -76,14 +76,17 @@ function copyConfig(
   fireEvent.click(getByText('Copy config'))
   expect(writeText).toHaveBeenCalledTimes(1)
   return JSON.parse(writeText.mock.calls[0]![0]) as {
-    displays: { displayId: string; color?: { value: string } }[]
+    displays: {
+      displayId: string
+      encoding?: { color?: { value: string } }
+    }[]
     textSearching?: { indexingAttributes?: string[] }
   }
 }
 
 function expectEditedWhole(copied: ReturnType<typeof copyConfig>) {
   const display = copied.displays.find(d => d.displayId === DISPLAY_ID)
-  expect(display?.color?.value).toBe('rgb(1,2,3)')
+  expect(display?.encoding?.color?.value).toBe('rgb(1,2,3)')
   expect(copied.textSearching?.indexingAttributes).toEqual(['Name'])
 }
 

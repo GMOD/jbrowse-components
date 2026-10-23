@@ -13,7 +13,11 @@ export default function JexlColorsAndLabels() {
           name: 'Volvox genes (jexl color + label)',
           uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox.sort.gff3.gz',
           displayDefaults: {
-            color: "jexl:get(feature,'strand')==1?'#1f77b4':'#d62728'",
+            encoding: {
+              color: {
+                value: "jexl:get(feature,'strand')==1?'#1f77b4':'#d62728'",
+              },
+            },
             labels: {
               name: "jexl:get(feature,'name')+' ['+get(feature,'type')+']'",
             },

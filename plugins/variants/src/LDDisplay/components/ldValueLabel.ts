@@ -9,7 +9,7 @@ import type { LDMetric } from '../../RenderLDDataRPC/ldTypes.ts'
  * legend both say it.
  */
 export function ldMetricLabel(metric: LDMetric) {
-  return LD_FIELD_PRESETS[metric].title
+  return LD_FIELD_PRESETS[metric].legend.title
 }
 
 /**

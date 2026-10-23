@@ -91,7 +91,7 @@ describe('when the row color key shows', () => {
 
   it('shows nothing by name on stacked rows, whose labels are the key', () => {
     const display = makeDisplay({
-      rowColor: { domain: ['a'], range: ['#00f'] },
+      rowColor: { scale: { domain: ['a'], range: ['#00f'] } },
     })
     expect(display.resolvedRowColors.get('a')).toBe('#00f')
     expect(display.rowColorScales).toEqual([])
@@ -116,14 +116,14 @@ describe('when the row color key shows', () => {
 describe('the entries', () => {
   it('list the pairs first, then the values in the order dealt', () => {
     const display = makeDisplay({
-      rowColor: { field: 'group', domain: ['y'], range: ['#00f'] },
+      rowColor: { field: 'group', scale: { domain: ['y'], range: ['#00f'] } },
     })
     expect(entriesOf(display).map(e => e.value)).toEqual(['y', 'x'])
   })
 
   it('list "(no value)" last where a pair colors the rows with none', () => {
     const display = makeDisplay({
-      rowColor: { field: 'group', domain: [''], range: ['#eee'] },
+      rowColor: { field: 'group', scale: { domain: [''], range: ['#eee'] } },
     })
     expect(display.resolvedRowColors.get('e')).toBe('#eee')
     expect(entriesOf(display)).toEqual([
@@ -171,9 +171,7 @@ describe('the entries', () => {
     const display = makeDisplay({
       rowColor: {
         field: 'group',
-        domain: ['x'],
-        range: ['#00f'],
-        unknown: '#ccc',
+        scale: { domain: ['x'], range: ['#00f'], unknown: '#ccc' },
       },
     })
     expect(entriesOf(display)).toEqual([
@@ -184,7 +182,10 @@ describe('the entries', () => {
 
   it("list no Other under unknown: ''", () => {
     const display = makeDisplay({
-      rowColor: { field: 'group', domain: ['x'], range: ['#00f'], unknown: '' },
+      rowColor: {
+        field: 'group',
+        scale: { domain: ['x'], range: ['#00f'], unknown: '' },
+      },
     })
     expect(entriesOf(display)).toEqual([
       { value: 'x', label: 'x', color: '#00f' },
@@ -217,9 +218,7 @@ describe('a click on an entry', () => {
     const display = makeDisplay({
       rowColor: {
         field: 'group',
-        domain: ['x'],
-        range: ['#00f'],
-        unknown: '#ccc',
+        scale: { domain: ['x'], range: ['#00f'], unknown: '#ccc' },
       },
     })
     const other = display.rowColorScales[0]!.entries.at(-1)!
@@ -229,7 +228,7 @@ describe('a click on an entry', () => {
 
   it('on "(no value)" focuses the rows with no value', () => {
     const display = makeDisplay({
-      rowColor: { field: 'group', domain: [''], range: ['#eee'] },
+      rowColor: { field: 'group', scale: { domain: [''], range: ['#eee'] } },
     })
     const noValue = display.rowColorScales[0]!.entries.at(-1)!
     display.focusLegendEntry('rowColor', noValue.value)
@@ -248,12 +247,7 @@ describe('a click on an entry', () => {
 test("dealtValueColors reads no row by name under unknown: ''", () => {
   const rowsOf = jest.fn(() => [{ name: 'a' }, { name: 'b' }])
   const dealt = dealtValueColors(
-    {
-      field: 'name',
-      domain: ['a'],
-      range: ['#f00'],
-      unknown: '',
-    },
+    { field: 'name', scale: { domain: ['a'], range: ['#f00'], unknown: '' } },
     rowsOf,
     true,
   )

@@ -42,18 +42,22 @@ test('the feature height sizes grey out while the alignments are hidden', () => 
   expect(customHeightDisabled(display)).toBe(true)
 })
 
-// The field defaults to `strand` here, so the string has to say "no field" as
-// well as naming the color, or the constant lands under a field that hides it.
-test('a string color is the constant fill, over the strand default', () => {
+// `strand` paints only while the channel names neither a field nor a
+// constant, so a written `value` is the fill and a written field wins over it.
+test('a written value is the constant fill, over the strand default', () => {
   const display = createDisplay()
   expect(display.colorBy).toEqual({ type: 'strand' })
-  display.applyPlot({ color: 'steelblue' })
+  display.applyPlot({ encoding: { color: { value: 'steelblue' } } })
   expect(display.colorBy).toEqual({ type: 'normal' })
   expect(display.colorSetting.value).toBe('steelblue')
   display.colorByField('strand')
   expect(display.colorBy).toEqual({ type: 'strand' })
-  display.applyPlot({ color: { value: 'steelblue', field: 'strand' } })
+  display.applyPlot({
+    encoding: { color: { value: 'steelblue', field: 'strand' } },
+  })
   expect(display.colorBy).toEqual({ type: 'strand' })
+  display.applyPlot({ encoding: { color: 'mapq' } })
+  expect(display.colorBy).toEqual({ type: 'mapq' })
 })
 
 // An all-vs-all track stacks one section per mate assembly, so this display

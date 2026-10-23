@@ -66,12 +66,12 @@ test('leaving the arrangement unsets what it wrote', () => {
 
 test('the round trip leaves the read color and the placement alone', () => {
   const display = createDisplay({
-    color: { field: 'tags.HP' },
+    encoding: { color: { field: 'tags.HP' } },
     readConnections: { placement: 'up' },
   })
   clickRow(display)
   clickRow(display)
-  expect(getConf(display, ['color', 'field'])).toBe('tags.HP')
+  expect(getConf(display, ['encoding', 'color', 'field'])).toBe('tags.HP')
   expect(display.readConnectionsPlacement).toBe('up')
 })
 

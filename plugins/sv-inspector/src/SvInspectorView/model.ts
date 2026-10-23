@@ -300,7 +300,7 @@ function SvInspectorViewF(pluginManager: PluginManager) {
                   displayId: `${trackId}-chord-display`,
                   onChordClick:
                     'jexl:defaultOnChordClick(feature, track, pluginManager)',
-                  color: { field: SV_TYPE_FIELD },
+                  encoding: { color: { field: SV_TYPE_FIELD } },
                   opacity: CHORD_ALPHA,
                 },
               ],

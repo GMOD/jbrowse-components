@@ -43,7 +43,10 @@ import MultiRegionDisplayMixin from '@jbrowse/display-kit/MultiRegionDisplayMixi
 import { skippedFeatures } from '@jbrowse/display-kit/SkippedFeaturesIndicator'
 import StoredHoverMixin from '@jbrowse/display-kit/StoredHoverMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
-import { featureColorEncoding } from '@jbrowse/display-kit/colorConfigSchema'
+import {
+  colorSettingOf,
+  featureColorEncoding,
+} from '@jbrowse/display-kit/colorConfigSchema'
 import { facetSettingOf } from '@jbrowse/display-kit/facetConfigSchema'
 import { fetchEachRegion } from '@jbrowse/display-kit/fetchEachRegion'
 import { onTrackAssembly } from '@jbrowse/display-kit/foundationView'
@@ -121,7 +124,7 @@ import {
   toBinEdges,
   widestBinStep,
 } from './markRequest.ts'
-import { markSizePx, readsValue } from './markSpecs.ts'
+import { markSizePx, pxChannelOf, readsValue } from './markSpecs.ts'
 import { DEFAULT_POINT_DIAMETER_PX } from './markVocabulary.ts'
 import { sharedKeyNotice, sharedKeysOf } from './pinDistinct.ts'
 import { defaultPlot } from './plotDefault.ts'
@@ -224,9 +227,11 @@ function storedRegionData(result: EncodedLayersResult): MarkRegionData {
   }
 }
 
-// A mark's `encoding.size` number, or its type's default where none is written.
+// A mark's px, its `encoding.size` or `encoding.strokeWidth` number by its
+// type, or its type's default where none is written.
 function markSizeOf({ mark, encoding }: Pick<MarkConfig, 'mark' | 'encoding'>) {
-  return markSizePx(mark.type, encoding.size.value)
+  const px = pxChannelOf(mark.type)
+  return markSizePx(mark.type, px && encoding[px].value)
 }
 
 /** The marks at the view's zoom: which draw. */
@@ -381,7 +386,8 @@ export function stateModelFactory(
           return this.markEntries.map((entry, i) => ({
             ...entry,
             ownColor:
-              featureColorEncoding(marks[i]!.encoding.color) !== undefined,
+              featureColorEncoding(colorSettingOf(marks[i]!.encoding.color)) !==
+              undefined,
           }))
         },
         /**
@@ -397,8 +403,9 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * Each mark's `encoding.size` number in px, its type's default where
-         * none is written, and 0 for a bar, span or text, which draw none.
+         * Each mark's px, a point's `encoding.size` or a stroked mark's
+         * `encoding.strokeWidth` number, its type's default where none is
+         * written, and 0 for a bar, span or text, which draw none.
          */
         get markSizes(): number[] {
           return self.conf.marks.map(markSizeOf)
@@ -1844,9 +1851,9 @@ export function stateModelFactory(
         },
         /**
          * #action
-         * The categorical analogue of the min/max dialog's "Use current
+         * The ordinal analogue of the min/max dialog's "Use current
          * range": every value a colliding shape key lists goes into the
-         * shape's `domain`, in key order after what it already lists, so each
+         * shape's `scale.domain`, in key order after what it already lists, so each
          * takes a separate shape.
          */
         pinDistinctShapes() {
@@ -1854,7 +1861,7 @@ export function stateModelFactory(
             for (const i of key.markIndexes) {
               setConf(
                 self.conf.marks[i]!,
-                ['encoding', 'shape', 'domain'],
+                ['encoding', 'shape', 'scale', 'domain'],
                 key.pinned,
               )
             }

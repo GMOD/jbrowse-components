@@ -211,9 +211,9 @@ jbrowse make-pif ecoli_pggb_untangle.paf
 `untangle_to_bed.py` turns the same PAF into a BED with a `strain` column, so
 one track can draw every strain on K12's axis. In
 [grammar-of-graphics](/docs/config_guides/mark_display) terms, `rows` assigns
-one row per `strain`, and `color` is a color scale that here uses
-`scale: "identity"` for the colors the file states, red where the strain runs
-inverted:
+one row per `strain`, and `encoding.color` is a color scale that here uses
+`scale.type: "identity"` for the colors the file states, red where the strain
+runs inverted:
 
 <!-- from: scripts/build_ecoli_pangenome_graph.sh -->
 
@@ -238,10 +238,14 @@ tabix -p bed ecoli_pggb_untangle_rows.bed.gz
         "field": "strain",
         "sort": ["Sakai", "CFT073", "NCTC86", "IAI39"]
       },
-      "color": {
-        "scale": "identity",
-        "domain": ["rgb(153,153,153)", "rgb(214,39,40)"],
-        "labels": ["Same orientation as K12", "Inverted"]
+      "encoding": {
+        "color": {
+          "scale": {
+            "type": "identity",
+            "domain": ["rgb(153,153,153)", "rgb(214,39,40)"],
+            "names": ["Same orientation as K12", "Inverted"]
+          }
+        }
       }
     }
   ]
@@ -602,25 +606,29 @@ over the same files colors each segment by that count:
   "displayDefaults": {
     "displayMode": "collapsed",
     "showLabels": "none",
-    "color": {
-      "field": "sampleCount",
-      "domain": ["5", "4", "3", "2", "1"],
-      "range": ["#bdbdbd", "#fed976", "#feb24c", "#fd8d3c", "#e31a1c"],
-      "labels": [
-        "All 5 strains (core)",
-        "4 strains",
-        "3 strains",
-        "2 strains",
-        "1 strain (private)"
-      ],
-      "title": "Strains"
+    "encoding": {
+      "color": {
+        "field": "sampleCount",
+        "scale": {
+          "domain": ["5", "4", "3", "2", "1"],
+          "range": ["#bdbdbd", "#fed976", "#feb24c", "#fd8d3c", "#e31a1c"],
+          "names": [
+            "All 5 strains (core)",
+            "4 strains",
+            "3 strains",
+            "2 strains",
+            "1 strain (private)"
+          ]
+        },
+        "legend": { "title": "Strains" }
+      }
     }
   }
 }
 ```
 
 Type `chr:1,299,499-1,300,693`, the IS5 element. **Advanced → Edit plot...** in
-the track menu shows the `color` block as text and applies edits live.
+the track menu shows the `encoding.color` block as text and applies edits live.
 
 <Figure caption="The IS5 element: the depth curve over the strains-per-segment track. Red marks a segment K12 alone has." src="/img/pangenome/pggb_carriage_lane.png" />
 

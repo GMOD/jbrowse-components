@@ -87,7 +87,7 @@ test('overlay: tableau10 by name, grouped or not', async () => {
 
 test("overlay: rowColor's spare range leads the palette", async () => {
   const display = await loaded(GROUPED, {
-    rowColor: { range: ['#111111', '#222222'] },
+    rowColor: { scale: { range: ['#111111', '#222222'] } },
   })
   expect(derived(display)).toMatchSnapshot()
 })
@@ -190,8 +190,7 @@ test('rows, line: dialog edits reorder, recolor the plot and relabel', async () 
   })
   const [g1, g2, g3, g4] = display.editableSources
   display.applyRowEdits([{ ...g3!, label: 'Liver 3' }, g2!, g4!, g1!], {
-    domain: [g2!.name],
-    range: ['#00f'],
+    scale: { domain: [g2!.name], range: ['#00f'] },
   })
   expect(derived(display)).toMatchSnapshot()
   display.resetRowArrangement()
@@ -205,8 +204,7 @@ test('rows, density: a dialog edit tints the label', async () => {
   })
   const [, g2] = display.editableSources
   display.applyRowEdits(display.editableSources, {
-    domain: [g2!.name],
-    range: ['#00f'],
+    scale: { domain: [g2!.name], range: ['#00f'] },
   })
   expect(derived(display)).toMatchSnapshot()
 })
@@ -239,11 +237,12 @@ test('rows: a run lands its tree, a reorder drops it, a reset returns to the see
 test('overlay, density: a dialog edit is kept and paints no strip', async () => {
   const display = await loaded(GROUPED, { defaultRendering: 'density' })
   display.applyRowEdits(display.editableSources, {
-    domain: ['Grain1'],
-    range: ['#00f'],
+    scale: { domain: ['Grain1'], range: ['#00f'] },
   })
   expect(display.markSources[0]).toEqual({ name: 'Grain1', color: undefined })
-  expect(pairedColorsOf(display.rowColorSetting).get('Grain1')).toBe('#00f')
+  expect(pairedColorsOf(display.rowColorSetting.scale).get('Grain1')).toBe(
+    '#00f',
+  )
   expect(display.liveNotices.join('\n')).toContain('one strip')
 })
 
@@ -289,11 +288,16 @@ test('rows: the plot box writes rows whole', async () => {
 test('rows: a reorder keeps the declared rowColor as it was', async () => {
   const display = await loaded(GROUPED, {
     ...rowsPerSource(),
-    rowColor: { domain: ['Grain3', 'Grain1'], range: ['#0f0', '#00f'] },
+    rowColor: {
+      scale: { domain: ['Grain3', 'Grain1'], range: ['#0f0', '#00f'] },
+    },
   })
   expect(display.rowStylingIsCustom).toBe(false)
   const [g1, g2, g3, g4] = display.editableSources
   display.applyRowEdits([g1!, g3!, g2!, g4!])
-  expect(display.configuration.rowColor.domain).toEqual(['Grain3', 'Grain1'])
+  expect(display.configuration.rowColor.scale.domain).toEqual([
+    'Grain3',
+    'Grain1',
+  ])
   expect(display.rowStylingIsCustom).toBe(false)
 })

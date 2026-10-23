@@ -53,6 +53,17 @@ test('submitting a positive height pins it', () => {
   expect(model.setFitToHeight).not.toHaveBeenCalled()
 })
 
+test('a negative height cannot be submitted', () => {
+  const model = makeModel({ rowHeight: 12 })
+  const { baseElement, getByText } = open(model)
+  fireEvent.change(baseElement.querySelector('input')!, {
+    target: { value: '-5' },
+  })
+  submit(getByText)
+  expect(model.setRowHeight).not.toHaveBeenCalled()
+  expect(model.setFitToHeight).not.toHaveBeenCalled()
+})
+
 // The per-consumer opt-out: only a display exposing both halves gets the second
 // field. maf has one, multi-row features and the variant displays do not.
 test('the proportion field appears only where the display has that axis', () => {

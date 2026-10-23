@@ -40,7 +40,7 @@ Bars from a BED score column, colored by strand, with the color key on screen:
           "mark": "bar",
           "encoding": {
             "y": "score",
-            "color": { "field": "strand", "scale": "categorical" }
+            "color": { "field": "strand", "scale": { "type": "ordinal" } }
           }
         }
       ]
@@ -66,28 +66,28 @@ one.
 | --- | --- | --- | --- |
 | a bar from a baseline to a value | `geom_col()` | `"mark": "bar"` | `"mark": "bar"`, the display's `origin` as the baseline |
 | a point at a value | `geom_point(size)` | `"mark": "point"`, `"size"` on the mark | `"mark": "point"`, `encoding.size` a number, at the middle of `x` to `x2` |
-| a line across an interval at a value | `geom_segment(aes(xend = end, yend = score))` | `"mark": "rule"` over `x`, `x2` and `y` | `"mark": "rule"`, `encoding.size` a number as its thickness |
-| a line through the values | `geom_step()`, `geom_line()` | `"mark": { "type": "line", "interpolate": "step-after" }` or `"linear"` | `"mark": { "type": "line", "interpolate": "step" }` or `"linear"`, `encoding.size` its width |
+| a line across an interval at a value | `geom_segment(aes(xend = end, yend = score))` | `"mark": "rule"` over `x`, `x2` and `y` | `"mark": "rule"`, `encoding.strokeWidth` a number as its thickness |
+| a line through the values | `geom_step()`, `geom_line()` | `"mark": { "type": "line", "interpolate": "step-after" }` or `"linear"` | `"mark": { "type": "line", "interpolate": "step" }` or `"linear"`, `encoding.strokeWidth` its width |
 | a band across the plot, with no value | `geom_rect()` with no y | `"mark": "rect"` over `x` and `x2` alone | `"mark": "span"` |
 | a heatmap strip, its color the value | `geom_tile(aes(fill = score))` | `"mark": "rect"` with a quantitative `color` | `"mark": "span"` with a color scale over the field |
 | a band thinner than its row | `geom_tile(height = 0.8)` | `"mark": {"type": "rect", "height": {"band": 0.8}}` | `"mark": {"type": "span", "height": {"band": 0.8}}` |
 | the field a mark plots | `aes(y = score)` | `"y": {"field": "score"}` | `"encoding": {"y": "score"}` |
 | a value computed on the way in | `mutate()` before the plot | `{"calculate": …, "as": …}` | `{"type": "formula", "expr": …, "as": …}` |
-| a color per category | `aes(fill = strand)` | `"color": {"field": "strand", "type": "nominal"}` | `"color": {"field": "strand", "scale": "categorical"}` |
-| which colors, in which order | `scale_fill_manual(values, breaks)` | `"scale": {"domain": […], "range": […]}` | `domain` and `range` on the color |
-| a color ramp over a number | `scale_fill_viridis_c()`, `scale_fill_gradientn(colors)` | `"type": "quantitative"`, `"scale": {"scheme"}` | `"scale": "linear"` with `scheme` or `range` |
-| the ramp's middle stop at a value | `scale_fill_gradient2(midpoint)` | `"scale": {"domainMid"}` | `domainMid` on the color |
-| a color per interval of a number | `cut()` into `scale_fill_manual(values)` | `"scale": {"type": "threshold", "domain", "range"}` | `"scale": "threshold"`, `domain` holding the cuts |
-| a shape per category | `aes(shape = svType)` | `"shape": {"field": "svType"}` | `"shape": {"field": "svType", "scale": "categorical"}` |
+| a color per category | `aes(fill = strand)` | `"color": {"field": "strand", "type": "nominal"}` | `"color": {"field": "strand", "scale": {"type": "ordinal"}}` |
+| which colors, in which order | `scale_fill_manual(values, breaks)` | `"scale": {"domain": […], "range": […]}` | `scale.domain` and `scale.range` on the color |
+| a color ramp over a number | `scale_fill_viridis_c()`, `scale_fill_gradientn(colors)` | `"type": "quantitative"`, `"scale": {"scheme"}` | `"scale": {"type": "linear"}` with `scheme` or `range` |
+| the ramp's middle stop at a value | `scale_fill_gradient2(midpoint)` | `"scale": {"domainMid"}` | `scale.domainMid` on the color |
+| a color per interval of a number | `cut()` into `scale_fill_manual(values)` | `"scale": {"type": "threshold", "domain", "range"}` | `"scale": {"type": "threshold"}`, `domain` holding the cuts |
+| a shape per category | `aes(shape = svType)` | `"shape": {"field": "svType"}` | `"shape": {"field": "svType", "scale": {"type": "ordinal"}}` |
 | a log axis | `scale_y_log10()` | `"y": {"scale": {"type": "log"}}` | `"scales": {"y": {"type": "log"}}` |
 | a log-like axis through zero | `scale_y_continuous(transform = "pseudo_log")` | `"y": {"scale": {"type": "symlog", "constant"}}` | `"scales": {"y": {"type": "symlog", "symlogConstant"}}` |
 | fixed axis ends | `coord_cartesian(ylim)` | `"scale": {"domain": [lo, hi]}` | `domainMin` and `domainMax` on `scales.y` |
 | one axis over a faceted plot | `facet_*(scales = "fixed")` | the default | always: every section and row reads the display's one `scales.y` |
 | one axis over several tracks | | `"resolve": {"scale": {"y": "shared"}}` on a concatenation | `scales.y.autoscaleGroup` |
 | an axis caption | `labs(y = "…")` | `"axis": {"title"}` | `scales.y.title` |
-| a key heading | `labs(fill = "…")` | `"legend": {"title"}` | `title` on the color |
-| which values the key lists | `scale_fill_manual(breaks)` | `"legend": {"values"}` | `breaks` on the color or shape |
-| a stepped key, highest first | `guide_legend(reverse = TRUE)` | | `descending` on a threshold color |
+| a key heading | `labs(fill = "…")` | `"legend": {"title"}` | `legend.title` on the color |
+| which values the key lists | `scale_fill_manual(breaks)` | `"legend": {"values"}` | `legend.values` on the color or shape |
+| a stepped key, highest first | `guide_legend(reverse = TRUE)` | | `legend.descending` on a threshold color |
 | a horizontal line at a value | `geom_hline(yintercept)` | `"mark": "rule"` with a `datum` | `scales.y.rules` |
 | a histogram | `geom_histogram(binwidth)` | `{"bin": {"step"}}` then `{"aggregate": [{"op": "count"}]}` | `{"type": "bin", "step"}` then `{"type": "aggregate", "ops": [{"op": "count"}]}` |
 | a summary per bin | `stat_summary_bin(fun = mean)` | `bin` then `aggregate` with `"op": "mean"` | `bin` then `aggregate` with `"op": "mean"` |
@@ -98,7 +98,7 @@ one.
 | a fixed px height per row | | `"height": {"step": 20}` on the view | the display's `rowHeight`, under `rows` |
 | a label at each feature | `geom_text(aes(label = name), check_overlap = TRUE)` | `"mark": "text"`, `"text": {"field": "name"}` | `"mark": "text"`, `"encoding": {"text": "name"}` |
 | a curve between two positions | `geom_curve(aes(x, xend))` | GenomeSpy `"mark": "link"`, `"x2"` | `"mark": "link"`, `x` to `x2` |
-| a stroke width per feature | `aes(linewidth = score)` | `"size": {"field": "score"}` | `"encoding": {"size": {"field": "score"}}` on a link |
+| a stroke width per feature | `aes(linewidth = score)` | `"strokeWidth": {"field": "score"}` | `"encoding": {"strokeWidth": {"field": "score"}}` on a link |
 | a record's other end | | | `{"type": "mate"}`, which a link's `x2` then reads |
 | a band of the plot per category | `facet_grid(rows = vars(sample))` | `"row": {"field": "sample"}` | `"facet": "sample"`, or `"rows": "sample"` for one row each |
 | layers drawn in order | `+ geom_…()` | `"layer": […]` | `marks`, in list order |
@@ -111,24 +111,25 @@ this display `encoding.row` is the band a feature stands in, the integer a
 channel is a bare field here, where Vega-Lite's has a scale, because the y scale
 is the display's `scales.y` and every mark reads one axis. The display has no
 stacked bar and no `opacity` channel; every bar rises from the baseline. A
-mark's size is `encoding.size`, as its color is `encoding.color`: a number is a
-point's diameter, a rule's thickness or a link's stroke, and a field maps a
-link's width.
+point's diameter is `encoding.size`, and a rule's, line's or link's stroke is
+`encoding.strokeWidth`, Vega-Lite's word: a number of px, or on a link a field
+mapped to a width.
 
 ## The encoding
 
 Each mark's `encoding` maps feature fields to the channels its type reads:
 
-| Channel | Read by                                | Value                                                                                                                                                                                                                                                       |
-| ------- | -------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `x`     | every mark                             | a field holding the left edge in bp; `start` by default                                                                                                                                                                                                     |
-| `x2`    | every mark                             | the right edge; `end` by default                                                                                                                                                                                                                            |
-| `y`     | `bar`, `point`, `rule`, `line`, `text` | the field plotted on the score axis, read through the display's `scales.y` (below); a feature whose value is not a finite number is skipped. A `text` may leave it empty and stand at the apex of a link between its two ends, or in the middle of its band |
-| `row`   | every mark                             | an integer field naming the band the mark stands in, from 0; missing is 0, and left empty it follows the last `pileup` step before it, in the mark's, the facet's or the display's                                                                          |
-| `color` | every mark                             | a field through a scale (below), or a constant `{ "value": … }` holding a CSS color or a jexl callback returning one; a bare string is a field                                                                                                              |
-| `shape` | `point`                                | `circle`, `triangle-down`, `diamond` or `square`, a jexl callback returning one, or a categorical scale (below)                                                                                                                                             |
-| `size`  | `point`, `rule`, `line`, `link`        | a number of px, a point's diameter, a rule's thickness, a line's width or a link's stroke; or, on a link, a field read through a linear or log scale into a px range (below)                                                                                |
-| `text`  | `text`                                 | the field printed, `name` by default; a feature with nothing there prints nothing                                                                                                                                                                           |
+| Channel       | Read by                                | Value                                                                                                                                                                                                                                                       |
+| ------------- | -------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `x`           | every mark                             | a field holding the left edge in bp; `start` by default                                                                                                                                                                                                     |
+| `x2`          | every mark                             | the right edge; `end` by default                                                                                                                                                                                                                            |
+| `y`           | `bar`, `point`, `rule`, `line`, `text` | the field plotted on the score axis, read through the display's `scales.y` (below); a feature whose value is not a finite number is skipped. A `text` may leave it empty and stand at the apex of a link between its two ends, or in the middle of its band |
+| `row`         | every mark                             | an integer field naming the band the mark stands in, from 0; missing is 0, and left empty it follows the last `pileup` step before it, in the mark's, the facet's or the display's                                                                          |
+| `color`       | every mark                             | a field through a scale (below), or a constant `{ "value": … }` holding a CSS color or a jexl callback returning one; a bare string is a field                                                                                                              |
+| `shape`       | `point`                                | `circle`, `triangle-down`, `diamond` or `square`, a jexl callback returning one, or a categorical scale (below)                                                                                                                                             |
+| `size`        | `point`                                | a number of px, the point's diameter                                                                                                                                                                                                                        |
+| `strokeWidth` | `rule`, `line`, `link`                 | a number of px, a rule's thickness, a line's width or a link's stroke; or, on a link, a field read through a linear or log scale into a px range (below)                                                                                                    |
+| `text`        | `text`                                 | the field printed, `name` by default; a feature with nothing there prints nothing                                                                                                                                                                           |
 
 A field name is read directly from the feature (`score`, `strand`, or any column
 a BED `columnNames` or a GFF attribute names). A `jexl:` expression over
@@ -299,38 +300,39 @@ scale, so the legend reads the same table the colors came from. A constant is
 color per feature; a color name written bare is reported as a field no feature
 holds. With `scale` unset, `score` runs through a linear ramp and any other
 field is categorical, a color per distinct value, so a numeric field such as
-RepeatMasker's `milliDiv` needs `"scale": "linear"` written. A color written
-with an alpha, `rgba()` or `#rrggbbaa`, paints at that opacity, as a constant or
-as an entry of a `range`, which is how a dense scatter or overlapping spans stay
-readable.
+RepeatMasker's `milliDiv` needs `"scale": { "type": "linear" }` written. A color
+written with an alpha, `rgba()` or `#rrggbbaa`, paints at that opacity, as a
+constant or as an entry of a `scale.range`, which is how a dense scatter or
+overlapping spans stay readable.
 
-- **categorical** —
-  `{ "field": "strand", "scale": "categorical", "range": ["#1f77b4", "#ff7f0e"] }`
+- **ordinal** —
+  `{ "field": "strand", "scale": { "type": "ordinal", "range": ["#1f77b4", "#ff7f0e"] } }`
 
-  `domain` lists values in legend order and takes `range` entries from the
-  first; values it leaves out follow, sorted. Each value it leaves out takes a
-  distinct color the first time the track shows it, and keeps that color as
-  other regions load; a value that no other value competes with paints the color
-  derived from the value. `unknown`, d3's name, paints every value the domain
-  leaves out one color instead, a feature with no value too, and the key names
-  them one row, Other. One row per color, so two values painted alike share a
-  row. A key of one color, or over 20 rows, is not drawn.
+  `scale.domain` lists values in legend order and takes `scale.range` entries
+  from the first; values it leaves out follow, sorted. Each value it leaves out
+  takes a distinct color the first time the track shows it, and keeps that color
+  as other regions load; a value that no other value competes with paints the
+  color derived from the value. `scale.unknown`, d3's name, paints every value
+  the domain leaves out one color instead, a feature with no value too, and the
+  key names them one row, Other. One row per color, so two values painted alike
+  share a row. A key of one color, or over 20 rows, is not drawn.
 
 - **linear**, **log** or **symlog** —
-  `{ "field": "signal", "scale": "linear", "domainMin": 0, "domainMax": 50, "range": ["white", "red"] }`
+  `{ "field": "signal", "scale": { "type": "linear", "domainMin": 0, "domainMax": 50, "range": ["white", "red"] } }`
 
   `symlog` runs logarithmic away from 0 and linear through it, so a signed fold
-  change ramps on both sides. `scheme` names a ramp in place of `range`, and
-  `reverse` turns either round. An end left off spans every loaded region and
-  moves as you pan, so pin both for a figure and one for a floor or a ceiling.
-  `domainMid` places the middle stop, which is how a diverging ramp centres on
-  zero inside an asymmetric domain.
+  change ramps on both sides. `scale.scheme` names a ramp in place of
+  `scale.range`, and `scale.reverse` turns either round. An end left off spans
+  every loaded region and moves as you pan, so pin both for a figure and one for
+  a floor or a ceiling. `scale.domainMid` places the middle stop, which is how a
+  diverging ramp centres on zero inside an asymmetric domain.
 
 - **threshold** —
-  `{ "field": "signal", "scale": "threshold", "domain": [10, 50], "range": ["#eee", "#f90", "#c00"] }`
+  `{ "field": "signal", "scale": { "type": "threshold", "domain": [10, 50], "range": ["#eee", "#f90", "#c00"] } }`
 
-  Each cut in `domain` opens an interval, so `range` has one color more. The key
-  lists a row per interval, and a grey one for features with no value.
+  Each cut in `scale.domain` opens an interval, so `scale.range` has one color
+  more. The key lists a row per interval, and a grey one for features with no
+  value.
 
 The display paints every color from the data it already loaded, so a change to a
 constant color, a palette, a domain, a threshold's cuts or a ramp's ends redraws
@@ -338,44 +340,48 @@ without fetching again. A change to what is read from each feature does fetch
 again: a field named or dropped, a switch between categories and numbers, or a
 `jexl:` color.
 
-`title` heads the key and has three states: unset reads the `field` name, text
-is that text, `""` draws no heading. Marks share one key only under one title,
-and share a ramp only with both ends pinned.
+`legend.title` heads the key and has three states: unset reads the `field` name,
+text is that text, `""` draws no heading. Marks share one key only under one
+title, and share a ramp only with both ends pinned.
 
-Three more members shape the key and paint nothing. `breaks` lists the values it
-names, in that order, and every value still takes its color. `descending` lists
-a threshold's intervals from the highest down. `missingLabel` names the grey row
-for features with nothing in the field.
+Three more `legend` members shape the key and paint nothing. `values` lists the
+values it names, in that order, and every value still takes its color.
+`descending` lists a threshold's intervals from the highest down. `missingLabel`
+names the grey row for features with nothing in the field.
 
 ## Shape scales
 
 Other channels take a scale too. `shape` takes the same categorical form,
-`{ "field": "svType", "scale": "categorical" }`, where `range` lists the shapes
-to hand out as a color scale's lists colors (`circle`, `triangle-down`,
-`diamond` in that order when left off, `square` only where listed, since a
-circle 3 px across draws as one) and `domain` lists the values in legend order.
-The legend then has a second key whose swatches are the shapes themselves:
+`{ "field": "svType", "scale": { "type": "ordinal" } }`, where `scale.range`
+lists the shapes to hand out as a color scale's lists colors (`circle`,
+`triangle-down`, `diamond` in that order when left off, `square` only where
+listed, since a circle 3 px across draws as one) and `scale.domain` lists the
+values in legend order. The legend then has a second key whose swatches are the
+shapes themselves:
 
 ```json
 {
   "mark": "point",
   "encoding": {
     "y": "score",
-    "color": { "field": "strand", "scale": "categorical" },
+    "color": { "field": "strand", "scale": { "type": "ordinal" } },
     "shape": {
       "field": "svType",
-      "scale": "categorical",
-      "domain": ["INS", "DEL"],
-      "range": ["triangle-down", "diamond"]
+      "scale": {
+        "type": "ordinal",
+        "domain": ["INS", "DEL"],
+        "range": ["triangle-down", "diamond"]
+      }
     }
   }
 }
 ```
 
-A scale is a lookup from the field's value into `domain` and `range`, so it
-costs a fraction of the per-feature jexl callback it replaces. With three shapes
-to hand out, two unlisted values often derive the same one; the corner notice
-names them, and **Pin distinct shapes** writes the key's values into `domain`.
+A scale is a lookup from the field's value into `scale.domain` and
+`scale.range`, so it costs a fraction of the per-feature jexl callback it
+replaces. With three shapes to hand out, two unlisted values often derive the
+same one; the corner notice names them, and **Pin distinct shapes** writes the
+key's values into `scale.domain`.
 
 ## Several marks
 
@@ -397,11 +403,11 @@ with the points' color a callback:
 ```
 
 A point stands at the middle of its `x` to `x2`, `encoding.size` px across. A
-`rule` is the line from `x` to `x2` at `y`, `encoding.size` px thick, for a
-value that belongs to an interval — a window's Fst, a segment's copy number:
+`rule` is the line from `x` to `x2` at `y`, `encoding.strokeWidth` px thick, for
+a value that belongs to an interval — a window's Fst, a segment's copy number:
 
 ```json
-{ "mark": "rule", "encoding": { "y": "score", "size": 3 } }
+{ "mark": "rule", "encoding": { "y": "score", "strokeWidth": 3 } }
 ```
 
 A `line` strokes through consecutive values on a row. Its mark object's
@@ -409,14 +415,14 @@ A `line` strokes through consecutive values on a row. Its mark object's
 to the next where two spans abut, dropping to `origin` across a gap, so a
 bedGraph or a BigWig tier draws the values as stored; `"linear"` runs from one
 span's centre to the next, which is smoother where the spans are few.
-`encoding.size` is the width in px, 1 unset. A color scale over the field `y`
-plots colors the stroke by the value under each pixel, so a threshold at 0 with
-two colors paints a rise across zero in both, changing at the axis.
+`encoding.strokeWidth` is the width in px, 1 unset. A color scale over the field
+`y` plots colors the stroke by the value under each pixel, so a threshold at 0
+with two colors paints a rise across zero in both, changing at the axis.
 
 ```json
 {
   "mark": { "type": "line", "interpolate": "linear" },
-  "encoding": { "y": "score", "size": 2 }
+  "encoding": { "y": "score", "strokeWidth": 2 }
 }
 ```
 
@@ -425,10 +431,10 @@ interval whose extent is the point. With no `row` every span shares one band;
 with one, `{ "mark": "span", "encoding": { "row": "sampleIndex" } }`, the plot
 divides into as many bands as the highest row on screen needs. A color scale
 over a field makes the span a heatmap:
-`{ "mark": "span", "encoding": { "color": { "field": "score", "scale": "linear", "range": ["white", "red"] } } }`
-paints each interval by its value, and a diverging `range` with `domainMid`
-fades through the middle color at that value, which is how a signed signal reads
-white at zero.
+`{ "mark": "span", "encoding": { "color": { "field": "score", "scale": { "type": "linear", "range": ["white", "red"] } } } }`
+paints each interval by its value, and a diverging `scale.range` with
+`scale.domainMid` fades through the middle color at that value, which is how a
+signed signal reads white at zero.
 
 `"mark": { "type": "span", "height": { "band": 0.8 } }` fills that fraction of
 its band, centred, where an unwritten `band` fills all of it. It sits on the
@@ -482,9 +488,10 @@ labels fit. On the circular view the labels appear on the linear track only.
 ## Links
 
 A `link` mark draws a curve from `x` up and over to `x2`. Over a BED with
-start-end pairs, `x` to `x2` is the feature's two ends, and `encoding.size`
-strokes each curve by a field through a linear or log scale into a pixel range.
-Splice junctions from a STAR file, stroked by read support and labelled with it:
+start-end pairs, `x` to `x2` is the feature's two ends, and
+`encoding.strokeWidth` strokes each curve by a field through a linear or log
+scale into a pixel range. Splice junctions from a STAR file, stroked by read
+support and labelled with it:
 
 ```json addtrack
 {
@@ -501,7 +508,10 @@ Splice junctions from a STAR file, stroked by read support and labelled with it:
         {
           "mark": "link",
           "encoding": {
-            "size": { "field": "score", "scale": "log", "range": [1, 8] }
+            "strokeWidth": {
+              "field": "score",
+              "scale": { "type": "log", "range": [1, 8] }
+            }
           }
         },
         { "mark": "text", "encoding": { "text": "score" }, "maxBpPerPx": 50 }
@@ -547,7 +557,7 @@ out to add more: a color by type, a stroke by score, a shape:
       "marks": [
         {
           "mark": "link",
-          "encoding": { "color": { "field": "svType" }, "size": 2 },
+          "encoding": { "color": "svType", "strokeWidth": 2 },
           "transform": [{ "type": "mate" }]
         }
       ]
@@ -640,7 +650,13 @@ Haplotagged reads split by their `HP` tag, the tag lifted into a field by a
       {
         "mark": "span",
         "transform": [{ "type": "pileup" }],
-        "encoding": { "color": { "field": "HP", "scale": "categorical", "title": "Haplotype" } }
+        "encoding": {
+          "color": {
+            "field": "HP",
+            "scale": { "type": "ordinal" },
+            "legend": { "title": "Haplotype" }
+          }
+        }
       }
     ]
   }
@@ -686,8 +702,8 @@ presets also set every span's `mark.height.band`, so the rows stand apart.
 
 The display's [`rowColor`](/docs/config/linearmarkdisplay/#slot-rowcolor) paints
 the bar beside each row's label and leaves the marks' colors unchanged.
-`{ "domain": ["tumor"], "range": ["#e15759"] }` pairs a row's value with a
-color, the form **Edit colors/arrangement...** writes.
+`{ "scale": { "domain": ["tumor"], "range": ["#e15759"] } }` pairs a row's value
+with a color, the form **Edit colors/arrangement...** writes.
 
 `facet` and `rows` both split the features on a field, and differ in what a
 value gets: a facet section is as deep as its packing and has a chip, where a
@@ -731,7 +747,9 @@ source chromosome:
       "marks": [
         {
           "mark": "span",
-          "encoding": { "color": { "field": "chr", "scale": "categorical" } }
+          "encoding": {
+            "color": { "field": "chr", "scale": { "type": "ordinal" } }
+          }
         }
       ]
     }
@@ -775,9 +793,11 @@ each insertion once the zoom shows a base:
           "encoding": {
             "color": {
               "field": "state",
-              "scale": "categorical",
-              "domain": ["match", "mismatch", "gap", "insertion"],
-              "range": ["#d9d9d9", "#e41a1c", "#404040", "#984ea3"]
+              "scale": {
+                "type": "ordinal",
+                "domain": ["match", "mismatch", "gap", "insertion"],
+                "range": ["#d9d9d9", "#e41a1c", "#404040", "#984ea3"]
+              }
             }
           }
         },
@@ -848,7 +868,7 @@ that row draws the packing:
   "transform": [{ "type": "pileup", "padding": 10 }],
   "encoding": {
     "row": "row",
-    "color": { "field": "strand", "scale": "categorical" }
+    "color": { "field": "strand", "scale": { "type": "ordinal" } }
   }
 }
 ```
@@ -930,23 +950,23 @@ each reported under its id:
 | `op-field` | error | A `sum`, `mean`, `min` or `max` naming no `field`. |
 | `step-field-expression` | error | A step's field written as a `jexl:` expression, where a step reads a name or a dotted path. |
 | `unwritten-y` | error | A `y` naming a field that no `aggregate` or `coverage` step before it writes. |
-| `unread-channel` | warning | A channel the mark's type does not read, such as `y` on a `span` or a size field on a point. |
-| `unread-size` | warning | An `encoding.size` on a mark that draws no point, rule or line and strokes no link. |
+| `unread-channel` | warning | A channel the mark's type does not read, such as `y` on a `span`, a `size` on a rule, whose width is `strokeWidth`, or a size field on a point. |
+| `unread-size` | warning | An `encoding.size` or `encoding.strokeWidth` on a mark that draws no point, rule or line and strokes no link. |
 | `unread-mark-member` | warning | A `mark` member its type does not read: an `interpolate` off a line or a link, a `height` off a span, a `gapBp` off a line. |
 | `mark-interpolate` | warning | An `interpolate` the mark's type does not draw, such as `dome` on a line, which then draws its default. |
 | `threshold-cuts` | warning | Threshold cuts that repeat, leaving an interval no value falls in. |
 | `threshold-no-cuts` | warning | A threshold color naming no cut, so every value paints one color. |
 | `threshold-cut-count` | warning | A threshold color naming more cuts than it paints, so a value past the eighth takes the ninth color. |
-| `threshold-range` | warning | A threshold `range` not one color longer than its cuts. |
-| `ramp-domain` | warning | A `domain` on a linear, log or symlog color, whose ends are `domainMin` and `domainMax`. |
-| `ramp-range` | warning | A linear, log or symlog color whose `range` lists one color, which paints every value alike. |
+| `threshold-range` | warning | A threshold `scale.range` not one color longer than its cuts. |
+| `ramp-domain` | warning | A `scale.domain` on a linear, log or symlog color, whose ends are `scale.domainMin` and `scale.domainMax`. |
+| `ramp-range` | warning | A linear, log or symlog color whose `scale.range` lists one color, which paints every value alike. |
 | `domain-ends` | warning | A scale's `domainMax` below its `domainMin`: a color ramp's, a width's or `scales.y`'s. |
 | `domain-quantile` | warning | A color ramp's or `scales.y`'s `domainQuantile` outside 0.5 to 1, a percent among them. |
 | `log-floor` | warning | A log scale's `domainMin` at or below 0, which a log scale cannot represent, so the end floors above it. |
 | `field-spells-constant` | warning | A color's or a shape's `field` spelling a CSS color or a shape name, which is a constant written `{ value }`. |
-| `labels-domain` | warning | A color's or a shape's `labels` naming values its `domain` does not list, or no categorical scale's. |
-| `unknown-domain` | warning | A categorical color's `unknown` with no `domain`, so it paints every value. |
-| `unknown-scale` | warning | An `unknown` on a color painting through no categorical scale, so nothing reads it. |
+| `names-domain` | warning | A color's or a shape's `scale.names` naming values its `scale.domain` does not list, or no ordinal scale's. |
+| `unknown-domain` | warning | An ordinal color's `scale.unknown` with no `scale.domain`, so it paints every value. |
+| `unknown-scale` | warning | A `scale.unknown` on a color painting through no ordinal scale, so nothing reads it. |
 | `window-frame` | warning | A `window`'s `frame` other than two whole row offsets or `null`, the first not past the second, so the step reads its default. |
 | `step-pair` | warning | A `bin`'s `as` or `fields`, or a `pileup`'s `fields`, naming other than two fields, so the step reads its defaults. |
 | `bin-field-and-fields` | warning | A `bin` naming a `field` beside the `fields` it cuts at the bin edges, which leaves the `field` unread. |
@@ -983,9 +1003,9 @@ write, so `INFO.DP`, `count`, a `jexl:` expression or a constant all go through.
 Under a field that names a scale, the editor shows the kind of scale and then
 what that kind reads: a categorical scale's values in order, their colors and
 their names in the key; a threshold's cut points and a color per interval; a
-ramp's `scheme`, its `reverse`, the ends that pin it, its middle, and whether an
-open end follows the extremes or a percentile. An end left empty spans the
-loaded regions, so pinning both fixes a figure's colors. A list is
+ramp's `scale.scheme`, its `scale.reverse`, the ends that pin it, its middle,
+and whether an open end follows the extremes or a percentile. An end left empty
+spans the loaded regions, so pinning both fixes a figure's colors. A list is
 comma-separated. When the kind changes, the editor drops the members the new
 kind does not paint.
 

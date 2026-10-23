@@ -245,15 +245,15 @@ hg38 assembly before either track.
 
 ## Coloring each isoform by its usage change
 
-In [grammar-of-graphics](/docs/config_guides/mark_display) terms, `color` is a
-color scale: its `field`, `dif_called` (a called transcript's isoform-fraction
-change), goes through the `threshold` cuts in `domain` to the colors in `range`,
-liver-preferred below zero and muscle-preferred above. A value on a cut takes
-the interval above it.
+In [grammar-of-graphics](/docs/config_guides/mark_display) terms,
+`encoding.color` is a color scale: its `field`, `dif_called` (a called
+transcript's isoform-fraction change), goes through the `threshold` cuts in
+`scale.domain` to the colors in `scale.range`, liver-preferred below zero and
+muscle-preferred above. A value on a cut takes the interval above it.
 
-- The key lists every interval under the `title`, plus a `(no value)` row for
-  uncalled transcripts.
-- A UTR follows `color` unless `utrColor` is set.
+- The key lists every interval under the `legend.title`, plus a `(no value)` row
+  for uncalled transcripts.
+- A UTR follows `encoding.color` unless `utrColor` is set.
 - Clicking an isoform opens its numbers in the details panel.
 
 ```json addtrack loc=chr10:7,787,600-7,812,400
@@ -264,27 +264,31 @@ the interval above it.
   "assemblyNames": ["hg38"],
   "displayDefaults": {
     "subfeatureLabels": "below",
-    "color": {
-      "field": "dif_called",
-      "scale": "threshold",
-      "domain": [-0.6, -0.3, 0, 0.3, 0.6],
-      "range": [
-        "#124f95",
-        "#2370cc",
-        "#6394d5",
-        "#d5716a",
-        "#c63335",
-        "#901e21"
-      ],
-      "labels": [
-        "liver, below -0.6",
-        "liver, -0.6 to -0.3",
-        "liver, -0.3 to 0",
-        "muscle, 0 to 0.3",
-        "muscle, 0.3 to 0.6",
-        "muscle, 0.6 and above"
-      ],
-      "title": "ΔIF, muscle - liver"
+    "encoding": {
+      "color": {
+        "field": "dif_called",
+        "scale": {
+          "type": "threshold",
+          "domain": [-0.6, -0.3, 0, 0.3, 0.6],
+          "range": [
+            "#124f95",
+            "#2370cc",
+            "#6394d5",
+            "#d5716a",
+            "#c63335",
+            "#901e21"
+          ],
+          "names": [
+            "liver, below -0.6",
+            "liver, -0.6 to -0.3",
+            "liver, -0.3 to 0",
+            "muscle, 0 to 0.3",
+            "muscle, 0.3 to 0.6",
+            "muscle, 0.6 and above"
+          ]
+        },
+        "legend": { "title": "ΔIF, muscle - liver" }
+      }
     },
     "labels": {
       "name": "jexl:feature.transcript_name||feature.gene_name||feature.name||feature.id"

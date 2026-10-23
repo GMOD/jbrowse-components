@@ -34,13 +34,17 @@ const ECOLI_SEGMENTS_TRACK = 'ecoli_minigraph_segments'
 
 // The graph view's 'Stable rank' colors, so a segment's block and node match.
 const RANK_COLOR_DEFAULTS = {
-  color: {
-    field: 'rank',
-    scale: 'threshold',
-    domain: [1],
-    range: ['rgb(52,152,219)', 'rgb(237,137,44)'],
-    labels: ['reference', 'other assemblies'],
-    title: 'Segment rank',
+  encoding: {
+    color: {
+      field: 'rank',
+      scale: {
+        type: 'threshold',
+        domain: [1],
+        range: ['rgb(52,152,219)', 'rgb(237,137,44)'],
+        names: ['reference', 'other assemblies'],
+      },
+      legend: { title: 'Segment rank' },
+    },
   },
 }
 
@@ -285,7 +289,11 @@ const LAUNCH_OUT_URL = sessionSpec(ECOLI_PANGENOME_CONFIG, {
     {
       ...ECOLI_SEGMENTS_SESSION_TRACK,
       trackId: LAUNCH_OUT_SEGMENTS_TRACK,
-      displayDefaults: { color: referencePositionColor(LAUNCH_OUT_REGION) },
+      displayDefaults: {
+        encoding: {
+          color: { value: referencePositionColor(LAUNCH_OUT_REGION) },
+        },
+      },
     },
   ],
   views: [
@@ -632,7 +640,9 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
               type: 'LinearBasicDisplay',
               showLabels: 'none',
               height: 50,
-              color: referencePositionColor(PGGB_TIER_REGION),
+              encoding: {
+                color: { value: referencePositionColor(PGGB_TIER_REGION) },
+              },
             },
             {
               trackId: PGGB_MAF_TRACK,
@@ -787,7 +797,9 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
             {
               trackId: ECOLI_SEGMENTS_TRACK,
               type: 'LinearBasicDisplay',
-              color: referencePositionColor(ECOLI_REGION),
+              encoding: {
+                color: { value: referencePositionColor(ECOLI_REGION) },
+              },
             },
           ],
         },
@@ -887,7 +899,9 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
                 {
                   trackId: ECOLI_SEGMENTS_TRACK,
                   type: 'LinearBasicDisplay',
-                  color: referencePositionColor(PAA_RAMP_DOMAIN),
+                  encoding: {
+                    color: { value: referencePositionColor(PAA_RAMP_DOMAIN) },
+                  },
                   height: 50,
                 },
               ],
@@ -975,7 +989,9 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
             {
               trackId: ECOLI_SEGMENTS_TRACK,
               type: 'LinearBasicDisplay',
-              color: referencePositionColor(SEGMENT_REGION),
+              encoding: {
+                color: { value: referencePositionColor(SEGMENT_REGION) },
+              },
             },
           ],
         },

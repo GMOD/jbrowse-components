@@ -129,8 +129,8 @@ calls, both loaded straight from their FTP URL.
 The CNV BED has no header, so
 [`columnNames`](/docs/config/bedadapter/#slot-columnnames) names its columns. In
 [grammar-of-graphics](/docs/config_guides/mark_display) terms, the track's
-`color` is a color scale that maps the `field` `total_copy_number` through the
-cuts in `domain` to the colors in `range`.
+`encoding.color` is a color scale that maps the `field` `total_copy_number`
+through the cuts in `scale.domain` to the colors in `scale.range`.
 
 ```json addtrack
 {
@@ -155,13 +155,17 @@ cuts in `domain` to the colors in `range`.
     "labels": {
       "name": "jexl:'CN '+feature.total_copy_number+' ('+feature.hap1_copy_number+'|'+feature.hap2_copy_number+')'"
     },
-    "color": {
-      "field": "total_copy_number",
-      "scale": "threshold",
-      "domain": [1, 2, 3, 4],
-      "range": ["#2166ac", "#92c5de", "#e0e0e0", "#f4a582", "#b2182b"],
-      "labels": ["CN 0", "CN 1", "CN 2", "CN 3", "CN 4+"],
-      "title": "Copy number"
+    "encoding": {
+      "color": {
+        "field": "total_copy_number",
+        "scale": {
+          "type": "threshold",
+          "domain": [1, 2, 3, 4],
+          "range": ["#2166ac", "#92c5de", "#e0e0e0", "#f4a582", "#b2182b"],
+          "names": ["CN 0", "CN 1", "CN 2", "CN 3", "CN 4+"]
+        },
+        "legend": { "title": "Copy number" }
+      }
     }
   }
 }
@@ -275,7 +279,7 @@ no index, and serves it to a variant track:
       "marks": [
         {
           "mark": "link",
-          "encoding": { "size": 2 },
+          "encoding": { "strokeWidth": 2 },
           "transform": [{ "type": "mate" }]
         }
       ]

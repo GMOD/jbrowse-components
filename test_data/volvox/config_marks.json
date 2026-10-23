@@ -76,7 +76,7 @@
                 "y": "score",
                 "color": {
                   "field": "name",
-                  "scale": "categorical"
+                  "scale": { "type": "ordinal" }
                 }
               }
             }
@@ -111,7 +111,7 @@
               "mark": "line",
               "encoding": {
                 "y": "score",
-                "size": 2
+                "strokeWidth": 2
               }
             },
             {
@@ -148,12 +148,14 @@
               "mark": "line",
               "encoding": {
                 "y": "score",
-                "size": 2,
+                "strokeWidth": 2,
                 "color": {
                   "field": "score",
-                  "scale": "threshold",
-                  "domain": [0],
-                  "range": ["red", "blue"]
+                  "scale": {
+                    "type": "threshold",
+                    "domain": [0],
+                    "range": ["red", "blue"]
+                  }
                 }
               }
             }
@@ -182,12 +184,14 @@
               "mark": { "type": "line", "interpolate": "linear" },
               "encoding": {
                 "y": "score",
-                "size": 2,
+                "strokeWidth": 2,
                 "color": {
                   "field": "score",
-                  "scale": "threshold",
-                  "domain": [0],
-                  "range": ["red", "blue"]
+                  "scale": {
+                    "type": "threshold",
+                    "domain": [0],
+                    "range": ["red", "blue"]
+                  }
                 }
               }
             }
@@ -217,9 +221,11 @@
               "encoding": {
                 "color": {
                   "field": "score",
-                  "scale": "linear",
-                  "range": ["blue", "white", "red"],
-                  "domainMid": 0
+                  "scale": {
+                    "type": "linear",
+                    "range": ["blue", "white", "red"],
+                    "domainMid": 0
+                  }
                 }
               }
             }
@@ -256,13 +262,15 @@
                 "y": "score",
                 "color": {
                   "field": "name",
-                  "scale": "categorical"
+                  "scale": { "type": "ordinal" }
                 },
                 "shape": {
                   "field": "name",
-                  "scale": "categorical",
-                  "domain": ["EDEN.1", "EDEN.2"],
-                  "range": ["triangle-down", "diamond"]
+                  "scale": {
+                    "type": "ordinal",
+                    "domain": ["EDEN.1", "EDEN.2"],
+                    "range": ["triangle-down", "diamond"]
+                  }
                 }
               }
             }
@@ -304,7 +312,7 @@
                 "row": "row",
                 "color": {
                   "field": "strand",
-                  "scale": "categorical"
+                  "scale": { "type": "ordinal" }
                 }
               }
             }
@@ -451,8 +459,7 @@
               "encoding": {
                 "color": {
                   "field": "coverage",
-                  "scale": "linear",
-                  "range": ["white", "red"]
+                  "scale": { "type": "linear", "range": ["white", "red"] }
                 }
               }
             }
@@ -495,7 +502,7 @@
                 "row": "row",
                 "color": {
                   "field": "type",
-                  "scale": "categorical"
+                  "scale": { "type": "ordinal" }
                 }
               }
             }
@@ -545,7 +552,7 @@
                 "row": "row",
                 "color": {
                   "field": "nm",
-                  "scale": "categorical"
+                  "scale": { "type": "ordinal" }
                 }
               }
             }
@@ -1184,7 +1191,7 @@
             {
               "mark": "link",
               "encoding": {
-                "size": 6
+                "strokeWidth": 6
               },
               "transform": [
                 {
@@ -1250,7 +1257,7 @@
               "encoding": {
                 "color": {
                   "field": "chr",
-                  "scale": "categorical"
+                  "scale": { "type": "ordinal" }
                 }
               }
             }
@@ -1315,9 +1322,11 @@
               "encoding": {
                 "color": {
                   "field": "state",
-                  "scale": "categorical",
-                  "domain": ["match", "mismatch", "gap", "insertion"],
-                  "range": ["#d9d9d9", "#e41a1c", "#404040", "#984ea3"]
+                  "scale": {
+                    "type": "ordinal",
+                    "domain": ["match", "mismatch", "gap", "insertion"],
+                    "range": ["#d9d9d9", "#e41a1c", "#404040", "#984ea3"]
+                  }
                 }
               }
             },
@@ -1390,9 +1399,11 @@
               "encoding": {
                 "color": {
                   "field": "state",
-                  "scale": "categorical",
-                  "domain": ["match", "mismatch", "gap", "insertion"],
-                  "range": ["#d9d9d9", "#e41a1c", "#404040", "#984ea3"]
+                  "scale": {
+                    "type": "ordinal",
+                    "domain": ["match", "mismatch", "gap", "insertion"],
+                    "range": ["#d9d9d9", "#e41a1c", "#404040", "#984ea3"]
+                  }
                 }
               }
             },
@@ -1481,10 +1492,12 @@
               "encoding": {
                 "color": {
                   "field": "identity",
-                  "scale": "linear",
-                  "domainMin": 0,
-                  "domainMax": 1,
-                  "range": ["white", "#08519c"]
+                  "scale": {
+                    "type": "linear",
+                    "domainMin": 0,
+                    "domainMax": 1,
+                    "range": ["white", "#08519c"]
+                  }
                 }
               }
             }

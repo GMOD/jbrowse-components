@@ -279,7 +279,7 @@ _SNRPN_, each in a row with its raw values under a moving average:
       "type": "LinearMarkDisplay",
       "displayId": "HG002_imprinted_5mC_smoothed-LinearMarkDisplay",
       "rows": "source",
-      "showLegend": false,
+      "legend": { "show": false },
       "fetchSizeLimit": 5000000,
       "scales": { "y": { "domainMin": 0, "domainMax": 100, "title": "% 5mC" } },
       "marks": [
@@ -312,10 +312,12 @@ _SNRPN_, each in a row with its raw values under a moving average:
             "y": "meth",
             "color": {
               "field": "source",
-              "domain": ["HP1", "HP2"],
-              "range": ["#d62728", "#1f77b4"]
+              "scale": {
+                "domain": ["HP1", "HP2"],
+                "range": ["#d62728", "#1f77b4"]
+              }
             },
-            "size": 2
+            "strokeWidth": 2
           }
         }
       ]
@@ -332,7 +334,7 @@ The display draws two marks over the same rows:
   depth modkit counted there
 - **with `groupby: ["source"]`** the step averages each haplotype over that
   haplotype's CpGs, and with `rows: "source"` the display gives each haplotype a
-  row whose label names it, so `showLegend` is off
+  row whose label names it, so `legend.show` is off
 - **with `fetchSizeLimit`** raised, the track reads the whole slice when zoomed
   out
 

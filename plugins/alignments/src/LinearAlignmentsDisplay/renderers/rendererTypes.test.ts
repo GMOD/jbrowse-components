@@ -1,3 +1,4 @@
+import { arcStrokeScale } from '../../features/arcs/arcLineWidth.ts'
 import { interbaseRangeEnds } from '../../shared/uploadTypes.ts'
 import { computeArcBand, pileupCellWidth } from './rendererTypes.ts'
 
@@ -33,7 +34,7 @@ function makeState(
   return {
     scrollTop: 0,
     readConnectionsColorField: 'insertSizeAndOrientation',
-    readConnectionsLineWidth: 1,
+    readConnectionsStrokeScale: arcStrokeScale(1),
     linkRegions: [],
     showOutline: false,
     readConnectionsDown: false,

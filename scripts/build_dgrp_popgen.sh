@@ -245,13 +245,16 @@ cat > "$APP"/config.json <<'JSON'
       "category": ["DGRP scans"],
       "adapter": { "type": "BigWigAdapter", "uri": "pi_ratio_In2Lt.bw" },
       "displayDefaults": {
-        "color": {
-          "field": "score",
-          "scale": "threshold",
-          "domain": [0],
-          "range": ["#e66100", "#1f78b4"],
-          "labels": ["inverted lower", "inverted higher"],
-          "title": "π, In(2L)t vs standard"
+        "encoding": {
+          "color": {
+            "scale": {
+              "type": "threshold",
+              "domain": [0],
+              "range": ["#e66100", "#1f78b4"],
+              "names": ["inverted lower", "inverted higher"]
+            },
+            "legend": { "title": "π, In(2L)t vs standard" }
+          }
         },
         "scales": { "y": { "domainMin": -1.5, "domainMax": 1.5, "title": "log2 ratio" } }
       }

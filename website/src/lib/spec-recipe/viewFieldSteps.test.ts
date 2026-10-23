@@ -36,11 +36,11 @@ test('the circular view holds the filter rows in its view menu', () => {
 })
 
 test('the color radios sit in the circular view menu and the comparative headers', () => {
-  const color = { field: 'strand' }
-  expect(stepPaths('color', color, 'CircularView')).toEqual([
+  const color = 'strand'
+  expect(stepPaths('encoding.color', color, 'CircularView')).toEqual([
     'View menu → Color by... → Strand',
   ])
-  expect(stepPaths('color', color, 'DotplotView')).toEqual([
+  expect(stepPaths('encoding.color', color, 'DotplotView')).toEqual([
     'Dotplot header → palette button → Strand',
   ])
 })
@@ -57,10 +57,10 @@ test('hiding unlabelled rows is a valid predicate the color menu writes', () => 
 })
 
 test('the legend toggle of the circular view is in its view menu', () => {
-  expect(stepPaths('showLegend', true, 'CircularView')).toEqual([
+  expect(stepPaths('legend', { show: true }, 'CircularView')).toEqual([
     'View menu → Show legend (checked)',
   ])
-  expect(stepPaths('showLegend', true, 'LinearSyntenyView')).toEqual([])
+  expect(stepPaths('legend', { show: true }, 'LinearSyntenyView')).toEqual([])
 })
 
 test('an axis grid names the menu each view keeps it in', () => {

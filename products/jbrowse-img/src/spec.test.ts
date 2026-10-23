@@ -11,7 +11,7 @@ import type { ViewSpec } from './spec.ts'
 const spec: ViewSpec = {
   type: 'LinearSyntenyView',
   views: [{ assembly: 'a' }, { assembly: 'b' }],
-  opacity: 0.9,
+  encoding: { opacity: 0.9 },
   mark: { interpolate: 'bump' },
 }
 
@@ -19,7 +19,7 @@ describe('viewSettingsFromSpec', () => {
   it('drops the type discriminator and keeps the rest', () => {
     expect(viewSettingsFromSpec(spec)).toEqual({
       views: [{ assembly: 'a' }, { assembly: 'b' }],
-      opacity: 0.9,
+      encoding: { opacity: 0.9 },
       mark: { interpolate: 'bump' },
     })
   })
@@ -34,7 +34,7 @@ describe('withViewSettings', () => {
     expect(
       withViewSettings(settings, { mark: { interpolate: 'linear' } }),
     ).toMatchObject({
-      opacity: 0.9,
+      encoding: { opacity: 0.9 },
       mark: { type: 'link', interpolate: 'linear' },
     })
     expect(settings.mark).toEqual({ type: 'link', interpolate: 'bump' })

@@ -5,10 +5,6 @@ import {
   withPassId,
 } from '@jbrowse/render-core/marks'
 
-import {
-  ARC_WIDTH_MAX_SCALE,
-  arcStrokeScale,
-} from '../../features/arcs/arcLineWidth.ts'
 import { sectionRenderState } from './rendererTypes.ts'
 
 import type { ArcBandFeed } from '../../features/arcs/bandFeed.ts'
@@ -62,7 +58,7 @@ export function arcBandYScale(state: ArcBandState) {
   const pxPerBp = Math.abs(linkRegions[0]?.signedPxPerBp ?? 0)
   const margin = Math.min(
     arcBand.height,
-    (ARC_WIDTH_MAX_SCALE * state.readConnectionsLineWidth) / 2,
+    Math.max(...state.readConnectionsStrokeScale.range) / 2,
   )
   const reach = arcBand.height - margin
   return {
@@ -77,14 +73,14 @@ export function arcBandYScale(state: ArcBandState) {
 
 function linkParams(state: ArcBandState, dashed: boolean): LinkParams {
   const cloud = state.arcsYDomainBp !== undefined
-  const width = state.readConnectionsLineWidth
+  const sizeScale = state.readConnectionsStrokeScale
   return {
     ...arcBandYScale(state),
     regions: state.linkRegions,
     linkShape: cloud ? 'line' : 'dome',
     valued: true,
-    sizePx: width,
-    sizeScale: arcStrokeScale(width),
+    sizePx: sizeScale.range[0],
+    sizeScale,
     stemPx: state.arcBand.height,
     strokeDash: dashed ? ARC_DASH : undefined,
   }

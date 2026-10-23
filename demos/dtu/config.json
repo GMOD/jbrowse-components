@@ -39,27 +39,31 @@
           "displayId": "dtu_muscle_vs_liver-LinearBasicDisplay",
           "height": 285,
           "subfeatureLabels": "below",
-          "color": {
-            "field": "dif_called",
-            "scale": "threshold",
-            "domain": ["-0.6", "-0.3", "0", "0.3", "0.6"],
-            "range": [
-              "#124f95",
-              "#2370cc",
-              "#6394d5",
-              "#d5716a",
-              "#c63335",
-              "#901e21"
-            ],
-            "labels": [
-              "liver, below -0.6",
-              "liver, -0.6 to -0.3",
-              "liver, -0.3 to 0",
-              "muscle, 0 to 0.3",
-              "muscle, 0.3 to 0.6",
-              "muscle, 0.6 and above"
-            ],
-            "title": "ΔIF, muscle - liver"
+          "encoding": {
+            "color": {
+              "field": "dif_called",
+              "scale": {
+                "type": "threshold",
+                "domain": ["-0.6", "-0.3", "0", "0.3", "0.6"],
+                "range": [
+                  "#124f95",
+                  "#2370cc",
+                  "#6394d5",
+                  "#d5716a",
+                  "#c63335",
+                  "#901e21"
+                ],
+                "names": [
+                  "liver, below -0.6",
+                  "liver, -0.6 to -0.3",
+                  "liver, -0.3 to 0",
+                  "muscle, 0 to 0.3",
+                  "muscle, 0.3 to 0.6",
+                  "muscle, 0.6 and above"
+                ]
+              },
+              "legend": { "title": "ΔIF, muscle - liver" }
+            }
           },
           "labels": {
             "name": "jexl:feature.transcript_name||feature.gene_name||feature.name||feature.id"

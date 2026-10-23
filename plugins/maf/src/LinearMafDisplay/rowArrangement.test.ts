@@ -162,7 +162,10 @@ describe('the guide tree draws while a rotation of it lists `rows.sort`', () => 
   it('draws a run tree over the guide tree, and a reset returns to it', () => {
     const display = treedDisplay()
     const runTree = '((hg38,mm10),panTro4);'
-    display.setRowOrder(named(['hg38', 'mm10', 'panTro4']), { tree: runTree })
+    display.setRowOrder(named(['hg38', 'mm10', 'panTro4']), {
+      tree: runTree,
+      provenance: { regions: [{ refName: 'ctgA', start: 0, end: 100 }] },
+    })
 
     expect(display.rowTree).toBe(runTree)
     expect(display.hierarchy).toBeDefined()
@@ -346,7 +349,7 @@ describe('rowColor tints a row over the adapter color', () => {
 
   function tinted(rowColor?: { domain: string[]; range: string[] }) {
     const { display } = createMafTestEnvironment({
-      displayConfig: rowColor ? { rowColor } : {},
+      displayConfig: rowColor ? { rowColor: { scale: rowColor } } : {},
     }).createDisplay()
     display.setSamples({
       samples: SAMPLES,
@@ -368,11 +371,16 @@ describe('rowColor tints a row over the adapter color', () => {
   it('writes the colors submitted over the declared ones, and a reset returns', () => {
     const display = tinted({ domain: ['hg38'], range: ['#00ff00'] })
     display.applyRowEdits(display.editableSources, {
-      domain: ['hg38', 'mm10'],
-      range: ['red', '#0000ff'],
+      scale: { domain: ['hg38', 'mm10'], range: ['red', '#0000ff'] },
     })
-    expect(getConf(display, ['rowColor', 'domain'])).toEqual(['hg38', 'mm10'])
-    expect(getConf(display, ['rowColor', 'range'])).toEqual(['red', '#0000ff'])
+    expect(getConf(display, ['rowColor', 'scale', 'domain'])).toEqual([
+      'hg38',
+      'mm10',
+    ])
+    expect(getConf(display, ['rowColor', 'scale', 'range'])).toEqual([
+      'red',
+      '#0000ff',
+    ])
     expect(tints(display)).toEqual(['red', '#0000ff'])
     expect(display.rowArrangementIsCustom).toBe(true)
 
@@ -383,8 +391,8 @@ describe('rowColor tints a row over the adapter color', () => {
 
   it('offers a reset for a recolor alone', () => {
     const display = tinted()
-    setConf(display, ['rowColor', 'domain'], ['mm10'])
-    setConf(display, ['rowColor', 'range'], ['#0000ff'])
+    setConf(display, ['rowColor', 'scale', 'domain'], ['mm10'])
+    setConf(display, ['rowColor', 'scale', 'range'], ['#0000ff'])
     expect(display.rowArrangementIsCustom).toBe(true)
   })
 
@@ -394,7 +402,7 @@ describe('rowColor tints a row over the adapter color', () => {
     const { display } = createMafTestEnvironment({
       displayConfig: {
         rows: { labels: { hg38: 'Human' } },
-        rowColor: { domain: ['hg38'], range: ['red'] },
+        rowColor: { scale: { domain: ['hg38'], range: ['red'] } },
       },
     }).createDisplay()
     display.setSamples({
@@ -407,7 +415,7 @@ describe('rowColor tints a row over the adapter color', () => {
     display.applyRowEdits(display.editableSources)
 
     expect(display.rowLabels).toEqual({ hg38: 'Human' })
-    expect(getConf(display, ['rowColor', 'domain'])).toEqual(['hg38'])
+    expect(getConf(display, ['rowColor', 'scale', 'domain'])).toEqual(['hg38'])
     expect(display.rowArrangementIsCustom).toBe(false)
   })
 })

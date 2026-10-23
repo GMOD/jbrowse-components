@@ -64,7 +64,7 @@ export interface PaletteColors {
 export type PaletteColorKey = keyof PaletteColors
 
 // Color palette for the renderer: the named colors, and what each read
-// category paints, resolved once from the color `color` declares for it or
+// category paints, resolved once from the color `encoding.color` declares for it or
 // its named default (`readCategoryColorsOf`). The GPU's `u.readCategoryColor`,
 // the Canvas2D fill, the key and the overlay palettes all index it.
 export interface ColorPalette extends PaletteColors {

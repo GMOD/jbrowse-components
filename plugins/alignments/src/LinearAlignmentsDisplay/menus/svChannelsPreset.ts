@@ -21,7 +21,7 @@ export const SV_CHANNELS_LABEL = 'SV channels (pairs by orientation)'
 // the preset exists because four of them spread across three menus is not an
 // arrangement anyone finds by looking.
 //
-// `color` is deliberately NOT among them. With the pileup hidden there are no
+// `encoding.color` is deliberately NOT among them. With the pileup hidden there are no
 // read fills to paint, and the coverage band reads the color only under a
 // modification or bisulfite scheme (executeRenderAlignmentData's
 // `modCoverage`). What the read color still reaches is the arcs, through

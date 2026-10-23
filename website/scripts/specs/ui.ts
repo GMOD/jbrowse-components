@@ -134,7 +134,7 @@ export const settingsVideoFixtures = {
         trackId: SV_CRAM_TRACK_ID,
         height: SV_CRAM_HEIGHT,
         unit: 'chain',
-        color: { field: 'insertSizeAndOrientation' },
+        encoding: { color: 'insertSizeAndOrientation' },
       },
     ],
   }),
@@ -307,10 +307,11 @@ const rhdPanel = (sortRowsBy?: RowSortSpec) =>
             // CN_HEATMAP_SETTINGS.
             origin: 2,
             scales: { y: { domainMin: 0, domainMax: 4 } },
-            color: {
-              field: 'score',
-              range: ['#2166ac', '#b2182b'],
-              title: 'Copy number',
+            encoding: {
+              color: {
+                scale: { range: ['#2166ac', '#b2182b'] },
+                legend: { title: 'Copy number' },
+              },
             },
             height: 330,
             runClustering: true,
@@ -322,7 +323,7 @@ const rhdPanel = (sortRowsBy?: RowSortSpec) =>
             // below 170 the last row of records clips
             height: 170,
             // One color: each label already names its SV type.
-            color: '#4a5568',
+            encoding: { color: { value: '#4a5568' } },
           },
           {
             trackId: 'ncbi_refseq_hg38',
@@ -583,7 +584,7 @@ export const uiSpecs: ScreenshotSpec[] = [
               variants: { show: true },
               forceLoad: true,
               height: 400,
-              color: { field: 'svType' },
+              encoding: { color: 'svType' },
             },
             {
               trackId: 'ncbi_refseq_109_hg38',

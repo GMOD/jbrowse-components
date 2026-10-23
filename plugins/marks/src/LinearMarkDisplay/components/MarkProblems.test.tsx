@@ -45,7 +45,7 @@ describe('MarkSlotProblems', () => {
       <MarkSlotProblems
         problems={[
           problem('warning', 'encoding.color', 0),
-          problem('error', 'encoding.color.domainMin', 0),
+          problem('error', 'encoding.color.scale.domainMin', 0),
         ]}
       />,
     )

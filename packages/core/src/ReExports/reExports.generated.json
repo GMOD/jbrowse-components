@@ -4221,7 +4221,6 @@
         "IDENTITY_SCALE",
         "categoricalColorField",
         "colorChannelOptions",
-        "colorChannelSlots",
         "colorConfigSchema",
         "colorDescendingSlot",
         "colorDomainEndsSlots",
@@ -4229,18 +4228,24 @@
         "colorDomainSlot",
         "colorEncodingOf",
         "colorFieldOf",
+        "colorFieldSlot",
         "colorForField",
         "colorForScheme",
         "colorForValue",
-        "colorLabelsSlot",
+        "colorLegendOptions",
+        "colorNamesSlot",
         "colorRampSlots",
         "colorRangeSlot",
         "colorReverseSlot",
+        "colorScaleOptions",
+        "colorScaleTypeSlot",
         "colorSettingOf",
         "colorSnapshotOf",
         "colorTitleSlot",
         "colorUnknownSlot",
         "dealRowColors",
+        "definedColor",
+        "encodingOptions",
         "featureColorEncoding",
         "identityKeyEntries",
         "impliedFieldOf",
@@ -4398,6 +4403,13 @@
       "names": [
         "default",
         "facetForField"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/display-kit/featureEncodingConfigSchema": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "featureEncodingConfigSchema"
       ],
       "worker": "real"
     },
@@ -4601,6 +4613,13 @@
       ],
       "worker": "real"
     },
+    "@jbrowse/display-kit/hiddenLegendConfigSchema": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "hiddenLegendConfigSchema"
+      ],
+      "worker": "real"
+    },
     "@jbrowse/display-kit/highlightHost": {
       "package": "@jbrowse/display-kit",
       "names": [
@@ -4638,6 +4657,13 @@
       ],
       "worker": "real"
     },
+    "@jbrowse/display-kit/legendConfigSchema": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "legendConfigSchema"
+      ],
+      "worker": "real"
+    },
     "@jbrowse/display-kit/legendHost": {
       "package": "@jbrowse/display-kit",
       "names": [
@@ -4649,8 +4675,7 @@
       "package": "@jbrowse/display-kit",
       "names": [
         "default",
-        "legendCheckboxItem",
-        "legendMixinSlots"
+        "legendCheckboxItem"
       ],
       "worker": "real"
     },
@@ -4783,8 +4808,11 @@
       "package": "@jbrowse/display-kit",
       "names": [
         "RETIRED_ROW_STATE_KEYS",
+        "isFlatColor",
+        "liftFlatColor",
         "liftRetiredRowState",
-        "moveDisplayDefaults"
+        "moveDisplayDefaults",
+        "retiredDisplayColor"
       ],
       "worker": "real"
     },

@@ -99,19 +99,21 @@ function exportTrack(config: string, modifiers: string[] = [], locs = [loc]) {
 }
 
 const basic = { type: 'LinearBasicDisplay' }
-const byName = { field: 'name', domain: ['EDEN.1', 'EDEN.2'] }
+const byName = { field: 'name', scale: { domain: ['EDEN.1', 'EDEN.2'] } }
 const byStrand = { field: 'strand', sort: ['1'] }
 
 describe('a path write into a setting the config already writes', () => {
   test('changes that member and keeps the rest, as the config saying it would', async () => {
     const written = await exportTrack(
-      configWith({ ...basic, color: byName, facet: byStrand }),
-      ['color.domain=EDEN.2,EDEN.1', 'facet.sort=-1,1'],
+      configWith({ ...basic, encoding: { color: byName }, facet: byStrand }),
+      ['encoding.color.scale.domain=EDEN.2,EDEN.1', 'facet.sort=-1,1'],
     )
     const stated = await exportTrack(
       configWith({
         ...basic,
-        color: { ...byName, domain: ['EDEN.2', 'EDEN.1'] },
+        encoding: {
+          color: { ...byName, scale: { domain: ['EDEN.2', 'EDEN.1'] } },
+        },
         facet: { ...byStrand, sort: ['-1', '1'] },
       }),
     )
@@ -121,14 +123,16 @@ describe('a path write into a setting the config already writes', () => {
   test('reaches every panel of a breakpoint view the same way', async () => {
     const panels = ['ctgA:1-12000', 'ctgA:15000-25000']
     const written = await exportTrack(
-      configWith({ ...basic, color: byName, facet: byStrand }),
-      ['color.domain=EDEN.2,EDEN.1', 'facet.sort=-1,1'],
+      configWith({ ...basic, encoding: { color: byName }, facet: byStrand }),
+      ['encoding.color.scale.domain=EDEN.2,EDEN.1', 'facet.sort=-1,1'],
       panels,
     )
     const stated = await exportTrack(
       configWith({
         ...basic,
-        color: { ...byName, domain: ['EDEN.2', 'EDEN.1'] },
+        encoding: {
+          color: { ...byName, scale: { domain: ['EDEN.2', 'EDEN.1'] } },
+        },
         facet: { ...byStrand, sort: ['-1', '1'] },
       }),
       [],
@@ -140,12 +144,12 @@ describe('a path write into a setting the config already writes', () => {
   test('lands on a named modifier the same way in either order', async () => {
     const config = configWith(basic)
     const pathFirst = await exportTrack(config, [
-      'color.domain=EDEN.2,EDEN.1',
+      'encoding.color.scale.domain=EDEN.2,EDEN.1',
       'color:red',
     ])
     const namedFirst = await exportTrack(config, [
       'color:red',
-      'color.domain=EDEN.2,EDEN.1',
+      'encoding.color.scale.domain=EDEN.2,EDEN.1',
     ])
     expect(pathFirst).toBe(namedFirst)
     expect(pathFirst).toContain('fill="rgb(255,0,0)"')
@@ -252,10 +256,10 @@ describe('a jexl: value in a path write', () => {
   test('writes one expression into a member', async () => {
     const callback = "jexl:get(feature,'start')>=0?'red':'blue'"
     const written = await exportTrack(configWith(basic), [
-      `color.value=${callback}`,
+      `encoding.color.value=${callback}`,
     ])
     const stated = await exportTrack(
-      configWith({ ...basic, color: { value: callback } }),
+      configWith({ ...basic, encoding: { color: { value: callback } } }),
     )
     expect(written).toBe(stated)
     expect(written).toContain('fill="rgb(255,0,0)"')
@@ -267,7 +271,12 @@ describe('a jexl: color field', () => {
     const svg = await exportTrack(
       configWith({
         ...basic,
-        color: { field: "jexl:get(feature,'name')", domain: ['EDEN.1'] },
+        encoding: {
+          color: {
+            field: "jexl:get(feature,'name')",
+            scale: { domain: ['EDEN.1'] },
+          },
+        },
       }),
     )
     expect(svg).toContain('<svg')

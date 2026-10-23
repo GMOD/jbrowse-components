@@ -71,13 +71,15 @@ const EVERY_SPELLING: Record<string, unknown> = {
       encoding: {
         color: {
           field: 'score',
-          scale: 'linear',
-          range: ['white', 'red'],
-          domainMin: 0,
-          domainMax: 10,
-          reverse: true,
+          scale: {
+            type: 'linear',
+            range: ['white', 'red'],
+            domainMin: 0,
+            domainMax: 10,
+            reverse: true,
+          },
         },
-        shape: { field: 'svtype', domain: [1, 2] },
+        shape: { field: 'svtype', scale: { domain: [1, 2] } },
       },
       transform: [{ type: 'bin', step: 1000, as: ['from', 'to'] }],
     },
@@ -85,13 +87,10 @@ const EVERY_SPELLING: Record<string, unknown> = {
       mark: { type: 'link', interpolate: 'arc' },
       encoding: {
         x2: { chrom: 'mate.refName', pos: 'mate.start' },
-        size: {
+        strokeWidth: {
           value: 3,
           field: 'score',
-          scale: 'log',
-          domainMin: 1,
-          domainMax: 100,
-          range: [1, 8],
+          scale: { type: 'log', domainMin: 1, domainMax: 100, range: [1, 8] },
         },
       },
       transform: [{ type: 'mate' }],

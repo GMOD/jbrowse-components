@@ -97,7 +97,7 @@
           }
         ],
         "tracks": ["grasses_orthogroups"],
-        "color": { "field": "reference" },
+        "encoding": { "color": "reference" },
         "autoDiagonalize": true,
         "coord": { "ratio": 1 },
         "collapseEmptyRows": true

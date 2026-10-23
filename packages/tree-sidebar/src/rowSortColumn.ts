@@ -45,7 +45,7 @@ export function regionCoversColumn(
  * sorting against whatever it has. A column no loaded region covers gives every
  * row the same "no value", which ranks them all equally and writes back the
  * order they were already in — a sort that reads as having silently done
- * nothing, and that still costs a `layout` write. Scanning every region on the
+ * nothing, and that still costs an order write. Scanning every region on the
  * refName instead is the near-miss: coordinates repeat across regions only by
  * refName, so two loaded windows on one contig would both answer and the
  * winner would be whichever the map iterated last.
@@ -132,9 +132,8 @@ export function sortRowsAtColumn<S extends { name: string }, D>(
  * do the valueless ones. That is what lets an earlier sort survive inside each
  * block a later one produces.
  *
- * Returns the rows themselves rather than their names, so the caller writes the
- * result straight to `layout` — the rows it is handed are already
- * layout-merged, and a name round-trip would only re-look-up what it had.
+ * Returns the rows themselves rather than their names, so the caller hands the
+ * result straight to `setRowOrder`.
  */
 export function orderRowsByValueAt<T extends { name: string }, V>(
   sources: T[],

@@ -38,8 +38,9 @@ JBrowse infers `VcfTabixAdapter` and `VariantTrack` from `variants.vcf.gz`, and 
 `VariantTrack` with appearance settings in place. Rather than writing out the
 full `displays` array, you can list them in a `displayDefaults` object —
 JBrowse works out which display they belong to and applies them for you (here
-it puts `color` on the `LinearVariantDisplay`), so you don't have to know
-display names. A `jexl:` value works here for per-feature coloring:
+it puts `encoding` on each variant display), so you don't have to know
+display names. A `jexl:` expression in `encoding.color.value` colors per
+feature:
 
 ```js
 {
@@ -51,7 +52,7 @@ display names. A `jexl:` value works here for per-feature coloring:
     type: 'VcfTabixAdapter',
     uri: 'https://example.com/variants.vcf.gz',
   },
-  displayDefaults: { color: 'darkblue' },
+  displayDefaults: { encoding: { color: { value: 'darkblue' } } },
 }
 ```
 

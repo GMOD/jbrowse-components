@@ -5,6 +5,10 @@ import { filterFieldNarrowing } from '@jbrowse/core/util/jexlFilters'
 import { facetSettingOf } from '@jbrowse/display-kit/facetConfigSchema'
 import { stableIdentityComputed } from '@jbrowse/display-kit/stableIdentityComputed'
 
+import {
+  arcStrokeScale,
+  strokeWidthScale,
+} from '../features/arcs/arcLineWidth.ts'
 import { ordinaryPairsShown } from '../features/arcs/arcTypes.ts'
 import {
   ALIGNMENTS_FIELD_PRESETS,
@@ -66,6 +70,7 @@ import type {
 import type { Reversible } from '@jbrowse/core/ui/filterMenuItems'
 import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
+import type { LinkSizeScale } from '@jbrowse/render-core/marks'
 
 /** The `filter` list as written, before the defaults merge in. */
 export function writtenFilterOf(
@@ -91,17 +96,14 @@ export function writtenFilterOf(
  */
 /**
  * What a config says beside the schema's rules that the reads cannot draw as
- * written: a per-base `color.field`, levels a field does not have, and a
- * `facet` the `unit` cannot group by.
+ * written: a per-base `encoding.color.field`, levels a field does not have,
+ * and a `facet` the `unit` cannot group by.
  */
 export function alignmentsConfigProblems(
   conf: BaseLinearAlignmentsDisplayConfigModel,
 ) {
   return [
-    ...alignmentsColorProblems({
-      ...alignmentsColorSettingOf(conf.color),
-      labels: readConfObject(conf, ['color', 'labels']),
-    }),
+    ...alignmentsColorProblems(alignmentsColorSettingOf(conf.encoding.color)),
     ...facetUnitNotices(
       facetSettingOf({
         field: readConfObject(conf, ['facet', 'field']),
@@ -127,7 +129,7 @@ export interface ConfigSlotSelf extends IStateTreeNode {
 }
 
 /**
- * The display's configuration when it declares `sashimi`, `baseColor` and
+ * The display's configuration when it declares `sashimi`, `pileup.bases` and
  * `modifications`, which LGVSyntenyDisplay's leaves out, and so draws the
  * splice junctions the `junction` filter fields test.
  * `getConf` reads an undeclared slot as undefined without failing, so every
@@ -146,7 +148,7 @@ export function requireReadsConf(self: ConfigSlotSelf) {
   const conf = readsConfOf(self.configuration)
   if (!conf) {
     throw new Error(
-      `${self.type} has no sashimi, junction filter, baseColor or modifications`,
+      `${self.type} has no sashimi, junction filter, pileup.bases or modifications`,
     )
   }
   return conf
@@ -156,7 +158,7 @@ export function configSlotViews(self: ConfigSlotSelf) {
   const insertSizeBand = stableIdentityComputed(() =>
     pinnedInsertSizeBand(
       alignmentsColorEncoding(
-        alignmentsColorSettingOf(self.configuration.color),
+        alignmentsColorSettingOf(self.configuration.encoding.color),
       ),
     ),
   )
@@ -306,9 +308,50 @@ export function configSlotViews(self: ConfigSlotSelf) {
     get readConnectionsPlacement(): ReadConnectionsPlacement {
       return getConf(self, ['readConnections', 'placement'])
     },
-    /** #getter */
+    /**
+     * #getter
+     * The link mark's size scale `readConnections.encoding.strokeWidth`
+     * draws.
+     */
+    get readConnectionsStrokeScale(): LinkSizeScale {
+      return strokeWidthScale({
+        value: getConf(self, [
+          'readConnections',
+          'encoding',
+          'strokeWidth',
+          'value',
+        ]),
+        field: getConf(self, [
+          'readConnections',
+          'encoding',
+          'strokeWidth',
+          'field',
+        ]),
+        scale: {
+          type: getConf(self, [
+            'readConnections',
+            'encoding',
+            'strokeWidth',
+            'scale',
+            'type',
+          ]),
+          range: getConf(self, [
+            'readConnections',
+            'encoding',
+            'strokeWidth',
+            'scale',
+            'range',
+          ]),
+        },
+      })
+    },
+    /**
+     * #getter
+     * The width a one-read connection strokes at, which the Line width menu
+     * shows.
+     */
     get readConnectionsLineWidth(): number {
-      return getConf(self, ['readConnections', 'lineWidth'])
+      return this.readConnectionsStrokeScale.range[0]
     },
     /**
      * #getter
@@ -338,7 +381,7 @@ export function configSlotViews(self: ConfigSlotSelf) {
      * #getter
      */
     get colorSetting(): AlignmentsColorSetting {
-      return alignmentsColorSettingOf(self.configuration.color)
+      return alignmentsColorSettingOf(self.configuration.encoding.color)
     },
     /**
      * #getter
@@ -350,50 +393,60 @@ export function configSlotViews(self: ConfigSlotSelf) {
     },
     /**
      * #getter
-     * `color.labels` as written, read apart from `colorSetting`, which every
-     * color tier keys on, so renaming a key entry re-bakes no read.
+     * `encoding.color.scale.names` as written, read apart from
+     * `colorSetting`, which every color tier keys on, so renaming a key entry
+     * re-bakes no read.
      */
     get colorLabels(): readonly string[] {
-      return getConf(self, ['color', 'labels'])
+      return getConf(self, ['encoding', 'color', 'scale', 'names'])
     },
     /**
      * #getter
-     * `color.title` as written: unset keeps the key's own heading, `''` draws
-     * none.
+     * `encoding.color.legend.title` as written: unset keeps the key's own
+     * heading, `''` draws none.
      */
     get colorTitle(): string | undefined {
-      return getConf(self, ['color', 'title'])
+      return getConf(self, ['encoding', 'color', 'legend', 'title'])
     },
     /**
      * #getter
-     * The key's heading: `color.title` as written, else its field preset's
-     * while the color paints through the preset, so `{ field: 'mapq' }` keys
-     * as "Mapping quality". Unset keeps the key's own heading.
+     * The key's heading: `encoding.color.legend.title` as written, else its
+     * field preset's while the color paints through the preset, so
+     * `encoding.color: "mapq"` keys as "Mapping quality". Unset keeps the
+     * key's own heading.
      */
     get colorKeyTitle(): string | undefined {
       return withPreset(
-        { ...this.colorSetting, title: this.colorTitle },
+        { ...this.colorSetting, legend: { title: this.colorTitle } },
         ALIGNMENTS_FIELD_PRESETS,
-      ).title
+      ).legend.title
     },
     /**
      * #getter
-     * `color.descending` as written, else its field preset's while the color
-     * paints through the preset, so `{ field: 'mapq' }` keys 30+ first. Read
-     * apart from `colorSetting`, so turning the key round re-bakes no read.
+     * `encoding.color.legend.descending` as written, else its field preset's
+     * while the color paints through the preset, so `encoding.color: "mapq"`
+     * keys 30+ first. Read apart from `colorSetting`, so turning the key
+     * round re-bakes no read.
      */
     get colorKeyDescending(): boolean | undefined {
       return withPreset(
         {
           ...this.colorSetting,
-          descending: getConf(self, ['color', 'descending']),
+          legend: {
+            descending: getConf(self, [
+              'encoding',
+              'color',
+              'legend',
+              'descending',
+            ]),
+          },
         },
         ALIGNMENTS_FIELD_PRESETS,
-      ).descending
+      ).legend.descending
     },
     /**
      * #getter
-     * The short/long cut points `color.domain` pins under an insert-size
+     * The short/long cut points `encoding.color.scale.domain` pins under an insert-size
      * field, undefined while the sampled band decides. Compared by value, so
      * a color write that leaves the cut points alone relayouts nothing.
      */
@@ -409,7 +462,7 @@ export function configSlotViews(self: ConfigSlotSelf) {
     },
     /**
      * #getter
-     * The read fill `color` selects.
+     * The read fill `encoding.color` selects.
      */
     get colorBy(): ReadColorBy {
       return colorByOf(this.colorEncoding)
@@ -423,25 +476,35 @@ export function configSlotViews(self: ConfigSlotSelf) {
     },
     /**
      * #getter
-     * The field the arcs and the read cloud paint: `readConnections.color`'s
-     * own, or the reads' where it names none.
+     * The field the arcs and the read cloud paint:
+     * `readConnections.encoding.color`'s own, or the reads' where it names
+     * none.
      */
     get readConnectionsColorField(): ArcColorField {
       return arcColorFieldOf(
-        getConf(self, ['readConnections', 'color', 'field']),
+        getConf(self, ['readConnections', 'encoding', 'color', 'field']),
         this.colorField,
       )
     },
     /**
      * #getter
-     * The per-base layer `baseColor` selects, with the settings the
+     * The per-base layer `pileup.bases` draws, with the settings the
      * modification fields read beside it; undefined while none is drawn.
      */
     get baseLayer(): BaseLayer | undefined {
       const conf = readsConfOf(self.configuration)
       return conf
         ? baseLayerOf(
-            readConfObject(conf, ['baseColor', 'field']),
+            {
+              show: readConfObject(conf, ['pileup', 'bases', 'show']),
+              field: readConfObject(conf, [
+                'pileup',
+                'bases',
+                'encoding',
+                'color',
+                'field',
+              ]),
+            },
             this.modificationSettings,
           )
         : undefined
@@ -647,9 +710,17 @@ export function configSlotActions(self: ConfigSlotSelf) {
 
     /**
      * #action
+     * Stroke a one-read connection `width` px, widening with its reads as the
+     * default curve does; undefined returns to the default 1 px.
      */
-    setReadConnectionsLineWidth(width: number) {
-      setConf(self, ['readConnections', 'lineWidth'], width)
+    setReadConnectionsLineWidth(width?: number) {
+      setConf(
+        self,
+        ['readConnections', 'encoding', 'strokeWidth'],
+        width === undefined
+          ? {}
+          : { scale: { range: arcStrokeScale(width).range.map(String) } },
+      )
     },
 
     /**
@@ -657,7 +728,7 @@ export function configSlotActions(self: ConfigSlotSelf) {
      * Paint the connections by `field`, `''` following the reads.
      */
     setReadConnectionsColorField(field: ArcColorField | '') {
-      setConf(self, ['readConnections', 'color', 'field'], field)
+      setConf(self, ['readConnections', 'encoding', 'color', 'field'], field)
     },
 
     /**

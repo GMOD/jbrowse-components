@@ -3,17 +3,18 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import {
   colorDomainSlot,
   colorRangeSlot,
+  colorScaleOptions,
   colorUnknownSlot,
-  normalizeChannel,
 } from './colorConfigSchema.ts'
+import { isFlatColor, liftFlatColor } from './retiredSettings.ts'
 
 /**
  * #config RowColor
  * #category display
- * The `rowColor` setting of the row displays: one categorical color channel
- * on the row axis. `field` names the row attribute whose values take the
- * colors, `name` (the row itself) by default, and `domain`/`range` pair those
- * values with CSS colors, so a color a reader sets on a row in the
+ * The `rowColor` setting of the row displays: one ordinal color channel on
+ * the row axis. `field` names the row attribute whose values take the
+ * colors, `name` (the row itself) by default, and `scale.domain` and
+ * `scale.range` pair those values with CSS colors, so a color a reader sets on a row in the
  * arrangement dialog is an entry under `name`. Each display paints it on the
  * element that identifies a row: the quantitative display's plot, or
  * the tint beside its label while a score gradient paints; the multi-row
@@ -23,14 +24,17 @@ import {
  * attributes (a samplesTsv column or a subtrack's group), `field` may name one,
  * and its values each take a palette color. Under `name` the palette deals only
  * where the rows share one panel, a wiggle overlay; stacked rows are identified by
- * their labels. `unknown: ''` deals none, so only the values `domain` lists take
- * a color and every other row keeps the color it already has. A string is the field.
+ * their labels. `scale.unknown: ''` deals none, so only the values
+ * `scale.domain` lists take a color and every other row keeps the color it
+ * already has. A string is the field.
  *
  * #example
  * ```js
  * {
  *   type: 'LinearWiggleDisplay',
- *   rowColor: { domain: ['tumor', 'normal'], range: ['#b2182b', '#2166ac'] },
+ *   rowColor: {
+ *     scale: { domain: ['tumor', 'normal'], range: ['#b2182b', '#2166ac'] },
+ *   },
  * }
  * ```
  * ```js
@@ -39,7 +43,9 @@ import {
  * ```js
  * {
  *   type: 'LinearMultiRowFeatureDisplay',
- *   rowColor: { domain: ['mom'], range: ['#b2182b'], unknown: '#cccccc' },
+ *   rowColor: {
+ *     scale: { domain: ['mom'], range: ['#b2182b'], unknown: '#cccccc' },
+ *   },
  * }
  * ```
  */
@@ -55,20 +61,33 @@ export const rowColorConfigSchema = ConfigurationSchema(
       description:
         "the row attribute whose values take the colors: name, the row itself, or an attribute of the rows, such as a column of a multi-sample variant adapter's samplesTsvLocation, e.g. population, or a subtrack's group",
     },
-    ...colorDomainSlot({
-      domain:
-        "the field's values that get a color, in order: under name, rows by name",
-    }),
-    ...colorRangeSlot({
-      range: 'the CSS color each value in domain takes, in the same order',
-    }),
-    ...colorUnknownSlot,
+    /**
+     * #slot scale
+     * Which color each value of the field takes.
+     */
+    scale: ConfigurationSchema(
+      'RowColorScale',
+      {
+        ...colorDomainSlot({
+          domain:
+            "the field's values that get a color, in order: under name, rows by name",
+        }),
+        ...colorRangeSlot({
+          range: 'the CSS color each value in domain takes, in the same order',
+        }),
+        ...colorUnknownSlot,
+      },
+      colorScaleOptions('rowColor.scale'),
+    ),
   },
   {
     shorthand: 'field',
     writes: 'whole',
     plot: true,
     closed: true,
-    preProcessSnapshot: snap => normalizeChannel(snap, 'rowColor'),
+    // @deprecated: hosted jb2hubs configs write `rowColor`'s scale members
+    // flat; goes with `liftFlatColor`.
+    preProcessSnapshot: snap =>
+      isFlatColor(snap) ? liftFlatColor(snap, 'field') : snap,
   },
 )

@@ -94,7 +94,7 @@ test('a percentile edit refetches nothing, and the next fetch asks for it', asyn
   const { display, view, mockRpcCall } = await loadedDisplay()
   const calls = contactCalls(mockRpcCall).length
 
-  setConf(display, ['color', 'domainQuantile'], 0.5)
+  setConf(display, ['encoding', 'color', 'scale', 'domainQuantile'], 0.5)
   jest.advanceTimersByTime(1100)
   await jest.runAllTimersAsync()
   expect(contactCalls(mockRpcCall).length).toBe(calls)

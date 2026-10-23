@@ -1386,7 +1386,7 @@ describe('bezierConnectionLegendItems', () => {
   })
 })
 
-// `filter.connections` as the connectors read it: the test the arc band
+// The `connection` filter fields as the connectors read them: the test the arc band
 // applies to the same connection
 describe('connectorFilterOf', () => {
   const first = SAM_FLAG_PAIRED | SAM_FLAG_FIRST_IN_PAIR

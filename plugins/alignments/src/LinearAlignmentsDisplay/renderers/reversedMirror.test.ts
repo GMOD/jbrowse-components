@@ -1,4 +1,5 @@
 import { makePileupDataResult } from '../../RenderAlignmentDataRPC/testPileupData.ts'
+import { arcStrokeScale } from '../../features/arcs/arcLineWidth.ts'
 import { READ_COLOR_CATEGORY } from '../colorUtils.ts'
 import { makeTestPalette } from '../testUtils.ts'
 import { Canvas2DAlignmentsRenderer } from './Canvas2DAlignmentsRenderer.ts'
@@ -273,7 +274,7 @@ function state(overrides: Partial<RenderState> = {}): RenderState {
     colors: makeTestPalette(),
     chainMode: false,
     showLinkedReadLines: false,
-    readConnectionsLineWidth: 1,
+    readConnectionsStrokeScale: arcStrokeScale(1),
     drawnReadConnections: 'off',
     readConnectionsDown: false,
     readConnectionsHeight: 0,

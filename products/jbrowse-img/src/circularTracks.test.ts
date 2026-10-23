@@ -120,7 +120,7 @@ test('a modifier the chord display has no slot for is said, not applied', async 
     'sv_one',
     'height:400',
     'force:true',
-    'color.field=SVTYPE',
+    'encoding.color.field=SVTYPE',
   ])
   expect(modified).toBe(plain)
   expect(warn).toHaveBeenCalledWith(

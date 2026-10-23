@@ -23,10 +23,11 @@ before your users do.
 
 Most sessions and configs migrate through `preProcessSnapshot`:
 
-- canvas `color1`/`color2`/`color3` become `color`/`connectorColor`/`utrColor`
+- canvas `color1`/`color2`/`color3` become
+  `encoding.color`/`connectorColor`/`utrColor`
 - `outline` becomes `outlineColor`
 - a v4 session's `heightPreConfig` migrates onto the `height` slot
-- the LD display's `ldMetric` becomes `color.field`
+- the LD display's `ldMetric` becomes `encoding.color.field`
 - the multi-sample variant display's `renderingMode: 'phased' | 'alleleCount'`
   becomes `unit: 'haplotype' | 'sample'`, from the config slot and from a
   session's `renderingModeSetting` alike
@@ -375,8 +376,8 @@ that way. A config or a session naming `MultiLinearWiggleDisplay` loads as
 `MultiLinearWiggleDisplay` kept as display props. The arrangement is therefore
 one per track, shared by every view showing it, and an edit to it is a change to
 the track's settings that undo and reset reach. A color set on one subtrack is
-`rowColor: { domain, range }`. `runClustering`, `clusterRegion` and `sortRowsBy`
-stay display props.
+`rowColor: { scale: { domain, range } }`. `runClustering`, `clusterRegion` and
+`sortRowsBy` stay display props.
 
 <!-- prettier-ignore -->
 | v4 display prop | v5 display config |
@@ -396,15 +397,15 @@ no `field`, since their rows are the samples: `rows.sort` is the row order,
 `rows.labels` the relabels, `rows.tree` and `rows.treeProvenance` a clustering
 run's tree, and `rows.kept` the focus. In phased mode the names are haplotypes,
 `"<sample> HP<n>"`, and a sample's name stands for all of its haplotypes.
-`rowColor` is `field | { field, domain, range }`: the string is still the
-sample-metadata attribute that tints every row, and `domain`/`range` pair row
-names with the colors a reader set; while an attribute is named, its palette
-takes precedence over them.
+`rowColor` is `field | { field, scale: { domain, range } }`: the string is still
+the sample-metadata attribute that tints every row, and
+`scale.domain`/`scale.range` pair row names with the colors a reader set; while
+an attribute is named, its palette takes precedence over them.
 
 <!-- prettier-ignore -->
 | v4 | v5 display config |
 | --- | --- |
-| `layout` display prop, the rows in order with any label and color set on each | `rows.sort`, `rows.labels` and `rowColor.domain`/`range` |
+| `layout` display prop, the rows in order with any label and color set on each | `rows.sort`, `rows.labels` and `rowColor.scale.domain`/`scale.range` |
 | `clusterTree` display prop | `rows.tree` |
 | `subtreeFilter` display prop | `rows.kept` |
 
@@ -417,9 +418,9 @@ palette.
 The multi-row feature display is new in v5. Its rows are the values of a feature
 attribute, and `rows` holds both halves: `rows.field` is the attribute, empty
 still picking one off the data, and the other members are the arrangement, as on
-the quantitative display. `rowColor: { domain, range }` pairs row values with
-colors, and holds both a color a config names and a color a reader sets in
-**Edit colors/arrangement...**.
+the quantitative display. `rowColor: { scale: { domain, range } }` pairs row
+values with colors, and holds both a color a config names and a color a reader
+sets in **Edit colors/arrangement...**.
 
 ## The MAF rows are config too
 
@@ -428,60 +429,62 @@ are the species, as on the multi-sample variant displays. The adapter's guide
 tree stays the adapter's: it draws while some rotation of it lists the species
 in `rows.sort`'s order, so a reorder that splits a clade hides it and **Reset
 row order** brings it back, and a clustering run's tree in `rows.tree` replaces
-it. `rowColor: { domain, range }` pairs species with the label tint a reader
-set, over the adapter's `samples[].color`. A session saved with
+it. `rowColor: { scale: { domain, range } }` pairs species with the label tint a
+reader set, over the adapter's `samples[].color`. A session saved with
 jbrowse-plugin-mafviewer opens with its `subtreeFilter` in `rows.kept` and its
 `treeAreaWidth` on the display config.
 
-## The wiggle color is one `color` object
+## The wiggle color is one `encoding.color` object
 
-`color` on `LinearWiggleDisplay` is a CSS color string, or
-`{ field, scale, domain, range, scheme }`, the object every other display's
-color already was. A v4 config or session lifts `posColor` and `negColor` into
-the threshold object. `useBicolor` and `densityColorRamp` stop loading, and
-`bicolorPivot` is `origin`, the mark display's slot, which is also the value the
-bars grow from.
+`encoding.color` on `LinearWiggleDisplay` is `{ value }`, a CSS color, or
+`{ scale: { type, domain, range, scheme } }` over the score, the scale every
+other display's color takes. A v4 config or session lifts `posColor` and
+`negColor` into the threshold object. `useBicolor` and `densityColorRamp` stop
+loading, and `bicolorPivot` is `origin`, the mark display's slot, which is also
+the value the bars grow from.
 
 <!-- prettier-ignore -->
 | v4 | v5 |
 | --- | --- |
-| `posColor`, `negColor`, `bicolorPivot: p` | `color: { field: 'score', scale: 'threshold', domain: [p], range: [neg, pos] }` |
-| `color` beside `useBicolor: false` | `color: '#…'` |
-| `densityColorRamp: 'viridis'` | `color: { field: 'score', scale: 'linear', scheme: 'viridis' }` |
+| `posColor`, `negColor`, `bicolorPivot: p` | `encoding.color: { scale: { type: 'threshold', domain: [p], range: [neg, pos] } }` |
+| `color` beside `useBicolor: false` | `encoding.color: { value: '#…' }` |
+| `densityColorRamp: 'viridis'` | `encoding.color: { scale: { type: 'linear', scheme: 'viridis' } }` |
 
 `setPosColor`, `setNegColor`, `setUseBicolor` and `setBicolorPivot` are
 `setColor` and `setOrigin`. **`useBicolor`, `densityColorRamp` and
 `bicolorPivot` do not migrate**: MST drops a snapshot key the model no longer
 declares, so a track that named one of them reopens in the default colors.
-`domainMid` is new on the ramp. The track menu no longer has a color row: **Edit
-colors/arrangement...** offers the plot's two colors on one line, and **Edit
-plot...** opens the shared plot dialog on the same object a config file holds.
+`scale.domainMid` is new on the ramp. The track menu no longer has a color row:
+**Edit colors/arrangement...** offers the plot's two colors on one line, and
+**Edit plot...** opens the shared plot dialog on the same object a config file
+holds.
 
 [](/docs/config/wigglecolor) lists the members.
 
-## The Hi-C color is a `color` object
+## The Hi-C color is an `encoding.color` object
 
-`LinearHicDisplay` takes its ramp from `color: { scale, scheme, reverse }`, with
-the same schemes as every other color scale. `colorScheme` and `useLogScale`
-stop loading, with no migration.
+`LinearHicDisplay` takes its ramp from
+`encoding.color: { scale: { type, scheme, reverse } }`, with the same schemes as
+every other color scale. `colorScheme` and `useLogScale` stop loading, with no
+migration.
 
 <!-- prettier-ignore -->
 | v4 | v5 |
 | --- | --- |
-| `colorScheme: 'fall'` | `color: { scheme: 'fall' }` |
-| `useLogScale: true` | `color: { scale: 'symlog' }` |
+| `colorScheme: 'fall'` | `encoding.color: { scale: { scheme: 'fall' } }` |
+| `useLogScale: true` | `encoding.color: { scale: { type: 'symlog' } }` |
 
 `setUseLogScale` is `setLogScale(true | false)`. [](/docs/config/hiccolor) lists
 the members.
 
-## The LD color is a `color` object
+## The LD color is an `encoding.color` object
 
 `LDTrackDisplay` takes its statistic and ramp from
-`color: { field, scheme, reverse, domainMin, domainMax }`. `field` is `r2` or
-`dprime`, and an unset `scheme` is reds for r² and blues for D', as before.
-`ldMetric: 'dprime'` loads as `color: { field: 'dprime' }`; the v4 `colorScheme`
-string stops loading, with no migration. [](/docs/config/ldcolor) lists the
-members.
+`encoding.color: { field, scale: { scheme, reverse, domainMin, domainMax } }`.
+`field` is `r2` or `dprime`, and an unset `scale.scheme` is reds for r² and
+blues for D', as before. `ldMetric: 'dprime'` loads as
+`encoding.color: { field: 'dprime' }`; the v4 `colorScheme` string stops
+loading, with no migration. [](/docs/config/ldcolor) lists the members.
 
 ## A non-coding BED12 parses as a transcript
 

@@ -165,7 +165,14 @@ async function captureScene(
         tracks: [
           {
             trackId: 'volvox_alignments',
-            displaySnapshot: { baseColor: { field: scene.field } },
+            displaySnapshot: {
+              pileup: {
+                bases: {
+                  show: true,
+                  encoding: { color: { field: scene.field } },
+                },
+              },
+            },
           },
         ],
       },

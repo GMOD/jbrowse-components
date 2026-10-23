@@ -15,7 +15,7 @@ export function heldColorSlots(
   node: object,
   encoding: ColorEncoding | undefined,
 ): HeldSlots | undefined {
-  if (typeof encoding !== 'object' || encoding.scale !== 'categorical') {
+  if (typeof encoding !== 'object' || encoding.scale !== 'ordinal') {
     return undefined
   }
   let owner: object = node

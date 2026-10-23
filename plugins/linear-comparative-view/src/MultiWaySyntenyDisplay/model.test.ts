@@ -61,13 +61,12 @@ const namedGene = (
 test('a ribbon color the validator refuses is a corner notice', () => {
   const display = createDisplay()
   expect(display.notices).toEqual([])
-  setConf(display, 'ribbonColor', {
+  setConf(display, ['ribbons', 'encoding', 'color'], {
     field: 'identity',
-    domainMin: 1,
-    domainMax: 0.5,
+    scale: { domainMin: 1, domainMax: 0.5 },
   })
   expect(display.notices).toEqual([
-    expect.stringMatching(/^ribbonColor\.domainMax: /),
+    expect.stringMatching(/^ribbons\.encoding\.color\.scale\.domainMax: /),
   ])
 })
 
@@ -460,7 +459,9 @@ test('the track menu ends with the stacked-synteny launcher under Launch', () =>
 
 test('the key names the anchor lane genes a name-hashed color slot draws', () => {
   const display = createDisplay()
-  setConf(display, 'color', "jexl:randomColor(get(feature,'name'))")
+  setConf(display, ['encoding', 'color'], {
+    value: "jexl:randomColor(get(feature,'name'))",
+  })
   display.setLaneGenes(
     new Map([
       [
@@ -486,7 +487,7 @@ test('the key names the anchor lane genes a name-hashed color slot draws', () =>
 
 test('a flat color slot has nothing to key', () => {
   const display = createDisplay()
-  setConf(display, 'ribbonColor', { value: 'grey' })
+  setConf(display, ['ribbons', 'encoding', 'color'], { value: 'grey' })
   display.setLaneGenes(
     new Map([
       [
@@ -527,7 +528,9 @@ test('a color string paints through the channel, and unset is goldenrod', () => 
   anchorGenes(display, [namedGene('g1', 'atpA', 100, 300)])
   expect(anchorGeneFills(display)).toEqual([['g1', 'goldenrod']])
 
-  setConf(display, 'color', "jexl:feature.name == 'atpA' ? 'red' : 'blue'")
+  setConf(display, ['encoding', 'color'], {
+    value: "jexl:feature.name == 'atpA' ? 'red' : 'blue'",
+  })
   expect(display.geneColorField).toBe('')
   expect(anchorGeneFills(display)).toEqual([['g1', 'red']])
 })
@@ -554,31 +557,38 @@ test('cluster paints a gene by the group it carries', () => {
 
 test('Default parks the field, and the field keeps its order', () => {
   const display = createDisplay()
-  setConf(display, 'color', { value: 'red', field: 'name', domain: ['atpA'] })
+  setConf(display, ['encoding', 'color'], {
+    value: 'red',
+    field: 'name',
+    scale: { domain: ['atpA'] },
+  })
   display.colorByField('')
   expect(display.geneColorField).toBe('')
   expect(display.geneColorSettings.color).toMatchObject({
     value: 'red',
     field: '',
   })
-  expect(display.parkedColor).toMatchObject({ field: 'name', domain: ['atpA'] })
+  expect(display.parkedColor).toMatchObject({
+    field: 'name',
+    scale: { domain: ['atpA'] },
+  })
   display.colorByField('name')
   expect(display.geneColorSettings.color).toMatchObject({
     value: 'red',
     field: 'name',
-    domain: ['atpA'],
+    scale: { domain: ['atpA'] },
   })
   display.colorByField('strand')
   expect(display.geneColorSettings.color).toMatchObject({
     value: 'red',
     field: 'strand',
-    domain: [],
+    scale: { domain: [] },
   })
 })
 
 test('Solid color... paints the kept constant and opens the picker; Default drops it', () => {
   const { display, session } = createDisplayWithSession()
-  setConf(display, 'color', { value: 'red', field: 'name' })
+  setConf(display, ['encoding', 'color'], { value: 'red', field: 'name' })
   expect(display.geneSolidColor).toBe('red')
   display.pickSolidColor()
   expect(display.geneColorField).toBe('')
@@ -597,7 +607,7 @@ test('Solid color... paints the kept constant and opens the picker; Default drop
 
 test('Solid color... over a painting field paints the pick', () => {
   const { display } = createDisplayWithSession()
-  setConf(display, 'color', { field: 'strand' })
+  setConf(display, ['encoding', 'color'], { field: 'strand' })
   display.pickSolidColor()
   display.setColorValue('teal')
   expect(display.geneColorField).toBe('')
@@ -609,7 +619,7 @@ test('Solid color... over a painting field paints the pick', () => {
 
 test('a jexl gene color is no constant', () => {
   const display = createDisplay()
-  setConf(display, ['color', 'value'], "jexl:'red'")
+  setConf(display, ['encoding', 'color', 'value'], "jexl:'red'")
   expect(display.geneSolidColor).toBeUndefined()
 })
 
@@ -720,13 +730,15 @@ test('gene names the hash puts on one color each take their own', () => {
 
 test('a ribbon color pick keeps the ramp the config declares', () => {
   const display = createDisplay()
-  setConf(display, 'ribbonColor', {
+  setConf(display, ['ribbons', 'encoding', 'color'], {
     field: 'identity',
-    scheme: 'magma',
-    reverse: true,
-    domainMin: 90,
-    domainMax: 100,
-    domainMid: 95,
+    scale: {
+      scheme: 'magma',
+      reverse: true,
+      domainMin: 90,
+      domainMax: 100,
+      domainMid: 95,
+    },
   })
   const ramp = {
     scheme: 'magma',
@@ -744,7 +756,9 @@ test('a ribbon color pick keeps the ramp the config declares', () => {
 
 test('the strand ribbon mode adds its own section', () => {
   const display = createDisplay()
-  setConf(display, 'color', "jexl:randomColor(get(feature,'name'))")
+  setConf(display, ['encoding', 'color'], {
+    value: "jexl:randomColor(get(feature,'name'))",
+  })
   display.setLaneGenes(
     new Map([
       [
@@ -775,7 +789,7 @@ test('ribbons color by strand until the setting names a field or a color', () =>
   display.setRibbonColorField('')
   expect(display.ribbonColorField).toBe('strand')
 
-  setConf(display, 'ribbonColor', { value: 'red' })
+  setConf(display, ['ribbons', 'encoding', 'color'], { value: 'red' })
   expect(display.ribbonColorField).toBe('')
   expect(display.ribbonColor).toBe('red')
 })
@@ -2406,7 +2420,7 @@ test('a ribbonColorDomain moves the label table, and the key with it', () => {
   ).toEqual(['C1', 'A1a', 'B1'])
 })
 
-test("ribbonColor's range paints the domain, and labels and title name its key", () => {
+test("the ribbon color's range paints the domain, and names and title name its key", () => {
   const { display } = createDisplayWithSession({
     syntenyAdapter: {
       type: 'MCScanBlocksAdapter',
@@ -2431,12 +2445,10 @@ test("ribbonColor's range paints the domain, and labels and title name its key",
     })
   const color = {
     field: 'group',
-    domain: ['C1'],
-    range: ['#ff0000'],
-    labels: ['Core'],
-    title: 'Gene family',
+    scale: { domain: ['C1'], range: ['#ff0000'], names: ['Core'] },
+    legend: { title: 'Gene family' },
   }
-  display.configuration.setSubschema('ribbonColor', color)
+  display.configuration.ribbons.encoding.setSubschema('color', color)
   display.setFeatures([row('f1', 'B1'), row('f2', 'C1')])
   const mode = resolveCategoricalMode('group', display.ribbonAttributeRanges)!
   expect(categoricalColor(mode, 'C1')).toBe('#ff0000')
@@ -2446,25 +2458,30 @@ test("ribbonColor's range paints the domain, and labels and title name its key",
     ribbons?.kind === 'categorical' ? ribbons.entries.map(e => e.label) : [],
   ).toEqual(['Core', 'B1'])
   display.setRibbonColorField('group')
-  expect(getSnapshot(display.configuration.ribbonColor)).toEqual(color)
+  expect(getSnapshot(display.configuration.ribbons.encoding.color)).toEqual(
+    color,
+  )
 })
 
-test('a picked ribbon mode is written as the ribbonColor object', () => {
+test('a picked ribbon mode is written as the ribbon color channel', () => {
   const { display } = createDisplayWithSession({
     syntenyAdapter: {
       type: 'MCScanBlocksAdapter',
       attributeColumns: ['group'],
     },
   })
-  const ribbonColor = () => getSnapshot(display.configuration.ribbonColor)
-  display.configuration.setSubschema('ribbonColor', 'grey')
+  const ribbonColor = () =>
+    getSnapshot(display.configuration.ribbons.encoding.color)
+  display.configuration.ribbons.encoding.setSubschema('color', {
+    value: 'grey',
+  })
   display.setRibbonColorField('group')
   display.setRibbonColorDomain(['C1'])
   display.setRibbonColorField('group')
   expect(ribbonColor()).toEqual({
     value: 'grey',
     field: 'group',
-    domain: ['C1'],
+    scale: { domain: ['C1'] },
   })
   display.setRibbonColorValue('grey')
   expect(ribbonColor()).toEqual({ value: 'grey' })
@@ -2483,29 +2500,25 @@ test('a picked ribbon mode is written as the ribbonColor object', () => {
   expect(ribbonColor()).toEqual({ value: 'grey', field: 'other' })
 })
 
-test('a ribbonColor field is a preset or a column, and a palette is refused', () => {
+test('a ribbon color field is a preset or a column, and a palette is refused', () => {
   const { display } = createDisplayWithSession({
     syntenyAdapter: {
       type: 'MCScanBlocksAdapter',
       attributeColumns: ['group'],
     },
   })
-  display.configuration.setSubschema('ribbonColor', { field: 'group' })
+  const { encoding } = display.configuration.ribbons
+  encoding.setSubschema('color', { field: 'group' })
   expect(display.ribbonColorField).toBe('group')
   expect(() =>
-    display.configuration.setSubschema('ribbonColor', {
-      field: 'group',
-      palette: ['red'],
-    }),
-  ).toThrow(
-    'RibbonColor takes value, field, scale, domain, range, scheme, reverse, domainMid, domainMin, domainMax, labels, descending and title, not palette',
-  )
+    encoding.setSubschema('color', { field: 'group', palette: ['red'] }),
+  ).toThrow('RibbonColor takes value, field, scale and legend, not palette')
   for (const field of ['strand', 'identity', 'mapq', 'dnds']) {
-    display.configuration.setSubschema('ribbonColor', { field })
+    encoding.setSubschema('color', field)
     expect(display.ribbonColorField).toBe(field)
   }
   expect(() =>
-    display.configuration.setSubschema('ribbonColor', { scale: 'strand' }),
+    encoding.setSubschema('color', { scale: { type: 'strand' } }),
   ).toThrow()
 })
 

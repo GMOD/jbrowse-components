@@ -3,11 +3,12 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import baseLinearDisplayConfigSchema from '@jbrowse/display-kit/configSchema'
 import { fieldPredicateList } from '@jbrowse/display-kit/fieldPredicateConfigSchema'
 import { heightModeConfigSchemaFields } from '@jbrowse/display-kit/heightModeConfigSchemaFields'
+import { hiddenLegendConfigSchema } from '@jbrowse/display-kit/hiddenLegendConfigSchema'
 import { sectionFacetConfigSchema } from '@jbrowse/display-kit/sectionFacetConfigSchema'
 import { types } from '@jbrowse/mobx-state-tree'
 import { scalesSchema, valueScaleSchema } from '@jbrowse/wiggle-core'
 
-import { alignmentsColorConfigSchema } from './alignmentsColorConfigSchema.ts'
+import { alignmentsEncodingConfigSchema } from './alignmentsEncodingConfigSchema.ts'
 import { alignmentsSortConfigSchema } from './alignmentsSortConfigSchema.ts'
 import { ALIGNMENTS_UNITS } from './constants.ts'
 import { pileupConfigSchema } from './pileupConfigSchema.ts'
@@ -19,11 +20,11 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 /**
  * #config BaseLinearAlignmentsDisplay
  * The slots LinearAlignmentsDisplay and LGVSyntenyDisplay share: the coverage,
- * pileup and read connection bands, and the `filter`, `unit`, `facet`, `sort`
- * and `color` every band reads. LinearAlignmentsDisplay adds the sashimi band,
- * the `junction` filter fields, `baseColor` and `modifications`, which apply only to
- * reads; a synteny block has no introns, basecaller tags or
- * qualities.
+ * pileup and read connection bands, and the `filter`, `unit`, `facet`, `sort`,
+ * `encoding` and `legend` every band reads. LinearAlignmentsDisplay adds the
+ * sashimi band, the `junction` filter fields, `pileup.bases` and
+ * `modifications`, which apply only to reads; a synteny block has no introns,
+ * basecaller tags or qualities.
  */
 export const baseLinearAlignmentsDisplayConfigSchema = ConfigurationSchema(
   'BaseLinearAlignmentsDisplay',
@@ -111,12 +112,10 @@ export const baseLinearAlignmentsDisplayConfigSchema = ConfigurationSchema(
      */
     sort: alignmentsSortConfigSchema,
     /**
-     * #slot color
-     * The read fill: `"steelblue"` paints every read, `{ field: "strand" }`
-     * a read dimension's own vocabulary and `{ field: "tags.HP" }` a SAM
-     * tag.
+     * #slot encoding
+     * The channels the reads paint through: `encoding.color`, the read fill.
      */
-    color: alignmentsColorConfigSchema,
+    encoding: alignmentsEncodingConfigSchema,
     /**
      * #slot scales
      * The coverage band's value scale. The read cloud's insert-size axis is
@@ -135,13 +134,10 @@ export const baseLinearAlignmentsDisplayConfigSchema = ConfigurationSchema(
       }),
     ),
     /**
-     * #slot
+     * #slot legend
+     * The display's key: `show`, off by default.
      */
-    showLegend: {
-      type: 'boolean',
-      description: 'Show the color-scheme legend overlay. Defaults to off',
-      defaultValue: false,
-    },
+    legend: hiddenLegendConfigSchema,
     /**
      * #slot coverage
      * The coverage histogram band: `show`, `height` (default 45),
@@ -159,9 +155,9 @@ export const baseLinearAlignmentsDisplayConfigSchema = ConfigurationSchema(
     /**
      * #slot readConnections
      * The connections between mates and split segments: `show` (default
-     * off), `mark` (`arc` or `cloud`), `height`, `placement`, `lineWidth`,
-     * `color` and `ordinaryPairs`; the `connection` and `breakpoint` filter
-     * fields filter the connections drawn.
+     * off), `mark` (`arc` or `cloud`), `height`, `placement`, `encoding`
+     * (`color` and `strokeWidth`) and `ordinaryPairs`; the `connection` and
+     * `breakpoint` filter fields filter the connections drawn.
      */
     readConnections: readConnectionsConfigSchema,
   },

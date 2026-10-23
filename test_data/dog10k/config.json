@@ -376,17 +376,21 @@
               "Village dog (Azerbaijan)"
             ]
           },
-          "color": {
-            "title": "Copy number",
-            "scale": "identity",
-            "domain": [
-              "rgb(146,197,222)",
-              "rgb(224,224,224)",
-              "rgb(244,165,130)",
-              "rgb(214,96,77)",
-              "rgb(178,24,43)"
-            ],
-            "labels": ["CN 1", "CN 2", "CN 3", "CN 4", "CN 5"]
+          "encoding": {
+            "color": {
+              "scale": {
+                "type": "identity",
+                "domain": [
+                  "rgb(146,197,222)",
+                  "rgb(224,224,224)",
+                  "rgb(244,165,130)",
+                  "rgb(214,96,77)",
+                  "rgb(178,24,43)"
+                ],
+                "names": ["CN 1", "CN 2", "CN 3", "CN 4", "CN 5"]
+              },
+              "legend": { "title": "Copy number" }
+            }
           }
         }
       ]
@@ -419,20 +423,32 @@
           "type": "LinearMultiRowFeatureDisplay",
           "displayId": "dog10k_cyp1a2_cohort_cn-LinearMultiRowFeatureDisplay",
           "rows": "sample",
-          "showLegend": false,
-          "color": {
-            "title": "Copy number",
-            "scale": "identity",
-            "domain": [
-              "rgb(33,102,172)",
-              "rgb(146,197,222)",
-              "rgb(224,224,224)",
-              "rgb(244,165,130)",
-              "rgb(214,96,77)",
-              "rgb(178,24,43)",
-              "rgb(103,0,31)"
-            ],
-            "labels": ["CN 0", "CN 1", "CN 2", "CN 3", "CN 4", "CN 5", "CN 6+"]
+          "legend": { "show": false },
+          "encoding": {
+            "color": {
+              "scale": {
+                "type": "identity",
+                "domain": [
+                  "rgb(33,102,172)",
+                  "rgb(146,197,222)",
+                  "rgb(224,224,224)",
+                  "rgb(244,165,130)",
+                  "rgb(214,96,77)",
+                  "rgb(178,24,43)",
+                  "rgb(103,0,31)"
+                ],
+                "names": [
+                  "CN 0",
+                  "CN 1",
+                  "CN 2",
+                  "CN 3",
+                  "CN 4",
+                  "CN 5",
+                  "CN 6+"
+                ]
+              },
+              "legend": { "title": "Copy number" }
+            }
           }
         }
       ]
@@ -459,7 +475,7 @@
         "uri": "dog10k_cyp1a2_cpg.bed.gz"
       },
       "displayDefaults": {
-        "color": "#2e7d32"
+        "encoding": { "color": { "value": "#2e7d32" } }
       }
     },
     {
@@ -515,18 +531,22 @@
               "Boxer 5"
             ]
           },
-          "color": {
-            "title": "Copy number",
-            "scale": "identity",
-            "domain": [
-              "rgb(146,197,222)",
-              "rgb(224,224,224)",
-              "rgb(244,165,130)",
-              "rgb(214,96,77)",
-              "rgb(178,24,43)",
-              "rgb(103,0,31)"
-            ],
-            "labels": ["CN 1", "CN 2", "CN 3", "CN 4", "CN 5", "CN 6+"]
+          "encoding": {
+            "color": {
+              "scale": {
+                "type": "identity",
+                "domain": [
+                  "rgb(146,197,222)",
+                  "rgb(224,224,224)",
+                  "rgb(244,165,130)",
+                  "rgb(214,96,77)",
+                  "rgb(178,24,43)",
+                  "rgb(103,0,31)"
+                ],
+                "names": ["CN 1", "CN 2", "CN 3", "CN 4", "CN 5", "CN 6+"]
+              },
+              "legend": { "title": "Copy number" }
+            }
           }
         }
       ]
@@ -559,19 +579,23 @@
           "type": "LinearMultiRowFeatureDisplay",
           "displayId": "dog10k_slc28a3_cohort_cn-LinearMultiRowFeatureDisplay",
           "rows": "sample",
-          "showLegend": false,
-          "color": {
-            "title": "Copy number",
-            "scale": "identity",
-            "domain": [
-              "rgb(146,197,222)",
-              "rgb(224,224,224)",
-              "rgb(244,165,130)",
-              "rgb(214,96,77)",
-              "rgb(178,24,43)",
-              "rgb(103,0,31)"
-            ],
-            "labels": ["CN 1", "CN 2", "CN 3", "CN 4", "CN 5", "CN 6+"]
+          "legend": { "show": false },
+          "encoding": {
+            "color": {
+              "scale": {
+                "type": "identity",
+                "domain": [
+                  "rgb(146,197,222)",
+                  "rgb(224,224,224)",
+                  "rgb(244,165,130)",
+                  "rgb(214,96,77)",
+                  "rgb(178,24,43)",
+                  "rgb(103,0,31)"
+                ],
+                "names": ["CN 1", "CN 2", "CN 3", "CN 4", "CN 5", "CN 6+"]
+              },
+              "legend": { "title": "Copy number" }
+            }
           }
         }
       ]
@@ -622,17 +646,21 @@
               "German Shepherd Dog 2"
             ]
           },
-          "color": {
-            "title": "Copy number",
-            "scale": "identity",
-            "domain": [
-              "rgb(224,224,224)",
-              "rgb(244,165,130)",
-              "rgb(214,96,77)",
-              "rgb(178,24,43)",
-              "rgb(103,0,31)"
-            ],
-            "labels": ["CN 2", "CN 3", "CN 4", "CN 5", "CN 6+"]
+          "encoding": {
+            "color": {
+              "scale": {
+                "type": "identity",
+                "domain": [
+                  "rgb(224,224,224)",
+                  "rgb(244,165,130)",
+                  "rgb(214,96,77)",
+                  "rgb(178,24,43)",
+                  "rgb(103,0,31)"
+                ],
+                "names": ["CN 2", "CN 3", "CN 4", "CN 5", "CN 6+"]
+              },
+              "legend": { "title": "Copy number" }
+            }
           }
         }
       ]
@@ -661,11 +689,15 @@
         {
           "type": "LinearMultiRowFeatureDisplay",
           "displayId": "dog10k_wolfdog_ancestry-LinearMultiRowFeatureDisplay",
-          "color": {
-            "scale": "identity",
-            "domain": ["rgb(0,114,178)", "rgb(230,159,0)"],
-            "labels": ["Breed dog", "Gray wolf"],
-            "title": "Ancestry (FLARE)"
+          "encoding": {
+            "color": {
+              "scale": {
+                "type": "identity",
+                "domain": ["rgb(0,114,178)", "rgb(230,159,0)"],
+                "names": ["Breed dog", "Gray wolf"]
+              },
+              "legend": { "title": "Ancestry (FLARE)" }
+            }
           },
           "rows": "sample"
         }
@@ -685,11 +717,15 @@
         {
           "type": "LinearMultiRowFeatureDisplay",
           "displayId": "dog10k_wolfdog_named-LinearMultiRowFeatureDisplay",
-          "color": {
-            "scale": "identity",
-            "domain": ["rgb(0,114,178)", "rgb(230,159,0)"],
-            "labels": ["Breed dog", "Gray wolf"],
-            "title": "Ancestry (FLARE)"
+          "encoding": {
+            "color": {
+              "scale": {
+                "type": "identity",
+                "domain": ["rgb(0,114,178)", "rgb(230,159,0)"],
+                "names": ["Breed dog", "Gray wolf"]
+              },
+              "legend": { "title": "Ancestry (FLARE)" }
+            }
           },
           "rows": {
             "field": "sample",

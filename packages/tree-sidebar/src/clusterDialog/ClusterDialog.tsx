@@ -10,24 +10,6 @@ import ClusterManualTab from './ClusterManualTab.tsx'
 
 import type { ClusterDialogProps } from './types.ts'
 
-const Header = observer(function Header({
-  activeMode,
-  setActiveMode,
-  description,
-}: {
-  activeMode: string
-  setActiveMode: (arg: string) => void
-  description?: string
-}) {
-  return (
-    <ClusterModeSelector value={activeMode} onChange={setActiveMode}>
-      {description ? (
-        <Typography style={{ marginBottom: 30 }}>{description}</Typography>
-      ) : null}
-    </ClusterModeSelector>
-  )
-})
-
 /**
  * The "Cluster rows by ..." dialog for every clusterable display. Two tabs (run
  * it in-app, or export an R script and paste the order back) over one
@@ -43,11 +25,11 @@ const ClusterDialog = observer(function ClusterDialog(
   // that switches the tabs, so both tabs render the identical header and the
   // two spellings could only ever drift apart.
   const header = (
-    <Header
-      activeMode={activeMode}
-      setActiveMode={setActiveMode}
-      description={description}
-    />
+    <ClusterModeSelector value={activeMode} onChange={setActiveMode}>
+      {description ? (
+        <Typography style={{ marginBottom: 30 }}>{description}</Typography>
+      ) : null}
+    </ClusterModeSelector>
   )
   return (
     <Dialog

@@ -1,4 +1,5 @@
 import { QUAL_UNAVAILABLE } from '../../shaders/slang/mismatch.consts.generated.ts'
+import { arcStrokeScale } from '../arcs/arcLineWidth.ts'
 import { MISMATCH_MARK } from './mark.ts'
 
 import type { RenderState } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
@@ -71,7 +72,7 @@ function baseState(overrides: Partial<RenderState> = {}): RenderState {
     chainMode: false,
     showLinkedReadLines: false,
     collapseSections: false,
-    readConnectionsLineWidth: 1,
+    readConnectionsStrokeScale: arcStrokeScale(1),
     linkRegions: [],
     pileupTopOffset: 0,
     coverageTopOffset: 0,

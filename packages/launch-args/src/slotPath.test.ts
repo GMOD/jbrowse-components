@@ -20,7 +20,7 @@ test('a value reads as a boolean, a number, a list or text', () => {
 })
 
 test('a named modifier is not a slot write', () => {
-  expect(isSlotPathOption('color.field=strand')).toBe(true)
+  expect(isSlotPathOption('encoding.color.field=strand')).toBe(true)
   expect(isSlotPathOption('height=300')).toBe(true)
   expect(isSlotPathOption('color:tag:HP')).toBe(false)
   expect(isSlotPathOption('index:https://example.com/a.csi?x=1')).toBe(false)
@@ -31,7 +31,7 @@ test('a path nests one object per segment', () => {
   expect(write('scales.y.type=log')).toEqual({
     scales: { y: { type: 'log' } },
   })
-  expect(() => write('color..field=x')).toThrow(/empty path segment/)
+  expect(() => write('encoding..color=x')).toThrow(/empty path segment/)
 })
 
 // `marks`, `transform` and an aggregate's `ops` are lists of objects, so a
@@ -59,8 +59,8 @@ test('an index past the end names the entry to write first', () => {
   expect(() => write('marks.2.mark=bar')).toThrow(
     /index 2 is past the end of a list of 0; write index 0 first/,
   )
-  const settings = write('color.range=tan,teal')
-  expect(() => write('color.range.5=red', settings)).toThrow(
+  const settings = write('scale.range=tan,teal')
+  expect(() => write('scale.range.5=red', settings)).toThrow(
     /index 5 is past the end of a list of 2; write index 2 first/,
   )
 })
@@ -72,33 +72,33 @@ test('a path contradicting the shape already there is refused', () => {
   expect(() => write('transform.step=auto', settings)).toThrow(
     /"transform" is a list, not a setting/,
   )
-  expect(() => write('color.0=red', write('color.field=strand'))).toThrow(
-    /"color" is a setting, not a list/,
-  )
+  expect(() =>
+    write('encoding.color.0=red', write('encoding.color.field=strand')),
+  ).toThrow(/"color" is a setting, not a list/)
 })
 
-// A whole-list value still replaces: `color.range=tan,teal` says what the
-// range IS, where `color.range.0=tan` says what its first entry is.
+// A whole-list value still replaces: `scale.range=tan,teal` says what the
+// range IS, where `scale.range.0=tan` says what its first entry is.
 test('a list value replaces and an index write does not', () => {
-  const settings = write('color.range=tan,teal,olive')
-  write('color.range.1=red', settings)
-  expect(settings).toEqual({ color: { range: ['tan', 'red', 'olive'] } })
-  write('color.range=grey,', settings)
-  expect(settings).toEqual({ color: { range: ['grey'] } })
+  const settings = write('scale.range=tan,teal,olive')
+  write('scale.range.1=red', settings)
+  expect(settings).toEqual({ scale: { range: ['tan', 'red', 'olive'] } })
+  write('scale.range=grey,', settings)
+  expect(settings).toEqual({ scale: { range: ['grey'] } })
 })
 
 test('merging fills objects and replaces everything else', () => {
-  const target = { color: { field: 'strand' }, height: 100 } as Record<
+  const target = { scale: { type: 'log' }, height: 100 } as Record<
     string,
     unknown
   >
-  mergeSettings(target, { color: { range: ['red'] }, height: 200 })
+  mergeSettings(target, { scale: { range: ['red'] }, height: 200 })
   expect(target).toEqual({
-    color: { field: 'strand', range: ['red'] },
+    scale: { type: 'log', range: ['red'] },
     height: 200,
   })
-  mergeSettings(target, { color: 'purple' })
-  expect(target.color).toBe('purple')
+  mergeSettings(target, { scale: 'linear' })
+  expect(target.scale).toBe('linear')
 })
 
 test('a prototype key is refused', () => {

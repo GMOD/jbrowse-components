@@ -166,20 +166,33 @@ const Color = ConfigurationSchema(
       contextVariable: ['feature'],
     },
     field: { type: 'string', defaultValue: 'score' },
-    scale: { type: 'maybeString' },
-    domain: { type: 'stringArray', defaultValue: [] },
-    range: { type: 'stringArray', defaultValue: [] },
+    scale: ConfigurationSchema(
+      'PlotTestColorScale',
+      {
+        type: { type: 'maybeString' },
+        domain: { type: 'stringArray', defaultValue: [] },
+        range: { type: 'stringArray', defaultValue: [] },
+      },
+      { closed: true },
+    ),
   },
   {
     closed: true,
-    plot: true,
-    fieldPresets: { score: { scale: 'threshold' } },
+    writes: 'whole',
+    fieldPresets: { score: { scale: { type: 'threshold' } } },
   },
 )
 
 const ColorDisplay = ConfigurationSchema(
   'PlotTestColorDisplay',
-  { color: Color, scales: Scales },
+  {
+    encoding: ConfigurationSchema(
+      'PlotTestEncoding',
+      { color: Color },
+      { closed: true, plot: true },
+    ),
+    scales: Scales,
+  },
   { explicitIdentifier: 'displayId' },
 )
 
@@ -189,12 +202,14 @@ test("a lifted plot's color is judged under its schema's presets and defaults, i
   expect(
     schemaPlotProblems(
       liftPlot(conf, {
-        color: { domain: ['5', '1'] },
+        encoding: { color: { scale: { domain: ['5', '1'] } } },
         scales: { y: { domainMin: 9, domainMax: 1 } },
       }),
     ),
   ).toEqual([
-    expect.stringMatching(/^color\.domain: threshold cuts are distinct/),
+    expect.stringMatching(
+      /^encoding\.color\.scale\.domain: threshold cuts are distinct/,
+    ),
     expect.stringMatching(/^scales\.y\.domainMax: domainMax is below/),
   ])
 })

@@ -172,7 +172,7 @@ describe('alignments sashimi.labels.show (sashimi arc counts)', () => {
   })
 })
 
-describe('alignments showLegend (color-scheme key)', () => {
+describe('alignments legend.show (color-scheme key)', () => {
   it('is off by default', () => {
     const { display } = createDisplay()
     expect(display.showLegend).toBe(false)
@@ -180,7 +180,7 @@ describe('alignments showLegend (color-scheme key)', () => {
 
   // The legend's own "×" is `setShowLegend(false)` (PileupComponent).
   it('the legend "×" turns it off', () => {
-    const { display } = createDisplay({ showLegend: true })
+    const { display } = createDisplay({ legend: { show: true } })
     expect(display.showLegend).toBe(true)
     display.setShowLegend(false)
     expect(display.showLegend).toBe(false)
@@ -305,23 +305,27 @@ describe('alignments colorBy', () => {
   })
 
   it('takes an explicit per-track scheme', () => {
-    const { display } = createDisplay({ color: { field: 'strand' } })
+    const { display } = createDisplay({
+      encoding: { color: { field: 'strand' } },
+    })
     expect(display.colorBy).toEqual({ type: 'strand' })
   })
 
   it('reads a tag and an attribute off the config', () => {
     expect(
-      createDisplay({ color: { field: 'tags.HP' } }).display.colorBy,
+      createDisplay({ encoding: { color: { field: 'tags.HP' } } }).display
+        .colorBy,
     ).toEqual({ type: 'tag', tag: 'HP' })
     expect(
-      createDisplay({ color: { field: 'score' } }).display.colorBy,
+      createDisplay({ encoding: { color: { field: 'score' } } }).display
+        .colorBy,
     ).toEqual({ type: 'tag', attribute: 'score' })
   })
 
   it('draws a per-base layer beside whatever fills the reads', () => {
     const { display } = createDisplay({
-      color: { field: 'tags.HP' },
-      baseColor: 'modifications',
+      encoding: { color: { field: 'tags.HP' } },
+      pileup: { bases: { show: true, encoding: { color: 'modifications' } } },
       modifications: { threshold: 50 },
     })
     expect(display.colorBy).toEqual({ type: 'tag', tag: 'HP' })
@@ -339,7 +343,7 @@ describe('alignments colorBy', () => {
 
   it('the methylation view draws its calls, with the fill unmarked', () => {
     const { display } = createDisplay({
-      baseColor: 'modifications',
+      pileup: { bases: { show: true, encoding: { color: 'modifications' } } },
       modifications: { unmodified: 'all' },
     })
     expect(display.showModifications).toBe(true)
@@ -353,25 +357,35 @@ describe('alignments colorBy', () => {
   })
 
   it('a per-base variable on the read fill paints the plain fill', () => {
-    const { display } = createDisplay({ color: { field: 'modifications' } })
+    const { display } = createDisplay({
+      encoding: { color: { field: 'modifications' } },
+    })
     expect(display.colorBy).toEqual({ type: 'normal' })
     expect(display.rpcProps()).toMatchObject({ colorBy: undefined })
   })
 
   it('a per-base layer names one of its four variables', () => {
-    expect(() => createDisplay({ baseColor: 'methylation' })).toThrow(
-      /methylation/,
-    )
+    expect(() =>
+      createDisplay({
+        pileup: { bases: { encoding: { color: 'methylation' } } },
+      }),
+    ).toThrow(/methylation/)
   })
 
   it('a modification layer over the plain fill tints the body by strand', () => {
-    const { display } = createDisplay({ baseColor: { field: 'bisulfite' } })
+    const { display } = createDisplay({
+      pileup: {
+        bases: { show: true, encoding: { color: { field: 'bisulfite' } } },
+      },
+    })
     expect(display.colorBy).toEqual({ type: 'normal' })
     expect(display.bodyColorScheme).toBe('bisulfite')
   })
 
   it('a read pick leaves the layer alone, and the layer has its own way off', () => {
-    const { display } = createDisplay({ baseColor: 'modifications' })
+    const { display } = createDisplay({
+      pileup: { bases: { show: true, encoding: { color: 'modifications' } } },
+    })
     display.colorByField('strand')
     expect(display.baseLayer?.type).toBe('modifications')
     display.setBaseLayer({ type: 'baseQuality' })
@@ -381,95 +395,139 @@ describe('alignments colorBy', () => {
     expect(display.baseLayer).toBeUndefined()
   })
 
-  it('None clears the per-base field', () => {
-    const { display } = createDisplay({ baseColor: 'modifications' })
+  it('None hides the layer and clears its field', () => {
+    const { display } = createDisplay({
+      pileup: { bases: { show: true, encoding: { color: 'modifications' } } },
+    })
     display.setBaseLayer()
     expect(display.baseLayer).toBeUndefined()
+    const conf = requireReadsConf(display)
+    expect(readConfObject(conf, ['pileup', 'bases', 'show'])).toBe(false)
     expect(
-      readConfObject(requireReadsConf(display), ['baseColor', 'field']),
+      readConfObject(conf, ['pileup', 'bases', 'encoding', 'color', 'field']),
     ).toBe('')
+  })
+
+  it('a named field draws no layer while bases.show is off', () => {
+    const { display } = createDisplay({
+      pileup: { bases: { encoding: { color: 'modifications' } } },
+    })
+    expect(display.baseLayer).toBeUndefined()
+    display.setBaseLayer({ type: 'base' })
+    expect(display.baseLayer?.type).toBe('base')
+    expect(
+      readConfObject(requireReadsConf(display), ['pileup', 'bases', 'show']),
+    ).toBe(true)
   })
 
   it('a ramp with its ends reversed is a notice', () => {
     const { display } = createDisplay({
-      color: { field: 'tags.XS', scale: 'linear', domainMin: 10, domainMax: 1 },
+      encoding: {
+        color: {
+          field: 'tags.XS',
+          scale: { type: 'linear', domainMin: 10, domainMax: 1 },
+        },
+      },
     })
     expect(display.notices).toEqual([
-      expect.stringMatching(/^color\.domainMax: domainMax is below domainMin/),
+      expect.stringMatching(
+        /^encoding\.color\.scale\.domainMax: domainMax is below domainMin/,
+      ),
     ])
   })
 
-  it('a string is the constant read fill', () => {
-    const { display } = createDisplay({ color: 'rgb(0, 0, 255)' })
+  it('a string is the field, and value the constant read fill', () => {
+    expect(
+      createDisplay({ encoding: { color: 'strand' } }).display.colorBy,
+    ).toEqual({ type: 'strand' })
+    expect(() =>
+      createDisplay({ encoding: { color: 'rgb(0, 0, 255)' } }),
+    ).toThrow(/is a color, and a bare string is the field/)
+    const { display } = createDisplay({
+      encoding: { color: { value: 'rgb(0, 0, 255)' } },
+    })
     expect(display.colorBy).toEqual({ type: 'normal' })
     expect(display.colorSetting.value).toBe('rgb(0, 0, 255)')
   })
 
   it('a scheme pick writes the field and keeps a declared range for the way back', () => {
     const { display } = createDisplay({
-      color: { field: 'tags.HP', range: ['red', 'blue'] },
+      encoding: {
+        color: { field: 'tags.HP', scale: { range: ['red', 'blue'] } },
+      },
     })
     display.colorByField('')
     expect(display.colorBy).toEqual({ type: 'normal' })
     expect(display.parkedColor?.field).toBe('tags.HP')
     display.colorByField('tags.HP')
-    expect(display.colorSetting.range).toEqual(['red', 'blue'])
+    expect(display.colorSetting.scale.range).toEqual(['red', 'blue'])
     display.colorByField('strand')
-    expect(display.colorSetting).toMatchObject({ field: 'strand', range: [] })
+    expect(display.colorSetting).toMatchObject({
+      field: 'strand',
+      scale: { range: [] },
+    })
   })
 
   it('Normal and back keeps a tag and its members, its scale included', () => {
     const color = {
       field: 'tags.NM',
-      scale: 'linear',
-      range: ['#ffffff', '#000000'],
-      domainMin: 0,
+      scale: { type: 'linear', range: ['#ffffff', '#000000'], domainMin: 0 },
     }
-    const { display } = createDisplay({ color })
+    const { display } = createDisplay({ encoding: { color } })
     expect(display.bakedColorScale?.kind).toBe('linear')
     display.colorByField('')
     expect(display.bakedColorScale).toBeUndefined()
     display.colorByField('tags.NM')
     expect(display.colorSetting).toMatchObject({
       field: 'tags.NM',
-      scale: 'linear',
-      range: ['#ffffff', '#000000'],
-      domainMin: 0,
+      scale: { type: 'linear', range: ['#ffffff', '#000000'], domainMin: 0 },
     })
   })
 
   it('the Tag dialog picks a gradient or a color per value', () => {
     const { display } = createDisplay({
-      color: {
-        field: 'tags.NM',
-        scale: 'linear',
-        range: ['#ffffff', '#000000'],
-        domainMin: 0,
+      encoding: {
+        color: {
+          field: 'tags.NM',
+          scale: {
+            type: 'linear',
+            range: ['#ffffff', '#000000'],
+            domainMin: 0,
+          },
+        },
       },
     })
     display.colorByField('')
     display.applyPlot({
-      color: tagColorFor(
-        display.writtenColor,
-        'NM',
-        'linear',
-        display.parkedColor,
-      ),
+      encoding: {
+        color: tagColorFor(
+          display.writtenColor,
+          'NM',
+          'linear',
+          display.parkedColor,
+        ),
+      },
     })
     expect(display.bakedColorScale?.kind).toBe('linear')
     expect(display.colorSetting).toMatchObject({
-      range: ['#ffffff', '#000000'],
-      domainMin: 0,
+      scale: { range: ['#ffffff', '#000000'], domainMin: 0 },
     })
     display.applyPlot({
-      color: tagColorFor(display.writtenColor, 'NM', 'categorical'),
+      encoding: {
+        color: tagColorFor(display.writtenColor, 'NM', 'ordinal'),
+      },
     })
-    expect(display.colorSetting.scale).toBeUndefined()
+    expect(display.colorSetting.scale.type).toBeUndefined()
   })
 
   it('leaving pairs and coming back keeps a pinned insert-size band', () => {
     const { display } = createDisplay({
-      color: { field: 'insertSizeAndOrientation', domain: ['150', '600'] },
+      encoding: {
+        color: {
+          field: 'insertSizeAndOrientation',
+          scale: { domain: ['150', '600'] },
+        },
+      },
     })
     display.setUnit('chain')
     display.setUnit('read')
@@ -479,35 +537,42 @@ describe('alignments colorBy', () => {
   })
 
   it('an undeclared key in the color object is named, and a write of one refused', () => {
-    const { display } = createDisplay({ color: { type: 'strand' } })
+    const { display } = createDisplay({
+      encoding: { color: { type: 'strand' } },
+    })
     expect(console.warn).toHaveBeenCalledWith(
       expect.stringMatching(/Color does not declare type: loading without it$/),
     )
     expect(() => {
-      setConf(display, 'color', { type: 'strand' })
+      setConf(display, ['encoding', 'color'], { type: 'strand' })
     }).toThrow('not type')
   })
 
   it('pins the insert-size cut points from the domain', () => {
     const { display } = createDisplay({
-      color: { field: 'insertSize', domain: ['150', '600'] },
+      encoding: {
+        color: { field: 'insertSize', scale: { domain: ['150', '600'] } },
+      },
     })
     expect(display.pinnedInsertSizeBand).toEqual({ lower: 150, upper: 600 })
   })
 
   it('an insert-size domain is the cuts of the threshold its field defaults to', () => {
     const { display } = createDisplay({
-      color: { field: 'insertSize', domain: ['600', '150'] },
+      encoding: {
+        color: { field: 'insertSize', scale: { domain: ['600', '150'] } },
+      },
     })
     expect(display.pinnedInsertSizeBand).toEqual({ lower: 150, upper: 600 })
   })
 
-  it('under a categorical scale an insert-size domain orders and pins nothing', () => {
+  it('under an ordinal scale an insert-size domain orders and pins nothing', () => {
     const { display } = createDisplay({
-      color: {
-        field: 'insertSize',
-        scale: 'categorical',
-        domain: ['150', '600'],
+      encoding: {
+        color: {
+          field: 'insertSize',
+          scale: { type: 'ordinal', domain: ['150', '600'] },
+        },
       },
     })
     expect(display.pinnedInsertSizeBand).toBeUndefined()

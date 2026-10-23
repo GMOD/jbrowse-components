@@ -67,7 +67,7 @@ test('the rows layer is clipped to the rows box', async () => {
 
 // The key is the only decoder an exported figure ships with, and dismissing it
 // on screen used to leave it in the figure: maf was the one row display with no
-// `showLegend` at all.
+// `legend.show` at all.
 test('a dismissed color key stays out of the export', async () => {
   const { display, view } = clusteredDisplay()
   display.colorByField('identity')

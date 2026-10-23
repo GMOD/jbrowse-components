@@ -9,7 +9,8 @@ plain properties (`feature.strand`). When an expression outgrows one line,
 register your own function from a small plugin and call it like a built-in.
 
 A callback is a [Jexl](https://github.com/TomFrost/Jexl) expression in a slot
-that takes one, `"color": "jexl:feature.strand==-1?'red':'blue'"`. The
+that takes one, such as `encoding.color`'s
+`"value": "jexl:feature.strand==-1?'red':'blue'"`. The
 [config pages](/docs/config_guide) list _callback args_ under each such slot,
 and a config writing a callback anywhere else fails to load, naming the slot. A
 [`featureField`](/docs/config_guides/slot_types#featurefield) slot, such as a
@@ -41,10 +42,10 @@ per row
 `feature.start` and `get(feature,'start')` are equivalent; `get()` also works on
 older JBrowse releases. What `feature` is depends on the callback:
 
-| Callback                                                               | `feature` is                    | Property form | `get()` form |
-| ---------------------------------------------------------------------- | ------------------------------- | ------------- | ------------ |
-| Color, label, tooltip, filter (`color`, `name`, `mouseover`, `filter`) | a `SimpleFeature`               | yes           | yes          |
-| [`formatDetails`](/docs/config_guides/customizing_feature_details)     | a plain object from the session | yes           | **no**       |
+| Callback                                                                              | `feature` is                    | Property form | `get()` form |
+| ------------------------------------------------------------------------------------- | ------------------------------- | ------------- | ------------ |
+| Color, label, tooltip, filter (`encoding.color.value`, `name`, `mouseover`, `filter`) | a `SimpleFeature`               | yes           | yes          |
+| [`formatDetails`](/docs/config_guides/customizing_feature_details)                    | a plain object from the session | yes           | **no**       |
 
 In JavaScript plugin code a `SimpleFeature` handed to your own function is the
 real object, read with `feature.get('start')`.
@@ -147,7 +148,7 @@ jexl: missingness(feature) // fraction of alleles with no call, so ./1 counts ha
 jexl: impact(feature) // HIGH, MODERATE, LOW or MODIFIER, from SnpEff ANN / VEP CSQ
 jexl: consequence(feature) // e.g. missense_variant, from the same annotation — the MOST SEVERE one alone
 jexl: 'missense_variant' in consequences(feature) // every consequence term on the record, across all transcripts (bcftools INFO/CSQ ~ "missense_variant")
-jexl: impactColor(feature) // the color `color: { field: 'impact' }` paints the variant's most severe tier
+jexl: impactColor(feature) // the color `encoding: { color: 'impact' }` paints the variant's most severe tier
 jexl: alleleLength(feature) >= 50 // longest allele in bp, so an insertion is not measured by its reference span
 jexl: svType(feature) == 'DEL' // SV class, read off a symbolic ALT before falling back to INFO/SVTYPE (bcftools INFO/SVTYPE)
 jexl: nAlt(feature) == 1 // ALT alleles the record declares, i.e. biallelic-only (bcftools N_ALT)

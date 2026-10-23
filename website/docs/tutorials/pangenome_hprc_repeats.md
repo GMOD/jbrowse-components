@@ -542,7 +542,7 @@ copy:
           }
         ],
         "tracks": ["amylase_adjacent"],
-        "color": { "field": "strand" },
+        "encoding": { "color": "strand" },
         "mark": { "interpolate": "bump" },
         "levelHeights": [110, 110, 110, 110]
       }

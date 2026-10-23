@@ -50,7 +50,12 @@ test('the comparison track is this map over the other, as observed/control', () 
       uri: 'treated.hic',
       controlAdapter: { type: 'HicAdapter', uri: 'untreated.hic' },
     },
-    displays: [{ type: 'LinearHicDisplay', color: 'observed/control' }],
+    displays: [
+      {
+        type: 'LinearHicDisplay',
+        encoding: { color: 'observed/control' },
+      },
+    ],
   })
   expect(conf.displays[0]!.displayId).toBe(`${conf.trackId}-LinearHicDisplay`)
 })

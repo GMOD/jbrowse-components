@@ -66,6 +66,8 @@ packages is released, so breaking changes are fine.
 - Cut: `--fasta2`/`--loc2`/`--aliases2`, `--aliases`/`--cytobands` (genome
   modifiers instead), `--assembly <json file>` (`--config` instead), the
   `properPairs:` refusal. An unknown track modifier throws.
+- The last of a repeated modifier wins (`name:a name:b` names it b), so a
+  script overrides a shared list by appending. `filterTag:` appends instead.
 
 ## Traps
 
@@ -134,3 +136,7 @@ packages is released, so breaking changes are fine.
 - A comparison file takes `name:` and throws on any other modifier. An
   MCScan file throws, since it needs each genome's BED.
 - A lone `--chromSizes` opens a linear view in both apps.
+- One genome file named twice is one assembly in two rows, since an assembly's
+  name is its config identifier and MST refuses a reference two assemblies
+  share. A repeat row takes `loc:`, and throws on `aliases:` or `cytobands:`
+  that differ from the first row's.

@@ -32,7 +32,7 @@ const DATA: PerBaseQualityUploadData = {
   perBaseQualScores: new Uint8Array([0, 20, 40, 255]),
 }
 
-// A plain fill apart from the theme's neutral, as `color.value` writes one, so
+// A plain fill apart from the theme's neutral, as `encoding.color.value` writes one, so
 // a painter reading the neutral cannot pass for one reading the plain fill.
 const STATE = makeTestRenderState({
   showPerBaseQuality: true,

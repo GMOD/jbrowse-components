@@ -190,7 +190,7 @@ test("the view's color paints each ribbon, at the view's alpha", async () => {
   view.setColorField('strand')
   view.setOpacity(0.5)
   expect(display.shapeFor(feature.id())!.fill).toBe(
-    colord(UNIVERSAL_FIELD_PRESETS.strand.range[1]).toHex(),
+    colord(UNIVERSAL_FIELD_PRESETS.strand.scale.range[1]).toHex(),
   )
   expect(display.shapeAlpha).toBe(0.5)
 }, 20000)
@@ -199,7 +199,7 @@ test("the view's color paints each ribbon, at the view's alpha", async () => {
 test('a ribbon its color paints transparent is not drawn', async () => {
   const { view, display } = await setup(['volvox', 'volvox2'])
   expect(display.ribbonLanes.count).toBe(1)
-  applySnapshot(view.color, { value: 'rgba(0,0,0,0)' })
+  applySnapshot(view.encoding.color, { value: 'rgba(0,0,0,0)' })
   expect(display.ribbonLanes.count).toBe(0)
 }, 20000)
 

@@ -117,7 +117,12 @@ describe('multi-sample variant row placement', () => {
       display.editableSources.map((s, i) =>
         i === 0 ? { ...s, label: 'Renamed' } : s,
       ),
-      { domain: [display.editableSources[0]!.name], range: ['#123456'] },
+      {
+        scale: {
+          domain: [display.editableSources[0]!.name],
+          range: ['#123456'],
+        },
+      },
     )
     expect(display.perRegionCellMap.get(0)).toBe(before)
     display.setRowOrder([{ name: 'S1' }, { name: 'S0' }, { name: 'S2' }])

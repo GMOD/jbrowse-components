@@ -176,8 +176,8 @@ Set these on each gene track:
   `jexl:feature.gene_name == 'MFHAS1' || feature.gene_name == 'ERI1' || feature.gene_name == 'TNKS' || feature.gene_name == 'MSRA' || feature.gene_name == 'PINX1' || feature.gene_name == 'XKR6' || feature.gene_name == 'BLK' || feature.gene_name == 'GATA4'`,
   the longest protein-coding genes in the inverted block
 
-**Advanced → Edit plot...** in a gene track's menu shows its `color` (a color
-scale) and `filter` (drops records) as text and applies edits live.
+**Advanced → Edit plot...** in a gene track's menu shows its `encoding.color` (a
+color scale) and `filter` (drops records) as text and applies edits live.
 
 <Figure caption="HG002 maternal (top) against paternal (bottom) at 8p23.1, colored by strand. The inverted block is the long blue bar." src="/img/hg002_haplotypes_8p23_inversion.png" />
 

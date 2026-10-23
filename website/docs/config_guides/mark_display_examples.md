@@ -43,8 +43,8 @@ the config whose shape matches your file and change the field names.
 ## Points, colored and shaped by a category
 
 Each point stands at the middle of its copy. The color and the shape each take a
-categorical scale over `strand`, whose values are `1` and `-1`, so `domain`
-names the levels and `labels` what the key calls them.
+categorical scale over `strand`, whose values are `1` and `-1`, so
+`scale.domain` names the levels and `scale.names` what the key calls them.
 
 ```json addtrack config=https://jbrowse.org/demos/gene_density/config.json loc=chr1:151,000,000-151,030,000
 {
@@ -68,16 +68,17 @@ names the levels and `labels` what the key calls them.
             "size": 8,
             "color": {
               "field": "strand",
-              "domain": ["1", "-1"],
-              "labels": ["+", "-"],
-              "title": "Strand"
+              "scale": { "domain": ["1", "-1"], "names": ["+", "-"] },
+              "legend": { "title": "Strand" }
             },
             "shape": {
               "field": "strand",
-              "domain": ["1", "-1"],
-              "range": ["circle", "triangle-down"],
-              "labels": ["+", "-"],
-              "title": ""
+              "scale": {
+                "domain": ["1", "-1"],
+                "range": ["circle", "triangle-down"],
+                "names": ["+", "-"]
+              },
+              "legend": { "title": "" }
             }
           }
         }
@@ -92,7 +93,7 @@ names the levels and `labels` what the key calls them.
 ## A color ramp
 
 A `linear` scale over the plotted column, pinned at both ends so the colors mean
-the same in every window. `scheme` names the ramp.
+the same in every window. `scale.scheme` names the ramp.
 
 ```json addtrack config=https://jbrowse.org/demos/gene_density/config.json loc=chr1:151,000,000-151,030,000
 {
@@ -115,11 +116,13 @@ the same in every window. `scheme` names the ramp.
             "y": "milliDiv",
             "color": {
               "field": "milliDiv",
-              "scale": "linear",
-              "scheme": "viridis",
-              "domainMin": 0,
-              "domainMax": 300,
-              "title": "Divergence"
+              "scale": {
+                "type": "linear",
+                "scheme": "viridis",
+                "domainMin": 0,
+                "domainMax": 300
+              },
+              "legend": { "title": "Divergence" }
             }
           }
         }
@@ -133,8 +136,9 @@ the same in every window. `scheme` names the ramp.
 
 ## A color per interval
 
-A `threshold` scale cuts the column at the values in `domain` and paints one
-`range` color per interval, so a divergence reads as young, middle or old.
+A `threshold` scale cuts the column at the values in `scale.domain` and paints
+one `scale.range` color per interval, so a divergence reads as young, middle or
+old.
 
 ```json addtrack config=https://jbrowse.org/demos/gene_density/config.json loc=chr1:151,000,000-151,030,000
 {
@@ -157,10 +161,12 @@ A `threshold` scale cuts the column at the values in `domain` and paints one
             "y": "milliDiv",
             "color": {
               "field": "milliDiv",
-              "scale": "threshold",
-              "domain": [80, 150],
-              "range": ["#d73027", "#fdae61", "#4575b4"],
-              "title": "Divergence"
+              "scale": {
+                "type": "threshold",
+                "domain": [80, 150],
+                "range": ["#d73027", "#fdae61", "#4575b4"]
+              },
+              "legend": { "title": "Divergence" }
             }
           }
         }
@@ -275,9 +281,8 @@ draws the packing, colored by strand.
           "encoding": {
             "color": {
               "field": "strand",
-              "domain": ["1", "-1"],
-              "labels": ["+", "-"],
-              "title": "Strand"
+              "scale": { "domain": ["1", "-1"], "names": ["+", "-"] },
+              "legend": { "title": "Strand" }
             }
           }
         }
@@ -418,11 +423,13 @@ pair, stroked by its mapping quality.
           "encoding": {
             "color": {
               "field": "score",
-              "scale": "linear",
-              "domainMin": 0,
-              "domainMax": 60,
-              "range": ["#bdbdbd", "#1f4e9a"],
-              "title": "Mapping quality"
+              "scale": {
+                "type": "linear",
+                "domainMin": 0,
+                "domainMax": 60,
+                "range": ["#bdbdbd", "#1f4e9a"]
+              },
+              "legend": { "title": "Mapping quality" }
             }
           }
         }
@@ -484,7 +491,7 @@ alignment length in a PAF without one. A `rule` at that value across each
 alignment is a percent identity plot, the picture
 [PipMaker](https://doi.org/10.1101/gr.10.4.577) drew for a pair of genomes.
 Stretches with no rule are where nothing aligned. Coloring each rule by the same
-value separates short alignments that overlap, and `showLegend` is off because
+value separates short alignments that overlap, and `legend.show` is off because
 the axis already reads the color.
 
 ```json addtrack config=https://jbrowse.org/demos/hpylori/config.json loc=NC_018939.1:330,000-560,000
@@ -502,7 +509,7 @@ the axis already reads the color.
     {
       "type": "LinearMarkDisplay",
       "displayId": "hpylori_identity-LinearMarkDisplay",
-      "showLegend": false,
+      "legend": { "show": false },
       "scales": {
         "y": { "domainMin": 0.5, "domainMax": 1, "title": "Identity" }
       },
@@ -511,14 +518,16 @@ the axis already reads the color.
           "mark": "rule",
           "encoding": {
             "y": "identity",
-            "size": 4,
+            "strokeWidth": 4,
             "color": {
               "field": "identity",
-              "scale": "linear",
-              "scheme": "viridis",
-              "domainMin": 0.7,
-              "domainMax": 1,
-              "title": "Identity"
+              "scale": {
+                "type": "linear",
+                "scheme": "viridis",
+                "domainMin": 0.7,
+                "domainMax": 1
+              },
+              "legend": { "title": "Identity" }
             }
           }
         }

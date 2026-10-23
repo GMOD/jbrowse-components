@@ -6,20 +6,24 @@ import {
   resolveWiggleColor,
   wiggleColorEncoding,
   wiggleColorProblems,
+  wiggleColorWritten,
 } from './wiggleColor.ts'
 import { wiggleColorSchema } from './wiggleColorConfigSchema.ts'
 
 import type { ColorSetting } from '@jbrowse/display-kit/colorConfigSchema'
 
-const EMPTY: ColorSetting = {
+const color = ({
+  scale,
+  ...over
+}: Partial<Omit<ColorSetting, 'scale'>> & {
+  scale?: Partial<ColorSetting['scale']>
+}): ColorSetting => ({
   value: undefined,
   field: '',
-  scale: undefined,
-  domain: [],
-  range: [],
-}
-
-const color = (over: Partial<ColorSetting>) => ({ ...EMPTY, ...over })
+  legend: {},
+  ...over,
+  scale: { type: undefined, domain: [], range: [], ...scale },
+})
 
 const resolved = (written: ColorSetting, origin: number) =>
   resolveWiggleColor(wiggleColorEncoding(written), origin)
@@ -27,15 +31,21 @@ const resolved = (written: ColorSetting, origin: number) =>
 test('a threshold past the cuts the shader reads is a problem', () => {
   const domain = Array.from({ length: 9 }, (_, i) => String(i + 1))
   const problems = (cuts: string[]) =>
-    wiggleColorProblems(color({ scale: 'threshold', domain: cuts }), 'xyplot')
+    wiggleColorProblems(
+      color({ scale: { type: 'threshold', domain: cuts } }),
+      'xyplot',
+    )
   expect(problems(domain)).toEqual([
-    'color.domain: a wiggle threshold reads at most 8 cuts, and the 1 past them draw no band',
+    'encoding.color.scale.domain: a wiggle threshold reads at most 8 cuts, and the 1 past them draw no band',
   ])
   expect(problems(domain.slice(1))).toEqual([])
 })
 
 test('a gradient is no problem on any mark', () => {
-  const ramp = color({ field: 'score', scale: 'linear', scheme: 'viridis' })
+  const ramp = color({
+    field: 'score',
+    scale: { type: 'linear', scheme: 'viridis' },
+  })
   for (const rendering of ['line', 'linecenter', 'xyplot', 'density']) {
     expect(wiggleColorProblems(ramp, rendering)).toEqual([])
   }
@@ -67,9 +77,11 @@ test('each cut after the first adds a band, painted by the next range color', ()
   const out = resolved(
     color({
       field: 'score',
-      scale: 'threshold',
-      domain: ['2', '-2'],
-      range: ['blue', 'grey', 'red'],
+      scale: {
+        type: 'threshold',
+        domain: ['2', '-2'],
+        range: ['blue', 'grey', 'red'],
+      },
     }),
     0,
   )
@@ -84,7 +96,10 @@ test('each cut after the first adds a band, painted by the next range color', ()
 
 test('a band a threshold range leaves out paints the no-category grey', () => {
   const out = resolved(
-    color({ field: 'score', scale: 'threshold', domain: ['-2', '0', '2'] }),
+    color({
+      field: 'score',
+      scale: { type: 'threshold', domain: ['-2', '0', '2'] },
+    }),
     0,
   )
   expect(out.innerColors).toEqual(['#afafaf', '#afafaf'])
@@ -98,9 +113,11 @@ test('a threshold domain names the cut and the range the two sides', () => {
   const out = resolved(
     color({
       field: 'score',
-      scale: 'threshold',
-      domain: ['2'],
-      range: ['#2166ac', '#b2182b'],
+      scale: {
+        type: 'threshold',
+        domain: ['2'],
+        range: ['#2166ac', '#b2182b'],
+      },
     }),
     0,
   )
@@ -111,7 +128,7 @@ test('a threshold domain names the cut and the range the two sides', () => {
 
 test('a scheme resolves to the LUT both backends index', () => {
   const out = resolved(
-    color({ field: 'score', scale: 'linear', scheme: 'viridis' }),
+    color({ field: 'score', scale: { type: 'linear', scheme: 'viridis' } }),
     0,
   )
   expect(out.rampLut).toEqual(rampLutOf({ scheme: 'viridis' }))
@@ -120,22 +137,26 @@ test('a scheme resolves to the LUT both backends index', () => {
 // A ramp field named anything else used to become linear because a ramp was
 // written; the scale follows the field alone now, and a ramp asks for linear.
 test('a range written under an unset scale does not turn score into a ramp', () => {
-  const out = resolved(color({ field: 'score', range: ['white', 'red'] }), 0)
+  const out = resolved(
+    color({ field: 'score', scale: { range: ['white', 'red'] } }),
+    0,
+  )
   expect(out.rampLut).toBeNull()
   expect([out.negColor, out.posColor]).toEqual(['white', 'red'])
 })
 
 test('reverse turns a ramp and its ends round', () => {
   const forward = resolved(
-    color({ field: 'score', scale: 'linear', range: ['white', 'red'] }),
+    color({
+      field: 'score',
+      scale: { type: 'linear', range: ['white', 'red'] },
+    }),
     0,
   )
   const reversed = resolved(
     color({
       field: 'score',
-      scale: 'linear',
-      range: ['white', 'red'],
-      reverse: true,
+      scale: { type: 'linear', range: ['white', 'red'], reverse: true },
     }),
     0,
   )
@@ -148,7 +169,7 @@ test('reverse turns a ramp and its ends round', () => {
 
 test("a scheme's two colors are its table's ends", () => {
   const out = resolved(
-    color({ field: 'score', scale: 'linear', scheme: 'viridis' }),
+    color({ field: 'score', scale: { type: 'linear', scheme: 'viridis' } }),
     0,
   )
   const lut = rampLutOf({ scheme: 'viridis' })
@@ -160,20 +181,20 @@ test("a scheme's two colors are its table's ends", () => {
 })
 
 test('a linear scale with no range or scheme paints viridis', () => {
-  const out = resolved(color({ field: 'score', scale: 'linear' }), 0)
+  const out = resolved(color({ field: 'score', scale: { type: 'linear' } }), 0)
   expect(out.rampLut).toEqual(rampLutOf({ scheme: 'viridis' }))
   expect(
-    resolved(color({ field: 'score', scale: 'linear', reverse: true }), 0)
-      .rampLut,
+    resolved(
+      color({ field: 'score', scale: { type: 'linear', reverse: true } }),
+      0,
+    ).rampLut,
   ).toEqual(rampLutOf({ scheme: 'viridis', reverse: true }))
 })
 
 test('CSS stops build one cached LUT, and domainMid moves the pivot', () => {
   const written = color({
     field: 'score',
-    scale: 'linear',
-    range: ['white', 'red'],
-    domainMid: 2,
+    scale: { type: 'linear', range: ['white', 'red'], domainMid: 2 },
   })
   const out = resolved(written, 0)
   expect(out.pivot).toBe(2)
@@ -182,7 +203,10 @@ test('CSS stops build one cached LUT, and domainMid moves the pivot', () => {
 })
 
 test('one CSS stop paints flat, as a one-stop ramp does on every display', () => {
-  const written = color({ field: 'score', scale: 'linear', range: ['red'] })
+  const written = color({
+    field: 'score',
+    scale: { type: 'linear', range: ['red'] },
+  })
   const out = resolved(written, 3)
   expect(out.rampLut).toBe(rampLutOf({ range: ['red'] }))
   expect(out.rampMid).toBeUndefined()
@@ -191,16 +215,22 @@ test('one CSS stop paints flat, as a one-stop ramp does on every display', () =>
 })
 
 test('a ramp takes its transform from the y scale, so log is refused', () => {
-  expect(() =>
-    wiggleColorSchema.create({ field: 'score', scale: 'log' }),
-  ).toThrow()
+  expect(() => wiggleColorSchema.create({ scale: { type: 'log' } })).toThrow()
   expect(
-    wiggleColorSchema.create({ field: 'score', scale: 'linear' }).scale,
+    wiggleColorSchema.create({ scale: { type: 'linear' } }).scale.type,
   ).toBe('linear')
 })
 
-test("field is a one-value enum, not the builder's free string", () => {
-  expect(
-    getConfigurationSchemaMetadata(wiggleColorSchema)?.definition.field,
-  ).toMatchObject({ type: 'maybeStringEnum' })
+test('the channel declares no field, and implies score', () => {
+  const meta = getConfigurationSchemaMetadata(wiggleColorSchema)
+  expect(meta?.definition).not.toHaveProperty('field')
+  expect(meta?.options.impliedField).toBe('score')
+})
+
+test('a written value or painted scale member is written; key names alone are not', () => {
+  expect(wiggleColorWritten(color({}))).toBe(false)
+  expect(wiggleColorWritten(color({ scale: { names: ['loss'] } }))).toBe(false)
+  expect(wiggleColorWritten(color({ value: 'red' }))).toBe(true)
+  expect(wiggleColorWritten(color({ scale: { range: ['a', 'b'] } }))).toBe(true)
+  expect(wiggleColorWritten(color({ scale: { type: 'linear' } }))).toBe(true)
 })

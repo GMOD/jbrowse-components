@@ -49,7 +49,7 @@ const spec = encodeURIComponent(
         tracks: ['hs1ToMm39.over.chain.pif'],
         views: [{ assembly: 'hs1' }, { assembly: 'mm39' }],
         autoDiagonalize: true,
-        color: { field: 'query' },
+        encoding: { color: 'query' },
         filter: [{ field: 'length', gte: 1000000 }],
       },
     ],

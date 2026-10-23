@@ -4,9 +4,9 @@ import type { PairDirection } from '@jbrowse/alignments-core'
 
 /**
  * The values a categorical read field takes, in its own order, shared by
- * every channel naming the field: a `facet` section is keyed by one and a
- * `color.domain` names one, so `{ field: 'pairOrientation', domain: ['RR'] }`
- * means the same thing under both. A domain lists its values first and the
+ * every channel naming the field: a `facet` section is keyed by one and
+ * `encoding.color.scale.domain` names one, so `domain: ['RR']` over
+ * `pairOrientation` means the same thing under both. A domain lists its values first and the
  * rest follow this order. Strand's values are core's universal `strand`
  * vocabulary.
  */

@@ -49,9 +49,11 @@ const STRAND_COLOR = { field: 'strand' }
 // The recipe docs/cookbook.md teaches.
 const RMSK_CLASS_COLOR = {
   field: 'repClass',
-  domain: ['SINE', 'LINE', 'LTR', 'DNA', 'Simple_repeat', 'Low_complexity'],
-  range: ['#e41a1c', '#377eb8', '#4daf4a', '#984ea3', '#ff7f00', '#a65628'],
-  labels: ['SINE', 'LINE', 'LTR', 'DNA', 'Simple repeat', 'Low complexity'],
+  scale: {
+    domain: ['SINE', 'LINE', 'LTR', 'DNA', 'Simple_repeat', 'Low_complexity'],
+    range: ['#e41a1c', '#377eb8', '#4daf4a', '#984ea3', '#ff7f00', '#a65628'],
+    names: ['SINE', 'LINE', 'LTR', 'DNA', 'Simple repeat', 'Low complexity'],
+  },
 }
 
 // Each spec applies a docs/cookbook.md recipe's exact config to a demo track, so
@@ -68,7 +70,7 @@ export const cookbookSpecs: ScreenshotSpec[] = [
         {
           trackId: 'ncbi_refseq_109_hg38',
           height: 260,
-          color: STRAND_COLOR,
+          encoding: { color: STRAND_COLOR },
         },
       ],
     }),
@@ -87,7 +89,7 @@ export const cookbookSpecs: ScreenshotSpec[] = [
           displays: [
             {
               type: 'LinearBasicDisplay',
-              color: RMSK_CLASS_COLOR,
+              encoding: { color: RMSK_CLASS_COLOR },
             },
           ],
         },
@@ -141,22 +143,24 @@ export const cookbookSpecs: ScreenshotSpec[] = [
                 ],
               },
               rowColor: {
-                domain: [
-                  'SINE',
-                  'LINE',
-                  'LTR',
-                  'DNA',
-                  'Simple_repeat',
-                  'Low_complexity',
-                ],
-                range: [
-                  '#e41a1c',
-                  '#377eb8',
-                  '#4daf4a',
-                  '#984ea3',
-                  '#ff7f00',
-                  '#a65628',
-                ],
+                scale: {
+                  domain: [
+                    'SINE',
+                    'LINE',
+                    'LTR',
+                    'DNA',
+                    'Simple_repeat',
+                    'Low_complexity',
+                  ],
+                  range: [
+                    '#e41a1c',
+                    '#377eb8',
+                    '#4daf4a',
+                    '#984ea3',
+                    '#ff7f00',
+                    '#a65628',
+                  ],
+                },
               },
               showRowSeparators: true,
               height: 260,

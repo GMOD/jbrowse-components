@@ -135,7 +135,11 @@ const agKaryotypeTrack = (
 ) => {
   const track = agPageTrack('ag1000g_2la_karyotype_cmgam', pop)
   const [display] = track.displays as Record<string, unknown>[]
-  return { ...track, name, displays: [{ ...display, showLegend, height }] }
+  return {
+    ...track,
+    name,
+    displays: [{ ...display, legend: { show: showLegend }, height }],
+  }
 }
 
 // Per-site Weir & Cockerham Fst, the European panel against the other 2001
@@ -169,7 +173,7 @@ const lctPanelTrack = (trackId: string, name: string, file: string) => ({
   displays: [
     {
       type: 'LDTrackDisplay',
-      showLegend: true,
+      legend: { show: true },
       height: 330,
       variantLayout: 'genomic',
     },
@@ -214,7 +218,7 @@ export const ldSpecs: ScreenshotSpec[] = [
             {
               trackId: 'kgp_lct_fst',
               mark: 'point',
-              color: '#0068d1',
+              encoding: { color: { value: '#0068d1' } },
               size: 2,
               y: 'maxScore',
               extent: 'none',
@@ -299,7 +303,7 @@ export const ldSpecs: ScreenshotSpec[] = [
             {
               trackId: 'kgp_lct_fst_scan',
               mark: 'point',
-              color: '#0068d1',
+              encoding: { color: { value: '#0068d1' } },
               size: 2,
               y: 'maxScore',
               extent: 'none',
