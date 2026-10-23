@@ -1,3 +1,5 @@
+import path from 'node:path'
+
 import { fileNameOf } from '@jbrowse/add-track-core'
 
 import { adapterTypeByName, syntenyAdapterTypes } from './fileAdapter.ts'
@@ -7,7 +9,7 @@ import {
   isGenomeFlag,
   isSequenceAdapter,
 } from './fileInput.ts'
-import { FILE_FLAG, modifierValue, splitModifier } from './parseArgv.ts'
+import { FILE_FLAG, isUrl, modifierValue, splitModifier } from './parseArgv.ts'
 
 import type { Adapter } from './fileAdapter.ts'
 import type { Assembly, Track } from './fileInput.ts'
@@ -125,12 +127,29 @@ export interface ComparativeData {
   syntenyTracks: Track[]
 }
 
+const ASSEMBLY_MODIFIERS = ['aliases', 'cytobands']
+
+// local paths compare resolved, so `./a.fa` and `a.fa` are one file
+function sameFile(a: string, b: string) {
+  return (
+    a === b || (!isUrl(a) && !isUrl(b) && path.resolve(a) === path.resolve(b))
+  )
+}
+
+// whether a repeat row sets `key:` to a value its first row did not
+function changes(firstMods: string[], mods: string[], key: string) {
+  const value = modifierValue(mods, key)
+  const was = modifierValue(firstMods, key)
+  return value !== undefined && (was === undefined || !sameFile(was, value))
+}
+
 /**
  * The genomes and comparisons of a comparative view, in command-line order.
  *
  * - Each genome opens a row, at its `loc:` or whole, with its `aliases:` and
- *   `cytobands:`, named after its file. Two files of one name throw; one file
- *   twice is a self-comparison, two rows of one assembly.
+ *   `cytobands:`, named after its file, and two files of one name throw.
+ * - One file named twice is a self-comparison, two rows of one assembly that
+ *   take its `aliases:` and `cytobands:` from the first row.
  * - A comparison file binds to the gap between the genome before it and the
  *   next one; a trailing one, written after both, clamps to the last gap.
  * - A comparison takes `name:`; any other modifier, on it or on a genome,
@@ -138,7 +157,7 @@ export interface ComparativeData {
  */
 export function buildComparative(entries: Entry[]): ComparativeData {
   const assemblies: Assembly[] = []
-  const genomeFiles = new Map<string, string>()
+  const genomes = new Map<string, { file: string; mods: string[] }>()
   const rows: ComparativeRow[] = []
   const comparisons: { entry: Entry; before: number }[] = []
   for (const entry of entries) {
@@ -158,13 +177,19 @@ export function buildComparative(entries: Entry[]): ComparativeData {
           `${label} takes loc:, aliases: and cytobands:, not ${extra.join(' ')}`,
         )
       }
-      const sameName = genomeFiles.get(assembly.name)
-      if (sameName === undefined) {
-        genomeFiles.set(assembly.name, file)
+      const first = genomes.get(assembly.name)
+      if (!first) {
+        genomes.set(assembly.name, { file, mods })
         assemblies.push(assembly)
-      } else if (sameName !== file) {
+      } else if (!sameFile(first.file, file)) {
         throw new Error(
-          `${sameName} and ${file} are both named ${assembly.name}, and a genome takes its file's name; rename or link one of them`,
+          `${first.file} and ${file} are both named ${assembly.name}, and a genome takes its file's name; rename or link one of them`,
+        )
+      } else if (
+        ASSEMBLY_MODIFIERS.some(key => changes(first.mods, mods, key))
+      ) {
+        throw new Error(
+          `${label} repeats ${assembly.name}, which takes its aliases: and cytobands: on its first row; a repeat row takes loc:, or restates them unchanged`,
         )
       }
       const loc = modifierValue(mods, 'loc')

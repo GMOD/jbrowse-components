@@ -86,9 +86,6 @@ async function main() {
         ],
       },
     )
-    // --track is repeatable and carries its own [id, ...modifiers], so it's read
-    // from the raw entries rather than the collapsed `rest` (which keeps only the
-    // last value of a repeated flag).
     const showTracks = parsed.filter(([key]) => key === 'track')
 
     for (const key of Object.keys(rest)) {
@@ -108,7 +105,6 @@ async function main() {
 
     const width = getNumber(rest, 'width', DEFAULT_WIDTH)
     const renderOpts = {
-      fasta: getString(rest, 'fasta'),
       assembly: getString(rest, 'assembly'),
       genome: getString(rest, 'genome'),
       config: getString(rest, 'config'),
