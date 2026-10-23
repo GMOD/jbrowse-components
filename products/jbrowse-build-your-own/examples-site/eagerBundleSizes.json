@@ -1,114 +1,114 @@
 {
   "index": {
-    "chunks": 268,
-    "gzipKb": 479
+    "chunks": 279,
+    "gzipKb": 490
   },
   "color-and-group-by-a-field": {
-    "chunks": 271,
-    "gzipKb": 480
+    "chunks": 282,
+    "gzipKb": 491
   },
   "dark-theme": {
-    "chunks": 269,
-    "gzipKb": 478
+    "chunks": 280,
+    "gzipKb": 490
   },
   "every-chromosome": {
-    "chunks": 268,
-    "gzipKb": 478
+    "chunks": 279,
+    "gzipKb": 489
   },
   "feature-details": {
-    "chunks": 268,
-    "gzipKb": 478
+    "chunks": 279,
+    "gzipKb": 489
   },
   "gene-lanes": {
-    "chunks": 352,
-    "gzipKb": 604
+    "chunks": 363,
+    "gzipKb": 616
   },
   "genome-by-name": {
-    "chunks": 270,
-    "gzipKb": 479
+    "chunks": 281,
+    "gzipKb": 490
   },
   "highlight-a-region": {
-    "chunks": 269,
-    "gzipKb": 478
+    "chunks": 280,
+    "gzipKb": 490
   },
   "inline-plugin": {
-    "chunks": 275,
-    "gzipKb": 484
+    "chunks": 286,
+    "gzipKb": 496
   },
   "local-files": {
-    "chunks": 268,
-    "gzipKb": 479
+    "chunks": 279,
+    "gzipKb": 490
   },
   "multiple-tracks": {
-    "chunks": 268,
-    "gzipKb": 478
+    "chunks": 279,
+    "gzipKb": 489
   },
   "plot-from-json": {
-    "chunks": 271,
-    "gzipKb": 480
+    "chunks": 282,
+    "gzipKb": 491
   },
   "scalebar-and-gridlines": {
-    "chunks": 268,
-    "gzipKb": 479
+    "chunks": 279,
+    "gzipKb": 490
   },
   "search-by-name": {
-    "chunks": 269,
-    "gzipKb": 479
+    "chunks": 280,
+    "gzipKb": 490
   },
   "search-results": {
-    "chunks": 269,
-    "gzipKb": 479
+    "chunks": 280,
+    "gzipKb": 490
   },
   "session-in-url": {
-    "chunks": 270,
-    "gzipKb": 480
+    "chunks": 281,
+    "gzipKb": 492
   },
   "static-first-paint": {
     "chunks": 10,
     "gzipKb": 92
   },
   "svg-figures": {
-    "chunks": 284,
-    "gzipKb": 491
+    "chunks": 295,
+    "gzipKb": 503
   },
   "synteny": {
-    "chunks": 377,
-    "gzipKb": 645
+    "chunks": 388,
+    "gzipKb": 657
   },
   "table-of-calls": {
-    "chunks": 269,
-    "gzipKb": 479
+    "chunks": 280,
+    "gzipKb": 490
   },
   "track-labels": {
-    "chunks": 268,
-    "gzipKb": 478
+    "chunks": 279,
+    "gzipKb": 489
   },
   "track-loading-and-errors": {
-    "chunks": 269,
-    "gzipKb": 479
+    "chunks": 280,
+    "gzipKb": 490
   },
   "track-selector": {
-    "chunks": 268,
-    "gzipKb": 479
+    "chunks": 279,
+    "gzipKb": 490
   },
   "track-settings": {
-    "chunks": 270,
-    "gzipKb": 479
+    "chunks": 281,
+    "gzipKb": 490
   },
   "ultraminimal": {
-    "chunks": 268,
-    "gzipKb": 478
+    "chunks": 279,
+    "gzipKb": 489
   },
   "view-controls": {
-    "chunks": 270,
-    "gzipKb": 480
+    "chunks": 281,
+    "gzipKb": 491
   },
   "view-loading-and-errors": {
-    "chunks": 269,
-    "gzipKb": 479
+    "chunks": 280,
+    "gzipKb": 490
   },
   "web-worker": {
-    "chunks": 268,
-    "gzipKb": 478
+    "chunks": 279,
+    "gzipKb": 489
   }
 }
