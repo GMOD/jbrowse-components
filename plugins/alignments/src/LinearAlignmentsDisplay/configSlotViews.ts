@@ -6,8 +6,8 @@ import { facetSettingOf } from '@jbrowse/display-kit/facetConfigSchema'
 import { stableIdentityComputed } from '@jbrowse/display-kit/stableIdentityComputed'
 
 import {
-  arcStrokeScale,
   strokeWidthScale,
+  strokeWidthWithBase,
 } from '../features/arcs/arcLineWidth.ts'
 import { ordinaryPairsShown } from '../features/arcs/arcTypes.ts'
 import { qualityOpacityOf } from '../features/mismatch/qualityOpacity.ts'
@@ -42,6 +42,7 @@ import {
   readConnectionsMarkOf,
 } from './constants.ts'
 
+import type { StrokeWidthSetting } from '../features/arcs/arcLineWidth.ts'
 import type {
   MismatchOpacityField,
   QualityOpacity,
@@ -156,6 +157,18 @@ export function requireReadsConf(self: ConfigSlotSelf) {
     )
   }
   return conf
+}
+
+function strokeWidthSettingOf(self: ConfigSlotSelf): StrokeWidthSetting {
+  const path = ['readConnections', 'encoding', 'strokeWidth']
+  return {
+    value: getConf(self, [...path, 'value']),
+    field: getConf(self, [...path, 'field']),
+    scale: {
+      type: getConf(self, [...path, 'scale', 'type']),
+      range: getConf(self, [...path, 'scale', 'range']),
+    },
+  }
 }
 
 export function configSlotViews(self: ConfigSlotSelf) {
@@ -370,36 +383,7 @@ export function configSlotViews(self: ConfigSlotSelf) {
      * draws.
      */
     get readConnectionsStrokeScale(): LinkSizeScale {
-      return strokeWidthScale({
-        value: getConf(self, [
-          'readConnections',
-          'encoding',
-          'strokeWidth',
-          'value',
-        ]),
-        field: getConf(self, [
-          'readConnections',
-          'encoding',
-          'strokeWidth',
-          'field',
-        ]),
-        scale: {
-          type: getConf(self, [
-            'readConnections',
-            'encoding',
-            'strokeWidth',
-            'scale',
-            'type',
-          ]),
-          range: getConf(self, [
-            'readConnections',
-            'encoding',
-            'strokeWidth',
-            'scale',
-            'range',
-          ]),
-        },
-      })
+      return strokeWidthScale(strokeWidthSettingOf(self))
     },
     /**
      * #getter
@@ -765,8 +749,9 @@ export function configSlotActions(self: ConfigSlotSelf) {
 
     /**
      * #action
-     * Stroke a one-read connection `width` px, widening with its reads as the
-     * default curve does; undefined returns to the default 1 px.
+     * Stroke a one-read connection `width` px, keeping the written field,
+     * scale type and range ratio, or a constant width; undefined returns to
+     * the default 1 px.
      */
     setReadConnectionsLineWidth(width?: number) {
       setConf(
@@ -774,7 +759,7 @@ export function configSlotActions(self: ConfigSlotSelf) {
         ['readConnections', 'encoding', 'strokeWidth'],
         width === undefined
           ? {}
-          : { scale: { range: arcStrokeScale(width).range.map(String) } },
+          : strokeWidthWithBase(strokeWidthSettingOf(self), width),
       )
     },
 

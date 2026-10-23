@@ -8,6 +8,7 @@ import {
   ARC_WIDTH_PER_DOUBLING,
   arcStrokeScale,
   strokeWidthScale,
+  strokeWidthWithBase,
 } from './arcLineWidth.ts'
 import { arcsToRegionResult } from './arcRegions.ts'
 import { buildArcBandFeeds } from './bandFeed.ts'
@@ -139,5 +140,45 @@ describe('strokeWidthScale, the scale encoding.strokeWidth draws', () => {
         scale: { type: 'log', range: ['2'] },
       }).range,
     ).toEqual(arcStrokeScale(1).range)
+  })
+})
+
+describe('strokeWidthWithBase, what the Line width menu writes', () => {
+  test('unset widens the default curve from the new base', () => {
+    expect(
+      strokeWidthWithBase(
+        {
+          value: undefined,
+          field: undefined,
+          scale: { type: 'log', range: [] },
+        },
+        2,
+      ),
+    ).toEqual({ scale: { type: 'log', range: ['2', '8'] } })
+  })
+
+  test('a constant width stays a constant', () => {
+    expect(
+      strokeWidthWithBase(
+        { value: 2, field: undefined, scale: { type: 'log', range: [] } },
+        3,
+      ),
+    ).toEqual({ value: 3 })
+  })
+
+  test('a written field, scale type and range ratio survive', () => {
+    expect(
+      strokeWidthWithBase(
+        {
+          value: undefined,
+          field: 'reads',
+          scale: { type: 'linear', range: ['1', '10'] },
+        },
+        2,
+      ),
+    ).toEqual({
+      field: 'reads',
+      scale: { type: 'linear', range: ['2', '20'] },
+    })
   })
 })

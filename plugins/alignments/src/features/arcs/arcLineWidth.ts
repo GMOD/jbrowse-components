@@ -84,3 +84,23 @@ export function strokeWidthScale({
     range: pxRange(scale.range) ?? curve.range,
   }
 }
+
+/**
+ * The `encoding.strokeWidth` a Line width of `width` px writes over `setting`:
+ * a constant stays a constant, and a mapped width keeps its field, scale type
+ * and the ratio between its two range ends.
+ */
+export function strokeWidthWithBase(
+  { value, field, scale }: StrokeWidthSetting,
+  width: number,
+) {
+  if (!field && value !== undefined) {
+    return { value: width }
+  }
+  const [thin, wide] = pxRange(scale.range) ?? arcStrokeScale(1).range
+  const ratio = thin > 0 ? wide / thin : ARC_WIDTH_MAX_SCALE
+  return {
+    ...(field ? { field } : {}),
+    scale: { type: scale.type, range: [width, width * ratio].map(String) },
+  }
+}
