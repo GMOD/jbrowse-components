@@ -29,5 +29,5 @@ A setting written to it names members one by one: a member left out stays as it 
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
-| <span id="slot-color">**color**</span><br>[AlignmentsArcColor](../alignmentsarccolor) | The field that colors the connections; `""` uses the reads' `encoding.color` field where a connection paints it. |
+| <span id="slot-color">**color**</span><br>[AlignmentsArcColor](../alignmentsarccolor) | The field that colors every connection: this band, `pileup.connectors` and a chain's links between displayed regions; `""` uses the reads' `encoding.color` field where a connection paints it. |
 | <span id="slot-strokewidth">**strokeWidth**</span><br>[ReadConnectionsStrokeWidth](../readconnectionsstrokewidth) | The width each connection strokes at. |

@@ -1233,7 +1233,7 @@ function filterFieldStep(
       `${TRACK_MENU} → Filter by... → Off-screen mate connections`,
       categoryOf(equal),
       'off-screen mate connections',
-      'The row appears once Read arcs, Read cloud or Curved connectors is on.',
+      'The row appears once Read arcs, Read cloud or Pileup connectors is on.',
     )
   }
   if (field === 'connection.interchrom' && alignments) {
@@ -1908,8 +1908,8 @@ export const trackFields: Record<string, FieldRecipe> = {
     'Show... → Soft clipping',
     'Reveals clipped bases — the signal that a read spans a breakpoint.',
   ),
-  'pileup.showConnectors': checkbox(
-    'Read connections → Curved connectors',
+  'pileup.connectors': layerCheckbox(
+    'Read connections → Pileup connectors',
     "Draws a read's alignments joined by a curve rather than a straight line. Worth it when the two ends sit in different displayed regions, where the curve reads as one read crossing the gap.",
   ),
   // Sits directly under "Coverage" in the alignments "Show..." submenu

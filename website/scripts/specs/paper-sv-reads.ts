@@ -161,7 +161,7 @@ const readEvidence = ({
             pileup: {
               // rows tall enough to show each maps-back loop
               readHeight: connectorCurves ? 6 : 3,
-              showConnectors: connectorCurves,
+              connectors: { show: connectorCurves },
             },
             unit: 'chain',
             // paints each split segment by its strand against its molecule

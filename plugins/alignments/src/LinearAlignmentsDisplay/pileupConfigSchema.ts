@@ -1,5 +1,6 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
+import { pileupConnectorsConfigSchema } from './pileupConnectorsConfigSchema.ts'
 import { pileupMismatchesConfigSchema } from './pileupMismatchesConfigSchema.ts'
 import { pileupSoftClipsConfigSchema } from './pileupSoftClipsConfigSchema.ts'
 
@@ -60,14 +61,11 @@ export const pileupConfigSchema = ConfigurationSchema(
      */
     softClips: pileupSoftClipsConfigSchema,
     /**
-     * #slot
+     * #slot connectors
+     * Lines over the pileup joining each read to its mate or split segment:
+     * `show`.
      */
-    showConnectors: {
-      type: 'boolean',
-      defaultValue: false,
-      description:
-        "draw a connector over the pileup from each read to its mate or split segment: a straight line for a normal pair within one displayed region, a curve otherwise. Under unit: 'chain' a link between displayed regions curves either way. The arc and read-cloud band is readConnections",
-    },
+    connectors: pileupConnectorsConfigSchema,
     /**
      * #slot
      */

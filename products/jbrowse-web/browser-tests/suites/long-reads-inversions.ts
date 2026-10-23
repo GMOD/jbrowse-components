@@ -56,7 +56,7 @@ const suite: TestSuite = {
         {
           trackId: 'volvox-inv-pbsim',
           displaySnapshot: {
-            pileup: { showConnectors: true },
+            pileup: { connectors: { show: true } },
             readConnections: { show: true },
           },
         },
@@ -71,7 +71,7 @@ const suite: TestSuite = {
         {
           trackId: 'volvox-simple-inv.bam',
           displaySnapshot: {
-            pileup: { showConnectors: true },
+            pileup: { connectors: { show: true } },
             readConnections: { show: true },
           },
         },

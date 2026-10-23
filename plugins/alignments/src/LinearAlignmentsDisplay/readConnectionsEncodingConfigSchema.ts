@@ -26,7 +26,8 @@ export const readConnectionsEncodingConfigSchema = ConfigurationSchema(
   {
     /**
      * #slot color
-     * The field that colors the connections; `""` uses the reads'
+     * The field that colors every connection: this band, `pileup.connectors`
+     * and a chain's links between displayed regions; `""` uses the reads'
      * `encoding.color` field where a connection paints it.
      */
     color: alignmentsArcColorConfigSchema,

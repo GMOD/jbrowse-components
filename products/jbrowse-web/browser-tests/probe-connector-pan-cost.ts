@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-// What "Use curved connectors" (`showConnectors`) costs a pan, A/B
+// What "Pileup connectors" (`pileup.connectors`) costs a pan, A/B
 // across two production builds: ADR-225's "Measured" table.
 //
 // Each arm is a built `products/jbrowse-web/build` served statically, so the
@@ -107,7 +107,7 @@ function appUrl(arm: Arm, view: View, on: boolean) {
             type: 'LinearAlignmentsDisplay',
             forceLoad: true,
             height: DISPLAY_HEIGHT,
-            pileup: { showConnectors: on },
+            pileup: { connectors: { show: on } },
             ...display,
           },
         ],

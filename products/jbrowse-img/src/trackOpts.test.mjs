@@ -71,13 +71,13 @@ test('alignment overlay/layout modifiers all produce a valid display snapshot', 
   assert.ok(svg.includes('<svg'), 'output should be SVG')
 })
 
-test('pileup.showConnectors=true enables the curved-connector overlay', async () => {
+test('pileup.connectors.show=true enables the curved-connector overlay', async () => {
   const svg = await renderRegion({
     fasta,
     loc: 'ctgA:1-2000',
     noRasterize: true,
     trackList: [
-      ['bam', [sortedBam, 'pileup.showConnectors=true', 'force:true']],
+      ['bam', [sortedBam, 'pileup.connectors.show=true', 'force:true']],
     ],
   })
   assert.ok(svg.includes('<svg'), 'output should be SVG')

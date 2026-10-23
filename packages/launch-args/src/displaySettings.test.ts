@@ -47,7 +47,7 @@ describe('alignments modifiers', () => {
 
   test('the curved-connector overlay is a band member, which waits for the display', () => {
     const { snap } = buildDisplaySnapshot('alignments', [
-      'pileup.showConnectors=true',
+      'pileup.connectors.show=true',
     ])
     expect(snap).toEqual({})
   })

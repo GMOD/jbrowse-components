@@ -106,7 +106,7 @@ describe('read connections menu', () => {
     const items = rows(model)
     expect(labelsOf(items)).toEqual([
       'View as pairs / link supplementary alignments',
-      'Curved connectors',
+      'Pileup connectors',
       'Read arcs',
       'Read cloud',
       'Show ordinary pairs',

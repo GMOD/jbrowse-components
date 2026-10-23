@@ -6868,6 +6868,27 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "additionalProperties": false
     },
+    "PileupConnectors": {
+      "title": "PileupConnectors",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "show": {
+          "description": "draw a connector over the pileup from each read to its mate or split segment: straight for a normal pair within one displayed region, curved otherwise. Under unit: 'chain' a connector between displayed regions curves either way.",
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
     "AlignmentsBaseColor": {
       "title": "AlignmentsBaseColor",
       "anyOf": [
@@ -7011,14 +7032,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/PileupSoftClips"
           }
         },
-        "showConnectors": {
-          "description": "draw a connector over the pileup from each read to its mate or split segment: a straight line for a normal pair within one displayed region, a curve otherwise. Under unit: 'chain' a link between displayed regions curves either way. The arc and read-cloud band is readConnections.",
-          "default": false,
+        "connectors": {
           "if": {
             "type": "null"
           },
           "else": {
-            "type": "boolean"
+            "$ref": "#/$defs/PileupConnectors"
           }
         },
         "fadeLowBaseQuality": {
@@ -7286,7 +7305,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "x-closed": true,
       "properties": {
         "show": {
-          "description": "draw the read connections.",
+          "description": "draw the band of arcs or the read cloud; pileup.connectors draws the connectors over the reads.",
           "default": false,
           "if": {
             "type": "null"
@@ -8511,14 +8530,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/PileupSoftClips"
           }
         },
-        "showConnectors": {
-          "description": "draw a connector over the pileup from each read to its mate or split segment: a straight line for a normal pair within one displayed region, a curve otherwise. Under unit: 'chain' a link between displayed regions curves either way. The arc and read-cloud band is readConnections.",
-          "default": false,
+        "connectors": {
           "if": {
             "type": "null"
           },
           "else": {
-            "type": "boolean"
+            "$ref": "#/$defs/PileupConnectors"
           }
         },
         "fadeLowBaseQuality": {

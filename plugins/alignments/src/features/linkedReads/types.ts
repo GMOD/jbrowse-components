@@ -7,7 +7,7 @@
 // `readYs`, so they cannot exist before rows are placed. Always present, so
 // consumers can treat the fields as required.
 //
-// Populated in PILEUP layout with curved connectors on (`showLinkedReadLines`
+// Populated in PILEUP layout with pileup connectors on (`showLinkedReadLines`
 // = `showConnectors && unit !== 'chain'`), and empty in chain mode,
 // which draws its own per-chain `connectingLine` pass instead.
 export interface LinkedReadLinesUploadData {

@@ -4245,8 +4245,16 @@ export const configManifest: ConfigManifest = {
               "writes": "members"
             },
             {
-              "name": "showConnectors",
-              "type": "boolean"
+              "name": "connectors",
+              "type": "PileupConnectorsConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "show",
+                  "type": "boolean"
+                }
+              ],
+              "schema": "PileupConnectors",
+              "writes": "members"
             },
             {
               "name": "fadeLowBaseQuality",
@@ -5204,8 +5212,16 @@ export const configManifest: ConfigManifest = {
               "writes": "members"
             },
             {
-              "name": "showConnectors",
-              "type": "boolean"
+              "name": "connectors",
+              "type": "PileupConnectorsConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "show",
+                  "type": "boolean"
+                }
+              ],
+              "schema": "PileupConnectors",
+              "writes": "members"
             },
             {
               "name": "fadeLowBaseQuality",

@@ -377,7 +377,7 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
                   ...DEEP_ONT,
                   filter: [{ field: 'split', equal: true }],
                   unit: 'chain',
-                  pileup: { showConnectors: true, readHeight: 3 },
+                  pileup: { connectors: { show: true }, readHeight: 3 },
                   coverage: { height: 30 },
                   readConnections: { show: true, height: 110 },
                   heightMode: 'grow',
@@ -475,9 +475,9 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
                   unit: 'chain',
                   pileup: {
                     // Chain mode joins only pieces that straddle two panels;
-                    // showConnectors adds the inverted and hidden-segment joins
+                    // connectors adds the inverted and hidden-segment joins
                     // inside one panel.
-                    showConnectors: true,
+                    connectors: { show: true },
                     readHeight: 5,
                   },
                   coverage: {
@@ -797,7 +797,7 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
             // Sashimi arcs read as read connections joining the wrong places.
             show: false,
           },
-          pileup: { ...SPLIT_READS, showConnectors: true },
+          pileup: { ...SPLIT_READS, connectors: { show: true } },
           readConnections: {
             show: true,
             height: 90,
@@ -870,7 +870,7 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
           height: 800,
           coverage: { height: 110 },
           sashimi: { show: false },
-          pileup: { ...SPLIT_READS, showConnectors: true },
+          pileup: { ...SPLIT_READS, connectors: { show: true } },
           readConnections: {
             // The donor tick for the remaining reads keeps its width:
             // `arcStrokeScale` caps at ~44 reads. DEMO_DATASETS.md has the

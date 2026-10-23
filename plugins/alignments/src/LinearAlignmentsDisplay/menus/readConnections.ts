@@ -82,7 +82,7 @@ export function getReadConnectionsMenuItem(
         model.setUnit(linked ? 'read' : 'chain')
       },
     ),
-    toggleItem('Curved connectors', model.showConnectors, flag => {
+    toggleItem('Pileup connectors', model.showConnectors, flag => {
       model.setShowConnectors(flag)
     }),
     bandMarkItem(model, 'Read arcs', 'arc'),

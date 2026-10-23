@@ -212,7 +212,7 @@ export function configSlotViews(self: ConfigSlotSelf) {
     },
     /** #getter */
     get showConnectors(): boolean {
-      return getConf(self, ['pileup', 'showConnectors'])
+      return getConf(self, ['pileup', 'connectors', 'show'])
     },
     /** #getter */
     get fadeLowBaseQuality(): boolean {
@@ -477,7 +477,7 @@ export function configSlotViews(self: ConfigSlotSelf) {
     },
     /**
      * #getter
-     * The field the arcs and the read cloud paint:
+     * The field the arcs, the read cloud and the pileup connectors paint:
      * `readConnections.encoding.color`'s own, or the reads' where it names
      * none.
      */
@@ -643,7 +643,7 @@ export function configSlotActions(self: ConfigSlotSelf) {
      * refetches.
      */
     setShowConnectors(flag: boolean) {
-      setConf(self, ['pileup', 'showConnectors'], flag)
+      setConf(self, ['pileup', 'connectors', 'show'], flag)
     },
 
     /**

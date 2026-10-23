@@ -15,8 +15,8 @@ export {
 export type { InsertionType } from '@jbrowse/alignments-core'
 
 // What one pileup row stands for: a read, or a chain of a read's mate and
-// split segments joined by QNAME. Curved connectors are the orthogonal
-// `pileup.showConnectors` and draw over either unit.
+// split segments joined by QNAME. The pileup connectors are the orthogonal
+// `pileup.connectors` and draw over either unit.
 export const ALIGNMENTS_UNITS = ['read', 'chain'] as const
 export type AlignmentsUnit = (typeof ALIGNMENTS_UNITS)[number]
 
