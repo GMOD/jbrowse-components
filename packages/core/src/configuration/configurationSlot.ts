@@ -1,3 +1,4 @@
+import { printValue } from '@jbrowse/jexl'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import { isCssColor } from '../util/cssColorParse.ts'
@@ -277,7 +278,9 @@ function enumShaped(type: ConfigSlotType, model: IAnyType) {
 
 /** A fixed value as the `jexl:` callback that returns it. */
 export function toCallbackValue(value: unknown) {
-  return isCallbackValue(value) ? value : `jexl:${JSON.stringify(value)}`
+  return isCallbackValue(value)
+    ? value
+    : `jexl:${printValue(value) ?? 'undefined'}`
 }
 
 /**

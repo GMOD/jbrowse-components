@@ -349,15 +349,29 @@ test('stringEnum slot uses a custom model and reads its value', () => {
 
 describe('toCallbackValue', () => {
   test.each([
-    ['hello', 'jexl:"hello"'],
-    ['fo"o', String.raw`jexl:"fo\"o"`],
+    ['hello', "jexl:'hello'"],
     [42, 'jexl:42'],
-    [false, 'jexl:false'],
-    [0, 'jexl:0'],
-    [['a', 'b'], 'jexl:["a","b"]'],
-    [{ x: 1 }, 'jexl:{"x":1}'],
+    [['a', 'b'], "jexl:['a', 'b']"],
+    [{ x: 1 }, 'jexl:{x: 1}'],
   ])('wraps %p as %p', (value, expected) => {
     expect(toCallbackValue(value)).toBe(expected)
+  })
+
+  test.each([
+    'hello',
+    'fo"o',
+    "it's",
+    'two\nlines',
+    'a\tb',
+    42,
+    false,
+    0,
+    ['a', 'b'],
+    { x: 1, 'a b': ['c\nd'] },
+  ])('converts %p back to itself', value => {
+    expect(toFixedValue(toCallbackValue(value), 'string', '', jexl)).toEqual(
+      value,
+    )
   })
 
   test('leaves an existing callback unchanged', () => {
