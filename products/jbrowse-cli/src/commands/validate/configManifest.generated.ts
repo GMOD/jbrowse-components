@@ -6310,16 +6310,40 @@ export const configManifest: ConfigManifest = {
           "type": "(number | undefined)"
         },
         {
-          "name": "showForward",
-          "type": "boolean"
+          "name": "forward",
+          "type": "SequenceForwardConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "show",
+              "type": "boolean"
+            }
+          ],
+          "schema": "SequenceForward",
+          "writes": "members"
         },
         {
-          "name": "showReverse",
-          "type": "boolean"
+          "name": "reverse",
+          "type": "SequenceReverseConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "show",
+              "type": "boolean"
+            }
+          ],
+          "schema": "SequenceReverse",
+          "writes": "members"
         },
         {
-          "name": "showTranslation",
-          "type": "boolean"
+          "name": "translation",
+          "type": "SequenceTranslationConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "show",
+              "type": "boolean"
+            }
+          ],
+          "schema": "SequenceTranslation",
+          "writes": "members"
         },
         {
           "name": "fetchSizeLimit",
@@ -6331,7 +6355,10 @@ export const configManifest: ConfigManifest = {
         }
       ],
       "legacyKeys": [
-        "renderer"
+        "renderer",
+        "showForward",
+        "showReverse",
+        "showTranslation"
       ],
       "droppedKeys": [
         "renderer"

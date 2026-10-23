@@ -804,10 +804,10 @@ exports[`every registered schema slot default 1`] = `
   "display: LinearReferenceSequenceDisplay": {
     "fetchSizeLimit": "number = 1000000",
     "forceLoad": "boolean = false",
+    "forward.show": "boolean = true",
     "height": "maybeNumber = undefined",
-    "showForward": "boolean = true",
-    "showReverse": "boolean = true",
-    "showTranslation": "boolean = true",
+    "reverse.show": "boolean = true",
+    "translation.show": "boolean = true",
   },
   "display: LinearSyntenyDisplay": {},
   "display: LinearVariantDisplay": {

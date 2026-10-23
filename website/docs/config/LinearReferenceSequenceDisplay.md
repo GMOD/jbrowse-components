@@ -14,8 +14,8 @@ reverse complement and the translation frames.
 
 The display goes in the `displays` array of the assembly's `sequence` track,
 which is where a `ReferenceSequenceTrack` is authored, so the display sets
-no assembly name. `showForward`, `showReverse`, and `showTranslation` toggle the
-strand and translation rows:
+no assembly name. `forward`, `reverse` and `translation` each turn their rows
+on and off with `show`:
 
 ```js
 sequence: {
@@ -29,7 +29,7 @@ sequence: {
     {
       type: 'LinearReferenceSequenceDisplay',
       displayId: 'refseq-LinearReferenceSequenceDisplay',
-      showTranslation: false,
+      translation: { show: false },
     },
   ],
 }
@@ -54,9 +54,12 @@ Display slots go on a display entry: `"displays": [{ "type": "LinearReferenceSeq
 | Slot | Description |
 | --- | --- |
 | <span id="slot-height">**height**</span><br>[`maybeNumber`](/docs/config_guides/slot_types#the-maybe-types) | explicit display height (e.g. from a drag-resize); unset means auto-fit to the zoom-aware computed height. See the model's `height` getter. |
-| <span id="slot-showforward">**showForward**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | show the forward-strand sequence row |
-| <span id="slot-showreverse">**showReverse**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | show the reverse-complement sequence row (DNA only) |
-| <span id="slot-showtranslation">**showTranslation**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | show the translation frame rows (DNA only) |
+| <span id="slot-forward">**forward**</span><br>[SequenceForward sub-schema](#slot-forwardshow) | The forward-strand base row. |
+| <span id="slot-forwardshow">**forward.show**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | draw the rows |
+| <span id="slot-reverse">**reverse**</span><br>[SequenceReverse sub-schema](#slot-reverseshow) | The reverse-complement base row; a protein sequence has none. |
+| <span id="slot-reverseshow">**reverse.show**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | draw the rows |
+| <span id="slot-translation">**translation**</span><br>[SequenceTranslation sub-schema](#slot-translationshow) | The three translation frame rows per drawn strand; a protein sequence has none. |
+| <span id="slot-translationshow">**translation.show**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | draw the rows |
 | <span id="slot-fetchsizelimit">**fetchSizeLimit**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>1000000</code> | bytes a region may fetch before the display asks first; an adapter that sets its own limit overrides this<br>_advanced_ |
 | <span id="slot-forceload">**forceLoad**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | Declarative equivalent of the "Force load" button on the "too much data" banner: when true the display always renders, however large the region or dense the features. Off by default (the gate guards against huge downloads). Set it on a view no one can interact with — an embedded / notebook view, or a screenshot — where the region is known and you want it drawn without a click.<br>_advanced_ |
 
@@ -68,3 +71,6 @@ An older config may still write these. Each loads without an error, and `jbrowse
 | Key | On load |
 | --- | --- |
 | `renderer` | ignored |
+| `showForward` | moved into a current slot |
+| `showReverse` | moved into a current slot |
+| `showTranslation` | moved into a current slot |

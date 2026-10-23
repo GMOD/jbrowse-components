@@ -278,8 +278,8 @@ describe('buildReadVsRefSpec', () => {
     }[]) {
       const display = view.tracks[0]!.displays[0]!
       expect(display.configuration).toMatchObject({
-        showReverse: false,
-        showTranslation: false,
+        reverse: { show: false },
+        translation: { show: false },
       })
     }
   })

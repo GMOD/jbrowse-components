@@ -2017,9 +2017,9 @@ export const trackFields: Record<string, FieldRecipe> = {
       : undefined,
   // Three sibling checkboxes in the reference-sequence track's Show... submenu
   // (LinearReferenceSequenceDisplay.trackMenuItems)
-  showForward: checkbox('Show... → Forward'),
-  showReverse: checkbox('Show... → Reverse'),
-  showTranslation: checkbox('Show... → Translation'),
+  forward: layerCheckbox('Show... → Forward'),
+  reverse: layerCheckbox('Show... → Reverse'),
+  translation: layerCheckbox('Show... → Translation'),
   'sashimi.labels': layerCheckbox('Show... → Sashimi read counts'),
   'readConnections.placement': fromTable(
     'Advanced → Read connections placement',

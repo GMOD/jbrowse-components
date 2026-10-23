@@ -70,7 +70,9 @@ test('a setting toggled on a reference sequence track is saved in its assembly',
 
   expect(display.showForward).toBe(false)
   const saved = getSnapshot(jbrowse) as {
-    assemblies: { sequence: { displays: { showForward?: boolean }[] } }[]
+    assemblies: {
+      sequence: { displays: { forward?: { show?: boolean } }[] }
+    }[]
   }
-  expect(saved.assemblies[0]!.sequence.displays[0]!.showForward).toBe(false)
+  expect(saved.assemblies[0]!.sequence.displays[0]!.forward?.show).toBe(false)
 })

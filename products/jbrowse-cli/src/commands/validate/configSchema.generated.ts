@@ -11395,6 +11395,69 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "unevaluatedProperties": false
     },
+    "SequenceForward": {
+      "title": "SequenceForward",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "show": {
+          "description": "draw the rows.",
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
+    "SequenceReverse": {
+      "title": "SequenceReverse",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "show": {
+          "description": "draw the rows.",
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
+    "SequenceTranslation": {
+      "title": "SequenceTranslation",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "show": {
+          "description": "draw the rows.",
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
     "LinearReferenceSequenceDisplaySlots": {
       "type": "object",
       "properties": {
@@ -11407,34 +11470,28 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "number"
           }
         },
-        "showForward": {
-          "description": "show the forward-strand sequence row.",
-          "default": true,
+        "forward": {
           "if": {
             "type": "null"
           },
           "else": {
-            "type": "boolean"
+            "$ref": "#/$defs/SequenceForward"
           }
         },
-        "showReverse": {
-          "description": "show the reverse-complement sequence row (DNA only).",
-          "default": true,
+        "reverse": {
           "if": {
             "type": "null"
           },
           "else": {
-            "type": "boolean"
+            "$ref": "#/$defs/SequenceReverse"
           }
         },
-        "showTranslation": {
-          "description": "show the translation frame rows (DNA only).",
-          "default": true,
+        "translation": {
           "if": {
             "type": "null"
           },
           "else": {
-            "type": "boolean"
+            "$ref": "#/$defs/SequenceTranslation"
           }
         },
         "fetchSizeLimit": {
@@ -11458,6 +11515,18 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "renderer": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "showForward": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "showReverse": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "showTranslation": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
@@ -16761,14 +16830,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "height": {
               "$ref": "#/$defs/LinearReferenceSequenceDisplaySlots/properties/height"
             },
-            "showForward": {
-              "$ref": "#/$defs/LinearReferenceSequenceDisplaySlots/properties/showForward"
+            "forward": {
+              "$ref": "#/$defs/LinearReferenceSequenceDisplaySlots/properties/forward"
             },
-            "showReverse": {
-              "$ref": "#/$defs/LinearReferenceSequenceDisplaySlots/properties/showReverse"
+            "reverse": {
+              "$ref": "#/$defs/LinearReferenceSequenceDisplaySlots/properties/reverse"
             },
-            "showTranslation": {
-              "$ref": "#/$defs/LinearReferenceSequenceDisplaySlots/properties/showTranslation"
+            "translation": {
+              "$ref": "#/$defs/LinearReferenceSequenceDisplaySlots/properties/translation"
             },
             "fetchSizeLimit": {
               "$ref": "#/$defs/LinearReferenceSequenceDisplaySlots/properties/fetchSizeLimit"
@@ -16778,6 +16847,15 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "renderer": {
               "$ref": "#/$defs/LinearReferenceSequenceDisplaySlots/properties/renderer"
+            },
+            "showForward": {
+              "$ref": "#/$defs/LinearReferenceSequenceDisplaySlots/properties/showForward"
+            },
+            "showReverse": {
+              "$ref": "#/$defs/LinearReferenceSequenceDisplaySlots/properties/showReverse"
+            },
+            "showTranslation": {
+              "$ref": "#/$defs/LinearReferenceSequenceDisplaySlots/properties/showTranslation"
             }
           },
           "patternProperties": {

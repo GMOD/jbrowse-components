@@ -877,9 +877,9 @@ export const dog10kSpecs: ScreenshotSpec[] = [
       tracks: [
         {
           trackId: 'UU_Cfam_GSD_1.0-ReferenceSequenceTrack',
-          showForward: true,
-          showReverse: false,
-          showTranslation: true,
+          forward: { show: true },
+          reverse: { show: false },
+          translation: { show: true },
           height: 80,
         },
         {

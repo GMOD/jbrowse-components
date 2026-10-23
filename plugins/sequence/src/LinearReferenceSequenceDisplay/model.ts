@@ -50,6 +50,12 @@ import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { PerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
 
+const ROW_PART = {
+  showForward: 'forward',
+  showReverse: 'reverse',
+  showTranslation: 'translation',
+} as const satisfies Record<keyof RowVisibility, string>
+
 /**
  * `sequenceType` is the ReferenceSequenceTrack's own slot, not a base track
  * one, and `getContainingTrack` answers `AbstractTrackModel` — a base config.
@@ -123,19 +129,19 @@ export function modelFactory(
        * #getter
        */
       get showForward(): boolean {
-        return getConf(self, 'showForward')
+        return getConf(self, ['forward', 'show'])
       },
       /**
        * #getter
        */
       get showReverse(): boolean {
-        return getConf(self, 'showReverse')
+        return getConf(self, ['reverse', 'show'])
       },
       /**
        * #getter
        */
       get showTranslation(): boolean {
-        return getConf(self, 'showTranslation')
+        return getConf(self, ['translation', 'show'])
       },
       /**
        * #getter
@@ -262,7 +268,7 @@ export function modelFactory(
     .actions(self => {
       // a row toggle drops a manual resize, so the track refits its rows
       function toggleRow(key: keyof RowVisibility) {
-        setConf(self, key, !self[key])
+        setConf(self, [ROW_PART[key], 'show'], !self[key])
         setConf(self, 'height', undefined)
       }
       return {

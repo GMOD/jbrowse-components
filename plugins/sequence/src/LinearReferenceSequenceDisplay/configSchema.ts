@@ -1,6 +1,8 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { regionTooLargeConfigSchemaFields } from '@jbrowse/display-kit/regionTooLargeConfigSchemaFields'
 
+const rowShow = (part: string) => (show: unknown) => ({ [part]: { show } })
+
 /**
  * #config LinearReferenceSequenceDisplay
  * Draws a `ReferenceSequenceTrack` as rows of bases: the forward strand, the
@@ -9,8 +11,8 @@ import { regionTooLargeConfigSchemaFields } from '@jbrowse/display-kit/regionToo
  * #example
  * The display goes in the `displays` array of the assembly's `sequence` track,
  * which is where a `ReferenceSequenceTrack` is authored, so the display sets
- * no assembly name. `showForward`, `showReverse`, and `showTranslation` toggle the
- * strand and translation rows:
+ * no assembly name. `forward`, `reverse` and `translation` each turn their rows
+ * on and off with `show`:
  * ```js
  * sequence: {
  *   type: 'ReferenceSequenceTrack',
@@ -23,7 +25,7 @@ import { regionTooLargeConfigSchemaFields } from '@jbrowse/display-kit/regionToo
  *     {
  *       type: 'LinearReferenceSequenceDisplay',
  *       displayId: 'refseq-LinearReferenceSequenceDisplay',
- *       showTranslation: false,
+ *       translation: { show: false },
  *     },
  *   ],
  * }
@@ -43,29 +45,60 @@ export const configSchema = ConfigurationSchema(
       description: 'display height in pixels; unset auto-fits to the sequence',
     },
     /**
-     * #slot
+     * #slot forward
+     * The forward-strand base row.
      */
-    showForward: {
-      type: 'boolean',
-      defaultValue: true,
-      description: 'show the forward-strand sequence row',
-    },
+    forward: ConfigurationSchema(
+      'SequenceForward',
+      {
+        /**
+         * #slot forward.show
+         */
+        show: {
+          type: 'boolean',
+          defaultValue: true,
+          description: 'draw the rows',
+        },
+      },
+      { closed: true },
+    ),
     /**
-     * #slot
+     * #slot reverse
+     * The reverse-complement base row; a protein sequence has none.
      */
-    showReverse: {
-      type: 'boolean',
-      defaultValue: true,
-      description: 'show the reverse-complement sequence row (DNA only)',
-    },
+    reverse: ConfigurationSchema(
+      'SequenceReverse',
+      {
+        /**
+         * #slot reverse.show
+         */
+        show: {
+          type: 'boolean',
+          defaultValue: true,
+          description: 'draw the rows',
+        },
+      },
+      { closed: true },
+    ),
     /**
-     * #slot
+     * #slot translation
+     * The three translation frame rows per drawn strand; a protein
+     * sequence has none.
      */
-    showTranslation: {
-      type: 'boolean',
-      defaultValue: true,
-      description: 'show the translation frame rows (DNA only)',
-    },
+    translation: ConfigurationSchema(
+      'SequenceTranslation',
+      {
+        /**
+         * #slot translation.show
+         */
+        show: {
+          type: 'boolean',
+          defaultValue: true,
+          description: 'draw the rows',
+        },
+      },
+      { closed: true },
+    ),
     // Owed to `RegionTooLargeMixin`, which this display composes through
     // `MultiRegionDisplayMixin` and which reads both slots through a host cast.
     // This schema stands apart from `baseLinearDisplayConfigSchema` (its
@@ -76,8 +109,13 @@ export const configSchema = ConfigurationSchema(
   {
     explicitIdentifier: 'displayId',
     explicitlyTyped: true,
-    // v4's renderer block held the row height
-    retired: { renderer: () => ({}) },
+    retired: {
+      // v4's renderer block held the row height
+      renderer: () => ({}),
+      showForward: rowShow('forward'),
+      showReverse: rowShow('reverse'),
+      showTranslation: rowShow('translation'),
+    },
   },
 )
 

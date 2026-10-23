@@ -19,15 +19,15 @@ export function buildSequenceTrack(
         id: `${rand()}`,
         type: 'LinearReferenceSequenceDisplay',
         height: 35,
-        // Inline config (not just a displayId string) so showReverse/
-        // showTranslation actually override the config-schema defaults —
+        // Inline config (not just a displayId string) so `reverse` and
+        // `translation` actually override the config-schema defaults —
         // a bare id here resolves to the track's auto-injected stub display
         // config, which ignores sibling snapshot fields.
         configuration: {
           type: 'LinearReferenceSequenceDisplay',
           displayId: `${trackId}-LinearReferenceSequenceDisplay`,
-          showReverse: false,
-          showTranslation: false,
+          reverse: { show: false },
+          translation: { show: false },
         },
       },
     ],
