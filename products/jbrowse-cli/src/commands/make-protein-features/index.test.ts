@@ -83,15 +83,27 @@ test('a HMMER row names the protein on whichever side it sits', () => {
   expect(parseCall('# comment', isProtein)).toBeUndefined()
 })
 
+// rows from interproscan6's own tests/data/output/test.faa.tsv.gz: 15 columns,
+// `-` for a missing score or InterPro entry
 test('reads an InterProScan TSV row', () => {
-  const row =
-    'XP_1.1\tmd5\t600\tPfam\tPF00069\tProtein kinase domain\t3\t10\t2.1E-50\tT\t01-01-2026\tIPR000719\tProtein kinase domain'
-  expect(parseCall(row, () => false)).toMatchObject({
-    protein: 'XP_1.1',
-    start: 3,
-    end: 10,
+  const pfam =
+    'sp|Q9QXX0|JAG1_MOUSE\t0001C5D32DCCB8E03267C370872E1694\t1218\tPfam\tPF07657\tN terminus of Notch ligand C2-like domain\t32\t185\t9.0E-55\tPfam\t12-04-2026\tIPR011651\tNotch ligand, N-terminal domain\t-\t-'
+  expect(parseCall(pfam, () => false)).toEqual({
+    protein: 'sp|Q9QXX0|JAG1_MOUSE',
+    start: 32,
+    end: 185,
+    accession: 'PF07657',
+    name: 'N terminus of Notch ligand C2-like domain',
+    description: 'Notch ligand, N-terminal domain',
     source: 'Pfam',
-    name: 'Protein kinase domain',
+    evalue: '9.0E-55',
+  })
+  const noScore =
+    'sp|Q9QXX0|JAG1_MOUSE\t0001C5D32DCCB8E03267C370872E1694\t1218\tPROSITE patterns\tPS00010\tAspartic acid and asparagine hydroxylation site\t389\t400\t-\tPROSITE patterns\t12-04-2026\tIPR000152\tEGF-type aspartate/asparagine hydroxylation site\t-\t-'
+  expect(parseCall(noScore, () => false)).toMatchObject({
+    start: 389,
+    end: 400,
+    evalue: '-',
   })
 })
 

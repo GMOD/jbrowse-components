@@ -56,9 +56,9 @@ config:
 Features sharing a value stack into the same row, and the value becomes the row
 label.
 
-The rows are discovered from the values the loaded region holds, so a file that
-gains a sample or a category needs no config change, and a region missing one
-has no row for it.
+The rows are discovered from the values of the features in the window, so a file
+that gains a sample or a category needs no config change, and a window missing
+one has no row for it. The rows update once panning pauses.
 
 ### Partitioning with a jexl expression {#when-the-category-is-not-a-column}
 
