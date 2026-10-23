@@ -258,7 +258,7 @@ function assertInventoryParsed(
   const canaries: [string, string][] = [
     ['scales.y.type', 'stringEnum'], // linked spelling, dotted name
     ['displayMode', 'stringEnum'], // bare spelling
-    ['expressions', 'expressionArray'], // bare, non-enum
+    ['field', 'string'], // bare, non-enum
     ['height', 'number'], // linked, non-enum
     ['facet', SUB_SCHEMA_KIND], // a sub-schema
   ]
