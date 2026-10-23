@@ -571,7 +571,7 @@ channel reader and the hover.
 
 ## fenceOutliers
 
-Where a value axis's open ends stand below a `domainQuantile` of 1: at the
+Where a value axis's open ends stand below a `fenceQuantile` of 1: at the
 `extremes`, unless one would stretch the axis past twice the span the
 quantileExtent ends `quantiles` draw, 0 included where the axis
 reaches it (`zero`); that end stops at the fence. So a plot with no spike

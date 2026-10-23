@@ -75,8 +75,8 @@ export interface WiggleTablesArgs {
   regions?: TablesRegion[]
   /**
    * The display's config as a track's `displays` entry writes it for a
-   * `LinearWiggleDisplay`: `mark`, `y`, `extent`, `origin`, `color`,
-   * `encoding`, `rows`, `resolution` and the rest of its slots. Unset reads the default display.
+   * `LinearWiggleDisplay`: `mark`, `extent`, `origin`, `encoding`, `rows`,
+   * `resolution` and the rest of its slots. Unset reads the default display.
    */
   display?: Record<string, unknown>
   /**

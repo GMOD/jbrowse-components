@@ -12,8 +12,8 @@
 <!-- auto -->
 <g id="node1" class="node">
 <title>auto</title>
-<polygon fill="none" stroke="black" points="165,-443.75 78.47,-425.75 165,-407.75 251.53,-425.75 165,-443.75"/>
-<text xml:space="preserve" text-anchor="middle" x="165" y="-422.62" font-family="monospace" font-size="10.00">domainQuantile</text>
+<polygon fill="none" stroke="black" points="165,-443.75 83.66,-425.75 165,-407.75 246.34,-425.75 165,-443.75"/>
+<text xml:space="preserve" text-anchor="middle" x="165" y="-422.62" font-family="monospace" font-size="10.00">fenceQuantile</text>
 </g>
 <!-- local -->
 <g id="node6" class="node">
@@ -24,8 +24,8 @@
 <!-- auto&#45;&gt;local -->
 <g id="edge4" class="edge">
 <title>auto&#45;&gt;local</title>
-<path fill="none" stroke="black" d="M150.47,-410.34C137.42,-397.4 117.96,-378.11 102.35,-362.63"/>
-<polygon fill="black" stroke="black" points="105.23,-360.56 95.66,-356 100.3,-365.53 105.23,-360.56"/>
+<path fill="none" stroke="black" d="M150.86,-410.73C137.79,-397.77 118.05,-378.2 102.27,-362.56"/>
+<polygon fill="black" stroke="black" points="105.08,-360.41 95.51,-355.85 100.15,-365.38 105.08,-360.41"/>
 <text xml:space="preserve" text-anchor="middle" x="135.63" y="-376.45" font-family="Times,serif" font-size="14.00"> 1</text>
 </g>
 <!-- pct -->
@@ -38,15 +38,15 @@
 <!-- auto&#45;&gt;pct -->
 <g id="edge5" class="edge">
 <title>auto&#45;&gt;pct</title>
-<path fill="none" stroke="black" d="M179.86,-410.34C193.21,-397.4 213.11,-378.11 229.08,-362.63"/>
-<polygon fill="black" stroke="black" points="231.18,-365.46 235.93,-355.99 226.31,-360.44 231.18,-365.46"/>
+<path fill="none" stroke="black" d="M179.46,-410.73C192.83,-397.77 213.01,-378.2 229.15,-362.56"/>
+<polygon fill="black" stroke="black" points="231.34,-365.31 236.08,-355.84 226.47,-360.29 231.34,-365.31"/>
 <text xml:space="preserve" text-anchor="middle" x="248.06" y="-376.45" font-family="Times,serif" font-size="14.00"> below 1</text>
 </g>
 <!-- scale -->
 <g id="node2" class="node">
 <title>scale</title>
-<polygon fill="none" stroke="black" points="165,-125.25 104.43,-107.25 165,-89.25 225.57,-107.25 165,-125.25"/>
-<text xml:space="preserve" text-anchor="middle" x="165" y="-104.12" font-family="monospace" font-size="10.00">scaleType</text>
+<polygon fill="none" stroke="black" points="165,-125.25 130.39,-107.25 165,-89.25 199.61,-107.25 165,-125.25"/>
+<text xml:space="preserve" text-anchor="middle" x="165" y="-104.12" font-family="monospace" font-size="10.00">type</text>
 </g>
 <!-- lin -->
 <g id="node10" class="node">
@@ -57,8 +57,8 @@
 <!-- scale&#45;&gt;lin -->
 <g id="edge10" class="edge">
 <title>scale&#45;&gt;lin</title>
-<path fill="none" stroke="black" d="M147.5,-93.93C128.72,-80.72 98.44,-59.41 74.95,-42.89"/>
-<polygon fill="black" stroke="black" points="77.11,-40.13 66.92,-37.24 73.09,-45.86 77.11,-40.13"/>
+<path fill="none" stroke="black" d="M150.78,-96.24C132.39,-83.3 99.77,-60.35 74.85,-42.82"/>
+<polygon fill="black" stroke="black" points="77.16,-40.16 66.96,-37.27 73.13,-45.89 77.16,-40.16"/>
 <text xml:space="preserve" text-anchor="middle" x="136.98" y="-57.95" font-family="Times,serif" font-size="14.00"> linear</text>
 </g>
 <!-- log -->
@@ -85,8 +85,8 @@
 <!-- scale&#45;&gt;sym -->
 <g id="edge12" class="edge">
 <title>scale&#45;&gt;sym</title>
-<path fill="none" stroke="black" d="M188.97,-95.9C220.14,-82.43 275.44,-58.55 316.15,-40.96"/>
-<polygon fill="black" stroke="black" points="317.51,-44.19 325.3,-37.01 314.74,-37.76 317.51,-44.19"/>
+<path fill="none" stroke="black" d="M183.28,-98.35C213.07,-85.49 273.1,-59.56 316.44,-40.84"/>
+<polygon fill="black" stroke="black" points="317.62,-44.14 325.41,-36.96 314.84,-37.72 317.62,-44.14"/>
 <text xml:space="preserve" text-anchor="middle" x="311.84" y="-57.95" font-family="Times,serif" font-size="14.00"> symlog</text>
 </g>
 <!-- vis -->
@@ -152,7 +152,7 @@
 <title>bounds</title>
 <polygon fill="none" stroke="black" points="275,-208.5 55,-208.5 55,-162.25 275,-162.25 275,-208.5"/>
 <text xml:space="preserve" text-anchor="middle" x="165" y="-195" font-family="monospace" font-size="10.00">nice domain, clamped by</text>
-<text xml:space="preserve" text-anchor="middle" x="165" y="-182.25" font-family="monospace" font-size="10.00">minScoreBound / maxScoreBound</text>
+<text xml:space="preserve" text-anchor="middle" x="165" y="-182.25" font-family="monospace" font-size="10.00">domainMin / domainMax</text>
 <text xml:space="preserve" text-anchor="middle" x="165" y="-169.5" font-family="monospace" font-size="10.00">an unset bound autoscales that end</text>
 </g>
 <!-- rules&#45;&gt;bounds -->
@@ -168,5 +168,5 @@
 <polygon fill="black" stroke="black" points="168.5,-137.2 165,-127.2 161.5,-137.2 168.5,-137.2"/>
 </g>
 </g>
-<!-- diagram-source-sha256 69482d35d6cdc529d61fdedaea524c0eb49798f898eb61a0cf4a30cb0871d10c -->
+<!-- diagram-source-sha256 0e7ee809a79f7f61db6f0fd36dd949e0e5bf85c6783dc5649c07bf478aa0163a -->
 </svg>

@@ -303,8 +303,8 @@ zero, and `encoding.y` pins the y scale to ±1.5:
 }
 ```
 
-**Advanced → Edit plot...** in the track menu shows `encoding` and `scales` as
-text and applies edits live.
+**Advanced → Edit plot...** in the track menu shows `encoding`, the y and color
+scales included, as text and applies edits live.
 
 ## Reading the Cyp6g1 sweep in Tajima's D and π
 

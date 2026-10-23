@@ -8,7 +8,7 @@ digraph wiggle_domain {
   stats [label="computeScoreStats\nmin, max"]
   vis -> mode -> stats -> auto
 
-  auto [label="domainQuantile"]
+  auto [label="fenceQuantile"]
   auto -> local   [label=" 1"]
   auto -> pct     [label=" below 1"]
   local [label="the visible min and max"]
@@ -17,10 +17,10 @@ digraph wiggle_domain {
   rules [label="widen to any score a\nscore rule is drawn at"]
   local -> rules  pct -> rules
 
-  bounds [label="nice domain, clamped by\nminScoreBound / maxScoreBound\nan unset bound autoscales that end"]
+  bounds [label="nice domain, clamped by\ndomainMin / domainMax\nan unset bound autoscales that end"]
   rules -> bounds -> scale
 
-  scale [label="scaleType"]
+  scale [label="type"]
   scale -> lin [label=" linear"]
   scale -> log [label=" log"]
   scale -> sym [label=" symlog"]
