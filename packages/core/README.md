@@ -1923,7 +1923,7 @@ has to read as one tone across the whole palette or it reads as noise.
 import { relight } from '@jbrowse/core/util/color'
 
 // type signature
-(color: string, lightnessShift: number, chromaScale?: number) => string
+(color: string, lightnessShift: number, chromaScale?: number, maxLightness?: number) => string
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/color/index.ts)
