@@ -1,6 +1,6 @@
 ---
 name: vega-lite-layout-and-multiway-leftovers
-description: ADR-238 settings with no spelling or step yet: layout words (canvas displayMode, the views' pixel spacing), the multi-way display's leftovers, and show*, density and min-max settings no step covers. Read before respelling any of them, and settle bridgeSkippedLanes against ADR-238's Rejected row first.
+description: ADR-238 settings with no spelling or step yet: layout words (canvas displayMode, the views' pixel spacing), the multi-way display's leftovers, and show*, density and min-max settings no step covers. Read before respelling any of them.
 ---
 
 # Vega-Lite leftovers with no home
@@ -35,20 +35,18 @@ Each item needs a call before work. Check the ADR-238 spelling first.
 - `hideUnlabelled` becomes a `ribbons.filter` entry `{ field, valid: true }`,
   `showGeneLabels` becomes `genes.labels.show`, and `showLaneTicks` becomes
   `axis.show`, which should then gate the anchor rule's ticks too.
-- `impliedUTRs` sits in ADR-238's Rejected row on one-behaviour flags, which
-  cut `showIntraviewLinks` and `bridgeSkippedLanes`.
 - `splitStrands` and `inlineLaneNames` change layout and have no spelling.
 - Off-screen mate marks honor only the `length` filter, since the worker sends
   no attribute lanes with the mates.
 
 ## Settings no step covers
 
-- Canvas: `showLabels`, `showOutline`, `showChevrons`, the three
-  `max*FeatureDensity` settings, and the flat `connectorColor`, `utrColor` and
-  `outlineColor`.
-- Reference sequence: `showForward`, `showReverse`, `showTranslation`.
-- LD: `showVerticalGuides`, `showLabels`.
+- Canvas: `showLabels`, `showOutline`, the three `max*FeatureDensity`
+  settings, and the flat `connectorColor`, `utrColor` and `outlineColor`.
+- LD: `showLabels`.
 - Multi-sample variants: `showTooltips`, `showInsertionGlyphs`, `showLabels`.
 - Mark display: `marks[].minBpPerPx` and `maxBpPerPx`, although ADR-238 says
-  `view.bpPerPx` replaces every zoom gate.
-- `rowProportion` on MAF and the multi-row display.
+  `view.bpPerPx` replaces every zoom gate. The predicate input does not exist
+  yet, and building it for two rarely written bounds waits on a second use.
+- `rowProportion` and `rowHeight` stay display slots (ADR-194); folding them
+  into `mark.height` loses the row pitch.
