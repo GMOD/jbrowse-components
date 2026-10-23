@@ -21,7 +21,7 @@ import ClusterProgress from '../ClusterProgress.tsx'
 import { generateClusterRScript, matrixToTsv } from '../clusterRScript.ts'
 import { parseClusterOrder } from '../clusterUtils.ts'
 import ClusterAdvancedOptions from './ClusterAdvancedOptions.tsx'
-import { resolveClusterRunArgs } from './clusterRunArgs.ts'
+import { clusterRunRegions, resolveClusterRunArgs } from './clusterRunArgs.ts'
 
 import type { ClusterDialogProps } from './types.ts'
 
@@ -66,11 +66,7 @@ const ClusterManualTab = observer(function ClusterManualTab({
   // open leaves the script and TSV describing rows that are no longer on screen.
   const view = containingLgv(model)
   const regionKey = JSON.stringify({
-    blocks: view.dynamicBlocks.contentBlocks.map(b => [
-      b.refName,
-      b.start,
-      b.end,
-    ]),
+    blocks: clusterRunRegions(model).map(b => [b.refName, b.start, b.end]),
     bpPerPx: view.bpPerPx,
   })
   const {

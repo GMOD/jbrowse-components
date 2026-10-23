@@ -16,10 +16,8 @@ const modeDescriptions = {
   ),
 }
 
-// Auto (in-app JS hclust) vs manual (download R script) mode picker, shared by
-// the wiggle and variant clustering dialogs. A controlled form control: read
-// `value`, write via `onChange`. Compose a per-plugin intro by passing it as
-// `children` (rendered above the radios).
+// `ClusterDialog`'s auto (in-app JS hclust) vs manual (download R script) mode
+// picker, with `children` rendered above the radios.
 const ClusterModeSelector = observer(function ClusterModeSelector({
   value,
   onChange,

@@ -122,10 +122,6 @@ export default observer(function SetColorDialog<S extends RowSource>({
   onEditAsJson,
 }: SetColorDialogProps<S>) {
   const { classes } = useStyles()
-  const openedOn = () => ({
-    rows: model.editableSources,
-    choice: model.rowColorChoice,
-  })
   // Undefined until a swatch is touched, so a reset re-reads the model rather
   // than restoring a pair snapshotted before it.
   const [plotPair, setPlotPair] = useState<{
@@ -133,9 +129,9 @@ export default observer(function SetColorDialog<S extends RowSource>({
     below: string
   }>()
   const [showBulkEditor, setShowBulkEditor] = useState(false)
-  const [opened, setOpened] = useState(openedOn)
-  const [currLayout, setCurrLayout] = useState(opened.rows)
-  const [choice, setChoice] = useState(opened.choice)
+  const [currLayout, setCurrLayout] = useState(model.editableSources)
+  const [openedChoice, setOpenedChoice] = useState(model.rowColorChoice)
+  const [choice, setChoice] = useState(openedChoice)
   // The `rowColor` object each choice the reader edited in this sitting
   // writes; an unedited one writes what it starts from.
   const [drafts, setDrafts] = useState<
@@ -185,7 +181,7 @@ export default observer(function SetColorDialog<S extends RowSource>({
 
   // An untouched panel writes no color object, so the config's own stands
   // whatever the panel can spell.
-  const colorTouched = choice !== opened.choice || Object.hasOwn(drafts, choice)
+  const colorTouched = choice !== openedChoice || Object.hasOwn(drafts, choice)
 
   // The row color goes first: a plot color can change whether the palette
   // deals, which the written object was chosen under.
@@ -215,10 +211,9 @@ export default observer(function SetColorDialog<S extends RowSource>({
   // Drop custom settings and re-seed the grid from the model's persisted state.
   const resetToModel = () => {
     model.resetRowArrangement()
-    const next = openedOn()
-    setOpened(next)
-    setCurrLayout(next.rows)
-    setChoice(next.choice)
+    setCurrLayout(model.editableSources)
+    setOpenedChoice(model.rowColorChoice)
+    setChoice(model.rowColorChoice)
     setDrafts({})
     setPlotPair(undefined)
   }
