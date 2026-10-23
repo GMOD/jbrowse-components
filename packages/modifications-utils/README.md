@@ -14,13 +14,15 @@ Bins per-read base modifications and their probabilities onto the reference
 offsets of `window` (the whole read without one), indexed from `refStart`. Only
 cytosines in `context` are considered (default CpG); plants also use CHG/CHH.
 With `fill`, a cytosine in context that the MM tag left implicit bins as
-unmethylated (probability 0) where the tag allows it.
+unmethylated (probability 0) where the tag allows it: no `?` skip flag on a 5mC
+or 5hmC group that `isVisible` keeps. A hidden group drops out of that check,
+since the fill then claims nothing about its type.
 
 Every ML probability is `(N + 0.5) / 256`, which float32 holds exactly.
 
 ```js
 // type signature
-({ modifications, probabilities, cigarOps, seq, fstrand, flen, window, }: ParsedModData, context?: CytosineContext, fill?: boolean) => MethBins
+({ modifications, probabilities, cigarOps, seq, fstrand, flen, window, }: ParsedModData, context?: CytosineContext, fill?: boolean, isVisible?: (type: string) => boolean) => MethBins
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/modifications-utils/src/getMethBins.ts)
