@@ -4,17 +4,17 @@
     "gzipBytes": 183746
   },
   "plain": {
-    "bytes": 168967,
-    "gzipBytes": 59141
+    "bytes": 170486,
+    "gzipBytes": 59591
   },
   "seam": {
     "bytes": 61435,
     "gzipBytes": 24257
   },
-  "savedBytes": 376568,
-  "savedGzipBytes": 124605,
+  "savedBytes": 375049,
+  "savedGzipBytes": 124155,
   "muiKb": 533,
-  "plainKb": 165,
+  "plainKb": 166,
   "seamKb": 60,
   "muiGzipKb": 179,
   "plainGzipKb": 58,
