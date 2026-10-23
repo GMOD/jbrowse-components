@@ -5997,6 +5997,67 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         }
       ]
     },
+    "RowAxisWithGrid": {
+      "title": "RowAxisWithGrid",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "tree": {
+          "description": "draw the clustering tree in the sidebar.",
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
+        },
+        "branchLength": {
+          "description": "position tree nodes by branch length (dendrogram) rather than evenly by topology (cladogram).",
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
+        },
+        "labels": {
+          "description": "draw each row’s name over the left of the plot.",
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
+        },
+        "width": {
+          "description": "width in px of the tree sidebar, which a drag on its edge also writes.",
+          "default": 80,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
+        },
+        "grid": {
+          "description": "draw a hairline between adjacent rows, once rows are at least 4px tall.",
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
     "LinearMultiRowFeatureDisplaySlots": {
       "type": "object",
       "properties": {
@@ -6074,16 +6135,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "number"
           }
         },
-        "showRowSeparators": {
-          "description": "draw a hairline between adjacent rows; off by default, because neighbouring rows that differ in color already show a boundary and the line helps only where they match — a run of same-colored rows reads as one block without it, with no way to recover the row count by eye. Drawn only once rows are at least 4px tall: below that the line is as thick as the row it borders, turning a dense painting into a grid of hairlines with a little color between them.",
-          "default": false,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "boolean"
-          }
-        },
         "legend": {
           "if": {
             "type": "null"
@@ -6111,44 +6162,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/Facet"
           }
         },
-        "showTree": {
-          "description": "show the cluster tree sidebar.",
-          "default": true,
+        "axis": {
           "if": {
             "type": "null"
           },
           "else": {
-            "type": "boolean"
-          }
-        },
-        "showBranchLength": {
-          "description": "position tree nodes by branch length (dendrogram) rather than evenly by topology (cladogram).",
-          "default": true,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "boolean"
-          }
-        },
-        "showRowLabels": {
-          "description": "draw the row name over the left of each row.",
-          "default": true,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "boolean"
-          }
-        },
-        "treeAreaWidth": {
-          "description": "width in px of the tree sidebar, which a drag on its edge also writes.",
-          "default": 80,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "number"
+            "$ref": "#/$defs/RowAxisWithGrid"
           }
         },
         "maxFeatureScreenDensity": {
@@ -6168,6 +6187,26 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
         "color": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "showTree": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "showBranchLength": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "showRowLabels": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "treeAreaWidth": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "showRowSeparators": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
@@ -12322,44 +12361,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "number"
           }
         },
-        "showTree": {
-          "description": "Show the sample clustering tree in the sidebar.",
-          "default": true,
+        "axis": {
           "if": {
             "type": "null"
           },
           "else": {
-            "type": "boolean"
-          }
-        },
-        "showBranchLength": {
-          "description": "position tree nodes by branch length (dendrogram) rather than evenly by topology (cladogram).",
-          "default": true,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "boolean"
-          }
-        },
-        "showRowLabels": {
-          "description": "Show the per-sample row labels in the sidebar.",
-          "default": true,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "boolean"
-          }
-        },
-        "treeAreaWidth": {
-          "description": "width in px of the tree sidebar, which a drag on its edge also writes.",
-          "default": 80,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "number"
+            "$ref": "#/$defs/RowAxisWithGrid"
           }
         },
         "rows": {
@@ -12368,16 +12375,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           },
           "else": {
             "$ref": "#/$defs/SampleRows"
-          }
-        },
-        "showRowSeparators": {
-          "description": "draw a hairline between adjacent rows; off by default, because neighbouring rows that differ in color already show a boundary and the line helps only where they match — a run of same-colored rows reads as one block without it, with no way to recover the row count by eye. Drawn only once rows are at least 4px tall: below that the line is as thick as the row it borders, turning a dense painting into a grid of hairlines with a little color between them.",
-          "default": false,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "boolean"
           }
         },
         "showTooltips": {
@@ -12497,6 +12494,26 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
         "showSidebarLabels": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "showTree": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "showBranchLength": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "showRowLabels": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "treeAreaWidth": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "showRowSeparators": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
@@ -13593,54 +13610,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             ]
           }
         },
-        "showTree": {
-          "description": "Show the subtrack clustering tree in the sidebar.",
-          "default": true,
+        "axis": {
           "if": {
             "type": "null"
           },
           "else": {
-            "type": "boolean"
-          }
-        },
-        "showBranchLength": {
-          "description": "position tree nodes by branch length (dendrogram) rather than evenly by topology (cladogram).",
-          "default": true,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "boolean"
-          }
-        },
-        "showRowLabels": {
-          "description": "Name each subtrack row down the left edge.",
-          "default": true,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "boolean"
-          }
-        },
-        "treeAreaWidth": {
-          "description": "width in px of the tree sidebar, which a drag on its edge also writes.",
-          "default": 80,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "number"
-          }
-        },
-        "showRowSeparators": {
-          "description": "draw a hairline between adjacent rows; off by default, because neighbouring rows that differ in color already show a boundary and the line helps only where they match — a run of same-colored rows reads as one block without it, with no way to recover the row count by eye. Drawn only once rows are at least 4px tall: below that the line is as thick as the row it borders, turning a dense painting into a grid of hairlines with a little color between them.",
-          "default": false,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "boolean"
+            "$ref": "#/$defs/RowAxisWithGrid"
           }
         },
         "scales": {
@@ -13716,6 +13691,26 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
         "resolution": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "showTree": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "showBranchLength": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "showRowLabels": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "treeAreaWidth": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "showRowSeparators": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
@@ -14024,6 +14019,57 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "additionalProperties": false
     },
+    "RowAxis": {
+      "title": "RowAxis",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "tree": {
+          "description": "draw the clustering tree in the sidebar.",
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
+        },
+        "branchLength": {
+          "description": "position tree nodes by branch length (dendrogram) rather than evenly by topology (cladogram).",
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
+        },
+        "labels": {
+          "description": "draw each row’s name over the left of the plot.",
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
+        },
+        "width": {
+          "description": "width in px of the tree sidebar, which a drag on its edge also writes.",
+          "default": 80,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
     "MafPart": {
       "title": "MafPart",
       "type": "object",
@@ -14216,44 +14262,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/MafEncoding"
           }
         },
-        "showTree": {
-          "description": "show the species tree sidebar.",
-          "default": true,
+        "axis": {
           "if": {
             "type": "null"
           },
           "else": {
-            "type": "boolean"
-          }
-        },
-        "showBranchLength": {
-          "description": "position tree nodes by branch length (dendrogram) rather than evenly by topology (cladogram).",
-          "default": true,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "boolean"
-          }
-        },
-        "showRowLabels": {
-          "description": "draw the species name over the left of each row.",
-          "default": true,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "boolean"
-          }
-        },
-        "treeAreaWidth": {
-          "description": "width in px of the tree sidebar, which a drag on its edge also writes.",
-          "default": 80,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "number"
+            "$ref": "#/$defs/RowAxis"
           }
         },
         "rows": {
@@ -14337,6 +14351,22 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
         "scales": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "showTree": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "showBranchLength": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "showRowLabels": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "treeAreaWidth": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
@@ -15009,44 +15039,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/RowColor"
           }
         },
-        "showTree": {
-          "description": "show the cluster tree beside the rows.",
-          "default": true,
+        "axis": {
           "if": {
             "type": "null"
           },
           "else": {
-            "type": "boolean"
-          }
-        },
-        "showBranchLength": {
-          "description": "position tree nodes by branch length (dendrogram) rather than evenly by topology (cladogram).",
-          "default": true,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "boolean"
-          }
-        },
-        "showRowLabels": {
-          "description": "draw the row value over the left of each row.",
-          "default": true,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "boolean"
-          }
-        },
-        "treeAreaWidth": {
-          "description": "width in px of the tree sidebar, which a drag on its edge also writes.",
-          "default": 80,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "number"
+            "$ref": "#/$defs/RowAxis"
           }
         },
         "rowHeight": {
@@ -15123,6 +15121,22 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
         "jexlFilters": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "showTree": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "showBranchLength": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "showRowLabels": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "treeAreaWidth": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
@@ -15232,44 +15246,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/RowColor"
           }
         },
-        "showTree": {
-          "description": "show the cluster tree beside the rows.",
-          "default": true,
+        "axis": {
           "if": {
             "type": "null"
           },
           "else": {
-            "type": "boolean"
-          }
-        },
-        "showBranchLength": {
-          "description": "position tree nodes by branch length (dendrogram) rather than evenly by topology (cladogram).",
-          "default": true,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "boolean"
-          }
-        },
-        "showRowLabels": {
-          "description": "draw the row value over the left of each row.",
-          "default": true,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "boolean"
-          }
-        },
-        "treeAreaWidth": {
-          "description": "width in px of the tree sidebar, which a drag on its edge also writes.",
-          "default": 80,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "number"
+            "$ref": "#/$defs/RowAxis"
           }
         },
         "rowHeight": {
@@ -15346,6 +15328,22 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
         "jexlFilters": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "showTree": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "showBranchLength": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "showRowLabels": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "treeAreaWidth": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
@@ -16183,18 +16181,24 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "rowProportion": {
               "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/rowProportion"
             },
-            "showRowSeparators": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/showRowSeparators"
-                },
-                {
-                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/showRowSeparators"
-                }
-              ]
-            },
             "rowGroups": {
               "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/rowGroups"
+            },
+            "axis": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/axis"
+                },
+                {
+                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/axis"
+                },
+                {
+                  "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/axis"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/axis"
+                }
+              ]
             },
             "showTree": {
               "anyOf": [
@@ -16257,6 +16261,16 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 },
                 {
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/treeAreaWidth"
+                }
+              ]
+            },
+            "showRowSeparators": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/showRowSeparators"
+                },
+                {
+                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/showRowSeparators"
                 }
               ]
             },
@@ -16788,6 +16802,18 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "rowColor": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rowColor"
             },
+            "axis": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/axis"
+            },
+            "rowHeight": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rowHeight"
+            },
+            "origin": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/origin"
+            },
+            "minWidthPx": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/minWidthPx"
+            },
             "showTree": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/showTree"
             },
@@ -16799,15 +16825,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "treeAreaWidth": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/treeAreaWidth"
-            },
-            "rowHeight": {
-              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rowHeight"
-            },
-            "origin": {
-              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/origin"
-            },
-            "minWidthPx": {
-              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/minWidthPx"
             }
           },
           "patternProperties": {
@@ -17413,6 +17430,60 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 }
               ]
             },
+            "axis": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/axis"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/axis"
+                }
+              ]
+            },
+            "rows": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/rows"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rows"
+                }
+              ]
+            },
+            "showTooltips": {
+              "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/showTooltips"
+            },
+            "unit": {
+              "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/unit"
+            },
+            "shadeByDosage": {
+              "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/shadeByDosage"
+            },
+            "rowColor": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/rowColor"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rowColor"
+                }
+              ]
+            },
+            "referenceDrawingMode": {
+              "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/referenceDrawingMode"
+            },
+            "showInsertionGlyphs": {
+              "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/showInsertionGlyphs"
+            },
+            "variants": {
+              "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/variants"
+            },
+            "renderingMode": {
+              "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/renderingMode"
+            },
+            "showSidebarLabels": {
+              "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/showSidebarLabels"
+            },
             "showTree": {
               "anyOf": [
                 {
@@ -17453,52 +17524,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 }
               ]
             },
-            "rows": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/rows"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rows"
-                }
-              ]
-            },
             "showRowSeparators": {
               "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/showRowSeparators"
-            },
-            "showTooltips": {
-              "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/showTooltips"
-            },
-            "unit": {
-              "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/unit"
-            },
-            "shadeByDosage": {
-              "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/shadeByDosage"
-            },
-            "rowColor": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/rowColor"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rowColor"
-                }
-              ]
-            },
-            "referenceDrawingMode": {
-              "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/referenceDrawingMode"
-            },
-            "showInsertionGlyphs": {
-              "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/showInsertionGlyphs"
-            },
-            "variants": {
-              "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/variants"
-            },
-            "renderingMode": {
-              "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/renderingMode"
-            },
-            "showSidebarLabels": {
-              "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/showSidebarLabels"
             },
             "showReferenceAlleles": {
               "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/showReferenceAlleles"
@@ -18052,48 +18079,15 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "extent": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/extent"
             },
-            "showTree": {
+            "axis": {
               "anyOf": [
                 {
-                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/showTree"
+                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/axis"
                 },
                 {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/showTree"
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/axis"
                 }
               ]
-            },
-            "showBranchLength": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/showBranchLength"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/showBranchLength"
-                }
-              ]
-            },
-            "showRowLabels": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/showRowLabels"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/showRowLabels"
-                }
-              ]
-            },
-            "treeAreaWidth": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/treeAreaWidth"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/treeAreaWidth"
-                }
-              ]
-            },
-            "showRowSeparators": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/showRowSeparators"
             },
             "scales": {
               "anyOf": [
@@ -18193,6 +18187,49 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "resolution": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/resolution"
+            },
+            "showTree": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/showTree"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/showTree"
+                }
+              ]
+            },
+            "showBranchLength": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/showBranchLength"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/showBranchLength"
+                }
+              ]
+            },
+            "showRowLabels": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/showRowLabels"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/showRowLabels"
+                }
+              ]
+            },
+            "treeAreaWidth": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/treeAreaWidth"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/treeAreaWidth"
+                }
+              ]
+            },
+            "showRowSeparators": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/showRowSeparators"
             },
             "defaultRendering": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/defaultRendering"
@@ -18470,48 +18507,15 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "extent": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/extent"
             },
-            "showTree": {
+            "axis": {
               "anyOf": [
                 {
-                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/showTree"
+                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/axis"
                 },
                 {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/showTree"
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/axis"
                 }
               ]
-            },
-            "showBranchLength": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/showBranchLength"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/showBranchLength"
-                }
-              ]
-            },
-            "showRowLabels": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/showRowLabels"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/showRowLabels"
-                }
-              ]
-            },
-            "treeAreaWidth": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/treeAreaWidth"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/treeAreaWidth"
-                }
-              ]
-            },
-            "showRowSeparators": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/showRowSeparators"
             },
             "scales": {
               "anyOf": [
@@ -18611,6 +18615,49 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "resolution": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/resolution"
+            },
+            "showTree": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/showTree"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/showTree"
+                }
+              ]
+            },
+            "showBranchLength": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/showBranchLength"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/showBranchLength"
+                }
+              ]
+            },
+            "showRowLabels": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/showRowLabels"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/showRowLabels"
+                }
+              ]
+            },
+            "treeAreaWidth": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/treeAreaWidth"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/treeAreaWidth"
+                }
+              ]
+            },
+            "showRowSeparators": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/showRowSeparators"
             },
             "defaultRendering": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/defaultRendering"
@@ -18846,20 +18893,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "extent": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/extent"
             },
-            "showTree": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/showTree"
-            },
-            "showBranchLength": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/showBranchLength"
-            },
-            "showRowLabels": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/showRowLabels"
-            },
-            "treeAreaWidth": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/treeAreaWidth"
-            },
-            "showRowSeparators": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/showRowSeparators"
+            "axis": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/axis"
             },
             "scales": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/scales"
@@ -18917,6 +18952,21 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "resolution": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/resolution"
+            },
+            "showTree": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/showTree"
+            },
+            "showBranchLength": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/showBranchLength"
+            },
+            "showRowLabels": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/showRowLabels"
+            },
+            "treeAreaWidth": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/treeAreaWidth"
+            },
+            "showRowSeparators": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/showRowSeparators"
             },
             "defaultRendering": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/defaultRendering"
@@ -19148,43 +19198,13 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 }
               ]
             },
-            "showTree": {
+            "axis": {
               "anyOf": [
                 {
-                  "$ref": "#/$defs/LinearMafDisplaySlots/properties/showTree"
+                  "$ref": "#/$defs/LinearMafDisplaySlots/properties/axis"
                 },
                 {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/showTree"
-                }
-              ]
-            },
-            "showBranchLength": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearMafDisplaySlots/properties/showBranchLength"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/showBranchLength"
-                }
-              ]
-            },
-            "showRowLabels": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearMafDisplaySlots/properties/showRowLabels"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/showRowLabels"
-                }
-              ]
-            },
-            "treeAreaWidth": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearMafDisplaySlots/properties/treeAreaWidth"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/treeAreaWidth"
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/axis"
                 }
               ]
             },
@@ -19286,6 +19306,46 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 },
                 {
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/scales"
+                }
+              ]
+            },
+            "showTree": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearMafDisplaySlots/properties/showTree"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/showTree"
+                }
+              ]
+            },
+            "showBranchLength": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearMafDisplaySlots/properties/showBranchLength"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/showBranchLength"
+                }
+              ]
+            },
+            "showRowLabels": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearMafDisplaySlots/properties/showRowLabels"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/showRowLabels"
+                }
+              ]
+            },
+            "treeAreaWidth": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearMafDisplaySlots/properties/treeAreaWidth"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/treeAreaWidth"
                 }
               ]
             },
@@ -20022,6 +20082,18 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "rowColor": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rowColor"
             },
+            "axis": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/axis"
+            },
+            "rowHeight": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rowHeight"
+            },
+            "origin": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/origin"
+            },
+            "minWidthPx": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/minWidthPx"
+            },
             "showTree": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/showTree"
             },
@@ -20033,15 +20105,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "treeAreaWidth": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/treeAreaWidth"
-            },
-            "rowHeight": {
-              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rowHeight"
-            },
-            "origin": {
-              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/origin"
-            },
-            "minWidthPx": {
-              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/minWidthPx"
             }
           },
           "patternProperties": {
@@ -20241,17 +20304,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "rowColor": {
               "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/rowColor"
             },
-            "showTree": {
-              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/showTree"
-            },
-            "showBranchLength": {
-              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/showBranchLength"
-            },
-            "showRowLabels": {
-              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/showRowLabels"
-            },
-            "treeAreaWidth": {
-              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/treeAreaWidth"
+            "axis": {
+              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/axis"
             },
             "rowHeight": {
               "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/rowHeight"
@@ -20285,6 +20339,18 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "jexlFilters": {
               "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/jexlFilters"
+            },
+            "showTree": {
+              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/showTree"
+            },
+            "showBranchLength": {
+              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/showBranchLength"
+            },
+            "showRowLabels": {
+              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/showRowLabels"
+            },
+            "treeAreaWidth": {
+              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/treeAreaWidth"
             }
           },
           "patternProperties": {

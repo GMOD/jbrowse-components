@@ -3689,10 +3689,6 @@ export const configManifest: ConfigManifest = {
           "type": "number"
         },
         {
-          "name": "showRowSeparators",
-          "type": "boolean"
-        },
-        {
           "name": "legend",
           "type": "LegendConfigurationSchema",
           "subSlots": [
@@ -3740,20 +3736,32 @@ export const configManifest: ConfigManifest = {
           }
         },
         {
-          "name": "showTree",
-          "type": "boolean"
-        },
-        {
-          "name": "showBranchLength",
-          "type": "boolean"
-        },
-        {
-          "name": "showRowLabels",
-          "type": "boolean"
-        },
-        {
-          "name": "treeAreaWidth",
-          "type": "number"
+          "name": "axis",
+          "type": "RowAxisWithGridConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "tree",
+              "type": "boolean"
+            },
+            {
+              "name": "branchLength",
+              "type": "boolean"
+            },
+            {
+              "name": "labels",
+              "type": "boolean"
+            },
+            {
+              "name": "width",
+              "type": "number"
+            },
+            {
+              "name": "grid",
+              "type": "boolean"
+            }
+          ],
+          "schema": "RowAxisWithGrid",
+          "writes": "members"
         }
       ],
       "legacyKeys": [
@@ -3761,7 +3769,12 @@ export const configManifest: ConfigManifest = {
         "maxDisplayedBpPerPx",
         "mouseover",
         "jexlFilters",
-        "color"
+        "color",
+        "showTree",
+        "showBranchLength",
+        "showRowLabels",
+        "treeAreaWidth",
+        "showRowSeparators"
       ],
       "droppedKeys": [
         "maxFeatureScreenDensity",
@@ -6775,20 +6788,32 @@ export const configManifest: ConfigManifest = {
           "type": "number"
         },
         {
-          "name": "showTree",
-          "type": "boolean"
-        },
-        {
-          "name": "showBranchLength",
-          "type": "boolean"
-        },
-        {
-          "name": "showRowLabels",
-          "type": "boolean"
-        },
-        {
-          "name": "treeAreaWidth",
-          "type": "number"
+          "name": "axis",
+          "type": "RowAxisWithGridConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "tree",
+              "type": "boolean"
+            },
+            {
+              "name": "branchLength",
+              "type": "boolean"
+            },
+            {
+              "name": "labels",
+              "type": "boolean"
+            },
+            {
+              "name": "width",
+              "type": "number"
+            },
+            {
+              "name": "grid",
+              "type": "boolean"
+            }
+          ],
+          "schema": "RowAxisWithGrid",
+          "writes": "members"
         },
         {
           "name": "rows",
@@ -6826,10 +6851,6 @@ export const configManifest: ConfigManifest = {
           "shorthand": {
             "string": "field"
           }
-        },
-        {
-          "name": "showRowSeparators",
-          "type": "boolean"
         },
         {
           "name": "showTooltips",
@@ -7023,6 +7044,11 @@ export const configManifest: ConfigManifest = {
         "jexlFilters",
         "renderingMode",
         "showSidebarLabels",
+        "showTree",
+        "showBranchLength",
+        "showRowLabels",
+        "treeAreaWidth",
+        "showRowSeparators",
         "showReferenceAlleles",
         "colorBy",
         "autoscale",
@@ -7561,24 +7587,32 @@ export const configManifest: ConfigManifest = {
           "type": "Extent"
         },
         {
-          "name": "showTree",
-          "type": "boolean"
-        },
-        {
-          "name": "showBranchLength",
-          "type": "boolean"
-        },
-        {
-          "name": "showRowLabels",
-          "type": "boolean"
-        },
-        {
-          "name": "treeAreaWidth",
-          "type": "number"
-        },
-        {
-          "name": "showRowSeparators",
-          "type": "boolean"
+          "name": "axis",
+          "type": "RowAxisWithGridConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "tree",
+              "type": "boolean"
+            },
+            {
+              "name": "branchLength",
+              "type": "boolean"
+            },
+            {
+              "name": "labels",
+              "type": "boolean"
+            },
+            {
+              "name": "width",
+              "type": "number"
+            },
+            {
+              "name": "grid",
+              "type": "boolean"
+            }
+          ],
+          "schema": "RowAxisWithGrid",
+          "writes": "members"
         }
       ],
       "legacyKeys": [
@@ -7601,6 +7635,11 @@ export const configManifest: ConfigManifest = {
         "renderers",
         "summaryScoreMode",
         "resolution",
+        "showTree",
+        "showBranchLength",
+        "showRowLabels",
+        "treeAreaWidth",
+        "showRowSeparators",
         "defaultRendering",
         "lineWidth"
       ],
@@ -7841,20 +7880,28 @@ export const configManifest: ConfigManifest = {
           "writes": "members"
         },
         {
-          "name": "showTree",
-          "type": "boolean"
-        },
-        {
-          "name": "showBranchLength",
-          "type": "boolean"
-        },
-        {
-          "name": "showRowLabels",
-          "type": "boolean"
-        },
-        {
-          "name": "treeAreaWidth",
-          "type": "number"
+          "name": "axis",
+          "type": "RowAxisConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "tree",
+              "type": "boolean"
+            },
+            {
+              "name": "branchLength",
+              "type": "boolean"
+            },
+            {
+              "name": "labels",
+              "type": "boolean"
+            },
+            {
+              "name": "width",
+              "type": "number"
+            }
+          ],
+          "schema": "RowAxis",
+          "writes": "members"
         },
         {
           "name": "rows",
@@ -8146,7 +8193,11 @@ export const configManifest: ConfigManifest = {
         "showAllLetters",
         "showAsUpperCase",
         "y",
-        "scales"
+        "scales",
+        "showTree",
+        "showBranchLength",
+        "showRowLabels",
+        "treeAreaWidth"
       ],
       "droppedKeys": [
         "maxFeatureScreenDensity",
@@ -8838,20 +8889,28 @@ export const configManifest: ConfigManifest = {
           }
         },
         {
-          "name": "showTree",
-          "type": "boolean"
-        },
-        {
-          "name": "showBranchLength",
-          "type": "boolean"
-        },
-        {
-          "name": "showRowLabels",
-          "type": "boolean"
-        },
-        {
-          "name": "treeAreaWidth",
-          "type": "number"
+          "name": "axis",
+          "type": "RowAxisConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "tree",
+              "type": "boolean"
+            },
+            {
+              "name": "branchLength",
+              "type": "boolean"
+            },
+            {
+              "name": "labels",
+              "type": "boolean"
+            },
+            {
+              "name": "width",
+              "type": "number"
+            }
+          ],
+          "schema": "RowAxis",
+          "writes": "members"
         },
         {
           "name": "rowHeight",
@@ -9016,7 +9075,11 @@ export const configManifest: ConfigManifest = {
         "maxFeatureScreenDensity",
         "maxDisplayedBpPerPx",
         "mouseover",
-        "jexlFilters"
+        "jexlFilters",
+        "showTree",
+        "showBranchLength",
+        "showRowLabels",
+        "treeAreaWidth"
       ],
       "droppedKeys": [
         "maxFeatureScreenDensity",
@@ -9526,20 +9589,28 @@ export const configManifest: ConfigManifest = {
           }
         },
         {
-          "name": "showTree",
-          "type": "boolean"
-        },
-        {
-          "name": "showBranchLength",
-          "type": "boolean"
-        },
-        {
-          "name": "showRowLabels",
-          "type": "boolean"
-        },
-        {
-          "name": "treeAreaWidth",
-          "type": "number"
+          "name": "axis",
+          "type": "RowAxisConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "tree",
+              "type": "boolean"
+            },
+            {
+              "name": "branchLength",
+              "type": "boolean"
+            },
+            {
+              "name": "labels",
+              "type": "boolean"
+            },
+            {
+              "name": "width",
+              "type": "number"
+            }
+          ],
+          "schema": "RowAxis",
+          "writes": "members"
         },
         {
           "name": "rowHeight",
@@ -9704,7 +9775,11 @@ export const configManifest: ConfigManifest = {
         "maxFeatureScreenDensity",
         "maxDisplayedBpPerPx",
         "mouseover",
-        "jexlFilters"
+        "jexlFilters",
+        "showTree",
+        "showBranchLength",
+        "showRowLabels",
+        "treeAreaWidth"
       ],
       "droppedKeys": [
         "maxFeatureScreenDensity",
