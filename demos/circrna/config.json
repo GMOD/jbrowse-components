@@ -78,9 +78,28 @@
         "uri": "https://jbrowse.org/demos/circrna/SRR1636985.slice.bam"
       },
       "displayDefaults": {
-        "height": 400,
+        "height": 300,
         "sashimi": { "labels": { "show": true } },
-        "readConnections": { "show": true }
+        "filter": [{ "field": "mapq", "gte": 1 }]
+      }
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "hela_rnaser_split_reads",
+      "name": "HeLa RNase R+ split reads only",
+      "assemblyNames": ["hg38"],
+      "category": ["circRNA"],
+      "adapter": {
+        "type": "BamAdapter",
+        "uri": "https://jbrowse.org/demos/circrna/SRR1636985.slice.bam"
+      },
+      "displayDefaults": {
+        "height": 200,
+        "readConnections": { "show": true },
+        "filter": [
+          { "field": "mapq", "gte": 1 },
+          { "field": "split", "equal": true }
+        ]
       }
     }
   ],
