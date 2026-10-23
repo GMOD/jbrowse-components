@@ -2,9 +2,13 @@ import { makeSizeSubMenu } from '@jbrowse/core/ui'
 import { radioItems, toggleItem } from '@jbrowse/core/ui/menuItems'
 import { categoryFilterItem } from '@jbrowse/display-kit/categoryFilter'
 
+import {
+  JUNCTION_CLASSES,
+  junctionSource,
+} from '../../features/sashimi/junctionClass.ts'
 import { DEFAULT_MIN_SASHIMI_READS } from '../../shared/alignmentsFilter.ts'
 
-import type { JunctionFilter } from '../../shared/types.ts'
+import type { JunctionFilter, JunctionFilterPatch } from '../../shared/types.ts'
 import type { SashimiPlacement } from '../constants.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 
@@ -15,17 +19,37 @@ const SASHIMI_PLACEMENT_OPTIONS: { value: SashimiPlacement; label: string }[] =
     { value: 'down', label: 'Below coverage' },
   ]
 
-export interface SashimiModel {
+interface JunctionFiltersModel {
   showSashimi: boolean
+  junctionFilter: JunctionFilter
+  setJunctionFilter: (patch: JunctionFilterPatch) => void
+}
+
+export interface SashimiModel extends JunctionFiltersModel {
   setShowSashimi: (show: boolean) => void
   showSashimiCounts: boolean
   setShowSashimiCounts: (show: boolean) => void
 }
 
-interface JunctionFiltersModel {
-  showSashimi: boolean
-  junctionFilter: JunctionFilter
-  setJunctionFilter: (patch: Partial<JunctionFilter>) => void
+const SPLIT_CLASSES = JUNCTION_CLASSES.filter(
+  c => junctionSource(c) === 'split',
+)
+
+// Unchecking writes `junction.source` gap; checking clears it, widening a
+// `junction.class` that admits no split class so the box reads checked.
+function splitJunctionsItem(model: JunctionFiltersModel) {
+  const { classes } = model.junctionFilter
+  return toggleItem(
+    'Sashimi split-read junctions',
+    !classes || classes.some(c => SPLIT_CLASSES.includes(c)),
+    show => {
+      model.setJunctionFilter(
+        show
+          ? { classes: [...new Set([...(classes ?? []), ...SPLIT_CLASSES])] }
+          : { sources: ['gap'] },
+      )
+    },
+  )
 }
 
 interface SashimiPlacementModel {
@@ -35,7 +59,10 @@ interface SashimiPlacementModel {
   setSashimiPlacement: (placement: SashimiPlacement) => void
 }
 
-/** The arcs' rows in "Show...": the arcs, and their counts while they draw. */
+/**
+ * The arcs' rows in "Show...": the arcs, and while they draw their counts and
+ * whether split-read junctions join the N-gap splices.
+ */
 export function sashimiShowItems(model: SashimiModel): MenuItem[] {
   return [
     toggleItem('Sashimi arcs', model.showSashimi, show => {
@@ -46,6 +73,7 @@ export function sashimiShowItems(model: SashimiModel): MenuItem[] {
           toggleItem('Sashimi read counts', model.showSashimiCounts, show => {
             model.setShowSashimiCounts(show)
           }),
+          splitJunctionsItem(model),
         ]
       : []),
   ]

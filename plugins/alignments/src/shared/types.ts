@@ -1,6 +1,9 @@
 import { isValidTag } from '@jbrowse/core/util'
 
-import type { JunctionClass } from '../features/sashimi/junctionClass.ts'
+import type {
+  JunctionClass,
+  JunctionSource,
+} from '../features/sashimi/junctionClass.ts'
 import type { CategoryFilter } from '@jbrowse/display-kit/categoryFilter'
 import type { CytosineContext } from '@jbrowse/modifications-utils'
 
@@ -179,6 +182,12 @@ export interface JunctionFilter {
   nonCanonical?: CategoryFilter
   // The `junction.class` values drawn, every one when unset
   classes?: readonly JunctionClass[]
+}
+
+/** A junction filter write: `JunctionFilter`'s members, and `sources` writing `junction.source`. */
+export interface JunctionFilterPatch extends Partial<JunctionFilter> {
+  // every source when unset
+  sources?: readonly JunctionSource[]
 }
 
 /** The connections the display draws: its `connection` and `breakpoint` filter fields, read as `connectionFilter`. */

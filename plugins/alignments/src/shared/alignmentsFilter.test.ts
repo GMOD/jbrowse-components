@@ -168,6 +168,23 @@ describe('the junction and connection tests', () => {
     expect(junctionFilterOf(list)).toMatchObject(patch)
   })
 
+  test('a source write lowers to its classes and clears with every source', () => {
+    const gapOnly = withFields([], junctionEntries({ sources: ['gap'] }))
+    expect(gapOnly).toEqual([{ field: 'junction.source', oneOf: ['gap'] }])
+    expect(junctionFilterOf(merged(gapOnly)).classes).toEqual(['splice'])
+    expect(
+      withFields(gapOnly, junctionEntries({ sources: ['gap', 'split'] })),
+    ).toEqual([])
+    expect(
+      withFields(
+        gapOnly,
+        junctionEntries({
+          classes: ['splice', 'deletion', 'duplication', 'inversion'],
+        }),
+      ),
+    ).toEqual([])
+  })
+
   test('a class write of every class, or none, writes nothing', () => {
     expect(
       withFields(

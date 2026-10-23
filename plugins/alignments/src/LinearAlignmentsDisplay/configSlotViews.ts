@@ -57,6 +57,7 @@ import type {
   ModificationColorBy,
   ReadColorBy,
   JunctionFilter,
+  JunctionFilterPatch,
 } from '../shared/types.ts'
 import type { BaseLinearAlignmentsDisplayConfigModel } from './baseConfigSchema.ts'
 import type { LinearAlignmentsDisplayConfigModel } from './configSchema.ts'
@@ -678,7 +679,7 @@ export function configSlotActions(self: ConfigSlotSelf) {
     /**
      * #action
      */
-    setJunctionFilter(patch: Partial<JunctionFilter>) {
+    setJunctionFilter(patch: JunctionFilterPatch) {
       requireReadsConf(self)
       setFilterFields(junctionEntries(patch))
     },

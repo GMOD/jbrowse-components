@@ -7,7 +7,7 @@ import {
   sashimiShowItems,
 } from './sashimi.ts'
 
-import type { JunctionFilter } from '../../shared/types.ts'
+import type { JunctionFilter, JunctionFilterPatch } from '../../shared/types.ts'
 import type { SashimiPlacement } from '../constants.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 
@@ -59,8 +59,34 @@ describe('sashimi rows in Show...', () => {
     expect(labelsOf(sashimiShowItems(model))).toEqual(['Sashimi arcs'])
     model.showSashimi = true
     const rows = sashimiShowItems(model)
-    expect(labelsOf(rows)).toEqual(['Sashimi arcs', 'Sashimi read counts'])
+    expect(labelsOf(rows)).toEqual([
+      'Sashimi arcs',
+      'Sashimi read counts',
+      'Sashimi split-read junctions',
+    ])
     expect(rows.every(i => 'checked' in i && !('helpText' in i))).toBe(true)
+  })
+
+  test('"Sashimi split-read junctions" writes junction.source', () => {
+    const model = makeModel()
+    model.showSashimi = true
+    const writes: JunctionFilterPatch[] = []
+    const setJunctionFilter = model.setJunctionFilter.bind(model)
+    model.setJunctionFilter = patch => {
+      writes.push(patch)
+      setJunctionFilter({ ...patch, classes: patch.classes ?? ['splice'] })
+    }
+    const label = 'Sashimi split-read junctions'
+    const checked = () =>
+      sashimiShowItems(model).find(i => 'label' in i && i.label === label)
+    expect(checked()).toMatchObject({ checked: true })
+    click(sashimiShowItems(model), label)
+    expect(writes.at(-1)).toEqual({ sources: ['gap'] })
+    expect(checked()).toMatchObject({ checked: false })
+    click(sashimiShowItems(model), label)
+    expect(writes.at(-1)).toEqual({
+      classes: ['splice', 'deletion', 'duplication', 'inversion'],
+    })
   })
 })
 

@@ -21,6 +21,7 @@ import type {
   CategoryFilter,
   ConnectionFilter,
   JunctionFilter,
+  JunctionFilterPatch,
   TagFilter,
 } from './types.ts'
 import type {
@@ -254,12 +255,13 @@ export function junctionFilterOf(
 
 /**
  * `junctionFilterOf`'s members as the entries they are. `classes` writes
- * `junction.class` and clears `junction.source`, whose reading it folds in.
+ * `junction.class` and clears `junction.source`, whose reading it folds in;
+ * `sources` writes `junction.source` alone.
  */
 export function junctionEntries(
-  patch: Partial<JunctionFilter>,
+  patch: JunctionFilterPatch,
 ): Record<string, FieldPredicate[]> {
-  const { classes } = patch
+  const { classes, sources } = patch
   return {
     ...(patch.minReads === undefined
       ? {}
@@ -284,6 +286,15 @@ export function junctionEntries(
               ? []
               : [{ field: JUNCTION_CLASS, oneOf: [...classes] }],
           [JUNCTION_SOURCE]: [],
+        }
+      : {}),
+    ...('sources' in patch
+      ? {
+          [JUNCTION_SOURCE]:
+            sources === undefined ||
+            JUNCTION_SOURCES.every(s => sources.includes(s))
+              ? []
+              : [{ field: JUNCTION_SOURCE, oneOf: [...sources] }],
         }
       : {}),
   }
