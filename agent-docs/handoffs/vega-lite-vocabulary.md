@@ -25,38 +25,77 @@ Git history has each landing.
 
 ## Next
 
-1. **Pass B, the y channel.** The design is ADR-238's "The y channel". Six
-   display types declare `scales`: alignments, LGVSynteny, MAF, wiggle, the
-   mark display and Manhattan. Land in this order, each green on its own:
-   1. `ScoreScaleMixin` reads and writes each member through a per-display
-      member-to-path map that still answers `['scales', 'y', …]`.
-      `ResetAxisButton` takes the display's y path, and `valueScaleOf` and
-      `retiredScaleSpellings` take their target path. One helper feeds the
-      checks that key on a top-level `scales`: `plot.ts`, `validateConfig.ts`,
-      the spec-recipe and `check-doc-slots.ts`. Gate: `pnpm verify --full`,
-      then `npx jest` on `ScoreScaleMixin`, `scoreMenuItems` and `plot`.
-   2. The shared coverage band (`coverageBandConfigSchema`) gains
-      `encoding.y`, so alignments, MAF and LGVSynteny move together, MAF's
-      `y` with them. Their lifts build at `coverage.encoding.y` while
-      wiggle's keep `scales.y`, each display declares a `scales` lift, and
-      every in-repo writer is respelled (specs, `test_data`, launch-args and
-      jbrowse-img tests, docs). Gate: `pnpm verify --all`, the schema tests
-      with `ConfigSlotDefaults -u` reviewed, both `legacySessions` tests and
-      the `retired` tests.
-   3. Wiggle, the mark display and Manhattan (its `plotExamples.ts` writes
-      `{ "scales": null }`). The encoding schema becomes a factory, since the
-      y scale takes per-display defaults, and the doc generator drops a slot
-      built by a call from the config pages (`wiggleConfigSchemaFields.ts`).
-      `plotEdit.ts`'s `AXIS_MEMBERS` writes the new path. `minimalTicks`
-      goes, its v4 lift in `retiredAxisSpellings` becoming `() => ({})`.
-      Delete `scalesSchema` and `valueScaleSchema`. Same gates.
+1. **Pass B, the y channel.** The design is ADR-238's "The y channel". Four
+   display types declare `scales`: alignments (its coverage band, which
+   LGVSynteny inherits), MAF, wiggle and the mark display (which Manhattan
+   inherits, with the mark display's defaults). Land in this order, each green
+   on its own:
+   1. **A per-display `YScalePaths` map, no config path changes.** It lives in
+      `packages/wiggle-core/src/yScalePaths.ts` with type imports only:
+      `members` maps each of `type`, `zero`, `domainMin`, `domainMax`,
+      `fence`, `constant`, `group`, `title`, `grid`, `minimalTicks` and `rules`
+      to a config path (all still under `['scales', 'y']`), and `reset` lists
+      the sub-objects Reset rewrites, since resetting `encoding.y` on wiggle
+      would also revert the plotted field. Each map is typed against its
+      schema with `satisfies`, and `ScoreScaleMixin(paths)` takes it, with the
+      three composers (alignments `model.ts`, MAF `stateModel.ts`, marks
+      `model.ts`) passing theirs.
+      - **Model side reads the map:** `ScoreScaleMixin.ts` (including the two
+        direct reads of `scales.y`), `WiggleScoreConfigMixin.ts`,
+        `ResetAxisButton.tsx`, `plotEdit.ts`'s `AXIS_MEMBERS`, and the tables
+        exports.
+      - **Config side finds the scale by schema identity, not by path:** core
+        `plot.ts` walks for the value-scale schema as `channelsOf` does for
+        color, and the CLI's `validateConfig.ts` walks the manifest's
+        `subSlots` by schema name. The spec-recipe's `scalesStep` becomes a
+        `yStep` registered under each y path. `check-doc-slots.ts` stays, as a
+        canary on the generated slot name.
+      - **Lifts take a target path:** `valueScaleOf`, `retiredScaleSpellings`
+        and `retiredAxisSpellings`.
+      - Gate: `pnpm verify --full`, `pnpm check-config-read-types` (CI runs it,
+        `pnpm verify` does not), then `npx jest` on `ScoreScaleMixin`,
+        `scoreMenuItems`, `ScoreAxisWidget` and `plot`.
+   2. **The shared coverage band** (`coverageBandConfigSchema`) gains
+      `encoding.y`, so alignments, MAF and LGVSynteny move together, MAF's `y`
+      with them (a `y` → `encoding.y.field` lift). Rename the members in this
+      commit and make the shared `scaleEndsOf` in core `util/colorScale.ts`
+      read both `domainQuantile` and `fenceQuantile`, or the rename waits for
+      commit 3. The coverage band drops `minimalTicks` here. Each display
+      declares a `scales` lift, and every in-repo writer is respelled.
+      Gate: `pnpm verify --full --all`, the schema tests with
+      `ConfigSlotDefaults -u` reviewed, both `legacySessions` tests and the
+      `retired` tests.
+   3. **Wiggle, the mark display and Manhattan** (its `plotExamples.ts` writes
+      `{ "scales": null }`). The y channel becomes a factory, since the fence
+      defaults to 0.99 on wiggle and 1 elsewhere and the coverage band's
+      constant is 1. The mark display gains a display-level `encoding`, which
+      `PlotExamples.test.ts` pins. A shorthand on wiggle's y schema must not
+      reach the mark display's, which refuses a bare string, and declaring one
+      forces `writes`. Delete `scalesSchema` and `valueScaleSchema`. The doc
+      generator drops a slot built by a call from the config pages
+      (`wiggleConfigSchemaFields.ts`). Same gates, plus `pnpm check-docs`,
+      since every doc writing `displayDefaults: { scales }` goes red
+      (`hic_track.md`, `quantitative_track.md`, `cookbook.md`, `bisulfite.md`,
+      `bxd_qtl.md`, `cnv_cgiab.md`).
+   - **Wiggle's lifts merge:** `retired.ts` spreads `valueScaleOf`, `colorOf`
+     and `summaryOf` into one object. Once each returns `encoding`, the last
+     spread wins, so merge them, or leave the state lift writing `scales` for
+     `liftRetiredSpellings`. `retiredAxisSpellings`' `displayCrossHatches` and
+     `summaryOf`'s top-level `y` are lifts that drop silently if left behind.
    - **The fence rename** touches `valueScaleConfigSchema.ts`, the model
      names `domainQuantile`, `setDomainQuantile`, `clipQuantile` and
      `unclippedQuantile` (`scoreMenuItems.ts`, `ScoreAxisWidget.tsx`), both
      tables exports, the spec-recipe, the `domain-quantile` mark rule
-     (`markProblems.ts` and the CLI's copy), the specs (`qc.ts`, `bigwig.ts`),
+     (`scaleEndProblems` and `scaleEndsOf` in core `util/colorScale.ts`, which
+     ramps share, and the CLI's copy), the specs (`qc.ts`, `bigwig.ts`),
      docs and ggjbrowse's `R/wiggle.R` and tests. A ramp's `domainQuantile`
      stays.
+   - **Writers outside the code:** `demos/{cgiab,dtu,read_marks}/config.json`
+     (deploy with `scripts/deploy-demo.sh`), seven `scripts/build_*.sh`, seven
+     `test_data` configs, the `jbrowse-authoring`, `jbrowse-capture` and
+     `jbrowse-hosted-data` skills, `products/jbrowse-img/README.md`, and the
+     examples site's `SingleCellUmap.tsx` and `WiggleTrack.tsx`. The
+     pre-commit config check fails only on errors, so it forces none of them.
    - **Specs to respell:** 48 `scales: {` literals in TS specs, 6 session
      JSON `"scales"` objects and 4 `scales.y.*` flags in `jbrowse-img.ts`.
    - **jb2hubs:** respell in the same pass (Colin authorizes it):

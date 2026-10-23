@@ -137,8 +137,8 @@ channels.
 ### The y channel (Pass B, amended 2026-10-23)
 
 `encoding.y` is the channel object of the Channel section above, for the value
-axis of wiggle, the mark display, Manhattan, and the alignments, MAF and
-LGVSynteny coverage bands. MAF's own `encoding.y` holds `field` alone, since
+axis of wiggle, the mark display (and Manhattan, which inherits it), and the
+coverage bands of alignments, MAF and LGVSynteny. MAF's own `encoding.y` holds `field` alone, since
 its only value scale is `coverage.encoding.y`.
 
 - **Members:** `field` on wiggle (where `y` is the plotted field) and on MAF
@@ -167,7 +167,8 @@ its only value scale is `coverage.encoding.y`.
   in the scale's domain, drawn across every band the scale rules.
 - **`minimalTicks`** is cut with the move, and `tickCount` is not added.
 - **Writes** merge member by member on `encoding.y`, while a color, shape or
-  size channel writes whole. `encoding.y: null` resets the y slot alone.
+  size channel writes whole. A reset rewrites `scale`, `axis` and `rules`, not
+  `field`, since `setConf` on a sub-schema path replaces the whole object.
 - **Tree sidebar:** `showTree`, `showBranchLength`, `showRowLabels`,
   `showRowSeparators` and `treeAreaWidth` go to an `axis` beside `rows`, not
   `y.axis.tree`, since `rows` writes whole (Colin, 2026-10-22). The mark
