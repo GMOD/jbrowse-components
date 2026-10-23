@@ -203,9 +203,8 @@ Move a concept everywhere in one pass, so it never has two spellings at once:
   `autoplot` take the layer `show` parts. Its published `dog10k_lof` page
   still shows `domain` until a re-knit, which waits on the Dog10K callset
   host's certificate.
-- **ggjbrowse, jb2hubs and the graph plugin after Pass A:** ggjbrowse's docs
-  and examples spell `color` flat (`display = list(color =
-  list(field = "strand"))`, `R/alignments.R`, `R/synteny.R`); jb2hubs writes a
+- **jb2hubs and the graph plugin after Pass A** (ggjbrowse writes the
+  channel objects since its `b5f0934`): jb2hubs writes a
   display's flat `color` (`hubtools/src/fieldColor.ts`), the multi-sample
   variant display's (`pangenomeLinks.ts`), a mark color's
   `scale: 'categorical'` (`alfaPopulations.ts`) and the synteny view's
