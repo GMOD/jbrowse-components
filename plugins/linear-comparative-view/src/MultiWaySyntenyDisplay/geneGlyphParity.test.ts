@@ -124,7 +124,6 @@ const config: DisplayConfig = {
   containerTypes: [],
   geneGlyphMode: 'all',
   subParts: 'CDS,UTR,five_prime_UTR,three_prime_UTR',
-  impliedUTRs: true,
   mouseover: '',
   filter: [],
   color: { value: undefined, field: '' },

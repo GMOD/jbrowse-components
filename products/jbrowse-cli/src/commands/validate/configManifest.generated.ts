@@ -3420,10 +3420,6 @@ export const configManifest: ConfigManifest = {
         {
           "name": "subParts",
           "type": "string"
-        },
-        {
-          "name": "impliedUTRs",
-          "type": "boolean"
         }
       ],
       "legacyKeys": [
@@ -3435,6 +3431,7 @@ export const configManifest: ConfigManifest = {
         "outline",
         "maxHeight",
         "hideSourceFeatures",
+        "impliedUTRs",
         "renderer",
         "color",
         "showDescriptions"
@@ -3445,7 +3442,8 @@ export const configManifest: ConfigManifest = {
         "fetchSizeLimit",
         "mouseover",
         "maxHeight",
-        "hideSourceFeatures"
+        "hideSourceFeatures",
+        "impliedUTRs"
       ],
       "legacyValues": {
         "showLabels": [
@@ -6620,6 +6618,7 @@ export const configManifest: ConfigManifest = {
         "outline",
         "maxHeight",
         "hideSourceFeatures",
+        "impliedUTRs",
         "renderer",
         "color",
         "showDescriptions"
@@ -6630,7 +6629,8 @@ export const configManifest: ConfigManifest = {
         "fetchSizeLimit",
         "mouseover",
         "maxHeight",
-        "hideSourceFeatures"
+        "hideSourceFeatures",
+        "impliedUTRs"
       ],
       "legacyValues": {
         "showLabels": [

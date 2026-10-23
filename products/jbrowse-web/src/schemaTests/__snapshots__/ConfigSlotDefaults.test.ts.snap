@@ -565,7 +565,6 @@ exports[`every registered schema slot default 1`] = `
     "growMaxHeight": "number = 800",
     "height": "number = 100",
     "heightMode": "stringEnum = "fit" of ["fixed","grow","fit"]",
-    "impliedUTRs": "boolean = true",
     "labels.description": "featureField = "jexl:get(feature,'note') || get(feature,'description') || get(feature,'function')"",
     "labels.name": "featureField = "jexl:get(feature,'name') || get(feature,'id')"",
     "legend.show": "boolean = true",

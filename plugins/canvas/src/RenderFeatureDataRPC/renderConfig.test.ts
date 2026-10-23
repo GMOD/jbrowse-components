@@ -94,7 +94,6 @@ describe('pickDisplayConfig', () => {
     })
     expect(picked.transcriptTypes).toEqual(['mRNA'])
     expect(picked.subParts).toBe('CDS')
-    expect(picked.impliedUTRs).toBe(GENE_GLYPH_DEFAULTS.impliedUTRs)
   })
 
   describe('reads encoding.color off a display node', () => {

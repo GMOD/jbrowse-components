@@ -144,7 +144,7 @@ describe('transcriptCoords', () => {
   })
 
   // The exons a coordinate is counted on come from the FEATURE, never from what
-  // the glyph drew — `subParts` and `impliedUTRs` decide the latter, and an
+  // the glyph drew — `subParts` decides the latter, and an
   // HGVS position must not move when someone edits a rendering slot.
   it('ignores the display slots that decide which subparts are drawn', () => {
     const cdsUtr = mockFeature({
@@ -161,7 +161,6 @@ describe('transcriptCoords', () => {
     })
     const whole = [0, 100, 200, 300, 400, 500]
     expect(exonsOf(cdsUtr, { subParts: 'CDS' })).toEqual(whole)
-    expect(exonsOf(cdsUtr, { impliedUTRs: false })).toEqual(whole)
 
     const cdsOnly = mockFeature({
       type: 'mRNA',
@@ -169,7 +168,7 @@ describe('transcriptCoords', () => {
       end: 200,
       subfeatures: [mockFeature({ type: 'CDS', start: 50, end: 150 })],
     })
-    expect(exonsOf(cdsOnly, { impliedUTRs: false })).toEqual([0, 200])
+    expect(exonsOf(cdsOnly, { subParts: 'CDS' })).toEqual([0, 200])
   })
 
   it('carries the coding extent, and omits it for a non-coding transcript', () => {

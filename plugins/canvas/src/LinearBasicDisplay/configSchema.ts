@@ -156,15 +156,6 @@ export default function configSchemaFactory(pluginManager: PluginManager) {
         description: 'subparts for a glyph',
         defaultValue: GENE_GLYPH_DEFAULTS.subParts,
       },
-      /**
-       * #slot
-       */
-      impliedUTRs: {
-        type: 'boolean',
-        description:
-          'draw the stretch of each exon outside the CDS that no UTR row covers as a UTR, or with no exon rows, a CDS end no UTR row reaches out to the transcript bounds',
-        defaultValue: GENE_GLYPH_DEFAULTS.impliedUTRs,
-      },
     },
     {
       /**

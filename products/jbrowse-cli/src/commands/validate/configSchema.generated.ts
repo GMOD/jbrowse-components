@@ -5597,16 +5597,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/PlainString"
           }
         },
-        "impliedUTRs": {
-          "description": "draw the stretch of each exon outside the CDS that no UTR row covers as a UTR, or with no exon rows, a CDS end no UTR row reaches out to the transcript bounds.",
-          "default": true,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "boolean"
-          }
-        },
         "maxDisplayedBpPerPx": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
@@ -5636,6 +5626,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
         "hideSourceFeatures": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "impliedUTRs": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
@@ -11750,6 +11744,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
+        "impliedUTRs": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
         "renderer": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
@@ -15881,9 +15879,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "subParts": {
               "$ref": "#/$defs/LinearBasicDisplaySlots/properties/subParts"
             },
-            "impliedUTRs": {
-              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/impliedUTRs"
-            },
             "maxDisplayedBpPerPx": {
               "anyOf": [
                 {
@@ -15939,6 +15934,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "hideSourceFeatures": {
               "$ref": "#/$defs/LinearBasicDisplaySlots/properties/hideSourceFeatures"
+            },
+            "impliedUTRs": {
+              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/impliedUTRs"
             },
             "renderer": {
               "$ref": "#/$defs/LinearBasicDisplaySlots/properties/renderer"
@@ -17182,6 +17180,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "hideSourceFeatures": {
               "$ref": "#/$defs/LinearVariantDisplaySlots/properties/hideSourceFeatures"
+            },
+            "impliedUTRs": {
+              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/impliedUTRs"
             },
             "color": {
               "anyOf": [

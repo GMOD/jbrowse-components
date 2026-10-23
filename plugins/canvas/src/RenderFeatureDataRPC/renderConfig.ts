@@ -90,7 +90,6 @@ export interface DisplayConfig {
   canonicalTranscriptTags: string[]
   containerTypes: string[]
   subParts: string
-  impliedUTRs: boolean
   mouseover: string
   // the display's `filter` list, its `jexl:` fields as written
   filter: FieldPredicate[]
@@ -129,7 +128,6 @@ const WORKER_READS: Record<keyof SettingsDisplayConfig, true> = {
   canonicalTranscriptTags: true,
   containerTypes: true,
   subParts: true,
-  impliedUTRs: true,
   mouseover: true,
   filter: true,
   featureHeight: true,
@@ -156,7 +154,6 @@ export type GeneGlyphSettings = Pick<
   | 'canonicalTranscriptTags'
   | 'containerTypes'
   | 'subParts'
-  | 'impliedUTRs'
   | 'connectorColor'
   | 'utrColor'
 >
@@ -176,7 +173,6 @@ export const GENE_GLYPH_DEFAULTS: GeneGlyphSettings = {
   canonicalTranscriptTags: [...DEFAULT_CANONICAL_TRANSCRIPTS.tags],
   containerTypes: ['proteoform_orf'],
   subParts: 'CDS,UTR,five_prime_UTR,three_prime_UTR',
-  impliedUTRs: true,
   connectorColor: undefined,
   utrColor: undefined,
 }

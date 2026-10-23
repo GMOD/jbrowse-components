@@ -188,12 +188,11 @@ describe('getSubparts implied UTRs', () => {
     }
   })
 
-  it('does not duplicate explicit UTRs even when impliedUTRs is forced on', () => {
+  it('does not duplicate explicit UTRs with implied ones', () => {
     // Without the !hasUTRs guard a transcript with explicit UTRs and no exon
     // subfeatures gets a second, parent-derived set on top of the real ones.
     const forced = mockDisplayConfig({
       transcriptTypes: ['mRNA', 'transcript', 'primary_transcript'],
-      impliedUTRs: true,
     })
     const tx = mockFeature({
       type: 'mRNA',

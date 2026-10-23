@@ -43,13 +43,11 @@ function allowedSubPartTypes(subParts: string) {
 }
 
 export function getSubparts(f: Feature, config: DisplayConfig) {
-  let c = getSubfeatures(f)
-  if (c.length === 0) {
+  const subs = getSubfeatures(f)
+  if (subs.length === 0) {
     return []
   }
-  if (config.impliedUTRs) {
-    c = [...c, ...impliedUTRFeatures(f, c)]
-  }
+  const c = [...subs, ...impliedUTRFeatures(f, subs)]
   const allowedTypes = allowedSubPartTypes(config.subParts)
   return c.filter(child => allowedTypes.has(featureType(child).toLowerCase()))
 }

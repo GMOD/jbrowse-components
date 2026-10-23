@@ -56,6 +56,8 @@ export const basicRetired: Record<
   // a second grow ceiling, dead at its default; `growMaxHeight` is the one
   maxHeight: () => ({}),
   hideSourceFeatures: () => ({}),
+  // implied UTRs always draw (ADR-238: one behaviour)
+  impliedUTRs: () => ({}),
   renderer: liftRenderer,
 }
 
