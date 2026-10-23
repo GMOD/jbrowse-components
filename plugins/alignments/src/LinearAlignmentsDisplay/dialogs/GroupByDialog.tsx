@@ -15,7 +15,7 @@ import { observer } from 'mobx-react'
 
 import { colorFieldOf } from '../../shared/alignmentsColor.ts'
 import { COMMON_READ_TAG_PICKS } from '../../shared/commonTags.ts'
-import { TAG_FIELD_PREFIX, facetTag } from '../../shared/facetLabels.ts'
+import { TAG_FIELD_PREFIX, fieldTag } from '../../shared/facetLabels.ts'
 import { getUniqueTags } from '../../shared/getUniqueTags.ts'
 import { tagGroupingVerdict } from './tagGroupingVerdict.ts'
 
@@ -96,7 +96,7 @@ const GroupByDialog = observer(function GroupByDialog(props: {
   const { model, handleClose } = props
   // Pre-fill from the active grouping so reopening tweaks it rather than resets.
   const [groupByTag, setGroupByTag] = useState(
-    facetTag(model.facet?.field) ?? '',
+    fieldTag(model.facet?.field) ?? '',
   )
   // Undefined until the box is actually clicked, so until then it tracks the tag
   // being typed (`defaultColorByTag`); a click pins the answer, since from then

@@ -3,7 +3,7 @@ import { lazy } from 'react'
 import { capitalizeFirst, getDialogHost } from '@jbrowse/core/util'
 import SwapVertIcon from '@mui/icons-material/SwapVert'
 
-import { TAG_FIELD_PREFIX, facetTag } from '../../shared/facetLabels.ts'
+import { TAG_FIELD_PREFIX, fieldTag } from '../../shared/facetLabels.ts'
 import {
   FACET_DIMENSIONS,
   isReadDimension,
@@ -71,7 +71,7 @@ function getSortMode(model: SortMenuModel): SortMode {
   const field = model.sortColumn?.field
   return field === undefined
     ? model.layoutOrder
-    : facetTag(field) !== undefined
+    : fieldTag(field) !== undefined
       ? 'tag'
       : field === 'strand' || field === 'mapq' || field === 'pairOrientation'
         ? field
@@ -102,7 +102,7 @@ export function getSortMenuItem(
   // Name the tag once one is picked ("Tag (HP)..."), like the color menu's tag
   // radio: tag is the only mode whose choice has a parameter, and it was
   // otherwise invisible without reopening the dialog.
-  const sortTag = facetTag(model.sortColumn?.field)
+  const sortTag = fieldTag(model.sortColumn?.field)
   // Rows that only write an ordering keep the menu open by their radio type;
   // `tag` opens a dialog, so it passes false — the one asymmetry in the group,
   // and the only thing spelled out per row.
@@ -209,7 +209,7 @@ export function queueSortByTagDialog(
 // LGVSyntenyDisplay's), so a stored one ticks None here.
 export function getGroupByMenuItem(model: GroupByMenuModel) {
   const field = model.facet?.field
-  const tag = facetTag(field)
+  const tag = fieldTag(field)
   const hidden =
     field !== undefined &&
     isReadDimension(field) &&

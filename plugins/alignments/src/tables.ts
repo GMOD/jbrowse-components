@@ -159,7 +159,7 @@ import {
 } from './shared/alignmentsFilter.ts'
 import { arcColorFieldOf } from './shared/arcColorOptions.ts'
 import { paintsModifications } from './shared/colorSchemes.ts'
-import { facetTag } from './shared/facetLabels.ts'
+import { fieldTag } from './shared/facetLabels.ts'
 import { sectionOrder, workerFacet } from './shared/groupFeatures.ts'
 import { joinSections } from './shared/joinSections.ts'
 import { keySectionOrder } from './shared/keySectionOrder.ts'
@@ -1334,7 +1334,7 @@ export async function alignmentTables(
       regions.find(r => r.originalRefName === refName)?.refName ?? refName,
     regions[0]!.refName,
   )
-  const sortTag = facetTag(sortColumn?.field)
+  const sortTag = fieldTag(sortColumn?.field)
   const chain = readConfObject(conf, 'unit') === 'chain'
   const featureHeight: number = readConfObject(conf, ['pileup', 'readHeight'])
   const softClippingAsked: boolean = readConfObject(conf, [

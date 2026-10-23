@@ -19,7 +19,7 @@ import {
   tagFiltersOf,
 } from '../../shared/alignmentsFilter.ts'
 import { COMMON_READ_TAGS } from '../../shared/commonTags.ts'
-import { TAG_FIELD_PREFIX, facetTag } from '../../shared/facetLabels.ts'
+import { TAG_FIELD_PREFIX, fieldTag } from '../../shared/facetLabels.ts'
 import { snpBaseFromCigar } from '../../shared/hitTestTypes.ts'
 import {
   buildPairedEndMateFeature,
@@ -488,7 +488,7 @@ export function getContextMenuItems(
             onClick: () => {
               queueSortByTagDialog(
                 self,
-                facetTag(self.sortColumn?.field),
+                fieldTag(self.sortColumn?.field),
                 tag => {
                   self.setSort({
                     field: `${TAG_FIELD_PREFIX}${tag}`,

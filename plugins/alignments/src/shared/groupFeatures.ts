@@ -28,7 +28,7 @@ import { extractFeatureTagValue } from './extractFeatureTagValue.ts'
 import {
   FIRST_OF_PAIR_STRAND_LABELS,
   FACET_LABELS,
-  facetTag,
+  fieldTag,
 } from './facetLabels.ts'
 import { pairingOf } from './pairing.ts'
 import {
@@ -507,7 +507,7 @@ function valueKeyer(
   field: string,
   jexl: JexlInstance | undefined,
 ): FacetDimension['key'] {
-  const tag = facetTag(field)
+  const tag = fieldTag(field)
   const { key, sectionLabel } = categoricalField(tag ?? field)
   const read =
     tag === undefined
@@ -575,7 +575,7 @@ export function facetValueNotices(
 ): string[] {
   return facet &&
     !isReadDimension(facet.field) &&
-    facetTag(facet.field) === undefined &&
+    fieldTag(facet.field) === undefined &&
     keys.length === 1 &&
     keys[0] === ''
     ? [

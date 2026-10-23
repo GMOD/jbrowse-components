@@ -1,5 +1,7 @@
 import { isValidTag } from '@jbrowse/core/util'
 
+import { fieldTag } from './facetLabels.ts'
+
 import type {
   JunctionClass,
   JunctionSource,
@@ -293,7 +295,8 @@ export type ColumnSortField =
 export const SORT_FIELDS = [...LAYOUT_ORDERS, ...COLUMN_SORT_FIELDS] as const
 
 export function isTagSortField(field: string): field is `tags.${string}` {
-  return field.startsWith('tags.') && isValidTag(field.slice('tags.'.length))
+  const tag = fieldTag(field)
+  return tag !== undefined && isValidTag(tag)
 }
 
 export function isColumnSortField(field: string): field is ColumnSortField {

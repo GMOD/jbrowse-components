@@ -40,11 +40,14 @@ export const FIRST_OF_PAIR_STRAND_LABELS = {
   reverse: 'First-of-pair reverse',
 } as const
 
-/** The prefix a facet's `field` takes to name a read tag: `tags.HP`. */
+/** The prefix a `field` takes to name a read tag: `tags.HP`. */
 export const TAG_FIELD_PREFIX = 'tags.'
 
-/** The tag a facet field names, or undefined for any other field. */
-export function facetTag(field: string | undefined) {
+/**
+ * The tag a field names, or undefined for any other field: one reading for
+ * `encoding.color`, `facet`, `sort` and `filter` alike.
+ */
+export function fieldTag(field: string | undefined) {
   return field?.startsWith(TAG_FIELD_PREFIX)
     ? field.slice(TAG_FIELD_PREFIX.length)
     : undefined

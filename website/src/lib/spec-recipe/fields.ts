@@ -23,7 +23,7 @@ import { HEIGHT_PRESETS as MAF_HEIGHT_PRESETS } from '../../../../plugins/maf/sr
 import { MAF_COLOR_FIELD_LABELS } from '../../../../plugins/maf/src/LinearMafDisplay/rowRenderings.ts'
 import {
   FACET_LABELS,
-  facetTag,
+  fieldTag,
 } from '../../../../plugins/alignments/src/shared/facetLabels.ts'
 import {
   ARC_COLOR_OPTIONS,
@@ -247,7 +247,7 @@ const basesStep: FieldRecipe = value => {
 function namesAlignmentsColor(value: unknown) {
   const field = asString(channelOf(value)?.field) ?? ''
   return (
-    facetTag(field) !== undefined ||
+    fieldTag(field) !== undefined ||
     (field !== 'strand' && (COLOR_FIELDS as readonly string[]).includes(field))
   )
 }
@@ -304,12 +304,12 @@ function facetField(value: unknown) {
 // displays (`strand`) reads the same on both menus.
 function namesAlignmentsFacet(value: unknown) {
   const field = facetField(value) ?? ''
-  return facetTag(field) !== undefined || Object.hasOwn(FACET_LABELS, field)
+  return fieldTag(field) !== undefined || Object.hasOwn(FACET_LABELS, field)
 }
 
 function alignmentsFacetStep(value: unknown): FieldStep | undefined {
   const field = facetField(value)
-  const tag = facetTag(field)
+  const tag = fieldTag(field)
   if (tag) {
     return {
       path: `${TRACK_MENU} → Group by... → Tag... → enter "${tag}"`,

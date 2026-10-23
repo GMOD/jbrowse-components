@@ -10,7 +10,7 @@ import { emptyConnectingLinesUploadData } from '../features/connectingLines/type
 import { emptyLinkedReadLinesUploadData } from '../features/linkedReads/types.ts'
 import { emptyOverlapsUploadData } from '../features/overlap/types.ts'
 import { GAP_DELETION } from '../shaders/slang/gap.consts.generated.ts'
-import { facetTag } from '../shared/facetLabels.ts'
+import { fieldTag } from '../shared/facetLabels.ts'
 import {
   INTERBASE_HARDCLIP,
   INTERBASE_INSERTION,
@@ -274,7 +274,7 @@ function sortOverlappingByIndex(
         PAIR_ORIENTATION_RANK[readPairOrientations[a]!]! -
           PAIR_ORIENTATION_RANK[readPairOrientations[b]!]! || canonical(a, b),
     )
-  } else if (facetTag(field) !== undefined && sortTagValues) {
+  } else if (fieldTag(field) !== undefined && sortTagValues) {
     // Numeric sort only when every present value parses as a number. A single
     // numeric-looking first value must not decide the mode for a column of
     // string tags — that garbled string tags into NaN comparisons. A missing

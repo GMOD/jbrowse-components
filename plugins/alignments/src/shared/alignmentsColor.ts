@@ -18,7 +18,7 @@ import {
 } from '@jbrowse/display-kit/colorConfigSchema'
 
 import { COLOR_SCHEMES } from './colorSchemes.ts'
-import { TAG_FIELD_PREFIX, facetTag } from './facetLabels.ts'
+import { TAG_FIELD_PREFIX, fieldTag } from './facetLabels.ts'
 import {
   INSERT_SIZE_LEVELS,
   MAPQ_UNAVAILABLE_LEVEL,
@@ -178,7 +178,7 @@ export function colorByOf(encoding: AlignmentsColorEncoding): ReadColorBy {
   if (isPresetField(field)) {
     return { type: field }
   }
-  const tag = facetTag(field)
+  const tag = fieldTag(field)
   return tag ? { type: 'tag', tag } : { type: 'tag', attribute: field }
 }
 

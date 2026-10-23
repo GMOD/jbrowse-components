@@ -92,7 +92,7 @@ import {
   paintsModifications,
   workerColorBy,
 } from '../shared/colorSchemes.ts'
-import { facetTag } from '../shared/facetLabels.ts'
+import { fieldTag } from '../shared/facetLabels.ts'
 import {
   facetForUnit,
   facetValueNotices,
@@ -2563,7 +2563,7 @@ export default function stateModelFactory(
          * the tag changes, not when the sort position or a non-tag field flips.
          */
         get sortTag() {
-          return facetTag(self.sortColumn?.field)
+          return fieldTag(self.sortColumn?.field)
         },
 
         /**

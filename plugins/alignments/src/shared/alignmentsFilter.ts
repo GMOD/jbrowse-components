@@ -14,7 +14,7 @@ import {
   JUNCTION_SOURCES,
   junctionSource,
 } from '../features/sashimi/junctionClass.ts'
-import { TAG_FIELD_PREFIX } from './facetLabels.ts'
+import { TAG_FIELD_PREFIX, fieldTag } from './facetLabels.ts'
 
 import type { JunctionClass } from '../features/sashimi/junctionClass.ts'
 import type {
@@ -70,12 +70,8 @@ const ROW_VALUE_FIELDS = new Map<string, readonly string[]>([
   [JUNCTION_SOURCE, JUNCTION_SOURCES],
 ])
 
-function isTagField(field: string) {
-  return field.startsWith(TAG_FIELD_PREFIX)
-}
-
 function isRecordField(field: string) {
-  return RECORD_FIELDS.has(field) || isTagField(field)
+  return RECORD_FIELDS.has(field) || fieldTag(field) !== undefined
 }
 
 /** Whether the worker reads `field`, so a read filter edit refetches. */
@@ -395,16 +391,17 @@ export function readNameOf(predicates: readonly FieldPredicate[]) {
 export function tagFiltersOf(
   predicates: readonly FieldPredicate[],
 ): TagFilter[] {
-  return predicates.flatMap(p =>
-    isTagField(p.field) && (p.equal !== undefined || p.valid === true)
+  return predicates.flatMap(p => {
+    const tag = fieldTag(p.field)
+    return tag !== undefined && (p.equal !== undefined || p.valid === true)
       ? [
           {
-            tag: p.field.slice(TAG_FIELD_PREFIX.length),
+            tag,
             ...(p.equal === undefined ? {} : { value: String(p.equal) }),
           },
         ]
-      : [],
-  )
+      : []
+  })
 }
 
 /**
@@ -417,7 +414,7 @@ export function tagEntries(
 ): Record<string, FieldPredicate[]> {
   const patch: Record<string, FieldPredicate[]> = {}
   for (const p of written) {
-    if (isTagField(p.field)) {
+    if (fieldTag(p.field) !== undefined) {
       patch[p.field] = []
     }
   }
@@ -450,8 +447,8 @@ function recordLane(field: string): PredicateLane<FilterableRead> | undefined {
     const i = FLAG_FIELDS.indexOf(field)
     return i === -1 ? undefined : { kind: 'bits', word: flagsOf, mask: 1 << i }
   }
-  if (isTagField(field)) {
-    const tag = field.slice(TAG_FIELD_PREFIX.length)
+  const tag = fieldTag(field)
+  if (tag !== undefined) {
     return { kind: 'get', get: read => read.getTag(tag) }
   }
   return field === 'name'
