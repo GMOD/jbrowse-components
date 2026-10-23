@@ -20,6 +20,25 @@ export function mapLocationForFiles(
     : path.join(subDir || '', path.basename(p))
 }
 
+type Json = Record<string, unknown>
+
+function isPlainObject(value: unknown): value is Json {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
+// Plain objects merge key by key; arrays and scalars in `override` replace.
+export function deepMerge<T extends Json>(base: T, override: Json): T {
+  const merged: Json = { ...base }
+  for (const [key, value] of Object.entries(override)) {
+    const existing = merged[key]
+    merged[key] =
+      isPlainObject(existing) && isPlainObject(value)
+        ? deepMerge(existing, value)
+        : value
+  }
+  return merged as T
+}
+
 export function buildTrackConfig({
   trackType,
   trackId,
@@ -39,21 +58,23 @@ export function buildTrackConfig({
   configObj?: Record<string, unknown>
   adapter: { type: string; [key: string]: unknown }
 }): Track {
-  return {
-    type: trackType,
-    trackId,
-    name,
-    adapter,
-    category: category ? parseCommaSeparatedString(category) : undefined,
-    assemblyNames: parseCommaSeparatedString(assemblyNames),
-    description,
-    ...configObj,
-  }
+  return deepMerge(
+    {
+      type: trackType,
+      trackId,
+      name,
+      adapter,
+      category: category ? parseCommaSeparatedString(category) : undefined,
+      assemblyNames: parseCommaSeparatedString(assemblyNames),
+      description,
+    },
+    configObj,
+  )
 }
 
 // Fold the --color / --height convenience flags and any --displayDefaults JSON
 // into one displayDefaults object, layered over a displayDefaults already
-// present in --config. Precedence: --config < --displayDefaults < typed flags,
+// present in --config, merging nested objects key by key. Precedence: --config < --displayDefaults < typed flags,
 // so the most specific flag a user reaches for wins. Returns undefined when
 // nothing was supplied, so the track omits displayDefaults entirely.
 //
@@ -85,7 +106,7 @@ export function mergeDisplayDefaults({
     typed.height = Number.isNaN(asNumber) ? height : asNumber
   }
   const existing = (configObj?.displayDefaults ?? {}) as Record<string, unknown>
-  const merged = { ...existing, ...fromJson, ...typed }
+  const merged = deepMerge(deepMerge(existing, fromJson), typed)
   if (Object.keys(merged).length === 0) {
     return undefined
   }

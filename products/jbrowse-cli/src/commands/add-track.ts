@@ -77,7 +77,8 @@ export async function run(args?: string[]) {
     },
     config: {
       type: 'string',
-      description: 'Any extra config settings to add to a track',
+      description:
+        'Inline JSON of extra track settings. Nested objects merge into the generated track key by key, so {"adapter":{"disableGeneHeuristic":true}} keeps the adapter type and file locations; arrays and scalars replace',
     },
     color: {
       type: 'string',
@@ -161,7 +162,9 @@ export async function run(args?: string[]) {
     '--config takes inline JSON (not a file path) that is merged into the ' +
     'generated track config, so you can set fields the dedicated flags do not ' +
     'cover, e.g. --config \'{"metadata":{"skipTextIndex":true}}\' to exclude ' +
-    'the track from jbrowse text-index.\n\n' +
+    'the track from jbrowse text-index. Nested objects merge key by key, so ' +
+    '--config \'{"adapter":{"disableGeneHeuristic":true}}\' adds one key to ' +
+    'the generated adapter; arrays and scalars replace.\n\n' +
     '--color and --height set the two most common appearance settings without ' +
     'writing JSON. Wrap the value in single quotes and use double quotes inside ' +
     'a jexl callback so nothing needs escaping, e.g. ' +

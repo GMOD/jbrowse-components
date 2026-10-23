@@ -93,25 +93,9 @@ jb make-protein-features genes.gff3 pfam.domtblout --out pfam.bed.gz
 jb add-assembly "$FA" --name "$ASM" --load copy --force --out "$APP"
 jb add-track genes.gff3.gz --trackId genes --name Genes -a "$ASM" \
   --load copy --force --out "$APP"
-cp -f pfam.bed.gz pfam.bed.gz.tbi "$APP"/
-
-sed "s|@ASSEMBLY@|$ASM|" >track.json <<'JSON'
-{
-  "type": "FeatureTrack",
-  "trackId": "pfam_domains",
-  "name": "Pfam domains",
-  "assemblyNames": ["@ASSEMBLY@"],
-  "adapter": {
-    "type": "BedTabixAdapter",
-    "uri": "pfam.bed.gz",
-    "disableGeneHeuristic": true
-  },
-  "displayDefaults": {
-    "color": { "field": "name" }
-  }
-}
-JSON
-jb add-track-json track.json --update --out "$APP"
+jb add-track pfam.bed.gz --trackId pfam_domains --name "Pfam domains" \
+  -a "$ASM" --load copy --force --out "$APP" \
+  --config '{"adapter":{"disableGeneHeuristic":true},"displayDefaults":{"color":{"field":"name"}}}'
 jb text-index --tracks genes --attributes Name,gene --force --out "$APP"
 
 echo

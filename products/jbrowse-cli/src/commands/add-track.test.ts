@@ -313,6 +313,61 @@ test('adds bam track with all the custom fields', async () => {
   })
 })
 
+test('--config merges a nested adapter key into the generated adapter', async () => {
+  await runInTmpDir(async ctx => {
+    await initctx(ctx)
+
+    await runCommand([
+      'add-track',
+      simpleBedGz,
+      '--load',
+      'copy',
+      '--config',
+      '{"adapter":{"disableGeneHeuristic":true}}',
+    ])
+
+    const { adapter } = readConf(ctx).tracks[0]
+    expect(adapter).toEqual({
+      type: 'BedTabixAdapter',
+      bedGzLocation: { uri: 'volvox.bed.gz', locationType: 'UriLocation' },
+      index: {
+        indexType: 'TBI',
+        location: { uri: 'volvox.bed.gz.tbi', locationType: 'UriLocation' },
+      },
+      disableGeneHeuristic: true,
+    })
+  })
+})
+
+test('--config replaces an array and merges displayDefaults key by key', async () => {
+  await runInTmpDir(async ctx => {
+    await initctx(ctx)
+
+    await runCommand([
+      'add-track',
+      simpleBedGz,
+      '--load',
+      'copy',
+      '--assemblyNames',
+      'a,b',
+      '--config',
+      '{"assemblyNames":["c"],"displayDefaults":{"color":{"field":"name"},"height":50}}',
+      '--displayDefaults',
+      '{"mouseover":"jexl:feature.name"}',
+      '--height',
+      '200',
+    ])
+
+    const track = readConf(ctx).tracks[0]
+    expect(track.assemblyNames).toEqual(['c'])
+    expect(track.displayDefaults).toEqual({
+      color: { field: 'name' },
+      mouseover: 'jexl:feature.name',
+      height: 200,
+    })
+  })
+})
+
 test('--color, --height, and --displayDefaults merge into displayDefaults', async () => {
   await runInTmpDir(async ctx => {
     await initctx(ctx)
