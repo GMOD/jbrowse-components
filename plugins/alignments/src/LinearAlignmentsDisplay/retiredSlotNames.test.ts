@@ -54,19 +54,36 @@ test('a v4 filterBy and draw verb lift together, under the list written', () => 
   ])
 })
 
-test('mismatchAlpha lifts onto pileup.fadeLowBaseQuality, top level and renderer', () => {
-  expect(
-    readConfObject(create({ mismatchAlpha: true }), [
-      'pileup',
-      'fadeLowBaseQuality',
-    ]),
-  ).toBe(true)
+test('mismatchAlpha lifts onto the mismatches opacity field, top level and renderer', () => {
+  const field = [
+    'pileup',
+    'mismatches',
+    'encoding',
+    'opacity',
+    'field',
+  ] as const
+  expect(readConfObject(create({ mismatchAlpha: true }), field)).toBe(
+    'baseQuality',
+  )
   expect(
     readConfObject(
-      create({ renderers: { PileupRenderer: { mismatchAlpha: true } } }),
-      ['pileup', 'fadeLowBaseQuality'],
+      create({
+        renderers: {
+          PileupRenderer: { mismatchAlpha: true, hideMismatches: true },
+        },
+      }),
+      field,
     ),
-  ).toBe(true)
+  ).toBe('baseQuality')
+  expect(
+    readConfObject(
+      create({
+        renderers: { PileupRenderer: { mismatchAlpha: true } },
+        mismatchAlpha: false,
+      }),
+      field,
+    ),
+  ).toBe('')
 })
 
 // v4.3.0's read cloud display declared `featureHeight` and its pileup renderer

@@ -1,6 +1,7 @@
 import Flatbush from '@jbrowse/core/util/flatbush'
 
 import { indicatorFields } from '../../RenderAlignmentDataRPC/testPileupData.ts'
+import { DEFAULT_QUALITY_FADE } from '../../features/mismatch/qualityOpacity.ts'
 import {
   GAP_DELETION,
   GAP_SKIP,
@@ -465,7 +466,7 @@ describe('a mismatch its quality fade leaves unpainted hands the hover to its re
       100,
       60,
       resolved,
-      opts({ fadeLowQualityMismatches: true }),
+      opts({ qualityOpacity: DEFAULT_QUALITY_FADE }),
     )
     expect(hit.type === 'feature' && hit.hit).toStrictEqual({
       id: 'read1',

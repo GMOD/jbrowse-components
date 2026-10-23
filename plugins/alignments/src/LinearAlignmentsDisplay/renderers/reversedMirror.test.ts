@@ -1,5 +1,6 @@
 import { makePileupDataResult } from '../../RenderAlignmentDataRPC/testPileupData.ts'
 import { arcStrokeScale } from '../../features/arcs/arcLineWidth.ts'
+import { OPAQUE_MISMATCHES } from '../../features/mismatch/qualityOpacity.ts'
 import { READ_COLOR_CATEGORY } from '../colorUtils.ts'
 import { makeTestPalette } from '../testUtils.ts'
 import { Canvas2DAlignmentsRenderer } from './Canvas2DAlignmentsRenderer.ts'
@@ -257,7 +258,7 @@ function state(overrides: Partial<RenderState> = {}): RenderState {
     coverageMinAlleleFraction: 0,
     showMismatches: true,
     fadeLowFrequencyMismatches: false,
-    fadeLowQualityMismatches: false,
+    qualityOpacity: OPAQUE_MISMATCHES,
     // ON so the soft-clip-base cell layer (gated on this) is reachable; the
     // insertion layer rides showMismatches, already on.
     showSoftClipping: true,

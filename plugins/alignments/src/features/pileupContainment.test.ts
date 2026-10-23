@@ -21,6 +21,10 @@ import { CLIP_MARK } from './clip/mark.ts'
 import { DELETION_MARK, SKIP_MARK } from './gap/mark.ts'
 import { INSERTION_MARK } from './insertion/mark.ts'
 import { MISMATCH_MARK } from './mismatch/mark.ts'
+import {
+  DEFAULT_QUALITY_FADE,
+  OPAQUE_MISMATCHES,
+} from './mismatch/qualityOpacity.ts'
 import { MODIFICATION_MARK } from './modification/mark.ts'
 import { OVERLAP_MARK } from './overlap/mark.ts'
 import { PER_BASE_LETTER_MARK } from './perBaseLetter/mark.ts'
@@ -72,7 +76,7 @@ function renderState(overrides: Partial<RenderState>) {
   return {
     canvasWidth: 240,
     canvasHeight: 62,
-    fadeLowQualityMismatches: false,
+    qualityOpacity: OPAQUE_MISMATCHES,
     showMismatches: true,
     showSoftClipping: true,
     showModifications: true,
@@ -536,7 +540,7 @@ describe.each([false, true])(
             [1005, 1, 255, 60],
           ]),
           blockOf(reversed, 10),
-          renderState({ fadeLowQualityMismatches: true }),
+          renderState({ qualityOpacity: DEFAULT_QUALITY_FADE }),
         ),
       ).toEqual([])
     })

@@ -23,27 +23,31 @@ export const UNIFORM_OFFSET_F32 = {
   covOffset: 7,
   featHeight: 8,
   featSpacing: 9,
-  reversed: 14,
+  qualityOpacityZero: 13,
+  qualityOpacitySlope: 14,
+  qualityOpacityMin: 15,
+  qualityOpacityMax: 16,
+  reversed: 17,
   pxPerBp: 160,
   devicePixelRatio: 161,
 } as const
 
 // Word indices into a Uint32Array view over the uniform buffer.
 export const UNIFORM_OFFSET_U32 = {
-  colorBaseA: 15,
-  colorBaseC: 16,
-  colorBaseG: 17,
-  colorBaseT: 18,
-  colorBaseN: 19,
-  colorInsertion: 20,
-  colorDeletion: 21,
-  colorSkip: 22,
-  colorSoftclip: 23,
-  colorHardclip: 24,
-  colorConnectingLine: 25,
-  colorOverlapTint: 26,
-  colorOverlap: 27,
-  connectorColorShift: 28,
+  colorBaseA: 18,
+  colorBaseC: 19,
+  colorBaseG: 20,
+  colorBaseT: 21,
+  colorBaseN: 22,
+  colorInsertion: 23,
+  colorDeletion: 24,
+  colorSkip: 25,
+  colorSoftclip: 26,
+  colorHardclip: 27,
+  colorConnectingLine: 28,
+  colorOverlapTint: 29,
+  colorOverlap: 30,
+  connectorColorShift: 31,
 } as const
 
 // Word indices into a Int32Array view over the uniform buffer.
@@ -51,7 +55,6 @@ export const UNIFORM_OFFSET_I32 = {
   chainMode: 10,
   showStroke: 11,
   fadeLowFrequencyMismatches: 12,
-  fadeLowQualityMismatches: 13,
 } as const
 
 
@@ -111,7 +114,10 @@ export interface Uniforms {
   chainMode: number
   showStroke: number
   fadeLowFrequencyMismatches: number
-  fadeLowQualityMismatches: number
+  qualityOpacityZero: number
+  qualityOpacitySlope: number
+  qualityOpacityMin: number
+  qualityOpacityMax: number
   reversed: number
   colorBaseA: number
   colorBaseC: number
@@ -150,22 +156,25 @@ export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
   i32[10] = uniforms.chainMode
   i32[11] = uniforms.showStroke
   i32[12] = uniforms.fadeLowFrequencyMismatches
-  i32[13] = uniforms.fadeLowQualityMismatches
-  f32[14] = uniforms.reversed
-  u32[15] = uniforms.colorBaseA
-  u32[16] = uniforms.colorBaseC
-  u32[17] = uniforms.colorBaseG
-  u32[18] = uniforms.colorBaseT
-  u32[19] = uniforms.colorBaseN
-  u32[20] = uniforms.colorInsertion
-  u32[21] = uniforms.colorDeletion
-  u32[22] = uniforms.colorSkip
-  u32[23] = uniforms.colorSoftclip
-  u32[24] = uniforms.colorHardclip
-  u32[25] = uniforms.colorConnectingLine
-  u32[26] = uniforms.colorOverlapTint
-  u32[27] = uniforms.colorOverlap
-  u32[28] = uniforms.connectorColorShift
+  f32[13] = uniforms.qualityOpacityZero
+  f32[14] = uniforms.qualityOpacitySlope
+  f32[15] = uniforms.qualityOpacityMin
+  f32[16] = uniforms.qualityOpacityMax
+  f32[17] = uniforms.reversed
+  u32[18] = uniforms.colorBaseA
+  u32[19] = uniforms.colorBaseC
+  u32[20] = uniforms.colorBaseG
+  u32[21] = uniforms.colorBaseT
+  u32[22] = uniforms.colorBaseN
+  u32[23] = uniforms.colorInsertion
+  u32[24] = uniforms.colorDeletion
+  u32[25] = uniforms.colorSkip
+  u32[26] = uniforms.colorSoftclip
+  u32[27] = uniforms.colorHardclip
+  u32[28] = uniforms.colorConnectingLine
+  u32[29] = uniforms.colorOverlapTint
+  u32[30] = uniforms.colorOverlap
+  u32[31] = uniforms.connectorColorShift
   f32[32] = uniforms.linkedReadColor[0][0]
   f32[33] = uniforms.linkedReadColor[0][1]
   f32[34] = uniforms.linkedReadColor[0][2]

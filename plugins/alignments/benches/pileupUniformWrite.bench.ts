@@ -81,6 +81,7 @@
 // planned pass — where `preseed` was 1.27-1.32x of it. `total`, `template`,
 // `pokeview` and `hoisted` moved nowhere from the 2026-09-05 table.
 
+import { OPAQUE_MISMATCHES } from '../src/features/mismatch/qualityOpacity.ts'
 import {
   UNIFORMS_SIZE_BYTES,
   UNIFORM_OFFSET_F32,
@@ -92,6 +93,7 @@ import {
   writeUniforms,
 } from '../src/shaders/slang/read.iface.generated.ts'
 
+import type { QualityOpacity } from '../src/features/mismatch/qualityOpacity.ts'
 import type { Uniforms } from '../src/shaders/slang/read.iface.generated.ts'
 
 const arg = (name: string, dflt: string) =>
@@ -219,7 +221,7 @@ interface FrameState {
   chainMode: boolean
   showStroke: boolean
   fadeLowFrequencyMismatches: boolean
-  fadeLowQualityMismatches: boolean
+  qualityOpacity: QualityOpacity
   dpr: number
 }
 
@@ -230,7 +232,7 @@ const STATE: FrameState = {
   chainMode: false,
   showStroke: true,
   fadeLowFrequencyMismatches: true,
-  fadeLowQualityMismatches: false,
+  qualityOpacity: OPAQUE_MISMATCHES,
   dpr: 2,
 }
 
@@ -280,7 +282,10 @@ function pokeFrame(
   f32[F.featHeight] = STATE.featureHeight
   f32[F.featSpacing] = STATE.featureSpacing
   i32[I.fadeLowFrequencyMismatches] = STATE.fadeLowFrequencyMismatches ? 1 : 0
-  i32[I.fadeLowQualityMismatches] = STATE.fadeLowQualityMismatches ? 1 : 0
+  f32[F.qualityOpacityZero] = STATE.qualityOpacity.zero
+  f32[F.qualityOpacitySlope] = STATE.qualityOpacity.slope
+  f32[F.qualityOpacityMin] = STATE.qualityOpacity.min
+  f32[F.qualityOpacityMax] = STATE.qualityOpacity.max
   i32[I.chainMode] = STATE.chainMode ? 1 : 0
   i32[I.showStroke] = STATE.showStroke ? 1 : 0
   f32[F.reversed] = block.reversed ? 1 : 0
@@ -345,7 +350,10 @@ function ctrlFrame(
   f32[F.featHeight] = STATE.featureHeight
   f32[F.featSpacing] = STATE.featureSpacing
   i32[I.fadeLowFrequencyMismatches] = STATE.fadeLowFrequencyMismatches ? 1 : 0
-  i32[I.fadeLowQualityMismatches] = STATE.fadeLowQualityMismatches ? 1 : 0
+  f32[F.qualityOpacityZero] = STATE.qualityOpacity.zero
+  f32[F.qualityOpacitySlope] = STATE.qualityOpacity.slope
+  f32[F.qualityOpacityMin] = STATE.qualityOpacity.min
+  f32[F.qualityOpacityMax] = STATE.qualityOpacity.max
   i32[I.chainMode] = STATE.chainMode ? 1 : 0
   i32[I.showStroke] = STATE.showStroke ? 1 : 0
   f32[F.reversed] = block.reversed ? 1 : 0
@@ -396,7 +404,10 @@ function totalValues(block: Block, top: number): Uniforms {
     chainMode: STATE.chainMode ? 1 : 0,
     showStroke: STATE.showStroke ? 1 : 0,
     fadeLowFrequencyMismatches: STATE.fadeLowFrequencyMismatches ? 1 : 0,
-    fadeLowQualityMismatches: STATE.fadeLowQualityMismatches ? 1 : 0,
+    qualityOpacityZero: STATE.qualityOpacity.zero,
+    qualityOpacitySlope: STATE.qualityOpacity.slope,
+    qualityOpacityMin: STATE.qualityOpacity.min,
+    qualityOpacityMax: STATE.qualityOpacity.max,
     reversed: block.reversed ? 1 : 0,
     colorBaseA: packRgb(c.named.colorBaseA!),
     colorBaseC: packRgb(c.named.colorBaseC!),
@@ -495,7 +506,10 @@ function templateValues(): Uniforms {
     chainMode: STATE.chainMode ? 1 : 0,
     showStroke: STATE.showStroke ? 1 : 0,
     fadeLowFrequencyMismatches: STATE.fadeLowFrequencyMismatches ? 1 : 0,
-    fadeLowQualityMismatches: STATE.fadeLowQualityMismatches ? 1 : 0,
+    qualityOpacityZero: STATE.qualityOpacity.zero,
+    qualityOpacitySlope: STATE.qualityOpacity.slope,
+    qualityOpacityMin: STATE.qualityOpacity.min,
+    qualityOpacityMax: STATE.qualityOpacity.max,
     reversed: 0,
     colorBaseA: packRgb(c.named.colorBaseA!),
     colorBaseC: packRgb(c.named.colorBaseC!),
@@ -615,7 +629,10 @@ function viewFrame(scratch: ArrayBuffer, block: Block, top: number) {
   f32[F.featHeight] = STATE.featureHeight
   f32[F.featSpacing] = STATE.featureSpacing
   i32[I.fadeLowFrequencyMismatches] = STATE.fadeLowFrequencyMismatches ? 1 : 0
-  i32[I.fadeLowQualityMismatches] = STATE.fadeLowQualityMismatches ? 1 : 0
+  f32[F.qualityOpacityZero] = STATE.qualityOpacity.zero
+  f32[F.qualityOpacitySlope] = STATE.qualityOpacity.slope
+  f32[F.qualityOpacityMin] = STATE.qualityOpacity.min
+  f32[F.qualityOpacityMax] = STATE.qualityOpacity.max
   i32[I.chainMode] = STATE.chainMode ? 1 : 0
   i32[I.showStroke] = STATE.showStroke ? 1 : 0
   f32[F.reversed] = block.reversed ? 1 : 0
@@ -717,7 +734,10 @@ function hoistValues(block: Block, top: number): Uniforms {
     chainMode: STATE.chainMode ? 1 : 0,
     showStroke: STATE.showStroke ? 1 : 0,
     fadeLowFrequencyMismatches: STATE.fadeLowFrequencyMismatches ? 1 : 0,
-    fadeLowQualityMismatches: STATE.fadeLowQualityMismatches ? 1 : 0,
+    qualityOpacityZero: STATE.qualityOpacity.zero,
+    qualityOpacitySlope: STATE.qualityOpacity.slope,
+    qualityOpacityMin: STATE.qualityOpacity.min,
+    qualityOpacityMax: STATE.qualityOpacity.max,
     reversed: block.reversed ? 1 : 0,
     colorBaseA: c.named.colorBaseA!,
     colorBaseC: c.named.colorBaseC!,
@@ -802,7 +822,10 @@ function gateFrame(
   f32[F.featHeight] = STATE.featureHeight
   f32[F.featSpacing] = STATE.featureSpacing
   i32[I.fadeLowFrequencyMismatches] = STATE.fadeLowFrequencyMismatches ? 1 : 0
-  i32[I.fadeLowQualityMismatches] = STATE.fadeLowQualityMismatches ? 1 : 0
+  f32[F.qualityOpacityZero] = STATE.qualityOpacity.zero
+  f32[F.qualityOpacitySlope] = STATE.qualityOpacity.slope
+  f32[F.qualityOpacityMin] = STATE.qualityOpacity.min
+  f32[F.qualityOpacityMax] = STATE.qualityOpacity.max
   i32[I.chainMode] = STATE.chainMode ? 1 : 0
   i32[I.showStroke] = STATE.showStroke ? 1 : 0
   f32[F.reversed] = block.reversed ? 1 : 0
@@ -894,7 +917,10 @@ function preseedFrame(
   f32[F.featHeight] = STATE.featureHeight
   f32[F.featSpacing] = STATE.featureSpacing
   i32[I.fadeLowFrequencyMismatches] = STATE.fadeLowFrequencyMismatches ? 1 : 0
-  i32[I.fadeLowQualityMismatches] = STATE.fadeLowQualityMismatches ? 1 : 0
+  f32[F.qualityOpacityZero] = STATE.qualityOpacity.zero
+  f32[F.qualityOpacitySlope] = STATE.qualityOpacity.slope
+  f32[F.qualityOpacityMin] = STATE.qualityOpacity.min
+  f32[F.qualityOpacityMax] = STATE.qualityOpacity.max
   i32[I.chainMode] = STATE.chainMode ? 1 : 0
   i32[I.showStroke] = STATE.showStroke ? 1 : 0
   f32[F.reversed] = block.reversed ? 1 : 0
@@ -1024,7 +1050,10 @@ function planFrame(
   f32[F.featHeight] = STATE.featureHeight
   f32[F.featSpacing] = STATE.featureSpacing
   i32[I.fadeLowFrequencyMismatches] = STATE.fadeLowFrequencyMismatches ? 1 : 0
-  i32[I.fadeLowQualityMismatches] = STATE.fadeLowQualityMismatches ? 1 : 0
+  f32[F.qualityOpacityZero] = STATE.qualityOpacity.zero
+  f32[F.qualityOpacitySlope] = STATE.qualityOpacity.slope
+  f32[F.qualityOpacityMin] = STATE.qualityOpacity.min
+  f32[F.qualityOpacityMax] = STATE.qualityOpacity.max
   i32[I.chainMode] = STATE.chainMode ? 1 : 0
   i32[I.showStroke] = STATE.showStroke ? 1 : 0
   f32[F.reversed] = block.reversed ? 1 : 0

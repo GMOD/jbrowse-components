@@ -1,5 +1,9 @@
 import { readConfObject, setConf } from '@jbrowse/core/configuration'
 
+import {
+  DEFAULT_QUALITY_FADE,
+  OPAQUE_MISMATCHES,
+} from '../features/mismatch/qualityOpacity.ts'
 import { tagColorFor } from '../shared/alignmentsColor.ts'
 import { requireReadsConf } from './configSlotViews.ts'
 import { getFeatureHeightMenuItem } from './menus/featureSize.ts'
@@ -127,25 +131,45 @@ describe('alignments fit-to-display-height', () => {
   })
 })
 
-// pileup.fadeLowBaseQuality fades mismatch bases by their per-base Phred quality, and
-// reaches the renderers via renderState (tier-4 rerender).
-describe('alignments pileup.fadeLowBaseQuality (fade by base quality)', () => {
+// pileup.mismatches.encoding.opacity fades mismatch bases by their per-base
+// Phred quality, and reaches the renderers via renderState (tier-4 rerender).
+describe('alignments pileup.mismatches.encoding.opacity (fade by base quality)', () => {
   it('is off by default', () => {
     const { display } = createDisplay()
-    expect(display.fadeLowBaseQuality).toBe(false)
+    expect(display.mismatchOpacityField).toBe('')
+    expect(display.mismatchQualityOpacity).toEqual(OPAQUE_MISMATCHES)
   })
 
-  it('setFadeLowBaseQuality sets the config slot on and off', () => {
+  it('setMismatchOpacityField turns the fade on and off', () => {
     const { display } = createDisplay()
-    display.setFadeLowBaseQuality(true)
-    expect(display.fadeLowBaseQuality).toBe(true)
-    display.setFadeLowBaseQuality(false)
-    expect(display.fadeLowBaseQuality).toBe(false)
+    display.setMismatchOpacityField('baseQuality')
+    expect(display.mismatchQualityOpacity).toEqual(DEFAULT_QUALITY_FADE)
+    display.setMismatchOpacityField('')
+    expect(display.mismatchQualityOpacity).toEqual(OPAQUE_MISMATCHES)
   })
 
-  it('follows a config default', () => {
-    const { display } = createDisplay({ pileup: { fadeLowBaseQuality: true } })
-    expect(display.fadeLowBaseQuality).toBe(true)
+  it('a bare field lifts to the channel object', () => {
+    const { display } = createDisplay({
+      pileup: { mismatches: { encoding: { opacity: 'baseQuality' } } },
+    })
+    expect(display.mismatchOpacityField).toBe('baseQuality')
+    expect(display.mismatchQualityOpacity).toEqual(DEFAULT_QUALITY_FADE)
+  })
+
+  it('a written domain survives the toggle', () => {
+    const { display } = createDisplay({
+      pileup: {
+        mismatches: {
+          encoding: {
+            opacity: { field: 'baseQuality', scale: { domain: [0, 30] } },
+          },
+        },
+      },
+    })
+    expect(display.mismatchQualityOpacity.slope).toBeCloseTo(1 / 30, 10)
+    display.setMismatchOpacityField('')
+    display.setMismatchOpacityField('baseQuality')
+    expect(display.mismatchQualityOpacity.slope).toBeCloseTo(1 / 30, 10)
   })
 
   it('the top-level Show menu exposes the fade-by-quality toggle', () => {
@@ -153,7 +177,7 @@ describe('alignments pileup.fadeLowBaseQuality (fade by base quality)', () => {
     // Top-level Show item, not nested under Advanced.
     const show = menuSubItems(display.trackMenuItems(), 'Show...')
     clickMenuItem(show, 'Fade low quality mismatches')
-    expect(display.fadeLowBaseQuality).toBe(true)
+    expect(display.mismatchOpacityField).toBe('baseQuality')
   })
 })
 

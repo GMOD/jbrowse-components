@@ -6,6 +6,7 @@ import {
   INTERBASE_INSERTION,
   INTERBASE_SOFTCLIP,
 } from '../../shared/types.ts'
+import { OPAQUE_MISMATCHES } from '../mismatch/qualityOpacity.ts'
 import { INSERTION_MARK, insertionsOfSize } from './mark.ts'
 
 import type { RenderState } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
@@ -67,6 +68,7 @@ function state(fadeLowFrequency = true): RenderState {
     featureSpacing: 0,
     canvasHeight: 1000,
     fadeLowFrequencyMismatches: fadeLowFrequency,
+    qualityOpacity: OPAQUE_MISMATCHES,
     showMismatches: true,
     pileupTopOffset: 0,
     colors: { colorInsertion: [0.75, 0, 0.75] } as RenderState['colors'],

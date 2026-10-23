@@ -41,6 +41,29 @@ test('the Spec tab names the config by a url a reader can open', () => {
   )
 })
 
+test("the mismatches' quality fade is the checkbox under Mismatches", () => {
+  const recipe = recipeOf({
+    views: [
+      {
+        type: 'LinearGenomeView',
+        assembly: 'volvox',
+        loc: 'ctgA:1-5000',
+        tracks: [
+          {
+            trackId: 'volvox_cram',
+            pileup: { mismatches: { encoding: { opacity: 'baseQuality' } } },
+          },
+        ],
+      },
+    ],
+  })
+  const add = recipe.steps.find(s => s.example?.includes('“'))
+  expect(add?.substeps?.map(sub => sub.title)).toEqual([
+    expect.stringContaining('Fade low quality mismatches (checked)'),
+  ])
+  expect(recipe.unmapped).toEqual([])
+})
+
 test("a track's height is layout, and gets no step", () => {
   expect(recipeDialogHtml(twoTracks, 'd')).not.toContain('px here')
   expect(twoTracks.unmapped).toEqual([])

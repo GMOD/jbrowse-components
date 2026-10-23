@@ -6826,6 +6826,146 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "additionalProperties": false
     },
+    "PileupMismatchesOpacityScale": {
+      "title": "PileupMismatchesOpacityScale",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "domain": {
+          "description": "the Phred qualities that take the first and the last opacity in range.",
+          "default": [
+            "0",
+            "50"
+          ],
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "anyOf": [
+              {
+                "type": "array",
+                "items": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "number"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        "range": {
+          "description": "the opacities, 0 to 1, at the two ends of the domain.",
+          "default": [
+            "0",
+            "1"
+          ],
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "anyOf": [
+              {
+                "type": "array",
+                "items": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "number"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        "clamp": {
+          "description": "a quality past the domain takes the nearer end of the range; off, the line runs on until the base is fully opaque or gone.",
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
+    "PileupMismatchesOpacity": {
+      "title": "PileupMismatchesOpacity",
+      "anyOf": [
+        {
+          "description": "Shorthand for \`{ \\"field\\": ... }\`.",
+          "default": "",
+          "enum": [
+            "",
+            "baseQuality"
+          ],
+          "type": "string"
+        },
+        {
+          "title": "PileupMismatchesOpacity",
+          "type": "object",
+          "x-closed": true,
+          "properties": {
+            "field": {
+              "description": "baseQuality fades each mismatched base by its Phred quality; empty draws them opaque.",
+              "default": "",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "enum": [
+                  "",
+                  "baseQuality"
+                ]
+              }
+            },
+            "scale": {
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/PileupMismatchesOpacityScale"
+              }
+            }
+          },
+          "patternProperties": {
+            "^_+comment": {}
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "PileupMismatchesEncoding": {
+      "title": "PileupMismatchesEncoding",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "opacity": {
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PileupMismatchesOpacity"
+          }
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
     "PileupMismatches": {
       "title": "PileupMismatches",
       "type": "object",
@@ -6839,6 +6979,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           },
           "else": {
             "type": "boolean"
+          }
+        },
+        "encoding": {
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PileupMismatchesEncoding"
           }
         }
       },
@@ -7038,16 +7186,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           },
           "else": {
             "$ref": "#/$defs/PileupConnectors"
-          }
-        },
-        "fadeLowBaseQuality": {
-          "description": "fade each mismatch base by its Phred base quality: opaque from 50 up, fading linearly below.",
-          "default": false,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "boolean"
           }
         },
         "fadeLowFrequency": {
@@ -8536,16 +8674,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           },
           "else": {
             "$ref": "#/$defs/PileupConnectors"
-          }
-        },
-        "fadeLowBaseQuality": {
-          "description": "fade each mismatch base by its Phred base quality: opaque from 50 up, fading linearly below.",
-          "default": false,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "boolean"
           }
         },
         "fadeLowFrequency": {

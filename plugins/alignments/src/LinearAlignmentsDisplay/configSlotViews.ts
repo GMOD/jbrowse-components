@@ -10,6 +10,7 @@ import {
   strokeWidthScale,
 } from '../features/arcs/arcLineWidth.ts'
 import { ordinaryPairsShown } from '../features/arcs/arcTypes.ts'
+import { qualityOpacityOf } from '../features/mismatch/qualityOpacity.ts'
 import {
   ALIGNMENTS_FIELD_PRESETS,
   alignmentsColorEncoding,
@@ -42,6 +43,10 @@ import {
   readConnectionsMarkOf,
 } from './constants.ts'
 
+import type {
+  MismatchOpacityField,
+  QualityOpacity,
+} from '../features/mismatch/qualityOpacity.ts'
 import type {
   AlignmentsColorEncoding,
   AlignmentsColorSetting,
@@ -214,9 +219,61 @@ export function configSlotViews(self: ConfigSlotSelf) {
     get showConnectors(): boolean {
       return getConf(self, ['pileup', 'connectors', 'show'])
     },
-    /** #getter */
-    get fadeLowBaseQuality(): boolean {
-      return getConf(self, ['pileup', 'fadeLowBaseQuality'])
+    /**
+     * #getter
+     * The field `pileup.mismatches.encoding.opacity` fades by, `''` for none:
+     * the "Fade low quality mismatches" checkbox.
+     */
+    get mismatchOpacityField(): MismatchOpacityField {
+      return getConf(self, [
+        'pileup',
+        'mismatches',
+        'encoding',
+        'opacity',
+        'field',
+      ])
+    },
+    /**
+     * #getter
+     * `pileup.mismatches.encoding.opacity` as mismatch.slang's
+     * `qualityFade` reads it.
+     */
+    get mismatchQualityOpacity(): QualityOpacity {
+      return qualityOpacityOf({
+        field: getConf(self, [
+          'pileup',
+          'mismatches',
+          'encoding',
+          'opacity',
+          'field',
+        ]),
+        scale: {
+          domain: getConf(self, [
+            'pileup',
+            'mismatches',
+            'encoding',
+            'opacity',
+            'scale',
+            'domain',
+          ]),
+          range: getConf(self, [
+            'pileup',
+            'mismatches',
+            'encoding',
+            'opacity',
+            'scale',
+            'range',
+          ]),
+          clamp: getConf(self, [
+            'pileup',
+            'mismatches',
+            'encoding',
+            'opacity',
+            'scale',
+            'clamp',
+          ]),
+        },
+      })
     },
     /** #getter */
     get fadeLowFrequency(): boolean {
@@ -648,9 +705,15 @@ export function configSlotActions(self: ConfigSlotSelf) {
 
     /**
      * #action
+     * Writes `field` alone, so a written domain and range survive the
+     * fade being turned off and on.
      */
-    setFadeLowBaseQuality(value: boolean) {
-      setConf(self, ['pileup', 'fadeLowBaseQuality'], value)
+    setMismatchOpacityField(field: MismatchOpacityField) {
+      setConf(
+        self,
+        ['pileup', 'mismatches', 'encoding', 'opacity', 'field'],
+        field,
+      )
     },
 
     /**

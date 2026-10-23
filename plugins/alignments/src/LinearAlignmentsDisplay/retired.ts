@@ -140,6 +140,11 @@ export function colorSlotsOf(value: unknown): DisplayEntry {
   }
 }
 
+// v4's `mismatchAlpha` switched the fade by base quality
+function mismatchFadeOf(on: unknown) {
+  return { encoding: { opacity: { field: on ? 'baseQuality' : '' } } }
+}
+
 // v4's `renderers` block held the pileup renderer's own settings. Its color
 // was a callback into the plugin's jexl functions, which went (ADR-163).
 function rendererSlotsOf(renderers: unknown): DisplayEntry {
@@ -148,15 +153,14 @@ function rendererSlotsOf(renderers: unknown): DisplayEntry {
     return {}
   }
   const { height, maxHeight, mismatchAlpha, hideMismatches } = pileup
+  const mismatches = {
+    ...(hideMismatches !== undefined ? { show: !hideMismatches } : {}),
+    ...(mismatchAlpha !== undefined ? mismatchFadeOf(mismatchAlpha) : {}),
+  }
   const slots = {
     ...(height !== undefined ? { readHeight: height } : {}),
     ...(maxHeight !== undefined ? { maxLayoutHeight: maxHeight } : {}),
-    ...(mismatchAlpha !== undefined
-      ? { fadeLowBaseQuality: mismatchAlpha }
-      : {}),
-    ...(hideMismatches !== undefined
-      ? { mismatches: { show: !hideMismatches } }
-      : {}),
+    ...(Object.keys(mismatches).length > 0 ? { mismatches } : {}),
   }
   return Object.keys(slots).length > 0 ? { pileup: slots } : {}
 }
@@ -209,7 +213,7 @@ export const retiredConfigSpellings: Record<string, RetiredSpelling> = {
   maxHeight: v => ({ pileup: { maxLayoutHeight: v } }),
   hideSmallIndels: () => ({}),
   hideMismatches: v => ({ pileup: { mismatches: { show: !v } } }),
-  mismatchAlpha: v => ({ pileup: { fadeLowBaseQuality: v } }),
+  mismatchAlpha: v => ({ pileup: { mismatches: mismatchFadeOf(v) } }),
   hideLargeIndels: () => ({}),
   minSubfeatureWidth: () => ({}),
   flipStrandLongReadChains: () => ({}),

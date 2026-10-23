@@ -162,10 +162,11 @@ Declined on 2026-09-30: track- or view-level facets, and a free y per section.
   (ADR-180): the row facet's value, `{assembly}`, picks each lane's track.
 - **Fewer channels.** `opacity` and `angle` are uniforms, not channels, because
   shapes compile from hand-written Slang (ADR-095); `opacity` also breaks the
-  Canvas2D painters' color batching. The alignments mismatch fades
-  (`pileup.fadeLowBaseQuality`, `pileup.fadeLowFrequency`) stay booleans:
-  each fades by one variable, so an `opacity` object would take one legal
-  value. `encoding.size` maps a width through the
+  Canvas2D painters' color batching. The alignments quality fade is
+  `pileup.mismatches.encoding.opacity` over `baseQuality` (ADR-240), whose
+  linear scale folds into four uniforms of mismatch.slang;
+  `pileup.fadeLowFrequency` stays a boolean, since depth and zoom set its
+  ramp. `encoding.size` maps a width through the
   `size` lane on the link alone
   ([ADR-163](../architecture-decision-records/adr-163-a-link-is-a-mark-and-the-arc-plugin-is-gone.md)).
   An area mark waits on `y2`; the line is a mark

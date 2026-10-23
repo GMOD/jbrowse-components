@@ -85,7 +85,7 @@ multipliers are shared generated functions rather than per-pass arithmetic:
 | --- | --- | --- |
 | `frequencyFade` | is this base above the depth-dependent noise floor | `alignmentsUniforms.slang` |
 | `sizeAlpha` | is this indel big enough to mean something | `alignmentsUniforms.slang` |
-| `qualityFade` | how good is this base call, under `pileup.fadeLowBaseQuality` | per-base quality |
+| `qualityFade` | how good is this base call, under `pileup.mismatches.encoding.opacity` | per-base quality |
 | `intronAlpha` | are the rows too compact for centrelines | `gap.slang` |
 
 They multiply, and both backends import the same generated twin (ADR-051), so a

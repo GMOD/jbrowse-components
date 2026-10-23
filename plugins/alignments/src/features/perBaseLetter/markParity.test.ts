@@ -2,6 +2,10 @@ import { makeTestRenderState } from '../../LinearAlignmentsDisplay/testUtils.ts'
 import { frequencyFadeGate } from '../../shaders/slang/alignmentsUniforms.js.generated.ts'
 import * as mismatchShader from '../../shaders/slang/mismatch.generated.ts'
 import { qualityFade } from '../../shaders/slang/mismatch.js.generated.ts'
+import {
+  DEFAULT_QUALITY_FADE,
+  OPAQUE_MISMATCHES,
+} from '../mismatch/qualityOpacity.ts'
 import { PER_BASE_LETTER_MARK } from './mark.ts'
 
 import type { PerBaseLetterUploadData } from './types.ts'
@@ -59,23 +63,24 @@ function instances() {
   return out
 }
 
+const qualityOpacityOf = (fade: boolean) =>
+  fade ? DEFAULT_QUALITY_FADE : OPAQUE_MISMATCHES
+
 // mismatch.slang's `vs_main`, as the two generated twins it is assembled from.
 function shaderAlpha(
   instance: { frequency: number; qual: number },
-  fadeLowQualityMismatches: boolean,
+  fadeByQuality: boolean,
   fadeLowFrequency: boolean,
 ) {
+  const { zero, slope, min, max } = qualityOpacityOf(fadeByQuality)
   return (
     frequencyFadeGate(PX_PER_BP, instance.frequency, fadeLowFrequency) *
-    qualityFade(instance.qual, fadeLowQualityMismatches)
+    qualityFade(instance.qual, zero, slope, min, max)
   )
 }
 
 // The fills the painter set, under the same two settings.
-function paintedFills(
-  fadeLowQualityMismatches: boolean,
-  fadeLowFrequency: boolean,
-) {
+function paintedFills(fadeByQuality: boolean, fadeLowFrequency: boolean) {
   const fills: string[] = []
   let fill = ''
   const ctx = {
@@ -95,7 +100,7 @@ function paintedFills(
     BLOCK,
     makeTestRenderState({
       showPerBaseLetter: true,
-      fadeLowQualityMismatches,
+      qualityOpacity: qualityOpacityOf(fadeByQuality),
       fadeLowFrequencyMismatches: fadeLowFrequency,
     }),
   )
@@ -112,16 +117,14 @@ test.each([
   ['both on', true, true],
 ])(
   'the shader resolves the painted alpha with %s',
-  (_name, fadeLowQualityMismatches, fadeLowFrequency) => {
-    const fills = paintedFills(fadeLowQualityMismatches, fadeLowFrequency)
+  (_name, fadeByQuality, fadeLowFrequency) => {
+    const fills = paintedFills(fadeByQuality, fadeLowFrequency)
     expect(fills).toHaveLength(DATA.perBaseLetterYs.length)
     for (const fill of fills) {
       expect(fill).toMatch(/^rgb\(/)
     }
     for (const instance of instances()) {
-      expect(
-        shaderAlpha(instance, fadeLowQualityMismatches, fadeLowFrequency),
-      ).toBe(1)
+      expect(shaderAlpha(instance, fadeByQuality, fadeLowFrequency)).toBe(1)
     }
   },
 )

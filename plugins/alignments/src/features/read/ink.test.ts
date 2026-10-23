@@ -5,6 +5,7 @@ import {
 
 import { buildReadColorCategories } from '../../LinearAlignmentsDisplay/colorUtils.ts'
 import { makeTestPalette } from '../../LinearAlignmentsDisplay/testUtils.ts'
+import { OPAQUE_MISMATCHES } from '../mismatch/qualityOpacity.ts'
 import { READ_MARK } from './mark.ts'
 
 import type { RenderState } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
@@ -32,7 +33,7 @@ const state = {
   pileupTopOffset: 0,
   scrollTop: 0,
   canvasHeight: 1000,
-  fadeLowQualityMismatches: false,
+  qualityOpacity: OPAQUE_MISMATCHES,
   fadeLowFrequencyMismatches: false,
   showMismatches: true,
   showOutline: false,

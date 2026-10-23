@@ -2,6 +2,7 @@ import {
   GAP_DELETION,
   GAP_SKIP,
 } from '../../shaders/slang/gap.consts.generated.ts'
+import { OPAQUE_MISMATCHES } from '../mismatch/qualityOpacity.ts'
 import { DELETION_MARK, SKIP_MARK } from './mark.ts'
 
 import type { RenderState } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
@@ -30,6 +31,7 @@ function baseState(overrides: Partial<RenderState> = {}): RenderState {
     featureSpacing: 0,
     canvasHeight: 1000,
     fadeLowFrequencyMismatches: false,
+    qualityOpacity: OPAQUE_MISMATCHES,
     showMismatches: true,
     pileupTopOffset: 0,
     colors: {

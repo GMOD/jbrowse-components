@@ -2126,7 +2126,7 @@ export default function stateModelFactory(
             featureHeight: self.featureHeight,
             featureSpacing: self.featureSpacing,
             showMismatches: self.showMismatches,
-            fadeLowQualityMismatches: self.fadeLowBaseQuality,
+            qualityOpacity: self.mismatchQualityOpacity,
             scrollTop: self.scrollTop,
           })
         },
@@ -2591,7 +2591,7 @@ export default function stateModelFactory(
             sashimiHeight: self.bandHeights.sashimiHeight,
             showMismatches: self.showMismatches,
             fadeLowFrequencyMismatches: self.fadeLowFrequency,
-            fadeLowQualityMismatches: self.fadeLowBaseQuality,
+            qualityOpacity: self.mismatchQualityOpacity,
             showSoftClipping: self.showSoftClipping,
             showInterbaseIndicators: self.showInterbaseIndicators,
             showModifications: self.showModifications,

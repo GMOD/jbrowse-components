@@ -1,6 +1,7 @@
 import { backToFront } from '@jbrowse/render-core/marks'
 
 import { MISMATCH_MARK } from './mark.ts'
+import { OPAQUE_MISMATCHES } from './qualityOpacity.ts'
 
 import type { RenderState } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
 import type { MismatchUploadData } from './types.ts'
@@ -41,7 +42,7 @@ function state(): RenderState {
     pileupTopOffset: 0,
     scrollTop: 0,
     canvasHeight: 500,
-    fadeLowQualityMismatches: false,
+    qualityOpacity: OPAQUE_MISMATCHES,
     fadeLowFrequencyMismatches: true,
     showMismatches: true,
     colors: {

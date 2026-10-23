@@ -12,10 +12,6 @@ import hpmath;
 public static const uint VERTS_PER_INSTANCE = 6u;
 [[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
 
-// Phred quality at and above which a mismatch stays fully opaque. Everything
-// below fades linearly toward transparent.
-static const float OPAQUE_QUAL = 50.0;
-
 // "This base carries no quality": a read whose QUAL is absent, and every base of
 // the softclip-bases overlay, which shares this shader and has no quality to
 // report. 255 rather than 0, because 0 is a REAL Phred score — the worst one —
@@ -46,21 +42,17 @@ float3 baseColor(uint b, Uniforms u) {
   }
 }
 
-// Alpha multiplier for a mismatch of this per-base Phred quality: 1 when the
-// setting is off, 1 when the base carries no quality (QUAL_UNAVAILABLE), and a
-// linear ramp to OPAQUE_QUAL otherwise. `//! js-export`ed:
-// features/mismatch/mark.ts carried the same three-way conditional under a
-// "Mirrors the GPU mismatch.slang path" comment, which is the whole setting's
-// behavior kept in agreement by eye.
+// Alpha multiplier for a mismatch of this per-base Phred quality: the linear
+// scale `pileup.mismatches.encoding.opacity` folds into `zero` and `slope`
+// (`qualityOpacityOf`), clamped to [lo, hi], and 1 for a base that carries no
+// quality. Off is lo = hi = 1. `//! js-export`ed, so the Canvas2D and label
+// paths run this same ramp.
 //
-// The guard tests the sentinel, not `> 0`. Under `> 0` a Phred 0 base — the
-// least trustworthy call in the file — took the no-quality branch and drew fully
-// opaque, while Phred 1 drew at alpha 0.02 and vanished. The ramp ran backwards
-// across its own first step, and did so on exactly the bases the setting exists
-// to push off the screen.
-float qualityFade(float qual, bool enabled) {
-  if (enabled && qual != QUAL_UNAVAILABLE) {
-    return min(1.0, qual / OPAQUE_QUAL);
+// The guard tests the sentinel, not `> 0`: under `> 0` a Phred 0 base, the
+// least trustworthy call in the file, drew fully opaque while Phred 1 vanished.
+float qualityFade(float qual, float zero, float slope, float lo, float hi) {
+  if (qual != QUAL_UNAVAILABLE) {
+    return clamp((qual - zero) * slope, lo, hi);
   }
   return 1.0;
 }
@@ -74,7 +66,8 @@ ColorVsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   // per-site frequency so thinly-covered mismatches fade out. The softclip-base
   // pass shares this shader and packs full frequency, pinning its alpha at 1.
   float alpha = frequencyFade(u.pxPerBp, inst.frequency, u)
-              * qualityFade(inst.qual, u.fadeLowQualityMismatches != 0);
+              * qualityFade(inst.qual, u.qualityOpacityZero, u.qualityOpacitySlope,
+                            u.qualityOpacityMin, u.qualityOpacityMax);
   if (alpha <= 0.0) { return discardVertex(); }
 
   // `pileupCellX` (alignmentsUniforms) is the snapped, anchored cell span every

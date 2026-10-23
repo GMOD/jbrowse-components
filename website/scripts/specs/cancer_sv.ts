@@ -516,8 +516,8 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
                 },
                 // 15 of the 46 records here are secondary. flagExclude drops
                 // them and `unit: 'chain'` merges split segments, leaving 28
-                // rows at a pitch of 9. `fadeLowQualityMismatches` changes
-                // nothing on this Q30-Q50 R10 BAM.
+                // rows at a pitch of 9. A quality fade on the mismatches
+                // changes nothing on this Q30-Q50 R10 BAM.
                 {
                   trackId: 'reads_vs_der3',
                   // The same pitch as the hg38 lane, since the figure compares

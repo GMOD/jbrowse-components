@@ -8,6 +8,7 @@ import { READ_OUTLINE_MIN_HEIGHT_PX } from '../../shaders/slang/read.consts.gene
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 import type { ArcBandFeed } from '../../features/arcs/bandFeed.ts'
 import type { ConnectorFeed } from '../../features/linkedReads/connectorFeed.ts'
+import type { QualityOpacity } from '../../features/mismatch/qualityOpacity.ts'
 import type { SashimiBandFeed } from '../../features/sashimi/bandFeed.ts'
 import type { ColorPalette } from '../../shaders/colors.ts'
 import type { ArcColorField } from '../../shared/types.ts'
@@ -43,8 +44,7 @@ export interface RenderState {
   sashimiHeight: number
   showMismatches: boolean
   fadeLowFrequencyMismatches: boolean
-  // Fade mismatch bases by their per-base Phred quality (advanced setting).
-  fadeLowQualityMismatches: boolean
+  qualityOpacity: QualityOpacity
   showSoftClipping: boolean
   showInterbaseIndicators: boolean
   showModifications: boolean

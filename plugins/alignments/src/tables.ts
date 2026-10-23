@@ -20,7 +20,11 @@ import {
   readModCovSegments,
   readSnpSegments,
 } from '@jbrowse/alignments-core'
-import { fullConfSnapshot, readConfObject } from '@jbrowse/core/configuration'
+import {
+  fullConfSnapshot,
+  readConfObject,
+  refusingUndeclaredKeys,
+} from '@jbrowse/core/configuration'
 import { isSequenceAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { tablesFeatureAdapter } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import { overByteBudget, totalRegionBytes } from '@jbrowse/core/rpc/byteBudget'
@@ -80,6 +84,7 @@ import {
 } from './LinearAlignmentsDisplay/groupedDataMaps.ts'
 import { featureSpacingForHeight } from './LinearAlignmentsDisplay/menus/compactnessPresets.ts'
 import { pileupConfigSchema } from './LinearAlignmentsDisplay/pileupConfigSchema.ts'
+import { pileupMismatchesOpacityConfigSchema } from './LinearAlignmentsDisplay/pileupMismatchesOpacityConfigSchema.ts'
 import {
   baseQualitySpanAcrossGroups,
   presentMapqs,
@@ -107,6 +112,7 @@ import { arcOpacity } from './features/arcs/bandFeed.ts'
 import { computeArcsByGroup } from './features/arcs/compute.ts'
 import { emptyArcsUploadData } from './features/arcs/types.ts'
 import { effectiveBaseColors } from './features/mismatch/baseColors.ts'
+import { qualityOpacityOf } from './features/mismatch/qualityOpacity.ts'
 import {
   BASE_QUALITY_UNAVAILABLE,
   qualityAbgr,
@@ -184,6 +190,7 @@ import { getColorForModification } from './util.ts'
 import type { RefNamePosition } from './LinearAlignmentsDisplay/colorTagUtils.ts'
 import type { ReadColorCategory } from './LinearAlignmentsDisplay/colorUtils.ts'
 import type { LinearAlignmentsDisplayConfigModel as DisplayConf } from './LinearAlignmentsDisplay/configSchema.ts'
+import type { PileupMismatchesOpacitySnapshot } from './LinearAlignmentsDisplay/pileupMismatchesOpacityConfigSchema.ts'
 import type { RegionBounds } from './RenderAlignmentDataRPC/sortLayout.ts'
 import type {
   LaidOutPileupData,
@@ -1899,8 +1906,9 @@ let pileupDefaults: Instance<typeof pileupConfigSchema> | undefined
  * scale. `fade` is a mark's `fade` column, `length` its length in bp (a
  * deletion's `end - start`) and `quality` a mismatch's, 255 where the read
  * has none. A column may be a number, for one mark. `featureHeight` is
- * `readPitch.featureHeight`, and the two switches are the display's
- * `pileup.fadeLowFrequency` and `pileup.fadeLowBaseQuality`; each of the
+ * `readPitch.featureHeight`, `fadeLowFrequency` the display's
+ * `pileup.fadeLowFrequency`, and `mismatchOpacity` its
+ * `pileup.mismatches.encoding.opacity` as a config writes it; each of the
  * three takes the pileup config's default when left out.
  *
  * - An insertion's `widthPx` is `insertionBarWidthPx`, and its `alpha`
@@ -1910,13 +1918,13 @@ let pileupDefaults: Instance<typeof pileupConfigSchema> | undefined
  *   `frequencyFadeGate` over that width squared.
  * - A mismatch's `alpha` is `qualityFade` times `frequencyFadeGate` over
  *   `pxPerBp`, and a clip's that gate alone. `quality` may be left out
- *   while `fadeLowBaseQuality` is false.
+ *   while `mismatchOpacity` names no field.
  */
 export function alignmentMarkAlpha({
   pxPerBp,
   featureHeight,
   fadeLowFrequency,
-  fadeLowBaseQuality,
+  mismatchOpacity = {},
   insertions,
   deletions,
   mismatches,
@@ -1925,7 +1933,7 @@ export function alignmentMarkAlpha({
   pxPerBp: number
   featureHeight?: number
   fadeLowFrequency?: boolean
-  fadeLowBaseQuality?: boolean
+  mismatchOpacity?: PileupMismatchesOpacitySnapshot
   insertions?: { length: MarkColumn; fade: MarkColumn }
   deletions?: { length: MarkColumn; fade: MarkColumn }
   mismatches?: { fade: MarkColumn; quality?: MarkColumn }
@@ -1944,8 +1952,22 @@ export function alignmentMarkAlpha({
   }
   const byFrequency: boolean =
     fadeLowFrequency ?? readConfObject(pileupDefaults, 'fadeLowFrequency')
-  const byQuality: boolean =
-    fadeLowBaseQuality ?? readConfObject(pileupDefaults, 'fadeLowBaseQuality')
+  const opacity = refusingUndeclaredKeys(() =>
+    pileupMismatchesOpacityConfigSchema.create(
+      typeof mismatchOpacity === 'string'
+        ? { field: mismatchOpacity }
+        : mismatchOpacity,
+    ),
+  )
+  const byQuality = readConfObject(opacity, 'field') === 'baseQuality'
+  const { zero, slope, min, max } = qualityOpacityOf({
+    field: readConfObject(opacity, 'field'),
+    scale: {
+      domain: readConfObject(opacity, ['scale', 'domain']),
+      range: readConfObject(opacity, ['scale', 'range']),
+      clamp: readConfObject(opacity, ['scale', 'clamp']),
+    },
+  })
   const ins = markColumns('insertions', insertions, ['length', 'fade'])
   const del = markColumns('deletions', deletions, ['length', 'fade'])
   const mis = markColumns(
@@ -1979,7 +2001,8 @@ export function alignmentMarkAlpha({
     mismatches: {
       alpha: mis.fade.map(
         (fade, i) =>
-          qualityFade(mis.quality[i]!, byQuality) * gate(pxPerBp, fade),
+          qualityFade(mis.quality[i]!, zero, slope, min, max) *
+          gate(pxPerBp, fade),
       ),
     },
     clips: {

@@ -13,6 +13,7 @@ import {
   packedInterbaseSegments,
 } from '../../RenderAlignmentDataRPC/testPileupData.ts'
 import { arcStrokeScale } from '../../features/arcs/arcLineWidth.ts'
+import { OPAQUE_MISMATCHES } from '../../features/mismatch/qualityOpacity.ts'
 import { Canvas2DAlignmentsRenderer } from '../renderers/Canvas2DAlignmentsRenderer.ts'
 import {
   ALIGNMENTS_PASSES,
@@ -373,6 +374,7 @@ describe('coverage packing parity between GPU and Canvas2D', () => {
         },
       ],
       showMismatches: false,
+      qualityOpacity: OPAQUE_MISMATCHES,
       showSoftClipping: false,
       showModifications: false,
       // `makeTestPalette` rather than the slots this case happens to read: the
@@ -646,7 +648,7 @@ describe('renderBlocks canvasDrawn gating parity', () => {
       sashimiHeight: 0,
       showMismatches: false,
       fadeLowFrequencyMismatches: false,
-      fadeLowQualityMismatches: false,
+      qualityOpacity: OPAQUE_MISMATCHES,
       showSoftClipping: false,
       showInterbaseIndicators: false,
       showModifications: false,

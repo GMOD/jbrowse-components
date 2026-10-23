@@ -15,10 +15,10 @@ clip's alpha as the pileup draws them at `pxPerBp`, through the shaders'
 generated twins, for a host that draws the marks at its figure's scale. `fade`
 is a mark's `fade` column, `length` its length in bp (a deletion's
 `end - start`) and `quality` a mismatch's, 255 where the read has none. A column
-may be a number, for one mark. `featureHeight` is `readPitch.featureHeight`, and
-the two switches are the display's `pileup.fadeLowFrequency` and
-`pileup.fadeLowBaseQuality`; each of the three takes the pileup config's default
-when left out.
+may be a number, for one mark. `featureHeight` is `readPitch.featureHeight`,
+`fadeLowFrequency` the display's `pileup.fadeLowFrequency`, and
+`mismatchOpacity` its `pileup.mismatches.encoding.opacity` as a config writes
+it; each of the three takes the pileup config's default when left out.
 
 - An insertion's `widthPx` is `insertionBarWidthPx`, and its `alpha`
   `insertionSizeAlpha` times, under `LONG_INSERTION_MIN_LENGTH`,
@@ -27,11 +27,11 @@ when left out.
   `frequencyFadeGate` over that width squared.
 - A mismatch's `alpha` is `qualityFade` times `frequencyFadeGate` over
   `pxPerBp`, and a clip's that gate alone. `quality` may be left out while
-  `fadeLowBaseQuality` is false.
+  `mismatchOpacity` names no field.
 
 ```js
 // type signature
-({ pxPerBp, featureHeight, fadeLowFrequency, fadeLowBaseQuality, insertions, deletions, mismatches, clips, }: { pxPerBp: number; featureHeight?: number | undefined; fadeLowFrequency?: boolean | undefined; fadeLowBaseQuality?: boolean | undefined; insertions?: {…} | undefined; deletions?: {…} | undefined; mismatches?: { fade: MarkColumn; quality?: MarkColumn | undefined; } | undefined; clips?: { fade: MarkColumn; } | undefined; }) => { insertions: { widthPx: number[]; alpha: number[]; }; deletions: { alpha: number[]; }; mismatches: { alpha: number[]; }; clips: { alpha: number[]; }; }
+({ pxPerBp, featureHeight, fadeLowFrequency, mismatchOpacity, insertions, deletions, mismatches, clips, }: { pxPerBp: number; featureHeight?: number | undefined; fadeLowFrequency?: boolean | undefined; mismatchOpacity?: PileupMismatchesOpacitySnapshot | undefined; insertions?: {…} | undefined; deletions?: {…} | undefined; mismatches?: {…} | undefined; clips?: { fade: MarkColumn; } | undefined; }) => { insertions: { widthPx: number[]; alpha: number[]; }; deletions: { alpha: number[]; }; mismatches: { alpha: number[]; }; clips: { alpha: number[]; }; }
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/tables.ts)

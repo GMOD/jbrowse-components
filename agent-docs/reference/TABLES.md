@@ -272,13 +272,14 @@ twins:
   `quality`, the Phred score, 255 where the read has none) and `clips`
   (`fade`).
 - **Settings:** `featureHeight` (`readPitch.featureHeight`),
-  `fadeLowFrequency` and `fadeLowBaseQuality` (`config.pileup`'s). Each one
-  left out takes the pileup config's default: a 7 px read, `true` and
-  `false`.
+  `fadeLowFrequency` (`config.pileup`'s) and `mismatchOpacity`
+  (`config.pileup.mismatches.encoding.opacity`, as a config writes it). Each
+  one left out takes the pileup config's default: a 7 px read, `true` and no
+  quality fade.
 - **Columns:** a column may be a number, read as one mark, as R's jsonlite
   unboxes a one-row table. The call refuses a missing column, naming it,
   and a table whose columns differ in length. `mismatches.quality` may be
-  left out while `fadeLowBaseQuality` is false.
+  left out while `mismatchOpacity` names no field.
 - **Out:** `insertions.widthPx` and `insertions.alpha`, and `alpha` for
   `deletions`, `mismatches` and `clips`, one per mark in the order given.
   `widthPx` is in px; `alpha` runs from 0 (not drawn) to 1.

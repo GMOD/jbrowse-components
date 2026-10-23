@@ -6,6 +6,7 @@ import {
   INTERBASE_INSERTION,
   INTERBASE_SOFTCLIP,
 } from '../../shared/types.ts'
+import { OPAQUE_MISMATCHES } from '../mismatch/qualityOpacity.ts'
 import { CLIP_MARK, clipHit, clipsOfKind } from './mark.ts'
 
 import type { RenderState } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
@@ -67,6 +68,7 @@ function state(fadeLowFrequency = true): RenderState {
     featureSpacing: 0,
     canvasHeight: 1000,
     fadeLowFrequencyMismatches: fadeLowFrequency,
+    qualityOpacity: OPAQUE_MISMATCHES,
     pileupTopOffset: 0,
     colors: {
       colorSoftclip: [1, 0, 0],

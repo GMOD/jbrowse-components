@@ -25,6 +25,7 @@ import {
 } from './sectionScreen.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
+import type { QualityOpacity } from '../../features/mismatch/qualityOpacity.ts'
 
 export interface VisibleLabel {
   type: 'deletion' | 'insertion' | 'softclip' | 'hardclip' | 'mismatch'
@@ -74,9 +75,10 @@ interface ComputeVisibleLabelsParams {
   // PILEUP_MARKS and `softclipBases` is gated on `showSoftClipping`, so
   // gating the whole pass left those two drawn and unlabelled.
   showMismatches: boolean
-  // "Fade low quality mismatches". The SNP letter has to honor it as well as the
-  // box under it, or the setting does nothing at the one zoom it applies at.
-  fadeLowQualityMismatches: boolean
+  // `pileup.mismatches.encoding.opacity`. The SNP letter has to honor it as
+  // well as the box under it, or the fade does nothing at the one zoom it
+  // applies at.
+  qualityOpacity: QualityOpacity
   scrollTop: number
 }
 
@@ -143,7 +145,7 @@ export function computeVisibleLabels(
     featureHeight,
     featureSpacing,
     showMismatches,
-    fadeLowQualityMismatches,
+    qualityOpacity,
     scrollTop,
   } = params
 
@@ -422,9 +424,8 @@ export function computeVisibleLabels(
           }
 
           // The letter carries the same quality fade the mismatch mark /
-          // mismatch.slang put on the box under it. Without this, "Fade low
-          // quality mismatches" drew a 20%-alpha box under a fully opaque
-          // letter — and letters only appear at base-level zoom, so the setting
+          // mismatch.slang put on the box under it. Without this, the fade
+          // drew a 20%-alpha box under a fully opaque letter — and letters only appear at base-level zoom, so the setting
           // did nothing at the only zoom it applies at. `qualityFade` is the
           // shader's own ramp (adr-051), the same call the box makes.
           //
@@ -433,7 +434,10 @@ export function computeVisibleLabels(
           // so it resolves to 1 wherever this loop runs.
           const opacity = qualityFade(
             mismatchQuals[i]!,
-            fadeLowQualityMismatches,
+            qualityOpacity.zero,
+            qualityOpacity.slope,
+            qualityOpacity.min,
+            qualityOpacity.max,
           )
           if (opacity < MIN_QUALITY_LETTER_OPACITY) {
             continue

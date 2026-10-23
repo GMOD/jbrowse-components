@@ -64,9 +64,12 @@ public struct Uniforms {
   // 1 = filter low-freq mismatches/insertions/gaps by coverage depth (default);
   // 0 = show all at full alpha (user has disabled frequency filtering)
   public int fadeLowFrequencyMismatches;
-  // 1 = fade mismatch bases by their per-base Phred quality (advanced setting);
-  // 0 = full alpha regardless of quality.
-  public int fadeLowQualityMismatches;
+  // `pileup.mismatches.encoding.opacity` as mismatch.slang's `qualityFade`
+  // reads it (`QualityOpacity` in TS).
+  public float qualityOpacityZero;
+  public float qualityOpacitySlope;
+  public float qualityOpacityMin;
+  public float qualityOpacityMax;
   public float reversed;
 
   // Color palette — each uint is a packed ABGR value (1 byte per channel,

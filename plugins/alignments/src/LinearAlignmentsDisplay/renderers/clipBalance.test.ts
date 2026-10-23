@@ -3,6 +3,7 @@ import { arcStrokeScale } from '../../features/arcs/arcLineWidth.ts'
 import { buildArcBandFeeds } from '../../features/arcs/bandFeed.ts'
 import { ARC_SHAPE_ARC } from '../../features/arcs/shapes.ts'
 import { emptyArcsUploadData } from '../../features/arcs/types.ts'
+import { OPAQUE_MISMATCHES } from '../../features/mismatch/qualityOpacity.ts'
 import { makeTestPalette } from '../testUtils.ts'
 import { drawAlignmentsToCtx } from './Canvas2DAlignmentsRenderer.ts'
 
@@ -172,7 +173,7 @@ function state(): RenderState {
     coverageSymlogConstant: 1,
     showMismatches: true,
     fadeLowFrequencyMismatches: false,
-    fadeLowQualityMismatches: false,
+    qualityOpacity: OPAQUE_MISMATCHES,
     showSoftClipping: false,
     showInterbaseIndicators: false,
     showModifications: false,

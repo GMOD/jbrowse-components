@@ -1115,6 +1115,28 @@ const layerCheckbox = (label: string, note?: string): FieldRecipe => {
     step((value as { show?: unknown } | undefined)?.show, context)
 }
 
+// Same label in the same submenu on both displays that have the slot: the
+// alignments "Show..." menu (menus/reads.ts) and LGVSyntenyDisplay's trimmed
+// copy of it (LGVSyntenyDisplay/menus.ts), so one path serves both. The
+// quality fade's checkbox writes `encoding.opacity.field` alone; a written
+// scale has no row.
+const mismatchesLayer = layerCheckbox(
+  'Show... → Mismatches',
+  'Per-base differences read from the CIGAR (and cs tag, on synteny tracks). Worth unchecking when zoomed out far enough that each one is sub-pixel and they paint over the block structure.',
+)
+const mismatchesFade = checkbox('Show... → Fade low quality mismatches')
+const mismatchesStep: FieldRecipe = (value, context) => {
+  const opacity = channelOf(asRecord(asRecord(value)?.encoding)?.opacity)
+  const field = asString(opacity?.field)
+  const steps = [
+    mismatchesLayer(value, context),
+    field === undefined
+      ? undefined
+      : mismatchesFade(field === 'baseQuality', context),
+  ].flatMap(step => (step === undefined ? [] : step))
+  return steps.length > 0 ? steps : undefined
+}
+
 // A display's `filter` list, each entry as the row that writes it: an
 // expression is a "Filter by..." dialog entry, a read category one of the
 // alignments category radios (their labels off `READ_CATEGORIES`, which the
@@ -1945,13 +1967,7 @@ export const trackFields: Record<string, FieldRecipe> = {
     'Show... → Sashimi arcs',
     'Hides the splice-junction arcs and keeps the coverage band underneath them.',
   ),
-  // Same label in the same submenu on both displays that have the slot: the
-  // alignments "Show..." menu (menus/reads.ts) and LGVSyntenyDisplay's trimmed
-  // copy of it (LGVSyntenyDisplay/menus.ts), so one path serves both.
-  'pileup.mismatches': layerCheckbox(
-    'Show... → Mismatches',
-    'Per-base differences read from the CIGAR (and cs tag, on synteny tracks). Worth unchecking when zoomed out far enough that each one is sub-pixel and they paint over the block structure.',
-  ),
+  'pileup.mismatches': mismatchesStep,
   // A 'draw'/'skip' enum behind a checkbox, so it can't use `checkbox()` (which
   // only takes booleans). Label and polarity from the multi-sample variant
   // displays' own menu item: checked means 'draw'.

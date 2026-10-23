@@ -4,19 +4,21 @@
 // Scalar twins of mismatch.slang, transliterated from slangc's WGSL so
 // the Canvas2D and SVG paths run the shader's own math. See adr-051.
 
+function _clamp(x: number, lo: number, hi: number) {
+  return _min(_max(x, lo), hi)
+}
+
+function _max(a: number, b: number) {
+  return b > a || Number.isNaN(a) ? b : a
+}
+
 function _min(a: number, b: number) {
   return b < a || Number.isNaN(a) ? b : a
 }
 
-export function qualityFade(qual: number, enabled: boolean): number {
-  let _t0: boolean
-  if (enabled) {
-    _t0 = (qual != 255.0)
-  } else {
-    _t0 = false
-  }
-  if (_t0) {
-    return _min(1.0, (qual / 50.0))
+export function qualityFade(qual: number, zero: number, slope: number, lo: number, hi: number): number {
+  if ((qual != 255.0)) {
+    return _clamp(((qual - zero) * slope), lo, hi)
   }
   return 1.0
 }

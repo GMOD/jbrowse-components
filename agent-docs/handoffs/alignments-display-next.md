@@ -1,6 +1,6 @@
 ---
 name: alignments-display-next
-description: "What is left of the 2026-10-22 LinearAlignmentsDisplay review now that ADR-240's open calls 2 and 3 are closed: the quality fade as opacity (step 2b), the deprecated colorBy getter, and ggjbrowse's dog10k_lof page, blocked on its data host's expired certificate. The other ADR-240 steps are ordered in vega-lite-vocabulary.md."
+description: "What is left of the 2026-10-22 LinearAlignmentsDisplay review now that ADR-240's open calls 2 and 3 are closed: the deprecated colorBy getter, ggjbrowse's quality-fade argument, and its dog10k_lof page, blocked on its data host's expired certificate. The other ADR-240 steps are ordered in vega-lite-vocabulary.md."
 ---
 
 # LinearAlignmentsDisplay: next steps
@@ -14,9 +14,6 @@ starting it.
 
 ## ADR-240 work outside the vocabulary handoff
 
-- **Step 2b, the quality fade as opacity:** `pileup.mismatches.encoding.opacity`
-  over `baseQuality`; two uniforms and a subtract, checked by one run of the
-  mismatch bench.
 - **The deprecated `display.colorBy` getter** and its exported `ColorBy` /
   `ReadColorBy` types restate `colorField` for external plugins
   (`readColorByOf`); drop them at the next ABI break
@@ -32,6 +29,11 @@ starting it.
 
 ## ggjbrowse
 
+- `R/geoms-alignments.R` (`mark_alpha`) still reads `pileup$fadeLowBaseQuality`
+  and passes `fadeLowBaseQuality` to `alignmentMarkAlpha`, which ignores it
+  now: the engine takes `mismatchOpacity`, the display's
+  `pileup.mismatches.encoding.opacity` as written. Re-pinned before it moves,
+  ggjbrowse draws every mismatch opaque.
 - `dog10k_lof` is the one tutorial page not re-knit at the 2026-10-23 pin:
   its callset host, kiddlabshare.med.umich.edu, serves an expired TLS
   certificate, so the knit and ggjbrowse's Docs CI fail on it. Re-knit it with

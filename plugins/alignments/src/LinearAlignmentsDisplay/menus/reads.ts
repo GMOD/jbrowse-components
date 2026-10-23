@@ -10,6 +10,7 @@ import {
 } from './groupByMenu.ts'
 import { sashimiShowItems } from './sashimi.ts'
 
+import type { MismatchOpacityField } from '../../features/mismatch/qualityOpacity.ts'
 import type { AlignmentsUnit } from '../constants.ts'
 import type {
   CollapseSectionsModel,
@@ -38,8 +39,8 @@ interface ReadsModel
   unit: AlignmentsUnit
   showInterbaseIndicators: boolean
   setShowInterbaseIndicators: (show: boolean) => void
-  fadeLowBaseQuality: boolean
-  setFadeLowBaseQuality: (value: boolean) => void
+  mismatchOpacityField: MismatchOpacityField
+  setMismatchOpacityField: (field: MismatchOpacityField) => void
 }
 
 // Visibility of the rendering layers. Read connections live in their own menu.
@@ -90,9 +91,9 @@ export function getReadsMenuItems(model: ReadsModel) {
     }),
     toggleItem(
       'Fade low quality mismatches',
-      model.fadeLowBaseQuality,
+      model.mismatchOpacityField === 'baseQuality',
       fade => {
-        model.setFadeLowBaseQuality(fade)
+        model.setMismatchOpacityField(fade ? 'baseQuality' : '')
       },
     ),
     // The worker forces soft clipping off in chain mode

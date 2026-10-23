@@ -168,7 +168,11 @@ export function writePileupFrame(
   // The coverage band's own slots are NOT here: its marks write render-core's
   // `CoverageBandUniforms` into their own buffer before each of their passes.
   i32[UI.fadeLowFrequencyMismatches] = state.fadeLowFrequencyMismatches ? 1 : 0
-  i32[UI.fadeLowQualityMismatches] = state.fadeLowQualityMismatches ? 1 : 0
+  const { qualityOpacity } = state
+  f32[U.qualityOpacityZero] = qualityOpacity.zero
+  f32[U.qualityOpacitySlope] = qualityOpacity.slope
+  f32[U.qualityOpacityMin] = qualityOpacity.min
+  f32[U.qualityOpacityMax] = qualityOpacity.max
   // Chevron gating only — chain mode's effect on read COLOR is resolved on the
   // CPU into `readColorCategories`, so the shader no longer branches on it for
   // fills.

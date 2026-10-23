@@ -103,8 +103,8 @@ export const LABEL_FADE_FLOOR = 0.5
 // floor alone — not the size labels', which is LABEL_FADE_FLOOR above. The
 // quality ramp is a property of the base rather than of the zoom, so it rightly
 // goes all the way to nothing, and raising this to make a faint label legible
-// deletes letters instead: `qualityFade` is qual/50, so a floor of 0.5 drops
-// every base under Phred 25.
+// deletes letters instead: under the default scale `qualityFade` is qual/50,
+// so a floor of 0.5 drops every base under Phred 25.
 export const MIN_QUALITY_LETTER_OPACITY = 0.05
 
 // GLSL/WGSL smoothstep, matching the Canvas2D fades elsewhere in the plugin.

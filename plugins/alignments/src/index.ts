@@ -99,6 +99,10 @@ export type { ArcBandFeed } from './features/arcs/bandFeed.ts'
 export type { SashimiBandFeed } from './features/sashimi/bandFeed.ts'
 export type { ConnectorFeed } from './features/linkedReads/connectorFeed.ts'
 export type {
+  MismatchOpacityField,
+  QualityOpacity,
+} from './features/mismatch/qualityOpacity.ts'
+export type {
   ConnectorStyle,
   ConnectorStyler,
 } from './features/linkedReads/connectorStyle.ts'

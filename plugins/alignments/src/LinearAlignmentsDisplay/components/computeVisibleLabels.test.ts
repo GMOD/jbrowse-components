@@ -1,3 +1,7 @@
+import {
+  DEFAULT_QUALITY_FADE,
+  OPAQUE_MISMATCHES,
+} from '../../features/mismatch/qualityOpacity.ts'
 import { GAP_DELETION } from '../../shaders/slang/gap.consts.generated.ts'
 import { QUAL_UNAVAILABLE } from '../../shaders/slang/mismatch.consts.generated.ts'
 import { INTERBASE_INSERTION, INTERBASE_SOFTCLIP } from '../../shared/types.ts'
@@ -56,7 +60,7 @@ function run(rpcData: PileupDataResult, bpPerPx = 0.1, showMismatches = true) {
     featureHeight: 10,
     featureSpacing: 2,
     showMismatches,
-    fadeLowQualityMismatches: false,
+    qualityOpacity: OPAQUE_MISMATCHES,
     scrollTop: 0,
   })
 }
@@ -112,7 +116,7 @@ test('a collapsed section (pileupHeight 0) draws no labels', () => {
     featureHeight: 10,
     featureSpacing: 2,
     showMismatches: true,
-    fadeLowQualityMismatches: false,
+    qualityOpacity: OPAQUE_MISMATCHES,
     scrollTop: 0,
   })
   expect(labels).toHaveLength(0)
@@ -122,11 +126,11 @@ test('without the insertion all three SNP letters render', () => {
   expect(mismatchTexts(makeRpcData(threeMismatches))).toEqual(['A', 'C', 'G'])
 })
 
-// "Fade low quality mismatches" fades the SNP box (the mismatch mark /
-// mismatch.slang). The letter drawn on top has to fade with it, or the setting
+// `pileup.mismatches.encoding.opacity` fades the SNP box (the mismatch mark /
+// mismatch.slang). The letter drawn on top has to fade with it, or the fade
 // is a no-op at the only zoom letters appear at.
 describe('SNP letters carry the per-base quality fade', () => {
-  const qualLabels = (fadeLowQualityMismatches: boolean) =>
+  const qualLabels = (fade: boolean) =>
     computeVisibleLabels({
       view: {
         visibleRegions: [
@@ -163,7 +167,7 @@ describe('SNP letters carry the per-base quality fade', () => {
       featureHeight: 10,
       featureSpacing: 2,
       showMismatches: true,
-      fadeLowQualityMismatches,
+      qualityOpacity: fade ? DEFAULT_QUALITY_FADE : OPAQUE_MISMATCHES,
       scrollTop: 0,
     }).filter(l => l.type === 'mismatch')
 
@@ -280,7 +284,7 @@ describe('a deletion wider than the view labels its visible part', () => {
       featureHeight: 10,
       featureSpacing: 2,
       showMismatches: true,
-      fadeLowQualityMismatches: false,
+      qualityOpacity: OPAQUE_MISMATCHES,
       scrollTop: 0,
     }).find(l => l.type === 'deletion')
 
@@ -456,7 +460,7 @@ describe('the zoom gate agrees with the per-feature fade', () => {
       featureHeight: 10,
       featureSpacing: 2,
       showMismatches: true,
-      fadeLowQualityMismatches: false,
+      qualityOpacity: OPAQUE_MISMATCHES,
       scrollTop: 0,
     })
 
@@ -564,7 +568,7 @@ test('a grouped section near the top of its band stays visible after scrolling',
     featureHeight: 10,
     featureSpacing: 2,
     showMismatches: true,
-    fadeLowQualityMismatches: false,
+    qualityOpacity: OPAQUE_MISMATCHES,
     scrollTop: 200,
   })
   expect(labels.filter(l => l.type === 'mismatch')).toHaveLength(3)

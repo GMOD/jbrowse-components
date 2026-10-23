@@ -52,7 +52,8 @@ export const pileupConfigSchema = ConfigurationSchema(
     },
     /**
      * #slot mismatches
-     * How reads differ from the reference: `show`.
+     * How reads differ from the reference: `show`, and `encoding.opacity`,
+     * the fade by base quality.
      */
     mismatches: pileupMismatchesConfigSchema,
     /**
@@ -66,15 +67,6 @@ export const pileupConfigSchema = ConfigurationSchema(
      * `show`.
      */
     connectors: pileupConnectorsConfigSchema,
-    /**
-     * #slot
-     */
-    fadeLowBaseQuality: {
-      type: 'boolean',
-      defaultValue: false,
-      description:
-        'fade each mismatch base by its Phred base quality: opaque from 50 up, fading linearly below',
-    },
     /**
      * #slot
      */

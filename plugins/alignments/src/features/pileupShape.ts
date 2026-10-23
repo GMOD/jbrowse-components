@@ -406,7 +406,8 @@ function walk(
   const { fade, point, cell, decorate, bandOffset, bandHeight } = f
   const { constantAlpha } = f
   const { rule, opaqueCss, fadedCss } = f.tables
-  const { featureHeight, fadeLowQualityMismatches, chainMode } = state
+  const { featureHeight, chainMode } = state
+  const { zero, slope, min, max } = state.qualityOpacity
   const constantCss =
     ctx !== undefined &&
     keys === undefined &&
@@ -448,7 +449,7 @@ function walk(
       case Fade.cellFrequencyQuality: {
         frequencyFades = true
         frequencyBase = widthPx
-        alpha = qualityFade(quals![i]!, fadeLowQualityMismatches)
+        alpha = qualityFade(quals![i]!, zero, slope, min, max)
         break
       }
       case Fade.overlap: {

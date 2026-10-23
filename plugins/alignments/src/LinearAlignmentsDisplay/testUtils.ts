@@ -16,6 +16,7 @@ import { linearGenomeViewStateModelFactory as LinearGenomeViewModelFactory } fro
 
 import { baseWorkerPileupData } from '../RenderAlignmentDataRPC/testPileupData.ts'
 import { arcStrokeScale } from '../features/arcs/arcLineWidth.ts'
+import { OPAQUE_MISMATCHES } from '../features/mismatch/qualityOpacity.ts'
 import { nextRefsToTable } from '../shared/readNextRefs.ts'
 import { readCategoryColorsOf } from './colorUtils.ts'
 import configSchemaFactory from './configSchema.ts'
@@ -117,7 +118,7 @@ export function makeTestRenderState(
     sashimiHeight: 0,
     showMismatches: false,
     fadeLowFrequencyMismatches: false,
-    fadeLowQualityMismatches: false,
+    qualityOpacity: OPAQUE_MISMATCHES,
     showSoftClipping: false,
     showInterbaseIndicators: false,
     showModifications: false,

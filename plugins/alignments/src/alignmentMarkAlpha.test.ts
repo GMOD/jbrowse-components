@@ -51,7 +51,7 @@ test('a deletion fades by its width in px, a mismatch by quality and the zoom, a
     pxPerBp: 0.1,
     featureHeight: 7,
     fadeLowFrequency: true,
-    fadeLowBaseQuality: true,
+    mismatchOpacity: 'baseQuality',
     deletions: { length: [2, 30], fade: [0.5, 0] },
     mismatches: { fade: [0, 1], quality: [25, 255] },
     clips: { fade: [0, 0.5] },
@@ -75,14 +75,37 @@ test('a deletion fades by its width in px, a mismatch by quality and the zoom, a
   })
   expect(under.deletions.alpha).toEqual([0])
   expect(t.mismatches.alpha).toEqual([
-    qualityFade(25, true) * frequencyFadeGate(0.1, 0, true),
-    qualityFade(255, true) * frequencyFadeGate(0.1, 1, true),
+    qualityFade(25, 0, 1 / 50, 0, 1) * frequencyFadeGate(0.1, 0, true),
+    qualityFade(255, 0, 1 / 50, 0, 1) * frequencyFadeGate(0.1, 1, true),
   ])
   expect(t.mismatches.alpha[0]).toBeCloseTo(0.05, 10)
   expect(t.clips.alpha).toEqual([
     frequencyFadeGate(0.1, 0, true),
     frequencyFadeGate(0.1, 0.5, true),
   ])
+})
+
+test('a written opacity scale fades a mismatch along its own domain and range', () => {
+  const { mismatches } = alignmentMarkAlpha({
+    pxPerBp: 2,
+    mismatchOpacity: {
+      field: 'baseQuality',
+      scale: { domain: [10, 30], range: [0.2, 1] },
+    },
+    mismatches: { fade: [1, 1, 1], quality: [0, 20, 40] },
+  })
+  expect(mismatches.alpha[0]).toBeCloseTo(0.2, 10)
+  expect(mismatches.alpha[1]).toBeCloseTo(0.6, 10)
+  expect(mismatches.alpha[2]).toBe(1)
+})
+
+test('an undeclared opacity member is refused', () => {
+  expect(() =>
+    alignmentMarkAlpha({
+      pxPerBp: 1,
+      mismatchOpacity: { value: 0.5 } as never,
+    }),
+  ).toThrow()
 })
 
 test('with fadeLowFrequency off only size and quality fade a mark', () => {
@@ -113,7 +136,7 @@ test('a column may be one number, and a setting left out takes the pileup defaul
     pxPerBp: 0.5,
     featureHeight: 7,
     fadeLowFrequency: true,
-    fadeLowBaseQuality: false,
+    mismatchOpacity: { field: '' },
     insertions: { length: [3], fade: [0.2] },
     deletions: { length: [2], fade: [0] },
     mismatches: { fade: [0.5], quality: [255] },
@@ -131,7 +154,7 @@ test('a missing column, columns of two lengths and a bad pxPerBp are refused', (
     'mismatches.fade is missing',
   )
   expect(
-    call({ fadeLowBaseQuality: true, mismatches: { fade: [0.5] } }),
+    call({ mismatchOpacity: 'baseQuality', mismatches: { fade: [0.5] } }),
   ).toThrow('mismatches.quality is missing')
   expect(call({ insertions: { length: [1, 2], fade: [0] } })).toThrow(
     'insertions.fade has 1 rows where insertions.length has 2',

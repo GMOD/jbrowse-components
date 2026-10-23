@@ -104,6 +104,7 @@ import {
   buildBaseFadeCssMap,
 } from '../src/features/mismatch/baseColors.ts'
 import { MISMATCH_MARK } from '../src/features/mismatch/mark.ts'
+import { OPAQUE_MISMATCHES } from '../src/features/mismatch/qualityOpacity.ts'
 import { qualityRampCss } from '../src/features/perBaseQuality/colors.ts'
 import {
   Band,
@@ -219,7 +220,7 @@ function pileupHand(spec: PileupPaintSpec) {
       const bpLength = block.end - block.start
       const fullBlockWidth = block.screenEndPx - block.screenStartPx
       const featureHeight = state.featureHeight
-      const fadeLowQualityMismatches = state.fadeLowQualityMismatches
+      const { zero, slope, min, max } = state.qualityOpacity
       const chainMode = state.chainMode
       const constantAlpha =
         fade === Fade.intron ? intronAlpha(featureHeight) : 1
@@ -268,7 +269,7 @@ function pileupHand(spec: PileupPaintSpec) {
               case Fade.cellFrequencyQuality: {
                 alpha =
                   frequencyFade(state, widthPx, freqs![i]!) *
-                  qualityFade(quals![i]!, fadeLowQualityMismatches)
+                  qualityFade(quals![i]!, zero, slope, min, max)
                 break
               }
               case Fade.overlap: {
@@ -348,7 +349,7 @@ function pileupControl(spec: PileupPaintSpec) {
       const bpLength = block.end - block.start
       const fullBlockWidth = block.screenEndPx - block.screenStartPx
       const featureHeight = state.featureHeight
-      const fadeLowQualityMismatches = state.fadeLowQualityMismatches
+      const { zero, slope, min, max } = state.qualityOpacity
       const chainMode = state.chainMode
       const constantAlpha =
         fade === Fade.intron ? intronAlpha(featureHeight) : 1
@@ -397,7 +398,7 @@ function pileupControl(spec: PileupPaintSpec) {
               case Fade.cellFrequencyQuality: {
                 alpha =
                   frequencyFade(state, widthPx, freqs![i]!) *
-                  qualityFade(quals![i]!, fadeLowQualityMismatches)
+                  qualityFade(quals![i]!, zero, slope, min, max)
                 break
               }
               case Fade.overlap: {
@@ -517,7 +518,7 @@ function pileupState(): RenderState {
     scrollTop: 0,
     canvasWidth: FRAME.canvasWidth,
     canvasHeight: FRAME.canvasHeight,
-    fadeLowQualityMismatches: false,
+    qualityOpacity: OPAQUE_MISMATCHES,
     fadeLowFrequencyMismatches: true,
     chainMode: true,
     showMismatches: true,

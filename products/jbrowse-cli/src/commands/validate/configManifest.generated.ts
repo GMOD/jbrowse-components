@@ -4227,6 +4227,51 @@ export const configManifest: ConfigManifest = {
                 {
                   "name": "show",
                   "type": "boolean"
+                },
+                {
+                  "name": "encoding",
+                  "type": "PileupMismatchesEncodingConfigurationSchema",
+                  "subSlots": [
+                    {
+                      "name": "opacity",
+                      "type": "PileupMismatchesOpacityConfigurationSchema",
+                      "subSlots": [
+                        {
+                          "name": "field",
+                          "type": "PileupMismatchesOpacityField"
+                        },
+                        {
+                          "name": "scale",
+                          "type": "PileupMismatchesOpacityScaleConfigurationSchema",
+                          "subSlots": [
+                            {
+                              "name": "domain",
+                              "type": "string[]",
+                              "liftsNumbers": true
+                            },
+                            {
+                              "name": "range",
+                              "type": "string[]",
+                              "liftsNumbers": true
+                            },
+                            {
+                              "name": "clamp",
+                              "type": "boolean"
+                            }
+                          ],
+                          "schema": "PileupMismatchesOpacityScale",
+                          "writes": "members"
+                        }
+                      ],
+                      "schema": "PileupMismatchesOpacity",
+                      "writes": "whole",
+                      "shorthand": {
+                        "string": "field"
+                      }
+                    }
+                  ],
+                  "schema": "PileupMismatchesEncoding",
+                  "writes": "members"
                 }
               ],
               "schema": "PileupMismatches",
@@ -4255,10 +4300,6 @@ export const configManifest: ConfigManifest = {
               ],
               "schema": "PileupConnectors",
               "writes": "members"
-            },
-            {
-              "name": "fadeLowBaseQuality",
-              "type": "boolean"
             },
             {
               "name": "fadeLowFrequency",
@@ -5194,6 +5235,51 @@ export const configManifest: ConfigManifest = {
                 {
                   "name": "show",
                   "type": "boolean"
+                },
+                {
+                  "name": "encoding",
+                  "type": "PileupMismatchesEncodingConfigurationSchema",
+                  "subSlots": [
+                    {
+                      "name": "opacity",
+                      "type": "PileupMismatchesOpacityConfigurationSchema",
+                      "subSlots": [
+                        {
+                          "name": "field",
+                          "type": "PileupMismatchesOpacityField"
+                        },
+                        {
+                          "name": "scale",
+                          "type": "PileupMismatchesOpacityScaleConfigurationSchema",
+                          "subSlots": [
+                            {
+                              "name": "domain",
+                              "type": "string[]",
+                              "liftsNumbers": true
+                            },
+                            {
+                              "name": "range",
+                              "type": "string[]",
+                              "liftsNumbers": true
+                            },
+                            {
+                              "name": "clamp",
+                              "type": "boolean"
+                            }
+                          ],
+                          "schema": "PileupMismatchesOpacityScale",
+                          "writes": "members"
+                        }
+                      ],
+                      "schema": "PileupMismatchesOpacity",
+                      "writes": "whole",
+                      "shorthand": {
+                        "string": "field"
+                      }
+                    }
+                  ],
+                  "schema": "PileupMismatchesEncoding",
+                  "writes": "members"
                 }
               ],
               "schema": "PileupMismatches",
@@ -5222,10 +5308,6 @@ export const configManifest: ConfigManifest = {
               ],
               "schema": "PileupConnectors",
               "writes": "members"
-            },
-            {
-              "name": "fadeLowBaseQuality",
-              "type": "boolean"
             },
             {
               "name": "fadeLowFrequency",

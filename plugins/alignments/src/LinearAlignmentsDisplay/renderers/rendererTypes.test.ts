@@ -1,4 +1,5 @@
 import { arcStrokeScale } from '../../features/arcs/arcLineWidth.ts'
+import { OPAQUE_MISMATCHES } from '../../features/mismatch/qualityOpacity.ts'
 import { interbaseRangeEnds } from '../../shared/uploadTypes.ts'
 import { computeArcBand, pileupCellWidth } from './rendererTypes.ts'
 
@@ -54,7 +55,7 @@ function makeState(
     showPerBaseLetter: false,
     showMismatches: true,
     fadeLowFrequencyMismatches: true,
-    fadeLowQualityMismatches: false,
+    qualityOpacity: OPAQUE_MISMATCHES,
     showSoftClipping: false,
     showInterbaseIndicators: false,
     showModifications: false,
