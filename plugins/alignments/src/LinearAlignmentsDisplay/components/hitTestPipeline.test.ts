@@ -485,15 +485,31 @@ describe('contextMenuTargetForHit', () => {
   })
 
   // The depth histogram has a widget behind it, so it gets a menu like every
-  // other mark that does. Only an arc, a splice junction and a connector still
-  // fall through.
+  // other mark that does. Only an arc and a splice junction still fall through.
+  it('a connector opens the menu of the read a left click selects', () => {
+    const target = contextMenuTargetForHit(
+      {
+        type: 'connector',
+        hit: { id1: 'read1', id2: 'read2', readName: 'r', label: 'r' },
+        highlight: {
+          d: '',
+          clip: { x: 0, y: 0, width: 0, height: 0 },
+          lineWidth: 1,
+        },
+        nearerId: 'read2',
+      },
+      CANVAS_X,
+    )
+    expect(target).toStrictEqual({ featureId: 'read2' })
+  })
+
   it('a coverage hit carries the coverage hit but no feature', () => {
     const cov = { type: 'coverage', position: 1 } as const
     const target = contextMenuTargetForHit(
       { type: 'coverage', hit: cov, resolved },
       CANVAS_X,
     )
-    expect(target?.hit.coverageHit).toBe(cov)
+    expect(target?.hit?.coverageHit).toBe(cov)
     expect(target?.featureId).toBeUndefined()
   })
 
@@ -583,7 +599,7 @@ describe('contextMenuTargetForHit', () => {
       { type: 'indicator', hit: ind, resolved },
       CANVAS_X,
     )
-    expect(target?.hit.indicatorHit).toBe(ind)
+    expect(target?.hit?.indicatorHit).toBe(ind)
     expect(target?.featureId).toBeUndefined()
   })
 })

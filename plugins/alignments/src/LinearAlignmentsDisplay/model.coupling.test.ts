@@ -644,6 +644,15 @@ describe('ordering controls in chain mode', () => {
     ).toBe(true)
   })
 
+  test("a connector's menu is its read's, with no column to sort on", () => {
+    const display = createDisplay()
+    display.openContextMenu({ clientX: 0, clientY: 0, featureId: 'read1' })
+    expect(
+      hasMenuItem(display.contextMenuItems(), 'Open feature details'),
+    ).toBe(true)
+    expect(hasMenuItem(display.contextMenuItems(), 'Sort by...')).toBe(false)
+  })
+
   // `rpcProps()` is the fetch cache key (through `settingsFetchInputs`), so
   // anything in it that nothing then reads buys a refetch for nothing. Chain
   // layout reads neither soft clipping nor the sort tag.

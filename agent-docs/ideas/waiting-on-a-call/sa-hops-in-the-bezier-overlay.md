@@ -160,13 +160,11 @@ not plumbing:
   land in the region that copy came from, so the other window draws the reads
   again with no connector. A split view can keep a panel per visit, since
   each panel there is a separate view.
-- **The gesture is the open half.** A connector (ADR-225) offers no context
-  menu (`contextMenuTargetForHit` answers none for it), and a plain click
-  already selects the nearer endpoint. Either a right-click item on the
-  connector (the display's `openContextMenu` builds its items from a read
-  feature, so a connector needs its own item source) or a modified click.
-  Decide that before the plumbing, since it fixes where the region list is
-  built.
+- **The gesture is the nearer read's menu.** A connector's right-click opens
+  the menu of the read a left click selects (ADR-225), so the hop item goes in
+  that read's "View split alignments" submenu, built from the fetched read's
+  segments plus the connector the menu was opened from
+  (`connector?: ConnectorHit` on `ContextMenuTarget`).
 
 ---
 

@@ -111,15 +111,16 @@ export interface ContextMenuHit {
 }
 
 export interface ContextMenuTarget {
-  hit: ContextMenuHit
+  // Absent for a connector, which can span a gap no block covers.
+  hit?: ContextMenuHit
   // The read under the cursor, when the hit resolved one.
   featureId?: string
 }
 
 // What a right-click resolves to, or undefined for a mark with nothing to
 // offer — which falls through to the BROWSER's menu rather than opening an
-// empty one. Three marks do: an arc, a splice junction and a connector, none of
-// which has a menu of its own (ADR-225 for the connector).
+// empty one. Two marks do: an arc and a splice junction. A connector opens the
+// menu of the read a left click on it selects.
 //
 // A cigar/modification hit carries the read's featureId so the read's own items
 // (view mate, feature details) stay reachable over a mismatched or modified
@@ -133,10 +134,12 @@ export function contextMenuTargetForHit(
   if (
     result.type === 'none' ||
     result.type === 'arc' ||
-    result.type === 'sashimi' ||
-    result.type === 'connector'
+    result.type === 'sashimi'
   ) {
     return undefined
+  }
+  if (result.type === 'connector') {
+    return { featureId: result.nearerId }
   }
   const block = result.resolved
   const base = { block, genomicPos: canvasXToBasePos(canvasX, block) }

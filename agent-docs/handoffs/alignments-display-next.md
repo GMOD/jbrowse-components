@@ -1,6 +1,6 @@
 ---
 name: alignments-display-next
-description: "What is left of the 2026-10-22 LinearAlignmentsDisplay review now that ADR-240's open calls 2 and 3 are closed: the quality fade as opacity (step 2b), the internal ColorBy scheme object, a connector's right-click (waits on the SA-hops gesture call), and ggjbrowse's stale published pages. The other ADR-240 steps are ordered in vega-lite-vocabulary.md."
+description: "What is left of the 2026-10-22 LinearAlignmentsDisplay review now that ADR-240's open calls 2 and 3 are closed: the quality fade as opacity (step 2b), the internal ColorBy scheme object, and ggjbrowse's stale published pages. The other ADR-240 steps are ordered in vega-lite-vocabulary.md."
 ---
 
 # LinearAlignmentsDisplay: next steps
@@ -22,20 +22,6 @@ starting it.
   `color.field` in v4's scheme names, and the RPC arguments are still
   `filterBy` and `colorBy`. One field classifier serving color, facet, sort and
   predicates removes the translation. It changes no config path.
-
-## A connector's right-click
-
-Right-clicking a pileup connector opens the browser's menu
-(`contextMenuTargetForHit`). Colin's call, and it waits on the gesture the
-SA-hops idea needs (`ideas/waiting-on-a-call/sa-hops-in-the-bezier-overlay.md`):
-giving the right-click to the nearer read's menu uses it up.
-
-- Within `ARC_HIT_SLOP_PX` of a connector crossing a read, the connector
-  outranks the read (`useAlignmentsBase.ts`), so that read's own menu is
-  unreachable there.
-- `ContextMenuHit` requires a block and `ConnectorMarkHit` has none; under the
-  gap a cross-region connector spans, `runHitTest` finds no fetched block
-  either. `hitTestPipeline.test.ts` pins "no menu".
 
 ## Settled, not to re-open
 

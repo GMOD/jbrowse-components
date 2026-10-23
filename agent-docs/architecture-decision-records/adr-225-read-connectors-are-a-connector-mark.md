@@ -87,8 +87,9 @@ from the GPU, so it is not pursued.
 - A connector with an end in a displayed region past index 255 draws nothing,
   the link mark's table limit.
 - `plotOnly` exports now carry the connectors, which are on the canvas.
-- A connector still offers no context menu (`contextMenuTargetForHit`), as the
-  overlay did not.
+- A connector's right-click opens the menu of the read its left click selects,
+  the nearer end (`contextMenuTargetForHit`, amended 2026-10-23). The overlay
+  offered none.
 - `PileupBezierOverlay`, `PileupBezierArcsSvg`, `SectionBandClip`,
   `pileupBezierArcs.ts`, `computePileupBezierArcs` and `bezierArcKey` go. The
   projection's tests run through the feed and the mark.
