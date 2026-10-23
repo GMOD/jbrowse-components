@@ -38,7 +38,7 @@ export const circrnaSpecs: ScreenshotSpec[] = [
             color: DUPLICATION_TYPE_TEAL,
           },
         ],
-        anchor: { trackId: READS, loc: 'chr7:100,025,300', fracY: 0.1 },
+        anchor: { trackId: READS, loc: 'chr7:100,024,750', fracY: 0.1 },
       },
     ],
   },
