@@ -268,6 +268,32 @@
     },
     {
       "type": "SyntenyTrack",
+      "trackId": "grape_peach_anchors",
+      "name": "Grape peach synteny (MCScan, anchors)",
+      "assemblyNames": ["GCF_030704535.1", "GCF_000346465.2"],
+      "adapter": {
+        "type": "MCScanAnchorsAdapter",
+        "uri": "grape.peach.anchors.gz",
+        "bed1": "grape.bed.gz",
+        "bed2": "peach.bed.gz",
+        "assemblyNames": ["GCF_030704535.1", "GCF_000346465.2"]
+      }
+    },
+    {
+      "type": "SyntenyTrack",
+      "trackId": "grape_peach_anchors_simple",
+      "name": "Grape peach synteny (MCScan, simple anchors)",
+      "assemblyNames": ["GCF_030704535.1", "GCF_000346465.2"],
+      "adapter": {
+        "type": "MCScanSimpleAnchorsAdapter",
+        "uri": "grape.peach.anchors.simple.gz",
+        "bed1": "grape.bed.gz",
+        "bed2": "peach.bed.gz",
+        "assemblyNames": ["GCF_030704535.1", "GCF_000346465.2"]
+      }
+    },
+    {
+      "type": "SyntenyTrack",
       "trackId": "grape_peach_cacao_blocks",
       "name": "Grape vs peach, cacao, arabidopsis, poplar, tomato, citrus (MCScan blocks)",
       "_comment_assemblyNames": "The three assemblies this config DECLARES, not the seven columns the table has. A track whose assemblyNames name an assembly the config does not define makes the stacked LinearSyntenyView fail to resolve it, and all three rows come up 'No tracks active'. The extra four are blocks-only mates: they exist in the adapter below, which is what draws their lanes in an LGV, and they need no assembly because a lane is resolved from the table plus that genome's BED.",

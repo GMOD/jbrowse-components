@@ -127,7 +127,7 @@ done
 # ── jcvi: orthologs vs grape, MCScan each pair, join into one .blocks table ───
 for sp in "${MATES[@]}"; do
   [ -f "grape.$sp.lifted.anchors" ] || \
-    python -m jcvi.compara.catalog ortholog --no_strip_names grape "$sp"
+    python -m jcvi.compara.catalog ortholog --no_strip_names --no_dotplot grape "$sp"
   [ -f "grape.$sp.i1.blocks" ] || \
     python -m jcvi.compara.synteny mcscan grape.bed "grape.$sp.lifted.anchors" \
       --iter=1 -o "grape.$sp.i1.blocks"
@@ -148,8 +148,17 @@ if [ ! -f grape.blocks ]; then
     --noheader | cut -f"$keep" > grape.blocks
 fi
 
+# ── The pairwise grape-peach files ───────────────────────────────────────────
+# website/docs/tutorials/mcscan_synteny_grape_peach.md loads the grape-peach
+# gene pairs the catalog step wrote, and the blocks screen --simple reduces
+# them to, on these same BEDs; build_grape_peach_anchors.sh runs the same steps.
+[ -f grape.peach.anchors.simple ] || \
+  python -m jcvi.compara.synteny screen --minspan=30 --simple \
+    grape.peach.anchors grape.peach.anchors.new
+
 # ── Compress blocks + BEDs (the adapter reads plain or gzipped) ──────────────
-gzip -kf grape.blocks "${COLUMNS[@]/%/.bed}"
+gzip -kf grape.blocks "${COLUMNS[@]/%/.bed}" \
+  grape.peach.anchors grape.peach.anchors.simple
 
 # ── What the reference column costs the non-reference bands ──────────────────
 # The tutorial's "direct vs transitive pairs" section, read off the table
@@ -240,9 +249,32 @@ parts = {n: hub_parts(n) for n in accession}
 declared = [accession[n] for n in accession]
 columns = [accession.get(n, n) for n in names]
 
+def anchors_track(track_id, name, adapter, uri):
+    pair = [accession['grape'], accession['peach']]
+    return {
+        'type': 'SyntenyTrack',
+        'trackId': track_id,
+        'name': name,
+        'assemblyNames': pair,
+        'adapter': {
+            'type': adapter,
+            'uri': uri,
+            'bed1': 'grape.bed.gz',
+            'bed2': 'peach.bed.gz',
+            'assemblyNames': pair,
+        },
+    }
+
+
 config = {
     'assemblies': [parts[n][0] for n in accession],
-    'tracks': [parts[n][1] for n in accession] + [{
+    'tracks': [parts[n][1] for n in accession] + [
+        anchors_track('grape_peach_anchors', 'Grape peach synteny (MCScan, anchors)',
+                      'MCScanAnchorsAdapter', 'grape.peach.anchors.gz'),
+        anchors_track('grape_peach_anchors_simple',
+                      'Grape peach synteny (MCScan, simple anchors)',
+                      'MCScanSimpleAnchorsAdapter', 'grape.peach.anchors.simple.gz'),
+    ] + [{
         'type': 'SyntenyTrack',
         'trackId': 'grape_peach_cacao_blocks',
         'name': 'Grape vs %s (MCScan blocks)' % ', '.join(names[1:]),
