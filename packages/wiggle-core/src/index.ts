@@ -7,10 +7,8 @@ export {
   valueScaleSchema,
 } from './valueScaleConfigSchema.ts'
 export { yChannelSchema } from './yChannelConfigSchema.ts'
-export type {
-  YChannelConfigSchema,
-  YChannelOptions,
-} from './yChannelConfigSchema.ts'
+export type { YChannelConfigSchema } from './yChannelConfigSchema.ts'
+export type { YScaleOptions } from './yScaleConfigSchema.ts'
 export type {
   ScalesConfigSchema,
   ValueScaleConfigSchema,

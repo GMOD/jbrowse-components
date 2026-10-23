@@ -1,25 +1,24 @@
 ---
 id: valuescale
 title: ValueScale
-description: "The value scale of a quantitative display, written as scales.y: the wiggle plot, the alignments coverage band and the mark display, the Manhattan plot among them, each have one, with the axis guides…"
+description: "The value scale of a quantitative display, written as scales.y: the wiggle plot and the mark display, the Manhattan plot among them, each have one, with the axis guides it draws — its ticks, its…"
 sidebar_label: Display -> ValueScale
 ---
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/valueScaleConfigSchema.ts).
 
 The value scale of a quantitative display, written as `scales.y`: the
-wiggle plot, the alignments coverage band and the mark display, the
-Manhattan plot among them, each have one, with the axis guides it draws —
-its ticks, its `grid`, its `rules` and its `title`.
+wiggle plot and the mark display, the Manhattan plot among them, each have
+one, with the axis guides it draws — its ticks, its `grid`, its `rules` and
+its `title`. The coverage band of the alignments and MAF displays writes
+its axis as `coverage.encoding.y`, a [YChannel](../ychannel).
 
 Vega-Lite's spelling: a pinned end is `domainMin` or `domainMax`, an end
 left unset autoscales over the loaded regions, and `zero` sets whether an
 autoscaled linear or symlog axis reaches 0 whatever those regions hold.
 
-Two defaults come from the display rather than from the scale.
 `domainQuantile` starts at `0.99` on the wiggle plot, fencing a spike, and
-at `1`, the extremes, on the coverage band and the mark display. `symlogConstant` starts at `0` on the wiggle family and the mark
-display and at `1` on the coverage band.
+at `1`, the extremes, on the mark display.
 
 Every scale has the same guides: `rules`, reference lines at chosen
 values, `grid`, a line at every tick, `minimalTicks`, and `title`, the
@@ -57,12 +56,12 @@ displays start on:
 }
 ```
 
-Three samples' coverage on one axis that still follows the data, each
+Three samples' signal on one axis that still follows the data, each
 track's display naming the same group:
 
 ```js
 {
-  type: 'LinearAlignmentsDisplay',
+  type: 'LinearWiggleDisplay',
   scales: { y: { autoscaleGroup: 'depth' } },
 }
 ```
@@ -97,7 +96,7 @@ A setting written to it names members one by one: a member left out stays as it 
 | <span id="slot-scalesydomainmax">**scales.y.domainMax**</span><br>[`maybeNumber`](/docs/config_guides/slot_types#the-maybe-types) | The top of the axis. Unset autoscales that end. |
 | <span id="slot-scalesyzero">**scales.y.zero**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | Whether an autoscaled linear or symlog axis reaches 0 whatever the loaded values span, Vega-Lite's `zero`. On, a plot of values between 30 and 60 draws 0 to 60, and a bar always shows its whole height. Off, the axis spans the values alone. A pinned end is unmoved either way, a log axis has no 0, and a density plot, which maps score to color and has no axis, spans its values whatever this says. The Y axis panel's "Include 0" toggles it. |
 | <span id="slot-scalesyautoscalegroup">**scales.y.autoscaleGroup**</span><br>[`maybeString`](/docs/config_guides/slot_types#the-maybe-types) | A name shared by the tracks whose axes autoscale together: each unpinned end spans the data of every track in the view naming the same group, so three coverage lanes stay comparable as the view moves. A pinned end stays this track's own. The Y axis panel's "Share axis with" writes it. |
-| <span id="slot-scalesysymlogconstant">**scales.y.symlogConstant**</span><br>[`number`](/docs/config_guides/slot_types#number) = per display | Width of symlog's linear region around zero. `0` derives it from the domain, a thousandth of its largest magnitude — right for a wiggle track, whose units depend on the dataset. The coverage band starts at `1` instead, which makes symlog exactly `log(depth+1)` and puts the knee at one read.<br>_advanced_ |
+| <span id="slot-scalesysymlogconstant">**scales.y.symlogConstant**</span><br>[`number`](/docs/config_guides/slot_types#number) = per display | Width of symlog's linear region around zero. `0` derives it from the domain, a thousandth of its largest magnitude — right for a wiggle track, whose units depend on the dataset.<br>_advanced_ |
 | <span id="slot-scalesydomainquantile">**scales.y.domainQuantile**</span><br>[`number`](/docs/config_guides/slot_types#number) = per display | The fence for an unpinned end's outliers. An end follows the loaded values' extreme; below `1`, an extreme that would stretch the axis past twice the span this quantile of the values draws stops at that fence, and the bars past it show the red clip strip. So `0.99` leaves a plot with no spike whole and keeps one spike from flattening the rest. Each end's quantile is measured among the values on its side of 0, so a sparse minority tail stays visible, and the span includes 0 where `zero` reaches it. A color ramp's `domainQuantile` clips at the quantile itself, since the key shows what a saturated color stands for. The Y axis panel's "Clip extreme outliers" toggles it. |
 | <span id="slot-scalesygrid">**scales.y.grid**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | Rule the plot across at every tick, ggplot2's panel grid and Vega-Lite's `axis.grid`. The Y axis panel's "Grid lines" toggles it. |
 | <span id="slot-scalesyminimalticks">**scales.y.minimalTicks**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | Label only the two ends of the axis.<br>_advanced_ |

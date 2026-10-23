@@ -1,18 +1,19 @@
 ---
 id: mafencoding
 title: MafEncoding
-description: "The MAF display's encoding, the channels its aligned cells paint through."
+description: "The MAF display's encoding, the channels its aligned cells paint through and the field its rows' bars show."
 sidebar_label: Display -> MafEncoding
 ---
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `maf` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/maf/src/LinearMafDisplay/mafEncodingConfigSchema.ts).
 
-The MAF display's `encoding`, the channels its aligned cells paint through.
+The MAF display's `encoding`, the channels its aligned cells paint through
+and the field its rows' bars show.
 
 ## Example usage
 
 ```js
-{ type: 'LinearMafDisplay', encoding: { color: 'identity' }, y: 'identity' }
+{ type: 'LinearMafDisplay', encoding: { color: 'identity', y: 'identity' } }
 ```
 
 ## Config slots
@@ -23,3 +24,4 @@ A setting written to it names members one by one: a member left out stays as it 
 | Slot | Description |
 | --- | --- |
 | <span id="slot-color">**color**</span><br>[MafColor](../mafcolor) | What each aligned cell paints: `mismatch`, `base`, `identity`, `chromosome` or `codon`, and the scale its values map through. |
+| <span id="slot-y">**y**</span><br>[MafY](../mafy) | The value a row's bar height shows: `identity`, or unset for none. |

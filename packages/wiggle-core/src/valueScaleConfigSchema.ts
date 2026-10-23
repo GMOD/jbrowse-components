@@ -65,18 +65,17 @@ export type ValueScaleRuleConfig = Instance<
  * #config ValueScale
  * #category display
  * The value scale of a quantitative display, written as `scales.y`: the
- * wiggle plot, the alignments coverage band and the mark display, the
- * Manhattan plot among them, each have one, with the axis guides it draws —
- * its ticks, its `grid`, its `rules` and its `title`.
+ * wiggle plot and the mark display, the Manhattan plot among them, each have
+ * one, with the axis guides it draws — its ticks, its `grid`, its `rules` and
+ * its `title`. The coverage band of the alignments and MAF displays writes
+ * its axis as `coverage.encoding.y`, a [YChannel](../ychannel).
  *
  * Vega-Lite's spelling: a pinned end is `domainMin` or `domainMax`, an end
  * left unset autoscales over the loaded regions, and `zero` sets whether an
  * autoscaled linear or symlog axis reaches 0 whatever those regions hold.
  *
- * Two defaults come from the display rather than from the scale.
  * `domainQuantile` starts at `0.99` on the wiggle plot, fencing a spike, and
- * at `1`, the extremes, on the coverage band and the mark display. `symlogConstant` starts at `0` on the wiggle family and the mark
- * display and at `1` on the coverage band.
+ * at `1`, the extremes, on the mark display.
  *
  * Every scale has the same guides: `rules`, reference lines at chosen
  * values, `grid`, a line at every tick, `minimalTicks`, and `title`, the
@@ -113,11 +112,11 @@ export type ValueScaleRuleConfig = Instance<
  * ```
  *
  * #example
- * Three samples' coverage on one axis that still follows the data, each
+ * Three samples' signal on one axis that still follows the data, each
  * track's display naming the same group:
  * ```js
  * {
- *   type: 'LinearAlignmentsDisplay',
+ *   type: 'LinearWiggleDisplay',
  *   scales: { y: { autoscaleGroup: 'depth' } },
  * }
  * ```
@@ -210,9 +209,7 @@ export function valueScaleSchema({
        * #slot scales.y.symlogConstant
        * Width of symlog's linear region around zero. `0` derives it from
        * the domain, a thousandth of its largest magnitude — right for a
-       * wiggle track, whose units depend on the dataset. The coverage band starts
-       * at `1` instead, which makes symlog exactly `log(depth+1)` and
-       * puts the knee at one read.
+       * wiggle track, whose units depend on the dataset.
        */
       symlogConstant: {
         type: 'number',

@@ -117,7 +117,7 @@ more than eleven parts erases every prop rather than failing:
   RowHeightMixin(),
   TreeSidebarMixin<MafSource>(),
   ContextMenuMixin<MafContextMenuInfo>(),
-  ScoreScaleMixin(),
+  ScoreScaleMixin(COVERAGE_Y_PATHS),
   types.model({
     /**
      * #property

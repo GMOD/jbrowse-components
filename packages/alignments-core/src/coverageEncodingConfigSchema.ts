@@ -24,6 +24,7 @@ export const coverageEncodingConfigSchema = ConfigurationSchema(
   {
     /**
      * #slot y
+     * The depth axis: `scale`, `axis` and `rules`.
      */
     y: yChannelSchema({ constant: 1 }),
   },

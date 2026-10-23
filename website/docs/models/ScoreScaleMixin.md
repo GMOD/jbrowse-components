@@ -1,17 +1,19 @@
 ---
 id: scorescalemixin
 title: ScoreScaleMixin
-description: "Value scale, written in scales.y. valueScaleSchema / scalesSchema."
+description: "Value scale, written in scales.y or a YScalePaths map's paths (the coverage band's coverage.encoding.y). valueScaleSchema / scalesSchema / yChannelSchema."
 sidebar_label: Mixin -> ScoreScaleMixin
 ---
 
 Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/ScoreScaleMixin.ts).
 
-Value scale, written in `scales.y`. `valueScaleSchema` / `scalesSchema`. Brings `ScoreAxisMixin` plus `scaleType` / `scaleZero` / `domainQuantile` / `clipQuantile` / `symlogConstant` / `manual*` and their setters, i.e. the whole `ScoreScaleModel` interface the Y axis row and its drawer widget consume
+Value scale, written in `scales.y` or a `YScalePaths` map's paths (the coverage band's `coverage.encoding.y`). `valueScaleSchema` / `scalesSchema` / `yChannelSchema`. Brings `ScoreAxisMixin` plus `scaleType` / `scaleZero` / `domainQuantile` / `clipQuantile` / `symlogConstant` / `manual*` and their setters, i.e. the whole `ScoreScaleModel` interface the Y axis row and its drawer widget consume
 
-The value scale of every quantitative display: wiggle, the alignments
-coverage band and the mark display, Manhattan among them, each declare
-`scales.y` through valueScaleSchema and compose this. It backs
+The value scale of every quantitative display: wiggle and the mark
+display, Manhattan among them, declare `scales.y` through
+valueScaleSchema, and the alignments, LGVSynteny and MAF coverage
+band `coverage.encoding.y` through yChannelSchema; each composes
+this with the map to its members. It backs
 ScoreAxisMixin's three overridable members off that object and adds
 the setters that write it, so composing this is how a display satisfies
 ScoreScaleModel in `scoreMenuItems.ts` — the interface the Y axis
@@ -48,7 +50,7 @@ Each section ends with the members a composed model contributes, linked to the p
 | <span id="getter-grid">**grid**</span><br><code>boolean</code> | `scales.y.grid` |
 | <span id="getter-minimalticks">**minimalTicks**</span><br><code>boolean</code> | `scales.y.minimalTicks` |
 | <span id="getter-scorerulesdrawn">**scoreRulesDrawn**</span><br><code>boolean</code> | Whether this display draws `scales.y.rules`, which is whether the Y axis panel offers Include 0 and the reference lines: a scale it places y through rules a band for them to cross, which a density plot's color-mapped rows and a color ramp do not. |
-| <span id="getter-scorerules">**scoreRules**</span><br><code>ValueScaleRule[]</code> | `scales.y.rules`, read off the live nodes: a snapshot strips a slot at its default, and a rule at 0 is one. |
+| <span id="getter-scorerules">**scoreRules**</span><br><code>ValueScaleRule[]</code> | `scales.y.rules`, read off the live nodes. |
 
 <details class="inherited-members" data-pagefind-ignore>
 <summary>9 inherited getters from one model</summary>
