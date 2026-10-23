@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from 'node:fs'
+import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import path from 'node:path'
 
 // The module-graph walk two guards in this package share: `muiFree.test.ts`
@@ -18,6 +18,28 @@ const workspace: Record<string, string> = {
   '@jbrowse/render-core': path.join(packages, 'render-core/src'),
 }
 
+// the repo's own package names, read off each package.json
+const workspacePackages = new Set(
+  ['packages', 'plugins', 'products'].flatMap(root =>
+    readdirSync(path.join(packages, '..', root)).flatMap(dir => {
+      const manifest = path.join(packages, '..', root, dir, 'package.json')
+      return existsSync(manifest)
+        ? [
+            (JSON.parse(readFileSync(manifest, 'utf8')) as { name: string })
+              .name,
+          ]
+        : []
+    }),
+  ),
+)
+
+function packageName(spec: string) {
+  return spec
+    .split('/')
+    .slice(0, spec.startsWith('@') ? 2 : 1)
+    .join('/')
+}
+
 function resolveWorkspace(spec: string) {
   for (const [pkg, dir] of Object.entries(workspace)) {
     if (spec === pkg) {
@@ -27,12 +49,14 @@ function resolveWorkspace(spec: string) {
       return path.join(dir, spec.slice(pkg.length + 1))
     }
   }
-  // A `@jbrowse/*` this map does not know is the one shape that fails OPEN: the
-  // walk would find no file, decline to call it an offender, and stop — so a
-  // future import of a workspace package that itself reaches the library being
-  // hunted would pass in silence, which is precisely the class of bug these
-  // guards exist to catch. Add the package to `workspace` above.
-  if (spec.startsWith('@jbrowse/') && !spec.startsWith('@jbrowse/mobx-state')) {
+  // A workspace package this map does not know is the one shape that fails
+  // OPEN: the walk would find no file, decline to call it an offender, and stop
+  // — so a future import of a workspace package that itself reaches the library
+  // being hunted would pass in silence, which is precisely the class of bug
+  // these guards exist to catch. Add the package to `workspace` above. An
+  // npm-published `@jbrowse/*` (jexl, mobx-state-tree) is a dependency, not a
+  // package to walk.
+  if (workspacePackages.has(packageName(spec))) {
     throw new Error(
       `importGraph cannot follow '${spec}' — add its source dir to the workspace map in importGraph.node.ts`,
     )

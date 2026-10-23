@@ -1120,10 +1120,14 @@ const filterListStep: FieldRecipe = (value, context) => {
   if (!Array.isArray(value)) {
     return undefined
   }
-  const entries = value.flatMap(entry =>
-    typeof entry === 'string'
-      ? [{ field: entry, equal: true }]
-      : (asRecord(entry) ?? []),
+  const entries = (value as unknown[]).flatMap(
+    (entry): Record<string, unknown>[] => {
+      if (typeof entry === 'string') {
+        return [{ field: entry, equal: true }]
+      }
+      const record = asRecord(entry)
+      return record ? [record] : []
+    },
   )
   const expressions = entries
     .filter(e => isExpressionEntry(e))
