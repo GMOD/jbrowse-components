@@ -11,7 +11,7 @@ export interface JexlProblem {
   column?: number
 }
 
-export type JexlChecker = Pick<Jexl, 'parse' | '_grammar'>
+export type JexlChecker = Pick<Jexl, 'parse' | 'functionNames'>
 
 const ANY_ARGUMENTS: Signature = {
   params: ['any'],
@@ -23,9 +23,9 @@ const ANY_ARGUMENTS: Signature = {
  * Every function `jexl` registers, each taking any arguments, so `check`
  * reports a misspelt name without judging a registered one's arity.
  */
-export function registeredFunctions(jexl: Pick<Jexl, '_grammar'>) {
+export function registeredFunctions(jexl: Pick<Jexl, 'functionNames'>) {
   return Object.fromEntries(
-    Object.keys(jexl._grammar.functions).map(name => [name, ANY_ARGUMENTS]),
+    jexl.functionNames().map(name => [name, ANY_ARGUMENTS]),
   )
 }
 
