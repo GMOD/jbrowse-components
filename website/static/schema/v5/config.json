@@ -7645,6 +7645,10 @@
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
+        "scales": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
         "scaleType": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
@@ -7666,10 +7670,6 @@
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
         "inverted": {
-          "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
-        },
-        "scales": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
@@ -8693,6 +8693,10 @@
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
+        "scales": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
         "scaleType": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
@@ -8714,10 +8718,6 @@
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
         "inverted": {
-          "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
-        },
-        "scales": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
@@ -16048,6 +16048,16 @@
             "colorScheme": {
               "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/colorScheme"
             },
+            "scales": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/scales"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/scales"
+                }
+              ]
+            },
             "scaleType": {
               "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/scaleType"
             },
@@ -16065,16 +16075,6 @@
             },
             "inverted": {
               "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/inverted"
-            },
-            "scales": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/scales"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/scales"
-                }
-              ]
             },
             "multiTicks": {
               "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/multiTicks"
@@ -19118,6 +19118,16 @@
             "colorScheme": {
               "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/colorScheme"
             },
+            "scales": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/scales"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/scales"
+                }
+              ]
+            },
             "scaleType": {
               "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/scaleType"
             },
@@ -19135,16 +19145,6 @@
             },
             "inverted": {
               "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/inverted"
-            },
-            "scales": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/scales"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/scales"
-                }
-              ]
             },
             "multiTicks": {
               "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/multiTicks"

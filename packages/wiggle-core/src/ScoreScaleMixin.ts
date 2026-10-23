@@ -108,7 +108,7 @@ export function ScoreScaleMixin(paths: YScalePaths = SCALES_Y_PATHS) {
       },
       /**
        * #getter
-       * `scales.y.zero`: whether an autoscaled linear or symlog axis reaches
+       * The y scale's `zero`: whether an autoscaled linear or symlog axis reaches
        * 0.
        */
       get scaleZero(): boolean {
@@ -116,7 +116,7 @@ export function ScoreScaleMixin(paths: YScalePaths = SCALES_Y_PATHS) {
       },
       /**
        * #getter
-       * `scales.y.domainQuantile`: what an unpinned end follows, 1 the
+       * The y scale's fence quantile: what an unpinned end follows, 1 the
        * extremes and below it that quantile of each sign.
        */
       get domainQuantile(): number {
@@ -163,35 +163,35 @@ export function ScoreScaleMixin(paths: YScalePaths = SCALES_Y_PATHS) {
       },
       /**
        * #getter
-       * `scales.y.autoscaleGroup`, `undefined` while it names none.
+       * The y scale's autoscale group, `undefined` while it names none.
        */
       get autoscaleGroup(): string | undefined {
         return readY(self, paths, 'group') || undefined
       },
       /**
        * #getter
-       * `scales.y.title`, `''` while unset
+       * The y axis title, `''` while unset
        */
       get scaleTitle(): string {
         return readY(self, paths, 'title') ?? ''
       },
       /**
        * #getter
-       * `scales.y.grid`
+       * The y axis grid
        */
       get grid(): boolean {
         return readY(self, paths, 'grid')
       },
       /**
        * #getter
-       * `scales.y.minimalTicks`
+       * The y axis' minimal ticks, `false` where the display has none
        */
       get minimalTicks(): boolean {
         return readY(self, paths, 'minimalTicks') ?? false
       },
       /**
        * #getter
-       * Whether this display draws `scales.y.rules`, which is whether the
+       * Whether this display draws the y scale's rules, which is whether the
        * Y axis panel offers Include 0 and the reference lines: a scale it places y through
        * rules a band for them to cross, which a density plot's color-mapped
        * rows and a color ramp do not.
@@ -201,7 +201,7 @@ export function ScoreScaleMixin(paths: YScalePaths = SCALES_Y_PATHS) {
       },
       /**
        * #getter
-       * `scales.y.rules`, read off the live nodes.
+       * The y scale's rules, read off the live nodes.
        */
       get scoreRules(): ValueScaleRule[] {
         return yRuleNodes(confOf(self), paths).map(rule => {
@@ -263,7 +263,7 @@ export function ScoreScaleMixin(paths: YScalePaths = SCALES_Y_PATHS) {
       },
       /**
        * #action
-       * Replaces `scales.y.rules` whole, each entry in a form the config
+       * Replaces the y scale's rules whole, each entry in a form the config
        * takes: a number, or `{ value, color, label }`.
        */
       setScoreRules(rules: (number | ValueScaleRule)[]) {

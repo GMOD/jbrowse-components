@@ -39,18 +39,18 @@ Each section ends with the members a composed model contributes, linked to the p
 | Member | Description |
 | --- | --- |
 | <span id="getter-scaletype">**scaleType**</span><br><code>string</code> |  |
-| <span id="getter-scalezero">**scaleZero**</span><br><code>boolean</code> | `scales.y.zero`: whether an autoscaled linear or symlog axis reaches 0. |
-| <span id="getter-domainquantile">**domainQuantile**</span><br><code>number</code> | `scales.y.domainQuantile`: what an unpinned end follows, 1 the extremes and below it that quantile of each sign. |
+| <span id="getter-scalezero">**scaleZero**</span><br><code>boolean</code> | The y scale's `zero`: whether an autoscaled linear or symlog axis reaches 0. |
+| <span id="getter-domainquantile">**domainQuantile**</span><br><code>number</code> | The y scale's fence quantile: what an unpinned end follows, 1 the extremes and below it that quantile of each sign. |
 | <span id="getter-clipquantile">**clipQuantile**</span><br><code>number</code> | The quantile "Clip extreme outliers" fences at: the one an untick this session wrote over, else the scale's own default where that is below 1, else 0.99. |
 | <span id="getter-symlogconstant">**symlogConstant**</span><br><code>number</code> | Raw slot; `0` means "derive from the domain". Resolve it with `resolveSymlogConstant` once the domain is known. |
 | <span id="getter-manualminscore">**manualMinScore**</span><br><code>number &#124; undefined</code> | The lower bound the config pins, `undefined` where it pins none. |
 | <span id="getter-manualmaxscore">**manualMaxScore**</span><br><code>number &#124; undefined</code> | The upper bound the config pins, `undefined` where it pins none. |
-| <span id="getter-autoscalegroup">**autoscaleGroup**</span><br><code>string &#124; undefined</code> | `scales.y.autoscaleGroup`, `undefined` while it names none. |
-| <span id="getter-scaletitle">**scaleTitle**</span><br><code>string</code> | `scales.y.title`, `''` while unset |
-| <span id="getter-grid">**grid**</span><br><code>boolean</code> | `scales.y.grid` |
-| <span id="getter-minimalticks">**minimalTicks**</span><br><code>boolean</code> | `scales.y.minimalTicks` |
-| <span id="getter-scorerulesdrawn">**scoreRulesDrawn**</span><br><code>boolean</code> | Whether this display draws `scales.y.rules`, which is whether the Y axis panel offers Include 0 and the reference lines: a scale it places y through rules a band for them to cross, which a density plot's color-mapped rows and a color ramp do not. |
-| <span id="getter-scorerules">**scoreRules**</span><br><code>ValueScaleRule[]</code> | `scales.y.rules`, read off the live nodes. |
+| <span id="getter-autoscalegroup">**autoscaleGroup**</span><br><code>string &#124; undefined</code> | The y scale's autoscale group, `undefined` while it names none. |
+| <span id="getter-scaletitle">**scaleTitle**</span><br><code>string</code> | The y axis title, `''` while unset |
+| <span id="getter-grid">**grid**</span><br><code>boolean</code> | The y axis grid |
+| <span id="getter-minimalticks">**minimalTicks**</span><br><code>boolean</code> | The y axis' minimal ticks, `false` where the display has none |
+| <span id="getter-scorerulesdrawn">**scoreRulesDrawn**</span><br><code>boolean</code> | Whether this display draws the y scale's rules, which is whether the Y axis panel offers Include 0 and the reference lines: a scale it places y through rules a band for them to cross, which a density plot's color-mapped rows and a color ramp do not. |
+| <span id="getter-scorerules">**scoreRules**</span><br><code>ValueScaleRule[]</code> | The y scale's rules, read off the live nodes. |
 
 <details class="inherited-members" data-pagefind-ignore>
 <summary>9 inherited getters from one model</summary>
@@ -71,5 +71,5 @@ From [ScoreAxisMixin](../scoreaxismixin): <span id="getter-defaultscoredomain">[
 | <span id="action-setmaxscore">**setMaxScore**</span><br><code>(val?: number &#124; undefined) =&gt; void</code> |  |
 | <span id="action-setautoscalegroup">**setAutoscaleGroup**</span><br><code>(group?: string &#124; undefined) =&gt; void</code> |  |
 | <span id="action-setgrid">**setGrid**</span><br><code>(grid: boolean) =&gt; void</code> |  |
-| <span id="action-setscorerules">**setScoreRules**</span><br><code>(rules: (number &#124; ValueScaleRule)[]) =&gt; void</code> | Replaces `scales.y.rules` whole, each entry in a form the config takes: a number, or `{ value, color, label }`. |
+| <span id="action-setscorerules">**setScoreRules**</span><br><code>(rules: (number &#124; ValueScaleRule)[]) =&gt; void</code> | Replaces the y scale's rules whole, each entry in a form the config takes: a number, or `{ value, color, label }`. |
 | <span id="action-resetyscale">**resetYScale**</span><br><code>() =&gt; void</code> | Back to what the config.json says, or to what a session-owned track was added with, so an admin's declared axis survives a reset; slots the base leaves unset take their defaults. |

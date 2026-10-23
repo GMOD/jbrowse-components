@@ -207,8 +207,8 @@ export const retiredConfigSpellings: Record<string, RetiredSpelling> = {
   snpCoverageDisplay: block => subDisplaySlotsOf(block, 'coverage'),
   defaultRendering: () => ({}),
   colorScheme: () => ({}),
-  ...retiredScaleSpellings(COVERAGE_Y_PATHS.members),
   scales: retiredScalesSpelling(COVERAGE_Y_PATHS.members),
+  ...retiredScaleSpellings(COVERAGE_Y_PATHS.members),
   multiTicks: () => ({}),
   jitter: () => ({}),
   lineWidth: v => ({

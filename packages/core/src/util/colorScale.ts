@@ -459,15 +459,17 @@ function listOf(value: unknown) {
 
 /**
  * A quantitative scale's ends among the members `member` reads, each a number
- * or unset. The quantile is `domainQuantile`, or a y scale's `fenceQuantile`.
+ * or unset. `fence` names the quantile member: `domainQuantile`, or a y
+ * scale's `fenceQuantile`.
  */
-export function scaleEndsOf(member: (name: string) => unknown): ScaleEnds {
+export function scaleEndsOf(
+  member: (name: string) => unknown,
+  fence = 'domainQuantile',
+): ScaleEnds {
   return {
     domainMin: numberOf(member('domainMin')),
     domainMax: numberOf(member('domainMax')),
-    domainQuantile: numberOf(
-      member('domainQuantile') ?? member('fenceQuantile'),
-    ),
+    domainQuantile: numberOf(member(fence)),
     type: stringOf(member('type')),
   }
 }

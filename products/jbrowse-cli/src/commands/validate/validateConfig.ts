@@ -694,7 +694,7 @@ function checkScaleSlots(
     checkChannels(written, slot, `${where}.${slot.name}`, warn)
     for (const axis of valueAxesOf(written, slot, `${where}.${slot.name}`)) {
       for (const problem of scaleEndProblems(
-        scaleEndsOf(name => axis.ends[name]),
+        scaleEndsOf(name => axis.ends[name], axis.fence),
         { fence: axis.fence },
       )) {
         warn(axis.where, problem)

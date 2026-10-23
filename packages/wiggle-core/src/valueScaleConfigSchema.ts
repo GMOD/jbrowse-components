@@ -290,7 +290,6 @@ type YMembers = YScalePaths['members']
 const isRecord = (v: unknown): v is Record<string, unknown> =>
   !!v && typeof v === 'object' && !Array.isArray(v)
 
-// each value at its path, as one nested object; `{}` for none
 function nestedAt(entries: (readonly [readonly string[], unknown])[]) {
   const out: Record<string, unknown> = {}
   for (const [path, value] of entries) {

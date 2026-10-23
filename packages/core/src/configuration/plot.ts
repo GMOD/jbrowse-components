@@ -333,14 +333,17 @@ export function schemaPlotProblems(lifted: AnyConfigurationModel): string[] {
               )
             },
           ),
-          ...nodesWith(node, key, o => o.scaleFence).flatMap(([path, scale]) =>
-            noticeLines(
-              path,
-              scaleEndProblems(scaleEndsOf(membersOf(scale)), {
-                fence:
-                  getConfigurationSchemaMetadata(scale)!.options.scaleFence,
-              }),
-            ),
+          ...nodesWith(node, key, o => o.scaleFence).flatMap(
+            ([path, scale]) => {
+              const fence =
+                getConfigurationSchemaMetadata(scale)!.options.scaleFence
+              return noticeLines(
+                path,
+                scaleEndProblems(scaleEndsOf(membersOf(scale), fence), {
+                  fence,
+                }),
+              )
+            },
           ),
         ]
       : []

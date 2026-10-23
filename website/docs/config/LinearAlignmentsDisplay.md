@@ -146,13 +146,13 @@ An older config may still write these. Each loads without an error, and `jbrowse
 | `snpCoverageDisplay` | moved into a current slot |
 | `defaultRendering` | ignored |
 | `colorScheme` | ignored |
+| `scales` | moved into a current slot |
 | `scaleType` | moved into a current slot |
 | `autoscale` | moved into a current slot |
 | `minScore` | moved into a current slot |
 | `maxScore` | moved into a current slot |
 | `numStdDev` | ignored |
 | `inverted` | ignored |
-| `scales` | moved into a current slot |
 | `multiTicks` | ignored |
 | `jitter` | ignored |
 | `lineWidth` | moved into a current slot |

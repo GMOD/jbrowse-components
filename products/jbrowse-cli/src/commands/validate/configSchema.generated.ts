@@ -7876,6 +7876,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
+        "scales": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
         "scaleType": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
@@ -7897,10 +7901,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
         "inverted": {
-          "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
-        },
-        "scales": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
@@ -8948,6 +8948,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
+        "scales": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
         "scaleType": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
@@ -8969,10 +8973,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
         "inverted": {
-          "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
-        },
-        "scales": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
@@ -16539,6 +16539,16 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "colorScheme": {
               "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/colorScheme"
             },
+            "scales": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/scales"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/scales"
+                }
+              ]
+            },
             "scaleType": {
               "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/scaleType"
             },
@@ -16556,16 +16566,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "inverted": {
               "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/inverted"
-            },
-            "scales": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/scales"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/scales"
-                }
-              ]
             },
             "multiTicks": {
               "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/multiTicks"
@@ -19682,6 +19682,16 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "colorScheme": {
               "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/colorScheme"
             },
+            "scales": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/scales"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/scales"
+                }
+              ]
+            },
             "scaleType": {
               "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/scaleType"
             },
@@ -19699,16 +19709,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "inverted": {
               "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/inverted"
-            },
-            "scales": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/scales"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/scales"
-                }
-              ]
             },
             "multiTicks": {
               "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/multiTicks"

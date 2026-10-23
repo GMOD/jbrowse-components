@@ -39,45 +39,17 @@ Git history has each landing.
       pairing, such as `zero` mapped to the `grid` path, does not.
       `1.2` builds each display's own map, beside its config schema, written
       `as const satisfies`.
-   2. **The shared coverage band** (`coverageBandConfigSchema`) gains
-      `encoding.y`, so alignments, MAF and LGVSynteny move together, MAF's `y`
-      with them (a `y` → `encoding.y.field` lift). The commit also does what a
-      second shape makes observable, which 1.1 left out:
-      - **Model side:** `plotEdit.ts`'s `AXIS_MEMBERS` and both tables exports
-        read their display's map.
-      - **Config side finds the scale by a schema option**, as `channelsOf`
-        finds color through `fieldPresets`: the node that holds the scale's
-        ends carries it. Core's `plot.ts` walks for it, labelling the notice
-        with the walked path, and `plot.test.ts`'s `PlotTestAxis` fixture gains
-        it. A name match would put a plugin's string in core, and a shape match
-        would report ramps twice (`colorProblems` already runs
-        `scaleEndProblems` on them). The generator emits the option into the
-        manifest (`SlotEntry` gains a field), and the CLI walks `subSlots` for
-        it in `checkScaleSlots` and `checkMarkDisplay`. The spec-recipe's
-        `scalesStep` becomes a `yStep` registered under each y path.
-        `check-doc-slots.ts` stays, as a canary on the generated slot name.
-      - **Lifts take the `members` map, not a path:** the coverage target
-        splits the ends under `scale` and renames the fence, which a prefix
-        cannot say. `valueScaleOf`, `retiredScaleSpellings` and
-        `retiredAxisSpellings` become functions of the map; the three spread
-        sites are alignments `retired.ts`, wiggle `configSchema.ts` and wiggle
-        `retired.ts`.
-      - **Schema members only:** the model names (`domainQuantile`,
-        `setDomainQuantile`, `clipQuantile`, `unclippedQuantile`) are shared by
-        all four displays and wait for commit 3. `scaleEndProblems` takes the
-        slot name as an argument instead of hard-coding `domainQuantile`, and
-        `scaleEndsOf` reads both spellings, so the corner notice and the CLI
-        name a key the schema has. Core and the CLI recognise two shapes in
-        this window, the old scale whose `y` holds the ends and the new channel
-        whose `y.scale` does, and the schema option marks whichever node holds
-        them.
-      - The coverage band drops `minimalTicks`. Each display declares a
-        `scales` lift, and every in-repo writer is respelled.
-      - Gate: `pnpm verify --full --all`, the schema tests with
-        `ConfigSlotDefaults -u` reviewed, both `legacySessions` tests, the
-        `retired` tests, `plotEdit`, `validateConfig`, `markDisplays` and the
-        spec-recipe's `trackFieldSteps`. About 40 to 80 files plus regenerated
-        manifests.
+   2. **Landed:** the coverage band's depth axis is `coverage.encoding.y`
+      (`yChannelSchema`, with `YScale` and `YAxis` schemas) on alignments, MAF
+      and LGVSynteny, which share `COVERAGE_Y_PATHS`; MAF's `y` is
+      `encoding.y.field`. Core's `plot.ts` and the CLI find a value scale by the
+      `scaleFence` schema option, which names its fence slot. Old `scales`
+      configs lift, and a `scales` lift beats the v4 keys it overlaps.
+      Wiggle, the mark display and Manhattan stay on `scales.y`.
+      - **Gaps left open:** the CLI no longer judges an old-shape coverage
+        `scales.y`, and an old `trackConfigDeltas` delta loses to a base that
+        writes the same member in the new spelling, so a jb2hubs regeneration
+        needs a session migration for deltas first.
    3. **Wiggle, the mark display and Manhattan** (its `plotExamples.ts` writes
       `{ "scales": null }`). The y channel becomes a factory, since the fence
       defaults to 0.99 on wiggle and 1 elsewhere and the coverage band's
@@ -92,7 +64,23 @@ Git history has each landing.
       `bxd_qtl.md`, `cnv_cgiab.md`).
    - **Marks reads for commit 3:** `markPlot.ts` (`snapshot.scales`),
      `markProblems.ts` (`ScalesSnapshot` and the `scales.y.${slot}` label) and
-     the CLI's generated copies.
+     the CLI's generated copies. Pass the axis's `where` and fence through
+     `markProblems`, or drop `scales` from it in the CLI, since
+     `checkScaleSlots` already covers it; otherwise the mark display's ends
+     report twice under different paths.
+   - **Wiggle's y channel is not `MafY`:** call `yChannelSchema` with the 0.99
+     fence, add a `field`, and give it `writes: 'members'`. `MafY`'s
+     `writes: 'whole'` fits a channel holding only `field`.
+   - **Freeze before deleting:** `retiredScalesSpelling` reads
+     `SCALES_Y_PATHS.members` as its table of old names, and `yChannelSchema`
+     imports `valueScaleRuleSchema` from the file that goes. Copy the v5 names
+     and move the rule schema first.
+   - **Also in 1.3:** drop `minimalTicks` from `YMember`, `YScalePaths`, the
+     mixin getter, `retiredAxisSpellings` and ValueScale's `scaleFence`; merge
+     the spec-recipe's `encoding.y` entry with `yStep` for wiggle and the mark
+     display, and move wiggle's `y` Bin summary recipe to `encoding.y.field`;
+     each moved display spreads `retiredScalesSpelling(itsMap.members)` before
+     the v4 spread.
    - **Wiggle's lifts merge:** `retired.ts` spreads `valueScaleOf`, `colorOf`
      and `summaryOf` into one object. Once each returns `encoding`, the last
      spread wins, so merge them, or leave the state lift writing `scales` for

@@ -266,3 +266,17 @@ test('a v4 arc lineWidth strokes every connection at it', () => {
 test('an instance with only live props lifts nothing', () => {
   expect(retiredState.lift({ type: 'LinearAlignmentsDisplay' })).toEqual({})
 })
+
+test('a v5 coverage scale beats the v4 key it overlaps', () => {
+  expect(
+    alignmentsEntries([
+      {
+        type: 'LinearAlignmentsDisplay',
+        scaleType: 'log',
+        scales: { y: { type: 'linear' } },
+      },
+    ]),
+  ).toMatchObject([
+    { coverage: { encoding: { y: { scale: { type: 'linear' } } } } },
+  ])
+})

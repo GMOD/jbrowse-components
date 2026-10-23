@@ -2,6 +2,7 @@ import {
   colorNotices,
   colorProblems,
   fieldScaleOf,
+  scaleEndsOf,
   withPreset,
 } from './colorScale.ts'
 
@@ -245,4 +246,18 @@ test('unknown with no domain paints every value, and outside an ordinal scale no
       strand: { scale: { type: 'ordinal', domain: ['1', '-1'] } },
     }),
   ).toEqual([])
+})
+
+test('a scale reads the quantile member its fence names and no other', () => {
+  const members: Record<string, unknown> = {
+    domainQuantile: 0.5,
+    fenceQuantile: 0.9,
+  }
+  const read = (name: string) => members[name]
+  expect(scaleEndsOf(read).domainQuantile).toBe(0.5)
+  expect(scaleEndsOf(read, 'fenceQuantile').domainQuantile).toBe(0.9)
+  expect(
+    scaleEndsOf(name => (name === 'fenceQuantile' ? 0.9 : undefined))
+      .domainQuantile,
+  ).toBeUndefined()
 })

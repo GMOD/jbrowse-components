@@ -43,11 +43,7 @@ export interface SlotEntry {
   /** A color object's `field` while a config leaves it unwritten (Hi-C's `count`). */
   fieldDefault?: string
   impliedField?: string
-  /**
-   * A value axis's scale: the slot its outlier fence is spelt by
-   * (`domainQuantile` on `scales.y`, `fenceQuantile` on `encoding.y.scale`),
-   * which marks the node holding the ends (the schema's `scaleFence` option).
-   */
+  /** A value axis's scale: the name of its outlier-fence slot. */
   scaleFence?: string
   /** A `stringArray` slot whose schema reads a bare string as a list of one. */
   liftsString?: true
