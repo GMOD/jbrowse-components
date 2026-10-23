@@ -45,7 +45,9 @@ export const TAG_FIELD_PREFIX = 'tags.'
 
 /**
  * The tag a field names, or undefined for any other field: one reading for
- * `encoding.color`, `facet`, `sort` and `filter` alike.
+ * `encoding.color`, `facet`, `sort` and `filter` alike. Their named fields
+ * stay apart (`COLOR_FIELDS`, `READ_DIMENSIONS`, `COLUMN_SORT_FIELDS`, the
+ * filter's record fields), since each channel answers a different set.
  */
 export function fieldTag(field: string | undefined) {
   return field?.startsWith(TAG_FIELD_PREFIX)

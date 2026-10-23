@@ -1,6 +1,6 @@
 ---
 name: alignments-display-next
-description: "What is left of the 2026-10-22 LinearAlignmentsDisplay review now that ADR-240's open calls 2 and 3 are closed: the quality fade as opacity (step 2b), the internal ColorBy scheme object, and ggjbrowse's dog10k_lof page, blocked on its data host's expired certificate. The other ADR-240 steps are ordered in vega-lite-vocabulary.md."
+description: "What is left of the 2026-10-22 LinearAlignmentsDisplay review now that ADR-240's open calls 2 and 3 are closed: the quality fade as opacity (step 2b), the deprecated colorBy getter, and ggjbrowse's dog10k_lof page, blocked on its data host's expired certificate. The other ADR-240 steps are ordered in vega-lite-vocabulary.md."
 ---
 
 # LinearAlignmentsDisplay: next steps
@@ -17,11 +17,10 @@ starting it.
 - **Step 2b, the quality fade as opacity:** `pileup.mismatches.encoding.opacity`
   over `baseQuality`; two uniforms and a subtract, checked by one run of the
   mismatch bench.
-- **The internal `ColorBy` scheme object** (`shared/types.ts`,
-  `shared/alignmentsColor.ts` `colorByOf` / `colorFieldOf`) restates
-  `color.field` in v4's scheme names, and the RPC arguments are still
-  `filterBy` and `colorBy`. One field classifier serving color, facet, sort and
-  predicates removes the translation. It changes no config path.
+- **The deprecated `display.colorBy` getter** and its exported `ColorBy` /
+  `ReadColorBy` types restate `colorField` for external plugins
+  (`readColorByOf`); drop them at the next ABI break
+  (`reference/PLUGIN_ABI_STABILITY.md`).
 
 ## Settled, not to re-open
 
