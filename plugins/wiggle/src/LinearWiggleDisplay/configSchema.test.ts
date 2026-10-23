@@ -177,6 +177,19 @@ test('a bare encoding.y is the field, and the fence starts at 0.99', () => {
   expect(readConfObject(conf, [...Y, 'scale', 'fenceQuantile'])).toBe(0.99)
 })
 
+test.each([
+  [{ scales: { y: { type: 'log', domainMin: 1 } } }, ['scale', 'type'], 'log'],
+  [{ scaleType: 'log' }, ['scale', 'type'], 'log'],
+  [{ displayCrossHatches: true }, ['axis', 'grid'], true],
+])(
+  'a retired y setting lands beside a bare encoding.y: %j',
+  (retired, path, value) => {
+    const conf = create({ encoding: { y: 'maxScore' }, ...retired })
+    expect(readConfObject(conf, [...Y, 'field'])).toBe('maxScore')
+    expect(readConfObject(conf, [...Y, ...path])).toBe(value)
+  },
+)
+
 describe('the slots v4 declared on the display', () => {
   const y = (
     snap: Record<string, unknown>,

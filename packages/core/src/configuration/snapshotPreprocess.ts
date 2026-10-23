@@ -186,9 +186,10 @@ export function liftRetiredSpellings(
     : snapshot
 }
 
-// A member written in its shorthand, `filter: ['jexl:…']`, as the object it
-// lifts into, so a retired spelling lifting into the same member lands beside
-// it rather than under a list it cannot merge with.
+// A member written in its shorthand, `filter: ['jexl:…']` or `encoding: { y:
+// 'maxScore' }`, as the object it lifts into, so a retired spelling lifting
+// into the same member lands beside it rather than under a value it cannot
+// merge with.
 function withMemberShorthandsLifted(
   { definition }: ConfigurationSchemaMetadata,
   snapshot: Record<string, unknown>,
@@ -199,8 +200,11 @@ function withMemberShorthandsLifted(
     const meta = isBareConfigurationSchemaType(member)
       ? getConfigurationSchemaMetadata(member)
       : undefined
-    if (meta?.options.shorthand !== undefined) {
-      out[key] = liftShorthand(meta, value)
+    if (meta) {
+      const lifted = liftShorthand(meta, value)
+      out[key] = isPlainObject(lifted)
+        ? withMemberShorthandsLifted(meta, lifted)
+        : lifted
     }
   }
   return out
