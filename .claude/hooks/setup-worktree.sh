@@ -95,6 +95,23 @@ else
   note "created $dir on $branch from $from"
 fi
 
+# Seed tsc's caches from the primary: a cold worktree paid 18s for its first
+# typecheck and 34s for its first build:esm, against 4s and 5s seeded. tsc
+# compares the buildinfo's content hashes, so a stale entry is rebuilt, not
+# trusted. Runs before the install, which links bins into esm/ (jb2capture).
+# A plain copy, never a hardlink: tsc rewrites outputs in place.
+if (cd "$repo" && find . -name '*.tsbuildinfo' -not -path '*/node_modules/*' \
+  -not -path './.claude/*' -printf '%h\n' |
+  while read -r d; do
+    [ -d "$dir/$d" ] || continue
+    printf '%s\n' "$d"/*.tsbuildinfo
+    if [ -d "$d/esm" ]; then printf '%s\n' "$d/esm"; fi
+  done | tar -cf - -T - | tar -xf - -C "$dir") 2>>"$log"; then
+  note "OK: tsc caches seeded from $repo"
+else
+  note "WARN: seeding tsc caches failed; the first typecheck runs cold"
+fi
+
 # A worktree is a bare checkout: no node_modules, and none of the files
 # postinstall generates (products/jbrowse-web/src/buildInfo.ts among them, which
 # a fresh worktree otherwise fails `tsc` on, taking ~5 suites with it).
