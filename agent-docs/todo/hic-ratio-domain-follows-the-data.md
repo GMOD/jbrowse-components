@@ -5,7 +5,7 @@ metadata:
   area: config
   category: ready
   order: 1
-  first_move: "with the channel object (handoffs/vega-lite-vocabulary.md step 1), spell a ratio field's domain `[min, { quantile }]`, the quantile symmetric in log space"
+  first_move: "with the channel object (ADR-238's Channel section), spell a ratio field's domain `[min, { quantile }]`, the quantile symmetric in log space"
 ---
 
 # A Hi-C ratio's color domain can follow the data again

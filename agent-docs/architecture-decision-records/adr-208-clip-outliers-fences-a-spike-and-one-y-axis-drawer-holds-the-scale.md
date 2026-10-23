@@ -7,7 +7,9 @@ summary: "Below a `scales.y.domainQuantile` of 1 an open end follows the extreme
 
 ## Status
 
-Accepted (2026-10-04). Colin: "The 'score at 0' uncheck does nothing", "The
+Accepted (2026-10-04). Amended 2026-10-23 by
+[ADR-238](adr-238-every-display-speaks-vega-lite.md): the y fence is
+`encoding.y.scale.fenceQuantile`. Colin: "The 'score at 0' uncheck does nothing", "The
 scores at 0 conflicts with set min/max...fuse them", "The outliers thing shows
 clipping even when there is barely any deviation e.g. in multiwiggle. it should
 only be for extreme outliers", and, over the first fused dialog, "this frankly

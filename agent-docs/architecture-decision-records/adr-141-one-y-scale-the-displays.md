@@ -7,7 +7,9 @@ summary: "The mark display has one y scale and the display owns it: `scales.y` â
 
 ## Status
 
-Accepted (2026-09-19). Generalised by
+Accepted (2026-09-19). Amended 2026-10-23 by
+[ADR-238](adr-238-every-display-speaks-vega-lite.md): `scales.y` becomes
+`encoding.y`, a channel object. Generalised by
 [ADR-142](adr-142-one-value-scale-object.md): `scales.y` is now built by a
 shared factory and every quantitative display declares one. Supersedes
 [ADR-113](adr-113-one-scale-rule-in-one-place.md)

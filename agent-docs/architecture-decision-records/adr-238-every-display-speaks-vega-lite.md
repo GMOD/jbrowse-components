@@ -18,6 +18,10 @@ field, a link's width is `strokeWidth`, `autosize` is not borrowed,
 `scale: 'none'` goes with no value-beats-field rule, `scale.name` becomes
 `scale.group`, and per-value names are `scale.names`.
 
+Amended 2026-10-23 for Pass B, the y channel (below): `encoding.y` carries
+`scale`, `axis` and `rules`; the outlier fence is `scale.fenceQuantile`; the
+tree sidebar's toggles go to an `axis` beside `rows`.
+
 Colin's steer, on a review of the linear synteny view's settings: aim for
 ideal grammar-of-graphics terms rather than house ones ("things like
 'minLength' are exactly the types of things that concern me"), elegance over
@@ -130,6 +134,57 @@ channels.
   the packed color lane the display already uploads. A mapped size needs a
   lane that exists, which today is the link's. No channel adds a lane.
 
+### The y channel (Pass B, amended 2026-10-23)
+
+`encoding.y` is the channel object of the Channel section above, for the value
+axis of wiggle, the mark display, Manhattan, and the alignments, MAF and
+LGVSynteny coverage bands. MAF's own `encoding.y` holds `field` alone, since
+its only value scale is `coverage.encoding.y`.
+
+- **Members:** `field` on wiggle (where `y` is the plotted field) and on MAF
+  (where it picks the row bars), plus `scale`, `axis` and `rules`. The mark
+  display's display-level `encoding.y` has no `field`: each mark's bare
+  `encoding.y: 'score'` names the field and reads this object's scale, and a
+  bare string at display level is refused at load.
+  - It holds no field, so `checkMarks`, the mark schema's `requires` and the
+    Plot field dialog still find `y` on the mark alone. Those are the costs
+    [ADR-141](adr-141-one-y-scale-the-displays.md) rejected an inherited layer
+    encoding for. A mark's `y` also keeps no scale of its own, where
+    Vega-Lite's layer `y` replaces the parent's.
+  - ADR-141's objection to `{ field }` on a positional channel, that the
+    object had no second member, no longer holds once `scale`, `axis` and
+    `rules` share it. Colin chose this shape (2026-10-22).
+- **`scale`** holds `type`, `domainMin`, `domainMax`, `zero`, `fenceQuantile`,
+  `constant` (was `symlogConstant`) and `group` (was `autoscaleGroup`), as
+  ADR-240 spells them. **`axis`** holds `title` and `grid`. This removes
+  `tickCount` and `tree` from the Axis bullet below and overrides ADR-240's
+  `tickCount: 4` sample.
+- **The fence:** `scale.fenceQuantile` replaces `scales.y.domainQuantile`, so
+  the word stays out of the y scale. A ramp's `scale.domainQuantile` keeps
+  its meaning, clipping at the quantile itself. The fence stops an extreme at
+  twice the span its quantile draws, measured per side of 0 (ADR-208).
+- **`rules`** sits on `encoding.y`, not in `axis`: reference lines are values
+  in the scale's domain, drawn across every band the scale rules.
+- **`minimalTicks`** is cut with the move, and `tickCount` is not added.
+- **Writes** merge member by member on `encoding.y`, while a color, shape or
+  size channel writes whole. `encoding.y: null` resets the y slot alone.
+- **Tree sidebar:** `showTree`, `showBranchLength`, `showRowLabels`,
+  `showRowSeparators` and `treeAreaWidth` go to an `axis` beside `rows`, not
+  `y.axis.tree`, since `rows` writes whole (Colin, 2026-10-22). The mark
+  display keeps `facet`, `rows` and `encoding.row` as three words, and its
+  per-category band is Vega-Lite's `row` channel over a shared `y`, not a
+  `band`-scale `y`. This replaces the Rows bullet below.
+- **Tables output names stay.** The tables' `type`, `scaleType` and
+  `symlogConstant` are the R-facing contract; the exports map from the
+  config's words.
+- **Lifts.** Each moved display declares `scales` in `retired`, lifting
+  `scales.y` onto `encoding.y` (the coverage bands onto
+  `coverage.encoding.y`), until jb2hubs' hosted configs regenerate. Every v4
+  `scales` lift (`valueScaleOf`, `retiredScaleSpellings`, the alignments
+  coverage lift) targets the moved path in the commit that moves its display,
+  since a lift to an undeclared key drops silently. Wiggle's `y` field lifts
+  to `encoding.y.field`.
+
 ### Mark, guides, coordinates
 
 - **Marks:** `rect bar point rule tick line area text link gene`.
@@ -163,8 +218,8 @@ channels.
   it, a fact about the data rather than the pixel it covers.
 - **Rows:**
   - A split with its own inner scale is `facet`.
-  - One position per category is `encoding.y` on a `band` scale, with the
-    dendrogram as `y.axis.tree`.
+  - One position per category is `encoding.y` on a `band` scale. The
+    dendrogram's toggles are an `axis` beside `rows` (see "The y channel").
   - `facet.sort` orders and never drops; a predicate drops.
 
 ### CIGAR detail in the comparative views

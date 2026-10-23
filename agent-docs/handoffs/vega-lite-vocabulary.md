@@ -1,223 +1,110 @@
 ---
 name: vega-lite-vocabulary
-description: "ADR-238's migration of every display's settings to Vega-Lite's words (predicate filter, channel object under encoding, mark, axis, legend: null, coord, data, render). Landed: the predicate compiler, every display's and view's filter, the synteny views' mark, and the color channel object (Pass A). Open: encoding.y (Pass B), the band layers' thresholds, guides, layout and the writers, concept by concept across the app. Read before adding or renaming any display or view setting."
+description: "ADR-238's migration of every display's settings to Vega-Lite's words. Landed: the predicate compiler and every filter, the synteny views' mark, axis, coord and data words, the alignments and MAF parts, and the color channel (Pass A). Open: the y channel (Pass B, decided in ADR-238's 2026-10-23 amendment, three landable commits), the band layers' filters, per-channel legends, the tree sidebar's axis, wiggle and Hi-C `data`, the comparative indels part, and the writers. Read before adding or renaming any display or view setting."
 ---
 
 # Vega-Lite vocabulary: what is left
 
-The alignments displays' end state, slot by slot, and its amendments to
-ADR-238 are
-[ADR-240](../architecture-decision-records/adr-240-the-alignments-display-speaks-vega-lite.md);
-its order of work slots into the steps below.
-
 [ADR-238](../architecture-decision-records/adr-238-every-display-speaks-vega-lite.md)
-holds the decided end state. This file tracks the order of work. Other
-sessions reshaping a display's settings meanwhile should write the ADR's
-spelling, not a new house word. That means no new `min*`, `max*`, `show*` or
-`hide*` setting, and no new color-object variant.
+holds the end state, amended by
+[ADR-240](../architecture-decision-records/adr-240-the-alignments-display-speaks-vega-lite.md)
+and [ADR-241](../architecture-decision-records/adr-241-a-color-object-is-unset-a-value-or-a-field.md).
+This file orders the work. Claim a step here before starting it.
 
-## Landed
+- A session reshaping a display's settings writes the ADR's spelling, and adds
+  no `min*`, `max*`, `show*` or `hide*` setting and no color-object variant.
 
-- `@jbrowse/core/util/fieldPredicate`: the predicate compiler over typed
-  lanes, and display-kit's `FieldPredicate` schema.
-- Every display's `filter`, one predicate list (ADR-240 steps 3a and 3b):
-  alignments and LGVSynteny merge with their defaults by field; canvas's
-  gene category is the `geneLike` field; the multi-sample variant
-  thresholds are `minorAlleleFrequency` and `missingness`; the mark
-  display's field tests reach the worker as a `predicates` filter step.
-  An expression entry (a bare `jexl:` string) holds on a truthy value. The
-  costs are rows of measurement `field-predicate-read-filter`.
-- The linear synteny, dotplot and circular views' `filter`, a predicate list
-  that replaced `minAlignmentLength`, `minIdentity` and `hideUnlabelled`
-  (`SyntenyFilterMixin`, `filterLanes.ts`).
-- The linear synteny view's `mark.interpolate`, which replaced `drawCurves`.
-- The two comparative views' `coord.ratio`, which replaced `sameScale` and
-  `lockAspectRatio`.
-- The linear synteny view's `offscreen.show`, which replaced
-  `showOffscreenMates`. It is the first part built on ADR-231's `show`
-  member, which ADR-238's amendment puts in the place of `null`.
-- `axis` on the linear genome, dotplot and linear synteny views, which
-  replaced their `showGridlines`, `showTickLabels` and `drawLocationMarkers`.
-- The synteny and circular views' `render.antialias`, which replaced
-  `fadeThinAlignmentsMode`.
-- `data.resolution` on the comparative views and the LGVSynteny and
-  multi-way displays, which replaced `lodMode`.
-- The chord displays' `mark.depth`, which replaced `bezierRadiusRatio`.
-- The linear synteny view's `navigation` (`follow`, `anchor`), which replaced
-  `followSynteny` and `followAnchorIndex`. `diagonalizeAnchorRow` stays apart:
-  a gesture takes the follow anchor, and only the reorder dialog sets this one.
-- LGVSyntenyDisplay's self lane as a `facet.hidden` entry, which replaced
-  `hideSelfAlignments`.
-- Wiggle's `mark` as Vega-Lite's mark object, `{ type, interpolate }`, a bare
-  name lifting to the type; the chord displays' `mark` is a plot setting
-  beside it.
-- The mark display's `marks[].mark` as the same object (`MarkDef`), so the
-  two displays spell a mark alike (ADR-216). The members one mark type reads
-  moved inside it: a link's `linkShape` is `mark.interpolate` (`dome`, `arc`,
-  `linear`), a span's `rowProportion` is `mark.height: { band }`, and a line's
-  `gapBp` is `mark.gapBp`. render-core's link params still say `linkShape`
-  and `line`; `markEntryOf` maps the one word onto them.
-- The alignments `readConnections.mark` as Vega-Lite's mark object (ADR-240
-  step 5), `{ type: 'link' | 'rule' }` with a bare name lifting to the type,
-  which replaced `arc` and `cloud`; the menus keep their words.
-- The alignments layer toggles as `{ show }` parts (ADR-240 step 1):
-  `coverage.interbase` (MAF's band too), `pileup.mismatches`,
-  `pileup.softClips`, `sashimi.labels` and `readConnections.ordinaryPairs`,
-  which replaced `showInterbaseIndicators`, `showMismatches`,
-  `showSoftClipping`, `showCounts` and `showOrdinaryPairs`;
-  `pileup.showOutline` went, the outline following `unit`.
-  `pileup.connectors` followed once ADR-240 rejected a rename. Left for its
-  own call: `baseColor` (step 0 below).
-- MAF's `alignments.inversions`, `.frames` and `.reference` as `{ show }`
-  parts, which replaced `showInversions`, `showAnnotations` and the top-level
-  `showReferenceRow`. `rowIdentityAutoZoom`, `showAllLetters` and
-  `showAsUpperCase` went outright: identity always yields to the bases at
-  base level, letters follow `color`, and they keep the file's case. MAF's
-  `color`, `y`, `scales` and `showLegend` wait on steps 1 and 3 below.
+## Done
 
-## Next, one concept at a time across the app
+Predicate `filter` on every display and view; the synteny views' `mark`,
+`coord.ratio`, `axis`, `offscreen`, `render.antialias`, `navigation` and
+`data.resolution`; wiggle's and the mark display's `mark` object; the
+alignments and MAF `{ show }` parts; the chord displays' `mark.depth`; and
+Pass A, `encoding.color` on every display with `legend.show` display-wide.
+Git history has each landing.
 
-Move a concept everywhere in one pass, so it never has two spellings at once:
+## Next
 
-1. **The channel object under `encoding`.** It replaces the color-object
-   variants, `scales.y`, `opacity` and the size slots. This collides with
-   whoever is reshaping the alignments, wiggle, Hi-C, LD and MAF color objects,
-   so agree on the order with that thread first.
-   - **The row displays, decided 2026-10-22:** the mark display keeps `facet`,
-     `rows` and `encoding.row` as three words; their members respell. The
-     order slot on `facet` and `rows` became `sort` across every row display
-     (landed). Then `scales.y` becomes a display-level `encoding.y` holding
-     `scale` and `axis` and no field, which every mark's `encoding.y: 'score'`
-     reads, in the same pass as wiggle, whose `scales.y` is the same
-     wiggle-core object. The tree sidebar's `showTree`, `showBranchLength`,
-     `showRowLabels` and `treeAreaWidth` go to an `axis` beside `rows` in step
-     3, not inside it, since `rows` writes whole.
-   - **The channel object's plan, reviewed 2026-10-22** (it is ADR-240's
-     step 2; claim it here before starting):
-     - Words: ADR-240's (`scale.names`, `scale.group`, `legend.descending`, a
-       display-wide `legend.show` beside each channel's), `scale.type`
-       `ordinal` for `categorical`, and `scale.domainQuantile` for a ramp's
-       quantile (ADR-240's table amended: no slot type holds `{ quantile }`,
-       and `scale.quantile` reads as d3's `type: 'quantile'`). A bare string
-       inside `encoding` is a field, as on the mark display.
-       **Pass A landed 2026-10-22.** Every display's color is
-       `encoding.color: { value, field, scale: {…}, legend: {…} }`, read
-       nested with no converter; `showLegend` is a display-wide
-       `legend.show`, the circular view's included; `ordinal` and `names`
-       replace `categorical` and `labels`; a missing value's color is
-       `scale.invalid`, and `scale.unknown` keeps d3's "not in the domain"
-       (ADR-240 amended); `baseColor` is `pileup.bases`,
-       `readConnections` has its own `encoding` with `strokeWidth`, the
-       ribbons a `ribbons.encoding.color` part, the synteny views' color
-       and opacity sit under the view's `encoding`, and stroked marks
-       take `strokeWidth`. Deprecated lifts (`liftFlatColor` and
-       `retiredDisplayColor` in display-kit's `retiredSettings.ts`, the
-       multi-sample variant display's `retired`, `liftViewColor` in
-       `liftSyntenyViewSettings.ts`) cover what hosted jb2hubs configs
-       write, and go once those configs regenerate (Writers below). Left
-       open: wiggle's v4 `posColor` and `negColor` config keys have no
-       lift, since `retired` lifts each key alone and the two fill one
-       `scale.range`; a `rowColor`, `MarkShape`, `opacity`, `size` or
-       `strokeWidth` written as a bare color name reads as a field, as it
-       did before the pass.
-     - Step 0 landed as
-       [ADR-241](../architecture-decision-records/adr-241-a-color-object-is-unset-a-value-or-a-field.md):
-       a color object is unset, a `value` or a `field`, and the field a write
-       leaves is `ParkedColorMixin` state. Pass A moves its `writtenOf`
-       readers with the path, and the no-value fill alignments and the
-       ribbons still read off `value` goes to the missing-value member, so
-       `value` and `field` never share an object. `pileup.bases.show` comes
-       with `baseColor`'s move under `pileup.bases`.
-     - Pass A, together: every color object, the hand-written ones included
-       (HicColor, MafColor, MarkShape, MarkSize, RowColor, WiggleColor,
-       `baseColor`, `readConnections.color`), and every reader of the flat
-       member names: `markColor.ts` and `legend.ts`, `wiggleColor.ts`,
-       canvas's `renderConfig.ts` fetch key, `ColorWritesMixin.ts`,
-       `markEdit.ts`, `plot.ts`'s checks (which look at top-level keys only)
-       and the CLI's copy of `colorScale.ts`. A link's width is
-       `strokeWidth`.
-     - Pass B: `encoding.y` writes by member, as `scales.y` does, and only
-       color, shape and size write whole; `ScoreScaleMixin` takes its path, so
-       coverage reads `coverage.encoding.y`.
-     - Cut rather than respell: a channel `sort`, `legend.labels`,
-       `minimalTicks`, WiggleColor's `field` (`impliedField` supplies
-       `score`). Hosted hub configs keep a lift for each name they write.
-   - ADR-238's "one position per category is `encoding.y` on a `band` scale"
-     fits the one-glyph row displays and not the mark display, whose `y` is
-     the value every mark folds into one scale and whose rows each hold a plot
-     of it; there the band is Vega-Lite's `row` channel with a shared `y`.
+1. **Pass B, the y channel.** The design is ADR-238's "The y channel". Six
+   display types declare `scales`: alignments, LGVSynteny, MAF, wiggle, the
+   mark display and Manhattan. Land in this order, each green on its own:
+   1. `ScoreScaleMixin` reads and writes each member through a per-display
+      member-to-path map that still answers `['scales', 'y', …]`.
+      `ResetAxisButton` takes the display's y path, and `valueScaleOf` and
+      `retiredScaleSpellings` take their target path. One helper feeds the
+      checks that key on a top-level `scales`: `plot.ts`, `validateConfig.ts`,
+      the spec-recipe and `check-doc-slots.ts`. Gate: `pnpm verify --full`,
+      then `npx jest` on `ScoreScaleMixin`, `scoreMenuItems` and `plot`.
+   2. The shared coverage band (`coverageBandConfigSchema`) gains
+      `encoding.y`, so alignments, MAF and LGVSynteny move together, MAF's
+      `y` with them. Their lifts build at `coverage.encoding.y` while
+      wiggle's keep `scales.y`, each display declares a `scales` lift, and
+      every in-repo writer is respelled (specs, `test_data`, launch-args and
+      jbrowse-img tests, docs). Gate: `pnpm verify --all`, the schema tests
+      with `ConfigSlotDefaults -u` reviewed, both `legacySessions` tests and
+      the `retired` tests.
+   3. Wiggle, the mark display and Manhattan (its `plotExamples.ts` writes
+      `{ "scales": null }`). The encoding schema becomes a factory, since the
+      y scale takes per-display defaults, and the doc generator drops a slot
+      built by a call from the config pages (`wiggleConfigSchemaFields.ts`).
+      `plotEdit.ts`'s `AXIS_MEMBERS` writes the new path. `minimalTicks`
+      goes, its v4 lift in `retiredAxisSpellings` becoming `() => ({})`.
+      Delete `scalesSchema` and `valueScaleSchema`. Same gates.
+   - **The fence rename** touches `valueScaleConfigSchema.ts`, the model
+     names `domainQuantile`, `setDomainQuantile`, `clipQuantile` and
+     `unclippedQuantile` (`scoreMenuItems.ts`, `ScoreAxisWidget.tsx`), both
+     tables exports, the spec-recipe, the `domain-quantile` mark rule
+     (`markProblems.ts` and the CLI's copy), the specs (`qc.ts`, `bigwig.ts`),
+     docs and ggjbrowse's `R/wiggle.R` and tests. A ramp's `domainQuantile`
+     stays.
+   - **Specs to respell:** 48 `scales: {` literals in TS specs, 6 session
+     JSON `"scales"` objects and 4 `scales.y.*` flags in `jbrowse-img.ts`.
+   - **jb2hubs:** respell in the same pass (Colin authorizes it):
+     `hubtools/src/wiggleDisplay.ts` and `alfaPopulations.ts` write
+     `scales.y`. A host that predates `encoding.y` boots and loses the scale
+     settings, so the in-app lifts stay until the hosted configs regenerate.
+     Re-pin ggjbrowse with `check-against-jbrowse.sh`.
+   - **Not in Pass B:** `tickCount`, a channel's own `legend.show`, the tree
+     `axis`. Wiggle's v4 display-level `posColor` and `negColor` keys still
+     have no lift.
+   - The unlanded `chat-request-evals` branch writes 8 `scales.y` lines in
+     `scripts/agent-evals/tasks.ts`.
 2. **The band layers' thresholds as layer filters** (ADR-240 step 3c):
    `coverage.alleles`, `coverage.interbase` and the modification layer, each
-   into its layer's `filter` (ADR-238 "Layers inside a part"), percents
-   becoming fractions.
-3. **Legends, with step 1**: Vega-Lite gives each channel its own `legend`.
-   Pass A moved every display's `showLegend` to a display-wide `legend.show`
-   and each channel's `title` and `descending` under its `legend`; a
-   channel's own `legend.show` waits on ADR-240's open call 1.
-4. **Wiggle's `resolution` and Hi-C's `resolutionBias`** under `data`, each
-   in its own units (ADR-238's amendment); the comparative `lodMode` is done.
-   Settle one direction in the same pass: wiggle's `resolution` grows finer,
-   while Hi-C's `resolutionBias` (+1 is one bin coarser) and BigWigAdapter's
-   `resolutionMultiplier` (scales bpPerPx) grow coarser.
-5. **Layout**: `height`, `autosize` and `maxHeight` take over `heightMode`,
-   `growMaxHeight`, `rowHeight`, `featureHeight` and `pileup.readHeight`.
-   The canvas `displayMode` belongs here too: compact and superCompact scale
-   `featureHeight` by 0.6 and 0.3 (`HEIGHT_MULTIPLIERS`), and its "Feature
-   height" menu writes the mode, where alignments' presets write
-   `pileup.readHeight`.
-   - The views' pixel layout words move in the same pass: the circular
-     view's `spacingPx` (Vega-Lite's facet `spacing`), `paddingPx`
-     (`padding`), `minimumRadiusPx` (the zoom-out extent) and
-     `minVisibleWidth` (the width below which a region elides), with the
-     synteny view's `overdrawPx` and the dotplot's `lineWidth`. Renaming
-     the circle's alone would give each concept a second spelling.
-   - The circle draws no ruler flags, so it has no `axis` to respell; an
-     `axis.labels` there would be a new feature, not a rename.
-6. **Comparative leftovers**:
-   - The `indels` part takes over `cigarMode` and `drawCigar`, after step 1.
-     The linear synteny view already passes `cigarMode` to the worker as one
-     resolved value.
-   - The multi-way display's ribbons part takes over `ribbonColor`,
-     `drawCurves` and `bridgeSkippedLanes`. `drawCurves` draws the linear
-     synteny view's bump, so it becomes `mark.interpolate: 'bump'`.
-     `bridgeSkippedLanes` is Vega-Lite's `mark.invalid: 'filter'`, which
-     joins a path across a missing value, and `false` breaks the path there
-     as d3's `defined` does. A bridged ribbon also draws at `BRIDGE_ALPHA`.
-   - The same pass moves the multi-way display's other top-level words:
-     `hideUnlabelled` into `ribbons.filter` as the synteny views' `{ field,
-     valid: true }` entry, `showGeneLabels` to `genes.labels.show`,
-     `showLaneTicks` to `axis.show` (it should then gate the anchor rule's
-     ticks too, which it skips today), and `color`, `utrColor` and `text`
-     under `encoding`. `splitStrands` and `inlineLaneNames` change layout and
-     have no spelling yet.
-   - Off-screen mate marks honor only the `length` filter: the worker sends
-     no attribute lanes with the mates, so an `identity` predicate cannot
-     reach them.
+   into its layer's `filter`, percents becoming fractions.
+3. **Per-channel `legend.show`** waits on ADR-240's open call 1, legend
+   precedence.
+4. **The tree sidebar's `axis`** beside `rows` (`showTree`, `showBranchLength`,
+   `showRowLabels`, `showRowSeparators`, `treeAreaWidth`), on wiggle, MAF, the
+   mark display, the multi-sample variant display and multi-row canvas.
+5. **`data`:** wiggle's `resolution` and Hi-C's `resolutionBias` and
+   `selectedNormalization`, each in its own units.
+6. **The comparative `indels` part** takes over `cigarMode` and `drawCigar`,
+   after the alignments `show` parts.
+7. **The height step** (ADR-240 step 4): `pileup.readHeight` becomes
+   `pileup.mark.height`. The remaining layout words are in the idea below.
+
+Layout, the multi-way leftovers and settings with no step are in
+[ideas/waiting-on-a-call/vega-lite-layout-and-multiway-leftovers.md](../ideas/waiting-on-a-call/vega-lite-layout-and-multiway-leftovers.md).
+Step 2b (the quality fade as opacity) and the internal `ColorBy` object are in
+[alignments-display-next.md](alignments-display-next.md).
 
 ## Writers to update after each landing
 
-- **ggjbrowse:** respell its R lists and re-pin its engine (memory
-  `a-config-rename-reaches-ggjbrowse`). Its synteny and dotplot lists are
-  respelled up to `data.resolution`, its multi-way `pins` are records, its
-  `rows` and `facet` lists write `sort`, and its alignments lists and
-  `autoplot` take the layer `show` parts. Its published `dog10k_lof` page
-  still shows `domain` until a re-knit, which waits on the Dog10K callset
+- **Lifts to drop once hosted configs regenerate:** display-kit's
+  `liftFlatColor` and `retiredDisplayColor`, the multi-sample variant
+  display's `retired`, `liftViewColor`, and `retiredOrderSpelling` (when
+  jb2hubs' `HOST_VERSIONS` floor reads `sort`).
+- **jb2hubs:** `drawCurves: true` in `website/src/components/orthologSearchUtils.ts`,
+  `SyntenySelector.tsx` and `jbrowseLinks.ts` has no lift, so synteny drops
+  it. Row orders write `domain` beside `sort` for released hosts.
+- **ggjbrowse:** `scripts/gallery.R` passes `showLegend`, which launch-args no
+  longer declares. Re-knit the published pages at a new pin (memory
+  `a-config-rename-reaches-ggjbrowse`); `dog10k_lof` waits on the callset
   host's certificate.
-- **jb2hubs and the graph plugin after Pass A** (ggjbrowse writes the
-  channel objects since its `b5f0934`): jb2hubs writes a
-  display's flat `color` (`hubtools/src/fieldColor.ts`), the multi-sample
-  variant display's (`pangenomeLinks.ts`), a mark color's
-  `scale: 'categorical'` (`alfaPopulations.ts`) and the synteny view's
-  `color` (`orthologSearchUtils.ts`); the graph plugin's
-  `LinearGraphDisplay` keeps its own `color`. Respell each, then drop the
-  deprecated lifts the Pass A bullet names.
-- **jb2hubs:** its row orders write `sort` beside `domain` (`rowOrder.ts`,
-  `repeatClassDisplay.ts`), `domain` for the released hosts and Desktop
-  installs that predate `sort`. Display-kit's `retiredOrderSpelling` stays
-  while they do, or a host from the rename on logs `domain` as undeclared;
-  both go once jb2hubs' `HOST_VERSIONS` floor reads `sort`. The hosted hub
-  configs pick up `sort` at their next regeneration.
-- **jbrowse-img:** its flags (`--minAlignmentLength`, `--drawCurves`) still
-  carry the old names and write the new settings.
-- **The figure specs, tutorials and `demos/` configs:** `pnpm verify --full`
-  and the pre-commit config check catch a dead key.
+- **Figure specs:** [screenshot-spec-elegance.md](screenshot-spec-elegance.md)
+  owns the respell. It can use the landed words now: filters (plain-equality
+  jexl entries become predicates), constant color, legends, rows and facet.
+  The 43 `scales: { y` specs wait on Pass B.
+- **Tutorials and `demos/` configs:** `pnpm verify --full` and the pre-commit
+  config check catch a dead key, and a jexl filter never trips them.
