@@ -154,10 +154,13 @@ test('a size preset needs no display type, since only the canvas base declares i
   ).toEqual([])
 })
 
-test('turning read connections off is the None overlay radio', () => {
+test('read connections are the band checkboxes, off being the default', () => {
+  expect(
+    stepPaths('readConnections', 'cloud', 'LinearAlignmentsDisplay'),
+  ).toEqual(['Track menu → Read connections → Read cloud (checked)'])
   expect(
     stepPaths('readConnections', 'off', 'LinearAlignmentsDisplay'),
-  ).toEqual(['Track menu → Read connections → None'])
+  ).toEqual([])
 })
 
 test("a filter list's entries are the rows that write them", () => {
@@ -193,8 +196,8 @@ test("a filter list's entries are the rows that write them", () => {
     ),
   ).toEqual([
     'Track menu → Filter by... → Split alignments → Only split alignments',
-    'Track menu → Sashimi arcs → Min read support → 3',
-    'Track menu → Sashimi arcs → Non-canonical junctions → Hide non-canonical junctions',
+    'Track menu → Filter by... → Min reads at a junction → 3',
+    'Track menu → Filter by... → Non-canonical junctions → Hide non-canonical junctions',
   ])
   expect(
     stepPaths('filter', [{ field: 'mapq', gte: 20 }], 'LinearAlignmentsDisplay'),

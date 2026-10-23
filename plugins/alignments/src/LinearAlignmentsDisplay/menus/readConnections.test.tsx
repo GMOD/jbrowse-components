@@ -112,8 +112,11 @@ describe('read connections menu', () => {
       'Show ordinary pairs',
       'SV channels (pairs by orientation)',
     ])
-    expect(items.every(i => 'checked' in i && !('helpText' in i))).toBe(true)
-    expect(items.every(i => staysOpenOnClick(i))).toBe(true)
+    expect(
+      items.every(
+        i => 'checked' in i && !('helpText' in i) && staysOpenOnClick(i),
+      ),
+    ).toBe(true)
   })
 
   test('"View as pairs" toggles unit between read and chain', () => {

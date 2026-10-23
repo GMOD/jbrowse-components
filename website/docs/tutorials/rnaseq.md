@@ -169,10 +169,10 @@ every read without a skip, and the coverage histogram follows, leaving the
 junction-spanning evidence alone. **Hide spliced reads** in the same submenu is
 the complement.
 
-**Sashimi arcs → Non-canonical junctions → Hide non-canonical junctions** drops
+**Filter by... → Non-canonical junctions → Hide non-canonical junctions** drops
 every arc whose intron does not begin and end with GT-AG, GC-AG or AT-AC on
-either strand. Raising **Sashimi arcs → Min read support** also drops thin arcs,
-along with any real junction few reads support.
+either strand. Raising **Filter by... → Min reads at a junction** also drops
+thin arcs, along with any real junction few reads support.
 
 <Figure caption="Every junction above, only the canonical ones below." src="/img/rnaseq/hide_non_canonical.png" links="All junctions=rnaseq/sashimi_all_junctions,Canonical only=rnaseq/sashimi_canonical_only" />
 

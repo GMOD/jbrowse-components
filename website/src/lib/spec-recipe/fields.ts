@@ -1011,13 +1011,12 @@ const SASHIMI_PLACEMENT: Record<string, string> = {
   down: 'Below coverage',
 }
 
-// verified against READ_CONNECTIONS_OPTIONS, the "Connection overlay" radio
-// group in getReadConnectionsMenuItem
-// (plugins/alignments/src/LinearAlignmentsDisplay/menus/readConnections.ts)
+// the two band checkboxes in getReadConnectionsMenuItem
+// (plugins/alignments/src/LinearAlignmentsDisplay/menus/readConnections.ts);
+// 'off' is the default, so it needs no step
 const READ_CONNECTIONS: Record<string, string> = {
-  off: 'None',
-  arc: 'Read arcs',
-  cloud: 'Read cloud',
+  arc: 'Read arcs (checked)',
+  cloud: 'Read cloud (checked)',
 }
 
 const READ_CONNECTIONS_PLACEMENT: Record<string, string> = {
@@ -1214,14 +1213,14 @@ function filterFieldStep(
   const reads = fixed(gte)
   if (field === 'junction.reads' && alignments && reads !== undefined) {
     return {
-      path: `${TRACK_MENU} → Sashimi arcs → Min read support → ${reads}`,
+      path: `${TRACK_MENU} → Filter by... → Min reads at a junction → ${reads}`,
       note: 'Hides splice junctions supported by fewer reads than this.',
     }
   }
   if (field === 'junction.canonical' && alignments) {
-    // in the submenu the arcs own (menus/sashimi.ts), shown only while they are
+    // in "Filter by..." only while the arcs draw (menus/sashimi.ts)
     return categoryStep(
-      `${TRACK_MENU} → Sashimi arcs → Non-canonical junctions`,
+      `${TRACK_MENU} → Filter by... → Non-canonical junctions`,
       equal === true ? 'exclude' : equal === false ? 'only' : undefined,
       'non-canonical junctions',
       'Hiding drops every arc whose intron does not begin and end with one of the six canonical dinucleotide pairs. At depth those are mostly alignment artefacts, and the support floor removes them only by also removing a real junction few reads carry.',
@@ -1229,15 +1228,15 @@ function filterFieldStep(
   }
   if (field === 'connection.offscreen' && alignments) {
     return categoryStep(
-      `${READ_CONNECTIONS_MENU} → Off-screen mate connections`,
+      `${TRACK_MENU} → Filter by... → Off-screen mate connections`,
       categoryOf(equal),
       'off-screen mate connections',
-      'The row stays greyed out until an arc or read-cloud overlay, or the curved connectors, are on.',
+      'The row appears once Read arcs, Read cloud or Curved connectors is on.',
     )
   }
   if (field === 'connection.interchrom' && alignments) {
     return categoryStep(
-      `${READ_CONNECTIONS_MENU} → Inter-chromosomal pairs`,
+      `${TRACK_MENU} → Filter by... → Inter-chromosomal pairs`,
       categoryOf(equal),
       'inter-chromosomal pairs',
     )
@@ -1889,7 +1888,7 @@ export const trackFields: Record<string, FieldRecipe> = {
   height: () => [],
   subfeatureLabels: fromTable('Subfeature labels', SUBFEATURE_LABELS),
   'sashimi.placement': fromTable(
-    'Sashimi arcs → Arc placement',
+    'Advanced → Sashimi placement',
     SASHIMI_PLACEMENT,
   ),
   readConnections: fromTable('Read connections', READ_CONNECTIONS),
@@ -1898,7 +1897,7 @@ export const trackFields: Record<string, FieldRecipe> = {
     'Reveals clipped bases — the signal that a read spans a breakpoint.',
   ),
   'pileup.showConnectors': checkbox(
-    'Read connections → Use curved connectors',
+    'Read connections → Curved connectors',
     "Draws a read's alignments joined by a curve rather than a straight line. Worth it when the two ends sit in different displayed regions, where the curve reads as one read crossing the gap.",
   ),
   // Sits directly under "Coverage" in the alignments "Show..." submenu
@@ -1922,10 +1921,9 @@ export const trackFields: Record<string, FieldRecipe> = {
         }
       : undefined
   },
-  // Its own submenu rather than "Show...", because the arcs carry a placement
-  // and a score threshold alongside the toggle (menus/sashimi.ts). Unchecking
-  // leaves the coverage band, which is what a figure about the histogram wants:
-  // the arcs are strand-colored too, from the XS/TS tag, and outdraw it.
+  // Unchecking leaves the coverage band, which is what a figure about the
+  // histogram wants: the arcs are strand-colored too, from the XS/TS tag, and
+  // outdraw it.
   'sashimi.show': checkbox(
     'Sashimi arcs → Show sashimi arcs',
     'Hides the splice-junction arcs and keeps the coverage band underneath them.',
@@ -1956,7 +1954,7 @@ export const trackFields: Record<string, FieldRecipe> = {
   showTranslation: checkbox('Show... → Translation'),
   'sashimi.labels': layerCheckbox('Sashimi arcs → Show read counts'),
   'readConnections.placement': fromTable(
-    'Read connections → Arc placement',
+    'Advanced → Read connections placement',
     READ_CONNECTIONS_PLACEMENT,
   ),
   'readConnections.ordinaryPairs': layerCheckbox(

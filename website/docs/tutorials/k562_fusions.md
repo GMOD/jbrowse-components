@@ -207,7 +207,7 @@ box separated by spaces:
 A read crossing the junction is one alignment on chr22 and a supplementary
 alignment (the second piece of the split read) on chr9. In the track menu:
 
-- **Read connections → Use curved connectors** joins the two across the region
+- **Read connections → Curved connectors** joins the two across the region
   divider.
 - **Filter by... → Split alignments → Only split alignments** drops every read
   that stays on one chromosome.

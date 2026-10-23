@@ -328,22 +328,21 @@ non-canonical. The motif shows in the arc's tooltip, and a junction with no
 strand-tagged reads takes the strand its motif implies, so untagged STAR output
 still colors by strand. This needs a sequence adapter on the assembly.
 
-The track menu's **Sashimi arcs** submenu controls them:
+The track menu's **Sashimi arcs** submenu turns them on and off, and **Show read
+counts** prints each junction's supporting-read count on its arc. While the arcs
+draw:
 
-- **Show read counts** prints each junction's supporting-read count on its arc
-- **Arc placement** splits the arcs above/below the coverage row
-- **Non-canonical junctions → Hide non-canonical junctions** drops junctions
-  whose motif is none of the three canonical pairs. On deep RNA-seq the thin
-  arcs are mostly these, so it is the filter to reach for first. **Only
-  non-canonical junctions** in the same submenu keeps just those, for checking
-  an aligner's output
-- **Min read support** drops the junctions with fewer reads than the slider's
-  value
-
-Turn the arcs off from the same submenu. See the
-[RNA-seq tutorial](/docs/tutorials/rnaseq). When one junction peak dominates the
-coverage histogram, **Coverage axis... → Scale → Log** keeps the shallower
-junctions visible.
+- **Filter by... → Non-canonical junctions → Hide non-canonical junctions**
+  drops junctions whose motif is none of the three canonical pairs. On deep
+  RNA-seq the thin arcs are mostly these, so it is the filter to reach for
+  first. **Only non-canonical junctions** in the same submenu keeps just those,
+  for checking an aligner's output
+- **Filter by... → Min reads at a junction** drops the junctions with fewer
+  reads than the slider's value
+- **Advanced → Sashimi placement** splits the arcs above/below the coverage row
+  See the [RNA-seq tutorial](/docs/tutorials/rnaseq). When one junction peak
+  dominates the coverage histogram, **Coverage axis... → Scale → Log** keeps the
+  shallower junctions visible.
 
 <Figure caption="Sashimi arcs over B2M RNA-seq with read-support labels on and coverage on a log scale." src="/img/alignments_track_arcs.png" />
 

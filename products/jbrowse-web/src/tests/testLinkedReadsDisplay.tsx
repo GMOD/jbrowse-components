@@ -19,7 +19,7 @@ type DisplayMode = 'arc' | 'cloud' | 'bezier' | 'linked' | 'stack'
 const MENU_PATHS: Record<DisplayMode, string[]> = {
   arc: ['Read connections', 'Read arcs'],
   cloud: ['Read connections', 'Read cloud'],
-  bezier: ['Read connections', 'Use curved connectors'],
+  bezier: ['Read connections', 'Curved connectors'],
   linked: ['Read connections', 'View as pairs / link supplementary alignments'],
   stack: ['Read connections', 'View as pairs / link supplementary alignments'],
 }

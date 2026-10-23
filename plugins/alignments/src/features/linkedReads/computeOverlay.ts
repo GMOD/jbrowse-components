@@ -45,7 +45,7 @@ function isCrossRegionPair({ e1, e2 }: LinkedPair): boolean {
 /**
  * Which connections this overlay is responsible for.
  *
- * - `all` — the user ticked "Use curved connectors", so it draws every
+ * - `all` — the user ticked "Curved connectors", so it draws every
  *   connection the GPU line pass doesn't own (`isBezierArcPair`).
  * - `crossRegion` — chain mode with that box unticked. Chain layout puts a
  *   chain's alignments on ONE row across displayed regions (`mergeChains`) but
