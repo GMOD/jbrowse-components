@@ -1,6 +1,6 @@
 ---
 name: vega-lite-vocabulary
-description: "ADR-238's migration of every display's settings to Vega-Lite's words. Landed: the predicate compiler and every filter, the synteny views' mark, axis, coord and data words, the alignments and MAF parts, the color channel (Pass A) and the y channel (Pass B). Open: Pass B's jb2hubs, ggjbrowse and lift cleanup, the band layers' filters, per-channel legends, the tree sidebar's axis, wiggle and Hi-C `data`, the comparative indels part, and the writers. Read before adding or renaming any display or view setting."
+description: "ADR-238's migration of every display's settings to Vega-Lite's words. Landed: the predicate compiler and every filter, the synteny views' mark, axis, coord and data words, the alignments and MAF parts, the color channel (Pass A) and the y channel (Pass B). Open: Pass B's jb2hubs, ggjbrowse and lift cleanup, the band layers' filters, the tree sidebar's axis, wiggle and Hi-C `data`, the comparative indels part, and the writers. Read before adding or renaming any display or view setting."
 ---
 
 # Vega-Lite vocabulary: what is left
@@ -55,16 +55,14 @@ Git history has each landing.
 2. **The band layers' thresholds as layer filters** (ADR-240 step 3c):
    `coverage.alleles`, `coverage.interbase` and the modification layer, each
    into its layer's `filter`, percents becoming fractions.
-3. **Per-channel `legend.show`** waits on ADR-240's open call 1, legend
-   precedence.
-4. **The tree sidebar's `axis`** beside `rows` (`showTree`, `showBranchLength`,
+3. **The tree sidebar's `axis`** beside `rows` (`showTree`, `showBranchLength`,
    `showRowLabels`, `showRowSeparators`, `treeAreaWidth`), on wiggle, MAF, the
    mark display, the multi-sample variant display and multi-row canvas.
-5. **`data`:** wiggle's `resolution` and Hi-C's `resolutionBias` and
+4. **`data`:** wiggle's `resolution` and Hi-C's `resolutionBias` and
    `selectedNormalization`, each in its own units.
-6. **The comparative `indels` part** takes over `cigarMode` and `drawCigar`,
+5. **The comparative `indels` part** takes over `cigarMode` and `drawCigar`,
    after the alignments `show` parts.
-7. **The height step** (ADR-240 step 4): `pileup.readHeight` becomes
+6. **The height step** (ADR-240 step 4): `pileup.readHeight` becomes
    `pileup.mark.height`. The remaining layout words are in the idea below.
 
 Layout, the multi-way leftovers and settings with no step are in

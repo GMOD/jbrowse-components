@@ -1,13 +1,13 @@
 ---
 status: Accepted
-summary: "ADR-238's end state for LinearAlignmentsDisplay and LGVSyntenyDisplay, slot by slot: one `filter` predicate list that merges with its defaults by field (`flags.*`, `mapq`, `tags.XX`, the read categories, and the derived rows `junction.reads`, `connection.*` and `breakpoint.reads`); `encoding.color` with `scale.{type, domain, range, names, group, ...}` and a per-channel `legend` under a display-wide `legend.show`; `coverage.encoding.y`; a `show` on every band and layer (`pileup.mismatches`, `softClips`, `connectors`, `bases`, `coverage.interbase`, `alleles`, `sashimi.labels`, `readConnections.ordinaryPairs`); `pileup.mark.height`; `readConnections.mark` as `{ type: 'link' }` (a dome) or `{ type: 'rule' }` with `encoding.strokeWidth`. Amends ADR-238: a written filter list merges by field, a link's width is `strokeWidth`, `autosize` is not borrowed, `scale: 'none'` goes with no value-beats-field rule, `scale.name` becomes `scale.group`, per-value names are `scale.names`. Keeps `collapseSections`, `heightMode`, `fadeLowFrequency` and `maxLayoutHeight`; cuts `pileup.showOutline`"
+summary: "ADR-238's end state for LinearAlignmentsDisplay and LGVSyntenyDisplay, slot by slot: one `filter` predicate list that merges with its defaults by field (`flags.*`, `mapq`, `tags.XX`, the read categories, and the derived rows `junction.reads`, `connection.*` and `breakpoint.reads`); `encoding.color` with `scale.{type, domain, range, names, group, ...}` and a per-channel `legend.{title, descending}` under the one display-wide `legend.show`; `coverage.encoding.y`; a `show` on every band and layer (`pileup.mismatches`, `softClips`, `connectors`, `bases`, `coverage.interbase`, `alleles`, `sashimi.labels`, `readConnections.ordinaryPairs`); `pileup.mark.height`; `readConnections.mark` as `{ type: 'link' }` (a dome) or `{ type: 'rule' }` with `encoding.strokeWidth`. Amends ADR-238: a written filter list merges by field, a link's width is `strokeWidth`, `autosize` is not borrowed, `scale: 'none'` goes with no value-beats-field rule, `scale.name` becomes `scale.group`, per-value names are `scale.names`. Keeps `collapseSections`, `heightMode`, `fadeLowFrequency` and `maxLayoutHeight`; cuts `pileup.showOutline`"
 ---
 
 # ADR-240: The alignments display speaks Vega-Lite
 
 ## Status
 
-Accepted (2026-10-22), with one call open (below). The alignments stage of
+Accepted (2026-10-22). The alignments stage of
 [ADR-238](adr-238-every-display-speaks-vega-lite.md), whose order of work this
 follows. Amended the same day: a ramp's quantile is `scale.domainQuantile`,
 not `{ quantile }`, which no slot type holds and which reads as d3's
@@ -16,6 +16,8 @@ display: the categorical `scale.type` is Vega-Lite's `ordinal`, and a missing
 value's color is `scale.invalid`, Vega-Lite's member for null and NaN inputs.
 Amended 2026-10-23: open calls 2 and 3 closed as written, their proposals
 moved to Rejected after five Opus reviews (two cold reads, one adversarial).
+Amended again the same day: open call 1, legend precedence, closed with the
+display-wide `legend.show` as the only switch.
 
 Five reviews shaped it: an Opus design pass from ADR-238 and the schemas, two
 Opus arbiters on its calls (one on Vega-Lite fidelity, one on authors, writers
@@ -60,7 +62,7 @@ hand, and Colin's rulings on the calls they split.
         "scheme": "viridis", "reverse": false,
         "domainMin": 0, "domainMax": 60, "domainMid": 30
       },
-      "legend": { "show": true, "title": "Haplotype", "descending": false }
+      "legend": { "title": "Haplotype", "descending": false }
     }
   },
   "legend": { "show": false },          // the whole key
@@ -129,9 +131,9 @@ hand, and Colin's rulings on the calls they split.
 - **`scale.group`** shares one autoscaled domain across tracks, as
   `autoscaleGroup` does. ggplot2's scale `name` is the axis title, and a ggplot
   reader writing `name: "Depth"` would join a share group.
-- **The legend switch is display-wide and each channel's is its own.** `legend.show:
-  false` hides the whole key and skips its scans; a channel's `legend.show:
-  false` drops that channel's entries.
+- **`legend.show` is display-wide and the only legend switch.** `false` hides
+  the whole key and skips its scans. A channel's `legend` holds `title` and
+  `descending`, which label and order its rows.
 - **`pileup.showOutline` is cut.** `read.slang` repaints a fixed 1 px edge that
   no width could set, and no config, menu or figure writes the slot. The
   outline follows `unit`, as unset does today.
@@ -177,7 +179,7 @@ them in its own stage:
 | `filter.junctions.minReads`, `nonCanonical` | `junction.reads gte`, `junction.canonical equal` |
 | `filter.connections.interchrom`, `offscreenMates`, `minInterchromReads` | `connection.interchrom`, `connection.offscreen`, `breakpoint.reads gte` |
 | `facet.domain` | `facet.sort`; every `domain` that only orders moves in the same sweep |
-| `color.*` | `encoding.color`: `scale.{type, domain, range, names, unknown, invalid, scheme, reverse, domainMin, domainMax, domainMid, domainQuantile}`, `legend.{show, title, descending}` |
+| `color.*` | `encoding.color`: `scale.{type, domain, range, names, unknown, invalid, scheme, reverse, domainMin, domainMax, domainMid, domainQuantile}`, `legend.{title, descending}` |
 | `showLegend` | `legend.show` |
 | `scales.y.*` | `coverage.encoding.y.scale` and `.axis`, with wiggle's y step (`ScoreScaleMixin` hard-codes the path); `rules` follows wiggle's spelling |
 | `coverage.showInterbaseIndicators`, `minAlleleFraction` | `coverage.interbase.show`, `coverage.alleles.filter` |
@@ -195,12 +197,6 @@ them in its own stage:
 | `readConnections.color.field` | `encoding.color.field` |
 | `readConnections.showOrdinaryPairs` | `ordinaryPairs.show` |
 
-## Open
-
-1. **Legend precedence.** The display-wide `legend.show` above, or only the
-   per-channel one, as Vega-Lite has. The display-wide switch saves an author
-   three nested writes and gates real scans.
-
 ## Rejected
 
 | Proposal | Why not |
@@ -216,6 +212,7 @@ them in its own stage:
 | `unmodified` as a code (`code: oneOf ['m', 'h', 'unmodified']`) | `code: ['unmodified']` alone draws nothing on a 5mC-only read (`extract.test.ts`), the type checkboxes never offer it since no read declares it, and an empty `code` list, meaning every type, would turn the two-color view on. `?`-mode data needs no switch: `getMethBins` fills no site a `?` group leaves out |
 | Renaming `pileup.connectors` or `readConnections` | Both draw one molecule's connections, read one `connection.*` filter and one `readConnections.encoding.color`, and the path says where. `links` is a mark type, `mates` and `pairs` miss split segments, `curves` misses straight pairs, and nesting the connectors under `readConnections` breaks ADR-238's layer-under-its-part rule. The confusion a cold reader found came from the slot descriptions, which now name each other |
 | `bases.impute` for `unmodified: 'all'` | `'all'` runs another extraction path, and a probability default would break the two-color view, where no threshold applies |
+| A per-channel `legend.show` | The key merges sections across channels: the reads and the arcs share one when their colors match, and sashimi's split rows fold into the arcs' (`legendUtils.ts`), so a channel's switch cannot say which rows it hides. The section ✕ (`dismissLegendSection`) already hides a drawn section for the sitting |
 | `legend.labels` | `labels` already means a boolean on `axis` and a text layer on `sashimi` |
 | `legend.descending` as the channel's `sort` | Amendment 6 |
 | `size` for a link's width | Amendment 2 |
