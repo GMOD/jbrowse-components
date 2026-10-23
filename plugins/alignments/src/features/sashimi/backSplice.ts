@@ -7,6 +7,8 @@ const SECONDARY = 0x100
 const MAX_BACK_SPLICE_SPAN = 200_000
 
 interface Segment {
+  refName: string
+  strand: number
   start: number
   end: number
   clipAtStart: number
@@ -14,10 +16,12 @@ interface Segment {
 
 /**
  * Back-splice junctions from split reads: two consecutive segments of one read,
- * same chromosome and strand, where the later one in the read lies upstream in
- * transcript order. A circRNA read crosses its circle's joint that way, so the
- * junction spans from the upstream segment's start to the downstream one's end.
- * Counted off each primary record, so a read's supplementary twin adds nothing.
+ * same chromosome and strand, where the later one in the read starts no further
+ * downstream in transcript order than the earlier one. A circRNA read crosses
+ * its circle's joint that way, so the junction runs from the earlier segment's
+ * end back to the later one's start; a rolling-circle read crosses it once per
+ * pass and counts once. Counted off each primary record, so a read's
+ * supplementary twin adds nothing.
  */
 export function computeBackSpliceJunctions(
   refName: string,
@@ -35,23 +39,44 @@ export function computeBackSpliceJunctions(
       continue
     }
     const segments: Segment[] = [
-      { start: f.start, end: f.end, clipAtStart: clipAtStart[i]! },
-      ...featurizeSA(sa, '', f.strand, undefined)
-        .filter(s => s.refName === refName && s.strand === f.strand)
-        .map(s => ({
-          start: s.start,
-          end: s.end,
-          clipAtStart: s.clipLengthAtStartOfRead,
-        })),
+      {
+        refName,
+        strand: f.strand,
+        start: f.start,
+        end: f.end,
+        clipAtStart: clipAtStart[i]!,
+      },
+      ...featurizeSA(sa, '', f.strand, undefined).map(s => ({
+        refName: s.refName,
+        strand: s.strand,
+        start: s.start,
+        end: s.end,
+        clipAtStart: s.clipLengthAtStartOfRead,
+      })),
     ].sort((a, b) => a.clipAtStart - b.clipAtStart)
+    const seen = new Set<string>()
     for (let k = 1; k < segments.length; k++) {
       const a = segments[k - 1]!
       const b = segments[k]!
-      const upstream = f.strand === -1 ? b.start > a.start : b.start < a.start
-      const start = Math.min(a.start, b.start)
-      const end = Math.max(a.end, b.end)
-      if (upstream && end - start <= MAX_BACK_SPLICE_SPAN) {
-        const key = `${start}:${end}`
+      if (
+        a.refName !== refName ||
+        b.refName !== refName ||
+        a.strand !== b.strand
+      ) {
+        continue
+      }
+      const reverse = a.strand === -1
+      const backward = reverse ? b.end >= a.end : b.start <= a.start
+      const start = reverse ? a.start : b.start
+      const end = reverse ? b.end : a.end
+      const key = `${start}:${end}`
+      if (
+        backward &&
+        end > start &&
+        end - start <= MAX_BACK_SPLICE_SPAN &&
+        !seen.has(key)
+      ) {
+        seen.add(key)
         const j = counts.get(key)
         if (j) {
           j.n++

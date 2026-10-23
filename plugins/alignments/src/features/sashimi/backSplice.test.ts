@@ -71,3 +71,23 @@ test('segments on another chromosome or strand are not a back-splice', () => {
   )
   expect(junctions.size).toBe(0)
 })
+
+test('a rolling-circle read counts its joint once however many passes cross it', () => {
+  const junctions = computeBackSpliceJunctions(
+    'chr1',
+    [read(1000, 1500, 1)],
+    ['chr1,1001,+,500S500M500S,60,0;chr1,1001,+,1000S500M,60,0;'],
+    [0],
+  )
+  expect([...junctions.values()]).toEqual([{ start: 1000, end: 1500, n: 1 }])
+})
+
+test('a piece on another chromosome breaks the adjacency it sits between', () => {
+  const junctions = computeBackSpliceJunctions(
+    'chr1',
+    [read(5000, 5050, 1)],
+    ['chr5,101,+,50S50M50S,60,0;chr1,1001,+,100S50M,60,0;'],
+    [0],
+  )
+  expect(junctions.size).toBe(0)
+})
