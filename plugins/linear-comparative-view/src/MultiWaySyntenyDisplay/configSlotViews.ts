@@ -15,7 +15,11 @@ import { paintedRibbonColor } from './ribbonColorConfigSchema.ts'
 import type { MultiWaySyntenyDisplayConfigModel } from './configSchema.ts'
 import type { GeneColorSettings } from './geneColor.ts'
 import type { IStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
-import type { LodMode, SyntenyColorPaint } from '@jbrowse/synteny-core'
+import type {
+  LodMode,
+  RibbonInterpolation,
+  SyntenyColorPaint,
+} from '@jbrowse/synteny-core'
 
 export interface ConfigSlotSelf extends IStateTreeNode {
   configuration: Instance<MultiWaySyntenyDisplayConfigModel>
@@ -59,9 +63,12 @@ export function configSlotViews(self: ConfigSlotSelf) {
     get hideUnlabelled(): boolean {
       return getConf(self, 'hideUnlabelled')
     },
-    /** #getter */
-    get drawCurves(): boolean {
-      return getConf(self, 'drawCurves')
+    /**
+     * #getter
+     * The curve every ribbon side takes, `ribbons.mark.interpolate`.
+     */
+    get interpolate(): RibbonInterpolation {
+      return getConf(self, ['ribbons', 'mark', 'interpolate'])
     },
     /** #getter */
     get bridgeSkippedLanes(): boolean {
@@ -156,8 +163,8 @@ export function configSlotActions(self: ConfigSlotSelf) {
       setConf(self, 'hideUnlabelled', flag)
     },
     /** #action */
-    setDrawCurves(flag: boolean) {
-      setConf(self, 'drawCurves', flag)
+    setInterpolate(interpolate: RibbonInterpolation) {
+      setConf(self, ['ribbons', 'mark', 'interpolate'], interpolate)
     },
     /** #action */
     setShowLaneTicks(flag: boolean) {

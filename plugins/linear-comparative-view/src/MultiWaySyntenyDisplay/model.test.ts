@@ -1,5 +1,5 @@
 import { parseCigar2 } from '@jbrowse/cigar-utils'
-import { setConf } from '@jbrowse/core/configuration'
+import { readConfObject, setConf } from '@jbrowse/core/configuration'
 import { DEAL_COLOR_DIFFERENCE, colorDifference } from '@jbrowse/core/ui/colors'
 import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
 import { SimpleFeature, getContainingTrack } from '@jbrowse/core/util'
@@ -20,6 +20,7 @@ import { autorun, when } from 'mobx'
 
 import { KIND_BASE } from '../LinearSyntenyRPC/syntenyKinds.ts'
 import { NO_OPS } from './alignmentOps.ts'
+import { configSchemaFactory } from './configSchema.ts'
 import { LaneGene } from './geneGlyph.ts'
 import { decideLaneFrames, frameFromDecision } from './laneDecision.ts'
 import {
@@ -806,14 +807,31 @@ test('Hide unlabelled rows belongs to the field it was ticked under', () => {
 
 test('the drawing toggles write the slots the display reads back', () => {
   const display = createDisplay()
-  expect(display.drawCurves).toBe(false)
+  expect(display.interpolate).toBe('linear')
   expect(display.showLaneTicks).toBe(true)
 
-  display.setDrawCurves(true)
+  display.setInterpolate('bump')
   display.setShowLaneTicks(false)
-  expect(display.drawCurves).toBe(true)
+  expect(display.interpolate).toBe('bump')
   expect(display.showLaneTicks).toBe(false)
 })
+
+test.each([
+  [true, 'bump'],
+  [false, 'linear'],
+])(
+  'a retired drawCurves %s reads as ribbons.mark.interpolate %s',
+  (drawCurves, interpolate) => {
+    const conf = configSchemaFactory().create({
+      type: 'MultiWaySyntenyDisplay',
+      displayId: 'd',
+      drawCurves,
+    })
+    expect(readConfObject(conf, ['ribbons', 'mark', 'interpolate'])).toBe(
+      interpolate,
+    )
+  },
+)
 
 describe('the anchor lane pair stays ordered', () => {
   function withGroup() {

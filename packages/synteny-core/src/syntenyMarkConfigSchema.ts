@@ -11,8 +11,8 @@ export type RibbonInterpolation = (typeof RIBBON_INTERPOLATIONS)[number]
 /**
  * #config SyntenyMark
  * #category view
- * The linear synteny view's `mark`: how each ribbon draws between its two
- * rows. Straight sides read a ribbon's slant as the offset between the rows;
+ * How each synteny ribbon draws between its two rows: the linear synteny
+ * view's `mark` and the multi-way display's `ribbons.mark`. Straight sides read a ribbon's slant as the offset between the rows;
  * the bump curve reads a dense whole-genome stack more calmly.
  *
  * #example

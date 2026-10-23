@@ -32,7 +32,6 @@ Each item needs a call before work. Check the ADR-238 spelling first.
 
 - `ribbonColor`, `utrColor` and `text` go under `encoding`; `color` already
   has.
-- `drawCurves` becomes `mark.interpolate: 'bump'`.
 - `hideUnlabelled` becomes a `ribbons.filter` entry `{ field, valid: true }`,
   `showGeneLabels` becomes `genes.labels.show`, and `showLaneTicks` becomes
   `axis.show`, which should then gate the anchor rule's ticks too.

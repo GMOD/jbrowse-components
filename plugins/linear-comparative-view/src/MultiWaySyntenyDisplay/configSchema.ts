@@ -114,7 +114,8 @@ export function configSchemaFactory() {
       /**
        * #slot ribbons
        * The bands joining each gene's placements in adjacent lanes:
-       * `ribbons.encoding.color` paints them.
+       * `ribbons.encoding.color` paints them and `ribbons.mark.interpolate`
+       * curves their sides.
        */
       ribbons: ribbonsConfigSchema,
       /**
@@ -124,15 +125,6 @@ export function configSchemaFactory() {
         type: 'boolean',
         description:
           'under a text column, draw only the ribbons whose pair has a label',
-        defaultValue: false,
-      },
-      /**
-       * #slot
-       */
-      drawCurves: {
-        type: 'boolean',
-        description:
-          "draw each ribbon side as the S-curve that leaves and meets each lane square, the linear synteny view's `mark.interpolate: 'bump'`; off draws it straight, the default, since a straight side's slant reads as the offset between two lanes",
         defaultValue: false,
       },
       /**
@@ -230,6 +222,11 @@ export function configSchemaFactory() {
        */
       baseConfiguration: baseLinearDisplayConfigSchema,
       explicitlyTyped: true,
+      retired: {
+        drawCurves: (curves: unknown) => ({
+          ribbons: { mark: { interpolate: curves ? 'bump' : 'linear' } },
+        }),
+      },
     },
   )
 }

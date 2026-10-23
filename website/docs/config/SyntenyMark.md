@@ -1,14 +1,14 @@
 ---
 id: syntenymark
 title: SyntenyMark
-description: "The linear synteny view's mark: how each ribbon draws between its two rows."
+description: "How each synteny ribbon draws between its two rows: the linear synteny view's mark and the multi-way display's ribbons.mark."
 sidebar_label: View -> SyntenyMark
 ---
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/syntenyMarkConfigSchema.ts).
 
-The linear synteny view's `mark`: how each ribbon draws between its two
-rows. Straight sides read a ribbon's slant as the offset between the rows;
+How each synteny ribbon draws between its two rows: the linear synteny
+view's `mark` and the multi-way display's `ribbons.mark`. Straight sides read a ribbon's slant as the offset between the rows;
 the bump curve reads a dense whole-genome stack more calmly.
 
 ## Example usage
@@ -19,7 +19,7 @@ the bump curve reads a dense whole-genome stack more calmly.
 
 ## Config slots
 
-Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
+A setting written to it names members one by one: a member left out stays as it is, and `null` resets one. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
 
 <!-- prettier-ignore -->
 | Slot | Description |

@@ -106,14 +106,18 @@ test('ribbons color by strand, keyed against the lane above', async () => {
   const t = await engine.multiway({
     ...ALL_VS_ALL,
     display: {
-      ribbons: { encoding: { color: { field: 'strand' } } },
-      drawCurves: true,
+      ribbons: {
+        encoding: { color: { field: 'strand' } },
+        mark: { interpolate: 'bump' },
+      },
     },
   })
   expect(t.config).toMatchObject({
-    drawCurves: true,
     hideUnlabelled: false,
-    ribbons: { encoding: { color: { field: 'strand' } } },
+    ribbons: {
+      encoding: { color: { field: 'strand' } },
+      mark: { interpolate: 'bump' },
+    },
   })
   expect(t.legend.label).toEqual([
     'Same orientation as lane above',

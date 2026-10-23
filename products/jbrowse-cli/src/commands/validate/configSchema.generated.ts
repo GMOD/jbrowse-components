@@ -9588,6 +9588,30 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "additionalProperties": false
     },
+    "SyntenyMark": {
+      "title": "SyntenyMark",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "interpolate": {
+          "description": "the curve of each ribbon side: linear is straight, bump the S-curve that leaves and meets each row square.",
+          "default": "linear",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "enum": [
+              "linear",
+              "bump"
+            ]
+          }
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
     "MultiWayRibbons": {
       "title": "MultiWayRibbons",
       "type": "object",
@@ -9599,6 +9623,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           },
           "else": {
             "$ref": "#/$defs/MultiWayRibbonsEncoding"
+          }
+        },
+        "mark": {
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/SyntenyMark"
           }
         }
       },
@@ -11274,16 +11306,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "boolean"
           }
         },
-        "drawCurves": {
-          "description": "draw each ribbon side as the S-curve that leaves and meets each lane square, the linear synteny view's \`mark.interpolate: 'bump'\`; off draws it straight, the default, since a straight side's slant reads as the offset between two lanes.",
-          "default": false,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "boolean"
-          }
-        },
         "laneGeneTracks": {
           "description": "the trackId of the gene track each lane draws, one per genome, or an entry spelling \`{assembly}\`, such as \`{assembly}-ncbiRefSeq\`, naming in each lane the track whose id has that lane's genome, or any of its aliases, written there. Plain ids outrank \`{assembly}\` entries, and an earlier entry outranks a later one. A lane whose genome no entry names draws the session's best-ranked annotation track for it, which on a config holding several gene sets per genome is whichever is declared first.",
           "if": {
@@ -11388,6 +11410,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
         "jexlFilters": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "drawCurves": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
@@ -19901,9 +19927,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "hideUnlabelled": {
               "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/hideUnlabelled"
             },
-            "drawCurves": {
-              "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/drawCurves"
-            },
             "laneGeneTracks": {
               "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/laneGeneTracks"
             },
@@ -19927,6 +19950,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "splitStrands": {
               "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/splitStrands"
+            },
+            "drawCurves": {
+              "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/drawCurves"
             },
             "marks": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/marks"
@@ -27916,30 +27942,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "^_+comment": {}
       },
       "unevaluatedProperties": false
-    },
-    "SyntenyMark": {
-      "title": "SyntenyMark",
-      "type": "object",
-      "x-closed": true,
-      "properties": {
-        "interpolate": {
-          "description": "the curve of each ribbon side: linear is straight, bump the S-curve that leaves and meets each row square.",
-          "default": "linear",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "enum": [
-              "linear",
-              "bump"
-            ]
-          }
-        }
-      },
-      "patternProperties": {
-        "^_+comment": {}
-      },
-      "additionalProperties": false
     },
     "LinearSyntenyAxis": {
       "title": "LinearSyntenyAxis",

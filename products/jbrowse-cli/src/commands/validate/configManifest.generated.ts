@@ -5834,6 +5834,18 @@ export const configManifest: ConfigManifest = {
               ],
               "schema": "MultiWayRibbonsEncoding",
               "writes": "members"
+            },
+            {
+              "name": "mark",
+              "type": "SyntenyMarkConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "interpolate",
+                  "type": "RibbonInterpolation"
+                }
+              ],
+              "schema": "SyntenyMark",
+              "writes": "members"
             }
           ],
           "schema": "MultiWayRibbons",
@@ -5841,10 +5853,6 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "hideUnlabelled",
-          "type": "boolean"
-        },
-        {
-          "name": "drawCurves",
           "type": "boolean"
         },
         {
@@ -6286,7 +6294,8 @@ export const configManifest: ConfigManifest = {
         "maxFeatureScreenDensity",
         "maxDisplayedBpPerPx",
         "mouseover",
-        "jexlFilters"
+        "jexlFilters",
+        "drawCurves"
       ],
       "droppedKeys": [
         "maxFeatureScreenDensity",

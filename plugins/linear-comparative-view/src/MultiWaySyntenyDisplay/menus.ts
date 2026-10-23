@@ -31,7 +31,7 @@ import type { LaneSelectionModel } from './laneSelection.ts'
 import type { Lane } from './laneStack.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { RadioOption } from '@jbrowse/core/ui/menuItems'
-import type { AttributeRange } from '@jbrowse/synteny-core'
+import type { AttributeRange, RibbonInterpolation } from '@jbrowse/synteny-core'
 
 export type HeaderLane = Pick<
   Lane,
@@ -81,8 +81,8 @@ export interface MultiWayMenuModel extends LaneHeaderModel, LaneSelectionModel {
   setShowGeneLabels: (flag: boolean) => void
   inlineLaneNames: boolean
   setInlineLaneNames: (flag: boolean) => void
-  drawCurves: boolean
-  setDrawCurves: (flag: boolean) => void
+  interpolate: RibbonInterpolation
+  setInterpolate: (interpolate: RibbonInterpolation) => void
   bridgeSkippedLanes: boolean
   setBridgeSkippedLanes: (flag: boolean) => void
   rowsVsAnchor: boolean
@@ -254,7 +254,9 @@ export function showSubMenuItems(model: MultiWayMenuModel): MenuItem[] {
       helpText:
         'Genes reading rightwards above the lane line and leftwards below it.',
     }),
-    toggleItem('Curved lines', model.drawCurves, model.setDrawCurves),
+    toggleItem('Curved lines', model.interpolate === 'bump', v => {
+      model.setInterpolate(v ? 'bump' : 'linear')
+    }),
     ...(model.rowsVsAnchor
       ? []
       : [

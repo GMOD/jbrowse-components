@@ -98,7 +98,7 @@ From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`sc
 | <span id="getter-ribboncolordomain">**ribbonColorDomain**</span><br><code>string[]</code> |  |
 | <span id="getter-ribbonpaint">**ribbonPaint**</span><br><code>SyntenyColorPaint</code> |  |
 | <span id="getter-hideunlabelled">**hideUnlabelled**</span><br><code>boolean</code> |  |
-| <span id="getter-drawcurves">**drawCurves**</span><br><code>boolean</code> |  |
+| <span id="getter-interpolate">**interpolate**</span><br><code>"bump" &#124; "linear"</code> | The curve every ribbon side takes, `ribbons.mark.interpolate`. |
 | <span id="getter-bridgeskippedlanes">**bridgeSkippedLanes**</span><br><code>boolean</code> |  |
 | <span id="getter-showlaneticks">**showLaneTicks**</span><br><code>boolean</code> |  |
 | <span id="getter-splitstrands">**splitStrands**</span><br><code>boolean</code> |  |
@@ -311,7 +311,7 @@ From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`rendering
 | <span id="action-setbridgeskippedlanes">**setBridgeSkippedLanes**</span><br><code>(flag: boolean) =&gt; void</code> |  |
 | <span id="action-setribboncolordomain">**setRibbonColorDomain**</span><br><code>(domain: string[]) =&gt; void</code> |  |
 | <span id="action-sethideunlabelled">**setHideUnlabelled**</span><br><code>(flag: boolean) =&gt; void</code> |  |
-| <span id="action-setdrawcurves">**setDrawCurves**</span><br><code>(flag: boolean) =&gt; void</code> |  |
+| <span id="action-setinterpolate">**setInterpolate**</span><br><code>(interpolate: "bump" &#124; "linear") =&gt; void</code> |  |
 | <span id="action-setshowlaneticks">**setShowLaneTicks**</span><br><code>(flag: boolean) =&gt; void</code> |  |
 | <span id="action-setsplitstrands">**setSplitStrands**</span><br><code>(flag: boolean) =&gt; void</code> |  |
 | <span id="action-setinlinelanenames">**setInlineLaneNames**</span><br><code>(flag: boolean) =&gt; void</code> |  |

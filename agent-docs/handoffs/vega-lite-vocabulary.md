@@ -72,9 +72,9 @@ Layout, the multi-way leftovers and settings with no step are in
   display's `retired`, `liftViewColor`, `retiredOrderSpelling` (when
   jb2hubs' `HOST_VERSIONS` floor reads `sort`), and the y channel's lifts
   (item 1).
-- **jb2hubs:** `drawCurves: true` in its `orthologSearchUtils.ts`,
-  `SyntenySelector.tsx` and `jbrowseLinks.ts` has no lift, so synteny drops
-  it. Row orders write `domain` beside `sort` for released hosts.
+- **jb2hubs:** its unpushed branch `synteny-mark-interpolate` writes the
+  synteny view's `mark: { interpolate: 'bump' }` for `drawCurves: true`. Row
+  orders write `domain` beside `sort` for released hosts.
 - **ggjbrowse:** its `gallery.R` passes `showLegend`, which launch-args no
   longer declares. Re-knit the published pages at a new pin (memory
   `a-config-rename-reaches-ggjbrowse`); `dog10k_lof` waits on the callset

@@ -93,6 +93,7 @@ import type {
   AxisArgs,
   ColorArg,
   ComparativeAxis,
+  RibbonInterpolation,
 } from '@jbrowse/synteny-core'
 
 export interface MultiWayTablesArgs {
@@ -117,16 +118,18 @@ export interface MultiWayTablesArgs {
   /**
    * The display's settings, as a `MultiWaySyntenyDisplay` config writes
    * them: `ribbons.encoding.color` (a field such as `'strand'`, or the color
-   * channel's slots such as `{ value: 'grey' }`), `rows` (`sort`, the lanes that stack first,
-   * and `kept`, the lanes drawn), `hideUnlabelled`, `drawCurves`,
-   * `bridgeSkippedLanes`, `splitStrands`, `showGeneLabels`,
-   * `inlineLaneNames` and `height`, the stack's px.
+   * channel's slots such as `{ value: 'grey' }`), `ribbons.mark.interpolate`,
+   * `rows` (`sort`, the lanes that stack first, and `kept`, the lanes drawn),
+   * `hideUnlabelled`, `bridgeSkippedLanes`, `splitStrands`,
+   * `showGeneLabels`, `inlineLaneNames` and `height`, the stack's px.
    */
   display?: {
-    ribbons?: { encoding?: { color?: ColorArg } }
+    ribbons?: {
+      encoding?: { color?: ColorArg }
+      mark?: { interpolate?: RibbonInterpolation }
+    }
     rows?: { sort?: string[]; kept?: string[] }
     hideUnlabelled?: boolean
-    drawCurves?: boolean
     bridgeSkippedLanes?: boolean
     splitStrands?: boolean
     showGeneLabels?: boolean
@@ -193,7 +196,7 @@ function readDisplay(slots: MultiWayTablesArgs['display'] = {}) {
     rowsSort: readConfObject(conf, ['rows', 'sort']),
     kept: readConfObject(conf, ['rows', 'kept']),
     hideUnlabelled: readConfObject(conf, 'hideUnlabelled'),
-    drawCurves: readConfObject(conf, 'drawCurves'),
+    curves: readConfObject(conf, ['ribbons', 'mark', 'interpolate']) === 'bump',
     bridgeSkippedLanes: readConfObject(conf, 'bridgeSkippedLanes'),
     splitStrands: readConfObject(conf, 'splitStrands'),
     showGeneLabels: readConfObject(conf, 'showGeneLabels'),
@@ -596,7 +599,7 @@ export async function multiwayTables(
     attributeRanges,
     hideUnlabelled: settings.hideUnlabelled,
     paint: settings.paint,
-    drawCurves: settings.drawCurves,
+    drawCurves: settings.curves,
     bridgeSkippedLanes: settings.bridgeSkippedLanes,
     rowsVsAnchor,
   })

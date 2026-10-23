@@ -2051,7 +2051,7 @@ export function stateModelFactory(
           attributeRanges: self.ribbonAttributeRanges,
           hideUnlabelled: self.hideUnlabelled,
           paint: self.ribbonPaint,
-          drawCurves: self.drawCurves,
+          drawCurves: self.interpolate === 'bump',
           bridgeSkippedLanes: self.bridgeSkippedLanes,
           rowsVsAnchor: self.rowsVsAnchor,
         })

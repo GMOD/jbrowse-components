@@ -1,5 +1,6 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { encodingOptions } from '@jbrowse/display-kit/colorConfigSchema'
+import { syntenyMarkConfigSchema } from '@jbrowse/synteny-core'
 
 import { ribbonColorConfigSchema } from './ribbonColorConfigSchema.ts'
 
@@ -12,6 +13,11 @@ import { ribbonColorConfigSchema } from './ribbonColorConfigSchema.ts'
  * #example
  * ```js
  * { type: 'MultiWaySyntenyDisplay', ribbons: { encoding: { color: 'identity' } } }
+ * ```
+ *
+ * Curved sides, the linear synteny view's `mark` spelled the same:
+ * ```js
+ * { type: 'MultiWaySyntenyDisplay', ribbons: { mark: { interpolate: 'bump' } } }
  * ```
  */
 export const ribbonsConfigSchema = ConfigurationSchema(
@@ -33,6 +39,11 @@ export const ribbonsConfigSchema = ConfigurationSchema(
       },
       encodingOptions,
     ),
+    /**
+     * #slot mark
+     * How each ribbon draws: `interpolate` picks straight or S-curved sides.
+     */
+    mark: syntenyMarkConfigSchema,
   },
   { closed: true, plot: true },
 )

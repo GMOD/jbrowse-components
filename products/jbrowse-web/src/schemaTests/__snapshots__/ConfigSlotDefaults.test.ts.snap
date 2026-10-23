@@ -894,7 +894,6 @@ exports[`every registered schema slot default 1`] = `
   "display: MultiWaySyntenyDisplay": {
     "bridgeSkippedLanes": "boolean = true",
     "data.resolution": "stringEnum = "auto" of ["auto","fine","coarse"]",
-    "drawCurves": "boolean = false",
     "encoding.color.field": "featureField = """,
     "encoding.color.legend.title": "maybeString = undefined",
     "encoding.color.scale.domain": "stringArray = []",
@@ -924,6 +923,7 @@ exports[`every registered schema slot default 1`] = `
     "ribbons.encoding.color.scale.scheme": "maybeStringEnum = undefined of ["viridis","magma","inferno","cividis","juicebox","fall","reds","blues","redblue","purpleorange","redgreyblue","redyellowblue"]",
     "ribbons.encoding.color.scale.type": "maybeStringEnum = undefined of ["linear","threshold"]",
     "ribbons.encoding.color.value": "maybeColor = undefined",
+    "ribbons.mark.interpolate": "stringEnum = "linear" of ["linear","bump"]",
     "rows.field": "stringEnum = "assembly" of ["assembly"]",
     "rows.kept": "stringArray = []",
     "rows.labels": "stringMap = {}",
