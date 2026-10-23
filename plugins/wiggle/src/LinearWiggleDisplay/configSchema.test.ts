@@ -182,7 +182,7 @@ test.each([
   [{ scales: { y: { type: 'log', domainMin: 1 } } }, ['scale', 'type'], 'log'],
   [{ scaleType: 'log' }, ['scale', 'type'], 'log'],
   [{ displayCrossHatches: true }, ['axis', 'grid'], true],
-])(
+] as const)(
   'a retired y setting lands beside a bare encoding.y: %j',
   (retired, path, value) => {
     const conf = create({ encoding: { y: 'maxScore' }, ...retired })
