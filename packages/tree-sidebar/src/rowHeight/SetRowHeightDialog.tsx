@@ -72,13 +72,16 @@ const SetRowHeightDialog = observer(function SetRowHeightDialog({
       <NumberTextField
         defaultValue={model.rowHeight}
         helperText="Enter row height in px (0 = squeeze to fit view)"
+        min={0}
         autoFocus
         onValueChange={setHeight}
       />
       {proportionApplies ? (
         <NumberTextField
           defaultValue={rowProportion}
-          helperText="Enter row proportion"
+          helperText="Enter row proportion, 0 to 1"
+          min={0}
+          max={1}
           onValueChange={setProportion}
         />
       ) : null}
