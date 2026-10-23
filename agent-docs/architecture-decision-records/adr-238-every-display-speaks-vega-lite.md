@@ -184,7 +184,9 @@ its only value scale is `coverage.encoding.y`.
   `scales` lift (`valueScaleOf`, `retiredScaleSpellings`, the alignments
   coverage lift) targets the moved path in the commit that moves its display,
   since a lift to an undeclared key drops silently. Wiggle's `y` field lifts
-  to `encoding.y.field`.
+  to `encoding.y.field`. A stored `trackConfigDeltas` display lifts by its
+  display's schema before it merges over the base, so an old spelling there
+  still beats the base's current one.
 
 ### Mark, guides, coordinates
 

@@ -17,7 +17,11 @@ import {
 import { compareStructural, computed } from 'mobx'
 
 import { TracksManagerSessionMixin } from './Tracks.ts'
-import { displayWholeAt, hydratedTrackForm } from './hydratedForms.ts'
+import {
+  deltaInCurrentSpelling,
+  displayWholeAt,
+  hydratedTrackForm,
+} from './hydratedForms.ts'
 import { assertNotReaddedDifferently } from './readdedTrackConf.ts'
 import { assertTrackConfOutlivesItsAssemblies } from './temporaryAssemblyTracks.ts'
 
@@ -137,6 +141,7 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
   // frozen-base identity, which is stable until a jbrowse.tracks write.
   const hydrate = hydratedTrackForm(pluginManager)
   const wholeAt = displayWholeAt(pluginManager)
+  const inCurrentSpelling = deltaInCurrentSpelling(pluginManager)
   const canonicalBaseCache = new WeakMap<object, TrackConfigEntry>()
   function toPlainConfig(base: TrackConfigEntry): TrackConfigEntry {
     const cached = canonicalBaseCache.get(base)
@@ -146,6 +151,13 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
     const hydrated = hydrate(base) as TrackConfigEntry
     canonicalBaseCache.set(base, hydrated)
     return hydrated
+  }
+  function mergedOver(plainBase: TrackConfigEntry, delta: PlainTrackConfig) {
+    return mergeTrackConfig(
+      plainBase,
+      inCurrentSpelling(plainBase, delta),
+      wholeAt,
+    )
   }
   return TracksManagerSessionMixin(pluginManager)
     .named('SessionTracksManagerSessionMixin')
@@ -230,7 +242,7 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
         if (cached?.delta === delta) {
           return cached.merged
         }
-        const merged = mergeTrackConfig(toPlainConfig(base), delta, wholeAt)
+        const merged = mergedOver(toPlainConfig(base), delta)
         mergeCache.set(base, { delta, merged })
         return merged
       }
@@ -370,7 +382,11 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
           const delta = deltaFor(trackId)
           const base = delta ? baseFor(trackId) : undefined
           return delta && base
-            ? flattenTrackConfigDelta(base, delta, wholeAt)
+            ? flattenTrackConfigDelta(
+                base,
+                inCurrentSpelling(base, delta),
+                wholeAt,
+              )
             : []
         },
       }
@@ -690,11 +706,7 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
           for (const id of ids) {
             const base = bases.get(id)!
             self.jbrowse.updateTrackConf(
-              mergeTrackConfig(
-                toPlainConfig(base),
-                self.trackConfigDeltas[id]!,
-                wholeAt,
-              ),
+              mergedOver(toPlainConfig(base), self.trackConfigDeltas[id]!),
             )
             writeDelta(id, undefined)
           }

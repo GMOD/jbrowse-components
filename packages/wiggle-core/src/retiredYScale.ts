@@ -79,17 +79,23 @@ export function valueScaleOf(members: YMembers) {
  * The scale slots v4 declared on a display, as `retired` declares them on
  * each display whose y scale took them over, at its member paths. `minScore`
  * and `maxScore` were unset at v4's own sentinels; `numStdDev` and `inverted`
- * have no successor and are let go.
+ * have no successor and are let go. A `null` resets the member it became.
  */
 export function retiredScaleSpellings(members: YMembers) {
   const lift = valueScaleOf(members)
+  const orReset =
+    (member: YMember, lifted: (value: unknown) => Record<string, unknown>) =>
+    (value: unknown) =>
+      value === null ? nestedAt([[members[member], null]]) : lifted(value)
   return {
-    scaleType: (scale: unknown) => lift({ scale }),
-    autoscale: (autoscale: unknown) => lift({ autoscale }),
-    minScore: (min: unknown) =>
+    scaleType: orReset('type', scale => lift({ scale })),
+    autoscale: orReset('fence', autoscale => lift({ autoscale })),
+    minScore: orReset('domainMin', min =>
       min === Number.MIN_VALUE ? {} : lift({ constraints: { min } }),
-    maxScore: (max: unknown) =>
+    ),
+    maxScore: orReset('domainMax', max =>
       max === Number.MAX_VALUE ? {} : lift({ constraints: { max } }),
+    ),
     numStdDev: () => ({}),
     inverted: () => ({}),
   }

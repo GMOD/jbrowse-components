@@ -37,9 +37,6 @@ Git history has each landing.
      `WIGGLE_DERIVED_KEYS` is `y`, `extent`, `aggregate` and `scales` today;
      once jb2hubs respells, it and `COLOR_DERIVED_KEYS` both own `encoding`,
      so a step taking one set whole drops the other's members.
-   - **Before the hosted configs regenerate:** an old `trackConfigDeltas`
-     delta loses to a base that writes the same member in the new spelling, so
-     the regeneration needs a session migration for deltas first.
    - **Then delete the lifts:** `retiredScalesSpelling` on the alignments, MAF,
      wiggle and mark displays, and the `y` lift on wiggle and MAF. Until then
      `jbrowse validate` warns on an old `scales`, in a display entry or a
