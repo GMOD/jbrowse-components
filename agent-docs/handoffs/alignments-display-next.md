@@ -1,6 +1,6 @@
 ---
 name: alignments-display-next
-description: "What is left of the 2026-10-22 LinearAlignmentsDisplay review now that ADR-240's open calls 2 and 3 are closed: the quality fade as opacity (step 2b), the internal ColorBy scheme object, a connector's right-click (waits on the SA-hops gesture call), a 5hmC fill edge case under mixed MM skip flags, and ggjbrowse's stale published pages. The other ADR-240 steps are ordered in vega-lite-vocabulary.md."
+description: "What is left of the 2026-10-22 LinearAlignmentsDisplay review now that ADR-240's open calls 2 and 3 are closed: the quality fade as opacity (step 2b), the internal ColorBy scheme object, a connector's right-click (waits on the SA-hops gesture call), and ggjbrowse's stale published pages. The other ADR-240 steps are ordered in vega-lite-vocabulary.md."
 ---
 
 # LinearAlignmentsDisplay: next steps
@@ -44,13 +44,6 @@ giving the right-click to the nearer read's menu uses it up.
   drag handle sizes one lane without touching the others
   (`GroupResizeHandles`); the cost is blank space under a stack whose lane was
   shrunk, while a truncated sibling keeps its slice and its expand button.
-
-## Edge case
-
-- **`C+m.;C+h?` fills unlisted cytosines as unmodified.** `getMethBins` checks
-  only the `m` groups' skip flag, so a site whose 5hmC status the tag calls
-  unknown still paints the two-color view's blue. Untested, and no file in
-  `test_data/` mixes the flags.
 
 ## ggjbrowse
 

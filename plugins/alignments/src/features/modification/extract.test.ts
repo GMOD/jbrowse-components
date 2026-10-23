@@ -401,6 +401,38 @@ describe('the calls view weighs 5mC and 5hmC as the fill view does', () => {
   })
 })
 
+describe('the fill view under mixed skip flags', () => {
+  const positions = (mm: string, shownModifications?: string[]) =>
+    runFill(
+      new SimpleFeature({
+        uniqueId: 'mixed',
+        refName: 'ctgA',
+        start: 100,
+        end: 104,
+        strand: 1,
+        CIGAR: '4M',
+        seq: 'CGCG',
+        tags: { MM: mm, ML: [230, 100] },
+      }),
+      {
+        type: 'modifications',
+        modifications: { unmodified: 'all', shownModifications },
+      },
+    ).map(m => m.position)
+
+  test("a visible '?' 5hmC group leaves the uncalled CpG unpainted", () => {
+    expect(positions('C+m.,0;C+h?,0;')).toEqual([100])
+  })
+
+  test("an unticked '?' 5hmC group lets the 5mC fill paint it", () => {
+    expect(positions('C+m.,0;C+h?,0;', ['m'])).toEqual([100, 102])
+  })
+
+  test("'.' on both groups fills", () => {
+    expect(positions('C+m.,0;C+h.,0;')).toEqual([100, 102])
+  })
+})
+
 describe('the fill view keeps a read’s non-cytosine modifications', () => {
   // Fiber-seq shape: 5mC on C and 6mA on A in one read. getMethBins is
   // cytosine-only, so handing it the whole paint dropped every 6mA call —

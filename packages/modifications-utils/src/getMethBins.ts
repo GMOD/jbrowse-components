@@ -57,7 +57,9 @@ export interface MethBins {
  * offsets of `window` (the whole read without one), indexed from `refStart`.
  * Only cytosines in `context` are considered (default CpG); plants also use
  * CHG/CHH. With `fill`, a cytosine in context that the MM tag left implicit
- * bins as unmethylated (probability 0) where the tag allows it.
+ * bins as unmethylated (probability 0) where the tag allows it: no `?` skip flag
+ * on a 5mC or 5hmC group that `isVisible` keeps. A hidden group drops out of
+ * that check, since the fill then claims nothing about its type.
  *
  * Every ML probability is `(N + 0.5) / 256`, which float32 holds exactly.
  */
@@ -73,6 +75,7 @@ export function getMethBins(
   }: ParsedModData,
   context: CytosineContext = 'CG',
   fill = true,
+  isVisible: (type: string) => boolean = () => true,
 ): MethBins {
   const isReverse = fstrand === -1
   const lo = Math.max(0, window?.refStart ?? 0)
@@ -117,12 +120,16 @@ export function getMethBins(
   // Only fill undetected sites as unmethylated when the read actually carries a
   // 5mC ('m') call. A read with only e.g. 6mA modifications never assayed
   // methylation, so inventing unmethylated cytosines for it would be wrong.
-  // Additionally, per SAMtags the '?' flag means the status of bases not listed
-  // in the MM tag is unknown, so we must NOT assume them unmethylated; only the
-  // '.'/absent flag (low probability for skipped bases) lets us fill them in.
+  // Per SAMtags the '?' flag means the status of bases not listed in the MM tag
+  // is unknown, so we must NOT assume them unmethylated. A filled site claims
+  // low 5mC and low 5hmC, so a visible 'h' group's '?' blocks the fill too.
   const methMods = modifications.filter(m => m.type === 'm')
   const fillUnmethylated =
-    fill && methMods.length > 0 && !methMods.some(m => m.unknownSkip)
+    fill &&
+    methMods.length > 0 &&
+    !modifications.some(
+      m => m.unknownSkip && isMethylationFillType(m.type) && isVisible(m.type),
+    )
 
   // A '-' MM group assays the cytosines of the strand OPPOSITE the read, so a
   // both-strand modBAM ('C+m;G-m') has its uncalled sites in both directions.

@@ -34,8 +34,14 @@ function bins(
   strand: 1 | -1 = 1,
   cigar = `${seq.length}M`,
   context: CytosineContext = 'CG',
+  isVisible?: (type: string) => boolean,
 ) {
-  return getMethBins(makeModData(seq, mm, ml, strand, cigar), context)
+  return getMethBins(
+    makeModData(seq, mm, ml, strand, cigar),
+    context,
+    true,
+    isVisible,
+  )
 }
 
 describe('getMethBins CpG filtering', () => {
@@ -138,6 +144,41 @@ describe('getMethBins CpG filtering', () => {
     const { methBins } = bins('AACGATCGAA', 'C+m?,0;', [230])
     expect(methBins[2]).toBe(1)
     expect(methBins[6]).toBe(0)
+  })
+
+  describe('mixed skip flags on 5mC and 5hmC', () => {
+    const mixed = (mm: string, isVisible?: (type: string) => boolean) =>
+      bins('AACGATCGAA', mm, [230, 100], 1, '10M', 'CG', isVisible).methBins
+    const notH = (type: string) => type !== 'h'
+
+    test("a visible '?' 5hmC group blocks the fill", () => {
+      expect(mixed('C+m.,0;C+h?,0;')[6]).toBe(0)
+    })
+
+    test("an unticked '?' 5hmC group no longer blocks it", () => {
+      expect(mixed('C+m.,0;C+h?,0;', notH)[6]).toBe(1)
+    })
+
+    test("'.' on both groups still fills", () => {
+      expect(mixed('C+m.,0;C+h.,0;')[6]).toBe(1)
+    })
+
+    test("a '?' group of another strand blocks the fill in both", () => {
+      const { methBins } = bins(
+        'AACGAA',
+        'C+m.,0;G-m.,0;C+h?,0;',
+        [200, 200, 5],
+      )
+      expect(methBins[2]).toBe(1)
+      expect(methBins[3]).toBe(1)
+      const mixedStrand = bins(
+        'AACGATCGAA',
+        'C+m.,0;G-m.,0;G-h?,0;',
+        [230, 230, 100],
+      ).methBins
+      expect(mixedStrand[6]).toBe(0)
+      expect(mixedStrand[7]).toBe(0)
+    })
   })
 
   test('CHG context: forward CHG site stored, dropped under default CpG', () => {
