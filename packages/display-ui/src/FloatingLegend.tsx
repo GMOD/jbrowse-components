@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useLayoutEffect, useState } from 'react'
 
 // deep subpaths, never the `@jbrowse/core/ui` barrel: a display renders this
 // legend directly, so it sits behind neither bring-your-own seam, and one named
@@ -39,9 +39,8 @@ const useStyles = makeStyles()(theme => ({
     border: `1px solid ${theme.palette.divider}`,
     borderRadius: 3,
     padding: 3,
-    // Two keys on one short display ran past its bottom edge and were cut
-    // there; the box scrolls inside the display instead.
-    overflowY: 'auto',
+    display: 'flex',
+    flexDirection: 'column',
     fontSize: 10,
     zIndex: 100,
     // the default; `maxWidth` overrides it per display
@@ -71,6 +70,28 @@ const useStyles = makeStyles()(theme => ({
   },
   withClose: {
     paddingRight: 20,
+  },
+  // A key taller than its display scrolls here. The platform may hide an
+  // overlay scrollbar, so `moreBelow` names the entries past the fold.
+  scroller: {
+    overflowY: 'auto',
+    overscrollBehavior: 'contain',
+    minHeight: 0,
+  },
+  moreBelow: {
+    font: 'inherit',
+    flexShrink: 0,
+    marginTop: 2,
+    padding: '1px 0 0',
+    border: 0,
+    borderTop: `1px solid ${theme.palette.divider}`,
+    background: 'none',
+    textAlign: 'left',
+    color: theme.palette.accent,
+    cursor: 'pointer',
+    '&:hover': {
+      textDecoration: 'underline',
+    },
   },
   topTitle: {
     fontWeight: 'bold',
@@ -232,7 +253,7 @@ const GradientRow = observer(function GradientRow({
 }) {
   const { classes, theme } = useStyles()
   return (
-    <div className={classes.gradientRow}>
+    <div className={classes.gradientRow} data-legend-count={1}>
       {label ? <div className={classes.label}>{label}</div> : null}
       <div
         className={classes.gradientBar}
@@ -313,6 +334,7 @@ const LegendItemList = observer(function LegendItemList({
             key={`${item.label}-${i}`}
             type="button"
             className={cx(itemClass, classes.itemButton)}
+            data-legend-count={1}
             title="Show only these rows"
             onClick={() => {
               onItemClick(item)
@@ -321,8 +343,12 @@ const LegendItemList = observer(function LegendItemList({
             {row}
           </button>
         ) : (
-          // eslint-disable-next-line @eslint-react/no-array-index-key
-          <div key={`${item.label}-${i}`} className={itemClass}>
+          <div
+            // eslint-disable-next-line @eslint-react/no-array-index-key
+            key={`${item.label}-${i}`}
+            className={itemClass}
+            data-legend-count={1}
+          >
             {row}
           </div>
         )
@@ -331,6 +357,7 @@ const LegendItemList = observer(function LegendItemList({
         <button
           type="button"
           className={classes.toggle}
+          data-legend-count={expanded ? undefined : hiddenCount}
           onClick={() => {
             setExpanded(!expanded)
           }}
@@ -341,6 +368,63 @@ const LegendItemList = observer(function LegendItemList({
     </>
   )
 })
+
+// How many entries `scroller` holds below its visible bottom. Each row counts
+// one, and a collapsed "Show N more" toggle counts the rows it hides.
+function entriesBelow(scroller: HTMLElement) {
+  const { bottom } = scroller.getBoundingClientRect()
+  let count = 0
+  for (const el of scroller.querySelectorAll<HTMLElement>(
+    '[data-legend-count]',
+  )) {
+    if (el.getBoundingClientRect().bottom > bottom + 1) {
+      count += Number(el.dataset.legendCount)
+    }
+  }
+  return count
+}
+
+// The scroller's entries below the fold, recounted on scroll, resize and any
+// change to its rows. While the key can scroll, a wheel anywhere over it is the
+// key's alone, so it neither zooms nor pans the view beneath; ctrl/meta still
+// zoom, and a sideways swipe still pans.
+function useEntriesBelow(scroller: HTMLDivElement | null) {
+  const [below, setBelow] = useState(0)
+  useLayoutEffect(() => {
+    if (!scroller) {
+      return
+    }
+    const update = () => {
+      setBelow(entriesBelow(scroller))
+    }
+    const onWheel = (e: WheelEvent) => {
+      if (
+        !e.ctrlKey &&
+        !e.metaKey &&
+        Math.abs(e.deltaY) >= Math.abs(e.deltaX) &&
+        scroller.scrollHeight > scroller.clientHeight
+      ) {
+        e.stopPropagation()
+      }
+    }
+    const box = scroller.parentElement!
+    update()
+    scroller.addEventListener('scroll', update, { passive: true })
+    box.addEventListener('wheel', onWheel, { passive: true })
+    const mutations = new MutationObserver(update)
+    mutations.observe(scroller, { childList: true, subtree: true })
+    const resizes =
+      'ResizeObserver' in window ? new ResizeObserver(update) : undefined
+    resizes?.observe(scroller)
+    return () => {
+      scroller.removeEventListener('scroll', update)
+      box.removeEventListener('wheel', onWheel)
+      mutations.disconnect()
+      resizes?.disconnect()
+    }
+  }, [scroller])
+  return below
+}
 
 // Floating color-key overlay: one panel per section (e.g. genotype colors vs.
 // sample-grouping colors on the multi-sample variant display). Section titles
@@ -353,8 +437,9 @@ const LegendItemList = observer(function LegendItemList({
 // cells stays inert text beside it.
 //
 // The key covers data at the lane's top right, an overlap Colin accepted on
-// 2026-09-30. A lane shorter than the key scrolls it rather than clipping it,
-// which a still cannot show, so a figure gives that lane more height.
+// 2026-09-30. A lane shorter than the key scrolls it, and a "N more" row under
+// the visible entries names what lies below, so neither the screen nor a still
+// of it hides an entry.
 const FloatingLegend = observer(function FloatingLegend({
   sections,
   title,
@@ -386,6 +471,8 @@ const FloatingLegend = observer(function FloatingLegend({
   right?: number
 }) {
   const { classes } = useStyles()
+  const [scroller, setScroller] = useState<HTMLDivElement | null>(null)
+  const below = useEntriesBelow(scroller)
 
   const nonEmpty = nonEmptyLegendSections(sections)
   if (nonEmpty.length === 0) {
@@ -433,44 +520,60 @@ const FloatingLegend = observer(function FloatingLegend({
             </button>
           </Tooltip>
         ) : null}
-        {title ? <div className={classes.topTitle}>{title}</div> : null}
-        {nonEmpty.map(section => (
-          <div key={section.id} className={classes.section}>
-            {multiSection && section.title ? (
-              <div className={classes.sectionHeader}>
-                <span className={classes.sectionTitle}>{section.title}</span>
-                {onDismissSection ? (
-                  <Tooltip title={`Hide ${section.title}`}>
-                    <button
-                      type="button"
-                      className={classes.sectionClose}
-                      aria-label={`Hide ${section.title}`}
-                      onClick={() => {
-                        onDismissSection(section.id)
-                      }}
-                    >
-                      ×
-                    </button>
-                  </Tooltip>
-                ) : null}
-              </div>
-            ) : null}
-            {section.note ? (
-              <div className={classes.sectionNote}>{section.note}</div>
-            ) : null}
-            <LegendItemList
-              items={section.items}
-              maxItems={maxItems}
-              onItemClick={
-                onItemClick && section.focusesRows
-                  ? item => {
-                      onItemClick(item, section)
-                    }
-                  : undefined
-              }
-            />
-          </div>
-        ))}
+        <div ref={setScroller} className={classes.scroller}>
+          {title ? <div className={classes.topTitle}>{title}</div> : null}
+          {nonEmpty.map(section => (
+            <div key={section.id} className={classes.section}>
+              {multiSection && section.title ? (
+                <div className={classes.sectionHeader}>
+                  <span className={classes.sectionTitle}>{section.title}</span>
+                  {onDismissSection ? (
+                    <Tooltip title={`Hide ${section.title}`}>
+                      <button
+                        type="button"
+                        className={classes.sectionClose}
+                        aria-label={`Hide ${section.title}`}
+                        onClick={() => {
+                          onDismissSection(section.id)
+                        }}
+                      >
+                        ×
+                      </button>
+                    </Tooltip>
+                  ) : null}
+                </div>
+              ) : null}
+              {section.note ? (
+                <div className={classes.sectionNote}>{section.note}</div>
+              ) : null}
+              <LegendItemList
+                items={section.items}
+                maxItems={maxItems}
+                onItemClick={
+                  onItemClick && section.focusesRows
+                    ? item => {
+                        onItemClick(item, section)
+                      }
+                    : undefined
+                }
+              />
+            </div>
+          ))}
+        </div>
+        {below > 0 && scroller ? (
+          <button
+            type="button"
+            className={classes.moreBelow}
+            onClick={() => {
+              scroller.scrollTop += Math.max(
+                SWATCH,
+                scroller.clientHeight - SWATCH,
+              )
+            }}
+          >
+            {below} more ▾
+          </button>
+        ) : null}
       </div>
     </TrackOverlayPortal>
   )

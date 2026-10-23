@@ -201,6 +201,81 @@ describe('FloatingLegend', () => {
     expect(getByText('+3 more').closest('button')).toBeNull()
   })
 
+  describe('in a display shorter than the key', () => {
+    const ROW = 13
+    const VISIBLE = 100
+    let rect: jest.SpyInstance
+
+    // jsdom lays nothing out, so the mock shows VISIBLE px of the scroller and
+    // stacks each counted element ROW px below the last, less `scrollTop`.
+    beforeEach(() => {
+      rect = jest
+        .spyOn(HTMLElement.prototype, 'getBoundingClientRect')
+        .mockImplementation(function (this: HTMLElement) {
+          const scroller = this.closest('[data-testid="floating-legend"]')
+            ?.firstElementChild as HTMLElement | null
+          if (this.dataset.legendCount !== undefined && scroller) {
+            const counted = [
+              ...scroller.querySelectorAll('[data-legend-count]'),
+            ]
+            const bottom =
+              (counted.indexOf(this) + 1) * ROW - scroller.scrollTop
+            return { bottom } as DOMRect
+          }
+          return { bottom: VISIBLE } as DOMRect
+        })
+    })
+    afterEach(() => {
+      rect.mockRestore()
+    })
+
+    it('counts the entries below the fold, collapsed ones included', () => {
+      const { getByText } = render(
+        <FloatingLegend sections={one(items(32))} maxItems={12} />,
+      )
+      // rows 8-12 lie below 100px, and the toggle hides 20 more
+      expect(getByText('25 more ▾')).toBeTruthy()
+    })
+
+    it('recounts on scroll and drops the cue at the bottom', () => {
+      const { getByTestId, getByText, queryByText } = render(
+        <FloatingLegend sections={one(items(10))} />,
+      )
+      expect(getByText('3 more ▾')).toBeTruthy()
+      const scroller = getByTestId('floating-legend').firstElementChild!
+      scroller.scrollTop = 3 * ROW
+      fireEvent.scroll(scroller)
+      expect(queryByText(/more ▾/)).toBeNull()
+    })
+
+    it('shows no cue when every entry fits', () => {
+      const { queryByText } = render(
+        <FloatingLegend sections={one(items(7))} />,
+      )
+      expect(queryByText(/more ▾/)).toBeNull()
+    })
+  })
+
+  it('keeps a wheel over a scrollable key from reaching the view', () => {
+    const viewWheel = jest.fn()
+    const { getByTestId } = render(
+      <div ref={el => el?.addEventListener('wheel', viewWheel)}>
+        <FloatingLegend sections={one(items(30))} maxItems={30} />
+      </div>,
+    )
+    const scroller = getByTestId('floating-legend').firstElementChild!
+    Object.defineProperties(scroller, {
+      scrollHeight: { value: 400 },
+      clientHeight: { value: 100 },
+    })
+    fireEvent.wheel(scroller, { deltaY: 40 })
+    expect(viewWheel).not.toHaveBeenCalled()
+    fireEvent.wheel(getByTestId('floating-legend'), { deltaY: 40 })
+    expect(viewWheel).not.toHaveBeenCalled()
+    fireEvent.wheel(scroller, { deltaY: 40, ctrlKey: true })
+    expect(viewWheel).toHaveBeenCalledTimes(1)
+  })
+
   it('renders no Material UI, in every state that has a control', () => {
     const { container } = render(
       <FloatingLegend
