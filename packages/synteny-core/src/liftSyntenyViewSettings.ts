@@ -81,7 +81,6 @@ function liftMinLength(snap: Snap) {
   }
 }
 
-// `cigarMode` and the dotplot's `drawCigar` are the `indels` part
 function liftIndels(snap: Snap) {
   if (!('cigarMode' in snap) && !('drawCigar' in snap)) {
     return snap

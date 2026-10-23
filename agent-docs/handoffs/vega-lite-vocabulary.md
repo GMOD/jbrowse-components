@@ -78,7 +78,11 @@ Layout, the multi-way leftovers and settings with no step are in
   orders write `domain` beside `sort` for released hosts.
 - **ggjbrowse:** Re-knit the published pages at a new pin (memory
   `a-config-rename-reaches-ggjbrowse`); `dog10k_lof` waits on the callset
-  host's certificate.
+  host's certificate. Re-pin and respell for `view.indels`,
+  `pileup.mark.height`, `coverage.alleles.filter` and `pileup.bases.filter`:
+  `R/synteny.R:62` sends `cigarMode`, which the tables engine lifts, and
+  `R/alignments.R:388` and the docs write `readHeight`, `minAlleleFraction`,
+  `cytosineContext` and `shownModifications`.
 - **Figure specs:** [screenshot-spec-elegance.md](screenshot-spec-elegance.md)
   owns the respell. It can use the landed words now: filters (plain-equality
   jexl entries become predicates), constant color, legends, rows, facet and

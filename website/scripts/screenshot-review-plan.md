@@ -352,13 +352,14 @@ tolerance ball for "did this figure move".
     `tabix hg38ToHs1.over.pif.gz tchr5:69200000-71700000`. PIF indexes both
     sides — `t`-prefixed names are the target, `q`-prefixed the query — and
     `tabix -l` tells you which are present.
-- **Over a segmental duplication a synteny track needs `cigarMode: 'off'`.** The
-  default `'full'` draws every CIGAR block of every chain; where several chains
-  overlap the same span that is thousands of slivers and the band renders as a
-  hairball. `'off'` gives one ribbon per chain, which is the level a claim about
-  chains is made at. Pair it with `minAlignmentLength` to drop the sub-kb chains
-  a segdup throws off, and with `alpha` well above the 0.2 default — that
-  default protects against pile-up, and three ribbons are not a pile-up.
+- **Over a segmental duplication a synteny view needs
+  `indels: { show: false }`.** The default draws every CIGAR block of every
+  chain; where several chains overlap the same span that is thousands of slivers
+  and the band renders as a hairball. Hidden indels give one ribbon per chain,
+  which is the level a claim about chains is made at. Pair it with
+  `minAlignmentLength` to drop the sub-kb chains a segdup throws off, and with
+  `alpha` well above the 0.2 default — that default protects against pile-up,
+  and three ribbons are not a pile-up.
 - **`heightMode: 'fixed'` + `height` is how a session spec pins a lane whose
   track config says `grow`.** Worth reaching for before assuming a `height` was
   ignored: `hs1-genes` is configured to grow, and over a segdup its RefSeq-All

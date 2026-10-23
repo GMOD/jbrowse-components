@@ -15,6 +15,7 @@ import {
   fadesThinAt,
   isInstanceInvisible,
   locateCum,
+  liftSyntenyViewSettings,
   resolvedIndels,
   unpack,
   viewColorSettings,
@@ -337,20 +338,21 @@ function concatColumns<T extends Record<string, unknown[]>>(a: T, b: T) {
  */
 export async function syntenyTables(
   pluginManager: PluginManager,
-  { adapterConfig, query, target, view = {} }: SyntenyTablesArgs,
+  { adapterConfig, query, target, view: written = {} }: SyntenyTablesArgs,
 ) {
+  const view = liftSyntenyViewSettings(written) as typeof written
   const q = comparativeAxis(query, adapterConfig, 0)
   const t = comparativeAxis(target, adapterConfig, 1)
+  const indels = resolvedIndels(view.indels)
   const config = {
     filter: view.filter ?? [],
-    indels: resolvedIndels(view.indels).settings,
+    indels: indels.settings,
     mark: { interpolate: view.mark?.interpolate ?? 'linear' },
     axis: { grid: view.axis?.grid ?? false },
     render: { antialias: view.render?.antialias },
     height: view.height ?? DEFAULT_LEVEL_HEIGHT,
   }
   const { height } = config
-  const cigarMode = resolvedIndels(view.indels).drawing
   const { value } = await executeSyntenyFeaturesAndPositions({
     pluginManager,
     sessionId: 'tables',
@@ -369,7 +371,7 @@ export async function syntenyTables(
       windowRegions: t.regions,
       fetchRegions: t.regions,
     },
-    cigarMode,
+    cigarMode: indels.drawing,
     statusCallback: () => {},
   })
   const { instanceData, ...featureData } = value

@@ -43,8 +43,8 @@ export const syntenyIndelsConfigSchema = ConfigurationSchema(
       {
         /**
          * #slot encoding.opacity
-         * `0` leaves each indel a gap; unset paints it in its operation's
-         * color.
+         * `0` leaves each indel a gap; unset, or any other value, paints it
+         * in its operation's color.
          */
         opacity: ConfigurationSchema(
           'SyntenyIndelsOpacity',
@@ -55,7 +55,7 @@ export const syntenyIndelsConfigSchema = ConfigurationSchema(
             value: {
               type: 'maybeNumber',
               description:
-                "0 leaves each indel a gap; unset paints it in its operation's color",
+                "0 leaves each indel a gap; unset, or any other value, paints it in its operation's color",
             },
           },
           { shorthand: 'value', writes: 'whole', closed: true },

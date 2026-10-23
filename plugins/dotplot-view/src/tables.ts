@@ -10,6 +10,7 @@ import {
   createComparativeColorFunction,
   isInstanceInvisible,
   locateCum,
+  liftSyntenyViewSettings,
   resolvedIndels,
   unpack,
   viewColorSettings,
@@ -75,8 +76,9 @@ const OP_NAMES: Record<number, string> = {
  */
 export async function dotplotTables(
   pluginManager: PluginManager,
-  { adapterConfig, x, y, view = {} }: DotplotTablesArgs,
+  { adapterConfig, x, y, view: written = {} }: DotplotTablesArgs,
 ) {
+  const view = liftSyntenyViewSettings(written) as typeof written
   const indels = resolvedIndels(view.indels)
   const config = {
     filter: view.filter ?? [],

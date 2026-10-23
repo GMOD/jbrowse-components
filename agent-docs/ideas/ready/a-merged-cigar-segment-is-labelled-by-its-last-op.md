@@ -66,4 +66,6 @@ portion as a sub-span of the same quad, which needs a second corner pair per
 instance and is a geometry change.
 
 `visitCigarRenderedSegments` is shared with the dotplot, which draws the same
-segments as lines, so whichever it is lands in both views.
+segments as lines, so whichever it is lands in both views. The dotplot's gap
+drawing (`indels: { encoding: { opacity: 0 } }`) skips the mislabelled segments
+too, so its lines lose the merged match bases as the synteny view's ribbons do.
