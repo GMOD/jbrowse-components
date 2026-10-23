@@ -840,21 +840,6 @@ const FILTER_MENU_DISPLAYS = new Set([
   'LinearMultiSampleVariantDisplay',
 ])
 
-// A feature display's jexl `filter.expressions`; the alignments display's read
-// members are `filter`'s own entry, which the read-category step reads as it
-// reads v4's `filterBy`.
-const expressionsStep: FieldRecipe = (value, { displayType }) => {
-  const filters = Array.isArray(value)
-    ? value.filter(f => typeof f === 'string')
-    : []
-  return filters.length && displayType && FILTER_MENU_DISPLAYS.has(displayType)
-    ? {
-        path: `${TRACK_MENU} → Filter by... → add ${filters.length === 1 ? 'the expression' : `the ${filters.length} expressions`}`,
-        note: `This figure filters on ${filters.map(f => `\`${f.replace(/^jexl:/, '')}\``).join(', ')}.`,
-      }
-    : undefined
-}
-
 // The radios inside the alignments display's 'Arc color' submenu, imported so a
 // renamed radio changes this table with it.
 const ARC_COLORS: Record<string, string> = Object.fromEntries([
@@ -1103,36 +1088,149 @@ const layerCheckbox = (label: string, note?: string): FieldRecipe => {
     step((value as { show?: unknown } | undefined)?.show, context)
 }
 
-// `filter`, or v4's `filterBy`, carries every read filter, and only the read
-// categories have a click path worth writing: the flag masks and tag filters
-// are typed into the dialog rather than picked off a menu, so a figure setting
-// one of those gets the row that opens the dialog and stops there.
-//
-// Every label comes off `READ_CATEGORIES`, which is what the menu builds its
-// rows from, so a renamed category cannot leave figures naming a row that is
-// gone — the "imported, cannot drift" guarantee the color-scheme table above
-// has.
-function readCategoryPath(value: unknown): FieldStep | undefined {
-  const filter = asRecord(value)
-  if (!filter) {
+// A display's `filter` list, each entry as the row that writes it: an
+// expression is a "Filter by..." dialog entry, a read category one of the
+// alignments category radios (their labels off `READ_CATEGORIES`, which the
+// menu builds its rows from, so a renamed one cannot leave figures naming a
+// row that is gone), and each field below the slider or radio that writes it.
+// A flag or tag test is typed into the dialog rather than picked off a menu,
+// so an entry no row writes gets the step that opens the dialog.
+const filterListStep: FieldRecipe = (value, context) => {
+  if (!Array.isArray(value)) {
     return undefined
   }
-  const steps = READ_CATEGORIES.flatMap(({ key, noun, only, exclude }) => {
-    const choice = asString(filter[key])
-    return choice === 'only'
+  const entries = value.flatMap(entry =>
+    typeof entry === 'string'
+      ? [{ field: entry, equal: true }]
+      : (asRecord(entry) ?? []),
+  )
+  const expressions = entries
+    .filter(e => isExpressionEntry(e))
+    .map(e => e.field as string)
+  const categories = READ_CATEGORIES.flatMap(({ key, noun, only, exclude }) => {
+    const equal = entries.find(e => e.field === key)?.equal
+    return equal === true
       ? [`${noun} → ${only}`]
-      : choice === 'exclude'
+      : equal === false
         ? [`${noun} → ${exclude}`]
         : []
   })
-  return steps.length > 0
+  const readCategoryKeys = new Set<unknown>(READ_CATEGORIES.map(c => c.key))
+  const rest = entries.filter(
+    e => !isExpressionEntry(e) && !readCategoryKeys.has(e.field),
+  )
+  const fieldSteps = rest.map(e => filterFieldStep(e, context))
+  return [
+    ...(expressions.length > 0
+      ? [expressionsStep(expressions, context)]
+      : []),
+    ...(categories.length > 0
+      ? [
+          {
+            path: categories
+              .map(step => `${TRACK_MENU} → Filter by... → ${step}`)
+              .join(', then '),
+            note: 'A read filter drops reads in the worker before layout, so it thins the coverage histogram along with the pileup.',
+          },
+        ]
+      : []),
+    ...fieldSteps.filter(step => step !== undefined),
+    ...(fieldSteps.includes(undefined)
+      ? [{ path: `${TRACK_MENU} → Filter by... → Edit filters...` }]
+      : []),
+  ].filter(step => step !== undefined)
+}
+
+function isExpressionEntry(e: Record<string, unknown>) {
+  return (
+    typeof e.field === 'string' &&
+    isJexl(e.field) &&
+    e.equal === true &&
+    Object.keys(e).length === 2
+  )
+}
+
+const categoryOf = (equal: unknown) =>
+  equal === true ? 'only' : equal === false ? 'exclude' : undefined
+
+const fixed = (n: unknown) => (typeof n === 'number' ? n : undefined)
+
+// One field of a `filter` list as the slider or radio that writes it.
+function filterFieldStep(
+  { field, equal, gte, lte }: Record<string, unknown>,
+  { displayType }: FieldContext,
+): FieldStep | undefined {
+  const alignments = isAlignmentsOnlyField(displayType)
+  if (field === 'geneLike') {
+    // the category row LinearBasicDisplay adds to "Filter by..." (model.ts)
+    return categoryStep(
+      `${TRACK_MENU} → Filter by... → Genes`,
+      categoryOf(equal),
+      'genes',
+      'Genes counts every gene, transcript and RNA type, the configured transcript and container types, and a top-level CDS; the rest of a GFF, such as NCBI region and match rows, is not a gene.',
+    )
+  }
+  // the two inline sliders under the multi-sample variant "Filter by..."
+  // submenu (multiSampleVariantMenuItems.ts); both refetch on release
+  const maf = fixed(gte)
+  if (field === 'minorAlleleFrequency' && maf !== undefined) {
+    return {
+      path: `${TRACK_MENU} → Filter by... → Minor allele frequency → ${maf.toFixed(2)}`,
+      note: 'Hides variants whose minor allele frequency is below this.',
+    }
+  }
+  const missing = fixed(lte)
+  if (field === 'missingness' && missing !== undefined) {
+    return {
+      path: `${TRACK_MENU} → Filter by... → Missingness → ${missing.toFixed(2)}`,
+      note: 'Hides variants whose fraction of no-call genotypes is above this.',
+    }
+  }
+  const reads = fixed(gte)
+  if (field === 'junction.reads' && alignments && reads !== undefined) {
+    return {
+      path: `${TRACK_MENU} → Sashimi arcs → Min read support → ${reads}`,
+      note: 'Hides splice junctions supported by fewer reads than this.',
+    }
+  }
+  if (field === 'junction.canonical' && alignments) {
+    // in the submenu the arcs own (menus/sashimi.ts), shown only while they are
+    return categoryStep(
+      `${TRACK_MENU} → Sashimi arcs → Non-canonical junctions`,
+      equal === true ? 'exclude' : equal === false ? 'only' : undefined,
+      'non-canonical junctions',
+      'Hiding drops every arc whose intron does not begin and end with one of the six canonical dinucleotide pairs. At depth those are mostly alignment artefacts, and the support floor removes them only by also removing a real junction few reads carry.',
+    )
+  }
+  if (field === 'connection.offscreen' && alignments) {
+    return categoryStep(
+      `${READ_CONNECTIONS_MENU} → Off-screen mate connections`,
+      categoryOf(equal),
+      'off-screen mate connections',
+      'The row stays greyed out until an arc or read-cloud overlay, or the curved connectors, are on.',
+    )
+  }
+  if (field === 'connection.interchrom' && alignments) {
+    return categoryStep(
+      `${READ_CONNECTIONS_MENU} → Inter-chromosomal pairs`,
+      categoryOf(equal),
+      'inter-chromosomal pairs',
+    )
+  }
+  return undefined
+}
+
+// The `jexl:` expressions of a display's `filter` list.
+function expressionsStep(
+  filters: readonly string[],
+  { displayType }: FieldContext,
+): FieldStep | undefined {
+  return filters.length && displayType && FILTER_MENU_DISPLAYS.has(displayType)
     ? {
-        path: steps
-          .map(step => `${TRACK_MENU} → Filter by... → ${step}`)
-          .join(', then '),
-        note: 'A read filter drops reads in the worker before layout, so it thins the coverage histogram along with the pileup.',
+        path: `${TRACK_MENU} → Filter by... → add ${filters.length === 1 ? 'the expression' : `the ${filters.length} expressions`}`,
+        note: `This figure filters on ${filters.map(f => `\`${f.replace(/^jexl:/, '')}\``).join(', ')}.`,
       }
-    : { path: `${TRACK_MENU} → Filter by... → Edit filters...` }
+    : undefined
 }
 
 const fromTable = (
@@ -1374,8 +1472,7 @@ export const trackFields: Record<string, FieldRecipe> = {
   modifications: modificationsStep,
   rowColor: rowColorStep,
   facet: facetStep,
-  filter: readCategoryPath,
-  'filter.expressions': expressionsStep,
+  filter: filterListStep,
   // Declared by LinearHicDisplay alone, so as with the alignments-only fields
   // the name settles the display and an unresolved entry can still be
   // answered.
@@ -1572,23 +1669,6 @@ export const trackFields: Record<string, FieldRecipe> = {
                 : undefined,
           }
         : undefined,
-  'filter.connections.offscreenMates': (value, { displayType }) =>
-    isAlignmentsOnlyField(displayType)
-      ? categoryStep(
-          `${READ_CONNECTIONS_MENU} → Off-screen mate connections`,
-          value,
-          'off-screen mate connections',
-          'The row stays greyed out until an arc or read-cloud overlay, or the curved connectors, are on.',
-        )
-      : undefined,
-  'filter.connections.interchrom': (value, { displayType }) =>
-    isAlignmentsOnlyField(displayType)
-      ? categoryStep(
-          `${READ_CONNECTIONS_MENU} → Inter-chromosomal pairs`,
-          value,
-          'inter-chromosomal pairs',
-        )
-      : undefined,
   'readConnections.height': (value, { displayType }) =>
     typeof value === 'number' && isAlignmentsOnlyField(displayType)
       ? {
@@ -1796,7 +1876,6 @@ export const trackFields: Record<string, FieldRecipe> = {
     'Read connections → Use curved connectors',
     "Draws a read's alignments joined by a curve rather than a straight line. Worth it when the two ends sit in different displayed regions, where the curve reads as one read crossing the gap.",
   ),
-  filterBy: readCategoryPath,
   // Sits directly under "Coverage" in the alignments "Show..." submenu
   // (menus/reads.ts). Unchecking it leaves the coverage band alone, which is
   // what a figure comparing depth across samples wants: at whole-gene zoom a
@@ -1845,29 +1924,12 @@ export const trackFields: Record<string, FieldRecipe> = {
           note: 'Off fills the lane solid grey and paints only ALT alleles, which reads better when a cell means "carries the variant". Turn it on where homozygous reference is itself the state of interest.',
         }
       : undefined,
-  // The category row LinearBasicDisplay adds to "Filter by..." (model.ts).
-  'filter.genes': value =>
-    categoryStep(
-      `${TRACK_MENU} → Filter by... → Genes`,
-      value,
-      'genes',
-      'Genes counts every gene, transcript and RNA type, the configured transcript and container types, and a top-level CDS; the rest of a GFF, such as NCBI region and match rows, is not a gene.',
-    ),
   // Three sibling checkboxes in the reference-sequence track's Show... submenu
   // (LinearReferenceSequenceDisplay.trackMenuItems)
   showForward: checkbox('Show... → Forward'),
   showReverse: checkbox('Show... → Reverse'),
   showTranslation: checkbox('Show... → Translation'),
   'sashimi.labels': layerCheckbox('Sashimi arcs → Show read counts'),
-  // A peer of the two above, in the submenu the arcs own (menus/sashimi.ts),
-  // and shown only while the arcs are.
-  'filter.junctions.nonCanonical': value =>
-    categoryStep(
-      `${TRACK_MENU} → Sashimi arcs → Non-canonical junctions`,
-      value,
-      'non-canonical junctions',
-      'Hiding drops every arc whose intron does not begin and end with one of the six canonical dinucleotide pairs. At depth those are mostly alignment artefacts, and the support floor removes them only by also removing a real junction few reads carry.',
-    ),
   'readConnections.placement': fromTable(
     'Read connections → Arc placement',
     READ_CONNECTIONS_PLACEMENT,
@@ -1876,23 +1938,8 @@ export const trackFields: Record<string, FieldRecipe> = {
     'Read connections → Show ordinary pairs',
     'Unchecked, the band keeps only the pairs that carry a category — an abnormal insert size or orientation, or a split junction — which on deep coverage is the difference between a readable band and a solid mass.',
   ),
-  'filter.junctions.minReads': numberField(n => ({
-    path: `${TRACK_MENU} → Sashimi arcs → Min read support → ${n}`,
-    note: 'Hides splice junctions supported by fewer reads than this.',
-  })),
   'pileup.maxLayoutHeight': numberField(n => ({
     path: `${TRACK_MENU} → Read height → Set max layout height... → ${n}`,
-  })),
-  // Two inline sliders under the multi-sample variant "Filter by..." submenu
-  // (labels verified in LinearMultiSampleVariantDisplay/multiSampleVariantMenuItems.ts). Both re-fetch
-  // on release; a value of 0 (MAF) / 1 (missingness) turns the filter off.
-  'filter.minMinorAlleleFrequency': numberField(n => ({
-    path: `${TRACK_MENU} → Filter by... → Minor allele frequency → ${n.toFixed(2)}`,
-    note: 'Hides variants whose minor allele frequency is below this.',
-  })),
-  'filter.maxMissingness': numberField(n => ({
-    path: `${TRACK_MENU} → Filter by... → Missingness → ${n.toFixed(2)}`,
-    note: 'Hides variants whose fraction of no-call genotypes is above this; 1 keeps every variant.',
   })),
   mark: markStep,
   extent: value =>

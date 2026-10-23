@@ -109,7 +109,7 @@ function realignedReadsPartSpecs(): ScreenshotSpec[] {
     },
     // Split reads only: otherwise connectors leave rows packed below the
     // visible band and draw as diagonal ladders with no read at either end.
-    filterBy: { split: 'only' },
+    filter: [{ field: 'split', equal: true }],
   }
   return [
     {
@@ -375,7 +375,7 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
                 {
                   trackId: TUMOUR,
                   ...DEEP_ONT,
-                  filterBy: { split: 'only' },
+                  filter: [{ field: 'split', equal: true }],
                   unit: 'chain',
                   pileup: { showConnectors: true, readHeight: 3 },
                   coverage: { height: 30 },
@@ -471,7 +471,7 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
                 {
                   trackId: TUMOUR,
                   ...DEEP_ONT,
-                  filterBy: { split: 'only' },
+                  filter: [{ field: 'split', equal: true }],
                   unit: 'chain',
                   pileup: {
                     // Chain mode joins only pieces that straddle two panels;
@@ -530,7 +530,7 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
                     height: 40,
                   },
                   unit: 'chain',
-                  filterBy: { flagInclude: 0, flagExclude: 1796 },
+                  filter: [{ field: 'flags.SECONDARY', equal: false }],
                 },
               ],
             },
@@ -881,7 +881,7 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
             // At 35 the two arcs read as one mark.
             height: 90,
           },
-          filterBy: { split: 'only' },
+          filter: [{ field: 'split', equal: true }],
           unit: 'chain',
           showLegend: true,
         },

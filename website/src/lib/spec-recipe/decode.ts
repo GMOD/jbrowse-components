@@ -81,8 +81,8 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
 // settings, each one a control of its own. So is each band object of the
 // alignments, MAF and multi-sample variant displays (`coverage`, `sashimi`,
 // `variants`, ...), to one entry per member under its dotted path,
-// `coverage.show`, and so are the junction and connection objects of the
-// alignments display's `filter`, `filter.junctions.minReads`.
+// `coverage.show`. A `filter` list stays one entry, which its recipe reads
+// entry by entry.
 export function specTrackSettings(entry: SpecTrackEntry): [string, unknown][] {
   if (typeof entry === 'string') {
     return []
@@ -108,44 +108,7 @@ export function flatSettings(settings: Record<string, unknown>) {
 function settingEntries(key: string, value: unknown): [string, unknown][] {
   return BAND_OBJECTS.has(key) && isPlainObject(value)
     ? bandEntries(key, value)
-    : key === 'filter' && isPlainObject(value)
-      ? filterEntries(value)
-      : key === 'filter' && Array.isArray(value)
-        ? [['filter.expressions', value]]
-        : [[key, value]]
-}
-
-// The members a feature display's `filter` holds, each a row of its own in
-// its "Filter by..." menu.
-const FEATURE_FILTER_MEMBERS = new Set([
-  'expressions',
-  'genes',
-  'minMinorAlleleFrequency',
-  'maxMissingness',
-])
-
-// The alignments read members stay one `filter` entry, as the Filter menu
-// reads them; each member of `junctions` and `connections` is a row of its own
-// in the sashimi and read connections menus, as each feature filter member is
-// in its display's Filter menu.
-function filterEntries(filter: Record<string, unknown>): [string, unknown][] {
-  const members = Object.entries(filter)
-  const read = members.filter(
-    ([member, value]) =>
-      !isPlainObject(value) && !FEATURE_FILTER_MEMBERS.has(member),
-  )
-  return [
-    ...(read.length
-      ? [['filter', Object.fromEntries(read)] as [string, unknown]]
-      : []),
-    ...members.flatMap(([member, value]): [string, unknown][] =>
-      isPlainObject(value)
-        ? Object.entries(value).map(([sub, v]) => [`filter.${member}.${sub}`, v])
-        : FEATURE_FILTER_MEMBERS.has(member)
-          ? [[`filter.${member}`, value]]
-          : [],
-    ),
-  ]
+    : [[key, value]]
 }
 
 /** The inverse of `flatSettings`, for a predicate the plugin owns. */
@@ -160,12 +123,13 @@ export function nestedSettings(entries: Record<string, unknown>) {
     if (key === 'readConnections' && typeof value === 'string') {
       Object.assign(
         band(key),
-        value === 'off' ? { show: false } : { show: true, mark: value },
+        value === 'off'
+          ? { show: false }
+          : { show: true, mark: value === 'cloud' ? 'rule' : 'link' },
       )
     } else if (path.length === 0) {
       // a copy, which a later dotted member is written into rather than the
-      // caller's object; one read first, `filter.junctions.minReads`, keeps
-      // its place
+      // caller's object
       out[key] = isPlainObject(value)
         ? { ...value, ...(isPlainObject(out[key]) ? out[key] : {}) }
         : value
