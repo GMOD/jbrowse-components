@@ -63,6 +63,14 @@ export function unwrapFeature(feature: Feature & MaybeProxiedFeature): Feature {
   return feature[featureTarget] ?? feature
 }
 
+/** The properties `jexlFeatureProxy` answers itself, rather than as fields. */
+export const PROXY_NAMES: ReadonlySet<string> = new Set([
+  'parent',
+  'uniqueId',
+  'get',
+  'toJSON',
+])
+
 /**
  * Wrap a feature so jexl callbacks can read attributes as plain properties
  * (`feature.score`) instead of `get(feature,'score')`. Since jexl has no

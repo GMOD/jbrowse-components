@@ -3684,6 +3684,7 @@
     "@jbrowse/core/util/simpleFeature": {
       "package": "@jbrowse/core",
       "names": [
+        "PROXY_NAMES",
         "buildJexlContext",
         "default",
         "isFeature",

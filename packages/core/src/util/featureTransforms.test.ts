@@ -1406,3 +1406,82 @@ test('a request split before its row-by-row steps answers what splitting after t
     expect([...(layer.row as Uint32Array)]).toEqual([...late.layers[i]!.rows])
   }
 })
+
+// A table as the worker encodes one: a Float32 score lane and a coded type
+function typedTable() {
+  const scores = [4, 10, 12.5, 30, Number.NaN, 0.9]
+  const types = [0, 1, 1, 0, 1, 2]
+  return new ColumnTable(
+    scores.length,
+    new Map<string, Column>([
+      [
+        'start',
+        {
+          kind: 'number',
+          values: Uint32Array.from(scores, (_, i) => i * 10),
+          at: undefined,
+        },
+      ],
+      [
+        'end',
+        {
+          kind: 'number',
+          values: Uint32Array.from(scores, (_, i) => i * 10 + 5),
+          at: undefined,
+        },
+      ],
+      [
+        'score',
+        { kind: 'number', values: Float32Array.from(scores), at: undefined },
+      ],
+      [
+        'type',
+        {
+          kind: 'category',
+          codes: Uint8Array.from(types),
+          labels: ['exon', 'gene', 'CDS'],
+          at: undefined,
+        },
+      ],
+    ]),
+    String,
+  )
+}
+
+test.each([
+  "feature.score >= 10 && feature.type == 'gene'",
+  'feature.score > 4 && feature.score <= 30',
+  "get(feature, 'score') < 10",
+  "feature.type in ['exon', 'CDS']",
+  '10 < feature.score',
+  'feature.score == 10',
+])(
+  'a jexl filter of field comparisons keeps the rows it keeps run per row: %s',
+  expr => {
+    const kept = (e: string) =>
+      rows(
+        runTransforms(typedTable(), [{ type: 'filter', expr: e }], jexl),
+        'start',
+      )
+    // `!!` keeps the expression from reading as conditions
+    expect(kept(`jexl:${expr}`)).toEqual(kept(`jexl:!!(${expr})`))
+    expect(kept(`jexl:${expr}`).length).toBeGreaterThan(0)
+  },
+)
+
+test('a jexl filter of field comparisons runs on the lanes, without evaluating', () => {
+  const filtered = (expr: string) =>
+    rows(
+      runTransforms(typedTable(), [{ type: 'filter', expr }], undefined),
+      'start',
+    )
+  expect(
+    filtered("jexl:feature.score >= 10 && feature.type == 'gene'"),
+  ).toEqual([[10], [20]])
+  // a Float32 lane holds 0.9 as 0.8999999762, and the lane's test rounds the
+  // bound to match, as a `{ field, gte }` predicate does
+  expect(filtered('jexl:feature.score >= 0.9 && feature.score < 1')).toEqual([
+    [50],
+  ])
+  expect(() => filtered("jexl:feature.type != 'gene'")).toThrow(/jexl instance/)
+})

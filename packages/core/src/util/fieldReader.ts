@@ -1,7 +1,7 @@
 import { Jexl, analyze } from '@jbrowse/jexl'
 
 import { JEXL_PREFIX, isJexl, stringToJexlExpression } from './jexlStrings.ts'
-import { buildJexlContext } from './simpleFeature.ts'
+import { PROXY_NAMES, buildJexlContext } from './simpleFeature.ts'
 
 import type { JexlInstance } from './jexlStrings.ts'
 import type { Feature } from './simpleFeature.ts'
@@ -72,9 +72,6 @@ export function isConstantJexl(ref: string) {
   return variables.length === 0 && calls.length === 0
 }
 
-// jexlFeatureProxy answers these itself, so `feature.parent` is no field read
-const PROXIED = new Set(['parent', 'uniqueId', 'get', 'toJSON'])
-
 /**
  * #api
  * The field a ref reads by name: a plain ref itself, or the one field a
@@ -101,7 +98,7 @@ export function plainFieldName(ref: string) {
     read.path.length === 1 &&
     typeof name === 'string' &&
     !name.includes('.') &&
-    (viaGet || !PROXIED.has(name))
+    (viaGet || !PROXY_NAMES.has(name))
     ? name
     : undefined
 }

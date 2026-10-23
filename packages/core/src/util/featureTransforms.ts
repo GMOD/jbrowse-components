@@ -6,6 +6,7 @@ import {
   fusesCellMatches,
 } from './cellMatches.ts'
 import { cells } from './cellsStep.ts'
+import { expressionPredicates } from './expressionPredicates.ts'
 import {
   DerivedTable,
   NO_COLUMN,
@@ -104,10 +105,17 @@ class RowsBuilder {
 }
 
 function filter(
-  { table, bounds }: Staged,
+  staged: Staged,
   expr: string,
   jexl: JexlInstance | undefined,
 ): Staged {
+  const { table, bounds } = staged
+  const predicates = expressionPredicates(expr, field =>
+    typedLaneOf(table, field),
+  )
+  if (predicates) {
+    return filterByPredicates(staged, predicates, jexl)
+  }
   const compiled = expression(expr, jexl)
   const kept = new RowsBuilder()
   for (let i = 0; i < table.length; i++) {
@@ -120,6 +128,15 @@ function filter(
     table: selectRows(table, parentRow),
     bounds: boundsThrough(bounds, parentRow),
   }
+}
+
+function typedLaneOf(table: FeatureTable, field: string) {
+  const column = table.column(field)
+  return column.kind === 'number' && !column.at
+    ? 'number'
+    : column.kind === 'category' && !column.at
+      ? 'labels'
+      : undefined
 }
 
 // a typed column tests as a lane; anything else, a `jexl:` field included,

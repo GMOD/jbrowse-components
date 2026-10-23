@@ -367,7 +367,7 @@ const names: Record<string, string[]> = {
   '@jbrowse/core/util/setStackTraceLimit': ['setStackTraceLimit'],
   '@jbrowse/core/util/shapeNameList': ['DEFAULT_SHAPE_RANGE', 'SHAPE_NAMES'],
   '@jbrowse/core/util/shapeNames': ['DEFAULT_SHAPE_RANGE', 'SHAPE_CODES', 'SHAPE_NAMES'],
-  '@jbrowse/core/util/simpleFeature': ['buildJexlContext', 'default', 'isFeature', 'jexlFeatureProxy', 'unwrapFeature'],
+  '@jbrowse/core/util/simpleFeature': ['PROXY_NAMES', 'buildJexlContext', 'default', 'isFeature', 'jexlFeatureProxy', 'unwrapFeature'],
   '@jbrowse/core/util/starFusion': ['parseStarFusionBreakpoint', 'starFusionColumns'],
   '@jbrowse/core/util/stats': ['blankStats', 'calcStdFromSums', 'rectifyStats', 'scoresToStats'],
   '@jbrowse/core/util/stepOutputs': ['AGGREGATE_OPS', 'BIN_OVERLAP_FIELD', 'CELLS_FIELDS', 'DEFAULT_AGGREGATE_OP', 'DEFAULT_BIN_AS', 'DEFAULT_COVERAGE_AS', 'DEFAULT_FORMULA_AS', 'DEFAULT_PILEUP_AS', 'MATE_FIELDS', 'POSITION_FIELDS', 'STEP_OUTPUTS', 'aggregateFieldName', 'isFieldPair', 'isRowwise', 'stepWrites', 'stepsOutput'],
