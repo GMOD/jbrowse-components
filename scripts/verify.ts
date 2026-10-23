@@ -3,6 +3,8 @@
 //   pnpm verify          the fast gates over what this branch changed (seconds)
 //   pnpm verify --all    the fast gates over the whole tree, as CI runs them
 //   pnpm verify --full   adds `autogen --check`, `check-docs`, `build:esm` (~5 min)
+//   --no-cache           reruns gates that already passed on this exact tree
+//                        (`scripts/gatePassCache.ts`)
 //
 // The definition of done in CLAUDE.md § Tooling is typecheck, scoped tests,
 // lint. Three CI jobs are gated by none of those — `check-format`, `check-docs`
@@ -32,6 +34,7 @@ import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 import { changedFiles } from './changedFiles.ts'
+import { gatePassCache } from './gatePassCache.ts'
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
 const full = process.argv.includes('--full')
@@ -50,7 +53,7 @@ interface Gate {
   // Costs minutes; only under --full.
   slow?: boolean
   // Holds no heavy slot, so it runs alongside the gates that do, its output
-  // held until the end.
+  // held until no other gate is writing to the terminal.
   concurrent?: boolean
 }
 
@@ -178,8 +181,10 @@ if (!all) {
   )
 }
 
+const passes = gatePassCache(root, !process.argv.includes('--no-cache'))
 const failed: string[] = []
 const skipped: string[] = []
+const cached: string[] = []
 const running: Promise<void>[] = []
 // A held gate's report waits here while an inherited one has the terminal.
 const reports: string[] = []
@@ -235,26 +240,41 @@ for (const gate of GATES) {
     continue
   }
   const { name } = gate
+  if (passes.passed(argv)) {
+    reports.push(`\n=== ${name}: passed on this exact tree already\n`)
+    cached.push(name)
+    continue
+  }
+  const settle = (status: number | null) => {
+    if (status === 0) {
+      passes.record(argv)
+    } else {
+      failed.push(name)
+    }
+  }
   if (gate.concurrent) {
     running.push(
       run(argv, true).then(({ status, output }) => {
         reports.push(`\n=== ${name}\n${output}`)
-        if (status !== 0) {
-          failed.push(name)
-        }
+        settle(status)
       }),
     )
     continue
   }
   flushReports()
   console.log(`\n=== ${name}`)
-  const { status } = await run(argv, false)
-  if (status !== 0) {
-    failed.push(name)
-  }
+  settle((await run(argv, false)).status)
 }
 await Promise.all(running)
 flushReports()
+passes.save()
+
+if (cached.length > 0) {
+  console.log(
+    `\nSkipped as already passed on this tree: ${cached.join(', ')}. ` +
+      `--no-cache reruns them.`,
+  )
+}
 
 if (!full) {
   console.log(
