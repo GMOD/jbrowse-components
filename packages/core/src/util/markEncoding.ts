@@ -14,7 +14,7 @@ import { MISCONFIGURED_COLOR, NO_CATEGORY_COLOR } from './color/index.ts'
 import { cssColorToABGR, packAbgr } from './colorBits.ts'
 import { rampDomain, rampLutOf } from './colorRamp.ts'
 import { asTable, numberReaderOf, readerOf } from './featureTable.ts'
-import { fieldReader, plainFieldName } from './fieldReader.ts'
+import { fieldReader, isConstantJexl, plainFieldName } from './fieldReader.ts'
 import Flatbush from './flatbush/index.ts'
 import { valueText } from './groupKeys.ts'
 import { isJexl, stringToJexlExpression } from './jexlStrings.ts'
@@ -1184,7 +1184,7 @@ export function colorEvaluator(
   color: string,
   jexl: JexlInstance | undefined,
 ): (feature: Feature) => number {
-  if (isJexl(color)) {
+  if (isJexl(color) && !isConstantJexl(color)) {
     const expr = jexlExpression(color, jexl)
     // A jexl color answers from a handful of strings over a million
     // features; parsing each answer once is a third of the arm's cost
@@ -1203,8 +1203,16 @@ export function colorEvaluator(
       return c
     }
   }
-  const constant = cssColorToABGR(color)
+  const constant = constantColor(color, jexl)
   return () => constant
+}
+
+function constantColor(color: string, jexl: JexlInstance | undefined) {
+  if (!isJexl(color)) {
+    return cssColorToABGR(color)
+  }
+  const v = jexlExpression(color, jexl).eval()
+  return typeof v === 'string' ? cssColorToABGR(v) : FALLBACK_COLOR
 }
 
 function unscaledColor(
@@ -1215,8 +1223,8 @@ function unscaledColor(
   if (typeof color === 'function') {
     return i => color(table.row(i))
   }
-  if (!isJexl(color)) {
-    return cssColorToABGR(color)
+  if (!isJexl(color) || isConstantJexl(color)) {
+    return constantColor(color, jexl)
   }
   const colorOf = colorEvaluator(color, jexl)
   return i => colorOf(table.row(i))

@@ -50,6 +50,28 @@ export function isPlainFieldRef(ref: string) {
 
 const parser = new Jexl()
 
+function parsed(ref: string) {
+  try {
+    return parser.parse(ref.slice(JEXL_PREFIX.length))
+  } catch {
+    return undefined
+  }
+}
+
+/**
+ * #api
+ * Whether a `jexl:` ref answers the same for every feature: it reads no
+ * variable and calls no function, as `jexl:'red'` does.
+ */
+export function isConstantJexl(ref: string) {
+  const ast = isJexl(ref) ? parsed(ref) : undefined
+  if (!ast) {
+    return false
+  }
+  const { variables, calls } = analyze(ast)
+  return variables.length === 0 && calls.length === 0
+}
+
 // jexlFeatureProxy answers these itself, so `feature.parent` is no field read
 const PROXIED = new Set(['parent', 'uniqueId', 'get', 'toJSON'])
 
@@ -64,12 +86,7 @@ export function plainFieldName(ref: string) {
   if (!ref.startsWith(JEXL_PREFIX)) {
     return ref.includes('.') ? undefined : ref
   }
-  let ast
-  try {
-    ast = parser.parse(ref.slice(JEXL_PREFIX.length))
-  } catch {
-    return undefined
-  }
+  const ast = parsed(ref)
   if (!ast) {
     return undefined
   }

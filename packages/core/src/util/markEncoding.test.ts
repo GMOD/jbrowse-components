@@ -20,6 +20,7 @@ import createJexlInstance from './jexl.ts'
 import {
   DEFAULT_MARK_COLOR,
   colorAt,
+  colorEvaluator,
   continuousColorScale,
   encodeFeatures,
   encodedChannelTransferables,
@@ -1497,4 +1498,26 @@ test('a colorKey lane over a category column indexes the entries its rows met', 
     r.scale?.kind === 'categorical' ? r.scale.entries.map(e => e.value) : []
   expect(entries).toEqual(['b', 'd'])
   expect([...r.colorKey].map(k => entries[k])).toEqual(['d', 'b', 'd', 'b'])
+})
+
+test('a jexl color that reads nothing is evaluated once', () => {
+  let evals = 0
+  const counting = {
+    compile: (code: string) => ({
+      eval: (context?: Record<string, unknown>) => {
+        evals++
+        return jexl.compile(code).eval(context)
+      },
+    }),
+  }
+  const constant = colorEvaluator("jexl:'red'", counting)
+  const perFeature = colorEvaluator(
+    "jexl:feature.score > 20 ? 'red' : 'blue'",
+    counting,
+  )
+  for (const f of features) {
+    expect(constant(f)).toBe(cssColorToABGR('red'))
+    perFeature(f)
+  }
+  expect(evals).toBe(1 + features.length)
 })
