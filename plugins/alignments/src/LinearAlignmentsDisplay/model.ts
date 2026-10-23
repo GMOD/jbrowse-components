@@ -174,13 +174,17 @@ import {
 import {
   featureSpacingForHeight,
   getColorByMenuItem,
+  getConnectionFilterItems,
   getContextMenuItems,
   getFeatureHeightMenuItem,
   getFiltersMenuItems,
   getGroupByMenuItem,
+  getJunctionFilterItems,
+  getReadConnectionsBandItems,
   getReadConnectionsMenuItem,
   getReadsMenuItems,
   getSashimiMenuItem,
+  getSashimiPlacementItems,
   getSortMenuItem,
 } from './menus/index.ts'
 import {
@@ -3599,7 +3603,13 @@ export default function stateModelFactory(
             getSortMenuItem(self, {
               disabledHelpText: self.sortReadsBlockedReason,
             }),
-            ...getFiltersMenuItems(self, { readCategories: true }),
+            ...getFiltersMenuItems(self, {
+              readCategories: true,
+              more: [
+                ...getConnectionFilterItems(self),
+                ...getJunctionFilterItems(self),
+              ],
+            }),
             getGroupByMenuItem(self),
             ...getReadsMenuItems(self),
             getFeatureHeightMenuItem(self, self.featureNoun, {
@@ -3610,7 +3620,10 @@ export default function stateModelFactory(
             ...getCoverageMenuItems(self),
             getReadConnectionsMenuItem(self),
             getSashimiMenuItem(self),
-            ...editPlotMenuItems(self),
+            ...editPlotMenuItems(self, [
+              ...getReadConnectionsBandItems(self),
+              ...getSashimiPlacementItems(self),
+            ]),
           ] satisfies MenuItem[]
         },
 

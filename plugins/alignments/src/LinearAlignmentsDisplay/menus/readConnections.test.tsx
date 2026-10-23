@@ -2,7 +2,11 @@ import { resolveSubMenu, staysOpenOnClick } from '@jbrowse/core/ui'
 import { fireEvent, render, screen } from '@testing-library/react'
 
 import { DEFAULT_MIN_INTERCHROM_READS } from '../../shared/alignmentsFilter.ts'
-import { getReadConnectionsMenuItem } from './readConnections.ts'
+import {
+  getConnectionFilterItems,
+  getReadConnectionsBandItems,
+  getReadConnectionsMenuItem,
+} from './readConnections.ts'
 
 import type { Facet, ConnectionFilter } from '../../shared/types.ts'
 import type {
@@ -10,6 +14,7 @@ import type {
   ReadConnectionsMode,
   ReadConnectionsPlacement,
 } from '../constants.ts'
+import type { MenuItem } from '@jbrowse/core/ui'
 
 function makeModel() {
   return {
@@ -49,8 +54,6 @@ function makeModel() {
     setReadConnectionsLineWidth(v?: number) {
       this.readConnectionsLineWidth = v ?? 1
     },
-    // The SV-channel row is served from this menu, so its settings from
-    // outside it are on the mock as well.
     showPileup: true,
     facet: undefined as Facet | undefined,
     get writtenFacet() {
@@ -62,208 +65,160 @@ function makeModel() {
   }
 }
 
-function findByLabel(model: ReturnType<typeof makeModel>, label: string) {
-  const items = resolveSubMenu(getReadConnectionsMenuItem(model))
-  return (
-    items.find(i => 'label' in i && i.label === label) ??
-    items
-      .flatMap(i => ('subMenu' in i ? resolveSubMenu(i) : []))
-      .find(i => 'label' in i && i.label === label)
-  )
+type Model = ReturnType<typeof makeModel>
+
+function rows(model: Model) {
+  return resolveSubMenu(getReadConnectionsMenuItem(model))
 }
 
-const FILTER_ROWS = [
-  'Off-screen mate connections',
-  'Inter-chromosomal pairs',
-  'Min reads at a breakpoint',
-]
-
-const BAND_ROWS = ['Show ordinary pairs', 'Arc placement', 'Arc line width']
-
-function topLabels(model: ReturnType<typeof makeModel>) {
-  return resolveSubMenu(getReadConnectionsMenuItem(model)).map(i =>
-    'label' in i ? i.label : undefined,
-  )
+function labelsOf(items: MenuItem[]) {
+  return items.flatMap(i => ('label' in i ? [i.label] : []))
 }
 
-function bandRow(model: ReturnType<typeof makeModel>, label: string) {
-  const item = resolveSubMenu(getReadConnectionsMenuItem(model)).find(
-    i => 'label' in i && i.label === label,
+function byLabel(items: MenuItem[], label: string) {
+  const item = items.find(
+    i => 'label' in i && String(i.label).startsWith(label),
   )
-  if (!item || !('disabled' in item)) {
-    throw new Error(`no band row ${label}`)
+  if (!item) {
+    throw new Error(`no ${label} row`)
   }
   return item
 }
 
-function checkboxByLabel(model: ReturnType<typeof makeModel>, label: string) {
-  const item = findByLabel(model, label)
-  if (!item || !('checked' in item) || !('onClick' in item)) {
-    throw new Error(`no ${label} checkbox`)
+function click(items: MenuItem[], label: string) {
+  const item = byLabel(items, label)
+  if (!('onClick' in item)) {
+    throw new Error(`${label} is not clickable`)
   }
-  return item
+  item.onClick()
+}
+
+function checked(model: Model) {
+  return rows(model).flatMap(i =>
+    'checked' in i && i.checked && 'label' in i ? [i.label] : [],
+  )
 }
 
 describe('read connections menu', () => {
-  test('"View as pairs" row toggles unit between read and chain', () => {
+  test('is checkboxes only, with no "?"', () => {
     const model = makeModel()
-    const label = 'View as pairs / link supplementary alignments'
-    checkboxByLabel(model, label).onClick()
+    model.drawnReadConnections = 'arc'
+    const items = rows(model)
+    expect(labelsOf(items)).toEqual([
+      'View as pairs / link supplementary alignments',
+      'Curved connectors',
+      'Read arcs',
+      'Read cloud',
+      'Show ordinary pairs',
+      'SV channels (pairs by orientation)',
+    ])
+    expect(items.every(i => 'checked' in i && !('helpText' in i))).toBe(true)
+    expect(items.every(i => staysOpenOnClick(i))).toBe(true)
+  })
+
+  test('"View as pairs" toggles unit between read and chain', () => {
+    const model = makeModel()
+    click(rows(model), 'View as pairs')
     expect(model.unit).toBe('chain')
-    checkboxByLabel(model, label).onClick()
+    click(rows(model), 'View as pairs')
     expect(model.unit).toBe('read')
   })
 
-  // The overlay is one radio over the slot: arcs and the read cloud share a
-  // band, so they were mutually exclusive checkboxes, and a radio says so.
-  test('the "Connection overlay" radio selects the mode, None included', () => {
+  // The two share a band, so ticking one unticks the other.
+  test('read arcs and the read cloud tick one at a time', () => {
     const model = makeModel()
-    for (const [label, mode] of [
-      ['Read arcs', 'arc'],
-      ['Read cloud', 'cloud'],
-      ['None', 'off'],
-    ] as const) {
-      checkboxByLabel(model, label).onClick()
-      expect(model.drawnReadConnections).toBe(mode)
-    }
+    click(rows(model), 'Read arcs')
+    expect(model.drawnReadConnections).toBe('arc')
+    click(rows(model), 'Read cloud')
+    expect(model.drawnReadConnections).toBe('cloud')
+    expect(checked(model)).toEqual(['Read cloud', 'Show ordinary pairs'])
+    click(rows(model), 'Read cloud')
+    expect(model.drawnReadConnections).toBe('off')
   })
 
-  test('exactly one overlay row is checked, reflecting the drawn mark', () => {
+  test('"Show ordinary pairs" appears only while the band draws', () => {
     const model = makeModel()
-    const checked = () =>
-      (['None', 'Read arcs', 'Read cloud'] as const).filter(
-        label => checkboxByLabel(model, label).checked,
-      )
-    expect(checked()).toEqual(['None'])
-    model.drawnReadConnections = 'arc'
-    expect(checked()).toEqual(['Read arcs'])
+    expect(labelsOf(rows(model))).not.toContain('Show ordinary pairs')
     model.drawnReadConnections = 'cloud'
-    expect(checked()).toEqual(['Read cloud'])
-  })
-
-  // WHERE it is, not just that it exists. svChannels.test.ts calls the builder
-  // directly and the spec-recipe test asserts against arrangements.ts's own
-  // hardcoded path string, so between them the row could return to nowhere with
-  // three published docs still sending readers here for it —
-  // `check-menu-labels` gates each segment as a string somewhere in plugins/,
-  // never the nesting.
-  test('the SV-channel row is a direct child of this submenu', () => {
-    const model = makeModel()
-    const labels = resolveSubMenu(getReadConnectionsMenuItem(model)).map(i =>
-      'label' in i ? i.label : undefined,
-    )
-    expect(labels).toContain('SV channels (pairs by orientation)')
+    click(rows(model), 'Show ordinary pairs')
+    expect(model.showOrdinaryPairs).toBe(false)
   })
 })
 
-describe('the arc / read cloud band rows', () => {
-  test('sit directly in Read connections under their heading', () => {
-    const labels = topLabels(makeModel())
-    const heading = labels.indexOf('Arc / read cloud band')
-    expect(heading).toBeGreaterThan(-1)
-    expect(labels.slice(heading + 1)).toEqual(BAND_ROWS)
-  })
-
-  test('are disabled with a help tooltip when no overlay is active', () => {
+describe('connection filter rows', () => {
+  test('appear while the band or the curved connectors draw', () => {
     const model = makeModel()
-    for (const label of BAND_ROWS) {
-      const row = bandRow(model, label)
-      expect(row.disabled).toBe(true)
-      expect(row.disabledHelpText).toBeTruthy()
-    }
-  })
-
-  test('are enabled and functional when arcs are on', () => {
-    const model = makeModel()
-    model.drawnReadConnections = 'arc'
-    for (const label of BAND_ROWS) {
-      expect(bandRow(model, label).disabled).toBe(false)
-    }
-    checkboxByLabel(model, 'Above coverage').onClick()
-    expect(model.readConnectionsPlacement).toBe('up')
-  })
-})
-
-// The `connection` filter fields reach the band and the curved connectors alike, so
-// their rows live while either draws
-describe('the connection filter rows', () => {
-  test('sit under their own heading, ahead of the band rows', () => {
-    const labels = topLabels(makeModel())
-    const heading = labels.indexOf('Which connections draw')
-    expect(heading).toBeGreaterThan(-1)
-    expect(
-      labels.slice(heading + 1, labels.indexOf('Arc / read cloud band')),
-    ).toEqual(FILTER_ROWS)
-  })
-
-  test('are disabled while neither the band nor the connectors draw', () => {
-    const model = makeModel()
-    for (const label of FILTER_ROWS) {
-      const row = bandRow(model, label)
-      expect(row.disabled).toBe(true)
-      expect(row.disabledHelpText).toBeTruthy()
-    }
-  })
-
-  test('are enabled by the curved connectors with the band off', () => {
-    const model = makeModel()
+    expect(getConnectionFilterItems(model)).toEqual([])
     model.showConnectors = true
-    for (const label of FILTER_ROWS) {
-      expect(bandRow(model, label).disabled).toBe(false)
-    }
-    for (const label of BAND_ROWS) {
-      expect(bandRow(model, label).disabled).toBe(true)
-    }
+    expect(labelsOf(getConnectionFilterItems(model))).toEqual([
+      'Off-screen mate connections',
+      'Inter-chromosomal pairs',
+      'Min reads at a breakpoint',
+    ])
+    model.showConnectors = false
+    model.drawnReadConnections = 'arc'
+    expect(getConnectionFilterItems(model)).toHaveLength(3)
   })
 
   test('each connection category is one All / Only / Hide choice', () => {
     const model = makeModel()
     model.drawnReadConnections = 'arc'
-    checkboxByLabel(model, 'Only inter-chromosomal pairs').onClick()
+    const sub = (label: string) => {
+      const item = byLabel(getConnectionFilterItems(model), label)
+      return 'subMenu' in item ? resolveSubMenu(item) : []
+    }
+    click(sub('Inter-chromosomal'), 'Only inter-chromosomal pairs')
     expect(model.connectionFilter.interchrom).toBe('only')
-    expect(topLabels(model)).toContain('Inter-chromosomal pairs — only')
-    checkboxByLabel(model, 'Hide off-screen mate connections').onClick()
+    expect(labelsOf(getConnectionFilterItems(model))).toContain(
+      'Inter-chromosomal pairs — only',
+    )
+    click(sub('Off-screen'), 'Hide off-screen mate connections')
     expect(model.connectionFilter.offscreenMates).toBe('exclude')
     expect(model.connectionFilter.interchrom).toBe('only')
   })
 })
 
-// Turning arcs on, then long-range, then inter-chromosomal is one workflow, so
-// no row here may dismiss the menu.
-test('every toggle keeps the menu open', () => {
-  const model = makeModel()
-  const rows = resolveSubMenu(getReadConnectionsMenuItem(model)).flatMap(i =>
-    'subMenu' in i ? resolveSubMenu(i) : [i],
-  )
-  const toggles = rows.filter(i => 'checked' in i)
-  expect(toggles.length).toBeGreaterThan(0)
-  expect(toggles.every(i => staysOpenOnClick(i))).toBe(true)
-})
+describe('band rows for Advanced', () => {
+  test('appear only while arcs or the read cloud draw', () => {
+    const model = makeModel()
+    model.showConnectors = true
+    expect(getReadConnectionsBandItems(model)).toEqual([])
+    model.drawnReadConnections = 'cloud'
+    expect(labelsOf(getReadConnectionsBandItems(model))).toEqual([
+      'Read connections placement',
+      'Read connections line width',
+    ])
+  })
 
-// The arc width had a setter and no way to reach it: every
-// renderer and the SVG export read the width, and nothing in the UI wrote one.
-describe('arc line width row', () => {
-  function lineWidthRow(model: ReturnType<typeof makeModel>) {
-    const item = bandRow(model, 'Arc line width')
+  test('placement switches on click', () => {
+    const model = makeModel()
+    model.drawnReadConnections = 'arc'
+    const item = byLabel(
+      getReadConnectionsBandItems(model),
+      'Read connections placement',
+    )
+    click('subMenu' in item ? resolveSubMenu(item) : [], 'Above coverage')
+    expect(model.readConnectionsPlacement).toBe('up')
+  })
+
+  // `findBy*`, not `getBy*`: makeSizeMenu draws the row through `lazy()`, so the
+  // first paint is its Suspense fallback.
+  test('the line width slider writes the width the renderers read', async () => {
+    const model = makeModel()
+    model.drawnReadConnections = 'arc'
+    const item = byLabel(
+      getReadConnectionsBandItems(model),
+      'Read connections line width',
+    )
     const row = 'subMenu' in item ? resolveSubMenu(item)[0] : undefined
     if (row?.type !== 'custom') {
       throw new Error('no line width slider row')
     }
-    return row
-  }
-
-  // `findBy*`, not `getBy*`: makeSizeMenu draws the row through `lazy()`, so the
-  // first paint is its Suspense fallback.
-  test('the slider writes the width the renderers read', async () => {
-    const model = makeModel()
-    model.drawnReadConnections = 'arc'
-    render(<>{lineWidthRow(model).render(() => {})}</>)
-
+    render(<>{row.render(() => {})}</>)
     const input = (
-      await screen.findByTestId('arc-line-width-slider')
+      await screen.findByTestId('read-connections-line-width-slider')
     ).querySelector('input')!
     fireEvent.change(input, { target: { value: 3 } })
-
     expect(model.readConnectionsLineWidth).toBe(3)
   })
 })

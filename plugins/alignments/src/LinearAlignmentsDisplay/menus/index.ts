@@ -23,7 +23,15 @@ export type {
   HiddenGroupsModel,
   SectionOrderMenuModel,
 } from './groupByMenu.ts'
-export { getReadConnectionsMenuItem } from './readConnections.ts'
+export {
+  getConnectionFilterItems,
+  getReadConnectionsBandItems,
+  getReadConnectionsMenuItem,
+} from './readConnections.ts'
 export { getReadsMenuItems } from './reads.ts'
-export { getSashimiMenuItem } from './sashimi.ts'
+export {
+  getJunctionFilterItems,
+  getSashimiMenuItem,
+  getSashimiPlacementItems,
+} from './sashimi.ts'
 export { getGroupByMenuItem, getSortMenuItem } from './sortGroup.ts'

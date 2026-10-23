@@ -30,11 +30,14 @@ export function openPlotDialog(
 }
 
 /**
- * The track menu's Advanced submenu holding "Edit plot...", sorted just
- * above "Display types" wherever a display places it. None on a display that
- * declares no plot setting.
+ * The track menu's Advanced submenu holding "Edit plot..." and a display's
+ * `more` rows, sorted just above "Display types" wherever a display places it.
+ * None on a display that declares no plot setting.
  */
-export function editPlotMenuItems(display: PlotDisplay): MenuItem[] {
+export function editPlotMenuItems(
+  display: PlotDisplay,
+  more: MenuItem[] = [],
+): MenuItem[] {
   return display.plotKeys.length
     ? [
         {
@@ -52,6 +55,7 @@ export function editPlotMenuItems(display: PlotDisplay): MenuItem[] {
                 openPlotDialog(display)
               },
             },
+            ...more,
           ],
         },
       ]

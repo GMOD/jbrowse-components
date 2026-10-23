@@ -37,20 +37,12 @@ export function svChannelsActive(model: SvChannelsModel) {
 }
 
 export function getSvChannelsMenuItem(model: SvChannelsModel) {
-  return toggleItem(
-    SV_CHANNELS_LABEL,
-    svChannelsActive(model),
-    on => {
-      // a regrouping on the field already grouping keeps its section order
-      const { facet, ...bands } = on ? SV_CHANNELS_ON : SV_CHANNELS_OFF
-      model.applyPlot({
-        ...bands,
-        facet: facet ? facetForField(model.writtenFacet, facet.field) : null,
-      })
-    },
-    {
-      helpText:
-        'Split the reads into one band per pair orientation — LR normal, RL mates pointing outward, and the two same-strand classes — each band drawn as its own coverage with its own arcs, concordant pairs left out. The orientation classes are the read-pair evidence an SV caller works from: a deletion or an inversion junction puts a bundle of arcs in one band standing on its two breakpoints, and a band that stays empty across a call is a call with no read-pair support behind it. Turning this off restores an ordinary pileup.',
-    },
-  )
+  return toggleItem(SV_CHANNELS_LABEL, svChannelsActive(model), on => {
+    // a regrouping on the field already grouping keeps its section order
+    const { facet, ...bands } = on ? SV_CHANNELS_ON : SV_CHANNELS_OFF
+    model.applyPlot({
+      ...bands,
+      facet: facet ? facetForField(model.writtenFacet, facet.field) : null,
+    })
+  })
 }

@@ -89,7 +89,8 @@ function minMapqItem(model: FiltersModel): MenuItem {
 /**
  * The "Filter by..." family for an alignments display.
  *
- * `readCategories` adds the four whole-read filters. LGVSyntenyDisplay shares
+ * `readCategories` adds the four whole-read filters, and `more` the rows on
+ * data derived from reads (connections, junctions). LGVSyntenyDisplay shares
  * this model chain and its `filter` slot, but a PAF block has no mate, no pair
  * flag, no SA tag and no CIGAR skip, so of the four only `svSignal` answers
  * there, by its SV-size indels, and its menu leaves them out.
@@ -101,7 +102,10 @@ function minMapqItem(model: FiltersModel): MenuItem {
  */
 export function getFiltersMenuItems(
   model: FiltersModel,
-  { readCategories = false }: { readCategories?: boolean } = {},
+  {
+    readCategories = false,
+    more = [],
+  }: { readCategories?: boolean; more?: MenuItem[] } = {},
 ) {
   return filterMenuItems({
     narrowings: filterNarrowings(model),
@@ -110,6 +114,7 @@ export function getFiltersMenuItems(
       ...(readCategories
         ? READ_CATEGORIES.map(c => readCategoryItem(model, c))
         : []),
+      ...more,
     ],
     onEdit: () => {
       getDialogHost(model).queueDialog(handleClose => [
