@@ -8,6 +8,7 @@ import { IMPACT_TIERS } from './variantConsequence.ts'
 import type { JexlFilterField } from '@jbrowse/core/ui/JexlFilterDialog'
 
 type HeaderLine = Record<string, unknown>
+type Cardinality = NonNullable<JexlFilterField['cardinality']>
 
 interface Header {
   INFO?: Record<string, HeaderLine | undefined>
@@ -73,25 +74,40 @@ function columns(filterIds: string[]) {
         type: 'text',
         values: filterIds,
       },
-      { label: 'ID', path: ['ID'], type: 'text' },
+      { label: 'ID', path: ['ID'], type: 'text', cardinality: 'many' },
       { label: 'REF', path: ['REF'], type: 'text' },
-      { label: 'ALT', path: ['ALT'], type: 'text' },
+      { label: 'ALT', path: ['ALT'], type: 'text', cardinality: 'perAlt' },
     ] satisfies JexlFilterField[]
   ).map(field => ({ ...field, group: 'Columns' }))
 }
 
+const PER_ALLELE: Record<string, Cardinality> = {
+  A: 'perAlt',
+  R: 'perAllele',
+  G: 'perGenotype',
+}
+
+// @gmod/vcf parses every INFO value but a flag into a list
+function cardinalityOf(declared: unknown): Cardinality {
+  const count = Number(declared)
+  return Number.isInteger(count) && count > 0
+    ? count
+    : (PER_ALLELE[String(declared)] ?? 'many')
+}
+
 function infoField(id: string, line: HeaderLine): JexlFilterField {
-  const { Type, Description } = line
+  const { Type, Number: declared, Description } = line
+  const flag = Type === 'Flag'
   return {
     label: id,
     path: ['INFO', id],
     group: 'INFO',
-    type:
-      Type === 'Flag'
-        ? 'flag'
-        : Type === 'Integer' || Type === 'Float'
-          ? 'number'
-          : 'text',
+    type: flag
+      ? 'flag'
+      : Type === 'Integer' || Type === 'Float'
+        ? 'number'
+        : 'text',
+    ...(flag ? {} : { cardinality: cardinalityOf(declared) }),
     description: typeof Description === 'string' ? Description : undefined,
   }
 }

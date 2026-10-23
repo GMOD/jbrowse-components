@@ -3278,6 +3278,15 @@
       ],
       "worker": "real"
     },
+    "@jbrowse/core/util/jexlDiagnostics": {
+      "package": "@jbrowse/core",
+      "names": [
+        "jexlProblemText",
+        "jexlProblems",
+        "registeredFunctions"
+      ],
+      "worker": "real"
+    },
     "@jbrowse/core/util/jexlFilters": {
       "package": "@jbrowse/core",
       "names": [

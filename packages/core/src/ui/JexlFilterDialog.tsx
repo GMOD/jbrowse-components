@@ -5,9 +5,11 @@ import { Autocomplete, ListItemText, MenuItem, TextField } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { readConfObject } from '../configuration/readConfObject.ts'
+import { jexlProblemText, jexlProblems } from '../util/jexlDiagnostics.ts'
 import {
   describedColumns,
   fieldExpression,
+  filterFieldSchema,
   stripJexlPrefix,
 } from '../util/jexlFilterFields.ts'
 import { ensureJexlPrefix } from '../util/jexlStrings.ts'
@@ -19,7 +21,7 @@ import SubmitDialog from './SubmitDialog.tsx'
 
 import type { JexlFilterField } from '../util/jexlFilterFields.ts'
 import type { JexlFilterModel } from '../util/jexlFilters.ts'
-import type { Jexl } from '@jbrowse/jexl'
+import type { FieldSchema, Jexl } from '@jbrowse/jexl'
 
 export type { JexlFilterField } from '../util/jexlFilterFields.ts'
 
@@ -86,6 +88,9 @@ const useStyles = makeStyles()(theme => ({
   picker: {
     minWidth: 220,
   },
+  note: {
+    display: 'block',
+  },
 }))
 
 function textLines(text: string) {
@@ -96,23 +101,19 @@ function textLines(text: string) {
     .map(ensureJexlPrefix)
 }
 
-function compileError(line: string, jexl: Pick<Jexl, 'compile'>) {
-  try {
-    jexl.compile(stripJexlPrefix(line.trim()))
-    return undefined
-  } catch (e) {
-    return e instanceof Error ? e.message : String(e)
-  }
-}
-
-function textError(text: string, jexl: Jexl) {
-  for (const [i, line] of text.split('\n').entries()) {
-    const error = line.trim() ? compileError(line, jexl) : undefined
-    if (error) {
-      return `Line ${i + 1}: ${error}`
-    }
-  }
-  return undefined
+function textProblems(
+  text: string,
+  jexl: Jexl,
+  schema: readonly FieldSchema[],
+) {
+  return text.split('\n').flatMap((line, i) =>
+    line.trim()
+      ? jexlProblems(line, jexl, schema).map(problem => ({
+          severity: problem.severity,
+          text: jexlProblemText(`Line ${i + 1}`, problem),
+        }))
+      : [],
+  )
 }
 
 function trackName(model: JexlFilterModel) {
@@ -168,7 +169,15 @@ const JexlFilterDialog = observer(function JexlFilterDialog({
     model.configuredFilters().map(stripJexlPrefix).join('\n'),
   )
   const box = useRef<HTMLTextAreaElement>(null)
-  const error = textError(text, jexl)
+  const problems = textProblems(text, jexl, filterFieldSchema(choices))
+  const error = problems.find(problem => problem.severity === 'error')?.text
+  const notes = [
+    ...new Set(
+      problems
+        .filter(problem => problem.severity !== 'error')
+        .map(problem => problem.text),
+    ),
+  ]
   const name = trackName(model)
   const grouped = choices.some(choice => choice.group)
 
@@ -248,7 +257,15 @@ const JexlFilterDialog = observer(function JexlFilterDialog({
           inputTestId="jexl-filter-text"
           value={text}
           error={error}
-          helperText="One filter per line; a feature has to pass every line."
+          helperText={
+            notes.length
+              ? notes.map(note => (
+                  <span key={note} className={classes.note}>
+                    {note}
+                  </span>
+                ))
+              : 'One filter per line; a feature has to pass every line.'
+          }
           onChange={setText}
         />
         <p>

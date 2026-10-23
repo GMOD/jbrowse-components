@@ -103,10 +103,38 @@ test('a line that does not compile names its line and blocks Apply', () => {
     target: { value: 'feature.QUAL > 5\nfeature.QUAL >' },
   })
   expect(screen.getByRole('button', { name: 'Apply' })).toBeDisabled()
-  expect(screen.getByText(/^Line 2:/)).toBeInTheDocument()
+  expect(screen.getByText(/^Line 2: .*\(column 15\)$/)).toBeInTheDocument()
   fireEvent.change(textBox(), { target: { value: 'feature.QUAL > 5\n\n' } })
   apply()
   expect(written).toHaveBeenLastCalledWith(['jexl:feature.QUAL > 5'])
+})
+
+test('a misspelt function blocks Apply and names the one meant', () => {
+  setup()
+  fireEvent.change(textBox(), {
+    target: { value: "startWith(feature.REF, 'A')" },
+  })
+  expect(screen.getByRole('button', { name: 'Apply' })).toBeDisabled()
+  expect(
+    screen.getByText(
+      /^Line 1: no function startWith; did you mean .*startsWith/,
+    ),
+  ).toBeInTheDocument()
+})
+
+test('a value the field never takes warns without blocking Apply', () => {
+  const { written } = setup()
+  fireEvent.change(textBox(), {
+    target: { value: "feature.QUAL > 5\nfeature.FILTER == 'PAS'" },
+  })
+  expect(
+    screen.getByText(/^Line 2: 'PAS' is not one of the values/),
+  ).toBeInTheDocument()
+  apply()
+  expect(written).toHaveBeenLastCalledWith([
+    'jexl:feature.QUAL > 5',
+    "jexl:feature.FILTER == 'PAS'",
+  ])
 })
 
 test('a picked field is written at the cursor', () => {

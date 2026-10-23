@@ -17,11 +17,11 @@ const header = new VCFParser({
 test('lists the columns, the INFO fields the header declares and the variant functions', async () => {
   const fields = await variantFilterFields(Promise.resolve(header))
   const info = fields.filter(f => f.group === 'INFO')
-  expect(info.map(f => [f.label, f.type])).toEqual([
-    ['AF', 'number'],
-    ['CLNSIG', 'text'],
-    ['DB', 'flag'],
-    ['DP', 'number'],
+  expect(info.map(f => [f.label, f.type, f.cardinality])).toEqual([
+    ['AF', 'number', 'perAlt'],
+    ['CLNSIG', 'text', 'many'],
+    ['DB', 'flag', undefined],
+    ['DP', 'number', 1],
   ])
   expect(fields.some(f => f.label === 'AA')).toBe(false)
   expect(fields.find(f => f.label === 'FILTER')?.values).toEqual([

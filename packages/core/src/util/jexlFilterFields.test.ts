@@ -1,4 +1,8 @@
-import { describedColumns, fieldExpression } from './jexlFilterFields.ts'
+import {
+  describedColumns,
+  fieldExpression,
+  filterFieldSchema,
+} from './jexlFilterFields.ts'
 
 test('a field inserts the expression that reads it', () => {
   expect(fieldExpression({ label: 'AF', path: ['INFO', 'AF'] })).toBe(
@@ -32,4 +36,26 @@ test("a BigBed's autoSql columns join the fields it does not list", () => {
     describedColumns({ columnNumbers: { ref: 1 }, metaChar: '#' }, fields),
   ).toEqual([])
   expect(describedColumns(undefined, fields)).toEqual([])
+})
+
+test('the schema holds each typed path field, the feature left open', () => {
+  expect(
+    filterFieldSchema([
+      { label: 'FILTER', path: ['FILTER'], type: 'text', values: ['PASS'] },
+      {
+        label: 'AF',
+        path: ['INFO', 'AF'],
+        type: 'number',
+        cardinality: 'perAlt',
+      },
+      { label: 'DB', path: ['INFO', 'DB'], type: 'flag' },
+      { label: 'note', path: ['note'] },
+      { label: 'maf', call: 'maf', type: 'number' },
+    ]),
+  ).toEqual([
+    { path: [], type: 'record', open: true },
+    { path: ['FILTER'], type: 'string', categories: ['PASS'] },
+    { path: ['INFO', 'AF'], type: 'number', cardinality: 'perAlt' },
+    { path: ['INFO', 'DB'], type: 'flag' },
+  ])
 })

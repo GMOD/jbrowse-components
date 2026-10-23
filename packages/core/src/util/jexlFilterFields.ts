@@ -2,12 +2,17 @@ import { callSubject, pathSubject, print } from '@jbrowse/jexl'
 
 import { JEXL_PREFIX, isJexl } from './jexlStrings.ts'
 
+import type { Cardinality, FieldSchema } from '@jbrowse/jexl'
+
 export type JexlFilterField = {
   label: string
   /** unset for a field whose values may be numbers or text */
   type?: 'number' | 'text' | 'flag'
+  /** how many values the field holds, one when unset */
+  cardinality?: Cardinality
   group?: string
   description?: string
+  /** every value a text field takes */
   values?: string[]
 } & ({ path: string[] } | { call: string })
 
@@ -19,6 +24,32 @@ export function fieldExpression(field: JexlFilterField) {
       : pathSubject('feature', field.path)
     ).node,
   )
+}
+
+/**
+ * The fields as `check` reads them: each typed one that a path reads. The
+ * feature stays open, since a list names only some of what it holds.
+ */
+export function filterFieldSchema(
+  fields: readonly JexlFilterField[],
+): FieldSchema[] {
+  return [
+    { path: [], type: 'record', open: true },
+    ...fields.flatMap(field =>
+      'path' in field && field.type
+        ? [
+            {
+              path: field.path,
+              type: field.type === 'text' ? 'string' : field.type,
+              ...(field.cardinality ? { cardinality: field.cardinality } : {}),
+              ...(field.type === 'text' && field.values?.length
+                ? { categories: field.values }
+                : {}),
+            } satisfies FieldSchema,
+          ]
+        : [],
+    ),
+  ]
 }
 
 // a feature carries these as refName, start and end
