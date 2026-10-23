@@ -332,6 +332,14 @@ function levelNotices(encoding: AlignmentsColorEncoding): string[] {
   }
   const levels = paintedLevels(type).map(([value]) => value)
   const named = levels.filter(level => level !== '').join(', ')
+  const mapsLevels =
+    encoding.scale === 'ordinal' ||
+    (encoding.scale === 'threshold' && INSERT_SIZE_FIELDS.has(encoding.field))
+  if (!mapsLevels) {
+    return [
+      `encoding.color.scale.type: ${encoding.field} paints its own levels (${named}), which a ${encoding.scale} scale does not map; an unset or "ordinal" scale.type recolors them through scale.range`,
+    ]
+  }
   if (encoding.scale === 'threshold') {
     return Array.from(encoding.domain ?? [], String).some(value =>
       levels.includes(value),
@@ -340,9 +348,6 @@ function levelNotices(encoding: AlignmentsColorEncoding): string[] {
           `encoding.color.scale.domain: names a level of ${encoding.field} (${named}), which a threshold scale reads as a cut point; scale.type: "ordinal" colors the levels`,
         ]
       : []
-  }
-  if (encoding.scale !== 'ordinal') {
-    return []
   }
   return Array.from(encoding.domain ?? [], String)
     .filter(value => !levels.includes(value))

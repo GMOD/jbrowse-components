@@ -35,7 +35,7 @@ import {
 } from '../shared/alignmentsFilter.ts'
 import { arcColorFieldOf } from '../shared/arcColorOptions.ts'
 import { facetUnitNotices } from '../shared/groupFeatures.ts'
-import { sortOf } from './alignmentsSortConfigSchema.ts'
+import { sortOf, sortProblems } from './alignmentsSortConfigSchema.ts'
 import {
   READ_CONNECTIONS_MARK_TYPE,
   drawnReadConnectionsOf,
@@ -102,7 +102,7 @@ export function writtenFilterOf(
 /**
  * What a config says beside the schema's rules that the reads cannot draw as
  * written: a per-base `encoding.color.field`, levels a field does not have,
- * and a `facet` the `unit` cannot group by.
+ * a `facet` the `unit` cannot group by, and a column `sort` with no `pos`.
  */
 export function alignmentsConfigProblems(
   conf: BaseLinearAlignmentsDisplayConfigModel,
@@ -116,6 +116,7 @@ export function alignmentsConfigProblems(
       }),
       readConfObject(conf, 'unit'),
     ),
+    ...sortProblems(conf.sort),
     ...filterProblems(writtenFilterOf(conf)),
     ...(readsConfOf(conf)
       ? []

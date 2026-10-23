@@ -132,3 +132,18 @@ export function sortOf(
               },
       }
 }
+
+/**
+ * A column sort with no `pos`, which ranks nothing and leaves the reads in
+ * position order.
+ */
+export function sortProblems(
+  sort: Instance<typeof alignmentsSortConfigSchema>,
+) {
+  const field: string = readConfObject(sort, 'field')
+  return isColumnSortField(field) && readConfObject(sort, 'pos') === undefined
+    ? [
+        `sort: ${field} ranks the reads over one column, and with no pos they keep position order`,
+      ]
+    : []
+}

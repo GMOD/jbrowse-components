@@ -44,6 +44,32 @@ test.each([
     },
     /^encoding\.color\.scale\.names: names gives one value each its name in the key, and 3 names meet 2 values/,
   ],
+  [
+    'a linear scale over the fixed strand levels',
+    {
+      encoding: {
+        color: {
+          field: 'strand',
+          scale: { type: 'linear', range: ['red', 'blue'] },
+        },
+      },
+    },
+    /^encoding\.color\.scale\.type: strand paints its own levels/,
+  ],
+  [
+    'a threshold over the fixed strand levels',
+    {
+      encoding: {
+        color: { field: 'strand', scale: { type: 'threshold', domain: ['0'] } },
+      },
+    },
+    /^encoding\.color\.scale\.type: strand paints its own levels/,
+  ],
+  [
+    'a column sort with no pos',
+    { sort: 'mapq' },
+    /^sort: mapq ranks the reads over one column/,
+  ],
 ])(
   "%s: a draft's problems are the notice it shows once applied",
   (_name, draft, line) => {
