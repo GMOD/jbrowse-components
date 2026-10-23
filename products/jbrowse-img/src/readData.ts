@@ -4,14 +4,12 @@ import { pathToFileURL } from 'node:url'
 import { expandAssemblySequence } from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
 import { addRelativeUris } from '@jbrowse/core/util/addRelativeUris'
 import {
-  FILE_FLAG,
   buildComparative,
   comparativeRole,
-  fileAdapter,
   fileTrack,
   genomeAssembly,
   hasComparativeArgs,
-  isSequenceAdapter,
+  isGenomeFlag,
   modifierValue,
   uniqueId,
 } from '@jbrowse/launch-args'
@@ -136,12 +134,9 @@ export function readData(
   // or a bare genome file
   const comparative = hasComparativeArgs(argv)
   const genome: Entry | undefined =
-    argv.find(([key]) => key === 'fasta' || key === 'chromSizes') ??
+    argv.find(([key]) => isGenomeFlag(key)) ??
     (fasta ? ['fasta', [fasta]] : undefined) ??
-    trackList.find(
-      ([key, [file]]) =>
-        key === FILE_FLAG && !!file && isSequenceAdapter(fileAdapter(file)),
-    )
+    trackList.find(entry => comparativeRole(entry) === 'genome')
 
   const tracksData = tracks ? readTrackArray(tracks) : undefined
   const configData: Partial<Config> & Record<string, unknown> = configObject
@@ -226,7 +221,7 @@ export function readData(
     const comparative = buildComparative(argv)
     configData.assemblies = comparative.assemblies
     configData.assembly = comparative.assemblies[0]!
-    configData.assemblyLocs = comparative.locs
+    configData.comparativeRows = comparative.rows
     syntenyTracks = comparative.syntenyTracks
   } else if (genome) {
     const { assembly, unused } = genomeAssembly(genome[0], genome[1], 'refseq')

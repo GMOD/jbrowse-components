@@ -112,7 +112,10 @@ describe('readData', () => {
     ])
     const result = readData({ argv, trackList })
     expect(result.assemblies.map(a => a.name)).toEqual(['a.fa', 'b.fa'])
-    expect(result.assemblyLocs).toEqual(['I', undefined])
+    expect(result.comparativeRows).toEqual([
+      { assembly: 'a.fa', loc: 'I' },
+      { assembly: 'b.fa' },
+    ])
     expect(result.tracks.map(t => [t.type, t.assemblyNames])).toEqual([
       ['SyntenyTrack', ['a.fa', 'b.fa']],
       ['AlignmentsTrack', ['a.fa']],

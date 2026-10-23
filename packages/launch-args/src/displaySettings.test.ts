@@ -564,6 +564,8 @@ describe('modifier values are validated the same way everywhere', () => {
   test.each([
     ['alignments', 'height:', /Missing height/],
     ['alignments', 'height:8o', /Invalid height/],
+    ['alignments', 'height:Infinity', /Invalid height/],
+    ['alignments', 'mapq: ', /Invalid mapq/],
     ['alignments', 'color:', /Missing color/],
     ['alignments', 'sort:', /Missing sort/],
     // a bare `arcs` used to mean OFF, the opposite of every other bare modifier

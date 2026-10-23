@@ -4,7 +4,6 @@ export {
   guessTrack,
   guessTrackType,
   makeLocationProtocol,
-  siblingSidecar,
   syntenyAdapterTypes,
 } from './fileAdapter.ts'
 export {
@@ -14,31 +13,14 @@ export {
   fileAdapter,
   fileTrack,
   genomeAssembly,
-  isSequenceAdapter,
+  genomeFlags,
+  isGenomeFlag,
   makeLocation,
-  sequenceAssembly,
-  trackFlagAdapters,
   trackFlags,
 } from './fileInput.ts'
 export { genomeConfigUrl } from './genome.ts'
-export {
-  type SlotWrite,
-  applySlotWrite,
-  isMemberWrite,
-  isSlotPathOption,
-  mergeSettings,
-  slotValue,
-  slotWrite,
-  viewSettings,
-} from './slotPath.ts'
-export {
-  invalidModifierValue,
-  parseBool,
-  parseEnum,
-  parseJsonModifier,
-  parseNum,
-  parseStr,
-} from './modifierValues.ts'
+export { mergeSettings, viewSettings } from './slotPath.ts'
+export { parseBool } from './modifierValues.ts'
 export {
   resolveTrackId,
   trackMatches,
@@ -47,14 +29,12 @@ export {
 } from './trackIds.ts'
 export {
   type ComparativeData,
+  type ComparativeRow,
   type SyntenyFlag,
   buildComparative,
   comparativeRole,
   hasComparativeArgs,
-  stackedViews,
-  syntenyFlagAdapters,
   syntenyFlags,
-  syntenyTrack,
 } from './comparative.ts'
 export {
   type ComparativeLaunchPlan,
@@ -66,19 +46,16 @@ export {
   launchFlags,
   launchPlan,
   launchViewType,
-  launchViewTypes,
+  takesFile,
   uniqueId,
 } from './launchPlan.ts'
 export {
   type Entry,
   FILE_FLAG,
-  extraValuesMessage,
   isDataFile,
   isModifier,
   isUrl,
-  locValue,
   modifierValue,
   parseArgv,
-  splitModifier,
   standardizeArgv,
 } from './parseArgv.ts'

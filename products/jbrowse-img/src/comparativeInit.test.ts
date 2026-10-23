@@ -25,12 +25,18 @@ describe('comparativeViews', () => {
     )
   })
 
-  test('keeps assembly order and attaches each per-assembly loc', () => {
-    const data = { ...config([asm('a'), asm('b')]), assemblyLocs: ['chr1'] }
-    expect(comparativeViews(data)).toEqual([
-      { assembly: 'a', loc: 'chr1' },
+  test('stacks the assemblies whole when no rows were given', () => {
+    expect(comparativeViews(config([asm('a'), asm('b')]))).toEqual([
+      { assembly: 'a' },
       { assembly: 'b' },
     ])
+  })
+
+  test('takes the command line rows, one assembly twice for a self pair', () => {
+    const rows = [{ assembly: 'a', loc: 'chr1' }, { assembly: 'a' }]
+    const data = { ...config([asm('a')]), comparativeRows: rows }
+    expect(comparativeViews(data)).toEqual(rows)
+    expect(dotplotInit(data).views).toEqual(rows)
   })
 })
 

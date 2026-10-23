@@ -18,8 +18,8 @@ export function invalidModifierValue(
 // A bare `height:` would otherwise become a silent 0 via `+''`. `expected`
 // names the wider grammar for the modifiers that also accept keywords.
 export function parseNum(prefix: string, val: string, expected = 'a number') {
-  const n = val === '' ? Number.NaN : +val
-  return Number.isNaN(n) ? invalidModifierValue(prefix, val, expected) : n
+  const n = val.trim() === '' ? Number.NaN : Number(val)
+  return Number.isFinite(n) ? n : invalidModifierValue(prefix, val, expected)
 }
 
 // A modifier whose value is mandatory and free-form (a color, a tag, a display

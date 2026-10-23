@@ -4,7 +4,12 @@ import type {
   VariantAllele,
   VariantSortColumn,
 } from '@jbrowse/alignments-core/variantSortColumn'
-import type { Assembly, Entry, Track } from '@jbrowse/launch-args'
+import type {
+  Assembly,
+  ComparativeRow,
+  Entry,
+  Track,
+} from '@jbrowse/launch-args'
 import type { TrackLabelMode } from '@jbrowse/plugin-linear-genome-view'
 
 // Compile-time assertion that a type is empty. Used with `Exclude<...>` to prove
@@ -121,9 +126,9 @@ export interface Config {
   // Trix (or other) text-search adapters, e.g. from a --genome config, that let
   // --loc navigate by gene name. Passed through to createViewState.
   aggregateTextSearchAdapters?: TextSearchAdapter[]
-  // Per-assembly location strings (aligned with `assemblies`) for comparative
-  // views built from CLI args; undefined entries render that assembly
-  // whole-genome.
-  assemblyLocs?: (string | undefined)[]
+  // A comparative view's rows when built from CLI args, each at its `loc:` or
+  // whole; one genome twice is two rows of one assembly. Undefined stacks
+  // `assemblies` whole.
+  comparativeRows?: ComparativeRow[]
   [key: string]: unknown
 }

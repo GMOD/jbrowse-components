@@ -3,7 +3,7 @@ import {
   isDataFile,
   parseArgv,
   standardizeArgv,
-  trackFlags,
+  takesFile,
   viewSettings,
 } from '@jbrowse/launch-args'
 import { checkModifiers } from '@jbrowse/launch-args/displaySettings'
@@ -133,7 +133,7 @@ const rawName = (key: string) => (key.length === 1 ? `-${key}` : `--${key}`)
 function checkFlag(command: ParsedArgs['command'], [key, values]: Entry) {
   if (key === FILE_FLAG) {
     throw new Error(`${values[0]} is a data file. ${DATA_FILE_HINT}`)
-  } else if (key === 'fasta' || (trackFlags as string[]).includes(key)) {
+  } else if (takesFile(key)) {
     throw new Error(`--${key} opens a data file. ${DATA_FILE_HINT}`)
   }
   const flag = SHORT[key] ?? key

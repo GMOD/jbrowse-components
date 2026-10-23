@@ -90,8 +90,9 @@ describe('stackSyntenyTrackIds', () => {
   test('a self pair needs a track naming the assembly twice', () => {
     const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined)
     const data: Config = {
-      assemblies: [asm('wheat'), asm('wheat')],
+      assemblies: [asm('wheat')],
       assembly: asm('wheat'),
+      comparativeRows: [{ assembly: 'wheat' }, { assembly: 'wheat' }],
       tracks: [
         synteny('wheat_sorghum', ['wheat', 'sorghum']),
         synteny('wheat_self', ['wheat', 'wheat']),
