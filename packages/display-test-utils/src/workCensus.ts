@@ -286,7 +286,7 @@ const ROW_GETTERS = [
   'clusterableSources',
   'bandedSources',
   'sources',
-  'dealtRowColors',
+  'dealtValueColors',
   'resolvedRowColors',
 ] as const
 

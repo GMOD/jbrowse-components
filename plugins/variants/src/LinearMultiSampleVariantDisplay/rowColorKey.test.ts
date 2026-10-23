@@ -2,7 +2,7 @@ import { createTestEnvironment } from './testEnv.ts'
 
 function display() {
   const { display } = createTestEnvironment().createDisplay()
-  display.setRowColorField('population')
+  display.setRowColorChoice('population')
   display.setSources([
     { name: 'S0', population: 'AFR' },
     { name: 'S1', population: 'EUR' },

@@ -6,7 +6,7 @@ import { rowColorConfigSchema } from '@jbrowse/display-kit/rowColorConfigSchema'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import { TreeSidebarMixin } from './TreeSidebarMixin.ts'
-import { dealtValueColors } from './rowColorScale.ts'
+import { dealValueColors } from './rowColorScale.ts'
 import { treeSidebarConfigSchemaFields } from './treeSidebarConfigSchemaFields.ts'
 
 const configSchema = ConfigurationSchema('RowColorKeyDisplay', {
@@ -244,9 +244,9 @@ describe('a click on an entry', () => {
   })
 })
 
-test("dealtValueColors reads no row by name under unknown: ''", () => {
+test("dealValueColors reads no row by name under unknown: ''", () => {
   const rowsOf = jest.fn(() => [{ name: 'a' }, { name: 'b' }])
-  const dealt = dealtValueColors(
+  const dealt = dealValueColors(
     { field: 'name', scale: { domain: ['a'], range: ['#f00'], unknown: '' } },
     rowsOf,
     true,

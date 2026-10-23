@@ -167,11 +167,11 @@ hook's name throws at `create`:
 - `rowBanding` — none by default; the variant displays' `facet`, and the
   multi-row display's `facet` with its `rowGroups` groups listed after the
   facet's `sort`.
-- `rowBand(row)` — the row's value of the banding attribute by default;
+- `rowBand(row)` — the row's value of the banding field by default;
   multi-row matches `rowGroups` on the name, since its rows are tagged after the
   arrangement.
-- `rowColorFields` — the row attributes offered to color by: by default every
-  attribute the rows carry but their name, label and colors, which on
+- `rowColorFields` — the row fields offered to color by: by default every
+  field the rows carry but their name, label and colors, which on
   multi-row is the `group` its `rowGroups` tag; variants' are its samplesTsv
   columns; MAF and the mark display offer none.
 
@@ -179,10 +179,10 @@ MAF also overrides `clusterableSources`, since on a track that discovers its
 species a focus applies as given, as the worker's does.
 
 **A row's color is one getter, `resolvedRowColors`**: its `rowColor` entry (a
-`name` pair, or the color its attribute value is dealt), else its own `color`,
+`name` pair, or the color its field's value is dealt), else its own `color`,
 else the palette's by name where `rowPaletteDeals` — `sharesPanel &&
-rowColorPaintsMarks`. `dealtRowColors` is the value-to-color map behind it and
-`dealtRowColorsFor` the dialog's preview of another setting. `dealRowColors` deals
+rowColorPaintsMarks`. `dealtValueColors` is the value-to-color map behind it and
+`dealtValueColorsFor` the dialog's preview of another setting. `dealRowColors` deals
 d3's ordinal way over the rows in source order (`rowColorDealRows`), so no
 reorder, focus or relabel recolors a row and a tables export deals the same
 (ADR-239). Values the config declares for the field (`rowColorDeclaredValues`,
@@ -191,9 +191,9 @@ not, so a later region moves no color. Listed values take their `scale.range`
 color, the rest first seen first from tableau10 less its grey and then re-lit
 laps of it (`rowPaletteColorAt`), and a set `scale.unknown` stands in for the
 palette. A name deal skips a row carrying
-its own color; an attribute deal skips the empty value, so a row with none
-takes a color only from a `''` pair (ggplot's `na.value`, not a category); an
-attribute no row carries deals nothing. A multi-row `rowGroups` entry only
+its own color; a field deal skips the empty value, so a row with none
+takes a color only from a `''` pair (ggplot's `na.value`, not a category); a
+field no row carries deals nothing. A multi-row `rowGroups` entry only
 tags a row's `group`; the group's color is
 `rowColor: { field: 'group' }`. Every row carries it as `rowColor`: the sidebar always draws
 it as the row's label bar, and a display paints its marks in it only where
@@ -202,7 +202,7 @@ it as the row's label bar, and a display paints its marks in it only where
 **A row color has one key, `rowColorScales`**, which every display spreads last
 into its `colorScales`: one scale titled by the `rowColor` field, capitalised,
 or none where it would have no entries. It keys wherever the labels cannot name
-the colors: by an attribute on any display at any row height, and by `name`
+the colors: by a field on any display at any row height, and by `name`
 only in a shared panel. By `name` on stacked rows the labels are the key. `rowColorKeyEntries` lists
 one entry per value some row carries with a color, in deal order (pairs first,
 then first seen over the rows in source order, so a focus never re-ranks or drops
@@ -226,7 +226,7 @@ What else the mixin owns:
   to what a track the session owns was added with, and never touches
   `rows.field`. A reset to empty would write a delta erasing an admin's declared
   order for that reader. `rowArrangementIsCustom` compares against the same
-  base, with `rowStylingIsCustom` for the colors, and leaves `rows.kept`
+  base, with `rowColorIsCustom` for the colors, and leaves `rows.kept`
   out, since the focus has a clear of its own; a reset still clears it.
   `rowColorResetTarget` (`rowColorChoice.ts`) is the one rule for both: what
   a reset writes to `rowColor`, or nothing while the live object is not
@@ -237,9 +237,9 @@ What else the mixin owns:
   back (ADR-209).
 - **The dialog shows the `rowColor` object and submits it**
   (`applyRowEdits(rows, rowColor)`, ADR-209): "Color rows by" None, Each row
-  or an attribute, on every row display. Each row and an attribute hold their
+  or a field, on every row display. Each row and a field hold their
   picks and an Other swatch, the `scale.unknown`: Auto, None, or a color, with
-  None hidden where it equals Auto. An attribute's picks are its value table, each
+  None hidden where it equals Auto. A field's picks are its value table, each
   value with its color and row count in the key's order; Each row's are the
   row list's swatches, which show every row's color under any choice and edit
   only there, as the bulk color button does. The bulk editor sets `label` and

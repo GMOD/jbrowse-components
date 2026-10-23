@@ -217,15 +217,12 @@ function getOrderedGenotypeCodes(cellData: CellDataResult) {
 }
 
 function warnUnknownArrangementAttributes(
-  self: { rowColorAttribute: string; facet: FacetSetting | undefined },
+  self: { rowColorField: string; facet: FacetSetting | undefined },
   sources: Source[],
 ) {
-  const { rowColorAttribute } = self
-  if (
-    rowColorAttribute &&
-    !sources.some(source => rowColorAttribute in source)
-  ) {
-    warnMissingAttribute('rowColor', rowColorAttribute, sources)
+  const { rowColorField } = self
+  if (rowColorField && !sources.some(source => rowColorField in source)) {
+    warnMissingAttribute('rowColor', rowColorField, sources)
   }
   const field = self.facet?.field
   if (field && !sources.some(source => field in source)) {
@@ -800,6 +797,7 @@ export function stateModelFactory(
       }))
       .actions(self => {
         const fetchMetadata = createAdapterMetadataFetch(self)
+        const superSetRowColorChoice = self.setRowColorChoice
         return {
           /**
            * #action
@@ -858,13 +856,12 @@ export function stateModelFactory(
           },
           /**
            * #action
-           * Recolor sample rows by a metadata attribute (e.g. 'population'), or
-           * pass '' for None, through the mixin's `setRowColorChoice`. The
-           * tint is resolved on every read of `sources`, so a recolor moves no
-           * rows and drops no cluster tree.
+           * The mixin's, then a warning naming a metadata field no sample
+           * carries. The tint is resolved on every read of `sources`, so a
+           * recolor moves no rows and drops no cluster tree.
            */
-          setRowColorField(field: string) {
-            self.setRowColorChoice(field)
+          setRowColorChoice(choice: string) {
+            superSetRowColorChoice(choice)
             warnUnknownArrangementAttributes(self, self.adapterSamples ?? [])
           },
           /**

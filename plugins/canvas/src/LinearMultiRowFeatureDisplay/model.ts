@@ -410,7 +410,7 @@ export default function stateModelFactory(
           }
         }
         const unanswered = `(no ${self.effectiveRowsField})`
-        return orderRowValues(values, self.baseRowDomain).map(name =>
+        return orderRowValues(values, self.baseRowSort).map(name =>
           name === '' ? { name, label: unanswered } : { name },
         )
       })

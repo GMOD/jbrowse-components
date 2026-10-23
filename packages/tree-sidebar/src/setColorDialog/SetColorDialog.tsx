@@ -52,12 +52,14 @@ export interface TreeLayoutModel<S extends RowSource> {
   // the ClearTreeWarning is shown before Submit.
   rowOrderWillDropTree: (next: S[]) => boolean
   rowColorChoice: string
-  rowColorAttributesOffered: readonly string[]
+  rowColorFieldsOffered: readonly string[]
   rowColorFor: (choice: string) => RowColorSetting
   rowPaletteDeals: boolean
   rowAlias: RowAlias | undefined
   internalRowFields: readonly string[]
-  dealtRowColorsFor: (setting: RowColorSnapshot) => ReadonlyMap<string, string>
+  dealtValueColorsFor: (
+    setting: RowColorSnapshot,
+  ) => ReadonlyMap<string, string>
 }
 
 export interface SetColorDialogProps<S extends RowSource> {
@@ -147,7 +149,7 @@ export default observer(function SetColorDialog<S extends RowSource>({
     setDrafts({ ...drafts, [choice]: next(setting) })
   }
   const pairs = pairedColorsOf(setting.scale)
-  const dealt = model.dealtRowColorsFor(setting)
+  const dealt = model.dealtValueColorsFor(setting)
   const colors = resolveRowColors(
     currLayout,
     setting.field,
@@ -276,7 +278,7 @@ export default observer(function SetColorDialog<S extends RowSource>({
             {showRows ? (
               <>
                 <RowColorPanel
-                  fields={model.rowColorAttributesOffered}
+                  fields={model.rowColorFieldsOffered}
                   choice={choice}
                   values={
                     byField

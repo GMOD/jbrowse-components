@@ -20,7 +20,7 @@ import { arrangeRows, bandRows } from '@jbrowse/tree-sidebar/arrangeRows'
 import { keptRows } from '@jbrowse/tree-sidebar/clusterUtils'
 import { rowColorSettingOf } from '@jbrowse/tree-sidebar/rowColorChoice'
 import {
-  dealtValueColors,
+  dealValueColors,
   resolveRowColors,
   rowColorKeyEntries,
   rowFieldValue,
@@ -715,7 +715,7 @@ function rowColorsOf(
   rowAlias: RowAlias,
 ) {
   const setting = rowColorSettingOf(conf.rowColor)
-  const dealt = dealtValueColors(setting, () => dealRows, false)
+  const dealt = dealValueColors(setting, () => dealRows, false)
   const resolved = resolveRowColors(dealRows, setting.field, dealt, rowAlias)
   const attribute = setting.field === 'name' ? '' : setting.field
   const entries = attribute

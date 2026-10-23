@@ -16,7 +16,7 @@ export interface RowColorScaleSetting {
 }
 
 /**
- * The `rowColor` object as read: the row attribute whose values take the
+ * The `rowColor` object as read: the row field whose values take the
  * colors, `name` for the rows themselves, and its `scale`.
  */
 export interface RowColorSetting {
@@ -29,16 +29,16 @@ const NONE: ReadonlyMap<string, string> = new Map()
 /**
  * The color `setting` gives each value of its field over `rowsOf()`, the
  * rows in source order: its pairs, and the row palette dealt over the
- * rest by `dealRowColors`. An attribute's values deal always, first seen
+ * rest by `dealRowColors`. A field's values deal always, first seen
  * first, except the empty value, which takes a color only from a pair: a row
  * with no value is missing, not a category, as ggplot's `na.value`. A row name
  * deals only while `namesDeal` or a `scale.unknown` stands in for the palette, and
- * a row with its own color takes no turn. None for an attribute no row
+ * a row with its own color takes no turn. None for a field no row
  * carries. Reads no row where only the pairs paint, so a reorder deals nothing
- * again. `declared` lists values of an attribute the config states, which
+ * again. `declared` lists values of a field the config states, which
  * take their turns first, loaded or not.
  */
-export function dealtValueColors(
+export function dealValueColors(
   setting: RowColorSetting,
   rowsOf: () => readonly RowSource[],
   namesDeal: boolean,

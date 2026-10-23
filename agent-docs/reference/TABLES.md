@@ -437,7 +437,7 @@ layer encoder (`buildSourceRenderData`):
   gradient.
 
 A source paints the color the display gives it, through the tree sidebar's
-own rules (`dealtValueColors`, `resolveRowColors`, `markColorOf`): its row
+own rules (`dealValueColors`, `resolveRowColors`, `markColorOf`): its row
 color where nothing else colors the marks, and in a shared panel the
 tableau10 palette dealt by name, or `rowColor`'s pairs. The `display` config
 fills its defaults from the track type's: a `MultiQuantitativeTrack`
