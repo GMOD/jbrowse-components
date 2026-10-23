@@ -206,8 +206,9 @@ export async function launchFromPlan(
   return pluginManager
 }
 
-// the view takes a hosted genome's assembly and comparisons from its config and
-// nothing else, so it opens on session assemblies and tracks alone
+// the view takes a hosted genome's assembly, gene-name search and comparisons
+// from its config and nothing else, so it opens on session assemblies and
+// tracks, in a config holding only the search
 async function launchComparativePlan(
   plan: ComparativeLaunchPlanJson,
   { fetchConfig, createPluginManager }: LaunchFromPlanDeps,
@@ -228,7 +229,11 @@ async function launchComparativePlan(
     views: plan.views,
     tracks: tracks.map(track => track.trackId),
   }
-  const pluginManager = await createPluginManager(undefined)
+  const pluginManager = await createPluginManager(
+    hosted.textSearchAdapters.length
+      ? { aggregateTextSearchAdapters: hosted.textSearchAdapters }
+      : undefined,
+  )
   await loadSessionSpec(
     {
       sessionAssemblies: [...plan.assemblies, ...hosted.assemblies],

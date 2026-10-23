@@ -7,6 +7,12 @@ import type { Track } from './fileInput.ts'
 
 type NamedAssembly = { name: string } & Record<string, unknown>
 
+export interface TextSearchAdapter {
+  type: string
+  assemblyNames?: string[]
+  [key: string]: unknown
+}
+
 /**
  * The parts of a genomes.jbrowse.org config.json a comparative view reads, with
  * the assembly type the caller holds them as.
@@ -14,6 +20,7 @@ type NamedAssembly = { name: string } & Record<string, unknown>
 export interface HostedConfig<A extends { name: string } = NamedAssembly> {
   assemblies?: A[]
   tracks?: Track[]
+  aggregateTextSearchAdapters?: TextSearchAdapter[]
 }
 
 // order-free, as a track's [query, target] follows its file format; a self
@@ -27,8 +34,9 @@ function compares(track: Track, a: string, b: string) {
 
 /**
  * What a comparative view's `--genome` rows take from their hosted configs,
- * keyed by genome name: each genome's assembly, and a comparison for each gap
- * beside a hosted row that no comparison file fills.
+ * keyed by genome name: each genome's assembly, its gene-name search, so a row's
+ * `loc:` can name a gene, and a comparison for each gap beside a hosted row
+ * that no comparison file fills.
  *
  * A config holds the comparisons its genome is the target of, so a pair is
  * often hosted twice, once in each direction; the upper row's config wins, and
@@ -48,6 +56,11 @@ export function hostedComparative<A extends { name: string }>(
     }
     return assembly
   })
+  const textSearchAdapters = [...configs].flatMap(([name, config]) =>
+    (config.aggregateTextSearchAdapters ?? []).filter(adapter =>
+      adapter.assemblyNames?.includes(name),
+    ),
+  )
   const tracks: Track[] = []
   for (const [i, lower] of rows.slice(1).entries()) {
     const a = rows[i]!.assembly
@@ -68,5 +81,5 @@ export function hostedComparative<A extends { name: string }>(
       tracks.push(hosted)
     }
   }
-  return { assemblies, tracks }
+  return { assemblies, textSearchAdapters, tracks }
 }

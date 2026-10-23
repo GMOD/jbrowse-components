@@ -13,6 +13,20 @@ const liftOver = (target: string, query: string): Track => ({
 const hosted = (name: string, tracks: Track[]): HostedConfig => ({
   assemblies: [{ name, sequence: {} }],
   tracks: [{ trackId: `${name}-genes`, type: 'FeatureTrack' }, ...tracks],
+  aggregateTextSearchAdapters: [
+    { type: 'TrixTextSearchAdapter', assemblyNames: [name] },
+    { type: 'TrixTextSearchAdapter', assemblyNames: [`${name}-other`] },
+  ],
+})
+
+test("each hosted genome brings its own gene-name search, and no other's", () => {
+  expect(
+    hostedComparative(rows('hg38', 'mm39'), [], configs).textSearchAdapters,
+  ).toEqual([
+    { type: 'TrixTextSearchAdapter', assemblyNames: ['hg38'] },
+    { type: 'TrixTextSearchAdapter', assemblyNames: ['mm39'] },
+    { type: 'TrixTextSearchAdapter', assemblyNames: ['hs1'] },
+  ])
 })
 
 const configs = new Map([

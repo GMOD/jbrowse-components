@@ -235,6 +235,7 @@ export function readData(
       assemblies.find(a => a.name === comparative.rows[0]?.assembly) ??
       assemblies[0]
     configData.comparativeRows = comparative.rows
+    configData.aggregateTextSearchAdapters = hosted.textSearchAdapters
     syntenyTracks = [...comparative.syntenyTracks, ...hosted.tracks]
   } else if (genome) {
     const { assembly, unused } = genomeAssembly(genome[0], genome[1], 'refseq')

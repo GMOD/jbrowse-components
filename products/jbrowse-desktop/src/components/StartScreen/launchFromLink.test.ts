@@ -698,10 +698,12 @@ describe('a command-line plan', () => {
       type: 'SyntenyTrack',
       assemblyNames: [target, query],
     })
+    const search = { type: 'TrixTextSearchAdapter', assemblyNames: ['hg38'] }
     const hosted = {
       'https://x.test/hg38.json': {
         assemblies: [{ name: 'hg38', sequence: {} }],
         tracks: [liftOver('hg38', 'mm39'), { trackId: 'genes' }],
+        aggregateTextSearchAdapters: [search],
       },
       'https://x.test/mm39.json': {
         assemblies: [{ name: 'mm39', sequence: {} }],
@@ -731,7 +733,9 @@ describe('a command-line plan', () => {
       },
       d,
     )
-    expect(d.createPluginManager).toHaveBeenCalledWith(undefined)
+    expect(d.createPluginManager).toHaveBeenCalledWith({
+      aggregateTextSearchAdapters: [search],
+    })
     expect(mockLoadSessionSpec).toHaveBeenCalledWith(
       {
         sessionAssemblies: [
