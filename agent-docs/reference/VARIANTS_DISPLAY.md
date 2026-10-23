@@ -45,9 +45,13 @@ below are relative to `plugins/variants/src/`.
 - **`encoding.color` is the single cell-coloring axis** (`shared/cellHue.ts`).
   A preset (`impact`, `phaseSet`) and a record field (`svType` among them) are
   both fields of it, and a record with no value keeps the alt hue. Color never
-  depends on zoom: the insertion marker is the cell's own color widened, and
-  "insertion" is its shape and width. A purple marker made a variant read as an
-  insertion only at the zooms where the marker outgrew its cell.
+  depends on zoom. A purple marker made a variant read as an insertion only at
+  the zooms where the marker outgrew its cell.
+- **An insertion draws at its reference span**, as every record does, and the
+  hover's "Insertion" row names its bp. A per-cell marker sized by the inserted
+  bp (`showInsertionGlyphs`, cut 2026-10-23) put a zoom-dependent pixel width on
+  the span channel and repeated it down every carrier row as a wall over
+  reference the haplotypes keep; the hosted HPRC launch had turned it off.
 - **A cell's alpha does depend on zoom, where records share pixels**
   (`LinearMultiSampleVariantDisplay/densityFade.ts`). At genomic positions each
   record shorter than the 2 px a cell draws is drawn at `1 - 0.1 ** (1 / n)`,
@@ -70,8 +74,7 @@ Each channel carries one variable through one scale.
   carry that.
 - **`dosage` is over CALLED alleles**, so `1/2` is a hom and `0/2` a het, and
   `./1` is a full dose on the one haplotype that was called. A wholly uncalled
-  genotype is the no-call category, never a blend into it. `altDosageByte` is
-  the same number for the insertion marker.
+  genotype is the no-call category, never a blend into it.
 - **One ramp for every mode**, bounded by a fixed pale ceiling so a het in a
   class color still reads as that class. Full dosage is the hue itself, which
   is also what makes a legend swatch and a hom cell the same color. The
@@ -247,8 +250,7 @@ model**, so `startRenderingBackend` tags which backend is attached
 draws; across a switch the old backend is sent an empty map until the other
 chrome's backend arrives.
 
-Columns are for genotype PATTERN, not spans: the lane, the insertion markers and
-the reference toggle are genomic-position features and answer off in columns.
+Columns are for genotype PATTERN, not spans: the lane and the reference toggle are genomic-position features and answer off in columns.
 
 **Each display names the slot's checkbox for its own picture**, so the two check
 for opposite values: "Layout → Genotype matrix" here (columns), "Size cells by

@@ -1,9 +1,8 @@
-import { pxPerBpOf, regionAtPixel } from '@jbrowse/render-core/canvas2dUtils'
+import { regionAtPixel } from '@jbrowse/render-core/canvas2dUtils'
 import { observer } from 'mobx-react'
 
 import { REFERENCE_COLOR } from '../../shared/constants.ts'
 import { decodeGenotype } from '../../shared/genotypeCodec.ts'
-import VariantInsertionLabels from './VariantInsertionLabels.tsx'
 import { buildVariantHit } from './buildVariantHit.ts'
 import { enrichFeatureFromClick } from './enrichFeatureFromClick.ts'
 import { pickVariantCell } from './pickVariantCell.ts'
@@ -19,10 +18,6 @@ export interface HoveredCell {
   cellIndex: number
   genomicStart: number
   genomicEnd: number
-  // bp this cell's record inserts; widens the drawn cell to an insertion marker,
-  // so the highlight has to widen with it (see variantCellSpan.ts). 0 for
-  // everything else.
-  insertedBp: number
   displayedRegionIndex: number
 }
 
@@ -86,10 +81,6 @@ function getHoveredFeature(
     rowNearest,
     rowLowest,
     rowUnmap,
-    // sizes the insertion marker's click target, so it is the same
-    // `pxPerBpOf` the draw pass sized the drawn marker with
-    pxPerBp: pxPerBpOf(region),
-    insertionsWiden: model.showInsertionGlyphs,
   })
   if (!picked) {
     return undefined
@@ -130,7 +121,6 @@ function getHoveredFeature(
       cellIndex,
       genomicStart,
       genomicEnd,
-      insertedBp,
       displayedRegionIndex: region.displayedRegionIndex,
     },
   }
@@ -180,25 +170,22 @@ const VariantBody = observer(function VariantBody({
   const width = model.canvasWidthPx
 
   return (
-    <>
-      <canvas
-        role="img"
-        aria-label="Variant genotypes"
-        data-testid="variant_canvas"
-        ref={canvasRef}
-        style={{
-          width,
-          height: model.availableHeight,
-          position: 'absolute',
-          left: 0,
-          top: 0,
-          backgroundColor:
-            model.referenceDrawingMode === 'skip' ? REFERENCE_COLOR : undefined,
-        }}
-        {...variantSurfaceHandlers(model, variantRowsSurface(model))}
-      />
-      <VariantInsertionLabels model={model} />
-    </>
+    <canvas
+      role="img"
+      aria-label="Variant genotypes"
+      data-testid="variant_canvas"
+      ref={canvasRef}
+      style={{
+        width,
+        height: model.availableHeight,
+        position: 'absolute',
+        left: 0,
+        top: 0,
+        backgroundColor:
+          model.referenceDrawingMode === 'skip' ? REFERENCE_COLOR : undefined,
+      }}
+      {...variantSurfaceHandlers(model, variantRowsSurface(model))}
+    />
   )
 })
 

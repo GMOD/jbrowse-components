@@ -2,7 +2,6 @@ import { rowsUnderPointer } from '@jbrowse/core/util/rowStackGeometry'
 import { bpAtPxExact } from '@jbrowse/render-core/canvas2dUtils'
 
 import { drawnCellHeightPx } from './shaders/variant.js.generated.ts'
-import { MAX_INSERTION_MARKER_WIDTH_PX } from './variantCellSpan.ts'
 
 // Minimal region shape the hit-test geometry needs — a subset of the view's
 // visible-region objects.
@@ -30,14 +29,9 @@ interface VariantHitQuery {
 // be near-impossible to hit.
 export const HIT_TOLERANCE_PX = 5
 
-// Half-width of the feature-interval search window. The intervals are the
-// records' *reference* spans, but an insertion paints a marker up to
-// MAX_INSERTION_MARKER_WIDTH_PX wide centered on that span (see
-// variantCellSpan.ts), so the window has to reach a marker's far edge from the
-// cursor or hovering the visible glyph returns nothing. Callers narrow the
-// candidates back down to what each cell actually paints.
-export const HIT_SEARCH_PAD_PX =
-  MAX_INSERTION_MARKER_WIDTH_PX / 2 + HIT_TOLERANCE_PX
+// Half-width of the feature-interval search window: the click tolerance.
+// Callers narrow the candidates back down to what each cell actually paints.
+export const HIT_SEARCH_PAD_PX = HIT_TOLERANCE_PX
 
 // Pure geometry for hit-testing one region: maps a cursor position (relative to
 // the canvas) to a bp window and a row band. Split out from VariantComponent so

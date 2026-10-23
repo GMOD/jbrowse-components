@@ -793,7 +793,6 @@ exports[`every registered schema slot default 1`] = `
     "rows.tree": "maybeString = undefined",
     "rows.treeProvenance": "maybeFrozen = undefined",
     "shadeByDosage": "boolean = true",
-    "showInsertionGlyphs": "boolean = true",
     "tooltip.show": "boolean = true",
     "unit": "stringEnum = "sample" of ["sample","haplotype"]",
     "variantLayout": "stringEnum = "genomic" of ["genomic","columns"]",

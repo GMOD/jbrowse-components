@@ -71,8 +71,6 @@ const rowY = (row: number) => row * state.rowHeight + state.rowHeight / 2
 const geom = {
   block,
   state,
-  pxPerBp: 1,
-  insertionsWiden: true,
   rowUnmap: identityRows,
 }
 
@@ -266,126 +264,35 @@ describe('pickVariantCell row resolution', () => {
   })
 })
 
-describe('pickVariantCell insertion markers', () => {
+describe('pickVariantCell insertions', () => {
   // A 5000bp insertion occupying 1bp of reference: row 0 carries it, row 1 is
-  // reference. Zoomed out to 0.2 px/bp the drawn marker is far wider than the
-  // 2px cell, and only the alt row paints one.
+  // reference. It draws at its reference span like every other record.
   const data = build({
     refCells: [{ feature: 0, row: 1 }],
     altCells: [{ feature: 0, row: 0, carriesAlt: true }],
     features: [[1000, 1001]],
     insertedBp: [5000],
   })
-  const zoomedOut = {
-    ...geom,
-    block: { ...block, end: 4000 },
-    pxPerBp: 0.2,
-  }
-  // 1000bp -> x 200; the marker is centered there.
-  const farFromLocus = 200 + HIT_TOLERANCE_PX + 4
-
-  test('the alt row is hoverable across the whole drawn marker', () => {
-    const picked = pickVariantCell({
+  const zoomedOut = { ...geom, block: { ...block, end: 4000 } }
+  // 1000bp -> x 200
+  const pick = (mouseX: number, row: number) =>
+    pickVariantCell({
       data,
       candidateFeatures: [0],
-      mouseX: farFromLocus,
-      mouseY: rowY(0),
-      rowNearest: 0,
-      rowLowest: 0,
+      mouseX,
+      mouseY: rowY(row),
+      rowNearest: row,
+      rowLowest: row,
       ...zoomedOut,
     })
-    expect(picked?.rowIndex).toBe(0)
-    expect(picked?.insertedBp).toBe(5000)
+
+  test('the alt row reports the inserted bp, the reference row none', () => {
+    expect(pick(200, 0)?.insertedBp).toBe(5000)
+    expect(pick(200, 1)?.insertedBp).toBe(0)
   })
 
-  test('an insertion marker outranks a later cell of the same span', () => {
-    // one site split into an insertion record and an SNV record, both carried
-    // on row 0: the SNV's cell is later, but the marker is painted over it
-    const split = build({
-      altCells: [
-        { feature: 0, row: 0, carriesAlt: true },
-        { feature: 1, row: 0, carriesAlt: true },
-      ],
-      features: [
-        [1000, 1001],
-        [1000, 1001],
-      ],
-      insertedBp: [5000, 0],
-    })
-    for (const candidateFeatures of [
-      [0, 1],
-      [1, 0],
-    ]) {
-      const picked = pickVariantCell({
-        data: split,
-        candidateFeatures,
-        mouseX: 200,
-        mouseY: rowY(0),
-        rowNearest: 0,
-        rowLowest: 0,
-        ...zoomedOut,
-      })
-      expect(picked?.featureIndex).toBe(0)
-      expect(picked?.insertedBp).toBe(5000)
-    }
-  })
-
-  test('the reference row of the same record is not widened', () => {
-    // It paints no marker, so its hit target stays the 2px cell — otherwise
-    // hovering empty space would claim that haplotype carries the insertion.
-    expect(
-      pickVariantCell({
-        data,
-        candidateFeatures: [0],
-        mouseX: farFromLocus,
-        mouseY: rowY(1),
-        rowNearest: 1,
-        rowLowest: 1,
-        ...zoomedOut,
-      }),
-    ).toBeUndefined()
-    const onLocus = pickVariantCell({
-      data,
-      candidateFeatures: [0],
-      mouseX: 200,
-      mouseY: rowY(1),
-      rowNearest: 1,
-      rowLowest: 1,
-      ...zoomedOut,
-    })
-    expect(onLocus?.rowIndex).toBe(1)
-    expect(onLocus?.insertedBp).toBe(0)
-  })
-
-  // With `showInsertionGlyphs` off the record is painted at the 2px floor like
-  // a SNP and no marker is drawn, so the click target has to shrink with it.
-  // It did not: the pick still measured the marker's box, and a click 20px
-  // clear of a 2px cell opened that cell's feature widget.
-  test('the drawn marker is not clickable when the display draws none', () => {
-    const noGlyphs = { ...zoomedOut, insertionsWiden: false }
-    expect(
-      pickVariantCell({
-        data,
-        candidateFeatures: [0],
-        mouseX: farFromLocus,
-        mouseY: rowY(0),
-        rowNearest: 0,
-        rowLowest: 0,
-        ...noGlyphs,
-      }),
-    ).toBeUndefined()
-    // the 2px cell itself still is
-    expect(
-      pickVariantCell({
-        data,
-        candidateFeatures: [0],
-        mouseX: 200,
-        mouseY: rowY(0),
-        rowNearest: 0,
-        rowLowest: 0,
-        ...noGlyphs,
-      })?.rowIndex,
-    ).toBe(0)
+  test('a cursor past the click tolerance of the span picks nothing', () => {
+    expect(pick(200 + HIT_TOLERANCE_PX + 4, 0)).toBeUndefined()
   })
 })
 

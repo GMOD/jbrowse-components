@@ -133,7 +133,6 @@ Display slots go on a display entry: `"displays": [{ "type": "LinearMultiSampleV
 | <span id="slot-rowcolor">**rowColor**</span><br>[RowColor](../rowcolor) | The bar beside each row's label: a sample-metadata attribute whose palette colors every row, or under `name` the colors a reader set row by row. |
 | <span id="slot-facet">**facet**</span><br>[Facet](../facet) | A sample-metadata attribute (a column in the adapter's samplesTsvLocation, e.g. `"population"`) whose values each take a band of rows; or `{ field, sort }`, the listed values banding first and the rest sorted. Unset, the rows keep their existing order.<br><br>The band is applied when the rows are read, over whatever order the reader has arranged, so a drag that moves a sample into another band snaps back while this is set. Each band is labelled beside the tree and draws the clade of the cluster tree whose leaves are exactly its rows; a clustering run under bands clusters each band apart. |
 | <span id="slot-referencedrawingmode">**referenceDrawingMode**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (draw, skip) = <code>'skip'</code> | Whether to paint reference alleles: 'skip' (the default) fills the row background solid grey and paints only ALT alleles, which makes overlapping variants easier to pick out; 'draw' paints reference alleles like any other genotype. |
-| <span id="slot-showinsertionglyphs">**showInsertionGlyphs**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | Widen each alt cell of an insertion to a marker sized by the inserted bp, the same one `plugins/alignments` and `plugins/maf` draw, with the bp count when the row is tall enough. An insertion consumes almost no reference, so without it a 65 kb insertion draws at the same 2px floor as a SNP. Only cells whose genotype includes the allele widen, and each keeps its genotype color. Columns have no span to correct, so this applies at genomic positions only. |
 | <span id="slot-variants">**variants**</span><br>[VariantsBand](../variantsband) | The band of the variants themselves above the genotype rows, at their genomic positions: `show` (default off), `height` and `showLabels`. |
 | <span id="slot-rowheight">**rowHeight**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>0</code> | per-row height in px, scrolling the rows that do not fit; 0 (the default) fits the rows to the display height instead, dividing it between them |
 | <span class="slot-group">Inherited from [BaseLinearDisplay](../baselineardisplay)</span> | <span class="slot-group-count">2 slots</span> |
@@ -152,6 +151,7 @@ An older config may still write these. Each loads without an error, and `jbrowse
 | `mouseover` | ignored |
 | `jexlFilters` | moved into a current slot |
 | `showTooltips` | moved into a current slot |
+| `showInsertionGlyphs` | ignored |
 | `renderingMode` | moved into a current slot |
 | `showSidebarLabels` | moved into a current slot |
 | `showTree` | moved into a current slot |

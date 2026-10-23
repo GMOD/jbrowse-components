@@ -70,10 +70,9 @@ export function buildVariantHit({
     description:
       info.alt.length >= 3 ? 'multiple ALT alleles' : info.description,
     length: getBpDisplayStr(info.length),
-    // The count the insertion marker paints on the cell, verbatim, so hovering
-    // decodes the number rather than leaving it to be guessed against `length`
-    // (the reference span, ~1 bp for any insertion). Empty for everything else,
-    // which getTooltipRows drops.
+    // The inserted bp, which `length` (the reference span, ~1 bp for any
+    // insertion) cannot say. Empty for everything else, which getTooltipRows
+    // drops.
     insertion: insertedBp > 0 ? `${insertedBp}bp` : '',
     sampleName,
     name,

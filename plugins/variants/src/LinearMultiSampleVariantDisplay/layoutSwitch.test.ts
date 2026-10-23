@@ -20,7 +20,6 @@ test('the layout is a fetch input, and columns spend no band on the lane', () =>
   expect(display.topBands.laneHeight).toBe(0)
   expect(display.lineZoneHeight).toBe(20)
   expect(display.rowsTopOffset).toBe(20)
-  expect(display.drawsInsertionMarkers).toBe(false)
 })
 
 test('Layout → Genotype matrix switches the layout both ways', () => {

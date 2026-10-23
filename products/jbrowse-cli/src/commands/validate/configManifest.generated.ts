@@ -7021,10 +7021,6 @@ export const configManifest: ConfigManifest = {
           "type": "ReferenceDrawingMode"
         },
         {
-          "name": "showInsertionGlyphs",
-          "type": "boolean"
-        },
-        {
           "name": "variants",
           "type": "VariantsBandConfigurationSchema",
           "subSlots": [
@@ -7051,6 +7047,7 @@ export const configManifest: ConfigManifest = {
         "mouseover",
         "jexlFilters",
         "showTooltips",
+        "showInsertionGlyphs",
         "renderingMode",
         "showSidebarLabels",
         "showTree",
@@ -7074,6 +7071,7 @@ export const configManifest: ConfigManifest = {
         "maxDisplayedBpPerPx",
         "fetchSizeLimit",
         "mouseover",
+        "showInsertionGlyphs",
         "colorBy",
         "autoscale",
         "minScore",

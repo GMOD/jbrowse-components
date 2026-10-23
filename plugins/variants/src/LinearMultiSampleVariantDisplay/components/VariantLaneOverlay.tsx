@@ -152,8 +152,7 @@ const VariantLaneInteraction = observer(function VariantLaneInteraction({
  *
  * Every observable the draw needs is read here in the render body rather than
  * inside the closure, because `OverlayCanvas` calls `draw` from an effect where
- * nothing is tracked — the same rule `VariantInsertionLabels` follows, and
- * what makes a refetch, a pan or a band resize repaint.
+ * nothing is tracked, and that is what makes a refetch, a pan or a band resize repaint.
  */
 const VariantLaneOverlay = observer(function VariantLaneOverlay({
   model,

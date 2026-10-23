@@ -69,11 +69,7 @@ import {
   squeezeFloorScale,
 } from '@jbrowse/plugin-canvas'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
-import {
-  makeBpMapper,
-  pxPerBpOf,
-  spanRect,
-} from '@jbrowse/render-core/canvas2dUtils'
+import { makeBpMapper, spanRect } from '@jbrowse/render-core/canvas2dUtils'
 import { installUpload } from '@jbrowse/render-core/installUpload'
 import { inkOfInstances, shiftInk } from '@jbrowse/render-core/marks'
 import {
@@ -106,12 +102,6 @@ import {
   sortSourcesAroundVariant,
 } from './anchoredHaplotypeSort.ts'
 import { cellGlyphs } from './components/cellGlyphs.ts'
-import { drawnCellHeightPx } from './components/shaders/variant.js.generated.ts'
-import { variantCellSpanPx } from './components/variantCellSpan.ts'
-import {
-  anyMarkerPossibleForBlock,
-  variantInsertionChannels,
-} from './components/variantInsertions.ts'
 import { VARIANT_MARKS } from './components/variantMarks.ts'
 import {
   densityRung,
@@ -158,7 +148,6 @@ import type {
   VariantMatrixRenderingBackend,
 } from './matrix/variantMatrixRenderingBackendTypes.ts'
 import type { Placed } from './placeVariantRows.ts'
-import type { InsertionChannels } from '@jbrowse/alignments-core'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
@@ -674,16 +663,6 @@ export function stateModelFactory(
          */
         get unit(): VariantUnit {
           return getConf(self, 'unit')
-        },
-        /**
-         * #getter
-         * Whether an insertion draws as a marker sized by its inserted bp, or
-         * at the 2px floor like a SNP. The marker overlay, the hover
-         * highlight and the click target all read it through
-         * `variantCellSpanPx`, so the three agree.
-         */
-        get showInsertionGlyphs(): boolean {
-          return getConf(self, 'showInsertionGlyphs')
         },
         /**
          * #getter
@@ -1818,25 +1797,13 @@ export function stateModelFactory(
         /**
          * #getter
          * The one walk of the payload every genomic-position consumer reads:
-         * `paintedRegionRows` with the `cell` mark's attributes and, while
-         * `showInsertionGlyphs` is on, the insertion markers' channels.
+         * `paintedRegionRows` with the `cell` mark's attributes.
          */
         get perRegionCellMap() {
-          const { paintedRegionRows, regionCellGlyphs, showInsertionGlyphs } =
-            self
-          const out = new Map<
-            number,
-            Placed<VariantCellData> &
-              CellGlyphs & { insertions?: InsertionChannels }
-          >()
+          const { paintedRegionRows, regionCellGlyphs } = self
+          const out = new Map<number, Placed<VariantCellData> & CellGlyphs>()
           for (const [k, painted] of paintedRegionRows) {
-            out.set(k, {
-              ...painted,
-              ...regionCellGlyphs.get(k)!,
-              insertions: showInsertionGlyphs
-                ? variantInsertionChannels(painted)
-                : undefined,
-            })
+            out.set(k, { ...painted, ...regionCellGlyphs.get(k)! })
           }
           return out
         },
@@ -1931,8 +1898,7 @@ export function stateModelFactory(
          * #getter
          * The box of the hovered genotype cell or lane mark, for the
          * chrome's highlight. A cell is its instance through the cell mark's
-         * ink, moved down by the bands above the rows, and widened to the
-         * insertion marker where one paints over it; a lane mark is the box
+         * ink, moved down by the bands above the rows; a lane mark is the box
          * plugin-canvas laid out and painted, in the lane at the top.
          */
         get hoverInk(): HighlightRect[] {
@@ -1969,24 +1935,7 @@ export function stateModelFactory(
             if (!ink || !region) {
               return []
             }
-            const toX = makeBpMapper(region)
-            const marker = variantCellSpanPx({
-              x1: toX(cell.genomicStart),
-              x2: toX(cell.genomicEnd),
-              insertedBp: cell.insertedBp,
-              insertionsWiden: self.showInsertionGlyphs,
-              pxPerBp: pxPerBpOf(region),
-              drawnRowHeight: ink.height,
-            })
-            return [
-              {
-                ...ink,
-                ...(marker.drawsMarker
-                  ? { left: marker.left, width: marker.width }
-                  : {}),
-                top: ink.top + self.rowsTopOffset,
-              },
-            ]
+            return [{ ...ink, top: ink.top + self.rowsTopOffset }]
           }
           if (lane) {
             const region = self.host.visibleRegions.find(
@@ -2019,40 +1968,6 @@ export function stateModelFactory(
          */
         get highlightStyle(): HighlightStyle {
           return 'box'
-        },
-        /**
-         * #getter
-         * Per-region cell data for the insertion counts' overlay, or
-         * undefined when no marker can draw in this window, which unmounts the
-         * overlay rather than repainting it empty on every pan frame.
-         */
-        get insertionGlyphRegions() {
-          return this.drawsInsertionMarkers ? self.perRegionCellMap : undefined
-        },
-        /**
-         * #getter
-         * Whether insertion markers draw in the current window, which keys the
-         * marker in the legend. Asked of the painter's own blocks
-         * (`anyMarkerPossibleForBlock`): "the window holds an insertion" keys a
-         * callset of short indels that never draws one.
-         */
-        get drawsInsertionMarkers(): boolean {
-          if (!self.showInsertionGlyphs || !self.atGenomicPositions) {
-            return false
-          }
-          // `effectiveRowHeight` directly: `renderState` carries `scrollTop`,
-          // and would walk every feature per wheel frame
-          const drawnRowHeight = drawnCellHeightPx(self.effectiveRowHeight)
-          for (const block of self.renderBlocks) {
-            const region = self.perRegionCellMap.get(block.displayedRegionIndex)
-            if (
-              region?.numCells &&
-              anyMarkerPossibleForBlock(region, block, drawnRowHeight)
-            ) {
-              return true
-            }
-          }
-          return false
         },
         /**
          * #getter
@@ -2326,10 +2241,7 @@ export function stateModelFactory(
       .views(self => ({
         /**
          * #getter
-         * `LegendMixin`'s hook: the cell coloring, the insertion marker where
-         * one is drawn, and the row color key. Whether the marker is keyed
-         * is `drawsInsertionMarkers`' answer, the painter's own test on the
-         * painter's own blocks.
+         * `LegendMixin`'s hook: the cell coloring and the row color key.
          */
         get colorScales(): ColorScale[] {
           return [
@@ -2347,7 +2259,6 @@ export function stateModelFactory(
                 self.colorSetting,
                 CATEGORICAL_FIELD_PRESETS,
               ).legend.title,
-              insertionMarkers: self.drawsInsertionMarkers,
             }),
             ...self.rowColorScales,
           ]

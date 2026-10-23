@@ -12474,16 +12474,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             ]
           }
         },
-        "showInsertionGlyphs": {
-          "description": "widen insertion cells to a marker sized by the inserted bp, instead of drawing them at the 2px floor like a SNP.",
-          "default": true,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "boolean"
-          }
-        },
         "variants": {
           "if": {
             "type": "null"
@@ -12509,6 +12499,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
         "showTooltips": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "showInsertionGlyphs": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
@@ -17495,14 +17489,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "referenceDrawingMode": {
               "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/referenceDrawingMode"
             },
-            "showInsertionGlyphs": {
-              "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/showInsertionGlyphs"
-            },
             "variants": {
               "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/variants"
             },
             "showTooltips": {
               "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/showTooltips"
+            },
+            "showInsertionGlyphs": {
+              "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/showInsertionGlyphs"
             },
             "renderingMode": {
               "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/renderingMode"

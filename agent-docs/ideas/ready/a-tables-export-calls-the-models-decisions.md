@@ -32,9 +32,7 @@ level: the latch is hysteresis against flicker while zooming, which a static
 export has no history for.
 
 Canvas label density counted a feature crossing two regions twice; the tables
-count each feature once now, as the display's on-screen ids do. The variants
-key leaves out the insertion entry the display's key carries, and the tables
-emit no insertion markers either, so the two agree.
+count each feature once now, as the display's on-screen ids do.
 
 The alignments tables key reads and arcs apart (`legend`, `arcLegend`) where
 the display's one legend box merges them when they share a color

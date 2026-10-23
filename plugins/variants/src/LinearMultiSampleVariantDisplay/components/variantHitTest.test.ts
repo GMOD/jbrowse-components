@@ -1,4 +1,3 @@
-import { MAX_INSERTION_MARKER_WIDTH_PX } from './variantCellSpan.ts'
 import {
   HIT_SEARCH_PAD_PX,
   HIT_TOLERANCE_PX,
@@ -36,13 +35,8 @@ describe('computeVariantHitQuery genomicPos', () => {
     expect(computeVariantHitQuery(shifted, 120, 0, 0, 10).genomicPos).toBe(2000)
   })
 
-  test('bpPadding reaches the far edge of the widest insertion marker', () => {
-    // The flatbush boxes are reference spans, but an insertion paints a marker
-    // centered on that span, so a cursor on the marker's edge sits
-    // MAX_INSERTION_MARKER_WIDTH_PX/2 away from the box it must find.
-    expect(HIT_SEARCH_PAD_PX).toBe(
-      MAX_INSERTION_MARKER_WIDTH_PX / 2 + HIT_TOLERANCE_PX,
-    )
+  test('bpPadding is the click tolerance in bp', () => {
+    expect(HIT_SEARCH_PAD_PX).toBe(HIT_TOLERANCE_PX)
     expect(computeVariantHitQuery(fwd, 0, 0, 0, 10).bpPadding).toBe(
       HIT_SEARCH_PAD_PX * 10,
     )

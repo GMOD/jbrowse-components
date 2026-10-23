@@ -223,12 +223,10 @@ function getCellColorScale(
 
 /**
  * The display's own color scales, each a section of the key the reader can
- * close on its own: the genotype/cell coloring and the insertion marker where
- * one is drawn.
+ * close on its own: the genotype/cell coloring.
  */
 export function getVariantColorScales({
   color,
-  insertionMarkers = false,
   colorSlots,
   ...inputs
 }: VariantLegendInputs & {
@@ -238,9 +236,6 @@ export function getVariantColorScales({
   // The slots an ordinal `encoding.color` deals its values into
   // (`heldColorSlots`).
   colorSlots?: HeldSlots
-  // Whether the display is drawing insertion markers in this window (columns
-  // never does, genomic only where a marker outgrows its cell).
-  insertionMarkers?: boolean
 }): ColorScale[] {
   // Phase-set coloring exists only on the phased path — the allele-count cell
   // loop never reads PS — so outside phased mode the cells are genotype-colored
@@ -254,24 +249,5 @@ export function getVariantColorScales({
     inputs,
     colorSlots,
   )
-  return [
-    ...(cellScale ? [cellScale] : []),
-    // A section of its own rather than one more entry on the genotype scale:
-    // the marker is drawn in EVERY cell-color mode, while the genotype entries
-    // are *replaced* wholesale by the consequence-impact, SV-type or phase-set
-    // section. It has no swatch, because the marker has no color of its own —
-    // it is the cell's color, widened — and what a reader cannot decode is the
-    // number: the review that prompted this reported the marker as "the text
-    // like 5593".
-    ...(insertionMarkers
-      ? [
-          {
-            kind: 'categorical' as const,
-            id: 'insertions',
-            title: 'Insertions',
-            entries: [entry('Widened to inserted bp')],
-          },
-        ]
-      : []),
-  ]
+  return cellScale ? [cellScale] : []
 }

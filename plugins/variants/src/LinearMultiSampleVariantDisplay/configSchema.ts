@@ -275,22 +275,6 @@ export default function configSchemaFactory() {
           "reference-allele drawing: 'skip' (the default) fills the row background solid grey and paints only ALT alleles, which makes overlapping variants easier to pick out; 'draw' paints reference alleles like any other genotype",
       },
       /**
-       * #slot
-       * Widen each alt cell of an insertion to a marker sized by the
-       * inserted bp, the same one `plugins/alignments` and `plugins/maf` draw,
-       * with the bp count when the row is tall enough. An insertion consumes
-       * almost no reference, so without it a 65 kb insertion draws at the same
-       * 2px floor as a SNP. Only cells whose genotype includes the allele widen,
-       * and each keeps its genotype color. Columns have no span to correct, so
-       * this applies at genomic positions only.
-       */
-      showInsertionGlyphs: {
-        type: 'boolean',
-        defaultValue: true,
-        description:
-          'widen insertion cells to a marker sized by the inserted bp, instead of drawing them at the 2px floor like a SNP',
-      },
-      /**
        * #slot variants
        * The band of the variants themselves above the genotype rows, at
        * their genomic positions: `show` (default off), `height` and
@@ -310,6 +294,8 @@ export default function configSchemaFactory() {
       // the matrix never read.
       retired: {
         showTooltips: show => ({ tooltip: { show } }),
+        // an insertion draws at its reference span; the hover names its bp
+        showInsertionGlyphs: () => ({}),
         renderingMode: (v: unknown) => ({
           unit: v === 'phased' ? 'haplotype' : 'sample',
         }),

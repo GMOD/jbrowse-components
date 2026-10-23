@@ -1,5 +1,4 @@
 /* eslint-disable react-refresh/only-export-components */
-import { paintInsertionLabels } from '@jbrowse/alignments-core'
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
 import MarkSvgLayer from '@jbrowse/display-kit/MarkSvgLayer'
@@ -8,10 +7,7 @@ import { paintFeatureBand } from '@jbrowse/plugin-canvas'
 
 import { REFERENCE_COLOR } from '../shared/constants.ts'
 import SvgVariantOverlay from './components/SvgVariantOverlay.tsx'
-import {
-  VARIANT_MARKS,
-  variantInsertionParams,
-} from './components/variantMarks.ts'
+import { VARIANT_MARKS } from './components/variantMarks.ts'
 
 import type {
   VariantRenderBlock,
@@ -28,8 +24,6 @@ interface RenderSvgModel extends RenderSvgBaseModel {
   renderBlocks: VariantRenderBlock[]
   perRegionCellMap: ReadonlyMap<number, VariantUploadData>
   renderState: VariantRenderState
-  // undefined when no insertion marker draws in this window
-  insertionGlyphRegions: ReadonlyMap<number, VariantUploadData> | undefined
   // The lane's laid-out band, empty when it is off. plugin-canvas's own render
   // data — see `laneFitStage`.
   laneLaidOutDataMap: ReadonlyMap<number, FeatureDataResult>
@@ -58,7 +52,6 @@ function VariantSvgBody({
     renderBlocks,
     perRegionCellMap,
     renderState,
-    insertionGlyphRegions,
     laneLaidOutDataMap,
     laneRenderedLabels,
     laneFontSize,
@@ -119,19 +112,6 @@ function VariantSvgBody({
         width={canvasWidth}
         height={canvasHeight}
         opts={opts}
-        paint={(ctx, state) => {
-          if (overlays && insertionGlyphRegions) {
-            paintInsertionLabels(
-              ctx,
-              renderBlocks,
-              block =>
-                insertionGlyphRegions.get(block.displayedRegionIndex)
-                  ?.insertions,
-              state,
-              variantInsertionParams(state),
-            )
-          }
-        }}
       />
     </SvgVariantOverlay>
   )

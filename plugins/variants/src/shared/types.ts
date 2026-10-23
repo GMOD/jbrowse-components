@@ -38,8 +38,8 @@ interface VariantFeatureBase {
   length: number
   // Bases inserted beyond the reference span (getInsertedBp), 0 for anything
   // that isn't an insertion. `length` is the reference span, which is ~1 for an
-  // insertion however large, so without this the tooltip could not explain the
-  // number the insertion marker paints on the cell.
+  // insertion however large, so without this the tooltip could not name the
+  // inserted bp.
   insertedBp: number
   // SO term(s) for the variant (e.g. 'breakend', 'deletion', 'inversion').
   // Carried through so a feature clicked from a multi-sample display opens the
