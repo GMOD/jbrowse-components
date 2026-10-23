@@ -115,12 +115,20 @@ import {
   sashimiArcHeightFraction,
   sashimiStrokeWidth,
 } from './features/sashimi/bandFeed.ts'
-import { mergeJunctions } from './features/sashimi/junctions.ts'
 import {
-  isNonCanonicalSpliceMotif,
-  spliceMotifLabel,
-} from './features/sashimi/motif.ts'
-import { arcSlotCategory, buildArcColorPalette } from './shaders/palettes.ts'
+  junctionClass,
+  junctionSource,
+} from './features/sashimi/junctionClass.ts'
+import {
+  mergeJunctions,
+  passesJunctionFilter,
+} from './features/sashimi/junctions.ts'
+import { spliceMotifLabel } from './features/sashimi/motif.ts'
+import {
+  arcCategoryColor,
+  arcSlotCategory,
+  buildArcColorPalette,
+} from './shaders/palettes.ts'
 import {
   frequencyFadeGate,
   sizeAlpha,
@@ -162,9 +170,9 @@ import {
   getArcLegendItems,
   getReadDisplayLegendItems,
   sashimiLegendItems,
+  sashimiLegendTitle,
 } from './shared/legendUtils.ts'
 import { getModificationName } from './shared/modificationData.ts'
-import { passesCategory } from './shared/readCategoryFilters.ts'
 import {
   INTERBASE_INSERTION,
   INTERBASE_SOFTCLIP,
@@ -181,9 +189,13 @@ import type {
   LaidOutPileupData,
   WorkerPileupData,
 } from './RenderAlignmentDataRPC/types.ts'
+import type { ArcSplitCategory } from './features/arcs/arcSplitCategory.ts'
 import type { CrossRegionArc, RegionInfo } from './features/arcs/arcTypes.ts'
 import type { ArcsUploadData } from './features/arcs/types.ts'
-import type { RegionJunctions } from './features/sashimi/junctions.ts'
+import type {
+  MergedJunction,
+  RegionJunctions,
+} from './features/sashimi/junctions.ts'
 import type { ColorPalette } from './shaders/colors.ts'
 import type {
   ArcColorField,
@@ -350,7 +362,8 @@ const INTERBASE_LABELS: Record<InterbaseTypeName, string> = {
  * The colors the display paints its per-base and coverage marks in, off its
  * palette: each base through `effectiveBaseColors`, so a modifications or
  * bisulfite layer mutes them, the interbase histogram in its band variants,
- * and a junction in its transcript strand's.
+ * and a splice junction in its transcript strand's, a split junction in its
+ * read arc's.
  */
 function markColors(palette: ColorPalette, baseLayer: BaseLayer | undefined) {
   const muted = paintsModifications(baseLayer)
@@ -377,14 +390,17 @@ function markColors(palette: ColorPalette, baseLayer: BaseLayer | undefined) {
       softclip: hex(palette.colorSoftclipIndicator),
       hardclip: hex(palette.colorHardclipIndicator),
     } as Record<InterbaseTypeName, string>,
-    junction: (strand: number) =>
+    junction: ({ strand, split }: Pick<MergedJunction, 'strand' | 'split'>) =>
       hex(
-        strand === 1
-          ? palette.colorFwdStrand
-          : strand === -1
-            ? palette.colorRevStrand
-            : palette.colorPairLR,
+        split
+          ? arcCategoryColor(palette, split)
+          : strand === 1
+            ? palette.colorFwdStrand
+            : strand === -1
+              ? palette.colorRevStrand
+              : palette.colorPairLR,
       ),
+    palette,
   }
 }
 
@@ -724,10 +740,12 @@ function interbase(d: WorkerPileupData, paint: MarkColors) {
 }
 
 /**
- * The splice junctions the reads' skips support, merged as the sashimi band
- * merges them: each once, with its supporting-read count, the strand its
- * reads' tags or its splice motif give it (0 where neither says), and the
- * motif where the reference was read. Every junction, down to a single
+ * The junctions the reads' skips and split reads support, merged as the
+ * sashimi band merges them: each once, with its supporting-read count, its
+ * `class` and `source` as the filter's `junction` fields name them, the
+ * strand its reads' tags or its splice motif give a splice junction (0 where
+ * neither says, and for a split junction), and the motif where the reference
+ * was read. Every junction, down to a single
  * read, with `shown` false where the display's `junction` filter fields hide it; a
  * junction whose motif was never read counts as canonical, as the display
  * counts it. `arcHeight` is the apex as a fraction
@@ -741,6 +759,7 @@ function junctions(
   regionInfos: RegionInfo[],
   paint: MarkColors,
   thresholds: MarkThresholds,
+  shownSplits: Set<ArcSplitCategory>,
 ) {
   const contigOrder = new Map<string, number>()
   for (const { refName } of regionInfos) {
@@ -756,21 +775,22 @@ function junctions(
   )
   const footRegion = (refName: string, bp: number) =>
     regionIndexOf(regionInfos, refName, bp) ?? -1
+  const shown = merged.map(j => passesJunctionFilter(j, thresholds.junctions))
+  for (const [i, j] of merged.entries()) {
+    if (j.split && shown[i]) {
+      shownSplits.add(j.split)
+    }
+  }
   return {
     start: merged.map(j => j.start),
     end: merged.map(j => j.end),
     count: merged.map(j => j.count),
+    class: merged.map(j => junctionClass(j.split)),
+    source: merged.map(j => junctionSource(junctionClass(j.split))),
     strand: merged.map(j => j.strand),
     motif: merged.map(j => spliceMotifLabel(j.motif) ?? ''),
-    color: merged.map(j => paint.junction(j.strand)),
-    shown: merged.map(
-      j =>
-        j.count >= thresholds.junctions.minReads &&
-        passesCategory(
-          isNonCanonicalSpliceMotif(j.motif),
-          thresholds.junctions.nonCanonical,
-        ),
-    ),
+    color: merged.map(j => paint.junction(j)),
+    shown,
     arcHeight: merged.map(j =>
       sashimiArcHeightFraction(Math.abs(j.end - j.start)),
     ),
@@ -1439,6 +1459,7 @@ export async function alignmentTables(
       : undefined,
   )
   const paint = markColors(colors.palette, baseLayer)
+  const shownSplits = new Set<ArcSplitCategory>()
   const thresholds: MarkThresholds = {
     minAlleleFraction: readConfObject(conf, ['coverage', 'minAlleleFraction']),
     junctions: junctionFilterOf(filterOf(conf)),
@@ -1524,6 +1545,7 @@ export async function alignmentTables(
             regionInfos,
             paint,
             thresholds,
+            shownSplits,
           ),
         },
       })),
@@ -1532,7 +1554,7 @@ export async function alignmentTables(
   })
   return {
     ...tables,
-    ...markLegends(tables, paint),
+    ...markLegends(tables, paint, shownSplits),
     sections: {
       key: order.map(g => g.key),
       label: order.map(g => g.label),
@@ -1662,18 +1684,19 @@ function layoutWarnings({
 /**
  * The keys of the marks the reads' own `legend` leaves out, each over what the
  * tables paint: the bases (none while a modifications layer mutes them), the
- * junction strands of the junctions shown, as the sashimi band keys them, and
- * the interbase histogram's events.
+ * splice junction strands and split junction classes shown, as the sashimi
+ * band keys them, and the interbase histogram's events.
  */
 function markLegends(
   tables: {
     mismatches: { base: string[] }
     alleleCoverage: { base: string[] }
-    junctions: { strand: number[]; shown: boolean[] }
+    junctions: { strand: number[]; source: string[]; shown: boolean[] }
     interbaseCoverage: { type: InterbaseTypeName[] }
     indicators: { type: InterbaseTypeName[] }
   },
   paint: MarkColors,
+  shownSplits: ReadonlySet<ArcSplitCategory>,
 ) {
   const bases = new Set([
     ...tables.mismatches.base,
@@ -1682,9 +1705,13 @@ function markLegends(
   const keyedBases = paint.muted ? [] : BASES.filter(b => bases.has(b))
   const junctionKey = sashimiLegendItems(
     new Set(
-      tables.junctions.strand.filter((_, i) => tables.junctions.shown[i]),
+      tables.junctions.strand.filter(
+        (_, i) =>
+          tables.junctions.shown[i] && tables.junctions.source[i] === 'gap',
+      ),
     ),
     resolvePalette().alignmentFill,
+    { classes: shownSplits, palette: paint.palette },
   )
   const events = new Set([
     ...tables.interbaseCoverage.type,
@@ -1703,7 +1730,7 @@ function markLegends(
       label: junctionKey.map(item => item.label),
       color: junctionKey.map(item => cssColorToHex(item.color!)),
     },
-    junctionLegendTitle: 'Splice junctions',
+    junctionLegendTitle: sashimiLegendTitle(junctionKey),
     interbaseLegend: {
       label: keyedEvents.map(t => INTERBASE_LABELS[t]),
       color: keyedEvents.map(t => paint.interbase[t]),
