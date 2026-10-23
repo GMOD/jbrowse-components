@@ -1,6 +1,6 @@
 ---
 name: vega-lite-vocabulary
-description: "ADR-238's migration of every display's settings to Vega-Lite's words. Landed: the predicate compiler and every filter, the synteny views' mark, axis, coord and data words, the alignments and MAF parts, and the color channel (Pass A). Open: the y channel (Pass B, decided in ADR-238's 2026-10-23 amendment, three landable commits), the band layers' filters, per-channel legends, the tree sidebar's axis, wiggle and Hi-C `data`, the comparative indels part, and the writers. Read before adding or renaming any display or view setting."
+description: "ADR-238's migration of every display's settings to Vega-Lite's words. Landed: the predicate compiler and every filter, the synteny views' mark, axis, coord and data words, the alignments and MAF parts, the color channel (Pass A) and the y channel (Pass B). Open: Pass B's jb2hubs, ggjbrowse and lift cleanup, the band layers' filters, per-channel legends, the tree sidebar's axis, wiggle and Hi-C `data`, the comparative indels part, and the writers. Read before adding or renaming any display or view setting."
 ---
 
 # Vega-Lite vocabulary: what is left
@@ -19,99 +19,36 @@ This file orders the work. Claim a step here before starting it.
 Predicate `filter` on every display and view; the synteny views' `mark`,
 `coord.ratio`, `axis`, `offscreen`, `render.antialias`, `navigation` and
 `data.resolution`; wiggle's and the mark display's `mark` object; the
-alignments and MAF `{ show }` parts; the chord displays' `mark.depth`; and
-Pass A, `encoding.color` on every display with `legend.show` display-wide.
+alignments and MAF `{ show }` parts; the chord displays' `mark.depth`;
+Pass A, `encoding.color` on every display with `legend.show` display-wide; and
+Pass B, `encoding.y` on every value axis.
 Git history has each landing.
 
 ## Next
 
-1. **Pass B, the y channel.** The design is ADR-238's "The y channel". Four
-   display types declare `scales`: alignments (its coverage band, which
-   LGVSynteny inherits), MAF, wiggle and the mark display (which Manhattan
-   inherits, with the mark display's defaults). Land in this order, each green
-   on its own:
-   1. **Landed:** `ScoreScaleMixin(paths)` takes a `YScalePaths` map
-      (`packages/wiggle-core/src/yScalePaths.ts`, default `SCALES_Y_PATHS`),
-      reads and writes every member through it, and owns `resetYScale()`,
-      which walks the map's `reset` list. The four displays still use the
-      default, so no config path moved. A map path the host schema lacks fails
-      the typecheck (`ScoreScaleHostPath`), and a mistyped member-to-slot
-      pairing, such as `zero` mapped to the `grid` path, does not.
-      `1.2` builds each display's own map, beside its config schema, written
-      `as const satisfies`.
-   2. **Landed:** the coverage band's depth axis is `coverage.encoding.y`
-      (`yChannelSchema`, with `YScale` and `YAxis` schemas) on alignments, MAF
-      and LGVSynteny, which share `COVERAGE_Y_PATHS`; MAF's `y` is
-      `encoding.y.field`. Core's `plot.ts` and the CLI find a value scale by the
-      `scaleFence` schema option, which names its fence slot. Old `scales`
-      configs lift, and a `scales` lift beats the v4 keys it overlaps.
-      Wiggle, the mark display and Manhattan stay on `scales.y`.
-      - **Gaps left open:** the CLI no longer judges an old-shape coverage
-        `scales.y`, and an old `trackConfigDeltas` delta loses to a base that
-        writes the same member in the new spelling, so a jb2hubs regeneration
-        needs a session migration for deltas first.
-   3. **Wiggle, the mark display and Manhattan** (its `plotExamples.ts` writes
-      `{ "scales": null }`). The y channel becomes a factory, since the fence
-      defaults to 0.99 on wiggle and 1 elsewhere and the coverage band's
-      constant is 1. The mark display gains a display-level `encoding`, which
-      `PlotExamples.test.ts` pins. A shorthand on wiggle's y schema must not
-      reach the mark display's, which refuses a bare string, and declaring one
-      forces `writes`. Delete `scalesSchema` and `valueScaleSchema`. The doc
-      generator drops a slot built by a call from the config pages
-      (`wiggleConfigSchemaFields.ts`). Same gates, plus `pnpm check-docs`,
-      since every doc writing `displayDefaults: { scales }` goes red
-      (`hic_track.md`, `quantitative_track.md`, `cookbook.md`, `bisulfite.md`,
-      `bxd_qtl.md`, `cnv_cgiab.md`).
-   - **Marks reads for commit 3:** `markPlot.ts` (`snapshot.scales`),
-     `markProblems.ts` (`ScalesSnapshot` and the `scales.y.${slot}` label) and
-     the CLI's generated copies. Pass the axis's `where` and fence through
-     `markProblems`, or drop `scales` from it in the CLI, since
-     `checkScaleSlots` already covers it; otherwise the mark display's ends
-     report twice under different paths.
-   - **Wiggle's y channel is not `MafY`:** call `yChannelSchema` with the 0.99
-     fence, add a `field`, and give it `writes: 'members'`. `MafY`'s
-     `writes: 'whole'` fits a channel holding only `field`.
-   - **Freeze before deleting:** `retiredScalesSpelling` reads
-     `SCALES_Y_PATHS.members` as its table of old names, and `yChannelSchema`
-     imports `valueScaleRuleSchema` from the file that goes. Copy the v5 names
-     and move the rule schema first.
-   - **Also in 1.3:** drop `minimalTicks` from `YMember`, `YScalePaths`, the
-     mixin getter, `retiredAxisSpellings` and ValueScale's `scaleFence`; merge
-     the spec-recipe's `encoding.y` entry with `yStep` for wiggle and the mark
-     display, and move wiggle's `y` Bin summary recipe to `encoding.y.field`;
-     each moved display spreads `retiredScalesSpelling(itsMap.members)` before
-     the v4 spread.
-   - **Wiggle's lifts merge:** `retired.ts` spreads `valueScaleOf`, `colorOf`
-     and `summaryOf` into one object. Once each returns `encoding`, the last
-     spread wins, so merge them, or leave the state lift writing `scales` for
-     `liftRetiredSpellings`. `retiredAxisSpellings`' `displayCrossHatches` and
-     `summaryOf`'s top-level `y` are lifts that drop silently if left behind.
-   - **The fence rename** touches `valueScaleConfigSchema.ts`, the model
-     names `domainQuantile`, `setDomainQuantile`, `clipQuantile` and
-     `unclippedQuantile` (`scoreMenuItems.ts`, `ScoreAxisWidget.tsx`), both
-     tables exports, the spec-recipe, the `domain-quantile` mark rule
-     (`scaleEndProblems` and `scaleEndsOf` in core `util/colorScale.ts`, which
-     ramps share, and the CLI's copy), the specs (`qc.ts`, `bigwig.ts`),
-     docs and ggjbrowse's `R/wiggle.R` and tests. A ramp's `domainQuantile`
-     stays.
-   - **Writers outside the code:** `demos/{cgiab,dtu,read_marks}/config.json`
-     (deploy with `scripts/deploy-demo.sh`), seven `scripts/build_*.sh`, seven
-     `test_data` configs, the `jbrowse-authoring`, `jbrowse-capture` and
-     `jbrowse-hosted-data` skills, `products/jbrowse-img/README.md`, and the
-     examples site's `SingleCellUmap.tsx` and `WiggleTrack.tsx`. The
-     pre-commit config check fails only on errors, so it forces none of them.
-   - **Specs to respell:** 48 `scales: {` literals in TS specs, 6 session
-     JSON `"scales"` objects and 4 `scales.y.*` flags in `jbrowse-img.ts`.
-   - **jb2hubs:** respell in the same pass (Colin authorizes it):
-     `hubtools/src/wiggleDisplay.ts` and `alfaPopulations.ts` write
-     `scales.y`. A host that predates `encoding.y` boots and loses the scale
-     settings, so the in-app lifts stay until the hosted configs regenerate.
-     Re-pin ggjbrowse with `check-against-jbrowse.sh`.
-   - **Not in Pass B:** `tickCount`, a channel's own `legend.show`, the tree
-     `axis`. Wiggle's v4 display-level `posColor` and `negColor` keys still
-     have no lift.
+1. **Pass B's leftovers.** Every value axis is `encoding.y` (ADR-238's "The y
+   channel"): wiggle's a `YFieldChannel`, the mark display's and Manhattan's a
+   `YChannel` under `YEncoding`, the coverage band's at `coverage.encoding.y`.
+   Each display's `YScalePaths` map sits beside its schema. What stays open:
+   - **jb2hubs** (Colin authorizes the respell): `hubtools/src/wiggleDisplay.ts`
+     and `alfaPopulations.ts` write `scales.y`. `enhanceConfig.ts`'s
+     `WIGGLE_DERIVED_KEYS` and `COLOR_DERIVED_KEYS` both own `encoding` now, so
+     a step taking one set whole drops the other's members. A host that
+     predates `encoding.y` boots and loses the scale settings.
+   - **Before the hosted configs regenerate:** an old `trackConfigDeltas`
+     delta loses to a base that writes the same member in the new spelling, so
+     the regeneration needs a session migration for deltas first.
+   - **Then delete the lifts:** `retiredScalesSpelling` on the alignments, MAF,
+     wiggle and mark displays, and the `y` lift on wiggle and MAF. Until then
+     the CLI judges no old-shape `scales.y`.
+   - **ggjbrowse:** re-pin with `check-against-jbrowse.sh`, and respell
+     `R/wiggle.R`, `test-alignments.R` and its tests.
+   - **Demos:** `demos/{cgiab,dtu,read_marks}/config.json` are respelled and
+     not deployed (`scripts/deploy-demo.sh`).
    - The unlanded `chat-request-evals` branch writes 8 `scales.y` lines in
      `scripts/agent-evals/tasks.ts`.
+   - Wiggle's v4 display-level `posColor` and `negColor` keys have no lift.
+   - **Not decided:** `tickCount`, which the y channel cut with `minimalTicks`.
 2. **The band layers' thresholds as layer filters** (ADR-240 step 3c):
    `coverage.alleles`, `coverage.interbase` and the modification layer, each
    into its layer's `filter`, percents becoming fractions.
@@ -134,8 +71,9 @@ Layout, the multi-way leftovers and settings with no step are in
 
 - **Lifts to drop once hosted configs regenerate:** display-kit's
   `liftFlatColor` and `retiredDisplayColor`, the multi-sample variant
-  display's `retired`, `liftViewColor`, and `retiredOrderSpelling` (when
-  jb2hubs' `HOST_VERSIONS` floor reads `sort`).
+  display's `retired`, `liftViewColor`, `retiredOrderSpelling` (when
+  jb2hubs' `HOST_VERSIONS` floor reads `sort`), and the y channel's lifts
+  (item 1).
 - **jb2hubs:** `drawCurves: true` in its `orthologSearchUtils.ts`,
   `SyntenySelector.tsx` and `jbrowseLinks.ts` has no lift, so synteny drops
   it. Row orders write `domain` beside `sort` for released hosts.
@@ -145,7 +83,7 @@ Layout, the multi-way leftovers and settings with no step are in
   host's certificate.
 - **Figure specs:** [screenshot-spec-elegance.md](screenshot-spec-elegance.md)
   owns the respell. It can use the landed words now: filters (plain-equality
-  jexl entries become predicates), constant color, legends, rows and facet.
-  The 43 `scales: { y` specs wait on Pass B.
+  jexl entries become predicates), constant color, legends, rows, facet and
+  `encoding.y`.
 - **Tutorials and `demos/` configs:** `pnpm verify --full` and the pre-commit
   config check catch a dead key, and a jexl filter never trips them.
