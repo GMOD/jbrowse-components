@@ -87,10 +87,10 @@ function colorByLabels(display: Awaited<ReturnType<typeof syntenyDisplay>>) {
 
 test('offers only the schemes a PAF block can answer', async () => {
   expect(colorByLabels(await syntenyDisplay())).toEqual([
-    'Normal',
     'Strand',
     'Mapping quality',
     'Query',
+    'Solid color...',
   ])
 })
 

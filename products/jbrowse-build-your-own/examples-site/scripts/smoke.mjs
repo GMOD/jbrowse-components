@@ -513,7 +513,7 @@ async function legendIsPlainAndAboveTheSeams(page, slug) {
   if (!picked) {
     return ['no Color by <select> on the page, or it would not take a scheme']
   }
-  // `showLegend` is opt-in — a legend eagerly covering the top of every
+  // `legend.show` is opt-in — a legend eagerly covering the top of every
   // alignments track is worse than one you asked for — so a scheme with a key
   // is necessary and not sufficient. The page draws the checkbox for it.
   const toggled = await page.evaluate(() => {

@@ -63,7 +63,11 @@ const Channels = observer(function Channels({
         value={display.colorField}
         onChange={field => {
           display.applyPlot({
-            color: field ? { field, domain: domains[field] } : null,
+            encoding: {
+              color: field
+                ? { field, scale: { domain: domains[field] } }
+                : null,
+            },
           })
         }}
       />
@@ -72,7 +76,7 @@ const Channels = observer(function Channels({
         value={display.facet?.field}
         onChange={field => {
           display.applyPlot({
-            facet: field ? { field, domain: domains[field] } : null,
+            facet: field ? { field, sort: domains[field] } : null,
           })
         }}
       />

@@ -157,10 +157,10 @@ swap `uri` for the bgzipped, tabix-indexed BED your conversion wrote.
 ```
 
 - `scale.type: "identity"` on
-  [`encoding.color`](/docs/config/linearmultirowfeaturedisplay/#slot-color)
-  keeps the `itemRgb` colors, and its `scale.names` name the genotype each
-  `scale.domain` color stands for. The same entries fill the **Categories**
-  toggles in the track menu, so hiding `H` isolates the B/D contrast.
+  [`encoding.color`](/docs/config/featureencoding/#slot-color) keeps the
+  `itemRgb` colors, and its `scale.names` name the genotype each `scale.domain`
+  color stands for. The same entries fill the **Categories** toggles in the
+  track menu, so hiding `H` isolates the B/D contrast.
 - `disableGeneHeuristic: true` stops the BED adapter from reading each block as
   a gene, which the `thickStart`/`thickEnd` columns would otherwise trigger.
 

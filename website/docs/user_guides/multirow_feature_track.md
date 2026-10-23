@@ -116,10 +116,10 @@ Four sources of color, in precedence order:
   `scale.range`, or with a `field` a color per value of a row attribute such as
   its `rowGroups` group. Use it when the row identity is the signal (one color
   per population, per treatment arm).
-- [`encoding.color`](/docs/config/linearmultirowfeaturedisplay/#slot-color) is a
-  per-feature fill: a CSS color as its `value`, or a field whose values each
-  take a color through a scale — a color per value, a color per interval between
-  cut points, or a gradient — with a key naming them.
+- [`encoding.color`](/docs/config/featureencoding/#slot-color) is a per-feature
+  fill: a CSS color as its `value`, or a field whose values each take a color
+  through a scale — a color per value, a color per interval between cut points,
+  or a gradient — with a key naming them.
 - `itemRgb` is honored automatically. A BED9 that already has per-feature colors
   (ChromHMM state colors, for one) paints correctly with no color configuration.
 - Otherwise each row is auto-assigned a distinct color from a categorical

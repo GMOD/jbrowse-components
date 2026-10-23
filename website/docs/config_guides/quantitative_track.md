@@ -29,7 +29,7 @@ either, through `displayDefaults`.
 ## Display options
 
 The axis is one object, [`scales.y`](/docs/config/valuescale), the color is one
-object, [`encoding.color`](/docs/config/linearwiggledisplay/#slot-color), and
+object, [`encoding.color`](/docs/config/wiggleencoding/#slot-color), and
 [`rows`](/docs/config/linearwiggledisplay/#slot-rows) decides the layout; all
 three are [`LinearWiggleDisplay`](/docs/config/linearwiggledisplay) slots and
 all three go through `displayDefaults`.

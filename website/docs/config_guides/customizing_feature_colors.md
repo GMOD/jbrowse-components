@@ -61,9 +61,9 @@ them generically as `field6`, `field7`, ... and `feature.itemRgb` reads as
 
 <!-- GOTCHA BedAdapter END -->
 
-An unset [`encoding.color`](/docs/config/linearcanvasbasedisplay/#slot-color)
-paints each feature from the colors a BED has, under whichever of those names
-they land, so a callback is only needed to override that.
+An unset [`encoding.color`](/docs/config/featureencoding/#slot-color) paints
+each feature from the colors a BED has, under whichever of those names they
+land, so a callback is only needed to override that.
 
 ## Reading the type list off the file
 

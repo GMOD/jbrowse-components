@@ -187,9 +187,9 @@ JBrowse finds the `.bed.gz.tbi` beside the file. In
   sort by value
 
 JBrowse paints each feature with its `itemRgb`. The
-[`encoding.color`](/docs/config/linearmultirowfeaturedisplay/#slot-color) slot
-is a color scale that overrides this, mapping the values of a `field` through
-its `scale.domain` to its `scale.range`. The adapter needs
+[`encoding.color`](/docs/config/featureencoding/#slot-color) slot is a color
+scale that overrides this, mapping the values of a `field` through its
+`scale.domain` to its `scale.range`. The adapter needs
 [`columnNames`](/docs/config/bedtabixadapter/#slot-columnnames) only for a file
 without a defline.
 
@@ -209,8 +209,8 @@ JBrowse builds the key from the state colors, one entry per distinct color,
 labeled with the first state name seen in it. States that share a color merge
 into one entry, so in the Broad 15-state model `4_Strong_Enhancer` shares its
 entry with `5_`. An identity
-[`encoding.color`](/docs/config/linearmultirowfeaturedisplay/#slot-color) scale
-keeps the file's colors and relabels them in the key.
+[`encoding.color`](/docs/config/featureencoding/#slot-color) scale keeps the
+file's colors and relabels them in the key.
 
 Most of any segmentation is quiescent or heterochromatic. The track menu has
 these actions for reading the rest:

@@ -39,7 +39,7 @@ test.each(['green', 'purple'])(
     const display = view.tracks[0]!.displays[0] as {
       applyPlot: (draft: Record<string, unknown>) => void
     }
-    display.applyPlot({ color })
+    display.applyPlot({ encoding: { color: { value: color } } })
 
     // the recolor repaints without refetching, so nothing on the model moves —
     // the pixels leaving the default blue are the signal

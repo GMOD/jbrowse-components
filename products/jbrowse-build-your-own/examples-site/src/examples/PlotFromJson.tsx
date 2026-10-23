@@ -17,9 +17,11 @@ const lineage = {
 
 const color = {
   field: 'lineage',
-  scale: 'categorical',
-  domain: ['AluJ', 'AluS', 'AluY', 'FLAM', 'FRAM'],
-  range: ['#4575b4', '#fdae61', '#d73027', '#8c8c8c', '#8c8c8c'],
+  scale: {
+    type: 'ordinal',
+    domain: ['AluJ', 'AluS', 'AluY', 'FLAM', 'FRAM'],
+    range: ['#4575b4', '#fdae61', '#d73027', '#8c8c8c', '#8c8c8c'],
+  },
 }
 
 const aluTrack = (

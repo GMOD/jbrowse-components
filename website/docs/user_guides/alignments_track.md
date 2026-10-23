@@ -370,13 +370,13 @@ nothing across chromosomes.
 insert size, pair orientation, or both. **Same as reads**, the default, takes
 the read color when the read color is one of those three, and paints insert size
 and orientation under any other read color. The
-[`readConnections.encoding.color`](/docs/config/readconnections/#slot-color)
+[`readConnections.encoding.color`](/docs/config/readconnectionsencoding/#slot-color)
 holds the choice, `""` meaning same as reads.
 
 Reads describing the same connection draw as **one arc, thickened by how many
 there are**, on a log scale, so the arcs rank the evidence. A single-read
 connection draws at
-[`readConnections.encoding.strokeWidth`](/docs/config/readconnections/#slot-linewidth).
+[`readConnections.encoding.strokeWidth`](/docs/config/readconnectionsencoding/#slot-strokewidth).
 Arcs coalesce only on exactly equal endpoints.
 
 Hovering an arc reports its location, the distance between the ends, the

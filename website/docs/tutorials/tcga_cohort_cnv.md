@@ -126,11 +126,10 @@ the rows and colors:
 
 - [`rows`](/docs/config/linearmultirowfeaturedisplay/#slot-rows) assigns one
   labeled row per value of `sample`
-- [`encoding.color`](/docs/config/linearmultirowfeaturedisplay/#slot-color) is a
-  `threshold` color scale on `segmean`, since this BED has no `itemRgb`: the
-  four cuts in `scale.domain` open five intervals, `scale.range` gives each a
-  color on a diverging blue-to-red scale, and `scale.names` names each interval
-  in the key
+- [`encoding.color`](/docs/config/featureencoding/#slot-color) is a `threshold`
+  color scale on `segmean`, since this BED has no `itemRgb`: the four cuts in
+  `scale.domain` open five intervals, `scale.range` gives each a color on a
+  diverging blue-to-red scale, and `scale.names` names each interval in the key
 
 ## Cluster tumors by copy-number profile
 

@@ -159,7 +159,7 @@ types**), and its point mark chooses what it reads:
 - `encoding.color: { "field": "population" }` — gives each distinct value of a
   column a different color and draws a key of the values met. A value takes the
   same color in every region and session. Its
-  [`scale.domain`](/docs/config/markcolor/#slot-domain) is the order those
+  [`scale.domain`](/docs/config/markcolor/#slot-scaledomain) is the order those
   values take, in the key and in the colors: the values it lists come first, in
   that order, and the rest follow sorted, and `scale.range` hands them colors.
 
