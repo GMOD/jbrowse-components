@@ -29,3 +29,35 @@ test('an empty chain admits everything without touching the feature', () => {
   expect(c.passes(feature)).toBe(true)
   expect(get).not.toHaveBeenCalled()
 })
+
+function feature(data: Record<string, unknown>) {
+  return new SimpleFeature({
+    uniqueId: 'f',
+    refName: 't1',
+    start: 0,
+    end: 10,
+    ...data,
+  })
+}
+
+test('an expression entry holds on a truthy value, as a bare expression does', () => {
+  const c = new SerializableFilterChain({
+    filters: [{ field: "jexl:get(feature,'name')", equal: true }],
+    jexl: createJexlInstance(),
+  })
+  expect(c.passes(feature({ name: 'BRCA1' }))).toBe(true)
+  expect(c.passes(feature({}))).toBe(false)
+})
+
+test('a jexl: field is computed, then tested like a record field', () => {
+  const c = new SerializableFilterChain({
+    filters: [
+      { field: 'jexl:feature.end - feature.start', gte: 5 },
+      { field: 'score', lt: 3 },
+    ],
+    jexl: createJexlInstance(),
+  })
+  expect(c.passes(feature({ score: 1 }))).toBe(true)
+  expect(c.passes(feature({ score: 4 }))).toBe(false)
+  expect(c.passes(feature({ score: 1, end: 3 }))).toBe(false)
+})
