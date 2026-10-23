@@ -18,7 +18,7 @@ import {
 } from '@jbrowse/display-kit/colorConfigSchema'
 
 import { COLOR_SCHEMES, colorSchemeOf } from './colorSchemes.ts'
-import { TAG_FIELD_PREFIX, fieldTag } from './facetLabels.ts'
+import { TAG_FIELD_PREFIX } from './facetLabels.ts'
 import {
   INSERT_SIZE_LEVELS,
   MAPQ_UNAVAILABLE_LEVEL,
@@ -37,7 +37,6 @@ import type {
   BaseLayerType,
   ColorSchemeType,
   ModificationColorBy,
-  ReadColorBy,
   ReadColorSchemeType,
   TagColorScale,
 } from './types.ts'
@@ -152,17 +151,6 @@ export function readColorFieldOf(encoding: AlignmentsColorEncoding) {
     FACET_ONLY_FIELDS.has(encoding.field)
     ? ''
     : encoding.field
-}
-
-/** @deprecated The {@link ReadColorBy} a read fill field restates. */
-export function readColorByOf(field: string): ReadColorBy {
-  const type = colorSchemeOf(field)
-  const tag = fieldTag(field)
-  return type !== 'tag'
-    ? { type }
-    : tag
-      ? { type, tag }
-      : { type, attribute: field }
 }
 
 /**

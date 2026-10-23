@@ -19,7 +19,6 @@ import {
   baseLayerOf,
   bodyColorScheme,
   pinnedInsertSizeBand,
-  readColorByOf,
   readColorFieldOf,
 } from '../shared/alignmentsColor.ts'
 import {
@@ -60,7 +59,6 @@ import type {
   Facet,
   LayoutOrder,
   ModificationColorBy,
-  ReadColorBy,
   JunctionFilter,
   JunctionFilterPatch,
 } from '../shared/types.ts'
@@ -524,13 +522,6 @@ export function configSlotViews(self: ConfigSlotSelf) {
      */
     get colorField(): string {
       return readColorFieldOf(this.colorEncoding)
-    },
-    /**
-     * #getter
-     * @deprecated read `colorField`, the field itself.
-     */
-    get colorBy(): ReadColorBy {
-      return readColorByOf(this.colorField)
     },
     /**
      * #getter

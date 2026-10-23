@@ -172,17 +172,13 @@ export type {
   AlignmentsColorSetting,
   DeclaredReadLabels,
 } from './shared/alignmentsColor.ts'
-// `ColorBy` and `ReadColorBy` stay, deprecated, while the `colorBy` getter
-// does: a display composing this model names them in its declarations.
 export type {
   ArcColorField,
   CategoryFilter,
   BaseLayer,
-  ColorBy,
   ColorSchemeType,
   Facet,
   ModificationColorBy,
-  ReadColorBy,
   ConnectionFilter,
   JunctionFilter,
   JunctionFilterPatch,

@@ -117,24 +117,6 @@ export type ColorSchemeType =
 
 export type ReadColorSchemeType = Exclude<ColorSchemeType, BaseLayerType>
 
-/**
- * @deprecated The read fill is `encoding.color.field`, which the display reads
- * as `colorField` and `colorSchemeOf` classifies. Kept for plugins that name
- * `display.colorBy`.
- */
-export interface ColorBy {
-  type: ColorSchemeType
-  tag?: string
-  attribute?: string
-  modifications?: ModificationColorBy
-}
-
-/** @deprecated See {@link ColorBy}. */
-export interface ReadColorBy extends ColorBy {
-  type: ReadColorSchemeType
-  modifications?: undefined
-}
-
 /** How a read tag colors: a color per value, or a gradient over its numbers. */
 export type TagColorScale = 'ordinal' | 'linear'
 

@@ -10,7 +10,6 @@ import {
   baseLayerOf,
   bodyColorScheme,
   pinnedInsertSizeBand,
-  readColorByOf,
   readColorFieldOf,
 } from './alignmentsColor.ts'
 import { colorSchemeOf } from './colorSchemes.ts'
@@ -53,15 +52,6 @@ describe('readColorFieldOf', () => {
     for (const field of BASE_COLOR_FIELDS) {
       expect(readFill(field)).toBe('')
     }
-  })
-})
-
-describe('readColorByOf', () => {
-  test('restates a field as the deprecated scheme object', () => {
-    expect(readColorByOf('')).toEqual({ type: 'normal' })
-    expect(readColorByOf('mapq')).toEqual({ type: 'mapq' })
-    expect(readColorByOf('tags.HP')).toEqual({ type: 'tag', tag: 'HP' })
-    expect(readColorByOf('score')).toEqual({ type: 'tag', attribute: 'score' })
   })
 })
 

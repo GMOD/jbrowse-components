@@ -161,8 +161,6 @@ Git history has each landing.
 
 Layout, the multi-way leftovers and settings with no step are in
 [ideas/waiting-on-a-call/vega-lite-layout-and-multiway-leftovers.md](../ideas/waiting-on-a-call/vega-lite-layout-and-multiway-leftovers.md).
-Step 2b (the quality fade as opacity) and the internal `ColorBy` object are in
-[alignments-display-next.md](alignments-display-next.md).
 
 ## Writers to update after each landing
 

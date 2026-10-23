@@ -180,7 +180,6 @@ From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`sc
 | <span id="getter-pinnedinsertsizeband">**pinnedInsertSizeBand**</span><br><code>{ lower: number; upper: number; } &#124; undefined</code> | The short/long cut points `encoding.color.scale.domain` pins under an insert-size field, undefined while the sampled band decides. Compared by value, so a color write that leaves the cut points alone relayouts nothing. |
 | <span id="getter-modificationsettings">**modificationSettings**</span><br><code>ModificationColorBy</code> |  |
 | <span id="getter-colorfield">**colorField**</span><br><code>string</code> | The field the read fill paints by, `''` for the plain fill. |
-| <span id="getter-colorby">**colorBy**</span><br><code>ReadColorBy</code> |  |
 | <span id="getter-readconnectionscolorfield">**readConnectionsColorField**</span><br><code>"insertSize" &#124; "insertSizeAndOrientation" &#124; "pairOrientation"</code> | The field the arcs, the read cloud and the pileup connectors paint: `readConnections.encoding.color`'s own, or the reads' where it names none. |
 | <span id="getter-baselayer">**baseLayer**</span><br><code>BaseLayer &#124; undefined</code> | The per-base layer `pileup.bases` draws, with the settings the modification fields read beside it; undefined while none is drawn. |
 | <span id="getter-bodycolorscheme">**bodyColorScheme**</span><br><code>ColorSchemeType</code> | What the read body paints as: `colorField`'s scheme, or the modification layer's own pale strand tint while the fill is plain. |

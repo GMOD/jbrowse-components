@@ -22,7 +22,10 @@ coordinate from a paper as canFam3.1 until proven otherwise.**
   (`kiddlabshare/dog10K/Manta-SV_2022-03-28/SV-genotype-v2.merge.agg_only.08032022.vcf.gz`):
   the only callset carrying DUP and INV. Use it for structural loci.
 - **Zenodo 8084059**: the Paragraph SV set (no DUP/INV), small variants and the
-  phased imputation panel. No copy number.
+  phased imputation panel. No copy number. Its `AutoAndXPAR.SNPs.bcf` keeps
+  only `GT`, so the callset-`DP` copy-number scripts need kiddlabshare's
+  397 GB `AutoAndXPAR.SNPs.vqsr99.vcf.gz`, whose host let its TLS certificate
+  expire in October 2026 (`curl -k` still reads it).
 - **Kidd lab bigBeds** (`github.com/KiddLab/dog-long-read-sv`): Ohana selection
   output and two SV sets, bed9 with no names or scores. An overlay under a
   computed track, not a substitute.

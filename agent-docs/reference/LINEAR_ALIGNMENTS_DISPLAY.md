@@ -149,6 +149,12 @@ merely differ — a single-section grouping sat wholly in that hole. `tighterCap
 is the one place the budget and the ceiling are compared, and a tie is the
 ceiling, since expanding there hands back the identical cap.
 
+**A sized lane keeps its siblings' equal slice** (declined 2026-10-23).
+`resolvedFitDefaultCap` still counts an overridden lane in `visibleGroupCount`,
+so dragging one lane never reflows the others (`GroupResizeHandles`). Fit mode
+refuses lane sizing (`canSizeGroupHeights`), so only fixed and grow see this;
+the cost is blank space under a stack whose lane was shrunk.
+
 ## Read height vs track height
 
 **`fit` is the sole `heightMode` that also drives the read-height axis**; every
