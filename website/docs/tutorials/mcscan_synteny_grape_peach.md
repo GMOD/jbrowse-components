@@ -282,7 +282,7 @@ Only genes**.
 MCScan anchors only the pairs it could call confidently, so most genes have no
 ribbon.
 
-## Tandem copies sharing one ortholog {#syntenic-depth}
+## Copies sharing one ortholog {#syntenic-depth}
 
 Pick **Color by value → Syntenic depth** on the palette button in the view
 header. A ribbon stays grey where its two genes pair only with each other, and
