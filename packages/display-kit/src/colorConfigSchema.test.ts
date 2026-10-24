@@ -242,7 +242,7 @@ describe('colorForField', () => {
   }
 
   test('the constant drops the field and its scale', () => {
-    expect(colorForField(tag, '')).toEqual({ value: 'grey' })
+    expect(colorForField(tag, undefined)).toEqual({ value: 'grey' })
     expect(parkedColorOf(tag)).toEqual({
       field: 'tags.HP',
       scale: { type: 'ordinal', domain: ['1', '2'], range: ['red', 'blue'] },
@@ -279,7 +279,9 @@ describe('colorForField', () => {
   })
 
   test('a fieldless identity scale goes with the field it never had', () => {
-    expect(colorForField({ scale: { type: 'identity' } }, '')).toEqual({})
+    expect(colorForField({ scale: { type: 'identity' } }, undefined)).toEqual(
+      {},
+    )
   })
 })
 

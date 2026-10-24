@@ -47,7 +47,7 @@ test('a written value is the constant fill, over the strand default', () => {
   const display = createDisplay()
   expect(display.colorField).toBe('strand')
   display.applyPlot({ encoding: { color: { value: 'steelblue' } } })
-  expect(display.colorField).toBe('')
+  expect(display.colorField).toBeUndefined()
   expect(display.colorSetting.value).toBe('steelblue')
   display.colorByField('strand')
   expect(display.colorField).toBe('strand')

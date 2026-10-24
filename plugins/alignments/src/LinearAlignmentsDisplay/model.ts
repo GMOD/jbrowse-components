@@ -3393,8 +3393,8 @@ export default function stateModelFactory(
             // marks read against, so neither direction swaps.
             const [from, to] =
               unit === 'read'
-                ? (['insertSizeAndOrientation', ''] as const)
-                : (['', 'insertSizeAndOrientation'] as const)
+                ? (['insertSizeAndOrientation', undefined] as const)
+                : ([undefined, 'insertSizeAndOrientation'] as const)
             if (self.colorField === from && !self.baseLayer) {
               self.colorByField(to)
             }

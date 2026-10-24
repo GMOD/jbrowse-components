@@ -2,11 +2,11 @@
 // colors by the grouping too; a hand-picked color stays.
 export function colorsWithGrouping(
   color: string | undefined,
-  colorField: string,
+  colorField: string | undefined,
   field: string | undefined,
 ) {
   return (
-    (color === undefined && colorField === '') ||
-    (colorField !== '' && colorField === field)
+    (color === undefined && colorField === undefined) ||
+    (colorField !== undefined && colorField === field)
   )
 }

@@ -765,7 +765,7 @@ describe('FetchVisibleRegions autorun', () => {
 
     expect(mockRpcCall.mock.calls.length).toBe(callsBefore)
     // ...and the reads still repaint, because the scheme index is render state
-    expect(display.colorField).toBe('')
+    expect(display.colorField).toBeUndefined()
   })
 
   // Chain identity is joined on the main thread, so the toggle is a relayout.

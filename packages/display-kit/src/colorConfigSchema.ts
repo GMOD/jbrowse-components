@@ -809,19 +809,19 @@ export function definedColor(color: ColorSlots): ColorSlots {
 }
 
 /**
- * The color object a Color by pick writes over `current`. `''` drops the field
- * and its scale and key, leaving `value`, and a fieldless identity scale,
- * which paints each feature's own color, black included; the field already
- * named keeps its scale and key; the field `parked` holds (`parkedColorOf`)
- * takes them back; a new field keeps only `value`.
+ * The color object a Color by pick writes over `current`. An undefined field
+ * drops the field and its scale and key, leaving `value`, and a fieldless
+ * identity scale, which paints each feature's own color, black included; the
+ * field already named keeps its scale and key; the field `parked` holds
+ * (`parkedColorOf`) takes them back; a new field keeps only `value`.
  */
 export function colorForField(
   current: ColorSlots,
-  field: string,
+  field: string | undefined,
   parked?: ColorSlots,
 ): ColorSlots {
   const { value } = current
-  if (field === '') {
+  if (field === undefined) {
     const cleared = withoutField(current)
     return cleared.scale?.type === IDENTITY_SCALE
       ? definedColor({

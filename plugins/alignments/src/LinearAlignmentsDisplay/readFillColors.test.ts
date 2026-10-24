@@ -23,12 +23,15 @@ function pileupWith(readTagValues: string[]) {
   })
 }
 
-function encodingFor(field: string, declared: ColorScaleSlots = {}) {
+function encodingFor(
+  field: string | undefined,
+  declared: ColorScaleSlots = {},
+) {
   return alignmentsColorEncoding(colorSettingOf({ field, scale: declared }))
 }
 
 function scaleFor(
-  field: string,
+  field: string | undefined,
   declared: ColorScaleSlots = {},
   position?: RefNamePosition,
 ) {
@@ -149,7 +152,7 @@ describe('strand tag colors', () => {
 })
 
 describe('overlayReadFillColors', () => {
-  const overlay = (field: string) =>
+  const overlay = (field: string | undefined) =>
     overlayReadFillColors(
       new Map([[0, pileupWith(['chr1'])]]),
       field,
@@ -168,7 +171,7 @@ describe('overlayReadFillColors', () => {
   // scheme must leave the array empty and the shader on its palette path.
   test('bakes nothing for schemes the shader colors itself', () => {
     expect(overlay('strand')).toBe(0)
-    expect(overlay('')).toBe(0)
+    expect(overlay(undefined)).toBe(0)
   })
 })
 

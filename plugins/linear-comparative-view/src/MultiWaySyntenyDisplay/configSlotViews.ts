@@ -118,10 +118,10 @@ export function configSlotViews(self: ConfigSlotSelf) {
     },
     /**
      * #getter
-     * `''` while `encoding.color.value` paints
+     * undefined while `encoding.color.value` paints
      */
-    get geneColorField(): string {
-      return colorFieldOf(this.geneColorEncoding)?.field ?? ''
+    get geneColorField(): string | undefined {
+      return colorFieldOf(this.geneColorEncoding)?.field
     },
     /**
      * #getter

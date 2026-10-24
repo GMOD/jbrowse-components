@@ -209,8 +209,8 @@ function layoutOneGroup(
 // too, so the GPU, the Canvas2D fallback and the legend all read one
 // classification.
 export interface ReadColorContext {
-  // The `encoding.color` field the bake reads, `''` for the plain fill.
-  colorField: string
+  // The `encoding.color` field the bake reads, undefined for the plain fill.
+  colorField: string | undefined
   // What the body paints as: `colorField`'s kind, or the modification
   // layer's own tint under the plain fill (`bodyColorKind`).
   bodyFill: ColorFieldKind

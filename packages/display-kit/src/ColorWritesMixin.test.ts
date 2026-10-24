@@ -93,7 +93,7 @@ test("the way back parks the field, and re-picking it keeps the key's names", ()
     scale: { domain: ['gene', 'mRNA'], names: ['Gene', 'Transcript'] },
     legend: { title: 'Feature type' },
   })
-  d.colorByField('')
+  d.colorByField(undefined)
   expect(colorOf(d)).toEqual({})
   expect(d.parkedColor).toMatchObject({ field: 'type' })
   d.colorByField('type')

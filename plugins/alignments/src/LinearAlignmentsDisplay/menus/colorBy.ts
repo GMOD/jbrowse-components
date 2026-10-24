@@ -35,12 +35,12 @@ import type { ColorSlots } from '@jbrowse/core/util/colorScale'
 const TagDialog = lazy(() => import('../dialogs/TagDialog.tsx'))
 
 interface ColorByModel {
-  colorField: string
+  colorField: string | undefined
   colorEncoding: AlignmentsColorEncoding
   writtenColor: ColorSlots
   parkedColor?: ColorSlots
   parkColor: (name: string, written: ColorSlots, next: unknown) => void
-  colorByField: (field: string) => void
+  colorByField: (field: string | undefined) => void
   pickDefaultColor: () => void
   pickSolidColor: () => void
   applyPlot: (draft: Plot) => void
@@ -98,11 +98,13 @@ const pairedEndColorOptions = radioColorFieldOptions('pairedEnd')
 
 // A constant paints the reads while no field does
 function paintsConstant(model: AnyColorByModel) {
-  return model.colorField === '' && model.writtenColor.value !== undefined
+  return (
+    model.colorField === undefined && model.writtenColor.value !== undefined
+  )
 }
 
 // A plain radio naming a field: the read fill's, or a per-base layer's. The
-// plain fill's '' is unset, a constant included.
+// plain fill's radio names none.
 function colorRadio(
   model: AnyColorByModel,
   { label, field }: ColorFieldOption,
@@ -112,10 +114,10 @@ function colorRadio(
     ? radioItem(label, model.baseLayer?.field === layer, () => {
         model.setBases({ show: true, field: layer })
       })
-    : field === ''
+    : field === undefined
       ? radioItem(
           label,
-          model.colorField === '' && !paintsConstant(model),
+          model.colorField === undefined && !paintsConstant(model),
           () => {
             model.pickDefaultColor()
           },

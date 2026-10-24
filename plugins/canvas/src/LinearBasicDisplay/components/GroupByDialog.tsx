@@ -28,7 +28,7 @@ const GroupByDialog = observer(function GroupByDialog({
   model: GroupByDialogModel
   handleClose: () => void
   color: string | undefined
-  colorField: string
+  colorField: string | undefined
 }) {
   const current = model.facet?.field
   const [attribute, setAttribute] = useState(

@@ -251,7 +251,6 @@ describe('an intron that only touches a region edge', () => {
   })
   const skipsIn = (start: number, end: number) =>
     extractFeatureArrays([spliced], buildFeatureData, {
-      colorField: '',
       showSoftClipping: false,
       region: { refName: 'ctgA', start, end, assemblyName: 'volvox' },
       perBaseBinBp: 1,
@@ -287,7 +286,6 @@ describe('modification type detection', () => {
     baseLayer?: { field: 'modifications' },
   ) =>
     extractFeatureArrays(features, buildFeatureData, {
-      colorField: '',
       baseLayer,
       showSoftClipping: false,
       region,
@@ -326,7 +324,6 @@ describe('the SA lookup', () => {
   }
   const saOf = (read: Read) =>
     extractFeatureArrays([read], buildFeatureData, {
-      colorField: '',
       showSoftClipping: false,
       region,
       perBaseBinBp: 1,

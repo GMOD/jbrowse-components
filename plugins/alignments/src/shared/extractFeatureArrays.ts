@@ -75,7 +75,7 @@ export function extractFeatureArrays<T extends FeatureData>(
   report?: ProgressReporter,
 ) {
   const {
-    colorField = '',
+    colorField,
     baseLayer,
     showSoftClipping,
     region,

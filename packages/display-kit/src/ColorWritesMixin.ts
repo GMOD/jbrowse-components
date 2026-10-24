@@ -36,7 +36,8 @@ const host = (self: object) => self as ColorWritesHost
  */
 export function writtenColorOf(color: AnyConfigurationModel): ColorSlots {
   const written = getSnapshot<ColorSlots | undefined>(color) ?? {}
-  const field: unknown = 'field' in color ? readConfObject(color, 'field') : ''
+  const field: unknown =
+    'field' in color ? readConfObject(color, 'field') : undefined
   return typeof field === 'string' && field && written.field === undefined
     ? { ...written, field }
     : withImpliedField(written, impliedFieldOf(color))
@@ -78,10 +79,10 @@ export default function ColorWritesMixin() {
         /**
          * #action
          * Paint by `field`, keeping its domain, range and key names while it
-         * is the field already painting or the one parked; `''` paints
+         * is the field already painting or the one parked; undefined paints
          * `value` and parks the field.
          */
-        colorByField(field: string) {
+        colorByField(field: string | undefined) {
           write(colorForField(self.writtenColor, field, self.parkedColor))
         },
         /**
@@ -99,7 +100,7 @@ export default function ColorWritesMixin() {
          */
         pickDefaultColor() {
           if (solidColorOf(self.writtenColor) === undefined) {
-            this.colorByField('')
+            this.colorByField(undefined)
           } else {
             this.setColorValue(undefined)
           }
@@ -112,7 +113,7 @@ export default function ColorWritesMixin() {
         pickSolidColor() {
           const written = self.writtenColor
           if (written.field && solidColorOf(written) !== undefined) {
-            this.colorByField('')
+            this.colorByField(undefined)
           }
           host(self).openSolidColorDialog?.()
         },

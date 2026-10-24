@@ -158,7 +158,7 @@ function withoutNoValue(
  * unread beside a mate reference, whose values are sequence names.
  */
 export function bakedColorScale(
-  colorField: string,
+  colorField: string | undefined,
   encoding: AlignmentsColorEncoding,
   refNamePosition: RefNamePosition | undefined,
   extent: NumericExtent | undefined,
@@ -264,7 +264,7 @@ export function numericExtentAcrossGroups<D>(
  */
 export function linearFieldExtent(
   encoding: AlignmentsColorEncoding,
-  colorField: string,
+  colorField: string | undefined,
   byGroup: LaidOutByGroup,
 ): NumericExtent | undefined {
   return typeof encoding !== 'object' || encoding.scale !== 'linear'
@@ -284,7 +284,7 @@ export function linearFieldExtent(
  */
 export function bakedColorExtent(
   encoding: AlignmentsColorEncoding,
-  colorField: string,
+  colorField: string | undefined,
   byGroup: LaidOutByGroup,
 ): NumericExtent | undefined {
   if (

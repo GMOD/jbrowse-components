@@ -86,7 +86,7 @@ function tagValueColor(value: string) {
  * here claiming the two matched was written before that.
  */
 export function bakedValueColor(
-  colorField: string,
+  colorField: string | undefined,
   value: string,
   refNamePosition?: RefNamePosition,
 ) {

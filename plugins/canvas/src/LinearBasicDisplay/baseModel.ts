@@ -1605,17 +1605,16 @@ export default function baseStateModelFactory(
        * field. Both colors keep a written constant, as Color by does.
        */
       groupByPlot(field: string | undefined, colorByGroup: boolean): Plot {
-        const groupColor = self.categoricalColorField?.field ?? ''
-        const painted = self.colorField ?? ''
+        const groupColor = self.categoricalColorField?.field
         const current = facetOf(self.facet, getConf(self, ['facet', 'hidden']))
         const written = self.writtenColor
         const wasGroupColor =
-          groupColor !== '' &&
+          groupColor !== undefined &&
           (groupColor === current?.field || groupColor === field)
         return {
           facet: field ? facetForField(self.writtenFacet, field) : null,
           ...(colorByGroup && field
-            ? field === painted
+            ? field === self.colorField
               ? {}
               : {
                   encoding: {
@@ -1623,7 +1622,7 @@ export default function baseStateModelFactory(
                   },
                 }
             : wasGroupColor
-              ? { encoding: { color: colorForField(written, '') } }
+              ? { encoding: { color: colorForField(written, undefined) } }
               : {}),
         }
       },
@@ -1717,7 +1716,7 @@ export default function baseStateModelFactory(
               model: self,
               handleClose,
               color: self.colorSetting.value,
-              colorField: self.colorField ?? '',
+              colorField: self.colorField,
             },
           ])
         },

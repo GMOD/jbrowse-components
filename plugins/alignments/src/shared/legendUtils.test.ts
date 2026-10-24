@@ -36,7 +36,7 @@ import type { ColorScale, RampScale } from '@jbrowse/core/ui/colorScale'
 
 // A read fill field, or a per-base layer with its settings.
 function legendFor(
-  scheme: string | BaseLayer,
+  scheme: string | undefined | BaseLayer,
   categories: ReadColorCategory[],
   rest?: {
     detectedModifications?: Map<string, string>
@@ -50,9 +50,9 @@ function legendFor(
   },
 ) {
   return getReadDisplayLegendItems({
-    ...(typeof scheme === 'string'
-      ? splitSchemeForTest(scheme)
-      : splitSchemeForTest(scheme.field, scheme)),
+    ...(typeof scheme === 'object'
+      ? splitSchemeForTest(scheme.field, scheme)
+      : splitSchemeForTest(scheme)),
     presentCategories: new Set(categories),
     palette: makeTestPalette(),
     ...rest,
@@ -60,7 +60,7 @@ function legendFor(
 }
 
 function labels(
-  field: string,
+  field: string | undefined,
   categories: ReadColorCategory[],
   detectedModifications?: Map<string, string>,
 ) {
@@ -136,9 +136,9 @@ describe('getReadDisplayLegendItems', () => {
 
   test('normal scheme shows a base-reads swatch plus any cross-cutting buckets', () => {
     // a single "Reads" entry so "Show legend" is never a silent no-op
-    expect(labels('', ['plain'])).toEqual(['Reads'])
+    expect(labels(undefined, ['plain'])).toEqual(['Reads'])
     // chain mode still surfaces the unmapped-mate bucket after the base swatch
-    expect(labels('', ['plain', 'unmappedMate'])).toEqual([
+    expect(labels(undefined, ['plain', 'unmappedMate'])).toEqual([
       'Reads',
       'Unmapped mate',
     ])
@@ -149,7 +149,7 @@ describe('getReadDisplayLegendItems', () => {
     // ordinary reads stay grey; a fwd/rev bucket here can only be a split, so it
     // must not read as a plain "Forward strand" — and the color frames the
     // segment against its chain primary, so it must not name a strand either.
-    expect(labels('', ['plain', 'fwdStrand', 'revStrand'])).toEqual([
+    expect(labels(undefined, ['plain', 'fwdStrand', 'revStrand'])).toEqual([
       'Reads',
       'Split segment (same strand)',
       'Split segment (inverted)',
@@ -195,7 +195,7 @@ describe('getReadDisplayLegendItems', () => {
   test('per-base schemes name the read body under their marks', () => {
     expect(labels('baseQuality', ['plain'])).toEqual(['Read'])
     expect(labels('base', ['plain'])).toEqual(['A', 'C', 'G', 'T', 'N', 'Read'])
-    const plainFill = legendFor('', ['plain'])[0]!.color
+    const plainFill = legendFor(undefined, ['plain'])[0]!.color
     for (const type of ['baseQuality', 'base'] as const) {
       const body = legendFor(type, ['plain']).find(i => i.label === 'Read')
       expect(body?.color).toBe(plainFill)
@@ -576,7 +576,7 @@ describe('getReadDisplayLegendItems', () => {
 
   test('base quality unavailable is keyed only when a drawn base carries it', () => {
     const rows = (baseQualityUnavailable: boolean) =>
-      legendFor('', ['plain'], {
+      legendFor(undefined, ['plain'], {
         baseLayer: { field: 'baseQuality' },
         baseQualityUnavailable,
       })
@@ -925,7 +925,7 @@ describe('colorRampScales', () => {
     expect(
       colorRampScales({
         ...noExtents,
-        colorField: '',
+        colorField: undefined,
         baseLayer: { field: 'base' },
       }),
     ).toEqual([])
@@ -1230,7 +1230,7 @@ describe('getAlignmentsColorScales', () => {
 describe('the overlap row', () => {
   const items = (overlaps?: 'chain' | 'collapsed') =>
     getReadDisplayLegendItems({
-      colorField: '',
+      colorField: undefined,
       presentCategories: new Set<ReadColorCategory>(['pairLR']),
       palette: makeTestPalette({
         colorPairLR: [1, 1, 1],

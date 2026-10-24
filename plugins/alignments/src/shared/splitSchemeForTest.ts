@@ -7,11 +7,11 @@ import type { BaseLayer } from './types.ts'
  * over a plain fill, anything else the fill with no layer.
  */
 export function splitSchemeForTest(
-  field: string,
+  field: string | undefined,
   settings?: Omit<BaseLayer, 'field'>,
-): { colorField: string; baseLayer: BaseLayer | undefined } {
+): { colorField: string | undefined; baseLayer: BaseLayer | undefined } {
   const layer = baseLayerOfField(field)
   return layer
-    ? { colorField: '', baseLayer: { field: layer, ...settings } }
+    ? { colorField: undefined, baseLayer: { field: layer, ...settings } }
     : { colorField: field, baseLayer: undefined }
 }

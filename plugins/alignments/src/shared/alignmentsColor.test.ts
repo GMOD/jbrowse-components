@@ -19,7 +19,7 @@ import { FACET_LABELS } from './facetLabels.ts'
 
 import type { ColorSlots } from '@jbrowse/core/util/colorScale'
 
-function readFill(field: string) {
+function readFill(field: string | undefined) {
   return readColorFieldOf(alignmentsColorEncoding(colorSettingOf({ field })))
 }
 
@@ -45,13 +45,13 @@ describe('readColorFieldOf', () => {
   })
 
   test('no field paints the plain fill', () => {
-    expect(readFill('')).toBe('')
-    expect(colorFieldKindOf('')).toBe('normal')
+    expect(readFill(undefined)).toBeUndefined()
+    expect(colorFieldKindOf(undefined)).toBe('normal')
   })
 
   test('a per-base field is no read fill, and costs no attribute lookup', () => {
     for (const field of BASE_COLOR_FIELDS) {
-      expect(readFill(field)).toBe('')
+      expect(readFill(field)).toBeUndefined()
     }
   })
 })
@@ -97,9 +97,9 @@ describe('baseLayerOf', () => {
 describe('bodyColorKind', () => {
   test('a modification layer tints the plain fill and yields to a read field', () => {
     const mods = { field: 'modifications' } as const
-    expect(bodyColorKind('', mods)).toBe('modifications')
+    expect(bodyColorKind(undefined, mods)).toBe('modifications')
     expect(bodyColorKind('tags.HP', mods)).toBe('tag')
-    expect(bodyColorKind('', { field: 'base' })).toBe('normal')
+    expect(bodyColorKind(undefined, { field: 'base' })).toBe('normal')
     expect(bodyColorKind('strand', undefined)).toBe('strand')
   })
 })
@@ -111,7 +111,7 @@ describe('a Color by pick over the written color', () => {
   }
 
   test('the plain fill drops the field, and re-picking the parked one restores it', () => {
-    expect(colorForField(hp, '').field).toBeUndefined()
+    expect(colorForField(hp, undefined).field).toBeUndefined()
     const back = colorForField({}, 'tags.HP', parkedColorOf(hp))
     expect(back).toMatchObject({
       field: 'tags.HP',

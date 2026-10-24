@@ -107,11 +107,7 @@ export function groupByMenuItems(self: GroupByMenuSelf): MenuItem[] {
       onSelect: strand => {
         self.applyGroupBy(
           strand,
-          colorsWithGrouping(
-            self.colorSetting.value,
-            self.colorField ?? '',
-            strand,
-          ),
+          colorsWithGrouping(self.colorSetting.value, self.colorField, strand),
         )
       },
       onNone: () => {

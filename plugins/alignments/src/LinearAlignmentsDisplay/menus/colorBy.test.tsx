@@ -19,10 +19,10 @@ import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
 // "defined" whenever modificationsReady is set, even to false).
 function makeModel() {
   return {
-    colorField: '',
+    colorField: undefined as string | undefined,
     colorEncoding: undefined,
     writtenColor: {},
-    colorByField(field: string) {
+    colorByField(field: string | undefined) {
       this.colorField = field
     },
     applyPlot(_draft: Plot) {},
@@ -470,14 +470,14 @@ describe('color by menu curation', () => {
 
   test('curated colorOptions replace the basic radios', () => {
     expect(
-      labelsFor({ colorOptions: colorFieldOptions('', 'mateRefName') }),
+      labelsFor({ colorOptions: colorFieldOptions(undefined, 'mateRefName') }),
     ).toEqual(['Normal', 'Mate chromosome', 'Solid color...'])
   })
 
   test('a curated entry can relabel one scheme for its own display', () => {
     expect(
       labelsFor({
-        colorOptions: colorFieldOptions('', {
+        colorOptions: colorFieldOptions(undefined, {
           field: 'mateRefName',
           label: 'Query name',
         }),

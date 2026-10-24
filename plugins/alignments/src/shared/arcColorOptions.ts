@@ -43,7 +43,10 @@ function isArcColorField(field?: string): field is ArcColorField {
  * unset, then `readField`, the reads' `encoding.color` field, where an arc can
  * paint it, else {@link DEFAULT_ARC_COLOR_FIELD}.
  */
-export function arcColorFieldOf(own: string | undefined, readField: string) {
+export function arcColorFieldOf(
+  own: string | undefined,
+  readField: string | undefined,
+) {
   return isArcColorField(own)
     ? own
     : isArcColorField(readField)

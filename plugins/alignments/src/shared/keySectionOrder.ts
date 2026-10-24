@@ -8,7 +8,10 @@ import type { Facet } from './types.ts'
  * Not over `mapq`, whose sections are bins and whose key is its bins or its
  * raw values.
  */
-export function keySectionOrder(facet: Facet | undefined, colorField: string) {
+export function keySectionOrder(
+  facet: Facet | undefined,
+  colorField: string | undefined,
+) {
   return facet && facet.field === colorField && colorField !== 'mapq'
     ? sectionOrder(facet.field, facet.sort)
     : undefined

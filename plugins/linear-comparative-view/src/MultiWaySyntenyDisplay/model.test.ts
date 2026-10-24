@@ -532,7 +532,7 @@ test('a color string paints through the channel, and unset is goldenrod', () => 
   setConf(display, ['encoding', 'color'], {
     value: "jexl:feature.name == 'atpA' ? 'red' : 'blue'",
   })
-  expect(display.geneColorField).toBe('')
+  expect(display.geneColorField).toBeUndefined()
   expect(anchorGeneFills(display)).toEqual([['g1', 'red']])
 })
 
@@ -563,8 +563,8 @@ test('Default parks the field, and the field keeps its order', () => {
     field: 'name',
     scale: { domain: ['atpA'] },
   })
-  display.colorByField('')
-  expect(display.geneColorField).toBe('')
+  display.colorByField(undefined)
+  expect(display.geneColorField).toBeUndefined()
   expect(display.geneColorSettings.color).toMatchObject({
     value: 'red',
     field: '',
@@ -592,7 +592,7 @@ test('Solid color... paints the kept constant and opens the picker; Default drop
   setConf(display, ['encoding', 'color'], { value: 'red', field: 'name' })
   expect(display.geneSolidColor).toBe('red')
   display.pickSolidColor()
-  expect(display.geneColorField).toBe('')
+  expect(display.geneColorField).toBeUndefined()
   expect(display.geneColorSettings.color).toMatchObject({
     value: 'red',
     field: '',
@@ -602,7 +602,7 @@ test('Solid color... paints the kept constant and opens the picker; Default drop
   expect(display.geneSolidColor).toBe('teal')
   display.pickDefaultColor()
   expect(display.geneSolidColor).toBeUndefined()
-  expect(display.geneColorField).toBe('')
+  expect(display.geneColorField).toBeUndefined()
   expect(display.parkedColor).toMatchObject({ field: 'name' })
 })
 
@@ -611,7 +611,7 @@ test('Solid color... over a painting field paints the pick', () => {
   setConf(display, ['encoding', 'color'], { field: 'strand' })
   display.pickSolidColor()
   display.setColorValue('teal')
-  expect(display.geneColorField).toBe('')
+  expect(display.geneColorField).toBeUndefined()
   expect(display.geneColorSettings.color).toMatchObject({
     value: 'teal',
     field: '',

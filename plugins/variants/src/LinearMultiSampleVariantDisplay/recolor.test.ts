@@ -111,7 +111,7 @@ test('a recolor repaints the loaded cells, the lane and the key', () => {
 test('a switch to a constant and back keeps the fetch key', () => {
   const { display, dispose } = setup()
   const key = display.rpcProps()
-  display.colorByField('')
+  display.colorByField(undefined)
   expect(display.rpcProps()).toEqual(key)
   expect(cells(display)).toEqual(new Array(3).fill(het(ALT_HUE)))
   expect(display.paintedDomain).toEqual([])
@@ -217,7 +217,7 @@ test('a pick of what already paints writes nothing', () => {
   onPatch(display, patch => patches.push(patch))
   display.colorByField('INFO.AF')
   expect(patches).toEqual([])
-  display.colorByField('')
+  display.colorByField(undefined)
   patches.length = 0
   display.setColorValue('#123456')
   expect(patches).toEqual([])

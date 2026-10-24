@@ -51,7 +51,7 @@ const buildFeatureData = (f: Feature): FeatureData => ({
 
 // Everything the worker's extraction produces that depends on the color
 // field. The reference sequence is supplied so the bisulfite path can run.
-function extracted(field: string) {
+function extracted(field: string | undefined) {
   const out = extractFeatureArrays([makeFeature()], buildFeatureData, {
     ...splitSchemeForTest(field),
     showSoftClipping: false,
@@ -72,10 +72,10 @@ function extracted(field: string) {
 // A scheme with no worker-side extraction must produce byte-identical output to
 // no scheme at all — that is exactly the condition under which
 // `workerColorField` may collapse it and skip the refetch.
-const baseline = JSON.stringify(extracted(''))
+const baseline = JSON.stringify(extracted(undefined))
 
-const sample: Record<ColorFieldKind, string> = {
-  normal: '',
+const sample: Record<ColorFieldKind, string | undefined> = {
+  normal: undefined,
   strand: 'strand',
   mapq: 'mapq',
   baseQuality: 'baseQuality',
@@ -105,7 +105,7 @@ describe('workerColorField', () => {
   )
 
   test('shader-only fields collapse to one value, so switching them refetches nothing', () => {
-    expect(workerColorField('')).toBeUndefined()
+    expect(workerColorField(undefined)).toBeUndefined()
     expect(workerColorField('strand')).toBeUndefined()
     expect(workerColorField('mapq')).toBeUndefined()
     expect(workerColorField('insertSizeAndOrientation')).toBeUndefined()

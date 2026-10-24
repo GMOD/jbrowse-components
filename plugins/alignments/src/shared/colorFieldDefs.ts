@@ -201,12 +201,14 @@ export function paintsEveryBase(layer: BaseLayer | undefined) {
 const PRESET_FIELDS = new Set<string>(COLOR_FIELDS)
 
 /**
- * The kind a read fill's field paints through: `''` the plain fill, a
+ * The kind a read fill's field paints through: undefined the plain fill, a
  * preset field its own, and a tag (`tags.HP`) or any other attribute the
  * per-read bake.
  */
-export function colorFieldKindOf(field: string): ReadColorFieldKind {
-  return field === ''
+export function colorFieldKindOf(
+  field: string | undefined,
+): ReadColorFieldKind {
+  return field === undefined
     ? 'normal'
     : PRESET_FIELDS.has(field)
       ? (field as ReadColorFieldKind)
@@ -225,7 +227,7 @@ export function colorFieldKindOf(field: string): ReadColorFieldKind {
 // Modification TYPES are still detected on every fetch (the detection loop in
 // extractModifications is ungated, so the Modifications menu still populates);
 // only the paint/extract passes are gated.
-export function workerColorField(field: string) {
+export function workerColorField(field: string | undefined) {
   return COLOR_FIELD_DEFS[colorFieldKindOf(field)].workerExtracts
     ? field
     : undefined

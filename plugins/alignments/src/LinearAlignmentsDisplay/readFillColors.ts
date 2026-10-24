@@ -38,7 +38,7 @@ const NO_FILL_COLORS = new Uint32Array(0)
 // loop and the cache is reused across every region rather than rebuilt per
 // region.
 function makeColorResolver(
-  colorField: string,
+  colorField: string | undefined,
   scale: BakedColorScale,
 ): ColorResolver {
   // The strand tags first, and they have to be: they are tags like any
@@ -110,7 +110,7 @@ function applyResolver(
 // reads `uint tagColor` and unpacks; 0 means "no color" (palette fallback).
 export function buildReadFillColors(
   data: WorkerPileupData,
-  colorField: string,
+  colorField: string | undefined,
   scale: BakedColorScale,
 ): Uint32Array {
   return bakerFor(colorField, scale)(data)
@@ -136,7 +136,7 @@ function applyMapqTable(data: WorkerPileupData, table: Uint32Array) {
   return out
 }
 
-function bakerFor(colorField: string, scale: BakedColorScale) {
+function bakerFor(colorField: string | undefined, scale: BakedColorScale) {
   if (colorField === 'mapq') {
     const table = mapqColorTable(scale)
     return (data: WorkerPileupData) => applyMapqTable(data, table)
@@ -158,7 +158,7 @@ function bakerFor(colorField: string, scale: BakedColorScale) {
 // never went through here.
 export function overlayReadFillColors(
   map: Map<number, LaidOutPileupData>,
-  colorField: string,
+  colorField: string | undefined,
   scale: BakedColorScale | undefined,
 ): Map<number, FillColoredPileupData> {
   const bake =

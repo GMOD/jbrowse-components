@@ -125,7 +125,7 @@ function trackModel({
   configuredLanes = [],
   domain = [],
   hasLegendKey = false,
-  geneColorField = '',
+  geneColorField,
   geneSolidColor,
 }: {
   universe?: number

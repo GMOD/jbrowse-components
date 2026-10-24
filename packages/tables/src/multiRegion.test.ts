@@ -91,7 +91,6 @@ test('a read crossing a seam is listed in both regions under one key, on one row
           adapterConfig: BAM.adapterConfig,
           sequenceAdapter: BAM.sequenceAdapter,
           regions: [{ assemblyName: '', ...r }],
-          colorField: '',
           statusCallback: () => {},
         },
       })

@@ -77,7 +77,6 @@ function run(
       adapterConfig: { type: 'BamAdapter' },
       sequenceAdapter: { type: 'TwoBitAdapter' },
       regions: [region],
-      colorField: '',
       statusCallback: undefined,
       ...settings,
     },

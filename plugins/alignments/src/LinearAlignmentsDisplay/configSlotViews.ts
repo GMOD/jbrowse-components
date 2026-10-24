@@ -528,9 +528,9 @@ export function configSlotViews(self: ConfigSlotSelf) {
     },
     /**
      * #getter
-     * The field the read fill paints by, `''` for the plain fill.
+     * The field the read fill paints by, undefined for the plain fill.
      */
-    get colorField(): string {
+    get colorField(): string | undefined {
       return readColorFieldOf(this.colorEncoding)
     },
     /**

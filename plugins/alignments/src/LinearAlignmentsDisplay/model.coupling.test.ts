@@ -343,7 +343,7 @@ describe('keySectionOrder', () => {
 describe('setUnit color scheme preservation', () => {
   test('entering pairs nudges the plain default to insert-size-and-orientation', () => {
     const display = createDisplay()
-    expect(display.colorField).toBe('')
+    expect(display.colorField).toBeUndefined()
 
     display.setUnit('chain')
     expect(display.unit).toBe('chain')
@@ -355,7 +355,7 @@ describe('setUnit color scheme preservation', () => {
     display.setBases({ show: true, field: 'modifications' })
 
     display.setUnit('chain')
-    expect(display.colorField).toBe('')
+    expect(display.colorField).toBeUndefined()
     expect(display.bodyColorKind).toBe('modifications')
   })
 
@@ -374,7 +374,7 @@ describe('setUnit color scheme preservation', () => {
 
     display.setUnit('read')
     expect(display.unit).toBe('read')
-    expect(display.colorField).toBe('')
+    expect(display.colorField).toBeUndefined()
   })
 
   // A first-of-pair strand fill is the usual stranded RNA-seq pileup, picked

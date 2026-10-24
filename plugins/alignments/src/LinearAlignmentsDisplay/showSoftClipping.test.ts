@@ -326,7 +326,7 @@ describe('alignments fit-to-display-height split', () => {
 describe('alignments colorField', () => {
   it('is normal with no config', () => {
     const { display } = createDisplay()
-    expect(display.colorField).toBe('')
+    expect(display.colorField).toBeUndefined()
   })
 
   it('takes an explicit per-track scheme', () => {
@@ -396,7 +396,7 @@ describe('alignments colorField', () => {
     const { display } = createDisplay({
       encoding: { color: { field: 'modifications' } },
     })
-    expect(display.colorField).toBe('')
+    expect(display.colorField).toBeUndefined()
     expect(display.rpcProps()).toMatchObject({ colorField: undefined })
   })
 
@@ -414,7 +414,7 @@ describe('alignments colorField', () => {
         bases: { show: true, encoding: { color: { field: 'bisulfite' } } },
       },
     })
-    expect(display.colorField).toBe('')
+    expect(display.colorField).toBeUndefined()
     expect(display.bodyColorKind).toBe('bisulfite')
   })
 
@@ -484,7 +484,7 @@ describe('alignments colorField', () => {
     const { display } = createDisplay({
       encoding: { color: { value: 'rgb(0, 0, 255)' } },
     })
-    expect(display.colorField).toBe('')
+    expect(display.colorField).toBeUndefined()
     expect(display.colorSetting.value).toBe('rgb(0, 0, 255)')
   })
 
@@ -494,8 +494,8 @@ describe('alignments colorField', () => {
         color: { field: 'tags.HP', scale: { range: ['red', 'blue'] } },
       },
     })
-    display.colorByField('')
-    expect(display.colorField).toBe('')
+    display.colorByField(undefined)
+    expect(display.colorField).toBeUndefined()
     expect(display.parkedColor?.field).toBe('tags.HP')
     display.colorByField('tags.HP')
     expect(display.colorSetting.scale.range).toEqual(['red', 'blue'])
@@ -513,7 +513,7 @@ describe('alignments colorField', () => {
     }
     const { display } = createDisplay({ encoding: { color } })
     expect(display.bakedColorScale?.kind).toBe('linear')
-    display.colorByField('')
+    display.colorByField(undefined)
     expect(display.bakedColorScale).toBeUndefined()
     display.colorByField('tags.NM')
     expect(display.colorSetting).toMatchObject({
@@ -535,7 +535,7 @@ describe('alignments colorField', () => {
         },
       },
     })
-    display.colorByField('')
+    display.colorByField(undefined)
     display.applyPlot({
       encoding: {
         color: tagColorFor(
@@ -569,7 +569,7 @@ describe('alignments colorField', () => {
     })
     display.setUnit('chain')
     display.setUnit('read')
-    expect(display.colorField).toBe('')
+    expect(display.colorField).toBeUndefined()
     display.setUnit('chain')
     expect(display.pinnedInsertSizeBand).toEqual({ lower: 150, upper: 600 })
   })
@@ -623,7 +623,7 @@ describe('alignments colorField', () => {
     expect(display.colorField).toBe('insertSizeAndOrientation')
 
     display.setUnit('read')
-    expect(display.colorField).toBe('')
+    expect(display.colorField).toBeUndefined()
   })
 })
 

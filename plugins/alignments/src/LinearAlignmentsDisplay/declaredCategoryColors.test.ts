@@ -237,7 +237,7 @@ describe('a domain that names no level says so', () => {
       ])
       expect(
         readColorFieldOf(alignmentsColorEncoding(colorSettingOf({ field }))),
-      ).toBe('')
+      ).toBeUndefined()
     },
   )
 

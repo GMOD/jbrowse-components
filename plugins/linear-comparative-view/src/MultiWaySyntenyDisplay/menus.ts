@@ -86,7 +86,7 @@ export interface MultiWayMenuModel extends LaneHeaderModel, LaneSelectionModel {
   showLegend: boolean
   setShowLegend: (flag: boolean) => void
   hasLegendKey: boolean
-  geneColorField: string
+  geneColorField: string | undefined
   colorByField: (field: string) => void
   geneSolidColor: string | undefined
   pickDefaultColor: () => void
@@ -284,14 +284,14 @@ const GENE_COLOR_FIELDS: RadioOption<string>[] = [
 export function geneColorMenuItems(model: MultiWayMenuModel): MenuItem[] {
   const field = model.geneColorField
   const fields =
-    field === '' || GENE_COLOR_FIELDS.some(mode => mode.value === field)
+    field === undefined || GENE_COLOR_FIELDS.some(mode => mode.value === field)
       ? GENE_COLOR_FIELDS
       : [...GENE_COLOR_FIELDS, { value: field, label: field }]
   return [
     {
       label: 'Default',
       type: 'radio',
-      checked: field === '' && model.geneSolidColor === undefined,
+      checked: field === undefined && model.geneSolidColor === undefined,
       helpText:
         "The gene color the track's config sets, goldenrod where it sets none.",
       onClick: () => {
@@ -301,9 +301,12 @@ export function geneColorMenuItems(model: MultiWayMenuModel): MenuItem[] {
     ...radioItems(fields, field, value => {
       model.colorByField(value)
     }),
-    solidColorItem(field === '' && model.geneSolidColor !== undefined, () => {
-      model.pickSolidColor()
-    }),
+    solidColorItem(
+      field === undefined && model.geneSolidColor !== undefined,
+      () => {
+        model.pickSolidColor()
+      },
+    ),
   ]
 }
 

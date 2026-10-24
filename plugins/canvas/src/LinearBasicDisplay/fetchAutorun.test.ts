@@ -1668,7 +1668,7 @@ describe('SettingsInvalidate keys on the payload, not the reads', () => {
     setConf(display, ['encoding', 'color', 'legend', 'title'], 'Biotype')
     setConf(display, ['legend', 'show'], false)
     setConf(display, ['encoding', 'color', 'scale', 'type'], 'threshold')
-    display.colorByField('')
+    display.colorByField(undefined)
     display.colorByField('biotype')
     jest.advanceTimersByTime(800)
     await jest.runAllTimersAsync()

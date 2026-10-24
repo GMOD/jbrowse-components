@@ -24,7 +24,7 @@ afterEach(() => {
 // and without it the grouping is the one the menu would have applied anyway. The
 // verdict itself is unit-tested below.
 function renderDialog(state: {
-  colorField: string
+  colorField?: string
   baseLayer?: BaseLayer
   facet?: Facet
 }) {
@@ -120,7 +120,6 @@ test('a non-tag color scheme is not replaced by default', async () => {
 // against, and the tag palette's blue and pink collide with the calls'.
 test('the plain fill under a per-base layer is not replaced by default', async () => {
   const { colorByField } = renderDialog({
-    colorField: '',
     baseLayer: { field: 'modifications' },
   })
   typeTag('HP')
@@ -133,7 +132,7 @@ test('the plain fill under a per-base layer is not replaced by default', async (
 // The guard this dialog exists for reads a scan that has not landed yet, so a
 // click before it settles applied a grouping nothing had vetted.
 test('Submit is held until the scan settles', async () => {
-  renderDialog({ colorField: '' })
+  renderDialog({})
   typeTag('HP')
   expect(submitButton().disabled).toBe(true)
   await settleScan()
@@ -143,7 +142,7 @@ test('Submit is held until the scan settles', async () => {
 // Grouping by a tag usually pairs with coloring by it, so an uncolored track
 // opts in by default.
 test('an uncolored track defaults to coloring by the grouped tag', async () => {
-  const { colorByField } = renderDialog({ colorField: '' })
+  const { colorByField } = renderDialog({})
   typeTag('HP')
   expect(checkbox().checked).toBe(true)
   await settleScan()
@@ -165,7 +164,7 @@ test('unticking drops the matching coloring and stays unticked', async () => {
   expect(checkbox().checked).toBe(false)
   await settleScan()
   submit()
-  expect(colorByField).toHaveBeenCalledWith('')
+  expect(colorByField).toHaveBeenCalledWith(undefined)
 })
 
 // The scan's verdict, unit-tested rather than driven through the dialog: the

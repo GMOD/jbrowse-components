@@ -38,15 +38,15 @@ export interface GroupByDialogModel extends IStateTreeNode {
   // scan IS the render fetch's download, so it is measured against the render
   // fetch's budget rather than running unbounded beside a refused track.
   resolvedByteLimit: () => number | undefined
-  colorField: string
+  colorField: string | undefined
   baseLayer: BaseLayer | undefined
   facet?: Facet
   facetByField: (field: string) => void
-  colorByField: (field: string) => void
+  colorByField: (field: string | undefined) => void
 }
 
 // Reads are currently colored by exactly this tag.
-function isColoringByTag(colorField: string, tag: string) {
+function isColoringByTag(colorField: string | undefined, tag: string) {
   return fieldTag(colorField) === tag
 }
 
@@ -64,24 +64,23 @@ function isColoringByTag(colorField: string, tag: string) {
 // means "don't color by this tag", submitting turned those colors off.
 function defaultColorByTag(model: GroupByDialogModel, tag: string) {
   return (
-    (model.colorField === '' && !model.baseLayer) ||
+    (model.colorField === undefined && !model.baseLayer) ||
     isColoringByTag(model.colorField, tag)
   )
 }
 
-// The color field to apply after grouping by `tag`: the tag when checked; when
-// unchecked, undo only the coloring this dialog set (same tag), else leave the
-// existing field (undefined) alone.
-function nextColorField(
-  colorField: string,
+// After grouping by `tag`: color by the tag when checked; when unchecked, undo
+// only the coloring this dialog set (same tag), else leave the fill alone.
+function applyColorByTag(
+  model: GroupByDialogModel,
   tag: string,
   alsoColorByTag: boolean,
 ) {
-  return alsoColorByTag
-    ? `${TAG_FIELD_PREFIX}${tag}`
-    : isColoringByTag(colorField, tag)
-      ? ''
-      : undefined
+  if (alsoColorByTag) {
+    model.colorByField(`${TAG_FIELD_PREFIX}${tag}`)
+  } else if (isColoringByTag(model.colorField, tag)) {
+    model.colorByField(undefined)
+  }
 }
 
 // Group reads into stacked sections by a tag value (HP, RG, ...). Tag is the one
@@ -147,10 +146,7 @@ const GroupByDialog = observer(function GroupByDialog(props: {
 
   const handleSubmit = () => {
     model.facetByField(`${TAG_FIELD_PREFIX}${groupByTag}`)
-    const field = nextColorField(model.colorField, groupByTag, colorByTag)
-    if (field !== undefined) {
-      model.colorByField(field)
-    }
+    applyColorByTag(model, groupByTag, colorByTag)
     handleClose()
   }
 

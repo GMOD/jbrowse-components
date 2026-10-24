@@ -21,7 +21,7 @@ const SCAN: AttributeScan = [
 function setup(
   field: string | undefined,
   color?: string,
-  colorField = '',
+  colorField?: string,
   scan: AttributeScan = [],
 ) {
   const applyGroupBy = jest.fn()
@@ -123,7 +123,7 @@ test('the box lists what the scan found in view, with section counts', async () 
   const { getByTestId, scanGroupByCandidates } = setup(
     undefined,
     undefined,
-    '',
+    undefined,
     SCAN,
   )
   fireEvent.mouseDown(getByTestId('group-by-attribute'))
@@ -136,7 +136,12 @@ test('the box lists what the scan found in view, with section counts', async () 
 })
 
 test('the caption says what the typed attribute sections into, before anything is applied', async () => {
-  const { getByTestId, applyGroupBy } = setup(undefined, undefined, '', SCAN)
+  const { getByTestId, applyGroupBy } = setup(
+    undefined,
+    undefined,
+    undefined,
+    SCAN,
+  )
   typeAttribute(getByTestId('group-by-attribute'), 'biotype')
   await screen.findByText('Found values: lncRNA, protein_coding')
   typeAttribute(getByTestId('group-by-attribute'), 'name')

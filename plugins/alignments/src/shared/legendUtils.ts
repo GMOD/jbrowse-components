@@ -542,7 +542,7 @@ const FIRST_OF_PAIR_LABELS: Partial<Record<SwatchCategory, string>> = {
 // Per-field relabeling of the shared fwd/rev-strand swatches: the fragment
 // strand under `firstOfPairStrand`, a split segment against its molecule under
 // the orientation fields, and the read's own strand under `strand`.
-function strandLabelOverrides(colorField: string) {
+function strandLabelOverrides(colorField: string | undefined) {
   return colorField === 'firstOfPairStrand'
     ? FIRST_OF_PAIR_LABELS
     : colorField === 'strand'
@@ -557,7 +557,7 @@ function strandLabelOverrides(colorField: string) {
 // `declared` is `encoding.color.scale.names` by bucket (`declaredReadLabels`), which names a
 // bucket over every wording here.
 export function readCategoryLabelOverrides(
-  colorField: string,
+  colorField: string | undefined,
   declared: Partial<Record<ReadColorCategory, string>> = {},
 ): Partial<Record<ReadColorCategory, string>> {
   const tag = fieldTag(colorField)
@@ -957,11 +957,11 @@ function bakedValueLegend(
 
 /** The key of a tag, attribute or MAPQ painted through a linear ramp. */
 export function bakedRampScale(
-  field: string,
+  field: string | undefined,
   scale: BakedColorScale | undefined,
   extent?: readonly [number, number],
 ): RampScale | undefined {
-  return scale?.kind === 'linear'
+  return scale?.kind === 'linear' && field !== undefined
     ? {
         kind: 'ramp',
         id: READS_RAMP_ID,
@@ -987,7 +987,7 @@ export function colorRampScales({
   linearFieldExtent,
   baseQualityExtent,
 }: {
-  colorField: string
+  colorField: string | undefined
   baseLayer: BaseLayer | undefined
   bakedScale: BakedColorScale | undefined
   linearFieldExtent: Extent
@@ -1049,7 +1049,7 @@ function sortedBakedValues(
 
 // XS/TS/ts encode strand rather than a categorical value, so they are keyed by
 // the strand pair rather than by discovered values.
-function isStrandTag(colorField: string) {
+function isStrandTag(colorField: string | undefined) {
   const tag = fieldTag(colorField)
   return tag !== undefined && STRAND_TAGS.has(tag)
 }
@@ -1123,7 +1123,7 @@ function readFillLegend({
   // The plain fill paints every read one flat color ('plain'),
   // which isn't a CATEGORY_LEGEND bucket, so without an explicit entry its
   // legend would be empty and "Show legend" would render nothing.
-  if (colorField === '') {
+  if (colorField === undefined) {
     // Under a modification layer the plain fill is that layer's strand tint,
     // which the buckets key.
     return paintsModifications(baseLayer)
@@ -1159,8 +1159,8 @@ function readFillLegend({
 // The display-supplied half of the legend's inputs — everything but the live
 // palette and the bucket scan, which the two consumers below split differently.
 interface ReadDisplayLegendArgs {
-  // `encoding.color.field`, `''` for the plain fill
-  colorField: string
+  // `encoding.color.field`, undefined for the plain fill
+  colorField: string | undefined
   // `encoding.color.scale.names` against what it names (`declaredReadLabels`)
   labels?: DeclaredReadLabels
   // A threshold key lists its highest interval first (`colorKeyDescending`).

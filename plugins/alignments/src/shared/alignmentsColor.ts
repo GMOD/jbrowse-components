@@ -144,15 +144,17 @@ export function alignmentsColorProblems(setting: AlignmentsColorSetting) {
 export type AlignmentsColorEncoding = ReturnType<typeof alignmentsColorEncoding>
 
 /**
- * The field a resolved `encoding.color` fills reads by, `''` for the plain
- * fill: a constant, a per-base variable, which `pileup.bases` draws, and a
- * read category only a facet answers paint none.
+ * The field a resolved `encoding.color` fills reads by, undefined for the
+ * plain fill: a constant, a per-base variable, which `pileup.bases` draws, and
+ * a read category only a facet answers paint none.
  */
-export function readColorFieldOf(encoding: AlignmentsColorEncoding) {
+export function readColorFieldOf(
+  encoding: AlignmentsColorEncoding,
+): string | undefined {
   return typeof encoding !== 'object' ||
     baseLayerOfField(encoding.field) ||
     FACET_ONLY_FIELDS.has(encoding.field)
-    ? ''
+    ? undefined
     : encoding.field
 }
 
@@ -182,10 +184,10 @@ export function baseLayerOf(
  * modification layer's own body, a pale strand tint the marks read against.
  */
 export function bodyColorKind(
-  colorField: string,
+  colorField: string | undefined,
   baseLayer: BaseLayer | undefined,
 ): ColorFieldKind {
-  return colorField === '' &&
+  return colorField === undefined &&
     baseLayer &&
     MODIFICATION_LAYER_FIELDS.has(baseLayer.field)
     ? baseLayer.field
@@ -196,7 +198,7 @@ export function bodyColorKind(
  * Whether the main thread bakes a color per read through the `encoding.color`
  * scale: from a value the worker ships, or from the read's MAPQ.
  */
-export function isBakedField(colorField: string) {
+export function isBakedField(colorField: string | undefined) {
   const kind = colorFieldKindOf(colorField)
   return kind === 'mapq' || kind === 'mateRefName' || kind === 'tag'
 }
