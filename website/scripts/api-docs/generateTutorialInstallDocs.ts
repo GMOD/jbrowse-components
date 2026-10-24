@@ -10,12 +10,34 @@ import { rewriteGroupedMarkerBlocks } from './util.ts'
 // for the language package managers. `tutorialInstall.json` holds a tool's
 // package name under each manager that has one, so a rename changes every page
 // in one commit. A tool apt lacks but ships as a Linux x86_64 binary also gets
-// a wget line; one with no packaged install stays a bullet with a link.
+// a wget line; one with no packaged install stays a bullet with a link. A
+// package released with JBrowse names its `npmPrerelease` dist-tag, which the
+// npm line installs while JBrowse is on a prerelease, as the tutorials' beta
+// notice tells readers to.
 const MANAGERS = ['apt', 'conda', 'cargo', 'pip', 'npm'] as const
 
 type Manager = (typeof MANAGERS)[number]
 
-type Entry = Partial<Record<Manager, string>> & { download?: string[] }
+type Entry = Partial<Record<Manager, string>> & {
+  download?: string[]
+  npmPrerelease?: string
+}
+
+const PRERELEASE = (
+  JSON.parse(
+    fs.readFileSync(
+      new URL('../../../products/jbrowse-web/package.json', import.meta.url),
+      'utf8',
+    ),
+  ) as { version: string }
+).version.includes('-')
+
+function packageOf(entry: Entry, m: Manager) {
+  const name = entry[m]
+  return name && m === 'npm' && PRERELEASE && entry.npmPrerelease
+    ? `${name}@${entry.npmPrerelease}`
+    : name
+}
 
 const REGISTRY = JSON.parse(
   fs.readFileSync(new URL('./tutorialInstall.json', import.meta.url), 'utf8'),
@@ -62,7 +84,10 @@ export function renderInstall(tools: string[], where: string) {
     return { tool, entry }
   })
   const packages = (m: Manager) =>
-    entries.flatMap(({ entry }) => (entry[m] ? [entry[m]] : []))
+    entries.flatMap(({ entry }) => {
+      const name = packageOf(entry, m)
+      return name ? [name] : []
+    })
 
   const lines: string[] = []
   const apt = packages('apt')

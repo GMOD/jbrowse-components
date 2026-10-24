@@ -11,8 +11,8 @@
 # its proteinFeatures.
 #
 # Requires: samtools, gffread, hmmscan + hmmpress (HMMER 3), bgzip + tabix
-#           (htslib), and node (the JBrowse CLI is fetched via npx unless
-#           `jbrowse` is already on PATH).
+#           (htslib), and node. A `jbrowse` on PATH runs if it has
+#           make-protein-features; otherwise npx fetches a CLI that does.
 # Usage:    bash scripts/build_protein_domains.sh genome.fa genes.gff3 [outdir]
 #
 # Pfam-A.hmm (about 1.5 GB pressed) downloads into the output directory once.
@@ -50,10 +50,10 @@ mkdir -p "$OUTDIR"
 cd "$OUTDIR"
 APP=jbrowse2
 
-if command -v jbrowse >/dev/null 2>&1; then
+if jbrowse make-protein-features --help >/dev/null 2>&1; then
   jb() { jbrowse "$@"; }
 else
-  jb() { npx -y @jbrowse/cli "$@"; }
+  jb() { npx -y '@jbrowse/cli@>=5.0.0-beta.18' "$@"; }
 fi
 
 # ── The FASTA, uncompressed and indexed ──────────────────────────────────────

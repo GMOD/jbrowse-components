@@ -49,7 +49,7 @@ wget -P ~/.local/bin \
   https://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/liftOver
 chmod +x ~/.local/bin/bedGraphToBigWig ~/.local/bin/liftOver
 # any platform
-npm install -g @jbrowse/cli
+npm install -g @jbrowse/cli@next
 ```
 
 <!-- TUTORIAL_INSTALL samtools,htslib,jbrowse-cli,bedGraphToBigWig,liftOver END -->

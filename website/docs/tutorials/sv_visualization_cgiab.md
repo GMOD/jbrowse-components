@@ -48,7 +48,7 @@ sudo apt install samtools minimap2 nodejs
 # or conda, which has every tool above
 conda install -c bioconda -c conda-forge samtools minimap2 nodejs
 # any platform
-npm install -g @jbrowse/cli
+npm install -g @jbrowse/cli@next
 ```
 
 <!-- TUTORIAL_INSTALL samtools,minimap2,node,jbrowse-cli END -->

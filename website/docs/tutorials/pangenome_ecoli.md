@@ -57,7 +57,7 @@ wget -P ~/.local/bin \
 chmod +x ~/.local/bin/bedGraphToBigWig ~/.local/bin/datasets ~/.local/bin/dataformat
 # any platform
 cargo install gfa-to-tabix
-npm install -g @jbrowse/cli
+npm install -g @jbrowse/cli@next
 ```
 
 <!-- TUTORIAL_INSTALL samtools,htslib,minimap2,node,jbrowse-cli,bedGraphToBigWig,datasets,gfa-to-tabix END -->

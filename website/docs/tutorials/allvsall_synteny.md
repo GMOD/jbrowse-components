@@ -51,7 +51,7 @@ wget -P ~/.local/bin \
   https://ftp.ncbi.nlm.nih.gov/pub/datasets/command-line/v2/linux-amd64/dataformat
 chmod +x ~/.local/bin/datasets ~/.local/bin/dataformat
 # any platform
-npm install -g @jbrowse/cli
+npm install -g @jbrowse/cli@next
 ```
 
 <!-- TUTORIAL_INSTALL samtools,htslib,minimap2,node,jbrowse-cli,datasets END -->

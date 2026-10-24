@@ -127,9 +127,11 @@
     "pip": "whatshap"
   },
   "jbrowse-cli": {
-    "npm": "@jbrowse/cli"
+    "npm": "@jbrowse/cli",
+    "npmPrerelease": "next"
   },
   "jbrowse-img": {
-    "npm": "@jbrowse/img"
+    "npm": "@jbrowse/img",
+    "npmPrerelease": "next"
   }
 }

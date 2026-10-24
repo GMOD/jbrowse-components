@@ -26,7 +26,7 @@ breast tumors we:
 <!-- TUTORIAL_INSTALL jbrowse-cli START -->
 
 ```bash
-npm install -g @jbrowse/cli
+npm install -g @jbrowse/cli@next
 ```
 
 <!-- TUTORIAL_INSTALL jbrowse-cli END -->

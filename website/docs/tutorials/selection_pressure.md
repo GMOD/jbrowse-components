@@ -43,7 +43,7 @@ sudo apt install tabix diamond-aligner nodejs
 conda install -c bioconda -c conda-forge htslib diamond nodejs
 # any platform
 pip install jcvi biopython
-npm install -g @jbrowse/cli
+npm install -g @jbrowse/cli@next
 ```
 
 <!-- TUTORIAL_INSTALL htslib,diamond,node,jbrowse-cli,jcvi,biopython END -->

@@ -40,7 +40,7 @@ sudo apt install diamond-aligner nodejs
 conda install -c bioconda -c conda-forge diamond nodejs
 # any platform
 pip install jcvi biopython
-npm install -g @jbrowse/cli
+npm install -g @jbrowse/cli@next
 ```
 
 <!-- TUTORIAL_INSTALL diamond,node,jbrowse-cli,jcvi,biopython END -->

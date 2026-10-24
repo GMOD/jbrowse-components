@@ -26,7 +26,7 @@ tumor and normal reads. We:
 <!-- TUTORIAL_INSTALL jbrowse-img START -->
 
 ```bash
-npm install -g @jbrowse/img
+npm install -g @jbrowse/img@next
 ```
 
 <!-- TUTORIAL_INSTALL jbrowse-img END -->

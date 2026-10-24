@@ -42,7 +42,7 @@ sudo apt install gffread hmmer tabix samtools nodejs
 conda install -c bioconda -c conda-forge gffread hmmer htslib samtools \
   nodejs
 # any platform
-npm install -g @jbrowse/cli
+npm install -g @jbrowse/cli@next
 ```
 
 <!-- TUTORIAL_INSTALL gffread,hmmer,htslib,samtools,node,jbrowse-cli END -->

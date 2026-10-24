@@ -36,7 +36,7 @@ sudo apt install tabix nodejs
 # or conda, which has every tool above
 conda install -c bioconda -c conda-forge htslib nodejs
 # any platform
-npm install -g @jbrowse/cli
+npm install -g @jbrowse/cli@next
 ```
 
 <!-- TUTORIAL_INSTALL htslib,node,jbrowse-cli END -->

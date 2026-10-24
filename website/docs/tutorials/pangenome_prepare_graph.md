@@ -49,7 +49,7 @@ conda install -c bioconda -c conda-forge htslib bcftools gfatools minigraph \
   vg
 # any platform
 cargo install gfa-to-tabix
-npm install -g @jbrowse/cli
+npm install -g @jbrowse/cli@next
 ```
 
 <!-- TUTORIAL_INSTALL htslib,bcftools,gfa-to-tabix,gfatools,minigraph,vg,jbrowse-cli END -->
