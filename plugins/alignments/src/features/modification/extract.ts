@@ -194,8 +194,9 @@ export function extractModifications(
  * and unmodified.
  *
  * Takes the whole bases filter rather than just its context, because the
- * winner selection below also has to know which codes it left ticked. It did not, and that made the "Modification types"
- * checkboxes inert in this view while the LEGEND read the same predicate and
+ * winner selection below also has to know which codes it left ticked. Taking
+ * the context alone made the "Modification types" checkboxes inert in this
+ * view while the LEGEND read the same predicate and
  * dropped the swatch — so unticking 5hmC removed its key and left its magenta
  * marks on screen, off a box whose whole claim is that it names every color
  * drawn.

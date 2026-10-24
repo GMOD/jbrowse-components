@@ -164,12 +164,12 @@ export function readsConfOf(
     : undefined
 }
 
-/** `readsConfOf`, for a write or a test: a display without the four throws. */
+/** `readsConfOf`, for a write or a test: a display without them throws. */
 export function requireReadsConf(self: ConfigSlotSelf) {
   const conf = readsConfOf(self.configuration)
   if (!conf) {
     throw new Error(
-      `${self.type} has no sashimi, junction filter, pileup.bases or modifications`,
+      `${self.type} has no sashimi, junction filter or pileup.bases`,
     )
   }
   return conf

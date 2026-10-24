@@ -5,8 +5,7 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
  * #category display
  * The pileup's `bases.unmodified` layer: the unmodified side of the
  * `modifications` and `bisulfite` fields, in blue. Under `modifications` it
- * paints every cytosine in the `context` a read's 5mC or 5hmC calls left
- * implicit, the methylation view, and each other call more likely
+ * paints every cytosine in the `context` a read's 5mC calls left implicit, the methylation view, and each other call more likely
  * unmodified; the probability floor does not apply.
  *
  * #example

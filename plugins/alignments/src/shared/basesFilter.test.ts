@@ -10,7 +10,7 @@ import {
   basesFilterOf,
   basesFilterProblems,
   contextEntries,
-  withBasesField,
+  withBasesFields,
 } from './basesFilter.ts'
 
 const schema = configSchemaFactory(new PluginManager())
@@ -67,20 +67,18 @@ test('a floor at a call probability reaches the worker exactly', () => {
 
 test('a write at the default leaves the field unwritten', () => {
   expect(
-    withBasesField([], 'probability', [{ field: 'probability', gte: 0.1 }]),
+    withBasesFields([], { probability: [{ field: 'probability', gte: 0.1 }] }),
   ).toEqual([])
-  expect(withBasesField([], 'context', contextEntries('CG'))).toEqual([])
-  expect(withBasesField([], 'context', contextEntries('all'))).toEqual([
+  expect(withBasesFields([], { context: contextEntries('CG') })).toEqual([])
+  expect(withBasesFields([], { context: contextEntries('all') })).toEqual([
     { field: 'context' },
   ])
   expect(
-    withBasesField(
-      [{ field: 'probability', gte: 0.5 }],
-      'probability',
-      undefined,
-    ),
+    withBasesFields([{ field: 'probability', gte: 0.5 }], {
+      probability: undefined,
+    }),
   ).toEqual([])
-  expect(basesFilterOf(withBasesField([], 'context', []))).toEqual({
+  expect(basesFilterOf(withBasesFields([], { context: [] }))).toEqual({
     ...DEFAULT_BASES_FILTER,
     context: 'all',
   })

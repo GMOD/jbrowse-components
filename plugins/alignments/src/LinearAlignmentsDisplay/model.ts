@@ -90,7 +90,7 @@ import {
   declaredReadLabels,
   isBakedField,
 } from '../shared/alignmentsColor.ts'
-import { withBasesField } from '../shared/basesFilter.ts'
+import { withBasesFields } from '../shared/basesFilter.ts'
 import {
   paintsEveryBase,
   paintsModifications,
@@ -3183,11 +3183,7 @@ export default function stateModelFactory(
               setConf(
                 conf,
                 ['pileup', 'bases', 'filter'],
-                Object.entries(filter).reduce(
-                  (list, [name, entries]) =>
-                    withBasesField(list, name, entries),
-                  predicatesOf(bases.filter),
-                ),
+                withBasesFields(predicatesOf(bases.filter), filter),
               )
             }
           },

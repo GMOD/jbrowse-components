@@ -157,12 +157,16 @@ export function colorSlotsOf(value: unknown): DisplayEntry {
 /**
  * @deprecated The v5 beta's `modifications: { unmodified }`, which ggjbrowse
  * releases before its v5 re-pin write: `calls` and `all` are
- * `pileup.bases.unmodified.show`.
+ * `pileup.bases.unmodified.show`, and `hidden` its `false`, which a stored
+ * delta needs to beat a base that shows it.
  */
 export const liftModifications: RetiredSpelling = value =>
-  isObject(value) &&
-  (value.unmodified === 'calls' || value.unmodified === 'all')
-    ? { pileup: { bases: { unmodified: { show: true } } } }
+  isObject(value) && typeof value.unmodified === 'string'
+    ? {
+        pileup: {
+          bases: { unmodified: { show: value.unmodified !== 'hidden' } },
+        },
+      }
     : {}
 
 // v4's `mismatchAlpha` switched the fade by base quality

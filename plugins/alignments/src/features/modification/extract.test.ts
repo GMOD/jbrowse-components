@@ -131,7 +131,7 @@ describe('extractModifications', () => {
     expect(drawn(true)).toEqual(['m'])
   })
 
-  test('shownModifications allow-list renders only the listed type but still detects all', () => {
+  test('a code filter renders only the listed type but still detects all', () => {
     const { out, detected } = run({
       field: 'modifications',
       filter: basesFilterOf([
@@ -341,11 +341,11 @@ describe('the fill view honours the modification-type filter', () => {
       seq: 'CGCGCGCG',
       tags: { MM: 'C+m?,0,0,0,0;', ML: [230, 10, 20, 200] },
     })
-    const fill = (shownModifications: string[]) =>
+    const fill = (codes: string[]) =>
       runFill(mOnly, {
         field: 'modifications',
         unmodified: true,
-        filter: basesFilterOf([{ field: 'code', oneOf: shownModifications }]),
+        filter: basesFilterOf([{ field: 'code', oneOf: codes }]),
       })
     expect(fill(['m']).map(m => m.position)).toEqual([100, 102, 104, 106])
     expect(fill(['h'])).toEqual([])
@@ -445,7 +445,7 @@ describe('the 2-color view weighs 5mC and 5hmC per cytosine', () => {
 })
 
 describe('the fill view under mixed skip flags', () => {
-  const positions = (mm: string, shownModifications?: string[]) =>
+  const positions = (mm: string, codes?: string[]) =>
     runFill(
       new SimpleFeature({
         uniqueId: 'mixed',
@@ -460,7 +460,7 @@ describe('the fill view under mixed skip flags', () => {
       {
         field: 'modifications',
         unmodified: true,
-        filter: basesFilterOf([{ field: 'code', oneOf: shownModifications }]),
+        filter: basesFilterOf([{ field: 'code', oneOf: codes }]),
       },
     ).map(m => m.position)
 

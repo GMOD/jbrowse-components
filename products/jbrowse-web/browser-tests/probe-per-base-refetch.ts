@@ -203,7 +203,7 @@ async function installHook(page: Page) {
         issuedAt: performance.now(),
         perBaseBinBp: args.perBaseBinBp as number,
         colorBy:
-          (args.baseLayer as { type: string } | undefined)?.type ?? 'default',
+          (args.baseLayer as { field: string } | undefined)?.field ?? 'default',
         region: `${region.refName}:${region.start}-${region.end}`,
         statusAfterStop: 0,
       }

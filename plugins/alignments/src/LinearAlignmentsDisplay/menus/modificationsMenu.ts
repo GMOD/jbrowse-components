@@ -147,9 +147,17 @@ export function modificationsMenu(model: ModificationsMenuModel): MenuItem {
           isDefault:
             filter.probability.min === DEFAULT_BASES_FILTER.probability.min &&
             !filter.probability.strict,
+          // keeps a written `gt`: the slider moves the floor, not its test
           onChange: v => {
             model.setBases({
-              filter: { [PROBABILITY]: [{ field: PROBABILITY, gte: v / 100 }] },
+              filter: {
+                [PROBABILITY]: [
+                  {
+                    field: PROBABILITY,
+                    [filter.probability.strict ? 'gt' : 'gte']: v / 100,
+                  },
+                ],
+              },
             })
           },
           onReset: () => {

@@ -602,7 +602,7 @@ describe('getReadDisplayLegendItems', () => {
     ])
   })
 
-  test('shownModifications allow-list keeps only the listed swatch', () => {
+  test('a code filter keeps only the listed swatch', () => {
     const mods = new Map([
       ['m', 'red'],
       ['h', 'blue'],

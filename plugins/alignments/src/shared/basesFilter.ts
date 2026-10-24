@@ -1,7 +1,7 @@
 import { layerFilterProblems } from '@jbrowse/alignments-core/coverageBandConfigSchema'
 import { floorOf, predicatesOf } from '@jbrowse/core/util/fieldPredicate'
 
-import { entriesOn, mergeFilter, withField } from './alignmentsFilter.ts'
+import { entriesOn, mergeFilter, withFields } from './alignmentsFilter.ts'
 
 import type { BasesFilter } from './types.ts'
 import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
@@ -55,15 +55,14 @@ export function basesFilterOf(filter: unknown): BasesFilter {
 export const DEFAULT_BASES_FILTER = basesFilterOf([])
 
 /**
- * The written list with `field`'s entries replaced, as `withField` does for
- * the display's `filter`: `undefined` returns the field to its default.
+ * The written list with each field the patch names replaced, as `withFields`
+ * does for the display's `filter`: `undefined` returns a field to its default.
  */
-export function withBasesField(
+export function withBasesFields(
   written: readonly FieldPredicate[],
-  field: string,
-  entries: readonly FieldPredicate[] | undefined,
+  patch: Readonly<Record<string, readonly FieldPredicate[] | undefined>>,
 ) {
-  return withField(written, field, entries, BASES_FILTER_DEFAULTS)
+  return withFields(written, patch, BASES_FILTER_DEFAULTS)
 }
 
 /** The `context` entries for one context, none for every cytosine. */

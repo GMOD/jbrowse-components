@@ -98,7 +98,7 @@ export function baseLayerOfField(field: string | undefined) {
 
 const FACET_ONLY_FIELDS = new Set<string>(FACET_ONLY_DIMENSIONS)
 
-const READS_MODIFICATION_SETTINGS = new Set<BaseColorField>([
+const MODIFICATION_LAYER_FIELDS = new Set<BaseColorField>([
   'modifications',
   'bisulfite',
 ])
@@ -170,7 +170,7 @@ export function baseLayerOf(
     : undefined
   return field === undefined
     ? undefined
-    : READS_MODIFICATION_SETTINGS.has(field)
+    : MODIFICATION_LAYER_FIELDS.has(field)
       ? {
           field,
           unmodified: readConfObject(bases, ['unmodified', 'show']) as boolean,
@@ -189,7 +189,7 @@ export function bodyColorKind(
 ): ColorFieldKind {
   return colorField === '' &&
     baseLayer &&
-    READS_MODIFICATION_SETTINGS.has(baseLayer.field)
+    MODIFICATION_LAYER_FIELDS.has(baseLayer.field)
     ? baseLayer.field
     : colorFieldKindOf(colorField)
 }

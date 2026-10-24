@@ -106,7 +106,7 @@ export type TagColorScale = 'ordinal' | 'linear'
 export interface BaseLayer {
   field: BaseColorField
   // `unmodified.show`: paint the unmodified side blue, at every cytosine in
-  // context a 5mC or 5hmC group left implicit, and at each call more likely
+  // context a read's 5mC group left implicit, and at each call more likely
   // unmodified
   unmodified?: boolean
   filter?: BasesFilter

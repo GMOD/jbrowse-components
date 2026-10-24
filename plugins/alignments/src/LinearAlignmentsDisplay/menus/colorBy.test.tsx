@@ -2,7 +2,7 @@ import { isValidElement } from 'react'
 
 import { resolveSubMenu, staysOpenOnClick } from '@jbrowse/core/ui'
 
-import { basesFilterOf, withBasesField } from '../../shared/basesFilter.ts'
+import { basesFilterOf, withBasesFields } from '../../shared/basesFilter.ts'
 import { colorFieldOptions } from '../../shared/colorFieldOptions.ts'
 import { getColorByMenuItem } from './colorBy.ts'
 
@@ -54,10 +54,7 @@ function makeModel() {
         show: show ?? bases.show,
         field: field ?? bases.field,
         unmodified: unmodified ?? bases.unmodified,
-        filter: Object.entries(filter ?? {}).reduce(
-          (list, [name, entries]) => withBasesField(list, name, entries),
-          bases.filter,
-        ),
+        filter: withBasesFields(bases.filter, filter ?? {}),
       }
     },
     modificationsReady: false,

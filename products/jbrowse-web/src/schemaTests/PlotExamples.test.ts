@@ -108,7 +108,6 @@ test("each display's plot settings", () => {
       'facet',
       'filter',
       'legend',
-      'modifications',
       'pileup',
       'readConnections',
       'sashimi',
