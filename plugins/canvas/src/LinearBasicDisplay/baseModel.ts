@@ -23,7 +23,7 @@ import { STRAND_FIELD } from '@jbrowse/core/util/categoricalField'
 import {
   baseJexlFilters,
   configuredJexlFilters,
-  jexlFilterNarrowing,
+  filterFieldNarrowing,
   writeJexlFilters,
 } from '@jbrowse/core/util/jexlFilters'
 import { getRpcSessionId, toTrackConfigEntry } from '@jbrowse/core/util/tracks'
@@ -1526,7 +1526,7 @@ export default function baseStateModelFactory(
        */
       featureNarrowings(): Reversibles {
         return {
-          filter: jexlFilterNarrowing(self),
+          filter: filterFieldNarrowing(self, () => true),
           solo: {
             count: self.soloApplied ? 1 : 0,
             clear: () => {

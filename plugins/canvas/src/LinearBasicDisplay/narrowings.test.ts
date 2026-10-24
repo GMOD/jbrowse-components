@@ -1,3 +1,4 @@
+import { setConf } from '@jbrowse/core/configuration'
 import {
   activeCount,
   clearAll,
@@ -24,6 +25,20 @@ describe('declared narrowings drive count and clear together', () => {
     clearAll(display.featureNarrowings())
 
     expect(activeCount(display.featureNarrowings())).toBe(0)
+  })
+
+  it('counts and clears a field predicate, not only a jexl: entry', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display } = createDisplay()
+
+    setConf(display.configuration, 'filter', [
+      { field: 'score', gte: 5 },
+      `jexl:get(feature,'name')=='a'`,
+    ])
+
+    expect(activeCount(display.featureNarrowings())).toBe(2)
+    clearAll(display.featureNarrowings())
+    expect(display.configuration.filter).toEqual([])
   })
 
   it('gives every active narrowing and mark a way back', () => {

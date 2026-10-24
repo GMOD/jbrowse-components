@@ -60,7 +60,7 @@ test('a filter the config declares counts nothing, and the clear returns to it',
     setGenesFilter: (value?: string) => void
     featureNarrowings: () => Reversibles
   }
-  const genes = () => display.featureNarrowings().genes!
+  const genes = () => display.featureNarrowings().filter!
   expect(genes().count).toBe(0)
   display.setGenesFilter(undefined)
   expect(display.genesFilter).toBeUndefined()

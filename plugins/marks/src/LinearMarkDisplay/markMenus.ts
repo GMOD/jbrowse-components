@@ -3,7 +3,7 @@ import { lazy } from 'react'
 import { filterMenuItems } from '@jbrowse/core/ui/filterMenuItems'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import { getDialogHost } from '@jbrowse/core/util'
-import { jexlFilterNarrowing } from '@jbrowse/core/util/jexlFilters'
+import { filterFieldNarrowing } from '@jbrowse/core/util/jexlFilters'
 import { legendCheckboxItem } from '@jbrowse/display-kit/LegendMixin'
 import {
   hiddenGroupsItems,
@@ -97,7 +97,7 @@ export function markTrackMenuItems(self: LinearMarkDisplayModel): MenuItem[] {
     }),
     ...pinDistinctShapesMenuItems(self),
     ...filterMenuItems({
-      narrowings: { filter: jexlFilterNarrowing(self) },
+      narrowings: { filter: filterFieldNarrowing(self, () => true) },
       onEdit: () => {
         getDialogHost(self).queueDialog(handleClose => [
           JexlFilterDialog,

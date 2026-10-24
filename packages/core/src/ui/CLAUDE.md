@@ -26,7 +26,7 @@ Anything narrowing or marking what the user sees is one
   holds for any extension seam.
 - `featureNarrowings` hide data; `featureMarks` (highlights, pins) don't.
   `filterMenuItems` takes only narrowings.
-- `jexlFilterNarrowing` counts "override differs from config", never a length:
+- `filterFieldNarrowing` counts "override differs from config", never a length:
   an admin's filter is not a user narrowing.
 
 ## Styling

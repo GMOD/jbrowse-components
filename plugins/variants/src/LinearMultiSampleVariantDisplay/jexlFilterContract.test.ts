@@ -2,7 +2,7 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { setConf } from '@jbrowse/core/configuration'
 import { activeCount } from '@jbrowse/core/ui/filterMenuItems'
 import { predicatesOf } from '@jbrowse/core/util/fieldPredicate'
-import { jexlFilterNarrowing } from '@jbrowse/core/util/jexlFilters'
+import { filterFieldNarrowing } from '@jbrowse/core/util/jexlFilters'
 import CanvasPlugin from '@jbrowse/plugin-canvas'
 import LinearGenomeViewPlugin from '@jbrowse/plugin-linear-genome-view'
 
@@ -95,23 +95,45 @@ describe.each(CASES)('%s jexl filters', (_name, createDisplay) => {
     expect(display.configuredFilters()).toEqual([
       "jexl:get(feature,'score')>10",
     ])
-    expect(activeCount({ filter: jexlFilterNarrowing(display) })).toBe(0)
+    expect(
+      activeCount({ filter: filterFieldNarrowing(display, () => true) }),
+    ).toBe(0)
 
     display.setFilter(["jexl:get(feature,'score')>99"])
     expect(display.configuredFilters()).toEqual([
       "jexl:get(feature,'score')>99",
     ])
-    expect(activeCount({ filter: jexlFilterNarrowing(display) })).toBe(1)
+    expect(
+      activeCount({ filter: filterFieldNarrowing(display, () => true) }),
+    ).toBe(1)
 
     display.setFilter([])
     expect(display.configuredFilters()).toEqual([])
-    expect(activeCount({ filter: jexlFilterNarrowing(display) })).toBe(1)
+    expect(
+      activeCount({ filter: filterFieldNarrowing(display, () => true) }),
+    ).toBe(1)
 
     display.setFilter(undefined)
     expect(display.configuredFilters()).toEqual([
       "jexl:get(feature,'score')>10",
     ])
-    expect(activeCount({ filter: jexlFilterNarrowing(display) })).toBe(0)
+    expect(
+      activeCount({ filter: filterFieldNarrowing(display, () => true) }),
+    ).toBe(0)
+  })
+
+  it('counts and clears a site predicate the menu writes no expression for', () => {
+    const { display } = declared.createDisplay()
+    setConf(display.configuration, 'filter', [
+      ...predicatesOf(display.configuration.filter),
+      { field: 'QUAL', gte: 30 },
+    ])
+    const filter = () => filterFieldNarrowing(display, () => true)
+    expect(activeCount({ filter: filter() })).toBe(1)
+    filter().clear()
+    expect(predicatesOf(display.configuration.filter)).toEqual([
+      { field: "jexl:get(feature,'score')>10", equal: true },
+    ])
   })
 })
 

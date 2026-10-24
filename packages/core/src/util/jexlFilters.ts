@@ -93,33 +93,36 @@ export function filterFieldNarrowing(
 ): Reversible {
   const written = predicatesOf(self.configuration.filter)
   const base = predicatesOf(baseDisplayConfig(self).filter)
-  const entriesOn = (list: FieldPredicate[], field: string) =>
-    JSON.stringify(list.filter(p => p.field === field))
+  // the `jexl:` expressions count as one filter, as the dialog edits them
+  const keyOf = (p: FieldPredicate) =>
+    p.field.startsWith('jexl:') ? 'jexl:' : p.field
+  const entriesOn = (list: FieldPredicate[], key: string) =>
+    JSON.stringify(list.filter(p => selects(p.field) && keyOf(p) === key))
   const moved = new Set(
     [...written, ...base]
-      .map(p => p.field)
-      .filter(
-        field =>
-          selects(field) &&
-          entriesOn(written, field) !== entriesOn(base, field),
-      ),
+      .filter(p => selects(p.field))
+      .map(keyOf)
+      .filter(key => entriesOn(written, key) !== entriesOn(base, key)),
   )
+  const isMoved = (p: FieldPredicate) => selects(p.field) && moved.has(keyOf(p))
   return {
     count: moved.size,
     // off the list as it stands when run: "Clear all" runs one clear after
     // another, and the list this one read may be gone by then
     clear: () => {
       setConf(self.configuration, 'filter', [
-        ...predicatesOf(self.configuration.filter).filter(
-          p => !moved.has(p.field),
-        ),
-        ...base.filter(p => moved.has(p.field)),
+        ...predicatesOf(self.configuration.filter).filter(p => !isMoved(p)),
+        ...base.filter(isMoved),
       ])
     },
   }
 }
 
 /**
+ * @deprecated `filterFieldNarrowing(self, () => true)`, which counts a field
+ * predicate too, where this counts only the `jexl:` entries and so missed a
+ * `{ field, gte }` that hid features.
+ *
  * The `Reversible` a display declares for its jexl filters. The count is
  * whether the filters differ from what the track's config declares, not the
  * number of expressions: a filter an admin declared is not something the user

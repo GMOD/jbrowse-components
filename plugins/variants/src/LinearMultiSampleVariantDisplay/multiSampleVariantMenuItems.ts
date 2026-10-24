@@ -5,10 +5,7 @@ import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import { assembleLocString, getDialogHost } from '@jbrowse/core/util'
 import { SV_TYPE_FIELD } from '@jbrowse/core/util/categoricalField'
 import { copyText } from '@jbrowse/core/util/copyText'
-import {
-  filterFieldNarrowing,
-  jexlFilterNarrowing,
-} from '@jbrowse/core/util/jexlFilters'
+import { filterFieldNarrowing } from '@jbrowse/core/util/jexlFilters'
 import { isJexl } from '@jbrowse/core/util/jexlStrings'
 import { legendCheckboxItem } from '@jbrowse/display-kit/LegendMixin'
 import {
@@ -42,7 +39,6 @@ import {
   MultiSampleVariantClusterDialog as ClusterDialog,
   JexlFilterDialog,
 } from '../shared/lazyDialogs.ts'
-import { isSiteField } from '../shared/minorAlleleFrequencyUtils.ts'
 import { IMPACT_FIELD } from '../shared/variantConsequence.ts'
 import { VARIANT_FILTER_EXAMPLES } from '../shared/variantFilterExamples.ts'
 import { variantFilterFields } from '../shared/variantFilterFields.ts'
@@ -351,18 +347,10 @@ export function variantTrackMenuItems(
         ]
       : []),
     ...filterMenuItems({
-      // Declared once (see `Reversible`), so the count in the label and what
-      // "Clear all filters" clears come from the same list — they were two,
-      // and a filter added to one and not the other is one the clear leaves on.
-      //
-      // Each counted by whether it differs from what the track's config
-      // declares (ADR-204), so an admin's cutoff is no narrowing of the
-      // user's. Neither slider names its own undo row; each has its own reset
-      // inline below, and the group clear is what resets the whole set.
-      narrowings: {
-        thresholds: filterFieldNarrowing(self, isSiteField),
-        filter: jexlFilterNarrowing(self),
-      },
+      // every field of the one `filter` list, each counted by whether it
+      // differs from what the track's config declares (ADR-204), so an
+      // admin's cutoff is no narrowing of the user's
+      narrowings: { filter: filterFieldNarrowing(self, () => true) },
       onEdit: () => {
         getDialogHost(self).queueDialog(handleClose => [
           JexlFilterDialog,

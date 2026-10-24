@@ -7,7 +7,6 @@ import { radioItems, toggleItem } from '@jbrowse/core/ui/menuItems'
 import { utrDefaultColor } from '@jbrowse/core/ui/palette'
 import { isGeneLikeType, pluralize } from '@jbrowse/core/util'
 import { predicatesOf, replaceField } from '@jbrowse/core/util/fieldPredicate'
-import { filterFieldNarrowing } from '@jbrowse/core/util/jexlFilters'
 import { isJexl } from '@jbrowse/core/util/jexlStrings'
 import {
   categoryEntries,
@@ -278,19 +277,8 @@ export default function stateModelFactory(
       const superShowSubmenuRadioGroups = self.showSubmenuRadioGroups
       const superTrackMenuItems = self.trackMenuItems
       const superContextMenuItems = self.contextMenuItems
-      const superFeatureNarrowings = self.featureNarrowings
       const superFilterSubMenuItems = self.filterSubMenuItems
       return {
-        featureNarrowings() {
-          return {
-            ...superFeatureNarrowings(),
-            genes: filterFieldNarrowing(
-              self,
-              field => field === GENE_LIKE_FIELD,
-            ),
-          }
-        },
-
         filterSubMenuItems() {
           return [
             ...superFilterSubMenuItems(),
