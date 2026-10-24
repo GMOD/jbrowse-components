@@ -56,14 +56,9 @@ Landed on main: predicate missing-value rule, whole-list filter counts,
 `reference` filter and unread-field warnings, config-doc row paths,
 `x2.refName`, VcfFeature site fields, matrix `reverse` by name, Edit plot
 filter defaults, type checking in every product, threshold ramp fill,
-`span` → `rect`. Still open, each needing no further call:
+`span` → `rect`, with ggjbrowse re-pinned and the circular synteny demo
+deployed. Still open, each needing no further call:
 
-- **ggjbrowse:** re-pin the engine and respell `R/wiggle.R`,
-  `tests/testthat/test-wiggle.R`, the gallery script and `docs/gallery.md`
-  from `span` to `rect`; add `names` to `ARRAY_SLOTS` (`R/alignments.R`),
-  whose absence sends a one-value `scale.names` as a scalar.
-- **Hosted demo:** `demos/circular_synteny_chimp/config.json` respells
-  `rect`; deploy it with `scripts/deploy-demo.sh`.
 - **jb2hubs:** a gate running the oldest supported release's
   `jbrowse validate` over generated configs, since a host now fails a track
   on a value it does not know (ADR-120 amendment).
@@ -101,12 +96,7 @@ filter defaults, type checking in every product, threshold ramp fill,
   its current spelling. Each rename needs a ggjbrowse engine re-pin, an R
   respell and a tutorial re-knit (memory `a-config-rename-reaches-ggjbrowse`),
   since the closed-schema bundle drops an old key silently. A new key needs
-  the re-pin too: `coverage.alleles.show` waits on one, and on a line in
-  `R/alignments.R` beside `interbase$show`. Its
-  `test-alignments.R:286` still expects `modifications$unmodified = "all"`
-  to fill more than `"calls"`, which `pileup.bases.unmodified.show` merged,
-  so the downstream canary stays red until that re-pin drops the assertion.
-  `dog10k_lof` waits
+  the re-pin too. `dog10k_lof` waits
   on the callset host's certificate.
 - **Figure specs:** [screenshot-spec-elegance.md](screenshot-spec-elegance.md)
   owns the respell. It can use the landed words now: filters (plain-equality
