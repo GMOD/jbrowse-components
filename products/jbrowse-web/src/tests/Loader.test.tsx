@@ -160,13 +160,11 @@ test('pops up a warning for evil plugin in sessionPlugins', async () => {
 }, 20000)
 
 test('can use config from a url with nonexistent share param ', async () => {
-  // no `password`, so the share cannot be decrypted — the reason is reported
-  // and the app shows the error this asserts
   const error = jest.spyOn(console, 'error').mockImplementation(() => {})
   const { findAllByText } = render(
     <App search="?config=test_data/volvox/config_main_thread.json&session=share-nonexist" />,
   )
   await findAllByText(/Error/, {}, delay)
-  expect(error.mock.calls.flat().join(' ')).toContain('missing its "password"')
+  expect(error.mock.calls.flat().join(' ')).toContain('lost its key')
   error.mockRestore()
 }, 20000)
