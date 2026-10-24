@@ -110,3 +110,23 @@ test("a synteny row's steps sit under the row", () => {
   const row = recipe.steps.find(s => s.title === 'Row 2 (peach)')
   expect(row?.substeps?.[0]?.example).toBe('This figure is at chr1.')
 })
+
+test('only the first row of a synteny view says how a track is added', () => {
+  const recipe = recipeOf({
+    views: [
+      {
+        type: 'LinearSyntenyView',
+        views: ['volvox', 'volvox_del'].map(assembly => ({
+          assembly,
+          loc: 'ctgA',
+          tracks: ['volvox_cram'],
+        })),
+      },
+    ],
+  })
+  const [first, second] = recipe.steps
+    .filter(s => s.title.startsWith('Row'))
+    .map(row => row.substeps?.[0]?.title)
+  expect(first).toContain('**Add track**')
+  expect(second).toMatch(/^Add the next track the same way\./)
+})

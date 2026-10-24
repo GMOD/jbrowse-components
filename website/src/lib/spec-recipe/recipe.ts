@@ -417,6 +417,8 @@ function viewSteps(
   // view's own track selector (see OPEN_TRACK)
   viaTrackSelector = false,
   viewType = view.type,
+  // shared by the rows of one view, so only the first says how to add a track
+  told = { addTrack: false },
 ): { steps: RecipeStep[]; unmapped: string[] } {
   const steps: RecipeStep[] = []
   const unmapped: string[] = []
@@ -437,9 +439,7 @@ function viewSteps(
     steps.push(...formSteps.steps)
     unmapped.push(...formSteps.unmapped)
   } else {
-    const entries = specTracks(view)
-    let explained = false
-    for (const entry of entries) {
+    for (const entry of specTracks(view)) {
       const { unmapped: trackUnmapped, ...step } = trackStep(
         entry,
         config,
@@ -447,9 +447,9 @@ function viewSteps(
         sessionTracks,
         undefined,
         viaTrackSelector,
-        explained,
+        told.addTrack,
       )
-      explained ||= step.title.startsWith('Add your track')
+      told.addTrack ||= step.title.startsWith('Add your track')
       steps.push(step)
       unmapped.push(...trackUnmapped)
     }
@@ -485,6 +485,7 @@ function viewSteps(
       label,
       true,
       subView.type ?? rowViewType(view.type),
+      told,
     )
     steps.push(...(label ? groupSteps(label, sub.steps) : sub.steps))
     unmapped.push(...sub.unmapped)
