@@ -26,7 +26,7 @@ export const TRIO_HAPLOTYPES = [
   { sample: 'HG02026', hp: 1, label: 'Father hap2' },
 ]
 export const trioVcfRows = {
-  domain: TRIO_HAPLOTYPES.map(h => `${h.sample} HP${h.hp}`),
+  sort: TRIO_HAPLOTYPES.map(h => `${h.sample} HP${h.hp}`),
   labels: Object.fromEntries(
     TRIO_HAPLOTYPES.map(h => [`${h.sample} HP${h.hp}`, h.label]),
   ),
