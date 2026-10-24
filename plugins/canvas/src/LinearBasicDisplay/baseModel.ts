@@ -88,6 +88,7 @@ import {
 } from './components/resolveRegionColors.ts'
 import {
   colorValuesInSpans,
+  domainLaneOf,
   featureColorKey,
   onScreenColorValues,
 } from './derivedColorKey.ts'
@@ -210,14 +211,6 @@ function domainAdapterOf(self: Parameters<typeof getConf>[0]) {
         entry,
       ) as typeof entry)
   return adapter ? (toJS(adapter) as Record<string, unknown>) : undefined
-}
-
-function domainLaneOf(data: FeatureDataResult): FeatureDataResult {
-  return {
-    ...data,
-    colorValues: data.domainColorValues,
-    rectColorValues: data.rectDomainColorValues ?? new Uint32Array(0),
-  }
 }
 
 function loadedFeatureData(
@@ -411,10 +404,7 @@ export default function baseStateModelFactory(
             return new Map(
               [...self.rpcDataMap].map(([idx, data]) => [
                 idx,
-                {
-                  colorValues: data.domainColorValues,
-                  rectColorValues: data.rectDomainColorValues,
-                },
+                domainLaneOf(data),
               ]),
             )
           },

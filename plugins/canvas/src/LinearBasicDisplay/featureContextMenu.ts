@@ -47,6 +47,8 @@ const FeatureSequenceDialog = lazy(
 export interface FeatureContextMenuInfo {
   item: FlatbushItem
   subfeature?: SubfeatureInfo
+  // A protein domain block; `subfeature` is then its transcript
+  domain?: SubfeatureInfo
   hgvsLabel?: string
   tooltipText?: string
   displayedRegionIndex: number
@@ -61,7 +63,13 @@ export interface FeatureMenuSelf
   contextMenuInfo: FeatureContextMenuInfo | undefined
   featureNoun: string
   loadedRegions: { get: (displayedRegionIndex: number) => Region | undefined }
-  rpcDataMap: ReadonlyMap<number, { flatbushItems: readonly FlatbushItem[] }>
+  rpcDataMap: ReadonlyMap<
+    number,
+    {
+      flatbushItems: readonly FlatbushItem[]
+      subfeatureInfos: readonly SubfeatureInfo[]
+    }
+  >
   pinnedFeatureIdSet: ReadonlySet<string>
   highlightedFeatureIdSet: ReadonlySet<string>
   soloFeatureIdSet: ReadonlySet<string>
@@ -150,9 +158,21 @@ function inspectItems({ self, info }: MenuContext): MenuItem[] {
   const {
     item: { featureId, startBp, endBp },
     subfeature,
+    domain,
     displayedRegionIndex,
   } = info
   return [
+    ...(domain
+      ? [
+          {
+            label: `Open ${domain.displayLabel || 'domain'} details`,
+            icon: MenuOpenIcon,
+            onClick: () => {
+              self.selectFeatureById(featureId, domain, displayedRegionIndex)
+            },
+          },
+        ]
+      : []),
     {
       label: `Open ${self.featureNoun} details`,
       icon: MenuOpenIcon,
@@ -256,6 +276,7 @@ function highlightItems(ctx: MenuContext): MenuItem[] {
     ? `${subfeatureNoun} (${subfeature.displayLabel})`
     : undefined
   return groupOrSingleRow({ label: 'Highlight', icon: Highlighter }, [
+    ...domainHighlightItems(ctx),
     ...(subfeature
       ? [
           highlightItem(
@@ -273,6 +294,33 @@ function highlightItems(ctx: MenuContext): MenuItem[] {
       : []),
     wholeItem,
   ])
+}
+
+// The clicked block is one exon's share of the domain, so the row spans every
+// block the domain drew on its transcript.
+function domainHighlightItems(ctx: MenuContext): MenuItem[] {
+  const { self, info } = ctx
+  const { domain, displayedRegionIndex } = info
+  if (!domain?.domainId) {
+    return []
+  }
+  const blocks =
+    self.rpcDataMap
+      .get(displayedRegionIndex)
+      ?.subfeatureInfos.filter(
+        s =>
+          s.domainId === domain.domainId &&
+          s.transcriptId === domain.transcriptId,
+      ) ?? []
+  const scope = `${domain.type ?? 'domain'} (${domain.displayLabel || domain.domainId})`
+  return [
+    highlightItem(ctx, scope, `Remove ${scope} highlight`, {
+      startBp: Math.min(domain.startBp, ...blocks.map(b => b.startBp)),
+      endBp: Math.max(domain.endBp, ...blocks.map(b => b.endBp)),
+      name: domain.displayLabel,
+      featureId: domain.domainId,
+    }),
+  ]
 }
 
 function showHideItem({ self, info }: MenuContext): MenuItem {

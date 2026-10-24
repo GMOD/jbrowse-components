@@ -272,6 +272,25 @@ test('hoverTooltipRows names the exon under the cursor, on a line under the isof
   expect(at(18)).toEqual(['BRCA1-201', 'c.6-2'])
 })
 
+test('a domain under the cursor keeps its isoform, exon and HGVS, and adds its name', () => {
+  const result = isoformHit({
+    bpPos: 25,
+    domain: {
+      ...makeSub('mRNA1-domain-0-1', 'gene1', 20, 30, 0, 20),
+      type: 'protein_domain',
+      displayLabel: 'SH2',
+      domainId: 'pfam-0',
+      transcriptId: 'mRNA1',
+    },
+  })
+  expect(hoverTooltipRows(result)).toEqual([
+    'BRCA1-201',
+    'SH2',
+    'exon 2/3 c.11',
+  ])
+  expect(hgvsHitLabel(result)).toBe('BRCA1-201:c.11')
+})
+
 test('hoverTooltipRows reads the transcript off the feature when it stands alone', () => {
   expect(
     hoverTooltipRows(

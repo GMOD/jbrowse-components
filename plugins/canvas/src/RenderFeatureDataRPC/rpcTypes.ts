@@ -362,8 +362,10 @@ export interface SubfeatureInfo extends HitItemBase {
   displayLabel?: string
   childOrdinal?: number
   // A protein domain's id in the `proteinFeatures` track, whose adapter a
-  // click asks for its details.
+  // click asks for its details, and the transcript it sits on, which a hit
+  // resolves to so the readout and menu act on the transcript.
   domainId?: string
+  transcriptId?: string
 }
 
 export interface FeatureLabelData {

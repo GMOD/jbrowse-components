@@ -71,7 +71,11 @@ export function hoverTooltipRows(result: HitFeatureResult) {
   const featureRows = isoform
     ? [name, description, title]
     : [title, description]
-  return distinctRows([...featureRows, tooltipRow(exon, hgvs, residue)])
+  return distinctRows([
+    ...featureRows,
+    result.domain?.displayLabel,
+    tooltipRow(exon, hgvs, residue),
+  ])
 }
 
 // A single-transcript gene names its isoform after itself, and a nameless

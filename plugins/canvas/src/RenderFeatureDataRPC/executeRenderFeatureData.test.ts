@@ -1,184 +1,156 @@
-import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
-import { SimpleFeature } from '@jbrowse/core/util'
 import createJexlInstance from '@jbrowse/core/util/jexl'
 
-import { executeRenderFeatureData } from './executeRenderFeatureData.ts'
+import { buildFeatureAdmission } from './featureAdmission.ts'
 import { mockDisplayConfig } from './testUtils.ts'
 
-import type { FeatureDataResult } from './rpcTypes.ts'
-import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Feature } from '@jbrowse/core/util'
 
-jest.mock('@jbrowse/core/data_adapters/getFeatureAdapter', () => ({
-  getFeatureAdapterOrThrow: jest.fn(),
-}))
+const jexl = createJexlInstance()
 
-const ctgA = { refName: 'ctgA', start: 0, end: 1000, assemblyName: 'volvox' }
-
-const transcript = new SimpleFeature({
-  uniqueId: 'tx1',
-  refName: 'ctgA',
-  start: 100,
-  end: 400,
-  type: 'mRNA',
-  id: 'rna-1',
-  name: 'vav-RA',
-  subfeatures: [
-    { uniqueId: 'c1', refName: 'ctgA', start: 100, end: 160, type: 'CDS' },
-    { uniqueId: 'c2', refName: 'ctgA', start: 300, end: 400, type: 'CDS' },
-  ],
-})
-
-function domain(transcriptKey: string) {
-  return new SimpleFeature({
-    uniqueId: 'pfam-0',
-    refName: 'ctgA',
-    start: 120,
-    end: 340,
-    name: 'SH2',
-    transcript: transcriptKey,
-    subfeatures: [
-      { uniqueId: 'b1', refName: 'ctgA', start: 120, end: 160 },
-      { uniqueId: 'b2', refName: 'ctgA', start: 300, end: 340 },
-    ],
-  })
+function feat(type: string, attrs: Record<string, unknown> = {}): Feature {
+  const map: Record<string, unknown> = { type, ...attrs }
+  return {
+    get: (k: string) => map[k],
+    id: () => String(map.id ?? type),
+  } as Feature
 }
 
-type DomainSource = Feature[] | Error
+describe('buildFeatureAdmission', () => {
+  it('admits everything when the filter is empty', () => {
+    const admit = buildFeatureAdmission({ jexl, config: mockDisplayConfig() })
+    expect(admit(feat('gene'))).toBe(true)
+    expect(admit(feat('region'))).toBe(true)
+  })
 
-const domainQueries: { refName: string; start: number; end: number }[] = []
-
-function run(
-  domains: DomainSource,
-  proteinFeatures: Record<string, unknown> = {},
-  byteLimit?: number,
-) {
-  domainQueries.length = 0
-  jest
-    .mocked(getFeatureAdapterOrThrow)
-    .mockImplementation(async ({ adapterConfig }) => {
-      const isDomains = adapterConfig.type === 'Domains'
-      const rows = isDomains ? domains : [transcript]
-      return {
-        getRegionByteSize: async () => (isDomains ? 5000 : 100),
-        getFeaturesArray: async ({
-          refName,
-          start,
-          end,
-        }: {
-          refName: string
-          start: number
-          end: number
-        }) => {
-          if (isDomains) {
-            domainQueries.push({ refName, start, end })
-          }
-          if (rows instanceof Error) {
-            throw rows
-          }
-          return rows
-        },
-      } as never
+  it('applies the expressions', () => {
+    const admit = buildFeatureAdmission({
+      jexl,
+      config: mockDisplayConfig({
+        filter: [{ field: `jexl:get(feature,'type')=='gene'`, equal: true }],
+      }),
     })
-  return executeRenderFeatureData({
-    pluginManager: { jexl: createJexlInstance() } as PluginManager,
-    args: {
-      sessionId: 'test',
-      adapterConfig: { type: 'Genes' },
-      displayConfig: mockDisplayConfig(),
-      geneGlyphMode: 'all',
-      region: ctgA,
-      bpPerPx: 1,
-      byteLimit,
-      proteinFeatures: {
-        adapter: { type: 'Domains' },
-        color: { value: 'red', field: '' },
-        join: { domain: 'transcript', gene: 'id' },
-        refName: 'chrA',
-        ...proteinFeatures,
-      },
-    },
+    expect(admit(feat('gene'))).toBe(true)
+    expect(admit(feat('mRNA'))).toBe(false)
   })
-}
 
-async function payload(
-  domains: DomainSource,
-  proteinFeatures?: Record<string, unknown>,
-  byteLimit?: number,
-) {
-  const result = await run(domains, proteinFeatures, byteLimit)
-  if (!('__rpcResult' in result)) {
-    throw new Error('expected a payload, got the byte gate')
-  }
-  return result.value
-}
-
-function domainRects(data: FeatureDataResult) {
-  return data.subfeatureInfos.filter(s => s.type === 'protein_domain')
-}
-
-test('a domain track that fails still draws the genes, with a notice', async () => {
-  const healthy = await payload([domain('rna-1')])
-  const failed = await payload(new Error('HTTP 404 fetching pfam.bed.gz'))
-  expect(domainRects(healthy).map(s => s.domainId)).toEqual([
-    'pfam-0',
-    'pfam-0',
-  ])
-  expect(healthy.notices).toBeUndefined()
-  expect(failed.notices).toEqual([
-    'proteinFeatures: HTTP 404 fetching pfam.bed.gz',
-  ])
-  expect(domainRects(failed)).toEqual([])
-  expect(failed.flatbushItems.map(f => f.featureId)).toEqual(['tx1'])
-  expect(failed.rectPositions.length).toBe(
-    healthy.rectPositions.length - 2 * domainRects(healthy).length,
-  )
-})
-
-test('an abort still rejects the region', async () => {
-  const abort = new Error('aborted')
-  abort.name = 'AbortError'
-  await expect(run(abort)).rejects.toThrow('aborted')
-})
-
-describe('the join', () => {
-  it('pairs a domain by the fields it names', async () => {
-    const byName = await payload([domain('vav-RA')], {
-      join: { domain: 'transcript', gene: 'name' },
+  it('ANDs multiple expressions together', () => {
+    const admit = buildFeatureAdmission({
+      jexl,
+      config: mockDisplayConfig({
+        filter: [
+          { field: `jexl:get(feature,'type')=='gene'`, equal: true },
+          { field: `jexl:get(feature,'score')>5`, equal: true },
+        ],
+      }),
     })
-    expect(domainRects(byName)).toHaveLength(2)
-    expect(byName.notices).toBeUndefined()
+    expect(admit(feat('gene', { score: 10 }))).toBe(true)
+    expect(admit(feat('gene', { score: 1 }))).toBe(false)
   })
 
-  it('says so when no domain row here pairs with a transcript', async () => {
-    const missed = await payload([domain('XM_006568477.3')])
-    expect(domainRects(missed)).toEqual([])
-    expect(missed.notices).toEqual([
-      "proteinFeatures.join: no domain's `transcript` equals a transcript's `id` here",
-    ])
+  it("drops NCBI's gbkey=='Src' record and nothing else", () => {
+    const admit = buildFeatureAdmission({ jexl, config: mockDisplayConfig() })
+    expect(admit(feat('region', { gbkey: 'Src' }))).toBe(false)
+    expect(admit(feat('region', { gbkey: 'CpG_island' }))).toBe(true)
+    expect(admit(feat('region'))).toBe(true)
+    expect(admit(feat('gene'))).toBe(true)
   })
 
-  it('stays quiet with no domain rows, or one pairing', async () => {
-    expect((await payload([])).notices).toBeUndefined()
-    expect(
-      (await payload([domain('rna-1'), domain('XM_006568477.3')])).notices,
-    ).toBeUndefined()
+  it('genes only keeps gene-like top-level types and drops the rest', () => {
+    const admit = buildFeatureAdmission({
+      jexl,
+      config: mockDisplayConfig({
+        transcriptTypes: ['mRNA'],
+        filter: [{ field: 'geneLike', equal: true }],
+      }),
+    })
+    expect(admit(feat('gene'))).toBe(true)
+    expect(admit(feat('mRNA'))).toBe(true)
+    expect(admit(feat('exon'))).toBe(false)
+    expect(admit(feat('region'))).toBe(false)
   })
-})
 
-describe('the domain fetch', () => {
-  it("spans the drawn transcripts, under the domain file's contig name", async () => {
-    await payload([domain('rna-1')])
-    expect(domainQueries).toEqual([{ refName: 'chrA', start: 100, end: 400 }])
+  it('genes exclude drops gene-like top-level types and keeps the rest', () => {
+    const admit = buildFeatureAdmission({
+      jexl,
+      config: mockDisplayConfig({
+        transcriptTypes: ['mRNA'],
+        filter: [{ field: 'geneLike', equal: false }],
+      }),
+    })
+    expect(admit(feat('gene'))).toBe(false)
+    expect(admit(feat('mRNA'))).toBe(false)
+    expect(admit(feat('exon'))).toBe(true)
+    expect(admit(feat('region'))).toBe(true)
   })
 
-  it('skips the domains over the byte budget, keeping the genes', async () => {
-    const gated = await payload([domain('rna-1')], {}, 1000)
-    expect(domainQueries).toEqual([])
-    expect(domainRects(gated)).toEqual([])
-    expect(gated.flatbushItems.map(f => f.featureId)).toEqual(['tx1'])
-    expect(gated.notices).toEqual([
-      'proteinFeatures: 5000 bytes of domains here, over the 1000-byte limit',
-    ])
+  it('genes only keeps the gene and RNA types no slot lists', () => {
+    const admit = buildFeatureAdmission({
+      jexl,
+      config: mockDisplayConfig({
+        transcriptTypes: [],
+        containerTypes: [],
+        filter: [{ field: 'geneLike', equal: true }],
+      }),
+    })
+    for (const type of ['ncRNA_gene', 'pseudogene', 'lnc_RNA', 'tRNA', 'CDS']) {
+      expect(admit(feat(type))).toBe(true)
+    }
+    expect(admit(feat('repeat_region'))).toBe(false)
+  })
+
+  it('genes and expressions both apply (admission is their AND)', () => {
+    const admit = buildFeatureAdmission({
+      jexl,
+      config: mockDisplayConfig({
+        filter: [
+          { field: `jexl:get(feature,'score')>5`, equal: true },
+          { field: 'geneLike', equal: true },
+        ],
+      }),
+    })
+    expect(admit(feat('gene', { score: 10 }))).toBe(true)
+    expect(admit(feat('gene', { score: 1 }))).toBe(false)
+    expect(admit(feat('exon', { score: 10 }))).toBe(false)
+  })
+
+  it('soloFeatureIds admits only features whose id() is in the set', () => {
+    const admit = buildFeatureAdmission({
+      jexl,
+      config: mockDisplayConfig(),
+      soloFeatureIds: ['f1', 'f3'],
+    })
+    expect(admit(feat('gene', { id: 'f1' }))).toBe(true)
+    expect(admit(feat('gene', { id: 'f2' }))).toBe(false)
+    expect(admit(feat('gene', { id: 'f3' }))).toBe(true)
+  })
+
+  it('an empty soloFeatureIds set admits everything', () => {
+    const admit = buildFeatureAdmission({
+      jexl,
+      config: mockDisplayConfig(),
+      soloFeatureIds: [],
+    })
+    expect(admit(feat('gene', { id: 'f1' }))).toBe(true)
+    expect(admit(feat('region', { id: 'f2' }))).toBe(true)
+  })
+
+  it('hiddenFeatureIds drops features whose id() is in the set', () => {
+    const admit = buildFeatureAdmission({
+      jexl,
+      config: mockDisplayConfig(),
+      hiddenFeatureIds: ['f2'],
+    })
+    expect(admit(feat('gene', { id: 'f1' }))).toBe(true)
+    expect(admit(feat('gene', { id: 'f2' }))).toBe(false)
+  })
+
+  it('hidden wins over solo when a feature is in both', () => {
+    const admit = buildFeatureAdmission({
+      jexl,
+      config: mockDisplayConfig(),
+      soloFeatureIds: ['f1'],
+      hiddenFeatureIds: ['f1'],
+    })
+    expect(admit(feat('gene', { id: 'f1' }))).toBe(false)
   })
 })

@@ -205,6 +205,7 @@ function emitDomainRects(
         labelRowsAbove,
         displayLabel: name,
         domainId: feature.id(),
+        transcriptId: transcript.feature.id(),
       })
     }
   }

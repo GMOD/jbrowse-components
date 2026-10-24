@@ -4,7 +4,11 @@ import {
   makeFeatureData,
   makeFlatbushItem,
 } from '../RenderFeatureDataRPC/testUtils.ts'
-import { createTestEnvironment } from './testEnv.ts'
+import {
+  clickContextMenuItem,
+  contextMenuLabels,
+  createTestEnvironment,
+} from './testEnv.ts'
 
 import type { SubfeatureInfo } from '../RenderFeatureDataRPC/rpcTypes.ts'
 
@@ -183,6 +187,53 @@ describe('a protein domain click', () => {
     expect(args).toMatchObject({
       adapterConfig: display.proteinFeaturesArg!.adapter,
       region: { refName: 'ctgA', start: 2000, end: 2100 },
+    })
+  })
+
+  it('right-clicked, acts on its transcript and offers the whole domain', async () => {
+    const { createDisplay } = createTestEnvironment({
+      displayConfig: { proteinFeatures: 'test_track' },
+    })
+    const { display, mockRpcCall } = createDisplay()
+    mockRpcCall.mockResolvedValue({ feature: undefined })
+    const domain = { ...sh2, transcriptId: 'EDEN.1' }
+    const secondBlock = {
+      ...domain,
+      featureId: 'EDEN.1-domain-0-2',
+      startBp: 3000,
+      endBp: 3100,
+    }
+    display.setRpcData(
+      0,
+      makeFeatureData({
+        flatbushItems: [gene],
+        subfeatureInfos: [eden1, domain, secondBlock],
+      }),
+      ctgA,
+    )
+    display.openContextMenu({
+      item: gene,
+      subfeature: eden1,
+      domain,
+      displayedRegionIndex: 0,
+      clientX: 0,
+      clientY: 0,
+    })
+    expect(contextMenuLabels(display)).toEqual(
+      expect.arrayContaining([
+        'Open SH2 details',
+        'protein_domain (SH2)',
+        'mRNA (EDEN.1)',
+        'Copy EDEN.1 attributes (JSON)',
+      ]),
+    )
+    clickContextMenuItem(display, 'protein_domain (SH2)')
+    expect(display.featureHighlights).toEqual([
+      expect.objectContaining({ start: 2000, end: 3100 }),
+    ])
+    clickContextMenuItem(display, 'Open SH2 details')
+    await waitFor(() => {
+      expect(fetchedIds(mockRpcCall)).toEqual(['pfam_domains-4096'])
     })
   })
 

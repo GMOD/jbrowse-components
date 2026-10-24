@@ -19,7 +19,10 @@ import {
 } from './LinearBasicDisplay/components/peptidePositioning.ts'
 import { resolveMapColors } from './LinearBasicDisplay/components/resolveRegionColors.ts'
 import configSchemaFactory from './LinearBasicDisplay/configSchema.ts'
-import { featureColorKey } from './LinearBasicDisplay/derivedColorKey.ts'
+import {
+  domainLaneOf,
+  featureColorKey,
+} from './LinearBasicDisplay/derivedColorKey.ts'
 import {
   facetField,
   featureGroupSections,
@@ -134,15 +137,7 @@ function domainColorsOf(
   return featureColorViews({
     conf: { encoding: { color: conf.proteinFeatures.color } },
     impliedField: 'name',
-    rpcDataMap: new Map(
-      raws.map((raw, i) => [
-        i,
-        {
-          colorValues: raw.domainColorValues,
-          rectColorValues: raw.rectDomainColorValues,
-        },
-      ]),
-    ),
+    rpcDataMap: new Map(raws.map((raw, i) => [i, domainLaneOf(raw)])),
   })
 }
 
@@ -459,6 +454,10 @@ export async function featureTables(
           `${r.refName}:${r.start}-${r.end} needs ${result.bytes} bytes of features, over the ${byteLimit}-byte limit; read a smaller region or raise byteLimit`,
         )
       }
+      const [notice] = result.value.notices ?? []
+      if (notice) {
+        throw new Error(`${r.refName}:${r.start}-${r.end}: ${notice}`)
+      }
       return result.value
     }),
   )
@@ -537,11 +536,12 @@ export async function featureTables(
     conf: { encoding: { color: conf.encoding.color } },
     rpcDataMap: new Map(raws.map((raw, i) => [i, raw])),
   })
+  const domainColors = proteinFeatures && domainColorsOf(conf, raws)
   const resolved = resolveMapColors(
     laid,
     palette,
     colors.fieldPalette,
-    proteinFeatures && domainColorsOf(conf, raws).fieldPalette,
+    domainColors?.fieldPalette,
   )
   const scales = featureColorKey(colors, raws, {
     isHidden: hiddenGroupKeys.size > 0 ? isHidden : undefined,
@@ -556,6 +556,13 @@ export async function featureTables(
   })
   const key = scales.find(scale => scale.kind === 'categorical')
   const entries = key?.entries.filter(e => e.color !== undefined) ?? []
+  const domainKey = domainColors
+    ? featureColorKey(domainColors, raws.map(domainLaneOf)).find(
+        scale => scale.kind === 'categorical',
+      )
+    : undefined
+  const domainEntries =
+    domainKey?.entries.filter(e => e.color !== undefined) ?? []
   const hideChevrons = !readConfObject(conf, ['chevrons', 'show'])
   const labels = {
     showLabels: stage.showLabels,
@@ -601,6 +608,12 @@ export async function featureTables(
       color: entries.map(e => cssColorToHex(e.color!)),
     },
     legendTitle: key?.title ?? '',
+    /** The `proteinFeatures` domains' key, empty without a domain track. */
+    domainLegend: {
+      label: domainEntries.map(e => e.label),
+      color: domainEntries.map(e => cssColorToHex(e.color!)),
+    },
+    domainLegendTitle: domainKey?.title ?? '',
     ramps: scales.filter(scale => scale.kind === 'ramp').map(rampKeyOf),
     /** The px sizes the display draws its fixed-size marks at. */
     glyph: {

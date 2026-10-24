@@ -27,9 +27,9 @@ const BED = [
   'EDEN.1',
 ].join('\t')
 
-function domainsAdapter() {
+function domainsAdapter(more: string[] = []) {
   const file = path.join(mkdtempSync(path.join(os.tmpdir(), 'pfam-')), 'd.bed')
-  writeFileSync(file, `${BED}\n`)
+  writeFileSync(file, `${[BED, ...more].join('\n')}\n`)
   return {
     type: 'BedAdapter',
     bedLocation: { uri: pathToFileURL(file).href, locationType: 'UriLocation' },
@@ -92,4 +92,48 @@ test("the domains' color paints by name through its own palette", async () => {
   expect(sh2).toHaveLength(2)
   expect(sh2[0]!.color).toBe(sh2[1]!.color)
   expect(sh2[0]!.color).not.toBe(NO_CATEGORY_COLOR)
+})
+
+test('the tables key the domains apart from the features', async () => {
+  const ph = [
+    'ctgA',
+    5000,
+    5400,
+    'PH',
+    0,
+    '+',
+    5000,
+    5400,
+    0,
+    1,
+    '400',
+    '0',
+    'EDEN.1',
+  ]
+  const t = await engine.features({
+    ...GFF3,
+    display: { heightMode: 'grow', proteinFeatures: 'pfam' },
+    proteinFeatures: domainsAdapter([ph.join('\t')]),
+  })
+  expect(t.domainLegend.label).toEqual(['PH', 'SH2'])
+  expect(t.domainLegend.color).toContain(domainRects(t)[0]!.color)
+  const plain = await engine.features({ ...GFF3, display: {} })
+  expect(plain.domainLegend).toEqual({ label: [], color: [] })
+})
+
+test('a domain track that fails fails the tables', async () => {
+  const missing = {
+    ...domainsAdapter(),
+    bedLocation: {
+      uri: pathToFileURL(path.join(os.tmpdir(), 'no-such-domains.bed')).href,
+      locationType: 'UriLocation',
+    },
+  }
+  await expect(
+    engine.features({
+      ...GFF3,
+      display: { proteinFeatures: 'pfam' },
+      proteinFeatures: missing,
+    }),
+  ).rejects.toThrow(/proteinFeatures:/)
 })

@@ -30,11 +30,10 @@ function groupByTranscript(rows: Feature[], field: string) {
   const byTranscript = new Map<string, DomainData[]>()
   for (const row of rows) {
     const key = joinKey(row.get(field))
-    if (key !== undefined) {
-      const blocks = (row.get('subfeatures') ?? [row]).map(b => ({
-        start: b.get('start'),
-        end: b.get('end'),
-      }))
+    const blocks = (row.get('subfeatures') ?? [row])
+      .map(b => ({ start: b.get('start'), end: b.get('end') }))
+      .filter(b => b.end > b.start)
+    if (key !== undefined && blocks.length > 0) {
       const list = byTranscript.get(key) ?? []
       list.push({ feature: row, blocks })
       byTranscript.set(key, list)
@@ -75,22 +74,12 @@ async function fetchProteinFeatures({
     }
   }
   const rows = await adapter.getFeaturesArray(span, { signal })
-  const { join } = arg
-  const byTranscript = groupByTranscript(rows, join.domain)
-  const matched = transcripts.some(t => {
-    const key = joinKey(t.get(join.gene))
-    return key !== undefined && byTranscript.has(key)
-  })
   return {
     proteinFeatures: {
-      byTranscript,
+      byTranscript: groupByTranscript(rows, arg.join.domain),
       color: arg.color,
-      transcriptKey: join.gene,
+      transcriptKey: arg.join.gene,
     } satisfies ProteinFeatures,
-    notice:
-      byTranscript.size > 0 && !matched
-        ? `proteinFeatures.join: no domain's \`${join.domain}\` equals a transcript's \`${join.gene}\` here`
-        : undefined,
   }
 }
 
@@ -112,9 +101,8 @@ interface ProteinFeaturesFetch {
 /**
  * The domains of `features`' transcripts, keyed for the join, fetched once
  * over the transcripts' combined span under the region's byte budget, so a
- * domain whose blocks reach past the region still draws whole; and a notice
- * where the track failed or none of its rows here pairs with a transcript.
- * An abort still rejects.
+ * domain whose blocks reach past the region still draws whole; or a notice
+ * where the track failed. An abort still rejects.
  */
 export async function fetchProteinFeaturesOrNotice({
   features,
