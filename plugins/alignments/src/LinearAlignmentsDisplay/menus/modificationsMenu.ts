@@ -18,10 +18,9 @@ import type { MenuItem } from '@jbrowse/core/ui'
 import type { CytosineContext } from '@jbrowse/modifications-utils'
 
 // The MM/ML modification color field: two mode radios, two refinement
-// submenus and a threshold slider. Split from colorBy.ts because everything below shares one writer
-// (`patchMods`) and one slot shape that nothing else in the color menu touches;
-// reference-based bisulfite is its sibling, not its parent, and lives in
-// bisulfiteMenu.ts.
+// submenus and a threshold slider. Reference-based bisulfite is its sibling,
+// in bisulfiteMenu.ts, and writes the same `pileup.bases.filter` and
+// `unmodified`.
 //
 // The two radios echo each other on purpose: 2-color is by-type *plus* one extra
 // step, so the labels say exactly that ("One color per modification type" /

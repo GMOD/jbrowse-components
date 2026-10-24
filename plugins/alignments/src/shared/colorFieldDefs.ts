@@ -81,7 +81,7 @@ export const COLOR_FIELD_DEFS: Record<ColorFieldKind, ColorFieldDef> = {
   },
   base: {
     kind: 'base',
-    // like perBaseQuality: nucleotide quads paint over the 'normal' body
+    // like baseQuality: nucleotide quads paint over the 'normal' body
     bodyFill: 'normal',
     menu: { kind: 'radio', label: 'Per-base lettering', group: 'basic' },
     perBase: true,
@@ -155,8 +155,7 @@ export const COLOR_FIELD_DEFS: Record<ColorFieldKind, ColorFieldDef> = {
     menu: { kind: 'radio', label: 'Mate chromosome', group: 'pairedEnd' },
     workerExtracts: true,
   },
-  // methylation/bisulfite reuse the modifications shader path with different
-  // config (see model getMethBins / bisulfite is reference-based)
+  // bisulfite reuses the modifications shader path, read off the reference
   modifications: {
     kind: 'modifications',
     bodyFill: 'modifications',
@@ -171,7 +170,7 @@ export const COLOR_FIELD_DEFS: Record<ColorFieldKind, ColorFieldDef> = {
   },
 }
 
-// True for the modification family (modifications/methylation/bisulfite) — the
+// True for the modification family (modifications, bisulfite) — the
 // fields that share the 'modifications' shader path and drive the MM/ML
 // overlay, mod-coverage, and legend. Derived from the registry so the family
 // membership lives in exactly one place instead of being re-spelled as a

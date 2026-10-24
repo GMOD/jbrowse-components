@@ -38,11 +38,11 @@ export function admitsCode(filter: BasesFilter | undefined, code: string) {
 }
 
 // What a read body's fill classifies by, the buckets `fillCategory`
-// (colorUtils.ts) switches on. Several ColorSchemeTypes share one:
-// perBaseQuality/perBaseLetter paint over the 'normal' body,
-// methylation/bisulfite reuse 'modifications' with different config. 'tag' is
-// the per-read explicit color, a baked ABGR u32, so any field that resolves to
-// one color per read on the CPU (tag values, mateRefName) rides it.
+// (colorUtils.ts) switches on. Several color fields share one: baseQuality
+// and base paint over the 'normal' body, modifications and bisulfite share
+// 'modifications'. 'tag' is the per-read explicit color, a baked ABGR u32, so
+// any field that resolves to one color per read on the CPU (tag values,
+// mateRefName) rides it.
 export type BodyFill =
   | 'normal'
   | 'strand'
@@ -55,8 +55,7 @@ export type BodyFill =
   | 'tag'
 
 /**
- * The read fields with a vocabulary or ramp of their own, each its scheme's
- * name. A field that is also a facet dimension takes the facet's name, so
+ * The read fields with a vocabulary or ramp of their own. A field that is also a facet dimension takes the facet's name, so
  * `facet` and `encoding.color` over it are one word; the insert-size fields are not
  * facet dimensions, since their band is sampled per region. There is no
  * `chainStrand`: a long read's inversion reads under View as pairs.
@@ -84,7 +83,7 @@ export const BASE_COLOR_FIELDS = [
 export type BaseColorField = (typeof BASE_COLOR_FIELDS)[number]
 
 // Every color field, named by the field it paints but for the plain fill
-// and a tag or attribute. `COLOR_FIELD_DEFS` (shared/colorSchemes.ts) is typed
+// and a tag or attribute. `COLOR_FIELD_DEFS` (shared/colorFieldDefs.ts) is typed
 // `Record<ColorFieldKind, ColorFieldDef>`, so adding a field above is a
 // compile error until it is classified there with both a shader path and a
 // menu placement.

@@ -31,7 +31,7 @@ in as many words.
 **Ship as is, document the trade.** Cheapest, and the status quo. The cost is
 the over-statement above.
 
-**Bin `perBaseQuality` only.** One predicate in `isPerBaseScheme`. The bin is
+**Bin `baseQuality` only.** One predicate in `isPerBaseField`. The bin is
 provably invisible there, and quality is the more used of the two. But
 lettering then has no bound at all — and force-load, which exempts the byte
 gate, is what OOMs.

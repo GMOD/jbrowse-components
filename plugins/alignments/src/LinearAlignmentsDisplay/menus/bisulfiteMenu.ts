@@ -9,9 +9,8 @@ import type { CytosineContext } from '@jbrowse/modifications-utils'
 
 // Bisulfite / EM-seq is reference-based (read-vs-reference C→T), so it needs no
 // MM/ML tags and applies to any alignments display — it sits beside
-// "Modifications" in the color menu rather than inside it, and in its own file
-// for the same reason: it shares the cytosine-context vocabulary with the MM/ML
-// submenu but none of its state, writer, or readiness gating.
+// "Modifications" in the color menu rather than inside it, and skips that
+// submenu's readiness gating.
 //
 // Picking a cytosine context activates it. `pileup.bases.filter` is shared
 // with the MM/ML layer, so a click writes its `context` alone, keeping that
