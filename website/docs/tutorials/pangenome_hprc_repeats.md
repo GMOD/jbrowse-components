@@ -620,26 +620,20 @@ bash build_amylase_haplotypes.sh
 
 ## Citations
 
-- Schmidt K, Noureen A, Kronenberg F, Utermann G. Structure, function, and
-  genetics of lipoprotein(a). J Lipid Res. 2016;57(8):1339-1359.
-  https://doi.org/10.1194/jlr.R067314
-- Wick RR, Schultz MB, Zobel J, Holt KE. Bandage: interactive visualization of
-  de novo genome assemblies. Bioinformatics. 2015;31(20):3350-3352.
-  https://doi.org/10.1093/bioinformatics/btv383
-- De Roeck A, Duchateau L, Van Dongen J, et al. An intronic VNTR affects
-  splicing of ABCA7 and increases risk of Alzheimer's disease. Acta Neuropathol.
-  2018;135(6):827-837. https://doi.org/10.1007/s00401-018-1841-z
-- Dolzhenko E, English A, Dashnow H, et al. Characterization and visualization
-  of tandem repeats at genome scale. Nat Biotechnol. 2024;42(10):1606-1614.
-  https://doi.org/10.1038/s41587-023-02057-3
-- TRGT repeat catalogues and HPRC genotypes, Zenodo.
-  https://doi.org/10.5281/zenodo.8329210
+- Schmidt et al. (2016).
+  [Structure, function, and genetics of lipoprotein(a)](https://doi.org/10.1194/jlr.R067314)
+- Wick et al. (2015).
+  [Bandage: interactive visualization of de novo genome assemblies](https://doi.org/10.1093/bioinformatics/btv383)
+- De Roeck et al. (2018).
+  [An intronic VNTR affects splicing of ABCA7 and increases risk of Alzheimer's disease](https://doi.org/10.1007/s00401-018-1841-z)
+- Dolzhenko et al. (2024).
+  [Characterization and visualization of tandem repeats at genome scale](https://doi.org/10.1038/s41587-023-02057-3)
+- [TRGT repeat catalogues and HPRC genotypes](https://doi.org/10.5281/zenodo.8329210)
 - [HPRC release 2](https://doi.org/10.64898/2026.07.21.739710)
-- Yilmaz F, et al. Reconstruction of the human amylase locus reveals ancient
-  duplications seeding modern-day variation. Science (2024).
-  https://doi.org/10.1126/science.adn0609
-- Li H. Minimap2: pairwise alignment for nucleotide sequences. Bioinformatics
-  (2018). https://doi.org/10.1093/bioinformatics/bty191
+- Yilmaz et al. (2024).
+  [Reconstruction of the human amylase locus reveals ancient duplications seeding modern-day variation](https://doi.org/10.1126/science.adn0609)
+- Li (2018).
+  [Minimap2: pairwise alignment for nucleotide sequences](https://doi.org/10.1093/bioinformatics/bty191)
 
 [^kiv2-cut]:
     `gbz-base-query --keep` cut it from HPRC's gbz-base database, and

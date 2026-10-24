@@ -346,26 +346,16 @@ that pass through it.
 
 ## Citations
 
-- Leonard AS, Crysnanto D, Fang ZH, Heaton MP, Vander Ley BL, Herrera C,
-  Bollwein H, Bickhart DM, Kuhn KL, Smith TPL, Rosen BD, Pausch H. Structural
-  variant-based pangenome construction has low sensitivity to variability of
-  haplotype-resolved bovine assemblies. Nature Communications. 2022;13:3012.
-  https://doi.org/10.1038/s41467-022-30680-2
-- Leonard AS, Crysnanto D, Mapel XM, Bhati M, Pausch H. Graph construction
-  method impacts variation representation and analyses in a bovine
-  super-pangenome. Genome Biology. 2023;24:124.
-  https://doi.org/10.1186/s13059-023-02969-y
-- Li H, Feng X, Chu C. The design and construction of reference pangenome graphs
-  with minigraph. Genome Biology. 2020;21:265.
-  https://doi.org/10.1186/s13059-020-02168-z
-- Medugorac I, Seichter D, Graf A, Russ I, Blum H, Göpel KH, Rothammer S,
-  Förster M, Krebs S. Bovine polledness: an autosomal dominant trait with
-  allelic heterogeneity. PLoS ONE. 2012;7(6):e39477.
-  https://doi.org/10.1371/journal.pone.0039477
-- Milia S, Leonard AS, Mapel XM, Bernal Ulloa SM, Drögemüller C, Pausch H.
-  Taurine pangenome uncovers a segmental duplication upstream of KIT associated
-  with depigmentation in white-headed cattle. Genome Research.
-  2025;35(4):1041-1052. https://doi.org/10.1101/gr.279064.124
+- Leonard et al. (2022).
+  [Structural variant-based pangenome construction has low sensitivity to variability of haplotype-resolved bovine assemblies](https://doi.org/10.1038/s41467-022-30680-2)
+- Leonard et al. (2023).
+  [Graph construction method impacts variation representation and analyses in a bovine super-pangenome](https://doi.org/10.1186/s13059-023-02969-y)
+- Li et al. (2020).
+  [The design and construction of reference pangenome graphs with minigraph](https://doi.org/10.1186/s13059-020-02168-z)
+- Medugorac et al. (2012).
+  [Bovine polledness: an autosomal dominant trait with allelic heterogeneity](https://doi.org/10.1371/journal.pone.0039477)
+- Milia et al. (2025).
+  [Taurine pangenome uncovers a segmental duplication upstream of KIT associated with depigmentation in white-headed cattle](https://doi.org/10.1101/gr.279064.124)
 
 [^friesian]:
     OMIA also records the Friesian polled allele, a larger duplication further

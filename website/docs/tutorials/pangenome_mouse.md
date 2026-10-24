@@ -225,9 +225,7 @@ build.
 
 ## Citations
 
-- Li H, Feng X, Chu C. The design and construction of reference pangenome graphs
-  with minigraph. Genome Biology. 2020;21:265.
-  https://doi.org/10.1186/s13059-020-02168-z
-- Wick RR, Schultz MB, Zobel J, Holt KE. Bandage: interactive visualization of
-  de novo genome assemblies. Bioinformatics. 2015;31(20):3350-3352.
-  https://doi.org/10.1093/bioinformatics/btv383
+- Li et al. (2020).
+  [The design and construction of reference pangenome graphs with minigraph](https://doi.org/10.1186/s13059-020-02168-z)
+- Wick et al. (2015).
+  [Bandage: interactive visualization of de novo genome assemblies](https://doi.org/10.1093/bioinformatics/btv383)

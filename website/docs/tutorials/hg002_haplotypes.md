@@ -218,12 +218,10 @@ the inversion.
 
 ## Citations
 
-- Hansen, N. F. _et al._ A complete diploid human genome benchmark for
-  personalized genomics. _Cell_ (2026).
-  https://doi.org/10.1016/j.cell.2026.06.016
-- Bosch, N. _et al._ Nucleotide, cytogenetic and expression impact of the human
-  chromosome 8p23.1 inversion polymorphism. _PLOS ONE_ 4, e8269 (2009).
-  https://doi.org/10.1371/journal.pone.0008269
+- Hansen et al. (2026).
+  [A complete diploid human genome benchmark for personalized genomics](https://doi.org/10.1016/j.cell.2026.06.016)
+- Bosch et al. (2009).
+  [Nucleotide, cytogenetic and expression impact of the human chromosome 8p23.1 inversion polymorphism](https://doi.org/10.1371/journal.pone.0008269)
 
 [^from-dotplot]:
     The dotplot opens the same view framed on a region. Drag a box around the

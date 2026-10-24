@@ -199,9 +199,7 @@ whole-genome synteny view.
 
 - [HPRC release 2](https://doi.org/10.64898/2026.07.21.739710), the release
   whose graph, assemblies and CAT annotations this page reads.
-- Hughes AE et al.
-  [A common CFH haplotype, with deletion of CFHR1 and CFHR3, is associated with lower risk of age-related macular degeneration](https://doi.org/10.1038/ng1890).
-  Nature Genetics, 2006.
-- Small K, Iber J, Warren ST.
-  [Emerin deletion reveals a common X-chromosome inversion mediated by inverted repeats](https://doi.org/10.1038/ng0597-96).
-  Nature Genetics, 1997.
+- Hughes et al. (2006).
+  [A common CFH haplotype, with deletion of CFHR1 and CFHR3, is associated with lower risk of age-related macular degeneration](https://doi.org/10.1038/ng1890)
+- Small et al. (1997).
+  [Emerin deletion reveals a common X-chromosome inversion mediated by inverted repeats](https://doi.org/10.1038/ng0597-96)
