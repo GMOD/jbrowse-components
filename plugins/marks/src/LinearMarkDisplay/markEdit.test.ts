@@ -104,7 +104,7 @@ describe('channelEdit', () => {
 
   it('is beyond the picker for a far foot naming its own sequence', () => {
     const mate = {
-      encoding: { x2: { chrom: 'mate.refName', pos: 'mate.start' } },
+      encoding: { x2: { refName: 'mate.refName', pos: 'mate.start' } },
     }
     expect(channelEdit(mate as MarkSnapshot, 'x2').beyond).toBe(true)
   })

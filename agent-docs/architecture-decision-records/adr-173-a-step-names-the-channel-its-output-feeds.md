@@ -14,7 +14,7 @@ Accepted (2026-09-26). Colin chose it over keeping every channel written
 
 Thirteen in-tree `marks` configs wrote a step's output back as a channel:
 `y: 'coverage'` after a `coverage`, `y: 'count'` after a count, and
-`x2: { chrom: 'mate.refName', pos: 'mate.start' }` after a `mate`. Each has one
+`x2: { refName: 'mate.refName', pos: 'mate.start' }` after a `mate`. Each has one
 answer the step already knows. `row` had worked this way since the `pileup`
 step landed, resolved in the worker (`survivingPileupField`). Leaving `y` off
 a bar behind a coverage step drew nothing and failed the schema's

@@ -161,7 +161,7 @@ it('holds a declaration the picker cannot round-trip read-only', () => {
     marks: [
       {
         mark: 'link',
-        encoding: { x2: { chrom: 'chrom2', pos: 'start2' } },
+        encoding: { x2: { refName: 'chrom2', pos: 'start2' } },
       },
     ],
   })

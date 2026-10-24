@@ -86,7 +86,7 @@ const EVERY_SPELLING: Record<string, unknown> = {
     {
       mark: { type: 'link', interpolate: 'arc' },
       encoding: {
-        x2: { chrom: 'mate.refName', pos: 'mate.start' },
+        x2: { refName: 'mate.refName', pos: 'mate.start' },
         strokeWidth: {
           value: 3,
           field: 'score',

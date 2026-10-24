@@ -13,7 +13,7 @@ test('a link standing at a y folds into the axis whichever side its far foot lie
     marks: [
       {
         mark: { type: 'link', interpolate: 'linear' },
-        encoding: { y: 'score', x2: { chrom: 'chrom2', pos: 'start2' } },
+        encoding: { y: 'score', x2: { refName: 'chrom2', pos: 'start2' } },
       },
     ],
   }).createDisplay()

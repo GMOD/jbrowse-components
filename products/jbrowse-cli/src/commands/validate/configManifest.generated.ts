@@ -6499,7 +6499,7 @@ export const configManifest: ConfigManifest = {
                           "type": "string"
                         },
                         {
-                          "name": "chrom",
+                          "name": "refName",
                           "type": "string"
                         }
                       ],
@@ -9135,7 +9135,7 @@ export const configManifest: ConfigManifest = {
                       "type": "string"
                     },
                     {
-                      "name": "chrom",
+                      "name": "refName",
                       "type": "string"
                     }
                   ],
@@ -9857,7 +9857,7 @@ export const configManifest: ConfigManifest = {
                       "type": "string"
                     },
                     {
-                      "name": "chrom",
+                      "name": "refName",
                       "type": "string"
                     }
                   ],

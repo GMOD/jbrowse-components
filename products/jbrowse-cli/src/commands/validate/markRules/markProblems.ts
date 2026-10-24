@@ -223,7 +223,7 @@ export type MarkSnapshot = {
   maxBpPerPx?: number
   encoding?: {
     x?: string
-    x2?: string | { pos?: string; chrom?: string }
+    x2?: string | { pos?: string; refName?: string }
     y?: string
     row?: string
     color?: ColorSlots
@@ -264,7 +264,7 @@ function atDefault(channel: string, value: unknown) {
         value === DEFAULT_X2 ||
         (typeof value === 'object' &&
           value !== null &&
-          unwritten((value as { chrom?: unknown }).chrom) &&
+          unwritten((value as { refName?: unknown }).refName) &&
           ((value as { pos?: unknown }).pos === DEFAULT_X2 ||
             unwritten((value as { pos?: unknown }).pos)))
       )
@@ -624,7 +624,7 @@ function channelFields(
   const named: [string, string | undefined][] = [
     ['encoding.x', x],
     ['encoding.x2', typeof x2 === 'string' ? x2 : x2?.pos],
-    ['encoding.x2.chrom', typeof x2 === 'object' ? x2.chrom : undefined],
+    ['encoding.x2.refName', typeof x2 === 'object' ? x2.refName : undefined],
     ['encoding.row', reads('row') ? row : undefined],
     [
       'encoding.color.field',

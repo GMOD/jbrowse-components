@@ -1157,7 +1157,7 @@ const paired = [
 test('a locus x2 reads its position and files its sequence in the refName dictionary', () => {
   const out = encodeFeatures(
     paired,
-    { x2: { chrom: 'mate.refName', pos: 'mate.start' } },
+    { x2: { refName: 'mate.refName', pos: 'mate.start' } },
     ['x2Ref'],
   )
   expect([...out.x2]).toEqual([5000, 300, 20])
@@ -1180,7 +1180,7 @@ test('a locus x2 packs the arm each end keeps into the feet lane', () => {
     }),
     feature(2, { mate: { refName: 'chr1', start: 20 } }),
   ]
-  const x2 = { chrom: 'mate.refName', pos: 'mate.start' }
+  const x2 = { refName: 'mate.refName', pos: 'mate.start' }
   const out = encodeFeatures(ends, { x2 }, ['x2Ref'])
   expect([...out.feet!]).toEqual([linkFeet(-1, 1), linkFeet(1, 1), 0])
   expect(encodedChannelTransferables(out)).toContain(out.feet!.buffer)
@@ -1199,7 +1199,7 @@ test('the hit index boxes a link between its feet whichever way round', () => {
     feature(0, { mate: { refName: 'chr1', start: 20 } }, 200, 250),
     feature(1, { mate: { refName: 'chr7', start: 300 } }, 900, 950),
   ]
-  const encoding = { x2: { chrom: 'mate.refName', pos: 'mate.start' } }
+  const encoding = { x2: { refName: 'mate.refName', pos: 'mate.start' } }
   const fb = Flatbush.from(
     encodeFeatures(links, encoding, ['index']).flatbushData!,
   )
@@ -1214,7 +1214,7 @@ test('the hit index boxes a link between its feet whichever way round', () => {
 test('the size and x2Ref lanes ride the transfer list', () => {
   const out = encodeFeatures(
     paired,
-    { x2: { chrom: 'mate.refName', pos: 'mate.start' }, size: 'score' },
+    { x2: { refName: 'mate.refName', pos: 'mate.start' }, size: 'score' },
     ['x2Ref', 'size'],
   )
   const buffers = encodedChannelTransferables(out)

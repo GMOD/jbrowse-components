@@ -121,11 +121,10 @@ export type ShapeEncoding =
  * #api
  * A position that may lie on another sequence: the field holding its refName
  * and the field holding its 0-based coordinate, as a paired record states
- * its mate (`{ chrom: 'mate.refName', pos: 'mate.start' }`). Spelt the way
- * GenomeSpy spells a genomic position over two columns.
+ * its mate (`{ refName: 'mate.refName', pos: 'mate.start' }`).
  */
 export interface LocusRef {
-  chrom: FieldRef
+  refName: FieldRef
   pos: FieldRef
 }
 

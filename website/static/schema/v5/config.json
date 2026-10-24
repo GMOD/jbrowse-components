@@ -9756,7 +9756,7 @@
                 "$ref": "#/$defs/FeatureField"
               }
             },
-            "chrom": {
+            "refName": {
               "description": "sequence field; empty is the feature’s own.",
               "default": "",
               "if": {

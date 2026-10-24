@@ -1309,16 +1309,16 @@ test('a step fills the y and the far end its mark leaves unwritten', () => {
     {
       mark: 'link',
       transform: [{ type: 'mate' }],
-      encoding: { x2: { chrom: 'chrom2', pos: 'start2' } },
+      encoding: { x2: { refName: 'chrom2', pos: 'start2' } },
     },
   ])
   const { display } = createDisplay()
   const { layers } = display.rpcProps()
   expect(layers.map(l => [l.encoding.y, l.encoding.x2])).toEqual([
     ['coverage', 'end'],
-    [undefined, { chrom: 'mate.refName', pos: 'mate.start' }],
+    [undefined, { refName: 'mate.refName', pos: 'mate.start' }],
     ['mean_score', 'end'],
-    [undefined, { chrom: 'chrom2', pos: 'start2' }],
+    [undefined, { refName: 'chrom2', pos: 'start2' }],
   ])
   expect(layers[0]!.lanes).toContain('y')
   expect(display.markEntries[0]!.valued).toBe(true)
@@ -3003,7 +3003,7 @@ test('a failed scan is tried again on the next ask', async () => {
 const LINK = {
   mark: 'link',
   encoding: {
-    x2: { chrom: 'mate.refName', pos: 'mate.start' },
+    x2: { refName: 'mate.refName', pos: 'mate.start' },
     strokeWidth: { field: 'score', scale: { type: 'log', range: [1, 8] } },
     color: { value: 'red' },
   },
@@ -3050,7 +3050,7 @@ test('a link mark sends its far foot as a locus, its stroke width as the size sc
   expect(display.hasLinkMark).toBe(true)
   expect(display.rpcProps().layers[0]).toMatchObject({
     encoding: {
-      x2: { chrom: 'mate.refName', pos: 'mate.start' },
+      x2: { refName: 'mate.refName', pos: 'mate.start' },
       size: { field: 'score', scale: 'log', range: [1, 8] },
     },
     lanes: ['row', 'size', 'x2Ref', 'index'],
@@ -3224,7 +3224,7 @@ test('a scan finding a mate writes the link and its step, with nothing declared'
   })
   expect(display.rpcProps().layers[0]!.transform).toEqual([{ type: 'mate' }])
   expect(display.rpcProps().layers[0]!.encoding.x2).toEqual({
-    chrom: 'mate.refName',
+    refName: 'mate.refName',
     pos: 'mate.start',
   })
 })

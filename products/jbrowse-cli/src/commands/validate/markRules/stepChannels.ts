@@ -4,7 +4,7 @@ import { stepsOutput } from './markRuleFacts.ts'
 import type { StepOutline } from './markRuleFacts.ts'
 
 /** The far end a `mate` step writes, as `x2` reads a position on another sequence. */
-export const MATE_X2 = { chrom: 'mate.refName', pos: 'mate.start' } as const
+export const MATE_X2 = { refName: 'mate.refName', pos: 'mate.start' } as const
 
 /**
  * The channels a step list fills for a mark that leaves them unwritten, the

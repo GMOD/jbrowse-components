@@ -16,7 +16,10 @@ test('only a mark with a far foot reaches the other end a mate step found', () =
   const span = markLayerRequest(markOf({ mark: 'span' }), channels, 1)
   expect(span.encoding.x2).toBe('end')
   const link = markLayerRequest(markOf({ mark: 'link' }), channels, 1)
-  expect(link.encoding.x2).toEqual({ chrom: 'mate.refName', pos: 'mate.start' })
+  expect(link.encoding.x2).toEqual({
+    refName: 'mate.refName',
+    pos: 'mate.start',
+  })
   const bnd = new SimpleFeature({
     uniqueId: 'bnd',
     refName: 'ctgA',

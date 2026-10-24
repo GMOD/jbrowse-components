@@ -55,7 +55,7 @@ function channelExpressions(encoding: unknown): Expression[] {
     const setting = `encoding.${channel}`
     return typeof spec === 'string'
       ? [{ setting, code: spec }]
-      : membersAt(spec, setting, ['field', 'value', 'chrom', 'pos'])
+      : membersAt(spec, setting, ['field', 'value', 'refName', 'pos'])
   })
 }
 

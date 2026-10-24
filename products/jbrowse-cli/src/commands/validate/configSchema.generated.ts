@@ -10036,7 +10036,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 "$ref": "#/$defs/FeatureField"
               }
             },
-            "chrom": {
+            "refName": {
               "description": "sequence field; empty is the feature’s own.",
               "default": "",
               "if": {

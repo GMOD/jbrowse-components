@@ -687,7 +687,7 @@ export function encodeFeatures<L extends LaneName>(
   if (has('x2Ref')) {
     x2Ref = new Uint32Array(count)
     const readChrom = x2Locus
-      ? channelReader(table, x2Locus.chrom, jexl)
+      ? channelReader(table, x2Locus.refName, jexl)
       : undefined
     const readRefName = readerOf(table.column('refName'))
     const refIndex = new Map<string, number>()

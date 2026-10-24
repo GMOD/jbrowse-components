@@ -66,7 +66,7 @@ export function encodingOf(
   // `mate` step found; a span or bar behind one keeps its own interval.
   const x2 =
     mark.encoding.x2.pos === DEFAULT_X2 &&
-    !mark.encoding.x2.chrom &&
+    !mark.encoding.x2.refName &&
     spec.farFoot
       ? (filled.x2 ?? mark.encoding.x2)
       : mark.encoding.x2
@@ -85,7 +85,7 @@ export function encodingOf(
     x,
     // A far end on another sequence names the field holding which; a plain
     // position crosses as the field alone.
-    x2: x2.chrom ? { chrom: x2.chrom, pos: x2.pos } : x2.pos,
+    x2: x2.refName ? { refName: x2.refName, pos: x2.pos } : x2.pos,
     // The field alone: the worker reads a value, and the scale it is read
     // through is the display's `encoding.y`. Shipping that scale would put the
     // axis type and its bounds in the fetch's inputs, so a menu toggle

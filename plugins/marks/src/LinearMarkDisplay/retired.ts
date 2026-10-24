@@ -25,7 +25,7 @@ export const retiredTypes: RetiredDisplayType[] = [
     migrate: entry =>
       toLink(entry, {
         transform: [{ type: 'mate' }],
-        encoding: { x2: { chrom: 'mate.refName', pos: 'mate.start' } },
+        encoding: { x2: { refName: 'mate.refName', pos: 'mate.start' } },
       }),
   },
 ]

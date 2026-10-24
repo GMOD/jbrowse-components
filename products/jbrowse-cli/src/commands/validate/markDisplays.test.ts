@@ -189,7 +189,7 @@ describe('a marks list in a config file', () => {
         {
           mark: { type: 'link', interpolate: 'arc' },
           encoding: {
-            x2: { chrom: 'mate.refName', pos: 'mate.start' },
+            x2: { refName: 'mate.refName', pos: 'mate.start' },
             strokeWidth: 3,
           },
         },

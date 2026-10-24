@@ -945,7 +945,7 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
             {
               mark: 'link',
               encoding: {
-                x2: { chrom: 'mate.refName', pos: 'mate.start' },
+                x2: { refName: 'mate.refName', pos: 'mate.start' },
                 color: { value: '#a65628' },
                 strokeWidth: 2,
               },
@@ -961,7 +961,7 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
             {
               mark: 'link',
               encoding: {
-                x2: { chrom: 'mate.refName', pos: 'mate.start' },
+                x2: { refName: 'mate.refName', pos: 'mate.start' },
                 color: { value: '#a65628' },
                 strokeWidth: 2,
               },

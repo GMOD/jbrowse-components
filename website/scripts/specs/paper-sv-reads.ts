@@ -141,7 +141,7 @@ const readEvidence = ({
                 mark: 'link',
                 transform: [{ type: 'mate' }],
                 encoding: {
-                  x2: { chrom: 'mate.refName', pos: 'mate.start' },
+                  x2: { refName: 'mate.refName', pos: 'mate.start' },
                   strokeWidth: 2,
                 },
               },

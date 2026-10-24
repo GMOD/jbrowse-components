@@ -49,7 +49,8 @@ the alignments band hit and worked around with a view-space DOM overlay:
   degenerates to a circle whose legs rise from each foot, the alignments
   band's rule and reasoning. The view's width, not the block's, so the two
   blocks holding a pair's feet draw one curve.
-- **`x2` takes GenomeSpy's `{ chrom, pos }` form beside a field.** The
+- **`x2` takes a `{ refName, pos }` form beside a field**, GenomeSpy's
+  `{ chrom, pos }` in the app's own word. The
   encoder files each feature's far sequence in an `x2Ref` dictionary lane,
   and the display resolves it once per fetch, through the assembly's
   aliases, into an `x2Region` lane naming the displayed region holding the
@@ -102,7 +103,7 @@ the alignments band hit and worked around with a view-space DOM overlay:
 ## Consequences
 
 - A BEDPE, STAR-Fusion or SV VCF track draws its arcs as
-  `{ mark: 'link', encoding: { x2: { chrom: 'mate.refName', pos:
+  `{ mark: 'link', encoding: { x2: { refName: 'mate.refName', pos:
   'mate.start' } }, transform: [{ type: 'mate' }] }`, and a BED of
   start-end pairs as `{ mark: 'link' }` alone. Thickness by score is
   `encoding.size: { field: 'score', scale: 'log', range: [1, 8] }`, a label
