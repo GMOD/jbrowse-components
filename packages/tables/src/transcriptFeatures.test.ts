@@ -4,7 +4,7 @@ import path from 'node:path'
 import { pathToFileURL } from 'node:url'
 
 import { DEAL_COLOR_DIFFERENCE, colorDifference } from '@jbrowse/core/ui/colors'
-import { featureDefaultColor } from '@jbrowse/core/ui/palette'
+import { featureDefaultColor, utrDefaultColor } from '@jbrowse/core/ui/palette'
 import { NO_CATEGORY_COLOR } from '@jbrowse/core/util/color'
 
 import { createTablesEngine } from './index.ts'
@@ -63,16 +63,22 @@ function domainRects(t: Awaited<ReturnType<typeof engine.features>>) {
     .filter(r => r.start === 1250 || r.start === 3000)
 }
 
-test('the tables draw the proteinFeatures track on its transcript', async () => {
+test('the tables draw a transcriptFeatures track on the transcript it names', async () => {
   const display = {
     heightMode: 'grow',
-    proteinFeatures: { track: 'pfam', color: { value: '#ff00ff' } },
+    transcriptFeatures: {
+      tracks: [{ track: 'pfam', join: { field: 'transcript' } }],
+      encoding: { color: { value: '#ff00ff' } },
+    },
   }
-  const plain = await engine.features({ ...GFF3, display })
+  const plain = await engine.features({
+    ...GFF3,
+    display: { heightMode: 'grow' },
+  })
   const joined = await engine.features({
     ...GFF3,
     display,
-    proteinFeatures: domainsAdapter(),
+    transcriptFeatures: { pfam: domainsAdapter() },
   })
   expect(joined.rects.start.length).toBe(plain.rects.start.length + 2)
   expect(plain.rects.color).not.toContain('#ff00ff')
@@ -84,11 +90,11 @@ test('the tables draw the proteinFeatures track on its transcript', async () => 
   )
 })
 
-test("the domains' color paints by name through its own palette", async () => {
+test("the rows' color paints by name through its own palette", async () => {
   const t = await engine.features({
     ...GFF3,
-    display: { heightMode: 'grow', proteinFeatures: 'pfam' },
-    proteinFeatures: domainsAdapter(),
+    display: { heightMode: 'grow', transcriptFeatures: ['pfam'] },
+    transcriptFeatures: { pfam: domainsAdapter() },
   })
   const sh2 = domainRects(t).filter(r => r.end === 1500 || r.end === 3100)
   expect(sh2).toHaveLength(2)
@@ -96,7 +102,7 @@ test("the domains' color paints by name through its own palette", async () => {
   expect(sh2[0]!.color).not.toBe(NO_CATEGORY_COLOR)
 })
 
-test('the tables key the domains apart from the features', async () => {
+test('the tables key the rows apart from the features', async () => {
   const ph = [
     'ctgA',
     5000,
@@ -114,8 +120,8 @@ test('the tables key the domains apart from the features', async () => {
   ]
   const t = await engine.features({
     ...GFF3,
-    display: { heightMode: 'grow', proteinFeatures: 'pfam' },
-    proteinFeatures: domainsAdapter([ph.join('\t')]),
+    display: { heightMode: 'grow', transcriptFeatures: ['pfam'] },
+    transcriptFeatures: { pfam: domainsAdapter([ph.join('\t')]) },
   })
   expect(t.domainLegend.label).toEqual(['PH', 'SH2'])
   expect(t.domainLegend.color).toContain(domainRects(t)[0]!.color)
@@ -123,7 +129,7 @@ test('the tables key the domains apart from the features', async () => {
   expect(plain.domainLegend).toEqual({ label: [], color: [] })
 })
 
-test('no domain takes a color that reads as the CDS it paints over', async () => {
+test('no row takes a color that reads as the CDS or UTR it paints over', async () => {
   const families = Array.from({ length: 30 }, (_, i) =>
     [
       'ctgA',
@@ -146,10 +152,10 @@ test('no domain takes a color that reads as the CDS it paints over', async () =>
       ...GFF3,
       display: {
         heightMode: 'grow',
-        proteinFeatures: 'pfam',
+        transcriptFeatures: ['pfam'],
         ...(color ? { encoding: { color: { value: color } } } : {}),
       },
-      proteinFeatures: domainsAdapter(families),
+      transcriptFeatures: { pfam: domainsAdapter(families) },
     })
     return t.domainLegend.color
   }
@@ -158,10 +164,11 @@ test('no domain takes a color that reads as the CDS it paints over', async () =>
   const dealt = await keyed()
   expect(dealt).toHaveLength(31)
   expect(near(dealt, featureDefaultColor)).toEqual([])
+  expect(near(dealt, utrDefaultColor)).toEqual([])
   expect(near(await keyed('#4e79a7'), '#4e79a7')).toEqual([])
 })
 
-test('a domain track that fails fails the tables', async () => {
+test('a transcriptFeatures track that fails fails the tables', async () => {
   const missing = {
     ...domainsAdapter(),
     bedLocation: {
@@ -172,8 +179,14 @@ test('a domain track that fails fails the tables', async () => {
   await expect(
     engine.features({
       ...GFF3,
-      display: { proteinFeatures: 'pfam' },
-      proteinFeatures: missing,
+      display: { transcriptFeatures: ['pfam'] },
+      transcriptFeatures: { pfam: missing },
     }),
-  ).rejects.toThrow(/proteinFeatures:/)
+  ).rejects.toThrow(/transcriptFeatures:/)
+})
+
+test('a transcriptFeatures track with no adapter fails the tables', async () => {
+  await expect(
+    engine.features({ ...GFF3, display: { transcriptFeatures: ['pfam'] } }),
+  ).rejects.toThrow(/no adapter for "pfam"/)
 })

@@ -1,8 +1,8 @@
-import { MAX_DOMAIN_LANES, assignDomainLanes } from './domainLanes.ts'
+import { MAX_ATTACHED_LANES, assignAttachedLanes } from './attachedLanes.ts'
 
 test('disjoint domains share one lane', () => {
   expect(
-    assignDomainLanes([
+    assignAttachedLanes([
       { start: 0, end: 10 },
       { start: 20, end: 30 },
     ]),
@@ -11,7 +11,7 @@ test('disjoint domains share one lane', () => {
 
 test('a domain nested in another takes the next lane', () => {
   expect(
-    assignDomainLanes([
+    assignAttachedLanes([
       { start: 5, end: 8 },
       { start: 0, end: 20 },
     ]),
@@ -19,11 +19,11 @@ test('a domain nested in another takes the next lane', () => {
 })
 
 test('lanes past the cap share the last one', () => {
-  const spans = Array.from({ length: MAX_DOMAIN_LANES + 2 }, () => ({
+  const spans = Array.from({ length: MAX_ATTACHED_LANES + 2 }, () => ({
     start: 0,
     end: 10,
   }))
-  const { lanes, laneCount } = assignDomainLanes(spans)
-  expect(laneCount).toBe(MAX_DOMAIN_LANES)
-  expect(Math.max(...lanes)).toBe(MAX_DOMAIN_LANES - 1)
+  const { lanes, laneCount } = assignAttachedLanes(spans)
+  expect(laneCount).toBe(MAX_ATTACHED_LANES)
+  expect(Math.max(...lanes)).toBe(MAX_ATTACHED_LANES - 1)
 })

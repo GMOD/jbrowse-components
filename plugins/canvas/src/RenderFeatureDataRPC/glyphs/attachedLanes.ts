@@ -1,13 +1,13 @@
-export interface DomainSpan {
+export interface AttachedSpan {
   start: number
   end: number
 }
 
-export const MAX_DOMAIN_LANES = 3
+export const MAX_ATTACHED_LANES = 3
 
-// Greedy first-fit by start, longest first, so a domain nested in a larger one
+// Greedy first-fit by start, longest first, so a row nested in a larger one
 // takes the next lane. Lanes past the cap share the last one.
-export function assignDomainLanes(spans: DomainSpan[]) {
+export function assignAttachedLanes(spans: AttachedSpan[]) {
   const order = spans
     .map((span, i) => ({ ...span, i }))
     .toSorted((a, b) => a.start - b.start || b.end - a.end)
@@ -16,7 +16,7 @@ export function assignDomainLanes(spans: DomainSpan[]) {
   for (const { start, end, i } of order) {
     let lane = laneEnds.findIndex(laneEnd => laneEnd <= start)
     if (lane === -1) {
-      lane = Math.min(laneEnds.length, MAX_DOMAIN_LANES - 1)
+      lane = Math.min(laneEnds.length, MAX_ATTACHED_LANES - 1)
     }
     laneEnds[lane] = Math.max(laneEnds[lane] ?? 0, end)
     lanes[i] = lane

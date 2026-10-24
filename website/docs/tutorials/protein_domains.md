@@ -121,8 +121,7 @@ jbrowse make-protein-features genes.gff3 pfam.domtblout --out pfam.bed.gz
 
 ## Drawing the domains on the genes
 
-JBrowse loads the domain file as a track, with `disableGeneHeuristic` to stop it
-reading a stranded BED12 row as a coding transcript:
+JBrowse loads the domain file as a track:
 
 ```json addtrack
 {
@@ -132,17 +131,18 @@ reading a stranded BED12 row as a coding transcript:
   "assemblyNames": ["GCF_003254395.2"],
   "adapter": {
     "type": "BedTabixAdapter",
-    "uri": "https://jbrowse.org/demos/protein_domains/pfam.bed.gz",
-    "disableGeneHeuristic": true
+    "uri": "https://jbrowse.org/demos/protein_domains/pfam.bed.gz"
   }
 }
 ```
 
-A gene track names that track in
-[`proteinFeatures`](/docs/config/linearbasicdisplay/#slot-proteinfeatures) and
-draws each domain over the CDS that encodes it, colored by Pfam family, with a
-key naming the families on screen. This one reads the same RefSeq GFF as the
-honey bee hub's gene track:
+A gene track lists that track in
+[`transcriptFeatures`](/docs/config/linearbasicdisplay/#slot-transcriptfeatures)
+and draws each domain over the CDS that encodes it, colored by Pfam family, with
+a key naming the families on screen. The `join` draws each row on the transcript
+its `transcript` column names, so each isoform shows the domains called on its
+own protein. This one reads the same RefSeq GFF as the honey bee hub's gene
+track:
 
 ```json addtrack
 {
@@ -161,9 +161,13 @@ honey bee hub's gene track:
     }
   },
   "displayDefaults": {
-    "proteinFeatures": {
-      "track": "pfam_domains",
-      "color": { "field": "name", "legend": { "title": "Pfam family" } }
+    "transcriptFeatures": {
+      "tracks": [
+        { "track": "pfam_domains", "join": { "field": "transcript" } }
+      ],
+      "encoding": {
+        "color": { "field": "name", "legend": { "title": "Pfam family" } }
+      }
     }
   }
 }

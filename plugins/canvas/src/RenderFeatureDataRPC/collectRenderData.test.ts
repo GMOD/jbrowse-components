@@ -1163,7 +1163,7 @@ describe('collectRenderData arrow gene lane', () => {
   })
 })
 
-describe('protein features', () => {
+describe('transcript features', () => {
   const domain = mockFeature({
     type: 'polypeptide_domain',
     id: 'd1',
@@ -1171,28 +1171,33 @@ describe('protein features', () => {
     end: 203,
     attributes: { name: 'SH2' },
   })
-  const proteinFeatures = {
-    byTranscript: new Map([
-      [
-        'tx1',
-        [
+  const color: WorkerColor = { value: undefined, field: 'name' }
+  const transcriptFeatures = (color: WorkerColor) => ({
+    tracks: [
+      {
+        trackId: 'pfam',
+        rows: [
           {
             feature: domain,
             blocks: [
-              { start: 101, end: 104 },
-              { start: 200, end: 203 },
-            ],
+              [101, 104],
+              [200, 203],
+            ] as [number, number][],
+            key: 'tx1',
           },
         ],
-      ],
-    ]),
-    color: { value: undefined, field: 'name' },
-    transcriptKey: 'id',
-  }
+        on: 'cds' as const,
+        join: { field: 'transcript', transcriptField: 'id' },
+        candidates: 0,
+        attached: 0,
+      },
+    ],
+    color,
+  })
 
   function collectDomains(
     trackField: string,
-    color: WorkerColor = proteinFeatures.color,
+    domainColor: WorkerColor = color,
   ) {
     const { layout } = twoExonTranscript()
     const tx = layout.feature
@@ -1208,7 +1213,7 @@ describe('protein features', () => {
       { ...layout, feature: named },
       {
         config: mockDisplayConfig({ color: { field: trackField } }),
-        proteinFeatures: { ...proteinFeatures, color },
+        transcriptFeatures: transcriptFeatures(domainColor),
       },
     )
   }
@@ -1254,7 +1259,7 @@ describe('protein features', () => {
     }
   })
 
-  it('ships no domain lane without protein features', () => {
+  it('ships no domain lane without transcript features', () => {
     const { layout } = twoExonTranscript()
     const result = collect(layout)
     expect(result.rectDomainColorValues).toHaveLength(0)

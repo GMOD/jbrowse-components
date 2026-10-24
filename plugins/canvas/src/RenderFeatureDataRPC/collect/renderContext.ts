@@ -1,7 +1,9 @@
+import type { Span } from '../../shared/mergeSpans.ts'
 import type { ArrowData, LineData, RectData } from '../packRenderArrays.ts'
 import type { DisplayConfig, WorkerColor } from '../renderConfig.ts'
 import type {
   AminoAcidOverlayItem,
+  TranscriptFeaturesJoin,
   FlatbushItem,
   FloatingLabelsDataMap,
   SubfeatureInfo,
@@ -11,16 +13,28 @@ import type { ColorKey } from './colorKey.ts'
 import type { Feature } from '@jbrowse/core/util'
 import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
 
-export interface DomainData {
+// A `transcriptFeatures` row with its blocks merged, as it fits a transcript
+export interface AttachableRow {
   feature: Feature
-  blocks: { start: number; end: number }[]
+  blocks: Span[]
+  // The row's `join.field`, undefined while the track joins by shape alone
+  key?: string
 }
 
-export interface ProteinFeatures {
-  byTranscript: Map<string, DomainData[]>
+export interface TranscriptFeatures {
+  // One per `transcriptFeatures.tracks` entry, its rows ascending by start.
+  // `candidates` and `attached` count what the walk tried and kept, for the
+  // notice on a track that fit nothing.
+  tracks: {
+    trackId: string
+    rows: AttachableRow[]
+    on: 'cds' | 'exon'
+    join: TranscriptFeaturesJoin
+    candidates: number
+    attached: number
+  }[]
+  // One color for every track's rows, so they share one key
   color: WorkerColor
-  // The transcript field `byTranscript`'s keys equal.
-  transcriptKey: string
 }
 
 // The worker resolves no theme color at all — a color that depends on the theme
@@ -30,7 +44,7 @@ export interface RenderContext {
   config: DisplayConfig
   colorByFrame: boolean
   peptideDataMap?: Map<string, PeptideData>
-  proteinFeatures?: ProteinFeatures
+  transcriptFeatures?: TranscriptFeatures
   jexl: JexlInstance
   // Reads `config.facetField`, built once per walk.
   readGroupKey?: (feature: Feature) => unknown

@@ -158,7 +158,7 @@ describe('the containing feature the panel is told about', () => {
   })
 })
 
-describe('a protein domain click', () => {
+describe('a click on a row drawn on a transcript', () => {
   const sh2: SubfeatureInfo = {
     ...eden1,
     featureId: 'EDEN.1-domain-0-1',
@@ -167,11 +167,12 @@ describe('a protein domain click', () => {
     endBp: 2100,
     displayLabel: 'SH2',
     domainId: 'pfam_domains-4096',
+    domainTrack: 0,
   }
 
-  it("fetches the domain from the proteinFeatures track's adapter over its block", async () => {
+  it("fetches the row from its transcriptFeatures track's adapter over its block", async () => {
     const { createDisplay } = createTestEnvironment({
-      displayConfig: { proteinFeatures: 'test_track' },
+      displayConfig: { transcriptFeatures: ['test_track'] },
     })
     const { display, mockRpcCall } = createDisplay()
     mockRpcCall.mockResolvedValue({ feature: undefined })
@@ -185,14 +186,14 @@ describe('a protein domain click', () => {
       ([, method]) => method === 'GetCanvasFeatureDetails',
     )!
     expect(args).toMatchObject({
-      adapterConfig: display.proteinFeaturesArg!.adapter,
+      adapterConfig: display.transcriptFeaturesArg!.tracks[0]!.adapter,
       region: { refName: 'ctgA', start: 2000, end: 2100 },
     })
   })
 
-  it('right-clicked, acts on its transcript and offers the whole domain', async () => {
+  it('right-clicked, acts on its transcript and offers the whole row', async () => {
     const { createDisplay } = createTestEnvironment({
-      displayConfig: { proteinFeatures: 'test_track' },
+      displayConfig: { transcriptFeatures: ['test_track'] },
     })
     const { display, mockRpcCall } = createDisplay()
     mockRpcCall.mockResolvedValue({ feature: undefined })
@@ -237,7 +238,7 @@ describe('a protein domain click', () => {
     })
   })
 
-  it('fetches the gene while the display names no domain track', async () => {
+  it('fetches the gene while the display names no transcriptFeatures track', async () => {
     const { display, mockRpcCall } = setup()
     display.selectFeatureById('EDEN', sh2, 0)
 

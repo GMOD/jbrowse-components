@@ -154,7 +154,7 @@ export function featureColorKey(
 }
 
 /**
- * `data` with the `proteinFeatures` color's values in place of the feature
+ * `data` with the `transcriptFeatures` color's values in place of the feature
  * color's, so the key and palette code reads the domains' lane as its own.
  */
 export function domainLaneOf<

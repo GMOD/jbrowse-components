@@ -54,10 +54,10 @@ export async function run(args?: string[]) {
     'or its CDS ID (gffread -y, NCBI and Ensembl protein FASTA all match). ' +
     'A feature spanning an intron becomes one BED12 row with a block per ' +
     'exon. Where HMMER hits on one protein overlap by more than half, the ' +
-    'lowest E-value is kept, as pfam_scan does. ' +
-    'Add the file as a track with disableGeneHeuristic, and name that track ' +
-    "in a gene track's proteinFeatures to draw the domains on its " +
-    'transcripts. Requires bgzip and tabix on the PATH.'
+    'lowest E-value is kept, whatever their Pfam clans. ' +
+    "Add the file as a track, and list it in a gene track's " +
+    'transcriptFeatures with join.field "transcript" to draw the domains ' +
+    'on their transcripts. Requires bgzip and tabix on the PATH.'
 
   if (flags.help) {
     printHelp({

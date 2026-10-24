@@ -1,6 +1,6 @@
 import { fullConfSnapshot, readConfObject } from '@jbrowse/core/configuration'
 import { tablesFeatureAdapter } from '@jbrowse/core/data_adapters/getFeatureAdapter'
-import { featureDefaultColor, resolvePalette } from '@jbrowse/core/ui/palette'
+import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { rampKeyOf } from '@jbrowse/core/ui/rampKey'
 import { STRAND_FIELD } from '@jbrowse/core/util/categoricalField'
 import { abgrToHex, cssColorToHex } from '@jbrowse/core/util/colorBits'
@@ -53,6 +53,12 @@ import {
 } from './LinearBasicDisplay/passes/shaders/chevron.js.generated.ts'
 import { isPlacedRow } from './LinearBasicDisplay/rowPlacement.ts'
 import { labelVisibility } from './LinearBasicDisplay/showLabelsMode.ts'
+import {
+  geneFills,
+  resolveTrackRefNames,
+  transcriptFeatureEntries,
+  transcriptFeaturesArg,
+} from './LinearBasicDisplay/transcriptFeaturesArg.ts'
 import { executeRenderFeatureData } from './RenderFeatureDataRPC/executeRenderFeatureData.ts'
 import { labelFontSize } from './RenderFeatureDataRPC/glyphs/glyphUtils.ts'
 import { pickDisplayConfig } from './RenderFeatureDataRPC/renderConfig.ts'
@@ -123,27 +129,25 @@ export interface FeatureTablesArgs {
    */
   byteLimit?: number
   /**
-   * The adapter of the track `display.proteinFeatures.track` names, whose
-   * domains draw on each transcript's CDS. Its file spells each contig as
-   * `adapterConfig`'s does.
+   * The adapter of each track `display.transcriptFeatures.tracks` names, by
+   * trackId, whose rows draw on the transcripts they fit. Each file spells a
+   * contig as `adapterConfig`'s does.
    */
-  proteinFeatures?: Record<string, unknown>
+  transcriptFeatures?: Record<string, Record<string, unknown>>
 }
 
 function domainColorsOf(
   conf: ReturnType<ReturnType<typeof configSchemaFactory>['create']>,
   raws: readonly FeatureDataResult[],
 ) {
-  const geneColor = conf.encoding.color
+  const { solidColor } = featureColorViews({
+    conf: { encoding: { color: conf.encoding.color } },
+    rpcDataMap: new Map(),
+  })
   return featureColorViews({
-    conf: { encoding: { color: conf.proteinFeatures.color } },
+    conf: { encoding: conf.transcriptFeatures.encoding },
     impliedField: 'name',
-    reservedColors: [
-      featureColorViews({
-        conf: { encoding: { color: geneColor } },
-        rpcDataMap: new Map(),
-      }).solidColor ?? featureDefaultColor,
-    ],
+    reservedColors: geneFills(solidColor, conf.utrColor),
     rpcDataMap: new Map(raws.map((raw, i) => [i, domainLaneOf(raw)])),
   })
 }
@@ -390,7 +394,7 @@ export async function featureTables(
     aminoAcids = true,
     geneticCodeId,
     byteLimit = DEFAULT_BYTE_LIMIT,
-    proteinFeatures,
+    transcriptFeatures = {},
   }: FeatureTablesArgs,
 ) {
   const conf = configSchemaFactory(pluginManager).create({
@@ -398,6 +402,21 @@ export async function featureTables(
     type: 'LinearBasicDisplay',
     displayId: 'tables',
   })
+  const attachedTracks = transcriptFeatureEntries(conf.transcriptFeatures).map(
+    entry => {
+      const adapter = transcriptFeatures[entry.trackId]
+      if (!adapter) {
+        throw new Error(
+          `transcriptFeatures: no adapter for "${entry.trackId}" in the transcriptFeatures argument`,
+        )
+      }
+      return { ...entry, adapter }
+    },
+  )
+  const attached = transcriptFeaturesArg(
+    attachedTracks,
+    domainColorsOf(conf, []).workerColor,
+  )
   const displayMode = readConfObject(conf, 'displayMode')
   const collapsed = displayMode === 'collapsed'
   // Collapsed mode forces 'none' as the display does, since the label is baked
@@ -440,19 +459,10 @@ export async function featureTables(
           peptides: aminoAcids && shouldRenderPeptideBackground(bpPerPx),
           geneticCodeId,
           byteLimit,
-          proteinFeatures: proteinFeatures && {
-            adapter: proteinFeatures,
-            color: domainColorsOf(conf, []).workerColor,
-            join: {
-              domain: readConfObject(conf, [
-                'proteinFeatures',
-                'join',
-                'domain',
-              ]),
-              gene: readConfObject(conf, ['proteinFeatures', 'join', 'gene']),
-            },
-            refName: r.refName,
-          },
+          transcriptFeatures:
+            attached &&
+            (await resolveTrackRefNames(attached, r.refName, async () => ({})))
+              .arg,
           statusCallback: () => {},
         } satisfies RpcExecuteArgs<'RenderFeatureData'>,
       })
@@ -543,7 +553,7 @@ export async function featureTables(
     conf: { encoding: { color: conf.encoding.color } },
     rpcDataMap: new Map(raws.map((raw, i) => [i, raw])),
   })
-  const domainColors = proteinFeatures && domainColorsOf(conf, raws)
+  const domainColors = attached && domainColorsOf(conf, raws)
   const resolved = resolveMapColors(
     laid,
     palette,
@@ -615,7 +625,7 @@ export async function featureTables(
       color: entries.map(e => cssColorToHex(e.color!)),
     },
     legendTitle: key?.title ?? '',
-    /** The `proteinFeatures` domains' key, empty without a domain track. */
+    /** The `transcriptFeatures` rows' key, empty without such a track. */
     domainLegend: {
       label: domainEntries.map(e => e.label),
       color: domainEntries.map(e => cssColorToHex(e.color!)),

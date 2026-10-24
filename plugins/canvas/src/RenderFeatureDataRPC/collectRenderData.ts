@@ -34,11 +34,11 @@ export function collectRenderData(
     regionEnd: number
   },
 ) {
-  const { layouts, regionStart, regionEnd, config, jexl, proteinFeatures } =
+  const { layouts, regionStart, regionEnd, config, jexl, transcriptFeatures } =
     args
   const collector = createCollector(
     createColorKey(config.color.field, jexl),
-    proteinFeatures && createColorKey(proteinFeatures.color.field, jexl),
+    transcriptFeatures && createColorKey(transcriptFeatures.color.field, jexl),
   )
   const ctx = {
     ...args,

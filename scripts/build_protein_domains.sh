@@ -8,7 +8,7 @@
 # proteins with Pfam's own gathering thresholds, and `jbrowse
 # make-protein-features` places each domain back on the exons that encode it.
 # The script then builds a JBrowse whose gene track draws the domains through
-# its proteinFeatures.
+# its transcriptFeatures.
 #
 # Requires: samtools, gffread, hmmscan + hmmpress (HMMER 3), bgzip + tabix
 #           (htslib), and node. A `jbrowse` on PATH runs if it has
@@ -106,11 +106,10 @@ jb make-protein-features genes.gff3 pfam.domtblout --out pfam.bed.gz
 [ -f "$APP/index.html" ] || jb create "$APP"
 jb add-assembly "$FA" --name "$ASM" --load copy --force --out "$APP"
 jb add-track pfam.bed.gz --trackId pfam_domains --name "Pfam domains" \
-  -a "$ASM" --load copy --force --out "$APP" \
-  --config '{"adapter":{"disableGeneHeuristic":true}}'
+  -a "$ASM" --load copy --force --out "$APP"
 jb add-track genes.gff3.gz --trackId genes --name Genes -a "$ASM" \
   --load copy --force --out "$APP" \
-  --config '{"displayDefaults":{"proteinFeatures":{"track":"pfam_domains","color":{"field":"name","legend":{"title":"Pfam family"}}}}}'
+  --config '{"displayDefaults":{"transcriptFeatures":{"tracks":[{"track":"pfam_domains","join":{"field":"transcript"}}],"encoding":{"color":{"field":"name","legend":{"title":"Pfam family"}}}}}}'
 jb text-index --tracks genes --attributes Name,gene --force --out "$APP"
 
 echo

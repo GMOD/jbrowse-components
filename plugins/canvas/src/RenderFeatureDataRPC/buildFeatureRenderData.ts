@@ -2,7 +2,7 @@ import { collectRenderData } from './collectRenderData.ts'
 import { findGlyph } from './glyphs/findGlyph.ts'
 import { summarizeIsoformPicks } from './isoformPicks.ts'
 
-import type { ProteinFeatures } from './collect/renderContext.ts'
+import type { TranscriptFeatures } from './collect/renderContext.ts'
 import type { DisplayConfig } from './renderConfig.ts'
 import type { FeatureDataResult } from './rpcTypes.ts'
 import type { FeatureLayout, PeptideData } from './types.ts'
@@ -27,7 +27,7 @@ export function buildFeatureRenderData({
   colorByFrame = false,
   expandedGeneIds,
   peptideDataMap,
-  proteinFeatures,
+  transcriptFeatures,
   report,
 }: {
   features: Iterable<Feature>
@@ -38,7 +38,7 @@ export function buildFeatureRenderData({
   colorByFrame?: boolean
   expandedGeneIds?: ReadonlySet<string>
   peptideDataMap?: Map<string, PeptideData>
-  proteinFeatures?: ProteinFeatures
+  transcriptFeatures?: TranscriptFeatures
   report?: () => void
 }): FeatureDataResult {
   const layouts: FeatureLayout[] = []
@@ -63,7 +63,7 @@ export function buildFeatureRenderData({
     config,
     colorByFrame,
     peptideDataMap,
-    proteinFeatures,
+    transcriptFeatures,
     jexl,
   })
   return {

@@ -16,7 +16,6 @@ const PFAM_TRACK = {
   adapter: {
     type: 'BedTabixAdapter',
     uri: 'https://jbrowse.org/demos/protein_domains/pfam.bed.gz',
-    disableGeneHeuristic: true,
   },
 }
 
@@ -36,9 +35,11 @@ const GENES_TRACK = {
     },
   },
   displayDefaults: {
-    proteinFeatures: {
-      track: 'pfam_domains',
-      color: { field: 'name', legend: { title: 'Pfam family' } },
+    transcriptFeatures: {
+      tracks: [{ track: 'pfam_domains', join: { field: 'transcript' } }],
+      encoding: {
+        color: { field: 'name', legend: { title: 'Pfam family' } },
+      },
     },
   },
 }

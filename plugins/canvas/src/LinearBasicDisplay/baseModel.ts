@@ -116,7 +116,6 @@ import {
   featureIdsTouchingBlocks,
 } from './layoutQueries.ts'
 import { facetOf, plotJexlProblems } from './plotProblems.ts'
-import { proteinFeaturesFor } from './proteinFeaturesArg.ts'
 import { scanGroupByCandidates } from './scanGroupByCandidates.ts'
 import { labelVisibility, modeCanShowDescription } from './showLabelsMode.ts'
 import {
@@ -128,6 +127,12 @@ import {
   showSubmenuLegendItems,
   showSubmenuRadioGroups,
 } from './trackMenus.ts'
+import {
+  geneFills,
+  resolveTrackRefNames,
+  transcriptFeatureEntries,
+  transcriptFeaturesArg,
+} from './transcriptFeaturesArg.ts'
 import {
   installYMorphAutorun,
   yMorphActions,
@@ -180,7 +185,7 @@ import type {
 import type { HighlightRect } from '@jbrowse/display-kit/highlightHost'
 import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
-import type { Instance } from '@jbrowse/mobx-state-tree'
+import type { IStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 
 // Region identity rides in the stored payload: the layout groups by ref, and
 // a canonical refName is not what `Region.refName` carries.
@@ -190,15 +195,7 @@ type LoadedFeatureData = LayoutRegionData & {
   reversed: boolean
 }
 
-function proteinFeaturesConf(
-  self: Parameters<typeof getConf>[0],
-  path: readonly string[],
-) {
-  return getConf(self, ['proteinFeatures', ...path]) as string
-}
-
-function domainAdapterOf(self: Parameters<typeof getConf>[0]) {
-  const trackId = proteinFeaturesConf(self, ['track'])
+function adapterOfTrack(self: IStateTreeNode, trackId: string) {
   const raw = trackId ? getSession(self).getTrackById(trackId) : undefined
   if (!raw) {
     return undefined
@@ -398,7 +395,7 @@ export default function baseStateModelFactory(
         {
           get conf() {
             const conf = self.configuration as LinearBasicDisplayConfig
-            return { encoding: { color: conf.proteinFeatures.color } }
+            return { encoding: conf.transcriptFeatures.encoding }
           },
           get rpcDataMap() {
             return new Map(
@@ -410,7 +407,8 @@ export default function baseStateModelFactory(
           },
           impliedField: 'name',
           get reservedColors() {
-            return [self.featureColor]
+            const conf = self.configuration as LinearBasicDisplayConfig
+            return geneFills(self.solidColor, conf.utrColor)
           },
         },
         self,
@@ -418,54 +416,65 @@ export default function baseStateModelFactory(
       return {
         /**
          * #getter
-         * The `proteinFeatures` track's adapter and the share of its color
-         * the worker reads, undefined while no track is named.
+         * The `transcriptFeatures` tracks, each with its adapter where its
+         * trackId names a track that has one.
          */
-        get proteinFeaturesArg() {
-          const adapter = domainAdapterOf(self)
-          const joinField = (side: 'domain' | 'gene') =>
-            proteinFeaturesConf(self, ['join', side])
-          return (
-            adapter && {
-              adapter,
-              color: domainColors.workerColor,
-              join: { domain: joinField('domain'), gene: joinField('gene') },
-            }
-          )
+        get transcriptFeatureTracks() {
+          // A variant display's schema has no `transcriptFeatures`
+          const conf = self.configuration as Partial<LinearBasicDisplayConfig>
+          return conf.transcriptFeatures
+            ? transcriptFeatureEntries(conf.transcriptFeatures).map(entry => ({
+                ...entry,
+                adapter: adapterOfTrack(self, entry.trackId),
+              }))
+            : []
         },
         /**
          * #getter
-         * The `proteinFeatures` color's values painted through its scale,
-         * dealt from the session's slots as the domain track's own color is;
-         * undefined without a domain track, as on a variant display, whose
-         * schema has no `proteinFeatures`.
+         * The tracks whose rows draw on the transcripts and the share of
+         * their color the worker reads, undefined while none resolves.
+         */
+        get transcriptFeaturesArg() {
+          const tracks = this.transcriptFeatureTracks
+          return tracks.length > 0
+            ? transcriptFeaturesArg(tracks, domainColors.workerColor)
+            : undefined
+        },
+        /**
+         * #getter
+         * The `transcriptFeatures` color's values painted through its scale,
+         * dealt from the session's slots as each track's own color is;
+         * undefined without a track, as on a variant display, whose schema
+         * has no `transcriptFeatures`.
          */
         get domainPalette(): FieldPalette | undefined {
-          return this.proteinFeaturesArg && domainColors.fieldPalette
+          return this.transcriptFeaturesArg && domainColors.fieldPalette
         },
         /**
          * #method
-         * The key the `proteinFeatures` color derives from `regions`.
+         * The key the `transcriptFeatures` color derives from `regions`.
          */
         domainColorScales(
           regions: readonly FeatureDataResult[],
           isHidden?: (section: SectionStamp) => boolean,
         ): ColorScale[] {
           return featureColorKey(domainColors, regions, { isHidden }).map(
-            scale => ({ ...scale, id: `proteinFeatures-${scale.id}` }),
+            scale => ({ ...scale, id: `transcriptFeatures-${scale.id}` }),
           )
         },
         /**
          * #getter
-         * A `proteinFeatures.track` naming no track, and what each loaded
-         * region could not draw from it, while the features still draw.
+         * A `transcriptFeatures` track naming no track, and what each
+         * loaded region could not draw from them, while the features still
+         * draw.
          */
         get liveNotices(): string[] {
-          const trackId = proteinFeaturesConf(self, ['track'])
           return [
-            ...(trackId && !this.proteinFeaturesArg
-              ? [`proteinFeatures.track: no track "${trackId}" with an adapter`]
-              : []),
+            ...this.transcriptFeatureTracks.flatMap(({ trackId, adapter }) =>
+              adapter
+                ? []
+                : [`transcriptFeatures: no track "${trackId}" with an adapter`],
+            ),
             ...new Set(
               [...self.rpcDataMap.values()].flatMap(data => data.notices ?? []),
             ),
@@ -806,7 +815,7 @@ export default function baseStateModelFactory(
               : { facetField: self.facet.field }),
           },
           colorByFrame: self.colorByFrame,
-          proteinFeatures: self.proteinFeaturesArg,
+          transcriptFeatures: self.transcriptFeaturesArg,
           // Undefined while collecting, so building the set neither
           // refetches nor hides anything.
           soloFeatureIds:
@@ -1602,8 +1611,8 @@ export default function baseStateModelFactory(
       // Always fetches `featureId`, the top-level id, not
       // `subfeatureInfo.parentFeatureId`: GetCanvasFeatureDetails searches
       // top-level features only, and `findSubfeatureById` recurses from the
-      // root. A protein domain is the exception: the `proteinFeatures`
-      // track's adapter answers it by its own id.
+      // root. A row drawn on a transcript is the exception: its
+      // `transcriptFeatures` track's adapter answers it by its own id.
       selectFeatureById(
         featureId: string,
         subfeatureInfo: SubfeatureInfo | undefined,
@@ -1614,7 +1623,11 @@ export default function baseStateModelFactory(
         const drawn = subfeatureInfo
           ? self.featureIdIndex.get(featureId)
           : undefined
-        const domainAdapter = self.proteinFeaturesArg?.adapter
+        const domainAdapter =
+          subfeatureInfo?.domainTrack === undefined
+            ? undefined
+            : self.transcriptFeaturesArg?.tracks[subfeatureInfo.domainTrack]
+                ?.adapter
         const region = self.loadedRegions.get(displayedRegionIndex)
         self.openFeatureDetails(
           async () => {
@@ -1680,25 +1693,35 @@ export default function baseStateModelFactory(
               const assembly = getSession(self).assemblyManager.get(
                 region.assemblyName,
               )
-              const domains = args.proteinFeatures
-                ? await proteinFeaturesFor(
-                    self,
-                    args.proteinFeatures,
-                    region,
-                    ctx.signal,
+              const attached = args.transcriptFeatures
+                ? await resolveTrackRefNames(
+                    args.transcriptFeatures,
+                    region.refName,
+                    adapter =>
+                      getSession(self).assemblyManager.getRefNameMapForAdapter(
+                        adapter,
+                        region.assemblyName,
+                        {
+                          sessionId: getRpcSessionId(self),
+                          signal: ctx.signal,
+                        },
+                      ),
                   )
-                : {}
+                : { notices: [] }
               const result = await ctx.callRpc('RenderFeatureData', {
                 ...args,
                 ...zoomArgs,
-                proteinFeatures: domains.arg,
+                transcriptFeatures: attached.arg,
                 geneticCodeId: assembly?.getGeneticCodeId(region.refName),
                 region,
                 bpPerPx,
                 maxFeatureDensity,
               })
-              return domains.notice && !isRegionRefused(result)
-                ? { ...result, notices: [domains.notice] }
+              return attached.notices.length > 0 && !isRegionRefused(result)
+                ? {
+                    ...result,
+                    notices: [...attached.notices, ...(result.notices ?? [])],
+                  }
                 : result
             },
             onResult: (_idx, result, region) =>
@@ -1739,7 +1762,7 @@ export default function baseStateModelFactory(
                   })
                 : undefined,
           }),
-          ...(self.proteinFeaturesArg
+          ...(self.transcriptFeaturesArg
             ? self.domainColorScales(
                 regions.map(data => {
                   const lane = domainLaneOf(data)

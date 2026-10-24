@@ -114,8 +114,8 @@ test('a VCF names its picked value a field, as the multi-sample menu does', () =
   expect(labels).not.toContain('Attribute...')
 })
 
-test('a variant display, whose schema has no proteinFeatures, paints no domains', () => {
+test('a variant display, whose schema has no transcriptFeatures, paints none', () => {
   const display = createDisplay()
-  expect(display.proteinFeaturesArg).toBeUndefined()
+  expect(display.transcriptFeaturesArg).toBeUndefined()
   expect(display.domainPalette).toBeUndefined()
 })

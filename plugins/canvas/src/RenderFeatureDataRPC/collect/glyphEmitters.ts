@@ -4,8 +4,8 @@ import { valueText } from '@jbrowse/core/util/groupKeys'
 import { LITERAL } from '../colorClasses.ts'
 import { DEFAULT_MOUSEOVER } from '../featureMouseover.ts'
 import { createFeatureFloatingLabels } from '../floatingLabels.ts'
+import { assignAttachedLanes } from '../glyphs/attachedLanes.ts'
 import { PAM_LABEL, findPamSubfeature } from '../glyphs/crisprGuide.ts'
-import { assignDomainLanes } from '../glyphs/domainLanes.ts'
 import { collectPolyproteinCDS } from '../glyphs/matureProteinRegion.ts'
 import { transcriptCoords } from '../glyphs/transcriptCoords.ts'
 import {
@@ -14,9 +14,9 @@ import {
   subfeatureLabelPlacement,
   subfeatureLabelText,
 } from '../labelUtils.ts'
-import { joinKey } from '../proteinFeatures.ts'
 import { readConfigValueSafe } from '../renderConfig.ts'
 import { collapsibleIntronsOf } from '../splicedParts.ts'
+import { attachToTranscript } from '../transcriptFeatures.ts'
 import { featureType } from '../util.ts'
 import {
   centerShrink,
@@ -155,34 +155,32 @@ function domainFill(
   })
 }
 
-function emitDomainRects(
+function emitAttachedRects(
   transcript: FeatureLayout,
   place: GlyphPlacement,
   ctx: RenderContext,
   collector: Collector,
 ) {
-  const { proteinFeatures, jexl } = ctx
-  const domains =
-    proteinFeatures &&
-    proteinFeatures.byTranscript.get(
-      joinKey(transcript.feature.get(proteinFeatures.transcriptKey)) ?? '',
-    )
-  if (!proteinFeatures || !domains) {
+  const { transcriptFeatures, jexl } = ctx
+  const attached = transcriptFeatures
+    ? attachToTranscript(transcript.feature, transcriptFeatures)
+    : []
+  if (!transcriptFeatures || attached.length === 0) {
     return
   }
   const { baseTopPx, flatbushIdx, labelRowsAbove } = place
-  const { lanes, laneCount } = assignDomainLanes(
-    domains.map(({ blocks }) => ({
-      start: blocks[0]!.start,
-      end: blocks.at(-1)!.end,
+  const { lanes, laneCount } = assignAttachedLanes(
+    attached.map(({ blocks }) => ({
+      start: blocks[0]![0],
+      end: blocks.at(-1)![1],
     })),
   )
   const laneHeight = transcript.height / laneCount
-  for (const [i, { feature, blocks }] of domains.entries()) {
-    const fill = domainFill(feature, proteinFeatures.color, jexl, collector)
+  for (const [i, { feature, blocks, track, trackId }] of attached.entries()) {
+    const fill = domainFill(feature, transcriptFeatures.color, jexl, collector)
     const name = valueText(feature.get('name'))
-    for (const [j, { start, end }] of blocks.entries()) {
-      const y = baseTopPx + lanes[i]! * laneHeight
+    const y = baseTopPx + lanes[i]! * laneHeight
+    for (const [j, [start, end]] of blocks.entries()) {
       collector.rects.push({
         start,
         end,
@@ -195,9 +193,9 @@ function emitDomainRects(
       })
       collector.subfeatureInfos.push({
         kind: 'subfeature',
-        featureId: `${transcript.feature.id()}-domain-${i}-${j}`,
+        featureId: `${transcript.feature.id()}-attached-${i}-${j}`,
         parentFeatureId: place.parentFeature.id(),
-        type: 'protein_domain',
+        type: trackId,
         startBp: start,
         endBp: end,
         topPx: y,
@@ -205,6 +203,7 @@ function emitDomainRects(
         labelRowsAbove,
         displayLabel: name,
         domainId: feature.id(),
+        domainTrack: track,
         transcriptId: transcript.feature.id(),
       })
     }
@@ -264,8 +263,9 @@ function processTranscriptLayout(
     )
   }
 
-  // After the transcript registers, so a domain outranks it under the cursor
-  emitDomainRects(transcript, place, ctx, collector)
+  // After the transcript registers, so a row drawn on it outranks it under
+  // the cursor
+  emitAttachedRects(transcript, place, ctx, collector)
 
   emitStrandArrow(
     {
