@@ -970,6 +970,7 @@ each reported under its id:
 | `names-domain` | warning | A color's or a shape's `scale.names` naming values its `scale.domain` does not list, or no ordinal scale's. |
 | `unknown-domain` | warning | An ordinal color's `scale.unknown` with no `scale.domain`, so it paints every value. |
 | `unknown-scale` | warning | A `scale.unknown` on a color painting through no ordinal scale, so nothing reads it. |
+| `invalid-scale` | warning | A `scale.invalid` on a color painting through no ordinal scale, so nothing reads it. |
 | `window-frame` | warning | A `window`'s `frame` other than two whole row offsets or `null`, the first not past the second, so the step reads its default. |
 | `step-pair` | warning | A `bin`'s `as` or `fields`, or a `pileup`'s `fields`, naming other than two fields, so the step reads its defaults. |
 | `bin-field-and-fields` | warning | A `bin` naming a `field` beside the `fields` it cuts at the bin edges, which leaves the `field` unread. |

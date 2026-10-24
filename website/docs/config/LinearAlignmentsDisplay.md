@@ -44,8 +44,13 @@ displayId: '...', pileup: ... }]`. See
   assemblyNames: ['hg38'],
   adapter: { type: 'CramAdapter', uri: 'https://example.com/sample.cram' },
   displayDefaults: {
-    pileup: { bases: { show: true, encoding: { color: 'modifications' } } },
-    modifications: { unmodified: 'all' },
+    pileup: {
+      bases: {
+        show: true,
+        encoding: { color: 'modifications' },
+        unmodified: { show: true },
+      },
+    },
   },
 }
 ```
@@ -111,7 +116,6 @@ Display slots go on a display entry: `"displays": [{ "type": "LinearAlignmentsDi
 | Slot | Description |
 | --- | --- |
 | <span id="slot-pileup">**pileup**</span><br>[ReadsPileup](../readspileup) | The stacked reads, with the per-base layer drawn over them, whatever fills them: `bases: { show: true, encoding: { color: "modifications" } }`, `"bisulfite"`, `"baseQuality"` or `"base"`. |
-| <span id="slot-modifications">**modifications**</span><br>[AlignmentsModifications](../alignmentsmodifications) | The `modifications` and `bisulfite` color fields' `unmodified`; `pileup.bases.filter` picks the calls they draw. |
 | <span id="slot-sashimi">**sashimi**</span><br>[Sashimi](../sashimi) | The splice-junction arcs, drawn in the coverage band: `show`, `height`, `placement` and `labels`; the `junction` filter fields filter the junctions drawn. |
 | <span class="slot-group">Inherited from [BaseLinearAlignmentsDisplay](../baselinearalignmentsdisplay)</span> | <span class="slot-group-count">12 slots</span> |
 | <span id="slot-height">**height**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>250</code> | Starting height in pixels for the bands together; heightMode decides what a pileup deeper than this does |
@@ -165,3 +169,4 @@ An older config may still write these. Each loads without an error, and `jbrowse
 | `minSubfeatureWidth` | ignored |
 | `flipStrandLongReadChains` | ignored |
 | `renderers` | moved into a current slot |
+| `modifications` | moved into a current slot |

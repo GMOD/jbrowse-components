@@ -10,8 +10,8 @@ Auto-generated from the config schema in the source — see the [config guide](/
 The slots LinearAlignmentsDisplay and LGVSyntenyDisplay share: the coverage,
 pileup and read connection bands, and the `filter`, `unit`, `facet`, `sort`,
 `encoding` and `legend` every band reads. LinearAlignmentsDisplay adds the
-sashimi band, the `junction` filter fields, `pileup.bases` and
-`modifications`, which apply only to reads; a synteny block has no introns,
+sashimi band, the `junction` filter fields and `pileup.bases`, which
+apply only to reads; a synteny block has no introns,
 basecaller tags or qualities.
 
 ## Related links
