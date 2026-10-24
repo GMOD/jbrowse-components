@@ -169,7 +169,7 @@ function slotsOf(type) {
       // A sub-schema is an object slot with slots of its own (adapter.index,
       // track.displays[]); the validator recurses into these.
       subSlots: sub ? slotsOf(prop) : undefined,
-      legacyKeys: sub ? subLegacyKeysOf(meta, name, subMeta) : undefined,
+      legacyKeys: sub ? subLegacyKeysOf(subMeta) : undefined,
       // the sub-schema by name and how a settings bag writes it, which the
       // config reference states on that schema's page
       schema: subMeta?.name,
@@ -201,14 +201,12 @@ function slotsOf(type) {
   })
 }
 
-// The keys a sub-schema slot still lifts: the sub-schema's own retired
-// spellings and the members its parent retired out of it.
-function subLegacyKeysOf(meta, name, subMeta) {
+// The keys a sub-schema slot still lifts, its own retired spellings
+function subLegacyKeysOf(subMeta) {
   const declared = new Set(Object.keys(subMeta?.definition ?? {}))
-  const keys = [
-    ...Object.keys(subMeta?.options.retired ?? {}),
-    ...(meta?.options.retiredMembers?.[name]?.names ?? []),
-  ].filter(key => !declared.has(key))
+  const keys = Object.keys(subMeta?.options.retired ?? {}).filter(
+    key => !declared.has(key),
+  )
   return keys.length > 0 ? keys : undefined
 }
 

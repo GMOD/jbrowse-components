@@ -200,13 +200,11 @@ export function mergeConfSettings(
   const meta = isType(schema)
     ? getConfigurationSchemaMetadata(schema)
     : undefined
-  const lift = (
-    bag: Record<string, unknown>,
-    base?: Record<string, unknown>,
-  ) => (meta ? liftRetiredSpellings(meta, bag, base) : bag)
+  const lift = (bag: Record<string, unknown>) =>
+    meta ? liftRetiredSpellings(meta, bag) : bag
   const definition = meta?.definition ?? {}
   const out = { ...lift(under) }
-  for (const [key, value] of Object.entries(lift(over, out))) {
+  for (const [key, value] of Object.entries(lift(over))) {
     const member = Object.hasOwn(definition, key) ? definition[key] : undefined
     const namespace = namespaceMetadata(member)
     const prior = namespace ? liftShorthand(namespace, out[key]) : out[key]
@@ -262,12 +260,7 @@ export function applyConfSettings(
   const conf = isConfigurationModel(target) ? target : target.configuration
   const meta = getConfigurationSchemaMetadata(conf)
   const values = meta
-    ? preProcessSnapshotWith(meta, settings, {
-        routesUndeclared: true,
-        base: meta.options.retiredMembers
-          ? (getSnapshot(conf) as Record<string, unknown>)
-          : undefined,
-      })
+    ? preProcessSnapshotWith(meta, settings, { routesUndeclared: true })
     : settings
   const report: ConfSettingsReport = { applied: [], undeclared: {}, failed: [] }
   for (const [key, value] of Object.entries(values)) {

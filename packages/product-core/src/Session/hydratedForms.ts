@@ -41,7 +41,6 @@ const isRecord = (v: unknown): v is Record<string, unknown> =>
 function liftedAtEveryDepth(
   schema: unknown,
   bag: Record<string, unknown>,
-  base: Record<string, unknown> | undefined,
 ): Record<string, unknown> {
   const meta = isBareConfigurationSchemaType(schema)
     ? getConfigurationSchemaMetadata(schema)
@@ -49,16 +48,11 @@ function liftedAtEveryDepth(
   if (!meta) {
     return bag
   }
-  const lifted = liftRetiredSpellings(meta, bag, base)
+  const lifted = liftRetiredSpellings(meta, bag)
   let out = lifted
   for (const [key, value] of Object.entries(lifted)) {
     if (isRecord(value) && Object.hasOwn(meta.definition, key)) {
-      const under = base?.[key]
-      const next = liftedAtEveryDepth(
-        meta.definition[key],
-        value,
-        isRecord(under) ? under : undefined,
-      )
+      const next = liftedAtEveryDepth(meta.definition[key], value)
       if (next !== value) {
         out = out === lifted ? { ...lifted } : out
         out[key] = next
@@ -73,9 +67,7 @@ function liftedAtEveryDepth(
  * schema of the display it lands on in the hydrated `base`, since a delta
  * display names its type only when the edit changed it. Merged as stored, an
  * old spelling loses to a base writing the same member in the current one,
- * and its `null` resets nothing. A namespace's `retiredMembers` lift reads the
- * base display for what the delta leaves alone. The delta itself when it holds
- * none.
+ * and its `null` resets nothing. The delta itself when it holds none.
  */
 export function deltaInCurrentSpelling(pluginManager: PluginManager) {
   return <T extends Record<string, unknown>>(
@@ -98,11 +90,7 @@ export function deltaInCurrentSpelling(pluginManager: PluginManager) {
         baseDisplays.find(b => d.type !== undefined && b.type === d.type)
       const type = d.type ?? baseDisplay?.type
       return typeof type === 'string' && pluginManager.displayTypes.has(type)
-        ? liftedAtEveryDepth(
-            pluginManager.getDisplayType(type).configSchema,
-            d,
-            baseDisplay,
-          )
+        ? liftedAtEveryDepth(pluginManager.getDisplayType(type).configSchema, d)
         : d
     })
     return next.some((d, i) => d !== displays[i])

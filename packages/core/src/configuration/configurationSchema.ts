@@ -67,22 +67,6 @@ export interface ConfigurationSchemaDefinition {
 
 export type RetiredSpelling = (value: unknown) => Record<string, unknown>
 
-/**
- * Members an older release spelt inside one of a schema's namespaces that now
- * live outside it. `lift` reads their values together, `null` for a reset,
- * and answers members of the schema, written over the snapshot. It reads the
- * snapshot as `written`, so its own spellings win; a stored delta passes its
- * hydrated `base` too, for what the delta leaves alone.
- */
-export interface RetiredMembers {
-  names: readonly string[]
-  lift: (
-    values: Record<string, unknown>,
-    written: Record<string, unknown>,
-    base?: Record<string, unknown>,
-  ) => Record<string, unknown>
-}
-
 export interface ConfigurationSchemaOptions<
   BASE_SCHEMA extends AnyConfigurationSchemaType | undefined,
   EXPLICIT_IDENTIFIER extends string | undefined,
@@ -156,13 +140,6 @@ export interface ConfigurationSchemaOptions<
    * the key, which `jbrowse validate` reports as never read.
    */
   retired?: Record<string, RetiredSpelling>
-  /**
-   * The retired members of a namespace the schema declares, by its name,
-   * lifted after `retired` on the same paths and read by the validator and
-   * the `displayDefaults` router. The namespace keeps the members it
-   * declares.
-   */
-  retiredMembers?: Record<string, RetiredMembers>
   /**
    * A color channel's defaults by `field`, `*` for any other: the scale while
    * `scale.type` is unset, and the members that scale and its key read while
@@ -294,7 +271,7 @@ function preprocessConfigurationSchemaArguments(
       baseMeta.definition,
       schemaDefinition,
     )
-    // The hooks, `requires`, `retired` and `retiredMembers` compose, base first, where every
+    // The hooks, `requires` and `retired` compose, base first, where every
     // other option is replaced by the child's: a track schema's own
     // preProcessSnapshot must not drop the base's display-stub injection.
     const basePreProcess = baseMeta.options.preProcessSnapshot
@@ -317,13 +294,6 @@ function preprocessConfigurationSchemaArguments(
       retired:
         baseMeta.options.retired || inputOptions.retired
           ? { ...baseMeta.options.retired, ...inputOptions.retired }
-          : undefined,
-      retiredMembers:
-        baseMeta.options.retiredMembers || inputOptions.retiredMembers
-          ? {
-              ...baseMeta.options.retiredMembers,
-              ...inputOptions.retiredMembers,
-            }
           : undefined,
       requires: requires.length ? requires : undefined,
     }

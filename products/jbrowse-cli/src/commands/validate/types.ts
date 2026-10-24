@@ -16,8 +16,8 @@ export interface SlotEntry {
   /** present when the slot is a nested sub-schema (adapter.index and friends) */
   subSlots?: SlotEntry[]
   /**
-   * A sub-schema slot: the keys an older release wrote inside it that a lift
-   * still moves, the schema's own `retired` and its parent's `retiredMembers`.
+   * A sub-schema slot: the keys an older release wrote inside it that its
+   * `retired` still moves.
    */
   legacyKeys?: string[]
   /** A sub-schema slot: the schema's name, its config reference page. */

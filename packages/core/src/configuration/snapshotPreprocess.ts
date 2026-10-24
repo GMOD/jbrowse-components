@@ -9,7 +9,7 @@ import {
   shorthandTargets,
 } from './schemaTypes.ts'
 
-import type { RetiredMembers, RetiredSpelling } from './configurationSchema.ts'
+import type { RetiredSpelling } from './configurationSchema.ts'
 import type { ConfigurationSchemaMetadata } from './schemaRegistry.ts'
 import type { IAnyType } from '@jbrowse/mobx-state-tree'
 
@@ -164,90 +164,26 @@ function underWritten(written: unknown, lifted: unknown): unknown {
  * the same slot inside a retired `renderer` — the one declared first wins.
  * A retired name the schema itself declares is that slot, not a spelling,
  * so a list shared across displays leaves it alone where one still takes it.
- * Then each namespace's `retiredMembers` lift, handed `base` for a stored
- * delta.
  */
 export function liftRetiredSpellings(
   schema: ConfigurationSchemaMetadata,
   snapshot: Record<string, unknown>,
-  base?: Record<string, unknown>,
 ) {
-  const { retired, retiredMembers } = schema.options
-  if ((!retired && !retiredMembers) || !isOwnSnapshot(schema, snapshot)) {
+  const { retired } = schema.options
+  if (!retired || !isOwnSnapshot(schema, snapshot)) {
     return snapshot
   }
   const declared = new Set(declaredKeys(schema))
   const spellings = Object.fromEntries(
-    Object.entries(retired ?? {}).filter(([name]) => !declared.has(name)),
+    Object.entries(retired).filter(([name]) => !declared.has(name)),
   )
-  const named = Object.keys(spellings).some(key => key in snapshot)
+  return Object.keys(spellings).some(key => key in snapshot)
     ? applyRetiredSpellings(
         spellings,
         withMemberShorthandsLifted(schema, snapshot),
         name => declared.has(name),
       )
     : snapshot
-  return retiredMembers
-    ? liftRetiredMembers(schema.definition, retiredMembers, named, base)
-    : named
-}
-
-function namespaceDeclares(member: unknown) {
-  return new Set(
-    isBareConfigurationSchemaType(member)
-      ? declaredKeys(getConfigurationSchemaMetadata(member)!)
-      : [],
-  )
-}
-
-function liftRetiredMembers(
-  definition: ConfigurationSchemaMetadata['definition'],
-  retiredMembers: Record<string, RetiredMembers>,
-  snapshot: Record<string, unknown>,
-  base: Record<string, unknown> | undefined,
-) {
-  let out = snapshot
-  for (const [namespace, { names: retired, lift }] of Object.entries(
-    retiredMembers,
-  )) {
-    const declared = namespaceDeclares(definition[namespace])
-    const names = retired.filter(name => !declared.has(name))
-    const value = out[namespace]
-    if (
-      isPlainObject(value) &&
-      names.some(name => Object.hasOwn(value, name))
-    ) {
-      const kept = { ...value }
-      const values: Record<string, unknown> = {}
-      for (const name of names) {
-        if (value[name] !== undefined) {
-          values[name] = value[name]
-        }
-        delete kept[name]
-      }
-      const written = { ...out, [namespace]: kept }
-      out =
-        Object.keys(values).length > 0
-          ? overWritten(written, lift(values, written, base))
-          : written
-    }
-  }
-  return out
-}
-
-function overWritten(
-  written: Record<string, unknown>,
-  lifted: Record<string, unknown>,
-) {
-  const out = { ...written }
-  for (const [key, value] of Object.entries(lifted)) {
-    const prior = out[key]
-    out[key] =
-      isPlainObject(prior) && isPlainObject(value)
-        ? overWritten(prior, value)
-        : value
-  }
-  return out
 }
 
 // A member written in its shorthand, `filter: ['jexl:…']` or `encoding: { y:
@@ -344,16 +280,12 @@ export function liftShorthand(
  * `refusingUndeclaredKeys`, unless the caller is a settings bag that routes
  * an undeclared key itself (`routesUndeclared`); it refuses a bare value no
  * shorthand lifted on every door, and so is a `jexl:` callback in a slot
- * declaring no `contextVariable`. A bag written over a live config passes
- * that config's snapshot as `base`, for the `retiredMembers` lifts.
+ * declaring no `contextVariable`.
  */
 export function preProcessSnapshotWith(
   schema: ConfigurationSchemaMetadata,
   snapshot: unknown,
-  {
-    routesUndeclared = false,
-    base,
-  }: { routesUndeclared?: boolean; base?: Record<string, unknown> } = {},
+  { routesUndeclared = false }: { routesUndeclared?: boolean } = {},
 ): Record<string, unknown> {
   const { closed, preProcessSnapshot } = schema.options
   const bare = liftShorthand(schema, snapshot)
@@ -363,7 +295,7 @@ export function preProcessSnapshotWith(
       : bare !== snapshot
         ? (bare as Record<string, unknown>)
         : (snapshot as Record<string, unknown>)
-  const named = nullMembersAsUnset(liftRetiredSpellings(schema, lifted, base))
+  const named = nullMembersAsUnset(liftRetiredSpellings(schema, lifted))
   const processed = preProcessSnapshot ? preProcessSnapshot(named) : named
   if (closed && !routesUndeclared && isOwnSnapshot(schema, processed)) {
     checkUndeclaredKeys(schema, processed)
