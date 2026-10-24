@@ -1,8 +1,11 @@
 import { svClassOf } from '@jbrowse/core/util/svAlt'
 
+import { calculateAlleleCountsFast } from '../shared/alleleCounts.ts'
+import { summarizeAlleleCounts } from '../shared/minorAlleleFrequencyUtils.ts'
 import { getVariantImpact } from '../shared/variantConsequence.ts'
 import { getEnd, getSOTermAndDescription } from './util.ts'
 
+import type { AlleleSummary } from '../shared/minorAlleleFrequencyUtils.ts'
 import type VCFParser from '@gmod/vcf'
 import type { FormatFieldsCallback, GenotypeCallback, Variant } from '@gmod/vcf'
 import type { Feature } from '@jbrowse/core/util'
@@ -41,6 +44,8 @@ export default class VCFFeature implements Feature {
 
   private _impact?: string
 
+  private _alleleSummary?: AlleleSummary
+
   constructor(args: { variant: Variant; parser: VCFParser; id: string }) {
     this.variant = args.variant
     this.parser = args.parser
@@ -55,7 +60,9 @@ export default class VCFFeature implements Feature {
   get(name: 'start' | 'end'): number
   get(name: 'phase'): 0 | 1 | 2 | undefined
   get(name: 'strand'): -1 | 0 | 1 | undefined
-  get(name: 'score' | 'QUAL'): number | undefined
+  get(
+    name: 'score' | 'QUAL' | 'minorAlleleFrequency' | 'missingness',
+  ): number | undefined
   get(name: 'subfeatures'): Feature[] | undefined
   get(field: 'ALT'): string[] | undefined
   get(field: 'FILTER'): string | string[] | undefined
@@ -72,8 +79,35 @@ export default class VCFFeature implements Feature {
           ? this.svType()
           : field === 'impact'
             ? this.impact()
-            : (this.data[field as keyof typeof this.data] ??
-              this.variant[field as keyof typeof this.variant])
+            : field === 'minorAlleleFrequency' || field === 'missingness'
+              ? this.siteField(field)
+              : (this.data[field as keyof typeof this.data] ??
+                this.variant[field as keyof typeof this.variant])
+  }
+
+  /**
+   * The site's allele summary over every sample, counted once on first read:
+   * what the multi-sample display's filter and colors read, and what
+   * `minorAlleleFrequency` and `missingness` answer on any display.
+   */
+  alleleSummary() {
+    this._alleleSummary ??= summarizeAlleleCounts(
+      calculateAlleleCountsFast(this),
+    )
+    return this._alleleSummary
+  }
+
+  // missing where the site has no genotype to count: every sample a no-call
+  // leaves missingness 1 and the frequency missing, a sites-only VCF both
+  private siteField(field: 'minorAlleleFrequency' | 'missingness') {
+    const summary = this.alleleSummary()
+    return field === 'minorAlleleFrequency'
+      ? summary.calledAlleleCount > 0
+        ? summary.minorAlleleFrequency
+        : undefined
+      : summary.calledAlleleCount > 0 || summary.missingness > 0
+        ? summary.missingness
+        : undefined
   }
 
   private svType() {

@@ -94,6 +94,16 @@ function computeAlleleCounts(feature: Feature) {
       )
 }
 
+// A site's allele summary: the one VcfFeature counted already, if it did
+function siteSummaryOf(feature: Feature): AlleleSummary {
+  const raw = unwrapFeature(feature) as Feature & {
+    alleleSummary?: () => AlleleSummary
+  }
+  return typeof raw.alleleSummary === 'function'
+    ? raw.alleleSummary()
+    : summarizeAlleleCounts(computeAlleleCounts(feature))
+}
+
 // A jexlFeatureProxy answers `processGenotypes` through `get()`, so the jexl
 // functions unwrap to reach VcfFeature's own method
 function featureAlleleCounts(feature: Feature) {
@@ -159,7 +169,7 @@ export function filterVariant(
   if (filterChain && !filterChain.passes(feature)) {
     return undefined
   }
-  const summary = summarizeAlleleCounts(computeAlleleCounts(feature))
+  const summary = siteSummaryOf(feature)
   return passesSite(summary)
     ? { feature, mostFrequentAlt: summary.mostFrequentAlt }
     : undefined

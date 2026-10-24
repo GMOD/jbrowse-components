@@ -381,3 +381,37 @@ test('a record with a sequence ALT beside a symbolic one spans its REF', () => {
   )
   expect(f.get('end')).toEqual(107)
 })
+
+describe('the site fields every display reads', () => {
+  const header =
+    '#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tS1\tS2\tS3\tS4'
+  const feature = (genotypes: string) => {
+    const parser = new VcfParser({ header })
+    const variant = parser.parseLine(
+      `chr1\t100\t.\tA\tG\t50\tPASS\t.\tGT\t${genotypes}`,
+    )
+    return new VcfFeature({ parser, variant, id: 'v' })
+  }
+
+  test('minorAlleleFrequency and missingness count every sample', () => {
+    const f = feature('0/0\t0/1\t1/1\t./.')
+    expect(f.get('minorAlleleFrequency')).toBeCloseTo(0.5)
+    expect(f.get('missingness')).toBeCloseTo(0.25)
+  })
+
+  test('a site with no called allele has no frequency', () => {
+    const f = feature('./.\t./.\t./.\t./.')
+    expect(f.get('minorAlleleFrequency')).toBeUndefined()
+    expect(f.get('missingness')).toBe(1)
+  })
+
+  test('a sites-only record answers neither', () => {
+    const parser = new VcfParser({
+      header: '#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO',
+    })
+    const variant = parser.parseLine('chr1\t100\t.\tA\tG\t50\tPASS\t.')
+    const f = new VcfFeature({ parser, variant, id: 'v' })
+    expect(f.get('minorAlleleFrequency')).toBeUndefined()
+    expect(f.get('missingness')).toBeUndefined()
+  })
+})
