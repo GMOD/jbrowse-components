@@ -38,11 +38,11 @@ const budget = (marks: number) =>
   DISMISS_GUTTER -
   swatchColumn(marks)
 
-// Every registered scheme, so the per-scheme relabelings (split segments,
+// Every registered field, so the per-field relabelings (split segments,
 // first-of-pair, the tag/mate no-value wording) are measured too and not just
 // the base table. Off the registry rather than a list kept here: a hand-kept
 // list left `modifications` out, so its rows went unmeasured. The modification
-// schemes key different rows per sub-mode (the methylated states, the
+// fields key different rows per sub-mode (the methylated states, the
 // unmodified swatch), so each sub-mode is swept as well.
 const MODIFICATION_MODES: (LayerSettings | undefined)[] = [
   undefined,
@@ -61,7 +61,7 @@ const FIELDS = Object.values(COLOR_FIELD_DEFS).flatMap(
 )
 
 // Every bucket at once — not a realistic frame, but the union is what has to
-// fit, and asking for it per scheme lets each scheme's overrides through. The
+// fit, and asking for it per field lets each field's overrides through. The
 // exhaustive category list, so a new swatch bucket is measured without being
 // added here; the dynamic ones (plain/mapq/tag) key no bucket row and are
 // harmless in the set.
@@ -117,7 +117,7 @@ function everyLabel() {
 }
 
 // The rows the hand-kept lists used to miss. A sweep that quietly stops
-// reaching a scheme measures nothing for it, so the reach is pinned.
+// reaching a field measures nothing for it, so the reach is pinned.
 test('the sweep reaches the modification rows', () => {
   expect(everyLabel()).toEqual(
     expect.arrayContaining([

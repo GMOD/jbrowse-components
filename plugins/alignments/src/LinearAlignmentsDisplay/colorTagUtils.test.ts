@@ -99,8 +99,8 @@ test('a refName with no known position falls back to a stable color', () => {
 })
 
 // The one thing that is NOT a function of the value alone, and the model test
-// that used to cover it: the scheme picks which function runs, so the same
+// that used to cover it: the field picks which function runs, so the same
 // string paints differently under chromosome painting than under a tag.
-test('the scheme, not the value, is what changes a color', () => {
+test('the field, not the value, is what changes a color', () => {
   expect(bakedValueColor(MATE, 'ctgA')).not.toBe(tagColor('ctgA'))
 })

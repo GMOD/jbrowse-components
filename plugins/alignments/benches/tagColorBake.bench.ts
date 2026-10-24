@@ -9,7 +9,7 @@
 //
 // THE QUESTION. `buildReadFillColors` bakes one packed ABGR per read on the main
 // thread, per region, whenever the layout re-runs under a CPU-baked color
-// scheme (tag values, or mate refNames under chromosome painting). It used to
+// field (tag values, or mate refNames under chromosome painting). It used to
 // resolve each read through a model-held `colorTagMap` of every value the track
 // had ever seen; it now computes the color from the value itself and memoizes
 // per bake. That deletes state, but it also moves a `hashString` +
@@ -45,7 +45,7 @@
 // every fixture, and more so the longer the track had been panned, because the
 // arm it replaced re-parsed the whole accumulated map on every bake while this
 // one only ever touches values that are on screen. The `=== ''` fast path is
-// the rest of it — a read the scheme resolved no value for skips the map lookup
+// the rest of it — a read the field resolved no value for skips the map lookup
 // entirely, which is why the HP fixture (one read in three untagged) separates
 // most.
 //

@@ -131,7 +131,7 @@ function pileupData(): PileupDataResult {
     readInsertSizes: new Float32Array([0, 0]),
     readPairOrientations: new Uint8Array([0, 0]),
     readStrands: new Int8Array([1, -1]),
-    // fwd + rev under the strand scheme — the same bytes the bake produces.
+    // fwd + rev under the strand field — the same bytes the bake produces.
     readColorCategories: new Uint8Array([
       READ_COLOR_CATEGORY.fwdStrand,
       READ_COLOR_CATEGORY.revStrand,
@@ -244,7 +244,6 @@ function state(overrides: Partial<RenderState> = {}): RenderState {
     canvasWidth: BLOCK_WIDTH,
     canvasHeight: 200 + COV_H,
     scrollTop: 0,
-    colorScheme: 0,
     featureHeight: 10,
     featureSpacing: 1,
     // Coverage ON. The band's 0.8px fudge is what FUDGE_TOLERANCE_PX absorbs;

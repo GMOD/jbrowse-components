@@ -295,7 +295,7 @@ describe('value fills the reads no field colors, scale.invalid the reads with no
     )
   })
 
-  test('scale.invalid paints a tag scheme before its bake and a read with no value', () => {
+  test('scale.invalid paints a tag field before its bake and a read with no value', () => {
     const palette = paletteFor({
       field: 'tags.HP',
       scale: { invalid: 'steelblue' },

@@ -447,7 +447,7 @@ describe('a modification call answers only while the mark draws', () => {
     bpRange: [0, 200] as [number, number],
   }
 
-  it('is hit under a modification scheme', () => {
+  it('is hit under a modification field', () => {
     const result = performHitTest(
       100,
       55,
@@ -457,7 +457,7 @@ describe('a modification call answers only while the mark draws', () => {
     expect(result.type).toBe('modification')
   })
 
-  it('is not hit once the scheme is switched away', () => {
+  it('is not hit once the field is switched away', () => {
     const result = performHitTest(
       100,
       55,

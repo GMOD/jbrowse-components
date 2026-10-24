@@ -16,9 +16,9 @@ const region: Region = {
   assemblyName: 'volvox',
 }
 
-// A read that would trigger EVERY extraction path if its scheme asked for one:
+// A read that would trigger EVERY extraction path if its field asked for one:
 // MM/ML tags (modifications), a base-quality array, a sequence, a categorical
-// tag, and a mate reference. So a scheme that extracts nothing here extracts
+// tag, and a mate reference. So a field that extracts nothing here extracts
 // nothing at all.
 function makeFeature() {
   return new SimpleFeature({
@@ -69,8 +69,8 @@ function extracted(field: string | undefined) {
   }
 }
 
-// A scheme with no worker-side extraction must produce byte-identical output to
-// no scheme at all — that is exactly the condition under which
+// A field with no worker-side extraction must produce byte-identical output to
+// no field at all — that is exactly the condition under which
 // `workerColorField` may collapse it and skip the refetch.
 const baseline = JSON.stringify(extracted(undefined))
 
@@ -92,10 +92,10 @@ const sample: Record<ColorFieldKind, string | undefined> = {
 
 describe('workerColorField', () => {
   // The oracle for the `workerExtracts` registry flag: rather than re-spelling
-  // the list, run the worker's extraction under every registered scheme and
-  // compare it to running with no scheme. Declaring a scheme shader-only when
+  // the list, run the worker's extraction under every registered field and
+  // compare it to running with no field. Declaring a field shader-only when
   // it does extract would render stale data on the switch into it; declaring an
-  // extracting scheme shader-only would cost a refetch it doesn't need.
+  // extracting field shader-only would cost a refetch it doesn't need.
   test.each(Object.keys(COLOR_FIELD_DEFS) as ColorFieldKind[])(
     '%s: the workerExtracts flag matches what the worker extracts',
     type => {

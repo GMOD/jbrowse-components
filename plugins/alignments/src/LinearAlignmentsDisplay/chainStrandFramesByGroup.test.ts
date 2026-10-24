@@ -86,7 +86,7 @@ describe('the chain-strand consensus reaches across grouping lanes', () => {
     expect(fills(out, 'HP:2', 1)).toEqual([REV, REV])
   })
 
-  // A scheme that discards the framing skips the relaxation rather than paying
+  // A field that discards the framing skips the relaxation rather than paying
   // for it per frame: unframed, HP:2 keeps the marker reconciliation left it
   // instead of the sign the other lane's chains argue it into.
   it('does not solve the consensus when the framing is not read', () => {

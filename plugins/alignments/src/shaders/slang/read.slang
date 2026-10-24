@@ -25,7 +25,7 @@ public static const uint VERTS_PER_INSTANCE = 9u;
 // `readColorCategories` and uploaded as `inst.colorCategory`. This shader only
 // PAINTS a category; it does not classify. That is why there is no precedence
 // chain here anymore: the ordered rules (long-read chain strand framing, split
-// inversion/deletion, unmapped mate, inter-chromosomal, per-scheme) used to be
+// inversion/deletion, unmapped mate, inter-chromosomal, per-field) used to be
 // hand-mirrored between this file and colorUtils.ts, and hand-mirrored ordered
 // rules drift. Now the GPU, the Canvas2D/SVG fallback, and the legend all
 // consume one classification.
@@ -54,16 +54,16 @@ static const uint RC_MOD_REV         = 19u;
 // ramp's top, keyed exactly when reads carry it.
 static const uint RC_MAPQ_UNAVAILABLE = 20u;
 
-// When a read's direction is uninformative (normal color scheme, mate unmapped,
+// When a read's direction is uninformative (no color field, mate unmapped,
 // or mate on another chromosome), only draw its strand arrow once the read is at
 // least this many CSS px wide — so the arrows fade out when zoomed out far and
 // return only when zoomed in. Direction-relevant reads (strand/orientation
-// schemes) keep the looser base gate.
+// fields) keep the looser base gate.
 static const float CHEVRON_DIRLESS_MIN_WIDTH_PX = 30.0;
 
 // Hide arrows on paired reads whose whole pair (|insert size| on screen) shrinks
 // below this many CSS px — when zoomed out the mates sit on top of each other and
-// the arrows are just clutter. Applies regardless of color scheme.
+// the arrows are just clutter. Applies under every color field.
 static const float PAIR_MIN_SPAN_PX = 10.0;
 
 // The read outline, which is not a stroke: the outermost READ_OUTLINE_PX of the

@@ -24,7 +24,7 @@ function readFill(field: string | undefined) {
 }
 
 describe('readColorFieldOf', () => {
-  test('every preset field selects the scheme of its name', () => {
+  test('every preset field selects the field of its name', () => {
     for (const field of COLOR_FIELDS) {
       expect(readFill(field)).toBe(field)
       expect(colorFieldKindOf(readFill(field))).toBe(field)

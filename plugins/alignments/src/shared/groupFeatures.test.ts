@@ -260,7 +260,7 @@ test('a chain takes the SV evidence of its strongest record', () => {
 // F1R2 and F2R1 are the SAME pair orientation — the normal LR — differing only
 // in which mate the record is. Keying the raw `pair_orientation` string opened a
 // section per permutation, so a plain FR library drew two "normal" sections, both
-// painted the identical LR grey by the color scheme, plus a cryptic label neither
+// painted the identical LR grey by the color field, plus a cryptic label neither
 // the legend nor the tooltip uses.
 test('pair-orientation grouping keys the IGV category, not the raw string', () => {
   const features = [
@@ -372,13 +372,13 @@ test("a facet section's key is the value the color names that level by", () => {
     feat('ll', { pair_orientation: 'F1F2', strand: -1, flags: 0x91 }),
     feat('none', { strand: 1 }),
   ]
-  for (const [field, scheme] of [
-    ['pairOrientation', 'pairOrientation'],
-    ['strand', 'strand'],
-    ['firstOfPairStrand', 'firstOfPairStrand'],
+  for (const field of [
+    'pairOrientation',
+    'strand',
+    'firstOfPairStrand',
   ] as const) {
     expect(keys(partitionFeatures(features, { field })).toSorted()).toEqual(
-      Object.values(levelKeysOf(scheme)!).toSorted(),
+      Object.values(levelKeysOf(field)!).toSorted(),
     )
   }
 })

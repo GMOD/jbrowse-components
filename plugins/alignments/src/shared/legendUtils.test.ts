@@ -92,14 +92,14 @@ describe('getReadDisplayLegendItems', () => {
     expect(labels('strand', ['fwdStrand'])).toEqual(['Forward strand'])
   })
 
-  test('strand scheme lists forward/reverse', () => {
+  test('strand field lists forward/reverse', () => {
     expect(labels('strand', ['fwdStrand', 'revStrand'])).toEqual([
       'Forward strand',
       'Reverse strand',
     ])
   })
 
-  test('pair-orientation scheme: split-read strand framing + non-split bucket', () => {
+  test('pair-orientation field: split-read strand framing + non-split bucket', () => {
     // fwd/rev come only from split segments here, and po=0 non-split reads are
     // their own grey bucket.
     expect(
@@ -134,7 +134,7 @@ describe('getReadDisplayLegendItems', () => {
     ])
   })
 
-  test('normal scheme shows a base-reads swatch plus any cross-cutting buckets', () => {
+  test('the plain fill shows a base-reads swatch plus any cross-cutting buckets', () => {
     // a single "Reads" entry so "Show legend" is never a silent no-op
     expect(labels(undefined, ['plain'])).toEqual(['Reads'])
     // chain mode still surfaces the unmapped-mate bucket after the base swatch
@@ -144,7 +144,7 @@ describe('getReadDisplayLegendItems', () => {
     ])
   })
 
-  test('chain-mode split reads read as split segments under any non-strand scheme', () => {
+  test('chain-mode split reads read as split segments under any non-strand field', () => {
     // In linked-reads mode only the split segments pick up a fwd/rev color while
     // ordinary reads stay grey; a fwd/rev bucket here can only be a split, so it
     // must not read as a plain "Forward strand" — and the color frames the
@@ -161,7 +161,7 @@ describe('getReadDisplayLegendItems', () => {
     ])
   })
 
-  // The two per-base schemes must never reach that reframing: a fwd/rev bucket
+  // The two per-base fields must never reach that reframing: a fwd/rev bucket
   // beside their "Read" row keys colors the marks cover. Classified for real
   // rather than from a hand-written set, since the classifier is the half that
   // used to produce them.
@@ -191,8 +191,8 @@ describe('getReadDisplayLegendItems', () => {
 
   // The per-base marks sit on the flat 'plain' body, and 'plain' keys no bucket
   // row, so without an explicit row the grey most of the frame shows had no
-  // name — the gap the modification scheme closed with modFwd/modRev.
-  test('per-base schemes name the read body under their marks', () => {
+  // name — the gap the modification field closed with modFwd/modRev.
+  test('per-base fields name the read body under their marks', () => {
     expect(labels('baseQuality', ['plain'])).toEqual(['Read'])
     expect(labels('base', ['plain'])).toEqual(['A', 'C', 'G', 'T', 'N', 'Read'])
     const plainFill = legendFor(undefined, ['plain'])[0]!.color
@@ -230,7 +230,7 @@ describe('getReadDisplayLegendItems', () => {
     expect(named.join(' ')).not.toMatch(/deletion|duplication|insertion/i)
   })
 
-  test('the plain strand scheme keeps the plain wording (fwd/rev is its primary key)', () => {
+  test('the plain strand field keeps the plain wording (fwd/rev is its primary key)', () => {
     // Under strand, every read is colored by its own strand, so a fwd/rev bucket
     // is the key itself, not a split-read exception.
     expect(labels('strand', ['fwdStrand', 'revStrand'])).toEqual([
@@ -249,7 +249,7 @@ describe('getReadDisplayLegendItems', () => {
   })
 
   // The read body, under the marks painted on top of it. No read reaches
-  // fwd/revStrand under this scheme: the chain-strand framing is the
+  // fwd/revStrand under this field: the chain-strand framing is the
   // orientation fields' alone, so `fillCategory` decides every read here and
   // it answers modFwd/modRev.
   test('modifications view names the read body after the mod-type key', () => {
@@ -264,7 +264,7 @@ describe('getReadDisplayLegendItems', () => {
     )
   })
 
-  test('value tag scheme lists the values on screen, sorted', () => {
+  test('value tag field lists the values on screen, sorted', () => {
     expect(tagLabels('tags.HP', new Set(['2', '1']))).toEqual(['1', '2'])
     // a numeric tag counts, rather than reading '10' as a word starting in '1'
     expect(tagLabels('tags.HP', new Set(['10', '2', '1']))).toEqual([
@@ -507,9 +507,9 @@ describe('getReadDisplayLegendItems', () => {
   })
 
   // Reads the tag is absent from paint the neutral fallback, which used to be
-  // the one painted color with no legend entry. Named per scheme, since "no
+  // the one painted color with no legend entry. Named per field, since "no
   // value" means a missing tag under one and a mateless block under the other.
-  test('the unvalued bucket is named for the scheme that produced it', () => {
+  test('the unvalued bucket is named for the field that produced it', () => {
     expect(
       legendFor('tags.HP', ['tag', 'noTagValue'], {
         presentTagValues: new Set(['1']),
@@ -546,7 +546,7 @@ describe('getReadDisplayLegendItems', () => {
   })
 
   // The values on screen are the whole list now. They used to be intersected
-  // with `colorTagMap`, which only ever grew — cleared when the scheme changed,
+  // with `colorTagMap`, which only ever grew — cleared when the field changed,
   // never on navigation — so panning to a region whose reads all mate to ctgA
   // still listed ctgB until the narrowing was bolted on.
   test('baked-value swatches are exactly the values on screen', () => {
@@ -555,7 +555,7 @@ describe('getReadDisplayLegendItems', () => {
         presentTagValues: new Set(['ctgA']),
       }).map(i => i.label),
     ).toEqual(['ctgA'])
-    // the empty set is a real state: the scheme has values, none are drawn
+    // the empty set is a real state: the field has values, none are drawn
     expect(tagLabels('tags.HP', new Set())).toEqual([])
     // undefined is "the caller can't tell", which keys none
     expect(tagLabels('tags.HP')).toEqual([])
@@ -679,7 +679,7 @@ describe('getReadDisplayLegendItems', () => {
         presentModifications: new Set(['m']),
       }).map(i => i.label),
     ).toEqual(['5mC'])
-    // the empty set is a real state: the scheme is on and no marks are drawn
+    // the empty set is a real state: the field is on and no marks are drawn
     expect(
       legendFor({ field: 'modifications' }, [], {
         detectedModifications: mods,
@@ -829,8 +829,8 @@ describe('getArcLegendItems', () => {
     ).toEqual([{ color: expect.any(String), label: 'Long insert' }])
   })
 
-  test('takes no per-scheme rewording — an arc never produces a strand bucket', () => {
-    // under a read scheme these two would read as "Split read (forward/reverse)"
+  test('takes no per-field rewording — an arc never produces a strand bucket', () => {
+    // under a read field these two would read as "Split read (forward/reverse)"
     expect(
       getArcLegendItems(
         new Set<ReadColorCategory>(['fwdStrand', 'revStrand']),

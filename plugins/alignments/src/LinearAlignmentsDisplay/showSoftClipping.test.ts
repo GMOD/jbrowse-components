@@ -197,7 +197,7 @@ describe('alignments sashimi.labels.show (sashimi arc counts)', () => {
   })
 })
 
-describe('alignments legend.show (color-scheme key)', () => {
+describe('alignments legend.show (color key)', () => {
   it('is off by default', () => {
     const { display } = createDisplay()
     expect(display.showLegend).toBe(false)
@@ -329,7 +329,7 @@ describe('alignments colorField', () => {
     expect(display.colorField).toBeUndefined()
   })
 
-  it('takes an explicit per-track scheme', () => {
+  it('takes an explicit per-track color field', () => {
     const { display } = createDisplay({
       encoding: { color: { field: 'strand' } },
     })
@@ -488,7 +488,7 @@ describe('alignments colorField', () => {
     expect(display.colorSetting.value).toBe('rgb(0, 0, 255)')
   })
 
-  it('a scheme pick writes the field and keeps a declared range for the way back', () => {
+  it('picking a field writes it and keeps a declared range for the way back', () => {
     const { display } = createDisplay({
       encoding: {
         color: { field: 'tags.HP', scale: { range: ['red', 'blue'] } },
@@ -616,7 +616,7 @@ describe('alignments colorField', () => {
     expect(display.pinnedInsertSizeBand).toBeUndefined()
   })
 
-  // Leaving pairs mode discards the now-meaningless pairing scheme.
+  // Leaving pairs mode discards the now-meaningless pairing field.
   it('leaving pairs resets the color field to the plain fill', () => {
     const { display } = createDisplay()
     display.setUnit('chain')

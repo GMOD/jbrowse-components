@@ -7,7 +7,7 @@ import type { ArcColorField } from '../shared/types.ts'
 
 // The arc overlay and the read fills classify a pair through one function
 // (`pairCategory`), and the model folds the arc key into the read key whenever
-// the two schemes are twins, which renders an arc bucket as a plain read swatch
+// the two fields are twins, which renders an arc bucket as a plain read swatch
 // and drops the curve mark. This pins what the fold assumes: the arc side's
 // own gates (`hasPaired`, `isSplit`) and its category-to-slot fold leave a
 // paired arc keyed as the reads under it are. A figure once shipped with red

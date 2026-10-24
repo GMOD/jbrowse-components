@@ -15,7 +15,7 @@ import type { Plot } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
 
-// Minimal model: enough for schemeRadios + the Paired end submenu (modModel is
+// Minimal model: enough for the field radios + the Paired end submenu (modModel is
 // "defined" whenever modificationsReady is set, even to false).
 function makeModel() {
   return {
@@ -83,7 +83,7 @@ function subMenuOf(item: MenuItem | undefined) {
   return item && 'subMenu' in item ? resolveSubMenu(item) : []
 }
 
-// Flatten the Color by... menu so the scheme radios and those nested under
+// Flatten the Color by... menu so the field radios and those nested under
 // "Paired end" and "Per-base coloring" are reachable by label. These specs describe the
 // alignments display's menu, which opts into every section — a caller that opts
 // out is covered by the curation tests below.
@@ -116,7 +116,7 @@ function byLabel(
 }
 
 describe('color by menu', () => {
-  // The tag radio is the only scheme whose choice carries a parameter, and it
+  // The tag radio is the only field whose choice carries a parameter, and it
   // was invisible without reopening the dialog.
   test('the tag radio names the tag in use', () => {
     const model = makeModel()
@@ -130,11 +130,11 @@ describe('color by menu', () => {
   })
 
   // A radio row keeps the menu open by its type, which is right for every row
-  // that just writes a scheme — users try several, and the menu is an observer so
+  // that just writes a field — users try several, and the menu is an observer so
   // the ticks move live. The tag row is the one exception: its click opens a
   // dialog, so it opts out with keepMenuOpen: false, or the dialog appears behind
   // a menu the user then has to dismiss. Solid color opens its picker likewise.
-  test('scheme rows stay open, the tag and solid color rows (dialogs) dismiss', () => {
+  test('field rows stay open, the tag and solid color rows (dialogs) dismiss', () => {
     const model = makeModel()
     const rows = allItems(model, { includeTagOption: true }).filter(
       i => 'checked' in i,
@@ -344,7 +344,7 @@ describe('color by modifications menu', () => {
     'Modification types',
     'Probability threshold',
     'Cytosine context',
-  ])('%s is revealed only while the modifications scheme is active', label => {
+  ])('%s is revealed only while the modifications field is active', label => {
     const model = makeModModel(['m', 'h'])
     drawing(model, 'bisulfite')
     expect(byLabel(model, label)).toBeFalsy()
@@ -421,14 +421,14 @@ describe('color by modifications menu', () => {
   // Detection is per-fetch volatile state, so a track colored by modifications
   // can land on a region whose reads carry no MM/ML calls. Dropping the submenu
   // then left the whole Color by... menu with nothing checked.
-  test('the submenu stays while it is the active scheme, with nothing detected', () => {
+  test('the submenu stays while it is the active field, with nothing detected', () => {
     const model = makeModModel([])
     drawing(model, 'modifications')
     expect(byLabel(model, BY_TYPE)).toBeTruthy()
     expect(allItems(model).some(i => 'checked' in i && i.checked)).toBe(true)
   })
 
-  test('a ready display with no detected types and another scheme active omits it', () => {
+  test('a ready display with no detected types and another field active omits it', () => {
     const model = makeModModel([])
     expect(byLabel(model, BY_TYPE)).toBeFalsy()
     expect(byLabel(model, 'Bisulfite / EM-seq')).toBeTruthy()
@@ -474,7 +474,7 @@ describe('color by menu curation', () => {
     ).toEqual(['Normal', 'Mate chromosome', 'Solid color...'])
   })
 
-  test('a curated entry can relabel one scheme for its own display', () => {
+  test('a curated entry can relabel one field for its own display', () => {
     expect(
       labelsFor({
         colorOptions: colorFieldOptions(undefined, {
@@ -485,7 +485,7 @@ describe('color by menu curation', () => {
     ).toEqual(['Normal', 'Query name', 'Solid color...'])
   })
 
-  // Everything behind the scheme is already wired for a BAM (the worker reads
+  // Everything behind the field is already wired for a BAM (the worker reads
   // the mate refName off next_ref, readFillColors bakes it, the legend names its
   // empty bucket "No mate"); it just had no row to reach it from.
   // One radio group in the top menu, so one row reads as ticked: the per-base

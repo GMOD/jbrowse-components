@@ -167,9 +167,9 @@ describe('overlayReadFillColors', () => {
     expect(overlay('tags.HP')).toBe(1)
   })
 
-  // The worker only fills readTagValues for the baked schemes, so any other
-  // scheme must leave the array empty and the shader on its palette path.
-  test('bakes nothing for schemes the shader colors itself', () => {
+  // The worker only fills readTagValues for the baked fields, so any other
+  // field must leave the array empty and the shader on its palette path.
+  test('bakes nothing for fields the shader colors itself', () => {
     expect(overlay('strand')).toBe(0)
     expect(overlay(undefined)).toBe(0)
   })

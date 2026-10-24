@@ -125,7 +125,7 @@ describe('one region', () => {
 
   test('a supplementary takes its primary’s pair orientation, copy-on-write', () => {
     // The primary pair is LL (abnormal); the split segment's own record
-    // computes a divergent LR, which under the pair-orientation scheme would
+    // computes a divergent LR, which under the pair-orientation field would
     // paint it the normal grey.
     const raw = region([
       { id: 'p', name: 'r1', flags: READ1, pairOrientation: 4 },
@@ -303,7 +303,7 @@ describe('a chain split across two displayed regions', () => {
   })
 
   // "View split alignment regions" opens one window per segment, and with the
-  // supplementary coloring off the pair-orientation scheme reads this array.
+  // supplementary coloring off the pair-orientation field reads this array.
   test('a supplementary takes the orientation of a primary in another region', () => {
     const primarySide = region([
       { id: 'p', name: 'pair', flags: READ1, pairOrientation: 4 },

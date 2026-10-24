@@ -16,7 +16,7 @@ import type { GroupedAlignmentsResult } from '../RenderAlignmentDataRPC/types.ts
 // Both halves fail silently. A display that passes no order, and a display whose
 // probe misses because it compared a file's `12` against a canonical `chr12`,
 // both land on the same hash fallback — a real color, plausible on screen, and
-// the one this scheme was moved off. So the fixture deliberately spells the
+// the one this field was moved off. So the fixture deliberately spells the
 // assembly and the file differently, which is the ordinary case for a
 // GRCh37-style BAM read against an hg38-style assembly.
 
@@ -127,9 +127,9 @@ test('the order reaches the baked read colors', async () => {
   ])
 })
 
-// The scheme is the gate: nothing else pays for a Map probe per distinct value,
+// The field is the gate: nothing else pays for a Map probe per distinct value,
 // and a tag value is not a refName.
-test('no position is offered under a scheme that is not chromosome painting', async () => {
+test('no position is offered under a field that is not chromosome painting', async () => {
   const display = await loadedDisplay()
   display.colorByField('tags.HP')
   expect(display.paintedRefNamePosition).toBeUndefined()

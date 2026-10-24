@@ -145,7 +145,7 @@ describe('computeArcsFromPileupData', () => {
     expect(result.lines[1]!.x.refName).toBe('chr2')
     // A tick carries no color of its own — every one paints
     // ARC_COLOR_INTERCHROM, which the band's feed names directly — so "the
-    // interchromosomal slot under the insert-size schemes" is now structural
+    // interchromosomal slot under the insert-size fields" is now structural
     // rather than a per-instance value to assert. What still needs pinning is
     // that the slot means the interchrom swatch; see the legend test below.
     expect(arcSlotCategory(ARC_COLOR_INTERCHROM, 'insertSize')).toBe(
@@ -157,7 +157,7 @@ describe('computeArcsFromPileupData', () => {
     // RL orientation (2) would resolve to the RL slot (6) for a same-chromosome
     // arc; across chromosomes "pair orientation" is meaningless. The pair must
     // therefore leave the arc path entirely and come out as two ticks — which,
-    // carrying no color, cannot pick up the RL slot however the scheme is set.
+    // carrying no color, cannot pick up the RL slot however the color field is set.
     const data = makePileupData({
       readPositions: new Uint32Array([0, 100]),
       readFlags: new Uint16Array([SAM_FLAG_PAIRED]),
@@ -645,7 +645,7 @@ describe('computeArcsFromPileupData', () => {
       expect(crossRegion[0]!.p2RegionIndex).toBe(1)
     })
 
-    test('painted the interchromosomal color, not the pair scheme', () => {
+    test('painted the interchromosomal color, not the pair-orientation color', () => {
       // The color is now the ONLY channel saying "crosses chromosomes": a
       // same-chromosome cross-region arc crosses the same panel divider and
       // otherwise looks identical.

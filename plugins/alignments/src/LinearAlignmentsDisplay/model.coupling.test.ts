@@ -209,15 +209,15 @@ describe('alignments display cross-feature coupling', () => {
 })
 
 // Color by used to also manage a discovered-value map: clear it when
-// the scheme changed, and — a second rule patching the first — NOT clear it
+// the field changed, and — a second rule patching the first — NOT clear it
 // when the radio already showing was re-picked, since that refetches nothing
 // and an emptied map left the legend blank until the next pan. Both rules went
 // with the map, the value's color being a pure function of the value
 // (`colorTagUtils.test.ts` pins that, including the one thing that is not: the
-// scheme picks which function runs). What has to survive is that re-picking the
-// scheme in use is still inert.
+// field picks which function runs). What has to survive is that re-picking the
+// field in use is still inert.
 describe('colorByField', () => {
-  test('re-picking the scheme in use changes nothing', () => {
+  test('re-picking the field in use changes nothing', () => {
     const display = createDisplay()
     display.colorByField('mateRefName')
     const before = display.readColorContext
@@ -226,7 +226,7 @@ describe('colorByField', () => {
     expect(display.readColorContext).toStrictEqual(before)
   })
 
-  test('a different scheme reaches the bake', () => {
+  test('a different field reaches the bake', () => {
     const display = createDisplay()
     display.colorByField('tags.HP')
     const before = display.readColorContext
@@ -338,9 +338,9 @@ describe('keySectionOrder', () => {
 })
 
 // Toggling "view as pairs" auto-switches coloring for the common case but must
-// not stomp on a color scheme the user picked deliberately (regression guard —
+// not stomp on a color field the user picked deliberately (regression guard —
 // the auto-switch previously overwrote the color field unconditionally).
-describe('setUnit color scheme preservation', () => {
+describe('setUnit color field preservation', () => {
   test('entering pairs nudges the plain default to insert-size-and-orientation', () => {
     const display = createDisplay()
     expect(display.colorField).toBeUndefined()
@@ -359,7 +359,7 @@ describe('setUnit color scheme preservation', () => {
     expect(display.bodyColorKind).toBe('modifications')
   })
 
-  test('entering pairs preserves an explicit non-pairing color scheme', () => {
+  test('entering pairs preserves an explicit non-pairing color field', () => {
     const display = createDisplay()
     display.colorByField('tags.HP')
 
@@ -388,7 +388,7 @@ describe('setUnit color scheme preservation', () => {
     expect(display.colorField).toBe('firstOfPairStrand')
   })
 
-  test('leaving pairs preserves an explicit non-pairing color scheme', () => {
+  test('leaving pairs preserves an explicit non-pairing color field', () => {
     const display = createDisplay()
     display.setUnit('chain')
     display.colorByField('tags.HP')
@@ -1558,7 +1558,7 @@ test('a region arrival invalidates renderState, not just the size gate', () => {
 describe('upload tiers: what a settings change does to the laid-out payloads', () => {
   function displayWithOneRead(color: ColorSlots = { field: 'tags.HP' }) {
     const display = createDisplay()
-    // Tag coloring is the CPU-baked scheme `colorTagMap` feeds; set it before
+    // Tag coloring is the CPU-baked field `colorTagMap` feeds; set it before
     // seeding, since the color field is an rpcProps (tier-1) setting and clears data.
     display.applyPlot({ encoding: { color } })
     display.setRpcData(

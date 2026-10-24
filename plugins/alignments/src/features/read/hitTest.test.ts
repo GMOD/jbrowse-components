@@ -68,7 +68,7 @@ function at(genomicPos: number, yWithinRow: number): CigarCoords {
   }
 }
 
-const STRAND_SCHEME: ChevronFrame = {
+const FRAME: ChevronFrame = {
   pxPerBp: 1,
   chainMode: false,
   featureHeight: FEATURE_HEIGHT,
@@ -78,30 +78,30 @@ const MID_ROW = FEATURE_HEIGHT / 2
 
 test('a reverse-strand read is hit on the arrowhead before its start', () => {
   const block = oneRead({ start: 100, end: 160, strand: -1 })
-  expect(hitTestFeature(block, at(96, MID_ROW), STRAND_SCHEME)).toEqual({
+  expect(hitTestFeature(block, at(96, MID_ROW), FRAME)).toEqual({
     id: 'r',
     index: 0,
   })
-  expect(hitTestFeature(block, at(164, MID_ROW), STRAND_SCHEME)).toBeUndefined()
+  expect(hitTestFeature(block, at(164, MID_ROW), FRAME)).toBeUndefined()
 })
 
 test('a forward-strand read is hit on the arrowhead past its end', () => {
   const block = oneRead({ start: 100, end: 160, strand: 1 })
-  expect(hitTestFeature(block, at(164, MID_ROW), STRAND_SCHEME)).toEqual({
+  expect(hitTestFeature(block, at(164, MID_ROW), FRAME)).toEqual({
     id: 'r',
     index: 0,
   })
-  expect(hitTestFeature(block, at(96, MID_ROW), STRAND_SCHEME)).toBeUndefined()
+  expect(hitTestFeature(block, at(96, MID_ROW), FRAME)).toBeUndefined()
 })
 
 test('the arrowhead tapers: its corners past the edge are not ink', () => {
   const block = oneRead({ start: 100, end: 160, strand: 1 })
   // 4 px out the head is half its height, so mid-row hits and the row's top
   // row of pixels does not; past CHEVRON_PX nothing does.
-  expect(hitTestFeature(block, at(164, MID_ROW), STRAND_SCHEME)).toBeDefined()
-  expect(hitTestFeature(block, at(164, 0.5), STRAND_SCHEME)).toBeUndefined()
+  expect(hitTestFeature(block, at(164, MID_ROW), FRAME)).toBeDefined()
+  expect(hitTestFeature(block, at(164, 0.5), FRAME)).toBeUndefined()
   expect(
-    hitTestFeature(block, at(160 + CHEVRON_PX + 1, MID_ROW), STRAND_SCHEME),
+    hitTestFeature(block, at(160 + CHEVRON_PX + 1, MID_ROW), FRAME),
   ).toBeUndefined()
 })
 
@@ -110,7 +110,7 @@ test('no arrowhead, no hit: strand-less, region-clipped, or gated off', () => {
     hitTestFeature(
       oneRead({ start: 100, end: 160, strand: 0 }),
       at(164, MID_ROW),
-      STRAND_SCHEME,
+      FRAME,
     ),
   ).toBeUndefined()
   // A read whose start the region clipped has no first segment to cap.
@@ -118,7 +118,7 @@ test('no arrowhead, no hit: strand-less, region-clipped, or gated off', () => {
     hitTestFeature(
       oneRead({ start: 100, end: 160, strand: -1, edgeFlags: 0b10 }),
       at(96, MID_ROW),
-      STRAND_SCHEME,
+      FRAME,
     ),
   ).toBeUndefined()
   // A plain-filled read narrower than CHEVRON_DIRLESS_MIN_WIDTH_PX draws no
@@ -127,7 +127,7 @@ test('no arrowhead, no hit: strand-less, region-clipped, or gated off', () => {
     hitTestFeature(
       oneRead({ start: 100, end: 120, strand: 1, category: RC_PLAIN }),
       at(124, MID_ROW),
-      STRAND_SCHEME,
+      FRAME,
     ),
   ).toBeUndefined()
 })
@@ -153,7 +153,7 @@ test('chevronContains is the triangle the painters trace', () => {
 // from its start, and the hover answers on that whole sliver.
 test('a read narrower than a pixel answers across its painted 1px', () => {
   const block = oneRead({ start: 100, end: 101, strand: 1, category: RC_PLAIN })
-  const frame = { ...STRAND_SCHEME, pxPerBp: 1 / 50 }
+  const frame = { ...FRAME, pxPerBp: 1 / 50 }
   const zoomedOut = (genomicPos: number) => ({
     ...at(genomicPos, MID_ROW),
     bpPerPx: 50,

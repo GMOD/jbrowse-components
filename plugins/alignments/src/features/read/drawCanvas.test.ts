@@ -122,7 +122,7 @@ const wideFwd = { start: 10, end: 50, strand: 1 }
 const wideRev = { start: 10, end: 50, strand: -1 }
 
 // drawReads only re-assigns fillStyle when the resolved color changes, since
-// the assignment re-parses the CSS string and the default scheme paints every
+// the assignment re-parses the CSS string and the plain fill paints every
 // read the same color. These pin that the skip can never leave a read wearing
 // its predecessor's color. Zoomed out (0.05 px/bp) so bodies are plain rects.
 test('reads of differing colors each keep their own fill', () => {
@@ -192,7 +192,7 @@ test('strandless read (strand 0) never gets an arrowhead', () => {
   expect(svg).not.toContain('<path')
 })
 
-test('direction-moot narrow read (normal scheme) stays a rect', () => {
+test('direction-moot narrow read (plain fill) stays a rect', () => {
   // read [10,12] → 20px body, under the 30px dirless gate
   const svg = draw([{ start: 10, end: 12, strand: 1 }], {
     colorByType: 'normal',
@@ -201,7 +201,7 @@ test('direction-moot narrow read (normal scheme) stays a rect', () => {
   expect(svg).not.toContain('<path')
 })
 
-test('direction-moot wide read (normal scheme) still gets an arrowhead', () => {
+test('direction-moot wide read (plain fill) still gets an arrowhead', () => {
   const svg = draw([wideFwd], { colorByType: 'normal' })
   expect(svg).toContain('<path')
 })

@@ -655,7 +655,7 @@ describe('FetchVisibleRegions autorun', () => {
     expect(mockRpcCall.mock.calls.length).toBe(callsBefore)
   })
 
-  // Only the schemes the worker extracts different data for are in rpcProps
+  // Only the fields the worker extracts different data for are in rpcProps
   // (see workerColorField) — per-base overlays, modifications, bisulfite, and the
   // CPU-baked tag/mateRefName strings.
   it('refetches when the color field changes to one the worker extracts for', async () => {
@@ -713,9 +713,9 @@ describe('FetchVisibleRegions autorun', () => {
     expect(lastArgs.perBaseBinBp).toBe(1)
   })
 
-  // ...and the same zoom in every other scheme holds one constant key, so the
+  // ...and the same zoom under every other field holds one constant key, so the
   // bin costs no refetch to a mode that never reads it.
-  it('does NOT refetch on zoom when the scheme is not per-base', async () => {
+  it('does NOT refetch on zoom when the field is not per-base', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment()
     mockRpcCall.mockResolvedValue(makeEmptyGroupedData())
     const { display, view } = createDisplay()
@@ -740,7 +740,7 @@ describe('FetchVisibleRegions autorun', () => {
   // The shader decides these from arrays every fetch already produces, so
   // switching between them is a repaint. Sending every field made each of
   // these hops drop rpcDataMap and re-read the region for identical data.
-  it('does NOT refetch when switching between shader-only color schemes', async () => {
+  it('does NOT refetch when switching between shader-only color fields', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment()
     mockRpcCall.mockResolvedValue(makeEmptyGroupedData())
     const { display } = createDisplay()
@@ -764,7 +764,7 @@ describe('FetchVisibleRegions autorun', () => {
     }
 
     expect(mockRpcCall.mock.calls.length).toBe(callsBefore)
-    // ...and the reads still repaint, because the scheme index is render state
+    // ...and the reads still repaint, because the field's index is render state
     expect(display.colorField).toBeUndefined()
   })
 

@@ -94,7 +94,7 @@ describe('per-base bin supersession', () => {
     expect(display.displayPhase).toBe('ready')
   })
 
-  it('is unmoved by the same zoom in a scheme that paints no wall', () => {
+  it('is unmoved by the same zoom under a field that paints no wall', () => {
     const env = createRpcTestEnvironment().createDisplay()
     const { display, view } = env
 

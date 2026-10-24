@@ -77,7 +77,7 @@ const chainOpts = { chainMode: true }
 const framedOpts = { chainMode: true, framesChainStrand: true }
 
 describe('readColorCategory', () => {
-  test('strand scheme buckets by read strand', () => {
+  test('strand field buckets by read strand', () => {
     expect(readColorCategory(0, makeData({ strand: 1 }), 'strand')).toBe(
       'fwdStrand',
     )
@@ -86,7 +86,7 @@ describe('readColorCategory', () => {
     )
   })
 
-  test('insertSize scheme buckets against thresholds', () => {
+  test('insertSize field buckets against thresholds', () => {
     expect(
       readColorCategory(0, makeData({ insertSize: 700 }, stats), 'insertSize'),
     ).toBe('longInsert')
@@ -103,7 +103,7 @@ describe('readColorCategory', () => {
     ).toBe('normalInsert')
   })
 
-  test('pairOrientation scheme buckets by orientation code', () => {
+  test('pairOrientation field buckets by orientation code', () => {
     const cat = (po: number) =>
       readColorCategory(0, makeData({ pairOrientation: po }), 'pairOrientation')
     expect(cat(1)).toBe('pairLR')
@@ -168,9 +168,9 @@ describe('readColorCategory', () => {
     ).toBe('longInsert')
   })
 
-  test('paired supplementary chains keep their per-scheme color', () => {
+  test('paired supplementary chains keep their per-field color', () => {
     // chain mode, paired (flags=1) supplementary read: no flat override, so it
-    // falls through to the active scheme and the discordant-pair signal survives
+    // falls through to the active field and the discordant-pair signal survives
     expect(
       readColorCategory(
         0,
@@ -179,7 +179,7 @@ describe('readColorCategory', () => {
         chainOpts,
       ),
     ).toBe('pairRR')
-    // and a strand scheme keeps the read's own strand
+    // and a strand field keeps the read's own strand
     expect(
       readColorCategory(
         0,
@@ -191,7 +191,7 @@ describe('readColorCategory', () => {
   })
 
   test('paired split-inversion chains paint the dedicated split-inversion color', () => {
-    // orientation schemes: the whole chain reads as an inversion regardless of
+    // orientation fields: the whole chain reads as an inversion regardless of
     // the concordant pair orientation it inherited (po=1 LR here)
     expect(
       readColorCategory(
@@ -212,7 +212,7 @@ describe('readColorCategory', () => {
         chainOpts,
       ),
     ).toBe('splitInversion')
-    // non-orientation schemes keep their own coloring (strand here)
+    // non-orientation fields keep their own coloring (strand here)
     expect(
       readColorCategory(
         0,
@@ -251,7 +251,7 @@ describe('readColorCategory', () => {
         chainOpts,
       ),
     ).toBe('splitDeletion')
-    // non-orientation scheme (strand) keeps its own coloring
+    // non-orientation field (strand) keeps its own coloring
     expect(
       readColorCategory(
         0,
@@ -332,24 +332,24 @@ describe('readColorCategory', () => {
     )
   })
 
-  test('unmapped mate and inter-chromosomal apply to orientation schemes', () => {
+  test('unmapped mate and inter-chromosomal apply to orientation fields', () => {
     expect(
       readColorCategory(0, makeData({ flags: 8 }, stats), 'insertSize'),
     ).toBe('unmappedMate')
     expect(
       readColorCategory(0, makeData({ interchrom: 1 }, stats), 'insertSize'),
     ).toBe('interchrom')
-    // ...but not to the plain strand scheme
+    // ...but not to the plain strand field
     expect(readColorCategory(0, makeData({ interchrom: 1 }), 'strand')).toBe(
       'fwdStrand',
     )
   })
 
-  // The CPU-baked schemes (tag values, chromosome painting) resolve no color
+  // The CPU-baked fields (tag values, chromosome painting) resolve no color
   // for a read the tag is absent from, or a block with no mate. It paints the
   // palette fallback, so it gets its own bucket and the legend can key that
   // neutral instead of leaving it as the one painted color with no entry.
-  test('a read with no baked color is its own bucket under the tag scheme', () => {
+  test('a read with no baked color is its own bucket under the tag field', () => {
     expect(
       readColorCategory(0, makeData({ tagColor: 0xff00ff00 }), 'tag'),
     ).toBe('tag')
@@ -366,11 +366,11 @@ describe('readColorCategory', () => {
 })
 
 describe('getReadColor maps each category to its palette color', () => {
-  test('discrete schemes paint the bucket color', () => {
+  test('discrete fields paint the bucket color', () => {
     expect(getReadColor(0, makeData({ strand: -1 }), 'strand', palette)).toBe(
       rgb255(palette.colorRevStrand),
     )
-    // paired supplementary chain: falls through to the scheme color, not a flat
+    // paired supplementary chain: falls through to the field's color, not a flat
     // supplementary override
     expect(
       getReadColor(
@@ -402,7 +402,7 @@ describe('getReadColor maps each category to its palette color', () => {
   })
 })
 
-// The `firstOfPairStrand` COLOR scheme and the `firstOfPairStrand` GROUPING
+// The `firstOfPairStrand` COLOR field and the `firstOfPairStrand` GROUPING
 // dimension have to answer the same question about the same read: a read painted
 // reverse belongs in the reverse section. They used to spell the fragment-strand
 // rule twice under a comment promising they matched — this one read `strand`,
@@ -462,8 +462,8 @@ describe('framesUnpairedChainStrand', () => {
   ]
   test.each(cases)(
     '%s in chain mode %s frames: %s',
-    (scheme, chain, expected) => {
-      expect(framesUnpairedChainStrand(scheme, chain)).toBe(expected)
+    (field, chain, expected) => {
+      expect(framesUnpairedChainStrand(field, chain)).toBe(expected)
     },
   )
 })

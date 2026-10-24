@@ -102,10 +102,10 @@ test('a different tag coloring leaves the box unticked and untouched', async () 
   expect(colorByField).not.toHaveBeenCalled()
 })
 
-// Every scheme but the plain one PAINTS something the checkbox would replace, so
+// Every field but the plain fill PAINTS something the checkbox would replace, so
 // grouping by HP over an insert-size view used to turn that picture off on
 // Submit.
-test('a non-tag color scheme is not replaced by default', async () => {
+test('a non-tag color field is not replaced by default', async () => {
   const { colorByField } = renderDialog({
     colorField: 'insertSize',
   })

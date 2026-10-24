@@ -162,7 +162,6 @@ function state(): RenderState {
     canvasWidth: 200,
     canvasHeight: 200,
     scrollTop: 0,
-    colorScheme: 0,
     featureHeight: 10,
     featureSpacing: 1,
     coverageHeight: 50,

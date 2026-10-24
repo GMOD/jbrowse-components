@@ -211,7 +211,7 @@ describe('legend.title heads the key the color channel draws', () => {
   })
 })
 
-test('a scheme pick over the same field keeps the names and title, a new field drops them', () => {
+test('a color pick over the same field keeps the names and title, a new field drops them', () => {
   const written: ColorSlots = {
     field: 'tags.HP',
     scale: { domain: ['1', '2'], names: ['Maternal', 'Paternal'] },

@@ -88,8 +88,8 @@ describe('mateRefName extraction', () => {
   })
 
   // The channel is shared with tag coloring, so it must stay empty for every
-  // other scheme — a stray value would bake a color over the shader's own.
-  test('the channel is empty under other color schemes', () => {
+  // other field — a stray value would bake a color over the shader's own.
+  test('the channel is empty under other color fields', () => {
     expect(
       extract([syntenyFeature('ctgA', 'ctgB')], 'strand').tagColorValues,
     ).toEqual([])
