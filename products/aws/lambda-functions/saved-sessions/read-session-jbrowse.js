@@ -1,18 +1,16 @@
-const AWS = require('aws-sdk')
+const { DynamoDBClient, GetItemCommand } = require('@aws-sdk/client-dynamodb')
 
 const { AWS_REGION: region, sessionTable } = process.env
 
-const dynamodb = new AWS.DynamoDB.DocumentClient({
-  apiVersion: '2012-08-10',
-  region,
-})
+const dynamodb = new DynamoDBClient({ region })
 
 function readSession(sessionId) {
-  const params = {
-    TableName: sessionTable,
-    Key: { sessionId },
-  }
-  return dynamodb.get(params).promise()
+  return dynamodb.send(
+    new GetItemCommand({
+      TableName: sessionTable,
+      Key: { sessionId: { S: sessionId } },
+    }),
+  )
 }
 
 exports.handler = async event => {
@@ -32,14 +30,18 @@ exports.handler = async event => {
     }
   }
 
-  const sessionObj = tableData.Item
-  if (!sessionObj) {
+  const item = tableData.Item
+  if (!item) {
     return {
       statusCode: 404,
       body: JSON.stringify({ message: 'Session not found' }),
     }
   }
 
+  // every attribute is a string
+  const sessionObj = Object.fromEntries(
+    Object.entries(item).map(([key, value]) => [key, value.S]),
+  )
   return {
     statusCode: 200,
     body: JSON.stringify(sessionObj),

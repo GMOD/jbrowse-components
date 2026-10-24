@@ -82,20 +82,42 @@ describe('readSharedSession', () => {
     fetchMock.resetMocks()
   })
 
-  // stands in for the share service: what `share` stores, `load` returns
-  async function upload() {
+  // Stands in for the share service: what `share` stores, `load` returns. One
+  // that names its own id answers `id1`; one that takes offers answers the id
+  // it was offered, and `load` finds the session only under that id.
+  async function upload({ takesOffers = false } = {}) {
     let stored = ''
+    let storedId = ''
     fetchMock.mockResponseOnce(async req => {
-      stored = (await req.formData()).get('session') as string
-      return JSON.stringify({ sessionId: 'id1' })
+      const form = await req.formData()
+      stored = form.get('session') as string
+      storedId = takesOffers ? (form.get('sessionId') as string) : 'id1'
+      return JSON.stringify({ sessionId: storedId })
     })
     const { sessionParam } = await encodeSessionParam('short', session, {
       shareURL: 'https://s/',
       referer: '',
     })
-    fetchMock.mockResponseOnce(JSON.stringify({ session: stored }))
-    return { sessionParam, stored }
+    fetchMock.mockResponseOnce(async req =>
+      new URL(req.url).searchParams.get('sessionId') === storedId
+        ? JSON.stringify({ session: stored })
+        : JSON.stringify({}),
+    )
+    return { sessionParam, stored, storedId }
   }
+
+  it('holds only the key when the service takes the offered id', async () => {
+    const { sessionParam, storedId } = await upload({ takesOffers: true })
+    const key = sessionParam.slice('share-'.length)
+
+    expect(key).toMatch(/^[\w-]{11}$/)
+    expect(JSON.parse(await readSharedSession(loadUrl, sessionParam))).toEqual(
+      session,
+    )
+    // the service stores and serves the session under a hash of the key
+    expect(storedId).not.toContain(key)
+    expect(JSON.stringify(fetchMock.mock.calls)).not.toContain(key)
+  })
 
   it('reads a link with its key after the id, sending only the id', async () => {
     const { sessionParam } = await upload()

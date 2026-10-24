@@ -3,6 +3,7 @@ import {
   aesDecryptBytes,
   aesEncryptBytes,
   base64Decode,
+  sha256,
   toBase64Url,
 } from './crypto.ts'
 
@@ -130,9 +131,16 @@ export function shareEndpoint(shareURL: string, path: 'share' | 'load') {
     : `${shareURL}${path}`
 }
 
-// The key's length in a `share-<id><key>` value, which is how a reader finds
-// where the server's id ends
+// The key's length in a `share-` value, which is how a reader finds where a
+// server-named id ends
 const SHARE_KEY_LENGTH = 11
+
+// The id a session is offered to the share service under. A hash of the key, so
+// a link holding only the key can find it, and the service, which sees only
+// this, cannot recover the key.
+async function shareIdForKey(key: string) {
+  return toBase64Url(await sha256(`jbrowse-share-id:${key}`)).slice(0, 16)
+}
 
 /**
  * writes the encrypted session, current datetime, and referer to DynamoDB
@@ -145,6 +153,7 @@ async function shareSessionToDynamo(
   // the server returns the ciphertext to anyone holding the session id, so the
   // key alone guards it: 64 bits, in SHARE_KEY_LENGTH base64url characters
   const key = toBase64Url(crypto.getRandomValues(new Uint8Array(8)))
+  const offeredId = await shareIdForKey(key)
 
   const data = new FormData()
   data.append(
@@ -153,6 +162,7 @@ async function shareSessionToDynamo(
   )
   data.append('dateShared', `${Date.now()}`)
   data.append('referer', referer)
+  data.append('sessionId', offeredId)
 
   const response = await fetch(shareEndpoint(shareURL, 'share'), {
     method: 'POST',
@@ -164,7 +174,9 @@ async function shareSessionToDynamo(
     throw new Error(getErrorMsg(await response.text()))
   }
   const { sessionId } = (await response.json()) as { sessionId: string }
-  return { sessionId, key }
+  // a service that names its own id (any deployed before it took offers) puts
+  // it in the link, ahead of the key
+  return { key, sessionId: sessionId === offeredId ? '' : sessionId }
 }
 
 export type SessionShareMode = 'short' | 'long'
@@ -175,7 +187,7 @@ export interface EncodedSessionParam {
 }
 
 // Encodes a session snapshot into the `?session=` value jbrowse-web decodes:
-// `share-<id><key>` (uploaded + encrypted) or `encoded-<b64>` (compressed
+// `share-<key>` or `share-<id><key>` (uploaded + encrypted) or `encoded-<b64>` (compressed
 // inline). Single source of these prefixes, shared by jbrowse-web's ShareDialog
 // and jbrowse-desktop's ExportToWebDialog so the two producers can't drift from
 // the decoder. The decoder also reads `json-{"session":…}`, which nothing here
@@ -262,9 +274,10 @@ export async function readSessionFromDynamo(
 }
 
 /**
- * The session JSON a `share-` value names. The link holds the key after the id
- * (`share-<id><key>`), or, in the older shape, as `&password=`; either way only
- * the id goes to the share service, and the session is decrypted here.
+ * The session JSON a `share-` value names. The link holds the key alone
+ * (`share-<key>`, stored under a hash of it), after a server-named id
+ * (`share-<id><key>`), or, in the oldest shape, as `&password=`. Only the id
+ * goes to the share service, and the session is decrypted here.
  */
 export async function readSharedSession(
   loadUrl: string,
@@ -278,16 +291,13 @@ export async function readSharedSession(
     )
   }
   const payload = sessionParamPayload(value)
-  if (payload.length <= SHARE_KEY_LENGTH) {
+  if (payload.length < SHARE_KEY_LENGTH) {
     throw missingKeyError()
   }
-  const ciphertext = await fetchCiphertext(
-    loadUrl,
-    payload.slice(0, -SHARE_KEY_LENGTH),
-    signal,
-  )
-  const bytes = await decrypt(() =>
-    aesDecryptBytes(ciphertext, payload.slice(-SHARE_KEY_LENGTH)),
-  )
+  const key = payload.slice(-SHARE_KEY_LENGTH)
+  const sessionId =
+    payload.slice(0, -SHARE_KEY_LENGTH) || (await shareIdForKey(key))
+  const ciphertext = await fetchCiphertext(loadUrl, sessionId, signal)
+  const bytes = await decrypt(() => aesDecryptBytes(ciphertext, key))
   return inflate(() => bytes)
 }

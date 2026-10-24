@@ -1176,14 +1176,14 @@ IndexedDB.
 
 ### &session=share-
 
-`https://host/jbrowse2/#session=share-HShsEcnq3iXb3_kPq9LmZ`, from the Share
-button.
+`https://host/jbrowse2/#session=share-Xb3_kPq9LmZ`, from the Share button.
 
 - The client mints a random key, encrypts the session and uploads the blob
-  without the key to a DynamoDB store. The link carries the key after the id,
-  and the recipient's browser sends only the id to the store and decrypts the
-  session itself, so the store's contents cannot be read even by JBrowse
-  administrators.
+  without the key to a DynamoDB store, under a hash of the key. The link carries
+  only the key, and the recipient's browser sends the store only the hash and
+  decrypts the session itself, so the store's contents cannot be read even by
+  JBrowse administrators.
+- A share service that names its own ids puts the id in the link before the key.
 - A link from before JBrowse 5 carries its key as `&password=`, and still opens.
 - Behind a firewall that cannot reach the shortener, the Share dialog's gear
   icon switches to "Long URL". `shareURL` in the config points at a shortener of
@@ -1192,7 +1192,7 @@ button.
 #### Are share links reproducible
 
 - The short link is not reproducible: each click mints a new key and uploads a
-  new blob, so the same view gives a new id and key every time.
+  new blob, so the same view gives a new key every time.
 - "Long URL" is reproducible: it contains the whole session in the link, so the
   same view and config produce the same link, and it survives moving the
   instance.

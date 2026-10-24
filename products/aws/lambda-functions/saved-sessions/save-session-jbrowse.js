@@ -1,12 +1,16 @@
 const { createHash } = require('crypto')
 
-const AWS = require('aws-sdk')
+const {
+  ConditionalCheckFailedException,
+  DynamoDBClient,
+  PutItemCommand,
+} = require('@aws-sdk/client-dynamodb')
 
 const multipart = require('./multipart.js')
 
 const { AWS_REGION: region, sessionTable } = process.env
 
-const dynamodb = new AWS.DynamoDB({ apiVersion: '2012-08-10', region })
+const dynamodb = new DynamoDBClient({ region })
 
 // slice of session hash in base64, add a math.random so that same session maps
 // to new id
@@ -20,45 +24,50 @@ function generateSessionId(session) {
     .replace(/=+$/, '')
 }
 
-async function uploadSession(sessionId, session, dateShared, referer) {
-  const params = {
-    Item: {
-      sessionId: {
-        S: sessionId,
+// The client offers a hash of the key its link carries, so the link needs only
+// the key. Write-once below keeps an offered id from replacing a stored session.
+function offeredSessionId(sessionId) {
+  return typeof sessionId === 'string' && /^[\w-]{16,64}$/.test(sessionId)
+    ? sessionId
+    : undefined
+}
+
+function uploadSession(sessionId, session, dateShared, referer) {
+  return dynamodb.send(
+    new PutItemCommand({
+      Item: {
+        sessionId: { S: sessionId },
+        session: { S: session },
+        dateShared: { S: dateShared },
+        referer: { S: referer },
       },
-      session: {
-        S: session,
-      },
-      dateShared: {
-        S: dateShared,
-      },
-      referer: {
-        S: referer,
-      },
-    },
-    ConditionExpression: 'attribute_not_exists(sessionId)', // write once
-    TableName: sessionTable,
-  }
-  return dynamodb.putItem(params).promise()
+      ConditionExpression: 'attribute_not_exists(sessionId)', // write once
+      TableName: sessionTable,
+    }),
+  )
 }
 
 exports.handler = async event => {
   const data = multipart.parse(event)
   const { session, dateShared, referer } = data
-  const sessionId = generateSessionId(session)
+  const sessionId =
+    offeredSessionId(data.sessionId) ?? generateSessionId(session)
   try {
     await uploadSession(sessionId, session, dateShared, referer)
   } catch (e) {
-    const response = {
+    return {
       statusCode: 400,
-      body: JSON.stringify({ message: `${e}` }),
+      body: JSON.stringify({
+        message:
+          e instanceof ConditionalCheckFailedException
+            ? 'A session is already stored under that id'
+            : `${e}`,
+      }),
     }
-    return response
   }
 
-  const response = {
+  return {
     statusCode: 200,
     body: JSON.stringify({ sessionId }),
   }
-  return response
 }
