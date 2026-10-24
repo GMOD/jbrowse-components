@@ -470,7 +470,7 @@ function colorReads(
     : undefined
   const colored = applyReadColorsByGroup(byGroup, {
     colorField,
-    bodyKind: bodyColorKind(colorField, baseLayer),
+    bodyColorKind: bodyColorKind(colorField, baseLayer),
     readColorOpts,
     bakedScale,
   })

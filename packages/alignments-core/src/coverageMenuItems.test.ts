@@ -47,19 +47,19 @@ test('the coverage rows grey out with the band hidden', () => {
 test('the coverage rows are live with the band shown', () => {
   expect(menu(true).map(row => 'label' in row && row.label)).toEqual([
     'Coverage axis...',
-    'Color SNPs above...',
+    'Color alleles above...',
   ])
   for (const row of menu(true)) {
     expect(row).toMatchObject({ disabled: false })
   }
 })
 
-test('the SNP floor greys out with the alleles hidden, the axis does not', () => {
+test('the allele floor greys out with the alleles hidden, the axis does not', () => {
   const [axis, floor] = menu(true, 0, false)
   expect(axis).toMatchObject({ disabled: false })
   expect(floor).toMatchObject({
     disabled: true,
-    disabledHelpText: expect.stringContaining('Coverage SNPs'),
+    disabledHelpText: expect.stringContaining('Coverage alleles'),
   })
 })
 
@@ -69,7 +69,7 @@ test('the SNP floor greys out with the alleles hidden, the axis does not', () =>
 // effect. Ties go to the lower row.
 function tickedSnpFrequencyLabels(minAlleleFraction: number) {
   const group = menu(true, minAlleleFraction).find(
-    row => 'label' in row && row.label === 'Color SNPs above...',
+    row => 'label' in row && row.label === 'Color alleles above...',
   )
   const options = group && 'subMenu' in group ? resolveSubMenu(group) : []
   return options.flatMap(row =>

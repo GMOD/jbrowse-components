@@ -154,8 +154,8 @@ function showLabels(showCoverage: boolean) {
 test('the interbase toggle is offered only while coverage is drawn', () => {
   expect(showLabels(true)).toContain('Interbase indicators')
   expect(showLabels(false)).not.toContain('Interbase indicators')
-  expect(showLabels(true)).toContain('Coverage SNPs')
-  expect(showLabels(false)).not.toContain('Coverage SNPs')
+  expect(showLabels(true)).toContain('Coverage alleles')
+  expect(showLabels(false)).not.toContain('Coverage alleles')
 })
 
 test('the rest of the Show menu does not depend on coverage', () => {

@@ -153,7 +153,7 @@ test('the interbase toggle follows the coverage band', () => {
 test('the coverage SNP toggle follows the coverage band and writes its show', () => {
   const row = (showCoverage: boolean) =>
     subMenuOf(makeModel({ showCoverage })).find(
-      r => 'label' in r && r.label === 'Coverage SNPs',
+      r => 'label' in r && r.label === 'Coverage alleles',
     )
   expect(row(false)).toMatchObject({
     disabled: true,
@@ -161,7 +161,7 @@ test('the coverage SNP toggle follows the coverage band and writes its show', ()
   })
   const model = makeModel()
   const shown = subMenuOf(model).find(
-    r => 'label' in r && r.label === 'Coverage SNPs',
+    r => 'label' in r && r.label === 'Coverage alleles',
   )
   expect(shown).toMatchObject({ disabled: false, checked: true })
   if (shown && 'onClick' in shown) {

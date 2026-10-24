@@ -213,7 +213,7 @@ export interface ReadColorContext {
   colorField: string | undefined
   // What the body paints as: `colorField`'s kind, or the modification
   // layer's own tint under the plain fill (`bodyColorKind`).
-  bodyKind: ColorFieldKind
+  bodyColorKind: ColorFieldKind
   readColorOpts: ReadColorOpts
   // Required-but-nullable, so dropping it from the model's context is a compile
   // error instead of a silent fall back onto the plain fill.
@@ -331,7 +331,7 @@ export function applyReadColorsByGroup(
       key,
       overlayReadColorCategories(
         overlayReadFillColors(map, ctx.colorField, ctx.bakedScale),
-        ctx.bodyKind,
+        ctx.bodyColorKind,
         ctx.readColorOpts,
       ),
     )

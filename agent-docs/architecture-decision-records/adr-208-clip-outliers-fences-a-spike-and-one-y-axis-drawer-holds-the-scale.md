@@ -80,7 +80,7 @@ edit at a time. The display is a `safeReference`: hiding the track or closing
 the view empties it, and the widget says so. The row's label carries only what
 the plot cannot show, a pinned end and a non-linear scale ("Y axis (190 –
 auto, log)..."). The coverage band's row is Coverage axis..., beside its own
-Color SNPs above...; a density plot's is Score range.... Summary score mode
+Color alleles above...; a density plot's is Score range.... Summary score mode
 moves under Resolution, the other setting about how bins are read.
 
 The wiggle plugin registers the widget through

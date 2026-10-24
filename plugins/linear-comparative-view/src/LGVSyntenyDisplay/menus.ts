@@ -138,7 +138,7 @@ export function getSyntenyShowMenuItems(model: ShowModel) {
     ...(model.showCoverage
       ? [
           toggleItem(
-            'Coverage SNPs',
+            'Coverage alleles',
             model.showCoverageAlleles,
             model.setShowCoverageAlleles,
             {

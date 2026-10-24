@@ -1421,7 +1421,7 @@ export default function stateModelFactory(
           get readColorContext() {
             return {
               colorField: self.colorField,
-              bodyKind: self.bodyColorKind,
+              bodyColorKind: self.bodyColorKind,
               readColorOpts: this.readColorOpts,
               bakedScale: this.bakedColorScale,
             }

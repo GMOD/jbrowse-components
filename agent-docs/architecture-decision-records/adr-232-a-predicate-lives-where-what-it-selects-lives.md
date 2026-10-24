@@ -133,7 +133,7 @@ readConnections: { show, mark, height, placement, lineWidth, color, showOrdinary
   the shared-meaning rule; `readConnections.lineWidth` stays the band's.
 - The coverage band colors an allele segment only at or above
   `coverage.minAlleleFraction` (default 0) of its position's depth, the menu's
-  "Color SNPs above…". The member stays a color rule beside
+  "Color alleles above…". The member stays a color rule beside
   `pileup.fadeLowFrequency`, under which the pileup fades a mark by the same
   per-base share through a depth-dependent threshold, never at 1 bp/px or
   closer, and drops the faded marks from hit testing. MAF keeps the member

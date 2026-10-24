@@ -18,7 +18,7 @@ export interface CoverageMenuModel extends ScoreScaleModel {
 // Fractions rather than a free-entry dialog: the useful settings are an order
 // of magnitude apart, and 0.2 is what IGV's coverage track defaults to. A
 // dialog would ask for a number nobody has a fourth digit of.
-const SNP_FREQUENCY_OPTIONS = [
+const ALLELE_FRACTION_OPTIONS = [
   { value: '0', label: 'All mismatches' },
   { value: '0.01', label: 'Above 1%' },
   { value: '0.05', label: 'Above 5%' },
@@ -31,8 +31,8 @@ const SNP_FREQUENCY_OPTIONS = [
 // group reported "no floor set" over a floor that was in effect. Nearest wins,
 // ties to the lower since the list is ascending; the click still writes the
 // row's own exact value, so opening the menu never silently rounds the setting.
-function nearestSnpFrequencyOption(fraction: number) {
-  return SNP_FREQUENCY_OPTIONS.reduce((best, option) =>
+function nearestAlleleFractionOption(fraction: number) {
+  return ALLELE_FRACTION_OPTIONS.reduce((best, option) =>
     Math.abs(Number(option.value) - fraction) <
     Math.abs(Number(best.value) - fraction)
       ? option
@@ -54,7 +54,7 @@ const BAND_HIDDEN_HELP =
   'These settings scale the coverage band — turn on "Show... → Coverage" first'
 
 const ALLELES_HIDDEN_HELP =
-  'SNPs are not colored — turn on "Show... → Coverage SNPs" first'
+  'Alleles are not colored — turn on "Show... → Coverage alleles" first'
 
 export function getCoverageMenuItems(model: CoverageMenuModel): MenuItem[] {
   const disabled = !model.showCoverage
@@ -65,12 +65,12 @@ export function getCoverageMenuItems(model: CoverageMenuModel): MenuItem[] {
       disabledHelpText: BAND_HIDDEN_HELP,
     }),
     {
-      label: 'Color SNPs above...',
+      label: 'Color alleles above...',
       disabled: disabled || !model.showCoverageAlleles,
       disabledHelpText: disabled ? BAND_HIDDEN_HELP : ALLELES_HIDDEN_HELP,
       subMenu: radioItems(
-        SNP_FREQUENCY_OPTIONS,
-        nearestSnpFrequencyOption(model.coverageMinAlleleFraction),
+        ALLELE_FRACTION_OPTIONS,
+        nearestAlleleFractionOption(model.coverageMinAlleleFraction),
         v => {
           model.setCoverageMinAlleleFraction(Number(v))
         },
@@ -104,7 +104,7 @@ export function interbaseIndicatorsMenuItem(model: {
 }
 
 /**
- * The coverage band's "Coverage SNPs" row, `coverage.alleles.show`: off, the
+ * The coverage band's "Coverage alleles" row, `coverage.alleles.show`: off, the
  * depth bars draw plain grey. Greyed with the band hidden, as the interbase
  * row is.
  */
@@ -114,7 +114,7 @@ export function coverageAllelesMenuItem(model: {
   setShowCoverageAlleles: (show: boolean) => void
 }): MenuItem {
   return toggleItem(
-    'Coverage SNPs',
+    'Coverage alleles',
     model.showCoverageAlleles,
     show => {
       model.setShowCoverageAlleles(show)
@@ -122,7 +122,7 @@ export function coverageAllelesMenuItem(model: {
     {
       disabled: !model.showCoverage,
       disabledHelpText:
-        'SNPs are colored in the coverage band — turn on "Show... → Coverage" first',
+        'Alleles are colored in the coverage band — turn on "Show... → Coverage" first',
     },
   )
 }
