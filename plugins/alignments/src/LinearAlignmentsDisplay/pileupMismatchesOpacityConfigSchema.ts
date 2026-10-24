@@ -1,7 +1,10 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 
-import { MISMATCH_OPACITY_FIELDS } from '../features/mismatch/qualityOpacity.ts'
+import {
+  MISMATCH_OPACITY_FIELDS,
+  QUALITY_OPACITY_DOMAIN,
+} from '../features/mismatch/qualityOpacity.ts'
 import { dropEmptyField } from '../shared/dropEmptyField.ts'
 
 import type { MismatchOpacityField } from '../features/mismatch/qualityOpacity.ts'
@@ -12,7 +15,8 @@ export type PileupMismatchesOpacitySnapshot =
   | {
       field?: MismatchOpacityField
       scale?: {
-        domain?: readonly (number | string)[]
+        domainMin?: number
+        domainMax?: number
         range?: readonly (number | string)[]
         clamp?: boolean
       }
@@ -42,7 +46,7 @@ export type PileupMismatchesOpacitySnapshot =
  *       encoding: {
  *         opacity: {
  *           field: 'baseQuality',
- *           scale: { domain: [0, 30], range: [0.2, 1] },
+ *           scale: { domainMin: 0, domainMax: 30, range: [0.2, 1] },
  *         },
  *       },
  *     },
@@ -72,13 +76,21 @@ export const pileupMismatchesOpacityConfigSchema = ConfigurationSchema(
       'PileupMismatchesOpacityScale',
       {
         /**
-         * #slot scale.domain
+         * #slot scale.domainMin
          */
-        domain: {
-          type: 'stringArray',
-          defaultValue: ['0', '50'],
+        domainMin: {
+          type: 'number',
+          defaultValue: QUALITY_OPACITY_DOMAIN[0],
           description:
-            'the Phred qualities that take the first and the last opacity in range',
+            'the Phred quality that takes the first opacity in range',
+        },
+        /**
+         * #slot scale.domainMax
+         */
+        domainMax: {
+          type: 'number',
+          defaultValue: QUALITY_OPACITY_DOMAIN[1],
+          description: 'the Phred quality that takes the last opacity in range',
         },
         /**
          * #slot scale.range
@@ -100,13 +112,10 @@ export const pileupMismatchesOpacityConfigSchema = ConfigurationSchema(
       },
       {
         closed: true,
-        // the domain and range are written as the numbers they name and held
-        // as strings, the way a threshold domain holds its cuts
+        // the range is written as the numbers it names and held as strings,
+        // the way a threshold domain holds its cuts
         preProcessSnapshot: (snap: Record<string, unknown> = {}) => ({
           ...snap,
-          ...(Array.isArray(snap.domain)
-            ? { domain: snap.domain.map(String) }
-            : {}),
           ...(Array.isArray(snap.range)
             ? { range: snap.range.map(String) }
             : {}),

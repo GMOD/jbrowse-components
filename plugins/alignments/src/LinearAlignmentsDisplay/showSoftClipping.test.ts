@@ -162,7 +162,10 @@ describe('alignments pileup.mismatches.encoding.opacity (fade by base quality)',
       pileup: {
         mismatches: {
           encoding: {
-            opacity: { field: 'baseQuality', scale: { domain: [0, 30] } },
+            opacity: {
+              field: 'baseQuality',
+              scale: { domainMin: 0, domainMax: 30 },
+            },
           },
         },
       },

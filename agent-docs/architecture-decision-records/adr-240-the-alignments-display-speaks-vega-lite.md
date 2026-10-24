@@ -83,7 +83,7 @@ hand, and Colin's rulings on the calls they split.
     "maxLayoutHeight": 6000,
     "fadeLowFrequency": true,
     "mismatches": { "show": true, "encoding": { "opacity": {
-      "field": "baseQuality", "scale": { "domain": [0, 50], "range": [0, 1], "clamp": true } } } },
+      "field": "baseQuality", "scale": { "domainMin": 0, "domainMax": 50, "range": [0, 1], "clamp": true } } } },
     "softClips": { "show": false },
     "connectors": { "show": false },
     "bases": {

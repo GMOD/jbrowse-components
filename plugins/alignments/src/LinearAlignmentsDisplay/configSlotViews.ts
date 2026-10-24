@@ -288,13 +288,21 @@ export function configSlotViews(self: ConfigSlotSelf) {
           'field',
         ]),
         scale: {
-          domain: getConf(self, [
+          domainMin: getConf(self, [
             'pileup',
             'mismatches',
             'encoding',
             'opacity',
             'scale',
-            'domain',
+            'domainMin',
+          ]),
+          domainMax: getConf(self, [
+            'pileup',
+            'mismatches',
+            'encoding',
+            'opacity',
+            'scale',
+            'domainMax',
           ]),
           range: getConf(self, [
             'pileup',

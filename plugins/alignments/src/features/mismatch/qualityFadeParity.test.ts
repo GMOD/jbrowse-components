@@ -37,7 +37,12 @@ function scaleOf(
 ): QualityOpacity {
   return qualityOpacityOf({
     field: 'baseQuality',
-    scale: { domain: domain.map(String), range: range.map(String), clamp },
+    scale: {
+      domainMin: domain[0]!,
+      domainMax: domain[1]!,
+      range: range.map(String),
+      clamp,
+    },
   })
 }
 
@@ -65,7 +70,7 @@ test('no field leaves every quality opaque', () => {
   expect(
     qualityOpacityOf({
       field: undefined,
-      scale: { domain: ['0', '30'], range: ['0', '1'], clamp: true },
+      scale: { domainMin: 0, domainMax: 30, range: ['0', '1'], clamp: true },
     }),
   ).toBe(OPAQUE_MISMATCHES)
 })
@@ -126,10 +131,15 @@ test('a flat range or an empty domain draws one opacity', () => {
   expect(fade(5, scaleOf([20, 20], [0, 1]))).toBeCloseTo(0.5, 6)
 })
 
-test('a domain or range that is not two numbers takes the default', () => {
+test('a domain end or range that is not a number takes the default', () => {
   const bad = qualityOpacityOf({
     field: 'baseQuality',
-    scale: { domain: ['x'], range: ['0', '1', '2'], clamp: true },
+    scale: {
+      domainMin: Number.NaN,
+      domainMax: 50,
+      range: ['0', '1', '2'],
+      clamp: true,
+    },
   })
   expect(bad).toEqual(DEFAULT_QUALITY_FADE)
 })

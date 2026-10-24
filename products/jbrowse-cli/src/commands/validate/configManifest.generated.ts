@@ -4553,9 +4553,12 @@ export const configManifest: ConfigManifest = {
                           "type": "PileupMismatchesOpacityScaleConfigurationSchema",
                           "subSlots": [
                             {
-                              "name": "domain",
-                              "type": "string[]",
-                              "liftsNumbers": true
+                              "name": "domainMin",
+                              "type": "number"
+                            },
+                            {
+                              "name": "domainMax",
+                              "type": "number"
                             },
                             {
                               "name": "range",
@@ -5731,9 +5734,12 @@ export const configManifest: ConfigManifest = {
                           "type": "PileupMismatchesOpacityScaleConfigurationSchema",
                           "subSlots": [
                             {
-                              "name": "domain",
-                              "type": "string[]",
-                              "liftsNumbers": true
+                              "name": "domainMin",
+                              "type": "number"
+                            },
+                            {
+                              "name": "domainMax",
+                              "type": "number"
                             },
                             {
                               "name": "range",

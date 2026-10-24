@@ -90,7 +90,7 @@ test('a written opacity scale fades a mismatch along its own domain and range', 
     pxPerBp: 2,
     mismatchOpacity: {
       field: 'baseQuality',
-      scale: { domain: [10, 30], range: [0.2, 1] },
+      scale: { domainMin: 10, domainMax: 30, range: [0.2, 1] },
     },
     mismatches: { fade: [1, 1, 1], quality: [0, 20, 40] },
   })

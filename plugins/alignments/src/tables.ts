@@ -1955,7 +1955,8 @@ export function alignmentMarkAlpha({
   const { zero, slope, min, max } = qualityOpacityOf({
     field: readConfObject(opacity, 'field'),
     scale: {
-      domain: readConfObject(opacity, ['scale', 'domain']),
+      domainMin: readConfObject(opacity, ['scale', 'domainMin']),
+      domainMax: readConfObject(opacity, ['scale', 'domainMax']),
       range: readConfObject(opacity, ['scale', 'range']),
       clamp: readConfObject(opacity, ['scale', 'clamp']),
     },

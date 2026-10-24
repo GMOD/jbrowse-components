@@ -7105,31 +7105,24 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "x-closed": true,
       "properties": {
-        "domain": {
-          "description": "the Phred qualities that take the first and the last opacity in range.",
-          "default": [
-            "0",
-            "50"
-          ],
+        "domainMin": {
+          "description": "the Phred quality that takes the first opacity in range.",
+          "default": 0,
           "if": {
             "type": "null"
           },
           "else": {
-            "anyOf": [
-              {
-                "type": "array",
-                "items": {
-                  "anyOf": [
-                    {
-                      "type": "string"
-                    },
-                    {
-                      "type": "number"
-                    }
-                  ]
-                }
-              }
-            ]
+            "type": "number"
+          }
+        },
+        "domainMax": {
+          "description": "the Phred quality that takes the last opacity in range.",
+          "default": 50,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
           }
         },
         "range": {

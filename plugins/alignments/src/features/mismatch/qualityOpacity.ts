@@ -29,7 +29,8 @@ export const OPAQUE_MISMATCHES: QualityOpacity = {
 export interface MismatchOpacitySetting {
   field: string | undefined
   scale: {
-    domain: readonly string[]
+    domainMin: number
+    domainMax: number
     range: readonly string[]
     clamp: boolean
   }
@@ -54,7 +55,10 @@ export function qualityOpacityOf({
   if (field !== 'baseQuality') {
     return OPAQUE_MISMATCHES
   }
-  const [d0, d1] = numberPair(scale.domain, QUALITY_OPACITY_DOMAIN)
+  const [d0, d1] = numberPair(
+    [scale.domainMin, scale.domainMax].map(String),
+    QUALITY_OPACITY_DOMAIN,
+  )
   const [r0, r1] = numberPair(scale.range, QUALITY_OPACITY_RANGE)
   const slope = (r1 - r0) / (d1 - d0)
   if (slope === 0 || !Number.isFinite(slope)) {
@@ -73,7 +77,8 @@ export function qualityOpacityOf({
 export const DEFAULT_QUALITY_FADE = qualityOpacityOf({
   field: 'baseQuality',
   scale: {
-    domain: QUALITY_OPACITY_DOMAIN.map(String),
+    domainMin: QUALITY_OPACITY_DOMAIN[0],
+    domainMax: QUALITY_OPACITY_DOMAIN[1],
     range: QUALITY_OPACITY_RANGE.map(String),
     clamp: true,
   },
