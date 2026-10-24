@@ -3021,7 +3021,8 @@
         "facetLayers",
         "layerTables",
         "matedBy",
-        "runTransforms"
+        "runTransforms",
+        "unreadStepFields"
       ],
       "worker": "real"
     },
@@ -3057,6 +3058,10 @@
         "predicatesOf",
         "replaceField",
         "testsSomething",
+        "unreadFieldNotice",
+        "unreadFields",
+        "unreadInEveryRegion",
+        "unreadRecordFields",
         "upperBoundOf",
         "withLowerBound",
         "withUpperBound"
