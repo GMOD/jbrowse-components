@@ -6398,6 +6398,15 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/CssColor"
           }
         },
+        "unknown": {
+          "description": "CSS color of a read whose value the ordinal domain leaves out; unset deals the next palette color, \\"\\" paints it as a read with no value.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/CssColor"
+          }
+        },
         "names": {
           "description": "key name for each value domain lists, in order, or with no domain for each of a preset field's levels in level order, a threshold scale's bins from the lowest; an empty or missing entry shows the value's name.",
           "if": {

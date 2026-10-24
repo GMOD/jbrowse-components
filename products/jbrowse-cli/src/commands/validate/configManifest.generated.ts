@@ -3976,6 +3976,10 @@ export const configManifest: ConfigManifest = {
                       "type": "(CssColor | undefined)"
                     },
                     {
+                      "name": "unknown",
+                      "type": "(CssColor | undefined)"
+                    },
+                    {
                       "name": "names",
                       "type": "string[]",
                       "liftsNumbers": true
@@ -5126,6 +5130,10 @@ export const configManifest: ConfigManifest = {
                     },
                     {
                       "name": "invalid",
+                      "type": "(CssColor | undefined)"
+                    },
+                    {
+                      "name": "unknown",
                       "type": "(CssColor | undefined)"
                     },
                     {

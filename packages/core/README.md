@@ -1411,9 +1411,10 @@ Two settings bags for one schema as one, `over` written after `under` the way
 `applyConfSettings` writes a bag: a namespace's object merges member by member
 at any depth, a bare value its shorthand lifts included, and a slot or a channel
 takes `over`'s value whole. Each side's retired spellings lift first, at every
-depth, so a bag's own retired name still beats the other's current one. For
-combining snapshots before any config node exists, as a track's
-`displayDefaults` folds into its `displays`.
+depth, so a bag's own retired name still beats the other's current one; `over`'s
+namespace members lift against `under` as their base, so they replace only the
+entries they name in a list `under` writes. For combining snapshots before any
+config node exists, as a track's `displayDefaults` folds into its `displays`.
 
 ```js
 import { mergeConfSettings } from '@jbrowse/core/configuration'
@@ -1696,8 +1697,9 @@ does; `whole` takes it for the whole plot, as the "Edit plot..." text is.
 
 What applying a draft writes: each setting whose lifted value differs from the
 plot, as the lifted value, and `null` for one it resets. A value spelled another
-way but lifting to the same setting writes nothing. Under `whole`, a setting the
-draft leaves out writes its reset. Throws a refusal before anything is written.
+way but lifting to the same setting writes nothing, and a retired spelling
+writes the settings it lifts into. Under `whole`, a setting the draft leaves out
+writes its reset. Throws a refusal before anything is written.
 
 ```js
 import { plotWrites } from '@jbrowse/core/configuration'
