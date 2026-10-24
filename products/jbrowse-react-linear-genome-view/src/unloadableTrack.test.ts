@@ -50,7 +50,7 @@ test.each(['session', 'defaultSession'] as const)(
   'a track whose config cannot load costs that track, through %s',
   async key => {
     const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
-    const state = await createViewStateAsync({
+    const { session } = await createViewStateAsync({
       assembly,
       tracks: [track('good'), track('bad', { heightMode: 'shrink' })],
       location: 'ctgA:1-10',
@@ -63,7 +63,6 @@ test.each(['session', 'defaultSession'] as const)(
         },
       },
     })
-    const { session } = state
     expect(
       session.view.tracks.map(
         (t: { configuration: { trackId: string } }) => t.configuration.trackId,
