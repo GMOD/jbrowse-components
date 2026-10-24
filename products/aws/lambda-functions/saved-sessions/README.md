@@ -26,3 +26,8 @@ aws lambda update-function-code --region us-east-1 \
 ```
 
 `read-session-jbrowse` goes up the same way, without `multipart.js`.
+
+- Updating the code and the runtime is two calls, and either alone breaks the
+  function until the other lands, so run them back to back.
+- **Never scan `JB2_saved_sessions`.** Its read capacity is provisioned low, so
+  a scan throttles and takes capacity from live loads. Find a row by its id.
