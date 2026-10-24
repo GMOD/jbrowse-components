@@ -1,5 +1,6 @@
 import { categoricalColorScale } from '@jbrowse/core/ui/colors'
 import { tagColorPalette } from '@jbrowse/core/ui/palette'
+import { NO_CATEGORY_COLOR } from '@jbrowse/core/util/color'
 import {
   buildColorRampLut,
   colorRampStops,
@@ -151,8 +152,8 @@ function withoutNoValue(
  * in `domain` names a read with no value, which the category table colors
  * (`declaredReadCategoryColors`), so it and its `range` entry leave the list.
  * A set `scale.unknown` paints every value `domain` leaves out, as d3's
- * `ordinal.unknown` does, and `''` there files them with the reads that have
- * no value.
+ * `ordinal.unknown` does, and `''` there paints them the no-value grey the
+ * feature displays use.
  * A linear or threshold scale reads a tag, an attribute or MAPQ, and waits
  * unread beside a mate reference, whose values are sequence names.
  */
@@ -181,7 +182,9 @@ export function bakedColorScale(
     scaled?.scale === 'ordinal'
       ? withoutNoValue(scaled.domain?.map(String) ?? [], scaled.range)
       : { domain: [], range: undefined }
-  const unknown = scaled?.scale === 'ordinal' ? scaled.unknown : undefined
+  const written = scaled?.scale === 'ordinal' ? scaled.unknown : undefined
+  const unknown =
+    written === undefined ? undefined : written || NO_CATEGORY_COLOR
   if (domain.length > 0 || range?.length || unknown !== undefined) {
     const color = categoricalColorScale(domain, range ?? tagColorPalette)
     const listed = new Set(domain)
@@ -193,8 +196,7 @@ export function bakedColorScale(
         ? { color }
         : {
             unknown,
-            color: value =>
-              listed.has(value) ? color(value) : unknown || undefined,
+            color: value => (listed.has(value) ? color(value) : unknown),
           }),
     }
   }

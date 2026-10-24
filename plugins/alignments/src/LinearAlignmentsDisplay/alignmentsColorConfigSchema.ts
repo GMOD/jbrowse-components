@@ -131,15 +131,17 @@ export const alignmentsColorConfigSchema = ConfigurationSchema(
         },
         /**
          * #slot unknown
-         * The fill of a read whose value an ordinal `domain` leaves out, d3's
-         * `ordinal.unknown`: `unknown: "#999"` beside `domain: ["1", "2"]` on
-         * `tags.HP` paints every other haplotype grey, and the key lists them
-         * as one row, Other.
+         * The fill of a read whose tag, attribute, mate reference or MAPQ an
+         * ordinal `domain` leaves out, d3's `ordinal.unknown`:
+         * `unknown: "#999"` beside `domain: ["1", "2"]` on `tags.HP` paints
+         * every other haplotype grey, and the key lists them as one row,
+         * Other. A field with fixed levels, such as strand, has no value
+         * outside them.
          */
         unknown: {
           ...colorUnknownSlot.unknown,
           description:
-            'CSS color of a read whose value the ordinal domain leaves out; unset deals the next palette color, "" paints it as a read with no value',
+            'CSS color of a read whose tag, attribute, mate reference or MAPQ the ordinal domain leaves out, keyed as one row, Other; unset deals the next palette color, "" the no-value grey',
         },
         /**
          * #slot names

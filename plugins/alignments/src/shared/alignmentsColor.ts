@@ -349,12 +349,19 @@ function levelNotices(encoding: AlignmentsColorEncoding): string[] {
         ]
       : []
   }
-  return Array.from(encoding.domain ?? [], String)
-    .filter(value => !levels.includes(value))
-    .map(
-      value =>
-        `encoding.color.scale.domain: "${value}" names no level of ${encoding.field}, whose levels are ${named}`,
-    )
+  return [
+    ...Array.from(encoding.domain ?? [], String)
+      .filter(value => !levels.includes(value))
+      .map(
+        value =>
+          `encoding.color.scale.domain: "${value}" names no level of ${encoding.field}, whose levels are ${named}`,
+      ),
+    ...(encoding.unknown === undefined
+      ? []
+      : [
+          `encoding.color.scale.unknown: ${encoding.field} has no value outside its levels (${named}); scale.range recolors a level`,
+        ]),
+  ]
 }
 
 function declaredOrder(
