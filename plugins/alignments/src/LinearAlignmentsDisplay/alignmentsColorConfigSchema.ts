@@ -12,7 +12,6 @@ import {
   colorScaleOptions,
   colorScaleTypeSlot,
   colorTitleSlot,
-  colorUnknownSlot,
 } from '@jbrowse/display-kit/colorConfigSchema'
 
 import {
@@ -139,7 +138,7 @@ export const alignmentsColorConfigSchema = ConfigurationSchema(
          * outside them.
          */
         unknown: {
-          ...colorUnknownSlot.unknown,
+          type: 'maybeColor',
           description:
             'CSS color of a read whose tag, attribute, mate reference or MAPQ the ordinal domain leaves out, keyed as one row, Other; unset deals the next palette color, "" the no-value grey',
         },
