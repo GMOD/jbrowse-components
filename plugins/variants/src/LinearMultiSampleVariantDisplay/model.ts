@@ -1499,12 +1499,17 @@ export function stateModelFactory(
         // The unit decides what a row is called, so everything naming rows
         // goes stale together, whichever write moved it: the menu, Edit plot,
         // a share link or an agent. Not a reaction, which an undo's
-        // applySnapshot would fire mid-restore.
-        function resettingRowsOnUnitChange<T>(write: () => T) {
+        // applySnapshot would fire mid-restore. `restate` writes again what
+        // the write said of the rows, which names them at the new unit.
+        function resettingRowsOnUnitChange<T>(
+          write: () => T,
+          restate?: () => void,
+        ) {
           const before = self.unit
           const result = write()
           if (self.unit !== before) {
             self.resetRowArrangement()
+            restate?.()
           }
           return result
         }
@@ -1530,13 +1535,22 @@ export function stateModelFactory(
           /**
            * #action
            * `BaseDisplay`'s, resetting the row arrangement when it moves
-           * `unit`.
+           * `unit`, and then writing the `rows` and `rowColor` the settings
+           * state, which name the rows at the new unit.
            */
           applyDisplaySettings(
-            ...args: Parameters<typeof superApplyDisplaySettings>
+            settings: Record<string, unknown>,
+            options?: { allowSetters?: boolean },
           ) {
-            return resettingRowsOnUnitChange(() =>
-              superApplyDisplaySettings(...args),
+            const { rows, rowColor } = settings
+            return resettingRowsOnUnitChange(
+              () => superApplyDisplaySettings(settings, options),
+              () => {
+                superApplyDisplaySettings({
+                  ...(rows === undefined ? {} : { rows }),
+                  ...(rowColor === undefined ? {} : { rowColor }),
+                })
+              },
             )
           },
         }

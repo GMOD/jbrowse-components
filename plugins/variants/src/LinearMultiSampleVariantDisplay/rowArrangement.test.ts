@@ -355,6 +355,38 @@ describe('a rendering-mode switch renames the rows', () => {
     expect(display.rowTree).toBeUndefined()
   })
 
+  // A session spec's track entry writes `unit` and `rows` in one bag; the
+  // trio figures' haplotype labels came through this way.
+  it('keeps the rows a settings bag states beside the unit it moves', () => {
+    const display = clusteredDisplay()
+    display.setRowFocus(['S2', 'S0'])
+
+    display.applyDisplaySettings({
+      unit: 'haplotype',
+      rows: {
+        sort: ['S1 HP1', 'S0 HP0'],
+        labels: { 'S1 HP1': 'One hap2', 'S0 HP0': 'Zero hap1' },
+      },
+      rowColor: {
+        field: 'name',
+        scale: { domain: ['S1 HP1'], range: ['#123456'] },
+      },
+    })
+    display.setCellData({
+      samplePloidy: { S0: 2, S1: 2, S2: 2 },
+    } as unknown as Parameters<typeof display.setCellData>[0])
+
+    expect(display.rowFocus).toBeUndefined()
+    expect(display.rowTree).toBeUndefined()
+    expect(
+      display.sources.slice(0, 3).map(s => [s.name, s.label, s.rowColor]),
+    ).toEqual([
+      ['S1 HP1', 'One hap2', '#123456'],
+      ['S0 HP0', 'Zero hap1', undefined],
+      ['S0 HP1', undefined, undefined],
+    ])
+  })
+
   // The coloring is resolved on the read, so the renamed rows arrive already
   // tinted.
   it('keeps the configured coloring on the renamed rows', () => {
