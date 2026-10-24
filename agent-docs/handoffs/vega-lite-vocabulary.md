@@ -49,6 +49,39 @@ Git history has each landing.
 Layout, the multi-way leftovers and settings with no step are in
 [ideas/waiting-on-a-call/vega-lite-layout-and-multiway-leftovers.md](../ideas/waiting-on-a-call/vega-lite-layout-and-multiway-leftovers.md).
 
+## Open from the 2026-10-24 pressure test
+
+Landed on main: predicate missing-value rule, whole-list filter counts,
+`range`, emptied entries dropped, opacity `domainMin`/`domainMax`, synteny
+`reference` filter and unread-field warnings, config-doc row paths,
+`x2.refName`, VcfFeature site fields, matrix `reverse` by name, Edit plot
+filter defaults, type checking in every product, threshold ramp fill,
+`span` → `rect`. Still open, each needing no further call:
+
+- **ggjbrowse:** re-pin the engine and respell `R/wiggle.R`,
+  `tests/testthat/test-wiggle.R`, `scripts/gallery.R` and `docs/gallery.md`
+  from `span` to `rect`; add `names` to `ARRAY_SLOTS` (`R/alignments.R`),
+  whose absence sends a one-value `scale.names` as a scalar.
+- **Hosted demo:** `demos/circular_synteny_chimp/config.json` respells
+  `rect`; deploy it with `scripts/deploy-demo.sh`.
+- **jb2hubs:** a gate running the oldest supported release's
+  `jbrowse validate` over generated configs, since a host now fails a track
+  on a value it does not know (ADR-120 amendment).
+- **Unread filter field on the other displays:** synteny warns; canvas, mark
+  and multi-sample variants do not. Report only when a filter emptied a
+  non-empty region (no per-record cost).
+- **`jbrowse validate` misses what the runtime flags:** a CSS color where
+  `encoding.color` takes a field, and alignments filter fields and operators.
+  Reuse the runtime rules through `scripts/generateMarkRules.ts`'s copy seam.
+- **A cross-display conformance test** (one spec table through every
+  display's color and predicate resolver, exceptions named and shrinking).
+- **`encoding.y.scale.reverse`** for minus-strand bigWigs (v4 `inverted`);
+  shaders, Canvas2D twins, axis and band compare change, about 2-3 days.
+- **`scale.scheme` on an ordinal scale** samples the ramp per domain value.
+- **Four config-doc Type cells** print factory source
+  (`markListSchema(...)`, `types.array(aggregateOpSchema)`); the generator
+  cannot follow a factory across files.
+
 ## Writers to update after each landing
 
 - **Lifts to drop once hosted configs regenerate:** display-kit's
