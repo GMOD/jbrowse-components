@@ -219,6 +219,27 @@ describe('featureData', () => {
     expect(types).toEqual(['block', 'block', 'block'])
   })
 
+  it('skips the heuristic for a BED whose header names protein columns', () => {
+    const names = [
+      ...['chrom', 'chromStart', 'chromEnd', 'name', 'score', 'strand'],
+      ...['thickStart', 'thickEnd', 'itemRgb', 'blockCount', 'blockSizes'],
+      ...['chromStarts', 'transcript', 'proteinStart', 'proteinEnd'],
+    ]
+    const input = makeTranscriptLikeInput()
+    const result = featureData({
+      ...input,
+      ...withNames(names),
+      splitLine: [...input.splitLine, 'rna-1', '10', '240'],
+    })
+    expect(result.type).toBeUndefined()
+    expect(result.subfeatures?.map(s => s.type)).toEqual([
+      'block',
+      'block',
+      'block',
+    ])
+    expect(result.proteinStart).toBe('10')
+  })
+
   // These tests guarantee that extra fields like geneName2 (used as aggregateField in
   // BigBedAdapter) survive featureData through every code path. Before the refactor,
   // BigBedAdapter extracted the aggregateField from a separate parser.parseLine call;

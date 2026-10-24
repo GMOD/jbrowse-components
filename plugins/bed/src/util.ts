@@ -208,6 +208,12 @@ const REPEAT_OWN = new Set([
   'thickEnd',
 ])
 
+// The columns `jbrowse make-protein-features` writes: each stranded BED12 row
+// is a protein feature's genome blocks, which no gene glyph should draw
+function namesProteinFeatures(names: string[] | undefined) {
+  return !!names?.includes('proteinStart') && names.includes('proteinEnd')
+}
+
 export function featureData({
   splitLine,
   refName,
@@ -296,6 +302,7 @@ export function featureData({
   }
   if (
     !disableGeneHeuristic &&
+    !namesProteinFeatures(names) &&
     subfeatures &&
     isUcscTranscript(transcriptCheck)
   ) {
