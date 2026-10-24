@@ -200,7 +200,7 @@ test('Identity fade reads opacity from identity and back', async () => {
   expect(view.opacityField).toBe('identity')
   expect(isTicked('Identity fade')).toBe(true)
   fireEvent.click(checkboxRow('Identity fade'))
-  expect(view.opacityField).toBe('')
+  expect(view.opacityField).toBeUndefined()
 }, 20000)
 
 // Asserted in both polarities, since a row rendering its glyph from a constant

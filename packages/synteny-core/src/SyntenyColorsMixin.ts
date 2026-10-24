@@ -93,12 +93,12 @@ export function SyntenyColorsMixin({
         },
         /**
          * #getter
-         * The field `encoding.opacity` fades by, `''` while it draws its
-         * constant.
+         * The field `encoding.opacity` fades by, undefined while it draws
+         * its constant.
          */
-        get opacityField() {
+        get opacityField(): string | undefined {
           const setting = this.opacitySetting
-          return opacityMapsField(setting) ? setting.field! : ''
+          return opacityMapsField(setting) ? setting.field : undefined
         },
         /**
          * #method
@@ -159,14 +159,14 @@ export function SyntenyColorsMixin({
       /**
        * #action
        * Fade by `field` from the current opacity down to 0.3 of it, or with
-       * `''` draw every alignment at the opacity the fade reached.
+       * undefined draw every alignment at the opacity the fade reached.
        */
-      setOpacityField(field: string) {
+      setOpacityField(field: string | undefined) {
         const level = self.opacityLevel
         setConf(
           self.encoding,
           'opacity',
-          field
+          field !== undefined
             ? {
                 field,
                 scale: {

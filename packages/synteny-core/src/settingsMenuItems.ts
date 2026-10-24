@@ -50,14 +50,14 @@ export function opacityMenuItem(model: {
  * read from `identity`, or back to the constant.
  */
 export function identityFadeMenuItem(model: {
-  opacityField: string
-  setOpacityField: (field: string) => void
+  opacityField: string | undefined
+  setOpacityField: (field: string | undefined) => void
 }): MenuItem {
   return toggleItem(
     'Identity fade',
     model.opacityField === 'identity',
     v => {
-      model.setOpacityField(v ? 'identity' : '')
+      model.setOpacityField(v ? 'identity' : undefined)
     },
     {
       helpText:

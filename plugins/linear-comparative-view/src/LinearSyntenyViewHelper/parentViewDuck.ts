@@ -64,7 +64,7 @@ export interface ParentViewDuck extends FollowAnchorHost {
   // carrying its own.
   opacityLevel: number
   opacityFade: SyntenyOpacitySnapshot | undefined
-  opacityField: string
+  opacityField: string | undefined
   fadeThinAlignments: boolean
   cigarMode: CigarMode
   interpolate: RibbonInterpolation

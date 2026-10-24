@@ -58,12 +58,12 @@ test('the identity fade runs from the current opacity, and back', () => {
     expect.closeTo(0.12),
     expect.closeTo(0.4),
   ])
-  v.setOpacityField('')
-  expect(v.opacityField).toBe('')
+  v.setOpacityField(undefined)
+  expect(v.opacityField).toBeUndefined()
   expect(v.opacityLevel).toBeCloseTo(0.4)
   v.setOpacity(0.2)
   v.setOpacityField('identity')
-  v.setOpacityField('')
+  v.setOpacityField(undefined)
   expect(opacityOf(v)).toBeUndefined()
 })
 

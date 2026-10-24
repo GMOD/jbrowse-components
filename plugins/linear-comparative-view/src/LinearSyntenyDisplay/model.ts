@@ -368,7 +368,7 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
               instanceData,
               featureData,
               this.view.predicates.length > 0 ||
-                this.view.opacityField !== '' ||
+                this.view.opacityField !== undefined ||
                 self.hiddenFeatureIds.length > 0
                 ? this.computedColors
                 : undefined,
