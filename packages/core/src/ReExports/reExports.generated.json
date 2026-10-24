@@ -4486,7 +4486,8 @@
       "names": [
         "fieldPredicateArray",
         "fieldPredicateConfigSchema",
-        "fieldPredicateList"
+        "fieldPredicateList",
+        "predicateListDefaults"
       ],
       "worker": "real"
     },

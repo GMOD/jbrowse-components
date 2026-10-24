@@ -434,7 +434,7 @@ const names: Record<string, string[]> = {
   '@jbrowse/display-kit/fetchEachRegion': ['callEachRegion', 'fetchAllRegions', 'fetchEachRegion', 'fetchRegionsBatched'],
   '@jbrowse/display-kit/fetchInputs': ['makeFetchInputs', 'makeSettingsFetchInputs', 'snapshotInputs'],
   '@jbrowse/display-kit/FetchMixin': ['default', 'fetchMixinLifecycle', 'makeFetchContext'],
-  '@jbrowse/display-kit/fieldPredicateConfigSchema': ['fieldPredicateArray', 'fieldPredicateConfigSchema', 'fieldPredicateList'],
+  '@jbrowse/display-kit/fieldPredicateConfigSchema': ['fieldPredicateArray', 'fieldPredicateConfigSchema', 'fieldPredicateList', 'predicateListDefaults'],
   '@jbrowse/display-kit/floatingLabelHost': ['isFloatingLabelHost', 'isNamedFeatureHost'],
   '@jbrowse/display-kit/foundationDisplayPhase': ['foundationDisplayPhase'],
   '@jbrowse/display-kit/foundationPaintInert': ['foundationPaintInert'],
