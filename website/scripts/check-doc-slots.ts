@@ -1,11 +1,10 @@
 // Validates the config slots a hand-written doc names against the schemas those
 // slots actually come from.
 //
-// The gap this closes: NOTHING else catches a stale slot value. MST does not.
-// Creating a JBrowse config with a slot value the enum does not list, or with a
-// slot that no longer exists at all, throws nothing, warns nothing, and round-trips through
-// `jbrowse add-track` clean — the object is stored verbatim and only quietly
-// ignored once a display is instantiated in a browser. So `check-config-blocks`
+// The gap this closes: nothing checks a doc's config against the schema. A
+// slot that no longer exists loads with one console line, a value the enum does
+// not list fails the load only where MST type checking is on (jbrowse-web), and
+// both round-trip through `jbrowse add-track` clean. So `check-config-blocks`
 // (shape) and `check-config-cli` (CLI round-trip) both pass on a config that
 // cannot work, which is how a retired `showLabels` value once sat in the
 // cookbook.
