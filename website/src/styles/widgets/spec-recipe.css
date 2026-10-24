@@ -215,4 +215,18 @@
     font-size: 0.8rem;
     line-height: 1.5;
   }
+  /* The agent prompt is prose a reader edits, so its first line has to show */
+  .spec-prompt pre,
+  .spec-prompt code {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+  .spec-more {
+    margin: 1rem 0;
+  }
+  .spec-more summary {
+    cursor: pointer;
+    color: var(--color-accent);
+    font-weight: 600;
+  }
 }

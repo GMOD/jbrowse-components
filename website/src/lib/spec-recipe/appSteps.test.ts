@@ -17,7 +17,7 @@ const recipe = buildRecipe(
 )!
 
 test('one genome step covers Desktop and Web', () => {
-  expect(recipe.steps[0]?.title).toContain('JBrowse Desktop start screen')
+  expect(recipe.steps[0]?.title).toContain('JBrowse Desktop')
   expect(recipe.steps[0]?.title).toContain('`jbrowse add-assembly`')
 })
 
@@ -39,7 +39,7 @@ test('the dialog opens the view first, then the tabs that rebuild it', () => {
   expect(desktop).toBeGreaterThan(web)
   expect(tabs).toBeGreaterThan(desktop)
   expect(html).not.toContain('class="spec-open"')
-  expect(recipeDialogHtml(recipe, 'd', true)).toContain('takes a while')
+  expect(recipeDialogHtml(recipe, 'd', true)).toContain('slow to open')
 })
 
 test('several views share one dialog, starting on the view the figure shows', () => {

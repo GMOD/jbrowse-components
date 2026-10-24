@@ -104,7 +104,7 @@ function trackLine(
 // Everything an agent needs to start from the view, so the reader writes only
 // what they want done with it: the same view of their own files, its settings
 // in their config.json, the view in their open app, or a figure like it.
-export function agentBrief(decoded: DecodedSpec, liveUrl: string): string {
+export function agentBrief(decoded: DecodedSpec): string {
   const byId = new Map(
     viewTrackEntries(decoded.spec.views).map(e => [specTrackId(e.entry), e]),
   )
@@ -112,14 +112,13 @@ export function agentBrief(decoded: DecodedSpec, liveUrl: string): string {
     trackLine(decoded, entry, viewType),
   )
   return [
-    'My goal: [the same view of my own files / its track settings in my config.json / this view in my open JBrowse / a figure like it at other loci]',
+    'My goal: [write yours, e.g. this view of my own files, or these track settings in my config.json]',
     '',
-    'Start from this view in the JBrowse docs.',
-    `- Live: ${liveUrl}`,
+    'Start from this JBrowse view.',
     `- Config it loads: ${new URL(decoded.config, decoded.base).href}`,
     ...(tracks.length ? ['- Tracks:', ...tracks.map(t => `  ${t}`)] : []),
     '',
-    `${DOCS}agents_authoring/ says how to write and check a config, and ${DOCS}agents/ how to drive a JBrowse that is running. Load the jbrowse-authoring, jbrowse-hosted-data and jbrowse-capture skills if you have them. Validate any config you write with \`npx @jbrowse/cli validate\`, then render the result and look at it: a config that loads is not yet a track that drew.`,
+    `Docs: ${DOCS}agents_authoring/ (writing a config), ${DOCS}agents/ (driving a running JBrowse). Use the jbrowse-authoring, jbrowse-hosted-data and jbrowse-capture skills if you have them. Check any config with \`npx @jbrowse/cli validate\`, then render it and look: a config that loads is not yet a track that drew.`,
     '',
     'The session spec that draws the view:',
     JSON.stringify(decoded.spec, null, 2),

@@ -70,14 +70,17 @@ function withSettings(
     : undefined
 }
 
-// A track the reader can point at a file of their own with one `uri`: not one
-// stitched from several adapters, and not an assembly's sequence, which lives
-// on the assembly rather than in `tracks`.
-function takesOneFile({ type, adapterType }: TrackInfo) {
-  return (
-    type !== 'ReferenceSequenceTrack' &&
-    !!configManifest.adapters[adapterType]?.shorthandKeys?.includes('uri')
-  )
+// The adapter a reader fills in with their own files: one `uri`, or a
+// BigWig per row of a multi-wiggle. A sequence track gets none, since its file
+// belongs to the assembly.
+function ownAdapter({ type, adapterType }: TrackInfo) {
+  return type === 'ReferenceSequenceTrack'
+    ? undefined
+    : adapterType === 'MultiWiggleAdapter'
+      ? { type: adapterType, bigWigs: [`${OWN_FILE}_1`, `${OWN_FILE}_2`] }
+      : configManifest.adapters[adapterType]?.shorthandKeys?.includes('uri')
+        ? { type: adapterType, uri: OWN_FILE }
+        : undefined
 }
 
 function viewAssemblies(views: SpecView[] = []): string[] {
@@ -111,15 +114,16 @@ export function configTracks({ config, spec }: DecodedSpec): RawTrack[] {
     }
     const assemblyNames =
       info.assemblyNames ?? (assemblies.length === 1 ? assemblies : undefined)
+    const adapter = ownAdapter(info)
     const base: RawTrack | undefined =
       tracks.get(info.trackId) ??
-      (assemblyNames && takesOneFile(info)
+      (assemblyNames && adapter
         ? {
             type: info.type,
             trackId: info.trackId,
             name: info.name,
             assemblyNames,
-            adapter: { type: info.adapterType, uri: OWN_FILE },
+            adapter,
           }
         : undefined)
     const styled =

@@ -31,6 +31,14 @@ test("a config track's slots become the defaults of a track on the reader's file
   })
 })
 
+test('a multi-wiggle takes one BigWig of the reader\'s per row', () => {
+  const [track] = tracksOf(lgv([{ trackId: 'volvox_microarray_multi', height: 200 }]))
+  expect(track?.adapter).toEqual({
+    type: 'MultiWiggleAdapter',
+    bigWigs: [`${OWN_FILE}_1`, `${OWN_FILE}_2`],
+  })
+})
+
 test('a track the spec only names carries nothing to a config', () => {
   expect(tracksOf(lgv(['volvox_cram', { trackId: 'volvox_cram' }]))).toEqual(
     [],
@@ -72,7 +80,7 @@ test("a session track keeps its own config and takes the spec's settings", () =>
 
 test("the brief leaves the goal to the reader and names the view's tracks", () => {
   const spec = lgv([{ trackId: 'volvox_cram', height: 300 }])
-  const brief = agentBrief({ base, config, spec }, `${base}?config=${config}`)
+  const brief = agentBrief({ base, config, spec })
   const lines = brief.split('\n')
   expect(lines[0]).toMatch(/^My goal: \[/)
   expect(brief).toContain(`Config it loads: ${base}${config}`)

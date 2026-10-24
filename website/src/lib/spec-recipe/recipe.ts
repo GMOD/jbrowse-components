@@ -214,9 +214,9 @@ interface BandContext {
 // belongs somewhere else — a second pane, a row of a synteny view — is added
 // from that view's own track selector, which is the app's own advice.
 const OPEN_TRACK =
-  'Add a track: check one your config has in the track selector, or **File → Open track...** to paste a URL or choose a local file.'
+  'Add your track: **File → Open track...**, or check it in the track selector.'
 const ADD_TRACK =
-  "Add a track: open this view's track selector and check one your config has, or click **+** and choose **Add track** to paste a URL or choose a local file."
+  "Add your track: **+** → **Add track** in this view's track selector, or check it there."
 
 const NEXT_TRACK = 'Add the next track the same way.'
 
@@ -227,11 +227,11 @@ function addTrackTitle(
   viaTrackSelector: boolean | undefined,
   repeat: boolean | undefined,
 ) {
-  const needs = kind ? ` This one needs ${kind}.` : ''
+  const needs = kind ? ` Needs ${kind}.` : ''
   return info?.type === 'ReferenceSequenceTrack'
-    ? `Show the genome's sequence: open the track selector and check **${info.name}**.`
+    ? `Show the sequence: check **${info.name}** in the track selector.`
     : band
-      ? `Point the import form at your own file: ${band.form.band}, choose **New track**, and paste a URL or pick a local file.${needs}`
+      ? `Add your file: ${band.form.band} and choose **New track**.${needs}`
       : `${repeat ? NEXT_TRACK : viaTrackSelector ? ADD_TRACK : OPEN_TRACK}${needs}`
 }
 
@@ -298,7 +298,7 @@ function importFormSteps(
   if (assemblies.length) {
     steps.push({
       title:
-        'Open your genomes: on the JBrowse Desktop start screen click **Open new genome** (or **Show all available genomes** to pick a hosted one), then **File → Open genome...** for each of the rest. For JBrowse Web, run `jbrowse add-assembly` once for each to put them in your `config.json`.',
+        'Open your genomes: **Open new genome** in JBrowse Desktop, then **File → Open genome...** for each of the rest, or `jbrowse add-assembly` for each in JBrowse Web.',
       example: form.assemblies(assemblies),
     })
   }
@@ -328,7 +328,7 @@ function importFormSteps(
       index === 0
         ? {
             ...step,
-            note: `A synteny track the session already has is quicker: pick it under **Quick start**, which fills in ${form.rowsControl} itself.`,
+            note: `Or pick a synteny track you already have under **Quick start**, which fills in ${form.rowsControl}.`,
           }
         : step,
     )
@@ -427,7 +427,7 @@ function viewSteps(
     const kind = assembly ? fileKind(assembly.adapterType) : undefined
     steps.push({
       title:
-        'Open your genome: on the JBrowse Desktop start screen click **Open new genome** (or **Show all available genomes** to pick a hosted one). For JBrowse Web, `jbrowse add-assembly` puts it in your `config.json`.',
+        'Open your genome: **Open new genome** in JBrowse Desktop, or `jbrowse add-assembly` for JBrowse Web.',
       example: `This figure uses ${view.assembly}${kind ? `, loaded from ${kind}` : ''}.`,
     })
   }
@@ -449,7 +449,7 @@ function viewSteps(
         viaTrackSelector,
         explained,
       )
-      explained ||= step.title.startsWith('Add a track')
+      explained ||= step.title.startsWith('Add your track')
       steps.push(step)
       unmapped.push(...trackUnmapped)
     }
@@ -457,8 +457,7 @@ function viewSteps(
 
   if (view.loc) {
     steps.push({
-      title:
-        'Type your region of interest into the location box and press Enter.',
+      title: 'Go to your region in the location box.',
       example: `This figure is at ${view.loc}.`,
     })
   }
@@ -596,7 +595,7 @@ export function buildRecipe(
     steps,
     python: plugin ? undefined : pythonSnippet(configUrl, spec),
     agent: {
-      brief: agentBrief(decoded, liveUrl),
+      brief: agentBrief(decoded),
       frames: [captureFrame(decoded, figureName)],
       notes: [],
     },

@@ -87,7 +87,7 @@ test("a reference sequence track is checked in the selector, not added", () => {
     ],
   })
   expect(recipe.steps.map(s => s.title)).toContain(
-    "Show the genome's sequence: open the track selector and check **Reference sequence (volvox)**.",
+    'Show the sequence: check **Reference sequence (volvox)** in the track selector.',
   )
 })
 

@@ -124,6 +124,10 @@ const HAS_THUMB = new Set(
   description="Step-by-step, data-driven walkthroughs of common JBrowse workflows."
 >
   <p class="lead">Hands-on walkthroughs of common JBrowse workflows</p>
+  <p>
+    Each figure's <strong>Open or rebuild this view</strong> button opens it in
+    JBrowse, or rebuilds it on your own data.
+  </p>
   {grouped.map(group => (
     <section class="tut-section">
       <h2 class="tut-heading" id={slug(group.category)}>

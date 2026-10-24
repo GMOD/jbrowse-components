@@ -55,13 +55,11 @@ function renderStep(step: RecipeStep): string {
 
 function ownDataSteps(steps: RecipeStep[], unmapped: string[]): string {
   return [
-    note(
-      '<strong>From scratch with your own data</strong>, the steps behind the figure:',
-    ),
+    note('<strong>From scratch</strong>:'),
     `<ol class="spec-steps">${steps.map(renderStep).join('')}</ol>`,
     unmapped.length
       ? note(
-          'Some settings have no written step yet — see the <strong>Spec</strong> tab.',
+          'Some settings have no step yet: see <strong>Session</strong>.',
         )
       : '',
   ].join('')
@@ -95,7 +93,7 @@ interface Panel {
 // assemblies here is the difference between that and a config that works.
 function assembliesNote(assemblies: string[]): string {
   return assemblies.length
-    ? ` The config needs ${assemblies.map(name => `<code>${escapeAttr(name)}</code>`).join(', ')} already — <a href="/docs/cli/#jbrowse-add-assembly"><code>jbrowse add-assembly</code></a> adds yours.`
+    ? ` Needs ${assemblies.map(name => `<code>${escapeAttr(name)}</code>`).join(', ')} in the config (<a href="/docs/cli/#jbrowse-add-assembly"><code>jbrowse add-assembly</code></a>).`
     : ''
 }
 
@@ -113,11 +111,12 @@ function panels(recipe: Recipe, id: string, inlineOpens = false): Panel[] {
           ? `<div class="spec-open"><a href="${escapeAttr(recipe.liveUrl)}" target="_blank" rel="noopener">Open this view in JBrowse Web ↗</a> · ${desktopLink(recipe, id, 'Open this view in JBrowse Desktop ↗')}</div>`
           : '',
         note(
-          'The short route: open the view in JBrowse Web, where <strong>File → Open track...</strong> adds your own files beside its hosted genome and tracks.',
+          '<strong>Quickest</strong>: open the view, then <strong>File → Open track...</strong> for your files.',
         ),
         ownDataSteps(recipe.steps, recipe.unmapped),
       ].join(''),
     },
+    agentPanel(recipe.agent),
     ...(recipe.cli
       ? [
           {
@@ -125,26 +124,16 @@ function panels(recipe: Recipe, id: string, inlineOpens = false): Panel[] {
             kind: 'cli',
             body: [
               note(
-                'The <a href="/docs/cli/">jbrowse CLI</a> writes the figure\'s tracks into a <code>config.json</code>, each carrying the figure\'s display settings as its <a href="/docs/config_guides/tracks/#configuring-displays">defaults</a>, so every session that opens the config draws them this way: <a href="/docs/cli/#jbrowse-add-track"><code>add-track</code></a> where flags cover the whole track, <a href="/docs/cli/#jbrowse-add-track-json"><code>add-track-json</code></a> where they do not.',
+                `Adds these tracks to your <code>config.json</code>, <a href="/docs/config_guides/tracks/#configuring-displays">styled</a> as in the figure. Point each <code>uri</code> at your file${recipe.cli.commands.includes(OWN_FILE) ? ` (replace <code>${OWN_FILE}</code>)` : ''}.`,
               ),
               copyableBlock(recipe.cli.commands, 'spec-json'),
               note(
-                `Run these where the <code>config.json</code> is, or add <code>--out &lt;dir&gt;</code>, and point each <code>uri</code> at your own file, <code>${OWN_FILE}</code> where the figure's file is a hosted one.${assembliesNote(recipe.cli.assemblies)} The location, which tracks are open, and settings no config slot holds are session state: the <strong>Spec</strong> tab, or <a href="/docs/cli/#jbrowse-set-default-session"><code>jbrowse set-default-session</code></a>.`,
+                `Run beside <code>config.json</code>, or add <code>--out &lt;dir&gt;</code>.${assembliesNote(recipe.cli.assemblies)}`,
               ),
             ].join(''),
           },
         ]
       : []),
-    {
-      label: 'Spec',
-      kind: 'spec',
-      body: [
-        note(
-          `This <a href="/docs/urlparams/#session-spec">session spec</a> draws the figure. It goes after <code>&amp;session=spec-</code> on a JBrowse Web link that loads <a href="${escapeAttr(recipe.configUrl)}">${escapeAttr(recipe.configUrl)}</a>, which is what the Web button above opens.`,
-        ),
-        copyableBlock(recipe.specJson, 'spec-json'),
-      ].join(''),
-    },
     ...(recipe.python
       ? [
           {
@@ -152,7 +141,7 @@ function panels(recipe: Recipe, id: string, inlineOpens = false): Panel[] {
             kind: 'notebook',
             body: [
               note(
-                'The same view with <a href="/docs/jbrowse_anywidget/">jbrowse-anywidget</a>, from the config the figure loads. Swap a track\'s <code>uri</code> for your own file.',
+                'This view in a notebook, with <a href="/docs/jbrowse_anywidget/">jbrowse-anywidget</a>. Swap a track\'s <code>uri</code> for your file.',
               ),
               copyableBlock(recipe.python, 'spec-python'),
             ].join(''),
@@ -166,60 +155,70 @@ function panels(recipe: Recipe, id: string, inlineOpens = false): Panel[] {
             kind: 'img',
             body: [
               note(
-                '<a href="/docs/jbrowse-img/">jbrowse-img</a> draws the same view as an SVG, from the command line and without a browser. Point <code>--config</code> at your own config, or swap a track for your own file: <a href="/docs/jbrowse-img/#track-params">a data file</a> opens as the track its name says.',
+                '<a href="/docs/jbrowse-img/">jbrowse-img</a> draws this view as an SVG, no browser needed. Swap <code>--config</code> or <a href="/docs/jbrowse-img/#track-params">a track</a> for your own.',
               ),
               copyableBlock(recipe.img.command, 'spec-json'),
               note(
-                '<code>--out figure.png</code> writes a PNG instead, through <code>rsvg-convert</code> (<code>apt install librsvg2-bin</code>, <code>brew install librsvg</code>).',
+                'For a PNG, <code>--out figure.png</code> (needs <code>rsvg-convert</code>: <code>apt install librsvg2-bin</code>, <code>brew install librsvg</code>).',
               ),
             ].join(''),
           },
         ]
       : []),
-    agentPanel(recipe.agent),
+    {
+      label: 'Session',
+      kind: 'spec',
+      body: [
+        note(
+          `The <a href="/docs/urlparams/#session-spec">session spec</a> behind the figure, over <a href="${escapeAttr(recipe.configUrl)}">this config</a>.`,
+        ),
+        copyableBlock(recipe.specJson, 'spec-json'),
+      ].join(''),
+    },
   ]
 }
 
-// One block per frame, each with what its command leaves out of the figure,
-// then the line that stacks a composed figure's frames.
+// The prompt first, then the headless redraw folded under it: one block per
+// frame, each with what its command leaves out, and the line stacking them.
 function agentPanel({ brief, frames, stack, notes }: AgentRecipe): Panel {
+  const commands = [
+    ...(frames.length > 1
+      ? [
+          note(
+            `The figure stacks ${frames.length} frames: one command draws each, and ImageMagick stacks them.`,
+          ),
+        ]
+      : []),
+    ...frames.flatMap(frame => [
+      ...(frame.label
+        ? [note(`<strong>${escapeAttr(frame.label)}</strong>`)]
+        : []),
+      copyableBlock(frame.command, 'spec-json'),
+      ...frame.notes.map(text => note(renderInline(text))),
+    ]),
+    ...(stack ? [copyableBlock(stack, 'spec-json')] : []),
+    ...notes.map(text => note(renderInline(text))),
+  ].join('')
   return {
     label: 'Agent',
     kind: 'agent',
     body: [
-      ...(brief
+      brief
         ? [
             note(
-              'Paste this into a coding agent and replace the first line with what you want: the view on your own files, its settings in your <code>config.json</code>, the view in a JBrowse you have open, or a figure like it elsewhere.',
+              'Paste into a coding agent, with your goal on the first line.',
             ),
-            copyableBlock(brief, 'spec-json'),
-            note(
-              'The command below redraws the figure itself, and an agent can rerun it to check a change.',
-            ),
-          ]
+            copyableBlock(brief, 'spec-json', 'spec-prompt'),
+            `<details class="spec-more"><summary>Redraw the figure headlessly</summary>${commands}</details>`,
+          ].join('')
         : [
             note(
-              'Hand this to a coding agent. It rebuilds the figure above headlessly, and the session file is then the thing to edit: change the location or a track\'s settings, or add your own track under <code>sessionTracks</code>, and rerun.',
+              "Rebuilds the figure headlessly. Edit the session file (location, track settings, your own track under <code>sessionTracks</code>) and rerun.",
             ),
-          ]),
-      ...(frames.length > 1
-        ? [
-            note(
-              `The figure stacks ${frames.length} frames: one command draws each, and ImageMagick stacks them.`,
-            ),
-          ]
-        : []),
-      ...frames.flatMap(frame => [
-        ...(frame.label
-          ? [note(`<strong>${escapeAttr(frame.label)}</strong>`)]
-          : []),
-        copyableBlock(frame.command, 'spec-json'),
-        ...frame.notes.map(text => note(renderInline(text))),
-      ]),
-      ...(stack ? [copyableBlock(stack, 'spec-json')] : []),
-      ...notes.map(text => note(renderInline(text))),
+            commands,
+          ].join(''),
       note(
-        '<a href="/docs/agents/">Using JBrowse with AI agents</a> covers the rest: <a href="/docs/agents_hosted_data/">hosted genomes</a> to point it at, and <a href="/docs/agents_capture/">why waiting for the render</a> is the part that goes wrong.',
+        'More: <a href="/docs/agents/">Using JBrowse with AI agents</a>.',
       ),
     ].join(''),
   }
@@ -260,7 +259,7 @@ function opensHtml(recipe: Recipe, slow: boolean, id: string): string {
     desktopLink(recipe, id, 'Open in JBrowse Desktop ↗', 'spec-open-btn'),
     '</div>',
     slow
-      ? '<p class="spec-rebuild-lead">This session loads a large dataset and takes a while to open.</p>'
+      ? '<p class="spec-rebuild-lead">Large dataset: slow to open.</p>'
       : '',
     '<p class="spec-rebuild-lead">Or rebuild it from your own data:</p>',
   ].join('')
