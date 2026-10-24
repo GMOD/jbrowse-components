@@ -539,7 +539,7 @@ test('a v4 paired arc display opens as links to each mate', async () => {
     {
       mark: { type: 'link' },
       transform: [{ type: 'mate' }],
-      encoding: { x2: { chrom: 'mate.refName', pos: 'mate.start' } },
+      encoding: { x2: { refName: 'mate.refName', pos: 'mate.start' } },
     },
   ])
 })
@@ -604,7 +604,7 @@ test('a v4 paired arc display picked from the menu opens as links', async () => 
     {
       mark: { type: 'link' },
       transform: [{ type: 'mate' }],
-      encoding: { x2: { chrom: 'mate.refName', pos: 'mate.start' } },
+      encoding: { x2: { refName: 'mate.refName', pos: 'mate.start' } },
     },
   ])
 })

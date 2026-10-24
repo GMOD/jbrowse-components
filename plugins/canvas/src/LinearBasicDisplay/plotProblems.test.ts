@@ -10,7 +10,7 @@ test('finds the jexl in every channel, facet, filter, transform and label', () =
       encoding: {
         color: { value: 'jexl:a' },
         y: 'jexl:b',
-        x2: { chrom: 'mate.refName', pos: 'jexl:c' },
+        x2: { refName: 'mate.refName', pos: 'jexl:c' },
         size: 4,
         text: 'name',
       },
