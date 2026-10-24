@@ -201,7 +201,7 @@ describe('boxColor (color by a field)', () => {
         field,
       },
     })
-    const colorKey = createColorKey(config, jexl)!
+    const colorKey = createColorKey(config.color.field, jexl)!
     colorKey.enterRecord({ strand: undefined, groupKey: undefined })
     const ctx = { config, colorByFrame, jexl }
     const scale = categoricalField(field)

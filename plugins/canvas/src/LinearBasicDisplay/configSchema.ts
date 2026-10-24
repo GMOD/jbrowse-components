@@ -1,4 +1,5 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import { colorConfigSchema } from '@jbrowse/display-kit/colorConfigSchema'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import {
@@ -166,6 +167,64 @@ export default function configSchemaFactory(pluginManager: PluginManager) {
         description: 'subparts for a glyph',
         defaultValue: GENE_GLYPH_DEFAULTS.subParts,
       },
+      /**
+       * #slot proteinFeatures
+       * The display draws this track's domains over each transcript's CDS,
+       * in a color of their own. A bare string names the track.
+       */
+      proteinFeatures: ConfigurationSchema(
+        'ProteinFeatures',
+        {
+          /**
+           * #slot proteinFeatures.track
+           * The trackId of a BED with a column naming each domain's
+           * transcript (`join`), as `jbrowse make-protein-features` writes.
+           */
+          track: {
+            type: 'string',
+            defaultValue: '',
+            description: 'trackId of the protein-features track',
+          },
+          /**
+           * #slot proteinFeatures.color
+           * The domains' color, an `encoding.color` object over the BED rows,
+           * by `name` while it names no field or value. The track's own
+           * `encoding.color` never reaches the domains, nor this one the
+           * exons.
+           */
+          color: colorConfigSchema,
+          /**
+           * #slot proteinFeatures.join
+           * Which fields pair a domain with its transcript: the domain row's
+           * `domain` field equals the transcript's `gene` field. `gene: 'name'`
+           * suits a gene track keyed by transcript name, such as a UCSC
+           * bigBed.
+           */
+          join: ConfigurationSchema(
+            'ProteinFeaturesJoin',
+            {
+              /**
+               * #slot proteinFeatures.join.domain
+               */
+              domain: {
+                type: 'string',
+                defaultValue: 'transcript',
+                description: "domain row field naming the domain's transcript",
+              },
+              /**
+               * #slot proteinFeatures.join.gene
+               */
+              gene: {
+                type: 'string',
+                defaultValue: 'id',
+                description: 'transcript field the domain field equals',
+              },
+            },
+            { closed: true },
+          ),
+        },
+        { shorthand: 'track', writes: 'whole', closed: true },
+      ),
     },
     {
       /**

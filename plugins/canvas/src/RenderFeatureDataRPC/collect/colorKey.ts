@@ -2,7 +2,6 @@ import { fieldReader } from '@jbrowse/core/util/fieldReader'
 import { valueText } from '@jbrowse/core/util/groupKeys'
 import { MAX_LEGEND_CANDIDATES } from '@jbrowse/core/util/legendCandidates'
 
-import type { DisplayConfig } from '../renderConfig.ts'
 import type { ColorValues, SectionStamp } from '../rpcTypes.ts'
 import type { Feature } from '@jbrowse/core/util'
 import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
@@ -13,8 +12,7 @@ import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
  * value with the section its record files under. The scale that turns a value
  * into a color is the main thread's, so a recolor re-encodes what is loaded.
  */
-export function createColorKey(config: DisplayConfig, jexl: JexlInstance) {
-  const { field } = config.color
+export function createColorKey(field: string, jexl: JexlInstance) {
   if (!field) {
     return undefined
   }

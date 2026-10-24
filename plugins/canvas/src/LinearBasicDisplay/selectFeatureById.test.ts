@@ -153,3 +153,45 @@ describe('the containing feature the panel is told about', () => {
     expect(widget.featureData).toMatchObject({ uniqueId: 'EDEN' })
   })
 })
+
+describe('a protein domain click', () => {
+  const sh2: SubfeatureInfo = {
+    ...eden1,
+    featureId: 'EDEN.1-domain-0-1',
+    type: 'protein_domain',
+    startBp: 2000,
+    endBp: 2100,
+    displayLabel: 'SH2',
+    domainId: 'pfam_domains-4096',
+  }
+
+  it("fetches the domain from the proteinFeatures track's adapter over its block", async () => {
+    const { createDisplay } = createTestEnvironment({
+      displayConfig: { proteinFeatures: 'test_track' },
+    })
+    const { display, mockRpcCall } = createDisplay()
+    mockRpcCall.mockResolvedValue({ feature: undefined })
+    display.setRpcData(0, makeFeatureData({ flatbushItems: [gene] }), ctgA)
+    display.selectFeatureById('EDEN', sh2, 0)
+
+    await waitFor(() => {
+      expect(fetchedIds(mockRpcCall)).toEqual(['pfam_domains-4096'])
+    })
+    const [, , args] = mockRpcCall.mock.calls.find(
+      ([, method]) => method === 'GetCanvasFeatureDetails',
+    )!
+    expect(args).toMatchObject({
+      adapterConfig: display.proteinFeaturesArg!.adapter,
+      region: { refName: 'ctgA', start: 2000, end: 2100 },
+    })
+  })
+
+  it('fetches the gene while the display names no domain track', async () => {
+    const { display, mockRpcCall } = setup()
+    display.selectFeatureById('EDEN', sh2, 0)
+
+    await waitFor(() => {
+      expect(fetchedIds(mockRpcCall)).toEqual(['EDEN'])
+    })
+  })
+})

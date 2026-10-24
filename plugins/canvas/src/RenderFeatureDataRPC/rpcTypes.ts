@@ -1,7 +1,7 @@
 import type { FieldColorValues } from '../shared/fieldColorCandidates.ts'
 import type { GroupByCandidate } from './groupByCandidates.ts'
 import type { IsoformPicks } from './isoformPicks.ts'
-import type { DisplayConfig } from './renderConfig.ts'
+import type { DisplayConfig, WorkerColor } from './renderConfig.ts'
 import type {
   GatedFetchArgs,
   RegionTooLargeResult,
@@ -13,6 +13,11 @@ export interface LabelItem {
   text: string
   relativeY: number
   textWidth: number
+}
+
+export interface ProteinFeaturesJoin {
+  domain: string
+  gene: string
 }
 
 export interface RenderFeatureDataArgs extends GatedFetchArgs {
@@ -41,6 +46,16 @@ export interface RenderFeatureDataArgs extends GatedFetchArgs {
   // Translation-table fallback for transcripts whose features lack a
   // transl_table attribute.
   geneticCodeId?: number
+  // The `proteinFeatures` track's adapter, the share of its color the worker
+  // reads, and the fields pairing a domain row with its transcript. `refName`
+  // is the region's contig as that adapter spells it: the RPC renames
+  // `region` for `adapterConfig` alone.
+  proteinFeatures?: {
+    adapter: Record<string, unknown>
+    color: WorkerColor
+    join: ProteinFeaturesJoin
+    refName: string
+  }
   // Matched against feature.id() (the uniqueId) rather than run as a jexl
   // filter, since jexlFeatureProxy cannot reach the uniqueId.
   soloFeatureIds?: string[]
@@ -110,6 +125,9 @@ export interface FeatureDataResult {
   // LENGTH ZERO when the track names no color field: each rect's one-based
   // index into `colorValues.values`, 0 where no field value paints it.
   rectColorValues: Uint32Array
+  // As `rectColorValues`, into `domainColorValues.values`: nonzero only on a
+  // protein domain's rect, which never takes the track's own color field.
+  rectDomainColorValues?: Uint32Array
   // LENGTH ZERO when this region emits no `below` subfeature labels. The main
   // thread adds `count × labelFontPx` after the compact scale, because the row
   // height is the mode's label font size and the worker is mode-agnostic.
@@ -160,6 +178,9 @@ export interface FeatureDataResult {
   // Undefined unless the track names a color field. The scale is the main
   // thread's, which paints each value and derives the key from `painted`.
   colorValues?: ColorValues
+  // The `proteinFeatures` color field's values, which the main thread paints
+  // through that color's scale.
+  domainColorValues?: ColorValues
 
   featureCount: number
 
@@ -173,6 +194,10 @@ export interface FeatureDataResult {
 
   // Index-estimated compressed bytes, undefined for adapters with no estimate.
   bytes?: number
+
+  // What the display could not draw from a second source, such as a
+  // `proteinFeatures` track that failed to load, while the features still drew.
+  notices?: string[]
 }
 
 /**
@@ -336,6 +361,9 @@ export interface SubfeatureInfo extends HitItemBase {
   parentFeatureId: string
   displayLabel?: string
   childOrdinal?: number
+  // A protein domain's id in the `proteinFeatures` track, whose adapter a
+  // click asks for its details.
+  domainId?: string
 }
 
 export interface FeatureLabelData {

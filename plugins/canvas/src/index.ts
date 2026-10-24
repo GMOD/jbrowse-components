@@ -93,6 +93,7 @@ export type {
   FeatureDataResult,
   FlatbushItem,
   RegionRenderData,
+  SectionStamp,
   SubfeatureInfo,
 } from './RenderFeatureDataRPC/rpcTypes.ts'
 export type { RegionGateMeasurement } from './shared/CanvasFeatureGateMixin.ts'

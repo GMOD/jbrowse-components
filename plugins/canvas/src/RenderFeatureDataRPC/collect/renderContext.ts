@@ -1,5 +1,5 @@
 import type { ArrowData, LineData, RectData } from '../packRenderArrays.ts'
-import type { DisplayConfig } from '../renderConfig.ts'
+import type { DisplayConfig, WorkerColor } from '../renderConfig.ts'
 import type {
   AminoAcidOverlayItem,
   FlatbushItem,
@@ -11,6 +11,18 @@ import type { ColorKey } from './colorKey.ts'
 import type { Feature } from '@jbrowse/core/util'
 import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
 
+export interface DomainData {
+  feature: Feature
+  blocks: { start: number; end: number }[]
+}
+
+export interface ProteinFeatures {
+  byTranscript: Map<string, DomainData[]>
+  color: WorkerColor
+  // The transcript field `byTranscript`'s keys equal.
+  transcriptKey: string
+}
+
 // The worker resolves no theme color at all — a color that depends on the theme
 // ships as a class the main-thread encode fills in, which keeps a light/dark
 // toggle out of the RPC cache key.
@@ -18,6 +30,7 @@ export interface RenderContext {
   config: DisplayConfig
   colorByFrame: boolean
   peptideDataMap?: Map<string, PeptideData>
+  proteinFeatures?: ProteinFeatures
   jexl: JexlInstance
   // Reads `config.facetField`, built once per walk.
   readGroupKey?: (feature: Feature) => unknown
@@ -50,9 +63,13 @@ export interface Collector {
   subfeatureInfos: SubfeatureInfo[]
   aminoAcidOverlay: AminoAcidOverlayItem[]
   colorKey?: ColorKey
+  domainColorKey?: ColorKey
 }
 
-export function createCollector(colorKey?: ColorKey): Collector {
+export function createCollector(
+  colorKey?: ColorKey,
+  domainColorKey?: ColorKey,
+): Collector {
   return {
     rects: [],
     lines: [],
@@ -62,5 +79,6 @@ export function createCollector(colorKey?: ColorKey): Collector {
     subfeatureInfos: [],
     aminoAcidOverlay: [],
     colorKey,
+    domainColorKey,
   }
 }

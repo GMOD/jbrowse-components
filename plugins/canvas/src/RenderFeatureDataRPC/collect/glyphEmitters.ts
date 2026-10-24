@@ -1,9 +1,11 @@
+import { NO_CATEGORY_COLOR } from '@jbrowse/core/util/color'
 import { valueText } from '@jbrowse/core/util/groupKeys'
 
 import { LITERAL } from '../colorClasses.ts'
 import { DEFAULT_MOUSEOVER } from '../featureMouseover.ts'
 import { createFeatureFloatingLabels } from '../floatingLabels.ts'
 import { PAM_LABEL, findPamSubfeature } from '../glyphs/crisprGuide.ts'
+import { assignDomainLanes } from '../glyphs/domainLanes.ts'
 import { collectPolyproteinCDS } from '../glyphs/matureProteinRegion.ts'
 import { transcriptCoords } from '../glyphs/transcriptCoords.ts'
 import {
@@ -12,6 +14,8 @@ import {
   subfeatureLabelPlacement,
   subfeatureLabelText,
 } from '../labelUtils.ts'
+import { joinKey } from '../proteinFeatures.ts'
+import { readConfigValueSafe } from '../renderConfig.ts'
 import { collapsibleIntronsOf } from '../splicedParts.ts'
 import { featureType } from '../util.ts'
 import {
@@ -31,6 +35,7 @@ import {
   featureTooltip,
   isRetrotransposonBody,
   matureProteinColor,
+  packColor,
   repeatSubpartColor,
   strokeColor,
 } from './glyphColors.ts'
@@ -38,6 +43,7 @@ import { aminoAcidsByFeature, aminoAcidsInSpans } from './peptideMapping.ts'
 
 import type { Span } from '../../shared/mergeSpans.ts'
 import type { AggregatedAminoAcid } from '../peptides/aggregateAminoAcids.ts'
+import type { WorkerColor } from '../renderConfig.ts'
 import type { TranscriptCoords } from '../rpcTypes.ts'
 import type { FeatureLayout, GlyphType } from '../types.ts'
 import type { BoxRectArgs } from './emitPrimitives.ts'
@@ -128,6 +134,82 @@ function emitExonRects(
   }
 }
 
+function domainFill(
+  domain: Feature,
+  color: WorkerColor,
+  jexl: RenderContext['jexl'],
+  collector: Collector,
+) {
+  const key = collector.domainColorKey
+  if (key) {
+    const domainColorValue = key.laneValueOf(domain, domain)
+    key.record(domainColorValue)
+    return {
+      ...packColor({ color: NO_CATEGORY_COLOR, colorClass: LITERAL }),
+      domainColorValue,
+    }
+  }
+  return packColor({
+    color: readConfigValueSafe(color, 'value', domain, jexl, NO_CATEGORY_COLOR),
+    colorClass: LITERAL,
+  })
+}
+
+function emitDomainRects(
+  transcript: FeatureLayout,
+  place: GlyphPlacement,
+  ctx: RenderContext,
+  collector: Collector,
+) {
+  const { proteinFeatures, jexl } = ctx
+  const domains =
+    proteinFeatures &&
+    proteinFeatures.byTranscript.get(
+      joinKey(transcript.feature.get(proteinFeatures.transcriptKey)) ?? '',
+    )
+  if (!proteinFeatures || !domains) {
+    return
+  }
+  const { baseTopPx, flatbushIdx, labelRowsAbove } = place
+  const { lanes, laneCount } = assignDomainLanes(
+    domains.map(({ blocks }) => ({
+      start: blocks[0]!.start,
+      end: blocks.at(-1)!.end,
+    })),
+  )
+  const laneHeight = transcript.height / laneCount
+  for (const [i, { feature, blocks }] of domains.entries()) {
+    const fill = domainFill(feature, proteinFeatures.color, jexl, collector)
+    const name = valueText(feature.get('name'))
+    for (const [j, { start, end }] of blocks.entries()) {
+      const y = baseTopPx + lanes[i]! * laneHeight
+      collector.rects.push({
+        start,
+        end,
+        y,
+        height: laneHeight,
+        ...fill,
+        strand: 0,
+        flatbushIdx,
+        labelRowsAbove,
+      })
+      collector.subfeatureInfos.push({
+        kind: 'subfeature',
+        featureId: `${transcript.feature.id()}-domain-${i}-${j}`,
+        parentFeatureId: place.parentFeature.id(),
+        type: 'protein_domain',
+        startBp: start,
+        endBp: end,
+        topPx: y,
+        bottomPx: y + laneHeight,
+        labelRowsAbove,
+        displayLabel: name,
+        domainId: feature.id(),
+      })
+    }
+  }
+}
+
 function processTranscriptLayout(
   transcript: FeatureLayout,
   place: GlyphPlacement,
@@ -180,6 +262,9 @@ function processTranscriptLayout(
       collector,
     )
   }
+
+  // After the transcript registers, so a domain outranks it under the cursor
+  emitDomainRects(transcript, place, ctx, collector)
 
   emitStrandArrow(
     {
@@ -741,10 +826,9 @@ export function processFeatureRecord(
   })
   const flatbushIdx = collector.flatbushItems.length - 1
 
-  collector.colorKey?.enterRecord({
-    strand: strand !== 0 ? strand : undefined,
-    groupKey,
-  })
+  const section = { strand: strand !== 0 ? strand : undefined, groupKey }
+  collector.colorKey?.enterRecord(section)
+  collector.domainColorKey?.enterRecord(section)
 
   emitGlyph(
     layout,

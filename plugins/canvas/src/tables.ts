@@ -119,6 +119,31 @@ export interface FeatureTablesArgs {
    * before any feature is fetched. 200 MB by default.
    */
   byteLimit?: number
+  /**
+   * The adapter of the track `display.proteinFeatures.track` names, whose
+   * domains draw on each transcript's CDS. Its file spells each contig as
+   * `adapterConfig`'s does.
+   */
+  proteinFeatures?: Record<string, unknown>
+}
+
+function domainColorsOf(
+  conf: ReturnType<ReturnType<typeof configSchemaFactory>['create']>,
+  raws: readonly FeatureDataResult[],
+) {
+  return featureColorViews({
+    conf: { encoding: { color: conf.proteinFeatures.color } },
+    impliedField: 'name',
+    rpcDataMap: new Map(
+      raws.map((raw, i) => [
+        i,
+        {
+          colorValues: raw.domainColorValues,
+          rectColorValues: raw.rectDomainColorValues,
+        },
+      ]),
+    ),
+  })
 }
 
 const DEFAULT_BYTE_LIMIT = 200_000_000
@@ -363,6 +388,7 @@ export async function featureTables(
     aminoAcids = true,
     geneticCodeId,
     byteLimit = DEFAULT_BYTE_LIMIT,
+    proteinFeatures,
   }: FeatureTablesArgs,
 ) {
   const conf = configSchemaFactory(pluginManager).create({
@@ -412,6 +438,19 @@ export async function featureTables(
           peptides: aminoAcids && shouldRenderPeptideBackground(bpPerPx),
           geneticCodeId,
           byteLimit,
+          proteinFeatures: proteinFeatures && {
+            adapter: proteinFeatures,
+            color: domainColorsOf(conf, []).workerColor,
+            join: {
+              domain: readConfObject(conf, [
+                'proteinFeatures',
+                'join',
+                'domain',
+              ]),
+              gene: readConfObject(conf, ['proteinFeatures', 'join', 'gene']),
+            },
+            refName: r.refName,
+          },
           statusCallback: () => {},
         } satisfies RpcExecuteArgs<'RenderFeatureData'>,
       })
@@ -498,7 +537,12 @@ export async function featureTables(
     conf: { encoding: { color: conf.encoding.color } },
     rpcDataMap: new Map(raws.map((raw, i) => [i, raw])),
   })
-  const resolved = resolveMapColors(laid, palette, colors.fieldPalette)
+  const resolved = resolveMapColors(
+    laid,
+    palette,
+    colors.fieldPalette,
+    proteinFeatures && domainColorsOf(conf, raws).fieldPalette,
+  )
   const scales = featureColorKey(colors, raws, {
     isHidden: hiddenGroupKeys.size > 0 ? isHidden : undefined,
     order:

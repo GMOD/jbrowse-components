@@ -47,16 +47,44 @@ export function onScreenColorValues<
     'colorValues' | 'rectColorValues' | 'rectFeatureIndices' | 'flatbushItems'
   >,
 >(data: T, onScreen: ReadonlySet<string>): T {
-  const { colorValues, rectColorValues, rectFeatureIndices, flatbushItems } =
-    data
+  const { rectFeatureIndices, flatbushItems } = data
+  return paintedWhere(data, i => {
+    const item = flatbushItems[rectFeatureIndices[i]!]
+    return !!item && onScreen.has(item.featureId)
+  })
+}
+
+/**
+ * `data` with its color values narrowed to those a rect overlapping one of
+ * `spans` paints, for a key over parts of a feature: a domain off screen
+ * names no family though its gene is on screen.
+ */
+export function colorValuesInSpans<
+  T extends Pick<
+    FeatureDataResult,
+    'colorValues' | 'rectColorValues' | 'rectPositions'
+  >,
+>(data: T, spans: readonly { start: number; end: number }[]): T {
+  const { rectPositions } = data
+  return paintedWhere(data, i =>
+    spans.some(
+      ({ start, end }) =>
+        rectPositions[i * 2]! < end && rectPositions[i * 2 + 1]! > start,
+    ),
+  )
+}
+
+function paintedWhere<
+  T extends Pick<FeatureDataResult, 'colorValues' | 'rectColorValues'>,
+>(data: T, shows: (rect: number) => boolean): T {
+  const { colorValues, rectColorValues } = data
   if (!colorValues) {
     return data
   }
   const shown = new Set<number>()
   for (let i = 0; i < rectColorValues.length; i++) {
     const value = rectColorValues[i]!
-    const item = flatbushItems[rectFeatureIndices[i]!]
-    if (value > 0 && item && onScreen.has(item.featureId)) {
+    if (value > 0 && shows(i)) {
       shown.add(value - 1)
     }
   }

@@ -8,8 +8,20 @@ import { geneTypeTest } from './featureAdmission.ts'
 import { labelKindsOf } from './floatingLabels.ts'
 import { packRenderArrays } from './packRenderArrays.ts'
 
+import type { ColorKey } from './collect/colorKey.ts'
 import type { RenderContext } from './collect/renderContext.ts'
 import type { FeatureLayout } from './types.ts'
+
+function colorValuesOf(key: ColorKey | undefined) {
+  return (
+    key && {
+      field: key.field,
+      values: key.values,
+      painted: key.painted,
+      rows: key.rows,
+    }
+  )
+}
 
 // Walks the per-feature layout tree, emits draw primitives and hit/label
 // metadata into a Collector, then packs the visible window into the typed
@@ -22,8 +34,12 @@ export function collectRenderData(
     regionEnd: number
   },
 ) {
-  const { layouts, regionStart, regionEnd, config, jexl } = args
-  const collector = createCollector(createColorKey(config, jexl))
+  const { layouts, regionStart, regionEnd, config, jexl, proteinFeatures } =
+    args
+  const collector = createCollector(
+    createColorKey(config.color.field, jexl),
+    proteinFeatures && createColorKey(proteinFeatures.color.field, jexl),
+  )
   const ctx = {
     ...args,
     readGroupKey:
@@ -53,12 +69,8 @@ export function collectRenderData(
     floatingLabelsData: collector.floatingLabelsData,
     flatbushItems: collector.flatbushItems,
     subfeatureInfos: collector.subfeatureInfos,
-    colorValues: collector.colorKey && {
-      field: collector.colorKey.field,
-      values: collector.colorKey.values,
-      painted: collector.colorKey.painted,
-      rows: collector.colorKey.rows,
-    },
+    colorValues: colorValuesOf(collector.colorKey),
+    domainColorValues: colorValuesOf(collector.domainColorKey),
     aminoAcidOverlay:
       collector.aminoAcidOverlay.length > 0
         ? collector.aminoAcidOverlay

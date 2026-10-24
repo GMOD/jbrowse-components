@@ -12,6 +12,7 @@ import {
 } from './densityGate.ts'
 import { buildFeatureAdmission } from './featureAdmission.ts'
 import { fetchPeptideData } from './peptides/peptideUtils.ts'
+import { fetchProteinFeaturesOrNotice } from './proteinFeatures.ts'
 
 import type { DisplayConfig } from './renderConfig.ts'
 import type { FeatureDataResult } from './rpcTypes.ts'
@@ -36,6 +37,7 @@ export async function executeRenderFeatureData({
     peptides,
     geneticCodeId,
     sequenceAdapter,
+    proteinFeatures: proteinFeaturesArg,
     soloFeatureIds,
     hiddenFeatureIds,
     expandedGeneIds,
@@ -138,6 +140,21 @@ export async function executeRenderFeatureData({
     )
   }
 
+  const { proteinFeatures, notice } = proteinFeaturesArg
+    ? await updateStatus('Downloading protein features', statusCallback, () =>
+        fetchProteinFeaturesOrNotice({
+          pluginManager,
+          sessionId,
+          arg: proteinFeaturesArg,
+          region,
+          features,
+          config,
+          byteLimit,
+          signal,
+        }),
+      )
+    : {}
+
   checkAbortSignal(signal)
 
   // One `withProgress` over the whole layout+collect pass: the collect is the
@@ -159,13 +176,18 @@ export async function executeRenderFeatureData({
         colorByFrame: !!colorByFrame,
         expandedGeneIds: expandedGenes,
         peptideDataMap,
+        proteinFeatures,
         report,
       }),
   )
 
   checkAbortSignal(signal)
 
-  const result: FeatureDataResult = { ...packed, bytes }
+  const result: FeatureDataResult = {
+    ...packed,
+    bytes,
+    ...(notice ? { notices: [notice] } : {}),
+  }
 
   // The RPC framework unwraps this before returning to the caller, whose type
   // comes from the RpcRegistry declaration rather than from an annotation here.
