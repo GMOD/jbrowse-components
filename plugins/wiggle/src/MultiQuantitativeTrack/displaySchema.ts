@@ -14,6 +14,8 @@ const rowPerSource = ConfigurationSchema(
     field: {
       type: 'stringEnum',
       model: types.enumeration('QuantitativeRowsField', ['', 'source']),
+      // '' stays a member, not unset: under this default, unset could not
+      // say "one plot every source shares"
       defaultValue: 'source',
       description:
         'source for one row per subtrack, or empty for one plot every source shares',

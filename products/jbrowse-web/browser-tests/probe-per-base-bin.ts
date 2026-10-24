@@ -169,7 +169,9 @@ async function captureScene(
               pileup: {
                 bases: {
                   show: true,
-                  encoding: { color: { field: scene.field } },
+                  encoding: scene.field
+                    ? { color: { field: scene.field } }
+                    : {},
                 },
               },
             },
