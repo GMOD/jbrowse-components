@@ -26,6 +26,11 @@ initializing phase`, because `createObservableInstance` asserts the node is
 INITIALIZING and a dead one is not. That throw went through React's error
 boundary and took the page down (#5616, #5618).
 
+@jbrowse/mobx-state-tree has since removed that throw (its ADR 0008, September
+2026): a dead child nobody had read now builds its instance and reads as dead,
+so the read warns like any other. The decision below still stands, because
+neither the `getContainingView` throw nor the mid-action destroy depends on it.
+
 Which of the two you got was decided by whether the property the walk happened
 to land on had been read before — that is, by what the user had open.
 
