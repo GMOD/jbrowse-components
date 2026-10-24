@@ -93,6 +93,9 @@ import { CSS_COLOR_NAMES } from '@jbrowse/core/util/color'
 import { EXPRESSION_CHARACTERS } from '@jbrowse/core/util/jexlStrings'
 import { FileLocation } from '@jbrowse/core/util/types/mst'
 import {
+  asArrayType,
+  asMapType,
+  asModelType,
   getSnapshot,
   isArrayType,
   isFrozenType,
@@ -102,6 +105,7 @@ import {
   isModelType,
   isReferenceType,
   isType,
+  unwrapType,
 } from '@jbrowse/mobx-state-tree'
 import corePlugins from './src/corePlugins.ts'
 import sessionModelFactory from './src/sessionModel/index.ts'
@@ -134,11 +138,13 @@ await Promise.all([
 // so its slots are the element's and the validator checks each entry; an array
 // over a union (a track's displays) has no single model and stays opaque.
 function modelOf(type) {
-  let cur = type
-  for (let i = 0; cur && !cur.properties && i < 12; i++) {
-    cur = cur._subtype ?? cur._subType ?? cur.subType ?? cur.type
+  if (!isType(type)) {
+    return undefined
   }
-  return cur
+  const bare = unwrapType(type)
+  const element =
+    asArrayType(bare)?.getChildType() ?? asMapType(bare)?.getChildType()
+  return asModelType(bare) ?? (element && asModelType(element))
 }
 
 function slotsOf(type) {

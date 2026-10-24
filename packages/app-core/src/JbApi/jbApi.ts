@@ -1382,10 +1382,9 @@ function describeSchema(type: mst.IAnyType): SlotDescription | undefined {
     }
   }
   const bare = mst.unwrapType(type)
-  if (mst.isArrayType(bare)) {
-    const items = describeSchema(
-      (bare as unknown as { getChildType(): mst.IAnyType }).getChildType(),
-    )
+  const array = mst.asArrayType(bare)
+  if (array) {
+    const items = describeSchema(array.getChildType())
     return items ? { type: 'array', items } : undefined
   }
   if (mst.isUnionType(bare)) {
