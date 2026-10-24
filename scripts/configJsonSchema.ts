@@ -683,10 +683,34 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
         return false
       }
     }
+    const refuses = (input: unknown) => {
+      try {
+        lift?.(input)
+        return false
+      } catch {
+        return true
+      }
+    }
     return {
       targets: deps.shorthandTargetsOf(meta),
       uri: lifts({ uri: 'probe' }),
+      colorAsField:
+        !!lift && refuses({ field: 'red' }) && !refuses({ field: 'probe' }),
     }
+  }
+
+  // A color channel refuses a color written as its field, which its writer
+  // meant as the constant `{ "value": … }`.
+  function refusingColor(member: JsonSchema = {}): JsonSchema {
+    const { else: value } = member
+    const not = {
+      not: ref('CssColorEntry'),
+      errorMessage:
+        'is a color, and a bare string is the field. To paint every feature it, write { "value": <the color> }',
+    }
+    return value
+      ? { ...member, else: { allOf: [value as JsonSchema, not] } }
+      : { allOf: [member, not] }
   }
 
   // What a schema declares it cannot mean (`requires`), as `if`/`then` carrying
@@ -831,6 +855,9 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
     const name = type.name.replace(/ConfigurationSchema$/, '')
     const forms = liftedForms(meta)
     const slots = slotTable(meta, depth)
+    if (forms.colorAsField && slots.field) {
+      slots.field = refusingColor(slots.field)
+    }
     const properties = {
       ...Object.fromEntries(
         Object.keys(meta.options.retired ?? {}).map(key => [key, LEGACY]),

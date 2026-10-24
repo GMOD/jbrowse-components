@@ -645,11 +645,17 @@ describe('a marks list in a config file', () => {
     ])
   })
 
-  it('warns on a color written as a field', () => {
+  it('refuses a color written as a field, as the display does', () => {
     expect(
       found([{ mark: 'bar', encoding: { y: 'score', color: 'steelblue' } }]),
+    ).toEqual([`error undefined ${DISPLAY}.marks[0].encoding.color`])
+  })
+
+  it('warns on a shape written as a field', () => {
+    expect(
+      found([{ mark: 'point', encoding: { y: 'score', shape: 'circle' } }]),
     ).toEqual([
-      `warning field-spells-constant ${DISPLAY}.marks[0].encoding.color.field`,
+      `warning field-spells-constant ${DISPLAY}.marks[0].encoding.shape.field`,
     ])
   })
 

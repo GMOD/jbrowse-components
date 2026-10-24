@@ -5082,7 +5082,17 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         {
           "description": "Shorthand for \`{ \\"field\\": ... }\`.",
           "default": "",
-          "$ref": "#/$defs/FeatureField",
+          "allOf": [
+            {
+              "$ref": "#/$defs/FeatureField"
+            },
+            {
+              "not": {
+                "$ref": "#/$defs/CssColorEntry"
+              },
+              "errorMessage": "is a color, and a bare string is the field. To paint every feature it, write { \\"value\\": <the color> }"
+            }
+          ],
           "type": "string"
         },
         {
@@ -5106,7 +5116,17 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 "type": "null"
               },
               "else": {
-                "$ref": "#/$defs/FeatureField"
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/FeatureField"
+                  },
+                  {
+                    "not": {
+                      "$ref": "#/$defs/CssColorEntry"
+                    },
+                    "errorMessage": "is a color, and a bare string is the field. To paint every feature it, write { \\"value\\": <the color> }"
+                  }
+                ]
               }
             },
             "scale": {
@@ -6723,7 +6743,17 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         {
           "description": "Shorthand for \`{ \\"field\\": ... }\`.",
           "default": "",
-          "$ref": "#/$defs/PlainString",
+          "allOf": [
+            {
+              "$ref": "#/$defs/PlainString"
+            },
+            {
+              "not": {
+                "$ref": "#/$defs/CssColorEntry"
+              },
+              "errorMessage": "is a color, and a bare string is the field. To paint every feature it, write { \\"value\\": <the color> }"
+            }
+          ],
           "type": "string"
         },
         {
@@ -6747,7 +6777,17 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 "type": "null"
               },
               "else": {
-                "$ref": "#/$defs/PlainString"
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/PlainString"
+                  },
+                  {
+                    "not": {
+                      "$ref": "#/$defs/CssColorEntry"
+                    },
+                    "errorMessage": "is a color, and a bare string is the field. To paint every feature it, write { \\"value\\": <the color> }"
+                  }
+                ]
               }
             },
             "scale": {
@@ -8399,7 +8439,17 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         {
           "description": "Shorthand for \`{ \\"field\\": ... }\`.",
           "default": "",
-          "$ref": "#/$defs/FeatureField",
+          "allOf": [
+            {
+              "$ref": "#/$defs/FeatureField"
+            },
+            {
+              "not": {
+                "$ref": "#/$defs/CssColorEntry"
+              },
+              "errorMessage": "is a color, and a bare string is the field. To paint every feature it, write { \\"value\\": <the color> }"
+            }
+          ],
           "type": "string"
         },
         {
@@ -8424,7 +8474,17 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 "type": "null"
               },
               "else": {
-                "$ref": "#/$defs/FeatureField"
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/FeatureField"
+                  },
+                  {
+                    "not": {
+                      "$ref": "#/$defs/CssColorEntry"
+                    },
+                    "errorMessage": "is a color, and a bare string is the field. To paint every feature it, write { \\"value\\": <the color> }"
+                  }
+                ]
               }
             },
             "scale": {
@@ -8774,7 +8834,17 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         {
           "description": "Shorthand for \`{ \\"field\\": ... }\`.",
           "default": "",
-          "$ref": "#/$defs/PlainString",
+          "allOf": [
+            {
+              "$ref": "#/$defs/PlainString"
+            },
+            {
+              "not": {
+                "$ref": "#/$defs/CssColorEntry"
+              },
+              "errorMessage": "is a color, and a bare string is the field. To paint every feature it, write { \\"value\\": <the color> }"
+            }
+          ],
           "type": "string"
         },
         {
@@ -8798,7 +8868,17 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 "type": "null"
               },
               "else": {
-                "$ref": "#/$defs/PlainString"
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/PlainString"
+                  },
+                  {
+                    "not": {
+                      "$ref": "#/$defs/CssColorEntry"
+                    },
+                    "errorMessage": "is a color, and a bare string is the field. To paint every feature it, write { \\"value\\": <the color> }"
+                  }
+                ]
               }
             },
             "scale": {
@@ -9424,7 +9504,17 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         {
           "description": "Shorthand for \`{ \\"field\\": ... }\`.",
           "default": "",
-          "$ref": "#/$defs/FeatureField",
+          "allOf": [
+            {
+              "$ref": "#/$defs/FeatureField"
+            },
+            {
+              "not": {
+                "$ref": "#/$defs/CssColorEntry"
+              },
+              "errorMessage": "is a color, and a bare string is the field. To paint every feature it, write { \\"value\\": <the color> }"
+            }
+          ],
           "type": "string"
         },
         {
@@ -9448,7 +9538,17 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 "type": "null"
               },
               "else": {
-                "$ref": "#/$defs/FeatureField"
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/FeatureField"
+                  },
+                  {
+                    "not": {
+                      "$ref": "#/$defs/CssColorEntry"
+                    },
+                    "errorMessage": "is a color, and a bare string is the field. To paint every feature it, write { \\"value\\": <the color> }"
+                  }
+                ]
               }
             },
             "scale": {
@@ -9791,7 +9891,17 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         {
           "description": "Shorthand for \`{ \\"field\\": ... }\`.",
           "default": "",
-          "$ref": "#/$defs/PlainString",
+          "allOf": [
+            {
+              "$ref": "#/$defs/PlainString"
+            },
+            {
+              "not": {
+                "$ref": "#/$defs/CssColorEntry"
+              },
+              "errorMessage": "is a color, and a bare string is the field. To paint every feature it, write { \\"value\\": <the color> }"
+            }
+          ],
           "type": "string"
         },
         {
@@ -9815,7 +9925,17 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 "type": "null"
               },
               "else": {
-                "$ref": "#/$defs/PlainString"
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/PlainString"
+                  },
+                  {
+                    "not": {
+                      "$ref": "#/$defs/CssColorEntry"
+                    },
+                    "errorMessage": "is a color, and a bare string is the field. To paint every feature it, write { \\"value\\": <the color> }"
+                  }
+                ]
               }
             },
             "scale": {
@@ -10291,7 +10411,17 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         {
           "description": "Shorthand for \`{ \\"field\\": ... }\`.",
           "default": "",
-          "$ref": "#/$defs/FeatureField",
+          "allOf": [
+            {
+              "$ref": "#/$defs/FeatureField"
+            },
+            {
+              "not": {
+                "$ref": "#/$defs/CssColorEntry"
+              },
+              "errorMessage": "is a color, and a bare string is the field. To paint every feature it, write { \\"value\\": <the color> }"
+            }
+          ],
           "type": "string"
         },
         {
@@ -10315,7 +10445,17 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 "type": "null"
               },
               "else": {
-                "$ref": "#/$defs/FeatureField"
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/FeatureField"
+                  },
+                  {
+                    "not": {
+                      "$ref": "#/$defs/CssColorEntry"
+                    },
+                    "errorMessage": "is a color, and a bare string is the field. To paint every feature it, write { \\"value\\": <the color> }"
+                  }
+                ]
               }
             },
             "scale": {
@@ -12441,7 +12581,17 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         {
           "description": "Shorthand for \`{ \\"field\\": ... }\`.",
           "default": "",
-          "$ref": "#/$defs/FeatureField",
+          "allOf": [
+            {
+              "$ref": "#/$defs/FeatureField"
+            },
+            {
+              "not": {
+                "$ref": "#/$defs/CssColorEntry"
+              },
+              "errorMessage": "is a color, and a bare string is the field. To paint every feature it, write { \\"value\\": <the color> }"
+            }
+          ],
           "type": "string"
         },
         {
@@ -12465,7 +12615,17 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 "type": "null"
               },
               "else": {
-                "$ref": "#/$defs/FeatureField"
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/FeatureField"
+                  },
+                  {
+                    "not": {
+                      "$ref": "#/$defs/CssColorEntry"
+                    },
+                    "errorMessage": "is a color, and a bare string is the field. To paint every feature it, write { \\"value\\": <the color> }"
+                  }
+                ]
               }
             },
             "scale": {
@@ -14177,12 +14337,22 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         {
           "description": "Shorthand for \`{ \\"field\\": ... }\`.",
           "default": "mismatch",
-          "enum": [
-            "mismatch",
-            "base",
-            "identity",
-            "chromosome",
-            "codon"
+          "allOf": [
+            {
+              "enum": [
+                "mismatch",
+                "base",
+                "identity",
+                "chromosome",
+                "codon"
+              ]
+            },
+            {
+              "not": {
+                "$ref": "#/$defs/CssColorEntry"
+              },
+              "errorMessage": "is a color, and a bare string is the field. To paint every feature it, write { \\"value\\": <the color> }"
+            }
           ],
           "type": "string"
         },
@@ -14198,12 +14368,22 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 "type": "null"
               },
               "else": {
-                "enum": [
-                  "mismatch",
-                  "base",
-                  "identity",
-                  "chromosome",
-                  "codon"
+                "allOf": [
+                  {
+                    "enum": [
+                      "mismatch",
+                      "base",
+                      "identity",
+                      "chromosome",
+                      "codon"
+                    ]
+                  },
+                  {
+                    "not": {
+                      "$ref": "#/$defs/CssColorEntry"
+                    },
+                    "errorMessage": "is a color, and a bare string is the field. To paint every feature it, write { \\"value\\": <the color> }"
+                  }
                 ]
               }
             },
@@ -14784,10 +14964,20 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         {
           "description": "Shorthand for \`{ \\"field\\": ... }\`.",
           "default": "observed",
-          "enum": [
-            "observed",
-            "observed/expected",
-            "observed/control"
+          "allOf": [
+            {
+              "enum": [
+                "observed",
+                "observed/expected",
+                "observed/control"
+              ]
+            },
+            {
+              "not": {
+                "$ref": "#/$defs/CssColorEntry"
+              },
+              "errorMessage": "is a color, and a bare string is the field. To paint every feature it, write { \\"value\\": <the color> }"
+            }
           ],
           "type": "string"
         },
@@ -14803,10 +14993,20 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 "type": "null"
               },
               "else": {
-                "enum": [
-                  "observed",
-                  "observed/expected",
-                  "observed/control"
+                "allOf": [
+                  {
+                    "enum": [
+                      "observed",
+                      "observed/expected",
+                      "observed/control"
+                    ]
+                  },
+                  {
+                    "not": {
+                      "$ref": "#/$defs/CssColorEntry"
+                    },
+                    "errorMessage": "is a color, and a bare string is the field. To paint every feature it, write { \\"value\\": <the color> }"
+                  }
                 ]
               }
             },
@@ -26978,7 +27178,17 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         {
           "description": "Shorthand for \`{ \\"field\\": ... }\`.",
           "default": "",
-          "$ref": "#/$defs/PlainString",
+          "allOf": [
+            {
+              "$ref": "#/$defs/PlainString"
+            },
+            {
+              "not": {
+                "$ref": "#/$defs/CssColorEntry"
+              },
+              "errorMessage": "is a color, and a bare string is the field. To paint every feature it, write { \\"value\\": <the color> }"
+            }
+          ],
           "type": "string"
         },
         {
@@ -27002,7 +27212,17 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 "type": "null"
               },
               "else": {
-                "$ref": "#/$defs/PlainString"
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/PlainString"
+                  },
+                  {
+                    "not": {
+                      "$ref": "#/$defs/CssColorEntry"
+                    },
+                    "errorMessage": "is a color, and a bare string is the field. To paint every feature it, write { \\"value\\": <the color> }"
+                  }
+                ]
               }
             },
             "scale": {

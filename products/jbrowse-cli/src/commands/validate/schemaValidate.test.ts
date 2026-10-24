@@ -308,6 +308,38 @@ describe('the schema', () => {
     expect(schemaProblems(config)).toEqual([])
   })
 
+  it('refuses a color written where a color channel takes its field, as the display does', () => {
+    const config = baseConfig()
+    const withColor = (color: unknown) => {
+      config.tracks[0] = {
+        ...config.tracks[0]!,
+        type: 'FeatureTrack',
+        adapter: { type: 'Gff3TabixAdapter', uri: 'g.gff.gz' },
+        displays: [{ type: 'LinearBasicDisplay', encoding: { color } }],
+      }
+      return schemaProblems(config)
+    }
+    const message =
+      'is a color, and a bare string is the field. To paint every feature it, write { "value": <the color> }'
+    expect(withColor('red')).toEqual([
+      {
+        where: 'tracks[0].displays[0].encoding.color',
+        message: `"red" ${message}`,
+        level: 'error',
+      },
+    ])
+    expect(withColor({ field: '255,0,0' })).toEqual([
+      {
+        where: 'tracks[0].displays[0].encoding.color.field',
+        message: `"255,0,0" ${message}`,
+        level: 'error',
+      },
+    ])
+    expect(withColor('type')).toEqual([])
+    expect(withColor({ value: 'red' })).toEqual([])
+    expect(withColor("jexl:get(feature,'type')")).toEqual([])
+  })
+
   it('accepts a jexl: callback where a callback slot expects a number', () => {
     const config = baseConfig()
     config.tracks[0] = {

@@ -504,7 +504,12 @@ function explain(
         )
         break
       case 'not':
-        emit(where, `must not ${describe(parent.not as Schema)}`)
+        emit(
+          where,
+          typeof parent.errorMessage === 'string'
+            ? `${JSON.stringify(error.data)} ${parent.errorMessage}`
+            : `must not ${describe(parent.not as Schema)}`,
+        )
         break
       default:
         emit(where, error.message ?? error.keyword)
