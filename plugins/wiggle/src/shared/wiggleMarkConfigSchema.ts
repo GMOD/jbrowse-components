@@ -8,7 +8,7 @@ import { LINE_INTERPOLATIONS, WIGGLE_MARK_NAMES } from '../renderingTypes.ts'
  * #category display
  * A wiggle display's `mark`, Vega-Lite's mark object: the `type` each score
  * draws as, and a line's `interpolate`. A bare name is the `type`, so
- * `mark: "span"` and `mark: { type: "span" }` are one config.
+ * `mark: "rect"` and `mark: { type: "rect" }` are one config.
  *
  * #example
  * ```json

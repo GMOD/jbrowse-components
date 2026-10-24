@@ -13,7 +13,7 @@ export const WIGGLE_RENDERINGS = [
 export type WiggleRendering = (typeof WIGGLE_RENDERINGS)[number][0]
 
 /** What a quantitative plot draws each score as, the mark display's words. */
-export const WIGGLE_MARK_NAMES = ['bar', 'point', 'line', 'span'] as const
+export const WIGGLE_MARK_NAMES = ['bar', 'point', 'line', 'rect'] as const
 
 /** A point's diameter and a line's width in px while `size` is unset. */
 export const DEFAULT_POINT_SIZE_PX = 2
@@ -33,7 +33,7 @@ export function renderingOf(
     case 'point': {
       return 'scatter'
     }
-    case 'span': {
+    case 'rect': {
       return 'density'
     }
     case 'line': {
@@ -61,7 +61,7 @@ export function markOf(rendering: string): WiggleMarkObject | undefined {
       return { type: 'point' }
     }
     case 'density': {
-      return { type: 'span' }
+      return { type: 'rect' }
     }
     case 'line': {
       return { type: 'line', interpolate: 'step' }

@@ -147,7 +147,7 @@ describe('markProblems over a lifted plot', () => {
 
   it('reports an unread channel as a warning, which does not block', () => {
     const settings = lift({
-      marks: [{ mark: 'span', encoding: { y: 'score' } }],
+      marks: [{ mark: 'rect', encoding: { y: 'score' } }],
     })
     const problems = markProblems(settings)
     expect(problems.map(p => p.rule)).toContain('unread-channel')

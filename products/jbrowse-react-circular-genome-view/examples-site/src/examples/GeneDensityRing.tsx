@@ -32,7 +32,7 @@ const tracks = [
       {
         type: 'LinearWiggleDisplay',
         displayId: 'hg38ToMm39_gene_density-LinearWiggleDisplay',
-        mark: 'span',
+        mark: 'rect',
         height: 40,
       },
     ],

@@ -27,7 +27,7 @@ export const MARK_PLOT_EXAMPLES = [
     description: 'a point per feature at its score, colored by strand',
   },
   {
-    plot: '{"facet":{"field":"HP","transform":[{"type":"pileup"}]},"marks":[{"mark":"span"}]}',
+    plot: '{"facet":{"field":"HP","transform":[{"type":"pileup"}]},"marks":[{"mark":"rect"}]}',
     description: 'one band per haplotype, each packed on its own',
   },
   {

@@ -233,7 +233,7 @@ describe('a mark display the rule list finds a problem in', () => {
   test('says a warning and draws', async () => {
     const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
     const svg = await exportTrack(
-      marks({ mark: 'span', encoding: { y: 'score' } }),
+      marks({ mark: 'rect', encoding: { y: 'score' } }),
     )
     expect(svg).toContain('<svg')
     expect(warn).toHaveBeenCalledWith(

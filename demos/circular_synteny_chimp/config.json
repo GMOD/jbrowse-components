@@ -131,7 +131,7 @@
         {
           "type": "LinearWiggleDisplay",
           "displayId": "hg38ToPanTro6_gene_density-LinearWiggleDisplay",
-          "mark": "span",
+          "mark": "rect",
           "encoding": {
             "color": {
               "scale": { "type": "linear", "range": ["#ffffff", "#d95f02"] }

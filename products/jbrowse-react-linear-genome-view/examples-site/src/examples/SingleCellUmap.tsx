@@ -247,7 +247,7 @@ function tracks(cells: Cells) {
         uri: `${BASE}/percell.zarr`,
       },
       displayDefaults: {
-        mark: 'span',
+        mark: 'rect',
         height: 420,
         encoding: { y: { scale: { domainMin: 0, domainMax: 4 } } },
       },

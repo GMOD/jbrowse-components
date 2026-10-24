@@ -90,7 +90,7 @@ const SNRPN_FACET_TRACK = {
       facet: 'HP',
       marks: [
         {
-          mark: 'span',
+          mark: 'rect',
           transform: [{ type: 'pileup' }],
           encoding: {
             row: 'row',

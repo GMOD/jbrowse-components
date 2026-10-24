@@ -306,7 +306,7 @@ color is the average over each pixel's bins. `mark` is the shape drawn, and
   "uri": "https://jbrowse.org/demos/circular_synteny/hg38ToMm39.genes.gff.density.bw",
   "assemblyNames": ["hg38", "mm39"],
   "displayDefaults": {
-    "mark": "span",
+    "mark": "rect",
     "encoding": {
       "color": {
         "scale": { "type": "linear", "range": ["#ffffff", "#d95f02"] }
@@ -360,7 +360,7 @@ before the synteny track:
           {
             "trackId": "hg38ToMm39_gene_density",
             "type": "LinearWiggleDisplay",
-            "mark": "span",
+            "mark": "rect",
             "encoding": {
               "color": {
                 "scale": { "type": "linear", "range": ["#ffffff", "#d95f02"] }

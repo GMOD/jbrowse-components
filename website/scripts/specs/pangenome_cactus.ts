@@ -336,7 +336,7 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
             {
               trackId: 'ecoli_cactus_pav_odgi_colors',
               // A 0-1 domain keeps every present base fully saturated.
-              mark: 'span',
+              mark: 'rect',
               encoding: { y: { scale: { domainMin: 0, domainMax: 1 } } },
               // The raster's 40px per row.
               height: 160,

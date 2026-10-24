@@ -40,7 +40,7 @@ test.each([
   ],
   [
     'one color on a heatmap',
-    { mark: 'span', encoding: { color: { value: 'green' } } },
+    { mark: 'rect', encoding: { color: { value: 'green' } } },
     /^encoding\.color: one color paints a heatmap flat/,
   ],
 ])(

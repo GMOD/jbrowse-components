@@ -131,7 +131,7 @@ const TRACKS = {
   alu_pileup: aluTrack('alu_pileup', 'Alu copies, packed', {
     marks: [
       {
-        mark: 'span',
+        mark: 'rect',
         transform: [{ type: 'pileup', padding: 200 }],
         encoding: {
           color: {
@@ -145,7 +145,7 @@ const TRACKS = {
   }),
   alu_facet: aluTrack('alu_facet', 'Alu copies by strand', {
     facet: { field: 'strand', transform: [{ type: 'pileup' }] },
-    marks: [{ mark: 'span', encoding: { color: { value: '#4575b4' } } }],
+    marks: [{ mark: 'rect', encoding: { color: { value: '#4575b4' } } }],
   }),
   alu_labels: aluTrack('alu_labels', 'Alu divergence, labelled', {
     marks: [

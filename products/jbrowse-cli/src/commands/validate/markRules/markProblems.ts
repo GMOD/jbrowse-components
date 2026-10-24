@@ -54,11 +54,11 @@ export type MarkProblemLevel = 'error' | 'warning'
 export const MARK_RULES = {
   /** A bar, point, rule or line naming no `y`, with no step before it writing one it reads by default. */
   'mark-without-value': 'error',
-  /** A channel the mark's type does not read, such as `y` on a `span`, a `size` on a rule, whose width is `strokeWidth`, or a size field on a point. */
+  /** A channel the mark's type does not read, such as `y` on a `rect`, a `size` on a rule, whose width is `strokeWidth`, or a size field on a point. */
   'unread-channel': 'warning',
   /** An `encoding.size` or `encoding.strokeWidth` on a mark that draws no point, rule or line and strokes no link. */
   'unread-size': 'warning',
-  /** A `mark` member its type does not read: an `interpolate` off a line or a link, a `height` off a span, a `gapBp` off a line. */
+  /** A `mark` member its type does not read: an `interpolate` off a line or a link, a `height` off a rect, a `gapBp` off a line. */
   'unread-mark-member': 'warning',
   /** An `interpolate` the mark's type does not draw, such as `dome` on a line, which then draws its default. */
   'mark-interpolate': 'warning',
@@ -112,7 +112,7 @@ export const MARK_RULES = {
   'unwritten-y': 'error',
   /** Another channel naming a field that no `aggregate` or `coverage` step before it writes, so it reads no value; the field a `facet` or `rows` splits on counts as written. */
   'unwritten-field': 'warning',
-  /** A mark other than a span drawn beside one that stacks rows, standing in the first of them. */
+  /** A mark other than a rect drawn beside one that stacks rows, standing in the first of them. */
   'value-beside-rows': 'warning',
   /** Two `pileup` steps packing one plot, whose rows share numbers. */
   'two-packings': 'warning',
@@ -131,7 +131,7 @@ export type MarkRuleId = keyof typeof MARK_RULES
  * the mark, or none for the display's own `transform`, the slot to look at,
  * and why. A problem is a combination of slots,
  * which a load cannot refuse: the config editor writes one slot at a time, so
- * moving a bar to a span passes through a span that still names a `y`, and a
+ * moving a bar to a rect passes through a rect that still names a `y`, and a
  * refusal there drops the track from the session it was saved in (ADR-133).
  * The display draws what it can and says the rest in its corner notice.
  */
@@ -926,7 +926,7 @@ export function markProblems({
       if (
         !faceted &&
         !drawsRows &&
-        markTypeOf(mark) !== 'span' &&
+        markTypeOf(mark) !== 'rect' &&
         !banded(mark, shared) &&
         banded(other, shared)
       ) {

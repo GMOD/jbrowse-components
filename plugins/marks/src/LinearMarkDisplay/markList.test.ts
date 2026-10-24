@@ -102,8 +102,8 @@ const block = {
 const REGIONS = [{ refName: 'ctgA' }]
 
 test('mark i reads layers[i], and every mark gets its own pass id', () => {
-  const marks = buildMarkList(entries('bar', 'point', 'span'))
-  expect(marks.map(m => m.pass.id)).toEqual(['bar#0', 'point#1', 'span#2'])
+  const marks = buildMarkList(entries('bar', 'point', 'rect'))
+  expect(marks.map(m => m.pass.id)).toEqual(['bar#0', 'point#1', 'rect#2'])
   const data: MarkRegionData = {
     layers: [
       layer([42], [0.5], [RED]),
@@ -144,10 +144,10 @@ test('a rule draws through the point shader as a rule, its size the thickness', 
 })
 
 test('a text mark takes no place in the list, and the marks after it keep their own index', () => {
-  const marks = buildMarkList(entries('bar', 'text', 'span'))
+  const marks = buildMarkList(entries('bar', 'text', 'rect'))
   expect(marks.map(m => [m.pass.id, m.markIndex])).toEqual([
     ['bar#0', 0],
-    ['span#2', 2],
+    ['rect#2', 2],
   ])
   const data: MarkRegionData = {
     layers: [
@@ -196,7 +196,7 @@ test('a region with fewer layers than marks packs nothing for the missing one', 
 })
 
 test('a layer without the lanes its type reads packs nothing', () => {
-  const [span] = buildMarkList(entries('span'))
+  const [span] = buildMarkList(entries('rect'))
   const withoutRow: MarkRegionData = { layers: [layer([1], [1], [RED])] }
   expect(span!.pass.pack(withoutRow).byteLength).toBe(0)
   const withRow: MarkRegionData = {
@@ -267,7 +267,7 @@ test('a bar and a point take the row lane, each band `rowHeight` px', () => {
 })
 
 test('a span mark stacks on the row lane, each band `rowHeight` px', () => {
-  const [mark] = buildMarkList(entries('span'))
+  const [mark] = buildMarkList(entries('rect'))
   const hal = new MockHal([mark!.pass])
   const scratch = new ArrayBuffer(mark!.pass.uniformByteSize)
   const clip = clipBlock(block, state.canvasWidth, state.canvasHeight, {

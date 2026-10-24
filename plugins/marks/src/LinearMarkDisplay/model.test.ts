@@ -160,7 +160,7 @@ test('the config reaches the worker as one encoding per mark, jexl unevaluated',
       },
     },
     {
-      mark: 'span',
+      mark: 'rect',
       encoding: {
         color: {
           field: 'score',
@@ -175,7 +175,7 @@ test('the config reaches the worker as one encoding per mark, jexl unevaluated',
     },
   ])
   const { display } = createDisplay()
-  expect(display.markTypes).toEqual(['bar', 'point', 'span'])
+  expect(display.markTypes).toEqual(['bar', 'point', 'rect'])
   expect(display.rpcProps()).toEqual({
     transform: [],
     layers: [
@@ -215,7 +215,7 @@ test('the config reaches the worker as one encoding per mark, jexl unevaluated',
   expect(display.markList.map(m => m.pass.id)).toEqual([
     'bar#0',
     'point#1',
-    'span#2',
+    'rect#2',
   ])
 })
 
@@ -379,7 +379,7 @@ test('the worker fills the text lane the request names, and the placement reads 
 test('a hover on a mark after a text mark lights its own ink', () => {
   const { createDisplay } = createTestEnvironment([
     { mark: 'text', encoding: { row: 'sampleIndex' } },
-    { mark: 'span', encoding: { row: 'sampleIndex' } },
+    { mark: 'rect', encoding: { row: 'sampleIndex' } },
   ])
   const { display } = createDisplay()
   display.setRpcData(
@@ -891,7 +891,7 @@ test('a bar or point naming no y loads, draws nothing and says so', () => {
     'mark 0 encoding.y: a bar stands at a value, and names no y field while no step before it writes one — a coverage, or an aggregate with one op — so it draws nothing',
   ])
   expect(noticesOf([{ mark: 'point', encoding: { y: '' } }])).toHaveLength(1)
-  expect(noticesOf([{ mark: 'span', encoding: {} }])).toEqual([])
+  expect(noticesOf([{ mark: 'rect', encoding: {} }])).toEqual([])
   const { display } = createTestEnvironment([
     { mark: 'bar', encoding: { color: { value: 'red' } } },
     { mark: 'bar', encoding: { y: 'score' } },
@@ -910,7 +910,7 @@ function namedOnLoad(...args: Parameters<typeof createTestEnvironment>) {
 
 test('a key an encoding channel does not declare is named as the config loads', () => {
   expect(
-    namedOnLoad([{ mark: 'span', encoding: { color: { colour: 'strand' } } }]),
+    namedOnLoad([{ mark: 'rect', encoding: { color: { colour: 'strand' } } }]),
   ).toEqual(['MarkColor does not declare colour: loading without it'])
   expect(
     namedOnLoad([
@@ -985,12 +985,12 @@ test('an unpinned color ramp says nothing, on a text or a span', () => {
   expect(
     noticesOf([{ mark: 'text', encoding: { text: 'name', color: ramp } }]),
   ).toEqual([])
-  expect(noticesOf([{ mark: 'span', encoding: { color: ramp } }])).toEqual([])
+  expect(noticesOf([{ mark: 'rect', encoding: { color: ramp } }])).toEqual([])
 })
 
 test('a channel the mark does not read is named, and the rest still draws', () => {
-  expect(noticesOf([{ mark: 'span', encoding: { y: 'score' } }])).toEqual([
-    'mark 0 encoding.y: a span does not read y',
+  expect(noticesOf([{ mark: 'rect', encoding: { y: 'score' } }])).toEqual([
+    'mark 0 encoding.y: a rect does not read y',
   ])
   expect(
     noticesOf([
@@ -1105,7 +1105,7 @@ test('a color ramp pins the end it names, and a domain beside it is named as unr
 
 test('a span-only display has no score domain', () => {
   const { createDisplay } = createTestEnvironment([
-    { mark: 'span', encoding: {} },
+    { mark: 'rect', encoding: {} },
   ])
   const { display } = createDisplay()
   display.setRpcData(0, result([{ y: [0, 0], row: [0, 0] }]), REGION)
@@ -1115,7 +1115,7 @@ test('a span-only display has no score domain', () => {
 
 test('a span stacked by a row field asks the worker for the row lane and bands the plot by the highest row', () => {
   const { createDisplay } = createTestEnvironment([
-    { mark: 'span', encoding: { row: 'sampleIndex' } },
+    { mark: 'rect', encoding: { row: 'sampleIndex' } },
   ])
   const { display } = createDisplay()
   expect(display.rpcProps().layers[0]).toEqual({
@@ -1137,7 +1137,7 @@ test('a span stacked by a row field asks the worker for the row lane and bands t
 
 test('rows deeper than the plot squash into it, and rows that fit keep whole px', () => {
   const { createDisplay } = createTestEnvironment(
-    [{ mark: 'span', encoding: { row: 'sampleIndex' } }],
+    [{ mark: 'rect', encoding: { row: 'sampleIndex' } }],
     WIDE_REGION,
   )
   const { display } = createDisplay()
@@ -1165,8 +1165,8 @@ test('rows deeper than the plot squash into it, and rows that fit keep whole px'
 
 test('a span outside its zoom range adds no bands', () => {
   const { createDisplay } = createTestEnvironment([
-    { mark: 'span', encoding: { row: 'sampleIndex' }, minBpPerPx: 4 },
-    { mark: 'span', encoding: {} },
+    { mark: 'rect', encoding: { row: 'sampleIndex' }, minBpPerPx: 4 },
+    { mark: 'rect', encoding: {} },
   ])
   const { display, view } = createDisplay()
   display.setRpcData(
@@ -1267,13 +1267,13 @@ test('a bin hands its edges to the aggregate behind it, and a pileup the row to 
       transform: [{ type: 'aggregate', ops: [{ op: 'count' }] }],
       encoding: { y: 'count' },
     },
-    { mark: 'span', transform: [{ type: 'pileup' }], encoding: {} },
+    { mark: 'rect', transform: [{ type: 'pileup' }], encoding: {} },
     {
-      mark: 'span',
+      mark: 'rect',
       transform: [{ type: 'pileup', as: 'lane' }],
       encoding: {},
     },
-    { mark: 'span', encoding: {} },
+    { mark: 'rect', encoding: {} },
   ])
   const { display } = createDisplay()
   const { layers } = display.rpcProps()
@@ -1422,7 +1422,7 @@ test("a mark's aggregate behind a bin in the display's transform groups by that 
 test('a flatten keeping its empty features says so on the wire', () => {
   const { createDisplay } = createTestEnvironment([
     {
-      mark: 'span',
+      mark: 'rect',
       transform: [
         { type: 'flatten', keepEmpty: true },
         { type: 'flatten', field: 'exons' },
@@ -1884,7 +1884,7 @@ test("a shape scale reaches the worker beside the color, and its key draws the s
 
 test('the hovered instance lights the box its mark painted, inset by the plot top', () => {
   const { createDisplay } = createTestEnvironment([
-    { mark: 'span', encoding: { row: 'sampleIndex' } },
+    { mark: 'rect', encoding: { row: 'sampleIndex' } },
   ])
   const { display } = createDisplay()
   display.setRpcData(0, result([{ y: [0, 0], row: [0, 1] }]), REGION)
@@ -2276,7 +2276,7 @@ test('a bar sharing the axis keeps it on the plot box, where a bar top is drawn'
 })
 
 const FACET_MARKS = [
-  { mark: 'span', transform: [{ type: 'pileup' }], encoding: { row: 'row' } },
+  { mark: 'rect', transform: [{ type: 'pileup' }], encoding: { row: 'row' } },
 ]
 
 function facetedEnvironment(display: Record<string, unknown> = {}) {
@@ -2302,7 +2302,7 @@ function facetResult(rows: number[]) {
 test('a mark outside its zoom range leaves the sections as deep as the marks drawn', () => {
   const { createDisplay } = createTestEnvironment(
     [
-      { mark: 'span', maxBpPerPx: 0.01 },
+      { mark: 'rect', maxBpPerPx: 0.01 },
       { mark: 'bar', encoding: { y: 'score' } },
     ],
     REGION,
@@ -2667,7 +2667,7 @@ test("a span ramp's key drops the no-value row with the section that painted it"
   const { display } = createTestEnvironment(
     [
       {
-        mark: 'span',
+        mark: 'rect',
         encoding: { color: { field: 'score', scale: { type: 'linear' } } },
       },
     ],

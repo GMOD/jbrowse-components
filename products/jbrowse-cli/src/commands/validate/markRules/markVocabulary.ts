@@ -21,7 +21,7 @@ export const MARK_TYPES = [
   'point',
   'rule',
   'line',
-  'span',
+  'rect',
   'text',
   'link',
 ] as const
@@ -43,7 +43,7 @@ export const DEFAULT_LINE_INTERPOLATE: LineInterpolation = 'step'
 export const MARK_MEMBERS = ['interpolate', 'height', 'gapBp'] as const
 export type MarkMember = (typeof MARK_MEMBERS)[number]
 
-/** The fraction of its band a span fills where its `mark.height.band` is left unwritten. */
+/** The fraction of its band a rect fills where its `mark.height.band` is left unwritten. */
 export const DEFAULT_HEIGHT_BAND = 1
 
 /** A `marks` entry's `mark` as a snapshot holds it: the object, or its type alone. */

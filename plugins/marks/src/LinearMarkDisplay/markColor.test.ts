@@ -380,11 +380,11 @@ test('a color over another field crosses as its field and reads the values that 
   })
 })
 
-test('a span colored by the depth its coverage step writes reads the raw values', () => {
+test('a rect colored by the depth its coverage step writes reads the raw values', () => {
   const { display } = createTestEnvironment({
     marks: [
       {
-        mark: 'span',
+        mark: 'rect',
         transform: [{ type: 'coverage' }],
         encoding: { color: { field: 'coverage', scale: { type: 'linear' } } },
       },

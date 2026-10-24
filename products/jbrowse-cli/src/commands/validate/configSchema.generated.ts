@@ -4930,7 +4930,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "range": {
-          "description": "CSS colors the domain takes, in order, continuing into the default palette past its end; under threshold one per interval, one more than the cuts; under linear or log the ramp's stops, winning over scheme.",
+          "description": "CSS colors the domain takes, in order, continuing into the default palette past its end; under threshold one per interval, one more than the cuts, an interval left out sampling the default ramp; under linear or log the ramp's stops, winning over scheme.",
           "if": {
             "type": "null"
           },
@@ -9918,7 +9918,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "x-closed": true,
       "properties": {
         "band": {
-          "description": "fraction of its band a span fills.",
+          "description": "fraction of its band a rect fills.",
           "default": 1,
           "if": {
             "type": "null"
@@ -9944,7 +9944,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "point",
             "rule",
             "line",
-            "span",
+            "rect",
             "text",
             "link"
           ],
@@ -9956,7 +9956,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "x-closed": true,
           "properties": {
             "type": {
-              "description": "bar, point, rule, line, span, text or link.",
+              "description": "bar, point, rule, line, rect, text or link.",
               "default": "bar",
               "if": {
                 "type": "null"
@@ -9967,7 +9967,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                   "point",
                   "rule",
                   "line",
-                  "span",
+                  "rect",
                   "text",
                   "link"
                 ]
@@ -10126,7 +10126,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "range": {
-          "description": "CSS colors an ordinal scale hands its domain in order, a threshold scale its intervals, or a ramp's evenly spaced stops; empty is the default palette, or the scheme.",
+          "description": "CSS colors an ordinal scale hands its domain in order, a threshold scale its intervals, or a ramp's evenly spaced stops; empty is the default palette for ordinal, the scheme, or for a threshold the default ramp sampled per interval.",
           "if": {
             "type": "null"
           },
@@ -12894,7 +12894,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "reverse": {
-          "description": "turns the scheme's ramp round; unset reverses a scheme dark at its low end.",
+          "description": "turns the scheme's ramp round; unset reverses viridis, magma, inferno and cividis.",
           "if": {
             "type": "null"
           },
@@ -13236,7 +13236,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "bar",
             "point",
             "line",
-            "span"
+            "rect"
           ],
           "type": "string"
         },
@@ -13256,7 +13256,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                   "bar",
                   "point",
                   "line",
-                  "span"
+                  "rect"
                 ]
               }
             },
@@ -14707,7 +14707,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "reverse": {
-          "description": "turns the scheme's ramp round; unset reverses a scheme dark at its low end.",
+          "description": "turns the scheme's ramp round; unset reverses viridis, magma, inferno and cividis.",
           "if": {
             "type": "null"
           },
@@ -15345,7 +15345,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "minWidthPx": {
-          "description": "minimum bar/span width in px.",
+          "description": "minimum bar/rect width in px.",
           "default": 1,
           "if": {
             "type": "null"
@@ -15552,7 +15552,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "minWidthPx": {
-          "description": "minimum bar/span width in px.",
+          "description": "minimum bar/rect width in px.",
           "default": 1,
           "if": {
             "type": "null"

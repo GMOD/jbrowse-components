@@ -225,7 +225,7 @@ describe('the wiggle display track menu', () => {
 
     // density maps score to color and draws no min and max, so offering them
     // would tick a setting nothing on screen follows
-    expect(labels(binSummary('span'))).toEqual(['Minimum', 'Maximum', 'Mean'])
+    expect(labels(binSummary('rect'))).toEqual(['Minimum', 'Maximum', 'Mean'])
   })
 
   // One source needs no key, and a faceted track names its sources beside

@@ -121,7 +121,7 @@ export const MARK_SPECS = {
     members: ['interpolate', 'gapBp'],
     interpolations: ['step', 'linear'],
   },
-  span: {
+  rect: {
     channels: ['row', 'color'],
     value: 'none',
     hit: 'rows',

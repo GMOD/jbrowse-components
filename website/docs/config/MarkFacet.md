@@ -21,7 +21,7 @@ is.
 {
   type: 'LinearMarkDisplay',
   facet: { field: 'HP', transform: [{ type: 'pileup' }] },
-  marks: [{ mark: 'span' }],
+  marks: [{ mark: 'rect' }],
 }
 ```
 

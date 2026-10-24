@@ -315,7 +315,7 @@ const pileup = ConfigurationSchema(
   {
     /**
      * #slot pileup.as
-     * The field each feature's row is written to, which a `span` encoding
+     * The field each feature's row is written to, which a `rect` encoding
      * `row` then reads.
      */
     as: {

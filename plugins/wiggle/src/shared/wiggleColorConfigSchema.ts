@@ -44,7 +44,7 @@ export const WIGGLE_FIELD_PRESETS = {
  *   the score along it
  * - unset `scale.type`, a two-color `scale.range` (red and blue unset) is the
  *   pair about the `origin`: bars, points and lines solid either side of it,
- *   and a heatmap (`mark: 'span'`) fading to each from white at it, a ramp
+ *   and a heatmap (`mark: 'rect'`) fading to each from white at it, a ramp
  *   whose middle stop `scale.domainMid` moves
  *
  * A subtrack's own color is `rowColor`'s. A wiggle colors per signal rather
@@ -68,7 +68,7 @@ export const WIGGLE_FIELD_PRESETS = {
  * ```js
  * {
  *   type: 'LinearWiggleDisplay',
- *   mark: 'span',
+ *   mark: 'rect',
  *   encoding: { color: { scale: { type: 'linear', scheme: 'viridis' } } },
  * }
  * ```
@@ -76,7 +76,7 @@ export const WIGGLE_FIELD_PRESETS = {
  * ```js
  * {
  *   type: 'LinearWiggleDisplay',
- *   mark: 'span',
+ *   mark: 'rect',
  *   origin: 2,
  *   encoding: { color: { scale: { range: ['#2166ac', '#b2182b'] } } },
  * }

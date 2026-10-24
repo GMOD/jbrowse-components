@@ -135,11 +135,11 @@ test('launchTrack switches a shown track to the display type it names', async ()
   const track = await view.launchTrack(
     'gff3tabix_genes',
     {},
-    { type: 'LinearMarkDisplay', marks: [{ mark: 'span' }] },
+    { type: 'LinearMarkDisplay', marks: [{ mark: 'rect' }] },
   )
   expect(track!.activeDisplay.type).toBe('LinearMarkDisplay')
   expect(getSnapshot(track!.activeDisplay.configuration)).toMatchObject({
-    marks: [{ mark: { type: 'span' } }],
+    marks: [{ mark: { type: 'rect' } }],
   })
   expect(session.snackbarMessages).toHaveLength(0)
 })

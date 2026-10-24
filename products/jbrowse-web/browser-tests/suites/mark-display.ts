@@ -53,7 +53,7 @@ const suite: TestSuite = {
         displayTestId,
       }),
     ),
-    // A span colored by its value is a heatmap: the ramp resolves in the
+    // A rect colored by its value is a heatmap: the ramp resolves in the
     // shader off the value lane, a diverging range white at 0.
     lgvSnapshotTest({
       name: 'a heatmap over a positive and negative BigWig, white at 0',

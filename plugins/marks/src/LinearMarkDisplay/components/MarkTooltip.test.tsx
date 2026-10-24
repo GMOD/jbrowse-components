@@ -89,7 +89,7 @@ test('a span stacked by a transform names the band it stands in', async () => {
   const box = await tooltip({
     hoveredFeature: { ...HIT, color: 0xff123456, row: 2 },
     encodings: [{ row: 'row', color: 'red' }],
-    markTypes: ['span'],
+    markTypes: ['rect'],
   })
   expect(box.textContent).toContain('row: 2')
 })
@@ -101,7 +101,7 @@ test('a mark in an implicit pileup names its section', async () => {
   const box = await tooltip({
     hoveredFeature: { ...HIT, color: 0xff123456, row: 3 },
     encodings: [{ color: 'red' }],
-    markTypes: ['span'],
+    markTypes: ['rect'],
     facetLayout: {
       field: 'svtype',
       sections: [
@@ -120,7 +120,7 @@ test('a mark in an implicit pileup outside a facet shows no bare row number', as
   const box = await tooltip({
     hoveredFeature: { ...HIT, color: 0xff123456, row: 3 },
     encodings: [{ color: 'red' }],
-    markTypes: ['span'],
+    markTypes: ['rect'],
   })
   expect(box.textContent).not.toContain('row')
 })
@@ -129,7 +129,7 @@ test('under a facet the band reads as the section chip rather than an index', as
   const box = await tooltip({
     hoveredFeature: { ...HIT, color: 0xff123456, row: 3 },
     encodings: [{ row: 'row', color: 'red' }],
-    markTypes: ['span'],
+    markTypes: ['rect'],
     facetLayout: {
       field: 'svtype',
       sections: [

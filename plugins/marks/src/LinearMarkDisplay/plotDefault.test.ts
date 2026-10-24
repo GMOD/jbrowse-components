@@ -246,5 +246,5 @@ test('a pairwise alignment is one row, and one with no identity draws its spans'
   const blocks = scanPlotFields(features([alignment('J99')]), {
     listedSources: 0,
   })
-  expect(defaultPlot(blocks)?.marks).toEqual([{ mark: 'span' }])
+  expect(defaultPlot(blocks)?.marks).toEqual([{ mark: 'rect' }])
 })

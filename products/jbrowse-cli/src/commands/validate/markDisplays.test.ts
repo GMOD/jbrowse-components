@@ -62,7 +62,7 @@ const COVERAGE = {
   transform: [{ type: 'coverage' }],
   encoding: { y: 'coverage' },
 }
-const PILEUP = { mark: 'span', transform: [{ type: 'pileup' }] }
+const PILEUP = { mark: 'rect', transform: [{ type: 'pileup' }] }
 
 describe('a marks list in a config file', () => {
   it('passes the guide examples', () => {
@@ -106,7 +106,7 @@ describe('a marks list in a config file', () => {
     expect(found([{ mark: 'point', encoding: { y: '' } }])).toEqual([
       `error mark-without-value ${DISPLAY}.marks[0].encoding.y`,
     ])
-    expect(found([{ mark: 'span' }])).toEqual([])
+    expect(found([{ mark: 'rect' }])).toEqual([])
   })
 
   it('reports the rules of the other marks beside a requirement failure', () => {
@@ -127,7 +127,7 @@ describe('a marks list in a config file', () => {
   })
 
   it('warns on a channel the mark does not read', () => {
-    expect(found([{ mark: 'span', encoding: { y: 'score' } }])).toEqual([
+    expect(found([{ mark: 'rect', encoding: { y: 'score' } }])).toEqual([
       `warning unread-channel ${DISPLAY}.marks[0].encoding.y`,
     ])
     expect(
@@ -138,13 +138,13 @@ describe('a marks list in a config file', () => {
         },
       ]),
     ).toEqual([`warning unread-channel ${DISPLAY}.marks[0].encoding.shape`])
-    expect(found([{ mark: 'span', encoding: { size: 8 } }])).toEqual([
+    expect(found([{ mark: 'rect', encoding: { size: 8 } }])).toEqual([
       `warning unread-size ${DISPLAY}.marks[0].encoding.size`,
     ])
-    expect(found([{ mark: { type: 'span', interpolate: 'linear' } }])).toEqual([
+    expect(found([{ mark: { type: 'rect', interpolate: 'linear' } }])).toEqual([
       `warning unread-mark-member ${DISPLAY}.marks[0].mark.interpolate`,
     ])
-    expect(found([{ mark: { type: 'span', gapBp: 5000 } }])).toEqual([
+    expect(found([{ mark: { type: 'rect', gapBp: 5000 } }])).toEqual([
       `warning unread-mark-member ${DISPLAY}.marks[0].mark.gapBp`,
     ])
     expect(found([{ mark: { type: 'link', interpolate: 'step' } }])).toEqual([
@@ -173,7 +173,7 @@ describe('a marks list in a config file', () => {
         },
       ]),
     ).toEqual([`warning unread-mark-member ${DISPLAY}.marks[0].mark.height`])
-    expect(found([{ mark: { type: 'span', height: { band: 0.8 } } }])).toEqual(
+    expect(found([{ mark: { type: 'rect', height: { band: 0.8 } } }])).toEqual(
       [],
     )
     expect(
@@ -222,7 +222,7 @@ describe('a marks list in a config file', () => {
 
   it('points two marks packing rows of their own at one shared pileup', () => {
     const filtered = (expr: string) => ({
-      mark: 'span',
+      mark: 'rect',
       transform: [{ type: 'filter', expr }, { type: 'pileup' }],
     })
     expect(found([filtered('jexl:a'), filtered('jexl:b')])).toEqual([
@@ -309,7 +309,7 @@ describe('a marks list in a config file', () => {
     expect(
       found([
         {
-          mark: 'span',
+          mark: 'rect',
           transform: [{ type: 'bin', step: 10, as: ['lo'] }],
         },
       ]),
@@ -481,7 +481,7 @@ describe('a marks list in a config file', () => {
     const colored = (mark: string, color: Record<string, unknown>) => [
       {
         mark,
-        encoding: { ...(mark === 'span' ? {} : { y: 'score' }), color },
+        encoding: { ...(mark === 'rect' ? {} : { y: 'score' }), color },
       },
     ]
     const cuts = (domain: unknown[]) =>
@@ -539,7 +539,7 @@ describe('a marks list in a config file', () => {
     expect(
       found(colored('bar', rampWith({ type: 'log', domainMin: 0 }))),
     ).toEqual([`warning log-floor ${color}.domainMin`])
-    expect(found(colored('span', ramp))).toEqual([])
+    expect(found(colored('rect', ramp))).toEqual([])
     expect(
       found([{ mark: 'text', encoding: { text: 'name', color: ramp } }]),
     ).toEqual([])
@@ -573,9 +573,9 @@ describe('a marks list in a config file', () => {
         }),
       ),
     ).toEqual([`warning invalid-scale ${color}.invalid`])
-    expect(found(colored('span', { value: 'red' }))).toEqual([])
+    expect(found(colored('rect', { value: 'red' }))).toEqual([])
     expect(
-      found([{ mark: 'span', encoding: { color: { value: 'red' } } }]),
+      found([{ mark: 'rect', encoding: { color: { value: 'red' } } }]),
     ).toEqual([])
   })
 
@@ -595,7 +595,7 @@ describe('a marks list in a config file', () => {
   it('leaves a list whose keys or types are wrong to the schema', () => {
     const problems = problemsOf(
       configOf([
-        { mark: 'span', encoding: { y: 'score' }, transform: 'pileup' },
+        { mark: 'rect', encoding: { y: 'score' }, transform: 'pileup' },
       ]),
     )
     expect(problems.map(p => p.where)).toEqual([
@@ -694,7 +694,7 @@ describe('a mark display drawing its default plot', () => {
     expect(
       found([
         {
-          mark: { type: 'span', height: { band: 1 } },
+          mark: { type: 'rect', height: { band: 1 } },
           encoding: { y: '', text: 'name', shape: {}, size: {} },
         },
       ]),
@@ -703,7 +703,7 @@ describe('a mark display drawing its default plot', () => {
 })
 
 describe('where a config holds a marks list', () => {
-  const marks = [{ mark: 'span', encoding: { y: 'score' } }]
+  const marks = [{ mark: 'rect', encoding: { y: 'score' } }]
   const base = () => configOf([{ mark: 'bar', encoding: { y: 'score' } }])
 
   // Why the walk is the whole file and an untyped node carrying `marks` is a

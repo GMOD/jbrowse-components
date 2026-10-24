@@ -110,7 +110,7 @@ copy of a duplicated sequence. The config lists two of the panel's 104 PUR
     ]
   },
   "displayDefaults": {
-    "mark": "span",
+    "mark": "rect",
     "origin": 2,
     "encoding": {
       "y": { "scale": { "domainMin": 0, "domainMax": 4 } },
@@ -129,7 +129,7 @@ plain list of absolute URLs and names each subtrack from its filename. In
 is a color scale and `encoding.y` the y scale, which these settings turn into a
 copy-number heatmap:
 
-- [`mark`](/docs/config/linearwiggledisplay/#slot-mark) `span` gives each sample
+- [`mark`](/docs/config/linearwiggledisplay/#slot-mark) `rect` gives each sample
   one strip of color.
 - [`origin`](/docs/config/linearwiggledisplay/#slot-origin) `2` puts white at
   the diploid baseline, and [`encoding.color`](/docs/config/wigglecolor/)'s
@@ -301,7 +301,7 @@ With the plugin loaded, the adapter's `uri` names the store:
     "uri": "https://jbrowse.org/demos/1000g/qm2_cn_1kb.zarr"
   },
   "displayDefaults": {
-    "mark": "span",
+    "mark": "rect",
     "origin": 2,
     "encoding": {
       "y": { "scale": { "domainMin": 0, "domainMax": 4 } },

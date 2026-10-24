@@ -308,9 +308,9 @@ const markSchema = ConfigurationSchema(
     /**
      * #slot marks.mark
      * What the mark draws, a [](/docs/config/markdef) object or its `type`
-     * alone: `bar`, `point`, `rule`, `line`, `span`, `text` or `link`, with
+     * alone: `bar`, `point`, `rule`, `line`, `rect`, `text` or `link`, with
      * the members one type reads, a line's or a link's `interpolate`, a
-     * span's `height` and a line's `gapBp`.
+     * rect's `height` and a line's `gapBp`.
      */
     mark: markDefSchema,
     /**
@@ -499,12 +499,12 @@ export function configSchemaFactory() {
       },
       /**
        * #slot minWidthPx
-       * Narrowest a bar or span is painted, in px, grown off its start edge.
+       * Narrowest a bar or rect is painted, in px, grown off its start edge.
        */
       minWidthPx: {
         type: 'number',
         defaultValue: 1,
-        description: 'minimum bar/span width in px',
+        description: 'minimum bar/rect width in px',
         advanced: true,
       },
       /**

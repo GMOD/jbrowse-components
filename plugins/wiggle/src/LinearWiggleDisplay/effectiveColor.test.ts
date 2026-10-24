@@ -290,11 +290,11 @@ test('a color per source on xyplot draws no gradient key', () => {
 // the key describes every row.
 test('a heatmap keys its ramp, rows with their own colors included', () => {
   const display = scoredDisplay([{ name: 'a' }])
-  display.setMark('span')
+  display.setMark('rect')
   expect(scoreKey(display)?.kind).toBe('ramp')
   expect(display.valueScales).toEqual([])
   const colored = scoredDisplay([{ name: 'a', color: '#ff0000' }])
-  colored.setMark('span')
+  colored.setMark('rect')
   expect(scoreKey(colored)?.kind).toBe('ramp')
   expect(colored.markSources[0]!.color).toBeUndefined()
 })
@@ -340,7 +340,7 @@ test("the corner notice reads the y scale's ends by the color ramp's rule", () =
 describe('a heatmap reads the pair as a fade and a written scale as written', () => {
   const heatmap = (color?: Record<string, unknown>) => {
     const display = makeDisplay(['a'], true)
-    display.setMark('span')
+    display.setMark('rect')
     if (color !== undefined) {
       display.applyPlot({ encoding: { color } })
     }

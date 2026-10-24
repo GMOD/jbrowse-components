@@ -160,5 +160,5 @@ test('one leaf writes both axes in one action', () => {
     throw new Error('no Density row under Multi-row')
   }
   density.onClick()
-  expect(self.writes).toEqual([{ mark: { type: 'span' }, rowLayout: true }])
+  expect(self.writes).toEqual([{ mark: { type: 'rect' }, rowLayout: true }])
 })

@@ -196,7 +196,7 @@
         ]
       },
       "displayDefaults": {
-        "mark": "span",
+        "mark": "rect",
         "origin": 2,
         "encoding": {
           "y": { "scale": { "domainMin": 0, "domainMax": 4 } },
@@ -3603,7 +3603,7 @@
         {
           "type": "LinearWiggleDisplay",
           "displayId": "hg19.100way.phyloP100way_density",
-          "mark": "span"
+          "mark": "rect"
         }
       ]
     },

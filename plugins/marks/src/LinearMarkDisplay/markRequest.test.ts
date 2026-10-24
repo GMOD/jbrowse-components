@@ -13,7 +13,7 @@ function markOf(mark: Record<string, unknown>) {
 
 test('only a mark with a far foot reaches the other end a mate step found', () => {
   const channels = stepChannels([{ type: 'mate' }])
-  const span = markLayerRequest(markOf({ mark: 'span' }), channels, 1)
+  const span = markLayerRequest(markOf({ mark: 'rect' }), channels, 1)
   expect(span.encoding.x2).toBe('end')
   const link = markLayerRequest(markOf({ mark: 'link' }), channels, 1)
   expect(link.encoding.x2).toEqual({
@@ -118,7 +118,7 @@ test("a window's frame reaches the worker as written, or its default where the r
 
 test('an emptied step slot leaves the worker its default, which the channel reader assumed', () => {
   const mark = markOf({
-    mark: 'span',
+    mark: 'rect',
     transform: [
       { type: 'coverage', as: '' },
       { type: 'pileup', as: '' },

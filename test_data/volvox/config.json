@@ -988,7 +988,7 @@
       "displays": [
         {
           "type": "LinearWiggleDisplay",
-          "mark": "span"
+          "mark": "rect"
         }
       ]
     },
@@ -1180,7 +1180,7 @@
         {
           "type": "LinearWiggleDisplay",
           "displayId": "volvox_microarray_density_density",
-          "mark": "span"
+          "mark": "rect"
         }
       ]
     },
@@ -1222,7 +1222,7 @@
         {
           "type": "LinearWiggleDisplay",
           "displayId": "volvox_microarray_density_folder_density",
-          "mark": "span"
+          "mark": "rect"
         }
       ]
     },
@@ -1803,7 +1803,7 @@
         {
           "type": "LinearWiggleDisplay",
           "displayId": "VUyE25kYsQo_density",
-          "mark": "span"
+          "mark": "rect"
         }
       ]
     },
@@ -1838,7 +1838,7 @@
         {
           "type": "LinearWiggleDisplay",
           "displayId": "oMVFQozR9NO_density",
-          "mark": "span"
+          "mark": "rect"
         }
       ]
     },

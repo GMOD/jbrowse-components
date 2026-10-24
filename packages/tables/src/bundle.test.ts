@@ -192,7 +192,7 @@ test.each([
 test.each([
   ['signed', SIGNED_BIGWIG],
   ['zoomed-out min-max', { ...COVERAGE_BIGWIG, bpPerPx: 1000 }],
-  ['density', { ...SIGNED_BIGWIG, display: { mark: 'span' } }],
+  ['density', { ...SIGNED_BIGWIG, display: { mark: 'rect' } }],
 ])(
   'the bundle answers a %s BigWig as the engine does, in a bare host',
   async (_, args) => {

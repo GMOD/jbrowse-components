@@ -275,7 +275,7 @@ points at a store with the same layout, built by the reproduce script below:
     "uri": "percell.zarr"
   },
   "displayDefaults": {
-    "mark": "span",
+    "mark": "rect",
     "encoding": { "y": { "scale": { "domainMin": 0, "domainMax": 2 } } },
     "height": 420
   }

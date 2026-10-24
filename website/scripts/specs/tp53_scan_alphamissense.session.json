@@ -17,7 +17,7 @@
           "trackId": "hg38-alphaMissense",
           "height": 90,
           "type": "LinearWiggleDisplay",
-          "mark": "span",
+          "mark": "rect",
           "rows": "source",
           "legend": { "show": false },
           "encoding": {

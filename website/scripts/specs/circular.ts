@@ -16,7 +16,7 @@ const CHROMOSOMES = [
 const LIFTOVER = 'hg38ToMm39_liftover'
 const DENSITY_RING = {
   trackId: 'hg38ToMm39_gene_density',
-  mark: 'span',
+  mark: 'rect',
   encoding: {
     color: { scale: { type: 'linear', range: ['#ffffff', '#d95f02'] } },
   },

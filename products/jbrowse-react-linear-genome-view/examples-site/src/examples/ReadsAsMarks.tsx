@@ -26,7 +26,7 @@ const tracks = [
         facet: 'HP',
         marks: [
           {
-            mark: 'span',
+            mark: 'rect',
             transform: [{ type: 'pileup' }],
             encoding: {
               row: 'row',

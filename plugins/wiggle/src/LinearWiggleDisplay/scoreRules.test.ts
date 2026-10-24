@@ -109,7 +109,7 @@ it('stops drawing rules in density mode', () => {
   // for a rule to sit on — the same reason the grid draws nothing here,
   // and a dashed line with a "2 copies" caption over a color ramp reads as a
   // threshold in a picture that has none
-  display.setMark('span')
+  display.setMark('rect')
   expect(display.isDensityMode).toBe(true)
   expect(display.domain).toBeDefined()
   expect(ruleMarksOf(display)).toEqual([])
@@ -128,7 +128,7 @@ it('offers the reference lines only where the rules draw', () => {
   const display = makeDisplay()
   expect(display.scoreRulesDrawn).toBe(true)
   expect(menuLabels(display)).toContain('Y axis...')
-  display.setMark('span')
+  display.setMark('rect')
   expect(display.valueScales).toEqual([])
   expect(display.scoreRulesDrawn).toBe(false)
   expect(menuLabels(display)).toContain('Score range...')
@@ -140,7 +140,7 @@ it('offers the reference lines only where the rules draw', () => {
       sources: [{ ...source('a', 30), color: 'red' }],
     },
   )
-  colored.setMark('span')
+  colored.setMark('rect')
   expect(colored.valueScales).toEqual([])
   expect(colored.scoreRulesDrawn).toBe(false)
 })
@@ -154,7 +154,7 @@ it('does not lift the axis for a rule density will not draw', () => {
   const display = makeDisplay([90])
   expect(display.domain).toEqual([0, 90])
 
-  display.setMark('span')
+  display.setMark('rect')
   expect(ruleMarksOf(display)).toEqual([])
   expect(display.domain).toEqual([30, 60])
 })

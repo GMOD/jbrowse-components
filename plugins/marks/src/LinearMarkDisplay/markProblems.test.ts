@@ -70,7 +70,7 @@ const COVERAGE = {
   transform: [{ type: 'coverage' }],
   encoding: { y: 'coverage' },
 }
-const PILEUP = { mark: 'span', transform: [{ type: 'pileup' }] }
+const PILEUP = { mark: 'rect', transform: [{ type: 'pileup' }] }
 
 interface ShippedConfig {
   tracks: {
@@ -141,7 +141,7 @@ test('a bar or point naming no y, with no step writing one, draws nothing', () =
       message: `a ${mark === 0 ? 'bar' : 'point'} stands at a value, and names no y field while no step before it writes one — a coverage, or an aggregate with one op — so it draws nothing`,
     })),
   )
-  expect(found([{ mark: 'span' }])).toEqual([])
+  expect(found([{ mark: 'rect' }])).toEqual([])
 })
 
 test("a step's output is the y a bar leaves unwritten", () => {
@@ -172,7 +172,7 @@ test("a step's output is the y a bar leaves unwritten", () => {
 })
 
 test('a channel the mark does not read waits unread', () => {
-  expect(found([{ mark: 'span', encoding: { y: 'score' } }])).toEqual([
+  expect(found([{ mark: 'rect', encoding: { y: 'score' } }])).toEqual([
     'warning unread-channel mark 0 encoding.y',
   ])
   expect(
@@ -201,10 +201,10 @@ test('a channel the mark does not read waits unread', () => {
 })
 
 test('a width on a mark that draws none waits unread, and a point or a rule reads a number alone', () => {
-  expect(found([{ mark: 'span', encoding: { size: 8 } }])).toEqual([
+  expect(found([{ mark: 'rect', encoding: { size: 8 } }])).toEqual([
     'warning unread-size mark 0 encoding.size',
   ])
-  expect(found([{ mark: 'span', encoding: { strokeWidth: 8 } }])).toEqual([
+  expect(found([{ mark: 'rect', encoding: { strokeWidth: 8 } }])).toEqual([
     'warning unread-size mark 0 encoding.strokeWidth',
   ])
   expect(found([{ mark: 'point', encoding: { y: 'score', size: 8 } }])).toEqual(
@@ -247,7 +247,7 @@ test('an interpolate on a mark that joins nothing waits unread', () => {
       },
     ]),
   ).toEqual(['warning unread-mark-member mark 0 mark.interpolate'])
-  expect(found([{ mark: { type: 'span', interpolate: 'arc' } }])).toEqual([
+  expect(found([{ mark: { type: 'rect', interpolate: 'arc' } }])).toEqual([
     'warning unread-mark-member mark 0 mark.interpolate',
   ])
   expect(
@@ -324,7 +324,7 @@ test('a height on a mark that draws no span waits unread, unless it is the defau
       { mark: { type: 'bar', height: { band: 1 } }, encoding: { y: 'score' } },
     ]),
   ).toEqual([])
-  expect(found([{ mark: { type: 'span', height: { band: 0.8 } } }])).toEqual([])
+  expect(found([{ mark: { type: 'rect', height: { band: 0.8 } } }])).toEqual([])
 })
 
 test('a valued mark beside a packed span is told it stands in the first row, unless they never draw together or a facet bands them', () => {
@@ -345,7 +345,7 @@ test('a valued mark beside a packed span is told it stands in the first row, unl
 
 test('two marks packing rows of their own are pointed at one shared pileup', () => {
   const filtered = (expr: string) => ({
-    mark: 'span',
+    mark: 'rect',
     transform: [{ type: 'filter', expr }, { type: 'pileup' }],
   })
   expect(found([filtered('jexl:a'), filtered('jexl:b')])).toEqual([
@@ -442,7 +442,7 @@ test("a y the display's steps write is written, and one they unmake is not", () 
 test("a display pileup bands every mark, so none stands beside another's rows", () => {
   expect(
     found(
-      [{ mark: 'bar', encoding: { y: 'score' } }, { mark: 'span' }],
+      [{ mark: 'bar', encoding: { y: 'score' } }, { mark: 'rect' }],
       undefined,
       [{ type: 'pileup' }],
     ),
@@ -473,7 +473,7 @@ test('a pair slot naming another number of fields says it reads the default', ()
   expect(
     problemsOf([
       {
-        mark: 'span',
+        mark: 'rect',
         encoding: {},
         transform: [
           { type: 'bin', step: 10, as: ['lo'] },
@@ -620,7 +620,7 @@ test("the display's own steps are checked as a mark's are, under no mark", () =>
 
 test('a mark the caller could not read keeps its index as a gap', () => {
   const packed: MarkSnapshot = {
-    mark: 'span',
+    mark: 'rect',
     transform: [{ type: 'pileup' }],
   }
   expect(
@@ -653,14 +653,14 @@ test("a mark packing over the facet's or the display's pileup is two packings", 
 
 test("a display pileup under a facet packs across every section, and the facet's is the fix", () => {
   expect(
-    problemsOf([{ mark: 'span' }], { field: 'HP' }, [{ type: 'pileup' }]).map(
+    problemsOf([{ mark: 'rect' }], { field: 'HP' }, [{ type: 'pileup' }]).map(
       problemText,
     ),
   ).toEqual([
     'transform.0: runs before the facet splits the features, so it packs across every section and leaves each section the rows the others fill; the same pileup in facet.transform packs each section on its own',
   ])
   expect(
-    found([{ mark: 'span' }], {
+    found([{ mark: 'rect' }], {
       field: 'HP',
       transform: [{ type: 'pileup' }],
     }),
@@ -671,11 +671,11 @@ test("a display pileup under a facet packs across every section, and the facet's
 // own step makes features that carry no row, so it stands beside the rows.
 test('a mark whose own step unmakes a shared pileup stands beside the rows', () => {
   expect(
-    found([COVERAGE, { mark: 'span' }], undefined, [{ type: 'pileup' }]),
+    found([COVERAGE, { mark: 'rect' }], undefined, [{ type: 'pileup' }]),
   ).toEqual(['warning value-beside-rows mark 0 encoding.row'])
   expect(
     found(
-      [{ mark: 'bar', encoding: { y: 'score' } }, { mark: 'span' }],
+      [{ mark: 'bar', encoding: { y: 'score' } }, { mark: 'rect' }],
       undefined,
       [{ type: 'pileup' }],
     ),
@@ -684,7 +684,7 @@ test('a mark whose own step unmakes a shared pileup stands beside the rows', () 
 
 test("the facet's steps are checked under facet.transform, and what they make a mark may read", () => {
   expect(
-    found([{ mark: 'span' }], {
+    found([{ mark: 'rect' }], {
       field: 'HP',
       transform: [{ type: 'bin', step: -1 }],
     }),
@@ -886,7 +886,7 @@ test('a ramp reads its ends, not a domain, and leaves an end open on any mark', 
     {
       mark,
       encoding: {
-        ...(mark === 'span' ? {} : { y: 'score' }),
+        ...(mark === 'rect' ? {} : { y: 'score' }),
         color: { field: 'score', scale: { type: 'linear', ...scale } },
       },
     },
@@ -909,7 +909,7 @@ test('a ramp reads its ends, not a domain, and leaves an end open on any mark', 
     'warning log-floor mark 0 encoding.color.scale.domainMin',
   ])
   expect(found(ramp('bar', { type: 'log', domainMin: 1 }))).toEqual([])
-  expect(found(ramp('span', {}))).toEqual([])
+  expect(found(ramp('rect', {}))).toEqual([])
   const text = (scale: Record<string, unknown>) => [
     {
       mark: 'text',
@@ -1051,7 +1051,7 @@ test("a pileup under rows is told its packed rows share their value's row", () =
   const BAR = { mark: 'bar', encoding: { y: 'score' } }
   expect(
     found(
-      [BAR, PILEUP, { mark: 'span', encoding: { row: 'lane' } }],
+      [BAR, PILEUP, { mark: 'rect', encoding: { row: 'lane' } }],
       { transform: [{ type: 'pileup' }] },
       [{ type: 'pileup' }],
       'source',
@@ -1100,7 +1100,7 @@ test('a field spelling a color in any CSS syntax is a constant written bare', ()
 
 test('a slot written at its default reads as unwritten, as the display sees it', () => {
   const written = {
-    mark: { type: 'span', height: { band: 1 } },
+    mark: { type: 'rect', height: { band: 1 } },
     encoding: {
       y: '',
       x: 'start',

@@ -203,7 +203,7 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
             {
               trackId: 'ecoli_pggb_pav',
               // Matches pangenome_cactus/pav so the two builders compare.
-              mark: 'span',
+              mark: 'rect',
               height: 240,
             },
           ],

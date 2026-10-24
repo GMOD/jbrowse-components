@@ -302,7 +302,7 @@ const rhdPanel = (sortRowsBy?: RowSortSpec) =>
           {
             trackId: 'cnv_1000g_zarr',
             type: 'LinearWiggleDisplay',
-            mark: 'span',
+            mark: 'rect',
             // Symmetric about the diploid origin; see cnv1000g's
             // CN_HEATMAP_SETTINGS.
             origin: 2,

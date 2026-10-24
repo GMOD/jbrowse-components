@@ -424,7 +424,7 @@ export function stateModelFactory(
          * undefined where no mark is a span, so the dialog asks for none.
          */
         get rowProportion(): number | undefined {
-          return self.conf.marks.find(m => m.mark.type === 'span')?.mark.height
+          return self.conf.marks.find(m => m.mark.type === 'rect')?.mark.height
             .band
         },
         /**
@@ -1591,7 +1591,7 @@ export function stateModelFactory(
          */
         setRowProportion(n: number) {
           for (const mark of self.conf.marks) {
-            if (mark.mark.type === 'span') {
+            if (mark.mark.type === 'rect') {
               setConf(mark, ['mark', 'height', 'band'], n)
             }
           }

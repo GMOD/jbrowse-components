@@ -28,7 +28,7 @@ const FIELDS: PlotFields = {
 
 describe('editChannels', () => {
   it('offers a span no y, since a span stands at no value', () => {
-    expect(editChannels('span')).not.toContain('y')
+    expect(editChannels('rect')).not.toContain('y')
     expect(editChannels('bar')).toContain('y')
   })
 
@@ -290,7 +290,7 @@ describe('withChannel', () => {
 
 describe('unreadChannels', () => {
   it('names a channel the type stopped reading', () => {
-    const wasBar = { mark: 'span', encoding: { y: 'score' } }
+    const wasBar = { mark: 'rect', encoding: { y: 'score' } }
     expect(unreadChannels(wasBar as MarkSnapshot)).toEqual(['y'])
   })
 
@@ -302,7 +302,7 @@ describe('unreadChannels', () => {
 
   it('clears one without touching the rest', () => {
     const mark = {
-      mark: 'span',
+      mark: 'rect',
       encoding: { y: 'score', color: { value: 'red' } },
     }
     expect(withoutChannel(mark as MarkSnapshot, 'y').encoding).toEqual({
@@ -315,7 +315,7 @@ describe('the mark list', () => {
   const marks: MarkSnapshot[] = [
     { mark: 'bar', encoding: { y: 'a' } },
     { mark: 'point', encoding: { y: 'b' } },
-    { mark: 'span' },
+    { mark: 'rect' },
   ]
 
   it('adds a mark at its defaults, which the rules then report on', () => {
@@ -324,18 +324,18 @@ describe('the mark list', () => {
   })
 
   it('removes one and keeps the order of the rest', () => {
-    expect(removeMark(marks, 1).map(m => m.mark)).toEqual(['bar', 'span'])
+    expect(removeMark(marks, 1).map(m => m.mark)).toEqual(['bar', 'rect'])
   })
 
   it('moves one, since the list order is the paint order', () => {
     expect(moveMark(marks, 0, 1).map(m => m.mark)).toEqual([
       'point',
       'bar',
-      'span',
+      'rect',
     ])
     expect(moveMark(marks, 2, -1).map(m => m.mark)).toEqual([
       'bar',
-      'span',
+      'rect',
       'point',
     ])
   })

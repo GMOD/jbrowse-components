@@ -157,7 +157,7 @@ export function wigglePairOf({ value, scale }: ColorSetting) {
  * The `encoding.color` channel as it paints. A score color with no
  * `scale.type` is the pair about the `origin` (`wigglePairOf`), which every
  * mark draws in its own idiom: bars, points and lines paint it solid either
- * side of the cut, a threshold, and a heatmap (`span`) fades to it from white
+ * side of the cut, a threshold, and a heatmap (`rect`) fades to it from white
  * at the origin, a `linear` ramp with its middle stop there
  * (`scale.domainMid` moves it). A written `threshold` paints solid bands and
  * a written `linear` a ramp on every mark.

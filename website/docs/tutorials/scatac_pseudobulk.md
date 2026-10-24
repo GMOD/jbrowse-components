@@ -220,7 +220,7 @@ the row loads with no data.
 In [grammar-of-graphics](/docs/config_guides/mark_display) terms, a
 [`mark`](/docs/config/linearwiggledisplay/#slot-mark) is the shape drawn, and
 the track menu switches it between modes: `bar` (the default, and the figures
-here) compares peak shape, and `span` maps score to color and fits more rows.
+here) compares peak shape, and `rect` maps score to color and fits more rows.
 
 To check the rows against marker genes, paste two loci into the location box to
 open them side by side in one view, a T-cell marker (_CD8A_) and a B-cell marker

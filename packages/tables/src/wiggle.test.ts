@@ -92,7 +92,7 @@ test('a zoomed-out min-max extent draws the max and min bands around the mean', 
 })
 
 test('density fades each bin from white at the origin to the side it is on', async () => {
-  const t = await engine.wiggle({ ...SIGNED_BIGWIG, display: { mark: 'span' } })
+  const t = await engine.wiggle({ ...SIGNED_BIGWIG, display: { mark: 'rect' } })
   expect(t.rendering).toBe('density')
   const lightness = (hex: string) =>
     Math.min(...[1, 3, 5].map(k => Number.parseInt(hex.slice(k, k + 2), 16)))
@@ -113,7 +113,7 @@ test('density fades each bin from white at the origin to the side it is on', asy
 })
 
 test('density keys its ramp as the display does, and a bar plot keys none', async () => {
-  const t = await engine.wiggle({ ...SIGNED_BIGWIG, display: { mark: 'span' } })
+  const t = await engine.wiggle({ ...SIGNED_BIGWIG, display: { mark: 'rect' } })
   expect(t.ramps).toHaveLength(1)
   const [ramp] = t.ramps
   expect(ramp!.title).toBe('Score')
@@ -249,7 +249,7 @@ describe('sources sharing one panel take the colors the display deals them', () 
     for (const display of [
       { rowColor: { scale: { unknown: '' } } },
       { encoding: { color: { value: 'darkgreen' } } },
-      { mark: 'span' },
+      { mark: 'rect' },
     ]) {
       expect((await colorsOf(display)).declared).toEqual(['', '', ''])
     }
@@ -299,7 +299,7 @@ describe('several regions share the one domain the display autoscales to', () =>
     })
 
   it('colors a score alike in every region, against one ramp', async () => {
-    const density = { mark: 'span' }
+    const density = { mark: 'rect' }
     const [alone, both] = await Promise.all([
       Promise.all([read([low], density), read([high], density)]),
       read([low, high], density),

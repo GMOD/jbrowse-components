@@ -224,6 +224,11 @@ its only value scale is `coverage.encoding.y`.
 ### Mark, guides, coordinates
 
 - **Marks:** `rect bar point rule tick line area text link gene`.
+  - Amended 2026-10-24: the mark display and wiggle say `rect` where they
+    said `span`, a band from `x` to `x2` filling its row, as Vega-Lite and
+    GenomeSpy name it; render-core's shape keeps the id `span`, since canvas
+    registers a `rect` pass. Built today: `bar point rule line rect text
+    link`.
   - `link` joins `x..x2` to its mate: a curve between points, a ribbon between
     intervals. One mark covers the synteny ribbons, the dotplot segments and
     the chords.

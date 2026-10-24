@@ -108,7 +108,7 @@ describe('what the line reads out', () => {
   // A heatmap's unset color is a ramp through white, and its two ends are the
   // whole of it, so the line edits them and writes the ramp back.
   it('edits a heatmap ramp through white as its two ends', () => {
-    const display = makeDisplay({ mark: 'span' })
+    const display = makeDisplay({ mark: 'rect' })
     expect(display.scoreGradientPaints).toBe(true)
     expect(lineOf(display)).toMatchObject({ mode: 'edit', cut: 0 })
     display.applyPlot({
@@ -130,7 +130,7 @@ describe('what the line reads out', () => {
   // A threshold on a heatmap paints solid bands, as on bars.
   it('edits a threshold heatmap as the two sides of its cut', () => {
     const display = makeDisplay({
-      mark: 'span',
+      mark: 'rect',
       encoding: {
         color: { scale: { type: 'threshold', range: ['#2166ac', '#b2182b'] } },
       },
@@ -320,7 +320,7 @@ describe('a round trip changes nothing', () => {
     [
       'a threshold pair in density',
       {
-        mark: 'span' as const,
+        mark: 'rect' as const,
         encoding: {
           color: {
             scale: { type: 'threshold', range: ['#2166ac', '#b2182b'] },

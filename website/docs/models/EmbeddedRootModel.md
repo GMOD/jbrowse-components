@@ -57,6 +57,7 @@ From [InternetAccountsMixin](../internetaccountsmixin): <span id="property-inter
 | --- | --- |
 | <span id="action-setsession">**setSession**</span><br><code>(sessionSnapshot: SnapshotIn&lt;SESSION&gt;) =&gt; void</code> | Synchronous: an async caller must `await pluginManager.preloadSessionTypes(snapshot)` first. |
 | <span id="action-restoresession">**restoreSession**</span><br><code>(sessionSnapshot: SessionSnapshot) =&gt; void</code> | Load a session whose shape is only known at runtime — decoded from a URL, read back from storage, handed over by a non-TypeScript host.<br><br>Separate from `setSession` because that one takes the compiler-checked snapshot type, which a value parsed out of JSON can never satisfy. This method exists to hold the one assertion below, so callers do not each assert at their call site. At runtime MST validates the snapshot as it applies it and throws on a mismatch, which is the check that matters for a value this app did not author. |
+| <span id="action-aftercreate">**afterCreate**</span><br><code>() =&gt; void</code> | The `session` prop at create is the third door, after the two above: a track whose config cannot load is dropped there too. |
 | <span id="action-renamecurrentsession">**renameCurrentSession**</span><br><code>(sessionName: string) =&gt; void</code> |  |
 
 <details class="inherited-members" data-pagefind-ignore>

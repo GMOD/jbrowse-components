@@ -24,7 +24,7 @@ const STARTS: Record<string, unknown> = {
     encoding: { y: 'score', shape: { field: 'svtype' } },
   },
   'a span with a pinned ramp and a pileup': {
-    mark: 'span',
+    mark: 'rect',
     transform: [{ type: 'pileup' }],
     encoding: {
       color: {

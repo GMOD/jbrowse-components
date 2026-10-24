@@ -257,7 +257,7 @@ The histogram's bins show `mean` over the column in place of the count.
 
 ## A pileup
 
-A `pileup` step writes each copy's row in a first-fit packing, and a `span`
+A `pileup` step writes each copy's row in a first-fit packing, and a `rect`
 draws the packing, colored by strand.
 
 ```json addtrack config=https://jbrowse.org/demos/gene_density/config.json loc=chr1:151,000,000-151,030,000
@@ -276,7 +276,7 @@ draws the packing, colored by strand.
       "displayId": "alu_pileup-LinearMarkDisplay",
       "marks": [
         {
-          "mark": "span",
+          "mark": "rect",
           "transform": [{ "type": "pileup", "padding": 200 }],
           "encoding": {
             "color": {
@@ -315,7 +315,7 @@ chip. A `pileup` in the facet's `transform` packs each section separately.
       "displayId": "alu_facet-LinearMarkDisplay",
       "facet": { "field": "strand", "transform": [{ "type": "pileup" }] },
       "marks": [
-        { "mark": "span", "encoding": { "color": { "value": "#4575b4" } } }
+        { "mark": "rect", "encoding": { "color": { "value": "#4575b4" } } }
       ]
     }
   ]

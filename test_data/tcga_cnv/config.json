@@ -43,7 +43,7 @@
         "uri": "https://jbrowse.org/demos/tcga/tcga_brca_cnv.zarr"
       },
       "displayDefaults": {
-        "mark": "span",
+        "mark": "rect",
         "origin": 0,
         "encoding": {
           "y": { "scale": { "domainMin": -2, "domainMax": 2 } },

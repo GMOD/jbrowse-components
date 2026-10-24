@@ -87,7 +87,7 @@ describe('an overlay of several subtracks deals tableau10 by name', () => {
   })
 
   it('deals nothing while a gradient paints', () => {
-    const display = makeDisplay({ rows: false, mark: 'span' })
+    const display = makeDisplay({ rows: false, mark: 'rect' })
     expect(display.rowPaletteDeals).toBe(false)
     expect(display.rowColorChoice).toBe('')
   })

@@ -11,7 +11,7 @@ test('a text field a step writes is picked as a category, a number as a ramp', (
   ])
   const scaleOf = (field: string) =>
     (
-      withChannel({ mark: 'span' }, 'color', field, fields).encoding?.color as {
+      withChannel({ mark: 'rect' }, 'color', field, fields).encoding?.color as {
         scale?: { type?: string }
       }
     ).scale?.type

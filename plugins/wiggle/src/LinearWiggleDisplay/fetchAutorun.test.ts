@@ -380,7 +380,7 @@ describe('LinearWiggleDisplay solid color', () => {
     mode => {
       const display = loadedWithSignedData()
       display.applyPlot({ encoding: { color: { value: 'green' } } })
-      display.setMark('span')
+      display.setMark('rect')
       display.setY(mode)
 
       const layers = buildSourceRenderData(

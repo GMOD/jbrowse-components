@@ -78,7 +78,7 @@ function markColorOptions() {
  * ```
  * ```js
  * {
- *   mark: 'span',
+ *   mark: 'rect',
  *   encoding: {
  *     color: {
  *       field: 'score',

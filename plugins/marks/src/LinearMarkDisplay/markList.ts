@@ -57,7 +57,7 @@ const MARK_VALUE_LANES = {
   point: ['y', 'glyph'],
   rule: ['y'],
   line: ['y'],
-  span: ['row'],
+  rect: ['row'],
   link: ['x2Region'],
 } as const satisfies Record<Exclude<MarkType, 'text'>, readonly ChannelLane[]>
 
@@ -129,7 +129,7 @@ export interface MarkRenderState extends MarkFrame {
   valueInsetPx: number
   /** The px each row band is drawn in, the display's `effectiveRowHeight`. */
   rowHeight: number
-  /** Each mark's fraction of its band, which a span fills. */
+  /** Each mark's fraction of its band, which a rect fills. */
   rowProportions: number[]
   /** The px the rows are scrolled up by, 0 wherever they fit the plot. */
   scrollTop: number
@@ -417,13 +417,13 @@ function shapeMark(entry: MarkEntry, i: number) {
         }),
       )
     }
-    case 'span': {
+    case 'rect': {
       return layerMark(
         entry,
         i,
         spanMark,
         id,
-        d => withLanes(d.layers[i], MARK_VALUE_LANES.span),
+        d => withLanes(d.layers[i], MARK_VALUE_LANES.rect),
         (s, d) => ({
           colorScale: regionColorScale(s, d, i),
           rowHeight: s.rowHeight,

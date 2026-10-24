@@ -463,7 +463,7 @@ column is a stretch that strain lacks:
       }
     ]
   },
-  "displayDefaults": { "mark": "span" }
+  "displayDefaults": { "mark": "rect" }
 }
 ```
 

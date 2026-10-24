@@ -11,7 +11,7 @@ guide_category: Track types
 Vega-Lite or ggplot: a picture is declared as marks, encodings and transforms
 rather than drawn by code. It goes on a `FeatureTrack`, an `AlignmentsTrack`, a
 `VariantTrack`, a `QuantitativeTrack` or a `MultiQuantitativeTrack`, and draws a
-`bar`, `point`, `rule`, `line`, `span`, `text` or `link` per `marks` entry, each
+`bar`, `point`, `rule`, `line`, `rect`, `text` or `link` per `marks` entry, each
 with an `encoding` naming the fields that feed it, a `transform` list that can
 bin, count, pack or measure coverage, and a zoom range it draws in.
 
@@ -68,9 +68,9 @@ one.
 | a point at a value | `geom_point(size)` | `"mark": "point"`, `"size"` on the mark | `"mark": "point"`, `encoding.size` a number, at the middle of `x` to `x2` |
 | a line across an interval at a value | `geom_segment(aes(xend = end, yend = score))` | `"mark": "rule"` over `x`, `x2` and `y` | `"mark": "rule"`, `encoding.strokeWidth` a number as its thickness |
 | a line through the values | `geom_step()`, `geom_line()` | `"mark": { "type": "line", "interpolate": "step-after" }` or `"linear"` | `"mark": { "type": "line", "interpolate": "step" }` or `"linear"`, `encoding.strokeWidth` its width |
-| a band across the plot, with no value | `geom_rect()` with no y | `"mark": "rect"` over `x` and `x2` alone | `"mark": "span"` |
-| a heatmap strip, its color the value | `geom_tile(aes(fill = score))` | `"mark": "rect"` with a quantitative `color` | `"mark": "span"` with a color scale over the field |
-| a band thinner than its row | `geom_tile(height = 0.8)` | `"mark": {"type": "rect", "height": {"band": 0.8}}` | `"mark": {"type": "span", "height": {"band": 0.8}}` |
+| a band across the plot, with no value | `geom_rect()` with no y | `"mark": "rect"` over `x` and `x2` alone | `"mark": "rect"` |
+| a heatmap strip, its color the value | `geom_tile(aes(fill = score))` | `"mark": "rect"` with a quantitative `color` | `"mark": "rect"` with a color scale over the field |
+| a band thinner than its row | `geom_tile(height = 0.8)` | `"mark": {"type": "rect", "height": {"band": 0.8}}` | `"mark": {"type": "rect", "height": {"band": 0.8}}` |
 | the field a mark plots | `aes(y = score)` | `"y": {"field": "score"}` | `"encoding": {"y": "score"}` |
 | a value computed on the way in | `mutate()` before the plot | `{"calculate": …, "as": …}` | `{"type": "formula", "expr": …, "as": …}` |
 | a color per category | `aes(fill = strand)` | `"color": {"field": "strand", "type": "nominal"}` | `"color": {"field": "strand", "scale": {"type": "ordinal"}}` |
@@ -429,17 +429,17 @@ with two colors paints a rise across zero in both, changing at the axis.
 }
 ```
 
-A `span` has no `y`: it paints a band from `x` to `x2` in its color, for an
-interval whose extent is the point. With no `row` every span shares one band;
-with one, `{ "mark": "span", "encoding": { "row": "sampleIndex" } }`, the plot
+A `rect` has no `y`: it paints a band from `x` to `x2` in its color, for an
+interval whose extent is the point. With no `row` every rect shares one band;
+with one, `{ "mark": "rect", "encoding": { "row": "sampleIndex" } }`, the plot
 divides into as many bands as the highest row on screen needs. A color scale
-over a field makes the span a heatmap:
-`{ "mark": "span", "encoding": { "color": { "field": "score", "scale": { "type": "linear", "range": ["white", "red"] } } } }`
+over a field makes the rect a heatmap:
+`{ "mark": "rect", "encoding": { "color": { "field": "score", "scale": { "type": "linear", "range": ["white", "red"] } } } }`
 paints each interval by its value, and a diverging `scale.range` with
 `scale.domainMid` fades through the middle color at that value, which is how a
 signed signal reads white at zero.
 
-`"mark": { "type": "span", "height": { "band": 0.8 } }` fills that fraction of
+`"mark": { "type": "rect", "height": { "band": 0.8 } }` fills that fraction of
 its band, centred, where an unwritten `band` fills all of it. It sits on the
 mark, so two spans over the same rows can differ, one drawn thick at `0.8` and
 one thin at `0.3`.
@@ -600,7 +600,7 @@ each section into separate rows with every mark standing in them, and a
   {
     "type": "LinearMarkDisplay",
     "facet": { "field": "sample", "transform": [{ "type": "pileup" }] },
-    "marks": [{ "mark": "span" }]
+    "marks": [{ "mark": "rect" }]
   }
 ]
 ```
@@ -651,7 +651,7 @@ Haplotagged reads split by their `HP` tag, the tag lifted into a field by a
     "facet": "HP",
     "marks": [
       {
-        "mark": "span",
+        "mark": "rect",
         "transform": [{ "type": "pileup" }],
         "encoding": {
           "color": {
@@ -701,7 +701,7 @@ The rows divide the plot between them by default, so every row shows.
 scroll: a wheel over the rows or the scrollbar at the right reaches them, and
 shift+wheel resizes them. `0`, the default, fits them to the plot again, and
 **Row height → Squeeze to fit view** writes it. The menu's Normal and Compact
-presets also set every span's `mark.height.band`, so the rows stand apart.
+presets also set every rect's `mark.height.band`, so the rows stand apart.
 
 The display's [`rowColor`](/docs/config/linearmarkdisplay/#slot-rowcolor) paints
 the bar beside each row's label and leaves the marks' colors unchanged.
@@ -724,7 +724,7 @@ features themselves. The adapter lists its species too, so every species has a
 row whether or not the loaded regions align it, in the guide tree's order with
 the tree drawn beside the rows, as on the MAF display. Each row keeps its
 block's reference span and has the species' `chr`, `srcStart`, `strand`,
-`srcSize` and `seq`; a span colored by `chr` is the MAF display's color by
+`srcSize` and `seq`; a rect colored by `chr` is the MAF display's color by
 source chromosome:
 
 ```json addtrack
@@ -749,7 +749,7 @@ source chromosome:
       "rows": "species",
       "marks": [
         {
-          "mark": "span",
+          "mark": "rect",
           "encoding": {
             "color": { "field": "chr", "scale": { "type": "ordinal" } }
           }
@@ -764,7 +764,7 @@ A `cells` step behind the flatten replaces each species row with its runs of
 columns against the reference: one feature per run in one `state`, `match`,
 `mismatch` or `gap`, a mismatch run with its `base`, and one interbase
 `insertion` per run of inserted bases, standing at the reference base it
-precedes with the bases in `base`. A span colored by `state` is the MAF
+precedes with the bases in `base`. A rect colored by `state` is the MAF
 display's mismatch view, an insertion painting as a sliver of the display's
 `minWidthPx` at its anchor, and a `text` over `base` letters each mismatch and
 each insertion once the zoom shows a base:
@@ -792,7 +792,7 @@ each insertion once the zoom shows a base:
       "rows": "species",
       "marks": [
         {
-          "mark": "span",
+          "mark": "rect",
           "encoding": {
             "color": {
               "field": "state",
@@ -862,12 +862,12 @@ summaries needs `y` to choose one. A link behind a `mate` step reaches the other
 end the step found without naming `x2`, and a written channel takes precedence.
 
 `pileup` expresses the packing of a read pileup as a step. It writes the lowest
-row on which each feature overlaps nothing already there, and a `span` reading
+row on which each feature overlaps nothing already there, and a `rect` reading
 that row draws the packing:
 
 ```json
 {
-  "mark": "span",
+  "mark": "rect",
   "transform": [{ "type": "pileup", "padding": 10 }],
   "encoding": {
     "row": "row",
@@ -953,9 +953,9 @@ each reported under its id:
 | `op-field` | error | A `sum`, `mean`, `min` or `max` naming no `field`. |
 | `step-field-expression` | error | A step's field written as a `jexl:` expression, where a step reads a name or a dotted path. |
 | `unwritten-y` | error | A `y` naming a field that no `aggregate` or `coverage` step before it writes. |
-| `unread-channel` | warning | A channel the mark's type does not read, such as `y` on a `span`, a `size` on a rule, whose width is `strokeWidth`, or a size field on a point. |
+| `unread-channel` | warning | A channel the mark's type does not read, such as `y` on a `rect`, a `size` on a rule, whose width is `strokeWidth`, or a size field on a point. |
 | `unread-size` | warning | An `encoding.size` or `encoding.strokeWidth` on a mark that draws no point, rule or line and strokes no link. |
-| `unread-mark-member` | warning | A `mark` member its type does not read: an `interpolate` off a line or a link, a `height` off a span, a `gapBp` off a line. |
+| `unread-mark-member` | warning | A `mark` member its type does not read: an `interpolate` off a line or a link, a `height` off a rect, a `gapBp` off a line. |
 | `mark-interpolate` | warning | An `interpolate` the mark's type does not draw, such as `dome` on a line, which then draws its default. |
 | `threshold-cuts` | warning | Threshold cuts that repeat, leaving an interval no value falls in. |
 | `threshold-no-cuts` | warning | A threshold color naming no cut, so every value paints one color. |
@@ -976,7 +976,7 @@ each reported under its id:
 | `bin-field-and-fields` | warning | A `bin` naming a `field` beside the `fields` it cuts at the bin edges, which leaves the `field` unread. |
 | `unread-weight` | warning | A `weight` on a `min` or a `max`, where it has no effect. |
 | `unwritten-field` | warning | Another channel naming a field that no `aggregate` or `coverage` step before it writes, so it reads no value; the field a `facet` or `rows` splits on counts as written. |
-| `value-beside-rows` | warning | A mark other than a span drawn beside one that stacks rows, standing in the first of them. |
+| `value-beside-rows` | warning | A mark other than a rect drawn beside one that stacks rows, standing in the first of them. |
 | `two-packings` | warning | Two `pileup` steps packing one plot, whose rows share numbers. |
 | `cross-section-packing` | warning | A `pileup` in the display's `transform` under a `facet`, packing across every section. |
 | `rows-beside-facet` | warning | `rows` beside a `facet` on another field, where the facet draws alone. |
@@ -1070,7 +1070,7 @@ the session names the mark display for it.
 
 ## When a plugin is the next step
 
-A drawing that is not a bar, a point, a rule, a span or a label needs a new
+A drawing that is not a bar, a point, a rule, a rect or a label needs a new
 **mark type**: one shader, one painter and one hit test, declared as a mark over
 the same worker channels this display reads. See
 [](/docs/developer_guides/creating_gpu_display) to write one. A display that

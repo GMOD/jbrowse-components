@@ -13,14 +13,14 @@ const markHeightSchema = ConfigurationSchema(
   {
     /**
      * #slot height.band
-     * The fraction of its band a span fills, centred in the band, so below 1
-     * the rows stand apart. Read by a span alone; the track menu's Row height
-     * presets write every span's.
+     * The fraction of its band a rect fills, centred in the band, so below 1
+     * the rows stand apart. Read by a rect alone; the track menu's Row height
+     * presets write every rect's.
      */
     band: {
       type: 'number',
       defaultValue: DEFAULT_HEIGHT_BAND,
-      description: 'fraction of its band a span fills',
+      description: 'fraction of its band a rect fills',
     },
   },
   { closed: true },
@@ -31,7 +31,7 @@ const markHeightSchema = ConfigurationSchema(
  * #category display
  * A `marks` entry's `mark`, Vega-Lite's mark object: the `type` it draws as,
  * and the members one type alone reads, a line's or a link's `interpolate`,
- * a span's `height` and a line's `gapBp`. A bare name is the `type`, so
+ * a rect's `height` and a line's `gapBp`. A bare name is the `type`, so
  * `mark: "line"` and `mark: { type: "line" }` are one mark.
  *
  * #example
@@ -42,7 +42,7 @@ const markHeightSchema = ConfigurationSchema(
  * }
  * ```
  * ```js
- * { mark: { type: 'span', height: { band: 0.8 } } }
+ * { mark: { type: 'rect', height: { band: 0.8 } } }
  * ```
  */
 export const markDefSchema = ConfigurationSchema(
@@ -54,7 +54,7 @@ export const markDefSchema = ConfigurationSchema(
      * the middle of `x` to `x2`; `rule` is a line across `x` to `x2` at `y`,
      * `encoding.strokeWidth` px thick; `line` is a stroke through consecutive
      * values, held across each span or run centre to centre as `interpolate`
-     * says, dropping to `origin` across a gap; `span` is a band across the
+     * says, dropping to `origin` across a gap; `rect` is a band across the
      * whole plot from `x` to `x2`; `text` prints a field over the middle of
      * `x` to `x2`, just above `y` where it names one, at the apex of a link
      * drawn between the same two ends, and in the middle of its band
@@ -66,7 +66,7 @@ export const markDefSchema = ConfigurationSchema(
       type: 'stringEnum',
       model: types.enumeration('MarkType', [...MARK_TYPES]),
       defaultValue: DEFAULT_MARK_TYPE,
-      description: 'bar, point, rule, line, span, text or link',
+      description: 'bar, point, rule, line, rect, text or link',
     },
     /**
      * #slot
@@ -88,7 +88,7 @@ export const markDefSchema = ConfigurationSchema(
     },
     /**
      * #slot
-     * The height a `span` draws at, as a fraction of its band:
+     * The height a `rect` draws at, as a fraction of its band:
      * `{ band: 0.8 }`, Vega-Lite's spelling.
      */
     height: markHeightSchema,

@@ -49,7 +49,7 @@ export function defaultPlot(
           marks: [{ mark: 'rule', encoding: { y: IDENTITY_FIELD, size: 2 } }],
           zero: false,
         }
-      : { marks: [{ mark: 'span' }] }
+      : { marks: [{ mark: 'rect' }] }
   }
   if (fields.mated) {
     return { marks: [{ mark: 'link', transform: [{ type: 'mate' }] }] }

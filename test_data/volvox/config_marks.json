@@ -217,7 +217,7 @@
           "displayId": "marks_heatmap-LinearMarkDisplay",
           "marks": [
             {
-              "mark": "span",
+              "mark": "rect",
               "encoding": {
                 "color": {
                   "field": "score",
@@ -302,7 +302,7 @@
           "displayId": "marks_pileup-LinearMarkDisplay",
           "marks": [
             {
-              "mark": "span",
+              "mark": "rect",
               "transform": [
                 {
                   "type": "pileup"
@@ -491,7 +491,7 @@
           "displayId": "marks_variants-LinearMarkDisplay",
           "marks": [
             {
-              "mark": "span",
+              "mark": "rect",
               "transform": [
                 {
                   "type": "pileup",
@@ -542,7 +542,7 @@
           "facet": "nm",
           "marks": [
             {
-              "mark": "span",
+              "mark": "rect",
               "transform": [
                 {
                   "type": "pileup"
@@ -1253,7 +1253,7 @@
           "rows": "species",
           "marks": [
             {
-              "mark": "span",
+              "mark": "rect",
               "encoding": {
                 "color": {
                   "field": "chr",
@@ -1318,7 +1318,7 @@
           "rows": "species",
           "marks": [
             {
-              "mark": "span",
+              "mark": "rect",
               "encoding": {
                 "color": {
                   "field": "state",
@@ -1395,7 +1395,7 @@
           "height": 120,
           "marks": [
             {
-              "mark": "span",
+              "mark": "rect",
               "encoding": {
                 "color": {
                   "field": "state",
@@ -1470,7 +1470,7 @@
           "rows": "species",
           "marks": [
             {
-              "mark": "span",
+              "mark": "rect",
               "transform": [
                 {
                   "type": "bin",

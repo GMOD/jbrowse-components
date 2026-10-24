@@ -156,7 +156,7 @@ describe('convertTrackConfig', () => {
       }),
       dataRoot,
     )
-    expect(result.displays?.[0]?.mark).toBe('span')
+    expect(result.displays?.[0]?.mark).toBe('rect')
   })
 
   it('returns unsupported conf for VCFTribble', () => {

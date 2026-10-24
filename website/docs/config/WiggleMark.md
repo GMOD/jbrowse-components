@@ -1,7 +1,7 @@
 ---
 id: wigglemark
 title: WiggleMark
-description: "A wiggle display's mark, Vega-Lite's mark object: the type each score draws as, and a line's interpolate. A bare name is the type, so mark: \"span\" and mark: { type: \"span\" } are one config."
+description: "A wiggle display's mark, Vega-Lite's mark object: the type each score draws as, and a line's interpolate. A bare name is the type, so mark: \"rect\" and mark: { type: \"rect\" } are one config."
 sidebar_label: Display -> WiggleMark
 ---
 
@@ -9,7 +9,7 @@ Auto-generated from the config schema in the source — see the [config guide](/
 
 A wiggle display's `mark`, Vega-Lite's mark object: the `type` each score
 draws as, and a line's `interpolate`. A bare name is the `type`, so
-`mark: "span"` and `mark: { type: "span" }` are one config.
+`mark: "rect"` and `mark: { type: "rect" }` are one config.
 
 ## Example usage
 
@@ -31,5 +31,5 @@ A setting written to it names members one by one: a member left out stays as it 
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
-| <span id="slot-type">**type**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (bar, point, line, span) = <code>'bar'</code> | bar, point, line or span |
+| <span id="slot-type">**type**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (bar, point, line, rect) = <code>'bar'</code> | bar, point, line or span |
 | <span id="slot-interpolate">**interpolate**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (step, linear) = <code>'step'</code> | The path a `line` takes between scores: `step` holds each across its bin, as the data says; `linear` runs from one bin's centre to the next, smoother where the bins are few. Read by a line alone. |

@@ -67,7 +67,7 @@ const EVERY_SPELLING: Record<string, unknown> = {
       transform: [{ type: 'coverage', as: 'depth' }],
     },
     {
-      mark: 'span',
+      mark: 'rect',
       encoding: {
         color: {
           field: 'score',

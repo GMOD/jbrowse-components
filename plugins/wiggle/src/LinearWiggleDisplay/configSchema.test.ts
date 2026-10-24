@@ -103,7 +103,7 @@ test("v4's rendering names load as the mark they draw, and an unknown one as the
   }
   expect(read('xyplot')).toEqual(['bar', 'step'])
   expect(read('scatter')).toEqual(['point', 'step'])
-  expect(read('density')).toEqual(['span', 'step'])
+  expect(read('density')).toEqual(['rect', 'step'])
   expect(read('line')).toEqual(['line', 'step'])
   expect(read('linecenter')).toEqual(['line', 'linear'])
   const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined)

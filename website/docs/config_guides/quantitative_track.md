@@ -35,7 +35,7 @@ three are [`LinearWiggleDisplay`](/docs/config/linearwiggledisplay) slots and
 all three go through `displayDefaults`.
 
 [`mark`](/docs/config/linearwiggledisplay/#slot-mark) picks `bar`, `point`,
-`line` or `span`, what a signal is drawn as; `rows` sets how many rows there
+`line` or `rect`, what a signal is drawn as; `rows` sets how many rows there
 are, so the two can be set independently.
 
 A line's [`mark.interpolate`](/docs/config/wigglemark/#slot-interpolate) is
@@ -89,7 +89,7 @@ middle stop, and with one color runs from white to it. The
 [`rowColor`](/docs/config/linearwiggledisplay/#slot-rowcolor) names each
 source's color as `scale.domain`/`scale.range` pairs, and several sources
 sharing one plot box with no `encoding.color` set take palette colors by name
-unprompted, except under `span`, where the score ramp is the whole color.
+unprompted, except under `rect`, where the score ramp is the whole color.
 
 ## Adapters
 

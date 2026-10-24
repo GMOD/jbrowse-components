@@ -19,7 +19,7 @@ import { placeTextMarks } from './textMarks.ts'
 
 import type { LinearMarkDisplayModel } from './model.ts'
 
-const SPAN = [{ mark: 'span' }]
+const SPAN = [{ mark: 'rect' }]
 
 // Four rows over the whole region, so every column of a row reaches it.
 const FOUR = features(
@@ -144,8 +144,8 @@ function spanProportionUniform(display: LinearMarkDisplayModel, i: number) {
 
 test('each span reads its own height band, and setRowProportion writes every span', () => {
   const display = loaded(PINNED, [
-    { mark: { type: 'span', height: { band: 0.75 } } },
-    { mark: { type: 'span', height: { band: 0.25 } } },
+    { mark: { type: 'rect', height: { band: 0.75 } } },
+    { mark: { type: 'rect', height: { band: 0.25 } } },
   ])
   expect(spanProportionUniform(display, 0)).toBe(0.75)
   expect(spanProportionUniform(display, 1)).toBe(0.25)

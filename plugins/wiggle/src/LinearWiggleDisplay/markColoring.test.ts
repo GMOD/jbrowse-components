@@ -73,7 +73,7 @@ describe('the key names what an overlaid density paints', () => {
     fileColors => {
       const display = makeDisplay({
         rows: false,
-        mark: 'span',
+        mark: 'rect',
         fileColors,
         displayConfig: {
           rowColor: { scale: { domain: ['a', 'b'], range: ['red', 'blue'] } },
@@ -88,7 +88,7 @@ describe('the key names what an overlaid density paints', () => {
   it('a named ramp paints every row alike, so the ramp is the key', () => {
     const display = makeDisplay({
       rows: false,
-      mark: 'span',
+      mark: 'rect',
       displayConfig: {
         encoding: { color: { scale: { type: 'linear', scheme: 'viridis' } } },
         rowColor: { scale: { domain: ['a', 'b'], range: ['red', 'blue'] } },

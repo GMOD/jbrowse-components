@@ -32,7 +32,7 @@ const LADDER_TRACK = pageTrack('tutorials/population_cnv.md', 'pur_cnv_ladder')
 // not 0..6: the ramp divides both sides by the longer one, so a 0..6 domain
 // caps a homozygous deletion at half saturation.
 export const CN_HEATMAP_SETTINGS = {
-  mark: 'span',
+  mark: 'rect',
   origin: 2,
   encoding: {
     y: { scale: { domainMin: 0, domainMax: 4 } },

@@ -1,15 +1,15 @@
 ---
 id: marklocus
 title: MarkLocus
-description: "A mark's far end as a position that may lie on another sequence: pos, the feature field holding its coordinate, and chrom, the field holding its refName, as a paired record states its mate."
+description: "A mark's far end as a position that may lie on another sequence: pos, the feature field holding its coordinate, and refName, the field holding the sequence it lies on, as a paired record states its…"
 sidebar_label: Display -> MarkLocus
 ---
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `marks` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/marks/src/LinearMarkDisplay/markLocusConfigSchema.ts).
 
 A mark's far end as a position that may lie on another sequence: `pos`,
-the feature field holding its coordinate, and `chrom`, the field holding
-its refName, as a paired record states its mate. A field name written
+the feature field holding its coordinate, and `refName`, the field holding
+the sequence it lies on, as a paired record states its mate. A field name written
 directly on the encoding sets `pos`, on the feature's sequence.
 Left unwritten behind a `mate` step, it is the other end the step found.
 
@@ -20,7 +20,7 @@ A BEDPE-like file whose second end sits in separate columns:
 ```js
 {
   mark: 'link',
-  encoding: { x2: { chrom: 'chrom2', pos: 'start2' } },
+  encoding: { x2: { refName: 'chrom2', pos: 'start2' } },
 }
 ```
 
@@ -32,4 +32,4 @@ A setting written to it replaces it whole, since its members are alternatives: a
 | Slot | Description |
 | --- | --- |
 | <span id="slot-pos">**pos**</span><br>[`featureField`](/docs/config_guides/slot_types#featurefield) = <code>'end'</code> | The feature field, or jexl expression over `feature`, giving the position in bp. |
-| <span id="slot-chrom">**chrom**</span><br>[`featureField`](/docs/config_guides/slot_types#featurefield) = <code>''</code> | The feature field holding the sequence the position lies on. Empty is the feature's own. |
+| <span id="slot-refname">**refName**</span><br>[`featureField`](/docs/config_guides/slot_types#featurefield) = <code>''</code> | The feature field holding the sequence the position lies on. Empty is the feature's own. |

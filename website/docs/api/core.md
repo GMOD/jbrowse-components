@@ -370,8 +370,9 @@ display's (ADR-118).
 
 ## darkAtLowEnd
 
-Whether a named ramp runs dark at its low end, drawn over white: viridis
-and its siblings do, juicebox, fall, reds and blues do not.
+Whether a named ramp is a sequential one running dark at its low end:
+viridis, magma, inferno and cividis. Juicebox, fall, reds and blues run
+light to dark, and a diverging ramp is light in its middle.
 
 ```js
 import { darkAtLowEnd } from '@jbrowse/core/util/colorRamp'
@@ -876,8 +877,7 @@ import { listsRowSources } from '@jbrowse/core/data_adapters/BaseAdapter/rowSour
 
 A position that may lie on another sequence: the field holding its refName
 and the field holding its 0-based coordinate, as a paired record states
-its mate (`{ chrom: 'mate.refName', pos: 'mate.start' }`). Spelt the way
-GenomeSpy spells a genomic position over two columns.
+its mate (`{ refName: 'mate.refName', pos: 'mate.start' }`).
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
 
@@ -1710,8 +1710,9 @@ import { thresholdLabels } from '@jbrowse/core/util/thresholdScale'
 
 ## thresholdPalette
 
-The color of each interval, in order: the declared palette, and the
-default categorical palette where it runs out.
+The color of each interval, in order: the declared palette, and where it
+runs out the interval's evenly spaced sample of the default ramp, since the
+intervals are ordered and a categorical deck would say they are not.
 
 ```js
 import { thresholdPalette } from '@jbrowse/core/util/thresholdScale'

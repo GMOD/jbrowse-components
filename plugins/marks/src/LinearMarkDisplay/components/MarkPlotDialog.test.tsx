@@ -56,19 +56,19 @@ it('lists the marks in paint order with what each reads', () => {
   setup({
     marks: [
       { mark: 'bar', encoding: { y: 'score' } },
-      { mark: 'span', encoding: { color: { value: 'red' } } },
+      { mark: 'rect', encoding: { color: { value: 'red' } } },
     ],
   })
   expect(screen.getByTestId('mark-row-0').textContent).toContain(
     'bar · y score',
   )
   expect(screen.getByTestId('mark-row-1').textContent).toContain(
-    'span · color red',
+    'rect · color red',
   )
 })
 
 it('offers only the channels the selected mark type reads', () => {
-  setup({ marks: [{ mark: 'span' }] })
+  setup({ marks: [{ mark: 'rect' }] })
   expect(screen.queryByTestId('channel-y')).toBeNull()
   expect(screen.getByTestId('channel-color')).toBeTruthy()
 })
@@ -101,12 +101,12 @@ it('adds a mark and says at once what it still needs', () => {
 
 it('removes and reorders, since the list order is the paint order', () => {
   const { apply, written } = setup({
-    marks: [{ mark: 'bar', encoding: { y: 'a' } }, { mark: 'span' }],
+    marks: [{ mark: 'bar', encoding: { y: 'a' } }, { mark: 'rect' }],
   })
   fireEvent.click(screen.getByLabelText('move mark 2 up'))
   fireEvent.click(apply())
   expect(written.mock.calls[0]![0].marks[0]).toEqual({
-    mark: 'span',
+    mark: 'rect',
   })
 })
 
@@ -115,7 +115,7 @@ it('keeps the selected mark selected when a row above it is removed', () => {
     marks: [
       { mark: 'bar', encoding: { y: 'a' } },
       { mark: 'point', encoding: { y: 'a' } },
-      { mark: 'span' },
+      { mark: 'rect' },
     ],
   })
   fireEvent.click(screen.getByTestId('mark-row-1'))
@@ -141,14 +141,14 @@ it('takes a fractional zoom bound', () => {
 it('keeps a channel a type change stopped reading, and clears it on request', () => {
   const { apply, written, writes } = setup(BAR)
   fireEvent.change(screen.getByTestId('mark-type'), {
-    target: { value: 'span' },
+    target: { value: 'rect' },
   })
   expect(screen.getByText(/does not read these/)).toBeTruthy()
   fireEvent.click(screen.getByText('Clear'))
   fireEvent.click(apply())
   expect(written).toHaveBeenCalledWith(
     writes({
-      marks: [{ mark: 'span', encoding: {} }],
+      marks: [{ mark: 'rect', encoding: {} }],
     }),
   )
 })
@@ -678,8 +678,8 @@ describe('the mark list', () => {
   it('prints a finding no control claims beneath the controls', () => {
     setup({
       marks: [
-        { mark: 'span', transform: [{ type: 'pileup' }] },
-        { mark: 'span', transform: [{ type: 'pileup' }] },
+        { mark: 'rect', transform: [{ type: 'pileup' }] },
+        { mark: 'rect', transform: [{ type: 'pileup' }] },
       ],
     })
     fireEvent.click(screen.getByTestId('mark-row-1'))

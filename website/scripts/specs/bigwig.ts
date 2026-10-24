@@ -68,7 +68,7 @@ export const bigwigSpecs: ScreenshotSpec[] = [
             },
             {
               trackId: 'wiggle_mode_density',
-              mark: 'span',
+              mark: 'rect',
               height: 60,
             },
             {
@@ -446,7 +446,7 @@ export const bigwigSpecs: ScreenshotSpec[] = [
         {
           trackId: 'pur_copynumber_1000g',
           height: 420,
-          mark: 'span',
+          mark: 'rect',
           // Most cells sit at copy number 2, so the default 99th-percentile
           // clip clamps the amplifications near 2.2.
           encoding: { y: { scale: { fenceQuantile: 1 } } },

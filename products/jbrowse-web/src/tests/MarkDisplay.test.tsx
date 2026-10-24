@@ -219,7 +219,7 @@ test('spans stacked by a row channel band the plot by the highest row', async ()
   const { view, findByTestId } = await createView(
     markTrackConfig('mark_rows', [
       {
-        mark: 'span',
+        mark: 'rect',
         encoding: {
           row: "jexl:get(feature,'name')=='EDEN.1'?0:1",
           color: { field: 'name', scale: { type: 'ordinal' } },
@@ -339,7 +339,7 @@ test('a stack over the volvox BAM is a declared pileup, its rows packed in the w
       'mark_pileup',
       [
         {
-          mark: 'span',
+          mark: 'rect',
           transform: [{ type: 'pileup' }],
           encoding: { row: 'row', color: { value: 'red' } },
         },
@@ -408,7 +408,7 @@ test('spans over a VCF stack the variants the worker packed', async () => {
       'mark_variants',
       [
         {
-          mark: 'span',
+          mark: 'rect',
           transform: [{ type: 'pileup', padding: 10000 }],
           encoding: { row: 'row', color: { value: 'green' } },
         },

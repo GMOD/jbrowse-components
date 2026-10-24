@@ -28,7 +28,7 @@ import type { ConfigurationSlotPath } from '@jbrowse/core/configuration'
 /**
  * #config LinearWiggleDisplay
  * #category display
- * Draws quantitative signal as bars, points, a line or a color strip (`span`),
+ * Draws quantitative signal as bars, points, a line or a color strip (`rect`),
  * for one source or many; `rows: 'source'` draws each source in a separate row.
  *
  * Per-source metadata (a `name`, `color` and `group` for each) is preloaded on
@@ -102,7 +102,7 @@ const linearWiggleDisplayConfigSchema = ConfigurationSchema(
      * The shape each score is drawn as, using the mark display's names: `bar`
      * draws a bar from the `origin` to the score, `point` a point at it,
      * `line` a line through the scores, stepped or as `interpolate` says, and
-     * `span` a strip whose color is the score. The track menu's Plot type
+     * `rect` a strip whose color is the score. The track menu's Plot type
      * writes it. v4's `defaultRendering` loads as its `mark`: `xyplot` a bar,
      * `scatter` a point, `density` a span, `line` a stepped line and
      * `linecenter` a linear one.
@@ -111,7 +111,7 @@ const linearWiggleDisplayConfigSchema = ConfigurationSchema(
      * ```json
      * {
      *   "type": "LinearWiggleDisplay",
-     *   "mark": "span"
+     *   "mark": "rect"
      * }
      * ```
      */

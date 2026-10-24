@@ -534,7 +534,7 @@ describe('the schema', () => {
           transform: [{ type: 'coverage', as: 'depth' }],
         },
         {
-          mark: 'span',
+          mark: 'rect',
           encoding: {
             color: {
               field: 'score',
@@ -552,9 +552,9 @@ describe('the schema', () => {
 
   it('takes a y-less span, and a y naming a field', () => {
     expect(
-      problemsOfMarks([{ mark: 'span', encoding: { row: 'name' } }]),
+      problemsOfMarks([{ mark: 'rect', encoding: { row: 'name' } }]),
     ).toEqual([])
-    expect(problemsOfMarks([{ mark: 'span' }])).toEqual([])
+    expect(problemsOfMarks([{ mark: 'rect' }])).toEqual([])
     expect(
       problemsOfMarks([{ mark: 'bar', encoding: { y: 'score' } }]),
     ).toEqual([])
