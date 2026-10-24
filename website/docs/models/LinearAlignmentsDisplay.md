@@ -415,7 +415,6 @@ From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`rendering
 | Member | Description |
 | --- | --- |
 | <span id="action-setfilterfields">**setFilterFields**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(patch: Readonly&lt;Record&lt;string, readonly FieldPredicate[] &#124; und…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(patch: Readonly&lt;Record&lt;string, readonly FieldPredicate[] &#124; undefined&gt;&gt;) =&gt; void</code></pre></dialog></span> | Replaces the entries on each field the patch names, `undefined` returning a field to its defaults; every other field keeps what was written. |
-| <span id="action-applyfilterobject">**applyFilterObject**</span><br><code>(object: FilterObject) =&gt; void</code> | An object-form filter, a launch modifier's or a JSON settings bag's, written onto this display's list by field as the track menu writes (`filterPatchOfObject`). |
 | <span id="action-setshowcoverage">**setShowCoverage**</span><br><code>(show: boolean) =&gt; void</code> |  |
 | <span id="action-setshowinterbaseindicators">**setShowInterbaseIndicators**</span><br><code>(show: boolean) =&gt; void</code> |  |
 | <span id="action-setcoverageminallelefraction">**setCoverageMinAlleleFraction**</span><br><code>(fraction: number) =&gt; void</code> |  |
