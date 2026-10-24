@@ -1,4 +1,4 @@
-import { DEFAULT_SHARE_URL } from '@jbrowse/app-core'
+import { resolveShareUrl } from '@jbrowse/app-core'
 import { encodeSessionParam, fetchJson } from '@jbrowse/core/util'
 import { addRelativeUris } from '@jbrowse/core/util/addRelativeUris'
 import {
@@ -62,38 +62,19 @@ export async function prepareExport(
     // from — never this desktop instance's own shareURL config, since Desktop never
     // reads share links at all. That target is DEFAULT_WEB_BASE_URL loading
     // `?config=<plan.configUrl>`, and jbrowse-web resolves the store from *that
-    // config's* configuration.shareURL (SessionLoader.fetchSharedSession). So a
+    // config's* configuration.shareURL, through the same resolveShareUrl. So a
     // hosted base declaring its own share server has to win here, or the link
     // resolves against a store the session was never uploaded to. With no hosted
-    // base (self-contained, `?config=none`) web falls back to DEFAULT_SHARE_URL, and
-    // the two defaults are a pair.
+    // base (self-contained, `?config=none`) both sides fall back to the default.
+    //
+    // Resolved against the jbrowse-web deployment the link opens, never
+    // desktop's own page, which in a packaged build is `file:///…/index.html`,
+    // where the POST cannot leave the app. Resolving here also gives the upload
+    // prompt a host to name.
     shareURL: resolveShareUrl(
-      plan.strategy === 'hostedConfigBase'
-        ? // mirrors web's readConf: an explicit empty string is honored as-is
-          (baseConfig?.configuration?.shareURL ?? DEFAULT_SHARE_URL)
-        : DEFAULT_SHARE_URL,
+      plan.strategy === 'hostedConfigBase' ? baseConfig : undefined,
       plan.webBaseUrl,
     ),
-  }
-}
-
-// The share store as an absolute url. jbrowse-web honors an empty or relative
-// shareURL as "relative to the page", and the page it means is the jbrowse-web
-// deployment the link opens — resolving one against desktop's own page instead
-// points the upload at `file:///…/index.html` in a packaged build, where the POST
-// cannot leave the app. Resolving here also gives the upload prompt a host to
-// name, at the one moment the user is being asked to approve sending something
-// to it.
-function resolveShareUrl(shareURL: string, webBaseUrl: string) {
-  try {
-    // `./` for the empty string, not the empty string: web appends the endpoint
-    // name and lets the browser resolve `share` against the page, which drops the
-    // page's last segment. Resolving `''` would keep an `index.html` and post to
-    // `…/index.html/share`.
-    return new URL(shareURL || './', webBaseUrl).href
-  } catch (e) {
-    console.error(e)
-    return shareURL
   }
 }
 

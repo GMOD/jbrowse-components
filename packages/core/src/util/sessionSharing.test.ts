@@ -1,13 +1,17 @@
 import { aesDecrypt } from './crypto.ts'
 import {
   b64PadSuffix,
+  encodeSessionParam,
   fromUrlSafeB64,
   readSessionFromDynamo,
+  sessionParamKind,
+  sessionParamPayload,
   shareEndpoint,
   toUrlSafeB64,
 } from './sessionSharing.ts'
 
 jest.mock('./crypto.ts', () => ({
+  ...jest.requireActual('./crypto.ts'),
   aesDecrypt: jest.fn().mockResolvedValue('decrypted-session-data'),
   aesEncrypt: jest.fn().mockResolvedValue('encrypted-data'),
 }))
@@ -24,6 +28,41 @@ describe('shareEndpoint', () => {
 
   it('leaves an empty shareURL relative to the page', () => {
     expect(shareEndpoint('', 'load')).toBe('load')
+  })
+})
+
+describe('sessionParamKind / sessionParamPayload', () => {
+  it.each([
+    ['share-abc', 'share', 'abc'],
+    ['encoded-eJy', 'encoded', 'eJy'],
+    ['json-{"session":{}}', 'json', '{"session":{}}'],
+    ['spec-{"views":[]}', 'spec', '{"views":[]}'],
+    ['local-x-y', 'local', 'x-y'],
+  ])('reads %s', (value, kind, payload) => {
+    expect(sessionParamKind(value)).toBe(kind)
+    expect(sessionParamPayload(value)).toBe(payload)
+  })
+
+  it('names no kind for an unprefixed value, and leaves it whole', () => {
+    expect(sessionParamKind('sharex-abc')).toBeUndefined()
+    expect(sessionParamPayload('sharex-abc')).toBe('sharex-abc')
+  })
+})
+
+describe('encodeSessionParam short mode', () => {
+  beforeEach(() => {
+    fetchMock.resetMocks()
+  })
+
+  // 96 bits: the share service hands the ciphertext to anyone with the id
+  it('makes a 16-character URL-safe password, fresh each time', async () => {
+    fetchMock.mockResponse(JSON.stringify({ sessionId: 'id1' }))
+    const share = () =>
+      encodeSessionParam('short', {}, { shareURL: 'https://s/', referer: '' })
+    const [a, b] = await Promise.all([share(), share()])
+    expect(a.password).toMatch(/^[\w-]{16}$/)
+    expect(a.password).not.toBe(b.password)
+    expect(a.sessionParam).toBe('share-id1')
   })
 })
 

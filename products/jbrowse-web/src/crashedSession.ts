@@ -1,11 +1,11 @@
 import { readQueryParams } from '@jbrowse/app-core'
 import {
+  sessionParamKind,
+  sessionParamPayload,
   sessionStorageGetItem,
   sessionStorageRemoveItem,
   sessionStorageSetItem,
 } from '@jbrowse/core/util'
-
-import { getSessionQueryType, stripPrefix } from './sessionLoaderHelpers.ts'
 
 // The one thing a boot needs to know about the boot before it: that the last
 // attempt to put this session on screen ended at the app-level ErrorBoundary,
@@ -46,8 +46,8 @@ export interface CrashedSession {
  */
 function localSessionIdFromUrl() {
   const { session } = readQueryParams(['session'])
-  return session && getSessionQueryType(session) === 'local'
-    ? stripPrefix(session)
+  return session && sessionParamKind(session) === 'local'
+    ? sessionParamPayload(session)
     : undefined
 }
 

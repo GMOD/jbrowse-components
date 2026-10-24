@@ -25,8 +25,7 @@ jest.mock('idb', () => ({
   openDB: jest.fn(),
 }))
 
-// keep the helpers real (stripPrefix and the prefix table are half of what is
-// under test); only stub the plugin fetch, which pulls in the whole loader
+// only stub the plugin fetch, which pulls in the whole loader
 jest.mock('./sessionLoaderHelpers', () => ({
   ...jest.requireActual('./sessionLoaderHelpers'),
   loadPluginRecords: jest.fn().mockResolvedValue({ records: [], failures: [] }),
@@ -90,7 +89,7 @@ async function roundTrip(mode: SessionShareMode) {
 
   window.history.replaceState(null, '', url)
   const loader = createSessionLoaderFromUrl(Date.now())
-  // what fetchConfig would have committed; fetchSharedSession reads the share
+  // what fetchConfig would have committed; decodeImportedSession reads the share
   // service's location back out of it
   await loader.loadConfigAndPlugins({ configuration: { shareURL: SHARE_URL } })
   await loader.loadSessionByType()

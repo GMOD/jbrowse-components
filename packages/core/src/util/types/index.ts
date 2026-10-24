@@ -532,14 +532,21 @@ export function isSessionWithDeleteTrackConf(
   return isSessionModel(t) && 'deleteTrackConf' in t
 }
 
-/** abstract interface for a session allows adding tracks */
+/**
+ * a session that names a share service; an empty `shareURL` is one too, the
+ * service relative to the page
+ */
 export interface SessionWithShareURL extends AbstractSessionModel {
   shareURL: string
 }
 export function isSessionWithShareURL(
   thing: unknown,
 ): thing is SessionWithShareURL {
-  return isSessionModel(thing) && 'shareURL' in thing && !!thing.shareURL
+  return (
+    isSessionModel(thing) &&
+    'shareURL' in thing &&
+    typeof thing.shareURL === 'string'
+  )
 }
 
 export interface Widget {

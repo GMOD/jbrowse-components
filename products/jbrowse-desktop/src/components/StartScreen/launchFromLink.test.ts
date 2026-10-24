@@ -91,7 +91,7 @@ test('a spec carrying its own assemblies needs no config fetch', async () => {
   expect(mockLoadSessionSpec).toHaveBeenCalledWith(selfContained, pluginManager)
 })
 
-test('a link only its own instance can open fails before anything is built', async () => {
+test('a link only the browser that made it can open fails before anything is built', async () => {
   const fetchConfig = jest.fn()
   const createPluginManager = jest.fn()
 
@@ -101,7 +101,7 @@ test('a link only its own instance can open fails before anything is built', asy
       createPluginManager,
       trustPlugins,
     }),
-  ).rejects.toThrow(/only the JBrowse Web instance that created it/)
+  ).rejects.toThrow(/only that browser can open it/)
 
   expect(fetchConfig).not.toHaveBeenCalled()
   expect(createPluginManager).not.toHaveBeenCalled()

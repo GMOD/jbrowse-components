@@ -88,20 +88,18 @@ describe('a jbrowse:// wrapper', () => {
   })
 })
 
-test('explains that a hash-form share link cannot be opened elsewhere', () => {
-  expect(() =>
-    parseSessionSpecUrl(
-      'https://jbrowse.org/code/jb2/main/#session=encoded-abc123',
-    ),
-  ).toThrow(/only the JBrowse Web instance that created it/)
+// parseSessionSnapshotUrl reads these; Desktop tries it first
+test.each([
+  'https://jbrowse.org/code/jb2/main/#session=encoded-abc123',
+  'https://jbrowse.org/code/jb2/main/?session=share-abc123',
+])('says %s hands over a whole session, not a spec', link => {
+  expect(() => parseSessionSpecUrl(link)).toThrow(/hands over a whole session/)
 })
 
-test('explains that a share link cannot be opened elsewhere', () => {
+test('explains that a local link opens only in the browser that made it', () => {
   expect(() =>
-    parseSessionSpecUrl(
-      'https://jbrowse.org/code/jb2/main/?session=share-abc123',
-    ),
-  ).toThrow(/only the JBrowse Web instance that created it/)
+    parseSessionSpecUrl('https://jbrowse.org/code/jb2/main/?session=local-abc'),
+  ).toThrow(/only that browser can open it/)
 })
 
 test('rejects a link with no session', () => {

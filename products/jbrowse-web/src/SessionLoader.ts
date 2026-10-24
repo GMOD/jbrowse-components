@@ -1,8 +1,13 @@
-import { DEFAULT_SHARE_URL, deleteQueryParams } from '@jbrowse/app-core'
+import { deleteQueryParams, resolveShareUrl } from '@jbrowse/app-core'
 import {
   dropVendoredPlugins,
   pluginsNotIn,
 } from '@jbrowse/core/pluginDefinitions'
+import {
+  sessionParamKind,
+  sessionParamPayload,
+  shareEndpoint,
+} from '@jbrowse/core/util'
 import { createElementId } from '@jbrowse/core/util/types/mst'
 import { getSnapshot, isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
@@ -21,21 +26,13 @@ import { resolveConfigPath } from './resolveConfigPath.ts'
 import {
   buildLgvInit,
   fetchRemoteConfig,
-  getSessionQueryType,
   loadPluginRecords,
   readSessionFromIDB,
   readSessionFromStorage,
-  stripPrefix,
   writeSessionToIDB,
 } from './sessionLoaderHelpers.ts'
 import { RELOAD_LOCK_WAIT_MS, claimSessionId } from './sessionLock.ts'
 import { arePluginsTrusted, configNeedsNoPrompt } from './trustedPlugins.ts'
-import {
-  fromUrlSafeB64,
-  readConf,
-  readSessionFromDynamo,
-  shareEndpoint,
-} from './util.ts'
 
 import type { CrashedSession } from './crashedSession.ts'
 import type {
@@ -236,14 +233,11 @@ const SessionLoader = types
   .views(self => ({
     /**
      * #getter
-     * the `session=` URL param's type prefix (`share`/`spec`/`encoded`/`json`/
-     * `local`), or undefined when there's no recognized prefix. Mirrors the
-     * prefixes stripped by stripPrefix()
+     * the `session=` URL param's kind (`share`/`spec`/`encoded`/`json`/
+     * `local`), or undefined when it names none
      */
     get sessionQueryType() {
-      return self.sessionQuery
-        ? getSessionQueryType(self.sessionQuery)
-        : undefined
+      return self.sessionQuery ? sessionParamKind(self.sessionQuery) : undefined
     },
     /**
      * #getter
@@ -666,7 +660,7 @@ const SessionLoader = types
      * recognized.
      */
     async fetchLocalSession() {
-      const query = stripPrefix(self.sessionQuery!)
+      const query = sessionParamPayload(self.sessionQuery!)
       const crashed = readCrashedSession()
       if (crashed?.id === query) {
         self.setCrashedSession(crashed)
@@ -688,27 +682,18 @@ const SessionLoader = types
     },
     /**
      * #action
+     * a session carried whole in the link (`encoded-`, `json-`) or uploaded
+     * behind it (`share-`, read from the share service the config names)
      */
-    async fetchSharedSession() {
-      const decrypted = await readSessionFromDynamo(
-        shareEndpoint(
-          readConf(self.configSnapshot, 'shareURL', DEFAULT_SHARE_URL),
-          'load',
-        ),
-        self.sessionQuery ?? '',
-        self.password ?? '',
-      )
+    async decodeImportedSession() {
       await this.loadImportedSession(
-        JSON.parse(await fromUrlSafeB64(decrypted)),
-      )
-    },
-    /**
-     * #action
-     * an `encoded-` or `json-` session, carried whole in the link
-     */
-    async decodeInlineSession() {
-      await this.loadImportedSession(
-        await decodeSessionFromUrl(self.sessionQuery!),
+        await decodeSessionFromUrl(self.sessionQuery!, {
+          loadUrl: shareEndpoint(
+            resolveShareUrl(self.configSnapshot, window.location.href),
+            'load',
+          ),
+          password: self.password,
+        }),
       )
     },
     /**
@@ -717,7 +702,7 @@ const SessionLoader = types
     decodeSessionSpec() {
       self.setSessionSource({
         type: 'spec',
-        spec: JSON.parse(stripPrefix(self.sessionQuery!)),
+        spec: JSON.parse(sessionParamPayload(self.sessionQuery!)),
       })
     },
     /**
@@ -772,22 +757,21 @@ const SessionLoader = types
           // session snapshot, whose plugins were already accepted when added
           // in-session. Load those (already-trusted) session plugins without
           // re-triaging. Incoming URL sessions never reach here — they vet via
-          // fetchSharedSession etc.
+          // decodeImportedSession etc.
           if (self.sessionSource.type === 'snapshot' && !self.sessionPlugins) {
             await self.loadSession(
               self.sessionSource.snapshot as SessionSnap,
               true,
             )
           }
-        } else if (self.sessionQueryType === 'share') {
-          await self.fetchSharedSession()
         } else if (self.sessionQueryType === 'spec') {
           self.decodeSessionSpec()
         } else if (
+          self.sessionQueryType === 'share' ||
           self.sessionQueryType === 'encoded' ||
           self.sessionQueryType === 'json'
         ) {
-          await self.decodeInlineSession()
+          await self.decodeImportedSession()
         } else if (self.sessionQueryType === 'local') {
           await self.fetchLocalSession()
         } else if (self.extendDefaultSession && self.isJb1StyleSession) {

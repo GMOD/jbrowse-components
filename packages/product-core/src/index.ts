@@ -113,7 +113,7 @@ export type { PluginInput } from './pluginInput.ts'
 export { loadRuntimePlugins } from './loadPlugins.ts'
 export type { LoadPluginsArgs } from './loadPlugins.ts'
 export { decodeSessionFromUrl, encodeSessionToUrl } from './sessionUrl.ts'
-export type { SessionSnapshot } from './sessionUrl.ts'
+export type { SessionSnapshot, SharedSessionSource } from './sessionUrl.ts'
 // in-memory files as tracks, for hosts whose data lives in a process rather
 // than at a URL (a notebook kernel, an R session) — read by byte range, so an
 // indexed file stays indexed

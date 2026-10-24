@@ -208,26 +208,20 @@ describe('the two URL parsers agree', () => {
 // is what the person pasting the link reads.
 describe('the disagreements are deliberate', () => {
   test.each([
-    [
-      'a share session, which needs web session store',
-      '/?session=share-abc&password=xyz',
-      'share',
-    ],
-    [
-      'an encoded session, which needs its decoder',
-      '/?session=encoded-abc',
-      'encoded',
-    ],
+    // the first three hand over a whole session, which parseSessionSnapshotUrl
+    // reads instead
+    ['a share session', '/?session=share-abc&password=xyz', 'share'],
+    ['an encoded session', '/?session=encoded-abc', 'encoded'],
+    ['a json session snapshot', '/?session=json-{"session":{}}', 'json'],
     [
       'a local session, which lives in this browser',
       '/?session=local-abc',
       'local',
     ],
-    ['a json session snapshot', '/?session=json-{"session":{}}', 'json'],
-  ])('app-core refuses %s', (_name, url, kind) => {
+  ])('app-core refuses %s as a spec', (_name, url, kind) => {
     setUrl(url)
     expect(() => parseSessionSpecUrl(window.location.href)).toThrow(
-      new RegExp(`"${kind}" session link`),
+      new RegExp(`"${kind}"`),
     )
   })
 

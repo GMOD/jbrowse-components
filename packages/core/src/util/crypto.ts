@@ -599,7 +599,7 @@ function base64Encode(data: Uint8Array): string {
 }
 
 // Base64 decode
-function base64Decode(str: string): Uint8Array<ArrayBuffer> {
+export function base64Decode(str: string): Uint8Array<ArrayBuffer> {
   const binary = atob(str)
   const bytes = new Uint8Array(binary.length)
   for (let i = 0; i < binary.length; i++) {

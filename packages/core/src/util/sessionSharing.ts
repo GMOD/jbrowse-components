@@ -1,20 +1,4 @@
-import { aesDecrypt, aesEncrypt } from './crypto.ts'
-
-function bytesToBinaryString(bytes: Uint8Array) {
-  return Array.from(bytes, b => String.fromCharCode(b)).join('')
-}
-
-// from https://stackoverflow.com/questions/1349404/
-// crypto.getRandomValues is available in non-secure contexts per MDN,
-// unlike crypto.subtle which requires HTTPS.
-function generateUID(length: number) {
-  return window
-    .btoa(
-      bytesToBinaryString(crypto.getRandomValues(new Uint8Array(length * 2))),
-    )
-    .replaceAll(/[+/]/g, '')
-    .slice(0, length)
-}
+import { aesDecrypt, aesEncrypt, base64Decode, toBase64Url } from './crypto.ts'
 
 function getErrorMsg(err: string) {
   try {
@@ -25,6 +9,10 @@ function getErrorMsg(err: string) {
   }
 }
 
+/**
+ * @deprecated `atob` accepts unpadded base64, so nothing in JBrowse pads any
+ * more; kept because `@jbrowse/core/util` exports it
+ */
 export function b64PadSuffix(b64: string): string {
   let num: number
   const mo = b64.length % 4
@@ -61,10 +49,7 @@ async function transformBytes(
  */
 export async function fromUrlSafeB64(b64: string) {
   try {
-    const bytes = Uint8Array.from(
-      atob(b64PadSuffix(b64.replaceAll('-', '+').replaceAll('_', '/'))),
-      c => c.charCodeAt(0),
-    )
+    const bytes = base64Decode(b64.replaceAll('-', '+').replaceAll('_', '/'))
     return new TextDecoder().decode(
       await transformBytes(bytes, new DecompressionStream('deflate')),
     )
@@ -81,22 +66,44 @@ export async function fromUrlSafeB64(b64: string) {
  * See {@link https://en.wikipedia.org/wiki/Base64#URL_applications}
  */
 export async function toUrlSafeB64(str: string) {
-  const deflated = await transformBytes(
-    new TextEncoder().encode(str),
-    new CompressionStream('deflate'),
+  return toBase64Url(
+    await transformBytes(
+      new TextEncoder().encode(str),
+      new CompressionStream('deflate'),
+    ),
   )
-  const encoded = btoa(bytesToBinaryString(deflated)).replace(/=+$/, '')
-  return encoded.replaceAll('+', '-').replaceAll('/', '_')
 }
 
 /**
- * The `?session=` value prefixes for a session carried by or behind the link.
- * The decoder half (jbrowse-web's SessionLoader) has its own list covering
- * `spec-` and `local-` too.
+ * The kinds of `?session=` value, each written `<kind>-<payload>`: a session
+ * uploaded behind the link (`share`), carried whole in it (`encoded`, `json`), a
+ * session spec to build one from (`spec`), or one saved in this browser
+ * (`local`).
  */
+export const SESSION_PARAM_KINDS = [
+  'share',
+  'encoded',
+  'json',
+  'spec',
+  'local',
+] as const
+export type SessionParamKind = (typeof SESSION_PARAM_KINDS)[number]
+
 export const SHARE_PREFIX = 'share-'
 export const ENCODED_PREFIX = 'encoded-'
 export const JSON_PREFIX = 'json-'
+export const SPEC_PREFIX = 'spec-'
+export const LOCAL_PREFIX = 'local-'
+
+export function sessionParamKind(value: string): SessionParamKind | undefined {
+  return SESSION_PARAM_KINDS.find(kind => value.startsWith(`${kind}-`))
+}
+
+/** The payload after a `?session=` value's kind, or the value itself without one */
+export function sessionParamPayload(value: string) {
+  const kind = sessionParamKind(value)
+  return kind ? value.slice(kind.length + 1) : value
+}
 
 /**
  * Joins a configured `shareURL` with one of the share service's two endpoints.
@@ -121,8 +128,8 @@ async function shareSessionToDynamo(
 ) {
   const sess = await toUrlSafeB64(JSON.stringify(session))
   // the server returns the ciphertext to anyone holding the session id, so the
-  // password alone guards it; 16 base62 characters is ~95 bits
-  const password = generateUID(16)
+  // password alone guards it: 16 base64url characters, 96 bits
+  const password = toBase64Url(crypto.getRandomValues(new Uint8Array(12)))
 
   const data = new FormData()
   data.append('session', await aesEncrypt(sess, password))

@@ -1,3 +1,5 @@
+import { SPEC_PREFIX, sessionParamKind } from '@jbrowse/core/util'
+
 import { readAllQueryParams } from '../queryParams.ts'
 import {
   buildLgvInitFromParams,
@@ -216,7 +218,8 @@ export function parseSessionSnapshotUrl(
   }
   const params = readAllQueryParams(url)
   const session = params.get('session')
-  return session && /^(share|encoded|json)-/.test(session)
+  const kind = session ? sessionParamKind(session) : undefined
+  return session && (kind === 'share' || kind === 'encoded' || kind === 'json')
     ? {
         configUrl: new URL(params.get('config') ?? 'config.json', url.href)
           .href,
@@ -244,19 +247,21 @@ export function parseSessionSpecUrl(input: string): ParsedSessionSpec {
       sessionName: params.get('sessionName') ?? undefined,
     }
   }
-  if (!session.startsWith('spec-')) {
-    const kind = /^(share|encoded|local|json)-/.exec(session)?.[1]
+  if (!session.startsWith(SPEC_PREFIX)) {
+    const kind = sessionParamKind(session)
     throw new Error(
-      kind
-        ? `This is a "${kind}" session link, which only the JBrowse Web instance that created it can open. Session-spec links (&session=spec-...) work here.`
-        : 'Unrecognized session in that link; only session-spec links (&session=spec-...) can be opened here.',
+      kind === 'local'
+        ? 'This is a "local" session link, which names a session saved in the browser that made it, so only that browser can open it. Session-spec links (&session=spec-...) work here.'
+        : kind
+          ? `This "${kind}" link hands over a whole session, not a session spec.`
+          : 'Unrecognized session in that link; only session-spec links (&session=spec-...) can be opened here.',
     )
   }
 
   let spec: ParsedSessionSpec['spec']
   try {
     spec = JSON.parse(
-      session.slice('spec-'.length),
+      session.slice(SPEC_PREFIX.length),
     ) as ParsedSessionSpec['spec']
   } catch (e) {
     throw new Error(`The session spec in that link isn't valid JSON: ${e}`, {

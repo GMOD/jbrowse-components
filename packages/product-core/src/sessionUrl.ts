@@ -1,7 +1,9 @@
 import {
   ENCODED_PREFIX,
   JSON_PREFIX,
+  SHARE_PREFIX,
   fromUrlSafeB64,
+  readSessionFromDynamo,
   toUrlSafeB64,
 } from '@jbrowse/core/util'
 
@@ -73,22 +75,43 @@ async function parseEncodedParam(value: string): Promise<unknown> {
   )
 }
 
+/** Where a `share-` session is stored, and the key only its link holds */
+export interface SharedSessionSource {
+  loadUrl: string
+  password?: string
+}
+
+async function fetchShareParam(
+  value: string,
+  share: SharedSessionSource | undefined,
+): Promise<unknown> {
+  if (!share) {
+    throw new Error('A "share-" session link needs a share service to read it')
+  }
+  return parseEncodedParam(
+    await readSessionFromDynamo(share.loadUrl, value, share.password ?? ''),
+  )
+}
+
 /**
- * Inverse of {@link encodeSessionToUrl}, and of the `json-` form jbrowse-web's
- * share dialog writes. Accepts an `encoded-` value with or without its prefix,
- * so a raw `?session=` value from either app passes straight through.
+ * Inverse of {@link encodeSessionToUrl} and of `encodeSessionParam`: an
+ * `encoded-` value with or without its prefix, a hand-written `json-` one, and,
+ * given the share service to fetch it from, a `share-` one.
  *
- * Throws on anything that isn't a decodable session — a truncated link, or a
- * `share-`/`spec-` param an embedded product doesn't handle — so a host can
- * fall back to its own declarative launch state instead of opening a
+ * Throws on anything that isn't a decodable session — a truncated link, a
+ * `spec-` param, or a `share-` one with no service to read it from — so a host
+ * can fall back to its own declarative launch state instead of opening a
  * half-built session.
  */
 export async function decodeSessionFromUrl(
   value: string,
+  share?: SharedSessionSource,
 ): Promise<SessionSnapshot> {
   const parsed = value.startsWith(JSON_PREFIX)
     ? parseJsonParam(value.slice(JSON_PREFIX.length))
-    : await parseEncodedParam(value)
+    : value.startsWith(SHARE_PREFIX)
+      ? await fetchShareParam(value, share)
+      : await parseEncodedParam(value)
   if (!isSessionSnapshot(parsed)) {
     throw new Error('not a session snapshot: no "name"')
   }

@@ -5,7 +5,11 @@ export {
   preloadAppShell,
 } from './ui/index.ts'
 export { HistoryManagementMixin } from './HistoryManagement/index.ts'
-export { DEFAULT_SHARE_URL, JBrowseConfigF } from './JBrowseConfig/index.ts'
+export {
+  DEFAULT_SHARE_URL,
+  JBrowseConfigF,
+  resolveShareUrl,
+} from './JBrowseConfig/index.ts'
 export { JBrowseModelF } from './JBrowseModel/index.ts'
 export { AssembliesMixin } from './Assemblies/index.ts'
 export { AppSessionMixin } from './AppSession/index.ts'

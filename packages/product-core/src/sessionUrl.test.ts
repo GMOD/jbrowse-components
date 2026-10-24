@@ -1,4 +1,8 @@
-import { encodeSessionParam, toUrlSafeB64 } from '@jbrowse/core/util'
+import {
+  aesEncrypt,
+  encodeSessionParam,
+  toUrlSafeB64,
+} from '@jbrowse/core/util'
 
 import { decodeSessionFromUrl } from './sessionUrl.ts'
 
@@ -52,4 +56,51 @@ test('decodeSessionFromUrl reads a json- session', async () => {
   await expect(decodeSessionFromUrl('json-{"notSession":1}')).rejects.toThrow(
     'not a session',
   )
+})
+
+describe('a share- value', () => {
+  const loadUrl = 'https://share.example/api/v1/load'
+
+  async function serve(session: unknown, password: string) {
+    fetchMock.mockResponseOnce(
+      JSON.stringify({
+        session: await aesEncrypt(
+          await toUrlSafeB64(JSON.stringify(session)),
+          password,
+        ),
+      }),
+    )
+  }
+
+  beforeEach(() => {
+    fetchMock.resetMocks()
+  })
+
+  test('is fetched from the share service and decrypted', async () => {
+    await serve({ name: 'uploaded' }, 'pw')
+
+    await expect(
+      decodeSessionFromUrl('share-abc', { loadUrl, password: 'pw' }),
+    ).resolves.toEqual({ name: 'uploaded' })
+    expect(fetchMock).toHaveBeenCalledWith(
+      `${loadUrl}?sessionId=abc`,
+      expect.anything(),
+    )
+  })
+
+  test('is checked for a session like the inline forms', async () => {
+    await serve([1, 2, 3], 'pw')
+
+    await expect(
+      decodeSessionFromUrl('share-abc', { loadUrl, password: 'pw' }),
+    ).rejects.toThrow('not a session')
+  })
+
+  // an embedded product has no share service to name
+  test('throws without a share service, fetching nothing', async () => {
+    await expect(decodeSessionFromUrl('share-abc')).rejects.toThrow(
+      /needs a share service/,
+    )
+    expect(fetchMock).not.toHaveBeenCalled()
+  })
 })

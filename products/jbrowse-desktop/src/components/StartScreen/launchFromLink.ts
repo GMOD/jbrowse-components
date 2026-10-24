@@ -1,15 +1,10 @@
 import {
-  DEFAULT_SHARE_URL,
   loadSessionSpec,
   parseSessionSnapshotUrl,
   parseSessionSpecUrl,
+  resolveShareUrl,
 } from '@jbrowse/app-core'
-import {
-  SHARE_PREFIX,
-  fromUrlSafeB64,
-  readSessionFromDynamo,
-  shareEndpoint,
-} from '@jbrowse/core/util'
+import { shareEndpoint } from '@jbrowse/core/util'
 import { hostedComparative } from '@jbrowse/launch-args/hostedGenomes'
 import { resolveTrackId } from '@jbrowse/launch-args/trackIds'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
@@ -50,29 +45,6 @@ function nonEmptyList(value: unknown): unknown[] {
   return Array.isArray(value) ? value : []
 }
 
-// The snapshot a `share-` link names: fetched from the share service the
-// link's own config points at, and decrypted with the password only the link
-// holds. Web honors an empty or relative shareURL as relative to its page, so
-// it is resolved against the page the link points at.
-async function fetchSharedSnapshot(
-  { session, password, pageUrl }: ParsedSessionSnapshotUrl,
-  config: JBrowseConfig,
-) {
-  const configured = config.configuration?.shareURL
-  const loadUrl = new URL(
-    shareEndpoint(
-      typeof configured === 'string' ? configured : DEFAULT_SHARE_URL,
-      'load',
-    ),
-    pageUrl,
-  ).href
-  return JSON.parse(
-    await fromUrlSafeB64(
-      await readSessionFromDynamo(loadUrl, session, password ?? ''),
-    ),
-  ) as Record<string, unknown>
-}
-
 // A link that hands over a whole session: carried in it (`encoded-`/`json-`,
 // what genomes.jbrowse.org's protein browser writes) or stored under an id
 // (`share-`, what JBrowse Web's share button writes). The snapshot becomes the
@@ -89,10 +61,13 @@ async function launchSessionSnapshot(
   { fetchConfig, createPluginManager, trustPlugins }: LaunchFromLinkDeps,
 ) {
   const config = await fetchConfig(link.configUrl)
+  // a `share-` snapshot comes from the share service the link's own config
+  // names, decrypted with the password only the link holds
   const { sessionPlugins, sessionConnections, ...session } =
-    link.session.startsWith(SHARE_PREFIX)
-      ? await fetchSharedSnapshot(link, config)
-      : await decodeSessionFromUrl(link.session)
+    await decodeSessionFromUrl(link.session, {
+      loadUrl: shareEndpoint(resolveShareUrl(config, link.pageUrl), 'load'),
+      password: link.password,
+    })
   const connections = nonEmptyList(sessionConnections)
   if (connections.length) {
     throw new Error(

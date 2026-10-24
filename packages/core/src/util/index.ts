@@ -183,14 +183,20 @@ export { formatRelativeTime } from './formatRelativeTime.ts'
 export { fetchJson } from './fetchJson.ts'
 export {
   type EncodedSessionParam,
+  type SessionParamKind,
   type SessionShareMode,
   ENCODED_PREFIX,
   JSON_PREFIX,
+  LOCAL_PREFIX,
+  SESSION_PARAM_KINDS,
   SHARE_PREFIX,
+  SPEC_PREFIX,
   b64PadSuffix,
   encodeSessionParam,
   fromUrlSafeB64,
   readSessionFromDynamo,
+  sessionParamKind,
+  sessionParamPayload,
   shareEndpoint,
   toUrlSafeB64,
 } from './sessionSharing.ts'

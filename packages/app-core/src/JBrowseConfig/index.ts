@@ -9,7 +9,7 @@ import type {
 } from '@jbrowse/core/configuration'
 import type { PluginDefinition } from '@jbrowse/core/pluginDefinitions'
 
-export { DEFAULT_SHARE_URL } from './defaultShareUrl.ts'
+export { DEFAULT_SHARE_URL, resolveShareUrl } from './defaultShareUrl.ts'
 
 /**
  * #config JBrowseRootConfig

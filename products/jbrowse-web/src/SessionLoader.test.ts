@@ -1,4 +1,4 @@
-import { toUrlSafeB64 } from '@jbrowse/core/util'
+import { aesEncrypt, toUrlSafeB64 } from '@jbrowse/core/util'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import { autorun, when } from 'mobx'
 
@@ -38,10 +38,6 @@ jest.mock('@jbrowse/core/util/io', () => ({
 jest.mock('./util', () => ({
   addRelativeUris: jest.fn(),
   checkPlugins: jest.fn().mockResolvedValue(true),
-  fromUrlSafeB64: jest.fn().mockResolvedValue('{"id":"test","name":"Test"}'),
-  readConf: jest.fn().mockReturnValue(''),
-  readSessionFromDynamo: jest.fn(),
-  shareEndpoint: jest.fn().mockReturnValue('load'),
 }))
 
 jest.mock('idb', () => ({
@@ -718,24 +714,26 @@ describe('SessionLoader', () => {
 
     // Guards the vetting boundary the reload fix must NOT erode: an incoming
     // shared-session URL is not the user's own session, so an untrusted plugin
-    // still routes to triage (no pre-set sessionSource → fetchSharedSession
+    // still routes to triage (no pre-set sessionSource → decodeImportedSession
     // path, which vets via checkPlugins without userAcceptedConfirmation).
     it('shared session with an untrusted plugin still triages on initial load', async () => {
-      const { readSessionFromDynamo, fromUrlSafeB64, checkPlugins } =
-        jest.requireMock('./util')
-      readSessionFromDynamo.mockResolvedValueOnce('encrypted-blob')
-      fromUrlSafeB64.mockResolvedValueOnce(
+      const { checkPlugins } = jest.requireMock('./util')
+      const shared = JSON.stringify({
+        id: 'shared',
+        name: 'Shared',
+        sessionPlugins: [
+          { name: 'Custom', url: 'https://example.com/custom.js' },
+        ],
+      })
+      fetchMock.mockResponseOnce(
         JSON.stringify({
-          id: 'shared',
-          name: 'Shared',
-          sessionPlugins: [
-            { name: 'Custom', url: 'https://example.com/custom.js' },
-          ],
+          session: await aesEncrypt(await toUrlSafeB64(shared), 'pw'),
         }),
       )
       checkPlugins.mockResolvedValueOnce(false)
       const loader = createAndInit({
         sessionQuery: 'share-abc',
+        password: 'pw',
         configSnapshot: {},
         initialTimestamp: Date.now(),
       })
