@@ -304,9 +304,10 @@ since an unnormalized group's height tracks its cell count.
 
 ## Citations
 
-- [CATlas: a single-cell atlas of chromatin accessibility in the human genome (Zhang et al., Cell 2021)](https://www.sciencedirect.com/science/article/pii/S0092867421012794)
-  · [resource portal](https://www.catlas.org/), the published atlas a track
-  reads without building anything
+- Zhang et al. (2021).
+  [A single-cell atlas of chromatin accessibility in the human genome](https://www.sciencedirect.com/science/article/pii/S0092867421012794),
+  and its [resource portal](https://www.catlas.org/), the published atlas a
+  track reads without building anything
 
 [^inline]:
     The BigWigs can also be viewed inline from the clustering environment

@@ -272,12 +272,10 @@ arrays with fresh URLs.
 
 ## Citations
 
-- Avsec Ž, et al. AlphaGenome: advancing regulatory variant effect prediction
-  with a unified DNA sequence model. bioRxiv (2025).
-  https://doi.org/10.1101/2025.06.25.661532
-- Mansour MR, et al. An oncogenic super-enhancer formed through somatic mutation
-  of a noncoding intergenic element. Science 346:1373-1377 (2014).
-  https://doi.org/10.1126/science.1259037
+- Avsec et al. (2025).
+  [AlphaGenome: advancing regulatory variant effect prediction with a unified DNA sequence model](https://doi.org/10.1101/2025.06.25.661532)
+- Mansour et al. (2014).
+  [An oncogenic super-enhancer formed through somatic mutation of a noncoding intergenic element](https://doi.org/10.1126/science.1259037)
 
 [^license]:
     The plugin is Apache-2.0. AlphaGenome's API is

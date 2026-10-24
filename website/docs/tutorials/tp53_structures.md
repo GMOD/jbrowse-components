@@ -184,10 +184,9 @@ translation.
 
 ## Citations
 
-- Cho Y, Gorina S, Jeffrey PD, Pavletich NP. Crystal structure of a p53 tumor
-  suppressor-DNA complex: understanding tumorigenic mutations. _Science_ 1994.
-- Kussie PH, Gorina S, Marechal V, et al. Structure of the MDM2 oncoprotein
-  bound to the p53 tumor suppressor transactivation domain. _Science_ 1996.
-- Lee CW, Martinez-Yamout MA, Dyson HJ, Wright PE. Structure of the p53
-  transactivation domain in complex with the nuclear receptor coactivator
-  binding domain of CREB binding protein. _Biochemistry_ 2010.
+- Cho et al. (1994).
+  [Crystal structure of a p53 tumor suppressor-DNA complex: understanding tumorigenic mutations](https://doi.org/10.1126/science.8023157)
+- Kussie et al. (1996).
+  [Structure of the MDM2 oncoprotein bound to the p53 tumor suppressor transactivation domain](https://doi.org/10.1126/science.274.5289.948)
+- Lee et al. (2010).
+  [Structure of the p53 transactivation domain in complex with the nuclear receptor coactivator binding domain of CREB binding protein](https://doi.org/10.1021/bi1012996)

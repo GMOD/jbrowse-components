@@ -395,12 +395,12 @@ the local copy to open your own run.
 
 ## Citations
 
-- Gilis J, Vitting-Seerup K, Van den Berge K, Clement L.
-  [satuRn: Scalable analysis of differential transcript usage for bulk and single-cell RNA-sequencing applications](https://doi.org/10.12688/f1000research.51749.1).
-  _F1000Research_ 10:374 (2021), the method behind the statistic drawn here.
-- Li B, Dewey CN.
-  [RSEM: accurate transcript quantification from RNA-Seq data with or without a reference genome](https://doi.org/10.1186/1471-2105-12-323).
-  _BMC Bioinformatics_ 12:323 (2011), the quantifier ENCODE ran.
+- Gilis et al. (2021).
+  [satuRn: Scalable analysis of differential transcript usage for bulk and single-cell RNA-sequencing applications](https://doi.org/10.12688/f1000research.51749.1),
+  the method behind the statistic drawn here.
+- Li and Dewey (2011).
+  [RSEM: accurate transcript quantification from RNA-Seq data with or without a reference genome](https://doi.org/10.1186/1471-2105-12-323),
+  the quantifier ENCODE ran.
 
 [^tpm]:
     The script takes the isoform fraction from TPM, because read counts scale

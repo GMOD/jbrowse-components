@@ -306,10 +306,9 @@ and `FAMILY` and `YOUNG` pick another family and its youngest lineage.
 
 ## Citations
 
-- Batzer MA, Deininger PL.
-  [Alu repeats and human genomic diversity](https://doi.org/10.1038/nrg798).
-  _Nature Reviews Genetics_ 3:370-379 (2002), the subfamily lineages and their
-  ages.
+- Batzer and Deininger (2002).
+  [Alu repeats and human genomic diversity](https://doi.org/10.1038/nrg798), the
+  subfamily lineages and their ages.
 - Lander et al. (2001).
   [Initial sequencing and analysis of the human genome](https://doi.org/10.1038/35057062),
   where the distribution of young against old Alu copies along the genome was

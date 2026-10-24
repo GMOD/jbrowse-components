@@ -224,9 +224,7 @@ chr22  50012765  50018574  g14001.t1:split          0  -
 
 ## Citations
 
-- Gabriel L, Becker F, Hoff KJ, Stanke M. Tiberius: end-to-end deep learning
-  with an HMM for gene prediction. _Bioinformatics_ 40(12) (2024).
-  https://doi.org/10.1093/bioinformatics/btae685
-- Frankish A, et al. GENCODE: reference annotation for the human and mouse
-  genomes at single nucleotide resolution. _Nucleic Acids Research_ (2023).
-  https://doi.org/10.1093/nar/gkac1071
+- Gabriel et al. (2024).
+  [Tiberius: end-to-end deep learning with an HMM for gene prediction](https://doi.org/10.1093/bioinformatics/btae685)
+- Frankish et al. (2023).
+  [GENCODE: reference annotation for the human and mouse genomes in 2023](https://doi.org/10.1093/nar/gkac1071)
