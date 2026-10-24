@@ -3435,6 +3435,138 @@ export const configManifest: ConfigManifest = {
         {
           "name": "subParts",
           "type": "string"
+        },
+        {
+          "name": "proteinFeatures",
+          "type": "ProteinFeaturesConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "track",
+              "type": "string"
+            },
+            {
+              "name": "color",
+              "type": "FeatureColorConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "value",
+                  "type": "(JexlString | (CssColor | undefined))"
+                },
+                {
+                  "name": "field",
+                  "type": "string"
+                },
+                {
+                  "name": "scale",
+                  "type": "FeatureColorScaleConfigurationSchema",
+                  "subSlots": [
+                    {
+                      "name": "type",
+                      "type": "(FeatureColorScaleType | undefined)"
+                    },
+                    {
+                      "name": "domain",
+                      "type": "string[]",
+                      "liftsNumbers": true
+                    },
+                    {
+                      "name": "range",
+                      "type": "CssColorEntry[]"
+                    },
+                    {
+                      "name": "unknown",
+                      "type": "(CssColor | undefined)"
+                    },
+                    {
+                      "name": "invalid",
+                      "type": "(CssColor | undefined)"
+                    },
+                    {
+                      "name": "names",
+                      "type": "string[]",
+                      "liftsNumbers": true
+                    },
+                    {
+                      "name": "scheme",
+                      "type": "(ColorScheme | undefined)"
+                    },
+                    {
+                      "name": "reverse",
+                      "type": "(boolean | undefined)"
+                    },
+                    {
+                      "name": "domainMid",
+                      "type": "(number | undefined)"
+                    },
+                    {
+                      "name": "domainMin",
+                      "type": "(number | undefined)"
+                    },
+                    {
+                      "name": "domainMax",
+                      "type": "(number | undefined)"
+                    },
+                    {
+                      "name": "domainQuantile",
+                      "type": "number"
+                    }
+                  ],
+                  "schema": "FeatureColorScale",
+                  "writes": "members"
+                },
+                {
+                  "name": "legend",
+                  "type": "FeatureColorLegendConfigurationSchema",
+                  "subSlots": [
+                    {
+                      "name": "title",
+                      "type": "(string | undefined)"
+                    }
+                  ],
+                  "schema": "FeatureColorLegend",
+                  "writes": "members"
+                }
+              ],
+              "schema": "FeatureColor",
+              "writes": "whole",
+              "shorthand": {
+                "string": "field"
+              },
+              "fieldPresets": {
+                "score": {
+                  "scale": {
+                    "type": "linear"
+                  }
+                },
+                "*": {
+                  "scale": {
+                    "type": "ordinal"
+                  }
+                }
+              }
+            },
+            {
+              "name": "join",
+              "type": "ProteinFeaturesJoinConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "domain",
+                  "type": "string"
+                },
+                {
+                  "name": "gene",
+                  "type": "string"
+                }
+              ],
+              "schema": "ProteinFeaturesJoin",
+              "writes": "members"
+            }
+          ],
+          "schema": "ProteinFeatures",
+          "writes": "whole",
+          "shorthand": {
+            "string": "track"
+          }
         }
       ],
       "legacyKeys": [

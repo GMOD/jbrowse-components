@@ -5274,6 +5274,85 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "additionalProperties": false
     },
+    "ProteinFeaturesJoin": {
+      "title": "ProteinFeaturesJoin",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "domain": {
+          "description": "domain row field naming the domain's transcript.",
+          "default": "transcript",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
+        },
+        "gene": {
+          "description": "transcript field the domain field equals.",
+          "default": "id",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
+    "ProteinFeatures": {
+      "title": "ProteinFeatures",
+      "anyOf": [
+        {
+          "description": "Shorthand for \`{ \\"track\\": ... }\`.",
+          "default": "",
+          "$ref": "#/$defs/PlainString",
+          "type": "string"
+        },
+        {
+          "title": "ProteinFeatures",
+          "type": "object",
+          "x-closed": true,
+          "properties": {
+            "track": {
+              "description": "trackId of the protein-features track.",
+              "default": "",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/PlainString"
+              }
+            },
+            "color": {
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/FeatureColor"
+              }
+            },
+            "join": {
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/ProteinFeaturesJoin"
+              }
+            }
+          },
+          "patternProperties": {
+            "^_+comment": {}
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
     "LinearBasicDisplaySlots": {
       "type": "object",
       "properties": {
@@ -5623,6 +5702,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           },
           "else": {
             "$ref": "#/$defs/PlainString"
+          }
+        },
+        "proteinFeatures": {
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/ProteinFeatures"
           }
         },
         "maxDisplayedBpPerPx": {
@@ -16162,6 +16249,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "subParts": {
               "$ref": "#/$defs/LinearBasicDisplaySlots/properties/subParts"
+            },
+            "proteinFeatures": {
+              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/proteinFeatures"
             },
             "maxDisplayedBpPerPx": {
               "anyOf": [
