@@ -1,6 +1,6 @@
-import { categoricalPalette } from '../ui/colors.ts'
 import { NO_VALUE_LABEL, keyNames } from './categoricalField.ts'
 import { MISCONFIGURED_COLOR, NO_CATEGORY_COLOR } from './color/index.ts'
+import { rampLutOf, stopsFromRampLut } from './colorRamp.ts'
 import { groupKeyComparator, isMissing } from './groupKeys.ts'
 import { numericValue } from './numericValue.ts'
 
@@ -58,17 +58,17 @@ export function thresholdIndex(
 
 /**
  * #api
- * The color of each interval, in order: the declared palette, and the
- * default categorical palette where it runs out.
+ * The color of each interval, in order: the declared palette, and where it
+ * runs out the interval's evenly spaced sample of the default ramp, since the
+ * intervals are ordered and a categorical deck would say they are not.
  */
 export function thresholdPalette(
   bins: number,
   palette: readonly string[] = [],
 ): string[] {
-  return Array.from(
-    { length: bins },
-    (_, i) => palette[i] ?? categoricalPalette[i % categoricalPalette.length]!,
-  )
+  const ramp =
+    palette.length < bins ? stopsFromRampLut(rampLutOf({}), bins) : []
+  return Array.from({ length: bins }, (_, i) => palette[i] ?? ramp[i]!.color)
 }
 
 /**

@@ -1042,7 +1042,7 @@ export const colorConfigSchema = ConfigurationSchema(
         }),
         ...colorRangeSlot({
           range:
-            "CSS colors the domain takes, in order, continuing into the default palette past its end; under threshold one per interval, one more than the cuts; under linear or log the ramp's stops, winning over scheme",
+            "CSS colors the domain takes, in order, continuing into the default palette past its end; under threshold one per interval, one more than the cuts, an interval left out sampling the default ramp; under linear or log the ramp's stops, winning over scheme",
         }),
         ...colorUnknownSlot,
         ...colorInvalidSlot,

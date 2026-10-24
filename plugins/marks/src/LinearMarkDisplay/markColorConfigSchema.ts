@@ -169,7 +169,7 @@ export const markColorSchema = ConfigurationSchema(
         ...colorDomainQuantileSlot,
         ...colorRangeSlot({
           range:
-            "CSS colors an ordinal scale hands its domain in order, a threshold scale its intervals, or a ramp's evenly spaced stops; empty is the default palette, or the scheme",
+            "CSS colors an ordinal scale hands its domain in order, a threshold scale its intervals, or a ramp's evenly spaced stops; empty is the default palette for ordinal, the scheme, or for a threshold the default ramp sampled per interval",
         }),
         ...colorUnknownSlot,
         ...colorInvalidSlot,

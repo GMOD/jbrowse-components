@@ -1,12 +1,20 @@
 import { NO_VALUE_LABEL } from './categoricalField.ts'
 import { MISCONFIGURED_COLOR, NO_CATEGORY_COLOR } from './color/index.ts'
+import { rampLutOf, stopsFromRampLut } from './colorRamp.ts'
 import {
   NOT_A_NUMBER_LABEL,
   numericDomain,
   thresholdField,
   thresholdIndex,
   thresholdLabels,
+  thresholdPalette,
 } from './thresholdScale.ts'
+
+test('intervals with no written color sample the default ramp in order', () => {
+  const ramp = stopsFromRampLut(rampLutOf({}), 3).map(s => s.color)
+  expect(thresholdPalette(3)).toEqual(ramp)
+  expect(thresholdPalette(3, ['red'])).toEqual(['red', ramp[1], ramp[2]])
+})
 
 const cuts = numericDomain(['0.2', '0.4', '0.6', '0.8'])
 
