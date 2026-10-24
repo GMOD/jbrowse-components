@@ -193,7 +193,7 @@ Check **Follow further breakends at each end** to add the rest of the chain:
 To follow a single read, right-click it and choose **Linear read vs ref**.
 JBrowse opens a synteny view with the read as an assembly along the bottom and
 every locus it touches along the top, the layout Ribbon
-([Nattestad et al. 2021](https://doi.org/10.1093/bioinformatics/btaa1080))
+([Nattestad et al. 2021](https://doi.org/10.1093/bioinformatics/btaa680))
 introduced.
 
 ## Assembling the der(3) derivative allele and aligning it to GRCh38 {#the-derivative-allele}
@@ -353,12 +353,9 @@ npx --yes serve cancer_sv_build/jbrowse2
 
 ## Citations
 
-- Valle-Inclán JE, et al. A multi-platform reference for somatic structural
-  variation detection. _Cell Genomics_ (2022).
-  https://doi.org/10.1016/j.xgen.2022.100139
-- Nattestad M, et al. Complex rearrangements and oncogene amplifications
-  revealed by long-read DNA and RNA sequencing of a breast cancer cell line.
-  _Genome Research_ (2018). https://doi.org/10.1101/gr.231100.117
-- Nattestad M, Aboukhalil R, Chin CS, Schatz MC. Ribbon: intuitive visualization
-  for complex genomic variation. _Bioinformatics_ (2021).
-  https://doi.org/10.1093/bioinformatics/btaa1080
+- Valle-Inclán et al. (2022).
+  [A multi-platform reference for somatic structural variation detection](https://doi.org/10.1016/j.xgen.2022.100139)
+- Nattestad et al. (2018).
+  [Complex rearrangements and oncogene amplifications revealed by long-read DNA and RNA sequencing of a breast cancer cell line](https://doi.org/10.1101/gr.231100.117)
+- Nattestad et al. (2021).
+  [Ribbon: intuitive visualization for complex genomic variation](https://doi.org/10.1093/bioinformatics/btaa680)

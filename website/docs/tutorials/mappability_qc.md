@@ -332,19 +332,18 @@ to its `LOCI` list the same way.
 
 ## Citations
 
-- Li H, Handsaker B, Wysoker A, et al.
-  [The Sequence Alignment/Map format and SAMtools](https://doi.org/10.1093/bioinformatics/btp352).
-  _Bioinformatics_ 25:2078-2079 (2009), and the current
+- Li et al. (2009).
+  [The Sequence Alignment/Map format and SAMtools](https://doi.org/10.1093/bioinformatics/btp352),
+  and the current
   [SAM specification](https://samtools.github.io/hts-specs/SAMv1.pdf), which
   defines MAPQ as `-10 log10 Pr{mapping position is wrong}`.
-- Li H, Ruan J, Durbin R.
-  [Mapping short DNA sequencing reads and calling variants using mapping quality scores](https://doi.org/10.1101/gr.078212.108).
-  _Genome Research_ 18:1851-1858 (2008), which introduced that estimator.
-- Karimzadeh M, Ernst C, Kundaje A, Hoffman MM.
-  [Umap and Bismap: quantifying genome and methylome mappability](https://doi.org/10.1093/nar/gky677).
-  _Nucleic Acids Research_ 46:e120 (2018), the source of the k100 mappability
-  track.
-- Gustafson JA, Gibson SB, Damaraju N, et al.
-  [High-coverage nanopore sequencing of samples from the 1000 Genomes Project to build a comprehensive catalog of human genetic variation](https://doi.org/10.1101/gr.279273.124).
-  _Genome Research_ 34:2061-2073 (2024), the source of both the long-read SV
-  callset in the wide figure and the GRCh38 / T2T-CHM13 read counts above.
+- Li et al. (2008).
+  [Mapping short DNA sequencing reads and calling variants using mapping quality scores](https://doi.org/10.1101/gr.078212.108),
+  which introduced that estimator.
+- Karimzadeh et al. (2018).
+  [Umap and Bismap: quantifying genome and methylome mappability](https://doi.org/10.1093/nar/gky677),
+  the source of the k100 mappability track.
+- Gustafson et al. (2024).
+  [High-coverage nanopore sequencing of samples from the 1000 Genomes Project to build a comprehensive catalog of human genetic variation](https://doi.org/10.1101/gr.279273.124),
+  the source of both the long-read SV callset in the wide figure and the GRCh38
+  / T2T-CHM13 read counts above.

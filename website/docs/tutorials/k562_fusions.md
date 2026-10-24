@@ -323,9 +323,7 @@ npx --yes serve cancer_sv_build/jbrowse2
 
 ## Citations
 
-- Nattestad M, et al. Complex rearrangements and oncogene amplifications
-  revealed by long-read DNA and RNA sequencing of a breast cancer cell line.
-  _Genome Research_ (2018). https://doi.org/10.1101/gr.231100.117
-- Zhou B, et al. Comprehensive, integrated, and phased whole-genome analysis of
-  the primary ENCODE cell line K562. _Genome Research_ (2019).
-  https://doi.org/10.1101/gr.234948.118
+- Nattestad et al. (2018).
+  [Complex rearrangements and oncogene amplifications revealed by long-read DNA and RNA sequencing of a breast cancer cell line](https://doi.org/10.1101/gr.231100.117)
+- Zhou et al. (2019).
+  [Comprehensive, integrated, and phased whole-genome analysis of the primary ENCODE cell line K562](https://doi.org/10.1101/gr.234948.118)

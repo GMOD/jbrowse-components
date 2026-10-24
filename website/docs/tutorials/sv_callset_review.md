@@ -180,6 +180,5 @@ renames to `EVENT`.
 
 ## Citations
 
-- Valle-Inclán JE, et al. A multi-platform reference for somatic structural
-  variation detection. _Cell Genomics_ (2022).
-  https://doi.org/10.1016/j.xgen.2022.100139
+- Valle-Inclán et al. (2022).
+  [A multi-platform reference for somatic structural variation detection](https://doi.org/10.1016/j.xgen.2022.100139)

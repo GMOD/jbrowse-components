@@ -307,10 +307,9 @@ tracks over NA12878. Given your own reads,
 
 ## Citations
 
-- Byrska-Bishop M, et al.
-  [High-coverage whole-genome sequencing of the expanded 1000 Genomes Project cohort including 602 trios](https://doi.org/10.1016/j.cell.2022.08.004).
-  _Cell_ 185:3426-3440 (2022), the reads and the structural-variant callset.
-- Li H, et al.
-  [The Sequence Alignment/Map format and SAMtools](https://doi.org/10.1093/bioinformatics/btp352).
-  _Bioinformatics_ 25:2078-2079 (2009), where the template length and mapping
-  quality fields are defined.
+- Byrska-Bishop et al. (2022).
+  [High-coverage whole-genome sequencing of the expanded 1000 Genomes Project cohort including 602 trios](https://doi.org/10.1016/j.cell.2022.08.004),
+  the reads and the structural-variant callset.
+- Li et al. (2009).
+  [The Sequence Alignment/Map format and SAMtools](https://doi.org/10.1093/bioinformatics/btp352),
+  where the template length and mapping quality fields are defined.
