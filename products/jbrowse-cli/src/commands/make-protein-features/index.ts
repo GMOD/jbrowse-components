@@ -61,8 +61,9 @@ export async function run(args?: string[]) {
     'A feature spanning an intron becomes one BED12 row with a block per ' +
     'exon. Where HMMER hits on one protein overlap by more than half, the ' +
     'lowest E-value is kept, as pfam_scan does. ' +
-    'Add the file with disableGeneHeuristic so JBrowse draws the blocks ' +
-    'rather than a transcript. Requires bgzip and tabix on the PATH.'
+    'Add the file as a track with disableGeneHeuristic, and name that track ' +
+    "in a gene track's proteinFeatures to draw the domains on its " +
+    'transcripts. Requires bgzip and tabix on the PATH.'
 
   if (flags.help) {
     printHelp({

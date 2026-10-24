@@ -1,13 +1,14 @@
 #!/usr/bin/env bash
 #
-# Calls Pfam domains on YOUR OWN gene models and serves them as a track under
-# the genes, the arrangement worked in
-# website/docs/tutorials/protein_domains.md on the honey bee RefSeq annotation.
+# Calls Pfam domains on YOUR OWN gene models and draws them on the gene track,
+# as website/docs/tutorials/protein_domains.md does on the honey bee RefSeq
+# annotation.
 #
 # gffread translates each transcript's CDS, hmmscan calls Pfam domains on the
 # proteins with Pfam's own gathering thresholds, and `jbrowse
 # make-protein-features` places each domain back on the exons that encode it.
-# The script then builds a JBrowse with the genome, the genes and the domains.
+# The script then builds a JBrowse whose gene track draws the domains through
+# its proteinFeatures.
 #
 # Requires: samtools, gffread, hmmscan + hmmpress (HMMER 3), bgzip + tabix
 #           (htslib), and node (the JBrowse CLI is fetched via npx unless
@@ -104,13 +105,14 @@ jb make-protein-features genes.gff3 pfam.domtblout --out pfam.bed.gz
 # ── JBrowse ──────────────────────────────────────────────────────────────────
 [ -f "$APP/index.html" ] || jb create "$APP"
 jb add-assembly "$FA" --name "$ASM" --load copy --force --out "$APP"
-jb add-track genes.gff3.gz --trackId genes --name Genes -a "$ASM" \
-  --load copy --force --out "$APP"
 jb add-track pfam.bed.gz --trackId pfam_domains --name "Pfam domains" \
   -a "$ASM" --load copy --force --out "$APP" \
-  --config '{"adapter":{"disableGeneHeuristic":true},"displayDefaults":{"encoding":{"color":{"field":"name","legend":{"title":"Pfam family"}}}}}'
+  --config '{"adapter":{"disableGeneHeuristic":true}}'
+jb add-track genes.gff3.gz --trackId genes --name Genes -a "$ASM" \
+  --load copy --force --out "$APP" \
+  --config '{"displayDefaults":{"proteinFeatures":{"track":"pfam_domains","color":{"field":"name","legend":{"title":"Pfam family"}}}}}'
 jb text-index --tracks genes --attributes Name,gene --force --out "$APP"
 
 echo
-echo "Built $APP with $ASM, its genes and their Pfam domains. Serve it with"
+echo "Built $APP with $ASM and its genes, drawn with their Pfam domains. Serve it with"
 echo "  npx --yes serve $(pwd)/$APP"

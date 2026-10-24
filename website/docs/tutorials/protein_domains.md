@@ -3,7 +3,7 @@ title: Protein domains on gene models
 sidebar_label: Protein domains (Pfam)
 description:
   Call Pfam domains on a genome's proteins, place each domain on the exons that
-  encode it, and draw the domains under the genes, one row per isoform
+  encode it, and draw the domains on each isoform of the gene track
 guide_category: Tutorials
 tutorial_category: Genes & annotation
 ---
@@ -11,7 +11,7 @@ tutorial_category: Genes & annotation
 A gene model shows where the exons are, and Pfam names the protein domains they
 encode, such as a kinase or a DNA-binding fold. Domain callers report each
 domain in residues along the protein, so the domains need placing back on the
-exons before they line up under the genes. Done for every transcript, the
+exons before a gene track can draw them. Done for every transcript, the
 placement shows which exons encode each domain and which isoforms leave one out.
 We work through the honey bee RefSeq annotation and the _vav_ gene (LOC413488),
 whose isoforms differ at their first domain. We:
@@ -19,11 +19,11 @@ whose isoforms differ at their first domain. We:
 - translate the gene models and call Pfam domains on the proteins with `hmmscan`
 - place each domain on the exons that encode it with
   `jbrowse make-protein-features`
-- load the domains as a track under the genes, colored by Pfam family
+- draw the domains on the gene track's isoforms, colored by Pfam family
 
 ## Prerequisites
 
-- a JBrowse to paste the track into ([Web](/docs/quickstart_web) or
+- a JBrowse to paste the tracks into ([Web](/docs/quickstart_web) or
   [Desktop](/docs/quickstart_desktop)), or the honey bee genome on
   [genomes.jbrowse.org](https://genomes.jbrowse.org)
 - `gffread`, which translates each transcript's CDS
@@ -52,8 +52,8 @@ npm install -g @jbrowse/cli
 The figures read the honey bee Amel_HAv3.1 assembly and its NCBI RefSeq
 annotation from genomes.jbrowse.org, and a Pfam domain file built from that
 annotation with the commands below. Nothing to download to follow the page: the
-track config reads the domain file by URL. The commands take your own genome
-FASTA and GFF3 the same way.
+track configs read the domain file and the gene models by URL. The commands take
+your own genome FASTA and GFF3 the same way.
 
 | What it is                                                 | File                                                                                                                                                                          |
 | ---------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -119,13 +119,12 @@ jbrowse make-protein-features genes.gff3 pfam.domtblout --out pfam.bed.gz
   shows them on click.
 - `--source Pfam` keeps only the Pfam rows of an InterProScan TSV.
 
-## Loading the domains under the genes
+## Drawing the domains on the genes
 
-The domain track reads the BED with `disableGeneHeuristic`, which stops JBrowse
-drawing a stranded BED12 row as a coding transcript, and colors each domain by
-its family:
+JBrowse loads the domain file as a track, with `disableGeneHeuristic` to stop it
+reading a stranded BED12 row as a coding transcript:
 
-```json addtrack loc=NC_037640.1:1,971,400-1,976,800
+```json addtrack
 {
   "type": "FeatureTrack",
   "trackId": "pfam_domains",
@@ -135,26 +134,49 @@ its family:
     "type": "BedTabixAdapter",
     "uri": "https://jbrowse.org/demos/protein_domains/pfam.bed.gz",
     "disableGeneHeuristic": true
+  }
+}
+```
+
+A gene track names that track in
+[`proteinFeatures`](/docs/config/linearbasicdisplay/#slot-proteinfeatures) and
+draws each domain over the CDS that encodes it, colored by Pfam family, with a
+key naming the families on screen. This one reads the same RefSeq GFF as the
+honey bee hub's gene track:
+
+```json addtrack
+{
+  "type": "FeatureTrack",
+  "trackId": "genes_with_pfam",
+  "name": "RefSeq genes with Pfam domains",
+  "assemblyNames": ["GCF_003254395.2"],
+  "adapter": {
+    "type": "Gff3TabixAdapter",
+    "uri": "https://jbrowse.org/hubs/genark/GCF/003/254/395/GCF_003254395.2/GCF_003254395.2_Amel_HAv3.1_genomic.gff.gz",
+    "index": {
+      "location": {
+        "uri": "https://jbrowse.org/hubs/genark/GCF/003/254/395/GCF_003254395.2/GCF_003254395.2_Amel_HAv3.1_genomic.gff.gz.csi"
+      },
+      "indexType": "CSI"
+    }
   },
   "displayDefaults": {
-    "encoding": {
+    "proteinFeatures": {
+      "track": "pfam_domains",
       "color": { "field": "name", "legend": { "title": "Pfam family" } }
     }
   }
 }
 ```
 
-Point `uri` at your own `pfam.bed.gz` and `assemblyNames` at your assembly.
+For your own data, point the first `uri` at your `pfam.bed.gz`, the gene adapter
+at your sorted, indexed GFF3, and `assemblyNames` at your assembly.
 
-To follow along on genomes.jbrowse.org, open the honey bee genome, add the track
-above, go to `NC_037640.1:1,971,400-1,976,800`, and turn on the gene track,
-**NCBI RefSeq - RefSeq All (GFF)**.
-
-The track draws one copy of each domain per isoform, and a domain crossing an
-intron as blocks joined like the exons above it. Clicking a domain shows its
+To follow along on genomes.jbrowse.org, open the honey bee genome, add both
+tracks, and go to `NC_037640.1:1,971,400-1,976,800`. Clicking a domain shows its
 transcript, accession and residue range.
 
-<Figure src="/img/protein_domains/vav.png" caption="Honey bee vav: its RefSeq isoforms over the Pfam domains they encode, colored by family. The top isoform skips the exon encoding CH, so CH has one copy fewer than the other domains." />
+<Figure src="/img/protein_domains/vav.png" caption="Honey bee vav: its RefSeq isoforms with their Pfam domains drawn over the CDS, colored by family. The top isoform skips the exon encoding CH." />
 
 ## Reproduce it end to end
 
@@ -165,7 +187,7 @@ runs every step above on your own genome FASTA and GFF3. The script:
 2. Downloads and presses the Pfam library once, then calls domains with hmmscan,
    on chunks of the proteins at once.
 3. Places the domains on the exons with `jbrowse make-protein-features`.
-4. Builds a JBrowse with the genome, the genes and the domain track.
+4. Builds a JBrowse whose gene track draws the domains.
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_protein_domains.sh
