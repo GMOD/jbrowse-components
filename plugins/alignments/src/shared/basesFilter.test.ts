@@ -3,6 +3,8 @@ import {
   applyConfSettings,
   getConfigurationSchemaMetadata,
   liftRetiredSpellings,
+  mergeConfSettings,
+  plotWrites,
   readConfObject,
 } from '@jbrowse/core/configuration'
 import { preprocessTrackConfigSnapshot } from '@jbrowse/core/pluggableElementTypes/models'
@@ -51,11 +53,15 @@ test('a bases filter states only the fields it names', () => {
   expect(modificationFiltersOf([])).toEqual({})
   expect(
     modificationFiltersOf([
-      { field: 'probability', gte: 0.07 },
+      { field: 'probability', gte: 0.25 },
       { field: 'context', oneOf: ['CHH'] },
       { field: 'code', oneOf: ['a'] },
     ]),
-  ).toEqual({ threshold: 7, cytosineContext: 'CHH', shownModifications: ['a'] })
+  ).toEqual({
+    threshold: 25,
+    cytosineContext: 'CHH',
+    shownModifications: ['a'],
+  })
   expect(modificationFiltersOf([{ field: 'context' }])).toEqual({
     cytosineContext: 'all',
   })
@@ -82,6 +88,14 @@ test('a probability floor written gt excludes the call at it', () => {
   expect(basesFilterOf({ threshold: 50, thresholdStrict: true })).toEqual([
     { field: 'probability', gt: 0.5 },
   ])
+})
+
+test('a floor at a call probability reaches the worker exactly', () => {
+  const call = 149.5 / 256
+  const { threshold } = modificationFiltersOf([
+    { field: 'probability', gte: call },
+  ])
+  expect(threshold! / 100).toBe(call)
 })
 
 test('a test the per-base layer cannot apply is named', () => {
@@ -233,6 +247,31 @@ test('a beta member in a settings bag lands over the live config', () => {
   applyConfSettings(conf, { modifications: { threshold: 30 } })
   expect(basesFilterOfConf(conf)).toEqual([
     { field: 'context', oneOf: ['CHG'] },
+    { field: 'probability', gte: 0.3 },
+  ])
+})
+
+test("a beta member merged over another bag keeps that bag's other entries", () => {
+  const merged = mergeConfSettings(
+    schema,
+    { pileup: { bases: { filter: [{ field: 'code', oneOf: ['m'] }] } } },
+    { modifications: { threshold: 30 } },
+  )
+  expect(basesFilterOfConf(create(merged))).toEqual([
+    { field: 'code', oneOf: ['m'] },
+    { field: 'probability', gte: 0.3 },
+  ])
+})
+
+test('a plot draft in the beta spelling writes the bases filter', () => {
+  const conf = create({
+    pileup: { bases: { filter: [{ field: 'code', oneOf: ['m'] }] } },
+  })
+  const { pileup } = plotWrites(conf, { modifications: { threshold: 30 } })
+  expect(
+    predicatesOf((pileup as { bases: { filter: unknown } }).bases.filter),
+  ).toEqual([
+    { field: 'code', oneOf: ['m'] },
     { field: 'probability', gte: 0.3 },
   ])
 })

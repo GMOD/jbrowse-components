@@ -172,10 +172,10 @@ export function liftRetiredSpellings(
   snapshot: Record<string, unknown>,
   base?: Record<string, unknown>,
 ) {
-  if (!isOwnSnapshot(schema, snapshot)) {
+  const { retired, retiredMembers } = schema.options
+  if ((!retired && !retiredMembers) || !isOwnSnapshot(schema, snapshot)) {
     return snapshot
   }
-  const { retired, retiredMembers } = schema.options
   const declared = new Set(declaredKeys(schema))
   const spellings = Object.fromEntries(
     Object.entries(retired ?? {}).filter(([name]) => !declared.has(name)),
@@ -188,17 +188,30 @@ export function liftRetiredSpellings(
       )
     : snapshot
   return retiredMembers
-    ? liftRetiredMembers(retiredMembers, named, base)
+    ? liftRetiredMembers(schema.definition, retiredMembers, named, base)
     : named
 }
 
+function namespaceDeclares(member: unknown) {
+  return new Set(
+    isBareConfigurationSchemaType(member)
+      ? declaredKeys(getConfigurationSchemaMetadata(member)!)
+      : [],
+  )
+}
+
 function liftRetiredMembers(
+  definition: ConfigurationSchemaMetadata['definition'],
   retiredMembers: Record<string, RetiredMembers>,
   snapshot: Record<string, unknown>,
   base: Record<string, unknown> | undefined,
 ) {
   let out = snapshot
-  for (const [namespace, { names, lift }] of Object.entries(retiredMembers)) {
+  for (const [namespace, { names: retired, lift }] of Object.entries(
+    retiredMembers,
+  )) {
+    const declared = namespaceDeclares(definition[namespace])
+    const names = retired.filter(name => !declared.has(name))
     const value = out[namespace]
     if (
       isPlainObject(value) &&

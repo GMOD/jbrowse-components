@@ -169,6 +169,28 @@ test('a retired member lift reads the snapshot it lands in and a base', () => {
   expect(liftRetiredSpellings(membersMeta, snap)).toBe(snap)
 })
 
+test('a retired member name the namespace declares stays its slot', () => {
+  const sized = ConfigurationSchema(
+    'SizedMarksDisplay',
+    {
+      marks: ConfigurationSchema('SizedMarks', {
+        diameter: { type: 'number', defaultValue: 1 },
+      }),
+      size: { type: 'number', defaultValue: 2 },
+    },
+    {
+      explicitlyTyped: true,
+      retiredMembers: {
+        marks: { names: ['diameter'], lift: () => ({ size: 9 }) },
+      },
+    },
+  )
+  const snap = { marks: { diameter: 4 } }
+  expect(
+    liftRetiredSpellings(getConfigurationSchemaMetadata(sized)!, snap),
+  ).toBe(snap)
+})
+
 test('a subclass keeps its base’s retired members', () => {
   const child = ConfigurationSchema(
     'BigMarksDisplay',

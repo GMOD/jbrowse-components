@@ -186,7 +186,9 @@ export function writesWholeAt(schema: unknown, path: readonly string[]) {
  * member at any depth, a bare value its shorthand lifts included, and a slot
  * or a channel takes `over`'s value whole.
  * Each side's retired spellings lift first, at every depth, so a bag's own
- * retired name still beats the other's current one. For combining snapshots
+ * retired name still beats the other's current one; `over`'s namespace
+ * members lift against `under` as their base, so they replace only the entries
+ * they name in a list `under` writes. For combining snapshots
  * before any config node exists, as a track's `displayDefaults` folds into
  * its `displays`.
  */
@@ -198,11 +200,13 @@ export function mergeConfSettings(
   const meta = isType(schema)
     ? getConfigurationSchemaMetadata(schema)
     : undefined
-  const lift = (bag: Record<string, unknown>) =>
-    meta ? liftRetiredSpellings(meta, bag) : bag
+  const lift = (
+    bag: Record<string, unknown>,
+    base?: Record<string, unknown>,
+  ) => (meta ? liftRetiredSpellings(meta, bag, base) : bag)
   const definition = meta?.definition ?? {}
   const out = { ...lift(under) }
-  for (const [key, value] of Object.entries(lift(over))) {
+  for (const [key, value] of Object.entries(lift(over, out))) {
     const member = Object.hasOwn(definition, key) ? definition[key] : undefined
     const namespace = namespaceMetadata(member)
     const prior = namespace ? liftShorthand(namespace, out[key]) : out[key]

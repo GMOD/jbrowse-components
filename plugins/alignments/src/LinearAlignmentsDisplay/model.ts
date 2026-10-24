@@ -1749,11 +1749,15 @@ export default function stateModelFactory(
       .views(self => ({
         /**
          * #getter
+         * The probability floor as the menu shows it, a percent rounded for
+         * display; the worker reads the exact floor off `modificationSettings`.
          */
         get modificationThreshold() {
-          return (
-            self.modificationSettings.threshold ??
-            DEFAULT_MODIFICATION_THRESHOLD
+          return Number(
+            (
+              self.modificationSettings.threshold ??
+              DEFAULT_MODIFICATION_THRESHOLD
+            ).toFixed(2),
           )
         },
 

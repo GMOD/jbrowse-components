@@ -167,6 +167,19 @@ describe('the schema', () => {
     expect(error?.message).toContain('did you mean "bamLocation"')
   })
 
+  it('suggests no legacy key for a misspelt slot', () => {
+    const config = baseConfig()
+    config.tracks[0]!.displays = [
+      {
+        type: 'LinearAlignmentsDisplay',
+        modifications: { cytosineContexts: 'CHH' },
+      },
+    ]
+    const [error] = schemaProblems(config)
+    expect(error?.where).toContain('cytosineContexts')
+    expect(error?.message).not.toContain('"cytosineContext"')
+  })
+
   it('says a display warns and loads without an undeclared slot', () => {
     const config = baseConfig()
     config.tracks[0]!.displays = [
@@ -712,11 +725,12 @@ describe('the schema', () => {
     ).toEqual([])
   })
 
-  it('suggests the display prop a misspelled session key meant', () => {
+  it('suggests no legacy display prop for a misspelled session key', () => {
     const [error] = schemaProblems(
       sessionDisplay({ type: 'LinearAlignmentsDisplay', heightPreConfg: 1 }),
     )
-    expect(error?.message).toContain('did you mean "heightPreConfig"')
+    expect(error?.message).toContain('unknown display property')
+    expect(error?.message).not.toContain('heightPreConfig')
   })
 
   it('accepts a session display key a migration still lifts', () => {

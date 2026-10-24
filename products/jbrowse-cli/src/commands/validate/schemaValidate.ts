@@ -69,15 +69,21 @@ function resolve(schema: Schema): Schema {
   return name ? (defs[name] ?? schema) : schema
 }
 
-// The keys an object schema accepts: its own properties plus those of every
-// slot table it intersects through allOf.
-function acceptedKeys(schema: Schema): string[] {
-  const own = Object.keys((schema.properties as Schema | undefined) ?? {})
-  const composed = ((schema.allOf as Schema[] | undefined) ?? []).flatMap(
-    branch =>
-      Object.keys((resolve(branch).properties as Schema | undefined) ?? {}),
+function currentKeys(properties: unknown) {
+  return Object.entries(
+    (properties as Record<string, Schema> | undefined) ?? {},
   )
-  return [...new Set([...own, ...composed])]
+    .filter(([, property]) => property.deprecated !== true)
+    .map(([key]) => key)
+}
+
+// The keys an object schema accepts in their current spelling: its own
+// properties plus those of every slot table it intersects through allOf.
+function acceptedKeys(schema: Schema): string[] {
+  const composed = ((schema.allOf as Schema[] | undefined) ?? []).flatMap(
+    branch => currentKeys(resolve(branch).properties),
+  )
+  return [...new Set([...currentKeys(schema.properties), ...composed])]
 }
 
 function describe(schema: Schema): string {

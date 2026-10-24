@@ -162,12 +162,16 @@ export function modificationsMenu(model: ModificationsMenuModel): MenuItem {
           commitOnRelease: true,
           getValue: () => model.modificationThreshold,
           isDefault:
-            model.modificationThreshold === DEFAULT_MODIFICATION_THRESHOLD,
+            model.modificationThreshold === DEFAULT_MODIFICATION_THRESHOLD &&
+            !mods.thresholdStrict,
           onChange: v => {
             patchMods(model, { threshold: v })
           },
           onReset: () => {
-            patchMods(model, { threshold: DEFAULT_MODIFICATION_THRESHOLD })
+            patchMods(model, {
+              threshold: DEFAULT_MODIFICATION_THRESHOLD,
+              thresholdStrict: undefined,
+            })
           },
         }),
         ...(hasCytosineMeth(model)

@@ -20,10 +20,6 @@ type BasesFilterSettings = Pick<
   'threshold' | 'thresholdStrict' | 'cytosineContext' | 'shownModifications'
 >
 
-function percentOf(fraction: number) {
-  return Number((fraction * 100).toFixed(6))
-}
-
 function entriesOn(predicates: FieldPredicate[], field: string) {
   return predicates.filter(p => p.field === field)
 }
@@ -61,7 +57,7 @@ export function modificationFiltersOf(filter: unknown): BasesFilterSettings {
   return {
     ...(probability.length > 0
       ? {
-          threshold: percentOf(floor?.min ?? 0),
+          threshold: (floor?.min ?? 0) * 100,
           ...(floor?.strict ? { thresholdStrict: true } : {}),
         }
       : {}),

@@ -363,9 +363,7 @@ describe('color by modifications menu', () => {
   })
 
   // The threshold is the shared makeSizeMenu row, so assert through its props.
-  test('the threshold slider sits inline in Modifications, commits a non-default value, and resets', () => {
-    const model = makeModModel(['m', 'h'])
-    model.baseLayer = { type: 'modifications' }
+  function thresholdSlider(model: Model) {
     const item = byLabel(model, 'Probability threshold')
     if (!item || !('render' in item)) {
       throw new Error('no threshold slider')
@@ -379,13 +377,19 @@ describe('color by modifications menu', () => {
     if (!isValidElement(rendered)) {
       throw new Error('threshold slider did not render')
     }
+    return rendered.props as {
+      onChange: (v: number) => void
+      onReset: () => void
+      isDefault: boolean
+      commitOnRelease: boolean
+    }
+  }
+
+  test('the threshold slider sits inline in Modifications, commits a non-default value, and resets', () => {
+    const model = makeModModel(['m', 'h'])
+    model.baseLayer = { type: 'modifications' }
     const { onChange, onReset, isDefault, commitOnRelease } =
-      rendered.props as {
-        onChange: (v: number) => void
-        onReset: () => void
-        isDefault: boolean
-        commitOnRelease: boolean
-      }
+      thresholdSlider(model)
     expect(isDefault).toBe(true)
     expect(commitOnRelease).toBe(true)
     onChange(80)
@@ -398,6 +402,18 @@ describe('color by modifications menu', () => {
       type: 'modifications',
       modifications: { threshold: 10 },
     })
+  })
+
+  test('a gt floor at the default threshold is not the default, and resets to gte', () => {
+    const model = makeModModel(['m', 'h'])
+    model.baseLayer = {
+      type: 'modifications',
+      modifications: { threshold: 10, thresholdStrict: true },
+    }
+    const { onReset, isDefault } = thresholdSlider(model)
+    expect(isDefault).toBe(false)
+    onReset()
+    expect(model.modificationSettings.thresholdStrict).toBeUndefined()
   })
 
   test('cytosine context is shown only for cytosine methylation data', () => {

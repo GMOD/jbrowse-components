@@ -237,7 +237,8 @@ export function liftPlot(
  * #api core/configuration
  * What applying a draft writes: each setting whose lifted value differs from
  * the plot, as the lifted value, and `null` for one it resets. A value
- * spelled another way but lifting to the same setting writes nothing.
+ * spelled another way but lifting to the same setting writes nothing, and a
+ * retired spelling writes the settings it lifts into.
  * Under `whole`, a setting the draft leaves out writes its reset.
  * Throws a refusal before anything is written.
  */
@@ -248,9 +249,11 @@ export function plotWrites(
 ): Record<string, unknown> {
   const current = plotOf(conf)
   const lifted = plotOf(liftPlot(conf, draft, options))
-  const keys = options.whole
-    ? new Set([...Object.keys(current), ...Object.keys(draft)])
-    : Object.keys(draft).filter(key => draft[key] !== undefined)
+  const keys = new Set([
+    ...Object.keys(current),
+    ...Object.keys(lifted),
+    ...Object.keys(draft),
+  ])
   const writes: Record<string, unknown> = {}
   for (const key of keys) {
     if (!compareStructural(lifted[key], current[key])) {
