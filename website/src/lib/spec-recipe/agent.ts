@@ -8,15 +8,28 @@ import {
   figureLiveRefs,
   videoFrames,
 } from '../liveLinks.generated.ts'
-import { decodeSpecUrl, openedTrackIds } from './decode.ts'
+import {
+  canonicalDisplayType,
+  defaultDisplay,
+  fileKind,
+  lookupTrack,
+  viewTrackEntries,
+} from './configs.ts'
+import {
+  decodeSpecUrl,
+  openedTrackIds,
+  specDisplayType,
+  specTrackId,
+} from './decode.ts'
 import { heredoc, quote } from './img.ts'
 
 import type { DecodedSpec, SessionSpec } from './decode.ts'
 
-// The Agent tab: the command line that rebuilds a figure headlessly, as
-// @jbrowse/capture runs for a session and @jbrowse/img for a figure drawn
-// without a browser, and a sentence for whatever of the figure it cannot
-// reproduce.
+// The Agent tab: a prompt that hands a coding agent the view and leaves the
+// goal to the reader, then the command line that rebuilds the figure
+// headlessly, as @jbrowse/capture runs for a session and @jbrowse/img for a
+// figure drawn without a browser, with a sentence for whatever of the figure
+// it cannot reproduce.
 
 export interface AgentFrame {
   // which frame of a composed figure this command draws
@@ -26,6 +39,8 @@ export interface AgentFrame {
 }
 
 export interface AgentRecipe {
+  // the prompt, absent for a composed figure with no one session behind it
+  brief?: string
   frames: AgentFrame[]
   // the ImageMagick lines stacking a composed figure's frames
   stack?: string
@@ -59,6 +74,56 @@ const ONE_FRAME: Files = {
   session: 'session.json',
   callouts: 'callouts.json',
   image: 'figure.png',
+}
+
+const DOCS = 'https://jbrowse.org/jb2/docs/'
+
+function trackLine(
+  { config, spec }: DecodedSpec,
+  entry: Parameters<typeof specTrackId>[0],
+  viewType: string | undefined,
+) {
+  const trackId = specTrackId(entry)
+  const info = lookupTrack(config, trackId, spec.sessionTracks)
+  const display =
+    (typeof entry === 'string'
+      ? undefined
+      : canonicalDisplayType(specDisplayType(entry))) ??
+    (info && viewType ? defaultDisplay(info, viewType) : undefined)
+  const kind = info ? fileKind(info.adapterType) : undefined
+  return `- ${[
+    info && info.name !== trackId ? `${info.name} (${trackId})` : trackId,
+    info?.type,
+    kind,
+    display && `drawn as ${display}`,
+  ]
+    .filter(Boolean)
+    .join(', ')}`
+}
+
+// Everything an agent needs to start from the view, so the reader writes only
+// what they want done with it: the same view of their own files, its settings
+// in their config.json, the view in their open app, or a figure like it.
+export function agentBrief(decoded: DecodedSpec, liveUrl: string): string {
+  const byId = new Map(
+    viewTrackEntries(decoded.spec.views).map(e => [specTrackId(e.entry), e]),
+  )
+  const tracks = [...byId.values()].map(({ entry, viewType }) =>
+    trackLine(decoded, entry, viewType),
+  )
+  return [
+    'My goal: [the same view of my own files / its track settings in my config.json / this view in my open JBrowse / a figure like it at other loci]',
+    '',
+    'Start from this view in the JBrowse docs.',
+    `- Live: ${liveUrl}`,
+    `- Config it loads: ${new URL(decoded.config, decoded.base).href}`,
+    ...(tracks.length ? ['- Tracks:', ...tracks.map(t => `  ${t}`)] : []),
+    '',
+    `${DOCS}agents_authoring/ says how to write and check a config, and ${DOCS}agents/ how to drive a JBrowse that is running. Load the jbrowse-authoring, jbrowse-hosted-data and jbrowse-capture skills if you have them. Validate any config you write with \`npx @jbrowse/cli validate\`, then render the result and look at it: a config that loads is not yet a track that drew.`,
+    '',
+    'The session spec that draws the view:',
+    JSON.stringify(decoded.spec, null, 2),
+  ].join('\n')
 }
 
 function viewExists(spec: SessionSpec, view: Anchor['view']) {

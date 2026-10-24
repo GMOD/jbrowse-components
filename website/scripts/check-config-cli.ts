@@ -60,6 +60,7 @@ import {
   isAddtrack,
   isSession,
 } from '../src/lib/remark-config-cli-tabs.ts'
+import { configTracks } from '../src/lib/spec-recipe/configTracks.ts'
 import { decodeSpecUrl } from '../src/lib/spec-recipe/decode.ts'
 import { deriveCliRecipe } from '../src/lib/spec-recipe/recipe.ts'
 import { docsMatching, reportProblems } from './check-utils.ts'
@@ -563,17 +564,16 @@ for (const [label, config] of UNDERIVABLE_SESSIONS) {
   })
 }
 
-// The same two commands, derived from a figure's `sessionTracks` for the CLI
-// tab of its recipe dialog (src/lib/spec-recipe/recipe.ts). Nothing above
+// The same two commands, derived from a figure's tracks (configTracks) for the
+// CLI tab of its recipe dialog (src/lib/spec-recipe/recipe.ts). Nothing above
 // reaches them: a tagged doc fence is hand-written and CLI-clean, where a
-// session track is read off a live link and mostly isn't, so the recipes are
+// figure's track is read off a live link and mostly isn't, so the recipes are
 // where the add-track-json fallback actually ships. Checked once per DISTINCT
-// track — the corpus is ~100 tracks over ~90 figures, and a figure reusing one
-// would otherwise pay for it again.
+// track, since many figures share one.
 const recipeTracks = new Map<string, RawTrack>()
 for (const url of Object.values(screenshotLiveUrls)) {
-  const spec = decodeSpecUrl(url)?.spec
-  for (const track of (spec?.sessionTracks as RawTrack[] | undefined) ?? []) {
+  const decoded = decodeSpecUrl(url)
+  for (const track of decoded ? configTracks(decoded) : []) {
     recipeTracks.set(JSON.stringify(track), track)
   }
 }
@@ -587,9 +587,10 @@ for (const url of Object.values(screenshotLiveUrls)) {
 function jsonArgsAsShellSees(commands: string): string[] | string {
   const script = `jbrowse() { printf '%s\\0' "$2"; }\n${commands}`
   try {
-    return execFileSync('sh', ['-c', script], {
+    return execFileSync('sh', [], {
       encoding: 'utf8',
-      stdio: ['ignore', 'pipe', 'pipe'],
+      input: script,
+      stdio: ['pipe', 'pipe', 'pipe'],
     }).split('\0')
   } catch (e) {
     // quoting broken badly enough that the shell won't parse the script at all,
@@ -613,6 +614,44 @@ for (const track of recipeTracks.values()) {
     })
   }
 }
+
+// Pasted, the CLI tab's tracks become a reader's config.json, so the set has to
+// validate as one: a track template on an adapter with no `uri` slot
+// round-trips verbatim and still loads nothing.
+cases.push({
+  where: '  figure recipe tracks, as one config.json',
+  run: async () => {
+    const tracks = [...recipeTracks.values()]
+    const dir = mkdtempSync(join(tmpdir(), 'cfgcli-'))
+    const cfgPath = join(dir, 'config.json')
+    writeFileSync(
+      cfgPath,
+      JSON.stringify({
+        ...targetConfig([
+          ...new Set(tracks.flatMap(track => track.assemblyNames ?? [])),
+        ]),
+        tracks: tracks.map((track, i) => ({
+          ...track,
+          trackId: `${track.trackId}-${i}`,
+        })),
+      }),
+    )
+    try {
+      execFileSync('node', [cli, 'validate', cfgPath], { encoding: 'utf8' })
+      return ''
+    } catch (e) {
+      const { stdout } = e as { stdout?: string }
+      return (
+        stdout
+          ?.split('\n')
+          .filter(line => line.startsWith('error:'))
+          .join('\n    ') || firstLine(e)
+      )
+    } finally {
+      rmSync(dir, { recursive: true, force: true })
+    }
+  },
+})
 
 // One CLI process per core. The work is a child process each time, so the pool
 // is bounded by cores rather than by anything this process does.
@@ -656,5 +695,5 @@ if (errorLines.length) {
 const fixtures = FALLBACK_FIXTURES.length + 2 + UNDERIVABLE_SESSIONS.length
 reportProblems(
   errorLines,
-  `All ${checked} addtrack/addassembly/session block(s) + ${fixtures} fixture(s) + ${recipeTracks.size} figure-recipe session track(s) round-trip through jbrowse add-track / add-track-json / add-assembly / set-default-session.`,
+  `All ${checked} addtrack/addassembly/session block(s) + ${fixtures} fixture(s) + ${recipeTracks.size} figure-recipe track(s) round-trip through jbrowse add-track / add-track-json / add-assembly / set-default-session.`,
 )

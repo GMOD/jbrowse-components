@@ -1,6 +1,8 @@
 import { desktopLinkHtml } from '../desktop-link.ts'
 import { escapeAttr } from '../inline-html.ts'
 
+import { OWN_FILE } from './configTracks.ts'
+
 import type { AgentRecipe } from './agent.ts'
 import type { Recipe, RecipeStep } from './recipe.ts'
 
@@ -123,11 +125,11 @@ function panels(recipe: Recipe, id: string, inlineOpens = false): Panel[] {
             kind: 'cli',
             body: [
               note(
-                'A figure adds its tracks to one session. The <a href="/docs/cli/">jbrowse CLI</a> writes the same tracks into a <code>config.json</code> instead, where every session that opens it has them: <a href="/docs/cli/#jbrowse-add-track"><code>add-track</code></a> where flags cover the whole track, <a href="/docs/cli/#jbrowse-add-track-json"><code>add-track-json</code></a> where they do not.',
+                'The <a href="/docs/cli/">jbrowse CLI</a> writes the figure\'s tracks into a <code>config.json</code>, each carrying the figure\'s display settings as its <a href="/docs/config_guides/tracks/#configuring-displays">defaults</a>, so every session that opens the config draws them this way: <a href="/docs/cli/#jbrowse-add-track"><code>add-track</code></a> where flags cover the whole track, <a href="/docs/cli/#jbrowse-add-track-json"><code>add-track-json</code></a> where they do not.',
               ),
               copyableBlock(recipe.cli.commands, 'spec-json'),
               note(
-                `Run these where the <code>config.json</code> is, or add <code>--out &lt;dir&gt;</code>, and point each <code>uri</code> at your own file.${assembliesNote(recipe.cli.assemblies)} The location and the settings the steps carry are session state rather than track config — that half is the <strong>Spec</strong> tab, or <a href="/docs/cli/#jbrowse-set-default-session"><code>jbrowse set-default-session</code></a>.`,
+                `Run these where the <code>config.json</code> is, or add <code>--out &lt;dir&gt;</code>, and point each <code>uri</code> at your own file, <code>${OWN_FILE}</code> where the figure's file is a hosted one.${assembliesNote(recipe.cli.assemblies)} The location, which tracks are open, and settings no config slot holds are session state: the <strong>Spec</strong> tab, or <a href="/docs/cli/#jbrowse-set-default-session"><code>jbrowse set-default-session</code></a>.`,
               ),
             ].join(''),
           },
@@ -180,14 +182,26 @@ function panels(recipe: Recipe, id: string, inlineOpens = false): Panel[] {
 
 // One block per frame, each with what its command leaves out of the figure,
 // then the line that stacks a composed figure's frames.
-function agentPanel({ frames, stack, notes }: AgentRecipe): Panel {
+function agentPanel({ brief, frames, stack, notes }: AgentRecipe): Panel {
   return {
     label: 'Agent',
     kind: 'agent',
     body: [
-      note(
-        'Hand this to a coding agent. It rebuilds the figure above headlessly, and the session file is then the thing to edit: change the location or a track\'s settings, or add your own track under <code>sessionTracks</code>, and rerun.',
-      ),
+      ...(brief
+        ? [
+            note(
+              'Paste this into a coding agent and replace the first line with what you want: the view on your own files, its settings in your <code>config.json</code>, the view in a JBrowse you have open, or a figure like it elsewhere.',
+            ),
+            copyableBlock(brief, 'spec-json'),
+            note(
+              'The command below redraws the figure itself, and an agent can rerun it to check a change.',
+            ),
+          ]
+        : [
+            note(
+              'Hand this to a coding agent. It rebuilds the figure above headlessly, and the session file is then the thing to edit: change the location or a track\'s settings, or add your own track under <code>sessionTracks</code>, and rerun.',
+            ),
+          ]),
       ...(frames.length > 1
         ? [
             note(

@@ -28,7 +28,8 @@ export interface RawTrack {
   type?: string
   assemblyNames?: string[]
   adapter?: RawAdapter
-  displays?: { type?: string }[]
+  displays?: { type?: string; [field: string]: unknown }[]
+  displayDefaults?: Record<string, unknown>
 }
 
 export interface RawAssembly {
@@ -56,6 +57,8 @@ export interface TrackInfo {
   adapterType: string
   // the display types the track config declares, in order
   declaredDisplayTypes: string[]
+  // absent from a hosted config's snapshot
+  assemblyNames?: string[]
 }
 
 export interface AssemblyInfo {
@@ -126,6 +129,7 @@ export function lookupTrack(
         declaredDisplayTypes: (track.displays ?? [])
           .map(d => d.type)
           .filter(t => typeof t === 'string'),
+        ...(track.assemblyNames ? { assemblyNames: track.assemblyNames } : {}),
       }
     : undefined
 }
@@ -133,6 +137,11 @@ export function lookupTrack(
 // The display a view of `viewType` opens the track as when the spec names none.
 export function defaultDisplay(track: TrackInfo | undefined, viewType: string) {
   return track ? defaultDisplayIn(displayTable, track, viewType) : undefined
+}
+
+// A retired display type name as the one that answers to it now
+export function canonicalDisplayType(type: string | undefined) {
+  return type ? (displayTable.displayAliases[type] ?? type) : undefined
 }
 
 // The view type a spec view's rows (`views`) open as.

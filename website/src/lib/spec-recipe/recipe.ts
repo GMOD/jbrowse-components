@@ -7,7 +7,8 @@ import {
   rowViewType,
 } from './configs.ts'
 import { takeArrangement } from './arrangements.ts'
-import { captureFrame } from './agent.ts'
+import { agentBrief, captureFrame } from './agent.ts'
+import { configTracks } from './configTracks.ts'
 import { imgRecipe } from './img.ts'
 import { figureFrames, videoFrames } from '../liveLinks.generated.ts'
 
@@ -68,8 +69,8 @@ export interface Recipe {
   steps: RecipeStep[]
   // absent when a view needs a plugin the widget cannot load from the config
   python?: string
-  // the `npx @jbrowse/capture` invocation that rebuilds this figure, for an
-  // agent asked to make one like it
+  // a prompt handing a coding agent this view, and the `npx @jbrowse/capture`
+  // invocation that rebuilds the figure
   agent: AgentRecipe
   // the @jbrowse/img command drawing a one-view figure without a browser
   img?: ImgRecipe
@@ -501,17 +502,17 @@ export interface CliRecipe {
   assemblies: string[]
 }
 
-// A session track is a whole track config, so the CLI can write the same track
-// into a config.json rather than into one session: `add-track` where the config
-// is CLI-clean, and `add-track-json` verbatim for the rest, which is most of
-// them here — a figure's track usually carries the `displays` array that is the
-// point of the figure. Both derivations are the ones behind the Config/CLI tabs
-// on a docs fence, and check-config-cli round-trips what they emit through the
-// real CLI.
-export function deriveCliRecipe(sessionTracks: RawTrack[] | undefined) {
-  return sessionTracks?.length
+// configTracks writes the figure's tracks as a config.json holds them, so the
+// CLI can put them in one: `add-track` where the config is CLI-clean, and
+// `add-track-json` verbatim for the rest, which is most of them here — a
+// figure's track usually carries the display settings that are the point of
+// the figure. Both derivations are the ones behind the Config/CLI tabs on a
+// docs fence, and check-config-cli round-trips what they emit through the real
+// CLI.
+export function deriveCliRecipe(tracks: RawTrack[]) {
+  return tracks.length
     ? {
-        commands: sessionTracks
+        commands: tracks
           .map(
             track =>
               deriveAddTrack(track) ??
@@ -519,7 +520,7 @@ export function deriveCliRecipe(sessionTracks: RawTrack[] | undefined) {
           )
           .join('\n\n'),
         assemblies: [
-          ...new Set(sessionTracks.flatMap(track => track.assemblyNames ?? [])),
+          ...new Set(tracks.flatMap(track => track.assemblyNames ?? [])),
         ],
       }
     : undefined
@@ -594,9 +595,13 @@ export function buildRecipe(
     specJson,
     steps,
     python: plugin ? undefined : pythonSnippet(configUrl, spec),
-    agent: { frames: [captureFrame(decoded, figureName)], notes: [] },
+    agent: {
+      brief: agentBrief(decoded, liveUrl),
+      frames: [captureFrame(decoded, figureName)],
+      notes: [],
+    },
     img: plugin ? undefined : imgRecipe(spec, configUrl, frame?.width),
-    cli: deriveCliRecipe(sessionTracks),
+    cli: deriveCliRecipe(configTracks(decoded)),
     unmapped: [...new Set(collected.flatMap(c => c.unmapped))],
   }
 }
