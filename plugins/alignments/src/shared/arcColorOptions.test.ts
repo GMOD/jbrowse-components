@@ -15,9 +15,9 @@ const INHERITED: [string, string][] = [
 
 describe('arcColorFieldOf', () => {
   test.each(INHERITED)(
-    'an empty arcColor under reads colored by %j paints %s',
+    'an unset arcColor under reads colored by %j paints %s',
     (colorField, expected) => {
-      expect(arcColorFieldOf('', colorField)).toBe(expected)
+      expect(arcColorFieldOf(undefined, colorField)).toBe(expected)
     },
   )
 
