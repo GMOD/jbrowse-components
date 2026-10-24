@@ -54,7 +54,7 @@ shows what each does to the picture:
 - **[`data.resolution`](/docs/config/hicdata/#slot-resolution)** is a signed
   offset from the zoom-derived binsize, so the choice survives zooming: positive
   is finer, negative coarser
-- **[`encoding.color.scale.domainMax`](/docs/config/hiccolor/#slot-domainmax)**
+- **[`encoding.color.scale.domainMax`](/docs/config/hiccolor/#slot-scaledomainmax)**
   pins the count the color scale saturates at. Unset, it follows the loaded
   counts, so two tracks given the same number share one scale
 - **[`encoding.color.field`](/docs/config/hiccolor/#slot-field)** is `observed`,
