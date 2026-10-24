@@ -1,7 +1,6 @@
 import {
+  findParent,
   getEnv as getEnvMST,
-  getParent,
-  hasParent,
   isStateTreeNode,
 } from '@jbrowse/mobx-state-tree'
 
@@ -97,14 +96,7 @@ export function getContainingTrack(
  * Does nothing for a node outside a track.
  */
 export function persistTrackConfigNow(node: IAnyStateTreeNode) {
-  let current = node
-  while (hasParent(current)) {
-    current = getParent<IAnyStateTreeNode>(current)
-    if (isTrackModel(current)) {
-      current.persistConfigurationNow?.()
-      return
-    }
-  }
+  findParent(node, isTrackModel)?.persistConfigurationNow?.()
 }
 
 /**

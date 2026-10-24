@@ -1,6 +1,6 @@
 import { heldSlotsOf } from '@jbrowse/core/util/categoricalField'
 import { isSessionModel } from '@jbrowse/core/util/types'
-import { getParent, hasParent, isStateTreeNode } from '@jbrowse/mobx-state-tree'
+import { findParent, getRoot, isStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 import type { HeldSlots } from '@jbrowse/core/ui/colors'
 import type { ColorEncoding } from '@jbrowse/core/util/markEncoding'
@@ -18,10 +18,10 @@ export function heldColorSlots(
   if (typeof encoding !== 'object' || encoding.scale !== 'ordinal') {
     return undefined
   }
-  let owner: object = node
-  while (isStateTreeNode(owner) && !isSessionModel(owner) && hasParent(owner)) {
-    owner = getParent<object>(owner)
-  }
+  const owner =
+    isStateTreeNode(node) && !isSessionModel(node)
+      ? (findParent(node, isSessionModel) ?? getRoot<object>(node))
+      : node
   const { field, domain = [], range = [] } = encoding
   return heldSlotsOf(owner, JSON.stringify([field, domain, range]))
 }

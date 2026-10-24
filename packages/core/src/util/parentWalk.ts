@@ -1,4 +1,10 @@
-import { getParent, hasParent, isAlive, isRoot } from '@jbrowse/mobx-state-tree'
+import {
+  findParent,
+  getParent,
+  hasParent,
+  isAlive,
+  isRoot,
+} from '@jbrowse/mobx-state-tree'
 
 import type { TypeTestedByPredicate } from './types/predicate.ts'
 import type {
@@ -23,19 +29,11 @@ export function findParentThat(
     )
     throw new Error('node does not have parent')
   }
-  let currentNode = getParent(node)
-
-  while (isAlive(currentNode)) {
-    if (predicate(currentNode)) {
-      return currentNode
-    }
-    if (hasParent(currentNode)) {
-      currentNode = getParent<IAnyStateTreeNode>(currentNode)
-    } else {
-      break
-    }
+  const found = findParent(node, predicate)
+  if (!found) {
+    throw new Error('no matching node found')
   }
-  throw new Error('no matching node found')
+  return found
 }
 
 export function findParentThatIs<T extends (a: IAnyStateTreeNode) => boolean>(

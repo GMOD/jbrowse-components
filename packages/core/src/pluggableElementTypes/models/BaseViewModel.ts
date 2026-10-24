@@ -1,4 +1,4 @@
-import { getParent, hasParent, types } from '@jbrowse/mobx-state-tree'
+import { findParent, types } from '@jbrowse/mobx-state-tree'
 
 import { isViewModel } from '../../util/types/index.ts'
 import { ElementId, Region } from '../../util/types/mst.ts'
@@ -20,14 +20,7 @@ import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
  * ancestor, which here is the common case rather than an error.
  */
 function containingViewOf(node: IAnyStateTreeNode) {
-  let current = node
-  while (hasParent(current)) {
-    current = getParent<IAnyStateTreeNode>(current)
-    if (isViewModel(current)) {
-      return current
-    }
-  }
-  return undefined
+  return findParent(node, isViewModel)
 }
 
 function bodyInDom(view: { bodyMounted?: boolean }): boolean {

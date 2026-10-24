@@ -1,6 +1,6 @@
 import { isSameAssemblyName } from '@jbrowse/core/util/tracks'
 import { isViewModel } from '@jbrowse/core/util/types'
-import { getParent, hasParent } from '@jbrowse/mobx-state-tree'
+import { findParent } from '@jbrowse/mobx-state-tree'
 
 import { resolvedMateSpan } from '../LaunchSyntenyView/resolvePanel.ts'
 import { movePanelsToSpan } from '../LinearSyntenyDisplay/moveMatchingPanel.ts'
@@ -17,7 +17,6 @@ import type {
   NotificationSink,
 } from '@jbrowse/core/util'
 import type { AssemblyNameResolver } from '@jbrowse/core/util/tracks'
-import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // A stack of genome panels, one above the next: LinearSyntenyView and
@@ -52,19 +51,14 @@ export interface PanelStack
 export function containingPanelStack(
   view: LinearGenomeViewModel,
 ): PanelStack | undefined {
-  let node: IAnyStateTreeNode = view
-  while (hasParent(node)) {
-    node = getParent<IAnyStateTreeNode>(node)
+  return findParent(view, node => {
     const { views } = node as { views?: unknown }
-    if (
+    return (
       isViewModel(node) &&
       Array.isArray(views) &&
       (views as unknown[]).includes(view)
-    ) {
-      return node as unknown as PanelStack
-    }
-  }
-  return undefined
+    )
+  })
 }
 
 /**
