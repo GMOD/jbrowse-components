@@ -10,7 +10,9 @@ Auto-generated from the config schema in the source — see the [config guide](/
 The coverage histogram band of the alignments and MAF displays, their
 `coverage` setting: whether it draws, its height, the insertion and clip
 marks drawn in it (`interbase`), which allele segments it colors
-(`alleles`), and its depth axis, `encoding.y`.
+(`alleles`), and its depth axis, `encoding.y`. On the alignments display,
+the modification bars in it follow the pileup's `bases` layer, which
+draws them beside its cells from the same calls.
 
 ## Example usage
 

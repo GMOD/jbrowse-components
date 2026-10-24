@@ -7378,7 +7378,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "x-closed": true,
       "properties": {
         "show": {
-          "description": "draw the per-base layer over the reads.",
+          "description": "draw the per-base layer over the reads, and its modification bars in the coverage band.",
           "default": false,
           "if": {
             "type": "null"
