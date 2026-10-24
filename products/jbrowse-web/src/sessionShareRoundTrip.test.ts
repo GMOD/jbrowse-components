@@ -56,10 +56,13 @@ function field(body: unknown, name: string) {
 // back to `load`, so the encrypt and decrypt halves meet the way they do in
 // production rather than through a canned fixture.
 function mockShareService() {
-  const state: { uploaded?: string; referer?: string } = {}
+  const state: { uploaded?: string; referer?: string; requests: string[] } = {
+    requests: [],
+  }
   const realFetch = global.fetch
   global.fetch = async (input, init) => {
     const url = String(input)
+    state.requests.push(url)
     if (url === `${SHARE_URL}share`) {
       state.uploaded = field(init?.body, 'session')
       state.referer = field(init?.body, 'referer')
@@ -123,9 +126,17 @@ test('a short link uploads an encrypted session, not the session', async () => {
   try {
     const { url } = await roundTrip('short')
 
-    // the key rides in the hash, which no server receives
+    // the key rides in the hash, which no server receives, and only the id
+    // before it goes to the share service
     expect(new URL(url).search).toBe('')
-    expect(new URL(url).hash).toContain('password=')
+    const session = new URLSearchParams(new URL(url).hash.slice(1)).get(
+      'session',
+    )
+    expect(session).toMatch(/^share-sessId1[\w-]{11}$/)
+    const key = session!.slice(-11)
+    expect(
+      [...service.state.requests, service.state.referer!].join(' '),
+    ).not.toContain(key)
     // the crypto-js OpenSSL envelope ("Salted__" + salt, base64) the deployed
     // lambda stores and every already-shared link decodes from
     expect(service.state.uploaded).toMatch(/^U2FsdGVkX1/)

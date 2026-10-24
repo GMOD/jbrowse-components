@@ -1,14 +1,17 @@
-import { aesDecrypt } from './crypto.ts'
+import { aesDecrypt, aesDecryptBytes } from './crypto.ts'
 import {
   b64PadSuffix,
   encodeSessionParam,
   fromUrlSafeB64,
   readSessionFromDynamo,
+  readSharedSession,
   sessionParamKind,
   sessionParamPayload,
   shareEndpoint,
   toUrlSafeB64,
 } from './sessionSharing.ts'
+
+import type * as CryptoModule from './crypto.ts'
 
 jest.mock('./crypto.ts', () => ({
   ...jest.requireActual('./crypto.ts'),
@@ -54,15 +57,100 @@ describe('encodeSessionParam short mode', () => {
     fetchMock.resetMocks()
   })
 
-  // 96 bits: the share service hands the ciphertext to anyone with the id
-  it('makes a 16-character URL-safe password, fresh each time', async () => {
+  // 64 bits: the share service hands the ciphertext to anyone with the id
+  it('puts a fresh 11-character key after the id', async () => {
     fetchMock.mockResponse(JSON.stringify({ sessionId: 'id1' }))
-    const share = () =>
-      encodeSessionParam('short', {}, { shareURL: 'https://s/', referer: '' })
+    const share = async () =>
+      (
+        await encodeSessionParam(
+          'short',
+          {},
+          { shareURL: 'https://s/', referer: '' },
+        )
+      ).sessionParam
     const [a, b] = await Promise.all([share(), share()])
-    expect(a.password).toMatch(/^[\w-]{16}$/)
-    expect(a.password).not.toBe(b.password)
-    expect(a.sessionParam).toBe('share-id1')
+    expect(a).toMatch(/^share-id1[\w-]{11}$/)
+    expect(a).not.toBe(b)
+  })
+})
+
+describe('readSharedSession', () => {
+  const loadUrl = 'https://s/load'
+  const session = { name: 'shared', views: [{ type: 'LinearGenomeView' }] }
+
+  beforeEach(() => {
+    fetchMock.resetMocks()
+  })
+
+  // stands in for the share service: what `share` stores, `load` returns
+  async function upload() {
+    let stored = ''
+    fetchMock.mockResponseOnce(async req => {
+      stored = (await req.formData()).get('session') as string
+      return JSON.stringify({ sessionId: 'id1' })
+    })
+    const { sessionParam } = await encodeSessionParam('short', session, {
+      shareURL: 'https://s/',
+      referer: '',
+    })
+    fetchMock.mockResponseOnce(JSON.stringify({ session: stored }))
+    return { sessionParam, stored }
+  }
+
+  it('reads a link with its key after the id, sending only the id', async () => {
+    const { sessionParam } = await upload()
+    const key = sessionParam.slice(-11)
+
+    expect(JSON.parse(await readSharedSession(loadUrl, sessionParam))).toEqual(
+      session,
+    )
+    expect(fetchMock.mock.calls.at(-1)![0]).toBe(`${loadUrl}?sessionId=id1`)
+    expect(JSON.stringify(fetchMock.mock.calls)).not.toContain(key)
+  })
+
+  // an older link's blob held the deflated session as base64 text, a third
+  // bigger for nothing
+  it('stores the deflated bytes themselves, encrypted', async () => {
+    const { sessionParam, stored } = await upload()
+    const bytes = await aesDecryptBytes(stored, sessionParam.slice(-11))
+    // a zlib stream's header byte, where base64 text would start with a letter
+    expect(bytes[0]).toBe(0x78)
+  })
+
+  // every link shared before the key moved into the session value
+  it('reads an older link, whose key is the password param', async () => {
+    const actual: typeof CryptoModule = jest.requireActual('./crypto.ts')
+    jest.mocked(aesDecrypt).mockImplementationOnce(actual.aesDecrypt)
+    fetchMock.mockResponseOnce(
+      JSON.stringify({
+        session: await actual.aesEncrypt(
+          await toUrlSafeB64(JSON.stringify(session)),
+          'fYAbt',
+        ),
+      }),
+    )
+
+    expect(
+      JSON.parse(await readSharedSession(loadUrl, 'share-old1', 'fYAbt')),
+    ).toEqual(session)
+  })
+
+  it('says a link with no key has lost it, without fetching', async () => {
+    await expect(readSharedSession(loadUrl, 'share-id1')).rejects.toThrow(
+      /lost its key/,
+    )
+    await expect(readSharedSession(loadUrl, 'share-id1', '')).rejects.toThrow(
+      /lost its key/,
+    )
+    expect(fetchMock).not.toHaveBeenCalled()
+  })
+
+  it('says the key is wrong when the decrypt fails', async () => {
+    const { sessionParam } = await upload()
+
+    await expect(
+      readSharedSession(loadUrl, `${sessionParam.slice(0, -11)}wrongkey123`),
+    ).rejects.toThrow(/key in the link is wrong|incomplete or damaged/)
   })
 })
 
@@ -119,28 +207,28 @@ describe('readSessionFromDynamo', () => {
       fetchMock.mockResponse(JSON.stringify({}))
       await expect(
         readSessionFromDynamo('https://api.example.com/', 'share-gone', 'pass'),
-      ).rejects.toThrow(/may have expired/)
+      ).rejects.toThrow(/cut short, or have expired/)
     })
   })
 
-  // the password is only ever in the link, so both of these are what a user
-  // sees when a chat client clips the URL — the cipher's own message ("The
+  // the key is only ever in the link, so both of these are what a user sees
+  // when a chat client clips the URL — the cipher's own message ("The
   // operation failed for an operation-specific reason") explains nothing
-  describe('password problems', () => {
-    it('says the link is missing its password, without fetching', async () => {
+  describe('key problems', () => {
+    it('says the link has lost its key, without fetching', async () => {
       fetchMock.mockResponse(JSON.stringify({ session: 'enc' }))
       await expect(
         readSessionFromDynamo('https://api.example.com/', 'share-abc', ''),
-      ).rejects.toThrow(/missing its "password"/)
+      ).rejects.toThrow(/lost its key/)
       expect(fetchMock).not.toHaveBeenCalled()
     })
 
-    it('says the password is wrong when the decrypt fails', async () => {
+    it('says the key is wrong when the decrypt fails', async () => {
       fetchMock.mockResponse(JSON.stringify({ session: 'enc' }))
       jest.mocked(aesDecrypt).mockRejectedValueOnce(new Error('OperationError'))
       await expect(
         readSessionFromDynamo('https://api.example.com/', 'share-abc', 'bad'),
-      ).rejects.toThrow(/password.*is wrong or the link was truncated/)
+      ).rejects.toThrow(/key in the link is wrong or the link was truncated/)
     })
   })
 

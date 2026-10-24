@@ -1,4 +1,8 @@
-import { aesEncrypt, toUrlSafeB64 } from '@jbrowse/core/util'
+import {
+  aesEncrypt,
+  encodeSessionParam,
+  toUrlSafeB64,
+} from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import { launchFromLink, launchFromPlan } from './launchFromLink.ts'
@@ -324,8 +328,9 @@ test('an encoded- session in a jbrowse:// link opens the same way', async () => 
   })
 })
 
-// What JBrowse Web's share button writes by default: an id the share service
-// holds the encrypted session under, and a password only the link carries.
+// What JBrowse Web's share button wrote before the key moved into the session
+// value: an id the share service holds the encrypted session under, and a
+// password only the link carries.
 const shareLink =
   'https://jbrowse.org/code/jb2/main/?config=%2Fucsc%2Fhg38%2Fconfig.json&session=share-abc&password=pw123'
 
@@ -387,6 +392,42 @@ describe('a share- link', () => {
     )
   })
 
+  // what the share button writes now: the key after the id
+  test('carrying its key after the id is opened, sending only the id', async () => {
+    let stored = ''
+    const fetchMock = jest.fn(async (_url: string, init?: RequestInit) => {
+      if (init?.body instanceof FormData) {
+        stored = init.body.get('session') as string
+        return { ok: true, json: () => Promise.resolve({ sessionId: 'abc' }) }
+      }
+      return { ok: true, json: () => Promise.resolve({ session: stored }) }
+    })
+    globalThis.fetch = fetchMock as unknown as typeof fetch
+    const { sessionParam } = await encodeSessionParam('short', snapshot, {
+      shareURL: 'https://share.jbrowse.org/api/v1/',
+      referer: '',
+    })
+    const createPluginManager = jest.fn().mockResolvedValue(pluginManager)
+
+    await launchFromLink(
+      `https://jbrowse.org/code/jb2/main/#config=%2Fucsc%2Fhg38%2Fconfig.json&session=${sessionParam}`,
+      {
+        fetchConfig: jest.fn().mockResolvedValue(config),
+        createPluginManager,
+        trustPlugins,
+      },
+    )
+
+    expect(fetchMock.mock.calls.at(-1)?.[0]).toBe(
+      'https://share.jbrowse.org/api/v1/load?sessionId=abc',
+    )
+    expect(createPluginManager).toHaveBeenCalledWith({
+      ...config,
+      plugins: [],
+      defaultSession: snapshot,
+    })
+  })
+
   test('that lost its password says so, and builds nothing', async () => {
     const fetchMock = await stubShareService()
     const fetchConfig = jest.fn().mockResolvedValue(config)
@@ -398,7 +439,7 @@ describe('a share- link', () => {
         createPluginManager,
         trustPlugins,
       }),
-    ).rejects.toThrow(/missing its "password"/)
+    ).rejects.toThrow(/lost its key/)
 
     expect(fetchMock).not.toHaveBeenCalled()
     expect(createPluginManager).not.toHaveBeenCalled()

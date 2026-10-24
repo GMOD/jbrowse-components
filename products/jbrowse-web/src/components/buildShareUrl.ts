@@ -9,8 +9,8 @@ import type { SessionShareMode } from '@jbrowse/core/util'
 //
 // Every mode puts its params in the hash fragment, which a browser never sends
 // to a server: an inline session there can't trip the request-line limit
-// (HTTP 414), and a short link's decryption key can't land in the access log of
-// whatever serves the page.
+// (HTTP 414), and a short link's key can't land in the access log of whatever
+// serves the page.
 export async function buildShareUrl(
   mode: SessionShareMode,
   snap: unknown,
@@ -28,14 +28,11 @@ export async function buildShareUrl(
   const referer = new URL(url)
   referer.search = params.toString()
   referer.hash = ''
-  const { sessionParam, password } = await encodeSessionParam(mode, snap, {
+  const { sessionParam } = await encodeSessionParam(mode, snap, {
     shareURL,
     referer: referer.href,
   })
   params.set('session', sessionParam)
-  if (password) {
-    params.set('password', password)
-  }
   url.search = ''
   url.hash = params.toString()
   return url.href

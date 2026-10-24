@@ -1,4 +1,10 @@
-import { aesDecrypt, aesEncrypt, base64Decode, toBase64Url } from './crypto.ts'
+import {
+  aesDecrypt,
+  aesDecryptBytes,
+  aesEncryptBytes,
+  base64Decode,
+  toBase64Url,
+} from './crypto.ts'
 
 function getErrorMsg(err: string) {
   try {
@@ -40,18 +46,19 @@ async function transformBytes(
   return new Uint8Array(await new Response(stream).arrayBuffer())
 }
 
-/**
- * Decode and inflate a url-safe base64 to a string
- * See {@link https://en.wikipedia.org/wiki/Base64#URL_applications}
- *
- * A truncated input rejects rather than inflating to a prefix: a link cut short
- * in transit has to say so, not fail later as a JSON syntax error.
- */
-export async function fromUrlSafeB64(b64: string) {
+function deflate(str: string) {
+  return transformBytes(
+    new TextEncoder().encode(str),
+    new CompressionStream('deflate'),
+  )
+}
+
+// A truncated input rejects rather than inflating to a prefix: a link cut short
+// in transit has to say so, not fail later as a JSON syntax error.
+async function inflate(read: () => Uint8Array<ArrayBuffer>) {
   try {
-    const bytes = base64Decode(b64.replaceAll('-', '+').replaceAll('_', '/'))
     return new TextDecoder().decode(
-      await transformBytes(bytes, new DecompressionStream('deflate')),
+      await transformBytes(read(), new DecompressionStream('deflate')),
     )
   } catch (e) {
     throw new Error(
@@ -62,16 +69,21 @@ export async function fromUrlSafeB64(b64: string) {
 }
 
 /**
+ * Decode and inflate a url-safe base64 to a string
+ * See {@link https://en.wikipedia.org/wiki/Base64#URL_applications}
+ */
+export async function fromUrlSafeB64(b64: string) {
+  return inflate(() =>
+    base64Decode(b64.replaceAll('-', '+').replaceAll('_', '/')),
+  )
+}
+
+/**
  * Compress and encode a string as url-safe base64
  * See {@link https://en.wikipedia.org/wiki/Base64#URL_applications}
  */
 export async function toUrlSafeB64(str: string) {
-  return toBase64Url(
-    await transformBytes(
-      new TextEncoder().encode(str),
-      new CompressionStream('deflate'),
-    ),
-  )
+  return toBase64Url(await deflate(str))
 }
 
 /**
@@ -118,6 +130,10 @@ export function shareEndpoint(shareURL: string, path: 'share' | 'load') {
     : `${shareURL}${path}`
 }
 
+// The key's length in a `share-<id><key>` value, which is how a reader finds
+// where the server's id ends
+const SHARE_KEY_LENGTH = 11
+
 /**
  * writes the encrypted session, current datetime, and referer to DynamoDB
  */
@@ -126,13 +142,15 @@ async function shareSessionToDynamo(
   shareURL: string,
   referer: string,
 ) {
-  const sess = await toUrlSafeB64(JSON.stringify(session))
   // the server returns the ciphertext to anyone holding the session id, so the
-  // password alone guards it: 16 base64url characters, 96 bits
-  const password = toBase64Url(crypto.getRandomValues(new Uint8Array(12)))
+  // key alone guards it: 64 bits, in SHARE_KEY_LENGTH base64url characters
+  const key = toBase64Url(crypto.getRandomValues(new Uint8Array(8)))
 
   const data = new FormData()
-  data.append('session', await aesEncrypt(sess, password))
+  data.append(
+    'session',
+    await aesEncryptBytes(await deflate(JSON.stringify(session)), key),
+  )
   data.append('dateShared', `${Date.now()}`)
   data.append('referer', referer)
 
@@ -146,7 +164,7 @@ async function shareSessionToDynamo(
     throw new Error(getErrorMsg(await response.text()))
   }
   const { sessionId } = (await response.json()) as { sessionId: string }
-  return { sessionId, password }
+  return { sessionId, key }
 }
 
 export type SessionShareMode = 'short' | 'long'
@@ -154,15 +172,13 @@ export type SessionShareMode = 'short' | 'long'
 export interface EncodedSessionParam {
   // the `?session=` query value the web SessionLoader decodes
   sessionParam: string
-  // present only for a short link
-  password?: string
 }
 
 // Encodes a session snapshot into the `?session=` value jbrowse-web decodes:
-// `share-<id>` (uploaded + encrypted) or `encoded-<b64>` (compressed inline).
-// Single source of these prefixes, shared by jbrowse-web's ShareDialog and
-// jbrowse-desktop's ExportToWebDialog so the two producers can't drift from the
-// decoder. The decoder also reads `json-{"session":…}`, which nothing here
+// `share-<id><key>` (uploaded + encrypted) or `encoded-<b64>` (compressed
+// inline). Single source of these prefixes, shared by jbrowse-web's ShareDialog
+// and jbrowse-desktop's ExportToWebDialog so the two producers can't drift from
+// the decoder. The decoder also reads `json-{"session":…}`, which nothing here
 // writes: it is the form a person writes by hand.
 export async function encodeSessionParam(
   mode: SessionShareMode,
@@ -170,56 +186,108 @@ export async function encodeSessionParam(
   options: { shareURL: string; referer: string },
 ): Promise<EncodedSessionParam> {
   if (mode === 'short') {
-    const { sessionId, password } = await shareSessionToDynamo(
+    const { sessionId, key } = await shareSessionToDynamo(
       session,
       options.shareURL,
       options.referer,
     )
-    return { sessionParam: `${SHARE_PREFIX}${sessionId}`, password }
+    return { sessionParam: `${SHARE_PREFIX}${sessionId}${key}` }
   } else {
     const encoded = await toUrlSafeB64(JSON.stringify(session))
     return { sessionParam: `${ENCODED_PREFIX}${encoded}` }
   }
 }
 
+async function fetchCiphertext(
+  loadUrl: string,
+  sessionId: string,
+  signal?: AbortSignal,
+) {
+  const response = await fetch(
+    `${loadUrl}?sessionId=${encodeURIComponent(sessionId)}`,
+    { signal },
+  )
+  if (!response.ok) {
+    throw new Error(getErrorMsg(await response.text()))
+  }
+  const json = (await response.json()) as { session?: string }
+  if (typeof json.session !== 'string') {
+    throw new Error(
+      'Shared session not found — the link may be cut short, or have expired',
+    )
+  }
+  return json.session
+}
+
+// The key never reaches the server, so a link that lost it (a chat client that
+// clipped the URL, a hand-edited link) fetches fine and then fails in the
+// cipher, whose own message is "The operation failed for an
+// operation-specific reason". These say what actually went wrong.
+function missingKeyError() {
+  return new Error(
+    'This shared session link has lost its key, the only thing that can decrypt it. A link cut short in transit arrives like this.',
+  )
+}
+
+async function decrypt<T>(run: () => Promise<T>) {
+  try {
+    return await run()
+  } catch (e) {
+    throw new Error(
+      'Could not decrypt the shared session — the key in the link is wrong or the link was truncated',
+      { cause: e },
+    )
+  }
+}
+
+/**
+ * The decrypted session of a link in the older shape, `share-<id>` beside
+ * `&password=<key>`: the deflated session as url-safe base64, which
+ * {@link fromUrlSafeB64} reads. {@link readSharedSession} reads either shape.
+ */
 export async function readSessionFromDynamo(
   loadUrl: string,
   sessionQueryParam: string,
   password: string,
   signal?: AbortSignal,
 ) {
+  if (!password) {
+    throw missingKeyError()
+  }
   const sessionId = sessionQueryParam.startsWith(SHARE_PREFIX)
     ? sessionQueryParam.slice(SHARE_PREFIX.length)
     : sessionQueryParam
-  // The password never reaches the server — it lives only in the link — so a
-  // link that lost its `&password=` (a chat client that clipped the URL, a
-  // hand-edited link) fetches fine and then fails in the cipher, where the
-  // browser's message is "The operation failed for an operation-specific
-  // reason". Say what actually went wrong instead.
-  if (!password) {
-    throw new Error(
-      'This shared session link is missing its "password" URL parameter, which is the only thing that can decrypt it',
-    )
-  }
-  const url = `${loadUrl}?sessionId=${encodeURIComponent(sessionId)}`
-  const response = await fetch(url, { signal })
+  const ciphertext = await fetchCiphertext(loadUrl, sessionId, signal)
+  return decrypt(() => aesDecrypt(ciphertext, password))
+}
 
-  if (!response.ok) {
-    throw new Error(getErrorMsg(await response.text()))
-  }
-
-  const json = (await response.json()) as { session?: string }
-  if (typeof json.session !== 'string') {
-    throw new Error(
-      'Shared session not found — the link may have expired or the id is wrong',
+/**
+ * The session JSON a `share-` value names. The link holds the key after the id
+ * (`share-<id><key>`), or, in the older shape, as `&password=`; either way only
+ * the id goes to the share service, and the session is decrypted here.
+ */
+export async function readSharedSession(
+  loadUrl: string,
+  value: string,
+  password?: string,
+  signal?: AbortSignal,
+) {
+  if (password !== undefined) {
+    return fromUrlSafeB64(
+      await readSessionFromDynamo(loadUrl, value, password, signal),
     )
   }
-  try {
-    return await aesDecrypt(json.session, password)
-  } catch (e) {
-    throw new Error(
-      'Could not decrypt the shared session — the "password" in the link is wrong or the link was truncated',
-      { cause: e },
-    )
+  const payload = sessionParamPayload(value)
+  if (payload.length <= SHARE_KEY_LENGTH) {
+    throw missingKeyError()
   }
+  const ciphertext = await fetchCiphertext(
+    loadUrl,
+    payload.slice(0, -SHARE_KEY_LENGTH),
+    signal,
+  )
+  const bytes = await decrypt(() =>
+    aesDecryptBytes(ciphertext, payload.slice(-SHARE_KEY_LENGTH)),
+  )
+  return inflate(() => bytes)
 }

@@ -860,8 +860,8 @@ function resolveWebBaseUrl(webExportUrl: string | undefined) {
 }
 
 // Assembles the jbrowse-web URL for an export plan. `sessionParam` is the
-// ready-made `session` value: `share-<id>` for a short lambda link (pass its
-// `password`) or `encoded-<b64>`/`json-<json>` for an inline long link.
+// ready-made `session` value: `share-<id>.<key>` for a short lambda link or
+// `encoded-<b64>`/`json-<json>` for an inline long link.
 // `config` points at the hosted base, or `none` for a self-contained session.
 //
 // `exportedFrom` stamps what produced the link. These links are artifacts —
@@ -878,22 +878,19 @@ function resolveWebBaseUrl(webExportUrl: string | undefined) {
 // Every mode goes in the hash fragment, which a browser never sends to a
 // server: a self-contained export carries its own assemblies and tracks and is
 // exactly the session long enough to trip the request-line limit (HTTP 414),
-// and a short link's decryption key would otherwise land in the web host's
-// access log. Mirrors jbrowse-web's buildShareUrl.
+// and a short link's key would otherwise land in the web host's access log.
+// Mirrors jbrowse-web's buildShareUrl.
 export function buildWebExportUrl(
   // where the link points and what config it loads: the plan's report fields
   // (what was dropped, what reverted) are for the sender's screen, not the URL
   plan: Pick<WebExportPlan, 'webBaseUrl' | 'configUrl'>,
   sessionParam: string,
-  options: { password?: string; exportedFrom?: string } = {},
+  options: { exportedFrom?: string } = {},
 ): string {
   const url = new URL(plan.webBaseUrl)
   const params = new URLSearchParams()
   params.set('config', plan.configUrl ?? 'none')
   params.set('session', sessionParam)
-  if (options.password) {
-    params.set('password', options.password)
-  }
   if (options.exportedFrom) {
     params.set('exportedFrom', options.exportedFrom)
   }

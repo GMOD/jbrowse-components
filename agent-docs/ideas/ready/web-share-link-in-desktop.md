@@ -12,7 +12,8 @@ and a link that hands over a whole session: `share-<id>` (uploaded, encrypted),
 the link's config, gets the snapshot, and hands it to the config as its
 `defaultSession`. A `share-` snapshot comes from the share service that config
 names (`shareURL`, relative to the page the link points at), decrypted with the
-link's `password=`.
+key the link carries after the id (`share-<id><key>`), or an older link's
+`password=`.
 
 One thing is still out.
 

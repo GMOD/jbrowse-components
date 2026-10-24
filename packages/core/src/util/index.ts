@@ -195,6 +195,7 @@ export {
   encodeSessionParam,
   fromUrlSafeB64,
   readSessionFromDynamo,
+  readSharedSession,
   sessionParamKind,
   sessionParamPayload,
   shareEndpoint,

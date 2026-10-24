@@ -16,7 +16,7 @@ JBrowse Web reads its launch state from the URL. Embedded components such as
   `json-` session, a whole [session spec](#session-spec), a big
   `&sessionTracks=`) cannot trip the request-line limit that answers a long
   query string with HTTP 414. The Share button writes every link as a hash URL,
-  which also keeps a short link's password out of the web server's logs.
+  which also keeps a short link's key out of the web server's logs.
 - If the fragment contains an `=`, JBrowse reads its parameters only from there
   and ignores the query string. A link must therefore put every parameter in the
   fragment: `?config=my.json#session=spec-{…}` loads the default `config.json`,
@@ -34,8 +34,8 @@ One linear genome view, from a handful of parameters:
   loads.
 - `?config=`, `&sessionName=`, `&hubURL=`, `&renderer=` and `&session=` work for
   any launch type.
-- `&password=` belongs to [`&session=share-`](#sessionshare-), and `&adminKey=`
-  to [](/docs/quickstart_adminserver).
+- `&password=` holds an older [`&session=share-`](#sessionshare-) link's key,
+  and `&adminKey=` belongs to [](/docs/quickstart_adminserver).
 
 ### ?config=
 
@@ -1176,13 +1176,15 @@ IndexedDB.
 
 ### &session=share-
 
-`https://host/jbrowse2/#session=share-HShsEcnq3i&password=nYzTU`, from the Share
+`https://host/jbrowse2/#session=share-HShsEcnq3iXb3_kPq9LmZ`, from the Share
 button.
 
 - The client mints a random key, encrypts the session and uploads the blob
-  without the key to a DynamoDB store. The recipient decrypts with the key in
-  the URL, so the store's contents cannot be read even by JBrowse
+  without the key to a DynamoDB store. The link carries the key after the id,
+  and the recipient's browser sends only the id to the store and decrypts the
+  session itself, so the store's contents cannot be read even by JBrowse
   administrators.
+- A link from before JBrowse 5 carries its key as `&password=`, and still opens.
 - Behind a firewall that cannot reach the shortener, the Share dialog's gear
   icon switches to "Long URL". `shareURL` in the config points at a shortener of
   your own.
@@ -1190,7 +1192,7 @@ button.
 #### Are share links reproducible
 
 - The short link is not reproducible: each click mints a new key and uploads a
-  new blob, so the same view gives a new id and password every time.
+  new blob, so the same view gives a new id and key every time.
 - "Long URL" is reproducible: it contains the whole session in the link, so the
   same view and config produce the same link, and it survives moving the
   instance.

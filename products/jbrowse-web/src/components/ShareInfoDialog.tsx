@@ -19,10 +19,10 @@ const ShareInfoDialog = observer(function ShareInfoDialog({
       </DialogContentText>
       <DialogContentText>
         <strong>Short URL</strong> (recommended): the session is encrypted in
-        your browser with a random password, then uploaded to a central
-        database. The password lives only in the URL, never on the server, so
-        short URLs are effectively end-to-end encrypted — only someone with the
-        link can read the session.
+        your browser with a random key, then uploaded to a central database. The
+        key lives only in the URL, never on the server, so short URLs are
+        effectively end-to-end encrypted — only someone with the link can read
+        the session.
       </DialogContentText>
       <DialogContentText>
         <strong>Long URL</strong>: the full session is compressed into the URL

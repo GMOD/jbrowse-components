@@ -31,19 +31,18 @@ describe('buildShareUrl', () => {
     expect(params.getAll('session')).toEqual(['encoded-BIG'])
   })
 
-  // the password decrypts the uploaded session, and a query string reaches the
+  // the key decrypts the uploaded session, and a query string reaches the
   // access log of whatever serves the page
-  it('puts a short link and its password in the hash', async () => {
-    mockEncode.mockResolvedValue({ sessionParam: 'share-abc', password: 'pw' })
+  it('puts a short link and its key in the hash', async () => {
+    mockEncode.mockResolvedValue({ sessionParam: 'share-abcKEY' })
 
     const { u, params } = await build('short', '?config=conf.json')
     expect(u.search).toBe('')
-    expect(params.get('session')).toBe('share-abc')
-    expect(params.get('password')).toBe('pw')
+    expect(params.get('session')).toBe('share-abcKEY')
     expect(params.get('config')).toBe('conf.json')
   })
 
-  it('drops a stale password when switching to a long link', async () => {
+  it("drops an older link's password", async () => {
     mockEncode.mockResolvedValue({ sessionParam: 'encoded-BIG' })
 
     const { params } = await build('long', '#session=share-old&password=stale')
@@ -58,7 +57,7 @@ describe('buildShareUrl', () => {
     'never carries the admin params into a %s share link',
     async mode => {
       mockEncode.mockResolvedValue({
-        sessionParam: mode === 'short' ? 'share-abc' : 'encoded-BIG',
+        sessionParam: mode === 'short' ? 'share-abcKEY' : 'encoded-BIG',
       })
 
       const { url, params } = await build(
@@ -75,7 +74,7 @@ describe('buildShareUrl', () => {
   // and it sticks across reloads on purpose — carried into a link it would
   // silently switch off the recipient's own plugins
   it('does not carry safeMode into the link', async () => {
-    mockEncode.mockResolvedValue({ sessionParam: 'share-abc', password: 'pw' })
+    mockEncode.mockResolvedValue({ sessionParam: 'share-abcKEY' })
 
     const { url } = await build('short', '?config=conf.json&safeMode=1')
     expect(url).toContain('config=conf.json')
@@ -97,7 +96,7 @@ describe('buildShareUrl', () => {
   // The referer is POSTed to the share server and stored beside the session, so
   // it has to drop everything the shared link itself drops.
   it('never reports the admin params or a password as the referer', async () => {
-    mockEncode.mockResolvedValue({ sessionParam: 'share-abc', password: 'pw' })
+    mockEncode.mockResolvedValue({ sessionParam: 'share-abcKEY' })
 
     await build(
       'short',
@@ -112,7 +111,7 @@ describe('buildShareUrl', () => {
   // uploading an inline session in the referer field would hand the share
   // service the very session short mode encrypts
   it('reports a hash page by its params, without its session', async () => {
-    mockEncode.mockResolvedValue({ sessionParam: 'share-abc', password: 'pw' })
+    mockEncode.mockResolvedValue({ sessionParam: 'share-abcKEY' })
 
     await build(
       'short',

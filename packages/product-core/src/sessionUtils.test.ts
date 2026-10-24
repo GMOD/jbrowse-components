@@ -904,19 +904,17 @@ test('buildWebExportUrl puts a self-contained encoded- session in the hash', () 
   expect(hashParams.get('session')).toBe('encoded-XYZ')
 })
 
-// the password decrypts the uploaded session, and a query string reaches the
-// web host's access log
-test('buildWebExportUrl puts a short share link and its password in the hash', () => {
+// the key after the id decrypts the uploaded session, and a query string
+// reaches the web host's access log
+test('buildWebExportUrl puts a short share link and its key in the hash', () => {
   const url = buildWebExportUrl(
     { webBaseUrl: 'https://jbrowse.org/code/jb2/latest/' },
-    'share-abc123',
-    { password: 'sekret' },
+    'share-abc123sekret12345',
   )
   const parsed = new URL(url)
   expect(parsed.search).toBe('')
   const hashParams = new URLSearchParams(parsed.hash.slice(1))
-  expect(hashParams.get('session')).toBe('share-abc123')
-  expect(hashParams.get('password')).toBe('sekret')
+  expect(hashParams.get('session')).toBe('share-abc123sekret12345')
 })
 
 // The link points at `latest` and diffs a hosted base config that is fetched

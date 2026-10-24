@@ -616,6 +616,14 @@ export async function aesEncrypt(
   plaintext: string,
   password: string,
 ): Promise<string> {
+  return aesEncryptBytes(stringToBytes(plaintext), password)
+}
+
+/** {@link aesEncrypt} of bytes rather than text */
+export async function aesEncryptBytes(
+  plaintext: Uint8Array<ArrayBuffer>,
+  password: string,
+): Promise<string> {
   const salt = getRandomBytes(8)
   const { key, iv } = evpBytesToKey(stringToBytes(password), salt, 32, 16)
 
@@ -632,12 +640,12 @@ export async function aesEncrypt(
     const encryptedBuffer = await crypto.subtle.encrypt(
       { name: 'AES-CBC', iv },
       cryptoKey,
-      stringToBytes(plaintext),
+      plaintext,
     )
     encrypted = new Uint8Array(encryptedBuffer)
   } else {
     // Fallback to pure JS implementation
-    encrypted = aesCbcEncryptFallback(stringToBytes(plaintext), key, iv)
+    encrypted = aesCbcEncryptFallback(plaintext, key, iv)
   }
 
   // Format: "Salted__" + salt + ciphertext, then Base64
@@ -660,6 +668,14 @@ export async function aesDecrypt(
   ciphertext: string,
   password: string,
 ): Promise<string> {
+  return bytesToString(await aesDecryptBytes(ciphertext, password))
+}
+
+/** {@link aesDecrypt} to bytes rather than text */
+export async function aesDecryptBytes(
+  ciphertext: string,
+  password: string,
+): Promise<Uint8Array<ArrayBuffer>> {
   const data = base64Decode(ciphertext)
 
   // Check for "Salted__" prefix
@@ -677,7 +693,7 @@ export async function aesDecrypt(
 
   const { key, iv } = evpBytesToKey(stringToBytes(password), salt, 32, 16)
 
-  let decrypted: Uint8Array
+  let decrypted: Uint8Array<ArrayBuffer>
   if (isWebCryptoAvailable()) {
     const cryptoKey = await crypto.subtle.importKey(
       'raw',
@@ -695,10 +711,10 @@ export async function aesDecrypt(
     decrypted = new Uint8Array(decryptedBuffer)
   } else {
     // Fallback to pure JS implementation
-    decrypted = aesCbcDecryptFallback(encrypted, key, iv)
+    decrypted = aesCbcDecryptFallback(encrypted, key, iv).slice()
   }
 
-  return bytesToString(decrypted)
+  return decrypted
 }
 
 /**

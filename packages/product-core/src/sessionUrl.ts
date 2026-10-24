@@ -3,7 +3,7 @@ import {
   JSON_PREFIX,
   SHARE_PREFIX,
   fromUrlSafeB64,
-  readSessionFromDynamo,
+  readSharedSession,
   toUrlSafeB64,
 } from '@jbrowse/core/util'
 
@@ -75,7 +75,10 @@ async function parseEncodedParam(value: string): Promise<unknown> {
   )
 }
 
-/** Where a `share-` session is stored, and the key only its link holds */
+/**
+ * Where a `share-` session is stored, and, for a link in the older shape, the
+ * `&password=` that holds its key
+ */
 export interface SharedSessionSource {
   loadUrl: string
   password?: string
@@ -88,8 +91,8 @@ async function fetchShareParam(
   if (!share) {
     throw new Error('A "share-" session link needs a share service to read it')
   }
-  return parseEncodedParam(
-    await readSessionFromDynamo(share.loadUrl, value, share.password ?? ''),
+  return JSON.parse(
+    await readSharedSession(share.loadUrl, value, share.password),
   )
 }
 
