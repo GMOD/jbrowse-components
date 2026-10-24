@@ -28,6 +28,7 @@ const MEMBER_LABELS: Partial<Record<ScaleMember, string>> = {
   title: 'key title',
   missingLabel: 'key name for no value',
   unknown: 'color for values not listed',
+  invalid: 'color for no value',
 }
 
 // What each list is, in the words of the scale it belongs to.
@@ -252,12 +253,20 @@ const MarkScaleRow = observer(function MarkScaleRow({
         />
       ) : null}
       {channel === 'color' && scale === 'ordinal' ? (
-        <MemberField
-          mark={mark}
-          channel={channel}
-          member="unknown"
-          onMember={onMember}
-        />
+        <>
+          <MemberField
+            mark={mark}
+            channel={channel}
+            member="unknown"
+            onMember={onMember}
+          />
+          <MemberField
+            mark={mark}
+            channel={channel}
+            member="invalid"
+            onMember={onMember}
+          />
+        </>
       ) : null}
       {channel === 'color' || channel === 'shape' ? (
         <MemberField

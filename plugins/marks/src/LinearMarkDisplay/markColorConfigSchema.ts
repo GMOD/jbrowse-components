@@ -14,6 +14,7 @@ import {
   colorScaleOptions,
   colorScaleTypeSlot,
   colorTitleSlot,
+  colorInvalidSlot,
   colorUnknownSlot,
 } from '@jbrowse/display-kit/colorConfigSchema'
 import {
@@ -171,6 +172,7 @@ export const markColorSchema = ConfigurationSchema(
             "CSS colors an ordinal scale hands its domain in order, a threshold scale its intervals, or a ramp's evenly spaced stops; empty is the default palette, or the scheme",
         }),
         ...colorUnknownSlot,
+        ...colorInvalidSlot,
         ...colorNamesSlot,
         ...colorRampSlots,
       },

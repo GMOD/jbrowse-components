@@ -10,6 +10,7 @@ import {
   colorScaleOptions,
   colorScaleTypeSlot,
   colorTitleSlot,
+  colorInvalidSlot,
   colorUnknownSlot,
 } from '@jbrowse/display-kit/colorConfigSchema'
 
@@ -69,6 +70,7 @@ export const chordColorConfigSchema = ConfigurationSchema(
             'CSS colors the domain takes, in order, continuing into the default palette past its end; under threshold one per interval, one more than the cuts',
         }),
         ...colorUnknownSlot,
+        ...colorInvalidSlot,
         ...colorNamesSlot,
       },
       colorScaleOptions('encoding.color.scale'),

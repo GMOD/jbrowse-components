@@ -22,8 +22,9 @@ export function cellHueField(encoding: ColorEncoding | undefined) {
 /**
  * The ordinal or threshold field a record field paints through, dealing
  * its colors into `held`, or undefined for a preset or a constant. A record
- * with no value keeps the default alt hue, and `unknown: ''`, no color from
- * the setting, paints the values `domain` leaves out that hue too.
+ * with no value keeps the default alt hue unless `invalid` paints it, and
+ * `unknown: ''`, no color from the setting, paints the values `domain` leaves
+ * out that hue too.
  */
 export function recordHueField(
   encoding: ColorEncoding | undefined,
@@ -44,13 +45,13 @@ export function recordHueField(
 
 /**
  * A record field's key color, the no-value key taking the default alt hue
- * unless an `unknown` paints it.
+ * unless an `invalid` paints it.
  */
 export function recordKeyColor(
-  field: { color: (key: string) => string; unknown?: unknown },
+  field: { color: (key: string) => string; invalid?: string },
   key: string,
 ) {
-  return key === '' && field.unknown === undefined ? ALT_HUE : field.color(key)
+  return key === '' && field.invalid === undefined ? ALT_HUE : field.color(key)
 }
 
 /**

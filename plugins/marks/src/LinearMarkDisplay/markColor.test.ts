@@ -1,5 +1,6 @@
 import { setConf } from '@jbrowse/core/configuration'
 import { categoricalValueColor } from '@jbrowse/core/ui/colors'
+import { NO_CATEGORY_COLOR } from '@jbrowse/core/util/color'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { DEFAULT_MARK_COLOR } from '@jbrowse/core/util/markEncoding'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
@@ -52,7 +53,8 @@ function editColor(
     | 'range'
     | 'domainMin'
     | 'domainMax'
-    | 'unknown',
+    | 'unknown'
+    | 'invalid',
   value: unknown,
 ) {
   const mark = display.conf.marks[0]!
@@ -145,6 +147,48 @@ test('unknown repaints the categories the domain leaves out, fetching nothing', 
   expect(JSON.stringify(display.rpcProps())).toBe(before)
   const [purple, grey] = ['purple', '#cccccc'].map(c => cssColorToABGR(c))
   expect(colorLane(display)).toEqual([purple, grey, purple])
+})
+
+test('unknown leaves a feature with no value grey, and invalid repaints it, fetching nothing', () => {
+  const { display } = createTestEnvironment({
+    marks: [
+      {
+        mark: 'bar',
+        encoding: {
+          y: 'score',
+          color: {
+            field: 'type',
+            scale: { domain: ['gene'], range: ['purple'], unknown: '#cccccc' },
+          },
+        },
+      },
+    ],
+  }).createDisplay()
+  display.setRpcData(
+    0,
+    workerResult(
+      display,
+      features([
+        { start: 0, end: 100, score: 2, type: 'gene' },
+        { start: 200, end: 300, score: 6, type: 'exon' },
+        { start: 400, end: 500, score: 9 },
+      ]),
+    ),
+    REGION,
+  )
+  const before = JSON.stringify(display.rpcProps())
+  const [purple, grey, noValue, black] = [
+    'purple',
+    '#cccccc',
+    NO_CATEGORY_COLOR,
+    'black',
+  ].map(c => cssColorToABGR(c))
+  expect(colorLane(display)).toEqual([purple, grey, noValue])
+
+  editColor(display, 'invalid', 'black')
+
+  expect(JSON.stringify(display.rpcProps())).toBe(before)
+  expect(colorLane(display)).toEqual([purple, grey, black])
 })
 
 test('categories the hash puts on one color each take their own, and keep it as regions arrive', () => {

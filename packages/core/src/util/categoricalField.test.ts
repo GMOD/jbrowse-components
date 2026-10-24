@@ -171,7 +171,7 @@ test('dealShownKeyColors deals what is shown apart even after the session has he
   }
 })
 
-test('unknown paints every key the domain leaves out, and the no-value key', () => {
+test('unknown paints every key the domain leaves out, and invalid the no-value key', () => {
   const field = categoricalField('type', {
     domain: ['a', 'b'],
     range: ['red', 'blue'],
@@ -182,15 +182,24 @@ test('unknown paints every key the domain leaves out, and the no-value key', () 
     'blue',
     'grey',
     'grey',
-    'grey',
+    NO_CATEGORY_COLOR,
   ])
   expect(field.colorAmong?.('c', new Set(['c']))).toBe('grey')
+  expect(field.colorAmong?.('', new Set(['']))).toBe(NO_CATEGORY_COLOR)
   expect(field.unknown?.color).toBe('grey')
   expect(['a', 'c', ''].map(k => field.unknown?.paints(k))).toEqual([
     false,
     true,
-    true,
+    false,
   ])
+  expect(field.invalid).toBeUndefined()
+  const painted = categoricalField('type', {
+    domain: ['a'],
+    unknown: 'grey',
+    invalid: 'black',
+  })
+  expect(['c', ''].map(painted.color)).toEqual(['grey', 'black'])
+  expect(painted.invalid).toBe('black')
   expect(OTHER_VALUES_LABEL).toBe('Other')
 })
 

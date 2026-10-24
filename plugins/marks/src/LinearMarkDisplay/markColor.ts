@@ -221,6 +221,7 @@ function colorByKeys<L extends EncodedChannels>(
     range: own?.range,
     held: own && held,
     unknown: own?.unknown,
+    invalid: own?.invalid,
   })
   dealKeyColors(
     declared,

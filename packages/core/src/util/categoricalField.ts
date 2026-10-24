@@ -62,6 +62,8 @@ export interface CategoricalField {
    * are, so a key ordered by another field's domain still names them.
    */
   unknown?: { color: string; paints: (key: string) => boolean }
+  /** The no-value key's written color, Vega-Lite's `invalid` */
+  invalid?: string
 }
 
 /**
@@ -92,8 +94,8 @@ export function keyNames(
  * config spells them for a reader rather than as the data does. `held` deals
  * each key the domain does not list a color when the key first appears
  * (`categoricalScale`); the caller keeps it for as long as the colors should
- * hold. `unknown` paints every such key, and the no-value key, one color
- * instead, `''` the no-value grey.
+ * hold. `unknown` paints every such key one color instead, `''` the
+ * no-value grey, and `invalid` paints the no-value key, the grey while unset.
  */
 export function categoricalField(
   field: string,
@@ -103,12 +105,14 @@ export function categoricalField(
     labels = [],
     held,
     unknown,
+    invalid,
   }: {
     domain?: readonly string[]
     range?: readonly string[]
     labels?: readonly string[]
     held?: HeldSlots
     unknown?: string
+    invalid?: string
   } = {},
 ): CategoricalField {
   // a field with a vocabulary of its own reads it on every channel, a facet's
@@ -128,7 +132,9 @@ export function categoricalField(
   const jexlField = isJexl(field)
   const other = unknown === undefined ? undefined : unknown || NO_CATEGORY_COLOR
   const listed = new Set(order)
-  const unlisted = (key: string) => other !== undefined && !listed.has(key)
+  const unlisted = (key: string) =>
+    other !== undefined && key !== '' && !listed.has(key)
+  const missing = invalid || NO_CATEGORY_COLOR
   let colorOf: CategoricalScale<string> | undefined
   return {
     field,
@@ -136,6 +142,7 @@ export function categoricalField(
     ...(other === undefined
       ? {}
       : { unknown: { color: other, paints: unlisted } }),
+    ...(invalid ? { invalid } : {}),
     key: value => {
       const key = valueText(value)
       return key === '' ? (vocabulary?.missing ?? key) : key
@@ -151,7 +158,7 @@ export function categoricalField(
         return other!
       }
       if (key === '') {
-        return NO_CATEGORY_COLOR
+        return missing
       }
       colorOf ??= categoricalColorScale(paired, colors, held)
       return colorOf(key)
@@ -161,7 +168,7 @@ export function categoricalField(
         return other!
       }
       if (key === '') {
-        return NO_CATEGORY_COLOR
+        return missing
       }
       colorOf ??= categoricalColorScale(paired, colors, held)
       return colorOf.among(key, batch)

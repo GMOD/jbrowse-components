@@ -121,6 +121,11 @@ channels.
   axis would clip what today draws whole. The fence's q, which "Clip extreme
   outliers" writes, needs a member of its own beside `domain`.
 - `reverse` defaults per preset.
+- Amended 2026-10-23: on an ordinal scale `unknown` paints the values
+  `domain` leaves out, and `invalid`, Vega-Lite's word, paints a feature with
+  no value. Unset, a feature with no value keeps the display's no-value color
+  and its own key row; writing `invalid` as the `unknown` color files it under
+  Other. Alignments had split the two first (ADR-240).
 - `scale.name` shares a domain across tracks as the union of member domains,
   as `autoscaleGroup` does.
 - A threshold takes at most eight cuts, which is the shader's cap.
@@ -301,6 +306,7 @@ predicate in the layer's own `filter`:
 | `condition` for hover and selection | ADR-110's measurement: a hover in render state repaints the whole pileup per mousemove on Canvas2D. The synteny shade is also a function of the base alpha, which a constant cannot express. Hover and selection stay guides, and `colorHover`/`colorSelected` become `theme.highlight` |
 | A part removed with `null` (Vega-Lite's `legend: null`) | `null` already means "reset to the default" in every config write (`setSlot(name, null)`, JSON having no `undefined`), and a part turned off by `null` loses its settings, where ADR-231's `show` keeps them for the way back |
 | A field-keyed filter map (`{ mapq: { gte: 20 } }`) | A record list names its parts and grows operators; the same call kept `filter.tags` as records |
+| `unknown` also painting a missing value, as d3's `ordinal.unknown` does | A feature with no value is something people look for (unannotated genes, unphased reads), and setting `unknown` hid it in Other on the feature, mark and variant displays while alignments kept it apart. `invalid` set to the `unknown` color still lumps them |
 | Missing values passing comparisons | `gte: 0.9` would not mean at least 0.9. The UI hints when no track carries the field instead |
 | Per-distinct-value evaluation of jexl | It needs structure read back out of jexl, which GRAMMAR_OF_GRAPHICS.md already declined |
 | `ribbon` and `cell` marks | `link` between intervals and a band-scaled `rect` say them |

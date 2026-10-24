@@ -318,16 +318,31 @@ export function colorRangeSlot({
 /**
  * The color for a value missing from `domain`, as d3's `ordinal.unknown`: unset,
  * the next palette color where the display deals one; a color, that color;
- * `""`, no color from this setting, so a row keeps the color it already has, a variant cell
- * the alt hue, and a feature or mark the no-value grey. On a feature or mark it also paints a feature
- * with no value, and the key lists every value it paints as one row, Other.
- * `range` entries past the domain go unread while it is set.
+ * `""`, no color from this setting, so a row keeps the color it already has, a
+ * variant cell the alt hue, and a feature or mark the no-value grey. The key
+ * lists every value it paints as one row, Other. A feature with no value
+ * takes `invalid` instead. `range` entries past the domain go unread while it
+ * is set.
  */
 export const colorUnknownSlot = {
   unknown: {
     type: 'maybeColor',
     description:
       'color for a value missing from domain: unset takes the next palette color where the display deals one, a color paints that color, "" adds no color from this setting, so a row keeps the color it already has, a variant cell takes the alt hue and a feature the no-value grey',
+  },
+} as const
+
+/**
+ * The color for a feature with no value under the field, Vega-Lite's
+ * `invalid`: unset, the display's no-value color, the grey on a feature or
+ * mark and the alt hue on a variant cell. Written as the `unknown` color, it
+ * files those features with the values `domain` leaves out, one row, Other.
+ */
+export const colorInvalidSlot = {
+  invalid: {
+    type: 'maybeColor',
+    description:
+      "color for a feature with no value under the field; unset, the display's no-value color",
   },
 } as const
 
@@ -638,6 +653,7 @@ export function colorEncodingOf<V extends string | undefined>(
         range: listed(s.range),
         names: listed(s.names ?? []),
         unknown: s.unknown,
+        invalid: s.invalid,
       }
     case 'threshold':
       return {
@@ -855,6 +871,7 @@ export function categoricalColorField(
         labels: encoding.names,
         held,
         unknown: encoding.unknown,
+        invalid: encoding.invalid,
       })
     : undefined
 }
@@ -992,6 +1009,7 @@ export const colorConfigSchema = ConfigurationSchema(
             "CSS colors the domain takes, in order, continuing into the default palette past its end; under threshold one per interval, one more than the cuts; under linear or log the ramp's stops, winning over scheme",
         }),
         ...colorUnknownSlot,
+        ...colorInvalidSlot,
         ...colorNamesSlot,
         ...colorRampSlots,
         ...colorDomainEndsSlots,

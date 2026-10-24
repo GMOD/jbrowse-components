@@ -71,13 +71,15 @@ const KEY_MEMBERS = ['title', 'descending', 'missingLabel'] as const
 
 /**
  * The single-valued members a control shows beside a channel's field: under
- * `scale`, for an ordinal color the one its left-out values paint, for a ramp
- * the ends that pin it, its middle, the quantile an open end follows, the
- * named stops it samples and their direction; under `legend`, for any scale
- * the key's title, row order and name for no value.
+ * `scale`, for an ordinal color the ones its left-out values and a feature
+ * with no value paint, for a ramp the ends that pin it, its middle, the
+ * quantile an open end follows, the named stops it samples and their
+ * direction; under `legend`, for any scale the key's title, row order and
+ * name for no value.
  */
 export const SCALE_MEMBERS = [
   'unknown',
+  'invalid',
   'scheme',
   'reverse',
   'domainMin',
@@ -113,7 +115,10 @@ export const RAMP_ENDS = ['domainMin', 'domainMax'] as const
 function rampMembers(channel: EditChannel): readonly ScaleMember[] {
   return channel === 'color'
     ? SCALE_MEMBERS.filter(
-        member => member !== 'unknown' && partOf(member) === 'scale',
+        member =>
+          member !== 'unknown' &&
+          member !== 'invalid' &&
+          partOf(member) === 'scale',
       )
     : RAMP_ENDS
 }
@@ -314,7 +319,7 @@ export function withChannelScale(
     ...(isRampScale(scale) && isRampScale(channelScale(mark, channel))
       ? ['range']
       : []),
-    ...(scale === 'ordinal' ? ['unknown'] : []),
+    ...(scale === 'ordinal' ? ['unknown', 'invalid'] : []),
   ]
   return writeChannel(mark, channel, {
     field: channelField(mark, channel) || undefined,
@@ -361,7 +366,8 @@ export function withScaleMember(
         : member === 'scheme' ||
             member === 'title' ||
             member === 'missingLabel' ||
-            member === 'unknown'
+            member === 'unknown' ||
+            member === 'invalid'
           ? value
           : Number(value)
   return withMember(mark, channel, member, held)

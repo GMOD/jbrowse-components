@@ -209,6 +209,7 @@ describe('colorSettingOf', () => {
         domainMid: undefined,
         domainQuantile: 0.9,
         unknown: undefined,
+        invalid: undefined,
       },
       legend: {},
     })

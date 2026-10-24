@@ -39,11 +39,13 @@ export interface CategoricalRef {
   /** What a key names each `domain` value, one each in order. */
   names?: string[]
   /**
-   * The color every value `domain` leaves out paints, and a feature with no
-   * value, as d3's `ordinal.unknown`; `''` is the no-value grey. Unset, each
-   * takes a palette color of its own.
+   * The color every value `domain` leaves out paints, as d3's
+   * `ordinal.unknown`; `''` is the no-value grey. Unset, each takes a palette
+   * color of its own.
    */
   unknown?: string
+  /** The color of a feature with no value, Vega-Lite's `invalid` */
+  invalid?: string
 }
 
 /**

@@ -158,8 +158,8 @@ export function derivedColorScale<T>(
       const value = sorted[0]!
       const other =
         unknown !== undefined &&
-        sorted.some(v => v !== '' && unknown.paints(v)) &&
-        sorted.every(v => unknown.paints(v))
+        sorted.some(v => unknown.paints(v)) &&
+        sorted.every(v => v === '' || unknown.paints(v))
       return {
         value,
         values: sorted,

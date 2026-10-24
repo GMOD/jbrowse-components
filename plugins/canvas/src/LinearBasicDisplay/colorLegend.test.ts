@@ -131,7 +131,12 @@ describe('derived color key', () => {
   // Three records, one per biotype, each in its own section.
   function coloredDisplay(
     field: string,
-    scale: { domain?: string[]; range?: string[]; unknown?: string } = {},
+    scale: {
+      domain?: string[]
+      range?: string[]
+      unknown?: string
+      invalid?: string
+    } = {},
   ) {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
@@ -372,9 +377,32 @@ describe('derived color key', () => {
       unknown: '#cccccc',
     })
     expect(display.paintColorValue?.('snoRNA')).toBe('#cccccc')
-    expect(display.paintColorValue?.('')).toBe('#cccccc')
+    expect(display.paintColorValue?.('')).toBe(NO_CATEGORY_COLOR)
     expect(
       display.legendSpec.sections[0]?.items.map(i => [i.label, i.color]),
+    ).toEqual([
+      ['lncRNA', abgrToCssRgba(cssColorToABGR('#ff0000'))],
+      ['Other', abgrToCssRgba(cssColorToABGR('#cccccc'))],
+    ])
+  })
+
+  it('keys a feature with no value apart from Other unless invalid shares its color', () => {
+    const scale = {
+      domain: ['lncRNA'],
+      range: ['#ff0000'],
+      unknown: '#cccccc',
+    }
+    const rows = (display: ReturnType<typeof coloredDisplay>) => {
+      display.setRpcData(0, paintedData(['', 'lncRNA', 'snoRNA']), ctgA)
+      return display.legendSpec.sections[0]?.items.map(i => [i.label, i.color])
+    }
+    expect(rows(coloredDisplay('biotype', scale))).toEqual([
+      ['lncRNA', abgrToCssRgba(cssColorToABGR('#ff0000'))],
+      ['Other', abgrToCssRgba(cssColorToABGR('#cccccc'))],
+      ['(no value)', abgrToCssRgba(cssColorToABGR(NO_CATEGORY_COLOR))],
+    ])
+    expect(
+      rows(coloredDisplay('biotype', { ...scale, invalid: '#cccccc' })),
     ).toEqual([
       ['lncRNA', abgrToCssRgba(cssColorToABGR('#ff0000'))],
       ['Other', abgrToCssRgba(cssColorToABGR('#cccccc'))],
