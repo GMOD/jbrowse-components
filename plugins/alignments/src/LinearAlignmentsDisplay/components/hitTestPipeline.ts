@@ -483,7 +483,10 @@ export function performHitTest(
       basePos,
       bpPerPx,
       resolved.reversed,
-      showCoverageAlleles ? coverageMinAlleleFraction : undefined,
+      {
+        showAlleles: showCoverageAlleles,
+        minAlleleFraction: coverageMinAlleleFraction,
+      },
     )
     if (position !== undefined) {
       return { type: 'coverage', hit: { type: 'coverage', position }, resolved }

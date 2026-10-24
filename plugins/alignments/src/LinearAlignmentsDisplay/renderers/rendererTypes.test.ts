@@ -58,6 +58,7 @@ function makeState(
     qualityOpacity: OPAQUE_MISMATCHES,
     showSoftClipping: false,
     showInterbaseIndicators: false,
+    showCoverageAlleles: true,
     showModifications: false,
     canvasWidth: 800,
     canvasHeight: 600,

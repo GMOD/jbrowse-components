@@ -4,6 +4,7 @@ import {
 } from '@jbrowse/alignments-core'
 
 import type { MafRegionData } from '../LinearMafRenderer/mafRenderingBackendTypes.ts'
+import type { CoverageBandState } from '@jbrowse/alignments-core'
 
 type Coverage = NonNullable<MafRegionData['coverage']>
 
@@ -12,15 +13,9 @@ export function coverageTooltipBinAt(
   basePos: number,
   bpPerPx: number,
   reversed: boolean,
-  minAlleleFraction: number | undefined,
+  band: Pick<CoverageBandState, 'showAlleles' | 'minAlleleFraction'>,
 ) {
-  const position = coverageBinAt(
-    coverage,
-    basePos,
-    bpPerPx,
-    reversed,
-    minAlleleFraction,
-  )
+  const position = coverageBinAt(coverage, basePos, bpPerPx, reversed, band)
   const bin =
     position === undefined
       ? undefined

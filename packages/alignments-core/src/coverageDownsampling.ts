@@ -19,6 +19,7 @@ import { coverageLayout } from './coverageBandBox.ts'
 import { forEachAtPosition, lowerBound } from './positionIndex.ts'
 import { snpLaneOf } from './snpCoverage.ts'
 
+import type { CoverageBandState } from './coverageBandMarks.ts'
 import type {
   ScoreStats,
   VisibleEntry,
@@ -724,10 +725,9 @@ function countInterbaseAtPosition(
  * way searched the neighbouring pixel's bp on a flipped view and named a SNP
  * the cursor was not over.
  *
- * `minAlleleFraction` is the band's own allele floor, applied per allele the way
- * the SNP pass applies it, so the snap cannot name a segment neither backend
- * drew, and undefined while the band draws no allele segments, which leaves
- * nothing to snap to. The pooled `SNP_TOOLTIP_SNAP_FLOOR` still gates
+ * `band` is what the SNP pass reads, so the snap cannot name a segment
+ * neither backend drew: no snap with the alleles hidden, and the band's own
+ * floor per allele otherwise. The pooled `SNP_TOOLTIP_SNAP_FLOOR` still gates
  * dominance in the pixel.
  */
 export function coverageBinAt(
@@ -735,14 +735,14 @@ export function coverageBinAt(
   basePos: number,
   bpPerPx: number,
   reversed: boolean,
-  minAlleleFraction: number | undefined,
+  band: Pick<CoverageBandState, 'showAlleles' | 'minAlleleFraction'>,
 ) {
   const { coverageDepths, coverageStartPos } = arrays
   const binIndex = basePos - coverageStartPos
   if (binIndex < 0 || binIndex >= coverageDepths.length) {
     return undefined
   }
-  if (bpPerPx <= 1 || minAlleleFraction === undefined) {
+  if (bpPerPx <= 1 || !band.showAlleles) {
     return basePos
   }
   const width = Math.ceil(bpPerPx)
@@ -755,7 +755,7 @@ export function coverageBinAt(
       from,
       from + width,
       SNP_TOOLTIP_SNAP_FLOOR,
-      { bases: arrays.mismatchBases, minFrequency: minAlleleFraction },
+      { bases: arrays.mismatchBases, minFrequency: band.minAlleleFraction },
     ) ?? basePos
   )
 }

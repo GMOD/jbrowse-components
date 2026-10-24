@@ -90,8 +90,8 @@ shared by its mates and supplementary segments. The coverage band's tables
 stop at the region's ends: the worker counts depth wherever its reads reach,
 which past the region is a partial count. A band or mark the display's
 `show` members hide (`coverage.show`, `pileup.show`, `pileup.mismatches.show`,
-`coverage.interbase.show`, `sashimi.show`) comes back as empty
-tables. `pileup.mismatches.show: false` empties `mismatches` and `insertions`
+`coverage.interbase.show`, `coverage.alleles.show`, `sashimi.show`) comes
+back as empty tables. `pileup.mismatches.show: false` empties `mismatches` and `insertions`
 and drops the deletions from `gaps`, as the display's marks do; the skips
 and `clips` stay.
 `@jbrowse/tables` composes them (`createTablesEngine`) and adds
@@ -252,8 +252,9 @@ through the assembly's sequence adapter, for a host drawing them under a
 pileup; the bundle serves it as `jbrowse.sequence`. The coverage band's
 stacks come back as the worker packs them for the display: `alleleCoverage`
 (each mismatch position's alleles as fractions of its bar, `from` and `to`,
-with the `depth` there) and `modificationCoverage` (each modification state's
-share, in its color and opacity), decoded through alignments-core's own
+with the `depth` there, empty while `settings.coverage.alleles.show` is false)
+and `modificationCoverage` (each modification state's share, in its color and
+opacity), decoded through alignments-core's own
 segment readers, so a host stacks what the display stacks. The interbase
 histogram comes back the same way, as `interbaseCoverage` (each position's
 insertions, soft clips and hard clips stacked in that order, `from` and `to`

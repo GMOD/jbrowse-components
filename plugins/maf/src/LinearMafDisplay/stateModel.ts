@@ -1333,9 +1333,7 @@ export default function stateModelFactory(
                 basePos,
                 bpPerPx,
                 reversed,
-                self.showCoverageAlleles
-                  ? self.coverageMinAlleleFraction
-                  : undefined,
+                self.coverageBandState,
               )
             : undefined
         },

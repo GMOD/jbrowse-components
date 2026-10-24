@@ -209,7 +209,10 @@ export function configSlotViews(self: ConfigSlotSelf) {
     get showInterbaseIndicators(): boolean {
       return getConf(self, ['coverage', 'interbase', 'show'])
     },
-    /** #getter */
+    /**
+     * #getter
+     * Whether the coverage band colors its allele segments, `coverage.alleles.show`
+     */
     get showCoverageAlleles(): boolean {
       return getConf(self, ['coverage', 'alleles', 'show'])
     },
@@ -639,6 +642,7 @@ export function configSlotActions(self: ConfigSlotSelf) {
 
     /**
      * #action
+     * Turns the coverage band's allele colors on or off, `coverage.alleles.show`
      */
     setShowCoverageAlleles(show: boolean) {
       setConf(self, ['coverage', 'alleles', 'show'], show)

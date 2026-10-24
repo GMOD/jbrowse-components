@@ -105,10 +105,9 @@ export function getReadsMenuItems(model: ReadsModel) {
     // (`executeRenderAlignmentData`'s `effShowSoftClipping`), so the row greys
     // out there rather than taking a click that draws nothing.
     softClippingItem(model),
-    // Greyed rather than hidden, unlike LGVSyntenyDisplay's twin, which
-    // defaults `showCoverage` off and so would spend its life greyed;
-    // `renderers/interbaseNeedsCoverage.test.ts` is the A/B that the toggle
-    // draws nothing with the band hidden.
+    // The band's two layer rows grey out rather than hide, unlike
+    // LGVSyntenyDisplay's twins, which default `showCoverage` off and so would
+    // spend their lives greyed.
     coverageAllelesMenuItem(model),
     interbaseIndicatorsMenuItem(model),
     ...sashimiShowItems(model),

@@ -263,6 +263,7 @@ function state(overrides: Partial<RenderState> = {}): RenderState {
     // insertion layer rides showMismatches, already on.
     showSoftClipping: true,
     showInterbaseIndicators: false,
+    showCoverageAlleles: true,
     showModifications: true,
     showPerBaseQuality: true,
     showPerBaseLetter: true,

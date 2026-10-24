@@ -173,6 +173,32 @@ describe('coverage hit — fires at all zoom levels', () => {
   })
 })
 
+describe('the coverage bin snaps to a SNP only while the band colors alleles', () => {
+  const resolved = makeResolved({
+    coverageDepths: new Float32Array(200).fill(10),
+    coverageStartPos: 9900,
+    mismatchPositions: new Uint32Array(5).fill(10050),
+    mismatchBases: new Uint8Array(5).fill('A'.charCodeAt(0)),
+  })
+  const positionAt = (showCoverageAlleles: boolean) => {
+    const result = performHitTest(
+      100,
+      30,
+      resolved,
+      opts({ showCoverageAlleles }),
+    )
+    return result.type === 'coverage' ? result.hit.position : undefined
+  }
+
+  it('names the SNP in the pixel with the alleles shown', () => {
+    expect(positionAt(true)).toBe(10050)
+  })
+
+  it('names the base under the cursor with the alleles hidden', () => {
+    expect(positionAt(false)).toBe(10000)
+  })
+})
+
 describe('indicator hit — fires at all zoom levels', () => {
   it('returns indicator hit in top-5px strip when bpPerPx > threshold', () => {
     const resolved = makeResolved({

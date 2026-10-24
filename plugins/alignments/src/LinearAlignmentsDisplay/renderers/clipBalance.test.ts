@@ -176,6 +176,7 @@ function state(): RenderState {
     qualityOpacity: OPAQUE_MISMATCHES,
     showSoftClipping: false,
     showInterbaseIndicators: false,
+    showCoverageAlleles: true,
     showModifications: false,
     showPerBaseQuality: false,
     showPerBaseLetter: false,
