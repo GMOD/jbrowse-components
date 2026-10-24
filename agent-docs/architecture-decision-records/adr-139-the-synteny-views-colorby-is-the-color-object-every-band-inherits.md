@@ -77,15 +77,15 @@ presets is a declared column, on the view as on the ribbon.
 
 **The field is what everything dispatches on.** There is no mode string
 between the object and the paint: `paintedField(color)` reads the field out
-(`''` under `scale: 'none'`, which is the default color), and the color
+(undefined under `scale: 'none'`, which is the default color), and the color
 functions, the legends, the menu radios and the worker all switch on that
-string. The structural fields come first in each switch and the ramps after,
+field. The structural fields come first in each switch and the ramps after,
 so a preset and a declared column are the same arm — `continuousRampConfig`
 is keyed by field, and each preset names the attribute it reads: `identity`
 and `dnds` read their own name, `mapq` reads `mappingQual`.
-`syntenyColorFor(field, current)` writes the object a menu pick means: `''` keeps the field and its order under
-`scale: 'none'`, and a field keeps its `domain` only when it is the one
-already named, as ADR-133 and the multi-way menu already did. One field is one
+`syntenyColorFor(field, current)` writes the object a menu pick means:
+undefined drops the field with its scale and key and keeps `value`, and a
+field keeps its `domain` only when it is the one already named, as ADR-133 and the multi-way menu already did. One field is one
 radio: a column an aligner named `identity` or `strand` writes what the preset
 or structural radio writes, so the menu offers the declared columns a radio
 does not already cover. The preset table is read by own property, since the
