@@ -129,8 +129,8 @@ export type ShorthandForm = 'string' | 'number' | 'list'
 /**
  * The slot a bare value of each form lifts into, off a `shorthand` option:
  * each slot it names takes the form its own type holds, a number or a list
- * where it holds one (`rules: [7.3]`, `filter: ['jexl:…']`) and a string
- * otherwise (`color: 'red'`), so a width naming `value` and `field` reads
+ * where it holds one (`rules: [7.3]`, `filter: ['jexl:…']`), or is a list of
+ * sub-schemas, and a string otherwise (`color: 'red'`), so a width naming `value` and `field` reads
  * `size: 3` as the one and `size: 'score'` as the other.
  */
 export function shorthandTargetsOf(
@@ -150,7 +150,8 @@ export function shorthandTargetsOf(
       return [
         type && NUMBER_SLOT_TYPES.has(type)
           ? 'number'
-          : type && LIST_SLOT_TYPES.has(type)
+          : (type && LIST_SLOT_TYPES.has(type)) ||
+              (isType(entry) && asArrayType(entry))
             ? 'list'
             : 'string',
         slot,
