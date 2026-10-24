@@ -35,7 +35,7 @@ test('a field the payload has no lane for is named, a jexl: entry included', () 
   expect(
     unreadFilterFields(
       [
-        { field: 'identiy', gte: 0.9 },
+        { field: 'pident', gte: 90 },
         { field: 'identity', gte: 0.9 },
         { field: 'jexl:feature.x > 1', equal: true },
         { field: 'dnds', valid: false },
@@ -43,5 +43,5 @@ test('a field the payload has no lane for is named, a jexl: entry included', () 
       ],
       data,
     ),
-  ).toEqual(['identiy', 'jexl:feature.x > 1'])
+  ).toEqual(['pident', 'jexl:feature.x > 1'])
 })

@@ -232,7 +232,7 @@ function withRange(
   ) {
     return badFilterEntry(entry, 'has a range that is not [min, max]')
   }
-  const [lo, hi] = range as (number | null)[]
+  const [lo, hi] = range as [number | null, number | null]
   const { gte, lte } = tests
   return {
     ...tests,

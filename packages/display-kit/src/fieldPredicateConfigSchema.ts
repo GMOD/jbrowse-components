@@ -6,7 +6,16 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 
 const Scalar = types.union(types.string, types.number, types.boolean)
 
-const TESTS = ['equal', 'lt', 'lte', 'gt', 'gte', 'oneOf', 'valid', 'range']
+const TESTS = new Set([
+  'equal',
+  'lt',
+  'lte',
+  'gt',
+  'gte',
+  'oneOf',
+  'valid',
+  'range',
+])
 const COMMENT_KEY = /^_+comment/
 
 function tighter(
@@ -52,7 +61,7 @@ function emptied(entry: unknown) {
     written.length > 0 &&
     !written.some(
       key =>
-        TESTS.includes(key) &&
+        TESTS.has(key) &&
         record[key] !== null &&
         record[key] !== undefined &&
         !(
