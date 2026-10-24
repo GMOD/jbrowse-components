@@ -6,6 +6,7 @@ import { compareStructural } from 'mobx'
 import {
   COLOR_SCALES,
   colorChannelOptions,
+  colorChannelSlots,
   colorConfigSchema,
   colorDomainEndsSlots,
   colorDomainSlot,
@@ -14,6 +15,7 @@ import {
   colorForField,
   colorForScheme,
   colorForValue,
+  colorLabelsSlot,
   colorRampSlots,
   colorRangeSlot,
   colorScaleOptions,
@@ -410,4 +412,20 @@ describe('paintedColorEncoding', () => {
     expect(paintedColorEncoding('red')).toBe('red')
     expect(paintedColorEncoding(undefined)).toBeUndefined()
   })
+})
+
+test('a plugin bundling a beta.17 synteny color schema still builds it', () => {
+  const Schema = ConfigurationSchema('BundledSyntenyColor', {
+    ...colorChannelSlots({
+      scales: ['none'],
+      scaleName: 'BundledSyntenyScale',
+      field: 'field',
+      fieldType: 'string',
+    }),
+    ...colorLabelsSlot,
+  })
+  const conf = Schema.create({ field: 'strand', scale: 'none', labels: ['a'] })
+  expect(conf.field).toBe('strand')
+  expect(conf.scale).toBe('none')
+  expect(conf.labels).toEqual(['a'])
 })

@@ -285,6 +285,35 @@ export function colorScaleTypeSlot<S extends ColorScaleName>({
   } as const
 }
 
+/**
+ * @deprecated `colorFieldSlot` and `colorScaleTypeSlot`. A plugin bundling
+ * `@jbrowse/synteny-core` or `display-kit` 5.0.0-beta.17 or older calls this
+ * from the host.
+ */
+export function colorChannelSlots<
+  S extends ColorScaleName,
+  F extends 'featureField' | 'string',
+>({
+  scales,
+  scaleName,
+  field,
+  fieldType,
+  fieldDefault,
+  scale,
+}: {
+  scales: readonly S[]
+  scaleName: string
+  field: string
+  fieldType: F
+  fieldDefault?: string
+  scale?: string
+}) {
+  return {
+    ...colorFieldSlot({ field, fieldType, fieldDefault }),
+    scale: colorScaleTypeSlot({ scales, scaleName, type: scale }).type,
+  } as const
+}
+
 /** The values that matter to an ordinal or threshold scale, in order. */
 export function colorDomainSlot({
   domain = 'values that take the range first, in order',
@@ -356,6 +385,9 @@ export const colorNamesSlot = {
       'key name for each domain value, one each in order, or under threshold for each interval from the lowest; a value past the end of the list shows its own',
   },
 } as const
+
+/** @deprecated `colorNamesSlot`; see `colorChannelSlots` */
+export const colorLabelsSlot = { labels: colorNamesSlot.names } as const
 
 /**
  * A threshold key's direction, the way a vertical stepped legend stands. A
