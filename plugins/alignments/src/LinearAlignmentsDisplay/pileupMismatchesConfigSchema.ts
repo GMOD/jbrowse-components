@@ -10,7 +10,7 @@ import { pileupMismatchesOpacityConfigSchema } from './pileupMismatchesOpacityCo
  * as per-base mismatches, insertion markers and deletion bars, and the
  * opacity each mismatched base takes from its quality. The line
  * joining a spliced read across its introns draws either way, since it shows
- * the exon blocks are one read (PILEUP_MARKS).
+ * the exon blocks are one read.
  *
  * #example
  * ```js

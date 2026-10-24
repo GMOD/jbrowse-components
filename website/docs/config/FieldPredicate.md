@@ -9,8 +9,14 @@ Auto-generated from the config schema in the source — see the [config guide](/
 
 One entry of a `filter` list, Vega-Lite's field predicate: the `field` of
 each record and the tests its value must pass, every one given. A `filter`
-list admits a record that passes every entry. A comparison on a missing
-value is false, and `valid: false` selects the missing values.
+list admits a record that passes every entry. A value is missing when it is
+absent, empty, or a VCF's `.`; `valid: false` selects exactly those. A
+comparison reads the value as a number, so a missing value and text that
+is no number both fail it.
+
+An entry whose every written test is `null` or one this release does not
+know loads as no entry at all, with a warning: R's `NA` and Python's `None`
+write `null`, and a bare `{ field }` would remove that field's defaults.
 
 A `field` written `jexl:` is computed per feature, where the display reads
 jexl, and a bare string entry is one that must hold:
@@ -25,6 +31,10 @@ filter: [{ field: 'length', gte: 10000 }, { field: 'identity', gte: 0.9 }]
 
 ```js
 filter: [{ field: 'query', oneOf: ['chr1', 'chr2'] }]
+```
+
+```js
+filter: [{ field: 'score', range: [100, 500] }]
 ```
 
 ```js
@@ -49,4 +59,5 @@ Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot typ
 | <span id="slot-gt">**gt**</span><br>[`maybeNumber`](/docs/config_guides/slot_types#the-maybe-types) | the value must be above this |
 | <span id="slot-gte">**gte**</span><br>[`maybeNumber`](/docs/config_guides/slot_types#the-maybe-types) | the value must be at least this |
 | <span id="slot-oneof">**oneOf**</span><br>[`maybeFrozen`](/docs/config_guides/slot_types#the-maybe-types) | the value must be one of these |
+| <span id="slot-range">**range**</span><br>[`maybeFrozen`](/docs/config_guides/slot_types#the-maybe-types) | Vega-Lite's [min, max], both ends included and a null end open; it loads as gte and lte, the tighter bound winning where either is also written |
 | <span id="slot-valid">**valid**</span><br>[`maybeBoolean`](/docs/config_guides/slot_types#the-maybe-types) | true admits only records with a value for the field, false only those without |

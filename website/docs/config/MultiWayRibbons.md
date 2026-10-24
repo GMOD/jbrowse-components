@@ -29,6 +29,6 @@ A setting written to it names members one by one: a member left out stays as it 
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
-| <span id="slot-encoding">**encoding**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>ConfigurationSchema( 'MultiWayRibbonsEncoding', { color: ribbon…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>ConfigurationSchema(&#10;&#160;&#160;'MultiWayRibbonsEncoding',&#10;&#160;&#160;{&#10;&#160;&#160;&#160;&#160;color: ribbonColorConfigSchema,&#10;&#160;&#160;},&#10;&#160;&#160;encodingOptions,&#10;)</code></pre></dialog></span> | The channels each ribbon paints through. |
-| <span id="slot-color">**color**</span><br>[RibbonColor](../ribboncolor) | `{ value }` paints every ribbon; `"strand"` the record's strand, `"identity"` a preset ramp and `"group"` a declared column. |
+| <span id="slot-encoding">**encoding**</span><br>[MultiWayRibbonsEncoding sub-schema](#slot-encodingcolor) | The channels each ribbon paints through. |
+| <span id="slot-encodingcolor">**encoding.color**</span><br>[RibbonColor](../ribboncolor) | `{ value }` paints every ribbon; `"strand"` the record's strand, `"identity"` a preset ramp and `"group"` a declared column. |
 | <span id="slot-mark">**mark**</span><br>[SyntenyMark](../syntenymark) | How each ribbon draws: `interpolate` picks straight or S-curved sides. |

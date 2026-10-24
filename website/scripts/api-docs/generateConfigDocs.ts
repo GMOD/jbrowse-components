@@ -262,14 +262,22 @@ export function accumulateConfig(
     file.preProcess = item
   } else if (
     obj.type === 'slot' &&
-    !file.slots.some(s => s.name === item.name)
+    !file.slots.some(s => s.name === slotPathOf(obj, item.name))
   ) {
     file.slots.push({
       ...item,
+      name: slotPathOf(obj, item.name),
       schemaDeclIds: obj.valueDeclIds,
       parameterisedDefault: obj.parameterisedDefault,
     })
   }
+}
+
+// A slot's row name: a tag spelling the slot alone (`#slot invalid`, or a bare
+// `#slot`) inside a sub-schema names it by its path from the page's schema
+// (`scale.invalid`), as a spread's rows are; a dotted tag is already a path.
+function slotPathOf(obj: ExtractedNode, name: string) {
+  return name.includes('.') ? name : `${obj.slotPrefix ?? ''}${name}`
 }
 
 // Resolve a config's documented base, or undefined: by declaration identity
@@ -1487,18 +1495,23 @@ function slotKind(item: Item, code: string | undefined) {
 }
 
 // The Type cell: the slot's declared type, linked to the slot-types guide, with
-// a stringEnum's choices after it, else what `slotKind` names, else the source.
+// a stringEnum's choices after it, else what `slotKind` names, else a
+// sub-schema named by its own name, else the source.
 function slotTypeCell(meta: SlotMeta, item: Item) {
   const enums = meta.enumValues ? ` (${enumList(meta.enumValues)})` : ''
   const code = slotSourceCode(meta)
   const kind = slotKind(item, code)
+  const schemaName =
+    code && /^ConfigurationSchema\(\s*'([^']+)'/.exec(code)?.[1]
   return meta.type
     ? `${typeLink(meta.type)}${enums}`
     : kind
       ? kind.href
         ? `[${kind.name}](${kind.href})`
         : kind.name
-      : codeCell(code)
+      : schemaName
+        ? `${schemaName} sub-schema`
+        : codeCell(code)
 }
 
 // A default the factory takes as a parameter has no one value to print, and its

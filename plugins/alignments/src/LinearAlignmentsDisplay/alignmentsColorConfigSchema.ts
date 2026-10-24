@@ -117,7 +117,7 @@ export const alignmentsColorConfigSchema = ConfigurationSchema(
             "CSS colors an ordinal scale hands its domain in order, or with no domain a preset field's levels in their preset order, a threshold scale its bins, or a linear scale's stops, evenly spaced; a level left out keeps its default; empty uses the field's default colors, cividis over mapq's bins, the tag palette or viridis",
         }),
         /**
-         * #slot invalid
+         * #slot scale.invalid
          * The fill of a read with no value under the field, Vega-Lite's word
          * for a missing value's output: no tag, no
          * attribute, or no mate under `mateRefName`. A `''` in `domain`
@@ -129,7 +129,7 @@ export const alignmentsColorConfigSchema = ConfigurationSchema(
             'CSS color of a read with no value under the field; unset, the theme color',
         },
         /**
-         * #slot unknown
+         * #slot scale.unknown
          * The fill of a read whose tag, attribute, mate reference or MAPQ an
          * ordinal `domain` leaves out, d3's `ordinal.unknown`:
          * `unknown: "#999"` beside `domain: ["1", "2"]` on `tags.HP` paints
@@ -143,7 +143,7 @@ export const alignmentsColorConfigSchema = ConfigurationSchema(
             'CSS color of a read whose tag, attribute, mate reference or MAPQ the ordinal domain leaves out, keyed as one row, Other; unset deals the next palette color, "" the no-value grey',
         },
         /**
-         * #slot names
+         * #slot scale.names
          * Names for each level or value `range` colors, in the same order, in
          * the key, the hovers and the arc key: `names: ["Maternal",
          * "Paternal"]` beside `domain: ["1", "2"]` on `tags.HP`.

@@ -134,7 +134,7 @@ export const baseLinearAlignmentsDisplayConfigSchema = ConfigurationSchema(
      * each with a `show` and a `filter`; `alleles.filter` floors each allele
      * segment's share of its position's depth, distinct from
      * `pileup.fadeLowFrequency`. The read cloud's insert-size axis is a fixed
-     * log scale (`arcBandYScale`) no setting reaches.
+     * log scale no setting reaches.
      */
     coverage: coverageBandConfigSchema,
     /**

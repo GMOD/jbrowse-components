@@ -22,4 +22,4 @@ A setting written to it names members one by one: a member left out stays as it 
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
-| <span id="slot-height">**height**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>7</code> | The one compactness setting: the spacing between reads follows from it (`featureSpacingForHeight`), and the Normal, Compact and Super-compact presets (7, 3, 1) and the fit-mode squeeze all write or read it. |
+| <span id="slot-height">**height**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>7</code> | The one compactness setting: the spacing between reads follows from it, and the Normal, Compact and Super-compact presets (7, 3, 1) and the fit-mode squeeze all write or read it. |

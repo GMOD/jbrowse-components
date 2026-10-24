@@ -36,4 +36,4 @@ A setting written to it names members one by one: a member left out stays as it 
 | Slot | Description |
 | --- | --- |
 | <span id="slot-show">**show**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | color the allele segments of the depth bars; off, the bars are plain grey |
-| <span id="slot-filter">**filter**</span><br>[FieldPredicate](../fieldpredicate) | Entries on `fraction`, a floor from 0 to 1 written `gte`, the one test the band's draw makes. Empty colors every mismatch, sequencing errors included. Distinct from `pileup.fadeLowFrequency`, which fades the pileup's marks by the same share through a depth-dependent threshold. |
+| <span id="slot-filter">**filter**</span><br><code>fieldPredicateList()</code> | Entries on `fraction`, a floor from 0 to 1 written `gte`, the one test the band's draw makes. Empty colors every mismatch, sequencing errors included. Distinct from `pileup.fadeLowFrequency`, which fades the pileup's marks by the same share through a depth-dependent threshold. |

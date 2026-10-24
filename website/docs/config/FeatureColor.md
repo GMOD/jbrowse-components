@@ -93,7 +93,6 @@ A setting written to it replaces it whole, since its members are alternatives: a
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
-| <span id="slot-title">**title**</span><br>[`maybeString`](/docs/config_guides/slot_types#the-maybe-types) | The heading of the key this scale draws, naming what the color measures. Three states: unset, the key keeps the display's own heading, usually the field's name; some text is that text; `""` is a key with no title, and the only spelling of one. `null` reads as unset, as it does in every slot. |
 | <span id="slot-value">**value**</span><br>[`maybeColor`](/docs/config_guides/slot_types#the-maybe-types) | A CSS color, or a jexl callback over `feature` returning one. Unset, a feature's own BED itemRgb paints it if it has one, else goldenrod.<br>_callback args:_ `feature` |
 | <span id="slot-scale">**scale**</span><br>[FeatureColorScale sub-schema](#slot-scaletype) | How the field's values map to colors, Vega-Lite's scale object. |
 | <span id="slot-legend">**legend**</span><br>[FeatureColorLegend sub-schema](#slot-legendtitle) | The key this channel draws. |

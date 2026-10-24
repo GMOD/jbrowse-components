@@ -31,7 +31,7 @@ export const ribbonsConfigSchema = ConfigurationSchema(
       'MultiWayRibbonsEncoding',
       {
         /**
-         * #slot color
+         * #slot encoding.color
          * `{ value }` paints every ribbon; `"strand"` the record's strand,
          * `"identity"` a preset ramp and `"group"` a declared column.
          */

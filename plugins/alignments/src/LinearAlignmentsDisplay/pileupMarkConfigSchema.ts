@@ -15,8 +15,8 @@ export const pileupMarkConfigSchema = ConfigurationSchema(
   {
     /**
      * #slot
-     * The one compactness setting: the spacing between reads follows from it
-     * (`featureSpacingForHeight`), and the Normal, Compact and Super-compact
+     * The one compactness setting: the spacing between reads follows from it,
+     * and the Normal, Compact and Super-compact
      * presets (7, 3, 1) and the fit-mode squeeze all write or read it.
      */
     height: {

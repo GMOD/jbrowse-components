@@ -60,7 +60,7 @@ export const readConnectionsStrokeWidthConfigSchema = ConfigurationSchema(
       'ReadConnectionsStrokeWidthScale',
       {
         /**
-         * #slot type
+         * #slot scale.type
          */
         type: {
           type: 'stringEnum',
@@ -72,7 +72,7 @@ export const readConnectionsStrokeWidthConfigSchema = ConfigurationSchema(
             'log adds the same width per doubling of reads; linear the same per read',
         },
         /**
-         * #slot range
+         * #slot scale.range
          * The px at one read and at 44, thinnest first. Empty is 1 to 4.
          */
         range: {

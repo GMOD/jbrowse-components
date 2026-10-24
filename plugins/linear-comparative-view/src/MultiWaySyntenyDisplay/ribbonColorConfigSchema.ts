@@ -114,7 +114,7 @@ export const ribbonColorConfigSchema = ConfigurationSchema(
       {
         ...syntenyColorScaleSlots('RibbonColorScaleType'),
         /**
-         * #slot invalid
+         * #slot scale.invalid
          * The color of a pair with no value for the field, Vega-Lite's word
          * for a missing value's output; its alpha is every ribbon's under the
          * field.

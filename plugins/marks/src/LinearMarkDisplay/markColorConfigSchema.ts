@@ -188,7 +188,7 @@ export const markColorSchema = ConfigurationSchema(
         ...colorTitleSlot,
         ...colorDescendingSlot,
         /**
-         * #slot values
+         * #slot legend.values
          * The values an ordinal key lists, in this order; empty lists every
          * value the loaded regions met. A value left out still paints, as
          * Vega-Lite's `legend.values` and ggplot2's `breaks` leave it.
@@ -199,7 +199,7 @@ export const markColorSchema = ConfigurationSchema(
           description: 'values the key lists; empty lists every value met',
         },
         /**
-         * #slot missingLabel
+         * #slot legend.missingLabel
          * The key's name for a feature with nothing in `field`; unset is
          * "(no value)". Vega-Lite's legend has no such member, so it keeps
          * its JBrowse name.

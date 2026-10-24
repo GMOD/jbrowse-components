@@ -79,12 +79,11 @@ export default function configSchemaF() {
     {
       /**
        * #slot
-       * The whole budget the byte gate measures against, since no MAF adapter
-       * declares a `fetchSizeLimit`. 5 Mb, as `LinearBasicDisplay` uses,
-       * because the index estimate is block-granular.
-       * `SUB_FLOOR_BYTE_BUDGET_FACTOR` lets deep data through below the
-       * force-load floor. Measurements: `MAF_LARGE_BLOCKS.md`, "Fetch dominates
-       * at 470-way".
+       * The bytes a region may cost before the display stops and offers to
+       * load it anyway, the whole budget since no MAF adapter declares a
+       * `fetchSizeLimit`.
+       * 5 Mb, as `LinearBasicDisplay` uses, because the index estimate is
+       * block-granular.
        */
       fetchSizeLimit: { type: 'number', defaultValue: 5_000_000 },
       ...trackHeightConfigSchemaFields({

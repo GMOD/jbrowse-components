@@ -1184,7 +1184,7 @@ import { isMissing } from '@jbrowse/core/util/thresholdScale'
 (value: unknown) => boolean
 ```
 
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/thresholdScale.ts)
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/groupKeys.ts)
 
 ### isPlainFieldRef
 

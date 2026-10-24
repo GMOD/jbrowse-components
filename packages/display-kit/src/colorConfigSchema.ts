@@ -402,8 +402,7 @@ export const colorDescendingSlot = {
 } as const
 
 /**
- * #slot title
- * The heading of the key this scale draws, naming what the color measures.
+ * A legend's `title`: the heading of the key this scale draws, naming what the color measures.
  * Three states: unset, the key keeps the display's own heading, usually the
  * field's name; some text is that text; `""` is a key with no title, and the
  * only spelling of one. `null` reads as unset, as it does in every slot.

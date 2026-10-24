@@ -34,6 +34,9 @@ export type TagType = (typeof TAG_TYPES)[number]
 export interface ExtractedNode {
   type: TagType
   name: string
+  // For `#slot` nodes only: the dotted path of the sub-schemas the slot sits
+  // in (`scale.`), which a tag naming the slot alone leaves out
+  slotPrefix?: string
   comment: string
   signature: string
   node: string
@@ -281,6 +284,7 @@ export function extractWithComment(
         parameterisedDefault: tags.includes('slot')
           ? hasParameterisedDefault(checker, node)
           : undefined,
+        slotPrefix: tags.includes('slot') ? subSchemaPrefix(node) : undefined,
         baseConfigName:
           tags.includes('baseConfiguration') && ts.isPropertyAssignment(node)
             ? findStringLiteral(node.initializer)
