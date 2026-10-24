@@ -98,7 +98,7 @@ export function extractModifications(
   }
 
   // Everything below places or scores marks, and only the modifications color
-  // schemes draw any — so a modBAM opened in normal, strand, insert-size or
+  // fields draw any — so a modBAM opened in normal, strand, insert-size or
   // tag coloring stops here. It used to run the whole per-read pipeline
   // regardless (`getModPositions` walks the delta list against the read
   // sequence, which makes BAM decode SEQ for the read), to populate the menu

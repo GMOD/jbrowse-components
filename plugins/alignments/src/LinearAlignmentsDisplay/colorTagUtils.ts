@@ -6,7 +6,7 @@ import { relight } from '@jbrowse/core/util/color'
  * Where a refName sits in its assembly's own chromosome order, for chromosome
  * painting — the display's `paintedRefNamePosition`, which canonicalizes the
  * name first because a mate reference arrives in the FILE's spelling. Undefined
- * for every other scheme, and while the assembly is still loading, where
+ * for every other field, and while the assembly is still loading, where
  * `refNameColor` falls back to its hash.
  */
 export type RefNamePosition = (refName: string) => number | undefined
@@ -58,15 +58,15 @@ function tagValueColor(value: string) {
 }
 
 /**
- * The color one CPU-baked value paints, for whichever scheme is active. The
+ * The color one CPU-baked value paints, for whichever field is active. The
  * paint path (`buildReadFillColors`) and the legend's swatch list both resolve
  * through this, so a swatch is the color drawn by construction.
  *
  * A pure function of the value, which is what lets the display hold no
  * discovered-value map at all. There used to be one — `colorTagMap`, a volatile
  * the fetch added to — and every rule around it existed to manage the cache
- * rather than to decide a color: clear it when the scheme changes, do NOT clear
- * it when the scheme is merely re-picked, assign only when a value was actually
+ * rather than to decide a color: clear it when the field changes, do NOT clear
+ * it when the field is merely re-picked, assign only when a value was actually
  * added or every already-loaded region rebakes, and narrow it at the legend
  * because it never shrank on navigation. All four are gone with the map. The
  * colors are unchanged: this is the same pair of functions the map's entries

@@ -16,7 +16,7 @@ import {
 } from '@jbrowse/core/util/thresholdScale'
 import { rampMidT } from '@jbrowse/render-core/shaders/colorRampLut'
 
-import { colorSchemeOf } from '../shared/colorSchemes.ts'
+import { colorFieldKindOf } from '../shared/colorFieldDefs.ts'
 import { bakedValueColor } from './colorTagUtils.ts'
 import {
   mapqExtentAcrossGroups,
@@ -164,7 +164,8 @@ export function bakedColorScale(
   extent: NumericExtent | undefined,
 ): BakedColorScale {
   const scaled = typeof encoding === 'object' ? encoding : undefined
-  const numeric = colorField === 'mapq' || colorSchemeOf(colorField) === 'tag'
+  const numeric =
+    colorField === 'mapq' || colorFieldKindOf(colorField) === 'tag'
   if (numeric && scaled?.scale === 'linear') {
     return linearScale(
       scaled,
@@ -270,7 +271,7 @@ export function linearFieldExtent(
     ? undefined
     : colorField === 'mapq'
       ? mapqExtentAcrossGroups(byGroup)
-      : colorSchemeOf(colorField) === 'tag'
+      : colorFieldKindOf(colorField) === 'tag'
         ? numericExtentAcrossGroups(byGroup, d => d.readTagValues)
         : undefined
 }
@@ -294,7 +295,7 @@ export function bakedColorExtent(
     return undefined
   }
   const quantile = encoding.domainQuantile ?? 1
-  if (colorSchemeOf(colorField) === 'tag') {
+  if (colorFieldKindOf(colorField) === 'tag') {
     return quantile < 1
       ? quantileExtentAcrossGroups(byGroup, d => d.readTagValues, quantile)
       : numericExtentAcrossGroups(byGroup, d => d.readTagValues)

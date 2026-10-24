@@ -23,7 +23,7 @@ import type {
 } from '../RenderAlignmentDataRPC/types.ts'
 import type { GroupConnectors } from '../features/linkedReads/computeOverlay.ts'
 import type {
-  ColorSchemeType,
+  ColorFieldKind,
   LayoutOrder,
   SortColumn,
 } from '../shared/types.ts'
@@ -211,9 +211,9 @@ function layoutOneGroup(
 export interface ReadColorContext {
   // The `encoding.color` field the bake reads, `''` for the plain fill.
   colorField: string
-  // What the body paints as: `colorField`'s scheme, or the modification
-  // layer's own tint under the plain fill (`bodyColorScheme`).
-  bodyScheme: ColorSchemeType
+  // What the body paints as: `colorField`'s kind, or the modification
+  // layer's own tint under the plain fill (`bodyColorKind`).
+  bodyFill: ColorFieldKind
   readColorOpts: ReadColorOpts
   // Required-but-nullable, so dropping it from the model's context is a compile
   // error instead of a silent fall back onto the plain fill.
@@ -228,10 +228,10 @@ export interface ReadColorContext {
  *
  * ITS OWN STEP because its inputs are its own: it reads the layout, chain mode
  * and whether the framing is live, and nothing in `ReadColorContext`. Folded
- * into the color bake it re-ran on every scheme switch and every tag value
+ * into the color bake it re-ran on every field switch and every tag value
  * discovered mid-fetch, re-solving a relaxation over every chain on screen for a
  * bit-identical answer. Callers should memoize this on `framed` as a BOOLEAN, so
- * the schemes that share an answer share the memo.
+ * the fields that share an answer share the memo.
  *
  * Across every group, since the consensus is a comparison BETWEEN chains, and
  * confining it to a group let two sections of the same locus settle on opposite
@@ -331,7 +331,7 @@ export function applyReadColorsByGroup(
       key,
       overlayReadColorCategories(
         overlayReadFillColors(map, ctx.colorField, ctx.bakedScale),
-        ctx.bodyScheme,
+        ctx.bodyFill,
         ctx.readColorOpts,
       ),
     )

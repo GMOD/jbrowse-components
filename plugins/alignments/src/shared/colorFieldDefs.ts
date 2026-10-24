@@ -3,24 +3,24 @@ import { COLOR_FIELDS } from './types.ts'
 
 import type {
   BaseLayer,
-  BodyScheme,
-  ColorSchemeType,
-  ReadColorSchemeType,
+  BodyFill,
+  ColorFieldKind,
+  ReadColorFieldKind,
 } from './types.ts'
 
 export type ColorGroup = 'basic' | 'pairedEnd'
 
-// Menu placement for a color scheme. Discriminated so a scheme is either a plain
+// Menu placement for a color field. Discriminated so a field is either a plain
 // radio (shown in the 'basic' top-level list or the 'pairedEnd' submenu) or
 // 'special' — driven by its own dialog/submenu (tag, modifications, bisulfite).
-export type ColorSchemeMenu =
+export type ColorFieldMenu =
   | { kind: 'radio'; label: string; group: ColorGroup }
   | { kind: 'special'; label: string }
 
-export interface ColorSchemeDef {
-  type: ColorSchemeType
-  bodyScheme: BodyScheme
-  menu: ColorSchemeMenu
+export interface ColorFieldDef {
+  kind: ColorFieldKind
+  bodyFill: BodyFill
+  menu: ColorFieldMenu
   // Color depends on the read's MATE (insert size / pair orientation), so an
   // unmapped mate (tlen=0) or inter-chromosomal mate is a level of its own
   // rather than a misleading insert/orientation hue (`overrideCategory`).
@@ -29,67 +29,67 @@ export interface ColorSchemeDef {
   // junction kinds and an unpaired segment's strand against its molecule's
   // are levels of it too (`overrideCategory`).
   orientation?: boolean
-  // The worker emits one entry per ALIGNED BASE of every read for this scheme,
+  // The worker emits one entry per ALIGNED BASE of every read for this field,
   // rather than one per event: the two walls this pipeline paints. Every other
-  // scheme's worker output is sparse in the reads' bases, so these are the only
+  // field's worker output is sparse in the reads' bases, so these are the only
   // two whose extract is sampled at `subPixelBinBp` (see `perBaseBinBp` on the
   // display, which is the only reader).
   perBase?: boolean
-  // The worker extracts different DATA for this scheme — per-base arrays,
+  // The worker extracts different DATA for this field — per-base arrays,
   // modification marks, per-read tag strings, a reference-sequence fetch. Every
-  // other scheme is decided entirely in the shader from arrays the worker always
+  // other field is decided entirely in the shader from arrays the worker always
   // produces, so switching between those must not refetch: `workerColorField`
   // collapses them to one value, keeping `rpcProps` (and therefore the fetched
   // data) identical across the switch. Under-declaring this renders stale data,
-  // so a new scheme's flag is asserted against what the worker actually reads —
+  // so a new field's flag is asserted against what the worker actually reads —
   // see workerColorField.test.ts.
   workerExtracts?: boolean
 }
 
-// Single registry of color-by schemes, keyed by ColorSchemeType. Adding a scheme
-// to the union is a compile error until it is classified here with BOTH a shader
-// path and a menu placement, so a scheme can no longer be half-wired — the bug
-// the two old parallel maps (a shader-index map in the model, a menu-placement
-// map in colorBy.ts) allowed, where a new scheme could get a shader index yet
-// silently never appear in any menu. Insertion order is the menu order
-// (Object.values preserves it), so the derived radio lists need no re-sorting.
-// A read category (svSignal, pairing, split, spliced) has no scheme: reads take
-// their arcs' colors, and Group by separates the categories (ADR-230).
-export const COLOR_SCHEMES: Record<ColorSchemeType, ColorSchemeDef> = {
+// The one registry of what each color field paints, keyed by ColorFieldKind:
+// a named field, `tag` for any tag or attribute, `normal` for none. ("Scheme"
+// is the ramp a channel's `scale.scheme` names.) Adding a kind to the union is
+// a compile error until it is classified here with BOTH a shader path and a
+// menu placement, so a field cannot be half-wired. Insertion order is the menu
+// order (Object.values preserves it), so the derived radio lists need no
+// re-sorting. A read category (svSignal, pairing, split, spliced) is no color
+// field: reads take their arcs' colors, and Group by separates the categories
+// (ADR-230).
+export const COLOR_FIELD_DEFS: Record<ColorFieldKind, ColorFieldDef> = {
   normal: {
-    type: 'normal',
-    bodyScheme: 'normal',
+    kind: 'normal',
+    bodyFill: 'normal',
     menu: { kind: 'radio', label: 'Normal', group: 'basic' },
   },
   strand: {
-    type: 'strand',
-    bodyScheme: 'strand',
+    kind: 'strand',
+    bodyFill: 'strand',
     menu: { kind: 'radio', label: FACET_LABELS.strand, group: 'basic' },
   },
   mapq: {
-    type: 'mapq',
-    bodyScheme: 'mapq',
+    kind: 'mapq',
+    bodyFill: 'mapq',
     menu: { kind: 'radio', label: FACET_LABELS.mapq, group: 'basic' },
   },
   baseQuality: {
-    type: 'baseQuality',
+    kind: 'baseQuality',
     // per-base overlay paints colored rects on top of a neutral 'normal' body
-    bodyScheme: 'normal',
+    bodyFill: 'normal',
     menu: { kind: 'radio', label: 'Per-base quality', group: 'basic' },
     perBase: true,
     workerExtracts: true,
   },
   base: {
-    type: 'base',
+    kind: 'base',
     // like perBaseQuality: nucleotide quads paint over the 'normal' body
-    bodyScheme: 'normal',
+    bodyFill: 'normal',
     menu: { kind: 'radio', label: 'Per-base lettering', group: 'basic' },
     perBase: true,
     workerExtracts: true,
   },
   insertSize: {
-    type: 'insertSize',
-    bodyScheme: 'insertSize',
+    kind: 'insertSize',
+    bodyFill: 'insertSize',
     menu: {
       kind: 'radio',
       label: INSERT_SIZE_LABELS.insertSize,
@@ -98,8 +98,8 @@ export const COLOR_SCHEMES: Record<ColorSchemeType, ColorSchemeDef> = {
     mateAware: true,
   },
   firstOfPairStrand: {
-    type: 'firstOfPairStrand',
-    bodyScheme: 'firstOfPairStrand',
+    kind: 'firstOfPairStrand',
+    bodyFill: 'firstOfPairStrand',
     menu: {
       kind: 'radio',
       label: FACET_LABELS.firstOfPairStrand,
@@ -107,8 +107,8 @@ export const COLOR_SCHEMES: Record<ColorSchemeType, ColorSchemeDef> = {
     },
   },
   pairOrientation: {
-    type: 'pairOrientation',
-    bodyScheme: 'pairOrientation',
+    kind: 'pairOrientation',
+    bodyFill: 'pairOrientation',
     menu: {
       kind: 'radio',
       label: FACET_LABELS.pairOrientation,
@@ -118,8 +118,8 @@ export const COLOR_SCHEMES: Record<ColorSchemeType, ColorSchemeDef> = {
     orientation: true,
   },
   insertSizeAndOrientation: {
-    type: 'insertSizeAndOrientation',
-    bodyScheme: 'insertSizeAndOrientation',
+    kind: 'insertSizeAndOrientation',
+    bodyFill: 'insertSizeAndOrientation',
     menu: {
       kind: 'radio',
       label: INSERT_SIZE_LABELS.insertSizeAndOrientation,
@@ -129,8 +129,8 @@ export const COLOR_SCHEMES: Record<ColorSchemeType, ColorSchemeDef> = {
     orientation: true,
   },
   tag: {
-    type: 'tag',
-    bodyScheme: 'tag',
+    kind: 'tag',
+    bodyFill: 'tag',
     menu: { kind: 'special', label: 'Tag' },
     workerExtracts: true,
   },
@@ -148,68 +148,68 @@ export const COLOR_SCHEMES: Record<ColorSchemeType, ColorSchemeDef> = {
   //
   // LGVSyntenyDisplay spells its own label for it ("Query"): a PAF block
   // has no mate, and on a BAM "query name" means QNAME, i.e. the read name —
-  // the one thing this scheme does not color by.
+  // the one thing this field does not color by.
   mateRefName: {
-    type: 'mateRefName',
-    bodyScheme: 'tag',
+    kind: 'mateRefName',
+    bodyFill: 'tag',
     menu: { kind: 'radio', label: 'Mate chromosome', group: 'pairedEnd' },
     workerExtracts: true,
   },
   // methylation/bisulfite reuse the modifications shader path with different
   // config (see model getMethBins / bisulfite is reference-based)
   modifications: {
-    type: 'modifications',
-    bodyScheme: 'modifications',
+    kind: 'modifications',
+    bodyFill: 'modifications',
     menu: { kind: 'special', label: 'Modification type' },
     workerExtracts: true,
   },
   bisulfite: {
-    type: 'bisulfite',
-    bodyScheme: 'modifications',
+    kind: 'bisulfite',
+    bodyFill: 'modifications',
     menu: { kind: 'special', label: 'Bisulfite' },
     workerExtracts: true,
   },
 }
 
 // True for the modification family (modifications/methylation/bisulfite) — the
-// schemes that share the 'modifications' shader path and drive the MM/ML
+// fields that share the 'modifications' shader path and drive the MM/ML
 // overlay, mod-coverage, and legend. Derived from the registry so the family
 // membership lives in exactly one place instead of being re-spelled as a
 // three-way `||` at every consumer.
-export function isModificationScheme(type: ColorSchemeType) {
-  return COLOR_SCHEMES[type].bodyScheme === 'modifications'
+export function isModificationField(kind: ColorFieldKind) {
+  return COLOR_FIELD_DEFS[kind].bodyFill === 'modifications'
 }
 
-// True for the two schemes whose worker output is one entry per aligned base of
+// True for the two fields whose worker output is one entry per aligned base of
 // every read — the only fetches that grow with bases x depth rather than with
 // events, and so the only ones the sub-pixel bin applies to. Derived from the
-// registry for the reason `isModificationScheme` is.
-export function isPerBaseScheme(type: ColorSchemeType) {
-  return COLOR_SCHEMES[type].perBase === true
+// registry for the reason `isModificationField` is.
+export function isPerBaseField(kind: ColorFieldKind) {
+  return COLOR_FIELD_DEFS[kind].perBase === true
 }
 
 /** Whether the per-base layer draws modification marks. */
 export function paintsModifications(layer: BaseLayer | undefined) {
-  return layer !== undefined && isModificationScheme(layer.field)
+  return layer !== undefined && isModificationField(layer.field)
 }
 
 /** Whether the per-base layer draws a cell for every aligned base. */
 export function paintsEveryBase(layer: BaseLayer | undefined) {
-  return layer !== undefined && isPerBaseScheme(layer.field)
+  return layer !== undefined && isPerBaseField(layer.field)
 }
 
 const PRESET_FIELDS = new Set<string>(COLOR_FIELDS)
 
 /**
- * The scheme a read fill's field paints through: `''` the plain fill, a
+ * The kind a read fill's field paints through: `''` the plain fill, a
  * preset field its own, and a tag (`tags.HP`) or any other attribute the
  * per-read bake.
  */
-export function colorSchemeOf(field: string): ReadColorSchemeType {
+export function colorFieldKindOf(field: string): ReadColorFieldKind {
   return field === ''
     ? 'normal'
     : PRESET_FIELDS.has(field)
-      ? (field as ReadColorSchemeType)
+      ? (field as ReadColorFieldKind)
       : 'tag'
 }
 
@@ -226,5 +226,7 @@ export function colorSchemeOf(field: string): ReadColorSchemeType {
 // extractModifications is ungated, so the Modifications menu still populates);
 // only the paint/extract passes are gated.
 export function workerColorField(field: string) {
-  return COLOR_SCHEMES[colorSchemeOf(field)].workerExtracts ? field : undefined
+  return COLOR_FIELD_DEFS[colorFieldKindOf(field)].workerExtracts
+    ? field
+    : undefined
 }

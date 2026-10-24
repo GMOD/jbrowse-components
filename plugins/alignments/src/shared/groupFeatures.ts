@@ -137,7 +137,7 @@ function strandKey(feature: Feature): GroupKey {
   return strandGroup(getStrand(feature), FWD_STRAND_GROUP, REV_STRAND_GROUP)
 }
 
-// The fragment's strand, through the same `firstOfPairStrand` the color scheme
+// The fragment's strand, through the same `firstOfPairStrand` the color field
 // of that name calls, so a read's section and its color can't disagree.
 function firstOfPairStrandKey(feature: Feature): GroupKey {
   return strandGroup(
@@ -150,7 +150,7 @@ function firstOfPairStrandKey(feature: Feature): GroupKey {
 // The IGV category (LR/RL/RR/LL) through `pairDirection`, never the raw
 // `pair_orientation`: F1R2 and F2R1 are one normal LR pair differing only in
 // which mate the record is, so the raw string opens up to eight sections, two of
-// them "normal". Every other consumer — color scheme, tooltip, arc palette,
+// them "normal". Every other consumer — color field, tooltip, arc palette,
 // concordant-pair filter — collapses them the same way. An unrecognized
 // orientation is not a category, so it files with the reads that have none.
 const NO_PAIR_ORIENTATION_GROUP: GroupKey = {

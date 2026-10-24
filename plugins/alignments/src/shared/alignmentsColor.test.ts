@@ -9,11 +9,11 @@ import {
   COLOR_FIELDS,
   alignmentsColorEncoding,
   baseLayerOf,
-  bodyColorScheme,
+  bodyColorKind,
   pinnedInsertSizeBand,
   readColorFieldOf,
 } from './alignmentsColor.ts'
-import { colorSchemeOf } from './colorSchemes.ts'
+import { colorFieldKindOf } from './colorFieldDefs.ts'
 import { colorSettingOf } from './colorSettingFixture.ts'
 import { FACET_LABELS } from './facetLabels.ts'
 
@@ -27,7 +27,7 @@ describe('readColorFieldOf', () => {
   test('every preset field selects the scheme of its name', () => {
     for (const field of COLOR_FIELDS) {
       expect(readFill(field)).toBe(field)
-      expect(colorSchemeOf(readFill(field))).toBe(field)
+      expect(colorFieldKindOf(readFill(field))).toBe(field)
     }
   })
 
@@ -40,13 +40,13 @@ describe('readColorFieldOf', () => {
   })
 
   test('tags.XX and any other name paint through the per-read bake', () => {
-    expect(colorSchemeOf(readFill('tags.HP'))).toBe('tag')
-    expect(colorSchemeOf(readFill('score'))).toBe('tag')
+    expect(colorFieldKindOf(readFill('tags.HP'))).toBe('tag')
+    expect(colorFieldKindOf(readFill('score'))).toBe('tag')
   })
 
   test('no field paints the plain fill', () => {
     expect(readFill('')).toBe('')
-    expect(colorSchemeOf('')).toBe('normal')
+    expect(colorFieldKindOf('')).toBe('normal')
   })
 
   test('a per-base field is no read fill, and costs no attribute lookup', () => {
@@ -94,13 +94,13 @@ describe('baseLayerOf', () => {
   })
 })
 
-describe('bodyColorScheme', () => {
+describe('bodyColorKind', () => {
   test('a modification layer tints the plain fill and yields to a read field', () => {
     const mods = { field: 'modifications' } as const
-    expect(bodyColorScheme('', mods)).toBe('modifications')
-    expect(bodyColorScheme('tags.HP', mods)).toBe('tag')
-    expect(bodyColorScheme('', { field: 'base' })).toBe('normal')
-    expect(bodyColorScheme('strand', undefined)).toBe('strand')
+    expect(bodyColorKind('', mods)).toBe('modifications')
+    expect(bodyColorKind('tags.HP', mods)).toBe('tag')
+    expect(bodyColorKind('', { field: 'base' })).toBe('normal')
+    expect(bodyColorKind('strand', undefined)).toBe('strand')
   })
 })
 

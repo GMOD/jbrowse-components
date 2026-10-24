@@ -37,13 +37,13 @@ export function admitsCode(filter: BasesFilter | undefined, code: string) {
   return !codes?.length || codes.includes(code)
 }
 
-// What a read body's fill classifies by, the buckets `schemeCategory`
+// What a read body's fill classifies by, the buckets `fillCategory`
 // (colorUtils.ts) switches on. Several ColorSchemeTypes share one:
 // perBaseQuality/perBaseLetter paint over the 'normal' body,
 // methylation/bisulfite reuse 'modifications' with different config. 'tag' is
-// the per-read explicit color, a baked ABGR u32, so any scheme that resolves to
+// the per-read explicit color, a baked ABGR u32, so any field that resolves to
 // one color per read on the CPU (tag values, mateRefName) rides it.
-export type BodyScheme =
+export type BodyFill =
   | 'normal'
   | 'strand'
   | 'mapq'
@@ -83,18 +83,18 @@ export const BASE_COLOR_FIELDS = [
 ] as const
 export type BaseColorField = (typeof BASE_COLOR_FIELDS)[number]
 
-// Every color-by scheme, named by the field it paints but for the plain fill
-// and a tag or attribute. `COLOR_SCHEMES` (shared/colorSchemes.ts) is typed
-// `Record<ColorSchemeType, ColorSchemeDef>`, so adding a field above is a
+// Every color field, named by the field it paints but for the plain fill
+// and a tag or attribute. `COLOR_FIELD_DEFS` (shared/colorSchemes.ts) is typed
+// `Record<ColorFieldKind, ColorFieldDef>`, so adding a field above is a
 // compile error until it is classified there with both a shader path and a
 // menu placement.
-export type ColorSchemeType =
+export type ColorFieldKind =
   | 'normal'
   | 'tag'
   | (typeof COLOR_FIELDS)[number]
   | BaseColorField
 
-export type ReadColorSchemeType = Exclude<ColorSchemeType, BaseColorField>
+export type ReadColorFieldKind = Exclude<ColorFieldKind, BaseColorField>
 
 /** How a read tag colors: a color per value, or a gradient over its numbers. */
 export type TagColorScale = 'ordinal' | 'linear'

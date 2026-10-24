@@ -16,7 +16,7 @@ import { buildBaseFeatureData } from '../shared/buildBaseFeatureData.ts'
 import { buildBaseReadArrays } from '../shared/buildBaseReadArrays.ts'
 import { buildCoverageResultFields } from '../shared/buildCoverageResultFields.ts'
 import { collectGroupedTransferables } from '../shared/collectTransferables.ts'
-import { isModificationScheme } from '../shared/colorSchemes.ts'
+import { isModificationField } from '../shared/colorFieldDefs.ts'
 import { computePairedInsertSizeStats } from '../shared/computePairedInsertSizeStats.ts'
 import { extractFeatureArrays } from '../shared/extractFeatureArrays.ts'
 import { fetchFeaturesFromAdapter } from '../shared/fetchFeaturesFromAdapter.ts'
@@ -395,7 +395,7 @@ export async function executeRenderAlignmentData({
   checkAbortSignal(signal)
 
   const modCoverage: ModCoverageKind | undefined =
-    !baseLayer || !isModificationScheme(baseLayer.field)
+    !baseLayer || !isModificationField(baseLayer.field)
       ? undefined
       : baseLayer.field === 'bisulfite'
         ? 'bisulfite'

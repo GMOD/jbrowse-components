@@ -23,7 +23,7 @@ import {
   alignmentsColorSettingOf,
   alignmentsColorProblems,
   baseLayerOf,
-  bodyColorScheme,
+  bodyColorKind,
   pinnedInsertSizeBand,
   readColorFieldOf,
 } from '../shared/alignmentsColor.ts'
@@ -66,7 +66,7 @@ import type { FilterObject } from '../shared/alignmentsFilter.ts'
 import type {
   ArcColorField,
   BaseLayer,
-  ColorSchemeType,
+  ColorFieldKind,
   ConnectionFilter,
   Facet,
   LayoutOrder,
@@ -558,11 +558,11 @@ export function configSlotViews(self: ConfigSlotSelf) {
     },
     /**
      * #getter
-     * What the read body paints as: `colorField`'s scheme, or the modification layer's
+     * What the read body paints as: `colorField`'s kind, or the modification layer's
      * own pale strand tint while the fill is plain.
      */
-    get bodyColorScheme(): ColorSchemeType {
-      return bodyColorScheme(this.colorField, this.baseLayer)
+    get bodyColorKind(): ColorFieldKind {
+      return bodyColorKind(this.colorField, this.baseLayer)
     },
     /**
      * #getter

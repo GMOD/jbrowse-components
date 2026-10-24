@@ -256,8 +256,8 @@ function drawReads(
 
   // Assigning fillStyle re-parses the CSS string, which is the per-read cost
   // that matters here — the category→CSS lookup is minor next to it. Under
-  // the default scheme every read resolves to the same color, so guarding the
-  // assignment collapses a deep pileup's parses to one; schemes that do vary
+  // the default field every read resolves to the same color, so guarding the
+  // assignment collapses a deep pileup's parses to one; fields that do vary
   // per read (mapq, tag, insert-size gradient) just fall through and assign as
   // before. Strings compare by value, so a freshly built one still matches.
   let lastFill: string | undefined
@@ -345,7 +345,7 @@ function drawReads(
  * The read body: one "home plate" pentagon or rect per exon segment, in the
  * category color the classification pass decided, outlined when the row is
  * tall enough. A hand-tuned glyph rather than a `pileupShape` — its instance
- * is a segment, its color a per-read function of the scheme — and its ink is
+ * is a segment, its color a per-read function of the field — and its ink is
  * the segment's box with the arrowhead it caps. The display answers a hover
  * with the READ (`hitTestFeature`) and lights it as its segments' boxes, so
  * the hit test this shape's ink implies is not the one it uses.

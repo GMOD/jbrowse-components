@@ -156,7 +156,7 @@ import {
   alignmentsColorSettingOf,
   alignmentsColorSnapshotOf,
   baseLayerOf,
-  bodyColorScheme,
+  bodyColorKind,
   declaredReadLabels,
   isBakedField,
   pinnedInsertSizeBand,
@@ -170,7 +170,7 @@ import {
   readPredicatesOf,
 } from './shared/alignmentsFilter.ts'
 import { arcColorFieldOf } from './shared/arcColorOptions.ts'
-import { paintsModifications } from './shared/colorSchemes.ts'
+import { paintsModifications } from './shared/colorFieldDefs.ts'
 import { fieldTag } from './shared/facetLabels.ts'
 import { sectionOrder, workerFacet } from './shared/groupFeatures.ts'
 import { joinSections } from './shared/joinSections.ts'
@@ -469,7 +469,7 @@ function colorReads(
     : undefined
   const colored = applyReadColorsByGroup(byGroup, {
     colorField,
-    bodyScheme: bodyColorScheme(colorField, baseLayer),
+    bodyFill: bodyColorKind(colorField, baseLayer),
     readColorOpts,
     bakedScale,
   })
@@ -1402,7 +1402,7 @@ export async function alignmentTables(
   const dataFor = (key: string, idx: number) =>
     chained ? chained.get(key)!.get(idx)! : sectionData.get(key)!.get(idx)!
   const framesChainStrand = framesUnpairedChainStrand(
-    bodyColorScheme(colorField, baseLayer),
+    bodyColorKind(colorField, baseLayer),
     chain,
   )
   const laidByGroup = chain

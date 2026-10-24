@@ -356,7 +356,7 @@ describe('setUnit color scheme preservation', () => {
 
     display.setUnit('chain')
     expect(display.colorField).toBe('')
-    expect(display.bodyColorScheme).toBe('modifications')
+    expect(display.bodyColorKind).toBe('modifications')
   })
 
   test('entering pairs preserves an explicit non-pairing color scheme', () => {

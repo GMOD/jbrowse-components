@@ -364,7 +364,7 @@ describe('alignments colorField', () => {
       unmodified: false,
       filter: basesFilterOf([{ field: 'probability', gte: 0.5 }]),
     })
-    expect(display.bodyColorScheme).toBe('tag')
+    expect(display.bodyColorKind).toBe('tag')
     expect(display.showModifications).toBe(true)
     expect(display.rpcProps()).toMatchObject({
       colorField: 'tags.HP',
@@ -415,7 +415,7 @@ describe('alignments colorField', () => {
       },
     })
     expect(display.colorField).toBe('')
-    expect(display.bodyColorScheme).toBe('bisulfite')
+    expect(display.bodyColorKind).toBe('bisulfite')
   })
 
   it('a read pick leaves the layer alone, and the layer has its own way off', () => {

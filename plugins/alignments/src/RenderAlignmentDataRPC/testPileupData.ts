@@ -55,7 +55,7 @@ export function makePileupDataResult(
  * The same fixture carried through both main-thread tiers: rows placed at 0 by
  * `withoutLayout` — the production zero-row layout, so the fixture cannot state a
  * layout the layout pass wouldn't — and the two color arrays empty, which is what
- * the bakes leave under a scheme that colors no read.
+ * the bakes leave under a field that colors no read.
  *
  * Most fixtures want this one: it is what a renderer, hit test or overlay reads.
  * A test about the worker's own output, or about a layout pass's input, takes

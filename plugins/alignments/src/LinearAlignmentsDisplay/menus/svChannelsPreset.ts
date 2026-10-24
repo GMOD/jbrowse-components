@@ -23,7 +23,7 @@ export const SV_CHANNELS_LABEL = 'SV channels (pairs by orientation)'
 //
 // `encoding.color` is deliberately NOT among them. With the pileup hidden there are no
 // read fills to paint, and the coverage band reads the color only under a
-// modification or bisulfite scheme (executeRenderAlignmentData's
+// modification or bisulfite field (executeRenderAlignmentData's
 // `modCoverage`). What the read color still reaches is the arcs, through
 // `readConnectionsColorField`, so writing it would also have repainted them.
 //

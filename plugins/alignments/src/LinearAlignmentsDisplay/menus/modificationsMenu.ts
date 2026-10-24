@@ -17,7 +17,7 @@ import type { BaseLayer, BasesFilter, BasesPatch } from '../../shared/types.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { CytosineContext } from '@jbrowse/modifications-utils'
 
-// The MM/ML modification color scheme: two mode radios, two refinement
+// The MM/ML modification color field: two mode radios, two refinement
 // submenus and a threshold slider. Split from colorBy.ts because everything below shares one writer
 // (`patchMods`) and one slot shape that nothing else in the color menu touches;
 // reference-based bisulfite is its sibling, not its parent, and lives in
@@ -95,7 +95,7 @@ function setModTypeShown(
 // gates only the by-type view (two-color uses a fixed 50% cutoff; the fill
 // paints every cytosine), which the 2-color radio states.
 //
-// All three are revealed only once this scheme is the active one, like
+// All three are revealed only once this field is the active one, like
 // bisulfite's "Show unmethylated" — see `refinements` below for why.
 export function modificationsMenu(model: ModificationsMenuModel): MenuItem {
   const filter = model.basesFilter
@@ -103,7 +103,7 @@ export function modificationsMenu(model: ModificationsMenuModel): MenuItem {
   const byTwoColor = isActive && model.baseLayer?.unmodified === true
   const types = model.detectedModificationTypes
 
-  // The three refinements, revealed together once this is the active scheme and
+  // The three refinements, revealed together once this is the active field and
   // each present only where it bites. One `isActive` rather than one per row:
   // they share the reveal, and the divider above them is derived from the list
   // so it cannot outlive the section it separates (the rule `withSubHeader`

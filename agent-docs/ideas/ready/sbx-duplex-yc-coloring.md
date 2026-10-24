@@ -31,7 +31,7 @@ Proposed, ranked:
   tag (`getTagAlt(feature, 'yc')`, same idiom as MM/ML) and walks
   `forEachAlignedBaseInRegion(cigar, start, region, …)` to emit per-ref-base
   entries, plus a GPU/canvas overlay over the `normal` body. Register in
-  `COLOR_SCHEMES` (`shared/colorSchemes.ts`) + the `ColorSchemeType` union
+  `COLOR_FIELD_DEFS` (`shared/colorFieldDefs.ts`) + the `ColorFieldKind` union
   (`shared/types.ts`) — a compile error until classified with a shader path + menu
   placement — and it appears in the Color-by menu with a legend (green concordant /
   red discordant / grey simplex). **Open question first:** confirm whether aligned

@@ -250,7 +250,7 @@ describe('getReadDisplayLegendItems', () => {
 
   // The read body, under the marks painted on top of it. No read reaches
   // fwd/revStrand under this scheme: the chain-strand framing is the
-  // orientation fields' alone, so `schemeCategory` decides every read here and
+  // orientation fields' alone, so `fillCategory` decides every read here and
   // it answers modFwd/modRev.
   test('modifications view names the read body after the mod-type key', () => {
     const mods = new Map([['m', 'red']])

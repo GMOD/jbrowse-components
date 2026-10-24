@@ -15,7 +15,7 @@ import {
 import { extractPerBaseLetter } from '../features/perBaseLetter/extract.ts'
 import { extractPerBaseQuality } from '../features/perBaseQuality/extract.ts'
 import { DEFAULT_BASES_FILTER } from './basesFilter.ts'
-import { colorSchemeOf } from './colorSchemes.ts'
+import { colorFieldKindOf } from './colorFieldDefs.ts'
 import {
   cigarCategoryBitsOf,
   extractCigarFeatures,
@@ -135,7 +135,7 @@ export function extractFeatureArrays<T extends FeatureData>(
   const clipAtStart: number[] = []
   const colorTag = fieldTag(colorField)
   const colorAttribute =
-    colorSchemeOf(colorField) === 'tag' && !colorTag ? colorField : undefined
+    colorFieldKindOf(colorField) === 'tag' && !colorTag ? colorField : undefined
   const readColorAttribute =
     colorAttribute === undefined
       ? undefined

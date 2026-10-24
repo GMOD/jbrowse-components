@@ -98,7 +98,7 @@ const V4_COLOR_FIELDS: Record<string, string> = {
   mateRefName: 'mateRefName',
 }
 
-// the v4 schemes that drew a cell per base, `pileup.bases`' fields now
+// the v4 fields that drew a cell per base, `pileup.bases`' fields now
 const V4_BASE_COLOR_FIELDS: Record<string, string> = {
   perBaseQuality: 'baseQuality',
   perBaseLettering: 'base',
@@ -208,7 +208,7 @@ function subDisplaySlotsOf(block: unknown, band: 'pileup' | 'coverage') {
 
 /**
  * The config spellings v1-v4 wrote on this display and the four it retired,
- * as `retired` declares them. v4's `colorBy` named a scheme and held the
+ * as `retired` declares them. v4's `colorBy` named a field and held the
  * modification settings, which are the `encoding.color` or `pileup.bases`
  * field and `pileup.bases`' `filter` and `unmodified` now; its LinearReadArcsDisplay gated the
  * two arc classes under the draw verb, which are `connection` filter fields

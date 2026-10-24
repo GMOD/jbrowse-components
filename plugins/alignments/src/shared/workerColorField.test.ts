@@ -1,11 +1,11 @@
 import { CIGAR_M } from '@jbrowse/cigar-utils'
 import { SimpleFeature } from '@jbrowse/core/util'
 
-import { COLOR_SCHEMES, workerColorField } from './colorSchemes.ts'
+import { COLOR_FIELD_DEFS, workerColorField } from './colorFieldDefs.ts'
 import { extractFeatureArrays } from './extractFeatureArrays.ts'
 import { splitSchemeForTest } from './splitSchemeForTest.ts'
 
-import type { ColorSchemeType } from './types.ts'
+import type { ColorFieldKind } from './types.ts'
 import type { FeatureData } from './webglRpcTypes.ts'
 import type { Feature, Region } from '@jbrowse/core/util'
 
@@ -74,7 +74,7 @@ function extracted(field: string) {
 // `workerColorField` may collapse it and skip the refetch.
 const baseline = JSON.stringify(extracted(''))
 
-const sample: Record<ColorSchemeType, string> = {
+const sample: Record<ColorFieldKind, string> = {
   normal: '',
   strand: 'strand',
   mapq: 'mapq',
@@ -96,11 +96,11 @@ describe('workerColorField', () => {
   // compare it to running with no scheme. Declaring a scheme shader-only when
   // it does extract would render stale data on the switch into it; declaring an
   // extracting scheme shader-only would cost a refetch it doesn't need.
-  test.each(Object.keys(COLOR_SCHEMES) as ColorSchemeType[])(
+  test.each(Object.keys(COLOR_FIELD_DEFS) as ColorFieldKind[])(
     '%s: the workerExtracts flag matches what the worker extracts',
     type => {
       const differs = JSON.stringify(extracted(sample[type])) !== baseline
-      expect(differs).toBe(!!COLOR_SCHEMES[type].workerExtracts)
+      expect(differs).toBe(!!COLOR_FIELD_DEFS[type].workerExtracts)
     },
   )
 

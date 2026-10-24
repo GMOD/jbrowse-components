@@ -12,8 +12,8 @@ import {
   ARC_COLOR_OPTIONS,
   SAME_AS_READS_LABEL,
 } from '../../shared/arcColorOptions.ts'
+import { colorFieldKindOf } from '../../shared/colorFieldDefs.ts'
 import { radioColorFieldOptions } from '../../shared/colorFieldOptions.ts'
-import { colorSchemeOf } from '../../shared/colorSchemes.ts'
 import { fieldTag } from '../../shared/facetLabels.ts'
 import { bisulfiteItem } from './bisulfiteMenu.ts'
 import { modificationsMenu } from './modificationsMenu.ts'
@@ -83,7 +83,7 @@ interface ColorByMenuOptions {
   colorOptions?: ColorFieldOption[]
 }
 
-// Derived from the shared COLOR_SCHEMES registry (single source of menu
+// Derived from the shared COLOR_FIELD_DEFS registry (single source of menu
 // placement + shader path), in registry order so the menu is unchanged.
 const basicColorOptions = radioColorFieldOptions('basic')
 const pairedEndColorOptions = radioColorFieldOptions('pairedEnd')
@@ -149,7 +149,7 @@ function tagColorScaleOf({
   colorField,
   colorEncoding,
 }: AnyColorByModel): TagColorScale {
-  return colorSchemeOf(colorField) === 'tag' &&
+  return colorFieldKindOf(colorField) === 'tag' &&
     typeof colorEncoding === 'object' &&
     colorEncoding.scale === 'linear'
     ? 'linear'
@@ -157,11 +157,11 @@ function tagColorScaleOf({
 }
 
 // Names the tag in the label once one is picked ("Tag (HP)...") — the radio is
-// the only scheme whose choice has a parameter, and it was previously invisible
+// the only field whose choice has a parameter, and it was previously invisible
 // without reopening the dialog.
 function tagItem(model: AnyColorByModel): MenuItem {
   const { colorField } = model
-  const isTag = colorSchemeOf(colorField) === 'tag'
+  const isTag = colorFieldKindOf(colorField) === 'tag'
   const tag = fieldTag(colorField)
   return radioItem(
     isTag ? `Tag (${tag ?? colorField})...` : 'Tag...',
@@ -197,7 +197,7 @@ function tagItem(model: AnyColorByModel): MenuItem {
   )
 }
 
-// Plain scheme radios in a submenu — nothing here reads a modification field, so
+// Plain field radios in a submenu — nothing here reads a modification field, so
 // it takes the bare model. Threading the `modModel` probe through it instead
 // silently dropped the whole section for a caller that opted in but carries no
 // modification state.
@@ -214,7 +214,7 @@ function pairedEndItem(model: AnyColorByModel): MenuItem {
 // Bisulfite is reference-based, so it applies to any alignments display
 // regardless of MM/ML tags.
 //
-// It also shows whenever it is the ACTIVE scheme, whatever detection returned.
+// It also shows whenever it is the ACTIVE field, whatever detection returned.
 // Detection is per-fetch volatile state, so a track colored by modifications —
 // from a saved session or a config — that lands on a
 // region whose reads carry no MM/ML calls otherwise dropped the only row that

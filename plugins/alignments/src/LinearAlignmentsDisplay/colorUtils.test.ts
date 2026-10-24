@@ -18,7 +18,7 @@ import {
 import { makeTestPalette } from './testUtils.ts'
 
 import type { RGBColor } from '../shaders/colors.ts'
-import type { ColorSchemeType } from '../shared/types.ts'
+import type { ColorFieldKind } from '../shared/types.ts'
 
 // The `readChainHasSupp` bit combinations these cases build, named for what they
 // mean rather than spelled as the byte. The frame and the split kind are
@@ -448,7 +448,7 @@ describe('firstOfPairStrand: color and grouping agree', () => {
 // it, and only in a chain: a constant stays one color and `strand` stays the
 // read's own strand.
 describe('framesUnpairedChainStrand', () => {
-  const cases: [ColorSchemeType, boolean, boolean][] = [
+  const cases: [ColorFieldKind, boolean, boolean][] = [
     ['pairOrientation', true, true],
     ['insertSizeAndOrientation', true, true],
     ['pairOrientation', false, false],

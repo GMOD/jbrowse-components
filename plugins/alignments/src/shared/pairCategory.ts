@@ -6,7 +6,7 @@ import type { InsertSizeBand } from './insertSizeStats.ts'
 
 /**
  * The one classification of a pair under the three pair color fields, read
- * by the read fill (`schemeCategory`) and the read-connection arcs
+ * by the read fill (`fillCategory`) and the read-connection arcs
  * (`getArcColorType`) alike, so an arc and the reads under it cannot key the
  * same pair two different ways. Both sides hand it the pair's orientation
  * (`pairOrientationToNum`: 1 LR, 2 RL, 3 RR, 4 LL, 0 none) and its TLEN with

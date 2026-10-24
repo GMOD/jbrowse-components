@@ -264,7 +264,7 @@ function chainSpan(rpcData: PileupDataResult, idx: number) {
  * is the confusing case, and naming the bucket is what connects the color to the
  * legend row that explains it.
  *
- * `categoryLabel` arrives already carrying the scheme's rewording (the model's
+ * `categoryLabel` arrives already carrying the field's rewording (the model's
  * `readCategoryLabel`), so this line and the swatch cannot disagree. Undefined
  * for the buckets with no single name — the mapq/tag/modification ramps, and an
  * ordinary unbucketed read — which append nothing rather than a blank row.
@@ -286,7 +286,7 @@ export function formatReadTooltip(
   ]
 
   if (mapq !== undefined) {
-    // 255 is the SAM spec's "not available", which the color scheme, the legend
+    // 255 is the SAM spec's "not available", which the color field, the legend
     // and the group-by dimension all name rather than plot — so the row says it
     // too instead of reporting the sentinel as a very good alignment.
     lines.push(mapq === MAPQ_UNAVAILABLE ? 'MAPQ unavailable' : `MAPQ: ${mapq}`)

@@ -462,11 +462,11 @@ export type ChainPileupData = WorkerPileupData & ChainFields
 export interface LaidOutPileupData
   extends ChainedPileupData, PileupLayoutArrays {}
 
-// The per-read fill under a baked scheme, a tag's or mapq's: packed ABGR u32
+// The per-read fill under a baked field, a tag's or mapq's: packed ABGR u32
 // per read (0 = no color). Baked on the main thread by `overlayReadFillColors`
 // from `readTagValues` or `readMapqs`, so no color table
 // crosses the worker boundary — the discover→assign→refetch loop that made
-// `colorTagMap` a tier-1 trap is structurally impossible. Empty under the schemes
+// `colorTagMap` a tier-1 trap is structurally impossible. Empty under the fields
 // that bake no per-read color, which leaves the shader on its palette fallback.
 export interface FillColoredPileupData extends LaidOutPileupData {
   readFillColors: Uint32Array

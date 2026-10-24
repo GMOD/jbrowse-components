@@ -4,7 +4,7 @@ import type {
   PileupDataResult,
   FillColoredPileupData,
 } from '../RenderAlignmentDataRPC/types.ts'
-import type { ColorSchemeType } from '../shared/types.ts'
+import type { ColorFieldKind } from '../shared/types.ts'
 import type { ReadColorOpts } from './colorUtils.ts'
 
 // Bake one RC_* index per read (see colorUtils `buildReadColorCategories`).
@@ -17,19 +17,19 @@ import type { ReadColorOpts } from './colorUtils.ts'
 // tier-2, a recolor with no worker round trip.
 //
 // A PURE PER-READ BAKE, and nothing else. The frame pass that rewrites
-// `readChainHasSupp` reads neither the color scheme nor the tag map, so it runs
+// `readChainHasSupp` reads neither the color field nor the tag map, so it runs
 // ahead of this in `applyChainStrandFrames` (groupLayout), memoized on what it
 // depends on.
 export function overlayReadColorCategories(
   map: Map<number, FillColoredPileupData>,
-  colorScheme: ColorSchemeType,
+  colorKind: ColorFieldKind,
   opts: ReadColorOpts,
 ): Map<number, PileupDataResult> {
   const out = new Map<number, PileupDataResult>()
   for (const [idx, data] of map) {
     out.set(idx, {
       ...data,
-      readColorCategories: buildReadColorCategories(data, colorScheme, opts),
+      readColorCategories: buildReadColorCategories(data, colorKind, opts),
     })
   }
   return out

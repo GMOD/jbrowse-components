@@ -78,7 +78,7 @@ export function getStrand(feature: Feature): -1 | 0 | 1 {
  * fragment strand directly.
  *
  * One implementation, deliberately shared by the two consumers that are
- * REQUIRED to agree — the `firstOfPairStrand` color scheme (colorUtils's
+ * REQUIRED to agree — the `firstOfPairStrand` color field (colorUtils's
  * `readColorCategory`) and its grouping twin (`firstOfPairStrandKey`). They used
  * to spell the rule twice under a comment promising they matched, and drifted:
  * one read `strand`, the other `SAM_FLAG_REVERSE`, so a flagless feature

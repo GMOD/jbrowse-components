@@ -36,7 +36,7 @@ import {
 import { arcCategoryColor } from '../shaders/palettes.ts'
 import { OVERLAP_ALPHA } from '../shaders/slang/overlap.consts.generated.ts'
 import { isBakedField, levelKeysOf } from './alignmentsColor.ts'
-import { colorSchemeOf, paintsModifications } from './colorSchemes.ts'
+import { colorFieldKindOf, paintsModifications } from './colorFieldDefs.ts'
 import {
   FACET_LABELS,
   FIRST_OF_PAIR_STRAND_LABELS,
@@ -236,7 +236,7 @@ function scaleOf(
  * `colorTitle` is the color's heading, `encoding.color.legend.title` or its field preset's
  * (`colorKeyTitle`), unset keeping the display's own and `''` drawing none. It heads the read fill's color bar when the
  * fill is a ramp, since the read rows beside a bar are the buckets every
- * scheme paints, and otherwise the read rows, standing in for "Read" when
+ * field paints, and otherwise the read rows, standing in for "Read" when
  * they merge with the arcs.
  */
 export function getAlignmentsColorScales(model: {
@@ -391,7 +391,7 @@ export function sashimiLegendItems({
 // is the order, the same way `FACET_DIMENSIONS`' is its menu order. The
 // swatch color is resolved from the live palette (categorySwatchColor), so
 // wording is the only thing the legend hard-codes. Categories absent from
-// `SwatchCategory` are keyed by `schemeLegend` ('plain', 'tag', 'mapq')
+// `SwatchCategory` are keyed by `readFillLegend` ('plain', 'tag', 'mapq')
 // instead.
 //
 // A `Record<SwatchCategory, …>` and not an array. `colorUtils` calls this pair
@@ -402,7 +402,7 @@ export function sashimiLegendItems({
 const CATEGORY_LEGEND: Record<SwatchCategory, string> = {
   fwdStrand: 'Forward strand',
   revStrand: 'Reverse strand',
-  // the modification scheme's read body, under the marks it paints on top
+  // the modification field's read body, under the marks it paints on top
   modFwd: 'Read, forward strand',
   modRev: 'Read, reverse strand',
   noOrientation: 'No orientation',
@@ -438,8 +438,8 @@ const CATEGORY_LEGEND: Record<SwatchCategory, string> = {
   splitDeletion: 'Split paired-end read (same strand)',
   interchrom: CONNECTION_LABELS.interchrom,
   unmappedMate: 'Unmapped mate',
-  // the two leftover buckets, last: a read whose scheme resolved no value for
-  // it. `noTagValue` is named per scheme below (no HP value / no mate).
+  // the two leftover buckets, last: a read whose field resolved no value for
+  // it. `noTagValue` is named per field below (no HP value / no mate).
   mapqUnavailable: 'MAPQ unavailable (255)',
   noTagValue: 'No value',
 }
@@ -480,7 +480,7 @@ const CATEGORY_LABELS: Partial<Record<ReadColorCategory, string>> =
 // dynamic ramps and palettes: mapq, tag, modifications), which have no single
 // swatch and therefore no single name.
 //
-// `overrides` is `readCategoryLabelOverrides` — the SAME per-scheme rewording
+// `overrides` is `readCategoryLabelOverrides` — the SAME per-field rewording
 // the legend box applies. Passing it is what keeps this honest under the chain
 // framing: the raw table says "Forward strand", and a framed swatch is not about
 // the read's own strand, so a consumer that skips the overrides tells the user
@@ -494,13 +494,13 @@ export function readColorCategoryLabel(
   return overrides[category] ?? CATEGORY_LABELS[category]
 }
 
-// Under any scheme that colors ordinary reads by something OTHER than their own
+// Under any field that colors ordinary reads by something OTHER than their own
 // strand (normal, insert size, pair orientation, mapq, modifications, tag …), a
 // fwd/rev-strand bucket can only have been produced by the split-read
-// (chained-supplementary) branch of readColorCategory — the scheme's own
+// (chained-supplementary) branch of readColorCategory — the field's own
 // classifier yields a different category (plain/mapq/insert/pair/…) for a
 // non-split read. Naming these as split reads is what distinguishes the colored
-// split segments from the scheme's grey/base-colored non-split reads in
+// split segments from the field's grey/base-colored non-split reads in
 // linked-reads (chain) mode, where only the splits pick up a color.
 //
 // "Forward"/"reverse" was the wrong axis to name: the branch frames each segment
@@ -539,7 +539,7 @@ const FIRST_OF_PAIR_LABELS: Partial<Record<SwatchCategory, string>> = {
   revStrand: FIRST_OF_PAIR_STRAND_LABELS.reverse,
 }
 
-// Per-scheme relabeling of the shared fwd/rev-strand swatches: the fragment
+// Per-field relabeling of the shared fwd/rev-strand swatches: the fragment
 // strand under `firstOfPairStrand`, a split segment against its molecule under
 // the orientation fields, and the read's own strand under `strand`.
 function strandLabelOverrides(colorField: string) {
@@ -550,8 +550,8 @@ function strandLabelOverrides(colorField: string) {
       : SPLIT_STRAND_LABELS
 }
 
-// Per-scheme relabeling of the whole shared swatch table. On top of the strand
-// rewording, the CPU-baked schemes name what the leftover neutral bucket means
+// Per-field relabeling of the whole shared swatch table. On top of the strand
+// rewording, the CPU-baked fields name what the leftover neutral bucket means
 // in their own terms — a read the tag is absent from, or a block with no mate —
 // rather than the bare "No value" the table can't specialize.
 // `declared` is `encoding.color.scale.names` by bucket (`declaredReadLabels`), which names a
@@ -680,11 +680,11 @@ function keyedModifications(
 }
 
 // The fixed-swatch buckets actually present in the reads, in CATEGORY_LEGEND
-// order. These are cross-cutting: under most schemes they mark exceptions
-// layered over the scheme's primary coloring — unmapped mate, inter-chromosomal,
+// order. These are cross-cutting: under most fields they mark exceptions
+// layered over the field's primary coloring — unmapped mate, inter-chromosomal,
 // and (in chain mode) the split-read strand framing — so every
-// scheme appends them after its own key rather than any one branch owning them.
-// fwd/rev are reworded per scheme (split read vs. fragment strand) — see
+// field appends them after its own key rather than any one branch owning them.
+// fwd/rev are reworded per field (split read vs. fragment strand) — see
 // strandLabelOverrides.
 // The present buckets in the table's order, those naming a section re-sorted
 // among the slots they hold by the order the sections stack in.
@@ -736,7 +736,7 @@ function bucketItems(
  * from — the failure this replaces is a swatch DERIVED from the ink instead of
  * shared with it, which showed the LR grey darkened by `OVERLAP_ALPHA` however
  * the pass was actually painting, and so was a lie in the two directions at
- * once: it named a color the pass didn't paint, and under any scheme but pair
+ * once: it named a color the pass didn't paint, and under any field but pair
  * orientation it named a pair of colors nothing on screen carried.
  *
  * **Collapsed group rows: two swatches, "this but tinted".** There the mark IS
@@ -744,7 +744,7 @@ function bucketItems(
  * (`collapsedLayout`, and the `mergeSpans` note in
  * reference/LINEAR_ALIGNMENTS_DISPLAY.md), so the tint stacks and the strength
  * is the depth. There is no single swatch to list, because the tint lands on
- * whatever the reads underneath already carry: under an insert-size scheme it
+ * whatever the reads underneath already carry: under an insert-size field it
  * tints five different colors. The neutral read color and that same color
  * tinted is the only honest form, and `LegendItem.swatches` exists for exactly
  * this — one meaning drawn twice.
@@ -895,7 +895,7 @@ function modificationLegend(
   ]
 }
 
-// One swatch per value of a CPU-baked scheme (tag values, or mate refNames
+// One swatch per value of a CPU-baked field (tag values, or mate refNames
 // under chromosome painting) that the rendered reads actually carry, colored
 // through the same `bakedValueColor` the paint path resolves each read with —
 // so a swatch is the color drawn by construction, rather than by a table both
@@ -909,7 +909,7 @@ function modificationLegend(
 // on the way. With the color a pure function of the value, the map has no
 // reason to exist and what is ON SCREEN is the whole answer.
 //
-// The empty string is what the worker reports for a read the scheme resolved no
+// The empty string is what the worker reports for a read the field resolved no
 // value for (no mate, or the tag absent). Dropped, because it paints the
 // neutral fallback rather than a value's color, and `noTagValue` is what keys
 // that neutral — under a name.
@@ -1054,13 +1054,13 @@ function isStrandTag(colorField: string) {
   return tag !== undefined && STRAND_TAGS.has(tag)
 }
 
-// The scheme's own key, before the cross-cutting buckets are appended. Every
+// The field's own key, before the cross-cutting buckets are appended. Every
 // branch returns just its own swatches; nothing here reads presentCategories.
 //
 // Takes the caller's own bag, minus the fields only the cross-cutting tail
 // reads. Six positional arguments of which four are optional maps and sets was
 // the alternative, and three of them are the same shape.
-type SchemeLegendArgs = Pick<
+type FillLegendArgs = Pick<
   ReadDisplayLegendArgs,
   | 'colorField'
   | 'baseLayer'
@@ -1083,7 +1083,7 @@ function baseLayerLegend({
   detectedModifications,
   presentModifications,
   baseQualityUnavailable,
-}: SchemeLegendArgs): LegendItem[] {
+}: FillLegendArgs): LegendItem[] {
   if (baseLayer?.field === 'baseQuality') {
     return baseQualityUnavailable
       ? [
@@ -1109,7 +1109,7 @@ function baseLayerLegend({
     : []
 }
 
-function schemeLegend({
+function readFillLegend({
   colorField,
   palette,
   presentTagValues,
@@ -1119,8 +1119,8 @@ function schemeLegend({
   sectionOrder,
   labels,
   descending,
-}: SchemeLegendArgs): LegendItem[] {
-  // The normal scheme paints every read one flat color ('plain'),
+}: FillLegendArgs): LegendItem[] {
+  // The plain fill paints every read one flat color ('plain'),
   // which isn't a CATEGORY_LEGEND bucket, so without an explicit entry its
   // legend would be empty and "Show legend" would render nothing.
   if (colorField === '') {
@@ -1173,9 +1173,9 @@ interface ReadDisplayLegendArgs {
   // not just the layout. Last in the list because it modifies the colors above
   // it rather than adding one.
   overlaps?: 'chain' | 'collapsed'
-  // Values the rendered reads carry, for the CPU-baked schemes — the display's
-  // `presentTagValues`, and the whole swatch list for those schemes. Undefined
-  // means "not known here" and keys none; the empty set means the scheme has
+  // Values the rendered reads carry, for the CPU-baked fields — the display's
+  // `presentTagValues`, and the whole swatch list for those fields. Undefined
+  // means "not known here" and keys none; the empty set means the field has
   // values and none are on screen, which lists none either.
   presentTagValues?: ReadonlySet<string>
   // The same, for the modification types drawn on screen — the display's
@@ -1196,7 +1196,7 @@ interface ReadDisplayLegendArgs {
 }
 
 /**
- * Legend items for the alignments display: the active scheme's own key followed
+ * Legend items for the alignments display: the active field's own key followed
  * by the cross-cutting buckets (unmapped mate, inter-chromosomal, supplementary,
  * split reads in chain mode) that actually occurred. `presentCategories` is the
  * set of read buckets seen in the rendered reads (from readColorCategory), so
@@ -1238,7 +1238,7 @@ export function getReadDisplayLegendItems({
         ),
       )
     : presentCategories
-  const scheme = {
+  const args = {
     colorField,
     baseLayer,
     palette,
@@ -1253,13 +1253,13 @@ export function getReadDisplayLegendItems({
     descending,
   }
   return [
-    ...baseLayerLegend(scheme),
-    ...schemeLegend(scheme),
+    ...baseLayerLegend(args),
+    ...readFillLegend(args),
     ...bucketItems(
       categories,
       palette,
       readCategoryLabelOverrides(colorField, labels?.categories),
-      levelKeysOf(colorSchemeOf(colorField)),
+      levelKeysOf(colorFieldKindOf(colorField)),
       sectionOrder,
     ),
     ...(overlaps === undefined

@@ -49,7 +49,7 @@ export interface ArcSettings {
   colorField: ArcColorField
   // read cloud mode: flat lines at Y=|tlen|, concordant FR pairs
   // filtered out so only discordant pairs remain. Coloring follows colorField
-  // (same palette as arcs), not a separate DEL/DUP/INV scheme.
+  // (same palette as arcs), not a separate DEL/DUP/INV field.
   cloud?: boolean
   // `minInterchromReads` is tested on MATE-LINK EVIDENCE ONLY
   // (`clearsInterchromFloor`), against the number each mark actually draws

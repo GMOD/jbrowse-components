@@ -95,7 +95,7 @@ import {
   paintsEveryBase,
   paintsModifications,
   workerColorField,
-} from '../shared/colorSchemes.ts'
+} from '../shared/colorFieldDefs.ts'
 import { fieldTag } from '../shared/facetLabels.ts'
 import {
   facetForUnit,
@@ -931,9 +931,9 @@ export default function stateModelFactory(
 
           /**
            * #getter
-           * The per-read values the CPU-baked schemes painted in the rendered
+           * The per-read values the CPU-baked fields painted in the rendered
            * reads (tag values, or mate refNames under chromosome painting).
-           * `undefined` for other schemes, and the legend then does not filter;
+           * `undefined` for other fields, and the legend then does not filter;
            * the empty set means none are on screen. Gated on showLegend:
            * O(reads).
            */
@@ -952,7 +952,7 @@ export default function stateModelFactory(
            * `modificationTypes`, which the worker builds from the drawn marks;
            * `detectedModifications` includes hidden lanes. The legend's
            * bisulfite branch runs before this filter, since the two differ
-           * there. `undefined` outside the modification schemes.
+           * there. `undefined` outside the modification fields.
            */
           get presentModifications(): ReadonlySet<string> | undefined {
             if (!self.showLegend || !paintsModifications(self.baseLayer)) {
@@ -1298,12 +1298,12 @@ export default function stateModelFactory(
            * #getter
            * Whether the unpaired chain-strand framing is on: the one answer the
            * consensus pass, the bake (`readColorOpts`) and the key read. A
-           * boolean in a separate computed, so a scheme switch that leaves the
+           * boolean in a separate computed, so a field switch that leaves the
            * answer alone does not re-run the frame solve.
            */
           get framesChainStrand() {
             return framesUnpairedChainStrand(
-              self.bodyColorScheme,
+              self.bodyColorKind,
               self.unit === 'chain',
             )
           },
@@ -1421,7 +1421,7 @@ export default function stateModelFactory(
           get readColorContext() {
             return {
               colorField: self.colorField,
-              bodyScheme: self.bodyColorScheme,
+              bodyFill: self.bodyColorKind,
               readColorOpts: this.readColorOpts,
               bakedScale: this.bakedColorScale,
             }
@@ -1491,7 +1491,7 @@ export default function stateModelFactory(
            * `Assembly.getRefNamePosition` the comparative displays paint by.
            * From the ASSEMBLY, not the reads on screen, so a color never
            * changes with what else is in view. Undefined under every other
-           * scheme and until the assembly initializes.
+           * field and until the assembly initializes.
            */
           get paintedRefNamePosition() {
             const assembly =
@@ -1503,7 +1503,7 @@ export default function stateModelFactory(
 
           /**
            * #getter
-           * The non-scheme inputs to read classification, with the framing as
+           * The inputs to read classification beside the field, with the framing as
            * `framesChainStrand` answered it, so the bake frames exactly where
            * the consensus pass ran and the key words it.
            */
@@ -2192,7 +2192,7 @@ export default function stateModelFactory(
 
         /**
          * #getter
-         * Names one read color bucket for the hover, with the active scheme's
+         * Names one read color bucket for the hover, with the active field's
          * rewording applied — the same `readCategoryLabelOverrides` the legend
          * uses, so the tooltip and its swatch agree.
          */

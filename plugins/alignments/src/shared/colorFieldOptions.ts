@@ -1,8 +1,8 @@
-import { COLOR_SCHEMES } from './colorSchemes.ts'
+import { COLOR_FIELD_DEFS } from './colorFieldDefs.ts'
 import { BASE_COLOR_FIELDS, COLOR_FIELDS } from './types.ts'
 
-import type { ColorGroup } from './colorSchemes.ts'
-import type { ColorSchemeType } from './types.ts'
+import type { ColorGroup } from './colorFieldDefs.ts'
+import type { ColorFieldKind } from './types.ts'
 
 /** A Color by radio: the field it paints by, `''` for the plain fill. */
 export interface ColorFieldOption {
@@ -12,12 +12,12 @@ export interface ColorFieldOption {
 
 const PAINTED_FIELDS = new Set<string>([...COLOR_FIELDS, ...BASE_COLOR_FIELDS])
 
-function fieldOfScheme(type: ColorSchemeType) {
-  return type === 'normal' ? '' : PAINTED_FIELDS.has(type) ? type : undefined
+function fieldOfKind(kind: ColorFieldKind) {
+  return kind === 'normal' ? '' : PAINTED_FIELDS.has(kind) ? kind : undefined
 }
 
-const RADIOS = Object.values(COLOR_SCHEMES).flatMap(({ type, menu }) => {
-  const field = fieldOfScheme(type)
+const RADIOS = Object.values(COLOR_FIELD_DEFS).flatMap(({ kind, menu }) => {
+  const field = fieldOfKind(kind)
   return menu.kind === 'radio' && field !== undefined
     ? [{ field, label: menu.label, group: menu.group }]
     : []

@@ -27,13 +27,13 @@ const revStrand = packRgb(cssColorToRgb(colorRevStrand))
 // tag) to a packed ABGR u32; 0 means "no color" (shader palette fallback).
 type ColorResolver = (val: string, strand: number) => number
 
-// One array for every region of every scheme that bakes nothing, because the
+// One array for every region of every field that bakes nothing, because the
 // renderer's upload memo compares `readFillColors` by IDENTITY to decide whether
 // the read pass needs rewriting — a fresh empty array per region would report a
 // recolor that didn't happen.
 const NO_FILL_COLORS = new Uint32Array(0)
 
-// Build the per-read color resolver once for a given scheme. The scheme
+// Build the per-read color resolver once for a given field. The kind
 // dispatch and the value→pack cache happen here, so both leave the per-read hot
 // loop and the cache is reused across every region rather than rebuilt per
 // region.
@@ -61,7 +61,7 @@ function makeColorResolver(
             : fwdStrand
           : 0
   }
-  // A read the scheme resolved no value for — no mate, or the tag absent, both
+  // A read the field resolved no value for — no mate, or the tag absent, both
   // arriving as the empty string — and a value the scale has no bin for pack 0.
   // That is "no color", the shader's palette fallback, and it is also what
   // `readColorCategory` reads to file the read under `noTagValue`. Values repeat
@@ -87,7 +87,7 @@ function applyResolver(
 ): Uint32Array {
   const tagValues = data.readTagValues
   const strands = data.readStrands
-  // No values to bake from — a region fetched under a scheme that extracts none,
+  // No values to bake from — a region fetched under a field that extracts none,
   // which the mid-switch window leaves laid out while the new field is already
   // applied. Shares NO_FILL_COLORS rather than minting an empty array, for the
   // reason that constant exists: a fresh one reports a recolor by identity and
@@ -150,9 +150,9 @@ function bakerFor(colorField: string, scale: BakedColorScale) {
 // recompute) setting rather than a tier-1 refetch. The resolver is built once and
 // shared across regions.
 //
-// The schemes that bake no per-read color get the empty array, which leaves the
+// The fields that bake no per-read color get the empty array, which leaves the
 // shader on its palette fallback. Stating it here rather than in the worker is
-// the point of the tier: this pass owns the field, so "this scheme colors no
+// the point of the tier: this pass owns the field, so "this field colors no
 // read" is its answer to give, and `overlayReadColorCategories` — which reads the
 // baked array to decide the `noTagValue` bucket — cannot be handed a region that
 // never went through here.

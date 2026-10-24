@@ -11,7 +11,7 @@ import {
 import { READ_MARK, showChevron } from './mark.ts'
 
 import type { RenderState } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
-import type { ColorSchemeType } from '../../shared/types.ts'
+import type { ColorFieldKind } from '../../shared/types.ts'
 import type { ChevronFrame } from './mark.ts'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
@@ -82,7 +82,7 @@ function draw(
     colorByType = 'strand',
     ...state
   }: Partial<RenderState> & {
-    colorByType?: ColorSchemeType
+    colorByType?: ColorFieldKind
   } = {},
   fullBlockWidth = 1000,
   blockOverrides: Partial<RenderBlock> = {},

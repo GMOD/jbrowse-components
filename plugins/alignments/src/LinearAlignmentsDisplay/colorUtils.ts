@@ -24,7 +24,7 @@ import {
   RC_TAG,
   RC_UNMAPPED_MATE,
 } from '../shaders/slang/read.consts.generated.ts'
-import { COLOR_SCHEMES } from '../shared/colorSchemes.ts'
+import { COLOR_FIELD_DEFS } from '../shared/colorFieldDefs.ts'
 import { pairCategory } from '../shared/pairCategory.ts'
 import {
   CHAIN_SPLIT_DELETION,
@@ -43,7 +43,7 @@ import type {
   RGBColor,
 } from '../shaders/colors.ts'
 import type { InsertSizeBand } from '../shared/insertSizeStats.ts'
-import type { ColorSchemeType, BodyScheme } from '../shared/types.ts'
+import type { ColorFieldKind, BodyFill } from '../shared/types.ts'
 
 export const rgb255 = normalizedRgbToCss
 
@@ -97,10 +97,10 @@ function strandCategory(strand: number): ReadColorCategory {
 // a molecule. The display asks once and hands the answer to the consensus
 // pass, the bake (`ReadColorOpts`) and the key.
 export function framesUnpairedChainStrand(
-  colorScheme: ColorSchemeType,
+  colorKind: ColorFieldKind,
   chainMode: boolean,
 ) {
-  return chainMode && COLOR_SCHEMES[colorScheme].orientation === true
+  return chainMode && COLOR_FIELD_DEFS[colorKind].orientation === true
 }
 
 // Category → the shader's RC_* index. Built from the generated constants, so
@@ -147,13 +147,13 @@ export const READ_COLOR_CATEGORY_BY_INDEX = Object.entries(
 // read.slang and drifted silently between backends.
 export function buildReadColorCategories(
   data: ReadColorData,
-  colorScheme: ColorSchemeType,
+  colorKind: ColorFieldKind,
   opts?: ReadColorOpts,
 ): Uint8Array {
   const n = data.readFlags.length
   const out = new Uint8Array(n)
   for (let i = 0; i < n; i++) {
-    out[i] = READ_COLOR_CATEGORY[readColorCategory(i, data, colorScheme, opts)]
+    out[i] = READ_COLOR_CATEGORY[readColorCategory(i, data, colorKind, opts)]
   }
   return out
 }
@@ -163,8 +163,8 @@ export interface ReadColorOpts {
   framesChainStrand?: boolean
 }
 
-// Classify read `i` under the active color scheme: the cross-cutting override
-// ladder first, then the scheme's own bucket.
+// Classify read `i` under the active color field: the cross-cutting override
+// ladder first, then the field's own bucket.
 //
 // This is the ONLY implementation of that precedence. read.slang consumes the
 // baked category (see buildReadColorCategories) and paints it; it no longer
@@ -172,18 +172,18 @@ export interface ReadColorOpts {
 export function readColorCategory(
   i: number,
   data: ReadColorData,
-  colorScheme: ColorSchemeType,
+  colorKind: ColorFieldKind,
   opts: ReadColorOpts = {},
 ): ReadColorCategory {
   return (
-    overrideCategory(i, data, colorScheme, opts) ??
-    schemeCategory(i, data, COLOR_SCHEMES[colorScheme].bodyScheme)
+    overrideCategory(i, data, colorKind, opts) ??
+    fillCategory(i, data, COLOR_FIELD_DEFS[colorKind].bodyFill)
   )
 }
 
 // The levels a mate-aware field paints beyond the pair's own: a mate on
 // another chromosome or none at all, and under an orientation field in a chain
-// the split levels. `undefined` hands the read on to `schemeCategory`. Under
+// the split levels. `undefined` hands the read on to `fillCategory`. Under
 // any other field, and under a constant, a read paints its field's value.
 //
 // A paired split mate is framed against its own mate's primary, which
@@ -195,10 +195,10 @@ export function readColorCategory(
 function overrideCategory(
   i: number,
   data: ReadColorData,
-  colorScheme: ColorSchemeType,
+  colorKind: ColorFieldKind,
   opts: ReadColorOpts,
 ): ReadColorCategory | undefined {
-  const { mateAware, orientation } = COLOR_SCHEMES[colorScheme]
+  const { mateAware, orientation } = COLOR_FIELD_DEFS[colorKind]
   if (!mateAware) {
     return undefined
   }
@@ -225,19 +225,19 @@ function overrideCategory(
   return data.readInterchrom[i] === 1 ? 'interchrom' : undefined
 }
 
-// The scheme's own bucket, for a read no override claimed. Takes the body
-// scheme, the granularity a body fill has: chromosome painting is the 'tag' body
-// with another value baked in. Exhaustive with no fallback, so a new body scheme
-// has to say what it paints.
-function schemeCategory(
+// The field's own bucket, for a read no override claimed. Takes the body
+// fill, the granularity a body has: chromosome painting is the 'tag' fill with
+// another value baked in. Exhaustive with no fallback, so a new body fill has
+// to say what it paints.
+function fillCategory(
   i: number,
   data: ReadColorData,
-  bodyScheme: BodyScheme,
+  bodyFill: BodyFill,
 ): ReadColorCategory {
   const flags = data.readFlags[i]!
   const strand = data.readStrands[i]!
 
-  switch (bodyScheme) {
+  switch (bodyFill) {
     case 'normal':
       return 'plain'
 
@@ -265,7 +265,7 @@ function schemeCategory(
     case 'pairOrientation':
     case 'insertSizeAndOrientation':
       return pairCategory(
-        bodyScheme,
+        bodyFill,
         data.readPairOrientations[i]!,
         data.readInsertSizes[i]!,
         data.insertSizeStats,
@@ -278,7 +278,7 @@ function schemeCategory(
       return strand === -1 ? 'modRev' : 'modFwd'
 
     case 'tag':
-      // A read this scheme resolved no color for — the tag is absent, or under
+      // A read this field resolved no color for — the tag is absent, or under
       // chromosome painting the read has no mate — paints the palette fallback
       // (colorPairLR). Its own bucket, so the legend keys that neutral instead
       // of leaving it as the one painted color with no entry. Guarded on the
@@ -338,12 +338,12 @@ export function readColorFromCategoryIndex(
 export function getReadColor(
   i: number,
   data: ReadColorData,
-  colorScheme: ColorSchemeType,
+  colorKind: ColorFieldKind,
   palette: ColorPalette,
   opts?: ReadColorOpts,
 ) {
   return categoryColor(
-    readColorCategory(i, data, colorScheme, opts),
+    readColorCategory(i, data, colorKind, opts),
     i,
     data,
     palette,

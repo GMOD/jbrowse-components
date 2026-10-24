@@ -3,7 +3,7 @@ import { measureText } from '@jbrowse/core/util'
 import { READ_COLOR_CATEGORY_BY_INDEX } from '../LinearAlignmentsDisplay/colorUtils.ts'
 import { makeTestPalette } from '../LinearAlignmentsDisplay/testUtils.ts'
 import { ARC_SPLIT_MERGED_LABELS } from '../features/arcs/arcSplitCategory.ts'
-import { COLOR_SCHEMES, isModificationScheme } from './colorSchemes.ts'
+import { COLOR_FIELD_DEFS, isModificationField } from './colorFieldDefs.ts'
 import {
   LEGEND_MAX_WIDTH,
   getArcLegendItems,
@@ -48,13 +48,13 @@ const MODIFICATION_MODES: (LayerSettings | undefined)[] = [
   undefined,
   { unmodified: true },
 ]
-const FIELDS = Object.values(COLOR_SCHEMES).flatMap(
-  ({ type }): [string, LayerSettings | undefined][] =>
-    isModificationScheme(type)
-      ? MODIFICATION_MODES.map(modifications => [type, modifications])
+const FIELDS = Object.values(COLOR_FIELD_DEFS).flatMap(
+  ({ kind }): [string, LayerSettings | undefined][] =>
+    isModificationField(kind)
+      ? MODIFICATION_MODES.map(modifications => [kind, modifications])
       : [
           [
-            type === 'normal' ? '' : type === 'tag' ? 'tags.HP' : type,
+            kind === 'normal' ? '' : kind === 'tag' ? 'tags.HP' : kind,
             undefined,
           ],
         ],

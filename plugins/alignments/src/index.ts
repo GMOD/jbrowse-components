@@ -176,7 +176,7 @@ export type {
   ArcColorField,
   CategoryFilter,
   BaseLayer,
-  ColorSchemeType,
+  ColorFieldKind,
   Facet,
   BasesFilter,
   BasesPatch,

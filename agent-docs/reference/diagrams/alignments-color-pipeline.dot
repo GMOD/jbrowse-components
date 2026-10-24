@@ -4,11 +4,11 @@ digraph color_pipeline {
   { node [shape=diamond] refetch }
 
   slot [label="color config slot\ntrack, then session,\nthen the default", shape=oval]
-  norm [label="colorSchemeOf\nthe read field to its scheme,\nbaseLayerOf the per-base one"]
-  reg  [label="COLOR_SCHEMES\nshader index, mate-aware,\norientation, worker-extracts"]
+  norm [label="colorFieldKindOf\nthe read field to its kind,\nbaseLayerOf the per-base one"]
+  reg  [label="COLOR_FIELD_DEFS\nshader index, mate-aware,\norientation, worker-extracts"]
   slot -> norm -> reg -> refetch
 
-  refetch [label="the scheme needs data\nthe worker has not sent"]
+  refetch [label="the field needs data\nthe worker has not sent"]
   refetch -> fetch [label=" yes"]
   refetch -> keep  [label=" no"]
   fetch [label="refetch: per-base arrays,\nmodification marks, tag strings,\nreference sequence"]

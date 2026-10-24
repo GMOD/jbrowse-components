@@ -19,7 +19,7 @@ import {
 } from '@jbrowse/display-kit/colorConfigSchema'
 
 import { basesFilterOf } from './basesFilter.ts'
-import { COLOR_SCHEMES, colorSchemeOf } from './colorSchemes.ts'
+import { COLOR_FIELD_DEFS, colorFieldKindOf } from './colorFieldDefs.ts'
 import { TAG_FIELD_PREFIX } from './facetLabels.ts'
 import {
   INSERT_SIZE_LEVELS,
@@ -37,8 +37,8 @@ import type { RGBColor } from '../shaders/colors.ts'
 import type {
   BaseLayer,
   BaseColorField,
-  ColorSchemeType,
-  ReadColorSchemeType,
+  ColorFieldKind,
+  ReadColorFieldKind,
   TagColorScale,
 } from './types.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
@@ -180,18 +180,18 @@ export function baseLayerOf(
 }
 
 /**
- * What the read body paints as: the read scheme, or under the plain fill the
+ * What the read body paints as: the read field, or under the plain fill the
  * modification layer's own body, a pale strand tint the marks read against.
  */
-export function bodyColorScheme(
+export function bodyColorKind(
   colorField: string,
   baseLayer: BaseLayer | undefined,
-): ColorSchemeType {
+): ColorFieldKind {
   return colorField === '' &&
     baseLayer &&
     READS_MODIFICATION_SETTINGS.has(baseLayer.field)
     ? baseLayer.field
-    : colorSchemeOf(colorField)
+    : colorFieldKindOf(colorField)
 }
 
 /**
@@ -199,8 +199,8 @@ export function bodyColorScheme(
  * scale: from a value the worker ships, or from the read's MAPQ.
  */
 export function isBakedField(colorField: string) {
-  const scheme = colorSchemeOf(colorField)
-  return scheme === 'mapq' || scheme === 'mateRefName' || scheme === 'tag'
+  const kind = colorFieldKindOf(colorField)
+  return kind === 'mapq' || kind === 'mateRefName' || kind === 'tag'
 }
 
 type ReadColorLevel = readonly [value: string, category: ReadColorCategory]
@@ -243,36 +243,34 @@ const CHAIN_LEVELS: readonly ReadColorLevel[] = [
 ]
 
 /**
- * Each read scheme's levels, by the value a `domain` names them with, in the
+ * Each read field's levels, by the value a `domain` names them with, in the
  * order a `range` beside no `domain` colors them. `''` is a read with no
  * value for the field.
  */
-const READ_COLOR_LEVELS: Record<
-  ReadColorSchemeType,
-  readonly ReadColorLevel[]
-> = {
-  normal: [],
-  strand: STRAND_LEVELS,
-  firstOfPairStrand: STRAND_LEVELS,
-  pairOrientation: [...PAIR_COLOR_LEVELS, ['', 'noOrientation']],
-  insertSize: INSERT_SIZE_COLOR_LEVELS,
-  // an LR pair of normal size is the normal insert
-  insertSizeAndOrientation: [
-    ...INSERT_SIZE_COLOR_LEVELS,
-    ...PAIR_COLOR_LEVELS.filter(([dir]) => dir !== 'LR'),
-  ],
-  mapq: [[MAPQ_UNAVAILABLE_LEVEL, 'mapqUnavailable']],
-  mateRefName: [NO_VALUE_LEVEL],
-  tag: [NO_VALUE_LEVEL],
-}
+const READ_COLOR_LEVELS: Record<ReadColorFieldKind, readonly ReadColorLevel[]> =
+  {
+    normal: [],
+    strand: STRAND_LEVELS,
+    firstOfPairStrand: STRAND_LEVELS,
+    pairOrientation: [...PAIR_COLOR_LEVELS, ['', 'noOrientation']],
+    insertSize: INSERT_SIZE_COLOR_LEVELS,
+    // an LR pair of normal size is the normal insert
+    insertSizeAndOrientation: [
+      ...INSERT_SIZE_COLOR_LEVELS,
+      ...PAIR_COLOR_LEVELS.filter(([dir]) => dir !== 'LR'),
+    ],
+    mapq: [[MAPQ_UNAVAILABLE_LEVEL, 'mapqUnavailable']],
+    mateRefName: [NO_VALUE_LEVEL],
+    tag: [NO_VALUE_LEVEL],
+  }
 
 /**
  * Every level a field paints: the levels its facet sections share, then the
  * mate and chain levels a mate-aware field adds, so a `scale.domain`,
  * `scale.range` or `scale.names` reaches every color on screen.
  */
-function paintedLevels(type: ReadColorSchemeType): readonly ReadColorLevel[] {
-  const { mateAware, orientation } = COLOR_SCHEMES[type]
+function paintedLevels(type: ReadColorFieldKind): readonly ReadColorLevel[] {
+  const { mateAware, orientation } = COLOR_FIELD_DEFS[type]
   return [
     ...READ_COLOR_LEVELS[type],
     ...(mateAware ? MATE_LEVELS : []),
@@ -293,13 +291,13 @@ const LEVEL_KEYS = new Map(
  * The value each of a field's read buckets names, which is also the key of
  * the section a facet over that field files the bucket's reads under.
  */
-export function levelKeysOf(type: ColorSchemeType) {
+export function levelKeysOf(type: ColorFieldKind) {
   return LEVEL_KEYS.get(type)
 }
 
 /**
  * What each field paints through while `scale.type` is unset: an insert-size
- * field a threshold, and any other field ordinal, a preset scheme's field over
+ * field a threshold, and any other field ordinal, a preset field over
  * its own levels, which `scale.range` and `scale.names` then index while
  * `scale.domain` is unwritten.
  */
@@ -323,8 +321,8 @@ export const ALIGNMENTS_FIELD_PRESETS: FieldPresets = {
   '*': { scale: { type: 'ordinal' } },
 }
 
-/** The schemes whose levels are their whole vocabulary, so a `domain` names them. */
-const LEVEL_SCHEMES = new Set<ReadColorSchemeType>([
+/** The fields whose levels are their whole vocabulary, so a `domain` names them. */
+const LEVEL_SCHEMES = new Set<ReadColorFieldKind>([
   'strand',
   'firstOfPairStrand',
   'pairOrientation',
@@ -336,7 +334,7 @@ function levelNotices(encoding: AlignmentsColorEncoding): string[] {
   if (typeof encoding !== 'object') {
     return []
   }
-  const type = colorSchemeOf(readColorFieldOf(encoding))
+  const type = colorFieldKindOf(readColorFieldOf(encoding))
   if (!LEVEL_SCHEMES.has(type)) {
     return []
   }
@@ -399,7 +397,7 @@ function declaredLevels(
   encoding: Exclude<AlignmentsColorEncoding, string | undefined>,
 ) {
   const field = readColorFieldOf(encoding)
-  const levels = paintedLevels(colorSchemeOf(field))
+  const levels = paintedLevels(colorFieldKindOf(field))
   return {
     order: declaredOrder(encoding, levels, isBakedField(field)),
     categoryOf: new Map(levels),
@@ -417,7 +415,7 @@ function filled(
 /**
  * The read category colors the `encoding.color` channel sets over the
  * palette's: `value` fills a read no field colors, `scale.invalid` one its tag
- * or mate scheme found no value for, before its bake too, and
+ * or mate field found no value for, before its bake too, and
  * `declaredReadCategoryColors` goes over both.
  */
 export function writtenReadCategoryColors(
@@ -455,7 +453,7 @@ export function declaredReadCategoryColors(
   return colors
 }
 
-/** What `encoding.color.scale.names` names: read buckets, and a baked scheme's values. */
+/** What `encoding.color.scale.names` names: read buckets, and a baked field's values. */
 export interface DeclaredReadLabels {
   categories: Partial<Record<ReadColorCategory, string>>
   // a tag or mate value by the value, or a threshold bin by its interval
@@ -465,7 +463,7 @@ export interface DeclaredReadLabels {
 /**
  * `scale.names` against the levels and values it names, in the order
  * `scale.range` colors them: `names[i]` names the i-th of `declaredLevels`,
- * and under a baked scheme the i-th `scale.domain` value, or a threshold's
+ * and under a baked field the i-th `scale.domain` value, or a threshold's
  * i-th bin. Read apart from the encoding, so a renamed key entry re-bakes no
  * read.
  */

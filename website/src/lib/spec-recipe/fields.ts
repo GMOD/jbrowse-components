@@ -10,9 +10,9 @@ import {
   readColorFieldOf,
 } from '../../../../plugins/alignments/src/shared/alignmentsColor.ts'
 import {
-  COLOR_SCHEMES,
-  colorSchemeOf,
-} from '../../../../plugins/alignments/src/shared/colorSchemes.ts'
+  COLOR_FIELD_DEFS,
+  colorFieldKindOf,
+} from '../../../../plugins/alignments/src/shared/colorFieldDefs.ts'
 import { READ_CATEGORIES } from '../../../../plugins/alignments/src/shared/readCategoryFilters.ts'
 import { cytosineContextOptions } from '../../../../plugins/alignments/src/shared/modificationData.ts'
 import { isJexl } from '../../../../packages/core/src/util/jexlStrings.ts'
@@ -146,8 +146,8 @@ function scaleOf(channel: Record<string, unknown> | undefined) {
   return asRecord(channel?.scale) ?? {}
 }
 
-// A scheme's registry `menu.label` doubles as the text on its menu row only for
-// `kind: 'radio'`. The three `kind: 'special'` schemes each open a submenu the
+// A color field's registry `menu.label` doubles as the text on its menu row only for
+// `kind: 'radio'`. The three `kind: 'special'` fields each open a submenu the
 // registry spells differently — it names them for the legend, not the menu — so
 // the "imported, cannot drift" guarantee covering the rest of this table stops
 // here and these are verified by hand instead: 'Tag...' from tagItem
@@ -168,7 +168,7 @@ const MODIFICATION_TWO_COLOR =
 const BISULFITE_UNMODIFIED = 'Show unmethylated (blue)'
 
 // The members a spec's `encoding.color` leaves out, so the field a recipe
-// reads goes through the display's own setting → encoding → scheme path rather
+// reads goes through the display's own setting → encoding → kind path rather
 // than a second reading of the same rule here.
 const UNSET_COLOR = {
   value: undefined,
@@ -185,8 +185,8 @@ const UNSET_COLOR = {
   legend: {},
 }
 
-// The alignments displays' `encoding.color`: the field names the scheme
-// (`colorSchemeOf`), and a scheme's place in the menu is COLOR_SCHEMES'. A declared
+// The alignments displays' `encoding.color`: the field names its kind
+// (`colorFieldKindOf`), and a kind's place in the menu is COLOR_FIELD_DEFS'. A declared
 // scale has no menu row, and neither has a feature attribute or a constant.
 function alignmentsColorStep(value: unknown): FieldStep | undefined {
   const color = channelOf(value)
@@ -199,19 +199,19 @@ function alignmentsColorStep(value: unknown): FieldStep | undefined {
       field: asString(color.field) ?? '',
     }),
   )
-  const scheme = colorSchemeOf(field)
+  const kind = colorFieldKindOf(field)
   const tag = fieldTag(field)
-  if (scheme === 'normal' || (scheme === 'tag' && !tag)) {
+  if (kind === 'normal' || (kind === 'tag' && !tag)) {
     return undefined
   }
-  const { menu } = COLOR_SCHEMES[scheme]
+  const { menu } = COLOR_FIELD_DEFS[kind]
   const path = [
     TRACK_MENU,
     'Color by...',
     ...(menu.kind === 'radio' && menu.group === 'pairedEnd'
       ? ['Paired end']
       : []),
-    SPECIAL_COLOR_MENUS[scheme] ?? menu.label,
+    SPECIAL_COLOR_MENUS[kind] ?? menu.label,
   ].join(' → ')
   const scale = scaleOf(color)
   const declared =
@@ -235,7 +235,7 @@ const basesStep: FieldRecipe = value => {
   if (!field) {
     return undefined
   }
-  const { menu } = COLOR_SCHEMES[field]
+  const { menu } = COLOR_FIELD_DEFS[field]
   const unmodified = asRecord(bases?.unmodified)?.show
   const filter = Array.isArray(bases?.filter) ? bases.filter.map(asRecord) : []
   const contexts = filter.find(p => p?.field === 'context')?.oneOf
