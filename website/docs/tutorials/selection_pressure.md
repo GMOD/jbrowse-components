@@ -298,12 +298,11 @@ npx --yes serve primate_selection_build/jbrowse2  # then open the printed URL
 
 ## Citations
 
-- Nei, M. & Gojobori, T. Simple methods for estimating the numbers of synonymous
-  and nonsynonymous nucleotide substitutions. _Molecular Biology and Evolution_
-  3, 418-426 (1986). https://doi.org/10.1093/oxfordjournals.molbev.a040410
-- Messier, W. & Stewart, C.-B. Episodic adaptive evolution of primate lysozymes.
-  _Nature_ 385, 151-154 (1997). https://doi.org/10.1038/385151a0
-- Tang, H. _et al._ jcvi: A versatile toolkit for comparative genomics analysis.
-  _iMeta_ 3, e211 (2024). https://doi.org/10.1002/imt2.211
+- Nei and Gojobori (1986).
+  [Simple methods for estimating the numbers of synonymous and nonsynonymous nucleotide substitutions](https://doi.org/10.1093/oxfordjournals.molbev.a040410)
+- Messier and Stewart (1997).
+  [Episodic adaptive evolution of primate lysozymes](https://doi.org/10.1038/385151a0)
+- Tang et al. (2024).
+  [jcvi: A versatile toolkit for comparative genomics analysis](https://doi.org/10.1002/imt2.211)
 
 [^chimp]: Chimpanzee leaves a denominator near zero on most genes.

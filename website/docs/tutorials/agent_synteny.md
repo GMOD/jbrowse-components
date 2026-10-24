@@ -251,8 +251,7 @@ bash build_fly_agent_synteny.sh fly_agent_synteny_build
 
 ## Citations
 
-- Chakraborty M, et al. Evolution of genome structure in the _Drosophila
-  simulans_ species complex. _Genome Research_ 31:380-396 (2021).
-  https://doi.org/10.1101/gr.263442.120
-- Li H. Minimap2: pairwise alignment for nucleotide sequences. _Bioinformatics_
-  34:3094-3100 (2018). https://doi.org/10.1093/bioinformatics/bty191
+- Chakraborty et al. (2021).
+  [Evolution of genome structure in the _Drosophila simulans_ species complex](https://doi.org/10.1101/gr.263442.120)
+- Li (2018).
+  [Minimap2: pairwise alignment for nucleotide sequences](https://doi.org/10.1093/bioinformatics/bty191)

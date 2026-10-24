@@ -237,8 +237,7 @@ bash build_t2t_apes_cactus_multiway.sh   # writes ./t2t_apes_cactus_build/config
 
 ## Citations
 
-- Yoo D, Rhie A, Hebbar P, et al. Complete sequencing of ape genomes. Nature
-  (2025). https://doi.org/10.1038/s41586-025-08816-3
-- Armstrong J, Hickey G, Diekhans M, et al. Progressive Cactus is a
-  multiple-genome aligner for the thousand-genome era. Nature (2020).
-  https://doi.org/10.1038/s41586-020-2871-y
+- Yoo et al. (2025).
+  [Complete sequencing of ape genomes](https://doi.org/10.1038/s41586-025-08816-3)
+- Armstrong et al. (2020).
+  [Progressive Cactus is a multiple-genome aligner for the thousand-genome era](https://doi.org/10.1038/s41586-020-2871-y)

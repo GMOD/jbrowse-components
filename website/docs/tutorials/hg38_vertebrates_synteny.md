@@ -298,6 +298,5 @@ bash build_hg38_liftover_multiway.sh   # writes ./hg38_vertebrates_build/config.
 
 ## Citations
 
-- Kent WJ, Baertsch R, Hinrichs A, Miller W, Haussler D. Evolution's cauldron:
-  duplication, deletion, and rearrangement in the mouse and human genomes. Proc
-  Natl Acad Sci USA (2003). https://doi.org/10.1073/pnas.1932072100
+- Kent et al. (2003).
+  [Evolution's cauldron: duplication, deletion, and rearrangement in the mouse and human genomes](https://doi.org/10.1073/pnas.1932072100)

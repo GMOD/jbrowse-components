@@ -416,18 +416,13 @@ bash build_syri_synteny.sh my_syri rows.txt
 
 ## Citations
 
-- Goel M, Sun H, Jiao WB, Schneeberger K. SyRI: finding genomic rearrangements
-  and local sequence differences from whole-genome assemblies. Genome Biol
-  (2019). https://doi.org/10.1186/s13059-019-1911-0
-- Goel M, Schneeberger K. plotsr: visualizing structural similarities and
-  rearrangements between multiple genomes. Bioinformatics (2022).
-  https://doi.org/10.1093/bioinformatics/btac196
-- Jiao WB, Schneeberger K. Chromosome-level assemblies of multiple Arabidopsis
-  genomes reveal hotspots of rearrangements with altered evolutionary dynamics.
-  Nat Commun (2020). https://doi.org/10.1038/s41467-020-14779-y
-- Zapata L, et al. Chromosome-level assembly of Arabidopsis thaliana Ler reveals
-  the extent of translocation and inversion polymorphisms. PNAS (2016).
-  https://doi.org/10.1073/pnas.1607532113
-- Fransz PF, et al. Integrated cytogenetic map of chromosome arm 4S of A.
-  thaliana: structural organization of heterochromatic knob and centromere
-  region. Cell (2000). https://doi.org/10.1016/S0092-8674(00)80670-5
+- Goel et al. (2019).
+  [SyRI: finding genomic rearrangements and local sequence differences from whole-genome assemblies](https://doi.org/10.1186/s13059-019-1911-0)
+- Goel and Schneeberger (2022).
+  [plotsr: visualizing structural similarities and rearrangements between multiple genomes](https://doi.org/10.1093/bioinformatics/btac196)
+- Jiao and Schneeberger (2020).
+  [Chromosome-level assemblies of multiple Arabidopsis genomes reveal hotspots of rearrangements with altered evolutionary dynamics](https://doi.org/10.1038/s41467-020-14779-y)
+- Zapata et al. (2016).
+  [Chromosome-level assembly of Arabidopsis thaliana Ler reveals the extent of translocation and inversion polymorphisms](https://doi.org/10.1073/pnas.1607532113)
+- Fransz et al. (2000).
+  [Integrated cytogenetic map of chromosome arm 4S of A. thaliana: structural organization of heterochromatic knob and centromere region](<https://doi.org/10.1016/S0092-8674(00)80672-8>)

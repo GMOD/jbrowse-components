@@ -183,11 +183,9 @@ each. On hg38 at
 
 ## Citations
 
-- Aganezov S, et al. A complete reference genome improves analysis of human
-  genetic variation. Science (2022). https://doi.org/10.1126/science.abl3533
-- Freeman HC, Hugill A, Dear NT, Ashcroft FM, Cox RD. Deletion of nicotinamide
-  nucleotide transhydrogenase: a new quantitive trait locus accounting for
-  glucose intolerance in C57BL/6J mice. Diabetes (2006).
-  https://doi.org/10.2337/db06-0358
-- Stefansson H, et al. A common inversion under selection in Europeans. Nat
-  Genet (2005). https://doi.org/10.1038/ng1508
+- Aganezov et al. (2022).
+  [A complete reference genome improves analysis of human genetic variation](https://doi.org/10.1126/science.abl3533)
+- Freeman et al. (2006).
+  [Deletion of nicotinamide nucleotide transhydrogenase: a new quantitive trait locus accounting for glucose intolerance in C57BL/6J mice](https://doi.org/10.2337/db06-0358)
+- Stefansson et al. (2005).
+  [A common inversion under selection in Europeans](https://doi.org/10.1038/ng1508)

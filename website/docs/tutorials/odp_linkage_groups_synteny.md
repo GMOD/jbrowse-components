@@ -335,9 +335,7 @@ For your own genomes, point the conversion at the tables odp writes under
 
 ## Citations
 
-- Schultz DT, Haddock SHD, Bredeson JV, Green RE, Simakov O, Rokhsar DS. Ancient
-  gene linkages support ctenophores as sister to other animals. Nature (2023).
-  https://doi.org/10.1038/s41586-023-05936-6
-- Simakov O, Bredeson J, Berkoff K, et al. Deeply conserved synteny and the
-  evolution of metazoan chromosomes. Sci Adv (2022).
-  https://doi.org/10.1126/sciadv.abi5884
+- Schultz et al. (2023).
+  [Ancient gene linkages support ctenophores as sister to other animals](https://doi.org/10.1038/s41586-023-05936-6)
+- Simakov et al. (2022).
+  [Deeply conserved synteny and the evolution of metazoan chromosomes](https://doi.org/10.1126/sciadv.abi5884)

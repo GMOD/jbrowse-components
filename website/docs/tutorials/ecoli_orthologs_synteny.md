@@ -312,9 +312,7 @@ bash build_ecoli_orthologs.sh
 
 ## Citations
 
-- Li W, et al. RefSeq: expanding the Prokaryotic Genome Annotation Pipeline
-  reach with protein family model curation. Nucleic Acids Res (2021).
-  https://doi.org/10.1093/nar/gkaa1105
-- Touchon M, et al. Organised genome dynamics in the Escherichia coli species
-  results in highly diverse adaptive paths. PLoS Genet (2009).
-  https://doi.org/10.1371/journal.pgen.1000344
+- Li et al. (2021).
+  [RefSeq: expanding the Prokaryotic Genome Annotation Pipeline reach with protein family model curation](https://doi.org/10.1093/nar/gkaa1105)
+- Touchon et al. (2009).
+  [Organised genome dynamics in the Escherichia coli species results in highly diverse adaptive paths](https://doi.org/10.1371/journal.pgen.1000344)

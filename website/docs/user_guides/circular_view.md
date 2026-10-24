@@ -146,15 +146,12 @@ et al. 2002) and the Brassica rapa triplication (Wang et al. 2011).
 
 Citations:
 
-- Yunis JJ, Prakash O (1982). The origin of man: a chromosomal pictorial legacy.
-  _Science_ 215:1525–1530.
-  [doi:10.1126/science.7063861](https://doi.org/10.1126/science.7063861)
-- Deng W et al. (2002). Genome sequence of _Yersinia pestis_ KIM. _J Bacteriol_
-  184:4601–4611.
-  [doi:10.1128/JB.184.16.4601-4611.2002](https://doi.org/10.1128/JB.184.16.4601-4611.2002)
-- Wang X et al. (2011). The genome of the mesopolyploid crop species _Brassica
-  rapa_. _Nat Genet_ 43:1035–1039.
-  [doi:10.1038/ng.919](https://doi.org/10.1038/ng.919)
+- Yunis and Prakash (1982).
+  [The origin of man: a chromosomal pictorial legacy](https://doi.org/10.1126/science.7063861)
+- Deng et al. (2002).
+  [Genome sequence of _Yersinia pestis_ KIM](https://doi.org/10.1128/JB.184.16.4601-4611.2002)
+- Wang et al. (2011).
+  [The genome of the mesopolyploid crop species _Brassica rapa_](https://doi.org/10.1038/ng.919)
 
 ## Interacting with chords
 

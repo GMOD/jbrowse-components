@@ -431,11 +431,11 @@ bash build_circular_synteny.sh
 
 ## Citations
 
-- Kent WJ, Baertsch R, Hinrichs A, Miller W, Haussler D. Evolution's cauldron:
-  duplication, deletion, and rearrangement in the mouse and human genomes. Proc
-  Natl Acad Sci USA (2003). https://doi.org/10.1073/pnas.1932072100
-- Ohno S. Sex Chromosomes and Sex-Linked Genes. Springer (1967), the argument
-  that the mammalian X chromosome's gene content is conserved across species.
-- Krzywinski M, Schein J, Birol I, et al. Circos: an information aesthetic for
-  comparative genomics. Genome Research 19:1639-1645 (2009).
-  https://doi.org/10.1101/gr.092759.109
+- Kent et al. (2003).
+  [Evolution's cauldron: duplication, deletion, and rearrangement in the mouse and human genomes](https://doi.org/10.1073/pnas.1932072100)
+- Ohno (1967).
+  [Sex Chromosomes and Sex-Linked Genes](https://doi.org/10.1007/978-3-642-88178-7),
+  the argument that the mammalian X chromosome's gene content is conserved
+  across species.
+- Krzywinski et al. (2009).
+  [Circos: an information aesthetic for comparative genomics](https://doi.org/10.1101/gr.092759.109)

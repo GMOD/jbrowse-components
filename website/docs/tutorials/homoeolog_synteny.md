@@ -287,11 +287,9 @@ npx --yes serve oat_homoeologs_build/jbrowse2  # then open the printed URL
 
 ## Citations
 
-- Peng, Y. _et al._ Reference genome assemblies reveal the origin and evolution
-  of allohexaploid oat. _Nature Genetics_ 54, 1248-1258 (2022).
-  https://doi.org/10.1038/s41588-022-01127-7
-- Nei, M. & Gojobori, T. Simple methods for estimating the numbers of synonymous
-  and nonsynonymous nucleotide substitutions. _Molecular Biology and Evolution_
-  3, 418-426 (1986). https://doi.org/10.1093/oxfordjournals.molbev.a040410
-- Tang, H. _et al._ jcvi: A versatile toolkit for comparative genomics analysis.
-  _iMeta_ 3, e211 (2024). https://doi.org/10.1002/imt2.211
+- Peng et al. (2022).
+  [Reference genome assemblies reveal the origin and evolution of allohexaploid oat](https://doi.org/10.1038/s41588-022-01127-7)
+- Nei and Gojobori (1986).
+  [Simple methods for estimating the numbers of synonymous and nonsynonymous nucleotide substitutions](https://doi.org/10.1093/oxfordjournals.molbev.a040410)
+- Tang et al. (2024).
+  [jcvi: A versatile toolkit for comparative genomics analysis](https://doi.org/10.1002/imt2.211)
