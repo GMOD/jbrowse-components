@@ -205,7 +205,7 @@ them in its own stage:
 | `heightMode` as `autosize` | Amendment 3 |
 | A field-keyed filter map (`{ mapq: { gte: 20 } }`) | ADR-238's own rejection, and the same shape declined for `filter.tags` |
 | Junction and connection predicates in each band's own `filter` | ADR-232: several parts and the tables engine read one filter |
-| `or` / `not` / `range` in the compiler for `minInterchromReads` | Nothing else in the display needs them; `breakpoint.reads` says the same with AND alone |
+| `or` / `not` / `range` in the compiler for `minInterchromReads` | Nothing else in the display needs them; `breakpoint.reads` says the same with AND alone. `range` landed 2026-10-24 as a load-time lift to `gte`/`lte` (ADR-238), which leaves the compiler as this row keeps it |
 | `ordinaryPairs` as a filter predicate | "Ordinary" is modal insert size for the cloud and a concordant, baseline-colored pair for arcs, and in `filter.connections` it would drop the pileup connectors too |
 | `facet.hidden` as a predicate | A hidden section is main-thread, and coverage still counts its reads |
 | `hideSelfAlignments` as a view-assembly token in `facet.hidden` | A token in a value list is templating; `facetForField` wipes it on a field change. LGVSyntenyDisplay's own stage decides |

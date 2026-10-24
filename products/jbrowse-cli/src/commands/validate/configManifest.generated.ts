@@ -3178,6 +3178,10 @@ export const configManifest: ConfigManifest = {
               "type": "((string | number | boolean)[] | undefined)"
             },
             {
+              "name": "range",
+              "type": "((number | null)[] | undefined)"
+            },
+            {
               "name": "valid",
               "type": "(boolean | undefined)"
             }
@@ -4010,6 +4014,10 @@ export const configManifest: ConfigManifest = {
               "type": "((string | number | boolean)[] | undefined)"
             },
             {
+              "name": "range",
+              "type": "((number | null)[] | undefined)"
+            },
+            {
               "name": "valid",
               "type": "(boolean | undefined)"
             }
@@ -4414,6 +4422,10 @@ export const configManifest: ConfigManifest = {
                       "type": "((string | number | boolean)[] | undefined)"
                     },
                     {
+                      "name": "range",
+                      "type": "((number | null)[] | undefined)"
+                    },
+                    {
                       "name": "valid",
                       "type": "(boolean | undefined)"
                     }
@@ -4466,6 +4478,10 @@ export const configManifest: ConfigManifest = {
                     {
                       "name": "oneOf",
                       "type": "((string | number | boolean)[] | undefined)"
+                    },
+                    {
+                      "name": "range",
+                      "type": "((number | null)[] | undefined)"
                     },
                     {
                       "name": "valid",
@@ -4659,6 +4675,10 @@ export const configManifest: ConfigManifest = {
                     {
                       "name": "oneOf",
                       "type": "((string | number | boolean)[] | undefined)"
+                    },
+                    {
+                      "name": "range",
+                      "type": "((number | null)[] | undefined)"
                     },
                     {
                       "name": "valid",
@@ -5171,6 +5191,10 @@ export const configManifest: ConfigManifest = {
               "type": "((string | number | boolean)[] | undefined)"
             },
             {
+              "name": "range",
+              "type": "((number | null)[] | undefined)"
+            },
+            {
               "name": "valid",
               "type": "(boolean | undefined)"
             }
@@ -5576,6 +5600,10 @@ export const configManifest: ConfigManifest = {
                       "type": "((string | number | boolean)[] | undefined)"
                     },
                     {
+                      "name": "range",
+                      "type": "((number | null)[] | undefined)"
+                    },
+                    {
                       "name": "valid",
                       "type": "(boolean | undefined)"
                     }
@@ -5628,6 +5656,10 @@ export const configManifest: ConfigManifest = {
                     {
                       "name": "oneOf",
                       "type": "((string | number | boolean)[] | undefined)"
+                    },
+                    {
+                      "name": "range",
+                      "type": "((number | null)[] | undefined)"
                     },
                     {
                       "name": "valid",
@@ -6882,6 +6914,10 @@ export const configManifest: ConfigManifest = {
               "type": "((string | number | boolean)[] | undefined)"
             },
             {
+              "name": "range",
+              "type": "((number | null)[] | undefined)"
+            },
+            {
               "name": "valid",
               "type": "(boolean | undefined)"
             }
@@ -7200,6 +7236,10 @@ export const configManifest: ConfigManifest = {
             {
               "name": "oneOf",
               "type": "((string | number | boolean)[] | undefined)"
+            },
+            {
+              "name": "range",
+              "type": "((number | null)[] | undefined)"
             },
             {
               "name": "valid",
@@ -8583,6 +8623,10 @@ export const configManifest: ConfigManifest = {
                       "type": "((string | number | boolean)[] | undefined)"
                     },
                     {
+                      "name": "range",
+                      "type": "((number | null)[] | undefined)"
+                    },
+                    {
                       "name": "valid",
                       "type": "(boolean | undefined)"
                     }
@@ -8635,6 +8679,10 @@ export const configManifest: ConfigManifest = {
                     {
                       "name": "oneOf",
                       "type": "((string | number | boolean)[] | undefined)"
+                    },
+                    {
+                      "name": "range",
+                      "type": "((number | null)[] | undefined)"
                     },
                     {
                       "name": "valid",
@@ -9616,6 +9664,10 @@ export const configManifest: ConfigManifest = {
               "type": "((string | number | boolean)[] | undefined)"
             },
             {
+              "name": "range",
+              "type": "((number | null)[] | undefined)"
+            },
+            {
               "name": "valid",
               "type": "(boolean | undefined)"
             }
@@ -10324,6 +10376,10 @@ export const configManifest: ConfigManifest = {
             {
               "name": "oneOf",
               "type": "((string | number | boolean)[] | undefined)"
+            },
+            {
+              "name": "range",
+              "type": "((number | null)[] | undefined)"
             },
             {
               "name": "valid",

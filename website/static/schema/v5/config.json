@@ -4703,6 +4703,17 @@
                 }
               }
             },
+            "range": {
+              "description": "Vega-Lite's [min, max], both ends included and a null end open; it loads as gte and lte, the tighter bound winning where either is also written. Any JSON value: the slot is `frozen`, so its shape is not checked here.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "not": {
+                  "$ref": "#/$defs/JexlString"
+                }
+              }
+            },
             "valid": {
               "description": "true admits only records with a value for the field, false only those without.",
               "if": {

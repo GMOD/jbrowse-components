@@ -80,10 +80,21 @@ vocabulary.
 
 ### Predicate
 
-`{ field, equal | lt | lte | gt | gte | range | oneOf | valid }`, with
-`and`, `or`, `not` and `param`. A `filter` list is the AND of its entries,
-and it is the whole filter: writing one replaces the default list, which Edit
-plot and the docs show.
+`{ field, equal | lt | lte | gt | gte | range | oneOf | valid }`. A
+`filter` list is the AND of its entries, and it is the whole filter: writing
+one replaces the default list, which Edit plot and the docs show.
+
+Amended 2026-10-24:
+- `range` is built as a load-time lift to `gte` and `lte`, the tighter bound
+  winning, so no compiler or hand reader sees it.
+- `and`, `or`, `not` and `param` are not built. No display needs them, and
+  a 5.0 host drops an unknown operator with a warning.
+- An entry whose every written test is `null` or unknown (R's `NA`, Python's
+  `None`, an operator from a later release) loads as no entry rather than a
+  bare `{ field }`, which on alignments would remove the field's defaults.
+- A missing value is `isMissing`'s (absent, empty, an all-empty list such as
+  a VCF's `DP=.`), the color key's own; a comparison reads `numericValue`, so
+  text that is no number fails it too, while `valid: true` admits it.
 
 - A comparison on a missing value is false, and `valid: false` selects the
   missing values.

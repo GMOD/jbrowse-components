@@ -1,5 +1,5 @@
 import { lowerBoundOf, withLowerBound } from '@jbrowse/core/util/fieldPredicate'
-import { fieldPredicateConfigSchema } from '@jbrowse/display-kit/fieldPredicateConfigSchema'
+import { fieldPredicateArray } from '@jbrowse/display-kit/fieldPredicateConfigSchema'
 import { cast, getSnapshot, types } from '@jbrowse/mobx-state-tree'
 
 import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
@@ -22,7 +22,7 @@ export function SyntenyFilterMixin() {
        * `[{ field: 'length', gte: 10000 }]` clears a whole-genome hairball.
        * A filter edit recolors and refetches nothing.
        */
-      filter: types.stripDefault(types.array(fieldPredicateConfigSchema), []),
+      filter: types.stripDefault(fieldPredicateArray(), []),
     })
     .views(self => ({
       /**

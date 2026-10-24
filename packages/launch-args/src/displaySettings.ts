@@ -185,7 +185,7 @@ const FILTER_TESTS: Record<
 
 function badFilterEntry(entry: unknown, why: string): never {
   throw new Error(
-    `filter entry ${JSON.stringify(entry)} ${why}; an entry is { field, ${Object.keys(FILTER_TESTS).join(' | ')} }, or a string, which means { field: <string>, equal: true }`,
+    `filter entry ${JSON.stringify(entry)} ${why}; an entry is { field, ${[...Object.keys(FILTER_TESTS), 'range'].join(' | ')} }, or a string, which means { field: <string>, equal: true }`,
   )
 }
 
@@ -202,10 +202,11 @@ function filterEntryOf(entry: unknown): FilterEntry {
   ) {
     return badFilterEntry(entry, 'is not an object')
   }
-  const { field, ...tests } = entry as Record<string, unknown>
+  const { field, range, ...written } = entry as Record<string, unknown>
   if (typeof field !== 'string' || !field) {
     return badFilterEntry(entry, 'names no field')
   }
+  const tests = range === undefined ? written : withRange(entry, written, range)
   for (const [name, value] of Object.entries(tests)) {
     const valid = lookup(FILTER_TESTS, name)
     if (!valid) {
@@ -214,7 +215,34 @@ function filterEntryOf(entry: unknown): FilterEntry {
       badFilterEntry(entry, `has a ${name} of the wrong type`)
     }
   }
-  return entry as FilterEntry
+  return { field, ...tests }
+}
+
+// Vega-Lite's `range`, as the config schema lifts it: [min, max], a null end
+// open, the tighter bound winning beside a written gte or lte
+function withRange(
+  entry: unknown,
+  tests: Record<string, unknown>,
+  range: unknown,
+) {
+  if (
+    !Array.isArray(range) ||
+    range.length !== 2 ||
+    !range.every(end => end === null || typeof end === 'number')
+  ) {
+    return badFilterEntry(entry, 'has a range that is not [min, max]')
+  }
+  const [lo, hi] = range as (number | null)[]
+  const { gte, lte } = tests
+  return {
+    ...tests,
+    ...(lo === null
+      ? {}
+      : { gte: typeof gte === 'number' ? Math.max(gte, lo) : lo }),
+    ...(hi === null
+      ? {}
+      : { lte: typeof lte === 'number' ? Math.min(lte, hi) : hi }),
+  }
 }
 
 /**

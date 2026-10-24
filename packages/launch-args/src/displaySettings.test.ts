@@ -460,6 +460,21 @@ describe('alignments settings a static export cannot reach any other way', () =>
     ])
   })
 
+  test('range lifts to gte and lte as the config schema lifts it', () => {
+    expect(
+      filterEntriesOf([
+        { field: 'score', range: [100, null] },
+        { field: 'mapq', gte: 30, range: [20, 60] },
+      ]),
+    ).toEqual([
+      { field: 'score', gte: 100 },
+      { field: 'mapq', gte: 30, lte: 60 },
+    ])
+    expect(() => filterEntriesOf([{ field: 'score', range: [1] }])).toThrow(
+      /range that is not \[min, max\]/,
+    )
+  })
+
   test('a string entry is the shorthand the config schema reads', () => {
     const list = ['split', 'jexl:feature.score > 1', { field: 'mapq', gte: 5 }]
     expect(filterEntriesOf(list)).toEqual(predicatesOf(list))

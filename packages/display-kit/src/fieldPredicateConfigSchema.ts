@@ -6,13 +6,86 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 
 const Scalar = types.union(types.string, types.number, types.boolean)
 
+const TESTS = ['equal', 'lt', 'lte', 'gt', 'gte', 'oneOf', 'valid', 'range']
+const COMMENT_KEY = /^_+comment/
+
+function tighter(
+  written: unknown,
+  end: unknown,
+  pick: (a: number, b: number) => number,
+) {
+  return typeof end !== 'number'
+    ? written
+    : typeof written === 'number'
+      ? pick(written, end)
+      : end
+}
+
+function liftRange(snap: Record<string, unknown>) {
+  const { range, ...rest } = snap
+  if (!Array.isArray(range)) {
+    return rest
+  }
+  const [lo, hi] = range as unknown[]
+  const gte = tighter(rest.gte, lo, Math.max)
+  const lte = tighter(rest.lte, hi, Math.min)
+  return {
+    ...rest,
+    ...(gte === undefined ? {} : { gte }),
+    ...(lte === undefined ? {} : { lte }),
+  }
+}
+
+const warnedEmptied = new Set<string>()
+
+// An entry that wrote tests and has none left once a null or an unknown
+// operator drops: it loads as no entry, never as a bare `{ field }`
+function emptied(entry: unknown) {
+  if (typeof entry !== 'object' || entry === null || Array.isArray(entry)) {
+    return false
+  }
+  const record = entry as Record<string, unknown>
+  const written = Object.keys(record).filter(
+    key => key !== 'field' && !COMMENT_KEY.test(key),
+  )
+  const empty =
+    written.length > 0 &&
+    !written.some(
+      key =>
+        TESTS.includes(key) &&
+        record[key] !== null &&
+        record[key] !== undefined &&
+        !(
+          key === 'range' &&
+          Array.isArray(record[key]) &&
+          !(record[key] as unknown[]).some(end => typeof end === 'number')
+        ),
+    )
+  if (empty) {
+    const text = JSON.stringify(record)
+    if (!warnedEmptied.has(text)) {
+      warnedEmptied.add(text)
+      console.warn(
+        `filter entry ${text} states no test this release applies: loading without it`,
+      )
+    }
+  }
+  return empty
+}
+
 /**
  * #config FieldPredicate
  * #category display
  * One entry of a `filter` list, Vega-Lite's field predicate: the `field` of
  * each record and the tests its value must pass, every one given. A `filter`
- * list admits a record that passes every entry. A comparison on a missing
- * value is false, and `valid: false` selects the missing values.
+ * list admits a record that passes every entry. A value is missing when it is
+ * absent, empty, or a VCF's `.`; `valid: false` selects exactly those. A
+ * comparison reads the value as a number, so a missing value and text that
+ * is no number both fail it.
+ *
+ * An entry whose every written test is `null` or one this release does not
+ * know loads as no entry at all, with a warning: R's `NA` and Python's `None`
+ * write `null`, and a bare `{ field }` would remove that field's defaults.
  *
  * A `field` written `jexl:` is computed per feature, where the display reads
  * jexl, and a bare string entry is one that must hold:
@@ -25,6 +98,9 @@ const Scalar = types.union(types.string, types.number, types.boolean)
  * ```
  * ```js
  * filter: [{ field: 'query', oneOf: ['chr1', 'chr2'] }]
+ * ```
+ * ```js
+ * filter: [{ field: 'score', range: [100, 500] }]
  * ```
  * ```js
  * filter: [{ field: 'gene_group', valid: true }]
@@ -84,6 +160,15 @@ export const fieldPredicateConfigSchema = ConfigurationSchema(
     /**
      * #slot
      */
+    range: {
+      type: 'maybeFrozen',
+      model: types.maybe(types.array(types.maybeNull(types.number))),
+      description:
+        "Vega-Lite's [min, max], both ends included and a null end open; it loads as gte and lte, the tighter bound winning where either is also written",
+    },
+    /**
+     * #slot
+     */
     valid: {
       type: 'maybeBoolean',
       description:
@@ -92,6 +177,7 @@ export const fieldPredicateConfigSchema = ConfigurationSchema(
   },
   {
     closed: true,
+    preProcessSnapshot: liftRange,
     shorthand: 'field',
     shorthandWith: { equal: true },
     writes: 'whole',
@@ -102,7 +188,18 @@ export interface FieldPredicateConfig extends Instance<
   typeof fieldPredicateConfigSchema
 > {}
 
+/**
+ * A list of predicates without the entries whose tests all dropped, the
+ * `filter` slot's type wherever a list of predicates is stored.
+ */
+export function fieldPredicateArray() {
+  return types.snapshotProcessor(types.array(fieldPredicateConfigSchema), {
+    preProcessor: (snap: unknown) =>
+      Array.isArray(snap) ? snap.filter(entry => !emptied(entry)) : snap,
+  })
+}
+
 /** A display's `filter` slot: a list of predicates, edited by "Edit plot...". */
 export function fieldPredicateList() {
-  return plotList(types.array(fieldPredicateConfigSchema))
+  return plotList(fieldPredicateArray())
 }
