@@ -115,6 +115,7 @@ export function makeTestRenderState(
     coverageScaleType: 0 as const,
     coverageSymlogConstant: 1,
     coverageMinAlleleFraction: 0,
+    showCoverageAlleles: true,
     sashimiHeight: 0,
     showMismatches: false,
     fadeLowFrequencyMismatches: false,

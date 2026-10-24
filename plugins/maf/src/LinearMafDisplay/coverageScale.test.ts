@@ -42,6 +42,7 @@ test('a default band is linear from zero, every mismatch and insertion drawn', (
     domainMax: domain[1],
     scaleType: scaleTypeCode('linear'),
     minAlleleFraction: 0,
+    showAlleles: true,
     showInterbase: true,
   })
   expect(display.axes[0]!.domain).toEqual(domain)
@@ -72,6 +73,29 @@ test('the SNP floor and the interbase toggle reach the band', () => {
   expect(display.coverageBandState.minAlleleFraction).toBe(0.2)
   display.setShowInterbaseIndicators(false)
   expect(display.coverageBandState.showInterbase).toBe(false)
+  display.setShowCoverageAlleles(false)
+  expect(display.coverageBandState.showAlleles).toBe(false)
+  expect(display.configuration.coverage.alleles.show).toBe(false)
+})
+
+test('with the alleles hidden the zoomed-out tooltip names the base under the cursor', () => {
+  const { display } = createMafTestEnvironment({
+    displayConfig: { coverage: { alleles: { show: false } } },
+  }).createDisplay()
+  const A = 'A'.charCodeAt(0)
+  stageDetailRegion(display, 0, {
+    ...emptyMafWireRegionData(),
+    coverage: {
+      ...emptyMafCoverage(0),
+      coverageDepths: new Float32Array(8).fill(10),
+      coverageMaxDepth: 10,
+      mismatchPositions: Uint32Array.from([6, 6, 6, 6, 6]),
+      mismatchBases: new Uint8Array(5).fill(A),
+    },
+  })
+  expect(display.coverageTooltipBin(0, 0, 8)?.position).toBe(0)
+  display.setShowCoverageAlleles(true)
+  expect(display.coverageTooltipBin(0, 0, 8)?.position).toBe(6)
 })
 
 test('the zoomed-out tooltip snaps past a SNP under the floor, as the band skips it', () => {
@@ -122,4 +146,11 @@ test('the track menu offers the shared coverage rows', () => {
       'Color SNPs above...',
     ]),
   )
+  expect(
+    labels(
+      display
+        .trackMenuItems()
+        .flatMap(i => ('subMenu' in i ? resolveSubMenu(i) : [i])),
+    ),
+  ).toEqual(expect.arrayContaining(['Coverage SNPs', 'Interbase indicators']))
 })

@@ -5,10 +5,15 @@ import { getCoverageMenuItems } from './coverageMenuItems.ts'
 // Both rows scale or color the coverage band and reach nothing else, and
 // neither carries the band's visibility toggle, so with the band hidden they
 // grey out and name the switch instead.
-function menu(showCoverage: boolean, minAlleleFraction = 0) {
+function menu(
+  showCoverage: boolean,
+  minAlleleFraction = 0,
+  showCoverageAlleles = true,
+) {
   return getCoverageMenuItems({
     id: 'd1',
     showCoverage,
+    showCoverageAlleles,
     autoscaleRange: undefined,
     autoscaledDomain: undefined,
     coverageMinAlleleFraction: minAlleleFraction,
@@ -47,6 +52,15 @@ test('the coverage rows are live with the band shown', () => {
   for (const row of menu(true)) {
     expect(row).toMatchObject({ disabled: false })
   }
+})
+
+test('the SNP floor greys out with the alleles hidden, the axis does not', () => {
+  const [axis, floor] = menu(true, 0, false)
+  expect(axis).toMatchObject({ disabled: false })
+  expect(floor).toMatchObject({
+    disabled: true,
+    disabledHelpText: expect.stringContaining('Coverage SNPs'),
+  })
 })
 
 // The floor is a plain number a config can declare, so it need not be one of the

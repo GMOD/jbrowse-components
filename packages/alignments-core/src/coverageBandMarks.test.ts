@@ -102,6 +102,7 @@ const state = (over: Partial<CoverageBandState> = {}): State => ({
     scaleType: SCALE_TYPE_LINEAR,
     symlogConstant: 1,
     minAlleleFraction: 0,
+    showAlleles: true,
     showInterbase: true,
     colors: {
       coverage: 1,
@@ -276,6 +277,23 @@ test('interbase off drops the histogram and its triangles on both backends', () 
     true,
     false,
     false,
+    false,
+  ])
+})
+
+test('alleles off drops the SNP slices, leaving the plain depth bars, on both backends', () => {
+  const s = state({ showAlleles: false })
+  expect(
+    render(FIVE, s)
+      .draws()
+      .map(d => d.passId),
+  ).toEqual(['coverage', 'modCov', 'interbase', 'indicator', 'clipStrip'])
+  expect(FIVE.map(m => paintOne(m, s).length > 0)).toEqual([
+    true,
+    false,
+    true,
+    true,
+    true,
     false,
   ])
 })

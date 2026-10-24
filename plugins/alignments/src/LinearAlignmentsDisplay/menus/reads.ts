@@ -1,4 +1,7 @@
-import { interbaseIndicatorsMenuItem } from '@jbrowse/alignments-core/coverageMenuItems'
+import {
+  coverageAllelesMenuItem,
+  interbaseIndicatorsMenuItem,
+} from '@jbrowse/alignments-core/coverageMenuItems'
 import { toggleItem } from '@jbrowse/core/ui/menuItems'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import { legendCheckboxItem } from '@jbrowse/display-kit/LegendMixin'
@@ -39,6 +42,8 @@ interface ReadsModel
   unit: AlignmentsUnit
   showInterbaseIndicators: boolean
   setShowInterbaseIndicators: (show: boolean) => void
+  showCoverageAlleles: boolean
+  setShowCoverageAlleles: (show: boolean) => void
   mismatchOpacityField: MismatchOpacityField | undefined
   setMismatchOpacityField: (field?: MismatchOpacityField) => void
 }
@@ -104,6 +109,7 @@ export function getReadsMenuItems(model: ReadsModel) {
     // defaults `showCoverage` off and so would spend its life greyed;
     // `renderers/interbaseNeedsCoverage.test.ts` is the A/B that the toggle
     // draws nothing with the band hidden.
+    coverageAllelesMenuItem(model),
     interbaseIndicatorsMenuItem(model),
     ...sashimiShowItems(model),
     legendCheckboxItem(model),

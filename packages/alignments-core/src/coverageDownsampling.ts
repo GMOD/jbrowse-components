@@ -726,21 +726,23 @@ function countInterbaseAtPosition(
  *
  * `minAlleleFraction` is the band's own allele floor, applied per allele the way
  * the SNP pass applies it, so the snap cannot name a segment neither backend
- * drew. The pooled `SNP_TOOLTIP_SNAP_FLOOR` still gates dominance in the pixel.
+ * drew, and undefined while the band draws no allele segments, which leaves
+ * nothing to snap to. The pooled `SNP_TOOLTIP_SNAP_FLOOR` still gates
+ * dominance in the pixel.
  */
 export function coverageBinAt(
   arrays: CoverageArrays & MismatchArrays,
   basePos: number,
   bpPerPx: number,
   reversed: boolean,
-  minAlleleFraction = 0,
+  minAlleleFraction: number | undefined,
 ) {
   const { coverageDepths, coverageStartPos } = arrays
   const binIndex = basePos - coverageStartPos
   if (binIndex < 0 || binIndex >= coverageDepths.length) {
     return undefined
   }
-  if (bpPerPx <= 1) {
+  if (bpPerPx <= 1 || minAlleleFraction === undefined) {
     return basePos
   }
   const width = Math.ceil(bpPerPx)

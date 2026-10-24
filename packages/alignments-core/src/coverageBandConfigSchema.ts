@@ -74,7 +74,8 @@ export const coverageBandConfigSchema = ConfigurationSchema(
     interbase: coverageInterbaseConfigSchema,
     /**
      * #slot alleles
-     * The colored allele segments: the `filter` on each one's `fraction`.
+     * The colored allele segments: `show`, and the `filter` on each one's
+     * `fraction`.
      */
     alleles: coverageAllelesConfigSchema,
   },

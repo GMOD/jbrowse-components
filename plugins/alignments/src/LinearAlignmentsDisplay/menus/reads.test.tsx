@@ -35,6 +35,8 @@ function makeModel(
     unit: 'read' as AlignmentsUnit,
     showInterbaseIndicators: true,
     setShowInterbaseIndicators: jest.fn(),
+    showCoverageAlleles: true,
+    setShowCoverageAlleles: jest.fn(),
     mismatchOpacityField: undefined,
     setMismatchOpacityField: jest.fn(),
     canCollapseSections: false,
@@ -146,6 +148,26 @@ test('the interbase toggle follows the coverage band', () => {
     disabledHelpText: expect.stringContaining('Coverage'),
   })
   expect(interbaseRow(true)).toMatchObject({ disabled: false })
+})
+
+test('the coverage SNP toggle follows the coverage band and writes its show', () => {
+  const row = (showCoverage: boolean) =>
+    subMenuOf(makeModel({ showCoverage })).find(
+      r => 'label' in r && r.label === 'Coverage SNPs',
+    )
+  expect(row(false)).toMatchObject({
+    disabled: true,
+    disabledHelpText: expect.stringContaining('Coverage'),
+  })
+  const model = makeModel()
+  const shown = subMenuOf(model).find(
+    r => 'label' in r && r.label === 'Coverage SNPs',
+  )
+  expect(shown).toMatchObject({ disabled: false, checked: true })
+  if (shown && 'onClick' in shown) {
+    shown.onClick()
+  }
+  expect(model.setShowCoverageAlleles).toHaveBeenCalledWith(false)
 })
 
 function softClipRow(unit: AlignmentsUnit) {

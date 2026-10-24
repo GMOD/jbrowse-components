@@ -1,6 +1,7 @@
 import { lazy } from 'react'
 
 import {
+  coverageAllelesMenuItem,
   getCoverageMenuItems,
   interbaseIndicatorsMenuItem,
 } from '@jbrowse/alignments-core/coverageMenuItems'
@@ -70,6 +71,7 @@ interface MafMenuSelf
   treeHasBranchLengths: boolean
   showInterbaseIndicators: boolean
   setShowInterbaseIndicators: (f: boolean) => void
+  setShowCoverageAlleles: (f: boolean) => void
   showAlignments: boolean
   showConservation: boolean
   showReferenceRow: boolean
@@ -223,6 +225,7 @@ function showMenuItems(self: MafMenuSelf): MenuItem[] {
       self.showCoverage,
       self.setShowCoverage,
     ),
+    coverageAllelesMenuItem(self),
     interbaseIndicatorsMenuItem(self),
     toggleItem('Alignments', self.showAlignments, self.setShowAlignments),
     toggleItem(

@@ -41,6 +41,8 @@ export interface RenderState {
   // mismatch. Nothing to do with `fadeLowFrequencyMismatches`, which is the
   // PILEUP's depth-dependent fade.
   coverageMinAlleleFraction: number
+  // Whether the band colors allele segments at all; off, every bar is grey.
+  showCoverageAlleles: boolean
   sashimiHeight: number
   showMismatches: boolean
   fadeLowFrequencyMismatches: boolean

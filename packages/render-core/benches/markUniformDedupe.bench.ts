@@ -283,6 +283,7 @@ const COV_STATE: CovState = {
     scaleType: 0,
     symlogConstant: 1,
     minAlleleFraction: 0,
+    showAlleles: true,
     showInterbase: true,
     colors: {
       coverage: 0xff888888,

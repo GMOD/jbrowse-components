@@ -210,6 +210,10 @@ export function configSlotViews(self: ConfigSlotSelf) {
       return getConf(self, ['coverage', 'interbase', 'show'])
     },
     /** #getter */
+    get showCoverageAlleles(): boolean {
+      return getConf(self, ['coverage', 'alleles', 'show'])
+    },
+    /** #getter */
     get coverageMinAlleleFraction(): number {
       return alleleFloorOf(self.configuration.coverage.alleles.filter)
     },
@@ -631,6 +635,13 @@ export function configSlotActions(self: ConfigSlotSelf) {
      */
     setShowInterbaseIndicators(show: boolean) {
       setConf(self, ['coverage', 'interbase', 'show'], show)
+    },
+
+    /**
+     * #action
+     */
+    setShowCoverageAlleles(show: boolean) {
+      setConf(self, ['coverage', 'alleles', 'show'], show)
     },
 
     /**

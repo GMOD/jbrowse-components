@@ -18,7 +18,8 @@ const FRACTION = 'fraction'
  * The coverage band's `alleles` layer: the colored segment each mismatched
  * base takes in its position's depth bar. Its `filter` keeps the segments
  * whose `fraction`, the allele's share of the position's depth, passes;
- * the grey depth bar shows through where a segment is left out.
+ * the grey depth bar shows through where a segment is left out, and
+ * everywhere under `show: false`.
  *
  * #example
  * ```js
@@ -27,10 +28,22 @@ const FRACTION = 'fraction'
  *   coverage: { alleles: { filter: [{ field: 'fraction', gte: 0.2 }] } },
  * }
  * ```
+ * ```js
+ * { type: 'LinearAlignmentsDisplay', coverage: { alleles: { show: false } } }
+ * ```
  */
 export const coverageAllelesConfigSchema = ConfigurationSchema(
   'CoverageAlleles',
   {
+    /**
+     * #slot
+     */
+    show: {
+      type: 'boolean',
+      defaultValue: true,
+      description:
+        'color the allele segments of the depth bars; off, the bars are plain grey',
+    },
     /**
      * #slot filter
      * Entries on `fraction`, a floor from 0 to 1 written `gte`, the one

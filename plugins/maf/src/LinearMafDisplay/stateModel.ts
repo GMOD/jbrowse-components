@@ -1205,6 +1205,7 @@ export default function stateModelFactory(
               self.symlogConstant,
             ),
             minAlleleFraction: self.coverageMinAlleleFraction,
+            showAlleles: self.showCoverageAlleles,
             showInterbase: self.showInterbaseIndicators,
             colors: self.coverageBandColors,
           }
@@ -1332,7 +1333,9 @@ export default function stateModelFactory(
                 basePos,
                 bpPerPx,
                 reversed,
-                self.coverageMinAlleleFraction,
+                self.showCoverageAlleles
+                  ? self.coverageMinAlleleFraction
+                  : undefined,
               )
             : undefined
         },

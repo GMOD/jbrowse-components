@@ -12,7 +12,7 @@ export function coverageTooltipBinAt(
   basePos: number,
   bpPerPx: number,
   reversed: boolean,
-  minAlleleFraction: number,
+  minAlleleFraction: number | undefined,
 ) {
   const position = coverageBinAt(
     coverage,

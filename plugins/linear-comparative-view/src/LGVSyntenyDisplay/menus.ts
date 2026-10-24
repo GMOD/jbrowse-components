@@ -93,6 +93,8 @@ interface ShowModel
   setShowMismatches: (show: boolean) => void
   showInterbaseIndicators: boolean
   setShowInterbaseIndicators: (show: boolean) => void
+  showCoverageAlleles: boolean
+  setShowCoverageAlleles: (show: boolean) => void
 }
 
 // Visibility of the rendering layers, mirroring the alignments "Show..." menu
@@ -135,6 +137,16 @@ export function getSyntenyShowMenuItems(model: ShowModel) {
     // why it does nothing should not be offered.
     ...(model.showCoverage
       ? [
+          toggleItem(
+            'Coverage SNPs',
+            model.showCoverageAlleles,
+            model.setShowCoverageAlleles,
+            {
+              helpText:
+                'Color the share of each coverage bar whose base differs ' +
+                'between the two assemblies.',
+            },
+          ),
           toggleItem(
             'Interbase indicators',
             model.showInterbaseIndicators,

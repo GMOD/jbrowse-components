@@ -107,6 +107,7 @@ export function coverageBandState(s: RenderState): CoverageBandState {
     scaleType: s.coverageScaleType,
     symlogConstant: s.coverageSymlogConstant,
     minAlleleFraction: s.coverageMinAlleleFraction,
+    showAlleles: s.showCoverageAlleles,
     showInterbase: s.showInterbaseIndicators,
     colors: bandColors(s),
   }

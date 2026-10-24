@@ -247,7 +247,7 @@ describe('the depth bin under the cursor', () => {
   }
 
   it('is the base under the cursor at base-level zoom', () => {
-    expect(coverageBinAt(arrays({}), 1000, 0.05, false)).toBe(1000)
+    expect(coverageBinAt(arrays({}), 1000, 0.05, false, 0)).toBe(1000)
   })
 
   it('is undefined off the end of the depth array', () => {
@@ -257,13 +257,14 @@ describe('the depth bin under the cursor', () => {
         1005,
         0.05,
         false,
+        0,
       ),
     ).toBeUndefined()
   })
 
   it('snaps to a SNP over 5% of the pixel it covers, zoomed out', () => {
     expect(
-      coverageBinAt(arrays({ mismatches: [1003, 1003] }), 1000, 10, false),
+      coverageBinAt(arrays({ mismatches: [1003, 1003] }), 1000, 10, false, 0),
     ).toBe(1003)
   })
 
@@ -274,6 +275,7 @@ describe('the depth bin under the cursor', () => {
         1000,
         10,
         false,
+        0,
       ),
     ).toBe(1000)
   })
@@ -302,6 +304,22 @@ describe('the depth bin under the cursor', () => {
     expect(coverageBinAt(one, 1000, 10, false, 0.3)).toBe(1003)
   })
 
+  // With the band's alleles hidden no segment is drawn, so the bin is the
+  // base under the cursor at every zoom.
+  it('does not snap while the band draws no allele segments', () => {
+    const snp = arrays({ mismatches: [1003, 1003] })
+    expect(coverageBinAt(snp, 1000, 10, false, undefined)).toBe(1000)
+    expect(
+      coverageBinAt(
+        arrays({ depths: new Float32Array([10]) }),
+        1005,
+        10,
+        false,
+        undefined,
+      ),
+    ).toBeUndefined()
+  })
+
   // On a reversed block bp run LEFTWARD, so the pixel holding base 1000 covers
   // (990, 1000], not [1000, 1010).
   it('widens the other way on a reversed block', () => {
@@ -310,10 +328,10 @@ describe('the depth bin under the cursor', () => {
       start: 900,
       depths: new Float32Array(200).fill(10),
     })
-    expect(coverageBinAt(left, 1000, 10, true)).toBe(995)
-    expect(coverageBinAt(left, 1000, 10, false)).toBe(1000)
+    expect(coverageBinAt(left, 1000, 10, true, 0)).toBe(995)
+    expect(coverageBinAt(left, 1000, 10, false, 0)).toBe(1000)
     const right = arrays({ mismatches: [1005, 1005] })
-    expect(coverageBinAt(right, 1000, 10, true)).toBe(1000)
-    expect(coverageBinAt(right, 1000, 10, false)).toBe(1005)
+    expect(coverageBinAt(right, 1000, 10, true, 0)).toBe(1000)
+    expect(coverageBinAt(right, 1000, 10, false, 0)).toBe(1005)
   })
 })

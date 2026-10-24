@@ -2585,6 +2585,7 @@ export default function stateModelFactory(
               self.symlogConstant,
             ),
             coverageMinAlleleFraction: self.coverageMinAlleleFraction,
+            showCoverageAlleles: self.showCoverageAlleles,
             sashimiHeight: self.bandHeights.sashimiHeight,
             showMismatches: self.showMismatches,
             fadeLowFrequencyMismatches: self.fadeLowFrequency,

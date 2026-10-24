@@ -131,9 +131,10 @@ export const baseLinearAlignmentsDisplayConfigSchema = ConfigurationSchema(
      * #slot coverage
      * The coverage histogram band: `show`, `height` (default 45),
      * `encoding.y`, its depth axis, and the `interbase` and `alleles` layers,
-     * each with a `filter`; `alleles.filter` floors each allele segment's
-     * share of its position's depth, distinct from `pileup.fadeLowFrequency`. The read cloud's insert-size
-     * axis is a fixed log scale (`arcBandYScale`) no setting reaches.
+     * each with a `show` and a `filter`; `alleles.filter` floors each allele
+     * segment's share of its position's depth, distinct from
+     * `pileup.fadeLowFrequency`. The read cloud's insert-size axis is a fixed
+     * log scale (`arcBandYScale`) no setting reaches.
      */
     coverage: coverageBandConfigSchema,
     /**

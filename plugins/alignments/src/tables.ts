@@ -1755,7 +1755,7 @@ function composingBands(conf: DisplayConf) {
  */
 const BAND_TABLES: readonly {
   band: 'pileup' | 'coverage' | 'sashimi'
-  layer?: 'mismatches' | 'interbase'
+  layer?: 'mismatches' | 'interbase' | 'alleles'
   tables: readonly string[]
 }[] = [
   {
@@ -1788,6 +1788,7 @@ const BAND_TABLES: readonly {
     layer: 'interbase',
     tables: ['interbaseCoverage', 'indicators'],
   },
+  { band: 'coverage', layer: 'alleles', tables: ['alleleCoverage'] },
   { band: 'sashimi', tables: ['junctions'] },
 ]
 

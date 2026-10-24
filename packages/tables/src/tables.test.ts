@@ -384,6 +384,13 @@ test('a band the display hides leaves its tables empty', async () => {
     expect(empty(table)).toBe(true)
   }
   expect(noCoverage.reads.start).toEqual(shown.reads.start)
+  const noAlleles = await engine.alignments({
+    ...SPLICED,
+    display: { coverage: { alleles: { show: false } } },
+  })
+  expect(empty(noAlleles.alleleCoverage)).toBe(true)
+  expect(noAlleles.coverage.depth).toEqual(shown.coverage.depth)
+  expect(noAlleles.interbaseCoverage).toEqual(shown.interbaseCoverage)
   const noPileup = await engine.alignments({
     ...SPLICED,
     display: { pileup: { show: false }, sashimi: { show: false } },

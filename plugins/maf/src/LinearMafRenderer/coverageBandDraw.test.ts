@@ -46,6 +46,7 @@ const BAND: CoverageBandState = {
   scaleType: SCALE_TYPE_LINEAR,
   symlogConstant: 1,
   minAlleleFraction: 0,
+  showAlleles: true,
   showInterbase: true,
   colors: COLORS,
 }

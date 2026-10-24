@@ -10,6 +10,7 @@ import type { ScoreScaleModel } from '@jbrowse/wiggle-core'
 export interface CoverageMenuModel extends ScoreScaleModel {
   id: string
   showCoverage: boolean
+  showCoverageAlleles: boolean
   coverageMinAlleleFraction: number
   setCoverageMinAlleleFraction: (fraction: number) => void
 }
@@ -41,15 +42,19 @@ function nearestSnpFrequencyOption(fraction: number) {
 
 // Two rows for the band: its axis, in the shared drawer widget, and its
 // allele-fraction floor, which is about what the bars are colored with
-// rather than the scale. The on/off toggle and the interbase toggle below live
-// in each display's "Show..." menu.
+// rather than the scale. The on/off toggle and the allele and interbase
+// toggles below live in each display's "Show..." menu.
 //
 // Both grey out with the band hidden: every setting here feeds the band's
 // draw and its hit test and nothing else, and neither row could turn it back
-// on, so each names that switch instead. At depth 500 every sequencing error
-// paints a sliver, so without a floor the band carries a permanent rainbow.
+// on, so each names that switch instead. The floor greys out too with the
+// alleles hidden. At depth 500 every sequencing error paints a sliver, so
+// without a floor the band carries a permanent rainbow.
 const BAND_HIDDEN_HELP =
   'These settings scale the coverage band — turn on "Show... → Coverage" first'
+
+const ALLELES_HIDDEN_HELP =
+  'SNPs are not colored — turn on "Show... → Coverage SNPs" first'
 
 export function getCoverageMenuItems(model: CoverageMenuModel): MenuItem[] {
   const disabled = !model.showCoverage
@@ -61,8 +66,8 @@ export function getCoverageMenuItems(model: CoverageMenuModel): MenuItem[] {
     }),
     {
       label: 'Color SNPs above...',
-      disabled,
-      disabledHelpText: BAND_HIDDEN_HELP,
+      disabled: disabled || !model.showCoverageAlleles,
+      disabledHelpText: disabled ? BAND_HIDDEN_HELP : ALLELES_HIDDEN_HELP,
       subMenu: radioItems(
         SNP_FREQUENCY_OPTIONS,
         nearestSnpFrequencyOption(model.coverageMinAlleleFraction),
@@ -94,6 +99,30 @@ export function interbaseIndicatorsMenuItem(model: {
       disabled: !model.showCoverage,
       disabledHelpText:
         'Interbase marks are drawn in the coverage band — turn on "Show... → Coverage" first',
+    },
+  )
+}
+
+/**
+ * The coverage band's "Coverage SNPs" row, `coverage.alleles.show`: off, the
+ * depth bars draw plain grey. Greyed with the band hidden, as the interbase
+ * row is.
+ */
+export function coverageAllelesMenuItem(model: {
+  showCoverage: boolean
+  showCoverageAlleles: boolean
+  setShowCoverageAlleles: (show: boolean) => void
+}): MenuItem {
+  return toggleItem(
+    'Coverage SNPs',
+    model.showCoverageAlleles,
+    show => {
+      model.setShowCoverageAlleles(show)
+    },
+    {
+      disabled: !model.showCoverage,
+      disabledHelpText:
+        'SNPs are colored in the coverage band — turn on "Show... → Coverage" first',
     },
   )
 }

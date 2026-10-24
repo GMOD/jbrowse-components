@@ -103,6 +103,7 @@ function state(binBp: number) {
       scaleType: 0 as const,
       symlogConstant: 1,
       minAlleleFraction: 0,
+      showAlleles: true,
       showInterbase: true,
       colors: NO_COLORS,
     },

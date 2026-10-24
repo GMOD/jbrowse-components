@@ -102,6 +102,8 @@ export interface CoverageBandState {
   symlogConstant: number
   /** SNP slices under this allele fraction are not drawn. */
   minAlleleFraction: number
+  /** Whether the SNP slices draw at all; off, every depth bar is plain. */
+  showAlleles: boolean
   /** Whether the interbase bars and their indicator triangles draw at all. */
   showInterbase: boolean
   colors: CoverageBandColors
@@ -294,7 +296,7 @@ export const coverageClipShape = layerShape(
 
 export const coverageSnpShape = layerShape(
   COVERAGE_SNP_PASS,
-  onDepthAxis,
+  p => (p.showAlleles && hasDomain(p) ? p : undefined),
   (ctx, c, bpToX, viewWidth, p) => {
     const { colors } = p
     drawSnpSegments(
@@ -523,6 +525,7 @@ export function hitCoverageBand(
     scaleType: SCALE_TYPE_LINEAR,
     symlogConstant: 1,
     minAlleleFraction: 0,
+    showAlleles: false,
     colors: NO_COLORS,
     regionMaxDepth: region.coverageMaxDepth,
     coverageBinSize: region.coverageBinSize,
