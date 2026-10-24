@@ -107,7 +107,6 @@ export const PATH_PROSE = new Set([
   'Zoom to region / use the location box, then add a highlight',
   // the tree sidebar's own drag/checkbox/swatch affordances, none of them menu
   // rows
-  'drag the rows into order',
   'untick the rows you do not want',
   // the arrangement dialog's one-line plot color, above the rows
   'the plot color swatches',
