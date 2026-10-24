@@ -1,6 +1,7 @@
 import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import { measureRegionBytes } from '@jbrowse/core/rpc/byteBudget'
 import { withProgress } from '@jbrowse/core/util'
+import { unreadRecordFields } from '@jbrowse/core/util/fieldPredicate'
 import { rpcResult } from '@jbrowse/core/util/librpc'
 
 import { computeVariantCells } from '../LinearMultiSampleVariantDisplay/components/computeVariantCells.ts'
@@ -127,6 +128,11 @@ interface CellDataBase {
    * estimate on every fetch rather than only on the ones it refuses.
    */
   bytes?: number
+  /**
+   * The `filter` fields no fetched variant carries, asked only once the
+   * filter left none.
+   */
+  unreadFilterFields?: string[]
 }
 
 export type CellDataResult = CellDataBase & {
@@ -208,6 +214,14 @@ export async function variantCellData({
         report,
       }),
   )
+  const unreadFilterFields =
+    (filters &&
+      unreadRecordFields(
+        filters.entries.filter(e => typeof e !== 'string'),
+        features,
+        passing.length,
+      )) ??
+    []
   // Screen order: the matrix's column order, and the order the anchored sort
   // walks for a variant's neighbours in either layout.
   const filteredVariants = orderByScreenPosition(
@@ -288,6 +302,7 @@ export async function variantCellData({
     sampleNames,
     bytes,
     perRegionCellData,
+    ...(unreadFilterFields.length > 0 ? { unreadFilterFields } : {}),
   }
   return { value, records: filteredVariants.map(v => v.feature) }
 }

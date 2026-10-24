@@ -19,8 +19,9 @@ import {
   valueAt,
   withColumns,
 } from './featureTable.ts'
-import { compilePredicates } from './fieldPredicate.ts'
+import { compilePredicates, unreadFields } from './fieldPredicate.ts'
 import { fieldReader, plainFieldName } from './fieldReader.ts'
+import { isMissing } from './groupKeys.ts'
 import { isJexl, stringToJexlExpression } from './jexlStrings.ts'
 import SimpleFeature, { buildJexlContext } from './simpleFeature.ts'
 import {
@@ -182,6 +183,45 @@ function filterByPredicates(
     table: selectRows(table, parentRow),
     bounds: boundsThrough(bounds, parentRow),
   }
+}
+
+function laneHoldsValue(lane: PredicateLane, length: number) {
+  for (let i = 0; i < length; i++) {
+    if (
+      lane.kind === 'number'
+        ? !Number.isNaN(lane.values[i])
+        : lane.kind === 'labels'
+          ? !isMissing(lane.labels[lane.ids[i]!])
+          : lane.kind === 'get'
+            ? !isMissing(lane.get(i))
+            : true
+    ) {
+      return true
+    }
+  }
+  return false
+}
+
+/**
+ * The fields the leading `filter` steps' predicates test that no row of
+ * `table` holds a value for (`unreadFields`); a later step may test a field
+ * an earlier one writes.
+ */
+export function unreadStepFields(
+  table: FeatureTable,
+  steps: readonly TransformStep[],
+  jexl: JexlInstance | undefined,
+) {
+  const end = steps.findIndex(step => step.type !== 'filter')
+  const predicates = steps
+    .slice(0, end === -1 ? steps.length : end)
+    .flatMap(step => ('predicates' in step ? step.predicates : []))
+  return unreadFields(
+    predicates,
+    field =>
+      isJexl(field) ||
+      laneHoldsValue(predicateLane(table, field, jexl), table.length),
+  )
 }
 
 function formula(

@@ -1,6 +1,6 @@
 import {
   compilePredicates,
-  testsSomething,
+  unreadFields,
 } from '@jbrowse/core/util/fieldPredicate'
 
 import { attributeOf, isAttributeLabels } from './colorRamps.ts'
@@ -82,13 +82,7 @@ export function unreadFilterFields(
   extras?: FilterExtras,
 ) {
   const laneOf = comparativeLaneOf(data, extras)
-  return [
-    ...new Set(
-      predicates
-        .filter(p => testsSomething(p) && p.valid !== false && !laneOf(p.field))
-        .map(p => p.field),
-    ),
-  ]
+  return unreadFields(predicates, field => !!laneOf(field))
 }
 
 /** The records a comparative `filter` admits, or undefined to admit all. */

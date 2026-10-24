@@ -21,6 +21,10 @@ import {
 import { createAdapterMetadataFetch } from '@jbrowse/core/util/adapterMetadata'
 import { STRAND_FIELD } from '@jbrowse/core/util/categoricalField'
 import {
+  unreadFieldNotice,
+  unreadInEveryRegion,
+} from '@jbrowse/core/util/fieldPredicate'
+import {
   baseJexlFilters,
   configuredJexlFilters,
   filterFieldNarrowing,
@@ -464,9 +468,9 @@ export default function baseStateModelFactory(
         },
         /**
          * #getter
-         * A `transcriptFeatures` track naming no track, and what each
-         * loaded region could not draw from them, while the features still
-         * draw.
+         * A `transcriptFeatures` track naming no track, what each loaded
+         * region could not draw from them while the features still draw, and
+         * each `filter` field no loaded feature carries.
          */
         get liveNotices(): string[] {
           return [
@@ -478,6 +482,11 @@ export default function baseStateModelFactory(
             ...new Set(
               [...self.rpcDataMap.values()].flatMap(data => data.notices ?? []),
             ),
+            ...unreadInEveryRegion(
+              [...self.rpcDataMap.values()].map(
+                data => data.unreadFilterFields,
+              ),
+            ).map(field => unreadFieldNotice(field, 'feature')),
           ]
         },
       }

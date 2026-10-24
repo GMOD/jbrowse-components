@@ -53,7 +53,8 @@ Layout, the multi-way leftovers and settings with no step are in
 
 Landed on main: predicate missing-value rule, whole-list filter counts,
 `range`, emptied entries dropped, opacity `domainMin`/`domainMax`, synteny
-`reference` filter and unread-field warnings, config-doc row paths,
+`reference` filter, unread-field warnings on synteny, canvas, mark and
+multi-sample variant displays, config-doc row paths,
 `x2.refName`, VcfFeature site fields, matrix `reverse` by name, Edit plot
 filter defaults, type checking in every product, threshold ramp fill,
 `span` → `rect`, with ggjbrowse re-pinned and the circular synteny demo
@@ -62,9 +63,6 @@ deployed. Still open, each needing no further call:
 - **jb2hubs:** a gate running the oldest supported release's
   `jbrowse validate` over generated configs, since a host now fails a track
   on a value it does not know (ADR-120 amendment).
-- **Unread filter field on the other displays:** synteny warns; canvas, mark
-  and multi-sample variants do not. Report only when a filter emptied a
-  non-empty region (no per-record cost).
 - **`jbrowse validate` misses what the runtime flags:** a CSS color where
   `encoding.color` takes a field, and alignments filter fields and operators.
   Reuse the runtime rules through `scripts/generateMarkRules.ts`'s copy seam.

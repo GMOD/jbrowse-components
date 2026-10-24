@@ -2,6 +2,7 @@ import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeature
 import { measureRegionBytes } from '@jbrowse/core/rpc/byteBudget'
 import { updateStatus, withProgress } from '@jbrowse/core/util'
 import { checkAbortSignal } from '@jbrowse/core/util/aborting'
+import { unreadRecordFields } from '@jbrowse/core/util/fieldPredicate'
 import { rpcResultWithArrayBuffers } from '@jbrowse/core/util/librpc'
 
 import { buildFeatureRenderData } from './buildFeatureRenderData.ts'
@@ -12,6 +13,7 @@ import {
 } from './densityGate.ts'
 import { buildFeatureAdmission } from './featureAdmission.ts'
 import { fetchPeptideData } from './peptides/peptideUtils.ts'
+import { GENE_LIKE_FIELD } from './renderConfig.ts'
 import { fetchTranscriptFeatures, unfitNotices } from './transcriptFeatures.ts'
 
 import type { DisplayConfig } from './renderConfig.ts'
@@ -189,6 +191,12 @@ export async function executeRenderFeatureData({
   const result: FeatureDataResult = {
     ...packed,
     bytes,
+    unreadFilterFields: unreadRecordFields(
+      config.filter,
+      featuresArray,
+      features.size,
+      field => field === GENE_LIKE_FIELD,
+    ),
     ...withNotices([...notices, ...unfitNotices(transcriptFeatures)]),
   }
 

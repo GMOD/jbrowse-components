@@ -4,6 +4,7 @@ import {
   layerTables,
   matedBy,
   runTransforms as runTables,
+  unreadStepFields,
 } from './featureTransforms.ts'
 import createJexlInstance from './jexl.ts'
 import { placeRect } from './layouts/placeRect.ts'
@@ -1484,4 +1485,20 @@ test('a jexl filter of field comparisons runs on the lanes, without evaluating',
     [50],
   ])
   expect(() => filtered("jexl:feature.type != 'gene'")).toThrow(/jexl instance/)
+})
+
+test('unreadStepFields names a leading filter field no row holds, and none a formula writes', () => {
+  const table = asTable([feature(0, 10, { score: 3 }), feature(20, 30)])
+  expect(
+    unreadStepFields(
+      table,
+      [
+        { type: 'filter', predicates: [{ field: 'scroe', gt: 1 }] },
+        { type: 'filter', predicates: [{ field: 'score', gt: 5 }] },
+        { type: 'formula', expr: 'jexl:1', as: 'made' },
+        { type: 'filter', predicates: [{ field: 'made', gt: 0 }] },
+      ],
+      jexl,
+    ),
+  ).toEqual(['scroe'])
 })

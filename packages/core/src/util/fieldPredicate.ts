@@ -1,6 +1,7 @@
 import { getSnapshot, isStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 import { isMissing, valueText } from './groupKeys.ts'
+import { isJexl } from './jexlStrings.ts'
 import { numericValue } from './numericValue.ts'
 
 /**
@@ -369,6 +370,69 @@ export function testsSomething(p: FieldPredicate) {
     p.oneOf !== undefined ||
     p.valid !== undefined
   )
+}
+
+/**
+ * The fields `predicates` test that `holdsValue` says no record carries: a
+ * typo, or a column the track's records lack. Each one hides every record, so
+ * a display asks only once a filter has emptied a region that held records.
+ * An entry selecting missing values, or testing nothing, is never unread.
+ */
+export function unreadFields(
+  predicates: readonly FieldPredicate[],
+  holdsValue: (field: string) => boolean,
+) {
+  return [
+    ...new Set(
+      predicates
+        .filter(p => testsSomething(p) && p.valid !== false)
+        .map(p => p.field),
+    ),
+  ].filter(field => !holdsValue(field))
+}
+
+/**
+ * `unreadFields` over records read as a filter reads them, `get(field)`, where
+ * a `jexl:` field and one `computed` names (a field the display derives) always
+ * hold a value. Undefined with nothing fetched, and empty without a scan where
+ * the filter kept a record.
+ */
+export function unreadRecordFields(
+  predicates: readonly FieldPredicate[],
+  fetched: readonly { get: (field: string) => unknown }[],
+  kept: number,
+  computed: (field: string) => boolean = () => false,
+) {
+  return fetched.length === 0
+    ? undefined
+    : kept > 0
+      ? []
+      : unreadFields(
+          predicates,
+          field =>
+            isJexl(field) ||
+            computed(field) ||
+            fetched.some(record => !isMissing(record.get(field))),
+        )
+}
+
+/**
+ * The fields every region that fetched records found unread: each region's
+ * `unreadFields`, empty where its filter admitted a record, undefined where it
+ * fetched none. A field one region holds is that region's data, not a typo.
+ */
+export function unreadInEveryRegion(
+  lists: readonly (readonly string[] | undefined)[],
+) {
+  const fetched = lists.filter(list => list !== undefined)
+  return (fetched[0] ?? []).filter(field =>
+    fetched.every(list => list.includes(field)),
+  )
+}
+
+/** The notice a display gives for a filter field none of its records carry. */
+export function unreadFieldNotice(field: string, record: string) {
+  return `The filter tests "${field}", which no loaded ${record} carries, so it hides every ${record}. Check the field name, or remove the entry.`
 }
 
 /**

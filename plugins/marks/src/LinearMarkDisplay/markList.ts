@@ -101,6 +101,8 @@ export interface MarkRegionData {
   notices?: string[]
   /** What the adapter read off the region's features, under names of its own. */
   facts?: Record<string, unknown>
+  /** The `filter` fields no fetched feature carries. */
+  unreadFilterFields?: string[]
 }
 
 export interface MarkRenderState extends MarkFrame {

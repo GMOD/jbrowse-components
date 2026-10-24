@@ -1,5 +1,5 @@
 import { checkAbortSignal } from '../../util/aborting.ts'
-import { layerTables } from '../../util/featureTransforms.ts'
+import { layerTables, unreadStepFields } from '../../util/featureTransforms.ts'
 import { pathSeries } from '../../util/pathSeries.ts'
 import { updateStatus } from '../../util/progress.ts'
 
@@ -85,6 +85,12 @@ export async function layerFeatures(
     },
     jexl,
   )
+  const unreadFilterFields =
+    fetched.length === 0
+      ? undefined
+      : tables.layers.some(l => l.table.length > 0)
+        ? []
+        : unreadStepFields(fetched, transform, jexl)
   const layers = tables.layers.map((layer, i): LayerFeatures => {
     const { path, transform: own = [] } = requested[i]!
     return path
@@ -97,5 +103,12 @@ export async function layerFeatures(
         )
       : layer
   })
-  return { layers, sections: tables.sections, zoomRange, notices, facts }
+  return {
+    layers,
+    sections: tables.sections,
+    zoomRange,
+    notices,
+    facts,
+    unreadFilterFields,
+  }
 }

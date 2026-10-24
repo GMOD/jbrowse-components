@@ -28,7 +28,7 @@ const features = [10, 40, 25, 3].map(
     }),
 )
 
-async function run(args: Partial<CoreGetEncodedLayersArgs>) {
+async function answer(args: Partial<CoreGetEncodedLayersArgs>) {
   jest.mocked(getAdapter).mockResolvedValue({
     dataAdapter: {
       getFeatures: () => {},
@@ -46,7 +46,11 @@ async function run(args: Partial<CoreGetEncodedLayersArgs>) {
     layers: [{ encoding: { y: 'score' }, lanes: ['y'] }],
     ...args,
   })
-  return (result as RpcResult<EncodedLayersResult>).value.layers[0]!
+  return (result as RpcResult<EncodedLayersResult>).value
+}
+
+async function run(args: Partial<CoreGetEncodedLayersArgs>) {
+  return (await answer(args)).layers[0]!
 }
 
 test('a filter step keeps the features its expression admits, in order', async () => {
@@ -58,6 +62,22 @@ test('a filter step keeps the features its expression admits, in order', async (
   })
   expect(layer.count).toBe(2)
   expect([...layer.y!]).toEqual([10, 25])
+})
+
+test('a filter that empties the region names the field no feature carries', async () => {
+  const typo = await answer({
+    transform: [{ type: 'filter', predicates: [{ field: 'scroe', gt: 5 }] }],
+  })
+  expect(typo.layers[0]!.count).toBe(0)
+  expect(typo.unreadFilterFields).toEqual(['scroe'])
+  const strict = await answer({
+    transform: [{ type: 'filter', predicates: [{ field: 'score', gt: 99 }] }],
+  })
+  expect(strict.unreadFilterFields).toEqual([])
+  const kept = await answer({
+    transform: [{ type: 'filter', predicates: [{ field: 'score', gt: 5 }] }],
+  })
+  expect(kept.unreadFilterFields).toEqual([])
 })
 
 test('no transform encodes every feature', async () => {

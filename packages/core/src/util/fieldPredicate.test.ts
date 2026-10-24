@@ -1,6 +1,9 @@
 import {
   compilePredicates,
   lowerBoundOf,
+  unreadFields,
+  unreadInEveryRegion,
+  unreadRecordFields,
   withLowerBound,
 } from './fieldPredicate.ts'
 
@@ -239,5 +242,50 @@ describe('a value no number reads as fails every comparison', () => {
     }
     expect(admitted([{ field: 'n', equal: '' }], { n }, 3)).toEqual([])
     expect(admitted([{ field: 'n', oneOf: [1, 'x'] }], { n }, 3)).toEqual([1])
+  })
+})
+
+test('a field no record holds is unread, unless its entry selects missing values or tests nothing', () => {
+  const held = new Set(['score'])
+  expect(
+    unreadFields(
+      [
+        { field: 'score', gt: 5 },
+        { field: 'scroe', gt: 5 },
+        { field: 'scroe', lt: 9 },
+        { field: 'strand', valid: false },
+        { field: 'name' },
+      ],
+      field => held.has(field),
+    ),
+  ).toEqual(['scroe'])
+})
+
+test('a field is unread only where every region that fetched records found it so', () => {
+  expect(unreadInEveryRegion([['a', 'b'], undefined, ['b']])).toEqual(['b'])
+  expect(unreadInEveryRegion([['a'], []])).toEqual([])
+  expect(unreadInEveryRegion([undefined])).toEqual([])
+})
+
+describe('unreadRecordFields', () => {
+  const filter = [
+    { field: 'scroe', gt: 5 },
+    { field: 'score', gt: 50 },
+    { field: 'geneLike', equal: true },
+    { field: "jexl:get(feature,'nope')", equal: true },
+  ]
+  const record = (values: Record<string, unknown>) => ({
+    get: (field: string) => values[field],
+  })
+  const fetched = [record({ score: 10 }), record({})]
+  const computed = (field: string) => field === 'geneLike'
+
+  test('names a field no record carries once the filter kept none', () => {
+    expect(unreadRecordFields(filter, fetched, 0, computed)).toEqual(['scroe'])
+  })
+
+  test('reads nothing while the filter kept a record, and is undefined with none fetched', () => {
+    expect(unreadRecordFields(filter, fetched, 1, computed)).toEqual([])
+    expect(unreadRecordFields(filter, [], 0, computed)).toBeUndefined()
   })
 })

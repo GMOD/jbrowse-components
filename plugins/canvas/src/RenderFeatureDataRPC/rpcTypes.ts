@@ -211,6 +211,9 @@ export interface FeatureDataResult {
   // `transcriptFeatures` track that failed to load, while the features still
   // drew.
   notices?: string[]
+
+  // The `filter` fields no fetched feature carries (`unreadFilterFields`).
+  unreadFilterFields?: string[]
 }
 
 /**

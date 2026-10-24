@@ -22,6 +22,7 @@ import { deepEqual } from '@jbrowse/core/util/deepEqual'
 import {
   lowerBoundOf,
   predicatesOf,
+  unreadFieldNotice,
   upperBoundOf,
   withLowerBound,
   withUpperBound,
@@ -749,10 +750,16 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * `rowBandingNotices`.
+         * `rowBandingNotices`, and each `filter` field no loaded variant
+         * carries.
          */
         get liveNotices(): string[] {
-          return self.rowBandingNotices
+          return [
+            ...self.rowBandingNotices,
+            ...(self.cellData?.unreadFilterFields ?? []).map(field =>
+              unreadFieldNotice(field, 'variant'),
+            ),
+          ]
         },
         /**
          * #getter

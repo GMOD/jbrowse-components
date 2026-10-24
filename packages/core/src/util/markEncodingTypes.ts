@@ -479,6 +479,11 @@ export interface EncodedLayersResult {
   notices?: string[]
   /** What the adapter read off the features, under names of its own. */
   facts?: Record<string, unknown>
+  /**
+   * The `filter` fields no fetched feature carries, empty where a feature
+   * passed, undefined where none was fetched (`unreadInEveryRegion`).
+   */
+  unreadFilterFields?: string[]
 }
 
 /**

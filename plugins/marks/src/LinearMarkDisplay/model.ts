@@ -20,6 +20,8 @@ import { deepEqual } from '@jbrowse/core/util/deepEqual'
 import {
   isExpressionEntry,
   predicatesOf,
+  unreadFieldNotice,
+  unreadInEveryRegion,
 } from '@jbrowse/core/util/fieldPredicate'
 import { groupKeySpaceOf } from '@jbrowse/core/util/groupKeys'
 import {
@@ -225,6 +227,7 @@ function storedRegionData(result: EncodedLayersResult): MarkRegionData {
     zoomRange: result.zoomRange,
     notices: result.notices,
     facts: result.facts,
+    unreadFilterFields: result.unreadFilterFields,
   }
 }
 
@@ -1422,12 +1425,14 @@ export function stateModelFactory(
          * #getter
          * What the adapter said about the loaded regions that the plot cannot
          * show — an index SNP no LD record names — each once, for the corner
-         * notice.
+         * notice, and each `filter` field no loaded feature carries.
          */
         get dataNotices(): string[] {
+          const regions = [...self.rpcDataMap.values()]
           return [
-            ...new Set(
-              [...self.rpcDataMap.values()].flatMap(d => d.notices ?? []),
+            ...new Set(regions.flatMap(d => d.notices ?? [])),
+            ...unreadInEveryRegion(regions.map(d => d.unreadFilterFields)).map(
+              field => unreadFieldNotice(field, 'feature'),
             ),
           ]
         },
