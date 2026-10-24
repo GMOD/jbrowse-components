@@ -395,6 +395,7 @@ exports[`every registered schema slot default 1`] = `
   },
   "display: LGVSyntenyDisplay": {
     "collapseSections": "boolean = true",
+    "coverage.alleles.show": "boolean = true",
     "coverage.encoding.y.axis.grid": "boolean = false",
     "coverage.encoding.y.axis.title": "maybeString = undefined",
     "coverage.encoding.y.scale.constant": "number = 1",
@@ -462,6 +463,7 @@ exports[`every registered schema slot default 1`] = `
   },
   "display: LinearAlignmentsDisplay": {
     "collapseSections": "boolean = false",
+    "coverage.alleles.show": "boolean = true",
     "coverage.encoding.y.axis.grid": "boolean = false",
     "coverage.encoding.y.axis.title": "maybeString = undefined",
     "coverage.encoding.y.scale.constant": "number = 1",
@@ -609,6 +611,7 @@ exports[`every registered schema slot default 1`] = `
     "conservation.height": "number = 40",
     "conservation.show": "boolean = false",
     "conservation.unit": "stringEnum = "base" of ["base","codon"]",
+    "coverage.alleles.show": "boolean = true",
     "coverage.encoding.y.axis.grid": "boolean = false",
     "coverage.encoding.y.axis.title": "maybeString = undefined",
     "coverage.encoding.y.scale.constant": "number = 1",
