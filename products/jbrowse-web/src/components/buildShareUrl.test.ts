@@ -82,6 +82,18 @@ describe('buildShareUrl', () => {
     expect(url).not.toContain('safeMode')
   })
 
+  // renderer works around this machine's GPU, and exportedFrom describes the
+  // link this page was opened from, not the one being made
+  it('carries only the config from the page', async () => {
+    mockEncode.mockResolvedValue({ sessionParam: 'encoded-BIG' })
+
+    const { params } = await build(
+      'long',
+      '#config=conf.json&renderer=canvas2d&exportedFrom=jbrowse-desktop%405&session=local-old',
+    )
+    expect([...params.keys()]).toEqual(['config', 'session'])
+  })
+
   // The referer is POSTed to the share server and stored beside the session, so
   // it has to drop everything the shared link itself drops.
   it('never reports the admin params or a password as the referer', async () => {

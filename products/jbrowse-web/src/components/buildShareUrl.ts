@@ -3,22 +3,6 @@ import { encodeSessionParam } from '@jbrowse/core/util'
 
 import type { SessionShareMode } from '@jbrowse/core/util'
 
-// Page params a shared link never carries:
-// - `adminKey`/`adminServer`: adminKey is the credential the admin server
-//   accepts for overwriting config.json, and both survive
-//   stripConsumedSessionParams because an admin needs them across reloads
-// - `safeMode`: sticks across reloads on purpose (it is how a user gets back to
-//   a menu a crashing permanent plugin hid), which is exactly what would make it
-//   silently switch off the recipient's plugins
-// - `session`/`password`: this page's own session, replaced by the shared one
-const PAGE_ONLY_PARAMS = [
-  'adminKey',
-  'adminServer',
-  'safeMode',
-  'session',
-  'password',
-]
-
 // Builds a link to this jbrowse-web page carrying `snap`. Session encoding is
 // shared with desktop's export-to-web via encodeSessionParam, so only the URL
 // assembly lives here.
@@ -34,10 +18,11 @@ export async function buildShareUrl(
   pageUrl: string,
 ): Promise<string> {
   const url = new URL(pageUrl)
-  const params = readAllQueryParams(url)
-  for (const key of PAGE_ONLY_PARAMS) {
-    params.delete(key)
-  }
+  // The link names the config and the session, and nothing else of this page's:
+  // the rest are this browser's own (adminKey is the admin server's credential,
+  // safeMode and renderer work around this machine's plugins and GPU)
+  const config = readAllQueryParams(url).get('config')
+  const params = new URLSearchParams(config === null ? {} : { config })
   // POSTed to the share server and stored beside the session, so it carries
   // what the link carries and no session
   const referer = new URL(url)
