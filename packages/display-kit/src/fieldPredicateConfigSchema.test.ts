@@ -1,7 +1,10 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
-import { fieldPredicateList } from './fieldPredicateConfigSchema.ts'
+import {
+  fieldPredicateList,
+  predicateListDefaults,
+} from './fieldPredicateConfigSchema.ts'
 
 const Display = ConfigurationSchema('FilterHost', {
   filter: fieldPredicateList(),
@@ -61,4 +64,22 @@ describe('an entry whose tests all drop loads as no entry', () => {
     ])
     expect(warn).not.toHaveBeenCalled()
   })
+})
+
+test('the lists declaring defaults are found at any depth, by path', () => {
+  const dup = [{ field: 'flags.DUP', equal: false }]
+  const floor = [{ field: 'depth', gte: 8 }]
+  const Host = ConfigurationSchema('DefaultsHost', {
+    filter: fieldPredicateList({ defaults: dup }),
+    plain: fieldPredicateList(),
+    band: ConfigurationSchema('DefaultsBand', {
+      layer: ConfigurationSchema('DefaultsLayer', {
+        filter: fieldPredicateList({ defaults: floor }),
+      }),
+    }),
+  })
+  expect(predicateListDefaults(Host.create())).toEqual([
+    { path: 'filter', entries: dup },
+    { path: 'band.layer.filter', entries: floor },
+  ])
 })

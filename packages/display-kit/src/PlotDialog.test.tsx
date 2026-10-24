@@ -1,8 +1,10 @@
 import '@testing-library/jest-dom'
 
+import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { fireEvent, render, screen } from '@testing-library/react'
 
 import PlotDialog from './PlotDialog.tsx'
+import { fieldPredicateList } from './fieldPredicateConfigSchema.ts'
 
 import type { PlotDialogHost } from './PlotDialog.tsx'
 import type { Plot } from '@jbrowse/core/configuration'
@@ -58,6 +60,23 @@ it('opens on the declared plot', () => {
   const { field } = setup()
   expect(field).toHaveValue(JSON.stringify(MARKS, null, 2))
   expect(screen.getByText('No changes')).toBeInTheDocument()
+})
+
+it('lists the defaults a written filter merges with, by path', () => {
+  const Host = ConfigurationSchema('PlotDefaultsHost', {
+    filter: fieldPredicateList({
+      defaults: [{ field: 'flags.DUP', equal: false }],
+    }),
+  })
+  setup({ host: { configuration: Host.create() } })
+  const listed = screen.getByTestId('plot-defaults')
+  expect(listed).toHaveTextContent('filter')
+  expect(listed).toHaveTextContent('{"field":"flags.DUP","equal":false}')
+})
+
+it('lists no defaults where no filter declares any', () => {
+  setup()
+  expect(screen.queryByTestId('plot-defaults')).toBeNull()
 })
 
 it('keeps the help hidden until asked', () => {

@@ -1,3 +1,6 @@
+import { predicateListDefaults } from '@jbrowse/display-kit/fieldPredicateConfigSchema'
+
+import { ALIGNMENTS_FILTER_DEFAULTS } from '../shared/alignmentsFilter.ts'
 import { bootAlignmentsDisplay } from './testUtils.ts'
 
 function createDisplay() {
@@ -87,4 +90,19 @@ test('the row order is part of the plot', () => {
   display.applyPlot({ sort: 'split' })
   expect(display.plot).toMatchObject({ sort: 'split' })
   expect(display.layoutOrder).toBe('split')
+})
+
+test('Edit plot finds the defaults each filter merges with', () => {
+  const display = createDisplay()
+  const defaults = predicateListDefaults(display.configuration)
+  expect(defaults.map(d => d.path)).toEqual([
+    'filter',
+    'coverage.interbase.filter',
+    'pileup.bases.filter',
+  ])
+  expect(defaults[0]!.entries).toBe(ALIGNMENTS_FILTER_DEFAULTS)
+  expect(defaults[1]!.entries).toEqual([
+    { field: 'depth', gte: 8 },
+    { field: 'fraction', gt: 0.3 },
+  ])
 })

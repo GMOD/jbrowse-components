@@ -2,6 +2,7 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { encodingOptions } from '@jbrowse/display-kit/colorConfigSchema'
 import { fieldPredicateList } from '@jbrowse/display-kit/fieldPredicateConfigSchema'
 
+import { BASES_FILTER_DEFAULTS } from '../shared/basesFilter.ts'
 import { alignmentsBaseColorConfigSchema } from './alignmentsBaseColorConfigSchema.ts'
 import { pileupBasesUnmodifiedConfigSchema } from './pileupBasesUnmodifiedConfigSchema.ts'
 
@@ -101,7 +102,7 @@ export const pileupBasesConfigSchema = ConfigurationSchema(
      * bisulfite read, and every code. An entry naming a field with no test,
      * `{ field: 'context' }`, drops that field's default.
      */
-    filter: fieldPredicateList(),
+    filter: fieldPredicateList({ defaults: BASES_FILTER_DEFAULTS }),
     /**
      * #slot unmodified
      * The unmodified side, in blue, under the `modifications` and

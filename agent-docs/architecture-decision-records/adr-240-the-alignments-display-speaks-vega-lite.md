@@ -146,8 +146,12 @@ them in its own stage:
 1. **A written `filter` list merges with the defaults by field.** An entry
    replaces the defaults on its own field, entries an author writes on one
    field all apply (`gte` and `lte` on `insertSize`), and an entry naming a
-   field with no test removes that field's defaults. Edit plot and the docs show
-   the merged list. ADR-238's whole-list replacement silently dropped the 1540
+   field with no test removes that field's defaults. The slot declares its
+   defaults (`fieldPredicateList({ defaults })`), and Edit plot lists them
+   beside the written list, which `plot` keeps as written (amended
+   2026-10-24: showing the merged list in `plot` gave `filter` a second
+   meaning there, and an `applyPlot` of one test then dropped the defaults).
+   ADR-238's whole-list replacement silently dropped the 1540
    flags and both floors on any hand-written filter, and broke the launch-arg
    modifiers, which compose onto what the config says
    (`readFilterModifiers.test.ts`). The merge runs once at config resolve.

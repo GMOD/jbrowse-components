@@ -16,6 +16,8 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import { predicateListDefaults } from './fieldPredicateConfigSchema.ts'
+
 import type {
   AnyConfigurationModel,
   Plot,
@@ -42,6 +44,8 @@ export interface PlotDialogHost {
   configDocsUrl: string
   /** A form over the same settings, opened on the draft. */
   openPlotForm?: (draft: Plot) => void
+  /** The display's config, whose filter lists may declare defaults. */
+  configuration?: AnyConfigurationModel
 }
 
 const EDIT_PLOT_GUIDE = 'https://jbrowse.org/jb2/docs/user_guides/edit_plot/'
@@ -120,7 +124,8 @@ const PlotDialog = observer(function PlotDialog({
   const [text, setText] = useState(() => plotText(model, seed, seedOptions))
   const [showHelp, setShowHelp] = useState(false)
   const { plot, problems, summary, error } = readDraft(model, text)
-  const { openPlotForm } = model
+  const { openPlotForm, configuration } = model
+  const defaults = configuration ? predicateListDefaults(configuration) : []
 
   return (
     <SubmitDialog
@@ -220,6 +225,20 @@ const PlotDialog = observer(function PlotDialog({
             <li key={problem}>{problem}</li>
           ))}
         </ul>
+      ) : null}
+      {defaults.length ? (
+        <DialogContentText component="div" data-testid="plot-defaults">
+          Each filter below also applies these defaults, unless an entry names
+          the same field; <code>{'{ "field": … }'}</code> with no test removes
+          that field's defaults.
+          <ul>
+            {defaults.map(({ path, entries }) => (
+              <li key={path}>
+                <code>{path}</code>: <code>{JSON.stringify(entries)}</code>
+              </li>
+            ))}
+          </ul>
+        </DialogContentText>
       ) : null}
     </SubmitDialog>
   )

@@ -1,8 +1,15 @@
-import { ConfigurationSchema, plotList } from '@jbrowse/core/configuration'
+import {
+  ConfigurationSchema,
+  getConfigurationSchemaMetadata,
+  isConfigurationSchemaType,
+  plotList,
+} from '@jbrowse/core/configuration'
 import { PredicateField } from '@jbrowse/core/util/types/mst'
-import { types } from '@jbrowse/mobx-state-tree'
+import { getType, isType, types } from '@jbrowse/mobx-state-tree'
 
-import type { Instance } from '@jbrowse/mobx-state-tree'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
+import type { IAnyType, Instance } from '@jbrowse/mobx-state-tree'
 
 const Scalar = types.union(types.string, types.number, types.boolean)
 
@@ -208,7 +215,41 @@ export function fieldPredicateArray() {
   })
 }
 
-/** A display's `filter` slot: a list of predicates, edited by "Edit plot...". */
-export function fieldPredicateList() {
-  return plotList(fieldPredicateArray())
+const listDefaults = new WeakMap<IAnyType, readonly FieldPredicate[]>()
+
+/**
+ * A display's `filter` slot: a list of predicates, edited by "Edit plot...".
+ * `defaults` are the entries a written list merges with by field (ADR-240):
+ * an entry replaces its field's defaults, and `{ field }` alone removes
+ * them. Declared here, Edit plot lists them beside the written list.
+ */
+export function fieldPredicateList({
+  defaults,
+}: { defaults?: readonly FieldPredicate[] } = {}) {
+  const type = fieldPredicateArray()
+  if (defaults) {
+    listDefaults.set(type, defaults)
+  }
+  return plotList(type)
+}
+
+/** Every predicate list under a config that declares defaults, by its path. */
+export function predicateListDefaults(
+  conf: AnyConfigurationModel,
+): { path: string; entries: readonly FieldPredicate[] }[] {
+  const walk = (
+    type: IAnyType,
+    prefix: string,
+  ): { path: string; entries: readonly FieldPredicate[] }[] =>
+    Object.entries(
+      getConfigurationSchemaMetadata(type)?.definition ?? {},
+    ).flatMap(([key, entry]) => {
+      const defaults = isType(entry) ? listDefaults.get(entry) : undefined
+      return defaults
+        ? [{ path: `${prefix}${key}`, entries: defaults }]
+        : isConfigurationSchemaType(entry)
+          ? walk(entry, `${prefix}${key}.`)
+          : []
+    })
+  return walk(getType(conf), '')
 }

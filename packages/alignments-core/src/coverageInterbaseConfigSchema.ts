@@ -6,6 +6,17 @@ import { layerFilterProblems } from './layerFilterProblems.ts'
 
 import type { Floor } from '@jbrowse/core/util/fieldPredicate'
 
+/** The depth and share a position needs for an indicator triangle. */
+export interface InterbaseIndicatorRule {
+  depth: Floor
+  fraction: Floor
+}
+
+export const DEFAULT_INTERBASE_INDICATOR_RULE: InterbaseIndicatorRule = {
+  depth: { min: 8, strict: false },
+  fraction: { min: 0.3, strict: true },
+}
+
 /**
  * #config CoverageInterbase
  * #category display
@@ -45,21 +56,15 @@ export const coverageInterbaseConfigSchema = ConfigurationSchema(
      * an entry naming a field with no test, `{ field: 'depth' }`, drops that
      * field's default.
      */
-    filter: fieldPredicateList(),
+    filter: fieldPredicateList({
+      defaults: Object.entries(DEFAULT_INTERBASE_INDICATOR_RULE).map(
+        ([field, { min, strict }]) =>
+          strict ? { field, gt: min } : { field, gte: min },
+      ),
+    }),
   },
   { closed: true },
 )
-
-/** The depth and share a position needs for an indicator triangle. */
-export interface InterbaseIndicatorRule {
-  depth: Floor
-  fraction: Floor
-}
-
-export const DEFAULT_INTERBASE_INDICATOR_RULE: InterbaseIndicatorRule = {
-  depth: { min: 8, strict: false },
-  fraction: { min: 0.3, strict: true },
-}
 
 const NO_FLOOR: Floor = { min: 0, strict: false }
 

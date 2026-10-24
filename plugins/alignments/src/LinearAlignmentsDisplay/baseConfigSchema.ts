@@ -10,6 +10,7 @@ import { hiddenLegendConfigSchema } from '@jbrowse/display-kit/hiddenLegendConfi
 import { sectionFacetConfigSchema } from '@jbrowse/display-kit/sectionFacetConfigSchema'
 import { types } from '@jbrowse/mobx-state-tree'
 
+import { ALIGNMENTS_FILTER_DEFAULTS } from '../shared/alignmentsFilter.ts'
 import { alignmentsEncodingConfigSchema } from './alignmentsEncodingConfigSchema.ts'
 import { alignmentsSortConfigSchema } from './alignmentsSortConfigSchema.ts'
 import { ALIGNMENTS_UNITS } from './constants.ts'
@@ -83,7 +84,7 @@ export const baseLinearAlignmentsDisplayConfigSchema = ConfigurationSchema(
      * field with no test, such as `{ field: "flags.DUP" }`, only removes
      * them.
      */
-    filter: fieldPredicateList(),
+    filter: fieldPredicateList({ defaults: ALIGNMENTS_FILTER_DEFAULTS }),
     /**
      * #slot facet
      * In-track stacked grouping, one labelled section per value: a read

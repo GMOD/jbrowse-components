@@ -81,8 +81,12 @@ vocabulary.
 ### Predicate
 
 `{ field, equal | lt | lte | gt | gte | range | oneOf | valid }`. A
-`filter` list is the AND of its entries, and it is the whole filter: writing
-one replaces the default list, which Edit plot and the docs show.
+`filter` list is the AND of its entries. Where a display declares default
+entries (the alignments reads, modification calls and interbase triangles), a
+written list merges with them by field, as ADR-240 amends: an entry replaces
+its field's defaults, and `{ field }` alone removes them. Edit plot lists the
+defaults beside the written list. With no defaults declared, the list is the
+whole filter.
 
 Amended 2026-10-24:
 - `range` is built as a load-time lift to `gte` and `lte`, the tighter bound
