@@ -297,7 +297,7 @@ describe('the schema', () => {
       'tracks[0].displays[0].pileup.bases.encoding.color',
     )
     expect(error?.message).toBe(
-      'expected one of "", "baseQuality", "base", "modifications", "bisulfite", got "methylation"',
+      'expected one of "baseQuality", "base", "modifications", "bisulfite", got "methylation"',
     )
     config.tracks[0]!.displays = [
       {
