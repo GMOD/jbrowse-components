@@ -13,7 +13,10 @@ import {
   resolveTrackId,
   trackType,
 } from '@jbrowse/launch-args'
-import { memberWrites } from '@jbrowse/launch-args/displaySettings'
+import {
+  buildDisplaySnapshot,
+  memberWrites,
+} from '@jbrowse/launch-args/displaySettings'
 import { addDisposer, destroy } from '@jbrowse/mobx-state-tree'
 import { renderToSvg as renderBreakpointToSvg } from '@jbrowse/plugin-breakpoint-split-view'
 import { renderToSvg as renderCircularToSvg } from '@jbrowse/plugin-circular-view'
@@ -24,6 +27,7 @@ import {
   renderToSvg as renderLinearToSvg,
   trackCategory,
   writeMembers,
+  writeReadFilter,
 } from '@jbrowse/plugin-linear-genome-view'
 import { createViewStateAsync } from '@jbrowse/react-app2'
 import { createCanvas, loadImage } from '@napi-rs/canvas'
@@ -52,7 +56,10 @@ import type { SnackbarMessage } from '@jbrowse/core/ui/SnackbarModel'
 import type { SettleableView } from '@jbrowse/core/util/whenViewSettled'
 import type { Entry } from '@jbrowse/launch-args'
 import type { LinearAlignmentsDisplayModel } from '@jbrowse/plugin-alignments'
-import type { BreakpointViewModel } from '@jbrowse/plugin-breakpoint-split-view'
+import type {
+  BreakpointSplitViewInitView,
+  BreakpointViewModel,
+} from '@jbrowse/plugin-breakpoint-split-view'
 import type {
   CircularViewCommands,
   CircularViewModel,
@@ -765,7 +772,8 @@ const renderCircular: ModeRenderer = async ctx => {
 // tracks on them: with no track there is nothing to connect and the export is a
 // stack of empty rulers. The modifiers that follow a --track reach the panels
 // through breakpointTracks, which is the one route a panel's launch blob has,
-// and their member writes through `writeMembers` once each panel has opened.
+// and their read filter and member writes through `writeReadFilter` and
+// `writeMembers` once each panel has opened.
 //
 // The view's panels are its `views`, one entry per panel, which is why this
 // does not go through `viewSettingsFromSpec` the way the single-blob modes do —
@@ -774,7 +782,7 @@ const renderCircular: ModeRenderer = async ctx => {
 const renderBreakpoint: ModeRenderer = async ctx => {
   const { data, opts, model } = ctx
   let flagTracks: OpenTrack[] = []
-  let spec: ViewSpec | undefined
+  let specPanels: BreakpointSplitViewInitView[] | undefined
   const view = await addLaunchView<BreakpointViewModel, 'BreakpointSplitView'>(
     ctx,
     'BreakpointSplitView',
@@ -785,28 +793,40 @@ const renderBreakpoint: ModeRenderer = async ctx => {
         breakpointInit(from, opts, showTracks, (trackId, modifiers) =>
           trackCategory(model.session, trackId, modifiers),
         )
-      spec = {
-        type: 'BreakpointSplitView',
-        views: panels({ ...data, openTracks: undefined }),
-      }
+      specPanels = panels({ ...data, openTracks: undefined })
       return { views: panels(data) }
     },
     spec => ({ views: breakpointPanelsFromSpec(spec) }),
   )
+  const drawnFilters = new Map<string, unknown[]>()
   // the view's own launch clears in the tick it creates the panels, each still
   // carrying the launch that opens its tracks
   for (const panel of view.views) {
     await whenViewReady(panel, model.session)
     for (const { trackId, opts: modifiers } of flagTracks) {
-      writeMembers(
-        panel,
-        trackId,
-        memberWrites(
-          trackCategory(model.session, trackId, modifiers),
-          modifiers,
-        ),
+      const category = trackCategory(model.session, trackId, modifiers)
+      const drawn = writeReadFilter(
+        panel.tracks.find(t => t.configuration.trackId === trackId)
+          ?.displays[0],
+        category,
+        buildDisplaySnapshot(category, modifiers, () => {}),
       )
+      if (drawn) {
+        drawnFilters.set(trackId, drawn)
+      }
+      writeMembers(panel, trackId, memberWrites(category, modifiers))
     }
+  }
+  const spec: ViewSpec | undefined = specPanels && {
+    type: 'BreakpointSplitView',
+    views: specPanels.map(panel => ({
+      ...panel,
+      tracks: panel.tracks?.map(t =>
+        typeof t !== 'string' && drawnFilters.has(t.trackId)
+          ? { ...t, filter: drawnFilters.get(t.trackId) }
+          : t,
+      ),
+    })),
   }
   const svg = await renderBreakpointToSvg(view, {
     ...baseSvgOpts(opts),

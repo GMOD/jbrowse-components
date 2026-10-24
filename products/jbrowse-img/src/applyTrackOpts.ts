@@ -57,6 +57,7 @@ export type AssertDisplaySettingsMatchPlugins = [
       : false
   >,
   AssertTrue<FilterEntry extends FieldPredicate ? true : false>,
+  AssertNever<Differ<keyof FilterEntry, keyof FieldPredicate>>,
 ]
 
 // Every DisplaySnapshot key exists on a display model, so a property renamed

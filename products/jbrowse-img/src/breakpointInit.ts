@@ -73,6 +73,10 @@ export function breakpointLocs(argv: Entry[] | undefined, loc?: string) {
  * A `TrackInit` object carries the snapshot instead: every key except
  * `trackId`/`trackSnapshot`/`displaySnapshot` folds into the display snapshot
  * (`normalizeTrackInit`), which is the same route a session spec takes.
+ *
+ * An alignments track's `filter` stays out of the snapshot, whose list would
+ * replace the configured one: `writeReadFilter` writes it by field once each
+ * panel opens.
  */
 export function breakpointTracks(
   openTracks: OpenTrack[] | undefined,
@@ -81,7 +85,11 @@ export function breakpointTracks(
 ): TrackInit[] {
   return [...showTracks, ...(openTracks ?? [])].map(({ trackId, opts }) => {
     const category = categoryOf(trackId, opts)
-    const { snap, sort, displayType } = buildDisplaySnapshot(category, opts)
+    const {
+      snap: { filter, ...snap },
+      sort,
+      displayType,
+    } = buildDisplaySnapshot(category, opts)
     if (sort) {
       // The center-line sort is resolved against a view's centerLineInfo, and
       // there is no single view here — one panel per --loc, each at its own
@@ -99,6 +107,7 @@ export function breakpointTracks(
       // the track's own wins.
       ...(category === 'alignments' ? { sort: 'svSignal' } : {}),
       ...snap,
+      ...(filter && category !== 'alignments' ? { filter } : {}),
       ...(displayType ? { type: displayType } : {}),
     }
   })

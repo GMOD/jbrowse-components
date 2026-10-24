@@ -118,6 +118,7 @@ export {
   launchTrackWithModifiers,
   trackCategory,
   writeMembers,
+  writeReadFilter,
 } from './TrackModifiers/index.ts'
 export type { ModifierView } from './TrackModifiers/index.ts'
 export {

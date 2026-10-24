@@ -5,7 +5,6 @@ import { normalizeTrackInit, trackDisplayType } from '@jbrowse/core/util/tracks'
 import {
   buildDisplaySnapshot,
   displayCategory,
-  filterEntriesOf,
   memberPatch,
   memberWrites,
   mergeSettings,
@@ -120,8 +119,8 @@ function modifierLaunch(
   }
 }
 
-function readFilterOf({ category, settings }: ModifierLaunch) {
-  return category === 'alignments' ? filterEntriesOf(settings.snap) : undefined
+function readFilterOf(category: Category, settings: DisplaySettings) {
+  return category === 'alignments' ? settings.snap.filter : undefined
 }
 
 // the entries grouped by field, as `setFilterFields` takes them: a field whose
@@ -140,19 +139,39 @@ function filterPatch(entries: readonly FieldPredicate[]) {
 // The display an alignments launch writes its read filter onto, once open
 interface FilterDisplay {
   setFilterFields?: (patch: Record<string, FieldPredicate[]>) => void
-  writtenFilter?: unknown[]
+  writtenFilter?: FieldPredicate[]
 }
 
 // the display snapshot a track opens with. An alignments `filter` stays out of
-// it: `finishOpen` writes it onto the configured filter by field, as the track
-// menu would, since the list in a snapshot would replace the configured one
-function launchSnapshot(launch: ModifierLaunch) {
-  const { snap, displayType } = launch.settings
+// it: `writeReadFilter` writes it once the track is open, since the list in a
+// snapshot would replace the configured one
+function launchSnapshot({ category, settings }: ModifierLaunch) {
+  const { snap, displayType } = settings
   const { filter: _filter, ...unfiltered } = snap
   return {
-    ...(readFilterOf(launch) ? unfiltered : snap),
+    ...(readFilterOf(category, settings) ? unfiltered : snap),
     ...(displayType ? { type: displayType } : {}),
   }
+}
+
+/**
+ * Write the read filter of an alignments track's `settings` onto its opened
+ * `display`, by field over the configured filter, as the track menu would.
+ * Returns the display's filter as written, which reopens the track as drawn,
+ * or undefined when the settings write no filter.
+ */
+export function writeReadFilter(
+  display: unknown,
+  category: Category,
+  settings: DisplaySettings,
+) {
+  const filter = readFilterOf(category, settings)
+  if (!filter) {
+    return undefined
+  }
+  const filterDisplay = display as FilterDisplay | undefined
+  filterDisplay?.setFilterFields?.(filterPatch(filter))
+  return filterDisplay?.writtenFilter
 }
 
 // the pivot is the base under the view's center, which a view has only once
@@ -176,22 +195,6 @@ function centerSort(
     )
     return undefined
   }
-}
-
-// the read filter onto the configured one, then the member writes
-function finishOpen(
-  view: ModifierView,
-  trackId: string,
-  launch: ModifierLaunch,
-  opened: { displays: unknown[] },
-) {
-  const filter = readFilterOf(launch)
-  if (filter) {
-    ;(opened.displays[0] as FilterDisplay | undefined)?.setFilterFields?.(
-      filterPatch(filter),
-    )
-  }
-  return writeMembers(view, trackId, launch.members)
 }
 
 interface LaunchOptions {
@@ -237,10 +240,12 @@ export async function launchTrackWithModifiers(
   if (!opened) {
     return undefined
   }
-  const members = finishOpen(view, trackId, launch, opened)
-  const drawnFilter =
-    readFilterOf(launch) &&
-    (opened.displays[0] as FilterDisplay | undefined)?.writtenFilter
+  const drawnFilter = writeReadFilter(
+    opened.displays[0],
+    category,
+    launch.settings,
+  )
+  const members = writeMembers(view, trackId, launch.members)
   return {
     trackId,
     ...launched,

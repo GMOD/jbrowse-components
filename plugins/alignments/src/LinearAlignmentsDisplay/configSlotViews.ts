@@ -127,7 +127,7 @@ export function alignmentsConfigProblems(
       readConfObject(conf, 'unit'),
     ),
     ...sortProblems(conf.sort),
-    ...filterProblems(writtenFilterOf(conf)),
+    ...filterProblems(writtenFilterOf(conf)).map(line => `filter: ${line}`),
     ...coverageLayerProblems(conf.coverage),
     ...basesFilterProblems(readsConfOf(conf)?.pileup.bases.filter),
     ...(readsConfOf(conf)
@@ -370,6 +370,18 @@ export function configSlotViews(self: ConfigSlotSelf) {
      */
     get filterPredicates(): FieldPredicate[] {
       return mergeFilter(this.writtenFilter)
+    },
+    /**
+     * #getter
+     * The `filter` entries the display cannot apply, at the level jbrowse-img
+     * fails an export on: an entry the reads ignore draws them unfiltered.
+     */
+    get configProblems() {
+      return filterProblems(this.writtenFilter).map(message => ({
+        level: 'error' as const,
+        slot: 'filter',
+        message,
+      }))
     },
     /**
      * #getter

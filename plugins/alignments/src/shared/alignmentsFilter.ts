@@ -507,16 +507,12 @@ export function filterProblems(written: readonly FieldPredicate[]): string[] {
         p.equal !== undefined ||
         p.oneOf !== undefined ||
         p.valid !== undefined
-        ? [
-            `filter: ${field} takes a floor (gte or gt), not ${JSON.stringify(p)}`,
-          ]
+        ? [`${field} takes a floor (gte or gt), not ${JSON.stringify(p)}`]
         : []
     }
     if (ROW_CATEGORY_FIELDS.has(field)) {
       return testsSomething(p) && typeof p.equal !== 'boolean'
-        ? [
-            `filter: ${field} takes equal: true or false, not ${JSON.stringify(p)}`,
-          ]
+        ? [`${field} takes equal: true or false, not ${JSON.stringify(p)}`]
         : []
     }
     const vocabulary = ROW_VALUE_FIELDS.get(field)
@@ -532,13 +528,13 @@ export function filterProblems(written: readonly FieldPredicate[]): string[] {
         p.valid !== undefined ||
         values.some(v => typeof v !== 'string' || !vocabulary.includes(v))
         ? [
-            `filter: ${field} takes equal or oneOf of ${vocabulary.join(', ')}, not ${JSON.stringify(p)}`,
+            `${field} takes equal or oneOf of ${vocabulary.join(', ')}, not ${JSON.stringify(p)}`,
           ]
         : []
     }
     return isReadField(field)
       ? []
-      : [`filter: no field ${JSON.stringify(field)} on an alignment`]
+      : [`no field ${JSON.stringify(field)} on an alignment`]
   })
 }
 

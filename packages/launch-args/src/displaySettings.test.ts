@@ -1,10 +1,11 @@
+import { predicatesOf } from '@jbrowse/core/util/fieldPredicate'
+
 import {
   buildDisplaySnapshot,
   checkModifiers,
+  filterEntriesOf,
   memberWrites,
 } from './displaySettings.ts'
-
-import type { FilterEntry } from './displaySettings.ts'
 
 // buildDisplaySnapshot turns a track's modifier list into a declarative display
 // snapshot (passed to showTrack), instead of a sequence of setter actions.
@@ -283,7 +284,7 @@ describe('alignments settings a static export cannot reach any other way', () =>
   })
 
   const filterOf = (opts: string[]) =>
-    buildDisplaySnapshot('alignments', opts).snap.filter as FilterEntry[]
+    buildDisplaySnapshot('alignments', opts).snap.filter!
   const testedOf = (opts: string[]) =>
     filterOf(opts).filter(p => Object.keys(p).length > 1)
 
@@ -373,14 +374,33 @@ describe('alignments settings a static export cannot reach any other way', () =>
     ).toThrow(/PAIRED, PROPER_PAIR/)
   })
 
-  // AND-ed, so a second one is a second condition rather than a replacement
-  test('tag filters accumulate, and coexist with the flag masks', () => {
+  test('tag filters on different tags accumulate beside the flag masks', () => {
     expect(
       testedOf(['flags:2', 'filterTag:HP:1', 'filterTag:RG:lane3']),
     ).toEqual([
       { field: 'flags.PROPER_PAIR', equal: true },
       { field: 'tags.HP', equal: '1' },
       { field: 'tags.RG', equal: 'lane3' },
+    ])
+  })
+
+  test('a second value on one tag is an alternative', () => {
+    expect(
+      filterOf([
+        'filterTag:RG:a',
+        'filterTag:HP:1',
+        'filterTag:RG:b',
+        'filterTag:RG:a',
+      ]),
+    ).toEqual([
+      { field: 'tags.HP', equal: '1' },
+      { field: 'tags.RG', oneOf: ['a', 'b'] },
+    ])
+    expect(filterOf(['filterTag:RG:a', 'filterTag:RG'])).toEqual([
+      { field: 'tags.RG', valid: true },
+    ])
+    expect(filterOf(['filterTag:RG', 'filterTag:RG:a'])).toEqual([
+      { field: 'tags.RG', equal: 'a' },
     ])
   })
 
@@ -417,6 +437,51 @@ describe('alignments settings a static export cannot reach any other way', () =>
       { field: 'tags.HP', equal: '1' },
       { field: 'mapq', gte: 20 },
     ])
+  })
+
+  test("a settings bag after a modifier keeps the modifier's fields", () => {
+    expect(
+      filterOf([
+        'mapq:20',
+        'filterTag:HP:1',
+        '{"filter":[{"field":"split","equal":true},{"field":"tags.HP","equal":"2"}]}',
+      ]),
+    ).toEqual([
+      { field: 'mapq', gte: 20 },
+      { field: 'split', equal: true },
+      { field: 'tags.HP', equal: '2' },
+    ])
+  })
+
+  test('a filter= write edits by field as a modifier does', () => {
+    expect(filterOf(['mapq:20', 'filter=split'])).toEqual([
+      { field: 'mapq', gte: 20 },
+      { field: 'split', equal: true },
+    ])
+  })
+
+  test('a string entry is the shorthand the config schema reads', () => {
+    const list = ['split', 'jexl:feature.score > 1', { field: 'mapq', gte: 5 }]
+    expect(filterEntriesOf(list)).toEqual(predicatesOf(list))
+  })
+
+  test.each([
+    [{ field: 'flags.DUP', equals: true }, /has no test "equals"/],
+    [null, /is not an object/],
+    [{ equal: true }, /names no field/],
+    [{ field: '' }, /names no field/],
+    [{ field: 'mapq', gte: '20' }, /has a gte of the wrong type/],
+    [{ field: 'tags.RG', oneOf: 'a' }, /has a oneOf of the wrong type/],
+    [{ field: 'tags.RG', oneOf: [{}] }, /has a oneOf of the wrong type/],
+    ['', /is empty/],
+    [7, /is not an object/],
+  ])('a bag entry %j throws', (entry, message) => {
+    expect(() =>
+      buildDisplaySnapshot('alignments', [JSON.stringify({ filter: [entry] })]),
+    ).toThrow(message)
+    expect(() => {
+      checkModifiers([JSON.stringify({ filter: [entry] })])
+    }).toThrow(message)
   })
 
   test("v4's object form is refused", () => {

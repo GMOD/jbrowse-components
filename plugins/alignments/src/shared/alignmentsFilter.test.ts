@@ -334,11 +334,11 @@ describe('problems', () => {
         { field: 'junction.source', gte: 1 },
       ]).map(p => p.split(',')[0]),
     ).toEqual([
-      'filter: no field "flags.NOPE" on an alignment',
-      'filter: junction.reads takes a floor (gte or gt)',
-      'filter: connection.interchrom takes equal: true or false',
-      'filter: junction.class takes equal or oneOf of splice',
-      'filter: junction.source takes equal or oneOf of gap',
+      'no field "flags.NOPE" on an alignment',
+      'junction.reads takes a floor (gte or gt)',
+      'connection.interchrom takes equal: true or false',
+      'junction.class takes equal or oneOf of splice',
+      'junction.source takes equal or oneOf of gap',
     ])
   })
 })

@@ -28,10 +28,10 @@ function fakeView() {
   return { view: view as unknown as LinearGenomeViewModel, calls, filters }
 }
 
-test("a feature track's filter object rides in on the snapshot", async () => {
+test("a feature track's filter rides in on the snapshot, its shorthand read", async () => {
   const { view, calls } = fakeView()
   await applyDisplayOpts(view, 't', 'feature', ['{"filter":["geneLike"]}'])
-  expect(calls[0]).toEqual({ filter: ['geneLike'] })
+  expect(calls[0]).toEqual({ filter: [{ field: 'geneLike', equal: true }] })
 })
 
 // A read filter in the open snapshot would replace the configured list, so it
@@ -55,10 +55,7 @@ test('every read filter modifier lands in the one write after the open', async (
   expect(filters).toEqual([
     {
       mapq: [{ field: 'mapq', gte: 20 }],
-      'tags.RG': [
-        { field: 'tags.RG', equal: 'lane3' },
-        { field: 'tags.RG', equal: 'lane4' },
-      ],
+      'tags.RG': [{ field: 'tags.RG', oneOf: ['lane3', 'lane4'] }],
       alone: [],
     },
   ])

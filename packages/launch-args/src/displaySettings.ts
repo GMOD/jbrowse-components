@@ -148,15 +148,88 @@ export const READ_CATEGORY_KEYS = [
   'split',
 ] as const
 
+type Scalar = string | number | boolean
+
 /**
- * One entry of an alignments display's `filter` (ADR-240): a test on a read
- * field, or the bare `{ field }` that clears the field, defaults included.
+ * One entry of a display's `filter`, core's `FieldPredicate` (ADR-238): the
+ * tests a record's `field` must pass. On an alignments display (ADR-240) the
+ * bare `{ field }` clears the field, defaults included.
  */
 export interface FilterEntry {
   field: string
-  equal?: string | number | boolean
+  equal?: Scalar
+  lt?: number
+  lte?: number
+  gt?: number
   gte?: number
+  oneOf?: Scalar[]
   valid?: boolean
+}
+
+const isScalar = (v: unknown) =>
+  typeof v === 'string' || typeof v === 'number' || typeof v === 'boolean'
+const isNumber = (v: unknown) => typeof v === 'number'
+
+const FILTER_TESTS: Record<
+  Exclude<keyof FilterEntry, 'field'>,
+  (v: unknown) => boolean
+> = {
+  equal: isScalar,
+  lt: isNumber,
+  lte: isNumber,
+  gt: isNumber,
+  gte: isNumber,
+  oneOf: v => Array.isArray(v) && v.every(isScalar),
+  valid: v => typeof v === 'boolean',
+}
+
+function badFilterEntry(entry: unknown, why: string): never {
+  throw new Error(
+    `filter entry ${JSON.stringify(entry)} ${why}; an entry is { field, ${Object.keys(FILTER_TESTS).join(' | ')} }, or a string, which means { field: <string>, equal: true }`,
+  )
+}
+
+// a string is the config schema's shorthand
+function filterEntryOf(entry: unknown): FilterEntry {
+  if (typeof entry === 'string') {
+    return entry
+      ? { field: entry, equal: true }
+      : badFilterEntry(entry, 'is empty')
+  } else if (
+    typeof entry !== 'object' ||
+    entry === null ||
+    Array.isArray(entry)
+  ) {
+    return badFilterEntry(entry, 'is not an object')
+  }
+  const { field, ...tests } = entry as Record<string, unknown>
+  if (typeof field !== 'string' || !field) {
+    return badFilterEntry(entry, 'names no field')
+  }
+  for (const [name, value] of Object.entries(tests)) {
+    const valid = lookup(FILTER_TESTS, name)
+    if (!valid) {
+      badFilterEntry(entry, `has no test "${name}"`)
+    } else if (!valid(value)) {
+      badFilterEntry(entry, `has a ${name} of the wrong type`)
+    }
+  }
+  return entry as FilterEntry
+}
+
+/**
+ * A `filter` list as a JSON bag or a `filter=` write gives it, each entry
+ * checked as the config schema checks one and a string read as its
+ * shorthand. Throws on what the schema would refuse, v4's object form
+ * included.
+ */
+export function filterEntriesOf(list: unknown): FilterEntry[] {
+  if (!Array.isArray(list)) {
+    throw new Error(
+      `a filter is a list of { field, ... } entries, not ${JSON.stringify(list)}`,
+    )
+  }
+  return list.map(filterEntryOf)
 }
 
 export interface ColorScaleObject {
@@ -213,7 +286,7 @@ export interface DisplaySnapshot {
     placement?: 'up' | 'down'
   }
   sashimi?: { show?: boolean; placement?: 'up' | 'down' | 'auto' }
-  filter?: FilterEntry[] | string[]
+  filter?: FilterEntry[]
   encoding?: { color?: ColorChannel }
   legend?: { show?: boolean }
   variantLayout?: 'genomic' | 'columns'
@@ -230,28 +303,20 @@ export interface DisplaySettings {
   displayType?: string
 }
 
-/**
- * An alignments display's `filter` as the settings write it, undefined when
- * they write none. Throws on v4's object form, which a JSON bag may still
- * spell.
- */
-export function filterEntriesOf(snap: DisplaySnapshot) {
-  const { filter } = snap
-  if (filter !== undefined && !Array.isArray(filter)) {
-    throw new Error(
-      `an alignments filter is a list of { field, ... } entries, not ${JSON.stringify(filter)}`,
-    )
-  }
-  return filter as FilterEntry[] | undefined
-}
-
 // `entries` replace what the settings wrote on each field they name
 function writeFilterFields(r: DisplaySettings, entries: FilterEntry[]) {
   const named = new Set(entries.map(p => p.field))
   r.snap.filter = [
-    ...(filterEntriesOf(r.snap) ?? []).filter(p => !named.has(p.field)),
+    ...(r.snap.filter ?? []).filter(p => !named.has(p.field)),
     ...entries,
   ]
+}
+
+function listedValues(entries: readonly FilterEntry[]) {
+  return entries.flatMap(p => [
+    ...(p.equal === undefined ? [] : [p.equal]),
+    ...(p.oneOf ?? []),
+  ])
 }
 
 function setColor(r: DisplaySettings, color: ColorChannel) {
@@ -529,17 +594,30 @@ const modifiers: Record<string, Modifier> = {
       writeFilterFields(r, [{ field: 'mapq', gte: parseNum('mapq', v) }])
     },
   },
-  // appends: `filterTag:HP:1 filterTag:RG:x` is two conditions, and a value
-  // keeps its colons, as in `filterTag:RG:HG002:fc1:1`
+  // a second value on one tag is an alternative, and a value keeps its
+  // colons, as in `filterTag:RG:HG002:fc1:1`
   filterTag: {
     on: ['alignments'],
     values: 'rest',
     apply: (r, tag, value) => {
       const field = `tags.${parseStr('filterTag', tag, 'a SAM tag name')}`
-      r.snap.filter = [
-        ...(filterEntriesOf(r.snap) ?? []),
-        value ? { field, equal: value } : { field, valid: true },
-      ]
+      const values = value
+        ? [
+            ...new Set([
+              ...listedValues(
+                (r.snap.filter ?? []).filter(p => p.field === field),
+              ),
+              value,
+            ]),
+          ]
+        : []
+      writeFilterFields(r, [
+        values.length === 0
+          ? { field, valid: true }
+          : values.length === 1
+            ? { field, equal: values[0] }
+            : { field, oneOf: values },
+      ])
     },
   },
 
@@ -681,10 +759,19 @@ export function buildDisplaySnapshot(
   const result: DisplaySettings = { snap: {} }
   for (const opt of opts) {
     if (opt.startsWith('{')) {
-      mergeSettings(settingsOf(result), parseJsonModifier(opt))
+      const { filter, ...rest } = parseJsonModifier(opt)
+      mergeSettings(settingsOf(result), rest)
+      if (filter !== undefined) {
+        writeFilterFields(result, filterEntriesOf(filter))
+      }
     } else if (isSlotPathOption(opt)) {
       if (!isMemberWrite(opt)) {
-        applySlotWrite(settingsOf(result), slotWrite(opt))
+        const write = slotWrite(opt)
+        if (write.segments[0] === 'filter') {
+          writeFilterFields(result, filterEntriesOf([write.value].flat()))
+        } else {
+          applySlotWrite(settingsOf(result), write)
+        }
       }
     } else {
       applyModifier(result, category, opt.split(':'), warn)
