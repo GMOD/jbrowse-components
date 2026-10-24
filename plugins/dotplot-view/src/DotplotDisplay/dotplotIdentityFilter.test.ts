@@ -39,7 +39,7 @@ function drawnFeatures(
   const colors = computeDotplotColors({
     instanceData,
     rpcData,
-    field: '',
+    field: undefined,
     trackColor: '#000',
     attributeRanges: {},
     filter: {

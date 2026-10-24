@@ -404,7 +404,7 @@ describe('the ribbons', () => {
       data.bp4[mark],
       data.bp3[mark],
     ]).toEqual([440, 440.8, 440, 440.8].map(Math.fround))
-    expect(data.colors[mark]).toBe(mismatchColor(''))
+    expect(data.colors[mark]).toBe(mismatchColor(undefined))
   })
 
   // 25 bp/px on both lanes, so each cluster of three mismatches spans under a pixel
@@ -461,8 +461,8 @@ describe('the ribbons', () => {
     )
     expect(marks).toHaveLength(2)
     expect(marks.map(i => data.colors[i])).toEqual([
-      mismatchColor(''),
-      mismatchColor(''),
+      mismatchColor(undefined),
+      mismatchColor(undefined),
     ])
     expect(marks.flatMap(i => [data.bp1[i], data.bp2[i]])).toEqual(
       [20, 20.12, 60, 60.12].map(Math.fround),

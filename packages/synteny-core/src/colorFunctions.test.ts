@@ -100,7 +100,7 @@ describe('chromosome painting', () => {
 describe('createComparativeColorFunction', () => {
   test('an alignment the filter rejects paints at zero alpha', () => {
     const paint = createComparativeColorFunction({
-      field: '',
+      field: undefined,
       data: inputs({
         attributes: { identity: Float32Array.from([0.5, 0.9, Number.NaN]) },
       }),
@@ -114,7 +114,7 @@ describe('createComparativeColorFunction', () => {
 
   test('the filter reads the sequence names and the length it is handed', () => {
     const paint = createComparativeColorFunction({
-      field: '',
+      field: undefined,
       data: inputs({
         strands: new Int8Array([1, 1, 1]),
         refNameDict: ['chr1', 'chr2'],
@@ -137,14 +137,14 @@ describe('createComparativeColorFunction', () => {
   test('only the unpainted default differs between the two views', () => {
     const data = inputs()
     const ribbon = createComparativeColorFunction({
-      field: '',
+      field: undefined,
       data,
       trackColor: '#123456',
       defaultColor: DEFAULT_RIBBON_COLOR,
       attributeRanges: {},
     })
     const point = createComparativeColorFunction({
-      field: '',
+      field: undefined,
       data,
       trackColor: '#123456',
       defaultColor: 0xff000000,

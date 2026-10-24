@@ -61,7 +61,7 @@ describe('createDotplotColorFunction', () => {
 
   test('default returns the shared point color (black)', () => {
     const data = fakeRpcData()
-    const fn = createDotplotColorFunction('', data, TRACK_COLOR, {})
+    const fn = createDotplotColorFunction(undefined, data, TRACK_COLOR, {})
     expect(unpack(fn(0))).toEqual({ r: 0, g: 0, b: 0, a: 255 })
     expect(unpack(fn(0))).toMatchObject(rgbOf(colorSchemes.default.pointColor))
   })

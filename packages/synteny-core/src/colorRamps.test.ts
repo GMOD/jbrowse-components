@@ -175,7 +175,7 @@ test('a flat or absent domain answers 0 rather than NaN', () => {
 })
 
 test('the constant and the structural fields are not numbers', () => {
-  expect(resolveNumericMode('')).toBeUndefined()
+  expect(resolveNumericMode(undefined)).toBeUndefined()
   expect(resolveNumericMode('strand')).toBeUndefined()
   expect(resolveNumericMode('query')).toBeUndefined()
 })

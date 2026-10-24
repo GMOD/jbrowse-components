@@ -161,7 +161,7 @@ function trackModel({
     openLaneSelection: () => {
       calls.push('open picker')
     },
-    ribbonColorField: '',
+    ribbonColorField: undefined,
     setRibbonColorField: () => {},
     openRibbonSolidColorDialog: () => {},
     ribbonColorAttributes: [],

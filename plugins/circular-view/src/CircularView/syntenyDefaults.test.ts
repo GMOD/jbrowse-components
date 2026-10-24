@@ -87,7 +87,7 @@ describe('a two-genome circle', () => {
     const { circle } = await launch({ encoding: { color: 'strand' } })
     expect(circle.colorField).toBe('strand')
     const constant = await launch({ encoding: { color: { value: 'grey' } } })
-    expect(constant.circle.colorField).toBe('')
+    expect(constant.circle.colorField).toBeUndefined()
   }, 40000)
 
   test('reorders its second genome unless the launch says not to', async () => {

@@ -28,8 +28,8 @@ const trackColors = (tracks: ColorByMenuTrack[]) => ({
 })
 
 const target = (over: Partial<ColorByMenuTarget> = {}): ColorByMenuTarget => ({
-  field: '',
-  structuralFields: ['', 'strand', 'track', 'query', 'target'],
+  field: undefined,
+  structuralFields: [undefined, 'strand', 'track', 'query', 'target'],
   attributes: [],
   attributeRanges: {
     identity: { min: 0.5, max: 1 },
@@ -81,7 +81,7 @@ test('a surface lists the structural modes it paints, and one track has no swatc
   const got = labels(
     colorByMenuItems(
       target({
-        structuralFields: ['', 'strand'],
+        structuralFields: [undefined, 'strand'],
         trackColors: trackColors([track(0)]),
       }),
     ),
@@ -97,8 +97,8 @@ function viewModel(tracks: number, reference = false): TrackColorsModel {
     })),
     colorableAttributes: [],
     attributeRanges: {},
-    colorField: '',
-    impliedColorField: '',
+    colorField: undefined,
+    impliedColorField: undefined,
     colorValue: undefined,
     hideUnlabelled: false,
     trackColorFor: () => '#4e79a7',
@@ -117,9 +117,9 @@ function viewModel(tracks: number, reference = false): TrackColorsModel {
 test('a view offers Track once two tracks overlay, and Reference across a stack', () => {
   const modesOf = (tracks: number, reference: boolean) =>
     colorByMenuTargetFor(viewModel(tracks, reference)).structuralFields
-  expect(modesOf(1, false)).toEqual(['', 'strand', 'query', 'target'])
+  expect(modesOf(1, false)).toEqual([undefined, 'strand', 'query', 'target'])
   expect(modesOf(2, true)).toEqual([
-    '',
+    undefined,
     'strand',
     'track',
     'query',
@@ -278,7 +278,7 @@ test('a column a radio already covers is not offered twice', () => {
   const items = colorByMenuItems(
     target({
       attributes: ['identity', 'strand', 'goc_score'],
-      structuralFields: ['', 'strand'],
+      structuralFields: [undefined, 'strand'],
     }),
   )
   expect(labels(valueModes(items))).not.toContain('identity')

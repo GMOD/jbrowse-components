@@ -4,6 +4,8 @@ import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
 import { TrackColorsMixin } from './TrackColorsMixin.ts'
+import { colorByMenuItems } from './colorByMenuItems.tsx'
+import { colorByMenuTargetFor } from './colorByMenuTarget.ts'
 import { categoricalColor } from './colorFunctions.ts'
 import { resolveCategoricalMode } from './colorRamps.ts'
 
@@ -360,7 +362,7 @@ describe('the color channel', () => {
     expect(view('strand').colorField).toBe('strand')
     expect(snapColor(view('strand'))).toEqual({ field: 'strand' })
     const v = view({ value: 'grey' })
-    expect(v.colorField).toBe('')
+    expect(v.colorField).toBeUndefined()
     expect(v.colorValue).toBe('grey')
   })
 
@@ -393,17 +395,33 @@ describe('the color channel', () => {
     expect(snapColor(v)).toEqual({ field: 'mapq' })
   })
 
+  it('reads the slot default field "" as the plain fill, with Default checked', () => {
+    const v = view({ field: '' })
+    expect(v.colorField).toBeUndefined()
+    expect(v.hasLegendKey).toBe(false)
+    expect(v.colorScales).toEqual([])
+    const [first] = colorByMenuItems(colorByMenuTargetFor(v))
+    expect(first).toMatchObject({ label: 'Default', checked: true })
+  })
+
+  it('writes no predicate for Hide unlabelled rows with no field', () => {
+    const v = view({})
+    v.setHideUnlabelled(true)
+    expect(v.predicates).toEqual([])
+    expect(v.hideUnlabelled).toBe(false)
+  })
+
   it('clears on null and on omission', () => {
-    expect(view(null).colorField).toBe('')
-    expect(view(undefined).colorField).toBe('')
+    expect(view(null).colorField).toBeUndefined()
+    expect(view(undefined).colorField).toBeUndefined()
     expect(snapColor(view(null))).toBeUndefined()
   })
 
   it('writes the whole object from a picked mode, parking the field it leaves', () => {
     const v = view({ field: 'gene_group', scale: { domain: ['B1'] } })
-    v.setColorField('')
+    v.setColorField(undefined)
     expect(snapColor(v)).toBeUndefined()
-    expect(v.colorField).toBe('')
+    expect(v.colorField).toBeUndefined()
     v.setColorField('gene_group')
     expect(snapColor(v)).toEqual({
       field: 'gene_group',

@@ -94,6 +94,13 @@ test('carriedSyntenySettings hands on encoding.color alone', () => {
   })
   expect(carriedSyntenySettings(v).encoding).not.toHaveProperty('opacity')
   expect(carriedSyntenySettings(view())).not.toHaveProperty('encoding')
+  expect(
+    carriedSyntenySettings(view({ color: { field: '' } })),
+  ).not.toHaveProperty('encoding')
+  const solid = view({ color: { value: 'grey' } })
+  expect(carriedSyntenySettings(solid)).toMatchObject({
+    encoding: { color: { value: 'grey' } },
+  })
 })
 
 test('a drag recolors nothing, under the constant or a field', () => {

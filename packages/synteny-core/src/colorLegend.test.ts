@@ -66,7 +66,7 @@ test('strand keys the colors range writes and the names it gives', () => {
 // Default (no cigarOps) is the static menu preview: match + the two indel ops
 // a typical alignment carries. The rare N (skip) op is opt-in.
 test('default/strand modes show labeled chips including CIGAR indels', () => {
-  const def = getColorBySwatch('')
+  const def = getColorBySwatch(undefined)
   expect(def?.kind).toBe('chips')
   if (def?.kind === 'chips') {
     expect(def.chips.map(c => c.label)).toEqual([
@@ -90,11 +90,11 @@ test('default/strand modes show labeled chips including CIGAR indels', () => {
 // painted on screen: no indels -> just the block/strand chips; N present ->
 // a "skip" chip appears (unlike the static preview, which omits it).
 test('cigarOps drives which indel chips the legend shows', () => {
-  const none = getColorBySwatch('', { cigarOps: NO_CIGAR_OPS })
+  const none = getColorBySwatch(undefined, { cigarOps: NO_CIGAR_OPS })
   if (none?.kind === 'chips') {
     expect(none.chips.map(c => c.label)).toEqual(['match'])
   }
-  const insertionOnly = getColorBySwatch('', { cigarOps: CIGAR_OP_I })
+  const insertionOnly = getColorBySwatch(undefined, { cigarOps: CIGAR_OP_I })
   if (insertionOnly?.kind === 'chips') {
     expect(insertionOnly.chips.map(c => c.label)).toEqual([
       'match',
@@ -115,7 +115,7 @@ test('cigarOps drives which indel chips the legend shows', () => {
 })
 
 test('point-based views (pointBased) drop the CIGAR chips', () => {
-  const def = getColorBySwatch('', { pointBased: true })
+  const def = getColorBySwatch(undefined, { pointBased: true })
   if (def?.kind === 'chips') {
     expect(def.chips.map(c => c.label)).toEqual(['alignment'])
     expect(def.chips[0]!.color).toBe('#000')
@@ -277,7 +277,7 @@ test('a ramp over rows with no value keys the color they paint', () => {
 })
 
 test('colorByScales composites chips by alpha and notes the keyless modes', () => {
-  const [chips] = colorByScales('', { pointBased: true, alpha: 0.5 })
+  const [chips] = colorByScales(undefined, { pointBased: true, alpha: 0.5 })
   expect(chips!.kind).toBe('categorical')
   if (chips!.kind === 'categorical') {
     expect(chips!.entries.map(e => e.label)).toEqual(['alignment'])

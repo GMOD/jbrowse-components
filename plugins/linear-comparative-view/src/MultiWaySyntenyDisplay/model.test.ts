@@ -787,11 +787,11 @@ test('ribbons color by strand until the setting names a field or a color', () =>
   expect(display.ribbonColorField).toBe('strand')
 
   display.setRibbonColorField('mapq')
-  display.setRibbonColorField('')
+  display.setRibbonColorField(undefined)
   expect(display.ribbonColorField).toBe('strand')
 
   setConf(display, ['ribbons', 'encoding', 'color'], { value: 'red' })
-  expect(display.ribbonColorField).toBe('')
+  expect(display.ribbonColorField).toBeUndefined()
   expect(display.ribbonColor).toBe('red')
 })
 
@@ -2515,7 +2515,7 @@ test('a picked ribbon mode is written as the ribbon color channel', () => {
   })
   display.setRibbonColorValue('grey')
   expect(ribbonColor()).toEqual({ value: 'grey' })
-  expect(display.ribbonColorField).toBe('')
+  expect(display.ribbonColorField).toBeUndefined()
   expect(display.ribbonColor).toBe('grey')
   display.setRibbonColorField('group')
   expect(display.ribbonColorField).toBe('group')
