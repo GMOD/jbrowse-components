@@ -48,7 +48,7 @@ From [ParkedColorMixin](../parkedcolormixin): <span id="method-parkedcolorof">[`
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="action-colorbyfield">**colorByField**</span><br><code>(field: string) =&gt; void</code> | Paint by `field`, keeping its domain, range and key names while it is the field already painting or the one parked; `''` paints `value` and parks the field. |
+| <span id="action-colorbyfield">**colorByField**</span><br><code>(field: string &#124; undefined) =&gt; void</code> | Paint by `field`, keeping its domain, range and key names while it is the field already painting or the one parked; undefined paints `value` and parks the field. |
 | <span id="action-setcolorvalue">**setColorValue**</span><br><code>(value: string &#124; undefined) =&gt; void</code> | Paint every feature `value`, a CSS color or a `jexl:` callback, parking the field; undefined lets each feature's own color paint. |
 | <span id="action-pickdefaultcolor">**pickDefaultColor**</span><br><code>() =&gt; void</code> | Color by's Default: no field and no constant, so the track's own color paints, a `jexl:` expression included. |
 | <span id="action-picksolidcolor">**pickSolidColor**</span><br><code>() =&gt; void</code> | Color by's Solid color...: paints the constant kept beside a painting field, where there is one, and opens the display's picker. |

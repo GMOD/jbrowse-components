@@ -6895,6 +6895,16 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "x-closed": true,
       "properties": {
+        "show": {
+          "description": "color the allele segments of the depth bars; off, the bars are plain grey.",
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
+        },
         "filter": {
           "if": {
             "type": "null"

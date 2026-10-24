@@ -10,7 +10,8 @@ Auto-generated from the config schema in the source — see the [config guide](/
 The coverage band's `alleles` layer: the colored segment each mismatched
 base takes in its position's depth bar. Its `filter` keeps the segments
 whose `fraction`, the allele's share of the position's depth, passes;
-the grey depth bar shows through where a segment is left out.
+the grey depth bar shows through where a segment is left out, and
+everywhere under `show: false`.
 
 ## Example usage
 
@@ -21,6 +22,10 @@ the grey depth bar shows through where a segment is left out.
 }
 ```
 
+```js
+{ type: 'LinearAlignmentsDisplay', coverage: { alleles: { show: false } } }
+```
+
 ## Config slots
 
 A setting written to it names members one by one: a member left out stays as it is, and `null` resets one. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
@@ -28,4 +33,5 @@ A setting written to it names members one by one: a member left out stays as it 
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
+| <span id="slot-show">**show**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | color the allele segments of the depth bars; off, the bars are plain grey |
 | <span id="slot-filter">**filter**</span><br>[FieldPredicate](../fieldpredicate) | Entries on `fraction`, a floor from 0 to 1 written `gte`, the one test the band's draw makes. Empty colors every mismatch, sequencing errors included. Distinct from `pileup.fadeLowFrequency`, which fades the pileup's marks by the same share through a depth-dependent threshold. |

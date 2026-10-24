@@ -111,6 +111,7 @@ From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`sc
 | <span id="getter-showcoverage">**showCoverage**</span><br><code>boolean</code> |  |
 | <span id="getter-showalignments">**showAlignments**</span><br><code>boolean</code> |  |
 | <span id="getter-coverageheight">**coverageHeight**</span><br><code>number</code> |  |
+| <span id="getter-showcoveragealleles">**showCoverageAlleles**</span><br><code>boolean</code> | Whether the coverage band colors its allele segments, `coverage.alleles.show` |
 | <span id="getter-coverageminallelefraction">**coverageMinAlleleFraction**</span><br><code>number</code> |  |
 | <span id="getter-interbaseindicatorrule">**interbaseIndicatorRule**</span><br><code>InterbaseIndicatorRule</code> | `coverage.interbase.filter` as the worker's triangle rule. |
 | <span id="getter-showinterbaseindicators">**showInterbaseIndicators**</span><br><code>boolean</code> |  |
@@ -290,6 +291,7 @@ From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`rendering
 | <span id="action-setrowproportion">**setRowProportion**</span><br><code>(n: number) =&gt; void</code> |  |
 | <span id="action-setcolorscheme">**setColorScheme**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(scheme: "blues" &#124; "cividis" &#124; "fall" &#124; "inferno" &#124; "juicebox"…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(scheme: "blues" &#124; "cividis" &#124; "fall" &#124; "inferno" &#124; "juicebox" &#124; "magma" &#124; "purpleorange" &#124; "redblue" &#124; "redgreyblue" &#124; "reds" &#124; "redyellowblue" &#124; "viridis") =&gt; void</code></pre></dialog></span> | Paint identity along a named ramp, clearing a written `scale.range`, which would win over it. |
 | <span id="action-setshowcoverage">**setShowCoverage**</span><br><code>(arg: boolean) =&gt; void</code> |  |
+| <span id="action-setshowcoveragealleles">**setShowCoverageAlleles**</span><br><code>(show: boolean) =&gt; void</code> | Turns the coverage band's allele colors on or off, `coverage.alleles.show` |
 | <span id="action-setcoverageminallelefraction">**setCoverageMinAlleleFraction**</span><br><code>(fraction: number) =&gt; void</code> |  |
 | <span id="action-setshowinterbaseindicators">**setShowInterbaseIndicators**</span><br><code>(arg: boolean) =&gt; void</code> |  |
 | <span id="action-setshowalignments">**setShowAlignments**</span><br><code>(arg: boolean) =&gt; void</code> |  |

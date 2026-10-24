@@ -4300,6 +4300,10 @@ export const configManifest: ConfigManifest = {
               "type": "CoverageAllelesConfigurationSchema",
               "subSlots": [
                 {
+                  "name": "show",
+                  "type": "boolean"
+                },
+                {
                   "name": "filter",
                   "type": "FieldPredicateConfigurationSchema[]",
                   "subSlots": [
@@ -5457,6 +5461,10 @@ export const configManifest: ConfigManifest = {
               "name": "alleles",
               "type": "CoverageAllelesConfigurationSchema",
               "subSlots": [
+                {
+                  "name": "show",
+                  "type": "boolean"
+                },
                 {
                   "name": "filter",
                   "type": "FieldPredicateConfigurationSchema[]",
@@ -8460,6 +8468,10 @@ export const configManifest: ConfigManifest = {
               "name": "alleles",
               "type": "CoverageAllelesConfigurationSchema",
               "subSlots": [
+                {
+                  "name": "show",
+                  "type": "boolean"
+                },
                 {
                   "name": "filter",
                   "type": "FieldPredicateConfigurationSchema[]",

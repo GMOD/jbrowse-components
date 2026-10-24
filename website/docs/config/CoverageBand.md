@@ -37,4 +37,4 @@ A setting written to it names members one by one: a member left out stays as it 
 | <span id="slot-height">**height**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>45</code> | height of the coverage band in pixels |
 | <span id="slot-encoding">**encoding**</span><br>[CoverageEncoding](../coverageencoding) | The depth axis, `encoding.y`: its `scale`, `axis` and `rules`. |
 | <span id="slot-interbase">**interbase**</span><br>[CoverageInterbase](../coverageinterbase) | The insertion and clip marks between bases: `show`, and the `filter` deciding which positions get an indicator triangle. |
-| <span id="slot-alleles">**alleles**</span><br>[CoverageAlleles](../coveragealleles) | The colored allele segments: the `filter` on each one's `fraction`. |
+| <span id="slot-alleles">**alleles**</span><br>[CoverageAlleles](../coveragealleles) | The colored allele segments: `show`, and the `filter` on each one's `fraction`. |
