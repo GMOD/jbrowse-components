@@ -32,4 +32,4 @@ A setting written to it replaces it whole, since its members are alternatives: a
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
-| <span id="slot-field">**field**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) ("", source) = <code>''</code> | `source` for one row per subtrack, or empty for one plot every source shares. Writing `rows: "source"` lands here. Empty stays an enum member rather than unset because the multi-row display defaults to `source`, where unset could not say "one shared plot". |
+| <span id="slot-field">**field**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) ("", source) = <code>''</code> | `source` for one row per subtrack, or empty for one plot every source shares. Writing `rows: "source"` lands here. |

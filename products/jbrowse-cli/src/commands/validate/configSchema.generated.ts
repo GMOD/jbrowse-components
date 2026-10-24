@@ -6399,7 +6399,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "unknown": {
-          "description": "CSS color of a read whose value the ordinal domain leaves out; unset deals the next palette color, \\"\\" paints it as a read with no value.",
+          "description": "CSS color of a read whose tag, attribute, mate reference or MAPQ the ordinal domain leaves out, keyed as one row, Other; unset deals the next palette color, \\"\\" the no-value grey.",
           "if": {
             "type": "null"
           },
