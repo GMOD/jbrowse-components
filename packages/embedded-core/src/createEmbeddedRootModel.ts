@@ -3,10 +3,11 @@ import assemblyManagerFactory, {
   assemblyConfigSchemaFactory,
 } from '@jbrowse/core/assemblyManager'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
-import { cast, types } from '@jbrowse/mobx-state-tree'
+import { cast, setTypeChecking, types } from '@jbrowse/mobx-state-tree'
 import {
   InternetAccountsRootModelMixin,
   createConfigModel,
+  dropUnloadableTracks,
   migrateSessionSnapshot,
 } from '@jbrowse/product-core'
 
@@ -66,6 +67,8 @@ export function createEmbeddedRootModel<
   sessionModelType: SESSION
   makeWorkerInstance?: () => Worker
 }) {
+  // as BaseRootModelFactory does: a refused config value names its slot path
+  setTypeChecking(true)
   const assemblyConfigSchema = assemblyConfigSchemaFactory(pluginManager)
   return types
     .compose(
@@ -126,6 +129,7 @@ export function createEmbeddedRootModel<
           setSession(sessionSnapshot: SnapshotIn<SESSION>) {
             pluginManager.assertSessionTypesLoaded(sessionSnapshot)
             self.session = cast(migrated(sessionSnapshot, pluginManager))
+            dropUnloadableTracks(self.session)
           },
           /**
            * #action
@@ -144,6 +148,15 @@ export function createEmbeddedRootModel<
             self.session = cast(
               migrated(sessionSnapshot, pluginManager) as SnapshotIn<SESSION>,
             )
+            dropUnloadableTracks(self.session)
+          },
+          /**
+           * #action
+           * The `session` prop at create is the third door, after the two
+           * above: a track whose config cannot load is dropped there too.
+           */
+          afterCreate() {
+            dropUnloadableTracks(self.session)
           },
           /**
            * #action

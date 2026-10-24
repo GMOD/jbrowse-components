@@ -154,6 +154,7 @@ export {
   DEFAULT_WEB_BASE_URL,
   analyzeWebPortability,
   buildWebExportUrl,
+  dropUnloadableTracks,
   filterSessionInPlace,
   planWebExport,
 } from './sessionUtils.ts'

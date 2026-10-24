@@ -4,6 +4,7 @@ import {
   getChildType,
   getPropertyMembers,
   getSnapshot,
+  getType,
   isArrayType,
   isMapType,
   isModelType,
@@ -33,6 +34,29 @@ export interface DroppedSessionNode {
   configuration?: string
 }
 
+/**
+ * `filterSessionInPlace` over a whole session, telling the user which tracks
+ * it dropped: one config with a refused value costs its own track, never the
+ * session.
+ */
+export function dropUnloadableTracks(
+  session: IAnyStateTreeNode & {
+    notify?: (message: string, level: 'warning') => void
+  },
+) {
+  const dropped = filterSessionInPlace(session, getType(session))
+  if (dropped.length > 0) {
+    const names = dropped
+      .map(d => d.configuration ?? d.type ?? 'unknown')
+      .join(', ')
+    const plural = dropped.length > 1
+    session.notify?.(
+      `Removed ${dropped.length} track${plural ? 's' : ''} that could not be loaded: ${names}`,
+      'warning',
+    )
+  }
+}
+
 // Cleans a freshly-loaded session in place by dropping any array/map element
 // that can't be hydrated — e.g. an open track whose `configuration` reference
 // resolves to a dangling id or a structurally-invalid config and throws when
@@ -58,7 +82,15 @@ export function filterSessionInPlace(
       const childType = getChildType(node)
       const isRef = isReferenceType(childType)
       for (let i = 0; i < array.length;) {
-        if (!walkChildOrDrop(() => array[i], childType, isRef, dropped)) {
+        if (
+          !walkChildOrDrop(
+            () => array[i],
+            () => (getSnapshot(array) as unknown[])[i],
+            childType,
+            isRef,
+            dropped,
+          )
+        ) {
           array.splice(i, 1)
         } else {
           i += 1
@@ -69,7 +101,15 @@ export function filterSessionInPlace(
       const childType = getChildType(map)
       const isRef = isReferenceType(childType)
       for (const key of map.keys()) {
-        if (!walkChildOrDrop(() => map.get(key), childType, isRef, dropped)) {
+        if (
+          !walkChildOrDrop(
+            () => map.get(key),
+            () => (getSnapshot(map) as Record<string, unknown>)[key],
+            childType,
+            isRef,
+            dropped,
+          )
+        ) {
           map.delete(key)
         }
       }
@@ -104,6 +144,7 @@ export function filterSessionInPlace(
 // Otherwise recurses into it and returns true.
 function walkChildOrDrop(
   get: () => IAnyStateTreeNode,
+  snapshotOf: () => unknown,
   childType: IAnyType,
   isRef: boolean,
   dropped: DroppedSessionNode[],
@@ -118,7 +159,7 @@ function walkChildOrDrop(
     return true
   } catch (e) {
     console.error(e)
-    dropped.push(describeDroppedNode(child))
+    dropped.push(describeDroppedNode(child, snapshotOf))
     return false
   }
 }
@@ -126,13 +167,16 @@ function walkChildOrDrop(
 // Identifies a dropped node for a user-facing message by reading its serialized
 // snapshot, which keeps a dangling `configuration` reference (the usual cause of
 // a drop) from throwing again — references serialize to their stored id string.
+// A node whose creation threw has none, so its entry in the parent's snapshot
+// stands in.
 function describeDroppedNode(
   node: IAnyStateTreeNode | undefined,
+  snapshotOf: () => unknown,
 ): DroppedSessionNode {
   try {
-    if (node !== undefined) {
-      const snap: { type?: unknown; configuration?: unknown } =
-        getSnapshot(node)
+    const raw = node === undefined ? snapshotOf() : getSnapshot(node)
+    if (raw && typeof raw === 'object') {
+      const snap = raw as { type?: unknown; configuration?: unknown }
       return {
         type: typeof snap.type === 'string' ? snap.type : undefined,
         configuration:

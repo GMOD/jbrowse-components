@@ -149,7 +149,10 @@ key, `init` nesting.
 - **`displayDefaults` routes a value to every display that declares the key,
   and two tutorial fences set `displayMode: "compact"` on a FeatureTrack**,
   whose arc display's `displayMode` is `arcs | semicircles`. `create()` throws
-  on it in a dev build; a production build stores the value unchecked. The
+  on it (amended 2026-10-24: every product's root model turns MST type
+  checking on, so the throw names the slot path everywhere, and a session
+  drops the one track it costs with a notice; a value under a pluggable union
+  was checked even with checking off, as union dispatch validates). The
   manifest checked key names only. The fences moved the setting onto an
   explicit `LinearBasicDisplay` entry; `collectDisplayOverrides` routing by
   slot acceptance rather than by name is the fix in core, made by

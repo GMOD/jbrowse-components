@@ -5,8 +5,8 @@ import { scheduleDetachedDestroy } from '@jbrowse/core/util'
 import {
   cast,
   detach,
-  getType,
   isStateTreeNode,
+  setTypeChecking,
   types,
 } from '@jbrowse/mobx-state-tree'
 
@@ -15,7 +15,7 @@ import {
   pruneUnbuildableNodes,
 } from '../pruneUnbuildableNodes.ts'
 import { migrateSessionSnapshot } from '../sessionMigrations/index.ts'
-import { filterSessionInPlace } from '../sessionUtils.ts'
+import { dropUnloadableTracks } from '../sessionUtils.ts'
 
 import type { BaseSession } from '../Session/BaseSession.ts'
 import type { UnbuildableNode } from '../pruneUnbuildableNodes.ts'
@@ -56,6 +56,10 @@ export function BaseRootModelFactory({
    */
   rpcManagerOptions?: RpcManagerOptions
 }) {
+  // A config value its slot refuses then fails with the slot path named, in
+  // every product: unchecked, a union of display types reported only "No
+  // matching type for union", and a track-level scalar went in unchecked
+  setTypeChecking(true)
   return types
     .model('BaseRootModel', {
       /**
@@ -210,20 +214,7 @@ export function BaseRootModelFactory({
                 'warning',
               )
             }
-            const dropped = filterSessionInPlace(
-              self.session,
-              getType(self.session),
-            )
-            if (dropped.length > 0) {
-              const names = dropped
-                .map(d => d.configuration ?? d.type ?? 'unknown')
-                .join(', ')
-              const plural = dropped.length > 1
-              ;(self.session as BaseSession).notify(
-                `Removed ${dropped.length} track${plural ? 's' : ''} that could not be loaded: ${names}`,
-                'warning',
-              )
-            }
+            dropUnloadableTracks(self.session as BaseSession)
           }
         } catch (error) {
           // put it back, and do not schedule the destroy below — this is the
