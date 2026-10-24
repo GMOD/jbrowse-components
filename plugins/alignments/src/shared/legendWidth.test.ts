@@ -10,7 +10,7 @@ import {
   getReadDisplayLegendItems,
 } from './legendUtils.ts'
 import { modificationData } from './modificationData.ts'
-import { splitSchemeForTest } from './splitSchemeForTest.ts'
+import { splitFieldForTest } from './splitFieldForTest.ts'
 
 import type { BaseLayer } from './types.ts'
 
@@ -88,7 +88,7 @@ function everyLabel() {
     for (const overlaps of OVERLAPS) {
       for (const detectedModifications of DETECTED_MODIFICATIONS) {
         for (const item of getReadDisplayLegendItems({
-          ...splitSchemeForTest(field, modifications),
+          ...splitFieldForTest(field, modifications),
           presentCategories: ALL,
           palette: makeTestPalette(),
           detectedModifications,

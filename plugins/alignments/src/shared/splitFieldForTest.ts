@@ -6,7 +6,7 @@ import type { BaseLayer } from './types.ts'
  * A field as the two halves the display holds: a per-base field is the layer
  * over a plain fill, anything else the fill with no layer.
  */
-export function splitSchemeForTest(
+export function splitFieldForTest(
   field: string | undefined,
   settings?: Omit<BaseLayer, 'field'>,
 ): { colorField: string | undefined; baseLayer: BaseLayer | undefined } {

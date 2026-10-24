@@ -322,7 +322,7 @@ export const ALIGNMENTS_FIELD_PRESETS: FieldPresets = {
 }
 
 /** The fields whose levels are their whole vocabulary, so a `domain` names them. */
-const LEVEL_SCHEMES = new Set<ReadColorFieldKind>([
+const LEVEL_FIELDS = new Set<ReadColorFieldKind>([
   'strand',
   'firstOfPairStrand',
   'pairOrientation',
@@ -335,7 +335,7 @@ function levelNotices(encoding: AlignmentsColorEncoding): string[] {
     return []
   }
   const type = colorFieldKindOf(readColorFieldOf(encoding))
-  if (!LEVEL_SCHEMES.has(type)) {
+  if (!LEVEL_FIELDS.has(type)) {
     return []
   }
   const levels = paintedLevels(type).map(([value]) => value)

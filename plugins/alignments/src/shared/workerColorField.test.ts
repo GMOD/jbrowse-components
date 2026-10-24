@@ -3,7 +3,7 @@ import { SimpleFeature } from '@jbrowse/core/util'
 
 import { COLOR_FIELD_DEFS, workerColorField } from './colorFieldDefs.ts'
 import { extractFeatureArrays } from './extractFeatureArrays.ts'
-import { splitSchemeForTest } from './splitSchemeForTest.ts'
+import { splitFieldForTest } from './splitFieldForTest.ts'
 
 import type { ColorFieldKind } from './types.ts'
 import type { FeatureData } from './webglRpcTypes.ts'
@@ -53,7 +53,7 @@ const buildFeatureData = (f: Feature): FeatureData => ({
 // field. The reference sequence is supplied so the bisulfite path can run.
 function extracted(field: string | undefined) {
   const out = extractFeatureArrays([makeFeature()], buildFeatureData, {
-    ...splitSchemeForTest(field),
+    ...splitFieldForTest(field),
     showSoftClipping: false,
     region,
     perBaseBinBp: 1,

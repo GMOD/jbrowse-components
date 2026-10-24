@@ -24,7 +24,7 @@ import {
   sashimiLegend,
   sashimiLegendItems,
 } from './legendUtils.ts'
-import { splitSchemeForTest } from './splitSchemeForTest.ts'
+import { splitFieldForTest } from './splitFieldForTest.ts'
 import { CHAIN_FRAME_REV, CHAIN_SUPP_PRESENT } from './types.ts'
 
 import type { BakedColorScale } from '../LinearAlignmentsDisplay/bakedColorScale.ts'
@@ -36,7 +36,7 @@ import type { ColorScale, RampScale } from '@jbrowse/core/ui/colorScale'
 
 // A read fill field, or a per-base layer with its settings.
 function legendFor(
-  scheme: string | undefined | BaseLayer,
+  field: string | undefined | BaseLayer,
   categories: ReadColorCategory[],
   rest?: {
     detectedModifications?: Map<string, string>
@@ -50,9 +50,9 @@ function legendFor(
   },
 ) {
   return getReadDisplayLegendItems({
-    ...(typeof scheme === 'object'
-      ? splitSchemeForTest(scheme.field, scheme)
-      : splitSchemeForTest(scheme)),
+    ...(typeof field === 'object'
+      ? splitFieldForTest(field.field, field)
+      : splitFieldForTest(field)),
     presentCategories: new Set(categories),
     palette: makeTestPalette(),
     ...rest,
