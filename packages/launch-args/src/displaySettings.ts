@@ -148,22 +148,16 @@ export const READ_CATEGORY_KEYS = [
   'split',
 ] as const
 
-type ReadCategoryKey = (typeof READ_CATEGORY_KEYS)[number]
-
 /**
- * The filter half of an alignments display's state, as a command line may
- * state it: the object form the display's `applyFilterObject` writes onto its
- * `filter` list by field. Every member optional: an omitted flag mask keeps
- * the display's, and `null` unsets a category.
+ * One entry of an alignments display's `filter` (ADR-240): a test on a read
+ * field, or the bare `{ field }` that clears the field, defaults included.
  */
-export type ReadFilterSnapshot = {
-  flagInclude?: number
-  flagExclude?: number
-  minMapq?: number
-  tags?: { tag: string; value?: string }[]
-  junctions?: Record<string, unknown>
-  connections?: Record<string, unknown>
-} & Partial<Record<ReadCategoryKey, 'only' | 'exclude' | null>>
+export interface FilterEntry {
+  field: string
+  equal?: string | number | boolean
+  gte?: number
+  valid?: boolean
+}
 
 export interface ColorScaleObject {
   type?: string
@@ -219,7 +213,7 @@ export interface DisplaySnapshot {
     placement?: 'up' | 'down'
   }
   sashimi?: { show?: boolean; placement?: 'up' | 'down' | 'auto' }
-  filter?: ReadFilterSnapshot | string[]
+  filter?: FilterEntry[] | string[]
   encoding?: { color?: ColorChannel }
   legend?: { show?: boolean }
   variantLayout?: 'genomic' | 'columns'
@@ -236,9 +230,28 @@ export interface DisplaySettings {
   displayType?: string
 }
 
-function readFilterOf(r: DisplaySettings): ReadFilterSnapshot {
-  const { filter } = r.snap
-  return filter && !Array.isArray(filter) ? filter : {}
+/**
+ * An alignments display's `filter` as the settings write it, undefined when
+ * they write none. Throws on v4's object form, which a JSON bag may still
+ * spell.
+ */
+export function filterEntriesOf(snap: DisplaySnapshot) {
+  const { filter } = snap
+  if (filter !== undefined && !Array.isArray(filter)) {
+    throw new Error(
+      `an alignments filter is a list of { field, ... } entries, not ${JSON.stringify(filter)}`,
+    )
+  }
+  return filter as FilterEntry[] | undefined
+}
+
+// `entries` replace what the settings wrote on each field they name
+function writeFilterFields(r: DisplaySettings, entries: FilterEntry[]) {
+  const named = new Set(entries.map(p => p.field))
+  r.snap.filter = [
+    ...(filterEntriesOf(r.snap) ?? []).filter(p => !named.has(p.field)),
+    ...entries,
+  ]
 }
 
 function setColor(r: DisplaySettings, color: ColorChannel) {
@@ -340,25 +353,41 @@ function settingsOf(result: DisplaySettings) {
   return result.snap as Record<string, unknown>
 }
 
-// `all` resets the category to unfiltered, which makes a category scriptable
-// from a variable that may be empty. `null`, not `undefined`, so the reset
-// survives a session spec's JSON.
+// `all` writes the bare field, which clears what the track's config set and
+// makes a category scriptable from a variable that may be empty.
 function readCategoryModifiers(): Record<string, Modifier> {
   return Object.fromEntries(
-    READ_CATEGORY_KEYS.map(key => [
-      key,
+    READ_CATEGORY_KEYS.map(field => [
+      field,
       {
         on: ['alignments'],
         apply: (r: DisplaySettings, v: string) => {
-          const choice = parseEnum(key, v, ['all', 'only', 'exclude'] as const)
-          r.snap.filter = {
-            ...readFilterOf(r),
-            [key]: choice === 'all' ? null : choice,
-          }
+          const choice = parseEnum(field, v, [
+            'all',
+            'only',
+            'exclude',
+          ] as const)
+          writeFilterFields(r, [
+            choice === 'all' ? { field } : { field, equal: choice === 'only' },
+          ])
         },
       } satisfies Modifier,
     ]),
   )
+}
+
+// samtools' `-f` then `-F` over every flag field: a bit in neither mask
+// clears its field, so `flags::256` also lifts the default exclusions
+function flagEntries(include: number, exclude: number): FilterEntry[] {
+  return samFlagNames.map((name, i) => {
+    const field = `flags.${name}`
+    const bit = 1 << i
+    return include & bit
+      ? { field, equal: true }
+      : exclude & bit
+        ? { field, equal: false }
+        : { field }
+  })
 }
 
 const modifiers: Record<string, Modifier> = {
@@ -479,23 +508,25 @@ const modifiers: Record<string, Modifier> = {
   // They filter before the coverage pipeline, so `svSignal:only` on an
   // ordinary sample removes almost every read and the coverage band with them.
   ...readCategoryModifiers(),
-  // samtools' `-f` then `-F`; an omitted half leaves that mask as configured
+  // an omitted half is mask 0
   flags: {
     on: ['alignments'],
     values: 2,
     apply: (r, include, exclude) => {
-      r.snap.filter = {
-        ...readFilterOf(r),
-        ...(include ? { flagInclude: parseFlagMask('flags', include) } : {}),
-        ...(exclude ? { flagExclude: parseFlagMask('flags', exclude) } : {}),
-      }
+      writeFilterFields(
+        r,
+        flagEntries(
+          include ? parseFlagMask('flags', include) : 0,
+          exclude ? parseFlagMask('flags', exclude) : 0,
+        ),
+      )
     },
   },
   // samtools' `-q`
   mapq: {
     on: ['alignments'],
     apply: (r, v) => {
-      r.snap.filter = { ...readFilterOf(r), minMapq: parseNum('mapq', v) }
+      writeFilterFields(r, [{ field: 'mapq', gte: parseNum('mapq', v) }])
     },
   },
   // appends: `filterTag:HP:1 filterTag:RG:x` is two conditions, and a value
@@ -504,16 +535,11 @@ const modifiers: Record<string, Modifier> = {
     on: ['alignments'],
     values: 'rest',
     apply: (r, tag, value) => {
-      r.snap.filter = {
-        ...readFilterOf(r),
-        tags: [
-          ...(readFilterOf(r).tags ?? []),
-          {
-            tag: parseStr('filterTag', tag, 'a SAM tag name'),
-            ...(value ? { value } : {}),
-          },
-        ],
-      }
+      const field = `tags.${parseStr('filterTag', tag, 'a SAM tag name')}`
+      r.snap.filter = [
+        ...(filterEntriesOf(r.snap) ?? []),
+        value ? { field, equal: value } : { field, valid: true },
+      ]
     },
   },
 

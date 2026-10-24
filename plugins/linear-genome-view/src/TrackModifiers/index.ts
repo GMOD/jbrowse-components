@@ -1,9 +1,11 @@
 import { getEnv, getSession } from '@jbrowse/core/util'
 import { basePaintedAt } from '@jbrowse/core/util/Base1DUtils'
+import { testsSomething } from '@jbrowse/core/util/fieldPredicate'
 import { normalizeTrackInit, trackDisplayType } from '@jbrowse/core/util/tracks'
 import {
   buildDisplaySnapshot,
   displayCategory,
+  filterEntriesOf,
   memberPatch,
   memberWrites,
   mergeSettings,
@@ -17,11 +19,11 @@ import {
 } from '@jbrowse/mobx-state-tree'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
 import type { TrackInit } from '@jbrowse/core/util/tracks'
 import type {
   Category,
   DisplaySettings,
-  ReadFilterSnapshot,
 } from '@jbrowse/launch-args/displaySettings'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
@@ -119,17 +121,25 @@ function modifierLaunch(
 }
 
 function readFilterOf({ category, settings }: ModifierLaunch) {
-  const { filter } = settings.snap
-  return category === 'alignments' &&
-    typeof filter === 'object' &&
-    !Array.isArray(filter)
-    ? filter
-    : undefined
+  return category === 'alignments' ? filterEntriesOf(settings.snap) : undefined
+}
+
+// the entries grouped by field, as `setFilterFields` takes them: a field whose
+// entries are all bare is `[]`, which clears it, defaults included
+function filterPatch(entries: readonly FieldPredicate[]) {
+  const patch: Record<string, FieldPredicate[]> = {}
+  for (const p of entries) {
+    patch[p.field] = [
+      ...(patch[p.field] ?? []),
+      ...(testsSomething(p) ? [p] : []),
+    ]
+  }
+  return patch
 }
 
 // The display an alignments launch writes its read filter onto, once open
 interface FilterDisplay {
-  applyFilterObject?: (filter: ReadFilterSnapshot) => void
+  setFilterFields?: (patch: Record<string, FieldPredicate[]>) => void
   writtenFilter?: unknown[]
 }
 
@@ -177,8 +187,8 @@ function finishOpen(
 ) {
   const filter = readFilterOf(launch)
   if (filter) {
-    ;(opened.displays[0] as FilterDisplay | undefined)?.applyFilterObject?.(
-      filter,
+    ;(opened.displays[0] as FilterDisplay | undefined)?.setFilterFields?.(
+      filterPatch(filter),
     )
   }
   return writeMembers(view, trackId, launch.members)

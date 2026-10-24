@@ -2,7 +2,6 @@ import { CIGAR_HAS_SKIP, samFlagNames } from '@jbrowse/cigar-utils'
 import {
   compilePredicates,
   testsSomething,
-  withLowerBound,
 } from '@jbrowse/core/util/fieldPredicate'
 import {
   categoryEntries,
@@ -543,7 +542,7 @@ export function filterProblems(written: readonly FieldPredicate[]): string[] {
   })
 }
 
-// ---- the object form: v4's, and what a launch modifier writes ----
+// ---- v4's object form, which the v4.3.0 lifts read ----
 
 export interface FilterObject {
   flagInclude?: unknown
@@ -570,40 +569,6 @@ function isCategory(v: unknown): v is CategoryFilter {
   return v === 'only' || v === 'exclude'
 }
 
-const OBJECT_MEMBERS: Record<string, readonly string[] | undefined> = {
-  flagInclude: undefined,
-  flagExclude: undefined,
-  minMapq: undefined,
-  readName: undefined,
-  tags: undefined,
-  tagFilter: undefined,
-  spliced: undefined,
-  svSignal: undefined,
-  alone: undefined,
-  split: undefined,
-  junctions: ['minReads', 'nonCanonical', 'classes'],
-  connections: ['interchrom', 'offscreenMates', 'minInterchromReads'],
-}
-
-/**
- * The members an object-form filter names that it does not have, as dotted
- * paths: what a write refuses, so a typo is an error rather than an
- * unfiltered track.
- */
-export function strayFilterMembers(object: Record<string, unknown>) {
-  return Object.entries(object).flatMap(([key, value]) => {
-    if (!(key in OBJECT_MEMBERS)) {
-      return [key]
-    }
-    const nested = OBJECT_MEMBERS[key]
-    return nested && typeof value === 'object' && value !== null
-      ? Object.keys(value)
-          .filter(k => !nested.includes(k))
-          .map(k => `${key}.${k}`)
-      : []
-  })
-}
-
 // A member a patch names: a value, or `null` for unset
 function given(object: Record<string, unknown>, key: string) {
   return key in object && object[key] !== undefined
@@ -619,46 +584,39 @@ function junctionClassListOrUnset(v: unknown) {
     : undefined
 }
 
-/**
- * The fields an object-form `filter` writes, composed onto `current` (a
- * merged list) as the track menu composes: a member the object names
- * replaces its fields and `null` unsets them, an omitted flag mask half keeps
- * `current`'s, and `tags` add to the tags `current` holds. What a launch
- * modifier and a JSON settings bag write.
- */
-export function filterPatchOfObject(
+// The fields an object-form `filter` writes over the defaults: a member the
+// object names replaces its fields and `null` unsets them, and an omitted
+// flag mask half keeps the default's.
+function filterPatchOfObject(
   object: FilterObject,
-  current: readonly FieldPredicate[],
 ): Record<string, FieldPredicate[]> {
   const o = object as Record<string, unknown>
   const patch: Record<string, FieldPredicate[]> = {}
-  const { flagInclude, flagExclude } = object
+  const { flagInclude, flagExclude, minMapq, readName } = object
   if (typeof flagInclude === 'number' || typeof flagExclude === 'number') {
-    const masks = flagMasksOf(current)
     Object.assign(
       patch,
       flagEntries(
-        typeof flagInclude === 'number' ? flagInclude : masks.include,
-        typeof flagExclude === 'number' ? flagExclude : masks.exclude,
+        typeof flagInclude === 'number'
+          ? flagInclude
+          : DEFAULT_FLAG_MASKS.include,
+        typeof flagExclude === 'number'
+          ? flagExclude
+          : DEFAULT_FLAG_MASKS.exclude,
       ),
     )
   }
   if (given(o, 'minMapq')) {
-    patch[MAPQ_FIELD] = withLowerBound(
-      entriesOn(current, MAPQ_FIELD),
-      MAPQ_FIELD,
-      typeof object.minMapq === 'number' ? object.minMapq : undefined,
-    )
+    patch[MAPQ_FIELD] =
+      typeof minMapq === 'number' ? [{ field: MAPQ_FIELD, gte: minMapq }] : []
   }
   if (given(o, 'readName')) {
     patch.name =
-      typeof object.readName === 'string'
-        ? [{ field: 'name', equal: object.readName }]
-        : []
+      typeof readName === 'string' ? [{ field: 'name', equal: readName }] : []
   }
   // v4's dialog asked for `*` to mean "any value", and its empty value kept
   // the reads lacking the tag, which nobody meant: both are any value
-  const added = [
+  const tags = [
     ...(Array.isArray(object.tags) ? object.tags : []),
     ...(object.tagFilter ? [object.tagFilter] : []),
   ]
@@ -671,15 +629,7 @@ export function filterPatchOfObject(
         ? { tag }
         : { tag, value },
     )
-  if (given(o, 'tags') || added.length > 0) {
-    Object.assign(
-      patch,
-      tagEntries(current, [
-        ...(object.tags === null ? [] : tagFiltersOf(current)),
-        ...added,
-      ]),
-    )
-  }
+  Object.assign(patch, tagEntries([], tags))
   for (const key of ['spliced', 'svSignal', 'alone', 'split'] as const) {
     if (given(o, key)) {
       patch[key] = categoryEntries(key, categoryOrUnset(object[key]))
@@ -726,7 +676,7 @@ export function filterPatchOfObject(
 export function predicatesOfFilterObject(
   object: FilterObject,
 ): FieldPredicate[] {
-  return withFields([], filterPatchOfObject(object, ALIGNMENTS_FILTER_DEFAULTS))
+  return withFields([], filterPatchOfObject(object))
 }
 
 /** The adapters' drop test, over `compileRecordFilter`; drops nothing when no field applies. */

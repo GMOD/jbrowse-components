@@ -1108,19 +1108,6 @@ describe('read categories + filter submenu', () => {
     })
   })
 
-  // jbrowse-img hands a settings bag's object-form `filter` to this action, so
-  // a typo there is an error rather than an unfiltered export
-  test('an object-form write refuses a member the object form lacks', () => {
-    const display = createDisplay()
-    expect(() => {
-      display.applyFilterObject({
-        svSignal: 'only',
-        flagExcludes: 4,
-      } as never)
-    }).toThrow('filter has no flagExcludes')
-    expect(display.writtenFilter).toEqual([])
-  })
-
   // the Filter menu's "Clear all filters"
   test('clearing the filter writes back what the config declares', () => {
     const display = createDisplay()

@@ -30,13 +30,11 @@ import {
 import {
   connectionEntries,
   connectionFilterOf,
-  filterPatchOfObject,
   filterProblems,
   junctionEntries,
   junctionFilterOf,
   mergeFilter,
   readPredicatesOf,
-  strayFilterMembers,
   withFields,
 } from '../shared/alignmentsFilter.ts'
 import { arcColorFieldOf } from '../shared/arcColorOptions.ts'
@@ -62,7 +60,6 @@ import type {
   AlignmentsColorEncoding,
   AlignmentsColorSetting,
 } from '../shared/alignmentsColor.ts'
-import type { FilterObject } from '../shared/alignmentsFilter.ts'
 import type {
   ArcColorField,
   BaseLayer,
@@ -621,25 +618,6 @@ export function configSlotActions(self: ConfigSlotSelf) {
      * written.
      */
     setFilterFields,
-
-    /**
-     * #action
-     * An object-form filter, a launch modifier's or a JSON settings bag's,
-     * written onto this display's list by field as the track menu writes
-     * (`filterPatchOfObject`).
-     */
-    applyFilterObject(object: FilterObject) {
-      const stray = strayFilterMembers(object as Record<string, unknown>)
-      if (stray.length > 0) {
-        throw new Error(`filter has no ${stray.join(', ')}`)
-      }
-      setFilterFields(
-        filterPatchOfObject(
-          object,
-          mergeFilter(writtenFilterOf(self.configuration)),
-        ),
-      )
-    },
 
     /**
      * #action

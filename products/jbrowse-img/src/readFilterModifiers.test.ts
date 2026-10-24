@@ -84,19 +84,21 @@ test('a category edit leaves the flag fields the track config set', async () => 
   ])
 })
 
-test('an omitted half of flags keeps the configured mask', async () => {
+test('flags writes every flag field, an omitted half as mask 0', async () => {
   const { display } = await filtered(
     [
       { field: 'flags.PROPER_PAIR', equal: true },
       { field: 'flags.SECONDARY', equal: false },
+      { field: 'tags.HP', equal: '1' },
     ],
     ['flags::256'],
   )
-  // exclude 256 alone, as `samtools view -F 256` says: SECONDARY out, and the
-  // three default exclusions lifted by their bare fields
+  // exclude 256 alone, as `samtools view -F 256` says: SECONDARY out, the
+  // configured include cleared, and the three default exclusions lifted by
+  // their bare fields
   expect(display.writtenFilter).toEqual([
-    { field: 'flags.PROPER_PAIR', equal: true },
     { field: 'flags.SECONDARY', equal: false },
+    { field: 'tags.HP', equal: '1' },
     { field: 'flags.UNMAP' },
     { field: 'flags.QCFAIL' },
     { field: 'flags.DUP' },
@@ -117,7 +119,7 @@ test('a tag filter is a second condition, not a replacement', async () => {
 test('a junction filter in a settings bag keeps the configured fields', async () => {
   const { display } = await filtered(
     [{ field: 'junction.reads', gte: 7 }],
-    ['{"filter":{"junctions":{"nonCanonical":"exclude"}}}', 'split:only'],
+    ['{"filter":[{"field":"junction.canonical","equal":true}]}', 'split:only'],
   )
   expect(display.junctionFilter).toEqual({
     minReads: 7,
@@ -145,7 +147,7 @@ test('the returned spec carries the filter as written', async () => {
   expect(spec.filter).toEqual([
     { field: 'flags.SECONDARY', equal: false },
     { field: 'tags.HP', equal: '1' },
-    { field: 'tags.RG', equal: 'lane3' },
     { field: 'split', equal: true },
+    { field: 'tags.RG', equal: 'lane3' },
   ])
 })

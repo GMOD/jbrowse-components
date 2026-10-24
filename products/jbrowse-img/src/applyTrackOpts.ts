@@ -5,6 +5,7 @@ import { launchTrackWithModifiers } from '@jbrowse/plugin-linear-genome-view'
 import type { AssertNever, AssertTrue, Covers } from './types.ts'
 import type { VariantSortColumn } from '@jbrowse/alignments-core/variantSortColumn'
 import type { ColorSchemeName } from '@jbrowse/core/util/colorSchemes'
+import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
 import type { HeightMode } from '@jbrowse/display-kit/heightMode'
 import type {
   ALIGNMENTS_COLOR_FIELDS,
@@ -13,13 +14,12 @@ import type {
   Category,
   DisplaySnapshot,
   FACET_ONLY_FIELDS,
+  FilterEntry,
   HEIGHT_MODES,
   READ_CATEGORY_KEYS,
-  ReadFilterSnapshot,
 } from '@jbrowse/launch-args/displaySettings'
 import type {
   COMPACTNESS_PRESETS,
-  CategoryFilter,
   FacetOnlyDimension,
   LinearAlignmentsDisplayModel,
   ReadCategoryKey,
@@ -56,11 +56,7 @@ export type AssertDisplaySettingsMatchPlugins = [
       ? true
       : false
   >,
-  AssertTrue<
-    NonNullable<ReadFilterSnapshot[ReadCategoryKey]> extends CategoryFilter
-      ? true
-      : false
-  >,
+  AssertTrue<FilterEntry extends FieldPredicate ? true : false>,
 ]
 
 // Every DisplaySnapshot key exists on a display model, so a property renamed

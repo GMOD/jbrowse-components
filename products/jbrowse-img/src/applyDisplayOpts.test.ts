@@ -10,8 +10,8 @@ function fakeView() {
   const calls: unknown[] = []
   const filters: unknown[] = []
   const display = {
-    applyFilterObject(filter: unknown) {
-      filters.push(filter)
+    setFilterFields(patch: unknown) {
+      filters.push(patch)
     },
   }
   const view = {
@@ -40,7 +40,7 @@ test('a read filter follows the open, the other settings ride the snapshot', asy
   const { view, calls, filters } = fakeView()
   await applyDisplayOpts(view, 't', 'alignments', ['height:400', 'split:only'])
   expect(calls).toEqual([{ height: 400 }])
-  expect(filters).toEqual([{ split: 'only' }])
+  expect(filters).toEqual([{ split: [{ field: 'split', equal: true }] }])
 })
 
 test('every read filter modifier lands in the one write after the open', async () => {
@@ -48,10 +48,19 @@ test('every read filter modifier lands in the one write after the open', async (
   await applyDisplayOpts(view, 't', 'alignments', [
     'mapq:20',
     'filterTag:RG:lane3',
+    'filterTag:RG:lane4',
+    'alone:all',
   ])
   expect(calls).toEqual([{}])
   expect(filters).toEqual([
-    { minMapq: 20, tags: [{ tag: 'RG', value: 'lane3' }] },
+    {
+      mapq: [{ field: 'mapq', gte: 20 }],
+      'tags.RG': [
+        { field: 'tags.RG', equal: 'lane3' },
+        { field: 'tags.RG', equal: 'lane4' },
+      ],
+      alone: [],
+    },
   ])
 })
 

@@ -4,6 +4,8 @@ import {
   memberWrites,
 } from './displaySettings.ts'
 
+import type { FilterEntry } from './displaySettings.ts'
+
 // buildDisplaySnapshot turns a track's modifier list into a declarative display
 // snapshot (passed to showTrack), instead of a sequence of setter actions.
 
@@ -280,27 +282,37 @@ describe('alignments settings a static export cannot reach any other way', () =>
     expect(snap).toEqual({ showOutline: false })
   })
 
-  // Both land in one `filter`, so they compose with the flag masks and tag
-  // filters below rather than sitting beside them.
-  test('the read categories fold into filter', () => {
-    expect(
-      buildDisplaySnapshot('alignments', ['svSignal:only', 'spliced:exclude'])
-        .snap.filter,
-    ).toEqual({ svSignal: 'only', spliced: 'exclude' })
+  const filterOf = (opts: string[]) =>
+    buildDisplaySnapshot('alignments', opts).snap.filter as FilterEntry[]
+  const testedOf = (opts: string[]) =>
+    filterOf(opts).filter(p => Object.keys(p).length > 1)
+
+  test('the read categories write their fields', () => {
+    expect(filterOf(['svSignal:only', 'spliced:exclude'])).toEqual([
+      { field: 'svSignal', equal: true },
+      { field: 'spliced', equal: false },
+    ])
   })
 
-  test('mapq: writes the minimum mapping quality beside the other filters', () => {
-    expect(
-      buildDisplaySnapshot('alignments', ['mapq:20', 'split:only']).snap.filter,
-    ).toEqual({ minMapq: 20, split: 'only' })
+  test('mapq: writes a floor beside the other filters', () => {
+    expect(filterOf(['mapq:20', 'split:only'])).toEqual([
+      { field: 'mapq', gte: 20 },
+      { field: 'split', equal: true },
+    ])
     expect(() => buildDisplaySnapshot('alignments', ['mapq:high'])).toThrow()
   })
 
-  // `all` resets to the absent filter, which lets a script pass a category
-  // through from a variable that may be empty
-  test('a category set to all resets it, in a form JSON keeps', () => {
-    const { filter } = buildDisplaySnapshot('alignments', ['alone:all']).snap
-    expect(JSON.parse(JSON.stringify(filter))).toEqual({ alone: null })
+  test('a later modifier on a field replaces the earlier one', () => {
+    expect(filterOf(['mapq:20', 'split:only', 'mapq:30'])).toEqual([
+      { field: 'split', equal: true },
+      { field: 'mapq', gte: 30 },
+    ])
+  })
+
+  // the bare field clears what the config set, which lets a script pass a
+  // category through from a variable that may be empty
+  test('a category set to all writes the bare field', () => {
+    expect(filterOf(['alone:only', 'alone:all'])).toEqual([{ field: 'alone' }])
   })
 
   test('an unknown category value names the three that work', () => {
@@ -309,45 +321,50 @@ describe('alignments settings a static export cannot reach any other way', () =>
     )
   })
 
-  // samtools' -f / -F, in that order
-  test('flags sets the two masks', () => {
-    expect(
-      buildDisplaySnapshot('alignments', ['flags:2:1540']).snap.filter,
-    ).toEqual({ flagInclude: 2, flagExclude: 1540 })
+  // samtools' -f / -F, in that order, over all twelve flag fields
+  test('flags writes every flag field', () => {
+    const filter = filterOf(['flags:2:1540'])
+    expect(filter).toHaveLength(12)
+    expect(filter.filter(p => Object.keys(p).length > 1)).toEqual([
+      { field: 'flags.PROPER_PAIR', equal: true },
+      { field: 'flags.UNMAP', equal: false },
+      { field: 'flags.QCFAIL', equal: false },
+      { field: 'flags.DUP', equal: false },
+    ])
+    expect(filter).toContainEqual({ field: 'flags.SECONDARY' })
   })
 
-  // An omitted half has to leave the display's own default alone rather than
-  // become 0 -- `flags::256` reading as "include nothing" would silently drop
-  // every read.
-  test('an omitted half of flags is left unset', () => {
-    expect(
-      buildDisplaySnapshot('alignments', ['flags::256']).snap.filter,
-    ).toEqual({ flagExclude: 256 })
-    expect(buildDisplaySnapshot('alignments', ['flags:2']).snap.filter).toEqual(
-      { flagInclude: 2 },
-    )
+  // samtools' meaning: `-F 256` alone lets unmapped, QC-failed and duplicate
+  // reads through, so the default exclusions go too
+  test('an omitted half of flags is mask 0', () => {
+    expect(testedOf(['flags::256'])).toEqual([
+      { field: 'flags.SECONDARY', equal: false },
+    ])
+    expect(filterOf(['flags::256'])).toContainEqual({ field: 'flags.DUP' })
+    expect(testedOf(['flags:2'])).toEqual([
+      { field: 'flags.PROPER_PAIR', equal: true },
+    ])
   })
 
   // The names carry their own arithmetic, so a reader who wants "drop secondary
   // as well" writes that rather than working out that 1540 becomes 1796.
   test('flags takes samtools flag names as well as numbers', () => {
-    expect(
-      buildDisplaySnapshot('alignments', ['flags::SECONDARY,DUP']).snap.filter,
-    ).toEqual({ flagExclude: 256 | 1024 })
-    expect(
-      buildDisplaySnapshot('alignments', ['flags:proper_pair']).snap.filter,
-    ).toEqual({ flagInclude: 2 })
+    expect(testedOf(['flags::SECONDARY,DUP'])).toEqual([
+      { field: 'flags.SECONDARY', equal: false },
+      { field: 'flags.DUP', equal: false },
+    ])
+    expect(testedOf(['flags:proper_pair'])).toEqual([
+      { field: 'flags.PROPER_PAIR', equal: true },
+    ])
     // The display's own default mask, said both ways — and the pair below is
     // the reason the names are worth having: 1540 and 1796 differ by one bit
     // nobody reads off the number.
-    expect(
-      buildDisplaySnapshot('alignments', ['flags::UNMAP,QCFAIL,DUP']).snap
-        .filter,
-    ).toEqual(buildDisplaySnapshot('alignments', ['flags::1540']).snap.filter)
-    expect(
-      buildDisplaySnapshot('alignments', ['flags::UNMAP,SECONDARY,QCFAIL,DUP'])
-        .snap.filter,
-    ).toEqual(buildDisplaySnapshot('alignments', ['flags::1796']).snap.filter)
+    expect(filterOf(['flags::UNMAP,QCFAIL,DUP'])).toEqual(
+      filterOf(['flags::1540']),
+    )
+    expect(filterOf(['flags::UNMAP,SECONDARY,QCFAIL,DUP'])).toEqual(
+      filterOf(['flags::1796']),
+    )
   })
 
   test('an unknown flag name lists the vocabulary', () => {
@@ -359,25 +376,18 @@ describe('alignments settings a static export cannot reach any other way', () =>
   // AND-ed, so a second one is a second condition rather than a replacement
   test('tag filters accumulate, and coexist with the flag masks', () => {
     expect(
-      buildDisplaySnapshot('alignments', [
-        'flags:2',
-        'filterTag:HP:1',
-        'filterTag:RG:lane3',
-      ]).snap.filter,
-    ).toEqual({
-      flagInclude: 2,
-      tags: [
-        { tag: 'HP', value: '1' },
-        { tag: 'RG', value: 'lane3' },
-      ],
-    })
+      testedOf(['flags:2', 'filterTag:HP:1', 'filterTag:RG:lane3']),
+    ).toEqual([
+      { field: 'flags.PROPER_PAIR', equal: true },
+      { field: 'tags.HP', equal: '1' },
+      { field: 'tags.RG', equal: 'lane3' },
+    ])
   })
 
   test("a tag filter's value keeps its colons", () => {
-    expect(
-      buildDisplaySnapshot('alignments', ['filterTag:RG:HG002:fc1:1']).snap
-        .filter,
-    ).toEqual({ tags: [{ tag: 'RG', value: 'HG002:fc1:1' }] })
+    expect(filterOf(['filterTag:RG:HG002:fc1:1'])).toEqual([
+      { field: 'tags.RG', equal: 'HG002:fc1:1' },
+    ])
   })
 
   test.each([
@@ -392,9 +402,30 @@ describe('alignments settings a static export cannot reach any other way', () =>
   })
 
   test('a tag filter with no value passes any read carrying the tag', () => {
+    expect(filterOf(['filterTag:HP'])).toEqual([
+      { field: 'tags.HP', valid: true },
+    ])
+  })
+
+  test('a settings bag writes the list the modifiers then edit by field', () => {
     expect(
-      buildDisplaySnapshot('alignments', ['filterTag:HP']).snap.filter,
-    ).toEqual({ tags: [{ tag: 'HP' }] })
+      filterOf([
+        '{"filter":[{"field":"mapq","gte":10},{"field":"tags.HP","equal":"1"}]}',
+        'mapq:20',
+      ]),
+    ).toEqual([
+      { field: 'tags.HP', equal: '1' },
+      { field: 'mapq', gte: 20 },
+    ])
+  })
+
+  test("v4's object form is refused", () => {
+    expect(() =>
+      buildDisplaySnapshot('alignments', [
+        '{"filter":{"junctions":{"nonCanonical":"exclude"}}}',
+        'split:only',
+      ]),
+    ).toThrow(/a list of \{ field, ... \} entries/)
   })
 
   test('the new alignments modifiers warn on a wiggle track', () => {
