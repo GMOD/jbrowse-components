@@ -31,6 +31,21 @@ export function valueText(value: unknown): string {
       : String(value)
 }
 
+/**
+ * #api
+ * Whether a field has no value: absent, empty, or a VCF's `AF=.`, which
+ * arrives as `[undefined]`. Text that fails to parse still counts as a value.
+ */
+export function isMissing(value: unknown) {
+  // the number test first: String() of a float costs ~50x an integer's, and a
+  // ramp asks this of every feature
+  return typeof value === 'number'
+    ? false
+    : Array.isArray(value)
+      ? value.every(v => v === undefined || v === null)
+      : valueText(value) === ''
+}
+
 function groupKeyRank(key: string) {
   return key === '' ? 1 : key === OVERFLOW_GROUP_KEY ? 2 : 0
 }

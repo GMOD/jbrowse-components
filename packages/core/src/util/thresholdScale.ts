@@ -1,8 +1,10 @@
 import { categoricalPalette } from '../ui/colors.ts'
 import { NO_VALUE_LABEL, keyNames } from './categoricalField.ts'
 import { MISCONFIGURED_COLOR, NO_CATEGORY_COLOR } from './color/index.ts'
-import { groupKeyComparator, valueText } from './groupKeys.ts'
+import { groupKeyComparator, isMissing } from './groupKeys.ts'
 import { numericValue } from './numericValue.ts'
+
+export { isMissing } from './groupKeys.ts'
 
 import type { CategoricalScale } from '../ui/colorScale.ts'
 import type { CategoricalField } from './categoricalField.ts'
@@ -147,21 +149,6 @@ export function rampGapScales(
 ): CategoricalScale[] {
   const entries = thresholdKeyEntries([], undefined, met).slice(1)
   return entries.length > 0 ? [{ kind: 'categorical', id, entries }] : []
-}
-
-/**
- * #api
- * Whether a field has no value: absent, empty, or a VCF's `AF=.`, which
- * arrives as `[undefined]`. Text that fails to parse still counts as a value.
- */
-export function isMissing(value: unknown) {
-  // the number test first: String() of a float costs ~50x an integer's, and a
-  // ramp asks this of every feature
-  return typeof value === 'number'
-    ? false
-    : Array.isArray(value)
-      ? value.every(v => v === undefined || v === null)
-      : valueText(value) === ''
 }
 
 /**

@@ -1,9 +1,15 @@
 import { getSnapshot, isStateTreeNode } from '@jbrowse/mobx-state-tree'
 
+import { isMissing, valueText } from './groupKeys.ts'
+import { numericValue } from './numericValue.ts'
+
 /**
  * Vega-Lite's field predicate (ADR-238): the `field` of each record and the
- * tests its value must pass, every one given. A comparison on a missing value
- * is false; `valid: false` selects the missing values.
+ * tests its value must pass, every one given. A value is missing as a color
+ * key reads it (`isMissing`: absent, empty, or a VCF's `DP=.`), and
+ * `valid: false` selects exactly those. A comparison reads the value as a
+ * number (`numericValue`), so a missing value and text that is no number
+ * both fail it.
  *
  * `compilePredicates` resolves each field once, before the loop, to a lane the
  * caller hands it, so the test it returns is a typed read and a compare per
@@ -76,21 +82,111 @@ function equalsOf(p: FieldPredicate) {
   return p.equal === undefined && p.oneOf === undefined ? undefined : listed
 }
 
-// A value read off an object is compared in the type of the constant it is
-// tested against, so a GFF attribute "12" passes `gte: 10` and `equal: 12`.
-function coerce(value: unknown, like: unknown) {
-  return typeof like === 'number'
-    ? Number(value)
-    : typeof like === 'boolean'
-      ? value === true || value === 'true'
-      : String(value)
+// A value as a number, `numericValue` with the two common types inline:
+// a record's number reads as itself and its text converts, blank text
+// being no number
+function numberOf(raw: unknown) {
+  if (typeof raw === 'number') {
+    return raw
+  }
+  if (typeof raw === 'string') {
+    const n = +raw
+    return n === 0 && raw.trim() === '' ? Number.NaN : n
+  }
+  return numericValue(raw)
+}
+
+// `isMissing`, with the two common types inline
+function missingOf(raw: unknown) {
+  return typeof raw === 'string'
+    ? raw === ''
+    : typeof raw === 'number'
+      ? false
+      : isMissing(raw)
+}
+
+function asBoolean(raw: unknown) {
+  return raw === true || raw === 'true'
+    ? true
+    : raw === false || raw === 'false'
+      ? false
+      : undefined
+}
+
+// What an `equal` or `oneOf` list admits, each member in its own type: a
+// number against the value's number, text against its text, and a boolean
+// against a boolean or its text, so `oneOf: [1, 'NA']` admits 1 and 'NA' and
+// nothing else. A list of one type tests that type alone.
+function membersTest(
+  listed: readonly (string | number | boolean)[],
+): (raw: unknown) => boolean {
+  const numbers = new Set<number>()
+  const texts = new Set<string>()
+  const booleans = new Set<boolean | undefined>()
+  for (const v of listed) {
+    if (typeof v === 'number') {
+      numbers.add(v)
+    } else if (typeof v === 'boolean') {
+      booleans.add(v)
+    } else {
+      texts.add(v)
+    }
+  }
+  const byNumber = (raw: unknown) => numbers.has(numberOf(raw))
+  const byText = (raw: unknown) =>
+    texts.has(typeof raw === 'string' ? raw : valueText(raw))
+  const byBoolean = (raw: unknown) => booleans.has(asBoolean(raw))
+  const kinds = [
+    ...(numbers.size > 0 ? [byNumber] : []),
+    ...(texts.size > 0 ? [byText] : []),
+    ...(booleans.size > 0 ? [byBoolean] : []),
+  ]
+  return kinds.length === 1
+    ? kinds[0]!
+    : raw => kinds.some(admits => admits(raw))
+}
+
+// The whole test on one value read off a record, the reference every lane
+// kind agrees with
+function valueTest(p: FieldPredicate): (raw: unknown) => boolean {
+  const listed = equalsOf(p)
+  const inBounds = boundsOf(p, n => n)
+  const members = listed && membersTest(listed)
+  const { valid } = p
+  if (!inBounds && members && valid === undefined) {
+    // a missing value reads as NaN, which no number member holds
+    return listed.every(v => typeof v === 'number')
+      ? members
+      : raw => !missingOf(raw) && members(raw)
+  }
+  if (!inBounds && !members && valid !== undefined) {
+    return raw => missingOf(raw) !== valid
+  }
+  return raw => {
+    const missing = missingOf(raw)
+    if (valid !== undefined && missing === valid) {
+      return false
+    }
+    if (missing) {
+      return valid === false && !inBounds && !members
+    }
+    return (!inBounds || inBounds(numberOf(raw))) && (!members || members(raw))
+  }
 }
 
 function numberTest(p: FieldPredicate, values: ArrayLike<number>): Test {
   const round = values instanceof Float32Array ? Math.fround : (n: number) => n
   const inBounds = boundsOf(p, round)
   const listed = equalsOf(p)
-  const members = listed && new Set(listed.map(v => round(Number(v))))
+  const members =
+    listed &&
+    new Set(
+      listed
+        .map(numberOf)
+        // eslint-disable-next-line no-self-compare -- text is no number
+        .filter(n => n === n)
+        .map(round),
+    )
   const { valid } = p
   return index => {
     const v = values[index]!
@@ -112,35 +208,21 @@ function labelsTest(
   labels: readonly string[],
 ): Test {
   // every per-record test becomes one lookup: which labels pass, decided once
-  const inBounds = boundsOf(p, n => n)
-  const listed = equalsOf(p)
-  const members = listed && new Set(listed.map(String))
-  const passes = labels.map(
-    label =>
-      (!inBounds || inBounds(Number(label))) &&
-      (!members || members.has(label)),
-  )
-  const { valid } = p
+  const test = valueTest(p)
+  const passes = labels.map(test)
+  const absent = test(undefined)
   const count = labels.length
   return index => {
     const id = ids[index]!
-    const missing = !(id >= 0 && id < count)
-    if (valid !== undefined && missing === valid) {
-      return false
-    }
-    return missing ? valid === false && !inBounds && !members : passes[id]!
+    return id >= 0 && id < count ? passes[id]! : absent
   }
 }
 
 function getTest<T>(p: FieldPredicate, get: (item: T) => unknown): Test<T> {
-  const listed = equalsOf(p)
-  const like = listed?.[0] ?? p.gte ?? p.gt ?? p.lte ?? p.lt
   const inBounds = boundsOf(p, n => n)
-  const members = listed && new Set(listed.map(v => coerce(v, like)))
-  const { valid } = p
-  // the common case, a bound on a number field, skips the coercion and the
-  // set: a number reads straight into the bounds
-  if (inBounds && !members && valid === undefined) {
+  // the common case, a bound on a number field, reads a number straight
+  // into the bounds
+  if (inBounds && p.equal === undefined && !p.oneOf && p.valid === undefined) {
     const { gte } = p
     if (
       gte !== undefined &&
@@ -150,32 +232,16 @@ function getTest<T>(p: FieldPredicate, get: (item: T) => unknown): Test<T> {
     ) {
       return index => {
         const raw = get(index)
-        return typeof raw === 'number'
-          ? raw >= gte
-          : raw !== undefined && raw !== null && Number(raw) >= gte
+        return numberOf(raw) >= gte
       }
     }
     return index => {
       const raw = get(index)
-      return typeof raw === 'number'
-        ? inBounds(raw)
-        : raw !== undefined && raw !== null && inBounds(Number(raw))
+      return inBounds(numberOf(raw))
     }
   }
-  return index => {
-    const raw = get(index)
-    const missing = raw === undefined || raw === null
-    if (valid !== undefined && missing === valid) {
-      return false
-    }
-    if (missing) {
-      return valid === false && !inBounds && !members
-    }
-    return (
-      (!inBounds || inBounds(Number(raw))) &&
-      (!members || members.has(coerce(raw, like)))
-    )
-  }
+  const test = valueTest(p)
+  return index => test(get(index))
 }
 
 // The value a bit lane holds for a predicate that is not a plain `equal`
@@ -239,11 +305,7 @@ function compileOne<T>(
 ): Test<T> {
   if (!lane) {
     // a field no record carries: every value is missing
-    return p.valid === false && p.equal === undefined && !p.oneOf
-      ? boundsOf(p, n => n)
-        ? NEVER
-        : () => true
-      : NEVER
+    return valueTest(p)(undefined) ? () => true : NEVER
   }
   // a typed lane is read by index, so its item is the record index
   return lane.kind === 'number'

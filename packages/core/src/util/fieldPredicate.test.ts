@@ -170,3 +170,74 @@ describe('the slider helpers', () => {
     ])
   })
 })
+
+describe('a value no number reads as fails every comparison', () => {
+  // a VCF's DP=. arrives as [undefined]
+  const values: unknown[] = [5, 0, '', ' ', [], [undefined], null, 'NA', '5']
+  const lane: PredicateLane = { kind: 'get', get: i => values[i] }
+  const admits = (p: FieldPredicate) =>
+    admitted([p], { v: lane }, values.length).map(i => values[i])
+
+  test('bounds and equal admit numbers alone', () => {
+    expect(admits({ field: 'v', gte: 0 })).toEqual([5, 0, '5'])
+    expect(admits({ field: 'v', lte: 10 })).toEqual([5, 0, '5'])
+    expect(admits({ field: 'v', equal: 0 })).toEqual([0])
+  })
+
+  test('valid splits the missing values from the rest', () => {
+    expect(admits({ field: 'v', valid: false })).toEqual([
+      '',
+      [],
+      [undefined],
+      null,
+    ])
+    expect(admits({ field: 'v', valid: true })).toEqual([5, 0, ' ', 'NA', '5'])
+  })
+
+  test('oneOf compares each member in its own type', () => {
+    expect(admits({ field: 'v', oneOf: [5, 'NA'] })).toEqual([5, 'NA', '5'])
+  })
+
+  test('equal: false admits false, not a missing value or 0', () => {
+    const flags = [false, 'false', true, 0, '', undefined]
+    expect(
+      admitted(
+        [{ field: 'f', equal: false }],
+        { f: { kind: 'get', get: i => flags[i] } },
+        flags.length,
+      ),
+    ).toEqual([0, 1])
+  })
+
+  test('a labels lane answers as a get lane does', () => {
+    const labels = ['5', '0', '', ' ', 'NA']
+    const labelsLane: PredicateLane = {
+      kind: 'labels',
+      ids: Int32Array.from([0, 1, 2, 3, 4, -1]),
+      labels,
+    }
+    const getLane: PredicateLane = {
+      kind: 'get',
+      get: i => [...labels, undefined][i],
+    }
+    for (const p of [
+      { field: 'v', gte: 0 },
+      { field: 'v', valid: false },
+      { field: 'v', valid: true },
+      { field: 'v', oneOf: [0, 'NA'] },
+    ]) {
+      expect(admitted([p], { v: labelsLane }, 6)).toEqual(
+        admitted([p], { v: getLane }, 6),
+      )
+    }
+  })
+
+  test("a number lane matches no text member, and '' is not 0", () => {
+    const n: PredicateLane = {
+      kind: 'number',
+      values: Float64Array.from([0, 1, Number.NaN]),
+    }
+    expect(admitted([{ field: 'n', equal: '' }], { n }, 3)).toEqual([])
+    expect(admitted([{ field: 'n', oneOf: [1, 'x'] }], { n }, 3)).toEqual([1])
+  })
+})
