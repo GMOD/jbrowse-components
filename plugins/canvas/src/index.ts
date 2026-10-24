@@ -68,6 +68,8 @@ export type {
   ResolvedHighlights,
 } from './LinearBasicDisplay/featureHighlight.ts'
 export type { FitStage } from './LinearBasicDisplay/fitLadder.ts'
+export type { UnplacedTranscriptFeaturesArg } from './LinearBasicDisplay/transcriptFeaturesArg.ts'
+export type { TranscriptFeaturesJoin } from './RenderFeatureDataRPC/rpcTypes.ts'
 export type { FitDrops } from './LinearBasicDisplay/fitNotes.ts'
 export type {
   IncrementalLayout,
