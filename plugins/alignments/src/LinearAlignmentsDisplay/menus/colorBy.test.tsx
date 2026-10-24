@@ -416,6 +416,15 @@ describe('color by modifications menu', () => {
     expect(model.modificationSettings.thresholdStrict).toBeUndefined()
   })
 
+  test('a floor the slider rounds to the default is not the default', () => {
+    const model = makeModModel(['m', 'h'])
+    model.baseLayer = {
+      type: 'modifications',
+      modifications: { threshold: 10.004 },
+    }
+    expect(thresholdSlider(model).isDefault).toBe(false)
+  })
+
   test('cytosine context is shown only for cytosine methylation data', () => {
     const cytosine = makeModModel(['m', 'h'])
     cytosine.baseLayer = { type: 'modifications' }

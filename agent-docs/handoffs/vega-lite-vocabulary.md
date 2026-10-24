@@ -1,6 +1,6 @@
 ---
 name: vega-lite-vocabulary
-description: "ADR-238's migration of every display's settings to Vega-Lite's words. Landed: the predicate compiler and every filter, the synteny views' mark, axis, coord and data words, the alignments and MAF parts, the color channel (Pass A), the y channel (Pass B), wiggle and Hi-C `data`, the tree sidebar's axis, the pileup's `mark.height`, the comparative `indels` part and the band layers' filters. Open: Pass B's jb2hubs, ggjbrowse and lift cleanup, the band layers' `show` and `unmodified` leftovers, and the writers. Read before adding or renaming any display or view setting."
+description: "ADR-238's migration of every display's settings to Vega-Lite's words. Landed: the predicate compiler and every filter, the synteny views' mark, axis, coord and data words, the alignments and MAF parts, the color channel (Pass A), the y channel (Pass B), wiggle and Hi-C `data`, the tree sidebar's axis, the pileup's `mark.height`, the comparative `indels` part and the band layers' filters. Open: Pass B's jb2hubs and lift cleanup, the band layers' `show` and `unmodified` leftovers, and the writers. Read before adding or renaming any display or view setting."
 ---
 
 # Vega-Lite vocabulary: what is left
@@ -41,14 +41,6 @@ Git history has each landing.
      wiggle and mark displays, and the `y` lift on wiggle and MAF. Until then
      `jbrowse validate` warns on an old `scales`, in a display entry or a
      `displayDefaults`.
-   - **ggjbrowse:** the unpushed `pass-b-respell` branch holds the
-     `encoding.y`, `legend.show` and `encoding.color` respell and an engine
-     re-pinned at a pushed main commit with `encoding.y`. Push it, and re-pin
-     again once wiggle's `data.resolution` lands. The R export writes
-     the display config as written (`rScript.ts`), so a stepped wiggle exports
-     `data = list(resolution = ...)`. By the closed-schema rule, a bundle
-     whose wiggle schema lacks `data` drops it silently; nobody has run that
-     case.
    - **Demos:** `demos/{cgiab,dtu,read_marks}/config.json` are respelled and
      not deployed (`scripts/deploy-demo.sh`).
    - The unlanded `chat-request-evals` branch writes 8 `scales.y` lines in
@@ -76,13 +68,11 @@ Layout, the multi-way leftovers and settings with no step are in
 - **jb2hubs:** its unpushed branch `synteny-mark-interpolate` writes the
   synteny view's `mark: { interpolate: 'bump' }` for `drawCurves: true`. Row
   orders write `domain` beside `sort` for released hosts.
-- **ggjbrowse:** Re-knit the published pages at a new pin (memory
-  `a-config-rename-reaches-ggjbrowse`); `dog10k_lof` waits on the callset
-  host's certificate. Re-pin and respell for `view.indels`,
-  `pileup.mark.height`, `coverage.alleles.filter` and `pileup.bases.filter`:
-  `R/synteny.R:62` sends `cigarMode`, which the tables engine lifts, and
-  `R/alignments.R:388` and the docs write `readHeight`, `minAlleleFraction`,
-  `cytosineContext` and `shownModifications`.
+- **ggjbrowse:** Its R code, docs and tutorials write every setting above in
+  its current spelling. Each rename needs a ggjbrowse engine re-pin, an R
+  respell and a tutorial re-knit (memory `a-config-rename-reaches-ggjbrowse`),
+  since the closed-schema bundle drops an old key silently. `dog10k_lof` waits
+  on the callset host's certificate.
 - **Figure specs:** [screenshot-spec-elegance.md](screenshot-spec-elegance.md)
   owns the respell. It can use the landed words now: filters (plain-equality
   jexl entries become predicates), constant color, legends, rows, facet and

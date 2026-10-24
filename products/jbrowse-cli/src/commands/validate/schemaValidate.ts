@@ -201,12 +201,11 @@ function unknownKeyMessage(
     return 'JBrowse takes the sequence from the assembly the track is displayed against, and this adapter declares no `sequenceAdapter` slot, so the one written here is never read — delete it'
   }
   if (title.endsWith('Snapshot')) {
-    const slots = Object.keys(
-      defs[`${title.replace(/Snapshot$/, '')}Slots`]?.properties as Schema,
-    )
-    return slots.includes(key)
+    const properties =
+      defs[`${title.replace(/Snapshot$/, '')}Slots`]?.properties
+    return Object.keys((properties as Schema | undefined) ?? {}).includes(key)
       ? `"${key}" is a config slot, not a display property, so a session snapshot drops it and the setting silently does nothing — put it on the track's "displays" entry under "tracks", or in a "trackConfigDeltas" entry, instead`
-      : `unknown display property "${key}"${didYouMean(key, [...accepted, ...slots])} — a session snapshot drops keys the display does not declare, so this setting silently does nothing`
+      : `unknown display property "${key}"${didYouMean(key, [...accepted, ...currentKeys(properties)])} — a session snapshot drops keys the display does not declare, so this setting silently does nothing`
   }
   if (viewNames.has(title)) {
     const elsewhere = [...viewNames].filter(

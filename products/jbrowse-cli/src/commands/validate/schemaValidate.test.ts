@@ -731,6 +731,10 @@ describe('the schema', () => {
     )
     expect(error?.message).toContain('unknown display property')
     expect(error?.message).not.toContain('heightPreConfig')
+    const [slot] = schemaProblems(
+      sessionDisplay({ type: 'LinearBasicDisplay', showChevronz: true }),
+    )
+    expect(slot?.message).not.toContain('showChevrons')
   })
 
   it('accepts a session display key a migration still lifts', () => {

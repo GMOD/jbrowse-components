@@ -162,8 +162,8 @@ export function modificationsMenu(model: ModificationsMenuModel): MenuItem {
           commitOnRelease: true,
           getValue: () => model.modificationThreshold,
           isDefault:
-            model.modificationThreshold === DEFAULT_MODIFICATION_THRESHOLD &&
-            !mods.thresholdStrict,
+            (mods.threshold ?? DEFAULT_MODIFICATION_THRESHOLD) ===
+              DEFAULT_MODIFICATION_THRESHOLD && !mods.thresholdStrict,
           onChange: v => {
             patchMods(model, { threshold: v })
           },
