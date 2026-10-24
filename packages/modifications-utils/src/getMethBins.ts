@@ -56,8 +56,8 @@ export interface MethBins {
  * Bins per-read base modifications and their probabilities onto the reference
  * offsets of `window` (the whole read without one), indexed from `refStart`.
  * Only cytosines in `context` are considered (default CpG); plants also use
- * CHG/CHH. With `fill`, a cytosine in context that the MM tag left implicit
- * bins as unmethylated (probability 0) where the tag allows it: no `?` skip flag
+ * CHG/CHH. A cytosine in context that the MM tag left implicit bins as
+ * unmethylated (probability 0) where the tag allows it: no `?` skip flag
  * on a 5mC or 5hmC group that `isVisible` keeps. A hidden group drops out of
  * that check, since the fill then claims nothing about its type.
  *
@@ -74,7 +74,6 @@ export function getMethBins(
     window,
   }: ParsedModData,
   context: CytosineContext = 'CG',
-  fill = true,
   isVisible: (type: string) => boolean = () => true,
 ): MethBins {
   const isReverse = fstrand === -1
@@ -125,7 +124,6 @@ export function getMethBins(
   // low 5mC and low 5hmC, so a visible 'h' group's '?' blocks the fill too.
   const methMods = modifications.filter(m => m.type === 'm')
   const fillUnmethylated =
-    fill &&
     methMods.length > 0 &&
     !modifications.some(
       m => m.unknownSkip && isMethylationFillType(m.type) && isVisible(m.type),

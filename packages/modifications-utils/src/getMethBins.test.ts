@@ -39,7 +39,6 @@ function bins(
   return getMethBins(
     makeModData(seq, mm, ml, strand, cigar),
     context,
-    true,
     isVisible,
   )
 }

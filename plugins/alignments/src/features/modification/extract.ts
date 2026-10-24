@@ -235,7 +235,7 @@ export function extractMethylation(
   }
   const { start: regionStart, end: regionEnd } = region
   const { refStart, methBins, methProbs, hydroxyMethBins, hydroxyMethProbs } =
-    getMethBins(modData, filter.context, true, type => admitsCode(filter, type))
+    getMethBins(modData, filter.context, type => admitsCode(filter, type))
 
   const methStrand = strand === -1 ? -1 : 1
   const kStart = Math.max(0, regionStart - featureStart - refStart)
