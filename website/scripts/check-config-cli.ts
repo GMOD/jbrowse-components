@@ -140,7 +140,7 @@ function diff(label: string, got: unknown, expected: unknown) {
 }
 
 function firstLine(e: unknown) {
-  return (e as Error).message.split('\n')[0]
+  return (e as Error).message.split('\n')[0] ?? ''
 }
 
 // A minimal target config declaring the assemblies the track references, so
