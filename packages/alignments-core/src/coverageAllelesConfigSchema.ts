@@ -19,7 +19,9 @@ const FRACTION = 'fraction'
  * base takes in its position's depth bar. Its `filter` keeps the segments
  * whose `fraction`, the allele's share of the position's depth, passes;
  * the grey depth bar shows through where a segment is left out, and
- * everywhere under `show: false`.
+ * everywhere under `show: false`. The modification bars are not allele
+ * segments: `pileup.bases` draws them, and nothing here hides or floors
+ * them.
  *
  * #example
  * ```js

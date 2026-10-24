@@ -14,6 +14,11 @@ import { pileupBasesUnmodifiedConfigSchema } from './pileupBasesUnmodifiedConfig
  * `modifications` and `bisulfite` fields paint, and `unmodified` adds the
  * unmodified side in blue.
  *
+ * Under those two fields the layer also stacks modification bars in the
+ * coverage band, from the calls its cells paint, so both bands agree. A
+ * coverage-only methylation track hides the pileup and keeps the layer on,
+ * as the last example does.
+ *
  * #example
  * ```js
  * {
@@ -50,6 +55,15 @@ import { pileupBasesUnmodifiedConfigSchema } from './pileupBasesUnmodifiedConfig
  *   },
  * }
  * ```
+ * ```js
+ * {
+ *   type: 'LinearAlignmentsDisplay',
+ *   pileup: {
+ *     show: false,
+ *     bases: { show: true, encoding: { color: 'modifications' } },
+ *   },
+ * }
+ * ```
  */
 export const pileupBasesConfigSchema = ConfigurationSchema(
   'PileupBases',
@@ -60,7 +74,8 @@ export const pileupBasesConfigSchema = ConfigurationSchema(
     show: {
       type: 'boolean',
       defaultValue: false,
-      description: 'draw the per-base layer over the reads',
+      description:
+        'draw the per-base layer over the reads, and its modification bars in the coverage band',
     },
     /**
      * #slot encoding
