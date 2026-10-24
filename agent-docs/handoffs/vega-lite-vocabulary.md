@@ -59,7 +59,7 @@ filter defaults, type checking in every product, threshold ramp fill,
 `span` → `rect`. Still open, each needing no further call:
 
 - **ggjbrowse:** re-pin the engine and respell `R/wiggle.R`,
-  `tests/testthat/test-wiggle.R`, `scripts/gallery.R` and `docs/gallery.md`
+  `tests/testthat/test-wiggle.R`, the gallery script and `docs/gallery.md`
   from `span` to `rect`; add `names` to `ARRAY_SLOTS` (`R/alignments.R`),
   whose absence sends a one-value `scale.names` as a scalar.
 - **Hosted demo:** `demos/circular_synteny_chimp/config.json` respells
