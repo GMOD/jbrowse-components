@@ -81,3 +81,47 @@ test('clamps the nudged position, not the raw one', () => {
   expect(box.x).toBe(894)
   expect(box.right).toBe(1021.5)
 })
+
+// A frame on data passes under the app's color key, as the data does: the trio
+// crossover figure's frame ran its stroke through the key's "Alt allele" row.
+function withKey(annotations: PayloadAnnotation[]) {
+  document.body.replaceChildren()
+  const key = document.createElement('div')
+  key.dataset.testid = 'floating-legend'
+  key.getBoundingClientRect = () => new DOMRect(900, 100, 80, 40)
+  document.body.append(key)
+  drawAnnotationOverlay(annotations, ANNOTATION_OVERLAY_ID)
+  const box = document.querySelector('svg > rect')!
+  const maskId = /^url\(#(.+)\)$/.exec(box.getAttribute('mask') ?? '')?.[1]
+  return { box, mask: maskId ? document.getElementById(maskId) : null }
+}
+
+test('a box on data is masked where the color key sits', () => {
+  const { mask } = withKey([
+    { type: 'box', anchor: { graphNode: 'n', rect: rect(200, 90, 800, 50) } },
+  ])
+  const holes = [...mask!.querySelectorAll('rect')].filter(
+    r => r.getAttribute('fill') === '#000',
+  )
+  expect(
+    holes.map(r =>
+      ['x', 'y', 'width', 'height'].map(k => Number(r.getAttribute(k))),
+    ),
+  ).toEqual([[900, 100, 80, 40]])
+})
+
+test('a box on a DOM anchor stays over the key', () => {
+  const { box } = withKey([
+    { type: 'box', anchor: { selector: '[data-testid="floating-legend"]' } },
+  ])
+  expect(box.hasAttribute('mask')).toBe(false)
+})
+
+test('with no key on the page a box carries no mask', () => {
+  document.body.replaceChildren()
+  drawAnnotationOverlay(
+    [{ type: 'box', anchor: { graphNode: 'n', rect: rect(200, 90, 800, 50) } }],
+    ANNOTATION_OVERLAY_ID,
+  )
+  expect(document.querySelector('svg > rect')!.hasAttribute('mask')).toBe(false)
+})

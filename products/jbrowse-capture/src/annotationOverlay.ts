@@ -586,6 +586,46 @@ export function drawAnnotationOverlay(
   const ARROW_LEN = 8
   const defs = document.createElementNS(NS, 'defs')
   svg.append(defs)
+
+  // A box framing data passes under the app's floating color keys, as the data
+  // itself does; otherwise its stroke runs through a key's entries. A box on a
+  // selector or text anchor names chrome, maybe the key itself, so it stays on
+  // top.
+  const keyRects = [
+    ...document.querySelectorAll('[data-testid="floating-legend"]'),
+  ]
+    .map(el => el.getBoundingClientRect())
+    .filter(r => r.width > 0 && r.height > 0)
+  const keyMaskId = `${overlayId}-under-keys`
+  if (keyRects.length > 0) {
+    const mask = document.createElementNS(NS, 'mask')
+    mask.setAttribute('id', keyMaskId)
+    mask.setAttribute('maskUnits', 'userSpaceOnUse')
+    const hole = (r: Rect, fill: string) => {
+      const el = document.createElementNS(NS, 'rect')
+      el.setAttribute('x', String(r.left))
+      el.setAttribute('y', String(r.top))
+      el.setAttribute('width', String(r.width))
+      el.setAttribute('height', String(r.height))
+      el.setAttribute('fill', fill)
+      mask.append(el)
+    }
+    hole(
+      { left: 0, top: 0, width: window.innerWidth, height: window.innerHeight },
+      '#fff',
+    )
+    for (const r of keyRects) {
+      hole(r, '#000')
+    }
+    defs.append(mask)
+  }
+  const onChrome = (anchor: Anchor) =>
+    anchor?.selector !== undefined || anchor?.text !== undefined
+  const passesUnderKeys = (a: (typeof resolved)[number]) =>
+    keyRects.length > 0 &&
+    a.anchor !== undefined &&
+    !onChrome(a.anchor) &&
+    !onChrome(a.fromAnchor)
   // One marker per distinct arrow color. A single shared marker recolored
   // per arrow would paint every head in whichever color was drawn last.
   const markerIds = new Map<string, string>()
@@ -853,6 +893,9 @@ export function drawAnnotationOverlay(
       }
       rect.setAttribute('stroke', color)
       rect.setAttribute('stroke-width', String(a.strokeWidth ?? 5))
+      if (passesUnderKeys(a)) {
+        rect.setAttribute('mask', `url(#${keyMaskId})`)
+      }
       svg.append(rect)
     } else if (a.type === 'circle') {
       const radius = a.radius ?? 16
