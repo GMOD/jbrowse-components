@@ -33,6 +33,7 @@ import {
 } from './types.ts'
 
 import type { ReadColorCategory } from '../LinearAlignmentsDisplay/colorUtils.ts'
+import type { pileupBasesConfigSchema } from '../LinearAlignmentsDisplay/pileupBasesConfigSchema.ts'
 import type { RGBColor } from '../shaders/colors.ts'
 import type {
   BaseLayer,
@@ -51,6 +52,7 @@ import type {
   ColorScaleSetting,
   ColorSetting,
 } from '@jbrowse/display-kit/colorConfigSchema'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 export const ALIGNMENTS_COLOR_SCALES = [
   'ordinal',
@@ -159,21 +161,17 @@ export function readColorFieldOf(encoding: AlignmentsColorEncoding) {
  * hidden or names no field.
  */
 export function baseLayerOf(
-  bases: AnyConfigurationModel,
+  bases: Instance<typeof pileupBasesConfigSchema>,
 ): BaseLayer | undefined {
   const field = readConfObject(bases, 'show')
-    ? baseLayerOfField(
-        readConfObject(bases, ['encoding', 'color', 'field']) as
-          | string
-          | undefined,
-      )
+    ? baseLayerOfField(readConfObject(bases, ['encoding', 'color', 'field']))
     : undefined
   return field === undefined
     ? undefined
     : MODIFICATION_LAYER_FIELDS.has(field)
       ? {
           field,
-          unmodified: readConfObject(bases, ['unmodified', 'show']) as boolean,
+          unmodified: readConfObject(bases, ['unmodified', 'show']),
           filter: basesFilterOf(bases.filter),
         }
       : { field }
