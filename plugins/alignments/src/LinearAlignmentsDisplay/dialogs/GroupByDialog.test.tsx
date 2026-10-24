@@ -121,7 +121,7 @@ test('a non-tag color scheme is not replaced by default', async () => {
 test('the plain fill under a per-base layer is not replaced by default', async () => {
   const { colorByField } = renderDialog({
     colorField: '',
-    baseLayer: { type: 'modifications' },
+    baseLayer: { field: 'modifications' },
   })
   typeTag('HP')
   expect(checkbox().checked).toBe(false)

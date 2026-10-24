@@ -80,8 +80,8 @@ test('an explicit author value wins over the band a retired type implies', () =>
   })
 })
 
-function bases(field: string) {
-  return { bases: { show: true, encoding: { color: { field } } } }
+function bases(field: string, rest: Record<string, unknown> = {}) {
+  return { bases: { show: true, encoding: { color: { field } }, ...rest } }
 }
 
 test.each([
@@ -91,10 +91,7 @@ test.each([
   [{ type: 'perBaseLettering' }, { pileup: bases('base') }],
   [
     { type: 'methylation' },
-    {
-      pileup: bases('modifications'),
-      modifications: { unmodified: 'all' },
-    },
+    { pileup: bases('modifications', { unmodified: { show: true } }) },
   ],
   [
     {
@@ -102,8 +99,12 @@ test.each([
       modifications: { isolatedModification: 'm', threshold: 10 },
     },
     {
-      pileup: bases('modifications'),
-      modifications: { shownModifications: ['m'], threshold: 10 },
+      pileup: bases('modifications', {
+        filter: [
+          { field: 'probability', gte: 0.1 },
+          { field: 'code', oneOf: ['m'] },
+        ],
+      }),
     },
   ],
 ])('a v4 colorBy %j becomes %j', (colorBy, slots) => {

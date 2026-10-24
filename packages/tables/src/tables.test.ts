@@ -460,9 +460,12 @@ test('base modifications paint under the modifications layer, keyed with the rea
     ...METHYLATED,
     display: {
       pileup: {
-        bases: { show: true, encoding: { color: { field: 'modifications' } } },
+        bases: {
+          show: true,
+          encoding: { color: { field: 'modifications' } },
+          unmodified: { show: true },
+        },
       },
-      modifications: { unmodified: 'calls' },
     },
   })
   expect(calls.modifications.unmodified.filter(Boolean).length).toBeGreaterThan(
@@ -489,9 +492,12 @@ test('the coverage band\u2019s stacks are the worker\u2019s: alleles, and modifi
     ...METHYLATED,
     display: {
       pileup: {
-        bases: { show: true, encoding: { color: { field: 'modifications' } } },
+        bases: {
+          show: true,
+          encoding: { color: { field: 'modifications' } },
+          unmodified: { show: true },
+        },
       },
-      modifications: { unmodified: 'calls' },
     },
   })
   expect(modificationCoverage.position.length).toBeGreaterThan(0)

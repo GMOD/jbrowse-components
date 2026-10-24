@@ -7,6 +7,7 @@ import { SimpleFeature } from '@jbrowse/core/util'
 import { cssColorToABGR, packAbgr } from '@jbrowse/core/util/colorBits'
 import { detectSimplexModifications } from '@jbrowse/modifications-utils'
 
+import { basesFilterOf } from '../../shared/basesFilter.ts'
 import { isMethylationView } from '../../shared/types.ts'
 import { extractMethylation, extractModifications } from './extract.ts'
 
@@ -33,7 +34,7 @@ function makeFeature() {
 // Both extractors, gated the way `extractFeatureArrays` gates them
 function drive(
   feature: SimpleFeature,
-  colorBy: BaseLayer,
+  layer: BaseLayer,
   region: Region,
   detected = new Set<string>(),
   seenModTypes = new Map<string, ModificationType>(),
@@ -45,23 +46,23 @@ function drive(
     100,
     1,
     region,
-    colorBy,
+    layer,
     detected,
     seenModTypes,
     out,
   )
-  if (isMethylationView(colorBy) && modData) {
-    extractMethylation(0, 100, 1, region, modData, out, colorBy.modifications)
+  if (isMethylationView(layer) && modData) {
+    extractMethylation(0, 100, 1, region, modData, out, layer.filter)
   }
   return out
 }
 
-function run(colorBy: BaseLayer) {
+function run(layer: BaseLayer) {
   const detected = new Set<string>()
   const seenModTypes = new Map<string, ModificationType>()
   const out = drive(
     makeFeature(),
-    colorBy,
+    layer,
     { start: 0, end: Number.MAX_SAFE_INTEGER } as Region,
     detected,
     seenModTypes,
@@ -72,8 +73,8 @@ function run(colorBy: BaseLayer) {
 describe('extractModifications', () => {
   test('default mode renders all types above the threshold', () => {
     const { out, detected } = run({
-      type: 'modifications',
-      modifications: { threshold: 10 },
+      field: 'modifications',
+      filter: basesFilterOf([{ field: 'probability', gte: 0.1 }]),
     })
     expect([...detected].sort()).toEqual(['a', 'm'])
     expect(out.map(m => m.modType).sort()).toEqual(['a', 'm'])
@@ -87,7 +88,10 @@ describe('extractModifications', () => {
       100,
       1,
       { start: 101, end: 103 },
-      { type: 'modifications', modifications: { threshold: 10 } },
+      {
+        field: 'modifications',
+        filter: basesFilterOf([{ field: 'probability', gte: 0.1 }]),
+      },
       new Set<string>(),
       new Map<string, ModificationType>(),
       out,
@@ -97,8 +101,8 @@ describe('extractModifications', () => {
 
   test('threshold hides low-probability calls', () => {
     const { out } = run({
-      type: 'modifications',
-      modifications: { threshold: 50 },
+      field: 'modifications',
+      filter: basesFilterOf([{ field: 'probability', gte: 0.5 }]),
     })
     expect(out.map(m => m.modType)).toEqual(['m'])
   })
@@ -113,8 +117,13 @@ describe('extractModifications', () => {
       drive(
         feature,
         {
-          type: 'modifications',
-          modifications: { threshold: atCall, thresholdStrict },
+          field: 'modifications',
+          filter: basesFilterOf([
+            {
+              field: 'probability',
+              [thresholdStrict ? 'gt' : 'gte']: atCall / 100,
+            },
+          ]),
         },
         { start: 0, end: Number.MAX_SAFE_INTEGER } as Region,
       ).map(m => m.modType)
@@ -124,8 +133,11 @@ describe('extractModifications', () => {
 
   test('shownModifications allow-list renders only the listed type but still detects all', () => {
     const { out, detected } = run({
-      type: 'modifications',
-      modifications: { threshold: 10, shownModifications: ['a'] },
+      field: 'modifications',
+      filter: basesFilterOf([
+        { field: 'probability', gte: 0.1 },
+        { field: 'code', oneOf: ['a'] },
+      ]),
     })
     expect(out.map(m => m.modType)).toEqual(['a'])
     // detection is unaffected — the menu still offers every detected type
@@ -136,8 +148,8 @@ describe('extractModifications', () => {
     // The read carries C+m and A+a, both on '+' with no '-' partner, so both
     // resolve to simplex once detectSimplexModifications runs over the pairs.
     const { seenModTypes } = run({
-      type: 'modifications',
-      modifications: { threshold: 10 },
+      field: 'modifications',
+      filter: basesFilterOf([{ field: 'probability', gte: 0.1 }]),
     })
     expect([...seenModTypes.keys()].sort()).toEqual(['+a', '+m'])
     const simplex = detectSimplexModifications([...seenModTypes.values()])
@@ -157,7 +169,10 @@ describe('extractModifications', () => {
       100,
       1,
       { start: 0, end: Number.MAX_SAFE_INTEGER },
-      { type: 'modifications', modifications: { threshold: 10 } },
+      {
+        field: 'modifications',
+        filter: basesFilterOf([{ field: 'probability', gte: 0.1 }]),
+      },
       detected,
       new Map<string, ModificationType>(),
       out,
@@ -187,9 +202,9 @@ describe('extractModifications', () => {
         ML: [230, 10, 20, 200, 10, 10, 220, 5],
       },
     })
-    const colorBy: BaseLayer = {
-      type: 'modifications',
-      modifications: { unmodified: 'all' },
+    const layer: BaseLayer = {
+      field: 'modifications',
+      unmodified: true,
     }
     const out: ModificationEntry[] = []
     const region = { refName: 'ctgA', start: 100, end: 108 } as Region
@@ -199,12 +214,12 @@ describe('extractModifications', () => {
       100,
       1,
       region,
-      colorBy,
+      layer,
       new Set<string>(),
       new Map<string, ModificationType>(),
       out,
     )!
-    extractMethylation(0, 100, 1, region, modData, out, colorBy.modifications)
+    extractMethylation(0, 100, 1, region, modData, out, layer.filter)
 
     // exactly one mark per CpG, no purple unmethylated-5hmC flooding
     expect(out.map(m => m.position)).toEqual([100, 102, 104, 106])
@@ -219,8 +234,9 @@ describe('extractModifications', () => {
 
   test('twoColor renders every call, painting low-confidence ones blue', () => {
     const { out } = run({
-      type: 'modifications',
-      modifications: { threshold: 50, unmodified: 'calls' },
+      field: 'modifications',
+      unmodified: true,
+      filter: basesFilterOf([{ field: 'probability', gte: 0.5 }]),
     })
     const byType = Object.fromEntries(out.map(m => [m.modType, m]))
     // both present despite threshold 50 (twoColor ignores the threshold)
@@ -236,8 +252,8 @@ describe('extractModifications', () => {
 // The fill view, driven the way `extractFeatureArrays` drives it: the MM/ML
 // paint and the cytosine walk are two calls that between them cover a read's
 // types once each. Both bugs below were in the seam between them.
-function runFill(feature: SimpleFeature, colorBy: BaseLayer) {
-  return drive(feature, colorBy, {
+function runFill(feature: SimpleFeature, layer: BaseLayer) {
+  return drive(feature, layer, {
     refName: 'ctgA',
     start: 100,
     end: 120,
@@ -268,12 +284,13 @@ function makeMethFeature() {
 describe('the fill view honours the modification-type filter', () => {
   test('every type ticked draws the same marks as no filter at all', () => {
     const unfiltered = runFill(makeMethFeature(), {
-      type: 'modifications',
-      modifications: { unmodified: 'all' },
+      field: 'modifications',
+      unmodified: true,
     })
     const allTicked = runFill(makeMethFeature(), {
-      type: 'modifications',
-      modifications: { unmodified: 'all', shownModifications: ['m', 'h'] },
+      field: 'modifications',
+      unmodified: true,
+      filter: basesFilterOf([{ field: 'code', oneOf: ['m', 'h'] }]),
     })
     expect(allTicked).toEqual(unfiltered)
     expect(unfiltered.map(m => m.modType)).toEqual(['m', 'm', 'h', 'm'])
@@ -284,8 +301,9 @@ describe('the fill view honours the modification-type filter', () => {
   // magenta mark on screen with nothing keying it.
   test('unticking 5hmC leaves no 5hmC mark', () => {
     const out = runFill(makeMethFeature(), {
-      type: 'modifications',
-      modifications: { unmodified: 'all', shownModifications: ['m'] },
+      field: 'modifications',
+      unmodified: true,
+      filter: basesFilterOf([{ field: 'code', oneOf: ['m'] }]),
     })
     expect(out.map(m => m.modType)).not.toContain('h')
   })
@@ -294,8 +312,9 @@ describe('the fill view honours the modification-type filter', () => {
   // blank, which is what "untick 5hmC to read gene-body 5mC" asks for.
   test('a cytosine 5hmC won falls back to the 5mC-vs-unmodified call', () => {
     const out = runFill(makeMethFeature(), {
-      type: 'modifications',
-      modifications: { unmodified: 'all', shownModifications: ['m'] },
+      field: 'modifications',
+      unmodified: true,
+      filter: basesFilterOf([{ field: 'code', oneOf: ['m'] }]),
     })
     expect(out.map(m => m.position)).toEqual([100, 102, 104, 106])
     // CpG2 was 5hmC; with only 5mC ticked its m=20(.08) loses to 1-.08
@@ -324,8 +343,9 @@ describe('the fill view honours the modification-type filter', () => {
     })
     const fill = (shownModifications: string[]) =>
       runFill(mOnly, {
-        type: 'modifications',
-        modifications: { unmodified: 'all', shownModifications },
+        field: 'modifications',
+        unmodified: true,
+        filter: basesFilterOf([{ field: 'code', oneOf: shownModifications }]),
       })
     expect(fill(['m']).map(m => m.position)).toEqual([100, 102, 104, 106])
     expect(fill(['h'])).toEqual([])
@@ -336,8 +356,11 @@ describe('the fill view honours the modification-type filter', () => {
   // 5mC, still draws its 5mC call.
   test('by-type: a cytosine 5hmC won still draws its 5mC call', () => {
     const out = runFill(makeMethFeature(), {
-      type: 'modifications',
-      modifications: { threshold: 5, shownModifications: ['m'] },
+      field: 'modifications',
+      filter: basesFilterOf([
+        { field: 'probability', gte: 0.05 },
+        { field: 'code', oneOf: ['m'] },
+      ]),
     })
     expect(out.map(m => [m.position, m.modType])).toEqual([
       [100, 'm'],
@@ -349,8 +372,9 @@ describe('the fill view honours the modification-type filter', () => {
 
   test('calls: a cytosine 5hmC won reads 5mC-or-not', () => {
     const out = runFill(makeMethFeature(), {
-      type: 'modifications',
-      modifications: { unmodified: 'calls', shownModifications: ['m'] },
+      field: 'modifications',
+      unmodified: true,
+      filter: basesFilterOf([{ field: 'code', oneOf: ['m'] }]),
     })
     expect(out.map(m => m.position)).toEqual([100, 102, 104, 106])
     const cpg2 = out.find(m => m.position === 104)!
@@ -360,20 +384,21 @@ describe('the fill view honours the modification-type filter', () => {
 
   test('an empty allow-list is the default: every type draws', () => {
     const all = runFill(makeMethFeature(), {
-      type: 'modifications',
-      modifications: { unmodified: 'all', shownModifications: [] },
+      field: 'modifications',
+      unmodified: true,
+      filter: basesFilterOf([{ field: 'code', oneOf: [] }]),
     })
     expect(all).toEqual(
       runFill(makeMethFeature(), {
-        type: 'modifications',
-        modifications: { unmodified: 'all' },
+        field: 'modifications',
+        unmodified: true,
       }),
     )
     expect(all.length).toBeGreaterThan(0)
   })
 })
 
-describe('the calls view weighs 5mC and 5hmC as the fill view does', () => {
+describe('the 2-color view weighs 5mC and 5hmC per cytosine', () => {
   // m = h = 115 (~0.45 each) leaves unmodified at ~0.10, so the cytosine
   // paints 5mC at 0.45
   test('unmodified is 1 - m - h, not 1 - max', () => {
@@ -388,7 +413,7 @@ describe('the calls view weighs 5mC and 5hmC as the fill view does', () => {
         seq: 'CG',
         tags: { MM: 'C+m?,0;C+h?,0;', ML: [115, 115] },
       }),
-      { type: 'modifications', modifications: { unmodified: 'calls' } },
+      { field: 'modifications', unmodified: true },
     )
     expect(out).toHaveLength(1)
     expect(out[0]!.noMod).toBe(false)
@@ -396,9 +421,9 @@ describe('the calls view weighs 5mC and 5hmC as the fill view does', () => {
     expect(out[0]!.prob).toBeCloseTo(115.5 / 256, 5)
   })
 
-  // 'C+m' without '?' lets the fill paint the uncalled CpG at 102; only 'all'
-  // asks for it
-  test('only the all level fills the cytosines the tag left implicit', () => {
+  // 'C+m' without '?' lets the fill paint the uncalled CpG at 102; the by-type
+  // view draws the call alone
+  test('only the 2-color view fills the cytosines the tag left implicit', () => {
     const feature = () =>
       new SimpleFeature({
         uniqueId: 'implicit',
@@ -410,13 +435,12 @@ describe('the calls view weighs 5mC and 5hmC as the fill view does', () => {
         seq: 'CGCG',
         tags: { MM: 'C+m,0;', ML: [230] },
       })
-    const positions = (unmodified: 'calls' | 'all') =>
-      runFill(feature(), {
-        type: 'modifications',
-        modifications: { unmodified },
-      }).map(m => m.position)
-    expect(positions('calls')).toEqual([100])
-    expect(positions('all')).toEqual([100, 102])
+    const positions = (unmodified: boolean) =>
+      runFill(feature(), { field: 'modifications', unmodified }).map(
+        m => m.position,
+      )
+    expect(positions(false)).toEqual([100])
+    expect(positions(true)).toEqual([100, 102])
   })
 })
 
@@ -434,8 +458,9 @@ describe('the fill view under mixed skip flags', () => {
         tags: { MM: mm, ML: [230, 100] },
       }),
       {
-        type: 'modifications',
-        modifications: { unmodified: 'all', shownModifications },
+        field: 'modifications',
+        unmodified: true,
+        filter: basesFilterOf([{ field: 'code', oneOf: shownModifications }]),
       },
     ).map(m => m.position)
 
@@ -455,7 +480,7 @@ describe('the fill view under mixed skip flags', () => {
 describe('the fill view keeps a read’s non-cytosine modifications', () => {
   // Fiber-seq shape: 5mC on C and 6mA on A in one read. getMethBins is
   // cytosine-only, so handing it the whole paint dropped every 6mA call —
-  // the 2-color radio, which is what writes `unmodified: 'all'` for cytosine data,
+  // the 2-color radio, which writes `unmodified.show`,
   // silently threw the adenine channel away.
   function makeFiberseqFeature() {
     return new SimpleFeature({
@@ -471,13 +496,10 @@ describe('the fill view keeps a read’s non-cytosine modifications', () => {
   }
 
   test('6mA is drawn in the fill view, at the same positions as by-type', () => {
-    const byType = runFill(makeFiberseqFeature(), {
-      type: 'modifications',
-      modifications: { unmodified: 'calls' },
-    })
+    const byType = runFill(makeFiberseqFeature(), { field: 'modifications' })
     const fill = runFill(makeFiberseqFeature(), {
-      type: 'modifications',
-      modifications: { unmodified: 'all' },
+      field: 'modifications',
+      unmodified: true,
     })
     const adenine = (out: ModificationEntry[]) =>
       out.filter(m => m.modType === 'a').map(m => m.position)
@@ -487,8 +509,8 @@ describe('the fill view keeps a read’s non-cytosine modifications', () => {
 
   test('the cytosines are still painted once, by the fill walk', () => {
     const fill = runFill(makeFiberseqFeature(), {
-      type: 'modifications',
-      modifications: { unmodified: 'all' },
+      field: 'modifications',
+      unmodified: true,
     })
     // C at read pos 0 and 3, each drawn exactly once — the MM/ML paint skips
     // 5mC precisely so the cytosine walk owns it
@@ -499,16 +521,17 @@ describe('the fill view keeps a read’s non-cytosine modifications', () => {
 
   test('the type filter reaches the non-cytosine half too', () => {
     const out = runFill(makeFiberseqFeature(), {
-      type: 'modifications',
-      modifications: { unmodified: 'all', shownModifications: ['m'] },
+      field: 'modifications',
+      unmodified: true,
+      filter: basesFilterOf([{ field: 'code', oneOf: ['m'] }]),
     })
     expect(out.map(m => m.modType)).not.toContain('a')
   })
 
   test('a read with only cytosine types is unchanged', () => {
     const before = runFill(makeMethFeature(), {
-      type: 'modifications',
-      modifications: { unmodified: 'all' },
+      field: 'modifications',
+      unmodified: true,
     })
     expect(before.map(m => [m.position, m.modType])).toEqual([
       [100, 'm'],
@@ -532,7 +555,7 @@ describe('an extract cut to a region matches the whole-read extract cut after', 
     mm: string,
     strand: -1 | 1,
     region: { start: number; end: number },
-    colorBy: BaseLayer,
+    layer: BaseLayer,
   ) {
     const feature = new SimpleFeature({
       uniqueId: 'cut',
@@ -551,12 +574,12 @@ describe('an extract cut to a region matches the whole-read extract cut after', 
       100,
       strand,
       region,
-      colorBy,
+      layer,
       new Set<string>(),
       new Map<string, ModificationType>(),
       out,
     )
-    if (colorBy.modifications?.unmodified === 'all' && modData) {
+    if (layer.unmodified === true && modData) {
       extractMethylation(
         0,
         100,
@@ -564,7 +587,7 @@ describe('an extract cut to a region matches the whole-read extract cut after', 
         { refName: 'ctgA', ...region } as Region,
         modData,
         out,
-        colorBy.modifications,
+        layer.filter,
       )
     }
     return out
@@ -577,15 +600,18 @@ describe('an extract cut to a region matches the whole-read extract cut after', 
     ['C+mh,0,1,0,2,1,0;A+a,1,0,2,0;', -1],
   ] as const)('%s on strand %d', (mm, strand) => {
     const modes: BaseLayer[] = [
-      { type: 'modifications', modifications: { threshold: 0 } },
-      { type: 'modifications', modifications: { unmodified: 'all' } },
+      {
+        field: 'modifications',
+        filter: basesFilterOf([{ field: 'probability', gte: 0 }]),
+      },
+      { field: 'modifications', unmodified: true },
     ]
-    for (const colorBy of modes) {
-      const all = extract(mm, strand, whole, colorBy)
+    for (const layer of modes) {
+      const all = extract(mm, strand, whole, layer)
       expect(new Set(all.map(m => m.modType)).size).toBeGreaterThan(1)
       for (let start = 97; start < 143; start++) {
         for (let end = start + 1; end <= 143; end++) {
-          expect(extract(mm, strand, { start, end }, colorBy)).toEqual(
+          expect(extract(mm, strand, { start, end }, layer)).toEqual(
             all.filter(m => m.position >= start && m.position < end),
           )
         }

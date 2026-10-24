@@ -1,6 +1,6 @@
 import { baseLayerOfField } from './alignmentsColor.ts'
 
-import type { BaseLayer, ModificationColorBy } from './types.ts'
+import type { BaseLayer } from './types.ts'
 
 /**
  * A field as the two halves the display holds: a per-base field is the layer
@@ -8,13 +8,10 @@ import type { BaseLayer, ModificationColorBy } from './types.ts'
  */
 export function splitSchemeForTest(
   field: string,
-  modifications?: ModificationColorBy,
+  settings?: Omit<BaseLayer, 'field'>,
 ): { colorField: string; baseLayer: BaseLayer | undefined } {
-  const type = baseLayerOfField(field)
-  return type
-    ? {
-        colorField: '',
-        baseLayer: modifications ? { type, modifications } : { type },
-      }
+  const layer = baseLayerOfField(field)
+  return layer
+    ? { colorField: '', baseLayer: { field: layer, ...settings } }
     : { colorField: field, baseLayer: undefined }
 }

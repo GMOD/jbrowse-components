@@ -6,6 +6,7 @@ import type {
   JunctionClass,
   JunctionSource,
 } from '../features/sashimi/junctionClass.ts'
+import type { FieldPredicate, Floor } from '@jbrowse/core/util/fieldPredicate'
 import type { CategoryFilter } from '@jbrowse/display-kit/categoryFilter'
 import type { CytosineContext } from '@jbrowse/modifications-utils'
 
@@ -13,50 +14,27 @@ export type { CategoryFilter }
 
 export type { ArcColorField } from './arcColorOptions.ts'
 
-// Minimum modification-call probability (%) shown by default. Stored threshold
-// is omitted at this value so default sessions don't carry a redundant field.
-export const DEFAULT_MODIFICATION_THRESHOLD = 10
-
-export const MODIFICATION_UNMODIFIED = ['hidden', 'calls', 'all'] as const
-
-export type ModificationUnmodified = (typeof MODIFICATION_UNMODIFIED)[number]
-
-export interface ModificationColorBy {
-  // Which unmodified sites paint blue. `calls` paints the calls more likely
-  // unmodified, under modifications and bisulfite alike, and ignores the
-  // threshold; a cytosine called 5mC and 5hmC paints its most likely state of
-  // the two and unmodified. `all` also paints the cytosines in the context the
-  // MM tag left implicit. Under bisulfite, which already walks every cytosine,
-  // `all` paints as `calls` does.
-  unmodified?: ModificationUnmodified
-  // Allow-list of modification type codes to draw: ONLY these render, so a "6mA
-  // only" view (shownModifications: ['a']) stays 6mA-only even if the basecaller
-  // also emits 5mC/5hmC on the same reads. Empty or absent means every
-  // detected type, the default, so a type first seen as more reads stream in
-  // shows up; the menu turns the layer off in place of an empty list.
-  shownModifications?: readonly string[]
-  threshold?: number
-  thresholdStrict?: boolean
-  // cytosine context for `unmodified: 'all'`; absent means CpG. CHG/CHH
-  // support plant methylation. Only consumed when filling (getMethBins) or in
-  // bisulfite mode.
-  cytosineContext?: CytosineContext
+/**
+ * `pileup.bases.filter` as the modification extract reads it, each field at
+ * its default where the list names none.
+ */
+export interface BasesFilter {
+  // the floor a call's `probability` must clear in the by-type view
+  probability: Floor
+  // the cytosines the methylation fill and bisulfite read
+  context: CytosineContext
+  // the `code`s drawn, every one while unset or empty, so a type first seen
+  // as more reads stream in shows up; the menu hides the layer in place of
+  // an empty list
+  codes?: readonly string[]
 }
 
-export function paintsUnmodifiedCalls(mods: ModificationColorBy | undefined) {
-  return mods?.unmodified === 'calls' || mods?.unmodified === 'all'
-}
-
-// Single source for "is this modification type visible?" given the layer.
-// Shared by the worker extract filter, the legend, and the color-by menu — the
-// type checkboxes render straight off this predicate, so what is ticked and what
-// is drawn cannot disagree.
-export function isModificationTypeVisible(
-  modifications: ModificationColorBy | undefined,
-  type: string,
-) {
-  const shown = modifications?.shownModifications
-  return !shown?.length || shown.includes(type)
+// The one reading of the `code` field, which the worker's extract, the legend
+// and the type checkboxes all take, so what is ticked and what is drawn
+// cannot disagree.
+export function admitsCode(filter: BasesFilter | undefined, code: string) {
+  const codes = filter?.codes
+  return !codes?.length || codes.includes(code)
 }
 
 // What a read body's fill classifies by, the buckets `schemeCategory`
@@ -103,7 +81,7 @@ export const BASE_COLOR_FIELDS = [
   'modifications',
   'bisulfite',
 ] as const
-export type BaseLayerType = (typeof BASE_COLOR_FIELDS)[number]
+export type BaseColorField = (typeof BASE_COLOR_FIELDS)[number]
 
 // Every color-by scheme, named by the field it paints but for the plain fill
 // and a tag or attribute. `COLOR_SCHEMES` (shared/colorSchemes.ts) is typed
@@ -114,44 +92,57 @@ export type ColorSchemeType =
   | 'normal'
   | 'tag'
   | (typeof COLOR_FIELDS)[number]
-  | BaseLayerType
+  | BaseColorField
 
-export type ReadColorSchemeType = Exclude<ColorSchemeType, BaseLayerType>
+export type ReadColorSchemeType = Exclude<ColorSchemeType, BaseColorField>
 
 /** How a read tag colors: a color per value, or a gradient over its numbers. */
 export type TagColorScale = 'ordinal' | 'linear'
 
-/** The per-base layer: `pileup.bases` with the modification settings it reads. */
+/**
+ * The per-base layer `pileup.bases` draws. `unmodified` and `filter` are the
+ * modifications and bisulfite fields' own.
+ */
 export interface BaseLayer {
-  type: BaseLayerType
-  modifications?: ModificationColorBy
+  field: BaseColorField
+  // `unmodified.show`: paint the unmodified side blue, at every cytosine in
+  // context a 5mC or 5hmC group left implicit, and at each call more likely
+  // unmodified
+  unmodified?: boolean
+  filter?: BasesFilter
 }
 
-// True for the modifications 2-color view, at either `unmodified` level, where
-// extractMethylation paints each cytosine's most likely state among 5mC, 5hmC
-// and unmodified. `unmodified: 'all'` also fills the cytosines the basecaller
-// left implicit.
+/** A write to `pileup.bases`, each member it names. */
+export interface BasesPatch {
+  show?: boolean
+  // `encoding.color.field`
+  field?: BaseColorField
+  // `unmodified.show`
+  unmodified?: boolean
+  // `filter` entries by field, `undefined` returning one to its default
+  filter?: Record<string, readonly FieldPredicate[] | undefined>
+}
+
+// The modifications 2-color view, where extractMethylation paints each
+// cytosine's most likely state among 5mC, 5hmC and unmodified.
 export function isMethylationView(layer: BaseLayer | undefined) {
-  return (
-    layer?.type === 'modifications' &&
-    paintsUnmodifiedCalls(layer.modifications)
-  )
+  return layer?.field === 'modifications' && layer.unmodified === true
 }
 
-// True when the mode keys the methylated/unmethylated legend (5mC/5hmC named)
+// The modes keying the methylated/unmethylated legend (5mC/5hmC named)
 // rather than the per-type MM palette, as extractMethylation and
 // extractBisulfite paint.
 export function usesMethylationLegend(layer: BaseLayer | undefined) {
-  return isMethylationView(layer) || layer?.type === 'bisulfite'
+  return isMethylationView(layer) || layer?.field === 'bisulfite'
 }
 
-// True when the mode actually paints the explicit "not modified" (blue) state,
-// gating that legend swatch — including two-color over a non-cytosine mod,
-// which paints blue low-probability 6mA calls (extract.ts).
+// The modes painting the explicit "not modified" (blue) state, gating that
+// legend swatch, two-color over a non-cytosine mod included, which paints
+// blue low-probability 6mA calls (extract.ts).
 export function paintsUnmodifiedState(layer: BaseLayer | undefined) {
   return (
-    (layer?.type === 'modifications' || layer?.type === 'bisulfite') &&
-    paintsUnmodifiedCalls(layer.modifications)
+    (layer?.field === 'modifications' || layer?.field === 'bisulfite') &&
+    layer.unmodified === true
   )
 }
 

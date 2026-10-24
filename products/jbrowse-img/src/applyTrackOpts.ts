@@ -70,7 +70,6 @@ type ConfigSlotKey =
   | 'encoding'
   | 'legend'
   | 'forceLoad'
-  | 'modifications'
   | 'filter'
   | 'sort'
   | 'pileup'

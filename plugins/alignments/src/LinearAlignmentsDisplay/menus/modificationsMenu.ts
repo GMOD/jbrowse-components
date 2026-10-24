@@ -2,16 +2,18 @@ import { makeSizeMenu } from '@jbrowse/core/ui'
 import { checkboxItem, radioItem, radioItems } from '@jbrowse/core/ui/menuItems'
 
 import {
+  DEFAULT_BASES_FILTER,
+  PROBABILITY,
+  codeEntries,
+  contextEntries,
+} from '../../shared/basesFilter.ts'
+import {
   cytosineContextOptions,
   getModificationName,
 } from '../../shared/modificationData.ts'
-import {
-  DEFAULT_MODIFICATION_THRESHOLD,
-  isModificationTypeVisible,
-  paintsUnmodifiedCalls,
-} from '../../shared/types.ts'
+import { admitsCode } from '../../shared/types.ts'
 
-import type { BaseLayer, ModificationColorBy } from '../../shared/types.ts'
+import type { BaseLayer, BasesFilter, BasesPatch } from '../../shared/types.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { CytosineContext } from '@jbrowse/modifications-utils'
 
@@ -31,74 +33,59 @@ import type { CytosineContext } from '@jbrowse/modifications-utils'
 // named a shared axis — and it collided with "Probability threshold" below,
 // which gates only the by-type view.
 //
-// `patchMods` is the single writer: it merges a patch into the slot. Mode
-// switches and refinement edits are both just patches, so switching the view
-// keeps threshold/context/type-filter intact and vice versa.
+// Mode switches write `pileup.bases.unmodified` and refinements its `filter`
+// by field, so switching the view keeps the filter intact and vice versa.
 
 // What this submenu reads, and no more. The caller's fuller
 // `ModificationsModel` (which also carries the readiness flags gating whether
 // this submenu is built at all) extends it.
 export interface ModificationsMenuModel {
   baseLayer: BaseLayer | undefined
-  modificationSettings: ModificationColorBy
-  setBaseLayer: (layer?: BaseLayer) => void
+  basesFilter: BasesFilter
+  setBases: (patch: BasesPatch) => void
   detectedModificationTypes: string[]
-  modificationThreshold: number
 }
 
 const DIVIDER: MenuItem = { type: 'divider' }
 
-// The slot, not `baseLayer.modifications`: a layer switched away and back keeps
-// its threshold, type filter and context.
-function currentMods(model: ModificationsMenuModel) {
-  return model.modificationSettings
-}
-
-// The 2-color view fills unmarked cytosines when the data is methylation —
-// the whole methylation view in one click (in the common MM "." mode the
-// unlisted cytosines are confident unmodified calls; hiding them under-paints
-// the data). getMethBins is cytosine-only, so other modifications (6mA…) fall
-// back to plain two-color.
+// The context picks the cytosines the 2-color view fills, so it bites only
+// on cytosine methylation; getMethBins is cytosine-only, and other
+// modifications (6mA…) draw their calls in plain two-color.
 function hasCytosineMeth(model: ModificationsMenuModel) {
   return model.detectedModificationTypes.some(k => k === 'm' || k === 'h')
 }
 
-// The slot is a typed object, so a member left at its default is the default:
-// the merge is the whole normalization.
-function patchMods(
-  model: ModificationsMenuModel,
-  patch: Partial<ModificationColorBy>,
-) {
-  model.setBaseLayer({
-    type: 'modifications',
-    modifications: { ...currentMods(model), ...patch },
-  })
+// The floor as the slider shows it, a percent rounded for display
+function probabilityPercent(filter: BasesFilter) {
+  return Number((filter.probability.min * 100).toFixed(2))
 }
 
 // Tick/untick one modification type. The current selection is read back through
-// isModificationTypeVisible — the same predicate the worker filter and the
-// legend use — so the boxes always reflect what is actually drawn.
+// `admitsCode`, the reading the worker filter and the legend take, so the
+// boxes always reflect what is actually drawn.
 function setModTypeShown(
   model: ModificationsMenuModel,
   type: string,
   shown: boolean,
 ) {
   const types = model.detectedModificationTypes
-  const mods = currentMods(model)
-  const visible = types.filter(t => isModificationTypeVisible(mods, t))
+  const filter = model.basesFilter
+  const visible = types.filter(t => admitsCode(filter, t))
   const next = shown ? [...visible, type] : visible.filter(t => t !== type)
   // An empty list is "every type" (the slot's default), so unticking the last
   // type turns the layer off instead; ticking one from there turns it back on
   // with that type alone.
   if (next.length === 0) {
-    model.setBaseLayer()
+    model.setBases({ show: false })
     return
   }
   // Everything ticked = follow the data: store the default, so a type first
   // seen as more reads stream in shows up rather than being silently excluded
   // by a list that was written before it was detected.
-  patchMods(model, {
-    shownModifications: types.every(t => next.includes(t)) ? [] : next,
+  model.setBases({
+    filter: {
+      code: codeEntries(types.every(t => next.includes(t)) ? undefined : next),
+    },
   })
 }
 
@@ -111,9 +98,9 @@ function setModTypeShown(
 // All three are revealed only once this scheme is the active one, like
 // bisulfite's "Show unmethylated" — see `refinements` below for why.
 export function modificationsMenu(model: ModificationsMenuModel): MenuItem {
-  const mods = currentMods(model)
-  const isActive = model.baseLayer?.type === 'modifications'
-  const byTwoColor = isActive && paintsUnmodifiedCalls(mods)
+  const filter = model.basesFilter
+  const isActive = model.baseLayer?.field === 'modifications'
+  const byTwoColor = isActive && model.baseLayer?.unmodified === true
   const types = model.detectedModificationTypes
 
   // The three refinements, revealed together once this is the active scheme and
@@ -122,8 +109,8 @@ export function modificationsMenu(model: ModificationsMenuModel): MenuItem {
   // so it cannot outlive the section it separates (the rule `withSubHeader`
   // states for a heading).
   //
-  // `patchMods` always writes `type: 'modifications'`, so a refinement offered
-  // under another layer would switch the layer as a side effect.
+  // A refinement writes the filter alone, which under another layer would
+  // change what that layer draws the next time modifications are picked.
   const refinements: MenuItem[] = isActive
     ? [
         ...(types.length > 1
@@ -135,13 +122,9 @@ export function modificationsMenu(model: ModificationsMenuModel): MenuItem {
                 subMenu: types.map(t =>
                   checkboxItem(
                     getModificationName(t),
-                    isModificationTypeVisible(mods, t),
+                    admitsCode(filter, t),
                     () => {
-                      setModTypeShown(
-                        model,
-                        t,
-                        !isModificationTypeVisible(mods, t),
-                      )
+                      setModTypeShown(model, t, !admitsCode(filter, t))
                     },
                   ),
                 ),
@@ -160,18 +143,17 @@ export function modificationsMenu(model: ModificationsMenuModel): MenuItem {
           // tier-1: the threshold reaches the worker's extractModifications
           // via rpcProps, so commit on release, not every intermediate pixel.
           commitOnRelease: true,
-          getValue: () => model.modificationThreshold,
+          getValue: () => probabilityPercent(filter),
           isDefault:
-            (mods.threshold ?? DEFAULT_MODIFICATION_THRESHOLD) ===
-              DEFAULT_MODIFICATION_THRESHOLD && !mods.thresholdStrict,
+            filter.probability.min === DEFAULT_BASES_FILTER.probability.min &&
+            !filter.probability.strict,
           onChange: v => {
-            patchMods(model, { threshold: v })
+            model.setBases({
+              filter: { [PROBABILITY]: [{ field: PROBABILITY, gte: v / 100 }] },
+            })
           },
           onReset: () => {
-            patchMods(model, {
-              threshold: DEFAULT_MODIFICATION_THRESHOLD,
-              thresholdStrict: undefined,
-            })
+            model.setBases({ filter: { [PROBABILITY]: undefined } })
           },
         }),
         ...(hasCytosineMeth(model)
@@ -182,9 +164,11 @@ export function modificationsMenu(model: ModificationsMenuModel): MenuItem {
                   'Which cytosines the 2-color (methylation) view paints. Plants use CHG/CHH.',
                 subMenu: radioItems<CytosineContext>(
                   cytosineContextOptions,
-                  mods.cytosineContext ?? 'CG',
+                  filter.context,
                   next => {
-                    patchMods(model, { cytosineContext: next })
+                    model.setBases({
+                      filter: { context: contextEntries(next) },
+                    })
                   },
                 ),
               },
@@ -202,18 +186,24 @@ export function modificationsMenu(model: ModificationsMenuModel): MenuItem {
         'One color per modification type',
         isActive && !byTwoColor,
         () => {
-          patchMods(model, { unmodified: 'hidden' })
+          model.setBases({
+            show: true,
+            field: 'modifications',
+            unmodified: false,
+          })
         },
         {
-          helpText: `Colors each call by which modification it is (5mC, 5hmC, 6mA…). Only positions the basecaller called, at or above the probability threshold (${model.modificationThreshold}%), are drawn — everything else stays blank.`,
+          helpText: `Colors each call by which modification it is (5mC, 5hmC, 6mA…). Only positions the basecaller called, at or above the probability threshold (${probabilityPercent(filter)}%), are drawn — everything else stays blank.`,
         },
       ),
       radioItem(
         'One color per type, plus low-probability & unmodified in blue',
         byTwoColor,
         () => {
-          patchMods(model, {
-            unmodified: hasCytosineMeth(model) ? 'all' : 'calls',
+          model.setBases({
+            show: true,
+            field: 'modifications',
+            unmodified: true,
           })
         },
         {

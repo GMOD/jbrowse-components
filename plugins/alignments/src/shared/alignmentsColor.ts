@@ -1,3 +1,4 @@
+import { readConfObject } from '@jbrowse/core/configuration'
 import { keyNames } from '@jbrowse/core/util/categoricalField'
 import { cssColorToNormalizedRgb } from '@jbrowse/core/util/colorBits'
 import {
@@ -17,6 +18,7 @@ import {
   impliedFieldOf,
 } from '@jbrowse/display-kit/colorConfigSchema'
 
+import { basesFilterOf } from './basesFilter.ts'
 import { COLOR_SCHEMES, colorSchemeOf } from './colorSchemes.ts'
 import { TAG_FIELD_PREFIX } from './facetLabels.ts'
 import {
@@ -34,9 +36,8 @@ import type { ReadColorCategory } from '../LinearAlignmentsDisplay/colorUtils.ts
 import type { RGBColor } from '../shaders/colors.ts'
 import type {
   BaseLayer,
-  BaseLayerType,
+  BaseColorField,
   ColorSchemeType,
-  ModificationColorBy,
   ReadColorSchemeType,
   TagColorScale,
 } from './types.ts'
@@ -92,12 +93,12 @@ export { BASE_COLOR_FIELDS, COLOR_FIELDS }
 /** The per-base layer `field` draws, if it names one. */
 export function baseLayerOfField(field: string | undefined) {
   const fields: readonly (string | undefined)[] = BASE_COLOR_FIELDS
-  return fields.includes(field) ? (field as BaseLayerType) : undefined
+  return fields.includes(field) ? (field as BaseColorField) : undefined
 }
 
 const FACET_ONLY_FIELDS = new Set<string>(FACET_ONLY_DIMENSIONS)
 
-const READS_MODIFICATION_SETTINGS = new Set<BaseLayerType>([
+const READS_MODIFICATION_SETTINGS = new Set<BaseColorField>([
   'modifications',
   'bisulfite',
 ])
@@ -154,19 +155,28 @@ export function readColorFieldOf(encoding: AlignmentsColorEncoding) {
 }
 
 /**
- * The per-base layer `pileup.bases` draws, with the settings the modification
- * fields read beside it. Undefined while it is hidden or names no field.
+ * The per-base layer a `pileup.bases` config draws, undefined while it is
+ * hidden or names no field.
  */
 export function baseLayerOf(
-  { show, field }: { show: boolean; field: string | undefined },
-  modifications?: ModificationColorBy,
+  bases: AnyConfigurationModel,
 ): BaseLayer | undefined {
-  const type = show ? baseLayerOfField(field) : undefined
-  return type === undefined
+  const field = readConfObject(bases, 'show')
+    ? baseLayerOfField(
+        readConfObject(bases, ['encoding', 'color', 'field']) as
+          | string
+          | undefined,
+      )
+    : undefined
+  return field === undefined
     ? undefined
-    : READS_MODIFICATION_SETTINGS.has(type) && modifications
-      ? { type, modifications }
-      : { type }
+    : READS_MODIFICATION_SETTINGS.has(field)
+      ? {
+          field,
+          unmodified: readConfObject(bases, ['unmodified', 'show']) as boolean,
+          filter: basesFilterOf(bases.filter),
+        }
+      : { field }
 }
 
 /**
@@ -179,8 +189,8 @@ export function bodyColorScheme(
 ): ColorSchemeType {
   return colorField === '' &&
     baseLayer &&
-    READS_MODIFICATION_SETTINGS.has(baseLayer.type)
-    ? baseLayer.type
+    READS_MODIFICATION_SETTINGS.has(baseLayer.field)
+    ? baseLayer.field
     : colorSchemeOf(colorField)
 }
 

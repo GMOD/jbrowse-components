@@ -750,9 +750,12 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
             {
               trackId: 'human_chr20_mod_call_5mC_5hmC_CG_cram',
               pileup: {
-                bases: { show: true, encoding: { color: 'modifications' } },
+                bases: {
+                  show: true,
+                  encoding: { color: 'modifications' },
+                  unmodified: { show: true },
+                },
               },
-              modifications: { unmodified: 'all' },
               forceLoad: true,
             },
           ],

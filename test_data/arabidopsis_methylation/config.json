@@ -57,10 +57,10 @@
                 "bases": {
                   "show": true,
                   "encoding": { "color": "modifications" },
-                  "filter": [{ "field": "context", "oneOf": ["CHH"] }]
+                  "filter": [{ "field": "context", "oneOf": ["CHH"] }],
+                  "unmodified": { "show": true }
                 }
-              },
-              "modifications": { "unmodified": "all" }
+              }
             }
           }
         ]

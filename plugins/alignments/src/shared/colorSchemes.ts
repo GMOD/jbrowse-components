@@ -190,12 +190,12 @@ export function isPerBaseScheme(type: ColorSchemeType) {
 
 /** Whether the per-base layer draws modification marks. */
 export function paintsModifications(layer: BaseLayer | undefined) {
-  return layer !== undefined && isModificationScheme(layer.type)
+  return layer !== undefined && isModificationScheme(layer.field)
 }
 
 /** Whether the per-base layer draws a cell for every aligned base. */
 export function paintsEveryBase(layer: BaseLayer | undefined) {
-  return layer !== undefined && isPerBaseScheme(layer.type)
+  return layer !== undefined && isPerBaseScheme(layer.field)
 }
 
 const PRESET_FIELDS = new Set<string>(COLOR_FIELDS)

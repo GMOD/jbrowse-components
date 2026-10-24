@@ -1,27 +1,19 @@
 import PluginManager from '@jbrowse/core/PluginManager'
-import {
-  applyConfSettings,
-  getConfigurationSchemaMetadata,
-  liftRetiredSpellings,
-  mergeConfSettings,
-  plotWrites,
-  readConfObject,
-} from '@jbrowse/core/configuration'
+import { readConfObject } from '@jbrowse/core/configuration'
 import { preprocessTrackConfigSnapshot } from '@jbrowse/core/pluggableElementTypes/models'
-import { mergeTrackConfig } from '@jbrowse/core/util'
 import { predicatesOf } from '@jbrowse/core/util/fieldPredicate'
-import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
 import configSchemaFactory from '../LinearAlignmentsDisplay/configSchema.ts'
 import AlignmentsPlugin from '../index.ts'
 import {
+  DEFAULT_BASES_FILTER,
   basesFilterOf,
   basesFilterProblems,
-  modificationFiltersOf,
+  contextEntries,
+  withBasesField,
 } from './basesFilter.ts'
 
 const schema = configSchemaFactory(new PluginManager())
-const meta = getConfigurationSchemaMetadata(schema)!
 
 function create(snapshot: Record<string, unknown>) {
   return schema.create({
@@ -34,68 +26,64 @@ function create(snapshot: Record<string, unknown>) {
 const basesFilterOfConf = (conf: ReturnType<typeof create>) =>
   predicatesOf(conf.pileup.bases.filter)
 
-// A stored delta as SessionTracks merges it: lifted against the hydrated
-// base, then merged over it
-function overDelta(
-  base: Record<string, unknown>,
-  delta: Record<string, unknown>,
-) {
-  const hydrated = getSnapshot(create(base)) as Record<string, unknown>
-  return create(
-    mergeTrackConfig(
-      hydrated,
-      liftRetiredSpellings(meta, { displayId: 'd', ...delta }, hydrated),
-    ),
-  )
-}
-
-test('a bases filter states only the fields it names', () => {
-  expect(modificationFiltersOf([])).toEqual({})
+test('an unwritten field reads at its default', () => {
+  expect(basesFilterOf([])).toEqual({
+    probability: { min: 0.1, strict: false },
+    context: 'CG',
+  })
   expect(
-    modificationFiltersOf([
+    basesFilterOf([
       { field: 'probability', gte: 0.25 },
       { field: 'context', oneOf: ['CHH'] },
       { field: 'code', oneOf: ['a'] },
     ]),
   ).toEqual({
-    threshold: 25,
-    cytosineContext: 'CHH',
-    shownModifications: ['a'],
-  })
-  expect(modificationFiltersOf([{ field: 'context' }])).toEqual({
-    cytosineContext: 'all',
+    probability: { min: 0.25, strict: false },
+    context: 'CHH',
+    codes: ['a'],
   })
 })
 
-test('the settings round-trip, their defaults left unwritten', () => {
-  const mods = {
-    threshold: 35,
-    cytosineContext: 'CHG' as const,
-    shownModifications: ['m', 'h'],
-  }
-  expect(modificationFiltersOf(basesFilterOf(mods))).toEqual(mods)
-  expect(basesFilterOf({ threshold: 10, cytosineContext: 'CG' })).toEqual([])
+test('a bare field drops its default', () => {
+  expect(basesFilterOf([{ field: 'context' }]).context).toBe('all')
+  expect(basesFilterOf([{ field: 'probability' }]).probability).toEqual({
+    min: 0,
+    strict: false,
+  })
 })
 
 test('a probability floor written gt excludes the call at it', () => {
-  expect(modificationFiltersOf([{ field: 'probability', gt: 0.5 }])).toEqual({
-    threshold: 50,
-    thresholdStrict: true,
-  })
-  expect(modificationFiltersOf([{ field: 'probability', gte: 0.5 }])).toEqual({
-    threshold: 50,
-  })
-  expect(basesFilterOf({ threshold: 50, thresholdStrict: true })).toEqual([
-    { field: 'probability', gt: 0.5 },
-  ])
+  expect(
+    basesFilterOf([{ field: 'probability', gt: 0.5 }]).probability,
+  ).toEqual({ min: 0.5, strict: true })
 })
 
 test('a floor at a call probability reaches the worker exactly', () => {
   const call = 149.5 / 256
-  const { threshold } = modificationFiltersOf([
-    { field: 'probability', gte: call },
+  expect(
+    basesFilterOf([{ field: 'probability', gte: call }]).probability.min,
+  ).toBe(call)
+})
+
+test('a write at the default leaves the field unwritten', () => {
+  expect(
+    withBasesField([], 'probability', [{ field: 'probability', gte: 0.1 }]),
+  ).toEqual([])
+  expect(withBasesField([], 'context', contextEntries('CG'))).toEqual([])
+  expect(withBasesField([], 'context', contextEntries('all'))).toEqual([
+    { field: 'context' },
   ])
-  expect(threshold! / 100).toBe(call)
+  expect(
+    withBasesField(
+      [{ field: 'probability', gte: 0.5 }],
+      'probability',
+      undefined,
+    ),
+  ).toEqual([])
+  expect(basesFilterOf(withBasesField([], 'context', []))).toEqual({
+    ...DEFAULT_BASES_FILTER,
+    context: 'all',
+  })
 })
 
 test('a test the per-base layer cannot apply is named', () => {
@@ -123,87 +111,37 @@ test('a test the per-base layer cannot apply is named', () => {
   ])
 })
 
-test('beta modifications thresholds lift into pileup.bases.filter', () => {
+test("a v4 colorBy's modification settings land in the bases layer", () => {
   const conf = create({
-    modifications: {
-      threshold: 50,
-      cytosineContext: 'CHG',
-      shownModifications: ['a'],
-      unmodified: 'all',
+    colorBy: {
+      type: 'methylation',
+      modifications: { threshold: 30, isolatedModification: 'm' },
     },
   })
   expect(basesFilterOfConf(conf)).toEqual([
-    { field: 'probability', gte: 0.5 },
-    { field: 'context', oneOf: ['CHG'] },
-    { field: 'code', oneOf: ['a'] },
-  ])
-  expect(readConfObject(conf, ['modifications', 'unmodified'])).toBe('all')
-})
-
-test('a written bases filter beats a lifted beta threshold on its field', () => {
-  expect(
-    basesFilterOfConf(
-      create({
-        modifications: { threshold: 50, cytosineContext: 'CHG' },
-        pileup: { bases: { filter: [{ field: 'probability', gte: 0.9 }] } },
-      }),
-    ),
-  ).toEqual([
-    { field: 'context', oneOf: ['CHG'] },
-    { field: 'probability', gte: 0.9 },
-  ])
-})
-
-test("a v4 colorBy's modification settings land in the bases filter", () => {
-  expect(
-    basesFilterOfConf(
-      create({
-        colorBy: {
-          type: 'modifications',
-          modifications: { threshold: 30, isolatedModification: 'm' },
-        },
-      }),
-    ),
-  ).toEqual([
     { field: 'probability', gte: 0.3 },
     { field: 'code', oneOf: ['m'] },
   ])
+  expect(readConfObject(conf, ['pileup', 'bases', 'unmodified', 'show'])).toBe(
+    true,
+  )
 })
 
-describe('a stored beta delta over the hydrated base', () => {
-  test('a threshold beats the base probability', () => {
-    const conf = overDelta(
-      { pileup: { bases: { filter: [{ field: 'probability', gte: 0.5 }] } } },
-      { modifications: { threshold: 30 } },
-    )
-    expect(basesFilterOfConf(conf)).toEqual([
-      { field: 'probability', gte: 0.3 },
-    ])
-  })
+test.each([
+  ['all', true],
+  ['calls', true],
+  ['hidden', false],
+])(
+  "a beta modifications.unmodified '%s' lifts to pileup.bases.unmodified.show",
+  (unmodified, show) => {
+    const conf = create({ modifications: { unmodified } })
+    expect(
+      readConfObject(conf, ['pileup', 'bases', 'unmodified', 'show']),
+    ).toBe(show)
+  },
+)
 
-  test('a null threshold resets the old-spelled base to the default', () => {
-    const conf = overDelta(
-      { modifications: { threshold: 50, cytosineContext: 'CHG' } },
-      { modifications: { threshold: null } },
-    )
-    expect(basesFilterOfConf(conf)).toEqual([
-      { field: 'context', oneOf: ['CHG'] },
-    ])
-  })
-
-  test('a context replaces the old-spelled base context and keeps the rest', () => {
-    const conf = overDelta(
-      { modifications: { threshold: 50, cytosineContext: 'CHG' } },
-      { modifications: { cytosineContext: 'CHH' } },
-    )
-    expect(basesFilterOfConf(conf)).toEqual([
-      { field: 'probability', gte: 0.5 },
-      { field: 'context', oneOf: ['CHH'] },
-    ])
-  })
-})
-
-test('a beta modifications member reaches the display through displayDefaults', () => {
+test('a beta modifications.unmodified reaches the display through displayDefaults', () => {
   const pluginManager = new PluginManager([new AlignmentsPlugin()])
   pluginManager.createPluggableElements()
   pluginManager.configure()
@@ -214,64 +152,14 @@ test('a beta modifications member reaches the display through displayDefaults', 
     name: 't',
     assemblyNames: ['volvox'],
     adapter: { type: 'BamAdapter', uri: 'a.bam' },
-    displayDefaults: { modifications: { threshold: 50, unmodified: 'all' } },
+    displayDefaults: { modifications: { unmodified: 'all' } },
   })
   expect(warn).not.toHaveBeenCalled()
   warn.mockRestore()
   const display = (out.displays as Record<string, unknown>[]).find(
     d => d.type === 'LinearAlignmentsDisplay',
   )
-  expect(basesFilterOfConf(create(display!))).toEqual([
-    { field: 'probability', gte: 0.5 },
-  ])
   expect(
-    readConfObject(create(display!), ['modifications', 'unmodified']),
-  ).toBe('all')
-})
-
-test('a beta member in a settings bag lands over the live config', () => {
-  const conf = create({
-    pileup: {
-      bases: {
-        filter: [
-          { field: 'probability', gte: 0.5 },
-          { field: 'context', oneOf: ['CHG'] },
-        ],
-      },
-    },
-  })
-  applyConfSettings(conf, { modifications: { threshold: null } })
-  expect(basesFilterOfConf(conf)).toEqual([
-    { field: 'context', oneOf: ['CHG'] },
-  ])
-  applyConfSettings(conf, { modifications: { threshold: 30 } })
-  expect(basesFilterOfConf(conf)).toEqual([
-    { field: 'context', oneOf: ['CHG'] },
-    { field: 'probability', gte: 0.3 },
-  ])
-})
-
-test("a beta member merged over another bag keeps that bag's other entries", () => {
-  const merged = mergeConfSettings(
-    schema,
-    { pileup: { bases: { filter: [{ field: 'code', oneOf: ['m'] }] } } },
-    { modifications: { threshold: 30 } },
-  )
-  expect(basesFilterOfConf(create(merged))).toEqual([
-    { field: 'code', oneOf: ['m'] },
-    { field: 'probability', gte: 0.3 },
-  ])
-})
-
-test('a plot draft in the beta spelling writes the bases filter', () => {
-  const conf = create({
-    pileup: { bases: { filter: [{ field: 'code', oneOf: ['m'] }] } },
-  })
-  const { pileup } = plotWrites(conf, { modifications: { threshold: 30 } })
-  expect(
-    predicatesOf((pileup as { bases: { filter: unknown } }).bases.filter),
-  ).toEqual([
-    { field: 'code', oneOf: ['m'] },
-    { field: 'probability', gte: 0.3 },
-  ])
+    readConfObject(create(display!), ['pileup', 'bases', 'unmodified', 'show']),
+  ).toBe(true)
 })

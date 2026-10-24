@@ -12,7 +12,9 @@ import {
 import { modificationData } from './modificationData.ts'
 import { splitSchemeForTest } from './splitSchemeForTest.ts'
 
-import type { ModificationColorBy } from './types.ts'
+import type { BaseLayer } from './types.ts'
+
+type LayerSettings = Omit<BaseLayer, 'field'>
 
 // FloatingLegend's own geometry, which decides how much of `LEGEND_MAX_WIDTH` a
 // label actually gets: 1px border either side, 3px left padding, the 20px
@@ -42,13 +44,12 @@ const budget = (marks: number) =>
 // list left `modifications` out, so its rows went unmeasured. The modification
 // schemes key different rows per sub-mode (the methylated states, the
 // unmodified swatch), so each sub-mode is swept as well.
-const MODIFICATION_MODES: (ModificationColorBy | undefined)[] = [
+const MODIFICATION_MODES: (LayerSettings | undefined)[] = [
   undefined,
-  { unmodified: 'calls' },
-  { unmodified: 'all' },
+  { unmodified: true },
 ]
 const FIELDS = Object.values(COLOR_SCHEMES).flatMap(
-  ({ type }): [string, ModificationColorBy | undefined][] =>
+  ({ type }): [string, LayerSettings | undefined][] =>
     isModificationScheme(type)
       ? MODIFICATION_MODES.map(modifications => [type, modifications])
       : [

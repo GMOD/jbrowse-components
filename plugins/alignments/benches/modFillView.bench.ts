@@ -687,9 +687,7 @@ function driveControl(reads: Read[], region: Region) {
 function driveShipped(reads: Read[], region: Region) {
   const out: ModificationEntry[] = []
   for (const r of reads) {
-    extractMethylation(r.index, r.start, r.strand, region, r.data, out, {
-      unmodified: 'all',
-    })
+    extractMethylation(r.index, r.start, r.strand, region, r.data, out)
   }
   return out
 }

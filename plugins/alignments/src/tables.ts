@@ -170,7 +170,6 @@ import {
   readPredicatesOf,
 } from './shared/alignmentsFilter.ts'
 import { arcColorFieldOf } from './shared/arcColorOptions.ts'
-import { modificationFiltersOf } from './shared/basesFilter.ts'
 import { paintsModifications } from './shared/colorSchemes.ts'
 import { fieldTag } from './shared/facetLabels.ts'
 import { sectionOrder, workerFacet } from './shared/groupFeatures.ts'
@@ -217,7 +216,6 @@ import type {
   BaseLayer,
   InterbaseTypeName,
   LayoutOrder,
-  ModificationColorBy,
   JunctionFilter,
   SortColumn,
 } from './shared/types.ts'
@@ -285,7 +283,7 @@ export interface AlignmentTablesArgs {
   /**
    * The display's config as a track's `displays` entry writes it for a
    * `LinearAlignmentsDisplay`. The tables read its `encoding.color`,
-   * `filter`, `modifications`, `sort` and `facet` objects, and its four
+   * `filter`, `sort` and `facet` objects, and its four
    * bands: `coverage`, `pileup` (with `pileup.bases`), `sashimi` and
    * `readConnections`, each with its own `show`. `filter` holds the tests on reads, on junctions
    * (the `junction` filter fields) and on connections (the `connection` fields). Unset
@@ -431,27 +429,6 @@ function positionIn(refNames: readonly string[]): RefNamePosition {
   return refName => position.get(refName)
 }
 
-/** The display's per-base layer, from its `pileup.bases` and `modifications` objects. */
-function baseLayerFor(conf: DisplayConf) {
-  const settings: ModificationColorBy = {
-    ...readConfObject(conf, 'modifications'),
-    ...modificationFiltersOf(conf.pileup.bases.filter),
-  }
-  return baseLayerOf(
-    {
-      show: readConfObject(conf, ['pileup', 'bases', 'show']),
-      field: readConfObject(conf, [
-        'pileup',
-        'bases',
-        'encoding',
-        'color',
-        'field',
-      ]),
-    },
-    settings,
-  )
-}
-
 /**
  * The display's color pipeline over its laid-out sections: `encoding.color`
  * resolved as the display resolves it, the worker's reads baked through one
@@ -563,7 +540,7 @@ function colorReads(
     bakedScale,
     linearFieldExtent: linearFieldExtent(encoding, colorField, byGroup),
     baseQualityExtent:
-      baseLayer?.type === 'baseQuality'
+      baseLayer?.field === 'baseQuality'
         ? baseQualitySpanAcrossGroups(byGroup).extent
         : undefined,
   })
@@ -1336,7 +1313,7 @@ export async function alignmentTables(
   const colorField = readColorFieldOf(
     alignmentsColorEncoding(alignmentsColorSettingOf(conf.encoding.color)),
   )
-  const baseLayer = baseLayerFor(conf)
+  const baseLayer = baseLayerOf(conf.pileup.bases)
   const { layoutOrder, sortColumn } = sortOf(
     conf.sort,
     refName =>

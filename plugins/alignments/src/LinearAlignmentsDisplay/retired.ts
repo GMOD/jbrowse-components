@@ -106,6 +106,20 @@ const V4_BASE_COLOR_FIELDS: Record<string, string> = {
   methylation: 'modifications',
 }
 
+// v4's modification settings, a percent threshold and one isolated type, as
+// the `pileup.bases.filter` entries they are
+function v4BasesFilterOf(modifications: Record<string, unknown>) {
+  const { threshold, isolatedModification } = modifications
+  return [
+    ...(typeof threshold === 'number'
+      ? [{ field: 'probability', gte: threshold / 100 }]
+      : []),
+    ...(typeof isolatedModification === 'string'
+      ? [{ field: 'code', oneOf: [isolatedModification] }]
+      : []),
+  ]
+}
+
 export function colorSlotsOf(value: unknown): DisplayEntry {
   if (!isObject(value)) {
     return {}
@@ -119,30 +133,37 @@ export function colorSlotsOf(value: unknown): DisplayEntry {
         : undefined
   const baseField =
     typeof type === 'string' ? V4_BASE_COLOR_FIELDS[type] : undefined
-  const given = isObject(modifications) ? modifications : undefined
-  const { isolatedModification, ...rest } = given ?? {}
-  const settings =
-    given || type === 'methylation'
-      ? {
-          ...rest,
-          ...(typeof isolatedModification === 'string'
-            ? { shownModifications: [isolatedModification] }
-            : {}),
-          ...(type === 'methylation' ? { unmodified: 'all' } : {}),
-        }
-      : undefined
+  const given = isObject(modifications) ? modifications : {}
+  const filter = v4BasesFilterOf(given)
   return {
     ...(field ? { encoding: { color: { field } } } : {}),
     ...(baseField
       ? {
           pileup: {
-            bases: { show: true, encoding: { color: { field: baseField } } },
+            bases: {
+              show: true,
+              encoding: { color: { field: baseField } },
+              ...(filter.length > 0 ? { filter } : {}),
+              ...(type === 'methylation' || given.twoColor === true
+                ? { unmodified: { show: true } }
+                : {}),
+            },
           },
         }
       : {}),
-    ...(settings ? { modifications: settings } : {}),
   }
 }
+
+/**
+ * @deprecated The v5 beta's `modifications: { unmodified }`, which ggjbrowse
+ * releases before its v5 re-pin write: `calls` and `all` are
+ * `pileup.bases.unmodified.show`.
+ */
+export const liftModifications: RetiredSpelling = value =>
+  isObject(value) &&
+  (value.unmodified === 'calls' || value.unmodified === 'all')
+    ? { pileup: { bases: { unmodified: { show: true } } } }
+    : {}
 
 // v4's `mismatchAlpha` switched the fade by base quality
 function mismatchFadeOf(on: unknown) {
@@ -189,7 +210,7 @@ function subDisplaySlotsOf(block: unknown, band: 'pileup' | 'coverage') {
  * The config spellings v1-v4 wrote on this display and the four it retired,
  * as `retired` declares them. v4's `colorBy` named a scheme and held the
  * modification settings, which are the `encoding.color` or `pileup.bases`
- * field and the `modifications` slot now; its LinearReadArcsDisplay gated the
+ * field and `pileup.bases`' `filter` and `unmodified` now; its LinearReadArcsDisplay gated the
  * two arc classes under the draw verb, which are `connection` filter fields
  * now, and its `filterBy` the read fields; `liftV4Filter` reads those three
  * together. Its read size and layout cap are `pileup`'s `mark.height` and

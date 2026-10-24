@@ -3,6 +3,7 @@ import {
   parkedColorOf,
 } from '@jbrowse/display-kit/colorConfigSchema'
 
+import { pileupBasesConfigSchema } from '../LinearAlignmentsDisplay/pileupBasesConfigSchema.ts'
 import {
   BASE_COLOR_FIELDS,
   COLOR_FIELDS,
@@ -56,41 +57,49 @@ describe('readColorFieldOf', () => {
 })
 
 describe('baseLayerOf', () => {
-  const shown = (field: string) => ({ show: true, field })
+  const bases = (snapshot: Record<string, unknown>) =>
+    pileupBasesConfigSchema.create(snapshot)
+  const shown = (field: string, rest: Record<string, unknown> = {}) =>
+    bases({ show: true, encoding: { color: field }, ...rest })
 
   test('every per-base field selects the layer of its name', () => {
     for (const field of BASE_COLOR_FIELDS) {
-      expect(baseLayerOf(shown(field))?.type).toBe(field)
+      expect(baseLayerOf(shown(field))?.field).toBe(field)
     }
   })
 
-  test('only the modification layers carry the modification settings', () => {
-    const settings = { threshold: 50 }
-    expect(baseLayerOf(shown('modifications'), settings)).toEqual({
-      type: 'modifications',
-      modifications: settings,
+  test('only the modification layers carry unmodified and the filter', () => {
+    const rest = {
+      filter: [{ field: 'probability', gte: 0.5 }],
+      unmodified: { show: true },
+    }
+    expect(baseLayerOf(shown('modifications', rest))).toEqual({
+      field: 'modifications',
+      unmodified: true,
+      filter: { probability: { min: 0.5, strict: false }, context: 'CG' },
     })
-    expect(baseLayerOf(shown('baseQuality'), settings)).toEqual({
-      type: 'baseQuality',
+    expect(baseLayerOf(shown('baseQuality', rest))).toEqual({
+      field: 'baseQuality',
     })
   })
 
-  test('no field or a read field draws no layer', () => {
-    expect(baseLayerOf(shown(''))).toBeUndefined()
-    expect(baseLayerOf(shown('strand'))).toBeUndefined()
+  test('no field draws no layer', () => {
+    expect(baseLayerOf(bases({ show: true }))).toBeUndefined()
   })
 
   test('a named field draws nothing while the layer is hidden', () => {
-    expect(baseLayerOf({ show: false, field: 'modifications' })).toBeUndefined()
+    expect(
+      baseLayerOf(bases({ show: false, encoding: { color: 'modifications' } })),
+    ).toBeUndefined()
   })
 })
 
 describe('bodyColorScheme', () => {
   test('a modification layer tints the plain fill and yields to a read field', () => {
-    const mods = { type: 'modifications' } as const
+    const mods = { field: 'modifications' } as const
     expect(bodyColorScheme('', mods)).toBe('modifications')
     expect(bodyColorScheme('tags.HP', mods)).toBe('tag')
-    expect(bodyColorScheme('', { type: 'base' })).toBe('normal')
+    expect(bodyColorScheme('', { field: 'base' })).toBe('normal')
     expect(bodyColorScheme('strand', undefined)).toBe('strand')
   })
 })

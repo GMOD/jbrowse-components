@@ -41,7 +41,10 @@ test('the model answers the four off and fetches no junctions', () => {
   expect(display.showSashimi).toBe(false)
   expect(display.showSashimiCounts).toBe(false)
   expect(display.baseLayer).toBeUndefined()
-  expect(display.modificationSettings).toEqual({})
+  expect(display.basesFilter).toEqual({
+    probability: { min: 0.1, strict: false },
+    context: 'CG',
+  })
   expect(display.rpcProps().junctions).toBe(false)
 })
 
@@ -54,6 +57,6 @@ test('a write to one of the four throws rather than landing nowhere', () => {
     display.setJunctionFilter({ minReads: 5 })
   }).toThrow('LGVSyntenyDisplay has no sashimi')
   expect(() => {
-    display.setBaseLayer({ type: 'baseQuality' })
+    display.setBases({ show: true, field: 'baseQuality' })
   }).toThrow('LGVSyntenyDisplay has no sashimi')
 })

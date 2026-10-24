@@ -5,6 +5,7 @@ import {
   OPAQUE_MISMATCHES,
 } from '../features/mismatch/qualityOpacity.ts'
 import { tagColorFor } from '../shared/alignmentsColor.ts'
+import { basesFilterOf } from '../shared/basesFilter.ts'
 import { requireReadsConf } from './configSlotViews.ts'
 import { getFeatureHeightMenuItem } from './menus/featureSize.ts'
 import {
@@ -359,28 +360,34 @@ describe('alignments colorField', () => {
     })
     expect(display.colorField).toBe('tags.HP')
     expect(display.baseLayer).toEqual({
-      type: 'modifications',
-      modifications: { threshold: 50 },
+      field: 'modifications',
+      unmodified: false,
+      filter: basesFilterOf([{ field: 'probability', gte: 0.5 }]),
     })
     expect(display.bodyColorScheme).toBe('tag')
     expect(display.showModifications).toBe(true)
     expect(display.rpcProps()).toMatchObject({
       colorField: 'tags.HP',
-      baseLayer: { type: 'modifications' },
+      baseLayer: { field: 'modifications' },
     })
   })
 
   it('the methylation view draws its calls, with the fill unmarked', () => {
     const { display } = createDisplay({
-      pileup: { bases: { show: true, encoding: { color: 'modifications' } } },
-      modifications: { unmodified: 'all' },
+      pileup: {
+        bases: {
+          show: true,
+          encoding: { color: 'modifications' },
+          unmodified: { show: true },
+        },
+      },
     })
     expect(display.showModifications).toBe(true)
     expect(display.rpcProps()).toMatchObject({
       colorField: undefined,
       baseLayer: {
-        type: 'modifications',
-        modifications: { unmodified: 'all' },
+        field: 'modifications',
+        unmodified: true,
       },
     })
   })
@@ -416,25 +423,27 @@ describe('alignments colorField', () => {
       pileup: { bases: { show: true, encoding: { color: 'modifications' } } },
     })
     display.colorByField('strand')
-    expect(display.baseLayer?.type).toBe('modifications')
-    display.setBaseLayer({ type: 'baseQuality' })
+    expect(display.baseLayer?.field).toBe('modifications')
+    display.setBases({ show: true, field: 'baseQuality' })
     expect(display.colorField).toBe('strand')
     expect(display.showPerBaseQuality).toBe(true)
-    display.setBaseLayer()
+    display.setBases({ show: false })
     expect(display.baseLayer).toBeUndefined()
   })
 
-  it('None hides the layer and clears its field', () => {
+  it('None hides the layer and keeps its field for the way back', () => {
     const { display } = createDisplay({
       pileup: { bases: { show: true, encoding: { color: 'modifications' } } },
     })
-    display.setBaseLayer()
+    display.setBases({ show: false })
     expect(display.baseLayer).toBeUndefined()
     const conf = requireReadsConf(display)
     expect(readConfObject(conf, ['pileup', 'bases', 'show'])).toBe(false)
     expect(
       readConfObject(conf, ['pileup', 'bases', 'encoding', 'color', 'field']),
-    ).toBeUndefined()
+    ).toBe('modifications')
+    display.setBases({ show: true })
+    expect(display.baseLayer?.field).toBe('modifications')
   })
 
   it('a named field draws no layer while bases.show is off', () => {
@@ -442,8 +451,8 @@ describe('alignments colorField', () => {
       pileup: { bases: { encoding: { color: 'modifications' } } },
     })
     expect(display.baseLayer).toBeUndefined()
-    display.setBaseLayer({ type: 'base' })
-    expect(display.baseLayer?.type).toBe('base')
+    display.setBases({ show: true, field: 'base' })
+    expect(display.baseLayer?.field).toBe('base')
     expect(
       readConfObject(requireReadsConf(display), ['pileup', 'bases', 'show']),
     ).toBe(true)

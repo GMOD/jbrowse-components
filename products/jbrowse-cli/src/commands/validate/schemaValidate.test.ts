@@ -172,12 +172,12 @@ describe('the schema', () => {
     config.tracks[0]!.displays = [
       {
         type: 'LinearAlignmentsDisplay',
-        modifications: { cytosineContexts: 'CHH' },
+        pileup: { readHeigth: 3 },
       },
     ]
     const [error] = schemaProblems(config)
-    expect(error?.where).toContain('cytosineContexts')
-    expect(error?.message).not.toContain('"cytosineContext"')
+    expect(error?.where).toContain('readHeigth')
+    expect(error?.message).not.toContain('"readHeight"')
   })
 
   it('says a display warns and loads without an undeclared slot', () => {

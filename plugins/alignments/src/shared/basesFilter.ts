@@ -1,28 +1,27 @@
 import { layerFilterProblems } from '@jbrowse/alignments-core/coverageBandConfigSchema'
 import { floorOf, predicatesOf } from '@jbrowse/core/util/fieldPredicate'
 
-import { DEFAULT_MODIFICATION_THRESHOLD } from './types.ts'
+import { entriesOn, mergeFilter, withField } from './alignmentsFilter.ts'
 
-import type { ModificationColorBy } from './types.ts'
-import type { RetiredMembers } from '@jbrowse/core/configuration'
+import type { BasesFilter } from './types.ts'
 import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
 import type { CytosineContext } from '@jbrowse/modifications-utils'
 
-const PROBABILITY = 'probability'
-const CONTEXT = 'context'
-const CODE = 'code'
-const DEFAULT_CONTEXT = 'CG'
+export const PROBABILITY = 'probability'
+export const CONTEXT = 'context'
+export const CODE = 'code'
 const CONTEXTS: readonly string[] = ['CG', 'CHG', 'CHH']
 const PATH = 'pileup.bases.filter'
 
-type BasesFilterSettings = Pick<
-  ModificationColorBy,
-  'threshold' | 'thresholdStrict' | 'cytosineContext' | 'shownModifications'
->
-
-function entriesOn(predicates: FieldPredicate[], field: string) {
-  return predicates.filter(p => p.field === field)
-}
+/**
+ * What `pileup.bases.filter` applies with nothing written: calls of
+ * probability 0.1 and up, in the by-type view, and the CG context. A written
+ * entry replaces these on its own field, and a bare `{ field }` drops them.
+ */
+export const BASES_FILTER_DEFAULTS: readonly FieldPredicate[] = [
+  { field: PROBABILITY, gte: 0.1 },
+  { field: CONTEXT, oneOf: ['CG'] },
+]
 
 function valuesOf(entries: FieldPredicate[]) {
   const named = entries.filter(p => p.oneOf || p.equal !== undefined)
@@ -42,53 +41,39 @@ function contextOf(entries: FieldPredicate[]): CytosineContext {
   ) as CytosineContext
 }
 
-/**
- * The modification settings a `pileup.bases.filter` list states, each field
- * it names and none it leaves to its default: `probability` at least 0.1,
- * `context` CG, every `code`. An entry naming a field with no test drops
- * that field's default.
- */
-export function modificationFiltersOf(filter: unknown): BasesFilterSettings {
-  const predicates = predicatesOf(filter)
-  const probability = entriesOn(predicates, PROBABILITY)
-  const context = entriesOn(predicates, CONTEXT)
-  const codes = valuesOf(entriesOn(predicates, CODE))
-  const floor = floorOf(probability, PROBABILITY)
+/** A written `pileup.bases.filter` list over its defaults, as the extract reads it. */
+export function basesFilterOf(filter: unknown): BasesFilter {
+  const merged = mergeFilter(predicatesOf(filter), BASES_FILTER_DEFAULTS)
+  const codes = valuesOf(entriesOn(merged, CODE))
   return {
-    ...(probability.length > 0
-      ? {
-          threshold: (floor?.min ?? 0) * 100,
-          ...(floor?.strict ? { thresholdStrict: true } : {}),
-        }
-      : {}),
-    ...(context.length > 0 ? { cytosineContext: contextOf(context) } : {}),
-    ...(codes ? { shownModifications: codes } : {}),
+    probability: floorOf(merged, PROBABILITY) ?? { min: 0, strict: false },
+    context: contextOf(entriesOn(merged, CONTEXT)),
+    ...(codes ? { codes } : {}),
   }
 }
 
-/** The `pileup.bases.filter` list stating `mods`, its defaults left out. */
-export function basesFilterOf(mods: ModificationColorBy): FieldPredicate[] {
-  const { threshold, thresholdStrict, cytosineContext, shownModifications } =
-    mods
-  return [
-    ...(threshold !== undefined &&
-    (threshold !== DEFAULT_MODIFICATION_THRESHOLD || thresholdStrict)
-      ? [
-          {
-            field: PROBABILITY,
-            [thresholdStrict ? 'gt' : 'gte']: threshold / 100,
-          },
-        ]
-      : []),
-    ...(cytosineContext === 'all'
-      ? [{ field: CONTEXT }]
-      : cytosineContext !== undefined && cytosineContext !== DEFAULT_CONTEXT
-        ? [{ field: CONTEXT, oneOf: [cytosineContext] }]
-        : []),
-    ...(shownModifications?.length
-      ? [{ field: CODE, oneOf: [...shownModifications] }]
-      : []),
-  ]
+export const DEFAULT_BASES_FILTER = basesFilterOf([])
+
+/**
+ * The written list with `field`'s entries replaced, as `withField` does for
+ * the display's `filter`: `undefined` returns the field to its default.
+ */
+export function withBasesField(
+  written: readonly FieldPredicate[],
+  field: string,
+  entries: readonly FieldPredicate[] | undefined,
+) {
+  return withField(written, field, entries, BASES_FILTER_DEFAULTS)
+}
+
+/** The `context` entries for one context, none for every cytosine. */
+export function contextEntries(context: CytosineContext): FieldPredicate[] {
+  return context === 'all' ? [] : [{ field: CONTEXT, oneOf: [context] }]
+}
+
+/** The `code` entries drawing `codes`; every code while unset or empty. */
+export function codeEntries(codes: readonly string[] | undefined) {
+  return codes?.length ? [{ field: CODE, oneOf: [...codes] }] : undefined
 }
 
 /** The `pileup.bases.filter` entries the per-base layer cannot apply. */
@@ -111,62 +96,4 @@ export function basesFilterProblems(filter: unknown) {
         ]
       : []),
   ]
-}
-
-function isObject(v: unknown): v is Record<string, unknown> {
-  return !!v && typeof v === 'object' && !Array.isArray(v)
-}
-
-function basesFilterAt(snapshot: Record<string, unknown> | undefined) {
-  const pileup = snapshot?.pileup
-  const bases = isObject(pileup) ? pileup.bases : undefined
-  return isObject(bases) ? bases.filter : undefined
-}
-
-const MEMBER_FIELDS = {
-  threshold: PROBABILITY,
-  cytosineContext: CONTEXT,
-  shownModifications: CODE,
-} as const
-
-/**
- * A beta `modifications.threshold` (a percent), `cytosineContext` and
- * `shownModifications`, as the `pileup.bases.filter` entries on
- * `probability`, `context` and `code`: under any entry the snapshot writes
- * on the same field, and over a stored delta's base on it, a `null` dropping
- * the base's.
- */
-export const retiredModificationMembers: RetiredMembers = {
-  names: Object.keys(MEMBER_FIELDS),
-  lift: (values, written, base) => {
-    const { threshold, cytosineContext, shownModifications } = values
-    const lifted = basesFilterOf({
-      threshold: typeof threshold === 'number' ? threshold : undefined,
-      cytosineContext:
-        typeof cytosineContext === 'string'
-          ? (cytosineContext as CytosineContext)
-          : undefined,
-      shownModifications: Array.isArray(shownModifications)
-        ? shownModifications.map(String)
-        : undefined,
-    })
-    const writtenFilter = basesFilterAt(written)
-    const own = predicatesOf(writtenFilter)
-    const under =
-      writtenFilter === undefined ? predicatesOf(basesFilterAt(base)) : []
-    const ownFields = new Set(own.map(p => p.field))
-    const named = new Set<string>(
-      Object.entries(MEMBER_FIELDS)
-        .filter(([name]) => Object.hasOwn(values, name))
-        .map(([, field]) => field),
-    )
-    const filter = [
-      ...under.filter(p => !named.has(p.field) && !ownFields.has(p.field)),
-      ...lifted.filter(p => !ownFields.has(p.field)),
-      ...own,
-    ]
-    return filter.length > 0 || under.length > 0
-      ? { pileup: { bases: { filter } } }
-      : {}
-  },
 }

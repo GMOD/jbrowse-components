@@ -352,7 +352,7 @@ describe('setUnit color scheme preservation', () => {
 
   test('entering pairs leaves the plain fill under a per-base layer', () => {
     const display = createDisplay()
-    display.setBaseLayer({ type: 'modifications' })
+    display.setBases({ show: true, field: 'modifications' })
 
     display.setUnit('chain')
     expect(display.colorField).toBe('')
@@ -2010,9 +2010,9 @@ describe('chain-strand framing: the gate, the bake and the key agree', () => {
   const fills = ['', 'strand', 'insertSize', 'pairOrientation', 'tags.HP']
   const layers: (BaseLayer | undefined)[] = [
     undefined,
-    { type: 'baseQuality' },
-    { type: 'base' },
-    { type: 'modifications' },
+    { field: 'baseQuality' },
+    { field: 'base' },
+    { field: 'modifications' },
   ]
   const splitSegment = makePileupDataResult({
     readStrands: Int8Array.of(-1),
@@ -2021,13 +2021,15 @@ describe('chain-strand framing: the gate, the bake and the key agree', () => {
 
   test.each(
     fills.flatMap(fill =>
-      layers.map(layer => [fill, layer?.type, fill, layer] as const),
+      layers.map(layer => [fill, layer?.field, fill, layer] as const),
     ),
   )('%s fill under the %s layer', (_fill, _layer, fill, layer) => {
     const display = createDisplay()
     display.setUnit('chain')
     display.colorByField(fill)
-    display.setBaseLayer(layer)
+    display.setBases(
+      layer ? { show: true, field: layer.field } : { show: false },
+    )
     const baked = applyReadColorsByGroup(
       new Map([['', new Map([[0, splitSegment]])]]),
       display.readColorContext,

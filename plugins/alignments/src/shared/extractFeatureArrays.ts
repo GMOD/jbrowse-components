@@ -14,6 +14,7 @@ import {
 } from '../features/modification/extract.ts'
 import { extractPerBaseLetter } from '../features/perBaseLetter/extract.ts'
 import { extractPerBaseQuality } from '../features/perBaseQuality/extract.ts'
+import { DEFAULT_BASES_FILTER } from './basesFilter.ts'
 import { colorSchemeOf } from './colorSchemes.ts'
 import {
   cigarCategoryBitsOf,
@@ -25,7 +26,7 @@ import { extractFeatureTagValue } from './extractFeatureTagValue.ts'
 import { fieldTag } from './facetLabels.ts'
 import { fieldValueReader } from './groupFeatures.ts'
 import { mateMapqOf } from './splitAlignment.ts'
-import { isMethylationView, paintsUnmodifiedCalls } from './types.ts'
+import { isMethylationView } from './types.ts'
 import { getMappingQuality, getMateRefName, getStrand } from './util.ts'
 
 import type { BaseLayer } from './types.ts'
@@ -99,9 +100,9 @@ export function extractFeatureArrays<T extends FeatureData>(
   // denominator. Stays empty in every other color mode.
   const bisulfiteCallCounts = new Map<number, number>()
   const perBaseQualities = new PerBaseColumns()
-  const isPerBaseQualityMode = baseLayer?.type === 'baseQuality'
+  const isPerBaseQualityMode = baseLayer?.field === 'baseQuality'
   const perBaseLetters = new PerBaseColumns()
-  const isPerBaseLetterMode = baseLayer?.type === 'base'
+  const isPerBaseLetterMode = baseLayer?.field === 'base'
   const tagColorValues: string[] = []
   const nextPositions: number[] = []
   // Walked whatever the settings, and shipped only when some read actually had
@@ -146,7 +147,7 @@ export function extractFeatureArrays<T extends FeatureData>(
   // `getMateRefName` reads — a synteny block's `mate`, a BAM read's `next_ref`
   // — which is uncolored rather than a hash of the empty string.
   const isMateRefNameMode = colorField === 'mateRefName'
-  const paintsModificationMarks = baseLayer?.type === 'modifications'
+  const paintsModificationMarks = baseLayer?.field === 'modifications'
   // A sort on the tag the reads are colored by shares their column, which
   // structured clone then ships once
   const sortsByColorTag = !!colorTag && colorTag === sortTag
@@ -276,11 +277,11 @@ export function extractFeatureArrays<T extends FeatureData>(
         region,
         modData,
         modifications,
-        baseLayer?.modifications,
+        baseLayer?.filter,
       )
     }
 
-    if (baseLayer?.type === 'bisulfite' && regionSequence !== undefined) {
+    if (baseLayer?.field === 'bisulfite' && regionSequence !== undefined) {
       extractBisulfite(
         feature,
         readIndex,
@@ -289,8 +290,8 @@ export function extractFeatureArrays<T extends FeatureData>(
         region,
         regionSequence,
         regionSequenceStart ?? region.start,
-        baseLayer.modifications?.cytosineContext ?? 'CG',
-        paintsUnmodifiedCalls(baseLayer.modifications),
+        (baseLayer.filter ?? DEFAULT_BASES_FILTER).context,
+        baseLayer.unmodified === true,
         modifications,
         bisulfiteCallCounts,
       )

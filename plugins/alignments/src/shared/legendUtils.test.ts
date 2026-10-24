@@ -11,6 +11,7 @@ import {
 import { makeTestPalette } from '../LinearAlignmentsDisplay/testUtils.ts'
 import { qualityRampCss } from '../features/perBaseQuality/colors.ts'
 import { alignmentsColorEncoding } from './alignmentsColor.ts'
+import { basesFilterOf } from './basesFilter.ts'
 import { colorSettingOf } from './colorSettingFixture.ts'
 import { sectionOrder } from './groupFeatures.ts'
 import {
@@ -51,7 +52,7 @@ function legendFor(
   return getReadDisplayLegendItems({
     ...(typeof scheme === 'string'
       ? splitSchemeForTest(scheme)
-      : splitSchemeForTest(scheme.type, scheme.modifications)),
+      : splitSchemeForTest(scheme.field, scheme)),
     presentCategories: new Set(categories),
     palette: makeTestPalette(),
     ...rest,
@@ -576,7 +577,7 @@ describe('getReadDisplayLegendItems', () => {
   test('base quality unavailable is keyed only when a drawn base carries it', () => {
     const rows = (baseQualityUnavailable: boolean) =>
       legendFor('', ['plain'], {
-        baseLayer: { type: 'baseQuality' },
+        baseLayer: { field: 'baseQuality' },
         baseQualityUnavailable,
       })
     expect(rows(false).map(i => i.label)).toEqual(['Read'])
@@ -609,38 +610,36 @@ describe('getReadDisplayLegendItems', () => {
     ])
     expect(
       legendFor(
-        { type: 'modifications', modifications: { shownModifications: ['a'] } },
+        {
+          field: 'modifications',
+          filter: basesFilterOf([{ field: 'code', oneOf: ['a'] }]),
+        },
         [],
         { detectedModifications: mods },
       ).map(i => i.label),
     ).toEqual(['6mA'])
   })
 
-  test.each(['all', 'calls'] as const)(
-    "2-color view (unmodified: '%s') keys the methylation states it paints",
-    unmodified => {
-      const mods = new Map([
-        ['m', 'red'],
-        ['h', 'magenta'],
-      ])
-      const items = legendFor(
-        { type: 'modifications', modifications: { unmodified } },
-        [],
-        { detectedModifications: mods },
-      )
-      expect(items).toEqual([
-        { color: '#ff0000', label: '5mC methylated' },
-        { color: '#ffc0cb', label: '5hmC methylated' },
-        { color: '#0000ff', label: 'Unmethylated' },
-      ])
-    },
-  )
+  test('the 2-color view keys the methylation states it paints', () => {
+    const mods = new Map([
+      ['m', 'red'],
+      ['h', 'magenta'],
+    ])
+    const items = legendFor({ field: 'modifications', unmodified: true }, [], {
+      detectedModifications: mods,
+    })
+    expect(items).toEqual([
+      { color: '#ff0000', label: '5mC methylated' },
+      { color: '#ffc0cb', label: '5hmC methylated' },
+      { color: '#0000ff', label: 'Unmethylated' },
+    ])
+  })
 
   // Bisulfite is reference-based and parses no MM/ML tags, so the detected-types
   // map is ALWAYS empty for it — the real shape of a bisulfite track. Gating its
   // swatches on that map dropped the red 5mC key entirely.
   test('bisulfite keys the methylated state it paints, with no MM types detected', () => {
-    // unmodified is 'hidden' by default in every mode, so a default bisulfite track
+    // unmodified is off by default in every mode, so a default bisulfite track
     // paints methylated (red) only, and must not key a blue swatch it never
     // draws.
     expect(labels('bisulfite', [], new Map())).toEqual(['5mC methylated'])
@@ -648,13 +647,9 @@ describe('getReadDisplayLegendItems', () => {
 
   test('bisulfite keys the unmethylated swatch once it paints unmodified calls', () => {
     expect(
-      legendFor(
-        { type: 'bisulfite', modifications: { unmodified: 'calls' } },
-        [],
-        {
-          detectedModifications: new Map(),
-        },
-      ).map(i => i.label),
+      legendFor({ field: 'bisulfite', unmodified: true }, [], {
+        detectedModifications: new Map(),
+      }).map(i => i.label),
     ).toEqual(['5mC methylated', 'Unmethylated'])
   })
 
@@ -663,11 +658,9 @@ describe('getReadDisplayLegendItems', () => {
   test('two-color over a non-cytosine mod keys its blue unmodified swatch', () => {
     const mods = new Map([['a', 'purple']])
     expect(
-      legendFor(
-        { type: 'modifications', modifications: { unmodified: 'calls' } },
-        [],
-        { detectedModifications: mods },
-      ).map(i => i.label),
+      legendFor({ field: 'modifications', unmodified: true }, [], {
+        detectedModifications: mods,
+      }).map(i => i.label),
     ).toEqual(['6mA', 'Unmodified'])
   })
 
@@ -681,14 +674,14 @@ describe('getReadDisplayLegendItems', () => {
       ['a', 'purple'],
     ])
     expect(
-      legendFor({ type: 'modifications' }, [], {
+      legendFor({ field: 'modifications' }, [], {
         detectedModifications: mods,
         presentModifications: new Set(['m']),
       }).map(i => i.label),
     ).toEqual(['5mC'])
     // the empty set is a real state: the scheme is on and no marks are drawn
     expect(
-      legendFor({ type: 'modifications' }, [], {
+      legendFor({ field: 'modifications' }, [], {
         detectedModifications: mods,
         presentModifications: new Set(),
       }),
@@ -702,7 +695,7 @@ describe('getReadDisplayLegendItems', () => {
   // narrowing on a set built from one of those would drop the only swatch.
   test('bisulfite keys its state whatever the presence filter says', () => {
     expect(
-      legendFor({ type: 'bisulfite' }, [], {
+      legendFor({ field: 'bisulfite' }, [], {
         detectedModifications: new Map(),
         presentModifications: new Set(),
       }).map(i => i.label),
@@ -733,11 +726,9 @@ describe('getReadDisplayLegendItems', () => {
   test('fill-unmarked view omits the 5hmC swatch when only 5mC was detected', () => {
     const mods = new Map([['m', 'red']])
     expect(
-      legendFor(
-        { type: 'modifications', modifications: { unmodified: 'all' } },
-        [],
-        { detectedModifications: mods },
-      ).map(i => i.label),
+      legendFor({ field: 'modifications', unmodified: true }, [], {
+        detectedModifications: mods,
+      }).map(i => i.label),
     ).toEqual(['5mC methylated', 'Unmethylated'])
   })
 
@@ -909,7 +900,7 @@ describe('colorRampScales', () => {
     const [baseQuality, mapq] = colorRampScales({
       ...noExtents,
       colorField: 'mapq',
-      baseLayer: { type: 'baseQuality' },
+      baseLayer: { field: 'baseQuality' },
       bakedScale: mapqRamp,
       baseQualityExtent: [2, 38],
     })
@@ -935,7 +926,7 @@ describe('colorRampScales', () => {
       colorRampScales({
         ...noExtents,
         colorField: '',
-        baseLayer: { type: 'base' },
+        baseLayer: { field: 'base' },
       }),
     ).toEqual([])
   })
@@ -1289,11 +1280,9 @@ describe('the fill view keys the types drawn beside the methylation states', () 
   ])
 
   test('a non-cytosine type is keyed after them, in its by-type color', () => {
-    const items = legendFor(
-      { type: 'modifications', modifications: { unmodified: 'all' } },
-      [],
-      { detectedModifications: fiberseq },
-    )
+    const items = legendFor({ field: 'modifications', unmodified: true }, [], {
+      detectedModifications: fiberseq,
+    })
     expect(items.map(i => i.label)).toEqual([
       '5mC methylated',
       '6mA',
@@ -1310,11 +1299,9 @@ describe('the fill view keys the types drawn beside the methylation states', () 
   // "Unmethylated" over those is a wrong statement about a drawn color.
   test('the blue swatch is Unmodified once a non-cytosine type is drawn', () => {
     const labels = (detected: Map<string, string>) =>
-      legendFor(
-        { type: 'modifications', modifications: { unmodified: 'all' } },
-        [],
-        { detectedModifications: detected },
-      ).map(i => i.label)
+      legendFor({ field: 'modifications', unmodified: true }, [], {
+        detectedModifications: detected,
+      }).map(i => i.label)
     expect(labels(fiberseq).at(-1)).toBe('Unmodified')
     // an ordinary methylation modBAM keeps the cytosine wording
     expect(labels(new Map([['m', 'rgb(255,0,0)']])).at(-1)).toBe('Unmethylated')
@@ -1332,8 +1319,9 @@ describe('the fill view keys the types drawn beside the methylation states', () 
     expect(
       legendFor(
         {
-          type: 'modifications',
-          modifications: { unmodified: 'all', shownModifications: ['m'] },
+          field: 'modifications',
+          unmodified: true,
+          filter: basesFilterOf([{ field: 'code', oneOf: ['m'] }]),
         },
         [],
         { detectedModifications: fiberseq },
@@ -1345,7 +1333,7 @@ describe('the fill view keys the types drawn beside the methylation states', () 
   // answers before this branch.
   test('bisulfite is unaffected', () => {
     expect(
-      legendFor({ type: 'bisulfite' }, [], {
+      legendFor({ field: 'bisulfite' }, [], {
         detectedModifications: new Map([['a', 'rgb(51,0,111)']]),
       }).map(i => i.label),
     ).toEqual(['5mC methylated'])

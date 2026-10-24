@@ -16,12 +16,9 @@ import {
   matchesCytosineContext,
 } from '@jbrowse/modifications-utils'
 
+import { DEFAULT_BASES_FILTER } from '../../shared/basesFilter.ts'
 import { forEachMaxProbMod } from '../../shared/getMaxProbModAtEachPosition.ts'
-import {
-  DEFAULT_MODIFICATION_THRESHOLD,
-  isModificationTypeVisible,
-  paintsUnmodifiedCalls,
-} from '../../shared/types.ts'
+import { admitsCode } from '../../shared/types.ts'
 import { getFlags } from '../../shared/util.ts'
 import { getColorForModification } from '../../util.ts'
 import {
@@ -29,7 +26,7 @@ import {
   packedCigarOps,
 } from '../alignedBaseWalk.ts'
 
-import type { BaseLayer, ModificationColorBy } from '../../shared/types.ts'
+import type { BaseLayer, BasesFilter } from '../../shared/types.ts'
 import type { ModificationEntry } from '../../shared/webglRpcTypes.ts'
 import type { Feature, Region } from '@jbrowse/core/util'
 import type {
@@ -107,7 +104,7 @@ export function extractModifications(
   // sequence, which makes BAM decode SEQ for the read), to populate the menu
   // above. That is the ungated cost the old comment on `packedCigarOps`
   // describes, and it is now gated.
-  if (layer?.type !== 'modifications') {
+  if (layer?.field !== 'modifications') {
     return
   }
 
@@ -136,8 +133,8 @@ export function extractModifications(
     window.readStart,
     window.readEnd,
   )
-  const mods = layer.modifications
-  const twoColor = paintsUnmodifiedCalls(mods)
+  const filter = layer.filter ?? DEFAULT_BASES_FILTER
+  const twoColor = layer.unmodified === true
 
   // The 2-color view hands 5mC/5hmC to extractMethylation, which weighs them
   // and unmodified against each other per cytosine; the read's other types
@@ -145,13 +142,12 @@ export function extractModifications(
   // the per-position max, so a hidden type never outscores a shown one.
   const drawn = modifications.filter(
     m =>
-      isModificationTypeVisible(mods, m.type) &&
+      admitsCode(filter, m.type) &&
       !(twoColor && isMethylationFillType(m.type)),
   )
   if (drawn.length > 0) {
     const modStrand = strand === -1 ? -1 : 1
-    const modThreshold =
-      (mods?.threshold ?? DEFAULT_MODIFICATION_THRESHOLD) / 100
+    const { min, strict } = filter.probability
     forEachMaxProbMod(
       drawn,
       getModProbabilityBytes(feature),
@@ -163,10 +159,7 @@ export function extractModifications(
         // unmethylated color (with prob = 1-prob = the unmodified confidence);
         // default mode hides calls below the threshold and always paints the mod
         // color at full prob. `isMeth` unifies both without an intermediate alloc.
-        if (
-          twoColor ||
-          (mods?.thresholdStrict ? prob > modThreshold : prob >= modThreshold)
-        ) {
+        if (twoColor || (strict ? prob > min : prob >= min)) {
           const isMeth = !twoColor || prob > 0.5
           modificationsData.push({
             readIndex,
@@ -196,13 +189,12 @@ export function extractModifications(
 }
 
 /**
- * Paints the 2-color view's cytosine marks, one per called cytosine in
- * context, each the most likely of 5mC, 5hmC and unmodified. `unmodified: 'all'` adds the
- * cytosines the MM tag left implicit.
+ * Paints the 2-color view's cytosine marks, one per cytosine in context, the
+ * ones the MM tag left implicit included, each the most likely of 5mC, 5hmC
+ * and unmodified.
  *
- * Takes the whole `modifications` slot rather than just its cytosine context,
- * because the winner selection below also has to know which types the type
- * filter left ticked. It did not, and that made the "Modification types"
+ * Takes the whole bases filter rather than just its context, because the
+ * winner selection below also has to know which codes it left ticked. It did not, and that made the "Modification types"
  * checkboxes inert in this view while the LEGEND read the same predicate and
  * dropped the swatch — so unticking 5hmC removed its key and left its magenta
  * marks on screen, off a box whose whole claim is that it names every color
@@ -232,10 +224,10 @@ export function extractMethylation(
   region: Region,
   modData: ParsedModData,
   modificationsData: ModificationEntry[],
-  mods: ModificationColorBy | undefined,
+  filter: BasesFilter = DEFAULT_BASES_FILTER,
 ) {
-  const showMeth = isModificationTypeVisible(mods, 'm')
-  const showHydroxy = isModificationTypeVisible(mods, 'h')
+  const showMeth = admitsCode(filter, 'm')
+  const showHydroxy = admitsCode(filter, 'h')
   if (
     (!showMeth && !showHydroxy) ||
     !modData.modifications.some(m => isMethylationFillType(m.type))
@@ -244,12 +236,7 @@ export function extractMethylation(
   }
   const { start: regionStart, end: regionEnd } = region
   const { refStart, methBins, methProbs, hydroxyMethBins, hydroxyMethProbs } =
-    getMethBins(
-      modData,
-      mods?.cytosineContext,
-      mods?.unmodified === 'all',
-      type => isModificationTypeVisible(mods, type),
-    )
+    getMethBins(modData, filter.context, true, type => admitsCode(filter, type))
 
   const methStrand = strand === -1 ? -1 : 1
   const kStart = Math.max(0, regionStart - featureStart - refStart)

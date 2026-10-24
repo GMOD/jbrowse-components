@@ -67,13 +67,13 @@ describe('a pick of what already paints writes nothing', () => {
     ).toEqual([])
   })
 
-  test('setBaseLayer of the layer already drawn', () => {
+  test('setBases of the layer already drawn', () => {
     const display = createDisplay({
       pileup: { bases: { show: true, encoding: { color: 'baseQuality' } } },
     })
     expect(
       patchesOf(display, () => {
-        display.setBaseLayer({ type: 'baseQuality' })
+        display.setBases({ show: true, field: 'baseQuality' })
       }),
     ).toEqual([])
   })

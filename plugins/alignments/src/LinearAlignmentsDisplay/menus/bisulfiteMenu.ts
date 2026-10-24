@@ -1,9 +1,9 @@
 import { checkboxItem, radioItems } from '@jbrowse/core/ui/menuItems'
 
+import { contextEntries } from '../../shared/basesFilter.ts'
 import { cytosineContextOptions } from '../../shared/modificationData.ts'
-import { paintsUnmodifiedCalls } from '../../shared/types.ts'
 
-import type { BaseLayer, ModificationColorBy } from '../../shared/types.ts'
+import type { BaseLayer, BasesFilter, BasesPatch } from '../../shared/types.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { CytosineContext } from '@jbrowse/modifications-utils'
 
@@ -13,45 +13,40 @@ import type { CytosineContext } from '@jbrowse/modifications-utils'
 // for the same reason: it shares the cytosine-context vocabulary with the MM/ML
 // submenu but none of its state, writer, or readiness gating.
 //
-// Picking a cytosine context activates it. The `modifications` slot is shared
-// with the MM/ML layer, so a click merges its two members into the slot rather
-// than replacing it, keeping that layer's threshold and type filter.
+// Picking a cytosine context activates it. `pileup.bases.filter` is shared
+// with the MM/ML layer, so a click writes its `context` alone, keeping that
+// layer's probability floor and codes.
 interface BisulfiteModel {
   baseLayer: BaseLayer | undefined
-  modificationSettings: ModificationColorBy
-  setBaseLayer: (layer?: BaseLayer) => void
+  basesFilter: BasesFilter
+  setBases: (patch: BasesPatch) => void
 }
 
 const DIVIDER: MenuItem = { type: 'divider' }
 
 export function bisulfiteItem(model: BisulfiteModel): MenuItem {
-  const isBis = model.baseLayer?.type === 'bisulfite'
-  const mods = model.modificationSettings
-  const context = mods.cytosineContext ?? 'CG'
-  const twoColor = isBis && paintsUnmodifiedCalls(mods)
-
-  const setBisulfite = (patch: Partial<ModificationColorBy>) => {
-    model.setBaseLayer({
-      type: 'bisulfite',
-      modifications: { ...mods, ...patch },
-    })
-  }
+  const isBis = model.baseLayer?.field === 'bisulfite'
+  const twoColor = isBis && model.baseLayer?.unmodified === true
 
   return {
     label: 'Bisulfite / EM-seq',
     subMenu: [
       ...radioItems<CytosineContext>(
         cytosineContextOptions,
-        isBis ? context : undefined,
+        isBis ? model.basesFilter.context : undefined,
         next => {
-          setBisulfite({ cytosineContext: next })
+          model.setBases({
+            show: true,
+            field: 'bisulfite',
+            filter: { context: contextEntries(next) },
+          })
         },
       ),
       ...(isBis
         ? [
             DIVIDER,
             checkboxItem('Show unmethylated (blue)', twoColor, () => {
-              setBisulfite({ unmodified: twoColor ? 'hidden' : 'calls' })
+              model.setBases({ unmodified: !twoColor })
             }),
           ]
         : []),

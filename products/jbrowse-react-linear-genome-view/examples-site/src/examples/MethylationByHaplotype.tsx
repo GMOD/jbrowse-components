@@ -40,9 +40,12 @@ export default function MethylationByHaplotype() {
               height: 360,
               facet: 'tags.HP',
               pileup: {
-                bases: { show: true, encoding: { color: 'modifications' } },
+                bases: {
+                  show: true,
+                  encoding: { color: 'modifications' },
+                  unmodified: { show: true },
+                },
               },
-              modifications: { unmodified: 'all' },
             },
           },
         ],

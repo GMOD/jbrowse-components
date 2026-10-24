@@ -284,7 +284,7 @@ describe('modification type detection', () => {
     )
   const detected = (
     features: Feature[],
-    baseLayer?: { type: 'modifications' },
+    baseLayer?: { field: 'modifications' },
   ) =>
     extractFeatureArrays(features, buildFeatureData, {
       colorField: '',
@@ -301,7 +301,7 @@ describe('modification type detection', () => {
   test('outside the layer, reads past the sample are not scanned', () => {
     const past = reads(MOD_TYPE_SAMPLE_READS + 1, MOD_TYPE_SAMPLE_READS)
     expect([...detected(past)]).toEqual([])
-    expect([...detected(past, { type: 'modifications' })]).toEqual(['m'])
+    expect([...detected(past, { field: 'modifications' })]).toEqual(['m'])
   })
 })
 

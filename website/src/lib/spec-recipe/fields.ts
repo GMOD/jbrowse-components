@@ -6,7 +6,7 @@ import {
 import {
   COLOR_FIELDS,
   alignmentsColorEncoding,
-  baseLayerOf,
+  baseLayerOfField,
   readColorFieldOf,
 } from '../../../../plugins/alignments/src/shared/alignmentsColor.ts'
 import {
@@ -159,12 +159,13 @@ const SPECIAL_COLOR_MENUS: Record<string, string> = {
   bisulfite: 'Bisulfite / EM-seq',
 }
 
-// The two radios inside the Modifications submenu (modificationsMenu.ts). Which
-// one a value means is the calls-or-all test `paintsUnmodifiedCalls` makes when
-// the menu decides which radio reads as checked.
+// The two radios inside the Modifications submenu (modificationsMenu.ts),
+// which `pileup.bases.unmodified.show` picks between, and the bisulfite
+// submenu's checkbox it ticks.
 const MODIFICATION_BY_TYPE = 'One color per modification type'
 const MODIFICATION_TWO_COLOR =
   'One color per type, plus low-probability & unmodified in blue'
+const BISULFITE_UNMODIFIED = 'Show unmethylated (blue)'
 
 // The members a spec's `encoding.color` leaves out, so the field a recipe
 // reads goes through the display's own setting → encoding → scheme path rather
@@ -225,18 +226,17 @@ function alignmentsColorStep(value: unknown): FieldStep | undefined {
 
 // The alignments displays' `pileup.bases`: the per-base layer's row in the
 // same Color by... menu. The two modification rows are submenus, whose radio
-// the sibling `modifications` slot settles (`modificationsStep`).
+// or checkbox `unmodified` settles.
 const basesStep: FieldRecipe = value => {
   const bases = asRecord(value)
   const color = channelOf(asRecord(bases?.encoding)?.color)
-  const layer = baseLayerOf({
-    show: bases?.show === true,
-    field: asString(color?.field) ?? '',
-  })
-  if (!layer) {
+  const field =
+    bases?.show === true ? baseLayerOfField(asString(color?.field)) : undefined
+  if (!field) {
     return undefined
   }
-  const { menu } = COLOR_SCHEMES[layer.type]
+  const { menu } = COLOR_SCHEMES[field]
+  const unmodified = asRecord(bases?.unmodified)?.show
   const filter = Array.isArray(bases?.filter) ? bases.filter.map(asRecord) : []
   const contexts = filter.find(p => p?.field === 'context')?.oneOf
   // The bisulfite submenu leads with its cytosine-context radios, whose labels
@@ -246,9 +246,9 @@ const basesStep: FieldRecipe = value => {
     : undefined
   return [
     {
-      path: `${TRACK_MENU} → Color by... → ${SPECIAL_COLOR_MENUS[layer.type] ?? menu.label}`,
+      path: `${TRACK_MENU} → Color by... → ${SPECIAL_COLOR_MENUS[field] ?? menu.label}`,
       note:
-        layer.type === 'modifications'
+        field === 'modifications'
           ? filter.some(p => p?.field === 'code')
             ? 'Needs MM/ML modification tags in your BAM/CRAM. This figure also narrows the drawn types under Modifications → Modification types.'
             : 'Needs MM/ML modification tags in your BAM/CRAM.'
@@ -259,6 +259,22 @@ const basesStep: FieldRecipe = value => {
           {
             path: `${TRACK_MENU} → Color by... → Per-base coloring → Bisulfite / EM-seq → ${context.label}`,
             note: 'Under the bisulfite color field only.',
+          },
+        ]
+      : []),
+    ...(field === 'modifications' && typeof unmodified === 'boolean'
+      ? [
+          {
+            path: `${TRACK_MENU} → Color by... → Per-base coloring → Modifications → ${
+              unmodified ? MODIFICATION_TWO_COLOR : MODIFICATION_BY_TYPE
+            }`,
+          },
+        ]
+      : []),
+    ...(field === 'bisulfite' && unmodified === true
+      ? [
+          {
+            path: `${TRACK_MENU} → Color by... → Per-base coloring → Bisulfite / EM-seq → ${BISULFITE_UNMODIFIED}`,
           },
         ]
       : []),
@@ -274,21 +290,6 @@ function namesAlignmentsColor(value: unknown) {
     fieldTag(field) !== undefined ||
     (field !== 'strand' && (COLOR_FIELDS as readonly string[]).includes(field))
   )
-}
-
-// The `modifications` slot beside a `pileup.bases` color of `modifications`
-// or `bisulfite`: which radio inside that submenu the figure picked.
-const modificationsStep: FieldRecipe = value => {
-  const mods = asRecord(value)
-  return mods
-    ? {
-        path: `${TRACK_MENU} → Color by... → Per-base coloring → Modifications → ${
-          mods.unmodified === 'calls' || mods.unmodified === 'all'
-            ? MODIFICATION_TWO_COLOR
-            : MODIFICATION_BY_TYPE
-        }`,
-      }
-    : undefined
 }
 
 // The alignments display and LGVSyntenyDisplay build their "Group by..." submenu
@@ -1562,7 +1563,6 @@ export const trackFields: Record<string, FieldRecipe> = {
   ...graphTrackFields,
   'encoding.color': colorStep,
   'pileup.bases': basesStep,
-  modifications: modificationsStep,
   rowColor: rowColorStep,
   facet: facetStep,
   filter: filterListStep,

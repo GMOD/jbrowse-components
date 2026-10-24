@@ -325,9 +325,9 @@ describe('the biggest generated type page as the docs tool serves it', () => {
   // The bullet shape the member route matches is the generator's, so pin it
   // against the generated page rather than only against a fixture of it.
   it('answers one member by name without the section holding it', () => {
-    const { text } = readDocSection(page, 'setBaseLayer', { members: true })
+    const { text } = readDocSection(page, 'setBases', { members: true })
     expect(text).toContain('## Actions')
-    expect(text).toContain('`setBaseLayer(')
+    expect(text).toContain('`setBases(')
     expect(text!.length).toBeLessThan(500)
   })
 })

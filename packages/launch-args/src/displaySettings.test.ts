@@ -463,8 +463,13 @@ describe('color routing', () => {
       ]).snap,
     ).toEqual({
       encoding: { color: 'mapq' },
-      pileup: { bases: { show: true, encoding: { color: 'modifications' } } },
-      modifications: { unmodified: 'all' },
+      pileup: {
+        bases: {
+          show: true,
+          encoding: { color: 'modifications' },
+          unmodified: { show: true },
+        },
+      },
     })
     expect(
       buildDisplaySnapshot('alignments', [
@@ -501,7 +506,7 @@ describe('color routing', () => {
       buildDisplaySnapshot('alignments', [
         'color:mapq',
         'encoding.color.scale.domain=1,2',
-        'modifications.unmodified=all',
+        'pileup.bases.unmodified.show=true',
         'showOutline=false',
       ]).snap,
     ).toEqual({ encoding: { color: 'mapq' }, showOutline: false })

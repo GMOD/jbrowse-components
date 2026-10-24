@@ -11,6 +11,7 @@ import { getCoverageMenuItems } from '@jbrowse/alignments-core/coverageMenuItems
 import {
   ConfigurationReference,
   getConf,
+  readConfObject,
   setConf,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
@@ -32,6 +33,7 @@ import {
   boundBandHeight,
   clampBandHeight,
 } from '@jbrowse/core/util/bandHeight'
+import { predicatesOf } from '@jbrowse/core/util/fieldPredicate'
 import { groupKeySpaceOf } from '@jbrowse/core/util/groupKeys'
 import { sameStrings } from '@jbrowse/core/util/sameStrings'
 import ColorWritesMixin, {
@@ -63,7 +65,7 @@ import {
   widenRangeToRules,
 } from '@jbrowse/wiggle-core'
 import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/wiggle-core/constants'
-import { autorun, compareStructural, computed, observable } from 'mobx'
+import { autorun, computed, observable } from 'mobx'
 
 import { buildArcBandFeeds } from '../features/arcs/bandFeed.ts'
 import { collectArcs, resolveArcsByGroup } from '../features/arcs/compute.ts'
@@ -88,7 +90,7 @@ import {
   declaredReadLabels,
   isBakedField,
 } from '../shared/alignmentsColor.ts'
-import { basesFilterOf } from '../shared/basesFilter.ts'
+import { withBasesField } from '../shared/basesFilter.ts'
 import {
   paintsEveryBase,
   paintsModifications,
@@ -114,7 +116,6 @@ import {
   readColorCategoryLabel,
   sashimiLegend,
 } from '../shared/legendUtils.ts'
-import { DEFAULT_MODIFICATION_THRESHOLD } from '../shared/types.ts'
 import { getMismatchContrastMap } from '../shared/util.ts'
 import { getColorForModification } from '../util.ts'
 import { sortOf } from './alignmentsSortConfigSchema.ts'
@@ -230,7 +231,7 @@ import type { DeclaredReadLabels } from '../shared/alignmentsColor.ts'
 import type { ReadSlot } from '../shared/readSlot.ts'
 import type {
   ArcColorField,
-  BaseLayer,
+  BasesPatch,
   ColumnSortField,
   SortColumn,
   SortSetting,
@@ -363,8 +364,13 @@ export interface AlignmentsContextMenuInfo extends ContextMenuAnchor {
  *     {
  *       type: 'LinearAlignmentsDisplay',
  *       displayId: 'methylation-LinearAlignmentsDisplay',
- *       pileup: { bases: { show: true, encoding: { color: 'modifications' } } },
- *       modifications: { unmodified: 'all' },
+ *       pileup: {
+ *         bases: {
+ *           show: true,
+ *           encoding: { color: 'modifications' },
+ *           unmodified: { show: true },
+ *         },
+ *       },
  *     },
  *   ],
  * }
@@ -1456,7 +1462,7 @@ export default function stateModelFactory(
            * none. O(bases), so gated on showLegend like the category scan.
            */
           get baseQualitySpan(): QualitySpan {
-            return self.showLegend && self.baseLayer?.type === 'baseQuality'
+            return self.showLegend && self.baseLayer?.field === 'baseQuality'
               ? baseQualitySpanAcrossGroups(this.laidOutByGroupFramed)
               : NO_QUALITY_SPAN
           },
@@ -1749,20 +1755,6 @@ export default function stateModelFactory(
       .views(self => ({
         /**
          * #getter
-         * The probability floor as the menu shows it, a percent rounded for
-         * display; the worker reads the exact floor off `modificationSettings`.
-         */
-        get modificationThreshold() {
-          return Number(
-            (
-              self.modificationSettings.threshold ??
-              DEFAULT_MODIFICATION_THRESHOLD
-            ).toFixed(2),
-          )
-        },
-
-        /**
-         * #getter
          */
         get showModifications() {
           return paintsModifications(self.baseLayer)
@@ -1785,14 +1777,14 @@ export default function stateModelFactory(
          * #getter
          */
         get showPerBaseQuality() {
-          return self.baseLayer?.type === 'baseQuality'
+          return self.baseLayer?.field === 'baseQuality'
         },
 
         /**
          * #getter
          */
         get showPerBaseLetter() {
-          return self.baseLayer?.type === 'base'
+          return self.baseLayer?.field === 'base'
         },
 
         /**
@@ -3159,30 +3151,44 @@ export default function stateModelFactory(
 
           /**
            * #action
-           * Draw a per-base layer over the reads, or none: writes
-           * `pileup.bases.show` and its channel's field. The read fill is
+           * Writes the `pileup.bases` members the patch names, as one
+           * action so a layer and its filter refetch once. The read fill is
            * `colorByField`'s and stays as it is.
            */
-          setBaseLayer(layer?: BaseLayer) {
-            if (!compareStructural(layer, self.baseLayer)) {
-              const conf = requireReadsConf(self)
-              const color = conf.pileup.bases.encoding.color
-              setConf(conf, ['pileup', 'bases', 'show'], layer !== undefined)
+          setBases({ show, field, unmodified, filter }: BasesPatch) {
+            const conf = requireReadsConf(self)
+            const { bases } = conf.pileup
+            const color = bases.encoding.color
+            if (
+              field !== undefined &&
+              field !== readConfObject(color, 'field')
+            ) {
               setConf(
                 conf,
                 ['pileup', 'bases', 'encoding', 'color'],
-                colorForField(writtenColorOf(color), layer?.type ?? ''),
+                colorForField(writtenColorOf(color), field),
               )
-              if (layer?.modifications) {
-                setConf(conf, 'modifications', {
-                  unmodified: layer.modifications.unmodified,
-                })
-                setConf(
-                  conf,
-                  ['pileup', 'bases', 'filter'],
-                  basesFilterOf(layer.modifications),
-                )
-              }
+            }
+            if (show !== undefined) {
+              setConf(conf, ['pileup', 'bases', 'show'], show)
+            }
+            if (unmodified !== undefined) {
+              setConf(
+                conf,
+                ['pileup', 'bases', 'unmodified', 'show'],
+                unmodified,
+              )
+            }
+            if (filter) {
+              setConf(
+                conf,
+                ['pileup', 'bases', 'filter'],
+                Object.entries(filter).reduce(
+                  (list, [name, entries]) =>
+                    withBasesField(list, name, entries),
+                  predicatesOf(bases.filter),
+                ),
+              )
             }
           },
 

@@ -69,11 +69,9 @@
           "pileup": {
             "bases": {
               "show": true,
-              "encoding": { "color": "modifications" }
+              "encoding": { "color": "modifications" },
+              "unmodified": { "show": true }
             }
-          },
-          "modifications": {
-            "unmodified": "all"
           }
         }
       ],

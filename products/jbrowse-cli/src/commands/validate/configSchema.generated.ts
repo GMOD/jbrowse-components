@@ -7245,6 +7245,27 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "additionalProperties": false
     },
+    "PileupBasesUnmodified": {
+      "title": "PileupBasesUnmodified",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "show": {
+          "description": "paint the unmodified side blue under the modifications and bisulfite fields.",
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
     "PileupBases": {
       "title": "PileupBases",
       "type": "object",
@@ -7277,6 +7298,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "items": {
               "$ref": "#/$defs/FieldPredicate"
             }
+          }
+        },
+        "unmodified": {
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PileupBasesUnmodified"
           }
         }
       },
@@ -7659,43 +7688,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "additionalProperties": false
     },
-    "AlignmentsModifications": {
-      "title": "AlignmentsModifications",
-      "type": "object",
-      "x-closed": true,
-      "properties": {
-        "threshold": {
-          "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
-        },
-        "cytosineContext": {
-          "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
-        },
-        "shownModifications": {
-          "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
-        },
-        "unmodified": {
-          "description": "unmodified sites painted blue: 'hidden' none, 'calls' the calls more likely unmodified, under modifications and bisulfite alike, and 'all' every cytosine in the context as well, the ones the basecaller left implicit included; 'all' is the methylation view.",
-          "default": "hidden",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "enum": [
-              "hidden",
-              "calls",
-              "all"
-            ]
-          }
-        }
-      },
-      "patternProperties": {
-        "^_+comment": {}
-      },
-      "additionalProperties": false
-    },
     "SashimiLabels": {
       "title": "SashimiLabels",
       "type": "object",
@@ -7917,14 +7909,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/ReadConnections"
           }
         },
-        "modifications": {
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "$ref": "#/$defs/AlignmentsModifications"
-          }
-        },
         "sashimi": {
           "if": {
             "type": "null"
@@ -8042,6 +8026,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
         "renderers": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "modifications": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
@@ -16723,9 +16711,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "readConnections": {
               "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/readConnections"
             },
-            "modifications": {
-              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/modifications"
-            },
             "sashimi": {
               "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/sashimi"
             },
@@ -16847,6 +16832,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "renderers": {
               "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/renderers"
+            },
+            "modifications": {
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/modifications"
             },
             "marks": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/marks"

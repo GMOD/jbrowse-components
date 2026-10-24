@@ -1,9 +1,8 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
-import { retiredModificationMembers } from '../shared/basesFilter.ts'
-import { alignmentsModificationsConfigSchema } from './alignmentsModificationsConfigSchema.ts'
 import { baseLinearAlignmentsDisplayConfigSchema } from './baseConfigSchema.ts'
 import { readsPileupConfigSchema } from './readsPileupConfigSchema.ts'
+import { liftModifications } from './retired.ts'
 import { sashimiConfigSchema } from './sashimiConfigSchema.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -47,8 +46,13 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  *   assemblyNames: ['hg38'],
  *   adapter: { type: 'CramAdapter', uri: 'https://example.com/sample.cram' },
  *   displayDefaults: {
- *     pileup: { bases: { show: true, encoding: { color: 'modifications' } } },
- *     modifications: { unmodified: 'all' },
+ *     pileup: {
+ *       bases: {
+ *         show: true,
+ *         encoding: { color: 'modifications' },
+ *         unmodified: { show: true },
+ *       },
+ *     },
  *   },
  * }
  * ```
@@ -109,14 +113,6 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
        */
       pileup: readsPileupConfigSchema,
       /**
-       * #slot modifications
-       * The `modifications` and `bisulfite` color fields' `unmodified`;
-       * `pileup.bases.filter` picks the calls they draw.
-       */
-      // Beside `pileup.bases` rather than inside its channel: a channel is
-      // written whole, so a menu pick of `bisulfite` would reset these.
-      modifications: alignmentsModificationsConfigSchema,
-      /**
        * #slot sashimi
        * The splice-junction arcs, drawn in the coverage band: `show`,
        * `height`, `placement` and `labels`; the `junction` filter fields
@@ -130,7 +126,7 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
        */
       baseConfiguration: baseLinearAlignmentsDisplayConfigSchema,
       explicitlyTyped: true,
-      retiredMembers: { modifications: retiredModificationMembers },
+      retired: { modifications: liftModifications },
     },
   )
 }

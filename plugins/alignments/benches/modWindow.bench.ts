@@ -179,15 +179,12 @@ async function loadOld(ref: string): Promise<Arm> {
   }
 }
 
-const marksColorBy: BaseLayer = {
-  type: 'modifications',
-  modifications: { threshold: 50 },
+const marksLayer: BaseLayer = {
+  field: 'modifications',
+  filter: { probability: { min: 0.5, strict: false }, context: 'CG' },
 }
-const fillColorBy: BaseLayer = {
-  type: 'modifications',
-  modifications: { unmodified: 'all' },
-}
-const colorBy = MODE === 'fill' ? fillColorBy : marksColorBy
+const fillLayer: BaseLayer = { field: 'modifications', unmodified: true }
+const layer = MODE === 'fill' ? fillLayer : marksLayer
 const ON_REF = { assemblyName: 'bench', refName: REFNAME }
 const WHOLE: Region = { ...ON_REF, start: 0, end: Number.MAX_SAFE_INTEGER }
 
@@ -203,13 +200,13 @@ function driveOld(arm: Arm, reads: Reads, region: Region, c: BaseLayer) {
   const out: ModificationEntry[] = []
   const detected = new Set<string>()
   const seen = new Map()
-  const fill = c.modifications?.unmodified === 'all'
+  const fill = c.unmodified === true
   for (let i = 0; i < features.length; i++) {
     const f = features[i]!
     const s = strands[i]!
     const data = arm.extract(f, i, f.start, s, region, c, detected, seen, out)
     if (fill && data) {
-      arm.methylation(i, f.start, s, region, data, out, c.modifications)
+      arm.methylation(i, f.start, s, region, data, out, c.filter)
     }
   }
   return out
@@ -220,13 +217,13 @@ function driveBounded(arm: Arm, reads: Reads, region: Region, c: BaseLayer) {
   const out: ModificationEntry[] = []
   const detected = new Set<string>()
   const seen = new Map()
-  const fill = c.modifications?.unmodified === 'all'
+  const fill = c.unmodified === true
   for (let i = 0; i < features.length; i++) {
     const f = features[i]!
     const s = strands[i]!
     const data = arm.extract(f, i, f.start, s, region, c, detected, seen, out)
     if (fill && data) {
-      arm.methylation(i, f.start, s, region, data, out, c.modifications)
+      arm.methylation(i, f.start, s, region, data, out, c.filter)
     }
   }
   return out
@@ -237,13 +234,13 @@ function driveControl(arm: Arm, reads: Reads, region: Region, c: BaseLayer) {
   const out: ModificationEntry[] = []
   const detected = new Set<string>()
   const seen = new Map()
-  const fill = c.modifications?.unmodified === 'all'
+  const fill = c.unmodified === true
   for (let i = 0; i < features.length; i++) {
     const f = features[i]!
     const s = strands[i]!
     const data = arm.extract(f, i, f.start, s, region, c, detected, seen, out)
     if (fill && data) {
-      arm.methylation(i, f.start, s, region, data, out, c.modifications)
+      arm.methylation(i, f.start, s, region, data, out, c.filter)
     }
   }
   return out
@@ -302,21 +299,21 @@ const mbp = features.reduce((a, f) => a + f.seq_length, 0) / 1e6
 const inRegion = (m: ModificationEntry) =>
   m.position >= region.start && m.position < region.end
 let marks = 0
-for (const c of [marksColorBy, fillColorBy]) {
+for (const c of [marksLayer, fillLayer]) {
   const oldOut = driveOld(old, reads, region, c)
   const boundedOut = driveBounded(bounded, reads, region, c)
   expectSame(
-    `${c === fillColorBy ? 'fill' : 'marks'}: bounded and old`,
+    `${c === fillLayer ? 'fill' : 'marks'}: bounded and old`,
     boundedOut,
     oldOut,
   )
   expectSame(
-    `${c === fillColorBy ? 'fill' : 'marks'}: control and old`,
+    `${c === fillLayer ? 'fill' : 'marks'}: control and old`,
     driveControl(control, reads, region, c),
     oldOut,
   )
   expectSame(
-    `${c === fillColorBy ? 'fill' : 'marks'}: bounded and whole-read cut to the region`,
+    `${c === fillLayer ? 'fill' : 'marks'}: bounded and whole-read cut to the region`,
     boundedOut,
     driveOld(old, reads, WHOLE, c).filter(inRegion),
   )
@@ -325,7 +322,7 @@ for (const c of [marksColorBy, fillColorBy]) {
   if (boundedOut.length === 0) {
     throw new Error(`${ONLY}: no marks, so nothing was compared`)
   }
-  if (c === colorBy) {
+  if (c === layer) {
     marks = boundedOut.length
   }
 }
@@ -338,11 +335,11 @@ for (let r = 0; r < ROUNDS; r++) {
     globalThis.gc?.()
     const t = performance.now()
     if (which === 0) {
-      sink += driveOld(old, reads, region, colorBy).length
+      sink += driveOld(old, reads, region, layer).length
     } else if (which === 1) {
-      sink += driveBounded(bounded, reads, region, colorBy).length
+      sink += driveBounded(bounded, reads, region, layer).length
     } else {
-      sink += driveControl(control, reads, region, colorBy).length
+      sink += driveControl(control, reads, region, layer).length
     }
     const dt = performance.now() - t
     const key = which === 0 ? 'old' : which === 1 ? 'bounded' : 'control'

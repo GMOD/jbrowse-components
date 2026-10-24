@@ -46,7 +46,7 @@ import { isReadDimension } from './groupFeatures.ts'
 import { getModificationName, modificationData } from './modificationData.ts'
 import { BASE_QUALITY_RAMP_MAX, qualityRampScale } from './qualityRamps.ts'
 import {
-  isModificationTypeVisible,
+  admitsCode,
   paintsUnmodifiedState,
   usesMethylationLegend,
 } from './types.ts'
@@ -603,7 +603,7 @@ function methylationLegend(
   layer: BaseLayer,
   keyed: ReadonlyMap<string, string>,
 ): LegendItem[] {
-  if (layer.type === 'bisulfite') {
+  if (layer.field === 'bisulfite') {
     return [{ color: methylated5mC, label: '5mC methylated' }]
   }
   return [
@@ -669,7 +669,7 @@ function keyedModifications(
     [...detectedModifications]
       .filter(
         ([type]) =>
-          isModificationTypeVisible(layer.modifications, type) &&
+          admitsCode(layer.filter, type) &&
           (present === undefined || present.has(type)),
       )
       .sort(
@@ -995,7 +995,7 @@ export function colorRampScales({
 }): RampScale[] {
   const readRamp = bakedRampScale(colorField, bakedScale, linearFieldExtent)
   return [
-    ...(baseLayer?.type === 'baseQuality'
+    ...(baseLayer?.field === 'baseQuality'
       ? [
           qualityRampScale(
             'base-quality-ramp',
@@ -1084,7 +1084,7 @@ function baseLayerLegend({
   presentModifications,
   baseQualityUnavailable,
 }: SchemeLegendArgs): LegendItem[] {
-  if (baseLayer?.type === 'baseQuality') {
+  if (baseLayer?.field === 'baseQuality') {
     return baseQualityUnavailable
       ? [
           {
@@ -1094,7 +1094,7 @@ function baseLayerLegend({
         ]
       : []
   }
-  if (baseLayer?.type === 'base') {
+  if (baseLayer?.field === 'base') {
     return BASE_LEGEND.map(({ key, label }) => ({
       color: rgb255(palette[key]),
       label,

@@ -3,6 +3,7 @@ import { encodingOptions } from '@jbrowse/display-kit/colorConfigSchema'
 import { fieldPredicateList } from '@jbrowse/display-kit/fieldPredicateConfigSchema'
 
 import { alignmentsBaseColorConfigSchema } from './alignmentsBaseColorConfigSchema.ts'
+import { pileupBasesUnmodifiedConfigSchema } from './pileupBasesUnmodifiedConfigSchema.ts'
 
 /**
  * #config PileupBases
@@ -10,7 +11,8 @@ import { alignmentsBaseColorConfigSchema } from './alignmentsBaseColorConfigSche
  * The pileup's `bases` layer, a cell per base over the reads: `show` turns it
  * on and `encoding.color` names what it paints. It draws while `show` is on
  * and a field is named. Its `filter` picks the modification calls the
- * `modifications` and `bisulfite` fields paint.
+ * `modifications` and `bisulfite` fields paint, and `unmodified` adds the
+ * unmodified side in blue.
  *
  * #example
  * ```js
@@ -31,6 +33,19 @@ import { alignmentsBaseColorConfigSchema } from './alignmentsBaseColorConfigSche
  *         { field: 'probability', gte: 0.5 },
  *         { field: 'code', oneOf: ['a'] },
  *       ],
+ *     },
+ *   },
+ * }
+ * ```
+ * ```js
+ * {
+ *   type: 'LinearAlignmentsDisplay',
+ *   pileup: {
+ *     bases: {
+ *       show: true,
+ *       encoding: { color: 'modifications' },
+ *       filter: [{ field: 'context', oneOf: ['CHG'] }],
+ *       unmodified: { show: true },
  *     },
  *   },
  * }
@@ -72,6 +87,12 @@ export const pileupBasesConfigSchema = ConfigurationSchema(
      * `{ field: 'context' }`, drops that field's default.
      */
     filter: fieldPredicateList(),
+    /**
+     * #slot unmodified
+     * The unmodified side, in blue, under the `modifications` and
+     * `bisulfite` fields: the methylation view.
+     */
+    unmodified: pileupBasesUnmodifiedConfigSchema,
   },
   { closed: true, plot: true },
 )

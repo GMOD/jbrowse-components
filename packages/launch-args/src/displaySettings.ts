@@ -197,7 +197,6 @@ export interface DisplaySnapshot {
   displayMode?: 'normal' | 'compact' | 'superCompact'
   heightMode?: (typeof HEIGHT_MODES)[number]
   growMaxHeight?: number
-  modifications?: { unmodified?: 'hidden' | 'calls' | 'all' }
   sort?:
     | string
     | {
@@ -208,7 +207,11 @@ export interface DisplaySnapshot {
       }
   pileup?: {
     mark?: { height?: number }
-    bases?: { show?: boolean; encoding?: { color?: string } }
+    bases?: {
+      show?: boolean
+      encoding?: { color?: string }
+      unmodified?: { show?: boolean }
+    }
   }
   readConnections?: {
     show?: boolean
@@ -526,12 +529,10 @@ const modifiers: Record<string, Modifier> = {
             encoding: {
               color: value === 'methylation' ? 'modifications' : value,
             },
+            ...(value === 'methylation' ? { unmodified: { show: true } } : {}),
           },
         },
       })
-      if (value === 'methylation') {
-        r.snap.modifications = { unmodified: 'all' }
-      }
     },
   },
   // a constant, a read field on alignments, or `strand` on a canvas display;

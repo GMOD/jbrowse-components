@@ -329,7 +329,7 @@ export async function executeRenderAlignmentData({
   let regionSequence: string | undefined
   let regionSequenceStart = region.start
   const inputFeatures = selectChains(sample, filter)
-  if (baseLayer?.type === 'bisulfite' && sequenceAdapter) {
+  if (baseLayer?.field === 'bisulfite' && sequenceAdapter) {
     const result = await fetchReferenceSequence({
       pluginManager,
       sessionId,
@@ -395,9 +395,9 @@ export async function executeRenderAlignmentData({
   checkAbortSignal(signal)
 
   const modCoverage: ModCoverageKind | undefined =
-    !baseLayer || !isModificationScheme(baseLayer.type)
+    !baseLayer || !isModificationScheme(baseLayer.field)
       ? undefined
-      : baseLayer.type === 'bisulfite'
+      : baseLayer.field === 'bisulfite'
         ? 'bisulfite'
         : 'modifications'
 

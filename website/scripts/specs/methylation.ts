@@ -163,8 +163,13 @@ const snrpnReadsPanel = ({ grouped = false, unmarked = true } = {}) =>
         height: 320,
         forceLoad: true,
         ...(grouped ? { facet: 'tags.HP' } : {}),
-        pileup: { bases: { show: true, encoding: { color: 'modifications' } } },
-        modifications: { unmodified: unmarked ? 'all' : 'hidden' },
+        pileup: {
+          bases: {
+            show: true,
+            encoding: { color: 'modifications' },
+            unmodified: { show: unmarked },
+          },
+        },
       },
     ],
   })
@@ -504,9 +509,12 @@ export const methylationSpecs: ScreenshotSpec[] = [
               forceLoad: true,
               facet: 'tags.HP',
               pileup: {
-                bases: { show: true, encoding: { color: 'modifications' } },
+                bases: {
+                  show: true,
+                  encoding: { color: 'modifications' },
+                  unmodified: { show: true },
+                },
               },
-              modifications: { unmodified: 'all' },
             },
           ],
         },

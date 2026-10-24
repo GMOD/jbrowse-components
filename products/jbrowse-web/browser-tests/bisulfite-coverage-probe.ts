@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 // One-off probe (not a suite): read the bisulfite coverage band's methylated
 // bar heights off the real app, for the shipped arabidopsis EM-seq config, with
-// "show unmethylated" (`unmodified: 'calls'`) off and then on. The two runs must agree — the
+// "show unmethylated" (`unmodified.show`) off and then on. The two runs must agree — the
 // unmethylated state is a painting choice and must not move the methylated bar.
 //
 //   node products/jbrowse-web/browser-tests/bisulfite-coverage-probe.ts [outdir]
@@ -134,16 +134,17 @@ try {
     const track = view?.tracks?.find((t: any) =>
       t.configuration.trackId.includes('wgbs'),
     )
-    track?.displays?.[0]?.setBaseLayer({
-      type: 'bisulfite',
-      modifications: { unmodified: 'calls' },
+    track?.displays?.[0]?.setBases({
+      show: true,
+      field: 'bisulfite',
+      unmodified: true,
     })
   })
   await waitForDataLoaded(page, 120000)
 
   const twoColorPng = await shoot('two-color')
   const twoColor = barHeights(twoColorPng, bandHeight)
-  const two = summarize('unmodified calls', twoColor)
+  const two = summarize('unmodified shown', twoColor)
 
   const shared = [...singleColor.keys()].filter(x => twoColor.has(x))
   const diffs = shared.map(x =>

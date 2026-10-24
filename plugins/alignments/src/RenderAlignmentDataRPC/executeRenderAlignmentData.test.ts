@@ -31,8 +31,8 @@ jest.mock('../features/modCoverage/readBaseCounts.ts', () => {
   return { computeReadBaseCounts: jest.fn(actual.computeReadBaseCounts) }
 })
 
-const MODIFICATIONS: BaseLayer = { type: 'modifications' }
-const BISULFITE: BaseLayer = { type: 'bisulfite' }
+const MODIFICATIONS: BaseLayer = { field: 'modifications' }
+const BISULFITE: BaseLayer = { field: 'bisulfite' }
 
 const region = { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 400 }
 

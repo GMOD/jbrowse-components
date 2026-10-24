@@ -295,15 +295,15 @@ describe('validateConfig', () => {
     }
   })
 
-  it('warns rather than errors on a namespace member a lift moves out', () => {
+  it('warns rather than errors on a retired slot and a retired member', () => {
     const config = baseConfig()
     config.tracks[0] = {
       ...config.tracks[0]!,
-      // @ts-expect-error the betas' modification thresholds
+      // @ts-expect-error the betas' unmodified setting
       displays: [
         {
           type: 'LinearAlignmentsDisplay',
-          modifications: { threshold: 50, cytosineContext: 'CHG' },
+          modifications: { unmodified: 'all' },
           pileup: { readHeight: 3 },
         },
       ],
@@ -311,8 +311,7 @@ describe('validateConfig', () => {
     expect(errorsOf(config)).toEqual([])
     const warnings = warningsOf(config)
     expect(warnings.map(w => w.where).toSorted()).toEqual([
-      'tracks[0].displays[0].modifications.cytosineContext',
-      'tracks[0].displays[0].modifications.threshold',
+      'tracks[0].displays[0].modifications',
       'tracks[0].displays[0].pileup.readHeight',
     ])
     for (const { message } of warnings) {
@@ -320,12 +319,12 @@ describe('validateConfig', () => {
     }
   })
 
-  it('accepts a retired namespace member in displayDefaults', () => {
+  it('accepts a retired slot in displayDefaults', () => {
     const config = baseConfig()
     config.tracks[0] = {
       ...config.tracks[0]!,
-      // @ts-expect-error the betas' modification threshold
-      displayDefaults: { modifications: { threshold: 50 } },
+      // @ts-expect-error the betas' unmodified setting
+      displayDefaults: { modifications: { unmodified: 'all' } },
     }
     expect(errorsOf(config)).toEqual([])
   })

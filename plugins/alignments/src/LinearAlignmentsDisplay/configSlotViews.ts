@@ -42,7 +42,8 @@ import {
 import { arcColorFieldOf } from '../shared/arcColorOptions.ts'
 import {
   basesFilterProblems,
-  modificationFiltersOf,
+  basesFilterOf,
+  DEFAULT_BASES_FILTER,
 } from '../shared/basesFilter.ts'
 import { facetUnitNotices } from '../shared/groupFeatures.ts'
 import { sortOf, sortProblems } from './alignmentsSortConfigSchema.ts'
@@ -69,7 +70,7 @@ import type {
   ConnectionFilter,
   Facet,
   LayoutOrder,
-  ModificationColorBy,
+  BasesFilter,
   JunctionFilter,
   JunctionFilterPatch,
 } from '../shared/types.ts'
@@ -149,11 +150,11 @@ export interface ConfigSlotSelf extends IStateTreeNode {
 }
 
 /**
- * The display's configuration when it declares `sashimi`, `pileup.bases` and
- * `modifications`, which LGVSyntenyDisplay's leaves out, and so draws the
+ * The display's configuration when it declares `sashimi` and `pileup.bases`,
+ * which LGVSyntenyDisplay's leaves out, and so draws the
  * splice junctions the `junction` filter fields test.
  * `getConf` reads an undeclared slot as undefined without failing, so every
- * read of the four goes through here, and a display without them answers off.
+ * read of them goes through here, and a display without them answers off.
  */
 export function readsConfOf(
   conf: BaseLinearAlignmentsDisplayConfigModel,
@@ -519,15 +520,14 @@ export function configSlotViews(self: ConfigSlotSelf) {
     },
     /**
      * #getter
+     * `pileup.bases.filter` over its defaults, which the modifications and
+     * bisulfite menus read while another layer draws.
      */
-    get modificationSettings(): ModificationColorBy {
+    get basesFilter(): BasesFilter {
       const conf = readsConfOf(self.configuration)
       return conf
-        ? {
-            ...readConfObject(conf, 'modifications'),
-            ...modificationFiltersOf(conf.pileup.bases.filter),
-          }
-        : {}
+        ? basesFilterOf(conf.pileup.bases.filter)
+        : DEFAULT_BASES_FILTER
     },
     /**
      * #getter
@@ -550,26 +550,11 @@ export function configSlotViews(self: ConfigSlotSelf) {
     },
     /**
      * #getter
-     * The per-base layer `pileup.bases` draws, with the settings the
-     * modification fields read beside it; undefined while none is drawn.
+     * The per-base layer `pileup.bases` draws; undefined while none is.
      */
     get baseLayer(): BaseLayer | undefined {
       const conf = readsConfOf(self.configuration)
-      return conf
-        ? baseLayerOf(
-            {
-              show: readConfObject(conf, ['pileup', 'bases', 'show']),
-              field: readConfObject(conf, [
-                'pileup',
-                'bases',
-                'encoding',
-                'color',
-                'field',
-              ]),
-            },
-            this.modificationSettings,
-          )
-        : undefined
+      return conf ? baseLayerOf(conf.pileup.bases) : undefined
     },
     /**
      * #getter

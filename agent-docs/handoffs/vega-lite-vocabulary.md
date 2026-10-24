@@ -1,6 +1,6 @@
 ---
 name: vega-lite-vocabulary
-description: "ADR-238's migration of every display's settings to Vega-Lite's words. Landed: the predicate compiler and every filter, the synteny views' mark, axis, coord and data words, the alignments and MAF parts, the color channel (Pass A), the y channel (Pass B), wiggle and Hi-C `data`, the tree sidebar's axis, the pileup's `mark.height`, the comparative `indels` part and the band layers' filters. Open: Pass B's jb2hubs and lift cleanup, the band layers' `show` and `unmodified` leftovers, and the writers. Read before adding or renaming any display or view setting."
+description: "ADR-238's migration of every display's settings to Vega-Lite's words. Landed: the predicate compiler and every filter, the synteny views' mark, axis, coord and data words, the alignments and MAF parts, the color channel (Pass A), the y channel (Pass B), wiggle and Hi-C `data`, the tree sidebar's axis, the pileup's `mark.height`, the comparative `indels` part, the band layers' filters and `pileup.bases.unmodified`. Open: Pass B's jb2hubs and lift cleanup, `coverage.alleles.show`, and the writers. Read before adding or renaming any display or view setting."
 ---
 
 # Vega-Lite vocabulary: what is left
@@ -45,10 +45,8 @@ Git history has each landing.
      not deployed (`scripts/deploy-demo.sh`).
    - The unlanded `chat-request-evals` branch writes 8 `scales.y` lines in
      `scripts/agent-evals/tasks.ts`.
-2. **The band layers' leftovers** (ADR-240's surface): `coverage.alleles.show`,
-   and `modifications.unmodified` as `pileup.bases.unmodified.show`, the data
-   picking implicit or called sites as `modificationsMenu.ts` does. The
-   layers' filters are in.
+2. **The band layers' leftover** (ADR-240's surface): `coverage.alleles.show`.
+   The layers' filters and `pileup.bases.unmodified` are in.
 
 Layout, the multi-way leftovers and settings with no step are in
 [ideas/waiting-on-a-call/vega-lite-layout-and-multiway-leftovers.md](../ideas/waiting-on-a-call/vega-lite-layout-and-multiway-leftovers.md).

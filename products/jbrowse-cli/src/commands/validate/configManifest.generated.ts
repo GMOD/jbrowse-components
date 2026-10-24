@@ -4525,6 +4525,18 @@ export const configManifest: ConfigManifest = {
                   "shorthand": {
                     "string": "field"
                   }
+                },
+                {
+                  "name": "unmodified",
+                  "type": "PileupBasesUnmodifiedConfigurationSchema",
+                  "subSlots": [
+                    {
+                      "name": "show",
+                      "type": "boolean"
+                    }
+                  ],
+                  "schema": "PileupBasesUnmodified",
+                  "writes": "members"
                 }
               ],
               "schema": "PileupBases",
@@ -4645,23 +4657,6 @@ export const configManifest: ConfigManifest = {
           "writes": "members"
         },
         {
-          "name": "modifications",
-          "type": "AlignmentsModificationsConfigurationSchema",
-          "subSlots": [
-            {
-              "name": "unmodified",
-              "type": "ModificationUnmodified"
-            }
-          ],
-          "legacyKeys": [
-            "threshold",
-            "cytosineContext",
-            "shownModifications"
-          ],
-          "schema": "AlignmentsModifications",
-          "writes": "members"
-        },
-        {
           "name": "sashimi",
           "type": "SashimiConfigurationSchema",
           "subSlots": [
@@ -4722,7 +4717,8 @@ export const configManifest: ConfigManifest = {
         "hideLargeIndels",
         "minSubfeatureWidth",
         "flipStrandLongReadChains",
-        "renderers"
+        "renderers",
+        "modifications"
       ],
       "droppedKeys": [
         "maxFeatureScreenDensity",

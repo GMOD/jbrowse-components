@@ -23,7 +23,8 @@ import type { ColorFieldOption } from '../../shared/colorFieldOptions.ts'
 import type {
   ArcColorField,
   BaseLayer,
-  ModificationColorBy,
+  BasesFilter,
+  BasesPatch,
   TagColorScale,
 } from '../../shared/types.ts'
 import type { ModificationsMenuModel } from './modificationsMenu.ts'
@@ -44,8 +45,8 @@ interface ColorByModel {
   pickSolidColor: () => void
   applyPlot: (draft: Plot) => void
   baseLayer: BaseLayer | undefined
-  modificationSettings: ModificationColorBy
-  setBaseLayer: (layer?: BaseLayer) => void
+  basesFilter: BasesFilter
+  setBases: (patch: BasesPatch) => void
 }
 
 // The MM/ML submenu's own surface plus the two readiness flags that decide
@@ -108,8 +109,8 @@ function colorRadio(
 ): MenuItem {
   const layer = baseLayerOfField(field)
   return layer
-    ? radioItem(label, model.baseLayer?.type === layer, () => {
-        model.setBaseLayer({ type: layer })
+    ? radioItem(label, model.baseLayer?.field === layer, () => {
+        model.setBases({ show: true, field: layer })
       })
     : field === ''
       ? radioItem(
@@ -136,7 +137,7 @@ function perBaseItem(
     type: 'subMenu',
     subMenu: [
       radioItem('None', model.baseLayer === undefined, () => {
-        model.setBaseLayer()
+        model.setBases({ show: false })
       }),
       ...options.map(o => colorRadio(model, o)),
       ...(mods ? modificationsItems(mods) : []),
@@ -221,7 +222,7 @@ function pairedEndItem(model: AnyColorByModel): MenuItem {
 // back to the modification settings without first navigating elsewhere.
 function modificationsItems(model: ModificationsModel): MenuItem[] {
   const detecting = !model.modificationsReady && !model.regionTooLarge
-  const active = model.baseLayer?.type === 'modifications'
+  const active = model.baseLayer?.field === 'modifications'
   const detected =
     model.modificationsReady && model.detectedModificationTypes.length > 0
   return [

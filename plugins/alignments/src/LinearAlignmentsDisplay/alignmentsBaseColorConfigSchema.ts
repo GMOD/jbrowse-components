@@ -10,8 +10,8 @@ import { BASE_COLOR_FIELDS } from '../shared/types.ts'
  * The `pileup.bases.encoding.color` channel: the per-base variable painted
  * as a cell per base over the reads, whatever `encoding.color` fills them
  * with. `modifications` paints the MM/ML calls and `bisulfite` the conversion
- * state against the reference, both under the display's `modifications`
- * settings; `baseQuality` and `base` paint every aligned base. A string is
+ * state against the reference, both through `pileup.bases.filter` and
+ * `unmodified`; `baseQuality` and `base` paint every aligned base. A string is
  * the field. While a modification field paints, mismatches draw grey, and a
  * read that no `encoding.color` paints takes a pale strand tint.
  *
