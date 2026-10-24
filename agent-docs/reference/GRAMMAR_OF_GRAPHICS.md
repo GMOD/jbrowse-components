@@ -81,8 +81,11 @@ carry.
 Vega-Lite's own spelling, and a display-level `scales.color` would be a second
 spelling. Plasma and turbo are not among the named ramps (plasma reads as
 magma's sibling, turbo is not perceptually uniform). On HicColor and LDColor
-an unset `reverse` follows `darkAtLowEnd` (`matrixColorEncodingOf`), since a
-ramp dark at its low end paints every sparse cell a dark speck.
+an unset `reverse` turns round the four sequential ramps dark at their low end,
+viridis, magma, inferno and cividis (`darkAtLowEnd`, `matrixColorEncodingOf`),
+since such a ramp paints every sparse cell a dark speck. The list is named, not
+measured: a luminance test also reversed every diverging ramp, whose light color
+is its middle.
 
 ## Seams
 

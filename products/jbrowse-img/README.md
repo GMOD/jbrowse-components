@@ -566,7 +566,7 @@ jb2export --genome hg19 --track hg19-ncbiRefSeqCurated \
 ![A Hi-C contact matrix as a triangular heatmap along hg19 chr1](https://jbrowse.org/jb2-figures/jbrowse-img/hic.239de0eebc0f.png)
 
 `color:viridis` on a `--hic` track names the ramp the counts run across, any
-[scheme HicColor takes](https://jbrowse.org/jb2/docs/config/hiccolor/#slot-scheme),
+[scheme HicColor takes](https://jbrowse.org/jb2/docs/config/hiccolor/#slot-scalescheme),
 and `encoding.color.scale.type=log` places them on it by their log2.
 
 ### Gene tracks and the reference sequence

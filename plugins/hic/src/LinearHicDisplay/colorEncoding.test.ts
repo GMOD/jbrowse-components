@@ -127,3 +127,25 @@ test('an inverted domain is flagged, and spans its ends in order', () => {
   setConf(display, ['encoding', 'color', 'scale', 'domainMax'], 1)
   expect(display.colorDomain).toEqual([1, 10])
 })
+
+// withPreset drops a preset whose scale.type differs, so a written symlog on
+// a ratio kept the preset's redblue and lost its reverse: true
+test('a ratio on a written scale type keeps its preset direction, enrichment red', () => {
+  const { display } = createDisplay()
+  display.applyPlot({
+    encoding: {
+      color: { field: 'observed/expected', scale: { type: 'symlog' } },
+    },
+  })
+  expect(display.colorScheme).toBe('redblue')
+  expect(display.colorReverse).toBe(true)
+  display.applyPlot({
+    encoding: {
+      color: {
+        field: 'observed/expected',
+        scale: { type: 'symlog', scheme: 'purpleorange' },
+      },
+    },
+  })
+  expect(display.colorReverse).toBe(false)
+})

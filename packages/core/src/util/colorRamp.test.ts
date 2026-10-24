@@ -108,10 +108,20 @@ test('rampMidT puts the middle stop at mid, both sides on one scale', () => {
   }
 })
 
-test('a ramp is dark at its low end when its first stop is darker over white', () => {
-  expect(darkAtLowEnd('viridis')).toBe(true)
-  expect(darkAtLowEnd('cividis')).toBe(true)
-  expect(darkAtLowEnd('juicebox')).toBe(false)
-  expect(darkAtLowEnd('fall')).toBe(false)
-  expect(darkAtLowEnd('blues')).toBe(false)
+test('the sequential ramps dark at their low end are named, and no diverging one is', () => {
+  for (const scheme of ['viridis', 'magma', 'inferno', 'cividis'] as const) {
+    expect(darkAtLowEnd(scheme)).toBe(true)
+  }
+  for (const scheme of [
+    'juicebox',
+    'fall',
+    'reds',
+    'blues',
+    'redblue',
+    'purpleorange',
+    'redgreyblue',
+    'redyellowblue',
+  ] as const) {
+    expect(darkAtLowEnd(scheme)).toBe(false)
+  }
 })

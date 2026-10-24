@@ -148,19 +148,24 @@ const SCHEME_STOPS: Record<ColorSchemeName, readonly ColorRampStop[]> = {
   redyellowblue: REDYELLOWBLUE_STOPS,
 }
 
-function luminanceOverWhite([r, g, b, a]: ColorRampStop) {
-  const over = (c: number) => 255 + (c - 255) * (a / 255)
-  return 0.2126 * over(r) + 0.7152 * over(g) + 0.0722 * over(b)
-}
+// Named, not measured: a luminance test also caught every diverging scheme,
+// whose light color is its middle, and redgreyblue's two ends sit a stop
+// edit apart
+const DARK_AT_LOW_END = new Set<ColorSchemeName>([
+  'viridis',
+  'magma',
+  'inferno',
+  'cividis',
+])
 
 /**
  * #api
- * Whether a named ramp runs dark at its low end, drawn over white: viridis
- * and its siblings do, juicebox, fall, reds and blues do not.
+ * Whether a named ramp is a sequential one running dark at its low end:
+ * viridis, magma, inferno and cividis. Juicebox, fall, reds and blues run
+ * light to dark, and a diverging ramp is light in its middle.
  */
 export function darkAtLowEnd(scheme: ColorSchemeName) {
-  const stops = SCHEME_STOPS[scheme]
-  return luminanceOverWhite(stops[0]!) < luminanceOverWhite(stops.at(-1)!)
+  return DARK_AT_LOW_END.has(scheme)
 }
 
 const EMPTY_EXTENT_DOMAIN = [0, 1] as const

@@ -56,10 +56,10 @@ Pick the ramp from the track menu's **Color scheme**:
 A bin with no contacts is left unpainted, so the page shows through it, and a
 ramp that is dark at its low end would scatter dark specks across the sparse
 long-range half of the matrix. Viridis, magma, inferno and cividis therefore run
-light to dark unless
-[`encoding.color.scale.reverse`](/docs/config/hiccolor/#slot-scalereverse)
-reverses them, whether picked from the menu or named in a config. These are the
-ramps every color scale in JBrowse names, so a config spells one as
+light to dark, whether picked from the menu or named in a config, unless
+[`encoding.color.scale.reverse`](/docs/config/hiccolor/#slot-scalereverse) is
+written `false`. These are the ramps every color scale in JBrowse names, so a
+config spells one as
 [`encoding.color.scale.scheme`](/docs/config/hiccolor/#slot-scalescheme).
 
 **Color scheme → Emphasize faint contacts (95th percentile)** decides what the

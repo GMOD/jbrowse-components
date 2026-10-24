@@ -84,13 +84,14 @@ export const ldColorConfigSchema = ConfigurationSchema(
         },
         /**
          * #slot scale.reverse
-         * Unset turns round a scheme dark at its low end, since an unpainted
-         * cell is the page behind the matrix.
+         * Unset turns round viridis, magma, inferno and cividis, which run
+         * dark at their low end, since an unpainted cell is the page behind
+         * the matrix.
          */
         reverse: {
           type: 'maybeBoolean',
           description:
-            "turns the scheme's ramp round; unset reverses a scheme dark at its low end",
+            "turns the scheme's ramp round; unset reverses viridis, magma, inferno and cividis",
         },
         /**
          * #slot scale.domainMin

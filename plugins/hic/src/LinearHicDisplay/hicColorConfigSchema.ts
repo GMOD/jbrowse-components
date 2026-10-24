@@ -127,13 +127,14 @@ export const hicColorConfigSchema = ConfigurationSchema(
         },
         /**
          * #slot scale.reverse
-         * Unset turns round a scheme dark at its low end, since an unpainted
-         * bin is the page behind the matrix.
+         * Unset turns round viridis, magma, inferno and cividis, which run
+         * dark at their low end, since an unpainted bin is the page behind the
+         * matrix; the field's own scheme keeps the field's direction.
          */
         reverse: {
           type: 'maybeBoolean',
           description:
-            "turns the scheme's ramp round; unset reverses a scheme dark at its low end",
+            "turns the scheme's ramp round; unset reverses viridis, magma, inferno and cividis",
         },
         /**
          * #slot scale.domainMid

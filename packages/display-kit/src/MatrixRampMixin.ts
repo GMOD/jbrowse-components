@@ -61,23 +61,30 @@ export default function MatrixRampMixin<F extends string>(
        * #getter
        * The color channel under the painted field's preset, with an unset
        * `scale.reverse` turning round a scheme dark at its low end, since an
-       * unpainted cell is the page behind the matrix. The preset's scheme
-       * fills whichever continuous scale is written: `withPreset` drops a
-       * preset whose scale differs, which would leave the Log toggle painting
-       * no field's scheme.
+       * unpainted cell is the page behind the matrix. The preset's scheme,
+       * and its direction with it, fill whichever continuous scale is
+       * written: `withPreset` drops a preset whose scale differs, which would
+       * leave the Log toggle painting no field's scheme, or observed/expected's
+       * enrichment blue.
        */
       get colorEncoding(): MatrixColorEncoding<F> {
         const field = self.paintedColorField
         const written = colorSettingOf(
           confNode(self).configuration.encoding.color,
         )
+        const preset = presets[field].scale
         return matrixColorEncodingOf(
           {
             ...written,
             field,
             scale: {
               ...written.scale,
-              scheme: written.scale.scheme ?? presets[field].scale.scheme,
+              scheme: written.scale.scheme ?? preset.scheme,
+              reverse:
+                written.scale.reverse ??
+                (written.scale.scheme === undefined
+                  ? preset.reverse
+                  : undefined),
             },
           },
           presets,
