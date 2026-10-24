@@ -419,15 +419,19 @@ describe('paintedColorEncoding', () => {
 test('a plugin bundling a beta.17 synteny color schema still builds it', () => {
   const Schema = ConfigurationSchema('BundledSyntenyColor', {
     ...colorChannelSlots({
-      scales: ['none'],
+      scales: ['ordinal'],
       scaleName: 'BundledSyntenyScale',
       field: 'field',
       fieldType: 'string',
     }),
     ...colorLabelsSlot,
   })
-  const conf = Schema.create({ field: 'strand', scale: 'none', labels: ['a'] })
+  const conf = Schema.create({
+    field: 'strand',
+    scale: 'ordinal',
+    labels: ['a'],
+  })
   expect(conf.field).toBe('strand')
-  expect(conf.scale).toBe('none')
+  expect(conf.scale).toBe('ordinal')
   expect(conf.labels).toEqual(['a'])
 })
