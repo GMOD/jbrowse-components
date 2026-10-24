@@ -58,6 +58,7 @@ export interface SessionOptions {
   pairStructure?: object
   pairColor?: object
   highlights?: object[]
+  msaReference?: string
 }
 
 export function linkedSession(
@@ -77,6 +78,7 @@ export function linkedSession(
     pairStructure,
     pairColor,
     highlights,
+    msaReference,
   }: SessionOptions,
 ) {
   const session = structuredClone(base)
@@ -87,6 +89,9 @@ export function linkedSession(
   msa.displayName = msaName
   msa.showDomains = domains
   msa.region = region
+  if (msaReference) {
+    msa.relativeTo = msaReference
+  }
   if (turnedOff.length > 0) {
     msa.turnedOffFeatures = Object.fromEntries(turnedOff.map(a => [a, true]))
   }
@@ -817,6 +822,7 @@ export const proteinVariantSpecs: ScreenshotSpec[] = [
       ],
       sessionTracks: [DOG10K_TRACK],
       msaHeight: 300,
+      msaReference: 'dog_query',
     }),
     ...READY,
     viewportHeight: 1300,
