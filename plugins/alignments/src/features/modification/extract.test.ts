@@ -7,11 +7,15 @@ import { SimpleFeature } from '@jbrowse/core/util'
 import { cssColorToABGR, packAbgr } from '@jbrowse/core/util/colorBits'
 import { detectSimplexModifications } from '@jbrowse/modifications-utils'
 
-import { basesFilterOf } from '../../shared/basesFilter.ts'
+import {
+  DEFAULT_BASES_FILTER,
+  basesFilterOf,
+} from '../../shared/basesFilter.ts'
+import { layerForTest } from '../../shared/splitFieldForTest.ts'
 import { isMethylationView } from '../../shared/types.ts'
 import { extractMethylation, extractModifications } from './extract.ts'
 
-import type { BaseLayer } from '../../shared/types.ts'
+import type { LayerSpec } from '../../shared/splitFieldForTest.ts'
 import type { ModificationEntry } from '../../shared/webglRpcTypes.ts'
 import type { Region } from '@jbrowse/core/util'
 import type { ModificationType } from '@jbrowse/modifications-utils'
@@ -34,11 +38,12 @@ function makeFeature() {
 // Both extractors, gated the way `extractFeatureArrays` gates them
 function drive(
   feature: SimpleFeature,
-  layer: BaseLayer,
+  spec: LayerSpec,
   region: Region,
   detected = new Set<string>(),
   seenModTypes = new Map<string, ModificationType>(),
 ) {
+  const layer = layerForTest(spec)
   const out: ModificationEntry[] = []
   const modData = extractModifications(
     feature,
@@ -57,7 +62,7 @@ function drive(
   return out
 }
 
-function run(layer: BaseLayer) {
+function run(layer: LayerSpec) {
   const detected = new Set<string>()
   const seenModTypes = new Map<string, ModificationType>()
   const out = drive(
@@ -88,10 +93,10 @@ describe('extractModifications', () => {
       100,
       1,
       { start: 101, end: 103 },
-      {
+      layerForTest({
         field: 'modifications',
         filter: basesFilterOf([{ field: 'probability', gte: 0.1 }]),
-      },
+      }),
       new Set<string>(),
       new Map<string, ModificationType>(),
       out,
@@ -169,10 +174,10 @@ describe('extractModifications', () => {
       100,
       1,
       { start: 0, end: Number.MAX_SAFE_INTEGER },
-      {
+      layerForTest({
         field: 'modifications',
         filter: basesFilterOf([{ field: 'probability', gte: 0.1 }]),
-      },
+      }),
       detected,
       new Map<string, ModificationType>(),
       out,
@@ -202,10 +207,7 @@ describe('extractModifications', () => {
         ML: [230, 10, 20, 200, 10, 10, 220, 5],
       },
     })
-    const layer: BaseLayer = {
-      field: 'modifications',
-      unmodified: true,
-    }
+    const layer = layerForTest({ field: 'modifications', unmodified: true })
     const out: ModificationEntry[] = []
     const region = { refName: 'ctgA', start: 100, end: 108 } as Region
     const modData = extractModifications(
@@ -219,7 +221,7 @@ describe('extractModifications', () => {
       new Map<string, ModificationType>(),
       out,
     )!
-    extractMethylation(0, 100, 1, region, modData, out, layer.filter)
+    extractMethylation(0, 100, 1, region, modData, out, DEFAULT_BASES_FILTER)
 
     // exactly one mark per CpG, no purple unmethylated-5hmC flooding
     expect(out.map(m => m.position)).toEqual([100, 102, 104, 106])
@@ -252,7 +254,7 @@ describe('extractModifications', () => {
 // The fill view, driven the way `extractFeatureArrays` drives it: the MM/ML
 // paint and the cytosine walk are two calls that between them cover a read's
 // types once each. Both bugs below were in the seam between them.
-function runFill(feature: SimpleFeature, layer: BaseLayer) {
+function runFill(feature: SimpleFeature, layer: LayerSpec) {
   return drive(feature, layer, {
     refName: 'ctgA',
     start: 100,
@@ -555,8 +557,9 @@ describe('an extract cut to a region matches the whole-read extract cut after', 
     mm: string,
     strand: -1 | 1,
     region: { start: number; end: number },
-    layer: BaseLayer,
+    spec: LayerSpec,
   ) {
+    const layer = layerForTest(spec)
     const feature = new SimpleFeature({
       uniqueId: 'cut',
       refName: 'ctgA',
@@ -579,7 +582,7 @@ describe('an extract cut to a region matches the whole-read extract cut after', 
       new Map<string, ModificationType>(),
       out,
     )
-    if (layer.unmodified === true && modData) {
+    if (isMethylationView(layer) && modData) {
       extractMethylation(
         0,
         100,
@@ -599,7 +602,7 @@ describe('an extract cut to a region matches the whole-read extract cut after', 
     ['C+mh,0,1,0,2,1,0;A+a,1,0,2,0;', 1],
     ['C+mh,0,1,0,2,1,0;A+a,1,0,2,0;', -1],
   ] as const)('%s on strand %d', (mm, strand) => {
-    const modes: BaseLayer[] = [
+    const modes: LayerSpec[] = [
       {
         field: 'modifications',
         filter: basesFilterOf([{ field: 'probability', gte: 0 }]),

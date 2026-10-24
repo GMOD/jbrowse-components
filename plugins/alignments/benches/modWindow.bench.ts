@@ -64,9 +64,10 @@ import {
   extractMethylation,
   extractModifications,
 } from '../src/features/modification/extract.ts'
+import { DEFAULT_BASES_FILTER } from '../src/shared/basesFilter.ts'
 import { getStrand } from '../src/shared/util.ts'
 
-import type { BaseLayer } from '../src/shared/types.ts'
+import type { ModificationLayer } from '../src/shared/types.ts'
 import type { ModificationEntry } from '../src/shared/webglRpcTypes.ts'
 import type { Region } from '@jbrowse/core/util'
 
@@ -179,11 +180,16 @@ async function loadOld(ref: string): Promise<Arm> {
   }
 }
 
-const marksLayer: BaseLayer = {
+const marksLayer: ModificationLayer = {
   field: 'modifications',
+  unmodified: false,
   filter: { probability: { min: 0.5, strict: false }, context: 'CG' },
 }
-const fillLayer: BaseLayer = { field: 'modifications', unmodified: true }
+const fillLayer: ModificationLayer = {
+  field: 'modifications',
+  unmodified: true,
+  filter: DEFAULT_BASES_FILTER,
+}
 const layer = MODE === 'fill' ? fillLayer : marksLayer
 const ON_REF = { assemblyName: 'bench', refName: REFNAME }
 const WHOLE: Region = { ...ON_REF, start: 0, end: Number.MAX_SAFE_INTEGER }
@@ -195,12 +201,17 @@ interface Reads {
 
 // Three drivers written out longhand, deliberately: one shared driver makes the
 // extract call site polymorphic across arms (BENCHMARKING.md).
-function driveOld(arm: Arm, reads: Reads, region: Region, c: BaseLayer) {
+function driveOld(
+  arm: Arm,
+  reads: Reads,
+  region: Region,
+  c: ModificationLayer,
+) {
   const { features, strands } = reads
   const out: ModificationEntry[] = []
   const detected = new Set<string>()
   const seen = new Map()
-  const fill = c.unmodified === true
+  const fill = c.unmodified
   for (let i = 0; i < features.length; i++) {
     const f = features[i]!
     const s = strands[i]!
@@ -212,12 +223,17 @@ function driveOld(arm: Arm, reads: Reads, region: Region, c: BaseLayer) {
   return out
 }
 
-function driveBounded(arm: Arm, reads: Reads, region: Region, c: BaseLayer) {
+function driveBounded(
+  arm: Arm,
+  reads: Reads,
+  region: Region,
+  c: ModificationLayer,
+) {
   const { features, strands } = reads
   const out: ModificationEntry[] = []
   const detected = new Set<string>()
   const seen = new Map()
-  const fill = c.unmodified === true
+  const fill = c.unmodified
   for (let i = 0; i < features.length; i++) {
     const f = features[i]!
     const s = strands[i]!
@@ -229,12 +245,17 @@ function driveBounded(arm: Arm, reads: Reads, region: Region, c: BaseLayer) {
   return out
 }
 
-function driveControl(arm: Arm, reads: Reads, region: Region, c: BaseLayer) {
+function driveControl(
+  arm: Arm,
+  reads: Reads,
+  region: Region,
+  c: ModificationLayer,
+) {
   const { features, strands } = reads
   const out: ModificationEntry[] = []
   const detected = new Set<string>()
   const seen = new Map()
-  const fill = c.unmodified === true
+  const fill = c.unmodified
   for (let i = 0; i < features.length; i++) {
     const f = features[i]!
     const s = strands[i]!

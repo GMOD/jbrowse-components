@@ -4,6 +4,7 @@ import {
   MOD_TYPE_SAMPLE_READS,
   extractFeatureArrays,
 } from './extractFeatureArrays.ts'
+import { layerForTest } from './splitFieldForTest.ts'
 
 import type { FeatureData } from './webglRpcTypes.ts'
 import type { Feature, Region } from '@jbrowse/core/util'
@@ -281,12 +282,9 @@ describe('modification type detection', () => {
           tags: i === mmAt ? { MM: 'C+m,0;' } : {},
         }),
     )
-  const detected = (
-    features: Feature[],
-    baseLayer?: { field: 'modifications' },
-  ) =>
+  const detected = (features: Feature[], spec?: { field: 'modifications' }) =>
     extractFeatureArrays(features, buildFeatureData, {
-      baseLayer,
+      baseLayer: spec && layerForTest(spec),
       showSoftClipping: false,
       region,
       perBaseBinBp: 1,

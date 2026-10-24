@@ -98,8 +98,9 @@ function setModTypeShown(
 // bisulfite's "Show unmethylated" — see `refinements` below for why.
 export function modificationsMenu(model: ModificationsMenuModel): MenuItem {
   const filter = model.basesFilter
-  const isActive = model.baseLayer?.field === 'modifications'
-  const byTwoColor = isActive && model.baseLayer?.unmodified === true
+  const layer = model.baseLayer
+  const isActive = layer?.field === 'modifications'
+  const byTwoColor = isActive && layer.unmodified
   const types = model.detectedModificationTypes
 
   // The three refinements, revealed together once this is the active field and

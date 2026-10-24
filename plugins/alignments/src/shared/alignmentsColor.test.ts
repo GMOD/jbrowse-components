@@ -13,9 +13,11 @@ import {
   pinnedInsertSizeBand,
   readColorFieldOf,
 } from './alignmentsColor.ts'
+import { basesFilterOf } from './basesFilter.ts'
 import { colorFieldKindOf } from './colorFieldDefs.ts'
 import { colorSettingOf } from './colorSettingFixture.ts'
 import { FACET_LABELS } from './facetLabels.ts'
+import { layerForTest } from './splitFieldForTest.ts'
 
 import type { ColorSlots } from '@jbrowse/core/util/colorScale'
 
@@ -59,12 +61,14 @@ describe('readColorFieldOf', () => {
 describe('baseLayerOf', () => {
   const bases = (snapshot: Record<string, unknown>) =>
     pileupBasesConfigSchema.create(snapshot)
+  const layerOf = (conf: ReturnType<typeof bases>) =>
+    baseLayerOf(conf, basesFilterOf(conf.filter))
   const shown = (field: string, rest: Record<string, unknown> = {}) =>
     bases({ show: true, encoding: { color: field }, ...rest })
 
   test('every per-base field selects the layer of its name', () => {
     for (const field of BASE_COLOR_FIELDS) {
-      expect(baseLayerOf(shown(field))?.field).toBe(field)
+      expect(layerOf(shown(field))?.field).toBe(field)
     }
   })
 
@@ -73,30 +77,30 @@ describe('baseLayerOf', () => {
       filter: [{ field: 'probability', gte: 0.5 }],
       unmodified: { show: true },
     }
-    expect(baseLayerOf(shown('modifications', rest))).toEqual({
+    expect(layerOf(shown('modifications', rest))).toEqual({
       field: 'modifications',
       unmodified: true,
       filter: { probability: { min: 0.5, strict: false }, context: 'CG' },
     })
-    expect(baseLayerOf(shown('baseQuality', rest))).toEqual({
+    expect(layerOf(shown('baseQuality', rest))).toEqual({
       field: 'baseQuality',
     })
   })
 
   test('no field draws no layer', () => {
-    expect(baseLayerOf(bases({ show: true }))).toBeUndefined()
+    expect(layerOf(bases({ show: true }))).toBeUndefined()
   })
 
   test('a named field draws nothing while the layer is hidden', () => {
     expect(
-      baseLayerOf(bases({ show: false, encoding: { color: 'modifications' } })),
+      layerOf(bases({ show: false, encoding: { color: 'modifications' } })),
     ).toBeUndefined()
   })
 })
 
 describe('bodyColorKind', () => {
   test('a modification layer tints the plain fill and yields to a read field', () => {
-    const mods = { field: 'modifications' } as const
+    const mods = layerForTest({ field: 'modifications' })
     expect(bodyColorKind(undefined, mods)).toBe('modifications')
     expect(bodyColorKind('tags.HP', mods)).toBe('tag')
     expect(bodyColorKind(undefined, { field: 'base' })).toBe('normal')

@@ -62,7 +62,7 @@ import type { ArcSplitCategory } from '../features/arcs/arcSplitCategory.ts'
 import type { ColorPalette, PaletteColorKey } from '../shaders/colors.ts'
 import type { ArcCategory } from '../shaders/palettes.ts'
 import type { DeclaredReadLabels } from './alignmentsColor.ts'
-import type { BaseLayer } from './types.ts'
+import type { BaseLayer, ModificationLayer } from './types.ts'
 import type { LegendItem, LegendSwatch } from '@jbrowse/core/ui'
 import type {
   CategoricalScale,
@@ -600,7 +600,7 @@ const METHYLATION_STATES = [
 // modified state, so key it unconditionally instead — before `keyed`, which for
 // the same reason has nothing to say about it.
 function methylationLegend(
-  layer: BaseLayer,
+  layer: ModificationLayer,
   keyed: ReadonlyMap<string, string>,
 ): LegendItem[] {
   if (layer.field === 'bisulfite') {
@@ -661,7 +661,7 @@ function modificationRank(type: string) {
 // has today rather than gaining an alphabetical one. A code absent from that
 // table sorts last, by code, since there is nothing else to rank it by.
 function keyedModifications(
-  layer: BaseLayer,
+  layer: ModificationLayer,
   detectedModifications: ReadonlyMap<string, string>,
   present: ReadonlySet<string> | undefined,
 ) {
@@ -857,7 +857,7 @@ export function getArcLegendItems(
 // too — it previously showed only the 6mA swatch, leaving its blue marks
 // unexplained.
 function modificationLegend(
-  layer: BaseLayer,
+  layer: ModificationLayer,
   detectedModifications: ReadonlyMap<string, string>,
   presentModifications: ReadonlySet<string> | undefined,
 ): LegendItem[] {

@@ -12,9 +12,9 @@ import {
 import { modificationData } from './modificationData.ts'
 import { splitFieldForTest } from './splitFieldForTest.ts'
 
-import type { BaseLayer } from './types.ts'
+import type { LayerSpec } from './splitFieldForTest.ts'
 
-type LayerSettings = Omit<BaseLayer, 'field'>
+type LayerSettings = Omit<LayerSpec, 'field'>
 
 // FloatingLegend's own geometry, which decides how much of `LEGEND_MAX_WIDTH` a
 // label actually gets: 1px border either side, 3px left padding, the 20px

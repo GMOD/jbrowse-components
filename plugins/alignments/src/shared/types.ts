@@ -32,8 +32,8 @@ export interface BasesFilter {
 // The one reading of the `code` field, which the worker's extract, the legend
 // and the type checkboxes all take, so what is ticked and what is drawn
 // cannot disagree.
-export function admitsCode(filter: BasesFilter | undefined, code: string) {
-  const codes = filter?.codes
+export function admitsCode(filter: BasesFilter, code: string) {
+  const codes = filter.codes
   return !codes?.length || codes.includes(code)
 }
 
@@ -102,14 +102,20 @@ export type TagColorScale = 'ordinal' | 'linear'
  * The per-base layer `pileup.bases` draws. `unmodified` and `filter` are the
  * modifications and bisulfite fields' own.
  */
-export interface BaseLayer {
-  field: BaseColorField
-  // `unmodified.show`: paint the unmodified side blue, at every cytosine in
-  // context a read's 5mC group left implicit, and at each call more likely
-  // unmodified
-  unmodified?: boolean
-  filter?: BasesFilter
-}
+export type BaseLayer =
+  | { field: 'baseQuality' }
+  | { field: 'base' }
+  | {
+      field: 'modifications' | 'bisulfite'
+      // `unmodified.show`: paint the unmodified side blue, at every cytosine
+      // in context a read's 5mC group left implicit, and at each call more
+      // likely unmodified
+      unmodified: boolean
+      filter: BasesFilter
+    }
+
+/** A modifications or bisulfite layer. */
+export type ModificationLayer = Extract<BaseLayer, { unmodified: boolean }>
 
 /** A write to `pileup.bases`, each member it names. */
 export interface BasesPatch {
@@ -124,8 +130,10 @@ export interface BasesPatch {
 
 // The modifications 2-color view, where extractMethylation paints each
 // cytosine's most likely state among 5mC, 5hmC and unmodified.
-export function isMethylationView(layer: BaseLayer | undefined) {
-  return layer?.field === 'modifications' && layer.unmodified === true
+export function isMethylationView(
+  layer: BaseLayer | undefined,
+): layer is ModificationLayer & { field: 'modifications'; unmodified: true } {
+  return layer?.field === 'modifications' && layer.unmodified
 }
 
 // The modes keying the methylated/unmethylated legend (5mC/5hmC named)
@@ -141,7 +149,7 @@ export function usesMethylationLegend(layer: BaseLayer | undefined) {
 export function paintsUnmodifiedState(layer: BaseLayer | undefined) {
   return (
     (layer?.field === 'modifications' || layer?.field === 'bisulfite') &&
-    layer.unmodified === true
+    layer.unmodified
   )
 }
 

@@ -16,7 +16,6 @@ import {
   matchesCytosineContext,
 } from '@jbrowse/modifications-utils'
 
-import { DEFAULT_BASES_FILTER } from '../../shared/basesFilter.ts'
 import { forEachMaxProbMod } from '../../shared/getMaxProbModAtEachPosition.ts'
 import { admitsCode } from '../../shared/types.ts'
 import { getFlags } from '../../shared/util.ts'
@@ -133,8 +132,7 @@ export function extractModifications(
     window.readStart,
     window.readEnd,
   )
-  const filter = layer.filter ?? DEFAULT_BASES_FILTER
-  const twoColor = layer.unmodified === true
+  const { filter, unmodified: twoColor } = layer
 
   // The 2-color view hands 5mC/5hmC to extractMethylation, which weighs them
   // and unmodified against each other per cytosine; the read's other types
@@ -225,7 +223,7 @@ export function extractMethylation(
   region: Region,
   modData: ParsedModData,
   modificationsData: ModificationEntry[],
-  filter: BasesFilter = DEFAULT_BASES_FILTER,
+  filter: BasesFilter,
 ) {
   const showMeth = admitsCode(filter, 'm')
   const showHydroxy = admitsCode(filter, 'h')

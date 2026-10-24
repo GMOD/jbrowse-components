@@ -107,6 +107,7 @@ import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { getModPositions } from '@jbrowse/modifications-utils'
 
 import { extractMethylation } from '../src/features/modification/extract.ts'
+import { DEFAULT_BASES_FILTER } from '../src/shared/basesFilter.ts'
 
 import type { ModificationEntry } from '../src/shared/webglRpcTypes.ts'
 import type { BamRecord } from '@gmod/bam'
@@ -687,7 +688,15 @@ function driveControl(reads: Read[], region: Region) {
 function driveShipped(reads: Read[], region: Region) {
   const out: ModificationEntry[] = []
   for (const r of reads) {
-    extractMethylation(r.index, r.start, r.strand, region, r.data, out)
+    extractMethylation(
+      r.index,
+      r.start,
+      r.strand,
+      region,
+      r.data,
+      out,
+      DEFAULT_BASES_FILTER,
+    )
   }
   return out
 }

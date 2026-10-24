@@ -14,7 +14,6 @@ import {
 } from '../features/modification/extract.ts'
 import { extractPerBaseLetter } from '../features/perBaseLetter/extract.ts'
 import { extractPerBaseQuality } from '../features/perBaseQuality/extract.ts'
-import { DEFAULT_BASES_FILTER } from './basesFilter.ts'
 import { colorFieldKindOf } from './colorFieldDefs.ts'
 import {
   cigarCategoryBitsOf,
@@ -277,7 +276,7 @@ export function extractFeatureArrays<T extends FeatureData>(
         region,
         modData,
         modifications,
-        baseLayer?.filter,
+        baseLayer.filter,
       )
     }
 
@@ -290,8 +289,8 @@ export function extractFeatureArrays<T extends FeatureData>(
         region,
         regionSequence,
         regionSequenceStart ?? region.start,
-        (baseLayer.filter ?? DEFAULT_BASES_FILTER).context,
-        baseLayer.unmodified === true,
+        baseLayer.filter.context,
+        baseLayer.unmodified,
         modifications,
         bisulfiteCallCounts,
       )

@@ -170,6 +170,7 @@ import {
   readPredicatesOf,
 } from './shared/alignmentsFilter.ts'
 import { arcColorFieldOf } from './shared/arcColorOptions.ts'
+import { basesFilterOf } from './shared/basesFilter.ts'
 import { paintsModifications } from './shared/colorFieldDefs.ts'
 import { fieldTag } from './shared/facetLabels.ts'
 import { sectionOrder, workerFacet } from './shared/groupFeatures.ts'
@@ -1313,7 +1314,10 @@ export async function alignmentTables(
   const colorField = readColorFieldOf(
     alignmentsColorEncoding(alignmentsColorSettingOf(conf.encoding.color)),
   )
-  const baseLayer = baseLayerOf(conf.pileup.bases)
+  const baseLayer = baseLayerOf(
+    conf.pileup.bases,
+    basesFilterOf(conf.pileup.bases.filter),
+  )
   const { layoutOrder, sortColumn } = sortOf(
     conf.sort,
     refName =>

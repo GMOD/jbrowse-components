@@ -12,6 +12,7 @@ import { computeReadBaseCounts } from '../features/modCoverage/readBaseCounts.ts
 import { fetchFeaturesFromAdapter } from '../shared/fetchFeaturesFromAdapter.ts'
 import { fetchReferenceSequence } from '../shared/fetchReferenceSequence.ts'
 import { classifyInsertSize } from '../shared/insertSizeStats.ts'
+import { layerForTest } from '../shared/splitFieldForTest.ts'
 import { executeRenderAlignmentData } from './executeRenderAlignmentData.ts'
 
 import type * as ReadBaseCounts from '../features/modCoverage/readBaseCounts.ts'
@@ -31,8 +32,8 @@ jest.mock('../features/modCoverage/readBaseCounts.ts', () => {
   return { computeReadBaseCounts: jest.fn(actual.computeReadBaseCounts) }
 })
 
-const MODIFICATIONS: BaseLayer = { field: 'modifications' }
-const BISULFITE: BaseLayer = { field: 'bisulfite' }
+const MODIFICATIONS = layerForTest({ field: 'modifications' })
+const BISULFITE = layerForTest({ field: 'bisulfite' })
 
 const region = { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 400 }
 

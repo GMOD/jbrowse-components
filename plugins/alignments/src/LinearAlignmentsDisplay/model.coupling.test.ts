@@ -23,6 +23,7 @@ import { connectorColorShift } from '../features/arcs/arcColors.ts'
 import { arcSlotCategory } from '../shaders/palettes.ts'
 import { linkedReadColorSlot } from '../shaders/slang/alignmentsUniforms.js.generated.ts'
 import { mergeFilter } from '../shared/alignmentsFilter.ts'
+import { layerForTest } from '../shared/splitFieldForTest.ts'
 import { CHAIN_FRAME_REV, CHAIN_SUPP_PRESENT } from '../shared/types.ts'
 import { READ_COLOR_CATEGORY_BY_INDEX } from './colorUtils.ts'
 import { applyReadColorsByGroup } from './groupLayout.ts'
@@ -1999,7 +2000,7 @@ describe('chain-strand framing: the gate, the bake and the key agree', () => {
     undefined,
     { field: 'baseQuality' },
     { field: 'base' },
-    { field: 'modifications' },
+    layerForTest({ field: 'modifications' }),
   ]
   const splitSegment = makePileupDataResult({
     readStrands: Int8Array.of(-1),

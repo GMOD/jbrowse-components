@@ -18,7 +18,6 @@ import {
   impliedFieldOf,
 } from '@jbrowse/display-kit/colorConfigSchema'
 
-import { basesFilterOf } from './basesFilter.ts'
 import { COLOR_FIELD_DEFS, colorFieldKindOf } from './colorFieldDefs.ts'
 import { TAG_FIELD_PREFIX } from './facetLabels.ts'
 import {
@@ -38,7 +37,9 @@ import type { RGBColor } from '../shaders/colors.ts'
 import type {
   BaseLayer,
   BaseColorField,
+  BasesFilter,
   ColorFieldKind,
+  ModificationLayer,
   ReadColorFieldKind,
   TagColorScale,
 } from './types.ts'
@@ -100,10 +101,11 @@ export function baseLayerOfField(field: string | undefined) {
 
 const FACET_ONLY_FIELDS = new Set<string>(FACET_ONLY_DIMENSIONS)
 
-const MODIFICATION_LAYER_FIELDS = new Set<BaseColorField>([
-  'modifications',
-  'bisulfite',
-])
+function isModificationLayerField(
+  field: BaseColorField,
+): field is ModificationLayer['field'] {
+  return field === 'modifications' || field === 'bisulfite'
+}
 
 const INSERT_SIZE_FIELDS = new Set<string>([
   'insertSize',
@@ -160,21 +162,23 @@ export function readColorFieldOf(
 
 /**
  * The per-base layer a `pileup.bases` config draws, undefined while it is
- * hidden or names no field.
+ * hidden or names no field. `filter` is `bases.filter` as `basesFilterOf`
+ * reads it.
  */
 export function baseLayerOf(
   bases: Instance<typeof pileupBasesConfigSchema>,
+  filter: BasesFilter,
 ): BaseLayer | undefined {
   const field = readConfObject(bases, 'show')
     ? baseLayerOfField(readConfObject(bases, ['encoding', 'color', 'field']))
     : undefined
   return field === undefined
     ? undefined
-    : MODIFICATION_LAYER_FIELDS.has(field)
+    : isModificationLayerField(field)
       ? {
           field,
           unmodified: readConfObject(bases, ['unmodified', 'show']),
-          filter: basesFilterOf(bases.filter),
+          filter,
         }
       : { field }
 }
@@ -189,7 +193,7 @@ export function bodyColorKind(
 ): ColorFieldKind {
   return colorField === undefined &&
     baseLayer &&
-    MODIFICATION_LAYER_FIELDS.has(baseLayer.field)
+    isModificationLayerField(baseLayer.field)
     ? baseLayer.field
     : colorFieldKindOf(colorField)
 }

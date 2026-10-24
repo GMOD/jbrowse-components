@@ -3,6 +3,7 @@ import { ThemeProvider } from '@mui/material'
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 
 import { MAX_GROUPS } from '../../shared/groupFeatures.ts'
+import { layerForTest } from '../../shared/splitFieldForTest.ts'
 import GroupByDialog from './GroupByDialog.tsx'
 import { tagGroupingVerdict } from './tagGroupingVerdict.ts'
 
@@ -120,7 +121,7 @@ test('a non-tag color field is not replaced by default', async () => {
 // against, and the tag palette's blue and pink collide with the calls'.
 test('the plain fill under a per-base layer is not replaced by default', async () => {
   const { colorByField } = renderDialog({
-    baseLayer: { field: 'modifications' },
+    baseLayer: layerForTest({ field: 'modifications' }),
   })
   typeTag('HP')
   expect(checkbox().checked).toBe(false)

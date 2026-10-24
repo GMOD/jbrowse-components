@@ -24,8 +24,9 @@ interface BisulfiteModel {
 const DIVIDER: MenuItem = { type: 'divider' }
 
 export function bisulfiteItem(model: BisulfiteModel): MenuItem {
-  const isBis = model.baseLayer?.field === 'bisulfite'
-  const twoColor = isBis && model.baseLayer?.unmodified === true
+  const layer = model.baseLayer
+  const isBis = layer?.field === 'bisulfite'
+  const twoColor = isBis && layer.unmodified
 
   return {
     label: 'Bisulfite / EM-seq',

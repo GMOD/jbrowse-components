@@ -37,6 +37,7 @@ import { refWindowToRead } from '@jbrowse/cigar-utils'
 import { getModPositions } from '@jbrowse/modifications-utils'
 
 import { extractMethylation } from '../src/features/modification/extract.ts'
+import { DEFAULT_BASES_FILTER } from '../src/shared/basesFilter.ts'
 import { fillControl, fillShipped } from './modFillWindow.baseline.ts'
 
 import type { ModificationEntry } from '../src/shared/webglRpcTypes.ts'
@@ -141,7 +142,15 @@ function driveShipped(reads: Read[]) {
 function driveTyped(reads: Read[]) {
   const out: ModificationEntry[] = []
   for (const r of reads) {
-    extractMethylation(r.index, r.start, r.strand, region, r.data, out)
+    extractMethylation(
+      r.index,
+      r.start,
+      r.strand,
+      region,
+      r.data,
+      out,
+      DEFAULT_BASES_FILTER,
+    )
   }
   return out
 }

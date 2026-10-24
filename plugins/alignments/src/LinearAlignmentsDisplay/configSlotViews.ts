@@ -558,7 +558,7 @@ export function configSlotViews(self: ConfigSlotSelf) {
      */
     get baseLayer(): BaseLayer | undefined {
       const conf = readsConfOf(self.configuration)
-      return conf ? baseLayerOf(conf.pileup.bases) : undefined
+      return conf ? baseLayerOf(conf.pileup.bases, this.basesFilter) : undefined
     },
     /**
      * #getter

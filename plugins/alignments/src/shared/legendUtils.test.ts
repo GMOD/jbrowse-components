@@ -30,13 +30,14 @@ import { CHAIN_FRAME_REV, CHAIN_SUPP_PRESENT } from './types.ts'
 import type { BakedColorScale } from '../LinearAlignmentsDisplay/bakedColorScale.ts'
 import type { RefNamePosition } from '../LinearAlignmentsDisplay/colorTagUtils.ts'
 import type { ReadColorCategory } from '../LinearAlignmentsDisplay/colorUtils.ts'
+import type { LayerSpec } from './splitFieldForTest.ts'
 import type { BaseLayer } from './types.ts'
 import type { LegendItem } from '@jbrowse/core/ui'
 import type { ColorScale, RampScale } from '@jbrowse/core/ui/colorScale'
 
 // A read fill field, or a per-base layer with its settings.
 function legendFor(
-  field: string | undefined | BaseLayer,
+  field: string | undefined | LayerSpec,
   categories: ReadColorCategory[],
   rest?: {
     detectedModifications?: Map<string, string>
