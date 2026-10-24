@@ -126,8 +126,11 @@ hand, and Colin's rulings on the calls they split.
   `scale.unknown` keeps d3's "not in the domain".
 - **`scale.names`** names each domain value, by position, in the key, the hovers
   and the arc key. `labels` keeps Vega-Lite's boolean on `axis` and the text
-  layer on `sashimi`; the rows objects' `labels` map converges on `names` in the
-  rows step.
+  layer on `sashimi`. The rows objects keep their `labels` map (amended
+  2026-10-24): it pairs with `axis.labels` as `rows.tree` does with
+  `axis.tree` (ADR-238), it is ggplot2's discrete `labels`, a value-to-text
+  map, and `names` there would read as the row names every other `rows`
+  member lists.
 - **`scale.group`** shares one autoscaled domain across tracks, as
   `autoscaleGroup` does. ggplot2's scale `name` is the axis title, and a ggplot
   reader writing `name: "Depth"` would join a share group.
