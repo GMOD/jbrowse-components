@@ -814,6 +814,7 @@ export function definedColor(color: ColorSlots): ColorSlots {
  * identity scale, which paints each feature's own color, black included; the
  * field already named keeps its scale and key; the field `parked` holds
  * (`parkedColorOf`) takes them back; a new field keeps only `value`.
+ * A `''` field clears too, as it did while `''` spelled no field.
  */
 export function colorForField(
   current: ColorSlots,
@@ -821,7 +822,7 @@ export function colorForField(
   parked?: ColorSlots,
 ): ColorSlots {
   const { value } = current
-  if (field === undefined) {
+  if (!field) {
     const cleared = withoutField(current)
     return cleared.scale?.type === IDENTITY_SCALE
       ? definedColor({

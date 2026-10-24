@@ -42,7 +42,7 @@ display for the same pick.
   wiggle's two-color plot) writes `applyPlot({ color })`. A picker that writes
   once per drag frame does not, since `applyPlot` rebuilds the display config
   for its draft; it calls `setColorValue`.
-- **Alignments' menus name fields.** A radio holds a field, `''` for the plain
+- **Alignments' menus name fields.** A radio holds a field, undefined for the plain
   fill, and checks against the `colorField` getter. `colorFieldOptions`
   replaces `pickColorOptions` for a display curating its radios (LGV synteny).
   `ReadColorBy` and `ColorBy` stay exported: the `colorBy` getter returns the

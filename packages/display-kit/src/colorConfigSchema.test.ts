@@ -243,6 +243,7 @@ describe('colorForField', () => {
 
   test('the constant drops the field and its scale', () => {
     expect(colorForField(tag, undefined)).toEqual({ value: 'grey' })
+    expect(colorForField(tag, '')).toEqual({ value: 'grey' })
     expect(parkedColorOf(tag)).toEqual({
       field: 'tags.HP',
       scale: { type: 'ordinal', domain: ['1', '2'], range: ['red', 'blue'] },
