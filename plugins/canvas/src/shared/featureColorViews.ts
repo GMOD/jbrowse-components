@@ -38,6 +38,8 @@ export interface FeatureColorHost {
   conf: { encoding: { color: Instance<typeof colorConfigSchema> } }
   /** The field the color paints while it names neither a field nor a value. */
   impliedField?: string
+  /** Colors the deal leaves to what the dealt colors paint over. */
+  reservedColors?: readonly string[]
   rpcDataMap: ReadonlyMap<
     number,
     {
@@ -211,7 +213,12 @@ export function featureColorViews(
      */
     get categoricalColorField() {
       const encoding = this.colorEncoding
-      return categoricalColorField(encoding, heldColorSlots(owner, encoding))
+      const reserved = self.reservedColors
+      return categoricalColorField(
+        encoding,
+        heldColorSlots(owner, encoding, reserved),
+        reserved,
+      )
     },
 
     /**
@@ -221,7 +228,12 @@ export function featureColorViews(
      */
     get paintedColorField() {
       const encoding = this.colorEncoding
-      return colorFieldOf(encoding, heldColorSlots(owner, encoding))
+      const reserved = self.reservedColors
+      return colorFieldOf(
+        encoding,
+        heldColorSlots(owner, encoding, reserved),
+        reserved,
+      )
     },
 
     /**

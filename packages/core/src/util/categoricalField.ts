@@ -109,6 +109,7 @@ export function categoricalField(
     range = [],
     labels = [],
     held,
+    reserved,
     unknown,
     invalid,
   }: {
@@ -116,6 +117,8 @@ export function categoricalField(
     range?: readonly string[]
     labels?: readonly string[]
     held?: HeldSlots
+    /** colors a dealt value avoids, `categoricalColorScale`'s */
+    reserved?: readonly string[]
     unknown?: string
     invalid?: string
   } = {},
@@ -171,14 +174,14 @@ export function categoricalField(
       if (unlisted(key)) {
         return other!
       }
-      colorOf ??= categoricalColorScale(paired, colors, held)
+      colorOf ??= categoricalColorScale(paired, colors, held, reserved)
       return noValueColor(key) ?? colorOf(key)
     },
     colorAmong: (key, batch) => {
       if (unlisted(key)) {
         return other!
       }
-      colorOf ??= categoricalColorScale(paired, colors, held)
+      colorOf ??= categoricalColorScale(paired, colors, held, reserved)
       return noValueColor(key) ?? colorOf.among(key, batch)
     },
   }

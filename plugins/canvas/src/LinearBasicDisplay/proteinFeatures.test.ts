@@ -1,3 +1,6 @@
+import { DEAL_COLOR_DIFFERENCE, colorDifference } from '@jbrowse/core/ui/colors'
+import { featureDefaultColor } from '@jbrowse/core/ui/palette'
+
 import { makeFeatureData } from '../RenderFeatureDataRPC/testUtils.ts'
 import { createTestEnvironment } from './testEnv.ts'
 
@@ -27,4 +30,16 @@ test('a track naming no track says so', () => {
 test('a display with no proteinFeatures has no notice', () => {
   expect(display().notices).toEqual([])
   expect(display({ track: 'test_track' }).notices).toEqual([])
+})
+
+test('no domain takes a color that reads as the CDS fill under it', () => {
+  const d = display({ track: 'test_track' })
+  const values = Array.from({ length: 30 }, (_, i) => `PF${i}`)
+  const near = values
+    .map(value => d.domainPalette!.paint(value))
+    .filter(
+      color => colorDifference(color, d.featureColor) < DEAL_COLOR_DIFFERENCE,
+    )
+  expect(d.featureColor).toBe(featureDefaultColor)
+  expect(near).toEqual([])
 })

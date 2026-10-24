@@ -3,6 +3,8 @@ import os from 'node:os'
 import path from 'node:path'
 import { pathToFileURL } from 'node:url'
 
+import { DEAL_COLOR_DIFFERENCE, colorDifference } from '@jbrowse/core/ui/colors'
+import { featureDefaultColor } from '@jbrowse/core/ui/palette'
 import { NO_CATEGORY_COLOR } from '@jbrowse/core/util/color'
 
 import { createTablesEngine } from './index.ts'
@@ -119,6 +121,44 @@ test('the tables key the domains apart from the features', async () => {
   expect(t.domainLegend.color).toContain(domainRects(t)[0]!.color)
   const plain = await engine.features({ ...GFF3, display: {} })
   expect(plain.domainLegend).toEqual({ label: [], color: [] })
+})
+
+test('no domain takes a color that reads as the CDS it paints over', async () => {
+  const families = Array.from({ length: 30 }, (_, i) =>
+    [
+      'ctgA',
+      5000,
+      5400,
+      `PF${i}`,
+      0,
+      '+',
+      5000,
+      5400,
+      0,
+      1,
+      '400',
+      '0',
+      'EDEN.1',
+    ].join('\t'),
+  )
+  const keyed = async (color?: string) => {
+    const t = await engine.features({
+      ...GFF3,
+      display: {
+        heightMode: 'grow',
+        proteinFeatures: 'pfam',
+        ...(color ? { encoding: { color: { value: color } } } : {}),
+      },
+      proteinFeatures: domainsAdapter(families),
+    })
+    return t.domainLegend.color
+  }
+  const near = (colors: string[], fill: string) =>
+    colors.filter(c => colorDifference(c, fill) < DEAL_COLOR_DIFFERENCE)
+  const dealt = await keyed()
+  expect(dealt).toHaveLength(31)
+  expect(near(dealt, featureDefaultColor)).toEqual([])
+  expect(near(await keyed('#4e79a7'), '#4e79a7')).toEqual([])
 })
 
 test('a domain track that fails fails the tables', async () => {

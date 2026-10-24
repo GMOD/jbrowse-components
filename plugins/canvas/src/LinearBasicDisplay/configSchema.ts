@@ -190,7 +190,8 @@ export default function configSchemaFactory(pluginManager: PluginManager) {
            * The domains' color, an `encoding.color` object over the BED rows,
            * by `name` while it names no field or value. The track's own
            * `encoding.color` never reaches the domains, nor this one the
-           * exons.
+           * exons. A dealt family skips the colors that read as the CDS fill,
+           * so it can paint differently here than on its own track.
            */
           color: colorConfigSchema,
           /**

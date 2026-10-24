@@ -1,6 +1,6 @@
 import { fullConfSnapshot, readConfObject } from '@jbrowse/core/configuration'
 import { tablesFeatureAdapter } from '@jbrowse/core/data_adapters/getFeatureAdapter'
-import { resolvePalette } from '@jbrowse/core/ui/palette'
+import { featureDefaultColor, resolvePalette } from '@jbrowse/core/ui/palette'
 import { rampKeyOf } from '@jbrowse/core/ui/rampKey'
 import { STRAND_FIELD } from '@jbrowse/core/util/categoricalField'
 import { abgrToHex, cssColorToHex } from '@jbrowse/core/util/colorBits'
@@ -134,9 +134,16 @@ function domainColorsOf(
   conf: ReturnType<ReturnType<typeof configSchemaFactory>['create']>,
   raws: readonly FeatureDataResult[],
 ) {
+  const geneColor = conf.encoding.color
   return featureColorViews({
     conf: { encoding: { color: conf.proteinFeatures.color } },
     impliedField: 'name',
+    reservedColors: [
+      featureColorViews({
+        conf: { encoding: { color: geneColor } },
+        rpcDataMap: new Map(),
+      }).solidColor ?? featureDefaultColor,
+    ],
     rpcDataMap: new Map(raws.map((raw, i) => [i, domainLaneOf(raw)])),
   })
 }

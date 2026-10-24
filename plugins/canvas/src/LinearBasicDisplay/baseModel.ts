@@ -409,6 +409,9 @@ export default function baseStateModelFactory(
             )
           },
           impliedField: 'name',
+          get reservedColors() {
+            return [self.featureColor]
+          },
         },
         self,
       )
