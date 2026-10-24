@@ -25,6 +25,7 @@ import {
   regionSignature,
   swappedAssembliesWarning,
   syntenyFetchRegions,
+  unreadFilterFields,
 } from '@jbrowse/synteny-core'
 
 import { computePresentCigarKinds } from '../LinearSyntenyRPC/presentCigarKinds.ts'
@@ -425,13 +426,29 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
        * distinct chromosome names).
        */
       get warnings() {
-        return self.assembliesSwapped
-          ? [
-              swappedAssembliesWarning(
-                'The chromosome names in the file match the opposite row. Try re-opening the synteny import form with the assemblies in the opposite order.',
-              ),
-            ]
+        const { featureData } = self
+        const unread = featureData
+          ? unreadFilterFields(
+              this.view.predicates,
+              featureData,
+              this.filterExtras,
+            )
           : []
+        return [
+          ...(self.assembliesSwapped
+            ? [
+                swappedAssembliesWarning(
+                  'The chromosome names in the file match the opposite row. Try re-opening the synteny import form with the assemblies in the opposite order.',
+                ),
+              ]
+            : []),
+          ...unread.map(field => ({
+            message: `The view's filter tests "${field}", which no alignment in this track carries`,
+            effect: field.startsWith('jexl:')
+              ? 'Every alignment is hidden: a synteny filter takes fields, not jexl: expressions.'
+              : 'Every alignment is hidden. Check the field name, or remove the entry.',
+          })),
+        ]
       },
       /**
        * #getter
@@ -663,6 +680,7 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
         const { featureData } = self
         return {
           trackId: this.trackId,
+          referenceSide: this.referenceSide,
           lengthOf: featureData
             ? i => Math.abs(featureData.ends[i]! - featureData.starts[i]!)
             : undefined,
@@ -693,16 +711,20 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
        */
       get paintedField(): string | undefined {
         const field = this.colorField
-        if (field === 'reference') {
-          const anchor = this.view.anchorAssemblyName
-          const pair = this.parentHelper.rowPair
-          const queryAsm = pair?.v0.assemblyNames[0]
-          const targetAsm = pair?.v1.assemblyNames[0]
-          return targetAsm === anchor && queryAsm !== anchor
-            ? 'target'
-            : 'query'
-        }
-        return field
+        return field === 'reference' ? this.referenceSide : field
+      },
+      /**
+       * #getter
+       * Which of this level's two sequence lanes `reference` names: `target`
+       * where only the target row is the view's anchor assembly, else `query`.
+       * The color and the filter both read it.
+       */
+      get referenceSide(): 'query' | 'target' {
+        const anchor = this.view.anchorAssemblyName
+        const pair = this.parentHelper.rowPair
+        const queryAsm = pair?.v0.assemblyNames[0]
+        const targetAsm = pair?.v1.assemblyNames[0]
+        return targetAsm === anchor && queryAsm !== anchor ? 'target' : 'query'
       },
       /**
        * #getter

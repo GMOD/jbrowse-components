@@ -1,4 +1,7 @@
-import { compilePredicates } from '@jbrowse/core/util/fieldPredicate'
+import {
+  compilePredicates,
+  testsSomething,
+} from '@jbrowse/core/util/fieldPredicate'
 
 import { attributeOf, isAttributeLabels } from './colorRamps.ts'
 
@@ -14,6 +17,9 @@ export interface FilterExtras {
   lengthOf?: (index: number) => number
   // the track every record of this payload came from
   trackId?: string
+  // which of the two sequence lanes the view's anchor assembly is on, as the
+  // `reference` color field resolves it per level; `query` when unsaid
+  referenceSide?: 'query' | 'target'
 }
 
 /**
@@ -24,10 +30,12 @@ export interface FilterExtras {
  */
 export function comparativeLaneOf(
   data: ColorFunctionInputs,
-  { lengthOf, trackId }: FilterExtras = {},
+  { lengthOf, trackId, referenceSide = 'query' }: FilterExtras = {},
 ) {
-  return (field: string): PredicateLane | undefined => {
+  const laneOf = (field: string): PredicateLane | undefined => {
     switch (field) {
+      case 'reference':
+        return laneOf(referenceSide)
       case 'length':
         return lengthOf ? { kind: 'get', get: lengthOf } : undefined
       case 'track':
@@ -59,6 +67,28 @@ export function comparativeLaneOf(
       ? { kind: 'labels', ids: values, labels: range.labels }
       : { kind: 'number', values }
   }
+  return laneOf
+}
+
+/**
+ * The fields a `filter` tests that this payload has no lane for: a typo, a
+ * column no record of the track carries, or a `jexl:` expression, which a
+ * comparative view does not evaluate. Each one hides every alignment, unless
+ * its entry selects missing values.
+ */
+export function unreadFilterFields(
+  predicates: readonly FieldPredicate[],
+  data: ColorFunctionInputs,
+  extras?: FilterExtras,
+) {
+  const laneOf = comparativeLaneOf(data, extras)
+  return [
+    ...new Set(
+      predicates
+        .filter(p => testsSomething(p) && p.valid !== false && !laneOf(p.field))
+        .map(p => p.field),
+    ),
+  ]
 }
 
 /** The records a comparative `filter` admits, or undefined to admit all. */

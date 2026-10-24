@@ -200,7 +200,11 @@ export {
 } from './syntenyMarkConfigSchema.ts'
 export { syntenyCoordConfigSchema } from './syntenyCoordConfigSchema.ts'
 export type { RibbonInterpolation } from './syntenyMarkConfigSchema.ts'
-export { comparativeFilter, comparativeLaneOf } from './filterLanes.ts'
+export {
+  comparativeFilter,
+  comparativeLaneOf,
+  unreadFilterFields,
+} from './filterLanes.ts'
 export type { FilterExtras } from './filterLanes.ts'
 export {
   SYNTENY_OPACITY_SCALES,
