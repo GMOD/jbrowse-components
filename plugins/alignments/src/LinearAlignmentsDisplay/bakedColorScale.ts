@@ -38,7 +38,9 @@ interface CategoricalBakedScale {
   /** false while a value's color is its own function and the config says nothing */
   declared: boolean
   domain: readonly string[]
-  color: (value: string) => string
+  /** `scale.unknown`, the color of every value `domain` leaves out */
+  unknown?: string
+  color: (value: string) => string | undefined
 }
 
 interface ThresholdBakedScale {
@@ -148,6 +150,9 @@ function withoutNoValue(
  * the listed values their colors in order, over the same tag palette. `''`
  * in `domain` names a read with no value, which the category table colors
  * (`declaredReadCategoryColors`), so it and its `range` entry leave the list.
+ * A set `scale.unknown` paints every value `domain` leaves out, as d3's
+ * `ordinal.unknown` does, and `''` there files them with the reads that have
+ * no value.
  * A linear or threshold scale reads a tag, an attribute or MAPQ, and waits
  * unread beside a mate reference, whose values are sequence names.
  */
@@ -176,12 +181,21 @@ export function bakedColorScale(
     scaled?.scale === 'ordinal'
       ? withoutNoValue(scaled.domain?.map(String) ?? [], scaled.range)
       : { domain: [], range: undefined }
-  if (domain.length > 0 || range?.length) {
+  const unknown = scaled?.scale === 'ordinal' ? scaled.unknown : undefined
+  if (domain.length > 0 || range?.length || unknown !== undefined) {
+    const color = categoricalColorScale(domain, range ?? tagColorPalette)
+    const listed = new Set(domain)
     return {
       kind: 'categorical',
       declared: true,
       domain,
-      color: categoricalColorScale(domain, range ?? tagColorPalette),
+      ...(unknown === undefined
+        ? { color }
+        : {
+            unknown,
+            color: value =>
+              listed.has(value) ? color(value) : unknown || undefined,
+          }),
     }
   }
   return {

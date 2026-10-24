@@ -12,6 +12,7 @@ import {
   colorScaleOptions,
   colorScaleTypeSlot,
   colorTitleSlot,
+  colorUnknownSlot,
 } from '@jbrowse/display-kit/colorConfigSchema'
 
 import {
@@ -127,6 +128,18 @@ export const alignmentsColorConfigSchema = ConfigurationSchema(
           type: 'maybeColor',
           description:
             'CSS color of a read with no value under the field; unset, the theme color',
+        },
+        /**
+         * #slot unknown
+         * The fill of a read whose value an ordinal `domain` leaves out, d3's
+         * `ordinal.unknown`: `unknown: "#999"` beside `domain: ["1", "2"]` on
+         * `tags.HP` paints every other haplotype grey, and the key lists them
+         * as one row, Other.
+         */
+        unknown: {
+          ...colorUnknownSlot.unknown,
+          description:
+            'CSS color of a read whose value the ordinal domain leaves out; unset deals the next palette color, "" paints it as a read with no value',
         },
         /**
          * #slot names

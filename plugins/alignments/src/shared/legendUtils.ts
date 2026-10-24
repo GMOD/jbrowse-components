@@ -13,6 +13,7 @@ import {
   methylated5mC,
   unmethylated5mC,
 } from '@jbrowse/core/ui/palette'
+import { OTHER_VALUES_LABEL } from '@jbrowse/core/util/categoricalField'
 import { groupKeyComparator } from '@jbrowse/core/util/groupKeys'
 import { isMethylationFillType } from '@jbrowse/modifications-utils'
 
@@ -931,17 +932,27 @@ function bakedValueLegend(
     }))
     return descending ? items.toReversed() : items
   }
-  const values = [...(present ?? [])].filter(value => value !== '')
+  const unknown = scale?.unknown
+  const listed = new Set(scale?.domain)
+  const values = [...(present ?? [])].filter(
+    value => value !== '' && (unknown === undefined || listed.has(value)),
+  )
   const sorted = sectionOrder
     ? [...values].sort(sectionOrder)
     : scale?.declared
       ? [...values].sort(groupKeyComparator(scale.domain))
       : sortedBakedValues(values, field, refNamePosition)
-  return sorted.map(value => ({
-    color:
-      scale?.color(value) ?? bakedValueColor(field, value, refNamePosition),
-    label: names.get(value) ?? value,
-  }))
+  const others =
+    unknown &&
+    [...(present ?? [])].some(value => value !== '' && !listed.has(value))
+  return [
+    ...sorted.map(value => ({
+      color:
+        scale?.color(value) ?? bakedValueColor(field, value, refNamePosition),
+      label: names.get(value) ?? value,
+    })),
+    ...(others ? [{ color: unknown, label: OTHER_VALUES_LABEL }] : []),
+  ]
 }
 
 /** The key of a tag, attribute or MAPQ painted through a linear ramp. */

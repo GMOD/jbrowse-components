@@ -18,6 +18,8 @@ freeze (ADR-120). The call is which displays' keys want them.
 `unknown`, d3's color for every value a `domain` leaves out, follows the same
 rule: FeatureColor, MarkColor, VariantCellColor, ChordColor and
 MultiWayGeneColor declare it, since their keys name its row Other through
-`derivedColorScale`, and RowColor had it already. The alignments, synteny and
-MAF color objects paint their categories through code of their own and join
-when that code reads it.
+`derivedColorScale`, and RowColor had it already. AlignmentsColor declares it
+on a tag, attribute or mate-reference field, where `bakedColorScale` paints it
+and `bakedValueLegend` keys it as Other. The synteny and MAF color objects
+paint their categories through code of their own and join when that code reads
+it.
