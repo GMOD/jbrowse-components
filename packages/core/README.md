@@ -262,7 +262,7 @@ the grey or the level's own color while unset.
 import { categoricalField } from '@jbrowse/core/util/categoricalField'
 
 // type signature
-(field: string, { domain, range, labels, held, unknown, invalid }?: { domain?: readonly string[]; range?: readonly string[]; labels?: readonly string[]; held?: HeldSlots; unknown?: string; invalid?: string; }) => CategoricalField
+(field: string, { domain, range, labels, held, reserved, unknown, invalid }?: { domain?: readonly string[]; range?: readonly string[]; labels?: readonly string[]; held?: HeldSlots; reserved?: readonly string[]; unknown?: string; invalid?: string; }) => CategoricalField
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/categoricalField.ts)
