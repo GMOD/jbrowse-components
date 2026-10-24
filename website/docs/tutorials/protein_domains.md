@@ -139,10 +139,10 @@ JBrowse loads the domain file as a track:
 A gene track lists that track in
 [`transcriptFeatures`](/docs/config/linearbasicdisplay/#slot-transcriptfeatures)
 and draws each domain over the CDS that encodes it, colored by Pfam family, with
-a key naming the families on screen. The `join` draws each row on the transcript
-its `transcript` column names, so each isoform shows the domains called on its
-own protein. This one reads the same RefSeq GFF as the honey bee hub's gene
-track:
+a key naming the families on screen. With `join`, the display draws each row on
+the transcript its `transcript` column names, so each isoform shows the domains
+called on its own protein. This one reads the same RefSeq GFF as the honey bee
+hub's gene track:
 
 ```json addtrack
 {
