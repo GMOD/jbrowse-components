@@ -62,7 +62,10 @@ export interface CategoricalField {
    * are, so a key ordered by another field's domain still names them.
    */
   unknown?: { color: string; paints: (key: string) => boolean }
-  /** The no-value key's written color, Vega-Lite's `invalid` */
+  /**
+   * The written color of the no-value key, `''` or a preset's own missing
+   * level, Vega-Lite's `invalid`
+   */
   invalid?: string
 }
 
@@ -95,7 +98,9 @@ export function keyNames(
  * each key the domain does not list a color when the key first appears
  * (`categoricalScale`); the caller keeps it for as long as the colors should
  * hold. `unknown` paints every such key one color instead, `''` the
- * no-value grey, and `invalid` paints the no-value key, the grey while unset.
+ * no-value grey, and `invalid` paints the no-value key, `''` or a preset's
+ * missing level (strand's `0`), which keeps the grey or the level's own color
+ * while unset.
  */
 export function categoricalField(
   field: string,
@@ -132,9 +137,18 @@ export function categoricalField(
   const jexlField = isJexl(field)
   const other = unknown === undefined ? undefined : unknown || NO_CATEGORY_COLOR
   const listed = new Set(order)
+  const missingLevel = vocabulary?.missing
   const unlisted = (key: string) =>
-    other !== undefined && key !== '' && !listed.has(key)
-  const missing = invalid || NO_CATEGORY_COLOR
+    other !== undefined &&
+    key !== '' &&
+    key !== missingLevel &&
+    !listed.has(key)
+  const noValueColor = (key: string) =>
+    key === ''
+      ? invalid || NO_CATEGORY_COLOR
+      : key === missingLevel && invalid
+        ? invalid
+        : undefined
   let colorOf: CategoricalScale<string> | undefined
   return {
     field,
@@ -157,21 +171,15 @@ export function categoricalField(
       if (unlisted(key)) {
         return other!
       }
-      if (key === '') {
-        return missing
-      }
       colorOf ??= categoricalColorScale(paired, colors, held)
-      return colorOf(key)
+      return noValueColor(key) ?? colorOf(key)
     },
     colorAmong: (key, batch) => {
       if (unlisted(key)) {
         return other!
       }
-      if (key === '') {
-        return missing
-      }
       colorOf ??= categoricalColorScale(paired, colors, held)
-      return colorOf.among(key, batch)
+      return noValueColor(key) ?? colorOf.among(key, batch)
     },
   }
 }

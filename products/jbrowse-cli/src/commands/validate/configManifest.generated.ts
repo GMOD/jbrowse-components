@@ -3257,6 +3257,10 @@ export const configManifest: ConfigManifest = {
                       "type": "(CssColor | undefined)"
                     },
                     {
+                      "name": "invalid",
+                      "type": "(CssColor | undefined)"
+                    },
+                    {
                       "name": "names",
                       "type": "string[]",
                       "liftsNumbers": true
@@ -3584,6 +3588,10 @@ export const configManifest: ConfigManifest = {
                     },
                     {
                       "name": "unknown",
+                      "type": "(CssColor | undefined)"
+                    },
+                    {
+                      "name": "invalid",
                       "type": "(CssColor | undefined)"
                     },
                     {
@@ -4814,6 +4822,10 @@ export const configManifest: ConfigManifest = {
                       "type": "(CssColor | undefined)"
                     },
                     {
+                      "name": "invalid",
+                      "type": "(CssColor | undefined)"
+                    },
+                    {
                       "name": "names",
                       "type": "string[]",
                       "liftsNumbers": true
@@ -5848,6 +5860,10 @@ export const configManifest: ConfigManifest = {
                       "type": "(CssColor | undefined)"
                     },
                     {
+                      "name": "invalid",
+                      "type": "(CssColor | undefined)"
+                    },
+                    {
                       "name": "names",
                       "type": "string[]",
                       "liftsNumbers": true
@@ -6298,6 +6314,10 @@ export const configManifest: ConfigManifest = {
                             },
                             {
                               "name": "unknown",
+                              "type": "(CssColor | undefined)"
+                            },
+                            {
+                              "name": "invalid",
                               "type": "(CssColor | undefined)"
                             },
                             {
@@ -6801,6 +6821,10 @@ export const configManifest: ConfigManifest = {
                       "type": "(CssColor | undefined)"
                     },
                     {
+                      "name": "invalid",
+                      "type": "(CssColor | undefined)"
+                    },
+                    {
                       "name": "names",
                       "type": "string[]",
                       "liftsNumbers": true
@@ -7170,6 +7194,10 @@ export const configManifest: ConfigManifest = {
                     },
                     {
                       "name": "unknown",
+                      "type": "(CssColor | undefined)"
+                    },
+                    {
+                      "name": "invalid",
                       "type": "(CssColor | undefined)"
                     },
                     {
@@ -8905,6 +8933,10 @@ export const configManifest: ConfigManifest = {
                           "type": "(CssColor | undefined)"
                         },
                         {
+                          "name": "invalid",
+                          "type": "(CssColor | undefined)"
+                        },
+                        {
                           "name": "names",
                           "type": "string[]",
                           "liftsNumbers": true
@@ -9616,6 +9648,10 @@ export const configManifest: ConfigManifest = {
                         },
                         {
                           "name": "unknown",
+                          "type": "(CssColor | undefined)"
+                        },
+                        {
+                          "name": "invalid",
                           "type": "(CssColor | undefined)"
                         },
                         {

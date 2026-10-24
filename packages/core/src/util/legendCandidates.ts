@@ -152,6 +152,7 @@ export function derivedColorScale<T>(
   },
 ): CategoricalScale[] {
   const { unknown } = field
+  const noValue = field.key('')
   const painted = unionLegendCandidates(regions, resolve).map(
     ({ values, color }) => {
       const sorted = values.toSorted(field.compare)
@@ -159,7 +160,7 @@ export function derivedColorScale<T>(
       const other =
         unknown !== undefined &&
         sorted.some(v => unknown.paints(v)) &&
-        sorted.every(v => v === '' || unknown.paints(v))
+        sorted.every(v => v === '' || v === noValue || unknown.paints(v))
       return {
         value,
         values: sorted,

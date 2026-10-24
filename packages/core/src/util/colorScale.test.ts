@@ -233,6 +233,13 @@ test("a preset's domain is the order names follow, and a threshold with no cuts 
   ).toEqual(['names-domain'])
 })
 
+test('invalid outside an ordinal scale paints nothing', () => {
+  expect(rules(scaled({ domain: ['a'], invalid: 'grey' }, 'type'))).toEqual([])
+  expect(rules(scaled({ invalid: 'grey' }, 'score'), 'linear')).toEqual([
+    'invalid-scale',
+  ])
+})
+
 test('unknown with no domain paints every value, and outside an ordinal scale nothing', () => {
   expect(rules(scaled({ unknown: 'grey' }, 'type'))).toEqual(['unknown-domain'])
   expect(rules(scaled({ unknown: '' }, 'type'))).toEqual(['unknown-domain'])

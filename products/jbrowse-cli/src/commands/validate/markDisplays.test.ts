@@ -565,6 +565,14 @@ describe('a marks list in a config file', () => {
         }),
       ),
     ).toEqual([`warning unknown-scale ${color}.unknown`])
+    expect(
+      found(
+        colored('bar', {
+          field: 'type',
+          scale: { type: 'linear', invalid: 'grey' },
+        }),
+      ),
+    ).toEqual([`warning invalid-scale ${color}.invalid`])
     expect(found(colored('span', { value: 'red' }))).toEqual([])
     expect(
       found([{ mark: 'span', encoding: { color: { value: 'red' } } }]),

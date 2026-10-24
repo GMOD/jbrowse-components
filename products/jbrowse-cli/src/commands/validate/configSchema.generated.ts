@@ -4939,6 +4939,15 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/CssColor"
           }
         },
+        "invalid": {
+          "description": "color for a feature with no value under an ordinal scale's field; unset, the display's no-value color.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/CssColor"
+          }
+        },
         "names": {
           "description": "key name for each domain value, one each in order, or under threshold for each interval from the lowest; a value past the end of the list shows its own.",
           "if": {
@@ -8148,6 +8157,15 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/CssColor"
           }
         },
+        "invalid": {
+          "description": "color for a feature with no value under an ordinal scale's field; unset, the display's no-value color.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/CssColor"
+          }
+        },
         "names": {
           "description": "key name for each domain value, one each in order, or under threshold for each interval from the lowest; a value past the end of the list shows its own.",
           "if": {
@@ -9164,6 +9182,15 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/CssColor"
           }
         },
+        "invalid": {
+          "description": "color for a feature with no value under an ordinal scale's field; unset, the display's no-value color.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/CssColor"
+          }
+        },
         "names": {
           "description": "key name for each domain value, one each in order, or under threshold for each interval from the lowest; a value past the end of the list shows its own.",
           "if": {
@@ -9934,6 +9961,15 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "unknown": {
           "description": "color for a value missing from domain: unset takes the next palette color where the display deals one, a color paints that color, \\"\\" adds no color from this setting, so a row keeps the color it already has, a variant cell takes the alt hue and a feature the no-value grey.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/CssColor"
+          }
+        },
+        "invalid": {
+          "description": "color for a feature with no value under an ordinal scale's field; unset, the display's no-value color.",
           "if": {
             "type": "null"
           },
@@ -12156,6 +12192,15 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "unknown": {
           "description": "color for a value missing from domain: unset takes the next palette color where the display deals one, a color paints that color, \\"\\" adds no color from this setting, so a row keeps the color it already has, a variant cell takes the alt hue and a feature the no-value grey.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/CssColor"
+          }
+        },
+        "invalid": {
+          "description": "color for a feature with no value under an ordinal scale's field; unset, the display's no-value color.",
           "if": {
             "type": "null"
           },

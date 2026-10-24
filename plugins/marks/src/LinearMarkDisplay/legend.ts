@@ -80,6 +80,7 @@ export function keySettingOf(
       descending: legend.descending,
       missingLabel: color.legend.missingLabel,
       unknown: scale.unknown,
+      invalid: scale.invalid,
     }
   }
   const { scale, legend } = mark.encoding.shape
@@ -120,6 +121,8 @@ export interface MarkKeySetting {
   swatchColor?: string
   /** The color `unknown` paints the values the domain leaves out, one row named Other. */
   unknown?: string
+  /** The color `invalid` paints a feature with no value */
+  invalid?: string
 }
 
 /**

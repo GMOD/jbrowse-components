@@ -7,6 +7,7 @@ import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import { isThreshold } from '@jbrowse/render-core/marks'
 
 import { findMarkHit } from './findMarkHit.ts'
+import { keySettingOf } from './legend.ts'
 import { regionColorScale } from './markList.ts'
 import {
   REGION,
@@ -189,6 +190,25 @@ test('unknown leaves a feature with no value grey, and invalid repaints it, fetc
 
   expect(JSON.stringify(display.rpcProps())).toBe(before)
   expect(colorLane(display)).toEqual([purple, grey, black])
+})
+
+test('two marks differing only in invalid keep a key each', () => {
+  const mark = (invalid: string) => ({
+    mark: 'bar',
+    encoding: {
+      y: 'score',
+      color: {
+        field: 'type',
+        scale: { domain: ['gene'], unknown: '#cccccc', invalid },
+      },
+    },
+  })
+  const { display } = createTestEnvironment({
+    marks: [mark('black'), mark('blue')],
+  }).createDisplay()
+  expect(display.conf.marks.map(m => keySettingOf(m, 'color').invalid)).toEqual(
+    ['black', 'blue'],
+  )
 })
 
 test('categories the hash puts on one color each take their own, and keep it as regions arrive', () => {

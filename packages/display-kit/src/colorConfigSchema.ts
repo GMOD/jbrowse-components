@@ -320,9 +320,9 @@ export function colorRangeSlot({
  * the next palette color where the display deals one; a color, that color;
  * `""`, no color from this setting, so a row keeps the color it already has, a
  * variant cell the alt hue, and a feature or mark the no-value grey. The key
- * lists every value it paints as one row, Other. A feature with no value
- * takes `invalid` instead. `range` entries past the domain go unread while it
- * is set.
+ * lists every value it paints as one row, Other. On a display that declares
+ * `invalid`, a feature with no value takes that instead. `range` entries past
+ * the domain go unread while it is set.
  */
 export const colorUnknownSlot = {
   unknown: {
@@ -333,16 +333,17 @@ export const colorUnknownSlot = {
 } as const
 
 /**
- * The color for a feature with no value under the field, Vega-Lite's
- * `invalid`: unset, the display's no-value color, the grey on a feature or
- * mark and the alt hue on a variant cell. Written as the `unknown` color, it
- * files those features with the values `domain` leaves out, one row, Other.
+ * The color for a feature with no value under an ordinal scale's field,
+ * Vega-Lite's `invalid`: unset, the display's no-value color, the grey on a
+ * feature or mark and the alt hue on a variant cell, or a preset's own
+ * missing level (strand's `0`). Written as the `unknown` color, it files those
+ * features with the values `domain` leaves out, one row, Other.
  */
 export const colorInvalidSlot = {
   invalid: {
     type: 'maybeColor',
     description:
-      "color for a feature with no value under the field; unset, the display's no-value color",
+      "color for a feature with no value under an ordinal scale's field; unset, the display's no-value color",
   },
 } as const
 

@@ -315,10 +315,10 @@ overlapping spans stay readable.
   as other regions load; a value that no other value competes with paints the
   color derived from the value. `scale.unknown`, d3's name, paints every value
   the domain leaves out one color instead, and the key names them one row,
-  Other. The key lists a feature with no value on a row of its own, in the
-  no-value grey unless `scale.invalid` sets a color. One row per color, so two
-  values painted alike share a row. A key of one color, or over 20 rows, is not
-  drawn.
+  Other. A feature with no value paints the no-value grey, or the
+  `scale.invalid` color where one is set. One row per color, so two values
+  painted alike share a row, and a no-value color matching `unknown`'s joins
+  Other. A key of one color, or over 20 rows, is not drawn.
 
 - **linear**, **log** or **symlog** —
   `{ "field": "signal", "scale": { "type": "linear", "domainMin": 0, "domainMax": 50, "range": ["white", "red"] } }`

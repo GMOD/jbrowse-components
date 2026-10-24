@@ -369,6 +369,7 @@ export interface ScaleProblem {
     | 'names-domain'
     | 'unknown-domain'
     | 'unknown-scale'
+    | 'invalid-scale'
   /** the slot to look at, relative to the object that holds the scale */
   slot: string
   message: string
@@ -492,6 +493,7 @@ export function colorSlotsOf(
       range: listOf(member('range')),
       names: listOf(member('names')),
       unknown: stringOf(member('unknown')),
+      invalid: stringOf(member('invalid')),
     },
   }
 }
@@ -518,7 +520,7 @@ export function colorProblems(
 ): ScaleProblem[] {
   const color = withPreset(written, presets)
   const { domain = [], names = [] } = color.scale ?? {}
-  const { range = [], unknown } = written.scale ?? {}
+  const { range = [], unknown, invalid } = written.scale ?? {}
   const scale =
     color.scale?.type === IDENTITY_SCALE
       ? IDENTITY_SCALE
@@ -589,6 +591,14 @@ export function colorProblems(
           'unknown paints every value domain leaves out, and with no domain that is every value; list the values that keep their own colors in domain',
       })
     }
+  }
+  if (invalid !== undefined && scale !== 'ordinal') {
+    problems.push({
+      rule: 'invalid-scale',
+      slot: 'scale.invalid',
+      message:
+        'invalid paints a feature with no value under an ordinal scale, and this color paints through no ordinal scale',
+    })
   }
   const named =
     scale === 'ordinal' || scale === IDENTITY_SCALE

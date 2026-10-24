@@ -839,6 +839,10 @@ test('unknown with no domain paints every value of an ordinal color', () => {
   expect(found(colored({ type: 'linear', unknown: 'grey' }))).toEqual([
     'warning unknown-scale mark 0 encoding.color.scale.unknown',
   ])
+  expect(found(colored({ domain: ['a'], invalid: 'grey' }))).toEqual([])
+  expect(found(colored({ type: 'linear', invalid: 'grey' }))).toEqual([
+    'warning invalid-scale mark 0 encoding.color.scale.invalid',
+  ])
 })
 
 test('names name the domain values of a shape, and a constant shape names none', () => {

@@ -88,6 +88,8 @@ export const MARK_RULES = {
   'unknown-domain': 'warning',
   /** A `scale.unknown` on a color painting through no ordinal scale, so nothing reads it. */
   'unknown-scale': 'warning',
+  /** A `scale.invalid` on a color painting through no ordinal scale, so nothing reads it. */
+  'invalid-scale': 'warning',
   /** A `minBpPerPx` not below the mark's `maxBpPerPx`, so the mark never draws. */
   'empty-zoom-range': 'error',
   /** A `filter` or `formula` whose `expr` is not a `jexl:` expression. */

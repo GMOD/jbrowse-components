@@ -203,6 +203,24 @@ test('unknown paints every key the domain leaves out, and invalid the no-value k
   expect(OTHER_VALUES_LABEL).toBe('Other')
 })
 
+test("a preset's missing level is a feature with no value, which unknown leaves and invalid paints", () => {
+  const strand = categoricalField('strand', {
+    domain: ['1', '-1'],
+    unknown: 'grey',
+  })
+  const missing = strand.key('')
+  expect(missing).toBe('0')
+  expect(strand.unknown?.paints(missing)).toBe(false)
+  expect(strand.color(missing)).toBe(categoricalField('strand').color('0'))
+  const painted = categoricalField('strand', {
+    domain: ['1', '-1'],
+    unknown: 'grey',
+    invalid: 'black',
+  })
+  expect(painted.color(missing)).toBe('black')
+  expect(painted.color('1')).toBe(strand.color('1'))
+})
+
 test("unknown '' paints the left-out keys the no-value grey, and unset deals them", () => {
   const grey = categoricalField('type', { domain: ['a'], unknown: '' })
   expect(grey.color('c')).toBe(NO_CATEGORY_COLOR)
