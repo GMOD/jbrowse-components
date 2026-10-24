@@ -433,10 +433,12 @@ export default function baseStateModelFactory(
         /**
          * #getter
          * The `proteinFeatures` color's values painted through its scale,
-         * dealt from the session's slots as the domain track's own color is.
+         * dealt from the session's slots as the domain track's own color is;
+         * undefined without a domain track, as on a variant display, whose
+         * schema has no `proteinFeatures`.
          */
         get domainPalette(): FieldPalette | undefined {
-          return domainColors.fieldPalette
+          return this.proteinFeaturesArg && domainColors.fieldPalette
         },
         /**
          * #method
