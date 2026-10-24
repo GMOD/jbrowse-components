@@ -2,24 +2,18 @@ import { spawn } from 'node:child_process'
 import fs from 'node:fs'
 import { parseArgs } from 'node:util'
 
+import {
+  BED_HEADER,
+  placeProteinFeatures,
+  placementWarnings,
+} from 'domains2genome'
+
 import { printHelp } from '../../utils.ts'
 import { describeExit, waitForProcessClose } from '../process-utils.ts'
 import {
   validateFileArgument,
   validateRequiredCommands,
 } from '../shared/validators.ts'
-import {
-  BED_HEADER,
-  bedLine,
-  bestOfOverlappingHmmerHits,
-  findTranscript,
-  parseCall,
-  projectResidues,
-  readCodingTranscripts,
-  readLines,
-} from './project.ts'
-
-import type { ProteinCall } from './project.ts'
 
 export async function run(args?: string[]) {
   const options = {
@@ -45,13 +39,13 @@ export async function run(args?: string[]) {
   })
 
   const description =
-    'Places protein features (InterProScan or HMMER domain calls) on the genome through each transcript CDS, as a bgzipped, indexed BED12'
+    'Places protein features (InterProScan or HMMER domain calls) on the genome through each transcript CDS, as a bgzipped, indexed BED12. The standalone domains2genome package does the same placement without JBrowse'
 
   const examples = [
     '# Pfam calls from hmmscan --domtblout, on the genes they were called from',
     '$ jbrowse make-protein-features genes.gff3 pfam.domtblout',
     '',
-    '# InterProScan TSV, Pfam rows only, to a named file',
+    '# InterProScan TSV or GFF3, Pfam rows only, to a named file',
     '$ jbrowse make-protein-features genes.gff3 interpro.tsv --source Pfam --out pfam.bed.gz',
   ]
 
@@ -86,66 +80,10 @@ export async function run(args?: string[]) {
   }
   validateRequiredCommands(['sh', 'bgzip', 'tabix'])
 
-  const sources = flags.source?.split(',').map(s => s.trim().toLowerCase())
   const outputFile = flags.out ?? 'protein_features.bed.gz'
-
-  const { lookup, transcripts } = await readCodingTranscripts(annotation)
-  if (transcripts === 0) {
-    throw new Error(
-      `${annotation} has no CDS rows to place protein features on`,
-    )
-  }
-
-  const rows: { refName: string; start: number; line: string }[] = []
-  const unmatched = new Set<string>()
-  let skippedSource = 0
-  let pastCds = 0
-  const isProtein = (id: string) => findTranscript(lookup, id) !== undefined
-  const parsed: ProteinCall[] = []
-  for await (const line of readLines(calls)) {
-    const call = parseCall(line, isProtein)
-    if (!call) {
-      continue
-    }
-    if (sources && !sources.includes(call.source.toLowerCase())) {
-      skippedSource++
-    } else {
-      parsed.push(call)
-    }
-  }
-  for (const call of bestOfOverlappingHmmerHits(parsed)) {
-    const transcript = findTranscript(lookup, call.protein)
-    if (!transcript) {
-      unmatched.add(call.protein)
-      continue
-    }
-    const blocks = projectResidues(transcript, call.start, call.end)
-    if (blocks.length === 0) {
-      pastCds++
-      continue
-    }
-    rows.push({
-      refName: transcript.refName,
-      start: blocks[0]!.start,
-      line: bedLine(transcript, call, blocks),
-    })
-  }
-  if (rows.length === 0) {
-    throw new Error(
-      `No protein features in ${calls} matched a transcript in ${annotation}${
-        unmatched.size > 0
-          ? `; protein names such as ${[...unmatched].slice(0, 3).join(', ')} match no transcript ID, protein_id or CDS ID`
-          : ''
-      }`,
-    )
-  }
-  rows.sort((a, b) =>
-    a.refName === b.refName
-      ? a.start - b.start
-      : a.refName < b.refName
-        ? -1
-        : 1,
-  )
+  const placed = await placeProteinFeatures(annotation, calls, {
+    sources: flags.source?.split(',').map(s => s.trim()),
+  })
 
   const partFile = `${outputFile}.part`
   const child = spawn(
@@ -155,7 +93,7 @@ export async function run(args?: string[]) {
   )
   const closed = waitForProcessClose(child)
   child.stdin.write(`#${BED_HEADER.join('\t')}\n`)
-  for (const { line } of rows) {
+  for (const line of placed.lines) {
     child.stdin.write(`${line}\n`)
   }
   child.stdin.end()
@@ -168,20 +106,15 @@ export async function run(args?: string[]) {
   fs.renameSync(partFile, outputFile)
   fs.renameSync(`${partFile}.tbi`, `${outputFile}.tbi`)
 
-  if (unmatched.size > 0) {
-    console.warn(
-      `Warning: ${unmatched.size} protein(s) match no transcript, e.g. ${[...unmatched].slice(0, 3).join(', ')}`,
-    )
-  }
-  if (pastCds > 0) {
-    console.warn(
-      `Warning: ${pastCds} feature(s) start past the end of their transcript's CDS; is the annotation the one the proteins came from?`,
-    )
+  for (const warning of placementWarnings(placed)) {
+    console.warn(`Warning: ${warning}`)
   }
   const skipped =
-    skippedSource > 0 ? ` (${skippedSource} from other analyses left out)` : ''
+    placed.skippedSource > 0
+      ? ` (${placed.skippedSource} from other analyses left out)`
+      : ''
   console.log(
-    `Placed ${rows.length} protein features on ${transcripts} coding transcripts${skipped}\n` +
+    `Placed ${placed.lines.length} protein features on ${placed.transcripts} coding transcripts${skipped}\n` +
       `Created ${outputFile} and ${outputFile}.tbi`,
   )
 }
