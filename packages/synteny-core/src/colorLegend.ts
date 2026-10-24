@@ -145,7 +145,6 @@ function indelChips(
 }
 
 const VIEW_FIELD_LABELS: Record<string, string> = {
-  '': 'Default',
   strand: 'Strand',
   query: 'Query name',
   target: 'Target name',
@@ -159,11 +158,13 @@ const VIEW_FIELD_LABELS: Record<string, string> = {
  * preset title, and a column's own name, which is the point of it — the
  * reader named it.
  */
-export function colorByShortLabel(field: string) {
-  return (
-    VIEW_FIELD_LABELS[field] ??
-    (isMeasureField(field) ? SYNTENY_FIELD_PRESETS[field].legend.title : field)
-  )
+export function colorByShortLabel(field: string | undefined) {
+  return field === undefined
+    ? 'Default'
+    : (VIEW_FIELD_LABELS[field] ??
+        (isMeasureField(field)
+          ? SYNTENY_FIELD_PRESETS[field].legend.title
+          : field))
 }
 
 // A threshold's bins as chips, named by `names` or the field's preset and
@@ -201,7 +202,7 @@ function thresholdChips(
 // What a field with no swatch spec is doing instead. Lives here rather than
 // inline in each legend so the HTML and SVG legends can't say different things
 // — the same rule this file already applies to chip colors and ramp stops.
-export function colorByFallbackNote(field: string) {
+export function colorByFallbackNote(field: string | undefined) {
   return field === 'track'
     ? 'Distinct color per track'
     : 'Distinct color per sequence'
@@ -215,7 +216,7 @@ export function colorByFallbackNote(field: string) {
 // passes the ops actually drawn on screen, defaulting to the static I+D menu
 // preview.
 export function getColorBySwatch(
-  field: string,
+  field: string | undefined,
   {
     pointBased = false,
     cigarOps = DEFAULT_CIGAR_OPS,
@@ -253,7 +254,7 @@ export function getColorBySwatch(
   // dotplot paints flat points and never draws CIGAR ops
   const ops = pointBased ? NO_CIGAR_OPS : cigarOps
   switch (field) {
-    case '':
+    case undefined:
       return {
         kind: 'chips',
         // dotplot draws each alignment as one flat point, not the ribbon's red
@@ -361,7 +362,7 @@ export function getColorBySwatch(
  * none.
  */
 export function colorByScales(
-  field: string,
+  field: string | undefined,
   {
     alpha = 1,
     title = colorByShortLabel(field),
@@ -379,7 +380,7 @@ export function colorByScales(
     return [
       {
         kind: 'ramp',
-        id: field,
+        id: field ?? 'default',
         title,
         domain,
         stops,
@@ -393,7 +394,7 @@ export function colorByScales(
   return [
     {
       kind: 'categorical',
-      id: field || 'default',
+      id: field ?? 'default',
       title,
       entries: swatch
         ? swatch.chips.map(({ color, label, values, missing }) => ({

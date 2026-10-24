@@ -9,7 +9,7 @@ import type { ColorByMenuTarget } from './colorByMenuTarget.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 
 interface ModeEntry {
-  value: string
+  value: string | undefined
   label: string
   helpText: string
   disabledHelpText?: string
@@ -45,8 +45,12 @@ function valueModes({
   structuralFields,
   surface,
 }: ColorByMenuTarget): ModeEntry[] {
-  const presets = COLOR_MODES.filter(
-    m => m.kind === 'value' && (m.surfaces?.includes(surface) ?? true),
+  const presets = COLOR_MODES.flatMap(({ field, ...m }) =>
+    field !== undefined &&
+    m.kind === 'value' &&
+    (m.surfaces?.includes(surface) ?? true)
+      ? [{ ...m, field }]
+      : [],
   )
   // one radio per field: a column an aligner happened to name `identity` or
   // `strand` is the preset or the structural radio already listed, since both
@@ -77,7 +81,8 @@ function radios(target: ColorByMenuTarget, modes: ModeEntry[]): MenuItem[] {
     label,
     type: 'radio' as const,
     checked:
-      target.field === value && !(value === '' && target.solidColor?.checked),
+      target.field === value &&
+      !(value === undefined && target.solidColor?.checked),
     helpText,
     disabled: disabledHelpText !== undefined,
     disabledHelpText,

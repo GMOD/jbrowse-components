@@ -45,6 +45,24 @@ test('the color radios sit in the circular view menu and the comparative headers
   ])
 })
 
+test('a synteny color channel names Default, Solid color, a preset or a column', () => {
+  const path = (color: unknown) =>
+    stepPaths('encoding.color', color, 'DotplotView')
+  expect(path({})).toEqual(['Dotplot header → palette button → Default'])
+  expect(path({ field: '' })).toEqual([
+    'Dotplot header → palette button → Default',
+  ])
+  expect(path({ value: 'red' })).toEqual([
+    'Dotplot header → palette button → Solid color...',
+  ])
+  expect(path('identity')).toEqual([
+    'Dotplot header → palette button → Color by value → Identity',
+  ])
+  expect(path('gene_group')).toEqual([
+    'Dotplot header → palette button → Color by value → gene_group',
+  ])
+})
+
 test('hiding unlabelled rows is a valid predicate the color menu writes', () => {
   const filter = [{ field: 'gene_group', valid: true }]
   expect(stepPaths('filter', filter, 'LinearSyntenyView')).toEqual([

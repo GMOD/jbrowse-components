@@ -49,8 +49,12 @@ function isValidOnly(p: FieldPredicate, field: string) {
   )
 }
 
-function isColumnField(field: string) {
-  return field !== '' && !STRUCTURAL_FIELDS.has(field) && !isMeasureField(field)
+function isColumnField(field: string | undefined): field is string {
+  return (
+    field !== undefined &&
+    !STRUCTURAL_FIELDS.has(field) &&
+    !isMeasureField(field)
+  )
 }
 
 // A label list only ever gains labels, in the order they were first seen, and
@@ -167,10 +171,11 @@ export function orderAttributeLabels(
  * that list (palette assignment, mode resolution, legend rows) is identical, so
  * it lives here rather than being copied into both models.
  */
-export function TrackColorsMixin({ defaultColorField = '' } = {}) {
-  const implied = defaultColorField || undefined
+export function TrackColorsMixin({
+  defaultColorField,
+}: { defaultColorField?: string } = {}) {
   const writtenOf = (color: AnyConfigurationModel) =>
-    withImpliedField(writtenColorOf(color), implied)
+    withImpliedField(writtenColorOf(color), defaultColorField)
   return types
     .compose(
       SyntenyFilterMixin(),
@@ -302,14 +307,17 @@ export function TrackColorsMixin({ defaultColorField = '' } = {}) {
        * field where it names neither a field nor a constant.
        */
       get colorSetting(): SyntenyColorSnapshot {
-        return withImpliedField(colorSnapshotOf(self.encoding.color), implied)
+        return withImpliedField(
+          colorSnapshotOf(self.encoding.color),
+          defaultColorField,
+        )
       },
       /**
        * #getter
        * The field the view paints while `encoding.color` names neither a
-       * field nor a constant, '' for its default scheme.
+       * field nor a constant, undefined for its default scheme.
        */
-      get impliedColorField(): string {
+      get impliedColorField(): string | undefined {
         return defaultColorField
       },
       /**
@@ -414,9 +422,9 @@ export function TrackColorsMixin({ defaultColorField = '' } = {}) {
       },
       /**
        * #getter
-       * The field `encoding.color` paints by, `''` for the default color.
+       * The field `encoding.color` paints by, undefined for the default color.
        */
-      get colorField(): string {
+      get colorField(): string | undefined {
         return paintedField(self.colorSetting)
       },
       /**
@@ -426,7 +434,10 @@ export function TrackColorsMixin({ defaultColorField = '' } = {}) {
        */
       get hideUnlabelled(): boolean {
         const field = this.colorField
-        return self.predicates.some(p => isValidOnly(p, field))
+        return (
+          field !== undefined &&
+          self.predicates.some(p => isValidOnly(p, field))
+        )
       },
       /**
        * #getter
@@ -481,10 +492,10 @@ export function TrackColorsMixin({ defaultColorField = '' } = {}) {
        * view, and the ramp domain it labels is the view's.
        */
       get colorScales(): ColorScale[] {
-        if (!self.hasLegendKey) {
+        const field = self.colorField
+        if (!self.hasLegendKey || field === undefined) {
           return []
         }
-        const field = self.colorField
         const { scale, legend } = self.colorSetting
         const textColumn =
           isColumnField(field) &&
@@ -561,19 +572,22 @@ export function TrackColorsMixin({ defaultColorField = '' } = {}) {
          */
         setHideUnlabelled(value: boolean) {
           const field = self.colorField
+          if (field === undefined) {
+            return
+          }
           const rest = self.predicates.filter(p => !isValidOnly(p, field))
           self.setFilter(value ? [...rest, { field, valid: true }] : rest)
         },
         /**
          * #action
-         * Set the field the view paints by over `encoding.color`, `''`
+         * Set the field the view paints by over `encoding.color`, undefined
          * unsetting it for the view's default, and rescale the ramp, which is
          * the only way back from a domain one outlying window widened.
          */
-        setColorField(field: string) {
+        setColorField(field: string | undefined) {
           const written = writtenOf(self.encoding.color)
           const next =
-            field === ''
+            field === undefined
               ? colorForValue(written, undefined)
               : colorForField(written, field, self.parkedColor)
           writeColor(written, next)

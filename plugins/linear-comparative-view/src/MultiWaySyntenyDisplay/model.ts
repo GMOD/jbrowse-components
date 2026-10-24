@@ -566,7 +566,7 @@ export function stateModelFactory(
           persistTrackConfigNow(self)
         },
         /** #action */
-        setRibbonColorField(field: string) {
+        setRibbonColorField(field: string | undefined) {
           const ribbonColor = self.configuration.ribbons.encoding.color
           if (
             field !== paintedRibbonColor(colorSnapshotOf(ribbonColor)).field
@@ -575,7 +575,7 @@ export function stateModelFactory(
           }
           const written = writtenColorOf(ribbonColor)
           const next =
-            field === ''
+            field === undefined
               ? colorForValue(written, undefined)
               : colorForField(written, field, self.parkedColorOf('ribbons'))
           self.parkColor('ribbons', written, next)

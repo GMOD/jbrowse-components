@@ -349,7 +349,7 @@ function alignmentsFacetStep(value: unknown): FieldStep | undefined {
 // imported. Note the neighbouring `colorByShortLabel` in the same package looks
 // like the same table and is not: it titles the floating legend, where these
 // read 'Query name' and 'Reference name'.
-const SYNTENY_COLOR_MODES: Record<string, string> = Object.fromEntries(
+const SYNTENY_COLOR_MODES = new Map(
   COLOR_MODES.map(m => [
     m.field,
     m.kind === 'value' ? `${VALUE_MODES_LABEL} → ${m.label}` : m.label,
@@ -361,22 +361,23 @@ const SOLID_COLOR = 'Solid color...'
 // A synteny color channel (the views' `encoding.color`, the multi-way
 // display's `ribbons.encoding.color`) as the Color by row that writes it: Solid
 // color... for a `value` with no field, else the radio of the field it names,
-// `''` for Default.
-function syntenyColorField(value: unknown) {
+// Default for none. A declared column has no fixed label but its own name,
+// under Color by value.
+function syntenyColorMode(value: unknown) {
   const color = channelOf(value)
   if (!color) {
     return undefined
   }
-  return color.field === undefined && color.value !== undefined
-    ? SOLID_COLOR
-    : paintedField({ field: asString(color.field) })
-}
-
-// A declared column has no fixed label but its own name, under Color by value.
-function syntenyColorLabel(field: string | undefined) {
-  return field === undefined || field === SOLID_COLOR
-    ? field
-    : (SYNTENY_COLOR_MODES[field] ?? `${VALUE_MODES_LABEL} → ${field}`)
+  if (color.field === undefined && color.value !== undefined) {
+    return { field: undefined, label: SOLID_COLOR }
+  }
+  const field = paintedField({ field: asString(color.field) })
+  return {
+    field,
+    label:
+      SYNTENY_COLOR_MODES.get(field) ??
+      `${VALUE_MODES_LABEL} → ${field ?? ''}`,
+  }
 }
 
 // Unlike every other colorBy here the value is not an enum — it is whichever
@@ -1809,7 +1810,7 @@ export const trackFields: Record<string, FieldRecipe> = {
         }
       : undefined,
   'ribbons.encoding.color': (value, { displayType }) => {
-    const label = syntenyColorLabel(syntenyColorField(value))
+    const label = syntenyColorMode(value)?.label
     return label && displayType === 'MultiWaySyntenyDisplay'
       ? { path: `${TRACK_MENU} → Color by... → Ribbons → ${label}` }
       : undefined
@@ -2328,8 +2329,8 @@ export const viewFields: Record<string, FieldRecipe> = {
       : undefined
   },
   'encoding.color': (value, { viewType }) => {
-    const mode = syntenyColorField(value)
-    const label = syntenyColorLabel(mode)
+    const mode = syntenyColorMode(value)
+    const label = mode?.label
     const menu = colorMenuPath(viewType)
     return label && menu
       ? {
@@ -2337,7 +2338,7 @@ export const viewFields: Record<string, FieldRecipe> = {
           note:
             viewType === 'CircularView'
               ? undefined
-              : mode === 'reference'
+              : mode.field === 'reference'
                 ? 'The palette button\'s tooltip reads "Color by: ...". Reference is offered only in a stacked view of three or more genomes, where there is a shared reference to trace.'
                 : 'The palette button\'s tooltip reads "Color by: ...".',
         }

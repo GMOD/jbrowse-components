@@ -117,7 +117,7 @@ export type OpacityArg = number | SyntenyOpacitySnapshot | undefined
 export type FilterArg = readonly FieldPredicate[] | undefined
 
 export interface ViewColorSettings {
-  field: string
+  field: string | undefined
   valueColor?: string
   paint: SyntenyColorPaint
   names?: readonly string[]

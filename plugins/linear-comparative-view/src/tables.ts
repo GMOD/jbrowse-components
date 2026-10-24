@@ -126,7 +126,7 @@ function offscreenLane(
     namePosition,
     minAlignmentLength,
   }: {
-    field: string
+    field: string | undefined
     namePosition?: RefNamePosition
     minAlignmentLength: number
   },

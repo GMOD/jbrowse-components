@@ -214,7 +214,8 @@ export interface SyntenyColorsModel extends Instance<
  */
 export function carriedSyntenySettings(view: SyntenyColorsModel) {
   const { trackColors, filter } = getSnapshot(view)
-  const paintsDefault = view.colorField === '' && view.colorValue === undefined
+  const paintsDefault =
+    view.colorField === undefined && view.colorValue === undefined
   return {
     ...(paintsDefault
       ? {}

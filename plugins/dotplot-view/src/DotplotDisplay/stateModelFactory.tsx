@@ -227,7 +227,7 @@ export function stateModelFactory(configSchema: DotplotDisplayConfigSchema) {
        * paints as 'query' — the dotplot twin of `LinearSyntenyDisplay.paintedField`,
        * which resolves it per level.
        */
-      get paintedField(): string {
+      get paintedField(): string | undefined {
         const field = this.view.colorField
         return field === 'reference' ? 'query' : field
       },

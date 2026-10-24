@@ -162,9 +162,9 @@ interface CircularViewInitSelf extends IStateTreeNode {
   finishAutoDiagonalize: () => void
   autoDiagonalize: () => Promise<void>
   canDiagonalize: boolean
-  colorField: string
+  colorField: string | undefined
   colorValue: string | undefined
-  setColorField: (field: string) => void
+  setColorField: (field: string | undefined) => void
 }
 
 // A ribbon display as the view reads it, duck-typed since the display's model

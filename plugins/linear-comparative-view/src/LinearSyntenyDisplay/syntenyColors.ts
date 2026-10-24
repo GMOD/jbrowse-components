@@ -53,7 +53,7 @@ const MARKER_COLOR_HIDDEN = packAbgr(0, 0, 0, 0)
 
 // I/D/N indel colors for the active scheme (strand recolors N/D purple). Both
 // schemes always define I/D/N, so these are unconditional.
-function buildIndelColors(field: string) {
+function buildIndelColors(field: string | undefined) {
   const { cigarColors } =
     field === 'strand' ? colorSchemes.strand : colorSchemes.default
   return {
@@ -91,7 +91,7 @@ export function computeSyntenyColors({
 }: {
   instanceData: InstanceInputs
   featureData: ColorFunctionInputs
-  field: string
+  field: string | undefined
   // the display's slot in the view's track palette; only read under 'track'
   trackColor: string
   // the view's `color.value`: what the match blocks paint under the default

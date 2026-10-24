@@ -78,7 +78,7 @@ export interface ParentViewDuck extends FollowAnchorHost {
   // pan does not re-scale the colors under the reader.
   attributeRanges: Record<string, AttributeRange>
   observeAttributeRanges: (ranges: Record<string, AttributeRange>) => void
-  colorField: string
+  colorField: string | undefined
   colorValue: string | undefined
   colorPaint: SyntenyColorPaint
   // a track's slot in the view's palette, keyed by trackId

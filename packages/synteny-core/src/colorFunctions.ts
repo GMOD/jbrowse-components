@@ -105,7 +105,7 @@ export type RefNameColor = (refName: string) => string | undefined
  * second. Undefined for any other field, and while that assembly loads.
  */
 export function refNamePositionFor(
-  field: string,
+  field: string | undefined,
   [queryAssembly, targetAssembly]: readonly (string | undefined)[],
   assemblyManager: {
     get: (name: string) => { getRefNamePosition: RefNamePosition } | undefined
@@ -334,8 +334,8 @@ export interface ColorFunctionInputs {
 }
 
 /**
- * The color `field` resolved to a packed-ABGR color per FEATURE index: `''`
- * paints `defaultColor`, the structural fields what an alignment is, a preset
+ * The color `field` resolved to a packed-ABGR color per FEATURE index:
+ * undefined paints `defaultColor`, the structural fields what an alignment is, a preset
  * or column its ramp or label palette.
  *
  * `defaultColor` is the one thing the two views legitimately disagree on: a
@@ -373,7 +373,7 @@ export function createComparativeColorFunction(
 }
 
 interface ComparativeColorArgs {
-  field: string
+  field: string | undefined
   data: ColorFunctionInputs
   // the display's slot in the view's track palette; only read under 'track'
   trackColor: string
@@ -413,7 +413,7 @@ function paintFunction({
   paint,
 }: ComparativeColorArgs): (index: number) => number {
   switch (field) {
-    case '':
+    case undefined:
       return () => defaultColor
     // One flat color for every alignment in this track, so overlaid tracks are
     // told apart by hue rather than all painting the conventional default.

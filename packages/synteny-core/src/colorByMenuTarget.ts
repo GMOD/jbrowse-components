@@ -29,7 +29,7 @@ export function colorByMenuTargetFor(
   return {
     field: model.colorField,
     structuralFields: [
-      ...(model.impliedColorField ? [] : ['']),
+      ...(model.impliedColorField === undefined ? [undefined] : []),
       'strand',
       ...(tracks.length > 1 ? ['track'] : []),
       'query',
@@ -47,7 +47,7 @@ export function colorByMenuTargetFor(
       model.setHideUnlabelled(value)
     },
     solidColor: {
-      checked: model.colorField === '' && model.colorValue !== undefined,
+      checked: model.colorField === undefined && model.colorValue !== undefined,
       pick: () => {
         model.openSolidColorDialog()
       },
@@ -71,14 +71,14 @@ export interface TrackColorsModel {
   colorableTracks: ColorableTrack[]
   colorableAttributes: string[]
   attributeRanges: Record<string, AttributeRange>
-  colorField: string
-  impliedColorField: string
+  colorField: string | undefined
+  impliedColorField: string | undefined
   colorValue: string | undefined
   hideUnlabelled: boolean
   trackColorFor: (trackId: string) => string
   colorSurface: () => SyntenyColorSurface
   offersReferenceColor: () => boolean
-  setColorField: (field: string) => void
+  setColorField: (field: string | undefined) => void
   setHideUnlabelled: (value: boolean) => void
   openSolidColorDialog: () => void
   setTrackColor: (trackId: string, value: string | undefined) => void
@@ -86,10 +86,10 @@ export interface TrackColorsModel {
 }
 
 export interface ColorByMenuTarget {
-  /** the field the surface paints by, `''` for its default color */
-  field: string
+  /** the field the surface paints by, undefined for its default color */
+  field: string | undefined
   /** the structural fields the surface paints, in `COLOR_MODES` order */
-  structuralFields: readonly string[]
+  structuralFields: readonly (string | undefined)[]
   /**
    * columns the tracks declare, each offered as its own mode. Taken from the
    * track config rather than from the data so the menu is right before
@@ -105,7 +105,7 @@ export interface ColorByMenuTarget {
   /** what draws the alignments, which some modes' help describes differently */
   surface: ColorModeSurface
   hideUnlabelled: boolean
-  setColorField: (field: string) => void
+  setColorField: (field: string | undefined) => void
   setHideUnlabelled: (value: boolean) => void
   /** whether a constant paints, and the picker Solid color... opens */
   solidColor?: { checked: boolean; pick: () => void }

@@ -31,7 +31,8 @@ export function paintedRibbonColor(setting: SyntenyColorSnapshot) {
   const color = withImpliedField(setting, RIBBON_IMPLIED_FIELD)
   const field = paintedField(color)
   return {
-    value: (field ? color.scale?.invalid : color.value) ?? RIBBON_GREY,
+    value:
+      (field === undefined ? color.value : color.scale?.invalid) ?? RIBBON_GREY,
     field,
   }
 }

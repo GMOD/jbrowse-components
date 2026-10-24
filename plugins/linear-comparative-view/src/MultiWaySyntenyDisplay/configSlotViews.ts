@@ -46,7 +46,7 @@ export function configSlotViews(self: ConfigSlotSelf) {
       return kept.length ? kept : undefined
     },
     /** #getter */
-    get ribbonColorField(): string {
+    get ribbonColorField(): string | undefined {
       return paintedRibbonColor(
         colorSnapshotOf(self.configuration.ribbons.encoding.color),
       ).field

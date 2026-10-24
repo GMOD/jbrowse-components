@@ -98,7 +98,7 @@ export function laneFieldKey(
 }
 
 export function ribbonColorKey(
-  field: string,
+  field: string | undefined,
   attributeRanges: Record<string, AttributeRange> = {},
   {
     hideUnlabelled = false,
@@ -156,7 +156,7 @@ interface RibbonKeyOptions {
 
 /** `title` unset keeps the ribbons' own heading; `''` draws none. */
 export function ribbonColorScales(
-  field: string,
+  field: string | undefined,
   attributeRanges: Record<string, AttributeRange>,
   {
     domain,

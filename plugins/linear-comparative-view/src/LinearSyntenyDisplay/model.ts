@@ -675,7 +675,7 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
        * 'reference' view reports 'reference' rather than the query/target each
        * level resolved it to.
        */
-      get colorField(): string {
+      get colorField(): string | undefined {
         return this.view.colorField
       },
       /**
@@ -691,7 +691,7 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
        * assembly it does not draw, so the cross-level color continuity stops at
        * that level while the legend still reads "reference".
        */
-      get paintedField(): string {
+      get paintedField(): string | undefined {
         const field = this.colorField
         if (field === 'reference') {
           const anchor = this.view.anchorAssemblyName

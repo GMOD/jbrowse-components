@@ -31,7 +31,7 @@ import type {
 const POINT_COLOR = cssColorToABGR(colorSchemes.default.pointColor)
 
 export function createDotplotColorFunction(
-  field: string,
+  field: string | undefined,
   data: DotplotRpcData,
   trackColor: string,
   attributeRanges: Record<string, AttributeRange>,
@@ -77,7 +77,7 @@ export function computeDotplotColors({
 }: {
   instanceData: DotplotInstanceData
   rpcData: DotplotRpcData
-  field: string
+  field: string | undefined
   // the display's slot in the view's track palette; only read under 'track'
   trackColor: string
   // the view's `colorBy.value`: what the points paint under the default mode

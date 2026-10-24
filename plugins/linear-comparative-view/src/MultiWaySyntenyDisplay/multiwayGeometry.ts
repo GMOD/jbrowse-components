@@ -269,7 +269,7 @@ class RibbonBuilder {
  * twist, since a flipped lane draws its inversions straight.
  */
 function ribbonColorer(
-  field: string,
+  field: string | undefined,
   slotColor: number,
   attributeRanges: Record<string, AttributeRange>,
   hideUnlabelled: boolean,
@@ -351,7 +351,7 @@ interface LinkMate {
   assemblyName?: string
 }
 
-export function mismatchColor(field: string) {
+export function mismatchColor(field: string | undefined) {
   const { cigarColors } =
     field === 'strand' ? colorSchemes.strand : colorSchemes.default
   return cssColorToABGR(cigarColors.X)
@@ -474,7 +474,7 @@ export function buildRibbonGeometry({
   anchorOps = new Map(),
   laneLinks,
   ribbonColor,
-  ribbonColorField = '',
+  ribbonColorField,
   attributeRanges = {},
   hideUnlabelled = false,
   paint,

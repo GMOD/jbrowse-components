@@ -478,7 +478,7 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
        */
       get legendColor(): string | undefined {
         const { view } = self
-        return view.colorField === ''
+        return view.colorField === undefined
           ? abgrToCssRgba(
               scaleAbgrAlpha(defaultAbgr(view.colorValue), view.opacityLevel),
             )

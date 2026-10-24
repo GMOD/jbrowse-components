@@ -7,14 +7,14 @@ export type ColorModeSurface = 'ribbons' | 'points' | 'lanes'
 export type SyntenyColorSurface = Exclude<ColorModeSurface, 'lanes'>
 
 /**
- * One radio of the Color by menu, keyed by the field it writes; `''` is the
- * default color. A `structural` field is what an alignment is (its strand,
+ * One radio of the Color by menu, keyed by the field it writes; undefined is
+ * the default color. A `structural` field is what an alignment is (its strand,
  * its track, the sequence it lies on) and sits at the menu's top level; a
  * `value` is a measurement on a preset ramp, folded under "Color by value"
  * beside the columns a track declares.
  */
 export interface ColorModeEntry {
-  field: string
+  field: string | undefined
   kind: 'structural' | 'value'
   label: string
   helpText: string
@@ -25,7 +25,7 @@ export interface ColorModeEntry {
 
 export const COLOR_MODES: ColorModeEntry[] = [
   {
-    field: '',
+    field: undefined,
     kind: 'structural',
     label: 'Default',
     helpText:

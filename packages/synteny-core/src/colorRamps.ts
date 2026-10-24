@@ -43,8 +43,10 @@ export type SyntenyMeasureField = keyof typeof SYNTENY_FIELD_PRESETS
  * Whether `field` is a preset measurement. An own-property lookup: a field
  * spelled `toString` is a column nobody declared, not `Object`'s method.
  */
-export function isMeasureField(field: string): field is SyntenyMeasureField {
-  return Object.hasOwn(SYNTENY_FIELD_PRESETS, field)
+export function isMeasureField(
+  field: string | undefined,
+): field is SyntenyMeasureField {
+  return field !== undefined && Object.hasOwn(SYNTENY_FIELD_PRESETS, field)
 }
 
 /**
@@ -207,11 +209,11 @@ export interface CategoricalMode {
  * values are numbers, a preset, or the constant.
  */
 export function resolveCategoricalMode(
-  field: string,
+  field: string | undefined,
   ranges?: Record<string, AttributeRange>,
 ): CategoricalMode | undefined {
-  const range = field ? ranges?.[field] : undefined
-  return range && isAttributeLabels(range)
+  const range = field === undefined ? undefined : ranges?.[field]
+  return field !== undefined && range && isAttributeLabels(range)
     ? {
         attribute: field,
         labels: range.labels,
@@ -259,11 +261,11 @@ export function strandLevels(
  * field and a text column.
  */
 export function resolveNumericMode(
-  field: string,
+  field: string | undefined,
   ranges: Record<string, AttributeRange> = {},
   paint: SyntenyColorPaint = {},
 ): NumericMode | undefined {
-  if (!field || STRUCTURAL_FIELDS.has(field)) {
+  if (field === undefined || STRUCTURAL_FIELDS.has(field)) {
     return undefined
   }
   const attribute = attributeOf(field)

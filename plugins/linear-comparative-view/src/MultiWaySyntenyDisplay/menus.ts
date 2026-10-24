@@ -66,8 +66,8 @@ export interface MultiWayMenuModel extends LaneHeaderModel, LaneSelectionModel {
   hiddenLanes: readonly string[]
   showHiddenLanes: () => void
   openLaneSelection: () => void
-  ribbonColorField: string
-  setRibbonColorField: (field: string) => void
+  ribbonColorField: string | undefined
+  setRibbonColorField: (field: string | undefined) => void
   openRibbonSolidColorDialog: () => void
   ribbonColorAttributes: readonly string[]
   ribbonAttributeRanges: Record<string, AttributeRange>
@@ -321,7 +321,7 @@ export function ribbonColorMenuItems(model: MultiWayMenuModel): MenuItem[] {
     setColorField: model.setRibbonColorField,
     setHideUnlabelled: model.setHideUnlabelled,
     solidColor: {
-      checked: model.ribbonColorField === '',
+      checked: model.ribbonColorField === undefined,
       pick: () => {
         model.openRibbonSolidColorDialog()
       },
