@@ -1545,6 +1545,17 @@ test('a region arrival invalidates renderState, not just the size gate', () => {
   dispose()
 })
 
+test('coverage.alleles.show reaches renderState without a refetch', () => {
+  const display = createDisplay()
+  const rpcProps = display.rpcProps()
+  expect(display.renderState.showCoverageAlleles).toBe(true)
+  display.setShowCoverageAlleles(false)
+  expect(display.renderState.showCoverageAlleles).toBe(false)
+  expect(display.rpcProps()).toEqual(rpcProps)
+  display.setShowCoverageAlleles(true)
+  expect(display.renderState.showCoverageAlleles).toBe(true)
+})
+
 // The upload autorun reads `sourceSections`, and `sync` packs ~9 GPU passes per
 // region from what it finds there. Which tier a setting lands in therefore
 // decides whether flipping it repacks every buffer on the track. Two tiers are

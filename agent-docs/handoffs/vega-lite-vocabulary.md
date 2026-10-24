@@ -69,7 +69,11 @@ Layout, the multi-way leftovers and settings with no step are in
   respell and a tutorial re-knit (memory `a-config-rename-reaches-ggjbrowse`),
   since the closed-schema bundle drops an old key silently. A new key needs
   the re-pin too: `coverage.alleles.show` waits on one, and on a line in
-  `R/alignments.R` beside `interbase$show`. `dog10k_lof` waits
+  `R/alignments.R` beside `interbase$show`. Its
+  `test-alignments.R:286` still expects `modifications$unmodified = "all"`
+  to fill more than `"calls"`, which `pileup.bases.unmodified.show` merged,
+  so the downstream canary stays red until that re-pin drops the assertion.
+  `dog10k_lof` waits
   on the callset host's certificate.
 - **Figure specs:** [screenshot-spec-elegance.md](screenshot-spec-elegance.md)
   owns the respell. It can use the landed words now: filters (plain-equality
