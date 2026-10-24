@@ -405,7 +405,7 @@ export const methylationSpecs: ScreenshotSpec[] = [
     url: snrpnReadsPanel({ grouped: true }),
     readySelector: displayPainted('pileup-display'),
     readyTimeout: 90000,
-    viewportHeight: 730,
+    viewportHeight: 742,
     // HP: 1 is the first group, so `dy` drops its pill off the track header.
     annotations: [
       {
@@ -422,6 +422,28 @@ export const methylationSpecs: ScreenshotSpec[] = [
         type: 'text',
         text: 'HP unknown',
         anchor: { text: 'HP: none', alignX: 'right', dx: 90 },
+      },
+      {
+        type: 'text',
+        text: 'Methylated',
+        leader: true,
+        anchor: {
+          trackId: 'HG002_snrpn_5mC_reads',
+          loc: 'chr15:24,955,800',
+          fracY: 0.12,
+        },
+        dx: 120,
+      },
+      {
+        type: 'text',
+        text: 'Unmethylated',
+        leader: true,
+        anchor: {
+          trackId: 'HG002_snrpn_5mC_reads',
+          loc: 'chr15:24,955,800',
+          fracY: 0.45,
+        },
+        dx: 120,
       },
     ],
   },

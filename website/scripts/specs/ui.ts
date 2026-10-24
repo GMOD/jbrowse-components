@@ -509,6 +509,14 @@ export const uiSpecs: ScreenshotSpec[] = [
           type: 'LinearGenomeView',
           assembly: 'hg19',
           loc: '1:55,705,770-55,706,090',
+          highlight: [
+            {
+              refName: '1',
+              start: 55_705_905,
+              end: 55_705_907,
+              label: 'Insertion',
+            },
+          ],
           tracks: [
             { trackId: 'nstd175.GRCh37.variant_call.vcf', height: 60 },
             { trackId: 'hg002_nanopore', height: 260 },
@@ -528,6 +536,31 @@ export const uiSpecs: ScreenshotSpec[] = [
     readyText: 'HG002',
     readyTimeout: 60000,
     viewportHeight: 1234,
+    annotations: [
+      {
+        type: 'text',
+        text: 'Nanopore',
+        anchor: { text: 'HG002 BAM ultralong', alignX: 'right', dx: 40 },
+      },
+      {
+        type: 'text',
+        text: 'PacBio',
+        anchor: { text: 'HG002 PacBio Sequel', alignX: 'right', dx: 40 },
+      },
+      {
+        type: 'text',
+        text: 'Illumina',
+        anchor: { text: 'HG002 Illumina', alignX: 'right', dx: 40 },
+      },
+      {
+        type: 'text',
+        text: 'Soft-clipped bases',
+        leader: true,
+        anchor: { trackId: 'illumina_hg002', loc: '1:55,705,950', fracY: 0.8 },
+        dx: 230,
+        dy: -90,
+      },
+    ],
   },
 
   {

@@ -467,11 +467,19 @@ export const svSpecs: ScreenshotSpec[] = [
           type: 'LinearGenomeView',
           assembly: 'hg19',
           loc: '1:63,005,675-63,007,432',
+          highlight: [
+            {
+              refName: '1',
+              start: 63_006_803,
+              end: 63_006_830,
+              label: 'Deletion',
+            },
+          ],
           tracks: [
             'variants_hg002',
             {
               trackId: 'hg002_nanopore_hp',
-              height: 400,
+              height: 300,
               forceLoad: true,
               facet: 'tags.HP',
               encoding: { color: 'tags.HP' },
@@ -482,7 +490,19 @@ export const svSpecs: ScreenshotSpec[] = [
     }),
     readySelector: displayPainted('pileup-display'),
     readyTimeout: 90000,
-    viewportHeight: 1000,
+    viewportHeight: 700,
+    annotations: [
+      {
+        type: 'text',
+        text: 'Haplotype 1',
+        anchor: { text: 'HP: 1', alignX: 'right', dx: 110, dy: 18 },
+      },
+      {
+        type: 'text',
+        text: 'Haplotype 2',
+        anchor: { text: 'HP: 2', alignX: 'right', dx: 110, dy: 18 },
+      },
+    ],
   },
 
   // A breakpoint where the reads clip hard at one column, so the clip-indicator

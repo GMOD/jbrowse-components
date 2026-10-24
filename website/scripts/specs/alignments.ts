@@ -886,16 +886,11 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
           // let the optional "Found values" tag preview resolve
           { type: 'delay', ms: 1500 },
         ],
-      },
-      {
-        actions: [
+        annotations: [
           {
-            type: 'click',
-            selector: '[role="dialog"] button[type="submit"]',
-          },
-          {
-            type: 'waitForSelector',
-            selector: displayPainted('pileup-display'),
+            type: 'box',
+            pad: 2,
+            anchor: { selector: '[data-testid="group-tag-name-input"]' },
           },
         ],
       },
