@@ -94,6 +94,10 @@ test.each([
     { pileup: bases('modifications', { unmodified: { show: true } }) },
   ],
   [
+    { type: 'modifications', modifications: { twoColor: true } },
+    { pileup: bases('modifications', { unmodified: { show: true } }) },
+  ],
+  [
     {
       type: 'modifications',
       modifications: { isolatedModification: 'm', threshold: 10 },
