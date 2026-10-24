@@ -166,7 +166,7 @@ heading, `''` draws none.
 
 ```js
 // type signature
-(field: string, { alpha, title, ...opts }?: { pointBased?: boolean | undefined; cigarOps?: number | undefined; trackChips?: ColorChip[] | undefined; attributeRanges?: Record<string, AttributeRange> | undefined; hideUnlabelled?: boolean | undefined; missingColor?: string | undefined; names?: readonly string[] | undefined; descending?: boolean | undefined; paint?: SyntenyColorPaint | undefined; } & { alpha?: number | undefined; title?: string | undefined; }) => ColorScale[]
+(field: string | undefined, { alpha, title, ...opts }?: { pointBased?: boolean | undefined; cigarOps?: number | undefined; trackChips?: ColorChip[] | undefined; attributeRanges?: Record<string, AttributeRange> | undefined; hideUnlabelled?: boolean | undefined; missingColor?: string | undefined; names?: readonly string[] | undefined; descending?: boolean | undefined; paint?: SyntenyColorPaint | undefined; } & { alpha?: number | undefined; title?: string | undefined; }) => ColorScale[]
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/colorLegend.ts)
@@ -192,7 +192,7 @@ named it.
 
 ```js
 // type signature
-(field: string) => string
+(field: string | undefined) => string
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/colorLegend.ts)
@@ -249,7 +249,7 @@ The Identity fade toggle of a view with `SyntenyViewMixin`: `opacity` read from
 
 ```js
 // type signature
-(model: { opacityField: string; setOpacityField: (field: string) => void; }) => MenuItem
+(model: { opacityField: string | undefined; setOpacityField: (field: string | undefined) => void; }) => MenuItem
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/settingsMenuItems.ts)
@@ -261,7 +261,7 @@ Whether `field` is a preset measurement. An own-property lookup: a field spelled
 
 ```js
 // type signature
-(field: string) => field is "dnds" | "identity" | "mapq" | "syntenicDepth"
+(field: string | undefined) => field is "dnds" | "identity" | "mapq" | "syntenicDepth"
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/colorRamps.ts)
@@ -436,12 +436,12 @@ number column's default fade.
 
 ### paintedField
 
-The field a synteny color channel paints by, or `''` while it names none. Read
-through the one resolver every display's color channel goes through.
+The field a synteny color channel paints by, or undefined while it names none.
+Read through the one resolver every display's color channel goes through.
 
 ```js
 // type signature
-({ value, scale, field, }: SyntenyColorSnapshot) => string
+({ value, scale, field, }: SyntenyColorSnapshot) => string | undefined
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/syntenyColorBy.ts)
@@ -454,7 +454,7 @@ Undefined for any other field, and while that assembly loads.
 
 ```js
 // type signature
-(field: string, [queryAssembly, targetAssembly]: readonly (string | undefined)[], assemblyManager: { get: (name: string) => { getRefNamePosition: RefNamePosition; } | undefined; }) => RefNamePosition | undefined
+(field: string | undefined, [queryAssembly, targetAssembly]: readonly (string | undefined)[], assemblyManager: { get: (name: string) => { getRefNamePosition: RefNamePosition; } | undefined; }) => RefNamePosition | undefined
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/colorFunctions.ts)
@@ -482,7 +482,7 @@ a text column.
 
 ```js
 // type signature
-(field: string, ranges?: Record<string, AttributeRange>, paint?: SyntenyColorPaint) => NumericMode | undefined
+(field: string | undefined, ranges?: Record<string, AttributeRange>, paint?: SyntenyColorPaint) => NumericMode | undefined
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/colorRamps.ts)
@@ -515,12 +515,13 @@ displays.
 
 ### syntenyColorFor
 
-The color channel that paints by `field`, written over `current`: display-kit's
-`colorForField`, the rule every display's Color by pick writes by.
+The color channel that paints by `field`, written over `current`, undefined
+clearing the field: display-kit's `colorForField`, the rule every display's
+Color by pick writes by.
 
 ```js
 // type signature
-(field: string, current: SyntenyColorSnapshot) => ColorSlots
+(field: string | undefined, current: SyntenyColorSnapshot) => ColorSlots
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/syntenyColorBy.ts)

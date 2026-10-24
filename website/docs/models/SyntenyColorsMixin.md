@@ -48,7 +48,7 @@ From [TrackColorsMixin](../trackcolorsmixin): <span id="volatile-seenattributera
 | <span id="getter-opacitysetting">**opacitySetting**</span><br><code>SyntenyOpacitySnapshot</code> | `encoding.opacity` as its snapshot holds it. |
 | <span id="getter-opacityfade">**opacityFade**</span><br><code>SyntenyOpacitySnapshot &#124; undefined</code> | What the color pass fades each alignment by: the field's mapping with its range as shares of `opacityLevel`, or undefined while `encoding.opacity` draws its constant, so the slider recolors nothing either way. |
 | <span id="getter-opacitylevel">**opacityLevel**</span><br><code>number</code> | The opacity every alignment draws at before a field's fade: the shader's uniform (`opacityLevel`). |
-| <span id="getter-opacityfield">**opacityField**</span><br><code>string</code> | The field `encoding.opacity` fades by, `''` while it draws its constant. |
+| <span id="getter-opacityfield">**opacityField**</span><br><code>string &#124; undefined</code> | The field `encoding.opacity` fades by, undefined while it draws its constant. |
 
 <details class="inherited-members" data-pagefind-ignore>
 <summary>18 inherited getters from 3 models</summary>
@@ -88,7 +88,7 @@ From [SyntenyFilterMixin](../syntenyfiltermixin): <span id="method-lowerbound">[
 | Member | Description |
 | --- | --- |
 | <span id="action-setopacity">**setOpacity**</span><br><code>(value: number) =&gt; void</code> | The opacity slider: the constant, or under a field its range scaled so its most opaque end equals `value`. |
-| <span id="action-setopacityfield">**setOpacityField**</span><br><code>(field: string) =&gt; void</code> | Fade by `field` from the current opacity down to 0.3 of it, or with `''` draw every alignment at the opacity the fade reached. |
+| <span id="action-setopacityfield">**setOpacityField**</span><br><code>(field: string &#124; undefined) =&gt; void</code> | Fade by `field` from the current opacity down to 0.3 of it, or with undefined draw every alignment at the opacity the fade reached. |
 
 <details class="inherited-members" data-pagefind-ignore>
 <summary>12 inherited actions from 3 models</summary>
