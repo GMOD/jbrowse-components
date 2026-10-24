@@ -745,7 +745,7 @@ Whether a field has no value: absent, empty, or a VCF's `AF=.`, which
 arrives as `[undefined]`. Text that fails to parse still counts as a value.
 
 ```js
-import { isMissing } from '@jbrowse/core/util/thresholdScale'
+import { isMissing } from '@jbrowse/core/util/groupKeys'
 
 // type signature
 (value: unknown) => boolean

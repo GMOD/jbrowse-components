@@ -5285,14 +5285,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "additionalProperties": false
     },
-    "ProteinFeaturesJoin": {
-      "title": "ProteinFeaturesJoin",
+    "TranscriptFeaturesJoin": {
+      "title": "TranscriptFeaturesJoin",
       "type": "object",
       "x-closed": true,
       "properties": {
-        "domain": {
-          "description": "domain row field naming the domain's transcript.",
-          "default": "transcript",
+        "field": {
+          "description": "row field naming the row's transcript.",
+          "default": "",
           "if": {
             "type": "null"
           },
@@ -5300,8 +5300,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/PlainString"
           }
         },
-        "gene": {
-          "description": "transcript field the domain field equals.",
+        "transcriptField": {
+          "description": "transcript field the row field equals.",
           "default": "id",
           "if": {
             "type": "null"
@@ -5316,8 +5316,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "additionalProperties": false
     },
-    "ProteinFeatures": {
-      "title": "ProteinFeatures",
+    "TranscriptFeaturesTrack": {
+      "title": "TranscriptFeaturesTrack",
       "anyOf": [
         {
           "description": "Shorthand for \`{ \\"track\\": ... }\`.",
@@ -5326,12 +5326,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "type": "string"
         },
         {
-          "title": "ProteinFeatures",
+          "title": "TranscriptFeaturesTrack",
           "type": "object",
           "x-closed": true,
           "properties": {
             "track": {
-              "description": "trackId of the protein-features track.",
+              "description": "trackId of the track whose rows draw.",
               "default": "",
               "if": {
                 "type": "null"
@@ -5340,12 +5340,17 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 "$ref": "#/$defs/PlainString"
               }
             },
-            "color": {
+            "on": {
+              "description": "the transcript spans a row must lie in.",
+              "default": "cds",
               "if": {
                 "type": "null"
               },
               "else": {
-                "$ref": "#/$defs/FeatureColor"
+                "enum": [
+                  "cds",
+                  "exon"
+                ]
               }
             },
             "join": {
@@ -5353,7 +5358,79 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 "type": "null"
               },
               "else": {
-                "$ref": "#/$defs/ProteinFeaturesJoin"
+                "$ref": "#/$defs/TranscriptFeaturesJoin"
+              }
+            },
+            "filter": {
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/FieldPredicate"
+                }
+              }
+            }
+          },
+          "patternProperties": {
+            "^_+comment": {}
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "TranscriptFeaturesEncoding": {
+      "title": "TranscriptFeaturesEncoding",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "color": {
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FeatureColor"
+          }
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
+    "TranscriptFeatures": {
+      "title": "TranscriptFeatures",
+      "anyOf": [
+        {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/TranscriptFeaturesTrack"
+          },
+          "description": "Shorthand for \`{ \\"tracks\\": ... }\`."
+        },
+        {
+          "title": "TranscriptFeatures",
+          "type": "object",
+          "x-closed": true,
+          "properties": {
+            "tracks": {
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/TranscriptFeaturesTrack"
+                }
+              }
+            },
+            "encoding": {
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/TranscriptFeaturesEncoding"
               }
             }
           },
@@ -5715,12 +5792,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/PlainString"
           }
         },
-        "proteinFeatures": {
+        "transcriptFeatures": {
           "if": {
             "type": "null"
           },
           "else": {
-            "$ref": "#/$defs/ProteinFeatures"
+            "$ref": "#/$defs/TranscriptFeatures"
           }
         },
         "maxDisplayedBpPerPx": {
@@ -7486,7 +7563,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "fadeLowFrequency": {
-          "description": "fade each sub-pixel mismatch, insertion, deletion and clip mark by the share of reads at its position that have it: a mark every read has stays opaque, and one under the depth-dependent noise threshold drops to the sub-pixel floor and, past one base per pixel, takes no clicks. Off draws them all at full opacity. The coverage band is not faded (see runCoveragePipeline).",
+          "description": "fade each sub-pixel mismatch, insertion, deletion and clip mark by the share of reads at its position that have it: a mark every read has stays opaque, and one under the depth-dependent noise threshold drops to the sub-pixel floor and, past one base per pixel, takes no clicks. Off draws them all at full opacity. The coverage band is not faded.",
           "default": true,
           "if": {
             "type": "null"
@@ -8888,7 +8965,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "fadeLowFrequency": {
-          "description": "fade each sub-pixel mismatch, insertion, deletion and clip mark by the share of reads at its position that have it: a mark every read has stays opaque, and one under the depth-dependent noise threshold drops to the sub-pixel floor and, past one base per pixel, takes no clicks. Off draws them all at full opacity. The coverage band is not faded (see runCoveragePipeline).",
+          "description": "fade each sub-pixel mismatch, insertion, deletion and clip mark by the share of reads at its position that have it: a mark every read has stays opaque, and one under the depth-dependent noise threshold drops to the sub-pixel floor and, past one base per pixel, takes no clicks. Off draws them all at full opacity. The coverage band is not faded.",
           "default": true,
           "if": {
             "type": "null"
@@ -16254,8 +16331,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "subParts": {
               "$ref": "#/$defs/LinearBasicDisplaySlots/properties/subParts"
             },
-            "proteinFeatures": {
-              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/proteinFeatures"
+            "transcriptFeatures": {
+              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/transcriptFeatures"
             },
             "maxDisplayedBpPerPx": {
               "anyOf": [

@@ -62,7 +62,7 @@ section's `label`. A section `facet.hidden` lists leaves every table.
 
 ```js
 // type signature
-(pluginManager: PluginManager, { adapterConfig, sequenceAdapter, region, regions, display, bpPerPx, colorByFrame, aminoAcids, geneticCodeId, byteLimit, proteinFeatures, }: FeatureTablesArgs) => Promise<{ sections: {…}; legend: {…}; legendTitle: string; domainLegend: {…}; domainLegendTitle: string; ramps: {…}[]; glyph: {…}; bpPerPx: number; config: Record<…>; height: number; truncated: number; subfeatures: {…} & {…}; labels: {…} & {…}; features: {…} & {…}; chevrons: {…} & {…}; rects: {…} & {…}; lines: {…} & {…}; arrows: {…} & {…}; aminoAcids: {…} & { region: number[]; }; }>
+(pluginManager: PluginManager, { adapterConfig, sequenceAdapter, region, regions, display, bpPerPx, colorByFrame, aminoAcids, geneticCodeId, byteLimit, transcriptFeatures, }: FeatureTablesArgs) => Promise<{ sections: {…}; legend: {…}; legendTitle: string; domainLegend: {…}; domainLegendTitle: string; ramps: {…}[]; glyph: {…}; bpPerPx: number; config: Record<…>; height: number; truncated: number; subfeatures: {…} & {…}; labels: {…} & {…}; features: {…} & {…}; chevrons: {…} & {…}; rects: {…} & {…}; lines: {…} & {…}; arrows: {…} & {…}; aminoAcids: {…} & { region: number[]; }; }>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/canvas/src/tables.ts)
