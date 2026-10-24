@@ -8,7 +8,7 @@
 
 import type { ZoomRange } from '../data_adapters/BaseAdapter/zoomRange.ts'
 import type { ColorSchemeName } from './colorSchemes.ts'
-import type { FieldPredicate } from './fieldPredicate.ts'
+import type { FieldPredicate } from './fieldPredicateType.ts'
 import type { ShapeName } from './shapeNameList.ts'
 import type { AggregateOpName } from './stepOutputs.ts'
 

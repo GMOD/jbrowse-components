@@ -32,8 +32,9 @@ import { closure } from './moduleClosure.ts'
 // interface for this reason — `types.ts` beside it carries the status and
 // abort graph through `BaseOptions` — `colorSchemes.ts` and `shapeNameList.ts`,
 // modules for one list each for the same reason, the import-free
-// `stepOutputs.ts`, which holds the aggregate op list, and `fieldPredicate.ts`,
-// whose `FieldPredicate` a filter step's `predicates` takes.
+// `stepOutputs.ts`, which holds the aggregate op list, and the import-free
+// `fieldPredicateType.ts`, whose `FieldPredicate` a filter step's `predicates`
+// takes.
 
 const root = join(__dirname, '..')
 
