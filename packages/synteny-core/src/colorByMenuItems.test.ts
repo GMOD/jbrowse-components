@@ -254,7 +254,7 @@ test('reset rows are disabled until a color is actually pinned', () => {
 // The declared columns appear as modes of their own, which is what keeps the
 // named list above from gaining a member per measurement anyone wants to see.
 test('a declared numeric column is offered as its own mode', () => {
-  const picked: string[] = []
+  const picked: (string | undefined)[] = []
   const items = colorByMenuItems(
     target({
       attributes: ['dn', 'goc_score'],
