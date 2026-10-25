@@ -27,14 +27,30 @@ interface FiltersModel {
     patch: Readonly<Record<string, readonly FieldPredicate[] | undefined>>,
   ) => void
   /** How `filter` differs from what the track's config declares. */
-  filterNarrowing: () => Reversible
+  filterNarrowing: (selects?: (field: string) => boolean) => Reversible
+}
+
+interface FiltersMenuOptions {
+  readCategories?: boolean
+  more?: MenuItem[]
+  /**
+   * The `filter` fields in effect, where some narrow a layer that is off. A
+   * field the menu offers no row for must not count, or the label shows a
+   * "(1)" nothing in the submenu explains.
+   */
+  counts?: (field: string) => boolean
+  /** Narrowings kept outside `filter`, such as the per-base layer's. */
+  narrowings?: Reversibles
 }
 
 // The whole of `filter` as one entry rather than one per field: the dialog's
 // own Reset is the per-field recovery, and each category row below undoes
 // itself, so naming an undo row here would offer a second, coarser one.
-function filterNarrowings(model: FiltersModel): Reversibles {
-  return { filter: model.filterNarrowing() }
+function filterNarrowings(
+  model: FiltersModel,
+  { counts, narrowings }: FiltersMenuOptions,
+): Reversibles {
+  return { filter: model.filterNarrowing(counts), ...narrowings }
 }
 
 function readCategoryItem(
@@ -102,13 +118,11 @@ function minMapqItem(model: FiltersModel): MenuItem {
  */
 export function getFiltersMenuItems(
   model: FiltersModel,
-  {
-    readCategories = false,
-    more = [],
-  }: { readCategories?: boolean; more?: MenuItem[] } = {},
+  options: FiltersMenuOptions = {},
 ) {
+  const { readCategories = false, more = [] } = options
   return filterMenuItems({
-    narrowings: filterNarrowings(model),
+    narrowings: filterNarrowings(model, options),
     subItems: [
       minMapqItem(model),
       ...(readCategories

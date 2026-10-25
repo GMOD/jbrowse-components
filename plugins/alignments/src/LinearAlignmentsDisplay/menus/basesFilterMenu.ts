@@ -16,6 +16,7 @@ import { admitsCode } from '../../shared/types.ts'
 import type { BasesFilter } from '../../shared/types.ts'
 import type { ModificationsMenuModel } from './modificationsMenu.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
+import type { Reversible } from '@jbrowse/core/ui/filterMenuItems'
 import type { CytosineContext } from '@jbrowse/modifications-utils'
 
 // The floor as the slider shows it, a percent rounded for display
@@ -112,28 +113,72 @@ function cytosineContextItem(model: ModificationsMenuModel): MenuItem {
   })
 }
 
+// Which refinements the drawn layer applies: the floor in the by-type view
+// (the 2-color view paints every call), the cytosine context under bisulfite
+// and in the 2-color view of cytosine methylation, and the type list wherever
+// modifications draw.
+function appliedRefinements(model: ModificationsMenuModel) {
+  const layer = model.baseLayer
+  const isMods = layer?.field === 'modifications'
+  const cytosineMeth = model.detectedModificationTypes.some(
+    k => k === 'm' || k === 'h',
+  )
+  return {
+    code: isMods,
+    probability: isMods && !layer.unmodified,
+    context:
+      layer?.field === 'bisulfite' ||
+      (isMods && layer.unmodified && cytosineMeth),
+  }
+}
+
 /**
  * The Filter by... rows over `pileup.bases.filter`, each present only while
- * the per-base layer it narrows draws: the type list where more than one type
- * is detected, the probability floor in the by-type view (the 2-color view
- * paints every call), and the cytosine context where the cytosines painted
- * depend on it (bisulfite, and the 2-color view of cytosine methylation).
- * Under another layer a refinement would change what this one draws the next
- * time it is picked.
+ * the per-base layer it narrows draws. The type list shows where more than one
+ * type is detected, and also while a type is unticked, so a list that hides
+ * every type in view can still be undone. Under another layer a refinement
+ * would change what this one draws the next time it is picked.
  */
 export function getBasesFilterItems(model: ModificationsMenuModel): MenuItem[] {
-  const layer = model.baseLayer
-  if (layer?.field === 'bisulfite') {
-    return [cytosineContextItem(model)]
-  }
-  if (layer?.field !== 'modifications') {
-    return []
-  }
-  const types = model.detectedModificationTypes
-  const cytosineMeth = types.some(k => k === 'm' || k === 'h')
+  const applied = appliedRefinements(model)
   return [
-    ...(types.length > 1 ? [modTypesItem(model)] : []),
-    ...(layer.unmodified ? [] : [probabilityItem(model)]),
-    ...(layer.unmodified && cytosineMeth ? [cytosineContextItem(model)] : []),
+    ...(applied.code &&
+    (model.detectedModificationTypes.length > 1 || model.basesFilter.codes)
+      ? [modTypesItem(model)]
+      : []),
+    ...(applied.probability ? [probabilityItem(model)] : []),
+    ...(applied.context ? [cytosineContextItem(model)] : []),
   ]
+}
+
+/**
+ * The refinements in effect that differ from their defaults, for the
+ * "Filter by..." count, and the clear that returns them to the defaults.
+ */
+export function basesFilterNarrowing(
+  model: ModificationsMenuModel,
+): Reversible {
+  const applied = appliedRefinements(model)
+  const filter = model.basesFilter
+  const moved = {
+    code: applied.code && filter.codes !== undefined,
+    probability:
+      applied.probability &&
+      (filter.probability.min !== DEFAULT_BASES_FILTER.probability.min ||
+        filter.probability.strict),
+    context: applied.context && filter.context !== DEFAULT_BASES_FILTER.context,
+  }
+  const fields = Object.entries(moved)
+    .filter(([, isMoved]) => isMoved)
+    .map(([field]) => field)
+  return {
+    count: fields.length,
+    clear: () => {
+      if (fields.length > 0) {
+        model.setBases({
+          filter: Object.fromEntries(fields.map(f => [f, undefined])),
+        })
+      }
+    },
+  }
 }

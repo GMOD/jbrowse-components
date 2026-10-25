@@ -1,4 +1,4 @@
-export { getBasesFilterItems } from './basesFilterMenu.ts'
+export { basesFilterNarrowing, getBasesFilterItems } from './basesFilterMenu.ts'
 export { getColorByMenuItem, getReadConnectionsColorItem } from './colorBy.ts'
 export { getContextMenuItems, getHitMenuItems } from './contextMenu.ts'
 export {

@@ -179,6 +179,7 @@ import {
 } from './lanes.ts'
 import {
   featureSpacingForHeight,
+  basesFilterNarrowing,
   getBasesFilterItems,
   getColorByMenuItem,
   getConnectionFilterItems,
@@ -3634,6 +3635,14 @@ export default function stateModelFactory(
             }),
             ...getFiltersMenuItems(self, {
               readCategories: true,
+              counts: field =>
+                field.startsWith('junction.')
+                  ? self.showSashimi
+                  : field.startsWith('connection.') ||
+                      field.startsWith('breakpoint.')
+                    ? self.drawnReadConnections !== 'off' || self.showConnectors
+                    : true,
+              narrowings: { bases: basesFilterNarrowing(self) },
               more: [
                 ...getBasesFilterItems(self),
                 ...getConnectionFilterItems(self),

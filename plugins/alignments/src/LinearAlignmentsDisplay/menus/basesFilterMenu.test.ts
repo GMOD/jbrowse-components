@@ -3,7 +3,7 @@ import { isValidElement } from 'react'
 import { resolveSubMenu } from '@jbrowse/core/ui'
 
 import { basesFilterOf, withBasesFields } from '../../shared/basesFilter.ts'
-import { getBasesFilterItems } from './basesFilterMenu.ts'
+import { basesFilterNarrowing, getBasesFilterItems } from './basesFilterMenu.ts'
 
 import type {
   BaseColorField,
@@ -94,6 +94,15 @@ describe('Filter by... rows over the per-base layer', () => {
     expect(labelsOf(makeModel('modifications', { types: ['m'] }))).toEqual([
       PROBABILITY,
     ])
+  })
+
+  // a list unticking the only type in view hides every mark, so its row stays
+  test('the type list stays while a type is unticked, even with one type in view', () => {
+    const model = makeModel('modifications', {
+      types: ['m'],
+      filter: [{ field: 'code', oneOf: ['h'] }],
+    })
+    expect(labelsOf(model)).toEqual([TYPES, PROBABILITY])
   })
 
   test('cytosine context is offered only for cytosine methylation data', () => {
@@ -200,5 +209,51 @@ describe('Filter by... rows over the per-base layer', () => {
       filter: [{ field: 'probability', gte: 0.10004 }],
     })
     expect(thresholdSlider(model).isDefault).toBe(false)
+  })
+})
+
+describe('the per-base refinements in the Filter by... count', () => {
+  test('nothing counts at the defaults', () => {
+    expect(basesFilterNarrowing(makeModel('modifications')).count).toBe(0)
+  })
+
+  test('a raised floor and an unticked type count, and clear', () => {
+    const model = makeModel('modifications', {
+      filter: [
+        { field: 'probability', gte: 0.8 },
+        { field: 'code', oneOf: ['m'] },
+      ],
+    })
+    const narrowing = basesFilterNarrowing(model)
+    expect(narrowing.count).toBe(2)
+    narrowing.clear()
+    expect(model.bases.filter).toEqual([])
+  })
+
+  // the 2-color view paints every call, so its floor changes nothing drawn
+  test('a floor the drawn view ignores does not count, and survives a clear', () => {
+    const floor = { field: 'probability', gte: 0.8 }
+    const model = makeModel('modifications', {
+      unmodified: true,
+      filter: [floor],
+    })
+    const narrowing = basesFilterNarrowing(model)
+    expect(narrowing.count).toBe(0)
+    narrowing.clear()
+    expect(model.bases.filter).toEqual([floor])
+  })
+
+  test('a context under bisulfite counts', () => {
+    const model = makeModel('bisulfite', {
+      filter: [{ field: 'context', oneOf: ['CHH'] }],
+    })
+    expect(basesFilterNarrowing(model).count).toBe(1)
+  })
+
+  test('nothing counts with the layer off', () => {
+    const model = makeModel(undefined, {
+      filter: [{ field: 'probability', gte: 0.8 }],
+    })
+    expect(basesFilterNarrowing(model).count).toBe(0)
   })
 })
