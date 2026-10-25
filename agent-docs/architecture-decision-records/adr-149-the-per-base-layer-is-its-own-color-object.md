@@ -63,8 +63,8 @@ meaning whatever fills the reads. The chain-strand framing holds off while any
 per-base layer draws, as it did under each of those schemes.
 
 **The menu keeps its rows.** "Color by..." lists the read fills, then under a
-"Per-base coloring" sub-header a radio group of None, Per-base quality, Per-base
-lettering, Modifications and Bisulfite / EM-seq, then a "Show unmodified in
+"Per-base coloring" sub-header a radio group of None, Base quality, Base
+letters, Modifications and Bisulfite / EM-seq, then a "Show unmodified in
 blue" checkbox while either methylation layer draws (2026-10-25; the submenus
 and then a pair of radios per layer came first). A read pick leaves the layer
 on, and None is the layer's way off.

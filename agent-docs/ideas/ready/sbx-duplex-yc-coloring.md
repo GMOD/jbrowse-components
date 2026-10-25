@@ -20,7 +20,7 @@ tail bases, 13 concordant duplex bases, 3 R2 tail bases.
 
 Key architectural fact: the XOOS demux tool **also bakes the three classes into
 the QUAL string** as three fixed Phred values (concordant=Q39, discordant=Q5,
-simplex-tail=Q22). So our existing **Color by → Per-base quality** overlay
+simplex-tail=Q22). So our existing **Color by → Base quality** overlay
 (`features/perBaseQuality`, reads `NUMERIC_QUAL`) *already* renders the duplex
 structure on SBX-D data today — discordant bases show as low-quality streaks — just
 unlabeled and on a generic gradient. Incremental work is legibility, not plumbing.

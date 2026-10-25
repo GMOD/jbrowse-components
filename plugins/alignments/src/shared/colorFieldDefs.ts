@@ -75,7 +75,7 @@ export const COLOR_FIELD_DEFS: Record<ColorFieldKind, ColorFieldDef> = {
     kind: 'baseQuality',
     // per-base overlay paints colored rects on top of a neutral 'normal' body
     bodyFill: 'normal',
-    menu: { kind: 'radio', label: 'Per-base quality', group: 'basic' },
+    menu: { kind: 'radio', label: 'Base quality', group: 'basic' },
     perBase: true,
     workerExtracts: true,
   },
@@ -83,7 +83,7 @@ export const COLOR_FIELD_DEFS: Record<ColorFieldKind, ColorFieldDef> = {
     kind: 'base',
     // like baseQuality: nucleotide quads paint over the 'normal' body
     bodyFill: 'normal',
-    menu: { kind: 'radio', label: 'Per-base lettering', group: 'basic' },
+    menu: { kind: 'radio', label: 'Base letters', group: 'basic' },
     perBase: true,
     workerExtracts: true,
   },

@@ -73,12 +73,12 @@ The track menu's **Color by...** offers several schemes.
   duplicate, QC-failed and unmapped reads, and keeps those. The
   [mappability QC tutorial](/docs/tutorials/mappability_qc) works a locus where
   MAPQ 0 covers a whole gene.
-- **Per-base quality** colors every base by Phred score on the same cividis
-  ramp, dark blue at 0 to yellow at 40 and above, the quickest way to tell a
-  variant from a run of low-confidence calls. A CRAM read stored without quality
-  scores draws its bases in the plain read color.
-- **Per-base lettering** draws every aligned base in its nucleotide color, not
-  just the mismatches.
+- **Base quality** colors every base by Phred score on the same cividis ramp,
+  dark blue at 0 to yellow at 40 and above, the quickest way to tell a variant
+  from a run of low-confidence calls. A CRAM read stored without quality scores
+  draws its bases in the plain read color.
+- **Base letters** draws every aligned base in its nucleotide color, not just
+  the mismatches.
 
 ### A read tag
 
