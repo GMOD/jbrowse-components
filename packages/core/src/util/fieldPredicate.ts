@@ -1,11 +1,13 @@
 import { getSnapshot, isStateTreeNode } from '@jbrowse/mobx-state-tree'
 
+import { testsSomething } from './fieldPredicateType.ts'
 import { isMissing, valueText } from './groupKeys.ts'
 import { isJexl } from './jexlStrings.ts'
 import { numericValue } from './numericValue.ts'
 
 import type { FieldPredicate } from './fieldPredicateType.ts'
 
+export { testsSomething } from './fieldPredicateType.ts'
 export type { FieldPredicate } from './fieldPredicateType.ts'
 
 /**
@@ -334,19 +336,6 @@ export function compilePredicates<T = number>(
   )
   const all = [...fused, ...tests]
   return all.length === 0 ? undefined : allOf(all)
-}
-
-/** Whether a predicate states any test, which an empty `{ field }` does not. */
-export function testsSomething(p: FieldPredicate) {
-  return (
-    p.equal !== undefined ||
-    p.lt !== undefined ||
-    p.lte !== undefined ||
-    p.gt !== undefined ||
-    p.gte !== undefined ||
-    p.oneOf !== undefined ||
-    p.valid !== undefined
-  )
 }
 
 /**

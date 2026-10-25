@@ -931,12 +931,13 @@ export default defineConfig(
     },
   },
   // The sanctioned home of the SAM_FLAG_REVERSE → strand conversion, plus the
-  // package that defines and re-exports the constant. Everything else reads
-  // `getStrand`.
+  // package that defines and re-exports the constant and the CLI's copy of
+  // its flag list. Everything else reads `getStrand`.
   {
     files: [
       'plugins/alignments/src/SamAdapter/**/*.{ts,tsx}',
       'packages/cigar-utils/src/**/*.{ts,tsx}',
+      'products/jbrowse-cli/src/commands/validate/alignmentsFilterRules/samFlags.ts',
     ],
     // Same carve-out as the source block this overrides, or a test under either
     // path would get the source-only rules switched back on.

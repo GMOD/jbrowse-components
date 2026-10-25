@@ -63,11 +63,11 @@ deployed. Still open, each needing no further call:
 - **jb2hubs:** a gate running the oldest supported release's
   `jbrowse validate` over generated configs, since a host now fails a track
   on a value it does not know (ADR-120 amendment).
-- **`jbrowse validate` misses what the runtime flags:** alignments filter
-  fields and operators (`filterProblems`, `basesFilterProblems`, the coverage
-  layers). Reuse the runtime rules through `scripts/generateMarkRules.ts`'s
-  copy seam, after moving `filterProblems` and its field tables into a leaf
-  module: its closure today is 37 files through cigar-utils and the menus.
+- **`jbrowse validate` misses what the runtime flags:** the alignments layer
+  filters (`basesFilterProblems`, the coverage `alleles` and `interbase`
+  filters). The read `filter`'s rules already reach the CLI through
+  `scripts/generateMarkRules.ts` (`shared/filterFields.ts`); these need
+  `layerFilterProblems` and their field tables moved into such a leaf.
 - **A cross-display conformance test** (one spec table through every
   display's color and predicate resolver, exceptions named and shrinking).
 - **`encoding.y.scale.reverse`** for minus-strand bigWigs (v4 `inverted`);

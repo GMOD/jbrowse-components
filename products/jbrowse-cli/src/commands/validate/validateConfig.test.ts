@@ -106,6 +106,34 @@ describe('validateConfig', () => {
 
   // A GC track needs nothing but its type now, which is the shape the warning
   // above is steering authors towards.
+  it('warns on an alignments filter entry the display cannot apply, on a display and in displayDefaults', () => {
+    const config = baseConfig()
+    Object.assign(config.tracks[0]!, {
+      displays: [
+        {
+          type: 'LinearAlignmentsDisplay',
+          filter: [
+            { field: 'mapQ', gte: 20 },
+            { field: 'junction.reads', lt: 3 },
+            { field: 'mapq', gte: 20 },
+            { field: 'flags.DUP', equal: false },
+            { field: 'tags.HP', equal: 1 },
+          ],
+        },
+      ],
+      displayDefaults: {
+        filter: [{ field: 'junction.class', equal: 'splices' }],
+      },
+    })
+    expect(
+      warningsOf(config).map(p => `${p.rule} ${p.where}: ${p.message}`),
+    ).toEqual([
+      'alignments-filter tracks[0].displayDefaults.filter: junction.class takes equal or oneOf of splice, deletion, duplication, inversion, not {"field":"junction.class","equal":"splices"}',
+      'alignments-filter tracks[0].displays[0].filter: no field "mapQ" on an alignment',
+      'alignments-filter tracks[0].displays[0].filter: junction.reads takes a floor (gte or gt), not {"field":"junction.reads","lt":3}',
+    ])
+  })
+
   it('accepts a GC content track with no sequenceAdapter at all', () => {
     const config = baseConfig()
     config.tracks[0]!.type = 'QuantitativeTrack'

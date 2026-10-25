@@ -1,5 +1,6 @@
 // Import-free, so a type-only module naming a filter step (`markEncodingTypes.ts`)
-// does not carry `fieldPredicate.ts`'s runtime graph.
+// does not carry `fieldPredicate.ts`'s runtime graph, and `jbrowse validate`
+// can carry a copy (`scripts/generateMarkRules.ts`).
 
 /**
  * Vega-Lite's field predicate (ADR-238): the `field` of each record and the
@@ -26,4 +27,17 @@ export interface FieldPredicate {
   gte?: number
   oneOf?: readonly (string | number | boolean)[]
   valid?: boolean
+}
+
+/** Whether a predicate states any test, which an empty `{ field }` does not. */
+export function testsSomething(p: FieldPredicate) {
+  return (
+    p.equal !== undefined ||
+    p.lt !== undefined ||
+    p.lte !== undefined ||
+    p.gt !== undefined ||
+    p.gte !== undefined ||
+    p.oneOf !== undefined ||
+    p.valid !== undefined
+  )
 }

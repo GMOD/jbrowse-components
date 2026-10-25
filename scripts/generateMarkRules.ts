@@ -1,5 +1,6 @@
-// Copies the mark display's rule list into `jbrowse validate`, so the validator
-// reports what the display's corner notice reports, from one source. @jbrowse/cli
+// Copies the mark display's rule list, and the alignments display's filter
+// field rules, into `jbrowse validate`, so the validator reports what the
+// display's corner notice reports, from one source. @jbrowse/cli
 // depends on neither @jbrowse/core nor a plugin, so it carries the rule list the
 // way it carries the config manifest: as committed output `pnpm autogen --check`
 // compares. Run directly after editing the rule list:
@@ -9,9 +10,9 @@
 // Every file is copied whole and unedited under a one-line header, which is
 // what keeps a copy from meaning something its source does not. That works
 // because the rule list's import closure is files beside it, imported by
-// relative path and so resolving the same way in the copy, plus one seam,
-// markRuleFacts.ts, whose only content is re-exports of what the rules read
-// from another package. Each module the seam names imports nothing, is copied
+// relative path and so resolving the same way in the copy, plus one seam
+// (markRuleFacts.ts, filterRuleFacts.ts), whose only content is re-exports of
+// what the rules read from outside their directory. Each module the seam names imports nothing, is copied
 // whole like the rest, and the seam's counterpart is written here over the
 // copies. An import that breaks either rule fails this run.
 import {
@@ -26,17 +27,29 @@ import path from 'node:path'
 
 import ts from 'typescript'
 
-import { check } from '../website/scripts/check-utils.ts'
+import { check, formatMarkdown } from '../website/scripts/check-utils.ts'
 import { closure, edgesOf, resolve } from './moduleClosure.ts'
 
 const REPO_ROOT = path.resolve(import.meta.dirname, '..')
-const RULES_DIR = path.join(REPO_ROOT, 'plugins/marks/src/LinearMarkDisplay')
-const ENTRY = path.join(RULES_DIR, 'markProblems.ts')
-const SEAM = path.join(RULES_DIR, 'markRuleFacts.ts')
-const OUT_DIR = path.join(
+const VALIDATE_DIR = path.join(
   REPO_ROOT,
-  'products/jbrowse-cli/src/commands/validate/markRules',
+  'products/jbrowse-cli/src/commands/validate',
 )
+
+// Each rule list the CLI carries: its entry, the seam beside it, and the
+// directory its copy goes to
+const RULE_LISTS = [
+  {
+    entry: 'plugins/marks/src/LinearMarkDisplay/markProblems.ts',
+    seam: 'markRuleFacts.ts',
+    out: 'markRules',
+  },
+  {
+    entry: 'plugins/alignments/src/shared/filterFields.ts',
+    seam: 'filterRuleFacts.ts',
+    out: 'alignmentsFilterRules',
+  },
+]
 
 const relative = (file: string) => path.relative(REPO_ROOT, file)
 
@@ -54,109 +67,125 @@ function refuseDocTags(file: string, text: string) {
   }
 }
 
-const files = [...closure(ENTRY, true).files]
-const local = files.filter(f => path.dirname(f) === RULES_DIR && f !== SEAM)
-const foreign = files.filter(f => path.dirname(f) !== RULES_DIR)
+function copyRuleList(entry: string, seamName: string, outName: string) {
+  const ENTRY = path.join(REPO_ROOT, entry)
+  const RULES_DIR = path.dirname(ENTRY)
+  const SEAM = path.join(RULES_DIR, seamName)
+  const OUT_DIR = path.join(VALIDATE_DIR, outName)
 
-for (const file of local) {
-  for (const { specifier } of edgesOf(file)) {
-    if (!/^\.\/[\w.-]+\.ts$/.test(specifier)) {
+  const files = [...closure(ENTRY, true).files]
+  const local = files.filter(f => path.dirname(f) === RULES_DIR && f !== SEAM)
+  const foreign = files.filter(f => path.dirname(f) !== RULES_DIR)
+
+  for (const file of local) {
+    for (const { specifier } of edgesOf(file)) {
+      if (!/^\.\/[\w.-]+\.ts$/.test(specifier)) {
+        throw new Error(
+          `${relative(file)} imports "${specifier}". The rule list stands on modules beside it, imported as "./name.ts", and reads another package through ${relative(SEAM)}`,
+        )
+      }
+    }
+  }
+
+  const seamSource = ts.createSourceFile(
+    SEAM,
+    readFileSync(SEAM, 'utf8'),
+    ts.ScriptTarget.ESNext,
+    true,
+  )
+  const seamLines = seamSource.statements.map(statement => {
+    if (
+      !ts.isExportDeclaration(statement) ||
+      !statement.exportClause ||
+      !statement.moduleSpecifier ||
+      !ts.isStringLiteral(statement.moduleSpecifier)
+    ) {
       throw new Error(
-        `${relative(file)} imports "${specifier}". The rule list stands on modules beside it, imported as "./name.ts", and reads another package through ${relative(SEAM)}`,
+        `${relative(SEAM)} holds only \`export { … } from '…'\` lines, and "${statement.getText(seamSource)}" is not one`,
       )
+    }
+    const specifier = statement.moduleSpecifier.text
+    const target = resolve(specifier, SEAM)
+    if (!target || !foreign.includes(target)) {
+      throw new Error(
+        `${relative(SEAM)} names "${specifier}", which resolves to no source outside the plugin`,
+      )
+    }
+    if (edgesOf(target).length > 0) {
+      throw new Error(
+        `${relative(target)} imports other modules, and the CLI carries a copy of it alone: state what ${relative(SEAM)} reads in a module that imports nothing`,
+      )
+    }
+    return {
+      target,
+      line: `export ${statement.isTypeOnly ? 'type ' : ''}${statement.exportClause.getText(seamSource)} from './${path.basename(target)}'`,
+    }
+  })
+
+  const unnamed = foreign.filter(f => !seamLines.some(s => s.target === f))
+  if (unnamed.length > 0) {
+    throw new Error(
+      `the rule list reaches ${unnamed.map(relative).join(', ')}, which ${relative(SEAM)} does not name`,
+    )
+  }
+
+  const copied = [...local, ...new Set(seamLines.map(s => s.target))]
+  const names = copied.map(f => path.basename(f))
+  const clash = names.find(
+    (n, i) => names.indexOf(n) !== i || n === path.basename(SEAM),
+  )
+  if (clash) {
+    throw new Error(`two modules the CLI would carry are both named ${clash}`)
+  }
+
+  const outputs = new Map<string, string>([
+    ...copied.map((file): [string, string] => {
+      const text = readFileSync(file, 'utf8')
+      refuseDocTags(file, text)
+      return [path.basename(file), header(file) + text]
+    }),
+    [
+      path.basename(SEAM),
+      formatMarkdown(
+        `${header(SEAM)}${seamLines.map(s => s.line).join('\n')}\n`,
+        path.join(OUT_DIR, path.basename(SEAM)),
+      ),
+    ],
+  ])
+
+  const onDisk = existsSync(OUT_DIR) ? readdirSync(OUT_DIR) : []
+  const orphans = onDisk.filter(name => !outputs.has(name))
+  const stale = [...outputs].filter(([name, content]) => {
+    const file = path.join(OUT_DIR, name)
+    return !existsSync(file) || readFileSync(file, 'utf8') !== content
+  })
+
+  if (check) {
+    if (stale.length > 0 || orphans.length > 0) {
+      console.error(
+        `${relative(OUT_DIR)} is out of date — run \`pnpm autogen\`:\n${[
+          ...stale.map(([name]) => `  ${name} differs from its source`),
+          ...orphans.map(
+            name => `  ${name} is no longer part of the rule list`,
+          ),
+        ].join('\n')}`,
+      )
+      process.exit(1)
+    }
+    console.log(`${relative(OUT_DIR)} is up to date (${outputs.size} files)`)
+  } else {
+    mkdirSync(OUT_DIR, { recursive: true })
+    for (const name of orphans) {
+      rmSync(path.join(OUT_DIR, name))
+      console.log(`removed ${relative(path.join(OUT_DIR, name))}`)
+    }
+    for (const [name, content] of outputs) {
+      writeFileSync(path.join(OUT_DIR, name), content)
+      console.log(`wrote ${relative(path.join(OUT_DIR, name))}`)
     }
   }
 }
 
-const seamSource = ts.createSourceFile(
-  SEAM,
-  readFileSync(SEAM, 'utf8'),
-  ts.ScriptTarget.ESNext,
-  true,
-)
-const seamLines = seamSource.statements.map(statement => {
-  if (
-    !ts.isExportDeclaration(statement) ||
-    !statement.exportClause ||
-    !statement.moduleSpecifier ||
-    !ts.isStringLiteral(statement.moduleSpecifier)
-  ) {
-    throw new Error(
-      `${relative(SEAM)} holds only \`export { … } from '…'\` lines, and "${statement.getText(seamSource)}" is not one`,
-    )
-  }
-  const specifier = statement.moduleSpecifier.text
-  const target = resolve(specifier, SEAM)
-  if (!target || !foreign.includes(target)) {
-    throw new Error(
-      `${relative(SEAM)} names "${specifier}", which resolves to no source outside the plugin`,
-    )
-  }
-  if (edgesOf(target).length > 0) {
-    throw new Error(
-      `${relative(target)} imports other modules, and the CLI carries a copy of it alone: state what ${relative(SEAM)} reads in a module that imports nothing`,
-    )
-  }
-  return {
-    target,
-    line: `export ${statement.isTypeOnly ? 'type ' : ''}${statement.exportClause.getText(seamSource)} from './${path.basename(target)}'`,
-  }
-})
-
-const unnamed = foreign.filter(f => !seamLines.some(s => s.target === f))
-if (unnamed.length > 0) {
-  throw new Error(
-    `the rule list reaches ${unnamed.map(relative).join(', ')}, which ${relative(SEAM)} does not name`,
-  )
-}
-
-const copied = [...local, ...new Set(seamLines.map(s => s.target))]
-const names = copied.map(f => path.basename(f))
-const clash = names.find(
-  (n, i) => names.indexOf(n) !== i || n === path.basename(SEAM),
-)
-if (clash) {
-  throw new Error(`two modules the CLI would carry are both named ${clash}`)
-}
-
-const outputs = new Map<string, string>([
-  ...copied.map((file): [string, string] => {
-    const text = readFileSync(file, 'utf8')
-    refuseDocTags(file, text)
-    return [path.basename(file), header(file) + text]
-  }),
-  [
-    path.basename(SEAM),
-    `${header(SEAM)}${seamLines.map(s => s.line).join('\n')}\n`,
-  ],
-])
-
-const onDisk = existsSync(OUT_DIR) ? readdirSync(OUT_DIR) : []
-const orphans = onDisk.filter(name => !outputs.has(name))
-const stale = [...outputs].filter(([name, content]) => {
-  const file = path.join(OUT_DIR, name)
-  return !existsSync(file) || readFileSync(file, 'utf8') !== content
-})
-
-if (check) {
-  if (stale.length > 0 || orphans.length > 0) {
-    console.error(
-      `${relative(OUT_DIR)} is out of date — run \`pnpm autogen\`:\n${[
-        ...stale.map(([name]) => `  ${name} differs from its source`),
-        ...orphans.map(name => `  ${name} is no longer part of the rule list`),
-      ].join('\n')}`,
-    )
-    process.exit(1)
-  }
-  console.log(`${relative(OUT_DIR)} is up to date (${outputs.size} files)`)
-} else {
-  mkdirSync(OUT_DIR, { recursive: true })
-  for (const name of orphans) {
-    rmSync(path.join(OUT_DIR, name))
-    console.log(`removed ${relative(path.join(OUT_DIR, name))}`)
-  }
-  for (const [name, content] of outputs) {
-    writeFileSync(path.join(OUT_DIR, name), content)
-    console.log(`wrote ${relative(path.join(OUT_DIR, name))}`)
-  }
+for (const { entry, seam, out } of RULE_LISTS) {
+  copyRuleList(entry, seam, out)
 }

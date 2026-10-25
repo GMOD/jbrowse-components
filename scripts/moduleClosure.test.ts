@@ -100,6 +100,12 @@ const CEILINGS = [
     runtime: 11,
     types: 11,
   },
+  // No headroom, for the same reason: the alignments filter's field rules.
+  {
+    entry: 'plugins/alignments/src/shared/filterFields.ts',
+    runtime: 5,
+    types: 5,
+  },
 ]
 
 test.each(CEILINGS)('$entry stays a leaf', ({ entry, runtime, types }) => {

@@ -11,6 +11,8 @@
 
 import type { ReadDimension } from './types.ts'
 
+export { TAG_FIELD_PREFIX, fieldTag } from './filterFields.ts'
+
 export const FACET_LABELS: Record<ReadDimension, string> = {
   strand: 'Strand',
   firstOfPairStrand: 'First-of-pair strand',
@@ -39,18 +41,3 @@ export const FIRST_OF_PAIR_STRAND_LABELS = {
   forward: 'First-of-pair forward',
   reverse: 'First-of-pair reverse',
 } as const
-
-/** The prefix a `field` takes to name a read tag: `tags.HP`. */
-export const TAG_FIELD_PREFIX = 'tags.'
-
-/**
- * The tag a field names, or undefined for any other field: one reading for
- * `encoding.color`, `facet`, `sort` and `filter` alike. Their named fields
- * stay apart (`COLOR_FIELDS`, `READ_DIMENSIONS`, `COLUMN_SORT_FIELDS`, the
- * filter's record fields), since each channel answers a different set.
- */
-export function fieldTag(field: string | undefined) {
-  return field?.startsWith(TAG_FIELD_PREFIX)
-    ? field.slice(TAG_FIELD_PREFIX.length)
-    : undefined
-}

@@ -1,4 +1,8 @@
 import type { ArcSplitCategory } from '../arcs/arcSplitCategory.ts'
+import type { JunctionClass, JunctionSource } from './junctionVocabulary.ts'
+
+export { JUNCTION_CLASSES, JUNCTION_SOURCES } from './junctionVocabulary.ts'
+export type { JunctionClass, JunctionSource } from './junctionVocabulary.ts'
 
 /**
  * The split classes in `sashimiClass` code order: code 0 is a splice junction
@@ -28,21 +32,6 @@ export const SPLIT_JUNCTION_NAMES: Record<ArcSplitCategory, string> = {
 export function splitClassCode(split: ArcSplitCategory) {
   return SPLIT_JUNCTION_CLASSES.indexOf(split) + 1
 }
-
-/** The values the filter's `junction.class` field tests. */
-export const JUNCTION_CLASSES = [
-  'splice',
-  'deletion',
-  'duplication',
-  'inversion',
-] as const
-
-export type JunctionClass = (typeof JUNCTION_CLASSES)[number]
-
-/** The values the filter's `junction.source` field tests. */
-export const JUNCTION_SOURCES = ['gap', 'split'] as const
-
-export type JunctionSource = (typeof JUNCTION_SOURCES)[number]
 
 const CLASS_OF_SPLIT: Record<ArcSplitCategory, JunctionClass> = {
   splitForward: 'deletion',

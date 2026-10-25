@@ -17,6 +17,7 @@ import {
   trackTypeForAdapter,
 } from '@jbrowse/add-track-core'
 
+import { filterProblems } from './alignmentsFilterRules/filterFields.ts'
 import { configManifest } from './configManifest.generated.ts'
 import { displayDefaultsForTrackType } from './displayDefaultKeys.ts'
 import { isRecord, liftToSnapshot } from './liftConfig.ts'
@@ -35,6 +36,7 @@ import {
 } from './schemaValidate.ts'
 import { didYouMean } from './suggest.ts'
 
+import type { FieldPredicate } from './alignmentsFilterRules/filterRuleFacts.ts'
 import type { ScaleProblem } from './markRules/colorScale.ts'
 import type { MarkSnapshot, StepSnapshot } from './markRules/markProblems.ts'
 import type {
@@ -629,6 +631,39 @@ function checkMarkDisplay(
   }
 }
 
+const ALIGNMENTS_DISPLAY = 'LinearAlignmentsDisplay'
+
+// What the alignments display's corner notice says of its `filter`: an entry
+// on a field it has no reading of, or a test the field does not take, by the
+// rules copied from the plugin (`alignmentsFilterRules/`).
+function checkAlignmentsFilter(
+  display: Record<string, unknown>,
+  manifest: ConfigManifest,
+  where: string,
+  report: Report,
+) {
+  const lifted = liftToSnapshot(
+    display,
+    manifest.displays[ALIGNMENTS_DISPLAY]?.slots ?? [],
+  )
+  if (!isRecord(lifted) || !Array.isArray(lifted.filter)) {
+    return
+  }
+  for (const message of filterProblems(
+    lifted.filter.filter(
+      (entry): entry is FieldPredicate =>
+        isRecord(entry) && typeof entry.field === 'string',
+    ),
+  )) {
+    report.problems.push({
+      level: 'warning',
+      where: `${where}.filter`,
+      message,
+      rule: 'alignments-filter',
+    })
+  }
+}
+
 // A problem the color and scale rules and the mark rule list both reach, such
 // as the y axis's ends on a mark display, is reported once.
 function pushOnce(report: Report, problem: Problem) {
@@ -807,16 +842,28 @@ function checkMarkDisplays(
     if (slots) {
       checkScaleSlots(node, slots, where, report)
     }
+    if (node.type === ALIGNMENTS_DISPLAY) {
+      checkAlignmentsFilter(node, manifest, where, report)
+    }
     const trackType = trackTypeOf(node)
     if (trackType && isRecord(node.displayDefaults)) {
       for (const display of displayDefaultsForTrackType(trackType, manifest)
         .displayTypes) {
+        const defaults = displayDefaultsReaching(display, node.displayDefaults)
         checkScaleSlots(
-          displayDefaultsReaching(display, node.displayDefaults),
+          defaults,
           manifest.displays[display]?.slots ?? [],
           `${where}.displayDefaults`,
           report,
         )
+        if (display === ALIGNMENTS_DISPLAY) {
+          checkAlignmentsFilter(
+            defaults,
+            manifest,
+            `${where}.displayDefaults`,
+            report,
+          )
+        }
       }
     }
     if (

@@ -1,4 +1,4 @@
-import { CIGAR_HAS_SKIP, samFlagNames } from '@jbrowse/cigar-utils'
+import { CIGAR_HAS_SKIP } from '@jbrowse/cigar-utils'
 import {
   compilePredicates,
   testsSomething,
@@ -13,7 +13,23 @@ import {
   JUNCTION_SOURCES,
   junctionSource,
 } from '../features/sashimi/junctionClass.ts'
-import { TAG_FIELD_PREFIX, fieldTag } from './facetLabels.ts'
+import {
+  BREAKPOINT_READS,
+  CHAIN_FIELDS,
+  CONNECTION_INTERCHROM,
+  CONNECTION_OFFSCREEN,
+  FLAG_FIELDS,
+  FLAG_FIELD_PREFIX,
+  JUNCTION_CANONICAL,
+  JUNCTION_CLASS,
+  JUNCTION_READS,
+  JUNCTION_SOURCE,
+  MAPQ_FIELD,
+  TAG_FIELD_PREFIX,
+  fieldTag,
+  isReadField,
+  isRecordField,
+} from './filterFields.ts'
 
 import type { JunctionClass } from '../features/sashimi/junctionClass.ts'
 import type {
@@ -36,47 +52,12 @@ import type {
  * the splice junctions and the connections between reads.
  */
 
-export const FLAG_FIELD_PREFIX = 'flags.'
-
-/** A SAM flag bit as a field: `flags.UNMAP`, `flags.DUP`, samtools' names. */
-export const FLAG_FIELDS: readonly string[] = samFlagNames.map(
-  name => `${FLAG_FIELD_PREFIX}${name}`,
-)
-
-const RECORD_FIELDS = new Set(['name', 'spliced', ...FLAG_FIELDS])
-const CHAIN_FIELDS = new Set(['svSignal', 'alone', 'split'])
-const MAPQ_FIELD = 'mapq'
-
-const JUNCTION_READS = 'junction.reads'
-const JUNCTION_CANONICAL = 'junction.canonical'
-const JUNCTION_CLASS = 'junction.class'
-const JUNCTION_SOURCE = 'junction.source'
-const CONNECTION_INTERCHROM = 'connection.interchrom'
-const CONNECTION_OFFSCREEN = 'connection.offscreen'
-const BREAKPOINT_READS = 'breakpoint.reads'
-
-// The fields lowered onto the junction and connection tests, each with the
-// tests it takes: a count takes a floor, a category a boolean `equal`.
-const COUNT_FIELDS = new Set([JUNCTION_READS, BREAKPOINT_READS])
-const ROW_CATEGORY_FIELDS = new Set([
-  JUNCTION_CANONICAL,
-  CONNECTION_INTERCHROM,
-  CONNECTION_OFFSCREEN,
-])
-// and a closed vocabulary its values, by `equal` or `oneOf`
-const ROW_VALUE_FIELDS = new Map<string, readonly string[]>([
-  [JUNCTION_CLASS, JUNCTION_CLASSES],
-  [JUNCTION_SOURCE, JUNCTION_SOURCES],
-])
-
-function isRecordField(field: string) {
-  return RECORD_FIELDS.has(field) || fieldTag(field) !== undefined
-}
-
-/** Whether the worker reads `field`, so a read filter edit refetches. */
-export function isReadField(field: string) {
-  return isRecordField(field) || field === MAPQ_FIELD || CHAIN_FIELDS.has(field)
-}
+export {
+  FLAG_FIELDS,
+  FLAG_FIELD_PREFIX,
+  filterProblems,
+  isReadField,
+} from './filterFields.ts'
 
 // The supporting-read floor for a splice junction: a single-read junction is
 // dominated by alignment noise, and unreadable at the 1px stroke
@@ -493,50 +474,6 @@ export function chainPredicatesOf(
 }
 
 // ---- problems ----
-
-/**
- * Entries the display cannot apply as written: a field it has no reading of,
- * or a test its junction and connection fields do not take.
- */
-export function filterProblems(written: readonly FieldPredicate[]): string[] {
-  return written.flatMap(p => {
-    const { field } = p
-    if (COUNT_FIELDS.has(field)) {
-      return p.lt !== undefined ||
-        p.lte !== undefined ||
-        p.equal !== undefined ||
-        p.oneOf !== undefined ||
-        p.valid !== undefined
-        ? [`${field} takes a floor (gte or gt), not ${JSON.stringify(p)}`]
-        : []
-    }
-    if (ROW_CATEGORY_FIELDS.has(field)) {
-      return testsSomething(p) && typeof p.equal !== 'boolean'
-        ? [`${field} takes equal: true or false, not ${JSON.stringify(p)}`]
-        : []
-    }
-    const vocabulary = ROW_VALUE_FIELDS.get(field)
-    if (vocabulary) {
-      const values = [
-        ...(p.equal === undefined ? [] : [p.equal]),
-        ...(p.oneOf ?? []),
-      ]
-      return p.lt !== undefined ||
-        p.lte !== undefined ||
-        p.gt !== undefined ||
-        p.gte !== undefined ||
-        p.valid !== undefined ||
-        values.some(v => typeof v !== 'string' || !vocabulary.includes(v))
-        ? [
-            `${field} takes equal or oneOf of ${vocabulary.join(', ')}, not ${JSON.stringify(p)}`,
-          ]
-        : []
-    }
-    return isReadField(field)
-      ? []
-      : [`no field ${JSON.stringify(field)} on an alignment`]
-  })
-}
 
 // ---- v4's object form, which the v4.3.0 lifts read ----
 
