@@ -248,6 +248,28 @@ test('span rows sort at a column by the color they paint there, the largest bloc
   expect(display.rowSort).toEqual(['mom', 's2', 'dad', 's10'])
 })
 
+test("span blocks of one size sort in their categories' order, whatever the palette", () => {
+  for (const range of [
+    ['black', 'white', 'gray'],
+    ['white', 'gray', 'black'],
+  ]) {
+    const display = loaded({ rows: 'source' }, [
+      {
+        mark: 'rect',
+        encoding: {
+          color: {
+            field: 'tissue',
+            scale: { domain: ['liver', 'brain', 'heart'], range },
+          },
+        },
+      },
+    ])
+    expect(display.sortRowsByValueAt('ctgA', 650)).toBe(true)
+    // brain, heart, liver, then the row with nothing there
+    expect(display.rowSort).toEqual(['dad', 's10', 'mom', 's2'])
+  }
+})
+
 test('span rows under one color sort by whether they cover the column', () => {
   const display = loaded({ rows: 'source' }, [{ mark: 'rect' }])
   expect(display.rowCompare).toEqual({ mark: 0, by: 'presence' })

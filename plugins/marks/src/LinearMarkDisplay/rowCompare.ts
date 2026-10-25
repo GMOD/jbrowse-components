@@ -1,9 +1,11 @@
+import { compareGroupKeys } from '@jbrowse/core/util/groupKeys'
 import { isJexl } from '@jbrowse/core/util/jexlStrings'
 
 import { readsValue } from './markSpecs.ts'
 
 import type { ColorSource } from './markColor.ts'
 import type { MarkType } from './markVocabulary.ts'
+import type { ColorScaleTable } from '@jbrowse/core/util/markEncoding'
 
 /**
  * What clustering and "Sort rows by ... here" compare a row's instances on:
@@ -66,13 +68,34 @@ export function rowCompareLabel(
 }
 
 /**
- * A sort over painted colors: rows of one color together, the color most
- * rows show first, then by color.
+ * The categories a layer's table paints each color for, so a sort reads a
+ * span's category and not its palette; categories the config paints alike,
+ * through `unknown` or a repeated `range` color, stay one.
  */
-export function byBlockSize(valueByName: ReadonlyMap<string, number>) {
-  const size = new Map<number, number>()
+export function categoriesByColor(scale: ColorScaleTable | undefined) {
+  const byColor = new Map<number, string[]>()
+  if (scale?.kind === 'categorical' || scale?.kind === 'identity') {
+    for (const { value, color } of scale.entries) {
+      byColor.set(color, [...(byColor.get(color) ?? []), value])
+    }
+  }
+  return new Map(
+    [...byColor].map(([color, values]) => [
+      color,
+      values.toSorted(compareGroupKeys).join(', '),
+    ]),
+  )
+}
+
+/**
+ * A sort over categories, as multi-row's: rows of one category together,
+ * the category most rows show first, then in the categories' own order.
+ */
+export function byCategoryBlocks(valueByName: ReadonlyMap<string, string>) {
+  const size = new Map<string, number>()
   for (const v of valueByName.values()) {
     size.set(v, (size.get(v) ?? 0) + 1)
   }
-  return (a: number, b: number) => size.get(b)! - size.get(a)! || a - b
+  return (a: string, b: string) =>
+    size.get(b)! - size.get(a)! || compareGroupKeys(a, b)
 }

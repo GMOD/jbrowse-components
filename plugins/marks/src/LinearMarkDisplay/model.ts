@@ -132,7 +132,12 @@ import { DEFAULT_POINT_DIAMETER_PX } from './markVocabulary.ts'
 import { MARK_Y_PATHS } from './markYPaths.ts'
 import { sharedKeyNotice, sharedKeysOf } from './pinDistinct.ts'
 import { defaultPlot } from './plotDefault.ts'
-import { byBlockSize, rowCompareLabel, rowCompareOf } from './rowCompare.ts'
+import {
+  byCategoryBlocks,
+  categoriesByColor,
+  rowCompareLabel,
+  rowCompareOf,
+} from './rowCompare.ts'
 import {
   drawnKeysOf,
   drawnRegion,
@@ -1738,9 +1743,10 @@ export function stateModelFactory(
          * #action
          * Order the rows by what `rowCompare` reads over (refName, pos), off
          * the loaded regions with no refetch: values and ramped numbers
-         * highest first, painted colors in blocks of one color, the largest
-         * on screen first, and covered rows before bare ones; false where no
-         * loaded region covers the column.
+         * highest first, a span's categories in blocks of one category, the
+         * largest on screen first and then in the categories' order, and
+         * covered rows before bare ones; false where no loaded region covers
+         * the column.
          */
         sortRowsByValueAt(refName: string, pos: number) {
           const compare = self.rowCompare
@@ -1763,10 +1769,20 @@ export function stateModelFactory(
                   byName.set(name, value)
                 }
               }
+              if (by !== 'colorKey') {
+                return orderRowsByValueAt(rows, byName, (a, b) => b - a)
+              }
+              const category = categoriesByColor(region.layers[mark]?.scale)
+              const categoryByName = new Map(
+                [...byName].flatMap(([name, color]) => {
+                  const value = category.get(color)
+                  return value === undefined ? [] : [[name, value] as const]
+                }),
+              )
               return orderRowsByValueAt(
                 rows,
-                byName,
-                by === 'colorKey' ? byBlockSize(byName) : (a, b) => b - a,
+                categoryByName,
+                byCategoryBlocks(categoryByName),
               )
             },
           )

@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "On the mark display, clustering and \"Sort rows by ... here\" compare rows on one mark, `rowCompare`: the first drawing bar, point or line by its `y`, else the first drawing rect by its color. A categorical or identity color compares as its category, one-hot per column with a gap channel, the last covering span winning, and presence past 64 categories; a ramped number compares as each column's mean; a constant compares on presence. A column sort orders painted colors in blocks, the color most rows show first. The cover and one-hot helpers live in tree-sidebar's binColumns, which multi-row's matrix now reads too. Second gap of the multi-row-on-marks handoff"
+summary: "On the mark display, clustering and \"Sort rows by ... here\" compare rows on one mark, `rowCompare`: the first drawing bar, point or line by its `y`, else the first drawing rect by its color. A categorical or identity color compares as its category, one-hot per column with a gap channel, the last covering span winning, and presence past 64 categories; a ramped number compares as each column's mean; a constant compares on presence. A column sort orders a span's categories in blocks, the category most rows show first, then in the categories' own order, so the palette decides nothing. The cover and one-hot helpers live in tree-sidebar's binColumns, which multi-row's matrix now reads too. Second gap of the multi-row-on-marks handoff"
 ---
 
 # ADR-244: Span rows compare on their color
@@ -33,8 +33,10 @@ multi-row display offers over its colors.
   columns times the channels fit 13,000, multi-row's budget, so a 16-state
   ChromHMM clusters over about 760 columns.
 - **A column sort reads the loaded regions.** Numbers sort highest first;
-  painted colors sort in blocks, the color most rows show at the column
-  first; covered rows sort before bare ones. Where two spans in one row
+  a span's categories sort in blocks, the category most rows show at the
+  column first and blocks of one size in the categories' own order, read
+  back from each painted color through the layer's table so no palette
+  reorders them; covered rows sort before bare ones. Where two spans in one row
   cover the column, the one drawn last answers, as it does in the matrix and
   the picture. A region still holding an earlier color declaration answers
   no color, so its rows sort with the valueless ones until it refetches. The
@@ -47,12 +49,15 @@ multi-row display offers over its colors.
 
 ## Consequences
 
-- A column sort over colors groups two categories that share a palette
-  color, as the picture does.
+- Two categories the config paints alike, through `unknown` or a repeated
+  `range` color, sort as one block, as the picture shows them.
 - A row clustered on more than 64 categories says nothing of the fallback to
   presence; multi-row's caption does.
 
 ## Rejected alternatives
+
+- **Sorting on the packed color**, as the first cut did: two palettes over
+  one locus gave two orders.
 
 - **A "Cluster on" field picker**, multi-row's `clusterField`. The rect's
   color already names the field the picture is about, which is what
