@@ -22,7 +22,7 @@ export interface MultiRowEncoded extends SpanChannels {
   color: Uint32Array
   featureIndex: Uint32Array
   rowIndex: RowSpanIndex
-  introns: SpanChannels
+  introns: SpanChannels & { featureIndex: Uint32Array }
 }
 
 /**
@@ -59,6 +59,7 @@ export function buildMultiRowChannels(
     x2: new Uint32Array(n),
     row: new Uint32Array(n),
     color: new Uint32Array(n),
+    featureIndex: new Uint32Array(n),
     count: 0,
   }
   let count = 0
@@ -81,6 +82,7 @@ export function buildMultiRowChannels(
       introns.x2[c] = featureStarts[i]!
       introns.row[c] = key
       introns.color[c] = abgr
+      introns.featureIndex[c] = i
     }
   }
   return {

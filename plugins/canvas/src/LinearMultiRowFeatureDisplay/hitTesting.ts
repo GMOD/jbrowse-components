@@ -140,6 +140,20 @@ function channelsOnRows(
   return out
 }
 
+/** The intron line on one of `keys` over `bp`, as its row key and feature. */
+function intronAt(
+  { x, x2, row, featureIndex, count }: MultiRowEncoded['introns'],
+  keys: readonly number[],
+  bp: number,
+) {
+  for (let c = 0; c < count; c++) {
+    if (x[c]! <= bp && bp < x2[c]! && keys.includes(row[c]!)) {
+      return { key: row[c]!, i: featureIndex[c]! }
+    }
+  }
+  return undefined
+}
+
 /**
  * `rowsUnderPointer` asks at the pixel's centre, the scanline that decided the
  * color under the cursor — at the 0.32 px rows a cohort painting fits into, the
@@ -173,23 +187,25 @@ function featureAtBase(
   )
   const xPx = Math.floor(mouseX) + 0.5
   const yPx = contentYAt(mouseY, { rowHeight })
+  const keys = rowKeysUnder(self, nearest, lowest)
   const c = MULTI_ROW_MARK.hitNearest?.(
     channels,
     block,
     self.renderState,
     xPx,
     yPx,
-    channelsOnRows(channels, block, xPx, rowKeysUnder(self, nearest, lowest)),
+    channelsOnRows(channels, block, xPx, keys),
     INSIDE_ONLY,
   )?.index
-  if (c === undefined) {
+  const found =
+    c === undefined
+      ? intronAt(channels.introns, keys, bpAtPxExact(xPx, block))
+      : { key: channels.row[c]!, i: channels.featureIndex[c]! }
+  const rowName = found && self.rowKeys.names[found.key]
+  if (!found || rowName === undefined) {
     return undefined
   }
-  const rowName = self.rowKeys.names[channels.row[c]!]
-  if (rowName === undefined) {
-    return undefined
-  }
-  const i = channels.featureIndex[c]!
+  const { i } = found
   return {
     id: region.featureIds[i]!,
     regionIndex: p.index,

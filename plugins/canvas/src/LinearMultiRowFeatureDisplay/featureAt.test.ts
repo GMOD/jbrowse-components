@@ -645,3 +645,18 @@ describe('agrees with a walk over every drawn feature', () => {
     expect(hits).toBeGreaterThan(1000)
   })
 })
+
+describe('a spliced feature', () => {
+  it('resolves on the line between its blocks, on its own row only', () => {
+    const { display } = twoRowDisplay(
+      region([
+        { row: 'a', start: 100, end: 200, id: 'spliced' },
+        { row: 'a', start: 300, end: 400, id: 'spliced' },
+        { row: 'b', start: 600, end: 700 },
+      ]),
+    )
+    expect(display.featureAt(250, 25)?.id).toBe('spliced')
+    expect(display.featureAt(250, 75)).toBeUndefined()
+    expect(display.featureAt(500, 25)).toBeUndefined()
+  })
+})
