@@ -1805,7 +1805,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "displays",
-          "type": "(LinearBasicDisplayConfigurationSchema | LinearMultiRowFeatureDisplayConfigurationSchema | LinearAlignmentsDisplayConfigurationSchema | ChordVariantDisplayConfigurationSchema | ChordSyntenyDisplayConfigurationSchema | DotplotDisplayConfigurationSchema | LinearSyntenyDisplayConfigurationSchema | LGVSyntenyDisplayConfigurationSchema | MultiWaySyntenyDisplayConfigurationSchema | LinearReferenceSequenceDisplayConfigurationSchema | LinearVariantDisplayConfigurationSchema | LinearMultiSampleVariantDisplayConfigurationSchema | LDTrackDisplayConfigurationSchema | LinearWiggleDisplayConfigurationSchema | LinearMafDisplayConfigurationSchema | LinearHicDisplayConfigurationSchema | LinearManhattanDisplayConfigurationSchema | LinearMarkDisplayConfigurationSchema)[]"
+          "type": "(LinearBasicDisplayConfigurationSchema | LinearAlignmentsDisplayConfigurationSchema | ChordVariantDisplayConfigurationSchema | ChordSyntenyDisplayConfigurationSchema | DotplotDisplayConfigurationSchema | LinearSyntenyDisplayConfigurationSchema | LGVSyntenyDisplayConfigurationSchema | MultiWaySyntenyDisplayConfigurationSchema | LinearReferenceSequenceDisplayConfigurationSchema | LinearVariantDisplayConfigurationSchema | LinearMultiSampleVariantDisplayConfigurationSchema | LDTrackDisplayConfigurationSchema | LinearWiggleDisplayConfigurationSchema | LinearMafDisplayConfigurationSchema | LinearHicDisplayConfigurationSchema | LinearManhattanDisplayConfigurationSchema | LinearMarkDisplayConfigurationSchema | LinearMultiRowFeatureDisplayConfigurationSchema)[]"
         },
         {
           "name": "formatDetails",
@@ -1860,10 +1860,10 @@ export const configManifest: ConfigManifest = {
       ],
       "displayTypes": [
         "LinearBasicDisplay",
-        "LinearMultiRowFeatureDisplay",
         "LinearWiggleDisplay",
         "LinearManhattanDisplay",
-        "LinearMarkDisplay"
+        "LinearMarkDisplay",
+        "LinearMultiRowFeatureDisplay"
       ]
     },
     "AlignmentsTrack": {
@@ -1926,7 +1926,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "displays",
-          "type": "(LinearBasicDisplayConfigurationSchema | LinearMultiRowFeatureDisplayConfigurationSchema | LinearAlignmentsDisplayConfigurationSchema | ChordVariantDisplayConfigurationSchema | ChordSyntenyDisplayConfigurationSchema | DotplotDisplayConfigurationSchema | LinearSyntenyDisplayConfigurationSchema | LGVSyntenyDisplayConfigurationSchema | MultiWaySyntenyDisplayConfigurationSchema | LinearReferenceSequenceDisplayConfigurationSchema | LinearVariantDisplayConfigurationSchema | LinearMultiSampleVariantDisplayConfigurationSchema | LDTrackDisplayConfigurationSchema | LinearWiggleDisplayConfigurationSchema | LinearMafDisplayConfigurationSchema | LinearHicDisplayConfigurationSchema | LinearManhattanDisplayConfigurationSchema | LinearMarkDisplayConfigurationSchema)[]"
+          "type": "(LinearBasicDisplayConfigurationSchema | LinearAlignmentsDisplayConfigurationSchema | ChordVariantDisplayConfigurationSchema | ChordSyntenyDisplayConfigurationSchema | DotplotDisplayConfigurationSchema | LinearSyntenyDisplayConfigurationSchema | LGVSyntenyDisplayConfigurationSchema | MultiWaySyntenyDisplayConfigurationSchema | LinearReferenceSequenceDisplayConfigurationSchema | LinearVariantDisplayConfigurationSchema | LinearMultiSampleVariantDisplayConfigurationSchema | LDTrackDisplayConfigurationSchema | LinearWiggleDisplayConfigurationSchema | LinearMafDisplayConfigurationSchema | LinearHicDisplayConfigurationSchema | LinearManhattanDisplayConfigurationSchema | LinearMarkDisplayConfigurationSchema | LinearMultiRowFeatureDisplayConfigurationSchema)[]"
         },
         {
           "name": "formatDetails",
@@ -2000,7 +2000,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "displays",
-          "type": "(LinearBasicDisplayConfigurationSchema | LinearMultiRowFeatureDisplayConfigurationSchema | LinearAlignmentsDisplayConfigurationSchema | ChordVariantDisplayConfigurationSchema | ChordSyntenyDisplayConfigurationSchema | DotplotDisplayConfigurationSchema | LinearSyntenyDisplayConfigurationSchema | LGVSyntenyDisplayConfigurationSchema | MultiWaySyntenyDisplayConfigurationSchema | LinearReferenceSequenceDisplayConfigurationSchema | LinearVariantDisplayConfigurationSchema | LinearMultiSampleVariantDisplayConfigurationSchema | LDTrackDisplayConfigurationSchema | LinearWiggleDisplayConfigurationSchema | LinearMafDisplayConfigurationSchema | LinearHicDisplayConfigurationSchema | LinearManhattanDisplayConfigurationSchema | LinearMarkDisplayConfigurationSchema)[]"
+          "type": "(LinearBasicDisplayConfigurationSchema | LinearAlignmentsDisplayConfigurationSchema | ChordVariantDisplayConfigurationSchema | ChordSyntenyDisplayConfigurationSchema | DotplotDisplayConfigurationSchema | LinearSyntenyDisplayConfigurationSchema | LGVSyntenyDisplayConfigurationSchema | MultiWaySyntenyDisplayConfigurationSchema | LinearReferenceSequenceDisplayConfigurationSchema | LinearVariantDisplayConfigurationSchema | LinearMultiSampleVariantDisplayConfigurationSchema | LDTrackDisplayConfigurationSchema | LinearWiggleDisplayConfigurationSchema | LinearMafDisplayConfigurationSchema | LinearHicDisplayConfigurationSchema | LinearManhattanDisplayConfigurationSchema | LinearMarkDisplayConfigurationSchema | LinearMultiRowFeatureDisplayConfigurationSchema)[]"
         },
         {
           "name": "name",
@@ -2107,7 +2107,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "displays",
-          "type": "(LinearBasicDisplayConfigurationSchema | LinearMultiRowFeatureDisplayConfigurationSchema | LinearAlignmentsDisplayConfigurationSchema | ChordVariantDisplayConfigurationSchema | ChordSyntenyDisplayConfigurationSchema | DotplotDisplayConfigurationSchema | LinearSyntenyDisplayConfigurationSchema | LGVSyntenyDisplayConfigurationSchema | MultiWaySyntenyDisplayConfigurationSchema | LinearReferenceSequenceDisplayConfigurationSchema | LinearVariantDisplayConfigurationSchema | LinearMultiSampleVariantDisplayConfigurationSchema | LDTrackDisplayConfigurationSchema | LinearWiggleDisplayConfigurationSchema | LinearMafDisplayConfigurationSchema | LinearHicDisplayConfigurationSchema | LinearManhattanDisplayConfigurationSchema | LinearMarkDisplayConfigurationSchema)[]"
+          "type": "(LinearBasicDisplayConfigurationSchema | LinearAlignmentsDisplayConfigurationSchema | ChordVariantDisplayConfigurationSchema | ChordSyntenyDisplayConfigurationSchema | DotplotDisplayConfigurationSchema | LinearSyntenyDisplayConfigurationSchema | LGVSyntenyDisplayConfigurationSchema | MultiWaySyntenyDisplayConfigurationSchema | LinearReferenceSequenceDisplayConfigurationSchema | LinearVariantDisplayConfigurationSchema | LinearMultiSampleVariantDisplayConfigurationSchema | LDTrackDisplayConfigurationSchema | LinearWiggleDisplayConfigurationSchema | LinearMafDisplayConfigurationSchema | LinearHicDisplayConfigurationSchema | LinearManhattanDisplayConfigurationSchema | LinearMarkDisplayConfigurationSchema | LinearMultiRowFeatureDisplayConfigurationSchema)[]"
         },
         {
           "name": "formatDetails",
@@ -2227,7 +2227,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "displays",
-          "type": "(LinearBasicDisplayConfigurationSchema | LinearMultiRowFeatureDisplayConfigurationSchema | LinearAlignmentsDisplayConfigurationSchema | ChordVariantDisplayConfigurationSchema | ChordSyntenyDisplayConfigurationSchema | DotplotDisplayConfigurationSchema | LinearSyntenyDisplayConfigurationSchema | LGVSyntenyDisplayConfigurationSchema | MultiWaySyntenyDisplayConfigurationSchema | LinearReferenceSequenceDisplayConfigurationSchema | LinearVariantDisplayConfigurationSchema | LinearMultiSampleVariantDisplayConfigurationSchema | LDTrackDisplayConfigurationSchema | LinearWiggleDisplayConfigurationSchema | LinearMafDisplayConfigurationSchema | LinearHicDisplayConfigurationSchema | LinearManhattanDisplayConfigurationSchema | LinearMarkDisplayConfigurationSchema)[]"
+          "type": "(LinearBasicDisplayConfigurationSchema | LinearAlignmentsDisplayConfigurationSchema | ChordVariantDisplayConfigurationSchema | ChordSyntenyDisplayConfigurationSchema | DotplotDisplayConfigurationSchema | LinearSyntenyDisplayConfigurationSchema | LGVSyntenyDisplayConfigurationSchema | MultiWaySyntenyDisplayConfigurationSchema | LinearReferenceSequenceDisplayConfigurationSchema | LinearVariantDisplayConfigurationSchema | LinearMultiSampleVariantDisplayConfigurationSchema | LDTrackDisplayConfigurationSchema | LinearWiggleDisplayConfigurationSchema | LinearMafDisplayConfigurationSchema | LinearHicDisplayConfigurationSchema | LinearManhattanDisplayConfigurationSchema | LinearMarkDisplayConfigurationSchema | LinearMultiRowFeatureDisplayConfigurationSchema)[]"
         },
         {
           "name": "formatDetails",
@@ -2344,7 +2344,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "displays",
-          "type": "(LinearBasicDisplayConfigurationSchema | LinearMultiRowFeatureDisplayConfigurationSchema | LinearAlignmentsDisplayConfigurationSchema | ChordVariantDisplayConfigurationSchema | ChordSyntenyDisplayConfigurationSchema | DotplotDisplayConfigurationSchema | LinearSyntenyDisplayConfigurationSchema | LGVSyntenyDisplayConfigurationSchema | MultiWaySyntenyDisplayConfigurationSchema | LinearReferenceSequenceDisplayConfigurationSchema | LinearVariantDisplayConfigurationSchema | LinearMultiSampleVariantDisplayConfigurationSchema | LDTrackDisplayConfigurationSchema | LinearWiggleDisplayConfigurationSchema | LinearMafDisplayConfigurationSchema | LinearHicDisplayConfigurationSchema | LinearManhattanDisplayConfigurationSchema | LinearMarkDisplayConfigurationSchema)[]"
+          "type": "(LinearBasicDisplayConfigurationSchema | LinearAlignmentsDisplayConfigurationSchema | ChordVariantDisplayConfigurationSchema | ChordSyntenyDisplayConfigurationSchema | DotplotDisplayConfigurationSchema | LinearSyntenyDisplayConfigurationSchema | LGVSyntenyDisplayConfigurationSchema | MultiWaySyntenyDisplayConfigurationSchema | LinearReferenceSequenceDisplayConfigurationSchema | LinearVariantDisplayConfigurationSchema | LinearMultiSampleVariantDisplayConfigurationSchema | LDTrackDisplayConfigurationSchema | LinearWiggleDisplayConfigurationSchema | LinearMafDisplayConfigurationSchema | LinearHicDisplayConfigurationSchema | LinearManhattanDisplayConfigurationSchema | LinearMarkDisplayConfigurationSchema | LinearMultiRowFeatureDisplayConfigurationSchema)[]"
         },
         {
           "name": "formatDetails",
@@ -2462,7 +2462,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "displays",
-          "type": "(LinearBasicDisplayConfigurationSchema | LinearMultiRowFeatureDisplayConfigurationSchema | LinearAlignmentsDisplayConfigurationSchema | ChordVariantDisplayConfigurationSchema | ChordSyntenyDisplayConfigurationSchema | DotplotDisplayConfigurationSchema | LinearSyntenyDisplayConfigurationSchema | LGVSyntenyDisplayConfigurationSchema | MultiWaySyntenyDisplayConfigurationSchema | LinearReferenceSequenceDisplayConfigurationSchema | LinearVariantDisplayConfigurationSchema | LinearMultiSampleVariantDisplayConfigurationSchema | LDTrackDisplayConfigurationSchema | LinearWiggleDisplayConfigurationSchema | LinearMafDisplayConfigurationSchema | LinearHicDisplayConfigurationSchema | LinearManhattanDisplayConfigurationSchema | LinearMarkDisplayConfigurationSchema)[]"
+          "type": "(LinearBasicDisplayConfigurationSchema | LinearAlignmentsDisplayConfigurationSchema | ChordVariantDisplayConfigurationSchema | ChordSyntenyDisplayConfigurationSchema | DotplotDisplayConfigurationSchema | LinearSyntenyDisplayConfigurationSchema | LGVSyntenyDisplayConfigurationSchema | MultiWaySyntenyDisplayConfigurationSchema | LinearReferenceSequenceDisplayConfigurationSchema | LinearVariantDisplayConfigurationSchema | LinearMultiSampleVariantDisplayConfigurationSchema | LDTrackDisplayConfigurationSchema | LinearWiggleDisplayConfigurationSchema | LinearMafDisplayConfigurationSchema | LinearHicDisplayConfigurationSchema | LinearManhattanDisplayConfigurationSchema | LinearMarkDisplayConfigurationSchema | LinearMultiRowFeatureDisplayConfigurationSchema)[]"
         },
         {
           "name": "formatDetails",
@@ -2580,7 +2580,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "displays",
-          "type": "(LinearBasicDisplayConfigurationSchema | LinearMultiRowFeatureDisplayConfigurationSchema | LinearAlignmentsDisplayConfigurationSchema | ChordVariantDisplayConfigurationSchema | ChordSyntenyDisplayConfigurationSchema | DotplotDisplayConfigurationSchema | LinearSyntenyDisplayConfigurationSchema | LGVSyntenyDisplayConfigurationSchema | MultiWaySyntenyDisplayConfigurationSchema | LinearReferenceSequenceDisplayConfigurationSchema | LinearVariantDisplayConfigurationSchema | LinearMultiSampleVariantDisplayConfigurationSchema | LDTrackDisplayConfigurationSchema | LinearWiggleDisplayConfigurationSchema | LinearMafDisplayConfigurationSchema | LinearHicDisplayConfigurationSchema | LinearManhattanDisplayConfigurationSchema | LinearMarkDisplayConfigurationSchema)[]"
+          "type": "(LinearBasicDisplayConfigurationSchema | LinearAlignmentsDisplayConfigurationSchema | ChordVariantDisplayConfigurationSchema | ChordSyntenyDisplayConfigurationSchema | DotplotDisplayConfigurationSchema | LinearSyntenyDisplayConfigurationSchema | LGVSyntenyDisplayConfigurationSchema | MultiWaySyntenyDisplayConfigurationSchema | LinearReferenceSequenceDisplayConfigurationSchema | LinearVariantDisplayConfigurationSchema | LinearMultiSampleVariantDisplayConfigurationSchema | LDTrackDisplayConfigurationSchema | LinearWiggleDisplayConfigurationSchema | LinearMafDisplayConfigurationSchema | LinearHicDisplayConfigurationSchema | LinearManhattanDisplayConfigurationSchema | LinearMarkDisplayConfigurationSchema | LinearMultiRowFeatureDisplayConfigurationSchema)[]"
         },
         {
           "name": "formatDetails",
@@ -2697,7 +2697,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "displays",
-          "type": "(LinearBasicDisplayConfigurationSchema | LinearMultiRowFeatureDisplayConfigurationSchema | LinearAlignmentsDisplayConfigurationSchema | ChordVariantDisplayConfigurationSchema | ChordSyntenyDisplayConfigurationSchema | DotplotDisplayConfigurationSchema | LinearSyntenyDisplayConfigurationSchema | LGVSyntenyDisplayConfigurationSchema | MultiWaySyntenyDisplayConfigurationSchema | LinearReferenceSequenceDisplayConfigurationSchema | LinearVariantDisplayConfigurationSchema | LinearMultiSampleVariantDisplayConfigurationSchema | LDTrackDisplayConfigurationSchema | LinearWiggleDisplayConfigurationSchema | LinearMafDisplayConfigurationSchema | LinearHicDisplayConfigurationSchema | LinearManhattanDisplayConfigurationSchema | LinearMarkDisplayConfigurationSchema)[]"
+          "type": "(LinearBasicDisplayConfigurationSchema | LinearAlignmentsDisplayConfigurationSchema | ChordVariantDisplayConfigurationSchema | ChordSyntenyDisplayConfigurationSchema | DotplotDisplayConfigurationSchema | LinearSyntenyDisplayConfigurationSchema | LGVSyntenyDisplayConfigurationSchema | MultiWaySyntenyDisplayConfigurationSchema | LinearReferenceSequenceDisplayConfigurationSchema | LinearVariantDisplayConfigurationSchema | LinearMultiSampleVariantDisplayConfigurationSchema | LDTrackDisplayConfigurationSchema | LinearWiggleDisplayConfigurationSchema | LinearMafDisplayConfigurationSchema | LinearHicDisplayConfigurationSchema | LinearManhattanDisplayConfigurationSchema | LinearMarkDisplayConfigurationSchema | LinearMultiRowFeatureDisplayConfigurationSchema)[]"
         },
         {
           "name": "formatDetails",
@@ -2815,7 +2815,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "displays",
-          "type": "(LinearBasicDisplayConfigurationSchema | LinearMultiRowFeatureDisplayConfigurationSchema | LinearAlignmentsDisplayConfigurationSchema | ChordVariantDisplayConfigurationSchema | ChordSyntenyDisplayConfigurationSchema | DotplotDisplayConfigurationSchema | LinearSyntenyDisplayConfigurationSchema | LGVSyntenyDisplayConfigurationSchema | MultiWaySyntenyDisplayConfigurationSchema | LinearReferenceSequenceDisplayConfigurationSchema | LinearVariantDisplayConfigurationSchema | LinearMultiSampleVariantDisplayConfigurationSchema | LDTrackDisplayConfigurationSchema | LinearWiggleDisplayConfigurationSchema | LinearMafDisplayConfigurationSchema | LinearHicDisplayConfigurationSchema | LinearManhattanDisplayConfigurationSchema | LinearMarkDisplayConfigurationSchema)[]"
+          "type": "(LinearBasicDisplayConfigurationSchema | LinearAlignmentsDisplayConfigurationSchema | ChordVariantDisplayConfigurationSchema | ChordSyntenyDisplayConfigurationSchema | DotplotDisplayConfigurationSchema | LinearSyntenyDisplayConfigurationSchema | LGVSyntenyDisplayConfigurationSchema | MultiWaySyntenyDisplayConfigurationSchema | LinearReferenceSequenceDisplayConfigurationSchema | LinearVariantDisplayConfigurationSchema | LinearMultiSampleVariantDisplayConfigurationSchema | LDTrackDisplayConfigurationSchema | LinearWiggleDisplayConfigurationSchema | LinearMafDisplayConfigurationSchema | LinearHicDisplayConfigurationSchema | LinearManhattanDisplayConfigurationSchema | LinearMarkDisplayConfigurationSchema | LinearMultiRowFeatureDisplayConfigurationSchema)[]"
         },
         {
           "name": "formatDetails",
@@ -2932,7 +2932,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "displays",
-          "type": "(LinearBasicDisplayConfigurationSchema | LinearMultiRowFeatureDisplayConfigurationSchema | LinearAlignmentsDisplayConfigurationSchema | ChordVariantDisplayConfigurationSchema | ChordSyntenyDisplayConfigurationSchema | DotplotDisplayConfigurationSchema | LinearSyntenyDisplayConfigurationSchema | LGVSyntenyDisplayConfigurationSchema | MultiWaySyntenyDisplayConfigurationSchema | LinearReferenceSequenceDisplayConfigurationSchema | LinearVariantDisplayConfigurationSchema | LinearMultiSampleVariantDisplayConfigurationSchema | LDTrackDisplayConfigurationSchema | LinearWiggleDisplayConfigurationSchema | LinearMafDisplayConfigurationSchema | LinearHicDisplayConfigurationSchema | LinearManhattanDisplayConfigurationSchema | LinearMarkDisplayConfigurationSchema)[]"
+          "type": "(LinearBasicDisplayConfigurationSchema | LinearAlignmentsDisplayConfigurationSchema | ChordVariantDisplayConfigurationSchema | ChordSyntenyDisplayConfigurationSchema | DotplotDisplayConfigurationSchema | LinearSyntenyDisplayConfigurationSchema | LGVSyntenyDisplayConfigurationSchema | MultiWaySyntenyDisplayConfigurationSchema | LinearReferenceSequenceDisplayConfigurationSchema | LinearVariantDisplayConfigurationSchema | LinearMultiSampleVariantDisplayConfigurationSchema | LDTrackDisplayConfigurationSchema | LinearWiggleDisplayConfigurationSchema | LinearMafDisplayConfigurationSchema | LinearHicDisplayConfigurationSchema | LinearManhattanDisplayConfigurationSchema | LinearMarkDisplayConfigurationSchema | LinearMultiRowFeatureDisplayConfigurationSchema)[]"
         },
         {
           "name": "formatDetails",
@@ -3056,7 +3056,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "displays",
-          "type": "(LinearBasicDisplayConfigurationSchema | LinearMultiRowFeatureDisplayConfigurationSchema | LinearAlignmentsDisplayConfigurationSchema | ChordVariantDisplayConfigurationSchema | ChordSyntenyDisplayConfigurationSchema | DotplotDisplayConfigurationSchema | LinearSyntenyDisplayConfigurationSchema | LGVSyntenyDisplayConfigurationSchema | MultiWaySyntenyDisplayConfigurationSchema | LinearReferenceSequenceDisplayConfigurationSchema | LinearVariantDisplayConfigurationSchema | LinearMultiSampleVariantDisplayConfigurationSchema | LDTrackDisplayConfigurationSchema | LinearWiggleDisplayConfigurationSchema | LinearMafDisplayConfigurationSchema | LinearHicDisplayConfigurationSchema | LinearManhattanDisplayConfigurationSchema | LinearMarkDisplayConfigurationSchema)[]"
+          "type": "(LinearBasicDisplayConfigurationSchema | LinearAlignmentsDisplayConfigurationSchema | ChordVariantDisplayConfigurationSchema | ChordSyntenyDisplayConfigurationSchema | DotplotDisplayConfigurationSchema | LinearSyntenyDisplayConfigurationSchema | LGVSyntenyDisplayConfigurationSchema | MultiWaySyntenyDisplayConfigurationSchema | LinearReferenceSequenceDisplayConfigurationSchema | LinearVariantDisplayConfigurationSchema | LinearMultiSampleVariantDisplayConfigurationSchema | LDTrackDisplayConfigurationSchema | LinearWiggleDisplayConfigurationSchema | LinearMafDisplayConfigurationSchema | LinearHicDisplayConfigurationSchema | LinearManhattanDisplayConfigurationSchema | LinearMarkDisplayConfigurationSchema | LinearMultiRowFeatureDisplayConfigurationSchema)[]"
         },
         {
           "name": "formatDetails",
@@ -3489,330 +3489,6 @@ export const configManifest: ConfigManifest = {
         "hiddenFeatureIds",
         "expandedGeneIds",
         "featureHighlights"
-      ]
-    },
-    "LinearMultiRowFeatureDisplay": {
-      "slots": [
-        {
-          "name": "type",
-          "type": "\"LinearMultiRowFeatureDisplay\""
-        },
-        {
-          "name": "displayId",
-          "type": "identifier"
-        },
-        {
-          "name": "fetchSizeLimit",
-          "type": "number"
-        },
-        {
-          "name": "forceLoad",
-          "type": "boolean"
-        },
-        {
-          "name": "height",
-          "type": "number"
-        },
-        {
-          "name": "rows",
-          "type": "RowsConfigurationSchema",
-          "subSlots": [
-            {
-              "name": "sort",
-              "type": "string[]",
-              "liftsNumbers": true
-            },
-            {
-              "name": "labels",
-              "type": "Map<string, string>"
-            },
-            {
-              "name": "tree",
-              "type": "(string | undefined)"
-            },
-            {
-              "name": "treeProvenance",
-              "type": "(frozen | undefined)"
-            },
-            {
-              "name": "kept",
-              "type": "string[]",
-              "liftsNumbers": true
-            },
-            {
-              "name": "field",
-              "type": "string"
-            }
-          ],
-          "legacyKeys": [
-            "domain"
-          ],
-          "schema": "Rows",
-          "writes": "whole",
-          "shorthand": {
-            "string": "field"
-          }
-        },
-        {
-          "name": "clusterField",
-          "type": "string"
-        },
-        {
-          "name": "encoding",
-          "type": "FeatureEncodingConfigurationSchema",
-          "subSlots": [
-            {
-              "name": "color",
-              "type": "FeatureColorConfigurationSchema",
-              "subSlots": [
-                {
-                  "name": "value",
-                  "type": "(JexlString | (CssColor | undefined))"
-                },
-                {
-                  "name": "field",
-                  "type": "string"
-                },
-                {
-                  "name": "scale",
-                  "type": "FeatureColorScaleConfigurationSchema",
-                  "subSlots": [
-                    {
-                      "name": "type",
-                      "type": "(FeatureColorScaleType | undefined)"
-                    },
-                    {
-                      "name": "domain",
-                      "type": "string[]",
-                      "liftsNumbers": true
-                    },
-                    {
-                      "name": "range",
-                      "type": "CssColorEntry[]"
-                    },
-                    {
-                      "name": "unknown",
-                      "type": "(CssColor | undefined)"
-                    },
-                    {
-                      "name": "invalid",
-                      "type": "(CssColor | undefined)"
-                    },
-                    {
-                      "name": "names",
-                      "type": "string[]",
-                      "liftsNumbers": true
-                    },
-                    {
-                      "name": "scheme",
-                      "type": "(ColorScheme | undefined)"
-                    },
-                    {
-                      "name": "reverse",
-                      "type": "(boolean | undefined)"
-                    },
-                    {
-                      "name": "domainMid",
-                      "type": "(number | undefined)"
-                    },
-                    {
-                      "name": "domainMin",
-                      "type": "(number | undefined)"
-                    },
-                    {
-                      "name": "domainMax",
-                      "type": "(number | undefined)"
-                    },
-                    {
-                      "name": "domainQuantile",
-                      "type": "number"
-                    }
-                  ],
-                  "schema": "FeatureColorScale",
-                  "writes": "members"
-                },
-                {
-                  "name": "legend",
-                  "type": "FeatureColorLegendConfigurationSchema",
-                  "subSlots": [
-                    {
-                      "name": "title",
-                      "type": "(string | undefined)"
-                    }
-                  ],
-                  "schema": "FeatureColorLegend",
-                  "writes": "members"
-                }
-              ],
-              "schema": "FeatureColor",
-              "writes": "whole",
-              "shorthand": {
-                "string": "field"
-              },
-              "fieldPresets": {
-                "score": {
-                  "scale": {
-                    "type": "linear"
-                  }
-                },
-                "*": {
-                  "scale": {
-                    "type": "ordinal"
-                  }
-                }
-              }
-            }
-          ],
-          "schema": "FeatureEncoding",
-          "writes": "members"
-        },
-        {
-          "name": "rowColor",
-          "type": "RowColorConfigurationSchema",
-          "subSlots": [
-            {
-              "name": "field",
-              "type": "string"
-            },
-            {
-              "name": "scale",
-              "type": "RowColorScaleConfigurationSchema",
-              "subSlots": [
-                {
-                  "name": "domain",
-                  "type": "string[]",
-                  "liftsNumbers": true
-                },
-                {
-                  "name": "range",
-                  "type": "CssColorEntry[]"
-                },
-                {
-                  "name": "unknown",
-                  "type": "(CssColor | undefined)"
-                }
-              ],
-              "schema": "RowColorScale",
-              "writes": "members"
-            }
-          ],
-          "schema": "RowColor",
-          "writes": "whole",
-          "shorthand": {
-            "string": "field"
-          }
-        },
-        {
-          "name": "rowProportion",
-          "type": "number"
-        },
-        {
-          "name": "legend",
-          "type": "LegendConfigurationSchema",
-          "subSlots": [
-            {
-              "name": "show",
-              "type": "boolean"
-            }
-          ],
-          "schema": "Legend",
-          "writes": "members"
-        },
-        {
-          "name": "rowGroups",
-          "type": "RowGroupConfigurationSchema[]",
-          "subSlots": [
-            {
-              "name": "match",
-              "type": "string"
-            },
-            {
-              "name": "group",
-              "type": "string"
-            }
-          ],
-          "schema": "RowGroup"
-        },
-        {
-          "name": "facet",
-          "type": "FacetConfigurationSchema",
-          "subSlots": [
-            {
-              "name": "field",
-              "type": "string"
-            },
-            {
-              "name": "sort",
-              "type": "string[]",
-              "liftsNumbers": true
-            }
-          ],
-          "legacyKeys": [
-            "domain"
-          ],
-          "schema": "Facet",
-          "writes": "whole",
-          "shorthand": {
-            "string": "field"
-          }
-        },
-        {
-          "name": "axis",
-          "type": "RowAxisWithGridConfigurationSchema",
-          "subSlots": [
-            {
-              "name": "tree",
-              "type": "boolean"
-            },
-            {
-              "name": "branchLength",
-              "type": "boolean"
-            },
-            {
-              "name": "labels",
-              "type": "boolean"
-            },
-            {
-              "name": "width",
-              "type": "number"
-            },
-            {
-              "name": "grid",
-              "type": "boolean"
-            }
-          ],
-          "schema": "RowAxisWithGrid",
-          "writes": "members"
-        }
-      ],
-      "legacyKeys": [
-        "maxFeatureScreenDensity",
-        "maxDisplayedBpPerPx",
-        "mouseover",
-        "jexlFilters",
-        "color",
-        "showTree",
-        "showBranchLength",
-        "showRowLabels",
-        "treeAreaWidth",
-        "showRowSeparators"
-      ],
-      "droppedKeys": [
-        "maxFeatureScreenDensity",
-        "maxDisplayedBpPerPx",
-        "fetchSizeLimit",
-        "mouseover"
-      ],
-      "stateModelProps": [
-        "id",
-        "type",
-        "parkedColors",
-        "runClustering",
-        "clusterRegion",
-        "sortRowsBy",
-        "configuration",
-        "hiddenCategories",
-        "hiddenKeySpace"
       ]
     },
     "LinearAlignmentsDisplay": {
@@ -9383,7 +9059,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "axis",
-          "type": "RowAxisConfigurationSchema",
+          "type": "RowAxisWithGridConfigurationSchema",
           "subSlots": [
             {
               "name": "tree",
@@ -9400,9 +9076,13 @@ export const configManifest: ConfigManifest = {
             {
               "name": "width",
               "type": "number"
+            },
+            {
+              "name": "grid",
+              "type": "boolean"
             }
           ],
-          "schema": "RowAxis",
+          "schema": "RowAxisWithGrid",
           "writes": "members"
         },
         {
@@ -9690,7 +9370,8 @@ export const configManifest: ConfigManifest = {
         "showTree",
         "showBranchLength",
         "showRowLabels",
-        "treeAreaWidth"
+        "treeAreaWidth",
+        "showRowSeparators"
       ],
       "droppedKeys": [
         "maxFeatureScreenDensity",
@@ -10227,7 +9908,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "axis",
-          "type": "RowAxisConfigurationSchema",
+          "type": "RowAxisWithGridConfigurationSchema",
           "subSlots": [
             {
               "name": "tree",
@@ -10244,9 +9925,13 @@ export const configManifest: ConfigManifest = {
             {
               "name": "width",
               "type": "number"
+            },
+            {
+              "name": "grid",
+              "type": "boolean"
             }
           ],
-          "schema": "RowAxis",
+          "schema": "RowAxisWithGrid",
           "writes": "members"
         },
         {
@@ -10534,7 +10219,8 @@ export const configManifest: ConfigManifest = {
         "showTree",
         "showBranchLength",
         "showRowLabels",
-        "treeAreaWidth"
+        "treeAreaWidth",
+        "showRowSeparators"
       ],
       "droppedKeys": [
         "maxFeatureScreenDensity",
@@ -10554,6 +10240,855 @@ export const configManifest: ConfigManifest = {
         "sortRowsBy",
         "configuration",
         "hiddenCategories"
+      ]
+    },
+    "LinearMultiRowFeatureDisplay": {
+      "slots": [
+        {
+          "name": "type",
+          "type": "\"LinearMultiRowFeatureDisplay\""
+        },
+        {
+          "name": "displayId",
+          "type": "identifier"
+        },
+        {
+          "name": "height",
+          "type": "number"
+        },
+        {
+          "name": "fetchSizeLimit",
+          "type": "number"
+        },
+        {
+          "name": "forceLoad",
+          "type": "boolean"
+        },
+        {
+          "name": "marks",
+          "type": "MarkConfigurationSchema[]",
+          "subSlots": [
+            {
+              "name": "mark",
+              "type": "MarkDefConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "type",
+                  "type": "MarkType"
+                },
+                {
+                  "name": "interpolate",
+                  "type": "(MarkInterpolation | undefined)"
+                },
+                {
+                  "name": "height",
+                  "type": "MarkHeightConfigurationSchema",
+                  "subSlots": [
+                    {
+                      "name": "band",
+                      "type": "number"
+                    }
+                  ],
+                  "schema": "MarkHeight",
+                  "writes": "members"
+                },
+                {
+                  "name": "gapBp",
+                  "type": "(number | undefined)"
+                }
+              ],
+              "schema": "MarkDef",
+              "writes": "members",
+              "shorthand": {
+                "string": "type"
+              }
+            },
+            {
+              "name": "encoding",
+              "type": "MarkEncodingConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "x",
+                  "type": "string"
+                },
+                {
+                  "name": "x2",
+                  "type": "MarkLocusConfigurationSchema",
+                  "subSlots": [
+                    {
+                      "name": "pos",
+                      "type": "string"
+                    },
+                    {
+                      "name": "refName",
+                      "type": "string"
+                    }
+                  ],
+                  "schema": "MarkLocus",
+                  "writes": "whole",
+                  "shorthand": {
+                    "string": "pos"
+                  }
+                },
+                {
+                  "name": "y",
+                  "type": "string"
+                },
+                {
+                  "name": "row",
+                  "type": "string"
+                },
+                {
+                  "name": "color",
+                  "type": "MarkColorConfigurationSchema",
+                  "subSlots": [
+                    {
+                      "name": "value",
+                      "type": "(JexlString | (CssColor | undefined))"
+                    },
+                    {
+                      "name": "field",
+                      "type": "string"
+                    },
+                    {
+                      "name": "scale",
+                      "type": "MarkColorScaleConfigurationSchema",
+                      "subSlots": [
+                        {
+                          "name": "type",
+                          "type": "(MarkColorScaleType | undefined)"
+                        },
+                        {
+                          "name": "domain",
+                          "type": "string[]",
+                          "liftsNumbers": true
+                        },
+                        {
+                          "name": "domainMin",
+                          "type": "(number | undefined)"
+                        },
+                        {
+                          "name": "domainMax",
+                          "type": "(number | undefined)"
+                        },
+                        {
+                          "name": "domainQuantile",
+                          "type": "number"
+                        },
+                        {
+                          "name": "range",
+                          "type": "CssColorEntry[]"
+                        },
+                        {
+                          "name": "unknown",
+                          "type": "(CssColor | undefined)"
+                        },
+                        {
+                          "name": "invalid",
+                          "type": "(CssColor | undefined)"
+                        },
+                        {
+                          "name": "names",
+                          "type": "string[]",
+                          "liftsNumbers": true
+                        },
+                        {
+                          "name": "scheme",
+                          "type": "(ColorScheme | undefined)"
+                        },
+                        {
+                          "name": "reverse",
+                          "type": "(boolean | undefined)"
+                        },
+                        {
+                          "name": "domainMid",
+                          "type": "(number | undefined)"
+                        }
+                      ],
+                      "schema": "MarkColorScale",
+                      "writes": "members"
+                    },
+                    {
+                      "name": "legend",
+                      "type": "MarkColorLegendConfigurationSchema",
+                      "subSlots": [
+                        {
+                          "name": "title",
+                          "type": "(string | undefined)"
+                        },
+                        {
+                          "name": "descending",
+                          "type": "(boolean | undefined)"
+                        },
+                        {
+                          "name": "values",
+                          "type": "string[]",
+                          "liftsNumbers": true
+                        },
+                        {
+                          "name": "missingLabel",
+                          "type": "(string | undefined)"
+                        }
+                      ],
+                      "schema": "MarkColorLegend",
+                      "writes": "members"
+                    }
+                  ],
+                  "schema": "MarkColor",
+                  "writes": "whole",
+                  "shorthand": {
+                    "string": "field"
+                  },
+                  "fieldPresets": {
+                    "score": {
+                      "scale": {
+                        "type": "linear"
+                      }
+                    },
+                    "*": {
+                      "scale": {
+                        "type": "ordinal"
+                      }
+                    }
+                  }
+                },
+                {
+                  "name": "shape",
+                  "type": "MarkShapeConfigurationSchema",
+                  "subSlots": [
+                    {
+                      "name": "value",
+                      "type": "(JexlString | ShapeName)"
+                    },
+                    {
+                      "name": "field",
+                      "type": "string"
+                    },
+                    {
+                      "name": "scale",
+                      "type": "MarkShapeScaleConfigurationSchema",
+                      "subSlots": [
+                        {
+                          "name": "type",
+                          "type": "(MarkShapeScaleType | undefined)"
+                        },
+                        {
+                          "name": "range",
+                          "type": "ShapeName[]"
+                        },
+                        {
+                          "name": "domain",
+                          "type": "string[]",
+                          "liftsNumbers": true
+                        },
+                        {
+                          "name": "names",
+                          "type": "string[]",
+                          "liftsNumbers": true
+                        }
+                      ],
+                      "schema": "MarkShapeScale",
+                      "writes": "members"
+                    },
+                    {
+                      "name": "legend",
+                      "type": "MarkShapeLegendConfigurationSchema",
+                      "subSlots": [
+                        {
+                          "name": "title",
+                          "type": "(string | undefined)"
+                        },
+                        {
+                          "name": "values",
+                          "type": "string[]",
+                          "liftsNumbers": true
+                        },
+                        {
+                          "name": "missingLabel",
+                          "type": "(string | undefined)"
+                        }
+                      ],
+                      "schema": "MarkShapeLegend",
+                      "writes": "members"
+                    }
+                  ],
+                  "schema": "MarkShape",
+                  "writes": "whole",
+                  "shorthand": {
+                    "string": "field"
+                  }
+                },
+                {
+                  "name": "text",
+                  "type": "string"
+                },
+                {
+                  "name": "size",
+                  "type": "MarkSizeConfigurationSchema",
+                  "subSlots": [
+                    {
+                      "name": "value",
+                      "type": "(number | undefined)"
+                    },
+                    {
+                      "name": "field",
+                      "type": "string"
+                    },
+                    {
+                      "name": "scale",
+                      "type": "MarkSizeScaleConfigurationSchema",
+                      "subSlots": [
+                        {
+                          "name": "type",
+                          "type": "SizeScale"
+                        },
+                        {
+                          "name": "domainMin",
+                          "type": "(number | undefined)"
+                        },
+                        {
+                          "name": "domainMax",
+                          "type": "(number | undefined)"
+                        },
+                        {
+                          "name": "range",
+                          "type": "string[]",
+                          "liftsNumbers": true
+                        }
+                      ],
+                      "schema": "MarkSizeScale",
+                      "writes": "members"
+                    }
+                  ],
+                  "schema": "MarkSize",
+                  "writes": "whole",
+                  "shorthand": {
+                    "number": "value",
+                    "string": "field"
+                  }
+                },
+                {
+                  "name": "strokeWidth",
+                  "type": "MarkSizeConfigurationSchema",
+                  "subSlots": [
+                    {
+                      "name": "value",
+                      "type": "(number | undefined)"
+                    },
+                    {
+                      "name": "field",
+                      "type": "string"
+                    },
+                    {
+                      "name": "scale",
+                      "type": "MarkSizeScaleConfigurationSchema",
+                      "subSlots": [
+                        {
+                          "name": "type",
+                          "type": "SizeScale"
+                        },
+                        {
+                          "name": "domainMin",
+                          "type": "(number | undefined)"
+                        },
+                        {
+                          "name": "domainMax",
+                          "type": "(number | undefined)"
+                        },
+                        {
+                          "name": "range",
+                          "type": "string[]",
+                          "liftsNumbers": true
+                        }
+                      ],
+                      "schema": "MarkSizeScale",
+                      "writes": "members"
+                    }
+                  ],
+                  "schema": "MarkSize",
+                  "writes": "whole",
+                  "shorthand": {
+                    "number": "value",
+                    "string": "field"
+                  }
+                }
+              ],
+              "schema": "MarkEncoding",
+              "writes": "members"
+            },
+            {
+              "name": "transform",
+              "type": "(filterConfigurationSchema | formulaConfigurationSchema | binConfigurationSchema | aggregateConfigurationSchema | windowConfigurationSchema | coverageConfigurationSchema | flattenConfigurationSchema | cellsConfigurationSchema | pileupConfigurationSchema | mateConfigurationSchema)[]"
+            },
+            {
+              "name": "minBpPerPx",
+              "type": "number"
+            },
+            {
+              "name": "maxBpPerPx",
+              "type": "number"
+            }
+          ],
+          "schema": "Mark"
+        },
+        {
+          "name": "transform",
+          "type": "(filterConfigurationSchema | formulaConfigurationSchema | binConfigurationSchema | aggregateConfigurationSchema | windowConfigurationSchema | coverageConfigurationSchema | flattenConfigurationSchema | cellsConfigurationSchema | pileupConfigurationSchema | mateConfigurationSchema)[]"
+        },
+        {
+          "name": "facet",
+          "type": "MarkFacetConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "field",
+              "type": "string"
+            },
+            {
+              "name": "sort",
+              "type": "string[]",
+              "liftsNumbers": true
+            },
+            {
+              "name": "hidden",
+              "type": "string[]",
+              "liftsNumbers": true
+            },
+            {
+              "name": "transform",
+              "type": "(filterConfigurationSchema | formulaConfigurationSchema | binConfigurationSchema | aggregateConfigurationSchema | windowConfigurationSchema | coverageConfigurationSchema | flattenConfigurationSchema | cellsConfigurationSchema | pileupConfigurationSchema | mateConfigurationSchema)[]"
+            }
+          ],
+          "legacyKeys": [
+            "domain"
+          ],
+          "schema": "MarkFacet",
+          "writes": "whole",
+          "shorthand": {
+            "string": "field"
+          }
+        },
+        {
+          "name": "rows",
+          "type": "RowsConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "sort",
+              "type": "string[]",
+              "liftsNumbers": true
+            },
+            {
+              "name": "labels",
+              "type": "Map<string, string>"
+            },
+            {
+              "name": "tree",
+              "type": "(string | undefined)"
+            },
+            {
+              "name": "treeProvenance",
+              "type": "(frozen | undefined)"
+            },
+            {
+              "name": "kept",
+              "type": "string[]",
+              "liftsNumbers": true
+            },
+            {
+              "name": "field",
+              "type": "string"
+            }
+          ],
+          "legacyKeys": [
+            "domain"
+          ],
+          "schema": "Rows",
+          "writes": "whole",
+          "shorthand": {
+            "string": "field"
+          }
+        },
+        {
+          "name": "rowColor",
+          "type": "RowColorConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "field",
+              "type": "string"
+            },
+            {
+              "name": "scale",
+              "type": "RowColorScaleConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "domain",
+                  "type": "string[]",
+                  "liftsNumbers": true
+                },
+                {
+                  "name": "range",
+                  "type": "CssColorEntry[]"
+                },
+                {
+                  "name": "unknown",
+                  "type": "(CssColor | undefined)"
+                }
+              ],
+              "schema": "RowColorScale",
+              "writes": "members"
+            }
+          ],
+          "schema": "RowColor",
+          "writes": "whole",
+          "shorthand": {
+            "string": "field"
+          }
+        },
+        {
+          "name": "rowGroups",
+          "type": "RowGroupConfigurationSchema[]",
+          "subSlots": [
+            {
+              "name": "match",
+              "type": "string"
+            },
+            {
+              "name": "group",
+              "type": "string"
+            }
+          ],
+          "schema": "RowGroup"
+        },
+        {
+          "name": "axis",
+          "type": "RowAxisWithGridConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "tree",
+              "type": "boolean"
+            },
+            {
+              "name": "branchLength",
+              "type": "boolean"
+            },
+            {
+              "name": "labels",
+              "type": "boolean"
+            },
+            {
+              "name": "width",
+              "type": "number"
+            },
+            {
+              "name": "grid",
+              "type": "boolean"
+            }
+          ],
+          "schema": "RowAxisWithGrid",
+          "writes": "members"
+        },
+        {
+          "name": "rowHeight",
+          "type": "number"
+        },
+        {
+          "name": "encoding",
+          "type": "MarkDisplayEncodingConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "y",
+              "type": "YChannelConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "scale",
+                  "type": "YScaleConfigurationSchema",
+                  "subSlots": [
+                    {
+                      "name": "type",
+                      "type": "YScaleType"
+                    },
+                    {
+                      "name": "domainMin",
+                      "type": "(number | undefined)"
+                    },
+                    {
+                      "name": "domainMax",
+                      "type": "(number | undefined)"
+                    },
+                    {
+                      "name": "zero",
+                      "type": "boolean"
+                    },
+                    {
+                      "name": "fenceQuantile",
+                      "type": "number"
+                    },
+                    {
+                      "name": "constant",
+                      "type": "number"
+                    },
+                    {
+                      "name": "group",
+                      "type": "(string | undefined)"
+                    }
+                  ],
+                  "schema": "YScale",
+                  "writes": "members",
+                  "scaleFence": "fenceQuantile"
+                },
+                {
+                  "name": "axis",
+                  "type": "YAxisConfigurationSchema",
+                  "subSlots": [
+                    {
+                      "name": "title",
+                      "type": "(string | undefined)"
+                    },
+                    {
+                      "name": "grid",
+                      "type": "boolean"
+                    }
+                  ],
+                  "schema": "YAxis",
+                  "writes": "members"
+                },
+                {
+                  "name": "rules",
+                  "type": "ValueScaleRuleConfigurationSchema[]",
+                  "subSlots": [
+                    {
+                      "name": "value",
+                      "type": "number"
+                    },
+                    {
+                      "name": "color",
+                      "type": "(CssColor | undefined)"
+                    },
+                    {
+                      "name": "label",
+                      "type": "string"
+                    }
+                  ],
+                  "schema": "ValueScaleRule",
+                  "shorthand": {
+                    "number": "value"
+                  }
+                }
+              ],
+              "schema": "YChannel",
+              "writes": "members"
+            },
+            {
+              "name": "color",
+              "type": "MarkColorConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "value",
+                  "type": "(JexlString | (CssColor | undefined))"
+                },
+                {
+                  "name": "field",
+                  "type": "string"
+                },
+                {
+                  "name": "scale",
+                  "type": "MarkColorScaleConfigurationSchema",
+                  "subSlots": [
+                    {
+                      "name": "type",
+                      "type": "(MarkColorScaleType | undefined)"
+                    },
+                    {
+                      "name": "domain",
+                      "type": "string[]",
+                      "liftsNumbers": true
+                    },
+                    {
+                      "name": "domainMin",
+                      "type": "(number | undefined)"
+                    },
+                    {
+                      "name": "domainMax",
+                      "type": "(number | undefined)"
+                    },
+                    {
+                      "name": "domainQuantile",
+                      "type": "number"
+                    },
+                    {
+                      "name": "range",
+                      "type": "CssColorEntry[]"
+                    },
+                    {
+                      "name": "unknown",
+                      "type": "(CssColor | undefined)"
+                    },
+                    {
+                      "name": "invalid",
+                      "type": "(CssColor | undefined)"
+                    },
+                    {
+                      "name": "names",
+                      "type": "string[]",
+                      "liftsNumbers": true
+                    },
+                    {
+                      "name": "scheme",
+                      "type": "(ColorScheme | undefined)"
+                    },
+                    {
+                      "name": "reverse",
+                      "type": "(boolean | undefined)"
+                    },
+                    {
+                      "name": "domainMid",
+                      "type": "(number | undefined)"
+                    }
+                  ],
+                  "schema": "MarkColorScale",
+                  "writes": "members"
+                },
+                {
+                  "name": "legend",
+                  "type": "MarkColorLegendConfigurationSchema",
+                  "subSlots": [
+                    {
+                      "name": "title",
+                      "type": "(string | undefined)"
+                    },
+                    {
+                      "name": "descending",
+                      "type": "(boolean | undefined)"
+                    },
+                    {
+                      "name": "values",
+                      "type": "string[]",
+                      "liftsNumbers": true
+                    },
+                    {
+                      "name": "missingLabel",
+                      "type": "(string | undefined)"
+                    }
+                  ],
+                  "schema": "MarkColorLegend",
+                  "writes": "members"
+                }
+              ],
+              "schema": "MarkColor",
+              "writes": "whole",
+              "shorthand": {
+                "string": "field"
+              },
+              "fieldPresets": {
+                "score": {
+                  "scale": {
+                    "type": "linear"
+                  }
+                },
+                "*": {
+                  "scale": {
+                    "type": "ordinal"
+                  }
+                }
+              }
+            }
+          ],
+          "schema": "MarkDisplayEncoding",
+          "writes": "members"
+        },
+        {
+          "name": "origin",
+          "type": "number"
+        },
+        {
+          "name": "minWidthPx",
+          "type": "number"
+        },
+        {
+          "name": "legend",
+          "type": "LegendConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "show",
+              "type": "boolean"
+            }
+          ],
+          "schema": "Legend",
+          "writes": "members"
+        },
+        {
+          "name": "filter",
+          "type": "FieldPredicateConfigurationSchema[]",
+          "subSlots": [
+            {
+              "name": "field",
+              "type": "PredicateField"
+            },
+            {
+              "name": "equal",
+              "type": "((string | number | boolean) | undefined)"
+            },
+            {
+              "name": "lt",
+              "type": "(number | undefined)"
+            },
+            {
+              "name": "lte",
+              "type": "(number | undefined)"
+            },
+            {
+              "name": "gt",
+              "type": "(number | undefined)"
+            },
+            {
+              "name": "gte",
+              "type": "(number | undefined)"
+            },
+            {
+              "name": "oneOf",
+              "type": "((string | number | boolean)[] | undefined)"
+            },
+            {
+              "name": "range",
+              "type": "((number | null)[] | undefined)"
+            },
+            {
+              "name": "valid",
+              "type": "(boolean | undefined)"
+            }
+          ],
+          "schema": "FieldPredicate",
+          "shorthand": {
+            "string": "field"
+          }
+        }
+      ],
+      "legacyKeys": [
+        "scales",
+        "maxFeatureScreenDensity",
+        "maxDisplayedBpPerPx",
+        "mouseover",
+        "jexlFilters",
+        "showTree",
+        "showBranchLength",
+        "showRowLabels",
+        "treeAreaWidth",
+        "showRowSeparators"
+      ],
+      "droppedKeys": [
+        "maxFeatureScreenDensity",
+        "maxDisplayedBpPerPx",
+        "fetchSizeLimit",
+        "mouseover"
+      ],
+      "stateModelProps": [
+        "id",
+        "type",
+        "runClustering",
+        "clusterRegion",
+        "sortRowsBy",
+        "configuration",
+        "hiddenCategories",
+        "parkedColors"
       ]
     }
   },

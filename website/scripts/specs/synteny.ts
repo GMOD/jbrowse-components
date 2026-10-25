@@ -1581,7 +1581,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
       },
     ),
     readyText: 'Tnz-1',
-    readySelector: '[data-testid="multirow_canvas"]',
+    readySelector: '[data-testid="mark-display"] canvas',
     readyTimeout: 120000,
     viewportHeight: 870,
   },

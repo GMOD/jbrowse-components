@@ -13,7 +13,7 @@ const CHROMHMM_MENU = trackMenu(CHROMHMM_TRACK)
 // painted once: the run item is disabled until the display has discovered two
 // rows to cluster (`discoveredRows`), and a disabled MenuItem swallows a
 // click and reports nothing.
-const MULTIROW_READY = displaySettled('multirow-display')
+const MULTIROW_READY = displaySettled('mark-display')
 
 const { wgbsTrackId, cpgPileup } = bisulfiteVideoFixtures
 const WGBS_MENU = trackMenu(wgbsTrackId)

@@ -5738,545 +5738,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "unevaluatedProperties": false
     },
-    "Rows": {
-      "title": "Rows",
-      "anyOf": [
-        {
-          "description": "Shorthand for \`{ \\"field\\": ... }\`.",
-          "default": "",
-          "$ref": "#/$defs/FeatureField",
-          "type": "string"
-        },
-        {
-          "title": "Rows",
-          "type": "object",
-          "x-closed": true,
-          "properties": {
-            "domain": {
-              "deprecated": true,
-              "description": "Legacy key: a migration rewrites it into current slots when the config loads."
-            },
-            "sort": {
-              "description": "the row order: the rows listed lead, in this order; the rest keep their source's order (a VCF's samples, a multi-BigWig's subtracks), or sort where the rows are values found on features.",
-              "if": {
-                "type": "null"
-              },
-              "else": {
-                "anyOf": [
-                  {
-                    "type": "array",
-                    "items": {
-                      "anyOf": [
-                        {
-                          "type": "string"
-                        },
-                        {
-                          "type": "number"
-                        }
-                      ]
-                    }
-                  }
-                ]
-              }
-            },
-            "labels": {
-              "description": "a label drawn beside a row in place of its name, by name.",
-              "if": {
-                "type": "null"
-              },
-              "else": {
-                "type": "object",
-                "additionalProperties": {
-                  "type": "string"
-                }
-              }
-            },
-            "tree": {
-              "description": "the dendrogram beside the rows, as newick, written by a clustering run beside the order it produced.",
-              "if": {
-                "type": "null"
-              },
-              "else": {
-                "$ref": "#/$defs/PlainString"
-              }
-            },
-            "treeProvenance": {
-              "description": "the locus and settings the tree was computed from; unset for a tree that arrived as data. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-              "if": {
-                "type": "null"
-              },
-              "else": {
-                "not": {
-                  "$ref": "#/$defs/JexlString"
-                }
-              }
-            },
-            "kept": {
-              "description": "the rows shown, by name; empty shows every row, and so does naming no current row where the track lists its rows.",
-              "if": {
-                "type": "null"
-              },
-              "else": {
-                "anyOf": [
-                  {
-                    "type": "array",
-                    "items": {
-                      "anyOf": [
-                        {
-                          "type": "string"
-                        },
-                        {
-                          "type": "number"
-                        }
-                      ]
-                    }
-                  }
-                ]
-              }
-            },
-            "field": {
-              "description": "the field whose values each take a row.",
-              "default": "",
-              "if": {
-                "type": "null"
-              },
-              "else": {
-                "$ref": "#/$defs/FeatureField"
-              }
-            }
-          },
-          "patternProperties": {
-            "^_+comment": {}
-          },
-          "additionalProperties": false
-        }
-      ]
-    },
-    "RowColorScale": {
-      "title": "RowColorScale",
-      "type": "object",
-      "x-closed": true,
-      "properties": {
-        "domain": {
-          "description": "the field's values that get a color, in order: under name, rows by name.",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "anyOf": [
-              {
-                "type": "array",
-                "items": {
-                  "anyOf": [
-                    {
-                      "type": "string"
-                    },
-                    {
-                      "type": "number"
-                    }
-                  ]
-                }
-              }
-            ]
-          }
-        },
-        "range": {
-          "description": "the CSS color each value in domain takes, in the same order.",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "array",
-            "items": {
-              "$ref": "#/$defs/CssColorEntry"
-            }
-          }
-        },
-        "unknown": {
-          "description": "color for a value missing from domain: unset takes the next palette color where the display deals one, a color paints that color, \\"\\" adds no color from this setting, so a row keeps the color it already has, a variant cell takes the alt hue and a feature the no-value grey.",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "$ref": "#/$defs/CssColor"
-          }
-        }
-      },
-      "patternProperties": {
-        "^_+comment": {}
-      },
-      "additionalProperties": false
-    },
-    "RowColor": {
-      "title": "RowColor",
-      "anyOf": [
-        {
-          "description": "Shorthand for \`{ \\"field\\": ... }\`.",
-          "default": "name",
-          "$ref": "#/$defs/PlainString",
-          "type": "string"
-        },
-        {
-          "title": "RowColor",
-          "type": "object",
-          "x-closed": true,
-          "properties": {
-            "field": {
-              "description": "the row attribute whose values take the colors: name, the row itself, or an attribute of the rows, such as a column of a multi-sample variant adapter's samplesTsvLocation, e.g. population, or a subtrack's group.",
-              "default": "name",
-              "if": {
-                "type": "null"
-              },
-              "else": {
-                "$ref": "#/$defs/PlainString"
-              }
-            },
-            "scale": {
-              "if": {
-                "type": "null"
-              },
-              "else": {
-                "$ref": "#/$defs/RowColorScale"
-              }
-            }
-          },
-          "patternProperties": {
-            "^_+comment": {}
-          },
-          "additionalProperties": false
-        }
-      ]
-    },
-    "RowGroup": {
-      "title": "RowGroup",
-      "type": "object",
-      "x-closed": true,
-      "properties": {
-        "match": {
-          "description": "a regex a row name has to match; one that does not compile matches nothing.",
-          "default": "",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "$ref": "#/$defs/PlainString"
-          }
-        },
-        "group": {
-          "description": "the group a matching row joins.",
-          "default": "",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "$ref": "#/$defs/PlainString"
-          }
-        }
-      },
-      "patternProperties": {
-        "^_+comment": {}
-      },
-      "additionalProperties": false
-    },
-    "Facet": {
-      "title": "Facet",
-      "anyOf": [
-        {
-          "description": "Shorthand for \`{ \\"field\\": ... }\`.",
-          "default": "",
-          "$ref": "#/$defs/FeatureField",
-          "type": "string"
-        },
-        {
-          "title": "Facet",
-          "type": "object",
-          "x-closed": true,
-          "properties": {
-            "domain": {
-              "deprecated": true,
-              "description": "Legacy key: a migration rewrites it into current slots when the config loads."
-            },
-            "field": {
-              "description": "feature field (or jexl expression) to facet over, one labelled section per value; \`strand\` for one per strand, and empty for no sections.",
-              "default": "",
-              "if": {
-                "type": "null"
-              },
-              "else": {
-                "$ref": "#/$defs/FeatureField"
-              }
-            },
-            "sort": {
-              "description": "values whose sections stack first, in order.",
-              "if": {
-                "type": "null"
-              },
-              "else": {
-                "anyOf": [
-                  {
-                    "type": "array",
-                    "items": {
-                      "anyOf": [
-                        {
-                          "type": "string"
-                        },
-                        {
-                          "type": "number"
-                        }
-                      ]
-                    }
-                  }
-                ]
-              }
-            }
-          },
-          "patternProperties": {
-            "^_+comment": {}
-          },
-          "additionalProperties": false
-        }
-      ]
-    },
-    "RowAxisWithGrid": {
-      "title": "RowAxisWithGrid",
-      "type": "object",
-      "x-closed": true,
-      "properties": {
-        "tree": {
-          "description": "draw the clustering tree in the sidebar.",
-          "default": true,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "boolean"
-          }
-        },
-        "branchLength": {
-          "description": "position tree nodes by branch length (dendrogram) rather than evenly by topology (cladogram).",
-          "default": true,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "boolean"
-          }
-        },
-        "labels": {
-          "description": "draw each row’s name over the left of the plot.",
-          "default": true,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "boolean"
-          }
-        },
-        "width": {
-          "description": "width in px of the tree sidebar, which a drag on its edge also writes.",
-          "default": 80,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "number"
-          }
-        },
-        "grid": {
-          "description": "draw a hairline between adjacent rows, once rows are at least 4px tall.",
-          "default": false,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "boolean"
-          }
-        }
-      },
-      "patternProperties": {
-        "^_+comment": {}
-      },
-      "additionalProperties": false
-    },
-    "LinearMultiRowFeatureDisplaySlots": {
-      "type": "object",
-      "properties": {
-        "fetchSizeLimit": {
-          "description": "bytes a region may fetch before the display asks first; an adapter that sets its own limit overrides this.",
-          "default": 5000000,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "number"
-          }
-        },
-        "forceLoad": {
-          "description": "Declarative equivalent of the \\"Force load\\" button on the \\"too much data\\" banner: when true the display always renders, however large the region or dense the features. Off by default (the gate guards against huge downloads). Set it on a view no one can interact with — an embedded / notebook view, or a screenshot — where the region is known and you want it drawn without a click.",
-          "default": false,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "boolean"
-          }
-        },
-        "height": {
-          "description": "default height for the track.",
-          "default": 100,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "number"
-          }
-        },
-        "rows": {
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "$ref": "#/$defs/Rows"
-          }
-        },
-        "clusterField": {
-          "description": "feature attribute the rows cluster and sort on, or a jexl expression deriving one. 'auto' = the attribute encoding.color reads, else name; empty = presence alone.",
-          "default": "auto",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "$ref": "#/$defs/FeatureField"
-          }
-        },
-        "encoding": {
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "$ref": "#/$defs/FeatureEncoding"
-          }
-        },
-        "rowColor": {
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "$ref": "#/$defs/RowColor"
-          }
-        },
-        "rowProportion": {
-          "description": "fraction of the row height each block fills.",
-          "default": 1,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "number"
-          }
-        },
-        "legend": {
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "$ref": "#/$defs/Legend"
-          }
-        },
-        "rowGroups": {
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "array",
-            "items": {
-              "$ref": "#/$defs/RowGroup"
-            }
-          }
-        },
-        "facet": {
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "$ref": "#/$defs/Facet"
-          }
-        },
-        "axis": {
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "$ref": "#/$defs/RowAxisWithGrid"
-          }
-        },
-        "maxFeatureScreenDensity": {
-          "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
-        },
-        "maxDisplayedBpPerPx": {
-          "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
-        },
-        "mouseover": {
-          "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
-        },
-        "jexlFilters": {
-          "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
-        },
-        "color": {
-          "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
-        },
-        "showTree": {
-          "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
-        },
-        "showBranchLength": {
-          "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
-        },
-        "showRowLabels": {
-          "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
-        },
-        "treeAreaWidth": {
-          "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
-        },
-        "showRowSeparators": {
-          "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
-        }
-      }
-    },
-    "LinearMultiRowFeatureDisplay": {
-      "title": "LinearMultiRowFeatureDisplay",
-      "type": "object",
-      "x-closed": true,
-      "allOf": [
-        {
-          "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots"
-        }
-      ],
-      "properties": {
-        "type": {
-          "const": "LinearMultiRowFeatureDisplay"
-        },
-        "displayId": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "type"
-      ],
-      "patternProperties": {
-        "^_+comment": {}
-      },
-      "unevaluatedProperties": false
-    },
     "AlignmentsSort": {
       "title": "AlignmentsSort",
       "anyOf": [
@@ -10016,7 +9477,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "x-closed": true,
       "properties": {
         "type": {
-          "description": "ordinal hands out range colors per distinct value; linear, log and symlog read the value between domainMin and domainMax into a ramp; threshold cuts the value at the domain and hands each interval a range color; identity reads no field and paints each feature its own BED color, black included, the key naming the colors in domain; unset is linear for score and ordinal for any other field.",
+          "description": "ordinal hands out range colors per distinct value; linear, log and symlog read the value between domainMin and domainMax into a ramp; threshold cuts the value at the domain and hands each interval a range color; identity paints each feature the CSS color its field holds, or with no field its own BED color, black included, the key naming the colors in domain; unset is linear for score and ordinal for any other field.",
           "if": {
             "type": "null"
           },
@@ -12158,6 +11619,67 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "unevaluatedProperties": false
     },
+    "RowAxisWithGrid": {
+      "title": "RowAxisWithGrid",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "tree": {
+          "description": "draw the clustering tree in the sidebar.",
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
+        },
+        "branchLength": {
+          "description": "position tree nodes by branch length (dendrogram) rather than evenly by topology (cladogram).",
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
+        },
+        "labels": {
+          "description": "draw each row’s name over the left of the plot.",
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
+        },
+        "width": {
+          "description": "width in px of the tree sidebar, which a drag on its edge also writes.",
+          "default": 80,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
+        },
+        "grid": {
+          "description": "draw a hairline between adjacent rows, once rows are at least 4px tall.",
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
     "SampleRows": {
       "title": "SampleRows",
       "anyOf": [
@@ -12507,6 +12029,160 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "^_+comment": {}
       },
       "additionalProperties": false
+    },
+    "RowColorScale": {
+      "title": "RowColorScale",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "domain": {
+          "description": "the field's values that get a color, in order: under name, rows by name.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "anyOf": [
+              {
+                "type": "array",
+                "items": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "number"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        "range": {
+          "description": "the CSS color each value in domain takes, in the same order.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/CssColorEntry"
+            }
+          }
+        },
+        "unknown": {
+          "description": "color for a value missing from domain: unset takes the next palette color where the display deals one, a color paints that color, \\"\\" adds no color from this setting, so a row keeps the color it already has, a variant cell takes the alt hue and a feature the no-value grey.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/CssColor"
+          }
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
+    "RowColor": {
+      "title": "RowColor",
+      "anyOf": [
+        {
+          "description": "Shorthand for \`{ \\"field\\": ... }\`.",
+          "default": "name",
+          "$ref": "#/$defs/PlainString",
+          "type": "string"
+        },
+        {
+          "title": "RowColor",
+          "type": "object",
+          "x-closed": true,
+          "properties": {
+            "field": {
+              "description": "the row attribute whose values take the colors: name, the row itself, or an attribute of the rows, such as a column of a multi-sample variant adapter's samplesTsvLocation, e.g. population, or a subtrack's group.",
+              "default": "name",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/PlainString"
+              }
+            },
+            "scale": {
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/RowColorScale"
+              }
+            }
+          },
+          "patternProperties": {
+            "^_+comment": {}
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "Facet": {
+      "title": "Facet",
+      "anyOf": [
+        {
+          "description": "Shorthand for \`{ \\"field\\": ... }\`.",
+          "default": "",
+          "$ref": "#/$defs/FeatureField",
+          "type": "string"
+        },
+        {
+          "title": "Facet",
+          "type": "object",
+          "x-closed": true,
+          "properties": {
+            "domain": {
+              "deprecated": true,
+              "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+            },
+            "field": {
+              "description": "feature field (or jexl expression) to facet over, one labelled section per value; \`strand\` for one per strand, and empty for no sections.",
+              "default": "",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/FeatureField"
+              }
+            },
+            "sort": {
+              "description": "values whose sections stack first, in order.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "anyOf": [
+                  {
+                    "type": "array",
+                    "items": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "number"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          "patternProperties": {
+            "^_+comment": {}
+          },
+          "additionalProperties": false
+        }
+      ]
     },
     "VariantsBand": {
       "title": "VariantsBand",
@@ -15127,6 +14803,151 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         }
       ]
     },
+    "Rows": {
+      "title": "Rows",
+      "anyOf": [
+        {
+          "description": "Shorthand for \`{ \\"field\\": ... }\`.",
+          "default": "",
+          "$ref": "#/$defs/FeatureField",
+          "type": "string"
+        },
+        {
+          "title": "Rows",
+          "type": "object",
+          "x-closed": true,
+          "properties": {
+            "domain": {
+              "deprecated": true,
+              "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+            },
+            "sort": {
+              "description": "the row order: the rows listed lead, in this order; the rest keep their source's order (a VCF's samples, a multi-BigWig's subtracks), or sort where the rows are values found on features.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "anyOf": [
+                  {
+                    "type": "array",
+                    "items": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "number"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            },
+            "labels": {
+              "description": "a label drawn beside a row in place of its name, by name.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                }
+              }
+            },
+            "tree": {
+              "description": "the dendrogram beside the rows, as newick, written by a clustering run beside the order it produced.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/PlainString"
+              }
+            },
+            "treeProvenance": {
+              "description": "the locus and settings the tree was computed from; unset for a tree that arrived as data. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "not": {
+                  "$ref": "#/$defs/JexlString"
+                }
+              }
+            },
+            "kept": {
+              "description": "the rows shown, by name; empty shows every row, and so does naming no current row where the track lists its rows.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "anyOf": [
+                  {
+                    "type": "array",
+                    "items": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "number"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            },
+            "field": {
+              "description": "the field whose values each take a row.",
+              "default": "",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/FeatureField"
+              }
+            }
+          },
+          "patternProperties": {
+            "^_+comment": {}
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "RowGroup": {
+      "title": "RowGroup",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "match": {
+          "description": "a regex a row name has to match; one that does not compile matches nothing.",
+          "default": "",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
+        },
+        "group": {
+          "description": "the group a matching row joins.",
+          "default": "",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
     "YScale3": {
       "title": "YScale",
       "type": "object",
@@ -15369,7 +15190,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "null"
           },
           "else": {
-            "$ref": "#/$defs/RowAxis"
+            "$ref": "#/$defs/RowAxisWithGrid"
           }
         },
         "rowHeight": {
@@ -15462,6 +15283,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
         "treeAreaWidth": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "showRowSeparators": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
@@ -15587,7 +15412,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "null"
           },
           "else": {
-            "$ref": "#/$defs/RowAxis"
+            "$ref": "#/$defs/RowAxisWithGrid"
           }
         },
         "rowHeight": {
@@ -15682,6 +15507,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "treeAreaWidth": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "showRowSeparators": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
       }
     },
@@ -15701,6 +15530,228 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "LinearArcDisplay",
             "LinearPairedArcDisplay"
           ]
+        },
+        "displayId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "unevaluatedProperties": false
+    },
+    "LinearMultiRowFeatureDisplaySlots": {
+      "type": "object",
+      "properties": {
+        "height": {
+          "description": "default height for the track.",
+          "default": 150,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
+        },
+        "fetchSizeLimit": {
+          "description": "bytes a region may download before the display asks.",
+          "default": 5000000,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
+        },
+        "forceLoad": {
+          "description": "Declarative equivalent of the \\"Force load\\" button on the \\"too much data\\" banner: when true the display always renders, however large the region or dense the features. Off by default (the gate guards against huge downloads). Set it on a view no one can interact with — an embedded / notebook view, or a screenshot — where the region is known and you want it drawn without a click.",
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
+        },
+        "marks": {
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/Mark"
+            }
+          }
+        },
+        "transform": {
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/MarkTransform"
+            }
+          }
+        },
+        "facet": {
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/MarkFacet"
+          }
+        },
+        "rows": {
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/Rows"
+          }
+        },
+        "rowColor": {
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/RowColor"
+          }
+        },
+        "rowGroups": {
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/RowGroup"
+            }
+          }
+        },
+        "axis": {
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/RowAxisWithGrid"
+          }
+        },
+        "rowHeight": {
+          "description": "per-row height in px under rows, scrolling the rows that do not fit; 0 (the default) fits the rows to the plot instead, dividing it between them.",
+          "default": 0,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
+        },
+        "encoding": {
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/MarkDisplayEncoding"
+          }
+        },
+        "origin": {
+          "description": "baseline value for bars.",
+          "default": 0,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
+        },
+        "minWidthPx": {
+          "description": "minimum bar/rect width in px.",
+          "default": 1,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
+        },
+        "legend": {
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/Legend"
+          }
+        },
+        "filter": {
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/FieldPredicate"
+            }
+          }
+        },
+        "scales": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "maxFeatureScreenDensity": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "maxDisplayedBpPerPx": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "mouseover": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "jexlFilters": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "showTree": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "showBranchLength": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "showRowLabels": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "treeAreaWidth": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "showRowSeparators": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        }
+      }
+    },
+    "LinearMultiRowFeatureDisplay": {
+      "title": "LinearMultiRowFeatureDisplay",
+      "type": "object",
+      "x-closed": true,
+      "allOf": [
+        {
+          "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots"
+        }
+      ],
+      "properties": {
+        "type": {
+          "const": "LinearMultiRowFeatureDisplay"
         },
         "displayId": {
           "type": "string"
@@ -16185,9 +16236,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                   "$ref": "#/$defs/LinearBasicDisplaySlots/properties/fetchSizeLimit"
                 },
                 {
-                  "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/fetchSizeLimit"
-                },
-                {
                   "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/fetchSizeLimit"
                 },
                 {
@@ -16195,6 +16243,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 },
                 {
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/fetchSizeLimit"
+                },
+                {
+                  "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/fetchSizeLimit"
                 }
               ]
             },
@@ -16204,13 +16255,13 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                   "$ref": "#/$defs/LinearBasicDisplaySlots/properties/forceLoad"
                 },
                 {
-                  "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/forceLoad"
-                },
-                {
                   "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/forceLoad"
                 },
                 {
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/forceLoad"
+                },
+                {
+                  "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/forceLoad"
                 }
               ]
             },
@@ -16220,9 +16271,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                   "$ref": "#/$defs/LinearBasicDisplaySlots/properties/height"
                 },
                 {
-                  "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/height"
-                },
-                {
                   "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/height"
                 },
                 {
@@ -16230,6 +16278,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 },
                 {
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/height"
+                },
+                {
+                  "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/height"
                 }
               ]
             },
@@ -16249,6 +16300,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 },
                 {
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/filter"
+                },
+                {
+                  "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/filter"
                 }
               ]
             },
@@ -16258,9 +16312,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                   "$ref": "#/$defs/LinearBasicDisplaySlots/properties/mouseover"
                 },
                 {
-                  "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/mouseover"
-                },
-                {
                   "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/mouseover"
                 },
                 {
@@ -16268,6 +16319,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 },
                 {
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/mouseover"
+                },
+                {
+                  "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/mouseover"
                 }
               ]
             },
@@ -16277,9 +16331,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                   "$ref": "#/$defs/LinearBasicDisplaySlots/properties/maxFeatureScreenDensity"
                 },
                 {
-                  "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/maxFeatureScreenDensity"
-                },
-                {
                   "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/maxFeatureScreenDensity"
                 },
                 {
@@ -16287,6 +16338,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 },
                 {
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/maxFeatureScreenDensity"
+                },
+                {
+                  "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/maxFeatureScreenDensity"
                 }
               ]
             },
@@ -16296,9 +16350,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                   "$ref": "#/$defs/LinearBasicDisplaySlots/properties/legend"
                 },
                 {
-                  "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/legend"
-                },
-                {
                   "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/legend"
                 },
                 {
@@ -16306,6 +16357,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 },
                 {
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/legend"
+                },
+                {
+                  "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/legend"
                 }
               ]
             },
@@ -16324,9 +16378,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                   "$ref": "#/$defs/LinearBasicDisplaySlots/properties/encoding"
                 },
                 {
-                  "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/encoding"
-                },
-                {
                   "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/encoding"
                 },
                 {
@@ -16334,6 +16385,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 },
                 {
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/encoding"
+                },
+                {
+                  "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/encoding"
                 }
               ]
             },
@@ -16355,13 +16409,13 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                   "$ref": "#/$defs/LinearBasicDisplaySlots/properties/facet"
                 },
                 {
-                  "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/facet"
-                },
-                {
                   "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/facet"
                 },
                 {
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/facet"
+                },
+                {
+                  "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/facet"
                 }
               ]
             },
@@ -16404,9 +16458,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                   "$ref": "#/$defs/LinearBasicDisplaySlots/properties/maxDisplayedBpPerPx"
                 },
                 {
-                  "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/maxDisplayedBpPerPx"
-                },
-                {
                   "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/maxDisplayedBpPerPx"
                 },
                 {
@@ -16414,6 +16465,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 },
                 {
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/maxDisplayedBpPerPx"
+                },
+                {
+                  "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/maxDisplayedBpPerPx"
                 }
               ]
             },
@@ -16423,9 +16477,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                   "$ref": "#/$defs/LinearBasicDisplaySlots/properties/jexlFilters"
                 },
                 {
-                  "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/jexlFilters"
-                },
-                {
                   "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/jexlFilters"
                 },
                 {
@@ -16433,6 +16484,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 },
                 {
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/jexlFilters"
+                },
+                {
+                  "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/jexlFilters"
                 }
               ]
             },
@@ -16466,9 +16520,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                   "$ref": "#/$defs/LinearBasicDisplaySlots/properties/color"
                 },
                 {
-                  "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/color"
-                },
-                {
                   "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/color"
                 }
               ]
@@ -16479,11 +16530,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "showDescriptions": {
               "$ref": "#/$defs/LinearBasicDisplaySlots/properties/showDescriptions"
             },
+            "mark": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/mark"
+            },
             "rows": {
               "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/rows"
-                },
                 {
                   "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/rows"
                 },
@@ -16492,17 +16543,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 },
                 {
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rows"
+                },
+                {
+                  "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/rows"
                 }
               ]
             },
-            "clusterField": {
-              "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/clusterField"
-            },
             "rowColor": {
               "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/rowColor"
-                },
                 {
                   "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/rowColor"
                 },
@@ -16511,117 +16559,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 },
                 {
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rowColor"
+                },
+                {
+                  "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/rowColor"
                 }
               ]
-            },
-            "rowProportion": {
-              "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/rowProportion"
-            },
-            "rowGroups": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/rowGroups"
-                },
-                {
-                  "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/rowGroups"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rowGroups"
-                }
-              ]
-            },
-            "axis": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/axis"
-                },
-                {
-                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/axis"
-                },
-                {
-                  "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/axis"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/axis"
-                }
-              ]
-            },
-            "showTree": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/showTree"
-                },
-                {
-                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/showTree"
-                },
-                {
-                  "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/showTree"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/showTree"
-                }
-              ]
-            },
-            "showBranchLength": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/showBranchLength"
-                },
-                {
-                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/showBranchLength"
-                },
-                {
-                  "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/showBranchLength"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/showBranchLength"
-                }
-              ]
-            },
-            "showRowLabels": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/showRowLabels"
-                },
-                {
-                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/showRowLabels"
-                },
-                {
-                  "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/showRowLabels"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/showRowLabels"
-                }
-              ]
-            },
-            "treeAreaWidth": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/treeAreaWidth"
-                },
-                {
-                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/treeAreaWidth"
-                },
-                {
-                  "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/treeAreaWidth"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/treeAreaWidth"
-                }
-              ]
-            },
-            "showRowSeparators": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/showRowSeparators"
-                },
-                {
-                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/showRowSeparators"
-                }
-              ]
-            },
-            "mark": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/mark"
             },
             "data": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/data"
@@ -16636,6 +16578,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 },
                 {
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/origin"
+                },
+                {
+                  "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/origin"
                 }
               ]
             },
@@ -16648,6 +16593,22 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "extent": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/extent"
             },
+            "axis": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/axis"
+                },
+                {
+                  "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/axis"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/axis"
+                },
+                {
+                  "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/axis"
+                }
+              ]
+            },
             "scales": {
               "anyOf": [
                 {
@@ -16658,6 +16619,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 },
                 {
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/scales"
+                },
+                {
+                  "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/scales"
                 }
               ]
             },
@@ -16697,6 +16661,86 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "resolution": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/resolution"
             },
+            "showTree": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/showTree"
+                },
+                {
+                  "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/showTree"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/showTree"
+                },
+                {
+                  "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/showTree"
+                }
+              ]
+            },
+            "showBranchLength": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/showBranchLength"
+                },
+                {
+                  "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/showBranchLength"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/showBranchLength"
+                },
+                {
+                  "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/showBranchLength"
+                }
+              ]
+            },
+            "showRowLabels": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/showRowLabels"
+                },
+                {
+                  "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/showRowLabels"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/showRowLabels"
+                },
+                {
+                  "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/showRowLabels"
+                }
+              ]
+            },
+            "treeAreaWidth": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/treeAreaWidth"
+                },
+                {
+                  "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/treeAreaWidth"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/treeAreaWidth"
+                },
+                {
+                  "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/treeAreaWidth"
+                }
+              ]
+            },
+            "showRowSeparators": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/showRowSeparators"
+                },
+                {
+                  "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/showRowSeparators"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/showRowSeparators"
+                },
+                {
+                  "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/showRowSeparators"
+                }
+              ]
+            },
             "defaultRendering": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/defaultRendering"
             },
@@ -16710,6 +16754,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 },
                 {
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/marks"
+                },
+                {
+                  "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/marks"
                 }
               ]
             },
@@ -16720,6 +16767,22 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 },
                 {
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/transform"
+                },
+                {
+                  "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/transform"
+                }
+              ]
+            },
+            "rowGroups": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/rowGroups"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rowGroups"
+                },
+                {
+                  "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/rowGroups"
                 }
               ]
             },
@@ -16730,6 +16793,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 },
                 {
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rowHeight"
+                },
+                {
+                  "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/rowHeight"
                 }
               ]
             },
@@ -16740,6 +16806,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 },
                 {
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/minWidthPx"
+                },
+                {
+                  "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/minWidthPx"
                 }
               ]
             }
@@ -17174,6 +17243,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "treeAreaWidth": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/treeAreaWidth"
+            },
+            "showRowSeparators": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/showRowSeparators"
             }
           },
           "patternProperties": {
@@ -17877,7 +17949,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               ]
             },
             "showRowSeparators": {
-              "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/showRowSeparators"
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/showRowSeparators"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/showRowSeparators"
+                }
+              ]
             },
             "showReferenceAlleles": {
               "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/showReferenceAlleles"
@@ -18584,7 +18663,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               ]
             },
             "showRowSeparators": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/showRowSeparators"
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/showRowSeparators"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/showRowSeparators"
+                }
+              ]
             },
             "defaultRendering": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/defaultRendering"
@@ -19015,7 +19101,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               ]
             },
             "showRowSeparators": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/showRowSeparators"
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/showRowSeparators"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/showRowSeparators"
+                }
+              ]
             },
             "defaultRendering": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/defaultRendering"
@@ -19730,6 +19823,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "filter": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/filter"
+            },
+            "showRowSeparators": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/showRowSeparators"
             }
           },
           "patternProperties": {
@@ -20472,6 +20568,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "treeAreaWidth": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/treeAreaWidth"
+            },
+            "showRowSeparators": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/showRowSeparators"
             }
           },
           "patternProperties": {
@@ -20721,6 +20820,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "treeAreaWidth": {
               "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/treeAreaWidth"
+            },
+            "showRowSeparators": {
+              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/showRowSeparators"
             }
           },
           "patternProperties": {
@@ -22630,7 +22732,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             {
               "enum": [
                 "LinearBasicDisplay",
-                "LinearMultiRowFeatureDisplay",
                 "LinearAlignmentsDisplay",
                 "ChordVariantDisplay",
                 "ChordSyntenyDisplay",
@@ -22646,7 +22747,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 "LinearMafDisplay",
                 "LinearHicDisplay",
                 "LinearManhattanDisplay",
-                "LinearMarkDisplay"
+                "LinearMarkDisplay",
+                "LinearMultiRowFeatureDisplay"
               ]
             },
             {
@@ -22676,22 +22778,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           },
           "then": {
             "$ref": "#/$defs/LinearBasicDisplay"
-          }
-        },
-        {
-          "if": {
-            "type": "object",
-            "properties": {
-              "type": {
-                "const": "LinearMultiRowFeatureDisplay"
-              }
-            },
-            "required": [
-              "type"
-            ]
-          },
-          "then": {
-            "$ref": "#/$defs/LinearMultiRowFeatureDisplay"
           }
         },
         {
@@ -22967,6 +23053,22 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           },
           "then": {
             "$ref": "#/$defs/LinearMarkDisplay"
+          }
+        },
+        {
+          "if": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "LinearMultiRowFeatureDisplay"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/LinearMultiRowFeatureDisplay"
           }
         }
       ]
@@ -23963,67 +24065,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             {
               "$ref": "#/$defs/LinearBasicDisplay"
-            }
-          ]
-        }
-      },
-      "required": [
-        "type"
-      ],
-      "patternProperties": {
-        "^_+comment": {}
-      },
-      "unevaluatedProperties": false
-    },
-    "LinearMultiRowFeatureDisplayState": {
-      "type": "object",
-      "properties": {
-        "parkedColors": {},
-        "runClustering": {
-          "type": "boolean"
-        },
-        "clusterRegion": {
-          "type": "string"
-        },
-        "sortRowsBy": {},
-        "hiddenCategories": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "hiddenKeySpace": {
-          "type": "string"
-        },
-        "heightPreConfig": {
-          "deprecated": true,
-          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
-        }
-      }
-    },
-    "LinearMultiRowFeatureDisplaySnapshot": {
-      "title": "LinearMultiRowFeatureDisplaySnapshot",
-      "description": "A LinearMultiRowFeatureDisplay node inside a saved session: the state model's own properties. A config slot does not belong here; it goes on the track's \`displays\` entry.",
-      "type": "object",
-      "allOf": [
-        {
-          "$ref": "#/$defs/LinearMultiRowFeatureDisplayState"
-        }
-      ],
-      "properties": {
-        "type": {
-          "const": "LinearMultiRowFeatureDisplay"
-        },
-        "id": {
-          "type": "string"
-        },
-        "configuration": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/LinearMultiRowFeatureDisplay"
             }
           ]
         }
@@ -25050,6 +25091,59 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "unevaluatedProperties": false
     },
+    "LinearMultiRowFeatureDisplayState": {
+      "type": "object",
+      "properties": {
+        "runClustering": {
+          "type": "boolean"
+        },
+        "clusterRegion": {
+          "type": "string"
+        },
+        "sortRowsBy": {},
+        "hiddenCategories": {},
+        "parkedColors": {},
+        "heightPreConfig": {
+          "deprecated": true,
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
+        }
+      }
+    },
+    "LinearMultiRowFeatureDisplaySnapshot": {
+      "title": "LinearMultiRowFeatureDisplaySnapshot",
+      "description": "A LinearMultiRowFeatureDisplay node inside a saved session: the state model's own properties. A config slot does not belong here; it goes on the track's \`displays\` entry.",
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/$defs/LinearMultiRowFeatureDisplayState"
+        }
+      ],
+      "properties": {
+        "type": {
+          "const": "LinearMultiRowFeatureDisplay"
+        },
+        "id": {
+          "type": "string"
+        },
+        "configuration": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "#/$defs/LinearMultiRowFeatureDisplay"
+            }
+          ]
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "unevaluatedProperties": false
+    },
     "FeatureTrackSnapshot": {
       "title": "FeatureTrackSnapshot",
       "description": "A FeatureTrack node inside a saved session view.",
@@ -25565,7 +25659,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             {
               "enum": [
                 "LinearBasicDisplay",
-                "LinearMultiRowFeatureDisplay",
                 "LinearAlignmentsDisplay",
                 "ChordVariantDisplay",
                 "ChordSyntenyDisplay",
@@ -25581,7 +25674,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 "LinearMafDisplay",
                 "LinearHicDisplay",
                 "LinearManhattanDisplay",
-                "LinearMarkDisplay"
+                "LinearMarkDisplay",
+                "LinearMultiRowFeatureDisplay"
               ]
             },
             {
@@ -25611,22 +25705,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           },
           "then": {
             "$ref": "#/$defs/LinearBasicDisplaySnapshot"
-          }
-        },
-        {
-          "if": {
-            "type": "object",
-            "properties": {
-              "type": {
-                "const": "LinearMultiRowFeatureDisplay"
-              }
-            },
-            "required": [
-              "type"
-            ]
-          },
-          "then": {
-            "$ref": "#/$defs/LinearMultiRowFeatureDisplaySnapshot"
           }
         },
         {
@@ -25902,6 +25980,22 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           },
           "then": {
             "$ref": "#/$defs/LinearMarkDisplaySnapshot"
+          }
+        },
+        {
+          "if": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "LinearMultiRowFeatureDisplay"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/LinearMultiRowFeatureDisplaySnapshot"
           }
         }
       ]
@@ -26190,42 +26284,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "type": {
               "const": "LinearBasicDisplay",
-              "description": "The display to open the track with, when the track offers several for this view."
-            },
-            "trackSnapshot": {
-              "type": "object",
-              "description": "Keys applied to the track config node."
-            },
-            "displaySnapshot": {
-              "type": "object",
-              "description": "Keys applied to the display node explicitly."
-            }
-          },
-          "required": [
-            "trackId"
-          ],
-          "patternProperties": {
-            "^_+comment": {}
-          },
-          "unevaluatedProperties": false
-        },
-        {
-          "type": "object",
-          "title": "LinearMultiRowFeatureDisplayTrackEntry",
-          "allOf": [
-            {
-              "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots"
-            },
-            {
-              "$ref": "#/$defs/LinearMultiRowFeatureDisplayState"
-            }
-          ],
-          "properties": {
-            "trackId": {
-              "type": "string"
-            },
-            "type": {
-              "const": "LinearMultiRowFeatureDisplay",
               "description": "The display to open the track with, when the track offers several for this view."
             },
             "trackSnapshot": {
@@ -26678,6 +26736,42 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "unevaluatedProperties": false
         },
         {
+          "type": "object",
+          "title": "LinearMultiRowFeatureDisplayTrackEntry",
+          "allOf": [
+            {
+              "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots"
+            },
+            {
+              "$ref": "#/$defs/LinearMultiRowFeatureDisplayState"
+            }
+          ],
+          "properties": {
+            "trackId": {
+              "type": "string"
+            },
+            "type": {
+              "const": "LinearMultiRowFeatureDisplay",
+              "description": "The display to open the track with, when the track offers several for this view."
+            },
+            "trackSnapshot": {
+              "type": "object",
+              "description": "Keys applied to the track config node."
+            },
+            "displaySnapshot": {
+              "type": "object",
+              "description": "Keys applied to the display node explicitly."
+            }
+          },
+          "required": [
+            "trackId"
+          ],
+          "patternProperties": {
+            "^_+comment": {}
+          },
+          "unevaluatedProperties": false
+        },
+        {
           "$ref": "#/$defs/TrackSnapshot"
         },
         {
@@ -26694,7 +26788,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 "enum": [
                   "LinearBasicDisplay",
                   "LinearFeatureDisplay",
-                  "LinearMultiRowFeatureDisplay",
                   "LinearAlignmentsDisplay",
                   "LinearPileupDisplay",
                   "LinearSNPCoverageDisplay",
@@ -26721,7 +26814,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                   "LinearManhattanDisplay",
                   "LinearMarkDisplay",
                   "LinearArcDisplay",
-                  "LinearPairedArcDisplay"
+                  "LinearPairedArcDisplay",
+                  "LinearMultiRowFeatureDisplay"
                 ]
               }
             }
@@ -27385,42 +27479,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         {
           "type": "object",
-          "title": "LinearMultiRowFeatureDisplayTrackEntry",
-          "allOf": [
-            {
-              "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots"
-            },
-            {
-              "$ref": "#/$defs/LinearMultiRowFeatureDisplayState"
-            }
-          ],
-          "properties": {
-            "trackId": {
-              "type": "string"
-            },
-            "type": {
-              "const": "LinearMultiRowFeatureDisplay",
-              "description": "The display to open the track with, when the track offers several for this view."
-            },
-            "trackSnapshot": {
-              "type": "object",
-              "description": "Keys applied to the track config node."
-            },
-            "displaySnapshot": {
-              "type": "object",
-              "description": "Keys applied to the display node explicitly."
-            }
-          },
-          "required": [
-            "trackId"
-          ],
-          "patternProperties": {
-            "^_+comment": {}
-          },
-          "unevaluatedProperties": false
-        },
-        {
-          "type": "object",
           "title": "LinearAlignmentsDisplayTrackEntry",
           "allOf": [
             {
@@ -27924,6 +27982,42 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "unevaluatedProperties": false
         },
         {
+          "type": "object",
+          "title": "LinearMultiRowFeatureDisplayTrackEntry",
+          "allOf": [
+            {
+              "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots"
+            },
+            {
+              "$ref": "#/$defs/LinearMultiRowFeatureDisplayState"
+            }
+          ],
+          "properties": {
+            "trackId": {
+              "type": "string"
+            },
+            "type": {
+              "const": "LinearMultiRowFeatureDisplay",
+              "description": "The display to open the track with, when the track offers several for this view."
+            },
+            "trackSnapshot": {
+              "type": "object",
+              "description": "Keys applied to the track config node."
+            },
+            "displaySnapshot": {
+              "type": "object",
+              "description": "Keys applied to the display node explicitly."
+            }
+          },
+          "required": [
+            "trackId"
+          ],
+          "patternProperties": {
+            "^_+comment": {}
+          },
+          "unevaluatedProperties": false
+        },
+        {
           "$ref": "#/$defs/TrackSnapshot"
         },
         {
@@ -27940,7 +28034,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 "enum": [
                   "LinearBasicDisplay",
                   "LinearFeatureDisplay",
-                  "LinearMultiRowFeatureDisplay",
                   "LinearAlignmentsDisplay",
                   "LinearPileupDisplay",
                   "LinearSNPCoverageDisplay",
@@ -27967,7 +28060,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                   "LinearManhattanDisplay",
                   "LinearMarkDisplay",
                   "LinearArcDisplay",
-                  "LinearPairedArcDisplay"
+                  "LinearPairedArcDisplay",
+                  "LinearMultiRowFeatureDisplay"
                 ]
               }
             }
@@ -28316,7 +28410,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 "enum": [
                   "LinearBasicDisplay",
                   "LinearFeatureDisplay",
-                  "LinearMultiRowFeatureDisplay",
                   "LinearAlignmentsDisplay",
                   "LinearPileupDisplay",
                   "LinearSNPCoverageDisplay",
@@ -28343,7 +28436,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                   "LinearManhattanDisplay",
                   "LinearMarkDisplay",
                   "LinearArcDisplay",
-                  "LinearPairedArcDisplay"
+                  "LinearPairedArcDisplay",
+                  "LinearMultiRowFeatureDisplay"
                 ]
               }
             }
@@ -28688,7 +28782,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 "enum": [
                   "LinearBasicDisplay",
                   "LinearFeatureDisplay",
-                  "LinearMultiRowFeatureDisplay",
                   "LinearAlignmentsDisplay",
                   "LinearPileupDisplay",
                   "LinearSNPCoverageDisplay",
@@ -28715,7 +28808,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                   "LinearManhattanDisplay",
                   "LinearMarkDisplay",
                   "LinearArcDisplay",
-                  "LinearPairedArcDisplay"
+                  "LinearPairedArcDisplay",
+                  "LinearMultiRowFeatureDisplay"
                 ]
               }
             }

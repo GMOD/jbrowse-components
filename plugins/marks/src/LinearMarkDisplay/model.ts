@@ -1364,10 +1364,16 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * `RowHeightMixin`'s hook: the plot split between the rows.
+         * `RowHeightMixin`'s hook: the plot split between the rows. Rows under
+         * `rows` fill the plot, a fraction of a px each where they must, as
+         * every row display's do; a facet's packed rows keep whole px while
+         * each can have one.
          */
         get autoRowHeight(): number {
-          return markRowHeightPx(this.plotBox.plotHeight, this.rowCount)
+          const { plotHeight } = this.plotBox
+          return self.drawsRows
+            ? plotHeight / Math.max(1, this.rowCount)
+            : markRowHeightPx(plotHeight, this.rowCount)
         },
         /**
          * #getter

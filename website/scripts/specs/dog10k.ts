@@ -977,7 +977,7 @@ export const dog10kSpecs: ScreenshotSpec[] = [
     // The dendrogram lands last; the row labels appear while rows are still in
     // file order.
     readySelector:
-      'body:has([data-testid="tree_sidebar_dendrogram"]) [data-testid="multirow-row-labels"]',
+      'body:has([data-testid="tree_sidebar_dendrogram"]) [data-testid="mark-row-labels"]',
     readyTimeout: 180000,
     viewportHeight: 1162,
   },

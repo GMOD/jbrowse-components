@@ -292,7 +292,7 @@ export const trioSpecs: ScreenshotSpec[] = [
       ],
     }),
     readyText: 'chr1',
-    readySelector: '[data-testid="multirow_canvas"]',
+    readySelector: '[data-testid="mark-display"] canvas',
     readyTimeout: 60000,
   },
 

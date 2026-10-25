@@ -17,8 +17,8 @@ come from the file's extension, and any key written beside `uri` overrides the
 inference.
 
 - [FeatureTrack](https://jbrowse.org/jb2/docs/config/featuretrack.md) —
-  displays: LinearBasicDisplay, LinearMultiRowFeatureDisplay,
-  LinearWiggleDisplay, LinearManhattanDisplay, LinearMarkDisplay
+  displays: LinearBasicDisplay, LinearWiggleDisplay, LinearManhattanDisplay,
+  LinearMarkDisplay, LinearMultiRowFeatureDisplay
 - [AlignmentsTrack](https://jbrowse.org/jb2/docs/config/alignmentstrack.md) —
   displays: LinearAlignmentsDisplay, LinearMarkDisplay
 - [ReferenceSequenceTrack](https://jbrowse.org/jb2/docs/config/referencesequencetrack.md)
@@ -47,7 +47,6 @@ inference.
 ## Display types
 
 - [LinearBasicDisplay](https://jbrowse.org/jb2/docs/config/linearbasicdisplay.md)
-- [LinearMultiRowFeatureDisplay](https://jbrowse.org/jb2/docs/config/linearmultirowfeaturedisplay.md)
 - [LinearAlignmentsDisplay](https://jbrowse.org/jb2/docs/config/linearalignmentsdisplay.md)
 - [ChordVariantDisplay](https://jbrowse.org/jb2/docs/config/chordvariantdisplay.md)
 - [ChordSyntenyDisplay](https://jbrowse.org/jb2/docs/config/chordsyntenydisplay.md)
@@ -64,6 +63,7 @@ inference.
 - [LinearHicDisplay](https://jbrowse.org/jb2/docs/config/linearhicdisplay.md)
 - [LinearManhattanDisplay](https://jbrowse.org/jb2/docs/config/linearmanhattandisplay.md)
 - [LinearMarkDisplay](https://jbrowse.org/jb2/docs/config/linearmarkdisplay.md)
+- [LinearMultiRowFeatureDisplay](https://jbrowse.org/jb2/docs/config/linearmultirowfeaturedisplay.md)
 
 ## Adapter types
 

@@ -80,9 +80,9 @@ const CLUSTERED = '[data-testid="tree_sidebar_dendrogram"]'
 // unsorted, the state a reader is in.
 export const tcgaVideoFixtures = {
   trackId: 'tcga_brca_cnv',
-  // `multirow_canvas` carries no readiness attributes, so a readiness selector
-  // on it never matches; the chrome div does.
-  painted: displaySettled('multirow-display'),
+  // The canvas carries no readiness attributes, so a readiness selector on it
+  // never matches; the chrome div does.
+  painted: displaySettled('mark-display'),
   unclusteredErbb2: sessionSpec(KG_CONFIG, {
     sessionTracks: [TCGA_BRCA_CNV_TRACK],
     views: [

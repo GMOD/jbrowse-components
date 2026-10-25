@@ -522,3 +522,11 @@ test('a value the fetch met only past the screen takes no row', () => {
   view.setNewView(1, 8800)
   expect(display.sources.map(row => row.name)).toEqual(['far'])
 })
+
+test('rows fill the plot, a fraction of a px each where the count does not divide it', () => {
+  const display = loaded({ rows: 'source', height: 151 })
+  const { plotHeight } = display.plotBox
+  expect(display.rowCount).toBe(4)
+  expect(plotHeight % 4).not.toBe(0)
+  expect(display.effectiveRowHeight * display.rowCount).toBeCloseTo(plotHeight)
+})

@@ -10,10 +10,6 @@ export const displayTable: DisplayTable = {
         "adapterCapabilities": []
       },
       {
-        "name": "LinearMultiRowFeatureDisplay",
-        "adapterCapabilities": []
-      },
-      {
         "name": "LinearWiggleDisplay",
         "adapterCapabilities": []
       },
@@ -23,6 +19,10 @@ export const displayTable: DisplayTable = {
       },
       {
         "name": "LinearMarkDisplay",
+        "adapterCapabilities": []
+      },
+      {
+        "name": "LinearMultiRowFeatureDisplay",
         "adapterCapabilities": []
       }
     ],
@@ -250,10 +250,6 @@ export const displayTable: DisplayTable = {
           "viewType": "LinearGenomeView"
         },
         {
-          "name": "LinearMultiRowFeatureDisplay",
-          "viewType": "LinearGenomeView"
-        },
-        {
           "name": "LinearAlignmentsDisplay",
           "viewType": "LinearGenomeView"
         },
@@ -300,6 +296,10 @@ export const displayTable: DisplayTable = {
         {
           "name": "LinearMarkDisplay",
           "viewType": "LinearGenomeView"
+        },
+        {
+          "name": "LinearMultiRowFeatureDisplay",
+          "viewType": "LinearGenomeView"
         }
       ]
     },
@@ -307,10 +307,6 @@ export const displayTable: DisplayTable = {
       "displays": [
         {
           "name": "LinearBasicDisplay",
-          "viewType": "LinearGenomeView"
-        },
-        {
-          "name": "LinearMultiRowFeatureDisplay",
           "viewType": "LinearGenomeView"
         },
         {
@@ -367,6 +363,10 @@ export const displayTable: DisplayTable = {
         },
         {
           "name": "LinearMarkDisplay",
+          "viewType": "LinearGenomeView"
+        },
+        {
+          "name": "LinearMultiRowFeatureDisplay",
           "viewType": "LinearGenomeView"
         }
       ]
