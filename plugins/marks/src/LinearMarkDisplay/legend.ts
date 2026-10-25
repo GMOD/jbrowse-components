@@ -1,5 +1,5 @@
 import { categoricalField } from '@jbrowse/core/util/categoricalField'
-import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
+import { abgrToCssRgba, cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { stopsFromRampLut } from '@jbrowse/core/util/colorRamp'
 import { IDENTITY_SCALE } from '@jbrowse/core/util/colorScale'
 import { DEFAULT_COLOR_SCHEME } from '@jbrowse/core/util/colorSchemes'
@@ -498,12 +498,28 @@ function shapeSwatches(shape: ShapeScaleTable) {
 
 // An identity key's rows: each `domain` color under its `names` entry, the
 // whole list once the region drew any color, as a threshold lists its bins.
+// With no `domain`, each color met, named by its features' names.
 function identityRows(
   scale: Extract<ScaleTable, { kind: 'identity' }>,
   key: MarkKeySetting,
 ): CategoricalEntry[] {
   if (scale.entries.length === 0) {
     return []
+  }
+  if (scale.domain.length === 0) {
+    return scale.entries.flatMap(e => {
+      const color = abgrToCssRgba(e.color)
+      return e.value === '' || !e.labels?.length
+        ? []
+        : [
+            {
+              value: color,
+              label: e.labels.join(', '),
+              color,
+              ...(key.hidden?.includes(color) ? { hidden: true } : {}),
+            },
+          ]
+    })
   }
   const { label } = categoricalField('', {
     domain: scale.domain,

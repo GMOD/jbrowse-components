@@ -114,6 +114,11 @@ export type ColorEncoding =
 export interface IdentityRef {
   scale: 'identity'
   field?: FieldRef
+  /**
+   * The field whose values name each color in the key, which the encoder
+   * gathers per color where the display's scale lists no colors of its own.
+   */
+  labelField?: FieldRef
 }
 
 /**
@@ -248,8 +253,17 @@ export type ColorScaleTable =
       field: ''
       /** The colors the key lists, the config's `scale.domain`; the worker sends none. */
       domain: string[]
-      /** Each color met as `r,g,b`, `''` for a feature carrying none. */
-      entries: { value: string; color: number; hidden?: boolean }[]
+      /**
+       * Each color met as `r,g,b`, `''` for a feature carrying none, with the
+       * `labelField` values of the features painted in it where the request
+       * names one.
+       */
+      entries: {
+        value: string
+        color: number
+        hidden?: boolean
+        labels?: string[]
+      }[]
     }
   | {
       kind: 'threshold'

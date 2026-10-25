@@ -1554,6 +1554,33 @@ test('an identity color over a field paints each feature the CSS color the field
   ])
 })
 
+test('an identity color asked for labels names each color by its features', () => {
+  const state = (name: string, itemRgb: string) =>
+    new SimpleFeature({
+      uniqueId: `${name}${itemRgb}`,
+      refName: 'ctgA',
+      start: 0,
+      end: 10,
+      name,
+      itemRgb,
+    })
+  const r = encodeFeatures(
+    [
+      state('1_Active_Promoter', '255,0,0'),
+      state('5_Strong_Enhancer', '250,202,0'),
+      state('6_Weak_Enhancer', '250,202,0'),
+      state('1_Active_Promoter', '255,0,0'),
+    ],
+    { color: { scale: 'identity', labelField: 'name' } },
+    ['colorKey'],
+  )
+  const entries = r.scale?.kind === 'identity' ? r.scale.entries : []
+  expect(entries.map(e => [e.value, e.labels])).toEqual([
+    ['250,202,0', ['5_Strong_Enhancer', '6_Weak_Enhancer']],
+    ['255,0,0', ['1_Active_Promoter']],
+  ])
+})
+
 test('an identity color asked for as a color lane paints each feature its own', () => {
   const r = encodeFeatures(
     [

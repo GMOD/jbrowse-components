@@ -159,14 +159,19 @@ export function markColorOf(
  * ones without building a ramp, whose cached lookup table would be copied on
  * every fetch.
  */
+/** The field naming each of a feature's own colors where the key lists none. */
+const COLOR_LABEL_FIELD = 'name'
+
 export function wireColorOf(color: ColorSource): MarkColorEncoding {
   switch (color.kind) {
     case 'expression':
       return color.encoding
     case 'identity':
-      return color.field === undefined
-        ? { scale: IDENTITY_SCALE }
-        : { scale: IDENTITY_SCALE, field: color.field }
+      return {
+        scale: IDENTITY_SCALE,
+        ...(color.field === undefined ? {} : { field: color.field }),
+        ...(color.domain.length === 0 ? { labelField: COLOR_LABEL_FIELD } : {}),
+      }
     case 'categories':
       return { field: color.encoding.field, scale: 'ordinal' }
     case 'numbers':

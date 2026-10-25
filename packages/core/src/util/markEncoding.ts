@@ -598,6 +598,40 @@ function bedColorFieldOf(table: FeatureTable) {
   return BED_COLOR_FIELDS[0]
 }
 
+const MAX_COLOR_LABELS = 8
+
+// The `labelField` values of the features painted in each color, keyed as
+// the color's entry is, first met first and a few per color.
+function colorLabels(
+  table: FeatureTable,
+  colorRef: FieldRef,
+  labelRef: FieldRef,
+  colors: CategoricalField,
+  { kept, count }: { kept: Kept; count: number },
+  jexl: JexlInstance | undefined,
+) {
+  const readColor = channelReader(table, colorRef, jexl)
+  const readLabel = textChannelReader(table, labelRef, jexl)
+  const labels = new Map<string, Set<string>>()
+  for (let k = 0; k < count; k++) {
+    const r = kept ? kept[k]! : k
+    const key = colors.key(readColor(r))
+    const label = readLabel(r)
+    if (label === '') {
+      continue
+    }
+    let set = labels.get(key)
+    if (!set) {
+      set = new Set()
+      labels.set(key, set)
+    }
+    if (set.size < MAX_COLOR_LABELS) {
+      set.add(label)
+    }
+  }
+  return labels
+}
+
 // A field's CSS color as its key, `''` for a feature holding none.
 function cssColorField(): CategoricalField {
   return {
@@ -967,11 +1001,26 @@ export function encodeFeatures<L extends LaneName>(
     if (colorKey) {
       keysToEntryOrder(colorKey, entries, resolved, count)
     }
+    const labels = identity.labelField
+      ? colorLabels(
+          table,
+          field ?? bedColorFieldOf(table),
+          identity.labelField,
+          field === undefined ? ownColorField() : cssColorField(),
+          { kept, count },
+          jexl,
+        )
+      : undefined
     scale = {
       kind: 'identity',
       field: '',
       domain: [],
-      entries: entries.map(e => ({ value: e.value, color: e.entry.color })),
+      entries: entries.map(e => {
+        const named = labels?.get(e.value)
+        return named
+          ? { value: e.value, color: e.entry.color, labels: [...named] }
+          : { value: e.value, color: e.entry.color }
+      }),
     }
   } else if (scaled?.scale === 'ordinal' && categoryLane) {
     const colorField = categoricalField(scaled.field, {

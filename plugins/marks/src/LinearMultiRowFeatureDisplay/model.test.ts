@@ -139,6 +139,41 @@ test('an identity color over a field paints the colors the field holds, with no 
   expect(model.cornerNotices).toEqual([])
 })
 
+test("a file's own colors with no domain take their features' names in the key", () => {
+  const model = display({
+    rows: 'sample',
+    marks: RECT_MARKS,
+    encoding: { color: { scale: { type: 'identity' } } },
+  })
+  model.setRpcData(
+    0,
+    workerResult(
+      model,
+      features([
+        {
+          sample: 'mom',
+          start: 0,
+          end: 400,
+          name: 'Quiescent',
+          itemRgb: '245,245,245',
+        },
+        {
+          sample: 'dad',
+          start: 0,
+          end: 400,
+          name: 'Promoter',
+          itemRgb: '255,0,0',
+        },
+      ]),
+    ),
+    REGION,
+  )
+  const labels = model.colorScales.flatMap(scale =>
+    scale.kind === 'categorical' ? scale.entries.map(e => e.label) : [],
+  )
+  expect(labels).toEqual(expect.arrayContaining(['Quiescent', 'Promoter']))
+})
+
 test("a row's color paints its blocks while no mark or display color does", () => {
   const model = loaded(
     display({
