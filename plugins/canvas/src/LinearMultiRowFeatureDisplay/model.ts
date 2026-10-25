@@ -60,7 +60,7 @@ import { fetchMultiRowFeatures } from './fetchMultiRowFeatures.ts'
 import {
   contextTargetAtPixel,
   featureAtPixel,
-  hitInstance,
+  hitInstances,
   hitRow,
 } from './hitTesting.ts'
 import {
@@ -928,14 +928,14 @@ export default function stateModelFactory(
 
       /**
        * #getter
-       * The box of the block to mark, for the chrome's highlight. The hover
+       * The boxes of the hovered feature's blocks, for the chrome's highlight. The hover
        * drops when a right-click menu opens, else its tooltip sticks under the
        * menu, so the menu's own feature stands in.
        */
       get hoverInk(): HighlightRect[] {
         const hit = self.hoveredFeature ?? self.contextMenuInfo?.hit
-        const instance = hitInstance(self, hit)
-        if (!hit || !instance) {
+        const instances = hitInstances(self, hit)
+        if (!hit || instances.length === 0) {
           return []
         }
         return inkOfInstances(
@@ -943,7 +943,7 @@ export default function stateModelFactory(
           self.renderBlocks,
           index => self.encodedChannels.get(index),
           self.renderState,
-          index => (index === hit.regionIndex ? [instance] : undefined),
+          index => (index === hit.regionIndex ? instances : undefined),
         ).map(r => shiftInk(r, 0, self.rowsTopOffset))
       },
       /**

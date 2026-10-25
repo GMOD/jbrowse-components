@@ -8,7 +8,10 @@ import { spansInRow } from '@jbrowse/render-core/marks'
 import { MULTI_ROW_MIN_CELL_PX } from '@jbrowse/render-core/shaders/rowRectConsts'
 import { treeSidebarRightEdge } from '@jbrowse/tree-sidebar'
 
-import { MULTI_ROW_MARK } from './rendering/multiRowMarks.ts'
+import {
+  MULTI_ROW_BLOCK_MARK,
+  MULTI_ROW_MARK,
+} from './rendering/multiRowMarks.ts'
 import { rowBand } from './rendering/rowBand.ts'
 
 import type { MultiRowEncoded } from './rendering/multiRowChannels.ts'
@@ -230,21 +233,21 @@ export function contextTargetAtPixel(
 }
 
 /**
- * The instance a hit names in the live encoding, resolved by row name and
- * feature id rather than trusted from the hit, so a row since filtered away
- * lights nothing.
+ * The blocks a hit's feature draws in the live encoding, resolved by row name
+ * and feature id rather than trusted from the hit, so a row since filtered
+ * away lights nothing.
  */
-export function hitInstance(
+export function hitInstances(
   self: Pick<
     MultiRowHitTestSlice,
     'rowIndexByValue' | 'rowKeys' | 'rpcDataMap' | 'encodedChannels'
   >,
   hit: MultiRowHit | undefined,
-): MarkInstance | undefined {
+): MarkInstance[] {
   const region = hit && self.rpcDataMap.get(hit.regionIndex)
   const channels = hit && self.encodedChannels.get(hit.regionIndex)
   if (!region || !channels || !self.rowIndexByValue.has(hit.rowName)) {
-    return undefined
+    return []
   }
   const key = self.rowKeys.lookup(hit.rowName)
   const found: number[] = []
@@ -254,15 +257,14 @@ export function hitInstance(
       channels.x,
       channels.x2,
       key,
-      hit.start,
-      hit.end,
+      0,
+      Infinity,
       found,
     )
   }
-  const index = found.find(
-    c => region.featureIds[channels.featureIndex[c]!] === hit.id,
-  )
-  return index === undefined ? undefined : { mark: 0, index }
+  return found
+    .filter(c => region.featureIds[channels.featureIndex[c]!] === hit.id)
+    .map(index => ({ mark: MULTI_ROW_BLOCK_MARK, index }))
 }
 
 /** The row a hit sits on, off the live order — resolved the way the box is. */

@@ -15,11 +15,14 @@ import type { RowSpanIndex, SpanChannels } from '@jbrowse/render-core/marks'
  * actually written, not the one-per-feature capacity — a hidden category
  * leaves the tail unwritten, so `featureIndex[c]` names the feature channel
  * `c` came from. `rowIndex` finds a key's channels over a stretch of bp.
+ * `introns` spans the gap between two consecutive entries of one feature,
+ * drawn as the line joining its blocks.
  */
 export interface MultiRowEncoded extends SpanChannels {
   color: Uint32Array
   featureIndex: Uint32Array
   rowIndex: RowSpanIndex
+  introns: SpanChannels
 }
 
 /**
@@ -33,6 +36,7 @@ export function buildMultiRowChannels(
     MultiRowRegionData,
     | 'featureStarts'
     | 'featureEnds'
+    | 'featureIds'
     | 'featureColors'
     | 'rectColorValues'
     | 'colorValues'
@@ -41,7 +45,7 @@ export function buildMultiRowChannels(
   >,
   { rowKeys, hiddenColors, fieldPalette }: MultiRowEncodeInputs,
 ): MultiRowEncoded {
-  const { featureStarts, featureEnds, featureRowValueIndex } = data
+  const { featureStarts, featureEnds, featureIds, featureRowValueIndex } = data
   const featureColors = ownColors(data, fieldPalette)
   const keyForLocal = Uint32Array.from(data.rowValues, v => rowKeys.keyOf(v))
   const n = featureStarts.length
@@ -50,6 +54,13 @@ export function buildMultiRowChannels(
   const row = new Uint32Array(n)
   const color = new Uint32Array(n)
   const featureIndex = new Uint32Array(n)
+  const introns = {
+    x: new Uint32Array(n),
+    x2: new Uint32Array(n),
+    row: new Uint32Array(n),
+    color: new Uint32Array(n),
+    count: 0,
+  }
   let count = 0
   for (let i = 0; i < n; i++) {
     const local = featureRowValueIndex[i]!
@@ -64,6 +75,13 @@ export function buildMultiRowChannels(
     color[count] = abgr
     featureIndex[count] = i
     count++
+    if (i > 0 && featureIds[i - 1] === featureIds[i]) {
+      const c = introns.count++
+      introns.x[c] = featureEnds[i - 1]!
+      introns.x2[c] = featureStarts[i]!
+      introns.row[c] = key
+      introns.color[c] = abgr
+    }
   }
   return {
     x,
@@ -73,5 +91,6 @@ export function buildMultiRowChannels(
     count,
     featureIndex,
     rowIndex: rowSpanIndex(x, x2, row, count),
+    introns,
   }
 }

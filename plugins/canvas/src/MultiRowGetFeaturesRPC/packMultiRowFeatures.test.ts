@@ -533,3 +533,50 @@ describe('the distinct values per partition candidate', () => {
     expect(batch).toEqual({ field: 'batch', values: ['x'], overflow: false })
   })
 })
+
+test('a feature with leaf subfeatures packs one entry per block, a gene one entry', () => {
+  const spliced = feat({
+    id: 'domain',
+    start: 100,
+    end: 400,
+    sample: 'mom',
+    subfeatures: [
+      { uniqueId: 'b0', refName: 'ctgA', start: 100, end: 150, type: 'block' },
+      { uniqueId: 'b1', refName: 'ctgA', start: 300, end: 400, type: 'block' },
+    ],
+  })
+  const gene = feat({
+    id: 'gene',
+    start: 500,
+    end: 900,
+    sample: 'dad',
+    subfeatures: [
+      {
+        uniqueId: 'tx',
+        refName: 'ctgA',
+        start: 500,
+        end: 900,
+        type: 'mRNA',
+        subfeatures: [
+          {
+            uniqueId: 'e',
+            refName: 'ctgA',
+            start: 500,
+            end: 600,
+            type: 'exon',
+          },
+        ],
+      },
+    ],
+  })
+  const r = packMultiRowFeatures({
+    features: [spliced, gene],
+    rowsField: 'sample',
+    colorConfig: { value: 'goldenrod', field: '' },
+    jexl: createJexlInstance(),
+  })
+  expect([...r.featureStarts]).toEqual([100, 300, 500])
+  expect([...r.featureEnds]).toEqual([150, 400, 900])
+  expect(r.featureIds).toEqual(['domain', 'domain', 'gene'])
+  expect([...r.featureRowValueIndex]).toEqual([0, 0, 1])
+})

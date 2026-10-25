@@ -14,6 +14,7 @@ export type EncodableRegion = Pick<
   MultiRowRegionData,
   | 'featureStarts'
   | 'featureEnds'
+  | 'featureIds'
   | 'featureColors'
   | 'rectColorValues'
   | 'colorValues'

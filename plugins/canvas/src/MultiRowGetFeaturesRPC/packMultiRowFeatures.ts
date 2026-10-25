@@ -228,6 +228,23 @@ export function makeFeatureValueResolver(field: string, jexl: JexlInstance) {
   }
 }
 
+/**
+ * What a feature paints: its children while none has children of its own, so
+ * a BED12 row or a transcript paints its exons and a gene over its
+ * transcripts paints whole.
+ */
+function paintedParts(feature: Feature): Feature[] {
+  const subfeatures = feature.get('subfeatures')
+  return subfeatures?.length &&
+    subfeatures.every(sub => !sub.get('subfeatures')?.length)
+    ? subfeatures
+    : [feature]
+}
+
+/**
+ * One entry per painted part, each carrying its feature's id, row and color,
+ * so a spliced feature's blocks are consecutive entries sharing an id.
+ */
 export function packMultiRowFeatures({
   features,
   rowsField,
@@ -241,7 +258,8 @@ export function packMultiRowFeatures({
   jexl: JexlInstance
   report?: ProgressReporter
 }): MultiRowGetFeaturesResult {
-  const n = features.length
+  const parts = features.map(paintedParts)
+  const n = parts.reduce((sum, p) => sum + p.length, 0)
   const featureStarts = new Uint32Array(n)
   const featureEnds = new Uint32Array(n)
   const featureColors = new Uint32Array(n)
@@ -262,14 +280,12 @@ export function packMultiRowFeatures({
   const featureRowValue = makeFeatureValueResolver(resolvedRowsField, jexl)
   let usedItemRgb = false
 
-  for (let i = 0; i < n; i++) {
+  let j = 0
+  for (let i = 0; i < features.length; i++) {
     report?.(i)
     const feature = features[i]!
-    featureStarts[i] = feature.get('start')
-    featureEnds[i] = feature.get('end')
-    featureIds[i] = feature.id()
-    const name: unknown = feature.get('name')
-    featureNames[i] = columnValue(name)
+    const id = feature.id()
+    const name = columnValue(feature.get('name'))
 
     const value = featureRowValue(feature)
     let idx = valueIndex.get(value)
@@ -278,16 +294,25 @@ export function packMultiRowFeatures({
       rowValues.push(value)
       valueIndex.set(value, idx)
     }
-    featureRowValueIndex[i] = idx
-    if (colorValues) {
-      rectColorValues[i] = colorValues.laneValueOf(feature, idx)
-    }
+    const rectColorValue = colorValues?.laneValueOf(feature, idx) ?? 0
     if (i < ROW_VALUE_COUNT_SAMPLE) {
       candidateValues.add(feature)
     }
     const { css, fromBed } = featureColor(feature)
     usedItemRgb ||= fromBed
-    featureColors[i] = cssColorToABGR(css)
+    const abgr = cssColorToABGR(css)
+    for (const part of parts[i]!) {
+      featureStarts[j] = part.get('start')
+      featureEnds[j] = part.get('end')
+      featureIds[j] = id
+      featureNames[j] = name
+      featureRowValueIndex[j] = idx
+      if (colorValues) {
+        rectColorValues[j] = rectColorValue
+      }
+      featureColors[j] = abgr
+      j++
+    }
   }
 
   return {

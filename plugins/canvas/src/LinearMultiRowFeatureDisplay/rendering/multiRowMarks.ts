@@ -21,6 +21,23 @@ export const MULTI_ROW_MARK = defineMark({
   }),
 })
 
+// A line centred in the row, which the span shape floors at 1 px tall
+const MULTI_ROW_INTRON_MARK = defineMark({
+  shape: spanMark,
+  channels: (c: MultiRowEncoded) => c.introns,
+  params: (s: MultiRowRenderState) => ({
+    rowHeight: s.rowHeight,
+    rowProportion: 0,
+    minWidthPx: 0,
+    seamPx: 0,
+    scrollTop: 0,
+    rowTable: s.rowTable,
+  }),
+})
+
 export const MULTI_ROW_MARKS: Mark<MultiRowEncoded, MultiRowRenderState>[] = [
+  MULTI_ROW_INTRON_MARK,
   MULTI_ROW_MARK,
 ]
+
+export const MULTI_ROW_BLOCK_MARK = MULTI_ROW_MARKS.indexOf(MULTI_ROW_MARK)

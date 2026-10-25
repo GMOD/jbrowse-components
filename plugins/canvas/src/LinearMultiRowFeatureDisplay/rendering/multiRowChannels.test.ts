@@ -114,3 +114,19 @@ test('a region with nothing drawn indexes nothing', () => {
   expect(encoded.count).toBe(0)
   expect(rowsOf(encoded).flat()).toEqual([])
 })
+
+test('consecutive entries of one feature are joined by a line over their gap', () => {
+  const buffer = buildMultiRowChannels(
+    {
+      ...region,
+      featureStarts: Uint32Array.from([10, 100, 300]),
+      featureEnds: Uint32Array.from([15, 150, 400]),
+      featureIds: ['f1', 'f2', 'f2'],
+      featureRowValueIndex: Uint32Array.from([0, 1, 1]),
+    },
+    inputs(['momHP0', 'dadHP1']),
+  )
+  expect(decode(buffer.introns)).toEqual([
+    { startBp: 150, endBp: 300, key: 1, color: 0xffff0000 },
+  ])
+})
