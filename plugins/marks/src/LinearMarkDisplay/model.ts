@@ -106,6 +106,7 @@ import {
 import { autorun } from 'mobx'
 
 import { facetLayout, rowsLayout, sectionsOn, unsplitRegion } from './facet.ts'
+import { instancesOfFeature } from './featureInstances.ts'
 import { fetchPlotFields, plotScanRegions } from './fetchPlotFields.ts'
 import { sameMarkHit } from './findMarkHit.ts'
 import { paintedColorNode } from './inheritedColor.ts'
@@ -133,6 +134,7 @@ import {
   lastBinEdges,
   markEntryOf,
   markLayerRequest,
+  withFeatureOwners,
   positionSource,
   stepsOf,
   toBinEdges,
@@ -1243,7 +1245,7 @@ export function stateModelFactory(
           facet?: FacetSpec
         } {
           const field = self.splitField
-          return {
+          return withFeatureOwners({
             layers: self.layerRequests,
             transform: [
               ...self.filterSteps,
@@ -1260,7 +1262,7 @@ export function stateModelFactory(
                       : {}),
                   },
                 }),
-          }
+          })
         },
         /**
          * #method
@@ -1465,21 +1467,21 @@ export function stateModelFactory(
             return []
           }
           const top = self.rowsTopOffset
-          const mark = self.markList.findIndex(
-            m => m.markIndex === hit.markIndex,
-          )
-          if (mark === -1) {
-            return []
-          }
+          const region = self.rpcDataMap.get(hit.regionIndex)
+          const lit =
+            hit.owner !== undefined && region
+              ? instancesOfFeature(region, hit.owner)
+              : [{ markIndex: hit.markIndex, index: hit.instance }]
+          const instances = lit.flatMap(({ markIndex, index }) => {
+            const mark = self.markList.findIndex(m => m.markIndex === markIndex)
+            return mark === -1 ? [] : [{ mark, index }]
+          })
           const boxes = inkOfInstances(
             self.markList,
             self.renderBlocks,
             index => self.rpcDataMap.get(index),
             this.renderState,
-            index =>
-              index === hit.regionIndex
-                ? [{ mark, index: hit.instance }]
-                : undefined,
+            index => (index === hit.regionIndex ? instances : undefined),
             [hit.regionIndex],
           ).map(r => shiftInk(r, 0, top))
           if (this.highlightStyle !== 'ring') {

@@ -3,8 +3,13 @@ import { encodeFeatures } from '@jbrowse/core/util/markEncoding'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 
 import { configSchemaFactory } from './configSchema.ts'
-import { markLayerRequest, stepsOf } from './markRequest.ts'
+import { markLayerRequest, stepsOf, withFeatureOwners } from './markRequest.ts'
 import { stepChannels } from './stepChannels.ts'
+
+import type {
+  LayerRequest,
+  TransformStep,
+} from '@jbrowse/core/util/markEncoding'
 
 function markOf(mark: Record<string, unknown>) {
   return configSchemaFactory().create({ displayId: 'd', marks: [mark] })
@@ -153,4 +158,37 @@ test('an emptied step slot leaves the worker its default, which the channel read
   const enc = encodeFeatures(out, { y: channels.y }, ['y'])
   expect(enc.count).toBe(3)
   expect(enc.skipped).toBe(0)
+})
+
+test('every layer asks which feature it draws once any step fans features out', () => {
+  const layer = (transform?: TransformStep[]): LayerRequest => ({
+    encoding: {},
+    lanes: ['row'],
+    ...(transform ? { transform } : {}),
+  })
+  const lanesOf = (request: { layers: LayerRequest[] }) =>
+    request.layers.map(l => l.lanes)
+  expect(
+    lanesOf(withFeatureOwners({ layers: [layer(), layer()], transform: [] })),
+  ).toEqual([['row'], ['row']])
+  expect(
+    lanesOf(
+      withFeatureOwners({
+        layers: [layer(), layer([{ type: 'flatten', keepEmpty: true }])],
+        transform: [],
+      }),
+    ),
+  ).toEqual([
+    ['row', 'owner'],
+    ['row', 'owner'],
+  ])
+  expect(
+    lanesOf(
+      withFeatureOwners({
+        layers: [layer()],
+        transform: [],
+        facet: { transform: [{ type: 'flatten' }] },
+      }),
+    ),
+  ).toEqual([['row', 'owner']])
 })

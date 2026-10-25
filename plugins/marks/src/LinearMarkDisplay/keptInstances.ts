@@ -61,6 +61,7 @@ export function keptInstances<L extends EncodedChannels>(
     x,
     x2,
     featureIndex: compact(featureIndex, keep, count, kept),
+    owner: lane(layer.owner),
     y,
     ...(y ? { yMin, yMax } : {}),
     color: typeof color === 'object' ? lane(color) : color,

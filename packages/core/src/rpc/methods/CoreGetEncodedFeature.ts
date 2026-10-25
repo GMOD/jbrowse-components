@@ -1,5 +1,6 @@
 import { getFeatureAdapterOrThrow } from '../../data_adapters/getFeatureAdapter.ts'
 import RpcMethodTypeWithRenameRegion from '../../pluggableElementTypes/RpcMethodTypeWithRenameRegion.ts'
+import { wholeFeatureRow } from '../../util/stepTables.ts'
 import { layerFeatures } from './layerFeatures.ts'
 
 import type { RpcExecuteArgs } from '../RpcRegistry.ts'
@@ -7,7 +8,7 @@ import type { RpcExecuteArgs } from '../RpcRegistry.ts'
 /**
  * The feature behind one instance of a `CoreGetEncodedLayers` answer: the same
  * request run again, and the row of `layer`'s table the instance's
- * `featureIndex` names. A display holds channels and no records, and two reads
+ * `featureIndex` names, or the feature that row is a child feature of. A display holds channels and no records, and two reads
  * sharing a span, a run counted inside one facet section or a mark whose `x` is
  * not `start` are each a feature no coordinate lookup finds.
  */
@@ -34,7 +35,7 @@ export default class CoreGetEncodedFeature extends RpcMethodTypeWithRenameRegion
     )
     const table = layers[0]?.table
     return table && featureIndex < table.length
-      ? table.row(featureIndex).toJSON()
+      ? wholeFeatureRow(table, featureIndex).toJSON()
       : undefined
   }
 }

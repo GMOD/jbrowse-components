@@ -51,6 +51,7 @@ export default class CoreGetEncodedLayers extends RpcMethodTypeWithRenameRegion<
 
     const { jexl } = pluginManager
     const {
+      fetched,
       layers: layered,
       sections,
       zoomRange,
@@ -66,6 +67,7 @@ export default class CoreGetEncodedLayers extends RpcMethodTypeWithRenameRegion<
         request.lanes,
         {
           jexl,
+          root: fetched,
           report: createProgressReporter({
             label: 'Processing features',
             total: table.length,

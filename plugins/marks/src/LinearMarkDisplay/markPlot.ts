@@ -31,6 +31,11 @@ export const MARK_PLOT_EXAMPLES = [
     description: 'one band per haplotype, each packed on its own',
   },
   {
+    plot: '{"marks":[{"mark":{"type":"rect","height":{"band":0}}},{"mark":"rect","transform":[{"type":"flatten","keepEmpty":true}]}]}',
+    description:
+      "each feature's blocks joined by a line, as BED12 rows and transcripts draw",
+  },
+  {
     plot: '{"marks":[{"mark":"bar","transform":[{"type":"bin","step":"auto"},{"type":"aggregate","ops":[{"op":"count"}]}],"minBpPerPx":100}]}',
     description: 'a count per zoom-following bin, drawn only zoomed out',
   },

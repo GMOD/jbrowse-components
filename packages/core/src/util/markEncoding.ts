@@ -27,6 +27,7 @@ import { numericValue } from './numericValue.ts'
 import { scaleExtent } from './quantileExtent.ts'
 import { DEFAULT_SHAPE_RANGE, SHAPE_CODES } from './shapeNames.ts'
 import { buildJexlContext } from './simpleFeature.ts'
+import { rootRowOf } from './stepTables.ts'
 import {
   isMissing,
   thresholdCuts,
@@ -155,12 +156,17 @@ export interface MarkEncodingInput {
  * #api
  * What surrounds an encode: the jexl instance a `jexl:` channel compiles
  * against — a caller whose channels are all readers or field names passes
- * none — and a progress reporter.
+ * none — a progress reporter, and the region's fetched features an `owner`
+ * lane names rows of.
  */
 export interface EncodeContext {
   jexl?: JexlInstance
   report?: ProgressReporter
+  root?: FeatureTable
 }
+
+/** The `owner` of an instance standing for a row of its own. */
+export const NO_OWNER = 0xffffffff
 
 function jexlExpression(ref: string, jexl: JexlInstance | undefined) {
   if (!jexl) {
@@ -691,7 +697,7 @@ export function encodeFeatures<L extends LaneName>(
   lanes: readonly L[],
   ctx: EncodeContext = {},
 ): Encoded<L> {
-  const { jexl, report } = ctx
+  const { jexl, report, root } = ctx
   const table = asTable(input)
   const n = table.length
   const has = (lane: LaneName) => (lanes as readonly LaneName[]).includes(lane)
@@ -727,6 +733,13 @@ export function encodeFeatures<L extends LaneName>(
   )
   const rowAt = (k: number) => (kept ? kept[k]! : k)
   const y = ys?.subarray(0, count)
+  let owner: Uint32Array | undefined
+  if (has('owner')) {
+    owner = new Uint32Array(count)
+    for (let k = 0; k < count; k++) {
+      owner[k] = rootRowOf(table, rowAt(k), root ?? table) ?? NO_OWNER
+    }
+  }
 
   let yMin = Infinity
   let yMax = -Infinity
@@ -1079,6 +1092,9 @@ export function encodeFeatures<L extends LaneName>(
   if (kept) {
     encoded.featureIndex = kept
   }
+  if (owner) {
+    encoded.owner = owner
+  }
   if (y) {
     encoded.y = y
   }
@@ -1349,6 +1365,7 @@ export function encodedChannelTransferables(c: EncodedChannels) {
   const buffers = new Set<ArrayBufferLike>([c.x.buffer, c.x2.buffer])
   for (const lane of [
     c.featureIndex,
+    c.owner,
     c.y,
     c.row,
     c.series,

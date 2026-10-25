@@ -294,6 +294,10 @@ class FlatTable extends FannedTable {
     return this.at.includes(undefined)
   }
 
+  isPart(i: number) {
+    return isFeature(this.items[i])
+  }
+
   // An entry's value for a field, `undefined` where it states none.
   private entryValue(i: number, name: string) {
     if (this.at[i] === undefined) {
@@ -446,6 +450,10 @@ class ListFlatTable extends FannedTable {
 
   get hasKept() {
     return this.kept !== undefined
+  }
+
+  isPart(i: number) {
+    return !this.list.keys && !this.isKept(i)
   }
 
   private entryOf(i: number) {

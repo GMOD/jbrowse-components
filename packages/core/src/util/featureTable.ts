@@ -264,10 +264,16 @@ export function throughIndex(column: Column, at: Uint32Array): Column {
 export class SourceTable implements FeatureTable {
   readonly length: number
   readonly features: readonly Feature[]
+  /** The table and its rows `selectRows` listed these features from. */
+  readonly from: { table: FeatureTable; rows: Uint32Array } | undefined
 
-  constructor(features: readonly Feature[]) {
+  constructor(
+    features: readonly Feature[],
+    from?: { table: FeatureTable; rows: Uint32Array },
+  ) {
     this.features = features
     this.length = features.length
+    this.from = from
   }
 
   column(field: string): Column {
@@ -531,7 +537,7 @@ export function selectRows(
     for (let k = 0; k < rows.length; k++) {
       listed[k] = features[rows[k]!]!
     }
-    return new SourceTable(listed)
+    return new SourceTable(listed, { table, rows })
   }
   return new SelectTable(table, rows)
 }

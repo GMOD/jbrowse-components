@@ -195,8 +195,8 @@ export interface MarkEncoding {
  * #api
  * The lanes a caller asks the encoder to fill, beyond `x` and `x2`, which
  * every payload has, and `featureIndex`, which a payload has where a feature
- * was skipped: a mark's channels, and `index` for the Flatbush a
- * hover reads. A lane not asked for is neither
+ * was skipped: a mark's channels, `index` for the Flatbush a
+ * hover reads, and `owner` for a plot that fans features out. A lane not asked for is neither
  * allocated nor transferred, and a caller that never hovers declines the
  * index, which is most of the encoder's cost after the walk.
  */
@@ -212,6 +212,7 @@ export type LaneName =
   | 'x2Ref'
   | 'series'
   | 'index'
+  | 'owner'
 
 /**
  * #api
@@ -384,6 +385,13 @@ export interface EncodedChannels {
   x: Uint32Array
   x2: Uint32Array
   featureIndex?: Uint32Array
+  /**
+   * The row of the region's fetched features each instance draws, whole or
+   * as one of its child features, so every layer's instances of one feature
+   * share it; {@link NO_OWNER} for an instance standing for a row of its own,
+   * a bin or a keyed record.
+   */
+  owner?: Uint32Array
   y?: Float32Array
   /**
    * Each instance's packed ABGR, or one number every instance paints where

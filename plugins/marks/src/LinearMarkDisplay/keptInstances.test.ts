@@ -18,6 +18,7 @@ function layer(): EncodedChannels {
     row: Uint32Array.from([0, 1, 0, 1]),
     text: ['a', 'b', 'c', 'd'],
     color: Uint32Array.from([1, 2, 3, 4]),
+    owner: Uint32Array.from([7, 7, 8, 8]),
   }
 }
 
@@ -31,6 +32,7 @@ test('every lane keeps the same instances, and featureIndex still names their fe
   expect(kept.text).toEqual(['a', 'c'])
   expect([...(kept.color as Uint32Array)]).toEqual([1, 3])
   expect([...kept.featureIndex!]).toEqual([0, 2])
+  expect([...kept.owner!]).toEqual([7, 8])
   expect([kept.yMin, kept.yMax]).toEqual([1, 5])
   // a color over the plotted field stays the y lane itself
   expect(kept.colorValue).toBe(kept.y)

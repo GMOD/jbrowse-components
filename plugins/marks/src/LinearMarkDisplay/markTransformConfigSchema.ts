@@ -248,7 +248,10 @@ const flatten = ConfigurationSchema(
     /**
      * #slot flatten.field
      * The field fanned out, one feature per element of an array or per entry
-     * of a record keyed by name: a name or a dotted path.
+     * of a record keyed by name: a name or a dotted path. An element that is
+     * a feature, such as a BED12 block or a transcript's exon, hovers and
+     * opens as the feature it came from, in every mark; a record or a plain
+     * value is a row of its own.
      */
     field: {
       type: 'string',

@@ -1,4 +1,4 @@
-import { hitIndexOf } from '@jbrowse/core/util/markEncoding'
+import { NO_OWNER, hitIndexOf } from '@jbrowse/core/util/markEncoding'
 import {
   HIDDEN_ROW,
   RAMP_NO_VALUE_BITS,
@@ -10,7 +10,7 @@ import {
 } from '@jbrowse/render-core/marks'
 
 import { facetLayout } from './facet.ts'
-import { findMarkHit, hitLocString } from './findMarkHit.ts'
+import { findMarkHit, hitLocString, sameMarkHit } from './findMarkHit.ts'
 import { buildMarkList } from './markList.ts'
 import { facetRowName, facetRowTable, keyRegion } from './rowTable.ts'
 
@@ -405,6 +405,40 @@ test('a link to another sequence names both feet, each on its own sequence', () 
   const [hit] = hits
   expect(hit).toMatchObject({ refName: 'ctgA', x2RefName: 'ctgB', bp: 100 })
   expect(hitLocString(hit!)).toBe('ctgA:101 → ctgB:51')
+})
+
+test('a block of a spliced feature answers as the feature, the same hit across its blocks', () => {
+  const span = (x: number[], x2: number[], owner: number[]): StoredLayer => ({
+    count: x.length,
+    skipped: 0,
+    x: Uint32Array.from(x),
+    x2: Uint32Array.from(x2),
+    row: new Uint32Array(x.length),
+    owner: Uint32Array.from(owner),
+    color: 0xff0000ff,
+    yMin: Infinity,
+    yMax: -Infinity,
+  })
+  const data = new Map([
+    [
+      0,
+      {
+        layers: [
+          span([0, 500], [400, 600], [5, 6]),
+          span([0, 300, 500, 700], [100, 400, 600, 800], [5, 5, 6, NO_OWNER]),
+        ],
+      },
+    ],
+  ])
+  const marks = buildMarkList(entries('rect', 'rect'))
+  const at = (bp: number) =>
+    findMarkHit(bp / STATE.bpPerPx, 15, [BLOCK], data, marks, STATE, REGIONS)!
+  const first = at(50)
+  expect(first).toMatchObject({ markIndex: 1, owner: 5, start: 0, end: 400 })
+  expect(sameMarkHit(first, at(350))).toBe(true)
+  expect(sameMarkHit(first, at(550))).toBe(false)
+  expect(at(750)).toMatchObject({ start: 700, end: 800 })
+  expect(at(750).owner).toBeUndefined()
 })
 
 test('a span written end first reads as the range it covers', () => {

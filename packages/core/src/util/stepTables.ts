@@ -5,6 +5,7 @@ import { aggregateFieldName } from './aggregateFieldName.ts'
 import {
   DerivedTable,
   NO_COLUMN,
+  SourceTable,
   TableRow,
   numberReaderOf,
   readerOf,
@@ -73,9 +74,64 @@ export abstract class FannedTable extends DerivedTable {
 
   abstract get hasKept(): boolean
 
+  /**
+   * Whether the entry is one of its container's child features, a BED12
+   * block or a transcript's exon, so a hover or a click answers the
+   * container; a keyed record or a plain value is a row in its own right.
+   */
+  abstract isPart(i: number): boolean
+
   override row(i: number): Feature {
     return this.isKept(i) ? this.parent.row(this.parentOf(i)) : super.row(i)
   }
+}
+
+/**
+ * The row of `root` that row `i` of `table` draws, whole or as one of its
+ * child features, or undefined where a step made the row out of several (a
+ * bin, an aggregate, a cell) or fanned out a record of its own.
+ */
+export function rootRowOf(table: FeatureTable, i: number, root: FeatureTable) {
+  let at = table
+  let row = i
+  while (at !== root) {
+    if (at instanceof SourceTable && at.from) {
+      row = at.from.rows[row]!
+      at = at.from.table
+      continue
+    }
+    if (!(at instanceof DerivedTable)) {
+      return undefined
+    }
+    if (
+      at.madeFrom &&
+      !(at instanceof FannedTable && (at.isKept(row) || at.isPart(row)))
+    ) {
+      return undefined
+    }
+    row = at.parentOf(row)
+    at = at.parent
+  }
+  return row
+}
+
+/**
+ * Row `i` of `table` as the feature a hover and a click answer: the outermost
+ * container it is a child feature of, else the row itself.
+ */
+export function wholeFeatureRow(table: FeatureTable, i: number) {
+  let whole = table.row(i)
+  let at = table
+  let row = i
+  while (at instanceof DerivedTable) {
+    const up = at.parentOf(row)
+    if (at instanceof FannedTable && at.isPart(row)) {
+      whole = at.parent.row(up)
+    }
+    row = up
+    at = at.parent
+  }
+  return whole
 }
 
 // A step reads a name or a dotted path. A plain name reads the table's column;

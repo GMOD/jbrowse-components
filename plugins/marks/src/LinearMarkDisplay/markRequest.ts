@@ -351,6 +351,33 @@ function pathOf(mark: MarkConfig, color: ColorSource): PathSpec {
   }
 }
 
+/**
+ * The request with every layer asking which fetched feature each instance
+ * draws where a `flatten` may fan features out into their child features, so
+ * a hover on one block answers the whole feature in every mark.
+ */
+export function withFeatureOwners<
+  R extends {
+    layers: LayerRequest[]
+    transform: TransformStep[]
+    facet?: { transform?: TransformStep[] }
+  },
+>(request: R): R {
+  const fansFeatures = (steps: readonly TransformStep[] | undefined) =>
+    steps?.some(step => step.type === 'flatten')
+  return fansFeatures(request.transform) ||
+    fansFeatures(request.facet?.transform) ||
+    request.layers.some(layer => fansFeatures(layer.transform))
+    ? {
+        ...request,
+        layers: request.layers.map(layer => ({
+          ...layer,
+          lanes: [...layer.lanes, 'owner'],
+        })),
+      }
+    : request
+}
+
 /** The widest bin any step of a request writes, in bp; 0 with none. */
 export function widestBinStep(steps: readonly TransformStep[]) {
   let widest = 0

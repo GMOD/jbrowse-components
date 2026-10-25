@@ -38,11 +38,11 @@ const reads = (
 
 const pluginManager = { jexl: createJexlInstance() } as PluginManager
 
-function request(args: Partial<CoreGetEncodedLayersArgs>) {
+function request(args: Partial<CoreGetEncodedLayersArgs>, features = reads) {
   jest.mocked(getAdapter).mockResolvedValue({
     dataAdapter: {
       getFeatures: () => {},
-      getFeatureTable: async () => asTable(reads),
+      getFeatureTable: async () => asTable(features),
       getZoomRange: async () => undefined,
     },
   } as unknown as Awaited<ReturnType<typeof getAdapter>>)
@@ -55,8 +55,11 @@ function request(args: Partial<CoreGetEncodedLayersArgs>) {
   }
 }
 
-async function drawnAndReadBack(args: Partial<CoreGetEncodedLayersArgs>) {
-  const req = request(args)
+async function drawnAndReadBack(
+  args: Partial<CoreGetEncodedLayersArgs>,
+  features = reads,
+) {
+  const req = request(args, features)
   const encoded = (await new CoreGetEncodedLayers(pluginManager).invoke(
     req,
   )) as RpcResult<EncodedLayersResult>
@@ -67,6 +70,7 @@ async function drawnAndReadBack(args: Partial<CoreGetEncodedLayersArgs>) {
       x: layer.x[i]!,
       x2: layer.x2[i]!,
       y: layer.y?.[i],
+      owner: layer.owner?.[i],
       feature: await details.invoke({
         ...req,
         layer: 0,
@@ -181,4 +185,32 @@ test('an index past the layer answers nothing', async () => {
       featureIndex: 99,
     }),
   ).toBeUndefined()
+})
+
+test('each block of a flattened transcript opens as the transcript', async () => {
+  const transcript = new SimpleFeature({
+    uniqueId: 'tx1',
+    refName: 'ctgA',
+    start: 0,
+    end: 100,
+    name: 'VAV',
+    subfeatures: [
+      { uniqueId: 'e1', refName: 'ctgA', start: 0, end: 10, type: 'exon' },
+      { uniqueId: 'e2', refName: 'ctgA', start: 60, end: 100, type: 'exon' },
+    ],
+  })
+  const drawn = await drawnAndReadBack(
+    {
+      layers: [
+        { encoding: {}, lanes: ['owner'], transform: [{ type: 'flatten' }] },
+      ],
+    },
+    [reads[0]!, transcript],
+  )
+  expect(
+    drawn.map(d => [d.x, d.x2, d.owner, d.feature?.uniqueId, d.feature?.name]),
+  ).toEqual([
+    [0, 10, 1, 'tx1', 'VAV'],
+    [60, 100, 1, 'tx1', 'VAV'],
+  ])
 })

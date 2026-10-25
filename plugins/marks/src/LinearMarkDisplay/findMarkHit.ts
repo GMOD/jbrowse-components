@@ -1,5 +1,9 @@
 import { assembleLocString } from '@jbrowse/core/util'
-import { colorAt, featureIndexAt } from '@jbrowse/core/util/markEncoding'
+import {
+  NO_OWNER,
+  colorAt,
+  featureIndexAt,
+} from '@jbrowse/core/util/markEncoding'
 import { clamp } from '@jbrowse/core/util/numericUtils'
 import { bpAtPx } from '@jbrowse/render-core/canvas2dUtils'
 import {
@@ -10,6 +14,8 @@ import {
   rowSpanIndex,
   spansInRow,
 } from '@jbrowse/render-core/marks'
+
+import { featureSpan } from './featureInstances.ts'
 
 import type {
   DisplayMark,
@@ -26,7 +32,13 @@ export interface MarkHitInfo {
   instance: number
   /** Which feature of the layer's list the worker encoded this instance from. */
   featureIndex: number
+  /**
+   * The fetched feature the instance draws whole or one block of, which
+   * every instance of that feature shares, where the plot fans features out.
+   */
+  owner?: number
   refName: string
+  /** The span of the instance's whole feature, every block of it. */
   start: number
   end: number
   /**
@@ -200,25 +212,30 @@ export function findMarkHit(
   const { markIndex, spansView } = marks[hit.mark]!
   const layer = hit.region.layers[markIndex]!
   const regionIndex = hit.block.displayedRegionIndex
-  const start = layer.x[hit.index]!
-  const end = layer.x2[hit.index]!
+  const own = layer.owner?.[hit.index]
+  const owner = own === undefined || own === NO_OWNER ? undefined : own
+  const x = layer.x[hit.index]!
+  const x2 = layer.x2[hit.index]!
+  const { start, end } =
+    owner === undefined ? { start: x, end: x2 } : featureSpan(hit.region, owner)
   const { refName } = displayedRegions[regionIndex]!
   const farRefName = farRefNameOf(layer, hit.index, displayedRegions)
   const x2RefName = farRefName === refName ? undefined : farRefName
-  const lo = Math.min(start, end)
-  const hi = Math.max(start, end)
+  const lo = Math.min(x, x2)
+  const hi = Math.max(x, x2)
   return {
     markIndex,
     regionIndex,
     instance: hit.index,
     featureIndex: featureIndexAt(layer, hit.index),
+    ...(owner === undefined ? {} : { owner }),
     refName,
     start,
     end,
     ...(x2RefName === undefined ? {} : { x2RefName }),
     bp:
       spansView || x2RefName !== undefined
-        ? start
+        ? x
         : clamp(bpAtPx(mouseX, hit.block), lo, Math.max(lo, hi - 1)),
     y: layer.y?.[hit.index],
     color: colorAt(layer, hit.index),
@@ -234,10 +251,12 @@ export function findMarkHit(
   }
 }
 
+/** Whether two hits are one instance, or two instances of one feature. */
 export function sameMarkHit(a: MarkHitInfo, b: MarkHitInfo) {
   return (
-    a.markIndex === b.markIndex &&
     a.regionIndex === b.regionIndex &&
-    a.instance === b.instance
+    (a.owner !== undefined
+      ? a.owner === b.owner
+      : a.markIndex === b.markIndex && a.instance === b.instance)
   )
 }
