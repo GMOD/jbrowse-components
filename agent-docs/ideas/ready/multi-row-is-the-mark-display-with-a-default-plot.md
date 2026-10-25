@@ -1,6 +1,6 @@
 ---
 name: multi-row-is-the-mark-display-with-a-default-plot
-description: LinearMultiRowFeatureDisplay draws colored features in rows, which is a `rect` mark with `rows` and a color. Rebuild it as the mark display with a default plot, as ADR-178 rebuilt Manhattan, and delete its own worker, encoder, model and component. Benched on the Roadmap ChromHMM painting, the mark worker runs in about half the multi-row worker's time and sends a quarter of its bytes. Two gaps on the mark display remain, the last drawing a facet section as a band of rows; a feature's own color (ADR-243), clustering span rows (ADR-244) and hiding a key row (ADR-246) are done. Read before touching either display's rows, row colors, clustering or legend hides.
+description: LinearMultiRowFeatureDisplay draws colored features in rows, which is a `rect` mark with `rows` and a color. Rebuild it as the mark display with a default plot, as ADR-178 rebuilt Manhattan, and delete its own worker, encoder, model and component. Benched on the Roadmap ChromHMM painting, the mark worker runs in about half the multi-row worker's time and sends a quarter of its bytes. Three gaps on the mark display remain, among them drawing a facet section as a band of rows and drawing a spliced feature's blocks; a feature's own color (ADR-243), clustering span rows (ADR-244) and hiding a key row (ADR-246) are done. Read before touching either display's rows, row colors, clustering or legend hides.
 ---
 
 # Multi-row is the mark display with a default plot
@@ -122,6 +122,11 @@ share it, not in `LinearMarkDisplay/model.ts` (2,076 lines).
    out (ADR-243).
 2. **Bands of rows**, as decided above, with `rowGroups` (the mark
    display's `rowColorFields` is `[]`, `model.ts:605-607`).
+3. **Spliced features.** Multi-row packs a BED12 row's or a transcript's
+   blocks as entries sharing an id (`paintedParts` in
+   `packMultiRowFeatures.ts`), draws a 1 px span over each gap between them,
+   and hits and hover-boxes the whole feature. The `protein_domains/vav`
+   figure goes back to solid bars without it.
 
 Small, any time: an identity key with no `domain` (multi-row names each
 color by its features' names; the mark display keys nothing), the feature
