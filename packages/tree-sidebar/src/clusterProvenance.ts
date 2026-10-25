@@ -32,10 +32,11 @@ export function clusterProvenanceFromRegions(
   settings?: { name: string; value: string }[],
 ): ClusterProvenance {
   return {
+    // whole bases covering the window: a view's edges are fractional
     regions: regions.map(r => ({
       refName: r.refName,
-      start: r.start,
-      end: r.end,
+      start: Math.floor(r.start),
+      end: Math.ceil(r.end),
       ...(r.assemblyName ? { assemblyName: r.assemblyName } : {}),
     })),
     ...(settings?.length ? { settings } : {}),

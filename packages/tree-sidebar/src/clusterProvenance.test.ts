@@ -27,6 +27,14 @@ test('keeps only the fields that describe the locus', () => {
   expect(provenance.settings).toBeUndefined()
 })
 
+test("a view's fractional edges widen to the whole bases they cover", () => {
+  const provenance = clusterProvenanceFromRegions([
+    ctgA(27_100_036.573487032, 27_250_037.573487032),
+  ])
+  expect(provenance.regions).toEqual([ctgA(27_100_036, 27_250_038)])
+  expect(clusterProvenanceLocLabel(provenance)).not.toContain('.5')
+})
+
 describe('labels', () => {
   test('a single region reads as a locstring', () => {
     expect(
