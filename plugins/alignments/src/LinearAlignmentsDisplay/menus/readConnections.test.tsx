@@ -6,6 +6,7 @@ import {
   getConnectionFilterItems,
   getReadConnectionsBandItems,
   getReadConnectionsMenuItem,
+  viewAsPairsItem,
 } from './readConnections.ts'
 
 import type { Facet, ConnectionFilter } from '../../shared/types.ts'
@@ -105,7 +106,6 @@ describe('read connections menu', () => {
     model.drawnReadConnections = 'arc'
     const items = rows(model)
     expect(labelsOf(items)).toEqual([
-      'View as pairs / link supplementary alignments',
       'Pileup connectors',
       'Read arcs',
       'Read cloud',
@@ -121,9 +121,11 @@ describe('read connections menu', () => {
 
   test('"View as pairs" toggles unit between read and chain', () => {
     const model = makeModel()
-    click(rows(model), 'View as pairs')
+    const item = () => [viewAsPairsItem(model)]
+    click(item(), 'View as pairs')
     expect(model.unit).toBe('chain')
-    click(rows(model), 'View as pairs')
+    expect(item()[0]).toMatchObject({ checked: true })
+    click(item(), 'View as pairs')
     expect(model.unit).toBe('read')
   })
 

@@ -11,6 +11,7 @@ export interface CoverageMenuModel extends ScoreScaleModel {
   id: string
   showCoverage: boolean
   showCoverageAlleles: boolean
+  setShowCoverageAlleles: (show: boolean) => void
   coverageMinAlleleFraction: number
   setCoverageMinAlleleFraction: (fraction: number) => void
 }
@@ -40,21 +41,20 @@ function nearestAlleleFractionOption(fraction: number) {
   ).value
 }
 
-// Two rows for the band: its axis, in the shared drawer widget, and its
-// allele-fraction floor, which is about what the bars are colored with
-// rather than the scale. The on/off toggle and the allele and interbase
-// toggles below live in each display's "Show..." menu.
+const OFF = 'off'
+
+// Two rows for the band: its axis, in the shared drawer widget, and whether
+// and above what fraction its bars color the alleles, which is about what the
+// bars are colored with rather than the scale. One radio group answers both
+// allele questions, since a floor means nothing with the alleles off. The
+// band's on/off and interbase toggles live in each display's "Show..." menu.
 //
 // Both grey out with the band hidden: every setting here feeds the band's
 // draw and its hit test and nothing else, and neither row could turn it back
-// on, so each names that switch instead. The floor greys out too with the
-// alleles hidden. At depth 500 every sequencing error paints a sliver, so
-// without a floor the band carries a permanent rainbow.
+// on, so each names that switch instead. At depth 500 every sequencing error
+// paints a sliver, so without a floor the band carries a permanent rainbow.
 const BAND_HIDDEN_HELP =
   'These settings scale the coverage band — turn on "Show... → Coverage" first'
-
-const ALLELES_HIDDEN_HELP =
-  'Alleles are not colored — turn on "Show... → Coverage alleles" first'
 
 export function getCoverageMenuItems(model: CoverageMenuModel): MenuItem[] {
   const disabled = !model.showCoverage
@@ -65,14 +65,21 @@ export function getCoverageMenuItems(model: CoverageMenuModel): MenuItem[] {
       disabledHelpText: BAND_HIDDEN_HELP,
     }),
     {
-      label: 'Color alleles above...',
-      disabled: disabled || !model.showCoverageAlleles,
-      disabledHelpText: disabled ? BAND_HIDDEN_HELP : ALLELES_HIDDEN_HELP,
+      label: 'Color alleles in coverage',
+      disabled,
+      disabledHelpText: BAND_HIDDEN_HELP,
       subMenu: radioItems(
-        ALLELE_FRACTION_OPTIONS,
-        nearestAlleleFractionOption(model.coverageMinAlleleFraction),
+        [{ value: OFF, label: 'Off' }, ...ALLELE_FRACTION_OPTIONS],
+        model.showCoverageAlleles
+          ? nearestAlleleFractionOption(model.coverageMinAlleleFraction)
+          : OFF,
         v => {
-          model.setCoverageMinAlleleFraction(Number(v))
+          if (v === OFF) {
+            model.setShowCoverageAlleles(false)
+          } else {
+            model.setShowCoverageAlleles(true)
+            model.setCoverageMinAlleleFraction(Number(v))
+          }
         },
       ),
     },
@@ -104,6 +111,9 @@ export function interbaseIndicatorsMenuItem(model: {
 }
 
 /**
+ * @deprecated the "Color alleles in coverage" radios in `getCoverageMenuItems`
+ * carry the on/off as their first row.
+ *
  * The coverage band's "Coverage alleles" row, `coverage.alleles.show`: off, the
  * depth bars draw plain grey. Greyed with the band hidden, as the interbase
  * row is.

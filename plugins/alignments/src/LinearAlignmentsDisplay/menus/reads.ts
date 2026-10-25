@@ -1,7 +1,4 @@
-import {
-  coverageAllelesMenuItem,
-  interbaseIndicatorsMenuItem,
-} from '@jbrowse/alignments-core/coverageMenuItems'
+import { interbaseIndicatorsMenuItem } from '@jbrowse/alignments-core/coverageMenuItems'
 import { toggleItem } from '@jbrowse/core/ui/menuItems'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import { legendCheckboxItem } from '@jbrowse/display-kit/LegendMixin'
@@ -42,8 +39,6 @@ interface ReadsModel
   unit: AlignmentsUnit
   showInterbaseIndicators: boolean
   setShowInterbaseIndicators: (show: boolean) => void
-  showCoverageAlleles: boolean
-  setShowCoverageAlleles: (show: boolean) => void
   mismatchOpacityField: MismatchOpacityField | undefined
   setMismatchOpacityField: (field?: MismatchOpacityField) => void
 }
@@ -72,7 +67,7 @@ function softClippingItem(model: ReadsModel) {
       ? {
           disabled: true,
           disabledHelpText:
-            'Chain layout does not expand soft clips — uncheck "View as pairs / link supplementary alignments" first',
+            'Chain layout does not expand soft clips — uncheck "View as pairs" first',
         }
       : undefined,
   )
@@ -105,10 +100,9 @@ export function getReadsMenuItems(model: ReadsModel) {
     // (`executeRenderAlignmentData`'s `effShowSoftClipping`), so the row greys
     // out there rather than taking a click that draws nothing.
     softClippingItem(model),
-    // The band's two layer rows grey out rather than hide, unlike
-    // LGVSyntenyDisplay's twins, which default `showCoverage` off and so would
-    // spend their lives greyed.
-    coverageAllelesMenuItem(model),
+    // The band's interbase row greys out rather than hides, unlike
+    // LGVSyntenyDisplay's twin, which defaults `showCoverage` off and so would
+    // spend its life greyed.
     interbaseIndicatorsMenuItem(model),
     ...sashimiShowItems(model),
     legendCheckboxItem(model),

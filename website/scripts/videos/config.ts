@@ -54,25 +54,15 @@ export const configVideos: VideoSpec[] = [
       { type: 'delay', ms: 700 },
       {
         type: 'click',
-        text: 'Read connections',
+        text: 'View as pairs',
         say: 'Then link each read to its mate',
-        hold: 1000,
-      },
-      {
-        type: 'waitForText',
-        text: 'View as pairs / link supplementary alignments',
-      },
-      {
-        type: 'click',
-        text: 'View as pairs / link supplementary alignments',
       },
       { type: 'waitForAppSettled', timeout: 120000 },
       { type: 'delay', ms: 700 },
       { type: 'press', key: 'Escape' },
-      { type: 'press', key: 'Escape' },
       {
         type: 'waitForText',
-        text: 'View as pairs / link supplementary alignments',
+        text: 'View as pairs',
         hidden: true,
       },
       { type: 'waitForText', text: 'About track', hidden: true },

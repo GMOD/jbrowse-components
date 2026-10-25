@@ -22,7 +22,7 @@ test('an autoscale group is the axis widget of the display it is on', () => {
       { scale: { group: 'depth' } },
       'LinearAlignmentsDisplay',
     ),
-  ).toEqual(['Track menu → Coverage axis... → Share axis with'])
+  ).toEqual(['Track menu → Advanced → Coverage axis... → Share axis with'])
   expect(
     stepPaths(
       'encoding.y',
@@ -63,9 +63,9 @@ test("a y channel's scale and axis members are axis widget rows", () => {
       'LinearAlignmentsDisplay',
     ),
   ).toEqual([
-    'Track menu → Coverage axis... → Scale → Log',
-    'Track menu → Coverage axis... → Clip extreme outliers (checked)',
-    'Track menu → Coverage axis... → Grid lines (checked)',
+    'Track menu → Advanced → Coverage axis... → Scale → Log',
+    'Track menu → Advanced → Coverage axis... → Clip extreme outliers (checked)',
+    'Track menu → Advanced → Coverage axis... → Grid lines (checked)',
   ])
   expect(stepPaths('encoding.y', 'identity', 'LinearMafDisplay')).toEqual([
     'Track menu → Plot type → Identity X-Y plot',

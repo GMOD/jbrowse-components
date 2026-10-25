@@ -175,8 +175,7 @@ row's two breakpoints side by side as two regions of one view:
 - Each region is oriented so the fusion transcript reads left to right across
   the join. _XKR3_ is on the minus strand, so its region arrives reversed
   (`[rev]`).
-- **Read connections → View as pairs / link supplementary alignments** merges
-  each molecule's two alignments onto one row.
+- **View as pairs** merges each molecule's two alignments onto one row.
 
 <Figure caption="NUP214--XKR3 as two regions of one view with reads linked, opened from its row in the SV inspector." src="/img/cancer_sv/k562_fusion_inspector_reads.png" links="Import form=cancer_sv/k562_fusion_inspector_form,All 44 calls=cancer_sv/k562_fusion_inspector_all,Searched for chr9=cancer_sv/k562_fusion_inspector_pair,Linked reads=cancer_sv/k562_fusion_inspector_reads" />
 

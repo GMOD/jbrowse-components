@@ -195,8 +195,8 @@ comparable:
 
 - Turn the pileup off with **Show... → Pileup** in the track menu, since at this
   width the coverage curve shows the difference.
-- Share one axis from **Coverage axis... → Share axis with**, ticking the other
-  two tracks, so the samples compare by height.
+- Share one axis from **Advanced → Coverage axis... → Share axis with**, ticking
+  the other two tracks, so the samples compare by height.
 
 <Figure caption="Coverage over RHD in samples of each genotype on one shared axis, the RHD span banded." src="/img/multisv_rhd_dosage.png" />
 

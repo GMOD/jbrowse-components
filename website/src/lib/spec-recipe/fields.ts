@@ -772,7 +772,7 @@ const ROW_ARRANGEMENT_EDITORS: Record<string, string> = {
 // helpers.
 const SCORE_MENUS: Record<string, string> = {
   LinearWiggleDisplay: 'Y axis...',
-  LinearAlignmentsDisplay: 'Coverage axis...',
+  LinearAlignmentsDisplay: 'Advanced → Coverage axis...',
 }
 
 const SCALE_TYPES: Record<string, string> = {
@@ -990,8 +990,6 @@ function isHicOnlyField(displayType: string | undefined) {
 // The mark display and the Manhattan display built on it share the plot
 // editor, which sits directly in the track menu.
 const MARK_DISPLAYS = new Set(['LinearMarkDisplay', 'LinearManhattanDisplay'])
-
-const READ_CONNECTIONS_MENU = `${TRACK_MENU} → Read connections`
 
 function geneGlyphStep(value: unknown): FieldStep | undefined {
   const option = GENE_GLYPH_MODE_OPTIONS.find(o => o.value === value)
@@ -1731,7 +1729,7 @@ export const trackFields: Record<string, FieldRecipe> = {
     (value === 'read' || value === 'chain') &&
     isAlignmentsOnlyField(displayType)
       ? {
-          path: `${READ_CONNECTIONS_MENU} → View as pairs / link supplementary alignments (${value === 'chain' ? 'checked' : 'unchecked'})`,
+          path: `${TRACK_MENU} → View as pairs (${value === 'chain' ? 'checked' : 'unchecked'})`,
         }
       : (value === 'sample' || value === 'haplotype') &&
           displayType &&
@@ -1990,7 +1988,7 @@ export const trackFields: Record<string, FieldRecipe> = {
       typeof floor === 'number' ? SNP_FREQUENCY_ROWS[String(floor)] : undefined
     return row
       ? {
-          path: `${TRACK_MENU} → Color alleles above... → ${row}`,
+          path: `${TRACK_MENU} → Advanced → Color alleles in coverage → ${row}`,
           note: 'At high depth every sequencing error paints a sliver on the coverage band, so a figure about the band\'s height wants a floor under what gets colored.',
         }
       : undefined
@@ -2020,7 +2018,7 @@ export const trackFields: Record<string, FieldRecipe> = {
   forward: layerCheckbox('Show... → Forward'),
   reverse: layerCheckbox('Show... → Reverse'),
   translation: layerCheckbox('Show... → Translation'),
-  'sashimi.labels': layerCheckbox('Show... → Sashimi read counts'),
+  'sashimi.labels': layerCheckbox('Advanced → Sashimi read counts'),
   'readConnections.placement': fromTable(
     'Advanced → Read connections placement',
     READ_CONNECTIONS_PLACEMENT,

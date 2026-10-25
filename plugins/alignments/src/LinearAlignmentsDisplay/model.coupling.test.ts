@@ -2052,6 +2052,7 @@ describe('rows the layer menus hand to other menus', () => {
     )
   }
 
+  const COVERAGE = ['Coverage axis...', 'Color alleles in coverage']
   const TRACK_SIZING = ['Autogrow track height', 'Set max layout height...']
 
   test('reach "Filter by..." and "Advanced" once their layer draws', () => {
@@ -2062,6 +2063,7 @@ describe('rows the layer menus hand to other menus', () => {
     )
     expect(labelsUnder(display, 'Advanced')).toEqual([
       'Edit plot...',
+      ...COVERAGE,
       ...TRACK_SIZING,
     ])
 
@@ -2072,26 +2074,28 @@ describe('rows the layer menus hand to other menus', () => {
         'Off-screen mate connections',
         'Inter-chromosomal pairs',
         'Min reads at a breakpoint',
+        'Junctions from split reads',
         'Non-canonical junctions',
         'Min reads at a junction',
       ]),
     )
     expect(labelsUnder(display, 'Advanced')).toEqual([
       'Edit plot...',
+      ...COVERAGE,
       ...TRACK_SIZING,
       'Read connections color',
       'Read connections placement',
       'Read connections line width',
+      'Sashimi read counts',
       'Sashimi placement',
     ])
   })
 
-  test('the sashimi toggles sit in "Show..."', () => {
+  test('the arcs toggle sits in "Show...", their set-once rows in "Advanced"', () => {
     const display = createDisplay()
     display.setShowSashimi(true)
-    expect(labelsUnder(display, 'Show...')).toEqual(
-      expect.arrayContaining(['Sashimi arcs', 'Sashimi read counts']),
-    )
+    expect(labelsUnder(display, 'Show...')).toContain('Sashimi arcs')
+    expect(labelsUnder(display, 'Advanced')).toContain('Sashimi read counts')
     expect(hasMenuItem(display.trackMenuItems(), 'Sashimi placement')).toBe(
       true,
     )

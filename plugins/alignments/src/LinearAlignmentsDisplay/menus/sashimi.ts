@@ -40,7 +40,7 @@ const SPLIT_CLASSES = JUNCTION_CLASSES.filter(
 function splitJunctionsItem(model: JunctionFiltersModel) {
   const { classes } = model.junctionFilter
   return toggleItem(
-    'Sashimi split-read junctions',
+    'Junctions from split reads',
     !classes || classes.some(c => SPLIT_CLASSES.includes(c)),
     show => {
       model.setJunctionFilter(
@@ -57,29 +57,24 @@ interface SashimiPlacementModel {
   showCoverage: boolean
   sashimiPlacement: SashimiPlacement
   setSashimiPlacement: (placement: SashimiPlacement) => void
+  showSashimiCounts: boolean
+  setShowSashimiCounts: (show: boolean) => void
 }
 
-/**
- * The arcs' rows in "Show...": the arcs, and while they draw their counts and
- * whether split-read junctions join the N-gap splices.
- */
+/** The arcs' row in "Show...". */
 export function sashimiShowItems(model: SashimiModel): MenuItem[] {
   return [
     toggleItem('Sashimi arcs', model.showSashimi, show => {
       model.setShowSashimi(show)
     }),
-    ...(model.showSashimi
-      ? [
-          toggleItem('Sashimi read counts', model.showSashimiCounts, show => {
-            model.setShowSashimiCounts(show)
-          }),
-          splitJunctionsItem(model),
-        ]
-      : []),
   ]
 }
 
-/** The `filter` rows on junctions, for "Filter by...", while the arcs draw. */
+/**
+ * The `filter` rows on junctions, for "Filter by...", while the arcs draw:
+ * whether split-read junctions join the N-gap splices, then the class and
+ * support floors.
+ */
 export function getJunctionFilterItems(
   model: JunctionFiltersModel,
 ): MenuItem[] {
@@ -87,6 +82,7 @@ export function getJunctionFilterItems(
     return []
   }
   return [
+    splitJunctionsItem(model),
     categoryFilterItem(
       {
         noun: 'Non-canonical junctions',
@@ -124,25 +120,34 @@ export function getJunctionFilterItems(
 }
 
 /**
- * The placement row, for "Advanced". Without the coverage band the arcs draw
- * in a strip of their own, so there is nothing to place.
+ * The arcs' set-once rows, for "Advanced", while they draw: their read counts,
+ * and their placement. Without the coverage band the arcs draw in a strip of
+ * their own, so there is nothing to place.
  */
 export function getSashimiPlacementItems(
   model: SashimiPlacementModel,
 ): MenuItem[] {
-  return model.showSashimi && model.showCoverage
-    ? [
-        {
-          label: 'Sashimi placement',
-          type: 'subMenu' as const,
-          subMenu: radioItems(
-            SASHIMI_PLACEMENT_OPTIONS,
-            model.sashimiPlacement,
-            placement => {
-              model.setSashimiPlacement(placement)
-            },
-          ),
-        },
-      ]
-    : []
+  if (!model.showSashimi) {
+    return []
+  }
+  return [
+    toggleItem('Sashimi read counts', model.showSashimiCounts, show => {
+      model.setShowSashimiCounts(show)
+    }),
+    ...(model.showCoverage
+      ? [
+          {
+            label: 'Sashimi placement',
+            type: 'subMenu' as const,
+            subMenu: radioItems(
+              SASHIMI_PLACEMENT_OPTIONS,
+              model.sashimiPlacement,
+              placement => {
+                model.setSashimiPlacement(placement)
+              },
+            ),
+          },
+        ]
+      : []),
+  ]
 }

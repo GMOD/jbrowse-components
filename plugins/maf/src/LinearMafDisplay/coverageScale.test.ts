@@ -143,7 +143,7 @@ test('the track menu offers the shared coverage rows', () => {
   expect(labels(display.trackMenuItems())).toEqual(
     expect.arrayContaining([
       `${COVERAGE_AXIS_LABEL}...`,
-      'Color alleles above...',
+      'Color alleles in coverage',
     ]),
   )
   expect(
@@ -152,7 +152,5 @@ test('the track menu offers the shared coverage rows', () => {
         .trackMenuItems()
         .flatMap(i => ('subMenu' in i ? resolveSubMenu(i) : [i])),
     ),
-  ).toEqual(
-    expect.arrayContaining(['Coverage alleles', 'Interbase indicators']),
-  )
+  ).toEqual(expect.arrayContaining(['Interbase indicators']))
 })

@@ -150,24 +150,14 @@ test('the interbase toggle follows the coverage band', () => {
   expect(interbaseRow(true)).toMatchObject({ disabled: false })
 })
 
-test('the coverage SNP toggle follows the coverage band and writes its show', () => {
-  const row = (showCoverage: boolean) =>
-    subMenuOf(makeModel({ showCoverage })).find(
+// The coverage band's allele coloring is one radio group under Advanced
+// (alignments-core coverageMenuItems.ts), so Show... carries no allele row.
+test('Show... carries no coverage allele row', () => {
+  expect(
+    subMenuOf(makeModel()).some(
       r => 'label' in r && r.label === 'Coverage alleles',
-    )
-  expect(row(false)).toMatchObject({
-    disabled: true,
-    disabledHelpText: expect.stringContaining('Coverage'),
-  })
-  const model = makeModel()
-  const shown = subMenuOf(model).find(
-    r => 'label' in r && r.label === 'Coverage alleles',
-  )
-  expect(shown).toMatchObject({ disabled: false, checked: true })
-  if (shown && 'onClick' in shown) {
-    shown.onClick()
-  }
-  expect(model.setShowCoverageAlleles).toHaveBeenCalledWith(false)
+    ),
+  ).toBe(false)
 })
 
 function softClipRow(unit: AlignmentsUnit) {

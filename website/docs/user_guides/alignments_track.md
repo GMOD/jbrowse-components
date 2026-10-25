@@ -326,9 +326,12 @@ non-canonical. The motif shows in the arc's tooltip, and a junction with no
 strand-tagged reads takes the strand its motif implies, so untagged STAR output
 still colors by strand. This needs a sequence adapter on the assembly.
 
-**Show... → Sashimi arcs** turns them on and off, and **Show... → Sashimi read
+**Show... → Sashimi arcs** turns them on and off, and **Advanced → Sashimi read
 counts** prints each junction's supporting-read count on its arc. While the arcs
 draw:
+
+- **Filter by... → Junctions from split reads** adds the junctions split
+  alignments (SA tag) imply to the N-gap splices
 
 - **Filter by... → Non-canonical junctions → Hide non-canonical junctions**
   drops junctions whose motif is none of the three canonical pairs. On deep
@@ -340,8 +343,8 @@ draw:
 - **Advanced → Sashimi placement** splits the arcs above/below the coverage row
 
 See the [RNA-seq tutorial](/docs/tutorials/rnaseq). When one junction peak
-dominates the coverage histogram, **Coverage axis... → Scale → Log** keeps the
-shallower junctions visible.
+dominates the coverage histogram, **Advanced → Coverage axis... → Scale → Log**
+keeps the shallower junctions visible.
 
 <Figure caption="Sashimi arcs over B2M RNA-seq with read-support labels on and coverage on a log scale." src="/img/alignments_track_arcs.png" />
 
@@ -398,8 +401,8 @@ mapped:
 
 - **Split current view to show mate** replaces the displayed regions with the
   read's locus and its mate's side by side, each padded by a read length, and
-  turns on **View as pairs / link supplementary alignments** so the pair is
-  drawn joined. A snackbar offers **Undo**, which restores both
+  turns on **View as pairs** so the pair is drawn joined. A snackbar offers
+  **Undo**, which restores both
 - **Open breakpoint split view** puts the two loci in
   [separate stacked panels](/docs/user_guides/sv_visualization#breakpoint-split-view),
   which draws the connecting splines

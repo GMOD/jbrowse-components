@@ -49,6 +49,8 @@ interface ReadConnectionsBandModel {
 // `encoding.strokeWidth` scale, for the is-default marker.
 const DEFAULT_READ_CONNECTIONS_LINE_WIDTH = 1
 
+export const VIEW_AS_PAIRS_LABEL = 'View as pairs'
+
 const PLACEMENT_OPTIONS: { value: ReadConnectionsPlacement; label: string }[] =
   [
     { value: 'up', label: 'Above coverage' },
@@ -66,6 +68,24 @@ function bandMarkItem(
   })
 }
 
+/**
+ * The top-level row joining each read to its mate and split segments on one
+ * row, as IGV's "View as pairs" does.
+ */
+export function viewAsPairsItem(model: {
+  unit: AlignmentsUnit
+  setUnit: (unit: AlignmentsUnit) => void
+}): MenuItem {
+  const linked = model.unit === 'chain'
+  return {
+    ...checkboxItem(VIEW_AS_PAIRS_LABEL, linked, () => {
+      model.setUnit(linked ? 'read' : 'chain')
+    }),
+    helpText:
+      'Draw each read with its mate and its supplementary (split) alignments on one row, joined by a line.',
+  }
+}
+
 // Checkboxes only, with no `?`: one row kind reads at a glance. Read arcs and
 // the read cloud share a band, so ticking one unticks the other. The
 // connection filters live in "Filter by..." and the band's placement and line
@@ -73,15 +93,7 @@ function bandMarkItem(
 export function getReadConnectionsMenuItem(
   model: ReadConnectionsModel & SvChannelsModel,
 ) {
-  const linked = model.unit === 'chain'
   const subMenu: MenuItem[] = [
-    checkboxItem(
-      'View as pairs / link supplementary alignments',
-      linked,
-      () => {
-        model.setUnit(linked ? 'read' : 'chain')
-      },
-    ),
     toggleItem('Pileup connectors', model.showConnectors, flag => {
       model.setShowConnectors(flag)
     }),

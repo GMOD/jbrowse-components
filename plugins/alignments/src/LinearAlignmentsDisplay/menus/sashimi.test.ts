@@ -54,39 +54,11 @@ function click(items: MenuItem[], label: string) {
 }
 
 describe('sashimi rows in Show...', () => {
-  test('the counts appear only while the arcs draw', () => {
+  test('Show... holds the arcs toggle alone', () => {
     const model = makeModel()
     expect(labelsOf(sashimiShowItems(model))).toEqual(['Sashimi arcs'])
     model.showSashimi = true
-    const rows = sashimiShowItems(model)
-    expect(labelsOf(rows)).toEqual([
-      'Sashimi arcs',
-      'Sashimi read counts',
-      'Sashimi split-read junctions',
-    ])
-    expect(rows.every(i => 'checked' in i && !('helpText' in i))).toBe(true)
-  })
-
-  test('"Sashimi split-read junctions" writes junction.source', () => {
-    const model = makeModel()
-    model.showSashimi = true
-    const writes: JunctionFilterPatch[] = []
-    const setJunctionFilter = model.setJunctionFilter.bind(model)
-    model.setJunctionFilter = patch => {
-      writes.push(patch)
-      setJunctionFilter({ ...patch, classes: patch.classes ?? ['splice'] })
-    }
-    const label = 'Sashimi split-read junctions'
-    const checked = () =>
-      sashimiShowItems(model).find(i => 'label' in i && i.label === label)
-    expect(checked()).toMatchObject({ checked: true })
-    click(sashimiShowItems(model), label)
-    expect(writes.at(-1)).toEqual({ sources: ['gap'] })
-    expect(checked()).toMatchObject({ checked: false })
-    click(sashimiShowItems(model), label)
-    expect(writes.at(-1)).toEqual({
-      classes: ['splice', 'deletion', 'duplication', 'inversion'],
-    })
+    expect(labelsOf(sashimiShowItems(model))).toEqual(['Sashimi arcs'])
   })
 })
 
@@ -96,9 +68,32 @@ describe('junction filter rows', () => {
     expect(getJunctionFilterItems(model)).toEqual([])
     model.showSashimi = true
     expect(labelsOf(getJunctionFilterItems(model))).toEqual([
+      'Junctions from split reads',
       'Non-canonical junctions',
       'Min reads at a junction',
     ])
+  })
+
+  test('"Junctions from split reads" writes junction.source', () => {
+    const model = makeModel()
+    model.showSashimi = true
+    const writes: JunctionFilterPatch[] = []
+    const setJunctionFilter = model.setJunctionFilter.bind(model)
+    model.setJunctionFilter = patch => {
+      writes.push(patch)
+      setJunctionFilter({ ...patch, classes: patch.classes ?? ['splice'] })
+    }
+    const label = 'Junctions from split reads'
+    const checked = () =>
+      getJunctionFilterItems(model).find(i => 'label' in i && i.label === label)
+    expect(checked()).toMatchObject({ checked: true })
+    click(getJunctionFilterItems(model), label)
+    expect(writes.at(-1)).toEqual({ sources: ['gap'] })
+    expect(checked()).toMatchObject({ checked: false })
+    click(getJunctionFilterItems(model), label)
+    expect(writes.at(-1)).toEqual({
+      classes: ['splice', 'deletion', 'duplication', 'inversion'],
+    })
   })
 
   test('"Non-canonical junctions" is one All / Only / Hide choice', () => {
@@ -129,15 +124,18 @@ describe('junction filter rows', () => {
   })
 })
 
-describe('sashimi placement row', () => {
-  test('appears only while the arcs draw over the coverage band', () => {
+describe('sashimi rows in Advanced', () => {
+  test('the counts show while the arcs draw, placement only over the coverage band', () => {
     const model = makeModel()
     expect(getSashimiPlacementItems(model)).toEqual([])
     model.showSashimi = true
     model.showCoverage = false
-    expect(getSashimiPlacementItems(model)).toEqual([])
+    expect(labelsOf(getSashimiPlacementItems(model))).toEqual([
+      'Sashimi read counts',
+    ])
     model.showCoverage = true
     expect(labelsOf(getSashimiPlacementItems(model))).toEqual([
+      'Sashimi read counts',
       'Sashimi placement',
     ])
   })

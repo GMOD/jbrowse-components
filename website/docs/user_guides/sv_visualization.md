@@ -273,14 +273,13 @@ keeps or hides the SV evidence and the reads without a mate.
 
 A long read spans the whole event, so it has what a short-read pair could only
 infer. At an inversion it splits into three alignments, the middle one on the
-opposite strand. With **View as pairs / link supplementary alignments** on,
-those segments chain onto one row: the inverted middle paints in the
-reverse-strand color between two forward-strand segments, and an arc joins each
-breakpoint pair: green at the junction LL pairs span, navy at the one RR pairs
-span. A split read across a deletion draws a gold arc. One across a tandem
-duplication draws a teal arc, the color of the pairs that span it, and with
-**Pileup connectors** on, a teal loop under its row where the read maps back
-over itself.
+opposite strand. With **View as pairs** on, those segments chain onto one row:
+the inverted middle paints in the reverse-strand color between two
+forward-strand segments, and an arc joins each breakpoint pair: green at the
+junction LL pairs span, navy at the one RR pairs span. A split read across a
+deletion draws a gold arc. One across a tandem duplication draws a teal arc, the
+color of the pairs that span it, and with **Pileup connectors** on, a teal loop
+under its row where the read maps back over itself.
 
 **Group by → Split read (SA tag)** splits the pileup into two sections: reads
 with a supplementary alignment, and the rest. Together the two sections give the
