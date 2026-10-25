@@ -118,11 +118,7 @@ test('dimension rows stay open, the tag row (a dialog) dismisses', () => {
   )
 })
 
-// Like the sort and color menus' tag rows — otherwise the tag being grouped on
-// is invisible without reopening the dialog.
-test('the tag radio names the tag being grouped on', () => {
+test('the tag radio ticks while a tag groups, and names no tag', () => {
   const items = radios(makeModel({ field: 'tags.RG' }).model)
-  expect(items.filter(i => i.checked).map(i => i.label)).toEqual([
-    'Tag (RG)...',
-  ])
+  expect(items.filter(i => i.checked).map(i => i.label)).toEqual(['Tag...'])
 })

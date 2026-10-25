@@ -1,7 +1,7 @@
 import { lazy } from 'react'
 
 import { filterMenuItems } from '@jbrowse/core/ui/filterMenuItems'
-import { makeRadioSubMenu, withHint } from '@jbrowse/core/ui/menuItems'
+import { makeRadioSubMenu } from '@jbrowse/core/ui/menuItems'
 import { getDialogHost } from '@jbrowse/core/util'
 import { MAPQ_BINS } from '@jbrowse/core/util/colorScale'
 import { lowerBoundOf, withLowerBound } from '@jbrowse/core/util/fieldPredicate'
@@ -90,10 +90,7 @@ function minMapqItem(model: FiltersModel): MenuItem {
       ? MAPQ_THRESHOLDS
       : [...MAPQ_THRESHOLDS, current].toSorted((a, b) => a - b)
   return makeRadioSubMenu({
-    label: withHint(
-      'Mapping quality',
-      current === undefined ? undefined : `${current}+`,
-    ),
+    label: 'Mapping quality',
     value: current === undefined ? 'all' : `${current}`,
     options: [
       ['all', 'All reads'],

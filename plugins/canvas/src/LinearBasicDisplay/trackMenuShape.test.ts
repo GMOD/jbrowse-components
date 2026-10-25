@@ -194,7 +194,7 @@ describe('canvas track menu shape', () => {
     click(find(genes, 'Hide genes'))
     expect(display.genesFilter).toBe('exclude')
     const after = subMenuOf(display.trackMenuItems(), 'Filter by... (1)')
-    click(find(subMenuOf(after, 'Genes — hidden'), 'All features'))
+    click(find(subMenuOf(after, 'Genes'), 'All features'))
     expect(display.genesFilter).toBeUndefined()
   })
 

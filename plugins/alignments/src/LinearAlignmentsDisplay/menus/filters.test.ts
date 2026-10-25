@@ -42,7 +42,7 @@ test('a minimum the dialog wrote gets a radio of its own, checked', () => {
   const { row, radios } = mapqRow([{ field: 'mapq', gte: 20 }])
   expect(radios.map(r => r.label)).toContain('MAPQ 20+')
   expect(radios.find(r => r.checked)?.label).toBe('MAPQ 20+')
-  expect(row.label).toContain('20+')
+  expect(row.label).toBe('Mapping quality')
 })
 
 test('a floor change keeps the ceiling written on the same field', () => {

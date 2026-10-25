@@ -13,7 +13,7 @@ import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 // per-display adapters. Two pairs, and which one a consumer wants is which
 // question it is asking: manualMinScore/manualMaxScore is what the config
 // really pins (undefined = nothing pinned), which is what the widget's fields
-// show and what the row captions itself with; minScoreBound/maxScoreBound is
+// show; minScoreBound/maxScoreBound is
 // where each end of the axis resolved to (undefined = autoscale this end),
 // which is what a domain computes from. hasManualScoreBounds is the third
 // question, and the only one of the three that survives a `defaultScoreDomain`
@@ -60,19 +60,6 @@ export interface ScoreAxisMenuItemOptions {
   disabledHelpText?: string
 }
 
-// The caption carries only what the plot cannot show: a pinned end, `auto`
-// for the other, and a scale that isn't linear. The resolved pair would
-// caption every GC content track "(0 – 1)" off its default domain.
-function caption(self: ScoreScaleModel) {
-  const parts = [
-    ...(self.hasManualScoreBounds
-      ? [`${self.manualMinScore ?? 'auto'} – ${self.manualMaxScore ?? 'auto'}`]
-      : []),
-    ...(self.scaleType === 'linear' ? [] : [self.scaleType]),
-  ]
-  return parts.length ? ` (${parts.join(', ')})` : ''
-}
-
 /**
  * The one track-menu row for a value scale. It opens the drawer widget that
  * edits `encoding.y` live — scale type, range, 0, outlier clipping, the axis a
@@ -84,7 +71,7 @@ export function makeScoreAxisMenuItem(
 ): NormalMenuItem {
   const { label = Y_AXIS_LABEL, disabled, disabledHelpText } = opts
   return {
-    label: `${label}${caption(self)}...`,
+    label: `${label}...`,
     icon: EqualizerIcon,
     disabled,
     disabledHelpText,

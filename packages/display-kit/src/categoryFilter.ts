@@ -1,4 +1,4 @@
-import { makeRadioSubMenu, withHint } from '@jbrowse/core/ui/menuItems'
+import { makeRadioSubMenu } from '@jbrowse/core/ui/menuItems'
 
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
@@ -49,9 +49,9 @@ export interface CategoryFilterLabels {
 // categories and the feature display's genes all take it, so a category
 // filter reads and writes the same way wherever it sits.
 //
-// The choice shows on the parent row (`withHint`), so which categories are
-// filtering is readable without opening any of them, and the help text sits
-// there too rather than on all three radios saying much the same thing.
+// The row names the category alone, never its current choice: the menu's
+// "Filter by... (n)" count says a filter is on. Help text, where a caller
+// passes it, sits on the row rather than on all three radios.
 export function categoryFilterItem(
   { noun, all, only, exclude, helpText }: CategoryFilterLabels,
   value: CategoryFilter | undefined,
@@ -60,12 +60,7 @@ export function categoryFilterItem(
 ): MenuItem {
   return {
     ...makeRadioSubMenu<CategoryFilter | 'all'>({
-      // 'hidden' rather than the stored 'exclude': the row is reporting what
-      // the user sees, and the vocabulary is the wire format's, not theirs.
-      label: withHint(
-        noun,
-        value === undefined ? undefined : value === 'only' ? 'only' : 'hidden',
-      ),
+      label: noun,
       helpText,
       value: value ?? 'all',
       options: [

@@ -57,35 +57,18 @@ describe('the Y axis row', () => {
     expect(label(makeDisplay())).toBe('Y axis...')
   })
 
-  it('names a pinned end, auto for the other, and a non-linear scale', () => {
+  // the drawer shows the range and scale; the row names no setting
+  it('names no setting, whatever is pinned', () => {
     const display = makeDisplay()
     display.setMinScore(190)
-    expect(label(display)).toBe('Y axis (190 – auto)...')
     display.setScaleType('log')
-    expect(label(display)).toBe('Y axis (190 – auto, log)...')
-    display.setMinScore(undefined)
-    expect(label(display)).toBe('Y axis (log)...')
+    expect(label(display)).toBe('Y axis...')
   })
 
   it('takes the label it is given', () => {
     expect(label(makeDisplay(), { label: 'Coverage axis' })).toBe(
       'Coverage axis...',
     )
-  })
-
-  // A display whose `defaultScoreDomain` pins an end (GC content's [0, 1])
-  // resolves `minScoreBound`/`maxScoreBound` to real numbers with both bounds
-  // unset, so a row asking the resolved bounds would caption a fresh track
-  // with a pair nobody pinned.
-  it('captions nothing off a default domain, and only what is really set', () => {
-    const display = makeDisplay([0, 1])
-    expect([display.minScoreBound, display.maxScoreBound]).toEqual([0, 1])
-    expect(label(display)).toBe('Y axis...')
-    display.setMaxScore(0.75)
-    expect(label(display)).toBe('Y axis (auto – 0.75)...')
-    display.setMaxScore(undefined)
-    expect(display.maxScoreBound).toBe(1)
-    expect(label(display)).toBe('Y axis...')
   })
 })
 

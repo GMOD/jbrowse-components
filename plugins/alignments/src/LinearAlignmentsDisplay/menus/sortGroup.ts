@@ -109,9 +109,7 @@ export function getSortMenuItem(
   // rule `checkedType` applies to the group-by radios.
   const stored = getSortMode(model)
   const mode = modes.includes(stored) ? stored : 'position'
-  // Name the tag once one is picked ("Tag (HP)..."), like the color menu's tag
-  // radio: tag is the only mode whose choice has a parameter, and it was
-  // otherwise invisible without reopening the dialog.
+  // The dialog opens on the tag in use, so the label names no tag.
   const sortTag = fieldTag(model.sortColumn?.field)
   // Rows that only write an ordering keep the menu open by their radio type;
   // `tag` opens a dialog, so it passes false — the one asymmetry in the group,
@@ -158,7 +156,7 @@ export function getSortMenuItem(
     }),
     tag: radio(
       'tag',
-      sortTag ? `Tag (${sortTag})...` : 'Tag...',
+      'Tag...',
       () => {
         queueSortByTagDialog(model, sortTag, tag => {
           model.sortAtCenterLine(`${TAG_FIELD_PREFIX}${tag}`)
@@ -243,7 +241,7 @@ export function getGroupByMenuItem(model: GroupByMenuModel) {
     extra: [
       {
         type: TAG_FIELD_PREFIX,
-        label: tag ? `Tag (${tag})...` : 'Tag...',
+        label: 'Tag...',
         onClick: () => {
           getDialogHost(model).queueDialog(handleClose => [
             GroupByDialog,

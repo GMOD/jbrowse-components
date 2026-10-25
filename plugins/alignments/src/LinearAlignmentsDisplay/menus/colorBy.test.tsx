@@ -121,7 +121,7 @@ function byLabel(
 describe('color by menu', () => {
   // The tag radio is the only field whose choice carries a parameter, and it
   // was invisible without reopening the dialog.
-  test('the tag radio names the tag in use', () => {
+  test('the tag radio names no tag, and ticks while a tag colors', () => {
     const model = makeModel()
     const labels = (m: Model) =>
       allItems(m, { includeTagOption: true })
@@ -129,7 +129,7 @@ describe('color by menu', () => {
         .filter(l => l.startsWith('Tag'))
     expect(labels(model)).toEqual(['Tag...'])
     model.colorField = 'tags.HP'
-    expect(labels(model)).toEqual(['Tag (HP)...'])
+    expect(labels(model)).toEqual(['Tag...'])
   })
 
   // A radio row keeps the menu open by its type, which is right for every row

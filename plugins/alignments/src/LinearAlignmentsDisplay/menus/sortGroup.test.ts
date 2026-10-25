@@ -79,7 +79,7 @@ describe('sort menu radio selection', () => {
     ['base', 'Base'],
     ['mapq', 'Mapping quality'],
     ['pairOrientation', 'Pair orientation'],
-    ['tags.HP', 'Tag (HP)...'],
+    ['tags.HP', 'Tag...'],
   ] as const)('a %s sort selects "%s"', (type, label) => {
     expect(checkedLabel(makeModel({ sortColumn: sorted(type) }))).toEqual([
       label,
@@ -94,13 +94,6 @@ describe('sort menu radio selection', () => {
       ])
     },
   )
-
-  // Like the color menu's tag radio: the tag in use is otherwise invisible
-  // without reopening the dialog.
-  test('the tag radio names the tag being sorted on', () => {
-    const model = makeModel({ sortColumn: sorted('tags.HP') })
-    expect(checkedLabel(model)).toEqual(['Tag (HP)...'])
-  })
 
   test('exactly one radio is ever checked', () => {
     for (const model of [

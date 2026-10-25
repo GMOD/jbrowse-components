@@ -159,15 +159,13 @@ function tagColorScaleOf({
     : 'ordinal'
 }
 
-// Names the tag in the label once one is picked ("Tag (HP)...") — the radio is
-// the only field whose choice has a parameter, and it was previously invisible
-// without reopening the dialog.
+// The dialog opens on the tag in use, so the label names no tag.
 function tagItem(model: AnyColorByModel): MenuItem {
   const { colorField } = model
   const isTag = colorFieldKindOf(colorField) === 'tag'
   const tag = fieldTag(colorField)
   return radioItem(
-    isTag ? `Tag (${tag ?? colorField})...` : 'Tag...',
+    'Tag...',
     isTag,
     () => {
       getDialogHost(model).queueDialog((handleClose: () => void) => [

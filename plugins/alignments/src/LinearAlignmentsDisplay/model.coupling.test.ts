@@ -1053,19 +1053,21 @@ describe('read categories + filter submenu', () => {
 
     // and back to the absent state, with no entry left on the field
     clickMenuItem(
-      menuSubItems(display.trackMenuItems(), 'SV evidence — hidden'),
+      menuSubItems(
+        menuSubItems(display.trackMenuItems(), 'Filter by... (1)'),
+        'SV evidence',
+      ),
       'All reads',
     )
     expect(display.writtenFilter).toEqual([])
   })
 
-  // The category row says what it is doing without being opened, and the group
-  // above it counts — so a filtered track reads as filtered at the top level.
-  test('an active category shows on its own row and in the count', () => {
+  // The group above counts the filter; the row names the category alone
+  test('an active category shows in the count, its row keeping its name', () => {
     const display = createDisplay()
     display.setFilterFields({ svSignal: [{ field: 'svSignal', equal: false }] })
     const filters = menuSubItems(display.trackMenuItems(), 'Filter by... (1)')
-    expect(hasMenuItem(filters, 'SV evidence — hidden')).toBe(true)
+    expect(hasMenuItem(filters, 'SV evidence')).toBe(true)
   })
 
   // The label is the only place the track chrome admits a filter is hiding
