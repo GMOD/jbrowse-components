@@ -3068,6 +3068,13 @@
       ],
       "worker": "real"
     },
+    "@jbrowse/core/util/fieldPredicateType": {
+      "package": "@jbrowse/core",
+      "names": [
+        "testsSomething"
+      ],
+      "worker": "real"
+    },
     "@jbrowse/core/util/fieldReader": {
       "package": "@jbrowse/core",
       "names": [

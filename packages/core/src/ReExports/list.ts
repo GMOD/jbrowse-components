@@ -304,6 +304,7 @@ export default [
   '@jbrowse/core/util/fetchHub',
   '@jbrowse/core/util/fetchPhases',
   '@jbrowse/core/util/fieldPredicate',
+  '@jbrowse/core/util/fieldPredicateType',
   '@jbrowse/core/util/fieldReader',
   '@jbrowse/core/util/fileHandleStore',
   '@jbrowse/core/util/FileSaver',
