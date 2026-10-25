@@ -1,4 +1,5 @@
 import { MAX_LEGEND_ITEMS } from '@jbrowse/core/ui/legendSpec'
+import { featureBedColor } from '@jbrowse/core/util/colorBits'
 import { matedBy } from '@jbrowse/core/util/featureTransforms'
 
 import type { Feature } from '@jbrowse/core/util'
@@ -20,6 +21,16 @@ const NON_PLOT_FIELDS = new Set([
   'description',
   'CHROM',
   'POS',
+])
+
+// Where a feature sits and what it is made of, never a value it carries.
+const STRUCTURE_FIELDS = new Set([
+  'uniqueId',
+  'refName',
+  'start',
+  'end',
+  'subfeatures',
+  'parentId',
 ])
 
 // A code, not a quantity: +1 and -1 want a palette and never a ramp.
@@ -65,6 +76,28 @@ export interface PlotFields {
   mated?: 'mate' | 'alt' | 'pair'
   /** Every scanned feature carries SAM `flags`: they are aligned reads. */
   reads?: true
+  /**
+   * Every field a scanned feature carries besides its position and its
+   * children, `name` and `type` included: what a row or a color may be
+   * read from.
+   */
+  attributes?: string[]
+  /**
+   * A scanned feature's children have none of their own, as a BED12 row's
+   * blocks and a transcript's exons do, so it draws as blocks joined by a
+   * line.
+   */
+  spliced?: true
+  /** A scanned feature states its own BED color as an `r,g,b` triple. */
+  bedColored?: true
+}
+
+function isSpliced(feature: Feature) {
+  const subfeatures = feature.get('subfeatures')
+  return (
+    !!subfeatures?.length &&
+    subfeatures.every(sub => !sub.get('subfeatures')?.length)
+  )
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -122,6 +155,9 @@ export function scanPlotFields(
   const values = new Map<string, Set<unknown>>()
   let mated: PlotFields['mated']
   let reads = features.length > 0
+  let spliced = false
+  let bedColored = false
+  const attributes = new Set<string>()
   const genomes = new Set<string>()
   const n = Math.min(features.length, PLOT_FIELD_SAMPLE)
   for (let i = 0; i < n; i++) {
@@ -131,6 +167,13 @@ export function scanPlotFields(
     }
     const record = feature.toJSON()
     reads &&= typeof record.flags === 'number'
+    spliced ||= isSpliced(feature)
+    bedColored ||= featureBedColor(feature) !== undefined
+    for (const field of Object.keys(record)) {
+      if (!STRUCTURE_FIELDS.has(field)) {
+        attributes.add(field)
+      }
+    }
     const mate = record.mate
     if (isRecord(mate) && typeof mate.assemblyName === 'string') {
       genomes.add(mate.assemblyName)
@@ -167,5 +210,8 @@ export function scanPlotFields(
     ...(genomes.size > 0 ? { genomes: [...genomes].sort() } : {}),
     ...(mated === undefined ? {} : { mated }),
     ...(reads ? { reads: true as const } : {}),
+    ...(attributes.size > 0 ? { attributes: [...attributes].sort() } : {}),
+    ...(spliced ? { spliced: true as const } : {}),
+    ...(bedColored ? { bedColored: true as const } : {}),
   }
 }

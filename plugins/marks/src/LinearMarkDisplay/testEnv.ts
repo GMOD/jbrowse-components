@@ -14,6 +14,7 @@ import { stateModelFactory } from './model.ts'
 import type { LinearMarkDisplayModel } from './model.ts'
 import type { EncodedLayersResult } from '@jbrowse/core/util/markEncoding'
 import type { Feature } from '@jbrowse/core/util/simpleFeature'
+import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 export const REGION = {
   refName: 'ctgA',
@@ -58,7 +59,7 @@ export function features(
  * `CoreGetEncodedLayers` runs them.
  */
 export function workerResult(
-  display: LinearMarkDisplayModel,
+  display: Pick<LinearMarkDisplayModel, 'rpcProps'> & IAnyStateTreeNode,
   feats: readonly Feature[],
 ): EncodedLayersResult {
   const { layers, transform, facet } = display.rpcProps()

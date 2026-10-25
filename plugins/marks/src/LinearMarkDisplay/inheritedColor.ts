@@ -4,9 +4,8 @@ import type { MarkConfig } from './configSchema.ts'
 
 export type MarkColorConfig = MarkConfig['encoding']['color']
 
-// Whether a color names a value, a field or a scale, and so paints anything
-// of its own.
-function saysColor(color: MarkColorConfig) {
+/** Whether a color names a value, a field or a scale, and so paints anything of its own. */
+export function saysColor(color: MarkColorConfig) {
   const { value, field, scale } = colorSettingOf(color)
   return value !== undefined || !!field || scale.type !== undefined
 }

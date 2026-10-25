@@ -2,7 +2,6 @@ import Plugin from '@jbrowse/core/Plugin'
 
 import LinearBasicDisplayF from './LinearBasicDisplay/index.ts'
 import { highlightSearchResultFeature } from './LinearBasicDisplay/searchResultHighlight.ts'
-import LinearMultiRowFeatureDisplayF from './LinearMultiRowFeatureDisplay/index.ts'
 import MultiRowClusterFeaturesRPCMethodF from './MultiRowClusterFeaturesRPC/index.ts'
 import MultiRowGetFeaturesRPCMethodF from './MultiRowGetFeaturesRPC/index.ts'
 import FeatureDataRPCMethodsF from './RenderFeatureDataRPC/index.ts'
@@ -14,7 +13,6 @@ export default class CanvasPlugin extends Plugin {
 
   install(pluginManager: PluginManager) {
     LinearBasicDisplayF(pluginManager)
-    LinearMultiRowFeatureDisplayF(pluginManager)
     FeatureDataRPCMethodsF(pluginManager)
     MultiRowGetFeaturesRPCMethodF(pluginManager)
     MultiRowClusterFeaturesRPCMethodF(pluginManager)

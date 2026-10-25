@@ -435,20 +435,20 @@ test('rows beside a facet leave the facet drawing, and say so on another field',
 // several sources — right for a display that declared nothing, and the reason
 // it stays on that path alone now that the marks are editable.
 test('the default plot draws a row per source, and leaves a facet or rows alone', () => {
-  const fields = { numeric: ['score'], categorical: [], rows: 'source' }
+  const plot = { marks: [], rows: 'source' }
   const bare = loaded({})
-  bare.splitByPlotRows(fields)
+  bare.applyDefaultPlot(plot)
   expect(bare.facet).toBeUndefined()
   expect(bare.drawsRows).toBe(true)
   expect(bare.rowsField).toBe('source')
 
   const faceted = loaded({ facet: 'tissue' })
-  faceted.splitByPlotRows(fields)
+  faceted.applyDefaultPlot(plot)
   expect(faceted.facet?.field).toBe('tissue')
   expect(faceted.rowsField).toBe('')
 
   const rows = loaded({ rows: 'source' })
-  rows.splitByPlotRows(fields)
+  rows.applyDefaultPlot(plot)
   expect(rows.facet).toBeUndefined()
   expect(rows.drawsRows).toBe(true)
   expect(rows.sources.map(row => row.name)).toEqual(['dad', 'mom', 's2', 's10'])

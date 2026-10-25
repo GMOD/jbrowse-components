@@ -1,6 +1,20 @@
 import type { MarkSnapshot } from './markProblems.ts'
 import type { PlotFields } from './scanPlotFields.ts'
 
+/**
+ * What a display with nothing declared draws: its marks, and the settings
+ * beside them the scanned features decide.
+ */
+export interface DefaultPlot {
+  marks: MarkSnapshot[]
+  /** The value axis starts where the values do rather than at 0. */
+  zero?: false
+  /** The field each row stands for a value of, where nothing splits the features. */
+  rows?: string
+  /** The display's `encoding.color`, where it states none. */
+  color?: Record<string, unknown>
+}
+
 export const DEFAULT_PLOT_FIELD = 'score'
 const IDENTITY_FIELD = 'identity'
 
@@ -27,9 +41,12 @@ export const KEEP_MAPPED_PASSING_UNIQUE_READS =
  * guessing one would draw a picture the user did not ask for, as a score on
  * one feature in a hundred would.
  */
-export function defaultPlot(
-  fields: PlotFields,
-): { marks: MarkSnapshot[]; zero?: false } | undefined {
+export function defaultPlot(fields: PlotFields): DefaultPlot | undefined {
+  const plot = marksOf(fields)
+  return plot && fields.rows ? { ...plot, rows: fields.rows } : plot
+}
+
+function marksOf(fields: PlotFields): DefaultPlot | undefined {
   if (fields.reads) {
     return {
       marks: [

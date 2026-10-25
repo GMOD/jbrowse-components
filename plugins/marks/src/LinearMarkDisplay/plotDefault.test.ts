@@ -235,6 +235,7 @@ test('alignments to other genomes draw their identity, a row per genome', () => 
   expect(defaultPlot(fields)).toEqual({
     marks: [{ mark: 'rule', encoding: { y: 'identity', size: 2 } }],
     zero: false,
+    rows: 'mate.assemblyName',
   })
 })
 

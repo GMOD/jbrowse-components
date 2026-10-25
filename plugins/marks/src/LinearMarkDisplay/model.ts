@@ -109,7 +109,7 @@ import { facetLayout, rowsLayout, sectionsOn, unsplitRegion } from './facet.ts'
 import { instancesOfFeature } from './featureInstances.ts'
 import { fetchPlotFields, plotScanRegions } from './fetchPlotFields.ts'
 import { sameMarkHit } from './findMarkHit.ts'
-import { paintedColorNode } from './inheritedColor.ts'
+import { paintedColorNode, saysColor } from './inheritedColor.ts'
 import {
   buildMarkLegend,
   colorSection,
@@ -151,6 +151,7 @@ import {
   rowCompareLabel,
   rowCompareOf,
 } from './rowCompare.ts'
+import { withRowColors } from './rowPaint.ts'
 import {
   drawnKeysOf,
   drawnRegion,
@@ -185,7 +186,9 @@ import type {
 } from './markList.ts'
 import type { MarkPlot, MarkPlotSettings } from './markPlot.ts'
 import type { MarkProblem, MarkSnapshot } from './markProblems.ts'
+import type { DefaultPlot } from './plotDefault.ts'
 import type { RowCompare } from './rowCompare.ts'
+import type { RowPaint } from './rowPaint.ts'
 import type { RowKeySpace } from './rowTable.ts'
 import type { JoinedPlotFields, PlotFields } from './scanPlotFields.ts'
 import type { StepChannels } from './stepChannels.ts'
@@ -391,6 +394,15 @@ export function stateModelFactory(
           _signal: AbortSignal,
         ): Promise<object | undefined> {
           return Promise.resolve(options)
+        },
+        /**
+         * #method
+         * Overridable hook: what the display draws with nothing declared, off
+         * the scanned fields, or undefined where they decide nothing and the
+         * plot dialog opens instead.
+         */
+        defaultPlotOf(fields: PlotFields): DefaultPlot | undefined {
+          return defaultPlot(fields)
         },
         /**
          * #getter
@@ -937,8 +949,31 @@ export function stateModelFactory(
           undefined,
           unsplitRegion,
         )
+        // A mark naming no color, under a display naming none, paints each
+        // row in the row's color where the row has one.
+        const rowPaint = stableIdentityComputed((): RowPaint | undefined => {
+          if (!self.drawsRows || !self.rowColorPaintsMarks) {
+            return undefined
+          }
+          const declared = saysColor(self.conf.encoding.color)
+          const marks = self.conf.marks.map(
+            m => !declared && !saysColor(m.encoding.color),
+          )
+          const colors = self.resolvedRowColors
+          return marks.includes(true) && colors.size > 0
+            ? { marks, colors }
+            : undefined
+        })
+        const rowPainted = createEncodeMemo(
+          () => keyed(),
+          () => rowPaint.get(),
+          (region, paint) =>
+            paint
+              ? withRowColors(region, paint, self.rowKeySpace.rowKeys.names)
+              : region,
+        )
         const drawn = () =>
-          self.splitField === undefined ? unsplit() : keyed()
+          self.splitField === undefined ? unsplit() : rowPainted()
         const mateRegions = stableIdentityComputed((): MateRegion[] =>
           self.host.displayedRegions.map((r, index) => ({
             index,
@@ -1904,13 +1939,20 @@ export function stateModelFactory(
         },
         /**
          * #action
-         * A row per source where the adapter lists several and nothing splits
-         * the features yet: one value per row is the row axis, and a facet is
-         * for bands holding more than one row.
+         * Write a default plot: its marks, its axis, a row per value of its
+         * `rows` field where nothing splits the features yet, and its color
+         * where the display states none.
          */
-        splitByPlotRows(fields: PlotFields) {
-          if (fields.rows && self.splitField === undefined) {
-            setConf(self.conf, ['rows', 'field'], fields.rows)
+        applyDefaultPlot(plot: DefaultPlot) {
+          setConf(self.conf, 'marks', plot.marks)
+          if (plot.zero === false) {
+            self.setScaleZero(false)
+          }
+          if (plot.rows && self.splitField === undefined) {
+            setConf(self.conf, ['rows', 'field'], plot.rows)
+          }
+          if (plot.color && !saysColor(self.conf.encoding.color)) {
+            setConf(self.conf, ['encoding', 'color'], plot.color)
           }
         },
         /**
@@ -2247,13 +2289,9 @@ export function stateModelFactory(
               if (!isAlive(self) || !fields || self.conf.marks.length > 0) {
                 return
               }
-              const plot = defaultPlot(fields)
+              const plot = self.defaultPlotOf(fields)
               if (plot) {
-                setConf(self.conf, 'marks', plot.marks)
-                if (plot.zero === false) {
-                  self.setScaleZero(false)
-                }
-                self.splitByPlotRows(fields)
+                self.applyDefaultPlot(plot)
               } else {
                 self.openMarkPlotDialog()
               }
