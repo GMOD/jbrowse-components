@@ -1041,12 +1041,12 @@ const SASHIMI_PLACEMENT: Record<string, string> = {
   down: 'Below coverage',
 }
 
-// the two band checkboxes in getReadConnectionsMenuItem
+// the Pair band radios in getReadConnectionsMenuItem
 // (plugins/alignments/src/LinearAlignmentsDisplay/menus/readConnections.ts)
 const READ_CONNECTIONS: Record<string, string> = {
-  off: 'Show read arcs (unchecked)',
-  arc: 'Show read arcs (checked)',
-  cloud: 'Show read cloud (checked)',
+  off: 'None',
+  arc: 'Read arcs',
+  cloud: 'Read cloud',
 }
 
 const READ_CONNECTIONS_PLACEMENT: Record<string, string> = {
@@ -1752,7 +1752,7 @@ export const trackFields: Record<string, FieldRecipe> = {
     (value === 'read' || value === 'chain') &&
     isAlignmentsOnlyField(displayType)
       ? {
-          path: `${TRACK_MENU} → Read connections → View as pairs / link supplementary alignments (${value === 'chain' ? 'checked' : 'unchecked'})`,
+          path: `${TRACK_MENU} → Read connections → Link mates and supplementary alignments (${value === 'chain' ? 'checked' : 'unchecked'})`,
         }
       : (value === 'sample' || value === 'haplotype') &&
           displayType &&
@@ -1978,7 +1978,7 @@ export const trackFields: Record<string, FieldRecipe> = {
     'Reveals clipped bases — the signal that a read spans a breakpoint.',
   ),
   'pileup.connectors': layerCheckbox(
-    'Read connections → Show pileup connectors',
+    'Read connections → Pileup connectors',
     "Draws a read's alignments joined by a curve rather than a straight line. Worth it when the two ends sit in different displayed regions, where the curve reads as one read crossing the gap.",
   ),
   // Sits directly under "Coverage" in the alignments "Show..." submenu
@@ -2038,7 +2038,7 @@ export const trackFields: Record<string, FieldRecipe> = {
     READ_CONNECTIONS_PLACEMENT,
   ),
   'readConnections.ordinaryPairs': layerCheckbox(
-    'Read connections → Show ordinary pairs',
+    'Read connections → Ordinary pairs',
     'Unchecked, the band keeps only the pairs that carry a category — an abnormal insert size or orientation, or a split junction — which on deep coverage is the difference between a readable band and a solid mass.',
   ),
   'pileup.maxLayoutHeight': numberField(n => ({

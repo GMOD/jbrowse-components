@@ -207,13 +207,13 @@ test('a size preset needs no display type, since only the canvas base declares i
   ).toEqual([])
 })
 
-test('read connections are the band checkboxes', () => {
+test('read connections are the Pair band radios', () => {
   expect(
     stepPaths('readConnections', 'cloud', 'LinearAlignmentsDisplay'),
-  ).toEqual(['Track menu → Read connections → Show read cloud (checked)'])
+  ).toEqual(['Track menu → Read connections → Read cloud'])
   expect(
     stepPaths('readConnections', 'off', 'LinearAlignmentsDisplay'),
-  ).toEqual(['Track menu → Read connections → Show read arcs (unchecked)'])
+  ).toEqual(['Track menu → Read connections → None'])
 })
 
 test('alignments fit is a Read height radio and autogrow an Advanced → Track height radio', () => {

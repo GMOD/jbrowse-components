@@ -59,7 +59,7 @@ export const baseLinearAlignmentsDisplayConfigSchema = ConfigurationSchema(
       defaultValue: 'read',
       // A chain joins by QNAME, never by a BX/MI linked-read barcode.
       description:
-        'The unit one row draws: a read, or a chain of a read, its mate and its split segments (the "View as pairs" menu row)',
+        'The unit one row draws: a read, or a chain of a read, its mate and its split segments (the "Link mates and supplementary alignments" menu row)',
       plot: true,
     },
     /**

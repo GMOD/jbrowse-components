@@ -14,14 +14,14 @@ type DisplayMode = 'arc' | 'cloud' | 'bezier' | 'linked' | 'stack'
 
 // Menu path from track menu → submenu → final click, per displayMode.
 // 'arc' / 'cloud' / 'bezier' pick how read connections are drawn; 'linked' and
-// 'stack' instead enable linked reads via the "View as pairs / link
-// supplementary alignments" checkbox, and differ only in the caller's snapshot.
+// 'stack' instead enable linked reads via the "Link mates and supplementary alignments"
+// checkbox, and differ only in the caller's snapshot.
 const MENU_PATHS: Record<DisplayMode, string[]> = {
-  arc: ['Read connections', 'Show read arcs'],
-  cloud: ['Read connections', 'Show read cloud'],
-  bezier: ['Read connections', 'Show pileup connectors'],
-  linked: ['Read connections', 'View as pairs / link supplementary alignments'],
-  stack: ['Read connections', 'View as pairs / link supplementary alignments'],
+  arc: ['Read connections', 'Read arcs'],
+  cloud: ['Read connections', 'Read cloud'],
+  bezier: ['Read connections', 'Pileup connectors'],
+  linked: ['Read connections', 'Link mates and supplementary alignments'],
+  stack: ['Read connections', 'Link mates and supplementary alignments'],
 }
 
 export async function testLinkedReadsDisplay({

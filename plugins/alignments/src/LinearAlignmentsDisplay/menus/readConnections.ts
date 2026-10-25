@@ -3,6 +3,7 @@ import {
   checkboxItem,
   radioItems,
   toggleItem,
+  withSubHeader,
 } from '@jbrowse/core/ui/menuItems'
 import PolylineIcon from '@mui/icons-material/Polyline'
 
@@ -45,46 +46,42 @@ const PLACEMENT_OPTIONS: { value: ReadConnectionsPlacement; label: string }[] =
     { value: 'down', label: 'Below coverage' },
   ]
 
-function bandMarkItem(
-  model: ReadConnectionsModel,
-  label: string,
-  mode: 'arc' | 'cloud',
-) {
-  const on = model.drawnReadConnections === mode
-  return checkboxItem(label, on, () => {
-    model.setDrawnReadConnections(on ? 'off' : mode)
-  })
-}
+const PAIR_BAND_OPTIONS: { value: ReadConnectionsMode; label: string }[] = [
+  { value: 'off', label: 'None' },
+  { value: 'arc', label: 'Read arcs' },
+  { value: 'cloud', label: 'Read cloud' },
+]
 
-// Checkboxes only, with no `?`: one row kind reads at a glance. Read arcs and
-// the read cloud share a band, so ticking one unticks the other. The
-// connection filters live in the "More filters..." dialog and the band's placement and line
-// width in "Advanced".
+export const PAIR_BAND_LABEL = 'Pair band'
+
+// Read arcs and the read cloud share one band, so they are radios under their
+// own sub-header. The connection filters live in the "More filters..." dialog
+// and the band's placement and line width in "Advanced".
 export function getReadConnectionsMenuItem(
   model: ReadConnectionsModel & SvChannelsModel,
 ) {
   const linked = model.unit === 'chain'
   const subMenu: MenuItem[] = [
-    checkboxItem(
-      'View as pairs / link supplementary alignments',
-      linked,
-      () => {
-        model.setUnit(linked ? 'read' : 'chain')
-      },
-    ),
-    toggleItem('Show pileup connectors', model.showConnectors, flag => {
+    checkboxItem('Link mates and supplementary alignments', linked, () => {
+      model.setUnit(linked ? 'read' : 'chain')
+    }),
+    toggleItem('Pileup connectors', model.showConnectors, flag => {
       model.setShowConnectors(flag)
     }),
-    bandMarkItem(model, 'Show read arcs', 'arc'),
-    bandMarkItem(model, 'Show read cloud', 'cloud'),
+    getSvChannelsMenuItem(model),
     ...(model.drawnReadConnections === 'off'
       ? []
       : [
-          toggleItem('Show ordinary pairs', model.showOrdinaryPairs, show => {
+          toggleItem('Ordinary pairs', model.showOrdinaryPairs, show => {
             model.setShowOrdinaryPairs(show)
           }),
         ]),
-    getSvChannelsMenuItem(model),
+    ...withSubHeader(
+      PAIR_BAND_LABEL,
+      radioItems(PAIR_BAND_OPTIONS, model.drawnReadConnections, mode => {
+        model.setDrawnReadConnections(mode)
+      }),
+    ),
   ]
   return {
     label: 'Read connections',

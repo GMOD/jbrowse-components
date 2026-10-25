@@ -58,7 +58,7 @@ export type BodyFill =
  * The read fields with a vocabulary or ramp of their own. A field that is also a facet dimension takes the facet's name, so
  * `facet` and `encoding.color` over it are one word; the insert-size fields are not
  * facet dimensions, since their band is sampled per region. There is no
- * `chainStrand`: a long read's inversion reads under View as pairs.
+ * `chainStrand`: a long read's inversion reads under Link mates and supplementary alignments.
  */
 export const COLOR_FIELDS = [
   'strand',

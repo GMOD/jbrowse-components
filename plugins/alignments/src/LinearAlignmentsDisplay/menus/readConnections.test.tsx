@@ -99,50 +99,64 @@ function checked(model: Model) {
 }
 
 describe('read connections menu', () => {
-  test('is checkboxes only, with no "?"', () => {
+  test('is checkboxes, then the Pair band radios, with no "?"', () => {
     const model = makeModel()
     model.drawnReadConnections = 'arc'
     const items = rows(model)
     expect(labelsOf(items)).toEqual([
-      'View as pairs / link supplementary alignments',
-      'Show pileup connectors',
-      'Show read arcs',
-      'Show read cloud',
-      'Show ordinary pairs',
-      'Show SV channels (pairs by orientation)',
+      'Link mates and supplementary alignments',
+      'Pileup connectors',
+      'SV channels (pairs by orientation)',
+      'Ordinary pairs',
+      'Pair band',
+      'None',
+      'Read arcs',
+      'Read cloud',
+    ])
+    const rowKinds = items.map(i => i.type)
+    expect(rowKinds).toEqual([
+      'checkbox',
+      'checkbox',
+      'checkbox',
+      'checkbox',
+      'subHeader',
+      'radio',
+      'radio',
+      'radio',
     ])
     expect(
       items.every(
-        i => 'checked' in i && !('helpText' in i) && staysOpenOnClick(i),
+        i =>
+          i.type === 'subHeader' || (!('helpText' in i) && staysOpenOnClick(i)),
       ),
     ).toBe(true)
   })
 
-  test('"View as pairs" toggles unit between read and chain', () => {
+  test('"Link mates" toggles unit between read and chain', () => {
     const model = makeModel()
-    click(rows(model), 'View as pairs')
+    click(rows(model), 'Link mates')
     expect(model.unit).toBe('chain')
-    click(rows(model), 'View as pairs')
+    click(rows(model), 'Link mates')
     expect(model.unit).toBe('read')
   })
 
-  // The two share a band, so ticking one unticks the other.
-  test('read arcs and the read cloud tick one at a time', () => {
+  test('the Pair band radios pick one of none, arcs and the cloud', () => {
     const model = makeModel()
-    click(rows(model), 'Show read arcs')
+    expect(checked(model)).toEqual(['None'])
+    click(rows(model), 'Read arcs')
     expect(model.drawnReadConnections).toBe('arc')
-    click(rows(model), 'Show read cloud')
+    click(rows(model), 'Read cloud')
     expect(model.drawnReadConnections).toBe('cloud')
-    expect(checked(model)).toEqual(['Show read cloud', 'Show ordinary pairs'])
-    click(rows(model), 'Show read cloud')
+    expect(checked(model)).toEqual(['Ordinary pairs', 'Read cloud'])
+    click(rows(model), 'None')
     expect(model.drawnReadConnections).toBe('off')
   })
 
-  test('"Show ordinary pairs" appears only while the band draws', () => {
+  test('"Ordinary pairs" appears only while the band draws', () => {
     const model = makeModel()
-    expect(labelsOf(rows(model))).not.toContain('Show ordinary pairs')
+    expect(labelsOf(rows(model))).not.toContain('Ordinary pairs')
     model.drawnReadConnections = 'cloud'
-    click(rows(model), 'Show ordinary pairs')
+    click(rows(model), 'Ordinary pairs')
     expect(model.showOrdinaryPairs).toBe(false)
   })
 })

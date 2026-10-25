@@ -621,7 +621,9 @@ describe('ordering controls in chain mode', () => {
     expect(display.canSortReads).toBe(false)
     const item = findMenuItem(display.trackMenuItems(), 'Sort by...')
     expect(item?.disabled).toBe(true)
-    expect(item?.disabledHelpText).toMatch(/View as pairs/)
+    expect(item?.disabledHelpText).toMatch(
+      /Link mates and supplementary alignments/,
+    )
   })
 
   test('the context menu drops its position-anchored sorts too', () => {

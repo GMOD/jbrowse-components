@@ -60,11 +60,11 @@ export const configVideos: VideoSpec[] = [
       },
       {
         type: 'waitForText',
-        text: 'View as pairs / link supplementary alignments',
+        text: 'Link mates and supplementary alignments',
       },
       {
         type: 'click',
-        text: 'View as pairs / link supplementary alignments',
+        text: 'Link mates and supplementary alignments',
       },
       { type: 'waitForAppSettled', timeout: 120000 },
       { type: 'delay', ms: 700 },
@@ -72,7 +72,7 @@ export const configVideos: VideoSpec[] = [
       { type: 'press', key: 'Escape' },
       {
         type: 'waitForText',
-        text: 'View as pairs / link supplementary alignments',
+        text: 'Link mates and supplementary alignments',
         hidden: true,
       },
       { type: 'waitForText', text: 'About track', hidden: true },

@@ -754,7 +754,7 @@ export default function stateModelFactory(
            */
           get sortReadsBlockedReason(): string | undefined {
             return self.unit === 'chain'
-              ? 'Chain rows are ordered by chain — turn off "View as pairs / link supplementary alignments" to sort reads'
+              ? 'Chain rows are ordered by chain — turn off "Link mates and supplementary alignments" to sort reads'
               : !self.showPileup
                 ? 'Turn on Show... → Pileup to sort reads'
                 : this.collapseSortBlockedReason
