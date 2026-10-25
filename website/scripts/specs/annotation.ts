@@ -25,5 +25,17 @@ export const annotationSpecs: ScreenshotSpec[] = [
     readyText: 'Tiberius gene predictions',
     readyTimeout: 90000,
     viewportHeight: 536,
+    // GENCODE labels its genes by accession, so the names the caption uses
+    // are pills under them
+    annotations: (
+      [
+        ['IL17REL', 'ENSG00000188263.11'],
+        ['TTLL8', 'ENSG00000138892.12'],
+      ] as const
+    ).map(([text, accession]) => ({
+      type: 'text' as const,
+      text,
+      anchor: { text: accession, dy: 50 },
+    })),
   },
 ]

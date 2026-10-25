@@ -601,14 +601,6 @@ function launchFromSelectionParts(): ScreenshotSpec[] {
     },
     {
       ...base,
-      name: 'multiway_synteny/ecoli_launch_dialog',
-      // MUI caps the dialog at viewport minus 64px and scrolls the rest; any
-      // shorter and the frame cuts off the action buttons
-      viewportHeight: 622,
-      actions: [...select, ...openDialog],
-    },
-    {
-      ...base,
       name: 'multiway_synteny/ecoli_launch_result',
       viewportHeight: 620,
       actions: [
@@ -2308,7 +2300,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
     name: 'multiway_synteny/ecoli_launch_from_selection',
     parts: [
       'multiway_synteny/ecoli_launch_selection',
-      'multiway_synteny/ecoli_launch_dialog',
       'multiway_synteny/ecoli_launch_result',
     ],
   },

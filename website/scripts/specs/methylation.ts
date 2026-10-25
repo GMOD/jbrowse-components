@@ -601,6 +601,17 @@ export const methylationSpecs: ScreenshotSpec[] = [
     readySelector: displayPainted('mark-display'),
     readyTimeout: 90000,
     viewportHeight: 725,
+    annotations: (
+      [
+        ['Haplotype 1', 'HP1'],
+        ['Haplotype 2', 'HP2'],
+      ] as const
+    ).map(([text, row]) => ({
+      type: 'text' as const,
+      text,
+      // in the lower half of each row, under its moving average
+      anchor: { text: row, alignX: 'right' as const, dx: 80, dy: 40 },
+    })),
   },
 
   {

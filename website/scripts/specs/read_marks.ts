@@ -12,6 +12,13 @@ import type {
 // track of its own.
 const CONFIG = 'https://jbrowse.org/demos/read_marks/config.json'
 const DELETION = 'chr20:32,925,000-32,955,000'
+// HGSV_90315 in the 1000 Genomes high-coverage SV callset
+const DELETION_SPAN = {
+  refName: 'chr20',
+  start: 32_937_680,
+  end: 32_941_583,
+  label: 'Deletion',
+}
 
 const geneTrack = {
   trackId: 'ncbi_refseq_hg38',
@@ -38,6 +45,7 @@ function readsSpec(
           type: 'LinearGenomeView',
           assembly: 'hg38',
           loc,
+          highlight: [DELETION_SPAN],
           tracks: [geneTrack, ...tracks],
         },
       ],

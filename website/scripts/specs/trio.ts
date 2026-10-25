@@ -263,6 +263,17 @@ export const trioSpecs: ScreenshotSpec[] = [
     }),
     readyText: 'chr1',
     readyTimeout: 60000,
+    annotations: (
+      [
+        ['Child', 'HG02024 HP0'],
+        ['Mother', 'HG02025 HP0'],
+        ['Father', 'HG02026 HP0'],
+      ] as const
+    ).map(([text, row]) => ({
+      type: 'text' as const,
+      text,
+      anchor: { text: row, alignX: 'right' as const, dx: 70, dy: 14 },
+    })),
   },
 
   {
