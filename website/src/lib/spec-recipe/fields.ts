@@ -1930,11 +1930,11 @@ export const trackFields: Record<string, FieldRecipe> = {
         : undefined
     }
     if (!(displayType && CANVAS_DISPLAYS.has(displayType))) {
-      return value === 'fit'
+      return value === 'fit' && !isAlignmentsOnlyField(displayType)
         ? { path: `${heightMenu(noun, displayType)} → ${FIT_TO_TRACK_LABEL}` }
-        : value === 'grow' || value === 'fixed'
+        : value === 'fit' || value === 'grow' || value === 'fixed'
           ? {
-              path: `${TRACK_MENU} → Advanced → Track height → ${value === 'grow' ? 'Autogrow' : 'Fixed'}`,
+              path: `${TRACK_MENU} → Advanced → Track height → ${value === 'fit' ? FIT_TO_TRACK_LABEL : value === 'grow' ? 'Autogrow' : 'Fixed'}`,
             }
           : undefined
     }

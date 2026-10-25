@@ -60,11 +60,11 @@ export {
   featureSpacingForHeight,
 } from './compactnessPresets.ts'
 
-// One radio group: the pixel-size presets, Custom, and fitting the read height
-// to the track. Fit derives the size, so no size reads as selected while
-// fitting, and picking one drops back to fixed (`setReadHeight`). How the track
-// absorbs overflow otherwise (autogrow) and the row cap sit in "Advanced",
-// from `getTrackSizingItems`.
+// One radio group of sizes: the pixel-size presets and Custom. The tick is the
+// configured size, which a fit to the track height overrides while it lasts;
+// picking a size drops back to fixed (`setReadHeight`). The height modes
+// (fixed, autogrow, fit) and the row cap sit in "Advanced", from
+// `getTrackSizingItems`.
 interface FeatureHeightModel {
   configuredReadHeight: number
   heightMode: HeightMode
@@ -77,7 +77,6 @@ export function getFeatureHeightMenuItem(
   noun: string,
   gate: ContentGate = {},
 ) {
-  const fit = model.heightMode === 'fit'
   const height = model.configuredReadHeight
   const matchesPreset = (preset: { height: number }) => height === preset.height
   return {
@@ -87,14 +86,14 @@ export function getFeatureHeightMenuItem(
     ...gate,
     subMenu: [
       ...PRESETS.map(preset =>
-        radioItem(preset.label, !fit && matchesPreset(preset), () => {
+        radioItem(preset.label, matchesPreset(preset), () => {
           model.setReadHeight(preset.height)
         }),
       ),
       {
         label: 'Custom...',
         type: 'radio' as const,
-        checked: !fit && !PRESETS.some(matchesPreset),
+        checked: !PRESETS.some(matchesPreset),
         keepMenuOpen: false,
         onClick: () => {
           // Seeded from the configured (fixed-mode) size, not the resolved
@@ -114,9 +113,6 @@ export function getFeatureHeightMenuItem(
           ])
         },
       },
-      radioItem(FIT_TO_TRACK_LABEL, fit, () => {
-        model.setHeightMode('fit')
-      }),
     ],
   }
 }
@@ -131,7 +127,7 @@ const TRACK_HEIGHT_OPTIONS: { value: HeightMode; label: string }[] = [
 
 /**
  * The track-sizing rows for "Advanced": the height mode as one radio group,
- * whose fit row is the one "Read height" also offers, and the row cap.
+ * and the row cap.
  * Autogrow is offered without content, since grow still fits the track to a
  * pileup-less stack (`growTargetHeight` collapses to the coverage bands); the
  * row cap only while there are rows.

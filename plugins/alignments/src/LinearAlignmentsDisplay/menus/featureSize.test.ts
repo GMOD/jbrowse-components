@@ -74,15 +74,14 @@ function checkedLabels(items: MenuItem[]) {
   )
 }
 
-// Fit derives the size, so it is the fifth choice of one radio group rather
-// than a mode in a second group beside the sizes.
-test('fit to track height is one more read height radio', () => {
+// The sizes alone: fitting to the track lives in Advanced → Track height, and
+// the configured size stays ticked through it
+test('Read height offers the sizes, and a size click ends a fit', () => {
   const { display } = createDisplay()
   const rows = () => getFeatureHeightMenuItem(display, 'read').subMenu
-  expect(rows()).toHaveLength(5)
-  clickMenuItem(rows(), FIT_TO_TRACK_LABEL)
-  expect(display.heightMode).toBe('fit')
-  expect(checkedLabels(rows())).toEqual([FIT_TO_TRACK_LABEL])
+  expect(rows()).toHaveLength(4)
+  display.setHeightMode('fit')
+  expect(checkedLabels(rows())).toEqual([COMPACTNESS_PRESETS.normal.label])
   clickMenuItem(rows(), COMPACTNESS_PRESETS.compact.label)
   expect(display.heightMode).toBe('fixed')
   expect(checkedLabels(rows())).toEqual([COMPACTNESS_PRESETS.compact.label])

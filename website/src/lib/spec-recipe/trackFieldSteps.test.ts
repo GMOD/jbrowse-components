@@ -216,9 +216,9 @@ test('read connections are the band checkboxes', () => {
   ).toEqual(['Track menu → Read connections → Show read arcs (unchecked)'])
 })
 
-test('alignments fit is a Read height radio and autogrow an Advanced checkbox', () => {
+test('alignments height modes are the Advanced → Track height radios', () => {
   expect(stepPaths('heightMode', 'fit', 'LinearAlignmentsDisplay')).toEqual([
-    'Track menu → Row height → Fit to track height',
+    'Track menu → Advanced → Track height → Fit to track height',
   ])
   expect(stepPaths('heightMode', 'grow', 'LinearAlignmentsDisplay')).toEqual([
     'Track menu → Advanced → Track height → Autogrow',
