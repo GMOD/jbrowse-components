@@ -472,13 +472,13 @@ export function getContextMenuItems(
         type: 'subMenu',
         subMenu: [
           {
-            label: 'Read strand',
+            label: 'Strand',
             onClick: () => {
               self.setSort({ field: 'strand', pos, refName })
             },
           },
           {
-            label: 'Base pair',
+            label: 'Base',
             onClick: () => {
               self.setSort({ field: 'base', pos, refName })
             },

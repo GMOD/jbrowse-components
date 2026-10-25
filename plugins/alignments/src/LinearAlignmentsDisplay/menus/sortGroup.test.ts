@@ -5,6 +5,7 @@ import type {
   LayoutOrder,
   SortColumn,
 } from '../../shared/types.ts'
+import type { RadioMenuItem } from '@jbrowse/core/ui'
 
 // A stub of the slice of the display model the sort menu reads/writes, so the
 // writes and the derived `checked` state are pinned without a real view.
@@ -20,8 +21,11 @@ function makeModel(init?: {
   }
 }
 
+// The radios alone: the center-line rows sit under a sub-header
 function radios(model: ReturnType<typeof makeModel>) {
-  return getSortMenuItem(model).subMenu
+  return getSortMenuItem(model).subMenu.filter(
+    (i): i is RadioMenuItem => 'type' in i && i.type === 'radio',
+  )
 }
 
 function radio(model: ReturnType<typeof makeModel>, label: string) {
@@ -37,13 +41,13 @@ function sorted(field: ColumnSortField): SortColumn {
 }
 
 const LABELS = [
-  'Start location',
+  'Start position',
   'Longest reads first',
   'Spliced reads first',
   'Split reads first',
   'SV evidence first',
-  'Read strand',
-  'Base pair',
+  'Strand',
+  'Base',
   'Mapping quality',
   'Pair orientation',
   'Tag...',
@@ -57,8 +61,8 @@ function checkedLabel(model: ReturnType<typeof makeModel>) {
 }
 
 describe('sort menu radio selection', () => {
-  test('default (no sort, position order) selects Start location', () => {
-    expect(checkedLabel(makeModel())).toEqual(['Start location'])
+  test('default (no sort, position order) selects Start position', () => {
+    expect(checkedLabel(makeModel())).toEqual(['Start position'])
   })
 
   test.each([
@@ -71,8 +75,8 @@ describe('sort menu radio selection', () => {
   })
 
   test.each([
-    ['strand', 'Read strand'],
-    ['base', 'Base pair'],
+    ['strand', 'Strand'],
+    ['base', 'Base'],
     ['mapq', 'Mapping quality'],
     ['pairOrientation', 'Pair orientation'],
     ['tags.HP', 'Tag (HP)...'],
@@ -83,10 +87,10 @@ describe('sort menu radio selection', () => {
   })
 
   test.each(['insertion', 'softclip', 'hardclip'] as const)(
-    'a context-menu %s sort keeps "Base pair" checked',
+    'a context-menu %s sort keeps "Base" checked',
     type => {
       expect(checkedLabel(makeModel({ sortColumn: sorted(type) }))).toEqual([
-        'Base pair',
+        'Base',
       ])
     },
   )
@@ -127,21 +131,26 @@ describe('curated modes', () => {
       getSortMenuItem(makeModel(), {
         ...opts,
         modes: [...opts.modes],
-      }).subMenu.map(i => i.label),
-    ).toEqual(['Start location', 'Longest features first', 'Feature strand'])
+      }).subMenu.map(i => ('label' in i ? i.label : '')),
+    ).toEqual([
+      'Start position',
+      'Longest features first',
+      'At the center line',
+      'Strand',
+    ])
   })
 
   // Mirrors the group-by radios, which tick "None" for a stored dimension they
   // don't offer: a blank radio group reads as a broken menu.
   test.each(['base', 'tags.HP'] as const)(
-    'a stored %s sort this menu does not offer falls back to Start location',
+    'a stored %s sort this menu does not offer falls back to Start position',
     type => {
       const item = getSortMenuItem(makeModel({ sortColumn: sorted(type) }), {
         ...opts,
         modes: [...opts.modes],
       })
       expect(item.subMenu.filter(i => i.checked).map(i => i.label)).toEqual([
-        'Start location',
+        'Start position',
       ])
     },
   )
@@ -159,7 +168,7 @@ describe('curated modes', () => {
 
 describe('sort menu writes', () => {
   test.each([
-    ['Start location', 'position'],
+    ['Start position', 'position'],
     ['Longest reads first', 'length'],
     ['Spliced reads first', 'spliced'],
     ['Split reads first', 'split'],
@@ -175,8 +184,8 @@ describe('sort menu writes', () => {
   // it has a column. Writing here instead would wipe the current ordering even
   // when the sort never lands (no valid center line).
   test.each([
-    ['Read strand', 'strand'],
-    ['Base pair', 'base'],
+    ['Strand', 'strand'],
+    ['Base', 'base'],
   ])('%s sorts at the center line without writing the slot', (label, type) => {
     const model = makeModel({ layoutOrder: 'length' })
     radio(model, label).onClick()

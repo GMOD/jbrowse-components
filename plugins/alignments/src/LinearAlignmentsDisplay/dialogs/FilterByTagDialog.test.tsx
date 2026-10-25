@@ -179,7 +179,7 @@ test('resetting leaves the read categories alone', () => {
 test('no read-category control is offered here', () => {
   renderDialog([{ field: 'split', equal: true }])
   expect(screen.queryByText('Read categories')).toBeNull()
-  expect(screen.queryByLabelText('Split alignments: Only')).toBeNull()
+  expect(screen.queryByLabelText('Split reads: Only')).toBeNull()
 })
 
 // One row per flag with a Require and an Exclude box, so the same flag can be

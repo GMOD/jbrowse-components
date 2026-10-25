@@ -281,8 +281,8 @@ deletion draws a gold arc. One across a tandem duplication draws a teal arc, the
 color of the pairs that span it, and with **Pileup connectors** on, a teal loop
 under its row where the read maps back over itself.
 
-**Group by → Split read (SA tag)** splits the pileup into two sections: reads
-with a supplementary alignment, and the rest. Together the two sections give the
+**Group by → Split reads** splits the pileup into two sections: reads with a
+supplementary alignment, and the rest. Together the two sections give the
 genotype directly from the pileup, independent of the caller's `GT` field: a
 locus where some reads invert and the rest run through unbroken is one inverted
 copy and one uninverted.

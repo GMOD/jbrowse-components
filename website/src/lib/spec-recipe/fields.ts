@@ -894,9 +894,9 @@ const ARC_COLORS: Record<string, string> = Object.fromEntries([
   ...ARC_COLOR_OPTIONS.map(o => [o.value, o.label]),
 ])
 
-// The alignments 'Sort by...' radios (menus/sortGroup.ts). The strand row is
-// titled from the track's noun, as the height submenus are.
-// Spelled as menus/sortGroup.ts builds each radio, noun included.
+// The alignments 'Sort by...' radios, spelled as menus/sortGroup.ts builds
+// each, noun included. The center-line rows sit under their own sub-header,
+// which a path does not name.
 function sortByLabel(field: string, noun: string) {
   return field === 'length'
     ? `Longest ${noun}s first`
@@ -905,9 +905,9 @@ function sortByLabel(field: string, noun: string) {
       : field === 'split'
         ? `Split ${noun}s first`
         : field === 'base'
-          ? 'Base pair'
+          ? 'Base'
           : field === 'strand'
-            ? `${capitalizeFirst(noun)} strand`
+            ? 'Strand'
             : field.startsWith('tags.')
               ? 'Tag...'
               : undefined

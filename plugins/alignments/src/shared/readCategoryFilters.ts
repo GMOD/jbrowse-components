@@ -48,9 +48,9 @@ export const READ_CATEGORIES = [
   },
   {
     key: 'alone',
-    noun: 'Reads alone in the window',
-    only: 'Only reads alone in the window',
-    exclude: 'Hide reads alone in the window',
+    noun: 'Reads with no mate in view',
+    only: 'Only reads with no mate in view',
+    exclude: 'Hide reads with no mate in view',
     helpText:
       'Reads with no other alignment of the same read in the window: no ' +
       'mate and no split or supplementary segment here. That takes in a ' +
@@ -63,9 +63,9 @@ export const READ_CATEGORIES = [
   },
   {
     key: 'split',
-    noun: 'Split alignments',
-    only: 'Only split alignments',
-    exclude: 'Hide split alignments',
+    noun: 'Split reads',
+    only: 'Only split reads',
+    exclude: 'Hide split reads',
     helpText:
       'Reads aligned in pieces — chimeric SV/breakpoint evidence: a read ' +
       'carrying an SA tag, which the aligner writes on every piece, the ' +

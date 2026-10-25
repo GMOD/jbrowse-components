@@ -192,10 +192,10 @@ test('sort by longest features first from the Sort by submenu', async () => {
 
     const display = view.tracks[0]!.displays[0]!
     // `length` is the synteny config default, so flip it off through "Start
-    // location" first and prove the radio brings it back.
+    // position" first and prove the radio brings it back.
     fireEvent.click(await screen.findByTestId('track_menu_icon', ...opts))
     fireEvent.click(await screen.findByText('Sort by...'))
-    fireEvent.click(await screen.findByText('Start location'))
+    fireEvent.click(await screen.findByText('Start position'))
     await waitFor(() => {
       expect(display.layoutOrder).toBe('position')
     }, delay)

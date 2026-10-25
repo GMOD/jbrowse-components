@@ -260,7 +260,7 @@ test("a filter list's entries are the rows that write them", () => {
       'LinearAlignmentsDisplay',
     ),
   ).toEqual([
-    'Track menu → Filter by... → Split alignments → Only split alignments',
+    'Track menu → Filter by... → Split reads → Only split reads',
     'Track menu → Filter by... → Min reads at a junction → 3',
     'Track menu → Filter by... → Non-canonical junctions → Hide non-canonical junctions',
   ])

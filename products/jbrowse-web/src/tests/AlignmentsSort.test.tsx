@@ -24,7 +24,7 @@ beforeEach(() => {
 const delay = { timeout: 30000 }
 const opts = [{}, delay]
 
-test('selects a sort, sort by base pair', async () => {
+test('selects a sort, sort by base', async () => {
   const { view } = await createView(config)
   view.setNewView(0.043688891869634636, 301762)
 
@@ -35,7 +35,7 @@ test('selects a sort, sort by base pair', async () => {
   fireEvent.click(await screen.findByTestId('track_menu_icon', ...opts))
 
   fireEvent.click(await screen.findByText('Sort by...'))
-  fireEvent.click(await screen.findByText('Base pair'))
+  fireEvent.click(await screen.findByText('Base'))
   const display1 = await findDisplayPainted('pileup-display', delay)
   expectCanvasMatch(findCanvasIn(display1), 0.1)
   await new Promise(resolve => setTimeout(resolve, 1000))

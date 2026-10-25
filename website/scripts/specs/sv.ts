@@ -705,7 +705,7 @@ export const svSpecs: ScreenshotSpec[] = [
     annotations: [
       {
         type: 'text',
-        text: 'Group by → Split read (SA tag)',
+        text: 'Group by → Split reads',
         fontSize: 18,
         anchor: { text: 'HG00151 Nanopore', alignX: 'right', dx: 16 },
       },

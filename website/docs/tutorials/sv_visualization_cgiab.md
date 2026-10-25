@@ -402,9 +402,9 @@ deletion.
 <Figure caption="The SV inspector after searching for SV_85, a heterozygous CUZD1 deletion, and the linear genome view its location link opens: the <DEL> ALT allele over the ClinVar CNV and NCBI RefSeq gene tracks." src="/img/sv_cgiab/deletion_sv_inspector_search.png" />
 
 Open **NCBI RefSeq genes (hg38)** from the hosted config and the tumor PacBio
-HiFi reads, then set **Read height → Compact** and **Sort by... → Base pair** in
-the reads' track menu and center the deletion. **Show... → Center line** in the
-view menu helps line up the breakpoint.
+HiFi reads, then set **Read height → Compact** and **Sort by... → Base** in the
+reads' track menu and center the deletion. **Show... → Center line** in the view
+menu helps line up the breakpoint.
 
 <Figure caption="Tumor HiFi reads at compact height, sorted by base pair at the deletion." src="/img/sv_cgiab/deletion_linear_view.png" />
 

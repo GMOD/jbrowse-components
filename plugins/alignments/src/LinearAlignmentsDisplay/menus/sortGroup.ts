@@ -1,6 +1,7 @@
 import { lazy } from 'react'
 
-import { capitalizeFirst, getDialogHost } from '@jbrowse/core/util'
+import { withSubHeader } from '@jbrowse/core/ui/menuItems'
+import { getDialogHost } from '@jbrowse/core/util'
 import SwapVertIcon from '@mui/icons-material/SwapVert'
 
 import { TAG_FIELD_PREFIX, fieldTag } from '../../shared/facetLabels.ts'
@@ -31,20 +32,19 @@ interface SortMenuModel {
   sortAtCenterLine: (field: ColumnSortField) => void
 }
 
-// One `sort` slot, so a single radio group. "Start location" is the unsorted
+// One `sort` slot, so a single radio group. "Start position" is the unsorted
 // default, so it doubles as the reset — no separate "Clear".
 //
 // Strand / base pair / tag anchor on the center-line column, which
 // `sortAtCenterLine` reveals when applied; a sort that never lands (no valid
 // center line, a cancelled tag dialog) leaves the slot alone. Interbase types
-// from the context menu's "sort at position" keep "Base pair" checked.
+// from the context menu's "sort at position" keep "Base" checked.
 //
 // Callers pick the applicable modes and the label noun (like colorFieldOptions):
-// alignments takes every mode with 'read'; LGVSyntenyDisplay drops base pair /
+// alignments takes every mode with 'read'; LGVSyntenyDisplay drops base /
 // tag — a PAF block has neither per-base sequence nor SAM tags — and uses
-// 'feature'. The noun is held lower-case because it also lands mid-label
-// ("Longest reads first", "Spliced reads first", "Split reads first"); rows that lead with it capitalize through
-// `capitalizeFirst`.
+// 'feature'. The noun lands mid-label, so it is held lower-case ("Longest
+// reads first", "Spliced reads first", "Split reads first").
 
 export type SortMode =
   | LayoutOrder
@@ -66,6 +66,16 @@ const ALL_SORT_MODES: SortMode[] = [
   'pairOrientation',
   'tag',
 ]
+
+// The modes that order the reads by what they hold at the center line, under
+// their own sub-header; the rest order the whole pileup.
+const CENTER_LINE_MODES = new Set<SortMode>([
+  'strand',
+  'base',
+  'mapq',
+  'pairOrientation',
+  'tag',
+])
 
 function getSortMode(model: SortMenuModel): SortMode {
   const field = model.sortColumn?.field
@@ -119,7 +129,7 @@ export function getSortMenuItem(
     onClick,
   })
   const items: Record<SortMode, RadioMenuItem> = {
-    position: radio('position', 'Start location', () => {
+    position: radio('position', 'Start position', () => {
       model.setSort('position')
     }),
     length: radio('length', `Longest ${noun}s first`, () => {
@@ -134,10 +144,10 @@ export function getSortMenuItem(
     svSignal: radio('svSignal', 'SV evidence first', () => {
       model.setSort('svSignal')
     }),
-    strand: radio('strand', `${capitalizeFirst(noun)} strand`, () => {
+    strand: radio('strand', 'Strand', () => {
       model.sortAtCenterLine('strand')
     }),
-    base: radio('base', 'Base pair', () => {
+    base: radio('base', 'Base', () => {
       model.sortAtCenterLine('base')
     }),
     mapq: radio('mapq', 'Mapping quality', () => {
@@ -163,7 +173,13 @@ export function getSortMenuItem(
     icon: SwapVertIcon,
     disabled: opts?.disabledHelpText !== undefined,
     disabledHelpText: opts?.disabledHelpText,
-    subMenu: modes.map(m => items[m]),
+    subMenu: [
+      ...modes.filter(m => !CENTER_LINE_MODES.has(m)).map(m => items[m]),
+      ...withSubHeader(
+        'At the center line',
+        modes.filter(m => CENTER_LINE_MODES.has(m)).map(m => items[m]),
+      ),
+    ],
   }
 }
 

@@ -208,8 +208,8 @@ alignment (the second piece of the split read) on chr9. In the track menu:
 
 - **Read connections → Pileup connectors** joins the two across the region
   divider.
-- **Filter by... → Split alignments → Only split alignments** drops every read
-  that stays on one chromosome.
+- **Filter by... → Split reads → Only split reads** drops every read that stays
+  on one chromosome.
 - **Read connections → Read arcs** adds a band under the coverage with one arc
   per junction, thicker where more reads support it. An arc needs both ends in
   view: the right-hand window gets one arc and the intron 1 window two, one at

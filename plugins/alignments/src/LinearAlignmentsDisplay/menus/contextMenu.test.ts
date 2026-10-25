@@ -215,7 +215,7 @@ test('sort still fires when the hit is cleared before the click', () => {
 
 // A deletion/skip reports `position` as the op's START, which for a 5kb
 // deletion or a 100kb intron can be off screen — and it disagreed with the read
-// menu's own "Sort by ▸ Base pair" in the same menu, which has always meant the
+// menu's own "Sort by ▸ Base" in the same menu, which has always meant the
 // clicked column. A base-pair sort anchors on the column.
 describe('a gap cigar hit sorts at the clicked column, not the gap start', () => {
   test('deletion', () => {
@@ -248,7 +248,7 @@ describe('a gap cigar hit sorts at the clicked column, not the gap start', () =>
 
   // The two "sort by base pair" rows a gap right-click puts in one menu — the
   // gap submenu's and the read's — must now name the same base.
-  test('agrees with the read menu Sort by ▸ Base pair', () => {
+  test('agrees with the read menu Sort by ▸ Base', () => {
     const model = makeModel({
       cigarHit: {
         type: 'deletion',
@@ -262,7 +262,7 @@ describe('a gap cigar hit sorts at the clicked column, not the gap start', () =>
     const items = run(model)
     firstSubMenuItem(items[0]).onClick()
     findSubMenu(items, 'Sort by...')
-      .find(i => i.label === 'Base pair')!
+      .find(i => i.label === 'Base')!
       .onClick()
     expect(model.sortCalls).toEqual([
       ['base', 30000, 'ctgA'],
@@ -399,14 +399,10 @@ test('a read hit offers a "Sort by" submenu anchored at the clicked column', () 
     genomicPos: 150,
   })
   const sortBy = findSubMenu(run(model), 'Sort by...')
-  expect(sortBy.map(i => i.label)).toEqual([
-    'Read strand',
-    'Base pair',
-    'Tag...',
-  ])
+  expect(sortBy.map(i => i.label)).toEqual(['Strand', 'Base', 'Tag...'])
 
-  sortBy.find(i => i.label === 'Read strand')!.onClick()
-  sortBy.find(i => i.label === 'Base pair')!.onClick()
+  sortBy.find(i => i.label === 'Strand')!.onClick()
+  sortBy.find(i => i.label === 'Base')!.onClick()
   expect(model.sortCalls).toEqual([
     ['strand', 150, 'ctgA'],
     ['base', 150, 'ctgA'],
@@ -419,7 +415,7 @@ test('the read "Sort by" fires after the block is cleared (captured pos/refName)
     genomicPos: 150,
   })
   const sortBy = findSubMenu(run(model), 'Sort by...')
-  const strand = sortBy.find(i => i.label === 'Read strand')!
+  const strand = sortBy.find(i => i.label === 'Strand')!
   model.contextMenuHit = undefined
   strand.onClick()
   expect(model.sortCalls).toEqual([['strand', 150, 'ctgA']])
