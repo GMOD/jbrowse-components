@@ -105,20 +105,18 @@ assembly:
 
 **File → Open track...** also opens the file by URL and infers the `.bai`.
 
-**Color by... → Per-base coloring → Modifications** in the track menu paints
-each read with its 5mC calls, in one of two modes:
+**Color by...** in the track menu paints each read with its 5mC calls, in one of
+two modes:
 
-- **One color per modification type** paints the positions the MM tag reports as
-  modified
-- **One color per type, plus low-probability & unmodified in blue** (IGV's
-  "2-color" scheme) also fills in every CpG the tag left implicit, so an
-  unmethylated region is solid blue
+- **Modifications** paints the positions the MM tag reports as modified
+- **Modifications, unmodified in blue** (IGV's "2-color" scheme) also fills in
+  every CpG the tag left implicit, so an unmethylated region is solid blue
 
 The
 [alignments track guide](/docs/user_guides/alignments_track#modifications-and-methylation)
-covers both modes, the probability threshold, and the cytosine-context submenu.
+covers both modes and the probability and cytosine-context filters.
 
-<Video src="/media/methylation/open_modbam.mp4" caption="The modBAM opened by URL and colored from its track menu: Color by..., Modifications, and the two-color mode." />
+<Video src="/media/methylation/open_modbam.mp4" caption="The modBAM opened by URL and colored from its track menu with Color by... → Modifications, unmodified in blue." />
 
 <Figure caption="HG002 ONT reads over the SNRPN CpG island in both modification color modes. The bottom mode fills every unmarked CpG in blue." src="/img/methylation/hg002_snrpn_mod_modes.png" links="Modified only=methylation/hg002_snrpn_marked_only,Every CpG=methylation/hg002_snrpn_fill_unmarked" />
 

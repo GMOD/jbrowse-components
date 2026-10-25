@@ -1,9 +1,13 @@
-import { isValidElement } from 'react'
-
 import { resolveSubMenu, staysOpenOnClick } from '@jbrowse/core/ui'
 
 import { basesFilterOf, withBasesFields } from '../../shared/basesFilter.ts'
 import { colorFieldOptions } from '../../shared/colorFieldOptions.ts'
+import {
+  BISULFITE_LABEL,
+  BISULFITE_TWO_COLOR_LABEL,
+  MODIFICATIONS_LABEL,
+  MODIFICATIONS_TWO_COLOR_LABEL,
+} from './baseLayerLabels.ts'
 import { getColorByMenuItem } from './colorBy.ts'
 
 import type {
@@ -84,7 +88,7 @@ function subMenuOf(item: MenuItem | undefined) {
 }
 
 // Flatten the Color by... menu so the field radios and those nested under
-// "Paired end" and "Per-base coloring" are reachable by label. These specs describe the
+// "Paired end" are reachable by label. These specs describe the
 // alignments display's menu, which opts into every section — a caller that opts
 // out is covered by the curation tests below.
 function allItems(
@@ -150,8 +154,8 @@ describe('color by menu', () => {
   })
 })
 
-// A ready display carrying the given modification types, so the "Color by
-// modifications" submenu is built rather than the loading placeholder.
+// A ready display carrying the given modification types, so the modification
+// radios are built rather than the loading placeholder.
 function makeModModel(types = ['m', 'h']) {
   const model = makeModel()
   model.modificationsReady = true
@@ -167,37 +171,24 @@ function clickRadio(model: Model, label: string) {
   item.onClick({})
 }
 
-// The bisulfite rows by name: "CHG" also names a cytosine context in the
-// modifications submenu.
-function bisulfiteRow(model: Model, label: string) {
-  return subMenuOf(byLabel(model, 'Bisulfite / EM-seq')).find(
-    i => 'label' in i && i.label === label,
-  )
+function isChecked(model: Model, label: string) {
+  const item = byLabel(model, label)
+  return !!item && 'checked' in item && item.checked
 }
 
-function clickBisulfite(model: Model, label: string) {
-  const item = bisulfiteRow(model, label)
-  if (!item || !('onClick' in item)) {
-    throw new Error(`no clickable bisulfite "${label}"`)
-  }
-  item.onClick({})
-}
+const BY_TYPE = MODIFICATIONS_LABEL
+const TWO_COLOR = MODIFICATIONS_TWO_COLOR_LABEL
 
-const BY_TYPE = 'One color per modification type'
-const TWO_COLOR =
-  'One color per type, plus low-probability & unmodified in blue'
-
-describe('color by modifications menu', () => {
-  const controls = [BY_TYPE, TWO_COLOR, 'Probability threshold']
-
+describe('color by modifications radios', () => {
   test.each([false, true])(
-    'shows the same controls in either view (unmodified %s)',
+    'both views are offered either way (unmodified %s)',
     unmodified => {
       const model = makeModModel()
       drawing(model, 'modifications', { unmodified })
-      for (const label of controls) {
-        expect(byLabel(model, label)).toBeTruthy()
-      }
+      expect([isChecked(model, BY_TYPE), isChecked(model, TWO_COLOR)]).toEqual([
+        !unmodified,
+        unmodified,
+      ])
     },
   )
 
@@ -206,232 +197,55 @@ describe('color by modifications menu', () => {
     const filter = [
       { field: 'probability', gte: 0.4 },
       { field: 'code', oneOf: ['m'] },
+      { field: 'context', oneOf: ['CHG'] },
     ]
     drawing(model, 'modifications', { filter })
-    model.setBases({ show: false })
-    clickRadio(model, BY_TYPE)
-    expect(model.bases.filter).toEqual(filter)
-
-    clickBisulfite(model, 'CHG')
+    clickRadio(model, BISULFITE_LABEL)
     expect(model.bases).toEqual({
       show: true,
       field: 'bisulfite',
       unmodified: false,
-      filter: [...filter, { field: 'context', oneOf: ['CHG'] }],
+      filter,
     })
     clickRadio(model, BY_TYPE)
-    expect(model.bases.filter).toEqual([
-      ...filter,
-      { field: 'context', oneOf: ['CHG'] },
-    ])
+    expect(model.bases.filter).toEqual(filter)
   })
 
-  // One `unmodified` member serves both layers: bisulfite's "Show
-  // unmethylated" reads it and a context pick leaves it be, so the
-  // methylation view survives a visit to bisulfite.
-  test('the fill view comes back after bisulfite, and bisulfite reads it as on', () => {
-    const model = makeModModel(['m', 'h'])
-    drawing(model, 'modifications', { unmodified: true })
-    clickBisulfite(model, 'CHG')
-    const unmethylated = bisulfiteRow(model, 'Show unmethylated (blue)')
-    expect(
-      unmethylated && 'checked' in unmethylated && unmethylated.checked,
-    ).toBe(true)
-    clickRadio(model, TWO_COLOR)
-    expect(model.bases.unmodified).toBe(true)
-
-    clickBisulfite(model, 'CHH')
-    clickBisulfite(model, 'Show unmethylated (blue)')
-    expect(model.bases.unmodified).toBe(false)
-  })
-
-  test.each([['m', 'h'], ['a']])(
-    'the 2-color radio shows the unmodified side, whatever the data (%s)',
-    (...types) => {
-      const model = makeModModel(types)
-      drawing(model, 'modifications')
-      clickRadio(model, TWO_COLOR)
-      expect(model.baseLayer).toMatchObject({
-        field: 'modifications',
-        unmodified: true,
-      })
-    },
-  )
-
-  test('the fill view reads as the "2-color" radio, not a separate row', () => {
-    const model = makeModModel()
-    drawing(model, 'modifications', { unmodified: true })
-    const prob = byLabel(model, TWO_COLOR)
-    expect(prob && 'checked' in prob && prob.checked).toBe(true)
-  })
-
-  test('switching views preserves refinements (cytosine context)', () => {
-    const model = makeModModel()
-    const filter = [{ field: 'context', oneOf: ['CHH'] }]
-    drawing(model, 'modifications', { unmodified: true, filter })
-    clickRadio(model, BY_TYPE)
-    expect(model.bases).toMatchObject({ unmodified: false, filter })
-  })
-
-  function tickModType(model: ReturnType<typeof makeModModel>, label: string) {
-    const item = subMenuOf(byLabel(model, 'Modification types')).find(
-      i => 'label' in i && i.label === label,
-    )
-    if (!item || !('onClick' in item)) {
-      throw new Error(`no ${label} checkbox`)
-    }
-    item.onClick({})
-  }
-
-  test('every detected type starts ticked', () => {
-    const model = makeModModel(['m', 'h'])
-    drawing(model, 'modifications')
-    expect(
-      subMenuOf(byLabel(model, 'Modification types')).map(i => [
-        'label' in i ? i.label : '',
-        'checked' in i ? i.checked : undefined,
-      ]),
-    ).toEqual([
-      ['5mC', true],
-      ['5hmC', true],
-    ])
-  })
-
-  test('unticking one type leaves the rest drawn', () => {
-    const model = makeModModel(['m', 'h', 'a'])
-    drawing(model, 'modifications')
-    tickModType(model, '5hmC')
-    expect(model.bases.filter).toEqual([{ field: 'code', oneOf: ['m', 'a'] }])
-  })
-
-  test('types are independent — two can be unticked, unlike the old radio', () => {
-    const model = makeModModel(['m', 'h', 'a'])
-    drawing(model, 'modifications')
-    tickModType(model, '5hmC')
-    tickModType(model, '6mA')
-    expect(model.bases.filter).toEqual([{ field: 'code', oneOf: ['m'] }])
-  })
-
-  test('re-ticking every type writes no code, so types found later stay visible', () => {
-    const model = makeModModel(['m', 'h'])
-    drawing(model, 'modifications', {
-      filter: [{ field: 'code', oneOf: ['m'] }],
-    })
-    tickModType(model, '5hmC')
-    expect(model.bases.filter).toEqual([])
-  })
-
-  // no code entry draws every type, so the layer goes off rather than
-  // silently drawing all
-  test('unticking the last type turns the layer off', () => {
-    const model = makeModModel(['m', 'h'])
-    drawing(model, 'modifications', {
-      filter: [{ field: 'code', oneOf: ['m'] }],
-    })
-    tickModType(model, '5mC')
-    expect(model.baseLayer).toBeUndefined()
-  })
-
-  test('the per-type filter is hidden when only one type is detected', () => {
-    const model = makeModModel(['m'])
-    drawing(model, 'modifications')
-    expect(byLabel(model, 'Modification types')).toBeFalsy()
-  })
-
-  // A refinement writes the filter alone, so one reachable under bisulfite
-  // would change what the modifications layer draws when next picked.
   test.each([
-    'Modification types',
-    'Probability threshold',
-    'Cytosine context',
-  ])('%s is revealed only while the modifications field is active', label => {
+    [BY_TYPE, 'modifications', false],
+    [TWO_COLOR, 'modifications', true],
+    [BISULFITE_LABEL, 'bisulfite', false],
+    [BISULFITE_TWO_COLOR_LABEL, 'bisulfite', true],
+  ] as const)('%s draws %s, unmodified %s', (label, field, unmodified) => {
     const model = makeModModel(['m', 'h'])
-    drawing(model, 'bisulfite')
-    expect(byLabel(model, label)).toBeFalsy()
-
-    drawing(model, 'modifications')
-    expect(byLabel(model, label)).toBeTruthy()
+    clickRadio(model, label)
+    expect(model.baseLayer).toMatchObject({ field, unmodified })
+    expect(isChecked(model, label)).toBe(true)
   })
 
-  // The threshold is the shared makeSizeMenu row, so assert through its props.
-  function thresholdSlider(model: Model) {
-    const item = byLabel(model, 'Probability threshold')
-    if (!item || !('render' in item)) {
-      throw new Error('no threshold slider')
-    }
-    // makeSizeMenu renders the row through `lazy()`, so `render()` hands back a
-    // Suspense boundary whose only child is the row — see ui/makeSizeMenu.tsx
-    const boundary = item.render(() => {})
-    const rendered = isValidElement(boundary)
-      ? (boundary.props as { children?: unknown }).children
-      : undefined
-    if (!isValidElement(rendered)) {
-      throw new Error('threshold slider did not render')
-    }
-    return rendered.props as {
-      onChange: (v: number) => void
-      onReset: () => void
-      isDefault: boolean
-      commitOnRelease: boolean
-    }
-  }
-
-  test('the threshold slider sits inline in Modifications, writes a probability floor, and resets', () => {
+  test('one radio in the per-base group reads as ticked', () => {
     const model = makeModModel(['m', 'h'])
-    drawing(model, 'modifications')
-    const { onChange, onReset, isDefault, commitOnRelease } =
-      thresholdSlider(model)
-    expect(isDefault).toBe(true)
-    expect(commitOnRelease).toBe(true)
-    onChange(80)
-    expect(model.bases.filter).toEqual([{ field: 'probability', gte: 0.8 }])
-    onReset()
-    expect(model.bases.filter).toEqual([])
-  })
-
-  test('a gt floor at the default threshold is not the default, and resets to it', () => {
-    const model = makeModModel(['m', 'h'])
-    drawing(model, 'modifications', {
-      filter: [{ field: 'probability', gt: 0.1 }],
-    })
-    const { onReset, isDefault } = thresholdSlider(model)
-    expect(isDefault).toBe(false)
-    onReset()
-    expect(model.bases.filter).toEqual([])
-  })
-
-  test('a floor the slider rounds to the default is not the default', () => {
-    const model = makeModModel(['m', 'h'])
-    drawing(model, 'modifications', {
-      filter: [{ field: 'probability', gte: 0.10004 }],
-    })
-    expect(thresholdSlider(model).isDefault).toBe(false)
-  })
-
-  test('cytosine context is shown only for cytosine methylation data', () => {
-    const cytosine = makeModModel(['m', 'h'])
-    drawing(cytosine, 'modifications')
-    expect(byLabel(cytosine, 'Cytosine context')).toBeTruthy()
-
-    const other = makeModModel(['a'])
-    drawing(other, 'modifications')
-    expect(byLabel(other, 'Cytosine context')).toBeFalsy()
+    drawing(model, 'bisulfite', { unmodified: true })
+    expect(
+      [BY_TYPE, TWO_COLOR, BISULFITE_LABEL, BISULFITE_TWO_COLOR_LABEL].filter(
+        l => isChecked(model, l),
+      ),
+    ).toEqual([BISULFITE_TWO_COLOR_LABEL])
   })
 
   // Detection is per-fetch volatile state, so a track colored by modifications
-  // can land on a region whose reads carry no MM/ML calls. Dropping the submenu
-  // then left the whole Color by... menu with nothing checked.
-  test('the submenu stays while it is the active field, with nothing detected', () => {
+  // can land on a region whose reads carry no MM/ML calls. Dropping the radios
+  // then left the per-base group with nothing checked.
+  test('the radios stay while modifications is the active field, with nothing detected', () => {
     const model = makeModModel([])
     drawing(model, 'modifications')
-    expect(byLabel(model, BY_TYPE)).toBeTruthy()
-    expect(allItems(model).some(i => 'checked' in i && i.checked)).toBe(true)
+    expect(isChecked(model, BY_TYPE)).toBe(true)
   })
 
-  test('a ready display with no detected types and another field active omits it', () => {
+  test('a ready display with no detected types and another field active omits them', () => {
     const model = makeModModel([])
     expect(byLabel(model, BY_TYPE)).toBeFalsy()
-    expect(byLabel(model, 'Bisulfite / EM-seq')).toBeTruthy()
+    expect(byLabel(model, BISULFITE_LABEL)).toBeTruthy()
   })
 })
 
@@ -451,17 +265,17 @@ describe('color by menu curation', () => {
   test('paired-end and modification sections are absent unless opted into', () => {
     const labels = deepLabelsFor({})
     expect(labels).not.toContain('Paired end')
-    expect(labels).not.toContain('Bisulfite / EM-seq')
+    expect(labels).not.toContain(BISULFITE_LABEL)
     expect(labels).not.toContain('Tag...')
   })
 
   test('each section is opted into independently', () => {
     expect(deepLabelsFor({ includePairedEnd: true })).toContain('Paired end')
     expect(deepLabelsFor({ includePairedEnd: true })).not.toContain(
-      'Bisulfite / EM-seq',
+      BISULFITE_LABEL,
     )
     expect(deepLabelsFor({ includeModifications: true })).toContain(
-      'Bisulfite / EM-seq',
+      BISULFITE_LABEL,
     )
     expect(deepLabelsFor({ includeModifications: true })).not.toContain(
       'Paired end',
@@ -485,21 +299,27 @@ describe('color by menu curation', () => {
     ).toEqual(['Normal', 'Query name', 'Solid color...'])
   })
 
-  // Everything behind the field is already wired for a BAM (the worker reads
-  // the mate refName off next_ref, readFillColors bakes it, the legend names its
-  // empty bucket "No mate"); it just had no row to reach it from.
-  // One radio group in the top menu, so one row reads as ticked: the per-base
-  // layer's radios sit in their own submenu.
-  test('per-base coloring is a submenu, not a second radio group', () => {
+  // The per-base layer draws over the read fill, so Color by... holds two
+  // radio groups, each with one row ticked, the second under its sub-header.
+  test('per-base coloring is a second radio group under a sub-header', () => {
     const model = makeModel()
     drawing(model, 'modifications')
     const top = subMenuOf(
       getColorByMenuItem(model, { includeModifications: true }),
     )
-    expect(top.filter(i => 'checked' in i && i.checked)).toHaveLength(1)
-    expect(top.some(i => i.type === 'subHeader')).toBe(false)
+    const header = top.findIndex(
+      i => i.type === 'subHeader' && i.label === 'Per-base coloring',
+    )
+    const ticked = (items: MenuItem[]) =>
+      items.filter(i => 'checked' in i && i.checked).length
+    expect(header).toBeGreaterThan(0)
+    expect(ticked(top.slice(0, header))).toBe(1)
+    expect(ticked(top.slice(header))).toBe(1)
   })
 
+  // Everything behind the field is already wired for a BAM (the worker reads
+  // the mate refName off next_ref, readFillColors bakes it, the legend names its
+  // empty bucket "No mate"); it just had no row to reach it from.
   test('mate chromosome is reachable from the paired-end submenu', () => {
     const model = makeModel()
     // clickRadio throws if the row isn't there or isn't clickable, so reaching

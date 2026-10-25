@@ -15,6 +15,12 @@ import {
 } from '../../../../plugins/alignments/src/shared/colorFieldDefs.ts'
 import { READ_CATEGORIES } from '../../../../plugins/alignments/src/shared/readCategoryFilters.ts'
 import { cytosineContextOptions } from '../../../../plugins/alignments/src/shared/modificationData.ts'
+import {
+  BISULFITE_LABEL,
+  BISULFITE_TWO_COLOR_LABEL,
+  MODIFICATIONS_LABEL,
+  MODIFICATIONS_TWO_COLOR_LABEL,
+} from '../../../../plugins/alignments/src/LinearAlignmentsDisplay/menus/baseLayerLabels.ts'
 import { isJexl } from '../../../../packages/core/src/util/jexlStrings.ts'
 // Straight from core, not through plugins/variants' re-export of it: that
 // module pulls in variantTopBands.ts -> the whole plugins/canvas entrypoint ->
@@ -147,25 +153,19 @@ function scaleOf(channel: Record<string, unknown> | undefined) {
 }
 
 // A color field's registry `menu.label` doubles as the text on its menu row only for
-// `kind: 'radio'`. The three `kind: 'special'` fields each open a submenu the
-// registry spells differently — it names them for the legend, not the menu — so
-// the "imported, cannot drift" guarantee covering the rest of this table stops
-// here and these are verified by hand instead: 'Tag...' from tagItem
-// (menus/colorBy.ts), 'Modifications' from modificationsMenu.ts, and
-// 'Bisulfite / EM-seq' from bisulfiteMenu.ts.
+// `kind: 'radio'`. 'Tag...' opens a dialog the registry spells differently (it
+// names the field for the legend), so it is verified by hand against tagItem
+// (menus/colorBy.ts).
 const SPECIAL_COLOR_MENUS: Record<string, string> = {
   tag: 'Tag...',
-  modifications: 'Modifications',
-  bisulfite: 'Bisulfite / EM-seq',
 }
 
-// The two radios inside the Modifications submenu (modificationsMenu.ts),
-// which `pileup.bases.unmodified.show` picks between, and the bisulfite
-// submenu's checkbox it ticks.
-const MODIFICATION_BY_TYPE = 'One color per modification type'
-const MODIFICATION_TWO_COLOR =
-  'One color per type, plus low-probability & unmodified in blue'
-const BISULFITE_UNMODIFIED = 'Show unmethylated (blue)'
+// The methylation layers' radio pairs, which `pileup.bases.unmodified.show`
+// picks between.
+const BASE_LAYER_RADIOS = {
+  modifications: [MODIFICATIONS_LABEL, MODIFICATIONS_TWO_COLOR_LABEL],
+  bisulfite: [BISULFITE_LABEL, BISULFITE_TWO_COLOR_LABEL],
+} as const
 
 // The members a spec's `encoding.color` leaves out, so the field a recipe
 // reads goes through the display's own setting → encoding → kind path rather
@@ -224,9 +224,8 @@ function alignmentsColorStep(value: unknown): FieldStep | undefined {
   }
 }
 
-// The alignments displays' `pileup.bases`: the per-base layer's row in the
-// same Color by... menu. The two modification rows are submenus, whose radio
-// or checkbox `unmodified` settles.
+// The alignments displays' `pileup.bases`: the per-base layer's radio in the
+// same Color by... menu, and the Filter by... rows its filter narrows.
 const basesStep: FieldRecipe = value => {
   const bases = asRecord(value)
   const color = channelOf(asRecord(bases?.encoding)?.color)
@@ -235,46 +234,33 @@ const basesStep: FieldRecipe = value => {
   if (!field) {
     return undefined
   }
-  const { menu } = COLOR_FIELD_DEFS[field]
-  const unmodified = asRecord(bases?.unmodified)?.show
+  const unmodified = asRecord(bases?.unmodified)?.show === true
   const filter = Array.isArray(bases?.filter) ? bases.filter.map(asRecord) : []
   const contexts = filter.find(p => p?.field === 'context')?.oneOf
-  // The bisulfite submenu leads with its cytosine-context radios, whose labels
-  // are importable ('CpG' is not the 'CG' the spec stores).
+  // The context radios' labels are importable ('CpG' is not the 'CG' the spec
+  // stores).
   const context = Array.isArray(contexts)
     ? cytosineContextOptions.find(o => o.value === asString(contexts[0]))
     : undefined
+  const label =
+    field === 'modifications' || field === 'bisulfite'
+      ? BASE_LAYER_RADIOS[field][unmodified ? 1 : 0]
+      : COLOR_FIELD_DEFS[field].menu.label
   return [
     {
-      path: `${TRACK_MENU} → Color by... → ${SPECIAL_COLOR_MENUS[field] ?? menu.label}`,
+      path: `${TRACK_MENU} → Color by... → ${label}`,
       note:
         field === 'modifications'
-          ? filter.some(p => p?.field === 'code')
-            ? 'Needs MM/ML modification tags in your BAM/CRAM. This figure also narrows the drawn types under Modifications → Modification types.'
-            : 'Needs MM/ML modification tags in your BAM/CRAM.'
+          ? 'Needs MM/ML modification tags in your BAM/CRAM.'
           : undefined,
     },
+    ...(field === 'modifications' && filter.some(p => p?.field === 'code')
+      ? [{ path: `${TRACK_MENU} → Filter by... → Modification types` }]
+      : []),
     ...(context
       ? [
           {
-            path: `${TRACK_MENU} → Color by... → Per-base coloring → Bisulfite / EM-seq → ${context.label}`,
-            note: 'Under the bisulfite color field only.',
-          },
-        ]
-      : []),
-    ...(field === 'modifications' && typeof unmodified === 'boolean'
-      ? [
-          {
-            path: `${TRACK_MENU} → Color by... → Per-base coloring → Modifications → ${
-              unmodified ? MODIFICATION_TWO_COLOR : MODIFICATION_BY_TYPE
-            }`,
-          },
-        ]
-      : []),
-    ...(field === 'bisulfite' && unmodified === true
-      ? [
-          {
-            path: `${TRACK_MENU} → Color by... → Per-base coloring → Bisulfite / EM-seq → ${BISULFITE_UNMODIFIED}`,
+            path: `${TRACK_MENU} → Filter by... → Cytosine context → ${context.label}`,
           },
         ]
       : []),

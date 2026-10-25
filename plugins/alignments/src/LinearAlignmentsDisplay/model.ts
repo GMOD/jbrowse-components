@@ -179,6 +179,7 @@ import {
 } from './lanes.ts'
 import {
   featureSpacingForHeight,
+  getBasesFilterItems,
   getColorByMenuItem,
   getConnectionFilterItems,
   getContextMenuItems,
@@ -3634,6 +3635,7 @@ export default function stateModelFactory(
             ...getFiltersMenuItems(self, {
               readCategories: true,
               more: [
+                ...getBasesFilterItems(self),
                 ...getConnectionFilterItems(self),
                 ...getJunctionFilterItems(self),
               ],

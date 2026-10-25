@@ -280,14 +280,15 @@ is a color channel for each base, here set from the `bisulfite` field. The
 
 ## Coloring the reads by cytosine context
 
-**Color by... → Per-base coloring → Bisulfite / EM-seq** in the alignments track
-menu sets `pileup.bases` to the `bisulfite` field, which paints each read's
-cytosines by context. The submenu offers:
+**Color by... → Bisulfite / EM-seq** in the alignments track menu sets
+`pileup.bases` to the `bisulfite` field, which paints each read's methylated
+cytosines red. Two more rows refine it:
 
-- **CpG**, **CHG**, **CHH** or **All cytosines**: methylated cytosines paint red
-- **Show unmethylated (blue)**: once a context is set, converted sites paint
-  blue, separating an unmethylated cytosine from a position with no cytosine.
-  The figure and clip further down leave it off
+- **Filter by... → Cytosine context** picks **CpG**, **CHG**, **CHH** or **All
+  cytosines**
+- **Color by... → Bisulfite / EM-seq, unmethylated in blue** also paints
+  converted sites blue, separating an unmethylated cytosine from a position with
+  no cytosine. The figure and clip further down leave it off
 
 ## Gene body methylation and transposon silencing
 

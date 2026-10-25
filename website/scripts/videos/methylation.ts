@@ -1,6 +1,7 @@
 // The allele-specific methylation tour.
 import { displayPainted } from '@jbrowse/browser-test-utils'
 
+import { MODIFICATIONS_TWO_COLOR_LABEL } from '../../../plugins/alignments/src/LinearAlignmentsDisplay/menus/baseLayerLabels.ts'
 import { methylationVideoFixtures } from '../specs/methylation.ts'
 import { cascade, leaveMenu, openTrackByUrlSteps, trackMenu } from './shared.ts'
 
@@ -13,10 +14,7 @@ const { ungrouped, readsTrackId, bamUrl, readsAbsent } =
 // its name is the file's.
 const OPENED_READS_MENU =
   '[data-testid="track_menu_icon"][data-trackid^="hg002_snrpn_5mc_haplotagged.bam-"]'
-const TWO_COLOR = cascade(
-  'menuitem',
-  'One color per type, plus low-probability & unmodified in blue',
-)
+const TWO_COLOR = cascade('menuitem', MODIFICATIONS_TWO_COLOR_LABEL)
 
 export const methylationVideos: VideoSpec[] = [
   // The page's modBAM opened by URL and colored the way its next sentence says,
@@ -24,7 +22,7 @@ export const methylationVideos: VideoSpec[] = [
   {
     name: 'methylation/open_modbam',
     description:
-      'The haplotagged modBAM opened by URL and painted with its 5mC calls: File, Open track..., the URL pasted in, then Color by..., Per-base coloring, Modifications and its two-color mode from the new track menu',
+      'The haplotagged modBAM opened by URL and painted with its 5mC calls: File, Open track..., the URL pasted in, then Color by... and its two-color modifications row from the new track menu',
     goal: 'Open a modBAM by URL and paint its reads by methylation',
     url: readsAbsent,
     viewportHeight: 740,
@@ -47,24 +45,6 @@ export const methylationVideos: VideoSpec[] = [
         type: 'click',
         selector: cascade('submenu', 'Color by...'),
         hold: 1000,
-      },
-      {
-        type: 'waitForSelector',
-        selector: cascade('submenu', 'Per-base coloring'),
-      },
-      {
-        type: 'click',
-        selector: cascade('submenu', 'Per-base coloring'),
-        hold: 1000,
-      },
-      {
-        type: 'waitForSelector',
-        selector: cascade('submenu', 'Modifications'),
-      },
-      {
-        type: 'click',
-        selector: cascade('submenu', 'Modifications'),
-        hold: 1200,
       },
       { type: 'waitForSelector', selector: TWO_COLOR },
       { type: 'click', selector: TWO_COLOR, hold: 1200 },

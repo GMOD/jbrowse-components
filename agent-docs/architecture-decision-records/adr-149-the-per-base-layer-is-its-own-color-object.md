@@ -62,11 +62,16 @@ on `showModifications`, which is the layer, so hue at base grain keeps one
 meaning whatever fills the reads. The chain-strand framing holds off while any
 per-base layer draws, as it did under each of those schemes.
 
-**The menu keeps its rows and its paths.** "Color by..." lists the read fills,
-then under a "Per-base coloring" sub-header a radio group of None, Per-base
-quality, Per-base lettering and the Modifications and Bisulfite submenus. A read
-pick leaves the layer on, and None is the layer's way off. A figure recipe's
-`Color by... → Modifications → …` path is unchanged.
+**The menu keeps its rows.** "Color by..." lists the read fills, then under a
+"Per-base coloring" sub-header a radio group of None, Per-base quality, Per-base
+lettering and ~~the Modifications and Bisulfite submenus~~ two radios each for
+modifications and bisulfite, the second painting the unmodified side blue
+(2026-10-25). A read pick leaves the layer on, and None is the layer's way off.
+The layer's refinements (modification types, probability floor, cytosine
+context) are "Filter by..." rows, present while the layer they narrow draws.
+Colin, on the four-level `Color by... → Per-base coloring → Modifications → …`
+path an interim submenu made: "i dont want to nest so many things for user
+interface".
 
 **The key lists the layer first**, then the read fill, then the buckets that
 occurred, so a modification key reads as it did and gains the read fill's rows

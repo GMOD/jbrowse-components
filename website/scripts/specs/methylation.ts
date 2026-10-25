@@ -1,5 +1,6 @@
 import { displayPainted } from '@jbrowse/browser-test-utils'
 
+import { MODIFICATIONS_TWO_COLOR_LABEL } from '../../../plugins/alignments/src/LinearAlignmentsDisplay/menus/baseLayerLabels.ts'
 import {
   DEMO_CONFIG,
   HG38_GENCODE_PROMOTER_TRACK,
@@ -182,12 +183,7 @@ const snrpnReadsPanel = ({
     ],
   })
 
-const SNRPN_TWO_COLOR_PATH = [
-  'Color by...',
-  'Per-base coloring',
-  'Modifications',
-  'One color per type, plus low-probability & unmodified in blue',
-]
+const SNRPN_TWO_COLOR_PATH = ['Color by...', MODIFICATIONS_TWO_COLOR_LABEL]
 
 export const methylationVideoFixtures = {
   ungrouped: snrpnReadsPanel(),

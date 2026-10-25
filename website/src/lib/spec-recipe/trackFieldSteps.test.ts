@@ -291,3 +291,35 @@ test('data flattens member by member, and each display reads its own resolution'
     'Track menu → Normalization → NONE',
   ])
 })
+
+test('a per-base methylation layer is one Color by... radio, its filter Filter by... rows', () => {
+  expect(
+    stepPaths(
+      'pileup.bases',
+      {
+        show: true,
+        encoding: { color: 'modifications' },
+        unmodified: { show: true },
+        filter: [{ field: 'code', oneOf: ['m'] }],
+      },
+      'LinearAlignmentsDisplay',
+    ),
+  ).toEqual([
+    'Track menu → Color by... → Modifications, unmodified in blue',
+    'Track menu → Filter by... → Modification types',
+  ])
+  expect(
+    stepPaths(
+      'pileup.bases',
+      {
+        show: true,
+        encoding: { color: 'bisulfite' },
+        filter: [{ field: 'context', oneOf: ['CHG'] }],
+      },
+      'LinearAlignmentsDisplay',
+    ),
+  ).toEqual([
+    'Track menu → Color by... → Bisulfite / EM-seq',
+    'Track menu → Filter by... → Cytosine context → CHG',
+  ])
+})

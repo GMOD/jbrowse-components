@@ -15,8 +15,8 @@ import {
 import { colorFieldKindOf } from '../../shared/colorFieldDefs.ts'
 import { radioColorFieldOptions } from '../../shared/colorFieldOptions.ts'
 import { fieldTag } from '../../shared/facetLabels.ts'
-import { bisulfiteItem } from './bisulfiteMenu.ts'
-import { modificationsMenu } from './modificationsMenu.ts'
+import { bisulfiteRadios } from './bisulfiteMenu.ts'
+import { modificationsRadios } from './modificationsMenu.ts'
 
 import type { AlignmentsColorEncoding } from '../../shared/alignmentsColor.ts'
 import type { ColorFieldOption } from '../../shared/colorFieldOptions.ts'
@@ -49,9 +49,8 @@ interface ColorByModel {
   setBases: (patch: BasesPatch) => void
 }
 
-// The MM/ML submenu's own surface plus the two readiness flags that decide
-// whether it is built at all — read here, in `modificationsItems`, and nowhere
-// below.
+// The MM/ML radios' own surface plus the two readiness flags that decide
+// whether they are built at all, read here in `modificationsItems`.
 export interface ModificationsModel extends ModificationsMenuModel {
   modificationsReady: boolean
   regionTooLarge: boolean
@@ -78,7 +77,7 @@ interface ColorByMenuOptions {
   // Insert size / pair orientation / first-of-pair — meaningful only where reads
   // come in pairs.
   includePairedEnd?: boolean
-  // The MM/ML modification submenu plus reference-based bisulfite.
+  // The MM/ML modification radios plus reference-based bisulfite.
   includeModifications?: boolean
   colorOptions?: ColorFieldOption[]
 }
@@ -128,23 +127,21 @@ function colorRadio(
 }
 
 // The per-base layer draws over whatever fills the reads, so its radios are a
-// group of their own, in a submenu so Color by... ticks one row.
-function perBaseItem(
+// group of their own under a sub-header, with None as the way off (ADR-149).
+function baseLayerItems(
   model: AnyColorByModel,
   options: ColorFieldOption[],
   mods: ModificationsModel | undefined,
-): MenuItem {
-  return {
-    label: 'Per-base coloring',
-    type: 'subMenu',
-    subMenu: [
-      radioItem('None', model.baseLayer === undefined, () => {
-        model.setBases({ show: false })
-      }),
-      ...options.map(o => colorRadio(model, o)),
-      ...(mods ? modificationsItems(mods) : []),
-    ],
-  }
+): MenuItem[] {
+  return options.length > 0 || mods
+    ? [
+        radioItem('None', model.baseLayer === undefined, () => {
+          model.setBases({ show: false })
+        }),
+        ...options.map(o => colorRadio(model, o)),
+        ...(mods ? modificationsItems(mods) : []),
+      ]
+    : []
 }
 
 function tagColorScaleOf({
@@ -210,29 +207,26 @@ function pairedEndItem(model: AnyColorByModel): MenuItem {
   }
 }
 
-// The MM/ML "Modifications" submenu shows while types are still loading (unless
-// the region is too large to ever detect them) or once any type has loaded; a
-// ready display with zero detected types falls through to bisulfite only.
-// Bisulfite is reference-based, so it applies to any alignments display
-// regardless of MM/ML tags.
+// The MM/ML radios show once any type has loaded, with a placeholder while
+// types are still loading (unless the region is too large to ever detect
+// them); a ready display with zero detected types offers bisulfite only, which
+// is reference-based and needs no MM/ML tags.
 //
-// It also shows whenever it is the ACTIVE field, whatever detection returned.
-// Detection is per-fetch volatile state, so a track colored by modifications —
-// from a saved session or a config — that lands on a
-// region whose reads carry no MM/ML calls otherwise dropped the only row that
-// could read as checked, leaving every radio in Color by... blank and no way
-// back to the modification settings without first navigating elsewhere.
+// They also show whenever modifications is the ACTIVE field, whatever
+// detection returned. Detection is per-fetch volatile state, so a track
+// colored by modifications that lands on a region whose reads carry no MM/ML
+// calls otherwise dropped the only row that could read as checked.
 function modificationsItems(model: ModificationsModel): MenuItem[] {
   const detecting = !model.modificationsReady && !model.regionTooLarge
   const active = model.baseLayer?.field === 'modifications'
   const detected =
     model.modificationsReady && model.detectedModificationTypes.length > 0
   return [
-    ...(active || detected ? [modificationsMenu(model)] : []),
+    ...(active || detected ? modificationsRadios(model) : []),
     ...(detecting
       ? [{ label: 'Loading modifications...', disabled: true, onClick() {} }]
       : []),
-    bisulfiteItem(model),
+    ...bisulfiteRadios(model),
   ]
 }
 
@@ -284,10 +278,11 @@ export function getColorByMenuItem(
           solidColorItem(paintsConstant(model), () => {
             model.pickSolidColor()
           }),
-          ...(layerOptions.length > 0 || mods
-            ? [perBaseItem(model, layerOptions, mods)]
-            : []),
         ],
+      },
+      {
+        header: 'Per-base coloring',
+        rows: baseLayerItems(model, layerOptions, mods),
       },
     ],
   })

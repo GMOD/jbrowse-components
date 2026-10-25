@@ -24,16 +24,16 @@ const WGBS_MENU = trackMenu(wgbsTrackId)
 // `::-p-text(CHG)` step is one layout change away from clicking a wiggle row.
 const colorCascade = (kind: 'submenu' | 'menuitem', label: string) =>
   `[data-testid="cascading-${kind}-${label.toLowerCase().replaceAll(/\s+/g, '_')}"]`
-const COLOR_BY = colorCascade('submenu', 'Color by...')
-const PER_BASE = colorCascade('submenu', 'Per-base coloring')
-const BISULFITE = colorCascade('submenu', 'Bisulfite / EM-seq')
+const FILTER_BY = colorCascade('submenu', 'Filter by...')
+const CYTOSINE_CONTEXT = colorCascade('submenu', 'Cytosine context')
 const CONTEXT = (label: string) => colorCascade('menuitem', label)
 // The one thing in the app bar with no handler on it, so a click or a hover
 // there only moves the pointer.
 const WORDMARK = '[aria-label="JBrowse"]'
 
 // One trip through the cascade to set one cytosine context, ending on the
-// recolored pileup with nothing over it.
+// recolored pileup with nothing over it. The fixture already colors by
+// bisulfite, so the context is a Filter by... row.
 const pickContext = (label: string): VideoStep[] => [
   {
     type: 'click',
@@ -41,18 +41,16 @@ const pickContext = (label: string): VideoStep[] => [
     say: `Color the reads by the ${label} context`,
     hold: 700,
   },
-  { type: 'waitForSelector', selector: COLOR_BY },
-  { type: 'click', selector: COLOR_BY, hold: 700 },
-  { type: 'waitForSelector', selector: PER_BASE },
-  { type: 'click', selector: PER_BASE, hold: 700 },
-  { type: 'waitForSelector', selector: BISULFITE },
+  { type: 'waitForSelector', selector: FILTER_BY },
+  { type: 'click', selector: FILTER_BY, hold: 700 },
+  { type: 'waitForSelector', selector: CYTOSINE_CONTEXT },
   // the four contexts with the current one checked
-  { type: 'click', selector: BISULFITE, hold: 1300 },
+  { type: 'click', selector: CYTOSINE_CONTEXT, hold: 1300 },
   { type: 'waitForSelector', selector: CONTEXT(label) },
   // The radio mark moving, before the menu goes: that is the only frame saying
   // which of the four is now in force.
   { type: 'click', selector: CONTEXT(label), hold: 900 },
-  ...leaveMenu(COLOR_BY),
+  ...leaveMenu(FILTER_BY),
   // The recolor itself, on camera. Nothing is refetched — the reads are
   // loaded and the context is a render prop — so what plays here is the same
   // pileup repainting, which is the whole claim three stacked panels cannot
@@ -81,7 +79,7 @@ export const epigenomicsVideos: VideoSpec[] = [
   {
     name: 'epigenomics/bisulfite_contexts',
     description:
-      'Cycling one Arabidopsis WGBS pileup through the plant cytosine contexts: Color by... to Bisulfite / EM-seq, then CHG and CHH over a gene body and an LTR element that answer differently',
+      'Cycling one Arabidopsis WGBS pileup through the plant cytosine contexts: Filter by..., Cytosine context, then CHG and CHH over a gene body and an LTR element that answer differently',
     goal: 'Recolor one plant WGBS pileup by each cytosine context in turn',
     url: cpgPileup,
     // genes + the repeat lane + the aggregate's three rows + one 200px pileup +
