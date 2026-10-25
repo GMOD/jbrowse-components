@@ -114,7 +114,10 @@ export interface IdentityRef {
   scale: 'identity'
 }
 
-/** #api What a mark's `color` crosses the wire as. */
+/**
+ * #api
+ * What a mark's `color` crosses the wire as.
+ */
 export type MarkColorEncoding = ColorEncoding | IdentityRef
 
 export type { ShapeName }
