@@ -243,7 +243,7 @@ export const chromhmmVideoFixtures = {
       {
         trackId: 'ncbi_gff_hg19',
         showLabels: 'name',
-        filter: ["jexl:feature.type!='pseudogene'"],
+        filter: ['geneLike', "jexl:feature.type!='pseudogene'"],
         height: 120,
       },
       {
@@ -1695,7 +1695,7 @@ export const uiSpecs: ScreenshotSpec[] = [
         {
           trackId: 'ncbi_gff_hg19',
           showLabels: 'name',
-          filter: ["jexl:feature.type!='pseudogene'"],
+          filter: ['geneLike', "jexl:feature.type!='pseudogene'"],
           displayMode: 'compact',
           height: 80,
         },
@@ -1749,7 +1749,7 @@ export const uiSpecs: ScreenshotSpec[] = [
         {
           trackId: 'ncbi_gff_hg19',
           showLabels: 'name',
-          filter: ["jexl:feature.type!='pseudogene'"],
+          filter: ['geneLike', "jexl:feature.type!='pseudogene'"],
           height: 110,
         },
         {
@@ -1800,7 +1800,7 @@ export const uiSpecs: ScreenshotSpec[] = [
         {
           trackId: 'ncbi_gff_hg19',
           showLabels: 'name',
-          filter: ["jexl:feature.type!='pseudogene'"],
+          filter: ['geneLike', "jexl:feature.type!='pseudogene'"],
           height: 110,
         },
         {
