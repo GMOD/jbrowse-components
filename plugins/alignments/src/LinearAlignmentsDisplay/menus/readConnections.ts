@@ -122,8 +122,6 @@ export function getConnectionFilterItems(
         all: 'All connections',
         only: 'Only off-screen mate connections',
         exclude: 'Hide off-screen mate connections',
-        helpText:
-          'Connections to a mate or split segment elsewhere on this chromosome and not loaded in the current view.',
       },
       filter.offscreenMates,
       offscreenMates => {
@@ -136,8 +134,6 @@ export function getConnectionFilterItems(
         all: 'All connections',
         only: 'Only inter-chromosomal pairs',
         exclude: 'Hide inter-chromosomal pairs',
-        helpText:
-          'Connections whose mate or split segment maps to another chromosome. Drawn as a breakpoint tick when that chromosome is not displayed.',
       },
       filter.interchrom,
       interchrom => {
@@ -147,7 +143,6 @@ export function getConnectionFilterItems(
     makeSizeSubMenu({
       label: 'Inter-chromosomal evidence',
       title: 'Min reads at a breakpoint',
-      help: 'Hide an inter-chromosomal connection unless this many read pairs support its breakpoint, counted over one fragment length on both sides.',
       // Linear and small-topped, unlike the junction floor's log slider: this
       // counts read PAIRS spanning a breakpoint, which even at 300x is tens.
       scale: 'linear',

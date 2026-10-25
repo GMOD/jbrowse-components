@@ -2073,7 +2073,7 @@ describe('rows the layer menus hand to other menus', () => {
         'Off-screen mate connections',
         'Inter-chromosomal pairs',
         'Min reads at a breakpoint',
-        'Junctions from split reads',
+        'Split-read junctions',
         'Non-canonical junctions',
         'Min reads at a junction',
       ]),

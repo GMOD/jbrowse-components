@@ -330,9 +330,8 @@ still colors by strand. This needs a sequence adapter on the assembly.
 counts** prints each junction's supporting-read count on its arc. While the arcs
 draw:
 
-- **Filter by... → Junctions from split reads** adds the junctions split
-  alignments (SA tag) imply to the N-gap splices
-
+- **Filter by... → Split-read junctions** shows, hides or keeps only the
+  junctions split alignments (SA tag) imply beside the N-gap splices
 - **Filter by... → Non-canonical junctions → Hide non-canonical junctions**
   drops junctions whose motif is none of the three canonical pairs. On deep
   RNA-seq the thin arcs are mostly these, so it is the filter to reach for

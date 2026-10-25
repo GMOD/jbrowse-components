@@ -1,6 +1,10 @@
 import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
 
-import { DEFAULT_MIN_SASHIMI_READS } from '../../shared/alignmentsFilter.ts'
+import {
+  junctionEntries,
+  junctionFilterOf,
+  withFields,
+} from '../../shared/alignmentsFilter.ts'
 import {
   getJunctionFilterItems,
   getSashimiPlacementItems,
@@ -10,6 +14,7 @@ import {
 import type { JunctionFilter, JunctionFilterPatch } from '../../shared/types.ts'
 import type { SashimiPlacement } from '../constants.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
+import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
 
 function makeModel() {
   return {
@@ -24,9 +29,13 @@ function makeModel() {
     setSashimiPlacement(mode: SashimiPlacement) {
       this.sashimiPlacement = mode
     },
-    junctionFilter: { minReads: DEFAULT_MIN_SASHIMI_READS } as JunctionFilter,
-    setJunctionFilter(patch: Partial<JunctionFilter>) {
-      this.junctionFilter = { ...this.junctionFilter, ...patch }
+    // the display's own write and read of `filter`
+    filter: [] as FieldPredicate[],
+    get junctionFilter(): JunctionFilter {
+      return junctionFilterOf(this.filter)
+    },
+    setJunctionFilter(patch: JunctionFilterPatch) {
+      this.filter = withFields(this.filter, junctionEntries(patch))
     },
   }
 }
@@ -71,32 +80,40 @@ describe('junction filter rows', () => {
     expect(getJunctionFilterItems(model)).toEqual([])
     model.showSashimi = true
     expect(labelsOf(getJunctionFilterItems(model))).toEqual([
-      'Junctions from split reads',
+      'Split-read junctions',
       'Non-canonical junctions',
       'Min reads at a junction',
     ])
   })
 
-  test('"Junctions from split reads" writes junction.source', () => {
+  test('"Split-read junctions" is one All / Only / Hide choice over junction.source', () => {
     const model = makeModel()
     model.showSashimi = true
     const writes: JunctionFilterPatch[] = []
     const setJunctionFilter = model.setJunctionFilter.bind(model)
     model.setJunctionFilter = patch => {
       writes.push(patch)
-      setJunctionFilter({ ...patch, classes: patch.classes ?? ['splice'] })
+      setJunctionFilter(patch)
     }
-    const label = 'Junctions from split reads'
-    const checked = () =>
-      getJunctionFilterItems(model).find(i => 'label' in i && i.label === label)
-    expect(checked()).toMatchObject({ checked: true })
-    click(getJunctionFilterItems(model), label)
-    expect(writes.at(-1)).toEqual({ sources: ['gap'] })
-    expect(checked()).toMatchObject({ checked: false })
-    click(getJunctionFilterItems(model), label)
-    expect(writes.at(-1)).toEqual({
-      classes: ['splice', 'deletion', 'duplication', 'inversion'],
-    })
+    const choose = (label: string) => {
+      click(
+        subMenuByLabel(getJunctionFilterItems(model), 'Split-read junctions'),
+        label,
+      )
+    }
+    choose('Hide split-read junctions')
+    expect(writes.at(-1)).toEqual({ classes: undefined, sources: ['gap'] })
+    expect(labelsOf(getJunctionFilterItems(model))).toContain(
+      'Split-read junctions — hidden',
+    )
+    choose('Only split-read junctions')
+    expect(writes.at(-1)).toEqual({ classes: undefined, sources: ['split'] })
+    expect(labelsOf(getJunctionFilterItems(model))).toContain(
+      'Split-read junctions — only',
+    )
+    choose('All junctions')
+    expect(writes.at(-1)).toEqual({ classes: undefined })
+    expect(model.filter).toEqual([])
   })
 
   test('"Non-canonical junctions" is one All / Only / Hide choice', () => {

@@ -58,7 +58,12 @@ function readCategoryItem(
   spec: ReadCategorySpec,
 ): MenuItem {
   return categoryFilterItem(
-    { ...spec, all: 'All reads' },
+    {
+      noun: spec.noun,
+      only: spec.only,
+      exclude: spec.exclude,
+      all: 'All reads',
+    },
     categoryOf(model.filterPredicates, spec.key),
     value => {
       model.setFilterFields({ [spec.key]: categoryEntries(spec.key, value) })
@@ -83,8 +88,6 @@ function minMapqItem(model: FiltersModel): MenuItem {
       'Mapping quality',
       current === undefined ? undefined : `${current}+`,
     ),
-    helpText:
-      'Hide reads mapped with low confidence. A read with MAPQ 255 (none reported) stays under any threshold.',
     value: current === undefined ? 'all' : `${current}`,
     options: [
       ['all', 'All reads'],

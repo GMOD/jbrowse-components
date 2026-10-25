@@ -35,23 +35,36 @@ const SPLIT_CLASSES = JUNCTION_CLASSES.filter(
   c => junctionSource(c) === 'split',
 )
 
-// Unchecking writes `junction.source` gap; checking clears it, widening a
-// `junction.class` that admits no split class so the box reads checked.
+// The split-read junctions as a category, like the rows beside it: each
+// choice clears `junction.class` and `only` and hide write `junction.source`,
+// so a class list admitting no split class reads as hidden.
+function splitJunctionsCategory({ classes }: JunctionFilter) {
+  const split = classes?.filter(c => SPLIT_CLASSES.includes(c)) ?? SPLIT_CLASSES
+  return split.length === 0
+    ? 'exclude'
+    : classes !== undefined && split.length === classes.length
+      ? 'only'
+      : undefined
+}
+
 function splitJunctionsItem(model: JunctionFiltersModel) {
-  const { classes } = model.junctionFilter
-  return toggleItem(
-    'Junctions from split reads',
-    !classes || classes.some(c => SPLIT_CLASSES.includes(c)),
-    show => {
-      model.setJunctionFilter(
-        show
-          ? { classes: [...new Set([...(classes ?? []), ...SPLIT_CLASSES])] }
-          : { sources: ['gap'] },
-      )
-    },
+  return categoryFilterItem(
     {
-      helpText:
-        'Count the junctions that split alignments (SA tag) imply beside the spliced (N) ones.',
+      noun: 'Split-read junctions',
+      all: 'All junctions',
+      only: 'Only split-read junctions',
+      exclude: 'Hide split-read junctions',
+    },
+    splitJunctionsCategory(model.junctionFilter),
+    value => {
+      model.setJunctionFilter(
+        value === undefined
+          ? { classes: undefined }
+          : {
+              classes: undefined,
+              sources: [value === 'only' ? 'split' : 'gap'],
+            },
+      )
     },
   )
 }
@@ -98,8 +111,6 @@ export function getJunctionFilterItems(
         all: 'All junctions',
         only: 'Only non-canonical junctions',
         exclude: 'Hide non-canonical junctions',
-        helpText:
-          'Sashimi arcs whose intron does not begin and end with a canonical splice motif.',
       },
       model.junctionFilter.nonCanonical,
       nonCanonical => {
@@ -109,7 +120,6 @@ export function getJunctionFilterItems(
     makeSizeSubMenu({
       label: 'Min read support',
       title: 'Min reads at a junction',
-      help: 'Hide a sashimi arc carried by fewer reads than this.',
       // Log-scale: support runs from small integers to thousands on deep
       // RNA-seq. 1 already shows every arc, since a junction has a read.
       scale: 'log',

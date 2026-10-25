@@ -54,8 +54,6 @@ function modTypesItem(model: ModificationsMenuModel): MenuItem {
   const filter = model.basesFilter
   return {
     label: 'Modification types',
-    helpText:
-      'Which modification types are drawn. Basecallers often emit several on one read (5mC, 5hmC, 6mA): untick 5hmC to read gene-body 5mC on a 5mCG_5hmCG model.',
     subMenu: model.detectedModificationTypes.map(t =>
       checkboxItem(getModificationName(t), admitsCode(filter, t), () => {
         setModTypeShown(model, t, !admitsCode(filter, t))
@@ -69,7 +67,6 @@ function probabilityItem(model: ModificationsMenuModel): MenuItem {
   return makeSizeSubMenu({
     label: 'Hide calls under',
     title: 'Modification probability',
-    help: 'Hide modification calls below this probability.',
     min: 0,
     max: 100,
     step: 1,
@@ -103,8 +100,6 @@ function probabilityItem(model: ModificationsMenuModel): MenuItem {
 function cytosineContextItem(model: ModificationsMenuModel): MenuItem {
   return makeRadioSubMenu<CytosineContext>({
     label: 'Cytosine context',
-    helpText:
-      'Which cytosines the methylation colors paint. Plants methylate CHG and CHH as well as CpG.',
     value: model.basesFilter.context,
     options: cytosineContextOptions.map(o => [o.value, o.label] as const),
     onChange: next => {
