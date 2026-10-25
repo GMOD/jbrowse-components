@@ -1,4 +1,5 @@
 import SkippedFeaturesIndicator from '@jbrowse/display-kit/SkippedFeaturesIndicator'
+import { DisplayCrosshairs } from '@jbrowse/tree-sidebar'
 import { ScorePlotChrome } from '@jbrowse/wiggle-core/ScorePlotChrome'
 import { observer } from 'mobx-react'
 
@@ -41,8 +42,19 @@ const LinearMarkDisplayComponent = observer(
             <MarkRows model={model} />
           </>
         )}
+        // The vertical guide for the pointer, and the row guide beside it
+        // under `rows`; over a value axis a horizontal one reads as a rule.
         tooltip={mouseState => (
-          <MarkTooltip model={model} mouseState={mouseState} />
+          <>
+            {mouseState ? (
+              <DisplayCrosshairs
+                model={model}
+                mouseX={mouseState.x}
+                mouseY={model.drawsRows ? mouseState.y : undefined}
+              />
+            ) : null}
+            <MarkTooltip model={model} mouseState={mouseState} />
+          </>
         )}
         indicators={() => (
           <SkippedFeaturesIndicator {...model.skippedFeatures} />
