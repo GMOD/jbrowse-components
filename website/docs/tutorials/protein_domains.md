@@ -53,8 +53,8 @@ npm install -g @jbrowse/cli@next
 The figures read the honey bee Amel_HAv3.1 assembly and its NCBI RefSeq
 annotation from genomes.jbrowse.org, and a Pfam domain file built from that
 annotation with the commands below. Nothing to download to follow the page: the
-track configs read the domain file and the gene models by URL. The commands take
-your own genome FASTA and GFF3 the same way.
+track config reads the domain file by URL. The commands take your own genome
+FASTA and GFF3 the same way.
 
 | What it is                                                 | File                                                                                                                                                                          |
 | ---------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

@@ -162,10 +162,8 @@ Declined on 2026-09-30: track- or view-level facets, and a free y per section.
   backs it, and each source multiplies the refName renaming, byte gate and zoom
   range a display runs once today. It reopens when a named plot needs two files
   in one display. The multi-way display's lanes already read a source per layer
-  (ADR-180): the row facet's value, `{assembly}`, picks each lane's track. The
-  canvas display's `transcriptFeatures` is the other exception (ADR-242): its
-  rows draw only inside a transcript they fit, so they need no axis or zoom
-  range of their own.
+  (ADR-180): the row facet's value, `{assembly}`, picks each lane's track.
+  ADR-245 declines drawing one track's rows on another's transcripts.
 - **Fewer channels.** `opacity` and `angle` are uniforms, not channels, because
   shapes compile from hand-written Slang (ADR-095); `opacity` also breaks the
   Canvas2D painters' color batching. The alignments quality fade is
