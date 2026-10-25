@@ -4,6 +4,7 @@ import {
 } from '@jbrowse/tree-sidebar'
 
 import type { MarkRowMatrixArgs } from '../MarkRowsRPC/rpcTypes.ts'
+import type { RowCompare } from './rowCompare.ts'
 import type { Region, RpcStatus } from '@jbrowse/core/util'
 import type {
   FacetSpec,
@@ -21,7 +22,8 @@ export interface MarkClusterModel extends ClusterRunModel<RowSource> {
   clusterableSources: RowSource[]
   adapterConfig: Record<string, unknown>
   rowsField: string
-  valueMarkIndex: number
+  rowCompare: RowCompare | undefined
+  rowCompareLabel: string
   layerRequests: LayerRequest[]
   host: { bpPerPx: number }
   rpcProps: () => { transform: TransformStep[]; facet?: FacetSpec }
@@ -38,8 +40,8 @@ export interface MarkClusterDialogModel
 
 /**
  * The matrix request: the display's own split, steps and adapter options over
- * `regions`, and the first mark standing at a value, one matrix row per row
- * clustered.
+ * `regions`, and the mark `rowCompare` names with what it compares, one
+ * matrix row per row clustered.
  */
 export async function markRowMatrixArgs(
   model: MarkClusterModel,
@@ -48,10 +50,11 @@ export async function markRowMatrixArgs(
 ): Promise<MarkRowMatrixArgs> {
   const { transform, facet } = model.rpcProps()
   const options = model.adapterOptions
-  const layer = model.layerRequests[model.valueMarkIndex]
+  const { rowCompare } = model
+  const layer = rowCompare && model.layerRequests[rowCompare.mark]
   if (!facet || !layer) {
     throw new Error(
-      'Clustering compares the values a bar or point mark stands at, and none draws at this zoom',
+      'Clustering compares the rows of a bar, point or rect mark, and none draws at this zoom',
     )
   }
   return {
@@ -62,6 +65,7 @@ export async function markRowMatrixArgs(
     facet,
     bpPerPx: model.host.bpPerPx,
     layer,
+    compare: rowCompare.by,
     ...(options
       ? {
           regionOpts: await Promise.all(
@@ -76,13 +80,14 @@ export async function markRowMatrixArgs(
 
 /** The dialog's fetch key: the run's inputs, never the model node. */
 export function rowMatrixKey(model: MarkClusterModel) {
-  const { clusterableSources, valueMarkIndex } = model
-  return clusterableSources.length && valueMarkIndex !== -1
+  const { clusterableSources, rowCompare } = model
+  return clusterableSources.length && rowCompare
     ? ([
         'markRowMatrix',
         clusterableSources.map(row => row.name).join('\t'),
         JSON.stringify(model.rpcProps()),
-        valueMarkIndex,
+        rowCompare.mark,
+        rowCompare.by,
       ] as const)
     : null
 }
@@ -108,7 +113,9 @@ export async function runMarkClustering({
     rows: model.clusterableSources,
     provenance: clusterProvenanceFromRegions(regions, [
       { name: 'rows', value: model.rowsField },
-      { name: 'y', value: String(args.layer.encoding.y ?? '') },
+      args.compare === 'y'
+        ? { name: 'y', value: String(args.layer.encoding.y ?? '') }
+        : { name: 'compared on', value: model.rowCompareLabel },
     ]),
     matrix: () =>
       rpcManager.call(sessionId, 'MarkClusterRows', {

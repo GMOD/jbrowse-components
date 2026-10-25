@@ -26,12 +26,12 @@ const MarkClusterDialog = observer(function MarkClusterDialog({
       model={model}
       handleClose={handleClose}
       title="Cluster rows by similarity"
-      description="This procedure will cluster the rows by the values their bars or points stand at across the window in view, using hierarchical clustering"
+      description={`This procedure will cluster the rows by ${model.rowCompare?.by === 'y' ? 'the values their bars or points stand at' : `their ${model.rowCompareLabel}`} across the window in view, using hierarchical clustering`}
       matrixLabel="value matrix"
       tsvFilename="rows.tsv"
       canRun={
         clusterableSources.length >= MIN_CLUSTER_ROWS &&
-        model.valueMarkIndex !== -1
+        model.rowCompare !== undefined
       }
       matrixKey={rowMatrixKey(model)}
       run={args => runMarkClustering({ model, ...args })}

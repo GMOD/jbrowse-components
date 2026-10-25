@@ -19,6 +19,7 @@ import type { MarkType } from './configSchema.ts'
 import type { HeldColor } from './markColor.ts'
 import type { MarkSpec } from './markSpecs.ts'
 import type { LineInterpolation } from './markVocabulary.ts'
+import type { RowCompareBy } from './rowCompare.ts'
 import type { ZoomRange } from '@jbrowse/core/data_adapters/BaseAdapter/zoomRange'
 import type {
   CoreGetEncodedLayersArgs,
@@ -180,23 +181,35 @@ export interface TextMarkEntry extends MarkEntry {
 }
 
 /**
- * The value mark `mark`'s instances stand at over `pos`, by the `row` key
- * each carries, the highest where two in one row cover it.
+ * What mark `mark`'s instances over `pos` compare on, by the `row` key each
+ * carries, the highest where two in one row cover it: the value a bar
+ * stands at, a span's painted color or the number it ramps, or 1 where a
+ * span covers it at all.
  */
 export function rowValuesAt(
   region: MarkRegionData,
   mark: number,
   pos: number,
+  by: RowCompareBy = 'y',
 ): Map<number, number> {
   const values = new Map<number, number>()
   const layer = region.layers[mark]
-  const { y, row } = layer ?? {}
-  if (layer && y && row) {
+  const lane =
+    by === 'y'
+      ? layer?.y
+      : by === 'colorValue'
+        ? layer?.colorValue
+        : by === 'colorKey' && layer?.color instanceof Uint32Array
+          ? layer.color
+          : undefined
+  const row = layer?.row
+  if (layer && row && (lane || by === 'presence')) {
     for (let i = 0; i < layer.count; i++) {
-      if (layer.x[i]! <= pos && pos < layer.x2[i]!) {
+      const v = lane ? lane[i]! : 1
+      if (layer.x[i]! <= pos && pos < layer.x2[i]! && !Number.isNaN(v)) {
         const had = values.get(row[i]!)
-        if (had === undefined || y[i]! > had) {
-          values.set(row[i]!, y[i]!)
+        if (had === undefined || v > had) {
+          values.set(row[i]!, v)
         }
       }
     }

@@ -18,7 +18,10 @@ function region(start: number, end: number, refName = 'ctgA'): Region {
 }
 
 function feats(
-  records: { source: string; start: number; end: number; score: number }[],
+  records: ({ source: string; start: number; end: number } & Record<
+    string,
+    unknown
+  >)[],
 ) {
   return records.map(
     (data, i) =>
@@ -46,6 +49,7 @@ function args(over: Partial<MarkRowMatrixArgs>) {
     facet: { field: 'source' },
     bpPerPx: 2.5,
     layer: { encoding: { y: 'score' }, lanes: [] },
+    compare: 'y' as const,
     ...over,
   }
 }
@@ -169,4 +173,83 @@ test("each region's fetch carries the adapter options the display resolved for i
     expect.objectContaining({ ld: { start: 5, refName: 'A' }, bpPerPx: 2.5 }),
     expect.not.objectContaining({ ld: expect.anything() }),
   ])
+})
+
+test('a span covering columns marks presence, the later span winning where two meet', async () => {
+  stubAdapter([
+    feats([
+      { source: 'a', start: 0, end: 5 },
+      { source: 'b', start: 5, end: 10 },
+    ]),
+  ])
+  expect(
+    await matrix({
+      rows: ['a', 'b'],
+      layer: { encoding: {}, lanes: [] },
+      compare: 'presence',
+    }),
+  ).toEqual({ a: [1, 1, 0, 0], b: [0, 0, 1, 1] })
+})
+
+test("a span's color categories one-hot across regions by value, with a gap channel", async () => {
+  stubAdapter([
+    feats([
+      { source: 'a', start: 0, end: 5, state: 'TssA' },
+      { source: 'b', start: 0, end: 10, state: 'Quies' },
+    ]),
+    feats([{ source: 'a', start: 100, end: 105, state: 'Quies' }]),
+  ])
+  const rows = await matrix({
+    rows: ['a', 'b'],
+    regions: [region(0, 10), region(100, 110, 'ctgB')],
+    bpPerPx: 5,
+    layer: {
+      encoding: { color: { field: 'state', scale: 'ordinal' } },
+      lanes: [],
+    },
+    compare: 'colorKey',
+  })
+  // channels: Quies, TssA (the first region's entries in order), then gap
+  expect(rows).toEqual({
+    a: [0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1],
+    b: [1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1],
+  })
+})
+
+test("a span's own BED colors cluster as categories", async () => {
+  stubAdapter([
+    feats([
+      { source: 'a', start: 0, end: 10, itemRgb: '255,0,0' },
+      { source: 'b', start: 0, end: 10, itemRgb: '255,0,0' },
+      { source: 'c', start: 0, end: 10, itemRgb: '0,0,255' },
+    ]),
+  ])
+  const rows = await matrix({
+    bpPerPx: 10,
+    layer: { encoding: { color: { scale: 'identity' } }, lanes: [] },
+    compare: 'colorKey',
+  })
+  expect(rows.a).toEqual(rows.b)
+  expect(rows.a).not.toEqual(rows.c)
+})
+
+test("a span's ramped numbers average into the columns, a missing value skipped", async () => {
+  stubAdapter([
+    feats([
+      { source: 'a', start: 0, end: 10, depth: 4 },
+      { source: 'a', start: 0, end: 5, depth: 2 },
+      { source: 'b', start: 0, end: 10 },
+    ]),
+  ])
+  expect(
+    await matrix({
+      rows: ['a', 'b'],
+      bpPerPx: 5,
+      layer: {
+        encoding: { color: { field: 'depth', scale: 'threshold' } },
+        lanes: [],
+      },
+      compare: 'colorValue',
+    }),
+  ).toEqual({ a: [3, 4], b: [0, 0] })
 })

@@ -47,8 +47,8 @@ function rowsMenuItems(self: LinearMarkDisplayModel): MenuItem[] {
       cluster: {
         runItem: {
           label: 'Cluster rows by similarity...',
-          disabled: self.valueMarkIndex === -1,
-          disabledHelpText: 'No bar or point mark draws at this zoom',
+          disabled: self.rowCompare === undefined,
+          disabledHelpText: 'No bar, point or rect mark draws at this zoom',
           onClick: () => {
             getDialogHost(self).queueDialog(handleClose => [
               MarkClusterDialog,
@@ -138,7 +138,7 @@ export function markContextMenuItems(self: LinearMarkDisplayModel): MenuItem[] {
         ...(self.drawsRows
           ? [
               sortRowsHereMenuItem({
-                label: 'Sort rows by value here',
+                label: `Sort rows by ${self.rowCompareLabel} here`,
                 rowCount: self.editableSources.length,
                 onClick: () => {
                   self.sortRowsByValueAt(hit.refName, hit.bp)

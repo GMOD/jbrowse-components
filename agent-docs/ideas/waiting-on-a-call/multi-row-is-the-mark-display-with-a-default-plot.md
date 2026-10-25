@@ -1,6 +1,6 @@
 ---
 name: multi-row-is-the-mark-display-with-a-default-plot
-description: LinearMultiRowFeatureDisplay draws colored features in rows, which is a `rect` mark with `rows` and a color. Rebuild it as the mark display with a default plot, as ADR-178 rebuilt Manhattan, and delete its own worker, encoder, model and component. Benched on the Roadmap ChromHMM painting, the mark worker runs in about half the multi-row worker's time and sends a quarter of its bytes. Waits on one call, what `facet` means beside `rows`, then four gaps on the mark display; the first gap, a feature's own color, is ADR-243. Read before touching either display's rows, row colors, clustering or legend hides.
+description: LinearMultiRowFeatureDisplay draws colored features in rows, which is a `rect` mark with `rows` and a color. Rebuild it as the mark display with a default plot, as ADR-178 rebuilt Manhattan, and delete its own worker, encoder, model and component. Benched on the Roadmap ChromHMM painting, the mark worker runs in about half the multi-row worker's time and sends a quarter of its bytes. Waits on one call, what `facet` means beside `rows`, then three gaps on the mark display; a feature's own color (ADR-243) and clustering span rows (ADR-244) are done. Read before touching either display's rows, row colors, clustering or legend hides.
 ---
 
 # Multi-row is the mark display with a default plot
@@ -94,26 +94,19 @@ Each gap is its own change, in this order. Put row-axis work in
 `packages/tree-sidebar`, beside the variant, MAF and wiggle displays that
 share it, not in `LinearMarkDisplay/model.ts` (2,076 lines).
 
-1. **Clustering and sorting span rows.** `valueMarkIndex` is -1 for a span
-   (`model.ts:1610-1630`), so span rows cluster nothing; move
-   `collectMultiRowMatrix` (presence, categorical, scalar) from
-   `plugins/canvas/src/MultiRowClusterFeaturesRPC` into tree-sidebar, with the
-   "Cluster on" picker. "Sort rows by ... here" reads `y` alone
-   (`markList.ts:194`) and needs the color key, which an identity color
-   now sends as `colorKey` (ADR-243).
-2. **Hiding a legend category** from paint and hit test. Multi-row re-encodes
+1. **Hiding a legend category** from paint and hit test. Multi-row re-encodes
    the region on a toggle (ADR-165), which costs nothing while nothing is
    hidden; a per-instance mask in the span shader would cost every span config.
    An identity key row matches its `domain` color to the met keys by packed
    color, since a key is `r,g,b` and a `domain` entry any CSS spelling.
-3. **Row discovery and the menus.** The automatic rows field (`repClass`, else
+2. **Row discovery and the menus.** The automatic rows field (`repClass`, else
    `name`: `rowsFields.ts`), "One row per..." with row counts, Color by and
    Group by, and rows read from the window rather than the fetch buffer
    (`windowedRegion.ts`; the mark display's `discoveredRows`, `model.ts:692`,
    reads every loaded region). Color by's itemRgb preset writes
    `{ scale: { type: 'identity' } }`; Edit plot's scale picker leaves identity
    out (ADR-243).
-4. **Bands of rows**, after the call above, with `rowGroups` (the mark
+3. **Bands of rows**, after the call above, with `rowGroups` (the mark
    display's `rowColorFields` is `[]`, `model.ts:605-607`).
 
 Small, any time: an identity key with no `domain` (multi-row names each
@@ -127,8 +120,9 @@ per click (`packages/core/src/rpc/methods/CoreGetEncodedFeature.ts:29-33`).
 ## Then the swap
 
 - The subtype's schema and model, the 5 MB limit, the plot examples.
-- Delete the engine; an ADR records the retirement and supersedes the
-  multi-row halves of ADR-165 and ADR-169.
+- Delete the engine, `MultiRowClusterFeaturesRPC` with it, whose matrix
+  already reads tree-sidebar's `coverSpan` (ADR-244). An ADR records the
+  retirement and supersedes the multi-row halves of ADR-165 and ADR-169.
 - Reshoot the multi-row figures (`website/scripts/figure-manifest.json`,
   `specs/cookbook.ts`, `specs/ui.ts`) and check the tutorials that show it
   (`git grep -l LinearMultiRowFeatureDisplay -- website/docs`).

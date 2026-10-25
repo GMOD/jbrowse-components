@@ -1,3 +1,4 @@
+import type { RowCompareBy } from '../LinearMarkDisplay/rowCompare.ts'
 import type {
   FacetSpec,
   LayerRequest,
@@ -20,8 +21,9 @@ export interface MarkRowMatrixArgs {
   transform: TransformStep[]
   facet: FacetSpec
   bpPerPx: number
-  // the mark whose values fill each row
+  // the mark whose instances fill each row, and what of them
   layer: LayerRequest
+  compare: RowCompareBy
   // the adapter options each region's fetch carries, as the display's own
   // does, so the matrix reads the features the plot draws
   regionOpts?: (object | undefined)[]

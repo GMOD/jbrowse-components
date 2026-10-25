@@ -1,8 +1,10 @@
 import {
+  MAX_CATEGORICAL_VALUES,
   binSpan,
   columnMeans,
   columnSegments,
-  spanColumns,
+  coverSpan,
+  markGaps,
 } from '@jbrowse/tree-sidebar/binColumns'
 
 // `regionIndex` is required because genomic coordinates repeat across
@@ -17,11 +19,7 @@ export interface MatrixFeature {
 
 export type MatrixEncoding = 'presence' | 'scalar' | 'categorical'
 
-// Past this many distinct values a field is an identifier, not a category:
-// one-hot over it is a row of channels no two rows share, so the distance
-// carries only coverage, at `channels` times the cost of measuring coverage
-// directly. `name` under the auto pick is the field that gets here.
-export const MAX_CATEGORICAL_VALUES = 64
+export { MAX_CATEGORICAL_VALUES }
 
 function chooseEncoding(
   clusterField: string,
@@ -107,9 +105,6 @@ export function buildMultiRowMatrix({
   }
 
   const rows = new Map<string, Float32Array<ArrayBuffer>>()
-  // Refilled per row, and assigned in feature order so a later feature
-  // overwrites the bins it shares with an earlier one: last covering wins.
-  const coveringPerBin = new Array<MatrixFeature | undefined>(width)
   // The scalar path averages instead, the way a wiggle column does: several
   // features commonly land in one bin, and last-wins would sample one of them
   // at random.
@@ -131,25 +126,15 @@ export function buildMultiRowMatrix({
       rows.set(name, columnMeans(sums, counts, 0, row))
       continue
     }
-    coveringPerBin.fill(undefined)
     for (const f of intervals) {
       const segment = segments[f.regionIndex]
       if (segment) {
-        const { startX, endX } = spanColumns(segment, f.start, f.end)
-        const from = segment.colOffset + startX
-        coveringPerBin.fill(f, from, from + Math.max(0, endX - startX))
+        const slot = encoding === 'presence' ? 0 : slotOf.get(f.value)!
+        coverSpan(row, 0, channels, segment, f.start, f.end, slot)
       }
     }
-    for (let binIndex = 0; binIndex < width; binIndex++) {
-      const covering = coveringPerBin[binIndex]
-      if (encoding === 'presence') {
-        row[binIndex] = covering ? 1 : 0
-      } else {
-        row[
-          binIndex * channels +
-            (covering ? slotOf.get(covering.value)! : channels - 1)
-        ] = 1
-      }
+    if (encoding === 'categorical') {
+      markGaps(row, 0, width, channels)
     }
     rows.set(name, row)
   }

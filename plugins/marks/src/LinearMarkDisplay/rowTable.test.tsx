@@ -224,6 +224,43 @@ test('sort at a column after a reorder names each value by its key, not its slot
   expect(display.rowSort).toEqual(['dad', 'mom', 's2', 's10'])
 })
 
+test('span rows sort at a column by the color they paint there, the largest block first', () => {
+  const display = loaded({ rows: 'source' }, [
+    {
+      mark: 'rect',
+      encoding: {
+        color: {
+          field: 'tissue',
+          scale: { domain: ['liver', 'brain'], range: ['black', 'white'] },
+        },
+      },
+    },
+  ])
+  expect(display.rowCompare).toEqual({ mark: 0, by: 'colorKey' })
+  expect(display.rowCompareLabel).toBe('tissue')
+  expect(display.sortRowsByValueAt('ctgA', 250)).toBe(true)
+  expect(display.rowSort).toEqual(['mom', 's2', 'dad', 's10'])
+
+  // the block comes first whichever of the two colors packs higher
+  const { color } = display.conf.marks[0]!.encoding
+  setConf(color, ['scale', 'range'], ['white', 'black'])
+  expect(display.sortRowsByValueAt('ctgA', 250)).toBe(true)
+  expect(display.rowSort).toEqual(['mom', 's2', 'dad', 's10'])
+})
+
+test('span rows under one color sort by whether they cover the column', () => {
+  const display = loaded({ rows: 'source' }, [{ mark: 'rect' }])
+  expect(display.rowCompare).toEqual({ mark: 0, by: 'presence' })
+  expect(display.sortRowsByValueAt('ctgA', 650)).toBe(true)
+  expect(display.rowSort).toEqual(['dad', 'mom', 's10', 's2'])
+})
+
+test('a bar beside a span is what the rows compare on', () => {
+  const display = loaded({ rows: 'source' }, [{ mark: 'rect' }, ...BARS])
+  expect(display.rowCompare).toEqual({ mark: 1, by: 'y' })
+  expect(display.rowCompareLabel).toBe('value')
+})
+
 test('a focused-out row sorts with the rows that have no value there', () => {
   const display = loaded({ rows: 'source' })
   display.setRowFocus(['mom', 's2', 's10'])

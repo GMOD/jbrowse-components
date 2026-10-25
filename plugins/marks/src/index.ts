@@ -30,6 +30,10 @@ export type {
 } from './LinearMarkDisplay/markProblems.ts'
 export type { SharedKey } from './LinearMarkDisplay/pinDistinct.ts'
 export type {
+  RowCompare,
+  RowCompareBy,
+} from './LinearMarkDisplay/rowCompare.ts'
+export type {
   ColorSource,
   HeldColor,
   ValueColor,

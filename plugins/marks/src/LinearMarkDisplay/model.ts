@@ -126,11 +126,12 @@ import {
   toBinEdges,
   widestBinStep,
 } from './markRequest.ts'
-import { markSizePx, pxChannelOf, readsValue } from './markSpecs.ts'
+import { markSizePx, pxChannelOf } from './markSpecs.ts'
 import { DEFAULT_POINT_DIAMETER_PX } from './markVocabulary.ts'
 import { MARK_Y_PATHS } from './markYPaths.ts'
 import { sharedKeyNotice, sharedKeysOf } from './pinDistinct.ts'
 import { defaultPlot } from './plotDefault.ts'
+import { byBlockSize, rowCompareLabel, rowCompareOf } from './rowCompare.ts'
 import {
   drawnKeysOf,
   drawnRegion,
@@ -165,6 +166,7 @@ import type {
 } from './markList.ts'
 import type { MarkPlot, MarkPlotSettings } from './markPlot.ts'
 import type { MarkProblem } from './markProblems.ts'
+import type { RowCompare } from './rowCompare.ts'
 import type { RowKeySpace } from './rowTable.ts'
 import type { JoinedPlotFields, PlotFields } from './scanPlotFields.ts'
 import type { StepChannels } from './stepChannels.ts'
@@ -1613,28 +1615,36 @@ export function stateModelFactory(
       .views(self => ({
         /**
          * #getter
-         * The first mark drawing at this zoom that stands at a value: what a
-         * row's value at a column is read from, and what clustering compares.
-         * -1 where none does, so span rows cluster nothing: they would need
-         * multi-row's presence and categorical encodings
-         * (`buildMultiRowMatrix`) moved into tree-sidebar.
+         * The mark clustering and "Sort rows by ... here" read at this zoom,
+         * and what of its instances they compare (`rowCompareOf`).
          */
-        get valueMarkIndex(): number {
-          return (
-            self.drawingMarkIndices.find(i => readsValue(self.markTypes[i]!)) ??
-            -1
+        get rowCompare(): RowCompare | undefined {
+          return rowCompareOf(
+            self.drawingMarkIndices,
+            self.markTypes,
+            self.markColors,
           )
         },
         /**
          * #getter
+         * What a sort or a cluster caption names the compared thing.
+         */
+        get rowCompareLabel(): string {
+          const compare = this.rowCompare
+          return compare
+            ? rowCompareLabel(compare.by, self.markColors[compare.mark])
+            : 'value'
+        },
+        /**
+         * #getter
          * Two or more clusterable rows once the row listing settles, and a
-         * mark that has a value.
+         * mark to compare them on.
          */
         get autoClusterReady(): boolean {
           return (
             self.rowListingSettled &&
             self.clusterableSources.length > 1 &&
-            this.valueMarkIndex !== -1
+            this.rowCompare !== undefined
           )
         },
         /**
@@ -1722,22 +1732,25 @@ export function stateModelFactory(
         },
         /**
          * #action
-         * Order the rows by the value each stands at over (refName, pos),
-         * highest first, off the loaded regions with no refetch; false where no
+         * Order the rows by what `rowCompare` reads over (refName, pos), off
+         * the loaded regions with no refetch: values and ramped numbers
+         * highest first, painted colors in blocks of one color, the largest
+         * on screen first, and covered rows before bare ones; false where no
          * loaded region covers the column.
          */
         sortRowsByValueAt(refName: string, pos: number) {
-          const mark = self.valueMarkIndex
+          const compare = self.rowCompare
           return sortRowsAtColumn(
             self,
             refName,
             pos,
-            index => (mark === -1 ? undefined : self.rpcDataMap.get(index)),
+            index => (compare ? self.rpcDataMap.get(index) : undefined),
             (rows, region) => {
+              const { mark, by } = compare!
               const { rowTable } = self
               const { rowKeys } = self.rowKeySpace
               const byName = new Map<string, number>()
-              for (const [key, value] of rowValuesAt(region, mark, pos)) {
+              for (const [key, value] of rowValuesAt(region, mark, pos, by)) {
                 const name =
                   rowTable && keySlot(key, rowTable) !== undefined
                     ? rowKeys.names[key]
@@ -1746,7 +1759,11 @@ export function stateModelFactory(
                   byName.set(name, value)
                 }
               }
-              return orderRowsByValueAt(rows, byName, (a, b) => b - a)
+              return orderRowsByValueAt(
+                rows,
+                byName,
+                by === 'colorKey' ? byBlockSize(byName) : (a, b) => b - a,
+              )
             },
           )
         },
