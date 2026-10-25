@@ -56,6 +56,6 @@ could take an "RHD" highlight.
 ## Capturing on the laptop
 
 With ada's ssh refused, a worktree build (`pnpm --filter @jbrowse/web build`)
-and `TMPDIR=/tmp/<short> node scripts/generate-screenshots.ts --filter <names>
---localport <free port>` from `website/` worked, after symlinking
-`website/static/img` and `static/media` to the primary's.
+and `website/scripts/generate-screenshots.ts`, run from `website/` with a short
+`TMPDIR`, `--filter <names>` and a free `--localport`, worked after symlinking
+`website/static/img` and `website/static/media` to the primary's.
