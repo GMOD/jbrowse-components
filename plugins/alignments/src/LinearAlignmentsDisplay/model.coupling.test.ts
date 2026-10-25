@@ -511,7 +511,7 @@ describe('pileup-only menus grey out when the pileup is hidden', () => {
     expect(item?.disabledHelpText).toBeTruthy()
     const advanced = menuSubItems(display.trackMenuItems(), 'Advanced')
     expect(hasMenuItem(advanced, 'Track height')).toBe(true)
-    expect(hasMenuItem(advanced, 'Set max layout height...')).toBe(false)
+    expect(hasMenuItem(advanced, 'Max layout height...')).toBe(false)
   })
 
   test.each(['Group by...', 'Filter by...'])(
@@ -535,11 +535,11 @@ describe('the row cap sits with the other sizing controls', () => {
     const items = display.trackMenuItems()
     for (const menu of ['Show...', 'Read height']) {
       expect(
-        hasMenuItem(menuSubItems(items, menu), 'Set max layout height...'),
+        hasMenuItem(menuSubItems(items, menu), 'Max layout height...'),
       ).toBe(false)
     }
     expect(
-      hasMenuItem(menuSubItems(items, 'Advanced'), 'Set max layout height...'),
+      hasMenuItem(menuSubItems(items, 'Advanced'), 'Max layout height...'),
     ).toBe(true)
   })
 
@@ -2058,7 +2058,7 @@ describe('rows the layer menus hand to other menus', () => {
     expect(labelsUnder(display, 'Advanced')).toEqual([
       'Edit plot...',
       'Coverage axis...',
-      'Set max layout height...',
+      'Max layout height...',
       'Color alleles in coverage',
       'Track height',
     ])
@@ -2076,7 +2076,7 @@ describe('rows the layer menus hand to other menus', () => {
     expect(labelsUnder(display, 'Advanced')).toEqual([
       'Edit plot...',
       'Coverage axis...',
-      'Set max layout height...',
+      'Max layout height...',
       'Color alleles in coverage',
       'Track height',
       'Read connections color',

@@ -975,10 +975,10 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     viewportHeight: 560,
     actions: [
       { type: 'click', selector: '[data-testid="track_menu_icon"]' },
-      ...menuCascade(['Advanced', 'Track height', FIT_TO_TRACK_LABEL]),
+      ...menuCascade(['Read height', FIT_TO_TRACK_LABEL]),
     ],
     annotations: [
-      { type: 'box', anchor: { text: 'Track height' } },
+      { type: 'box', anchor: { text: 'Read height' } },
       { type: 'box', anchor: { text: FIT_TO_TRACK_LABEL } },
     ],
   },

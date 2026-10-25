@@ -74,33 +74,34 @@ function checkedLabels(items: MenuItem[]) {
   )
 }
 
-// The sizes alone: fitting to the track lives in Advanced → Track height, and
-// the configured size stays ticked through it
-test('Read height offers the sizes, and a size click ends a fit', () => {
+test('fit to track height is one more read height radio', () => {
   const { display } = createDisplay()
   const rows = () => getFeatureHeightMenuItem(display, 'read').subMenu
-  expect(rows()).toHaveLength(4)
-  display.setHeightMode('fit')
-  expect(checkedLabels(rows())).toEqual([COMPACTNESS_PRESETS.normal.label])
+  expect(rows()).toHaveLength(5)
+  clickMenuItem(rows(), FIT_TO_TRACK_LABEL)
+  expect(display.heightMode).toBe('fit')
+  expect(checkedLabels(rows())).toEqual([FIT_TO_TRACK_LABEL])
   clickMenuItem(rows(), COMPACTNESS_PRESETS.compact.label)
   expect(display.heightMode).toBe('fixed')
   expect(checkedLabels(rows())).toEqual([COMPACTNESS_PRESETS.compact.label])
 })
 
-test('Track height picks the height mode, and the row cap needs rows', () => {
+test('Track height is fixed or autogrow, a fit ticks Fixed, and the row cap needs rows', () => {
   const { display } = createDisplay()
   const rows = (gate = {}) => getTrackSizingItems(display, gate)
   const modes = () => menuSubItems(rows(), 'Track height')
   clickMenuItem(modes(), 'Autogrow')
   expect(display.heightMode).toBe('grow')
   expect(checkedLabels(modes())).toEqual(['Autogrow'])
-  clickMenuItem(modes(), FIT_TO_TRACK_LABEL)
-  expect(display.heightMode).toBe('fit')
+  display.setHeightMode('fit')
+  expect(checkedLabels(modes())).toEqual(['Fixed'])
+  clickMenuItem(modes(), 'Autogrow')
+  expect(display.heightMode).toBe('grow')
   clickMenuItem(modes(), 'Fixed')
   expect(display.heightMode).toBe('fixed')
   expect(rows().map(i => 'label' in i && i.label)).toEqual([
     'Track height',
-    'Set max layout height...',
+    'Max layout height...',
   ])
   expect(
     rows({ disabled: true, disabledHelpText: 'no pileup' }).map(

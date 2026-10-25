@@ -28,7 +28,7 @@ import type { LinearAlignmentsDisplayModel } from '../model.ts'
 // does nothing when clicked. You meet it by scrolling to the end of the reads,
 // which is exactly when "there were more" is worth knowing; a reader who does
 // not scroll that far is not being asked to care. Raising the cap stays in the
-// track menu ("Set max layout height..."), which is where a persistent setting
+// track menu ("Max layout height..."), which is where a persistent setting
 // belongs.
 //
 // PER SECTION, not per display: the ceiling is display-wide but the boundary is

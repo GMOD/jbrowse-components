@@ -129,7 +129,7 @@ test('no read-category filter is offered here', () => {
 // read size and the fixed/grow/fit modes already live.
 test('the row cap is not here', () => {
   const { queryByText } = renderRows(subMenuOf(makeModel()))
-  expect(queryByText('Set max layout height...')).toBeNull()
+  expect(queryByText('Max layout height...')).toBeNull()
 })
 
 function interbaseRow(showCoverage: boolean) {

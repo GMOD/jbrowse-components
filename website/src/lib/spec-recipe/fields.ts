@@ -1931,11 +1931,11 @@ export const trackFields: Record<string, FieldRecipe> = {
         : undefined
     }
     if (!(displayType && CANVAS_DISPLAYS.has(displayType))) {
-      return value === 'fit' && !isAlignmentsOnlyField(displayType)
+      return value === 'fit'
         ? { path: `${heightMenu(noun, displayType)} → ${FIT_TO_TRACK_LABEL}` }
-        : value === 'fit' || value === 'grow' || value === 'fixed'
+        : value === 'grow' || value === 'fixed'
           ? {
-              path: `${TRACK_MENU} → Advanced → Track height → ${value === 'fit' ? FIT_TO_TRACK_LABEL : value === 'grow' ? 'Autogrow' : 'Fixed'}`,
+              path: `${TRACK_MENU} → Advanced → Track height → ${value === 'grow' ? 'Autogrow' : 'Fixed'}`,
             }
           : undefined
     }
@@ -2042,7 +2042,7 @@ export const trackFields: Record<string, FieldRecipe> = {
     'Unchecked, the band keeps only the pairs that carry a category — an abnormal insert size or orientation, or a split junction — which on deep coverage is the difference between a readable band and a solid mass.',
   ),
   'pileup.maxLayoutHeight': numberField(n => ({
-    path: `${TRACK_MENU} → Advanced → Set max layout height... → ${n}`,
+    path: `${TRACK_MENU} → Advanced → Max layout height... → ${n}`,
   })),
   mark: markStep,
   extent: value =>

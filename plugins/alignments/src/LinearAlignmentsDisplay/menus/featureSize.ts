@@ -22,12 +22,12 @@ interface MaxHeightModel {
 // The pileup row cap: how tall the stack may grow before reads are dropped.
 function getMaxHeightMenuItem(model: MaxHeightModel) {
   return {
-    label: 'Set max layout height...',
+    label: 'Max layout height...',
     onClick: () => {
       getDialogHost(model).queueDialog(handleClose => [
         PixelHeightDialog,
         {
-          title: 'Set max layout height',
+          title: 'Max layout height',
           description:
             'Maximum pixel height of the pileup layout. Reads that pile up beyond this are not stacked; the coverage histogram still reflects the true depth. Raise it for very deep targeted-sequencing data.',
           label: 'Max layout height (px)',
@@ -60,11 +60,8 @@ export {
   featureSpacingForHeight,
 } from './compactnessPresets.ts'
 
-// One radio group of sizes: the pixel-size presets and Custom. The tick is the
-// configured size, which a fit to the track height overrides while it lasts;
-// picking a size drops back to fixed (`setReadHeight`). The height modes
-// (fixed, autogrow, fit) and the row cap sit in "Advanced", from
-// `getTrackSizingItems`.
+// One radio group: the pixel-size presets, Custom, and fitting the reads to
+// the track. Picking a size drops back to fixed (`setReadHeight`).
 interface FeatureHeightModel {
   configuredReadHeight: number
   heightMode: HeightMode
@@ -77,6 +74,7 @@ export function getFeatureHeightMenuItem(
   noun: string,
   gate: ContentGate = {},
 ) {
+  const fit = model.heightMode === 'fit'
   const height = model.configuredReadHeight
   const matchesPreset = (preset: { height: number }) => height === preset.height
   return {
@@ -86,14 +84,14 @@ export function getFeatureHeightMenuItem(
     ...gate,
     subMenu: [
       ...PRESETS.map(preset =>
-        radioItem(preset.label, matchesPreset(preset), () => {
+        radioItem(preset.label, !fit && matchesPreset(preset), () => {
           model.setReadHeight(preset.height)
         }),
       ),
       {
         label: 'Custom...',
         type: 'radio' as const,
-        checked: !PRESETS.some(matchesPreset),
+        checked: !fit && !PRESETS.some(matchesPreset),
         keepMenuOpen: false,
         onClick: () => {
           // Seeded from the configured (fixed-mode) size, not the resolved
@@ -113,6 +111,9 @@ export function getFeatureHeightMenuItem(
           ])
         },
       },
+      radioItem(FIT_TO_TRACK_LABEL, fit, () => {
+        model.setHeightMode('fit')
+      }),
     ],
   }
 }
@@ -122,12 +123,11 @@ export const TRACK_HEIGHT_LABEL = 'Track height'
 const TRACK_HEIGHT_OPTIONS: { value: HeightMode; label: string }[] = [
   { value: 'fixed', label: 'Fixed' },
   { value: 'grow', label: 'Autogrow' },
-  { value: 'fit', label: FIT_TO_TRACK_LABEL },
 ]
 
 /**
- * The track-sizing rows for "Advanced": the height mode as one radio group,
- * and the row cap.
+ * The track-sizing rows for "Advanced": fixed or autogrow, and the row cap. A
+ * fit keeps the track's height, so it ticks Fixed.
  * Autogrow is offered without content, since grow still fits the track to a
  * pileup-less stack (`growTargetHeight` collapses to the coverage bands); the
  * row cap only while there are rows.
@@ -140,9 +140,13 @@ export function getTrackSizingItems(
     {
       label: TRACK_HEIGHT_LABEL,
       type: 'subMenu' as const,
-      subMenu: radioItems(TRACK_HEIGHT_OPTIONS, model.heightMode, mode => {
-        model.setHeightMode(mode)
-      }),
+      subMenu: radioItems(
+        TRACK_HEIGHT_OPTIONS,
+        model.heightMode === 'grow' ? 'grow' : 'fixed',
+        mode => {
+          model.setHeightMode(mode)
+        },
+      ),
     },
     ...(gate.disabled ? [] : [getMaxHeightMenuItem(model)]),
   ]
