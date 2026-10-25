@@ -300,6 +300,39 @@ test("an identity color paints each feature its file's color, and its key's name
   expect(display.configProblems).toEqual([])
 })
 
+test('hiding an identity key row drops the features painted its color', () => {
+  const { display } = createTestEnvironment({
+    marks: [
+      {
+        mark: 'rect',
+        encoding: {
+          color: {
+            scale: {
+              type: 'identity',
+              domain: ['rgb(255,0,0)', 'rgb(0,128,0)'],
+              names: ['Active TSS', 'Strong transcription'],
+            },
+          },
+        },
+      },
+    ],
+  }).createDisplay()
+  display.setRpcData(0, workerResult(display, PAINTED), REGION)
+
+  display.toggleCategory('', ['rgb(255,0,0)'])
+
+  const blue = cssColorToABGR(DEFAULT_MARK_COLOR)
+  expect(colorLane(display)).toEqual([cssColorToABGR('rgb(0,128,0)'), blue])
+  const [key] = display.colorScales
+  expect(
+    key?.kind === 'categorical' &&
+      key.entries.map(e => [e.label, !!e.hidden] as const),
+  ).toEqual([
+    ['Active TSS', true],
+    ['Strong transcription', false],
+  ])
+})
+
 test("a text mark under an identity color prints each label in its feature's color", () => {
   const { display } = createTestEnvironment({
     marks: [

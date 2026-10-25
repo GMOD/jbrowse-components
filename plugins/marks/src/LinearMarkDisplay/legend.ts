@@ -1,6 +1,7 @@
 import { categoricalField } from '@jbrowse/core/util/categoricalField'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { stopsFromRampLut } from '@jbrowse/core/util/colorRamp'
+import { IDENTITY_SCALE } from '@jbrowse/core/util/colorScale'
 import { DEFAULT_COLOR_SCHEME } from '@jbrowse/core/util/colorSchemes'
 import { isJexl } from '@jbrowse/core/util/jexlStrings'
 import {
@@ -27,6 +28,7 @@ import { thresholdBandOf } from '@jbrowse/render-core/marks'
 import { rampMidNorm, scaleTypeCode } from '@jbrowse/render-core/scoreScale'
 
 import type { MarkConfig } from './configSchema.ts'
+import type { HiddenCategory } from './markColor.ts'
 import type { MarkRegionData, StoredLayer } from './markList.ts'
 import type {
   CategoricalEntry,
@@ -58,21 +60,27 @@ export function constantColorOf(mark: MarkConfig): string | undefined {
 
 /**
  * What a mark's channel says of its key: its guide members, copied out of the
- * config so a section holds plain values.
+ * config so a section holds plain values, and for a color the values of its
+ * field that `hidden` names.
  */
 export function keySettingOf(
   mark: MarkConfig | undefined,
   channel: ScaledChannel,
+  hidden: readonly HiddenCategory[] = [],
 ): MarkKeySetting {
   if (!mark) {
     return {}
   }
   if (channel === 'color') {
     const { color } = mark.encoding
-    const { scale, legend } = withPreset(
+    const { field, scale, legend } = withPreset(
       colorSnapshotOf(color),
       FEATURE_FIELD_PRESETS,
     )
+    const keyField = scale.type === IDENTITY_SCALE ? '' : field
+    const hiddenValues = hidden
+      .filter(h => h.field === keyField)
+      .map(h => h.value)
     return {
       title: legend.title,
       names: [...(scale.names ?? [])],
@@ -81,6 +89,7 @@ export function keySettingOf(
       missingLabel: color.legend.missingLabel,
       unknown: scale.unknown,
       invalid: scale.invalid,
+      ...(hiddenValues.length > 0 ? { hidden: hiddenValues } : {}),
     }
   }
   const { scale, legend } = mark.encoding.shape
@@ -123,6 +132,8 @@ export interface MarkKeySetting {
   unknown?: string
   /** The color `invalid` paints a feature with no value */
   invalid?: string
+  /** The values the Categories menu hides, which the key strikes through. */
+  hidden?: readonly string[]
 }
 
 /**
@@ -493,7 +504,22 @@ function identityRows(
     value: color,
     label: label(color),
     color,
+    ...(key.hidden?.includes(color) ? { hidden: true } : {}),
   }))
+}
+
+// A key's rows struck through where every value a row names is hidden.
+function withHiddenRows(scale: CategoricalScale, { hidden }: MarkKeySetting) {
+  return hidden?.length
+    ? {
+        ...scale,
+        entries: scale.entries.map(e =>
+          (e.values ?? [e.value]).every(v => hidden.includes(v))
+            ? { ...e, hidden: true }
+            : e,
+        ),
+      }
+    : scale
 }
 
 /**
@@ -540,7 +566,7 @@ export function markColorScales(
         const hinted =
           scale.numericKeys && listed.length > NUMERIC_KEY_HINT_ROWS
         if (!hinted) {
-          return keys.map(k => listedKey(k, key))
+          return keys.map(k => withHiddenRows(listedKey(k, key), key))
         }
         return keys.length > 0
           ? keys.map(k => ({ ...listedKey(k, key), note: NUMERIC_KEY_HINT }))

@@ -35,6 +35,7 @@ import {
 import { heldColorSlots } from '@jbrowse/display-kit/heldColorSlots'
 import { MAX_COLOR_CUTS } from '@jbrowse/render-core/shaders/markColorConsts'
 
+import { keptInstances } from './keptInstances.ts'
 import { paintScaleOf } from './legend.ts'
 import { plotsValue } from './markSpecs.ts'
 
@@ -56,6 +57,16 @@ import type { MarkColorScale } from '@jbrowse/render-core/marks'
 /** A color over a number: a ramp, or a threshold's bands. */
 export type ValueColor = ContinuousRef | ThresholdRef
 
+/**
+ * A category a key row hides: a value of the field a categorical color
+ * reads, or under an identity color (`field` `''`) a color its `domain`
+ * lists.
+ */
+export interface HiddenCategory {
+  field: string
+  value: string
+}
+
 /** How a mark's color is worked out: one of five ways. */
 export type ColorSource =
   /** One color for every feature; the worker reads nothing for it. */
@@ -64,11 +75,13 @@ export type ColorSource =
    * A color per category; the worker sends each feature's category as an
    * index into the categories it met, and each is painted here through the
    * config's `domain` and `range`, dealt into `held` (`heldColorSlots`).
+   * A category in `hidden` drops its instances.
    */
   | {
       kind: 'categories'
       encoding: CategoricalRef & { range?: string[] }
       held?: HeldSlots
+      hidden?: string[]
     }
   /**
    * A ramp or threshold over a number; the worker sends the numbers, unless
@@ -80,23 +93,32 @@ export type ColorSource =
   /**
    * Each feature's own BED color (ADR-166); the worker sends each feature's
    * color as an index into the colors it met, a feature carrying none in the
-   * mark's default. `domain` and `names` are the key's alone.
+   * mark's default. `domain` and `names` are the key's alone; a color in
+   * `hidden`, packed, drops its instances.
    */
-  | { kind: 'identity'; domain: string[] }
+  | { kind: 'identity'; domain: string[]; hidden?: number[] }
 
 /**
  * `owner` is the display holding the mark, whose track's ordinal colors
  * deal into one set of slots; a caller that only asks the worker leaves it
- * out.
+ * out, as it does `hidden`, the categories the key hides.
  */
 export function markColorOf(
   mark: MarkConfig,
   channels: StepChannels,
   owner?: object,
+  hidden: readonly HiddenCategory[] = [],
 ): ColorSource {
   const setting = colorSettingOf(mark.encoding.color)
+  const hiddenOf = (field: string) =>
+    hidden.filter(h => h.field === field).map(h => h.value)
   if (setting.scale.type === IDENTITY_SCALE && setting.value === undefined) {
-    return { kind: 'identity', domain: [...setting.scale.domain] }
+    const colors = hiddenOf('').map(value => cssColorToABGR(value))
+    return {
+      kind: 'identity',
+      domain: [...setting.scale.domain],
+      ...(colors.length > 0 ? { hidden: colors } : {}),
+    }
   }
   // a key's names change what the legend says, not what any feature paints
   const encoding = paintedColorEncoding(featureColorEncoding(setting))
@@ -107,10 +129,12 @@ export function markColorOf(
       : { kind: 'constant', color: cssColorToABGR(value) }
   }
   if (encoding.scale === 'ordinal') {
+    const values = hiddenOf(encoding.field)
     return {
       kind: 'categories',
       encoding,
       held: owner && heldColorSlots(owner, encoding),
+      ...(values.length > 0 ? { hidden: values } : {}),
     }
   }
   const y = mark.encoding.y || channels.y
@@ -221,6 +245,7 @@ function colorByKeys<L extends EncodedChannels>(
   keys: Uint32Array,
   encoding?: CategoricalRef & { range?: string[] },
   held?: HeldSlots,
+  hidden: readonly string[] = [],
 ): L {
   const read = layer.scale
   if (read?.kind !== 'categorical') {
@@ -246,22 +271,48 @@ function colorByKeys<L extends EncodedChannels>(
   for (let k = 0; k < layer.count; k++) {
     color[k] = palette[keys[k]!]!
   }
+  const isHidden = read.entries.map(e => hidden.includes(e.value))
   const entries = read.entries
-    .map((e, i) => ({ value: e.value, color: palette[i]! }))
+    .map((e, i) => ({
+      value: e.value,
+      color: palette[i]!,
+      ...(isHidden[i] ? { hidden: true } : {}),
+    }))
     .sort((a, b) => declared.compare(a.value, b.value))
-  return {
-    ...layer,
-    color,
-    colorKey: undefined,
-    scale: {
-      kind: 'categorical',
-      field,
-      domain: [...declared.domain],
-      ...(own?.range ? { range: [...own.range] } : {}),
-      ...(read.numericKeys ? { numericKeys: true } : {}),
-      entries,
+  return withoutHidden(
+    {
+      ...layer,
+      color,
+      colorKey: undefined,
+      scale: {
+        kind: 'categorical',
+        field,
+        domain: [...declared.domain],
+        ...(own?.range ? { range: [...own.range] } : {}),
+        ...(read.numericKeys ? { numericKeys: true } : {}),
+        entries,
+      },
     },
+    keys,
+    isHidden,
+  )
+}
+
+// The instances whose key is hidden dropped, and the layer as it is while
+// none is.
+function withoutHidden<L extends EncodedChannels>(
+  layer: L,
+  keys: Uint32Array,
+  isHidden: readonly boolean[],
+) {
+  if (!isHidden.includes(true)) {
+    return layer
   }
+  const keep = new Uint8Array(layer.count)
+  for (let k = 0; k < layer.count; k++) {
+    keep[k] = isHidden[keys[k]!] ? 0 : 1
+  }
+  return keptInstances(layer, keep)
 }
 
 // Each feature's own color off its key, the table keeping the key's `domain`.
@@ -269,6 +320,7 @@ function colorByOwnColors<L extends EncodedChannels>(
   layer: L,
   keys: Uint32Array,
   domain: string[] = [],
+  hidden: readonly number[] = [],
 ): L {
   const read = layer.scale
   if (read?.kind !== 'identity') {
@@ -278,7 +330,20 @@ function colorByOwnColors<L extends EncodedChannels>(
   for (let k = 0; k < layer.count; k++) {
     color[k] = read.entries[keys[k]!]!.color
   }
-  return { ...layer, color, colorKey: undefined, scale: { ...read, domain } }
+  const isHidden = read.entries.map(e => hidden.includes(e.color))
+  const entries = read.entries.map((e, i) =>
+    isHidden[i] ? { ...e, hidden: true } : e,
+  )
+  return withoutHidden(
+    {
+      ...layer,
+      color,
+      colorKey: undefined,
+      scale: { ...read, domain, entries },
+    },
+    keys,
+    isHidden,
+  )
 }
 
 const DEFAULT_ABGR = cssColorToABGR(DEFAULT_MARK_COLOR)
@@ -374,11 +439,17 @@ export function withMarkColor<L extends EncodedChannels>(
       return layer.colorKey &&
         layer.scale?.kind === 'categorical' &&
         layer.scale.field === color.encoding.field
-        ? colorByKeys(layer, layer.colorKey, color.encoding, color.held)
+        ? colorByKeys(
+            layer,
+            layer.colorKey,
+            color.encoding,
+            color.held,
+            color.hidden,
+          )
         : colorAsHeld(layer)
     case 'identity':
       return layer.colorKey && layer.scale?.kind === 'identity'
-        ? colorByOwnColors(layer, layer.colorKey, color.domain)
+        ? colorByOwnColors(layer, layer.colorKey, color.domain, color.hidden)
         : colorAsHeld(layer)
     case 'numbers': {
       const { fromY, encoding } = color

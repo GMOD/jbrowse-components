@@ -233,8 +233,11 @@ export type ColorScaleTable =
        * the data.
        */
       numericKeys?: boolean
-      /** Each key met, in the field's order, `''` for no value. */
-      entries: { value: string; color: number }[]
+      /**
+       * Each key met, in the field's order, `''` for no value; `hidden` where
+       * a display's key hides it, and its instances are gone.
+       */
+      entries: { value: string; color: number; hidden?: boolean }[]
     }
   | {
       kind: 'identity'
@@ -243,7 +246,7 @@ export type ColorScaleTable =
       /** The colors the key lists, the config's `scale.domain`; the worker sends none. */
       domain: string[]
       /** Each color met as `r,g,b`, `''` for a feature carrying none. */
-      entries: { value: string; color: number }[]
+      entries: { value: string; color: number; hidden?: boolean }[]
     }
   | {
       kind: 'threshold'

@@ -36,6 +36,7 @@ export type {
 export type {
   ColorSource,
   HeldColor,
+  HiddenCategory,
   ValueColor,
 } from './LinearMarkDisplay/markColor.ts'
 

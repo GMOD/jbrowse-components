@@ -1,4 +1,5 @@
 import { setConf } from '@jbrowse/core/configuration'
+import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
 import { MockHal } from '@jbrowse/render-core/hal'
 import { rowSlot } from '@jbrowse/render-core/marks'
 import { GpuMarkBackend } from '@jbrowse/render-core/marks/backend'
@@ -17,6 +18,7 @@ import { placeTextMarks } from './textMarks.ts'
 
 import type { MarkHitInfo } from './findMarkHit.ts'
 import type { LinearMarkDisplayModel } from './model.ts'
+import type { MenuItem } from '@jbrowse/core/ui'
 import type { Feature } from '@jbrowse/core/util/simpleFeature'
 
 const BARS = [
@@ -321,6 +323,90 @@ test('a region still holding an earlier color gives a color sort nothing to read
   // the held scores would put s10, 40, first
   display.sortRowsByValueAt('ctgA', 650)
   expect(display.rowSort).toEqual(['dad', 'mom', 's2', 's10'])
+})
+
+const TISSUE_RECTS = [
+  {
+    mark: 'rect',
+    encoding: { color: { field: 'tissue', scale: { type: 'ordinal' } } },
+  },
+]
+
+function menuLabels(display: LinearMarkDisplayModel) {
+  const labelOf = (item: MenuItem) => ('label' in item ? item.label : '')
+  return display
+    .trackMenuItems()
+    .flatMap(item => [
+      labelOf(item),
+      ...('subMenu' in item
+        ? resolveSubMenu(item).map(sub => `  ${labelOf(sub)}`)
+        : []),
+    ])
+}
+
+test('hiding a key category drops its spans from the plot and the hover, and fetches nothing', () => {
+  const display = loaded({ rows: 'source' }, TISSUE_RECTS)
+  const count = () => display.rpcDataMap.get(0)!.layers[0]!.count
+  const before = JSON.stringify(display.rpcProps())
+  expect(count()).toBe(5)
+
+  display.toggleCategory('tissue', ['liver'])
+
+  expect(JSON.stringify(display.rpcProps())).toBe(before)
+  expect(count()).toBe(2)
+  expect(sweepHits(display).map(h => rowNameOf(display, h))).not.toContain('s2')
+  const key = display.colorScales[0]!
+  expect(
+    key.kind === 'categorical' &&
+      key.entries.map(e => [e.value, !!e.hidden] as const),
+  ).toEqual([
+    ['brain', false],
+    ['heart', false],
+    ['liver', true],
+  ])
+  expect(menuLabels(display)).toEqual(
+    expect.arrayContaining([
+      'Filter by... (1)',
+      '  Show all categories',
+      'Categories (1 hidden)',
+      '  liver',
+    ]),
+  )
+
+  display.toggleCategory('tissue', ['liver'])
+  expect(count()).toBe(5)
+  display.toggleCategory('tissue', ['liver', 'brain'])
+  expect(count()).toBe(1)
+  display.showAllCategories()
+  expect(count()).toBe(5)
+  expect(display.hiddenCategories).toBeUndefined()
+})
+
+test('under a row focus a hidden category keeps its key row, its way back', () => {
+  const display = loaded({ rows: 'source' }, TISSUE_RECTS)
+  display.setRowFocus(['mom', 'dad', 's2'])
+  display.toggleCategory('tissue', ['liver'])
+  expect(legendValues(display)).toContain('liver')
+  expect(menuLabels(display)).toContain('  liver')
+})
+
+test('a hide keeps across a palette edit and waits out a field change', () => {
+  const display = loaded({ rows: 'source' }, TISSUE_RECTS)
+  const count = () => display.rpcDataMap.get(0)!.layers[0]!.count
+  display.toggleCategory('tissue', ['liver'])
+  const { color } = display.conf.marks[0]!.encoding
+  setConf(color, ['scale', 'range'], ['black', 'white', 'gray'])
+  expect(count()).toBe(2)
+
+  setConf(color, 'field', 'source')
+  display.setRpcData(0, workerResult(display, FAMILY), REGION)
+  expect(display.activeHiddenCategories).toEqual([])
+  expect(count()).toBe(5)
+
+  setConf(color, 'field', 'tissue')
+  display.setRpcData(0, workerResult(display, FAMILY), REGION)
+  expect(display.activeHiddenCategories).toHaveLength(1)
+  expect(count()).toBe(2)
 })
 
 test('a bar beside a span is what the rows compare on', () => {

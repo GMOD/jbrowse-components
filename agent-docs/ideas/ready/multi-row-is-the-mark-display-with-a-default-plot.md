@@ -1,6 +1,6 @@
 ---
 name: multi-row-is-the-mark-display-with-a-default-plot
-description: LinearMultiRowFeatureDisplay draws colored features in rows, which is a `rect` mark with `rows` and a color. Rebuild it as the mark display with a default plot, as ADR-178 rebuilt Manhattan, and delete its own worker, encoder, model and component. Benched on the Roadmap ChromHMM painting, the mark worker runs in about half the multi-row worker's time and sends a quarter of its bytes. Three gaps on the mark display remain, the last drawing a facet section as a band of rows; a feature's own color (ADR-243) and clustering span rows (ADR-244) are done. Read before touching either display's rows, row colors, clustering or legend hides.
+description: LinearMultiRowFeatureDisplay draws colored features in rows, which is a `rect` mark with `rows` and a color. Rebuild it as the mark display with a default plot, as ADR-178 rebuilt Manhattan, and delete its own worker, encoder, model and component. Benched on the Roadmap ChromHMM painting, the mark worker runs in about half the multi-row worker's time and sends a quarter of its bytes. Two gaps on the mark display remain, the last drawing a facet section as a band of rows; a feature's own color (ADR-243), clustering span rows (ADR-244) and hiding a key row (ADR-246) are done. Read before touching either display's rows, row colors, clustering or legend hides.
 ---
 
 # Multi-row is the mark display with a default plot
@@ -113,19 +113,14 @@ Each gap is its own change, in this order. Put row-axis work in
 `packages/tree-sidebar`, beside the variant, MAF and wiggle displays that
 share it, not in `LinearMarkDisplay/model.ts` (2,076 lines).
 
-1. **Hiding a legend category** from paint and hit test. Multi-row re-encodes
-   the region on a toggle (ADR-165), which costs nothing while nothing is
-   hidden; a per-instance mask in the span shader would cost every span config.
-   An identity key row matches its `domain` color to the met keys by packed
-   color, since a key is `r,g,b` and a `domain` entry any CSS spelling.
-2. **Row discovery and the menus.** The automatic rows field (`repClass`, else
+1. **Row discovery and the menus.** The automatic rows field (`repClass`, else
    `name`: `rowsFields.ts`), "One row per..." with row counts, Color by and
    Group by, and rows read from the window rather than the fetch buffer
    (`windowedRegion.ts`; the mark display's `discoveredRows`, `model.ts:692`,
    reads every loaded region). Color by's itemRgb preset writes
    `{ scale: { type: 'identity' } }`; Edit plot's scale picker leaves identity
    out (ADR-243).
-3. **Bands of rows**, as decided above, with `rowGroups` (the mark
+2. **Bands of rows**, as decided above, with `rowGroups` (the mark
    display's `rowColorFields` is `[]`, `model.ts:605-607`).
 
 Small, any time: an identity key with no `domain` (multi-row names each

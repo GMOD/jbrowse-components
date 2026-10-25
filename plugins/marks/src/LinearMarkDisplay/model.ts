@@ -163,7 +163,7 @@ import type { FacetLayout } from './facet.ts'
 import type { MarkHitInfo } from './findMarkHit.ts'
 import type { MateRegion } from './linkOwners.ts'
 import type { RegionLayer } from './markAutoscale.ts'
-import type { ColorSource } from './markColor.ts'
+import type { ColorSource, HiddenCategory } from './markColor.ts'
 import type {
   MarkEntry,
   MarkRegionData,
@@ -289,6 +289,17 @@ export function stateModelFactory(
            */
           configuration: ConfigurationReference(configSchema),
           // #endregion
+          /**
+           * #property
+           * The categories the key's rows hide, each a value of the field a
+           * categorical color reads or a color an identity key lists: session
+           * state the Categories menu toggles, applied where the colors
+           * resolve, so a toggle refetches nothing. Kept across a field
+           * change and live again when the field comes back.
+           */
+          hiddenCategories: types.frozen<
+            readonly HiddenCategory[] | undefined
+          >(),
         }),
       )
       .views(() => ({
@@ -498,7 +509,7 @@ export function stateModelFactory(
         get markColors(): ColorSource[] {
           const { markChannels } = this
           return self.conf.marks.map((m, i) =>
-            markColorOf(m, markChannels[i]!, self),
+            markColorOf(m, markChannels[i]!, self, self.hiddenCategories),
           )
         },
         /**
@@ -1543,7 +1554,8 @@ export function stateModelFactory(
           return buildMarkLegend(
             self.scaleDataMap.values(),
             i => !!visible[i],
-            (i, channel) => keySettingOf(marks[i], channel),
+            (i, channel) =>
+              keySettingOf(marks[i], channel, self.hiddenCategories),
           )
         },
         /**
@@ -1620,6 +1632,26 @@ export function stateModelFactory(
         setFitToHeight() {
           setConf(self, 'rowHeight', 0)
         },
+        /**
+         * #action
+         * Hide a key row's categories, or show them all again where any is
+         * hidden: `field` the color's, `''` under an identity color.
+         */
+        toggleCategory(field: string, values: readonly string[]) {
+          const hidden = self.hiddenCategories ?? []
+          const named = (h: HiddenCategory) =>
+            h.field === field && values.includes(h.value)
+          const next = hidden.some(named)
+            ? hidden.filter(h => !named(h))
+            : [...hidden, ...values.map(value => ({ field, value }))]
+          self.hiddenCategories = next.length > 0 ? next : undefined
+        },
+        /**
+         * #action
+         */
+        showAllCategories() {
+          self.hiddenCategories = undefined
+        },
       }))
       .views(self => ({
         /**
@@ -1643,6 +1675,24 @@ export function stateModelFactory(
           return compare
             ? rowCompareLabel(compare.by, self.markColors[compare.mark])
             : 'value'
+        },
+        /**
+         * #getter
+         * The hidden categories a color drawn now reads, so a hide kept
+         * across a field change counts only once its field is back.
+         */
+        get activeHiddenCategories(): readonly HiddenCategory[] {
+          const fields = new Set(
+            self.drawingMarkIndices.flatMap(i => {
+              const color = self.markColors[i]
+              return color?.kind === 'categories'
+                ? [color.encoding.field]
+                : color?.kind === 'identity'
+                  ? ['']
+                  : []
+            }),
+          )
+          return (self.hiddenCategories ?? []).filter(h => fields.has(h.field))
         },
         /**
          * #getter

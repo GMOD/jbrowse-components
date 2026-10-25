@@ -1,9 +1,11 @@
 import { lazy } from 'react'
 
 import { filterMenuItems } from '@jbrowse/core/ui/filterMenuItems'
+import { checkboxItem } from '@jbrowse/core/ui/menuItems'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import { getDialogHost } from '@jbrowse/core/util'
 import { filterFieldNarrowing } from '@jbrowse/core/util/jexlFilters'
+import { MAX_LEGEND_ENTRIES } from '@jbrowse/core/util/legendCandidates'
 import { legendCheckboxItem } from '@jbrowse/display-kit/LegendMixin'
 import {
   hiddenGroupsItems,
@@ -20,9 +22,11 @@ import {
 } from '@jbrowse/tree-sidebar'
 import { makeScoreAxisMenuItem } from '@jbrowse/wiggle-core'
 import { makeMarkSizeSubMenu } from '@jbrowse/wiggle-core/chrome'
+import LegendToggleIcon from '@mui/icons-material/LegendToggle'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import ShowChartIcon from '@mui/icons-material/ShowChart'
 
+import { markColorScales } from './legend.ts'
 import { DEFAULT_POINT_DIAMETER_PX } from './markVocabulary.ts'
 
 import type { LinearMarkDisplayModel } from './model.ts'
@@ -62,6 +66,46 @@ function rowsMenuItems(self: LinearMarkDisplayModel): MenuItem[] {
   ]
 }
 
+// One checkbox per row of each categorical or identity color key, which
+// hides the row's categories from the plot and the hover. A key too long to
+// list offers none, and the submenu stays while anything is hidden, so a
+// hide always has its way back.
+function categoriesMenuItems(self: LinearMarkDisplayModel): MenuItem[] {
+  const rows = self.legendSections.flatMap(section => {
+    const { scale } = section
+    if (
+      section.channel !== 'color' ||
+      (scale.kind !== 'categorical' && scale.kind !== 'identity')
+    ) {
+      return []
+    }
+    const field = scale.kind === 'identity' ? '' : scale.field
+    return markColorScales([section]).flatMap(key =>
+      key.kind === 'categorical'
+        ? key.entries.map(entry => ({ field, entry }))
+        : [],
+    )
+  })
+  const hidden = self.activeHiddenCategories.length
+  const toggles =
+    rows.length > MAX_LEGEND_ENTRIES
+      ? []
+      : rows.map(({ field, entry }) =>
+          checkboxItem(entry.label, !entry.hidden, () => {
+            self.toggleCategory(field, entry.values ?? [entry.value])
+          }),
+        )
+  return toggles.length > 0 || hidden > 0
+    ? [
+        {
+          label: hidden > 0 ? `Categories (${hidden} hidden)` : 'Categories',
+          icon: LegendToggleIcon,
+          subMenu: toggles,
+        },
+      ]
+    : []
+}
+
 function pinDistinctShapesMenuItems(self: LinearMarkDisplayModel): MenuItem[] {
   return self.sharedKeys.length > 0
     ? [
@@ -97,7 +141,16 @@ export function markTrackMenuItems(self: LinearMarkDisplayModel): MenuItem[] {
     }),
     ...pinDistinctShapesMenuItems(self),
     ...filterMenuItems({
-      narrowings: { filter: filterFieldNarrowing(self, () => true) },
+      narrowings: {
+        filter: filterFieldNarrowing(self, () => true),
+        hiddenCategories: {
+          count: self.activeHiddenCategories.length,
+          label: () => 'Show all categories',
+          clear: () => {
+            self.showAllCategories()
+          },
+        },
+      },
       onEdit: () => {
         getDialogHost(self).queueDialog(handleClose => [
           JexlFilterDialog,
@@ -105,6 +158,7 @@ export function markTrackMenuItems(self: LinearMarkDisplayModel): MenuItem[] {
         ])
       },
     }),
+    ...categoriesMenuItems(self),
     ...(self.drawsRows ? rowsMenuItems(self) : []),
     ...makeShowSubMenu([
       ...(self.drawsRows

@@ -208,7 +208,10 @@ export function drawnScales(
     yMax: valued ? yMax : layer.yMax,
     scale:
       (scale?.kind === 'categorical' || scale?.kind === 'identity') && color
-        ? { ...scale, entries: scale.entries.filter(e => colors.has(e.color)) }
+        ? {
+            ...scale,
+            entries: scale.entries.filter(e => e.hidden || colors.has(e.color)),
+          }
         : ramp && scale?.kind === 'ramp'
           ? {
               ...(scale.pinned[0] && scale.pinned[1]
