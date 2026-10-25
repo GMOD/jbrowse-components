@@ -24,7 +24,7 @@ export const methylationVideos: VideoSpec[] = [
   {
     name: 'methylation/open_modbam',
     description:
-      'The haplotagged modBAM opened by URL and painted with its 5mC calls: File, Open track..., the URL pasted in, then Color by..., Modifications and its two-color mode from the new track menu',
+      'The haplotagged modBAM opened by URL and painted with its 5mC calls: File, Open track..., the URL pasted in, then Color by..., Per-base coloring, Modifications and its two-color mode from the new track menu',
     goal: 'Open a modBAM by URL and paint its reads by methylation',
     url: readsAbsent,
     viewportHeight: 740,
@@ -46,6 +46,15 @@ export const methylationVideos: VideoSpec[] = [
       {
         type: 'click',
         selector: cascade('submenu', 'Color by...'),
+        hold: 1000,
+      },
+      {
+        type: 'waitForSelector',
+        selector: cascade('submenu', 'Per-base coloring'),
+      },
+      {
+        type: 'click',
+        selector: cascade('submenu', 'Per-base coloring'),
         hold: 1000,
       },
       {

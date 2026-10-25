@@ -6,10 +6,12 @@ import {
   HG002_NANOPORE_HP_TRACK,
   PARK_CURSOR,
   VOLVOX,
+  cascadeBoxes,
   lgvSession,
   menuCascade,
   openTrackSelector,
   sessionSpec,
+  trackMenuIcon,
 } from '../screenshot-spec-helpers.ts'
 
 import type { Annotation, ScreenshotSpec } from '../screenshot-spec-types.ts'
@@ -924,6 +926,34 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
       { type: 'box', anchor: { text: 'Read height' } },
       { type: 'box', anchor: { text: 'Compact' } },
     ],
+  },
+
+  // The menu half of `insertion`, whose Illumina track has soft clipping on.
+  {
+    mode: 'url',
+    name: 'alignments/insertion_soft_clipping_menu',
+    url: lgvSession(DEMO_CONFIG, {
+      assembly: 'hg19',
+      loc: '1:55,705,770-55,706,090',
+      highlight: [
+        {
+          refName: '1',
+          start: 55_705_905,
+          end: 55_705_907,
+          label: 'Insertion',
+        },
+      ],
+      tracks: [{ trackId: 'illumina_hg002', height: 320 }],
+    }),
+    readyText: 'HG002',
+    readyTimeout: 60000,
+    hideSelectors: ['.MuiTooltip-popper'],
+    tooltip: 'hide',
+    actions: [
+      trackMenuIcon('illumina_hg002'),
+      ...menuCascade(['Show...', 'Soft clipping']),
+    ],
+    annotations: cascadeBoxes(['Show...', 'Soft clipping']),
   },
 
   {

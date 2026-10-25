@@ -147,7 +147,11 @@ const ARABIDOPSIS_CONTEXT_LANES = [
 
 // videos/methylation.ts films the route between these two states, starting
 // from `grouped: false`.
-const snrpnReadsPanel = ({ grouped = false, unmarked = true } = {}) =>
+const snrpnReadsPanel = ({
+  grouped = false,
+  unmarked = true,
+  colored = true,
+} = {}) =>
   lgvSession(DEMO_CONFIG, {
     assembly: 'hg38',
     loc: 'chr15:24,948,000-24,962,000',
@@ -163,16 +167,27 @@ const snrpnReadsPanel = ({ grouped = false, unmarked = true } = {}) =>
         height: 320,
         forceLoad: true,
         ...(grouped ? { facet: 'tags.HP' } : {}),
-        pileup: {
-          bases: {
-            show: true,
-            encoding: { color: 'modifications' },
-            unmodified: { show: unmarked },
-          },
-        },
+        ...(colored
+          ? {
+              pileup: {
+                bases: {
+                  show: true,
+                  encoding: { color: 'modifications' },
+                  unmodified: { show: unmarked },
+                },
+              },
+            }
+          : {}),
       },
     ],
   })
+
+const SNRPN_TWO_COLOR_PATH = [
+  'Color by...',
+  'Per-base coloring',
+  'Modifications',
+  'One color per type, plus low-probability & unmodified in blue',
+]
 
 export const methylationVideoFixtures = {
   ungrouped: snrpnReadsPanel(),
@@ -379,6 +394,22 @@ export const methylationSpecs: ScreenshotSpec[] = [
         },
       },
     ],
+  },
+
+  {
+    mode: 'url',
+    name: 'methylation/hg002_snrpn_color_menu',
+    url: snrpnReadsPanel({ colored: false }),
+    readySelector: displayPainted('pileup-display'),
+    readyTimeout: 90000,
+    viewportHeight: 730,
+    hideSelectors: ['.MuiTooltip-popper'],
+    tooltip: 'hide',
+    actions: [
+      trackMenuIcon('HG002_snrpn_5mC_reads'),
+      ...menuCascade(SNRPN_TWO_COLOR_PATH),
+    ],
+    annotations: cascadeBoxes(SNRPN_TWO_COLOR_PATH),
   },
 
   {

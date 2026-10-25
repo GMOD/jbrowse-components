@@ -25,6 +25,7 @@ const WGBS_MENU = trackMenu(wgbsTrackId)
 const colorCascade = (kind: 'submenu' | 'menuitem', label: string) =>
   `[data-testid="cascading-${kind}-${label.toLowerCase().replaceAll(/\s+/g, '_')}"]`
 const COLOR_BY = colorCascade('submenu', 'Color by...')
+const PER_BASE = colorCascade('submenu', 'Per-base coloring')
 const BISULFITE = colorCascade('submenu', 'Bisulfite / EM-seq')
 const CONTEXT = (label: string) => colorCascade('menuitem', label)
 // The one thing in the app bar with no handler on it, so a click or a hover
@@ -42,6 +43,8 @@ const pickContext = (label: string): VideoStep[] => [
   },
   { type: 'waitForSelector', selector: COLOR_BY },
   { type: 'click', selector: COLOR_BY, hold: 700 },
+  { type: 'waitForSelector', selector: PER_BASE },
+  { type: 'click', selector: PER_BASE, hold: 700 },
   { type: 'waitForSelector', selector: BISULFITE },
   // the four contexts with the current one checked
   { type: 'click', selector: BISULFITE, hold: 1300 },
