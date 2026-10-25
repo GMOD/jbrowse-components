@@ -143,6 +143,7 @@ families on screen:
       "type": "LinearMultiRowFeatureDisplay",
       "displayId": "pfam_domains-LinearMultiRowFeatureDisplay",
       "rows": "transcript",
+      "rowProportion": 0.7,
       "encoding": {
         "color": { "field": "name", "legend": { "title": "Pfam family" } }
       }

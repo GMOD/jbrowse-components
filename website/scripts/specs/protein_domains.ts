@@ -22,6 +22,7 @@ const PFAM_TRACK = {
       type: 'LinearMultiRowFeatureDisplay',
       displayId: 'pfam_domains-LinearMultiRowFeatureDisplay',
       rows: 'transcript',
+      rowProportion: 0.7,
       encoding: {
         color: { field: 'name', legend: { title: 'Pfam family' } },
       },
@@ -42,10 +43,11 @@ export const proteinDomainsSpecs: ScreenshotSpec[] = [
           assembly: ASSEMBLY,
           loc: 'NC_037640.1:1,971,400-1,976,800',
           tracks: [
-            { trackId: `${ASSEMBLY}-ncbiGff`, height: 150 },
+            { trackId: `${ASSEMBLY}-ncbiGff`, height: 110 },
             {
               trackId: 'pfam_domains',
               type: 'LinearMultiRowFeatureDisplay',
+              height: 120,
             },
           ],
         },
@@ -54,6 +56,6 @@ export const proteinDomainsSpecs: ScreenshotSpec[] = [
     readyText: 'Pfam family',
     readyTimeout: 60000,
     viewportWidth: 1200,
-    viewportHeight: 480,
+    viewportHeight: 520,
   },
 ]
