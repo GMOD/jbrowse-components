@@ -3447,6 +3447,7 @@
         "DEFAULT_MARK_COLOR",
         "DEFAULT_SIZE_RANGE_PX",
         "MISCONFIGURED_ABGR",
+        "NO_OWNER",
         "NO_VALUE_ABGR",
         "NO_VALUE_LABEL",
         "colorAt",
