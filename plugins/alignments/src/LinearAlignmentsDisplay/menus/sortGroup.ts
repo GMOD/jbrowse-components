@@ -43,8 +43,8 @@ interface SortMenuModel {
 // Callers pick the applicable modes and the label noun (like colorFieldOptions):
 // alignments takes every mode with 'read'; LGVSyntenyDisplay drops base /
 // tag — a PAF block has neither per-base sequence nor SAM tags — and uses
-// 'feature'. The noun lands mid-label, so it is held lower-case ("Longest
-// reads first", "Spliced reads first", "Split reads first").
+// 'feature'. The noun lands mid-label, so it is held lower-case:
+// "Longest reads first", "Spliced reads first", "Split reads first".
 
 export type SortMode =
   | LayoutOrder
