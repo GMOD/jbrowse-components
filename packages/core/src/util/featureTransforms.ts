@@ -294,7 +294,7 @@ class FlatTable extends FannedTable {
     return this.at.includes(undefined)
   }
 
-  isPart(i: number) {
+  isChildFeature(i: number) {
     return isFeature(this.items[i])
   }
 
@@ -452,7 +452,7 @@ class ListFlatTable extends FannedTable {
     return this.kept !== undefined
   }
 
-  isPart(i: number) {
+  isChildFeature(i: number) {
     return !this.list.keys && !this.isKept(i)
   }
 

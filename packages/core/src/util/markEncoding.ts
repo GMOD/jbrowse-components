@@ -156,7 +156,7 @@ export interface MarkEncodingInput {
  * #api
  * What surrounds an encode: the jexl instance a `jexl:` channel compiles
  * against — a caller whose channels are all readers or field names passes
- * none — a progress reporter, and the region's fetched features an `owner`
+ * none — a progress reporter, and the region's fetched features a `root`
  * lane names rows of.
  */
 export interface EncodeContext {
@@ -165,8 +165,8 @@ export interface EncodeContext {
   root?: FeatureTable
 }
 
-/** The `owner` of an instance standing for a row of its own. */
-export const NO_OWNER = 0xffffffff
+/** The `root` of an instance standing for a row of its own. */
+export const NO_ROOT = 0xffffffff
 
 function jexlExpression(ref: string, jexl: JexlInstance | undefined) {
   if (!jexl) {
@@ -741,11 +741,11 @@ export function encodeFeatures<L extends LaneName>(
   )
   const rowAt = (k: number) => (kept ? kept[k]! : k)
   const y = ys?.subarray(0, count)
-  let owner: Uint32Array | undefined
-  if (has('owner')) {
-    owner = new Uint32Array(count)
+  let rootRows: Uint32Array | undefined
+  if (has('root')) {
+    rootRows = new Uint32Array(count)
     for (let k = 0; k < count; k++) {
-      owner[k] = rootRowOf(table, rowAt(k), root ?? table) ?? NO_OWNER
+      rootRows[k] = rootRowOf(table, rowAt(k), root ?? table) ?? NO_ROOT
     }
   }
 
@@ -1104,8 +1104,8 @@ export function encodeFeatures<L extends LaneName>(
   if (kept) {
     encoded.featureIndex = kept
   }
-  if (owner) {
-    encoded.owner = owner
+  if (rootRows) {
+    encoded.root = rootRows
   }
   if (y) {
     encoded.y = y
@@ -1377,7 +1377,7 @@ export function encodedChannelTransferables(c: EncodedChannels) {
   const buffers = new Set<ArrayBufferLike>([c.x.buffer, c.x2.buffer])
   for (const lane of [
     c.featureIndex,
-    c.owner,
+    c.root,
     c.y,
     c.row,
     c.series,

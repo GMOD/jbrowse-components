@@ -133,7 +133,7 @@ The blocks take the first of these that names a color:
   `scale.range`, or with a `field` a color per value of a row attribute such as
   its `rowGroups` group. Use it when the row identity is the signal (one color
   per population, per treatment arm).
-- Otherwise the default block color.
+- Otherwise the default feature color.
 
 Binning a numeric column onto a diverging scale is the common case, e.g. segment
 mean copy number, with `scale.names` naming each interval in the key:

@@ -79,7 +79,7 @@ export abstract class FannedTable extends DerivedTable {
    * block or a transcript's exon, so a hover or a click answers the
    * container; a keyed record or a plain value is a row in its own right.
    */
-  abstract isPart(i: number): boolean
+  abstract isChildFeature(i: number): boolean
 
   override row(i: number): Feature {
     return this.isKept(i) ? this.parent.row(this.parentOf(i)) : super.row(i)
@@ -105,7 +105,7 @@ export function rootRowOf(table: FeatureTable, i: number, root: FeatureTable) {
     }
     if (
       at.madeFrom &&
-      !(at instanceof FannedTable && (at.isKept(row) || at.isPart(row)))
+      !(at instanceof FannedTable && (at.isKept(row) || at.isChildFeature(row)))
     ) {
       return undefined
     }
@@ -125,7 +125,7 @@ export function wholeFeatureRow(table: FeatureTable, i: number) {
   let row = i
   while (at instanceof DerivedTable) {
     const up = at.parentOf(row)
-    if (at instanceof FannedTable && at.isPart(row)) {
+    if (at instanceof FannedTable && at.isChildFeature(row)) {
       whole = at.parent.row(up)
     }
     row = up

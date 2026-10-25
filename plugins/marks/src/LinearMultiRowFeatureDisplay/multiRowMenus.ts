@@ -38,8 +38,7 @@ export interface MultiRowMenuModel {
   rowsField: string
   setRowsField: (field: string) => void
   colorField: string | undefined
-  colorByMode: 'default' | 'solid' | 'strand' | 'attribute'
-  paintsItemRgb: boolean
+  colorByMode: 'default' | 'solid' | 'strand' | 'itemRgb' | 'attribute'
   colorByItemRgb: () => void
   colorByField: (field: string) => void
   pickDefaultColor: () => void
@@ -109,11 +108,12 @@ function colorByMenuItems(self: MultiRowMenuModel): MenuItem[] {
               field: STRAND_FIELD,
               checked: self.colorByMode === 'strand',
             },
-            ...(carriesBedColor(self.attributes) || self.paintsItemRgb
+            ...(carriesBedColor(self.attributes) ||
+            self.colorByMode === 'itemRgb'
               ? [
                   {
                     label: 'itemRgb',
-                    checked: self.paintsItemRgb,
+                    checked: self.colorByMode === 'itemRgb',
                     onClick: () => {
                       self.colorByItemRgb()
                     },

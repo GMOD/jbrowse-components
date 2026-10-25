@@ -3,7 +3,7 @@ import type { DefaultPlot } from '../LinearMarkDisplay/plotDefault.ts'
 import type { PlotFields } from '../LinearMarkDisplay/scanPlotFields.ts'
 
 /** A rect per feature. */
-export const BLOCK_MARKS: MarkSnapshot[] = [{ mark: 'rect' }]
+export const RECT_MARKS: MarkSnapshot[] = [{ mark: 'rect' }]
 
 /** Each feature's span as a line, and its blocks over it. */
 export const SPLICED_MARKS: MarkSnapshot[] = [
@@ -23,7 +23,7 @@ const FALLBACK_ROWS_FIELD = 'name'
 export function multiRowPlot(fields: PlotFields): DefaultPlot {
   const attributes = fields.attributes ?? []
   return {
-    marks: fields.spliced ? SPLICED_MARKS : BLOCK_MARKS,
+    marks: fields.spliced ? SPLICED_MARKS : RECT_MARKS,
     rows:
       fields.rows ??
       (attributes.includes(PREFERRED_ROWS_FIELD)

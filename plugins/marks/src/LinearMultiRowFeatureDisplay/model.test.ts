@@ -3,7 +3,7 @@ import { colorAt } from '@jbrowse/core/util/markEncoding'
 
 import { REGION, features, workerResult } from '../LinearMarkDisplay/testEnv.ts'
 import { multiRowMenuItems } from './multiRowMenus.ts'
-import { BLOCK_MARKS, SPLICED_MARKS, multiRowPlot } from './multiRowPlot.ts'
+import { RECT_MARKS, SPLICED_MARKS, multiRowPlot } from './multiRowPlot.ts'
 import { createTestEnvironment } from './testEnv.ts'
 
 import type { LinearMultiRowFeatureDisplayModel } from './model.ts'
@@ -37,10 +37,10 @@ function labels(items: MenuItem[]) {
 test('a painting rows on repClass where the features carry it, else name, unless the adapter lists sources', () => {
   expect(
     multiRowPlot({ numeric: [], categorical: [], attributes: ['repClass'] }),
-  ).toEqual({ marks: BLOCK_MARKS, rows: 'repClass' })
+  ).toEqual({ marks: RECT_MARKS, rows: 'repClass' })
   expect(
     multiRowPlot({ numeric: [], categorical: [], attributes: ['sample'] }),
-  ).toEqual({ marks: BLOCK_MARKS, rows: 'name' })
+  ).toEqual({ marks: RECT_MARKS, rows: 'name' })
   expect(
     multiRowPlot({ numeric: [], categorical: [], rows: 'source' }).rows,
   ).toBe('source')
@@ -73,7 +73,7 @@ test('the default plot writes its rows and color, and leaves a declared color al
     }),
   )
   expect(bare.rowsField).toBe('repClass')
-  expect(bare.paintsItemRgb).toBe(true)
+  expect(bare.colorByMode).toBe('itemRgb')
   expect(bare.markTypes).toEqual(['rect'])
 
   const declared = display({
@@ -88,7 +88,7 @@ test('the default plot writes its rows and color, and leaves a declared color al
 })
 
 test('One row per... and Color by offer the scanned attributes and write the display', () => {
-  const model = display({ rows: 'sample', marks: BLOCK_MARKS })
+  const model = display({ rows: 'sample', marks: RECT_MARKS })
   model.setPlotFields({
     numeric: ['score'],
     categorical: [],
@@ -105,7 +105,7 @@ test('One row per... and Color by offer the scanned attributes and write the dis
   model.setRowsField('name')
   expect(model.rowsField).toBe('name')
   model.colorByItemRgb()
-  expect(model.paintsItemRgb).toBe(true)
+  expect(model.colorByMode).toBe('itemRgb')
   model.colorByField('strand')
   expect(model.colorByMode).toBe('strand')
 })
@@ -118,7 +118,7 @@ test("a spliced painting's rows sort and cluster on its blocks, not the line und
 test('an identity color over a field paints the colors the field holds, with no notice', () => {
   const model = display({
     rows: 'sample',
-    marks: BLOCK_MARKS,
+    marks: RECT_MARKS,
     encoding: {
       color: {
         field: 'tint',
@@ -143,7 +143,7 @@ test("a row's color paints its blocks while no mark or display color does", () =
   const model = loaded(
     display({
       rows: 'sample',
-      marks: BLOCK_MARKS,
+      marks: RECT_MARKS,
       rowColor: { scale: { domain: ['mom'], range: ['#222222'] } },
     }),
   )

@@ -1,7 +1,7 @@
 import { spansInRow } from '@jbrowse/render-core/marks'
 
 import { drawnScales } from './drawnScales.ts'
-import { rowIndexOf } from './rowIndexes.ts'
+import { rowSpanIndexOf } from './rowSpanIndexes.ts'
 
 import type { MarkRegionData, StoredLayer } from './markList.ts'
 import type { CategoricalField } from '@jbrowse/core/util/categoricalField'
@@ -56,7 +56,7 @@ export function sectionsInWindow(
       if (layer.count === 0) {
         return false
       }
-      const index = rowIndexOf(layer)
+      const index = rowSpanIndexOf(layer)
       return spans.some(({ start, end }) => {
         out.length = 0
         spansInRow(index, layer.x, layer.x2, row, start, end, out)

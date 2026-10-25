@@ -356,7 +356,7 @@ function pathOf(mark: MarkConfig, color: ColorSource): PathSpec {
  * draws where a `flatten` may fan features out into their child features, so
  * a hover on one block answers the whole feature in every mark.
  */
-export function withFeatureOwners<
+export function withRootLane<
   R extends {
     layers: LayerRequest[]
     transform: TransformStep[]
@@ -372,7 +372,7 @@ export function withFeatureOwners<
         ...request,
         layers: request.layers.map(layer => ({
           ...layer,
-          lanes: [...layer.lanes, 'owner'],
+          lanes: [...layer.lanes, 'root'],
         })),
       }
     : request

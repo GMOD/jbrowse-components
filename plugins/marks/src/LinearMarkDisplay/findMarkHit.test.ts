@@ -1,4 +1,4 @@
-import { NO_OWNER, hitIndexOf } from '@jbrowse/core/util/markEncoding'
+import { NO_ROOT, hitIndexOf } from '@jbrowse/core/util/markEncoding'
 import {
   HIDDEN_ROW,
   RAMP_NO_VALUE_BITS,
@@ -408,13 +408,13 @@ test('a link to another sequence names both feet, each on its own sequence', () 
 })
 
 test('a block of a spliced feature answers as the feature, the same hit across its blocks', () => {
-  const span = (x: number[], x2: number[], owner: number[]): StoredLayer => ({
+  const span = (x: number[], x2: number[], root: number[]): StoredLayer => ({
     count: x.length,
     skipped: 0,
     x: Uint32Array.from(x),
     x2: Uint32Array.from(x2),
     row: new Uint32Array(x.length),
-    owner: Uint32Array.from(owner),
+    root: Uint32Array.from(root),
     color: 0xff0000ff,
     yMin: Infinity,
     yMax: -Infinity,
@@ -425,7 +425,7 @@ test('a block of a spliced feature answers as the feature, the same hit across i
       {
         layers: [
           span([0, 500], [400, 600], [5, 6]),
-          span([0, 300, 500, 700], [100, 400, 600, 800], [5, 5, 6, NO_OWNER]),
+          span([0, 300, 500, 700], [100, 400, 600, 800], [5, 5, 6, NO_ROOT]),
         ],
       },
     ],
@@ -434,11 +434,11 @@ test('a block of a spliced feature answers as the feature, the same hit across i
   const at = (bp: number) =>
     findMarkHit(bp / STATE.bpPerPx, 15, [BLOCK], data, marks, STATE, REGIONS)!
   const first = at(50)
-  expect(first).toMatchObject({ markIndex: 1, owner: 5, start: 0, end: 400 })
+  expect(first).toMatchObject({ markIndex: 1, root: 5, start: 0, end: 400 })
   expect(sameMarkHit(first, at(350))).toBe(true)
   expect(sameMarkHit(first, at(550))).toBe(false)
   expect(at(750)).toMatchObject({ start: 700, end: 800 })
-  expect(at(750).owner).toBeUndefined()
+  expect(at(750).root).toBeUndefined()
 })
 
 test('a span written end first reads as the range it covers', () => {

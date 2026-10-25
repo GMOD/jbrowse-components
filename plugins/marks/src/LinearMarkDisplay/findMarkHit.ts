@@ -1,6 +1,6 @@
 import { assembleLocString } from '@jbrowse/core/util'
 import {
-  NO_OWNER,
+  NO_ROOT,
   colorAt,
   featureIndexAt,
 } from '@jbrowse/core/util/markEncoding'
@@ -15,7 +15,7 @@ import {
 } from '@jbrowse/render-core/marks'
 
 import { featureSpan } from './featureInstances.ts'
-import { rowIndexOf } from './rowIndexes.ts'
+import { rowSpanIndexOf } from './rowSpanIndexes.ts'
 
 import type {
   DisplayMark,
@@ -36,7 +36,7 @@ export interface MarkHitInfo {
    * The fetched feature the instance draws whole or one block of, which
    * every instance of that feature shares, where the plot fans features out.
    */
-  owner?: number
+  root?: number
   refName: string
   /** The span of the instance's whole feature, every block of it. */
   start: number
@@ -136,7 +136,7 @@ function rowCandidates(
   sizePx: number,
   { bpMin, bpMax, valueMin, valueMax }: HitWindow,
 ) {
-  const index = rowIndexOf(layer)
+  const index = rowSpanIndexOf(layer)
   const out: number[] = []
   for (const key of rowKeysNear(yPx, state, HIT_RADIUS_PX + sizePx)) {
     spansInRow(index, layer.x, layer.x2, key, bpMin, bpMax, out)
@@ -201,12 +201,12 @@ export function findMarkHit(
   const { markIndex, spansView } = marks[hit.mark]!
   const layer = hit.region.layers[markIndex]!
   const regionIndex = hit.block.displayedRegionIndex
-  const own = layer.owner?.[hit.index]
-  const owner = own === undefined || own === NO_OWNER ? undefined : own
+  const raw = layer.root?.[hit.index]
+  const root = raw === undefined || raw === NO_ROOT ? undefined : raw
   const x = layer.x[hit.index]!
   const x2 = layer.x2[hit.index]!
   const { start, end } =
-    owner === undefined ? { start: x, end: x2 } : featureSpan(hit.region, owner)
+    root === undefined ? { start: x, end: x2 } : featureSpan(hit.region, root)
   const { refName } = displayedRegions[regionIndex]!
   const farRefName = farRefNameOf(layer, hit.index, displayedRegions)
   const x2RefName = farRefName === refName ? undefined : farRefName
@@ -217,7 +217,7 @@ export function findMarkHit(
     regionIndex,
     instance: hit.index,
     featureIndex: featureIndexAt(layer, hit.index),
-    ...(owner === undefined ? {} : { owner }),
+    ...(root === undefined ? {} : { root }),
     refName,
     start,
     end,
@@ -244,8 +244,8 @@ export function findMarkHit(
 export function sameMarkHit(a: MarkHitInfo, b: MarkHitInfo) {
   return (
     a.regionIndex === b.regionIndex &&
-    (a.owner !== undefined
-      ? a.owner === b.owner
+    (a.root !== undefined
+      ? a.root === b.root
       : a.markIndex === b.markIndex && a.instance === b.instance)
   )
 }

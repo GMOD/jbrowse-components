@@ -140,7 +140,7 @@ import {
   lastBinEdges,
   markEntryOf,
   markLayerRequest,
-  withFeatureOwners,
+  withRootLane,
   positionSource,
   stepsOf,
   toBinEdges,
@@ -151,13 +151,13 @@ import { DEFAULT_POINT_DIAMETER_PX } from './markVocabulary.ts'
 import { MARK_Y_PATHS } from './markYPaths.ts'
 import { sharedKeyNotice, sharedKeysOf } from './pinDistinct.ts'
 import { defaultPlot } from './plotDefault.ts'
+import { withRowColors } from './rowColors.ts'
 import {
   byCategoryBlocks,
   categoriesByColor,
   rowCompareLabel,
   rowCompareOf,
 } from './rowCompare.ts'
-import { withRowColors } from './rowPaint.ts'
 import {
   drawnKeysOf,
   drawnRegion,
@@ -193,8 +193,8 @@ import type {
 import type { MarkPlot, MarkPlotSettings } from './markPlot.ts'
 import type { MarkProblem, MarkSnapshot } from './markProblems.ts'
 import type { DefaultPlot } from './plotDefault.ts'
+import type { RowColors } from './rowColors.ts'
 import type { RowCompare } from './rowCompare.ts'
-import type { RowPaint } from './rowPaint.ts'
 import type { RowKeySpace } from './rowTable.ts'
 import type { JoinedPlotFields, PlotFields } from './scanPlotFields.ts'
 import type { StepChannels } from './stepChannels.ts'
@@ -972,29 +972,31 @@ export function stateModelFactory(
         )
         // A mark naming no color, under a display naming none, paints each
         // row in the row's color where the row has one.
-        const rowPaint = stableIdentityComputed((): RowPaint | undefined => {
-          if (!self.drawsRows || !self.rowColorPaintsMarks) {
-            return undefined
-          }
-          const declared = saysColor(self.conf.encoding.color)
-          const marks = self.conf.marks.map(
-            m => !declared && !saysColor(m.encoding.color),
-          )
-          const colors = self.resolvedRowColors
-          return marks.includes(true) && colors.size > 0
-            ? { marks, colors }
-            : undefined
-        })
-        const rowPainted = createEncodeMemo(
+        const rowColorPaint = stableIdentityComputed(
+          (): RowColors | undefined => {
+            if (!self.drawsRows || !self.rowColorPaintsMarks) {
+              return undefined
+            }
+            const declared = saysColor(self.conf.encoding.color)
+            const marks = self.conf.marks.map(
+              m => !declared && !saysColor(m.encoding.color),
+            )
+            const colors = self.resolvedRowColors
+            return marks.includes(true) && colors.size > 0
+              ? { marks, colors }
+              : undefined
+          },
+        )
+        const rowColored = createEncodeMemo(
           () => keyed(),
-          () => rowPaint.get(),
-          (region, paint) =>
-            paint
-              ? withRowColors(region, paint, self.rowKeySpace.rowKeys.names)
+          () => rowColorPaint.get(),
+          (region, colors) =>
+            colors
+              ? withRowColors(region, colors, self.rowKeySpace.rowKeys.names)
               : region,
         )
         const drawn = () =>
-          self.splitField === undefined ? unsplit() : rowPainted()
+          self.splitField === undefined ? unsplit() : rowColored()
         const mateRegions = stableIdentityComputed((): MateRegion[] =>
           self.host.displayedRegions.map((r, index) => ({
             index,
@@ -1301,7 +1303,7 @@ export function stateModelFactory(
           facet?: FacetSpec
         } {
           const field = self.splitField
-          return withFeatureOwners({
+          return withRootLane({
             layers: self.layerRequests,
             transform: [
               ...self.filterSteps,
@@ -1525,8 +1527,8 @@ export function stateModelFactory(
           const top = self.rowsTopOffset
           const region = self.rpcDataMap.get(hit.regionIndex)
           const lit =
-            hit.owner !== undefined && region
-              ? instancesOfFeature(region, hit.owner)
+            hit.root !== undefined && region
+              ? instancesOfFeature(region, hit.root)
               : [{ markIndex: hit.markIndex, index: hit.instance }]
           const instances = lit.flatMap(({ markIndex, index }) => {
             const mark = self.markList.findIndex(m => m.markIndex === markIndex)

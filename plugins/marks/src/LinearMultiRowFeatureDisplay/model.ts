@@ -80,27 +80,27 @@ export function stateModelFactory(
       },
       /**
        * #getter
-       * The Color by row that is ticked: a field, else a constant, else the
+       * The Color by row that is ticked: a field, else each feature's own BED
+       * color through a fieldless identity color, else a constant, else the
        * marks' own colors.
        */
-      get colorByMode(): 'default' | 'solid' | 'strand' | 'attribute' {
+      get colorByMode():
+        | 'default'
+        | 'solid'
+        | 'strand'
+        | 'itemRgb'
+        | 'attribute' {
+        const { scale, value } = self.writtenColor
         const field = this.colorField
         return field === undefined
-          ? this.solidColor === undefined
-            ? 'default'
-            : 'solid'
+          ? scale?.type === 'identity' && value === undefined
+            ? 'itemRgb'
+            : this.solidColor === undefined
+              ? 'default'
+              : 'solid'
           : field === STRAND_FIELD
             ? 'strand'
             : 'attribute'
-      },
-      /**
-       * #getter
-       * Whether each feature paints its own BED color, through a fieldless
-       * identity `encoding.color`.
-       */
-      get paintsItemRgb(): boolean {
-        const { scale, field, value } = self.writtenColor
-        return scale?.type === 'identity' && !field && value === undefined
       },
     }))
     .actions(self => ({
@@ -117,7 +117,7 @@ export function stateModelFactory(
        * fieldless identity `encoding.color`, so a black triple paints black.
        */
       colorByItemRgb() {
-        if (!self.paintsItemRgb) {
+        if (self.colorByMode !== 'itemRgb') {
           setConf(self, ['encoding', 'color'], { scale: { type: 'identity' } })
         }
       },

@@ -1,4 +1,4 @@
-import { NO_OWNER } from '@jbrowse/core/util/markEncoding'
+import { NO_ROOT } from '@jbrowse/core/util/markEncoding'
 
 import type { MarkRegionData } from './markList.ts'
 
@@ -7,44 +7,44 @@ export interface FeatureInstance {
   index: number
 }
 
-const byOwner = new WeakMap<MarkRegionData, Map<number, FeatureInstance[]>>()
+const byRoot = new WeakMap<MarkRegionData, Map<number, FeatureInstance[]>>()
 
-function ownerIndex(region: MarkRegionData) {
-  let index = byOwner.get(region)
+function rootIndex(region: MarkRegionData) {
+  let index = byRoot.get(region)
   if (!index) {
     index = new Map()
     for (const [markIndex, layer] of region.layers.entries()) {
-      const owners = layer.owner ?? []
-      for (let i = 0; i < owners.length; i++) {
-        const owner = owners[i]!
-        if (owner !== NO_OWNER) {
-          const list = index.get(owner)
+      const roots = layer.root ?? []
+      for (let i = 0; i < roots.length; i++) {
+        const root = roots[i]!
+        if (root !== NO_ROOT) {
+          const list = index.get(root)
           if (list) {
             list.push({ markIndex, index: i })
           } else {
-            index.set(owner, [{ markIndex, index: i }])
+            index.set(root, [{ markIndex, index: i }])
           }
         }
       }
     }
-    byOwner.set(region, index)
+    byRoot.set(region, index)
   }
   return index
 }
 
 /**
- * Every instance the region's marks drew of the fetched feature `owner`
+ * Every instance the region's marks drew of the fetched feature `root`
  * names: a spliced feature's span and each of its blocks.
  */
-export function instancesOfFeature(region: MarkRegionData, owner: number) {
-  return ownerIndex(region).get(owner) ?? []
+export function instancesOfFeature(region: MarkRegionData, root: number) {
+  return rootIndex(region).get(root) ?? []
 }
 
 /** The bp those instances cover, from the lowest end to the highest. */
-export function featureSpan(region: MarkRegionData, owner: number) {
+export function featureSpan(region: MarkRegionData, root: number) {
   let start = Infinity
   let end = -Infinity
-  for (const { markIndex, index } of instancesOfFeature(region, owner)) {
+  for (const { markIndex, index } of instancesOfFeature(region, root)) {
     const layer = region.layers[markIndex]!
     const a = layer.x[index]!
     const b = layer.x2[index]!

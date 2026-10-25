@@ -1,6 +1,6 @@
 import { asTable } from './featureTable.ts'
 import { layerTables, runTransforms } from './featureTransforms.ts'
-import { NO_OWNER, encodeFeatures } from './markEncoding.ts'
+import { NO_ROOT, encodeFeatures } from './markEncoding.ts'
 import SimpleFeature from './simpleFeature.ts'
 import { wholeFeatureRow } from './stepTables.ts'
 
@@ -32,7 +32,7 @@ const block = new SimpleFeature({
   alignments: { hg38: { seq: 'AC' }, panTro6: { seq: 'AG' } },
 })
 
-function owners(steps: TransformStep[][], facet?: { field: string }) {
+function roots(steps: TransformStep[][], facet?: { field: string }) {
   const root = asTable([transcript, solid])
   const { layers } = layerTables(
     root,
@@ -40,19 +40,19 @@ function owners(steps: TransformStep[][], facet?: { field: string }) {
     undefined,
   )
   return layers.map(({ table }) =>
-    Array.from(encodeFeatures(table, {}, ['owner'], { root }).owner, o =>
-      o === NO_OWNER ? 'none' : root.row(o).id(),
+    Array.from(encodeFeatures(table, {}, ['root'], { root }).root, o =>
+      o === NO_ROOT ? 'none' : root.row(o).id(),
     ),
   )
 }
 
 test('a span and its flattened blocks name the same fetched feature, under a facet too', () => {
   const blocks: TransformStep[] = [{ type: 'flatten', keepEmpty: true }]
-  expect(owners([[], blocks])).toEqual([
+  expect(roots([[], blocks])).toEqual([
     ['tx1', 'solid'],
     ['tx1', 'tx1', 'solid'],
   ])
-  expect(owners([[], blocks], { field: 'sample' })).toEqual([
+  expect(roots([[], blocks], { field: 'sample' })).toEqual([
     ['solid', 'tx1'],
     ['solid', 'tx1', 'tx1'],
   ])
@@ -60,7 +60,7 @@ test('a span and its flattened blocks name the same fetched feature, under a fac
 
 test('a bin stands for a row of its own', () => {
   expect(
-    owners([
+    roots([
       [
         { type: 'bin', step: 1000 },
         { type: 'aggregate', ops: [] },
@@ -75,8 +75,8 @@ test('a keyed record stands for a row of its own', () => {
     { type: 'flatten', field: 'alignments', key: 'species' },
   ])
   expect(
-    Array.from(encodeFeatures(species, {}, ['owner'], { root }).owner),
-  ).toEqual([NO_OWNER, NO_OWNER])
+    Array.from(encodeFeatures(species, {}, ['root'], { root }).root),
+  ).toEqual([NO_ROOT, NO_ROOT])
   expect(wholeFeatureRow(species, 1).id()).toBe('maf#panTro6')
 })
 

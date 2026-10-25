@@ -40,7 +40,8 @@ AC, 2026-10-24 and 2026-10-25:
 - **A spliced feature is two marks**, drawn only where the scan sees blocks:
   the bench's spliced column is what a painting with none would pay. A
   block a `flatten` fans out of a feature's child features hovers and opens as
-  the feature, through the `owner` lane (`rootRowOf`, commit fe10636be2).
+  the feature, through the `root` lane (`rootRowOf`, commit fe10636be2,
+  which named it `owner`).
 - **The menus write the display.** One row per... writes `rows.field`, Group
   by `facet`, Color by the display's `encoding.color`, which every mark naming
   no color paints (ADR-248).

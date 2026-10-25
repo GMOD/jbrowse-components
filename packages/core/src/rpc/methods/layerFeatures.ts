@@ -32,7 +32,7 @@ export interface LayerFeatures {
  * request names one, then through each layer's own steps, with each faceted
  * layer's stacked rows beside it, and a path layer's rows in series order.
  * An instance's `featureIndex` indexes its layer's table, so the same request
- * answers which row an instance is, and its `owner` indexes `fetched`.
+ * answers which row an instance is, and its `root` indexes `fetched`.
  */
 export async function layerFeatures(
   dataAdapter: BaseFeatureDataAdapter,

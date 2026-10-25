@@ -70,7 +70,7 @@ async function drawnAndReadBack(
       x: layer.x[i]!,
       x2: layer.x2[i]!,
       y: layer.y?.[i],
-      owner: layer.owner?.[i],
+      root: layer.root?.[i],
       feature: await details.invoke({
         ...req,
         layer: 0,
@@ -202,13 +202,13 @@ test('each block of a flattened transcript opens as the transcript', async () =>
   const drawn = await drawnAndReadBack(
     {
       layers: [
-        { encoding: {}, lanes: ['owner'], transform: [{ type: 'flatten' }] },
+        { encoding: {}, lanes: ['root'], transform: [{ type: 'flatten' }] },
       ],
     },
     [reads[0]!, transcript],
   )
   expect(
-    drawn.map(d => [d.x, d.x2, d.owner, d.feature?.uniqueId, d.feature?.name]),
+    drawn.map(d => [d.x, d.x2, d.root, d.feature?.uniqueId, d.feature?.name]),
   ).toEqual([
     [0, 10, 1, 'tx1', 'VAV'],
     [60, 100, 1, 'tx1', 'VAV'],
