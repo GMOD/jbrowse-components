@@ -134,7 +134,7 @@ From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`sc
 | <span id="getter-rowtable">**rowTable**</span><br><code>RowTable</code> | The row table both backends and the hit test place each key through: its drawn row, hidden where the focus left it out, and its color override. Rebuilt on a reorder, focus, recolor or a new name, which is one texture upload and no instance bytes. |
 | <span id="getter-renderstate">**renderState**</span><br><code>MultiRowRenderState</code> | Render state passed to the GPU/Canvas2D backend each frame. |
 | <span id="getter-encodedchannels">**encodedChannels**</span><br><code>ReadonlyMap&lt;number, MultiRowEncoded&gt;</code> | Every loaded region's `span` channels with their per-key buckets: what the backend uploads, the hit test reads and the hover and export draw from. The memo is held in this closure so it outlives a context-loss recovery. |
-| <span id="getter-hoverink">**hoverInk**</span><br><code>HighlightRect[]</code> | The box of the block to mark, for the chrome's highlight. The hover drops when a right-click menu opens, else its tooltip sticks under the menu, so the menu's own feature stands in. |
+| <span id="getter-hoverink">**hoverInk**</span><br><code>HighlightRect[]</code> | The boxes of the hovered feature's blocks, for the chrome's highlight. The hover drops when a right-click menu opens, else its tooltip sticks under the menu, so the menu's own feature stands in. |
 | <span id="getter-highlightstyle">**highlightStyle**</span><br><code>HighlightStyle</code> | A wash and a border: the block colors are the data. |
 | <span id="getter-hoveredrow">**hoveredRow**</span><br><code>RowSource &#124; undefined</code> | The row the hovered feature sits on, off the live order. |
 

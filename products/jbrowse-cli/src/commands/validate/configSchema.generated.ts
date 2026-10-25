@@ -5305,162 +5305,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "additionalProperties": false
     },
-    "TranscriptFeaturesJoin": {
-      "title": "TranscriptFeaturesJoin",
-      "type": "object",
-      "x-closed": true,
-      "properties": {
-        "field": {
-          "description": "row field naming the row's transcript.",
-          "default": "",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "$ref": "#/$defs/PlainString"
-          }
-        },
-        "transcriptField": {
-          "description": "transcript field the row field equals.",
-          "default": "id",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "$ref": "#/$defs/PlainString"
-          }
-        }
-      },
-      "patternProperties": {
-        "^_+comment": {}
-      },
-      "additionalProperties": false
-    },
-    "TranscriptFeaturesTrack": {
-      "title": "TranscriptFeaturesTrack",
-      "anyOf": [
-        {
-          "description": "Shorthand for \`{ \\"track\\": ... }\`.",
-          "default": "",
-          "$ref": "#/$defs/PlainString",
-          "type": "string"
-        },
-        {
-          "title": "TranscriptFeaturesTrack",
-          "type": "object",
-          "x-closed": true,
-          "properties": {
-            "track": {
-              "description": "trackId of the track whose rows draw.",
-              "default": "",
-              "if": {
-                "type": "null"
-              },
-              "else": {
-                "$ref": "#/$defs/PlainString"
-              }
-            },
-            "on": {
-              "description": "the transcript spans a row must lie in.",
-              "default": "cds",
-              "if": {
-                "type": "null"
-              },
-              "else": {
-                "enum": [
-                  "cds",
-                  "exon"
-                ]
-              }
-            },
-            "join": {
-              "if": {
-                "type": "null"
-              },
-              "else": {
-                "$ref": "#/$defs/TranscriptFeaturesJoin"
-              }
-            },
-            "filter": {
-              "if": {
-                "type": "null"
-              },
-              "else": {
-                "type": "array",
-                "items": {
-                  "$ref": "#/$defs/FieldPredicate"
-                }
-              }
-            }
-          },
-          "patternProperties": {
-            "^_+comment": {}
-          },
-          "additionalProperties": false
-        }
-      ]
-    },
-    "TranscriptFeaturesEncoding": {
-      "title": "TranscriptFeaturesEncoding",
-      "type": "object",
-      "x-closed": true,
-      "properties": {
-        "color": {
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "$ref": "#/$defs/FeatureColor"
-          }
-        }
-      },
-      "patternProperties": {
-        "^_+comment": {}
-      },
-      "additionalProperties": false
-    },
-    "TranscriptFeatures": {
-      "title": "TranscriptFeatures",
-      "anyOf": [
-        {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/TranscriptFeaturesTrack"
-          },
-          "description": "Shorthand for \`{ \\"tracks\\": ... }\`."
-        },
-        {
-          "title": "TranscriptFeatures",
-          "type": "object",
-          "x-closed": true,
-          "properties": {
-            "tracks": {
-              "if": {
-                "type": "null"
-              },
-              "else": {
-                "type": "array",
-                "items": {
-                  "$ref": "#/$defs/TranscriptFeaturesTrack"
-                }
-              }
-            },
-            "encoding": {
-              "if": {
-                "type": "null"
-              },
-              "else": {
-                "$ref": "#/$defs/TranscriptFeaturesEncoding"
-              }
-            }
-          },
-          "patternProperties": {
-            "^_+comment": {}
-          },
-          "additionalProperties": false
-        }
-      ]
-    },
     "LinearBasicDisplaySlots": {
       "type": "object",
       "properties": {
@@ -5810,14 +5654,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           },
           "else": {
             "$ref": "#/$defs/PlainString"
-          }
-        },
-        "transcriptFeatures": {
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "$ref": "#/$defs/TranscriptFeatures"
           }
         },
         "maxDisplayedBpPerPx": {
@@ -10180,7 +10016,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "x-closed": true,
       "properties": {
         "type": {
-          "description": "ordinal hands out range colors per distinct value; linear, log and symlog read the value between domainMin and domainMax into a ramp; threshold cuts the value at the domain and hands each interval a range color; identity reads no field and paints each feature its own BED color, black included, invalid where it carries none, the key naming the colors in domain; unset is linear for score and ordinal for any other field.",
+          "description": "ordinal hands out range colors per distinct value; linear, log and symlog read the value between domainMin and domainMax into a ramp; threshold cuts the value at the domain and hands each interval a range color; identity reads no field and paints each feature its own BED color, black included, the key naming the colors in domain; unset is linear for score and ordinal for any other field.",
           "if": {
             "type": "null"
           },
@@ -16531,9 +16367,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "subParts": {
               "$ref": "#/$defs/LinearBasicDisplaySlots/properties/subParts"
-            },
-            "transcriptFeatures": {
-              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/transcriptFeatures"
             },
             "maxDisplayedBpPerPx": {
               "anyOf": [
@@ -25055,6 +24888,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "type": "string"
         },
         "sortRowsBy": {},
+        "hiddenCategories": {},
         "indexSnp": {
           "type": "string"
         },
@@ -25109,6 +24943,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "type": "string"
         },
         "sortRowsBy": {},
+        "hiddenCategories": {},
         "heightPreConfig": {
           "deprecated": true,
           "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."

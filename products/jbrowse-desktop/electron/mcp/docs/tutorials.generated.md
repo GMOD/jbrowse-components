@@ -700,15 +700,13 @@ Page: https://jbrowse.org/jb2/docs/tutorials/primate_orthologs_synteny/
 
 ## Protein domains on gene models
 
-Call Pfam domains on a genome's proteins, place each domain on the exons that encode it, and draw the domains on each isoform of the gene track
+Call Pfam domains on a genome's proteins, place each domain on the exons that encode it, and draw each isoform's domains on a row of their own
 
 Page: https://jbrowse.org/jb2/docs/tutorials/protein_domains/
 
 - https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/003/254/395/GCF_003254395.2_Amel_HAv3.1/GCF_003254395.2_Amel_HAv3.1_genomic.fna.gz
 - https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/003/254/395/GCF_003254395.2_Amel_HAv3.1/GCF_003254395.2_Amel_HAv3.1_genomic.gff.gz
 - https://jbrowse.org/demos/protein_domains/pfam.bed.gz
-- https://jbrowse.org/hubs/genark/GCF/003/254/395/GCF_003254395.2/GCF_003254395.2_Amel_HAv3.1_genomic.gff.gz
-- https://jbrowse.org/hubs/genark/GCF/003/254/395/GCF_003254395.2/GCF_003254395.2_Amel_HAv3.1_genomic.gff.gz.csi
 - https://jbrowse.org/hubs/genark/GCF/003/254/395/GCF_003254395.2/config.json
 
 ## Variants on protein structures part 6: BRAF V600 in the activation loop

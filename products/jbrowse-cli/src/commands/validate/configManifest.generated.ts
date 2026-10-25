@@ -3439,206 +3439,6 @@ export const configManifest: ConfigManifest = {
         {
           "name": "subParts",
           "type": "string"
-        },
-        {
-          "name": "transcriptFeatures",
-          "type": "TranscriptFeaturesConfigurationSchema",
-          "subSlots": [
-            {
-              "name": "tracks",
-              "type": "TranscriptFeaturesTrackConfigurationSchema[]",
-              "subSlots": [
-                {
-                  "name": "track",
-                  "type": "string"
-                },
-                {
-                  "name": "on",
-                  "type": "TranscriptFeaturesOn"
-                },
-                {
-                  "name": "join",
-                  "type": "TranscriptFeaturesJoinConfigurationSchema",
-                  "subSlots": [
-                    {
-                      "name": "field",
-                      "type": "string"
-                    },
-                    {
-                      "name": "transcriptField",
-                      "type": "string"
-                    }
-                  ],
-                  "schema": "TranscriptFeaturesJoin",
-                  "writes": "members"
-                },
-                {
-                  "name": "filter",
-                  "type": "FieldPredicateConfigurationSchema[]",
-                  "subSlots": [
-                    {
-                      "name": "field",
-                      "type": "PredicateField"
-                    },
-                    {
-                      "name": "equal",
-                      "type": "((string | number | boolean) | undefined)"
-                    },
-                    {
-                      "name": "lt",
-                      "type": "(number | undefined)"
-                    },
-                    {
-                      "name": "lte",
-                      "type": "(number | undefined)"
-                    },
-                    {
-                      "name": "gt",
-                      "type": "(number | undefined)"
-                    },
-                    {
-                      "name": "gte",
-                      "type": "(number | undefined)"
-                    },
-                    {
-                      "name": "oneOf",
-                      "type": "((string | number | boolean)[] | undefined)"
-                    },
-                    {
-                      "name": "range",
-                      "type": "((number | null)[] | undefined)"
-                    },
-                    {
-                      "name": "valid",
-                      "type": "(boolean | undefined)"
-                    }
-                  ],
-                  "schema": "FieldPredicate",
-                  "shorthand": {
-                    "string": "field"
-                  }
-                }
-              ],
-              "schema": "TranscriptFeaturesTrack",
-              "shorthand": {
-                "string": "track"
-              }
-            },
-            {
-              "name": "encoding",
-              "type": "TranscriptFeaturesEncodingConfigurationSchema",
-              "subSlots": [
-                {
-                  "name": "color",
-                  "type": "FeatureColorConfigurationSchema",
-                  "subSlots": [
-                    {
-                      "name": "value",
-                      "type": "(JexlString | (CssColor | undefined))"
-                    },
-                    {
-                      "name": "field",
-                      "type": "string"
-                    },
-                    {
-                      "name": "scale",
-                      "type": "FeatureColorScaleConfigurationSchema",
-                      "subSlots": [
-                        {
-                          "name": "type",
-                          "type": "(FeatureColorScaleType | undefined)"
-                        },
-                        {
-                          "name": "domain",
-                          "type": "string[]",
-                          "liftsNumbers": true
-                        },
-                        {
-                          "name": "range",
-                          "type": "CssColorEntry[]"
-                        },
-                        {
-                          "name": "unknown",
-                          "type": "(CssColor | undefined)"
-                        },
-                        {
-                          "name": "invalid",
-                          "type": "(CssColor | undefined)"
-                        },
-                        {
-                          "name": "names",
-                          "type": "string[]",
-                          "liftsNumbers": true
-                        },
-                        {
-                          "name": "scheme",
-                          "type": "(ColorScheme | undefined)"
-                        },
-                        {
-                          "name": "reverse",
-                          "type": "(boolean | undefined)"
-                        },
-                        {
-                          "name": "domainMid",
-                          "type": "(number | undefined)"
-                        },
-                        {
-                          "name": "domainMin",
-                          "type": "(number | undefined)"
-                        },
-                        {
-                          "name": "domainMax",
-                          "type": "(number | undefined)"
-                        },
-                        {
-                          "name": "domainQuantile",
-                          "type": "number"
-                        }
-                      ],
-                      "schema": "FeatureColorScale",
-                      "writes": "members"
-                    },
-                    {
-                      "name": "legend",
-                      "type": "FeatureColorLegendConfigurationSchema",
-                      "subSlots": [
-                        {
-                          "name": "title",
-                          "type": "(string | undefined)"
-                        }
-                      ],
-                      "schema": "FeatureColorLegend",
-                      "writes": "members"
-                    }
-                  ],
-                  "schema": "FeatureColor",
-                  "writes": "whole",
-                  "shorthand": {
-                    "string": "field"
-                  },
-                  "fieldPresets": {
-                    "score": {
-                      "scale": {
-                        "type": "linear"
-                      }
-                    },
-                    "*": {
-                      "scale": {
-                        "type": "ordinal"
-                      }
-                    }
-                  }
-                }
-              ],
-              "schema": "TranscriptFeaturesEncoding",
-              "writes": "members"
-            }
-          ],
-          "schema": "TranscriptFeatures",
-          "writes": "whole",
-          "shorthand": {
-            "list": "tracks"
-          }
         }
       ],
       "legacyKeys": [
@@ -9776,6 +9576,7 @@ export const configManifest: ConfigManifest = {
         "clusterRegion",
         "sortRowsBy",
         "configuration",
+        "hiddenCategories",
         "indexSnp"
       ]
     },
@@ -10493,7 +10294,8 @@ export const configManifest: ConfigManifest = {
         "runClustering",
         "clusterRegion",
         "sortRowsBy",
-        "configuration"
+        "configuration",
+        "hiddenCategories"
       ]
     }
   },

@@ -22,6 +22,7 @@ Each section ends with the members a composed model contributes, linked to the p
 | --- | --- |
 | <span id="property-type">**type**</span><br><code>type: types.literal('LinearMarkDisplay')</code> |  |
 | <span id="property-configuration">**configuration**</span><br><code>configuration: ConfigurationReference(configSchema)</code> |  |
+| <span id="property-hiddencategories">**hiddenCategories**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>hiddenCategories: types.frozen&lt; readonly HiddenCategory[] &#124; und…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>hiddenCategories: types.frozen&lt;&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;readonly HiddenCategory[] &#124; undefined&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&gt;()</code></pre></dialog></span> | The categories the key's rows hide, each a value of the field a categorical color reads or a color an identity key lists: session state the Categories menu toggles, applied where the colors resolve, so a toggle refetches nothing. Kept across a field change and live again when the field comes back. |
 
 <details class="inherited-members" data-pagefind-ignore>
 <summary>4 inherited properties from 2 models</summary>
@@ -154,8 +155,10 @@ From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`sc
 | <span id="getter-effectiverowheight">**effectiveRowHeight**</span><br><code>number</code> | The px each row is drawn in, the band every shape gets: `RowHeightMixin`'s under `rows`, pinned or fit. Elsewhere the bands fit the plot whatever `rowHeight` holds, since a facet's rows and have no scroll to reach past the plot's foot. |
 | <span id="getter-scrollcontentheight">**scrollContentHeight**</span><br><code>number</code> | `TrackHeightMixin`'s hook: the rows under `rows`, taller than the plot wherever a pinned `rowHeight` asks for more than it holds. |
 | <span id="getter-scrollviewportheight">**scrollViewportHeight**</span><br><code>number</code> | `TrackHeightMixin`'s hook: the plot the rows scroll behind. |
-| <span id="getter-valuemarkindex">**valueMarkIndex**</span><br><code>number</code> | The first mark drawing at this zoom that stands at a value: what a row's value at a column is read from, and what clustering compares. -1 where none does, so span rows cluster nothing: they would need multi-row's presence and categorical encodings (`buildMultiRowMatrix`) moved into tree-sidebar. |
-| <span id="getter-autoclusterready">**autoClusterReady**</span><br><code>boolean</code> | Two or more clusterable rows once the row listing settles, and a mark that has a value. |
+| <span id="getter-rowcompare">**rowCompare**</span><br><code>RowCompare &#124; undefined</code> | The mark clustering and "Sort rows by ... here" read at this zoom, and what of its instances they compare (`rowCompareOf`). |
+| <span id="getter-rowcomparelabel">**rowCompareLabel**</span><br><code>string</code> | What a sort or a cluster caption names the compared thing. |
+| <span id="getter-activehiddencategories">**activeHiddenCategories**</span><br><code>readonly HiddenCategory[]</code> | The hidden categories a color drawn now reads, so a hide kept across a field change counts only once its field is back. |
+| <span id="getter-autoclusterready">**autoClusterReady**</span><br><code>boolean</code> | Two or more clusterable rows once the row listing settles, and a mark to compare them on. |
 | <span id="getter-svgsidebar">**svgSidebar**</span><br><code>SvgSidebarProps &#124; undefined</code> |  |
 | <span id="getter-plotscanlocus">**plotScanLocus**</span><br><code>string &#124; undefined</code> | The window the held field scan read, for the dialog to name. |
 
@@ -229,10 +232,12 @@ From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`rendering
 | <span id="action-setsourcelisting">**setSourceListing**</span><br><code>(read: AdapterRead&lt;RowSourceListing &#124; null&gt;) =&gt; void</code> |  |
 | <span id="action-setrowproportion">**setRowProportion**</span><br><code>(n: number) =&gt; void</code> | Write every span mark's `mark.height.band`. |
 | <span id="action-setfittoheight">**setFitToHeight**</span><br><code>() =&gt; void</code> | Fit the rows to the plot. The `height` getter is the slot itself, so nothing needs seeding on the way in. |
+| <span id="action-togglecategory">**toggleCategory**</span><br><code>(field: string, values: readonly string[]) =&gt; void</code> | Hide a key row's categories, or show them all again where any is hidden: `field` the color's, `''` under an identity color. |
+| <span id="action-showallcategories">**showAllCategories**</span><br><code>() =&gt; void</code> |  |
 | <span id="action-selectfeature">**selectFeature**</span><br><code>(hit: MarkHitInfo) =&gt; void</code> | Open the feature widget on the read, the bin or the run a hit drew, inside its facet section, through `selectEncodedFeature`. |
 | <span id="action-setrpcdata">**setRpcData**</span><br><code>(idx: number, data: EncodedLayersResult, region: Region) =&gt; void</code> | Stage a region as fetched, with this display's payload layout. |
 | <span id="action-splitbyplotrows">**splitByPlotRows**</span><br><code>(fields: PlotFields) =&gt; void</code> | A row per source where the adapter lists several and nothing splits the features yet: one value per row is the row axis, and a facet is for bands holding more than one row. |
-| <span id="action-sortrowsbyvalueat">**sortRowsByValueAt**</span><br><code>(refName: string, pos: number) =&gt; boolean</code> | Order the rows by the value each stands at over (refName, pos), highest first, off the loaded regions with no refetch; false where no loaded region covers the column. |
+| <span id="action-sortrowsbyvalueat">**sortRowsByValueAt**</span><br><code>(refName: string, pos: number) =&gt; boolean</code> | Order the rows by what `rowCompare` reads over (refName, pos), off the loaded regions with no refetch: values and ramped numbers highest first, a span's categories in blocks of one category, the largest on screen first and then in the categories' order, and covered rows before bare ones; false where no loaded region covers the column. |
 | <span id="action-setfilter">**setFilter**</span><br><code>(filters?: string[] &#124; undefined) =&gt; void</code> | Write the `filter` list's expressions; undefined returns them to what the track's config declares. |
 | <span id="action-setplotfields">**setPlotFields**</span><br><code>(fields?: PlotFields &#124; undefined, error?: unknown) =&gt; void</code> |  |
 | <span id="action-setplotdefaultchecked">**setPlotDefaultChecked**</span><br><code>() =&gt; void</code> |  |
