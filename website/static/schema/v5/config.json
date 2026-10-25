@@ -14806,8 +14806,8 @@
       },
       "additionalProperties": false
     },
-    "YEncoding": {
-      "title": "YEncoding",
+    "MarkDisplayEncoding": {
+      "title": "MarkDisplayEncoding",
       "type": "object",
       "x-closed": true,
       "properties": {
@@ -14817,6 +14817,14 @@
           },
           "else": {
             "$ref": "#/$defs/YChannel2"
+          }
+        },
+        "color": {
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/MarkColor"
           }
         }
       },
@@ -14938,7 +14946,7 @@
             "type": "null"
           },
           "else": {
-            "$ref": "#/$defs/YEncoding"
+            "$ref": "#/$defs/MarkDisplayEncoding"
           }
         },
         "origin": {
@@ -15154,7 +15162,7 @@
             "type": "null"
           },
           "else": {
-            "$ref": "#/$defs/YEncoding"
+            "$ref": "#/$defs/MarkDisplayEncoding"
           }
         },
         "origin": {

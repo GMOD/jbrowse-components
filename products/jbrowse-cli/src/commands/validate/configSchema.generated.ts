@@ -15247,8 +15247,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "additionalProperties": false
     },
-    "YEncoding": {
-      "title": "YEncoding",
+    "MarkDisplayEncoding": {
+      "title": "MarkDisplayEncoding",
       "type": "object",
       "x-closed": true,
       "properties": {
@@ -15258,6 +15258,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           },
           "else": {
             "$ref": "#/$defs/YChannel2"
+          }
+        },
+        "color": {
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/MarkColor"
           }
         }
       },
@@ -15379,7 +15387,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "null"
           },
           "else": {
-            "$ref": "#/$defs/YEncoding"
+            "$ref": "#/$defs/MarkDisplayEncoding"
           }
         },
         "origin": {
@@ -15597,7 +15605,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "null"
           },
           "else": {
-            "$ref": "#/$defs/YEncoding"
+            "$ref": "#/$defs/MarkDisplayEncoding"
           }
         },
         "origin": {

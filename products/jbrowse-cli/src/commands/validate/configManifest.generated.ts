@@ -9411,7 +9411,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "encoding",
-          "type": "YEncodingConfigurationSchema",
+          "type": "MarkDisplayEncodingConfigurationSchema",
           "subSlots": [
             {
               "name": "y",
@@ -9495,9 +9495,123 @@ export const configManifest: ConfigManifest = {
               ],
               "schema": "YChannel",
               "writes": "members"
+            },
+            {
+              "name": "color",
+              "type": "MarkColorConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "value",
+                  "type": "(JexlString | (CssColor | undefined))"
+                },
+                {
+                  "name": "field",
+                  "type": "string"
+                },
+                {
+                  "name": "scale",
+                  "type": "MarkColorScaleConfigurationSchema",
+                  "subSlots": [
+                    {
+                      "name": "type",
+                      "type": "(MarkColorScaleType | undefined)"
+                    },
+                    {
+                      "name": "domain",
+                      "type": "string[]",
+                      "liftsNumbers": true
+                    },
+                    {
+                      "name": "domainMin",
+                      "type": "(number | undefined)"
+                    },
+                    {
+                      "name": "domainMax",
+                      "type": "(number | undefined)"
+                    },
+                    {
+                      "name": "domainQuantile",
+                      "type": "number"
+                    },
+                    {
+                      "name": "range",
+                      "type": "CssColorEntry[]"
+                    },
+                    {
+                      "name": "unknown",
+                      "type": "(CssColor | undefined)"
+                    },
+                    {
+                      "name": "invalid",
+                      "type": "(CssColor | undefined)"
+                    },
+                    {
+                      "name": "names",
+                      "type": "string[]",
+                      "liftsNumbers": true
+                    },
+                    {
+                      "name": "scheme",
+                      "type": "(ColorScheme | undefined)"
+                    },
+                    {
+                      "name": "reverse",
+                      "type": "(boolean | undefined)"
+                    },
+                    {
+                      "name": "domainMid",
+                      "type": "(number | undefined)"
+                    }
+                  ],
+                  "schema": "MarkColorScale",
+                  "writes": "members"
+                },
+                {
+                  "name": "legend",
+                  "type": "MarkColorLegendConfigurationSchema",
+                  "subSlots": [
+                    {
+                      "name": "title",
+                      "type": "(string | undefined)"
+                    },
+                    {
+                      "name": "descending",
+                      "type": "(boolean | undefined)"
+                    },
+                    {
+                      "name": "values",
+                      "type": "string[]",
+                      "liftsNumbers": true
+                    },
+                    {
+                      "name": "missingLabel",
+                      "type": "(string | undefined)"
+                    }
+                  ],
+                  "schema": "MarkColorLegend",
+                  "writes": "members"
+                }
+              ],
+              "schema": "MarkColor",
+              "writes": "whole",
+              "shorthand": {
+                "string": "field"
+              },
+              "fieldPresets": {
+                "score": {
+                  "scale": {
+                    "type": "linear"
+                  }
+                },
+                "*": {
+                  "scale": {
+                    "type": "ordinal"
+                  }
+                }
+              }
             }
           ],
-          "schema": "YEncoding",
+          "schema": "MarkDisplayEncoding",
           "writes": "members"
         },
         {
@@ -10141,7 +10255,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "encoding",
-          "type": "YEncodingConfigurationSchema",
+          "type": "MarkDisplayEncodingConfigurationSchema",
           "subSlots": [
             {
               "name": "y",
@@ -10225,9 +10339,123 @@ export const configManifest: ConfigManifest = {
               ],
               "schema": "YChannel",
               "writes": "members"
+            },
+            {
+              "name": "color",
+              "type": "MarkColorConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "value",
+                  "type": "(JexlString | (CssColor | undefined))"
+                },
+                {
+                  "name": "field",
+                  "type": "string"
+                },
+                {
+                  "name": "scale",
+                  "type": "MarkColorScaleConfigurationSchema",
+                  "subSlots": [
+                    {
+                      "name": "type",
+                      "type": "(MarkColorScaleType | undefined)"
+                    },
+                    {
+                      "name": "domain",
+                      "type": "string[]",
+                      "liftsNumbers": true
+                    },
+                    {
+                      "name": "domainMin",
+                      "type": "(number | undefined)"
+                    },
+                    {
+                      "name": "domainMax",
+                      "type": "(number | undefined)"
+                    },
+                    {
+                      "name": "domainQuantile",
+                      "type": "number"
+                    },
+                    {
+                      "name": "range",
+                      "type": "CssColorEntry[]"
+                    },
+                    {
+                      "name": "unknown",
+                      "type": "(CssColor | undefined)"
+                    },
+                    {
+                      "name": "invalid",
+                      "type": "(CssColor | undefined)"
+                    },
+                    {
+                      "name": "names",
+                      "type": "string[]",
+                      "liftsNumbers": true
+                    },
+                    {
+                      "name": "scheme",
+                      "type": "(ColorScheme | undefined)"
+                    },
+                    {
+                      "name": "reverse",
+                      "type": "(boolean | undefined)"
+                    },
+                    {
+                      "name": "domainMid",
+                      "type": "(number | undefined)"
+                    }
+                  ],
+                  "schema": "MarkColorScale",
+                  "writes": "members"
+                },
+                {
+                  "name": "legend",
+                  "type": "MarkColorLegendConfigurationSchema",
+                  "subSlots": [
+                    {
+                      "name": "title",
+                      "type": "(string | undefined)"
+                    },
+                    {
+                      "name": "descending",
+                      "type": "(boolean | undefined)"
+                    },
+                    {
+                      "name": "values",
+                      "type": "string[]",
+                      "liftsNumbers": true
+                    },
+                    {
+                      "name": "missingLabel",
+                      "type": "(string | undefined)"
+                    }
+                  ],
+                  "schema": "MarkColorLegend",
+                  "writes": "members"
+                }
+              ],
+              "schema": "MarkColor",
+              "writes": "whole",
+              "shorthand": {
+                "string": "field"
+              },
+              "fieldPresets": {
+                "score": {
+                  "scale": {
+                    "type": "linear"
+                  }
+                },
+                "*": {
+                  "scale": {
+                    "type": "ordinal"
+                  }
+                }
+              }
             }
           ],
-          "schema": "YEncoding",
+          "schema": "MarkDisplayEncoding",
           "writes": "members"
         },
         {
