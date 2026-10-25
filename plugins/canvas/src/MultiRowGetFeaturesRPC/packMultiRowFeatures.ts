@@ -342,9 +342,11 @@ export function packMultiRowFeatures({
     const { css, fromBed } = featureColor(feature)
     usedItemRgb ||= fromBed
     const abgr = cssColorToABGR(css)
-    for (const part of parts[i] ?? [undefined]) {
-      featureStarts[j] = part ? part.start : feature.get('start')
-      featureEnds[j] = part ? part.end : feature.get('end')
+    const own = parts[i]
+    const count = own ? own.length : 1
+    for (let k = 0; k < count; k++) {
+      featureStarts[j] = own ? own[k]!.start : feature.get('start')
+      featureEnds[j] = own ? own[k]!.end : feature.get('end')
       featureIds[j] = id
       featureNames[j] = name
       featureRowValueIndex[j] = idx
