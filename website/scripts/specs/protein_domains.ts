@@ -7,7 +7,7 @@ import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 const HUB = 'https://jbrowse.org/hubs/genark/GCF/003/254/395/GCF_003254395.2'
 const ASSEMBLY = 'GCF_003254395.2'
 
-// tutorials/protein_domains.md fences both tracks
+// tutorials/protein_domains.md fences this track
 const PFAM_TRACK = {
   type: 'FeatureTrack',
   trackId: 'pfam_domains',
@@ -17,52 +17,43 @@ const PFAM_TRACK = {
     type: 'BedTabixAdapter',
     uri: 'https://jbrowse.org/demos/protein_domains/pfam.bed.gz',
   },
-}
-
-const GENES_TRACK = {
-  type: 'FeatureTrack',
-  trackId: 'genes_with_pfam',
-  name: 'RefSeq genes with Pfam domains',
-  assemblyNames: [ASSEMBLY],
-  adapter: {
-    type: 'Gff3TabixAdapter',
-    uri: `${HUB}/GCF_003254395.2_Amel_HAv3.1_genomic.gff.gz`,
-    index: {
-      location: {
-        uri: `${HUB}/GCF_003254395.2_Amel_HAv3.1_genomic.gff.gz.csi`,
-      },
-      indexType: 'CSI',
-    },
-  },
-  displayDefaults: {
-    transcriptFeatures: {
-      tracks: [{ track: 'pfam_domains', join: { field: 'transcript' } }],
+  displays: [
+    {
+      type: 'LinearMultiRowFeatureDisplay',
+      displayId: 'pfam_domains-LinearMultiRowFeatureDisplay',
+      rows: 'transcript',
       encoding: {
         color: { field: 'name', legend: { title: 'Pfam family' } },
       },
     },
-  },
+  ],
 }
 
 export const proteinDomainsSpecs: ScreenshotSpec[] = [
-  // vav's four isoforms, the top one skipping the exon that encodes CH
+  // vav's four isoforms, one of them skipping the exon that encodes CH
   {
     mode: 'url',
     name: 'protein_domains/vav',
     url: sessionSpec(`${HUB}/config.json`, {
-      sessionTracks: [PFAM_TRACK, GENES_TRACK],
+      sessionTracks: [PFAM_TRACK],
       views: [
         {
           type: 'LinearGenomeView',
           assembly: ASSEMBLY,
           loc: 'NC_037640.1:1,971,400-1,976,800',
-          tracks: [{ trackId: 'genes_with_pfam', height: 160 }],
+          tracks: [
+            { trackId: `${ASSEMBLY}-ncbiGff`, height: 150 },
+            {
+              trackId: 'pfam_domains',
+              type: 'LinearMultiRowFeatureDisplay',
+            },
+          ],
         },
       ],
     }),
     readyText: 'Pfam family',
     readyTimeout: 60000,
     viewportWidth: 1200,
-    viewportHeight: 380,
+    viewportHeight: 480,
   },
 ]

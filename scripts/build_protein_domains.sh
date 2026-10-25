@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
 #
-# Calls Pfam domains on YOUR OWN gene models and draws them on the gene track,
+# Calls Pfam domains on YOUR OWN gene models and draws them under the genes,
 # as website/docs/tutorials/protein_domains.md does on the honey bee RefSeq
 # annotation.
 #
 # gffread translates each transcript's CDS, hmmscan calls Pfam domains on the
 # proteins with Pfam's own gathering thresholds, and `jbrowse
 # make-protein-features` places each domain back on the exons that encode it.
-# The script then builds a JBrowse whose gene track draws the domains through
-# its transcriptFeatures.
+# The script then builds a JBrowse with the genes and a domain track that draws
+# each transcript's domains on a row of its own.
 #
 # Requires: samtools, gffread, hmmscan + hmmpress (HMMER 3), bgzip + tabix
 #           (htslib), and node. A `jbrowse` on PATH runs if it has
@@ -105,13 +105,13 @@ jb make-protein-features genes.gff3 pfam.domtblout --out pfam.bed.gz
 # ── JBrowse ──────────────────────────────────────────────────────────────────
 [ -f "$APP/index.html" ] || jb create "$APP"
 jb add-assembly "$FA" --name "$ASM" --load copy --force --out "$APP"
-jb add-track pfam.bed.gz --trackId pfam_domains --name "Pfam domains" \
-  -a "$ASM" --load copy --force --out "$APP"
 jb add-track genes.gff3.gz --trackId genes --name Genes -a "$ASM" \
-  --load copy --force --out "$APP" \
-  --config '{"displayDefaults":{"transcriptFeatures":{"tracks":[{"track":"pfam_domains","join":{"field":"transcript"}}],"encoding":{"color":{"field":"name","legend":{"title":"Pfam family"}}}}}}'
+  --load copy --force --out "$APP"
+jb add-track pfam.bed.gz --trackId pfam_domains --name "Pfam domains" \
+  -a "$ASM" --load copy --force --out "$APP" \
+  --config '{"displays":[{"type":"LinearMultiRowFeatureDisplay","displayId":"pfam_domains-LinearMultiRowFeatureDisplay","rows":"transcript","encoding":{"color":{"field":"name","legend":{"title":"Pfam family"}}}}]}'
 jb text-index --tracks genes --attributes Name,gene --force --out "$APP"
 
 echo
-echo "Built $APP with $ASM and its genes, drawn with their Pfam domains. Serve it with"
+echo "Built $APP with $ASM and its genes, and their Pfam domains. Serve it with"
 echo "  npx --yes serve $(pwd)/$APP"
