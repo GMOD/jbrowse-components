@@ -1,4 +1,7 @@
+import { spansInRow } from '@jbrowse/render-core/marks'
+
 import { drawnScales } from './drawnScales.ts'
+import { rowIndexOf } from './rowIndexes.ts'
 
 import type { MarkRegionData, StoredLayer } from './markList.ts'
 import type { CategoricalField } from '@jbrowse/core/util/categoricalField'
@@ -35,6 +38,39 @@ export interface FacetLayout {
 export function sectionsOn(region: MarkRegionData, field: string) {
   const asked = region.request?.facet?.field
   return asked === undefined || asked === field ? region.facet : undefined
+}
+
+/**
+ * Of the sections `sectionsOn` names, the ones with an instance in some
+ * layer over one of `spans`, bp on the region's sequence: the rows on
+ * screen, where the fetch reaches past it on each side.
+ */
+export function sectionsInWindow(
+  region: MarkRegionData,
+  field: string,
+  spans: readonly { start: number; end: number }[],
+) {
+  const out: number[] = []
+  const covers = (row: number) =>
+    region.layers.some(layer => {
+      if (layer.count === 0) {
+        return false
+      }
+      const index = rowIndexOf(layer)
+      return spans.some(({ start, end }) => {
+        out.length = 0
+        spansInRow(index, layer.x, layer.x2, row, start, end, out)
+        return out.length > 0
+      })
+    })
+  return (sectionsOn(region, field) ?? []).filter(({ firstRow, rowCount }) => {
+    for (let row = firstRow; row < firstRow + rowCount; row++) {
+      if (covers(row)) {
+        return true
+      }
+    }
+    return false
+  })
 }
 
 const drawnRowsCache = new WeakMap<

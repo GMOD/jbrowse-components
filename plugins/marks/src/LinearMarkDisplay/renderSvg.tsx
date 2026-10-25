@@ -3,7 +3,11 @@ import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { GroupLabelBoxes } from '@jbrowse/display-kit/GroupLabelBox'
 import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
 import { SvgHaloText } from '@jbrowse/display-ui'
-import { SvgTreeSidebar } from '@jbrowse/tree-sidebar'
+import {
+  FILLED_ROW_SEPARATOR_OPACITY,
+  RowSeparatorLines,
+  SvgTreeSidebar,
+} from '@jbrowse/tree-sidebar'
 import { ScorePlotSvgFrame } from '@jbrowse/wiggle-core/ScorePlotSvgFrame'
 
 import { TEXT_HALO_PX, TEXT_MARK_FONT_PX, placeTextMarks } from './textMarks.ts'
@@ -104,6 +108,16 @@ function MarkSvgBody(props: LgvSvgBodyProps<RenderSvgModel>) {
               left={0}
               width={canvasWidth}
               canvasHeight={plotHeight}
+            />
+          ) : null}
+          {model.drawsRows && model.showRowSeparators ? (
+            <RowSeparatorLines
+              numRows={model.nrow}
+              rowHeight={rowHeight}
+              width={canvasWidth}
+              opacity={FILLED_ROW_SEPARATOR_OPACITY}
+              scrollTop={model.scrollTop}
+              viewportHeight={plotHeight}
             />
           ) : null}
           {model.svgSidebar ? (

@@ -236,14 +236,18 @@ test('Sort rows by value here sorts at the base right-clicked, not at the start 
 })
 
 test('a region arriving with a new value adds its row, and the arranged rows keep their places', () => {
-  const display = loaded({ rows: 'source' })
+  const nextRegion = { ...REGION, refName: 'ctgB' }
+  const { display } = createTestEnvironment({ marks: BARS, rows: 'source' }, [
+    REGION,
+    nextRegion,
+  ]).createDisplay()
+  display.setRpcData(0, workerResult(display, FAMILY), REGION)
   const [dad, mom, s2, s10] = display.editableSources
   display.applyRowEdits([s10!, { ...mom!, label: 'Mother' }, dad!, s2!])
   const before = display.discoveredRows
   display.setRpcData(0, workerResult(display, FAMILY), REGION)
   expect(display.discoveredRows).toBe(before)
 
-  const nextRegion = { ...REGION, refName: 'ctgB' }
   display.setRpcData(
     1,
     workerResult(
@@ -495,4 +499,26 @@ test('a listing that answers another adapter config lists no rows', async () => 
     's2',
     's10',
   ])
+})
+
+test('a value the fetch met only past the screen takes no row', () => {
+  const { display, view } = createTestEnvironment({
+    marks: BARS,
+    rows: 'source',
+  }).createDisplay()
+  view.setNewView(1, 0)
+  display.setRpcData(
+    0,
+    workerResult(
+      display,
+      features([
+        { source: 'mom', start: 0, end: 400, score: 1 },
+        { source: 'far', start: 9000, end: 9500, score: 2 },
+      ]),
+    ),
+    REGION,
+  )
+  expect(display.sources.map(row => row.name)).toEqual(['mom'])
+  view.setNewView(1, 8800)
+  expect(display.sources.map(row => row.name)).toEqual(['far'])
 })

@@ -31,6 +31,9 @@ import { getStrokeProps } from '@jbrowse/core/util'
  */
 export const MIN_SEPARATOR_ROW_PX = 4
 
+/** The divider color's alpha over blocks filling their rows edge to edge. */
+export const FILLED_ROW_SEPARATOR_OPACITY = 0.4
+
 // eslint-disable-next-line no-restricted-syntax -- drawn inside a frozen SVG figure
 export function RowSeparatorLines({
   numRows,

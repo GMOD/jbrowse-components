@@ -17,6 +17,7 @@ export { RowLabelsOverlay } from './RowLabelsOverlay.tsx'
 export { RowsPanel } from './RowsPanel.tsx'
 export type { RowsPanelModel } from './RowsPanel.tsx'
 export {
+  FILLED_ROW_SEPARATOR_OPACITY,
   MIN_SEPARATOR_ROW_PX,
   RowSeparatorLines,
 } from './RowSeparatorLines.tsx'

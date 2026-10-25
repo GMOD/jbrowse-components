@@ -4,6 +4,7 @@ import { filterMenuItems } from '@jbrowse/core/ui/filterMenuItems'
 import { checkboxItem } from '@jbrowse/core/ui/menuItems'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import { getDialogHost } from '@jbrowse/core/util'
+import { copyText } from '@jbrowse/core/util/copyText'
 import { filterFieldNarrowing } from '@jbrowse/core/util/jexlFilters'
 import { MAX_LEGEND_ENTRIES } from '@jbrowse/core/util/legendCandidates'
 import { legendCheckboxItem } from '@jbrowse/display-kit/LegendMixin'
@@ -17,15 +18,18 @@ import {
   rowOrderMenuItems,
   rowHeightMenuItem,
   showRowLabelsMenuItem,
+  showRowSeparatorsMenuItem,
   sortRowsHereMenuItem,
   treeSidebarShowMenuItems,
 } from '@jbrowse/tree-sidebar'
 import { makeScoreAxisMenuItem } from '@jbrowse/wiggle-core'
 import { makeMarkSizeSubMenu } from '@jbrowse/wiggle-core/chrome'
+import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import LegendToggleIcon from '@mui/icons-material/LegendToggle'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import ShowChartIcon from '@mui/icons-material/ShowChart'
 
+import { hitLocString } from './findMarkHit.ts'
 import { markColorScales } from './legend.ts'
 import { DEFAULT_POINT_DIAMETER_PX } from './markVocabulary.ts'
 
@@ -162,7 +166,11 @@ export function markTrackMenuItems(self: LinearMarkDisplayModel): MenuItem[] {
     ...(self.drawsRows ? rowsMenuItems(self) : []),
     ...makeShowSubMenu([
       ...(self.drawsRows
-        ? [...treeSidebarShowMenuItems(self), showRowLabelsMenuItem(self)]
+        ? [
+            ...treeSidebarShowMenuItems(self),
+            showRowLabelsMenuItem(self),
+            showRowSeparatorsMenuItem(self),
+          ]
         : []),
       ...hiddenGroupsItems(self),
       ...resetSectionOrderItems({
@@ -187,6 +195,13 @@ export function markContextMenuItems(self: LinearMarkDisplayModel): MenuItem[] {
           icon: MenuOpenIcon,
           onClick: () => {
             self.selectFeature(hit)
+          },
+        },
+        {
+          label: 'Copy location',
+          icon: ContentCopyIcon,
+          onClick: () => {
+            void copyText(self, hitLocString(hit), 'location')
           },
         },
         ...(self.drawsRows

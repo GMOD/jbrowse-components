@@ -13,9 +13,9 @@ import { rowsConfigSchema } from '@jbrowse/display-kit/rowsConfigSchema'
 import { trackHeightConfigSchemaFields } from '@jbrowse/display-kit/trackHeightConfigSchemaFields'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
-  retiredRowAxisSpellings,
-  rowAxisConfigSchema,
-} from '@jbrowse/tree-sidebar/rowAxisConfigSchema'
+  retiredRowAxisWithGridSpellings,
+  rowAxisWithGridConfigSchema,
+} from '@jbrowse/tree-sidebar/rowAxisWithGridConfigSchema'
 import { rowGroupConfigSchema } from '@jbrowse/tree-sidebar/rowGroupConfigSchema'
 import { rowHeightConfigSchemaFields } from '@jbrowse/tree-sidebar/rowHeightConfigSchemaFields'
 import { retiredScalesSpelling } from '@jbrowse/wiggle-core'
@@ -487,10 +487,11 @@ export function configSchemaFactory() {
       rowGroups: types.array(rowGroupConfigSchema),
       /**
        * #slot axis
-       * The row axis down the left of the rows `rows` draws: the cluster tree
-       * and each row's value. The value axis is `encoding.y.axis`.
+       * The row axis down the left of the rows `rows` draws: the cluster tree,
+       * each row's value and, with `grid`, a line between rows. The value
+       * axis is `encoding.y.axis`.
        */
-      axis: rowAxisConfigSchema,
+      axis: rowAxisWithGridConfigSchema,
       ...rowHeightConfigSchemaFields({
         rowHeight:
           'per-row height in px under rows, scrolling the rows that do not fit; 0 (the default) fits the rows to the plot instead, dividing it between them',
@@ -552,7 +553,7 @@ export function configSchemaFactory() {
       retired: {
         scales: retiredScalesSpelling(MARK_Y_PATHS.members),
         ...retiredBaseDisplaySpellings,
-        ...retiredRowAxisSpellings,
+        ...retiredRowAxisWithGridSpellings,
       },
       preProcessSnapshot: checkMarks,
     },

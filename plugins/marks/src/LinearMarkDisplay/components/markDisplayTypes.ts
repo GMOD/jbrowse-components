@@ -56,6 +56,7 @@ export interface MarkDisplayModel
   scrollViewportHeight: number
   setRowHeight: (n: number) => void
   showRowLabels: boolean
+  showRowSeparators: boolean
   rowTreeProvenance?: ClusterProvenance
   hiddenGroups: { size: number }
   facet: { sort: readonly string[] } | undefined

@@ -11,11 +11,11 @@ import {
   RAMP_NO_VALUE_BITS,
   nearestMarkHit,
   rampValueBits,
-  rowSpanIndex,
   spansInRow,
 } from '@jbrowse/render-core/marks'
 
 import { featureSpan } from './featureInstances.ts'
+import { rowIndexOf } from './rowIndexes.ts'
 
 import type {
   DisplayMark,
@@ -23,7 +23,7 @@ import type {
   MarkRenderState,
   StoredLayer,
 } from './markList.ts'
-import type { HitWindow, RowSpanIndex } from '@jbrowse/render-core/marks'
+import type { HitWindow } from '@jbrowse/render-core/marks'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
 export interface MarkHitInfo {
@@ -101,17 +101,6 @@ export function hitLocString({ refName, start, end, x2RefName }: MarkHitInfo) {
         end: Math.max(start, end),
       })
     : `${assembleLocString({ refName, start, end: start + 1 })} → ${assembleLocString({ refName: x2RefName, start: end, end: end + 1 })}`
-}
-
-const rowIndexes = new WeakMap<StoredLayer, RowSpanIndex>()
-
-function rowIndexOf(layer: StoredLayer) {
-  let index = rowIndexes.get(layer)
-  if (!index) {
-    index = rowSpanIndex(layer.x, layer.x2, layer.row, layer.count)
-    rowIndexes.set(layer, index)
-  }
-  return index
 }
 
 // The `row` keys whose bands lie within the hit radius of `yPx`: the slots

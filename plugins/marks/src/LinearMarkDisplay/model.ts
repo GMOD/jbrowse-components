@@ -105,7 +105,13 @@ import {
 } from '@jbrowse/wiggle-core'
 import { autorun } from 'mobx'
 
-import { facetLayout, rowsLayout, sectionsOn, unsplitRegion } from './facet.ts'
+import {
+  facetLayout,
+  rowsLayout,
+  sectionsInWindow,
+  sectionsOn,
+  unsplitRegion,
+} from './facet.ts'
 import { instancesOfFeature } from './featureInstances.ts'
 import { fetchPlotFields, plotScanRegions } from './fetchPlotFields.ts'
 import { sameMarkHit } from './findMarkHit.ts'
@@ -702,6 +708,13 @@ export function stateModelFactory(
         get rowsField(): string {
           return getConf(self, ['rows', 'field'])
         },
+        /**
+         * #getter
+         * Whether a line runs between rows, `axis.grid`.
+         */
+        get showRowSeparators(): boolean {
+          return getConf(self, ['axis', 'grid'])
+        },
       }))
       .views(self => ({
         /**
@@ -845,8 +858,14 @@ export function stateModelFactory(
             self.adapterSources?.map(source => [source.name, source]),
           )
           const found = new Set<string>()
-          for (const region of self.featurePayloads.values()) {
-            for (const { key } of sectionsOn(region, self.rowsField) ?? []) {
+          const shown = self.trackVisibleRegions
+          for (const [index, region] of self.featurePayloads) {
+            const spans = shown.filter(b => b.displayedRegionIndex === index)
+            const sections =
+              shown.length === 0
+                ? (sectionsOn(region, self.rowsField) ?? [])
+                : sectionsInWindow(region, self.rowsField, spans)
+            for (const { key } of sections) {
               if (!listed.has(key)) {
                 found.add(key)
               }
@@ -870,8 +889,10 @@ export function stateModelFactory(
            * `TreeSidebarMixin`'s hook: every row the adapter lists over the
            * rows' field, in its order and with its label and color, so a
            * source with nothing in the loaded regions keeps its row; then the
-           * other values the worker split the loaded regions on, in the order
-           * the field's sections stack.
+           * other values the worker split the loaded regions on that have an
+           * instance on screen, in the order the field's sections stack. The
+           * fetch reaches past the screen on each side, and a row it met only
+           * there would stand empty.
            */
           get discoveredRows(): RowSource[] {
             return discoveredRows.get()
@@ -1936,6 +1957,12 @@ export function stateModelFactory(
             ...storedRegionData(data),
             request: { ...request, region },
           })
+        },
+        /**
+         * #action
+         */
+        setShowRowSeparators(show: boolean) {
+          setConf(self, ['axis', 'grid'], show)
         },
         /**
          * #action
