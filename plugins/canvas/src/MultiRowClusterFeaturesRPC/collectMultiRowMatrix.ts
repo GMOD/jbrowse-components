@@ -2,7 +2,10 @@ import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeature
 import { createStatusFanOut, updateStatus } from '@jbrowse/core/util'
 import { checkAbortSignal } from '@jbrowse/core/util/aborting'
 
-import { makeFeatureValueResolver } from '../MultiRowGetFeaturesRPC/packMultiRowFeatures.ts'
+import {
+  makeFeatureValueResolver,
+  splicedParts,
+} from '../MultiRowGetFeaturesRPC/packMultiRowFeatures.ts'
 import { dedupeFeaturesById } from '../RenderFeatureDataRPC/dedupeFeatures.ts'
 import { buildMultiRowMatrix } from './buildMultiRowMatrix.ts'
 
@@ -12,8 +15,8 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 import type { RpcCallContext } from '@jbrowse/core/rpc/RpcRegistry'
 
 /**
- * Every feature in `regions` with the row it paints in and its `clusterField`
- * value, read through the resolver the painting partitions with, so the
+ * Every feature in `regions`, a spliced one as each block it paints, with the
+ * row it paints in and its `clusterField` value, read through the resolver the painting partitions with, so the
  * clustering matrix and the column sort place each feature in the row the
  * painting drew it in.
  */
@@ -55,13 +58,14 @@ export async function collectMatrixFeatures({
     // Dedup per region, not across the fetch: a feature appearing in two
     // clustered regions covers bins in both.
     for (const f of dedupeFeaturesById(feats).values()) {
-      features.push({
-        regionIndex,
-        row: featureRowValue(f),
-        start: f.get('start'),
-        end: f.get('end'),
-        value: featureValue(f),
-      })
+      const row = featureRowValue(f)
+      const value = featureValue(f)
+      const parts = splicedParts(f) ?? [
+        { start: f.get('start'), end: f.get('end') },
+      ]
+      for (const { start, end } of parts) {
+        features.push({ regionIndex, row, start, end, value })
+      }
     }
   }
   return features

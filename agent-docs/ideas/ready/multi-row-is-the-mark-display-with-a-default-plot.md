@@ -121,7 +121,7 @@ share it, not in `LinearMarkDisplay/model.ts` (2,076 lines).
    `{ scale: { type: 'identity' } }`; Edit plot's scale picker leaves identity
    out (ADR-243).
 2. **Spliced features.** Multi-row packs a BED12 row's or a transcript's
-   blocks as entries sharing an id (`paintedParts` in
+   blocks as entries sharing an id (`splicedParts` in
    `packMultiRowFeatures.ts`), draws a 1 px span over each gap between them,
    and hits and hover-boxes the whole feature. The `protein_domains/vav`
    figure goes back to solid bars without it.

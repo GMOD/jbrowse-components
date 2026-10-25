@@ -234,18 +234,18 @@ interface Span {
 }
 
 /**
- * What a feature paints, in order and disjoint: the union of its children
- * while none has children of its own, so a BED12 row paints its blocks, a
- * transcript its exons with their CDS, and a gene over its transcripts paints
- * whole.
+ * The blocks a spliced feature paints, in order and disjoint: the union of its
+ * children while none has children of its own, so a BED12 row paints its
+ * blocks and a transcript its exons with their CDS. Undefined for a feature
+ * that paints whole, a gene over its transcripts included.
  */
-function paintedParts(feature: Feature): Span[] {
+export function splicedParts(feature: Feature): Span[] | undefined {
   const subfeatures = feature.get('subfeatures')
   if (
     !subfeatures?.length ||
     subfeatures.some(sub => sub.get('subfeatures')?.length)
   ) {
-    return [{ start: feature.get('start'), end: feature.get('end') }]
+    return undefined
   }
   const sorted = subfeatures
     .map(sub => ({ start: sub.get('start'), end: sub.get('end') }))
@@ -299,8 +299,8 @@ export function packMultiRowFeatures({
   jexl: JexlInstance
   report?: ProgressReporter
 }): MultiRowGetFeaturesResult {
-  const parts = features.map(paintedParts)
-  const n = parts.reduce((sum, p) => sum + p.length, 0)
+  const parts = features.map(splicedParts)
+  const n = parts.reduce((sum, p) => sum + (p?.length ?? 1), 0)
   const featureStarts = new Uint32Array(n)
   const featureEnds = new Uint32Array(n)
   const featureColors = new Uint32Array(n)
@@ -342,9 +342,9 @@ export function packMultiRowFeatures({
     const { css, fromBed } = featureColor(feature)
     usedItemRgb ||= fromBed
     const abgr = cssColorToABGR(css)
-    for (const part of parts[i]!) {
-      featureStarts[j] = part.start
-      featureEnds[j] = part.end
+    for (const part of parts[i] ?? [undefined]) {
+      featureStarts[j] = part ? part.start : feature.get('start')
+      featureEnds[j] = part ? part.end : feature.get('end')
       featureIds[j] = id
       featureNames[j] = name
       featureRowValueIndex[j] = idx

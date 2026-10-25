@@ -56,8 +56,9 @@ config:
 Features sharing a value stack into the same row, and the value becomes the row
 label.
 
-A BED12 row or a transcript draws its blocks joined by a line, as a gene track
-draws exons.
+A feature whose children have none of their own, such as a BED12 row or a GFF
+transcript at the top of its file, draws them as blocks joined by a line, as a
+gene track draws exons. A gene over its transcripts draws whole.
 
 The rows are discovered from the values of the features in the window, so a file
 that gains a sample or a category needs no config change, and a window missing

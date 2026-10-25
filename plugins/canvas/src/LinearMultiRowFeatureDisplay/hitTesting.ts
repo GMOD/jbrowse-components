@@ -275,8 +275,8 @@ export function hitInstances(
       channels.x,
       channels.x2,
       key,
-      0,
-      Infinity,
+      hit.start,
+      hit.end,
       found,
     )
   }

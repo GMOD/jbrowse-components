@@ -674,3 +674,19 @@ describe('a spliced feature under the pointer', () => {
     }
   })
 })
+
+describe('the hover box on a spliced feature', () => {
+  it('boxes every block of the feature, from any of them', () => {
+    const { display } = twoRowDisplay(
+      region([
+        { row: 'a', start: 100, end: 200, id: 'spliced' },
+        { row: 'a', start: 300, end: 400, id: 'spliced' },
+        { row: 'a', start: 600, end: 700, id: 'other' },
+      ]),
+    )
+    display.setPointer({ x: 150, y: 25 })
+    expect(display.hoverInk).toHaveLength(2)
+    display.setPointer({ x: 250, y: 25 })
+    expect(display.hoverInk).toHaveLength(2)
+  })
+})

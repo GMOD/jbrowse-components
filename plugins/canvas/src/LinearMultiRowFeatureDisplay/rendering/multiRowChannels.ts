@@ -54,12 +54,18 @@ export function buildMultiRowChannels(
   const row = new Uint32Array(n)
   const color = new Uint32Array(n)
   const featureIndex = new Uint32Array(n)
+  let gaps = 0
+  for (let i = 1; i < n; i++) {
+    if (featureIds[i - 1] === featureIds[i]) {
+      gaps++
+    }
+  }
   const introns = {
-    x: new Uint32Array(n),
-    x2: new Uint32Array(n),
-    row: new Uint32Array(n),
-    color: new Uint32Array(n),
-    featureIndex: new Uint32Array(n),
+    x: new Uint32Array(gaps),
+    x2: new Uint32Array(gaps),
+    row: new Uint32Array(gaps),
+    color: new Uint32Array(gaps),
+    featureIndex: new Uint32Array(gaps),
     count: 0,
   }
   let count = 0
