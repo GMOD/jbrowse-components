@@ -8,7 +8,7 @@ summary: "On the mark display, clustering and \"Sort rows by ... here\" compare 
 ## Status
 
 Accepted (2026-10-25). The second gap in
-`ideas/waiting-on-a-call/multi-row-is-the-mark-display-with-a-default-plot.md`.
+`ideas/ready/multi-row-is-the-mark-display-with-a-default-plot.md`.
 
 ## Context
 

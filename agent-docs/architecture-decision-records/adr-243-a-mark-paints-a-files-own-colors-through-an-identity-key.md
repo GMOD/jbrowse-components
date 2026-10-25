@@ -8,7 +8,7 @@ summary: "The mark display's `color` takes `scale: 'identity'`, ADR-166's scale:
 ## Status
 
 Accepted (2026-10-25). The first gap in
-`ideas/waiting-on-a-call/multi-row-is-the-mark-display-with-a-default-plot.md`.
+`ideas/ready/multi-row-is-the-mark-display-with-a-default-plot.md`.
 Amends [ADR-166](adr-166-an-identity-scale-names-the-colors-a-file-carries.md),
 which kept identity off the mark display, and
 [ADR-202](adr-202-every-mark-color-resolves-on-the-main-thread.md), whose

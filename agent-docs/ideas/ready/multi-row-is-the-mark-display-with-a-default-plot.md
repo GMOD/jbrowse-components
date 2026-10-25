@@ -1,6 +1,6 @@
 ---
 name: multi-row-is-the-mark-display-with-a-default-plot
-description: LinearMultiRowFeatureDisplay draws colored features in rows, which is a `rect` mark with `rows` and a color. Rebuild it as the mark display with a default plot, as ADR-178 rebuilt Manhattan, and delete its own worker, encoder, model and component. Benched on the Roadmap ChromHMM painting, the mark worker runs in about half the multi-row worker's time and sends a quarter of its bytes. Waits on one call, what `facet` means beside `rows`, then three gaps on the mark display; a feature's own color (ADR-243) and clustering span rows (ADR-244) are done. Read before touching either display's rows, row colors, clustering or legend hides.
+description: LinearMultiRowFeatureDisplay draws colored features in rows, which is a `rect` mark with `rows` and a color. Rebuild it as the mark display with a default plot, as ADR-178 rebuilt Manhattan, and delete its own worker, encoder, model and component. Benched on the Roadmap ChromHMM painting, the mark worker runs in about half the multi-row worker's time and sends a quarter of its bytes. Three gaps on the mark display remain, the last drawing a facet section as a band of rows; a feature's own color (ADR-243) and clustering span rows (ADR-244) are done. Read before touching either display's rows, row colors, clustering or legend hides.
 ---
 
 # Multi-row is the mark display with a default plot
@@ -71,7 +71,9 @@ at 1.00-1.04x; rerun on ada before quoting the times anywhere else.
   remap) and the paint. ADR-165 already has both displays reorder, focus and
   recolor rows through one row table.
 
-## The call: what `facet` means beside `rows`
+## A facet section is a band
+
+Colin's call, 2026-10-25, the recommendation below.
 
 - **Multi-row:** `facet: 'group'` stacks bands of rows by a row attribute,
   `group`, which `rowGroups` tags by matching row names (ADR-169), through
@@ -81,7 +83,7 @@ at 1.00-1.04x; rerun on ada before quoting the times anywhere else.
   is false (`plugins/marks/src/LinearMarkDisplay/model.ts:587-589`) and the
   `rows` slot's doc says bands of rows are "not drawn yet"
   (`configSchema.ts:441-448`).
-- **Recommended:** one meaning, a facet section is a band. A facet on a
+- **Decided:** one meaning, a facet section is a band. A facet on a
   feature field splits in the worker as today; a facet on a row attribute
   (`group`, a samples-TSV column) bands the rows on the main thread from the
   rows' attributes, as `bandedSources` does now; `rows` inside either draws
@@ -106,7 +108,7 @@ share it, not in `LinearMarkDisplay/model.ts` (2,076 lines).
    reads every loaded region). Color by's itemRgb preset writes
    `{ scale: { type: 'identity' } }`; Edit plot's scale picker leaves identity
    out (ADR-243).
-3. **Bands of rows**, after the call above, with `rowGroups` (the mark
+3. **Bands of rows**, as decided above, with `rowGroups` (the mark
    display's `rowColorFields` is `[]`, `model.ts:605-607`).
 
 Small, any time: an identity key with no `domain` (multi-row names each

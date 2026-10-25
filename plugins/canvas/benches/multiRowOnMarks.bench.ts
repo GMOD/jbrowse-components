@@ -3,7 +3,7 @@
 // same features once they have arrived, including the structured clone its
 // result crosses the wire by. Settles whether a `rect` mark with `rows` and a
 // color can replace `MultiRowGetFeatures` at 1.00x
-// (agent-docs/ideas/waiting-on-a-call/multi-row-is-the-mark-display-with-a-default-plot.md).
+// (agent-docs/ideas/ready/multi-row-is-the-mark-display-with-a-default-plot.md).
 //
 //   node --experimental-transform-types plugins/canvas/benches/multiRowOnMarks.bench.ts --only=roadmap --color=rgb
 //   node --experimental-transform-types plugins/canvas/benches/multiRowOnMarks.bench.ts --only=bxd --color=field --rounds=9
