@@ -1,15 +1,15 @@
 ---
 id: rowgroup
 title: RowGroup
-description: "One entry of the multi-row feature display's rowGroups: a row joins the group of the first entry whose match regex its name matches, and rowColor: { field: 'group' } colors the groups."
+description: "One entry of a row display's rowGroups: a row joins the group of the first entry whose match regex its name matches, facet: 'group' stacks the groups in bands, and rowColor: { field: 'group' } colors…"
 sidebar_label: Display -> RowGroup
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `canvas` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/canvas/src/LinearMultiRowFeatureDisplay/rowGroupConfigSchema.ts).
+Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/tree-sidebar/src/rowGroupConfigSchema.ts).
 
-One entry of the multi-row feature display's `rowGroups`: a row joins the
-`group` of the first entry whose `match` regex its name matches, and
-`rowColor: { field: 'group' }` colors the groups.
+One entry of a row display's `rowGroups`: a row joins the `group` of the
+first entry whose `match` regex its name matches, `facet: 'group'` stacks
+the groups in bands, and `rowColor: { field: 'group' }` colors them.
 
 ## Example usage
 

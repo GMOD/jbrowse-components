@@ -14904,6 +14904,17 @@
             "$ref": "#/$defs/RowColor"
           }
         },
+        "rowGroups": {
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/RowGroup"
+            }
+          }
+        },
         "axis": {
           "if": {
             "type": "null"
@@ -15107,6 +15118,17 @@
           },
           "else": {
             "$ref": "#/$defs/RowColor"
+          }
+        },
+        "rowGroups": {
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/RowGroup"
+            }
           }
         },
         "axis": {
@@ -16028,7 +16050,17 @@
               "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/rowProportion"
             },
             "rowGroups": {
-              "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/rowGroups"
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/rowGroups"
+                },
+                {
+                  "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/rowGroups"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rowGroups"
+                }
+              ]
             },
             "axis": {
               "anyOf": [
@@ -16639,6 +16671,9 @@
             },
             "rowColor": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rowColor"
+            },
+            "rowGroups": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rowGroups"
             },
             "axis": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/axis"
@@ -17384,6 +17419,9 @@
             "transform": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/transform"
             },
+            "rowGroups": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rowGroups"
+            },
             "origin": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/origin"
             },
@@ -18057,6 +18095,9 @@
             "facet": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/facet"
             },
+            "rowGroups": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rowGroups"
+            },
             "rowHeight": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rowHeight"
             },
@@ -18476,6 +18517,9 @@
             },
             "facet": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/facet"
+            },
+            "rowGroups": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rowGroups"
             },
             "rowHeight": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rowHeight"
@@ -19141,6 +19185,9 @@
             },
             "facet": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/facet"
+            },
+            "rowGroups": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rowGroups"
             },
             "origin": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/origin"
@@ -19850,6 +19897,9 @@
             "rowColor": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rowColor"
             },
+            "rowGroups": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rowGroups"
+            },
             "axis": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/axis"
             },
@@ -20063,6 +20113,9 @@
             },
             "rowColor": {
               "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/rowColor"
+            },
+            "rowGroups": {
+              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/rowGroups"
             },
             "axis": {
               "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/axis"

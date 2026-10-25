@@ -15345,6 +15345,17 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/RowColor"
           }
         },
+        "rowGroups": {
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/RowGroup"
+            }
+          }
+        },
         "axis": {
           "if": {
             "type": "null"
@@ -15550,6 +15561,17 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           },
           "else": {
             "$ref": "#/$defs/RowColor"
+          }
+        },
+        "rowGroups": {
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/RowGroup"
+            }
           }
         },
         "axis": {
@@ -16488,7 +16510,17 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/rowProportion"
             },
             "rowGroups": {
-              "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/rowGroups"
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/rowGroups"
+                },
+                {
+                  "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/rowGroups"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rowGroups"
+                }
+              ]
             },
             "axis": {
               "anyOf": [
@@ -17107,6 +17139,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "rowColor": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rowColor"
+            },
+            "rowGroups": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rowGroups"
             },
             "axis": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/axis"
@@ -17869,6 +17904,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "transform": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/transform"
             },
+            "rowGroups": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rowGroups"
+            },
             "origin": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/origin"
             },
@@ -18558,6 +18596,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "facet": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/facet"
             },
+            "rowGroups": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rowGroups"
+            },
             "rowHeight": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rowHeight"
             },
@@ -18985,6 +19026,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "facet": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/facet"
+            },
+            "rowGroups": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rowGroups"
             },
             "rowHeight": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rowHeight"
@@ -19666,6 +19710,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "facet": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/facet"
+            },
+            "rowGroups": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rowGroups"
             },
             "origin": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/origin"
@@ -20391,6 +20438,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "rowColor": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rowColor"
             },
+            "rowGroups": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rowGroups"
+            },
             "axis": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/axis"
             },
@@ -20612,6 +20662,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "rowColor": {
               "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/rowColor"
+            },
+            "rowGroups": {
+              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/rowGroups"
             },
             "axis": {
               "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/axis"

@@ -9367,6 +9367,21 @@ export const configManifest: ConfigManifest = {
           }
         },
         {
+          "name": "rowGroups",
+          "type": "RowGroupConfigurationSchema[]",
+          "subSlots": [
+            {
+              "name": "match",
+              "type": "string"
+            },
+            {
+              "name": "group",
+              "type": "string"
+            }
+          ],
+          "schema": "RowGroup"
+        },
+        {
           "name": "axis",
           "type": "RowAxisConfigurationSchema",
           "subSlots": [
@@ -10080,6 +10095,21 @@ export const configManifest: ConfigManifest = {
           "shorthand": {
             "string": "field"
           }
+        },
+        {
+          "name": "rowGroups",
+          "type": "RowGroupConfigurationSchema[]",
+          "subSlots": [
+            {
+              "name": "match",
+              "type": "string"
+            },
+            {
+              "name": "group",
+              "type": "string"
+            }
+          ],
+          "schema": "RowGroup"
         },
         {
           "name": "axis",
