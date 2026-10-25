@@ -61,6 +61,7 @@ const CategoryRow = observer(function CategoryRow({
     <>
       <Typography variant="body2">{label}</Typography>
       <TextField
+        variant="outlined"
         select
         size="small"
         className={classes.field}
@@ -97,6 +98,7 @@ const NumberRow = observer(function NumberRow({
     <>
       <Typography variant="body2">{label}</Typography>
       <TextField
+        variant="outlined"
         size="small"
         type="number"
         className={classes.field}
@@ -273,6 +275,7 @@ const LayerFilterSections = observer(function LayerFilterSections({
             <>
               <Typography variant="body2">Cytosine context</Typography>
               <TextField
+                variant="outlined"
                 select
                 size="small"
                 value={bases.context}

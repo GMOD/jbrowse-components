@@ -2,7 +2,6 @@ import { lazy } from 'react'
 
 import { TRACK_MENU_PRIORITY } from '@jbrowse/core/ui/menuItems'
 import { getDialogHost } from '@jbrowse/core/util'
-import DataObjectIcon from '@mui/icons-material/DataObject'
 import TuneIcon from '@mui/icons-material/Tune'
 
 import type { PlotDialogHost } from './PlotDialog.tsx'
@@ -27,6 +26,14 @@ export function openPlotDialog(
     PlotDialog,
     { model: display, seed, seedOptions, handleClose },
   ])
+}
+
+function withoutIcon(item: MenuItem): MenuItem {
+  if (!('icon' in item) || item.icon === undefined) {
+    return item
+  }
+  const { icon: _icon, ...rest } = item
+  return rest
 }
 
 // A row's kind, in the order Advanced lists them: rows that act or open a
@@ -59,12 +66,15 @@ export function editPlotMenuItems(
           subMenu: [
             {
               label: 'Edit plot...',
-              icon: DataObjectIcon,
               onClick: () => {
                 openPlotDialog(display)
               },
             },
-            ...more.toSorted((a, b) => rowKindRank(a) - rowKindRank(b)),
+            // no row icons: rows from several features gather here, and an
+            // icon on some of them reads as a difference that is not there
+            ...more
+              .toSorted((a, b) => rowKindRank(a) - rowKindRank(b))
+              .map(withoutIcon),
           ],
         },
       ]
