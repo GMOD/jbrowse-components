@@ -1,4 +1,4 @@
-import { defineMark, spanMark } from '@jbrowse/render-core/marks'
+import { defineMark, spanMark, withPassId } from '@jbrowse/render-core/marks'
 import { MULTI_ROW_MIN_CELL_PX } from '@jbrowse/render-core/shaders/rowRectConsts'
 
 import type { MultiRowEncoded } from './multiRowChannels.ts'
@@ -23,7 +23,7 @@ export const MULTI_ROW_MARK = defineMark({
 
 // A line centred in the row, which the span shape floors at 1 px tall
 const MULTI_ROW_INTRON_MARK = defineMark({
-  shape: spanMark,
+  shape: withPassId(spanMark, 'multiRowIntron'),
   channels: (c: MultiRowEncoded) => c.introns,
   params: (s: MultiRowRenderState) => ({
     rowHeight: s.rowHeight,
