@@ -51,7 +51,24 @@ the rows field and `encodeFeatures` for a `rect`. Every arm's
 | BXD painting, chr1 | 1,196 | 198 | `name` | 3.0 ms | | 0.42x | 86.1 → 23.4 |
 
 Laptop on AC at load 5-8, 2026-10-24, MIN of 7-15 interleaved rounds, controls
-at 1.00-1.04x; rerun on ada before quoting the times anywhere else.
+at 1.00-1.04x.
+
+On ada the mark arms gain less over a large painting. 2026-10-25 at
+64e70accab, load 19-24 on 24 cores, MIN of 9-25 rounds, controls at
+0.99-1.01x:
+
+| Fixture | Color | multi-row | marks-jexl | marks-identity | marks-key |
+| --- | --- | ---: | ---: | ---: | ---: |
+| Roadmap ChromHMM, chr7:25-30 Mb | file's own | 154.3 ms | 0.86x | 0.67x | 0.67x |
+| Roadmap ChromHMM, chr7:25-30 Mb | `name` | 166.2 ms | | | 0.62x |
+| Roadmap ChromHMM, chr7:10-35 Mb | file's own | 407.8 ms | 0.95x | 0.70x | 0.68x |
+| Roadmap ChromHMM, chr7:10-35 Mb | `name` | 700.4 ms | | | 0.57x |
+| BXD painting, chr1 | file's own | 2.2 ms | 0.64x | 0.45x | 0.44x |
+| BXD painting, chr1 | `name` | 2.6 ms | | | 0.41x |
+
+A quiet ada would say whether the load or the machine narrows the Roadmap
+gap; either way the mark worker stays the faster one, at a quarter of the
+bytes.
 
 - The multi-row worker also sends each feature's name and ID as strings, a
   sample of field names, row-field candidate values and legend candidates,
@@ -64,8 +81,8 @@ at 1.00-1.04x; rerun on ada before quoting the times anywhere else.
 - `marks-key` reads the color column as an ordinal key, the worker half of a
   native identity scale; the main thread then parses each distinct color once.
 - `marks-identity` is the shipped spelling, `{ scale: 'identity' }`
-  (ADR-243): 0.45x on Roadmap chr7:25-30 Mb and 0.46x on BXD, 2026-10-25,
-  its colors equal to multi-row's.
+  (ADR-243), its colors equal to multi-row's: 0.45x on Roadmap
+  chr7:25-30 Mb and 0.46x on BXD on the laptop, 2026-10-25.
 - **Not timed:** the main thread's work per arriving region
   (`buildMultiRowChannels` against the mark display's color paint and row-table
   remap) and the paint. ADR-165 already has both displays reorder, focus and
