@@ -1,10 +1,13 @@
-import { collectLegendCandidates } from '../MultiRowGetFeaturesRPC/packMultiRowFeatures.ts'
+import {
+  collectLegendCandidates,
+  featureRun,
+} from '../MultiRowGetFeaturesRPC/packMultiRowFeatures.ts'
 
 import type { MultiRowRegionData } from './rendering/multiRowRenderingBackendTypes.ts'
 
 /**
  * The part of a loaded region the window shows: its features overlapping
- * `spans`, their rows renumbered over the values they carry and their color
+ * `spans`, every part of a feature kept while the feature overlaps, their rows renumbered over the values they carry and their color
  * key candidates found again. A fetch reaches half a window past each side, so
  * rows and a key read off the whole region list what is off screen.
  * `colorValues.values` stays whole, so a value keeps its index and its dealt
@@ -15,12 +18,16 @@ export function windowedRegion(
   spans: readonly { start: number; end: number }[],
 ): MultiRowRegionData {
   const kept: number[] = []
-  for (let i = 0; i < data.featureIds.length; i++) {
-    const start = data.featureStarts[i]!
-    const end = data.featureEnds[i]!
+  for (let i = 0; i < data.featureIds.length;) {
+    const [first, last] = featureRun(data.featureIds, i)
+    const start = data.featureStarts[first]!
+    const end = data.featureEnds[last]!
     if (spans.some(s => start < s.end && end > s.start)) {
-      kept.push(i)
+      for (let k = first; k <= last; k++) {
+        kept.push(k)
+      }
     }
+    i = last + 1
   }
   if (kept.length === data.featureIds.length) {
     return data

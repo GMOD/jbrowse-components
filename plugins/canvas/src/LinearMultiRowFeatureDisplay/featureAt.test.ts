@@ -660,3 +660,17 @@ describe('a spliced feature', () => {
     expect(display.featureAt(500, 25)).toBeUndefined()
   })
 })
+
+describe('a spliced feature under the pointer', () => {
+  it('names the whole feature, from its first block to its last', () => {
+    const { display } = twoRowDisplay(
+      region([
+        { row: 'a', start: 100, end: 200, id: 'spliced' },
+        { row: 'a', start: 300, end: 400, id: 'spliced' },
+      ]),
+    )
+    for (const x of [150, 250, 350]) {
+      expect(display.featureAt(x, 25)).toMatchObject({ start: 100, end: 400 })
+    }
+  })
+})

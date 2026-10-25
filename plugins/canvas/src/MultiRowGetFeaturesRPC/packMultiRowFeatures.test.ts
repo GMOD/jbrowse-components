@@ -580,3 +580,51 @@ test('a feature with leaf subfeatures packs one entry per block, a gene one entr
   expect(r.featureIds).toEqual(['domain', 'domain', 'gene'])
   expect([...r.featureRowValueIndex]).toEqual([0, 0, 1])
 })
+
+test('a transcript paints its exons merged with the CDS inside them, in order', () => {
+  const r = packMultiRowFeatures({
+    features: [
+      feat({
+        id: 'tx',
+        start: 100,
+        end: 900,
+        sample: 'mom',
+        subfeatures: [
+          {
+            uniqueId: 'e2',
+            refName: 'ctgA',
+            start: 600,
+            end: 900,
+            type: 'exon',
+          },
+          {
+            uniqueId: 'e1',
+            refName: 'ctgA',
+            start: 100,
+            end: 300,
+            type: 'exon',
+          },
+          {
+            uniqueId: 'c1',
+            refName: 'ctgA',
+            start: 200,
+            end: 300,
+            type: 'CDS',
+          },
+          {
+            uniqueId: 'c2',
+            refName: 'ctgA',
+            start: 600,
+            end: 700,
+            type: 'CDS',
+          },
+        ],
+      }),
+    ],
+    rowsField: 'sample',
+    colorConfig: { value: 'goldenrod', field: '' },
+    jexl: createJexlInstance(),
+  })
+  expect([...r.featureStarts]).toEqual([100, 600])
+  expect([...r.featureEnds]).toEqual([300, 900])
+})

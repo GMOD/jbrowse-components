@@ -1,5 +1,6 @@
 import { collectLegendCandidates } from '../MultiRowGetFeaturesRPC/packMultiRowFeatures.ts'
 import { createTestEnvironment, ctgA } from './testEnv.ts'
+import { windowedRegion } from './windowedRegion.ts'
 
 import type { MultiRowRegionData } from './rendering/multiRowRenderingBackendTypes.ts'
 
@@ -109,4 +110,16 @@ describe('rows and the key read the window, not the fetch buffer', () => {
     expect(display.colorLegend.map(e => e.label)).not.toContain('Torsin')
     expect(display.hiddenColors.size).toBe(1)
   })
+})
+
+test('a window inside a feature intron keeps every block of the feature', () => {
+  const data = region([
+    { transcript: 'vav-201', domain: 'CH', start: 0 },
+    { transcript: 'vav-201', domain: 'CH', start: 1000 },
+    { transcript: 'vav-202', domain: 'SH2', start: 5000 },
+  ])
+  const spliced = { ...data, featureIds: ['f0', 'f0', 'f2'] }
+  const windowed = windowedRegion(spliced, [{ start: 400, end: 600 }])
+  expect([...windowed.featureStarts]).toEqual([0, 1000])
+  expect(windowed.rowValues).toEqual(['vav-201'])
 })

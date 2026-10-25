@@ -228,17 +228,58 @@ export function makeFeatureValueResolver(field: string, jexl: JexlInstance) {
   }
 }
 
+interface Span {
+  start: number
+  end: number
+}
+
 /**
- * What a feature paints: its children while none has children of its own, so
- * a BED12 row or a transcript paints its exons and a gene over its
- * transcripts paints whole.
+ * What a feature paints, in order and disjoint: the union of its children
+ * while none has children of its own, so a BED12 row paints its blocks, a
+ * transcript its exons with their CDS, and a gene over its transcripts paints
+ * whole.
  */
-function paintedParts(feature: Feature): Feature[] {
+function paintedParts(feature: Feature): Span[] {
   const subfeatures = feature.get('subfeatures')
-  return subfeatures?.length &&
-    subfeatures.every(sub => !sub.get('subfeatures')?.length)
-    ? subfeatures
-    : [feature]
+  if (
+    !subfeatures?.length ||
+    subfeatures.some(sub => sub.get('subfeatures')?.length)
+  ) {
+    return [{ start: feature.get('start'), end: feature.get('end') }]
+  }
+  const sorted = subfeatures
+    .map(sub => ({ start: sub.get('start'), end: sub.get('end') }))
+    .sort((a, b) => a.start - b.start)
+  const merged = [sorted[0]!]
+  for (const span of sorted.slice(1)) {
+    const last = merged.at(-1)!
+    if (span.start <= last.end) {
+      last.end = Math.max(last.end, span.end)
+    } else {
+      merged.push(span)
+    }
+  }
+  return merged
+}
+
+/**
+ * The entries `[first, last]` of the feature entry `i` belongs to: its parts
+ * are consecutive and share its id, so the feature spans
+ * `featureStarts[first]` to `featureEnds[last]`.
+ */
+export function featureRun(featureIds: readonly string[], i: number) {
+  let first = i
+  let last = i
+  while (first > 0 && featureIds[first - 1] === featureIds[i]) {
+    first--
+  }
+  while (
+    last + 1 < featureIds.length &&
+    featureIds[last + 1] === featureIds[i]
+  ) {
+    last++
+  }
+  return [first, last] as const
 }
 
 /**
@@ -302,8 +343,8 @@ export function packMultiRowFeatures({
     usedItemRgb ||= fromBed
     const abgr = cssColorToABGR(css)
     for (const part of parts[i]!) {
-      featureStarts[j] = part.get('start')
-      featureEnds[j] = part.get('end')
+      featureStarts[j] = part.start
+      featureEnds[j] = part.end
       featureIds[j] = id
       featureNames[j] = name
       featureRowValueIndex[j] = idx

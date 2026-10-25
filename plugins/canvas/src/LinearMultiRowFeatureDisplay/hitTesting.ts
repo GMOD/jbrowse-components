@@ -8,6 +8,7 @@ import { spansInRow } from '@jbrowse/render-core/marks'
 import { MULTI_ROW_MIN_CELL_PX } from '@jbrowse/render-core/shaders/rowRectConsts'
 import { treeSidebarRightEdge } from '@jbrowse/tree-sidebar'
 
+import { featureRun } from '../MultiRowGetFeaturesRPC/packMultiRowFeatures.ts'
 import {
   MULTI_ROW_BLOCK_MARK,
   MULTI_ROW_MARK,
@@ -205,6 +206,7 @@ function featureAtBase(
   if (!found || rowName === undefined) {
     return undefined
   }
+  const [first, last] = featureRun(region.featureIds, found.i)
   const { i } = found
   return {
     id: region.featureIds[i]!,
@@ -212,8 +214,8 @@ function featureAtBase(
     rowName,
     name: region.featureNames[i]!,
     refName: p.refName,
-    start: region.featureStarts[i]!,
-    end: region.featureEnds[i]!,
+    start: region.featureStarts[first]!,
+    end: region.featureEnds[last]!,
   }
 }
 
