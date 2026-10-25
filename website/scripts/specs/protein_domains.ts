@@ -46,7 +46,6 @@ export const proteinDomainsSpecs: ScreenshotSpec[] = [
             { trackId: `${ASSEMBLY}-ncbiGff`, height: 110 },
             {
               trackId: 'pfam_domains',
-              type: 'LinearMultiRowFeatureDisplay',
               height: 120,
             },
           ],
