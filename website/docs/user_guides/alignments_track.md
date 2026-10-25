@@ -95,7 +95,7 @@ Modifications** paints them in two modes:
   unmethylated region looks empty. **Filter by... → Modification probability**
   raises the probability cutoff and **Filter by... → Modification types**
   restricts to one type such as 5mC
-- **Modifications, unmodified in blue** (IGV's "2-color") also paints the
+- **Color by... → Show unmodified in blue** (IGV's "2-color") also paints the
   not-modified side blue. For cytosine data it fills every CpG in context,
   including ones the basecaller left implicit, inferred from the reference.
   **Filter by... → Cytosine context** picks CpG/CHG/CHH
@@ -117,10 +117,10 @@ Bisulfite (WGBS) and EM-seq reads have no MM/ML tags; methylation is in the C→
 conversion itself. **Color by... → Bisulfite / EM-seq** reads it off the aligned
 bases against the reference, so a plain BAM from a bisulfite-aware aligner
 colors without a methylation caller. Methylated cytosines paint red, **Color
-by... → Bisulfite / EM-seq, unmethylated in blue** paints the converted sites
-too, and **Filter by... → Cytosine context** picks the CG, CHG or CHH context,
-which plant genomes methylate in all three. The
-[bisulfite tutorial](/docs/tutorials/bisulfite) runs it on _Arabidopsis_ data.
+by... → Show unmodified in blue** paints the converted sites too, and **Filter
+by... → Cytosine context** picks the CG, CHG or CHH context, which plant genomes
+methylate in all three. The [bisulfite tutorial](/docs/tutorials/bisulfite) runs
+it on _Arabidopsis_ data.
 
 ### Pair orientation and insert size
 

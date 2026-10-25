@@ -60,8 +60,7 @@ ratchet's backlog. What follows is what no check sees.
   and link labels; a protein product is roman. `mappability_qc` is the page to
   copy. oxfmt picks the emphasis marker.
 - A menu path in prose spells the app's label, ellipsis included:
-  `**Color by... → Modifications, unmodified in blue**`. A caption keeps the
-  path bare.
+  `**Color by... → Show unmodified in blue**`. A caption keeps the path bare.
 - `Add track` (FAB menu) and `Add track...` (track hamburger) are both real
   labels.
 

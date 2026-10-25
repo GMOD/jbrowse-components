@@ -2,7 +2,7 @@ import { displayPainted } from '@jbrowse/browser-test-utils'
 
 import {
   MODIFICATIONS_LABEL,
-  MODIFICATIONS_TWO_COLOR_LABEL,
+  UNMODIFIED_IN_BLUE_LABEL,
 } from '../../../plugins/alignments/src/LinearAlignmentsDisplay/menus/baseLayerLabels.ts'
 import { FIT_TO_TRACK_LABEL } from '../../../plugins/alignments/src/LinearAlignmentsDisplay/menus/compactnessPresets.ts'
 import {
@@ -797,7 +797,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
         dy: -60,
         maxWidth: 340,
         fontSize: 16,
-        text: `${MODIFICATIONS_TWO_COLOR_LABEL}: every CpG, red methylated and blue not`,
+        text: `${UNMODIFIED_IN_BLUE_LABEL}: every CpG, red methylated and blue not`,
       },
     ],
   },

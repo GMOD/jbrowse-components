@@ -119,10 +119,10 @@ coverage band built from its own reads:
 HG002's nanopore reads also carry 5mC calls in their `MM`/`ML` tags. On hg38,
 navigate to the SNRPN imprinting center at `chr15:24,948,000-24,962,000` and
 open **HG002 ONT reads (5mC, haplotagged)**. In its track menu, **Color by... →
-Modifications, unmodified in blue** paints each CpG red where its 5mC call says
-methylated and blue where it says unmethylated:
+Modifications** paints each CpG red where its 5mC call says methylated, and
+**Color by... → Show unmodified in blue** adds blue where it says unmethylated:
 
-<Figure caption="Color by... → Modifications, unmodified in blue in the HG002 ONT track menu." src="/img/methylation/hg002_snrpn_color_menu.png" />
+<Figure caption="Color by... → Modifications in the HG002 ONT track menu." src="/img/methylation/hg002_snrpn_color_menu.png" />
 
 **Group by... → Tag...** with `HP` then puts the methylated parental allele in
 one section and the unmethylated one in the other:

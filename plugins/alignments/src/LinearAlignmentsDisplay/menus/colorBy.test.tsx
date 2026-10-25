@@ -4,9 +4,8 @@ import { basesFilterOf, withBasesFields } from '../../shared/basesFilter.ts'
 import { colorFieldOptions } from '../../shared/colorFieldOptions.ts'
 import {
   BISULFITE_LABEL,
-  BISULFITE_TWO_COLOR_LABEL,
   MODIFICATIONS_LABEL,
-  MODIFICATIONS_TWO_COLOR_LABEL,
+  UNMODIFIED_IN_BLUE_LABEL,
 } from './baseLayerLabels.ts'
 import { getColorByMenuItem } from './colorBy.ts'
 
@@ -177,16 +176,16 @@ function isChecked(model: Model, label: string) {
 }
 
 const BY_TYPE = MODIFICATIONS_LABEL
-const TWO_COLOR = MODIFICATIONS_TWO_COLOR_LABEL
+const IN_BLUE = UNMODIFIED_IN_BLUE_LABEL
 
 describe('color by modifications radios', () => {
   test.each([false, true])(
-    'both views are offered either way (unmodified %s)',
+    'one radio, and the blue view as a checkbox (unmodified %s)',
     unmodified => {
       const model = makeModModel()
       drawing(model, 'modifications', { unmodified })
-      expect([isChecked(model, BY_TYPE), isChecked(model, TWO_COLOR)]).toEqual([
-        !unmodified,
+      expect([isChecked(model, BY_TYPE), isChecked(model, IN_BLUE)]).toEqual([
+        true,
         unmodified,
       ])
     },
@@ -212,25 +211,47 @@ describe('color by modifications radios', () => {
   })
 
   test.each([
-    [BY_TYPE, 'modifications', false],
-    [TWO_COLOR, 'modifications', true],
-    [BISULFITE_LABEL, 'bisulfite', false],
-    [BISULFITE_TWO_COLOR_LABEL, 'bisulfite', true],
-  ] as const)('%s draws %s, unmodified %s', (label, field, unmodified) => {
+    [BY_TYPE, 'modifications'],
+    [BISULFITE_LABEL, 'bisulfite'],
+  ] as const)('%s draws %s', (label, field) => {
     const model = makeModModel(['m', 'h'])
     clickRadio(model, label)
-    expect(model.baseLayer).toMatchObject({ field, unmodified })
+    expect(model.baseLayer).toMatchObject({ field, unmodified: false })
     expect(isChecked(model, label)).toBe(true)
+  })
+
+  test.each(['modifications', 'bisulfite'] as const)(
+    'the checkbox paints the unmodified side blue under %s, and keeps it on a switch',
+    field => {
+      const model = makeModModel(['m', 'h'])
+      drawing(model, field)
+      clickRadio(model, IN_BLUE)
+      expect(model.baseLayer).toMatchObject({ field, unmodified: true })
+      clickRadio(model, field === 'bisulfite' ? BY_TYPE : BISULFITE_LABEL)
+      expect(isChecked(model, IN_BLUE)).toBe(true)
+    },
+  )
+
+  test('the checkbox is offered only while a methylation layer draws', () => {
+    const model = makeModModel(['m', 'h'])
+    expect(byLabel(model, IN_BLUE)).toBeFalsy()
+    drawing(model, 'baseQuality')
+    expect(byLabel(model, IN_BLUE)).toBeFalsy()
   })
 
   test('one radio in the per-base group reads as ticked', () => {
     const model = makeModModel(['m', 'h'])
     drawing(model, 'bisulfite', { unmodified: true })
-    expect(
-      [BY_TYPE, TWO_COLOR, BISULFITE_LABEL, BISULFITE_TWO_COLOR_LABEL].filter(
-        l => isChecked(model, l),
-      ),
-    ).toEqual([BISULFITE_TWO_COLOR_LABEL])
+    expect([BY_TYPE, BISULFITE_LABEL].filter(l => isChecked(model, l))).toEqual(
+      [BISULFITE_LABEL],
+    )
+  })
+
+  test('the Modifications radio greys out while the reads are being read', () => {
+    const model = makeModModel([])
+    model.modificationsReady = false
+    const item = byLabel(model, BY_TYPE)
+    expect(item && 'disabled' in item && item.disabled).toBe(true)
   })
 
   // Detection is per-fetch volatile state, so a track colored by modifications

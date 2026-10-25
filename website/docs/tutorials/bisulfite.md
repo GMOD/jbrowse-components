@@ -286,9 +286,9 @@ cytosines red. Two more rows refine it:
 
 - **Filter by... → Cytosine context** picks **CpG**, **CHG**, **CHH** or **All
   cytosines**
-- **Color by... → Bisulfite / EM-seq, unmethylated in blue** also paints
-  converted sites blue, separating an unmethylated cytosine from a position with
-  no cytosine. The figure and clip further down leave it off
+- **Color by... → Show unmodified in blue** also paints converted sites blue,
+  separating an unmethylated cytosine from a position with no cytosine. The
+  figure and clip further down leave it off
 
 ## Gene body methylation and transposon silencing
 

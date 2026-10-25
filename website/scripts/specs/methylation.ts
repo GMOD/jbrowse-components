@@ -1,6 +1,6 @@
 import { displayPainted } from '@jbrowse/browser-test-utils'
 
-import { MODIFICATIONS_TWO_COLOR_LABEL } from '../../../plugins/alignments/src/LinearAlignmentsDisplay/menus/baseLayerLabels.ts'
+import { MODIFICATIONS_LABEL } from '../../../plugins/alignments/src/LinearAlignmentsDisplay/menus/baseLayerLabels.ts'
 import {
   DEMO_CONFIG,
   HG38_GENCODE_PROMOTER_TRACK,
@@ -183,7 +183,7 @@ const snrpnReadsPanel = ({
     ],
   })
 
-const SNRPN_TWO_COLOR_PATH = ['Color by...', MODIFICATIONS_TWO_COLOR_LABEL]
+const SNRPN_COLOR_PATH = ['Color by...', MODIFICATIONS_LABEL]
 
 export const methylationVideoFixtures = {
   ungrouped: snrpnReadsPanel(),
@@ -403,9 +403,9 @@ export const methylationSpecs: ScreenshotSpec[] = [
     tooltip: 'hide',
     actions: [
       trackMenuIcon('HG002_snrpn_5mC_reads'),
-      ...menuCascade(SNRPN_TWO_COLOR_PATH),
+      ...menuCascade(SNRPN_COLOR_PATH),
     ],
-    annotations: cascadeBoxes(SNRPN_TWO_COLOR_PATH),
+    annotations: cascadeBoxes(SNRPN_COLOR_PATH),
   },
 
   {

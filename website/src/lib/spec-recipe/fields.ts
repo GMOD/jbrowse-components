@@ -17,9 +17,8 @@ import { READ_CATEGORIES } from '../../../../plugins/alignments/src/shared/readC
 import { cytosineContextOptions } from '../../../../plugins/alignments/src/shared/modificationData.ts'
 import {
   BISULFITE_LABEL,
-  BISULFITE_TWO_COLOR_LABEL,
   MODIFICATIONS_LABEL,
-  MODIFICATIONS_TWO_COLOR_LABEL,
+  UNMODIFIED_IN_BLUE_LABEL,
 } from '../../../../plugins/alignments/src/LinearAlignmentsDisplay/menus/baseLayerLabels.ts'
 import { isJexl } from '../../../../packages/core/src/util/jexlStrings.ts'
 // Straight from core, not through plugins/variants' re-export of it: that
@@ -160,11 +159,11 @@ const SPECIAL_COLOR_MENUS: Record<string, string> = {
   tag: 'Tag...',
 }
 
-// The methylation layers' radio pairs, which `pileup.bases.unmodified.show`
-// picks between.
+// The methylation layers' radios; `pileup.bases.unmodified.show` is the
+// checkbox under them.
 const BASE_LAYER_RADIOS = {
-  modifications: [MODIFICATIONS_LABEL, MODIFICATIONS_TWO_COLOR_LABEL],
-  bisulfite: [BISULFITE_LABEL, BISULFITE_TWO_COLOR_LABEL],
+  modifications: MODIFICATIONS_LABEL,
+  bisulfite: BISULFITE_LABEL,
 } as const
 
 // The members a spec's `encoding.color` leaves out, so the field a recipe
@@ -242,10 +241,10 @@ const basesStep: FieldRecipe = value => {
   const context = Array.isArray(contexts)
     ? cytosineContextOptions.find(o => o.value === asString(contexts[0]))
     : undefined
-  const label =
-    field === 'modifications' || field === 'bisulfite'
-      ? BASE_LAYER_RADIOS[field][unmodified ? 1 : 0]
-      : COLOR_FIELD_DEFS[field].menu.label
+  const isMethylation = field === 'modifications' || field === 'bisulfite'
+  const label = isMethylation
+    ? BASE_LAYER_RADIOS[field]
+    : COLOR_FIELD_DEFS[field].menu.label
   return [
     {
       path: `${TRACK_MENU} → Color by... → ${label}`,
@@ -254,6 +253,9 @@ const basesStep: FieldRecipe = value => {
           ? 'Needs MM/ML modification tags in your BAM/CRAM.'
           : undefined,
     },
+    ...(isMethylation && unmodified
+      ? [{ path: `${TRACK_MENU} → Color by... → ${UNMODIFIED_IN_BLUE_LABEL}` }]
+      : []),
     ...(field === 'modifications' && filter.some(p => p?.field === 'code')
       ? [{ path: `${TRACK_MENU} → Filter by... → Modification types` }]
       : []),

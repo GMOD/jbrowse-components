@@ -1,18 +1,17 @@
-import { radioItem } from '@jbrowse/core/ui/menuItems'
+import { checkboxItem, radioItem } from '@jbrowse/core/ui/menuItems'
 
 import {
   MODIFICATIONS_LABEL,
-  MODIFICATIONS_TWO_COLOR_LABEL,
+  UNMODIFIED_IN_BLUE_LABEL,
 } from './baseLayerLabels.ts'
 
 import type { BaseLayer, BasesFilter, BasesPatch } from '../../shared/types.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 
-// The MM/ML modification layer's two radios in Color by...: the calls in one
-// color per type, or the same plus the not-modified side in blue (IGV's
-// "2-color"). Each writes `pileup.bases.unmodified` and leaves `filter` alone,
-// so switching views keeps the Filter by... refinements (basesFilterMenu.ts).
-// Reference-based bisulfite is the sibling pair, in bisulfiteMenu.ts.
+// The MM/ML modification layer's radio in Color by.... It leaves `unmodified`
+// and `filter` alone, so switching layers keeps the blue view and the
+// Filter by... refinements (basesFilterMenu.ts). Reference-based bisulfite is
+// the sibling radio, in bisulfiteMenu.ts.
 export interface ModificationsMenuModel {
   baseLayer: BaseLayer | undefined
   basesFilter: BasesFilter
@@ -20,15 +19,31 @@ export interface ModificationsMenuModel {
   detectedModificationTypes: string[]
 }
 
-export function modificationsRadios(model: ModificationsMenuModel): MenuItem[] {
+export function modificationsRadio(model: ModificationsMenuModel): MenuItem {
+  return radioItem(
+    MODIFICATIONS_LABEL,
+    model.baseLayer?.field === 'modifications',
+    () => {
+      model.setBases({ show: true, field: 'modifications' })
+    },
+  )
+}
+
+/**
+ * The not-modified side in blue (IGV's "2-color") for whichever methylation
+ * layer draws: unmodified calls under Modifications, unconverted cytosines
+ * under bisulfite. Offered only while one of them draws.
+ */
+export function unmodifiedInBlueItems(model: {
+  baseLayer: BaseLayer | undefined
+  setBases: (patch: BasesPatch) => void
+}): MenuItem[] {
   const layer = model.baseLayer
-  const isActive = layer?.field === 'modifications'
-  const byTwoColor = isActive && layer.unmodified
-  const pick = (unmodified: boolean) => () => {
-    model.setBases({ show: true, field: 'modifications', unmodified })
-  }
-  return [
-    radioItem(MODIFICATIONS_LABEL, isActive && !byTwoColor, pick(false)),
-    radioItem(MODIFICATIONS_TWO_COLOR_LABEL, byTwoColor, pick(true)),
-  ]
+  return layer?.field === 'modifications' || layer?.field === 'bisulfite'
+    ? [
+        checkboxItem(UNMODIFIED_IN_BLUE_LABEL, layer.unmodified, () => {
+          model.setBases({ unmodified: !layer.unmodified })
+        }),
+      ]
+    : []
 }

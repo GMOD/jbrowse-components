@@ -15,8 +15,12 @@ import {
 import { colorFieldKindOf } from '../../shared/colorFieldDefs.ts'
 import { radioColorFieldOptions } from '../../shared/colorFieldOptions.ts'
 import { fieldTag } from '../../shared/facetLabels.ts'
-import { bisulfiteRadios } from './bisulfiteMenu.ts'
-import { modificationsRadios } from './modificationsMenu.ts'
+import { MODIFICATIONS_LABEL } from './baseLayerLabels.ts'
+import { bisulfiteRadio } from './bisulfiteMenu.ts'
+import {
+  modificationsRadio,
+  unmodifiedInBlueItems,
+} from './modificationsMenu.ts'
 
 import type { AlignmentsColorEncoding } from '../../shared/alignmentsColor.ts'
 import type { ColorFieldOption } from '../../shared/colorFieldOptions.ts'
@@ -207,12 +211,12 @@ function pairedEndItem(model: AnyColorByModel): MenuItem {
   }
 }
 
-// The MM/ML radios show once any type has loaded, with a placeholder while
+// The Modifications radio shows once any type has loaded, greyed out while
 // types are still loading (unless the region is too large to ever detect
 // them); a ready display with zero detected types offers bisulfite only, which
 // is reference-based and needs no MM/ML tags.
 //
-// They also show whenever modifications is the ACTIVE field, whatever
+// It also shows whenever modifications is the ACTIVE field, whatever
 // detection returned. Detection is per-fetch volatile state, so a track
 // colored by modifications that lands on a region whose reads carry no MM/ML
 // calls otherwise dropped the only row that could read as checked.
@@ -222,11 +226,22 @@ function modificationsItems(model: ModificationsModel): MenuItem[] {
   const detected =
     model.modificationsReady && model.detectedModificationTypes.length > 0
   return [
-    ...(active || detected ? modificationsRadios(model) : []),
-    ...(detecting
-      ? [{ label: 'Loading modifications...', disabled: true, onClick() {} }]
-      : []),
-    ...bisulfiteRadios(model),
+    ...(active || detected
+      ? [modificationsRadio(model)]
+      : detecting
+        ? [
+            {
+              label: MODIFICATIONS_LABEL,
+              type: 'radio' as const,
+              checked: false,
+              disabled: true,
+              disabledHelpText: 'Looking for modification calls in the reads',
+              onClick() {},
+            },
+          ]
+        : []),
+    bisulfiteRadio(model),
+    ...unmodifiedInBlueItems(model),
   ]
 }
 

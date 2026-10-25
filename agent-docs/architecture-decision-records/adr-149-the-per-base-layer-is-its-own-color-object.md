@@ -64,9 +64,10 @@ per-base layer draws, as it did under each of those schemes.
 
 **The menu keeps its rows.** "Color by..." lists the read fills, then under a
 "Per-base coloring" sub-header a radio group of None, Per-base quality, Per-base
-lettering and ~~the Modifications and Bisulfite submenus~~ two radios each for
-modifications and bisulfite, the second painting the unmodified side blue
-(2026-10-25). A read pick leaves the layer on, and None is the layer's way off.
+lettering, Modifications and Bisulfite / EM-seq, then a "Show unmodified in
+blue" checkbox while either methylation layer draws (2026-10-25; the submenus
+and then a pair of radios per layer came first). A read pick leaves the layer
+on, and None is the layer's way off.
 The layer's refinements (modification types, probability floor, cytosine
 context) are "Filter by..." rows, present while the layer they narrow draws.
 Colin, on the four-level `Color by... → Per-base coloring → Modifications → …`
