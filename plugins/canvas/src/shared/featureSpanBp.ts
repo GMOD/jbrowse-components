@@ -7,10 +7,3 @@
 export function featureSpanEndBp(start: number, end: number) {
   return Math.max(end, start + 1)
 }
-
-/**
- * Counts a zero-length feature as covering the base it is painted from.
- */
-export function featureSpanContainsBp(start: number, end: number, bp: number) {
-  return start <= bp && bp < featureSpanEndBp(start, end)
-}
