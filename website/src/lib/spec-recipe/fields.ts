@@ -257,12 +257,12 @@ const basesStep: FieldRecipe = value => {
       ? [{ path: `${TRACK_MENU} → Color by... → ${UNMODIFIED_IN_BLUE_LABEL}` }]
       : []),
     ...(field === 'modifications' && filter.some(p => p?.field === 'code')
-      ? [{ path: `${TRACK_MENU} → Filter by... → Modification types` }]
+      ? [{ path: `${MORE_FILTERS} → Modifications → Modification types` }]
       : []),
     ...(context
       ? [
           {
-            path: `${TRACK_MENU} → Filter by... → Cytosine context → ${context.label}`,
+            path: `${MORE_FILTERS} → Modifications → Cytosine context → ${context.label}`,
           },
         ]
       : []),
@@ -1063,6 +1063,11 @@ const readSizeStep: FieldRecipe = (value, { noun, displayType }) => {
 
 // A category filter's three radios (menus/categoryFilterItem.ts): every row,
 // only the category's, or none of them.
+// The alignments "More filters..." dialog, which holds every filter the
+// "Filter by..." submenu leaves out, in sections named for what they filter
+// (dialogs/LayerFilterSections.tsx).
+const MORE_FILTERS = `${TRACK_MENU} → Filter by... → More filters...`
+
 function categoryStep(
   menu: string,
   value: unknown,
@@ -1188,12 +1193,14 @@ const filterListStep: FieldRecipe = (value, context) => {
   const expressions = entries
     .filter(e => isExpressionEntry(e))
     .map(e => e.field as string)
+  // `alone` is a dialog field; the rest are rows of the submenu
   const categories = READ_CATEGORIES.flatMap(({ key, noun, only, exclude }) => {
     const equal = entries.find(e => e.field === key)?.equal
+    const row = `${key === 'alone' ? 'More filters... → Reads → ' : ''}${noun}`
     return equal === true
-      ? [`${noun} → ${only}`]
+      ? [`${row} → ${only}`]
       : equal === false
-        ? [`${noun} → ${exclude}`]
+        ? [`${row} → ${exclude}`]
         : []
   })
   const readCategoryKeys = new Set<unknown>(READ_CATEGORIES.map(c => c.key))
@@ -1217,7 +1224,13 @@ const filterListStep: FieldRecipe = (value, context) => {
       : []),
     ...fieldSteps.filter(step => step !== undefined),
     ...(fieldSteps.includes(undefined)
-      ? [{ path: `${TRACK_MENU} → Filter by... → Edit filters...` }]
+      ? [
+          {
+            path: isAlignmentsOnlyField(context.displayType)
+              ? MORE_FILTERS
+              : `${TRACK_MENU} → Filter by... → Edit filters...`,
+          },
+        ]
       : []),
   ].filter(step => step !== undefined)
 }
@@ -1270,14 +1283,14 @@ function filterFieldStep(
   const reads = fixed(gte)
   if (field === 'junction.reads' && alignments && reads !== undefined) {
     return {
-      path: `${TRACK_MENU} → Filter by... → Min reads at a junction → ${reads}`,
+      path: `${MORE_FILTERS} → Sashimi arcs → Min reads at a junction → ${reads}`,
       note: 'Hides splice junctions supported by fewer reads than this.',
     }
   }
   if (field === 'junction.canonical' && alignments) {
-    // in "Filter by..." only while the arcs draw (menus/sashimi.ts)
+    // in the dialog only while the arcs draw
     return categoryStep(
-      `${TRACK_MENU} → Filter by... → Non-canonical junctions`,
+      `${MORE_FILTERS} → Sashimi arcs → Non-canonical junctions`,
       equal === true ? 'exclude' : equal === false ? 'only' : undefined,
       'non-canonical junctions',
       'Hiding drops every arc whose intron does not begin and end with one of the six canonical dinucleotide pairs. At depth those are mostly alignment artefacts, and the support floor removes them only by also removing a real junction few reads carry.',
@@ -1285,15 +1298,15 @@ function filterFieldStep(
   }
   if (field === 'connection.offscreen' && alignments) {
     return categoryStep(
-      `${TRACK_MENU} → Filter by... → Off-screen mate connections`,
+      `${MORE_FILTERS} → Read connections → Off-screen mate connections`,
       categoryOf(equal),
       'off-screen mate connections',
-      'The row appears once Read arcs, Read cloud or Pileup connectors is on.',
+      'The section appears once read arcs, the read cloud or pileup connectors draw.',
     )
   }
   if (field === 'connection.interchrom' && alignments) {
     return categoryStep(
-      `${TRACK_MENU} → Filter by... → Inter-chromosomal pairs`,
+      `${MORE_FILTERS} → Read connections → Inter-chromosomal pairs`,
       categoryOf(equal),
       'inter-chromosomal pairs',
     )

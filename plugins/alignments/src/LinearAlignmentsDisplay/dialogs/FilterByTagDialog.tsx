@@ -30,8 +30,16 @@ import {
   tagEntries,
   tagFiltersOf,
 } from '../../shared/alignmentsFilter.ts'
+import LayerFilterSections from './LayerFilterSections.tsx'
+import {
+  defaultLayerFilterState,
+  layerBasesPatch,
+  layerFilterEntries,
+  layerFilterStateOf,
+} from './layerFilters.ts'
 
 import type { TagFilter } from '../../shared/types.ts'
+import type { LayerFiltersModel } from './layerFilters.ts'
 import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
 
 const useStyles = makeStyles()(theme => ({
@@ -333,22 +341,22 @@ const MapqFilterSection = observer(function MapqFilterSection(props: {
   )
 })
 
-// The filters a user TYPES: a read name, a minimum mapping quality, a tag and its value, and the flag
-// masks. The four read categories are picked off a list instead, so they are
-// rows in the "Filter by..." submenu and are deliberately not repeated here —
-// one control, one home, and one commitment model. Offering them in both places
-// meant the same filter applied on click in the menu and only on Submit here,
-// with Cancel undoing one and not the other.
+// "More filters...": every filter the "Filter by..." submenu leaves out. The
+// submenu keeps the read categories a user flips several times at a locus
+// (SV evidence, split and spliced reads) and mapping quality; this holds the
+// rest — a read name, a tag and its value, the reads with no mate in view, the
+// filters of each layer drawing (Sashimi arcs, read connections,
+// modifications) and the flag masks. Each filter has one home, so a choice
+// never applies on click in one place and on Submit in another.
 //
-// Which is also why this dialog's Submit and Reset touch only the fields
-// below: everything it does not show, it preserves. The menu's "Clear all
-// filters" is what resets the whole filter.
+// Submit and Reset touch only the fields shown: everything else, the
+// submenu's categories included, it preserves. The menu's "Clear all filters"
+// is what resets the whole filter.
 //
 // Sections run in the order a user reaches for them, the flag masks last —
 // they used to open the dialog and outweigh the rest of it put together.
 const FilterByTagDialog = observer(function FilterByTagDialog(props: {
-  model: {
-    filterPredicates: FieldPredicate[]
+  model: LayerFiltersModel & {
     setFilterFields: (
       patch: Readonly<Record<string, readonly FieldPredicate[] | undefined>>,
     ) => void
@@ -371,6 +379,8 @@ const FilterByTagDialog = observer(function FilterByTagDialog(props: {
     const floor = lowerBoundOf(predicates, 'mapq')
     return floor === undefined ? '' : `${floor}`
   })
+  const [initialLayers] = useState(() => layerFilterStateOf(model))
+  const [layers, setLayers] = useState(initialLayers)
 
   const handleReset = () => {
     setFlagInclude(DEFAULT_FLAG_MASKS.include)
@@ -380,6 +390,7 @@ const FilterByTagDialog = observer(function FilterByTagDialog(props: {
     ])
     setReadName('')
     setMinMapq('')
+    setLayers(defaultLayerFilterState(layers))
   }
 
   const handleSubmit = () => {
@@ -401,7 +412,15 @@ const FilterByTagDialog = observer(function FilterByTagDialog(props: {
       ...tagEntries(predicates, tags),
       name: readName === '' ? [] : [{ field: 'name', equal: readName }],
       mapq: withLowerBound(entriesOn(predicates, 'mapq'), 'mapq', floor),
+      ...layerFilterEntries(layers, initialLayers),
     })
+    const basesPatch = layerBasesPatch(
+      layers,
+      model.basesFilter?.probability.strict ?? false,
+    )
+    if (basesPatch) {
+      model.setBases?.(basesPatch)
+    }
     handleClose()
   }
 
@@ -411,7 +430,7 @@ const FilterByTagDialog = observer(function FilterByTagDialog(props: {
       onClose={() => {
         handleClose()
       }}
-      title="Filter options"
+      title="More filters"
     >
       {/* Form wrapper gives Enter-to-submit, like SubmitDialog. Reset/Cancel are
       MUI-default type="button" so they don't submit; only the primary does. */}
@@ -428,6 +447,7 @@ const FilterByTagDialog = observer(function FilterByTagDialog(props: {
           />
           <MapqFilterSection minMapq={minMapq} setMinMapq={setMinMapq} />
           <TagFilterSection rows={tagRows} setRows={setTagRows} />
+          <LayerFilterSections state={layers} setState={setLayers} />
           <FlagFilterSection
             flagInclude={flagInclude}
             flagExclude={flagExclude}

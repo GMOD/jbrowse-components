@@ -468,9 +468,9 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     actions: [
       { type: 'click', selector: '[data-testid="track_menu_icon"]' },
       { type: 'delay', ms: 500 },
-      ...menuCascade(['Filter by...', 'Edit filters...']),
-      { type: 'click', text: 'Edit filters...' },
-      { type: 'waitForText', text: 'Filter options' },
+      ...menuCascade(['Filter by...', 'More filters...']),
+      { type: 'click', text: 'More filters...' },
+      { type: 'waitForText', text: 'Filter by tag' },
       // focusing the value box shows its `*` placeholder
       { type: 'type', selector: 'input[maxlength="2"]', value: 'HP' },
       { type: 'press', key: 'Tab' },

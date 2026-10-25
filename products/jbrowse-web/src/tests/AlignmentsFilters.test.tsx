@@ -27,12 +27,10 @@ const opts = [{}, delay]
 async function testFilterTrack(trackId: string, tag: string, value: string) {
   fireEvent.click(await screen.findByTestId(hts(trackId), ...opts))
   fireEvent.click(await screen.findByTestId('track_menu_icon', ...opts))
-  // TWO HOPS since the read categories moved into this group: `filterMenuItems`
-  // keeps the lone dialog opener as a top-level row, and the alignments display
-  // now passes `readCategories: true`, so the group has rows and becomes a
-  // submenu with the dialog behind `Edit filters...`.
+  // Two hops: the alignments "Filter by..." is a submenu whose last row opens
+  // the dialog.
   fireEvent.click(await screen.findByText('Filter by...'))
-  fireEvent.click(await screen.findByText('Edit filters...'))
+  fireEvent.click(await screen.findByText('More filters...'))
   fireEvent.change(await screen.findByLabelText('Tag name', ...opts), {
     target: { value: tag },
   })

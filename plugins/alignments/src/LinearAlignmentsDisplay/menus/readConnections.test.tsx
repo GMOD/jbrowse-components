@@ -3,7 +3,6 @@ import { fireEvent, render, screen } from '@testing-library/react'
 
 import { DEFAULT_MIN_INTERCHROM_READS } from '../../shared/alignmentsFilter.ts'
 import {
-  getConnectionFilterItems,
   getReadConnectionsBandItems,
   getReadConnectionsMenuItem,
 } from './readConnections.ts'
@@ -145,39 +144,6 @@ describe('read connections menu', () => {
     model.drawnReadConnections = 'cloud'
     click(rows(model), 'Show ordinary pairs')
     expect(model.showOrdinaryPairs).toBe(false)
-  })
-})
-
-describe('connection filter rows', () => {
-  test('appear while the band or the curved connectors draw', () => {
-    const model = makeModel()
-    expect(getConnectionFilterItems(model)).toEqual([])
-    model.showConnectors = true
-    expect(labelsOf(getConnectionFilterItems(model))).toEqual([
-      'Off-screen mate connections',
-      'Inter-chromosomal pairs',
-      'Min reads at a breakpoint',
-    ])
-    model.showConnectors = false
-    model.drawnReadConnections = 'arc'
-    expect(getConnectionFilterItems(model)).toHaveLength(3)
-  })
-
-  test('each connection category is one All / Only / Hide choice', () => {
-    const model = makeModel()
-    model.drawnReadConnections = 'arc'
-    const sub = (label: string) => {
-      const item = byLabel(getConnectionFilterItems(model), label)
-      return 'subMenu' in item ? resolveSubMenu(item) : []
-    }
-    click(sub('Inter-chromosomal'), 'Only inter-chromosomal pairs')
-    expect(model.connectionFilter.interchrom).toBe('only')
-    expect(labelsOf(getConnectionFilterItems(model))).toContain(
-      'Inter-chromosomal pairs — only',
-    )
-    click(sub('Off-screen'), 'Hide off-screen mate connections')
-    expect(model.connectionFilter.offscreenMates).toBe('exclude')
-    expect(model.connectionFilter.interchrom).toBe('only')
   })
 })
 

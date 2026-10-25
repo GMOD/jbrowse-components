@@ -4,13 +4,10 @@ import {
   radioItems,
   toggleItem,
 } from '@jbrowse/core/ui/menuItems'
-import { categoryFilterItem } from '@jbrowse/display-kit/categoryFilter'
 import PolylineIcon from '@mui/icons-material/Polyline'
 
-import { DEFAULT_MIN_INTERCHROM_READS } from '../../shared/alignmentsFilter.ts'
 import { getSvChannelsMenuItem } from './svChannels.ts'
 
-import type { ConnectionFilter } from '../../shared/types.ts'
 import type {
   AlignmentsUnit,
   ReadConnectionsMode,
@@ -28,13 +25,6 @@ interface ReadConnectionsModel {
   setShowOrdinaryPairs: (show?: boolean) => void
   showConnectors: boolean
   setShowConnectors: (flag: boolean) => void
-}
-
-interface ConnectionFiltersModel {
-  drawnReadConnections: ReadConnectionsMode
-  showConnectors: boolean
-  connectionFilter: ConnectionFilter
-  setConnectionFilter: (patch: Partial<ConnectionFilter>) => void
 }
 
 interface ReadConnectionsBandModel {
@@ -68,7 +58,7 @@ function bandMarkItem(
 
 // Checkboxes only, with no `?`: one row kind reads at a glance. Read arcs and
 // the read cloud share a band, so ticking one unticks the other. The
-// connection filters live in "Filter by..." and the band's placement and line
+// connection filters live in the "More filters..." dialog and the band's placement and line
 // width in "Advanced".
 export function getReadConnectionsMenuItem(
   model: ReadConnectionsModel & SvChannelsModel,
@@ -102,65 +92,6 @@ export function getReadConnectionsMenuItem(
     type: 'subMenu' as const,
     subMenu,
   }
-}
-
-/**
- * The `filter` rows on connections, for "Filter by...". Offered while the band
- * or the curved connectors draw, the two parts that read them.
- */
-export function getConnectionFilterItems(
-  model: ConnectionFiltersModel,
-): MenuItem[] {
-  if (model.drawnReadConnections === 'off' && !model.showConnectors) {
-    return []
-  }
-  const filter = model.connectionFilter
-  return [
-    categoryFilterItem(
-      {
-        noun: 'Off-screen mate connections',
-        all: 'All connections',
-        only: 'Only off-screen mate connections',
-        exclude: 'Hide off-screen mate connections',
-      },
-      filter.offscreenMates,
-      offscreenMates => {
-        model.setConnectionFilter({ offscreenMates })
-      },
-    ),
-    categoryFilterItem(
-      {
-        noun: 'Inter-chromosomal pairs',
-        all: 'All connections',
-        only: 'Only inter-chromosomal pairs',
-        exclude: 'Hide inter-chromosomal pairs',
-      },
-      filter.interchrom,
-      interchrom => {
-        model.setConnectionFilter({ interchrom })
-      },
-    ),
-    makeSizeSubMenu({
-      label: 'Inter-chromosomal evidence',
-      title: 'Min reads at a breakpoint',
-      // Linear and small-topped, unlike the junction floor's log slider: this
-      // counts read PAIRS spanning a breakpoint, which even at 300x is tens.
-      scale: 'linear',
-      min: 1,
-      max: 20,
-      format: n => (n === 1 ? 'all' : `${n}`),
-      getValue: () => filter.minInterchromReads,
-      isDefault: filter.minInterchromReads === DEFAULT_MIN_INTERCHROM_READS,
-      onChange: minInterchromReads => {
-        model.setConnectionFilter({ minInterchromReads })
-      },
-      onReset: () => {
-        model.setConnectionFilter({
-          minInterchromReads: DEFAULT_MIN_INTERCHROM_READS,
-        })
-      },
-    }),
-  ]
 }
 
 /** The band's layout rows, for "Advanced", while arcs or the read cloud draw. */

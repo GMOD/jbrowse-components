@@ -40,18 +40,18 @@ describe('the Filter by... count over every layer it filters', () => {
     expect(filterRow(display).label).toBe('Filter by...')
   })
 
-  test('the rows group under the layer they filter, with no icons', () => {
+  test('the submenu holds the everyday read filters, then the dialog, with no icons', () => {
     const display = createDisplay()
     display.setShowSashimi(true)
     display.setDrawnReadConnections('arc')
     const rows = filterRow(display).subMenu
-    const headers = rows.flatMap(i => (i.type === 'subHeader' ? [i.label] : []))
-    expect(headers).toEqual(['Reads', 'Sashimi arcs', 'Read connections'])
-    const reads = rows.slice(
-      1,
-      rows.findIndex(i => 'label' in i && i.label === 'Sashimi arcs'),
-    )
-    expect(reads.at(-1)).toMatchObject({ label: 'Edit filters...' })
+    expect(rows.map(i => ('label' in i ? i.label : i.type))).toEqual([
+      'Mapping quality',
+      'SV evidence',
+      'Split reads',
+      'Spliced reads',
+      'More filters...',
+    ])
     expect(rows.some(i => 'icon' in i && i.icon)).toBe(false)
   })
 

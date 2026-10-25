@@ -1,4 +1,4 @@
-export { basesFilterNarrowing, getBasesFilterItems } from './basesFilterMenu.ts'
+export { basesFilterNarrowing } from './basesFilterMenu.ts'
 export { getColorByMenuItem, getReadConnectionsColorItem } from './colorBy.ts'
 export { getContextMenuItems, getHitMenuItems } from './contextMenu.ts'
 export {
@@ -26,10 +26,9 @@ export type {
   SectionOrderMenuModel,
 } from './groupByMenu.ts'
 export {
-  getConnectionFilterItems,
   getReadConnectionsBandItems,
   getReadConnectionsMenuItem,
 } from './readConnections.ts'
 export { getReadsMenuItems } from './reads.ts'
-export { getJunctionFilterItems, getSashimiPlacementItems } from './sashimi.ts'
+export { getSashimiPlacementItems } from './sashimi.ts'
 export { getGroupByMenuItem, getSortMenuItem } from './sortGroup.ts'

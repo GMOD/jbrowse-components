@@ -261,12 +261,12 @@ test("a filter list's entries are the rows that write them", () => {
     ),
   ).toEqual([
     'Track menu → Filter by... → Split reads → Only split reads',
-    'Track menu → Filter by... → Min reads at a junction → 3',
-    'Track menu → Filter by... → Non-canonical junctions → Hide non-canonical junctions',
+    'Track menu → Filter by... → More filters... → Sashimi arcs → Min reads at a junction → 3',
+    'Track menu → Filter by... → More filters... → Sashimi arcs → Non-canonical junctions → Hide non-canonical junctions',
   ])
   expect(
     stepPaths('filter', [{ field: 'mapq', gte: 20 }], 'LinearAlignmentsDisplay'),
-  ).toEqual(['Track menu → Filter by... → Edit filters...'])
+  ).toEqual(['Track menu → Filter by... → More filters...'])
 })
 
 test('data flattens member by member, and each display reads its own resolution', () => {
@@ -307,7 +307,7 @@ test('a per-base methylation layer is one Color by... radio, its filter Filter b
   ).toEqual([
     'Track menu → Color by... → Modifications',
     'Track menu → Color by... → Show unmodified in blue',
-    'Track menu → Filter by... → Modification types',
+    'Track menu → Filter by... → More filters... → Modifications → Modification types',
   ])
   expect(
     stepPaths(
@@ -321,6 +321,6 @@ test('a per-base methylation layer is one Color by... radio, its filter Filter b
     ),
   ).toEqual([
     'Track menu → Color by... → Bisulfite / EM-seq',
-    'Track menu → Filter by... → Cytosine context → CHG',
+    'Track menu → Filter by... → More filters... → Modifications → Cytosine context → CHG',
   ])
 })

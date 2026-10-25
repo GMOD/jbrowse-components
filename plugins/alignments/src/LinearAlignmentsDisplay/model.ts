@@ -180,14 +180,11 @@ import {
 import {
   featureSpacingForHeight,
   basesFilterNarrowing,
-  getBasesFilterItems,
   getColorByMenuItem,
-  getConnectionFilterItems,
   getContextMenuItems,
   getFeatureHeightMenuItem,
   getFiltersMenuItems,
   getGroupByMenuItem,
-  getJunctionFilterItems,
   getReadConnectionsBandItems,
   getReadConnectionsMenuItem,
   getReadConnectionsColorItem,
@@ -3643,14 +3640,6 @@ export default function stateModelFactory(
                     ? self.drawnReadConnections !== 'off' || self.showConnectors
                     : true,
               narrowings: { bases: basesFilterNarrowing(self) },
-              groups: [
-                { header: 'Sashimi arcs', rows: getJunctionFilterItems(self) },
-                {
-                  header: 'Read connections',
-                  rows: getConnectionFilterItems(self),
-                },
-                { header: 'Modifications', rows: getBasesFilterItems(self) },
-              ],
             }),
             getGroupByMenuItem(self),
             ...getReadsMenuItems(self),

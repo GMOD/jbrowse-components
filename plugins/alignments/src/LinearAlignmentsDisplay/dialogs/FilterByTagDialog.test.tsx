@@ -206,3 +206,28 @@ test('unticking a default exclusion writes the field that removes it', () => {
     DEFAULT_FLAG_MASKS.exclude & ~0x400,
   )
 })
+
+// The layers' own filters sit in the dialog while the layer draws
+test('the Sashimi arcs section shows while the arcs draw, and writes its floor', () => {
+  const setFilterFields = jest.fn()
+  const model = {
+    filterPredicates: mergeFilter([]),
+    setFilterFields,
+    showSashimi: true,
+    junctionFilter: { minReads: 1 },
+  }
+  render(
+    <ThemeProvider theme={createJBrowseTheme()}>
+      <FilterByTagDialog model={model} handleClose={() => {}} />
+    </ThemeProvider>,
+  )
+  expect(screen.getByText('Sashimi arcs')).toBeTruthy()
+  expect(screen.queryByText('Read connections')).toBeNull()
+  fireEvent.change(screen.getByLabelText('Min reads at a junction'), {
+    target: { value: '5' },
+  })
+  submit()
+  expect(setFilterFields.mock.lastCall![0]['junction.reads']).toEqual([
+    { field: 'junction.reads', gte: 5 },
+  ])
+})

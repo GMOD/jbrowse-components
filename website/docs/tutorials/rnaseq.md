@@ -170,10 +170,11 @@ every read without a skip, and the coverage histogram follows, leaving the
 junction-spanning evidence alone. **Hide spliced reads** in the same submenu is
 the complement.
 
-**Filter by... → Non-canonical junctions → Hide non-canonical junctions** drops
-every arc whose intron does not begin and end with GT-AG, GC-AG or AT-AC on
-either strand. Raising **Filter by... → Min reads at a junction** also drops
-thin arcs, along with any real junction few reads support.
+In **Filter by... → More filters...**, **Non-canonical junctions → Hide
+non-canonical junctions** drops every arc whose intron does not begin and end
+with GT-AG, GC-AG or AT-AC on either strand. Raising **Min reads at a junction**
+in the same dialog also drops thin arcs, along with any real junction few reads
+support.
 
 <Figure caption="Every junction above, only the canonical ones below." src="/img/rnaseq/hide_non_canonical.png" links="All junctions=rnaseq/sashimi_all_junctions,Canonical only=rnaseq/sashimi_canonical_only" />
 
@@ -230,8 +231,8 @@ short read across that joint aligns in two pieces, and the aligner writes the
 second piece into the read's `SA` tag. The sashimi band counts split-read
 junctions beside the N-gap splices, one arc per junction, and colors each by its
 class. A back-splice is a duplication-type split, drawn in the teal of an RL
-pair. **Filter by... → Split-read junctions → Hide split-read junctions** turns
-them off.
+pair. **Split-read junctions → Hide split-read junctions** in **Filter by... →
+More filters...** turns them off.
 
 STAR writes those `SA` tags only in chimeric mode. With its defaults it
 soft-clips the joint, and no back-splice arc appears:

@@ -1,14 +1,7 @@
 import { lazy } from 'react'
 
-import {
-  EDIT_FILTERS_LABEL,
-  filterMenuItems,
-} from '@jbrowse/core/ui/filterMenuItems'
-import {
-  makeRadioSubMenu,
-  withHint,
-  withSubHeader,
-} from '@jbrowse/core/ui/menuItems'
+import { filterMenuItems } from '@jbrowse/core/ui/filterMenuItems'
+import { makeRadioSubMenu, withHint } from '@jbrowse/core/ui/menuItems'
 import { getDialogHost } from '@jbrowse/core/util'
 import { MAPQ_BINS } from '@jbrowse/core/util/colorScale'
 import { lowerBoundOf, withLowerBound } from '@jbrowse/core/util/fieldPredicate'
@@ -48,12 +41,13 @@ interface FiltersMenuOptions {
   counts?: (field: string) => boolean
   /** Narrowings kept outside `filter`, such as the per-base layer's. */
   narrowings?: Reversibles
-  /**
-   * Rows filtering what a layer draws from the reads, each group under a
-   * sub-header naming the layer, after the read filters' own "Reads" group.
-   */
-  groups?: { header: string; rows: MenuItem[] }[]
 }
+
+export const MORE_FILTERS_LABEL = 'More filters...'
+
+// The categories a user flips several times at a locus; the rest are in the
+// "More filters..." dialog.
+const MENU_CATEGORIES = READ_CATEGORIES.filter(c => c.key !== 'alone')
 
 // The whole of `filter` as one entry rather than one per field: the dialog's
 // own Reset is the per-field recovery, and each category row below undoes
@@ -135,36 +129,28 @@ export function getFiltersMenuItems(
   model: FiltersModel,
   options: FiltersMenuOptions = {},
 ) {
-  const { readCategories = false, more = [], groups } = options
+  const { readCategories = false, more = [] } = options
   const openDialog = () => {
     getDialogHost(model).queueDialog(handleClose => [
       FilterByTagDialog,
       { model, handleClose },
     ])
   }
-  const readRows = [
-    minMapqItem(model),
-    ...(readCategories
-      ? READ_CATEGORIES.map(c => readCategoryItem(model, c))
-      : []),
-  ]
-  // Grouped, the dialog (flags and tags, which filter reads) ends the Reads
-  // group instead of opening the submenu.
-  return groups
+  // With the categories, the dialog row follows them under its own name, since
+  // it holds every filter the submenu leaves out.
+  return readCategories
     ? filterMenuItems({
         narrowings: filterNarrowings(model, options),
         subItems: [
-          ...withSubHeader('Reads', [
-            ...readRows,
-            { label: EDIT_FILTERS_LABEL, onClick: openDialog },
-          ]),
-          ...groups.flatMap(g => withSubHeader(g.header, g.rows)),
+          minMapqItem(model),
+          ...MENU_CATEGORIES.map(c => readCategoryItem(model, c)),
           ...more,
+          { label: MORE_FILTERS_LABEL, onClick: openDialog },
         ],
       })
     : filterMenuItems({
         narrowings: filterNarrowings(model, options),
-        subItems: [...readRows, ...more],
+        subItems: [minMapqItem(model), ...more],
         onEdit: openDialog,
       })
 }

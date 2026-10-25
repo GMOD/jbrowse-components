@@ -92,13 +92,13 @@ For a BAM/CRAM with MM/ML modification calls (nanopore, PacBio), **Color by →
 Modifications** paints them in two modes:
 
 - **Modifications** marks only where the MM tag reports a modified base, so an
-  unmethylated region looks empty. **Filter by... → Modification probability**
-  raises the probability cutoff and **Filter by... → Modification types**
-  restricts to one type such as 5mC
+  unmethylated region looks empty. In **Filter by... → More filters...**, the
+  Modifications section raises the probability cutoff and restricts to one type
+  such as 5mC
 - **Color by... → Show unmodified in blue** (IGV's "2-color") also paints the
   not-modified side blue. For cytosine data it fills every CpG in context,
-  including ones the basecaller left implicit, inferred from the reference.
-  **Filter by... → Cytosine context** picks CpG/CHG/CHH
+  including ones the basecaller left implicit, inferred from the reference. The
+  same section's cytosine context picks CpG/CHG/CHH
 
 See the [methylation tutorial](/docs/tutorials/methylation) for an end-to-end
 modified-base workflow.
@@ -328,17 +328,16 @@ still colors by strand. This needs a sequence adapter on the assembly.
 
 **Show... → Sashimi arcs** turns them on and off, and **Show... → Sashimi read
 counts** prints each junction's supporting-read count on its arc. While the arcs
-draw:
+draw, the Sashimi arcs section of **Filter by... → More filters...** filters
+them:
 
-- **Filter by... → Split-read junctions** shows, hides or keeps only the
-  junctions split alignments (SA tag) imply beside the N-gap splices
-- **Filter by... → Non-canonical junctions → Hide non-canonical junctions**
-  drops junctions whose motif is none of the three canonical pairs. On deep
-  RNA-seq the thin arcs are mostly these, so it is the filter to reach for
-  first. **Only non-canonical junctions** in the same submenu keeps just those,
-  for checking an aligner's output
-- **Filter by... → Min reads at a junction** drops the junctions with fewer
-  reads than the slider's value
+- **Split-read junctions** shows, hides or keeps only the junctions split
+  alignments (SA tag) imply beside the N-gap splices
+- **Non-canonical junctions → Hide non-canonical junctions** drops junctions
+  whose motif is none of the three canonical pairs. On deep RNA-seq the thin
+  arcs are mostly these, so it is the filter to reach for first. **Only
+  non-canonical junctions** keeps just those, for checking an aligner's output
+- **Min reads at a junction** drops the junctions with fewer reads
 - **Advanced → Sashimi placement** splits the arcs above/below the coverage row
 
 See the [RNA-seq tutorial](/docs/tutorials/rnaseq). When one junction peak

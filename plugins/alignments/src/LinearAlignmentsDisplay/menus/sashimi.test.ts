@@ -5,11 +5,7 @@ import {
   junctionFilterOf,
   withFields,
 } from '../../shared/alignmentsFilter.ts'
-import {
-  getJunctionFilterItems,
-  getSashimiPlacementItems,
-  sashimiShowItems,
-} from './sashimi.ts'
+import { getSashimiPlacementItems, sashimiShowItems } from './sashimi.ts'
 
 import type { JunctionFilter, JunctionFilterPatch } from '../../shared/types.ts'
 import type { SashimiPlacement } from '../constants.ts'
@@ -71,76 +67,6 @@ describe('sashimi rows in Show...', () => {
       'Sashimi arcs',
       'Sashimi read counts',
     ])
-  })
-})
-
-describe('junction filter rows', () => {
-  test('appear only while the arcs draw', () => {
-    const model = makeModel()
-    expect(getJunctionFilterItems(model)).toEqual([])
-    model.showSashimi = true
-    expect(labelsOf(getJunctionFilterItems(model))).toEqual([
-      'Split-read junctions',
-      'Non-canonical junctions',
-      'Min reads at a junction',
-    ])
-  })
-
-  test('"Split-read junctions" is one All / Only / Hide choice over junction.source', () => {
-    const model = makeModel()
-    model.showSashimi = true
-    const writes: JunctionFilterPatch[] = []
-    const setJunctionFilter = model.setJunctionFilter.bind(model)
-    model.setJunctionFilter = patch => {
-      writes.push(patch)
-      setJunctionFilter(patch)
-    }
-    const choose = (label: string) => {
-      click(
-        subMenuByLabel(getJunctionFilterItems(model), 'Split-read junctions'),
-        label,
-      )
-    }
-    choose('Hide split-read junctions')
-    expect(writes.at(-1)).toEqual({ classes: undefined, sources: ['gap'] })
-    expect(labelsOf(getJunctionFilterItems(model))).toContain(
-      'Split-read junctions — hidden',
-    )
-    choose('Only split-read junctions')
-    expect(writes.at(-1)).toEqual({ classes: undefined, sources: ['split'] })
-    expect(labelsOf(getJunctionFilterItems(model))).toContain(
-      'Split-read junctions — only',
-    )
-    choose('All junctions')
-    expect(writes.at(-1)).toEqual({ classes: undefined })
-    expect(model.filter).toEqual([])
-  })
-
-  test('"Non-canonical junctions" is one All / Only / Hide choice', () => {
-    const model = makeModel()
-    model.showSashimi = true
-    const choose = (label: string) => {
-      click(
-        subMenuByLabel(getJunctionFilterItems(model), 'Non-canonical'),
-        label,
-      )
-    }
-    choose('Hide non-canonical junctions')
-    expect(model.junctionFilter.nonCanonical).toBe('exclude')
-    expect(labelsOf(getJunctionFilterItems(model))).toContain(
-      'Non-canonical junctions — hidden',
-    )
-    choose('Only non-canonical junctions')
-    expect(model.junctionFilter.nonCanonical).toBe('only')
-    choose('All junctions')
-    expect(model.junctionFilter.nonCanonical).toBeUndefined()
-  })
-
-  test('the read-support floor is a submenu holding its slider', () => {
-    const model = makeModel()
-    model.showSashimi = true
-    const floor = subMenuByLabel(getJunctionFilterItems(model), 'Min reads')
-    expect(floor.map(i => 'type' in i && i.type)).toEqual(['custom'])
   })
 })
 

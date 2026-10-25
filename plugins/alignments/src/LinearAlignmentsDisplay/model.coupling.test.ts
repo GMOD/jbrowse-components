@@ -1028,12 +1028,7 @@ describe('read categories + filter submenu', () => {
     const display = createDisplay()
     const items = display.trackMenuItems()
     const filters = menuSubItems(items, 'Filter by...')
-    for (const noun of [
-      'SV evidence',
-      'Reads with no mate in view',
-      'Split reads',
-      'Spliced reads',
-    ]) {
+    for (const noun of ['SV evidence', 'Split reads', 'Spliced reads']) {
       expect(hasMenuItem(filters, noun)).toBe(true)
     }
 
@@ -2066,18 +2061,16 @@ describe('rows the layer menus hand to other menus', () => {
       'Track height',
     ])
 
+    // the layers' own filters are in the More filters... dialog
     display.setDrawnReadConnections('arc')
     display.setShowSashimi(true)
-    expect(labelsUnder(display, 'Filter by...')).toEqual(
-      expect.arrayContaining([
-        'Off-screen mate connections',
-        'Inter-chromosomal pairs',
-        'Min reads at a breakpoint',
-        'Split-read junctions',
-        'Non-canonical junctions',
-        'Min reads at a junction',
-      ]),
-    )
+    expect(labelsUnder(display, 'Filter by...')).toEqual([
+      'Mapping quality',
+      'SV evidence',
+      'Split reads',
+      'Spliced reads',
+      'More filters...',
+    ])
     expect(labelsUnder(display, 'Advanced')).toEqual([
       'Edit plot...',
       'Coverage axis...',
