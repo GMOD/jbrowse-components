@@ -3327,7 +3327,9 @@ test('a color on score paints a ramp, as the feature display s does', () => {
     { mark: 'point', encoding: { y: 'score', color: { field: 'svtype' } } },
   ]).createDisplay()
   expect(
-    display.markColors.map(c => (c.kind === 'constant' ? c.kind : c.encoding)),
+    display.markColors.map(c =>
+      c.kind === 'constant' || c.kind === 'identity' ? c.kind : c.encoding,
+    ),
   ).toMatchObject([{ scale: 'linear' }, { scale: 'ordinal' }])
   expect(display.encodings[1]!.color).toEqual({
     field: 'svtype',

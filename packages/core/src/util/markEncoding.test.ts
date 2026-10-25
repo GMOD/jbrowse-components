@@ -1500,6 +1500,59 @@ test('a colorKey lane over a category column indexes the entries its rows met', 
   expect([...r.colorKey].map(k => entries[k])).toEqual(['d', 'b', 'd', 'b'])
 })
 
+test('an identity color keys each feature by the BED color it carries, under the name its file gives the column', () => {
+  const own = (reserved?: unknown) =>
+    new SimpleFeature({
+      uniqueId: `f${String(reserved)}`,
+      refName: 'ctgA',
+      start: 0,
+      end: 10,
+      ...(reserved === undefined ? {} : { reserved }),
+    })
+  const r = encodeFeatures(
+    [own('255,0,0'), own(), own(0xff0000), own('0,0,0'), own('not a color')],
+    { color: { scale: 'identity' } },
+    ['colorKey'],
+  )
+  expect(r.color).toBeUndefined()
+  expect(r.scale?.kind).toBe('identity')
+  const entries = r.scale?.kind === 'identity' ? r.scale.entries : []
+  expect(entries.map(e => e.value)).toEqual(['0,0,0', '255,0,0', ''])
+  expect(entries.map(e => e.color)).toEqual([
+    cssColorToABGR('black'),
+    cssColorToABGR('red'),
+    cssColorToABGR(DEFAULT_MARK_COLOR),
+  ])
+  expect([...r.colorKey].map(k => entries[k]!.value)).toEqual([
+    '255,0,0',
+    '',
+    '255,0,0',
+    '0,0,0',
+    '',
+  ])
+})
+
+test('an identity color asked for as a color lane paints each feature its own', () => {
+  const r = encodeFeatures(
+    [
+      new SimpleFeature({
+        uniqueId: 'a',
+        refName: 'ctgA',
+        start: 0,
+        end: 10,
+        field8: '0,128,0',
+      }),
+      new SimpleFeature({ uniqueId: 'b', refName: 'ctgA', start: 0, end: 10 }),
+    ],
+    { color: { scale: 'identity' } },
+    ['color'],
+  )
+  expect([...colorLane(r.color)]).toEqual([
+    cssColorToABGR('rgb(0,128,0)'),
+    cssColorToABGR(DEFAULT_MARK_COLOR),
+  ])
+})
+
 test('a jexl color that reads nothing is evaluated once', () => {
   let evals = 0
   const counting = {

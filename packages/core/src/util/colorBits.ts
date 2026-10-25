@@ -95,7 +95,7 @@ export function featureItemRgb(
 // Nothing is renamed on the feature, deliberately: a config already reading
 // `jexl:get(feature,'field8')` (the workaround this issue's users were told to
 // write) keeps working, and can now just be deleted.
-const BED_COLOR_FIELDS = ['itemRgb', 'reserved', 'field8']
+export const BED_COLOR_FIELDS = ['itemRgb', 'reserved', 'field8'] as const
 
 /**
  * The BED color a feature declares for itself, under any column name, or

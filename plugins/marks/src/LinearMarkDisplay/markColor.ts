@@ -19,6 +19,7 @@ import {
   dealKeyColors,
 } from '@jbrowse/core/util/categoricalField'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
+import { IDENTITY_SCALE } from '@jbrowse/core/util/colorScale'
 import { isJexl } from '@jbrowse/core/util/jexlStrings'
 import {
   DEFAULT_MARK_COLOR,
@@ -44,10 +45,10 @@ import type { StepChannels } from './stepChannels.ts'
 import type { HeldSlots } from '@jbrowse/core/ui/colors'
 import type {
   CategoricalRef,
-  ColorEncoding,
   ColorScaleTable,
   ContinuousRef,
   EncodedChannels,
+  MarkColorEncoding,
   ThresholdRef,
 } from '@jbrowse/core/util/markEncoding'
 import type { MarkColorScale } from '@jbrowse/render-core/marks'
@@ -55,7 +56,7 @@ import type { MarkColorScale } from '@jbrowse/render-core/marks'
 /** A color over a number: a ramp, or a threshold's bands. */
 export type ValueColor = ContinuousRef | ThresholdRef
 
-/** How a mark's color is worked out: one of four ways. */
+/** How a mark's color is worked out: one of five ways. */
 export type ColorSource =
   /** One color for every feature; the worker reads nothing for it. */
   | { kind: 'constant'; color: number }
@@ -76,6 +77,12 @@ export type ColorSource =
   | { kind: 'numbers'; encoding: ValueColor; fromY: boolean }
   /** A `jexl:` expression the worker evaluates per feature into a color. */
   | { kind: 'expression'; encoding: string }
+  /**
+   * Each feature's own BED color (ADR-166); the worker sends each feature's
+   * color as an index into the colors it met, and a feature carrying none
+   * paints `invalid`. `domain` and `names` are the key's alone.
+   */
+  | { kind: 'identity'; domain: string[]; invalid?: number }
 
 /**
  * `owner` is the display holding the mark, whose track's ordinal colors
@@ -87,10 +94,17 @@ export function markColorOf(
   channels: StepChannels,
   owner?: object,
 ): ColorSource {
+  const setting = colorSettingOf(mark.encoding.color)
+  const { type, domain, invalid } = setting.scale
+  if (type === IDENTITY_SCALE && setting.value === undefined) {
+    return {
+      kind: 'identity',
+      domain: [...domain],
+      ...(invalid ? { invalid: cssColorToABGR(invalid) } : {}),
+    }
+  }
   // a key's names change what the legend says, not what any feature paints
-  const encoding = paintedColorEncoding(
-    featureColorEncoding(colorSettingOf(mark.encoding.color)),
-  )
+  const encoding = paintedColorEncoding(featureColorEncoding(setting))
   if (typeof encoding !== 'object') {
     const value = encoding ?? DEFAULT_MARK_COLOR
     return isJexl(value)
@@ -120,10 +134,12 @@ export function markColorOf(
  * ones without building a ramp, whose cached lookup table would be copied on
  * every fetch.
  */
-export function wireColorOf(color: ColorSource): ColorEncoding {
+export function wireColorOf(color: ColorSource): MarkColorEncoding {
   switch (color.kind) {
     case 'expression':
       return color.encoding
+    case 'identity':
+      return { scale: IDENTITY_SCALE }
     case 'categories':
       return { field: color.encoding.field, scale: 'ordinal' }
     case 'numbers':
@@ -143,6 +159,7 @@ export function colorLanesOf(color: ColorSource): MarkLane[] {
     case 'expression':
       return ['color']
     case 'categories':
+    case 'identity':
       return ['colorKey']
     case 'numbers':
       return color.fromY ? [] : ['colorValue']
@@ -252,6 +269,33 @@ function colorByKeys<L extends EncodedChannels>(
   }
 }
 
+// Each feature's own color off its key, a feature carrying none in
+// `invalid` where the config sets one, the table keeping the key's `domain`.
+function colorByOwnColors<L extends EncodedChannels>(
+  layer: L,
+  keys: Uint32Array,
+  domain: string[] = [],
+  invalid?: number,
+): L {
+  const read = layer.scale
+  if (read?.kind !== 'identity') {
+    return layer
+  }
+  const entries = read.entries.map(e =>
+    e.value === '' && invalid !== undefined ? { ...e, color: invalid } : e,
+  )
+  const color = new Uint32Array(layer.count)
+  for (let k = 0; k < layer.count; k++) {
+    color[k] = entries[keys[k]!]!.color
+  }
+  return {
+    ...layer,
+    color,
+    colorKey: undefined,
+    scale: { ...read, domain, entries },
+  }
+}
+
 const DEFAULT_ABGR = cssColorToABGR(DEFAULT_MARK_COLOR)
 
 /**
@@ -275,7 +319,12 @@ export interface HeldColor {
 function colorAsHeld<L extends EncodedChannels>(layer: L): L {
   const read = layer.scale
   if (layer.colorKey) {
-    return { ...colorByKeys(layer, layer.colorKey), heldColor: true }
+    return {
+      ...(read?.kind === 'identity'
+        ? colorByOwnColors(layer, layer.colorKey)
+        : colorByKeys(layer, layer.colorKey)),
+      heldColor: true,
+    }
   }
   if (layer.colorValue && read) {
     const ramp: ContinuousRef = { field: read.field, scale: 'linear' }
@@ -337,8 +386,14 @@ export function withMarkColor<L extends EncodedChannels>(
             scale: undefined,
           }
     case 'categories':
-      return layer.colorKey && layer.scale?.field === color.encoding.field
+      return layer.colorKey &&
+        layer.scale?.kind === 'categorical' &&
+        layer.scale.field === color.encoding.field
         ? colorByKeys(layer, layer.colorKey, color.encoding, color.held)
+        : colorAsHeld(layer)
+    case 'identity':
+      return layer.colorKey && layer.scale?.kind === 'identity'
+        ? colorByOwnColors(layer, layer.colorKey, color.domain, color.invalid)
         : colorAsHeld(layer)
     case 'numbers': {
       const { fromY, encoding } = color

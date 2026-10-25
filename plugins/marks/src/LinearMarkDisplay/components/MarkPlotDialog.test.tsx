@@ -273,7 +273,7 @@ describe('a scale beside its field', () => {
     expect(screen.queryByTestId('scale-color')).toBeNull()
   })
 
-  it('offers every color scale the schema declares, and shape only its own', () => {
+  it('offers every field color scale the schema declares, and shape only its own', () => {
     setup(RAMP)
     const options = [...screen.getByTestId('scale-color').children].map(
       o => (o as HTMLOptionElement).value,

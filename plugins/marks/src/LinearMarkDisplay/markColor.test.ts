@@ -7,7 +7,7 @@ import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import { isThreshold } from '@jbrowse/render-core/marks'
 
 import { findMarkHit } from './findMarkHit.ts'
-import { keySettingOf } from './legend.ts'
+import { categoryLabel, colorSection, keySettingOf } from './legend.ts'
 import { regionColorScale } from './markList.ts'
 import {
   REGION,
@@ -249,6 +249,71 @@ test('categories the hash puts on one color each take their own, and keep it as 
   expect(second[1]).toBe(first[1])
   expect(second[2]).toBe(first[0])
   expect(display.cornerNotices.join('\n')).not.toMatch(/share one color/)
+})
+
+const PAINTED = features([
+  { start: 0, end: 100, itemRgb: '255,0,0', name: 'TssA' },
+  { start: 200, end: 300, itemRgb: '0,128,0', name: 'Tx' },
+  { start: 400, end: 500, name: 'unpainted' },
+])
+
+test("an identity color paints each feature its file's color, and its key, names and invalid fetch nothing", () => {
+  const { display } = createTestEnvironment({
+    marks: [
+      {
+        mark: 'rect',
+        encoding: {
+          color: {
+            scale: {
+              type: 'identity',
+              domain: ['rgb(255,0,0)', 'rgb(0,128,0)'],
+              names: ['Active TSS'],
+            },
+          },
+        },
+      },
+    ],
+  }).createDisplay()
+  const [request] = display.layerRequests
+  expect(request!.encoding.color).toEqual({ scale: 'identity' })
+  expect(request!.lanes).toContain('colorKey')
+  expect(request!.lanes).not.toContain('color')
+  display.setRpcData(0, workerResult(display, PAINTED), REGION)
+
+  const red = cssColorToABGR('red')
+  const green = cssColorToABGR('rgb(0,128,0)')
+  const blue = cssColorToABGR(DEFAULT_MARK_COLOR)
+  expect(colorLane(display)).toEqual([red, green, blue])
+  const [key] = display.colorScales
+  expect(key?.kind === 'categorical' && key.entries.map(e => e.label)).toEqual([
+    'Active TSS',
+    'rgb(0,128,0)',
+  ])
+  const section = colorSection(display.legendSections, 0)
+  expect(categoryLabel(section, red)).toBe('Active TSS')
+  const before = JSON.stringify(display.rpcProps())
+
+  editColor(display, 'invalid', 'black')
+  setConf(display.conf.marks[0]!.encoding.color, ['scale', 'names'], [])
+
+  expect(JSON.stringify(display.rpcProps())).toBe(before)
+  expect(colorLane(display)).toEqual([red, green, cssColorToABGR('black')])
+})
+
+test('an identity color under a constant value paints the constant and keys nothing', () => {
+  const display = loaded([
+    {
+      mark: 'rect',
+      encoding: {
+        color: {
+          value: 'orange',
+          scale: { type: 'identity', domain: ['rgb(255,0,0)'] },
+        },
+      },
+    },
+  ])
+  expect(layerOf(display).color).toBe(cssColorToABGR('orange'))
+  expect(display.colorScales).toEqual([])
 })
 
 test('a threshold over the plotted field ships no color lane and is not a fetch input', () => {

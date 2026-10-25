@@ -166,6 +166,7 @@ function copyOf(scale: ScaleTable): ScaleTable {
           : {}),
       }
     case 'categorical':
+    case 'identity':
       return { ...scale, entries: [...scale.entries] }
     case 'shape':
       return { ...scale, entries: [...scale.entries] }
@@ -201,6 +202,11 @@ function union(current: ScaleTable, next: ScaleTable) {
       break
     case 'shape':
       if (next.kind === 'shape') {
+        unionEntries(current.entries, next.entries)
+      }
+      break
+    case 'identity':
+      if (next.kind === 'identity') {
         unionEntries(current.entries, next.entries)
       }
       break
@@ -268,6 +274,8 @@ function sectionKey(markIndex: number, scale: ScaleTable, key: MarkKeySetting) {
         scale.domain,
         thresholdPalette(scale.domain.length + 1, scale.range),
       ])
+    case 'identity':
+      return JSON.stringify(['identity', title, scale.domain])
     case 'shape':
       return JSON.stringify([
         'shape',
@@ -468,6 +476,26 @@ function shapeSwatches(shape: ShapeScaleTable) {
   }
 }
 
+// An identity key's rows: each `domain` color under its `names` entry, the
+// whole list once the region drew any color, as a threshold lists its bins.
+function identityRows(
+  scale: Extract<ScaleTable, { kind: 'identity' }>,
+  key: MarkKeySetting,
+): CategoricalEntry[] {
+  if (scale.entries.length === 0) {
+    return []
+  }
+  const { label } = categoricalField('', {
+    domain: scale.domain,
+    labels: key.names,
+  })
+  return scale.domain.map(color => ({
+    value: color,
+    label: label(color),
+    color,
+  }))
+}
+
 /**
  * The keys as the color scales `LegendMixin` derives the legend from. An
  * ordinal color's key is the one every color channel derives
@@ -524,6 +552,12 @@ export function markColorScales(
                 entries: [{ value: '', label: NUMERIC_KEY_HINT }],
               },
             ]
+      }
+      case 'identity': {
+        const entries = identityRows(scale, key)
+        return entries.length > 0
+          ? [{ kind: 'categorical', id, title, entries }]
+          : []
       }
       case 'shape':
         return [shapeKey(id, title, scale, facet, key)]
@@ -705,8 +739,12 @@ export function categoryLabel(
     return undefined
   }
   const { scale, key } = section
-  if (scale.kind === 'threshold') {
-    return thresholdRows(scale, key).find(
+  if (scale.kind === 'threshold' || scale.kind === 'identity') {
+    const rows =
+      scale.kind === 'threshold'
+        ? thresholdRows(scale, key)
+        : identityRows(scale, key)
+    return rows.find(
       e => e.color !== undefined && cssColorToABGR(e.color) === color,
     )?.label
   }

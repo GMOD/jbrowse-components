@@ -56,9 +56,10 @@ function markColorOptions() {
  * placing its middle stop where a diverging ramp turns; `symlog` runs
  * logarithmic away from 0 and linear through it, so a signed fold change
  * ramps on both sides) or a `threshold` scale (a `range` color per interval
- * between the cut points `domain` lists). A string is the field, as every
- * channel's is inside `encoding`; a constant is `{ value }`. `legend` shapes
- * the key the scale draws.
+ * between the cut points `domain` lists). An `identity` scale reads no field:
+ * each feature paints the BED color it carries. A string is the field, as
+ * every channel's is inside `encoding`; a constant is `{ value }`. `legend`
+ * shapes the key the scale draws.
  *
  * #example
  * ```js
@@ -127,6 +128,21 @@ function markColorOptions() {
  *   },
  * }
  * ```
+ * ```js
+ * {
+ *   mark: 'rect',
+ *   encoding: {
+ *     row: 'cellType',
+ *     color: {
+ *       scale: {
+ *         type: 'identity',
+ *         domain: ['rgb(255,0,0)', 'rgb(0,128,0)'],
+ *         names: ['Active TSS', 'Strong transcription'],
+ *       },
+ *     },
+ *   },
+ * }
+ * ```
  */
 export const markColorSchema = ConfigurationSchema(
   'MarkColor',
@@ -159,7 +175,7 @@ export const markColorSchema = ConfigurationSchema(
         ...colorScaleTypeSlot({
           scales: MARK_COLOR_SCALES,
           scaleName: 'MarkColorScaleType',
-          type: 'ordinal hands out range colors per distinct value; linear, log and symlog read the value between domainMin and domainMax into a ramp; threshold cuts the value at the domain and hands each interval a range color; unset is linear for score and ordinal for any other field',
+          type: 'ordinal hands out range colors per distinct value; linear, log and symlog read the value between domainMin and domainMax into a ramp; threshold cuts the value at the domain and hands each interval a range color; identity reads no field and paints each feature its own BED color, black included, invalid where it carries none, the key naming the colors in domain; unset is linear for score and ordinal for any other field',
         }),
         ...colorDomainSlot({
           domain:

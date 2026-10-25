@@ -11,7 +11,12 @@ import { GLYPH_DISC } from '@jbrowse/render-core/shaders/pointMarkConsts'
 import { categoricalScale } from '../ui/colors.ts'
 import { categoricalField } from './categoricalField.ts'
 import { MISCONFIGURED_COLOR, NO_CATEGORY_COLOR } from './color/index.ts'
-import { cssColorToABGR, packAbgr } from './colorBits.ts'
+import {
+  BED_COLOR_FIELDS,
+  cssColorToABGR,
+  featureItemRgb,
+  packAbgr,
+} from './colorBits.ts'
 import { rampDomain, rampLutOf } from './colorRamp.ts'
 import { asTable, numberReaderOf, readerOf } from './featureTable.ts'
 import { fieldReader, isConstantJexl, plainFieldName } from './fieldReader.ts'
@@ -33,13 +38,13 @@ import type { CategoricalField } from './categoricalField.ts'
 import type { Column, FeatureTable, NumberLane } from './featureTable.ts'
 import type { JexlInstance } from './jexlStrings.ts'
 import type {
-  ColorEncoding,
   ColorScaleTable,
   ContinuousRef,
   Encoded,
   EncodedChannels,
   FieldRef,
   LocusRef,
+  MarkColorEncoding,
   ShapeEncoding,
   ShapeName,
   ShapeScaleTable,
@@ -69,7 +74,9 @@ export type {
   FieldRef,
   FilterStep,
   FormulaStep,
+  IdentityRef,
   LocusRef,
+  MarkColorEncoding,
   MateStep,
   PathSpec,
   ShapeEncoding,
@@ -112,6 +119,8 @@ export const NO_VALUE_ABGR = cssColorToABGR(NO_CATEGORY_COLOR)
 
 const FALLBACK_COLOR = MISCONFIGURED_ABGR
 
+const DEFAULT_MARK_ABGR = cssColorToABGR(DEFAULT_MARK_COLOR)
+
 /**
  * #api
  * A channel read per feature: the compiled form of a {@link FieldRef}, and
@@ -136,7 +145,7 @@ export interface MarkEncodingInput {
   row?: FieldRef | ChannelReader | ArrayLike<number>
   /** Each row's series, what the `series` lane is filled from. */
   series?: ArrayLike<number>
-  color?: ColorEncoding | ChannelReader<number>
+  color?: MarkColorEncoding | ChannelReader<number>
   shape?: ShapeEncoding | ChannelReader<number>
   text?: FieldRef | ChannelReader
   size?: SizeEncoding
@@ -566,6 +575,57 @@ function paintCategories<T>(
     .map(value => ({ value, entry: resolved.get(value)!.entry }))
 }
 
+// The BED color column a table holds, under the first of its names any row
+// fills; a file spells it one way throughout.
+function bedColorFieldOf(table: FeatureTable) {
+  const readers = BED_COLOR_FIELDS.map(field => ({
+    field,
+    read: readerOf(table.column(field)),
+  }))
+  for (let i = 0; i < table.length; i++) {
+    for (const { field, read } of readers) {
+      if (read(i) !== undefined) {
+        return field
+      }
+    }
+  }
+  return BED_COLOR_FIELDS[0]
+}
+
+// A feature's own color as its key: the `r,g,b` its raw value parses to under
+// UCSC's `itemRgb on`, `''` for none, each distinct raw value parsed once.
+function ownColorField(): CategoricalField {
+  const parsed = new Map<unknown, string>()
+  return {
+    ...categoricalField(''),
+    key: raw => {
+      let key = parsed.get(raw)
+      if (key === undefined) {
+        key = featureItemRgb(raw, true) ?? ''
+        parsed.set(raw, key)
+      }
+      return key
+    },
+  }
+}
+
+// A `colorKey` lane's indexes, handed out in the order keys were first met,
+// moved to each key's position in `entries`.
+function keysToEntryOrder(
+  colorKey: Uint32Array,
+  entries: readonly { entry: { order: number } }[],
+  resolved: number,
+  count: number,
+) {
+  const position = new Uint32Array(resolved)
+  for (const [i, e] of entries.entries()) {
+    position[e.entry.order] = i
+  }
+  for (let k = 0; k < count; k++) {
+    colorKey[k] = position[colorKey[k]!]!
+  }
+}
+
 /**
  * #api
  * The hit index over `count` instances: each a box from `x` to `x2` at its
@@ -804,8 +864,12 @@ export function encodeFeatures<L extends LaneName>(
   }
 
   const colorEncoding = encoding.color ?? DEFAULT_MARK_COLOR
+  const ownColor =
+    typeof colorEncoding === 'object' && colorEncoding.scale === 'identity'
   const declaredScale =
-    typeof colorEncoding === 'object' ? colorEncoding : undefined
+    typeof colorEncoding === 'object' && colorEncoding.scale !== 'identity'
+      ? colorEncoding
+      : undefined
   const rampEncoding =
     declaredScale &&
     (declaredScale.scale === 'linear' ||
@@ -835,12 +899,15 @@ export function encodeFeatures<L extends LaneName>(
         : new Float32Array(count)
       : undefined
   const colorKey =
-    declaredScale?.scale === 'ordinal' && has('colorKey')
+    (declaredScale?.scale === 'ordinal' || ownColor) && has('colorKey')
       ? new Uint32Array(count)
       : undefined
   const paintsColor = has('color') && !colorValue && !colorKey
   const unscaled =
-    paintsColor && declaredScale?.scale !== 'ordinal' && !quantitative
+    paintsColor &&
+    !ownColor &&
+    declaredScale?.scale !== 'ordinal' &&
+    !quantitative
       ? unscaledColor(
           table,
           colorEncoding as string | ChannelReader<number>,
@@ -857,7 +924,31 @@ export function encodeFeatures<L extends LaneName>(
   let scale: ColorScaleTable | undefined
   let missingMet = false
   let notNumberMet = false
-  if (scaled?.scale === 'ordinal' && categoryLane) {
+  if (ownColor && categoryLane) {
+    let resolved = 0
+    const entries = paintCategories(
+      table,
+      bedColorFieldOf(table),
+      jexl,
+      ownColorField(),
+      { kept, count, report },
+      categoryLane,
+      key => ({
+        color: key === '' ? DEFAULT_MARK_ABGR : cssColorToABGR(key),
+        order: resolved++,
+      }),
+      entry => (colorKey ? entry.order : entry.color),
+    )
+    if (colorKey) {
+      keysToEntryOrder(colorKey, entries, resolved, count)
+    }
+    scale = {
+      kind: 'identity',
+      field: '',
+      domain: [],
+      entries: entries.map(e => ({ value: e.value, color: e.entry.color })),
+    }
+  } else if (scaled?.scale === 'ordinal' && categoryLane) {
     const colorField = categoricalField(scaled.field, {
       domain: scaled.domain?.map(String),
       range: scaled.range,
@@ -877,13 +968,7 @@ export function encodeFeatures<L extends LaneName>(
       entry => (colorKey ? entry.order : entry.color),
     )
     if (colorKey) {
-      const position = new Uint32Array(resolved)
-      for (const [i, e] of entries.entries()) {
-        position[e.entry.order] = i
-      }
-      for (let k = 0; k < count; k++) {
-        colorKey[k] = position[colorKey[k]!]!
-      }
+      keysToEntryOrder(colorKey, entries, resolved, count)
     }
     scale = {
       kind: 'categorical',

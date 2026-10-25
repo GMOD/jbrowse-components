@@ -148,7 +148,7 @@ export function drawnScales(
   const askedColors = new Set(
     !color || ramp
       ? []
-      : scale?.kind === 'categorical'
+      : scale?.kind === 'categorical' || scale?.kind === 'identity'
         ? scale.entries.map(e => e.color)
         : scale?.kind === 'threshold' || scale?.kind === 'ramp'
           ? [NO_VALUE_ABGR, MISCONFIGURED_ABGR]
@@ -207,7 +207,7 @@ export function drawnScales(
     yMin: valued ? yMin : layer.yMin,
     yMax: valued ? yMax : layer.yMax,
     scale:
-      scale?.kind === 'categorical' && color
+      (scale?.kind === 'categorical' || scale?.kind === 'identity') && color
         ? { ...scale, entries: scale.entries.filter(e => colors.has(e.color)) }
         : ramp && scale?.kind === 'ramp'
           ? {

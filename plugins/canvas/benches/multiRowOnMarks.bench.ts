@@ -35,6 +35,9 @@
 //                    column: what a native identity scale would ask the
 //                    worker for, each distinct color then parsed once on the
 //                    main thread
+//     marks-identity the same with `{ scale: 'identity' }`, the mark
+//                    display's own spelling (ADR-243): the worker finds the
+//                    column and keys each distinct raw value's parsed color
 //   --color=field  a categorical field (`name`, the state):
 //     multirow, control  as above with `color.field`
 //     marks-key      an ordinal color over the field, the `colorKey` lane
@@ -251,6 +254,25 @@ function marksKeyArm() {
   })
 }
 
+function marksIdentityArm() {
+  const { layers, sections } = layerTables(
+    fetched,
+    { transform: [], facet: { field: rowsField }, layers: [{}] },
+    jexl,
+  )
+  const { table, row } = layers[0]!
+  const encoded = encodeFeatures(
+    table,
+    { x: 'start', x2: 'end', row, color: { scale: 'identity' } },
+    ['row', 'colorKey'],
+    { jexl },
+  )
+  const result = { layers: [encoded], facet: sections }
+  return structuredClone(result, {
+    transfer: [...encodedChannelTransferables(encoded)] as ArrayBuffer[],
+  })
+}
+
 type MultiRowOut = ReturnType<typeof multiRowArm>
 // Either marks arm: the jexl arm fills `color`, the key arm `colorKey`.
 interface MarksOut {
@@ -294,7 +316,10 @@ function keyColor(value: string) {
 function marksTuples(r: MarksOut) {
   const e = r.layers[0]!
   const keys = rowKeysOf(r.facet)
-  const entries = e.scale?.kind === 'categorical' ? e.scale.entries : []
+  const entries =
+    e.scale?.kind === 'categorical' || e.scale?.kind === 'identity'
+      ? e.scale.entries
+      : []
   const out: string[] = []
   for (let i = 0; i < e.count; i++) {
     const color = e.colorKey
@@ -315,7 +340,10 @@ const arms: {
   { name: 'multirow', run: multiRowArm, tuples: multiRowTuples },
   { name: 'control', run: controlArm, tuples: multiRowTuples },
   ...(colorMode === 'rgb'
-    ? [{ name: 'marks-jexl', run: marksJexlArm, tuples: marksTuples }]
+    ? [
+        { name: 'marks-jexl', run: marksJexlArm, tuples: marksTuples },
+        { name: 'marks-identity', run: marksIdentityArm, tuples: marksTuples },
+      ]
     : []),
   { name: 'marks-key', run: marksKeyArm, tuples: marksTuples },
 ]

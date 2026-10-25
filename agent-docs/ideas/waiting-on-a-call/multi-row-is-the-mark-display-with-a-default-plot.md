@@ -1,6 +1,6 @@
 ---
 name: multi-row-is-the-mark-display-with-a-default-plot
-description: LinearMultiRowFeatureDisplay draws colored features in rows, which is a `rect` mark with `rows` and a color. Rebuild it as the mark display with a default plot, as ADR-178 rebuilt Manhattan, and delete its own worker, encoder, model and component. Benched on the Roadmap ChromHMM painting, the mark worker runs in about half the multi-row worker's time and sends a quarter of its bytes. Waits on one call, what `facet` means beside `rows`, then five gaps on the mark display. Read before touching either display's rows, row colors, clustering or legend hides.
+description: LinearMultiRowFeatureDisplay draws colored features in rows, which is a `rect` mark with `rows` and a color. Rebuild it as the mark display with a default plot, as ADR-178 rebuilt Manhattan, and delete its own worker, encoder, model and component. Benched on the Roadmap ChromHMM painting, the mark worker runs in about half the multi-row worker's time and sends a quarter of its bytes. Waits on one call, what `facet` means beside `rows`, then four gaps on the mark display; the first gap, a feature's own color, is ADR-243. Read before touching either display's rows, row colors, clustering or legend hides.
 ---
 
 # Multi-row is the mark display with a default plot
@@ -63,6 +63,9 @@ at 1.00-1.04x; rerun on ada before quoting the times anywhere else.
   today.
 - `marks-key` reads the color column as an ordinal key, the worker half of a
   native identity scale; the main thread then parses each distinct color once.
+- `marks-identity` is the shipped spelling, `{ scale: 'identity' }`
+  (ADR-243): 0.45x on Roadmap chr7:25-30 Mb and 0.46x on BXD, 2026-10-25,
+  its colors equal to multi-row's.
 - **Not timed:** the main thread's work per arriving region
   (`buildMultiRowChannels` against the mark display's color paint and row-table
   remap) and the paint. ADR-165 already has both displays reorder, focus and
@@ -91,32 +94,31 @@ Each gap is its own change, in this order. Put row-axis work in
 `packages/tree-sidebar`, beside the variant, MAF and wiggle displays that
 share it, not in `LinearMarkDisplay/model.ts` (2,076 lines).
 
-1. **A feature's own color.** `MARK_COLOR_SCALES` has no `identity`
-   (`plugins/marks/src/LinearMarkDisplay/markVocabulary.ts:82-88`), and
-   `markColorOf` (`markColor.ts`) has no kind for it. Build it as the
-   `marks-key` arm does: an ordinal key over the BED color column, each
-   distinct value parsed on the main thread. The column goes by three names
-   (`featureBedColor`, `packages/core/src/util/colorBits.ts:98-112`), so the
-   worker reads whichever the feature carries. ADR-166 gave FeatureColor the
-   same scale.
-2. **Clustering and sorting span rows.** `valueMarkIndex` is -1 for a span
+1. **Clustering and sorting span rows.** `valueMarkIndex` is -1 for a span
    (`model.ts:1610-1630`), so span rows cluster nothing; move
    `collectMultiRowMatrix` (presence, categorical, scalar) from
    `plugins/canvas/src/MultiRowClusterFeaturesRPC` into tree-sidebar, with the
    "Cluster on" picker. "Sort rows by ... here" reads `y` alone
-   (`markList.ts:194`) and needs the color key.
-3. **Hiding a legend category** from paint and hit test. Multi-row re-encodes
+   (`markList.ts:194`) and needs the color key, which an identity color
+   now sends as `colorKey` (ADR-243).
+2. **Hiding a legend category** from paint and hit test. Multi-row re-encodes
    the region on a toggle (ADR-165), which costs nothing while nothing is
    hidden; a per-instance mask in the span shader would cost every span config.
-4. **Row discovery and the menus.** The automatic rows field (`repClass`, else
+   An identity key row matches its `domain` color to the met keys by packed
+   color, since a key is `r,g,b` and a `domain` entry any CSS spelling.
+3. **Row discovery and the menus.** The automatic rows field (`repClass`, else
    `name`: `rowsFields.ts`), "One row per..." with row counts, Color by and
    Group by, and rows read from the window rather than the fetch buffer
    (`windowedRegion.ts`; the mark display's `discoveredRows`, `model.ts:692`,
-   reads every loaded region).
-5. **Bands of rows**, after the call above, with `rowGroups` (the mark
+   reads every loaded region). Color by's itemRgb preset writes
+   `{ scale: { type: 'identity' } }`; Edit plot's scale picker leaves identity
+   out (ADR-243).
+4. **Bands of rows**, after the call above, with `rowGroups` (the mark
    display's `rowColorFields` is `[]`, `model.ts:605-607`).
 
-Small, any time: the feature name in the tooltip, Copy location, `axis.grid`
+Small, any time: an identity key with no `domain` (multi-row names each
+color by its features' names; the mark display keys nothing), the feature
+name in the tooltip, Copy location, `axis.grid`
 row separators (`packages/tree-sidebar/src/rowAxisConfigSchema.ts`), strand
 preset colors, `rowColor` painting the blocks when no color is set
 (`rowColorPaintsMarks`), and feature details, which rerun the region's steps

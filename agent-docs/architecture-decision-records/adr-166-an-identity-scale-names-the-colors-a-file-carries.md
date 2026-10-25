@@ -13,6 +13,8 @@ round left open. Amends
 which kept the multi-row display's `legend` slot for a file's own `itemRgb`
 relabelled and called that, in grammar terms, an identity scale with labels.
 
+Amended by [ADR-243](adr-243-a-mark-paints-a-files-own-colors-through-an-identity-key.md): the mark display takes the identity scale too.
+
 ## Context
 
 ChromHMM, the BXD painting, dog10k's copy number, the E. coli projections and

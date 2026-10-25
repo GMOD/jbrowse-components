@@ -12,6 +12,9 @@ Accepted (2026-09-30). Extends
 moved a quantitative color over the plotted field off the fetch, to every
 color the mark display paints.
 
+Amended by [ADR-243](adr-243-a-mark-paints-a-files-own-colors-through-an-identity-key.md): a fifth `ColorSource`, `identity`, keys each feature's own
+BED color.
+
 ## Context
 
 A probe in the grammar-unity review found that on the mark display a constant

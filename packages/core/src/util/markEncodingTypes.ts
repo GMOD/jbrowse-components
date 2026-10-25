@@ -104,6 +104,19 @@ export type ColorEncoding =
   | ContinuousRef
   | ThresholdRef
 
+/**
+ * #api
+ * Each feature's own color, off the BED color column under whichever name
+ * the file gives it: ADR-166's identity scale. The encoder keys each feature
+ * by the `r,g,b` its color parses to, `''` where it carries none.
+ */
+export interface IdentityRef {
+  scale: 'identity'
+}
+
+/** #api What a mark's `color` crosses the wire as. */
+export type MarkColorEncoding = ColorEncoding | IdentityRef
+
 export type { ShapeName }
 
 /**
@@ -167,7 +180,7 @@ export interface MarkEncoding {
   x2?: FieldRef | LocusRef
   y?: FieldRef
   row?: FieldRef
-  color?: ColorEncoding
+  color?: MarkColorEncoding
   shape?: ShapeEncoding
   /** The field a `text` mark prints, read by that mark alone. */
   text?: FieldRef
@@ -218,6 +231,15 @@ export type ColorScaleTable =
        */
       numericKeys?: boolean
       /** Each key met, in the field's order, `''` for no value. */
+      entries: { value: string; color: number }[]
+    }
+  | {
+      kind: 'identity'
+      /** `''`: the colors are the features' own, off no field the config names. */
+      field: ''
+      /** The colors the key lists, the config's `scale.domain`; the worker sends none. */
+      domain: string[]
+      /** Each color met as `r,g,b`, `''` for a feature carrying none. */
       entries: { value: string; color: number }[]
     }
   | {
