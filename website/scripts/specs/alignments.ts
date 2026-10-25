@@ -772,7 +772,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     readyTimeout: 60000,
     tooltip: 'hide',
     viewportWidth: 2000,
-    viewportHeight: 875,
+    viewportHeight: 890,
     annotations: [
       {
         type: 'text',

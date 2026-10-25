@@ -398,7 +398,7 @@ export const methylationSpecs: ScreenshotSpec[] = [
     url: snrpnReadsPanel({ colored: false }),
     readySelector: displayPainted('pileup-display'),
     readyTimeout: 90000,
-    viewportHeight: 730,
+    viewportHeight: 745,
     hideSelectors: ['.MuiTooltip-popper'],
     tooltip: 'hide',
     actions: [

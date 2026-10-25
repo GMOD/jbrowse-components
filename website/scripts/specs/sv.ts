@@ -490,7 +490,7 @@ export const svSpecs: ScreenshotSpec[] = [
     }),
     readySelector: displayPainted('pileup-display'),
     readyTimeout: 90000,
-    viewportHeight: 700,
+    viewportHeight: 618,
     annotations: [
       {
         type: 'text',
