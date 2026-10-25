@@ -110,6 +110,35 @@ test('One row per... and Color by offer the scanned attributes and write the dis
   expect(model.colorByMode).toBe('strand')
 })
 
+test("a spliced painting's rows sort and cluster on its blocks, not the line under them", () => {
+  const model = display({ rows: 'sample', marks: SPLICED_MARKS })
+  expect(model.rowCompare?.mark).toBe(1)
+})
+
+test('an identity color over a field paints the colors the field holds, with no notice', () => {
+  const model = display({
+    rows: 'sample',
+    marks: BLOCK_MARKS,
+    encoding: {
+      color: {
+        field: 'tint',
+        scale: { type: 'identity', domain: ['#0072b2'], names: ['A'] },
+      },
+    },
+  })
+  model.setRpcData(
+    0,
+    workerResult(
+      model,
+      features([{ sample: 'mom', start: 0, end: 400, tint: '#0072b2' }]),
+    ),
+    REGION,
+  )
+  const [layer] = [...model.rpcDataMap.values()][0]!.layers
+  expect(colorAt(layer!, 0)).toBe(cssColorToABGR('#0072b2'))
+  expect(model.cornerNotices).toEqual([])
+})
+
 test("a row's color paints its blocks while no mark or display color does", () => {
   const model = loaded(
     display({

@@ -22,7 +22,13 @@ const PFAM_TRACK = {
       type: 'LinearMultiRowFeatureDisplay',
       displayId: 'pfam_domains-LinearMultiRowFeatureDisplay',
       rows: 'transcript',
-      rowProportion: 0.7,
+      marks: [
+        { mark: { type: 'rect', height: { band: 0 } } },
+        {
+          mark: { type: 'rect', height: { band: 0.7 } },
+          transform: [{ type: 'flatten', keepEmpty: true }],
+        },
+      ],
       encoding: {
         color: { field: 'name', legend: { title: 'Pfam family' } },
       },

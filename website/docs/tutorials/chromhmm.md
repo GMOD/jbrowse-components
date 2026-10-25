@@ -221,8 +221,8 @@ these actions for reading the rest:
   transcription.
 - **Clustering → Cluster rows by similarity...** reorders the rows by the state
   each has across the region in view and draws the dendrogram in the sidebar.
-- Right-click a column and pick **Sort rows by name here** to rank the rows by
-  the state (`name`) each has at that base.
+- Right-click a state and pick **Sort rows by color here** to rank the rows by
+  the state each has at that base.
 
 ## Roadmap's epigenomes at PAX5 and HOXA
 

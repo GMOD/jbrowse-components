@@ -33,8 +33,10 @@ function spanCompare(color: ColorSource | undefined): RowCompareBy {
 }
 
 /**
- * The first drawing mark standing at a value, else the first drawing span,
- * and what its rows compare on; undefined where neither draws.
+ * The first drawing mark standing at a value, else the drawing span on top,
+ * and what its rows compare on; undefined where neither draws. A spliced
+ * feature's blocks draw over the line joining them, so its rows compare on
+ * the blocks.
  */
 export function rowCompareOf(
   drawing: readonly number[],
@@ -45,7 +47,7 @@ export function rowCompareOf(
   if (valued !== undefined) {
     return { mark: valued, by: 'y' }
   }
-  const span = drawing.find(i => markTypes[i] === 'rect')
+  const span = drawing.findLast(i => markTypes[i] === 'rect')
   return span === undefined
     ? undefined
     : { mark: span, by: spanCompare(colors[span]) }

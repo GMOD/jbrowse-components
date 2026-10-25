@@ -306,7 +306,6 @@
           "height": 400,
           "encoding": {
             "color": {
-              "value": "jexl:'rgb('+get(feature,'itemRgb')+')'",
               "scale": {
                 "type": "identity",
                 "domain": [

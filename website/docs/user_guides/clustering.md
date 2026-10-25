@@ -62,14 +62,11 @@ Every display opens the same dialog, with two modes:
 Both modes cluster the same rows with the same linkage by default (average, or
 UPGMA), so manual mode reproduces auto mode.
 
-The multi-row feature display clusters on a feature attribute, binned across the
-window: **Cluster on** in the dialog's advanced options picks which one, and the
-caption records it alongside the locus. By default the display follows the
-coloring — the attribute a `jexl:` color expression reads, else the feature
-name. A numeric attribute is averaged per bin and rows with similar values land
-closer together; any other attribute is categorical, and distance is the number
-of bins whose values differ. **Presence only** drops the values and clusters on
-which bins each row covers at all.
+The multi-row feature display clusters on what colors its blocks, binned across
+the window: the color's field, or each feature's own color. A numeric field is
+averaged per bin and rows with similar values land closer together; any other
+color is categorical, compared bin by bin. Under one color for everything, the
+display clusters on which bins each row covers at all.
 
 ## Reading and using the dendrogram
 

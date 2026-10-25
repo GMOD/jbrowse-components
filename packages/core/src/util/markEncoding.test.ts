@@ -1532,6 +1532,28 @@ test('an identity color keys each feature by the BED color it carries, under the
   ])
 })
 
+test('an identity color over a field paints each feature the CSS color the field holds', () => {
+  const tinted = (color?: string) =>
+    new SimpleFeature({
+      uniqueId: `f${color}`,
+      refName: 'ctgA',
+      start: 0,
+      end: 10,
+      itemRgb: '255,0,0',
+      ...(color === undefined ? {} : { color }),
+    })
+  const r = encodeFeatures(
+    [tinted('#0072b2'), tinted(), tinted('#e69f00')],
+    { color: { scale: 'identity', field: 'color' } },
+    ['color'],
+  )
+  expect([...colorLane(r.color)]).toEqual([
+    cssColorToABGR('#0072b2'),
+    cssColorToABGR(DEFAULT_MARK_COLOR),
+    cssColorToABGR('#e69f00'),
+  ])
+})
+
 test('an identity color asked for as a color lane paints each feature its own', () => {
   const r = encodeFeatures(
     [

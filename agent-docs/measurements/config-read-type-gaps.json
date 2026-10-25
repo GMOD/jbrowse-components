@@ -44,22 +44,22 @@
     {
       "values": {
         "scope": "source",
-        "calls": 608,
-        "unchecked": 71
+        "calls": 601,
+        "unchecked": 68
       }
     },
     {
       "values": {
         "scope": "tests",
-        "calls": 818,
+        "calls": 810,
         "unchecked": 174
       }
     },
     {
       "values": {
         "scope": "all",
-        "calls": 1426,
-        "unchecked": 245
+        "calls": 1411,
+        "unchecked": 242
       }
     }
   ]

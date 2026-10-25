@@ -13,21 +13,24 @@ type, copy number per tumor, ancestry per haplotype, genotype per strain)
 becomes a single track with one config, one adapter, and one fetch.
 
 Any BED, BigBed, GFF3, or GTF track can be switched to it from the track menu:
-**Display types → Multi-row feature display (painting)**.
+**Display types → Multi-row feature display (painting)**. It draws the features
+as a plot of marks, a `rect` per feature, so
+[**Advanced → Edit plot...**](/docs/user_guides/edit_plot) and **Edit marks...**
+reach every mark, scale, filter and facet setting.
 
 <Figure src="/img/chromhmm.png" caption="Roadmap 15-state ChromHMM as a multi-row track, 127 epigenomes in tissue order, each row tinted by its tissue group." />
 
 ## Turning a feature track into rows
 
-Picking it from **Display types** shows the rows right away, split on whichever
-column the file turns out to have: a RepeatMasker table opens as ~20 rows of
-`repClass`, and anything else falls back to the `name` column. Which column
-assigns a feature to a row is then **One row per…** in the same track menu,
-which lists the attribute names the loaded features have — so RepeatMasker also
-offers `repFamily` and `name` beside the class it started on. A saved row order,
-its labels and colors, and a clustering run survive a repartition. They name
-rows by value, so they match no row under the new partition and apply again when
-the field comes back. Hidden legend categories clear.
+Picking it from **Display types** reads a sample of the features once and splits
+them on whichever column the file turns out to have: a RepeatMasker table opens
+as ~20 rows of `repClass`, and anything else falls back to the `name` column.
+Which column assigns a feature to a row is then **One row per...** in the same
+track menu, which lists the attributes the sampled features carry, so
+RepeatMasker also offers `repFamily` and `name` beside the class it started on.
+A saved row order, its labels and colors, and a clustering run survive a
+repartition. They name rows by value, so they match no row under the new
+partition and apply again when the field comes back.
 
 <Figure src="/img/multirow/display_types_menu.png" caption="The RepeatMasker track's Display types submenu (top), and the same window partitioned by repeat class (bottom)." />
 
@@ -58,11 +61,13 @@ label.
 
 A feature whose children have none of their own, such as a BED12 row or a GFF
 transcript at the top of its file, draws them as blocks joined by a line, as a
-gene track draws exons. A gene over its transcripts draws whole.
+gene track draws exons. The plot is then two marks, a line over each feature and
+a `rect` over its blocks, and a hover or a click on any block answers for the
+whole feature.
 
 The rows are discovered from the values of the features in the window, so a file
 that gains a sample or a category needs no config change, and a window missing
-one has no row for it. The rows update once panning pauses.
+one has no row for it. The rows follow the window as it pans.
 
 ### Partitioning with a jexl expression {#when-the-category-is-not-a-column}
 
@@ -113,21 +118,22 @@ extra field works by name.
 
 ## Coloring the blocks
 
-Four sources of color, in precedence order:
+The blocks take the first of these that names a color:
 
-- [`rowColor`](/docs/config/linearmultirowfeaturedisplay/#slot-rowcolor) gives a
+- [`encoding.color`](/docs/config/markdisplayencoding/#slot-color), a
+  per-feature fill: a CSS color as its `value`, or a field whose values each
+  take a color through a scale (a color per value, a color per interval between
+  cut points, or a gradient) with a key naming them. **Color by...** writes it.
+- A feature's own color. A BED9 whose features state an `itemRgb` (ChromHMM
+  state colors, for one) opens painted with them, as
+  `encoding.color.scale.type: "identity"`; `scale.domain` and `scale.names` name
+  those colors in the key, and a `field` reads the colors a column holds.
+- [`rowColor`](/docs/config/linearmultirowfeaturedisplay/#slot-rowcolor), a
   color per row as pairs, the row values in `scale.domain` and their colors in
   `scale.range`, or with a `field` a color per value of a row attribute such as
   its `rowGroups` group. Use it when the row identity is the signal (one color
   per population, per treatment arm).
-- [`encoding.color`](/docs/config/featureencoding/#slot-color) is a per-feature
-  fill: a CSS color as its `value`, or a field whose values each take a color
-  through a scale — a color per value, a color per interval between cut points,
-  or a gradient — with a key naming them.
-- `itemRgb` is honored automatically. A BED9 that already has per-feature colors
-  (ChromHMM state colors, for one) paints correctly with no color configuration.
-- Otherwise each row is auto-assigned a distinct color from a categorical
-  palette.
+- Otherwise the default block color.
 
 Binning a numeric column onto a diverging scale is the common case, e.g. segment
 mean copy number, with `scale.names` naming each interval in the key:
@@ -185,7 +191,9 @@ applies at render time, with no refetch.
 
 The rows divide the track height between them, as a multi-row wiggle's do, so
 more samples shrink the rows and the track keeps its height. Drag the track
-taller to give a deep cohort more room per row.
+taller to give a deep cohort more room per row, or pick **Row height** to give
+each row a fixed height and scroll the rest. **Show... → Row separators** draws
+a line between rows once they are tall enough to hold one.
 
 ## Ordering and clustering rows
 
@@ -195,12 +203,13 @@ no value last. Three ways to change that:
 - **Edit colors/arrangement...** reorders, relabels or hand-picks rows in a
   dialog, and `rows.sort` pins an explicit order in config: the values it lists
   lead, and the rest sort.
-- Right-click a position and choose **Sort rows by _attribute_ here** to order
-  rows by the value each has at that exact base, the analogue of an alignments
-  track's sort-by-base. The attribute is the one clustering compares rows on
-  (`clusterField`, **Cluster on** in the clustering dialog). Numbers sort
-  highest first; other values form contiguous blocks, the largest first, turning
-  a QTL painting at its peak into a clean split by allele.
+- Right-click a feature and choose **Sort rows by _field_ here** to order rows
+  by the value each has at that exact base, the analogue of an alignments
+  track's sort-by-base. Rows compare on what colors the blocks, the same as
+  clustering: the color's field, a feature's own color, or with one color for
+  everything whether a row has a feature there. Numbers sort highest first;
+  other values form contiguous blocks, the largest first, turning a QTL painting
+  at its peak into a clean split by allele.
 - **Clustering → Cluster rows by similarity...** reorders rows so that samples
   with similar paintings sit together, and draws a dendrogram in the sidebar.
   See [](/docs/user_guides/clustering).

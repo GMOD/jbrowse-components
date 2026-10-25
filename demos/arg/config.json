@@ -184,7 +184,7 @@
           },
           "encoding": {
             "color": {
-              "value": "jexl:get(feature,'color')",
+              "field": "color",
               "scale": {
                 "type": "identity",
                 "domain": ["#0072b2", "#e69f00"],

@@ -598,6 +598,14 @@ function bedColorFieldOf(table: FeatureTable) {
   return BED_COLOR_FIELDS[0]
 }
 
+// A field's CSS color as its key, `''` for a feature holding none.
+function cssColorField(): CategoricalField {
+  return {
+    ...categoricalField(''),
+    key: raw => (raw === undefined || raw === null ? '' : String(raw)),
+  }
+}
+
 // A feature's own color as its key: the `r,g,b` its raw value parses to under
 // UCSC's `itemRgb on`, `''` for none, each distinct raw value parsed once.
 function ownColorField(): CategoricalField {
@@ -877,8 +885,11 @@ export function encodeFeatures<L extends LaneName>(
   }
 
   const colorEncoding = encoding.color ?? DEFAULT_MARK_COLOR
-  const ownColor =
+  const identity =
     typeof colorEncoding === 'object' && colorEncoding.scale === 'identity'
+      ? colorEncoding
+      : undefined
+  const ownColor = identity !== undefined
   const declaredScale =
     typeof colorEncoding === 'object' && colorEncoding.scale !== 'identity'
       ? colorEncoding
@@ -939,11 +950,12 @@ export function encodeFeatures<L extends LaneName>(
   let notNumberMet = false
   if (ownColor && categoryLane) {
     let resolved = 0
+    const field = identity.field
     const entries = paintCategories(
       table,
-      bedColorFieldOf(table),
+      field ?? bedColorFieldOf(table),
       jexl,
-      ownColorField(),
+      field === undefined ? ownColorField() : cssColorField(),
       { kept, count, report },
       categoryLane,
       key => ({

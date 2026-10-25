@@ -93,12 +93,12 @@ export type ColorSource =
   /** A `jexl:` expression the worker evaluates per feature into a color. */
   | { kind: 'expression'; encoding: string }
   /**
-   * Each feature's own BED color (ADR-166); the worker sends each feature's
-   * color as an index into the colors it met, a feature carrying none in the
-   * mark's default. `domain` and `names` are the key's alone; a color in
+   * Each feature's own color (ADR-166), the CSS color `field` holds or else
+   * its BED color; the worker sends each feature's color as an index into
+   * the colors it met, a feature carrying none in the mark's default. `domain` and `names` are the key's alone; a color in
    * `hidden`, packed, drops its instances.
    */
-  | { kind: 'identity'; domain: string[]; hidden?: number[] }
+  | { kind: 'identity'; field?: string; domain: string[]; hidden?: number[] }
 
 /**
  * `owner` is the display holding the mark, whose track's ordinal colors
@@ -121,6 +121,7 @@ export function markColorOf(
     const colors = hiddenOf('').map(value => cssColorToABGR(value))
     return {
       kind: 'identity',
+      ...(setting.field ? { field: setting.field } : {}),
       domain: [...setting.scale.domain],
       ...(colors.length > 0 ? { hidden: colors } : {}),
     }
@@ -163,7 +164,9 @@ export function wireColorOf(color: ColorSource): MarkColorEncoding {
     case 'expression':
       return color.encoding
     case 'identity':
-      return { scale: IDENTITY_SCALE }
+      return color.field === undefined
+        ? { scale: IDENTITY_SCALE }
+        : { scale: IDENTITY_SCALE, field: color.field }
     case 'categories':
       return { field: color.encoding.field, scale: 'ordinal' }
     case 'numbers':

@@ -83,7 +83,7 @@ the track:
 - **Display types → Multi-row feature display (painting)** in the track menu.
 
 The display partitions on `repClass` whenever the file has that column, and
-**One row per...** in the same menu lists every column the loaded features have,
+**One row per...** in the same menu lists every column the features carry,
 `repFamily` among them. <!-- menu-path-ok -->
 
 <Figure src="/img/multirow/display_types_menu.png" caption="Top: the track menu's Display types submenu on the UCSC RepeatMasker track; any feature track offers the multi-row display beside its default one. Bottom: the same window after picking it, one row per repeat class." />
