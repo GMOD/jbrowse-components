@@ -10180,7 +10180,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "x-closed": true,
       "properties": {
         "type": {
-          "description": "ordinal hands out range colors per distinct value; linear, log and symlog read the value between domainMin and domainMax into a ramp; threshold cuts the value at the domain and hands each interval a range color; unset is linear for score and ordinal for any other field.",
+          "description": "ordinal hands out range colors per distinct value; linear, log and symlog read the value between domainMin and domainMax into a ramp; threshold cuts the value at the domain and hands each interval a range color; identity reads no field and paints each feature its own BED color, black included, invalid where it carries none, the key naming the colors in domain; unset is linear for score and ordinal for any other field.",
           "if": {
             "type": "null"
           },
@@ -10190,7 +10190,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "linear",
               "log",
               "symlog",
-              "threshold"
+              "threshold",
+              "identity"
             ]
           }
         },

@@ -711,6 +711,14 @@ import { hitIndexOf } from '@jbrowse/core/util/markEncoding'
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncoding.ts)
 
+## IdentityRef
+
+Each feature's own color, off the BED color column under whichever name
+the file gives it: ADR-166's identity scale. The encoder keys each feature
+by the `r,g,b` its color parses to, `''` where it carries none.
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
+
 ## isBreakend
 
 Breakend notation, without parsing it: bracket forms (`G[chr2:100[`), single
@@ -887,6 +895,12 @@ A table whose rows a step made, which answers each row's identity, its
 hover JSON and the feature it hangs from.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/featureTable.ts)
+
+## MarkColorEncoding
+
+What a mark's `color` crosses the wire as.
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
 
 ## MarkEncoding
 

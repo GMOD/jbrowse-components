@@ -79,13 +79,14 @@ export const DEFAULT_LINK_STROKE_PX = 2
 /** The cuts a threshold color paints, render-core's `MAX_COLOR_CUTS`. */
 export const MAX_THRESHOLD_CUTS = 8
 
-/** The scales a mark's `color` offers. */
+/** The scales a mark's `color` offers; `identity` paints each feature's own BED color. */
 export const MARK_COLOR_SCALES = [
   'ordinal',
   'linear',
   'log',
   'symlog',
   'threshold',
+  'identity',
 ] as const
 
 export const SIZE_SCALES = ['linear', 'log'] as const

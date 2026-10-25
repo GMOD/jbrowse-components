@@ -14,9 +14,10 @@ object: an ordinal scale (a `range` color per value), a `linear`, `log` or
 placing its middle stop where a diverging ramp turns; `symlog` runs
 logarithmic away from 0 and linear through it, so a signed fold change
 ramps on both sides) or a `threshold` scale (a `range` color per interval
-between the cut points `domain` lists). A string is the field, as every
-channel's is inside `encoding`; a constant is `{ value }`. `legend` shapes
-the key the scale draws.
+between the cut points `domain` lists). An `identity` scale reads no field:
+each feature paints the BED color it carries. A string is the field, as
+every channel's is inside `encoding`; a constant is `{ value }`. `legend`
+shapes the key the scale draws.
 
 ## Example usage
 
@@ -92,6 +93,22 @@ the key the scale draws.
 }
 ```
 
+```js
+{
+  mark: 'rect',
+  encoding: {
+    row: 'cellType',
+    color: {
+      scale: {
+        type: 'identity',
+        domain: ['rgb(255,0,0)', 'rgb(0,128,0)'],
+        names: ['Active TSS', 'Strong transcription'],
+      },
+    },
+  },
+}
+```
+
 ## Config slots
 
 A setting written to it replaces it whole, since its members are alternatives: a member left out returns to its default. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
@@ -105,7 +122,7 @@ A setting written to it replaces it whole, since its members are alternatives: a
 | <span id="slot-legendvalues">**legend.values**</span><br>[`stringArray`](/docs/config_guides/slot_types#stringarray) = <code>[]</code> | The values an ordinal key lists, in this order; empty lists every value the loaded regions met. A value left out still paints, as Vega-Lite's `legend.values` and ggplot2's `breaks` leave it. |
 | <span id="slot-legendmissinglabel">**legend.missingLabel**</span><br>[`maybeString`](/docs/config_guides/slot_types#the-maybe-types) | The key's name for a feature with nothing in `field`; unset is "(no value)". Vega-Lite's legend has no such member, so it keeps its JBrowse name. |
 | <span id="slot-field">**field**</span><br>[`featureField`](/docs/config_guides/slot_types#featurefield) = <code>''</code> | the feature field a scale reads, or a jexl expression over feature, which is slower per feature and so the opt-in |
-| <span id="slot-scaletype">**scale.type**</span><br>[`maybeStringEnum`](/docs/config_guides/slot_types#the-maybe-types) (ordinal, linear, log, symlog, threshold) | ordinal hands out range colors per distinct value; linear, log and symlog read the value between domainMin and domainMax into a ramp; threshold cuts the value at the domain and hands each interval a range color; unset is linear for score and ordinal for any other field |
+| <span id="slot-scaletype">**scale.type**</span><br>[`maybeStringEnum`](/docs/config_guides/slot_types#the-maybe-types) (ordinal, linear, log, symlog, threshold, identity) | ordinal hands out range colors per distinct value; linear, log and symlog read the value between domainMin and domainMax into a ramp; threshold cuts the value at the domain and hands each interval a range color; identity reads no field and paints each feature its own BED color, black included, invalid where it carries none, the key naming the colors in domain; unset is linear for score and ordinal for any other field |
 | <span id="slot-scaledomain">**scale.domain**</span><br>[`stringArray`](/docs/config_guides/slot_types#stringarray) = <code>[]</code> | for an ordinal scale, the values in legend order, walking the range from the first entry and continuing into the default palette past its end (a value left out takes a color no listed value or value met before it paints, the first time the track shows it, and keeps it); for a threshold scale, the cut points in ascending order, a value taking the range entry for the number of them it is at or past, so range has one entry more than this; a linear or log scale reads domainMin and domainMax instead |
 | <span id="slot-scaledomainmin">**scale.domainMin**</span><br>[`maybeNumber`](/docs/config_guides/slot_types#the-maybe-types) | the bottom of a ramp's domain; unset follows the loaded values |
 | <span id="slot-scaledomainmax">**scale.domainMax**</span><br>[`maybeNumber`](/docs/config_guides/slot_types#the-maybe-types) | the top of a ramp's domain; unset follows the loaded values |

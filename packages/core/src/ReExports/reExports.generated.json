@@ -2808,6 +2808,7 @@
     "@jbrowse/core/util/colorBits": {
       "package": "@jbrowse/core",
       "names": [
+        "BED_COLOR_FIELDS",
         "abgrAlpha",
         "abgrBlue",
         "abgrGreen",
