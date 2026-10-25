@@ -111,8 +111,9 @@ Bakta) and on a `.tbi` index for a contig over 512 Mb.
    is hosted under `jbrowse.org/demos/protein_domains/`, and
    `protein_domains/vav` is reshot.
 8. **ggjbrowse** drops `transcript_features` (`R/features.R:172`), reads the
-   merged GFF, and respells `keys$domains` with step 4. Its
-   `scripts/check-against-jbrowse.sh` rebuilds the engine and runs the tests.
+   merged GFF, and respells `keys$domains` with step 4. The
+   `check-against-jbrowse.sh` under its `scripts/` rebuilds the engine and runs
+   the tests.
 
 ## Open for Colin
 
