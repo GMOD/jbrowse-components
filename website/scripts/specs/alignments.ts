@@ -1,5 +1,9 @@
 import { displayPainted } from '@jbrowse/browser-test-utils'
 
+import {
+  MODIFICATIONS_LABEL,
+  MODIFICATIONS_TWO_COLOR_LABEL,
+} from '../../../plugins/alignments/src/LinearAlignmentsDisplay/menus/baseLayerLabels.ts'
 import { FIT_TO_TRACK_LABEL } from '../../../plugins/alignments/src/LinearAlignmentsDisplay/menus/compactnessPresets.ts'
 import {
   DEMO_CONFIG,
@@ -780,8 +784,8 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
         dy: -60,
         maxWidth: 340,
         fontSize: 16,
-        // both callouts open with their menu radio label verbatim (colorBy.tsx)
-        text: 'One color per modification type: only positions marked in the MM tag',
+        // both callouts name their Color by... radio (baseLayerLabels.ts)
+        text: `${MODIFICATIONS_LABEL}: only the calls in the MM tag`,
       },
       {
         type: 'text',
@@ -790,14 +794,10 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
             '[data-testid^="trackRenderingContainer-"][data-testid$="-human_chr20_mod_call_5mC_5hmC_CG_cram"]',
         },
         dx: 250,
-        // the text grows down from the mid-line; less lift clips its last line
-        dy: -130,
+        dy: -60,
         maxWidth: 340,
         fontSize: 16,
-        text: `One color per type, plus low-probability & unmodified in blue: every CpG painted
-
-- red = methylated
-- blue = low probability or unmarked`,
+        text: `${MODIFICATIONS_TWO_COLOR_LABEL}: every CpG, red methylated and blue not`,
       },
     ],
   },
