@@ -3,7 +3,6 @@ import { lazy } from 'react'
 import {
   ConfigurationReference,
   getConf,
-  readConfObject,
   setConf,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
@@ -66,7 +65,12 @@ import {
   YSCALEBAR_LABEL_OFFSET,
   leftAxisGutterWidth,
 } from '@jbrowse/display-ui'
-import { addDisposer, isAlive, types } from '@jbrowse/mobx-state-tree'
+import {
+  addDisposer,
+  getSnapshot,
+  isAlive,
+  types,
+} from '@jbrowse/mobx-state-tree'
 import { createEncodeMemo } from '@jbrowse/render-core/encodeMemo'
 import { installUpload } from '@jbrowse/render-core/installUpload'
 import {
@@ -104,6 +108,7 @@ import { autorun } from 'mobx'
 import { facetLayout, rowsLayout, sectionsOn, unsplitRegion } from './facet.ts'
 import { fetchPlotFields, plotScanRegions } from './fetchPlotFields.ts'
 import { sameMarkHit } from './findMarkHit.ts'
+import { paintedColorNode } from './inheritedColor.ts'
 import {
   buildMarkLegend,
   colorSection,
@@ -177,7 +182,7 @@ import type {
   TextMarkEntry,
 } from './markList.ts'
 import type { MarkPlot, MarkPlotSettings } from './markPlot.ts'
-import type { MarkProblem } from './markProblems.ts'
+import type { MarkProblem, MarkSnapshot } from './markProblems.ts'
 import type { RowCompare } from './rowCompare.ts'
 import type { RowKeySpace } from './rowTable.ts'
 import type { JoinedPlotFields, PlotFields } from './scanPlotFields.ts'
@@ -237,12 +242,23 @@ const MarkPlotDialog = lazy(() => import('./components/MarkPlotDialog.tsx'))
 
 const NO_REGIONS: ReadonlyMap<number, MarkRegionData> = new Map()
 
+// What the rule list reads beside the plot: the row attributes a config
+// gives its rows, `group` where `rowGroups` declares any, and the display's
+// own `encoding.color`.
+type MarkColorSnapshot = NonNullable<MarkSnapshot['encoding']>['color']
+
+function plotContextOf(conf: AnyConfigurationModel) {
+  const { encoding } = getSnapshot<{
+    encoding?: { color?: MarkColorSnapshot }
+  }>(conf)
+  return { rowAttributes: rowAttributesOf(conf), color: encoding?.color }
+}
+
 // The row attributes a config gives its rows: `group` where `rowGroups`
 // declares any.
 function rowAttributesOf(conf: AnyConfigurationModel): readonly string[] {
-  return (readConfObject(conf, 'rowGroups') as unknown[]).length > 0
-    ? [ROW_GROUP_FIELD]
-    : []
+  const { rowGroups = [] } = getSnapshot<{ rowGroups?: unknown[] }>(conf)
+  return rowGroups.length > 0 ? [ROW_GROUP_FIELD] : []
 }
 const NO_JOINED_FIELDS: JoinedPlotFields = { numeric: [], categorical: [] }
 const NO_LINK_REGIONS: readonly LinkRegion[] = []
@@ -405,9 +421,9 @@ export function stateModelFactory(
          * The `rowGroups` entries, each slot filled in.
          */
         get rowGroups(): RowGroup[] {
-          return (
-            readConfObject(self.conf, 'rowGroups') as Partial<RowGroup>[]
-          ).map(({ match = '', group = '' }) => ({ match, group }))
+          return getSnapshot<Partial<RowGroup>[]>(self.conf.rowGroups).map(
+            ({ match = '', group = '' }) => ({ match, group }),
+          )
         },
         /**
          * #getter
@@ -466,7 +482,9 @@ export function stateModelFactory(
         get textMarkEntries(): TextMarkEntry[] {
           const { marks } = self.conf
           return this.markEntries.map((entry, i) => {
-            const color = colorSettingOf(marks[i]!.encoding.color)
+            const color = colorSettingOf(
+              paintedColorNode(marks[i]!, self.conf.encoding.color),
+            )
             return {
               ...entry,
               ownColor:
@@ -568,7 +586,13 @@ export function stateModelFactory(
         get markColors(): ColorSource[] {
           const { markChannels } = this
           return self.conf.marks.map((m, i) =>
-            markColorOf(m, markChannels[i]!, self, self.hiddenCategories),
+            markColorOf(
+              m,
+              markChannels[i]!,
+              self,
+              self.hiddenCategories,
+              self.conf.encoding.color,
+            ),
           )
         },
         /**
@@ -604,7 +628,13 @@ export function stateModelFactory(
             lastBinEdges(self.conf.transform)
           const { markChannels } = this
           return self.conf.marks.map((m, i) =>
-            markLayerRequest(m, markChannels[i]!, bpPerPx, binEdges),
+            markLayerRequest(
+              m,
+              markChannels[i]!,
+              bpPerPx,
+              binEdges,
+              self.conf.encoding.color,
+            ),
           )
         },
         /**
@@ -1506,7 +1536,7 @@ export function stateModelFactory(
         get configProblems(): MarkProblem[] {
           return markProblems({
             ...markPlotSettingsOf(self.conf),
-            rowAttributes: rowAttributesOf(self.conf),
+            ...plotContextOf(self.conf),
           })
         },
         /**
@@ -1518,7 +1548,7 @@ export function stateModelFactory(
         configProblemsOf(conf: AnyConfigurationModel): string[] {
           return markProblems({
             ...markPlotSettingsOf(conf),
-            rowAttributes: rowAttributesOf(conf),
+            ...plotContextOf(conf),
           }).map(problemText)
         },
         /**
@@ -1642,7 +1672,12 @@ export function stateModelFactory(
             self.scaleDataMap.values(),
             i => !!visible[i],
             (i, channel) =>
-              keySettingOf(marks[i], channel, self.hiddenCategories),
+              keySettingOf(
+                marks[i],
+                channel,
+                self.hiddenCategories,
+                self.conf.encoding.color,
+              ),
           )
         },
         /**

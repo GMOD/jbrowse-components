@@ -27,7 +27,10 @@ import {
 import { thresholdBandOf } from '@jbrowse/render-core/marks'
 import { rampMidNorm, scaleTypeCode } from '@jbrowse/render-core/scoreScale'
 
+import { paintedColorNode } from './inheritedColor.ts'
+
 import type { MarkConfig } from './configSchema.ts'
+import type { MarkColorConfig } from './inheritedColor.ts'
 import type { HiddenCategory } from './markColor.ts'
 import type { MarkRegionData, StoredLayer } from './markList.ts'
 import type {
@@ -47,10 +50,15 @@ const RAMP_STOPS = 8
 
 /**
  * The one color a mark paints every instance: the default blue where none is
- * written, and none under a jexl callback or a scale.
+ * written, here or in `inherited`, and none under a jexl callback or a scale.
  */
-export function constantColorOf(mark: MarkConfig): string | undefined {
-  const encoding = featureColorEncoding(colorSettingOf(mark.encoding.color))
+export function constantColorOf(
+  mark: MarkConfig,
+  inherited?: MarkColorConfig,
+): string | undefined {
+  const encoding = featureColorEncoding(
+    colorSettingOf(paintedColorNode(mark, inherited)),
+  )
   return encoding === undefined
     ? DEFAULT_MARK_COLOR
     : typeof encoding === 'string' && !isJexl(encoding)
@@ -67,12 +75,13 @@ export function keySettingOf(
   mark: MarkConfig | undefined,
   channel: ScaledChannel,
   hidden: readonly HiddenCategory[] = [],
+  inherited?: MarkColorConfig,
 ): MarkKeySetting {
   if (!mark) {
     return {}
   }
   if (channel === 'color') {
-    const { color } = mark.encoding
+    const color = paintedColorNode(mark, inherited)
     const { field, scale, legend } = withPreset(
       colorSnapshotOf(color),
       FEATURE_FIELD_PRESETS,
@@ -93,7 +102,7 @@ export function keySettingOf(
     }
   }
   const { scale, legend } = mark.encoding.shape
-  const swatchColor = constantColorOf(mark)
+  const swatchColor = constantColorOf(mark, inherited)
   return {
     title: legend.title,
     names: [...scale.names],

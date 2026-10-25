@@ -1047,6 +1047,16 @@ test('rows beside a facet on a feature field is named as drawing alone', () => {
   expect(found([BAR], 'source', undefined, 'source')).toEqual([])
 })
 
+test("the display's color is checked once, as the display's", () => {
+  const problems = markProblems({
+    marks: [{ mark: 'rect' }, { mark: 'rect' }] as MarkSnapshot[],
+    color: { field: 'red' },
+  })
+  expect(problems.map(p => [p.rule, p.mark, p.slot])).toEqual([
+    ['field-spells-constant', undefined, 'encoding.color.field'],
+  ])
+})
+
 test('rows beside a facet on a row attribute band the rows and raise nothing', () => {
   const plot = {
     marks: [{ mark: 'bar', encoding: { y: 'score' } }] as MarkSnapshot[],

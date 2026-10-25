@@ -90,8 +90,8 @@ test('an agent reads a plot as JSON, checks a draft, and applies it to two track
     expect.arrayContaining(['filter', 'bin', 'aggregate', 'coverage', 'mate']),
   )
   expect(slots.encoding).toMatchObject({
-    type: 'YEncoding',
-    slots: { y: { type: 'YChannel' } },
+    type: 'MarkDisplayEncoding',
+    slots: { y: { type: 'YChannel' }, color: { type: 'MarkColor' } },
   })
 
   const plot = structuredClone(a.plot) as {

@@ -18,14 +18,11 @@ import {
 } from '@jbrowse/tree-sidebar/rowAxisConfigSchema'
 import { rowGroupConfigSchema } from '@jbrowse/tree-sidebar/rowGroupConfigSchema'
 import { rowHeightConfigSchemaFields } from '@jbrowse/tree-sidebar/rowHeightConfigSchemaFields'
-import {
-  retiredScalesSpelling,
-  yChannelSchema,
-  yEncodingSchema,
-} from '@jbrowse/wiggle-core'
+import { retiredScalesSpelling } from '@jbrowse/wiggle-core'
 
 import { markColorSchema, markLegendOptions } from './markColorConfigSchema.ts'
 import { markDefSchema } from './markDefConfigSchema.ts'
+import { markDisplayEncodingSchema } from './markDisplayEncodingConfigSchema.ts'
 import { markFacetSchema } from './markFacetConfigSchema.ts'
 import { markLocusSchema } from './markLocusConfigSchema.ts'
 import { markSizeSchema } from './markSizeConfigSchema.ts'
@@ -501,16 +498,18 @@ export function configSchemaFactory() {
       /**
        * #slot encoding
        * The channels the marks are read through, owned by the display rather
-       * than by a mark: `y` alone, a [YChannel](../ychannel) every mark's
-       * `encoding.y` shares. It names no field, since each mark names its
-       * own, so a bare string here is refused. `encoding.y.axis` is the value
+       * than by a mark, a [MarkDisplayEncoding](../markdisplayencoding): `y`,
+       * the [YChannel](../ychannel) every mark's `encoding.y` shares, which
+       * names no field since each mark names its own, and `color`, which a
+       * mark paints whose own `encoding.color` says nothing, as a ggplot2
+       * layer inherits the plot's aesthetics. `encoding.y.axis` is the value
        * axis; the row axis beside `rows` is `axis`.
        * #example
        * ```js
        * { encoding: { y: { scale: { type: 'log' }, axis: { title: 'depth' } } } }
        * ```
        */
-      encoding: yEncodingSchema(yChannelSchema()),
+      encoding: markDisplayEncodingSchema,
       /**
        * #slot origin
        * The value bars grow from. The axis widens to include it whenever a

@@ -32,6 +32,7 @@ import {
 } from './markVocabulary.ts'
 
 import type { MarkConfig, MarkTransformStepConfig } from './configSchema.ts'
+import type { MarkColorConfig } from './inheritedColor.ts'
 import type { ColorSource } from './markColor.ts'
 import type { MarkEntry } from './markList.ts'
 import type { MarkSpec } from './markSpecs.ts'
@@ -53,6 +54,7 @@ import type { Region } from '@jbrowse/core/util/types/data'
 export function encodingOf(
   mark: MarkConfig,
   filled: StepChannels = {},
+  inherited?: MarkColorConfig,
 ): MarkEncoding {
   const { x, shape, text, strokeWidth } = mark.encoding
   const y = mark.encoding.y || filled.y
@@ -94,7 +96,7 @@ export function encodingOf(
     row: (reads('row') && row) || undefined,
     // The display paints every color but a `jexl:` callback off what the
     // worker reads (`markColor.ts`), so an edit to one refetches nothing.
-    color: wireColorOf(markColorOf(mark, filled)),
+    color: wireColorOf(markColorOf(mark, filled, undefined, [], inherited)),
     ...(reads('shape') ? { shape: shapeEncoding } : {}),
     ...(reads('text') && text ? { text } : {}),
     // A link's stroke width crosses as the worker's `size`, the lane it
@@ -315,20 +317,21 @@ export function markLayerRequest(
   channels: StepChannels,
   bpPerPx: number,
   binEdges?: [string, string],
+  inherited?: MarkColorConfig,
 ): LayerRequest {
   const transform = stepsOf(
     mark.transform,
     zoomInRange(mark, bpPerPx),
     binEdges,
   )
-  const color = markColorOf(mark, channels)
+  const color = markColorOf(mark, channels, undefined, [], inherited)
   const lanes = markLanes(mark.mark.type, colorLanesOf(color)).filter(
     lane =>
       (lane !== 'y' || marksValue(mark, channels)) &&
       (lane !== 'size' || mark.encoding.strokeWidth.field !== ''),
   )
   return {
-    encoding: encodingOf(mark, channels),
+    encoding: encodingOf(mark, channels, inherited),
     lanes,
     ...(transform.length > 0 ? { transform } : {}),
     ...(specOfMark(mark).path ? { path: pathOf(mark, color) } : {}),

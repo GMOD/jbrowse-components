@@ -644,6 +644,42 @@ function channelFields(
   )
 }
 
+// A color channel's own rules, a mark's or the display's, under
+// `encoding.color`.
+function colorChannelProblems(
+  written: NonNullable<MarkSnapshot['encoding']>['color'],
+): OwnProblem[] {
+  const color = written ?? {}
+  const out: OwnProblem[] = []
+  for (const { rule, slot, message } of colorProblems(
+    color,
+    FEATURE_FIELD_PRESETS,
+  )) {
+    out.push(found(rule, `encoding.color.${slot}`, message))
+  }
+  const cuts = color.scale?.domain ?? []
+  if (colorScaleOf(color) === 'threshold' && cuts.length === 0) {
+    out.push(
+      found(
+        'threshold-no-cuts',
+        'encoding.color.scale.domain',
+        'a threshold names its cut points in domain, and with none every value paints the first color',
+      ),
+    )
+  }
+  const cutCount = cuts.filter(cut => Number.isFinite(Number(cut))).length
+  if (colorScaleOf(color) === 'threshold' && cutCount > MAX_THRESHOLD_CUTS) {
+    out.push(
+      found(
+        'threshold-cut-count',
+        'encoding.color.scale.domain',
+        `a threshold paints ${MAX_THRESHOLD_CUTS} cuts, and these ${cutCount} leave a value past the ${MAX_THRESHOLD_CUTS}th in the ${MAX_THRESHOLD_CUTS + 1}th color`,
+      ),
+    )
+  }
+  return out
+}
+
 function ownProblems(
   mark: MarkSnapshot,
   display: readonly StepSnapshot[],
@@ -740,33 +776,7 @@ function ownProblems(
       ),
     )
   }
-  const color = mark.encoding?.color ?? {}
-  for (const { rule, slot, message } of colorProblems(
-    color,
-    FEATURE_FIELD_PRESETS,
-  )) {
-    problems.push(found(rule, `encoding.color.${slot}`, message))
-  }
-  const cuts = color.scale?.domain ?? []
-  if (colorScaleOf(color) === 'threshold' && cuts.length === 0) {
-    problems.push(
-      found(
-        'threshold-no-cuts',
-        'encoding.color.scale.domain',
-        'a threshold names its cut points in domain, and with none every value paints the first color',
-      ),
-    )
-  }
-  const cutCount = cuts.filter(cut => Number.isFinite(Number(cut))).length
-  if (colorScaleOf(color) === 'threshold' && cutCount > MAX_THRESHOLD_CUTS) {
-    problems.push(
-      found(
-        'threshold-cut-count',
-        'encoding.color.scale.domain',
-        `a threshold paints ${MAX_THRESHOLD_CUTS} cuts, and these ${cutCount} leave a value past the ${MAX_THRESHOLD_CUTS}th in the ${MAX_THRESHOLD_CUTS + 1}th color`,
-      ),
-    )
-  }
+  problems.push(...colorChannelProblems(mark.encoding?.color))
   problems.push(...shapeNameProblems(mark.encoding?.shape))
   problems.push(...constantAsFieldProblems(mark.encoding))
   for (const channel of PX_CHANNELS) {
@@ -828,7 +838,8 @@ function ownProblems(
  * a rowless mark stands on each section's first row by design. `transform` is
  * the display's own steps. `rows` is the field each value of which takes one
  * row, `rowAttributes` the fields its rows carry, which a facet bands them
- * by, and `axis` the scale every mark's `y` reads through. An `undefined`
+ * by, `color` the display's `encoding.color`, which a mark naming no color
+ * paints through, and `axis` the scale every mark's `y` reads through. An `undefined`
  * mark or step is one the caller could not read, such as one a file's schema
  * refuses: it keeps its index, so the others are reported where they are, and
  * is checked for nothing.
@@ -839,6 +850,7 @@ export interface PlotSnapshot {
   facet?: FacetSnapshot
   rows?: RowsSnapshot
   rowAttributes?: readonly string[]
+  color?: NonNullable<MarkSnapshot['encoding']>['color']
   axis?: AxisSnapshot
 }
 
@@ -854,6 +866,7 @@ export function markProblems({
   transform = [],
   rows,
   rowAttributes = [],
+  color,
   axis,
 }: PlotSnapshot): MarkProblem[] {
   const bandsRows =
@@ -914,6 +927,8 @@ export function markProblems({
         ]
       : []),
     ...(drawsRows ? packingsUnderRows(marks, transform, section) : []),
+    ...colorChannelProblems(color),
+    ...constantAsFieldProblems({ color }),
     ...marks.flatMap((mark, i) =>
       mark
         ? ownProblems(mark, display, section, split).map(p => ({

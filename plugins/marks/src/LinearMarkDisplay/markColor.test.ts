@@ -362,6 +362,41 @@ test("a text mark under an identity color prints each label in its feature's col
   }
 })
 
+test("a mark naming no color paints the display's, and one naming its own keeps it", () => {
+  const { display } = createTestEnvironment({
+    encoding: {
+      color: {
+        scale: {
+          type: 'identity',
+          domain: ['rgb(255,0,0)'],
+          names: ['Active TSS'],
+        },
+      },
+    },
+    marks: [
+      { mark: 'rect' },
+      { mark: 'rect', encoding: { color: { value: 'orange' } } },
+    ],
+  }).createDisplay()
+  const [inherits, own] = display.layerRequests
+  expect(inherits!.encoding.color).toEqual({ scale: 'identity' })
+  expect(own!.encoding.color).toBe(DEFAULT_MARK_COLOR)
+  display.setRpcData(0, workerResult(display, PAINTED), REGION)
+  expect(colorLane(display)).toEqual([
+    cssColorToABGR('red'),
+    cssColorToABGR('rgb(0,128,0)'),
+    cssColorToABGR(DEFAULT_MARK_COLOR),
+  ])
+  expect(display.rpcDataMap.get(0)!.layers[1]!.color).toBe(
+    cssColorToABGR('orange'),
+  )
+  const [key] = display.colorScales
+  expect(key?.kind === 'categorical' && key.entries.map(e => e.label)).toEqual([
+    'Active TSS',
+  ])
+  expect(display.configProblems).toEqual([])
+})
+
 test('an identity color under a constant value paints the constant and keys nothing', () => {
   const display = loaded([
     {

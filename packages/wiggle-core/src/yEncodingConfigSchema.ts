@@ -5,8 +5,8 @@ import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 /**
  * #config YEncoding
  * #category display
- * A display's `encoding` holding the y channel alone: the mark display's,
- * whose marks each name the field their `encoding.y` reads through it.
+ * A display's `encoding` holding the y channel alone, whose marks each name
+ * the field their `encoding.y` reads through it.
  *
  * #example
  * ```js

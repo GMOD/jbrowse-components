@@ -35,11 +35,13 @@ import {
 import { heldColorSlots } from '@jbrowse/display-kit/heldColorSlots'
 import { MAX_COLOR_CUTS } from '@jbrowse/render-core/shaders/markColorConsts'
 
+import { paintedColorNode } from './inheritedColor.ts'
 import { keptInstances } from './keptInstances.ts'
 import { paintScaleOf } from './legend.ts'
 import { plotsValue } from './markSpecs.ts'
 
 import type { MarkConfig } from './configSchema.ts'
+import type { MarkColorConfig } from './inheritedColor.ts'
 import type { MarkRegionData } from './markList.ts'
 import type { MarkLane } from './markSpecs.ts'
 import type { StepChannels } from './stepChannels.ts'
@@ -101,15 +103,18 @@ export type ColorSource =
 /**
  * `owner` is the display holding the mark, whose track's ordinal colors
  * deal into one set of slots; a caller that only asks the worker leaves it
- * out, as it does `hidden`, the categories the key hides.
+ * out, as it does `hidden`, the categories the key hides, and `inherited`,
+ * the display's color a mark saying none paints through
+ * (`paintedColorNode`).
  */
 export function markColorOf(
   mark: MarkConfig,
   channels: StepChannels,
   owner?: object,
   hidden: readonly HiddenCategory[] = [],
+  inherited?: MarkColorConfig,
 ): ColorSource {
-  const setting = colorSettingOf(mark.encoding.color)
+  const setting = colorSettingOf(paintedColorNode(mark, inherited))
   const hiddenOf = (field: string) =>
     hidden.filter(h => h.field === field).map(h => h.value)
   if (setting.scale.type === IDENTITY_SCALE && setting.value === undefined) {
