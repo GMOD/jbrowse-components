@@ -605,10 +605,10 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     position: 'left',
   },
   protein_domains: {
-    // the isoforms' CH end and the family key, below the view's toolbar
+    // the transcript rows' CH end, one row without it, and the family key
     src: 'protein_domains/vav.png',
-    band: [0.42, 0.93],
-    xband: [0.68, 1],
+    band: [0.6, 0.92],
+    xband: [0.6, 1],
   },
   alu_age: {
     // The binned frame below the app header and the view's toolbar: the grey
