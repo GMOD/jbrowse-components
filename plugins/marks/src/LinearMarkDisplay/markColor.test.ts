@@ -257,7 +257,7 @@ const PAINTED = features([
   { start: 400, end: 500, name: 'unpainted' },
 ])
 
-test("an identity color paints each feature its file's color, and its key, names and invalid fetch nothing", () => {
+test("an identity color paints each feature its file's color, and its key's names fetch nothing", () => {
   const { display } = createTestEnvironment({
     marks: [
       {
@@ -293,11 +293,40 @@ test("an identity color paints each feature its file's color, and its key, names
   expect(categoryLabel(section, red)).toBe('Active TSS')
   const before = JSON.stringify(display.rpcProps())
 
-  editColor(display, 'invalid', 'black')
   setConf(display.conf.marks[0]!.encoding.color, ['scale', 'names'], [])
 
   expect(JSON.stringify(display.rpcProps())).toBe(before)
-  expect(colorLane(display)).toEqual([red, green, cssColorToABGR('black')])
+  expect(colorLane(display)).toEqual([red, green, blue])
+  expect(display.configProblems).toEqual([])
+})
+
+test("a text mark under an identity color prints each label in its feature's color", () => {
+  const { display } = createTestEnvironment({
+    marks: [
+      {
+        mark: 'text',
+        encoding: { text: 'name', color: { scale: { type: 'identity' } } },
+      },
+    ],
+  }).createDisplay()
+  display.setRpcData(0, workerResult(display, PAINTED), REGION)
+  const placed = placeTextMarks(
+    display.textMarkEntries,
+    display.rpcDataMap,
+    display.renderBlocks,
+    display.renderState,
+    { size: 11, family: 'sans-serif' },
+    'black',
+  )
+  const own: Record<string, string> = {
+    TssA: 'rgba(255,0,0,1)',
+    Tx: 'rgba(0,128,0,1)',
+    unpainted: 'rgba(0,104,209,1)',
+  }
+  expect(placed.length).toBeGreaterThan(0)
+  for (const label of placed) {
+    expect(label.color).toBe(own[label.text])
+  }
 })
 
 test('an identity color under a constant value paints the constant and keys nothing', () => {

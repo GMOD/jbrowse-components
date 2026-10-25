@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "The mark display's `color` takes `scale: 'identity'`, ADR-166's scale: with `value` unset, each feature paints the BED color it carries, `invalid` paints one carrying none, and the key lists `domain` named by `names` once anything is drawn. The worker keys each feature by the `r,g,b` its color parses to under UCSC's `itemRgb on`, parsing each distinct raw value once, and the main thread paints the keys (`ColorSource` `identity`), so `domain`, `names` and `invalid` refetch nothing. The Edit plot scale picker leaves identity out, since it reads no field. First of the gaps between the mark display and the multi-row display it is to replace. Amends ADR-166 and ADR-202"
+summary: "The mark display's `color` takes `scale: 'identity'`, ADR-166's scale: with `value` unset, each feature paints the BED color it carries, one carrying none the mark's default, and the key lists `domain` named by `names` once anything is drawn. The worker keys each feature by the `r,g,b` its color parses to under UCSC's `itemRgb on`, parsing each distinct raw value once, and the main thread paints the keys (`ColorSource` `identity`), so `domain` and `names` refetch nothing. The Edit plot scale picker leaves identity out, since it reads no field. First of the gaps between the mark display and the multi-row display it is to replace. Amends ADR-166 and ADR-202"
 ---
 
 # ADR-243: A mark paints a file's own colors through an identity key
@@ -31,8 +31,9 @@ of the multi-row worker against 0.46-0.50x for a key over the column.
   wire. `encodeFeatures` reads the first of the three column names any row
   fills, keys each feature by `featureItemRgb(raw, true)`, `''` for none, and
   sends the `colorKey` lane with an `identity` table of the colors met.
-- **The main thread paints the keys**, `invalid` over the no-color key, so an
-  edit to `domain`, `names` or `invalid` fetches nothing.
+- **The main thread paints the keys**, so an edit to `domain` or `names`
+  fetches nothing. A feature carrying no color paints the mark's default:
+  `invalid` stays an ordinal scale's member, as it is on FeatureColor.
 - **The key lists `domain` whole** once the view draws any of the colors, each
   under its `names` entry; a hover names a color by its row.
 - **Edit plot's scale picker leaves identity out.** The picker sits beside a

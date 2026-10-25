@@ -175,7 +175,7 @@ test("each region's fetch carries the adapter options the display resolved for i
   ])
 })
 
-test('a span covering columns marks presence, the later span winning where two meet', async () => {
+test('a span marks presence over the columns it covers', async () => {
   stubAdapter([
     feats([
       { source: 'a', start: 0, end: 5 },
@@ -252,4 +252,29 @@ test("a span's ramped numbers average into the columns, a missing value skipped"
       compare: 'colorValue',
     }),
   ).toEqual({ a: [3, 4], b: [0, 0] })
+})
+
+test('where two spans in one row meet, the later one takes the column', async () => {
+  stubAdapter([
+    feats([
+      { source: 'a', start: 0, end: 10, state: 'Quies' },
+      { source: 'a', start: 5, end: 10, state: 'TssA' },
+      { source: 'b', start: 0, end: 10, state: 'TssA' },
+      { source: 'b', start: 5, end: 10, state: 'Quies' },
+    ]),
+  ])
+  const rows = await matrix({
+    rows: ['a', 'b'],
+    bpPerPx: 5,
+    layer: {
+      encoding: { color: { field: 'state', scale: 'ordinal' } },
+      lanes: [],
+    },
+    compare: 'colorKey',
+  })
+  // channels: Quies, TssA, then gap
+  expect(rows).toEqual({
+    a: [1, 0, 0, 0, 1, 0],
+    b: [0, 1, 0, 1, 0, 0],
+  })
 })

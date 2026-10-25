@@ -182,9 +182,11 @@ export interface TextMarkEntry extends MarkEntry {
 
 /**
  * What mark `mark`'s instances over `pos` compare on, by the `row` key each
- * carries, the highest where two in one row cover it: the value a bar
- * stands at, a span's painted color or the number it ramps, or 1 where a
- * span covers it at all.
+ * carries: the value a bar stands at, the highest where two in one row cover
+ * it; a span's painted color or the number it ramps, the last span drawn
+ * there, as the picture and the cluster matrix take it; or 1 where a span
+ * covers it at all. A region still holding an earlier color declaration
+ * (`heldColor`) answers no color.
  */
 export function rowValuesAt(
   region: MarkRegionData,
@@ -203,12 +205,13 @@ export function rowValuesAt(
           ? layer.color
           : undefined
   const row = layer?.row
-  if (layer && row && (lane || by === 'presence')) {
+  const stale = by !== 'y' && by !== 'presence' && layer?.heldColor
+  if (layer && row && !stale && (lane || by === 'presence')) {
     for (let i = 0; i < layer.count; i++) {
       const v = lane ? lane[i]! : 1
       if (layer.x[i]! <= pos && pos < layer.x2[i]! && !Number.isNaN(v)) {
         const had = values.get(row[i]!)
-        if (had === undefined || v > had) {
+        if (had === undefined || by !== 'y' || v > had) {
           values.set(row[i]!, v)
         }
       }

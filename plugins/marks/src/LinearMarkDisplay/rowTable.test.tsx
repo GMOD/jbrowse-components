@@ -255,6 +255,52 @@ test('span rows under one color sort by whether they cover the column', () => {
   expect(display.rowSort).toEqual(['dad', 'mom', 's10', 's2'])
 })
 
+test('a sort at a column reads the span drawn last where two in one row meet', () => {
+  const tissue = (range: string[]) => [
+    {
+      mark: 'rect',
+      encoding: {
+        color: {
+          field: 'tissue',
+          scale: { domain: ['liver', 'brain'], range },
+        },
+      },
+    },
+  ]
+  const overlap = features([
+    { source: 'mom', tissue: 'liver', start: 0, end: 400 },
+    { source: 'mom', tissue: 'brain', start: 200, end: 400 },
+    { source: 'dad', tissue: 'liver', start: 0, end: 400 },
+    { source: 's2', tissue: 'brain', start: 0, end: 400 },
+    { source: 's10', tissue: 'brain', start: 0, end: 400 },
+  ])
+  // whichever color packs higher, mom joins the brain block it shows on top
+  for (const range of [
+    ['black', 'white'],
+    ['white', 'black'],
+  ]) {
+    const display = loaded({ rows: 'source' }, tissue(range), overlap)
+    expect(display.sortRowsByValueAt('ctgA', 300)).toBe(true)
+    expect(display.rowSort.slice(0, 3).toSorted()).toEqual(['mom', 's10', 's2'])
+    expect(display.rowSort[3]).toBe('dad')
+  }
+})
+
+test('a region still holding an earlier color gives a color sort nothing to read', () => {
+  const display = loaded({ rows: 'source' }, [
+    {
+      mark: 'rect',
+      encoding: { color: { field: 'score', scale: { type: 'linear' } } },
+    },
+  ])
+  setConf(display.conf.marks[0]!.encoding.color, 'field', 'depth')
+  expect(display.rowCompare).toEqual({ mark: 0, by: 'colorValue' })
+  expect(display.rpcDataMap.get(0)!.layers[0]!.heldColor).toBe(true)
+  // the held scores would put s10, 40, first
+  display.sortRowsByValueAt('ctgA', 650)
+  expect(display.rowSort).toEqual(['dad', 'mom', 's2', 's10'])
+})
+
 test('a bar beside a span is what the rows compare on', () => {
   const display = loaded({ rows: 'source' }, [{ mark: 'rect' }, ...BARS])
   expect(display.rowCompare).toEqual({ mark: 1, by: 'y' })

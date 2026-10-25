@@ -34,8 +34,12 @@ multi-row display offers over its colors.
   ChromHMM clusters over about 760 columns.
 - **A column sort reads the loaded regions.** Numbers sort highest first;
   painted colors sort in blocks, the color most rows show at the column
-  first; covered rows sort before bare ones. The menu says what it sorts by:
-  the color's field, "color" for identity, "presence" or "value".
+  first; covered rows sort before bare ones. Where two spans in one row
+  cover the column, the one drawn last answers, as it does in the matrix and
+  the picture. A region still holding an earlier color declaration answers
+  no color, so its rows sort with the valueless ones until it refetches. The
+  menu says what it sorts by: the color's field, "color" for identity,
+  "presence" or "value".
 - **The cover and one-hot helpers are tree-sidebar's** (`coverSpan`,
   `markGaps`, `categoryColumnWidth`, `MAX_CATEGORICAL_VALUES` in
   `binColumns.ts`), and multi-row's `buildMultiRowMatrix` reads them until

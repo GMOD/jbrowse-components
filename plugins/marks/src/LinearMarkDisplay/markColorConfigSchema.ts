@@ -175,7 +175,7 @@ export const markColorSchema = ConfigurationSchema(
         ...colorScaleTypeSlot({
           scales: MARK_COLOR_SCALES,
           scaleName: 'MarkColorScaleType',
-          type: 'ordinal hands out range colors per distinct value; linear, log and symlog read the value between domainMin and domainMax into a ramp; threshold cuts the value at the domain and hands each interval a range color; identity reads no field and paints each feature its own BED color, black included, invalid where it carries none, the key naming the colors in domain; unset is linear for score and ordinal for any other field',
+          type: 'ordinal hands out range colors per distinct value; linear, log and symlog read the value between domainMin and domainMax into a ramp; threshold cuts the value at the domain and hands each interval a range color; identity reads no field and paints each feature its own BED color, black included, the key naming the colors in domain; unset is linear for score and ordinal for any other field',
         }),
         ...colorDomainSlot({
           domain:

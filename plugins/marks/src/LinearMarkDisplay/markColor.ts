@@ -79,10 +79,10 @@ export type ColorSource =
   | { kind: 'expression'; encoding: string }
   /**
    * Each feature's own BED color (ADR-166); the worker sends each feature's
-   * color as an index into the colors it met, and a feature carrying none
-   * paints `invalid`. `domain` and `names` are the key's alone.
+   * color as an index into the colors it met, a feature carrying none in the
+   * mark's default. `domain` and `names` are the key's alone.
    */
-  | { kind: 'identity'; domain: string[]; invalid?: number }
+  | { kind: 'identity'; domain: string[] }
 
 /**
  * `owner` is the display holding the mark, whose track's ordinal colors
@@ -95,13 +95,8 @@ export function markColorOf(
   owner?: object,
 ): ColorSource {
   const setting = colorSettingOf(mark.encoding.color)
-  const { type, domain, invalid } = setting.scale
-  if (type === IDENTITY_SCALE && setting.value === undefined) {
-    return {
-      kind: 'identity',
-      domain: [...domain],
-      ...(invalid ? { invalid: cssColorToABGR(invalid) } : {}),
-    }
+  if (setting.scale.type === IDENTITY_SCALE && setting.value === undefined) {
+    return { kind: 'identity', domain: [...setting.scale.domain] }
   }
   // a key's names change what the legend says, not what any feature paints
   const encoding = paintedColorEncoding(featureColorEncoding(setting))
@@ -269,31 +264,21 @@ function colorByKeys<L extends EncodedChannels>(
   }
 }
 
-// Each feature's own color off its key, a feature carrying none in
-// `invalid` where the config sets one, the table keeping the key's `domain`.
+// Each feature's own color off its key, the table keeping the key's `domain`.
 function colorByOwnColors<L extends EncodedChannels>(
   layer: L,
   keys: Uint32Array,
   domain: string[] = [],
-  invalid?: number,
 ): L {
   const read = layer.scale
   if (read?.kind !== 'identity') {
     return layer
   }
-  const entries = read.entries.map(e =>
-    e.value === '' && invalid !== undefined ? { ...e, color: invalid } : e,
-  )
   const color = new Uint32Array(layer.count)
   for (let k = 0; k < layer.count; k++) {
-    color[k] = entries[keys[k]!]!.color
+    color[k] = read.entries[keys[k]!]!.color
   }
-  return {
-    ...layer,
-    color,
-    colorKey: undefined,
-    scale: { ...read, domain, entries },
-  }
+  return { ...layer, color, colorKey: undefined, scale: { ...read, domain } }
 }
 
 const DEFAULT_ABGR = cssColorToABGR(DEFAULT_MARK_COLOR)
@@ -393,7 +378,7 @@ export function withMarkColor<L extends EncodedChannels>(
         : colorAsHeld(layer)
     case 'identity':
       return layer.colorKey && layer.scale?.kind === 'identity'
-        ? colorByOwnColors(layer, layer.colorKey, color.domain, color.invalid)
+        ? colorByOwnColors(layer, layer.colorKey, color.domain)
         : colorAsHeld(layer)
     case 'numbers': {
       const { fromY, encoding } = color

@@ -15,6 +15,7 @@ import {
 } from '@jbrowse/core/util'
 import { categoricalField } from '@jbrowse/core/util/categoricalField'
 import { rampDomain } from '@jbrowse/core/util/colorRamp'
+import { IDENTITY_SCALE } from '@jbrowse/core/util/colorScale'
 import { createAbortRotation } from '@jbrowse/core/util/createAbortRotation'
 import { deepEqual } from '@jbrowse/core/util/deepEqual'
 import {
@@ -389,12 +390,15 @@ export function stateModelFactory(
          */
         get textMarkEntries(): TextMarkEntry[] {
           const { marks } = self.conf
-          return this.markEntries.map((entry, i) => ({
-            ...entry,
-            ownColor:
-              featureColorEncoding(colorSettingOf(marks[i]!.encoding.color)) !==
-              undefined,
-          }))
+          return this.markEntries.map((entry, i) => {
+            const color = colorSettingOf(marks[i]!.encoding.color)
+            return {
+              ...entry,
+              ownColor:
+                featureColorEncoding(color) !== undefined ||
+                color.scale.type === IDENTITY_SCALE,
+            }
+          })
         },
         /**
          * #getter
