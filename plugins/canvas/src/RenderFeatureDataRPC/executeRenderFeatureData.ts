@@ -14,7 +14,6 @@ import {
 import { buildFeatureAdmission } from './featureAdmission.ts'
 import { fetchPeptideData } from './peptides/peptideUtils.ts'
 import { GENE_LIKE_FIELD } from './renderConfig.ts'
-import { fetchTranscriptFeatures, unfitNotices } from './transcriptFeatures.ts'
 
 import type { DisplayConfig } from './renderConfig.ts'
 import type { FeatureDataResult } from './rpcTypes.ts'
@@ -39,7 +38,6 @@ export async function executeRenderFeatureData({
     peptides,
     geneticCodeId,
     sequenceAdapter,
-    transcriptFeatures: transcriptFeaturesArg,
     soloFeatureIds,
     hiddenFeatureIds,
     expandedGeneIds,
@@ -142,24 +140,6 @@ export async function executeRenderFeatureData({
     )
   }
 
-  const { transcriptFeatures, notices = [] } = transcriptFeaturesArg
-    ? await updateStatus(
-        'Downloading transcript features',
-        statusCallback,
-        () =>
-          fetchTranscriptFeatures({
-            pluginManager,
-            sessionId,
-            arg: transcriptFeaturesArg,
-            region,
-            features,
-            jexl: pluginManager.jexl,
-            byteLimit,
-            signal,
-          }),
-      )
-    : {}
-
   checkAbortSignal(signal)
 
   // One `withProgress` over the whole layout+collect pass: the collect is the
@@ -181,7 +161,6 @@ export async function executeRenderFeatureData({
         colorByFrame: !!colorByFrame,
         expandedGeneIds: expandedGenes,
         peptideDataMap,
-        transcriptFeatures,
         report,
       }),
   )
@@ -197,14 +176,9 @@ export async function executeRenderFeatureData({
       features.size,
       field => field === GENE_LIKE_FIELD,
     ),
-    ...withNotices([...notices, ...unfitNotices(transcriptFeatures)]),
   }
 
   // The RPC framework unwraps this before returning to the caller, whose type
   // comes from the RpcRegistry declaration rather than from an annotation here.
   return rpcResultWithArrayBuffers(result)
-}
-
-function withNotices(notices: string[]) {
-  return notices.length > 0 ? { notices } : {}
 }

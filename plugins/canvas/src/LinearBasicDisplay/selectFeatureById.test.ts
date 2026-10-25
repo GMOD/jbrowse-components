@@ -4,11 +4,7 @@ import {
   makeFeatureData,
   makeFlatbushItem,
 } from '../RenderFeatureDataRPC/testUtils.ts'
-import {
-  clickContextMenuItem,
-  contextMenuLabels,
-  createTestEnvironment,
-} from './testEnv.ts'
+import { createTestEnvironment } from './testEnv.ts'
 
 import type { SubfeatureInfo } from '../RenderFeatureDataRPC/rpcTypes.ts'
 
@@ -155,95 +151,5 @@ describe('the containing feature the panel is told about', () => {
     const widget = await openedWidget(session)
     expect(widget.parentFeature).toBeUndefined()
     expect(widget.featureData).toMatchObject({ uniqueId: 'EDEN' })
-  })
-})
-
-describe('a click on a row drawn on a transcript', () => {
-  const sh2: SubfeatureInfo = {
-    ...eden1,
-    featureId: 'EDEN.1-domain-0-1',
-    type: 'protein_domain',
-    startBp: 2000,
-    endBp: 2100,
-    displayLabel: 'SH2',
-    domainId: 'pfam_domains-4096',
-    domainTrack: 0,
-  }
-
-  it("fetches the row from its transcriptFeatures track's adapter over its block", async () => {
-    const { createDisplay } = createTestEnvironment({
-      displayConfig: { transcriptFeatures: ['test_track'] },
-    })
-    const { display, mockRpcCall } = createDisplay()
-    mockRpcCall.mockResolvedValue({ feature: undefined })
-    display.setRpcData(0, makeFeatureData({ flatbushItems: [gene] }), ctgA)
-    display.selectFeatureById('EDEN', sh2, 0)
-
-    await waitFor(() => {
-      expect(fetchedIds(mockRpcCall)).toEqual(['pfam_domains-4096'])
-    })
-    const [, , args] = mockRpcCall.mock.calls.find(
-      ([, method]) => method === 'GetCanvasFeatureDetails',
-    )!
-    expect(args).toMatchObject({
-      adapterConfig: display.transcriptFeaturesArg!.tracks[0]!.adapter,
-      region: { refName: 'ctgA', start: 2000, end: 2100 },
-    })
-  })
-
-  it('right-clicked, acts on its transcript and offers the whole row', async () => {
-    const { createDisplay } = createTestEnvironment({
-      displayConfig: { transcriptFeatures: ['test_track'] },
-    })
-    const { display, mockRpcCall } = createDisplay()
-    mockRpcCall.mockResolvedValue({ feature: undefined })
-    const domain = { ...sh2, transcriptId: 'EDEN.1' }
-    const secondBlock = {
-      ...domain,
-      featureId: 'EDEN.1-domain-0-2',
-      startBp: 3000,
-      endBp: 3100,
-    }
-    display.setRpcData(
-      0,
-      makeFeatureData({
-        flatbushItems: [gene],
-        subfeatureInfos: [eden1, domain, secondBlock],
-      }),
-      ctgA,
-    )
-    display.openContextMenu({
-      item: gene,
-      subfeature: eden1,
-      domain,
-      displayedRegionIndex: 0,
-      clientX: 0,
-      clientY: 0,
-    })
-    expect(contextMenuLabels(display)).toEqual(
-      expect.arrayContaining([
-        'Open SH2 details',
-        'protein_domain (SH2)',
-        'mRNA (EDEN.1)',
-        'Copy EDEN.1 attributes (JSON)',
-      ]),
-    )
-    clickContextMenuItem(display, 'protein_domain (SH2)')
-    expect(display.featureHighlights).toEqual([
-      expect.objectContaining({ start: 2000, end: 3100 }),
-    ])
-    clickContextMenuItem(display, 'Open SH2 details')
-    await waitFor(() => {
-      expect(fetchedIds(mockRpcCall)).toEqual(['pfam_domains-4096'])
-    })
-  })
-
-  it('fetches the gene while the display names no transcriptFeatures track', async () => {
-    const { display, mockRpcCall } = setup()
-    display.selectFeatureById('EDEN', sh2, 0)
-
-    await waitFor(() => {
-      expect(fetchedIds(mockRpcCall)).toEqual(['EDEN'])
-    })
   })
 })

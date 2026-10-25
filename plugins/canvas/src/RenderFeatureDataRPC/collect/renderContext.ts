@@ -1,9 +1,7 @@
-import type { Span } from '../../shared/mergeSpans.ts'
 import type { ArrowData, LineData, RectData } from '../packRenderArrays.ts'
-import type { DisplayConfig, WorkerColor } from '../renderConfig.ts'
+import type { DisplayConfig } from '../renderConfig.ts'
 import type {
   AminoAcidOverlayItem,
-  TranscriptFeaturesJoin,
   FlatbushItem,
   FloatingLabelsDataMap,
   SubfeatureInfo,
@@ -13,30 +11,6 @@ import type { ColorKey } from './colorKey.ts'
 import type { Feature } from '@jbrowse/core/util'
 import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
 
-// A `transcriptFeatures` row with its blocks merged, as it fits a transcript
-export interface AttachableRow {
-  feature: Feature
-  blocks: Span[]
-  // The row's `join.field`, undefined while the track joins by shape alone
-  key?: string
-}
-
-export interface TranscriptFeatures {
-  // One per `transcriptFeatures.tracks` entry, its rows ascending by start.
-  // `candidates` and `attached` count what the walk tried and kept, for the
-  // notice on a track that fit nothing.
-  tracks: {
-    trackId: string
-    rows: AttachableRow[]
-    on: 'cds' | 'exon'
-    join: TranscriptFeaturesJoin
-    candidates: number
-    attached: number
-  }[]
-  // One color for every track's rows, so they share one key
-  color: WorkerColor
-}
-
 // The worker resolves no theme color at all — a color that depends on the theme
 // ships as a class the main-thread encode fills in, which keeps a light/dark
 // toggle out of the RPC cache key.
@@ -44,7 +18,6 @@ export interface RenderContext {
   config: DisplayConfig
   colorByFrame: boolean
   peptideDataMap?: Map<string, PeptideData>
-  transcriptFeatures?: TranscriptFeatures
   jexl: JexlInstance
   // Reads `config.facetField`, built once per walk.
   readGroupKey?: (feature: Feature) => unknown
@@ -77,13 +50,9 @@ export interface Collector {
   subfeatureInfos: SubfeatureInfo[]
   aminoAcidOverlay: AminoAcidOverlayItem[]
   colorKey?: ColorKey
-  domainColorKey?: ColorKey
 }
 
-export function createCollector(
-  colorKey?: ColorKey,
-  domainColorKey?: ColorKey,
-): Collector {
+export function createCollector(colorKey?: ColorKey): Collector {
   return {
     rects: [],
     lines: [],
@@ -93,6 +62,5 @@ export function createCollector(
     subfeatureInfos: [],
     aminoAcidOverlay: [],
     colorKey,
-    domainColorKey,
   }
 }

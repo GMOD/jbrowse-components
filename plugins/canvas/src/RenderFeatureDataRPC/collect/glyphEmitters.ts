@@ -1,10 +1,8 @@
-import { NO_CATEGORY_COLOR } from '@jbrowse/core/util/color'
 import { valueText } from '@jbrowse/core/util/groupKeys'
 
 import { LITERAL } from '../colorClasses.ts'
 import { DEFAULT_MOUSEOVER } from '../featureMouseover.ts'
 import { createFeatureFloatingLabels } from '../floatingLabels.ts'
-import { assignAttachedLanes } from '../glyphs/attachedLanes.ts'
 import { PAM_LABEL, findPamSubfeature } from '../glyphs/crisprGuide.ts'
 import { collectPolyproteinCDS } from '../glyphs/matureProteinRegion.ts'
 import { transcriptCoords } from '../glyphs/transcriptCoords.ts'
@@ -14,9 +12,7 @@ import {
   subfeatureLabelPlacement,
   subfeatureLabelText,
 } from '../labelUtils.ts'
-import { readConfigValueSafe } from '../renderConfig.ts'
 import { collapsibleIntronsOf } from '../splicedParts.ts'
-import { attachToTranscript } from '../transcriptFeatures.ts'
 import { featureType } from '../util.ts'
 import {
   centerShrink,
@@ -35,7 +31,6 @@ import {
   featureTooltip,
   isRetrotransposonBody,
   matureProteinColor,
-  packColor,
   repeatSubpartColor,
   strokeColor,
 } from './glyphColors.ts'
@@ -43,7 +38,6 @@ import { aminoAcidsByFeature, aminoAcidsInSpans } from './peptideMapping.ts'
 
 import type { Span } from '../../shared/mergeSpans.ts'
 import type { AggregatedAminoAcid } from '../peptides/aggregateAminoAcids.ts'
-import type { WorkerColor } from '../renderConfig.ts'
 import type { TranscriptCoords } from '../rpcTypes.ts'
 import type { FeatureLayout, GlyphType } from '../types.ts'
 import type { BoxRectArgs } from './emitPrimitives.ts'
@@ -134,82 +128,6 @@ function emitExonRects(
   }
 }
 
-function domainFill(
-  domain: Feature,
-  color: WorkerColor,
-  jexl: RenderContext['jexl'],
-  collector: Collector,
-) {
-  const key = collector.domainColorKey
-  if (key) {
-    const domainColorValue = key.laneValueOf(domain, domain)
-    key.record(domainColorValue)
-    return {
-      ...packColor({ color: NO_CATEGORY_COLOR, colorClass: LITERAL }),
-      domainColorValue,
-    }
-  }
-  return packColor({
-    color: readConfigValueSafe(color, 'value', domain, jexl, NO_CATEGORY_COLOR),
-    colorClass: LITERAL,
-  })
-}
-
-function emitAttachedRects(
-  transcript: FeatureLayout,
-  place: GlyphPlacement,
-  ctx: RenderContext,
-  collector: Collector,
-) {
-  const { transcriptFeatures, jexl } = ctx
-  const attached = transcriptFeatures
-    ? attachToTranscript(transcript.feature, transcriptFeatures)
-    : []
-  if (!transcriptFeatures || attached.length === 0) {
-    return
-  }
-  const { baseTopPx, flatbushIdx, labelRowsAbove } = place
-  const { lanes, laneCount } = assignAttachedLanes(
-    attached.map(({ blocks }) => ({
-      start: blocks[0]![0],
-      end: blocks.at(-1)![1],
-    })),
-  )
-  const laneHeight = transcript.height / laneCount
-  for (const [i, { feature, blocks, track, trackId }] of attached.entries()) {
-    const fill = domainFill(feature, transcriptFeatures.color, jexl, collector)
-    const name = valueText(feature.get('name'))
-    const y = baseTopPx + lanes[i]! * laneHeight
-    for (const [j, [start, end]] of blocks.entries()) {
-      collector.rects.push({
-        start,
-        end,
-        y,
-        height: laneHeight,
-        ...fill,
-        strand: 0,
-        flatbushIdx,
-        labelRowsAbove,
-      })
-      collector.subfeatureInfos.push({
-        kind: 'subfeature',
-        featureId: `${transcript.feature.id()}-attached-${i}-${j}`,
-        parentFeatureId: place.parentFeature.id(),
-        type: trackId,
-        startBp: start,
-        endBp: end,
-        topPx: y,
-        bottomPx: y + laneHeight,
-        labelRowsAbove,
-        displayLabel: name,
-        domainId: feature.id(),
-        domainTrack: track,
-        transcriptId: transcript.feature.id(),
-      })
-    }
-  }
-}
-
 function processTranscriptLayout(
   transcript: FeatureLayout,
   place: GlyphPlacement,
@@ -262,10 +180,6 @@ function processTranscriptLayout(
       collector,
     )
   }
-
-  // After the transcript registers, so a row drawn on it outranks it under
-  // the cursor
-  emitAttachedRects(transcript, place, ctx, collector)
 
   emitStrandArrow(
     {
@@ -827,9 +741,10 @@ export function processFeatureRecord(
   })
   const flatbushIdx = collector.flatbushItems.length - 1
 
-  const section = { strand: strand !== 0 ? strand : undefined, groupKey }
-  collector.colorKey?.enterRecord(section)
-  collector.domainColorKey?.enterRecord(section)
+  collector.colorKey?.enterRecord({
+    strand: strand !== 0 ? strand : undefined,
+    groupKey,
+  })
 
   emitGlyph(
     layout,

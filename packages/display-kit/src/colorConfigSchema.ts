@@ -896,7 +896,6 @@ export function colorForValue(
 export function categoricalColorField(
   encoding: ColorEncoding | undefined,
   held?: HeldSlots,
-  reserved?: readonly string[],
 ) {
   return typeof encoding === 'object' && encoding.scale === 'ordinal'
     ? categoricalField(encoding.field, {
@@ -904,7 +903,6 @@ export function categoricalColorField(
         range: encoding.range,
         labels: encoding.names,
         held,
-        reserved,
         unknown: encoding.unknown,
         invalid: encoding.invalid,
       })
@@ -919,7 +917,6 @@ export function categoricalColorField(
 export function colorFieldOf(
   encoding: ColorEncoding | undefined,
   held?: HeldSlots,
-  reserved?: readonly string[],
 ) {
   return typeof encoding === 'object' && encoding.scale === 'threshold'
     ? thresholdField(encoding.field, {
@@ -927,7 +924,7 @@ export function colorFieldOf(
         range: encoding.range,
         labels: encoding.names,
       })
-    : categoricalColorField(encoding, held, reserved)
+    : categoricalColorField(encoding, held)
 }
 
 /**

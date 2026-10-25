@@ -19,10 +19,7 @@ import {
 } from './LinearBasicDisplay/components/peptidePositioning.ts'
 import { resolveMapColors } from './LinearBasicDisplay/components/resolveRegionColors.ts'
 import configSchemaFactory from './LinearBasicDisplay/configSchema.ts'
-import {
-  domainLaneOf,
-  featureColorKey,
-} from './LinearBasicDisplay/derivedColorKey.ts'
+import { featureColorKey } from './LinearBasicDisplay/derivedColorKey.ts'
 import {
   facetField,
   featureGroupSections,
@@ -53,12 +50,6 @@ import {
 } from './LinearBasicDisplay/passes/shaders/chevron.js.generated.ts'
 import { isPlacedRow } from './LinearBasicDisplay/rowPlacement.ts'
 import { labelVisibility } from './LinearBasicDisplay/showLabelsMode.ts'
-import {
-  geneFills,
-  resolveTrackRefNames,
-  transcriptFeatureEntries,
-  transcriptFeaturesArg,
-} from './LinearBasicDisplay/transcriptFeaturesArg.ts'
 import { executeRenderFeatureData } from './RenderFeatureDataRPC/executeRenderFeatureData.ts'
 import { labelFontSize } from './RenderFeatureDataRPC/glyphs/glyphUtils.ts'
 import { pickDisplayConfig } from './RenderFeatureDataRPC/renderConfig.ts'
@@ -128,28 +119,6 @@ export interface FeatureTablesArgs {
    * before any feature is fetched. 200 MB by default.
    */
   byteLimit?: number
-  /**
-   * The adapter of each track `display.transcriptFeatures.tracks` names, by
-   * trackId, whose rows draw on the transcripts they fit. Each file spells a
-   * contig as `adapterConfig`'s does.
-   */
-  transcriptFeatures?: Record<string, Record<string, unknown>>
-}
-
-function domainColorsOf(
-  conf: ReturnType<ReturnType<typeof configSchemaFactory>['create']>,
-  raws: readonly FeatureDataResult[],
-) {
-  const { solidColor } = featureColorViews({
-    conf: { encoding: { color: conf.encoding.color } },
-    rpcDataMap: new Map(),
-  })
-  return featureColorViews({
-    conf: { encoding: conf.transcriptFeatures.encoding },
-    impliedField: 'name',
-    reservedColors: geneFills(solidColor, conf.utrColor),
-    rpcDataMap: new Map(raws.map((raw, i) => [i, domainLaneOf(raw)])),
-  })
 }
 
 const DEFAULT_BYTE_LIMIT = 200_000_000
@@ -394,7 +363,6 @@ export async function featureTables(
     aminoAcids = true,
     geneticCodeId,
     byteLimit = DEFAULT_BYTE_LIMIT,
-    transcriptFeatures = {},
   }: FeatureTablesArgs,
 ) {
   const conf = configSchemaFactory(pluginManager).create({
@@ -402,21 +370,6 @@ export async function featureTables(
     type: 'LinearBasicDisplay',
     displayId: 'tables',
   })
-  const attachedTracks = transcriptFeatureEntries(conf.transcriptFeatures).map(
-    entry => {
-      const adapter = transcriptFeatures[entry.trackId]
-      if (!adapter) {
-        throw new Error(
-          `transcriptFeatures: no adapter for "${entry.trackId}" in the transcriptFeatures argument`,
-        )
-      }
-      return { ...entry, adapter }
-    },
-  )
-  const attached = transcriptFeaturesArg(
-    attachedTracks,
-    domainColorsOf(conf, []).workerColor,
-  )
   const displayMode = readConfObject(conf, 'displayMode')
   const collapsed = displayMode === 'collapsed'
   // Collapsed mode forces 'none' as the display does, since the label is baked
@@ -459,10 +412,6 @@ export async function featureTables(
           peptides: aminoAcids && shouldRenderPeptideBackground(bpPerPx),
           geneticCodeId,
           byteLimit,
-          transcriptFeatures:
-            attached &&
-            (await resolveTrackRefNames(attached, r.refName, async () => ({})))
-              .arg,
           statusCallback: () => {},
         } satisfies RpcExecuteArgs<'RenderFeatureData'>,
       })
@@ -470,10 +419,6 @@ export async function featureTables(
         throw new Error(
           `${r.refName}:${r.start}-${r.end} needs ${result.bytes} bytes of features, over the ${byteLimit}-byte limit; read a smaller region or raise byteLimit`,
         )
-      }
-      const [notice] = result.value.notices ?? []
-      if (notice) {
-        throw new Error(`${r.refName}:${r.start}-${r.end}: ${notice}`)
       }
       return result.value
     }),
@@ -553,13 +498,7 @@ export async function featureTables(
     conf: { encoding: { color: conf.encoding.color } },
     rpcDataMap: new Map(raws.map((raw, i) => [i, raw])),
   })
-  const domainColors = attached && domainColorsOf(conf, raws)
-  const resolved = resolveMapColors(
-    laid,
-    palette,
-    colors.fieldPalette,
-    domainColors?.fieldPalette,
-  )
+  const resolved = resolveMapColors(laid, palette, colors.fieldPalette)
   const scales = featureColorKey(colors, raws, {
     isHidden: hiddenGroupKeys.size > 0 ? isHidden : undefined,
     order:
@@ -573,13 +512,6 @@ export async function featureTables(
   })
   const key = scales.find(scale => scale.kind === 'categorical')
   const entries = key?.entries.filter(e => e.color !== undefined) ?? []
-  const domainKey = domainColors
-    ? featureColorKey(domainColors, raws.map(domainLaneOf)).find(
-        scale => scale.kind === 'categorical',
-      )
-    : undefined
-  const domainEntries =
-    domainKey?.entries.filter(e => e.color !== undefined) ?? []
   const hideChevrons = !readConfObject(conf, ['chevrons', 'show'])
   const labels = {
     showLabels: stage.showLabels,
@@ -625,12 +557,6 @@ export async function featureTables(
       color: entries.map(e => cssColorToHex(e.color!)),
     },
     legendTitle: key?.title ?? '',
-    /** The `transcriptFeatures` rows' key, empty without such a track. */
-    domainLegend: {
-      label: domainEntries.map(e => e.label),
-      color: domainEntries.map(e => cssColorToHex(e.color!)),
-    },
-    domainLegendTitle: domainKey?.title ?? '',
     ramps: scales.filter(scale => scale.kind === 'ramp').map(rampKeyOf),
     /** The px sizes the display draws its fixed-size marks at. */
     glyph: {

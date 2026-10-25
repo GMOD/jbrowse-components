@@ -7,9 +7,7 @@ import {
   plotOf,
   setConf,
 } from '@jbrowse/core/configuration'
-import { preprocessTrackConfigSnapshot } from '@jbrowse/core/pluggableElementTypes'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
-import { isRegionRefused } from '@jbrowse/core/rpc/byteBudget'
 import { Highlighter } from '@jbrowse/core/ui/Icons'
 import {
   getDialogHost,
@@ -30,7 +28,7 @@ import {
   filterFieldNarrowing,
   writeJexlFilters,
 } from '@jbrowse/core/util/jexlFilters'
-import { getRpcSessionId, toTrackConfigEntry } from '@jbrowse/core/util/tracks'
+import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import ColorWritesMixin from '@jbrowse/display-kit/ColorWritesMixin'
 import { ContextMenuMixin } from '@jbrowse/display-kit/ContextMenuMixin'
 import FacetWritesMixin, {
@@ -49,12 +47,7 @@ import { facetSettingOf } from '@jbrowse/display-kit/facetConfigSchema'
 import { GROUP_LABEL_HEIGHT } from '@jbrowse/display-kit/groupLabelStyle'
 import { openPlotDialog as queuePlotDialog } from '@jbrowse/display-kit/plotMenu'
 import { rpcArgs } from '@jbrowse/display-kit/rpcArgs'
-import {
-  getEnv,
-  isAlive,
-  isStateTreeNode,
-  types,
-} from '@jbrowse/mobx-state-tree'
+import { getEnv, isAlive, types } from '@jbrowse/mobx-state-tree'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import { installUpload } from '@jbrowse/render-core/installUpload'
 import VerticalAlignTopIcon from '@mui/icons-material/VerticalAlignTop'
@@ -90,12 +83,7 @@ import {
   resolveOutlineColor,
   resolveRegionColors,
 } from './components/resolveRegionColors.ts'
-import {
-  colorValuesInSpans,
-  domainLaneOf,
-  featureColorKey,
-  onScreenColorValues,
-} from './derivedColorKey.ts'
+import { featureColorKey, onScreenColorValues } from './derivedColorKey.ts'
 import { facetField, featureGroupSections, sectionIdsOf } from './facet.ts'
 import { featureContextMenuItems } from './featureContextMenu.ts'
 import { FeatureHighlightModel } from './featureHighlight.ts'
@@ -132,19 +120,12 @@ import {
   showSubmenuRadioGroups,
 } from './trackMenus.ts'
 import {
-  geneFills,
-  resolveTrackRefNames,
-  transcriptFeatureEntries,
-  transcriptFeaturesArg,
-} from './transcriptFeaturesArg.ts'
-import {
   installYMorphAutorun,
   yMorphActions,
   yMorphViews,
   yMorphVolatiles,
 } from './yMorphViews.ts'
 
-import type { FieldPalette } from '../RenderFeatureDataRPC/colorClasses.ts'
 import type { IsoformPicks } from '../RenderFeatureDataRPC/isoformPicks.ts'
 import type {
   DisplayMode,
@@ -154,13 +135,11 @@ import type {
 // which types `rpcManager.call()`.
 import type {
   FeatureDataResult,
-  SectionStamp,
   SubfeatureInfo,
 } from '../RenderFeatureDataRPC/rpcTypes.ts'
 import type { LinearCanvasBaseDisplayConfigModel } from './baseConfigSchema.ts'
 import type { CanvasFeatureRenderingBackend } from './components/canvasFeatureRenderingBackendTypes.ts'
 import type { FlatbushRegionIndexes } from './components/hitTesting.ts'
-import type { LinearBasicDisplayConfig } from './configSchema.ts'
 import type { FeatureFacet, FeatureGroupSection } from './facet.ts'
 import type { FeatureContextMenuInfo } from './featureContextMenu.ts'
 import type { RegionInstanceIndex } from './featureHighlightInk.ts'
@@ -189,7 +168,7 @@ import type {
 import type { HighlightRect } from '@jbrowse/display-kit/highlightHost'
 import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
-import type { IStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 // Region identity rides in the stored payload: the layout groups by ref, and
 // a canonical refName is not what `Region.refName` carries.
@@ -197,21 +176,6 @@ type LoadedFeatureData = LayoutRegionData & {
   assemblyName: string
   refName: string
   reversed: boolean
-}
-
-function adapterOfTrack(self: IStateTreeNode, trackId: string) {
-  const raw = trackId ? getSession(self).getTrackById(trackId) : undefined
-  if (!raw) {
-    return undefined
-  }
-  const entry = toTrackConfigEntry(raw)
-  const { adapter } = isStateTreeNode(raw)
-    ? entry
-    : (preprocessTrackConfigSnapshot(
-        getEnv(self).pluginManager,
-        entry,
-      ) as typeof entry)
-  return adapter ? (toJS(adapter) as Record<string, unknown>) : undefined
 }
 
 function loadedFeatureData(
@@ -394,103 +358,17 @@ export default function baseStateModelFactory(
     }))
     .views(featureColorViews)
     .views(colorViews)
-    .views(self => {
-      const domainColors = featureColorViews(
-        {
-          get conf() {
-            const conf = self.configuration as LinearBasicDisplayConfig
-            return { encoding: conf.transcriptFeatures.encoding }
-          },
-          get rpcDataMap() {
-            return new Map(
-              [...self.rpcDataMap].map(([idx, data]) => [
-                idx,
-                domainLaneOf(data),
-              ]),
-            )
-          },
-          impliedField: 'name',
-          get reservedColors() {
-            const conf = self.configuration as LinearBasicDisplayConfig
-            return geneFills(self.solidColor, conf.utrColor)
-          },
-        },
-        self,
-      )
-      return {
-        /**
-         * #getter
-         * The `transcriptFeatures` tracks, each with its adapter where its
-         * trackId names a track that has one.
-         */
-        get transcriptFeatureTracks() {
-          // A variant display's schema has no `transcriptFeatures`
-          const conf = self.configuration as Partial<LinearBasicDisplayConfig>
-          return conf.transcriptFeatures
-            ? transcriptFeatureEntries(conf.transcriptFeatures).map(entry => ({
-                ...entry,
-                adapter: adapterOfTrack(self, entry.trackId),
-              }))
-            : []
-        },
-        /**
-         * #getter
-         * The tracks whose rows draw on the transcripts and the share of
-         * their color the worker reads, undefined while none resolves.
-         */
-        get transcriptFeaturesArg() {
-          const tracks = this.transcriptFeatureTracks
-          return tracks.length > 0
-            ? transcriptFeaturesArg(tracks, domainColors.workerColor)
-            : undefined
-        },
-        /**
-         * #getter
-         * The `transcriptFeatures` color's values painted through its scale,
-         * dealt from the session's slots as each track's own color is;
-         * undefined without a track, as on a variant display, whose schema
-         * has no `transcriptFeatures`.
-         */
-        get domainPalette(): FieldPalette | undefined {
-          return this.transcriptFeaturesArg && domainColors.fieldPalette
-        },
-        /**
-         * #method
-         * The key the `transcriptFeatures` color derives from `regions`.
-         */
-        domainColorScales(
-          regions: readonly FeatureDataResult[],
-          isHidden?: (section: SectionStamp) => boolean,
-        ): ColorScale[] {
-          return featureColorKey(domainColors, regions, { isHidden }).map(
-            scale => ({ ...scale, id: `transcriptFeatures-${scale.id}` }),
-          )
-        },
-        /**
-         * #getter
-         * A `transcriptFeatures` track naming no track, what each loaded
-         * region could not draw from them while the features still draw, and
-         * each `filter` field no loaded feature carries.
-         */
-        get liveNotices(): string[] {
-          return [
-            ...this.transcriptFeatureTracks.flatMap(({ trackId, adapter }) =>
-              adapter
-                ? []
-                : [`transcriptFeatures: no track "${trackId}" with an adapter`],
-            ),
-            ...new Set(
-              [...self.rpcDataMap.values()].flatMap(data => data.notices ?? []),
-            ),
-            ...unreadInEveryRegion(
-              [...self.rpcDataMap.values()].map(
-                data => data.unreadFilterFields,
-              ),
-            ).map(field => unreadFieldNotice(field, 'feature')),
-          ]
-        },
-      }
-    })
+    .views(self => ({
+      /**
+       * #getter
+       * Each `filter` field no loaded feature carries.
+       */
+      get liveNotices(): string[] {
+        return unreadInEveryRegion(
+          [...self.rpcDataMap.values()].map(data => data.unreadFilterFields),
+        ).map(field => unreadFieldNotice(field, 'feature'))
+      },
+    }))
     .views(() => ({
       /**
        * #getter
@@ -824,7 +702,6 @@ export default function baseStateModelFactory(
               : { facetField: self.facet.field }),
           },
           colorByFrame: self.colorByFrame,
-          transcriptFeatures: self.transcriptFeaturesArg,
           // Undefined while collecting, so building the set neither
           // refetches nor hides anything.
           soloFeatureIds:
@@ -849,7 +726,6 @@ export default function baseStateModelFactory(
         return {
           colorTable: themedColorTable(getPaletteHost(self).palette),
           fieldPalette: self.fieldPalette,
-          domainPalette: self.domainPalette,
         }
       },
     }))
@@ -1365,8 +1241,8 @@ export default function baseStateModelFactory(
         installUpload(self, backend, {
           cells: () => self.renderDataMap,
           inputs: () => self.gpuProps(),
-          encode: (data, { colorTable, fieldPalette, domainPalette }) =>
-            resolveRegionColors(data, colorTable, fieldPalette, domainPalette),
+          encode: (data, { colorTable, fieldPalette }) =>
+            resolveRegionColors(data, colorTable, fieldPalette),
           render: (b, encoded) =>
             b.renderBlocks(self.renderBlocks, encoded, self.renderState),
         })
@@ -1620,8 +1496,7 @@ export default function baseStateModelFactory(
       // Always fetches `featureId`, the top-level id, not
       // `subfeatureInfo.parentFeatureId`: GetCanvasFeatureDetails searches
       // top-level features only, and `findSubfeatureById` recurses from the
-      // root. A row drawn on a transcript is the exception: its
-      // `transcriptFeatures` track's adapter answers it by its own id.
+      // root.
       selectFeatureById(
         featureId: string,
         subfeatureInfo: SubfeatureInfo | undefined,
@@ -1632,24 +1507,8 @@ export default function baseStateModelFactory(
         const drawn = subfeatureInfo
           ? self.featureIdIndex.get(featureId)
           : undefined
-        const domainAdapter =
-          subfeatureInfo?.domainTrack === undefined
-            ? undefined
-            : self.transcriptFeaturesArg?.tracks[subfeatureInfo.domainTrack]
-                ?.adapter
-        const region = self.loadedRegions.get(displayedRegionIndex)
         self.openFeatureDetails(
           async () => {
-            if (subfeatureInfo?.domainId && domainAdapter && region) {
-              const { domainId, startBp, endBp } = subfeatureInfo
-              return fetchCanvasFeatureDetails(
-                getSession(self),
-                getRpcSessionId(self),
-                domainAdapter,
-                domainId,
-                featureSpanRegion(region, startBp, endBp),
-              )
-            }
             const parentFeature = await self.fetchFullFeature(
               featureId,
               displayedRegionIndex,
@@ -1696,42 +1555,20 @@ export default function baseStateModelFactory(
           const args = rpcArgs(self)
           const zoomArgs = self.zoomFetchArgs()
           void fetchGatedRegions(self, needed, {
-            call: async (region, ctx) => {
+            call: (region, ctx) => {
               // The assembly's genetic code, so the worker can translate
               // peptides on contigs whose features carry no transl_table.
               const assembly = getSession(self).assemblyManager.get(
                 region.assemblyName,
               )
-              const attached = args.transcriptFeatures
-                ? await resolveTrackRefNames(
-                    args.transcriptFeatures,
-                    region.refName,
-                    adapter =>
-                      getSession(self).assemblyManager.getRefNameMapForAdapter(
-                        adapter,
-                        region.assemblyName,
-                        {
-                          sessionId: getRpcSessionId(self),
-                          signal: ctx.signal,
-                        },
-                      ),
-                  )
-                : { notices: [] }
-              const result = await ctx.callRpc('RenderFeatureData', {
+              return ctx.callRpc('RenderFeatureData', {
                 ...args,
                 ...zoomArgs,
-                transcriptFeatures: attached.arg,
                 geneticCodeId: assembly?.getGeneticCodeId(region.refName),
                 region,
                 bpPerPx,
                 maxFeatureDensity,
               })
-              return attached.notices.length > 0 && !isRegionRefused(result)
-                ? {
-                    ...result,
-                    notices: [...attached.notices, ...(result.notices ?? [])],
-                  }
-                : result
             },
             onResult: (_idx, result, region) =>
               loadedFeatureData(result, region),
@@ -1752,16 +1589,16 @@ export default function baseStateModelFactory(
         const sectionOf =
           facet && hiddenGroupKeys.size > 0 ? sectionIdsOf(facet) : undefined
         const onScreen = self.onScreenFeatureIds
-        const shown = (data: FeatureDataResult) =>
-          onScreen ? onScreenColorValues(data, onScreen) : data
         const regions = [...self.rpcDataMap.values()]
-        const isHidden =
-          sectionOf &&
-          ((section: SectionStamp) =>
-            hiddenGroupKeys.has(sectionOf(section).key))
-        return [
-          ...featureColorKey(self, regions.map(shown), {
-            isHidden,
+        return featureColorKey(
+          self,
+          onScreen
+            ? regions.map(data => onScreenColorValues(data, onScreen))
+            : regions,
+          {
+            isHidden:
+              sectionOf &&
+              (section => hiddenGroupKeys.has(sectionOf(section).key)),
             order:
               facet && facet.field === categoricalColorField?.field
                 ? scale => ({
@@ -1770,24 +1607,8 @@ export default function baseStateModelFactory(
                     unknown: scale.unknown,
                   })
                 : undefined,
-          }),
-          ...(self.transcriptFeaturesArg
-            ? self.domainColorScales(
-                regions.map(data => {
-                  const lane = domainLaneOf(data)
-                  return onScreen
-                    ? colorValuesInSpans(
-                        shown(lane),
-                        containingLgv(self).coarseDynamicBlocks.filter(
-                          block => layoutRegionKey(block) === data.regionKey,
-                        ),
-                      )
-                    : lane
-                }),
-                isHidden,
-              )
-            : []),
-        ]
+          },
+        )
       },
       /**
        * #method

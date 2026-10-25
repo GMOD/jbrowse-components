@@ -1,8 +1,7 @@
 import type { FieldColorValues } from '../shared/fieldColorCandidates.ts'
 import type { GroupByCandidate } from './groupByCandidates.ts'
 import type { IsoformPicks } from './isoformPicks.ts'
-import type { DisplayConfig, WorkerColor } from './renderConfig.ts'
-import type { SerializedFilterChain } from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
+import type { DisplayConfig } from './renderConfig.ts'
 import type {
   GatedFetchArgs,
   RegionTooLargeResult,
@@ -14,30 +13,6 @@ export interface LabelItem {
   text: string
   relativeY: number
   textWidth: number
-}
-
-export interface TranscriptFeaturesJoin {
-  // The row field naming its transcript, '' to fit by shape alone
-  field: string
-  // The transcript field `field` equals
-  transcriptField: string
-}
-
-export interface TranscriptFeatureTrackArg {
-  trackId: string
-  adapter: Record<string, unknown>
-  // The region's contig as `adapter` spells it: the RPC renames `region` for
-  // `adapterConfig` alone.
-  refName: string
-  on: 'cds' | 'exon'
-  join: TranscriptFeaturesJoin
-  filter: SerializedFilterChain
-}
-
-export interface TranscriptFeaturesArg {
-  tracks: TranscriptFeatureTrackArg[]
-  // The share of the `transcriptFeatures` color the worker reads
-  color: WorkerColor
 }
 
 export interface RenderFeatureDataArgs extends GatedFetchArgs {
@@ -66,7 +41,6 @@ export interface RenderFeatureDataArgs extends GatedFetchArgs {
   // Translation-table fallback for transcripts whose features lack a
   // transl_table attribute.
   geneticCodeId?: number
-  transcriptFeatures?: TranscriptFeaturesArg
   // Matched against feature.id() (the uniqueId) rather than run as a jexl
   // filter, since jexlFeatureProxy cannot reach the uniqueId.
   soloFeatureIds?: string[]
@@ -136,10 +110,6 @@ export interface FeatureDataResult {
   // LENGTH ZERO when the track names no color field: each rect's one-based
   // index into `colorValues.values`, 0 where no field value paints it.
   rectColorValues: Uint32Array
-  // As `rectColorValues`, into `domainColorValues.values`: nonzero only on a
-  // `transcriptFeatures` row's rect, which never takes the track's own color
-  // field.
-  rectDomainColorValues?: Uint32Array
   // LENGTH ZERO when this region emits no `below` subfeature labels. The main
   // thread adds `count × labelFontPx` after the compact scale, because the row
   // height is the mode's label font size and the worker is mode-agnostic.
@@ -190,9 +160,6 @@ export interface FeatureDataResult {
   // Undefined unless the track names a color field. The scale is the main
   // thread's, which paints each value and derives the key from `painted`.
   colorValues?: ColorValues
-  // The `transcriptFeatures` color field's values, which the main thread
-  // paints through that color's scale.
-  domainColorValues?: ColorValues
 
   featureCount: number
 
@@ -206,11 +173,6 @@ export interface FeatureDataResult {
 
   // Index-estimated compressed bytes, undefined for adapters with no estimate.
   bytes?: number
-
-  // What the display could not draw from a second source, such as a
-  // `transcriptFeatures` track that failed to load, while the features still
-  // drew.
-  notices?: string[]
 
   // The `filter` fields no fetched feature carries (`unreadFilterFields`).
   unreadFilterFields?: string[]
@@ -377,12 +339,6 @@ export interface SubfeatureInfo extends HitItemBase {
   parentFeatureId: string
   displayLabel?: string
   childOrdinal?: number
-  // A `transcriptFeatures` row's id and the index of its track, whose adapter
-  // a click asks for its details, and the transcript it sits on, which a hit
-  // resolves to so the readout and menu act on the transcript.
-  domainId?: string
-  domainTrack?: number
-  transcriptId?: string
 }
 
 export interface FeatureLabelData {

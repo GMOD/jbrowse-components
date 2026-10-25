@@ -5,9 +5,7 @@ import {
 import { abgrToCssRgba, cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import createJexlInstance from '@jbrowse/core/util/jexl'
 
-import { resolveRegionColors } from '../LinearBasicDisplay/components/resolveRegionColors.ts'
 import { collectRenderData } from './collectRenderData.ts'
-import { createFieldPalette } from './colorClasses.ts'
 import { DEFAULT_MOUSEOVER } from './featureMouseover.ts'
 import { FEATURE_NAME_FIELD } from './featureNameField.ts'
 import { findGlyph } from './glyphs/findGlyph.ts'
@@ -16,7 +14,6 @@ import { layoutSubfeatures } from './glyphs/subfeatures.ts'
 import { GENE_GLYPH_DEFAULTS } from './renderConfig.ts'
 import { mockDisplayConfig, paintThroughColor } from './testUtils.ts'
 
-import type { WorkerColor } from './renderConfig.ts'
 import type { MockDisplayConfigOverrides } from './testUtils.ts'
 import type { FeatureLayout } from './types.ts'
 import type { Feature } from '@jbrowse/core/util'
@@ -1160,109 +1157,5 @@ describe('collectRenderData arrow gene lane', () => {
 
   it('flags each transcript arrow of a stacked gene', () => {
     expect([...collect(geneWithTwoTranscripts()).arrowGene]).toEqual([1, 1])
-  })
-})
-
-describe('transcript features', () => {
-  const domain = mockFeature({
-    type: 'polypeptide_domain',
-    id: 'd1',
-    start: 101,
-    end: 203,
-    attributes: { name: 'SH2' },
-  })
-  const color: WorkerColor = { value: undefined, field: 'name' }
-  const transcriptFeatures = (color: WorkerColor) => ({
-    tracks: [
-      {
-        trackId: 'pfam',
-        rows: [
-          {
-            feature: domain,
-            blocks: [
-              [101, 104],
-              [200, 203],
-            ] as [number, number][],
-            key: 'tx1',
-          },
-        ],
-        on: 'cds' as const,
-        join: { field: 'transcript', transcriptField: 'id' },
-        candidates: 0,
-        attached: 0,
-      },
-    ],
-    color,
-  })
-
-  function collectDomains(
-    trackField: string,
-    domainColor: WorkerColor = color,
-  ) {
-    const { layout } = twoExonTranscript()
-    const tx = layout.feature
-    const named = mockFeature({
-      type: 'mRNA',
-      id: 'tx1',
-      start: 100,
-      end: 205,
-      subfeatures: tx.get('subfeatures'),
-      attributes: { name: 'vav-RA' },
-    })
-    return collect(
-      { ...layout, feature: named },
-      {
-        config: mockDisplayConfig({ color: { field: trackField } }),
-        transcriptFeatures: transcriptFeatures(domainColor),
-      },
-    )
-  }
-
-  it("paints a domain the value of a jexl expression over the domain's row", () => {
-    const result = collectDomains('', {
-      value: "jexl:get(feature,'name')=='SH2'?'#ff0000':'#0000ff'",
-      field: '',
-    })
-    expect(result.rectDomainColorValues).toHaveLength(0)
-    const domainRects = [...collectDomains('').rectDomainColorValues!].flatMap(
-      (v, i) => (v > 0 ? [i] : []),
-    )
-    expect(domainRects).toHaveLength(2)
-    for (const i of domainRects) {
-      expect(result.rectColors[i]).toBe(cssColorToABGR('#ff0000'))
-    }
-  })
-
-  it('gives each rect a value in one lane only, a domain the domain lane', () => {
-    const result = collectDomains('name')
-    const domainLane = [...result.rectDomainColorValues!]
-    const trackLane = [...result.rectColorValues]
-    expect(domainLane.filter(v => v > 0)).toHaveLength(2)
-    expect(domainLane.map((v, i) => [v > 0, trackLane[i]! > 0])).toEqual(
-      domainLane.map(v => (v > 0 ? [true, false] : [false, true])),
-    )
-    expect(result.domainColorValues?.values).toEqual(['SH2'])
-    expect(result.colorValues?.values).toEqual(['vav-RA'])
-  })
-
-  it('paints domains and the track through their own scales', () => {
-    const result = collectDomains('name')
-    const resolved = resolveRegionColors(
-      { ...result, featureCount: 1 },
-      new Uint32Array(32),
-      createFieldPalette('name', () => 'red'),
-      createFieldPalette('name', () => 'blue'),
-    )
-    const domainLane = result.rectDomainColorValues!
-    for (const [i, color] of resolved.rectColors.entries()) {
-      expect(color).toBe(cssColorToABGR(domainLane[i]! > 0 ? 'blue' : 'red'))
-    }
-  })
-
-  it('ships no domain lane without transcript features', () => {
-    const { layout } = twoExonTranscript()
-    const result = collect(layout)
-    expect(result.rectDomainColorValues).toHaveLength(0)
-    expect(result.domainColorValues).toBeUndefined()
   })
 })

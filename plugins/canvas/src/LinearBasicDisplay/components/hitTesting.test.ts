@@ -207,24 +207,6 @@ test('hits subfeature when within subfeature bounds', () => {
   expect(result!.subfeature!.featureId).toBe('mRNA1')
 })
 
-test('a domain hit resolves to its transcript, with the domain beside it', () => {
-  const parent = makeItem('gene1', 1000, 5000, 0, 30)
-  const mRNA = makeSub('mRNA1', 'gene1', 1000, 5000, 5, 15)
-  const domain = {
-    ...makeSub('mRNA1-domain-0-0', 'gene1', 2000, 3000, 5, 15),
-    domainId: 'pfam-0',
-    transcriptId: 'mRNA1',
-  }
-  const result = hit(
-    new Map([[0, makeData([parent], [mRNA, domain])]]),
-    [makeRegion(0, 0, 10000, 0, 800)],
-    200,
-    10,
-  )
-  expect(result!.subfeature!.featureId).toBe('mRNA1')
-  expect(result!.domain!.featureId).toBe('mRNA1-domain-0-0')
-})
-
 test('overlapping same-row subfeatures: topmost (last painted) wins', () => {
   // The body registers first and the LTR paints on top, so the hit has to resolve
   // to the LTR rather than whichever match Flatbush yields first.

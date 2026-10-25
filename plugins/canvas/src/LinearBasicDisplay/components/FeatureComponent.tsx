@@ -193,7 +193,7 @@ const FeatureBody = observer(function FeatureBody({
     if (result) {
       model.setHover(
         result.feature.featureId,
-        (result.domain ?? result.subfeature)?.featureId,
+        result.subfeature?.featureId,
         hoverTooltipRows(result),
       )
     } else {
@@ -221,7 +221,7 @@ const FeatureBody = observer(function FeatureBody({
     } else if (result) {
       model.selectFeatureById(
         result.feature.featureId,
-        result.domain ?? result.subfeature,
+        result.subfeature,
         result.displayedRegionIndex,
       )
     } else {
@@ -242,7 +242,6 @@ const FeatureBody = observer(function FeatureBody({
         clientX: e.clientX,
         clientY: e.clientY,
         subfeature: result.subfeature,
-        domain: result.domain,
         // Both resolved here rather than in the menu: only the hit knows which
         // base was clicked and at what zoom.
         hgvsLabel: hgvsHitLabel(result),

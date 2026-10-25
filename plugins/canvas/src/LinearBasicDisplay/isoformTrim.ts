@@ -244,9 +244,6 @@ function trimPrimitiveKind(
   if (kind === 'rect') {
     data.rectHeights = pick(data.rectHeights, kept, 1)
     data.rectColorValues = pick(data.rectColorValues, kept, 1)
-    if (data.rectDomainColorValues) {
-      data.rectDomainColorValues = pick(data.rectDomainColorValues, kept, 1)
-    }
     data.rectPositions = pick(data.rectPositions, kept, 2)
     data.rectStrands = pick(data.rectStrands, kept, 1)
     data.rectDensityFade = pick(data.rectDensityFade, kept, 1)

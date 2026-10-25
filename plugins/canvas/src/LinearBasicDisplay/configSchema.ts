@@ -1,6 +1,4 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import { colorConfigSchema } from '@jbrowse/display-kit/colorConfigSchema'
-import { fieldPredicateArray } from '@jbrowse/display-kit/fieldPredicateConfigSchema'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import {
@@ -168,109 +166,6 @@ export default function configSchemaFactory(pluginManager: PluginManager) {
         description: 'subparts for a glyph',
         defaultValue: GENE_GLYPH_DEFAULTS.subParts,
       },
-      /**
-       * #slot transcriptFeatures
-       * Features from other tracks drawn on each transcript they fit, such as
-       * the protein domains `jbrowse make-protein-features` places, UniProt's
-       * genome-mapped features or miRNA sites, in one color with one key. A
-       * bare list names the tracks.
-       */
-      transcriptFeatures: ConfigurationSchema(
-        'TranscriptFeatures',
-        {
-          /**
-           * #slot transcriptFeatures.tracks
-           * The tracks whose rows draw on the transcripts, each a trackId or
-           * an object. A row fits a transcript when each of its blocks lies in
-           * one of the transcript's exons (`on`), give or take a codon, and it
-           * skips no exon between its first block and its last.
-           */
-          tracks: types.array(
-            ConfigurationSchema(
-              'TranscriptFeaturesTrack',
-              {
-                /**
-                 * #slot transcriptFeatures.tracks.track
-                 */
-                track: {
-                  type: 'string',
-                  defaultValue: '',
-                  description: 'trackId of the track whose rows draw',
-                },
-                /**
-                 * #slot transcriptFeatures.tracks.on
-                 * `cds` fits a row to a transcript's coding exons, as a
-                 * protein feature is; `exon` to all its exons, as a site in a
-                 * UTR is.
-                 */
-                on: {
-                  type: 'stringEnum',
-                  model: types.enumeration('TranscriptFeaturesOn', [
-                    'cds',
-                    'exon',
-                  ]),
-                  defaultValue: 'cds',
-                  description: 'the transcript spans a row must lie in',
-                },
-                /**
-                 * #slot transcriptFeatures.tracks.join
-                 * Narrows a fit to the transcript the row names: its `field`
-                 * equals the transcript's `transcriptField`. Unset, a row
-                 * draws on every transcript it fits.
-                 */
-                join: ConfigurationSchema(
-                  'TranscriptFeaturesJoin',
-                  {
-                    /**
-                     * #slot transcriptFeatures.tracks.join.field
-                     */
-                    field: {
-                      type: 'string',
-                      defaultValue: '',
-                      description: "row field naming the row's transcript",
-                    },
-                    /**
-                     * #slot transcriptFeatures.tracks.join.transcriptField
-                     * `id` for a GFF3, `name` for a GTF or a UCSC bigBed.
-                     */
-                    transcriptField: {
-                      type: 'string',
-                      defaultValue: 'id',
-                      description: 'transcript field the row field equals',
-                    },
-                  },
-                  { closed: true },
-                ),
-                /**
-                 * #slot transcriptFeatures.tracks.filter
-                 * Predicates a row passes to draw, as in the display's own
-                 * `filter`, such as `{ field: 'status', equal: 'swissprot' }`.
-                 */
-                filter: types.stripDefault(fieldPredicateArray(), []),
-              },
-              { shorthand: 'track', writes: 'whole', closed: true },
-            ),
-          ),
-          /**
-           * #slot transcriptFeatures.encoding
-           */
-          encoding: ConfigurationSchema(
-            'TranscriptFeaturesEncoding',
-            {
-              /**
-               * #slot transcriptFeatures.encoding.color
-               * The rows' color, an `encoding.color` object over the rows, by
-               * `name` while it names no field or value. A dealt value skips
-               * the colors that read as the CDS and UTR fills, so it can paint
-               * differently here than on its own track.
-               */
-              color: colorConfigSchema,
-            },
-            { closed: true },
-          ),
-        },
-        { shorthand: 'tracks', writes: 'whole', closed: true },
-      ),
     },
     {
       /**

@@ -113,9 +113,3 @@ test('a VCF names its picked value a field, as the multi-sample menu does', () =
   expect(labels).toContain('Field...')
   expect(labels).not.toContain('Attribute...')
 })
-
-test('a variant display, whose schema has no transcriptFeatures, paints none', () => {
-  const display = createDisplay()
-  expect(display.transcriptFeaturesArg).toBeUndefined()
-  expect(display.domainPalette).toBeUndefined()
-})

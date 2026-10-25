@@ -32,7 +32,6 @@ import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 export interface RenderSvgModel extends LgvSvgExportable {
   laidOutDataMap: ReadonlyMap<number, FeatureDataResult>
   fieldPalette: FieldPalette | undefined
-  domainPalette?: FieldPalette
   renderStateIn: (palette: JBrowsePalette) => RenderState
   // Drawn by the shell, over this body — not here. Declared so the export's
   // model still names every guide the figure carries.
@@ -83,7 +82,6 @@ function CanvasFeaturesSvgBody({
     model.laidOutDataMap,
     palette,
     model.fieldPalette,
-    model.domainPalette,
   )
   // Culled with the DOM overlay's own band so the export emits exactly the
   // labels on screen; anything outside the clip would be written and then

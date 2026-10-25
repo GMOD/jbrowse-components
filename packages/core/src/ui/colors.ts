@@ -216,10 +216,6 @@ export interface CategoricalScale<T> {
  * avoids, or without `distance` its own. A value nothing else collides with
  * keeps the entry it takes without `held`. With no `domain`, the deal spends
  * `range` before spilling into the `fallback` entries it lacks.
- *
- * A dealt value also avoids each `reserved` entry and its near twins, colors
- * that mean something else where the scale paints; a listed value keeps its
- * `range` entry regardless.
  */
 export function categoricalScale<T>(
   domain: readonly (string | number)[] | undefined,
@@ -229,18 +225,16 @@ export function categoricalScale<T>(
     isNear,
     distance,
     held,
-    reserved = [],
   }: {
     fallback?: readonly T[]
     isNear?: (a: T, b: T) => boolean
     distance?: (a: T, b: T) => number
     held?: HeldSlots
-    reserved?: readonly T[]
   } = {},
 ): CategoricalScale<T> {
   const base = range.length ? range : fallback
   const listed = [...new Set((domain ?? []).map(String))].filter(v => v !== '')
-  if (listed.length === 0 && !held && reserved.length === 0) {
+  if (listed.length === 0 && !held) {
     const hashed = (value: string) => base[valueSlot(value, base.length)]!
     return Object.assign(hashed, { among: hashed })
   }
@@ -260,16 +254,7 @@ export function categoricalScale<T>(
     ))
   const rank = new Map(listed.map((value, i) => [value, i]))
   const listedSlots = listed.map((_, i) => i % size)
-  const reservedKeys = new Set(reserved.map(entryKey))
-  const reservedSlots = entries.flatMap((entry, i) =>
-    reservedKeys.has(entryKey(entry)) || reserved.some(r => isNear?.(r, entry))
-      ? [i]
-      : [],
-  )
-  const listedTaken = new Set([
-    ...listedSlots.flatMap(twinsOf),
-    ...reservedSlots,
-  ])
+  const listedTaken = new Set(listedSlots.flatMap(twinsOf))
   const tiers =
     listed.length > 0
       ? [[0, size] as const]
@@ -344,7 +329,7 @@ export function categoricalScale<T>(
       return entries[i % size]!
     }
     if (!held) {
-      return entries[deal(value, listedTaken, new Set(reservedSlots))]!
+      return entries[deal(value, listedTaken)]!
     }
     let slot = held.get(value)
     if (slot === undefined) {
@@ -355,7 +340,7 @@ export function categoricalScale<T>(
           taken.add(twin)
         }
       }
-      slot = deal(value, taken, new Set([...avoid, ...reservedSlots]))
+      slot = deal(value, taken, avoid)
       held.set(value, slot)
       if (!among || among.has(value)) {
         avoid.add(slot)
@@ -504,22 +489,20 @@ export function similarColors(a: string, b: string) {
 /**
  * `categoricalScale` for a color channel: `palette` (the wide palette when
  * empty) spent in `domain` order and continued into the wide palette, and an
- * unlisted value never on a listed value's color, a `reserved` one, or one
- * within `DEAL_COLOR_DIFFERENCE` of either, nor, with `held`, on the color of
- * a value dealt with it.
+ * unlisted value never on a listed value's color or one within
+ * `DEAL_COLOR_DIFFERENCE` of it, nor, with `held`, on the color of a value
+ * dealt with it.
  */
 export function categoricalColorScale(
   domain: readonly (string | number)[] | undefined,
   palette: readonly string[] = [],
   held?: HeldSlots,
-  reserved?: readonly string[],
 ) {
   return categoricalScale(domain, palette, {
     fallback: categoricalPalette,
     isNear: dealNear,
     distance: colorDifference,
     held,
-    reserved,
   })
 }
 

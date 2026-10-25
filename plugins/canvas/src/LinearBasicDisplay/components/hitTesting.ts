@@ -50,8 +50,6 @@ export interface FlatbushRegionIndexes {
 export interface HitFeatureResult {
   feature: FlatbushItem
   subfeature: SubfeatureInfo | undefined
-  // A protein domain under the cursor; `subfeature` is then its transcript
-  domain?: SubfeatureInfo
   peptide: AminoAcidOverlayItem | undefined
   bpPos: number
   bpPerPx: number
@@ -183,21 +181,13 @@ function resolveSubfeature(
   feature: FlatbushItem,
 ) {
   if (!indexes.subfeature) {
-    return { subfeature: undefined, domain: undefined }
+    return undefined
   }
   const idx = topmostMatch(
     indexes.subfeature.search(bpPos, yPos, bpPos, yPos),
     i => data.subfeatureInfos[i]!.parentFeatureId === feature.featureId,
   )
-  const hit = idx === undefined ? undefined : data.subfeatureInfos[idx]!
-  return hit?.domainId
-    ? {
-        subfeature: data.subfeatureInfos.find(
-          s => s.featureId === hit.transcriptId && !s.domainId,
-        ),
-        domain: hit,
-      }
-    : { subfeature: hit, domain: undefined }
+  return idx === undefined ? undefined : data.subfeatureInfos[idx]!
 }
 
 export function performMultiRegionHitDetection(
@@ -218,7 +208,7 @@ export function performMultiRegionHitDetection(
         const feature = data.flatbushItems[idx]!
         return {
           feature,
-          ...resolveSubfeature(data, indexes, x, yPos, feature),
+          subfeature: resolveSubfeature(data, indexes, x, yPos, feature),
           peptide: findPeptideAt(data, x, yPos, idx),
           bpPos: bpAtPx(mouseXPx, vr),
           bpPerPx: regionBpPerPx(vr),

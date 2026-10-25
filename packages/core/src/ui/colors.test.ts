@@ -320,31 +320,3 @@ describe('paletteFromSpec', () => {
     warn.mockRestore()
   })
 })
-
-describe('a reserved color', () => {
-  const values = Array.from({ length: 30 }, (_, i) => `PF${i}`)
-  const nearGold = (scale: (v: string) => string) =>
-    values.map(scale).filter(c => dealtAlike(c, 'goldenrod'))
-
-  test('no dealt value takes it or a near twin', () => {
-    expect(nearGold(categoricalColorScale(undefined))).not.toEqual([])
-    expect(
-      nearGold(categoricalColorScale(undefined, [], undefined, ['goldenrod'])),
-    ).toEqual([])
-  })
-
-  test('nor a value dealt into held slots', () => {
-    expect(
-      nearGold(categoricalColorScale(undefined, [], new Map())),
-    ).not.toEqual([])
-    expect(
-      nearGold(categoricalColorScale(undefined, [], new Map(), ['goldenrod'])),
-    ).toEqual([])
-  })
-
-  test('a listed value keeps its range color', () => {
-    expect(
-      categoricalColorScale(['a'], ['#e6ab02'], undefined, ['goldenrod'])('a'),
-    ).toBe('#e6ab02')
-  })
-})

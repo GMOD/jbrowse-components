@@ -5,7 +5,7 @@ import {
 import { NO_CATEGORY_COLOR } from '@jbrowse/core/util/color'
 import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
 import { stopsFromRampLut } from '@jbrowse/core/util/colorRamp'
-import { withImpliedField, withPreset } from '@jbrowse/core/util/colorScale'
+import { withPreset } from '@jbrowse/core/util/colorScale'
 import { isJexl } from '@jbrowse/core/util/jexlStrings'
 import { continuousColorScale } from '@jbrowse/core/util/markEncoding'
 import { quantileExtent } from '@jbrowse/core/util/quantileExtent'
@@ -36,10 +36,6 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 
 export interface FeatureColorHost {
   conf: { encoding: { color: Instance<typeof colorConfigSchema> } }
-  /** The field the color paints while it names neither a field nor a value. */
-  impliedField?: string
-  /** Colors the deal leaves to what the dealt colors paint over. */
-  reservedColors?: readonly string[]
   rpcDataMap: ReadonlyMap<
     number,
     {
@@ -60,11 +56,8 @@ const NO_EXTENT: [number, number] = [Infinity, -Infinity]
 // Enough to read the ramp's shape without the bar becoming a table of stops.
 const RAMP_KEY_STOPS = 8
 
-function featureColorSettingOf({
-  conf,
-  impliedField,
-}: FeatureColorHost): ColorSetting {
-  return withImpliedField(colorSnapshotOf(conf.encoding.color), impliedField)
+function featureColorSettingOf({ conf }: FeatureColorHost): ColorSetting {
+  return colorSnapshotOf(conf.encoding.color)
 }
 
 // Each painted box's value, the region's own boxes where it ships their
@@ -84,13 +77,9 @@ function paintedValues(
  * A FeatureColor object read as the displays painting it read it: the scale
  * each field paints through, the color a value the worker shipped paints,
  * the key's title, and what its slots say together that it cannot paint. The
- * canvas feature and multi-row displays compose it. `owner` is the node whose
- * session holds the dealt colors, for a host that is no tree node itself.
+ * canvas feature and multi-row displays compose it.
  */
-export function featureColorViews(
-  self: FeatureColorHost,
-  owner: object = self,
-) {
+export function featureColorViews(self: FeatureColorHost) {
   // Compared by value, so a region that commits inside the extent, or a
   // key-only edit such as a title, hands the encode the same scale and
   // re-encodes nothing.
@@ -153,10 +142,7 @@ export function featureColorViews(
      * The two members the worker reads, the rest being the main thread's.
      */
     get workerColor(): WorkerColor {
-      return withImpliedField(
-        workerColorOf(self.conf.encoding.color),
-        self.impliedField,
-      )
+      return workerColorOf(self.conf.encoding.color)
     },
 
     /**
@@ -213,12 +199,7 @@ export function featureColorViews(
      */
     get categoricalColorField() {
       const encoding = this.colorEncoding
-      const reserved = self.reservedColors
-      return categoricalColorField(
-        encoding,
-        heldColorSlots(owner, encoding, reserved),
-        reserved,
-      )
+      return categoricalColorField(encoding, heldColorSlots(self, encoding))
     },
 
     /**
@@ -228,12 +209,7 @@ export function featureColorViews(
      */
     get paintedColorField() {
       const encoding = this.colorEncoding
-      const reserved = self.reservedColors
-      return colorFieldOf(
-        encoding,
-        heldColorSlots(owner, encoding, reserved),
-        reserved,
-      )
+      return colorFieldOf(encoding, heldColorSlots(self, encoding))
     },
 
     /**

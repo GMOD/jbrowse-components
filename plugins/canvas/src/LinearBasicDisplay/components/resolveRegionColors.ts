@@ -25,10 +25,9 @@ export function resolveRegionColors(
   data: FeatureDataResult,
   colorTable: Uint32Array,
   fieldPalette?: FieldPalette,
-  domainPalette?: FieldPalette,
 ) {
-  const { colorValues, domainColorValues, rectDomainColorValues } = data
-  const fieldColors = resolveColorLane(
+  const { colorValues } = data
+  const rectColors = resolveColorLane(
     data.rectColors,
     data.rectColorClasses,
     colorTable,
@@ -40,18 +39,6 @@ export function resolveRegionColors(
         )
       : undefined,
   )
-  const rectColors =
-    domainPalette &&
-    rectDomainColorValues &&
-    domainColorValues?.field === domainPalette.field
-      ? resolveColorLane(
-          fieldColors,
-          new Uint8Array(0),
-          colorTable,
-          rectDomainColorValues,
-          domainPalette.tableOf(domainColorValues.values, false),
-        )
-      : fieldColors
   const lineColors = resolveColorLane(
     data.lineColors,
     data.lineColorClasses,
@@ -91,15 +78,11 @@ export function resolveMapColors(
   map: ReadonlyMap<number, FeatureDataResult>,
   palette: JBrowsePalette,
   fieldPalette?: FieldPalette,
-  domainPalette?: FieldPalette,
 ) {
   const colorTable = themedColorTable(palette)
   const out = new Map<number, FeatureDataResult>()
   for (const [idx, data] of map) {
-    out.set(
-      idx,
-      resolveRegionColors(data, colorTable, fieldPalette, domainPalette),
-    )
+    out.set(idx, resolveRegionColors(data, colorTable, fieldPalette))
   }
   return out
 }

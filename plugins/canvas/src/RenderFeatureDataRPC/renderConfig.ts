@@ -22,7 +22,7 @@ export type { DisplayMode, SubfeatureLabels } from './displayModes.ts'
 // `fallback` alongside `undefined`: jexl hands back a present-but-empty
 // attribute as null, which a color slot or `mouseover` would otherwise paint.
 export function readConfigValueSafe<T>(
-  config: object,
+  config: DisplayConfig,
   key: string | string[],
   feature: Feature,
   jexl: JexlInstance,

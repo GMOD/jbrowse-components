@@ -21,7 +21,6 @@ export interface RectData extends PrimitiveBase {
   height: number
   strand: number
   colorValue?: number
-  domainColorValue?: number
 }
 
 export interface LineData extends PrimitiveBase {
@@ -132,12 +131,6 @@ export function packRenderArrays(
     r => r.colorValue ?? 0,
     0,
   )
-  const rectDomainColorValues = optionalLane(
-    visibleRects,
-    Uint32Array,
-    r => r.domainColorValue ?? 0,
-    0,
-  )
   const rectFeatureIndices = new Uint32Array(visibleRects.length)
   const rectLabelRows = labelRowArray(visibleRects)
   const rectChildOrdinals = childOrdinalArray(visibleRects)
@@ -202,7 +195,6 @@ export function packRenderArrays(
     rectDensityFade,
     rectColorClasses,
     rectColorValues,
-    rectDomainColorValues,
     rectFeatureIndices,
     rectLabelRows,
     rectChildOrdinals,
