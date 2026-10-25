@@ -34,6 +34,12 @@ export interface RowsFieldCandidateValues {
   overflow: boolean
 }
 
+/**
+ * The `feature*` lanes hold one entry per painted part, not per feature: a
+ * spliced feature's blocks are consecutive entries sharing its id, which
+ * `featureRun` reads back as the feature's span. A filter over entries keeps
+ * or drops a feature's run whole.
+ */
 export interface MultiRowRegionData {
   featureStarts: Uint32Array
   featureEnds: Uint32Array
