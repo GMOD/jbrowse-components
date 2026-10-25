@@ -1,5 +1,4 @@
 import FilterAltIcon from '@mui/icons-material/FilterAlt'
-import FilterAltOffIcon from '@mui/icons-material/FilterAltOff'
 
 import type { MenuItem } from './MenuTypes.ts'
 
@@ -81,6 +80,9 @@ export function undoItems(items: Reversibles, priority?: number): MenuItem[] {
     }))
 }
 
+/** The row opening a display's filter dialog. */
+export const EDIT_FILTERS_LABEL = 'Edit filters...'
+
 export interface FilterMenuOpts {
   /**
    * The display's narrowings, declared once (see {@link Reversible}). The count
@@ -126,8 +128,7 @@ export function filterMenuItems({
   const editItem: MenuItem[] = onEdit
     ? [
         {
-          label: 'Edit filters...',
-          icon: FilterAltIcon,
+          label: EDIT_FILTERS_LABEL,
           onClick: onEdit,
         },
       ]
@@ -137,7 +138,6 @@ export function filterMenuItems({
       ? [
           {
             label: 'Clear all filters',
-            icon: FilterAltOffIcon,
             onClick: () => {
               clearAll(narrowings)
             },
