@@ -54,11 +54,14 @@ function click(items: MenuItem[], label: string) {
 }
 
 describe('sashimi rows in Show...', () => {
-  test('Show... holds the arcs toggle alone', () => {
+  test('the counts appear only while the arcs draw', () => {
     const model = makeModel()
     expect(labelsOf(sashimiShowItems(model))).toEqual(['Sashimi arcs'])
     model.showSashimi = true
-    expect(labelsOf(sashimiShowItems(model))).toEqual(['Sashimi arcs'])
+    expect(labelsOf(sashimiShowItems(model))).toEqual([
+      'Sashimi arcs',
+      'Sashimi read counts',
+    ])
   })
 })
 
@@ -124,18 +127,15 @@ describe('junction filter rows', () => {
   })
 })
 
-describe('sashimi rows in Advanced', () => {
-  test('the counts show while the arcs draw, placement only over the coverage band', () => {
+describe('sashimi placement row', () => {
+  test('appears only while the arcs draw over the coverage band', () => {
     const model = makeModel()
     expect(getSashimiPlacementItems(model)).toEqual([])
     model.showSashimi = true
     model.showCoverage = false
-    expect(labelsOf(getSashimiPlacementItems(model))).toEqual([
-      'Sashimi read counts',
-    ])
+    expect(getSashimiPlacementItems(model)).toEqual([])
     model.showCoverage = true
     expect(labelsOf(getSashimiPlacementItems(model))).toEqual([
-      'Sashimi read counts',
       'Sashimi placement',
     ])
   })

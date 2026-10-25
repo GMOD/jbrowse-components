@@ -29,7 +29,6 @@ export {
   getConnectionFilterItems,
   getReadConnectionsBandItems,
   getReadConnectionsMenuItem,
-  viewAsPairsItem,
 } from './readConnections.ts'
 export { getReadsMenuItems } from './reads.ts'
 export { getJunctionFilterItems, getSashimiPlacementItems } from './sashimi.ts'

@@ -175,7 +175,8 @@ row's two breakpoints side by side as two regions of one view:
 - Each region is oriented so the fusion transcript reads left to right across
   the join. _XKR3_ is on the minus strand, so its region arrives reversed
   (`[rev]`).
-- **View as pairs** merges each molecule's two alignments onto one row.
+- **Read connections → View as pairs / link supplementary alignments** merges
+  each molecule's two alignments onto one row.
 
 <Figure caption="NUP214--XKR3 as two regions of one view with reads linked, opened from its row in the SV inspector." src="/img/cancer_sv/k562_fusion_inspector_reads.png" links="Import form=cancer_sv/k562_fusion_inspector_form,All 44 calls=cancer_sv/k562_fusion_inspector_all,Searched for chr9=cancer_sv/k562_fusion_inspector_pair,Linked reads=cancer_sv/k562_fusion_inspector_reads" />
 
@@ -206,14 +207,14 @@ box separated by spaces:
 A read crossing the junction is one alignment on chr22 and a supplementary
 alignment (the second piece of the split read) on chr9. In the track menu:
 
-- **Read connections → Pileup connectors** joins the two across the region
+- **Read connections → Show pileup connectors** joins the two across the region
   divider.
 - **Filter by... → Split reads → Only split reads** drops every read that stays
   on one chromosome.
-- **Read connections → Read arcs** adds a band under the coverage with one arc
-  per junction, thicker where more reads support it. An arc needs both ends in
-  view: the right-hand window gets one arc and the intron 1 window two, one at
-  each place the reads enter it.
+- **Read connections → Show read arcs** adds a band under the coverage with one
+  arc per junction, thicker where more reads support it. An arc needs both ends
+  in view: the right-hand window gets one arc and the intron 1 window two, one
+  at each place the reads enter it.
 
 A vertical line at the _BCR_ donor marks molecules whose _ABL1_ alignment falls
 in neither window.

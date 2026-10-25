@@ -1,5 +1,5 @@
 import { resolveSubMenu } from './MenuTypes.ts'
-import { pushIntoSubMenu } from './launchViewMenu.ts'
+import { nestLaunchInAdvanced, pushIntoSubMenu } from './launchViewMenu.ts'
 
 import type { MenuItem } from './MenuTypes.ts'
 
@@ -30,4 +30,31 @@ test('appends to a function-form submenu without calling it', () => {
     launch && 'subMenu' in launch ? labels(resolveSubMenu(launch)) : [],
   ).toEqual(['a', 'b'])
   expect(build).toHaveBeenCalledTimes(1)
+})
+
+describe('nestLaunchInAdvanced', () => {
+  const row = (label: string): MenuItem => ({ label, onClick: () => {} })
+  const sub = (label: string, rows: MenuItem[]): MenuItem => ({
+    label,
+    type: 'subMenu',
+    subMenu: rows,
+  })
+
+  test('moves Launch to the end of Advanced', () => {
+    const items = nestLaunchInAdvanced([
+      row('Color by...'),
+      sub('Launch', [row('Consensus')]),
+      sub('Advanced', [row('Edit plot...')]),
+    ])
+    expect(labels(items)).toEqual(['Color by...', 'Advanced'])
+    const advanced = items[1]!
+    expect(
+      'subMenu' in advanced ? labels(resolveSubMenu(advanced)) : [],
+    ).toEqual(['Edit plot...', 'Launch'])
+  })
+
+  test('keeps Launch where it is on a menu without Advanced', () => {
+    const items = [row('Color by...'), sub('Launch', [row('Consensus')])]
+    expect(nestLaunchInAdvanced(items)).toBe(items)
+  })
 })

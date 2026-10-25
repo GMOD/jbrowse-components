@@ -49,8 +49,6 @@ interface ReadConnectionsBandModel {
 // `encoding.strokeWidth` scale, for the is-default marker.
 const DEFAULT_READ_CONNECTIONS_LINE_WIDTH = 1
 
-export const VIEW_AS_PAIRS_LABEL = 'View as pairs'
-
 const PLACEMENT_OPTIONS: { value: ReadConnectionsPlacement; label: string }[] =
   [
     { value: 'up', label: 'Above coverage' },
@@ -68,24 +66,6 @@ function bandMarkItem(
   })
 }
 
-/**
- * The top-level row joining each read to its mate and split segments on one
- * row, as IGV's "View as pairs" does.
- */
-export function viewAsPairsItem(model: {
-  unit: AlignmentsUnit
-  setUnit: (unit: AlignmentsUnit) => void
-}): MenuItem {
-  const linked = model.unit === 'chain'
-  return {
-    ...checkboxItem(VIEW_AS_PAIRS_LABEL, linked, () => {
-      model.setUnit(linked ? 'read' : 'chain')
-    }),
-    helpText:
-      'Draw each read with its mate and its supplementary (split) alignments on one row, joined by a line.',
-  }
-}
-
 // Checkboxes only, with no `?`: one row kind reads at a glance. Read arcs and
 // the read cloud share a band, so ticking one unticks the other. The
 // connection filters live in "Filter by..." and the band's placement and line
@@ -93,12 +73,20 @@ export function viewAsPairsItem(model: {
 export function getReadConnectionsMenuItem(
   model: ReadConnectionsModel & SvChannelsModel,
 ) {
+  const linked = model.unit === 'chain'
   const subMenu: MenuItem[] = [
-    toggleItem('Pileup connectors', model.showConnectors, flag => {
+    checkboxItem(
+      'View as pairs / link supplementary alignments',
+      linked,
+      () => {
+        model.setUnit(linked ? 'read' : 'chain')
+      },
+    ),
+    toggleItem('Show pileup connectors', model.showConnectors, flag => {
       model.setShowConnectors(flag)
     }),
-    bandMarkItem(model, 'Read arcs', 'arc'),
-    bandMarkItem(model, 'Read cloud', 'cloud'),
+    bandMarkItem(model, 'Show read arcs', 'arc'),
+    bandMarkItem(model, 'Show read cloud', 'cloud'),
     ...(model.drawnReadConnections === 'off'
       ? []
       : [
@@ -200,7 +188,7 @@ export function getReadConnectionsBandItems(
       ),
     },
     makeSizeSubMenu({
-      label: 'Line width',
+      label: 'Read connections line width',
       title: 'Read connections line width',
       // Half-px steps because 1.5 is a real width on a retina display.
       scale: 'linear',

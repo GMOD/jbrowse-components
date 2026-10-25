@@ -67,7 +67,7 @@ function softClippingItem(model: ReadsModel) {
       ? {
           disabled: true,
           disabledHelpText:
-            'Chain layout does not expand soft clips — uncheck "View as pairs" first',
+            'Chain layout does not expand soft clips — uncheck "Read connections → View as pairs / link supplementary alignments" first',
         }
       : undefined,
   )

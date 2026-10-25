@@ -214,7 +214,7 @@ rest of its arm.
 Put `1:39,658,200-39,661,800` in the location box and add HG02768's CRAM as a
 track the same way as HG00113's.
 
-**Read connections → SV channels (pairs by orientation)** in the track menu
+**Read connections → Show SV channels (pairs by orientation)** in the track menu
 splits the reads into one band per orientation class, each with a separate
 coverage curve and arcs:
 

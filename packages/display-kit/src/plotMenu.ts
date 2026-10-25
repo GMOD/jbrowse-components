@@ -29,10 +29,21 @@ export function openPlotDialog(
   ])
 }
 
+// A row's kind, in the order Advanced lists them: rows that act or open a
+// dialog, then submenus, then toggles. Advanced collects rows from several
+// features, so grouping by kind is what keeps it scannable.
+function rowKindRank(item: MenuItem) {
+  return 'subMenu' in item
+    ? 1
+    : 'type' in item && (item.type === 'checkbox' || item.type === 'radio')
+      ? 2
+      : 0
+}
+
 /**
  * The track menu's Advanced submenu holding "Edit plot..." and a display's
- * `more` rows, sorted just above "Display types" wherever a display places it.
- * None on a display that declares no plot setting.
+ * `more` rows, grouped by kind, sorted just above "Display types" wherever a
+ * display places it. None on a display that declares no plot setting.
  */
 export function editPlotMenuItems(
   display: PlotDisplay,
@@ -49,13 +60,11 @@ export function editPlotMenuItems(
             {
               label: 'Edit plot...',
               icon: DataObjectIcon,
-              helpText:
-                "This track's color, grouping, rows, scales and filters as text, as a config file writes them",
               onClick: () => {
                 openPlotDialog(display)
               },
             },
-            ...more,
+            ...more.toSorted((a, b) => rowKindRank(a) - rowKindRank(b)),
           ],
         },
       ]

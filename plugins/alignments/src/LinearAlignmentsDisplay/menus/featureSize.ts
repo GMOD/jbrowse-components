@@ -1,6 +1,6 @@
 import { lazy } from 'react'
 
-import { checkboxItem, radioItem } from '@jbrowse/core/ui/menuItems'
+import { radioItem, radioItems } from '@jbrowse/core/ui/menuItems'
 import { capitalizeFirst, getDialogHost } from '@jbrowse/core/util'
 import HeightIcon from '@mui/icons-material/Height'
 
@@ -121,20 +121,33 @@ export function getFeatureHeightMenuItem(
   }
 }
 
+export const TRACK_HEIGHT_LABEL = 'Track height'
+
+const TRACK_HEIGHT_OPTIONS: { value: HeightMode; label: string }[] = [
+  { value: 'fixed', label: 'Fixed' },
+  { value: 'grow', label: 'Autogrow' },
+  { value: 'fit', label: FIT_TO_TRACK_LABEL },
+]
+
 /**
- * The track-sizing rows for "Advanced". Autogrow is offered without content,
- * since grow still fits the track to a pileup-less stack (`growTargetHeight`
- * collapses to the coverage bands); the row cap only while there are rows.
+ * The track-sizing rows for "Advanced": the height mode as one radio group,
+ * whose fit row is the one "Read height" also offers, and the row cap.
+ * Autogrow is offered without content, since grow still fits the track to a
+ * pileup-less stack (`growTargetHeight` collapses to the coverage bands); the
+ * row cap only while there are rows.
  */
 export function getTrackSizingItems(
   model: FeatureHeightModel & MaxHeightModel,
   gate: ContentGate = {},
 ): MenuItem[] {
-  const grow = model.heightMode === 'grow'
   return [
-    checkboxItem('Autogrow track height', grow, () => {
-      model.setHeightMode(grow ? 'fixed' : 'grow')
-    }),
+    {
+      label: TRACK_HEIGHT_LABEL,
+      type: 'subMenu' as const,
+      subMenu: radioItems(TRACK_HEIGHT_OPTIONS, model.heightMode, mode => {
+        model.setHeightMode(mode)
+      }),
+    },
     ...(gate.disabled ? [] : [getMaxHeightMenuItem(model)]),
   ]
 }

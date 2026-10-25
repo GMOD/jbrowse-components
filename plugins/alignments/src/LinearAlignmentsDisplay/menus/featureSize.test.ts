@@ -1,4 +1,8 @@
-import { bootAlignmentsDisplay, clickMenuItem } from '../testUtils.ts'
+import {
+  bootAlignmentsDisplay,
+  clickMenuItem,
+  menuSubItems,
+} from '../testUtils.ts'
 import {
   COMPACTNESS_PRESETS,
   FIT_TO_TRACK_LABEL,
@@ -84,20 +88,24 @@ test('fit to track height is one more read height radio', () => {
   expect(checkedLabels(rows())).toEqual([COMPACTNESS_PRESETS.compact.label])
 })
 
-test('autogrow toggles grow against fixed, and the row cap needs rows', () => {
+test('Track height picks the height mode, and the row cap needs rows', () => {
   const { display } = createDisplay()
   const rows = (gate = {}) => getTrackSizingItems(display, gate)
-  clickMenuItem(rows(), 'Autogrow track height')
+  const modes = () => menuSubItems(rows(), 'Track height')
+  clickMenuItem(modes(), 'Autogrow')
   expect(display.heightMode).toBe('grow')
-  clickMenuItem(rows(), 'Autogrow track height')
+  expect(checkedLabels(modes())).toEqual(['Autogrow'])
+  clickMenuItem(modes(), FIT_TO_TRACK_LABEL)
+  expect(display.heightMode).toBe('fit')
+  clickMenuItem(modes(), 'Fixed')
   expect(display.heightMode).toBe('fixed')
   expect(rows().map(i => 'label' in i && i.label)).toEqual([
-    'Autogrow track height',
+    'Track height',
     'Set max layout height...',
   ])
   expect(
     rows({ disabled: true, disabledHelpText: 'no pileup' }).map(
       i => 'label' in i && i.label,
     ),
-  ).toEqual(['Autogrow track height'])
+  ).toEqual(['Track height'])
 })

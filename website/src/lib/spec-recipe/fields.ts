@@ -1037,9 +1037,9 @@ const SASHIMI_PLACEMENT: Record<string, string> = {
 // the two band checkboxes in getReadConnectionsMenuItem
 // (plugins/alignments/src/LinearAlignmentsDisplay/menus/readConnections.ts)
 const READ_CONNECTIONS: Record<string, string> = {
-  off: 'Read arcs (unchecked)',
-  arc: 'Read arcs (checked)',
-  cloud: 'Read cloud (checked)',
+  off: 'Show read arcs (unchecked)',
+  arc: 'Show read arcs (checked)',
+  cloud: 'Show read cloud (checked)',
 }
 
 const READ_CONNECTIONS_PLACEMENT: Record<string, string> = {
@@ -1729,7 +1729,7 @@ export const trackFields: Record<string, FieldRecipe> = {
     (value === 'read' || value === 'chain') &&
     isAlignmentsOnlyField(displayType)
       ? {
-          path: `${TRACK_MENU} → View as pairs (${value === 'chain' ? 'checked' : 'unchecked'})`,
+          path: `${TRACK_MENU} → Read connections → View as pairs / link supplementary alignments (${value === 'chain' ? 'checked' : 'unchecked'})`,
         }
       : (value === 'sample' || value === 'haplotype') &&
           displayType &&
@@ -1921,7 +1921,7 @@ export const trackFields: Record<string, FieldRecipe> = {
         ? { path: `${heightMenu(noun, displayType)} → ${FIT_TO_TRACK_LABEL}` }
         : value === 'grow' || value === 'fixed'
           ? {
-              path: `${TRACK_MENU} → Advanced → Autogrow track height (${value === 'grow' ? 'checked' : 'unchecked'})`,
+              path: `${TRACK_MENU} → Advanced → Track height → ${value === 'grow' ? 'Autogrow' : 'Fixed'}`,
             }
           : undefined
     }
@@ -1964,7 +1964,7 @@ export const trackFields: Record<string, FieldRecipe> = {
     'Reveals clipped bases — the signal that a read spans a breakpoint.',
   ),
   'pileup.connectors': layerCheckbox(
-    'Read connections → Pileup connectors',
+    'Read connections → Show pileup connectors',
     "Draws a read's alignments joined by a curve rather than a straight line. Worth it when the two ends sit in different displayed regions, where the curve reads as one read crossing the gap.",
   ),
   // Sits directly under "Coverage" in the alignments "Show..." submenu
@@ -2018,7 +2018,7 @@ export const trackFields: Record<string, FieldRecipe> = {
   forward: layerCheckbox('Show... → Forward'),
   reverse: layerCheckbox('Show... → Reverse'),
   translation: layerCheckbox('Show... → Translation'),
-  'sashimi.labels': layerCheckbox('Advanced → Sashimi read counts'),
+  'sashimi.labels': layerCheckbox('Show... → Sashimi read counts'),
   'readConnections.placement': fromTable(
     'Advanced → Read connections placement',
     READ_CONNECTIONS_PLACEMENT,

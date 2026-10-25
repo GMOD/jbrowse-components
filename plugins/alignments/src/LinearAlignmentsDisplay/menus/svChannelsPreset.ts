@@ -14,7 +14,7 @@ function markType(mark: unknown) {
   return typeof mark === 'string' ? mark : member(mark, 'type')
 }
 
-export const SV_CHANNELS_LABEL = 'SV channels (pairs by orientation)'
+export const SV_CHANNELS_LABEL = 'Show SV channels (pairs by orientation)'
 
 // One band per pair orientation, each with its own coverage and its own arcs,
 // concordant pairs left out. Every setting is reachable from the other menus;

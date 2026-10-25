@@ -17,6 +17,7 @@ import {
 import { adapterConfigCacheKey } from '../../data_adapters/dataAdapterCache.ts'
 import { adapterByteLimit } from '../../rpc/byteBudget.ts'
 import { TRACK_MENU_PRIORITY } from '../../ui/MenuTypes.ts'
+import { nestLaunchInAdvanced } from '../../ui/launchViewMenu.ts'
 import {
   getContainingView,
   getDialogHost,
@@ -571,7 +572,7 @@ export function createBaseTrackModel(
         const compatDisp = self.compatibleDisplays
 
         return [
-          ...menuItems,
+          ...nestLaunchInAdvanced(menuItems),
           ...(compatDisp.length > 1 && shownId
             ? [
                 {

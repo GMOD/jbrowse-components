@@ -1001,14 +1001,14 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
       {
         actions: [
           { type: 'click', selector: '[data-testid="track_menu_icon"]' },
-          ...menuCascade(['Read connections', 'Read arcs']),
+          ...menuCascade(['Read connections', 'Show read arcs']),
         ],
-        annotations: [{ type: 'box', anchor: { text: 'Read arcs' } }],
+        annotations: [{ type: 'box', anchor: { text: 'Show read arcs' } }],
       },
       {
         // a checkbox row keeps the menu open
         actions: [
-          { type: 'click', text: 'Read arcs' },
+          { type: 'click', text: 'Show read arcs' },
           { type: 'press', key: 'Escape' },
           { type: 'press', key: 'Escape' },
           // the Escapes see only the menu closing, not the display refetch

@@ -228,10 +228,10 @@ basecalling error; a position that disagrees in both bands is a real variant.
 
 <Figure caption="GIAB HG002 nanopore reads grouped by strand, each band's coverage from that strand's reads alone. The left box disagrees in the reverse band only, the right box in both." src="/img/alignments/strand_split_coverage.png" />
 
-**Track menu → Read connections → SV channels (pairs by orientation)** groups by
-pair orientation, drops the pileup and turns the arcs on together, so each
-orientation class becomes a separate coverage band with a separate set of arcs.
-See [SV channels](/docs/user_guides/sv_visualization#sv-channels).
+**Track menu → Read connections → Show SV channels (pairs by orientation)**
+groups by pair orientation, drops the pileup and turns the arcs on together, so
+each orientation class becomes a separate coverage band with a separate set of
+arcs. See [SV channels](/docs/user_guides/sv_visualization#sv-channels).
 
 ## Read height and track sizing
 
@@ -246,10 +246,10 @@ A pileup taller than the track scrolls. Two settings change that:
 - **Read height → Fit to track height** derives the read height from the track
   height so the whole pileup fits, shrinking as coverage deepens. Picking a
   preset drops back to it
-- **Advanced → Autogrow track height** grows the track to hold the reads, up to
-  [growMaxHeight](/docs/config/linearalignmentsdisplay#slot-growmaxheight), past
-  which it scrolls again. Real sequencing depth passes that ceiling quickly, so
-  raise the slot to keep growing
+- **Advanced → Track height → Autogrow** grows the track to hold the reads, up
+  to [growMaxHeight](/docs/config/linearalignmentsdisplay#slot-growmaxheight),
+  past which it scrolls again. Real sequencing depth passes that ceiling
+  quickly, so raise the slot to keep growing
 
 <Figure src="/img/alignments/height_mode_fit.png" caption="The Read height submenu with Fit to track height selected." />
 
@@ -326,7 +326,7 @@ non-canonical. The motif shows in the arc's tooltip, and a junction with no
 strand-tagged reads takes the strand its motif implies, so untagged STAR output
 still colors by strand. This needs a sequence adapter on the assembly.
 
-**Show... → Sashimi arcs** turns them on and off, and **Advanced → Sashimi read
+**Show... → Sashimi arcs** turns them on and off, and **Show... → Sashimi read
 counts** prints each junction's supporting-read count on its arc. While the arcs
 draw:
 
@@ -355,12 +355,12 @@ the long-range relationships behind structural variants.
 
 ### Read arcs
 
-**Read connections → Read arcs** draws a bezier curve between the ends of each
-pair, so long-range and discordant pairs stand out from the short local arcs. A
-partner the view has not loaded draws as a large semicircle reaching toward it.
-A mate on another chromosome draws as an arc when that chromosome is on screen
-and as a vertical line at the breakpoint when it is not. Both can be toggled
-off, and dragging the track taller re-fits the arcs.
+**Read connections → Show read arcs** draws a bezier curve between the ends of
+each pair, so long-range and discordant pairs stand out from the short local
+arcs. A partner the view has not loaded draws as a large semicircle reaching
+toward it. A mate on another chromosome draws as an arc when that chromosome is
+on screen and as a vertical line at the breakpoint when it is not. Both can be
+toggled off, and dragging the track taller re-fits the arcs.
 
 An arc whose ends are in different displayed regions spans them, so a second
 region either side of a breakpoint shows the connection as one curve.
@@ -388,7 +388,7 @@ insert size.
 
 ### Read cloud
 
-**Read connections → Read cloud** lays pairs out on the Y axis by the **log
+**Read connections → Show read cloud** lays pairs out on the Y axis by the **log
 distance between mates**, so the insert-size distribution is visible directly
 and short-insert (insertion-supporting) pairs lift away from the background.
 
@@ -401,8 +401,8 @@ mapped:
 
 - **Split current view to show mate** replaces the displayed regions with the
   read's locus and its mate's side by side, each padded by a read length, and
-  turns on **View as pairs** so the pair is drawn joined. A snackbar offers
-  **Undo**, which restores both
+  turns on **View as pairs / link supplementary alignments** so the pair is
+  drawn joined. A snackbar offers **Undo**, which restores both
 - **Open breakpoint split view** puts the two loci in
   [separate stacked panels](/docs/user_guides/sv_visualization#breakpoint-split-view),
   which draws the connecting splines

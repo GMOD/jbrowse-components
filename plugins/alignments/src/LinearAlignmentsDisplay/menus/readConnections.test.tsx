@@ -6,7 +6,6 @@ import {
   getConnectionFilterItems,
   getReadConnectionsBandItems,
   getReadConnectionsMenuItem,
-  viewAsPairsItem,
 } from './readConnections.ts'
 
 import type { Facet, ConnectionFilter } from '../../shared/types.ts'
@@ -106,11 +105,12 @@ describe('read connections menu', () => {
     model.drawnReadConnections = 'arc'
     const items = rows(model)
     expect(labelsOf(items)).toEqual([
-      'Pileup connectors',
-      'Read arcs',
-      'Read cloud',
+      'View as pairs / link supplementary alignments',
+      'Show pileup connectors',
+      'Show read arcs',
+      'Show read cloud',
       'Show ordinary pairs',
-      'SV channels (pairs by orientation)',
+      'Show SV channels (pairs by orientation)',
     ])
     expect(
       items.every(
@@ -121,23 +121,21 @@ describe('read connections menu', () => {
 
   test('"View as pairs" toggles unit between read and chain', () => {
     const model = makeModel()
-    const item = () => [viewAsPairsItem(model)]
-    click(item(), 'View as pairs')
+    click(rows(model), 'View as pairs')
     expect(model.unit).toBe('chain')
-    expect(item()[0]).toMatchObject({ checked: true })
-    click(item(), 'View as pairs')
+    click(rows(model), 'View as pairs')
     expect(model.unit).toBe('read')
   })
 
   // The two share a band, so ticking one unticks the other.
   test('read arcs and the read cloud tick one at a time', () => {
     const model = makeModel()
-    click(rows(model), 'Read arcs')
+    click(rows(model), 'Show read arcs')
     expect(model.drawnReadConnections).toBe('arc')
-    click(rows(model), 'Read cloud')
+    click(rows(model), 'Show read cloud')
     expect(model.drawnReadConnections).toBe('cloud')
-    expect(checked(model)).toEqual(['Read cloud', 'Show ordinary pairs'])
-    click(rows(model), 'Read cloud')
+    expect(checked(model)).toEqual(['Show read cloud', 'Show ordinary pairs'])
+    click(rows(model), 'Show read cloud')
     expect(model.drawnReadConnections).toBe('off')
   })
 

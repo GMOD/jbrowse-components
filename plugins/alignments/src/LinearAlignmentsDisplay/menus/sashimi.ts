@@ -49,6 +49,10 @@ function splitJunctionsItem(model: JunctionFiltersModel) {
           : { sources: ['gap'] },
       )
     },
+    {
+      helpText:
+        'Count the junctions that split alignments (SA tag) imply beside the spliced (N) ones.',
+    },
   )
 }
 
@@ -57,16 +61,21 @@ interface SashimiPlacementModel {
   showCoverage: boolean
   sashimiPlacement: SashimiPlacement
   setSashimiPlacement: (placement: SashimiPlacement) => void
-  showSashimiCounts: boolean
-  setShowSashimiCounts: (show: boolean) => void
 }
 
-/** The arcs' row in "Show...". */
+/** The arcs' rows in "Show...": the arcs, and while they draw their counts. */
 export function sashimiShowItems(model: SashimiModel): MenuItem[] {
   return [
     toggleItem('Sashimi arcs', model.showSashimi, show => {
       model.setShowSashimi(show)
     }),
+    ...(model.showSashimi
+      ? [
+          toggleItem('Sashimi read counts', model.showSashimiCounts, show => {
+            model.setShowSashimiCounts(show)
+          }),
+        ]
+      : []),
   ]
 }
 
@@ -120,34 +129,25 @@ export function getJunctionFilterItems(
 }
 
 /**
- * The arcs' set-once rows, for "Advanced", while they draw: their read counts,
- * and their placement. Without the coverage band the arcs draw in a strip of
- * their own, so there is nothing to place.
+ * The placement row, for "Advanced". Without the coverage band the arcs draw
+ * in a strip of their own, so there is nothing to place.
  */
 export function getSashimiPlacementItems(
   model: SashimiPlacementModel,
 ): MenuItem[] {
-  if (!model.showSashimi) {
-    return []
-  }
-  return [
-    toggleItem('Sashimi read counts', model.showSashimiCounts, show => {
-      model.setShowSashimiCounts(show)
-    }),
-    ...(model.showCoverage
-      ? [
-          {
-            label: 'Sashimi placement',
-            type: 'subMenu' as const,
-            subMenu: radioItems(
-              SASHIMI_PLACEMENT_OPTIONS,
-              model.sashimiPlacement,
-              placement => {
-                model.setSashimiPlacement(placement)
-              },
-            ),
-          },
-        ]
-      : []),
-  ]
+  return model.showSashimi && model.showCoverage
+    ? [
+        {
+          label: 'Sashimi placement',
+          type: 'subMenu' as const,
+          subMenu: radioItems(
+            SASHIMI_PLACEMENT_OPTIONS,
+            model.sashimiPlacement,
+            placement => {
+              model.setSashimiPlacement(placement)
+            },
+          ),
+        },
+      ]
+    : []
 }

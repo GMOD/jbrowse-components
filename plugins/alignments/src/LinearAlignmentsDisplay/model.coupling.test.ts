@@ -510,7 +510,7 @@ describe('pileup-only menus grey out when the pileup is hidden', () => {
     expect(item?.disabled).toBe(true)
     expect(item?.disabledHelpText).toBeTruthy()
     const advanced = menuSubItems(display.trackMenuItems(), 'Advanced')
-    expect(hasMenuItem(advanced, 'Autogrow track height')).toBe(true)
+    expect(hasMenuItem(advanced, 'Track height')).toBe(true)
     expect(hasMenuItem(advanced, 'Set max layout height...')).toBe(false)
   })
 
@@ -2052,9 +2052,6 @@ describe('rows the layer menus hand to other menus', () => {
     )
   }
 
-  const COVERAGE = ['Coverage axis...', 'Color alleles in coverage']
-  const TRACK_SIZING = ['Autogrow track height', 'Set max layout height...']
-
   test('reach "Filter by..." and "Advanced" once their layer draws', () => {
     const display = createDisplay()
     display.setShowSashimi(false)
@@ -2063,8 +2060,10 @@ describe('rows the layer menus hand to other menus', () => {
     )
     expect(labelsUnder(display, 'Advanced')).toEqual([
       'Edit plot...',
-      ...COVERAGE,
-      ...TRACK_SIZING,
+      'Coverage axis...',
+      'Set max layout height...',
+      'Color alleles in coverage',
+      'Track height',
     ])
 
     display.setDrawnReadConnections('arc')
@@ -2081,21 +2080,23 @@ describe('rows the layer menus hand to other menus', () => {
     )
     expect(labelsUnder(display, 'Advanced')).toEqual([
       'Edit plot...',
-      ...COVERAGE,
-      ...TRACK_SIZING,
+      'Coverage axis...',
+      'Set max layout height...',
+      'Color alleles in coverage',
+      'Track height',
       'Read connections color',
       'Read connections placement',
       'Read connections line width',
-      'Sashimi read counts',
       'Sashimi placement',
     ])
   })
 
-  test('the arcs toggle sits in "Show...", their set-once rows in "Advanced"', () => {
+  test('the sashimi toggles sit in "Show..."', () => {
     const display = createDisplay()
     display.setShowSashimi(true)
-    expect(labelsUnder(display, 'Show...')).toContain('Sashimi arcs')
-    expect(labelsUnder(display, 'Advanced')).toContain('Sashimi read counts')
+    expect(labelsUnder(display, 'Show...')).toEqual(
+      expect.arrayContaining(['Sashimi arcs', 'Sashimi read counts']),
+    )
     expect(hasMenuItem(display.trackMenuItems(), 'Sashimi placement')).toBe(
       true,
     )

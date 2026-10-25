@@ -62,8 +62,8 @@ export interface OverlayLevel {
 export interface ConnectorRow {
   minimized: boolean
   /**
-   * the display links its own reads (View as pairs, or curved connectors on
-   * every pair), so it already connects
+   * the display links its own reads (View as pairs / link supplementary
+   * alignments, or curved connectors on every pair), so it already connects
    * everything that stays inside this row and an intra-view overlay curve
    * would just double it up
    */

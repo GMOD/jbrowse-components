@@ -47,7 +47,8 @@ Open the track's menu from the track label, then:
 - Choose **Color by... → Paired end → Insert size and orientation**, which
   leaves normally-paired reads gray and colors the rest by how they disagree
   with the reference.
-- Choose **View as pairs**, which puts each read on the same row as its mate.
+- Choose **Read connections → View as pairs / link supplementary alignments**,
+  which puts each read on the same row as its mate.
 - Drag the bottom edge of the track down to about 250px, so the deeper stack of
   paired rows fits.
 

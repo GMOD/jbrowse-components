@@ -157,9 +157,9 @@ combines both signals, so it is the usual first setting to try.
 
 ### Read arcs
 
-**Read connections → Read arcs** draws a bezier between the ends of each pair,
-in the color of the scheme in force. Concordant pairs make short local arcs, so
-a deletion reads as a bundle of long red arcs standing on the same two
+**Read connections → Show read arcs** draws a bezier between the ends of each
+pair, in the color of the scheme in force. Concordant pairs make short local
+arcs, so a deletion reads as a bundle of long red arcs standing on the same two
 breakpoints, and a mate on another chromosome draws as a vertical line at the
 breakpoint. Reads describing the same connection draw as one arc thickened by
 how many there are, so the arcs count the support as well as locate it.
@@ -176,11 +176,11 @@ an inversion. That is evidence from one molecule rather than from a pair.
 ### SV channels
 
 Every scheme above paints one pileup, so an event's evidence arrives mixed into
-the rows around it. **Read connections → SV channels (pairs by orientation)**
-takes the same reads apart: each orientation class gets a separate band with a
-coverage curve and arcs, the concordant pairs drop out, and the pileup goes
-away. Which band fills names the rearrangement, and a band that stays empty
-under a call is a call with no read-pair evidence behind it.
+the rows around it. **Read connections → Show SV channels (pairs by
+orientation)** takes the same reads apart: each orientation class gets a
+separate band with a coverage curve and arcs, the concordant pairs drop out, and
+the pileup goes away. Which band fills names the rearrangement, and a band that
+stays empty under a call is a call with no read-pair evidence behind it.
 
 <Figure caption="The INVdup call's reads, one band per pair orientation. Reads whose mate is unmapped or elsewhere draw as inter-chromosomal ticks." src="/img/sv_channels.png" />
 
@@ -273,13 +273,14 @@ keeps or hides the SV evidence and the reads without a mate.
 
 A long read spans the whole event, so it has what a short-read pair could only
 infer. At an inversion it splits into three alignments, the middle one on the
-opposite strand. With **View as pairs** on, those segments chain onto one row:
-the inverted middle paints in the reverse-strand color between two
-forward-strand segments, and an arc joins each breakpoint pair: green at the
-junction LL pairs span, navy at the one RR pairs span. A split read across a
-deletion draws a gold arc. One across a tandem duplication draws a teal arc, the
-color of the pairs that span it, and with **Pileup connectors** on, a teal loop
-under its row where the read maps back over itself.
+opposite strand. With **View as pairs / link supplementary alignments** on,
+those segments chain onto one row: the inverted middle paints in the
+reverse-strand color between two forward-strand segments, and an arc joins each
+breakpoint pair: green at the junction LL pairs span, navy at the one RR pairs
+span. A split read across a deletion draws a gold arc. One across a tandem
+duplication draws a teal arc, the color of the pairs that span it, and with
+**Show pileup connectors** on, a teal loop under its row where the read maps
+back over itself.
 
 **Group by → Split reads** splits the pileup into two sections: reads with a
 supplementary alignment, and the rest. Together the two sections give the

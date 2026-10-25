@@ -7,6 +7,8 @@ import type { MenuItem, SubMenuItem } from './MenuTypes.ts'
 // spelled it this way all along.
 export const LAUNCH_LABEL = 'Launch'
 
+const ADVANCED_LABEL = 'Advanced'
+
 // Add `item` under the `label` submenu of `items`, creating that submenu the
 // first time. What makes several plugins' contributions collect in one place
 // instead of each becoming its own top-level row, whatever order they ran in.
@@ -32,6 +34,36 @@ export function pushIntoSubMenu(
   } else {
     items.push({ label, type: 'subMenu', subMenu: [item] })
   }
+}
+
+/**
+ * A track menu's Launch submenu moved to the end of its Advanced submenu, where
+ * it has one: what Launch opens (a consensus readout, another view on the
+ * region) is occasional, and the top level keeps the everyday rows. A menu
+ * without an Advanced row keeps Launch where it is.
+ */
+export function nestLaunchInAdvanced(items: MenuItem[]): MenuItem[] {
+  const isSub = (label: string) => (i: MenuItem) =>
+    'subMenu' in i && i.label === label
+  const launch = items.find(isSub(LAUNCH_LABEL))
+  const advanced = items.find(isSub(ADVANCED_LABEL)) as SubMenuItem | undefined
+  if (!launch || !advanced) {
+    return items
+  }
+  const { subMenu } = advanced
+  return items
+    .filter(i => i !== launch)
+    .map(i =>
+      i === advanced
+        ? {
+            ...advanced,
+            subMenu: [
+              ...(typeof subMenu === 'function' ? subMenu() : subMenu),
+              launch,
+            ],
+          }
+        : i,
+    )
 }
 
 // Several independent plugins (dotplot-view, linear-comparative-view, …) each

@@ -210,10 +210,10 @@ test('a size preset needs no display type, since only the canvas base declares i
 test('read connections are the band checkboxes', () => {
   expect(
     stepPaths('readConnections', 'cloud', 'LinearAlignmentsDisplay'),
-  ).toEqual(['Track menu → Read connections → Read cloud (checked)'])
+  ).toEqual(['Track menu → Read connections → Show read cloud (checked)'])
   expect(
     stepPaths('readConnections', 'off', 'LinearAlignmentsDisplay'),
-  ).toEqual(['Track menu → Read connections → Read arcs (unchecked)'])
+  ).toEqual(['Track menu → Read connections → Show read arcs (unchecked)'])
 })
 
 test('alignments fit is a Read height radio and autogrow an Advanced checkbox', () => {
@@ -221,7 +221,7 @@ test('alignments fit is a Read height radio and autogrow an Advanced checkbox', 
     'Track menu → Row height → Fit to track height',
   ])
   expect(stepPaths('heightMode', 'grow', 'LinearAlignmentsDisplay')).toEqual([
-    'Track menu → Advanced → Autogrow track height (checked)',
+    'Track menu → Advanced → Track height → Autogrow',
   ])
   expect(stepPaths('heightMode', 'fit', 'LinearBasicDisplay')).toEqual([
     'Track menu → Feature height → Track sizing → Fit row height to track height',
