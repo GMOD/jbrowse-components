@@ -143,7 +143,7 @@ test('a multi-row reorder lands in the session at once and undoes', async () => 
   const { history } = rootModel as WebRootModel
   view.setNewView(50, 0)
   fireEvent.click(await findByTestId(hts(PAINTING), {}, delay))
-  await findDisplayPainted('multirow-display', delay)
+  await findDisplayPainted('mark-display', delay)
   const display: MultiRowDisplay = view.tracks[0]!.displays[0]
   await waitFor(() => {
     expect(display.sources.length).toBeGreaterThan(2)

@@ -7,6 +7,9 @@ summary: "Bands of rows on the multi-sample variant displays (`facet`, a samples
 
 ## Status
 
+Amended 2026-10-25 by ADR-249: the multi-row feature display is the mark
+display, which drives this on its behalf; its own engine is deleted.
+
 Accepted (2026-09-25). Step 5 of
 the one-row-model plan,
 on Colin's answers to calls 6, 7 and 8 of the row-model handoff. Builds on

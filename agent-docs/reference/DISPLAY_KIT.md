@@ -99,13 +99,13 @@ re-render like that gets seen at all; INTERACTION_PERF.md has the rest.
 
 Where the value has to stay an array — a row list rebuilt from `rpcDataMap` on
 every region arrival — `stableIdentityComputed` is what keeps its identity, for
-the `!==` caches downstream (render-core's `createEncodeMemo`). Both multi-row
-families hold their `discoveredRows` through it.
+the `!==` caches downstream (render-core's `createEncodeMemo`). The mark display
+holds its `discoveredRows` through it.
 
 ## A hit test's index needs an observer, or it is not memoized
 
 A pointer handler runs untracked, so a computed whose only readers are
-`featureAt` / `getHit` / `contextTargetAt` **has no observer — and MobX discards
+`featureAt` / `getHit` **has no observer — and MobX discards
 an unobserved computed's value as it hands it over**. Every rAF-coalesced mouse
 move then rebuilds it: a Hilbert-sorted Flatbush, a Map over every sample in the
 callset, a row index over every loaded feature. The getter reads as memoized,
@@ -114,9 +114,8 @@ green. Five getters across three plugins were found doing it; two were worth
 holding.
 
 The fix is an `autorunOnReadyView` reading them bare, named `*HitIndexes`
-(`CanvasHitIndexes`, `LaneHitIndexes`, `MultiRowHitIndexes`) so the set is
-greppable. Multi-row's holds the channel memo, whose per-key buckets are its hit
-index, and the row table the hit test places through. Where the read goes through a structural `self`, **type it
+(`CanvasHitIndexes`, `LaneHitIndexes`) so the set is greppable. Where the read
+goes through a structural `self`, **type it
 with the getters' real types**, not `unknown`: a rename otherwise reads
 `undefined`, establishes no dependency, and leaves a keep-alive holding nothing.
 

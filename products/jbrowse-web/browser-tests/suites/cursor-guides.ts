@@ -101,7 +101,7 @@ function assert(cond: boolean, message: string) {
 const LEGEND = '[data-testid="floating-legend"]'
 
 const MULTIROW_HIGHLIGHT =
-  '[data-testid="multirow-display"] [data-testid="chrome-hover"]'
+  '[data-testid="mark-display"] [data-testid="chrome-hover"]'
 
 export const suite: TestSuite = {
   name: 'cursor-guides',
@@ -112,7 +112,7 @@ export const suite: TestSuite = {
         await bootTrack(
           page,
           'volvox_mouse_inheritance_painting',
-          'multirow-display',
+          'mark-display',
         )
         assert(
           (await countGuideLines(page)) === 0,
@@ -121,7 +121,7 @@ export const suite: TestSuite = {
 
         const { x, y } = await hoverFraction(
           page,
-          '[data-testid="multirow_canvas"]',
+          '[data-testid="mark-display"] canvas',
           0.6,
           0.5,
         )

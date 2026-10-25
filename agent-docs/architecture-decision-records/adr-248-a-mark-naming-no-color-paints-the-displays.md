@@ -8,7 +8,8 @@ summary: "The mark display's `encoding` gains `color`, a MarkColor beside `y` (`
 ## Status
 
 Accepted (2026-10-25), Colin's "go for it" on the swap's one design call in
-`ideas/ready/multi-row-is-the-mark-display-with-a-default-plot.md`.
+the multi-row swap plan, retired by
+[ADR-249](adr-249-the-multi-row-display-is-the-mark-display-with-a-paintings-default-plot.md).
 
 ## Context
 

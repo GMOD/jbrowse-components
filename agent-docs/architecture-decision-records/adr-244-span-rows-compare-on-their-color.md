@@ -8,7 +8,8 @@ summary: "On the mark display, clustering and \"Sort rows by ... here\" compare 
 ## Status
 
 Accepted (2026-10-25). The second gap in
-`ideas/ready/multi-row-is-the-mark-display-with-a-default-plot.md`.
+the multi-row swap plan, retired by
+[ADR-249](adr-249-the-multi-row-display-is-the-mark-display-with-a-paintings-default-plot.md).
 
 ## Context
 

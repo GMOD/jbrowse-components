@@ -7,6 +7,9 @@ summary: "A `span` instance's `row` lane is a stable row KEY, and the pass binds
 
 ## Status
 
+Amended 2026-10-25 by ADR-249: the multi-row feature display is the mark
+display, which drives this on its behalf; its own engine is deleted.
+
 Accepted (2026-09-24). Stage 1 of the row axis resolved on the GPU: the
 mechanism in `@jbrowse/render-core`, the `span` shape reading it, and the
 multi-row feature display driving it. Applies rule 3 of

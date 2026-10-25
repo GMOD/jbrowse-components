@@ -8,7 +8,8 @@ summary: "The mark display hides a color key row's categories through a Categori
 ## Status
 
 Accepted (2026-10-25). The third gap in
-`ideas/ready/multi-row-is-the-mark-display-with-a-default-plot.md`. A Fable
+the multi-row swap plan, retired by
+[ADR-249](adr-249-the-multi-row-display-is-the-mark-display-with-a-paintings-default-plot.md). A Fable
 design read weighed the options below against the code; this records its
 recommendation as built.
 

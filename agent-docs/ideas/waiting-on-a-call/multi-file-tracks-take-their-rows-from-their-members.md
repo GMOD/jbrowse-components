@@ -23,9 +23,9 @@ no piece on its own merit.
 - Every file in a stack must spell chromosomes alike. A `chr1` BED stacked with
   a `1` BED draws one of them blank, with no warning. This is the one to watch.
 - `MultiWiggleAdapter.sourceFeatures` copies each feature to stamp `source`.
-- A file with nothing in view has no row until data appears.
-- The multi-row display sorts its rows by name, not in the order the files were
-  listed.
+- Closed by ADR-249, which made the multi-row display the mark display: a
+  file with nothing in view keeps its row, and the rows take the order the
+  files were listed in, both off the adapter's listing.
 - One unreachable file blanks the whole stack, with an error naming it.
 - In a stack of GFFs the stamp hides GFF's own `source` column.
 - A `.bed.gz` dropped on JBrowse Web is refused, since a drop brings no `.tbi`;
@@ -122,12 +122,8 @@ the shared class. New configs write `MultiFileAdapter`.
   cluster executors loop over `getMembers` where they branch on
   `isMultiSource`, calling `fetchRegionRaws` per member.
   `multiSourceAdapter.ts` goes.
-- **Multi-row**: `executeMultiRowGetFeatures` fetches per member and dedupes
-  within a member (`:50` dedupes across the whole list today), then packs with
-  the member as the row. Ids leaving the worker are member-qualified, so a
-  click round-trips through `GetFeatureDetails`, which finds the feature in
-  `getFeaturesArray` by `id()` (`plugins/canvas/src/RenderFeatureDataRPC/GetFeatureDetails.ts:17-19`).
-  `MultiRowClusterFeaturesRPC` does the same.
+- **Multi-row** is the mark display (ADR-249), so the mark display's path
+  covers it.
 - **A member that fails** puts an error on its own row, and the others draw.
   Abort still aborts the whole fetch.
 
@@ -137,17 +133,15 @@ the shared class. New configs write `MultiFileAdapter`.
 `CoreGetRefNames`. `TreeSidebarMixin` gains a `rowListing` hook and merges the
 listed rows ahead of the found rows, in listing order, which the mark display
 does by hand today (`plugins/marks/src/LinearMarkDisplay/model.ts:705` on).
-Multi-row's own sort sets `unlistedRowsSort: 'sorted'`
-(`LinearMultiRowFeatureDisplay/model.ts:337`) and would re-sort the files
-alphabetically, so the mixin owns the rule: listed rows in listing order, then
-found rows sorted.
+The mixin owns the rule: listed rows in listing order, then found rows
+sorted.
 
 The worker's automatic row field prefers the listing's field whenever the
 adapter lists rows, so a multi-file track draws one row per file with no `rows`
 written into its config, where the form writes `rows: 'source'` today.
 
-Multi-row gains the listing; the mark display keeps what it has by moving onto
-the mixin. Wiggle already keeps a row with nothing in view, since a
+Multi-row reads the listing as the mark display does (ADR-249), and keeps it by
+moving onto the mixin. Wiggle already keeps a row with nothing in view, since a
 multi-source payload carries the full list in every region (`sourcesLogic.ts`),
 and MAF keeps its rows from a header fetch (`sourcesVolatile`).
 

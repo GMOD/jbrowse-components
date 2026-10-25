@@ -8,7 +8,8 @@ summary: "On the mark display a facet section is a band: under `rows`, a facet o
 ## Status
 
 Accepted (2026-10-25), on Colin's call in
-`ideas/ready/multi-row-is-the-mark-display-with-a-default-plot.md`: "a facet
+the multi-row swap plan, retired by
+[ADR-249](adr-249-the-multi-row-display-is-the-mark-display-with-a-paintings-default-plot.md): "a facet
 section is a band". Amends
 [ADR-169](adr-169-a-band-draws-the-clade-of-its-rows.md), whose bands of rows
 reach the mark display.

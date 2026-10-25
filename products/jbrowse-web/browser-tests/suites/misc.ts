@@ -50,14 +50,14 @@ const suite: TestSuite = {
       snapshot: 'misc-multirow-painting',
       loc: 'ctgA:1..50,000',
       tracks: ['volvox_mouse_inheritance_painting'],
-      displayTestId: 'multirow-display',
+      displayTestId: 'mark-display',
     }),
     lgvSnapshotTest({
       name: 'Multi-row painting with a declared order, row colors and groups',
       snapshot: 'misc-multirow-arranged',
       loc: 'ctgA:1..50,000',
       tracks: ['volvox_mouse_inheritance_rows'],
-      displayTestId: 'multirow-display',
+      displayTestId: 'mark-display',
     }),
   ],
 }
