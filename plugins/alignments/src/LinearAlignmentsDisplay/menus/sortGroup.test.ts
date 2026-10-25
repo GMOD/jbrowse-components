@@ -149,9 +149,11 @@ describe('curated modes', () => {
         ...opts,
         modes: [...opts.modes],
       })
-      expect(item.subMenu.filter(i => i.checked).map(i => i.label)).toEqual([
-        'Start position',
-      ])
+      expect(
+        item.subMenu.flatMap(i =>
+          'checked' in i && i.checked ? [i.label] : [],
+        ),
+      ).toEqual(['Start position'])
     },
   )
 
@@ -160,9 +162,9 @@ describe('curated modes', () => {
       ...opts,
       modes: [...opts.modes],
     })
-    expect(item.subMenu.filter(i => i.checked).map(i => i.label)).toEqual([
-      'Longest features first',
-    ])
+    expect(
+      item.subMenu.flatMap(i => ('checked' in i && i.checked ? [i.label] : [])),
+    ).toEqual(['Longest features first'])
   })
 })
 
