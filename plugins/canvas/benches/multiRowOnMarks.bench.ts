@@ -116,7 +116,12 @@ const FIXTURES: Record<string, Fixture> = {
     open: bigBed(
       'https://jbrowse.org/demos/chromhmm/roadmap_15state_127epigenomes.bb',
     ),
-    region: { refName: 'chr7', start: 25_000_000, end: 30_000_000 },
+    region: {
+      assemblyName: 'hg19',
+      refName: 'chr7',
+      start: 25_000_000,
+      end: 30_000_000,
+    },
     rowsField: 'cellType',
     field: 'name',
   },
@@ -125,7 +130,12 @@ const FIXTURES: Record<string, Fixture> = {
       uriLocation,
       'https://jbrowse.org/demos/bxd/bxd_painting.bed.gz',
     ),
-    region: { refName: 'chr1', start: 0, end: 195_471_971 },
+    region: {
+      assemblyName: 'mm10',
+      refName: 'chr1',
+      start: 0,
+      end: 195_471_971,
+    },
     rowsField: 'sample',
     field: 'name',
   },
@@ -165,7 +175,7 @@ const multiRowColor: WorkerColor =
     : { value: undefined, field }
 const rgbExpression = `jexl:'rgb(' + feature.${colorColumn} + ')'`
 
-function transferablesOf(value: Record<string, unknown>) {
+function transferablesOf(value: object) {
   const buffers = new Set<ArrayBuffer>()
   for (const v of Object.values(value)) {
     if (ArrayBuffer.isView(v) && v.buffer instanceof ArrayBuffer) {
@@ -292,7 +302,7 @@ function marksTuples(r: MarksOut) {
         ? keyColor(entries[e.colorKey[i]!]!.value)
         : entries[e.colorKey[i]!]!.value
       : colorAt(e, i)
-    out.push([e.x[i], e.x2[i], keys[e.row[i]!], color].join('\t'))
+    out.push([e.x[i], e.x2[i], keys[e.row![i]!], color].join('\t'))
   }
   return out.sort()
 }
