@@ -38,6 +38,9 @@
 //     marks-identity the same with `{ scale: 'identity' }`, the mark
 //                    display's own spelling (ADR-243): the worker finds the
 //                    column and keys each distinct raw value's parsed color
+//     marks-spliced  the spliced plot, a 0-height `rect` over each span
+//                    beside the identity `rect` over a keepEmpty `flatten`;
+//                    its tuples are the blocks layer's
 //   --color=field  a categorical field (`name`, the state):
 //     multirow, control  as above with `color.field`
 //     marks-key      an ordinal color over the field, the `colorKey` lane
@@ -273,6 +276,32 @@ function marksIdentityArm() {
   })
 }
 
+function marksSplicedArm() {
+  const { layers, sections } = layerTables(
+    fetched,
+    {
+      transform: [],
+      facet: { field: rowsField },
+      layers: [{}, { transform: [{ type: 'flatten', keepEmpty: true }] }],
+    },
+    jexl,
+  )
+  const encoded = layers.map(({ table, row }) =>
+    encodeFeatures(
+      table,
+      { x: 'start', x2: 'end', row, color: { scale: 'identity' } },
+      ['row', 'colorKey'],
+      { jexl },
+    ),
+  )
+  const result = { layers: [encoded[1]!, encoded[0]!], facet: sections }
+  return structuredClone(result, {
+    transfer: encoded.flatMap(e => [
+      ...encodedChannelTransferables(e),
+    ]) as ArrayBuffer[],
+  })
+}
+
 type MultiRowOut = ReturnType<typeof multiRowArm>
 // Either marks arm: the jexl arm fills `color`, the key arm `colorKey`.
 interface MarksOut {
@@ -343,6 +372,7 @@ const arms: {
     ? [
         { name: 'marks-jexl', run: marksJexlArm, tuples: marksTuples },
         { name: 'marks-identity', run: marksIdentityArm, tuples: marksTuples },
+        { name: 'marks-spliced', run: marksSplicedArm, tuples: marksTuples },
       ]
     : []),
   { name: 'marks-key', run: marksKeyArm, tuples: marksTuples },

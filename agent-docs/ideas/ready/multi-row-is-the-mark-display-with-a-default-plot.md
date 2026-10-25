@@ -1,6 +1,6 @@
 ---
 name: multi-row-is-the-mark-display-with-a-default-plot
-description: LinearMultiRowFeatureDisplay draws colored features in rows, which is a `rect` mark with `rows` and a color. Rebuild it as the mark display with a default plot, as ADR-178 rebuilt Manhattan, and delete its own worker, encoder, model and component. Benched on the Roadmap ChromHMM painting, the mark worker runs in about half the multi-row worker's time and sends a quarter of its bytes. Two gaps on the mark display remain, row discovery with the menus and drawing a spliced feature's blocks; a feature's own color (ADR-243), clustering span rows (ADR-244), hiding a key row (ADR-246) and bands of rows (ADR-247) are done. Read before touching either display's rows, row colors, clustering or legend hides.
+description: LinearMultiRowFeatureDisplay draws colored features in rows, which is a `rect` mark with `rows` and a color. Rebuild it as the mark display with a default plot, as ADR-178 rebuilt Manhattan, and delete its own worker, encoder, model and component. Benched on the Roadmap ChromHMM painting, the mark worker runs in about half the multi-row worker's time and sends a quarter of its bytes. One gap on the mark display remains, row discovery with the menus; spliced features (a block hovers and opens as its feature), a feature's own color (ADR-243), clustering span rows (ADR-244), hiding a key row (ADR-246) and bands of rows (ADR-247) are done. Read before touching either display's rows, row colors, clustering or legend hides.
 ---
 
 # Multi-row is the mark display with a default plot
@@ -83,6 +83,10 @@ bytes.
 - `marks-identity` is the shipped spelling, `{ scale: 'identity' }`
   (ADR-243), its colors equal to multi-row's: 0.45x on Roadmap
   chr7:25-30 Mb and 0.46x on BXD on the laptop, 2026-10-25.
+- `marks-spliced` is the spliced pair over an unspliced painting, the
+  identity color on both: 0.84x and 32.1 B/feature on Roadmap
+  chr7:25-30 Mb, 0.58x and 39.6 B/feature on BXD, against 0.43x and 16.1
+  for one `rect`, laptop on AC, 2026-10-25.
 - **Not timed:** the main thread's work per arriving region
   (`buildMultiRowChannels` against the mark display's color paint and row-table
   remap) and the paint. ADR-165 already has both displays reorder, focus and
@@ -120,11 +124,16 @@ share it, not in `LinearMarkDisplay/model.ts` (2,076 lines).
    reads every loaded region). Color by's itemRgb preset writes
    `{ scale: { type: 'identity' } }`; Edit plot's scale picker leaves identity
    out (ADR-243).
-2. **Spliced features.** Multi-row packs a BED12 row's or a transcript's
-   blocks as entries sharing an id (`splicedParts` in
-   `packMultiRowFeatures.ts`), draws a 1 px span over each gap between them,
-   and hits and hover-boxes the whole feature. The `protein_domains/vav`
-   figure goes back to solid bars without it.
+2. **Spliced features: done.** The plot is two marks, a `rect` at
+   `height.band: 0` over the feature's span and a `rect` over
+   `{ type: 'flatten', keepEmpty: true }`, an Edit plot example. A block
+   fanned out of a feature's child features hovers, shades, names its span
+   and opens as the whole feature in every mark, through the `owner` lane
+   (`rootRowOf` in `stepTables.ts`, `featureInstances.ts`). Two pieces
+   wait for the subtype. Its default plot should draw the pair only where
+   `scanPlotFields` finds subfeatures, since over an unspliced painting the
+   pair doubles the worker's time and bytes (`marks-spliced` below). Its
+   window (gap 1) should keep every block of a feature it overlaps.
 
 Small, any time: an identity key with no `domain` (multi-row names each
 color by its features' names; the mark display keys nothing), the feature
