@@ -476,10 +476,10 @@ export const svSpecs: ScreenshotSpec[] = [
             },
           ],
           tracks: [
-            'variants_hg002',
+            { trackId: 'variants_hg002', height: 70 },
             {
               trackId: 'hg002_nanopore_hp',
-              height: 300,
+              height: 270,
               forceLoad: true,
               facet: 'tags.HP',
               encoding: { color: 'tags.HP' },
