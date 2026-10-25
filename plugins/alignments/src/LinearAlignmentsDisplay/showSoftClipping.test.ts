@@ -180,7 +180,7 @@ describe('alignments pileup.mismatches.encoding.opacity (fade by base quality)',
     const { display } = createDisplay()
     // Top-level Show item, not nested under Advanced.
     const show = menuSubItems(display.trackMenuItems(), 'Show...')
-    clickMenuItem(show, 'Fade low quality mismatches')
+    clickMenuItem(show, 'Fade low-quality mismatches')
     expect(display.mismatchOpacityField).toBe('baseQuality')
   })
 })

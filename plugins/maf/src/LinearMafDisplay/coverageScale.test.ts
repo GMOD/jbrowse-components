@@ -134,7 +134,7 @@ test('the interbase toggle greys out with the band hidden', () => {
   const row = display
     .trackMenuItems()
     .flatMap(i => ('subMenu' in i ? resolveSubMenu(i) : [i]))
-    .find(i => 'label' in i && i.label === 'Interbase indicators')
+    .find(i => 'label' in i && i.label === 'Insertion and clip markers')
   expect(row && 'disabled' in row && row.disabled).toBe(true)
 })
 
@@ -152,5 +152,5 @@ test('the track menu offers the shared coverage rows', () => {
         .trackMenuItems()
         .flatMap(i => ('subMenu' in i ? resolveSubMenu(i) : [i])),
     ),
-  ).toEqual(expect.arrayContaining(['Interbase indicators']))
+  ).toEqual(expect.arrayContaining(['Insertion and clip markers']))
 })

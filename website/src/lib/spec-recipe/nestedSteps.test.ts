@@ -59,7 +59,7 @@ test("the mismatches' quality fade is the checkbox under Mismatches", () => {
   })
   const add = recipe.steps.find(s => s.example?.includes('“'))
   expect(add?.substeps?.map(sub => sub.title)).toEqual([
-    expect.stringContaining('Fade low quality mismatches (checked)'),
+    expect.stringContaining('Fade low-quality mismatches (checked)'),
   ])
   expect(recipe.unmapped).toEqual([])
 })

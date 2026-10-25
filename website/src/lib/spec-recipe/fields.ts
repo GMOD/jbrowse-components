@@ -1152,7 +1152,7 @@ const mismatchesLayer = layerCheckbox(
   'Show... → Mismatches',
   'Per-base differences read from the CIGAR (and cs tag, on synteny tracks). Worth unchecking when zoomed out far enough that each one is sub-pixel and they paint over the block structure.',
 )
-const mismatchesFade = checkbox('Show... → Fade low quality mismatches')
+const mismatchesFade = checkbox('Show... → Fade low-quality mismatches')
 const mismatchesStep: FieldRecipe = (value, context) => {
   const opacity = channelOf(asRecord(asRecord(value)?.encoding)?.opacity)
   const field = asString(opacity?.field)

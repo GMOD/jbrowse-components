@@ -87,7 +87,7 @@ export function getCoverageMenuItems(model: CoverageMenuModel): MenuItem[] {
 }
 
 /**
- * The coverage band's "Interbase indicators" row. Every interbase mark
+ * The coverage band's "Insertion and clip markers" row. Every interbase mark
  * draws inside the band and its hit test reads the band's height, so with the
  * band hidden the row greys out and names that switch.
  */
@@ -97,7 +97,7 @@ export function interbaseIndicatorsMenuItem(model: {
   setShowInterbaseIndicators: (show: boolean) => void
 }): MenuItem {
   return toggleItem(
-    'Interbase indicators',
+    'Insertion and clip markers',
     model.showInterbaseIndicators,
     show => {
       model.setShowInterbaseIndicators(show)

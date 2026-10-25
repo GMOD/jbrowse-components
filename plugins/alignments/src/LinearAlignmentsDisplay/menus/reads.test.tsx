@@ -134,7 +134,7 @@ test('the row cap is not here', () => {
 
 function interbaseRow(showCoverage: boolean) {
   return subMenuOf(makeModel({ showCoverage })).find(
-    r => 'label' in r && r.label === 'Interbase indicators',
+    r => 'label' in r && r.label === 'Insertion and clip markers',
   )
 }
 

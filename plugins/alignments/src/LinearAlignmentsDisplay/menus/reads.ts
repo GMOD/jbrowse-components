@@ -90,7 +90,7 @@ export function getReadsMenuItems(model: ReadsModel) {
       model.setShowMismatches(show)
     }),
     toggleItem(
-      'Fade low quality mismatches',
+      'Fade low-quality mismatches',
       model.mismatchOpacityField === 'baseQuality',
       fade => {
         model.setMismatchOpacityField(fade ? 'baseQuality' : undefined)
