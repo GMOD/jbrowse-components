@@ -15,6 +15,7 @@ export async function clusterMarkRows({
 }) {
   return clusterMatrix({
     data: await collectMarkRowMatrix({ pluginManager, args }),
+    partition: args.partition,
     statusCallback: args.statusCallback,
     signal: args.signal,
   })

@@ -3,6 +3,7 @@ import { lazy } from 'react'
 import {
   ConfigurationReference,
   getConf,
+  readConfObject,
   setConf,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
@@ -83,6 +84,11 @@ import {
   sortRowsAtColumn,
   sidebarPanelWidth,
 } from '@jbrowse/tree-sidebar'
+import {
+  ROW_GROUP_FIELD,
+  compileRowGroups,
+  tagRowGroups,
+} from '@jbrowse/tree-sidebar/rowGroups'
 import {
   ScoreScaleMixin,
   autoscaleDomainFromSpans,
@@ -214,7 +220,12 @@ import type {
   RowTable,
 } from '@jbrowse/render-core/marks'
 import type { PerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
-import type { RowSource, SvgSidebarProps } from '@jbrowse/tree-sidebar'
+import type {
+  RowBanding,
+  RowSource,
+  SvgSidebarProps,
+} from '@jbrowse/tree-sidebar'
+import type { RowGroup } from '@jbrowse/tree-sidebar/rowGroups'
 import type { ValueScale } from '@jbrowse/wiggle-core'
 
 export type MarkRenderingBackend = PerRegionRenderingBackend<
@@ -225,6 +236,14 @@ export type MarkRenderingBackend = PerRegionRenderingBackend<
 const MarkPlotDialog = lazy(() => import('./components/MarkPlotDialog.tsx'))
 
 const NO_REGIONS: ReadonlyMap<number, MarkRegionData> = new Map()
+
+// The row attributes a config gives its rows: `group` where `rowGroups`
+// declares any.
+function rowAttributesOf(conf: AnyConfigurationModel): readonly string[] {
+  return (readConfObject(conf, 'rowGroups') as unknown[]).length > 0
+    ? [ROW_GROUP_FIELD]
+    : []
+}
 const NO_JOINED_FIELDS: JoinedPlotFields = { numeric: [], categorical: [] }
 const NO_LINK_REGIONS: readonly LinkRegion[] = []
 
@@ -375,11 +394,51 @@ export function stateModelFactory(
          * #getter
          * The `facet` object as written, or undefined while unfaceted.
          */
-        get facet(): FacetSetting | undefined {
+        get declaredFacet(): FacetSetting | undefined {
           return facetSettingOf({
             field: getConf(self, ['facet', 'field']),
             sort: getConf(self, ['facet', 'sort']),
           })
+        },
+        /**
+         * #getter
+         * The `rowGroups` entries, each slot filled in.
+         */
+        get rowGroups(): RowGroup[] {
+          return (
+            readConfObject(self.conf, 'rowGroups') as Partial<RowGroup>[]
+          ).map(({ match = '', group = '' }) => ({ match, group }))
+        },
+        /**
+         * #getter
+         * The fields a row carries beside its name, which a facet bands the
+         * rows by: `group` where `rowGroups` declares groups. Config alone, so
+         * whether a facet bands or splits is known before a feature loads.
+         */
+        get rowAttributeFields(): readonly string[] {
+          return rowAttributesOf(self.conf)
+        },
+        /**
+         * #getter
+         * Whether the facet stacks the rows in bands: `rows` drawn and the
+         * facet on a row attribute.
+         */
+        get bandsRows(): boolean {
+          const facet = this.declaredFacet
+          return (
+            !!facet &&
+            getConf(self, ['rows', 'field']) !== '' &&
+            this.rowAttributeFields.includes(facet.field)
+          )
+        },
+        /**
+         * #getter
+         * The facet the worker splits the features into sections by:
+         * `declaredFacet`, unless it bands the rows, which are split by
+         * `rows` alone and banded here.
+         */
+        get facet(): FacetSetting | undefined {
+          return this.bandsRows ? undefined : this.declaredFacet
         },
         /**
          * #getter
@@ -604,7 +663,7 @@ export function stateModelFactory(
         /**
          * #getter
          * Whether the display draws one row per value: a `rows` field and no
-         * `facet`, which draws in its place until bands of rows land.
+         * `facet` splitting the features, which draws in the rows' place.
          */
         get drawsRows(): boolean {
           return self.rowsField !== '' && !self.facet
@@ -621,11 +680,33 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * `TreeSidebarMixin`'s hook: none, since a row is a value of the rows
-         * field and has no attributes.
+         * The `rowGroups` entries whose `match` compiles.
          */
-        get rowColorFields(): readonly string[] {
-          return []
+        get rowGroupMatchers() {
+          return compileRowGroups(self.rowGroups)
+        },
+        /**
+         * #getter
+         * `TreeSidebarMixin`'s hook: the facet's bands where it bands the
+         * rows, its `sort` first and then the `rowGroups` groups in the order
+         * they are declared.
+         */
+        get rowBanding(): RowBanding | undefined {
+          const facet = self.declaredFacet
+          return self.bandsRows && facet
+            ? {
+                field: facet.field,
+                sort: [...facet.sort, ...self.rowGroups.map(g => g.group)],
+              }
+            : undefined
+        },
+        /**
+         * #method
+         * `TreeSidebarMixin`'s hook: each row tagged with the group of the
+         * first `rowGroups` entry its name matches.
+         */
+        expandRows(rows: RowSource[]): RowSource[] {
+          return tagRowGroups(rows, this.rowGroupMatchers)
         },
       }))
       .views(self => ({
@@ -1423,7 +1504,10 @@ export function stateModelFactory(
          * slot: jbrowse-img fails an export on an error and warns on the rest.
          */
         get configProblems(): MarkProblem[] {
-          return markProblems(markPlotSettingsOf(self.conf))
+          return markProblems({
+            ...markPlotSettingsOf(self.conf),
+            rowAttributes: rowAttributesOf(self.conf),
+          })
         },
         /**
          * #method
@@ -1432,7 +1516,10 @@ export function stateModelFactory(
          * `encoding.y` itself.
          */
         configProblemsOf(conf: AnyConfigurationModel): string[] {
-          return markProblems(markPlotSettingsOf(conf)).map(problemText)
+          return markProblems({
+            ...markPlotSettingsOf(conf),
+            rowAttributes: rowAttributesOf(conf),
+          }).map(problemText)
         },
         /**
          * #method

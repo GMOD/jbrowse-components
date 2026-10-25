@@ -11,8 +11,7 @@ import {
   retiredRowAxisWithGridSpellings,
   rowAxisWithGridConfigSchema,
 } from '@jbrowse/tree-sidebar/rowAxisWithGridConfigSchema'
-
-import { rowGroupConfigSchema } from './rowGroupConfigSchema.ts'
+import { rowGroupConfigSchema } from '@jbrowse/tree-sidebar/rowGroupConfigSchema'
 
 import type { Instance } from '@jbrowse/mobx-state-tree'
 

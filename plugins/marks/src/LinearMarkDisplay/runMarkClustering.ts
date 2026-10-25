@@ -24,6 +24,7 @@ export interface MarkClusterModel extends ClusterRunModel<RowSource> {
   rowsField: string
   rowCompare: RowCompare | undefined
   rowCompareLabel: string
+  clusterPartition: string[][] | undefined
   layerRequests: LayerRequest[]
   host: { bpPerPx: number }
   rpcProps: () => { transform: TransformStep[]; facet?: FacetSpec }
@@ -66,6 +67,7 @@ export async function markRowMatrixArgs(
     bpPerPx: model.host.bpPerPx,
     layer,
     compare: rowCompare.by,
+    ...(model.clusterPartition ? { partition: model.clusterPartition } : {}),
     ...(options
       ? {
           regionOpts: await Promise.all(

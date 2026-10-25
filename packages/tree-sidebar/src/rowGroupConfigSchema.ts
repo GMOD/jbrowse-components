@@ -3,9 +3,9 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 /**
  * #config RowGroup
  * #category display
- * One entry of the multi-row feature display's `rowGroups`: a row joins the
- * `group` of the first entry whose `match` regex its name matches, and
- * `rowColor: { field: 'group' }` colors the groups.
+ * One entry of a row display's `rowGroups`: a row joins the `group` of the
+ * first entry whose `match` regex its name matches, `facet: 'group'` stacks
+ * the groups in bands, and `rowColor: { field: 'group' }` colors them.
  *
  * #example
  * ```js

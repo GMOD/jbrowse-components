@@ -1036,15 +1036,27 @@ test('a zoom range that admits no zoom never draws', () => {
   ])
 })
 
-test('rows beside a facet on another field is named as not drawn yet', () => {
+test('rows beside a facet on a feature field is named as drawing alone', () => {
   const BAR = { mark: 'bar', encoding: { y: 'score' } }
   expect(found([BAR], undefined, undefined, 'source')).toEqual([])
   expect(
     problemsOf([BAR], 'tissue', undefined, 'source').map(problemText),
   ).toEqual([
-    'rows.field: facet stacks a labelled section per value and rows one row per value; bands of rows over two fields are not drawn yet, so the facet draws alone',
+    'rows.field: facet splits the features into a labelled section per value and rows one row per value; a facet bands the rows only on a row attribute, the group rowGroups writes, so this one draws alone',
   ])
   expect(found([BAR], 'source', undefined, 'source')).toEqual([])
+})
+
+test('rows beside a facet on a row attribute band the rows and raise nothing', () => {
+  const plot = {
+    marks: [{ mark: 'bar', encoding: { y: 'score' } }] as MarkSnapshot[],
+    facet: { field: 'group' },
+    rows: { field: 'source' },
+  }
+  expect(
+    markProblems({ ...plot, rowAttributes: ['group'] }).map(p => p.rule),
+  ).toEqual([])
+  expect(markProblems(plot).map(p => p.rule)).toContain('rows-beside-facet')
 })
 
 test("a pileup under rows is told its packed rows share their value's row", () => {

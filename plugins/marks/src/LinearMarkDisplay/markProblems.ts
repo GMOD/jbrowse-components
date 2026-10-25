@@ -826,7 +826,8 @@ function ownProblems(
  * the field its sections stack by and the steps each section runs; under one,
  * a rowless mark stands on each section's first row by design. `transform` is
  * the display's own steps. `rows` is the field each value of which takes one
- * row, and `axis` the scale every mark's `y` reads through. An `undefined`
+ * row, `rowAttributes` the fields its rows carry, which a facet bands them
+ * by, and `axis` the scale every mark's `y` reads through. An `undefined`
  * mark or step is one the caller could not read, such as one a file's schema
  * refuses: it keeps its index, so the others are reported where they are, and
  * is checked for nothing.
@@ -836,6 +837,7 @@ export interface PlotSnapshot {
   transform?: Steps
   facet?: FacetSnapshot
   rows?: RowsSnapshot
+  rowAttributes?: readonly string[]
   axis?: AxisSnapshot
 }
 
@@ -850,9 +852,12 @@ export function markProblems({
   facet,
   transform = [],
   rows,
+  rowAttributes = [],
   axis,
 }: PlotSnapshot): MarkProblem[] {
-  const faceted = named(facet?.field)
+  const bandsRows =
+    named(rows?.field) && rowAttributes.includes(String(facet?.field))
+  const faceted = named(facet?.field) && !bandsRows
   const drawsRows = named(rows?.field) && !faceted
   // the field the sections or rows are split on, which every section's rows
   // keep through the steps that make rows
@@ -903,7 +908,7 @@ export function markProblems({
           found(
             'rows-beside-facet',
             'rows.field',
-            'facet stacks a labelled section per value and rows one row per value; bands of rows over two fields are not drawn yet, so the facet draws alone',
+            'facet splits the features into a labelled section per value and rows one row per value; a facet bands the rows only on a row attribute, the group rowGroups writes, so this one draws alone',
           ),
         ]
       : []),

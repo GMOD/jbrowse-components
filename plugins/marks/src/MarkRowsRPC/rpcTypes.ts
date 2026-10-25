@@ -24,6 +24,8 @@ export interface MarkRowMatrixArgs {
   // the mark whose instances fill each row, and what of them
   layer: LayerRequest
   compare: RowCompareBy
+  // the rows of each band, which cluster apart
+  partition?: string[][]
   // the adapter options each region's fetch carries, as the display's own
   // does, so the matrix reads the features the plot draws
   regionOpts?: (object | undefined)[]

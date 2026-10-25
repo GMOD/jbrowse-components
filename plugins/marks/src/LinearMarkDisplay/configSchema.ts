@@ -16,6 +16,7 @@ import {
   retiredRowAxisSpellings,
   rowAxisConfigSchema,
 } from '@jbrowse/tree-sidebar/rowAxisConfigSchema'
+import { rowGroupConfigSchema } from '@jbrowse/tree-sidebar/rowGroupConfigSchema'
 import { rowHeightConfigSchemaFields } from '@jbrowse/tree-sidebar/rowHeightConfigSchemaFields'
 import {
   retiredScalesSpelling,
@@ -434,7 +435,10 @@ export function configSchemaFactory() {
        * steps pack it: `"HP"`, or `{ field, sort, transform }` with the
        * order the sections stack in and the steps each runs before any mark's,
        * a per-section `pileup` among them. A chip names each section and hides
-       * it. Split after `transform` and before any mark's own steps.
+       * it. Split after `transform` and before any mark's own steps. Beside
+       * `rows`, a facet on a row attribute, the `group` `rowGroups` writes,
+       * stacks the rows in labelled bands instead, each band's rows in their
+       * arranged order.
        */
       facet: markFacetSchema,
       /**
@@ -443,9 +447,9 @@ export function configSchemaFactory() {
        * a multi-BigWig is one xyplot per file. The worker splits the features
        * on the field as it does for `facet`, and the rows take the tree
        * sidebar, the row labels, clustering and the arrangement dialog, whose
-       * order, labels, tree and focus this object holds. Beside a `facet`, the
-       * facet draws; on another field that asks for bands of rows, which are
-       * not drawn yet, the display shows a notice.
+       * order, labels, tree and focus this object holds. A `facet` on a row
+       * attribute stacks the rows in bands; a facet on a feature field draws
+       * its sections in place of the rows, and the display shows a notice.
        *
        * #example
        * ```js
@@ -463,6 +467,27 @@ export function configSchemaFactory() {
        * `scale.domain`/`scale.range`, which the arrangement dialog writes.
        */
       rowColor: rowColorConfigSchema,
+      /**
+       * #slot rowGroups
+       * An array of `{ match, group }` tagging each row with the `group` of
+       * the first entry whose regex its name matches, a row attribute:
+       * `facet: 'group'` stacks the groups in bands, and
+       * `rowColor: { field: 'group' }` colors them. A row no entry matches
+       * has no group.
+       *
+       * #example
+       * ```js
+       * {
+       *   rows: 'sample',
+       *   rowGroups: [
+       *     { match: '^CLUP', group: 'Wolf' },
+       *     { match: '^CLAT', group: 'Coyote' },
+       *   ],
+       *   facet: 'group',
+       * }
+       * ```
+       */
+      rowGroups: types.array(rowGroupConfigSchema),
       /**
        * #slot axis
        * The row axis down the left of the rows `rows` draws: the cluster tree

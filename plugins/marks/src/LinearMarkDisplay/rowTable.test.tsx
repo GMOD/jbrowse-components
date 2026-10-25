@@ -8,6 +8,7 @@ import { render, screen } from '@testing-library/react'
 import MarkTooltip from './components/MarkTooltip.tsx'
 import { findMarkHit } from './findMarkHit.ts'
 import { listingNamesRows } from './rowTable.ts'
+import { markRowMatrixArgs } from './runMarkClustering.ts'
 import {
   REGION,
   createTestEnvironment,
@@ -217,6 +218,88 @@ test('text labels follow a reorder, and a hidden row places none', () => {
   expect(bandOf()).toEqual({ s10: 0, s2: 1, mom: 2, dad: 3 })
   display.setRowFocus(['mom', 'dad'])
   expect(bandOf()).toEqual({ mom: 0, dad: 1 })
+})
+
+const FAMILY_GROUPS = {
+  rows: 'source',
+  rowGroups: [
+    { match: '^(mom|dad)$', group: 'parents' },
+    { match: '^s', group: 'children' },
+  ],
+}
+
+test('a facet on the group rowGroups writes stacks the rows in bands, split by rows alone', () => {
+  const display = loaded({ ...FAMILY_GROUPS, facet: 'group' }, [
+    { mark: 'rect' },
+  ])
+  expect(display.bandsRows).toBe(true)
+  expect(display.facet).toBeUndefined()
+  expect(display.drawsRows).toBe(true)
+  expect(display.rpcProps().facet).toEqual({ field: 'source' })
+  expect(display.rowBands.map(b => b.label)).toEqual(['parents', 'children'])
+  expect(display.sources.map(row => row.name)).toEqual([
+    'dad',
+    'mom',
+    's2',
+    's10',
+  ])
+  expect(display.clusterPartition).toEqual([
+    ['dad', 'mom'],
+    ['s2', 's10'],
+  ])
+  expect(display.configProblems).toEqual([])
+  expect(display.rowColorFields).toContain('group')
+})
+
+test("a band's order follows facet.sort, and a hit names the row the band placed", () => {
+  const display = loaded(
+    { ...FAMILY_GROUPS, facet: { field: 'group', sort: ['children'] } },
+    [{ mark: 'rect' }],
+  )
+  expect(display.rowBands.map(b => b.label)).toEqual(['children', 'parents'])
+  const { canvasWidth, canvasHeight } = display.renderState
+  let top: MarkHitInfo | undefined
+  for (let y = 0; y < canvasHeight && !top; y += 2) {
+    for (let x = 0; x < canvasWidth && !top; x += 8) {
+      top = findMarkHit(
+        x,
+        y,
+        display.renderBlocks,
+        display.rpcDataMap,
+        display.markList,
+        display.renderState,
+        display.host.displayedRegions,
+      )
+    }
+  }
+  // the children band stacks first, so the topmost span is a child's
+  expect(['s2', 's10']).toContain(rowNameOf(display, top!))
+})
+
+test('a clustering run under bands clusters each band apart', async () => {
+  const display = loaded({ ...FAMILY_GROUPS, facet: 'group' }, [
+    { mark: 'rect' },
+  ])
+  const args = await markRowMatrixArgs(
+    display,
+    [REGION],
+    new AbortController().signal,
+  )
+  expect(args.partition).toEqual([
+    ['dad', 'mom'],
+    ['s2', 's10'],
+  ])
+  expect(args.facet).toEqual({ field: 'source' })
+})
+
+test('beside rows a facet on a feature field still splits the features, and says so', () => {
+  const display = loaded({ ...FAMILY_GROUPS, facet: 'tissue' }, [
+    { mark: 'rect' },
+  ])
+  expect(display.bandsRows).toBe(false)
+  expect(display.facet?.field).toBe('tissue')
+  expect(display.drawsRows).toBe(false)
+  expect(display.configProblems.map(p => p.rule)).toContain('rows-beside-facet')
 })
 
 test('sort at a column after a reorder names each value by its key, not its slot', () => {

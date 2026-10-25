@@ -602,7 +602,7 @@ function checkMarkDisplay(
   if (!slots || !isRecord(lifted)) {
     return
   }
-  const { facet, rows } = lifted
+  const { facet, rows, rowGroups } = lifted
   const [axis] = slots.flatMap(slot =>
     valueAxesOf(lifted[slot.name], slot, slot.name),
   )
@@ -616,6 +616,8 @@ function checkMarkDisplay(
       slots,
     ),
     rows: isRecord(rows) ? rows : undefined,
+    rowAttributes:
+      Array.isArray(rowGroups) && rowGroups.length > 0 ? ['group'] : [],
     axis: axis && {
       where: axis.where,
       fence: axis.fence,

@@ -32,6 +32,8 @@
     "./rowAxisWithGridConfigSchema": "./src/rowAxisWithGridConfigSchema.ts",
     "./rowColorChoice": "./src/rowColorChoice.ts",
     "./rowColorScale": "./src/rowColorScale.ts",
+    "./rowGroupConfigSchema": "./src/rowGroupConfigSchema.ts",
+    "./rowGroups": "./src/rowGroups.ts",
     "./rowHeightConfigSchemaFields": "./src/rowHeight/rowHeightConfigSchemaFields.ts",
     "./rowSortColumn": "./src/rowSortColumn.ts",
     "./treeSidebarGeometry": "./src/treeSidebarGeometry.ts"
@@ -83,6 +85,8 @@
       "./rowAxisWithGridConfigSchema": "./esm/rowAxisWithGridConfigSchema.js",
       "./rowColorChoice": "./esm/rowColorChoice.js",
       "./rowColorScale": "./esm/rowColorScale.js",
+      "./rowGroupConfigSchema": "./esm/rowGroupConfigSchema.js",
+      "./rowGroups": "./esm/rowGroups.js",
       "./rowHeightConfigSchemaFields": "./esm/rowHeight/rowHeightConfigSchemaFields.js",
       "./rowSortColumn": "./esm/rowSortColumn.js",
       "./treeSidebarGeometry": "./esm/treeSidebarGeometry.js"
