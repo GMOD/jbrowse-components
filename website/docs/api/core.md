@@ -435,7 +435,7 @@ import { DEFAULT_COLOR_SCHEME } from '@jbrowse/core/util/colorSchemes'
 
 What surrounds an encode: the jexl instance a `jexl:` channel compiles
 against — a caller whose channels are all readers or field names passes
-none — a progress reporter, and the region's fetched features an `owner`
+none — a progress reporter, and the region's fetched features a `root`
 lane names rows of.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncoding.ts)
@@ -714,9 +714,10 @@ import { hitIndexOf } from '@jbrowse/core/util/markEncoding'
 
 ## IdentityRef
 
-Each feature's own color, off the BED color column under whichever name
-the file gives it: ADR-166's identity scale. The encoder keys each feature
-by the `r,g,b` its color parses to, `''` where it carries none.
+Each feature's own color: ADR-166's identity scale. With `field`, the CSS
+color the field holds, as Vega-Lite's identity scale reads its field; with
+none, the BED color column under whichever name the file gives it, keyed
+by the `r,g,b` it parses to. A feature carrying none keys as `''`.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
 
@@ -824,7 +825,7 @@ import { keyNames } from '@jbrowse/core/util/categoricalField'
 The lanes a caller asks the encoder to fill, beyond `x` and `x2`, which
 every payload has, and `featureIndex`, which a payload has where a feature
 was skipped: a mark's channels, `index` for the Flatbush a
-hover reads, and `owner` for a plot that fans features out. A lane not asked for is neither
+hover reads, and `root` for a plot that fans features out. A lane not asked for is neither
 allocated nor transferred, and a caller that never hovers declines the
 index, which is most of the encoder's cost after the walk.
 

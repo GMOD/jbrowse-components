@@ -7320,7 +7320,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "heightMode": {
-          "description": "Track-sizing strategy — how the track responds when there are more reads than fit (the menu sets \`fit\` from \\"Read height → Fit to track height\\" and \`grow\` from \\"Advanced → Autogrow track height\\"). \`fixed\` (the default) keeps \`pileup.mark.height\` and scrolls; \`grow\` expands the track to show every read at that height; \`fit\` squeezes reads so every uncollapsed section fills the display without scrolling.",
+          "description": "Track-sizing strategy — how the track responds when there are more reads than fit (the menu sets \`fit\` from \\"Advanced → Track height → Fit to track height\\" and \`grow\` from \\"Advanced → Track height → Autogrow\\"). \`fixed\` (the default) keeps \`pileup.mark.height\` and scrolls; \`grow\` expands the track to show every read at that height; \`fit\` squeezes reads so every uncollapsed section fills the display without scrolling.",
           "default": "fixed",
           "if": {
             "type": "null"
@@ -8416,7 +8416,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "heightMode": {
-          "description": "Track-sizing strategy — how the track responds when there are more reads than fit (the menu sets \`fit\` from \\"Read height → Fit to track height\\" and \`grow\` from \\"Advanced → Autogrow track height\\"). \`fixed\` (the default) keeps \`pileup.mark.height\` and scrolls; \`grow\` expands the track to show every read at that height; \`fit\` squeezes reads so every uncollapsed section fills the display without scrolling.",
+          "description": "Track-sizing strategy — how the track responds when there are more reads than fit (the menu sets \`fit\` from \\"Advanced → Track height → Fit to track height\\" and \`grow\` from \\"Advanced → Track height → Autogrow\\"). \`fixed\` (the default) keeps \`pileup.mark.height\` and scrolls; \`grow\` expands the track to show every read at that height; \`fit\` squeezes reads so every uncollapsed section fills the display without scrolling.",
           "default": "fixed",
           "if": {
             "type": "null"

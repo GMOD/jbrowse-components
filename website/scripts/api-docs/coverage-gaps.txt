@@ -48,7 +48,7 @@ Dotplot1DView
 LinearSyntenyViewHelper
 TimeTraveller
 
-# model members with no description (1310)
+# model members with no description (1300)
 # fix: write a sentence under the member’s #property/#volatile/#getter/#method/#action tag
 AddTrackModel.adapterHint
 AddTrackModel.altAssemblyName
@@ -884,22 +884,12 @@ LinearMarkDisplay.renderSvg
 LinearMarkDisplay.setPlotDefaultChecked
 LinearMarkDisplay.setPlotFields
 LinearMarkDisplay.setPlotFieldsPromise
+LinearMarkDisplay.setShowRowSeparators
 LinearMarkDisplay.setSourceListing
 LinearMarkDisplay.showAllCategories
 LinearMarkDisplay.svgSidebar
 LinearMarkDisplay.trackMenuItems
-LinearMultiRowFeatureDisplay.fetchNeeded
-LinearMultiRowFeatureDisplay.hoverHitAt
-LinearMultiRowFeatureDisplay.renderSvg
-LinearMultiRowFeatureDisplay.rowIndexByValue
-LinearMultiRowFeatureDisplay.rowProportion
-LinearMultiRowFeatureDisplay.setHiddenCategories
-LinearMultiRowFeatureDisplay.setShowRowSeparators
-LinearMultiRowFeatureDisplay.showRowSeparators
-LinearMultiRowFeatureDisplay.startRenderingBackend
-LinearMultiRowFeatureDisplay.svgSidebar
 LinearMultiRowFeatureDisplay.trackMenuItems
-LinearMultiRowFeatureDisplay.view
 LinearMultiSampleVariantDisplay.atGenomicPositions
 LinearMultiSampleVariantDisplay.clearDisplaySpecificData
 LinearMultiSampleVariantDisplay.clearSettingsBakedData

@@ -1763,6 +1763,7 @@
     "@jbrowse/core/ui/filterMenuItems": {
       "package": "@jbrowse/core",
       "names": [
+        "EDIT_FILTERS_LABEL",
         "activeCount",
         "clearAll",
         "filterMenuItems",
@@ -3447,7 +3448,7 @@
         "DEFAULT_MARK_COLOR",
         "DEFAULT_SIZE_RANGE_PX",
         "MISCONFIGURED_ABGR",
-        "NO_OWNER",
+        "NO_ROOT",
         "NO_VALUE_ABGR",
         "NO_VALUE_LABEL",
         "colorAt",

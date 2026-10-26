@@ -157,7 +157,7 @@ From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`sc
 | <span id="getter-showmismatches">**showMismatches**</span><br><code>boolean</code> |  |
 | <span id="getter-showsoftclipping">**showSoftClipping**</span><br><code>boolean</code> |  |
 | <span id="getter-showconnectors">**showConnectors**</span><br><code>boolean</code> |  |
-| <span id="getter-mismatchopacityfield">**mismatchOpacityField**</span><br><code>"baseQuality" &#124; undefined</code> | The field `pileup.mismatches.encoding.opacity` fades by, unset for none: the "Fade low quality mismatches" checkbox. |
+| <span id="getter-mismatchopacityfield">**mismatchOpacityField**</span><br><code>"baseQuality" &#124; undefined</code> | The field `pileup.mismatches.encoding.opacity` fades by, unset for none: the "Fade low-quality mismatches" checkbox. |
 | <span id="getter-mismatchqualityopacity">**mismatchQualityOpacity**</span><br><code>QualityOpacity</code> | `pileup.mismatches.encoding.opacity` as mismatch.slang's `qualityFade` reads it. |
 | <span id="getter-fadelowfrequency">**fadeLowFrequency**</span><br><code>boolean</code> |  |
 | <span id="getter-hassashimi">**hasSashimi**</span><br><code>boolean</code> | Whether the display declares the sashimi band, which a synteny block, having no introns, has no use for. |
@@ -371,7 +371,7 @@ From [BaseDisplay](../basedisplay): <span id="getter-parenttrack">[`parentTrack`
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="method-filternarrowing">**filterNarrowing**</span><br><code>() =&gt; Reversible</code> | How `filter` differs from what the track's config declares, as a count of the fields that moved: the "Filter by..." count, and what "Clear all filters" writes back. |
+| <span id="method-filternarrowing">**filterNarrowing**</span><br><code>(selects?: (field: string) =&gt; boolean) =&gt; Reversible</code> | How `filter` differs from what the track's config declares, as a count of the fields that moved: the "Filter by..." count, and what "Clear all filters" writes back. `selects` narrows it to the fields in effect. |
 | <span id="method-nonreferenceat">**nonReferenceAt**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(column: VariantSortColumn, allele?: VariantAllele &#124; undefined)…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(column: VariantSortColumn, allele?: VariantAllele &#124; undefined) =&gt; { count: number; depth: number; } &#124; undefined</code></pre></dialog></span> | The loaded reads differing from the reference at a variant's sort column, or with `allele` only those with it, over the reads spanning it. Undefined until a fetch reaching the column completes. |
 | <span id="method-legenditems">**legendItems**</span><br><code>(palette: ColorPalette) =&gt; LegendItem[]</code> |  |
 | <span id="method-arclegenditems">**arcLegendItems**</span><br><code>(palette: ColorPalette) =&gt; LegendItem[]</code> | Key for the paired-end arc / read-cloud colors, empty when no overlay is drawn. |

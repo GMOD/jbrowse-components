@@ -1,14 +1,21 @@
 ---
 id: linearmultirowfeaturedisplay
 title: LinearMultiRowFeatureDisplay
-description: "Paints interval features as colored blocks on stacked rows partitioned by a feature attribute (\"chromosome / ancestry painting\")."
+description: "Colored features in stacked rows, one row per value of a feature attribute: a chromosome painting, an ancestry painting, a chromatin-state track per cell type."
 sidebar_label: Display -> LinearMultiRowFeatureDisplay
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `canvas` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/canvas/src/LinearMultiRowFeatureDisplay/configSchema.ts).
+Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `marks` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/marks/src/LinearMultiRowFeatureDisplay/configSchema.ts).
 
-Paints interval features as colored blocks on stacked rows partitioned by a
-feature attribute ("chromosome / ancestry painting").
+Colored features in stacked rows, one row per value of a feature
+attribute: a chromosome painting, an ancestry painting, a chromatin-state
+track per cell type. It is the mark display with a `rect` per feature as
+its default plot, so every mark, scale, facet and row setting applies.
+
+With nothing declared it reads a sample of the features once: a row per
+`repClass` where they carry one, else per `name`; each feature its file's
+own BED color where it has one; and a feature whose children have none of
+their own, a BED12 row or a transcript, as its blocks joined by a line.
 
 ## Example usage
 
@@ -51,13 +58,23 @@ HG00097 above HG00096 regardless of file order:
 }
 ```
 
-Omit `rowColor` entirely and the blocks paint in the default block color.
-A row `rowColor` does not name paints the same way, unless `scale.unknown`
-gives unnamed rows a color. A feature's `itemRgb` colors it with no
-configuration at all, and `encoding.color.scale.type: 'identity'` names it
-in the key. To color per feature off some other attribute, set
-`encoding.color.value` to a `jexl:` expression reading it.
-Omit `rows.sort` and the rows sort by value.
+Each feature in its file's BED color, the key naming three of them:
+
+```js
+{
+  type: 'LinearMultiRowFeatureDisplay',
+  rows: 'sample',
+  encoding: {
+    color: {
+      scale: {
+        type: 'identity',
+        domain: ['rgb(227,26,28)', 'rgb(31,120,180)', 'rgb(170,170,170)'],
+        names: ['Maternal', 'Paternal', 'Unknown'],
+      },
+    },
+  },
+}
+```
 
 ## Related links
 
@@ -74,7 +91,7 @@ Omit `rows.sort` and the rows sort by value.
 - **Adapter:** [SequenceSearchAdapter](../sequencesearchadapter)
 - **Adapter:** [SPARQLAdapter](../sparqladapter)
 - **State model:** [runtime API](../../models/linearmultirowfeaturedisplay)
-- **Base config:** [BaseLinearDisplay](../baselineardisplay)
+- **Base config:** [LinearMarkDisplay](../linearmarkdisplay)
 
 ## Config slots
 
@@ -83,19 +100,48 @@ Display slots go on a display entry: `"displays": [{ "type": "LinearMultiRowFeat
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
-| <span id="slot-rows">**rows**</span><br>[Rows](../rows) | One row per value of a feature attribute, and the arrangement a reader gives the rows. `field` names the attribute, or a `jexl:` expression derives one; empty, the default, picks one off the data (`repClass` where the features have it, else `name`). `sort` is the row order: the values it lists lead, and the rest sort, digits by magnitude, with the row of features with no value last. `labels`, `tree`, `treeProvenance` and `kept` are what the arrangement dialog, a clustering run and a focus write, each as a session edit to this object.<br><span class="cell-more"><button type="button" class="cell-more-trigger">example</button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>{ rows: 'sample' }</code></pre><pre><code>{ rows: { field: 'sample', sort: ['HG00097', 'HG00096'] } }</code></pre><pre><code>{ rows: "jexl:split(split(feature.name,'#')[1],'/')[0]" }</code></pre></dialog></span> |
-| <span id="slot-clusterfield">**clusterField**</span><br>[`featureField`](/docs/config_guides/slot_types#featurefield) = <code>'auto'</code> | Feature attribute whose value each row is clustered on, and which "Sort rows by ... here" orders by at a column; `auto` (the default) takes the attribute `encoding.color` reads, else `name`, and an empty string compares presence alone — which bins each row covers. A `jexl:` expression derives the value.<br><span class="cell-more"><button type="button" class="cell-more-trigger">example</button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>{ clusterField: 'state' }</code></pre></dialog></span> |
-| <span id="slot-encoding">**encoding**</span><br>[FeatureEncoding](../featureencoding) | The blocks' channels: `encoding.color`, each block's fill, the FeatureColor channel: a CSS color or `jexl:` callback in `value`, or a field whose values each take a color through `scale`, with a key. Unset, a feature's itemRgb paints it if it has one, else `rowColor` paints its row's blocks, else the default block color does. `scale.type: 'identity'` keeps each feature's color and names the `scale.domain` colors in the key, which is how a file's itemRgb states get their names.<br><span class="cell-more"><button type="button" class="cell-more-trigger">example</button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>{&#10;&#160;&#160;encoding: {&#10;&#160;&#160;&#160;&#160;color: {&#10;&#160;&#160;&#160;&#160;&#160;&#160;field: 'segmean',&#10;&#160;&#160;&#160;&#160;&#160;&#160;scale: {&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;type: 'threshold',&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;domain: [-1, -0.3, 0.3, 1],&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;range: ['#2166ac', '#92c5de', '#f7f7f7', '#f4a582', '#b2182b'],&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;names: ['Deep loss', 'Loss', 'Balanced', 'Gain', 'Amplification'],&#10;&#160;&#160;&#160;&#160;&#160;&#160;},&#10;&#160;&#160;&#160;&#160;},&#10;&#160;&#160;},&#10;}</code></pre><pre><code>{&#10;&#160;&#160;encoding: {&#10;&#160;&#160;&#160;&#160;color: {&#10;&#160;&#160;&#160;&#160;&#160;&#160;scale: {&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;type: 'identity',&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;domain: ['rgb(227,26,28)', 'rgb(31,120,180)', 'rgb(170,170,170)'],&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;names: ['Maternal', 'Paternal', 'Unknown'],&#10;&#160;&#160;&#160;&#160;&#160;&#160;},&#10;&#160;&#160;&#160;&#160;},&#10;&#160;&#160;},&#10;}</code></pre></dialog></span> |
-| <span id="slot-rowcolor">**rowColor**</span><br>[RowColor](../rowcolor) | A color per row, by value, as `scale.domain`/`scale.range` pairs: the bar beside the row's label, and the row's blocks while no `encoding.color` or itemRgb colors them. The arrangement dialog writes it.<br><span class="cell-more"><button type="button" class="cell-more-trigger">example</button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>{ rowColor: { scale: { domain: ['HG00096'], range: ['#4e79a7'] } } }</code></pre></dialog></span> |
-| <span id="slot-rowproportion">**rowProportion**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>1</code> | Fraction of the row height each block fills (1 = full, leaving no gap between rows).<br>_advanced_ |
-| <span id="slot-legend">**legend**</span><br>[Legend](../legend) | The color key, which appears only while a field paints the blocks — elsewhere the sidebar labels are already the key. |
-| <span id="slot-rowgroups">**rowGroups**</span><br>[RowGroup](../rowgroup) | An array of `{ match, group }` tagging each row with the `group` of the first entry whose regex its name matches, an attribute like any other: `facet: 'group'` stacks the groups in bands, and `rowColor: { field: 'group' }` colors them. A row no entry matches has no group, and takes no color from the deal.<br><span class="cell-more"><button type="button" class="cell-more-trigger">example</button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>rowGroups: [&#10;&#160;&#160;{ match: '^CLUP', group: 'Wolf' },&#10;&#160;&#160;{ match: '^CLAT', group: 'Coyote' },&#10;],&#10;rowColor: {&#10;&#160;&#160;field: 'group',&#10;&#160;&#160;scale: {&#10;&#160;&#160;&#160;&#160;domain: ['Wolf', 'Coyote'],&#10;&#160;&#160;&#160;&#160;range: ['rgb(27,120,55)', 'rgb(224,130,20)'],&#10;&#160;&#160;},&#10;},</code></pre></dialog></span> |
-| <span id="slot-facet">**facet**</span><br>[Facet](../facet) | Stacks the rows in labelled bands: `group` bands them by their `rowGroups` group, the groups in the order `rowGroups` declares them unless `sort` lists some first, and the rows no entry matches last. Each band keeps the rows' arranged order and, where the cluster tree holds a clade of exactly its rows, draws that clade; a clustering run clusters each band apart.<br><span class="cell-more"><button type="button" class="cell-more-trigger">example</button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>{ facet: 'group' }</code></pre></dialog></span> |
-| <span id="slot-axis">**axis**</span><br>[RowAxisWithGrid](../rowaxiswithgrid) | The guide down the left of the rows: the cluster tree, each row's name and the lines between rows. |
-| <span id="slot-fetchsizelimit">**fetchSizeLimit**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>5000000</code> | The byte axis is the only gate this display has: it paints into fixed lanes, so it composes no density axis to fall through to.<br>_advanced_ |
-| <span class="slot-group">Inherited from [BaseLinearDisplay](../baselineardisplay)</span> | <span class="slot-group-count">2 slots</span> |
-| <span id="slot-height">**height**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>100</code> | default height for the track |
+| <span id="slot-fetchsizelimit">**fetchSizeLimit**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>5000000</code> | The bytes a region may download before the display asks first: a painting's rows stack many features over each base.<br>_advanced_ |
+| <span class="slot-group">Inherited from [LinearMarkDisplay](../linearmarkdisplay)</span> | <span class="slot-group-count">40 slots</span> |
+| <span id="slot-marksencodingshapevalue">**marks.encoding.shape.value**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (circle, triangle-down, diamond, square) = <code>'circle'</code> | `circle`, `triangle-down`, `diamond` or `square`, or a jexl callback over `feature` returning one, for a point mark whose shape is not a scale.<br>_callback args:_ `feature` |
+| <span id="slot-marksencodingshapefield">**marks.encoding.shape.field**</span><br>[`featureField`](/docs/config_guides/slot_types#featurefield) = <code>''</code> | The feature field an ordinal scale reads — or a jexl expression over `feature`, which is slower per feature and so the opt-in. |
+| <span id="slot-marksencodingshapescale">**marks.encoding.shape.scale**</span><br>[MarkShapeScale sub-schema](#slot-marksencodingshapescaletype) | How the field's values map to shapes, Vega-Lite's scale object. |
+| <span id="slot-marksencodingshapescaletype">**marks.encoding.shape.scale.type**</span><br>[`maybeStringEnum`](/docs/config_guides/slot_types#the-maybe-types) (ordinal) | `ordinal` hands a shape from `range` to each distinct value of `field`. Unset beside a `field`, it is `ordinal`. |
+| <span id="slot-marksencodingshapescalerange">**marks.encoding.shape.scale.range**</span><br>[`stringEnumArray`](/docs/config_guides/slot_types#stringenumarray) (circle, triangle-down, diamond, square) = <code>[]</code> | The shape names an ordinal scale hands out, in order. Empty is `circle`, `triangle-down`, `diamond`; `square` draws only where listed. |
+| <span id="slot-marksencodingshapescaledomain">**marks.encoding.shape.scale.domain**</span><br>[`stringArray`](/docs/config_guides/slot_types#stringarray) = <code>[]</code> | The values in legend order, walking `range` from the first entry; left empty, each value derives its shape from itself, so every region agrees. |
+| <span id="slot-marksencodingshapescalenames">**marks.encoding.shape.scale.names**</span><br>[`stringArray`](/docs/config_guides/slot_types#stringarray) = <code>[]</code> | The key's name for each `domain` value, one each in order; a value past the end of the list shows its name. |
+| <span id="slot-marksencodingshapelegend">**marks.encoding.shape.legend**</span><br>[MarkShapeLegend sub-schema](#slot-marksencodingshapelegendtitle) | The key this channel's scale draws. |
+| <span id="slot-marksencodingshapelegendtitle">**marks.encoding.shape.legend.title**</span><br>[`maybeString`](/docs/config_guides/slot_types#the-maybe-types) | The heading of the key an ordinal scale draws, naming what the shape marks. Unset, the key is titled with `field`; `""` is a key with no title. |
+| <span id="slot-marksencodingshapelegendvalues">**marks.encoding.shape.legend.values**</span><br>[`stringArray`](/docs/config_guides/slot_types#stringarray) = <code>[]</code> | The values the key lists, in this order; empty lists every value the loaded regions met. A value left out still takes its shape. |
+| <span id="slot-marksencodingshapelegendmissinglabel">**marks.encoding.shape.legend.missingLabel**</span><br>[`maybeString`](/docs/config_guides/slot_types#the-maybe-types) | The key's name for a feature with nothing in `field`; unset is "(no value)". Vega-Lite's legend has no such member, so it keeps its JBrowse name. |
+| <span id="slot-marksencodingx">**marks.encoding.x**</span><br>[`featureField`](/docs/config_guides/slot_types#featurefield) = <code>'start'</code> | The feature field, or jexl expression over `feature`, giving the mark's left edge in bp. |
+| <span id="slot-marksencodingx2">**marks.encoding.x2**</span><br>[MarkLocus](../marklocus) | The feature field, or jexl expression, giving the mark's right edge in bp, or for a link its far foot: an object naming the field holding the foot's sequence beside the one holding its position, where a mate may lie on another sequence. Left at `end` behind a `mate` step, it is the other end the step found. |
+| <span id="slot-marksencodingy">**marks.encoding.y**</span><br>[`featureField`](/docs/config_guides/slot_types#featurefield) = <code>''</code> | The feature field, or jexl expression over `feature`, plotted on the score axis. A feature whose value is not a finite number is skipped. Empty reads what the steps before this mark's encode wrote, the way a ggplot2 stat names what its geom plots: a `coverage` step's depth, or the one summary an `aggregate` with one op writes. A bar or point with neither draws nothing and the track shows a corner notice, while a text with neither stands at the apex of a link drawn between its two ends, or in the middle of its band where none is. The scale it is read through is the display's `encoding.y`. |
+| <span id="slot-marksencodingrow">**marks.encoding.row**</span><br>[`featureField`](/docs/config_guides/slot_types#featurefield) = <code>''</code> | The feature field, or jexl expression, naming the band the mark stands in, an integer from 0; a feature with nothing there sits on band 0. Empty reads the field the last `pileup` before this mark's encode wrote, this mark's own, the facet's or the display's, and puts every mark on one band across the whole plot where none packs. |
+| <span id="slot-marksencodingcolor">**marks.encoding.color**</span><br>[MarkColor](../markcolor) | The mark's color: a field through an ordinal or continuous `scale`, written bare or as an object, or a constant `{ value }`, a CSS color or a jexl callback returning one. `legend` shapes the key the scale draws. |
+| <span id="slot-marksencodingshape">**marks.encoding.shape**</span><br>[MarkShape sub-schema](#slot-marksencodingshapevalue) | For a point mark: a field through an ordinal scale over `circle`, `triangle-down` and `diamond`, written bare or as an object, or a constant `{ value }`, one of those names, `square`, or a jexl callback returning one. `legend` shapes the key the scale draws. |
+| <span id="slot-marksencodingtext">**marks.encoding.text**</span><br>[`featureField`](/docs/config_guides/slot_types#featurefield) = <code>'name'</code> | For a text mark: the feature field, or jexl expression over `feature`, it prints, `name` unset. A feature with nothing there prints nothing. |
+| <span id="slot-marksencodingsize">**marks.encoding.size**</span><br>[MarkSize](../marksize) | A point's diameter in px. The track menu's Point size writes every point mark's number. |
+| <span id="slot-marksencodingstrokewidth">**marks.encoding.strokeWidth**</span><br>[MarkSize](../marksize) | A stroked mark's width in px, Vega-Lite's stroke width: a rule's or a line's thickness, or a link's stroke; a field, which a link alone reads, goes through a linear or log `scale` into a width, `scale.range` the px at each end of the domain. |
+| <span id="slot-marksmark">**marks.mark**</span><br>[MarkDef](../markdef) | What the mark draws, a [](/docs/config/markdef) object or its `type` alone: `bar`, `point`, `rule`, `line`, `rect`, `text` or `link`, with the members one type reads, a line's or a link's `interpolate`, a rect's `height` and a line's `gapBp`. |
+| <span id="slot-marksencoding">**marks.encoding**</span><br>[MarkEncoding sub-schema](#slot-marksencodingshapevalue) | The feature field each of the mark's channels reads. Every channel has a default, so `{}` draws a bar from `start` to `end` with no value. |
+| <span id="slot-markstransform">**marks.transform**</span><br>[MarkTransform](../marktransform) | Steps over the region's features before this mark encodes them, in order, after the display's own `transform`, and over each section alone under a facet. A `bin` then an `aggregate` grouped by `start` and `end` is a density: `count` per bin, which the mark plots as `y` unless its encoding names another field. |
+| <span id="slot-marksminbpperpx">**marks.minBpPerPx**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>0</code> | The mark draws only when the view is at least this zoomed out, in bp per px. 0 sets no bound. With `maxBpPerPx` on another mark, one config shows a density zoomed out and the features zoomed in. |
+| <span id="slot-marksmaxbpperpx">**marks.maxBpPerPx**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>0</code> | The mark draws only when the view is zoomed in past this, in bp per px. 0 sets no bound. |
+| <span id="slot-marks">**marks**</span><br>[list of Mark entries](#slot-marksencodingshapevalue) | The marks to draw, in order — a later one paints over an earlier one. Each is a `mark` and an `encoding`. |
+| <span id="slot-transform">**transform**</span><br>[MarkTransform](../marktransform) | Steps over the region's features before the facet splits them and before any mark's own, after `filter`: where a field the facet reads is made, such as a formula lifting a read's tag. |
+| <span id="slot-facet">**facet**</span><br>[MarkFacet](../markfacet) | Labelled sections, one per value of a field, each as tall as its steps pack it: `"HP"`, or `{ field, sort, transform }` with the order the sections stack in and the steps each runs before any mark's, a per-section `pileup` among them. A chip names each section and hides it. Split after `transform` and before any mark's own steps. Beside `rows`, a facet on a row attribute, the `group` `rowGroups` writes, stacks the rows in labelled bands instead, each band's rows in their arranged order. |
+| <span id="slot-rows">**rows**</span><br>[Rows](../rows) | One row per value of a field: `"source"` over a multi-BigWig is one xyplot per file. The worker splits the features on the field as it does for `facet`, and the rows take the tree sidebar, the row labels, clustering and the arrangement dialog, whose order, labels, tree and focus this object holds. A `facet` on a row attribute stacks the rows in bands; a facet on a feature field draws its sections in place of the rows, and the display shows a notice.<br><span class="cell-more"><button type="button" class="cell-more-trigger">example</button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>{ rows: 'source' }</code></pre><pre><code>{ rows: { field: 'source', sort: ['tumor', 'normal'] } }</code></pre></dialog></span> |
+| <span id="slot-rowcolor">**rowColor**</span><br>[RowColor](../rowcolor) | The bar beside each row's label; the marks keep their color. Under the default field `name`, a row's value paired with a color in `scale.domain`/`scale.range`, which the arrangement dialog writes. |
+| <span id="slot-rowgroups">**rowGroups**</span><br>[RowGroup](../rowgroup) | An array of `{ match, group }` tagging each row with the `group` of the first entry whose regex its name matches, a row attribute: `facet: 'group'` stacks the groups in bands, and `rowColor: { field: 'group' }` colors them. A row no entry matches has no group.<br><span class="cell-more"><button type="button" class="cell-more-trigger">example</button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>{&#10;&#160;&#160;rows: 'sample',&#10;&#160;&#160;rowGroups: [&#10;&#160;&#160;&#160;&#160;{ match: '^CLUP', group: 'Wolf' },&#10;&#160;&#160;&#160;&#160;{ match: '^CLAT', group: 'Coyote' },&#10;&#160;&#160;],&#10;&#160;&#160;facet: 'group',&#10;}</code></pre></dialog></span> |
+| <span id="slot-axis">**axis**</span><br>[RowAxisWithGrid](../rowaxiswithgrid) | The row axis down the left of the rows `rows` draws: the cluster tree, each row's value and, with `grid`, a line between rows. The value axis is `encoding.y.axis`. |
+| <span id="slot-encoding">**encoding**</span><br>[MarkDisplayEncoding](../markdisplayencoding) | The channels the marks are read through, owned by the display rather than by a mark, a [MarkDisplayEncoding](../markdisplayencoding): `y`, the [YChannel](../ychannel) every mark's `encoding.y` shares, which names no field since each mark names its own, and `color`, which a mark paints whose own `encoding.color` says nothing, as a ggplot2 layer inherits the plot's aesthetics. `encoding.y.axis` is the value axis; the row axis beside `rows` is `axis`.<br><span class="cell-more"><button type="button" class="cell-more-trigger">example</button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>{ encoding: { y: { scale: { type: 'log' }, axis: { title: 'depth' } } } }</code></pre></dialog></span> |
+| <span id="slot-origin">**origin**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>0</code> | The value bars grow from. The axis widens to include it whenever a bar mark is drawn. |
+| <span id="slot-minwidthpx">**minWidthPx**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>1</code> | Narrowest a bar or rect is painted, in px, grown off its start edge.<br>_advanced_ |
+| <span id="slot-legend">**legend**</span><br>[Legend](../legend) | The key for every mark whose color or shape is a scale; `show` defaults to on. |
+| <span id="slot-filter">**filter**</span><br><code>fieldPredicateList()</code> | The features the display draws, a list of [](/docs/config/fieldpredicate) entries a feature must all pass: a field of the feature's own (`{ field: "score", gte: 5 }`) or a `jexl:` expression that must hold. |
+| <span id="slot-height">**height**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>150</code> | default height for the track |
 | <span id="slot-forceload">**forceLoad**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | Declarative equivalent of the "Force load" button on the "too much data" banner: when true the display always renders, however large the region or dense the features. Off by default (the gate guards against huge downloads). Set it on a view no one can interact with — an embedded / notebook view, or a screenshot — where the region is known and you want it drawn without a click.<br>_advanced_ |
+| <span id="slot-rowheight">**rowHeight**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>0</code> | per-row height in px under rows, scrolling the rows that do not fit; 0 (the default) fits the rows to the plot instead, dividing it between them |
 
 ## Retired keys
 
@@ -104,11 +150,11 @@ An older config may still write these. Each loads without an error, and `jbrowse
 <!-- prettier-ignore -->
 | Key | On load |
 | --- | --- |
+| `scales` | moved into a current slot |
 | `maxFeatureScreenDensity` | ignored |
 | `maxDisplayedBpPerPx` | ignored |
 | `mouseover` | ignored |
 | `jexlFilters` | moved into a current slot |
-| `color` | moved into a current slot |
 | `showTree` | moved into a current slot |
 | `showBranchLength` | moved into a current slot |
 | `showRowLabels` | moved into a current slot |
