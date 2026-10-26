@@ -142,10 +142,8 @@ test('a log key starts where the ramp does', () => {
 test('the Log scale toggle keeps counts at or below 1 visible', () => {
   const display = loaded()
   display.setLogScale(true)
-  const {
-    scaleType,
-    domain: [domainMin, domainMax],
-  } = display.renderState.color
+  const { scaleType, domain } = display.renderState.color
+  const [domainMin, domainMax] = domain
   expect(scaleType).toBe(SCALE_TYPE_SYMLOG)
   expect(display.colorScales[0]).toMatchObject({
     title: 'Contacts (symlog) · 1Kbp',
