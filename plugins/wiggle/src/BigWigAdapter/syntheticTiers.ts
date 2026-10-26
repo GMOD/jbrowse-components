@@ -2,7 +2,7 @@ import type { RawFeatureArrays } from '../util.ts'
 import type { BigWig, BigWigHeaderWithRefNames } from '@gmod/bbi'
 import type { openLocation } from '@jbrowse/core/util/io'
 
-export interface BigWigRegionArrays extends RawFeatureArrays {
+interface BigWigRegionArrays extends RawFeatureArrays {
   starts: Int32Array
   ends: Int32Array
 }
@@ -201,19 +201,24 @@ export function binAlignedExtent(start: number, end: number, binBp: number) {
   }
 }
 
-function rawSlice(
-  starts: Int32Array,
-  ends: Int32Array,
-  scores: Float32Array,
+/** Rows `[lo, hi)` of bbi's packed arrays, copy-free. */
+export function sliceRows(
+  rows: {
+    starts: Int32Array
+    ends: Int32Array
+    scores: Float32Array
+    minScores?: Float32Array
+    maxScores?: Float32Array
+  },
   lo: number,
   hi: number,
 ): BigWigRegionArrays {
   return {
-    starts: starts.subarray(lo, hi),
-    ends: ends.subarray(lo, hi),
-    scores: scores.subarray(lo, hi),
-    minScores: undefined,
-    maxScores: undefined,
+    starts: rows.starts.subarray(lo, hi),
+    ends: rows.ends.subarray(lo, hi),
+    scores: rows.scores.subarray(lo, hi),
+    minScores: rows.minScores?.subarray(lo, hi),
+    maxScores: rows.maxScores?.subarray(lo, hi),
     count: hi - lo,
   }
 }
@@ -266,7 +271,7 @@ export function binRawRegion(
   // the bin its tail shares with the next record
   const capacity = Math.min(3 * (hi - lo), (extentEnd - extentStart) / binBp)
   if (capacity <= 0) {
-    return rawSlice(starts, ends, scores, rawLo, rawHi)
+    return sliceRows({ starts, ends, scores }, rawLo, rawHi)
   }
 
   const positions = new Int32Array(capacity * 2)
@@ -334,7 +339,7 @@ export function binRawRegion(
     }
     const recordStart = starts[i]!
     if (recordStart < previousEnd) {
-      return rawSlice(starts, ends, scores, rawLo, rawHi)
+      return sliceRows({ starts, ends, scores }, rawLo, rawHi)
     }
     previousEnd = ends[i]!
     let s = recordStart > extentStart ? recordStart : extentStart
@@ -344,7 +349,7 @@ export function binRawRegion(
         if (windowEnd >= 0) {
           n = emit(n, coveredStart, coveredEnd, sum, covered, min, max)
           if (n < 0) {
-            return rawSlice(starts, ends, scores, rawLo, rawHi)
+            return sliceRows({ starts, ends, scores }, rawLo, rawHi)
           }
         }
         const bin = s - (s % binBp)
@@ -372,7 +377,7 @@ export function binRawRegion(
   if (windowEnd >= 0) {
     n = emit(n, coveredStart, coveredEnd, sum, covered, min, max)
     if (n < 0) {
-      return rawSlice(starts, ends, scores, rawLo, rawHi)
+      return sliceRows({ starts, ends, scores }, rawLo, rawHi)
     }
   }
   if (n > 0 && outEnds[n - 1]! <= regionStart) {

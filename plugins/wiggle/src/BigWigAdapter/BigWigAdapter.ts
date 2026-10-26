@@ -11,6 +11,7 @@ import { bigWigFeatureTable } from './bigWigFeatureTable.ts'
 import {
   binAlignedExtent,
   binRawRegion,
+  sliceRows,
   sampleMeanRecordSpan,
   syntheticBinBp,
   syntheticCandidateLevels,
@@ -196,20 +197,20 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter<BigWigAdapterC
     )
 
     const { starts, ends, scores, regionOffsets } = res
-    const minScores = res.isSummary ? res.minScores : undefined
-    const maxScores = res.isSummary ? res.maxScores : undefined
+    const rows = res.isSummary
+      ? {
+          starts,
+          ends,
+          scores,
+          minScores: res.minScores,
+          maxScores: res.maxScores,
+        }
+      : { starts, ends, scores }
     return regions.map((region, i) => {
       const lo = regionOffsets[i]!
       const hi = regionOffsets[i + 1]!
       return binBp === undefined
-        ? {
-            starts: starts.subarray(lo, hi),
-            ends: ends.subarray(lo, hi),
-            scores: scores.subarray(lo, hi),
-            minScores: minScores?.subarray(lo, hi),
-            maxScores: maxScores?.subarray(lo, hi),
-            count: hi - lo,
-          }
+        ? sliceRows(rows, lo, hi)
         : binRawRegion(
             starts,
             ends,
