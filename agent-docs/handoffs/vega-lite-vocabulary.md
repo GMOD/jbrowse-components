@@ -85,10 +85,10 @@ list names each divergence and can only shrink.
   `showRowSeparators` and `treeAreaWidth` on each row display, the
   multi-sample variant display's `showSidebarLabels`, and display-kit's
   `liftRetiredRowState`.
-- **The graph plugin may write the removed `variants` band** (ADR-250): its
-  figure sessions are unchecked, and a closed-schema bundle drops the key
-  silently. jb2hubs stopped writing it (`19eeecbe06`); its hosted bovine config
-  loses the key at the next `pangenome-config/upload.sh`.
+- **jb2hubs' hosted bovine config still writes the removed `variants` band**
+  (ADR-250): jb2hubs stopped writing it (`19eeecbe06`), and the hosted copy
+  loses the key at the next `pangenome-config/upload.sh`. A closed-schema bundle
+  drops the key silently meanwhile. Nothing under `~/src/jb2plugins` writes it.
 - **ggjbrowse:** Its R code, docs and tutorials write every setting above in
   its current spelling. Each rename needs a ggjbrowse engine re-pin, an R
   respell and a tutorial re-knit (memory `a-config-rename-reaches-ggjbrowse`),
