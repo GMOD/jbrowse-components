@@ -279,8 +279,52 @@ every junction has an independent call to check against:
 ```
 
 The assembly, synteny track and truth set above reproduce the ribbons and arcs
-on your own contig; the segment labels, projected gene annotation and realigned
-reads below come from the demo's config.
+on your own contig. The build script also writes a BED labelling each segment of
+the derivative with its reference interval, and the spanning reads realigned to
+it:
+
+```json addtrack
+{
+  "trackId": "der3_segments",
+  "name": "Where each segment came from",
+  "uri": "der3_RARB.derivative_segments.bed.gz",
+  "assemblyNames": ["der3_RARB_BICC1_TRHDE"]
+}
+```
+
+```json addtrack
+{
+  "trackId": "reads_vs_der3",
+  "name": "Spanning reads realigned to the derivative",
+  "uri": "der3_RARB.reads_vs_derivative.bam",
+  "assemblyNames": ["der3_RARB_BICC1_TRHDE"]
+}
+```
+
+The hg38 row carries UCSC's RefSeq genes:
+
+```json addtrack
+{
+  "type": "FeatureTrack",
+  "trackId": "ncbi_refseq_hg38",
+  "name": "NCBI RefSeq genes",
+  "assemblyNames": ["hg38"],
+  "adapter": {
+    "type": "Gff3TabixAdapter",
+    "gffGzLocation": {
+      "uri": "https://jbrowse.org/ucsc/hg38/ncbiRefSeq.gff.gz"
+    },
+    "index": {
+      "indexType": "CSI",
+      "location": {
+        "uri": "https://jbrowse.org/ucsc/hg38/ncbiRefSeq.gff.gz.csi"
+      }
+    }
+  }
+}
+```
+
+The gene annotation projected onto the derivative comes from the demo's config.
 
 Open **Add → Linear synteny view** with hg38 on the top row and
 `der3_RARB_BICC1_TRHDE` below, and pick **der3 contig vs hg38** as the synteny

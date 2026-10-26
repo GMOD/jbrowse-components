@@ -8,7 +8,7 @@
 tutorials/agent_synteny.md 2
 tutorials/allvsall_synteny.md 4
 tutorials/bisulfite.md 3
-tutorials/cancer_sv.md 9
+tutorials/cancer_sv.md 2
 tutorials/genomes_proteins.md 4
 tutorials/genomes_synteny.md 10
 tutorials/hg002_haplotypes.md 3
