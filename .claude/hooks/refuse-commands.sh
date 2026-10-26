@@ -29,18 +29,28 @@ fi
 # chain) still runs the removal, so the check is on the worktree itself.
 removal=$(grep -oE "git([[:space:]]+-C[[:space:]]+[^[:space:]]+)?[[:space:]]+worktree[[:space:]]+remove([[:space:]]+(-f|--force))*[[:space:]]+[^[:space:];&|)]+" <<<"$cmd" | head -1)
 if [ -n "$removal" ]; then
-  # A relative path resolves against a leading `cd <dir> &&`, not the session's
-  # cwd, which can be the worktree being removed.
-  base=$(sed -nE 's/^[[:space:]]*cd[[:space:]]+([^[:space:];&|]+)[[:space:]]*&&.*/\1/p' <<<"$cmd")
-  case $base in '') base=$cwd ;; /*) ;; *) base="$cwd/$base" ;; esac
+  # A relative path resolves against a `cd <dir>` before it, not the session's
+  # cwd, which can be the worktree being removed. Every `cd` in the command is
+  # a candidate, the cwd too, and any one naming an unlanded worktree refuses.
   repo=$(sed -nE 's/^git[[:space:]]+-C[[:space:]]+([^[:space:]]+).*/\1/p' <<<"$removal")
-  case $repo in '' | /*) ;; *) repo="$base/$repo" ;; esac
+  repo=${repo//[\"\']/}
   path=${removal##*[[:space:]]}
   path=${path//[\"\']/}
-  case $path in /*) ;; *) path="${repo:-$base}/$path" ;; esac
-  if git -C "$path" rev-parse -q --verify HEAD >/dev/null 2>&1 &&
-    ! git -C "$path" merge-base --is-ancestor HEAD main 2>/dev/null; then
-    refuse "Refused: $path holds commits main lacks. Land them first (the merge alone, then read its result), or ask the user before discarding them."
-  fi
+  while IFS= read -r base; do
+    base=${base//[\"\']/}
+    case $base in '') base=$cwd ;; /*) ;; *) base="$cwd/$base" ;; esac
+    from=$repo
+    case $from in '' | /*) ;; *) from="$base/$from" ;; esac
+    target=$path
+    case $target in /*) ;; *) target="${from:-$base}/$target" ;; esac
+    if git -C "$target" rev-parse -q --verify HEAD >/dev/null 2>&1 &&
+      ! git -C "$target" merge-base --is-ancestor HEAD main 2>/dev/null; then
+      refuse "Refused: $target holds commits main lacks. Land them first (the merge alone, then read its result), or ask the user before discarding them."
+    fi
+  done < <(
+    echo
+    grep -oE "(^|[;&|(])[[:space:]]*cd[[:space:]]+[^[:space:];&|)]+" <<<"$cmd" |
+      sed -E 's/.*cd[[:space:]]+//'
+  )
 fi
 exit 0
