@@ -1,6 +1,7 @@
 import { cachedSetup } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
+import { parseAttributeValue } from '@jbrowse/synteny-core'
 
 import { ComparativeAdapterBase } from '../ComparativeAdapterBase.ts'
 import {
@@ -140,7 +141,7 @@ function checkColumnsResolve(
 // otherwise, and every one of them is discarded at the point the table is
 // written.
 //
-// Anything that is not a number is a missing value, not a zero. Compara writes
+// A missing-value sentinel (`parseAttributeValue`) is absent, not a zero. Compara writes
 // `NULL` for a dN it could not estimate, and a zero there is a dN/dS of zero,
 // which reads as total purifying selection rather than as no answer. Undefined
 // where a row carries none, so the common table allocates nothing per row.
@@ -151,11 +152,10 @@ function parseRowAttrs(
 ) {
   let attrs: Record<string, number | string> | undefined
   for (let i = 0; i < attributeColumns.length; i++) {
-    const raw = cols[firstColumn + i]?.trim()
-    if (raw && raw !== '.' && raw !== 'NA' && raw !== 'NULL') {
-      const value = Number(raw)
+    const value = parseAttributeValue(cols[firstColumn + i])
+    if (value !== undefined) {
       attrs ??= {}
-      attrs[attributeColumns[i]!] = Number.isFinite(value) ? value : raw
+      attrs[attributeColumns[i]!] = value
     }
   }
   return attrs

@@ -17,7 +17,9 @@ import type { Feature } from '@jbrowse/core/util'
  * keeps switching modes free: colors are recomputed on the main thread, so a
  * channel that is already in hand costs no refetch.
  *
- * A declared column is numeric until a feature carries text in it. Text interns
+ * A declared column is numeric until a feature carries text in it, and a
+ * missing-value sentinel (`nan`, `Inf`, `-`, `.`) is no value rather than text.
+ * Text interns
  * into the channel's label list and writes its index into the same Float32Array
  * (exact to 2^24), so the payload has one shape either way; the channel then
  * reports its labels rather than a span, and a numeric cell seen after that
@@ -82,12 +84,42 @@ export interface AttributeChannel {
   labelColors: Record<string, string>
 }
 
+const MISSING_TEXT: ReadonlySet<string> = new Set(['', '.', '-', 'NA', 'NULL'])
+const NON_FINITE_TEXT = /^[+-]?(?:nan|inf|infinity)$/i
+const DECIMAL_TEXT = /^[+-]?(?:\d+\.?\d*|\.\d+)(?:e[+-]?\d+)?$/i
+
+/**
+ * Whether a table cell's text is a missing-value sentinel rather than a
+ * value: empty, `.`, `-`, `NA`, `NULL`, or a NaN or infinity spelled any way.
+ */
+export function isMissingText(text: string) {
+  return MISSING_TEXT.has(text) || NON_FINITE_TEXT.test(text)
+}
+
+/**
+ * A cell as a column reads it: a finite number, the number decimal text
+ * spells (a PAF tag's value arrives as text), other text trimmed, or
+ * undefined for a missing value.
+ */
+export function parseAttributeValue(raw: unknown) {
+  if (typeof raw === 'number') {
+    return Number.isFinite(raw) ? raw : undefined
+  }
+  if (typeof raw !== 'string') {
+    return undefined
+  }
+  const text = raw.trim()
+  return isMissingText(text)
+    ? undefined
+    : DECIMAL_TEXT.test(text)
+      ? Number(text)
+      : text
+}
+
 /** Read `name` off a feature as a number, NaN for anything that is not one. */
 export function readAttribute(feature: Feature, name: string) {
-  const value = feature.get(name)
-  return typeof value === 'number' && Number.isFinite(value)
-    ? value
-    : Number.NaN
+  const value = parseAttributeValue(feature.get(name))
+  return typeof value === 'number' ? value : Number.NaN
 }
 
 /**
@@ -143,8 +175,8 @@ export function writeFeatureAttribute(
   index: number,
   feature: Feature,
 ) {
-  const value: unknown = feature.get(channel.name)
-  if (typeof value === 'string' && value !== '') {
+  const value = parseAttributeValue(feature.get(channel.name))
+  if (typeof value === 'string') {
     if (channel.labels.length === 0 && Number.isFinite(channel.min)) {
       // numbers already written read as label indices from here on, so they
       // become labels of their own
@@ -163,11 +195,7 @@ export function writeFeatureAttribute(
       fileColor(feature),
     )
   } else {
-    writeAttribute(
-      channel,
-      index,
-      typeof value === 'number' && Number.isFinite(value) ? value : Number.NaN,
-    )
+    writeAttribute(channel, index, value ?? Number.NaN)
   }
 }
 

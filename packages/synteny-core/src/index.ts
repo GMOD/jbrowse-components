@@ -236,6 +236,8 @@ export {
   createAttributeChannels,
   declaredAttributes,
   featureAttributeRanges,
+  isMissingText,
+  parseAttributeValue,
   readAttribute,
   readChannelValue,
   writeAttribute,

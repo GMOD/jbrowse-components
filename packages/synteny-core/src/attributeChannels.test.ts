@@ -125,3 +125,16 @@ test('nan, inf, - and . read as missing, and text stays text', () => {
     fill('kind', [{ kind: 'nan' }, { kind: 'INV' }]).attributeRanges.kind,
   ).toEqual({ labels: ['INV'], colors: {}, missing: true })
 })
+
+// A PAF adapter hands a `de:f:0.01` tag over as the text `0.01`.
+test('decimal text reads as its number', () => {
+  const { attributes, attributeRanges } = fill('de', [
+    { de: '0.01' },
+    { de: ' 2e-1 ' },
+  ])
+  expect(Array.from(attributes.de!)).toEqual([
+    Math.fround(0.01),
+    Math.fround(0.2),
+  ])
+  expect(attributeRanges.de).toMatchObject({ min: Math.fround(0.01) })
+})
