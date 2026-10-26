@@ -309,3 +309,19 @@ test('a minus-strand reference block turns over to the forward strand', async ()
     mm10: { seq: 'CG-T', strand: -1, srcStart: 5000 - 7 - 3 },
   })
 })
+
+// A row's stated size places it on the other strand, as it places the reference
+// and the e-lines, so a byte the size does not count shifts nothing.
+test('a turned-over row starts where its stated size puts it', async () => {
+  const [feature] = await firstValueFrom(
+    adapterOver([
+      [e('hg38.chr1', 100, '-', 'AACG'), 'mm10.chr9:7:3:+:5000:A CG'].join(','),
+    ])
+      .getFeatures(region)
+      .pipe(toArray()),
+  )
+  expect(feature!.get('alignments').mm10).toMatchObject({
+    strand: -1,
+    srcStart: 5000 - 7 - 3,
+  })
+})

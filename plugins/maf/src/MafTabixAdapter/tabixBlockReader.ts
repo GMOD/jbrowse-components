@@ -1,4 +1,5 @@
 import { revcom } from '@jbrowse/core/util'
+import { DASH } from '@jbrowse/core/util/alignedBytes'
 
 import { makeSourceResolver } from '../util/parseAssemblyName.ts'
 import { RecordSlots } from '../util/recordSlots.ts'
@@ -12,7 +13,6 @@ interface Token {
   chr: string
 }
 
-const DASH = 45
 const ZERO = 48
 
 // `parseInt(text.slice(from, to), 10)` without the slice where the field is a
@@ -54,6 +54,7 @@ export class MafTabixBlockReader {
   private to: number[] = []
   private chr: string[] = []
   private srcStart: number[] = []
+  private size: number[] = []
   private strand: number[] = []
   private srcSize: number[] = []
 
@@ -145,6 +146,7 @@ export class MafTabixBlockReader {
           this.to[slot] = to
           this.chr[slot] = token.chr
           this.srcStart[slot] = parseDecimal(text, c0 + 1, c1)
+          this.size[slot] = parseDecimal(text, c1 + 1, c2)
           this.strand[slot] = text.charCodeAt(c2 + 1) === DASH ? -1 : 1
           this.srcSize[slot] = parseDecimal(text, c3 + 1, c4)
           if (from === 0) {
@@ -230,7 +232,7 @@ export class MafTabixBlockReader {
         0,
         seq.length,
         this.chr[slot]!,
-        srcSize - this.srcStart[slot]! - alignedBases(text, from, to),
+        srcSize - this.srcStart[slot]! - this.size[slot]!,
         -this.strand[slot]!,
         srcSize,
         undefined,
@@ -241,14 +243,4 @@ export class MafTabixBlockReader {
   reportUnmatched() {
     this.resolver.reportUnmatched()
   }
-}
-
-function alignedBases(text: string, from: number, to: number) {
-  let n = 0
-  for (let i = from; i < to; i++) {
-    if (text.charCodeAt(i) !== DASH) {
-      n++
-    }
-  }
-  return n
 }

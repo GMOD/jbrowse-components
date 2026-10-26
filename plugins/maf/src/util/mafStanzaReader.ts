@@ -30,6 +30,7 @@ export class MafStanzaReader implements MafLineTarget {
   private seq: string[] = []
   private chr: string[] = []
   private srcStart: number[] = []
+  private size: number[] = []
   private strand: number[] = []
   private srcSize: number[] = []
   private rowContext: (AlignmentContext | undefined)[] = []
@@ -82,13 +83,22 @@ export class MafStanzaReader implements MafLineTarget {
   }
 
   row(sampleId: string, chr: string, line: MafSourceLine) {
-    this.addRow(sampleId, chr, line.start, line.strand, line.srcSize, line.seq)
+    this.addRow(
+      sampleId,
+      chr,
+      line.start,
+      line.size,
+      line.strand,
+      line.srcSize,
+      line.seq,
+    )
   }
 
   addRow(
     sampleId: string,
     chr: string,
     srcStart: number,
+    size: number,
     strand: number,
     srcSize: number,
     seq: string,
@@ -103,6 +113,7 @@ export class MafStanzaReader implements MafLineTarget {
     this.seq[slot] = seq
     this.chr[slot] = chr
     this.srcStart[slot] = srcStart
+    this.size[slot] = size
     this.strand[slot] = strand
     this.srcSize[slot] = srcSize
     this.rowContext[slot] = undefined
@@ -167,10 +178,9 @@ export class MafStanzaReader implements MafLineTarget {
   private flip() {
     const { rows, empties } = this
     for (let slot = 0; slot < rows.count; slot++) {
-      const seq = this.seq[slot]!
       this.srcStart[slot] =
-        this.srcSize[slot]! - this.srcStart[slot]! - alignedBases(seq)
-      this.seq[slot] = revcom(seq)
+        this.srcSize[slot]! - this.srcStart[slot]! - this.size[slot]!
+      this.seq[slot] = revcom(this.seq[slot]!)
       this.strand[slot] = -this.strand[slot]!
       const context = this.rowContext[slot]
       if (context) {
@@ -224,19 +234,4 @@ export class MafStanzaReader implements MafLineTarget {
       sink.addEmpty(empties.nameAt(slot), this.emptyRecord[slot]!)
     }
   }
-}
-
-/**
- * A row's aligned length, counted off its text: `-` is MAF's gap, and a space
- * reaches a row only from a malformed TAF column.
- */
-function alignedBases(seq: string) {
-  let n = 0
-  for (let i = 0; i < seq.length; i++) {
-    const c = seq[i]
-    if (c !== '-' && c !== ' ') {
-      n++
-    }
-  }
-  return n
 }

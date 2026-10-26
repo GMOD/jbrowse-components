@@ -230,6 +230,7 @@ export function readTafBlock(
         parsed.assemblyName,
         parsed.chr,
         row.start,
+        row.length,
         row.strand,
         row.sequenceLength,
         row.bases,
