@@ -153,8 +153,8 @@ browser's. Where its sequence differs from the transcript's translation, the
 **Pairwise alignment** panel shows each residue the structure lacks as a gap,
 and **Import manual alignment...** in the view menu takes a pairwise alignment
 of your own in Clustal format instead. The lookup needs a gene feature with a
-recognizable protein or transcript ID, which the RefSeq gene tracks on the
-hosted configs have.
+recognizable protein or transcript ID, which the hosted configs' RefSeq gene
+tracks, **NCBI RefSeq - RefSeq All** and **NCBI RefSeq - RefSeq Curated**, have.
 
 The protein view also has per-residue tracks for pLDDT, domains, helices and
 hydrophobicity. **Open side by side**, at the foot of the list the arrow beside

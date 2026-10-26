@@ -94,6 +94,7 @@ and problematic-region tracks for hg38 only:
 - **GIAB Problematic Regions - LowMap+SegDup**, the sequence GIAB leaves out of
   its benchmark.
 - **Long-read SVs - 1KG Vienna ONT SVs**, the long-read callset.
+- **NCBI RefSeq - RefSeq Curated**, the gene track the figures carry.
 
 The Umap config holds the **Minimum** score mode and the 0 to 1 axis:
 
