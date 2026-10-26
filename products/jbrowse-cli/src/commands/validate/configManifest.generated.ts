@@ -8875,6 +8875,7 @@ export const configManifest: ConfigManifest = {
       "stateModelProps": [
         "id",
         "type",
+        "parkedColors",
         "configuration"
       ]
     },

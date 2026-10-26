@@ -4302,6 +4302,7 @@
         "impliedFieldOf",
         "matrixColorEncodingOf",
         "normalizeChannel",
+        "ordinalRange",
         "paintedColorEncoding",
         "paintedScale",
         "pairedColorsOf",

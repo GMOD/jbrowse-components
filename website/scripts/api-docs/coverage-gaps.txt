@@ -48,7 +48,7 @@ Dotplot1DView
 LinearSyntenyViewHelper
 TimeTraveller
 
-# model members with no description (1296)
+# model members with no description (1294)
 # fix: write a sentence under the member’s #property/#volatile/#getter/#method/#action tag
 AddTrackModel.adapterHint
 AddTrackModel.altAssemblyName
@@ -810,17 +810,15 @@ LinearGenomeView.volatileWidth
 LinearGenomeView.width
 LinearGenomeView.zoomTo
 LinearHicDisplay.availableNormalizations
+LinearHicDisplay.binSize
 LinearHicDisplay.canStepResolutionCoarser
 LinearHicDisplay.canStepResolutionFiner
-LinearHicDisplay.effectiveResolution
 LinearHicDisplay.renderState
 LinearHicDisplay.renderSvg
-LinearHicDisplay.resetResolution
-LinearHicDisplay.setColorFollowsPercentile
+LinearHicDisplay.setColorDomainQuantile
 LinearHicDisplay.setFileInfo
-LinearHicDisplay.setSelectedNormalization
+LinearHicDisplay.setNormalization
 LinearHicDisplay.startRenderingBackend
-LinearHicDisplay.stepResolution
 LinearHicDisplay.trackMenuItems
 LinearMafDisplay.coarseAdapterSlot
 LinearMafDisplay.colorField

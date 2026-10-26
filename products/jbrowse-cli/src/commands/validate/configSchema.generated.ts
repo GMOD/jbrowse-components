@@ -14922,7 +14922,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "x-closed": true,
       "properties": {
         "type": {
-          "description": "linear; symlog, d3's log(1 + count), which the Log scale toggle writes: it lifts sparse long-range bins off the floor and leaves only 0 transparent; or log, log2 of the count from a pinned domainMin or else 1, every bin at or below which draws transparent. Unset is the field's own, linear for observed.",
+          "description": "linear; symlog, d3's log(1 + count), which the Log scale toggle writes: it lifts sparse long-range bins off the floor, so only 0 paints as the domain's bottom does; or log, log2 of the count from a pinned domainMin or else 1, every bin at or below which paints as the domain's bottom does. Juicebox paints that bottom transparent. Unset is the field's own, linear for observed.",
           "if": {
             "type": "null"
           },
@@ -25517,6 +25517,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "LinearHicDisplayState": {
       "type": "object",
       "properties": {
+        "parkedColors": {},
         "heightPreConfig": {
           "deprecated": true,
           "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."

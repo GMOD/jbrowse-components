@@ -96,6 +96,7 @@ From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`sc
 | <span id="getter-lanechoice">**laneChoice**</span><br><code>readonly string[] &#124; undefined</code> | `rows.kept` as a choice: undefined while it names no lane |
 | <span id="getter-ribboncolorfield">**ribbonColorField**</span><br><code>string &#124; undefined</code> |  |
 | <span id="getter-ribboncolordomain">**ribbonColorDomain**</span><br><code>string[]</code> |  |
+| <span id="getter-ribboncolorrange">**ribbonColorRange**</span><br><code>readonly string[]</code> | The colors a ribbon column's labels take in domain order: `scale.range`, else `scale.scheme` sampled once per domain value |
 | <span id="getter-ribbonpaint">**ribbonPaint**</span><br><code>SyntenyColorPaint</code> |  |
 | <span id="getter-hideunlabelled">**hideUnlabelled**</span><br><code>boolean</code> |  |
 | <span id="getter-interpolate">**interpolate**</span><br><code>"bump" &#124; "linear"</code> | The curve every ribbon side takes, `ribbons.mark.interpolate`. |
