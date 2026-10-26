@@ -104,7 +104,7 @@ import { openInsertionWidget } from './openInsertionWidget.ts'
 import { orderMafRowsByBaseAt } from './orderMafRowsByBaseAt.ts'
 import { placeMafRegionData } from './placeMafRows.ts'
 import { rowNavigationTargetsOf } from './rowNavigationTargets.ts'
-import { resolveRowPlan } from './rowPlan.ts'
+import { basePaintsOf, resolveRowPlan } from './rowPlan.ts'
 import {
   ZOOM_IN_FOR_BAND,
   buildMafTrackMenuItems,
@@ -1475,10 +1475,7 @@ export default function stateModelFactory(
          * cells walk and the letters both read.
          */
         get basePaints() {
-          return {
-            mismatches: self.rowPlan.mismatches,
-            everyBase: self.rowPlan.bases === 'base',
-          }
+          return basePaintsOf(self.rowPlan)
         },
       }))
       .views(self => ({

@@ -1,3 +1,5 @@
+import type { BasePaints } from '../LinearMafRenderer/resolveCellColor.ts'
+
 /**
  * What fills an aligned cell besides a constant: the mean identity to the
  * reference, or the rank of its block's source sequence within the row.
@@ -41,6 +43,14 @@ export interface RowPlan {
   bases: MafBasesField | undefined
   /** cells draw base by base, so letters, insertions and deletion counts draw */
   perBase: boolean
+}
+
+/**
+ * The bases that paint their own color over the fill, which the cells and the
+ * letters both read.
+ */
+export function basePaintsOf(plan: RowPlan): BasePaints {
+  return { mismatches: plan.mismatches, everyBase: plan.bases === 'base' }
 }
 
 /**

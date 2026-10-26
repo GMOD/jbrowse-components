@@ -26,6 +26,7 @@ import {
   refNameRankBarColors,
 } from './components/refNameRanks.ts'
 import { encodeSummarySpans } from './components/summarySpans.ts'
+import { basePaintsOf } from './rowPlan.ts'
 
 import type {
   MafCoverageRegion,
@@ -165,10 +166,7 @@ export function encodeMafRows(
               plan.color === undefined
                 ? (value ?? palette.matchColor)
                 : NO_FILL,
-            paints: {
-              mismatches: plan.mismatches,
-              everyBase: plan.bases === 'base',
-            },
+            paints: basePaintsOf(plan),
           })
         : EMPTY_MAF_CELLS,
     insertions:
