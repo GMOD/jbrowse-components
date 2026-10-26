@@ -4616,6 +4616,14 @@ export const configManifest: ConfigManifest = {
                       "type": "CssColorEntry[]"
                     },
                     {
+                      "name": "scheme",
+                      "type": "(ColorScheme | undefined)"
+                    },
+                    {
+                      "name": "reverse",
+                      "type": "(boolean | undefined)"
+                    },
+                    {
                       "name": "unknown",
                       "type": "(CssColor | undefined)"
                     },
@@ -5682,6 +5690,14 @@ export const configManifest: ConfigManifest = {
                     {
                       "name": "range",
                       "type": "CssColorEntry[]"
+                    },
+                    {
+                      "name": "scheme",
+                      "type": "(ColorScheme | undefined)"
+                    },
+                    {
+                      "name": "reverse",
+                      "type": "(boolean | undefined)"
                     },
                     {
                       "name": "unknown",
@@ -7213,6 +7229,14 @@ export const configManifest: ConfigManifest = {
                     {
                       "name": "range",
                       "type": "CssColorEntry[]"
+                    },
+                    {
+                      "name": "scheme",
+                      "type": "(ColorScheme | undefined)"
+                    },
+                    {
+                      "name": "reverse",
+                      "type": "(boolean | undefined)"
                     },
                     {
                       "name": "unknown",

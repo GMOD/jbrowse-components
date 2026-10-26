@@ -7704,6 +7704,37 @@
             }
           }
         },
+        "scheme": {
+          "description": "a named ramp sampled end to end: an ordinal scale that lists a domain takes one color per value, and a threshold that writes cuts one per interval; range's colors, where it lists any, win over it.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "enum": [
+              "viridis",
+              "magma",
+              "inferno",
+              "cividis",
+              "juicebox",
+              "fall",
+              "reds",
+              "blues",
+              "redblue",
+              "purpleorange",
+              "redgreyblue",
+              "redyellowblue"
+            ]
+          }
+        },
+        "reverse": {
+          "description": "turns the ramp round, so its last color paints the bottom of a ramp's domain or a threshold's lowest interval; unset follows the field's preset, else runs as written.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
+        },
         "unknown": {
           "description": "color for a value missing from domain: unset, a preset field's level keeps its own color and any other value takes the next palette color where the display deals one; a color paints that color; \"\" paints a feature the no-value grey and a variant cell the alt hue, and leaves a row the color it already has.",
           "if": {
@@ -8788,6 +8819,37 @@
             "items": {
               "$ref": "#/$defs/CssColorEntry"
             }
+          }
+        },
+        "scheme": {
+          "description": "a named ramp sampled end to end: an ordinal scale that lists a domain takes one color per value, and a threshold that writes cuts one per interval; range's colors, where it lists any, win over it.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "enum": [
+              "viridis",
+              "magma",
+              "inferno",
+              "cividis",
+              "juicebox",
+              "fall",
+              "reds",
+              "blues",
+              "redblue",
+              "purpleorange",
+              "redgreyblue",
+              "redyellowblue"
+            ]
+          }
+        },
+        "reverse": {
+          "description": "turns the ramp round, so its last color paints the bottom of a ramp's domain or a threshold's lowest interval; unset follows the field's preset, else runs as written.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
           }
         },
         "unknown": {
@@ -12007,6 +12069,37 @@
             "items": {
               "$ref": "#/$defs/CssColorEntry"
             }
+          }
+        },
+        "scheme": {
+          "description": "a named ramp sampled end to end: an ordinal scale that lists a domain takes one color per value, and a threshold that writes cuts one per interval; range's colors, where it lists any, win over it.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "enum": [
+              "viridis",
+              "magma",
+              "inferno",
+              "cividis",
+              "juicebox",
+              "fall",
+              "reds",
+              "blues",
+              "redblue",
+              "purpleorange",
+              "redgreyblue",
+              "redyellowblue"
+            ]
+          }
+        },
+        "reverse": {
+          "description": "turns the ramp round, so its last color paints the bottom of a ramp's domain or a threshold's lowest interval; unset follows the field's preset, else runs as written.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
           }
         },
         "unknown": {
