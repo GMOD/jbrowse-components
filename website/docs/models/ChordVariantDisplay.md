@@ -121,7 +121,7 @@ From [BaseDisplay](../basedisplay): <span id="getter-parenttrack">[`parentTrack`
 | <span id="method-shapelabel">**shapeLabel**</span><br><code>(feature: Feature) =&gt; string</code> |  |
 | <span id="method-swatchcolor">**swatchColor**</span><br><code>(color: string) =&gt; string</code> | a key swatch for `encoding.color`, faded as the chords draw it |
 | <span id="method-rendersvg">**renderSvg**</span><br><code>() =&gt; Promise&lt;Element &#124; null&gt;</code> |  |
-| <span id="method-trackmenuitems">**trackMenuItems**</span><br><code>() =&gt; MenuItem[]</code> | Color by... and Advanced → Edit plot..., which the circular view shows under its Tracks menu |
+| <span id="method-trackmenuitems">**trackMenuItems**</span><br><code>() =&gt; MenuItem[]</code> | Color by and Advanced → Edit plot..., which the circular view shows under its Tracks menu |
 
 <details class="inherited-members" data-pagefind-ignore>
 <summary>12 inherited methods from 3 models</summary>

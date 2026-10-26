@@ -33,6 +33,6 @@ which the reset calls.
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="action-hidegroup">**hideGroup**</span><br><code>(key: string) =&gt; void</code> | Drop a section from the stack. Reversed by `showAllGroups`, which the "Show..." menu offers while anything is hidden, since a hidden section has no chip to restore it. |
+| <span id="action-hidegroup">**hideGroup**</span><br><code>(key: string) =&gt; void</code> | Drop a section from the stack. Reversed by `showAllGroups`, which the "Show" menu offers while anything is hidden, since a hidden section has no chip to restore it. |
 | <span id="action-showallgroups">**showAllGroups**</span><br><code>() =&gt; void</code> |  |
 | <span id="action-dropgroupstate">**dropGroupState**</span><br><code>() =&gt; void</code> | Overridable hook: forget the volatile per-group state a display keeps. A no-op by default, since the hidden sections are config. |

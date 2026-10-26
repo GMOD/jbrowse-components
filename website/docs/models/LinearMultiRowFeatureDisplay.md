@@ -70,6 +70,7 @@ From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`sc
 | Member | Description |
 | --- | --- |
 | <span id="getter-attributes">**attributes**</span><br><code>readonly string[]</code> | The attributes the scanned features carry, which the menus offer. |
+| <span id="getter-menusofferplotfields">**menusOfferPlotFields**</span><br><code>boolean</code> |  |
 | <span id="getter-colorfield">**colorField**</span><br><code>string &#124; undefined</code> | The field the display's color paints by, or undefined for none. |
 | <span id="getter-solidcolor">**solidColor**</span><br><code>string &#124; undefined</code> | The constant every feature paints, undefined for none or a `jexl:` callback. |
 | <span id="getter-colorbymode">**colorByMode**</span><br><code>"attribute" &#124; "default" &#124; "itemRgb" &#124; "solid" &#124; "strand"</code> | The Color by row that is ticked: a field, else each feature's own BED color through a fieldless identity color, else a constant, else the marks' own colors. |
