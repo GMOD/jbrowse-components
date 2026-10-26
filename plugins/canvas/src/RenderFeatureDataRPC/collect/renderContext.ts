@@ -21,7 +21,7 @@ export interface RenderContext {
   jexl: JexlInstance
   // Reads `config.facetField`, built once per walk.
   readGroupKey?: (feature: Feature) => unknown
-  // Reads `config.mouseover`, built once per walk (`tooltipReader`).
+  // Reads `config.tooltip`, built once per walk (`tooltipReader`).
   tooltipOf?: (feature: Feature) => string
   isGeneType?: (type: string) => boolean
 }
