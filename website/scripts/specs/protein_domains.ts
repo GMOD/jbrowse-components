@@ -51,8 +51,8 @@ export const proteinDomainsSpecs: ScreenshotSpec[] = [
           tracks: [
             {
               trackId: `${ASSEMBLY}-ncbiGff`,
-              height: 170,
               subfeatureLabels: 'below',
+              heightMode: 'grow',
             },
             {
               trackId: 'pfam_domains',
@@ -65,6 +65,6 @@ export const proteinDomainsSpecs: ScreenshotSpec[] = [
     readyText: 'Pfam family',
     readyTimeout: 60000,
     viewportWidth: 1200,
-    viewportHeight: 520,
+    viewportHeight: 550,
   },
 ]

@@ -38,7 +38,7 @@
     "@jbrowse/text-indexing-core": "workspace:^",
     "ajv": "^8.20.0",
     "cli-progress": "^3.12.0",
-    "domains2genome": "^2.0.0",
+    "domains2genome": "^2.2.0",
     "serve-handler": "^6.1.7",
     "tmp": "^0.2.7"
   },

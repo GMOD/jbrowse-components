@@ -2358,8 +2358,8 @@ importers:
         specifier: ^3.12.0
         version: 3.12.0
       domains2genome:
-        specifier: ^2.0.0
-        version: 2.0.0
+        specifier: ^2.2.0
+        version: 2.2.0
       serve-handler:
         specifier: ^6.1.7
         version: 6.1.7
@@ -7637,9 +7637,9 @@ packages:
   dom-serializer@2.0.0:
     resolution: {integrity: sha512-wIkAryiqt/nV5EQKqQpo3SToSOV9J0DnbJqwK7Wv/Trc92zIAYZ4FlMu+JPFW1DfGFt81ZTCGgDEabffXeLyJg==}
 
-  domains2genome@2.0.0:
-    resolution: {integrity: sha512-5TvPp4+tMCQhQhkjSFJWb57Zsdwtu5vZFSqiVbyN0qBZ9PPIrtpmUc5X1Ko7svjyeUCEDLIMYbjwg8a5hqxzlw==}
-    engines: {node: '>=20'}
+  domains2genome@2.2.0:
+    resolution: {integrity: sha512-WO4yN8IEbLXPmboe1TubS3DoXkdfR/wpacdXsUl+KUCGIbWuw+ISCuxVzLrjvKP1+CCabfFS+bnJcc2XdOzykA==}
+    engines: {node: '>=18.3.0'}
     hasBin: true
 
   domelementtype@2.3.0:
@@ -15754,7 +15754,7 @@ snapshots:
       domhandler: 5.0.3
       entities: 4.5.0
 
-  domains2genome@2.0.0:
+  domains2genome@2.2.0:
     dependencies:
       g2p_mapper: 2.3.1
 

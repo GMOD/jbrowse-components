@@ -119,7 +119,7 @@ jbrowse make-protein-features genes.gff3 pfam.domtblout --out pfam.bed.gz
   `proteinStart`, `proteinEnd` and `evalue` follow as named columns, and JBrowse
   shows them on click.
 - `transcript` is the transcript's GFF3 `Name`, which the gene track labels it
-  with, or its ID where it has none.
+  with.
 - `--source Pfam` keeps only the Pfam rows of an InterProScan TSV.
 
 ## Drawing the domains under the genes
@@ -169,8 +169,14 @@ assembly.
 
 To follow along on genomes.jbrowse.org, open the honey bee genome, add the track
 above, turn on the gene track, **NCBI RefSeq - RefSeq All (GFF)**, and go to
-`NC_037640.1:1,971,400-1,976,800`. **Show... → Subfeature labels → Below** in
-the gene track's menu names each transcript, the name its domain row carries.
+`NC_037640.1:1,971,400-1,976,800`. In the gene track's menu, choose **Show... →
+Subfeature labels → Below** to label each transcript with the name its domain
+row carries.
+
+The gene track trims isoforms to fit its default height, so choose **Feature
+height → Fixed feature height + autogrow track height** to see them all.
+<!-- menu-path-ok -->
+
 Clicking a domain shows its transcript, accession and residue range.
 
 <Figure src="/img/protein_domains/vav.png" caption="Honey bee vav: each RefSeq isoform named under its gene model, and its Pfam domains on a row of that name, colored by family." />
