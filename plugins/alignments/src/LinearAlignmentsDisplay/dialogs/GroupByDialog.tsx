@@ -19,6 +19,7 @@ import { getUniqueTags } from '../../shared/getUniqueTags.ts'
 import { tagGroupingVerdict } from './tagGroupingVerdict.ts'
 
 import type { BaseLayer, Facet } from '../../shared/types.ts'
+import type { ColorSlots } from '@jbrowse/core/util/colorScale'
 import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
@@ -39,6 +40,7 @@ export interface GroupByDialogModel extends IStateTreeNode {
   // fetch's budget rather than running unbounded beside a refused track.
   resolvedByteLimit: () => number | undefined
   colorField: string | undefined
+  writtenColor: ColorSlots
   baseLayer: BaseLayer | undefined
   facet?: Facet
   facetByField: (field: string) => void
@@ -53,9 +55,9 @@ function isColoringByTag(colorField: string | undefined, tag: string) {
 // Whether "also color by this tag" should be ticked, absent an explicit click:
 // yes over a bare plain fill, where grouping by a tag usually pairs with
 // coloring by it, and yes when the reads already carry that same tag's colors.
-// No over any other fill, which ticking REPLACES, and no under a per-base
-// layer, whose calls read against the plain fill and share the tag palette's
-// blue.
+// No over any other fill or a solid color, which ticking REPLACES, and no under
+// a per-base layer, whose calls read against the plain fill and share the tag
+// palette's blue.
 //
 // Derived from the tag in the box rather than seeded once from the model: the
 // box is where the tag is chosen, so a state read at open time describes a tag
@@ -64,7 +66,9 @@ function isColoringByTag(colorField: string | undefined, tag: string) {
 // means "don't color by this tag", submitting turned those colors off.
 function defaultColorByTag(model: GroupByDialogModel, tag: string) {
   return (
-    (model.colorField === undefined && !model.baseLayer) ||
+    (model.colorField === undefined &&
+      model.writtenColor.value === undefined &&
+      !model.baseLayer) ||
     isColoringByTag(model.colorField, tag)
   )
 }

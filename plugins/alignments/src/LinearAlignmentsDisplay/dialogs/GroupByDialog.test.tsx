@@ -26,6 +26,7 @@ afterEach(() => {
 // verdict itself is unit-tested below.
 function renderDialog(state: {
   colorField?: string
+  solidColor?: string
   baseLayer?: BaseLayer
   facet?: Facet
 }) {
@@ -34,6 +35,7 @@ function renderDialog(state: {
   const model = {
     id: 'display1',
     colorField: state.colorField,
+    writtenColor: { value: state.solidColor },
     baseLayer: state.baseLayer,
     facet: state.facet,
     readFilter: {},
@@ -110,6 +112,17 @@ test('a non-tag color field is not replaced by default', async () => {
   const { colorByField } = renderDialog({
     colorField: 'insertSize',
   })
+  typeTag('HP')
+  expect(checkbox().checked).toBe(false)
+  await settleScan()
+  submit()
+  expect(colorByField).not.toHaveBeenCalled()
+})
+
+// A solid color leaves `colorField` unset, as the plain fill does, and the box
+// ticked itself over it, so Submit replaced the color the user picked.
+test('a solid color is not replaced by default', async () => {
+  const { colorByField } = renderDialog({ solidColor: 'red' })
   typeTag('HP')
   expect(checkbox().checked).toBe(false)
   await settleScan()
