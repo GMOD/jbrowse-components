@@ -263,9 +263,6 @@ function strainGeneLane(trackId: string) {
     trackId,
     filter: ['geneLike'],
     displayMode: 'compact',
-    // what the old `showDescriptions: false` resolved to; 'name' changes the
-    // figure
-    showLabels: 'auto',
     height: 60,
   }
 }
@@ -496,8 +493,6 @@ function graphContextPartSpecs(): ScreenshotSpec[] {
               trackId: 'K12_genes',
               filter: ['geneLike'],
               displayMode: 'compact',
-              // the retired `showDescriptions: false` resolved to 'auto'
-              showLabels: 'auto',
               height: 60,
             },
             graphTrack(ECOLI_SEGMENTS_TRACK, {
@@ -638,7 +633,7 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
             {
               trackId: PGGB_TIER_TRACK,
               type: 'LinearBasicDisplay',
-              showLabels: 'none',
+              labels: { name: { show: false }, description: { show: false } },
               height: 50,
               encoding: {
                 color: { value: referencePositionColor(PGGB_TIER_REGION) },

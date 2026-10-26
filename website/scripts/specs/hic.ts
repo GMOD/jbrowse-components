@@ -45,7 +45,7 @@ const junctionView = {
     // The RefSeq GFF buries ABL1 and BCR under LOC*/RN7SL* entries.
     {
       trackId: 'mane_hg38',
-      showLabels: 'name',
+      labels: { description: { show: false } },
       height: 68,
     },
     matrix('hic_gm12878_insitu', 380),
@@ -162,7 +162,7 @@ export const hicSpecs: ScreenshotSpec[] = [
       tracks: [
         {
           trackId: 'mane_hg38',
-          showLabels: 'name',
+          labels: { description: { show: false } },
           height: 62,
         },
         // without one pinned scale each lane autoscales and they stop comparing

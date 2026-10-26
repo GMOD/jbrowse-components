@@ -197,7 +197,9 @@ The config's first track is the graph. Its adapter holds:
     "assemblyNameToPanSN": { "hg38": "GRCh38" },
     "coarse": { "uri": "hprc.fold10000", "foldBelowBp": 10000 }
   },
-  "displayDefaults": { "showLabels": "none" },
+  "displayDefaults": {
+    "labels": { "name": { "show": false }, "description": { "show": false } }
+  },
   "displays": [
     { "type": "LinearGraphDisplay" },
     { "type": "LinearBasicDisplay" }

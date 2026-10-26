@@ -176,7 +176,7 @@ const CHRY_GENE_LANE = {
   geneGlyphMode: 'representative',
   displayMode: 'compact',
   // 'auto' adds RefSeq's sentence-long descriptions at this density
-  showLabels: 'name',
+  labels: { description: { show: false } },
   height: 60,
 }
 
@@ -459,7 +459,7 @@ const ECOLI_ROUND_TRIP_START = sessionSpec(
           {
             trackId: 'ecoli_minigraph_segments',
             type: 'LinearBasicDisplay',
-            showLabels: 'none',
+            labels: { name: { show: false }, description: { show: false } },
             height: 60,
           },
         ],
@@ -536,7 +536,6 @@ const LGV_TRACK_ZOOM_SESSION = sessionSpec(
             trackId: 'GCF_030704535.1-ncbiRefSeq',
             filter: ['geneLike'],
             displayMode: 'compact',
-            showLabels: 'auto',
           },
           {
             trackId: 'grape_peach_cacao_blocks',
@@ -847,7 +846,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
                     trackId: 'GCF_000346465.2-ncbiRefSeq',
                     filter: ['geneLike'],
                     displayMode: 'compact',
-                    showLabels: 'auto',
                   },
                 ],
               },
@@ -859,7 +857,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
                     trackId: 'GCF_030704535.1-ncbiRefSeq',
                     filter: ['geneLike'],
                     displayMode: 'compact',
-                    showLabels: 'auto',
                   },
                 ],
               },
@@ -871,7 +868,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
                     trackId: 'GCF_000208745.1-ncbiRefSeq',
                     filter: ['geneLike'],
                     displayMode: 'compact',
-                    showLabels: 'auto',
                   },
                 ],
               },
@@ -923,7 +919,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
                 trackId: 'GCF_030704535.1-ncbiRefSeq',
                 filter: ['geneLike'],
                 displayMode: 'compact',
-                showLabels: 'auto',
               },
               {
                 trackId: 'grape_peach_cacao_blocks',
@@ -962,7 +957,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
                 trackId: 'GCF_030704535.1-ncbiRefSeq',
                 filter: ['geneLike'],
                 displayMode: 'compact',
-                showLabels: 'auto',
               },
               {
                 trackId: 'grape_peach_cacao_blocks',
@@ -1005,7 +999,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
                 trackId: 'GCF_030704535.1-ncbiRefSeq',
                 filter: ['geneLike'],
                 displayMode: 'compact',
-                showLabels: 'auto',
               },
               {
                 trackId: 'grape_peach_cacao_blocks',
@@ -1157,7 +1150,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
                 filter: ['geneLike'],
                 displayMode: 'compact',
                 // Ensembl's tomato GFF3 names every gene by a bare Solyc id
-                showLabels: 'none',
+                labels: { name: { show: false }, description: { show: false } },
               },
               {
                 trackId: 'solanaceae_orthogroups',
@@ -1642,7 +1635,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
                 tracks: [
                   {
                     trackId: 'human_genes',
-                    showLabels: 'name',
+                    labels: { description: { show: false } },
                     displayMode: 'compact',
                   },
                 ],
@@ -1653,7 +1646,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
                 tracks: [
                   {
                     trackId: 'rhesus_genes',
-                    showLabels: 'name',
+                    labels: { description: { show: false } },
                     displayMode: 'compact',
                   },
                 ],
@@ -1957,7 +1950,10 @@ export const syntenySpecs: ScreenshotSpec[] = [
                     trackId: 'sorghum_genes',
                     filter: ['geneLike'],
                     displayMode: 'compact',
-                    showLabels: 'none',
+                    labels: {
+                      name: { show: false },
+                      description: { show: false },
+                    },
                     height: 40,
                   },
                 ],
@@ -1970,7 +1966,10 @@ export const syntenySpecs: ScreenshotSpec[] = [
                     trackId: 'rice_genes',
                     filter: ['geneLike'],
                     displayMode: 'compact',
-                    showLabels: 'none',
+                    labels: {
+                      name: { show: false },
+                      description: { show: false },
+                    },
                     height: 40,
                   },
                 ],
@@ -1983,7 +1982,10 @@ export const syntenySpecs: ScreenshotSpec[] = [
                     trackId: 'maize_genes',
                     filter: ['geneLike'],
                     displayMode: 'compact',
-                    showLabels: 'none',
+                    labels: {
+                      name: { show: false },
+                      description: { show: false },
+                    },
                     height: 40,
                   },
                 ],
@@ -2153,7 +2155,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
                   trackId: 'K12_genes',
                   filter: ['geneLike'],
                   displayMode: 'compact',
-                  showLabels: 'auto',
                 },
               ],
             },
@@ -2165,7 +2166,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
                   trackId: 'Sakai_genes',
                   filter: ['geneLike'],
                   displayMode: 'compact',
-                  showLabels: 'auto',
                 },
               ],
             },
@@ -2232,7 +2232,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
               trackId: 'K12_genes',
               filter: ['geneLike'],
               displayMode: 'compact',
-              showLabels: 'auto',
             },
             // the graph pane's ramp, so a node and its span share a hue
             {
@@ -2481,7 +2480,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
                   trackId: `${GRAPE}-ncbiRefSeq`,
                   filter: ['geneLike'],
                   displayMode: 'compact',
-                  showLabels: 'auto',
                   height: 70,
                 },
               ],
@@ -2494,7 +2492,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
                   trackId: `${PEACH}-ncbiRefSeq`,
                   filter: ['geneLike'],
                   displayMode: 'compact',
-                  showLabels: 'auto',
                   height: 70,
                 },
               ],
@@ -2530,7 +2527,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
                   trackId: `${GRAPE}-ncbiRefSeq`,
                   filter: ['geneLike'],
                   displayMode: 'compact',
-                  showLabels: 'auto',
                   height: 70,
                 },
               ],
@@ -2543,7 +2539,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
                   trackId: `${PEACH}-ncbiRefSeq`,
                   filter: ['geneLike'],
                   displayMode: 'compact',
-                  showLabels: 'auto',
                   height: 70,
                 },
               ],
@@ -2900,7 +2895,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
       ],
       {
         ribbons: { encoding: { color: 'strand' } },
-        showGeneLabels: false,
+        labels: { name: { show: false } },
         height: 6 * 60,
       },
     ),
@@ -3418,7 +3413,6 @@ export const syntenyVideoFixtures = {
               trackId: 'GCF_030704535.1-ncbiRefSeq',
               filter: ['geneLike'],
               displayMode: 'compact',
-              showLabels: 'auto',
             },
             {
               trackId: 'grape_peach_cacao_blocks',

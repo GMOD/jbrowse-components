@@ -42,7 +42,10 @@
         {
           "type": "LinearBasicDisplay",
           "displayId": "hg002v1.2_chainblocks_mat-LinearBasicDisplay",
-          "showLabels": "none",
+          "labels": {
+            "name": { "show": false },
+            "description": { "show": false }
+          },
           "encoding": { "color": "strand" }
         }
       ]
@@ -60,7 +63,10 @@
         {
           "type": "LinearBasicDisplay",
           "displayId": "hg002v1.2_chainblocks_pat-LinearBasicDisplay",
-          "showLabels": "none",
+          "labels": {
+            "name": { "show": false },
+            "description": { "show": false }
+          },
           "encoding": { "color": "strand" }
         }
       ]

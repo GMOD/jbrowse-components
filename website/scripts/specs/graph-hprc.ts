@@ -63,13 +63,13 @@ const MHC_CLASSII_REGION = {
 // The 12,014 bp REF of the four pgbi records whose ALTs are HPRC_ALLELE.
 const MHC_MARKED_DELETION = '6:32,517,422-32,529,435'
 
-// The legacy `showLabels: 'off'` migrates to 'description'. The lane packs 2-4
-// rows, and a pinned height clipped the last one at MHC and LPA.
+// The lane packs 2-4 rows, and a pinned height clipped the last one at MHC and
+// LPA.
 function hprcSegmentsLane(domain: { start: number; end: number }) {
   return {
     trackId: SEGMENTS_TRACK,
     type: 'LinearBasicDisplay',
-    showLabels: 'none',
+    labels: { name: { show: false }, description: { show: false } },
     heightMode: 'grow',
     encoding: { color: { value: referencePositionColor(domain) } },
   }
@@ -161,7 +161,7 @@ function cytobandLane() {
   return {
     trackId: 'hg38_cytobands_ucsc',
     displayMode: 'collapsed',
-    showLabels: 'none',
+    labels: { name: { show: false }, description: { show: false } },
     encoding: {
       color: {
         value:
@@ -349,7 +349,7 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
             {
               trackId: 'hprc_tier',
               type: 'LinearBasicDisplay',
-              showLabels: 'none',
+              labels: { name: { show: false }, description: { show: false } },
               // Packed: collapsed lets one long bubble fill the 1q gap, and the
               // gap is the point.
               height: 60,
@@ -900,7 +900,7 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
             {
               trackId: SEGMENTS_TRACK,
               type: 'LinearBasicDisplay',
-              showLabels: 'none',
+              labels: { name: { show: false }, description: { show: false } },
               // grown to the rows alone, the rank key clipped
               height: 110,
             },

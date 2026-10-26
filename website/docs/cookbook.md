@@ -278,8 +278,9 @@ off the file and moving an outgrown callback into a plugin.
 
 `labels.name` and `labels.description` each name the feature field a label line
 reads, such as `"note"`, or take a `jexl:` expression where the label wants a
-fallback. [`showLabels`](/docs/config/linearcanvasbasedisplay/#slot-showlabels)
-pins which lines are drawn at every zoom, and `mouseover` is rendered as HTML:
+fallback; `{ "show": false }` turns a line off
+([FeatureNameLabel](/docs/config/featurenamelabel)). The
+[`tooltip`](/docs/config/featuretooltip) is rendered as HTML:
 
 ```json addtrack
 {
@@ -293,7 +294,6 @@ pins which lines are drawn at every zoom, and `mouseover` is rendered as HTML:
       "name": "jexl:feature.name || feature.id",
       "description": "note"
     },
-    "showLabels": "nameAndDescription",
     "tooltip": "jexl:`${feature.name} [${feature.type}] ${feature.start}-${feature.end}`"
   }
 }

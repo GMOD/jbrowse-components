@@ -122,8 +122,7 @@ columns:
     "labels": {
       "name": "trait",
       "description": "jexl:'p=' + feature.pValue + ', ' + substring(feature.pubDate, 0, 4) + ', ' + feature.author"
-    },
-    "showLabels": "nameAndDescription"
+    }
   }
 }
 ```

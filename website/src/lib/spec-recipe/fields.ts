@@ -49,7 +49,6 @@ import {
 import { paintedField } from '../../../../packages/synteny-core/src/syntenyColorBy.ts'
 import { SETTINGS_SURFACE_LABELS } from '../../../../packages/synteny-core/src/settingsSurfaces.ts'
 import { GENE_GLYPH_MODE_OPTIONS } from '../../../../plugins/canvas/src/LinearBasicDisplay/geneGlyphMode.ts'
-import { SHOW_LABELS_OPTIONS } from '../../../../plugins/canvas/src/LinearBasicDisplay/showLabelsMode.ts'
 import {
   DISPLAY_MODE_OPTIONS,
   SUBFEATURE_LABEL_OPTIONS,
@@ -1025,19 +1024,10 @@ const heightMenu = (noun: string, displayType?: string) =>
     ? `${TRACK_MENU} → Feature height`
     : `${TRACK_MENU} → ${noun.charAt(0).toUpperCase()}${noun.slice(1)} height`
 
-// The canvas display's two flat radio groups, both imported. Both recipes are
-// gated on the display type because both field names mean a different menu
-// elsewhere — the alignments display has its own displayMode, and showLabels on
-// an LD display is a 'Variant labels' checkbox.
+// The canvas display's size radio, imported. The recipe is gated on the
+// display type because the alignments display has its own displayMode.
 const DISPLAY_MODES: Record<string, string> = Object.fromEntries(
   DISPLAY_MODE_OPTIONS.map(o => [o.value, o.label]),
-)
-
-// The arc display's `displayMode`, a different setting under the same name:
-// what an arc is drawn as. Imported rather than copied, so a renamed radio
-// changes this table with it — see the note on the import block above.
-const SHOW_LABELS_MODES: Record<string, string> = Object.fromEntries(
-  SHOW_LABELS_OPTIONS.map(o => [o.value, o.label]),
 )
 
 const SASHIMI_PLACEMENT: Record<string, string> = {
@@ -1835,12 +1825,6 @@ export const trackFields: Record<string, FieldRecipe> = {
           path: `${TRACK_MENU} → Show → Lane names on the gene row (${value ? 'checked' : 'unchecked'})`,
         }
       : undefined,
-  showGeneLabels: (value, { displayType }) =>
-    typeof value === 'boolean' && displayType === 'MultiWaySyntenyDisplay'
-      ? {
-          path: `${TRACK_MENU} → Show → Gene labels (${value ? 'checked' : 'unchecked'})`,
-        }
-      : undefined,
   'coverage.encoding.y': yStep(channelYMembers),
   'encoding.y': (value, context) => {
     const field = typeof value === 'string' ? value : asRecord(value)?.field
@@ -1984,17 +1968,41 @@ export const trackFields: Record<string, FieldRecipe> = {
       ? { path: `${TRACK_MENU} → Feature height → ${label}` }
       : undefined
   },
-  showLabels: (value, { displayType }) => {
-    const label =
-      typeof value === 'string' ? SHOW_LABELS_MODES[value] : undefined
-    return label && displayType && CANVAS_DISPLAYS.has(displayType)
-      ? { path: `${TRACK_MENU} → Show → Labels → ${label}` }
-      : undefined
+  // The label parts: the canvas display's Names and Descriptions checkboxes
+  // and its Subfeature labels radio, and the multi-way display's Gene labels
+  // checkbox. A label's field has no menu row.
+  labels: (value, { displayType }) => {
+    const labels = asRecord(value)
+    const checkbox = (label: string, part: unknown) => {
+      const shown = asRecord(part)?.show
+      return typeof shown === 'boolean'
+        ? {
+            path: `${TRACK_MENU} → Show → ${label} (${shown ? 'checked' : 'unchecked'})`,
+          }
+        : undefined
+    }
+    if (displayType === 'MultiWaySyntenyDisplay') {
+      return checkbox('Gene labels', labels?.name)
+    }
+    if (!displayType || !CANVAS_DISPLAYS.has(displayType)) {
+      return undefined
+    }
+    const subfeatures = asRecord(labels?.subfeatures)
+    const placement =
+      subfeatures?.show === false ? 'none' : asString(subfeatures?.placement)
+    const radio = placement ? SUBFEATURE_LABELS[placement] : undefined
+    const steps = [
+      checkbox('Names', labels?.name),
+      checkbox('Descriptions', labels?.description),
+      radio
+        ? { path: `${TRACK_MENU} → Show → Subfeature labels → ${radio}` }
+        : undefined,
+    ].filter(step => step !== undefined)
+    return steps.length > 0 ? steps : undefined
   },
   // layout the reader sets to taste: a step per track buries the settings
   // that make the picture
   height: () => [],
-  subfeatureLabels: fromTable('Subfeature labels', SUBFEATURE_LABELS),
   'sashimi.placement': fromTable(
     'Advanced → Sashimi placement',
     SASHIMI_PLACEMENT,
@@ -2080,15 +2088,9 @@ export const trackFields: Record<string, FieldRecipe> = {
           })`,
         }
       : undefined,
-  // `showDescriptions` has no entry on purpose. There is no "Show descriptions"
-  // checkbox any more: it and the three-way name radio were folded into the one
-  // Labels group, because the old pair let 'off' hide names while descriptions
-  // kept painting — a state nothing in the UI named. Which rung a legacy key
-  // becomes depends on the `showLabels` beside it, and a field handler sees only
-  // its own value, so any path written here is right for one pairing and wrong
-  // for the other. The specs have all been converted to the rung
-  // migrateBasicConfigSnapshot resolves them to, so a `showDescriptions` showing
-  // up in the gap report again is a spec to convert, not a handler to add.
+  // `showLabels` and `showDescriptions` have no entry: both lift onto `labels`
+  // at load, so one showing up in the gap report is a spec to respell, not a
+  // handler to add.
   // The row inside Resolution is a custom control rather than a menu item —
   // two buttons either side of the current bin size (ResolutionStepper) — so
   // the path stops at the submenu and the note names what is in it, the same

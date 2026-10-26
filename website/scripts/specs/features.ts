@@ -108,7 +108,7 @@ const GROUPING_TRACK = {
   trackId: 'ncbi_refseq_109_hg38_latest',
   geneGlyphMode: 'representative',
   // description rows push the reverse-strand section off the frame
-  showLabels: 'name',
+  labels: { description: { show: false } },
 }
 
 // Pasted by the `ui/gene_track_channel_spec` tour and printed in gene_track.md.

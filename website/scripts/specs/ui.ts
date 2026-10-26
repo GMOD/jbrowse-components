@@ -242,7 +242,7 @@ export const chromhmmVideoFixtures = {
     tracks: [
       {
         trackId: 'ncbi_gff_hg19',
-        showLabels: 'name',
+        labels: { description: { show: false } },
         filter: ['geneLike', "jexl:feature.type!='pseudogene'"],
         height: 120,
       },
@@ -328,7 +328,7 @@ const rhdPanel = (sortRowsBy?: RowSortSpec) =>
           {
             trackId: 'ncbi_refseq_hg38',
             height: 120,
-            showLabels: 'name',
+            labels: { description: { show: false } },
             filter: ['geneLike'],
           },
         ],
@@ -586,7 +586,7 @@ export const uiSpecs: ScreenshotSpec[] = [
             {
               trackId: 'ncbi_refseq_109_hg38',
               height: 140,
-              showLabels: 'name',
+              labels: { description: { show: false } },
               filter: ['geneLike'],
               heightMode: 'fit',
             },
@@ -622,7 +622,7 @@ export const uiSpecs: ScreenshotSpec[] = [
             {
               trackId: 'ncbi_refseq_109_hg38',
               height: 140,
-              showLabels: 'name',
+              labels: { description: { show: false } },
               filter: ['geneLike'],
               heightMode: 'fit',
             },
@@ -684,7 +684,7 @@ export const uiSpecs: ScreenshotSpec[] = [
               // in frame.
               heightMode: 'grow',
               geneGlyphMode: 'representative',
-              showLabels: 'name',
+              labels: { description: { show: false } },
               filter: ['geneLike'],
             },
             ...['HG00113', 'HG00096', 'HG00097'].map(s => ({
@@ -1694,7 +1694,7 @@ export const uiSpecs: ScreenshotSpec[] = [
       tracks: [
         {
           trackId: 'ncbi_gff_hg19',
-          showLabels: 'name',
+          labels: { description: { show: false } },
           filter: ['geneLike', "jexl:feature.type!='pseudogene'"],
           displayMode: 'compact',
           height: 80,
@@ -1748,7 +1748,7 @@ export const uiSpecs: ScreenshotSpec[] = [
       tracks: [
         {
           trackId: 'ncbi_gff_hg19',
-          showLabels: 'name',
+          labels: { description: { show: false } },
           filter: ['geneLike', "jexl:feature.type!='pseudogene'"],
           height: 110,
         },
@@ -1799,7 +1799,7 @@ export const uiSpecs: ScreenshotSpec[] = [
       tracks: [
         {
           trackId: 'ncbi_gff_hg19',
-          showLabels: 'name',
+          labels: { description: { show: false } },
           filter: ['geneLike', "jexl:feature.type!='pseudogene'"],
           height: 110,
         },

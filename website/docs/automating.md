@@ -162,8 +162,8 @@ export type TrackInit =
       // config node, `displaySnapshot` explicitly to the display node. Any
       // OTHER key on this object is treated as a display-snapshot prop, so the
       // common case sets display options inline with no nesting:
-      // `{ trackId, showLabels: 'name' }` rather than
-      // `{ trackId, displaySnapshot: { showLabels: 'name' } }`.
+      // `{ trackId, height: 200 }` rather than
+      // `{ trackId, displaySnapshot: { height: 200 } }`.
       trackSnapshot?: Record<string, unknown>
       displaySnapshot?: Record<string, unknown>
       // the command line's track options (`color:strand`, `sort:base`,

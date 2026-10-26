@@ -51,7 +51,7 @@ export const proteinDomainsSpecs: ScreenshotSpec[] = [
           tracks: [
             {
               trackId: `${ASSEMBLY}-ncbiGff`,
-              subfeatureLabels: 'below',
+              labels: { subfeatures: { placement: 'below' } },
               heightMode: 'grow',
             },
             {

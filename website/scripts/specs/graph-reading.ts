@@ -61,7 +61,7 @@ function hprcSegmentsLane(domain: { start: number; end: number }) {
   return {
     trackId: 'hprc_minigraph_segments',
     type: 'LinearBasicDisplay',
-    showLabels: 'none',
+    labels: { name: { show: false }, description: { show: false } },
     height: 100,
     encoding: { color: { value: referencePositionColor(domain) } },
   }

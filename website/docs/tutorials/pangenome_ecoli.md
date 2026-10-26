@@ -537,7 +537,9 @@ our hosted copy; a local build uses `ecoli_pggb`:
       "aboveBpPerPx": 5
     }
   },
-  "displayDefaults": { "showLabels": "none" },
+  "displayDefaults": {
+    "labels": { "name": { "show": false }, "description": { "show": false } }
+  },
   "displays": [
     { "type": "LinearGraphDisplay" },
     { "type": "LinearBasicDisplay" }
@@ -605,7 +607,7 @@ over the same files colors each segment by that count:
   },
   "displayDefaults": {
     "displayMode": "collapsed",
-    "showLabels": "none",
+    "labels": { "name": { "show": false }, "description": { "show": false } },
     "encoding": {
       "color": {
         "field": "sampleCount",

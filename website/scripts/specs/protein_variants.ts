@@ -565,8 +565,7 @@ const HBB_GWAS_STORY_TRACK = {
       "jexl:feature.trait in ['Malaria', 'Hereditary hemolytic anemias (PheCode 282)']",
       "jexl:feature.pValue in ['4E-69', '1E-323']",
     ],
-    labels: { name: 'trait' },
-    showLabels: 'name',
+    labels: { name: 'trait', description: { show: false } },
   },
 }
 

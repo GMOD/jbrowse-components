@@ -91,10 +91,10 @@ function strandSpecificSpec(): ScreenshotSpec {
       tracks: [
         // Reserves the strip the strand arrows sit in. Without `heightMode:
         // 'fixed'` the display grows to its content and packs snoRNA rows under
-        // the arrows; `showLabels: 'name'` drops their description lines.
+        // the arrows; hiding the descriptions drops their description lines.
         {
           trackId: 'ncbi_gff_hg19',
-          showLabels: 'name',
+          labels: { description: { show: false } },
           heightMode: 'fixed',
           height: 150,
         },
@@ -581,7 +581,6 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
       tracks: [
         {
           trackId: 'ncbi_gff_hg19',
-          showLabels: 'auto',
         },
         'hic',
       ],

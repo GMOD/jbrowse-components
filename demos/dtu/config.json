@@ -38,7 +38,6 @@
           "type": "LinearBasicDisplay",
           "displayId": "dtu_muscle_vs_liver-LinearBasicDisplay",
           "height": 285,
-          "subfeatureLabels": "below",
           "encoding": {
             "color": {
               "field": "dif_called",
@@ -66,7 +65,8 @@
             }
           },
           "labels": {
-            "name": "jexl:feature.transcript_name||feature.gene_name||feature.name||feature.id"
+            "name": "jexl:feature.transcript_name||feature.gene_name||feature.name||feature.id",
+            "subfeatures": { "placement": "below" }
           },
           "tooltip": "jexl:feature.gene_name+': '+feature.dtu_transcripts+' isoform(s) with a usage shift, largest ΔIF '+feature.dtu_top_dif"
         }

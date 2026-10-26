@@ -263,7 +263,6 @@ muscle-preferred above. A value on a cut takes the interval above it.
   "uri": "https://jbrowse.org/demos/dtu/dtu_muscle_vs_liver.gff3.gz",
   "assemblyNames": ["hg38"],
   "displayDefaults": {
-    "subfeatureLabels": "below",
     "encoding": {
       "color": {
         "field": "dif_called",
@@ -291,7 +290,8 @@ muscle-preferred above. A value on a cut takes the interval above it.
       }
     },
     "labels": {
-      "name": "jexl:feature.transcript_name||feature.gene_name||feature.name||feature.id"
+      "name": "jexl:feature.transcript_name||feature.gene_name||feature.name||feature.id",
+      "subfeatures": { "placement": "below" }
     },
     "tooltip": "jexl:feature.gene_name+': '+feature.dtu_transcripts+' isoform(s) with a usage shift, largest ΔIF '+feature.dtu_top_dif"
   }

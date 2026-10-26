@@ -249,7 +249,7 @@ export const mouseCattleGraphSpecs: ScreenshotSpec[] = [
             {
               trackId: 'bovine_minigraph_tier',
               type: 'LinearBasicDisplay',
-              showLabels: 'none',
+              labels: { name: { show: false }, description: { show: false } },
               height: 60,
             },
           ],

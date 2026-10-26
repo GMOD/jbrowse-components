@@ -512,7 +512,9 @@ index loads as one `GraphTrack` at the shared prefix:
     "type": "RgfaTabixAdapter",
     "uri": "https://jbrowse.org/demos/ecoli_pangenome/ecoli_cactus"
   },
-  "displayDefaults": { "showLabels": "none" },
+  "displayDefaults": {
+    "labels": { "name": { "show": false }, "description": { "show": false } }
+  },
   "displays": [
     { "type": "LinearGraphDisplay" },
     { "type": "LinearBasicDisplay" }

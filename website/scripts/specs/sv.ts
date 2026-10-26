@@ -815,17 +815,17 @@ export const svSpecs: ScreenshotSpec[] = [
             },
             {
               trackId: 'hg008t_severus_sv',
-              showLabels: 'none',
+              labels: { name: { show: false }, description: { show: false } },
               height: 45,
             },
             {
               trackId: 'hg008t_minda_sv',
-              showLabels: 'none',
+              labels: { name: { show: false }, description: { show: false } },
               height: 45,
             },
             {
               trackId: 'hg008t_dragen_sv',
-              showLabels: 'none',
+              labels: { name: { show: false }, description: { show: false } },
               height: 45,
             },
             {
@@ -1207,7 +1207,7 @@ export const svSpecs: ScreenshotSpec[] = [
             { trackId: 'hg008t_nygc_cnv', height: 70 },
             {
               trackId: 'hg008t_dragen_cnv',
-              showLabels: 'name',
+              labels: { description: { show: false } },
               height: 70,
             },
             {

@@ -516,7 +516,10 @@
         {
           "type": "LinearBasicDisplay",
           "displayId": "ecoli_pggb_segments-LinearBasicDisplay",
-          "showLabels": "none"
+          "labels": {
+            "name": { "show": false },
+            "description": { "show": false }
+          }
         }
       ]
     },
@@ -537,7 +540,10 @@
         {
           "type": "LinearBasicDisplay",
           "displayId": "ecoli_pggb_tier50-LinearBasicDisplay",
-          "showLabels": "none"
+          "labels": {
+            "name": { "show": false },
+            "description": { "show": false }
+          }
         }
       ],
       "description": "The same graph as the segments track with every variant under 50 bp folded into the reference, so a window far too wide for the fine index is still drawable. Built by gfa-to-tabix fold, the same fold the graph track runs on what it draws, so the segments track hands over to this tier without the drawing changing."
@@ -560,7 +566,10 @@
           "type": "LinearBasicDisplay",
           "displayId": "ecoli_pggb_carriage-LinearBasicDisplay",
           "displayMode": "collapsed",
-          "showLabels": "none",
+          "labels": {
+            "name": { "show": false },
+            "description": { "show": false }
+          },
           "encoding": {
             "color": {
               "field": "sampleCount",
@@ -710,7 +719,10 @@
         {
           "type": "LinearBasicDisplay",
           "displayId": "ecoli_cactus_segments-LinearBasicDisplay",
-          "showLabels": "none"
+          "labels": {
+            "name": { "show": false },
+            "description": { "show": false }
+          }
         }
       ],
       "description": "The Minigraph-Cactus graph itself, indexed by locus the same way the pggb segments track is: gfa-to-tabix walks the graph's P and W lines offline and writes the two tabix BEDs RgfaTabixAdapter reads. It opens as a graph cut over whatever window is on screen, so the two builders' graphs can be compared over the same locus."

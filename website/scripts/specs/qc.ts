@@ -360,9 +360,7 @@ export const qcSpecs: ScreenshotSpec[] = [
                   trackId: 'hs1-genes',
                   filter: ['geneLike'],
                   geneGlyphMode: 'representative',
-                  // A session spec silently drops the legacy
-                  // `showDescriptions: false`.
-                  showLabels: 'name',
+                  labels: { description: { show: false } },
                   // Unpinned, RefSeq All's pseudogene rows grow this lane to
                   // ~450 px.
                   heightMode: 'fixed',

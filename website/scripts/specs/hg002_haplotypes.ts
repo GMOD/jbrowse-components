@@ -284,13 +284,19 @@ export const hg002HaplotypeSpecs: ScreenshotSpec[] = [
       // rows of names are as close as this layout allows.
       [
         CHAIN_BLOCKS,
-        geneLane('MAT', { showLabels: 'none', height: 60 }),
+        geneLane('MAT', {
+          labels: { name: { show: false }, description: { show: false } },
+          height: 60,
+        }),
         landmarkLane('MAT'),
       ],
       [
         landmarkLane('PAT'),
         CHAIN_BLOCKS,
-        geneLane('PAT', { showLabels: 'none', height: 60 }),
+        geneLane('PAT', {
+          labels: { name: { show: false }, description: { show: false } },
+          height: 60,
+        }),
       ],
     ),
     viewportHeight: 850,

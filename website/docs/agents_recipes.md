@@ -362,14 +362,7 @@ return {
 
 ```json
 {
-  "knows": [
-    "height",
-    "color",
-    "displayMode",
-    "heightMode",
-    "showLabels",
-    "..."
-  ],
+  "knows": ["height", "color", "displayMode", "heightMode", "labels", "..."],
   "result": {
     "applied": ["displayMode"],
     "unapplied": [{ "key": "colour", "reason": "no-slot" }],

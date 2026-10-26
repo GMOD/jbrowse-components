@@ -2944,10 +2944,9 @@
           "tooltip": "jexl:`${feature.name} [${feature.type}] at ${feature.start} - ${feature.end} (strand: ${(feature.strand == 1 ? '+' : feature.strand == -1 ? '-' : 'none'})`",
           "labels": {
             "name": "jexl:feature.name || feature.id",
-            "description": "jexl:feature.note || feature.description || ''"
+            "description": "jexl:feature.note || feature.description || ''",
+            "subfeatures": { "placement": "below" }
           },
-          "showLabels": "auto",
-          "subfeatureLabels": "below",
           "type": "LinearBasicDisplay",
           "displayId": "gff3_custom_tooltips_linear"
         }
@@ -2973,10 +2972,9 @@
         {
           "labels": {
             "name": "jexl:feature.name || feature.id",
-            "description": "jexl:feature.note || feature.description || ''"
+            "description": "jexl:feature.note || feature.description || ''",
+            "subfeatures": { "placement": "below" }
           },
-          "showLabels": "auto",
-          "subfeatureLabels": "below",
           "type": "LinearBasicDisplay",
           "displayId": "gff3_mouseover_attr_linear"
         }

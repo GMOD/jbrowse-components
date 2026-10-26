@@ -248,7 +248,10 @@
       "displays": [
         {
           "type": "LinearVariantDisplay",
-          "showLabels": "none"
+          "labels": {
+            "name": { "show": false },
+            "description": { "show": false }
+          }
         }
       ]
     },
