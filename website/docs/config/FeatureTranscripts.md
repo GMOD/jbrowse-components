@@ -11,7 +11,7 @@ The feature display's `transcripts`: which children read as a gene's
 isoforms, and the order they rank in. `field` names the attribute holding
 a curated tag and `sort` the tag values that rank first, in order, as a
 `facet` sorts; the isoforms past the list follow by coding length. The
-first-ranked is the one transcript `geneGlyphMode: 'longestCoding'` draws,
+first-ranked is the one transcript `geneGlyphMode: 'representative'` draws,
 and the first kept when `auto` caps a gene at the rows the track has.
 
 ## Example usage

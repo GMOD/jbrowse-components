@@ -29,7 +29,7 @@ display:
 | Alignments display (`LinearAlignmentsDisplay`)                        | `unit`, `filter`, `facet`, `sort`, `encoding`, `legend`, `coverage`, `pileup`, `readConnections`, `sashimi` |
 | Chord synteny display (`ChordSyntenyDisplay`)                         | `mark`                                                                                                      |
 | Chord variant display (`ChordVariantDisplay`)                         | `mark`, `encoding`                                                                                          |
-| Feature display (`LinearBasicDisplay`)                                | `filter`, `legend`, `encoding`, `facet`, `labels`                                                           |
+| Feature display (`LinearBasicDisplay`)                                | `filter`, `legend`, `encoding`, `mark`, `facet`, `labels`                                                   |
 | Hi-C contact matrix display (`LinearHicDisplay`)                      | `encoding`, `legend`                                                                                        |
 | LD heatmap display (`LDTrackDisplay`)                                 | `encoding`, `legend`                                                                                        |
 | MAF display (`LinearMafDisplay`)                                      | `encoding`, `rows`, `rowColor`, `legend`, `coverage`, `alignments`, `conservation`                          |
@@ -39,7 +39,7 @@ display:
 | Multi-sample variant display (`LinearMultiSampleVariantDisplay`)      | `filter`, `rows`, `unit`, `encoding`, `legend`, `rowColor`, `facet`, `variants`                             |
 | Multi-way synteny display (`MultiWaySyntenyDisplay`)                  | `encoding`, `rows`, `ribbons`, `legend`, `text`, `laneLayers`                                               |
 | Synteny alignments display (`LGVSyntenyDisplay`)                      | `unit`, `filter`, `facet`, `sort`, `encoding`, `legend`, `coverage`, `pileup`, `readConnections`            |
-| Variant display (`LinearVariantDisplay`)                              | `filter`, `legend`, `encoding`, `facet`, `labels`                                                           |
+| Variant display (`LinearVariantDisplay`)                              | `filter`, `legend`, `encoding`, `mark`, `facet`, `labels`                                                   |
 | Wiggle display (`LinearWiggleDisplay`)                                | `mark`, `rows`, `rowColor`, `encoding`, `origin`, `legend`, `extent`                                        |
 
 <!-- END GENERATED PLOT_SETTINGS -->

@@ -94,9 +94,9 @@ From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`sc
 | <span id="getter-effectivesubfeaturelabels">**effectiveSubfeatureLabels**</span><br><code>"auto" &#124; "below" &#124; "none" &#124; "overlay"</code> |  |
 | <span id="getter-showchevrons">**showChevrons**</span><br><code>boolean</code> |  |
 | <span id="getter-utrcolor">**utrColor**</span><br><code>string</code> |  |
-| <span id="getter-geneglyphmode">**geneGlyphMode**</span><br><code>"all" &#124; "auto" &#124; "longestCoding"</code> |  |
+| <span id="getter-geneglyphmode">**geneGlyphMode**</span><br><code>"all" &#124; "auto" &#124; "representative"</code> |  |
 | <span id="getter-genesfilter">**genesFilter**</span><br><code>"exclude" &#124; "only" &#124; undefined</code> |  |
-| <span id="getter-effectivegeneglyphmode">**effectiveGeneGlyphMode**</span><br><code>"all" &#124; "auto" &#124; "longestCoding"</code> |  |
+| <span id="getter-effectivegeneglyphmode">**effectiveGeneGlyphMode**</span><br><code>"all" &#124; "auto" &#124; "representative"</code> |  |
 | <span id="getter-showseveryisoform">**showsEveryIsoform**</span><br><code>boolean</code> |  |
 | <span id="getter-showgeneglyphnotice">**showGeneGlyphNotice**</span><br><code>boolean</code> |  |
 | <span id="getter-geneglyphisoformpicks">**geneGlyphIsoformPicks**</span><br><code>IsoformPicks</code> | What picked the transcript each collapsed gene in the loaded view is showing, summed over its regions: the chip names the commonest rule (`RefSeq Select`) instead of only saying that transcripts are hidden. |
@@ -104,7 +104,7 @@ From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`sc
 | <span id="getter-geneglyphisoformcap">**geneGlyphIsoformCap**</span><br><code>number &#124; undefined</code> | The isoform count the fit ladder trimmed to, or undefined when nothing on screen was trimmed. |
 | <span id="getter-geneglyphcollapsed">**geneGlyphCollapsed**</span><br><code>boolean</code> |  |
 | <span id="getter-isgenelike">**isGeneLike**</span><br><code>boolean</code> | whether the right-clicked feature is a gene, transcript or RNA |
-| <span id="getter-geneglyphnotice">**geneGlyphNotice**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>{ collapsed: boolean; maxIsoforms: number &#124; undefined; picks: I…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>{ collapsed: boolean; maxIsoforms: number &#124; undefined; picks: IsoformPicks; dismissed: boolean; mode: "all" &#124; "auto" &#124; "longestCoding"; setMode: (value: "all" &#124; "auto" &#124; "longestCoding") =&gt; void; dismiss: () =&gt; void; } &#124; undefined</code></pre></dialog></span> | This display's answer to the base's isoform-collapse chrome hook (see `geneGlyphNotice` on the canvas base): absent unless the loaded data has a multi-isoform gene, so switching modes is meaningful. |
+| <span id="getter-geneglyphnotice">**geneGlyphNotice**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>{ collapsed: boolean; maxIsoforms: number &#124; undefined; picks: I…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>{ collapsed: boolean; maxIsoforms: number &#124; undefined; picks: IsoformPicks; dismissed: boolean; mode: "all" &#124; "auto" &#124; "representative"; setMode: (value: "all" &#124; "auto" &#124; "representative") =&gt; void; dismiss: () =&gt; void; } &#124; undefined</code></pre></dialog></span> | This display's answer to the base's isoform-collapse chrome hook (see `geneGlyphNotice` on the canvas base): absent unless the loaded data has a multi-isoform gene, so switching modes is meaningful. |
 
 <details class="inherited-members" data-pagefind-ignore>
 <summary>208 inherited getters from 14 models</summary>
@@ -175,7 +175,7 @@ From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`rendering
 | Member | Description |
 | --- | --- |
 | <span id="action-setsubfeaturelabels">**setSubfeatureLabels**</span><br><code>(value: "auto" &#124; "below" &#124; "none" &#124; "overlay") =&gt; void</code> |  |
-| <span id="action-setgeneglyphmode">**setGeneGlyphMode**</span><br><code>(value: "all" &#124; "auto" &#124; "longestCoding") =&gt; void</code> |  |
+| <span id="action-setgeneglyphmode">**setGeneGlyphMode**</span><br><code>(value: "all" &#124; "auto" &#124; "representative") =&gt; void</code> |  |
 | <span id="action-dismissgeneglyphnotice">**dismissGeneGlyphNotice**</span><br><code>() =&gt; void</code> |  |
 | <span id="action-setgenesfilter">**setGenesFilter**</span><br><code>(value?: "exclude" &#124; "only" &#124; undefined) =&gt; void</code> |  |
 | <span id="action-setshowchevrons">**setShowChevrons**</span><br><code>(value: boolean) =&gt; void</code> |  |

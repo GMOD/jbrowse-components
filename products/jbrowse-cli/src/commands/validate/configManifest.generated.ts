@@ -3338,7 +3338,7 @@ export const configManifest: ConfigManifest = {
           "subSlots": [
             {
               "name": "height",
-              "type": "(JexlString | number)"
+              "type": "number"
             }
           ],
           "schema": "FeatureMark",
@@ -3391,10 +3391,6 @@ export const configManifest: ConfigManifest = {
           ],
           "schema": "CanvasFeatureLabels",
           "writes": "members"
-        },
-        {
-          "name": "connectorColor",
-          "type": "(JexlString | (CssColor | undefined))"
         },
         {
           "name": "utrColor",
@@ -3451,10 +3447,6 @@ export const configManifest: ConfigManifest = {
           ],
           "schema": "FeatureContainers",
           "writes": "members"
-        },
-        {
-          "name": "subParts",
-          "type": "string"
         }
       ],
       "legacyKeys": [
@@ -3482,6 +3474,7 @@ export const configManifest: ConfigManifest = {
         "maxDisplayedBpPerPx",
         "fetchSizeLimit",
         "mouseover",
+        "color2",
         "outline",
         "maxHeight",
         "hideSourceFeatures",
@@ -6661,7 +6654,7 @@ export const configManifest: ConfigManifest = {
           "subSlots": [
             {
               "name": "height",
-              "type": "(JexlString | number)"
+              "type": "number"
             }
           ],
           "schema": "FeatureMark",
@@ -6740,6 +6733,7 @@ export const configManifest: ConfigManifest = {
         "maxDisplayedBpPerPx",
         "fetchSizeLimit",
         "mouseover",
+        "color2",
         "outline",
         "maxHeight",
         "hideSourceFeatures",

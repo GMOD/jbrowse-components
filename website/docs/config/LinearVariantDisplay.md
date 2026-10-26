@@ -94,7 +94,7 @@ An older config may still write these. Each loads without an error, and `jbrowse
 | `maxDisplayedBpPerPx` | ignored |
 | `jexlFilters` | moved into a current slot |
 | `color1` | moved into a current slot |
-| `color2` | moved into a current slot |
+| `color2` | ignored |
 | `color3` | moved into a current slot |
 | `featureHeight` | moved into a current slot |
 | `transcriptTypes` | moved into a current slot |

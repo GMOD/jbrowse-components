@@ -5184,7 +5184,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "null"
           },
           "else": {
-            "$ref": "#/$defs/NumberOrJexl"
+            "type": "number"
           }
         }
       },
@@ -5613,15 +5613,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/CanvasFeatureLabels"
           }
         },
-        "connectorColor": {
-          "description": "color of the connecting/intron lines between feature segments (defaults to the theme text color).",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "$ref": "#/$defs/CssColorOrJexl"
-          }
-        },
         "utrColor": {
           "description": "fill color for UTRs on gene/transcript glyphs. Unset, a feature's own BED itemRgb paints them too (matching UCSC's whole-item coloring), else a contrasting blue.",
           "if": {
@@ -5694,16 +5685,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           },
           "else": {
             "$ref": "#/$defs/FeatureContainers"
-          }
-        },
-        "subParts": {
-          "description": "subparts for a glyph.",
-          "default": "CDS,UTR,five_prime_UTR,three_prime_UTR",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "$ref": "#/$defs/PlainString"
           }
         },
         "maxDisplayedBpPerPx": {
@@ -16550,9 +16531,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "labels": {
               "$ref": "#/$defs/LinearBasicDisplaySlots/properties/labels"
             },
-            "connectorColor": {
-              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/connectorColor"
-            },
             "utrColor": {
               "$ref": "#/$defs/LinearBasicDisplaySlots/properties/utrColor"
             },
@@ -16570,9 +16548,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "containers": {
               "$ref": "#/$defs/LinearBasicDisplaySlots/properties/containers"
-            },
-            "subParts": {
-              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/subParts"
             },
             "maxDisplayedBpPerPx": {
               "anyOf": [

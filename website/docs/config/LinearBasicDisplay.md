@@ -1,18 +1,17 @@
 ---
 id: linearbasicdisplay
 title: LinearBasicDisplay
-description: "Draws the genes and other features of a FeatureTrack, from a BED, GFF or similar file. The display adds the gene-glyph slots (isoforms, subparts, UTRs, chevrons) to the shared canvas base."
+description: "Draws the genes and other features of a FeatureTrack, from a BED, GFF or similar file."
 sidebar_label: Display -> LinearBasicDisplay
 ---
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `canvas` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/canvas/src/LinearBasicDisplay/configSchema.ts).
 
 Draws the genes and other features of a `FeatureTrack`, from a BED, GFF or
-similar file. The display adds the gene-glyph slots (isoforms, subparts,
-UTRs, chevrons) to the shared canvas base. The color slots `color`,
-`connectorColor` and `utrColor` are display-level, set inside a track's
-`displays` array, each a CSS color or a `jexl:` expression for per-feature
-coloring.
+similar file. The display adds the gene-glyph slots (isoforms, UTRs,
+chevrons) to the shared canvas base. `encoding.color` paints each
+feature's fill and `utrColor` its UTRs; the intron lines, chevrons and
+strand arrows take the theme's stroke color.
 
 ## Example usage
 
@@ -66,15 +65,13 @@ Display slots go on a display entry: `"displays": [{ "type": "LinearBasicDisplay
 | Slot | Description |
 | --- | --- |
 | <span id="slot-fetchsizelimit">**fetchSizeLimit**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>5000000</code> | Feature (GFF/BED) tracks are light text, and the tabix byte estimate is block-granular (a small region still pulls whole BGZF blocks), so a single gene can trip a tighter gate.<br>_advanced_ |
-| <span id="slot-connectorcolor">**connectorColor**</span><br>[`maybeColor`](/docs/config_guides/slot_types#the-maybe-types) | color of the connecting/intron lines between feature segments (defaults to the theme text color)<br>_callback args:_ `feature` |
 | <span id="slot-utrcolor">**utrColor**</span><br>[`maybeColor`](/docs/config_guides/slot_types#the-maybe-types) | fill color for UTRs on gene/transcript glyphs. Unset, a feature's own BED itemRgb paints them too (matching UCSC's whole-item coloring), else a contrasting blue<br>_callback args:_ `feature` |
-| <span id="slot-geneglyphmode">**geneGlyphMode**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (auto, all, longestCoding) = <code>'auto'</code> | Gene glyph display mode: "auto" collapses each gene to one transcript when zoomed out and trims the rest to what the track height holds, "all" draws every transcript and scrolls the surplus instead of trimming, "longestCoding" shows one transcript per gene — the one canonicalTranscriptTags names, else the longest coding |
+| <span id="slot-geneglyphmode">**geneGlyphMode**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (auto, all, representative) = <code>'auto'</code> | Gene glyph display mode: "auto" collapses each gene to one transcript when zoomed out and trims the rest to what the track height holds, "all" draws every transcript and scrolls the surplus instead of trimming, "representative" shows one transcript per gene — the first by `transcripts.sort`, else the longest coding |
 | <span id="slot-subfeaturelabels">**subfeatureLabels**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (auto, none, below, overlay) = <code>'auto'</code> | subfeature label display mode: `auto` (the default) names a polyprotein's cleavage products on their rows and nothing else; `none`, `below` or `overlay` apply to every part |
 | <span id="slot-chevrons">**chevrons**</span><br>[FeatureChevrons sub-schema](#slot-chevronsshow) | The arrows on a feature's intron lines. |
 | <span id="slot-chevronsshow">**chevrons.show**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | draw chevrons on intron lines pointing the way the feature reads |
 | <span id="slot-transcripts">**transcripts**</span><br>[FeatureTranscripts](../featuretranscripts) | How a gene's isoforms are read and ranked, a [](/docs/config/featuretranscripts) object. |
 | <span id="slot-containers">**containers**</span><br>[FeatureContainers](../featurecontainers) | The top-level types whose children stack on rows of their own, a [](/docs/config/featurecontainers) object. |
-| <span id="slot-subparts">**subParts**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>'CDS,UTR,five_prime_UTR,three_prime_UTR'</code> | subparts for a glyph |
 | <span class="slot-group">Inherited from [LinearCanvasBaseDisplay](../linearcanvasbasedisplay)</span> | <span class="slot-group-count">16 slots</span> |
 | <span id="slot-filter">**filter**</span><br><code>fieldPredicateList()</code> | The features the display draws, a list of [](/docs/config/fieldpredicate) entries a feature must all pass: a field of the feature's own (`{ field: "score", gte: 100 }`), a `jexl:` expression that must hold (`"jexl:feature.type == 'gene'"`), or `geneLike`, true for every gene, transcript and RNA type, the `transcripts.types` and `containers.types`, and a top-level CDS. |
 | <span id="slot-mouseover">**mouseover**</span><br>[`string`](/docs/config_guides/slot_types#string) = <span class="cell-more"><button type="button" class="cell-more-trigger"><code>'jexl:get(feature,'_mouseOver')&#124;&#124;get(feature,'name')&#124;&#124;get(featu…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>'jexl:get(feature,'_mouseOver')&#124;&#124;get(feature,'name')&#124;&#124;get(feature,'function')&#124;&#124;get(feature,'id')'</code></pre></dialog></span> | text to display when the cursor hovers over a feature; left at the default, the tooltip adds the description line (`labels.description`) as a second row<br>_callback args:_ `feature` |
@@ -106,7 +103,7 @@ An older config may still write these. Each loads without an error, and `jbrowse
 | `maxDisplayedBpPerPx` | ignored |
 | `jexlFilters` | moved into a current slot |
 | `color1` | moved into a current slot |
-| `color2` | moved into a current slot |
+| `color2` | ignored |
 | `color3` | moved into a current slot |
 | `featureHeight` | moved into a current slot |
 | `transcriptTypes` | moved into a current slot |
