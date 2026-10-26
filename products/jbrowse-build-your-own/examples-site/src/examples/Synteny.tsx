@@ -1,9 +1,10 @@
 import { EmbedProvider, TrackStack } from '@jbrowse/display-ui/embed'
-import { SyntenyStack } from '@jbrowse/plugin-linear-comparative-view'
+import {
+  SyntenyStack,
+  isLinearSyntenyView,
+} from '@jbrowse/plugin-linear-comparative-view'
 import { useCreateViewState } from '@jbrowse/react-app2'
 import { observer } from 'mobx-react'
-
-import type { LinearSyntenyViewModel } from '@jbrowse/plugin-linear-comparative-view'
 
 const geneTrack = (assembly: string) => ({
   trackId: `${assembly}_genes`,
@@ -68,18 +69,21 @@ const Synteny = observer(function Synteny() {
     return null
   }
   const { session } = state
+  const view = session.views.find(isLinearSyntenyView)
   return (
     <EmbedProvider session={session}>
-      <SyntenyStack
-        view={session.views[0] as LinearSyntenyViewModel}
-        renderRow={row => (
-          <TrackStack view={row}>
-            <div style={{ fontSize: '0.7rem', opacity: 0.7, padding: 2 }}>
-              {row.assemblyNames[0]}
-            </div>
-          </TrackStack>
-        )}
-      />
+      {view ? (
+        <SyntenyStack
+          view={view}
+          renderRow={row => (
+            <TrackStack view={row}>
+              <div style={{ fontSize: '0.7rem', opacity: 0.7, padding: 2 }}>
+                {row.assemblyNames[0]}
+              </div>
+            </TrackStack>
+          )}
+        />
+      ) : null}
     </EmbedProvider>
   )
 })

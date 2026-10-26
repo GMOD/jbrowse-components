@@ -26,6 +26,7 @@ export type { MultiWaySyntenyDisplayModel } from './MultiWaySyntenyDisplay/model
 // For a host drawing its own comparative chrome: the whole stack, one ribbon
 // band, or the bare ribbon canvas under a band.
 export { SyntenyStack } from './LinearSyntenyView/SyntenyStack.tsx'
+export { isLinearSyntenyView } from './LinearSyntenyView/isLinearSyntenyView.ts'
 export { SyntenyLevel } from './LinearSyntenyViewHelper/SyntenyLevel.tsx'
 export { default as LevelSyntenyCanvas } from './LinearSyntenyViewHelper/LevelSyntenyCanvas.tsx'
 // A level, for a host that reaches one off `view.levels` and wants to name what
