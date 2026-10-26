@@ -279,7 +279,7 @@ off the file and moving an outgrown callback into a plugin.
 `labels.name` and `labels.description` each name the feature field a label line
 reads, such as `"note"`, or take a `jexl:` expression where the label wants a
 fallback; `{ "show": false }` turns a line off
-([FeatureNameLabel](/docs/config/featurenamelabel)). The
+([](/docs/config/featurenamelabel)). The
 [`tooltip`](/docs/config/featuretooltip) is rendered as HTML:
 
 ```json addtrack
