@@ -154,7 +154,7 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
        * Whether the adapter names a control, which observed/control needs.
        */
       get hasControl(): boolean {
-        return !!readFor(self, self.fileInfo)?.hasControl
+        return self.adapterConfig.controlAdapter != null
       },
       /**
        * #getter
@@ -607,7 +607,6 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
                 value: {
                   norms: value?.norms ?? [],
                   resolutions: [...resolutions].sort((a, b) => a - b),
-                  hasControl: !!value?.hasControl,
                 },
               })
             } else {

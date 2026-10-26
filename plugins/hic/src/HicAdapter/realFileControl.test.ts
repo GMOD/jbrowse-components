@@ -27,9 +27,8 @@ const REGIONS: Region[] = [
   { assemblyName: 'hg19', refName: '2', start: 0, end: 243_199_373 },
 ]
 
-test('the header offers what both files hold and says a control is there', async () => {
+test('the header offers what both files hold', async () => {
   const header = await selfControlled().getHeader()
-  expect(header.hasControl).toBe(true)
   expect(header.resolutions).toEqual([2_500_000, 100_000])
   expect(header.norms).toContain('KR')
 })

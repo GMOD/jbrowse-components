@@ -5,13 +5,17 @@ import configSchemaF from './configSchema.ts'
 import stateModelFactory from './model.ts'
 
 import type { LinearHicDisplayModel } from './model.ts'
+import type { TestAdapterSpec } from '@jbrowse/display-test-utils'
 
 // The shared display harness wired for the Hi-C display. HiC's whole fetch chain
 // hangs off a one-shot `CoreGetInfo`, so its failure behavior is only reachable
 // with a display that actually attaches — a bare `stateModel.create()` runs no
 // `afterAttach` and reaches no containing view.
-export function createTestEnvironment() {
+export function createTestEnvironment({
+  adapter,
+}: { adapter?: TestAdapterSpec } = {}) {
   return createDisplayTestEnvironment<LinearHicDisplayModel>({
+    adapter,
     trackType: 'HicTrack',
     displayName: 'LinearHicDisplay',
     configSchema: () => configSchemaF(),

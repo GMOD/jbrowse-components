@@ -148,3 +148,17 @@ test('picking the field already painted writes nothing', () => {
   dispose()
   expect(patches).toEqual([])
 })
+
+test('observed/control is on offer exactly where the adapter names a control', () => {
+  const control = { type: 'HicAdapter', uri: 'untreated.hic' }
+  const withControl = createTestEnvironment({
+    adapter: {
+      name: 'HicAdapter',
+      slots: { controlAdapter: { type: 'maybeFrozen' } },
+      config: { type: 'HicAdapter', controlAdapter: control },
+      configOnly: true,
+    },
+  }).createDisplay().display
+  expect(withControl.hasControl).toBe(true)
+  expect(createDisplay().display.hasControl).toBe(false)
+})

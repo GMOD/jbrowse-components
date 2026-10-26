@@ -72,8 +72,6 @@ interface HicContactOptions extends BaseOptions {
 export interface HicHeader {
   norms: string[]
   resolutions: number[]
-  /** whether `controlAdapter` names a control for observed/control */
-  hasControl: boolean
 }
 
 interface PairRead {
@@ -139,7 +137,7 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
     )
     const control = await this.controlSetup(opts)
     if (!control) {
-      return { norms, resolutions, hasControl: false }
+      return { norms, resolutions }
     }
     // A ratio compares the two at one binsize under one normalization, so
     // only what both files offer is offered.
@@ -153,7 +151,6 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
     return {
       norms: norms.filter(n => theirs.norms.includes(n)),
       resolutions: shared,
-      hasControl: true,
     }
   }
 
