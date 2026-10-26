@@ -3287,7 +3287,7 @@ export const videoFrames: Record<
   },
   "tcga/cohort_cnv_clustering": {
     "width": 1920,
-    "height": 910
+    "height": 912
   },
   "tcga/mutations_collapse_introns": {
     "width": 1920,
