@@ -27487,6 +27487,9 @@
         "data": {
           "$ref": "#/$defs/SyntenyData"
         },
+        "legend": {
+          "$ref": "#/$defs/Legend"
+        },
         "height": {
           "type": "number"
         },
@@ -27851,6 +27854,9 @@
         },
         "data": {
           "$ref": "#/$defs/SyntenyData"
+        },
+        "legend": {
+          "$ref": "#/$defs/Legend"
         },
         "render": {
           "$ref": "#/$defs/SyntenyRender"

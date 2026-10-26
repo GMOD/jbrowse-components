@@ -28503,6 +28503,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "data": {
           "$ref": "#/$defs/SyntenyData"
         },
+        "legend": {
+          "$ref": "#/$defs/Legend"
+        },
         "height": {
           "type": "number"
         },
@@ -28874,6 +28877,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "data": {
           "$ref": "#/$defs/SyntenyData"
+        },
+        "legend": {
+          "$ref": "#/$defs/Legend"
         },
         "render": {
           "$ref": "#/$defs/SyntenyRender"
