@@ -8,7 +8,9 @@ import {
   GENERATED_NOTICE,
   docFiles,
   isTsSource,
+  escapeRegExp,
   isWebsiteDoc,
+  replaceMarkerRegions,
   repoFiles,
   walkFiles,
 } from '../check-utils.ts'
@@ -3002,15 +3004,6 @@ export function sourceCorpus(
   }
 }
 
-// Quote a string for literal use inside a RegExp. The marker generators build
-// their patterns out of names read from the docs and the source (a COLOR_TABLE
-// group, a GOTCHA config name), which are authored text and so can hold regex
-// metacharacters — a placeholder name in a doc *about* the marker syntax is how
-// `pnpm gendocs` once died on `<ConfigName>`.
-export function escapeRegExp(s: string) {
-  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-}
-
 // The docs both marker sweeps walk. agent-docs is swept alongside the published
 // guides: the architecture spec restates several of the same tables the guides
 // do, and hand-mirroring one into the other is the drift these generators exist
@@ -3151,59 +3144,6 @@ export function assertMarkersAndDocsAgree({ both = true } = {}) {
       `${problems.length} marker(s) and the docs disagree:\n${problems.join('\n')}`,
     )
   }
-}
-
-// Replace every `<!-- … START -->`/`<!-- … END -->` region in one doc, and fail
-// on a START with no matching END. A function replacer keeps any `$`-sequence in
-// the rendered block literal.
-//
-// Both halves are load-bearing, and both used to fail the same silent way. A
-// non-global replace rewrote only the FIRST region, so a second block of the
-// same marker in one file kept the previous run's table forever — and passed
-// `--check`, since the text compared is identical whether or not the second
-// block was regenerated. An unterminated START is that failure with no region
-// written at all: the doc renders nothing between the markers, the generator
-// prints "up to date", and no gate disagrees. Both are authoring mistakes a
-// generator has to report, because nothing downstream can.
-export function replaceMarkerRegions({
-  text,
-  startMarker,
-  endMarker,
-  block,
-  file,
-}: {
-  text: string
-  startMarker: string
-  endMarker: string
-  block: string
-  file: string
-}) {
-  // A marker heads its own line, so prose quoting one in backticks is not one.
-  const region = new RegExp(
-    `^${escapeRegExp(startMarker)}$[\\s\\S]*?^${escapeRegExp(endMarker)}$`,
-    'gm',
-  )
-  // A region is non-greedy, so `START … START … END` matches once and consumes
-  // both starts — which is what makes comparing the two counts catch it.
-  const starts = text.split('\n').filter(line => line === startMarker).length
-  const regions = text.match(region)?.length ?? 0
-  if (starts !== regions) {
-    throw new Error(
-      `${file}: ${starts - regions} \`${startMarker}\` with no matching \`${endMarker}\`. The block between them is never generated, and the generator would report the doc as up to date.`,
-    )
-  }
-  // An empty block reads as "nothing here" while it usually means the
-  // generator's source parse stopped matching.
-  if (starts > 0 && !block.trim()) {
-    throw new Error(
-      `${file}: \`${startMarker}\` rendered nothing. Fix the generator's source read rather than publish an empty block.`,
-    )
-  }
-  const notice = isWebsiteDoc(file) ? '' : `${GENERATED_NOTICE}\n\n`
-  return text.replace(
-    region,
-    () => `${startMarker}\n\n${notice}${block}\n\n${endMarker}`,
-  )
 }
 
 // Rewrite the region between every `<!-- MARKER START -->`/`<!-- MARKER END -->`

@@ -12,6 +12,7 @@ import {
   hasSchemaDefinition,
   schemaProblems,
 } from '../../../products/jbrowse-cli/src/commands/validate/schemaValidate.ts'
+import { escapeRegExp } from '../check-utils.ts'
 import {
   agentPage,
   exampleBlock,
@@ -37,7 +38,6 @@ import {
   codeCell,
   collectTransitive,
   docPage,
-  escapeRegExp,
   exampleCell,
   exampleSection,
   filterUnseenByName,

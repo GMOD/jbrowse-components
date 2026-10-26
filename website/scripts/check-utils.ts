@@ -301,9 +301,72 @@ export function isWebsiteDoc(file: string): boolean {
   return resolve(repoRoot, file).startsWith(`${docsDir}/`)
 }
 
-// Replace the region between `<!-- BEGIN GENERATED <marker> -->` and its END
-// twin, leaving the hand-maintained prose around it alone. The marker text is
-// built here rather than passed in whole so the convention has one spelling.
+// Quote a string for literal use inside a RegExp. The marker generators build
+// their patterns out of names read from the docs and the source (a COLOR_TABLE
+// group, a GOTCHA config name), which are authored text and so can hold regex
+// metacharacters — a placeholder name in a doc *about* the marker syntax is how
+// `pnpm gendocs` once died on `<ConfigName>`.
+export function escapeRegExp(s: string) {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
+// Replace every `<!-- … START -->`/`<!-- … END -->` region in one doc, and fail
+// on a START with no matching END. A function replacer keeps any `$`-sequence in
+// the rendered block literal.
+//
+// Both halves are load-bearing, and both used to fail the same silent way. A
+// non-global replace rewrote only the FIRST region, so a second block of the
+// same marker in one file kept the previous run's table forever — and passed
+// `--check`, since the text compared is identical whether or not the second
+// block was regenerated. An unterminated START is that failure with no region
+// written at all: the doc renders nothing between the markers, the generator
+// prints "up to date", and no gate disagrees. Both are authoring mistakes a
+// generator has to report, because nothing downstream can.
+export function replaceMarkerRegions({
+  text,
+  startMarker,
+  endMarker,
+  block,
+  file,
+  allowEmpty = false,
+}: {
+  text: string
+  startMarker: string
+  endMarker: string
+  block: string
+  file: string
+  allowEmpty?: boolean
+}) {
+  // A marker heads its own line, so prose quoting one in backticks is not one.
+  const region = new RegExp(
+    `^${escapeRegExp(startMarker)}$[\\s\\S]*?^${escapeRegExp(endMarker)}$`,
+    'gm',
+  )
+  // A region is non-greedy, so `START … START … END` matches once and consumes
+  // both starts — which is what makes comparing the two counts catch it.
+  const starts = text.split('\n').filter(line => line === startMarker).length
+  const regions = text.match(region)?.length ?? 0
+  if (starts !== regions) {
+    throw new Error(
+      `${file}: ${starts - regions} \`${startMarker}\` with no matching \`${endMarker}\`. The block between them is never generated, and the generator would report the doc as up to date.`,
+    )
+  }
+  // An empty block reads as "nothing here" while it usually means the
+  // generator's source parse stopped matching.
+  if (starts > 0 && !block.trim() && !allowEmpty) {
+    throw new Error(
+      `${file}: \`${startMarker}\` rendered nothing. Fix the generator's source read rather than publish an empty block.`,
+    )
+  }
+  const notice = isWebsiteDoc(file) ? '' : `${GENERATED_NOTICE}\n\n`
+  const body = block.trim() ? `${notice}${block}\n\n` : ''
+  return text.replace(region, () => `${startMarker}\n\n${body}${endMarker}`)
+}
+
+// The `<!-- BEGIN GENERATED <marker> -->` spelling, for a generator that owns
+// one block in one named file. The pair must appear exactly once, since a
+// second one would never be regenerated, and an empty body is allowed: a
+// census with nothing to list is an answer.
 export function spliceGeneratedBlock({
   path,
   marker,
@@ -315,43 +378,27 @@ export function spliceGeneratedBlock({
   body: string[]
   // The file's current content, when the caller is mid-way through splicing
   // several blocks into one page and the previous splice is not on disk yet.
-  // Defaults to reading `path`, which is every single-block caller. `path` is
-  // still required either way: every error below names it.
   text?: string
 }): string {
   const begin = `<!-- BEGIN GENERATED ${marker} -->`
   const end = `<!-- END GENERATED ${marker} -->`
   const existing = text ?? readFileSync(path, 'utf8')
-  const from = existing.indexOf(begin)
-  const to = existing.indexOf(end)
-  if (from === -1 || to === -1) {
-    throw new Error(`${path}: missing ${begin} / ${end} markers`)
-  }
-  // Both authoring mistakes below produce a plausible-looking file rather than
-  // an error, which is why they are checked rather than commented about. An END
-  // above its BEGIN splices the table into the middle of the prose and deletes
-  // whatever sat between them; a second pair is simply never regenerated, and
-  // `--check` agrees the file is current because the text it compares is the
-  // same either way.
-  if (to < from) {
-    throw new Error(`${path}: ${end} appears above ${begin}`)
-  }
-  if (existing.includes(begin, from + 1)) {
+  const pairs = existing.split('\n').filter(line => line === begin).length
+  if (pairs !== 1) {
     throw new Error(
-      `${path}: more than one ${begin} — only the first would be regenerated`,
+      pairs === 0
+        ? `${path}: missing ${begin} / ${end} markers`
+        : `${path}: more than one ${begin} — only the first would be regenerated`,
     )
   }
-  return (
-    existing.slice(0, from) +
-    [
-      begin,
-      '',
-      ...(body.length
-        ? [...(isWebsiteDoc(path) ? [] : [GENERATED_NOTICE, '']), ...body, '']
-        : []),
-    ].join('\n') +
-    existing.slice(to)
-  )
+  return replaceMarkerRegions({
+    text: existing,
+    startMarker: begin,
+    endMarker: end,
+    block: body.join('\n'),
+    file: path,
+    allowEmpty: true,
+  })
 }
 
 // Written beside the target and renamed over it, so a generator running in

@@ -1,4 +1,4 @@
-import { GENERATED_NOTICE } from '../check-utils.ts'
+import { GENERATED_NOTICE, replaceMarkerRegions } from '../check-utils.ts'
 import {
   categoryLabel,
   collectTransitive,
@@ -13,7 +13,6 @@ import {
   overviewSection,
   parseTaggedComment,
   removeComments,
-  replaceMarkerRegions,
   repoRelative,
   section,
   sortUnionMembers,
