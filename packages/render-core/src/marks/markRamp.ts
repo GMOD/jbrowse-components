@@ -56,8 +56,14 @@ export function isThreshold(scale: MarkColorScale): scale is MarkThreshold {
   return 'cuts' in scale
 }
 
-function midNormOf({ domain, scale, mid }: MarkRamp) {
-  return rampMidNorm(domain[0], domain[1], scaleTypeCode(scale), mid)
+function midNormOf({ domain, scale, mid }: MarkRamp, symlogConstant = 1) {
+  return rampMidNorm(
+    domain[0],
+    domain[1],
+    scaleTypeCode(scale),
+    mid,
+    symlogConstant,
+  )
 }
 
 type Rgba = [number, number, number, number]
@@ -266,16 +272,16 @@ function thresholdColorOf(scale: MarkThreshold) {
       : scale.colors[value > 0 ? cuts.length : 0]!
 }
 
-function rampColorOf(ramp: MarkRamp) {
+function rampColorOf(ramp: MarkRamp, symlogConstant = 1) {
   const [min, max] = ramp.domain
   const type = scaleTypeCode(ramp.scale)
-  const midNorm = midNormOf(ramp)
+  const midNorm = midNormOf(ramp, symlogConstant)
   const { lut } = ramp
   const entries = lut.length / 4
   return (value: number) => {
     const t = rampMidT(
       Number.isFinite(value)
-        ? normalizeScore(value, min, max, type, 1)
+        ? normalizeScore(value, min, max, type, symlogConstant)
         : value > 0
           ? 1
           : 0,
@@ -306,11 +312,12 @@ export function rampAsThreshold(
   ramp: MarkRamp,
   low: number,
   high: number,
+  symlogConstant = 1,
 ): MarkThreshold {
   const [min, max] = ramp.domain
-  const colorOf = rampColorOf(ramp)
+  const colorOf = rampColorOf(ramp, symlogConstant)
   const type = scaleTypeCode(ramp.scale)
-  const at = (t: number) => denormalizeScore(t, min, max, type, 1)
+  const at = (t: number) => denormalizeScore(t, min, max, type, symlogConstant)
   if (!(at(1) > at(0))) {
     const floor = at(0)
     return {
@@ -319,7 +326,9 @@ export function rampAsThreshold(
     }
   }
   const norm = (value: number, fallback: number) =>
-    Number.isFinite(value) ? normalizeScore(value, min, max, type, 1) : fallback
+    Number.isFinite(value)
+      ? normalizeScore(value, min, max, type, symlogConstant)
+      : fallback
   const lo = norm(low, 0)
   const hi = Math.max(norm(high, 1), lo)
   const n = RAMP_LINE_BANDS

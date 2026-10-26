@@ -1,4 +1,7 @@
 import {
+  abgrBlue,
+  abgrGreen,
+  abgrRed,
   normalizedRgbToCss,
   normalizedRgbToCssRgba,
   setAbgrFill,
@@ -11,14 +14,20 @@ import {
   spanLeft,
   withClip,
 } from '@jbrowse/render-core/canvas2dUtils'
-import { BandPen, thresholdBandOf } from '@jbrowse/render-core/marks'
-import { denormalizeScore, rampMidNorm } from '@jbrowse/render-core/scoreScale'
+import {
+  BandPen,
+  rampAsThreshold,
+  thresholdBandOf,
+} from '@jbrowse/render-core/marks'
+import {
+  SCALE_TYPE_LOG,
+  SCALE_TYPE_SYMLOG,
+} from '@jbrowse/render-core/scoreScale'
 import { clipSide } from '@jbrowse/render-core/shaders/clipStrip'
 import {
   CLIP_STRIP_COLOR,
   CLIP_STRIP_PX,
 } from '@jbrowse/render-core/shaders/clipStripConsts'
-import { rampMidT } from '@jbrowse/render-core/shaders/colorRampLut'
 import {
   drawnRowHeightPx,
   rowBandOffsetPx,
@@ -31,7 +40,10 @@ import { makeDensityLutFillFn } from './getDensityColor.ts'
 import { WHISKER_BAND_OPACITY } from './shaders/wiggleBand.consts.generated.ts'
 import { centerLinksToPrevious } from './wiggleComponentUtils.ts'
 
-import type { MarkContext2D } from '@jbrowse/render-core/marks'
+import type {
+  MarkContext2D,
+  MarkValueScaleType,
+} from '@jbrowse/render-core/marks'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 import type { ScaleTypeCode } from '@jbrowse/render-core/scoreScale'
 import type { SourceRenderData } from '@jbrowse/wiggle-core'
@@ -271,80 +283,63 @@ function strokeByBands(
   }
 }
 
-// How many bands a gradient's line and min-max band are stroked in on Canvas2D
-// and in the SVG export, where the GPU reads the ramp per fragment: neighbours
-// this narrow differ by a LUT step or two.
-export const RAMP_LINE_BANDS = 32
+function scaleNameOf(scaleType: ScaleTypeCode): MarkValueScaleType {
+  return scaleType === SCALE_TYPE_LOG
+    ? 'log'
+    : scaleType === SCALE_TYPE_SYMLOG
+      ? 'symlog'
+      : 'linear'
+}
+
+function normalizedRgbOf(abgr: number): [number, number, number] {
+  return [abgrRed(abgr) / 255, abgrGreen(abgr) / 255, abgrBlue(abgr) / 255]
+}
 
 /**
  * A line row under a gradient as the threshold the line painters already
- * stroke: `RAMP_LINE_BANDS` bands evenly across the part of the y domain the
- * row's values (and the origin a step line drops to) reach, each in the
- * ramp's color at its middle, so a line over a sliver of the ramp still steps
- * through it finely. A domain with no range is the GPU's step: the start color at the
- * domain, the end color above it. Any other row passes through.
+ * stroke: render-core's `rampAsThreshold` over the scores the row reaches,
+ * the origin a step line drops to included. Any other row passes through.
  */
 export function rampAsBands<R extends RowDraw>(row: R): R {
   const { rampLut, rampMid, domainY, scaleType, symlogConstant, source } = row
   if (!rampLut) {
     return row
   }
-  const [min, max] = domainY
-  const mid = rampMidNorm(min, max, scaleType, rampMid, symlogConstant)
-  const lutColor = (t: number): [number, number, number] => {
-    const i = Math.min(Math.max(Math.round(rampMidT(t, mid) * 255), 0), 255) * 4
-    return [rampLut[i]! / 255, rampLut[i + 1]! / 255, rampLut[i + 2]! / 255]
-  }
-  if (!(max > min)) {
-    return {
-      ...row,
-      cuts: [min + Math.abs(min) * 1e-6 + 1e-12],
-      innerColors: [],
-      source: { ...source, negColor: lutColor(0), color: lutColor(1) },
+  const { numFeatures, band, gapScore } = source
+  let low = Number.POSITIVE_INFINITY
+  let high = Number.NEGATIVE_INFINITY
+  for (const scores of band
+    ? [source.featureScores, band.minScores]
+    : [source.featureScores]) {
+    for (let i = 0; i < numFeatures; i++) {
+      const score = scores[i]!
+      if (Number.isFinite(score)) {
+        low = Math.min(low, score)
+        high = Math.max(high, score)
+      }
     }
   }
-  const normOf = (score: number) =>
-    Math.min(
-      Math.max(
-        normalizeScoreUnclamped(score, min, max, scaleType, symlogConstant),
-        0,
-      ),
-      1,
-    )
-  let lo = 1
-  let hi = 0
-  const reach = (score: number) => {
-    if (Number.isFinite(score)) {
-      const t = normOf(score)
-      lo = Math.min(lo, t)
-      hi = Math.max(hi, t)
-    }
+  if (gapScore !== undefined && Number.isFinite(gapScore)) {
+    low = Math.min(low, gapScore)
+    high = Math.max(high, gapScore)
   }
-  for (let i = 0; i < source.numFeatures; i++) {
-    reach(source.featureScores[i]!)
-    if (source.band) {
-      reach(source.band.minScores[i]!)
-    }
-  }
-  if (source.gapScore !== undefined) {
-    reach(source.gapScore)
-  }
-  if (lo > hi) {
-    return row
-  }
-  const n = RAMP_LINE_BANDS
-  const tOf = (k: number) => lo + ((hi - lo) * k) / n
-  const colors =
-    hi > lo
-      ? Array.from({ length: n }, (_, k) => lutColor(tOf(k + 0.5)))
-      : [lutColor(lo)]
+  const { cuts, colors } = rampAsThreshold(
+    {
+      domain: domainY,
+      scale: scaleNameOf(scaleType),
+      lut: rampLut,
+      mid: rampMid,
+    },
+    low,
+    high,
+    symlogConstant,
+  )
+  const rgbs = Array.from(colors, normalizedRgbOf)
   return {
     ...row,
-    cuts: Array.from({ length: colors.length - 1 }, (_, k) =>
-      denormalizeScore(tOf(k + 1), min, max, scaleType, symlogConstant),
-    ),
-    innerColors: colors.slice(1, -1),
-    source: { ...source, negColor: colors[0]!, color: colors.at(-1)! },
+    cuts: [...cuts],
+    innerColors: rgbs.slice(1, -1),
+    source: { ...source, negColor: rgbs[0]!, color: rgbs.at(-1)! },
   }
 }
 

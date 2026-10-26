@@ -43,10 +43,12 @@ export {
   RAMP_NO_VALUE_COLOR,
 } from '../shaders/markColor.generated.ts'
 export {
+  RAMP_LINE_BANDS,
   instanceColor,
   isThreshold,
   keepRampValues,
   paintColors,
+  rampAsThreshold,
   rampUniforms,
   rampValueBits,
   thresholdBandOf,

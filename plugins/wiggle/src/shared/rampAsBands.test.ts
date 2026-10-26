@@ -1,4 +1,5 @@
 import { rampLutOf } from '@jbrowse/core/util/colorRamp'
+import { RAMP_LINE_BANDS } from '@jbrowse/render-core/marks'
 import { rampMidNorm } from '@jbrowse/render-core/scoreScale'
 import { rampMidT } from '@jbrowse/render-core/shaders/colorRampLut'
 import {
@@ -17,7 +18,7 @@ import { GLSL_FRAGMENT as LINE_GLSL } from './shaders/wiggleLine.glsl.generated.
 import { WGSL_SOURCE as LINE_WGSL } from './shaders/wiggleLine.wgsl.generated.ts'
 import { GLSL_FRAGMENT as CENTER_GLSL } from './shaders/wiggleLineCenter.glsl.generated.ts'
 import { WGSL_SOURCE as CENTER_WGSL } from './shaders/wiggleLineCenter.wgsl.generated.ts'
-import { RAMP_LINE_BANDS, rampAsBands } from './wiggleDrawFunctions.ts'
+import { rampAsBands } from './wiggleDrawFunctions.ts'
 
 import type { RowDraw } from './wiggleDrawFunctions.ts'
 import type { ScaleTypeCode } from '@jbrowse/render-core/scoreScale'
@@ -120,17 +121,27 @@ test('the bands span only the part of the domain the values reach', () => {
   }
 })
 
+const rampEnd = (t: number) => {
+  const i = Math.round(rampMidT(t, 0.5) * 255) * 4
+  return [lut[i], lut[i + 1], lut[i + 2]]
+}
+
 // The GPU normalizes a score on a domain with no range to a step: 0 at the
 // domain, 1 above it.
 test('a domain with no range strokes the GPU step', () => {
   const banded = rampAsBands(row([5, 5], SCALE_TYPE_LINEAR, [5, 6]))
-  const end = (t: number) => {
-    const i = Math.round(rampMidT(t, 0.5) * 255) * 4
-    return [lut[i], lut[i + 1], lut[i + 2]]
-  }
   expect(normalizeScore(5, 5, 5, SCALE_TYPE_LINEAR, 1)).toBe(0)
-  expect(bandColorOf(banded, 5)).toEqual(end(0))
-  expect(bandColorOf(banded, 6)).toEqual(end(1))
+  expect(bandColorOf(banded, 5)).toEqual(rampEnd(0))
+  expect(bandColorOf(banded, 6)).toEqual(rampEnd(1))
+})
+
+test('a log domain the floor leaves with no range strokes the GPU step', () => {
+  const scores = [0.2, 0.5, 5]
+  const banded = rampAsBands(row([0, 1], SCALE_TYPE_LOG, scores))
+  for (const score of scores) {
+    const t = normalizeScore(score, 0, 1, SCALE_TYPE_LOG, 1)
+    expect(bandColorOf(banded, score)).toEqual(rampEnd(t))
+  }
 })
 
 test.each([
