@@ -1,4 +1,4 @@
-import { aesDecrypt, aesDecryptBytes } from './crypto.ts'
+import { aesDecrypt, aesDecryptBytes } from './aes.ts'
 import {
   b64PadSuffix,
   encodeSessionParam,
@@ -11,10 +11,10 @@ import {
   toUrlSafeB64,
 } from './sessionSharing.ts'
 
-import type * as CryptoModule from './crypto.ts'
+import type * as AesModule from './aes.ts'
 
-jest.mock('./crypto.ts', () => ({
-  ...jest.requireActual('./crypto.ts'),
+jest.mock('./aes.ts', () => ({
+  ...jest.requireActual('./aes.ts'),
   aesDecrypt: jest.fn().mockResolvedValue('decrypted-session-data'),
   aesEncrypt: jest.fn().mockResolvedValue('encrypted-data'),
 }))
@@ -141,7 +141,7 @@ describe('readSharedSession', () => {
 
   // every link shared before the key moved into the session value
   it('reads an older link, whose key is the password param', async () => {
-    const actual: typeof CryptoModule = jest.requireActual('./crypto.ts')
+    const actual: typeof AesModule = jest.requireActual('./aes.ts')
     jest.mocked(aesDecrypt).mockImplementationOnce(actual.aesDecrypt)
     fetchMock.mockResponseOnce(
       JSON.stringify({

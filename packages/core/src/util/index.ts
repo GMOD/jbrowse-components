@@ -310,9 +310,8 @@ export { getStr } from './getStr.ts'
 export { downloadPhase, getLocationUri, resolveUri } from './getLocationUri.ts'
 export { measureGridWidth, resolveSelectedIds } from './dataGridUtils.ts'
 export { isRpcResult } from './rpc.ts'
+export { aesDecrypt, aesEncrypt } from './aes.ts'
 export {
-  aesDecrypt,
-  aesEncrypt,
   sha256,
   sha256Base64,
   sha256Base64Url,
