@@ -514,6 +514,16 @@ export const colorRampSlots = {
   },
 } as const
 
+/** What a discrete scale samples a named ramp with: its scheme and direction. */
+export const colorDiscreteSchemeSlots = {
+  scheme: {
+    ...colorRampSlots.scheme,
+    description:
+      "a named ramp sampled end to end: an ordinal scale that lists a domain takes one color per value, and a threshold that writes cuts one per interval; range's colors, where it lists any, win over it",
+  },
+  ...colorReverseSlot,
+} as const
+
 /** A ramp's two ends, each pinned or following the data. */
 export const colorDomainEndsSlots = {
   domainMin: {

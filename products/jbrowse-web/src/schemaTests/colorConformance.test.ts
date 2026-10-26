@@ -199,7 +199,7 @@ const MAF_FIELDS =
   'fills cells by identity or refNameRank alone, each with its one scale, so it declares no other field and no scale.type'
 
 const DISCRETE_SCALES =
-  'paints ordinal and threshold scales alone, so its scale declares no ramp members'
+  'paints ordinal and threshold scales alone, so its scale declares no linear ramp'
 
 const EXCEPTIONS: readonly Exception[] = [
   ...listed('variant', ORDINAL_DEFAULT, 'numeric field, no scale'),
@@ -229,14 +229,12 @@ const EXCEPTIONS: readonly Exception[] = [
   ...listed(
     'variant',
     DISCRETE_SCALES,
-    'ordinal scheme over a domain',
     'linear, pinned ends, scheme, reverse',
     'linear over the data, scheme',
   ),
   ...listed(
     'multiway',
     DISCRETE_SCALES,
-    'ordinal scheme over a domain',
     'linear, pinned ends, scheme, reverse',
     'linear over the data, scheme',
   ),

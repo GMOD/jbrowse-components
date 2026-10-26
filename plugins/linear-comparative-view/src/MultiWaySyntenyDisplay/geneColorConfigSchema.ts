@@ -1,6 +1,7 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import {
   DISCRETE_COLOR_SCALES,
+  colorDiscreteSchemeSlots,
   colorChannelOptions,
   colorDomainSlot,
   colorFieldSlot,
@@ -68,6 +69,7 @@ export const geneColorConfigSchema = ConfigurationSchema(
           range:
             'CSS colors the domain takes, in order, continuing into the default palette past its end; under threshold one per interval, one more than the cuts',
         }),
+        ...colorDiscreteSchemeSlots,
         ...colorUnknownSlot,
         ...colorInvalidSlot,
         ...colorNamesSlot,
