@@ -13,8 +13,11 @@ export type ColorGroup = 'basic' | 'pairedEnd'
 // Menu placement for a color field. Discriminated so a field is either a plain
 // radio (shown in the 'basic' top-level list or the 'pairedEnd' submenu) or
 // 'special' — driven by its own dialog/submenu (tag, modifications, bisulfite).
+// `whileActive`: a config can paint by the field, but Color by offers its
+// radio only while it paints, since "Insert size and orientation" carries the
+// same cue.
 export type ColorFieldMenu =
-  | { kind: 'radio'; label: string; group: ColorGroup }
+  | { kind: 'radio'; label: string; group: ColorGroup; whileActive?: true }
   | { kind: 'special'; label: string }
 
 export interface ColorFieldDef {
@@ -87,15 +90,16 @@ export const COLOR_FIELD_DEFS: Record<ColorFieldKind, ColorFieldDef> = {
     perBase: true,
     workerExtracts: true,
   },
-  insertSize: {
-    kind: 'insertSize',
-    bodyFill: 'insertSize',
+  insertSizeAndOrientation: {
+    kind: 'insertSizeAndOrientation',
+    bodyFill: 'insertSizeAndOrientation',
     menu: {
       kind: 'radio',
-      label: INSERT_SIZE_LABELS.insertSize,
+      label: INSERT_SIZE_LABELS.insertSizeAndOrientation,
       group: 'pairedEnd',
     },
     mateAware: true,
+    orientation: true,
   },
   firstOfPairStrand: {
     kind: 'firstOfPairStrand',
@@ -106,6 +110,17 @@ export const COLOR_FIELD_DEFS: Record<ColorFieldKind, ColorFieldDef> = {
       group: 'pairedEnd',
     },
   },
+  insertSize: {
+    kind: 'insertSize',
+    bodyFill: 'insertSize',
+    menu: {
+      kind: 'radio',
+      label: INSERT_SIZE_LABELS.insertSize,
+      group: 'pairedEnd',
+      whileActive: true,
+    },
+    mateAware: true,
+  },
   pairOrientation: {
     kind: 'pairOrientation',
     bodyFill: 'pairOrientation',
@@ -113,17 +128,7 @@ export const COLOR_FIELD_DEFS: Record<ColorFieldKind, ColorFieldDef> = {
       kind: 'radio',
       label: FACET_LABELS.pairOrientation,
       group: 'pairedEnd',
-    },
-    mateAware: true,
-    orientation: true,
-  },
-  insertSizeAndOrientation: {
-    kind: 'insertSizeAndOrientation',
-    bodyFill: 'insertSizeAndOrientation',
-    menu: {
-      kind: 'radio',
-      label: INSERT_SIZE_LABELS.insertSizeAndOrientation,
-      group: 'pairedEnd',
+      whileActive: true,
     },
     mateAware: true,
     orientation: true,

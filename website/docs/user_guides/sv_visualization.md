@@ -45,8 +45,9 @@ reads, then the views that show both sides of a breakpoint at once.
 
 ### Pair orientation
 
-**Color by → Pair orientation** colors each read by the strands its two mates
-aligned to. The colors follow
+Pair orientation colors each read by the strands its two mates aligned to. The
+menu offers it inside **Color by → Insert size and orientation**, below; alone
+it is `encoding.color` set to `pairOrientation`. The colors follow
 [IGV's](https://igv.org/doc/desktop/#UserGuide/tracks/alignments/paired_end_alignments/)
 and assume a standard `fr` (Illumina) library. SOLiD-style orientations are not
 supported.
@@ -133,9 +134,10 @@ the pileup states it.
 
 ### Insert size
 
-**Color by → Insert size** colors a read by how far apart its mates aligned: red
-for larger than expected, pink for smaller, light grey for normal. Expected is a
-band around the median insert.[^mad]
+Insert size colors a read by how far apart its mates aligned: red for larger
+than expected, pink for smaller, light grey for normal. Expected is a band
+around the median insert.[^mad] Alone it is `encoding.color` set to
+`insertSize`.
 
 <!-- COLOR_TABLE alignments-insert-size START -->
 
@@ -149,10 +151,10 @@ band around the median insert.[^mad]
 
 <!-- COLOR_TABLE alignments-insert-size END -->
 
-**Insert size and orientation** combines both. A short insert paints pink
-whatever its orientation, an abnormal orientation wins over a normal insert, and
-a large insert with normal orientation paints red, the classic deletion. It
-combines both signals, so it is the usual first setting to try.
+**Color by → Insert size and orientation** combines both. A short insert paints
+pink whatever its orientation, an abnormal orientation wins over a normal
+insert, and a large insert with normal orientation paints red, the classic
+deletion. It combines both signals, so it is the usual first setting to try.
 
 ### Read arcs
 

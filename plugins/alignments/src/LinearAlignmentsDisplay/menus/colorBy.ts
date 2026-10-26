@@ -288,7 +288,9 @@ export function getColorByMenuItem(
       {
         header: 'Paired end',
         rows: includePairedEnd
-          ? pairedEndColorOptions.map(o => colorRadio(model, o))
+          ? pairedEndColorOptions
+              .filter(o => !o.whileActive || model.colorField === o.field)
+              .map(o => colorRadio(model, o))
           : [],
       },
       {

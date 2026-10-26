@@ -313,9 +313,31 @@ describe('color by menu curation', () => {
     expect(header).toBeGreaterThan(0)
     expect(rows[header + 1]).toMatchObject({
       type: 'radio',
-      label: 'Insert size',
+      label: 'Insert size and orientation',
     })
     expect(rows.some(i => 'subMenu' in i)).toBe(false)
+  })
+
+  // the combined radio carries both cues; either alone is a config setting,
+  // offered only while it paints so a radio always names what paints
+  test('Insert size and Pair orientation alone show only while they paint', () => {
+    const model = makeModel()
+    const labels = () =>
+      subMenuOf(getColorByMenuItem(model, { includePairedEnd: true })).map(i =>
+        'label' in i ? i.label : '',
+      )
+    expect(labels()).toEqual(
+      expect.arrayContaining([
+        'Insert size and orientation',
+        'First-of-pair strand',
+        'Mate chromosome',
+      ]),
+    )
+    expect(labels()).not.toContain('Insert size')
+    expect(labels()).not.toContain('Pair orientation')
+    model.colorByField('pairOrientation')
+    expect(labels()).toContain('Pair orientation')
+    expect(labels()).not.toContain('Insert size')
   })
 
   test('curated colorOptions replace the basic radios', () => {

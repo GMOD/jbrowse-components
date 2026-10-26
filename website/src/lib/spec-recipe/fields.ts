@@ -205,6 +205,10 @@ function alignmentsColorStep(value: unknown): FieldStep | undefined {
     return undefined
   }
   const { menu } = COLOR_FIELD_DEFS[kind]
+  // a radio offered only while it paints has no row on a fresh track
+  if (menu.kind === 'radio' && menu.whileActive) {
+    return undefined
+  }
   const path = [
     TRACK_MENU,
     'Color by',
