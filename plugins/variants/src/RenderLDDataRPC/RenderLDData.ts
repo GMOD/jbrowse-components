@@ -1,6 +1,6 @@
 import RpcMethodTypeWithRenameRegions from '@jbrowse/core/pluggableElementTypes/RpcMethodTypeWithRenameRegions'
 
-import type { LDMetric } from './ldTypes.ts'
+import type { LDLayout, LDMetric } from './ldTypes.ts'
 import type { LDDataResult } from './types.ts'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 import type { Region } from '@jbrowse/core/util'
@@ -12,8 +12,10 @@ export interface RenderLDDataArgs {
   originBp: number
   /** axis bp from `originBp` to the far edge of the last block */
   spanBp: number
-  ldMetric: LDMetric
-  useGenomicPositions: boolean
+  /** `encoding.color.field`, the statistic the cells are */
+  field: LDMetric
+  /** `variantLayout`, which a multi-region view answers with columns */
+  layout: LDLayout
 }
 
 declare module '@jbrowse/core/rpc/RpcRegistry' {

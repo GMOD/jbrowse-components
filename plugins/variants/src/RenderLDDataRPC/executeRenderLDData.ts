@@ -15,21 +15,19 @@ export async function executeRenderLDData({
   pluginManager: PluginManager
   args: RpcExecuteArgs<'RenderLDData'>
 }) {
-  const { regions, originBp, spanBp, useGenomicPositions, statusCallback } =
-    args
+  const { regions, originBp, spanBp, layout, statusCallback } = args
 
   // `args` whole, never a re-listed subset, so no field the model sends can be
   // dropped on the way to the matrix builder.
-  const { snps, ldValues, band, metric, hasR2, hasDprime } = await updateStatus(
-    'Downloading LD data',
-    statusCallback,
-    () => getLDMatrixFromPlink({ pluginManager, args }),
-  )
+  const { snps, ldValues, band, appliedField, hasR2, hasDprime } =
+    await updateStatus('Downloading LD data', statusCallback, () =>
+      getLDMatrixFromPlink({ pluginManager, args }),
+    )
 
   // Genomic positions need one contiguous bp axis, so several regions fall back
   // to uniform columns. An empty result still reports the requested mode,
   // because the display sizes the band above the triangle by it.
-  const genomicMode = useGenomicPositions && regions.length === 1
+  const genomicMode = layout === 'genomic' && regions.length === 1
   const n = snps.length
   const uniformW = n === 0 ? 0 : spanBp / (n * Math.SQRT2)
   const boundaries = computeBoundaries({
@@ -47,8 +45,8 @@ export async function executeRenderLDData({
     band,
     uniformW,
     originBp,
-    genomicMode,
-    metric,
+    appliedLayout: genomicMode ? 'genomic' : 'columns',
+    appliedField,
     hasR2,
     hasDprime,
     snps,

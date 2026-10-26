@@ -85,8 +85,8 @@ async function run(
         regions,
         originBp: 0,
         spanBp: regions.reduce((sum, r) => sum + r.end - r.start, 0),
-        ldMetric: 'r2',
-        useGenomicPositions,
+        field: 'r2',
+        layout: useGenomicPositions ? 'genomic' : 'columns',
       },
     }),
   )

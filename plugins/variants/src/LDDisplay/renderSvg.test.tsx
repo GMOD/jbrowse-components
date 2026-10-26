@@ -26,8 +26,8 @@ function ldData(n: number, widthBp: number, originBp: number): LDDataResult {
     band: 1_000_000,
     uniformW: widthBp / (n * Math.SQRT2),
     originBp,
-    genomicMode: false,
-    metric: 'r2',
+    appliedLayout: 'columns',
+    appliedField: 'r2',
     hasR2: true,
     hasDprime: true,
   }
@@ -43,7 +43,7 @@ test('the exported labels and connector lines hold still while the view pans', a
   const width = view.dynamicBlocks.totalWidthPxWithoutBorders
   const block = view.dynamicBlocks.contentBlocks[0]!
   display.setRpcData(ldData(4, width * view.bpPerPx, block.start))
-  display.setShowLabels(true)
+  display.setShowNames(true)
 
   const { container } = render(<svg>{await renderSvg(display, {})}</svg>)
   const drawn = container.innerHTML

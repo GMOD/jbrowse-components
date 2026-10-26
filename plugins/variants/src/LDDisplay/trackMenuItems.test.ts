@@ -12,22 +12,22 @@ import type { MenuItem } from '@jbrowse/core/ui'
 // takes a structural interface, so this needs no display instance.
 function makeSelf(overrides: Partial<LDMenuSelf> = {}) {
   const stub = {
-    effectiveLdMetric: 'r2' as const,
+    paintedColorField: 'r2' as const,
     colorScheme: 'reds' as const,
     r2Available: true,
     dprimeAvailable: true,
     focalSnpIndex: -1,
     showLegend: false,
-    showLabels: false,
-    showVerticalGuides: true,
+    showNames: false,
+    showGuides: true,
     heightMode: 'fixed' as const,
     useGenomicPositions: false,
     setFocalSnp: jest.fn(),
-    setLDMetric: jest.fn(),
+    colorByField: jest.fn(),
     setColorScheme: jest.fn(),
     setShowLegend: jest.fn(),
-    setShowLabels: jest.fn(),
-    setShowVerticalGuides: jest.fn(),
+    setShowNames: jest.fn(),
+    setShowGuides: jest.fn(),
     setHeightMode: jest.fn(),
     setVariantLayout: jest.fn(),
     ...overrides,
@@ -99,7 +99,7 @@ test('a file with no DP column offers D-prime disabled, and says why', () => {
 test('a file with no R2 column offers r-squared disabled, and says why', () => {
   const metric = subMenuOf(
     buildLDTrackMenuItems(
-      makeSelf({ r2Available: false, effectiveLdMetric: 'dprime' }),
+      makeSelf({ r2Available: false, paintedColorField: 'dprime' }),
     ),
     'LD metric',
   )!
@@ -165,7 +165,7 @@ describe('on a display', () => {
       readConfObject(display.configuration, ['encoding', 'color', 'field']),
     ).toBe('dprime')
     expect(display.plot).toEqual({ encoding: { color: 'dprime' } })
-    expect(display.rpcProps().ldMetric).toBe('dprime')
+    expect(display.rpcProps().field).toBe('dprime')
   })
 
   test('a scheme pick leaves reverse to follow it', () => {

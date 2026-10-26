@@ -81,7 +81,7 @@ const LDPointer = observer(function LDPointer({
       const xJ = snp2 && model.locusViewportX(snp2.refName, snp2.start)
       const xI = snp1 && model.locusViewportX(snp1.refName, snp1.start)
       view.setVolatileGuides(
-        xJ !== undefined && xI !== undefined && model.showVerticalGuides
+        xJ !== undefined && xI !== undefined && model.showGuides
           ? [{ xPos: xJ }, { xPos: xI }]
           : [],
       )
@@ -107,7 +107,7 @@ const LDPointer = observer(function LDPointer({
         item={item}
         x={mouseState.clientX}
         y={mouseState.clientY}
-        ldMetric={model.effectiveLdMetric}
+        ldMetric={model.paintedColorField}
       />
     </>
   )

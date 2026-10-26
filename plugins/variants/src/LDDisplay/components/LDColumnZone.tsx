@@ -15,7 +15,7 @@ const LDColumnZone = observer(function LDColumnZone({
 }: {
   model: LDDisplayModel
 }) {
-  return model.effectiveUseGenomicPositions ? (
+  return model.atGenomicPositions ? (
     <LDLabelZone model={model} />
   ) : (
     <LinesConnectingMatrixToGenomicPosition model={model} />

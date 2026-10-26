@@ -1,3 +1,6 @@
+/** Where the cells draw: at each SNP's genomic position, or in even columns. */
+export type LDLayout = 'genomic' | 'columns'
+
 export type LDMetric = 'r2' | 'dprime'
 
 export interface LDSnp {
@@ -16,7 +19,7 @@ export interface LDMatrixResult {
   ldValues: Float32Array
   // The metric `ldValues` holds: a file lacking the requested column serves
   // the other one.
-  metric: LDMetric
+  appliedField: LDMetric
   // Which columns the file has, so the display disables a missing one's
   // radio.
   hasR2: boolean

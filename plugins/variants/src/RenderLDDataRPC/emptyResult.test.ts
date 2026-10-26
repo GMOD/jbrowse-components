@@ -26,7 +26,7 @@ function region(offset = 0): Region {
 const NO_PAIRS: LDMatrixResult = {
   snps: [],
   ldValues: new Float32Array(0),
-  metric: 'r2',
+  appliedField: 'r2',
   hasR2: true,
   hasDprime: true,
   band: 0,
@@ -45,28 +45,30 @@ async function run(regions: Region[], useGenomicPositions: boolean) {
         regions,
         originBp: 0,
         spanBp: regions.reduce((sum, r) => sum + r.end - r.start, 0),
-        ldMetric: 'r2',
-        useGenomicPositions,
+        field: 'r2',
+        layout: useGenomicPositions ? 'genomic' : 'columns',
       },
     }),
   )
 }
 
-// `genomicMode` is what the display branches its *chrome* on, not only its
-// matrix: `effectiveUseGenomicPositions` picks the label zone over the connector
+// `appliedLayout` is what the display branches its *chrome* on, not only its
+// matrix: `atGenomicPositions` picks the label zone over the connector
 // zone and sets `matrixTop`. Reporting `false` on an empty result
 // moved the triangle down by `lineZoneHeight` (100px by default) and shrank it
 // the moment a region held no pairs — then put it back on the next pan.
 test('an empty result keeps reporting the layout mode the display is in', async () => {
-  expect((await run([region()], true)).genomicMode).toBe(true)
-  expect((await run([region()], false)).genomicMode).toBe(false)
+  expect((await run([region()], true)).appliedLayout).toBe('genomic')
+  expect((await run([region()], false)).appliedLayout).toBe('columns')
 })
 
 // The multi-region fallback still has to survive the empty path, or the jump
 // comes back inverted — a request for genomic mode that the worker declines
 // would claim genomic layout while the columns are index-laid-out.
 test('an empty result still declines genomic mode across multiple regions', async () => {
-  expect((await run([region(0), region(5000)], true)).genomicMode).toBe(false)
+  expect((await run([region(0), region(5000)], true)).appliedLayout).toBe(
+    'columns',
+  )
 })
 
 // The metric rides out even with nothing to draw: the legend and the metric
@@ -76,6 +78,6 @@ test('an empty result still reports the metric the file can serve', async () => 
   const result = await run([region()], true)
   expect(result.numCells).toBe(0)
   expect(result.snps).toEqual([])
-  expect(result.metric).toBe('r2')
+  expect(result.appliedField).toBe('r2')
   expect(result.hasDprime).toBe(true)
 })

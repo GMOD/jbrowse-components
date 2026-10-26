@@ -1,4 +1,4 @@
-import type { LDMetric, LDSnp } from './ldTypes.ts'
+import type { LDLayout, LDMetric, LDSnp } from './ldTypes.ts'
 
 export interface LDCellHit {
   i: number
@@ -18,11 +18,11 @@ export interface LDDataResult {
   uniformW: number
   // echoed from RenderLDDataArgs.originBp; see its note
   originBp: number
-  // Whether the cells were laid out at genomic positions: a multi-region view
-  // falls back to uniform columns.
-  genomicMode: boolean
+  // Where the cells were laid out: a multi-region view falls back to uniform
+  // columns.
+  appliedLayout: LDLayout
   // the metric `ldValues` holds, and which columns the file has
-  metric: LDMetric
+  appliedField: LDMetric
   hasR2: boolean
   hasDprime: boolean
   snps: LDSnp[]

@@ -51,7 +51,7 @@ test('LD reserves the genomic-positions zone for whatever is switched on', () =>
 
   expect(display.matrixTop).toBe(0)
 
-  display.setShowLabels(true)
+  display.setShowNames(true)
   expect(display.matrixTop).toBe(display.lineZoneHeight)
   // and that band is the draggable one, so the room for the rotated labels is
   // the user's to set rather than something we measure text extents for
@@ -60,7 +60,7 @@ test('LD reserves the genomic-positions zone for whatever is switched on', () =>
 
   // off again spends 0 px, so switching labels on and back off leaves the
   // triangle exactly the size it was
-  display.setShowLabels(false)
+  display.setShowNames(false)
   expect(display.matrixTop).toBe(0)
 })
 

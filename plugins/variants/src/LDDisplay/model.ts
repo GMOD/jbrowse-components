@@ -5,6 +5,7 @@ import {
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
 import { reservedPx } from '@jbrowse/core/util/bandLayout'
+import ColorWritesMixin from '@jbrowse/display-kit/ColorWritesMixin'
 import GlobalFetchMixin from '@jbrowse/display-kit/GlobalFetchMixin'
 import LegendMixin from '@jbrowse/display-kit/LegendMixin'
 import MatrixRampMixin from '@jbrowse/display-kit/MatrixRampMixin'
@@ -80,6 +81,7 @@ export default function stateModelFactory(configSchema: LDDisplayConfigSchema) {
       GlobalFetchMixin(),
       LegendMixin(),
       MatrixRampMixin(LD_FIELD_PRESETS),
+      ColorWritesMixin(),
       TriangleMatrixMixin<LDDataResult>(),
       types.model({
         /**
@@ -119,21 +121,14 @@ export default function stateModelFactory(configSchema: LDDisplayConfigSchema) {
       },
       /**
        * #action
-       * `encoding.color.field`, the statistic the cells are, which refetches.
        */
-      setLDMetric(metric: LDMetric) {
-        setConf(self, ['encoding', 'color', 'field'], metric)
-      },
-      /**
-       * #action
-       */
-      setShowVerticalGuides(show: boolean) {
+      setShowGuides(show: boolean) {
         setConf(self, ['guides', 'show'], show)
       },
       /**
        * #action
        */
-      setShowLabels(show: boolean) {
+      setShowNames(show: boolean) {
         setConf(self, ['labels', 'name', 'show'], show)
       },
       /**
@@ -169,13 +164,13 @@ export default function stateModelFactory(configSchema: LDDisplayConfigSchema) {
       /**
        * #getter
        */
-      get showVerticalGuides(): boolean {
+      get showGuides(): boolean {
         return getConf(self, ['guides', 'show'])
       },
       /**
        * #getter
        */
-      get showLabels(): boolean {
+      get showNames(): boolean {
         return getConf(self, ['labels', 'name', 'show'])
       },
       /**
@@ -214,22 +209,11 @@ export default function stateModelFactory(configSchema: LDDisplayConfigSchema) {
       },
       /**
        * #getter
-       * The metric the loaded values are: a file with one column serves it
-       * whichever is asked for.
-       */
-      get effectiveLdMetric(): LDMetric {
-        return self.rpcData?.metric ?? this.colorField
-      },
-      /**
-       * #getter
        * Whether the loaded matrix is at genomic positions: a multi-region view
        * falls back to uniform columns.
        */
-      get effectiveUseGenomicPositions(): boolean {
-        return (
-          self.rpcData?.genomicMode ??
-          getConf(self, 'variantLayout') === 'genomic'
-        )
+      get atGenomicPositions(): boolean {
+        return (self.rpcData?.appliedLayout ?? this.variantLayout) === 'genomic'
       },
       /**
        * #getter
@@ -261,7 +245,7 @@ export default function stateModelFactory(configSchema: LDDisplayConfigSchema) {
        * its hue.
        */
       get paintedColorField(): LDMetric {
-        return self.effectiveLdMetric
+        return self.rpcData?.appliedField ?? self.colorField
       },
       /**
        * #getter
@@ -283,7 +267,7 @@ export default function stateModelFactory(configSchema: LDDisplayConfigSchema) {
         const [min, max] = LD_VALUE_EXTENT
         return self.rampColorScales({
           id: 'ld',
-          title: ldMetricLabel(self.effectiveLdMetric),
+          title: ldMetricLabel(self.paintedColorField),
           extent: { min, max },
         })
       },
@@ -300,7 +284,7 @@ export default function stateModelFactory(configSchema: LDDisplayConfigSchema) {
        */
       get matrixTop(): number {
         return reservedPx({
-          active: !self.effectiveUseGenomicPositions || self.showLabels,
+          active: !self.atGenomicPositions || self.showNames,
           height: self.lineZoneHeight,
         })
       },
@@ -309,8 +293,8 @@ export default function stateModelFactory(configSchema: LDDisplayConfigSchema) {
        */
       rpcProps(): LDRpcProps {
         return {
-          ldMetric: self.colorField,
-          useGenomicPositions: self.variantLayout === 'genomic',
+          field: self.colorField,
+          layout: self.variantLayout,
         }
       },
       /**

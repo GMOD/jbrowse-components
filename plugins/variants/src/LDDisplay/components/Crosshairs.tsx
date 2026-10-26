@@ -23,7 +23,7 @@ const Crosshairs = observer(function Crosshairs({
     rpcData,
     matrixTop,
     tickHeight,
-    effectiveUseGenomicPositions,
+    atGenomicPositions,
     canvasWidth,
     height,
   } = model
@@ -36,10 +36,10 @@ const Crosshairs = observer(function Crosshairs({
   const jCenter = (boundaries[j]! + boundaries[j + 1]!) / 2
   const iCenter = (boundaries[i]! + boundaries[i + 1]!) / 2
   const hovered = model.cellToScreen(jCenter, iCenter)
-  const snpJ = effectiveUseGenomicPositions
+  const snpJ = atGenomicPositions
     ? { x: xJ, y: matrixTop }
     : model.cellToScreen(jCenter, jCenter)
-  const snpI = effectiveUseGenomicPositions
+  const snpI = atGenomicPositions
     ? { x: xI, y: matrixTop }
     : model.cellToScreen(iCenter, iCenter)
 
@@ -61,7 +61,7 @@ const Crosshairs = observer(function Crosshairs({
         d={`M ${snpJ.x} ${snpJ.y} L ${hovered.x} ${hovered.y} L ${snpI.x} ${snpI.y}`}
       />
       <g stroke="#e00" strokeWidth="1.5" fill="none">
-        {effectiveUseGenomicPositions ? null : (
+        {atGenomicPositions ? null : (
           <>
             <path d={`M ${snpJ.x} ${snpJ.y} L ${xJ} ${tickHeight}`} />
             <path d={`M ${snpI.x} ${snpI.y} L ${xI} ${tickHeight}`} />

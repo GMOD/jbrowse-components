@@ -26,8 +26,8 @@ function ldData(n: number, widthBp: number, originBp: number): LDDataResult {
     band: 1_000_000,
     uniformW,
     originBp,
-    genomicMode: false,
-    metric: 'r2',
+    appliedLayout: 'columns',
+    appliedField: 'r2',
     hasR2: true,
     hasDprime: true,
   }

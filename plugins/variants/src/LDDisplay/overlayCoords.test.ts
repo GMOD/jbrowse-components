@@ -31,8 +31,8 @@ function ldData(
     band: 1_000_000,
     uniformW,
     originBp: 0,
-    genomicMode: false,
-    metric: 'r2',
+    appliedLayout: 'columns',
+    appliedField: 'r2',
     hasR2: true,
     hasDprime: true,
     ...overrides,
@@ -59,12 +59,12 @@ function loadedDisplay({ zoomedOut = false, data = {} } = {}) {
 // region, so the slot alone doesn't say what is on screen. Everything that
 // branches on the layout has to follow the data or it describes a matrix that
 // isn't there.
-describe('effectiveUseGenomicPositions follows the loaded matrix', () => {
+describe('atGenomicPositions follows the loaded matrix', () => {
   it('falls back to the slot before anything has loaded', () => {
     const { display } = createTestEnvironment().createDisplay()
-    expect(display.effectiveUseGenomicPositions).toBe(false)
+    expect(display.atGenomicPositions).toBe(false)
     display.setVariantLayout('genomic')
-    expect(display.effectiveUseGenomicPositions).toBe(true)
+    expect(display.atGenomicPositions).toBe(true)
   })
 
   it('reads the loaded layout, not the request', () => {
@@ -73,9 +73,9 @@ describe('effectiveUseGenomicPositions follows the loaded matrix', () => {
 
     // the request stands — it is what the next fetch sends
     expect(display.variantLayout).toBe('genomic')
-    expect(display.rpcProps().useGenomicPositions).toBe(true)
+    expect(display.rpcProps().layout).toBe('genomic')
     // but the matrix in hand is uniform, so the zone still holds connectors
-    expect(display.effectiveUseGenomicPositions).toBe(false)
+    expect(display.atGenomicPositions).toBe(false)
     expect(display.matrixTop).toBe(display.lineZoneHeight)
   })
 })
@@ -126,7 +126,7 @@ test('the canvas is the display below the band, not the natural apex', () => {
 test('one search serves the genomic layout too', () => {
   const { display } = loadedDisplay({
     data: {
-      genomicMode: true,
+      appliedLayout: 'genomic',
       boundaries: Float32Array.from([0, 10, 100, 120, 130]),
     },
   })

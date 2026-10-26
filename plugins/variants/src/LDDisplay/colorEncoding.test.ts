@@ -20,8 +20,8 @@ function served(metric: LDMetric): LDDataResult {
     band: 1,
     uniformW: 10,
     originBp: 0,
-    genomicMode: false,
-    metric,
+    appliedLayout: 'columns',
+    appliedField: metric,
     hasR2: metric === 'r2',
     hasDprime: metric === 'dprime',
     snps: [],
@@ -93,17 +93,21 @@ test('the served metric picks the preset, whatever the config asks for', () => {
   setConf(display, ['encoding', 'color', 'field'], 'dprime')
   display.setRpcData(served('r2'))
   expect(display.colorField).toBe('dprime')
-  expect(display.rpcProps().ldMetric).toBe('dprime')
+  expect(display.rpcProps().field).toBe('dprime')
   expect(display.colorScheme).toBe('reds')
   expect(display.colorScales[0]!.title).toBe('R²')
   display.setRpcData(served('dprime'))
   expect(display.colorScheme).toBe('blues')
 })
 
-test('a written scheme holds across a metric switch', () => {
+// ColorWritesMixin parks the metric it leaves: a scheme, domain or key title
+// written for r2 stays with r2, and D' starts from its own preset
+test('a written scheme stays with its metric across a switch', () => {
   const { display } = createDisplay()
   display.setColorScheme('viridis')
-  display.setLDMetric('dprime')
+  display.colorByField('dprime')
+  expect(display.colorScheme).toBe('blues')
+  display.colorByField('r2')
   expect(display.colorScheme).toBe('viridis')
 })
 
@@ -118,7 +122,7 @@ test("picking the field's own scheme leaves it following the field", () => {
       'scheme',
     ]),
   ).toBeUndefined()
-  display.setLDMetric('dprime')
+  display.colorByField('dprime')
   expect(display.colorScheme).toBe('blues')
 })
 
@@ -161,5 +165,5 @@ test('a v4 track whose display spells ldMetric loads its color', () => {
     readConfObject(display.configuration, ['encoding', 'color', 'field']),
   ).toBe('dprime')
   expect(display.colorScheme).toBe('blues')
-  expect(display.rpcProps().ldMetric).toBe('dprime')
+  expect(display.rpcProps().field).toBe('dprime')
 })

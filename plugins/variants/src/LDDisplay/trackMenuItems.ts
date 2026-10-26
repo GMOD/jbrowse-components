@@ -12,22 +12,22 @@ import type { TriangleHeightMode } from '@jbrowse/display-kit/TriangleMatrixMixi
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 export interface LDMenuSelf extends IStateTreeNode {
-  effectiveLdMetric: LDMetric
+  paintedColorField: LDMetric
   colorScheme: ColorSchemeName
   r2Available: boolean
   dprimeAvailable: boolean
   focalSnpIndex: number
   showLegend: boolean
-  showLabels: boolean
-  showVerticalGuides: boolean
+  showNames: boolean
+  showGuides: boolean
   heightMode: TriangleHeightMode
   variantLayout: 'genomic' | 'columns'
   setFocalSnp: (snp: LDSnp | undefined) => void
-  setLDMetric: (metric: LDMetric) => void
+  colorByField: (metric: LDMetric) => void
   setColorScheme: (scheme: ColorSchemeName) => void
   setShowLegend: (arg: boolean) => void
-  setShowLabels: (arg: boolean) => void
-  setShowVerticalGuides: (arg: boolean) => void
+  setShowNames: (arg: boolean) => void
+  setShowGuides: (arg: boolean) => void
   setHeightMode: (mode: TriangleHeightMode) => void
   setVariantLayout: (arg: 'genomic' | 'columns') => void
 }
@@ -38,9 +38,9 @@ export interface LDMenuSelf extends IStateTreeNode {
 function metricMenuItem(self: LDMenuSelf): MenuItem {
   return makeRadioSubMenu({
     label: 'LD metric',
-    value: self.effectiveLdMetric,
+    value: self.paintedColorField,
     onChange: metric => {
-      self.setLDMetric(metric)
+      self.colorByField(metric)
     },
     options: [
       {
@@ -65,12 +65,8 @@ function metricMenuItem(self: LDMenuSelf): MenuItem {
 
 function showMenuItems(self: LDMenuSelf): MenuItem[] {
   return [
-    toggleItem('Variant labels', self.showLabels, self.setShowLabels),
-    toggleItem(
-      'Vertical guides on hover',
-      self.showVerticalGuides,
-      self.setShowVerticalGuides,
-    ),
+    toggleItem('Variant labels', self.showNames, self.setShowNames),
+    toggleItem('Vertical guides on hover', self.showGuides, self.setShowGuides),
     legendCheckboxItem(self),
   ]
 }

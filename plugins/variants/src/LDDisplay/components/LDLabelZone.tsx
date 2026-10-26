@@ -17,7 +17,7 @@ const LDLabelZone = observer(function LDLabelZone({
 }: {
   model: LDDisplayModel
 }) {
-  const { height, showLabels, matrixTop } = model
+  const { height, showNames, matrixTop } = model
   const { width } = model.host
 
   return (
@@ -25,7 +25,7 @@ const LDLabelZone = observer(function LDLabelZone({
       <ConnectorZone width={width} height={height}>
         <VariantLabels model={model} />
       </ConnectorZone>
-      {!showLabels ? null : (
+      {!showNames ? null : (
         <ConnectorZoneResizeHandle model={model} top={matrixTop} />
       )}
     </>

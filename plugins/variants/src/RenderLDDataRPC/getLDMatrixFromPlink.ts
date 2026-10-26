@@ -95,10 +95,10 @@ export async function getLDMatrixFromPlink({
     sessionId: string
     headers?: Record<string, string>
     regions: Region[]
-    ldMetric?: LDMetric
+    field?: LDMetric
   }
 }): Promise<LDMatrixResult> {
-  const { regions, adapterConfig, sessionId, ldMetric = 'r2' } = args
+  const { regions, adapterConfig, sessionId, field = 'r2' } = args
 
   const { dataAdapter } = await getAdapter(
     pluginManager,
@@ -114,7 +114,7 @@ export async function getLDMatrixFromPlink({
   const header = await dataAdapter.getHeader(args)
   const hasR2 = header.r2Idx >= 0
   const hasDprime = header.dprimeIdx >= 0
-  const metric = resolveMetric(ldMetric, { hasR2, hasDprime })
+  const appliedField = resolveMetric(field, { hasR2, hasDprime })
 
   // A pair is fetched by the region its A side is in and kept where its B side
   // is in any displayed region, so a pair spanning two blocks loads. A tabix
@@ -148,7 +148,7 @@ export async function getLDMatrixFromPlink({
   for (const record of records) {
     const i = indexByKey.get(snpKey(record.chrA, record.bpA, record.snpA))!
     const j = indexByKey.get(snpKey(record.chrB, record.bpB, record.snpB))!
-    const value = metricValue(record, metric)
+    const value = metricValue(record, appliedField)
     if (i !== j && value !== LD_NOT_COMPUTED) {
       pairs.push({ slotI: i, slotJ: j, value })
       band = Math.max(band, Math.abs(i - j))
@@ -172,7 +172,7 @@ export async function getLDMatrixFromPlink({
   return {
     snps,
     ldValues,
-    metric,
+    appliedField,
     hasR2,
     hasDprime,
     band,
