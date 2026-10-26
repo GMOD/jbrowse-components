@@ -858,6 +858,12 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
     if (forms.colorAsField && slots.field) {
       slots.field = refusingColor(slots.field)
     }
+    const presetFields = Object.keys(meta.options.fieldPresets ?? {}).filter(
+      field => field !== '*',
+    )
+    if (presetFields.length > 0 && slots.field) {
+      slots.field = { ...slots.field, examples: presetFields }
+    }
     const properties = {
       ...Object.fromEntries(
         Object.keys(meta.options.retired ?? {}).map(key => [key, LEGACY]),

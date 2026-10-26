@@ -4984,6 +4984,7 @@
         {
           "description": "Shorthand for `{ \"field\": ... }`.",
           "default": "",
+          "examples": ["score"],
           "allOf": [
             {
               "$ref": "#/$defs/FeatureField"
@@ -5029,7 +5030,8 @@
                     "errorMessage": "is a color, and a bare string is the field. To paint every feature it, write { \"value\": <the color> }"
                   }
                 ]
-              }
+              },
+              "examples": ["score"]
             },
             "scale": {
               "if": {
@@ -6110,6 +6112,15 @@
         {
           "description": "Shorthand for `{ \"field\": ... }`.",
           "default": "",
+          "examples": [
+            "strand",
+            "mapq",
+            "insertSize",
+            "firstOfPairStrand",
+            "pairOrientation",
+            "insertSizeAndOrientation",
+            "mateRefName"
+          ],
           "allOf": [
             {
               "$ref": "#/$defs/PlainString"
@@ -6155,7 +6166,16 @@
                     "errorMessage": "is a color, and a bare string is the field. To paint every feature it, write { \"value\": <the color> }"
                   }
                 ]
-              }
+              },
+              "examples": [
+                "strand",
+                "mapq",
+                "insertSize",
+                "firstOfPairStrand",
+                "pairOrientation",
+                "insertSizeAndOrientation",
+                "mateRefName"
+              ]
             },
             "scale": {
               "if": {
@@ -8171,6 +8191,15 @@
         {
           "description": "Shorthand for `{ \"field\": ... }`.",
           "default": "",
+          "examples": [
+            "strand",
+            "mapq",
+            "insertSize",
+            "firstOfPairStrand",
+            "pairOrientation",
+            "insertSizeAndOrientation",
+            "mateRefName"
+          ],
           "allOf": [
             {
               "$ref": "#/$defs/PlainString"
@@ -8216,7 +8245,16 @@
                     "errorMessage": "is a color, and a bare string is the field. To paint every feature it, write { \"value\": <the color> }"
                   }
                 ]
-              }
+              },
+              "examples": [
+                "strand",
+                "mapq",
+                "insertSize",
+                "firstOfPairStrand",
+                "pairOrientation",
+                "insertSizeAndOrientation",
+                "mateRefName"
+              ]
             },
             "scale": {
               "if": {
@@ -9209,6 +9247,7 @@
         {
           "description": "Shorthand for `{ \"field\": ... }`.",
           "default": "",
+          "examples": ["mapq", "identity", "dnds", "syntenicDepth"],
           "allOf": [
             {
               "$ref": "#/$defs/PlainString"
@@ -9254,7 +9293,8 @@
                     "errorMessage": "is a color, and a bare string is the field. To paint every feature it, write { \"value\": <the color> }"
                   }
                 ]
-              }
+              },
+              "examples": ["mapq", "identity", "dnds", "syntenicDepth"]
             },
             "scale": {
               "if": {
@@ -9881,6 +9921,7 @@
         {
           "description": "Shorthand for `{ \"field\": ... }`.",
           "default": "",
+          "examples": ["score"],
           "allOf": [
             {
               "$ref": "#/$defs/FeatureField"
@@ -9926,7 +9967,8 @@
                     "errorMessage": "is a color, and a bare string is the field. To paint every feature it, write { \"value\": <the color> }"
                   }
                 ]
-              }
+              },
+              "examples": ["score"]
             },
             "scale": {
               "if": {
@@ -12668,6 +12710,7 @@
         {
           "description": "Shorthand for `{ \"field\": ... }`.",
           "default": "r2",
+          "examples": ["r2", "dprime"],
           "allOf": [
             {
               "enum": ["r2", "dprime"]
@@ -12704,7 +12747,8 @@
                     "errorMessage": "is a color, and a bare string is the field. To paint every feature it, write { \"value\": <the color> }"
                   }
                 ]
-              }
+              },
+              "examples": ["r2", "dprime"]
             },
             "scale": {
               "if": {
@@ -13953,6 +13997,7 @@
       "anyOf": [
         {
           "description": "Shorthand for `{ \"field\": ... }`.",
+          "examples": ["identity", "refNameRank"],
           "allOf": [
             {
               "enum": ["identity", "refNameRank"]
@@ -13997,7 +14042,8 @@
                     "errorMessage": "is a color, and a bare string is the field. To paint every feature it, write { \"value\": <the color> }"
                   }
                 ]
-              }
+              },
+              "examples": ["identity", "refNameRank"]
             },
             "scale": {
               "if": {
@@ -14684,6 +14730,7 @@
         {
           "description": "Shorthand for `{ \"field\": ... }`.",
           "default": "observed",
+          "examples": ["observed", "observed/expected", "observed/control"],
           "allOf": [
             {
               "enum": ["observed", "observed/expected", "observed/control"]
@@ -14724,7 +14771,8 @@
                     "errorMessage": "is a color, and a bare string is the field. To paint every feature it, write { \"value\": <the color> }"
                   }
                 ]
-              }
+              },
+              "examples": ["observed", "observed/expected", "observed/control"]
             },
             "scale": {
               "if": {
@@ -26881,6 +26929,7 @@
         {
           "description": "Shorthand for `{ \"field\": ... }`.",
           "default": "",
+          "examples": ["mapq", "identity", "dnds", "syntenicDepth"],
           "allOf": [
             {
               "$ref": "#/$defs/PlainString"
@@ -26926,7 +26975,8 @@
                     "errorMessage": "is a color, and a bare string is the field. To paint every feature it, write { \"value\": <the color> }"
                   }
                 ]
-              }
+              },
+              "examples": ["mapq", "identity", "dnds", "syntenicDepth"]
             },
             "scale": {
               "if": {

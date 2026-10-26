@@ -5124,6 +5124,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         {
           "description": "Shorthand for \`{ \\"field\\": ... }\`.",
           "default": "",
+          "examples": [
+            "score"
+          ],
           "allOf": [
             {
               "$ref": "#/$defs/FeatureField"
@@ -5169,7 +5172,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                     "errorMessage": "is a color, and a bare string is the field. To paint every feature it, write { \\"value\\": <the color> }"
                   }
                 ]
-              }
+              },
+              "examples": [
+                "score"
+              ]
             },
             "scale": {
               "if": {
@@ -6284,6 +6290,15 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         {
           "description": "Shorthand for \`{ \\"field\\": ... }\`.",
           "default": "",
+          "examples": [
+            "strand",
+            "mapq",
+            "insertSize",
+            "firstOfPairStrand",
+            "pairOrientation",
+            "insertSizeAndOrientation",
+            "mateRefName"
+          ],
           "allOf": [
             {
               "$ref": "#/$defs/PlainString"
@@ -6329,7 +6344,16 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                     "errorMessage": "is a color, and a bare string is the field. To paint every feature it, write { \\"value\\": <the color> }"
                   }
                 ]
-              }
+              },
+              "examples": [
+                "strand",
+                "mapq",
+                "insertSize",
+                "firstOfPairStrand",
+                "pairOrientation",
+                "insertSizeAndOrientation",
+                "mateRefName"
+              ]
             },
             "scale": {
               "if": {
@@ -8402,6 +8426,15 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         {
           "description": "Shorthand for \`{ \\"field\\": ... }\`.",
           "default": "",
+          "examples": [
+            "strand",
+            "mapq",
+            "insertSize",
+            "firstOfPairStrand",
+            "pairOrientation",
+            "insertSizeAndOrientation",
+            "mateRefName"
+          ],
           "allOf": [
             {
               "$ref": "#/$defs/PlainString"
@@ -8447,7 +8480,16 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                     "errorMessage": "is a color, and a bare string is the field. To paint every feature it, write { \\"value\\": <the color> }"
                   }
                 ]
-              }
+              },
+              "examples": [
+                "strand",
+                "mapq",
+                "insertSize",
+                "firstOfPairStrand",
+                "pairOrientation",
+                "insertSizeAndOrientation",
+                "mateRefName"
+              ]
             },
             "scale": {
               "if": {
@@ -9460,6 +9502,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         {
           "description": "Shorthand for \`{ \\"field\\": ... }\`.",
           "default": "",
+          "examples": [
+            "mapq",
+            "identity",
+            "dnds",
+            "syntenicDepth"
+          ],
           "allOf": [
             {
               "$ref": "#/$defs/PlainString"
@@ -9505,7 +9553,13 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                     "errorMessage": "is a color, and a bare string is the field. To paint every feature it, write { \\"value\\": <the color> }"
                   }
                 ]
-              }
+              },
+              "examples": [
+                "mapq",
+                "identity",
+                "dnds",
+                "syntenicDepth"
+              ]
             },
             "scale": {
               "if": {
@@ -10156,6 +10210,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         {
           "description": "Shorthand for \`{ \\"field\\": ... }\`.",
           "default": "",
+          "examples": [
+            "score"
+          ],
           "allOf": [
             {
               "$ref": "#/$defs/FeatureField"
@@ -10201,7 +10258,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                     "errorMessage": "is a color, and a bare string is the field. To paint every feature it, write { \\"value\\": <the color> }"
                   }
                 ]
-              }
+              },
+              "examples": [
+                "score"
+              ]
             },
             "scale": {
               "if": {
@@ -13025,6 +13085,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         {
           "description": "Shorthand for \`{ \\"field\\": ... }\`.",
           "default": "r2",
+          "examples": [
+            "r2",
+            "dprime"
+          ],
           "allOf": [
             {
               "enum": [
@@ -13067,7 +13131,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                     "errorMessage": "is a color, and a bare string is the field. To paint every feature it, write { \\"value\\": <the color> }"
                   }
                 ]
-              }
+              },
+              "examples": [
+                "r2",
+                "dprime"
+              ]
             },
             "scale": {
               "if": {
@@ -14355,6 +14423,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "anyOf": [
         {
           "description": "Shorthand for \`{ \\"field\\": ... }\`.",
+          "examples": [
+            "identity",
+            "refNameRank"
+          ],
           "allOf": [
             {
               "enum": [
@@ -14405,7 +14477,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                     "errorMessage": "is a color, and a bare string is the field. To paint every feature it, write { \\"value\\": <the color> }"
                   }
                 ]
-              }
+              },
+              "examples": [
+                "identity",
+                "refNameRank"
+              ]
             },
             "scale": {
               "if": {
@@ -15107,6 +15183,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         {
           "description": "Shorthand for \`{ \\"field\\": ... }\`.",
           "default": "observed",
+          "examples": [
+            "observed",
+            "observed/expected",
+            "observed/control"
+          ],
           "allOf": [
             {
               "enum": [
@@ -15151,7 +15232,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                     "errorMessage": "is a color, and a bare string is the field. To paint every feature it, write { \\"value\\": <the color> }"
                   }
                 ]
-              }
+              },
+              "examples": [
+                "observed",
+                "observed/expected",
+                "observed/control"
+              ]
             },
             "scale": {
               "if": {
@@ -27853,6 +27939,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         {
           "description": "Shorthand for \`{ \\"field\\": ... }\`.",
           "default": "",
+          "examples": [
+            "mapq",
+            "identity",
+            "dnds",
+            "syntenicDepth"
+          ],
           "allOf": [
             {
               "$ref": "#/$defs/PlainString"
@@ -27898,7 +27990,13 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                     "errorMessage": "is a color, and a bare string is the field. To paint every feature it, write { \\"value\\": <the color> }"
                   }
                 ]
-              }
+              },
+              "examples": [
+                "mapq",
+                "identity",
+                "dnds",
+                "syntenicDepth"
+              ]
             },
             "scale": {
               "if": {
