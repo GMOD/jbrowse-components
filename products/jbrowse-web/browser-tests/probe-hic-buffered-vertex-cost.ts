@@ -280,7 +280,7 @@ async function measureLocus(page: Page, loc: string) {
       '[data-testid="hic_canvas"]',
     ) as HTMLCanvasElement | null
     return {
-      binsize: display.effectiveResolution,
+      binsize: display.binSize,
       bpPerPx: view.bpPerPx,
       visibleBp: view.visibleBp,
       bufferedBp: view.staticBlocks.contentBlocks.reduce(

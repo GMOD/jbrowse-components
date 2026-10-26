@@ -9,19 +9,19 @@ digraph hic_request {
   listed -> terminal [label=" no"]
   listed -> sorted   [label=" yes"]
   terminal [label="setError"]
-  sorted [label="availableResolutions,\nascending"]
+  sorted [label="availableBinSizes,\nascending"]
 
   qualifies [label="binSize <= 2 * bpPerPx"]
   sorted -> qualifies
   qualifies -> auto   [label=" some"]
   qualifies -> finest [label=" none"]
-  auto   [label="autoResolutionIdx"]
+  auto   [label="autoBinSizeIdx"]
   finest [label="the finest binsize"]
 
   bias [label="- data.resolution, clamped"]
   auto -> bias  finest -> bias
   bias -> effective
-  effective [label="effectiveResolution", style=bold]
+  effective [label="binSize", style=bold]
 
   selected [label="data.normalization"]
   offered [label="the file offers it"]

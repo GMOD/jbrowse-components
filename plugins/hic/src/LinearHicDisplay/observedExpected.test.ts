@@ -61,7 +61,7 @@ function subMenu(items: MenuItem[], label: string) {
 
 test('observed/expected paints a log ramp diverging at 1, red where enriched', () => {
   const { display } = createDisplay()
-  display.setColorField('observed/expected')
+  display.colorByField('observed/expected')
   expect(display.plot).toEqual({ encoding: { color: 'observed/expected' } })
   expect(display.rpcProps().field).toBe('observed/expected')
   expect(display.colorEncoding).toMatchObject({
@@ -78,18 +78,20 @@ test('observed/expected paints a log ramp diverging at 1, red where enriched', (
   })
 })
 
-test('a new field starts from its own preset', () => {
+// ColorWritesMixin parks the field it leaves, so the counts' own pick
+// survives a trip through a ratio
+test('a new field starts from its own preset, and the old one comes back as it was', () => {
   const { display } = createDisplay()
   display.setColorScheme('viridis')
-  display.setColorField('observed/expected')
+  display.colorByField('observed/expected')
   expect(display.colorScheme).toBe('redblue')
-  display.setColorField('observed')
-  expect(display.colorScheme).toBe('juicebox')
+  display.colorByField('observed')
+  expect(display.colorScheme).toBe('viridis')
 })
 
 test('the key and menu follow the field the file could serve', () => {
   const { display } = createDisplay()
-  display.setColorField('observed/expected')
+  display.colorByField('observed/expected')
   display.setRpcData(payload('observed'))
   expect(display.paintedColorField).toBe('observed')
   expect(display.colorScheme).toBe('juicebox')
@@ -107,7 +109,7 @@ test('the key and menu follow the field the file could serve', () => {
 
 test('a ratio offers no count scale toggles, and names itself in the key', () => {
   const { display } = createDisplay()
-  display.setColorField('observed/expected')
+  display.colorByField('observed/expected')
   display.setRpcData(payload('observed/expected'))
   expect(display.colorScales[0]?.title).toBe('Observed/expected (KR) · 1Kbp')
   expect(display.valueLabel).toBe('Observed/expected (KR)')
@@ -144,7 +146,7 @@ test('picking the field already painted writes nothing', () => {
   display.setColorScheme('viridis')
   const patches: unknown[] = []
   const dispose = onPatch(display.configuration, p => patches.push(p))
-  display.setColorField('observed')
+  display.colorByField('observed')
   dispose()
   expect(patches).toEqual([])
 })

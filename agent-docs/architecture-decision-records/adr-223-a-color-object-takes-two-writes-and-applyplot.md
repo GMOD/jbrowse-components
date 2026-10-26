@@ -55,7 +55,9 @@ display for the same pick.
 ## Consequences
 
 A display whose menus pick a field or a constant composes the mixin, or they
-have nothing to call. Wiggle, Hi-C, LD and the mark display compose none: their
-color UI is a dialog writing `applyPlot` or a one-slot toggle. The removed
+have nothing to call. Wiggle, LD and the mark display compose none: their
+color UI is a dialog writing `applyPlot` or a one-slot toggle. Amended
+2026-10-26: Hi-C's Values menu picks a field, so it composes the mixin, and
+its `setColorField` is `colorByField`. The removed
 actions fail as `is not a function` in a plugin or a script still calling
 them; `reference/PLUGIN_ABI_STABILITY.md` covers the release note.

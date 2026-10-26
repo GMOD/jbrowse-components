@@ -20,29 +20,29 @@ interface HicMenuSelf extends IStateTreeNode {
   colorField: HicColorField
   paintedColorField: HicColorField
   hasControl: boolean
-  setColorField: (field: HicColorField) => void
+  colorByField: (field: string) => void
   colorScaleType: HicColorScale
-  colorFollowsPercentile: boolean
-  saturationQuantile: number
+  colorDomainQuantile: number
+  clipColorDomainQuantile: number
   showLegend: boolean
   heightMode: TriangleHeightMode
   colorScheme: ColorSchemeName
-  hasResolutions: boolean
+  hasBinSizes: boolean
   canStepResolutionFiner: boolean
   canStepResolutionCoarser: boolean
   availableNormalizations: string[] | undefined
   activeNormalization: string
   appliedNormalization: string
-  effectiveResolution: number | undefined
-  resolutionSteps: number
+  binSize: number | undefined
+  resolution: number
   setLogScale: (log: boolean) => void
-  setColorFollowsPercentile: (f: boolean) => void
+  setColorDomainQuantile: (quantile: number) => void
   setShowLegend: (f: boolean) => void
   setHeightMode: (mode: TriangleHeightMode) => void
   setColorScheme: (scheme: ColorSchemeName) => void
-  setSelectedNormalization: (s: string) => void
+  setNormalization: (normalization: string) => void
   stepResolution: (delta: number) => void
-  resetResolution: () => void
+  setResolution: (steps: number) => void
 }
 
 const NORM_HELP: Record<string, string> = {
@@ -54,27 +54,25 @@ const NORM_HELP: Record<string, string> = {
 }
 
 function resolutionMenuItems(self: HicMenuSelf): MenuItem[] {
-  return self.hasResolutions
+  return self.hasBinSizes
     ? [
         makeResolutionSubMenuItem({
           icon: GridOnIcon,
           getState: () => ({
             label:
-              self.effectiveResolution === undefined
-                ? ''
-                : getBpDisplayStr(self.effectiveResolution),
+              self.binSize === undefined ? '' : getBpDisplayStr(self.binSize),
             finerDisabled: !self.canStepResolutionFiner,
             coarserDisabled: !self.canStepResolutionCoarser,
-            resetDisabled: self.resolutionSteps === 0,
+            resetDisabled: self.resolution === 0,
           }),
           onFiner: () => {
-            self.stepResolution(-1)
-          },
-          onCoarser: () => {
             self.stepResolution(1)
           },
+          onCoarser: () => {
+            self.stepResolution(-1)
+          },
           onReset: () => {
-            self.resetResolution()
+            self.setResolution(0)
           },
           resetTitle: 'Back to auto (tracks zoom)',
         }),
@@ -115,11 +113,13 @@ function colorScaleMenuItems(self: HicMenuSelf): MenuItem[] {
   return [
     toggleItem('Log scale', self.colorScaleType !== 'linear', self.setLogScale),
     toggleItem(
-      `Emphasize faint contacts (${percentileName(self.saturationQuantile)} percentile)`,
-      self.colorFollowsPercentile,
-      self.setColorFollowsPercentile,
+      `Emphasize faint contacts (${percentileName(self.clipColorDomainQuantile)} percentile)`,
+      self.colorDomainQuantile < 1,
+      on => {
+        self.setColorDomainQuantile(on ? self.clipColorDomainQuantile : 1)
+      },
       {
-        helpText: `Saturate the color scale at the ${percentileName(self.saturationQuantile)} percentile of the loaded counts instead of their maximum, so faint off-diagonal contacts read more strongly. A domainMax set in Edit plot overrides both.`,
+        helpText: `Saturate the color scale at the ${percentileName(self.clipColorDomainQuantile)} percentile of the loaded counts instead of their maximum, so faint off-diagonal contacts read more strongly. A domainMax set in Edit plot overrides both.`,
       },
     ),
   ]
@@ -173,7 +173,7 @@ function fieldMenuItem(self: HicMenuSelf): MenuItem {
       })),
       paintedColorField,
       field => {
-        self.setColorField(field)
+        self.colorByField(field)
       },
     ),
   }
@@ -202,7 +202,7 @@ function normalizationMenuItems(self: HicMenuSelf): MenuItem[] {
             })),
             appliedNormalization,
             norm => {
-              self.setSelectedNormalization(norm)
+              self.setNormalization(norm)
             },
           ),
         },

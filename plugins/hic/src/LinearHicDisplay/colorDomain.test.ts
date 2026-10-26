@@ -60,7 +60,7 @@ test('an unset top saturates at the percentile, and the key says so', () => {
 
 test('with the percentile off an unset top is the largest count', () => {
   const display = loaded()
-  display.setColorFollowsPercentile(false)
+  display.setColorDomainQuantile(1)
   expect(display.colorDomain).toEqual([0, 400])
   expect(maxLabel(display)).toBe('400')
 })
@@ -68,11 +68,11 @@ test('with the percentile off an unset top is the largest count', () => {
 test('the percentile is the color domain quantile', () => {
   const display = loaded()
   expect(display.configuration.encoding.color.scale.domainQuantile).toBe(0.95)
-  expect(display.saturationQuantile).toBe(0.95)
-  display.setColorFollowsPercentile(false)
+  expect(display.clipColorDomainQuantile).toBe(0.95)
+  display.setColorDomainQuantile(1)
   expect(display.configuration.encoding.color.scale.domainQuantile).toBe(1)
-  expect(display.saturationQuantile).toBe(0.95)
-  display.setColorFollowsPercentile(true)
+  expect(display.clipColorDomainQuantile).toBe(0.95)
+  display.setColorDomainQuantile(display.clipColorDomainQuantile)
   expect(display.configuration.encoding.color.scale.domainQuantile).toBe(0.95)
 })
 

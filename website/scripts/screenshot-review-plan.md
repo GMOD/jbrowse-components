@@ -227,7 +227,7 @@ tolerance ball for "did this figure move".
     record count before believing the result.
   - **The display picks its binsize from the FILE's own resolution list** —
     largest `<= 2*bpPerPx`, falling back to the finest when nothing qualifies
-    (`LinearHicDisplay`'s `availableResolutions`). So a file carrying one
+    (`LinearHicDisplay`'s `availableBinSizes`). So a file carrying one
     resolution degrades rather than breaks when zoomed: it keeps drawing that
     binsize and the stepper offers no finer step. This is also the mechanism
     `data.resolution` steps from.

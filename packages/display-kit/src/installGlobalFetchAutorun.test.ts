@@ -96,7 +96,7 @@ const TestDisplay = types
     // content block declines every display in it, and none of those Retry
     // buttons is dead for a reason a `reload()` could fix
     viewportEmpty: false,
-    // stands in for HiC's `effectiveResolution === undefined`, and read by
+    // stands in for HiC's `binSize === undefined`, and read by
     // NOTHING else — which is what makes it a probe for whether the retry
     // check's reads leak into the autorun's dependency set. See the two
     // dependency-set tests at the bottom.
@@ -362,7 +362,7 @@ describe('installGlobalFetchAutorun', () => {
     expect(fetched.count).toBe(1)
   })
 
-  // HiC (`effectiveResolution !== undefined`) and LD (`showLDTriangle`) both
+  // HiC (`binSize !== undefined`) and LD (`showLDTriangle`) both
   // keep their gate open after loading, which is why reload always worked for
   // them even with the trigger reads under the gate.
   it('refetches on reload() when the gate stays open', async () => {

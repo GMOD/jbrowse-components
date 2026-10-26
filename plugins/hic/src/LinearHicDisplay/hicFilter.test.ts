@@ -39,6 +39,6 @@ test('a control floor says it reads nothing until the field is observed/control'
   expect(display.notices).toEqual([
     "filter: control is the control map's count, which only an encoding.color.field of observed/control reads",
   ])
-  display.setColorField('observed/control')
+  display.colorByField('observed/control')
   expect(display.notices).toEqual([])
 })

@@ -210,7 +210,7 @@ export function takeFetchStarted(self: object) {
  * difference is the point. A two-stage `reload()` bumps the counter, wakes a
  * prerequisite fetch in another autorun, and declines here only until that
  * lands. HiC is the case: the contacts autorun runs first and declines because
- * `effectiveResolution` is still undefined, and the header arriving a moment
+ * `binSize` is still undefined, and the header arriving a moment
  * later wakes it again through the tracked read that declined. So the bump is
  * left outstanding instead of consumed, and the run after the prerequisite
  * lands is the one that has to reach a fetch — if it declines too, the report

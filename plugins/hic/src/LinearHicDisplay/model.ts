@@ -12,18 +12,18 @@ import {
   readFor,
 } from '@jbrowse/core/util/installPrerequisiteFetch'
 import { clipQuantileOf } from '@jbrowse/core/util/quantileExtent'
+import ColorWritesMixin from '@jbrowse/display-kit/ColorWritesMixin'
 import GlobalFetchMixin from '@jbrowse/display-kit/GlobalFetchMixin'
 import LegendMixin from '@jbrowse/display-kit/LegendMixin'
 import MatrixRampMixin from '@jbrowse/display-kit/MatrixRampMixin'
 import PointerHoverMixin from '@jbrowse/display-kit/PointerHoverMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import TriangleMatrixMixin from '@jbrowse/display-kit/TriangleMatrixMixin'
-import { colorForField } from '@jbrowse/display-kit/colorConfigSchema'
 import { installGlobalFetchAutorun } from '@jbrowse/display-kit/installGlobalFetchAutorun'
 import { editPlotMenuItems } from '@jbrowse/display-kit/plotMenu'
 import { rpcArgs } from '@jbrowse/display-kit/rpcArgs'
 import { triangleAxis } from '@jbrowse/display-kit/triangleTransform'
-import { getSnapshot, types } from '@jbrowse/mobx-state-tree'
+import { types } from '@jbrowse/mobx-state-tree'
 import { installUpload } from '@jbrowse/render-core/installUpload'
 
 import { computeCountStats } from '../RenderHicDataRPC/countStats.ts'
@@ -46,7 +46,6 @@ import type { HicTrackConfig, HicTrackConfigModel } from './configSchema.ts'
 import type { HicColorField, HicColorScale } from './hicColorConfigSchema.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
-import type { ColorSlots } from '@jbrowse/core/util/colorScale'
 import type { AdapterRead } from '@jbrowse/core/util/installPrerequisiteFetch'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -112,6 +111,7 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
       GlobalFetchMixin(),
       LegendMixin(),
       MatrixRampMixin(HIC_FIELD_PRESETS),
+      ColorWritesMixin(),
       TriangleMatrixMixin<HicDataResult>(),
       PointerHoverMixin<HicContactItem>(
         (a, b) =>
@@ -150,7 +150,7 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
        * #getter
        * Smallest first, so a positive `data.resolution` is always finer.
        */
-      get availableResolutions(): number[] | undefined {
+      get availableBinSizes(): number[] | undefined {
         return readFor(self, self.fileInfo)?.resolutions
       },
       /**
@@ -164,35 +164,27 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
        * #getter
        * `data.resolution`: binsizes finer than the zoom's pick.
        */
-      get resolutionSteps(): number {
+      get resolution(): number {
         return getConf(self, ['data', 'resolution'])
       },
       /**
        * #getter
        * `encoding.color.scale.domainQuantile`: the quantile of the loaded
-       * counts an unset `domainMax` follows, their maximum at 1.
+       * values an unset `domainMax` follows, their maximum at 1.
        */
-      get colorQuantile(): number {
+      get colorDomainQuantile(): number {
         return getConf(self, ['encoding', 'color', 'scale', 'domainQuantile'])
       },
       /**
        * #getter
-       * Whether an unset `encoding.color.scale.domainMax` saturates at
-       * `colorQuantile` rather than the counts' maximum.
+       * The quantile "Emphasize faint contacts" clips the domain at:
+       * `colorDomainQuantile` while it clips, else the one ticking it
+       * writes. Each fetch asks the worker for this one whichever is drawn,
+       * so the toggle reselects nothing.
        */
-      get colorFollowsPercentile(): boolean {
-        return this.colorQuantile < 1
-      },
-      /**
-       * #getter
-       * The quantile "Emphasize faint contacts" saturates at: `colorQuantile`
-       * while it clips, else the one ticking it writes. Each fetch asks the
-       * worker for this one whichever is drawn, so the toggle reselects
-       * nothing.
-       */
-      get saturationQuantile(): number {
-        return this.colorFollowsPercentile
-          ? this.colorQuantile
+      get clipColorDomainQuantile(): number {
+        return this.colorDomainQuantile < 1
+          ? this.colorDomainQuantile
           : clipQuantileOf(
               getSlotDefinition(
                 self.configuration.encoding.color.scale,
@@ -204,7 +196,7 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
        * #getter
        * `data.normalization`, the one asked for.
        */
-      get selectedNormalization(): string {
+      get normalization(): string {
         return getConf(self, ['data', 'normalization'])
       },
       /**
@@ -240,8 +232,8 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
        * Whether the binsize list has arrived; every resolution control gates
        * on it.
        */
-      get hasResolutions(): boolean {
-        return !!self.availableResolutions?.length
+      get hasBinSizes(): boolean {
+        return !!self.availableBinSizes?.length
       },
       /**
        * #getter
@@ -251,7 +243,7 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
        */
       get activeNormalization(): string {
         const avail = self.availableNormalizations
-        const selected = self.selectedNormalization
+        const selected = self.normalization
         return !avail || avail.includes(selected)
           ? selected
           : (NORMALIZATION_PREFERENCE.find(n => avail.includes(n)) ??
@@ -260,13 +252,13 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
       },
       /**
        * #getter
-       * The loaded counts' `saturationQuantile`: the worker's answer, or after
+       * The loaded values' score at `clipColorDomainQuantile`: the worker's answer, or after
        * an edit a selection over the loaded matrix, so a new percentile
        * refetches nothing. The next fetch asks the worker for the new one.
        */
       get loadedQuantileScore(): number {
         const data = self.rpcData
-        const q = self.saturationQuantile
+        const q = self.clipColorDomainQuantile
         return !data
           ? 0
           : data.quantile === q
@@ -279,7 +271,7 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
       /**
        * #getter
        * What an open end of the color domain follows: the loaded values from
-       * 0, which is where a count's extent starts, to their `colorQuantile`
+       * 0, which is where a count's extent starts, to their `colorDomainQuantile`
        * below 1, else their maximum.
        */
       get colorExtent(): readonly [number, number] {
@@ -288,7 +280,7 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
           0,
           !data
             ? 0
-            : self.colorFollowsPercentile
+            : self.colorDomainQuantile < 1
               ? self.loadedQuantileScore
               : data.maxScore,
         ]
@@ -302,7 +294,7 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
        * pins it.
        */
       get awaitingPrerequisite(): boolean {
-        return !self.hasResolutions
+        return !self.hasBinSizes
       },
       /**
        * #getter
@@ -328,8 +320,8 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
        * The binsize index auto mode picks: the largest at most 2 bp/px, about
        * half a bin per pixel, else the finest.
        */
-      get autoResolutionIdx(): number {
-        const avail = self.availableResolutions
+      get autoBinSizeIdx(): number {
+        const avail = self.availableBinSizes
         if (!avail?.length) {
           return -1
         }
@@ -367,18 +359,15 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
       },
       /**
        * #getter
-       * The index in effect after `resolutionSteps`, clamped so steps set at
+       * The index in effect after `resolution`'s steps, clamped so steps set at
        * another zoom cannot index out of range.
        */
-      get effectiveResolutionIdx(): number {
-        const avail = self.availableResolutions
+      get binSizeIdx(): number {
+        const avail = self.availableBinSizes
         return avail?.length
           ? Math.max(
               0,
-              Math.min(
-                avail.length - 1,
-                self.autoResolutionIdx - self.resolutionSteps,
-              ),
+              Math.min(avail.length - 1, self.autoBinSizeIdx - self.resolution),
             )
           : -1
       },
@@ -394,23 +383,21 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
       /**
        * #getter
        */
-      get effectiveResolution(): number | undefined {
-        return self.availableResolutions?.[self.effectiveResolutionIdx]
+      get binSize(): number | undefined {
+        return self.availableBinSizes?.[self.binSizeIdx]
       },
       /**
        * #getter
        */
       get canStepResolutionFiner(): boolean {
-        return self.effectiveResolutionIdx > 0
+        return self.binSizeIdx > 0
       },
       /**
        * #getter
        */
       get canStepResolutionCoarser(): boolean {
-        const avail = self.availableResolutions
-        return (
-          avail !== undefined && self.effectiveResolutionIdx < avail.length - 1
-        )
+        const avail = self.availableBinSizes
+        return avail !== undefined && self.binSizeIdx < avail.length - 1
       },
       /**
        * #getter
@@ -428,9 +415,9 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
        */
       get viewSignature(): string | undefined {
         const blocks = self.staticBlockSignature
-        const resolution = self.effectiveResolution
-        return blocks !== undefined && resolution !== undefined
-          ? `${blocks}|res:${resolution}`
+        const { binSize } = self
+        return blocks !== undefined && binSize !== undefined
+          ? `${blocks}|res:${binSize}`
           : undefined
       },
       /**
@@ -491,23 +478,6 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
       },
       /**
        * #action
-       * What the cells show; a new field starts from its own preset, so a
-       * count's scheme or pinned top does not carry onto a ratio.
-       */
-      setColorField(field: HicColorField) {
-        if (field !== self.colorField) {
-          setConf(
-            self,
-            ['encoding', 'color'],
-            colorForField(
-              getSnapshot<ColorSlots>(self.configuration.encoding.color),
-              field,
-            ),
-          )
-        }
-      },
-      /**
-       * #action
        * The Log scale toggle: `encoding.color.scale.type` symlog, which keeps
        * every nonzero count visible, or unset for `observed`'s linear preset.
        */
@@ -521,18 +491,18 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
       /**
        * #action
        */
-      setColorFollowsPercentile(f: boolean) {
+      setColorDomainQuantile(quantile: number) {
         setConf(
           self,
           ['encoding', 'color', 'scale', 'domainQuantile'],
-          f ? self.saturationQuantile : 1,
+          quantile,
         )
       },
       /**
        * #action
        */
-      setSelectedNormalization(f: string) {
-        setConf(self, ['data', 'normalization'], f)
+      setNormalization(normalization: string) {
+        setConf(self, ['data', 'normalization'], normalization)
       },
       /**
        * #action
@@ -542,24 +512,21 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
       },
       /**
        * #action
+       * `data.resolution`, binsizes finer than the zoom's pick.
        */
-      resetResolution() {
-        setConf(self, ['data', 'resolution'], 0)
+      setResolution(steps: number) {
+        setConf(self, ['data', 'resolution'], steps)
       },
       /**
        * #action
-       * Lock to `availableResolutions[idx]`, clamped, stored as an offset from
+       * Lock to `availableBinSizes[idx]`, clamped, stored as an offset from
        * the auto pick so the choice keeps its meaning across zoom.
        */
-      setResolutionIdx(idx: number) {
-        const avail = self.availableResolutions
+      setBinSizeIdx(idx: number) {
+        const avail = self.availableBinSizes
         if (avail?.length) {
           const clamped = Math.max(0, Math.min(avail.length - 1, idx))
-          setConf(
-            self,
-            ['data', 'resolution'],
-            self.autoResolutionIdx - clamped,
-          )
+          setConf(self, ['data', 'resolution'], self.autoBinSizeIdx - clamped)
         }
       },
     }))
@@ -568,17 +535,18 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
        * #action
        * Lock to a binsize the file offers; any other is ignored.
        */
-      setResolution(binSize: number) {
-        const idx = self.availableResolutions?.indexOf(binSize) ?? -1
+      setBinSize(binSize: number) {
+        const idx = self.availableBinSizes?.indexOf(binSize) ?? -1
         if (idx !== -1) {
-          self.setResolutionIdx(idx)
+          self.setBinSizeIdx(idx)
         }
       },
       /**
        * #action
+       * `delta` binsizes finer, clamped to the file's.
        */
       stepResolution(delta: number) {
-        self.setResolutionIdx(self.effectiveResolutionIdx + delta)
+        self.setBinSizeIdx(self.binSizeIdx - delta)
       },
     }))
     .views(self => {
@@ -661,7 +629,7 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
 
         installGlobalFetchAutorun(self, {
           prepare: () => {
-            const resolution = self.effectiveResolution
+            const resolution = self.binSize
             const blocks = self.host.staticBlocks.contentBlocks
             if (resolution === undefined || !blocks.length) {
               return undefined
@@ -681,7 +649,7 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
               axisBlocks,
               originBp,
               resolution,
-              quantile: self.saturationQuantile,
+              quantile: self.clipColorDomainQuantile,
             }),
           commit: result => {
             self.setRpcData(result)

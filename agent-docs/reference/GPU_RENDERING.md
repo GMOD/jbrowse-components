@@ -68,7 +68,7 @@ walks this checklist; keep it in step with any change here.
     `afterAttach` via `installGlobalFetchAutorun(self, { prepare, run, commit,
     delay, name })`. `prepare` runs synchronously and returning `undefined` is the
     display's gate, so what it read to decline stays tracked (HiC declines until
-    `effectiveResolution` lands); `run` owns every await and writes nothing;
+    `binSize` lands); `run` owns every await and writes nothing;
     `commit` writes while the fetch is still current.
   - `RenderLifecycleMixin()` directly only when neither fetch surface is needed.
   - A cached `renderState` view; `startRenderingBackend` calling `installUpload`
