@@ -60,6 +60,7 @@ Page: https://jbrowse.org/jb2/docs/tutorials/analyze_trio/
 - https://hgdownload.soe.ucsc.edu/gbdb/hg38/1000Genomes/trio/HG02024_VN049_KHV/HG02024_VN049_KHVTrio.chr1.vcf.gz
 - https://jbrowse.org/code/jb2/main/test_data/config_demo.json
 - https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz
+- https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/ncbi_refseq/GRCh38_latest_genomic.sort.gff.gz
 
 ## Methylation (bisulfite)
 
@@ -82,6 +83,7 @@ Page: https://jbrowse.org/jb2/docs/tutorials/bxd_qtl/
 - https://jbrowse.org/code/jb2/main/test_data/config_bxd.json
 - https://jbrowse.org/demos/bxd/bxd_painting.bed.gz
 - https://jbrowse.org/demos/bxd/mm10.ncbiRefSeq.sorted.gtf.gz
+- https://jbrowse.org/demos/bxd/mm10.ncbiRefSeq.sorted.gtf.gz.tbi
 - https://jbrowse.org/genomes/mm10/fasta/mm10.fa.gz
 - https://jbrowse.org/ucsc/mm10/cytoBandIdeo.bed.gz
 
@@ -93,6 +95,8 @@ Page: https://jbrowse.org/jb2/docs/tutorials/cancer_sv/
 
 - https://jbrowse.org/demos/cancer_sv/config.json
 - https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz
+- https://jbrowse.org/ucsc/hg38/ncbiRefSeq.gff.gz
+- https://jbrowse.org/ucsc/hg38/ncbiRefSeq.gff.gz.csi
 - https://ont-open-data.s3.amazonaws.com/colo829_2024.03/basecalls/colo829bl/sup/PAU59807.d052sup4305mCG_5hmCGvHg38.bam
 - https://ont-open-data.s3.amazonaws.com/colo829_2024.03/wf_somatic_variation/sup/COLO829.wf-somatic-sv.vcf.gz
 - https://ont-open-data.s3.amazonaws.com/colo829_2024.03/wf_somatic_variation/sup/COLO829/qc/coverage/COLO829_normal.regions.bed.gz
@@ -157,6 +161,7 @@ Page: https://jbrowse.org/jb2/docs/tutorials/cnv_cgiab/
 - https://jbrowse.org/demos/cgiab/HG008-T_indexcov.bw
 - https://jbrowse.org/demos/cgiab/config.json
 - https://jbrowse.org/genomes/GRCh38/mane/MANE.GRCh38.v1.4.refseq.bb
+- https://jbrowse.org/ucsc/hg38/hg38.cytoBand.txt.gz
 
 ## Display settings
 
@@ -174,6 +179,9 @@ Page: https://jbrowse.org/jb2/docs/tutorials/dog10k_lof/
 
 - https://hgdownload.soe.ucsc.edu/goldenPath/canFam4/bigZips/canFam4.2bit
 - https://jbrowse.org/code/jb2/main/test_data/dog10k/config.json
+- https://jbrowse.org/code/jb2/main/test_data/dog10k/dog10k_cyp1a2_cpg.bed.gz
+- https://jbrowse.org/ucsc/canFam4/ncbiRefSeq.gff.gz
+- https://jbrowse.org/ucsc/canFam4/ncbiRefSeq.gff.gz.csi
 - https://kiddlabshare.med.umich.edu/dog10K/SNP_and_indel_calls_2021-10-17/AutoAndXPAR.SNPs.vqsr99.vcf.gz
 
 ## A selected haplotype (Dog10K)
@@ -184,6 +192,8 @@ Page: https://jbrowse.org/jb2/docs/tutorials/dog10k_selection/
 
 - https://hgdownload.soe.ucsc.edu/goldenPath/canFam4/bigZips/canFam4.2bit
 - https://jbrowse.org/code/jb2/main/test_data/dog10k/config.json
+- https://jbrowse.org/ucsc/canFam4/ncbiRefSeq.gff.gz
+- https://jbrowse.org/ucsc/canFam4/ncbiRefSeq.gff.gz.csi
 - https://kiddlabshare.med.umich.edu/dog10K/SNP_and_indel_calls_2021-10-17/AutoAndXPAR.SNPs.vqsr99.vcf.gz
 - https://kiddlabshare.med.umich.edu/dog10K/phased-imputation-panel/AutoAndXPAR.Dog10K.phased.bcf
 
@@ -196,6 +206,7 @@ Page: https://jbrowse.org/jb2/docs/tutorials/dog10k_svs/
 - https://hgdownload.soe.ucsc.edu/goldenPath/canFam4/bigZips/canFam4.2bit
 - https://jbrowse.org/code/jb2/main/test_data/dog10k/config.json
 - https://jbrowse.org/ucsc/canFam4/ncbiRefSeq.gff.gz
+- https://jbrowse.org/ucsc/canFam4/ncbiRefSeq.gff.gz.csi
 - https://kiddlabshare.med.umich.edu/dog10K/Manta-SV_2022-03-28/SV-genotype-v2.merge.agg_only.08032022.vcf.gz
 - https://zenodo.org/api/records/14968874/files/Dog10k_manta_paragraph.vcf.gz
 
@@ -359,6 +370,7 @@ Page: https://jbrowse.org/jb2/docs/tutorials/hic_structural_variants/
 - https://encode-public.s3.amazonaws.com/2021/10/28/5b488af0-df49-4b9b-9feb-8ad671b7eaef/ENCFF661LPK.bigWig
 - https://encode-public.s3.amazonaws.com/2021/10/28/6f0cc163-86c7-4a68-baac-65af90f5a90d/ENCFF053VBX.hic
 - https://encode-public.s3.amazonaws.com/2021/10/28/70e6944c-1212-45f9-855c-dbc74e9a21f5/ENCFF712NKX.bedpe.gz
+- https://hgdownload.soe.ucsc.edu/gbdb/hg38/mane/mane.1.0.bb
 - https://jbrowse.org/code/jb2/main/test_data/config_demo.json
 - https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz
 
@@ -381,6 +393,8 @@ Page: https://jbrowse.org/jb2/docs/tutorials/k562_fusions/
 - https://jbrowse.org/demos/cancer_sv/K562.star-fusion.tsv
 - https://jbrowse.org/demos/cancer_sv/config.json
 - https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz
+- https://jbrowse.org/ucsc/hg38/ncbiRefSeq.gff.gz
+- https://jbrowse.org/ucsc/hg38/ncbiRefSeq.gff.gz.csi
 - https://www.encodeproject.org/files/ENCFF092NLB/@@download/ENCFF092NLB.bam
 - https://www.encodeproject.org/files/ENCFF433YKW/@@download/ENCFF433YKW.bam
 - https://www.encodeproject.org/files/ENCFF475XQX/@@download/ENCFF475XQX.bam
@@ -394,6 +408,7 @@ Precompute an LD triangle with PLINK, and cut a window that shows the block's ed
 Page: https://jbrowse.org/jb2/docs/tutorials/ld_human/
 
 - https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/working/20220422_3202_phased_SNV_INDEL_SV/1kGP_high_coverage_Illumina.chr2.filtered.SNV_INDEL_SV_phased_panel.vcf.gz
+- https://hgdownload.soe.ucsc.edu/gbdb/hg38/bbi/clinvar/clinvarMain.bb
 - https://hgdownload.soe.ucsc.edu/gbdb/hg38/recombRate/recombAvg.bw
 - https://jbrowse.org/demos/popgen/lct_1kg38_chr2_6pop.vcf.gz
 - https://jbrowse.org/demos/popgen/lct_1kg38_chr2_af_CEU.bw
@@ -406,6 +421,8 @@ Page: https://jbrowse.org/jb2/docs/tutorials/ld_human/
 - https://jbrowse.org/demos/popgen/lct_1kg38_chr2_fst_eur_vs_rest_scan.bw
 - https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz
 - https://jbrowse.org/ucsc/hg38/config.json
+- https://jbrowse.org/ucsc/hg38/ncbiRefSeqCurated.gff.gz
+- https://jbrowse.org/ucsc/hg38/ncbiRefSeqCurated.gff.gz.csi
 
 ## LD across an inversion (mosquitoes)
 
@@ -476,11 +493,10 @@ Page: https://jbrowse.org/jb2/docs/tutorials/methylation/
 - https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz
 - https://jbrowse.org/ucsc/hg38/cpgIslandExt.bed.gz
 - https://jbrowse.org/ucsc/hg38/cpgIslandExt.bed.gz.csi
-- https://jbrowse.org/ucsc/hg38/ncbiRefSeq.gff.gz
-- https://jbrowse.org/ucsc/hg38/ncbiRefSeq.gff.gz.csi
 - https://ont-open-data.s3.amazonaws.com/giab_2023.05/analysis/hg002/sup/PAO83395.pass.cram
 - https://ont-open-data.s3.amazonaws.com/giab_2025.01/analysis/wf-human-variation/sup/HG002/PAW70337/output/SAMPLE.wf_mods.1.bedmethyl.gz
 - https://ont-open-data.s3.amazonaws.com/giab_2025.01/analysis/wf-human-variation/sup/HG002/PAW70337/output/SAMPLE.wf_mods.2.bedmethyl.gz
+- https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/ncbi_refseq/GRCh38_latest_genomic.sort.gff.gz
 
 ## Synteny from an ortholog table (grape, peach, cacao)
 
@@ -616,7 +632,6 @@ Page: https://jbrowse.org/jb2/docs/tutorials/pangenome_hprc_repeats/
 - https://jbrowse.org/demos/hprc/hprc_abca7_cnvtr.vcf.gz
 - https://jbrowse.org/demos/hprc/hprc_abca7_trgt.vcf.gz
 - https://jbrowse.org/demos/hprc/hprc_kiv2_copies_all.vcf.gz
-- https://jbrowse.org/demos/hprc/hprc_samples.tsv
 - https://jbrowse.org/demos/hprc/lpa_uniprot_domains.bed.gz
 - https://jbrowse.org/pangenome/hprc-grch38/config.json
 - https://zenodo.org/records/8329210/files/adotto_repeats.hg38.bed.gz
@@ -667,6 +682,8 @@ Page: https://jbrowse.org/jb2/docs/tutorials/population_cnv/
 - https://jbrowse.org/genomes/GRCh38/1000g/kidd_lab_cnv/PUR/HG01177.qm2.CN.1k.bw
 - https://jbrowse.org/genomes/GRCh38/1000g/kidd_lab_cnv/PUR/HG01395.qm2.CN.1k.bw
 - https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz
+- https://jbrowse.org/ucsc/hg38/ncbiRefSeq.gff.gz
+- https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/ncbi_refseq/GRCh38_latest_genomic.sort.gff.gz
 
 ## Selection scans (Drosophila DGRP)
 
@@ -685,7 +702,8 @@ Page: https://jbrowse.org/jb2/docs/tutorials/population_genomics/
 - https://jbrowse.org/demos/popgen/sites_all.bw
 - https://jbrowse.org/demos/popgen/tajimad_all.bw
 - https://jbrowse.org/ucsc/dm6/config.json
-- https://jbrowse.org/ucsc/dm6/ncbiRefSeq.gff.gz
+- https://jbrowse.org/ucsc/dm6/ncbiRefSeqCurated.gff.gz
+- https://jbrowse.org/ucsc/dm6/ncbiRefSeqCurated.gff.gz.csi
 - https://resources.aertslab.org/DGRP2/NCSU/final/dm6/DGRP2.source_NCSU.dm6.final.SNPs_only.vcf.gz
 
 ## Synteny from gene symbols (eight primates)
@@ -777,6 +795,8 @@ Page: https://jbrowse.org/jb2/docs/tutorials/read_marks/
 - https://jbrowse.org/demos/read_marks/NA12878.chr20.discordant_pairs.bed.gz
 - https://jbrowse.org/demos/read_marks/config.json
 - https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz
+- https://jbrowse.org/ucsc/hg38/ncbiRefSeq.gff.gz
+- https://jbrowse.org/ucsc/hg38/ncbiRefSeq.gff.gz.csi
 - https://s3.amazonaws.com/1000genomes/1000G_2504_high_coverage/data/ERR3239334/NA12878.final.cram
 
 ## RNA-seq visualization
@@ -786,6 +806,8 @@ Spliced reads, splice arcs, and strand-specific coverage in RNA-seq
 Page: https://jbrowse.org/jb2/docs/tutorials/rnaseq/
 
 - https://jbrowse.org/code/jb2/main/test_data/config_demo.json
+- https://jbrowse.org/demos/circrna/SRR1636985.backsplice.bed.gz
+- https://jbrowse.org/demos/circrna/SRR1636985.slice.bam
 - https://jbrowse.org/demos/circrna/config.json
 - https://jbrowse.org/demos/rnaseq/rnaseq_junctions.bed.gz
 - https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz
@@ -806,6 +828,7 @@ Page: https://jbrowse.org/jb2/docs/tutorials/scatac_pseudobulk/
 - https://jbrowse.org/demos/scatac_pbmc5k/CD8_Naive.bw
 - https://jbrowse.org/demos/scatac_pbmc5k/Naive_B.bw
 - https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz
+- https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/ncbi_refseq/GRCh38_latest_genomic.sort.gff.gz
 
 ## Single-cell RNA pseudobulk
 
@@ -819,6 +842,7 @@ Page: https://jbrowse.org/jb2/docs/tutorials/scrna_pseudobulk/
 - https://jbrowse.org/demos/scrna_pbmc5k/CD4_T.bw
 - https://jbrowse.org/demos/scrna_pbmc5k/CD8_T.bw
 - https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz
+- https://jbrowse.org/ucsc/hg38/ncbiRefSeq.gff.gz
 
 ## Selection pressure between two genomes (dN/dS)
 
@@ -858,6 +882,7 @@ Page: https://jbrowse.org/jb2/docs/tutorials/sv_multisamples/
 - https://jbrowse.org/demos/1000g/1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf.gz
 - https://jbrowse.org/demos/1000g/config.json
 - https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz
+- https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/ncbi_refseq/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz
 
 ## Structural variants (Cancer GIAB) part 1: breakpoints
 
@@ -920,6 +945,7 @@ Plot somatic copy number across a cohort of tumors, one row per sample
 
 Page: https://jbrowse.org/jb2/docs/tutorials/tcga_cohort_cnv/
 
+- https://ftp.ncbi.nlm.nih.gov/refseq/MANE/trackhub/data/release_1.4/MANE.GRCh38.v1.4.refseq.bb
 - https://jbrowse.org/demos/1000g/config.json
 - https://jbrowse.org/demos/tcga/tcga_brca_cnv.bed.gz
 - https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz
@@ -930,6 +956,7 @@ Read somatic point mutations across a cohort of tumors as a genotype matrix, fac
 
 Page: https://jbrowse.org/jb2/docs/tutorials/tcga_cohort_mutations/
 
+- https://ftp.ncbi.nlm.nih.gov/refseq/MANE/trackhub/data/release_1.4/MANE.GRCh38.v1.4.refseq.bb
 - https://jbrowse.org/demos/1000g/config.json
 - https://jbrowse.org/demos/tcga/tcga_brca_clinical.tsv
 - https://jbrowse.org/demos/tcga/tcga_brca_mutations.vcf.gz
