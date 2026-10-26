@@ -661,7 +661,7 @@ jobs:
         run: |
           DIST=products/${{ matrix.dir }}/examples-site/dist
           DEST=s3://jbrowse.org/storybook/${{ matrix.prefix }}
-          aws s3 sync --size-only \
+          aws s3 sync --size-only --exclude "*.map" \
             --cache-control "public, max-age=31536000, immutable" \
             "$DIST/_astro" "$DEST/_astro"
           aws s3 cp --recursive --exclude="_astro/*" "$DIST" "$DEST"
