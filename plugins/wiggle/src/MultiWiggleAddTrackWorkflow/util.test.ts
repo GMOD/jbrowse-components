@@ -15,6 +15,8 @@ import {
   sessionGuessers,
   stackAssemblies,
   stackKind,
+  subadaptersOf,
+  trackNameOf,
 } from './util.ts'
 
 import type { Member } from './util.ts'
@@ -196,6 +198,28 @@ describe('stackKind', () => {
 
   it('is undefined with no members', () => {
     expect(stackKind([])).toBeUndefined()
+  })
+})
+
+describe('subadaptersOf', () => {
+  it('names each row as the selection dialog lists its track', () => {
+    const tracks = [
+      {
+        trackId: 'unnamed_track',
+        type: 'QuantitativeTrack',
+        adapter: { type: 'BigWigAdapter', uri: 'https://x/a.bw' },
+      },
+      {
+        trackId: 't2',
+        name: 'Named',
+        type: 'QuantitativeTrack',
+        adapter: { type: 'BigWigAdapter', uri: 'https://x/b.bw' },
+      },
+    ]
+    expect(subadaptersOf(tracks).map(s => s.source)).toEqual(
+      tracks.map(trackNameOf),
+    )
+    expect(tracks.map(trackNameOf)).toEqual(['unnamed_track', 'Named'])
   })
 })
 

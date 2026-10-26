@@ -6,12 +6,12 @@ import {
   getSession,
   isSessionWithAddSessionTrack,
 } from '@jbrowse/core/util'
-import { toTrackConfigEntry } from '@jbrowse/core/util/tracks'
 
 import {
   addMultiRowTrack,
   stackAssemblies,
   stackKindOf,
+  subadaptersOf,
 } from '../MultiWiggleAddTrackWorkflow/util.ts'
 
 import type { StackKind } from '../MultiWiggleAddTrackWorkflow/util.ts'
@@ -55,12 +55,7 @@ function makeTrack({
       // that omit a slot at its default, so each read supplies the default
       assemblyNames: stackAssemblies(tracks, session.assemblyManager)
         .assemblyNames,
-      adapter: {
-        subadapters: tracks.map(toTrackConfigEntry).map(c => ({
-          ...(c.adapter as Record<string, unknown>),
-          source: (c.name as string | undefined) ?? '',
-        })),
-      },
+      adapter: { subadapters: subadaptersOf(tracks) },
       // #endregion
     })
   }

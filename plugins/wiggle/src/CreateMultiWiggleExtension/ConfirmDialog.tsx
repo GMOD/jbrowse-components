@@ -12,15 +12,12 @@ import {
   stackAssemblies,
   stackKind,
   stackKindOf,
+  trackNameOf,
 } from '../MultiWiggleAddTrackWorkflow/util.ts'
 
 import type { StackKind } from '../MultiWiggleAddTrackWorkflow/util.ts'
 import type { AnyTrackConfig } from '@jbrowse/core/configuration'
 import type { AssemblyNameResolver } from '@jbrowse/core/util/tracks'
-
-function nameOf(track: AnyTrackConfig) {
-  return (track.name as string | undefined) || track.trackId
-}
 
 const ConfirmDialog = observer(function ConfirmDialog({
   tracks: initialTracks,
@@ -58,7 +55,7 @@ const ConfirmDialog = observer(function ConfirmDialog({
       {leftOut.length > 0 ? (
         <Alert severity="warning">
           Left out, since only quantitative and feature tracks stack:{' '}
-          {leftOut.map(t => nameOf(t)).join(', ')}
+          {leftOut.map(t => trackNameOf(t)).join(', ')}
         </Alert>
       ) : null}
       {kind === 'mixed' ? (
@@ -78,8 +75,8 @@ const ConfirmDialog = observer(function ConfirmDialog({
           {
             field: 'name',
             headerName: 'Name',
-            width: measureGridWidth(tracks.map(t => nameOf(t))),
-            renderCell: ({ row }) => <SanitizedHTML html={nameOf(row)} />,
+            width: measureGridWidth(tracks.map(t => trackNameOf(t))),
+            renderCell: ({ row }) => <SanitizedHTML html={trackNameOf(row)} />,
           },
           {
             field: 'remove',

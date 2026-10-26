@@ -285,12 +285,7 @@ reads each entry's assemblies that way:
 // that omit a slot at its default, so each read supplies the default
 assemblyNames: stackAssemblies(tracks, session.assemblyManager)
   .assemblyNames,
-adapter: {
-  subadapters: tracks.map(toTrackConfigEntry).map(c => ({
-    ...(c.adapter as Record<string, unknown>),
-    source: (c.name as string | undefined) ?? '',
-  })),
-},
+adapter: { subadapters: subadaptersOf(tracks) },
 ```
 
 A TypeScript error "Property 'configuration' is missing" is the signal that you

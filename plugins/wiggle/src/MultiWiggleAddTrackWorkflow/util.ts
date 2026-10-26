@@ -10,6 +10,7 @@ import {
   getConfAssemblyNamesOrNone,
   guessAdapter,
   guessTrackType,
+  toTrackConfigEntry,
 } from '@jbrowse/core/util/tracks'
 
 import {
@@ -87,6 +88,17 @@ export function stackKindOf(trackType: string): StackKind | undefined {
     : trackType === 'FeatureTrack'
       ? 'feature'
       : undefined
+}
+
+export function trackNameOf(track: AnyTrackConfig) {
+  return (track.name as string | undefined) || track.trackId
+}
+
+export function subadaptersOf(tracks: AnyTrackConfig[]) {
+  return tracks.map(track => ({
+    ...(toTrackConfigEntry(track).adapter as Record<string, unknown>),
+    source: trackNameOf(track),
+  }))
 }
 
 function isBlob(location: FileLocation) {
