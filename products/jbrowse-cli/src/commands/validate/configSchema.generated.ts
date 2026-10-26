@@ -13003,7 +13003,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "x-closed": true,
           "properties": {
             "type": {
-              "description": "bar, point, line or span.",
+              "description": "bar, point, line or rect.",
               "default": "bar",
               "if": {
                 "type": "null"

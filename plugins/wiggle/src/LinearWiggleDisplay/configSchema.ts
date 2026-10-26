@@ -104,7 +104,7 @@ const linearWiggleDisplayConfigSchema = ConfigurationSchema(
      * `line` a line through the scores, stepped or as `interpolate` says, and
      * `rect` a strip whose color is the score. The track menu's Plot type
      * writes it. v4's `defaultRendering` loads as its `mark`: `xyplot` a bar,
-     * `scatter` a point, `density` a span, `line` a stepped line and
+     * `scatter` a point, `density` a rect, `line` a stepped line and
      * `linecenter` a linear one.
      * A [](/docs/config/wigglemark) object, or its `type` alone.
      * #example

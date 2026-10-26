@@ -159,7 +159,7 @@ export async function wiggleTables(
   const origin: number = readConfObject(conf, 'origin')
   const setting = wiggleColorSettingOf(conf.encoding.color)
   const wiggleColor = resolveWiggleColor(
-    wiggleColorEncoding(paintedWiggleColor(setting, { span: density, origin })),
+    wiggleColorEncoding(paintedWiggleColor(setting, { rect: density, origin })),
     origin,
   )
 

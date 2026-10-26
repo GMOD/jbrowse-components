@@ -33,7 +33,7 @@ export const wiggleMarkConfigSchema = ConfigurationSchema(
       type: 'stringEnum',
       model: types.enumeration('WiggleMarkType', [...WIGGLE_MARK_NAMES]),
       defaultValue: 'bar',
-      description: 'bar, point, line or span',
+      description: 'bar, point, line or rect',
     },
     /**
      * #slot

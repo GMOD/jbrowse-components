@@ -136,7 +136,7 @@ export function wiggleColorEncoding(color: ColorSetting) {
 }
 
 /** The white a heatmap fades from at the `origin`. */
-export const WIGGLE_SPAN_MIDDLE = '#ffffff'
+export const WIGGLE_RECT_MIDDLE = '#ffffff'
 
 /**
  * The two colors a score color with no `scale.type` names, below and above
@@ -164,10 +164,10 @@ export function wigglePairOf({ value, scale }: ColorSetting) {
  */
 export function paintedWiggleColor<C extends ColorSetting>(
   color: C,
-  { span, origin }: { span: boolean; origin: number },
+  { rect, origin }: { rect: boolean; origin: number },
 ): C {
   const implied = withImpliedField(color, WIGGLE_IMPLIED_FIELD)
-  if (!span || color.value !== undefined || color.scale.type) {
+  if (!rect || color.value !== undefined || color.scale.type) {
     return implied
   }
   const pair = wigglePairOf(color)
@@ -178,7 +178,7 @@ export function paintedWiggleColor<C extends ColorSetting>(
       type: 'linear',
       ...(pair
         ? {
-            range: [pair.below, WIGGLE_SPAN_MIDDLE, pair.above],
+            range: [pair.below, WIGGLE_RECT_MIDDLE, pair.above],
             domainMid: color.scale.domainMid ?? origin,
           }
         : {}),
@@ -193,7 +193,7 @@ export function paintedWiggleColor<C extends ColorSetting>(
  */
 export function wiggleColorProblems(color: ColorSetting, rendering: string) {
   const encoding = wiggleColorEncoding(
-    paintedWiggleColor(color, { span: rendering === 'density', origin: 0 }),
+    paintedWiggleColor(color, { rect: rendering === 'density', origin: 0 }),
   )
   const cuts = thresholdCutsOf(encoding).length
   return [

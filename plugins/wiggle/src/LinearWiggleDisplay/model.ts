@@ -288,7 +288,7 @@ export default function stateModelFactory(
        */
       get effectiveColor(): ColorSetting {
         return paintedWiggleColor(self.colorSetting, {
-          span: self.isDensityMode,
+          rect: self.isDensityMode,
           origin: self.origin,
         })
       },
