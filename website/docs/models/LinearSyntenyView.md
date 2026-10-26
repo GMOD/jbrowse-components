@@ -54,11 +54,11 @@ Each section ends with the members a composed model contributes, linked to the p
 | <span id="property-views">**views**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>views: types.array( pluginManager.getViewType('LinearGenomeView…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>views: types.array(&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;pluginManager.getViewType('LinearGenomeView').stateModel,&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;)</code></pre></dialog></span> | N genome rows, with N-1 synteny `levels` between adjacent pairs (see reconcileLevels). |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>8 inherited properties from 6 models</summary>
+<summary>9 inherited properties from 6 models</summary>
 
 From [SyntenyFadeMixin](../syntenyfademixin): <span id="property-render">[`render`](../syntenyfademixin#property-render)</span>
 
-From [SyntenyViewMixin](../syntenyviewmixin): <span id="property-data">[`data`](../syntenyviewmixin#property-data)</span>
+From [SyntenyViewMixin](../syntenyviewmixin): <span id="property-data">[`data`](../syntenyviewmixin#property-data)</span>, <span id="property-legend">[`legend`](../syntenyviewmixin#property-legend)</span>
 
 From [TrackColorsMixin](../trackcolorsmixin): <span id="property-encoding">[`encoding`](../trackcolorsmixin#property-encoding)</span>, <span id="property-trackcolors">[`trackColors`](../trackcolorsmixin#property-trackcolors)</span>
 
@@ -231,11 +231,11 @@ From [SyntenyFilterMixin](../syntenyfiltermixin): <span id="method-lowerbound">[
 | <span id="action-openincircularsyntenyview">**openInCircularSyntenyView**</span><br><code>() =&gt; void</code> | a circular view of this view's two genomes with its synteny tracks as ribbons, the second genome reordered to follow the first, and this view's color and length filter |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>30 inherited actions from 9 models</summary>
+<summary>31 inherited actions from 9 models</summary>
 
 From [SyntenyFadeMixin](../syntenyfademixin): <span id="action-setantialias">[`setAntialias`](../syntenyfademixin#action-setantialias)</span>, <span id="action-setfadethinlatch">[`setFadeThinLatch`](../syntenyfademixin#action-setfadethinlatch)</span>
 
-From [SyntenyViewMixin](../syntenyviewmixin): <span id="action-setresolution">[`setResolution`](../syntenyviewmixin#action-setresolution)</span>, <span id="action-setshowlegend">[`setShowLegend`](../syntenyviewmixin#action-setshowlegend)</span>, <span id="action-dismisslegendsection">[`dismissLegendSection`](../syntenyviewmixin#action-dismisslegendsection)</span>
+From [SyntenyViewMixin](../syntenyviewmixin): <span id="action-setresolution">[`setResolution`](../syntenyviewmixin#action-setresolution)</span>, <span id="action-setshowlegend">[`setShowLegend`](../syntenyviewmixin#action-setshowlegend)</span>, <span id="action-setlegendshow">[`setLegendShow`](../syntenyviewmixin#action-setlegendshow)</span>, <span id="action-dismisslegendsection">[`dismissLegendSection`](../syntenyviewmixin#action-dismisslegendsection)</span>
 
 From [SyntenyColorsMixin](../syntenycolorsmixin): <span id="action-setopacity">[`setOpacity`](../syntenycolorsmixin#action-setopacity)</span>, <span id="action-setopacityfield">[`setOpacityField`](../syntenycolorsmixin#action-setopacityfield)</span>
 

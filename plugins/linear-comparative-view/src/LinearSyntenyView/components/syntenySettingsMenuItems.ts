@@ -57,6 +57,13 @@ export function syntenySettingsMenuItems(
           'Mark alignments whose other end is off screen or on a contig the facing panel is not showing. Costs a second query per panel pair on an indexed file.',
       },
     ),
+    ...(model.hasLegendKey
+      ? [
+          toggleItem('Show legend', model.showLegend, v => {
+            model.setLegendShow(v)
+          }),
+        ]
+      : []),
     ...(hasCigarData
       ? [
           {

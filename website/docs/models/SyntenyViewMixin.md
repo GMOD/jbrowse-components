@@ -19,6 +19,7 @@ Each section ends with the members a composed model contributes, linked to the p
 | Member | Description |
 | --- | --- |
 | <span id="property-data">**data**</span><br><code>data: types.stripDefault(syntenyDataConfigSchema, {})</code> | What the fetch reads, a [](/docs/config/syntenydata) object: `resolution` picks a tiered file's stored tier. One value for the view, so every track draws at the same tier. |
+| <span id="property-legend">**legend**</span><br><code>legend: types.stripDefault(legendConfigSchema, {})</code> | Whether the view draws its color key, a [](/docs/config/legend) object. The key's close button hides it for the current mode only and is never saved. |
 
 <details class="inherited-members" data-pagefind-ignore>
 <summary>4 inherited properties from 3 models</summary>
@@ -52,7 +53,7 @@ From [TrackColorsMixin](../trackcolorsmixin): <span id="volatile-seenattributera
 | --- | --- |
 | <span id="getter-haslodcapableadapter">**hasLodCapableAdapter**</span><br><code>boolean</code> | Whether any track's adapter has tiers to switch between, which gates the "Level of detail" setting. |
 | <span id="getter-resolution">**resolution**</span><br><code>LodMode</code> | `data.resolution`: the stored tier every track fetches. |
-| <span id="getter-showlegend">**showLegend**</span><br><code>boolean</code> | The legend-host half of `LegendMixin` a view needs: whether the key draws, which is the mode having one and the reader not having closed it in this mode. `ChromeLegend` and `SvgLegend` read it. |
+| <span id="getter-showlegend">**showLegend**</span><br><code>boolean</code> | The legend-host half of `LegendMixin` a view needs: whether the key draws, which is `legend.show`, the mode having a key, and the reader not having closed it in this mode. `ChromeLegend` and `SvgLegend` read it. |
 | <span id="getter-legendspec">**legendSpec**</span><br><code>LegendSpec</code> | The key `ChromeLegend` draws on screen and `SvgLegend` in the export. |
 
 <details class="inherited-members" data-pagefind-ignore>
@@ -90,6 +91,7 @@ From [SyntenyFilterMixin](../syntenyfiltermixin): <span id="method-lowerbound">[
 | --- | --- |
 | <span id="action-setresolution">**setResolution**</span><br><code>(resolution: LodMode) =&gt; void</code> |  |
 | <span id="action-setshowlegend">**setShowLegend**</span><br><code>(show: boolean) =&gt; void</code> | The legend host's setter: closing the key hides it for this mode only, so picking another mode brings its key up. |
+| <span id="action-setlegendshow">**setLegendShow**</span><br><code>(show: boolean) =&gt; void</code> | The "Show legend" checkbox: writes `legend.show`, and showing it brings back a key closed in this mode. |
 | <span id="action-dismisslegendsection">**dismissLegendSection**</span><br><code>() =&gt; void</code> | One section is the whole key here. |
 
 <details class="inherited-members" data-pagefind-ignore>

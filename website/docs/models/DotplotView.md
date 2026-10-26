@@ -50,9 +50,9 @@ Each section ends with the members a composed model contributes, linked to the p
 | <span id="property-launch">**launch**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>launch: types.frozen&lt;LaunchInput&lt;DotplotViewCommands&gt; &#124; undefin…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>launch: types.frozen&lt;LaunchInput&lt;DotplotViewCommands&gt; &#124; undefined&gt;()</code></pre></dialog></span> | transient launch state: the settings written on the view object that need resolving before they can be view state — the two axis assemblies, track recipes, highlights. `preProcessSnapshot` moves them here off the snapshot, the afterAttach autorun applies them and clears this, so a saved session never retains it. Not written by hand: author every setting directly on the view. |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>7 inherited properties from 5 models</summary>
+<summary>8 inherited properties from 5 models</summary>
 
-From [SyntenyViewMixin](../syntenyviewmixin): <span id="property-data">[`data`](../syntenyviewmixin#property-data)</span>
+From [SyntenyViewMixin](../syntenyviewmixin): <span id="property-data">[`data`](../syntenyviewmixin#property-data)</span>, <span id="property-legend">[`legend`](../syntenyviewmixin#property-legend)</span>
 
 From [TrackColorsMixin](../trackcolorsmixin): <span id="property-encoding">[`encoding`](../trackcolorsmixin#property-encoding)</span>, <span id="property-trackcolors">[`trackColors`](../trackcolorsmixin#property-trackcolors)</span>
 
@@ -226,9 +226,9 @@ From [SyntenyFilterMixin](../syntenyfiltermixin): <span id="method-lowerbound">[
 | <span id="action-squareviewproportional">**squareViewProportional**</span><br><code>() =&gt; void</code> |  |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>35 inherited actions from 9 models</summary>
+<summary>36 inherited actions from 9 models</summary>
 
-From [SyntenyViewMixin](../syntenyviewmixin): <span id="action-setresolution">[`setResolution`](../syntenyviewmixin#action-setresolution)</span>, <span id="action-setshowlegend">[`setShowLegend`](../syntenyviewmixin#action-setshowlegend)</span>, <span id="action-dismisslegendsection">[`dismissLegendSection`](../syntenyviewmixin#action-dismisslegendsection)</span>
+From [SyntenyViewMixin](../syntenyviewmixin): <span id="action-setresolution">[`setResolution`](../syntenyviewmixin#action-setresolution)</span>, <span id="action-setshowlegend">[`setShowLegend`](../syntenyviewmixin#action-setshowlegend)</span>, <span id="action-setlegendshow">[`setLegendShow`](../syntenyviewmixin#action-setlegendshow)</span>, <span id="action-dismisslegendsection">[`dismissLegendSection`](../syntenyviewmixin#action-dismisslegendsection)</span>
 
 From [SyntenyColorsMixin](../syntenycolorsmixin): <span id="action-setopacity">[`setOpacity`](../syntenycolorsmixin#action-setopacity)</span>, <span id="action-setopacityfield">[`setOpacityField`](../syntenycolorsmixin#action-setopacityfield)</span>
 

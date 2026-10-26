@@ -71,6 +71,13 @@ const DotplotSettingsMenu = observer(function DotplotSettingsMenu({
                 'Number the ruler ticks along each axis. Off keeps the tick marks and chromosome names.',
             },
           ),
+          ...(model.hasLegendKey
+            ? [
+                toggleItem('Show legend', model.showLegend, flag => {
+                  model.setLegendShow(flag)
+                }),
+              ]
+            : []),
           ...lodMenuItems(model),
           opacityMenuItem(model),
           makeSizeSubMenu({

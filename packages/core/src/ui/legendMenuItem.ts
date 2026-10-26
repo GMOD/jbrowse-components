@@ -12,8 +12,9 @@ import type { SettingRowOptions } from './toggleMenuItems.ts'
  * legitimately differ (a Hi-C color scale is off by default, a variant genotype
  * key on), and their descriptions describe genuinely different legends.
  *
- * `synteny-core`'s color-by legend has no toggle at all: it comes up with the
- * modes that have a key and is dismissed from its own close button.
+ * The synteny views' settings menus carry the same "Show legend" row, writing
+ * their `legend.show`; their key's close button hides it for the current mode
+ * only.
  */
 /** #menuBuilder showLegendCheckboxItem | a "Show legend" checkbox outside a "Show..." submenu */
 export function showLegendCheckboxItem(

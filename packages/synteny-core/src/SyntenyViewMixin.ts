@@ -1,5 +1,6 @@
-import { readConfObject } from '@jbrowse/core/configuration'
+import { readConfObject, setConf } from '@jbrowse/core/configuration'
 import { legendSpecOf } from '@jbrowse/core/ui/colorScale'
+import { legendConfigSchema } from '@jbrowse/display-kit/legendConfigSchema'
 import { cast, getSnapshot, types } from '@jbrowse/mobx-state-tree'
 
 import { SyntenyColorsMixin } from './SyntenyColorsMixin.ts'
@@ -33,6 +34,13 @@ export function SyntenyViewMixin({
          * view, so every track draws at the same tier.
          */
         data: types.stripDefault(syntenyDataConfigSchema, {}),
+        /**
+         * #property
+         * Whether the view draws its color key, a [](/docs/config/legend)
+         * object. The key's close button hides it for the current mode only
+         * and is never saved.
+         */
+        legend: types.stripDefault(legendConfigSchema, {}),
       }),
     )
     .volatile(() => ({
@@ -63,12 +71,15 @@ export function SyntenyViewMixin({
       /**
        * #getter
        * The legend-host half of `LegendMixin` a view needs: whether the key
-       * draws, which is the mode having one and the reader not having closed
-       * it in this mode. `ChromeLegend` and `SvgLegend` read it.
+       * draws, which is `legend.show`, the mode having a key, and the reader
+       * not having closed it in this mode. `ChromeLegend` and `SvgLegend`
+       * read it.
        */
       get showLegend(): boolean {
         return (
-          self.hasLegendKey && self.colorLegendDismissedFor !== self.colorField
+          readConfObject(self.legend, 'show') &&
+          self.hasLegendKey &&
+          self.colorLegendDismissedFor !== self.colorField
         )
       },
       /**
@@ -93,6 +104,17 @@ export function SyntenyViewMixin({
        */
       setShowLegend(show: boolean) {
         self.colorLegendDismissedFor = show ? undefined : self.colorField
+      },
+      /**
+       * #action
+       * The "Show legend" checkbox: writes `legend.show`, and showing it
+       * brings back a key closed in this mode.
+       */
+      setLegendShow(show: boolean) {
+        setConf(self.legend, 'show', show)
+        if (show) {
+          self.colorLegendDismissedFor = undefined
+        }
       },
       /**
        * #action
