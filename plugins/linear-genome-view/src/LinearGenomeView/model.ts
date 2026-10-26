@@ -30,6 +30,7 @@ import { scaleBandHeights } from '@jbrowse/core/util/bandHeight'
 import { wholeBaseRegions } from '@jbrowse/core/util/blockTypes'
 import calculateDynamicBlocks from '@jbrowse/core/util/calculateDynamicBlocks'
 import calculateStaticBlocks from '@jbrowse/core/util/calculateStaticBlocks'
+import { coerceHighlight } from '@jbrowse/core/util/highlights'
 import {
   hideTrackGeneric,
   launchToggleTrackGeneric,
@@ -111,6 +112,7 @@ import type { FlightViewport } from './flyTo.ts'
 import type {
   BpOffset,
   ExportSvgOptions,
+  HighlightInput,
   HighlightType,
   InitState,
   NavLocation,
@@ -1732,6 +1734,29 @@ export function stateModelFactory(pluginManager: PluginManager) {
           initialSnapshot,
           displayInitialSnapshot,
           inlineConf,
+        )
+      },
+      /**
+       * #action
+       * Replace the highlights `highlights` reads, each written as the launch
+       * spec's `highlight` writes one: a locstring, or an object whose
+       * `assemblyName` defaults to the view's. Throws on one that names no
+       * region, writing none.
+       */
+      setHighlights(highlights: readonly (string | HighlightInput)[]) {
+        const session = getSession(self)
+        const assemblyName =
+          self.assemblyNames[0] ?? self.launchAssemblyName ?? ''
+        session.setHighlights(
+          highlights.map(h => {
+            const highlight = coerceHighlight(h, assemblyName, (ref, asm) =>
+              session.assemblyManager.isValidRefName(ref, asm ?? assemblyName),
+            )
+            if (!highlight) {
+              throw new Error(`not a region to highlight: ${JSON.stringify(h)}`)
+            }
+            return highlight
+          }),
         )
       },
       /**

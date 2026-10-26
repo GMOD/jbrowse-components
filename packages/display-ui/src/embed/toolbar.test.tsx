@@ -5,8 +5,14 @@ import { NavButton, Toolbar } from './toolbar.tsx'
 
 const FakeView = types
   .model({})
-  .volatile(() => ({ visited: [] as string[] }))
+  .volatile(() => ({ visited: [] as string[], marked: [] as unknown[] }))
   .actions(self => ({
+    setHighlights(highlights: readonly unknown[]) {
+      if (highlights.includes('nowhere')) {
+        throw new Error('not a region to highlight')
+      }
+      self.marked = [...highlights]
+    },
     navToLocString(input: string) {
       if (input === 'nowhere') {
         return Promise.reject(new Error('Unknown feature or sequence'))
@@ -59,4 +65,30 @@ test('a location the view cannot resolve reaches the session as an error', async
     fireEvent.click(screen.getByRole('button', { name: 'nowhere' }))
   })
   expect(session.errors).toEqual(['Error: Unknown feature or sequence'])
+})
+
+test('a nav button with a highlight marks the place and moves there', async () => {
+  const session = fakeSession()
+  const view = session.views[0]!
+  render(
+    <NavButton view={view} loc="chr17:1..300" highlight={['chr17:100..200']}>
+      BRCA1
+    </NavButton>,
+  )
+  await act(async () => {
+    fireEvent.click(screen.getByRole('button', { name: 'BRCA1' }))
+  })
+  expect(view.marked).toEqual(['chr17:100..200'])
+  expect(view.visited).toEqual(['chr17:1..300'])
+})
+
+test('a highlight the view refuses is reported, and the view still moves', async () => {
+  const session = fakeSession()
+  const view = session.views[0]!
+  render(<NavButton view={view} loc="chr17:1..300" highlight={['nowhere']} />)
+  await act(async () => {
+    fireEvent.click(screen.getByRole('button', { name: 'chr17:1..300' }))
+  })
+  expect(session.errors).toEqual(['Error: not a region to highlight'])
+  expect(view.visited).toEqual(['chr17:1..300'])
 })

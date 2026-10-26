@@ -13,7 +13,6 @@ const hits = [
     label: 'BRCA1',
     loc: 'chr17:43,020,000..43,150,000',
     highlight: {
-      assemblyName: 'hg38',
       refName: 'chr17',
       start: 43044295,
       end: 43125364,
@@ -24,7 +23,6 @@ const hits = [
     label: 'A single base',
     loc: 'chr17:43,020,000..43,150,000',
     highlight: {
-      assemblyName: 'hg38',
       refName: 'chr17',
       start: 43090000,
       end: 43090001,
@@ -36,7 +34,6 @@ const hits = [
     label: 'Off the end of the chromosome',
     loc: 'chr17:83,200,000..83,257,441',
     highlight: {
-      assemblyName: 'hg38',
       refName: 'chr17',
       start: 83250000,
       end: 83300000,
@@ -78,14 +75,7 @@ const HighlightARegion = observer(function HighlightARegion() {
     <EmbedProvider session={session}>
       <Toolbar>
         {hits.map(({ label, loc, highlight }) => (
-          <NavButton
-            key={label}
-            view={view}
-            loc={loc}
-            onClick={() => {
-              session.setHighlights([highlight])
-            }}
-          >
+          <NavButton key={label} view={view} loc={loc} highlight={[highlight]}>
             {label}
           </NavButton>
         ))}

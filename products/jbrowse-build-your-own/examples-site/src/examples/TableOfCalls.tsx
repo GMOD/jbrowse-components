@@ -8,10 +8,7 @@ import {
 import { useCreateViewState } from '@jbrowse/react-linear-genome-view2'
 import { observer } from 'mobx-react'
 
-import type {
-  LinearGenomeViewModel,
-  ViewModel,
-} from '@jbrowse/react-linear-genome-view2'
+import type { LinearGenomeViewModel } from '@jbrowse/react-linear-genome-view2'
 
 const calls = [
   {
@@ -46,7 +43,7 @@ const calls = [
 type Call = (typeof calls)[number]
 
 function highlightOf({ id, refName, start, end }: Call) {
-  return { assemblyName: 'hg38', refName, start, end, label: id }
+  return { refName, start, end, label: id }
 }
 
 function locOf({ refName, start, end }: Call) {
@@ -58,12 +55,10 @@ const cell: React.CSSProperties = { padding: '2px 10px', textAlign: 'left' }
 
 const Calls = observer(function Calls({
   view,
-  session,
 }: {
   view: LinearGenomeViewModel
-  session: ViewModel['session']
 }) {
-  const shown = session.highlights[0]?.label
+  const shown = view.highlights[0]?.label
   return (
     <table
       style={{
@@ -97,9 +92,7 @@ const Calls = observer(function Calls({
               <NavButton
                 view={view}
                 loc={locOf(call)}
-                onClick={() => {
-                  session.setHighlights([highlightOf(call)])
-                }}
+                highlight={[highlightOf(call)]}
               >
                 {call.id}
               </NavButton>
@@ -150,7 +143,7 @@ const TableOfCalls = observer(function TableOfCalls() {
   const { view } = state.session
   return (
     <EmbedProvider session={state.session}>
-      <Calls view={view} session={state.session} />
+      <Calls view={view} />
       <TrackStack view={view}>
         <Scalebar view={view} />
         <Highlights view={view} />
