@@ -39,6 +39,15 @@ test('offers the other Hi-C tracks on the same assembly, aliases included', () =
   expect(offered.map(t => t.trackId)).toEqual(['untreated'])
 })
 
+test('a comparison offers nothing, and is offered to nothing', () => {
+  const comparison = comparisonTrackConf(TREATED, UNTREATED)
+  const tracks = [TREATED, UNTREATED, comparison, hic('hap1', 'hg38', 'h.hic')]
+  expect(comparableTracks(session(tracks), comparison)).toEqual([])
+  expect(
+    comparableTracks(session(tracks), TREATED).map(t => t.trackId),
+  ).toEqual(['untreated', 'hap1'])
+})
+
 test('the comparison track is this map over the other, as observed/control', () => {
   const conf = comparisonTrackConf(TREATED, UNTREATED)
   expect(conf).toMatchObject({

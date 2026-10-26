@@ -21,15 +21,22 @@ const nameOf = (t: TrackConfigEntry) =>
 const adapterOf = (t: TrackConfigEntry): Record<string, unknown> =>
   typeof t.adapter === 'object' && t.adapter !== null ? { ...t.adapter } : {}
 
+const isComparison = (t: TrackConfigEntry) =>
+  adapterOf(t).controlAdapter != null
+
 /**
  * The other Hi-C tracks on `mine`'s assembly, each a control it can be
- * compared with; a comparison is not offered, since its own control would ride
- * along unread.
+ * compared with. A comparison takes no part on either side: as `other` its own
+ * control would ride along unread, and as `mine` the new control would replace
+ * the one its name says it divides by.
  */
 export function comparableTracks(
   session: AbstractSessionModel,
   mine: TrackConfigEntry,
 ) {
+  if (isComparison(mine)) {
+    return []
+  }
   const assemblies = getConfAssemblyNamesOrNone(mine)
   return allSessionTracks(session)
     .map(toTrackConfigEntry)
@@ -37,7 +44,7 @@ export function comparableTracks(
       t =>
         t.type === 'HicTrack' &&
         t.trackId !== mine.trackId &&
-        adapterOf(t).controlAdapter === undefined &&
+        !isComparison(t) &&
         getConfAssemblyNamesOrNone(t).some(a =>
           assemblies.some(b =>
             isSameAssemblyName(a, b, session.assemblyManager),
