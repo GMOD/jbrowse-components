@@ -379,7 +379,9 @@ exports[`every registered schema slot default 1`] = `
   "display: DotplotDisplay": {},
   "display: LDTrackDisplay": {
     "encoding.color.field": "stringEnum = "r2" of ["r2","dprime"]",
+    "encoding.color.legend.title": "maybeString = undefined",
     "encoding.color.scale.domainMax": "maybeNumber = undefined",
+    "encoding.color.scale.domainMid": "maybeNumber = undefined",
     "encoding.color.scale.domainMin": "maybeNumber = undefined",
     "encoding.color.scale.reverse": "maybeBoolean = undefined",
     "encoding.color.scale.scheme": "maybeStringEnum = undefined of ["viridis","magma","inferno","cividis","juicebox","fall","reds","blues","redblue","purpleorange","redgreyblue","redyellowblue"]",
