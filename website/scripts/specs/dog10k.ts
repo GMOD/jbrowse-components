@@ -655,11 +655,11 @@ export const dog10kSpecs: ScreenshotSpec[] = [
     ],
   },
 
-  // Side by side so each sample row sits on the same line in both halves.
+  // Stacked, the same animals in the same order in both halves. Side by side,
+  // the 6048 px composite drew its row labels at about 3 px in the page column.
   {
     mode: 'compose',
     name: 'dog10k-diet-genes',
-    columns: 2,
     parts: ['dog10k-amy2b-duplication', 'dog10k-rnase1-insertion'],
   },
 

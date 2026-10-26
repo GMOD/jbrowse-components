@@ -93,6 +93,29 @@ GenBank accessions:
 }
 ```
 
+The figures also show NCBI's RefSeq genes as a track:
+
+```json addtrack
+{
+  "type": "FeatureTrack",
+  "trackId": "canFam4_ncbi_refseq",
+  "name": "NCBI RefSeq genes (canFam4)",
+  "assemblyNames": ["UU_Cfam_GSD_1.0"],
+  "adapter": {
+    "type": "Gff3TabixAdapter",
+    "gffGzLocation": {
+      "uri": "https://jbrowse.org/ucsc/canFam4/ncbiRefSeq.gff.gz"
+    },
+    "index": {
+      "indexType": "CSI",
+      "location": {
+        "uri": "https://jbrowse.org/ucsc/canFam4/ncbiRefSeq.gff.gz.csi"
+      }
+    }
+  }
+}
+```
+
 ## A 7.8 kb deletion in NHEJ1
 
 Schall and Kidd genotyped long-read-discovered structural variants across the
@@ -131,42 +154,46 @@ tabix -p vcf dog10k_nhej1_svs.vcf.gz
   reported association
 - four Greek gray wolves, the outgroup
 
-Read the genotypes directly first:
-
-<!-- from: scripts/build_dog10k_nhej1_sv.sh -->
-
-```bash
-bcftools query -r chr37:25574005-25574006 -f '[%SAMPLE=%GT ]\n' \
-  dog10k_nhej1_svs.vcf.gz | tr ' ' '\n' | grep -v '=0/0'
-```
-
-Most Collies have it, some homozygous, as do some Shetland Sheepdogs and Silken
-Windhounds. Every other animal, including the four Lancashire Heelers, is
-homozygous reference.
-
 ## Loading the NHEJ1 slice with breed labels
 
 An SV VCF loads as an ordinary `VariantTrack`. The multi-sample variant display
 draws one row per sample across the variant's genomic span, so a 7.8 kb deletion
-is a 7.8 kb block.
+is a 7.8 kb block. The track below also:
+
+- reads the build script's `dog10k_nhej1_samples.tsv`, whose `clade` column
+  `facet` splits the rows on, one section per clade
+- filters the window's records to the 7.8 kb deletion. A second deletion nested
+  inside it is a no-call in the dogs homozygous for the larger one, which have
+  no reads there to genotype it from, and would stripe their rows yellow
 
 ```json addtrack
 {
+  "type": "VariantTrack",
   "trackId": "dog10k_nhej1_svs",
   "name": "Dog10K structural variants at NHEJ1",
-  "uri": "dog10k_nhej1_svs.vcf.gz",
-  "assemblyNames": ["UU_Cfam_GSD_1.0"]
+  "assemblyNames": ["UU_Cfam_GSD_1.0"],
+  "adapter": {
+    "type": "VcfTabixAdapter",
+    "uri": "dog10k_nhej1_svs.vcf.gz",
+    "samplesTsvLocation": { "uri": "dog10k_nhej1_samples.tsv" }
+  },
+  "displayDefaults": {
+    "facet": {
+      "field": "clade",
+      "sort": ["Collie clade", "Other breeds", "Gray wolf"]
+    },
+    "filter": ["jexl:feature.start == 25574004"]
+  }
 }
 ```
 
 The VCF names each sample by its Dog10K ID. In
 [grammar-of-graphics](/docs/config_guides/mark_display) terms, `rows` orders the
 sample rows and names them, and `rowColor` is a color scale on each row's label
-bar. The session below sets both for two animals. The figure names every row and
-facets them on the `clade` column of the build script's
-`dog10k_nhej1_samples.tsv`, one section per clade. **Edit
-colors/arrangement...** in the track menu writes both as you rename and recolor
-rows by hand, and **Advanced → Edit plot...** shows them as text.
+bar. The session below sets both for two animals, and the figure names every row
+the same way. **Edit colors/arrangement...** in the track menu writes both as
+you rename and recolor rows by hand, and **Advanced → Edit plot...** shows them
+as text.
 
 ```json session config=test_data/dog10k/config.json
 {
@@ -199,19 +226,12 @@ rows by hand, and **Advanced → Edit plot...** shows them as text.
 }
 ```
 
-## NHEJ1 deletion genotypes across breeds
+## OMIA's curated record of the NHEJ1 deletion
 
-Open the session above and add the assembly's gene annotation to see where the
-deletion falls in _NHEJ1_.
-
-<Figure caption="A deletion inside an NHEJ1 intron genotyped across breeds, with OMIA's record of the same variant between the genes and the genotypes." src="/img/dog10k-nhej1-cea-deletion.png" />
-
-### Checking the NHEJ1 deletion against OMIA's curated record
-
-The middle track is [OMIA](https://omia.org), Online Mendelian Inheritance in
-Animals, which curates the published causal variants of Mendelian traits. Its
-Collie eye anomaly record (OMIA 000218-9615) is this deletion. OMIA gives the
-span on CanFam3.1, and the build script lifts it to canFam4 with the UCSC chain:
+[OMIA](https://omia.org), Online Mendelian Inheritance in Animals, curates the
+published causal variants of Mendelian traits. Its Collie eye anomaly record
+(OMIA 000218-9615) is this deletion. OMIA gives the span on CanFam3.1, and the
+build script lifts it to canFam4 with the UCSC chain:
 
 <!-- from: scripts/build_omia_dog_variants.sh -->
 
@@ -237,37 +257,12 @@ The label under the bar gives the mode of inheritance, and clicking the bar
 opens the rest of the record, including whether the build lifted it from
 CanFam3.1.
 
-### Filtering the NHEJ1 window to the deletion record
+## NHEJ1 deletion genotypes across breeds
 
-The figure filters the window's SV records to the 7.8 kb deletion:
+Open the session above with the OMIA track and the assembly's gene annotation to
+see where the deletion falls in _NHEJ1_:
 
-```json addtrack
-{
-  "type": "VariantTrack",
-  "trackId": "dog10k_nhej1_svs",
-  "name": "Dog10K structural variants at NHEJ1",
-  "uri": "dog10k_nhej1_svs.vcf.gz",
-  "assemblyNames": ["UU_Cfam_GSD_1.0"],
-  "displays": [
-    {
-      "type": "LinearMultiSampleVariantDisplay",
-      "filter": ["jexl:feature.start == 25574004"]
-    }
-  ]
-}
-```
-
-Without the filter, a second deletion nested inside the 7.8 kb one draws yellow
-no-calls over the dark blue rows, so the two records look like one striped
-block. The no-calls are the dogs homozygous for the larger deletion, because a
-dog with no copy of the surrounding sequence has no reads to genotype it from:
-
-```bash
-# -r also returns records that span the region, so -i keeps the one starting here
-bcftools query -r chr37:25578185-25578186 -i 'POS=25578185' \
-  -f '[%SAMPLE=%GT ]\n' dog10k_nhej1_svs.vcf.gz \
-  | tr ' ' '\n' | grep -v '=0/0'
-```
+<Figure caption="A deletion inside an NHEJ1 intron genotyped across breeds, with OMIA's record of the same variant between the genes and the genotypes." src="/img/dog10k-nhej1-cea-deletion.png" />
 
 ## AMY2B duplication and RNASE1 insertion
 
@@ -318,7 +313,7 @@ A samples TSV labels these rows. Its first column is the sample name and every
 other column is an attribute that `rowColor` can name. The _RNASE1_ track is the
 same config with the other slice's `uri`.
 
-<Figure caption="Left: a duplication over pancreatic amylase. Right: an insertion in pancreatic ribonuclease. The same animals are in the same order in both." src="/img/dog10k-diet-genes.png" />
+<Figure caption="Top: a duplication over pancreatic amylase. Bottom: an insertion in pancreatic ribonuclease. The same animals are in the same order in both." src="/img/dog10k-diet-genes.png" />
 
 The grey Czechoslovakian Wolfdog row is CZEC000003, the animal
 [the local-ancestry tutorial](/docs/tutorials/local_ancestry) paints
@@ -444,6 +439,27 @@ script writes:
 {
   "name": "FGF4retro-CFA18",
   "uri": "FGF4retro-CFA18.fa"
+}
+```
+
+The build script also writes each retrocopy's GenBank feature table as an
+annotation track on its assembly:
+
+```json addtrack
+{
+  "trackId": "dog10k_fgf4_retro_cfa12_genes",
+  "name": "FGF4 CFA12 retrocopy: GenBank annotation (MF040221)",
+  "uri": "FGF4retro-CFA12.gff3.gz",
+  "assemblyNames": ["FGF4retro-CFA12"]
+}
+```
+
+```json addtrack
+{
+  "trackId": "dog10k_fgf4_retro_cfa18_genes",
+  "name": "FGF4 CFA18 retrocopy: GenBank annotation (MF040222)",
+  "uri": "FGF4retro-CFA18.gff3.gz",
+  "assemblyNames": ["FGF4retro-CFA18"]
 }
 ```
 
