@@ -7,6 +7,12 @@ Shared rules for all four sites:
   Mounting, status and chrome come from `@jbrowse/display-ui/embed`. A control
   that is one input bound to one view property stays inline, since it shows the
   reader the API; a kit export earns its place with logic of its own.
+- **A page spells out its genome's FASTA.** `jbrowseHub` also fetches the hub's
+  track catalog and search index, and `genome-by-name` is the page that shows
+  it.
+- **Labels beside the tracks stay the page's own** (`track-labels`). A gutter in
+  `TrackStack` would need synced row heights or `children` split into in-flow
+  headers and overlay layers, and the app's own gutter is parked.
 - No comments in example files, bar a one-line pointer at an option a reader
   would not otherwise find.
 - **`ultraminimal` imports only what the current npm beta of

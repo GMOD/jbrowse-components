@@ -25,6 +25,10 @@ import type { AsyncViewStateOptions } from './createViewState.ts'
  *
  * Undefined until the engine is built, so the first frame renders nothing. A
  * build that throws rethrows from render, for an error boundary to catch.
+ *
+ * Not a Suspense hook: React drops a component's state when it suspends on its
+ * first mount, so the build would need a cache key outside the component and a
+ * teardown for an engine whose component never mounted.
  */
 export function useCreateViewState(
   opts: AsyncViewStateOptions | (() => Promise<ViewModel>),
