@@ -263,7 +263,7 @@ export function computeMafCoverage(
   const pendingSamples = new Uint32Array(sampleIds.length)
   let pendingCount = 0
 
-  const flushPending = (position: number) => {
+  const flushPending = (position: number, lastIdx = length - 1) => {
     // Called at every reference column, and insertions are rare, so the empty
     // case skips straight past the clamp and the clear.
     if (pendingCount > 0) {
@@ -273,7 +273,7 @@ export function computeMafCoverage(
       // state is cleared regardless so it never leaks into the next closing
       // column.
       const idx = position - regionStart
-      const inRegion = idx >= 0 && idx < length
+      const inRegion = idx >= 0 && idx <= lastIdx
       for (let p = 0; p < pendingCount; p++) {
         const sample = pendingSamples[p]!
         if (inRegion) {
@@ -407,8 +407,11 @@ export function computeMafCoverage(
         refPos++
       }
     }
+    // A block ending at `regionEnd` is fetched by no region to the right, so
+    // its trailing insertion lands here, at the interbase after the last base.
+    // A run closing at `regionEnd` inside a block is the next region's.
     if (blockStartBp[block + 1] !== refPos) {
-      flushPending(refPos)
+      flushPending(refPos, length)
     }
   }
 

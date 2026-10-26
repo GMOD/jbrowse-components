@@ -144,6 +144,24 @@ test('an insertion at a block end with no abutting block still lands', () => {
   ])
 })
 
+// The region to the right fetches only blocks overlapping it, so a block ending
+// at the seam is this region's alone, insertion and all. A run closing at the
+// seam inside a block is the right region's, which fetches that block too.
+test('an insertion at a block end on the region end lands in this region', () => {
+  const blocks: TestWireBlock[] = [block(0, 'ACGT--', [row(0, 'ACGTTT')])]
+  expect(computeMafCoverage(blocks, 0, 4).insertions).toEqual([
+    { position: 4, length: 2 },
+  ])
+})
+
+test("an insertion closing at the region end inside a block is the next region's", () => {
+  const blocks: TestWireBlock[] = [block(0, 'ACGT--AC', [row(0, 'ACGTTTAC')])]
+  expect(computeMafCoverage(blocks, 0, 4).insertions).toEqual([])
+  expect(computeMafCoverage(blocks, 4, 6).insertions).toEqual([
+    { position: 4, length: 2 },
+  ])
+})
+
 // A malformed file can ship a row shorter than the reference. Out of range a
 // typed array reads `undefined`, which is neither '-' nor ' ', so the missing
 // tail used to read as real bases: phantom depth, a mismatch against base code
