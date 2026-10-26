@@ -1,5 +1,6 @@
 import {
   indexCandidateNames,
+  pairIndexFiles,
   resolveIndexType,
   sidecarCandidateNames,
 } from './indexCandidates.ts'
@@ -107,4 +108,16 @@ describe('resolveIndexType', () => {
   it('falls back when no index was named', () => {
     expect(resolveIndexType(undefined, 'TBI')).toBe('TBI')
   })
+})
+
+test('pairIndexFiles puts each index beside the data file it names', () => {
+  const named = (...names: string[]) => names.map(name => ({ name }))
+  const pairs = pairIndexFiles(
+    named('reads.bai', 'calls.vcf.gz', 'reads.bam', 'calls.vcf.gz.tbi', 'a.bw'),
+  )
+  expect(pairs.map(p => [p.data.name, p.index?.name])).toEqual([
+    ['calls.vcf.gz', 'calls.vcf.gz.tbi'],
+    ['reads.bam', 'reads.bai'],
+    ['a.bw', undefined],
+  ])
 })

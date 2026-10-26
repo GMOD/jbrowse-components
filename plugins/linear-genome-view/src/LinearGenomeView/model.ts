@@ -92,6 +92,7 @@ import {
   buildRubberbandClickMenuItems,
 } from './menuItems.ts'
 import { sharedScaleContainerOf } from './sharedScaleContainer.ts'
+import { showFiles } from './showFiles.ts'
 import {
   calculateVisibleLocStrings,
   cytobandLabelGutterWidth,
@@ -1732,6 +1733,16 @@ export function stateModelFactory(pluginManager: PluginManager) {
           displayInitialSnapshot,
           inlineConf,
         )
+      },
+      /**
+       * #action
+       * Show files from the user's disk as session tracks: one per data file,
+       * beside the index among them that names it, its type guessed from its
+       * name. Adds nothing when one file has no known type. Resolves the new
+       * tracks' ids.
+       */
+      async showFiles(files: readonly File[]): Promise<string[]> {
+        return showFiles(self as LinearGenomeViewModel, files)
       },
     }))
     .views(self => ({

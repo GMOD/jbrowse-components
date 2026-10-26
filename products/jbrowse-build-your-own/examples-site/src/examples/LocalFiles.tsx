@@ -1,40 +1,17 @@
 import { useState } from 'react'
 
 import { refNameMismatchMessage } from '@jbrowse/core/assemblyManager/assembly'
-import { fileToLocation, getEnv } from '@jbrowse/core/util'
-import { indexCandidateNames } from '@jbrowse/core/util/indexCandidates'
-import { guessTrackConfForLocation } from '@jbrowse/core/util/tracks'
 import { EmbedProvider, TrackStack } from '@jbrowse/display-ui/embed'
 import { useCreateViewState } from '@jbrowse/react-linear-genome-view2'
 import { observer } from 'mobx-react'
 
-import type { ViewModel } from '@jbrowse/react-linear-genome-view2'
-
-type Session = ViewModel['session']
+import type { LinearGenomeViewModel } from '@jbrowse/react-linear-genome-view2'
 
 const notice: React.CSSProperties = {
   background: 'color-mix(in srgb, CanvasText 8%, Canvas)',
   borderLeft: '3px solid #d97706',
   padding: '6px 10px',
   fontSize: '0.8rem',
-}
-
-function openFiles(session: Session, files: File[]) {
-  const { pluginManager } = getEnv(session)
-  const indexOf = (data: File) =>
-    files.find(f => indexCandidateNames(data.name).includes(f.name))
-  const indexes = new Set(files.map(indexOf))
-  for (const data of files.filter(f => !indexes.has(f))) {
-    const index = indexOf(data)
-    const conf = guessTrackConfForLocation(
-      fileToLocation(data),
-      index && fileToLocation(index),
-      pluginManager,
-      'hg38',
-    )
-    session.addSessionTrackConf(conf)
-    void session.view.launchTrack(conf.trackId)
-  }
 }
 
 async function fetchDemoBam() {
@@ -59,21 +36,17 @@ function otherGenomeBed() {
 }
 
 const FilePicker = observer(function FilePicker({
-  session,
+  view,
 }: {
-  session: Session
+  view: LinearGenomeViewModel
 }) {
   const [error, setError] = useState<unknown>()
   const [busy, setBusy] = useState(false)
   const open = (files: File[]) => {
     setError(undefined)
-    try {
-      openFiles(session, files)
-    } catch (e) {
-      setError(e)
-    }
+    view.showFiles(files).catch(setError)
   }
-  const mismatches = session.view.tracks.flatMap(t =>
+  const mismatches = view.tracks.flatMap(t =>
     t.refNameMismatch
       ? [{ id: t.id, message: refNameMismatchMessage(t.refNameMismatch) }]
       : [],
@@ -155,7 +128,7 @@ const LocalFiles = observer(function LocalFiles() {
   }
   return (
     <EmbedProvider session={state.session}>
-      <FilePicker session={state.session} />
+      <FilePicker view={state.session.view} />
       <TrackStack view={state.session.view} />
     </EmbedProvider>
   )

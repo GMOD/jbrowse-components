@@ -74,6 +74,22 @@ export function indexCandidateNames(fileName: string): string[] {
 }
 
 /**
+ * A selection of files as its data files, each beside the index among them
+ * that names it — `reads.bam` with `reads.bam.bai` or `reads.bai` — so a file
+ * picker's selection opens one track per data file.
+ */
+export function pairIndexFiles<T extends { name: string }>(
+  files: readonly T[],
+): { data: T; index?: T }[] {
+  const indexOf = (data: T) =>
+    files.find(f => indexCandidateNames(data.name).includes(f.name))
+  const indexes = new Set(files.map(indexOf))
+  return files
+    .filter(f => !indexes.has(f))
+    .map(data => ({ data, index: indexOf(data) }))
+}
+
+/**
  * The index spelling a location implies: htslib writes `.csi` in place of a
  * `.bai` or a `.tbi` for a reference over 512 Mb, and on request at any size.
  */

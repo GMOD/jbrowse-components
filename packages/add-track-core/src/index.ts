@@ -10,6 +10,7 @@ export {
 export {
   indexCandidateNames,
   indexSpellings,
+  pairIndexFiles,
   resolveIndexType,
   sidecarCandidateNames,
 } from './indexCandidates.ts'

@@ -6,7 +6,11 @@ import type { FileLocation } from './types/data.ts'
 
 // defined in `@jbrowse/add-track-core`, which is framework-free so `jbrowse-cli`
 // reads the same list; re-exported because this subpath serves them to plugins
-export { indexCandidateNames, indexSpellings } from '@jbrowse/add-track-core'
+export {
+  indexCandidateNames,
+  indexSpellings,
+  pairIndexFiles,
+} from '@jbrowse/add-track-core'
 
 /**
  * `location` with its filename replaced, i.e. the sibling of a data file.
