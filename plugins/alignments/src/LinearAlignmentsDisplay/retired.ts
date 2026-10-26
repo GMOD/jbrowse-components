@@ -2,8 +2,10 @@ import { COVERAGE_Y_PATHS } from '@jbrowse/alignments-core/coverageBandConfigSch
 import { applyRetiredSpellings } from '@jbrowse/core/configuration'
 import { isValidTag } from '@jbrowse/core/util'
 import {
+  retiredAxisSpellings,
   retiredScaleSpellings,
   retiredScalesSpelling,
+  valueScaleOf,
 } from '@jbrowse/wiggle-core'
 
 import {
@@ -385,6 +387,39 @@ const INSTANCE_SLOTS: Record<string, (value: unknown) => DisplayEntry> = {
 // sub-nodes; a v4.3.0 session holds both shapes.
 const NESTED_SUBNODES = ['PileupDisplay', 'SNPCoverageDisplay']
 
+// v4.3.0 built the SNP coverage display on the wiggle display, whose axis
+// state the coverage band's y scale took over
+const COVERAGE_AXIS_KEYS = [
+  'scale',
+  'autoscale',
+  'constraints',
+  'displayCrossHatches',
+]
+const coverageScaleOf = valueScaleOf(COVERAGE_Y_PATHS.members)
+const { displayCrossHatches: coverageGridOf } = retiredAxisSpellings(
+  COVERAGE_Y_PATHS.members,
+)
+
+function mergedTrees(a: DisplayEntry, b: DisplayEntry): DisplayEntry {
+  const out: DisplayEntry = { ...a, ...b }
+  for (const [key, value] of Object.entries(a)) {
+    const other = b[key]
+    if (isObject(value) && isObject(other)) {
+      out[key] = mergedTrees(value, other)
+    }
+  }
+  return out
+}
+
+function coverageAxisOf(source: DisplayEntry) {
+  return mergedTrees(
+    coverageScaleOf(source),
+    typeof source.displayCrossHatches === 'boolean'
+      ? coverageGridOf(source.displayCrossHatches)
+      : {},
+  )
+}
+
 // a key under both spellings resolves to the `*Setting` one, listed last
 function instanceSlotsOf(source: DisplayEntry) {
   let slots: DisplayEntry = {}
@@ -399,11 +434,24 @@ function instanceSlotsOf(source: DisplayEntry) {
 // The instance lifts build v4's filter object, which merges member by member,
 // and leave it as the predicate list once merged
 export const retiredState: RetiredDisplayState = {
-  keys: [...Object.keys(INSTANCE_SLOTS), ...NESTED_SUBNODES],
+  keys: [
+    ...Object.keys(INSTANCE_SLOTS),
+    ...COVERAGE_AXIS_KEYS,
+    ...NESTED_SUBNODES,
+  ],
   lift: instance => {
     const subNode = NESTED_SUBNODES.map(k => instance[k]).find(isObject)
+    const { SNPCoverageDisplay } = instance
     const { filter, ...slots } = underEntry(
-      subNode ? instanceSlotsOf(subNode) : {},
+      underEntry(
+        mergedTrees(
+          coverageAxisOf(
+            isObject(SNPCoverageDisplay) ? SNPCoverageDisplay : {},
+          ),
+          coverageAxisOf(instance),
+        ),
+        subNode ? instanceSlotsOf(subNode) : {},
+      ),
       instanceSlotsOf(instance),
     )
     return isObject(filter)

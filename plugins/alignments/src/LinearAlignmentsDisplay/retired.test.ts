@@ -1,4 +1,5 @@
 import PluginManager from '@jbrowse/core/PluginManager'
+import { readConfObject } from '@jbrowse/core/configuration'
 import { preprocessTrackConfigSnapshot } from '@jbrowse/core/pluggableElementTypes/models'
 
 import AlignmentsPlugin from '../index.ts'
@@ -284,4 +285,48 @@ test('a v5 coverage scale beats the v4 key it overlaps', () => {
   ).toMatchObject([
     { coverage: { encoding: { y: { scale: { type: 'linear' } } } } },
   ])
+})
+
+// v4.3.0's SNP coverage display was a wiggle display, axis state and all
+test.each([
+  [
+    'the nested sub-node',
+    {
+      type: 'LinearAlignmentsDisplay',
+      PileupDisplay: { type: 'LinearPileupDisplay' },
+      SNPCoverageDisplay: {
+        type: 'LinearSNPCoverageDisplay',
+        scale: 'log',
+        constraints: { max: 100 },
+        displayCrossHatches: true,
+      },
+    },
+  ],
+  [
+    'a standalone display',
+    {
+      type: 'LinearSNPCoverageDisplay',
+      scale: 'log',
+      constraints: { max: 100 },
+      displayCrossHatches: true,
+    },
+  ],
+])('a v4.3.0 coverage axis on %s loads as a log axis to 100', (_, v4) => {
+  const pluginManager = new PluginManager([new AlignmentsPlugin()])
+  pluginManager.createPluggableElements()
+  pluginManager.configure()
+  const conf = pluginManager
+    .getDisplayType('LinearAlignmentsDisplay')
+    .configSchema.create({
+      type: 'LinearAlignmentsDisplay',
+      displayId: 'd',
+      ...retiredState.lift(v4),
+    })
+  const y = ['coverage', 'encoding', 'y']
+  expect(readConfObject(conf, [...y, 'scale', 'type'])).toBe('log')
+  expect(readConfObject(conf, [...y, 'scale', 'domainMax'])).toBe(100)
+  expect(readConfObject(conf, [...y, 'axis', 'grid'])).toBe(true)
+  expect(retiredState.keys).toEqual(
+    expect.arrayContaining(['scale', 'constraints', 'displayCrossHatches']),
+  )
 })
