@@ -32,14 +32,19 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
-      # ggjbrowse needs ggplot2 4, newer than the apt archive's, so R and its
-      # packages come from Posit's binary mirror
-      - uses: r-lib/actions/setup-r@f9a764fea8d5c63df6ef9a5c7795bf7deb5d7e05 # v2
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
-          use-public-rspm: true
+          persist-credentials: false
       # Posit has no binary of the curl package for every R release, and its
       # source build needs the libcurl headers
-      - run: sudo apt-get install -y libcurl4-openssl-dev
+      - uses: ./.github/actions/setup
+        with:
+          apt-packages: libcurl4-openssl-dev
+      # ggjbrowse needs ggplot2 4, newer than the apt archive's, so R and its
+      # packages come from Posit's binary mirror
+      - uses: r-lib/actions/setup-r@f9a764fea8d5c63df6ef9a5c7795bf7deb5d7e05 # v2.14.0
+        with:
+          use-public-rspm: true
       - run:
           Rscript -e 'install.packages(c("ggplot2", "patchwork", "scales",
           "jsonlite", "curl", "V8"))'
@@ -48,10 +53,6 @@ jobs:
       - run: |
           curl -sL https://github.com/GMOD/ggjbrowse/archive/refs/heads/main.tar.gz | tar xz -C "$RUNNER_TEMP"
           R CMD INSTALL "$RUNNER_TEMP/ggjbrowse-main"
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-        with:
-          persist-credentials: false
-      - uses: ./.github/actions/setup
       - run:
           pnpm exec jest plugins/linear-genome-view/src/LinearGenomeView/rExport
           --reporters=default

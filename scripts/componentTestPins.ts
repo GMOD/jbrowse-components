@@ -9,9 +9,9 @@
 // cgv-vite. `gen-component-test-pins.ts --check` runs this in lint to catch the
 // drift at its source.
 //
-// pack.ts packs every workspace package, so a pin list computed from the
-// workspace listing alone matches one computed from a full pack — which is what
-// lets the check run without the tarballs on disk.
+// pack.ts packs every workspace package `isPacked` admits, so a pin list
+// computed from the workspace listing alone matches one computed from a full
+// pack — which is what lets the check run without the tarballs on disk.
 import fs from 'node:fs'
 import path from 'node:path'
 
@@ -24,7 +24,19 @@ export const subDirs = [
   'jbrowse-img',
 ]
 
-const workspaceDirs = ['packages', 'products', 'plugins', 'example-plugins']
+export const workspaceDirs = [
+  'packages',
+  'products',
+  'plugins',
+  'example-plugins',
+]
+
+// Private packages are never published, so no consumer installs one — except
+// example-plugins/*, which plugin-vite installs to test the publishConfig
+// exports map.
+export function isPacked(dir: string, pkgJson: { private?: boolean }) {
+  return !pkgJson.private || dir === 'example-plugins'
+}
 
 export interface WorkspaceIndex {
   /** package name -> the tarball name `pnpm pack` produces, minus the version */
@@ -48,6 +60,9 @@ export function readWorkspace(root: string): WorkspaceIndex {
         const pkgJsonPath = path.join(fullDir, subdir, 'package.json')
         if (fs.existsSync(pkgJsonPath)) {
           const pkgJson = JSON.parse(fs.readFileSync(pkgJsonPath, 'utf8'))
+          if (!isPacked(dir, pkgJson)) {
+            continue
+          }
           tarballs[pkgJson.name] = tarballName(pkgJson.name)
           dependencies[pkgJson.name] = pkgJson.dependencies ?? {}
         }

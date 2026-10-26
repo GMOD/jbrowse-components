@@ -3,13 +3,15 @@ import path from 'node:path'
 
 import { sync as spawnSync } from 'cross-spawn'
 
-import { pinnedFiles, subDirs, tarballName } from './componentTestPins.ts'
+import {
+  isPacked,
+  pinnedFiles,
+  subDirs,
+  tarballName,
+  workspaceDirs,
+} from './componentTestPins.ts'
 
 const root = path.resolve(import.meta.dirname, '..')
-// example-plugins/* are private (never published) but still packed: packing is
-// the only way a consumer resolves them through the publishConfig exports map
-// and built esm/ output, which is exactly what plugin-vite exists to test.
-const workspaceDirs = ['packages', 'products', 'plugins', 'example-plugins']
 const packedTarballsByPackageName: Record<string, string> = {}
 const dependenciesByPackageName: Record<string, Record<string, string>> = {}
 
@@ -34,6 +36,9 @@ for (const dir of workspaceDirs) {
       if (fs.existsSync(pkgJsonPath)) {
         const location = pkgDir
         const pkgJson = JSON.parse(fs.readFileSync(pkgJsonPath, 'utf8'))
+        if (!isPacked(dir, pkgJson)) {
+          continue
+        }
 
         if (pinOnly) {
           // Only register packages whose tarball is actually on disk, so a

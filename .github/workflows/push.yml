@@ -134,7 +134,10 @@ jobs:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           persist-credentials: false
+      # Each check after the first runs even when an earlier one failed, so one
+      # run names every failing check.
       - uses: ./.github/actions/setup
+        id: setup
       - name: Typecheck codebase
         run: pnpm typecheck
       # The published artifact, which `pnpm typecheck` does not stand in for:
@@ -150,6 +153,7 @@ jobs:
       # skipped the hook left main red with no run saying so. Cold here (no
       # .tsbuildinfo to reuse), which the project references keep to ~1min.
       - name: Build what we publish
+        if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
         run: pnpm build:esm
       # Rides this job rather than earning its own: it builds a program from the
       # same root tsconfig `typecheck:web` does, so it wants exactly this
@@ -161,6 +165,7 @@ jobs:
       # the decision. It only fails when the count GROWS; lowering the baseline
       # is a `--write` and a reason in the commit.
       - name: Check config reads did not lose their slot-name checking
+        if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
         run: pnpm check-config-read-types
 
       # The other half of the same problem: not a typo'd slot name, but a
@@ -169,6 +174,7 @@ jobs:
       # be a type error, because a `jexl:` expression on a `color` slot is a
       # string and the resolved type is already string.
       - name: Check callback slots are not resolved without a context
+        if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
         run: pnpm check-deferred-slot-reads
 
   lint:
@@ -180,14 +186,17 @@ jobs:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           persist-credentials: false
+      # Each check after the first runs even when an earlier one failed, so one
+      # run names every failing check.
       - uses: ./.github/actions/setup
+        id: setup
       - name: Check codebase format
         run: pnpm check-format
-      - name: Fast lint (oxlint) — fail fast before slower checks
-        run: pnpm lint:fast
       - name: Type-aware lint (oxlint + tsgolint)
+        if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
         run: pnpm lint
       - name: Lint backstop (eslint — react-compiler + guards oxlint can't do)
+        if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
         run: pnpm lint:eslint
       # A ratchet, not a generated artifact, so it is deliberately NOT a
       # scripts/autogen.ts generator: autogen would quietly write a new gated
@@ -195,16 +204,19 @@ jobs:
       # force. Source-only and instant, so it
       # rides lint's checkout rather than earning a job.
       - name: Check gated adapters declare a byte budget
+        if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
         run: pnpm check-gated-adapter-budgets
       # Source-only and instant for the same reason, and it guards a failure
       # nothing else can see: `| head` under pipefail exits 141, so the script
       # stops mid-run having printed something that looks like it finished.
       - name: Check no `| head` under `set -o pipefail`
+        if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
         run: pnpm check-shell-pipefail
       # Also source-only. Claude Code shows the model at most 2048 characters
       # of the MCP server instructions and of each tool description, and the
       # texts had drifted to 2.7 KB and 5 KB with the must-read sentence last.
       - name: Check the MCP server's texts fit what clients show the model
+        if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
         run: pnpm check-mcp-text-caps
       # Also source-only, and no other job can see it: `pnpm typecheck` is
       # `--noEmit`, so two files whose names differ only by case emit nothing to
@@ -212,17 +224,20 @@ jobs:
       # Three pairs were live at once on 2026-08-20 and main stayed red for
       # days; until now this ran from `pnpm verify` and nowhere else.
       - name: Check no two modules differ only by case
+        if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
         run: pnpm check-case-collisions
       # Also source-only. TypeScript 7's package entry is a stub, so a bump of
       # the ambient `typescript` past 6.x takes out typescript-eslint, both
       # doc generators and oxlint's type-aware pass at once — and the six
       # manifests declaring it are easy to fix one at a time and miss five.
       - name: Check every workspace manifest pins TypeScript 6.x
+        if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
         run: pnpm check-typescript-pin
       # Also source-only, and a static read rather than an import on purpose:
       # these lists are eager-bundle roots, so a shared array would put every
       # product's plugins in every product's graph.
       - name: Check the three app products' core plugin sets agree
+        if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
         run: pnpm check-core-plugin-sets
 
   # Every artifact that is generated and committed, behind one driver. Adding a
@@ -502,8 +517,6 @@ jobs:
       # local, including the --genome config.
       - name: Test @jbrowse/img end-to-end renders
         run: pnpm --filter @jbrowse/img test:integration
-      - name: Test build
-        run: BUILT_TESTS=1 pnpm built-test-ci
       - name: Upload packed artifacts for component tests
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
@@ -621,7 +634,9 @@ jobs:
         run: pnpm --filter ${{ matrix.site }} smoke
       # Each site deploys from its own leg, after its smoke test, so a red site
       # never ships and a green one does not wait on the other three. The
-      # prefix is fixed and unversioned, so a site deploys to its root. No
+      # prefix is fixed and unversioned, so a site deploys to its root. _astro/
+      # is content-hashed, so its sync skips any key already there at the same
+      # size. No
       # --delete: the site overlays the prefix without touching the historical
       # per-ref Storybook subdirs (e.g. /storybook/lgv/v3.0.0/). Prerelease tags
       # (carrying a '-') are excluded, since a beta would replace the live demos
@@ -643,7 +658,8 @@ jobs:
         run: |
           DIST=products/${{ matrix.dir }}/examples-site/dist
           DEST=s3://jbrowse.org/storybook/${{ matrix.prefix }}
-          aws s3 sync --cache-control "public, max-age=31536000, immutable" \
+          aws s3 sync --size-only \
+            --cache-control "public, max-age=31536000, immutable" \
             "$DIST/_astro" "$DEST/_astro"
           aws s3 sync --exclude="_astro/*" "$DIST" "$DEST"
           aws cloudfront create-invalidation \

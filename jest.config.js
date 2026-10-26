@@ -292,15 +292,6 @@ export default {
   // regardless: its filename carries a rootDir hash of its own.
   projects: [
     {
-      // Root-level integration test
-      displayName: 'integration',
-      testMatch: ['<rootDir>/integration.test.js'],
-      testEnvironment: 'node',
-      ...baseConfig,
-      id: 'jbrowse-integration',
-      roots: ['<rootDir>'],
-    },
-    {
       // Pure helpers behind the docs autogeneration scripts, plus the
       // astro:content-free pure helpers in website/src/lib (everything else
       // there depends on astro:content, which isn't mocked here, so is

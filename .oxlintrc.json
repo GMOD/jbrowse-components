@@ -146,7 +146,6 @@
     "**/test_data",
     "*_build",
     "packages/__mocks__",
-    "integration.test.js",
     "config/webpack",
     "website/blog",
     "website/docs",

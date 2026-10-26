@@ -25,7 +25,8 @@ inputs:
 # lands here. release.yml leaves `delete` off, because latest/ holds test_data
 # no current build has and old docs may still link to it.
 #
-# static/ is content-hashed, so browsers may keep it without re-checking.
+# static/ is content-hashed, so browsers may keep it without re-checking, and
+# the sync skips any key already there at the same size.
 # index.html goes up after the chunks it names. Old chunks stay for 30 days so
 # tabs on the previous build can still lazy-load them; the prune drops only
 # chunks that are both absent from this build and that old.
@@ -43,7 +44,7 @@ runs:
         DEST=s3://jbrowse.org/$PREFIX
         delete=()
         if [ "$DELETE" = true ]; then delete=(--delete); fi
-        aws s3 sync --exclude="*.map" --cache-control "public, max-age=31536000, immutable" static "$DEST/static"
+        aws s3 sync --size-only --exclude="*.map" --cache-control "public, max-age=31536000, immutable" static "$DEST/static"
         aws s3 sync "${delete[@]}" --exclude="*.map" --exclude="static/*" --exclude=index.html --exclude=config.json . "$DEST"
         aws s3 cp --cache-control no-cache config.json "$DEST/config.json"
         aws s3 cp --cache-control no-cache index.html "$DEST/index.html"

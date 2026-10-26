@@ -41,23 +41,16 @@ jobs:
     timeout-minutes: 30
     permissions:
       contents: write
-    # Consumed below so the prerelease flag and the latest/ gate can't drift.
+    # A prerelease tag carries a '-' (v4.4.0-beta.1).
     outputs:
-      prerelease: ${{ steps.tag.outputs.prerelease }}
+      prerelease: ${{ contains(github.ref_name, '-') }}
+    env:
+      RELEASE_VERSION: ${{ github.ref_name }}
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           persist-credentials: false
       - uses: ./.github/actions/setup
-      - name: Classify the release tag
-        id: tag
-        run: |
-          echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> "$GITHUB_ENV"
-          # A prerelease tag carries a '-' (v4.4.0-beta.1).
-          case "${GITHUB_REF#refs/tags/}" in
-            *-*) echo 'prerelease=true' >> "$GITHUB_OUTPUT" ;;
-            *) echo 'prerelease=false' >> "$GITHUB_OUTPUT" ;;
-          esac
       # The desktop jobs derive their upload target from package.json, not from
       # the tag — `gh release upload "v$VERSION" --clobber`. A tag that doesn't
       # match the tree's version therefore uploads this build's binaries over
@@ -129,8 +122,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PRERELEASE_FLAG:
-            ${{ steps.tag.outputs.prerelease == 'true' && '--prerelease' || ''
-            }}
+            ${{ contains(github.ref_name, '-') && '--prerelease' || '' }}
   buildwindows:
     needs: createrelease
     name: Build Windows desktop app
@@ -229,14 +221,15 @@ jobs:
   # Three green jobs is not the same claim as a complete release: each uploads
   # its own platform, and a release missing one platform's latest*.yml is one
   # that platform silently stops updating from. Reads the draft, so the answer
-  # is there before the Publish click that is the real gate; `if: always()` so
-  # an incomplete release says so rather than being inferred from a red sibling.
+  # is there before the Publish click that is the real gate. It runs after a
+  # failed platform build too, and names what the release lacks. It skips a
+  # failed createrelease, which leaves no draft to check.
   # `contents: write` only because GitHub hides drafts from a read-only token:
   # with `read`, v5.0.0-beta.7's complete draft reported "no release".
   verifydesktop:
     name: Verify the release carries every desktop artifact
-    needs: [buildwindows, buildmac, buildlinux]
-    if: always()
+    needs: [createrelease, buildwindows, buildmac, buildlinux]
+    if: ${{ !cancelled() && needs.createrelease.result == 'success' }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
