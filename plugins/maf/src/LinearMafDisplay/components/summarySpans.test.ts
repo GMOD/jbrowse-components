@@ -122,9 +122,9 @@ test('a bar takes the match color at its score-proportional alpha', () => {
 })
 
 test('positions a bar on its species row across the block extent', () => {
-  // row 2: h=12, offset=1.5, top = 1.5 + 15*2 = 31.5 in the rows band
+  // row 2 tops out at 1.5 + 15*2 = 31.5, which Canvas2D snaps to 32
   expect(paint([rec({ src: 'rn6' })], block(1))).toEqual([
-    { x: 0, y: ROWS_TOP + 31.5, w: 10, h: 12 },
+    { x: 0, y: ROWS_TOP + 32, w: 10, h: 12 },
   ])
 })
 
