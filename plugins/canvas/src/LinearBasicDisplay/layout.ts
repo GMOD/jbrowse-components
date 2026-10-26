@@ -23,7 +23,6 @@ import type {
   FlatbushItem,
 } from '../RenderFeatureDataRPC/rpcTypes.ts'
 import type { DrawnAxis } from './drawnAxis.ts'
-import type { FeatureFacet } from './facet.ts'
 import type { IsoformGapSpread } from './isoformGapFloor.ts'
 import type { IsoformBadge, IsoformTrim } from './isoformTrim.ts'
 import type {
@@ -49,29 +48,17 @@ export function computeLaidOutData(
   return layoutRefGroups(rpcDataMap, inputs, prevYByFeatureId).out
 }
 
-// A flattened layout puts every record on row 0 to share pixels, and a section
-// split there would stack two bands nobody reserved.
-function effectiveFacet(
-  inputs: Pick<LayoutInputs, 'facet' | 'flattenRows'>,
-): FeatureFacet | undefined {
-  return inputs.flattenRows ? undefined : inputs.facet
-}
-
 // The row above each section's first row, spent only while the sections draw
 // chips; ungrouped is the one-section case at 0.
-function sectionChipPx(inputs: Pick<LayoutInputs, 'facet' | 'flattenRows'>) {
-  return effectiveFacet(inputs) ? GROUP_LABEL_HEIGHT : 0
+function sectionChipPx({ facet }: Pick<LayoutInputs, 'facet'>) {
+  return facet ? GROUP_LABEL_HEIGHT : 0
 }
 
-function sectionOrder(inputs: Pick<LayoutInputs, 'facet' | 'flattenRows'>) {
-  const facet = effectiveFacet(inputs)
+function sectionOrder({ facet }: Pick<LayoutInputs, 'facet'>) {
   return facet ? facetField(facet).compare : compareGroupKeys
 }
 
-function sectionAssignment(
-  inputs: Pick<LayoutInputs, 'facet' | 'flattenRows'>,
-) {
-  const facet = effectiveFacet(inputs)
+function sectionAssignment({ facet }: Pick<LayoutInputs, 'facet'>) {
   return facet ? sectionIdsOf(facet) : undefined
 }
 
@@ -149,7 +136,7 @@ interface PackedSection extends SectionPrep {
 // its tallest ref group, and the chip row sits above its first row.
 function stackSections(
   refs: readonly PackedSection[][],
-  inputs: Pick<LayoutInputs, 'facet' | 'flattenRows'>,
+  inputs: Pick<LayoutInputs, 'facet'>,
 ) {
   const chipPx = sectionChipPx(inputs)
   const heights = new Map<string, number>()
@@ -531,7 +518,6 @@ const LAYOUT_CACHE_KEYS_RECORD: Record<
   expandedGeneIds: true,
   facet: true,
   hiddenGroupKeys: true,
-  flattenRows: true,
   dropBelowLabelRows: true,
   bodyScale: true,
 }
@@ -652,7 +638,7 @@ export function createIncrementalLayout({
     // Unlike `groupRawByRef`, an empty region still needs a cache entry, or
     // its group re-packs every time it is present.
     const groups = new Map<string, Map<number, LayoutRegionData>>()
-    const cacheKey = effectiveFacet(inputs)
+    const cacheKey = inputs.facet
       ? () => 'grouped'
       : (raw: LayoutRegionData) => raw.regionKey
     for (const [idx, raw] of rpcDataMap) {

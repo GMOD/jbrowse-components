@@ -93,20 +93,13 @@ features per pixel and this counts depth, so 25 records called at one bp pass th
 gate and pile 25 deep. It is a promise about the picture: what collapses is a
 column no stack could have shown.
 
-**A fixed-height density band opts out of rows entirely.** `flattenRows` packs
-every feature onto row 0 the way `displayMode: 'collapsed'` does, without that
-mode's label suppression. The multi-sample variant lane took it until ADR-250
-removed the lane, leaving `flattenRows` no caller: the band was 40px
-holding a whole callset, its records are meant to share pixels rather than each
-claim a row, and stacking them honestly needs 68px — which cost the band every
-name through the fit ladder. Its old flatness came from the reservation bug, so
-this is the same picture asked for rather than inherited. One row has nowhere to
-move a colliding label, so the packer drops it instead: in pack order, a record
-keeps its name and description only where their strip, its whole body span
-included, clears every strip already kept. The first version kept every label
-and overprinted nested pangenome bubbles (`pangenome/bovine_kit`). A `displayMode:
-'collapsed'` that keeps its names generally is `ideas/waiting-on-a-call/collapsed-mode-labels.md`,
-still parked.
+**A fixed-height density band once opted out of rows.** The multi-sample variant
+lane packed every feature onto row 0 like `displayMode: 'collapsed'`, but kept
+its labels: a record kept its name and description only where their strip
+cleared every strip already kept, and the packer dropped the rest. ADR-250
+removed the lane and that opt-out (`flattenRows`) with it. A `displayMode:
+'collapsed'` that keeps its names generally is
+`ideas/waiting-on-a-call/collapsed-mode-labels.md`, still parked.
 
 **2. Explicit `displayMode: 'collapsed'` (whole-track, user-chosen).** A
 feature-height preset alongside `normal`/`compact`/`superCompact`. When selected
@@ -159,8 +152,6 @@ When reading a "collapse" in this subsystem, disambiguate first:
 - `singleRow` / `displayMode === 'collapsed'` → the explicit whole-track preset.
 - `densityFade` / `isSubPixelFade` / `collapsedFeatureIds` /
   `DENSITY_COLLAPSE_DEPTH` → the automatic sub-pixel path.
-- `flattenRows` → a caller asking for the whole-track single row without the
-  label suppression `displayMode: 'collapsed'` comes with.
 - `PILEUP_FADE_DEPTH` / `pileupFadeIds` → the fade, downstream of BOTH, reading
   only the committed rows.
 

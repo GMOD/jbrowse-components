@@ -50,6 +50,13 @@ mode-agnostic. The height side of the same problem has since been settled:
 `TrackHeightMixin` stores the display height directly on the `height` config
 slot, so there is no `heightOverride` to reconcile a label reservation against.
 
+## Tried
+
+A greedy one-row pack, built for the multi-sample variant lane and removed with
+it (ADR-250), kept a record's name where its label strip cleared every strip
+already kept, in pack order, and dropped the rest, so a pile of records kept
+one name. It needed no solver.
+
 ## What not to re-propose
 
 Drawing the names at the row anyway and letting them overlap: that is what

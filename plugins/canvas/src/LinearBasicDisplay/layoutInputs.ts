@@ -56,11 +56,6 @@ export interface LayoutInputs {
   // A hidden section's features leave the pack. Keys mean nothing outside the
   // grouping that issued them, so the set is dropped when it changes.
   hiddenGroupKeys?: ReadonlySet<string>
-  // Row 0 for everything without collapsed mode's label suppression, for a
-  // fixed-height band whose records are meant to share pixels. A
-  // label whose strip meets one already kept is dropped, name and
-  // description both.
-  flattenRows?: boolean
   // The worker counts these rows and the main thread spends them at
   // `labelFontPx`, which is what makes this a layout input rather than a
   // refetch.
@@ -94,7 +89,7 @@ export interface DisplayModeMetrics {
 export function displayModeMetrics(
   inputs: Pick<
     LayoutInputs,
-    'displayMode' | 'dropBelowLabelRows' | 'bodyScale' | 'flattenRows'
+    'displayMode' | 'dropBelowLabelRows' | 'bodyScale'
   >,
 ): DisplayModeMetrics {
   const { displayMode, bodyScale = 1 } = inputs
@@ -104,7 +99,7 @@ export function displayModeMetrics(
     // height.
     labelFontPx: inputs.dropBelowLabelRows ? 0 : labelFontSize(displayMode),
     rowPadding: ROW_PADDING[displayMode] * bodyScale,
-    singleRow: displayMode === 'collapsed' || !!inputs.flattenRows,
+    singleRow: displayMode === 'collapsed',
   }
 }
 

@@ -486,14 +486,11 @@ function compareRank(a: number, b: number) {
 }
 
 // Three ranks: pinned, then prior row, then bp; this only reorders insertion,
-// and every feature still lands on its first-fit row. `longerFirst` breaks a
-// bp tie for the longer span, as `outranks` picks a pile's leader; the stacked
-// pack keeps insertion order there.
+// and every feature still lands on its first-fit row.
 function byPackPriority(
   packed: ReadonlyMap<string, PackedExtent>,
   pinnedFeatureIds: ReadonlySet<string>,
   prevYByFeatureId?: ReadonlyMap<string, number>,
-  longerFirst = false,
 ) {
   const pinRank = (id: string) => (pinnedFeatureIds.has(id) ? 0 : 1)
   const priorRow = (id: string) => prevYByFeatureId?.get(id) ?? PRIOR_ROW_NONE
@@ -501,8 +498,7 @@ function byPackPriority(
     ([idA, a], [idB, b]) =>
       compareRank(pinRank(idA), pinRank(idB)) ||
       compareRank(priorRow(idA), priorRow(idB)) ||
-      compareRank(a.layoutStartBp, b.layoutStartBp) ||
-      (longerFirst ? compareRank(b.endBp - b.startBp, a.endBp - a.startBp) : 0),
+      compareRank(a.layoutStartBp, b.layoutStartBp),
   )
 }
 
@@ -579,43 +575,16 @@ function reservedBoxPx(
   return { leftPx, rightPx, labelRows }
 }
 
-// One row has no row to move a colliding label to, so the label goes: in
-// pack order, a feature keeps its names and descriptions only where their
-// strip clears every strip already kept.
-function packSingleRow(
-  packed: ReadonlyMap<string, PackedExtent>,
-  features: PackPrep['features'],
-  inputs: LayoutInputs,
-  rowPadding: number,
-  droppedNameIds: Set<string>,
-  droppedDescriptionIds: Set<string>,
-) {
-  const { bpPerPx, pinnedFeatureIds } = inputs
+// Collapsed mode reserves no labels, so every feature takes row 0 at its own
+// height.
+function packSingleRow(packed: ReadonlyMap<string, PackedExtent>) {
   const layoutMap = new Map<string, number>()
   const layoutHeights = new Map<string, number>()
-  const kept: [number, number][] = []
-  // Collapsed mode reserves no labels, so it skips the sort.
-  const ordered = [...packed.values()].some(e => e.labelTopPx !== undefined)
-    ? byPackPriority(packed, pinnedFeatureIds, undefined, true)
-    : packed
-  for (const [id, ext] of ordered) {
+  for (const [id, ext] of packed) {
     layoutMap.set(id, 0)
     layoutHeights.set(id, ext.height)
-    if (ext.labelTopPx === undefined) {
-      continue
-    }
-    const strip = reservedBoxPx(ext, features.get(id)!, bpPerPx).labelRows!
-    if (
-      kept.some(([left, right]) => strip.left < right && left < strip.right)
-    ) {
-      droppedNameIds.add(id)
-      droppedDescriptionIds.add(id)
-      layoutHeights.set(id, ext.labelTopPx + rowPadding)
-    } else {
-      kept.push([strip.left, strip.right])
-    }
   }
-  return { layoutMap, layoutHeights, droppedDescriptionIds }
+  return { layoutMap, layoutHeights }
 }
 
 export function packPreparedRef(
@@ -635,14 +604,8 @@ export function packPreparedRef(
 
   if (singleRow) {
     return {
-      ...packSingleRow(
-        packed,
-        features,
-        inputs,
-        metrics.rowPadding,
-        droppedNameIds,
-        droppedDescriptionIds,
-      ),
+      ...packSingleRow(packed),
+      droppedDescriptionIds,
       droppedNameIds,
       trimPlan,
     }

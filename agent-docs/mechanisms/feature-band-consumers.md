@@ -6,8 +6,8 @@ description: A panel showing what another panel already draws has two seams avai
 # A band consumes the pipeline, not the display
 
 A panel routinely wants to show, in a strip of itself, what a different panel
-already knows how to draw: a coverage histogram over a read pileup, the variants
-over the genotypes that call them, a conservation summary over the alignment. The
+already knows how to draw: a coverage histogram over a read pileup, a
+conservation summary over the alignment. The
 composition has two seams available.
 
 The **shell** is the other panel's model, its config node, its fetch and its
@@ -51,7 +51,7 @@ choice between them is not a matter of taste:
 | --- | --- | --- |
 | another view of a payload the host already has | own bands, pure section math | `belowCoverageBandsGeometry`, `computeStackedSections` |
 | the same band two hosts draw | package it — buffers, passes, layer order | `coverageBandBuffers` in `packages/render-core/src/coverageBand.ts` |
-| another display's whole record rendering | consume that pipeline as functions | `buildFeatureRenderData` → `computeLaidOutData` → `paintFeatureBand`; no consumer since the variant lane left (ADR-250) |
+| another display's whole record rendering | consume that pipeline as functions | none in tree since the variant lane left (ADR-250); it ran plugin-canvas's layout, fit and paint calls over the cell payload |
 | the same display with different data | inherit the model | `LGVSyntenyDisplay` |
 
 Row two and row three are the same idea at different maturities. A band with two
@@ -63,9 +63,8 @@ the vocabulary, and moves when a second host appears.
 The pipeline seam exists only where the producing display's chain is plain data
 and plain functions — no MST, no React, no adapter, no fetch. Where it is, a
 consumer supplies its own reactivity and its own height budget and gets everything
-else: `buildFeatureRenderData`, `computeLaidOutData`, `resolveFitLadder`,
-`paintFeatureBand`, `performMultiRegionHitDetection` are the same calls the
-producing display makes.
+else: its layout, fit, paint and pick are the same calls the producing display
+makes.
 
 Where it is not, the work is to purify the chain first — which is the same work as
 making it unit-testable without booting a tree, so it is owed anyway.
@@ -132,7 +131,7 @@ strip (`64fd4d6ba1`) and left dead space at the bottom of the mode that promises
 to fill the display; `totalBelowCoverageOverhead` is the sum.
 
 The export and pick rules are why the composition, and not its pieces, is what gets shared:
-`paintFeatureBand` takes the kept label flags and the band's own cull band, so a
+a band painter takes the kept label flags and the band's own cull band, so a
 consumer cannot letter at a font size the packer never measured. Exporting the
 block painter and the label walk separately invites a second welding with its own
 answer to both.

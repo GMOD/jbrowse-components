@@ -124,35 +124,6 @@ export type { ImpliedUTR } from './RenderFeatureDataRPC/impliedUTRs.ts'
 export { mergeSpans } from './shared/mergeSpans.ts'
 export type { Span as GlyphSpan } from './shared/mergeSpans.ts'
 
-// The feature band as pure functions, for the multi-sample variant display's
-// lane and any other consumer drawing this plugin's data. The seam is the data,
-// not the model: plain arrays, plain config, plain numbers.
+// The feature glyph pipeline's front half as a pure function, for a display
+// outside this plugin checking its own glyphs against it.
 export { buildFeatureRenderData } from './RenderFeatureDataRPC/buildFeatureRenderData.ts'
-export {
-  computeLaidOutData,
-  createContentHeightProbe,
-} from './LinearBasicDisplay/layout.ts'
-export { scaleLaidOutData } from './LinearBasicDisplay/applyLayout.ts'
-export {
-  maxBottom,
-  minDrawnBoxHeight,
-} from './LinearBasicDisplay/layoutQueries.ts'
-export {
-  MIN_FIT_BOX_PX,
-  resolveFitLadder,
-  solveLabelRoomFactor,
-  squeezeFloorScale,
-} from './LinearBasicDisplay/fitLadder.ts'
-export { paintFeatureBand } from './LinearBasicDisplay/components/paintFeatureBand.ts'
-export {
-  buildFeatureFlatbushIndex,
-  performMultiRegionHitDetection,
-} from './LinearBasicDisplay/components/hitTesting.ts'
-export {
-  HEIGHT_MULTIPLIERS,
-  labelFontSize,
-} from './RenderFeatureDataRPC/glyphs/glyphUtils.ts'
-export type {
-  HitFeatureResult,
-  VisibleRegion,
-} from './LinearBasicDisplay/components/hitTesting.ts'

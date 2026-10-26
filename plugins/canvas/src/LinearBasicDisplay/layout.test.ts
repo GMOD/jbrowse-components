@@ -2157,88 +2157,9 @@ test('a hotspot does not drag the marks chained to it onto row 0', () => {
   expect(spreadTops.filter(t => t > 0).length).toBeGreaterThan(20)
 })
 
-function flatten(data: LayoutRegionData, showDescriptions = false) {
-  return computeLaidOutData(new Map([[0, data]]), {
-    bpPerPx: 20,
-    showLabels: true,
-    showDescriptions,
-    reversedRegions: new Set<number>(),
-    displayMode: 'normal',
-    pinnedFeatureIds: new Set<string>(),
-    flattenRows: true,
-  }).get(0)!
-}
-
-function namedIds(data: FeatureDataResult) {
-  return [...data.floatingLabelsData.values()]
-    .filter(l => l.nameLabel)
-    .map(l => l.featureId)
-}
-
-// One row has nowhere to move a colliding name, so it goes: the first of a
-// pile keeps its name, and so does every record clear of it.
-test('flattenRows packs a band onto one row, naming only what clears', () => {
-  const pile = Array.from({ length: 6 }, (_, i) => ({
-    featureId: `f${i}`,
-    startBp: 100 + i * 3,
-    endBp: 101 + i * 3,
-    height: 10,
-  }))
-  const spread = Array.from({ length: 4 }, (_, i) => ({
-    featureId: `g${i}`,
-    startBp: 5000 + i * 2000,
-    endBp: 5001 + i * 2000,
-    height: 10,
-  }))
-  const data = labeledFeatureData([...pile, ...spread])
-  const flat = flatten(data)
-  expect(flat.flatbushItems).toHaveLength(10)
-  expect(flat.flatbushItems.every(it => it.topPx === 0)).toBe(true)
-  expect(namedIds(flat)).toEqual(['f0', 'g0', 'g1', 'g2', 'g3'])
-  const bottomOf = (id: string) =>
-    flat.flatbushItems.find(it => it.featureId === id)!.bottomPx
-  expect(bottomOf('f1')).toBeLessThan(bottomOf('f0'))
-  const stacked = layout(new Map([[0, data]]), 20).get(0)!
-  expect(
-    new Set(stacked.flatbushItems.map(it => it.topPx)).size,
-  ).toBeGreaterThan(1)
-})
-
-// A description reaches as far as a name does, and a record that lost the
-// strip loses both lines: a description alone at the row would overprint the
-// one that kept it.
-test('flattenRows drops the description with the name', () => {
-  const data = labeledFeatureData([
-    { featureId: 'a', startBp: 100, endBp: 101, height: 10 },
-    { featureId: 'b', startBp: 1300, endBp: 1301, height: 10 },
-  ])
-  for (const label of data.floatingLabelsData.values()) {
-    label.descriptionLabel = {
-      text: 'a long description',
-      relativeY: 11,
-      textWidth: 200,
-    }
-  }
-  const withDescriptions = flatten(data, true)
-  expect(namedIds(withDescriptions)).toEqual(['a'])
-  expect(
-    withDescriptions.floatingLabelsData.get('b')?.descriptionLabel,
-  ).toBeUndefined()
-  expect(namedIds(flatten(data))).toEqual(['a', 'b'])
-})
-
-test('flattenRows gives a shared start to the longer record', () => {
-  const data = labeledFeatureData([
-    { featureId: 'short', startBp: 100, endBp: 101, height: 10 },
-    { featureId: 'long', startBp: 100, endBp: 20_000, height: 10 },
-  ])
-  expect(namedIds(flatten(data))).toEqual(['long'])
-})
-
-// The pack spends no rows under `flattenRows`, so a collapse plan is work with
-// nowhere to go: the two ways of asking for one row have to reach the density
-// collapse as one answer, not just reach the packer as one.
-test('a flattened band plans no density collapse', () => {
+// A collapsed pack spends no rows, so a density collapse plan is work with
+// nowhere to go.
+test('a collapsed pack plans no density collapse', () => {
   const features = Array.from({ length: 40 }, (_, i) => ({
     featureId: `d${i}`,
     startBp: 500,
@@ -2265,21 +2186,18 @@ test('a flattened band plans no density collapse', () => {
   )
   expect(stacked.collapsedFeatureIds.size).toBeGreaterThan(0)
 
-  const flat = { ...inputs, flattenRows: true }
-  const flattened = prepareRefPack(
+  const collapsed = { ...inputs, displayMode: 'collapsed' as const }
+  const packed = prepareRefPack(
     regions,
-    flat,
-    displayModeMetrics(flat),
+    collapsed,
+    displayModeMetrics(collapsed),
     drawnAxis([]),
   )
-  expect(flattened.collapsedFeatureIds.size).toBe(0)
-  expect(flattened.collapsedSpansPx).toEqual([])
+  expect(packed.collapsedFeatureIds.size).toBe(0)
+  expect(packed.collapsedSpansPx).toEqual([])
 })
 
-test.each([
-  ['a flattened', { flattenRows: true }],
-  ['a collapsed', { displayMode: 'collapsed' as const }],
-])('%s pack seeds no rows into the pack after it', (_, singleRow) => {
+test('a collapsed pack seeds no rows into the pack after it', () => {
   const overlapping = (ids: string[]) =>
     new Map([
       [
@@ -2308,7 +2226,7 @@ test.each([
     )
 
   const memo = createIncrementalLayout()
-  memo(overlapping(['a', 'b']), { ...base, ...singleRow })
+  memo(overlapping(['a', 'b']), { ...base, displayMode: 'collapsed' })
   const afterSingleRow = memo(overlapping(['a', 'b', 'late']), base)
 
   const cold = createIncrementalLayout()(overlapping(['a', 'b', 'late']), base)
