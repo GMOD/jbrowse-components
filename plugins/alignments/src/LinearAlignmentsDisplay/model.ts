@@ -116,7 +116,6 @@ import {
   readColorCategoryLabel,
   sashimiLegend,
 } from '../shared/legendUtils.ts'
-import { getMismatchContrastMap } from '../shared/util.ts'
 import { getColorForModification } from '../util.ts'
 import { sortOf } from './alignmentsSortConfigSchema.ts'
 import {
@@ -1758,19 +1757,6 @@ export default function stateModelFactory(
          */
         get showModifications() {
           return paintsModifications(self.baseLayer)
-        },
-
-        /**
-         * #getter
-         * Contrast colors for the mismatch/softclip/per-base letters, off the
-         * session palette. SVG export calls `getMismatchContrastMap` with its
-         * own palette.
-         */
-        get mismatchContrastMap(): Record<string, string> {
-          return getMismatchContrastMap(
-            this.showModifications,
-            getPaletteHost(self).palette,
-          )
         },
 
         /**

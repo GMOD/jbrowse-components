@@ -1,4 +1,10 @@
-import { buildBaseCssMap, buildBaseFadeCssMap } from './baseColors.ts'
+import { getContrastText } from '@jbrowse/core/ui/palette'
+
+import {
+  buildBaseContrastMap,
+  buildBaseCssMap,
+  buildBaseFadeCssMap,
+} from './baseColors.ts'
 
 import type { RenderState } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
 
@@ -92,5 +98,24 @@ describe('per-base canvas palette', () => {
     const dark = state(false)
     dark.colors = { ...dark.colors, colorBaseA: [0, 0, 0] }
     expect(buildBaseCssMap(dark)[65]).toBe('rgb(0,0,0)')
+  })
+})
+
+describe('per-base letter contrast', () => {
+  // The label pass read a map of A/C/G/T alone, so a letter over N's box or
+  // an IUPAC code fell back to black whatever the box's color
+  test('N and an IUPAC code take the contrast of their own box', () => {
+    const text = buildBaseContrastMap(state(false))
+    expect(text[78]).toBe(getContrastText('rgb(0,0,255)'))
+    expect(text[78]).toBe('#fff')
+    expect(text[IUPAC_R]).toBe(text[78])
+    expect(text[65]).toBe(getContrastText('rgb(255,0,0)'))
+  })
+
+  test('every letter follows the grey box under show-modifications', () => {
+    const text = buildBaseContrastMap(state(true))
+    for (const base of 'ACGTN') {
+      expect(text[base.charCodeAt(0)]).toBe(getContrastText(GREY))
+    }
   })
 })

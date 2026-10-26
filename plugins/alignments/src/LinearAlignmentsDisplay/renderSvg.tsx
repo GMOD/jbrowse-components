@@ -4,7 +4,6 @@ import { PaintLayer } from '@jbrowse/core/util/paintLayer'
 import { GroupLabelBoxes } from '@jbrowse/display-kit/GroupLabelBox'
 import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
 
-import { getMismatchContrastMap } from '../shared/util.ts'
 import SashimiLabels from './components/SashimiLabels.tsx'
 import { drawAlignmentLabels } from './components/drawAlignmentLabels.ts'
 import { bandScreenTop } from './components/sectionScreen.ts'
@@ -73,7 +72,6 @@ function AlignmentsSvgBody({
         sections.map(sec => sec.sashimiFeeds),
       )
     : []
-  const contrastMap = getMismatchContrastMap(model.showModifications, palette)
 
   // The sashimi count labels and the linked-read bezier arcs are vector SVG on
   // screen too, and each shares its geometry with the overlay so the two can't
@@ -94,7 +92,7 @@ function AlignmentsSvgBody({
             state,
           )
           if (overlays) {
-            drawAlignmentLabels(ctx, labels, contrastMap, palette)
+            drawAlignmentLabels(ctx, labels, state, palette)
           }
         }}
       />

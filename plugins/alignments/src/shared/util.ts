@@ -6,9 +6,7 @@ import {
   SAM_FLAG_SECOND_IN_PAIR,
   SAM_FLAG_UNMAPPED,
 } from '@jbrowse/cigar-utils'
-import { getContrastText } from '@jbrowse/core/ui/palette'
 
-import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 import type { Feature } from '@jbrowse/core/util'
 
 // Whether a packed CIGAR is soft or hard clipped at either end. Clips sit only
@@ -193,43 +191,6 @@ export function parseSamHeader(samHeader: SamHeaderLine[]): ParsedSamHeader {
   }
 
   return { idToName, idToLength, nameToId, readGroups }
-}
-
-function getColorBaseMap(palette: JBrowsePalette) {
-  const { skip, deletion, insertion, hardclip, softclip, bases } = palette
-  return {
-    A: bases.A.main,
-    C: bases.C.main,
-    G: bases.G.main,
-    T: bases.T.main,
-    deletion,
-    insertion,
-    hardclip,
-    softclip,
-    skip,
-  }
-}
-
-export function getContrastBaseMap(palette: JBrowsePalette) {
-  return Object.fromEntries(
-    Object.entries(getColorBaseMap(palette)).map(([key, value]) => [
-      key,
-      getContrastText(value),
-    ]),
-  )
-}
-
-// Returns contrast colors for mismatch/softclip/per-base letters. The rects
-// under these letters are always drawn in the base palette (baseColors.ts),
-// independent of the color field — only showModifications mutes them to a uniform
-// grey. So contrast text is meaningful in every color mode except when
-// modifications collapse the rects to grey, where black reads best and the
-// empty map makes drawAlignmentLabels fall back to it.
-export function getMismatchContrastMap(
-  showModifications: boolean,
-  palette: JBrowsePalette,
-): Record<string, string> {
-  return showModifications ? {} : getContrastBaseMap(palette)
 }
 
 function isTypedArray(

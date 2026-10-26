@@ -72,8 +72,6 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
   const hoverTargetRef = useRef<Element | null>(null)
   const isPanning = () => hoverTargetRef.current?.closest(PAN_DRAGGING) != null
 
-  const { mismatchContrastMap: contrastMap } = model
-
   function runHitTest(canvasX: number, canvasY: number) {
     const picked = resolveSectionForCanvasY(canvasY)
     const resolved = picked
@@ -597,7 +595,6 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
 
   return {
     width,
-    contrastMap,
     handleMouseLeave,
     handleMouseDown,
     handleContextMenu,

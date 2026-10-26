@@ -4,20 +4,21 @@ import { observer } from 'mobx-react'
 
 import { drawAlignmentLabels } from './drawAlignmentLabels.ts'
 
+import type { BaseColorState } from '../../features/mismatch/baseColors.ts'
 import type { VisibleLabel } from './computeVisibleLabels.ts'
 
 interface VisibleLabelsOverlayProps {
   labels: VisibleLabel[]
   width: number | undefined
   height: number
-  contrastMap: Record<string, string>
+  baseColors: BaseColorState
 }
 
 const VisibleLabelsOverlay = observer(function VisibleLabelsOverlay({
   labels,
   width,
   height,
-  contrastMap,
+  baseColors,
 }: VisibleLabelsOverlayProps) {
   const palette = usePalette()
   if (labels.length === 0) {
@@ -28,7 +29,7 @@ const VisibleLabelsOverlay = observer(function VisibleLabelsOverlay({
       width={width ?? 0}
       height={height}
       draw={ctx => {
-        drawAlignmentLabels(ctx, labels, contrastMap, palette)
+        drawAlignmentLabels(ctx, labels, baseColors, palette)
       }}
     />
   )

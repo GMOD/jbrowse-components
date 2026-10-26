@@ -42,7 +42,6 @@ const PileupBody = observer(function PileupBody({
 }) {
   const {
     width,
-    contrastMap,
     handleMouseLeave,
     handleMouseDown,
     handleContextMenu,
@@ -90,12 +89,7 @@ const PileupBody = observer(function PileupBody({
       <SashimiLabelsOverlay model={model} />
       <ArcHoverOverlay model={model} />
 
-      <VisibleLabelsHost
-        model={model}
-        width={width}
-        height={height}
-        contrastMap={contrastMap}
-      />
+      <VisibleLabelsHost model={model} width={width} height={height} />
 
       <CoverageResizeHandle model={model} />
 
@@ -367,19 +361,20 @@ const VisibleLabelsHost = observer(function VisibleLabelsHost({
   model,
   width,
   height,
-  contrastMap,
 }: {
   model: LinearAlignmentsDisplayModel
   width: number
   height: number
-  contrastMap: Record<string, string>
 }) {
   return (
     <VisibleLabelsOverlay
       labels={model.visibleLabels}
       width={width}
       height={height}
-      contrastMap={contrastMap}
+      baseColors={{
+        colors: model.themed.colors,
+        showModifications: model.showModifications,
+      }}
     />
   )
 })

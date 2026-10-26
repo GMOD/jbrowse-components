@@ -1,3 +1,5 @@
+import { getContrastText } from '@jbrowse/core/ui/palette'
+
 import {
   rgb255,
   rgbaPrefix255,
@@ -9,7 +11,7 @@ import type { ColorPalette, RGBColor } from '../../shaders/colors.ts'
 // Every function here reads exactly these two fields, so a caller holding the
 // palette — the coverage tooltip, which is not on a render path and has no
 // `RenderState` — can reach the same table without building one.
-type BaseColorState = Pick<RenderState, 'colors' | 'showModifications'>
+export type BaseColorState = Pick<RenderState, 'colors' | 'showModifications'>
 
 /**
  * The five per-base colors after the modifications-mode mute: when
@@ -69,6 +71,7 @@ let tableMemo:
       showModifications: boolean
       css: string[]
       faded: string[]
+      contrast: string[]
     }
   | undefined
 
@@ -82,6 +85,7 @@ function baseTables(state: BaseColorState) {
       showModifications: state.showModifications,
       css: baseTable(state, rgb255),
       faded: baseTable(state, rgbaPrefix255),
+      contrast: baseTable(state, c => getContrastText(rgb255(c))),
     }
   }
   return tableMemo
@@ -119,4 +123,10 @@ export function buildBaseCssMap(state: BaseColorState): string[] {
 // keeps a faded cell to one number conversion instead of four.
 export function buildBaseFadeCssMap(state: BaseColorState): string[] {
   return baseTables(state).faded
+}
+
+// The text color that reads on each base's box, by the same byte, so a letter
+// over N, an IUPAC code or the modifications mute follows its box.
+export function buildBaseContrastMap(state: BaseColorState): string[] {
+  return baseTables(state).contrast
 }

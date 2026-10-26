@@ -4,6 +4,9 @@ import {
   normalizedRgbToCssRgba,
 } from '@jbrowse/core/util/colorBits'
 
+import { buildBaseContrastMap } from '../../features/mismatch/baseColors.ts'
+
+import type { BaseColorState } from '../../features/mismatch/baseColors.ts'
 import type { VisibleLabel } from './computeVisibleLabels.ts'
 import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
@@ -20,12 +23,17 @@ const INTERBASE_TYPES = new Set<VisibleLabel['type']>([
  * raster overlays) applying DPR scaling.
  */
 export function drawAlignmentLabels(
-  ctx: Ctx2D,
+  ctx: Pick<
+    Ctx2D,
+    'fillStyle' | 'fillText' | 'font' | 'textAlign' | 'textBaseline'
+  >,
   labels: VisibleLabel[],
-  contrastMap: Record<string, string>,
+  baseColors: BaseColorState,
   palette: JBrowsePalette,
 ) {
   const white = palette.common.white
+  const baseText = buildBaseContrastMap(baseColors)
+  const deletionText = getContrastText(palette.deletion)
   ctx.textBaseline = 'middle'
   // Canvas2D re-parses the font shorthand on every assignment, and in practice
   // every label shares one font, so only write the state that changed. The
@@ -48,9 +56,9 @@ export function drawAlignmentLabels(
         fillColor = palette.hardclip
       }
     } else if (label.type === 'mismatch') {
-      fillColor = contrastMap[label.text] ?? 'black'
+      fillColor = baseText[label.text.charCodeAt(0)]!
     } else if (label.type === 'deletion') {
-      fillColor = getContrastText(palette.deletion)
+      fillColor = deletionText
     } else {
       fillColor = white
     }
