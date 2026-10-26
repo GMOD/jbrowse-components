@@ -49,7 +49,7 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
  *     {
  *       type: 'LinearScoreDisplay',
  *       displayId: 'genes_with_scores-LinearScoreDisplay',
- *       scoreColumn: 'score',
+ *       encoding: { y: { field: 'score' } },
  *     },
  *   ],
  * }
@@ -83,7 +83,7 @@ export function modelFactory(configSchema: LinearScoreDisplayConfigModel) {
       // settings that change what the worker computes here; never scroll/zoom
       // (those change every frame) or the fetch results themselves.
       rpcProps() {
-        return { scoreColumn: getConf(self, 'scoreColumn') }
+        return { scoreColumn: getConf(self, ['encoding', 'y', 'field']) }
       },
       // #endregion
     }))
@@ -112,7 +112,7 @@ export function modelFactory(configSchema: LinearScoreDisplayConfigModel) {
         return {
           canvasWidth: self.canvasWidthPx,
           canvasHeight: self.height,
-          color: cssColorToABGR(getConf(self, 'color')),
+          color: cssColorToABGR(getConf(self, ['encoding', 'color', 'value'])),
           domainY: self.domain,
         }
       },

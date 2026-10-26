@@ -101,7 +101,7 @@ detail in the steps below:
 src/
   index.ts                       the plugin class; installs the display, the RPC method and the feature panel
   LinearScoreDisplay/
-    configSchema.ts              config slots (color, scoreColumn)
+    configSchema.ts              config slots (encoding.color, encoding.y)
     findScoreHit.ts              the display's hit: `nearestMarkHit` asks the mark's `hitNearest` (implied by its `ink`) about every instance under the cursor
     index.ts                     registers the display type; the model and the component both load lazily
     model.ts                     MST model: rpcDataMap, renderState, fetchNeeded, startRenderingBackend, renderSvg

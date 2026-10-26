@@ -79,7 +79,7 @@ neither file:
 src/
   index.ts                       the plugin class; installs the display, the RPC method and the feature panel
   LinearScoreDisplay/
-    configSchema.ts              config slots (color, scoreColumn)
+    configSchema.ts              config slots (encoding.color, encoding.y)
     findScoreHit.ts              the display's hit: `nearestMarkHit` asks the mark's `hitNearest` (implied by its `ink`) about every instance under the cursor
     index.ts                     registers the display type; the model and the component both load lazily
     model.ts                     MST model: rpcDataMap, renderState, fetchNeeded, startRenderingBackend, renderSvg
@@ -255,7 +255,7 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
  *     {
  *       type: 'LinearScoreDisplay',
  *       displayId: 'genes_with_scores-LinearScoreDisplay',
- *       scoreColumn: 'score',
+ *       encoding: { y: { field: 'score' } },
  *     },
  *   ],
  * }
@@ -288,7 +288,7 @@ export function modelFactory(configSchema: LinearScoreDisplayConfigModel) {
       // settings that change what the worker computes here; never scroll/zoom
       // (those change every frame) or the fetch results themselves.
       rpcProps() {
-        return { scoreColumn: getConf(self, 'scoreColumn') }
+        return { scoreColumn: getConf(self, ['encoding', 'y', 'field']) }
       },
     }))
     .views(self => ({
@@ -313,7 +313,7 @@ export function modelFactory(configSchema: LinearScoreDisplayConfigModel) {
         return {
           canvasWidth: self.canvasWidthPx,
           canvasHeight: self.height,
-          color: cssColorToABGR(getConf(self, 'color')),
+          color: cssColorToABGR(getConf(self, ['encoding', 'color', 'value'])),
           domainY: self.domain,
         }
       },

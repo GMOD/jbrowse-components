@@ -1,4 +1,4 @@
-// #exampleFile shared | config slots (color, scoreColumn)
+// #exampleFile shared | config slots (encoding.color, encoding.y)
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 /**
@@ -18,21 +18,27 @@ export const configSchema = ConfigurationSchema(
     },
     /**
      * #slot
+     * The channels each box paints through, spelled as the built-in
+     * displays spell theirs: `color.value` fills every box, and `y.field`
+     * names the feature attribute read as the box height.
      */
-    color: {
-      type: 'color',
-      defaultValue: '#0068d1',
-      description: 'fill color for every score box',
-    },
-    /**
-     * #slot
-     * feature attribute read as the score (box height); normalized per region
-     */
-    scoreColumn: {
-      type: 'string',
-      defaultValue: 'score',
-      description: 'feature attribute used as the score',
-    },
+    encoding: ConfigurationSchema('LinearScoreEncoding', {
+      color: ConfigurationSchema('LinearScoreColor', {
+        value: {
+          type: 'color',
+          defaultValue: '#0068d1',
+          description: 'fill color for every score box',
+        },
+      }),
+      y: ConfigurationSchema('LinearScoreY', {
+        field: {
+          type: 'string',
+          defaultValue: 'score',
+          description:
+            'feature attribute read as the score (box height); normalized per region',
+        },
+      }),
+    }),
   },
   { explicitIdentifier: 'displayId', explicitlyTyped: true },
 )

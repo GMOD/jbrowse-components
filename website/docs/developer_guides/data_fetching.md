@@ -231,7 +231,7 @@ reads:
 // settings that change what the worker computes here; never scroll/zoom
 // (those change every frame) or the fetch results themselves.
 rpcProps() {
-  return { scoreColumn: getConf(self, 'scoreColumn') }
+  return { scoreColumn: getConf(self, ['encoding', 'y', 'field']) }
 },
 ```
 
