@@ -16,7 +16,7 @@ import type {
 // NLRP1 because its pyrin domain is present in human and absent in mouse.
 const NLRP1_WINDOW = 'chr17:5,495,000-5,591,000'
 
-// The fixed height and longestCoding mode keep the right-click coordinate
+// The fixed height and representative mode keep the right-click coordinate
 // stable when RefSeq's isoform count changes.
 const NLRP1_LGV = {
   type: 'LinearGenomeView',
@@ -25,7 +25,7 @@ const NLRP1_LGV = {
   tracks: [
     {
       trackId: 'hg38-ncbiRefSeqCurated',
-      geneGlyphMode: 'longestCoding',
+      geneGlyphMode: 'representative',
       height: 60,
     },
   ],
@@ -98,7 +98,7 @@ export const proteinTourFixtures = {
           {
             trackId: TP53_GENE_TRACK,
             // The right-click resolves against the band, as in NLRP1_LGV.
-            geneGlyphMode: 'longestCoding',
+            geneGlyphMode: 'representative',
             height: 60,
           },
           { trackId: TP53_CLINVAR_TRACK, height: 90 },
@@ -222,7 +222,7 @@ export const msaSpecs: ScreenshotSpec[] = [
           tracks: [
             {
               trackId: 'hg38-ncbiRefSeqCurated',
-              geneGlyphMode: 'longestCoding',
+              geneGlyphMode: 'representative',
               height: 60,
             },
             // unipDomain has one feature per record per isoform; unfiltered,

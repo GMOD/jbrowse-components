@@ -680,10 +680,10 @@ export const uiSpecs: ScreenshotSpec[] = [
             {
               trackId: 'ncbi_refseq_109_hg38',
               // The `geneLike` filter alone stacks a dozen RHD transcripts and
-              // pushes the coverage off; `longestCoding` plus 'grow' keeps RHD
+              // pushes the coverage off; `representative` plus 'grow' keeps RHD
               // in frame.
               heightMode: 'grow',
-              geneGlyphMode: 'longestCoding',
+              geneGlyphMode: 'representative',
               showLabels: 'name',
               filter: ['geneLike'],
             },

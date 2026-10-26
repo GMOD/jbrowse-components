@@ -16,7 +16,7 @@ describe('gene-glyph collapse notice', () => {
   it('shows whenever a multi-isoform gene is loaded, in every mode', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
-    display.setGeneGlyphMode('longestCoding')
+    display.setGeneGlyphMode('representative')
 
     display.setRpcData(
       0,
@@ -41,7 +41,7 @@ describe('gene-glyph collapse notice', () => {
   it('dismiss keeps the control (minimizes it), it does not remove it', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
-    display.setGeneGlyphMode('longestCoding')
+    display.setGeneGlyphMode('representative')
     display.setRpcData(
       0,
       makeFeatureData({ hasMultiIsoformGenes: true }),
@@ -60,7 +60,7 @@ describe('gene-glyph collapse notice', () => {
   it('exposes the control as a geneGlyphNotice bundle wired to the actions', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
-    display.setGeneGlyphMode('longestCoding')
+    display.setGeneGlyphMode('representative')
 
     display.setRpcData(
       0,
@@ -77,7 +77,7 @@ describe('gene-glyph collapse notice', () => {
     expect(display.geneGlyphNotice).toEqual({
       collapsed: true,
       dismissed: false,
-      mode: 'longestCoding',
+      mode: 'representative',
       picks: { byTag: {}, byLength: 0, byCap: 0 },
       setMode: expect.any(Function),
       dismiss: expect.any(Function),
@@ -94,7 +94,7 @@ describe('gene-glyph collapse notice', () => {
   it('sums each region’s picks into the notice the chip reads', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
-    display.setGeneGlyphMode('longestCoding')
+    display.setGeneGlyphMode('representative')
 
     for (const [num, byTag] of [
       [0, { 'RefSeq Select': 3 }],

@@ -132,7 +132,7 @@ const config: DisplayConfig = {
   labels: { name: '', description: '' },
 }
 
-function render(gene: SimpleFeature, geneGlyphMode: 'all' | 'longestCoding') {
+function render(gene: SimpleFeature, geneGlyphMode: 'all' | 'representative') {
   const track = buildFeatureRenderData({
     features: [gene],
     config: { ...config, geneGlyphMode },
@@ -198,7 +198,7 @@ function lines(
 
 describe.each([
   ['one transcript', oneTranscript, 'all'],
-  ['the representative of several', isoforms, 'longestCoding'],
+  ['the representative of several', isoforms, 'representative'],
 ] as const)('%s', (_name, gene, mode) => {
   const { track, lane, trackTop } = render(gene, mode)
 

@@ -216,7 +216,7 @@ export const mafSpecs: ScreenshotSpec[] = [
             {
               trackId: 'ce11_ncbi_refseq',
               displayMode: 'compact',
-              geneGlyphMode: 'longestCoding',
+              geneGlyphMode: 'representative',
             },
             {
               trackId: 'ce11.26way',
@@ -299,7 +299,7 @@ export const mafSpecs: ScreenshotSpec[] = [
           tracks: [
             {
               trackId: 'ncbi_genes_hg38_ucsc',
-              geneGlyphMode: 'longestCoding',
+              geneGlyphMode: 'representative',
               filter: ['geneLike'],
             },
             {
@@ -389,7 +389,7 @@ export const mafSpecs: ScreenshotSpec[] = [
           tracks: [
             {
               trackId: 'ncbi_genes_hg38_ucsc',
-              geneGlyphMode: 'longestCoding',
+              geneGlyphMode: 'representative',
               filter: ['geneLike'],
             },
             {
@@ -456,7 +456,7 @@ export const mafSpecs: ScreenshotSpec[] = [
             {
               trackId: 'ncbi_genes_hg38_ucsc',
               filter: ['geneLike'],
-              geneGlyphMode: 'longestCoding',
+              geneGlyphMode: 'representative',
               heightMode: 'grow',
             },
             {

@@ -47,7 +47,7 @@ function landmarkTrack(hap: 'MAT' | 'PAT') {
 function geneLane(hap: 'MAT' | 'PAT', extra: Record<string, unknown> = {}) {
   return {
     trackId: `hg002_genes_${hap.toLowerCase()}`,
-    geneGlyphMode: 'longestCoding',
+    geneGlyphMode: 'representative',
     encoding: { color: STRAND_COLOR },
     legend: { show: false },
     ...extra,
@@ -80,7 +80,7 @@ const STRAND_COLOR = { field: 'strand' }
 function landmarkLane(hap: 'MAT' | 'PAT') {
   return {
     trackId: `hg002_landmarks_${hap.toLowerCase()}`,
-    geneGlyphMode: 'longestCoding',
+    geneGlyphMode: 'representative',
     filter: [LANDMARK_FILTER],
     encoding: { color: STRAND_COLOR },
     legend: { show: false },

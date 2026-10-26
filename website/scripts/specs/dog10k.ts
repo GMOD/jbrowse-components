@@ -312,7 +312,7 @@ export const dog10kVideoFixtures = {
       tracks: [
         {
           trackId: 'canFam4_ncbi_refseq',
-          geneGlyphMode: 'longestCoding',
+          geneGlyphMode: 'representative',
           height: 80,
         },
         {
@@ -724,7 +724,7 @@ export const dog10kSpecs: ScreenshotSpec[] = [
       tracks: [
         {
           trackId: 'canFam4_ncbi_refseq',
-          geneGlyphMode: 'longestCoding',
+          geneGlyphMode: 'representative',
           displayMode: 'compact',
           height: 90,
         },
@@ -1001,7 +1001,7 @@ export const dog10kSpecs: ScreenshotSpec[] = [
           trackId: 'canFam4_ncbi_refseq',
           // The same glyph mode as dog10k-size-fst-scan-igf1 above it on the
           // page.
-          geneGlyphMode: 'longestCoding',
+          geneGlyphMode: 'representative',
           height: 80,
         },
         // Per-site Hudson Fst over the matrix's own VCF: each point is one

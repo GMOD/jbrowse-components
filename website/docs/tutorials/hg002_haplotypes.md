@@ -158,7 +158,7 @@ beside the assembly, one per haplotype, on matching contig names:
     "uri": "https://s3-us-west-2.amazonaws.com/human-pangenomics/T2T/HG002/assemblies/annotation/JHULiftoff/v0.6/hg002v1.1.MAT.loff.v0.6.gff.gz"
   },
   "displayDefaults": {
-    "geneGlyphMode": "longestCoding",
+    "geneGlyphMode": "representative",
     "labels": { "name": "jexl:feature.gene_name || feature.name || feature.id" }
   }
 }

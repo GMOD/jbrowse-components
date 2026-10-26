@@ -66,7 +66,7 @@ const FILTER_TEXT = '[data-testid="jexl-filter-text"]'
 // A reader reaches this mode with one click on the gene track's isoform chip.
 const GENE_TRACK_COLLAPSED = {
   ...GENE_TRACK,
-  geneGlyphMode: 'longestCoding',
+  geneGlyphMode: 'representative',
 }
 
 // A bare `?config=` opens the hub's defaultSession, as a reader arriving does.

@@ -50,7 +50,7 @@ describe('summarizeIsoformPicks', () => {
     })
   })
 
-  // `longestCoding` leaves a single-isoform gene alone, so a region holds both
+  // `representative` leaves a single-isoform gene alone, so a region holds both
   // kinds at once.
   it('ignores the genes that kept every isoform', () => {
     expect(
@@ -66,7 +66,7 @@ describe('summarizeIsoformPicks', () => {
   })
 })
 
-// The trim ranks its survivors by the same tag `longestCoding` does, so the tag
+// The trim ranks its survivors by the same tag `representative` does, so the tag
 // count alone cannot say which rule hid a gene's transcripts.
 describe('addTrimmedIsoformPicks', () => {
   it('counts each trimmed gene under its rule and under byCap', () => {

@@ -283,7 +283,7 @@ describe('LinearBasicDisplay configSchema', () => {
       },
     )
 
-    it('maps legacy geneGlyphMode "longest" lifted from renderer to "longestCoding"', () => {
+    it('maps legacy geneGlyphMode "longest" lifted from renderer to "representative"', () => {
       const config = schema.create(
         {
           displayId: 'test',
@@ -292,7 +292,19 @@ describe('LinearBasicDisplay configSchema', () => {
         },
         { pluginManager: pm },
       )
-      expect(readConfObject(config, 'geneGlyphMode')).toBe('longestCoding')
+      expect(readConfObject(config, 'geneGlyphMode')).toBe('representative')
+    })
+
+    it('maps v4.3.0 geneGlyphMode "longestCoding" to "representative"', () => {
+      const config = schema.create(
+        {
+          displayId: 'test',
+          type: 'LinearBasicDisplay',
+          geneGlyphMode: 'longestCoding',
+        },
+        { pluginManager: pm },
+      )
+      expect(readConfObject(config, 'geneGlyphMode')).toBe('representative')
     })
 
     it('leaves valid geneGlyphMode untouched', () => {

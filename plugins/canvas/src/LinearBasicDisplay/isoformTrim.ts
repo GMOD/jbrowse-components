@@ -22,7 +22,7 @@ export interface IsoformTrim {
   canonicalTag?: string
 }
 
-// Best by rank, not first by drawn order, so k = 1 keeps what `longestCoding`
+// Best by rank, not first by drawn order, so k = 1 keeps what `representative`
 // keeps; decorations are not isoforms and are always kept, which is why the
 // height cannot be counted in rows.
 export function trimIsoformStack(

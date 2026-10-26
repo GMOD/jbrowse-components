@@ -39,7 +39,7 @@ const GENOMES = {
   },
 }
 
-const MODES = ['auto', 'all', 'longestCoding'] as const
+const MODES = ['auto', 'all', 'representative'] as const
 
 async function loadGenome(key: keyof typeof GENOMES) {
   const { gff, refName, end } = GENOMES[key]
@@ -77,7 +77,7 @@ describe.each(MODES)('SARS-CoV-2 ORF1ab, geneGlyphMode %s', mode => {
     ])
     const pp1ab = ['MatureProteinRegion', 'ORF1ab polyprotein', 265, 21555, 15]
     const pp1a = ['MatureProteinRegion', 'ORF1a polyprotein', 265, 13483, 11]
-    expect(drawn).toEqual(mode === 'longestCoding' ? [pp1ab] : [pp1ab, pp1a])
+    expect(drawn).toEqual(mode === 'representative' ? [pp1ab] : [pp1ab, pp1a])
 
     const nsp12 = layout.children[0]!.children.filter(r => r.children.length)
     expect(nsp12.map(r => r.feature.get('product'))).toEqual([

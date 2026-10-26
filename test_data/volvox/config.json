@@ -1446,7 +1446,7 @@
         "uri": "volvox.canonical_tags.gff3.gz"
       },
       "displayDefaults": {
-        "geneGlyphMode": "longestCoding"
+        "geneGlyphMode": "representative"
       }
     },
     {

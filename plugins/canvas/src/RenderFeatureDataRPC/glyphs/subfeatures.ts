@@ -45,7 +45,7 @@ function getIsoforms(
 }
 
 // Scored once per child: the ranking reads these for every gene that stacks
-// more than one child, not only for the ones `longestCoding` collapses.
+// more than one child, not only for the ones `representative` collapses.
 function scoreIsoforms(features: Feature[], config: IsoformSettings) {
   const score = isoformScorer(featureIsoformReader, {
     field: config.canonicalTranscriptField,
@@ -63,7 +63,7 @@ function rankIsoforms(isoforms: Feature[], scores: Scores) {
 }
 
 /**
- * The isoform `longestCoding` draws for a gene, or undefined where no child is
+ * The isoform `representative` draws for a gene, or undefined where no child is
  * a transcript and the gene is its own.
  */
 export function representativeIsoform(
@@ -94,7 +94,7 @@ function keepBest(ranked: Feature[], scores: Scores, config: DisplayConfig) {
   }
 }
 
-// `longestCoding` is the only collapse the worker still makes: it is the user's
+// `representative` is the only collapse the worker still makes: it is the user's
 // own pick and the payload gate at whole-chromosome zoom. Everything else the
 // display gives up, it gives up on the main thread where it can see the pack.
 function collapseIsoforms({
@@ -106,7 +106,7 @@ function collapseIsoforms({
   scores: Scores
   config: DisplayConfig
 }) {
-  return config.geneGlyphMode === 'longestCoding' && isoforms.length > 1
+  return config.geneGlyphMode === 'representative' && isoforms.length > 1
     ? keepBest(rankIsoforms(isoforms, scores), scores, config)
     : undefined
 }
@@ -125,7 +125,7 @@ function layoutStackedChild(child: Feature, args: LayoutArgs) {
 
 // `rank` is deliberately not the drawn position: the stack sorts by (canonical,
 // coding) alone while the ranking also weighs protein length, so "drop a suffix"
-// would keep a different set than `longestCoding` does at k = 1.
+// would keep a different set than `representative` does at k = 1.
 function buildIsoformStack({
   drawn,
   children,
@@ -187,7 +187,7 @@ export function layoutSubfeatures(args: LayoutArgs): FeatureLayout {
   const scores = scoreIsoforms(subfeatures, config)
 
   // One list drives both the gene-glyph control's visibility and the
-  // longestCoding collapse, so the control appears exactly when switching modes
+  // representative collapse, so the control appears exactly when switching modes
   // would change something.
   const isoforms = getIsoforms(subfeatures, transcriptTypeSet(config))
   const hasMultipleIsoforms = isoforms.length > 1
@@ -210,7 +210,7 @@ export function layoutSubfeatures(args: LayoutArgs): FeatureLayout {
 
   if (!collapsed) {
     // Leads with the two terms `rankIsoforms` does, and stays stable below them.
-    // Gated on the collapse rather than the mode, because `longestCoding`
+    // Gated on the collapse rather than the mode, because `representative`
     // declines to collapse a gene the user EXPANDED and that gene draws every
     // isoform.
     subfeatures.sort((a, b) => {
@@ -266,7 +266,7 @@ export function layoutSubfeatures(args: LayoutArgs): FeatureLayout {
             boxHeightPx: heightPx,
             canonicalTag: collapsed?.canonicalTag,
             collapsedIsoformCount:
-              geneGlyphMode === 'longestCoding' && hasMultipleIsoforms
+              geneGlyphMode === 'representative' && hasMultipleIsoforms
                 ? 1
                 : undefined,
           })

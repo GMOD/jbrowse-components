@@ -1845,7 +1845,7 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         "Miscellaneous",
       ],
       "displayDefaults": {
-        "geneGlyphMode": "longestCoding",
+        "geneGlyphMode": "representative",
       },
       "name": "GFF3Tabix canonical transcript tags",
       "trackId": "gff3tabix_canonical_tags",

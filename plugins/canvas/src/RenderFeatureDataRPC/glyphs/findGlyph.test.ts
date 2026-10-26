@@ -24,7 +24,7 @@ function mockFeature(opts: {
   return f
 }
 
-describe.each(['auto', 'all', 'longestCoding'] as const)(
+describe.each(['auto', 'all', 'representative'] as const)(
   'findGlyph structural dispatch, geneGlyphMode %s',
   geneGlyphMode => {
     const config = mockDisplayConfig({

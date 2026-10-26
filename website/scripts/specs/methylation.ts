@@ -16,7 +16,7 @@ import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 
 const HG38_GENE_LANE = {
   trackId: 'ncbi_refseq_109_hg38_latest',
-  geneGlyphMode: 'longestCoding',
+  geneGlyphMode: 'representative',
   displayMode: 'compact',
   height: 90,
 }
@@ -325,7 +325,7 @@ export const methylationSpecs: ScreenshotSpec[] = [
             // GAPDH here.
             {
               trackId: 'ncbi_refseq_109_hg38_latest',
-              geneGlyphMode: 'longestCoding',
+              geneGlyphMode: 'representative',
             },
             'gencode_promoter_hg38_ucsc',
             {

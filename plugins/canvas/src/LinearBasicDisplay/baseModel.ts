@@ -1450,7 +1450,7 @@ export default function baseStateModelFactory(
        * The worker's zoom-dependent decisions, resolved: the RPC spreads this
        * object and the foundation stamps it beside each region, so a track
        * with the overlay off and a fixed mode never refetches on zoom.
-       * `expandedGeneIds` only under `longestCoding`, the one mode the worker
+       * `expandedGeneIds` only under `representative`, the one mode the worker
        * collapses in.
        */
       zoomFetchArgs() {
@@ -1461,7 +1461,8 @@ export default function baseStateModelFactory(
             self.showAminoAcids &&
             shouldRenderPeptideBackground(containingLgv(self).bpPerPx),
           expandedGeneIds:
-            geneGlyphMode === 'longestCoding' && self.expandedGeneIds.length > 0
+            geneGlyphMode === 'representative' &&
+            self.expandedGeneIds.length > 0
               ? toJS(self.expandedGeneIds)
               : undefined,
         }

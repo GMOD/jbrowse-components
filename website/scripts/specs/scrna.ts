@@ -16,7 +16,7 @@ const genes = { ...geneLane, filter: ['geneLike'] }
 // a dozen stacked RefSeq isoforms push the marker's label out of the lane
 const oneTranscriptPerGene = {
   ...geneLane,
-  geneGlyphMode: 'longestCoding',
+  geneGlyphMode: 'representative',
   height: 80,
 }
 

@@ -55,7 +55,7 @@ describe('gene-glyph control tooltip', () => {
   // A tag outranks protein length in the ranking, so the tooltip must not promise
   // a measurement it may not have made.
   it('describes the collapse as one transcript, not the longest coding', () => {
-    expect(geneGlyphTooltip({ mode: 'longestCoding', collapsed: true })).toBe(
+    expect(geneGlyphTooltip({ mode: 'representative', collapsed: true })).toBe(
       'One transcript per gene.',
     )
   })
@@ -63,14 +63,14 @@ describe('gene-glyph control tooltip', () => {
   it('names one rule when every gene agrees', () => {
     expect(
       geneGlyphTooltip({
-        mode: 'longestCoding',
+        mode: 'representative',
         collapsed: true,
         picks: picks({ 'RefSeq Select': 12 }),
       }),
     ).toBe('One transcript per gene (RefSeq Select).')
     expect(
       geneGlyphTooltip({
-        mode: 'longestCoding',
+        mode: 'representative',
         collapsed: true,
         picks: picks({}, 12),
       }),
@@ -82,7 +82,7 @@ describe('gene-glyph control tooltip', () => {
   it('spends the whole breakdown once the genes on screen disagree', () => {
     expect(
       geneGlyphTooltip({
-        mode: 'longestCoding',
+        mode: 'representative',
         collapsed: true,
         picks: picks({ 'MANE Select': 42, 'RefSeq Select': 3 }, 6),
       }),
@@ -96,7 +96,7 @@ describe('gene-glyph control tooltip', () => {
       'One transcript per gene, chosen by zoom. Zoom in for all.',
     )
     expect(
-      geneGlyphTooltip({ mode: 'longestCoding', collapsed: true }),
+      geneGlyphTooltip({ mode: 'representative', collapsed: true }),
     ).not.toContain('zoom')
   })
 

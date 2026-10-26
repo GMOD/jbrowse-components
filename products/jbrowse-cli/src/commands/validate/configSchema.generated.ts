@@ -5632,16 +5632,28 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "geneGlyphMode": {
-          "description": "Gene glyph display mode: \\"auto\\" collapses each gene to one transcript when zoomed out and trims the rest to what the track height holds, \\"all\\" draws every transcript and scrolls the surplus instead of trimming, \\"longestCoding\\" shows one transcript per gene — the one canonicalTranscriptTags names, else the longest coding.",
+          "description": "Gene glyph display mode: \\"auto\\" collapses each gene to one transcript when zoomed out and trims the rest to what the track height holds, \\"all\\" draws every transcript and scrolls the surplus instead of trimming, \\"representative\\" shows one transcript per gene — the first by \`transcripts.sort\`, else the longest coding.",
           "default": "auto",
           "if": {
             "type": "null"
           },
           "else": {
-            "enum": [
-              "auto",
-              "all",
-              "longestCoding"
+            "anyOf": [
+              {
+                "enum": [
+                  "auto",
+                  "all",
+                  "representative"
+                ]
+              },
+              {
+                "enum": [
+                  "longest",
+                  "longestCoding"
+                ],
+                "deprecated": true,
+                "description": "Legacy spellings a migration rewrites when the config loads."
+              }
             ]
           }
         },

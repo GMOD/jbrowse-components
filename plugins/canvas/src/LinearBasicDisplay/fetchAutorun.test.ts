@@ -384,9 +384,9 @@ describe('FetchVisibleRegions autorun', () => {
     it('rides in zoomFetchArgs and the RPC call, not in rpcProps', async () => {
       const { display, view, mockRpcCall } = await loadedCollapsed()
       const settings = display.settingsFetchInputs
-      expect(display.zoomFetchArgs().geneGlyphMode).toBe('longestCoding')
+      expect(display.zoomFetchArgs().geneGlyphMode).toBe('representative')
       expect(mockRpcCall.mock.lastCall?.[2]).toMatchObject({
-        geneGlyphMode: 'longestCoding',
+        geneGlyphMode: 'representative',
       })
       expect(display.rpcProps().displayConfig).not.toHaveProperty(
         'geneGlyphMode',
@@ -431,7 +431,7 @@ describe('FetchVisibleRegions autorun', () => {
       expect(mockRpcCall.mock.calls.length).toBe(callsBefore)
     })
 
-    it('an opened gene refetches under longestCoding, scrim-free', async () => {
+    it('an opened gene refetches under representative, scrim-free', async () => {
       const { display, mockRpcCall } = await loadedCollapsed()
       const settings = display.settingsFetchInputs
       const callsBefore = mockRpcCall.mock.calls.length
@@ -439,7 +439,7 @@ describe('FetchVisibleRegions autorun', () => {
       display.toggleExpandedGene('gene1')
       expect(display.rpcProps()).not.toHaveProperty('expandedGeneIds')
       expect(display.zoomFetchArgs()).toEqual({
-        geneGlyphMode: 'longestCoding',
+        geneGlyphMode: 'representative',
         peptides: false,
         expandedGeneIds: ['gene1'],
       })
@@ -1526,13 +1526,13 @@ describe('geneGlyphMode auto collapse', () => {
     return { display, view }
   }
 
-  it('switches to longestCoding when zoomed out past 100 bp/px', () => {
+  it('switches to representative when zoomed out past 100 bp/px', () => {
     const { display, view } = setup()
     expect(display.geneGlyphMode).toBe('auto')
 
     view.zoomTo(200)
     expect(view.bpPerPx).toBeGreaterThan(100)
-    expect(display.effectiveGeneGlyphMode).toBe('longestCoding')
+    expect(display.effectiveGeneGlyphMode).toBe('representative')
 
     view.zoomTo(50)
     expect(view.bpPerPx).toBeLessThan(100)

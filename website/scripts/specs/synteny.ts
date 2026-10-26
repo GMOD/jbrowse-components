@@ -117,11 +117,11 @@ export const PICALM_ALU_LOCUS = {
 export function hg38ChimpSynteny(
   locus: { hg38: string; panTro6: string } = RB1_L1_LOCUS,
 ) {
-  // panTro6 has no MANE, so 'longestCoding' cuts the isoform stacks. Pinning a
+  // panTro6 has no MANE, so 'representative' cuts the isoform stacks. Pinning a
   // featureHeight draws each short exon as a square beside flat repeat bars.
   const genes = (id: string) => ({
     trackId: id,
-    geneGlyphMode: 'longestCoding',
+    geneGlyphMode: 'representative',
     heightMode: 'grow',
   })
   // 'fit' inflates the boxes and drops labels; the repeat names are the point.
@@ -173,7 +173,7 @@ const CHRY_P_PALINDROME_WINDOW = 'chrY:22,330,000-22,810,000'
 const CHRY_GENE_LANE = {
   trackId: 'hs1_chrY_genes',
   filter: ['geneLike'],
-  geneGlyphMode: 'longestCoding',
+  geneGlyphMode: 'representative',
   displayMode: 'compact',
   // 'auto' adds RefSeq's sentence-long descriptions at this density
   showLabels: 'name',
@@ -205,7 +205,9 @@ function tnnt3Session(
           {
             assembly: 'hg38',
             loc: 'chr11:1,881,000-1,955,000',
-            tracks: [{ trackId: 'hg38-genes', geneGlyphMode: 'longestCoding' }],
+            tracks: [
+              { trackId: 'hg38-genes', geneGlyphMode: 'representative' },
+            ],
             trackLabels: 'offset',
             ...band('hg38', 1_897_015, 1_908_656),
           },
@@ -217,7 +219,7 @@ function tnnt3Session(
             tracks: [
               {
                 trackId: 'hs1-genes',
-                geneGlyphMode: 'longestCoding',
+                geneGlyphMode: 'representative',
                 filter: ['geneLike'],
               },
             ],
@@ -237,7 +239,7 @@ const FTO_PANEL_TRACKS = {
   hg38: [
     {
       trackId: 'hg38-ncbiRefSeqCurated',
-      geneGlyphMode: 'longestCoding',
+      geneGlyphMode: 'representative',
       height: 60,
     },
     {
@@ -250,7 +252,7 @@ const FTO_PANEL_TRACKS = {
   panTro6: [
     {
       trackId: 'panTro6-ncbiRefSeq',
-      geneGlyphMode: 'longestCoding',
+      geneGlyphMode: 'representative',
       height: 60,
     },
     {
@@ -2657,7 +2659,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
           tracks: [
             {
               trackId: 'hg38-ncbiRefSeqCurated',
-              geneGlyphMode: 'longestCoding',
+              geneGlyphMode: 'representative',
               height: 60,
             },
             // open before the launch, so the launch copies it into the human panel
@@ -3461,7 +3463,7 @@ export const syntenyVideoFixtures = {
         tracks: [
           {
             trackId: 'hg38-ncbiRefSeqCurated',
-            geneGlyphMode: 'longestCoding',
+            geneGlyphMode: 'representative',
             height: 90,
           },
           {

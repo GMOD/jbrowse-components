@@ -11,7 +11,7 @@ import type { VideoSpec, VideoStep } from '../video-spec-types.ts'
 const TP53_MENU_ANCHOR = {
   trackId: proteinTourFixtures.geneTrack,
   loc: 'chr17:7,676,000',
-  // near the top of the band: `longestCoding` draws one gene row, so a centred
+  // near the top of the band: `representative` draws one gene row, so a centred
   // right-click lands on empty canvas and opens the view's own menu
   fracY: 0.2,
 }

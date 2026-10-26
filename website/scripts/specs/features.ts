@@ -55,7 +55,7 @@ const PROTEIN_LAUNCH_GENE_TRACK = 'hg38-ncbiRefSeqCurated'
 const NES_MOTIF =
   '[data-testid="protein-feature-Motif"][data-feature-start="339"]'
 
-// `longestCoding` draws one gene row near the top, so a centered right-click
+// `representative` draws one gene row near the top, so a centered right-click
 // misses TP53 and opens the view's menu.
 const PROTEIN_LAUNCH_ANCHOR = {
   trackId: PROTEIN_LAUNCH_GENE_TRACK,
@@ -75,7 +75,7 @@ const PROTEIN_LAUNCH_SESSION = sessionSpec(UCSC_HG38_CONFIG, {
         // PROTEIN_LAUNCH_ANCHOR's fracY depends on both settings
         {
           trackId: PROTEIN_LAUNCH_GENE_TRACK,
-          geneGlyphMode: 'longestCoding',
+          geneGlyphMode: 'representative',
           height: 60,
         },
       ],
@@ -106,7 +106,7 @@ export const proteinLaunchFixtures = {
 const GROUPING_WINDOW = 'chr17:7,540,000-7,640,000'
 const GROUPING_TRACK = {
   trackId: 'ncbi_refseq_109_hg38_latest',
-  geneGlyphMode: 'longestCoding',
+  geneGlyphMode: 'representative',
   // description rows push the reverse-strand section off the frame
   showLabels: 'name',
 }
@@ -177,7 +177,7 @@ export const featuresSpecs: ScreenshotSpec[] = [
         'Pd8Wh30ei9R',
         {
           trackId: 'ncbi_gff_hg19',
-          geneGlyphMode: 'longestCoding',
+          geneGlyphMode: 'representative',
         },
       ],
     }),
@@ -224,7 +224,7 @@ export const featuresSpecs: ScreenshotSpec[] = [
         'Pd8Wh30ei9R',
         {
           trackId: 'ncbi_gff_hg19',
-          geneGlyphMode: 'longestCoding',
+          geneGlyphMode: 'representative',
         },
       ],
     }),
@@ -301,7 +301,7 @@ export const featuresSpecs: ScreenshotSpec[] = [
           tracks: [
             {
               trackId: 'ncbi_refseq_109_hg38_latest',
-              geneGlyphMode: 'longestCoding',
+              geneGlyphMode: 'representative',
             },
             {
               trackId: 'pten_directrna',
@@ -360,7 +360,7 @@ export const featuresSpecs: ScreenshotSpec[] = [
       tracks: [
         {
           trackId: 'ncbi_refseq_109_hg38_latest',
-          geneGlyphMode: 'longestCoding',
+          geneGlyphMode: 'representative',
           height: 200,
         },
       ],
@@ -389,7 +389,7 @@ export const featuresSpecs: ScreenshotSpec[] = [
       tracks: [
         {
           trackId: 'ncbi_refseq_109_hg38_latest',
-          geneGlyphMode: 'longestCoding',
+          geneGlyphMode: 'representative',
           height: 200,
         },
       ],
@@ -492,7 +492,7 @@ export const featuresSpecs: ScreenshotSpec[] = [
             tracks: [
               {
                 trackId: 'hg38-ncbiRefSeq',
-                geneGlyphMode: 'longestCoding',
+                geneGlyphMode: 'representative',
                 height: 70,
               },
             ],

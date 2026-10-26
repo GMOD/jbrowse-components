@@ -50,7 +50,7 @@ test('remaps legacy geneGlyphMode "longest"', () => {
     type: 'FeatureTrack',
     displays: [{ type: 'LinearBasicDisplay', geneGlyphMode: 'longest' }],
   })
-  expect(out.displays![0]!.geneGlyphMode).toBe('longestCoding')
+  expect(out.displays![0]!.geneGlyphMode).toBe('representative')
 })
 
 test('normalizes a boolean showLabels to its enum mode', () => {
@@ -66,7 +66,7 @@ test('matches the LinearFeatureDisplay alias too', () => {
     type: 'FeatureTrack',
     displays: [{ type: 'LinearFeatureDisplay', geneGlyphMode: 'longest' }],
   })
-  expect(out.displays![0]!.geneGlyphMode).toBe('longestCoding')
+  expect(out.displays![0]!.geneGlyphMode).toBe('representative')
 })
 
 test('leaves non-canvas displays untouched', () => {

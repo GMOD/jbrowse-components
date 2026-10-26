@@ -86,7 +86,7 @@ export default function configSchemaFactory(pluginManager: PluginManager) {
         type: 'stringEnum',
         model: types.enumeration('geneGlyphMode', [...GENE_GLYPH_MODES]),
         description:
-          'Gene glyph display mode: "auto" collapses each gene to one transcript when zoomed out and trims the rest to what the track height holds, "all" draws every transcript and scrolls the surplus instead of trimming, "longestCoding" shows one transcript per gene — the one canonicalTranscriptTags names, else the longest coding',
+          'Gene glyph display mode: "auto" collapses each gene to one transcript when zoomed out and trims the rest to what the track height holds, "all" draws every transcript and scrolls the surplus instead of trimming, "representative" shows one transcript per gene — the first by `transcripts.sort`, else the longest coding',
         defaultValue: 'auto',
       },
       /**

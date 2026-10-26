@@ -51,7 +51,7 @@ const geneTrack = (height: number, onlyGenes: boolean) => ({
   ...(onlyGenes ? { filter: ['geneLike'] } : {}),
   // HIDE_ISOFORM_CHIP removes the "Longest isoform" chip this raises; a
   // session spec cannot arrive with the chip dismissed.
-  geneGlyphMode: 'longestCoding',
+  geneGlyphMode: 'representative',
 })
 
 const HIDE_ISOFORM_CHIP = ['.MuiChip-root']
@@ -345,7 +345,7 @@ export const qcSpecs: ScreenshotSpec[] = [
                   filter: ['geneLike'],
                   // With every transcript, GTF2H2's ~25 grow this lane past
                   // 400 px and push the ribbon band out of frame.
-                  geneGlyphMode: 'longestCoding',
+                  geneGlyphMode: 'representative',
                   heightMode: 'fixed',
                   height: 120,
                 },
@@ -359,7 +359,7 @@ export const qcSpecs: ScreenshotSpec[] = [
                 {
                   trackId: 'hs1-genes',
                   filter: ['geneLike'],
-                  geneGlyphMode: 'longestCoding',
+                  geneGlyphMode: 'representative',
                   // A session spec silently drops the legacy
                   // `showDescriptions: false`.
                   showLabels: 'name',

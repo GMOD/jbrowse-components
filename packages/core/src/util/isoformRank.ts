@@ -2,7 +2,7 @@ import type { Feature, SimpleFeatureSerializedNoId } from './simpleFeature.ts'
 
 /**
  * Which isoform of a gene a display shows first: the canvas gene glyph's
- * `longestCoding` collapse and the sequence panel's default transcript both
+ * `representative` collapse and the sequence panel's default transcript both
  * rank with this, so the panel opens on the isoform the track drew. Generic
  * over the feature shape because the worker ranks live `Feature`s and the
  * panel ranks their serialized form.

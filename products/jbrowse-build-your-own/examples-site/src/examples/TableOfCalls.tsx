@@ -129,7 +129,7 @@ const TableOfCalls = observer(function TableOfCalls() {
         name: 'RefSeq curated genes',
         uri: 'https://jbrowse.org/ucsc/hg38/ncbiRefSeqCurated.gff.gz',
         index: 'https://jbrowse.org/ucsc/hg38/ncbiRefSeqCurated.gff.gz.csi',
-        displayDefaults: { height: 90, geneGlyphMode: 'longestCoding' },
+        displayDefaults: { height: 90, geneGlyphMode: 'representative' },
       },
       {
         trackId: 'hg008_tumor_hifi',

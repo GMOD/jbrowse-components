@@ -344,7 +344,7 @@ export const svSpecs: ScreenshotSpec[] = [
       tracks: [
         {
           trackId: 'ncbi_gff_hg19',
-          geneGlyphMode: 'longestCoding',
+          geneGlyphMode: 'representative',
         },
       ],
     }),
@@ -364,7 +364,7 @@ export const svSpecs: ScreenshotSpec[] = [
       tracks: [
         {
           trackId: 'ncbi_gff_hg19',
-          geneGlyphMode: 'longestCoding',
+          geneGlyphMode: 'representative',
         },
       ],
     }),
@@ -1189,7 +1189,7 @@ export const svSpecs: ScreenshotSpec[] = [
           tracks: [
             {
               trackId: 'hg38_ncbiRefSeq_ucsc',
-              geneGlyphMode: 'longestCoding',
+              geneGlyphMode: 'representative',
               displayMode: 'compact',
               height: 90,
             },
@@ -1410,7 +1410,7 @@ export const svSpecs: ScreenshotSpec[] = [
           tracks: [
             {
               trackId: 'hg38_ncbiRefSeq_ucsc',
-              geneGlyphMode: 'longestCoding',
+              geneGlyphMode: 'representative',
             },
             HG008_BICSEQ2_LANE,
             {

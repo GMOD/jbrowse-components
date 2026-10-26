@@ -526,6 +526,8 @@ const LEGACY_VALUE_CANDIDATES = [
   'reducedRepresentation',
   'collapse',
   'avg',
+  'longest',
+  'longestCoding',
 ]
 
 function legacyValuesOf(configSchema, declaredSlots) {

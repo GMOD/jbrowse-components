@@ -51,7 +51,7 @@ const SPLIT_READS = { mark: { height: 4 } }
 // gene name's floating label falls below the fixed track height and clips.
 const GENE_TRACK = {
   trackId: GENES,
-  geneGlyphMode: 'longestCoding',
+  geneGlyphMode: 'representative',
   height: 60,
 }
 
@@ -886,7 +886,7 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
       ],
     }),
     // No RefSeq transcript has an exon under the middle panel's coverage
-    // (ncbiRefSeq checked), so `longestCoding` hides nothing. Whether it is an
+    // (ncbiRefSeq checked), so `representative` hides nothing. Whether it is an
     // acceptor or an artefact is not established; the pill stops at the
     // annotation.
     annotations: [

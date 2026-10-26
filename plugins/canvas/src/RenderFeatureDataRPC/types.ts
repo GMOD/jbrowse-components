@@ -26,7 +26,7 @@ export interface FeatureLayout {
   labelRowsAbove?: number
   labelRows?: number
   ownsLabelRow?: boolean
-  // Set by the worker's own `longestCoding` collapse; the fit ladder's
+  // Set by the worker's own `representative` collapse; the fit ladder's
   // main-thread trim never sets it.
   isoformsCollapsed?: boolean
   // On a collapsed gene, the `canonicalTranscriptTags` entry that put the

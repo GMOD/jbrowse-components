@@ -197,7 +197,7 @@ describe('the trim counts what it leaves out', () => {
   })
 
   it('badges a wide worker-collapsed gene and leaves a narrow one alone', () => {
-    const layout = layoutGene(4, { geneGlyphMode: 'longestCoding' })
+    const layout = layoutGene(4, { geneGlyphMode: 'representative' })
     expect(layout.children).toHaveLength(1)
     const stack = trimmedRegion(layout).flatbushItems[0]!.isoformStack!
     const child = stack.children[0]!
@@ -218,7 +218,7 @@ describe('the trim counts what it leaves out', () => {
   })
 
   it('writes a badge-only gene’s badge onto the clone, not the payload', () => {
-    const raw = regionFor(layoutGene(4, { geneGlyphMode: 'longestCoding' }))
+    const raw = regionFor(layoutGene(4, { geneGlyphMode: 'representative' }))
     const laidOut = computeLaidOutData(new Map([[0, raw]]), INPUTS).get(0)!
     expect(
       laidOut.floatingLabelsData.get('gene1')!.moreIsoformsLabel,
@@ -251,7 +251,7 @@ describe('the trim counts what it leaves out', () => {
 
   it('keeps the badge on an expanded gene whatever mode it lands in', () => {
     const layout = layoutGene(4, {
-      geneGlyphMode: 'longestCoding',
+      geneGlyphMode: 'representative',
       expandedGeneIds: new Set(['gene1']),
     })
     expect(layout.children).toHaveLength(4)

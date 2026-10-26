@@ -203,7 +203,7 @@ export default function stateModelFactory(
 
       get geneGlyphCollapsed() {
         return (
-          this.effectiveGeneGlyphMode === 'longestCoding' ||
+          this.effectiveGeneGlyphMode === 'representative' ||
           this.geneGlyphIsoformCap !== undefined
         )
       },

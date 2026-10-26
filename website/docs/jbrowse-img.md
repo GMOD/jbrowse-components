@@ -592,7 +592,7 @@ features:
 
 ```bash
 jb2export --genome hg38 \
-  --track hg38-ncbiRefSeqCurated height:60 '{"filter":["geneLike"],"geneGlyphMode":"longestCoding"}' \
+  --track hg38-ncbiRefSeqCurated height:60 '{"filter":["geneLike"],"geneGlyphMode":"representative"}' \
   --refseq --loc chr17:7,675,018-7,675,098 --width 1500 --out gene_track.png
 ```
 

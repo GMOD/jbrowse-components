@@ -44,7 +44,7 @@ export function summarizeIsoformPicks(layouts: FeatureLayout[]): IsoformPicks {
   }
 }
 
-// The two sets never overlap: `longestCoding` leaves each gene one child and
+// The two sets never overlap: `representative` leaves each gene one child and
 // the trim's smallest k is 1, so a gene the worker collapsed is never trimmed
 // again.
 export function addTrimmedIsoformPicks(

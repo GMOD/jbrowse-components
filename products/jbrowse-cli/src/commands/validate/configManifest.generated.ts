@@ -3495,6 +3495,10 @@ export const configManifest: ConfigManifest = {
         "displayMode": [
           "reducedRepresentation",
           "collapse"
+        ],
+        "geneGlyphMode": [
+          "longest",
+          "longestCoding"
         ]
       },
       "aliases": [

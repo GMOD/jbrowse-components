@@ -60,7 +60,7 @@ const view = (
   tracks: [
     {
       trackId: 'hg38_ncbiRefSeq_ucsc',
-      geneGlyphMode: 'longestCoding',
+      geneGlyphMode: 'representative',
       displayMode: 'compact',
       height: genesHeight,
     },

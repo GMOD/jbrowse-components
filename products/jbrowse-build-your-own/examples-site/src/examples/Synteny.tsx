@@ -11,7 +11,7 @@ const geneTrack = (assembly: string) => ({
   uri: `https://jbrowse.org/ucsc/${assembly}/ncbiRefSeqCurated.gff.gz`,
   index: `https://jbrowse.org/ucsc/${assembly}/ncbiRefSeqCurated.gff.gz.csi`,
   assemblyNames: [assembly],
-  displayDefaults: { height: 110, geneGlyphMode: 'longestCoding' },
+  displayDefaults: { height: 110, geneGlyphMode: 'representative' },
 })
 
 const chromSizes = (assembly: string) => ({

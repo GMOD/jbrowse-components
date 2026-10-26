@@ -199,8 +199,8 @@ describe('layoutSubfeatures layout', () => {
     })
   })
 
-  describe('geneGlyphMode = "longestCoding" isoformsCollapsed flag', () => {
-    const config = mockDisplayConfig({ geneGlyphMode: 'longestCoding' })
+  describe('geneGlyphMode = "representative" isoformsCollapsed flag', () => {
+    const config = mockDisplayConfig({ geneGlyphMode: 'representative' })
 
     it('reports collapsed when multiple transcript isoforms exist', () => {
       const gene = makeGeneWithTranscripts(['mRNA-1', 'mRNA-2'])
@@ -328,11 +328,11 @@ describe('layoutSubfeatures layout', () => {
 
     // Every isoform here has the same 100bp CDS, so the later-wins tiebreak is
     // what decides.
-    it('ranks so a trim to one agrees with the longestCoding collapse', () => {
+    it('ranks so a trim to one agrees with the representative collapse', () => {
       const names = ['a', 'b', 'c']
       const longest = layoutSubfeatures({
         feature: makeGeneWithTranscripts(names),
-        config: mockDisplayConfig({ geneGlyphMode: 'longestCoding' }),
+        config: mockDisplayConfig({ geneGlyphMode: 'representative' }),
       }).children.map(c => c.feature.get('name'))
       expect(trimmedNames(names, 1)).toEqual(longest)
     })
@@ -411,10 +411,10 @@ describe('layoutSubfeatures layout', () => {
 
     // The gene ships one child and still counts them all, so the badge reads the
     // same way from either source.
-    it('counts every isoform under longestCoding too', () => {
+    it('counts every isoform under representative too', () => {
       const layout = layoutSubfeatures({
         feature: makeGeneWithTranscripts(['a', 'b', 'c']),
-        config: mockDisplayConfig({ geneGlyphMode: 'longestCoding' }),
+        config: mockDisplayConfig({ geneGlyphMode: 'representative' }),
       })
       expect(layout.children).toHaveLength(1)
       expect(layout.isoformStack).toMatchObject({ isoformCount: 3 })
@@ -461,7 +461,7 @@ describe('layoutSubfeatures layout', () => {
       layoutSubfeatures({
         feature: geneWithTag(attributes),
         config: mockDisplayConfig({
-          geneGlyphMode: 'longestCoding',
+          geneGlyphMode: 'representative',
           ...overrides,
         }),
       }).children.map(c => c.feature.get('name'))
@@ -545,7 +545,7 @@ describe('layoutSubfeatures layout', () => {
       layoutSubfeatures({
         feature,
         config: mockDisplayConfig({
-          geneGlyphMode: 'longestCoding',
+          geneGlyphMode: 'representative',
           canonicalTranscriptTags: shippedTags,
         }),
       }).children.map(c => c.feature.get('name'))
@@ -627,7 +627,7 @@ describe('layoutSubfeatures layout', () => {
         layoutSubfeatures({
           feature: geneWithTag(attributes),
           config: mockDisplayConfig({
-            geneGlyphMode: 'longestCoding',
+            geneGlyphMode: 'representative',
             ...overrides,
           }),
         }).canonicalTag
@@ -652,7 +652,7 @@ describe('layoutSubfeatures layout', () => {
         expect(
           layoutSubfeatures({
             feature: geneWithTag({ tag: 'RefSeq Select' }),
-            config: mockDisplayConfig({ geneGlyphMode: 'longestCoding' }),
+            config: mockDisplayConfig({ geneGlyphMode: 'representative' }),
           }).isoformStack?.canonicalTag,
         ).toBe('RefSeq Select')
       })
@@ -706,8 +706,8 @@ describe('layoutSubfeatures layout', () => {
     })
   })
 
-  describe('longestCoding CDS-length ranking', () => {
-    const config = mockDisplayConfig({ geneGlyphMode: 'longestCoding' })
+  describe('representative CDS-length ranking', () => {
+    const config = mockDisplayConfig({ geneGlyphMode: 'representative' })
 
     function mrnaWithCds(name: string, cdsRanges: [number, number][]) {
       const start = Math.min(...cdsRanges.map(r => r[0]))
@@ -858,10 +858,10 @@ describe('layoutSubfeatures layout', () => {
     const names = (layout: ReturnType<typeof layoutSubfeatures>) =>
       layout.children.map(c => c.feature.get('name'))
 
-    it("survives longestCoding against the gene's plain mRNAs", () => {
+    it("survives representative against the gene's plain mRNAs", () => {
       const layout = layoutSubfeatures({
         feature: viralGene(),
-        config: mockDisplayConfig({ geneGlyphMode: 'longestCoding' }),
+        config: mockDisplayConfig({ geneGlyphMode: 'representative' }),
       })
       expect(names(layout)).toEqual(['polyprotein'])
     })
@@ -916,7 +916,7 @@ describe('layoutSubfeatures layout', () => {
       })
       const layout = layoutSubfeatures({
         feature: gene,
-        config: mockDisplayConfig({ geneGlyphMode: 'longestCoding' }),
+        config: mockDisplayConfig({ geneGlyphMode: 'representative' }),
       })
       expect(names(layout)).toEqual(['longer'])
     })

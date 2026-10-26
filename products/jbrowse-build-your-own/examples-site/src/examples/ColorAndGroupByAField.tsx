@@ -101,7 +101,7 @@ const ColorAndGroupByAField = observer(function ColorAndGroupByAField() {
         uri: 'https://jbrowse.org/genomes/GRCh38/ncbi_refseq/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz',
         displayDefaults: {
           height: 220,
-          geneGlyphMode: 'longestCoding',
+          geneGlyphMode: 'representative',
           encoding: {
             color: {
               field: 'gene_biotype',

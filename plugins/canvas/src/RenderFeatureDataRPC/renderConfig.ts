@@ -80,7 +80,7 @@ export interface DisplayConfig {
   // compact/superCompact height scaling, so switching modes skips an RPC
   // round-trip. Track height is not sent either — the fit ladder trims isoforms
   // where it can see the packing.
-  geneGlyphMode: 'auto' | 'all' | 'longestCoding'
+  geneGlyphMode: 'auto' | 'all' | 'representative'
   // The `facetField` each feature's `groupKey` is stamped from; absent for a
   // strand facet, which the stamped strand answers without a refetch.
   facetField?: string

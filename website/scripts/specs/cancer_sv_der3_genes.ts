@@ -1,7 +1,7 @@
 // The hg38 RefSeq annotation projected onto the COLO829 derivative allele,
 // transcribed from the GFF3 that `sv_multihop.py derive ... --genes
 // ncbiRefSeq.gff.gz` writes, nested by ID/Parent. Sibling transcripts clipped
-// to one shape are collapsed, since 'longestCoding' draws one anyway. Once that
+// to one shape are collapsed, since 'representative' draws one anyway. Once that
 // GFF is hosted on demos/cancer_sv, this becomes a normal track id.
 const DER3 = 'der3_RARB_BICC1_TRHDE'
 

@@ -690,7 +690,7 @@ describe('collectRenderData stacked-transcript (Subfeatures) emit', () => {
 
 describe('collectRenderData collapsed-gene label + hit-box anchor', () => {
   // A gene spanning 100..2500 with two equal-coding isoforms: tx0 at 100..500
-  // (CDS 100..200) and tx1 at 1100..1500 (CDS 1100..1200). longestCoding breaks
+  // (CDS 100..200) and tx1 at 1100..1500 (CDS 1100..1200). representative breaks
   // the tie toward tx1, so the rendered glyph begins far right of the gene's
   // own start.
   function collapsedGeneLayout() {
@@ -718,14 +718,14 @@ describe('collectRenderData collapsed-gene label + hit-box anchor', () => {
     })
   }
 
-  const labelConfig = (geneGlyphMode: 'auto' | 'all' | 'longestCoding') =>
+  const labelConfig = (geneGlyphMode: 'auto' | 'all' | 'representative') =>
     mockDisplayConfig({
       geneGlyphMode,
       labels: { name: `jexl:get(feature,'id')`, description: '' },
     })
 
   it('anchors the label + hit box to the selected transcript when collapsed', () => {
-    const cfg = labelConfig('longestCoding')
+    const cfg = labelConfig('representative')
     const layout = layoutSubfeatures({
       feature: collapsedGeneLayout(),
       config: cfg,

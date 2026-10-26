@@ -125,7 +125,7 @@ const readEvidence = ({
         tracks: [
           {
             trackId: 'hg38_ncbiRefSeq_ucsc',
-            geneGlyphMode: 'longestCoding',
+            geneGlyphMode: 'representative',
             height: 60,
           },
           {

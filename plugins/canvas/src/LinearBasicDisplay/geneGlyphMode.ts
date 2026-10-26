@@ -5,26 +5,27 @@
 // boundaries can come from a different isoform. A mode that reduces a gene
 // picks one of its transcripts; it does not synthesize one.
 //
-// 'longestCoding' stays for config compatibility: the isoform ranking reads
-// RefSeq Select / MANE Select first and falls back to coding length, so the
-// label says representative.
-export const GENE_GLYPH_MODES = ['auto', 'all', 'longestCoding'] as const
+// 'representative' draws the first isoform by `transcripts.sort` (MANE or
+// RefSeq Select), else the longest coding.
+export const GENE_GLYPH_MODES = ['auto', 'all', 'representative'] as const
 
 export type GeneGlyphMode = (typeof GENE_GLYPH_MODES)[number]
 
 export const GENE_GLYPH_MODE_OPTIONS = [
   { value: 'auto', label: 'Auto' },
   { value: 'all', label: 'All transcripts' },
-  { value: 'longestCoding', label: 'Representative transcript' },
+  { value: 'representative', label: 'Representative transcript' },
 ] as const satisfies readonly { value: GeneGlyphMode; label: string }[]
 
 /** `auto` draws every transcript up to 100 bp/px and one per gene past it. */
 export function resolvedGeneGlyphMode(mode: GeneGlyphMode, bpPerPx: number) {
-  return mode === 'auto' ? (bpPerPx > 100 ? 'longestCoding' : 'all') : mode
+  return mode === 'auto' ? (bpPerPx > 100 ? 'representative' : 'all') : mode
 }
 
-// The old renderer's 'longest' maps to the closest surviving
-// single-transcript mode, so old configs pass enum validation.
+// v4.3.0's 'longestCoding' and the old renderer's 'longest' both drew one
+// transcript per gene.
 export function legacyGeneGlyphMode(value: unknown): unknown {
-  return value === 'longest' ? 'longestCoding' : value
+  return value === 'longest' || value === 'longestCoding'
+    ? 'representative'
+    : value
 }

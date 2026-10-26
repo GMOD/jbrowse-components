@@ -24,7 +24,7 @@ const geneTrack = {
   trackId: 'ncbi_refseq_hg38',
   height: 50,
   filter: ['geneLike'],
-  geneGlyphMode: 'longestCoding',
+  geneGlyphMode: 'representative',
 }
 
 function readsSpec(

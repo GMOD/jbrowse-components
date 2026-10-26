@@ -35,7 +35,7 @@ function tp53Session({
           assembly: 'hg38',
           loc,
           tracks: [
-            { trackId: GENES, geneGlyphMode: 'longestCoding', height: 50 },
+            { trackId: GENES, geneGlyphMode: 'representative', height: 50 },
           ],
         },
       },
