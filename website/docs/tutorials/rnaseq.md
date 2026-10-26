@@ -170,10 +170,10 @@ every read without a skip, and the coverage histogram follows, leaving the
 junction-spanning evidence alone. **Hide spliced reads** in the same submenu is
 the complement.
 
-In **Filter by... → More filters...**, **Non-canonical junctions → Hide
-non-canonical junctions** drops every arc whose intron does not begin and end
-with GT-AG, GC-AG or AT-AC on either strand. Raising **Min reads at a junction**
-in the same dialog also drops thin arcs, along with any real junction few reads
+**Filter by... → Non-canonical junctions → Hide non-canonical junctions** drops
+every arc whose intron does not begin and end with GT-AG, GC-AG or AT-AC on
+either strand. Raising **Min reads at a junction** in **Filter by... → More
+filters...** also drops thin arcs, along with any real junction few reads
 support.
 
 <Figure caption="Every junction above, only the canonical ones below." src="/img/rnaseq/hide_non_canonical.png" links="All junctions=rnaseq/sashimi_all_junctions,Canonical only=rnaseq/sashimi_canonical_only" />
@@ -189,7 +189,7 @@ The surfeit locus is a tight cluster of genes on alternating strands (_RPL7A_,
 _SURF1_, _SURF2_, _SURF4_). Type `chr9:136,214,000-136,229,000` into the
 location box, then pick this path from the track menu:
 
-**Color by... → Paired end → First-of-pair strand**
+**Color by... → First-of-pair strand**
 
 <Figure caption="The surfeit locus colored by first-of-pair strand." src="/img/rnaseq/strand_specific.png" />
 

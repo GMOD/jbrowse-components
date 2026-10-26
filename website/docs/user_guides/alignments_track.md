@@ -82,7 +82,7 @@ The track menu's **Color by...** offers several schemes.
 
 ### A read tag
 
-**Color by → Tag...** asks for a tag name and how to color it: **A color per
+**Color by... → Tag...** asks for a tag name and how to color it: **A color per
 value** for a tag like `HP` (haplotype) or `RG` (read group), or **A gradient
 over numbers** for a numeric tag like `NM` (edit distance).
 
@@ -117,15 +117,15 @@ Bisulfite (WGBS) and EM-seq reads have no MM/ML tags; methylation is in the C→
 conversion itself. **Color by... → Bisulfite / EM-seq** reads it off the aligned
 bases against the reference, so a plain BAM from a bisulfite-aware aligner
 colors without a methylation caller. Methylated cytosines paint red, **Color
-by... → Show unmodified in blue** paints the converted sites too, and **Filter
-by... → Cytosine context** picks the CG, CHG or CHH context, which plant genomes
-methylate in all three. The [bisulfite tutorial](/docs/tutorials/bisulfite) runs
-it on _Arabidopsis_ data.
+by... → Show unmodified in blue** paints the converted sites too, and the
+Modifications section of **Filter by... → More filters...** picks the CG, CHG or
+CHH context, which plant genomes methylate in all three. The
+[bisulfite tutorial](/docs/tutorials/bisulfite) runs it on _Arabidopsis_ data.
 
 ### Pair orientation and insert size
 
-For paired-end data, **Color by → Pair orientation** and **Color by → Insert
-size** highlight discordant pairs, the main way to scan short reads for
+For paired-end data, **Color by... → Pair orientation** and **Color by... →
+Insert size** highlight discordant pairs, the main way to scan short reads for
 structural variants: unexpectedly large inserts turn red, small ones pink, and
 abnormal orientations get separate colors. **Insert size and orientation**
 paints whichever cue is strongest. The
@@ -228,10 +228,10 @@ basecalling error; a position that disagrees in both bands is a real variant.
 
 <Figure caption="GIAB HG002 nanopore reads grouped by strand, each band's coverage from that strand's reads alone. The left box disagrees in the reverse band only, the right box in both." src="/img/alignments/strand_split_coverage.png" />
 
-**Track menu → Read connections → Show SV channels (pairs by orientation)**
-groups by pair orientation, drops the pileup and turns the arcs on together, so
-each orientation class becomes a separate coverage band with a separate set of
-arcs. See [SV channels](/docs/user_guides/sv_visualization#sv-channels).
+**Track menu → Read connections → SV channels (pairs by orientation)** groups by
+pair orientation, drops the pileup and turns the arcs on together, so each
+orientation class becomes a separate coverage band with a separate set of arcs.
+See [SV channels](/docs/user_guides/sv_visualization#sv-channels).
 
 ## Read height and track sizing
 
@@ -243,15 +243,15 @@ pixel height.
 
 A pileup taller than the track scrolls. Two settings change that:
 
-- **Advanced → Track height → Fit to track height** derives the read height from
-  the track height so the whole pileup fits, shrinking as coverage deepens.
-  Picking a size in **Read height** drops back to it
+- **Read height → Fit to track height** derives the read height from the track
+  height so the whole pileup fits, shrinking as coverage deepens. Picking a
+  preset drops back to it
 - **Advanced → Track height → Autogrow** grows the track to hold the reads, up
   to [growMaxHeight](/docs/config/linearalignmentsdisplay#slot-growmaxheight),
   past which it scrolls again. Real sequencing depth passes that ceiling
   quickly, so raise the slot to keep growing
 
-<Figure src="/img/alignments/height_mode_fit.png" caption="Advanced → Track height with Fit to track height selected." />
+<Figure src="/img/alignments/height_mode_fit.png" caption="The Read height submenu with Fit to track height selected." />
 
 Fit mode adapts to how much room a pileup has: drag the track taller or shorter
 and the reads re-fit. Reads draw no taller than the Normal preset and no smaller
@@ -328,16 +328,17 @@ still colors by strand. This needs a sequence adapter on the assembly.
 
 **Show... → Sashimi arcs** turns them on and off, and **Show... → Sashimi read
 counts** prints each junction's supporting-read count on its arc. While the arcs
-draw, the Sashimi arcs section of **Filter by... → More filters...** filters
-them:
+draw:
 
-- **Split-read junctions** shows, hides or keeps only the junctions split
-  alignments (SA tag) imply beside the N-gap splices
-- **Non-canonical junctions → Hide non-canonical junctions** drops junctions
-  whose motif is none of the three canonical pairs. On deep RNA-seq the thin
-  arcs are mostly these, so it is the filter to reach for first. **Only
-  non-canonical junctions** keeps just those, for checking an aligner's output
-- **Min reads at a junction** drops the junctions with fewer reads
+- **Filter by... → Non-canonical junctions → Hide non-canonical junctions**
+  drops junctions whose motif is none of the three canonical pairs. On deep
+  RNA-seq the thin arcs are mostly these, so it is the filter to reach for
+  first. **Only non-canonical junctions** keeps just those, for checking an
+  aligner's output
+- The Sashimi arcs section of **Filter by... → More filters...** shows, hides or
+  keeps only the **Split-read junctions** that split alignments (SA tag) imply
+  beside the N-gap splices, and **Min reads at a junction** drops the junctions
+  with fewer reads
 - **Advanced → Sashimi placement** splits the arcs above/below the coverage row
 
 See the [RNA-seq tutorial](/docs/tutorials/rnaseq). When one junction peak
@@ -353,12 +354,12 @@ the long-range relationships behind structural variants.
 
 ### Read arcs
 
-**Read connections → Show read arcs** draws a bezier curve between the ends of
-each pair, so long-range and discordant pairs stand out from the short local
-arcs. A partner the view has not loaded draws as a large semicircle reaching
-toward it. A mate on another chromosome draws as an arc when that chromosome is
-on screen and as a vertical line at the breakpoint when it is not. Both can be
-toggled off, and dragging the track taller re-fits the arcs.
+**Read connections → Read arcs** draws a bezier curve between the ends of each
+pair, so long-range and discordant pairs stand out from the short local arcs. A
+partner the view has not loaded draws as a large semicircle reaching toward it.
+A mate on another chromosome draws as an arc when that chromosome is on screen
+and as a vertical line at the breakpoint when it is not. Both can be toggled
+off, and dragging the track taller re-fits the arcs.
 
 An arc whose ends are in different displayed regions spans them, so a second
 region either side of a breakpoint shows the connection as one curve.
@@ -386,7 +387,7 @@ insert size.
 
 ### Read cloud
 
-**Read connections → Show read cloud** lays pairs out on the Y axis by the **log
+**Read connections → Read cloud** lays pairs out on the Y axis by the **log
 distance between mates**, so the insert-size distribution is visible directly
 and short-insert (insertion-supporting) pairs lift away from the background.
 
@@ -399,8 +400,8 @@ mapped:
 
 - **Split current view to show mate** replaces the displayed regions with the
   read's locus and its mate's side by side, each padded by a read length, and
-  turns on **View as pairs / link supplementary alignments** so the pair is
-  drawn joined. A snackbar offers **Undo**, which restores both
+  turns on **Link mates and supplementary alignments** so the pair is drawn
+  joined. A snackbar offers **Undo**, which restores both
 - **Open breakpoint split view** puts the two loci in
   [separate stacked panels](/docs/user_guides/sv_visualization#breakpoint-split-view),
   which draws the connecting splines
