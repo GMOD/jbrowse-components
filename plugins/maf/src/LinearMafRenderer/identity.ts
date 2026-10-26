@@ -4,7 +4,7 @@ import {
   isUnknownBase,
   sameBase,
 } from '@jbrowse/core/util/alignedBytes'
-import { cssColorToABGR, packAbgr } from '@jbrowse/core/util/colorBits'
+import { packAbgr } from '@jbrowse/core/util/colorBits'
 import {
   colorRampStops,
   rampDomain,
@@ -25,9 +25,6 @@ import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { ColorRampStop } from '@jbrowse/core/util/colorRamp'
 import type { ContinuousRef } from '@jbrowse/core/util/markEncoding'
 import type { SpanChannels } from '@jbrowse/render-core/marks'
-
-/** How the identity plot draws: a ramp per cell, or a bar per cell. */
-export type IdentityPlot = 'heatmap' | 'xyplot'
 
 /**
  * Identity is quantized to hundredths: the ramp's steps, and finer than a row
@@ -122,55 +119,38 @@ export function identityLut(
 }
 
 const XYPLOT_BAR_RGB = identityRgb(1)
-const XYPLOT_BAR_ABGR = cssColorToABGR(XYPLOT_BAR_RGB)
 
 /**
- * The key for whichever identity plot draws: the ramp, the X-Y plot's one bar
- * color with its height named, or the ramp's two ends where each cell is one
+ * The identity fill's key: the ramp, or its two ends where each cell is one
  * base, which matches or not, so the ramp's middle is never drawn.
  */
 export function identityColorScale(
-  mode: IdentityPlot,
   oneBaseCells = false,
   title = 'Per-base identity to reference',
   ramp = DEFAULT_IDENTITY_RAMP,
 ): ColorScale {
   const scale = identityScaleOf(ramp)
-  if (mode === 'heatmap' && oneBaseCells) {
-    return {
-      kind: 'categorical',
-      id: 'heatmap-base',
-      title,
-      entries: [
-        {
-          value: 'match',
-          label: 'Conserved (base matches)',
-          color: rgbOf(scale.at(1)),
-        },
-        {
-          value: 'mismatch',
-          label: 'Divergent (base differs)',
-          color: rgbOf(scale.at(0)),
-        },
-      ],
-    }
-  }
-  return mode === 'xyplot'
+  return oneBaseCells
     ? {
         kind: 'categorical',
-        id: mode,
+        id: 'heatmap-base',
         title,
         entries: [
           {
-            value: 'bar',
-            label: 'Bar height: full = conserved, flat = divergent',
-            color: XYPLOT_BAR_RGB,
+            value: 'match',
+            label: 'Conserved (base matches)',
+            color: rgbOf(scale.at(1)),
+          },
+          {
+            value: 'mismatch',
+            label: 'Divergent (base differs)',
+            color: rgbOf(scale.at(0)),
           },
         ],
       }
     : {
         kind: 'ramp',
-        id: mode,
+        id: 'heatmap',
         title,
         domain: scale.domain,
         stops: scale.keyOffsets().map(offset => ({
@@ -179,6 +159,25 @@ export function identityColorScale(
         })),
         format: v => `${Math.round(v * 100)}%`,
       }
+}
+
+/** The X-Y plot's key where one color fills its bars: what the height means. */
+export function barHeightScale(
+  title = 'Per-base identity to reference',
+  color = XYPLOT_BAR_RGB,
+): ColorScale {
+  return {
+    kind: 'categorical',
+    id: 'xyplot',
+    title,
+    entries: [
+      {
+        value: 'bar',
+        label: 'Bar height: full = conserved, flat = divergent',
+        color,
+      },
+    ],
+  }
 }
 
 /** Each row's mean identity to the reference, as runs of one hundredth. */
@@ -331,23 +330,25 @@ export function identitySpans(
   }
 }
 
-/**
- * The X-Y plot: a bar per run as tall as its identity, on the ramp or in the
- * plot's one color.
- */
+/** Each run's ramp color, the X-Y plot's bars under an identity fill. */
+export function identityRunColors(runs: MafIdentityRuns, lut = identityLut()) {
+  return Uint32Array.from(runs.step, s => lut[s]!)
+}
+
+/** The X-Y plot's one bar color, where no fill colors its bars. */
+export const XYPLOT_BAR_COLOR = XYPLOT_BAR_RGB
+
+/** The X-Y plot: a bar per run as tall as its identity, in `colors`. */
 export function identityBars(
   runs: MafIdentityRuns,
-  ramp: boolean,
-  lut = identityLut(),
+  colors: Uint32Array,
 ): MafIdentityBars {
   return {
     x: runs.x,
     x2: runs.x2,
     y: Float32Array.from(runs.step, s => s / STEPS),
     row: runs.row,
-    color: ramp
-      ? Uint32Array.from(runs.step, s => lut[s]!)
-      : new Uint32Array(runs.count).fill(XYPLOT_BAR_ABGR),
+    color: colors,
     count: runs.count,
   }
 }

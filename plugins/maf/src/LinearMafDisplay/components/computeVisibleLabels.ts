@@ -2,9 +2,10 @@ import { MIN_HEIGHT_FOR_TEXT } from '@jbrowse/alignments-core'
 import { DASH, LOWER_BIT, isGapByte } from '@jbrowse/core/util/alignedBytes'
 
 import { CHAR_SIZE_WIDTH } from '../../LinearMafRenderer/rendering/types.ts'
-import { paintsMatchColor } from '../../LinearMafRenderer/resolveCellColor.ts'
+import { paintsOwnColor } from '../../LinearMafRenderer/resolveCellColor.ts'
 import { eachVisibleRegion, rowViewport } from './visibleRegionGeometry.ts'
 
+import type { BasePaints } from '../../LinearMafRenderer/resolveCellColor.ts'
 import type { MafOverlayParams } from './visibleRegionGeometry.ts'
 
 export interface VisibleLabel {
@@ -15,18 +16,17 @@ export interface VisibleLabel {
 }
 
 interface ComputeVisibleLabelsParams extends MafOverlayParams {
-  /** a matching base's cell paints its own color */
-  colorMatches: boolean
+  paints: BasePaints
 }
 
 /**
  * A letter over every cell that paints its base's color, in the case the file
- * gives it: under `color: 'mismatch'` the mismatches, under `base` every base.
+ * gives it: the mismatches, or every base under the `base` layer.
  */
 export function computeVisibleLabels(
   params: ComputeVisibleLabelsParams,
 ): VisibleLabel[] {
-  const { view, rpcDataMap, rowHeight, colorMatches } = params
+  const { view, rpcDataMap, rowHeight, paints } = params
 
   const labels: VisibleLabel[] = []
   const { h, offset, firstRow, endRow } = rowViewport(params)
@@ -73,7 +73,7 @@ export function computeVisibleLabels(
             if (
               bp >= bpLo &&
               !isGapByte(alnCode) &&
-              !paintsMatchColor(refCode, alnCode, colorMatches)
+              paintsOwnColor(refCode, alnCode, paints)
             ) {
               labels.push({
                 // +0.5 → cell center, orientation-aware via bpToPx

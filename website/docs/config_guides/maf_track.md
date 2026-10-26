@@ -225,14 +225,14 @@ cells:
 `framesAdapter` on the MAF adapter points at a UCSC `mafFrames` file (a
 `BigBedAdapter` over `multiz<N>wayFrames.bb`): each gene's CDS reading frame
 projected through the alignment, one record per (species, region), keyed by
-`src` species. It enables the "CDS frames" overlay and the "Codon changes (amino
-acids)" row coloring, neither on by default. A record for the reference `src`
-gives the reference row a gene structure too.
+`src` species. It enables the `alignments.frames` strip and the `codon` field of
+[`alignments.bases`](/docs/config/mafbases), neither on by default. A record for
+the reference `src` gives the reference row a gene structure too.
 
 ## A larger example: the human 470-way
 
 The UCSC hg38 470-way multiz as a `BigMafAdapter`, with its summary (zoom-out)
-and frames (codon view) files from the same download directory:
+and frames (codon) files from the same download directory:
 
 ```json addtrack
 {

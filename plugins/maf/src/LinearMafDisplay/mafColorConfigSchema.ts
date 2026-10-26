@@ -16,47 +16,28 @@ import {
   SOURCE_CHROM_PALETTE,
   SOURCE_CHROM_RANK_LABELS,
 } from './components/drawSourceChrom.ts'
-import { MAF_COLOR_FIELDS } from './rowRenderings.ts'
+import { MAF_COLOR_FIELDS } from './rowPlan.ts'
 
-import type { MafColorField } from './rowRenderings.ts'
+import type { MafColorField } from './rowPlan.ts'
 import type { FieldPresets } from '@jbrowse/display-kit/colorConfigSchema'
-
-const BASE_KEYS = ['A', 'C', 'G', 'T', 'N', 'gap'] as const
 
 /**
  * Each field's one scale and what it reads while the config leaves a member
- * unwritten. The bases and the codons list no `range`, so they paint the
- * theme's colors.
+ * unwritten.
  */
 export const MAF_FIELD_PRESETS = {
-  mismatch: {
-    scale: { type: 'ordinal', domain: [...BASE_KEYS, 'match'] },
-    legend: { title: 'Mismatch to reference' },
-  },
-  base: {
-    scale: { type: 'ordinal', domain: BASE_KEYS },
-    legend: { title: 'Base' },
-  },
   identity: {
     ...MEASURE_FIELD_PRESETS.identity,
     legend: { title: 'Per-base identity to reference' },
   },
-  chromosome: {
+  refNameRank: {
     scale: {
       type: 'ordinal',
       domain: SOURCE_CHROM_PALETTE.map((_, rank) => String(rank)),
       range: SOURCE_CHROM_PALETTE,
       names: SOURCE_CHROM_RANK_LABELS,
     },
-    legend: { title: 'Source chromosome' },
-  },
-  codon: {
-    scale: {
-      type: 'ordinal',
-      domain: ['nonsyn', 'syn', 'stop'],
-      names: ['Nonsynonymous', 'Synonymous', 'Stop gained'],
-    },
-    legend: { title: 'Codon change' },
+    legend: { title: 'Source sequence' },
   },
 } as const satisfies FieldPresets<'ordinal' | 'linear'> &
   Record<MafColorField, unknown>
@@ -64,18 +45,17 @@ export const MAF_FIELD_PRESETS = {
 /**
  * #config MafColor
  * #category display
- * The MAF display's `encoding.color` colors each species row's aligned cells
- * by one field.
- * `mismatch` paints a base only where it differs from the reference,
- * `base` every base, `identity` the mean identity to the reference along a
- * ramp, `chromosome` each block by the rank of its source chromosome within
- * the row, and `codon` each codon by its amino-acid change, given an
- * `framesAdapter`. A string is the field. Each field has one scale:
- * `identity` runs from `scale.domainMin` 0 to `scale.domainMax` 1 along the
- * `redgreyblue` scheme, as every display's identity does, and the others are
- * ordinal. The bases and the codons paint the theme's colors. The slots are
- * the shared color channel's, so `jbrowse validate` and "Edit plot..." judge
- * them as they judge any other display's.
+ * The MAF display's `encoding.color`: what fills each species row's aligned
+ * cells, as alignments' `encoding.color` fills its reads. Unset, the theme's
+ * match tone fills them, and the X-Y plot's bars take its one bar color.
+ * `value` is a constant fill. `identity` paints the mean identity to the
+ * reference along a ramp, from `scale.domainMin` 0 to `scale.domainMax` 1
+ * along the `redgreyblue` scheme, as every display's identity does.
+ * `refNameRank` paints each block by the rank of its source sequence within
+ * the row, rank 0 being the sequence the row aligns most bases from, so a
+ * rearranged block stands out. A string is the field. The mismatches and the
+ * per-base layer draw over the fill: `alignments.mismatches` and
+ * `alignments.bases`.
  *
  * #example
  * ```js
@@ -89,19 +69,31 @@ export const MAF_FIELD_PRESETS = {
  *   },
  * }
  * ```
+ * ```js
+ * { type: 'LinearMafDisplay', encoding: { color: { value: '#ccc' } } }
+ * ```
  */
 export const mafColorConfigSchema = ConfigurationSchema(
   'MafColor',
   {
     /**
+     * #slot value
+     * The fill of every aligned cell, and of the X-Y plot's bars, while no
+     * field paints.
+     */
+    value: {
+      type: 'maybeColor',
+      description:
+        "CSS color of every aligned cell while no field paints; unset, the theme's match tone",
+    },
+    /**
      * #slot field
      */
     field: {
-      type: 'stringEnum',
+      type: 'maybeStringEnum',
       model: types.enumeration('MafColorField', [...MAF_COLOR_FIELDS]),
-      defaultValue: 'mismatch',
       description:
-        'field to color each cell by: mismatch, base, identity, chromosome or codon',
+        'field the aligned cells are filled by: identity or refNameRank; unset, the constant',
     },
     /**
      * #slot scale
@@ -113,11 +105,11 @@ export const mafColorConfigSchema = ConfigurationSchema(
       {
         ...colorDomainSlot({
           domain:
-            'the values the key lists, in order: under chromosome each rank from 0, the main source chromosome; under codon nonsyn, syn and stop',
+            'the ranks the key lists under refNameRank, in order, from 0, the main source sequence',
         }),
         ...colorRangeSlot({
           range:
-            "CSS colors: under chromosome one per rank from the main source chromosome, the last painting every rank past it; under identity the ramp's stops, winning over scheme; the bases and the codons paint the theme's colors",
+            "CSS colors: under refNameRank one per rank from the main source sequence, the last painting every rank past it; under identity the ramp's stops, winning over scheme",
         }),
         ...colorNamesSlot,
         /**

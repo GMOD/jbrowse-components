@@ -5,26 +5,34 @@ import { mafColorScales } from './colorScales.ts'
 import { MAF_FIELD_PRESETS } from './mafColorConfigSchema.ts'
 
 import type { MafColorScaleInputs } from './colorScales.ts'
-import type { MafColorField } from './rowRenderings.ts'
+import type { MafColorField, RowPlan } from './rowPlan.ts'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 
+const CELLS: RowPlan = {
+  mark: 'rect',
+  color: undefined,
+  mismatches: true,
+  bases: undefined,
+  perBase: true,
+}
+
 function inputs(
-  field: MafColorField,
+  field: MafColorField | undefined,
+  plan: Partial<RowPlan> = {},
   overrides: Partial<MafColorScaleInputs> = {},
 ): MafColorScaleInputs {
   return {
     palette: resolvePalette(),
-    rendering: field,
-    rowsColor: field,
+    plan: { ...CELLS, color: field, ...plan },
     colorEncoding: colorEncodingOf(
       {
-        field,
+        field: field ?? '',
         value: undefined,
         scale: { type: undefined, domain: [], range: [] },
         legend: {},
       },
       MAF_FIELD_PRESETS,
-    )!,
+    ),
     colorKeyTitle: 'Key',
     oneBaseCells: false,
     maxSourceChromRank: 3,
@@ -36,7 +44,7 @@ function inputs(
 
 const ids = (scales: ColorScale[]) => scales.map(s => s.id)
 
-test('a rendering keys itself, then frames, then the row colors', () => {
+test('the fill keys itself, then the codon layer, frames and row colors', () => {
   const rowKey: ColorScale = {
     kind: 'categorical',
     id: 'rows',
@@ -46,31 +54,35 @@ test('a rendering keys itself, then frames, then the row colors', () => {
   expect(
     ids(
       mafColorScales(
-        inputs('codon', { showsFrames: true, rowColorScales: [rowKey] }),
+        inputs(
+          'identity',
+          { bases: 'codon' },
+          { showsFrames: true, rowColorScales: [rowKey] },
+        ),
       ),
     ),
-  ).toEqual(['codon', 'cdsFrame', 'rows'])
+  ).toEqual(['heatmap', 'codon', 'cdsFrame', 'rows'])
 })
 
-test('chromosome keys one entry per rank', () => {
+test('refNameRank keys one entry per rank', () => {
   const [scale] = mafColorScales(
-    inputs('chromosome', { maxSourceChromRank: 2 }),
+    inputs('refNameRank', {}, { maxSourceChromRank: 2 }),
   )
   expect(scale!.id).toBe('sourceChrom')
   expect(scale!.kind === 'categorical' && scale!.entries.length).toBe(3)
 })
 
-test('identity color keys the heatmap whichever rendering draws it', () => {
-  expect(
-    ids(mafColorScales(inputs('identity', { rendering: 'xyplot' }))),
-  ).toEqual(['heatmap'])
+test('an identity fill keys its ramp under the bars too', () => {
+  expect(ids(mafColorScales(inputs('identity', { mark: 'bar' })))).toEqual([
+    'heatmap',
+  ])
 })
 
-test('an xyplot over a non-identity color keys the bars alone', () => {
-  const [scale] = mafColorScales(inputs('mismatch', { rendering: 'xyplot' }))
+test('bars under a constant fill key their height', () => {
+  const [scale] = mafColorScales(inputs(undefined, { mark: 'bar' }))
   expect(scale!.id).toBe('xyplot')
 })
 
-test('a rendering with no key of its own adds none', () => {
-  expect(mafColorScales(inputs('mismatch'))).toEqual([])
+test('a constant fill with the mismatches over it keys nothing', () => {
+  expect(mafColorScales(inputs(undefined))).toEqual([])
 })

@@ -7,6 +7,7 @@ import {
 } from './resolveCellColor.ts'
 
 import type { MafBlock } from './mafRenderingBackendTypes.ts'
+import type { BasePaints } from './resolveCellColor.ts'
 import type { MafColorPalette } from './util.ts'
 import type { SpanChannels } from '@jbrowse/render-core/marks'
 
@@ -27,8 +28,9 @@ export const EMPTY_MAF_CELLS: SpanChannels = {
 export interface BuildChannelsArgs {
   blocks: MafBlock[]
   palette: MafColorPalette
-  /** a matching base paints its own color rather than the match color */
-  colorMatches: boolean
+  /** the fill of a base painting no color of its own; transparent draws none */
+  matchColor: string
+  paints: BasePaints
   /**
    * Genomic bp per emitted cell. `1` encodes every base; larger values decimate
    * to one sample per window. Comes from `encodeBinBp` on the display, which
@@ -72,16 +74,14 @@ function maxInstances(blocks: MafBlock[], binBp: number) {
  * `encodeBinBp` for how the step is chosen). Insertion columns never appear —
  * `colForGpos` holds only columns carrying a genomic position — so the only
  * cells skipped here are the ones outside a row's `resolvedExtent`, which paint
- * blank.
+ * blank, and runs in a fully transparent color: where a field fills the row,
+ * the fill is transparent and only the bases painting their own color draw.
  */
 export function buildMafChannels(args: BuildChannelsArgs): SpanChannels {
-  const { blocks, palette, colorMatches, binBp } = args
+  const { blocks, palette, matchColor, paints, binBp } = args
   // Pack the palette once: per-cell color resolution then reads packed ABGR
   // ints directly with no CSS-string allocation or Map lookups.
-  const cfg = packMafCellColorConfig({
-    ...palette,
-    colorMatches,
-  })
+  const cfg = packMafCellColorConfig({ ...palette, matchColor, paints })
   const cap = maxInstances(blocks, binBp)
   const x = new Uint32Array(cap)
   const x2 = new Uint32Array(cap)
@@ -123,14 +123,14 @@ export function buildMafChannels(args: BuildChannelsArgs): SpanChannels {
         if (col < firstCol || col > lastCol) {
           // Outside the row's aligned extent nothing paints, so close the open
           // run here rather than letting it span the blank.
-          if (runStart >= 0) {
+          if (runStart >= 0 && runColor >>> 24 !== 0) {
             x[count] = startBp + runStart
             x2[count] = startBp + runEnd
             row[count] = rowIndex
             color[count] = runColor
             count++
-            runStart = -1
           }
+          runStart = -1
         } else {
           runEnd = Math.min(gpos + binBp, refLen)
           const abgr = resolveCellPacked(
@@ -142,17 +142,19 @@ export function buildMafChannels(args: BuildChannelsArgs): SpanChannels {
             runStart = gpos
             runColor = abgr
           } else if (abgr !== runColor) {
-            x[count] = startBp + runStart
-            x2[count] = startBp + gpos
-            row[count] = rowIndex
-            color[count] = runColor
-            count++
+            if (runColor >>> 24 !== 0) {
+              x[count] = startBp + runStart
+              x2[count] = startBp + gpos
+              row[count] = rowIndex
+              color[count] = runColor
+              count++
+            }
             runStart = gpos
             runColor = abgr
           }
         }
       }
-      if (runStart >= 0) {
+      if (runStart >= 0 && runColor >>> 24 !== 0) {
         x[count] = startBp + runStart
         x2[count] = startBp + runEnd
         row[count] = rowIndex

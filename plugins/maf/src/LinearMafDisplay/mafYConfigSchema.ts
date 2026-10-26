@@ -1,7 +1,7 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 
-import { MAF_Y_FIELDS } from './rowRenderings.ts'
+import { MAF_Y_FIELDS } from './rowPlan.ts'
 
 /**
  * #config MafY

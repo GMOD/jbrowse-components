@@ -1,7 +1,4 @@
 import { alpha, getContrastText } from '@jbrowse/core/ui/palette'
-import { keyNames } from '@jbrowse/core/util/categoricalField'
-
-import { MAF_FIELD_PRESETS } from '../LinearMafDisplay/mafColorConfigSchema.ts'
 
 import type { CodonChange } from '../LinearMafDisplay/codons.ts'
 import type { LegendItem } from '@jbrowse/core/ui'
@@ -142,41 +139,25 @@ export function getCodonColors(palette: JBrowsePalette) {
 }
 
 /**
- * The color key for the codon view: every change the painter fills, the ones
- * `domain` lists first, each named by `labels` or else by the preset, in the
- * very fill `getCodonColors` hands the painter. A domain orders the key and
- * never decides what it lists, since every change paints whatever it says.
- *
- * It has to be the fill, because the fills are alpha-composited: the legend
- * used to name the raw theme colors, so the faint synonymous fill (alpha 0.18
- * in light mode) showed in the key as a saturated blue no cell on screen is.
- *
+ * The color key for the codon layer: every change the painter fills, in the
+ * very fill `getCodonColors` hands the painter. It has to be the fill, since
+ * the fills are alpha-composited: the raw theme color of the faint synonymous
+ * fill (alpha 0.18 in light mode) is a saturated blue no cell on screen is.
  * `same` takes no fill, so a conserved codon has no swatch to show.
  */
-export function getCodonLegendItems(
-  palette: JBrowsePalette,
-  {
-    domain = [],
-    names = [],
-  }: {
-    domain?: readonly (string | number)[]
-    names?: readonly string[]
-  } = {},
-): LegendItem[] {
+export function getCodonLegendItems(palette: JBrowsePalette): LegendItem[] {
   const { fill } = getCodonColors(palette)
-  const preset = MAF_FIELD_PRESETS.codon
-  const keyed = keyNames(domain, names)
-  const presetNames = keyNames(preset.scale.domain, preset.scale.names)
-  const order = new Set([...domain.map(String), ...preset.scale.domain])
-  return [...order].flatMap(value => {
-    const color = Object.hasOwn(fill, value)
-      ? fill[value as CodonChange]
-      : undefined
-    return color
-      ? [{ label: keyed.get(value) ?? presetNames.get(value) ?? value, color }]
-      : []
+  return CODON_CHANGES.flatMap(({ value, label }) => {
+    const color = fill[value]
+    return color ? [{ label, color }] : []
   })
 }
+
+const CODON_CHANGES = [
+  { value: 'nonsyn', label: 'Nonsynonymous' },
+  { value: 'syn', label: 'Synonymous' },
+  { value: 'stop', label: 'Stop gained' },
+] as const
 
 /** What a per-base letter paints in: the contrast of its cell's color. */
 export interface MafLabelColors {

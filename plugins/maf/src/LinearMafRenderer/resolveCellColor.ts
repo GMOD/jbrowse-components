@@ -19,14 +19,27 @@ const UPPER_C = 67
 export interface MafCellColorConfig {
   /** A/C/G/T/N → hex, derived from `theme.palette.bases`. */
   colorForBase: Record<string, string>
-  /** The color of a base matching the reference, unless `colorMatches`. */
+  /**
+   * The fill of a base drawn in no color of its own. Fully transparent where
+   * a field fills the row elsewhere, so only the bases that paint draw.
+   */
   matchColor: string
   /** Color for alignment-gap cells (alnByte === '-' or ' '). */
   gapColor: string
   /** Fallback when the base isn't in `colorForBase`. */
   unknownBaseColor: string
-  /** A matching base paints its own color, as a mismatch does. */
-  colorMatches: boolean
+  /** Which bases paint their own color. */
+  paints: BasePaints
+}
+
+/**
+ * Which aligned bases paint their own color over the row's fill: the ones
+ * differing from the reference while the mismatches draw, every one under the
+ * `base` layer.
+ */
+export interface BasePaints {
+  mismatches: boolean
+  everyBase: boolean
 }
 
 /**
@@ -42,27 +55,27 @@ const CellCategory = {
 } as const
 type CellCategory = (typeof CellCategory)[keyof typeof CellCategory]
 
-/** Whether an aligned base paints the match color rather than its own. */
-export function paintsMatchColor(
+/** Whether an aligned base paints its own color rather than the fill. */
+export function paintsOwnColor(
   refByte: number,
   alnByte: number,
-  colorMatches: boolean,
+  { mismatches, everyBase }: BasePaints,
 ) {
-  return !colorMatches && sameBase(refByte, alnByte)
+  return everyBase || (mismatches && !sameBase(refByte, alnByte))
 }
 
 function classifyCell(
   refByte: number,
   alnByte: number,
-  colorMatches: boolean,
+  paints: BasePaints,
 ): CellCategory {
   return refByte === DASH
     ? CellCategory.Skip
     : isGapByte(alnByte)
       ? CellCategory.Gap
-      : paintsMatchColor(refByte, alnByte, colorMatches)
-        ? CellCategory.Match
-        : CellCategory.Base
+      : paintsOwnColor(refByte, alnByte, paints)
+        ? CellCategory.Base
+        : CellCategory.Match
 }
 
 /**
@@ -78,7 +91,7 @@ export interface MafCellPackedColors {
   packedByLowerByte: Uint32Array
   match: number
   gap: number
-  colorMatches: boolean
+  paints: BasePaints
 }
 
 export interface MafCellPackedConfig extends MafCellPackedColors {
@@ -100,7 +113,7 @@ export function resolvePackedUncached(
   alnByte: number,
   cfg: MafCellPackedColors,
 ) {
-  const category = classifyCell(refByte, alnByte, cfg.colorMatches)
+  const category = classifyCell(refByte, alnByte, cfg.paints)
   return category === CellCategory.Gap
     ? cfg.gap
     : category === CellCategory.Match
@@ -126,7 +139,7 @@ export function packMafCellColorConfig(
     packedByLowerByte,
     match: cssColorToABGR(cfg.matchColor),
     gap: cssColorToABGR(cfg.gapColor),
-    colorMatches: cfg.colorMatches,
+    paints: cfg.paints,
   }
   // Every row of the table is one mismatch row with the two entries that
   // case-fold equal to its reference patched.

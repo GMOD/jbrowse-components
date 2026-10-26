@@ -1,38 +1,39 @@
 digraph maf_rendering {
   rankdir=TB
   node [shape=box fontname=monospace fontsize=10]
-  { node [shape=diamond] summaryTier; field; y }
+  { node [shape=diamond] summaryTier; baseLevel; bars; codon }
 
-  slots [label="color and y\ntwo independent channels"]
-
-  selected [label="selectedColorField\nthe Color by tick, zoom-independent", style=bold]
-  slots -> selected
+  slots [label="encoding.color, encoding.y,\nalignments.mismatches, alignments.bases\nthe settings, zoom-independent", style=bold]
 
   summaryTier [label="summary tier owns the view"]
   slots -> summaryTier
-  summaryTier -> fallback [label=" yes"]
-  fallback [label="mismatch, no y"]
+  summaryTier -> constant [label=" yes"]
+  constant [label="constant fill, no layer"]
 
-  field [label="can the color field\ndraw at this zoom"]
-  summaryTier -> field [label=" no"]
-  field -> keep [label=" yes"]
-  field -> mismatch [label=" no: codon off base level,\n identity at base level"]
-  keep [label="the field"]
-  mismatch [label="mismatch"]
+  baseLevel [label="base level"]
+  summaryTier -> baseLevel [label=" no"]
+  baseLevel -> yields [label=" yes"]
+  yields [label="identity fill and the\nX-Y plot yield to the constant"]
+  baseLevel -> fill [label=" no"]
+  fill [label="the fill as written"]
 
-  rowsColor [label="rowsColor\nwhat colors the cells", style=bold]
-  fallback -> rowsColor  keep -> rowsColor  mismatch -> rowsColor
+  bars [label="encoding.y set"]
+  yields -> bars  fill -> bars
+  bars -> barMark [label=" yes"]
+  barMark [label="mark bar: the fill\ncolors the bars, no layer"]
 
-  y [label="y set, off the summary tier,\nidentity not yielding at base level"]
-  slots -> y
-  rowsY [label="rowsY\nwhat the bar height carries", style=bold]
-  y -> rowsY
+  codon [label="bases is codon"]
+  bars -> codon [label=" no"]
+  codon -> codonLayer [label=" frames file\n and base level"]
+  codonLayer [label="the codon layer,\nthe mismatches yield to it"]
+  codon -> layers [label=" otherwise"]
+  layers [label="the base layer, or\nthe mismatches where shown"]
 
-  active [label="activeRowRendering\nxyplot while rowsY, else rowsColor", style=bold]
-  rowsColor -> active  rowsY -> active
+  plan [label="rowPlan\n{ mark, color, mismatches, bases, perBase }", style=bold]
+  constant -> plan  barMark -> plan  codonLayer -> plan  layers -> plan
 
-  marks [label="one GPU mark per rendering\nbases, identity, bars, codon,\nsource chromosome, summary"]
-  active -> marks
-  base [label="basesRenderingActive\nletters, insertions and\ndeletion counts draw over"]
-  active -> base
+  marks [label="one GPU mark per channel set:\ncells, identity, bars, codon,\nsource ranks, summary"]
+  plan -> marks
+  perBase [label="perBase: letters, insertions\nand deletion counts draw over"]
+  plan -> perBase
 }

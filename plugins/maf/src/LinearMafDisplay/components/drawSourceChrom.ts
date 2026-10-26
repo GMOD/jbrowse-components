@@ -1,9 +1,11 @@
 import { keyNames } from '@jbrowse/core/util/categoricalField'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 
+import { blockIndexAtBp } from '../../LinearMafRenderer/blockAtBp.ts'
 import { rowChromBp } from './rowChromBp.ts'
 
 import type {
+  MafAlignedRow,
   MafBlock,
   MafRegionData,
 } from '../../LinearMafRenderer/mafRenderingBackendTypes.ts'
@@ -169,4 +171,42 @@ export function encodeSourceChromSpans(
     }
   }
   return { x, x2, row, color, count }
+}
+
+function rowAt(rows: readonly MafAlignedRow[], rowIndex: number) {
+  let lo = 0
+  let hi = rows.length
+  while (lo < hi) {
+    const mid = (lo + hi) >>> 1
+    if (rows[mid]!.rowIndex < rowIndex) {
+      lo = mid + 1
+    } else {
+      hi = mid
+    }
+  }
+  const row = rows[lo]
+  return row?.rowIndex === rowIndex ? row : undefined
+}
+
+/**
+ * The rank color of the block each bar starts in, so the X-Y plot's bars take
+ * the colors the cells would. A bar spanning two source sequences takes its
+ * first base's, as a sampled cell does. A block lists its rows in row order
+ * (`placeMafRegionData`), so the row is a binary search.
+ */
+export function sourceChromBarColors(
+  blocks: readonly MafBlock[],
+  bars: { x: Uint32Array; row: Uint32Array; count: number },
+  ranks: ReadonlyMap<number, ReadonlyMap<string, number>>,
+  rankColors: readonly number[] = RANK_ABGR,
+) {
+  const last = rankColors.length - 1
+  const colors = new Uint32Array(bars.count)
+  for (let i = 0; i < bars.count; i++) {
+    const b = blockIndexAtBp(blocks, bars.x[i]!)
+    const chr = b === -1 ? undefined : rowAt(blocks[b]!.rows, bars.row[i]!)?.chr
+    const rank = chr ? (ranks.get(bars.row[i]!)?.get(chr) ?? 0) : 0
+    colors[i] = rankColors[Math.min(rank, last)]!
+  }
+  return colors
 }

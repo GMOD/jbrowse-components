@@ -15,6 +15,7 @@ import { legendCheckboxItem } from '@jbrowse/display-kit/LegendMixin'
 import {
   colorByMenuItem,
   colorSchemeMenuItem,
+  solidColorItem,
 } from '@jbrowse/display-kit/colorByMenu'
 import {
   rowOrderMenuItems,
@@ -25,11 +26,21 @@ import {
 
 import { CONSERVATION_UNIT_OPTIONS } from './conservationUnits.ts'
 import { HEIGHT_PRESETS } from './displayDefaults.ts'
-import { MAF_COLOR_FIELDS, MAF_COLOR_FIELD_LABELS } from './rowRenderings.ts'
+import {
+  MAF_BASES_FIELDS,
+  MAF_BASES_FIELD_LABELS,
+  MAF_COLOR_FIELDS,
+  MAF_COLOR_FIELD_LABELS,
+} from './rowPlan.ts'
 
 import type { MafSource } from '../types.ts'
 import type { ConservationUnit } from './conservationUnits.ts'
-import type { MafColorField, MafYField } from './rowRenderings.ts'
+import type {
+  MafBasesField,
+  MafColorField,
+  MafYField,
+  RowPlan,
+} from './rowPlan.ts'
 import type { MafClusterSelf } from './runMafClustering.ts'
 import type { CoverageMenuModel } from '@jbrowse/alignments-core/coverageMenuItems'
 import type { MenuItem } from '@jbrowse/core/ui'
@@ -39,12 +50,12 @@ import type { TreeLayoutModel } from '@jbrowse/tree-sidebar'
 
 const MafClusterDialog = lazy(() => import('./components/MafClusterDialog.tsx'))
 
+// At base level a one-base identity is a match call, so the bases draw instead.
+const ZOOM_OUT_FOR_IDENTITY = 'zoom out past base level'
+
 // Both bands need the per-base alignment, which the summary tier does not read.
 // The tick keeps the user's choice and this hint says why nothing draws.
 export const ZOOM_IN_FOR_BAND = 'zoom in past the summary tier'
-
-// At base level a one-base identity is a match call, so the bases draw instead.
-const ZOOM_OUT_FOR_IDENTITY = 'zoom out past base level'
 
 /**
  * A row whose action the summary tier took away keeps its place and says why it
@@ -84,10 +95,17 @@ interface MafMenuSelf
   showFrames: boolean
   showInversions: boolean
   framesAdapterConfig: Record<string, unknown> | undefined
-  selectedColorField: MafColorField
+  colorField: MafColorField | undefined
+  colorValue: string | undefined
   colorByField: (field: MafColorField) => void
+  pickDefaultColor: () => void
+  pickSolidColor: () => void
+  basesField: MafBasesField | undefined
+  setBasesField: (field: MafBasesField | undefined) => void
+  showMismatches: boolean
+  setShowMismatches: (f: boolean) => void
+  rowPlan: RowPlan
   yField: MafYField | undefined
-  rowsY: MafYField | undefined
   setYField: (field: MafYField | undefined) => void
   colorScheme: ColorSchemeName | undefined
   setColorScheme: (scheme: ColorSchemeName) => void
@@ -138,46 +156,80 @@ function frameMenuItems(self: MafMenuSelf): MenuItem[] {
     : []
 }
 
-/**
- * One Color by row, an `encoding.color.field`. The codon and identity rows
- * can tick a field that yields at the current zoom; the hint and the toggle
- * say why the rows show bases.
- */
-function colorFieldRow(self: MafMenuSelf, field: MafColorField): MenuItem {
-  const label = MAF_COLOR_FIELD_LABELS[field]
-  const hint =
-    self.rowsY === 'identity' && field !== 'identity'
-      ? 'the X-Y plot draws its bars in one color'
-      : field === 'codon' && !self.zoomedToBaseLevel
-        ? 'zoom in to base level'
-        : field === 'identity' && self.zoomedToBaseLevel
-          ? ZOOM_OUT_FOR_IDENTITY
-          : undefined
-  return {
-    label: withHint(label, hint),
-    type: 'radio',
-    checked: self.selectedColorField === field,
-    onClick: () => {
-      self.colorByField(field)
-    },
-  }
+function radio(label: string, checked: boolean, onClick: () => void) {
+  return { label, type: 'radio' as const, checked, onClick }
 }
 
+/**
+ * Color by: what fills the rows, `encoding.color`, then the per-position
+ * layer drawn over it, `alignments.bases`, as alignments' Color by offers
+ * the read fill and its per-base coloring.
+ */
 function colorMenuItem(self: MafMenuSelf): MenuItem {
+  const constant = self.colorValue !== undefined
+  const fieldHint = (field: MafColorField) =>
+    self.coarseTierActive
+      ? ZOOM_IN_FOR_BAND
+      : field === 'identity' && self.zoomedToBaseLevel
+        ? ZOOM_OUT_FOR_IDENTITY
+        : undefined
   return colorByMenuItem({
     blocks: [
       {
-        rows: MAF_COLOR_FIELDS.filter(
-          field => field !== 'codon' || !!self.framesAdapterConfig,
-        ).map(field => colorFieldRow(self, field)),
+        rows: [
+          radio('Default', self.colorField === undefined && !constant, () => {
+            self.pickDefaultColor()
+          }),
+          ...MAF_COLOR_FIELDS.map(field =>
+            radio(
+              withHint(MAF_COLOR_FIELD_LABELS[field], fieldHint(field)),
+              self.colorField === field,
+              () => {
+                self.setShowLegend(true)
+                self.colorByField(field)
+              },
+            ),
+          ),
+          solidColorItem(self.colorField === undefined && constant, () => {
+            self.pickSolidColor()
+          }),
+        ],
+      },
+      {
+        header: 'Per-base coloring',
+        rows: [
+          radio('None', self.basesField === undefined, () => {
+            self.setBasesField(undefined)
+          }),
+          ...MAF_BASES_FIELDS.filter(
+            field => field !== 'codon' || !!self.framesAdapterConfig,
+          ).map(field =>
+            radio(
+              withHint(MAF_BASES_FIELD_LABELS[field], basesHint(self, field)),
+              self.basesField === field,
+              () => {
+                self.setBasesField(field)
+              },
+            ),
+          ),
+        ],
       },
     ],
     additional: [
-      ...(self.selectedColorField === 'identity'
-        ? [colorSchemeMenuItem(self)]
-        : []),
+      ...(self.colorField === 'identity' ? [colorSchemeMenuItem(self)] : []),
     ],
   })
+}
+
+/** Why a ticked per-position layer draws nothing at this zoom or plot. */
+function basesHint(self: MafMenuSelf, field: MafBasesField) {
+  return self.coarseTierActive
+    ? ZOOM_IN_FOR_BAND
+    : self.yField
+      ? 'the X-Y plot draws bars, not cells'
+      : field === 'codon' && !self.zoomedToBaseLevel
+        ? 'zoom in to base level'
+        : undefined
 }
 
 function conservationResolutionMenuItems(self: MafMenuSelf): MenuItem[] {
@@ -199,7 +251,11 @@ function plotTypeMenuItem(self: MafMenuSelf): MenuItem {
   return makeRadioSubMenu({
     label: withHint(
       'Plot type',
-      self.yField && self.zoomedToBaseLevel ? ZOOM_OUT_FOR_IDENTITY : undefined,
+      self.yField && self.coarseTierActive
+        ? ZOOM_IN_FOR_BAND
+        : self.yField && self.zoomedToBaseLevel
+          ? ZOOM_OUT_FOR_IDENTITY
+          : undefined,
     ),
     value: self.yField ?? 'cells',
     onChange: plot => {
@@ -227,6 +283,14 @@ function showMenuItems(self: MafMenuSelf): MenuItem[] {
     interbaseIndicatorsMenuItem(self),
     toggleItem('Alignments', self.showAlignments, self.setShowAlignments),
     toggleItem(
+      withHint(
+        'Mismatches',
+        self.coarseTierActive ? ZOOM_IN_FOR_BAND : undefined,
+      ),
+      self.showMismatches,
+      self.setShowMismatches,
+    ),
+    toggleItem(
       'Reference row',
       self.showReferenceRow,
       self.setShowReferenceRow,
@@ -240,12 +304,15 @@ function showMenuItems(self: MafMenuSelf): MenuItem[] {
       self.setShowConservation,
     ),
     toggleItem(
-      'Inversions (strand flips)',
+      withHint(
+        'Inversions (strand flips)',
+        self.coarseTierActive ? ZOOM_IN_FOR_BAND : undefined,
+      ),
       self.showInversions,
       self.setShowInversions,
     ),
     ...frameMenuItems(self),
-    // Only where a key exists: `bases` mode has nothing to key.
+    // Only where a key exists: a constant fill and the bases key nothing.
     ...(self.hasLegendKey ? [legendCheckboxItem(self)] : []),
   ]
 }

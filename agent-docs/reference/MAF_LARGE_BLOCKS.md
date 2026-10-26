@@ -36,7 +36,7 @@ of the buffer. [SYNTENY_LOD.md](SYNTENY_LOD.md) reached the same conclusion by
 profiling. The level-of-detail answer is the precomputed `summaryAdapter` tier;
 the gaps are in the tier, not the draw loop: a file written without a summary has
 no cheap zoom-out, and the identity plot is confined below the summary threshold
-because the summary tier makes `activeRowRendering` fall back to bases.
+because the summary tier makes `rowPlan` fall back to the constant fill.
 
 Two results not to re-derive: byte-scan parsing is not a win over the string
 `split` chain (V8's sliced strings make it nearly free), and transferables are a

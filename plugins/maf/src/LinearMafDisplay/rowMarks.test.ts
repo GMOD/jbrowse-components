@@ -124,11 +124,12 @@ describe('the summary bars are a row mark', () => {
   })
 })
 
-describe('color by source chromosome is a row mark', () => {
+describe('the source-sequence fill is a row mark', () => {
+  // The seed has no differing base, so the mismatches over the fill draw none.
   it('encodes one span per aligned row per block, and no cells', () => {
     const { display } = createMafTestEnvironment().createDisplay()
     seedRegion(display)
-    display.colorByField('chromosome')
+    display.colorByField('refNameRank')
     const payload = display.encodedUpload.get(0)!
     expect(payload.cells.count).toBe(0)
     expect(payload.sourceChrom).toMatchObject({ count: 4 })
@@ -138,7 +139,7 @@ describe('color by source chromosome is a row mark', () => {
     expect(payload.identityBars).toBeUndefined()
   })
 
-  it('encodes nothing for it in the bases rendering', () => {
+  it('encodes nothing for it under the constant fill', () => {
     const { display } = createMafTestEnvironment().createDisplay()
     seedRegion(display)
     const payload = display.encodedUpload.get(0)!
@@ -153,7 +154,7 @@ describe('color by source chromosome is a row mark', () => {
       ],
     })
     seedRegion(display)
-    display.colorByField('chromosome')
+    display.colorByField('refNameRank')
     const dispose = observed(display)
     const before = display.encodedUpload.get(0)!.sourceChrom
     view.horizontalScroll(500)
@@ -175,7 +176,7 @@ describe('identity is a row mark', () => {
     expect(payload.identityBars).toBeUndefined()
   })
 
-  it('encodes the X-Y plot as bars, on the ramp only under color identity', () => {
+  it('encodes the X-Y plot as bars, on the ramp only under the identity fill', () => {
     const { display, view } = createMafTestEnvironment().createDisplay()
     seedRegion(display)
     zoomPastBaseLevel(view)
@@ -183,10 +184,9 @@ describe('identity is a row mark', () => {
     const flat = display.encodedUpload.get(0)!.identityBars!
     expect(flat.count).toBeGreaterThan(0)
     expect(new Set(flat.color as Uint32Array).size).toBe(1)
-    expect(display.identityEncoding).toBe('bars')
 
     display.colorByField('identity')
-    expect(display.identityEncoding).toBe('rampBars')
+    expect(display.rowPlan).toMatchObject({ mark: 'bar', color: 'identity' })
     expect(display.encodedUpload.get(0)!.identity).toBeUndefined()
   })
 

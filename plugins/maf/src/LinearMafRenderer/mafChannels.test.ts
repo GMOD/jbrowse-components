@@ -63,12 +63,13 @@ const args = {
     conservationColor: 'grey',
     codonFill: { same: undefined, syn: 'blue', nonsyn: 'orange', stop: 'red' },
   },
-  colorMatches: false,
+  matchColor: '#d3d3d3',
+  paints: { mismatches: true, everyBase: false },
 }
 
 test('two disjoint blocks emit runs at distinct absolute positions', () => {
   // Block 1 at 100-105 (5 matches), block 2 at 1100-1105 (5 matches)
-  // With colorMatches=false, matches collapse into a single MATCH_COLOR run.
+  // Matches collapse into a single run in the fill.
   const blocks = [
     block(100, 'ACGTA', [[0, 'ACGTA']]),
     block(1100, 'ACGTA', [[0, 'ACGTA']]),
@@ -239,4 +240,16 @@ describe('gap runs at a block boundary', () => {
     expect(runs[0]!.color).toBe(runs[2]!.color)
     expect(runs[1]!.color).not.toBe(runs[0]!.color)
   })
+})
+
+// Where a field fills the row through its own spans, the cells walk draws
+// only the bases that paint: the fill is transparent and its runs emit nothing.
+test('a transparent fill emits only the differing bases', () => {
+  const blocks = [block(100, 'ACGTA', [[0, 'ACTTA']])]
+  const runs = decodeRuns(
+    buildMafChannels({ blocks, ...args, matchColor: 'rgba(0,0,0,0)' }),
+  )
+  expect(runs).toEqual([
+    expect.objectContaining({ startBp: 102, endBp: 103, rowIndex: 0 }),
+  ])
 })

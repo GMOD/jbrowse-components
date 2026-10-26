@@ -66,9 +66,9 @@ describe('frameColorIndex is the one place the palette layout is known', () => {
   })
 })
 
-// The strip is an *overlay*, drawn over whichever rendering won, while
-// `colorScales` is a dispatch on `activeRowRendering` — so no branch of that
-// dispatch is ever the strip and it could not have had a key. Three saturated
+// The strip is an *overlay*, drawn over whatever fills the rows, while
+// `colorScales` once dispatched on the rendering alone — so no branch of that
+// dispatch was ever the strip and it could not have had a key. Three saturated
 // colors on every species row, on screen and in every exported figure, with
 // nothing anywhere saying they mean reading frame.
 describe('the CDS strip keys itself', () => {
@@ -137,7 +137,7 @@ describe('the CDS strip keys itself', () => {
     seed(display, true)
     display.colorByField('identity')
     zoomPastBaseLevel(display.view)
-    expect(display.activeRowRendering).toBe('identity')
+    expect(display.rowPlan.color).toBe('identity')
 
     expect(display.legendSpec.sections.map(s => s.title)).toEqual([
       'Per-base identity to reference',

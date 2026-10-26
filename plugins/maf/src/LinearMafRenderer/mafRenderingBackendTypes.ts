@@ -261,8 +261,6 @@ export interface MafRegionData {
 // round-trip through the worker.
 export interface MafGpuProps {
   palette: MafColorPalette
-  /** a matching base paints its own color rather than the match color */
-  colorMatches: boolean
   /**
    * Genomic bp per emitted cell — `1` for the exact per-base encode, a larger
    * power of two once cells go sub-pixel (see `encodeBinBp`). Quantized so

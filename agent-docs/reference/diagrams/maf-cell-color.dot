@@ -1,7 +1,7 @@
 digraph maf_cell_color {
   rankdir=TB
   node [shape=box fontname=monospace fontsize=10]
-  { node [shape=diamond] refDash; alnGap; match; colorMatches }
+  { node [shape=diamond] refDash; alnGap; ownColor }
 
   cell [label="one (reference byte, aligned byte) pair"]
   refDash [label="reference is a gap"]
@@ -14,16 +14,12 @@ digraph maf_cell_color {
   alnGap -> gap [label=" yes"]
   gap [label="Gap"]
 
-  match [label="case-folded equal"]
-  alnGap -> match [label=" no"]
-  colorMatches [label="color is base"]
-  match -> colorMatches [label=" equal"]
-  colorMatches -> matchCat [label=" no"]
-  matchCat [label="Match"]
-
-  colorMatches -> baseCat [label=" yes"]
-  match -> baseCat [label=" differs"]
+  ownColor [label="every base paints,\nor the mismatches draw\nand the bases differ"]
+  alnGap -> ownColor [label=" no"]
+  ownColor -> baseCat [label=" yes"]
   baseCat [label="Base"]
+  ownColor -> matchCat [label=" no"]
+  matchCat [label="Match: the fill"]
 
   category [label="a CellCategory, not a color", style=bold]
   skip -> category  gap -> category  matchCat -> category  baseCat -> category
@@ -34,6 +30,6 @@ digraph maf_cell_color {
 
   table [label="packedByRefAln:\nthe cascade, memoized over\nits whole input domain", style=bold]
   packed -> table
-  sentinel [label="the skip case stays outside it"]
+  sentinel [label="the skip case stays outside it;\na transparent fill emits no run"]
   table -> sentinel
 }

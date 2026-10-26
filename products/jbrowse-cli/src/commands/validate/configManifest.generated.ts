@@ -7802,8 +7802,12 @@ export const configManifest: ConfigManifest = {
               "type": "MafColorConfigurationSchema",
               "subSlots": [
                 {
+                  "name": "value",
+                  "type": "(CssColor | undefined)"
+                },
+                {
                   "name": "field",
-                  "type": "MafColorField"
+                  "type": "(MafColorField | undefined)"
                 },
                 {
                   "name": "scale",
@@ -7866,39 +7870,6 @@ export const configManifest: ConfigManifest = {
                 "string": "field"
               },
               "fieldPresets": {
-                "mismatch": {
-                  "scale": {
-                    "type": "ordinal",
-                    "domain": [
-                      "A",
-                      "C",
-                      "G",
-                      "T",
-                      "N",
-                      "gap",
-                      "match"
-                    ]
-                  },
-                  "legend": {
-                    "title": "Mismatch to reference"
-                  }
-                },
-                "base": {
-                  "scale": {
-                    "type": "ordinal",
-                    "domain": [
-                      "A",
-                      "C",
-                      "G",
-                      "T",
-                      "N",
-                      "gap"
-                    ]
-                  },
-                  "legend": {
-                    "title": "Base"
-                  }
-                },
                 "identity": {
                   "scale": {
                     "type": "linear",
@@ -7910,7 +7881,7 @@ export const configManifest: ConfigManifest = {
                     "title": "Per-base identity to reference"
                   }
                 },
-                "chromosome": {
+                "refNameRank": {
                   "scale": {
                     "type": "ordinal",
                     "domain": [
@@ -7936,29 +7907,10 @@ export const configManifest: ConfigManifest = {
                     ]
                   },
                   "legend": {
-                    "title": "Source chromosome"
-                  }
-                },
-                "codon": {
-                  "scale": {
-                    "type": "ordinal",
-                    "domain": [
-                      "nonsyn",
-                      "syn",
-                      "stop"
-                    ],
-                    "names": [
-                      "Nonsynonymous",
-                      "Synonymous",
-                      "Stop gained"
-                    ]
-                  },
-                  "legend": {
-                    "title": "Codon change"
+                    "title": "Source sequence"
                   }
                 }
-              },
-              "fieldDefault": "mismatch"
+              }
             },
             {
               "name": "y",
@@ -8328,6 +8280,53 @@ export const configManifest: ConfigManifest = {
             {
               "name": "rowProportion",
               "type": "number"
+            },
+            {
+              "name": "mismatches",
+              "type": "MafMismatchesConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "show",
+                  "type": "boolean"
+                }
+              ],
+              "schema": "MafMismatches",
+              "writes": "members"
+            },
+            {
+              "name": "bases",
+              "type": "MafBasesConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "show",
+                  "type": "boolean"
+                },
+                {
+                  "name": "encoding",
+                  "type": "MafBasesEncodingConfigurationSchema",
+                  "subSlots": [
+                    {
+                      "name": "color",
+                      "type": "MafBasesColorConfigurationSchema",
+                      "subSlots": [
+                        {
+                          "name": "field",
+                          "type": "MafBasesField"
+                        }
+                      ],
+                      "schema": "MafBasesColor",
+                      "writes": "whole",
+                      "shorthand": {
+                        "string": "field"
+                      }
+                    }
+                  ],
+                  "schema": "MafBasesEncoding",
+                  "writes": "members"
+                }
+              ],
+              "schema": "MafBases",
+              "writes": "members"
             },
             {
               "name": "inversions",

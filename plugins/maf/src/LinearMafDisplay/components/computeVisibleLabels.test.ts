@@ -45,7 +45,7 @@ test('mismatched bases produce labels', () => {
     rowProportion: 0.8,
     scrollTop: 0,
     viewportHeight: 1000,
-    colorMatches: false,
+    paints: { mismatches: true, everyBase: false },
   })
   expect(labels.map(l => l.text)).toEqual(['C', 'G', 'T'])
   // Cell centers: scale = 1/0.05 = 20, center = (bp + 0.5 - start) * 20.
@@ -67,7 +67,7 @@ test('reversed region mirrors label x positions through the region end', () => {
     rowProportion: 0.8,
     scrollTop: 0,
     viewportHeight: 1000,
-    colorMatches: false,
+    paints: { mismatches: true, everyBase: false },
   })
   expect(labels.map(l => l.text)).toEqual(['C', 'G', 'T'])
   // Reversed: center = (end - (bp + 0.5)) * 20, end = 110.
@@ -89,9 +89,9 @@ test('space chars in alignment are treated as gaps, not labeled', () => {
     rowProportion: 0.8,
     scrollTop: 0,
     viewportHeight: 1000,
-    colorMatches: true,
+    paints: { mismatches: true, everyBase: true },
   })
-  // Only the two 'A' matches would produce labels (with colorMatches);
+  // Only the two 'A' matches would produce labels (under the base layer);
   // the 3 spaces should NOT be labeled.
   expect(labels.map(l => l.text)).toEqual(['A', 'A'])
 })
@@ -111,7 +111,7 @@ test('columns outside the visible span emit no label', () => {
     rowProportion: 0.8,
     scrollTop: 0,
     viewportHeight: 1000,
-    colorMatches: true,
+    paints: { mismatches: true, everyBase: true },
   })
   expect(labels).toHaveLength(12)
   expect(labels[0]!.x).toBe(10)
@@ -129,7 +129,7 @@ test('dashes in alignment are treated as gaps', () => {
     rowProportion: 0.8,
     scrollTop: 0,
     viewportHeight: 1000,
-    colorMatches: true,
+    paints: { mismatches: true, everyBase: true },
   })
   expect(labels.map(l => l.text)).toEqual(['A', 'A'])
 })
@@ -142,7 +142,7 @@ test('letters keep the case the file gives them', () => {
     rowProportion: 0.8,
     scrollTop: 0,
     viewportHeight: 1000,
-    colorMatches: false,
+    paints: { mismatches: true, everyBase: false },
   })
   expect(labels.map(l => l.text)).toEqual(['c', 'G', 't'])
 })

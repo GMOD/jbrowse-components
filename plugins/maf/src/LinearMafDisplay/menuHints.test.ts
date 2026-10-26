@@ -185,26 +185,24 @@ describe('the codon row coloring says when it is out of zoom range', () => {
   })
 })
 
-// Under the X-Y plot only identity colors the bars, so every other Color by
-// row ticks a field the bars do not paint.
-describe('the Color by rows say when the X-Y plot draws one color', () => {
-  const HINT = 'the X-Y plot draws its bars in one color'
+// Under the X-Y plot the fill colors the bars, but a bar has no cells for the
+// per-base layer to draw over, so its rows say so.
+describe('the per-base rows say when the X-Y plot draws bars', () => {
+  const HINT = 'the X-Y plot draws bars, not cells'
 
-  it('hints on every field but identity while y is identity', () => {
+  it('hints on the per-base rows, and not the fills, while y is identity', () => {
     const { display, view } = createMafTestEnvironment().createDisplay()
     zoomPastBaseLevel(view)
     display.setYField('identity')
     const items = display.trackMenuItems()
-    expect(hintOn(items, 'Source chromosome')).toBe(HINT)
-    expect(hintOn(items, 'Mismatches (SNPs vs reference)')).toBe(HINT)
+    expect(hintOn(items, 'Every base')).toBe(HINT)
+    expect(hintOn(items, 'Source sequence')).toBeUndefined()
     expect(hintOn(items, 'Identity to reference')).toBeUndefined()
   })
 
   it('is quiet with the cells drawn', () => {
     const { display } = createMafTestEnvironment().createDisplay()
-    expect(
-      hintOn(display.trackMenuItems(), 'Source chromosome'),
-    ).toBeUndefined()
+    expect(hintOn(display.trackMenuItems(), 'Every base')).toBeUndefined()
   })
 })
 

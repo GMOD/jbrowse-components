@@ -18,6 +18,9 @@
 //   encode      `encodeMafRows` whole, over a cold region
 //   control     the same encode declared a second time; far from 1.00 means
 //               the row measured nothing
+//   identity    the identity fill alone, as before the mismatches layer
+//   identityMismatches  the identity fill with the mismatches over it, the
+//               cells walk painting only the bases that differ
 //   sum         place then encode in one call, as a fetch's landing pays
 import { performance } from 'node:perf_hooks'
 
@@ -42,6 +45,7 @@ import MafTabixConfigSchema from '../src/MafTabixAdapter/configSchema.ts'
 import { DEFAULT_SPEC, ensureMafTabixFixture } from './mafTabixFixture.ts'
 
 import type { MafRowsEncodeProps } from '../src/LinearMafDisplay/encodeMafRows.ts'
+import type { RowPlan } from '../src/LinearMafDisplay/rowPlan.ts'
 import type { MafWireRegionData } from '../src/LinearMafRenderer/mafRenderingBackendTypes.ts'
 import type { AlignmentRecord } from '../src/types.ts'
 import type { MafFixtureSpec } from './mafTabixFixture.ts'
@@ -145,15 +149,24 @@ async function fetchWindow(spec: MafFixtureSpec, fetchedBp: number) {
   )
 }
 
+const MISMATCHES: RowPlan = {
+  mark: 'rect',
+  color: undefined,
+  mismatches: true,
+  bases: undefined,
+  perBase: true,
+}
+
 function encodePropsOf(
   binBp: number,
   rowIndexBySrc: Map<string, number>,
+  plan = MISMATCHES,
 ): MafRowsEncodeProps {
   return {
-    basesActive: true,
-    identity: undefined,
-    identityColors: new Uint32Array(101),
-    gpu: { palette, colorMatches: false, binBp },
+    plan,
+    value: undefined,
+    identityColors: new Uint32Array(101).fill(0xff808080),
+    gpu: { palette, binBp },
     sourceChromRanks: undefined,
     sourceChromColors: [],
     rowIndexBySrc,
@@ -172,7 +185,20 @@ function armPlace(
 }
 
 function armChannels(detail: Placed, props: MafRowsEncodeProps) {
-  return buildMafChannels({ blocks: detail.blocks, ...props.gpu }).count
+  return buildMafChannels({
+    blocks: detail.blocks,
+    ...props.gpu,
+    matchColor: palette.matchColor,
+    paints: { mismatches: true, everyBase: false },
+  }).count
+}
+
+function armIdentity(detail: Placed, props: MafRowsEncodeProps) {
+  const { cells, identity } = encodeMafRows(
+    { detail, summary: undefined, frames: undefined },
+    props,
+  )
+  return cells.count + (identity?.count ?? 0)
 }
 
 function armInsertions(detail: Placed, props: MafRowsEncodeProps) {
@@ -240,7 +266,19 @@ for (const species of SPECIES) {
       used.add(detail)
       return detail
     }
+    const identityOnly = encodePropsOf(binBp, rowIndexBySrc, {
+      ...MISMATCHES,
+      color: 'identity',
+      mismatches: false,
+      perBase: false,
+    })
+    const identityMismatches = encodePropsOf(binBp, rowIndexBySrc, {
+      ...MISMATCHES,
+      color: 'identity',
+    })
     const cold: Record<string, (d: Placed) => number> = {
+      identity: d => armIdentity(d, identityOnly),
+      identityMismatches: d => armIdentity(d, identityMismatches),
       channels: d => armChannels(d, props),
       insertions: d => armInsertions(d, props),
       encode: d => armEncode(d, props),
@@ -291,6 +329,8 @@ for (const species of SPECIES) {
       insertions: counts.insertions,
       placeMs: ms('place'),
       placeReorderedMs: ms('placeReordered'),
+      identityMs: ms('identity'),
+      identityMismatchesMs: ms('identityMismatches'),
       channelsMs: ms('channels'),
       insertionsMs: ms('insertions'),
       encodeMs: ms('encode'),

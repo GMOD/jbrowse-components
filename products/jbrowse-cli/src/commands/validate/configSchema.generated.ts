@@ -13811,7 +13811,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "x-closed": true,
       "properties": {
         "domain": {
-          "description": "the values the key lists, in order: under chromosome each rank from 0, the main source chromosome; under codon nonsyn, syn and stop.",
+          "description": "the ranks the key lists under refNameRank, in order, from 0, the main source sequence.",
           "if": {
             "type": "null"
           },
@@ -13834,7 +13834,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "range": {
-          "description": "CSS colors: under chromosome one per rank from the main source chromosome, the last painting every rank past it; under identity the ramp's stops, winning over scheme; the bases and the codons paint the theme's colors.",
+          "description": "CSS colors: under refNameRank one per rank from the main source sequence, the last painting every rank past it; under identity the ramp's stops, winning over scheme.",
           "if": {
             "type": "null"
           },
@@ -13957,15 +13957,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "anyOf": [
         {
           "description": "Shorthand for \`{ \\"field\\": ... }\`.",
-          "default": "mismatch",
           "allOf": [
             {
               "enum": [
-                "mismatch",
-                "base",
                 "identity",
-                "chromosome",
-                "codon"
+                "refNameRank"
               ]
             },
             {
@@ -13982,9 +13978,17 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "type": "object",
           "x-closed": true,
           "properties": {
+            "value": {
+              "description": "CSS color of every aligned cell while no field paints; unset, the theme's match tone.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/CssColor"
+              }
+            },
             "field": {
-              "description": "field to color each cell by: mismatch, base, identity, chromosome or codon.",
-              "default": "mismatch",
+              "description": "field the aligned cells are filled by: identity or refNameRank; unset, the constant.",
               "if": {
                 "type": "null"
               },
@@ -13992,11 +13996,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 "allOf": [
                   {
                     "enum": [
-                      "mismatch",
-                      "base",
                       "identity",
-                      "chromosome",
-                      "codon"
+                      "refNameRank"
                     ]
                   },
                   {
@@ -14140,6 +14141,113 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "additionalProperties": false
     },
+    "MafMismatches": {
+      "title": "MafMismatches",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "show": {
+          "description": "draw the differing bases, insertion markers and deletion counts.",
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
+    "MafBasesColor": {
+      "title": "MafBasesColor",
+      "anyOf": [
+        {
+          "description": "Shorthand for \`{ \\"field\\": ... }\`.",
+          "default": "base",
+          "enum": [
+            "base",
+            "codon"
+          ],
+          "type": "string"
+        },
+        {
+          "title": "MafBasesColor",
+          "type": "object",
+          "x-closed": true,
+          "properties": {
+            "field": {
+              "description": "the per-position variable: base, every base in its color, or codon, each codon by its amino-acid change.",
+              "default": "base",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "enum": [
+                  "base",
+                  "codon"
+                ]
+              }
+            }
+          },
+          "patternProperties": {
+            "^_+comment": {}
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "MafBasesEncoding": {
+      "title": "MafBasesEncoding",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "color": {
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/MafBasesColor"
+          }
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
+    "MafBases": {
+      "title": "MafBases",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "show": {
+          "description": "draw the per-position layer over the rows.",
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
+        },
+        "encoding": {
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/MafBasesEncoding"
+          }
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
     "MafPart": {
       "title": "MafPart",
       "type": "object",
@@ -14205,6 +14313,22 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           },
           "else": {
             "type": "number"
+          }
+        },
+        "mismatches": {
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/MafMismatches"
+          }
+        },
+        "bases": {
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/MafBases"
           }
         },
         "inversions": {

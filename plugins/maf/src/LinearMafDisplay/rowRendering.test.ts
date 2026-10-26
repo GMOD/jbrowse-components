@@ -4,49 +4,70 @@ import { createMafTestEnvironment, zoomPastBaseLevel } from './testEnv.ts'
 
 import type { MenuItem } from '@jbrowse/core/ui'
 
-// The rows are colored by one field and, as a bar chart, may carry identity
-// on the bar height: two settings, written apart.
-describe('row coloring is the color field and the bar height', () => {
-  it('defaults to the mismatches', () => {
+// The rows take a fill, `encoding.color`, a bar height, `encoding.y`, and the
+// layers over the fill, `alignments.mismatches` and `alignments.bases`: four
+// settings, written apart, as alignments writes its read fill and its layers.
+describe('the rows are a fill, a bar height and the layers over them', () => {
+  it('defaults to the constant fill with the mismatches over it', () => {
     const { display } = createMafTestEnvironment().createDisplay()
-    expect(display.colorField).toBe('mismatch')
+    expect(display.colorField).toBeUndefined()
     expect(display.yField).toBeUndefined()
-    expect(display.selectedColorField).toBe('mismatch')
+    expect(display.basesField).toBeUndefined()
+    expect(display.rowPlan).toEqual({
+      mark: 'rect',
+      color: undefined,
+      mismatches: true,
+      bases: undefined,
+      perBase: true,
+    })
   })
 
-  it('a bar height pick keeps the color, and a color pick keeps the bars', () => {
+  it('a bar height pick keeps the fill, and a fill pick keeps the bars', () => {
     const { display, view } = createMafTestEnvironment().createDisplay()
     zoomPastBaseLevel(view)
     display.setYField('identity')
-    expect(display.colorField).toBe('mismatch')
-    expect(display.identityEncoding).toBe('bars')
+    expect(display.rowPlan).toMatchObject({ mark: 'bar', color: undefined })
 
     display.colorByField('identity')
     expect(display.yField).toBe('identity')
-    expect(display.identityEncoding).toBe('rampBars')
+    expect(display.rowPlan).toMatchObject({ mark: 'bar', color: 'identity' })
 
     display.setYField(undefined)
-    expect(display.identityEncoding).toBe('heatmap')
+    expect(display.rowPlan).toMatchObject({ mark: 'rect', color: 'identity' })
   })
 
-  it('takes a color and a bar height a config names together', () => {
-    const { display, view } = createMafTestEnvironment({
-      displayConfig: { encoding: { color: 'identity', y: 'identity' } },
-    }).createDisplay()
+  it('the mismatches draw over a field fill, and their toggle takes them off', () => {
+    const { display, view } = createMafTestEnvironment().createDisplay()
     zoomPastBaseLevel(view)
-    expect(display.selectedColorField).toBe('identity')
-    expect(display.rowsColor).toBe('identity')
-    expect(display.rowsY).toBe('identity')
+    display.colorByField('refNameRank')
+    expect(display.rowPlan).toMatchObject({ mismatches: true, perBase: true })
+    display.setShowMismatches(false)
+    expect(display.rowPlan).toMatchObject({ mismatches: false, perBase: false })
   })
 
-  // Codons need a reading frame, so the option is not offered — and not
-  // reachable — without a `mafFrames` adapter. This track has none.
-  it('does not select codon view without a frames adapter', () => {
+  it('the base layer paints every base, and the mismatches yield to it', () => {
     const { display } = createMafTestEnvironment().createDisplay()
-    display.colorByField('codon')
+    display.setBasesField('base')
+    expect(display.rowPlan).toMatchObject({
+      mismatches: false,
+      bases: 'base',
+      perBase: true,
+    })
+    display.setBasesField(undefined)
+    expect(display.rowPlan.bases).toBeUndefined()
+  })
+
+  // Codons need a reading frame, so the layer draws nothing without a
+  // `mafFrames` adapter, and the mismatches draw in its place.
+  it('a codon layer with no frames adapter leaves the mismatches', () => {
+    const { display } = createMafTestEnvironment().createDisplay()
+    display.setBasesField('codon')
     expect(display.framesAdapterConfig).toBeUndefined()
-    expect(display.selectedColorField).toBe('mismatch')
-    expect(display.rowsColor).toBe('mismatch')
+    expect(display.basesField).toBe('codon')
+    expect(display.rowPlan).toMatchObject({
+      bases: undefined,
+      mismatches: true,
+    })
   })
 
   it('a scheme pick paints identity along it, over a written range', () => {
@@ -67,7 +88,7 @@ describe('row coloring is the color field and the bar height', () => {
   })
 })
 
-describe('the track menu writes color and the bar height apart', () => {
+describe('the track menu writes the fill, the layers and the bar height apart', () => {
   function subMenu(items: MenuItem[], label: string) {
     const item = items.find(i => 'label' in i && i.label === label)
     return item && 'subMenu' in item ? resolveSubMenu(item) : []
@@ -75,44 +96,60 @@ describe('the track menu writes color and the bar height apart', () => {
   function labels(items: MenuItem[]) {
     return items.flatMap(i => ('label' in i ? [i.label] : []))
   }
+  function pick(
+    display: { trackMenuItems: () => MenuItem[] },
+    menu: string,
+    label: string,
+  ) {
+    const row = subMenu(display.trackMenuItems(), menu).find(
+      i => 'label' in i && i.label === label,
+    )
+    if (row && 'onClick' in row) {
+      row.onClick()
+    }
+  }
 
-  it('lists the color fields, and the scheme only under identity', () => {
+  it('lists the fills, the per-base layers, and the scheme only under identity', () => {
     const { display, view } = createMafTestEnvironment().createDisplay()
     zoomPastBaseLevel(view)
     const colorBy = () => subMenu(display.trackMenuItems(), 'Color by')
     expect(labels(colorBy())).toEqual(
       expect.arrayContaining([
-        'Mismatches (SNPs vs reference)',
-        'Every base',
+        'Default',
         'Identity to reference',
-        'Source chromosome',
+        'Source sequence',
+        'Solid color...',
+        'None',
+        'Every base',
       ]),
     )
+    expect(labels(colorBy())).not.toContain('Codon changes (amino acids)')
     expect(labels(colorBy())).not.toContain('Color scheme')
 
     display.colorByField('identity')
     expect(labels(colorBy())).toContain('Color scheme')
   })
 
-  it('reaches identity bars on the identity ramp', () => {
+  it('reaches identity bars on the identity ramp, then back to the default', () => {
     const { display, view } = createMafTestEnvironment().createDisplay()
     zoomPastBaseLevel(view)
-    const pick = (menu: string, label: string) => {
-      const row = subMenu(display.trackMenuItems(), menu).find(
-        i => 'label' in i && i.label === label,
-      )
-      if (row && 'onClick' in row) {
-        row.onClick()
-      }
-    }
-    pick('Color by', 'Identity to reference')
-    pick('Plot type', 'Identity X-Y plot')
-    expect(display.identityEncoding).toBe('rampBars')
+    pick(display, 'Color by', 'Identity to reference')
+    pick(display, 'Plot type', 'Identity X-Y plot')
+    expect(display.rowPlan).toMatchObject({ mark: 'bar', color: 'identity' })
+    pick(display, 'Color by', 'Default')
+    expect(display.colorField).toBeUndefined()
+  })
+
+  it('turns the base layer on and off from its own block', () => {
+    const { display } = createMafTestEnvironment().createDisplay()
+    pick(display, 'Color by', 'Every base')
+    expect(display.basesField).toBe('base')
+    pick(display, 'Color by', 'None')
+    expect(display.basesField).toBeUndefined()
   })
 })
 
-// What paints is the setting, overridden only by the summary tier and zoom,
-// and falling back to the mismatches.
+// What paints is the setting, overridden only by the summary tier and zoom.
 describe('what paints is the selection, overridden only by zoom and summary', () => {
   // Presence is all the gates read, and the RPC that would fetch the file is
   // stubbed, so the shape of the frames adapter doesn't matter here.
@@ -135,98 +172,103 @@ describe('what paints is the selection, overridden only by zoom and summary', ()
     view.setCoarseDynamicBlocks(view.dynamicBlocks, view.bpPerPx)
   }
 
-  it('draws codons at base level and the bases zoomed out', () => {
+  it('draws the codon layer at base level and the mismatches zoomed out', () => {
     const { display, view } = framesEnv().createDisplay()
-    display.colorByField('codon')
+    display.setBasesField('codon')
     zoomAndSettle(view, 0.5)
-    expect(display.selectedColorField).toBe('codon')
     expect(display.zoomedToBaseLevel).toBe(true)
-    expect(display.activeRowRendering).toBe('codon')
+    expect(display.rowPlan).toMatchObject({ bases: 'codon', mismatches: false })
 
-    // Same selection, zoomed out: codons are not resolvable, so the rows go
-    // back to the bases. The selection is remembered, not repainted as
-    // something else, and the menu's tick doesn't move.
+    // Same setting, zoomed out: codons are not resolvable, so the mismatches
+    // draw. The setting is remembered and the menu's tick doesn't move.
     zoomAndSettle(view, 100)
-    expect(display.selectedColorField).toBe('codon')
-    expect(display.activeRowRendering).toBe('mismatch')
+    expect(display.basesField).toBe('codon')
+    expect(display.rowPlan).toMatchObject({
+      bases: undefined,
+      mismatches: true,
+    })
   })
 
-  it('yields an identity plot to the bases at base level', () => {
+  it('yields an identity fill to the constant at base level', () => {
     const { display, view } = framesEnv().createDisplay()
     display.colorByField('identity')
     zoomAndSettle(view, 100)
-    expect(display.activeRowRendering).toBe('identity')
+    expect(display.rowPlan.color).toBe('identity')
 
     // UCSC wigMaf: zoomed in, the letters say more than a per-pixel mean of them
     zoomAndSettle(view, 0.5)
-    expect(display.activeRowRendering).toBe('mismatch')
+    expect(display.rowPlan.color).toBeUndefined()
+    expect(display.rowPlan.perBase).toBe(true)
   })
 
-  it('yields the bar height to the color field at base level', () => {
+  it('yields the bar height to the cells at base level', () => {
     const { display, view } = createMafTestEnvironment({
-      displayConfig: { encoding: { color: 'base', y: 'identity' } },
+      displayConfig: {
+        encoding: { y: 'identity' },
+        alignments: { bases: { show: true } },
+      },
     }).createDisplay()
     zoomAndSettle(view, 100)
-    expect(display.activeRowRendering).toBe('xyplot')
+    expect(display.rowPlan).toMatchObject({ mark: 'bar', perBase: false })
     zoomAndSettle(view, 0.5)
-    expect(display.activeRowRendering).toBe('base')
-    expect(display.basesRenderingActive).toBe(true)
+    expect(display.rowPlan).toMatchObject({
+      mark: 'rect',
+      bases: 'base',
+      perBase: true,
+    })
   })
 
   // The cheap summary path carries neither per-row bases nor per-row source
-  // chromosomes, so no alternative can draw from it.
-  it('draws none of the alternatives on the summary path', () => {
+  // sequences, so no field or layer can draw from it.
+  it('draws the constant fill and no layer on the summary path', () => {
     const { display, view } = framesEnv({
       summaryAdapter: { type: 'BigBedAdapter' },
     }).createDisplay()
     zoomAndSettle(view, 100)
     expect(display.coarseTierActive).toBe(true)
 
-    for (const field of ['chromosome', 'identity'] as const) {
+    for (const field of ['refNameRank', 'identity'] as const) {
       display.colorByField(field)
-      expect(display.selectedColorField).toBe(field)
-      expect(display.activeRowRendering).toBe('mismatch')
+      expect(display.colorField).toBe(field)
+      expect(display.rowPlan.color).toBeUndefined()
     }
     display.setYField('identity')
-    expect(display.activeRowRendering).toBe('mismatch')
+    expect(display.rowPlan).toMatchObject({
+      mark: 'rect',
+      mismatches: false,
+      perBase: false,
+    })
   })
 
-  // ...and the base canvas can't draw from it either. `activeRowRendering`
-  // resolving to `mismatch` above says only that no *alternative* applies; the
-  // summary fetch clears `rpcDataMap` on purpose and the rows on screen are the
-  // summary overlay's. Reading the second question off the first pinned the
-  // display in `loading` forever: the render callback painted from the empty
-  // map, `renderBlocks` reported `painted: false` every frame, `canvasDrawn`
-  // never flipped, and the scrim sat over a fully loaded track. Nothing caught
-  // it because the summary bars underneath rendered correctly the whole time.
-  it('does not hand the rows to the base canvas on the summary path', () => {
+  // ...and the per-base painters can't draw from it either. The summary fetch
+  // clears `rpcDataMap` on purpose and the rows on screen are the summary
+  // overlay's. Reading "the bases draw" off the setting pinned the display in
+  // `loading` forever: the render callback painted from the empty map,
+  // `renderBlocks` reported `painted: false` every frame, `canvasDrawn` never
+  // flipped, and the scrim sat over a fully loaded track.
+  it('does not hand the rows to the per-base painters on the summary path', () => {
     const { display, view } = framesEnv({
       summaryAdapter: { type: 'BigBedAdapter' },
     }).createDisplay()
     zoomAndSettle(view, 100)
     expect(display.coarseTierActive).toBe(true)
+    expect(display.rowPlan.perBase).toBe(false)
 
-    expect(display.activeRowRendering).toBe('mismatch')
-    expect(display.basesRenderingActive).toBe(false)
-
-    // and the per-base overlays that gate on it stay off, so no frame pays for
-    // markers drawn over a rendering that isn't theirs
     expect(display.visibleLabels).toEqual([])
     expect(
       [...display.encodedUpload.values()].some(p => p.insertions?.count),
     ).toBe(false)
   })
 
-  // The same track below the floor takes the real alignment path, so the base
-  // canvas owns the rows again — the exclusion above is the summary path's, not
-  // a blanket "a summary adapter is configured".
-  it('hands the rows back to the base canvas below the summary floor', () => {
+  // The same track below the floor takes the real alignment path, so the
+  // per-base painters own the rows again.
+  it('hands the rows back to the per-base painters below the summary floor', () => {
     const { display, view } = framesEnv({
       summaryAdapter: { type: 'BigBedAdapter' },
     }).createDisplay()
     zoomAndSettle(view, 0.5)
     expect(display.coarseTierActive).toBe(false)
-    expect(display.basesRenderingActive).toBe(true)
+    expect(display.rowPlan.perBase).toBe(true)
   })
 
   // The coverage band's depths come off the alignment blocks the summary path

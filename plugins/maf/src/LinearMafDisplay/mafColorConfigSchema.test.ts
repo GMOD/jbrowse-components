@@ -10,7 +10,7 @@ import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
 import configSchemaFactory from './configSchema.ts'
 import { MAF_PLOT_EXAMPLES } from './plotExamples.ts'
-import { MAF_COLOR_FIELDS } from './rowRenderings.ts'
+import { MAF_COLOR_FIELDS } from './rowPlan.ts'
 
 function make(snap: Record<string, unknown> = {}) {
   return configSchemaFactory().create({
@@ -25,9 +25,7 @@ test.each(MAF_COLOR_FIELDS)(
   field => {
     const conf = make({ encoding: { color: field } })
     expect(readConfObject(conf, ['encoding', 'color', 'field'])).toBe(field)
-    expect(plotOf(conf)).toEqual(
-      field === 'mismatch' ? {} : { encoding: { color: field } },
-    )
+    expect(plotOf(conf)).toEqual({ encoding: { color: field } })
   },
 )
 
@@ -38,12 +36,12 @@ test('a default color reads back as no plot', () => {
 test.each([
   { field: 'identity', scale: { domainMin: 0.7 } },
   { field: 'identity', scale: { scheme: 'viridis', reverse: true } },
-  { field: 'chromosome', scale: { range: ['red', 'blue'] } },
   {
-    field: 'codon',
-    scale: { names: ['Changed', 'Silent', 'Stop'] },
-    legend: { title: 'Codons' },
+    field: 'refNameRank',
+    scale: { range: ['red', 'blue'], names: ['Main', 'Other'] },
+    legend: { title: 'Sequence' },
   },
+  { value: '#cccccc' },
 ])('an object reads back unchanged: %j', color => {
   expect(plotOf(make({ encoding: { color } }))).toEqual({
     encoding: { color },
@@ -52,7 +50,7 @@ test.each([
 
 test('a domain written as numbers reads as strings', () => {
   const conf = make({
-    encoding: { color: { field: 'chromosome', scale: { domain: [0, 1] } } },
+    encoding: { color: { field: 'refNameRank', scale: { domain: [0, 1] } } },
   })
   expect(getSnapshot(conf.encoding.color)).toMatchObject({
     scale: { domain: ['0', '1'] },
@@ -63,7 +61,7 @@ test('a write refuses a scale type, since each field has one', () => {
   expect(() =>
     refusingUndeclaredKeys(() =>
       make({
-        encoding: { color: { field: 'base', scale: { type: 'linear' } } },
+        encoding: { color: { field: 'identity', scale: { type: 'linear' } } },
       }),
     ),
   ).toThrow(/type/)
@@ -75,6 +73,28 @@ test('a flat member beside the field is refused, not read as unset', () => {
       make({ encoding: { color: { field: 'identity', domainMin: 0.7 } } }),
     ),
   ).toThrow(/domainMin/)
+})
+
+test('the per-base layer and the mismatches read back as parts', () => {
+  const plot = {
+    alignments: {
+      mismatches: { show: false },
+      bases: { show: true, encoding: { color: 'codon' } },
+    },
+  }
+  expect(plotOf(make(plot))).toEqual(plot)
+  expect(
+    readConfObject(make(), [
+      'alignments',
+      'bases',
+      'encoding',
+      'color',
+      'field',
+    ]),
+  ).toBe('base')
+  expect(readConfObject(make(), ['alignments', 'mismatches', 'show'])).toBe(
+    true,
+  )
 })
 
 test('the legend is on until hidden, as legend.show', () => {

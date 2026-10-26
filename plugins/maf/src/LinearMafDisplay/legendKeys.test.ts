@@ -2,6 +2,7 @@ import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
 import { resolvePalette } from '@jbrowse/core/ui/palette'
 
 import {
+  barHeightScale,
   identityColorScale,
   identityRgb,
 } from '../LinearMafRenderer/identity.ts'
@@ -27,7 +28,7 @@ describe('each row rendering keys itself from what it paints', () => {
     // Zoomed out a cell is the mean identity of a window of bases, so every
     // step of the ramp is on screen; two end swatches left the middle unkeyed.
     it('keys the heatmap with the ramp it shades with, 0% to 100%', () => {
-      const scale = identityColorScale('heatmap')
+      const scale = identityColorScale()
       expect(scale.kind).toBe('ramp')
       if (scale.kind === 'ramp') {
         expect(scale.stops.map(s => s.color)).toEqual(
@@ -41,7 +42,7 @@ describe('each row rendering keys itself from what it paints', () => {
     // At base level a cell is one base, which matches or not: only the ramp's
     // two ends are drawn, so the ramp would key a middle nothing shows.
     it('keys the base-level heatmap with the two colors it draws', () => {
-      const scale = identityColorScale('heatmap', true)
+      const scale = identityColorScale(true)
       expect(scale.kind).toBe('categorical')
       if (scale.kind === 'categorical') {
         expect(scale.entries.map(e => e.color)).toEqual([
@@ -55,7 +56,7 @@ describe('each row rendering keys itself from what it paints', () => {
     // identity in the bar's HEIGHT. Handed the heatmap's key it advertised a
     // "Divergent" red against a plot that never draws one.
     it('keys the X-Y plot with the one color it paints, not the ramp', () => {
-      const scale = identityColorScale('xyplot')
+      const scale = barHeightScale()
       expect(scale.kind).toBe('categorical')
       if (scale.kind === 'categorical') {
         expect(scale.entries).toHaveLength(1)
@@ -101,19 +102,6 @@ describe('each row rendering keys itself from what it paints', () => {
       expect(items[1]!.color).not.toBe(palette.codonSynonymous)
     })
 
-    it('lists every change a written domain leaves out, after the ones it orders', () => {
-      const palette = resolvePalette()
-      const items = getCodonLegendItems(palette, {
-        domain: ['stop'],
-        names: ['Stop'],
-      })
-      expect(items.map(i => i.label)).toEqual([
-        'Stop',
-        'Nonsynonymous',
-        'Synonymous',
-      ])
-    })
-
     // A conserved codon takes no fill at all, so it has no swatch to show.
     it('omits the unchanged category, which paints nothing', () => {
       const palette = resolvePalette()
@@ -151,7 +139,7 @@ describe('the color key is dismissible, like every other row display', () => {
     expect(display.showLegend).toBe(false)
   })
 
-  it('offers nothing in bases mode, which has no key to show', () => {
+  it('offers nothing under the constant fill, which has no key to show', () => {
     const { display } = createMafTestEnvironment().createDisplay()
     expect(display.colorScales).toEqual([])
     expect(rows(display.trackMenuItems())).not.toContain('Legend')

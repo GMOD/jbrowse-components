@@ -153,9 +153,9 @@ describe('identity', () => {
   })
 })
 
-describe('chromosome', () => {
+describe('refNameRank', () => {
   function chromosomeDisplay(color: Record<string, unknown> = {}) {
-    const display = displayWith({ field: 'chromosome', ...color })
+    const display = displayWith({ field: 'refNameRank', ...color })
     stageTwoIdentities(display)
     return display
   }
@@ -187,7 +187,7 @@ describe('chromosome', () => {
     const display = chromosomeDisplay({ scale: { range: ['red', 'blue'] } })
     const before = display.sourceChromColors
     setConf(display, ['encoding', 'color'], {
-      field: 'chromosome',
+      field: 'refNameRank',
       scale: { range: ['red', 'blue'] },
       legend: { title: 'Scaffold' },
     })

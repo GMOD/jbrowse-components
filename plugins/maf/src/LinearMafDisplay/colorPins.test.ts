@@ -9,7 +9,6 @@ import { encodeSourceChromSpans } from './components/drawSourceChrom.ts'
 import { createMafTestEnvironment, stageDetailRegion } from './testEnv.ts'
 
 import type { MafBlock } from '../LinearMafRenderer/mafRenderingBackendTypes.ts'
-import type { RowRendering } from './rowRenderings.ts'
 
 // The bytes and keys every MAF color painted before the color object took
 // them over, pinned so the defaults stay what they were.
@@ -84,29 +83,43 @@ test.each(['light', 'dark'] as const)(
     const palette = getMafColorPalette(
       resolvePalette({ configTheme: { palette: { mode } } }),
     )
-    for (const colorMatches of [false, true]) {
+    for (const everyBase of [false, true]) {
       expect(
         fnv1a(
-          packMafCellColorConfig({ ...palette, colorMatches }).packedByRefAln,
+          packMafCellColorConfig({
+            ...palette,
+            paints: { mismatches: true, everyBase },
+          }).packedByRefAln,
         ),
-      ).toBe(BASE_TABLE_FNV[`${mode}-${colorMatches}`])
+      ).toBe(BASE_TABLE_FNV[`${mode}-${everyBase}`])
     }
   },
 )
 
+type Pick =
+  | 'mismatch'
+  | 'base'
+  | 'codon'
+  | 'identity'
+  | 'refNameRank'
+  | 'xyplot'
+  | 'rampBars'
+
 function keyOf(
-  rendering: RowRendering | 'rampBars',
+  pick: Pick,
   bpPerPx: number,
   stage?: (display: ReturnType<typeof makeDisplay>['display']) => void,
 ) {
   const { display, view } = makeDisplay()
-  if (rendering === 'rampBars') {
+  if (pick === 'rampBars') {
     display.colorByField('identity')
     display.setYField('identity')
-  } else if (rendering === 'xyplot') {
+  } else if (pick === 'xyplot') {
     display.setYField('identity')
-  } else {
-    display.colorByField(rendering)
+  } else if (pick === 'base' || pick === 'codon') {
+    display.setBasesField(pick)
+  } else if (pick !== 'mismatch') {
+    display.colorByField(pick)
   }
   view.zoomTo(bpPerPx)
   view.setCoarseDynamicBlocks(view.dynamicBlocks, view.bpPerPx)
@@ -213,12 +226,12 @@ describe('each field keys as it did', () => {
     expect(keyOf('rampBars', 16)).toEqual([HEATMAP_RAMP])
   })
 
-  test('chromosome keys one entry per rank in view', () => {
-    expect(keyOf('chromosome', 16, stageTwoChromosomes)).toEqual([
+  test('refNameRank keys one entry per rank in view', () => {
+    expect(keyOf('refNameRank', 16, stageTwoChromosomes)).toEqual([
       {
         kind: 'categorical',
         id: 'sourceChrom',
-        title: 'Source chromosome',
+        title: 'Source sequence',
         entries: [
           {
             value: 'Main chromosome',

@@ -181,9 +181,9 @@ test('the exported key is in the export palette', async () => {
   }).createDisplay()
   view.zoomTo(0.5)
   view.setCoarseDynamicBlocks(view.dynamicBlocks, view.bpPerPx)
-  display.colorByField('codon')
+  display.setBasesField('codon')
   display.setShowLegend(true)
-  expect(display.activeRowRendering).toBe('codon')
+  expect(display.rowPlan.bases).toBe('codon')
   const legend = async (mode: 'light' | 'dark') => {
     const palette = resolvePalette({ mode })
     const svg = renderToString(

@@ -3,8 +3,10 @@ import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { clipBlockForCanvas } from '@jbrowse/render-core/canvas2dUtils'
 
 import {
+  XYPLOT_BAR_COLOR,
   buildIdentityRuns,
   identityBars,
+  identityRunColors,
   identitySpans,
 } from '../LinearMafRenderer/identity.ts'
 import {
@@ -18,7 +20,10 @@ import {
   locateRegionCodons,
 } from './codons.ts'
 import { encodeConservation } from './components/conservationBand.ts'
-import { encodeSourceChromSpans } from './components/drawSourceChrom.ts'
+import {
+  encodeSourceChromSpans,
+  sourceChromBarColors,
+} from './components/drawSourceChrom.ts'
 import { paintedBpRange } from './components/paintedBpRange.ts'
 import { encodeSummarySpans } from './components/summarySpans.ts'
 
@@ -31,7 +36,7 @@ import type {
 } from '../LinearMafRenderer/mafRenderingBackendTypes.ts'
 import type { MafFrameRecord, MafSummaryRecord } from '../types.ts'
 import type { CodonFills } from './codons.ts'
-import type { IdentityEncoding } from './rowRenderings.ts'
+import type { RowPlan } from './rowPlan.ts'
 import type { InsertionChannels } from '@jbrowse/alignments-core'
 import type { SpanChannels } from '@jbrowse/render-core/marks'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
@@ -63,19 +68,19 @@ const WIDEST_MARKER_PX = textWidthForNumber(Number.MAX_SAFE_INTEGER)
 
 /** Everything a region's rows encode reads beyond the region itself. */
 export interface MafRowsEncodeProps {
-  /** The rows are drawn base by base (`basesRenderingActive`). */
-  basesActive: boolean
-  identity: IdentityEncoding | undefined
+  plan: RowPlan
+  /** `encoding.color.value`, the fill while no field paints */
+  value: string | undefined
   /** the identity ramp's packed color at each hundredth (`identityLut`) */
   identityColors: Uint32Array
   gpu: MafGpuProps
-  /** The rows' source-chromosome ranks, while the rows are colored by them. */
+  /** The rows' source-sequence ranks, while `refNameRank` fills the rows. */
   sourceChromRanks: ReadonlyMap<number, ReadonlyMap<string, number>> | undefined
   /** each rank's packed color (`sourceChromRankColors`) */
   sourceChromColors: readonly number[]
   rowIndexBySrc: ReadonlyMap<string, number>
   /**
-   * The codons to locate, while the codon view or the band's codon mode
+   * The codons to locate, while the codon layer or the band's codon mode
    * draws: the anchor species whose frames define them, and the reference
    * row the band leaves out.
    */
@@ -109,10 +114,16 @@ function codonFills(fill: Record<string, string | undefined>): CodonFills {
   }
 }
 
+/** The cells' fill where a field fills the rows with marks of its own. */
+const NO_FILL = 'rgba(0,0,0,0)'
+
 /**
- * One region's rows as the row marks' channels. Only the rendering on screen
- * encodes: the others' channels are empty, which packs nothing and releases the
- * pass's GPU buffer.
+ * One region's rows as the row marks' channels: the fill `encoding.color`
+ * gives the cells or bars, then the layers over it. A constant fill is the
+ * cells' match color, so one walk draws it and the mismatches; a field fills
+ * through its own spans, and the cells walk then draws only the bases that
+ * paint. Only what draws encodes: the others' channels are empty, which packs
+ * nothing and releases the pass's GPU buffer.
  *
  * Main thread on purpose, so a color or row-order edit re-encodes without a
  * refetch (cost: `plugins/maf/benches/mafEncodeRows.bench.ts`).
@@ -120,8 +131,8 @@ function codonFills(fill: Record<string, string | undefined>): CodonFills {
 export function encodeMafRows(
   { detail, summary, frames }: MafRowsSource,
   {
-    basesActive,
-    identity,
+    plan,
+    value,
     identityColors,
     gpu,
     sourceChromRanks,
@@ -131,55 +142,79 @@ export function encodeMafRows(
     conservation,
   }: MafRowsEncodeProps,
 ): MafRowsPayload {
+  const { palette, binBp } = gpu
+  const rect = plan.mark === 'rect'
   const runs =
-    identity && detail ? buildIdentityRuns(detail.blocks, gpu.binBp) : undefined
+    detail && (plan.color === 'identity' || !rect)
+      ? buildIdentityRuns(detail.blocks, binBp)
+      : undefined
   const codons =
     codonProps && detail && frames
       ? locateRegionCodons(detail, frames, codonProps.anchor)
       : undefined
-  const bandColor = cssColorToABGR(gpu.palette.conservationColor)
+  const bandColor = cssColorToABGR(palette.conservationColor)
+  const ranks = plan.color === 'refNameRank' ? sourceChromRanks : undefined
   return {
     cells:
-      basesActive && detail
-        ? buildMafChannels({ blocks: detail.blocks, ...gpu })
+      detail && rect && (plan.color === undefined || plan.perBase)
+        ? buildMafChannels({
+            blocks: detail.blocks,
+            palette,
+            binBp,
+            matchColor:
+              plan.color === undefined
+                ? (value ?? palette.matchColor)
+                : NO_FILL,
+            paints: {
+              mismatches: plan.mismatches,
+              everyBase: plan.bases === 'base',
+            },
+          })
         : EMPTY_MAF_CELLS,
     insertions:
-      basesActive && detail
+      plan.perBase && detail
         ? mafInsertionChannels(
             detail,
-            cssColorToABGR(gpu.palette.insertionColor),
-            gpu.binBp,
+            cssColorToABGR(palette.insertionColor),
+            binBp,
           )
         : undefined,
     sourceChrom:
-      sourceChromRanks &&
-      detail &&
-      encodeSourceChromSpans(
-        detail.blocks,
-        sourceChromRanks,
-        sourceChromColors,
-      ),
+      rect && ranks && detail
+        ? encodeSourceChromSpans(detail.blocks, ranks, sourceChromColors)
+        : undefined,
     summary:
       summary &&
-      encodeSummarySpans(summary, rowIndexBySrc, gpu.palette.matchColor),
-    identity:
-      runs && identity === 'heatmap'
-        ? identitySpans(runs, identityColors)
-        : undefined,
+      encodeSummarySpans(summary, rowIndexBySrc, value ?? palette.matchColor),
+    identity: runs && rect ? identitySpans(runs, identityColors) : undefined,
     identityBars:
-      runs && identity !== 'heatmap'
-        ? identityBars(runs, identity === 'rampBars', identityColors)
+      runs && !rect && detail
+        ? identityBars(
+            runs,
+            plan.color === 'identity'
+              ? identityRunColors(runs, identityColors)
+              : ranks
+                ? sourceChromBarColors(
+                    detail.blocks,
+                    runs,
+                    ranks,
+                    sourceChromColors,
+                  )
+                : new Uint32Array(runs.count).fill(
+                    cssColorToABGR(value ?? XYPLOT_BAR_COLOR),
+                  ),
+          )
         : undefined,
     codons,
     codonCells:
       codons && codonProps?.cells
-        ? encodeCodonSpans(codons, codonFills(gpu.palette.codonFill))
+        ? encodeCodonSpans(codons, codonFills(palette.codonFill))
         : undefined,
     conservation:
       codons && codonProps?.band
         ? encodeCodonConservation(codons, codonProps.refRowIndex, bandColor)
         : conservation && detail
-          ? encodeConservation(detail.coverage, gpu.binBp, bandColor)
+          ? encodeConservation(detail.coverage, binBp, bandColor)
           : undefined,
   }
 }

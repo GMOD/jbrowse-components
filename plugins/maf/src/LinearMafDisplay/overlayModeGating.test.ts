@@ -39,39 +39,40 @@ function seedRegion(display: LinearMafDisplayModel) {
   )
 }
 
-// The insertion markers are drawn only by the `bases` rendering, so encoding
-// them in any other mode is a walk of every block x row thrown away. The
-// identity plot is the case that matters: it is the zoom-out default once
-// `rowIdentityMode` is set. See agent-docs/reference/MAF_LARGE_BLOCKS.md.
+// The insertion markers belong to the mismatches layer, as alignments'
+// `pileup.mismatches` draws its insertion markers, so encoding them while it is
+// off is a walk of every block x row thrown away. See
+// agent-docs/reference/MAF_LARGE_BLOCKS.md.
 const insertionsOf = (display: LinearMafDisplayModel) =>
   display.encodedUpload.get(0)?.insertions?.count ?? 0
 
-describe('insertion markers are only encoded for the rendering that draws them', () => {
-  it('emits markers in bases mode', () => {
+describe('insertion markers are only encoded while a layer draws them', () => {
+  it('emits markers under the mismatches', () => {
     const { display } = createMafTestEnvironment().createDisplay()
     seedRegion(display)
-    expect(display.activeRowRendering).toBe('mismatch')
+    expect(display.rowPlan.perBase).toBe(true)
     expect(insertionsOf(display)).toBe(2)
   })
 
-  it('emits none while the per-row identity plot owns the rows', () => {
+  it('emits them over a field fill, since the mismatches draw there too', () => {
     const { display } = createMafTestEnvironment().createDisplay()
     seedRegion(display)
     zoomPastBaseLevel(display.view)
     display.colorByField('identity')
-    expect(display.activeRowRendering).toBe('identity')
-    expect(insertionsOf(display)).toBe(0)
+    expect(insertionsOf(display)).toBe(2)
   })
 
-  it('emits none while color-by-source-chromosome owns the rows', () => {
+  it('emits none with the mismatches off', () => {
     const { display } = createMafTestEnvironment().createDisplay()
     seedRegion(display)
-    display.colorByField('chromosome')
-    expect(display.activeRowRendering).toBe('chromosome')
+    zoomPastBaseLevel(display.view)
+    display.colorByField('identity')
+    display.setShowMismatches(false)
+    expect(display.rowPlan.perBase).toBe(false)
     expect(insertionsOf(display)).toBe(0)
   })
 
-  it('draws deletion counts with the bases alone', () => {
+  it('draws deletion counts with the mismatches alone', () => {
     const { display } = createMafTestEnvironment().createDisplay()
     display.setSamples({
       samples: [{ name: 'hg38', label: 'hg38' }],
@@ -95,7 +96,7 @@ describe('insertion markers are only encoded for the rendering that draws them',
     display.view.zoomTo(0.05)
     display.view.centerAt(104, 'ctgA')
     expect(display.visibleDeletions.map(d => d.length)).toEqual([4])
-    display.colorByField('chromosome')
+    display.setShowMismatches(false)
     expect(display.visibleDeletions).toEqual([])
   })
 })
@@ -110,11 +111,12 @@ describe('the hover names an insertion only where its marker draws', () => {
     expect(atAnchor(display)).toBe('insertion')
   })
 
-  it('names the base under the identity plot', () => {
+  it('names the base with the mismatches off', () => {
     const { display } = createMafTestEnvironment().createDisplay()
     seedRegion(display)
     zoomPastBaseLevel(display.view)
     display.colorByField('identity')
+    display.setShowMismatches(false)
     expect(atAnchor(display)).toBe('cell')
   })
 })

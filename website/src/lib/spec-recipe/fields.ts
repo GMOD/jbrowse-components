@@ -29,7 +29,10 @@ import { isJexl } from '../../../../packages/core/src/util/jexlStrings.ts'
 import { capitalizeFirst } from '../../../../packages/core/src/util/stringUtils.ts'
 import { CONSERVATION_UNIT_OPTIONS } from '../../../../plugins/maf/src/LinearMafDisplay/conservationUnits.ts'
 import { HEIGHT_PRESETS as MAF_HEIGHT_PRESETS } from '../../../../plugins/maf/src/LinearMafDisplay/displayDefaults.ts'
-import { MAF_COLOR_FIELD_LABELS } from '../../../../plugins/maf/src/LinearMafDisplay/rowRenderings.ts'
+import {
+  MAF_BASES_FIELD_LABELS,
+  MAF_COLOR_FIELD_LABELS,
+} from '../../../../plugins/maf/src/LinearMafDisplay/rowPlan.ts'
 import {
   FACET_LABELS,
   fieldTag,
@@ -527,8 +530,8 @@ function colorStep(
     : constantColorStep(color?.value, context)
 }
 
-// The MAF display's `encoding.color`: a field named bare or as `{ field }`,
-// each one a Color by row.
+// The MAF display's `encoding.color`, the fill: a field named bare or as
+// `{ field }`, each one a Color by row.
 function mafColorStep(value: unknown): FieldStep | undefined {
   const field = asString(channelOf(value)?.field)
   const label =
@@ -1881,6 +1884,28 @@ export const trackFields: Record<string, FieldRecipe> = {
       ? {
           path: `${TRACK_MENU} → Show → Reference row (${show ? 'checked' : 'unchecked'})`,
         }
+      : undefined
+  },
+  'alignments.mismatches': (value, { displayType }) => {
+    const show = (value as { show?: unknown } | undefined)?.show
+    return typeof show === 'boolean' && displayType === 'LinearMafDisplay'
+      ? {
+          path: `${TRACK_MENU} → Show → Mismatches (${show ? 'checked' : 'unchecked'})`,
+        }
+      : undefined
+  },
+  'alignments.bases': (value, { displayType }) => {
+    const bases = asRecord(value)
+    const field =
+      asString(channelOf(asRecord(bases?.encoding)?.color)?.field) ?? 'base'
+    const label =
+      bases?.show === false
+        ? 'None'
+        : field in MAF_BASES_FIELD_LABELS
+          ? MAF_BASES_FIELD_LABELS[field as keyof typeof MAF_BASES_FIELD_LABELS]
+          : undefined
+    return label && bases?.show !== undefined && displayType === 'LinearMafDisplay'
+      ? { path: `${MAF_COLOR_BY} → Per-base coloring → ${label}` }
       : undefined
   },
   'alignments.rowProportion': (value, { displayType }) =>

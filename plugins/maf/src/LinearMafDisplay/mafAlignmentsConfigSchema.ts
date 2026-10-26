@@ -1,6 +1,8 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 import { DEFAULTS } from './displayDefaults.ts'
+import { mafBasesConfigSchema } from './mafBasesConfigSchema.ts'
+import { mafMismatchesConfigSchema } from './mafMismatchesConfigSchema.ts'
 import { mafPartConfigSchema } from './mafPartConfigSchema.ts'
 import { mafReferenceRowConfigSchema } from './mafReferenceRowConfigSchema.ts'
 
@@ -8,11 +10,9 @@ import { mafReferenceRowConfigSchema } from './mafReferenceRowConfigSchema.ts'
  * #config MafAlignments
  * #category display
  * The MAF display's `alignments` setting: the per-species rows, the band that
- * takes the height the bands above it leave, and the parts drawn over them.
- * Letters draw over every cell `encoding.color` paints with its base's color,
- * so `encoding: { color: 'base' }` letters every base and `mismatch` only
- * the mismatches; they keep the case the file gives them, lowercase being
- * soft-masked repeat in a UCSC alignment.
+ * takes the height the bands above it leave, and the layers drawn over the
+ * fill `encoding.color` gives them. Letters keep the case the file gives
+ * them, lowercase being soft-masked repeat in a UCSC alignment.
  *
  * #example
  * ```js
@@ -39,6 +39,17 @@ export const mafAlignmentsConfigSchema = ConfigurationSchema(
       defaultValue: DEFAULTS.rowProportion,
       description: 'fraction of the row height each glyph fills',
     },
+    /**
+     * #slot mismatches
+     * `show` draws each base differing from the reference, with insertion
+     * markers and deletion counts; on by default.
+     */
+    mismatches: mafMismatchesConfigSchema,
+    /**
+     * #slot bases
+     * The per-position layer: every base, or each codon's amino-acid change.
+     */
+    bases: mafBasesConfigSchema,
     /**
      * #slot inversions
      * `show` hatches each block a species aligns on the other strand from the

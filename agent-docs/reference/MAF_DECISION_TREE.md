@@ -58,33 +58,40 @@ not a key over the tier's name.
 
 ![Which rendering the per-sample rows are painting](diagrams/maf-rendering.svg)
 
-The display states what colors the rows as two channels: `encoding.color`,
-whose field names the variable (mismatch, base, identity, chromosome, codon),
-and `y`, which puts identity on each row's bar height. They are independent, so
-identity bars can take the identity ramp. What is left to decide is what each
-channel can draw at the current zoom.
+The rows take the alignments display's shape: a fill, `encoding.color` (a
+constant, `identity` or `refNameRank`), with layers over it,
+`alignments.mismatches` and `alignments.bases` (`base` or `codon`), and `y`,
+which puts identity on each row's bar height and lets the fill color the bars.
+What is left to decide is what each can draw at the current zoom.
 
-**The setting and the active rendering are different getters.** The one the
-radio ticks is zoom-independent, or the tick moves as the user zooms, which
-reads as the app changing the setting behind their back. `rowsColor` and `rowsY`
-apply the overrides — the summary tier carries no bases, codons exist only at
-base level with a frames file, and identity yields to the letters at base level
-— and every painter branches on those.
+**The setting and the plan are different getters.** The one the radio ticks
+is zoom-independent, or the tick moves as the user zooms, which reads as the
+app changing the setting behind their back. `rowPlan` applies the overrides —
+the summary tier carries no bases, the identity fill and the bars yield to the
+constant at base level, codons exist only at base level with a frames file,
+and the mismatches yield to a per-base layer — and every painter, key and
+hover reads it in the config's own words.
 
-**Every rendering is a GPU mark over one encode per region.** A pan moves
-uniforms rather than re-walking the blocks. `basesRenderingActive` now only says
-whether the letters, insertion markers and deletion counts draw over the cells,
-so the hover and menu consult it too: an insertion under the cursor is only an
-answer while insertions paint.
+**Every channel set is a GPU mark over one encode per region.** A pan moves
+uniforms rather than re-walking the blocks. `rowPlan.perBase` says whether the
+letters, insertion markers and deletion counts draw over the cells, so the
+hover and menu consult it too: an insertion under the cursor is only an answer
+while insertions paint.
+
+**The base-level yield is a cost as much as a picture.** At one base a cell, an
+identity fill under the mismatches costs the identity walk plus the cells walk,
+926 ms against 229 ms for the cells walk alone at 470 species
+(`benches/mafEncodeRows.bench.ts`), to draw what the mismatches already show.
+Above base level the mismatches over an identity fill add 41 to 52%.
 
 ## The cell
 
 ![What color one aligned base takes](diagrams/maf-cell-color.svg)
 
 The naive version is a branch cascade returning a color, spelled once in each
-painter. Both halves of that are wrong here. Only `encoding.color: 'base'`
-paints a matching base in its own color; every other field leaves matches in
-the match tone.
+painter. Both halves of that are wrong here. A base paints its own color under
+the `base` layer, or where it differs while the mismatches draw; every other
+base takes the fill.
 
 **The cascade returns a category, not a color**, and each representation maps
 from it — CSS strings for Canvas2D, packed integers for the instance buffer.
@@ -101,7 +108,10 @@ every row is one shared row with two entries patched — and exploiting it turns
 the build into a memcpy.
 
 **The skip case stays outside the table.** A packed color uses the full integer
-range, so no value inside it can safely mean "don't draw".
+range, so no value inside it can safely mean "don't draw". A fully transparent
+fill is a color that draws nothing, so the walk emits no run in it: where a
+field fills the row with spans of its own, the cells walk draws only the bases
+that paint.
 
 ## The layout
 

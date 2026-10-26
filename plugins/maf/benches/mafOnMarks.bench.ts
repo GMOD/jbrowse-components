@@ -328,8 +328,13 @@ function armMaf(
 ) {
   const packed = pack(features)
   const { blocks } = placeMafRegionData(packed, rowIndexBySrc)
-  return buildMafChannels({ blocks, palette, colorMatches: false, binBp: 1 })
-    .count
+  return buildMafChannels({
+    blocks,
+    palette,
+    matchColor: palette.matchColor,
+    paints: { mismatches: true, everyBase: false },
+    binBp: 1,
+  }).count
 }
 function armControl(
   features: readonly Feature[],
@@ -337,8 +342,13 @@ function armControl(
 ) {
   const packed = pack(features)
   const { blocks } = placeMafRegionData(packed, rowIndexBySrc)
-  return buildMafChannels({ blocks, palette, colorMatches: false, binBp: 1 })
-    .count
+  return buildMafChannels({
+    blocks,
+    palette,
+    matchColor: palette.matchColor,
+    paints: { mismatches: true, everyBase: false },
+    binBp: 1,
+  }).count
 }
 function armMarks(features: readonly Feature[]) {
   const { layers } = layerTables(
@@ -1042,7 +1052,13 @@ if (process.argv.includes('--stages')) {
       )
       best.place = Math.min(best.place ?? Infinity, performance.now() - t)
       t = performance.now()
-      buildMafChannels({ blocks, palette, colorMatches: false, binBp: 1 })
+      buildMafChannels({
+        blocks,
+        palette,
+        matchColor: palette.matchColor,
+        paints: { mismatches: true, everyBase: false },
+        binBp: 1,
+      })
       best.channels = Math.min(best.channels ?? Infinity, performance.now() - t)
     }
     console.log(
@@ -1083,7 +1099,13 @@ if (process.argv.includes('--column-stages')) {
         new Map(sections.map((s, i) => [s.key, i])),
       )
       t = lap('maf place', t)
-      buildMafChannels({ blocks, palette, colorMatches: false, binBp: 1 })
+      buildMafChannels({
+        blocks,
+        palette,
+        matchColor: palette.matchColor,
+        paints: { mismatches: true, everyBase: false },
+        binBp: 1,
+      })
       t = lap('maf channels', t)
       binnedMeanColumns(runs, binBp, 'match', 'species')
       lap('bin mean', t)

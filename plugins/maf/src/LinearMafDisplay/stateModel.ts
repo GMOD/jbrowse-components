@@ -19,6 +19,7 @@ import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { withHint } from '@jbrowse/core/ui/menuItems'
 import {
   assembleLocString,
+  getDialogHost,
   getPaletteHost,
   getSession,
 } from '@jbrowse/core/util'
@@ -30,6 +31,7 @@ import CoarseTierMixin from '@jbrowse/display-kit/CoarseTierMixin'
 import ColorWritesMixin from '@jbrowse/display-kit/ColorWritesMixin'
 import LegendMixin from '@jbrowse/display-kit/LegendMixin'
 import MultiRegionDisplayMixin from '@jbrowse/display-kit/MultiRegionDisplayMixin'
+import SolidColorDialog from '@jbrowse/display-kit/SolidColorDialog'
 import StoredHoverMixin from '@jbrowse/display-kit/StoredHoverMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import { MIN_DISPLAY_HEIGHT } from '@jbrowse/display-kit/const'
@@ -97,12 +99,11 @@ import {
 } from './encodeMafRows.ts'
 import { fetchMafAlignmentData, fetchMafSummaryData } from './fetchMafData.ts'
 import { mafLaunchMenuItems } from './launchMenuItems.ts'
-import { MAF_FIELD_PRESETS } from './mafColorConfigSchema.ts'
 import { openInsertionWidget } from './openInsertionWidget.ts'
 import { orderMafRowsByBaseAt } from './orderMafRowsByBaseAt.ts'
 import { placeMafRegionData } from './placeMafRows.ts'
 import { rowNavigationTargetsOf } from './rowNavigationTargets.ts'
-import { paintsBases, resolveRowPlan } from './rowRenderings.ts'
+import { resolveRowPlan } from './rowPlan.ts'
 import {
   ZOOM_IN_FOR_BAND,
   buildMafTrackMenuItems,
@@ -131,13 +132,7 @@ import type { HoverBp } from './components/findRowHover.ts'
 import type { MafRowGeometryParams } from './components/visibleRegionGeometry.ts'
 import type { LinearMafDisplayConfigModel } from './configSchema.ts'
 import type { MafRowsEncodeProps, MafRowsSource } from './encodeMafRows.ts'
-import type {
-  IdentityEncoding,
-  MafColorField,
-  MafYField,
-  RowPlan,
-  RowRendering,
-} from './rowRenderings.ts'
+import type { MafBasesField, RowPlan } from './rowPlan.ts'
 import type { MafHover } from './util.ts'
 import type { CoverageBandState } from '@jbrowse/alignments-core'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
@@ -204,12 +199,6 @@ function withKnownCopies(
 }
 
 const NO_DETAIL: ReadonlyMap<number, MafRegionData> = new Map()
-
-/** An ordinal field whose preset names no `scale.range` paints the theme's. */
-function paintsThemeColors(field: MafColorField) {
-  const preset = MAF_FIELD_PRESETS[field]
-  return preset.scale.type === 'ordinal' && !('range' in preset.scale)
-}
 
 /**
  * #stateModel LinearMafDisplay
@@ -426,7 +415,7 @@ export default function stateModelFactory(
         get framesInUse(): boolean {
           return (
             (self.showFrames ||
-              self.colorField === 'codon' ||
+              self.basesField === 'codon' ||
               (self.showConservation && self.conservationUnit === 'codon')) &&
             !!self.framesAdapterConfig
           )
@@ -586,7 +575,7 @@ export default function stateModelFactory(
          *
          * Layout, paint, hit tests and export read this; only the track menu
          * reads `showCoverage`, so the tick keeps the user's choice across
-         * zoom. Same split as `basesRenderingActive` vs `activeRowRendering`.
+         * zoom. Same split as `rowPlan` vs the slots it resolves.
          */
         get coverageBandActive() {
           return self.showCoverage && !self.coarseTierActive
@@ -1431,41 +1420,22 @@ export default function stateModelFactory(
            * theme's colors.
            */
           configProblemsOf(conf: AnyConfigurationModel): string[] {
-            const colorField: MafColorField = readConfObject(conf, [
+            const bases: MafBasesField = readConfObject(conf, [
+              'alignments',
+              'bases',
               'encoding',
               'color',
               'field',
             ])
-            const range: readonly string[] = readConfObject(conf, [
-              'encoding',
-              'color',
-              'scale',
-              'range',
-            ])
             return [
               ...superConfigProblemsOf(conf),
               ...coverageLayerProblems(conf.coverage),
-              ...(colorField === 'codon' && !self.framesAdapterConfig
+              ...(bases === 'codon' && !self.framesAdapterConfig
                 ? [
-                    'encoding.color.field: codon needs a framesAdapter on the MAF adapter to define reading frames, so the rows paint the mismatches',
-                  ]
-                : []),
-              ...(range.length > 0 && paintsThemeColors(colorField)
-                ? [
-                    `encoding.color.scale.range: ${colorField} paints the theme's colors and reads no range`,
+                    'alignments.bases.encoding.color.field: codon needs a framesAdapter on the MAF adapter to define reading frames, so the layer draws nothing',
                   ]
                 : []),
             ]
-          },
-          /**
-           * #getter
-           * The Color by menu's tick: the color field, with codon falling back
-           * to the mismatches where no frames file defines a reading frame.
-           */
-          get selectedColorField(): MafColorField {
-            return self.colorField === 'codon' && !self.framesAdapterConfig
-              ? 'mismatch'
-              : self.colorField
           },
           /**
            * #getter
@@ -1475,6 +1445,8 @@ export default function stateModelFactory(
             return resolveRowPlan({
               field: self.colorField,
               y: self.yField,
+              mismatches: self.showMismatches,
+              bases: self.basesField,
               summaryTier: self.coarseTierActive,
               baseLevel: self.zoomedToBaseLevel,
               hasFrames: !!self.framesAdapterConfig,
@@ -1485,34 +1457,14 @@ export default function stateModelFactory(
       .views(self => ({
         /**
          * #getter
+         * The bases that paint their own color over the fill, which the
+         * cells walk and the letters both read.
          */
-        get rowsColor(): MafColorField {
-          return self.rowPlan.color
-        },
-        /**
-         * #getter
-         */
-        get rowsY(): MafYField | undefined {
-          return self.rowPlan.y
-        },
-        /**
-         * #getter
-         * Every painter, the key and the export branch on it.
-         */
-        get activeRowRendering(): RowRendering {
-          return self.rowPlan.rendering
-        },
-        /**
-         * #getter
-         */
-        get basesRenderingActive(): boolean {
-          return self.rowPlan.bases
-        },
-        /**
-         * #getter
-         */
-        get identityEncoding(): IdentityEncoding | undefined {
-          return self.rowPlan.identity
+        get basePaints() {
+          return {
+            mismatches: self.rowPlan.mismatches,
+            everyBase: self.rowPlan.bases === 'base',
+          }
         },
       }))
       .views(self => ({
@@ -1540,7 +1492,7 @@ export default function stateModelFactory(
                 bp,
                 rowIndex,
                 bpPerPx,
-                self.basesRenderingActive ? self.encodeBinBp : undefined,
+                self.rowPlan.perBase ? self.encodeBinBp : undefined,
                 drawnRowHeightPx(self.effectiveRowHeight, self.rowProportion),
               )
             : undefined
@@ -1564,9 +1516,11 @@ export default function stateModelFactory(
           bp: number,
           rowIndex: number,
         ) {
-          const region = self.identityEncoding
-            ? self.rpcDataMap.get(displayedRegionIndex)
-            : undefined
+          const { color, mark } = self.rowPlan
+          const region =
+            color === 'identity' || mark === 'bar'
+              ? self.rpcDataMap.get(displayedRegionIndex)
+              : undefined
           const binBp = self.encodeBinBp
           const start = Math.floor(bp / binBp) * binBp
           return region
@@ -1580,12 +1534,12 @@ export default function stateModelFactory(
          * Positioned per-base letters, over the bases only.
          */
         get visibleLabels() {
-          return self.rowsVisible && !self.resizing && self.basesRenderingActive
+          return self.rowsVisible && !self.resizing && self.rowPlan.perBase
             ? computeVisibleLabels({
                 view: self.host,
                 rpcDataMap: self.detailOnScreen,
                 ...self.rowGeometry(),
-                colorMatches: self.rowsColor === 'base',
+                paints: self.basePaints,
               })
             : []
         },
@@ -1595,7 +1549,7 @@ export default function stateModelFactory(
          * Only the bases paint the gap cells the count is colored against.
          */
         get visibleDeletions() {
-          return self.rowsVisible && self.basesRenderingActive
+          return self.rowsVisible && self.rowPlan.perBase
             ? computeVisibleDeletions({
                 view: self.host,
                 rpcDataMap: self.detailOnScreen,
@@ -1647,7 +1601,7 @@ export default function stateModelFactory(
         get codonCellsActive() {
           return (
             self.rowsVisible &&
-            self.activeRowRendering === 'codon' &&
+            self.rowPlan.bases === 'codon' &&
             !!self.defaultCodonSpecies
           )
         },
@@ -1675,7 +1629,7 @@ export default function stateModelFactory(
          * unless the rows are colored by chromosome.
          */
         get sourceChromRanks(): ReturnType<typeof perRowChromRanks> {
-          return self.activeRowRendering === 'chromosome'
+          return self.rowPlan.color === 'refNameRank'
             ? perRowChromRanks(self.rpcDataMap.values())
             : { ranks: new Map<number, Map<string, number>>(), maxRank: 0 }
         },
@@ -1705,9 +1659,9 @@ export default function stateModelFactory(
         },
         /**
          * #getter
-         * `LegendMixin`'s hook: the key for whatever `activeRowRendering`
-         * paints, then the CDS frame key while the strip draws, then the row
-         * color key. Each key is built by the module that paints the rendering,
+         * `LegendMixin`'s hook: the key for the fill `rowPlan` paints, the
+         * codon layer's, then the CDS frame key while the strip draws, then
+         * the row color key. Each key is built by the module that paints it,
          * so the swatches match the screen.
          */
         get colorScales(): ColorScale[] {
@@ -1722,8 +1676,7 @@ export default function stateModelFactory(
           return self.host.initialized
             ? mafColorScales({
                 palette,
-                rendering: self.activeRowRendering,
-                rowsColor: self.rowsColor,
+                plan: self.rowPlan,
                 colorEncoding: self.colorEncoding,
                 colorKeyTitle: self.colorKeyTitle,
                 oneBaseCells: self.encodeBinBp === 1,
@@ -1736,15 +1689,19 @@ export default function stateModelFactory(
         /**
          * #getter
          * Whether this display has a color key, as opposed to whether one is
-         * drawn now: the question "Legend" is offered on. Bases key
-         * nothing; every other rendering keys what it paints.
+         * drawn now: the question "Legend" is offered on. A constant fill
+         * and the bases key nothing; a field, the bars' height and the codon
+         * layer key what they paint.
          *
          * Overrides `LegendMixin`'s, whose scale reads decline on an
          * uninitialized view and would drop the row while a track loads.
          */
         get hasLegendKey(): boolean {
+          const { color, mark, bases } = self.rowPlan
           return (
-            !paintsBases(self.activeRowRendering) ||
+            color !== undefined ||
+            mark === 'bar' ||
+            bases === 'codon' ||
             self.visibleFrames.length > 0 ||
             self.rowColorScales.length > 0
           )
@@ -1782,16 +1739,15 @@ export default function stateModelFactory(
          */
         rowsEncodePropsIn(colorPalette: MafColorPalette): MafRowsEncodeProps {
           return {
-            basesActive: self.basesRenderingActive,
-            identity: self.identityEncoding,
+            plan: self.rowPlan,
+            value: self.colorValue,
             identityColors: self.identityColors,
             gpu: {
               palette: colorPalette,
-              colorMatches: self.rowsColor === 'base',
               binBp: self.encodeBinBp,
             },
             sourceChromRanks:
-              self.activeRowRendering === 'chromosome'
+              self.rowPlan.color === 'refNameRank'
                 ? self.sourceChromRanks.ranks
                 : undefined,
             sourceChromColors: self.sourceChromColors,
@@ -1870,7 +1826,7 @@ export default function stateModelFactory(
           bp: number,
           rowIndex: number,
         ) {
-          return self.activeRowRendering === 'codon'
+          return self.rowPlan.bases === 'codon'
             ? findCodonAt(
                 self.encodedUpload.get(displayedRegionIndex)?.codons,
                 bp,
@@ -1924,6 +1880,29 @@ export default function stateModelFactory(
       .actions(self => ({
         /**
          * #action
+         * The picker Color by's Solid color... opens, on the theme's match
+         * tone until a constant is written.
+         */
+        openSolidColorDialog() {
+          const written = self.colorValue
+          getDialogHost(self).queueDialog(handleClose => [
+            SolidColorDialog,
+            {
+              label: 'Alignment color',
+              color: written ?? self.colorPalette.matchColor,
+              written,
+              onChange: (color: string) => {
+                self.setColorValue(color)
+              },
+              onReset: () => {
+                self.setColorValue(undefined)
+              },
+              handleClose,
+            },
+          ])
+        },
+        /**
+         * #action
          * The reference row the last detail batch named — see
          * `refSampleIdVolatile`. Written beside `setSamples` in the batch
          * commit, so a stale batch names nothing.
@@ -1967,7 +1946,7 @@ export default function stateModelFactory(
                     self.renderBlocks,
                     encoded,
                     self.renderState,
-                  ) || !self.basesRenderingActive
+                  ) || !self.rowPlan.perBase
                 : false
             },
           })

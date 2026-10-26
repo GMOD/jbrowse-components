@@ -22,9 +22,10 @@ what you can do once the track is on screen.
 Zoomed out, each pixel summarizes the alignment beneath it. Zoom in and the
 per-species rows resolve into individual bases, with positions where a species
 differs from the reference drawn as colored marks. The features below come from
-three track-menu submenus: **Color by** picks what colors the rows, **Plot
-type** whether they draw as cells or as identity bars, and **Show** holds the
-bands and overlays that layer on top of them.
+three track-menu submenus: **Color by** picks what fills the rows and the
+per-base coloring drawn over them, **Plot type** whether they draw as cells or
+as identity bars, and **Show** holds the bands and overlays that layer on top
+of them.
 
 ## Zooming out past the alignment
 
@@ -59,24 +60,34 @@ aligned species whose base matches the reference, a quick read of which regions
 are conserved versus divergent. It is computed from the alignment itself, so no
 extra files are needed.
 
-The **Color by** menu breaks the same signal out per species, so you can see
-_which_ genomes diverge in a region:
+The rows work as the [alignments track](/docs/user_guides/alignments_track)'s
+reads do: a fill, with the mismatches drawn over it. **Color by** breaks the
+same signal out per species, so you can see _which_ genomes diverge in a region.
+Its first block picks the fill:
 
-- **Mismatches (SNPs vs reference)**, the default, is the per-base coloring
-  described above.
-- **Every base** colors matching bases by base too, so the whole alignment reads
-  as sequence. Zoomed in, a letter marks every cell its base colors, in the case
-  the file gives it; UCSC alignments lowercase soft-masked repeats.
+- **Default** fills each row in one tone, the mismatches standing out over it.
 - **Identity to reference** shades each row on a red→grey→blue ramp (red
   divergent, blue conserved), a heatmap; its **Color scheme** submenu picks
   another ramp.
+- **Source sequence**, below, colors each block by where it comes from in the
+  species' own genome.
+- **Solid color...** fills the rows in a color you pick.
+
+Its **Per-base coloring** block draws over the fill. **Every base** colors
+matching bases by base too, so the whole alignment reads as sequence, and
+**Codon changes (amino acids)**, below, colors each codon. Zoomed in, a letter
+marks every cell its base colors, in the case the file gives it; UCSC alignments
+lowercase soft-masked repeats. **Show → Mismatches** takes the differing
+bases, insertion markers and deletion counts off, leaving the fill.
 
 **Plot type** › **Identity X-Y plot** draws identity as each row's bar height, a
-per-species wiggle. The two menus combine: bars colored by identity take the
-heatmap's ramp, and bars under any other coloring draw in one color.
+per-species wiggle. The bars take the fill: the heatmap's ramp under **Identity
+to reference**, and one color under **Default**.
 
-In a display config **Color by** is `encoding.color` (`mismatch`, `base`,
-`identity`, and the `chromosome` and `codon` options below) and the X-Y plot is
+In a display config the fill is [`encoding.color`](/docs/config/mafcolor)
+(`identity`, `refNameRank`, or a constant `value`), the per-base coloring
+[`alignments.bases`](/docs/config/mafbases), the mismatches
+[`alignments.mismatches`](/docs/config/mafmismatches), and the X-Y plot
 `encoding.y: "identity"`.
 
 The heatmap's ramp runs from 0 to 100% identity, and
@@ -84,12 +95,12 @@ The heatmap's ramp runs from 0 to 100% identity, and
 near its blue end, so
 `"color": { "field": "identity", "scale": { "domainMin": 0.7 } }` spreads the
 ramp over 70 to 100%, where they differ; `scale.scheme`, `scale.reverse` and
-`scale.domainMid` change the ramp itself. The source-chromosome colors below
-take a `scale.range`, one color per rank.
+`scale.domainMid` change the ramp itself. The source-sequence colors below take
+a `scale.range`, one color per rank.
 
 The heatmap and the X-Y plot draw only while you are zoomed out past base level.
-Zooming in to base level swaps them back for the base coloring, since a single
-base's identity is just whether it matches.
+Zooming in to base level swaps them for the default fill and the mismatches,
+since a single base's identity is just whether it matches.
 
 The heatmap works on large alignments: with all ~470 species of the UCSC hg38
 470-way shown at once, the heatmap gives a per-base conservation view across the
@@ -99,29 +110,29 @@ the guide tree (dendrogram) down the left.
 
 <Figure src="/img/maf_470way.png" caption="The hg38 470-way over GAPDH, every species at once."/>
 
-## Color by source chromosome
+## Color by source sequence
 
-**Source chromosome**, in the same **Color by** menu, replaces the per-base
-coloring with a structural view. Within each species row, the source chromosomes
-its blocks come from (in that species' own genome) are ranked by coverage: the
-row's main chromosome gets the primary color, and blocks from a different source
-chromosome take a contrasting accent. A row that stays one color is collinear; a
-row that _changes color along its length_ is drawing blocks from more than one
-source chromosome, an immediate flag for a translocation or rearrangement. The
-ranking is per row, and a compact legend in the top-right names the scheme (main
-/ 2nd / 3rd source). Like conservation, it is derived from the alignment with no
-extra data to fetch.
+**Source sequence**, in the same **Color by** menu, fills the rows with a
+structural view, the mismatches still drawn over it. Within each species row,
+the source chromosomes its blocks come from (in that species' own genome) are
+ranked by coverage: the row's main chromosome gets the primary color, and blocks
+from a different source chromosome take a contrasting accent. A row that stays
+one color is collinear; a row that _changes color along its length_ is drawing
+blocks from more than one source chromosome, an immediate flag for a
+translocation or rearrangement. The ranking is per row, and a compact legend in
+the top-right names the scheme (main / 2nd / 3rd source). Like conservation, it
+is derived from the alignment with no extra data to fetch.
 
 <Figure src="/img/maf_color_by_chromosome.png" caption="The ce11 26-way colored by source chromosome, a row switching color where its blocks come from another chromosome."/>
 
 ## Inversions (strand flips)
 
-**Show → Inversions (strand flips)** overlays a diagonal hatch on any block that
-aligns inverted relative to the consensus orientation of its source chromosome.
-Each block is compared to its scaffold's consensus, so an arbitrarily-oriented
-scaffold reads as collinear and only a genuine intra-scaffold strand flip is
-marked. It is an overlay, so it composes on top of the base, codon, or per-row
-identity rendering.
+**Show → Inversions (strand flips)** overlays a diagonal hatch on any block
+that aligns inverted relative to the consensus orientation of its source
+chromosome. Each block is compared to its scaffold's consensus, so an
+arbitrarily-oriented scaffold reads as collinear and only a genuine
+intra-scaffold strand flip is marked. It is an overlay, so it composes on top of
+any fill and per-base coloring.
 
 ## Codon (amino-acid) view
 
@@ -132,13 +143,14 @@ species' row, marking the coding exons projected onto that species so the gene
 structure reads vertically across the whole alignment. The strip draws over
 whatever the rows are colored by, so it works with any **Color by** choice.
 
-**Codon changes (amino acids)**, a **Color by** option, switches the per-sample
-rows from per-base SNP coloring to a per-codon view: every species is translated
-in the reference reading frame, and each codon cell is colored by how its amino
-acid compares to the reference. Nonsynonymous changes stand out, synonymous
-(silent) changes get a faint tint, a stop the reference does not share is
-flagged, and conserved codons, including the gene's stop, stay clean. The
-residue is drawn on each codon once you zoom in far enough to read it.
+**Codon changes (amino acids)**, under **Color by → Per-base coloring**,
+draws a per-codon layer over the rows in place of the mismatches: every species
+is translated in the reference reading frame, and each codon cell is colored by
+how its amino acid compares to the reference. Nonsynonymous changes stand out,
+synonymous (silent) changes get a faint tint, a stop the reference does not
+share is flagged, and conserved codons, including the gene's stop, show the
+fill. The residue is drawn on each codon once you zoom in far enough to read it,
+and the layer draws only at base level.
 
 <!-- COLOR_TABLE maf START -->
 
@@ -155,7 +167,7 @@ On a large alignment, narrowing to a focused set of species first (see
 [Selecting a subtree](#selecting-a-subtree)) keeps the per-codon columns
 legible, and the left sidebar redraws as the pruned guide tree.
 
-<Figure src="/img/maf_470way_codon.png" caption="The hg38 470-way narrowed to representative mammals in codon view."/>
+<Figure src="/img/maf_470way_codon.png" caption="The hg38 470-way narrowed to representative mammals, with the codon layer on."/>
 
 ## Tooltips
 
@@ -163,9 +175,9 @@ Hovering any cell reads out the alignment at that position: the species, its
 base, and the location in that species' own genome, plus the alignment status of
 the neighboring blocks (e.g. a bridged gap and its size). Insertions, deletions,
 and bridged e-line gaps each get a separate tooltip. When the CDS-frames file is
-loaded (in codon view, or with the strip on), the hover also shows the gene
-name; in codon view it shows the species' codon and amino acid next to the
-reference's and labels the change synonymous or nonsynonymous.
+loaded (with the codon layer or the strip on), the hover also shows the gene
+name; with the codon layer it shows the species' codon and amino acid next to
+the reference's and labels the change synonymous or nonsynonymous.
 
 <Figure src="/img/maf_codon_tooltip.png" caption="The codon-view tooltip, naming the substitution against the reference."/>
 

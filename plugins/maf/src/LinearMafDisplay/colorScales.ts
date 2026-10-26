@@ -1,20 +1,22 @@
-import { identityColorScale } from '../LinearMafRenderer/identity.ts'
+import {
+  barHeightScale,
+  identityColorScale,
+} from '../LinearMafRenderer/identity.ts'
 import {
   getCodonLegendItems,
   getFrameLegendItems,
 } from '../LinearMafRenderer/util.ts'
 import { sourceChromLegendItems } from './components/drawSourceChrom.ts'
 
-import type { MafColorField, RowRendering } from './rowRenderings.ts'
+import type { RowPlan } from './rowPlan.ts'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 import type { FieldColorEncoding } from '@jbrowse/display-kit/colorConfigSchema'
 
 export interface MafColorScaleInputs {
   palette: JBrowsePalette
-  rendering: RowRendering
-  rowsColor: MafColorField
-  colorEncoding: FieldColorEncoding
+  plan: RowPlan
+  colorEncoding: FieldColorEncoding | string | undefined
   colorKeyTitle: string
   oneBaseCells: boolean
   maxSourceChromRank: number
@@ -35,52 +37,56 @@ function categoricalScale(
   }
 }
 
-function renderedScales({
-  palette,
-  rendering,
-  rowsColor,
+/** The fill's key: the identity ramp, the source ranks, or the bars' height. */
+function fillScales({
+  plan,
   colorEncoding,
   colorKeyTitle,
   oneBaseCells,
   maxSourceChromRank,
 }: MafColorScaleInputs): ColorScale[] {
-  const named = colorEncoding.scale === 'ordinal' ? colorEncoding : {}
-  if (rendering === 'codon') {
-    return [
-      categoricalScale(
-        'codon',
-        colorKeyTitle,
-        getCodonLegendItems(palette, named),
-      ),
-    ]
-  }
-  if (rendering === 'chromosome') {
-    return [
-      categoricalScale(
-        'sourceChrom',
-        colorKeyTitle,
-        sourceChromLegendItems(maxSourceChromRank, named),
-      ),
-    ]
-  }
-  if (rendering === 'identity' || rowsColor === 'identity') {
-    return [
-      identityColorScale(
-        'heatmap',
-        oneBaseCells,
-        colorKeyTitle,
-        colorEncoding.scale === 'linear' ? colorEncoding : undefined,
-      ),
-    ]
-  }
-  return rendering === 'xyplot'
-    ? [identityColorScale('xyplot', oneBaseCells)]
-    : []
+  const fill = typeof colorEncoding === 'object' ? colorEncoding : undefined
+  return plan.color === 'identity'
+    ? [
+        identityColorScale(
+          plan.mark === 'rect' && oneBaseCells,
+          colorKeyTitle,
+          fill?.scale === 'linear' ? fill : undefined,
+        ),
+      ]
+    : plan.color === 'refNameRank'
+      ? [
+          categoricalScale(
+            'sourceChrom',
+            colorKeyTitle,
+            sourceChromLegendItems(
+              maxSourceChromRank,
+              fill?.scale === 'ordinal' ? fill : {},
+            ),
+          ),
+        ]
+      : plan.mark === 'bar'
+        ? [
+            barHeightScale(
+              undefined,
+              typeof colorEncoding === 'string' ? colorEncoding : undefined,
+            ),
+          ]
+        : []
 }
 
 export function mafColorScales(inputs: MafColorScaleInputs): ColorScale[] {
   return [
-    ...renderedScales(inputs),
+    ...fillScales(inputs),
+    ...(inputs.plan.bases === 'codon'
+      ? [
+          categoricalScale(
+            'codon',
+            'Codon change',
+            getCodonLegendItems(inputs.palette),
+          ),
+        ]
+      : []),
     ...(inputs.showsFrames
       ? [
           categoricalScale(

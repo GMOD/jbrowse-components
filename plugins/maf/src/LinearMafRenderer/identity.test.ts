@@ -3,6 +3,7 @@ import { colorRampStops, sampleColorRamp } from '@jbrowse/core/util/colorRamp'
 import {
   buildIdentityRuns,
   identityBars,
+  identityRunColors,
   identityOver,
   identityRgb,
   identitySpans,
@@ -119,13 +120,12 @@ test('each row keeps its own windows', () => {
 test('the heatmap paints each run its ramp color, and the bars stand at it', () => {
   const r = buildIdentityRuns([block(100, 'ACGT', [[0, 'ACGA']])], 1)
   const spans = identitySpans(r)
-  const bars = identityBars(r, false)
+  const bars = identityBars(r, new Uint32Array(r.count).fill(7))
   const spanColors = spans.color as Uint32Array
   expect(spanColors[0]).not.toBe(spanColors[1])
   expect(Array.from(bars.y)).toEqual([1, 0])
-  const barColors = bars.color as Uint32Array
-  expect(barColors[0]).toBe(barColors[1])
-  expect(identityBars(r, true).color).toEqual(spans.color)
+  expect(Array.from(bars.color as Uint32Array)).toEqual([7, 7])
+  expect(identityBars(r, identityRunColors(r)).color).toEqual(spans.color)
 })
 
 test('the hover reads the mean over its window', () => {

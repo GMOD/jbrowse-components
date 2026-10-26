@@ -19,8 +19,14 @@ const cfg: MafCellColorConfig = {
   matchColor: '#111111',
   gapColor: '#222222',
   unknownBaseColor: '#444444',
-  colorMatches: false,
+  paints: { mismatches: true, everyBase: false },
 }
+
+const PAINTS = [
+  { mismatches: true, everyBase: false },
+  { mismatches: false, everyBase: false },
+  { mismatches: true, everyBase: true },
+]
 
 const byte = (c: string) => c.charCodeAt(0)
 
@@ -36,8 +42,8 @@ const byte = (c: string) => c.charCodeAt(0)
 // together is the range a 7-bit sweep excludes.
 test('the packed color table agrees with the cascade over every byte pair', () => {
   const disagreements: string[] = []
-  for (const colorMatches of [false, true]) {
-    const packed = packMafCellColorConfig({ ...cfg, colorMatches })
+  for (const paints of PAINTS) {
+    const packed = packMafCellColorConfig({ ...cfg, paints })
     for (let refByte = 0; refByte < 256; refByte++) {
       if (refByte === DASH) {
         continue
@@ -47,7 +53,7 @@ test('the packed color table agrees with the cascade over every byte pair', () =
         const want = resolvePackedUncached(refByte, alnByte, packed)
         if (int !== want) {
           disagreements.push(
-            `ref=${refByte} aln=${alnByte} colorMatches=${colorMatches}: table ${int} !== cascade ${want}`,
+            `ref=${refByte} aln=${alnByte} paints=${JSON.stringify(paints)}: table ${int} !== cascade ${want}`,
           )
         }
       }
@@ -56,14 +62,32 @@ test('the packed color table agrees with the cascade over every byte pair', () =
   expect(disagreements).toEqual([])
 })
 
-test('a match paints the match color, or its own base under colorMatches', () => {
-  const at = (colorMatches: boolean) =>
+test('a match paints the fill, or its own base under the base layer', () => {
+  const at = (everyBase: boolean) =>
     resolveCellPacked(
       byte('A'),
       byte('a'),
-      packMafCellColorConfig({ ...cfg, colorMatches }),
+      packMafCellColorConfig({
+        ...cfg,
+        paints: { mismatches: true, everyBase },
+      }),
     )
   const { match, packedByLowerByte } = packMafCellColorConfig(cfg)
   expect(at(false)).toBe(match)
   expect(at(true)).toBe(packedByLowerByte[byte('a')])
+})
+
+test('a differing base paints the fill while the mismatches are off', () => {
+  const at = (mismatches: boolean) =>
+    resolveCellPacked(
+      byte('A'),
+      byte('c'),
+      packMafCellColorConfig({
+        ...cfg,
+        paints: { mismatches, everyBase: false },
+      }),
+    )
+  const { match, packedByLowerByte } = packMafCellColorConfig(cfg)
+  expect(at(false)).toBe(match)
+  expect(at(true)).toBe(packedByLowerByte[byte('c')])
 })

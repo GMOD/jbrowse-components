@@ -18,7 +18,7 @@ import { MAF_FIELD_PRESETS } from './mafColorConfigSchema.ts'
 
 import type { LinearMafDisplayConfigModel } from './configSchema.ts'
 import type { ConservationUnit } from './conservationUnits.ts'
-import type { MafColorField, MafYField } from './rowRenderings.ts'
+import type { MafBasesField, MafColorField, MafYField } from './rowPlan.ts'
 import type { InterbaseIndicatorRule } from '@jbrowse/alignments-core/coverageBandConfigSchema'
 import type { ColorSlots } from '@jbrowse/core/util/colorScale'
 import type { ColorSchemeName } from '@jbrowse/core/util/colorSchemes'
@@ -107,28 +107,38 @@ export function configSlotViews(self: ConfigSlotSelf) {
     /**
      * #getter
      */
-    get colorField(): MafColorField {
-      return getConf(self, ['encoding', 'color', 'field'])
+    get colorField(): MafColorField | undefined {
+      return getConf(self, ['encoding', 'color', 'field']) || undefined
+    },
+    /**
+     * #getter
+     * `encoding.color.value`, the constant fill, read alone so a key edit
+     * re-encodes nothing.
+     */
+    get colorValue(): string | undefined {
+      return getConf(self, ['encoding', 'color', 'value']) || undefined
     },
     /**
      * #getter
      * `encoding.color` as written, with the key's names and title.
      */
-    get colorSetting(): ColorSetting & { value: undefined } {
+    get colorSetting(): ColorSetting & { value: string | undefined } {
       const setting = colorSnapshotOf(self.configuration.encoding.color)
       return {
         ...setting,
-        value: undefined,
+        field: setting.field ?? '',
+        value: setting.value || undefined,
         scale: { ...setting.scale, type: undefined },
       }
     },
     /**
      * #getter
      * `encoding.color` as it paints, through its field's preset: one
-     * scale per field, so `scale.type` is never written.
+     * scale per field, so `scale.type` is never written. A string is the
+     * constant, and undefined the theme's.
      */
-    get colorEncoding(): FieldColorEncoding {
-      return colorEncodingOf(this.colorSetting, MAF_FIELD_PRESETS)!
+    get colorEncoding(): FieldColorEncoding | string | undefined {
+      return colorEncodingOf(this.colorSetting, MAF_FIELD_PRESETS)
     },
     /**
      * #getter
@@ -146,7 +156,9 @@ export function configSlotViews(self: ConfigSlotSelf) {
     get identityColors(): Uint32Array {
       const color = this.colorEncoding
       return identityLut(
-        color.field === 'identity' && color.scale === 'linear'
+        typeof color === 'object' &&
+          color.field === 'identity' &&
+          color.scale === 'linear'
           ? color
           : undefined,
       )
@@ -159,7 +171,9 @@ export function configSlotViews(self: ConfigSlotSelf) {
      */
     get colorScheme(): ColorSchemeName | undefined {
       const color = this.colorEncoding
-      return color.field !== 'identity' || color.scale !== 'linear'
+      return typeof color !== 'object' ||
+        color.field !== 'identity' ||
+        color.scale !== 'linear'
         ? MAF_FIELD_PRESETS.identity.scale.scheme
         : color.range?.length
           ? undefined
@@ -167,14 +181,16 @@ export function configSlotViews(self: ConfigSlotSelf) {
     },
     /**
      * #getter
-     * Each source chromosome rank's packed color, the written
-     * `encoding.color.scale.range`'s while `encoding.color` is chromosome.
+     * Each source sequence rank's packed color, the written
+     * `encoding.color.scale.range`'s while `encoding.color` is refNameRank.
      * One array per range, as `identityColors`.
      */
     get sourceChromColors(): readonly number[] {
       const color = this.colorEncoding
       return sourceChromRankColors(
-        color.field === 'chromosome' && color.scale === 'ordinal'
+        typeof color === 'object' &&
+          color.field === 'refNameRank' &&
+          color.scale === 'ordinal'
           ? color.range
           : undefined,
       )
@@ -184,6 +200,21 @@ export function configSlotViews(self: ConfigSlotSelf) {
      */
     get yField(): MafYField | undefined {
       return getConf(self, ['encoding', 'y', 'field'])
+    },
+    /**
+     * #getter
+     */
+    get showMismatches(): boolean {
+      return getConf(self, ['alignments', 'mismatches', 'show'])
+    },
+    /**
+     * #getter
+     * The per-position layer's field while `alignments.bases.show` is on.
+     */
+    get basesField(): MafBasesField | undefined {
+      return getConf(self, ['alignments', 'bases', 'show'])
+        ? getConf(self, ['alignments', 'bases', 'encoding', 'color', 'field'])
+        : undefined
     },
     /**
      * #getter
@@ -282,6 +313,27 @@ export function configSlotActions(self: ConfigSlotSelf) {
      */
     setYField(field: MafYField | undefined) {
       setConf(self, ['encoding', 'y', 'field'], field)
+    },
+    /**
+     * #action
+     */
+    setShowMismatches(arg: boolean) {
+      setConf(self, ['alignments', 'mismatches', 'show'], arg)
+    },
+    /**
+     * #action
+     * Turn the per-position layer on with `field`, or off with undefined,
+     * keeping the field it last painted.
+     */
+    setBasesField(field: MafBasesField | undefined) {
+      if (field !== undefined) {
+        setConf(
+          self,
+          ['alignments', 'bases', 'encoding', 'color', 'field'],
+          field,
+        )
+      }
+      setConf(self, ['alignments', 'bases', 'show'], field !== undefined)
     },
     /**
      * #action

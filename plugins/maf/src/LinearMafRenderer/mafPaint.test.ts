@@ -132,7 +132,8 @@ function draw(reversed: boolean, n: number, binBp = 1, aln?: string) {
   const channels = buildMafChannels({
     blocks: regionData(n, aln).blocks,
     palette,
-    colorMatches: false,
+    matchColor: palette.matchColor,
+    paints: { mismatches: true, everyBase: false },
     binBp,
   })
   MAF_ROW_MARK.paintBlock(ctx, { cells: channels }, block(reversed), s)
