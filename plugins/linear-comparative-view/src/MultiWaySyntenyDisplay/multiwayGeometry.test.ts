@@ -38,6 +38,7 @@ import type { BuildLanesOpts } from './laneStack.ts'
 import type { RowFrame, Span } from './layoutMultiWay.ts'
 import type { MultiWayCell } from './multiwayRenderTypes.ts'
 import type { Feature } from '@jbrowse/core/util'
+import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
 
 const WIDTH = 800
 
@@ -191,7 +192,7 @@ describe('the ribbons', () => {
     const { cells, layers, targets, groupTarget } = buildRibbonGeometry({
       stack: s,
       laneLinks: undefined,
-      ribbonColor: 'rgba(130,130,130,0.3)',
+      ribbonColor: 'rgb(130,130,130)',
       drawCurves: false,
     })
     expect(layers.map(l => l.key)).toEqual(['ribbons:0'])
@@ -249,7 +250,8 @@ describe('the ribbons', () => {
     const { cells, layers, groupTarget } = buildRibbonGeometry({
       stack: s,
       laneLinks: undefined,
-      ribbonColor: 'rgba(130,130,130,0.4)',
+      ribbonColor: 'rgb(130,130,130)',
+      opacity: { value: 0.4 },
       drawCurves: false,
     })
     expect(layers.map(l => l.key)).toEqual([
@@ -571,7 +573,7 @@ describe('the ribbons', () => {
   )
 
   // g2's record is reverse against the anchor, g1's forward
-  test('color by strand reads the record’s strand, at the slot color’s alpha', () => {
+  test('color by strand reads the record’s strand, at the ribbons’ opacity', () => {
     const s = stack({
       features: [
         pairFeature('g1', 100, 200),
@@ -581,7 +583,8 @@ describe('the ribbons', () => {
     const { cells } = buildRibbonGeometry({
       stack: s,
       laneLinks: undefined,
-      ribbonColor: 'rgba(130,130,130,0.4)',
+      ribbonColor: 'rgb(130,130,130)',
+      opacity: { value: 0.4 },
       ribbonColorField: 'strand',
       drawCurves: false,
     })
@@ -604,7 +607,8 @@ describe('the ribbons', () => {
     const { cells } = buildRibbonGeometry({
       stack: s,
       laneLinks: undefined,
-      ribbonColor: 'rgba(130,130,130,0.4)',
+      ribbonColor: 'rgb(130,130,130)',
+      opacity: { value: 0.4 },
       ribbonColorField: 'strand',
       drawCurves: false,
     })
@@ -629,7 +633,8 @@ describe('the ribbons', () => {
     const { cells } = buildRibbonGeometry({
       stack: s,
       laneLinks: undefined,
-      ribbonColor: 'rgba(130,130,130,0.4)',
+      ribbonColor: 'rgb(130,130,130)',
+      opacity: { value: 0.4 },
       ribbonColorField: 'strand',
       paint: { range: ['gold', 'black'] },
       drawCurves: false,
@@ -653,7 +658,8 @@ describe('the ribbons', () => {
     const { cells } = buildRibbonGeometry({
       stack: s,
       laneLinks: undefined,
-      ribbonColor: 'rgba(130,130,130,0.4)',
+      ribbonColor: 'rgb(130,130,130)',
+      opacity: { value: 0.4 },
       ribbonColorField: 'identity',
       drawCurves: false,
     })
@@ -666,7 +672,7 @@ describe('the ribbons', () => {
     expect(data.colors[0]).not.toBe(data.colors[1])
   })
 
-  test('color by a text column reads the label table, at the slot color’s alpha', () => {
+  test('color by a text column reads the label table, at the ribbons’ opacity', () => {
     const s = stack({
       features: [
         new SimpleFeature({
@@ -684,7 +690,8 @@ describe('the ribbons', () => {
     const { cells } = buildRibbonGeometry({
       stack: s,
       laneLinks: undefined,
-      ribbonColor: 'rgba(130,130,130,0.4)',
+      ribbonColor: 'rgb(130,130,130)',
+      opacity: { value: 0.4 },
       ribbonColorField: 'group',
       attributeRanges: {
         group: { labels: ['B1', 'A1a'], colors: { A1a: '#4DB5E3' } },
@@ -697,24 +704,74 @@ describe('the ribbons', () => {
     expect(data.colors[1]).toBe(
       withAbgrAlpha(cssColorToABGR(categoricalColor('B1')), alpha),
     )
-    expect(data.colors[2]).toBe(cssColorToABGR('rgba(130,130,130,0.4)'))
+    expect(data.colors[2]).toBe(
+      withAbgrAlpha(cssColorToABGR('rgb(130,130,130)'), alpha),
+    )
 
     const hidden = ribbonData(
       buildRibbonGeometry({
         stack: s,
         laneLinks: undefined,
-        ribbonColor: 'rgba(130,130,130,0.4)',
+        ribbonColor: 'rgb(130,130,130)',
+        opacity: { value: 0.4 },
         ribbonColorField: 'group',
         attributeRanges: {
           group: { labels: ['B1', 'A1a'], colors: { A1a: '#4DB5E3' } },
         },
-        hideUnlabelled: true,
+        filter: [{ field: 'group', valid: true }],
         drawCurves: false,
       }).cells,
       'ribbons:0',
     )
+    expect(hidden.instanceCount).toBe(2)
     expect(hidden.colors[1]).toBe(data.colors[1])
-    expect(abgrAlpha(hidden.colors[2]!)).toBe(0)
+  })
+
+  test('opacity by a numeric column fades each ribbon by its own pair', () => {
+    const s = stack({
+      features: [
+        new SimpleFeature({ ...pairFeature('g1', 100, 200).toJSON(), ks: 1 }),
+        new SimpleFeature({ ...pairFeature('g2', 300, 400).toJSON(), ks: 0 }),
+        pairFeature('g3', 500, 600),
+      ],
+    })
+    const { cells } = buildRibbonGeometry({
+      stack: s,
+      laneLinks: undefined,
+      ribbonColor: 'rgb(130,130,130)',
+      attributeRanges: { ks: { min: 0, max: 1 } },
+      opacity: { field: 'ks', scale: { range: ['0.2', '0.8'] } },
+      drawCurves: false,
+    })
+    const alphas = [...ribbonData(cells, 'ribbons:0').colors].map(abgrAlpha)
+    expect(alphas).toEqual([
+      Math.round(255 * 0.8),
+      Math.round(255 * 0.2),
+      Math.round(255 * 0.8),
+    ])
+  })
+
+  test('a filter draws only the ribbons that pass it, by length or strand', () => {
+    const s = stack({
+      features: [
+        pairFeature('g1', 100, 200),
+        pairFeature('g2', 300, 600, { strand: -1 }),
+      ],
+    })
+    const kept = (filter: FieldPredicate[]) => {
+      const { cells, targets } = buildRibbonGeometry({
+        stack: s,
+        laneLinks: undefined,
+        ribbonColor: 'grey',
+        filter,
+        drawCurves: false,
+      })
+      expect(ribbonData(cells, 'ribbons:0').instanceCount).toBe(targets.length)
+      return targets.map(t => t.groupKey)
+    }
+    expect(kept([])).toEqual(['g1', 'g2'])
+    expect(kept([{ field: 'length', gte: 200 }])).toEqual(['g2'])
+    expect(kept([{ field: 'strand', equal: 1 }])).toEqual(['g1'])
   })
 
   test('color by dN/dS or a numeric column ramps it, and a pair without one keeps the slot color', () => {
@@ -740,7 +797,8 @@ describe('the ribbons', () => {
         buildRibbonGeometry({
           stack: s,
           laneLinks: undefined,
-          ribbonColor: 'rgba(130,130,130,0.4)',
+          ribbonColor: 'rgb(130,130,130)',
+          opacity: { value: 0.4 },
           ribbonColorField,
           attributeRanges: {
             dnds: { min: 0.25, max: 2 },
@@ -784,7 +842,8 @@ describe('the ribbons', () => {
       const { cells, targets, records } = buildRibbonGeometry({
         stack: s,
         laneLinks: undefined,
-        ribbonColor: 'rgba(130,130,130,0.4)',
+        ribbonColor: 'rgb(130,130,130)',
+        opacity: { value: 0.4 },
         ribbonColorField: 'group',
         attributeRanges: {
           group: { labels: ['P', 'C'], colors: { P: '#f00', C: '#00f' } },
@@ -1034,7 +1093,7 @@ test('the runs of one clipped record draw one ribbon each', () => {
   const { cells } = buildRibbonGeometry({
     stack: s,
     laneLinks: undefined,
-    ribbonColor: 'rgba(130,130,130,0.3)',
+    ribbonColor: 'rgb(130,130,130)',
     drawCurves: false,
   })
   const data = ribbonData(cells, 'ribbons:0')

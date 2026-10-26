@@ -21,7 +21,7 @@ import type { SyntenyColorSnapshot } from '@jbrowse/synteny-core'
 export const RIBBON_IMPLIED_FIELD = 'strand'
 
 /** Every ribbon's color under no field, and an unlabelled pair's under one. */
-export const RIBBON_GREY = 'rgba(130,130,130,0.3)'
+export const RIBBON_GREY = 'rgb(130,130,130)'
 
 /**
  * The ribbon color channel as it paints: the field mapped, and the color of
@@ -52,7 +52,7 @@ export function paintedRibbonColor(setting: SyntenyColorSnapshot) {
  * ```js
  * {
  *   type: 'MultiWaySyntenyDisplay',
- *   ribbons: { encoding: { color: { value: 'rgba(130,130,130,0.3)' } } },
+ *   ribbons: { encoding: { color: { value: 'grey' } } },
  * }
  * ```
  * ```js
@@ -111,20 +111,7 @@ export const ribbonColorConfigSchema = ConfigurationSchema(
      */
     scale: ConfigurationSchema(
       'RibbonColorScale',
-      {
-        ...syntenyColorScaleSlots('RibbonColorScaleType'),
-        /**
-         * #slot scale.invalid
-         * The color of a pair with no value for the field, Vega-Lite's word
-         * for a missing value's output; its alpha is every ribbon's under the
-         * field.
-         */
-        invalid: {
-          type: 'maybeColor',
-          description:
-            'the color of a pair with no value for the field, whose alpha every ribbon takes; unset, rgba(130,130,130,0.3)',
-        },
-      },
+      syntenyColorScaleSlots('RibbonColorScaleType'),
       colorScaleOptions('ribbons.encoding.color.scale'),
     ),
     /**

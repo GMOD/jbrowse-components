@@ -454,7 +454,11 @@ function paintFunction({
         categorical,
         data.attributes,
         data.attributeRanges,
-        hideUnlabelled ? HIDDEN_UNLABELLED_COLOR : UNLABELLED_COLOR,
+        hideUnlabelled
+          ? HIDDEN_UNLABELLED_COLOR
+          : paint?.invalid
+            ? cssColorToABGR(paint.invalid)
+            : UNLABELLED_COLOR,
       )
     : () => defaultColor
 }

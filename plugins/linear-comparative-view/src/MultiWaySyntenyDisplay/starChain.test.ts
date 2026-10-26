@@ -2,6 +2,7 @@ import { SimpleFeature } from '@jbrowse/core/util'
 import { cssColorToABGR, withAbgrAlpha } from '@jbrowse/core/util/colorBits'
 import { colorSchemes } from '@jbrowse/synteny-core'
 
+import { RIBBON_OPACITY } from './ribbonOpacity.ts'
 import { createDisplayWithSession } from './testEnv.ts'
 
 import type { MultiWaySyntenyDisplayModel } from './model.ts'
@@ -84,7 +85,7 @@ test('each lane of a three-mate star takes its strand against the anchor', async
   expect(display.pairLinks.size).toBe(0)
 
   display.setRibbonColorField('strand')
-  const alpha = cssColorToABGR(display.ribbonColor) >>> 24
+  const alpha = Math.round(255 * RIBBON_OPACITY)
   const pos = withAbgrAlpha(cssColorToABGR(colorSchemes.strand.posColor), alpha)
   const neg = withAbgrAlpha(cssColorToABGR(colorSchemes.strand.negColor), alpha)
   const gutters = [0, 1, 2].map(row => gutter(display, row))

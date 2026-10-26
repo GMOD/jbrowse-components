@@ -804,6 +804,20 @@ test('Hide unlabelled rows belongs to the field it was ticked under', () => {
   expect(display.hideUnlabelled).toBe(true)
   display.setRibbonColorField('family')
   expect(display.hideUnlabelled).toBe(false)
+  expect(display.ribbonFilter).toEqual([])
+})
+
+test('Hide unlabelled rows is a ribbons.filter entry, and a color pick leaves the rest of the list', () => {
+  const display = createDisplay()
+  setConf(display, ['ribbons', 'filter'], [{ field: 'identity', gte: 0.9 }])
+  display.setRibbonColorField('group')
+  display.setHideUnlabelled(true)
+  expect(display.ribbonFilter).toEqual([
+    { field: 'identity', gte: 0.9 },
+    { field: 'group', valid: true },
+  ])
+  display.setRibbonColorValue('red')
+  expect(display.ribbonFilter).toEqual([{ field: 'identity', gte: 0.9 }])
 })
 
 test('the drawing toggles write the slots the display reads back', () => {

@@ -423,6 +423,18 @@ describe('the color channel', () => {
     expect(v.hideUnlabelled).toBe(false)
   })
 
+  it('takes the old field’s Hide unlabelled rows entry out when the field changes', () => {
+    const v = view({ field: 'gene_group' })
+    v.setFilter([{ field: 'length', gte: 1000 }])
+    v.setHideUnlabelled(true)
+    expect(v.predicates).toEqual([
+      { field: 'length', gte: 1000 },
+      { field: 'gene_group', valid: true },
+    ])
+    v.setColorField('query')
+    expect(v.predicates).toEqual([{ field: 'length', gte: 1000 }])
+  })
+
   it('clears on null and on omission', () => {
     expect(view(null).colorField).toBeUndefined()
     expect(view(undefined).colorField).toBeUndefined()

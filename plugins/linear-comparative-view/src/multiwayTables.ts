@@ -3,6 +3,7 @@ import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { rampKeyOf } from '@jbrowse/core/ui/rampKey'
 import { dedupe } from '@jbrowse/core/util'
 import { cssColorToHex } from '@jbrowse/core/util/colorBits'
+import { predicatesOf } from '@jbrowse/core/util/fieldPredicate'
 import { colorSnapshotOf } from '@jbrowse/display-kit/colorConfigSchema'
 import {
   PRESET_ATTRIBUTES,
@@ -12,8 +13,10 @@ import {
   declaredAttributes,
   declaredLanesOf,
   featureAttributeRanges,
+  hidesUnlabelled,
   isAttributeLabels,
   locateCum,
+  opacitySnapshotOf,
   orderAttributeLabels,
   readChannelValue,
   unpack,
@@ -88,12 +91,14 @@ import type {
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { Feature } from '@jbrowse/core/util'
+import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
 import type {
   AttributeRange,
   AxisArgs,
   ColorArg,
   ComparativeAxis,
   RibbonInterpolation,
+  SyntenyOpacitySnapshot,
 } from '@jbrowse/synteny-core'
 
 export interface MultiWayTablesArgs {
@@ -118,18 +123,18 @@ export interface MultiWayTablesArgs {
   /**
    * The display's settings, as a `MultiWaySyntenyDisplay` config writes
    * them: `ribbons.encoding.color` (a field such as `'strand'`, or the color
-   * channel's slots such as `{ value: 'grey' }`), `ribbons.mark.interpolate`,
-   * `rows` (`sort`, the lanes that stack first, and `kept`, the lanes drawn),
-   * `hideUnlabelled`, `splitStrands`, `labels.name.show`, `inlineLaneNames`
-   * and `height`, the stack's px.
+   * channel's slots such as `{ value: 'grey' }`), `ribbons.encoding.opacity`,
+   * `ribbons.mark.interpolate`, `ribbons.filter`, `rows` (`sort`, the lanes
+   * that stack first, and `kept`, the lanes drawn), `splitStrands`,
+   * `labels.name.show`, `inlineLaneNames` and `height`, the stack's px.
    */
   display?: {
     ribbons?: {
-      encoding?: { color?: ColorArg }
+      encoding?: { color?: ColorArg; opacity?: number | SyntenyOpacitySnapshot }
       mark?: { interpolate?: RibbonInterpolation }
+      filter?: FieldPredicate[]
     }
     rows?: { sort?: string[]; kept?: string[] }
-    hideUnlabelled?: boolean
     splitStrands?: boolean
     labels?: { name?: { show?: boolean; field?: string } }
     inlineLaneNames?: boolean
@@ -194,7 +199,8 @@ function readDisplay(slots: MultiWayTablesArgs['display'] = {}) {
     descending: setting.legend.descending,
     rowsSort: readConfObject(conf, ['rows', 'sort']),
     kept: readConfObject(conf, ['rows', 'kept']),
-    hideUnlabelled: readConfObject(conf, 'hideUnlabelled'),
+    opacity: opacitySnapshotOf(conf.ribbons.encoding.opacity),
+    filter: predicatesOf(conf.ribbons.filter),
     curves: readConfObject(conf, ['ribbons', 'mark', 'interpolate']) === 'bump',
     splitStrands: readConfObject(conf, 'splitStrands'),
     showGeneLabels: readConfObject(conf, ['labels', 'name', 'show']),
@@ -595,7 +601,8 @@ export async function multiwayTables(
     ribbonColor: settings.value,
     ribbonColorField: settings.field,
     attributeRanges,
-    hideUnlabelled: settings.hideUnlabelled,
+    opacity: settings.opacity,
+    filter: settings.filter,
     paint: settings.paint,
     drawCurves: settings.curves,
     rowsVsAnchor,
@@ -703,7 +710,7 @@ export async function multiwayTables(
     ...ribbonKey(
       ribbonColorScales(settings.field, attributeRanges, {
         domain: settings.domain,
-        hideUnlabelled: settings.hideUnlabelled,
+        hideUnlabelled: hidesUnlabelled(settings.filter, settings.field),
         slotColor: settings.value,
         names: settings.names,
         title: settings.title,

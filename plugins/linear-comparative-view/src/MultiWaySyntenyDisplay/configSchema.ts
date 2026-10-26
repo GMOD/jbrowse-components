@@ -119,15 +119,6 @@ export function configSchemaFactory() {
       /**
        * #slot
        */
-      hideUnlabelled: {
-        type: 'boolean',
-        description:
-          'under a text column, draw only the ribbons whose pair has a label',
-        defaultValue: false,
-      },
-      /**
-       * #slot
-       */
       laneGeneTracks: {
         type: 'stringArray',
         description:
@@ -213,6 +204,7 @@ export function configSchemaFactory() {
           ribbons: { mark: { interpolate: curves ? 'bump' : 'linear' } },
         }),
         bridgeSkippedLanes: () => ({}),
+        hideUnlabelled: () => ({}),
         // an empty `text` read the name, else the ID, the label's default
         text: (field: unknown) =>
           field ? { labels: { name: { field } } } : {},

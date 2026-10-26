@@ -113,10 +113,10 @@ test('ribbons color by strand, keyed against the lane above', async () => {
     },
   })
   expect(t.config).toMatchObject({
-    hideUnlabelled: false,
     ribbons: {
       encoding: { color: { field: 'strand' } },
       mark: { interpolate: 'bump' },
+      filter: [],
     },
   })
   expect(t.legend.label).toEqual([

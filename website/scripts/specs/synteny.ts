@@ -1326,7 +1326,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
               // strand color here mostly shows deposit orientation and drowns
               // the gene colors
               ribbons: {
-                encoding: { color: { value: 'rgba(130,130,130,0.3)' } },
+                encoding: { color: { value: 'rgb(130,130,130)' } },
               },
             },
           ],
@@ -1352,7 +1352,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
               trackId: 'ecoli_orthologs',
               height: 1500,
               ribbons: {
-                encoding: { color: { value: 'rgba(130,130,130,0.3)' } },
+                encoding: { color: { value: 'rgb(130,130,130)' } },
               },
             },
           ],

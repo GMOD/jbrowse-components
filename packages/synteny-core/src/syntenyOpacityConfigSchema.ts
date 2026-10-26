@@ -1,10 +1,15 @@
-import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import {
+  ConfigurationSchema,
+  readConfObject,
+} from '@jbrowse/core/configuration'
 import {
   colorDomainSlot,
   colorFieldSlot,
   colorScaleTypeSlot,
   normalizeChannel,
 } from '@jbrowse/display-kit/colorConfigSchema'
+
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * `scale.type` on a synteny opacity channel: `threshold` reads `domain` as
@@ -162,3 +167,21 @@ export const syntenyOpacityConfigSchema = ConfigurationSchema(
 )
 
 export type SyntenyOpacityConfigModel = typeof syntenyOpacityConfigSchema
+
+/** An `encoding.opacity` object as its snapshot holds it, defaults read. */
+export function opacitySnapshotOf(
+  opacity: Instance<SyntenyOpacityConfigModel>,
+): SyntenyOpacitySnapshot {
+  const { scale } = opacity
+  return {
+    value: readConfObject(opacity, 'value'),
+    field: readConfObject(opacity, 'field'),
+    scale: {
+      type: readConfObject(scale, 'type'),
+      domain: readConfObject(scale, 'domain'),
+      range: readConfObject(scale, 'range'),
+      domainMin: readConfObject(scale, 'domainMin'),
+      domainMax: readConfObject(scale, 'domainMax'),
+    },
+  }
+}

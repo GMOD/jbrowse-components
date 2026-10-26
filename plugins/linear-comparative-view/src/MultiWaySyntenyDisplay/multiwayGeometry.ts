@@ -42,6 +42,8 @@ import {
   groupSpansLanes,
 } from './layoutMultiWay.ts'
 import { PX_ORIGIN } from './multiwayRenderTypes.ts'
+import { ribbonFilterOf } from './ribbonFilter.ts'
+import { ribbonOpacityOf } from './ribbonOpacity.ts'
 
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
 import type { AlignmentOpsById, LaneLinks } from './alignmentOps.ts'
@@ -58,8 +60,14 @@ import type {
   RibbonRef,
   RibbonTarget,
 } from './multiwayRenderTypes.ts'
+import type { RibbonOpacity } from './ribbonOpacity.ts'
 import type { Feature } from '@jbrowse/core/util'
-import type { AttributeRange, SyntenyColorPaint } from '@jbrowse/synteny-core'
+import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
+import type {
+  AttributeRange,
+  SyntenyColorPaint,
+  SyntenyOpacitySnapshot,
+} from '@jbrowse/synteny-core'
 
 // narrower ribbons are clutter; the boxes they join still draw in the lanes
 const MIN_RIBBON_PX = 2
@@ -268,17 +276,15 @@ class RibbonBuilder {
  * `strand` colors by the record's strand against the anchor, not the drawn
  * twist, since a flipped lane draws its inversions straight.
  */
-function ribbonColorer(
+function ribbonPainter(
   field: string | undefined,
   slotColor: number,
   attributeRanges: Record<string, AttributeRange>,
-  hideUnlabelled: boolean,
   paint: SyntenyColorPaint = {},
-) {
-  const alpha = slotColor >>> 24
+): (strand: number, feature: Feature) => number {
   if (field === 'strand') {
     const [pos, neg] = strandLevels(paint).map(level =>
-      withAbgrAlpha(cssColorToABGR(level.color), alpha),
+      cssColorToABGR(level.color),
     )
     return (strand: number) => (strand < 0 ? neg! : pos!)
   }
@@ -290,19 +296,15 @@ function ribbonColorer(
     })
     return (_strand: number, feature: Feature) => {
       value[0] = readChannelValue(feature, numeric.attribute)
-      return withAbgrAlpha(colorOf(0), alpha)
+      return colorOf(0)
     }
   }
   const categorical = resolveCategoricalMode(field, attributeRanges)
   if (categorical) {
-    const unlabelled = hideUnlabelled ? withAbgrAlpha(slotColor, 0) : slotColor
     const lut = new Map(
       categorical.labels.map(label => [
         label,
-        withAbgrAlpha(
-          cssColorToABGR(categoricalColor(categorical, label)),
-          alpha,
-        ),
+        cssColorToABGR(categoricalColor(categorical, label)),
       ]),
     )
     return (_strand: number, feature: Feature) => {
@@ -313,10 +315,26 @@ function ribbonColorer(
           : typeof value === 'number'
             ? String(value)
             : undefined
-      return (label === undefined ? undefined : lut.get(label)) ?? unlabelled
+      return (label === undefined ? undefined : lut.get(label)) ?? slotColor
     }
   }
   return () => slotColor
+}
+
+/** Each ribbon's color, its alpha scaled by the opacity and the ribbon's fade. */
+function ribbonColorer(
+  field: string | undefined,
+  slotColor: number,
+  attributeRanges: Record<string, AttributeRange>,
+  { level, fadeOf }: RibbonOpacity,
+  paint?: SyntenyColorPaint,
+) {
+  const paintOf = ribbonPainter(field, slotColor, attributeRanges, paint)
+  return (strand: number, feature: Feature) => {
+    const painted = paintOf(strand, feature)
+    const share = fadeOf ? level * fadeOf(feature) : level
+    return withAbgrAlpha(painted, Math.round((painted >>> 24) * share))
+  }
 }
 
 export interface RibbonGeometry {
@@ -476,7 +494,8 @@ export function buildRibbonGeometry({
   ribbonColor,
   ribbonColorField,
   attributeRanges = {},
-  hideUnlabelled = false,
+  opacity = {},
+  filter = [],
   paint,
   drawCurves,
   rowsVsAnchor = false,
@@ -487,7 +506,10 @@ export function buildRibbonGeometry({
   ribbonColor: string
   ribbonColorField?: string
   attributeRanges?: Record<string, AttributeRange>
-  hideUnlabelled?: boolean
+  /** `ribbons.encoding.opacity` */
+  opacity?: SyntenyOpacitySnapshot
+  /** `ribbons.filter`: a ribbon failing it draws nothing */
+  filter?: readonly FieldPredicate[]
   paint?: SyntenyColorPaint
   drawCurves: boolean
   /** each gutter draws its lower lane against the anchor, as a star source states it */
@@ -499,9 +521,10 @@ export function buildRibbonGeometry({
     ribbonColorField,
     color,
     attributeRanges,
-    hideUnlabelled,
+    ribbonOpacityOf(opacity, attributeRanges),
     paint,
   )
+  const passes = ribbonFilterOf(filter)
   const mismatch = mismatchColor(ribbonColorField)
   const cells = new Map<string, MultiWayCell>()
   const layers: RibbonLayer[] = []
@@ -566,16 +589,15 @@ export function buildRibbonGeometry({
         far.spans.length === 1
       spans.forEach((s1, i) => {
         far.spans.forEach((s2, j) => {
+          const record = far.features[j]!
+          const strand = orientations[i]! * far.orientations[j]!
           if (
             statedTogether(intervals[i], far.intervals[j]) &&
-            wideEnough(s1, s2, upper, farLane)
+            wideEnough(s1, s2, upper, farLane) &&
+            (!passes || passes({ record, strand }))
           ) {
-            const record = far.features[j]!
             const target = targetOfGroup(key, group)
-            const painted = colorOf(
-              orientations[i]! * far.orientations[j]!,
-              record,
-            )
+            const painted = colorOf(strand, record)
             const fill = bridged
               ? withAbgrAlpha(
                   painted,
@@ -623,7 +645,13 @@ export function buildRibbonGeometry({
         link.get('end'),
       )
       const s2 = lower.spanOf(mate.refName, mate.start, mate.end)
-      if (s1 && s2 && wideEnough(s1, s2, upper, lower)) {
+      const strand = link.get('strand') === -1 ? -1 : 1
+      if (
+        s1 &&
+        s2 &&
+        wideEnough(s1, s2, upper, lower) &&
+        (!passes || passes({ record: link, strand }))
+      ) {
         const idx = targets.length
         linkTarget.set(link.id(), idx)
         targets.push({
@@ -639,7 +667,7 @@ export function buildRibbonGeometry({
             locOn(lower, mate.refName, mate.start, mate.end),
           ].join('\n'),
         })
-        const fill = colorOf(link.get('strand') === -1 ? -1 : 1, link)
+        const fill = colorOf(strand, link)
         const tiled =
           fill >>> 24 !== 0 &&
           addAlignmentDetail(

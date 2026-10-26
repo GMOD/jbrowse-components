@@ -6,6 +6,7 @@ import {
   colorDomainEndsSlots,
   colorDomainSlot,
   colorFieldSlot,
+  colorInvalidSlot,
   colorLegendOptions,
   colorNamesSlot,
   colorRampSlots,
@@ -74,6 +75,7 @@ export function syntenyColorScaleSlots(scaleName: string) {
     ...colorRampSlots,
     ...colorDomainEndsSlots,
     ...colorNamesSlot,
+    ...colorInvalidSlot,
   }
 }
 

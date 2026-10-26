@@ -1,4 +1,4 @@
-import { getConf, readConfObject, setConf } from '@jbrowse/core/configuration'
+import { getConf, setConf } from '@jbrowse/core/configuration'
 import { stableIdentityComputed } from '@jbrowse/display-kit/stableIdentityComputed'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
@@ -11,12 +11,10 @@ import {
   opacityMapsField,
   opacityRangeAt,
 } from './opacityChannel.ts'
+import { opacitySnapshotOf } from './syntenyOpacityConfigSchema.ts'
 
 import type { ComparativeTrackModel } from './lodTier.ts'
-import type {
-  SyntenyOpacityConfigModel,
-  SyntenyOpacitySnapshot,
-} from './syntenyOpacityConfigSchema.ts'
+import type { SyntenyOpacitySnapshot } from './syntenyOpacityConfigSchema.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
@@ -52,7 +50,7 @@ export function SyntenyColorsMixin({
       // structural, so a slider drag that scales a field's range alike at
       // both ends hands the color pass the same fade and recolors nothing
       const fade = stableIdentityComputed(() =>
-        opacityFadeOf(readOpacity(self.encoding.opacity)),
+        opacityFadeOf(opacitySnapshotOf(self.encoding.opacity)),
       )
       return {
         /**
@@ -68,7 +66,7 @@ export function SyntenyColorsMixin({
          * `encoding.opacity` as its snapshot holds it.
          */
         get opacitySetting(): SyntenyOpacitySnapshot {
-          return readOpacity(self.encoding.opacity)
+          return opacitySnapshotOf(self.encoding.opacity)
         },
         /**
          * #getter
@@ -181,23 +179,6 @@ export function SyntenyColorsMixin({
         )
       },
     }))
-}
-
-function readOpacity(
-  opacity: Instance<SyntenyOpacityConfigModel>,
-): SyntenyOpacitySnapshot {
-  const { scale } = opacity
-  return {
-    value: readConfObject(opacity, 'value'),
-    field: readConfObject(opacity, 'field'),
-    scale: {
-      type: readConfObject(scale, 'type'),
-      domain: readConfObject(scale, 'domain'),
-      range: readConfObject(scale, 'range'),
-      domainMin: readConfObject(scale, 'domainMin'),
-      domainMax: readConfObject(scale, 'domainMax'),
-    },
-  }
 }
 
 export interface SyntenyColorsModel extends Instance<

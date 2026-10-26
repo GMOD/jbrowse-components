@@ -284,7 +284,7 @@ for (let step = 0; step < 19; step++, span *= 1.35) {
     buildRibbonGeometry({
       stack,
       laneLinks: undefined,
-      ribbonColor: 'rgba(130,130,130,0.3)',
+      ribbonColor: 'rgb(130,130,130)',
       drawCurves: false,
     })
   })

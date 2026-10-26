@@ -52,7 +52,6 @@ import {
   colorFieldOf,
   colorForField,
   colorForValue,
-  colorSnapshotOf,
 } from '@jbrowse/display-kit/colorConfigSchema'
 import { heldColorSlots } from '@jbrowse/display-kit/heldColorSlots'
 import { editPlotMenuItems } from '@jbrowse/display-kit/plotMenu'
@@ -96,7 +95,12 @@ import { isNamedRecord } from '../syntenyMate.ts'
 import { NO_OPS } from './alignmentOps.ts'
 import { axisSpan, axisTickXs } from './anchorAxis.ts'
 import LaneSelectionDialog from './components/LaneSelectionDialog.tsx'
-import { configSlotActions, configSlotViews } from './configSlotViews.ts'
+import {
+  configSlotActions,
+  configSlotViews,
+  releaseHideUnlabelled,
+  ribbonColorFieldOf,
+} from './configSlotViews.ts'
 import { dealGeneColors, geneColors } from './geneColor.ts'
 import { laneGeneTracksOf } from './laneAnnotation.ts'
 import { nudgeDecision, sameDecisions } from './laneDecision.ts'
@@ -194,7 +198,7 @@ import {
   packedPx,
   ribbonPickState,
 } from './multiwayRenderTypes.ts'
-import { RIBBON_GREY, paintedRibbonColor } from './ribbonColorConfigSchema.ts'
+import { RIBBON_GREY } from './ribbonColorConfigSchema.ts'
 import {
   laneFetchesFor,
   rowsReadAgainstAnchor,
@@ -568,11 +572,7 @@ export function stateModelFactory(
         /** #action */
         setRibbonColorField(field: string | undefined) {
           const ribbonColor = self.configuration.ribbons.encoding.color
-          if (
-            field !== paintedRibbonColor(colorSnapshotOf(ribbonColor)).field
-          ) {
-            setConf(self, 'hideUnlabelled', false)
-          }
+          const painted = ribbonColorFieldOf(self)
           const written = writtenColorOf(ribbonColor)
           const next =
             field === undefined
@@ -580,6 +580,7 @@ export function stateModelFactory(
               : colorForField(written, field, self.parkedColorOf('ribbons'))
           self.parkColor('ribbons', written, next)
           setConf(self, ['ribbons', 'encoding', 'color'], next)
+          releaseHideUnlabelled(self, painted)
           self.seenAttributeRanges = {}
           observeRibbonFeatures(self.fetchedFeatures?.features ?? [])
           for (const { links } of self.laneLinks.held?.values() ?? []) {
@@ -2049,7 +2050,8 @@ export function stateModelFactory(
           ribbonColor: self.ribbonColor,
           ribbonColorField: self.ribbonColorField,
           attributeRanges: self.ribbonAttributeRanges,
-          hideUnlabelled: self.hideUnlabelled,
+          opacity: self.ribbonOpacity,
+          filter: self.ribbonFilter,
           paint: self.ribbonPaint,
           drawCurves: self.interpolate === 'bump',
           rowsVsAnchor: self.rowsVsAnchor,
@@ -2353,12 +2355,14 @@ export function stateModelFactory(
        * Paint every ribbon `value`, undefined returning to the strand colors.
        */
       setRibbonColorValue(value: string | undefined) {
+        const painted = ribbonColorFieldOf(self)
         const written = writtenColorOf(
           self.configuration.ribbons.encoding.color,
         )
         const next = colorForValue(written, value)
         self.parkColor('ribbons', written, next)
         setConf(self, ['ribbons', 'encoding', 'color'], next)
+        releaseHideUnlabelled(self, painted)
       },
       /**
        * #action

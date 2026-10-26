@@ -207,7 +207,7 @@ costs a `retired` entry kept for good, so the trivial ones go now.
 | A `sidebar` object | Row labels draw over the plot, and a boolean `sidebar.showLabels` would sit beside the enum `showLabels` |
 | One connector-zone object for LD and the variant display | Two members the variant display never reads; the zone is the `columns` layout's guide, and `lineZoneHeight` already means one thing on both |
 | `hideSelfAlignments` into the read filter | A section hide applied on the main thread (`displayHiddenGroupKeys`); as a read member it would refetch |
-| MultiWay `hideUnlabelled` into a filter | A paint rule (`colorFunctions.ts:444`) shared with the linear synteny, dotplot and chord views' state |
+| MultiWay `hideUnlabelled` into a filter | Superseded: declined while the box was a paint rule shared with the synteny views' state; those views' box became a `filter` entry (ADR-238), and the ribbons' box became a `ribbons.filter` one beside it |
 | A `preProcessSnapshot` turning a `filter` list into `{ expressions }` | Leaves the inferred write mode wrong for the one schema that broke it |
 | A boolean shorthand (`sashimi: false`) | Nothing uses one |
 | `sites` or `variantLane` for the variant band | Colin chose `variants`, named for what the band draws as `coverage` is |

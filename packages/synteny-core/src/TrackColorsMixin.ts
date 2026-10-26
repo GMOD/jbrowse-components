@@ -23,6 +23,7 @@ import {
   isMeasureField,
   resolveCategoricalMode,
 } from './colorRamps.ts'
+import { hidesUnlabelled, withHideUnlabelled } from './hideUnlabelledFilter.ts'
 import { paintedField } from './syntenyColorBy.ts'
 import { SYNTENY_VIEW_FIELDS } from './syntenyColorConfigSchema.ts'
 import { syntenyEncodingConfigSchema } from './syntenyEncodingConfigSchema.ts'
@@ -36,19 +37,8 @@ import type { ColorableTrack } from './trackColors.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { ColorSlots } from '@jbrowse/core/util/colorScale'
-import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
 
 const STRUCTURAL_FIELDS: ReadonlySet<string> = new Set(SYNTENY_VIEW_FIELDS)
-
-// `{ field, valid: true }` and nothing else: the predicate "Hide unlabelled
-// rows" writes for the field the view paints by
-function isValidOnly(p: FieldPredicate, field: string) {
-  return (
-    p.field === field &&
-    p.valid === true &&
-    Object.keys(p).every(k => k === 'field' || k === 'valid')
-  )
-}
 
 function isColumnField(field: string | undefined): field is string {
   return (
@@ -440,11 +430,7 @@ export function TrackColorsMixin({
        * the view paints by, the "Hide unlabelled rows" box.
        */
       get hideUnlabelled(): boolean {
-        const field = this.colorField
-        return (
-          field !== undefined &&
-          self.predicates.some(p => isValidOnly(p, field))
-        )
+        return hidesUnlabelled(self.predicates, this.colorField)
       },
       /**
        * #getter
@@ -516,6 +502,7 @@ export function TrackColorsMixin({
           attributeRanges: self.attributeRanges,
           alpha: self.legendAlpha(),
           hideUnlabelled: self.hideUnlabelled,
+          missingColor: self.colorPaint.invalid,
           names: scale?.names,
           title: legend?.title,
           descending: legend?.descending,
@@ -540,8 +527,12 @@ export function TrackColorsMixin({
       // channel's arrays recomputes
       function writeColor(written: ColorSlots, next: ColorSlots) {
         if (!compareStructural(next, written)) {
+          const field = self.colorField
           self.parkColor('color', written, next)
           setConf(self.encoding, 'color', next)
+          if (field !== undefined && field !== self.colorField) {
+            self.setFilter(withHideUnlabelled(self.predicates, field, false))
+          }
         }
       }
       return {
@@ -582,8 +573,7 @@ export function TrackColorsMixin({
           if (field === undefined) {
             return
           }
-          const rest = self.predicates.filter(p => !isValidOnly(p, field))
-          self.setFilter(value ? [...rest, { field, valid: true }] : rest)
+          self.setFilter(withHideUnlabelled(self.predicates, field, value))
         },
         /**
          * #action

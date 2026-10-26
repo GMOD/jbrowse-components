@@ -194,6 +194,7 @@ export type {
   SyntenyColorSnapshot,
 } from './syntenyColorConfigSchema.ts'
 export { SyntenyFilterMixin } from './SyntenyFilterMixin.ts'
+export { hidesUnlabelled, withHideUnlabelled } from './hideUnlabelledFilter.ts'
 export {
   RIBBON_INTERPOLATIONS,
   syntenyMarkConfigSchema,
@@ -208,6 +209,7 @@ export {
 export type { FilterExtras } from './filterLanes.ts'
 export {
   SYNTENY_OPACITY_SCALES,
+  opacitySnapshotOf,
   syntenyOpacityConfigSchema,
 } from './syntenyOpacityConfigSchema.ts'
 export type {

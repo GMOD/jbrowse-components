@@ -312,6 +312,19 @@ describe('a categorical attribute', () => {
     expect(fn(1)).toBe(cssColorToABGR('#4DB5E3'))
   })
 
+  test('scale.invalid paints a row with no label, as the multi-way ribbons do', () => {
+    const fn = createComparativeColorFunction({
+      field: 'group',
+      data,
+      trackColor: '#000',
+      defaultColor: 0,
+      attributeRanges: { group: fetchLabels },
+      paint: { invalid: 'orange' },
+    })
+    expect(fn(1)).toBe(cssColorToABGR('#4DB5E3'))
+    expect(fn(2)).toBe(cssColorToABGR('orange'))
+  })
+
   test('hideUnlabelled draws the unlabelled row at zero alpha and leaves the rest', () => {
     const fn = createComparativeColorFunction({
       field: 'group',

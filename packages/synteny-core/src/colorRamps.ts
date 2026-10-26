@@ -80,6 +80,8 @@ export interface SyntenyColorPaint {
   domainMin?: number
   domainMax?: number
   domainMid?: number
+  /** the color of an alignment with no value for the field */
+  invalid?: string
 }
 
 /**
@@ -101,6 +103,7 @@ export function colorPaintOf({ scale }: SyntenyColorConfig): SyntenyColorPaint {
     domainMin: readConfObject(scale, 'domainMin'),
     domainMax: readConfObject(scale, 'domainMax'),
     domainMid: readConfObject(scale, 'domainMid'),
+    invalid: readConfObject(scale, 'invalid'),
   }
 }
 

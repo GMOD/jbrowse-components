@@ -1,4 +1,5 @@
 import { getConf, setConf } from '@jbrowse/core/configuration'
+import { predicatesOf } from '@jbrowse/core/util/fieldPredicate'
 import { isJexl } from '@jbrowse/core/util/jexlStrings'
 import { persistTrackConfigNow } from '@jbrowse/core/util/mstUtils'
 import {
@@ -7,7 +8,12 @@ import {
   colorSnapshotOf,
   ordinalRange,
 } from '@jbrowse/display-kit/colorConfigSchema'
-import { colorPaintOf } from '@jbrowse/synteny-core'
+import {
+  colorPaintOf,
+  hidesUnlabelled,
+  opacitySnapshotOf,
+  withHideUnlabelled,
+} from '@jbrowse/synteny-core'
 
 import { laneLayersPx } from './laneLayers.ts'
 import { geneLabelRowPx } from './laneStack.ts'
@@ -15,11 +21,13 @@ import { paintedRibbonColor } from './ribbonColorConfigSchema.ts'
 
 import type { MultiWaySyntenyDisplayConfigModel } from './configSchema.ts'
 import type { GeneColorSettings } from './geneColor.ts'
+import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
 import type { IStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 import type {
   LodMode,
   RibbonInterpolation,
   SyntenyColorPaint,
+  SyntenyOpacitySnapshot,
 } from '@jbrowse/synteny-core'
 
 export interface ConfigSlotSelf extends IStateTreeNode {
@@ -48,9 +56,7 @@ export function configSlotViews(self: ConfigSlotSelf) {
     },
     /** #getter */
     get ribbonColorField(): string | undefined {
-      return paintedRibbonColor(
-        colorSnapshotOf(self.configuration.ribbons.encoding.color),
-      ).field
+      return ribbonColorFieldOf(self)
     },
     /** #getter */
     get ribbonColorDomain(): string[] {
@@ -84,9 +90,27 @@ export function configSlotViews(self: ConfigSlotSelf) {
     get ribbonPaint(): SyntenyColorPaint {
       return colorPaintOf(self.configuration.ribbons.encoding.color)
     },
-    /** #getter */
+    /**
+     * #getter
+     * `ribbons.encoding.opacity` as its snapshot holds it
+     */
+    get ribbonOpacity(): SyntenyOpacitySnapshot {
+      return opacitySnapshotOf(self.configuration.ribbons.encoding.opacity)
+    },
+    /**
+     * #getter
+     * `ribbons.filter`, the entries a ribbon must all pass to draw
+     */
+    get ribbonFilter(): FieldPredicate[] {
+      return predicatesOf(self.configuration.ribbons.filter)
+    },
+    /**
+     * #getter
+     * whether `ribbons.filter` drops the ribbons with no value for the field
+     * they paint by, the "Hide unlabelled rows" box
+     */
     get hideUnlabelled(): boolean {
-      return getConf(self, 'hideUnlabelled')
+      return hidesUnlabelled(this.ribbonFilter, this.ribbonColorField)
     },
     /**
      * #getter
@@ -160,6 +184,32 @@ export function configSlotViews(self: ConfigSlotSelf) {
   }
 }
 
+/** the field `ribbons.encoding.color` paints by */
+export function ribbonColorFieldOf(self: ConfigSlotSelf) {
+  return paintedRibbonColor(
+    colorSnapshotOf(self.configuration.ribbons.encoding.color),
+  ).field
+}
+
+/**
+ * Takes out the "Hide unlabelled rows" entry of `field` once the ribbons no
+ * longer paint by it, since the box shows only the painted field's. A ribbon
+ * color writer calls it with the field it painted before its write.
+ */
+export function releaseHideUnlabelled(
+  self: ConfigSlotSelf,
+  field: string | undefined,
+) {
+  const filter = predicatesOf(self.configuration.ribbons.filter)
+  if (field !== ribbonColorFieldOf(self) && hidesUnlabelled(filter, field)) {
+    setConf(
+      self,
+      ['ribbons', 'filter'],
+      withHideUnlabelled(filter, field!, false),
+    )
+  }
+}
+
 export function configSlotActions(self: ConfigSlotSelf) {
   return {
     /**
@@ -177,8 +227,20 @@ export function configSlotActions(self: ConfigSlotSelf) {
     },
     /** #action */
     setHideUnlabelled(flag: boolean) {
-      setConf(self, 'hideUnlabelled', flag)
+      const field = ribbonColorFieldOf(self)
+      if (field !== undefined) {
+        setConf(
+          self,
+          ['ribbons', 'filter'],
+          withHideUnlabelled(
+            predicatesOf(self.configuration.ribbons.filter),
+            field,
+            flag,
+          ),
+        )
+      }
     },
+
     /** #action */
     setInterpolate(interpolate: RibbonInterpolation) {
       setConf(self, ['ribbons', 'mark', 'interpolate'], interpolate)

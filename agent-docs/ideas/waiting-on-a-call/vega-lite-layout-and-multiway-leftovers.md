@@ -30,10 +30,8 @@ Each item needs a call before work. Check the ADR-238 spelling first.
 
 ## Multi-way display
 
-- `hideUnlabelled` becomes a `ribbons.filter` entry `{ field, valid: true }`,
-  and `showLaneTicks` becomes `axis.show`, which should then gate the anchor
-  rule's ticks too. `text` and `showGeneLabels` are `labels.name` (ADR-238's
-  feature display section).
+- `showLaneTicks` becomes `axis.show`, which should then gate the anchor
+  rule's ticks too.
 - `splitStrands` and `inlineLaneNames` change layout and have no spelling.
 - Off-screen mate marks honor only the `length` filter, since the worker sends
   no attribute lanes with the mates.
