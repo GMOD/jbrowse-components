@@ -184,15 +184,19 @@ function rowAt(rows: readonly MafAlignedRow[], rowIndex: number) {
       hi = mid
     }
   }
-  const row = rows[lo]
-  return row?.rowIndex === rowIndex ? row : undefined
+  let found: MafAlignedRow | undefined
+  for (let i = lo; rows[i]?.rowIndex === rowIndex; i++) {
+    found = rows[i]
+  }
+  return found
 }
 
 /**
  * The rank color of the block each bar starts in, so the X-Y plot's bars take
  * the colors the cells would. A bar spanning two source sequences takes its
  * first base's, as a sampled cell does. A block lists its rows in row order
- * (`placeMafRegionData`), so the row is a binary search.
+ * (`placeMafRegionData`), so the row is a binary search, and of two lines on
+ * one row (a paralog) it takes the last, the one the spans paint on top.
  */
 export function sourceChromBarColors(
   blocks: readonly MafBlock[],

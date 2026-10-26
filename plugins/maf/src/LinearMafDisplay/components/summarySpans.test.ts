@@ -168,7 +168,7 @@ test('the GPU draws the bars off their own buffer, in the rows band', () => {
     ...STATE,
     coverage: { height: 0 },
   } as MafGPURenderState)
-  expect(hal.draws().map(d => d.passId)).toEqual(['span', 'mafSummary'])
+  expect(hal.draws().map(d => d.passId)).toEqual(['mafSummary', 'span'])
 })
 
 // The hover on this tier. It hit-tests the drawn bars in px rather than the

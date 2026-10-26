@@ -221,6 +221,17 @@ function colorMenuItem(self: MafMenuSelf): MenuItem {
   })
 }
 
+/** Why ticked mismatches draw nothing at this zoom, plot or layer. */
+function mismatchesHint(self: MafMenuSelf) {
+  return self.coarseTierActive
+    ? ZOOM_IN_FOR_BAND
+    : self.rowPlan.mark === 'bar'
+      ? 'the X-Y plot draws bars, not cells'
+      : self.rowPlan.bases
+        ? 'the per-base coloring draws in their place'
+        : undefined
+}
+
 /** Why a ticked per-position layer draws nothing at this zoom or plot. */
 function basesHint(self: MafMenuSelf, field: MafBasesField) {
   return self.coarseTierActive
@@ -283,10 +294,7 @@ function showMenuItems(self: MafMenuSelf): MenuItem[] {
     interbaseIndicatorsMenuItem(self),
     toggleItem('Alignments', self.showAlignments, self.setShowAlignments),
     toggleItem(
-      withHint(
-        'Mismatches',
-        self.coarseTierActive ? ZOOM_IN_FOR_BAND : undefined,
-      ),
+      withHint('Mismatches', mismatchesHint(self)),
       self.showMismatches,
       self.setShowMismatches,
     ),

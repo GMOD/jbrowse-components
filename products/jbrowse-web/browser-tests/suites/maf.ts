@@ -68,7 +68,7 @@ const sourceChromSpec = {
           trackId: 'volvox_maf',
           displaySnapshot: {
             type: 'LinearMafDisplay',
-            encoding: { color: { field: 'chromosome' } },
+            encoding: { color: { field: 'refNameRank' } },
           },
         },
       ],

@@ -200,7 +200,7 @@ describe('color by source chromosome, as a span mark', () => {
     ])
   })
 
-  test('the GPU draws it off its own buffer, after the cells, in the rows band', () => {
+  test('the GPU draws it off its own buffer, under the cells, in the rows band', () => {
     const hal = new MockHal(MAF_MARKS.map(m => m.pass))
     const backend = new GpuMarkBackend(hal, MAF_MARKS)
     const payload = {
@@ -217,9 +217,9 @@ describe('color by source chromosome, as a span mark', () => {
       coverage: { height: 0 },
     } as MafGPURenderState)
     const draws = hal.draws()
-    expect(draws.map(d => d.passId)).toEqual(['span', 'mafSourceChrom'])
+    expect(draws.map(d => d.passId)).toEqual(['mafSourceChrom', 'span'])
     const dpr = getDpr()
-    expect(draws[1]!.scissor).toEqual({
+    expect(draws[0]!.scissor).toEqual({
       x: 0,
       y: ROWS_TOP * dpr,
       w: 200 * dpr,

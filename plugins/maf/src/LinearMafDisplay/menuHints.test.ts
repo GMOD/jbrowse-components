@@ -196,6 +196,7 @@ describe('the per-base rows say when the X-Y plot draws bars', () => {
     display.setYField('identity')
     const items = display.trackMenuItems()
     expect(hintOn(items, 'Every base')).toBe(HINT)
+    expect(hintOn(items, 'Mismatches')).toBe(HINT)
     expect(hintOn(items, 'Source sequence')).toBeUndefined()
     expect(hintOn(items, 'Identity to reference')).toBeUndefined()
   })

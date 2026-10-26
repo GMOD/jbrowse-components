@@ -116,9 +116,9 @@ export function getFrameLegendItems(palette: JBrowsePalette): LegendItem[] {
 }
 
 /**
- * Codon-view cell colors: nonsynonymous changes get a clear highlight, silent
+ * Codon-layer cell colors: nonsynonymous changes get a clear highlight, silent
  * (synonymous) changes a faint fill, stops the error color, and conserved codons
- * no fill (the cell stays clean). The amino-acid glyph drawn on top uses the
+ * no cell, so the row's fill shows through. The amino-acid glyph drawn on top uses the
  * primary text color. Theme-derived so it's available headless for SVG export.
  *
  * Dark mode uses higher alphas: a translucent fill composites toward the (dark)

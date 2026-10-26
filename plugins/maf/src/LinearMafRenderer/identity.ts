@@ -118,7 +118,8 @@ export function identityLut(
   return lut
 }
 
-const XYPLOT_BAR_RGB = identityRgb(1)
+/** The X-Y plot's one bar color, where no fill colors its bars. */
+export const XYPLOT_BAR_COLOR = identityRgb(1)
 
 /**
  * The identity fill's key: the ramp, or its two ends where each cell is one
@@ -164,7 +165,7 @@ export function identityColorScale(
 /** The X-Y plot's key where one color fills its bars: what the height means. */
 export function barHeightScale(
   title = 'Per-base identity to reference',
-  color = XYPLOT_BAR_RGB,
+  color = XYPLOT_BAR_COLOR,
 ): ColorScale {
   return {
     kind: 'categorical',
@@ -334,9 +335,6 @@ export function identitySpans(
 export function identityRunColors(runs: MafIdentityRuns, lut = identityLut()) {
   return Uint32Array.from(runs.step, s => lut[s]!)
 }
-
-/** The X-Y plot's one bar color, where no fill colors its bars. */
-export const XYPLOT_BAR_COLOR = XYPLOT_BAR_RGB
 
 /** The X-Y plot: a bar per run as tall as its identity, in `colors`. */
 export function identityBars(

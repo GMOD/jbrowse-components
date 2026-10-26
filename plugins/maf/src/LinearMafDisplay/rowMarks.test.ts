@@ -207,3 +207,44 @@ describe('identity is a row mark', () => {
     dispose()
   })
 })
+
+describe('a plan or rank that comes out the same re-encodes nothing', () => {
+  it('crossing base level under the default fill keeps the encode', () => {
+    const { display, view } = createMafTestEnvironment().createDisplay()
+    seedRegion(display)
+    view.zoomTo(0.5)
+    view.setCoarseDynamicBlocks(view.dynamicBlocks, view.bpPerPx)
+    const dispose = observed(display)
+    const before = display.encodedUpload
+    zoomPastBaseLevel(view)
+    expect(display.zoomedToBaseLevel).toBe(false)
+    expect(display.encodedUpload).toBe(before)
+    dispose()
+  })
+
+  it('a region landing with the same ranks leaves the others encoded', () => {
+    const { display } = createMafTestEnvironment().createDisplay()
+    seedRegion(display)
+    display.colorByField('refNameRank')
+    const dispose = observed(display)
+    const before = display.encodedUpload.get(0)
+    const ranks = display.sourceChromRanks
+    stageDetailRegion(
+      display,
+      1,
+      testWireRegionData(
+        [
+          {
+            startBp: 200,
+            refSeq: 'ACG',
+            rows: [{ sampleId: 'hg38', seq: 'ACG', chr: 'chr1' }],
+          },
+        ],
+        { coverage: emptyMafCoverage(200) },
+      ),
+    )
+    expect(display.sourceChromRanks).toBe(ranks)
+    expect(display.encodedUpload.get(0)).toBe(before)
+    dispose()
+  })
+})

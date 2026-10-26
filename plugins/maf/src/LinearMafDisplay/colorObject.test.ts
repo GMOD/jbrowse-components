@@ -152,7 +152,9 @@ describe('notices', () => {
   })
 
   test('a codon layer with no frames file says it draws nothing', () => {
-    const codon = { alignments: { bases: { encoding: { color: 'codon' } } } }
+    const codon = {
+      alignments: { bases: { show: true, encoding: { color: 'codon' } } },
+    }
     const { display } = displayWith(undefined, null, codon)
     expect(display.notices).toEqual([
       expect.stringMatching(
@@ -160,5 +162,9 @@ describe('notices', () => {
       ),
     ])
     expect(displayWith(undefined, {}, codon).display.notices).toEqual([])
+    const off = {
+      alignments: { bases: { show: false, encoding: { color: 'codon' } } },
+    }
+    expect(displayWith(undefined, null, off).display.notices).toEqual([])
   })
 })

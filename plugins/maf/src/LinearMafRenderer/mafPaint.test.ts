@@ -1,5 +1,5 @@
 import { buildMafChannels } from './mafChannels.ts'
-import { MAF_ROW_MARK } from './mafMarks.ts'
+import { MAF_ROWS_MARKS, MAF_ROW_MARK } from './mafMarks.ts'
 import { GAP_STROKE_OFFSET } from './rendering/types.ts'
 
 import type { MarkContext2D } from '@jbrowse/render-core/marks'
@@ -273,4 +273,38 @@ describe('the MAF rows mark, boundary gaps', () => {
   test('an interior gap run still paints', () => {
     expect(draw(false, 5, 1, 'A--AC')).toHaveLength(4)
   })
+})
+
+// A field fills the row through spans of its own and the cells carry only the
+// bases that paint, so the cells have to paint after the fill or the fill
+// covers every mismatch.
+test('the mismatches paint over a field fill', () => {
+  const { ctx } = recordingCtx()
+  const painted: { x: number; w: number; color: unknown }[] = []
+  ctx.fillRect = (x: number, _y: number, w: number) => {
+    painted.push({ x, w, color: ctx.fillStyle })
+  }
+  const cells = buildMafChannels({
+    blocks: regionData(10, 'AACAAAAAAA').blocks,
+    palette,
+    matchColor: 'rgba(0,0,0,0)',
+    paints: { mismatches: true, everyBase: false },
+    binBp: 1,
+  })
+  const fill = {
+    x: Uint32Array.of(START),
+    x2: Uint32Array.of(END),
+    row: Uint32Array.of(0),
+    color: Uint32Array.of(0xff00ff00),
+    count: 1,
+  }
+  for (const mark of MAF_ROWS_MARKS) {
+    mark.paintBlock(ctx, { cells, identity: fill }, block(false), state(1))
+  }
+  const mismatchX = (2 * BLOCK_WIDTH) / (END - START)
+  const last = painted.findLast(
+    r => r.x <= mismatchX + 1 && r.x + r.w >= mismatchX + 1,
+  )
+  expect(last?.color).not.toBe(painted[0]!.color)
+  expect(painted[0]!.w).toBeGreaterThan(BLOCK_WIDTH / 2)
 })

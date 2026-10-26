@@ -63,6 +63,7 @@ import {
 } from '@jbrowse/wiggle-core'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
+import { compareStructural } from 'mobx'
 
 import { mafCoverageBandColors } from '../LinearMafRenderer/coverageBandColors.ts'
 import { identityOver } from '../LinearMafRenderer/identity.ts'
@@ -1411,6 +1412,7 @@ export default function stateModelFactory(
       }))
       .views(self => {
         const superConfigProblemsOf = self.configProblemsOf
+        let lastPlan: RowPlan | undefined
         return {
           /**
            * #method
@@ -1420,13 +1422,19 @@ export default function stateModelFactory(
            * theme's colors.
            */
           configProblemsOf(conf: AnyConfigurationModel): string[] {
-            const bases: MafBasesField = readConfObject(conf, [
+            const bases: MafBasesField | undefined = readConfObject(conf, [
               'alignments',
               'bases',
-              'encoding',
-              'color',
-              'field',
+              'show',
             ])
+              ? readConfObject(conf, [
+                  'alignments',
+                  'bases',
+                  'encoding',
+                  'color',
+                  'field',
+                ])
+              : undefined
             return [
               ...superConfigProblemsOf(conf),
               ...coverageLayerProblems(conf.coverage),
@@ -1439,10 +1447,12 @@ export default function stateModelFactory(
           },
           /**
            * #getter
-           * What the rows draw now (`resolveRowPlan`).
+           * What the rows draw now (`resolveRowPlan`). The same object while
+           * its members are, since every region's encode keys on it: crossing
+           * base level with nothing to redraw re-encodes nothing.
            */
           get rowPlan(): RowPlan {
-            return resolveRowPlan({
+            const next = resolveRowPlan({
               field: self.colorField,
               y: self.yField,
               mismatches: self.showMismatches,
@@ -1451,6 +1461,10 @@ export default function stateModelFactory(
               baseLevel: self.zoomedToBaseLevel,
               hasFrames: !!self.framesAdapterConfig,
             })
+            if (!lastPlan || !compareStructural(next, lastPlan)) {
+              lastPlan = next
+            }
+            return lastPlan
           },
         }
       })
@@ -1621,19 +1635,29 @@ export default function stateModelFactory(
           )
         },
       }))
-      .views(self => ({
-        /**
-         * #getter
-         * Each row's source chromosomes ranked by aligned bp over the loaded
-         * regions, so a pan within loaded data keeps every block's color. Empty
-         * unless the rows are colored by chromosome.
-         */
-        get sourceChromRanks(): ReturnType<typeof perRowChromRanks> {
-          return self.rowPlan.color === 'refNameRank'
-            ? perRowChromRanks(self.rpcDataMap.values())
-            : { ranks: new Map<number, Map<string, number>>(), maxRank: 0 }
-        },
-      }))
+      .views(self => {
+        let last: ReturnType<typeof perRowChromRanks> | undefined
+        return {
+          /**
+           * #getter
+           * Each row's source sequences ranked by aligned bp over the loaded
+           * regions, so a pan within loaded data keeps every block's color.
+           * Empty unless `refNameRank` fills the rows. The same object while
+           * the ranks are, so a fetch that ranks nothing new re-encodes only
+           * its own region.
+           */
+          get sourceChromRanks(): ReturnType<typeof perRowChromRanks> {
+            const next =
+              self.rowPlan.color === 'refNameRank'
+                ? perRowChromRanks(self.rpcDataMap.values())
+                : { ranks: new Map<number, Map<string, number>>(), maxRank: 0 }
+            if (!last || !compareStructural(next, last)) {
+              last = next
+            }
+            return last
+          },
+        }
+      })
       .views(self => ({
         /**
          * #getter

@@ -190,14 +190,18 @@ export const MAF_INSERTION_MARK = defineMark({
   band: rowsBand,
 })
 
-/** The rows band's marks, in paint order. */
+/**
+ * The rows band's marks, in paint order: the fills a field draws, then the
+ * cells, which carry a constant fill or, over a field's, only the bases that
+ * paint, then the codon layer and the insertions over them.
+ */
 export const MAF_ROWS_MARKS: Mark<MafRowsPayload, MafGPURenderState>[] = [
-  MAF_ROW_MARK,
   MAF_IDENTITY_MARK,
   MAF_IDENTITY_BAR_MARK,
-  MAF_CODON_MARK,
   MAF_SOURCE_CHROM_MARK,
   MAF_SUMMARY_MARK,
+  MAF_ROW_MARK,
+  MAF_CODON_MARK,
   MAF_INSERTION_MARK,
 ]
 
