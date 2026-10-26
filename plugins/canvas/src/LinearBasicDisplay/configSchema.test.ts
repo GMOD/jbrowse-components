@@ -26,7 +26,7 @@ describe('LinearBasicDisplay configSchema', () => {
     ).toBeUndefined()
     expect(readConfObject(config, 'utrColor')).toBeUndefined()
     expect(readConfObject(config, 'connectorColor')).toBeUndefined()
-    expect(readConfObject(config, 'featureHeight')).toBe(10)
+    expect(readConfObject(config, ['mark', 'height'])).toBe(10)
     expect(readConfObject(config, 'displayMode')).toBe('normal')
     expect(readConfObject(config, 'geneGlyphMode')).toBe('auto')
     expect(readConfObject(config, 'transcriptTypes')).toEqual([

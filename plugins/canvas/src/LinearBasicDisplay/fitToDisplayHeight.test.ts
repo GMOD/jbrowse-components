@@ -898,7 +898,7 @@ describe('canvas display fit escalation ladder', () => {
     const { display } = createDisplay()
     display.setRpcData(0, mixedHeightRegionData([20, 20, 2, 20]), ctgA)
     display.setHeightMode('fit')
-    expect(readConfObject(display.configuration, 'featureHeight')).toBe(10)
+    expect(readConfObject(display.configuration, ['mark', 'height'])).toBe(10)
     expect(display.fitSmallestBoxPx).toBe(2)
     expect(display.fitMinScale).toBe(1)
 
@@ -1002,11 +1002,15 @@ describe('canvas display fit escalation ladder', () => {
     expect(looser.sig).not.toBe(decimated.sig)
   })
 
-  it('lays out under fit mode with a per-feature featureHeight callback', () => {
+  it('lays out under fit mode with a per-feature mark.height callback', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
     display.setRpcData(0, mixedHeightRegionData([20, 20, 20]), ctgA)
-    setConf(display, 'featureHeight', "jexl:get(feature,'score') > 5 ? 20 : 8")
+    setConf(
+      display,
+      ['mark', 'height'],
+      "jexl:get(feature,'score') > 5 ? 20 : 8",
+    )
     display.setHeightMode('fit')
     display.setHeight(30)
     expect(display.laidOutDataMap.size).toBeGreaterThan(0)

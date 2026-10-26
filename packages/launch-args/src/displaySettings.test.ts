@@ -181,6 +181,11 @@ describe('feature modifiers', () => {
     expect(snap.displayMode).toBe('superCompact')
   })
 
+  test('featureHeight numeric sets mark.height on canvas features', () => {
+    const { snap } = buildDisplaySnapshot('feature', ['featureHeight:4'])
+    expect(snap.mark).toEqual({ height: 4 })
+  })
+
   // A modifier aimed at the wrong track type used to be dropped in silence, so
   // `--gff genes.gff.gz sashimi:down` looked like it had worked.
   test('alignment-only modifiers warn on a feature track', () => {

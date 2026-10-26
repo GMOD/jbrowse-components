@@ -14,11 +14,10 @@ type DisplaySnapshot = {
   encoding?: { color?: { value?: string } }
   connectorColor?: string
   utrColor?: string
-  outlineColor?: string
   heightMode?: string
   height?: number
   maxHeight?: number
-  featureHeight?: number
+  mark?: { height?: number }
   renderer?: Record<string, unknown>
 }
 type TrackConfigSnapshot = {
@@ -130,7 +129,7 @@ test('lifts style slots out of the old renderer sub-config', () => {
   expect(out.displays![0]!.renderer).toBeUndefined()
 })
 
-test('renderer.height becomes featureHeight, not the track height', () => {
+test('renderer.height becomes mark.height, not the track height', () => {
   const out = evaluate({
     type: 'FeatureTrack',
     displays: [
@@ -140,7 +139,7 @@ test('renderer.height becomes featureHeight, not the track height', () => {
       },
     ],
   })
-  expect(out.displays![0]!.featureHeight).toBe(12)
+  expect(out.displays![0]!.mark).toEqual({ height: 12 })
   expect(out.displays![0]!.height).toBeUndefined()
 })
 
@@ -156,5 +155,5 @@ test('a display height alongside renderer.height keeps both meanings', () => {
     ],
   })
   expect(out.displays![0]!.height).toBe(200)
-  expect(out.displays![0]!.featureHeight).toBe(12)
+  expect(out.displays![0]!.mark).toEqual({ height: 12 })
 })

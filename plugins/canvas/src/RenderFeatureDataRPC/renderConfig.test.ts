@@ -82,7 +82,7 @@ describe('isDisplayMode', () => {
 // all, so its fetch sends the defaults the feature display's slots start at.
 describe('pickDisplayConfig', () => {
   it('sends the gene defaults for a display declaring no gene slots', () => {
-    const picked = pickDisplayConfig({ featureHeight: 10, height: 100 })
+    const picked = pickDisplayConfig({ mark: { height: 10 }, height: 100 })
     expect(picked).toMatchObject(GENE_GLYPH_DEFAULTS)
     expect(picked).not.toHaveProperty('height')
   })
@@ -94,6 +94,11 @@ describe('pickDisplayConfig', () => {
     })
     expect(picked.transcriptTypes).toEqual(['mRNA'])
     expect(picked.subParts).toBe('CDS')
+  })
+
+  it("sends mark.height as the worker's flat featureHeight", () => {
+    const height = "jexl:get(feature,'score') > 5 ? 20 : 8"
+    expect(pickDisplayConfig({ mark: { height } }).featureHeight).toBe(height)
   })
 
   describe('reads encoding.color off a display node', () => {

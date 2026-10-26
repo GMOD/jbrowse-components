@@ -15,6 +15,7 @@ import {
   MAX_DESCRIPTION_FEATURE_DENSITY,
   MAX_LABEL_FEATURE_DENSITY,
 } from '../RenderFeatureDataRPC/zoomThresholds.ts'
+import { featureMarkConfigSchema } from './featureMarkConfigSchema.ts'
 import {
   basicRetired,
   migrateBasicConfigSnapshot,
@@ -120,14 +121,10 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
       encoding: featureEncodingConfigSchema,
       /**
        * #slot
+       * The box each feature draws as, a [](/docs/config/featuremark)
+       * object: `{ height: 6 }`.
        */
-      featureHeight: {
-        type: 'number',
-        description:
-          'height in pixels of the main body of each feature in the normal display mode; compact draws it at 0.6 of this and superCompact at 0.3',
-        defaultValue: 10,
-        contextVariable: ['feature'],
-      },
+      mark: featureMarkConfigSchema,
       /**
        * #slot
        */

@@ -72,6 +72,7 @@ type ConfigSlotKey =
   | 'pileup'
   | 'readConnections'
   | 'sashimi'
+  | 'mark'
 type DisplayKeys =
   | keyof LinearAlignmentsDisplayModel
   | keyof LinearBasicDisplayModel

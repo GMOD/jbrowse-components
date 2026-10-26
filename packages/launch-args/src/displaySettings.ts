@@ -288,7 +288,7 @@ export type ColorChannel = string | ColorObject
 export interface DisplaySnapshot {
   height?: number
   forceLoad?: boolean
-  featureHeight?: number
+  mark?: { height?: number }
   displayMode?: 'normal' | 'compact' | 'superCompact'
   heightMode?: (typeof HEIGHT_MODES)[number]
   growMaxHeight?: number
@@ -523,7 +523,7 @@ const modifiers: Record<string, Modifier> = {
   },
 
   // alignments write `pileup.mark.height`, the canvas displays `displayMode`
-  // or `featureHeight`
+  // or `mark.height`
   featureHeight: {
     on: ['alignments', ...CANVAS],
     byCategory: true,
@@ -551,7 +551,7 @@ const modifiers: Record<string, Modifier> = {
         r.snap.displayMode =
           preset === 'super-compact' ? 'superCompact' : preset
       } else {
-        r.snap.featureHeight = height
+        r.snap.mark = { height }
       }
     },
   },

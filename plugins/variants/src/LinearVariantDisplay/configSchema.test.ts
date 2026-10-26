@@ -22,5 +22,5 @@ test('a variant display carries none of the gene-glyph slots', () => {
   ]) {
     expect(slots).not.toContain(gene)
   }
-  expect(slots).toContain('featureHeight')
+  expect(slots).toContain('mark')
 })

@@ -93,8 +93,8 @@ export interface DisplayConfig {
   mouseover: string
   // the display's `filter` list, its `jexl:` fields as written
   filter: FieldPredicate[]
-  // `number | string` because the slot declares `contextVariable: ['feature']`
-  // and so may hold a `jexl:` expression. Read it through `featureHeightPx`; the
+  // `mark.height`, flat here. `number | string` because the slot declares
+  // `contextVariable: ['feature']` and so may hold a `jexl:` expression. Read it through `featureHeightPx`; the
   // union makes any new direct read a type error rather than a Float32Array full
   // of NaN.
   featureHeight: number | string
@@ -194,5 +194,8 @@ export function pickDisplayConfig(snapshot: Record<string, unknown>) {
   }
   const encoding = source.encoding as { color?: object } | undefined
   picked.color = workerColorOf(encoding?.color ?? {})
+  picked.featureHeight = (
+    source.mark as { height?: unknown } | undefined
+  )?.height
   return picked as unknown as SettingsDisplayConfig
 }

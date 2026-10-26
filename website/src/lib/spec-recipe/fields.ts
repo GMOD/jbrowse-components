@@ -1047,7 +1047,7 @@ const READ_CONNECTIONS_PLACEMENT: Record<string, string> = {
   down: 'Below coverage',
 }
 
-// The canvas displays' `featureHeight` and the alignments `pileup.mark.height`
+// The canvas displays' `mark.height` and the alignments `pileup.mark.height`
 // share one size submenu, whose presets carry their own pixel heights.
 const readSizeStep: FieldRecipe = (value, { noun, displayType }) => {
   const preset = Object.values(COMPACTNESS_PRESETS).find(
@@ -1108,11 +1108,14 @@ function plotTypeStep(rendering: string): FieldStep | undefined {
   return radio ? { path: `${TRACK_MENU} → Plot type → ${radio[1]}` } : undefined
 }
 
-const markStep: FieldRecipe = value => {
+// A plot's `mark` names its type; the canvas displays' names the box height.
+const markStep: FieldRecipe = (value, context) => {
   const mark = typeof value === 'string' ? { type: value } : asRecord(value)
   return typeof mark?.type === 'string'
     ? plotTypeStep(renderingOf(mark.type, String(mark.interpolate ?? 'step')))
-    : undefined
+    : typeof mark?.height === 'number'
+      ? readSizeStep(mark.height, context)
+      : undefined
 }
 
 function resolutionLabel(n: number) {
@@ -1913,7 +1916,6 @@ export const trackFields: Record<string, FieldRecipe> = {
   geneGlyphMode: geneGlyphStep,
   // the size presets carry their own pixel heights, so the figure's number
   // names its preset without a second table to keep in sync
-  featureHeight: readSizeStep,
   'pileup.mark': (value, context) =>
     readSizeStep(asRecord(value)?.height, context),
   // The canvas display's 'Track sizing' radios sit under a subheader in its
