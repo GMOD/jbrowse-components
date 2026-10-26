@@ -3,6 +3,7 @@ import {
   cssColorToABGR,
   normalizedRgbToABGR,
 } from '@jbrowse/core/util/colorBits'
+import { rampLutOf } from '@jbrowse/core/util/colorRamp'
 import { paintMarkBlocks } from '@jbrowse/render-core/marks'
 import {
   drawnRowHeightPx,
@@ -688,6 +689,37 @@ describe('per-instance colors reach every Canvas2D draw fn', () => {
     expect(mock.strokeStyles).toEqual(['rgb(128,128,128)'])
   })
 })
+
+test.each([
+  ['xyplot', RENDERING_TYPE_XYPLOT],
+  ['density', RENDERING_TYPE_DENSITY],
+] as const)(
+  'a %s gradient sets the fill only where the color changes',
+  (_, renderingType) => {
+    const { ctx } = createMockCanvas()
+    let fill = ''
+    let sets = 0
+    Object.defineProperty(ctx, 'fillStyle', {
+      get: () => fill,
+      set: (value: string) => {
+        sets++
+        fill = value
+      },
+    })
+    const source = makeSource(
+      [5, 5, 5, 8],
+      [0, 100, 200, 300],
+      [100, 200, 300, 400],
+      renderingType,
+    )
+    paintWiggle(ctx, new Map([[0, [source]]]), [lineBlock], {
+      ...lineState,
+      renderingType,
+      rampLut: rampLutOf({ scheme: 'viridis' }),
+    })
+    expect(sets).toBe(2)
+  },
+)
 
 // A file stores 0.7 as float32 0.69999998, and the shader compares it with a
 // float32 cut, so a bin on the cut is at it.

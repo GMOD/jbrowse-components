@@ -154,6 +154,7 @@ export function drawXYPlot(row: RowDraw & { rgb: string }) {
   const rampFill = makeRampFill(row)
   const colorsAbgr = rampFill ? undefined : source.colorsAbgr
   let lastAbgr = NO_COLOR
+  let lastFill = ''
   if (!colorsAbgr && !rampFill) {
     ctx.fillStyle = rgb
   }
@@ -162,7 +163,11 @@ export function drawXYPlot(row: RowDraw & { rgb: string }) {
   let clipped = false
   for (let i = 0; i < n; i++) {
     if (rampFill) {
-      ctx.fillStyle = rampFill(scores[i]!)
+      const fill = rampFill(scores[i]!)
+      if (fill !== lastFill) {
+        ctx.fillStyle = fill
+        lastFill = fill
+      }
     } else if (colorsAbgr) {
       const c = colorsAbgr[i]!
       if (c !== lastAbgr) {
@@ -209,6 +214,7 @@ export function drawDensity(row: RowDraw & { rgb: string }) {
   const rampFill = makeRampFill(row)
   const colorsAbgr = rampFill ? undefined : source.colorsAbgr
   let lastAbgr = NO_COLOR
+  let lastFill = ''
   if (!colorsAbgr && !rampFill) {
     ctx.fillStyle = rgb
   }
@@ -221,7 +227,11 @@ export function drawDensity(row: RowDraw & { rgb: string }) {
   const bandTop = rowTop + rowBandOffsetPx(rowHeight, 1)
   for (let i = 0; i < n; i++) {
     if (rampFill) {
-      ctx.fillStyle = rampFill(scores[i]!)
+      const fill = rampFill(scores[i]!)
+      if (fill !== lastFill) {
+        ctx.fillStyle = fill
+        lastFill = fill
+      }
     } else if (colorsAbgr) {
       const c = colorsAbgr[i]!
       if (c !== lastAbgr) {
