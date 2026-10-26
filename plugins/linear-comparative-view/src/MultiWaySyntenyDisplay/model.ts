@@ -699,7 +699,7 @@ export function stateModelFactory(
         return orderAttributeLabels(
           self.seenAttributeRanges,
           self.ribbonColorDomain,
-          getConf(self, ['ribbons', 'encoding', 'color', 'scale', 'range']),
+          self.ribbonColorRange,
         )
       },
     }))

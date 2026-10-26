@@ -8,6 +8,7 @@ import {
   categoricalField,
 } from '@jbrowse/core/util/categoricalField'
 import { NO_CATEGORY_COLOR } from '@jbrowse/core/util/color'
+import { rampLutOf, stopsFromRampLut } from '@jbrowse/core/util/colorRamp'
 import { takeSnackbarAction, testAssembly } from '@jbrowse/display-test-utils'
 import { addMiddleware, getSnapshot } from '@jbrowse/mobx-state-tree'
 import { FEATURE_NAME_FIELD } from '@jbrowse/plugin-canvas'
@@ -2491,6 +2492,43 @@ test("the ribbon color's range paints the domain, and names and title name its k
   expect(getSnapshot(display.configuration.ribbons.encoding.color)).toEqual(
     color,
   )
+})
+
+test("the ribbon color's scheme paints a listed domain one color per value", () => {
+  const { display } = createDisplayWithSession({
+    syntenyAdapter: {
+      type: 'MCScanBlocksAdapter',
+      attributeColumns: ['group'],
+    },
+  })
+  const row = (id: string, group: string) =>
+    new SimpleFeature({
+      uniqueId: id,
+      refName: 'ctgA',
+      start: 100,
+      end: 300,
+      strand: 1,
+      name: id,
+      group,
+      mate: {
+        assemblyName: 'volvox_random',
+        refName: 'ctgB',
+        start: 100,
+        end: 300,
+      },
+    })
+  display.configuration.ribbons.encoding.setSubschema('color', {
+    field: 'group',
+    scale: { domain: ['C1', 'B1'], scheme: 'viridis' },
+  })
+  display.setFeatures([row('f1', 'B1'), row('f2', 'C1')])
+  const [first, last] = stopsFromRampLut(
+    rampLutOf({ scheme: 'viridis' }),
+    2,
+  ).map(stop => stop.color)
+  const mode = resolveCategoricalMode('group', display.ribbonAttributeRanges)!
+  expect(categoricalColor(mode, 'C1')).toBe(first)
+  expect(categoricalColor(mode, 'B1')).toBe(last)
 })
 
 test('a picked ribbon mode is written as the ribbon color channel', () => {

@@ -1,5 +1,6 @@
 import { legendSpecOf } from '@jbrowse/core/ui/colorScale'
 import { NO_VALUE_LABEL } from '@jbrowse/core/util/categoricalField'
+import { rampLutOf, stopsFromRampLut } from '@jbrowse/core/util/colorRamp'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
@@ -243,6 +244,17 @@ describe("a text column's range, names and title", () => {
       title: 'Gene group',
       labels: ['Subgenome A', 'B1'],
     })
+  })
+
+  it('samples its scheme once per domain value where it lists no range', () => {
+    const v = view({ scale: { domain: ['A1a', 'B1'], scheme: 'viridis' } })
+    v.observeAttributeRanges(seen)
+    const [first, last] = stopsFromRampLut(
+      rampLutOf({ scheme: 'viridis' }),
+      2,
+    ).map(stop => stop.color)
+    expect(colorOf(v, 'A1a')).toBe(first)
+    expect(colorOf(v, 'B1')).toBe(last)
   })
 
   it('takes range alone without reordering the labels', () => {

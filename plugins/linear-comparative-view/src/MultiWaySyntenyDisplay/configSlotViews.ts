@@ -5,6 +5,7 @@ import {
   colorEncodingOf,
   colorFieldOf,
   colorSnapshotOf,
+  ordinalRange,
 } from '@jbrowse/display-kit/colorConfigSchema'
 import { colorPaintOf } from '@jbrowse/synteny-core'
 
@@ -54,6 +55,30 @@ export function configSlotViews(self: ConfigSlotSelf) {
     /** #getter */
     get ribbonColorDomain(): string[] {
       return getConf(self, ['ribbons', 'encoding', 'color', 'scale', 'domain'])
+    },
+    /**
+     * #getter
+     * The colors a ribbon column's labels take in domain order: `scale.range`,
+     * else `scale.scheme` sampled once per domain value
+     */
+    get ribbonColorRange(): readonly string[] {
+      return ordinalRange({
+        domain: this.ribbonColorDomain,
+        range: getConf(self, [
+          'ribbons',
+          'encoding',
+          'color',
+          'scale',
+          'range',
+        ]),
+        scheme: getConf(self, [
+          'ribbons',
+          'encoding',
+          'color',
+          'scale',
+          'scheme',
+        ]),
+      })
     },
     /** #getter */
     get ribbonPaint(): SyntenyColorPaint {

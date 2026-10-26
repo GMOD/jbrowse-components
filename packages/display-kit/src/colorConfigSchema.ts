@@ -642,7 +642,10 @@ function listed(values: readonly string[]) {
  * `count` colors, one per ordinal value or threshold interval. Without a
  * scheme the display's own default colors stand.
  */
-function schemeRange(scale: ColorScaleSetting, count: number) {
+function schemeRange(
+  scale: Pick<ColorScaleSetting, 'domain' | 'range' | 'scheme' | 'reverse'>,
+  count: number,
+) {
   const listedRange = listed(scale.range)
   const { domain, scheme, reverse } = scale
   return (
@@ -653,6 +656,17 @@ function schemeRange(scale: ColorScaleSetting, count: number) {
         )
       : undefined)
   )
+}
+
+/**
+ * An ordinal scale's colors in domain order: its `range`, else its `scheme`
+ * sampled once per domain value, else none, for a reader that resolves the
+ * scale off its slots rather than through `colorEncodingOf`.
+ */
+export function ordinalRange(
+  scale: Pick<ColorScaleSetting, 'domain' | 'range' | 'scheme' | 'reverse'>,
+): readonly string[] {
+  return schemeRange(scale, scale.domain.length) ?? []
 }
 
 /** A color that maps a field: every form of {@link ColorEncoding} but the constant. */

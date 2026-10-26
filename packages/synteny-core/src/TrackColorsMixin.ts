@@ -9,6 +9,7 @@ import {
   colorForField,
   colorForValue,
   colorSnapshotOf,
+  ordinalRange,
 } from '@jbrowse/display-kit/colorConfigSchema'
 import { types } from '@jbrowse/mobx-state-tree'
 import { compareStructural } from 'mobx'
@@ -349,11 +350,17 @@ export function TrackColorsMixin({
       },
       /**
        * #getter
-       * `encoding.color.scale.range`, the colors a text column's labels take
-       * in domain order
+       * The colors a text column's labels take in domain order:
+       * `encoding.color.scale.range`, else its `scheme` sampled once per
+       * domain value
        */
       get colorRange(): readonly string[] {
-        return readConfObject(self.encoding.color.scale, 'range')
+        const { scale } = self.encoding.color
+        return ordinalRange({
+          domain: this.colorDomain,
+          range: readConfObject(scale, 'range'),
+          scheme: readConfObject(scale, 'scheme'),
+        })
       },
       /**
        * #getter
