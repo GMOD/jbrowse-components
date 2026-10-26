@@ -470,8 +470,8 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
       { type: 'delay', ms: 500 },
       ...menuCascade(['Filter by...', 'More filters...']),
       { type: 'click', text: 'More filters...' },
-      { type: 'waitForText', text: 'Filter by tag' },
-      // focusing the value box shows its `*` placeholder
+      { type: 'waitForText', text: 'Add tag filter' },
+      // the tag box, then Tab to its value box
       { type: 'type', selector: 'input[maxlength="2"]', value: 'HP' },
       { type: 'press', key: 'Tab' },
       { type: 'delay', ms: 1000 },
