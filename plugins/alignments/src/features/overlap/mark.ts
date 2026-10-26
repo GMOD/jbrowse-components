@@ -70,9 +70,10 @@ export const OVERLAP_MARK = defineMark({
     // Overlaps stack on a collapsed row and never abut along one, so no seam.
     contiguous: false,
     paint: state => {
-      const tint = state.chainMode
-        ? state.colors.colorOverlap
-        : state.colors.colorOverlapTint
+      const tint =
+        state.unit === 'chain'
+          ? state.colors.colorOverlap
+          : state.colors.colorOverlapTint
       return {
         rule: Paint.palette,
         opaqueCss: [rgb255(tint)],

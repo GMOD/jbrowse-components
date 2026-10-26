@@ -109,9 +109,8 @@ function draw(
     featureSpacing: 0,
     pileupTopOffset: 0,
     scrollTop: 0,
-    chainMode: false,
+    unit: 'read',
     colors: palette,
-    showOutline: false,
     ...state,
   } as unknown as RenderState)
   return ctx.getSerializedSvg()
@@ -255,9 +254,8 @@ describe('drawReads visible-row-band cull', () => {
       featureSpacing: 0,
       pileupTopOffset: 0,
       scrollTop: 0,
-      chainMode: false,
+      unit: 'read',
       colors: palette,
-      showOutline: false,
       canvasHeight: 100,
       ...over,
     } as unknown as RenderState)
@@ -288,7 +286,8 @@ function shaderShowChev(
   insertSize: number,
   widthPx: number,
 ) {
-  const baseShow = (f.chainMode || f.pxPerBp > 0.1) && f.featureHeight >= 3
+  const baseShow =
+    (f.unit === 'chain' || f.pxPerBp > 0.1) && f.featureHeight >= 3
   const dirMoot =
     colorCategory === RC_PLAIN || (flags & 8) !== 0 || interchrom !== 0
   const isPaired = (flags & 1) !== 0
@@ -299,9 +298,9 @@ function shaderShowChev(
 test('showChevron matches the shader predicate across a grid', () => {
   const frames: ChevronFrame[] = []
   for (const pxPerBp of [0.05, 0.2, 5]) {
-    for (const chainMode of [false, true]) {
+    for (const unit of ['read', 'chain'] as const) {
       for (const featureHeight of [2, 3, 10]) {
-        frames.push({ pxPerBp, chainMode, featureHeight })
+        frames.push({ pxPerBp, unit, featureHeight })
       }
     }
   }
@@ -354,9 +353,7 @@ describe('the read outline height gate', () => {
   // color tests use puts this read at exactly 2 px, which the width gate
   // rejects on its own.
   const outlined = (featureHeight: number) =>
-    draw([wideFwd], { showOutline: true, featureHeight }).includes(
-      'stroke-width=',
-    )
+    draw([wideFwd], { unit: 'chain', featureHeight }).includes('stroke-width=')
 
   test.each([
     ['Normal', 7, true],
@@ -374,10 +371,10 @@ describe('the read outline height gate', () => {
     expect(outlined(featureHeight)).toBe(expected)
   })
 
-  test('showOutline still switches it off at a height that would pass', () => {
-    expect(
-      draw([wideFwd], { showOutline: false, featureHeight: 7 }),
-    ).not.toContain('stroke-width=')
+  test('a read unit draws no outline at a height that would pass', () => {
+    expect(draw([wideFwd], { unit: 'read', featureHeight: 7 })).not.toContain(
+      'stroke-width=',
+    )
   })
 
   // What the GPU writes into `showStroke` and what this painter branches on are
@@ -385,7 +382,7 @@ describe('the read outline height gate', () => {
   // way if either side grows a second condition.
   test('the shared predicate is what both backends ask', () => {
     for (const featureHeight of [1, 3, 3.9, 4, 7, 20]) {
-      const state = { showOutline: true, featureHeight } as RenderState
+      const state = { unit: 'chain', featureHeight } as RenderState
       expect(outlined(featureHeight)).toBe(shouldOutlineReads(state))
     }
   })

@@ -39,7 +39,7 @@ const state = {
   featureSpacing: 2,
   scrollTop: 0,
   canvasHeight: 1000,
-  chainMode: false,
+  unit: 'read',
 } as RenderState
 
 const readIdIndex = {

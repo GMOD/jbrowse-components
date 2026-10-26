@@ -180,7 +180,7 @@ describe('getReadDisplayLegendItems', () => {
         readInterchrom: Uint8Array.of(0),
       }
       const categories = Array.from(
-        buildReadColorCategories(splitRead, type, { chainMode: true }),
+        buildReadColorCategories(splitRead, type, { unit: 'chain' }),
         idx => READ_COLOR_CATEGORY_BY_INDEX[idx]!,
       )
       expect(categories).toEqual(['plain'])

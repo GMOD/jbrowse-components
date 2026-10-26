@@ -44,6 +44,7 @@ import type {
 } from '../shaders/colors.ts'
 import type { InsertSizeBand } from '../shared/insertSizeStats.ts'
 import type { ColorFieldKind, BodyFill } from '../shared/types.ts'
+import type { AlignmentsUnit } from './constants.ts'
 
 export const rgb255 = normalizedRgbToCss
 
@@ -98,9 +99,9 @@ function strandCategory(strand: number): ReadColorCategory {
 // pass, the bake (`ReadColorOpts`) and the key.
 export function framesUnpairedChainStrand(
   colorKind: ColorFieldKind,
-  chainMode: boolean,
+  unit: AlignmentsUnit,
 ) {
-  return chainMode && COLOR_FIELD_DEFS[colorKind].orientation === true
+  return unit === 'chain' && COLOR_FIELD_DEFS[colorKind].orientation === true
 }
 
 // Category → the shader's RC_* index. Built from the generated constants, so
@@ -159,7 +160,7 @@ export function buildReadColorCategories(
 }
 
 export interface ReadColorOpts {
-  chainMode?: boolean
+  unit?: AlignmentsUnit
   framesChainStrand?: boolean
 }
 
@@ -208,7 +209,7 @@ function overrideCategory(
   if (opts.framesChainStrand && chainHasSupp(chainSupp) && !isPaired) {
     return strandCategory(data.readStrands[i]! * chainFrame(chainSupp))
   }
-  if (opts.chainMode && isPaired && orientation) {
+  if (opts.unit === 'chain' && isPaired && orientation) {
     const splitKind = chainSplitKind(chainSupp)
     if (splitKind === CHAIN_SPLIT_INVERSION) {
       return 'splitInversion'

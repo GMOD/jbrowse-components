@@ -221,7 +221,7 @@ function pileupHand(spec: PileupPaintSpec) {
       const fullBlockWidth = block.screenEndPx - block.screenStartPx
       const featureHeight = state.featureHeight
       const { zero, slope, min, max } = state.qualityOpacity
-      const chainMode = state.chainMode
+      const chainMode = state.unit === 'chain'
       const constantAlpha =
         fade === Fade.intron ? intronAlpha(featureHeight) : 1
       const pxPerBp = fullBlockWidth / bpLength
@@ -350,7 +350,7 @@ function pileupControl(spec: PileupPaintSpec) {
       const fullBlockWidth = block.screenEndPx - block.screenStartPx
       const featureHeight = state.featureHeight
       const { zero, slope, min, max } = state.qualityOpacity
-      const chainMode = state.chainMode
+      const chainMode = state.unit === 'chain'
       const constantAlpha =
         fade === Fade.intron ? intronAlpha(featureHeight) : 1
       const pxPerBp = fullBlockWidth / bpLength
@@ -580,9 +580,10 @@ const OVERLAP_SPEC: PileupPaintSpec = {
   band: Band.row,
   contiguous: false,
   paint: state => {
-    const tint = state.chainMode
-      ? state.colors.colorOverlap
-      : state.colors.colorOverlapTint
+    const tint =
+      state.unit === 'chain'
+        ? state.colors.colorOverlap
+        : state.colors.colorOverlapTint
     return {
       rule: Paint.palette,
       opaqueCss: [rgb255(tint)],

@@ -273,13 +273,12 @@ function state(overrides: Partial<RenderState> = {}): RenderState {
     // slot is the same value in either form, so nothing in a mirror comparison
     // turns on which.
     colors: makeTestPalette(),
-    chainMode: false,
+    unit: 'read',
     showLinkedReadLines: false,
     readConnectionsStrokeScale: arcStrokeScale(1),
     drawnReadConnections: 'off',
     readConnectionsDown: false,
     readConnectionsHeight: 0,
-    showOutline: false,
     pileupTopOffset: 0,
     coverageTopOffset: 0,
     sections: [section],
@@ -337,7 +336,7 @@ const CONFIGS: { name: string; overrides: Partial<RenderState> }[] = [
   {
     name: 'linked reads (adds overlaps + connecting/linked-read lines)',
     overrides: {
-      chainMode: true,
+      unit: 'chain',
       showLinkedReadLines: true,
     },
   },

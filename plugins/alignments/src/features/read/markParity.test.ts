@@ -40,8 +40,7 @@ const state = {
   pileupTopOffset: 0,
   scrollTop: 0,
   canvasHeight: 1000,
-  showOutline: false,
-  chainMode: false,
+  unit: 'read',
   colors: makeTestPalette({
     colorFwdStrand: [1, 0, 0],
     colorRevStrand: [0, 0, 1],

@@ -12,7 +12,7 @@ import type { QualityOpacity } from '../../features/mismatch/qualityOpacity.ts'
 import type { SashimiBandFeed } from '../../features/sashimi/bandFeed.ts'
 import type { ColorPalette } from '../../shaders/colors.ts'
 import type { ArcColorField } from '../../shared/types.ts'
-import type { ReadConnectionsMode } from '../constants.ts'
+import type { AlignmentsUnit, ReadConnectionsMode } from '../constants.ts'
 import type { LinkRegion, LinkSizeScale } from '@jbrowse/render-core/marks'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 import type { RenderingBackend } from '@jbrowse/render-core/renderingBackendBase'
@@ -63,9 +63,9 @@ export interface RenderState {
   // The field the read connections paint, which picks the connectors' slot
   // out of each one's color type.
   readConnectionsColorField: ArcColorField
-  // The display's `unit` is 'chain'. A shader uniform is an int at the GPU
-  // boundary, so the unit stops at the model and renderers get the boolean.
-  chainMode: boolean
+  // What one row draws. The pileup uniforms turn it into the shaders' 0/1
+  // `chainMode` flag at the GPU boundary.
+  unit: AlignmentsUnit
   // Straight-line pass connecting normal read-pairs in pileup layout.
   // True when bezier connections are on AND chain mode is off (pileup).
   // Chain layout has its own connecting-line pass, so this is never needed there.
@@ -93,7 +93,6 @@ export interface RenderState {
   // The renderers loop these, cloning the per-section offsets into the state
   // they hand the draw helpers and clipping to each band.
   sections: SectionRender[]
-  showOutline: boolean
 }
 
 // One stacked section's resolved screen-space draw geometry. All values are
@@ -240,7 +239,7 @@ export function computeArcBand(state: ArcBandInput): ArcBand | undefined {
 // names the tint. A legend row explaining a darkness the pass isn't drawing is
 // the failure this shares rather than restates.
 export interface OverlapDrawInput {
-  chainMode: boolean
+  unit: AlignmentsUnit
   collapseSections: boolean
   featureHeight: number
 }
@@ -250,7 +249,10 @@ export interface OverlapDrawInput {
 // feature on a row — a linked-reads chain, or a collapsed group — and suppressed
 // below 3px row height where the tint is sub-pixel noise.
 export function shouldDrawOverlaps(state: OverlapDrawInput) {
-  return (state.chainMode || state.collapseSections) && state.featureHeight >= 3
+  return (
+    (state.unit === 'chain' || state.collapseSections) &&
+    state.featureHeight >= 3
+  )
 }
 
 // Whether reads get an outline at all, for a whole frame. Shared by both
@@ -271,7 +273,9 @@ export function shouldDrawOverlaps(state: OverlapDrawInput) {
 // The width half stays per-read and lives at each call site, since it is a
 // property of one read rather than of the frame.
 export function shouldOutlineReads(state: RenderState) {
-  return state.showOutline && state.featureHeight >= READ_OUTLINE_MIN_HEIGHT_PX
+  return (
+    state.unit === 'chain' && state.featureHeight >= READ_OUTLINE_MIN_HEIGHT_PX
+  )
 }
 
 // The whole low-frequency fade gate for one feature: honors the

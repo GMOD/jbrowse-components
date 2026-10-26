@@ -180,7 +180,7 @@ function state(): RenderState {
     showPerBaseQuality: false,
     showPerBaseLetter: false,
     colors: makeTestPalette(),
-    chainMode: false,
+    unit: 'read',
     showLinkedReadLines: false,
     collapseSections: false,
     readConnectionsStrokeScale: arcStrokeScale(1),
@@ -188,7 +188,6 @@ function state(): RenderState {
     drawnReadConnections: 'off',
     readConnectionsDown: false,
     readConnectionsHeight: 0,
-    showOutline: false,
     pileupTopOffset: 50,
     coverageTopOffset: 0,
     sections: [

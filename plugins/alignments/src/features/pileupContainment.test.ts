@@ -52,23 +52,23 @@ const CLIP_HIT_MIN_TOLERANCE_BP = 0.5
 const OFF_CANVAS_ROW = 0xffff
 const START = 1000
 
-const scrolled = {
+const scrolled: Partial<RenderState> = {
   featureHeight: 10,
   featureSpacing: 2,
   pileupTopOffset: 3,
   scrollTop: 5,
   fadeLowFrequencyMismatches: true,
-  chainMode: true,
+  unit: 'chain',
   collapseSections: false,
 }
 
-const compact = {
+const compact: Partial<RenderState> = {
   featureHeight: 7,
   featureSpacing: 0,
   pileupTopOffset: 0,
   scrollTop: 0,
   fadeLowFrequencyMismatches: false,
-  chainMode: false,
+  unit: 'read',
   collapseSections: true,
 }
 

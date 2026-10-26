@@ -406,7 +406,8 @@ function walk(
   const { fade, point, cell, decorate, bandOffset, bandHeight } = f
   const { constantAlpha } = f
   const { rule, opaqueCss, fadedCss } = f.tables
-  const { featureHeight, chainMode } = state
+  const { featureHeight } = state
+  const chain = state.unit === 'chain'
   const { zero, slope, min, max } = state.qualityOpacity
   const constantCss =
     ctx !== undefined &&
@@ -453,7 +454,7 @@ function walk(
         break
       }
       case Fade.overlap: {
-        alpha = chainMode ? overlapFade(widthPx) : overlapAlpha(widthPx)
+        alpha = chain ? overlapFade(widthPx) : overlapAlpha(widthPx)
         break
       }
       case Fade.insertion: {

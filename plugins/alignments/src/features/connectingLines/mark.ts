@@ -95,5 +95,5 @@ export const CONNECTING_LINE_MARK = defineMark({
   shape: connectingLineShape,
   channels: (data: ConnectingLinesUploadData) => data,
   params: (state: RenderState) => state,
-  enabled: s => s.chainMode,
+  enabled: s => s.unit === 'chain',
 })

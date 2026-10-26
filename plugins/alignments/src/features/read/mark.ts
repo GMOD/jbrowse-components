@@ -24,6 +24,7 @@ import { showChevron as shaderShowChevron } from '../../shaders/slang/read.js.ge
 import { CHEVRON_PX } from '../../shaders/slang/readChevron.generated.ts'
 import { chevronCapsEdge } from '../../shaders/slang/readChevron.js.generated.ts'
 
+import type { AlignmentsUnit } from '../../LinearAlignmentsDisplay/constants.ts'
 import type { RenderState } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
 import type { InsertSizeBand } from '../../shared/insertSizeStats.ts'
 import type { MarkContext2D, MarkShape } from '@jbrowse/render-core/marks'
@@ -120,7 +121,7 @@ const OUTLINE_STYLE = `rgba(0,0,0,${Math.round((1 - READ_OUTLINE_SHADE) * 1e4) /
 // Frame-level inputs to the chevron gate, constant across reads in one block.
 export interface ChevronFrame {
   pxPerBp: number
-  chainMode: boolean
+  unit: AlignmentsUnit
   featureHeight: number
 }
 
@@ -137,7 +138,7 @@ export function showChevron(
   widthPx: number,
 ) {
   return shaderShowChevron(
-    f.chainMode,
+    f.unit === 'chain',
     f.pxPerBp,
     f.featureHeight,
     colorCategory,
@@ -238,7 +239,7 @@ function drawReads(
   const fH = state.featureHeight
   const chevronFrame: ChevronFrame = {
     pxPerBp: pxPerBpOf(block),
-    chainMode: state.chainMode,
+    unit: state.unit,
     featureHeight: fH,
   }
 
@@ -383,7 +384,7 @@ const readShape: MarkShape<ReadMarkRegion, RenderState> = {
       showChevron(
         {
           pxPerBp: pxPerBpOf(block),
-          chainMode: state.chainMode,
+          unit: state.unit,
           featureHeight: state.featureHeight,
         },
         region.readColorCategories[i]!,

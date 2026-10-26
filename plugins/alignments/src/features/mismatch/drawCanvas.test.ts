@@ -71,7 +71,7 @@ function baseState(overrides: Partial<RenderState> = {}): RenderState {
       colorBaseT: [1, 1, 0],
       colorBaseN: [0, 0, 0],
     } as RenderState['colors'],
-    chainMode: false,
+    unit: 'read',
     showLinkedReadLines: false,
     collapseSections: false,
     readConnectionsStrokeScale: arcStrokeScale(1),
@@ -79,7 +79,6 @@ function baseState(overrides: Partial<RenderState> = {}): RenderState {
     pileupTopOffset: 0,
     coverageTopOffset: 0,
     sections: [],
-    showOutline: false,
     ...overrides,
   }
 }

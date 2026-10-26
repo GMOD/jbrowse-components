@@ -19,6 +19,7 @@ import { makeTestPalette } from './testUtils.ts'
 
 import type { RGBColor } from '../shaders/colors.ts'
 import type { ColorFieldKind } from '../shared/types.ts'
+import type { ReadColorOpts } from './colorUtils.ts'
 
 // The `readChainHasSupp` bit combinations these cases build, named for what they
 // mean rather than spelled as the byte. The frame and the split kind are
@@ -73,8 +74,8 @@ function makeData(
 }
 
 const stats = { upper: 600, lower: 100 }
-const chainOpts = { chainMode: true }
-const framedOpts = { chainMode: true, framesChainStrand: true }
+const chainOpts: ReadColorOpts = { unit: 'chain' }
+const framedOpts: ReadColorOpts = { unit: 'chain', framesChainStrand: true }
 
 describe('readColorCategory', () => {
   test('strand field buckets by read strand', () => {
@@ -463,7 +464,9 @@ describe('framesUnpairedChainStrand', () => {
   test.each(cases)(
     '%s in chain mode %s frames: %s',
     (field, chain, expected) => {
-      expect(framesUnpairedChainStrand(field, chain)).toBe(expected)
+      expect(framesUnpairedChainStrand(field, chain ? 'chain' : 'read')).toBe(
+        expected,
+      )
     },
   )
 })

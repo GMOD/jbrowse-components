@@ -240,10 +240,10 @@ export interface ReadColorContext {
  */
 export function applyChainStrandFrames(
   byGroup: LaidOutByGroup,
-  chainMode: boolean,
+  unit: AlignmentsUnit,
   framed: boolean,
 ): LaidOutByGroup {
-  if (!chainMode || !framed) {
+  if (unit !== 'chain' || !framed) {
     return byGroup
   }
   // The groups are flattened into a private key space and split back out again.

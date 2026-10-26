@@ -36,8 +36,7 @@ const state = {
   qualityOpacity: OPAQUE_MISMATCHES,
   fadeLowFrequencyMismatches: false,
   showMismatches: true,
-  showOutline: false,
-  chainMode: false,
+  unit: 'read',
   colors: makeTestPalette({
     colorFwdStrand: [1, 0, 0],
     colorRevStrand: [0, 0, 1],

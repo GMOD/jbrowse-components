@@ -176,7 +176,7 @@ export function writePileupFrame(
   // Chevron gating only — chain mode's effect on read COLOR is resolved on the
   // CPU into `readColorCategories`, so the shader no longer branches on it for
   // fills.
-  i32[UI.chainMode] = state.chainMode ? 1 : 0
+  i32[UI.chainMode] = state.unit === 'chain' ? 1 : 0
   // The frame-level half of the outline gate, which the uniform is the natural
   // home for: `featSize.y` is `u.featHeight` for every read, so deciding it once
   // here is what makes the shader's own y test redundant rather than a second

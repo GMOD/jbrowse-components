@@ -79,7 +79,7 @@ describe('the chain-strand consensus reaches across grouping lanes', () => {
     ],
   ])
 
-  const out = applyChainStrandFrames(byGroup, true, true)
+  const out = applyChainStrandFrames(byGroup, 'chain', true)
 
   it('paints one insert color across both lanes', () => {
     expect(fills(out, 'HP:1', 1)).toEqual([FWD, FWD, FWD])
@@ -90,7 +90,7 @@ describe('the chain-strand consensus reaches across grouping lanes', () => {
   // for it per frame: unframed, HP:2 keeps the marker reconciliation left it
   // instead of the sign the other lane's chains argue it into.
   it('does not solve the consensus when the framing is not read', () => {
-    const unframed = applyChainStrandFrames(byGroup, true, false)
+    const unframed = applyChainStrandFrames(byGroup, 'chain', false)
     expect(fills(unframed, 'HP:2', 1)).toEqual([FWD, FWD])
   })
 

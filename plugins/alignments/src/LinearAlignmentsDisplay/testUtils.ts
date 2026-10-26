@@ -126,14 +126,13 @@ export function makeTestRenderState(
     showPerBaseQuality: false,
     showPerBaseLetter: false,
     colors: makeTestPalette(),
-    chainMode: false,
+    unit: 'read',
     showLinkedReadLines: false,
     collapseSections: false,
     readConnectionsStrokeScale: arcStrokeScale(1),
     linkRegions: [],
     pileupTopOffset: 0,
     coverageTopOffset: 0,
-    showOutline: false,
     sections: [
       {
         pileupTopOffset: 0,

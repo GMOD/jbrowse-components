@@ -1003,7 +1003,7 @@ export default function stateModelFactory(
           get overlapLegendKind(): 'chain' | 'collapsed' | undefined {
             if (
               !shouldDrawOverlaps({
-                chainMode: self.unit === 'chain',
+                unit: self.unit,
                 collapseSections: this.collapseSections,
                 featureHeight: this.featureHeight,
               })
@@ -1301,10 +1301,7 @@ export default function stateModelFactory(
            * answer alone does not re-run the frame solve.
            */
           get framesChainStrand() {
-            return framesUnpairedChainStrand(
-              self.bodyColorKind,
-              self.unit === 'chain',
-            )
+            return framesUnpairedChainStrand(self.bodyColorKind, self.unit)
           },
 
           /**
@@ -1315,7 +1312,7 @@ export default function stateModelFactory(
           get laidOutByGroupFramed() {
             return applyChainStrandFrames(
               this.laidOutByGroupUncolored,
-              self.unit === 'chain',
+              self.unit,
               this.framesChainStrand,
             )
           },
@@ -1508,7 +1505,7 @@ export default function stateModelFactory(
            */
           get readColorOpts() {
             return {
-              chainMode: self.unit === 'chain',
+              unit: self.unit,
               framesChainStrand: this.framesChainStrand,
             }
           },
@@ -2087,15 +2084,6 @@ export default function stateModelFactory(
 
         /**
          * #getter
-         * Whether each read draws its outline: in a chain, where the outline
-         * shows which segments are one molecule.
-         */
-        get showOutline() {
-          return self.unit === 'chain'
-        },
-
-        /**
-         * #getter
          */
         get visibleLabels() {
           const view = self.host
@@ -2581,7 +2569,6 @@ export default function stateModelFactory(
             showModifications: self.showModifications,
             showPerBaseQuality: self.showPerBaseQuality,
             showPerBaseLetter: self.showPerBaseLetter,
-            showOutline: self.showOutline,
             pileupTopOffset: self.coverageDisplayHeight,
             coverageTopOffset: 0,
             sections: buildSectionRenders(self.sections, {
@@ -2594,7 +2581,7 @@ export default function stateModelFactory(
             canvasHeight: self.height,
             colors: palette,
             readConnectionsColorField: self.readConnectionsColorField,
-            chainMode: self.unit === 'chain',
+            unit: self.unit,
             showLinkedReadLines: self.showLinkedReadLines,
             collapseSections: self.collapseSections,
             readConnectionsStrokeScale: self.readConnectionsStrokeScale,

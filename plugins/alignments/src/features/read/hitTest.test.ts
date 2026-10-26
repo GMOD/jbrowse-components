@@ -70,7 +70,7 @@ function at(genomicPos: number, yWithinRow: number): CigarCoords {
 
 const FRAME: ChevronFrame = {
   pxPerBp: 1,
-  chainMode: false,
+  unit: 'read',
   featureHeight: FEATURE_HEIGHT,
 }
 

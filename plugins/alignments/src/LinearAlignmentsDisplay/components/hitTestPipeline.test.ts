@@ -129,7 +129,7 @@ function opts(
       featureHeight: 10,
       featureSpacing: 2,
       scrollTop: 0,
-      chainMode: false,
+      unit: 'read',
       fadeLowFrequencyMismatches: true,
       showMismatches: true,
       coverageHeight: 50,
@@ -692,7 +692,7 @@ describe('reversed block resolves the base actually painted under the cursor', (
 // sat on mate 2, so the tooltip, feature details, and context menu all named the
 // wrong read.
 describe('chain mode resolves the read under the cursor, not the chain first read', () => {
-  const CHAIN_OPTS = opts({ chainMode: true })
+  const CHAIN_OPTS = opts({ unit: 'chain' })
 
   // One chain, two mates on row 0: mate1 [0,2000], mate2 [16000,18000].
   // 200px over [0,20000] → bpPerPx=100, so x=5 → bp 500, x=170 → bp 17000,
@@ -1165,7 +1165,7 @@ describe('clips stay hittable when zoomed out, as they stay drawn', () => {
 // reverse-strand read's head sits before its START, which on a reversed block
 // is screen-RIGHT of the body. Chain mode keeps the head drawn at this zoom.
 describe('the strand arrowhead answers a hover on a reversed block', () => {
-  const ARROW_OPTS = opts({ chainMode: true })
+  const ARROW_OPTS = opts({ unit: 'chain' })
   // Reversed: x=0 is bp 20000, so bp 9000 (the read's start) is x=110 and the
   // head runs to x=118.
   function reversedBlock(): ResolvedBlock {

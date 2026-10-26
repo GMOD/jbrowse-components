@@ -193,8 +193,12 @@ import {
 import { getColorForModification } from './util.ts'
 
 import type { RefNamePosition } from './LinearAlignmentsDisplay/colorTagUtils.ts'
-import type { ReadColorCategory } from './LinearAlignmentsDisplay/colorUtils.ts'
+import type {
+  ReadColorCategory,
+  ReadColorOpts,
+} from './LinearAlignmentsDisplay/colorUtils.ts'
 import type { LinearAlignmentsDisplayConfigModel as DisplayConf } from './LinearAlignmentsDisplay/configSchema.ts'
+import type { AlignmentsUnit } from './LinearAlignmentsDisplay/constants.ts'
 import type { PileupMismatchesOpacitySnapshot } from './LinearAlignmentsDisplay/pileupMismatchesOpacityConfigSchema.ts'
 import type { RegionBounds } from './RenderAlignmentDataRPC/sortLayout.ts'
 import type {
@@ -437,7 +441,7 @@ function colorReads(
   node: AnyConfigurationModel,
   baseLayer: BaseLayer | undefined,
   laidByGroup: ReadonlyMap<string, ReadonlyMap<number, LaidOutPileupData>>,
-  readColorOpts: { chainMode?: boolean; framesChainStrand?: boolean },
+  readColorOpts: ReadColorOpts,
   facet: { field: string; domain?: readonly string[] } | undefined,
   refNamePosition: RefNamePosition | undefined,
   overlaps: 'chain' | undefined,
@@ -1322,7 +1326,8 @@ export async function alignmentTables(
     regions[0]!.refName,
   )
   const sortTag = fieldTag(sortColumn?.field)
-  const chain = readConfObject(conf, 'unit') === 'chain'
+  const unit: AlignmentsUnit = readConfObject(conf, 'unit')
+  const chain = unit === 'chain'
   const featureHeight: number = readConfObject(conf, [
     'pileup',
     'mark',
@@ -1348,7 +1353,7 @@ export async function alignmentTables(
     colorField,
     baseLayer,
     sortTag: chain ? undefined : sortTag,
-    facet: workerFacet(facetSetting, chain ? 'chain' : 'read'),
+    facet: workerFacet(facetSetting, unit),
     showSoftClipping,
     interbaseIndicators: interbaseIndicatorRuleOf(
       conf.coverage.interbase.filter,
@@ -1404,7 +1409,7 @@ export async function alignmentTables(
     chained ? chained.get(key)!.get(idx)! : sectionData.get(key)!.get(idx)!
   const framesChainStrand = framesUnpairedChainStrand(
     bodyColorKind(colorField, baseLayer),
-    chain,
+    unit,
   )
   const laidByGroup = chain
     ? applyChainStrandFrames(
@@ -1417,7 +1422,7 @@ export async function alignmentTables(
             }),
           ]),
         ),
-        true,
+        unit,
         framesChainStrand,
       )
     : new Map(
@@ -1433,7 +1438,7 @@ export async function alignmentTables(
         ]),
       )
   const drawsOverlaps = shouldDrawOverlaps({
-    chainMode: chain,
+    unit,
     collapseSections: false,
     featureHeight,
   })
@@ -1441,7 +1446,7 @@ export async function alignmentTables(
     conf.encoding.color,
     baseLayer,
     laidByGroup,
-    chain ? { chainMode: true, framesChainStrand } : {},
+    chain ? { unit, framesChainStrand } : {},
     facetSetting,
     colorField === 'mateRefName'
       ? positionIn(refNames ?? (await dataAdapter.getRefNames()))

@@ -51,7 +51,7 @@ const opacityOf = (svg: string) =>
 const WIDE: [number, number][] = [[10, 50]]
 
 test('chain mode fills with the neutral, opaquely', () => {
-  const svg = draw(WIDE, { chainMode: true })
+  const svg = draw(WIDE, { unit: 'chain' })
   expect(svg).toContain('fill="rgb(51,51,51)"')
   // no fill-opacity attribute at all: an alpha here would composite the fill
   // back over whichever arm drew last, which is the reading the neutral exists
@@ -69,18 +69,22 @@ test('collapsed rows keep the stacking dark tint', () => {
 
 test('a narrow overlap fades in rather than popping', () => {
   // 1bp at 10px/bp sits between the two fade bounds
-  const opacity = opacityOf(draw([[10, 11]], { chainMode: true }))
+  const opacity = opacityOf(draw([[10, 11]], { unit: 'chain' }))
   expect(opacity).toBeGreaterThan(0)
   expect(opacity).toBeLessThan(1)
 })
 
 test('and below the fade floor nothing is painted at all', () => {
   // 40bp at 0.03px/bp is 1.2px, under FADE_LO_PX
-  expect(draw(WIDE, { chainMode: true }, 3)).not.toContain('<rect')
+  expect(draw(WIDE, { unit: 'chain' }, 3)).not.toContain('<rect')
 })
 
 test('sub-3px rows draw nothing in either layout', () => {
-  for (const state of [{ chainMode: true }, { collapseSections: true }]) {
+  const layouts: Partial<RenderState>[] = [
+    { unit: 'chain' },
+    { collapseSections: true },
+  ]
+  for (const state of layouts) {
     expect(draw(WIDE, { ...state, featureHeight: 2 })).not.toContain('<rect')
   }
 })

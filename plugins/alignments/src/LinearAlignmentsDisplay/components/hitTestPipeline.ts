@@ -436,7 +436,7 @@ export function performHitTest(
     featureHeight,
     featureSpacing,
     scrollTop,
-    chainMode,
+    unit,
   } = state
 
   // Coverage/indicator strip tests are relative to this section's coverage top
@@ -515,7 +515,7 @@ export function performHitTest(
   // inter-row gap themselves.
   const chevrons: ChevronFrame = {
     pxPerBp: 1 / bpPerPx,
-    chainMode,
+    unit,
     featureHeight,
   }
   const inReadBand = isWithinReadBand(coords, featureHeight)
@@ -569,7 +569,7 @@ export function performHitTest(
   const hit =
     hitTestFeature(resolved, coords, chevrons) ??
     hitTestSoftclipBase(resolved, state, canvasX, canvasY) ??
-    (chainMode
+    (unit === 'chain'
       ? hitTestChain(coords, resolved.rpcData, featureHeight)
       : undefined)
   return hit ? { type: 'feature', hit, resolved } : { type: 'none' }
