@@ -146,10 +146,13 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     band: [0.3, 1],
   },
   dtu: {
-    // the colored transcript stack, below the two coverage lanes: the ramp is
-    // what the card is about and it only exists in the gene lane
+    // the colored transcript stack under the liver coverage lane: the ramp is
+    // what the card is about and it only exists in the gene lane. Left of the
+    // exon callouts and their boxed column.
     src: 'dtu/dtu_colored_gene_glyph.png',
-    band: [0.35, 1],
+    band: [0.42, 0.95],
+    xband: [0.18, 0.56],
+    position: 'center',
   },
   methylation: {
     // hg002 5mC at SNRPN. Not alignments/modifications2.png, which carries
@@ -158,9 +161,10 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     band: [0.25, 1],
   },
   bisulfite: {
-    // per-context Arabidopsis WGBS: CG/CHG/CHH stacked
+    // per-context Arabidopsis WGBS: CG/CHG/CHH stacked, below the two
+    // sentence callouts over the gene and the transposon
     src: 'methylation/arabidopsis_wgbs_contexts.png',
-    band: [0.22, 1],
+    band: [0.37, 0.98],
     position: 'left',
   },
   chromhmm: {
@@ -285,10 +289,11 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     band: [0.3, 0.75],
   },
   hic_structural_variants: {
-    // the K562 fusion wedge, clear of the two pills on the left
+    // the K562 fusion wedge and the arrow into it, clear of the pills on the
+    // left
     src: 'hic/bcr_abl1_translocation.png',
     band: [0.6, 1],
-    xband: [0.28, 0.72],
+    xband: [0.31, 0.75],
     position: 'center',
   },
   mappability_qc: {
@@ -365,20 +370,21 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     band: [0.12, 0.95],
   },
   multiway_synteny_grape_peach_cacao: {
-    // Left third only: the per-row "No tracks active / Open track selector"
-    // blocks are horizontally centered, so a left frame gets the ribbons and the
-    // genome labels without them.
+    // The ribbons and the cacao genome labels between them, below the view's
+    // toolbar: a top crop of this 3.5:1 capture framed only the toolbar.
     src: 'multiway_synteny/grape_peach_cacao.png',
-    band: [0.14, 0.545],
-    xband: [0, 0.36],
+    band: [0.37, 0.86],
+    xband: [0.2, 0.5],
+    position: 'center',
   },
   selection_pressure: {
-    // The ribbon band with a gene row above it, past the app chrome and the
-    // locus boxes. The card's whole content is one orange ribbon among blue
-    // ones, so the crop has to keep enough width for the blue neighbours it is
-    // being contrasted against.
+    // The orange LYZ ribbon among its blue neighbours with the gene row above,
+    // framed to hold the whole callout beside it: any crop through this wide
+    // capture's centre cut the callout's text mid-word.
     src: 'selection_pressure/lysozyme.png',
-    band: [0.22, 0.78],
+    band: [0.3, 0.8],
+    xband: [0.46, 0.8],
+    position: 'center',
   },
   hg002_haplotypes: {
     // The ribbon band with a chain track above and below it, which is the whole
@@ -507,16 +513,19 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
   },
   pangenome_hprc_repeats: {
     // The KIV-2 window force-directed with its bubbles haloed: the knot of
-    // loops and the labels naming each bubble, below the linear lanes.
-    // xband starts right of the kringle-copies callout.
+    // loops and the labels naming each bubble, below the linear lanes. Above
+    // and right of the kringle-copies callout and its arrow.
     src: 'pangenome/hprc_lpa_kiv2.png',
-    band: [0.72, 0.96],
-    xband: [0.52, 1],
+    band: [0.69, 0.84],
+    xband: [0.6, 1],
+    position: 'center',
   },
   pangenome_mouse: {
-    // The Dock2 bubble as one superbubble, the graph pane only.
+    // The Dock2 superbubble, the graph pane only, right of the two callouts.
     src: 'pangenome/mouse_dock2.png',
-    band: [0.56, 0.97],
+    band: [0.66, 0.88],
+    xband: [0.42, 1],
+    position: 'center',
   },
   pangenome_hprc_haplotypes: {
     // The CFH lanes with their own contig names and coordinates in the row
@@ -540,10 +549,10 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     // The HSPA1A window from the gene lane down: the genotype matrix is the one
     // row on the page that names which assembly carries an allele rather than
     // just where the graph varies, and it reads as a matrix only with the
-    // breed labels beside it. The band drops the app chrome above the tracks;
-    // anything tighter framed a fragment of a callout's text at card size.
+    // breed labels beside it. The band drops the app chrome above the tracks
+    // and stops above the allele-inventory callout.
     src: 'pangenome/bovine_bola.png',
-    band: [0.108, 0.6],
+    band: [0.108, 0.5],
     position: 'left',
   },
   pangenome_cactus: {
@@ -569,11 +578,12 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     band: [0.175, 1],
     position: 'center',
   },
-  // The 2504-row cohort heatmap rather than the page's hero: the hero carries a
-  // callout pill, and this one is the cleanest render of the same pattern.
+  // The 2504-row cohort heatmap rather than the page's hero, left of the
+  // CCL3L1 / CCL4L1 pill.
   population_cnv: {
     src: 'cnv1000g/zarr_cohort.png',
-    band: [0.26, 0.72],
+    band: [0.3, 0.75],
+    xband: [0.15, 0.68],
     position: 'center',
   },
   // Overlaid multi-wiggle coverage, the most figure-like of the cookbook
@@ -617,10 +627,13 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     band: [0.3, 0.98],
   },
   read_marks: {
-    // The chromosome frame below the app header and the view's toolbar: the
-    // grey insert-size cloud with the red count bars standing up out of it.
-    src: 'read_marks/chromosome.png',
-    band: [0.42, 0.98],
+    // The highlighted deletion in the depth and insert-size lanes: the depth
+    // dip over it and the pairs spanning it lifted out of the cloud. Not the
+    // chromosome frame, whose two sentence callouts every crop cut through.
+    src: 'read_marks/insert_size.png',
+    band: [0.38, 1],
+    xband: [0.2, 0.8],
+    position: 'center',
   },
 }
 
