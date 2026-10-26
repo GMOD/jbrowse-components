@@ -26,7 +26,7 @@ useEffect(() => {
     const xJ = snp2 && model.locusViewportX(snp2.refName, snp2.start)
     const xI = snp1 && model.locusViewportX(snp1.refName, snp1.start)
     view.setVolatileGuides(
-      xJ !== undefined && xI !== undefined && model.showVerticalGuides
+      xJ !== undefined && xI !== undefined && model.showGuides
         ? [{ xPos: xJ }, { xPos: xI }]
         : [],
     )

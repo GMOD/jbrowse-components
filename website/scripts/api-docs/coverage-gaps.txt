@@ -535,11 +535,11 @@ LDTrackDisplay.renderSvg
 LDTrackDisplay.rpcProps
 LDTrackDisplay.setFocalSnp
 LDTrackDisplay.setLineZoneHeight
-LDTrackDisplay.setShowLabels
-LDTrackDisplay.setShowVerticalGuides
+LDTrackDisplay.setShowGuides
+LDTrackDisplay.setShowNames
 LDTrackDisplay.setVariantLayout
-LDTrackDisplay.showLabels
-LDTrackDisplay.showVerticalGuides
+LDTrackDisplay.showGuides
+LDTrackDisplay.showNames
 LDTrackDisplay.startRenderingBackend
 LDTrackDisplay.tickHeight
 LDTrackDisplay.trackMenuItems

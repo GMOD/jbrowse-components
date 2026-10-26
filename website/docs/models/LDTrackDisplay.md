@@ -23,7 +23,9 @@ Each section ends with the members a composed model contributes, linked to the p
 | <span id="property-configuration">**configuration**</span><br><code>configuration: ConfigurationReference(configSchema)</code> |  |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>1 inherited property from one model</summary>
+<summary>2 inherited properties from 2 models</summary>
+
+From [ParkedColorMixin](../parkedcolormixin): <span id="property-parkedcolors">[`parkedColors`](../parkedcolormixin#property-parkedcolors)</span>
 
 From [BaseDisplay](../basedisplay): <span id="property-id">[`id`](../basedisplay#property-id)</span>
 
@@ -64,15 +66,14 @@ From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`sc
 | <span id="getter-prefersoffset">**prefersOffset**</span><br><code>boolean</code> |  |
 | <span id="getter-linezoneheight">**lineZoneHeight**</span><br><code>number</code> |  |
 | <span id="getter-colorfield">**colorField**</span><br><code>LDMetric</code> | `encoding.color.field`, the statistic the fetch asks the file for. |
-| <span id="getter-showverticalguides">**showVerticalGuides**</span><br><code>boolean</code> |  |
-| <span id="getter-showlabels">**showLabels**</span><br><code>boolean</code> |  |
+| <span id="getter-showguides">**showGuides**</span><br><code>boolean</code> |  |
+| <span id="getter-shownames">**showNames**</span><br><code>boolean</code> |  |
 | <span id="getter-tickheight">**tickHeight**</span><br><code>number</code> |  |
 | <span id="getter-variantlayout">**variantLayout**</span><br><code>"columns" &#124; "genomic"</code> |  |
 | <span id="getter-snps">**snps**</span><br><code>LDSnp[]</code> | The loaded SNPs in screen order along the column axis. |
 | <span id="getter-cellwidth">**cellWidth**</span><br><code>number</code> | The column width the payload was laid out at. |
 | <span id="getter-viewsignature">**viewSignature**</span><br><code>string &#124; undefined</code> | The dynamic blocks: the SNP set is the viewport's, so a pan refetches while the stale triangle draws under the live transform. |
-| <span id="getter-effectiveldmetric">**effectiveLdMetric**</span><br><code>LDMetric</code> | The metric the loaded values are: a file with one column serves it whichever is asked for. |
-| <span id="getter-effectiveusegenomicpositions">**effectiveUseGenomicPositions**</span><br><code>boolean</code> | Whether the loaded matrix is at genomic positions: a multi-region view falls back to uniform columns. |
+| <span id="getter-atgenomicpositions">**atGenomicPositions**</span><br><code>boolean</code> | Whether the loaded matrix is at genomic positions: a multi-region view falls back to uniform columns. |
 | <span id="getter-r2available">**r2Available**</span><br><code>boolean</code> |  |
 | <span id="getter-dprimeavailable">**dprimeAvailable**</span><br><code>boolean</code> |  |
 | <span id="getter-focalsnpindex">**focalSnpIndex**</span><br><code>number</code> | Index of the focal SNP in `snps`, or -1. |
@@ -84,9 +85,13 @@ From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`sc
 | <span id="getter-connectorlinecoords">**connectorLineCoords**</span><br><code>ConnectorCoord[]</code> | Each column tied to its SNP's genomic x, for the connector lines. |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>89 inherited getters from 10 models</summary>
+<summary>91 inherited getters from 12 models</summary>
 
 From [TriangleMatrixMixin](../trianglematrixmixin): <span id="getter-heightmode">[`heightMode`](../trianglematrixmixin#getter-heightmode)</span>, <span id="getter-canvaswidth">[`canvasWidth`](../trianglematrixmixin#getter-canvaswidth)</span>, <span id="getter-viewtransform">[`viewTransform`](../trianglematrixmixin#getter-viewtransform)</span>, <span id="getter-matrixregions">[`matrixRegions`](../trianglematrixmixin#getter-matrixregions)</span>, <span id="getter-matrixheight">[`matrixHeight`](../trianglematrixmixin#getter-matrixheight)</span>, <span id="getter-matrixblocks">[`matrixBlocks`](../trianglematrixmixin#getter-matrixblocks)</span>, <span id="getter-yscalar">[`yScalar`](../trianglematrixmixin#getter-yscalar)</span>, <span id="getter-triangletransform">[`triangleTransform`](../trianglematrixmixin#getter-triangletransform)</span>, <span id="getter-triangleframe">[`triangleFrame`](../trianglematrixmixin#getter-triangleframe)</span>
+
+From [ColorWritesMixin](../colorwritesmixin): <span id="getter-writtencolor">[`writtenColor`](../colorwritesmixin#getter-writtencolor)</span>
+
+From [ParkedColorMixin](../parkedcolormixin): <span id="getter-parkedcolor">[`parkedColor`](../parkedcolormixin#getter-parkedcolor)</span>
 
 From [MatrixRampMixin](../matrixrampmixin): <span id="getter-colorencoding">[`colorEncoding`](../matrixrampmixin#getter-colorencoding)</span>, <span id="getter-colorscaletype">[`colorScaleType`](../matrixrampmixin#getter-colorscaletype)</span>, <span id="getter-colorscheme">[`colorScheme`](../matrixrampmixin#getter-colorscheme)</span>, <span id="getter-colorreverse">[`colorReverse`](../matrixrampmixin#getter-colorreverse)</span>, <span id="getter-colorramp">[`colorRamp`](../matrixrampmixin#getter-colorramp)</span>, <span id="getter-colorscale">[`colorScale`](../matrixrampmixin#getter-colorscale)</span>, <span id="getter-colordomain">[`colorDomain`](../matrixrampmixin#getter-colordomain)</span>, <span id="getter-colormidnorm">[`colorMidNorm`](../matrixrampmixin#getter-colormidnorm)</span>, <span id="getter-matrixcolor">[`matrixColor`](../matrixrampmixin#getter-matrixcolor)</span>, <span id="getter-colorfieldtitle">[`colorFieldTitle`](../matrixrampmixin#getter-colorfieldtitle)</span>
 
@@ -121,9 +126,11 @@ From [BaseDisplay](../basedisplay): <span id="getter-parenttrack">[`parentTrack`
 | <span id="method-rendersvg">**renderSvg**</span><br><code>(opts: ExportSvgDisplayOptions) =&gt; Promise&lt;ReactNode&gt;</code> |  |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>12 inherited methods from 5 models</summary>
+<summary>13 inherited methods from 6 models</summary>
 
 From [TriangleMatrixMixin](../trianglematrixmixin): <span id="method-celltoscreen">[`cellToScreen`](../trianglematrixmixin#method-celltoscreen)</span>, <span id="method-screentocell">[`screenToCell`](../trianglematrixmixin#method-screentocell)</span>
+
+From [ParkedColorMixin](../parkedcolormixin): <span id="method-parkedcolorof">[`parkedColorOf`](../parkedcolormixin#method-parkedcolorof)</span>
 
 From [MatrixRampMixin](../matrixrampmixin): <span id="method-rampcolorscales">[`rampColorScales`](../matrixrampmixin#method-rampcolorscales)</span>
 
@@ -142,16 +149,19 @@ From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`rendering
 | --- | --- |
 | <span id="action-setfocalsnp">**setFocalSnp**</span><br><code>(snp: LDSnp &#124; undefined) =&gt; void</code> |  |
 | <span id="action-setlinezoneheight">**setLineZoneHeight**</span><br><code>(n: number) =&gt; void</code> |  |
-| <span id="action-setldmetric">**setLDMetric**</span><br><code>(metric: LDMetric) =&gt; void</code> | `encoding.color.field`, the statistic the cells are, which refetches. |
-| <span id="action-setshowverticalguides">**setShowVerticalGuides**</span><br><code>(show: boolean) =&gt; void</code> |  |
-| <span id="action-setshowlabels">**setShowLabels**</span><br><code>(show: boolean) =&gt; void</code> |  |
+| <span id="action-setshowguides">**setShowGuides**</span><br><code>(show: boolean) =&gt; void</code> |  |
+| <span id="action-setshownames">**setShowNames**</span><br><code>(show: boolean) =&gt; void</code> |  |
 | <span id="action-setvariantlayout">**setVariantLayout**</span><br><code>(value: "columns" &#124; "genomic") =&gt; void</code> |  |
 | <span id="action-startrenderingbackend">**startRenderingBackend**</span><br><code>(backend: LDRenderingBackend) =&gt; void</code> |  |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>37 inherited actions from 9 models</summary>
+<summary>42 inherited actions from 11 models</summary>
 
 From [TriangleMatrixMixin](../trianglematrixmixin): <span id="action-setrpcdata">[`setRpcData`](../trianglematrixmixin#action-setrpcdata)</span>, <span id="action-setheightmode">[`setHeightMode`](../trianglematrixmixin#action-setheightmode)</span>
+
+From [ColorWritesMixin](../colorwritesmixin): <span id="action-colorbyfield">[`colorByField`](../colorwritesmixin#action-colorbyfield)</span>, <span id="action-setcolorvalue">[`setColorValue`](../colorwritesmixin#action-setcolorvalue)</span>, <span id="action-pickdefaultcolor">[`pickDefaultColor`](../colorwritesmixin#action-pickdefaultcolor)</span>, <span id="action-picksolidcolor">[`pickSolidColor`](../colorwritesmixin#action-picksolidcolor)</span>
+
+From [ParkedColorMixin](../parkedcolormixin): <span id="action-parkcolor">[`parkColor`](../parkedcolormixin#action-parkcolor)</span>
 
 From [MatrixRampMixin](../matrixrampmixin): <span id="action-setcolorscheme">[`setColorScheme`](../matrixrampmixin#action-setcolorscheme)</span>
 
