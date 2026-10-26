@@ -11,7 +11,7 @@ import type { TriangleAxisBlock } from '@jbrowse/display-kit/triangleTransform'
 export function buildResultRegions(
   regions: Region[],
   axisBlocks: TriangleAxisBlock[],
-  res: number,
+  binSize: number,
 ): HicResultRegion[] {
   return regions.map((region, i) => {
     const { refName, offsetBp } = axisBlocks[i]!
@@ -19,7 +19,7 @@ export function buildResultRegions(
       refName,
       dataXStart: offsetBp / Math.SQRT2,
       dataXEnd: (offsetBp + (region.end - region.start)) / Math.SQRT2,
-      combinedOffset: (offsetBp - region.start) / res,
+      combinedOffset: (offsetBp - region.start) / binSize,
       reversed: !!region.reversed,
     }
   })

@@ -42,7 +42,7 @@ async function statsFor(counts: number[]) {
       regions: [{ refName: 'a', start: 0, end: 1000, assemblyName: 'a' }],
       axisBlocks: [{ refName: 'a', offsetBp: 0 }],
       originBp: 0,
-      resolution: RES,
+      binSize: RES,
       normalization: 'KR',
       field: 'observed',
       quantile: 0.95,

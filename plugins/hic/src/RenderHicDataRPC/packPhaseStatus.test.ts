@@ -43,7 +43,7 @@ test('the pack after the download reports its own determinate phase', async () =
       regions,
       axisBlocks: regions.map(r => ({ refName: r.refName, offsetBp: 0 })),
       originBp: 0,
-      resolution: RES,
+      binSize: RES,
       normalization: 'KR',
       field: 'observed',
       quantile: 0.95,

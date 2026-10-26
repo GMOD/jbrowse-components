@@ -39,7 +39,7 @@ async function render(
         { refName: 'b', offsetBp: 1000 },
       ],
       originBp: 0,
-      resolution: RES,
+      binSize: RES,
       normalization: 'KR',
       field,
       quantile: 0.95,

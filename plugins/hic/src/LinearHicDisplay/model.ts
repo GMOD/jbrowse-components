@@ -347,7 +347,7 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
         return self.rampColorScales({
           id: 'contacts',
           title: rpcData
-            ? `${label} · ${getBpDisplayStr(rpcData.resolution)}`
+            ? `${label} · ${getBpDisplayStr(rpcData.binSize)}`
             : label,
           // the counts start at the key's bottom; a ratio's smallest value
           // is not scored, and one below a fixed domain's bottom is usual
@@ -417,7 +417,7 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
         const blocks = self.staticBlockSignature
         const { binSize } = self
         return blocks !== undefined && binSize !== undefined
-          ? `${blocks}|res:${binSize}`
+          ? `${blocks}|binSize:${binSize}`
           : undefined
       },
       /**
@@ -629,9 +629,9 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
 
         installGlobalFetchAutorun(self, {
           prepare: () => {
-            const resolution = self.binSize
+            const { binSize } = self
             const blocks = self.host.staticBlocks.contentBlocks
-            if (resolution === undefined || !blocks.length) {
+            if (binSize === undefined || !blocks.length) {
               return undefined
             }
             // The worker sees neither the view's axis nor its pre-rename
@@ -640,15 +640,15 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
               blocks,
               self.host.displayedRegions,
             )
-            return { resolution, regions: [...blocks], axisBlocks, originBp }
+            return { binSize, regions: [...blocks], axisBlocks, originBp }
           },
-          run: async ({ resolution, regions, axisBlocks, originBp }, ctx) =>
+          run: async ({ binSize, regions, axisBlocks, originBp }, ctx) =>
             await ctx.callRpc('RenderHicData', {
               ...rpcArgs(self),
               regions,
               axisBlocks,
               originBp,
-              resolution,
+              binSize,
               quantile: self.clipColorDomainQuantile,
             }),
           commit: result => {

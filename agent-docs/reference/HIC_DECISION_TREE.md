@@ -34,7 +34,7 @@ zone its `yOffsetPx` carries).
 The naive version is two settings read straight into the request. Neither
 survives contact with a real file.
 
-**Resolution is derived, and the user's control over it is a bias.** Binsize is
+**The binsize is derived, and the user's control over it is a bias.** Binsize is
 a function of zoom, so it rides as a per-call argument rather than an
 `rpcProps()` setting — a value the viewport already invalidates does not also
 need a cache key. The override is stored as an *offset from the automatic pick*,

@@ -30,7 +30,7 @@ async function run(region: Region, records: TestContact[], res: number) {
       regions: [region],
       axisBlocks: [{ refName: region.refName, offsetBp: 0 }],
       originBp: region.start,
-      resolution: res,
+      binSize: res,
       normalization: 'KR',
       field: 'observed',
       quantile: 0.95,

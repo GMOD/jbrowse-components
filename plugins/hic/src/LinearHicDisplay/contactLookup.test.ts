@@ -73,7 +73,7 @@ function makeData(
     quantile: 0.95,
     binWidth: W,
     originBp: 0,
-    resolution: 1000,
+    binSize: 1000,
     appliedNormalization: 'KR',
     appliedField: 'observed',
     regions,

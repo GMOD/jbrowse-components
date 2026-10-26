@@ -60,7 +60,7 @@ function makeData(contacts: { bin1: number; bin2: number }[], span: number) {
     quantile: 0.95,
     binWidth: W,
     originBp: 0,
-    resolution: 1000,
+    binSize: 1000,
     appliedNormalization: 'KR',
     appliedField: 'observed',
     regions: [

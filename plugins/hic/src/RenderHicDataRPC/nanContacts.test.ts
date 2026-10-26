@@ -42,7 +42,7 @@ async function run(records: TestContact[]) {
         { refName: 'b', offsetBp: SPAN },
       ],
       originBp: 0,
-      resolution: RES,
+      binSize: RES,
       normalization: 'KR',
       field: 'observed',
       quantile: 0.95,

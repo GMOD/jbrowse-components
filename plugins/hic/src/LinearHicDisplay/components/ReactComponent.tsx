@@ -17,8 +17,8 @@ import type { MouseState } from '@jbrowse/core/ui/useMouseTracking'
 
 function formatLocus(data: HicDataResult, regionIdx: number, bin: number) {
   const refName = data.regions[regionIdx]?.refName
-  const start = bin * data.resolution
-  return `${refName}:${toLocale(start + 1)}-${toLocale(start + data.resolution)}`
+  const start = bin * data.binSize
+  return `${refName}:${toLocale(start + 1)}-${toLocale(start + data.binSize)}`
 }
 
 // The two contact axes meeting under the cursor, drawn up to the diagonal. A

@@ -108,7 +108,7 @@ async function run(c: Case, records: TestContact[]) {
       regions: [region],
       axisBlocks: [{ refName: 'chr1', offsetBp: 0 }],
       originBp: region.start,
-      resolution: c.res,
+      binSize: c.res,
       normalization: 'KR',
       field: 'observed',
       quantile: 0.95,

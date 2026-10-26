@@ -38,7 +38,7 @@ async function run(
         offsetBp: regionOffsetsBp[i]!,
       })),
       originBp: 0,
-      resolution: RES,
+      binSize: RES,
       normalization: 'KR',
       field: 'observed',
       quantile: 0.95,

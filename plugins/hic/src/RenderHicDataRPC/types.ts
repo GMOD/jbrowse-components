@@ -14,7 +14,8 @@ export interface RenderHicDataArgs {
   axisBlocks: TriangleAxisBlock[]
   /** axis bp of the first block, echoed so a stale payload stays placed */
   originBp: number
-  resolution: number
+  /** the binsize to fetch, one of the file's, in bp */
+  binSize: number
   normalization: string
   /** what each instance's value is: the count, or the count over its expected */
   field: HicColorField
@@ -85,11 +86,11 @@ export interface HicDataResult {
   quantileScore: number
   /** the quantile `quantileScore` answers, echoed from the args */
   quantile: number
-  /** one bin in pre-rotation units: `resolution / √2` */
+  /** one bin in pre-rotation units: `binSize / √2` */
   binWidth: number
   originBp: number
-  /** the binsize this matrix was fetched at; hover loci read it */
-  resolution: number
+  /** the binsize this matrix was fetched at, in bp; hover loci read it */
+  binSize: number
   /** what the file applied, which falls back per binsize */
   appliedNormalization: string
   /**

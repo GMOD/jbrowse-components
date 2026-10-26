@@ -51,7 +51,7 @@ test('observed/expected over a real file matches straw', async () => {
         { refName: '2', offsetBp: 249_250_621 },
       ],
       originBp: 0,
-      resolution: RES,
+      binSize: RES,
       normalization: 'KR',
       field: 'observed/expected',
       quantile: 0.95,

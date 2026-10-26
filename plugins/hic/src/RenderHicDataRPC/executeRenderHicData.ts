@@ -30,7 +30,7 @@ export async function executeRenderHicData({
     regions,
     axisBlocks,
     originBp,
-    resolution,
+    binSize,
     normalization,
     field,
     quantile,
@@ -47,7 +47,7 @@ export async function executeRenderHicData({
   const { pairs, numContacts, appliedNormalization } = await (
     dataAdapter as HicAdapter
   ).getMultiRegionContactRecords(regions, {
-    resolution,
+    resolution: binSize,
     normalization,
     expected: field === 'observed/expected',
     control: field === 'observed/control',
@@ -79,8 +79,8 @@ export async function executeRenderHicData({
   const ctrlMin = floors.control?.min ?? Number.NEGATIVE_INFINITY
   const ctrlStrict = floors.control?.strict ?? false
 
-  const w = resolution / Math.SQRT2
-  const resultRegions = buildResultRegions(regions, axisBlocks, resolution)
+  const w = binSize / Math.SQRT2
+  const resultRegions = buildResultRegions(regions, axisBlocks, binSize)
   const packed = new Float32Array(numContacts * INSTANCE_STRIDE_WORDS)
   const pairRuns: RegionPairRun[] = []
   let at = 0
@@ -211,7 +211,7 @@ export async function executeRenderHicData({
       quantile,
       binWidth: w,
       originBp,
-      resolution,
+      binSize,
       appliedNormalization,
       appliedField,
       operands,
