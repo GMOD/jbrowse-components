@@ -6,6 +6,7 @@
 import { spawnSync } from 'node:child_process'
 import {
   existsSync,
+  lstatSync,
   readFileSync,
   readdirSync,
   renameSync,
@@ -119,24 +120,28 @@ export const SOURCE_SKIP_DIRS = new Set([
 // deletion is still listed.
 let listedFiles: string[] | undefined
 export function repoFiles(): string[] {
-  listedFiles ??= [
-    ...new Set(
-      spawnSync(
-        'git',
-        [
-          'ls-files',
-          '-z',
-          '--cached',
-          ...(process.env.AUTOGEN_TRACKED_ONLY === '1'
-            ? []
-            : ['--others', '--exclude-standard']),
-        ],
-        { cwd: repoRoot, encoding: 'utf8', maxBuffer: 1 << 28 },
-      )
-        .stdout.split('\0')
-        .filter(Boolean),
-    ),
-  ].filter(f => existsSync(join(repoRoot, f)))
+  if (!listedFiles) {
+    const { status, stdout, stderr, error } = spawnSync(
+      'git',
+      [
+        'ls-files',
+        '-z',
+        '--cached',
+        ...(process.env.AUTOGEN_TRACKED_ONLY === '1'
+          ? []
+          : ['--others', '--exclude-standard']),
+      ],
+      { cwd: repoRoot, encoding: 'utf8', maxBuffer: 1 << 28 },
+    )
+    // An empty list would regenerate every table empty, so a failed listing
+    // stops the run.
+    if (error || status !== 0) {
+      throw new Error(`git ls-files failed: ${error ?? stderr}`)
+    }
+    listedFiles = [...new Set(stdout.split('\0').filter(Boolean))].filter(f =>
+      existsSync(join(repoRoot, f)),
+    )
+  }
   return listedFiles
 }
 
@@ -351,10 +356,16 @@ export function spliceGeneratedBlock({
 
 // Written beside the target and renamed over it, so a generator running in
 // autogen's pool beside another that reads this file sees the old bytes or the
-// new ones, never half of them.
+// new ones, never half of them. A symlink is written through, since a rename
+// would replace the link with a file. The temp name is gitignored.
 export function writeFileAtomic(path: string, content: string) {
-  const tmp = `${path}.${process.pid}.tmp`
-  writeFileSync(tmp, content)
+  const target = existsSync(path) ? lstatSync(path) : undefined
+  if (target?.isSymbolicLink()) {
+    writeFileSync(path, content)
+    return
+  }
+  const tmp = `${path}.${process.pid}.autogen-tmp`
+  writeFileSync(tmp, content, target ? { mode: target.mode } : undefined)
   renameSync(tmp, path)
 }
 

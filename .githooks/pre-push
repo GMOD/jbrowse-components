@@ -346,7 +346,9 @@ fi
 # bare `pnpm autogen --check` and uploads the rewrite as `autogen.patch`.
 #
 # AUTOGEN_TRACKED_ONLY: an untracked file here is another agent's work in
-# progress, and CI never sees it, so the generators read tracked sources only.
+# progress, so the generators that list sources leave untracked files out. An
+# uncommitted edit to a tracked file still counts, and the bundling generators
+# still resolve imports from disk.
 astatus=0
 (
   AUTOGEN_TRACKED_ONLY=1

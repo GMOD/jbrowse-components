@@ -145,13 +145,6 @@ const GENERATORS: Generator[] = [
   },
   // Writes one file under website/src/lib and reads no doc.
   { name: 'live links', argv: web('gen-live-links.ts'), independent: true },
-  // The tutorials topic of Desktop's MCP docs tool; reads the tutorial pages.
-  {
-    name: 'agent tutorial index',
-    argv: web('gen-agent-tutorial-index.ts'),
-    independent: true,
-    needs: ['live links'],
-  },
   { name: 'guide indexes', argv: web('generate-guide-indexes.ts') },
   { name: 'ADR index', argv: web('generate-adr-index.ts') },
   {
@@ -311,6 +304,15 @@ const GENERATORS: Generator[] = [
     argv: api('generate.ts'),
     needs: ['config schema manifest', 'runtime re-exports'],
     wholeRepoProgram: true,
+  },
+  {
+    // The tutorials topic of Desktop's MCP docs tool. Reads the tutorial
+    // pages, whose TUTORIAL_INSTALL and GRAPH_PLUGIN_CONFIG blocks the marker
+    // writers splice.
+    name: 'agent tutorial index',
+    argv: web('gen-agent-tutorial-index.ts'),
+    independent: true,
+    needs: ['live links', 'marker tables', 'config/model/api docs'],
   },
   {
     // website/scripts/figure-manifest.json, from every <Figure> in the docs

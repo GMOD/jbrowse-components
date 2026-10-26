@@ -105,6 +105,8 @@ marker=$common/main-red
 # landed most recently. Cleared with the marker.
 since=$common/main-red-since
 lock=$common/post-merge-check.lock
+# Deprecated: the marker's name until 2026-10-26. Nothing reads it now.
+rm -f "$common/autogen-stale" "$common/autogen-stale-since"
 
 # One check at a time. Several agents landing in the same minute would otherwise
 # each start a run, and they would all reach the same answer. mkdir is the

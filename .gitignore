@@ -46,6 +46,8 @@ scripts/__pycache__
 yarn-error.log
 *.swp
 *.swo
+# writeFileAtomic's temp file, left behind only by a killed generator
+*.autogen-tmp
 .DS_Store
 lint.log
 .eslintcache

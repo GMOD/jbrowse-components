@@ -65,7 +65,10 @@ interface Census {
 
 function countTags(dir: string) {
   const counts = { slots: 0, properties: 0, volatiles: 0 }
-  for (const file of sourceFiles([relative(repoRoot, dir)], isTsSource)) {
+  for (const file of sourceFiles(
+    [relative(repoRoot, dir).replaceAll(sep, '/')],
+    isTsSource,
+  )) {
     const text = readFileSync(file, 'utf8')
     // The tag as JSDoc writes it, on its own line or as `/** #slot */`.
     // Anchored to the comment leader so a `#slot` inside prose about slots is
