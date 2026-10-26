@@ -98,18 +98,25 @@ function toggleBit(flag: number, index: number, checked: boolean) {
   return checked ? flag | (1 << index) : flag & ~(1 << index)
 }
 
+function masksOverlap(include: number, exclude: number) {
+  return (include & exclude) !== 0
+}
+
 const MaskField = observer(function MaskField(props: {
   label: string
   flag: number
   setFlag: (arg: number) => void
+  error: boolean
 }) {
-  const { label, flag, setFlag } = props
+  const { label, flag, setFlag, error } = props
   return (
     <TextField
       label={label}
       variant="outlined"
       size="small"
       value={flag}
+      error={error}
+      helperText={error ? 'A flag is both required and excluded' : undefined}
       onChange={event => {
         // Whole numbers only. `Number.isFinite` let "1.5" and "1e3" through:
         // the field then showed 1.5 while every `flag & (1 << i)` below read
@@ -124,7 +131,8 @@ const MaskField = observer(function MaskField(props: {
 })
 
 // One row per SAM flag with a Require and an Exclude box. The filter holds one
-// `flags.X` entry per flag, so ticking one box clears the other.
+// `flags.X` entry per flag, so ticking one box clears the other, and masks
+// typed to share a bit hold Submit until they don't.
 const FlagFilterSection = observer(function FlagFilterSection(props: {
   flagInclude: number
   flagExclude: number
@@ -133,6 +141,7 @@ const FlagFilterSection = observer(function FlagFilterSection(props: {
 }) {
   const { classes } = useStyles()
   const { flagInclude, flagExclude, setFlagInclude, setFlagExclude } = props
+  const overlap = masksOverlap(flagInclude, flagExclude)
   const atDefault =
     flagInclude === DEFAULT_FLAG_MASKS.include &&
     flagExclude === DEFAULT_FLAG_MASKS.exclude
@@ -166,11 +175,13 @@ const FlagFilterSection = observer(function FlagFilterSection(props: {
               label="Require mask"
               flag={flagInclude}
               setFlag={setFlagInclude}
+              error={overlap}
             />
             <MaskField
               label="Exclude mask"
               flag={flagExclude}
               setFlag={setFlagExclude}
+              error={overlap}
             />
           </div>
           <div className={classes.flagGrid}>
@@ -358,7 +369,11 @@ const MoreFiltersDialog = observer(function MoreFiltersDialog(props: {
     setLayers(declaredLayerFilterState(model))
   }
 
+  const masksConflict = masksOverlap(flagInclude, flagExclude)
   const handleSubmit = () => {
+    if (masksConflict) {
+      return
+    }
     model.setFilterFields({
       ...readFieldsEntries(
         predicates,
@@ -376,7 +391,7 @@ const MoreFiltersDialog = observer(function MoreFiltersDialog(props: {
       ),
       ...layerFilterEntries(layers, initialLayers),
     })
-    const basesPatch = layerBasesPatch(layers)
+    const basesPatch = layerBasesPatch(layers, initialLayers)
     if (basesPatch) {
       model.setBases?.(basesPatch)
     }
@@ -461,7 +476,13 @@ const MoreFiltersDialog = observer(function MoreFiltersDialog(props: {
           >
             Cancel
           </Button>
-          <Button variant="contained" color="primary" autoFocus type="submit">
+          <Button
+            variant="contained"
+            color="primary"
+            autoFocus
+            type="submit"
+            disabled={masksConflict}
+          >
             Submit
           </Button>
         </DialogActions>

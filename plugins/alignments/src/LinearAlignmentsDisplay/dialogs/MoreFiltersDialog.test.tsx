@@ -37,6 +37,7 @@ function renderDialog(
     </ThemeProvider>,
   )
   return {
+    setFilterFields,
     submitted: () =>
       mergeFilter(withFields(written, setFilterFields.mock.lastCall![0])),
   }
@@ -228,6 +229,29 @@ test('requiring a flag the defaults exclude clears its exclusion', () => {
     include: DEFAULT_FLAG_MASKS.include | 0x400,
     exclude: DEFAULT_FLAG_MASKS.exclude & ~0x400,
   })
+})
+
+// The checkboxes can't tick a flag twice, but typed masks could, and Submit
+// then kept only the Require half
+test('masks typed to share a flag hold Submit', () => {
+  const { setFilterFields } = renderDialog()
+  fireEvent.change(screen.getByLabelText('Require mask'), {
+    target: { value: '1' },
+  })
+  fireEvent.change(screen.getByLabelText('Exclude mask'), {
+    target: { value: '1541' },
+  })
+  expect(screen.getByText('Submit').closest('button')).toHaveProperty(
+    'disabled',
+    true,
+  )
+  fireEvent.submit(screen.getByText('Submit').closest('form')!)
+  expect(setFilterFields).not.toHaveBeenCalled()
+  fireEvent.change(screen.getByLabelText('Exclude mask'), {
+    target: { value: '1540' },
+  })
+  submit()
+  expect(setFilterFields).toHaveBeenCalled()
 })
 
 test('unticking a default exclusion writes the field that removes it', () => {

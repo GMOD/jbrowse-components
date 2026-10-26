@@ -91,7 +91,7 @@ function submit(
   const initial = layerFilterStateOf(model)
   const state = edit(initial)
   model.setFilterFields(layerFilterEntries(state, initial))
-  const patch = layerBasesPatch(state)
+  const patch = layerBasesPatch(state, initial)
   if (patch) {
     model.setBases(patch)
   }
@@ -121,7 +121,12 @@ describe('the More filters... layer sections', () => {
       makeModel({ layer: 'modifications', unmodified: true }),
     )
     expect(blue.bases?.probabilityPercent).toBeUndefined()
-    expect(Object.keys(blue.bases ?? {})).toEqual(['types', 'shown', 'strict'])
+    expect(Object.keys(blue.bases ?? {})).toEqual([
+      'types',
+      'shown',
+      'unloaded',
+      'strict',
+    ])
   })
 
   test('a Submit that changes nothing writes the filter back unchanged', () => {
@@ -159,6 +164,34 @@ describe('the More filters... layer sections', () => {
       codes: ['m'],
       probability: { min: 0.8 },
     })
+  })
+
+  // The boxes list only the types loaded now, and a Submit rewrote the list
+  // from them: a type no read in view carries dropped out, and with none of
+  // the listed types loaded the layer went off
+  test.each([[['h']], [['m', 'h']]])(
+    'a Submit that changes nothing keeps the type list %j',
+    codes => {
+      const model = makeModel({
+        layer: 'modifications',
+        types: ['m', 'a'],
+        bases: [{ field: 'code', oneOf: codes }],
+      })
+      submit(model, s => s)
+      expect(model.shown).toBe(true)
+      expect(model.basesFilter.codes).toEqual(codes)
+    },
+  )
+
+  test('an edit keeps the listed types no loaded read carries', () => {
+    const model = makeModel({
+      layer: 'modifications',
+      types: ['m', 'a'],
+      bases: [{ field: 'code', oneOf: ['m', 'h'] }],
+    })
+    submit(model, s => ({ ...s, bases: { ...s.bases!, shown: [] } }))
+    expect(model.shown).toBe(true)
+    expect(model.basesFilter.codes).toEqual(['h'])
   })
 
   // an empty type list is "every type", so the layer goes off instead

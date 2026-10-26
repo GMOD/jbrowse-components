@@ -1,3 +1,4 @@
+import { deepEqual } from '@jbrowse/core/util/deepEqual'
 import { predicatesOf } from '@jbrowse/core/util/fieldPredicate'
 import {
   categoryEntries,
@@ -136,6 +137,9 @@ export interface LayerFilterState {
   bases?: {
     types: string[]
     shown: string[]
+    // the listed codes no loaded read carries: no box shows them, and a write
+    // keeps them listed
+    unloaded: string[]
     probabilityPercent?: string
     strict: boolean
   }
@@ -219,6 +223,7 @@ export function layerFilterStateOf(
           bases: {
             types,
             shown: types.filter(t => admitsCode(bases, t)),
+            unloaded: bases.codes?.filter(c => !types.includes(c)) ?? [],
             ...(applied.probability
               ? { probabilityPercent: percentOf(bases.probability.min) }
               : {}),
@@ -278,19 +283,21 @@ export function layerFilterEntries(
 
 /**
  * The `pileup.bases` write the state makes, undefined where it shows no
- * per-base layer. Unticking every type turns the layer off, since an empty
- * list is "every type"; ticking every type stores none, so a type first seen
- * as more reads stream in still draws.
+ * per-base layer or the section is as it opened. Unticking every type turns
+ * the layer off, since an empty list is "every type"; ticking every type
+ * stores none, so a type first seen as more reads stream in still draws.
  */
 export function layerBasesPatch(
   state: LayerFilterState,
+  initial: LayerFilterState,
 ): BasesPatch | undefined {
   const { bases } = state
-  if (!bases) {
+  if (!bases || deepEqual(bases, initial.bases)) {
     return undefined
   }
-  const { strict } = bases
-  if (bases.types.length > 0 && bases.shown.length === 0) {
+  const { strict, unloaded } = bases
+  const codes = [...bases.shown, ...unloaded]
+  if (bases.types.length > 0 && codes.length === 0) {
     return { show: false }
   }
   const percent =
@@ -302,9 +309,10 @@ export function layerBasesPatch(
       ...(bases.types.length > 0
         ? {
             code: codeEntries(
-              bases.types.every(t => bases.shown.includes(t))
+              unloaded.length === 0 &&
+                bases.types.every(t => bases.shown.includes(t))
                 ? undefined
-                : bases.shown,
+                : codes,
             ),
           }
         : {}),
