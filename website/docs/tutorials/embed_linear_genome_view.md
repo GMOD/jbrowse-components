@@ -84,11 +84,9 @@ npx serve -S .
 
 Open the URL `serve` prints.
 
-<Figure caption="The complete example below embedded in a web page." src="/img/embed_linear_genome_view/final.png"/>
-
 The `@next` tag fetches the newest v5 prerelease, which the `assembly` and
 `tracks` shorthand above needs, so pin a version for production
-(`@jbrowse/react-linear-genome-view2@5.0.0-beta.11/dist/...`). For other view
+(`@jbrowse/react-linear-genome-view2@5.0.0-beta.17/dist/...`). For other view
 types, a different bundler, or working demo repos, see
 [](/docs/embedded_components).
 
@@ -140,6 +138,11 @@ function GenomeBrowser() {
   return state ? <JBrowseLinearGenomeView viewState={state} /> : null
 }
 ```
+
+## A more complete example
+
+Swap in the example below to draw genes, reads, conservation and variants in one
+view.
 
 <details id="more-complete-example">
 <summary>More complete example: multiple track types, name search</summary>
@@ -215,6 +218,14 @@ the smaller `assembly`/`tracks`/`view`.
   [`jbrowse text-index`](/docs/quickstart_web#indexing-feature-names-for-searching).
 
 </details>
+
+Serve the folder again and open the URL it prints:
+
+```bash
+npx serve -S .
+```
+
+<Figure caption="The more complete example embedded in a web page." src="/img/embed_linear_genome_view/final.png"/>
 
 ## See also
 
