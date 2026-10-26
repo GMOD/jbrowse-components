@@ -10,27 +10,50 @@ import type { NotificationsSession } from './notifications.tsx'
 import type { ThemeModeSession } from '@jbrowse/core/ui/PaletteContext'
 import type React from 'react'
 
+/**
+ * Which chrome a display draws around its data. `plain` (the default) is the
+ * toolkit-free set, with `overlays` and `trackControl` replacing parts of it;
+ * `material` is JBrowse's own Material UI chrome, which the stock displays
+ * bind themselves, so it takes no parts.
+ */
+export type EmbedChrome =
+  | {
+      chrome?: 'plain'
+      overlays?: Partial<DisplayChromeOverlays>
+      trackControl?: TrackControlComponent
+    }
+  | { chrome: 'material'; overlays?: never; trackControl?: never }
+
 export const EmbedProvider = observer(function EmbedProvider({
   session,
   mode,
-  overlays,
-  trackControl,
   notifications = true,
   children,
+  ...chrome
 }: {
   session: ThemeModeSession & NotificationsSession
   mode?: 'light' | 'dark'
-  overlays?: Partial<DisplayChromeOverlays>
-  trackControl?: TrackControlComponent
   notifications?: boolean
   children: React.ReactNode
-}) {
+} & EmbedChrome) {
+  const body = (
+    <>
+      {children}
+      {notifications ? <Notifications session={session} /> : null}
+    </>
+  )
   return (
     <SessionPaletteProvider session={session} mode={mode}>
-      <DisplayUIProvider overlays={overlays} trackControl={trackControl}>
-        {children}
-        {notifications ? <Notifications session={session} /> : null}
-      </DisplayUIProvider>
+      {chrome.chrome === 'material' ? (
+        body
+      ) : (
+        <DisplayUIProvider
+          overlays={chrome.overlays}
+          trackControl={chrome.trackControl}
+        >
+          {body}
+        </DisplayUIProvider>
+      )}
     </SessionPaletteProvider>
   )
 })

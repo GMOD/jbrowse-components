@@ -1,16 +1,11 @@
 import { useId, useState } from 'react'
 
-import { SessionPaletteProvider } from '@jbrowse/core/ui/PaletteContext'
-import { DisplayUIProvider, plainChromeOverlays } from '@jbrowse/display-ui'
-import { Toolbar, TrackStack } from '@jbrowse/display-ui/embed'
+import { EmbedProvider, Toolbar, TrackStack } from '@jbrowse/display-ui/embed'
 import { useCreateViewState } from '@jbrowse/react-linear-genome-view2'
 import { observer } from 'mobx-react'
 
-import type {
-  DisplayChromeOverlays,
-  ErrorBarProps,
-  LoadingProps,
-} from '@jbrowse/display-ui'
+import type { ErrorBarProps, LoadingProps } from '@jbrowse/display-ui'
+import type { EmbedChrome } from '@jbrowse/display-ui/embed'
 
 const pill: React.CSSProperties = {
   pointerEvents: 'auto',
@@ -89,16 +84,13 @@ const MyLoading = observer(function MyLoading({
   )
 })
 
-const myOverlays: Partial<DisplayChromeOverlays> = {
-  ErrorBar: MyErrorBar,
-  Loading: MyLoading,
-}
+const myOverlays = { ErrorBar: MyErrorBar, Loading: MyLoading }
 
 const sets = {
-  'overlays defined in this file': myOverlays,
-  plainChromeOverlays,
-  'the Material UI default': undefined,
-}
+  'overlays defined in this file': { overlays: myOverlays },
+  'the plain default': {},
+  'Material UI': { chrome: 'material' },
+} satisfies Record<string, EmbedChrome>
 
 type SetName = keyof typeof sets
 
@@ -147,14 +139,8 @@ const TrackLoadingAndErrors = observer(function TrackLoadingAndErrors() {
   if (!state) {
     return null
   }
-  const overlays = sets[setName]
-  const stack = (
-    <SessionPaletteProvider session={state.session}>
-      <TrackStack view={state.session.view} />
-    </SessionPaletteProvider>
-  )
   return (
-    <div>
+    <EmbedProvider session={state.session} {...sets[setName]}>
       <Toolbar>
         Draw loading and errors with
         {Object.keys(sets).map(name => (
@@ -171,12 +157,8 @@ const TrackLoadingAndErrors = observer(function TrackLoadingAndErrors() {
           </label>
         ))}
       </Toolbar>
-      {overlays ? (
-        <DisplayUIProvider overlays={overlays}>{stack}</DisplayUIProvider>
-      ) : (
-        stack
-      )}
-    </div>
+      <TrackStack view={state.session.view} />
+    </EmbedProvider>
   )
 })
 

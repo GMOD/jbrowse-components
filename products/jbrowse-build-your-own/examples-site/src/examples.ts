@@ -15,7 +15,7 @@ export const pages: ExamplePage[] = [
     slug: 'multiple-tracks',
     title: 'Multiple tracks',
     description:
-      "A wiggle, genes and reads, with JBrowse's default Material UI overlays.",
+      "A wiggle, genes and reads, in JBrowse's own Material UI chrome.",
     group: 'First view',
   },
   {
@@ -82,7 +82,7 @@ export const pages: ExamplePage[] = [
     slug: 'track-loading-and-errors',
     title: 'Track loading and error states',
     description:
-      'DisplayUIProvider swaps the overlay a track draws while it loads or fails.',
+      "EmbedProvider's overlays swap what a track draws while it loads or fails.",
     group: 'Loading, errors and theme',
   },
   {
