@@ -30,43 +30,25 @@ Each item needs a call before work. Check the ADR-238 spelling first.
 
 ## Multi-way display
 
-- `ribbonColor`, `utrColor` and `text` go under `encoding`; `color` already
-  has.
+- `utrColor` is a color with a default, where the canvas display's is unset
+  until written and then follows the fill. Converging them repaints the UTRs
+  under cluster colors; capture both before choosing.
 - `hideUnlabelled` becomes a `ribbons.filter` entry `{ field, valid: true }`,
-  `showGeneLabels` becomes `genes.labels.show`, and `showLaneTicks` becomes
-  `axis.show`, which should then gate the anchor rule's ticks too.
+  and `showLaneTicks` becomes `axis.show`, which should then gate the anchor
+  rule's ticks too. `text` and `showGeneLabels` are `labels.name` (ADR-238's
+  feature display section).
 - `splitStrands` and `inlineLaneNames` change layout and have no spelling.
 - Off-screen mate marks honor only the `length` filter, since the worker sends
   no attribute lanes with the mates.
 
 ## Settings no step covers
 
-- Canvas, after the 2026-10-26 pass (outline cut, `mark.height`,
-  `transcripts`, `containers`):
-  - `showLabels` and the two label densities: the gate runs on the main
-    thread over worker output, so it cannot be a predicate, and descriptions
-    must drop whenever names do. Moving `show` into `labels` would also make
-    each toggle an RPC key, since the worker reads `labels` whole.
-  - `geneGlyphMode`: a three-way choice. `all` also turns off the fit
-    ladder's isoform trim and the 100 bp/px switch, so `transcripts.limit`
-    plus a boolean spells it twice, and `transcripts.fit` clashes with
-    `heightMode: 'fit'`.
-  - `subfeatureLabels` and `subParts`: `parts` already means a display's
-    named sub-objects (ADR-238), and `subfeatureLabels` labels transcripts,
-    container children and cleavage products, not the boxes `subParts`
-    selects.
-  - `connectorColor` and `utrColor`: the connector color also paints strand
-    arrows and repeat-region lines, so neither `introns` nor `connectors`
-    names all it paints. Converge with the multi-way display's `utrColor`.
-  - `encoding.color.value` keeps its per-box jexl callback: an identity-scale
-    field evaluates on the transcript (volvox colors CDS and exon apart), and
-    at 1e5 distinct colors moves a values table over RPC.
-  - `mouseover` stays: jb2hubs writes it into every hosted feature track, and
-    `tooltip` is the multi-sample display's `{ show }` part.
-- LD: `showLabels`.
-- Multi-sample variants: `showLabels`.
-- Mark display: `marks[].minBpPerPx` and `maxBpPerPx`, although ADR-238 says
-  `view.bpPerPx` replaces every zoom gate. The predicate input does not exist
-  yet, and building it for two rarely written bounds waits on a second use.
+- Zoom and density gates: the mark display's `marks[].minBpPerPx` and
+  `maxBpPerPx`, and the canvas display's `maxLabelFeatureDensity` and
+  `maxDescriptionFeatureDensity`. ADR-238 says a `view.*` predicate replaces
+  every zoom gate, but the predicate input does not exist yet. Building it
+  moves all four, each label threshold into its label part's `filter`; the
+  gene-name fallback (gene names still draw past the name threshold while the
+  genes alone are under it) needs a spelling first.
 - `rowProportion` and `rowHeight` stay display slots (ADR-194); folding them
   into `mark.height` loses the row pitch.

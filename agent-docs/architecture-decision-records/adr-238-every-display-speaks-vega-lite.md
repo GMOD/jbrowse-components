@@ -22,6 +22,11 @@ Amended 2026-10-23 for Pass B, the y channel (below): `encoding.y` carries
 `scale`, `axis` and `rules`; the outlier fence is `scale.fenceQuantile`; the
 tree sidebar's toggles go to an `axis` beside `rows`.
 
+Amended 2026-10-26 for the canvas feature display (below): its labels are
+parts with `show`, `mouseover` is `tooltip`, `longestCoding` is
+`representative`, and `subParts`, `connectorColor` and the per-feature
+`mark.height` callback are cut.
+
 Colin's steer, on a review of the linear synteny view's settings: aim for
 ideal grammar-of-graphics terms rather than house ones ("things like
 'minLength' are exactly the types of things that concern me"), elegance over
@@ -221,6 +226,46 @@ its only value scale is `coverage.encoding.y`.
   display's schema before it merges over the base, so an old spelling there
   still beats the base's current one.
 
+### The feature display (amended 2026-10-26)
+
+`LinearBasicDisplay`, and `LinearVariantDisplay` on the same base. Two
+reviews, a cold Fable read of the generated reference and an Opus read
+against the code, checked the spelling twice.
+
+- **Labels are parts:** `labels: { name, description, subfeatures }`, each
+  with ADR-231's `show`. `name` and `description` hold the `field` they read;
+  a bare string is that field's shorthand, written member by member
+  (ADR-232), so jb2hubs' `labels.name: '<jexl>'` keeps loading on every host.
+  `subfeatures` holds `placement`: `auto` labels a polyprotein's cleavage
+  products on their rows, `below` and `overlay` every part. `showLabels` and
+  `subfeatureLabels` go.
+  - The variant band's `variants.labels`, LD's `labels.name`, and the
+    multi-way display's `labels.name` (from `text` and `showGeneLabels`) take
+    the same shape. The multi-way display's top-level `labels` means its gene
+    labels, as its top-level `encoding` means the gene glyphs.
+- **The density gate always runs.** A name hides above
+  `maxLabelFeatureDensity`; a description above the lower of the two
+  thresholds, whether or not names draw. No value pins labels at every zoom.
+  The two thresholds stay flat until a `view.*` predicate on each label
+  part's `filter` replaces them, with the mark display's zoom bounds.
+- **`tooltip: { show, field }`** replaces `mouseover`, as the multi-sample
+  display's `tooltip` is a part. `mouseover` lifts permanently: jb2hubs
+  writes it, since v4 hosts read no other spelling.
+- **`geneGlyphMode: 'representative'`** replaces `longestCoding`, which
+  lifts permanently. The mode draws the first isoform by `transcripts.sort`.
+- **Cut:** `subParts` (the coding-transcript glyph draws its CDS and UTR
+  boxes), `connectorColor` (the glyph's lines take the theme's stroke color)
+  and `mark.height`'s per-feature callback (`pileup.mark.height` takes none).
+- **Kept:** `displayMode`, igv.js's word for the same presets, which apply on
+  the main thread and also step font size and row padding; `geneGlyphMode`
+  as a slot; `transcripts`; `containers`; `utrColor`; and
+  `encoding.color.value`'s callback, which colors per box where a `field`
+  reads the transcript.
+- **Open:** the multi-way display's `utrColor` is a color with a default,
+  where the canvas one is unset until written and then follows the fill.
+  Converging them repaints the multi-way UTRs under cluster colors, which
+  needs a capture first.
+
 ### Mark, guides, coordinates
 
 - **Marks:** `rect bar point rule tick line area text link gene`.
@@ -334,6 +379,12 @@ predicate in the layer's own `filter`:
 | `showOffscreenMates` as a clamped end | A clamped end cannot carry the click that navigates to the mate; it is the synteny view's `offscreen` part |
 | `bridgeSkippedLanes`, `showIntraviewLinks`, implied UTRs as flags | One behaviour each |
 | `tension` for the chord curve | Vega-Lite's `tension` (d3's bundle `beta`) runs from a straight line to the full pull; the chord curve straightens no chord but an antipodal one, bows past straight toward the rim, and scales with each chord's length, as circlize's `h.ratio` does |
+| `encoding.stroke` for the feature display's `connectorColor` | A constant-only stroke is a color-object variant, a field-mapped one needs a lane and a key nobody asked for, and nothing wrote the slot |
+| A `maxDensity` member on each label part | A new `max*` word, and no value of it means "always": the label gate counts features on screen, while the too-many-features gate reads a sampled average and skips a force-loaded track |
+| `show: true \| false \| 'auto'` on a label part | `show` is a boolean on every part |
+| `displayMode`'s presets as written `mark.height` values, `collapsed` as a `layout` | The worker reads the height, so each preset click would refetch; the presets also step font size and padding |
+| `containers` as `unnest` | It names a data transform; only the layout changes, and filters, tables and counts see the same records |
+| `labels.subfeatures.filter` defaulting to the cleavage-product types, in place of `placement: 'auto'` | A written `placement: 'below'` would then label only the cleavage products, and labeling every part would take `filter: [{ field: 'type' }]`, today's `below` spelled obscurely |
 
 ## Consequences
 
