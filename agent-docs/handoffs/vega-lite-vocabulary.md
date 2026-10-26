@@ -63,10 +63,6 @@ deployed. Still open, each needing no further call:
   on a value it does not know (ADR-120 amendment). `checkConfigCompat.mjs`
   boots each host in `HOST_VERSIONS` but opens no track and runs no
   `jbrowse validate`.
-- **Four config-doc Type cells** print factory source
-  (`markListSchema(...)`, `types.array(aggregateOpSchema)`,
-  `multiQuantitativeDisplaySchemas(pluginManager)`). The generator resolves
-  the schema, but links only to a `#config` page or to the page's own slots.
 
 The cross-display color test waits on a call:
 [ideas/waiting-on-a-call/cross-display-color-conformance-test.md](../ideas/waiting-on-a-call/cross-display-color-conformance-test.md).
