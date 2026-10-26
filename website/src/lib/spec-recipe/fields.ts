@@ -23,7 +23,7 @@ import {
 } from '../../../../plugins/alignments/src/LinearAlignmentsDisplay/menus/baseLayerLabels.ts'
 import { isJexl } from '../../../../packages/core/src/util/jexlStrings.ts'
 // Straight from core, not through plugins/variants' re-export of it: that
-// module pulls in variantTopBands.ts -> the whole plugins/canvas entrypoint ->
+// module reached the whole plugins/canvas entrypoint ->
 // BaseDisplayModel.tsx, and `node` cannot load a .tsx, so check-spec-recipes.ts
 // died on ERR_UNKNOWN_FILE_EXTENSION before running a single check.
 import { capitalizeFirst } from '../../../../packages/core/src/util/stringUtils.ts'
