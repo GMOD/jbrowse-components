@@ -75,6 +75,40 @@ export function makeScoreNormalizer(
   return (score: number) => Math.max(0, Math.min(1, (score - min) * invRange))
 }
 
+/**
+ * `normalizeScoreUnclamped` hoisted as {@link makeScoreNormalizer} is. It
+ * divides by the range, as the shader does, rather than multiplying by the
+ * reciprocal, so a linear or log score lands where the shader puts it.
+ */
+export function makeUnclampedScoreNormalizer(
+  min: number,
+  max: number,
+  scaleType: ScaleTypeCode,
+  symlogConstant: number,
+): (score: number) => number {
+  if (scaleType === SCALE_TYPE_SYMLOG) {
+    const c = symlogConstant
+    const tMin = symlog(min, c)
+    const tRange = symlog(max, c) - tMin
+    return tRange > 0
+      ? (score: number) => (symlog(score, c) - tMin) / tRange
+      : (score: number) => (symlog(score, c) > tMin ? 1 : 0)
+  }
+  if (scaleType === SCALE_TYPE_LOG) {
+    const floor = min > 0 ? min : 1
+    const logMin = Math.log2(floor)
+    const logRange = Math.log2(Math.max(max, floor)) - logMin
+    return logRange > 0
+      ? (score: number) =>
+          (Math.log2(Math.max(score, floor)) - logMin) / logRange
+      : (score: number) => (Math.log2(Math.max(score, floor)) > logMin ? 1 : 0)
+  }
+  const range = max - min
+  return range > 0
+    ? (score: number) => (score - min) / range
+    : (score: number) => (score > min ? 1 : 0)
+}
+
 function symlogInverse(y: number, c: number) {
   return Math.sign(y) * c * Math.expm1(Math.abs(y))
 }

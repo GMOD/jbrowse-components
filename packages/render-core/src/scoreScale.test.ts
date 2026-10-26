@@ -1,4 +1,4 @@
-import { denormalizeScore } from './scoreScale.ts'
+import { denormalizeScore, makeUnclampedScoreNormalizer } from './scoreScale.ts'
 import {
   SCALE_TYPE_LOG,
   SCALE_TYPE_SYMLOG,
@@ -74,6 +74,21 @@ describe.each(CASES)('$name, unclamped', ({ scaleType, domain, c }) => {
     expect(norm(denormalizeScore(1.5, min, max, scaleType, c))).toBeCloseTo(
       1.5,
       9,
+    )
+  })
+
+  test('the hoisted twin agrees, dividing as the shader does', () => {
+    const hoisted = makeUnclampedScoreNormalizer(min, max, scaleType, c)
+    for (const t of [-0.5, ...FRACTIONS, 1.5]) {
+      const score = denormalizeScore(t, min, max, scaleType, c)
+      if (scaleType === SCALE_TYPE_SYMLOG) {
+        expect(hoisted(score)).toBeCloseTo(norm(score), 12)
+      } else {
+        expect(hoisted(score)).toBe(norm(score))
+      }
+    }
+    expect(makeUnclampedScoreNormalizer(min, min, scaleType, c)(max)).toBe(
+      normalizeScoreUnclamped(max, min, min, scaleType, c),
     )
   })
 

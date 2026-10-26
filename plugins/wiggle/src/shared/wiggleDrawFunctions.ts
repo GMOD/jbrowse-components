@@ -22,6 +22,7 @@ import {
 import {
   SCALE_TYPE_LOG,
   SCALE_TYPE_SYMLOG,
+  makeUnclampedScoreNormalizer,
 } from '@jbrowse/render-core/scoreScale'
 import { clipSide } from '@jbrowse/render-core/shaders/clipStrip'
 import {
@@ -32,7 +33,6 @@ import {
   drawnRowHeightPx,
   rowBandOffsetPx,
 } from '@jbrowse/render-core/shaders/rowRect'
-import { normalizeScoreUnclamped } from '@jbrowse/render-core/shaders/scoreScale'
 import { appendPointMarker, makeScoreNormalizer } from '@jbrowse/wiggle-core'
 
 import { WIGGLE_MIN_PX } from '../util.ts'
@@ -106,16 +106,13 @@ function makeColorToY(
   scaleType: ScaleTypeCode,
   symlogConstant: number,
 ) {
-  return (cut: number) => {
-    const norm = normalizeScoreUnclamped(
-      cut,
-      domainY[0],
-      domainY[1],
-      scaleType,
-      symlogConstant,
-    )
-    return (1 - norm) * rowHeight
-  }
+  const normalize = makeUnclampedScoreNormalizer(
+    domainY[0],
+    domainY[1],
+    scaleType,
+    symlogConstant,
+  )
+  return (score: number) => (1 - normalize(score)) * rowHeight
 }
 
 function makeRampFill({
@@ -363,9 +360,12 @@ export function drawLine({
     return
   }
   ctx.lineWidth = lineWidth
-  const scoreToY = makeScoreToY(rowHeight, domainY, scaleType, symlogConstant)
   const colorToY = makeColorToY(rowHeight, domainY, scaleType, symlogConstant)
-  const gapY = scoreToY(source.gapScore ?? 0) + rowTop
+  const rowBottom = rowTop + rowHeight
+  const gapY = Math.min(
+    Math.max(colorToY(source.gapScore ?? 0) + rowTop, rowTop),
+    rowBottom,
+  )
   const positions = source.featurePositions
   const scores = source.featureScores
   const toX = makeBpMapper(block)
@@ -379,8 +379,8 @@ export function drawLine({
         const endBp = positions[i * 2 + 1]!
         const x1 = toX(positions[i * 2]!)
         const x2 = toX(endBp)
-        const scoreY = scoreToY(scores[i]!) + rowTop
         const scoreColorY = colorToY(scores[i]!) + rowTop
+        const scoreY = Math.min(Math.max(scoreColorY, rowTop), rowBottom)
         if (!inRun) {
           pen.moveTo(x1, gapY)
           inRun = true
@@ -432,12 +432,12 @@ export function drawLineCenter({
   // Round joins/caps match the GPU capsule so sharp bends don't nick.
   ctx.lineJoin = 'round'
   ctx.lineCap = 'round'
-  const scoreToY = makeScoreToY(rowHeight, domainY, scaleType, symlogConstant)
   const positions = source.featurePositions
   const scores = source.featureScores
   const toX = makeBpMapper(block)
   const gapLimitBp = source.gapLimitBp ?? Number.POSITIVE_INFINITY
   const colorToY = makeColorToY(rowHeight, domainY, scaleType, symlogConstant)
+  const rowBottom = rowTop + rowHeight
   strokeByBands(
     ctx,
     cuts.map(cut => colorToY(Math.fround(cut)) + rowTop),
@@ -445,8 +445,8 @@ export function drawLineCenter({
     pen => {
       for (let i = 0; i < n; i++) {
         const cx = (toX(positions[i * 2]!) + toX(positions[i * 2 + 1]!)) / 2
-        const cy = scoreToY(scores[i]!) + rowTop
         const colorY = colorToY(scores[i]!) + rowTop
+        const cy = Math.min(Math.max(colorY, rowTop), rowBottom)
         if (!centerLinksToPrevious(positions, i, gapLimitBp)) {
           pen.moveTo(cx, cy, colorY)
         }
