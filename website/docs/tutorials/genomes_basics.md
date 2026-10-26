@@ -47,7 +47,7 @@ selector showing. Type `TP53` into the location box and press Enter. The hosted
 config ships a name index, so gene symbols resolve, and coordinates like
 `chr17:7,668,400-7,687,550` work too.
 
-<Figure src="/img/genomes_basics/search_tp53.png" caption="Top: TP53 typed into the location box. Middle: the view Enter opens, with the isoform control circled. Bottom: the same view after picking Representative transcript." />
+<Figure src="/img/genomes_basics/search_tp53.png" caption="Top: TP53 typed into the location box. Bottom: the view Enter opens, with the isoform control circled." />
 
 RefSeq All draws each transcript on a separate row, and _TP53_ has more than the
 track's height holds. Two controls trim the isoforms:

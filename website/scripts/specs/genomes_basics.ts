@@ -212,15 +212,6 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
           },
         ],
       },
-      {
-        viewportHeight: 340,
-        actions: [
-          { type: 'click', selector: '[data-testid="track-control-isoform"]' },
-          { type: 'click', text: 'Representative transcript' },
-          { type: 'delay', ms: 1500 },
-          PARK_CURSOR,
-        ],
-      },
     ],
   },
 

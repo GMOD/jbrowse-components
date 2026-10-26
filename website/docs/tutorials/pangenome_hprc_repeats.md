@@ -174,22 +174,15 @@ haplotype's copies settles it.
 
 We host one as a track: a single VCF 4.5 `<CNV:TR>` record at the array over
 every haplotype whose walk reaches both flanks. Each allele lists its runs of
-one copy type and every copy's length, a phased genotype puts each allele on its
-haplotype, and a samples table gives each sample's population:
+one copy type and every copy's length, and a phased genotype puts each allele on
+its haplotype:
 
 ```json addtrack loc=chr6:160,616,002-160,646,753
 {
-  "type": "VariantTrack",
   "trackId": "hprc_kiv2_copies_all",
   "name": "LPA KIV-2 copies by unit, all HPRC haplotypes",
-  "assemblyNames": ["hg38"],
-  "adapter": {
-    "type": "VcfTabixAdapter",
-    "uri": "https://jbrowse.org/demos/hprc/hprc_kiv2_copies_all.vcf.gz",
-    "samplesTsvLocation": {
-      "uri": "https://jbrowse.org/demos/hprc/hprc_samples.tsv"
-    }
-  }
+  "uri": "https://jbrowse.org/demos/hprc/hprc_kiv2_copies_all.vcf.gz",
+  "assemblyNames": ["hg38"]
 }
 ```
 
@@ -198,10 +191,7 @@ TandemRepeat plugin, which the hosted config loads beside the graph plugin,
 opens a view with one bar per haplotype, each with a bp axis and each copy
 colored by its type. Hover a copy for its haplotype.
 
-**Group by… → superpopulation** in the view's menu splits the bars by that
-column of the samples table.
-
-<Figure caption="The KIV-2 record's repeat copies grouped by superpopulation, each copy colored by its type." src="/img/pangenome/hprc_kiv2_copies_by_superpopulation.png" />
+<Figure caption="The KIV-2 record's repeat copies, one bar per haplotype, each copy colored by its type." src="/img/pangenome/hprc_kiv2_copies.png" />
 
 The track selector also holds `LPA KIV-2 copies by unit, eight HPRC haplotypes`,
 few enough bars to label each by name.

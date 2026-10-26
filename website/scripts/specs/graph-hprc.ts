@@ -726,7 +726,7 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
   },
   {
     mode: 'url',
-    name: 'pangenome/hprc_kiv2_copies_by_superpopulation',
+    name: 'pangenome/hprc_kiv2_copies',
     url: sessionSpec(HOSTED_HPRC_CONFIG, {
       views: [
         {
@@ -768,23 +768,6 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
         type: 'waitForSelector',
         selector: '[data-testid="tandem-repeat-view"]',
       },
-      {
-        type: 'click',
-        selector:
-          '[data-testid^="view-container-"]:has([data-testid="tandem-repeat-view"]) [data-testid="view_menu_icon"]',
-      },
-      { type: 'waitForText', text: 'Group by…' },
-      { type: 'click', text: 'Group by…' },
-      { type: 'waitForText', text: 'superpopulation' },
-      { type: 'click', text: 'superpopulation' },
-      {
-        type: 'waitForSelector',
-        selector: '[data-testid="tandem-repeat-section"]',
-      },
-      // a radio item leaves its menu open; Escape here closes only the menu
-      { type: 'press', key: 'Escape' },
-      { type: 'press', key: 'Escape' },
-      { type: 'waitForText', text: 'Group by…', hidden: true },
       { type: 'delay', ms: 500 },
     ],
   },
