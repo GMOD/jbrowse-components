@@ -31,6 +31,7 @@ import {
   colorSlotsOf,
   scaleEndProblems,
   scaleEndsOf,
+  UNIVERSAL_FIELD_PRESETS,
   withImpliedField,
 } from './markRules/colorScale.ts'
 import { markProblems } from './markRules/markProblems.ts'
@@ -816,7 +817,10 @@ function checkChannels(
       warn(where, problem)
     }
     const field = channelMember(written, slot, ['field'])
-    const presets = Object.keys(slot.fieldPresets).filter(f => f !== '*')
+    const presets = [
+      ...Object.keys(slot.fieldPresets),
+      ...Object.keys(UNIVERSAL_FIELD_PRESETS),
+    ].filter(f => f !== '*')
     const near =
       typeof field === 'string' && !presets.includes(field)
         ? suggest(field, presets)

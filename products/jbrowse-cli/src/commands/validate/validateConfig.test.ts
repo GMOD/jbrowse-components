@@ -708,6 +708,13 @@ describe('validateConfig', () => {
       expect(
         found(display('LinearAlignmentsDisplay', { field: 'strand' })),
       ).toEqual([])
+      expect(
+        found({
+          type: 'FeatureTrack',
+          adapter: { type: 'BedTabixAdapter', uri: 'x.bed.gz' },
+          ...display('LinearBasicDisplay', { field: 'svtyp' }),
+        }),
+      ).toEqual([`field-near-preset ${where}.field`])
     })
 
     it('checks displayDefaults against the display the track offers', () => {
