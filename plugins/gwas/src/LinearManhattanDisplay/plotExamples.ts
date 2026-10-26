@@ -11,7 +11,7 @@ export const MANHATTAN_PLOT_EXAMPLES: PlotExample[] = [
     description: 'a genome-wide significance line',
   },
   {
-    plot: '{ "encoding": null }',
+    plot: '{ "encoding": { "y": null } }',
     description: 'the axis following the data',
   },
 ]
