@@ -120,7 +120,7 @@ export interface MultiWayTablesArgs {
    * them: `ribbons.encoding.color` (a field such as `'strand'`, or the color
    * channel's slots such as `{ value: 'grey' }`), `ribbons.mark.interpolate`,
    * `rows` (`sort`, the lanes that stack first, and `kept`, the lanes drawn),
-   * `hideUnlabelled`, `splitStrands`, `showGeneLabels`, `inlineLaneNames`
+   * `hideUnlabelled`, `splitStrands`, `labels.name.show`, `inlineLaneNames`
    * and `height`, the stack's px.
    */
   display?: {
@@ -131,7 +131,7 @@ export interface MultiWayTablesArgs {
     rows?: { sort?: string[]; kept?: string[] }
     hideUnlabelled?: boolean
     splitStrands?: boolean
-    showGeneLabels?: boolean
+    labels?: { name?: { show?: boolean; field?: string } }
     inlineLaneNames?: boolean
     height?: number
   }
@@ -197,7 +197,7 @@ function readDisplay(slots: MultiWayTablesArgs['display'] = {}) {
     hideUnlabelled: readConfObject(conf, 'hideUnlabelled'),
     curves: readConfObject(conf, ['ribbons', 'mark', 'interpolate']) === 'bump',
     splitStrands: readConfObject(conf, 'splitStrands'),
-    showGeneLabels: readConfObject(conf, 'showGeneLabels'),
+    showGeneLabels: readConfObject(conf, ['labels', 'name', 'show']),
     inlineLaneNames: readConfObject(conf, 'inlineLaneNames'),
     height: readConfObject(conf, 'height'),
     config: fullConfSnapshot(conf),

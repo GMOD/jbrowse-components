@@ -32,8 +32,11 @@ export {
   linearBasicDisplayConfigSchemaFactory,
   linearCanvasBaseDisplayConfigSchemaFactory,
 } from './LinearBasicDisplay/index.ts'
-// The label-content vocabulary, for a display outside this plugin offering the
-// same choices.
+// The label parts, for a display outside this plugin labeling the same
+// records: `labels.name` and `labels.description`.
+export { featureNameLabelConfigSchema } from './LinearBasicDisplay/featureNameLabelConfigSchema.ts'
+export { featureDescriptionLabelConfigSchema } from './LinearBasicDisplay/featureDescriptionLabelConfigSchema.ts'
+// Deprecated: the five-value label mode `labels.*.show` replaced.
 export {
   SHOW_LABELS_MODES,
   modeCanShowDescription,

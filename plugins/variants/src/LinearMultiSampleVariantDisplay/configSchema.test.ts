@@ -11,6 +11,24 @@ import { createTestEnvironment } from './testEnv.ts'
 describe('the display config schema', () => {
   const configSchema = configSchemaFactory()
 
+  // A share link written before the label parts carries the five-value mode.
+  it.each([
+    ['none', [false, false]],
+    ['name', [true, false]],
+    ['description', [false, true]],
+    ['auto', [true, true]],
+  ])("lifts the band's showLabels %j onto its label parts", (mode, shown) => {
+    const config = configSchema.create({
+      type: 'LinearMultiSampleVariantDisplay',
+      displayId: `band-labels-${mode}`,
+      variants: { show: true, showLabels: mode },
+    })
+    expect([
+      readConfObject(config, ['variants', 'labels', 'name', 'show']),
+      readConfObject(config, ['variants', 'labels', 'description', 'show']),
+    ]).toEqual(shown)
+  })
+
   // `showReferenceAlleles` was a second boolean whose only job was seeding this
   // one; it is gone, and this slot is the whole setting.
   describe('referenceDrawingMode config slot', () => {

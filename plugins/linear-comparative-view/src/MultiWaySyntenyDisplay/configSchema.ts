@@ -3,6 +3,7 @@ import { utrDefaultColor } from '@jbrowse/core/ui/palette'
 import baseLinearDisplayConfigSchema from '@jbrowse/display-kit/configSchema'
 import { legendConfigSchema } from '@jbrowse/display-kit/legendConfigSchema'
 import { types } from '@jbrowse/mobx-state-tree'
+import { featureNameLabelConfigSchema } from '@jbrowse/plugin-canvas'
 import { syntenyDataConfigSchema } from '@jbrowse/synteny-core'
 
 import { geneEncodingConfigSchema } from './geneEncodingConfigSchema.ts'
@@ -155,16 +156,22 @@ export function configSchemaFactory() {
         defaultValue: true,
       },
       /**
-       * #slot
-       * The feature field, or jexl expression over `feature`, each lane's
-       * gene labels print; unset, the gene's name, else its ID.
+       * #slot labels
+       * The gene names each lane prints in a row under its genes, dropping a
+       * name where its neighbours leave it no room. The display's top-level
+       * `labels` are its genes', as its `encoding` is.
        */
-      text: {
-        type: 'featureField',
-        defaultValue: '',
-        description: 'gene label field, or jexl expression',
-        plot: true,
-      },
+      labels: ConfigurationSchema(
+        'MultiWayGeneLabels',
+        {
+          /**
+           * #slot labels.name
+           * Each gene's name, a [](/docs/config/featurenamelabel) object.
+           */
+          name: featureNameLabelConfigSchema,
+        },
+        { closed: true, plot: true },
+      ),
       /**
        * #slot
        */
@@ -173,15 +180,6 @@ export function configSchemaFactory() {
         description:
           "print each lane's genome name over the left end of its gene row, without its coordinates, instead of on a line above the genes. The stack then fits 12 px less per lane",
         defaultValue: false,
-      },
-      /**
-       * #slot
-       */
-      showGeneLabels: {
-        type: 'boolean',
-        description:
-          "print gene names in a row under each lane's genes, dropping a name where its neighbours leave it no room",
-        defaultValue: true,
       },
       /**
        * #slot laneLayers
@@ -218,6 +216,10 @@ export function configSchemaFactory() {
           ribbons: { mark: { interpolate: curves ? 'bump' : 'linear' } },
         }),
         bridgeSkippedLanes: () => ({}),
+        // an empty `text` read the name, else the ID, the label's default
+        text: (field: unknown) =>
+          field ? { labels: { name: { field } } } : {},
+        showGeneLabels: (show: unknown) => ({ labels: { name: { show } } }),
       },
     },
   )

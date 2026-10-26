@@ -80,14 +80,14 @@ export function configSlotViews(self: ConfigSlotSelf) {
     },
     /** #getter */
     get showGeneLabels(): boolean {
-      return getConf(self, 'showGeneLabels')
+      return getConf(self, ['labels', 'name', 'show'])
     },
     /**
      * #getter
-     * a field, a jexl expression, or empty for the name-else-ID default
+     * `labels.name.field`: a field or a jexl expression, empty for no name
      */
     get geneTextField(): string {
-      return getConf(self, 'text')
+      return getConf(self, ['labels', 'name', 'field'])
     },
     /** #getter */
     get inlineLaneNames(): boolean {
@@ -95,7 +95,7 @@ export function configSlotViews(self: ConfigSlotSelf) {
     },
     /** #getter */
     get geneLabelPx() {
-      return geneLabelRowPx(getConf(self, 'showGeneLabels'))
+      return geneLabelRowPx(getConf(self, ['labels', 'name', 'show']))
     },
     /** #getter */
     get laneLayerHeights(): number[] {
@@ -172,11 +172,11 @@ export function configSlotActions(self: ConfigSlotSelf) {
     },
     /** #action */
     setShowGeneLabels(flag: boolean) {
-      setConf(self, 'showGeneLabels', flag)
+      setConf(self, ['labels', 'name', 'show'], flag)
     },
     /** #action */
     setGeneTextField(field: string) {
-      setConf(self, 'text', field)
+      setConf(self, ['labels', 'name', 'field'], field)
     },
     /** #action */
     setResolution(mode: LodMode) {

@@ -91,16 +91,34 @@ export default function ldTrackDisplayConfigSchema() {
         { closed: true },
       ),
       /**
-       * #slot
+       * #slot labels
+       * The text drawn at each variant's tick mark.
        */
-      showLabels: {
-        type: 'stringEnum',
-        model: types.enumeration('LDShowLabels', ['none', 'name']),
-        defaultValue: 'none',
-        description:
-          '`name` draws each variant name above its tick mark and `none` draws no labels, two of the modes of the feature display `showLabels`',
-        advanced: true,
-      },
+      labels: ConfigurationSchema(
+        'LDLabels',
+        {
+          /**
+           * #slot labels.name
+           * Each variant's name, above its tick mark.
+           */
+          name: ConfigurationSchema(
+            'LDNameLabel',
+            {
+              /**
+               * #slot labels.name.show
+               */
+              show: {
+                type: 'boolean',
+                defaultValue: false,
+                description: 'draw each variant name above its tick mark',
+                advanced: true,
+              },
+            },
+            { closed: true, plot: true },
+          ),
+        },
+        { closed: true, plot: true },
+      ),
       /**
        * #slot
        */
@@ -151,12 +169,11 @@ export default function ldTrackDisplayConfigSchema() {
         lengthCutoffFilter: () => ({}),
         hweFilterThreshold: () => ({}),
         callRateFilter: () => ({}),
+        // v4's boolean, and the beta 'name' | 'none'
+        showLabels: shown => ({
+          labels: { name: { show: shown === true || shown === 'name' } },
+        }),
       },
-      // v4 spelt the label mode as a boolean
-      preProcessSnapshot: snap =>
-        typeof snap.showLabels === 'boolean'
-          ? { ...snap, showLabels: snap.showLabels ? 'name' : 'none' }
-          : snap,
     },
   )
 }

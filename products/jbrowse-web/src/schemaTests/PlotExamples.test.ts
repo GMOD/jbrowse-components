@@ -90,7 +90,7 @@ test("each display's plot settings", () => {
   ).toEqual({
     ChordSyntenyDisplay: ['mark'],
     ChordVariantDisplay: ['encoding', 'mark'],
-    LDTrackDisplay: ['encoding', 'legend'],
+    LDTrackDisplay: ['encoding', 'labels', 'legend'],
     LGVSyntenyDisplay: [
       'coverage',
       'encoding',
@@ -194,11 +194,11 @@ test("each display's plot settings", () => {
     ],
     MultiWaySyntenyDisplay: [
       'encoding',
+      'labels',
       'laneLayers',
       'legend',
       'ribbons',
       'rows',
-      'text',
     ],
   })
 })

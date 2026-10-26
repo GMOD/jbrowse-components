@@ -7,7 +7,6 @@ import { buildLaneRenderData } from './laneRenderData.ts'
 
 import type { VariantFeatureInfo } from '../shared/types.ts'
 import type { LaneSourceData } from './laneRenderData.ts'
-import type { ShowLabelsMode } from '@jbrowse/plugin-canvas'
 
 const jexl = createJexlInstance()
 const region = {
@@ -50,11 +49,12 @@ function source(
 
 function laidOut(
   data: LaneSourceData,
-  {
-    labels = 'none',
-    bpPerPx = 10,
-  }: { labels?: ShowLabelsMode; bpPerPx?: number } = {},
+  { names = false, bpPerPx = 10 }: { names?: boolean; bpPerPx?: number } = {},
 ) {
+  const labels = {
+    name: names ? `jexl:get(feature,'name') || get(feature,'id')` : '',
+    description: '',
+  }
   const built = buildLaneRenderData({
     data,
     region,
@@ -66,7 +66,7 @@ function laidOut(
     reversedRegions: new Set(),
     displayMode: 'compact',
     pinnedFeatureIds: new Set(),
-    showLabels: labels !== 'none',
+    showLabels: names,
     showDescriptions: false,
     flattenRows: true,
   })
@@ -125,8 +125,8 @@ test('each record keeps the color the display resolved for it', () => {
 // plugin-canvas turns a kind off — so `none` must produce no label data at all
 // rather than a blank one that still reserves row height.
 test('label mode none letters nothing', () => {
-  const withNames = laidOut(source([['rs1', 1000, 2000]]), { labels: 'name' })
-  const without = laidOut(source([['rs1', 1000, 2000]]), { labels: 'none' })
+  const withNames = laidOut(source([['rs1', 1000, 2000]]), { names: true })
+  const without = laidOut(source([['rs1', 1000, 2000]]))
   expect(withNames.get(0)!.floatingLabelsData.get('rs1')?.nameLabel?.text).toBe(
     'rs1',
   )

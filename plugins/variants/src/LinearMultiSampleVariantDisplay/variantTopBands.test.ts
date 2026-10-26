@@ -41,7 +41,7 @@ describe('the band stack', () => {
     expect(
       variantTopBandsGeometry({
         showVariantLane: true,
-        variantLaneLabels: 'none',
+        variantLaneLabels: { name: '', description: '' },
         variantLaneHeight: 20,
         lineZoneHeight: 30,
       }),
@@ -61,7 +61,7 @@ describe('the band stack', () => {
     expect(
       variantTopBandsGeometry({
         showVariantLane: false,
-        variantLaneLabels: 'none',
+        variantLaneLabels: { name: '', description: '' },
         variantLaneHeight: 20,
         lineZoneHeight: 30,
       }),
@@ -81,7 +81,7 @@ describe('the band stack', () => {
     const bands = (variantLaneHeight: number) =>
       variantTopBandsGeometry({
         showVariantLane: true,
-        variantLaneLabels: 'none',
+        variantLaneLabels: { name: '', description: '' },
         variantLaneHeight,
         lineZoneHeight: 0,
       })

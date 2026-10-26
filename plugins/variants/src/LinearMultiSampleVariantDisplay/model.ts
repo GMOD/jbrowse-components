@@ -149,6 +149,7 @@ import type {
   VariantMatrixRenderingBackend,
 } from './matrix/variantMatrixRenderingBackendTypes.ts'
 import type { Placed } from './placeVariantRows.ts'
+import type { VariantLaneLabels } from './variantTopBands.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
@@ -172,7 +173,6 @@ import type {
   LabelRoomFactorFreeInputs,
   LayoutInputs,
   LayoutRegionData,
-  ShowLabelsMode,
 } from '@jbrowse/plugin-canvas'
 import type {
   RowAlias,
@@ -706,11 +706,33 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * Which label kinds the variant lane asks for; what it draws is
-         * `laneRenderedLabels`.
+         * `variants.labels.name.show`
          */
-        get variantLaneLabels(): ShowLabelsMode {
-          return getConf(self, ['variants', 'showLabels'])
+        get variantLaneShowsNames(): boolean {
+          return getConf(self, ['variants', 'labels', 'name', 'show'])
+        },
+        /**
+         * #getter
+         * `variants.labels.description.show`
+         */
+        get variantLaneShowsDescriptions(): boolean {
+          return getConf(self, ['variants', 'labels', 'description', 'show'])
+        },
+        /**
+         * #getter
+         * The field each label kind the variant lane draws reads, empty where
+         * it is hidden; what it draws is `laneRenderedLabels`.
+         */
+        get variantLaneLabels(): VariantLaneLabels {
+          const field = (kind: 'name' | 'description', shown: boolean) =>
+            shown ? getConf(self, ['variants', 'labels', kind, 'field']) : ''
+          return {
+            name: field('name', this.variantLaneShowsNames),
+            description: field(
+              'description',
+              this.variantLaneShowsDescriptions,
+            ),
+          }
         },
 
         /**
@@ -955,8 +977,14 @@ export function stateModelFactory(
           /**
            * #action
            */
-          setVariantLaneLabels(arg: ShowLabelsMode) {
-            setConf(self, ['variants', 'showLabels'], arg)
+          setVariantLaneShowsNames(show: boolean) {
+            setConf(self, ['variants', 'labels', 'name', 'show'], show)
+          },
+          /**
+           * #action
+           */
+          setVariantLaneShowsDescriptions(show: boolean) {
+            setConf(self, ['variants', 'labels', 'description', 'show'], show)
           },
           /**
            * #action

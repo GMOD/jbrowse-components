@@ -5969,15 +5969,34 @@ export const configManifest: ConfigManifest = {
           "type": "boolean"
         },
         {
-          "name": "text",
-          "type": "string"
+          "name": "labels",
+          "type": "MultiWayGeneLabelsConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "name",
+              "type": "FeatureNameLabelConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "show",
+                  "type": "boolean"
+                },
+                {
+                  "name": "field",
+                  "type": "string"
+                }
+              ],
+              "schema": "FeatureNameLabel",
+              "writes": "members",
+              "shorthand": {
+                "string": "field"
+              }
+            }
+          ],
+          "schema": "MultiWayGeneLabels",
+          "writes": "members"
         },
         {
           "name": "inlineLaneNames",
-          "type": "boolean"
-        },
-        {
-          "name": "showGeneLabels",
           "type": "boolean"
         },
         {
@@ -6389,7 +6408,9 @@ export const configManifest: ConfigManifest = {
         "mouseover",
         "jexlFilters",
         "drawCurves",
-        "bridgeSkippedLanes"
+        "bridgeSkippedLanes",
+        "text",
+        "showGeneLabels"
       ],
       "droppedKeys": [
         "maxFeatureScreenDensity",
@@ -7188,9 +7209,54 @@ export const configManifest: ConfigManifest = {
               "type": "number"
             },
             {
-              "name": "showLabels",
-              "type": "showLabels"
+              "name": "labels",
+              "type": "VariantsBandLabelsConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "name",
+                  "type": "FeatureNameLabelConfigurationSchema",
+                  "subSlots": [
+                    {
+                      "name": "show",
+                      "type": "boolean"
+                    },
+                    {
+                      "name": "field",
+                      "type": "string"
+                    }
+                  ],
+                  "schema": "FeatureNameLabel",
+                  "writes": "members",
+                  "shorthand": {
+                    "string": "field"
+                  }
+                },
+                {
+                  "name": "description",
+                  "type": "FeatureDescriptionLabelConfigurationSchema",
+                  "subSlots": [
+                    {
+                      "name": "show",
+                      "type": "boolean"
+                    },
+                    {
+                      "name": "field",
+                      "type": "string"
+                    }
+                  ],
+                  "schema": "FeatureDescriptionLabel",
+                  "writes": "members",
+                  "shorthand": {
+                    "string": "field"
+                  }
+                }
+              ],
+              "schema": "VariantsBandLabels",
+              "writes": "members"
             }
+          ],
+          "legacyKeys": [
+            "showLabels"
           ],
           "schema": "VariantsBand",
           "writes": "members"
@@ -7369,8 +7435,24 @@ export const configManifest: ConfigManifest = {
           "writes": "members"
         },
         {
-          "name": "showLabels",
-          "type": "LDShowLabels"
+          "name": "labels",
+          "type": "LDLabelsConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "name",
+              "type": "LDNameLabelConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "show",
+                  "type": "boolean"
+                }
+              ],
+              "schema": "LDNameLabel",
+              "writes": "members"
+            }
+          ],
+          "schema": "LDLabels",
+          "writes": "members"
         },
         {
           "name": "tickHeight",
@@ -7401,7 +7483,8 @@ export const configManifest: ConfigManifest = {
         "minorAlleleFrequencyFilter",
         "lengthCutoffFilter",
         "hweFilterThreshold",
-        "callRateFilter"
+        "callRateFilter",
+        "showLabels"
       ],
       "droppedKeys": [
         "maxFeatureScreenDensity",
@@ -7419,12 +7502,6 @@ export const configManifest: ConfigManifest = {
         "hweFilterThreshold",
         "callRateFilter"
       ],
-      "legacyValues": {
-        "showLabels": [
-          true,
-          false
-        ]
-      },
       "stateModelProps": [
         "id",
         "type",

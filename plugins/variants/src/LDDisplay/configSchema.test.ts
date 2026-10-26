@@ -107,21 +107,21 @@ describe('encoding.color', () => {
   })
 })
 
-describe('showLabels', () => {
-  test('takes the two label modes the display draws, and none unset', () => {
-    expect(readConfObject(make(), 'showLabels')).toBe('none')
-    expect(readConfObject(make({ showLabels: 'name' }), 'showLabels')).toBe(
-      'name',
-    )
-    expect(() => make({ showLabels: 'auto' })).toThrow()
+describe('labels.name', () => {
+  test('draws no names unset', () => {
+    expect(readConfObject(make(), ['labels', 'name', 'show'])).toBe(false)
   })
 
-  // a boolean on LDTrackDisplay through v4.3.0
+  // a boolean on LDTrackDisplay through v4.3.0, then 'name' | 'none'
   test.each([
-    [true, 'name'],
-    [false, 'none'],
-  ])('lifts the v4 %s to %s', (v4, mode) => {
-    expect(readConfObject(make({ showLabels: v4 }), 'showLabels')).toBe(mode)
+    [true, true],
+    [false, false],
+    ['name', true],
+    ['none', false],
+  ])('lifts the old showLabels %j', (old, shown) => {
+    expect(
+      readConfObject(make({ showLabels: old }), ['labels', 'name', 'show']),
+    ).toBe(shown)
   })
 })
 

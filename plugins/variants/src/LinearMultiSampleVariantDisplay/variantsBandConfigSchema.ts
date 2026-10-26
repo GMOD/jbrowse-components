@@ -1,6 +1,8 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import { types } from '@jbrowse/mobx-state-tree'
-import { SHOW_LABELS_MODES } from '@jbrowse/plugin-canvas'
+import {
+  featureDescriptionLabelConfigSchema,
+  featureNameLabelConfigSchema,
+} from '@jbrowse/plugin-canvas'
 
 import { DEFAULT_VARIANT_LANE_HEIGHT } from './variantTopBands.ts'
 
@@ -41,19 +43,39 @@ export const variantsBandConfigSchema = ConfigurationSchema(
       description: 'height of the band in pixels, taken from the rows',
     },
     /**
-     * #slot
-     * Letter the marks with each record's VCF ID and/or its description, as a
-     * `LinearVariantDisplay` letters the same record. That display's fit
-     * ladder decides what the band has room for: descriptions drop first, then
-     * IDs are thinned, then dropped.
+     * #slot labels
+     * Letter the marks as a `LinearVariantDisplay` letters the same record:
+     * `labels.name`, each record's ID, and `labels.description`, each a
+     * [](/docs/config/featurenamelabel) and
+     * [](/docs/config/featuredescriptionlabel) object. The band's fit ladder
+     * decides what it has room for: descriptions drop first, then IDs thin,
+     * then drop.
      */
-    showLabels: {
-      type: 'stringEnum',
-      model: types.enumeration('showLabels', [...SHOW_LABELS_MODES]),
-      defaultValue: 'auto',
-      description:
-        "label text drawn beside each mark: the record's ID and/or its description, in plugin-canvas's own vocabulary. 'auto' admits both, the band's collision cull deciding what fits",
+    labels: ConfigurationSchema(
+      'VariantsBandLabels',
+      {
+        name: featureNameLabelConfigSchema,
+        description: featureDescriptionLabelConfigSchema,
+      },
+      { closed: true, plot: true },
+    ),
+  },
+  {
+    closed: true,
+    plot: true,
+    // the five-value label mode share links still carry
+    retired: {
+      showLabels: mode => {
+        const labels = {
+          ...(mode === 'none' || mode === 'description'
+            ? { name: { show: false } }
+            : {}),
+          ...(mode === 'none' || mode === 'name'
+            ? { description: { show: false } }
+            : {}),
+        }
+        return Object.keys(labels).length > 0 ? { labels } : {}
+      },
     },
   },
-  { closed: true, plot: true },
 )

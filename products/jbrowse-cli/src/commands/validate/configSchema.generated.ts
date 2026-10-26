@@ -9539,6 +9539,25 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "additionalProperties": false
     },
+    "MultiWayGeneLabels": {
+      "title": "MultiWayGeneLabels",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "name": {
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FeatureNameLabel"
+          }
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
     "MarkHeight": {
       "title": "MarkHeight",
       "type": "object",
@@ -11266,29 +11285,17 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "boolean"
           }
         },
-        "text": {
-          "description": "gene label field, or jexl expression.",
-          "default": "",
+        "labels": {
           "if": {
             "type": "null"
           },
           "else": {
-            "$ref": "#/$defs/FeatureField"
+            "$ref": "#/$defs/MultiWayGeneLabels"
           }
         },
         "inlineLaneNames": {
           "description": "print each lane's genome name over the left end of its gene row, without its coordinates, instead of on a line above the genes. The stack then fits 12 px less per lane.",
           "default": false,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "boolean"
-          }
-        },
-        "showGeneLabels": {
-          "description": "print gene names in a row under each lane's genes, dropping a name where its neighbours leave it no room.",
-          "default": true,
           "if": {
             "type": "null"
           },
@@ -11338,6 +11345,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
         "bridgeSkippedLanes": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "text": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "showGeneLabels": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
@@ -12401,11 +12416,42 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         }
       ]
     },
+    "VariantsBandLabels": {
+      "title": "VariantsBandLabels",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "name": {
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FeatureNameLabel"
+          }
+        },
+        "description": {
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FeatureDescriptionLabel"
+          }
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
     "VariantsBand": {
       "title": "VariantsBand",
       "type": "object",
       "x-closed": true,
       "properties": {
+        "showLabels": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
         "show": {
           "description": "draw the variants themselves above the genotype rows, at their genomic positions.",
           "default": false,
@@ -12426,20 +12472,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "number"
           }
         },
-        "showLabels": {
-          "description": "label text drawn beside each mark: the record's ID and/or its description, in plugin-canvas's own vocabulary. 'auto' admits both, the band's collision cull deciding what fits.",
-          "default": "auto",
+        "labels": {
           "if": {
             "type": "null"
           },
           "else": {
-            "enum": [
-              "auto",
-              "nameAndDescription",
-              "name",
-              "description",
-              "none"
-            ]
+            "$ref": "#/$defs/VariantsBandLabels"
           }
         }
       },
@@ -12902,6 +12940,46 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "additionalProperties": false
     },
+    "LDNameLabel": {
+      "title": "LDNameLabel",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "show": {
+          "description": "draw each variant name above its tick mark.",
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
+    "LDLabels": {
+      "title": "LDLabels",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "name": {
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/LDNameLabel"
+          }
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
     "LDTrackDisplaySlots": {
       "type": "object",
       "properties": {
@@ -12962,29 +13040,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/LDGuides"
           }
         },
-        "showLabels": {
-          "description": "\`name\` draws each variant name above its tick mark and \`none\` draws no labels, two of the modes of the feature display \`showLabels\`.",
-          "default": "none",
+        "labels": {
           "if": {
             "type": "null"
           },
           "else": {
-            "anyOf": [
-              {
-                "enum": [
-                  "none",
-                  "name"
-                ]
-              },
-              {
-                "enum": [
-                  true,
-                  false
-                ],
-                "deprecated": true,
-                "description": "Legacy spellings a migration rewrites when the config loads."
-              }
-            ]
+            "$ref": "#/$defs/LDLabels"
           }
         },
         "tickHeight": {
@@ -13086,6 +13147,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
         "callRateFilter": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "showLabels": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
@@ -18585,8 +18650,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "guides": {
               "$ref": "#/$defs/LDTrackDisplaySlots/properties/guides"
             },
-            "showLabels": {
-              "$ref": "#/$defs/LDTrackDisplaySlots/properties/showLabels"
+            "labels": {
+              "$ref": "#/$defs/LDTrackDisplaySlots/properties/labels"
             },
             "tickHeight": {
               "$ref": "#/$defs/LDTrackDisplaySlots/properties/tickHeight"
@@ -18653,6 +18718,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "callRateFilter": {
               "$ref": "#/$defs/LDTrackDisplaySlots/properties/callRateFilter"
+            },
+            "showLabels": {
+              "$ref": "#/$defs/LDTrackDisplaySlots/properties/showLabels"
             }
           },
           "patternProperties": {
@@ -20884,14 +20952,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "showLaneTicks": {
               "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/showLaneTicks"
             },
-            "text": {
-              "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/text"
+            "labels": {
+              "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/labels"
             },
             "inlineLaneNames": {
               "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/inlineLaneNames"
-            },
-            "showGeneLabels": {
-              "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/showGeneLabels"
             },
             "laneLayers": {
               "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/laneLayers"
@@ -20904,6 +20969,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "bridgeSkippedLanes": {
               "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/bridgeSkippedLanes"
+            },
+            "text": {
+              "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/text"
+            },
+            "showGeneLabels": {
+              "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/showGeneLabels"
             },
             "marks": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/marks"

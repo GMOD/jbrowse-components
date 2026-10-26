@@ -17,16 +17,12 @@
  * plugin-canvas (`laneFitStage`); this file only says how many pixels it gets.
  */
 import { stackBands } from '@jbrowse/core/util/bandLayout'
-import { modeCanShowDescription, modeCanShowName } from '@jbrowse/plugin-canvas'
-
-import type { ShowLabelsMode } from '@jbrowse/plugin-canvas'
 
 interface VariantTopBandsInput {
   showVariantLane: boolean
   /** The lane's configured height, spent only when the lane is on. */
   variantLaneHeight: number
-  /** plugin-canvas's label-content enum. */
-  variantLaneLabels: ShowLabelsMode
+  variantLaneLabels: VariantLaneLabels
   /** 0 on genomic-position displays. */
   lineZoneHeight: number
 }
@@ -62,26 +58,13 @@ export const MAX_VARIANT_LANE_HEIGHT = 120
 export const DEFAULT_VARIANT_LANE_HEIGHT = 40
 
 /**
- * The label-mode radio rows. The values are plugin-canvas's enum; the prose is
- * ours because "auto" means something narrower here: the band cannot grow, so
- * what adapts is how much of each record it spends its height on
- * (`laneFitStage`).
+ * The field each label kind reads off a record, empty where `variants.labels`
+ * hides it.
  */
-export const VARIANT_LANE_LABEL_OPTIONS = [
-  {
-    value: 'auto' as const,
-    label: 'Auto',
-    helpText:
-      'Draw the ID and the description, dropping the description and then thinning the IDs as the band runs out of room',
-  },
-  {
-    value: 'nameAndDescription' as const,
-    label: 'ID and description',
-  },
-  { value: 'name' as const, label: 'ID only' },
-  { value: 'description' as const, label: 'Description only' },
-  { value: 'none' as const, label: 'None' },
-]
+export interface VariantLaneLabels {
+  name: string
+  description: string
+}
 
 export const VARIANT_LANE_BOUNDS = {
   min: MIN_VARIANT_LANE_HEIGHT,
@@ -107,8 +90,8 @@ export function variantTopBandsGeometry({
   })
   return {
     laneHeight: reserved.lane,
-    wantsName: modeCanShowName(variantLaneLabels),
-    wantsDescription: modeCanShowDescription(variantLaneLabels),
+    wantsName: variantLaneLabels.name !== '',
+    wantsDescription: variantLaneLabels.description !== '',
     lineZoneTop: top.lineZone,
     bottom,
   }

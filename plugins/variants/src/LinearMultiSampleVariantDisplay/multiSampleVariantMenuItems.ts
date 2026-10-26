@@ -1,6 +1,6 @@
 import { makeSizeMenu } from '@jbrowse/core/ui'
 import { filterMenuItems } from '@jbrowse/core/ui/filterMenuItems'
-import { makeRadioSubMenu, radioItems } from '@jbrowse/core/ui/menuItems'
+import { makeRadioSubMenu, toggleItem } from '@jbrowse/core/ui/menuItems'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import { assembleLocString, getDialogHost } from '@jbrowse/core/util'
 import { SV_TYPE_FIELD } from '@jbrowse/core/util/categoricalField'
@@ -42,7 +42,6 @@ import {
 import { IMPACT_FIELD } from '../shared/variantConsequence.ts'
 import { VARIANT_FILTER_EXAMPLES } from '../shared/variantFilterExamples.ts'
 import { variantFilterFields } from '../shared/variantFilterFields.ts'
-import { VARIANT_LANE_LABEL_OPTIONS } from './variantTopBands.ts'
 
 import type { LinearMultiSampleVariantDisplayModel } from './model.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
@@ -132,13 +131,18 @@ export function variantShowSubmenuItems(
                   label: 'Variant lane labels',
                   helpText:
                     'Which text is drawn under each mark. The lane is one row, so a label is drawn only where it clears the previous one — they thin out as you zoom out, and a line is dropped when the lane is too short to hold the mark and the text',
-                  subMenu: radioItems(
-                    VARIANT_LANE_LABEL_OPTIONS,
-                    self.variantLaneLabels,
-                    mode => {
-                      self.setVariantLaneLabels(mode)
-                    },
-                  ),
+                  subMenu: [
+                    toggleItem('IDs', self.variantLaneShowsNames, show => {
+                      self.setVariantLaneShowsNames(show)
+                    }),
+                    toggleItem(
+                      'Descriptions',
+                      self.variantLaneShowsDescriptions,
+                      show => {
+                        self.setVariantLaneShowsDescriptions(show)
+                      },
+                    ),
+                  ],
                 },
               ]
             : []),

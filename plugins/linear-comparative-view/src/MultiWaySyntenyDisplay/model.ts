@@ -2223,6 +2223,9 @@ export function stateModelFactory(
       get geneTextOf(): (feature: Feature) => string | undefined {
         const field = self.geneTextField
         if (!field) {
+          return () => undefined
+        }
+        if (field === FEATURE_NAME_FIELD) {
           return getFeatureName
         }
         try {
