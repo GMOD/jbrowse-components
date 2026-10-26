@@ -765,29 +765,36 @@ export function nextGroupHeightOverride({
   return Math.max(rowHeight, Math.round((existingPx ?? displayedPx) + dy))
 }
 
-// The row caps the per-lane height overrides and "show all" lanes impose. An
-// override is a BAND height and a cap is a row count, so every px between two
-// row boundaries, and every px past what the lane's reads fill, names the same
-// caps. A "show all" lane takes the ceiling as its own cap, which opts it out
-// of the shared budget and the collapse as an override does, and which reports
-// a clip as the ceiling's, so the notice offering to raise it still shows.
+/**
+ * A size a user set on one lane: a px band height a drag set, or 'all', the
+ * chip's "show all", which lifts the lane's cap to `pileup.maxLayoutHeight`
+ * and pads nothing.
+ */
+export type GroupSize = number | 'all'
+
+// The row caps the per-lane sizes impose. A px size is a BAND height and a cap
+// is a row count, so every px between two row boundaries, and every px past
+// what the lane's reads fill, names the same caps. A "show all" lane takes the
+// ceiling as its own cap, which opts it out of the shared budget and the
+// collapse as a px size does, and which reports a clip as the ceiling's, so
+// the notice offering to raise it still shows.
 export function groupRowCaps({
-  overridesPx,
-  expandedKeys,
+  sizes,
   ceilingPx,
   rowHeight,
 }: {
-  overridesPx: ReadonlyMap<string, number>
-  expandedKeys: ReadonlySet<string>
+  sizes: ReadonlyMap<string, GroupSize>
   ceilingPx: number
   rowHeight: number
 }) {
   const caps = new Map<string, RowCap>()
-  for (const key of expandedKeys) {
-    caps.set(key, ceilingCap(maxRowsFor(ceilingPx, rowHeight)))
-  }
-  for (const [key, px] of overridesPx) {
-    caps.set(key, overrideCap(maxRowsFor(px, rowHeight)))
+  for (const [key, size] of sizes) {
+    caps.set(
+      key,
+      size === 'all'
+        ? ceilingCap(maxRowsFor(ceilingPx, rowHeight))
+        : overrideCap(maxRowsFor(size, rowHeight)),
+    )
   }
   return caps
 }

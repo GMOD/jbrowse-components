@@ -12,7 +12,7 @@ import {
   tagFiltersOf,
   withFields,
 } from '../../shared/alignmentsFilter.ts'
-import FilterByTagDialog from './FilterByTagDialog.tsx'
+import MoreFiltersDialog from './MoreFiltersDialog.tsx'
 import { declaredFiltersOf } from './layerFilters.ts'
 
 import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
@@ -33,7 +33,7 @@ function renderDialog(
   }
   render(
     <ThemeProvider theme={createJBrowseTheme()}>
-      <FilterByTagDialog model={model} handleClose={() => {}} />
+      <MoreFiltersDialog model={model} handleClose={() => {}} />
     </ThemeProvider>,
   )
   return {
@@ -253,7 +253,7 @@ test('the Sashimi arcs section shows while the arcs draw, and writes its floor',
   }
   render(
     <ThemeProvider theme={createJBrowseTheme()}>
-      <FilterByTagDialog model={model} handleClose={() => {}} />
+      <MoreFiltersDialog model={model} handleClose={() => {}} />
     </ThemeProvider>,
   )
   expect(screen.getByText('Sashimi arcs')).toBeTruthy()

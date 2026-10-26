@@ -246,6 +246,7 @@ import type { ContextMenuHit } from './components/hitTestPipeline.ts'
 import type { ScrollModel } from './components/sectionScreen.ts'
 import type { TooltipPayload } from './components/tooltipUtils.ts'
 import type { AlignmentsUnit } from './constants.ts'
+import type { GroupSize } from './groupLayout.ts'
 import type { AlignmentLane } from './lanes.ts'
 import type { QualitySpan } from './qualitySpans.ts'
 import type {
@@ -285,10 +286,9 @@ export interface HoverCoverageBand {
   coverageHeight: number
 }
 
-// One identity, so `groupHeightOverrides` hands the layout no fresh map per
+// One identity, so `groupSizesInEffect` hands the layout no fresh map per
 // read.
-const NO_GROUP_HEIGHT_OVERRIDES: ReadonlyMap<string, number> = new Map()
-const NO_GROUP_KEYS: ReadonlySet<string> = new Set()
+const NO_GROUP_SIZES: ReadonlyMap<string, GroupSize> = new Map()
 
 // One frozen empty array, so the common no-arcs frame invalidates no observer.
 // Frozen so no caller's in-place `.sort()` corrupts the singleton.
@@ -447,18 +447,12 @@ export default function stateModelFactory(
           collapsedGroups: observable.set<string>(),
           /**
            * #volatile
-           * Per-group pileup height a drag set, in px, keyed by group key and
-           * dropped with `collapsedGroups`. It caps the lane's rows and pads
-           * its band.
+           * Per-group pileup sizes a user set (`GroupSize`), keyed by group key
+           * and dropped with `collapsedGroups`: a drag's px height, which caps
+           * the lane's rows and pads its band, or 'all', the chip's "show
+           * all", which lifts the cap and pads nothing.
            */
-          groupMaxHeightOverrides: observable.map<string, number>(),
-          /**
-           * #volatile
-           * Group keys whose chip's "show all" lifted the lane's cap to
-           * `pileup.maxLayoutHeight`. Unlike a drag it pads nothing, so the
-           * band is as tall as the reads it stacks.
-           */
-          expandedGroups: observable.set<string>(),
+          groupSizes: observable.map<string, GroupSize>(),
           /**
            * #volatile
            * Fitted read pitch in px, written by the afterAttach autorun while
@@ -801,24 +795,12 @@ export default function stateModelFactory(
 
           /**
            * #getter
-           * The per-lane height overrides in effect, not the set banked. Fit
-           * solves one pitch from every lane's full row count, so fit mode
-           * ignores the overrides without dropping them; returning to fixed
-           * restores them.
+           * The lane sizes in effect, not the set banked. Fit solves one pitch
+           * from every lane's full row count, so fit mode ignores the sizes
+           * without dropping them; returning to fixed restores them.
            */
-          get groupHeightOverrides(): ReadonlyMap<string, number> {
-            return self.fitHeightToDisplay
-              ? NO_GROUP_HEIGHT_OVERRIDES
-              : self.groupMaxHeightOverrides
-          },
-
-          /**
-           * #getter
-           * The "show all" lanes in effect, which fit mode ignores as it does
-           * `groupHeightOverrides`.
-           */
-          get expandedGroupKeys(): ReadonlySet<string> {
-            return self.fitHeightToDisplay ? NO_GROUP_KEYS : self.expandedGroups
+          get groupSizesInEffect(): ReadonlyMap<string, GroupSize> {
+            return self.fitHeightToDisplay ? NO_GROUP_SIZES : self.groupSizes
           },
 
           /**
@@ -1203,8 +1185,7 @@ export default function stateModelFactory(
           get groupRowCaps(): ReadonlyMap<string, RowCap> {
             rowCaps ??= stableIdentityComputed(() =>
               groupRowCaps({
-                overridesPx: this.groupHeightOverrides,
-                expandedKeys: this.expandedGroupKeys,
+                sizes: this.groupSizesInEffect,
                 ceilingPx: self.pileupMaxLayoutHeight,
                 rowHeight: this.rowHeight,
               }),
@@ -1436,6 +1417,7 @@ export default function stateModelFactory(
               self.colorEncoding,
               self.colorField,
               this.laidOutByGroupFramed,
+              () => this.linearFieldExtent,
             )
           },
 
@@ -1819,8 +1801,7 @@ export default function stateModelFactory(
             arcInkKeys: self.arcsResult.inkGroupKeys,
             sashimiDownKeysByGroup: self.sashimiDownKeysByGroup,
             collapsedKeys: self.collapsedGroups,
-            heightOverridesPx: self.groupHeightOverrides,
-            expandedKeys: self.expandedGroupKeys,
+            sizes: self.groupSizesInEffect,
             showPileup: self.showPileup,
             fitHeightToDisplay: self.fitHeightToDisplay,
           })
@@ -2972,8 +2953,7 @@ export default function stateModelFactory(
         get ownGroupState() {
           return [
             [...self.collapsedGroups].sort((a, b) => a.localeCompare(b)),
-            Object.fromEntries(self.groupMaxHeightOverrides),
-            [...self.expandedGroups].sort((a, b) => a.localeCompare(b)),
+            Object.fromEntries(self.groupSizes),
           ]
         },
       }))
@@ -2997,8 +2977,7 @@ export default function stateModelFactory(
          */
         dropGroupState() {
           self.collapsedGroups.clear()
-          self.groupMaxHeightOverrides.clear()
-          self.expandedGroups.clear()
+          self.groupSizes.clear()
           self.scrollTop = 0
         },
       }))
@@ -3181,8 +3160,7 @@ export default function stateModelFactory(
            */
           setCollapseSections(flag: boolean) {
             setConf(self, 'collapseSections', flag)
-            self.groupMaxHeightOverrides.clear()
-            self.expandedGroups.clear()
+            self.groupSizes.clear()
             self.scrollTop = 0
           },
 
@@ -3194,14 +3172,10 @@ export default function stateModelFactory(
            * which engages the pileup scroll.
            */
           toggleGroupExpanded(key: string) {
-            if (
-              self.groupMaxHeightOverrides.has(key) ||
-              self.expandedGroups.has(key)
-            ) {
-              self.groupMaxHeightOverrides.delete(key)
-              self.expandedGroups.delete(key)
+            if (self.groupSizes.has(key)) {
+              self.groupSizes.delete(key)
             } else {
-              self.expandedGroups.add(key)
+              self.groupSizes.set(key, 'all')
             }
           },
 
@@ -3217,16 +3191,16 @@ export default function stateModelFactory(
             if (!section) {
               return
             }
-            self.groupMaxHeightOverrides.set(
+            const size = self.groupSizes.get(key)
+            self.groupSizes.set(
               key,
               nextGroupHeightOverride({
                 dy,
                 rowHeight: self.rowHeight,
                 displayedPx: section.pileupHeight,
-                existingPx: self.groupMaxHeightOverrides.get(key),
+                existingPx: typeof size === 'number' ? size : undefined,
               }),
             )
-            self.expandedGroups.delete(key)
           },
 
           /**
@@ -3260,8 +3234,7 @@ export default function stateModelFactory(
           setHeightMode(mode: HeightMode) {
             superSetHeightMode(mode)
             if (mode !== 'fixed') {
-              self.groupMaxHeightOverrides.clear()
-              self.expandedGroups.clear()
+              self.groupSizes.clear()
             }
             // Seed the fitted pitch in the same transaction, so the first
             // render draws reads at the fit height instead of snapping from the

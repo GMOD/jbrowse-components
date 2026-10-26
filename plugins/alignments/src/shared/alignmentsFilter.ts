@@ -46,6 +46,7 @@ import type {
 } from './types.ts'
 import type {
   FieldPredicate,
+  FieldsPatch,
   PredicateLane,
 } from '@jbrowse/core/util/fieldPredicate'
 
@@ -123,7 +124,7 @@ export function withField(
 /** Core's `withFields`, over the alignments defaults. */
 export function withFields(
   written: readonly FieldPredicate[],
-  patch: Readonly<Record<string, readonly FieldPredicate[] | undefined>>,
+  patch: FieldsPatch,
   defaults: readonly FieldPredicate[] = ALIGNMENTS_FILTER_DEFAULTS,
 ): FieldPredicate[] {
   return coreWithFields(written, patch, defaults)

@@ -278,7 +278,7 @@ export function linearFieldExtent(
 
 /**
  * The span of a linear color field over the laid-out reads, which a ramp's
- * open ends stretch across: their extremes, or below a `domainQuantile` of 1
+ * open ends stretch across: `wholeExtent`, or below a `domainQuantile` of 1
  * that quantile of each sign. Undefined while `domainMin` and `domainMax`
  * both pin the ramp or another scale paints.
  */
@@ -286,6 +286,7 @@ export function bakedColorExtent(
   encoding: AlignmentsColorEncoding,
   colorField: string | undefined,
   byGroup: LaidOutByGroup,
+  wholeExtent: () => NumericExtent | undefined,
 ): NumericExtent | undefined {
   if (
     typeof encoding !== 'object' ||
@@ -295,15 +296,11 @@ export function bakedColorExtent(
     return undefined
   }
   const quantile = encoding.domainQuantile ?? 1
-  if (colorFieldKindOf(colorField) === 'tag') {
-    return quantile < 1
-      ? quantileExtentAcrossGroups(byGroup, d => d.readTagValues, quantile)
-      : numericExtentAcrossGroups(byGroup, d => d.readTagValues)
-  }
-  if (colorField === 'mapq') {
-    return quantile < 1
+  return quantile >= 1
+    ? wholeExtent()
+    : colorField === 'mapq'
       ? mapqQuantileExtentAcrossGroups(byGroup, quantile)
-      : mapqExtentAcrossGroups(byGroup)
-  }
-  return undefined
+      : colorFieldKindOf(colorField) === 'tag'
+        ? quantileExtentAcrossGroups(byGroup, d => d.readTagValues, quantile)
+        : undefined
 }

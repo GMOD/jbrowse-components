@@ -6,7 +6,7 @@ import { junctionEntries } from '../../shared/alignmentsFilter.ts'
 import type { JunctionFilter } from '../../shared/types.ts'
 import type { SashimiPlacement } from '../constants.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
-import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
+import type { FieldsPatch } from '@jbrowse/core/util/fieldPredicate'
 
 const SASHIMI_PLACEMENT_OPTIONS: { value: SashimiPlacement; label: string }[] =
   [
@@ -32,9 +32,7 @@ interface SashimiPlacementModel {
 interface JunctionFilterModel {
   showSashimi: boolean
   junctionFilter: JunctionFilter
-  setFilterFields: (
-    patch: Readonly<Record<string, readonly FieldPredicate[] | undefined>>,
-  ) => void
+  setFilterFields: (patch: FieldsPatch) => void
 }
 
 /**

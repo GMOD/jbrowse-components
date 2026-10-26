@@ -255,7 +255,7 @@ test('sorting is blocked while every section is collapsed', () => {
 
 // A lane the user sized themselves still clips, and neither signal fires: what
 // their own cap hides is their own doing. That used to be a second read of
-// `groupMaxHeightOverrides` beside the classification; now the layout records
+// the lane sizes beside the classification; now the layout records
 // whose cap it ran under, so the two cannot disagree about which lanes are
 // overridden.
 test('a lane clipped by its own override raises nothing', () => {
@@ -337,7 +337,7 @@ test('fit ignores a banked height override rather than clipping under it', () =>
   expect(display.canSizeGroupHeights).toBe(false)
 
   expect(clippedBy(display, '1')).toBe('budget')
-  expect(display.groupHeightOverrides.has('1')).toBe(false)
+  expect(display.groupSizesInEffect.has('1')).toBe(false)
   // both lanes take the same slice, and the stack fills the display
   expect(rowsIn(display, 0)).toBe(rowsIn(display, 1))
   expect(display.sections.contentHeight).toBe(display.height)
@@ -345,7 +345,7 @@ test('fit ignores a banked height override rather than clipping under it', () =>
   // inert, not dropped — leaving fit hands the lane back its own cap
   display.configuration.setSlot('heightMode', 'fixed')
   expect(clippedBy(display, '1')).toBe('override')
-  expect(display.groupHeightOverrides.has('1')).toBe(true)
+  expect(display.groupSizesInEffect.has('1')).toBe(true)
 })
 
 // A height drag writes a px per frame, and a lane's layout only changes at a

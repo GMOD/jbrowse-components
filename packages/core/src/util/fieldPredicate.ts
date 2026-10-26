@@ -628,10 +628,15 @@ export function withField(
   )
 }
 
+/** Entries by field, `undefined` returning a field to its defaults. */
+export type FieldsPatch = Readonly<
+  Record<string, readonly FieldPredicate[] | undefined>
+>
+
 /** `withField` over several fields at once. */
 export function withFields(
   written: readonly FieldPredicate[],
-  patch: Readonly<Record<string, readonly FieldPredicate[] | undefined>>,
+  patch: FieldsPatch,
   defaults: readonly FieldPredicate[] = [],
 ): FieldPredicate[] {
   let next = [...written]

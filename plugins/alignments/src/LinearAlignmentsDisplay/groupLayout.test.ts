@@ -16,6 +16,7 @@ import type {
   ColoredByGroup,
   GroupLayoutContext,
   LaidOutByGroup,
+  GroupSize,
 } from './groupLayout.ts'
 
 // Two reads at the same position, so any real layout pass stacks them on rows 0
@@ -258,11 +259,9 @@ test('nextGroupHeightOverride: grows past the content, which pads the band', () 
 })
 
 test('groupRowCaps: px inside one row, or past the content, name one cap', () => {
-  const none = new Set<string>()
   const caps = (px: number) =>
     groupRowCaps({
-      overridesPx: new Map([['HP: 1', px]]),
-      expandedKeys: none,
+      sizes: new Map([['HP: 1', px]]),
       ceilingPx: 6000,
       rowHeight: 20,
     })
@@ -272,18 +271,19 @@ test('groupRowCaps: px inside one row, or past the content, name one cap', () =>
   expect(caps(100).get('HP: 1')).toEqual({ rows: 5, source: 'override' })
   expect(
     groupRowCaps({
-      overridesPx: new Map(),
-      expandedKeys: none,
+      sizes: new Map(),
       ceilingPx: 6000,
       rowHeight: 20,
     }).size,
   ).toBe(0)
 })
 
-test('groupRowCaps: a "show all" lane takes the ceiling cap, a drag over it wins', () => {
+test('groupRowCaps: a "show all" lane takes the ceiling cap, a px lane its own', () => {
   const caps = groupRowCaps({
-    overridesPx: new Map([['HP: 2', 100]]),
-    expandedKeys: new Set(['HP: 1', 'HP: 2']),
+    sizes: new Map<string, GroupSize>([
+      ['HP: 1', 'all'],
+      ['HP: 2', 100],
+    ]),
     ceilingPx: 6000,
     rowHeight: 20,
   })

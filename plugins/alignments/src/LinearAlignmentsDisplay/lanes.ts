@@ -5,6 +5,7 @@ import type {
   RowCapSource,
   WorkerPileupData,
 } from '../RenderAlignmentDataRPC/types.ts'
+import type { GroupSize } from './groupLayout.ts'
 import type { GroupId } from './groupedDataMaps.ts'
 import type { Section, SectionGroupInput } from './sectionLayout.ts'
 
@@ -88,10 +89,8 @@ export interface BuildLanesInput {
   arcInkKeys: ReadonlySet<string>
   sashimiDownKeysByGroup: ReadonlyMap<string, ReadonlySet<string>>
   collapsedKeys: ReadonlySet<string>
-  // The overrides IN EFFECT (`groupHeightOverrides`), which fit mode empties.
-  heightOverridesPx: ReadonlyMap<string, number>
-  // The "show all" lanes IN EFFECT (`expandedGroupKeys`).
-  expandedKeys: ReadonlySet<string>
+  // The lane sizes IN EFFECT (`groupSizesInEffect`), which fit mode empties.
+  sizes: ReadonlyMap<string, GroupSize>
   showPileup: boolean
   fitHeightToDisplay: boolean
 }
@@ -114,8 +113,7 @@ export function buildLanes(input: BuildLanesInput): AlignmentLane[] {
     arcInkKeys,
     sashimiDownKeysByGroup,
     collapsedKeys,
-    heightOverridesPx,
-    expandedKeys,
+    sizes,
     showPileup,
     fitHeightToDisplay,
   } = input
@@ -129,6 +127,7 @@ export function buildLanes(input: BuildLanesInput): AlignmentLane[] {
     const sashimiDownKeys = sashimiDownKeysByGroup.get(key) ?? EMPTY_KEYS
     const collapsed = collapsedKeys.has(key)
     const clippedBy = groupClipSource(laidOutPileupMap)
+    const size = sizes.get(key)
     return {
       groupKey: key,
       label,
@@ -141,8 +140,8 @@ export function buildLanes(input: BuildLanesInput): AlignmentLane[] {
       // arcs only), the same height-0 path a collapsed lane takes.
       maxY: !showPileup || collapsed ? 0 : groupMaxY(laidOutPileupMap),
       collapsed,
-      heightOverridePx: heightOverridesPx.get(key),
-      expanded: expandedKeys.has(key),
+      heightOverridePx: typeof size === 'number' ? size : undefined,
+      expanded: size === 'all',
       clippedBy,
       ceilingClipped: drawsCeilingNotice && clippedBy === 'ceiling',
     }

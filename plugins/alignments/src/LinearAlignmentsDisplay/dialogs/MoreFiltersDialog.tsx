@@ -42,7 +42,7 @@ import {
 
 import type { TagFilter } from '../../shared/types.ts'
 import type { LayerFiltersModel } from './layerFilters.ts'
-import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
+import type { FieldsPatch } from '@jbrowse/core/util/fieldPredicate'
 
 const useStyles = makeStyles()(theme => ({
   tagRows: {
@@ -325,11 +325,9 @@ const TagFilterRows = observer(function TagFilterRows(props: {
 // The menu's "Clear all filters" is what resets the whole filter.
 //
 // One form, one label column: a box per field read as eight separate dialogs.
-const FilterByTagDialog = observer(function FilterByTagDialog(props: {
+const MoreFiltersDialog = observer(function MoreFiltersDialog(props: {
   model: LayerFiltersModel & {
-    setFilterFields: (
-      patch: Readonly<Record<string, readonly FieldPredicate[] | undefined>>,
-    ) => void
+    setFilterFields: (patch: FieldsPatch) => void
   }
   handleClose: () => void
 }) {
@@ -472,4 +470,4 @@ const FilterByTagDialog = observer(function FilterByTagDialog(props: {
   )
 })
 
-export default FilterByTagDialog
+export default MoreFiltersDialog

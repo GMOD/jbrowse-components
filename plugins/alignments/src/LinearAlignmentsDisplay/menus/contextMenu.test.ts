@@ -17,7 +17,10 @@ import type {
 import type { ContextMenuHit } from '../components/hitTestPipeline.ts'
 import type { AlignmentsUnit } from '../constants.ts'
 import type { Feature } from '@jbrowse/core/util'
-import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
+import type {
+  FieldPredicate,
+  FieldsPatch,
+} from '@jbrowse/core/util/fieldPredicate'
 
 type SortCall = [type: string, pos: number, refName: string]
 
@@ -119,9 +122,7 @@ function makeModel(
     },
     // Record every call and apply it, so successive quick-filter clicks read the
     // accumulated filter (the coexistence path this suite guards).
-    setFilterFields(
-      patch: Readonly<Record<string, readonly FieldPredicate[] | undefined>>,
-    ) {
+    setFilterFields(patch: FieldsPatch) {
       filterCalls.push(patch)
       model.written = withFields(model.written, patch)
     },
@@ -399,7 +400,14 @@ test('a read hit offers a "Sort by" submenu anchored at the clicked column', () 
     genomicPos: 150,
   })
   const sortBy = findSubMenu(run(model), 'Sort by')
-  expect(sortBy.map(i => i.label)).toEqual(['Strand', 'Base', 'Tag...'])
+  // the track menu's center-line sorts, anchored at the clicked column
+  expect(sortBy.map(i => i.label)).toEqual([
+    'Strand',
+    'Base',
+    'Mapping quality',
+    'Pair orientation',
+    'Tag...',
+  ])
 
   sortBy.find(i => i.label === 'Strand')!.onClick()
   sortBy.find(i => i.label === 'Base')!.onClick()

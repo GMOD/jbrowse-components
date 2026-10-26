@@ -12,7 +12,10 @@ import {
 } from './layerFilters.ts'
 
 import type { BaseLayer, BasesPatch } from '../../shared/types.ts'
-import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
+import type {
+  FieldPredicate,
+  FieldsPatch,
+} from '@jbrowse/core/util/fieldPredicate'
 
 // A display's filter and per-base slots, read and written as the display does
 interface ModelOptions {
@@ -67,9 +70,7 @@ function makeModel({
           ? { field: layer }
           : undefined
     },
-    setFilterFields(
-      patch: Readonly<Record<string, readonly FieldPredicate[] | undefined>>,
-    ) {
+    setFilterFields(patch: FieldsPatch) {
       this.filterPredicates = withFields(this.filterPredicates, patch)
     },
     shown: true,

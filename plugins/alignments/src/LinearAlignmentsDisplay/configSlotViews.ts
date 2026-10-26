@@ -81,7 +81,10 @@ import type {
 import type { DeclaredFilters } from './dialogs/layerFilters.ts'
 import type { InterbaseIndicatorRule } from '@jbrowse/alignments-core/coverageBandConfigSchema'
 import type { Reversible } from '@jbrowse/core/ui/filterMenuItems'
-import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
+import type {
+  FieldPredicate,
+  FieldsPatch,
+} from '@jbrowse/core/util/fieldPredicate'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { LinkSizeScale } from '@jbrowse/render-core/marks'
 
@@ -166,6 +169,13 @@ function declaredBasesFilterOf(base: Record<string, unknown>) {
     ? bases.filter
     : undefined
 }
+
+const MISMATCH_OPACITY = [
+  'pileup',
+  'mismatches',
+  'encoding',
+  'opacity',
+] as const
 
 function strokeWidthSettingOf(self: ConfigSlotSelf): StrokeWidthSetting {
   const path = ['readConnections', 'encoding', 'strokeWidth'] as const
@@ -260,13 +270,7 @@ export function configSlotViews(self: ConfigSlotSelf) {
      * none: the "Fade low-quality mismatches" checkbox.
      */
     get mismatchOpacityField(): MismatchOpacityField | undefined {
-      return getConf(self, [
-        'pileup',
-        'mismatches',
-        'encoding',
-        'opacity',
-        'field',
-      ])
+      return getConf(self, [...MISMATCH_OPACITY, 'field'])
     },
     /**
      * #getter
@@ -275,46 +279,12 @@ export function configSlotViews(self: ConfigSlotSelf) {
      */
     get mismatchQualityOpacity(): QualityOpacity {
       return qualityOpacityOf({
-        field: getConf(self, [
-          'pileup',
-          'mismatches',
-          'encoding',
-          'opacity',
-          'field',
-        ]),
+        field: getConf(self, [...MISMATCH_OPACITY, 'field']),
         scale: {
-          domainMin: getConf(self, [
-            'pileup',
-            'mismatches',
-            'encoding',
-            'opacity',
-            'scale',
-            'domainMin',
-          ]),
-          domainMax: getConf(self, [
-            'pileup',
-            'mismatches',
-            'encoding',
-            'opacity',
-            'scale',
-            'domainMax',
-          ]),
-          range: getConf(self, [
-            'pileup',
-            'mismatches',
-            'encoding',
-            'opacity',
-            'scale',
-            'range',
-          ]),
-          clamp: getConf(self, [
-            'pileup',
-            'mismatches',
-            'encoding',
-            'opacity',
-            'scale',
-            'clamp',
-          ]),
+          domainMin: getConf(self, [...MISMATCH_OPACITY, 'scale', 'domainMin']),
+          domainMax: getConf(self, [...MISMATCH_OPACITY, 'scale', 'domainMax']),
+          range: getConf(self, [...MISMATCH_OPACITY, 'scale', 'range']),
+          clamp: getConf(self, [...MISMATCH_OPACITY, 'scale', 'clamp']),
         },
       })
     },
@@ -633,9 +603,7 @@ export function configSlotViews(self: ConfigSlotSelf) {
 }
 
 export function configSlotActions(self: ConfigSlotSelf) {
-  function setFilterFields(
-    patch: Readonly<Record<string, readonly FieldPredicate[] | undefined>>,
-  ) {
+  function setFilterFields(patch: FieldsPatch) {
     setConf(
       self.configuration,
       'filter',

@@ -466,7 +466,9 @@ function colorReads(
         colorField,
         encoding,
         refNamePosition,
-        bakedColorExtent(encoding, colorField, byGroup),
+        bakedColorExtent(encoding, colorField, byGroup, () =>
+          linearFieldExtent(encoding, colorField, byGroup),
+        ),
       )
     : undefined
   const colored = applyReadColorsByGroup(byGroup, {

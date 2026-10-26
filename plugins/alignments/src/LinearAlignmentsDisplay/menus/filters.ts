@@ -18,14 +18,12 @@ import type { ReadCategorySpec } from '../../shared/readCategoryFilters.ts'
 import type { LayerFiltersModel } from '../dialogs/layerFilters.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Reversible, Reversibles } from '@jbrowse/core/ui/filterMenuItems'
-import type { FieldPredicate, Floor } from '@jbrowse/core/util/fieldPredicate'
+import type { FieldsPatch, Floor } from '@jbrowse/core/util/fieldPredicate'
 
-const FilterByTagDialog = lazy(() => import('../dialogs/FilterByTagDialog.tsx'))
+const MoreFiltersDialog = lazy(() => import('../dialogs/MoreFiltersDialog.tsx'))
 
 interface FiltersModel extends LayerFiltersModel {
-  setFilterFields: (
-    patch: Readonly<Record<string, readonly FieldPredicate[] | undefined>>,
-  ) => void
+  setFilterFields: (patch: FieldsPatch) => void
   /** How `filter` differs from what the track's config declares. */
   filterNarrowing: (selects?: (field: string) => boolean) => Reversible
 }
@@ -140,7 +138,7 @@ export function getFiltersMenuItems(
   const { readCategories = false, more = [] } = options
   const openDialog = () => {
     getDialogHost(model).queueDialog(handleClose => [
-      FilterByTagDialog,
+      MoreFiltersDialog,
       { model, handleClose },
     ])
   }

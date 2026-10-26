@@ -4,7 +4,10 @@ import { floorOf, predicatesOf } from '@jbrowse/core/util/fieldPredicate'
 import { entriesOn, mergeFilter, withFields } from './alignmentsFilter.ts'
 
 import type { BasesFilter } from './types.ts'
-import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
+import type {
+  FieldPredicate,
+  FieldsPatch,
+} from '@jbrowse/core/util/fieldPredicate'
 import type { CytosineContext } from '@jbrowse/modifications-utils'
 
 export const PROBABILITY = 'probability'
@@ -60,7 +63,7 @@ export const DEFAULT_BASES_FILTER = basesFilterOf([])
  */
 export function withBasesFields(
   written: readonly FieldPredicate[],
-  patch: Readonly<Record<string, readonly FieldPredicate[] | undefined>>,
+  patch: FieldsPatch,
 ) {
   return withFields(written, patch, BASES_FILTER_DEFAULTS)
 }

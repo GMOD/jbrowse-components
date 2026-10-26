@@ -66,13 +66,26 @@ const ALL_SORT_MODES: SortMode[] = [
   'tag',
 ]
 
+const COLUMN_SORT_LABEL = {
+  strand: 'Strand',
+  base: 'Base',
+  mapq: 'Mapping quality',
+  pairOrientation: 'Pair orientation',
+} as const satisfies Partial<Record<SortMode, string>>
+
+/**
+ * The column sorts, each ordering the reads by what they hold at one
+ * position, in menu order: the track menu's center-line radios and the read
+ * right-click's sorts at the clicked column, with "Tag..." after them.
+ */
+export const COLUMN_SORTS = (
+  ['strand', 'base', 'mapq', 'pairOrientation'] as const
+).map(field => ({ field, label: COLUMN_SORT_LABEL[field] }))
+
 // The modes that order the reads by what they hold at the center line, under
 // their own sub-header; the rest order the whole pileup.
 const CENTER_LINE_MODES = new Set<SortMode>([
-  'strand',
-  'base',
-  'mapq',
-  'pairOrientation',
+  ...COLUMN_SORTS.map(c => c.field),
   'tag',
 ])
 
@@ -141,18 +154,22 @@ export function getSortMenuItem(
     svSignal: radio('svSignal', 'SV evidence first', () => {
       model.setSort('svSignal')
     }),
-    strand: radio('strand', 'Strand', () => {
+    strand: radio('strand', COLUMN_SORT_LABEL.strand, () => {
       model.sortAtCenterLine('strand')
     }),
-    base: radio('base', 'Base', () => {
+    base: radio('base', COLUMN_SORT_LABEL.base, () => {
       model.sortAtCenterLine('base')
     }),
-    mapq: radio('mapq', 'Mapping quality', () => {
+    mapq: radio('mapq', COLUMN_SORT_LABEL.mapq, () => {
       model.sortAtCenterLine('mapq')
     }),
-    pairOrientation: radio('pairOrientation', 'Pair orientation', () => {
-      model.sortAtCenterLine('pairOrientation')
-    }),
+    pairOrientation: radio(
+      'pairOrientation',
+      COLUMN_SORT_LABEL.pairOrientation,
+      () => {
+        model.sortAtCenterLine('pairOrientation')
+      },
+    ),
     tag: radio(
       'tag',
       'Tag...',

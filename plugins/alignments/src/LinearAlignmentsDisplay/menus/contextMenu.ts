@@ -43,7 +43,7 @@ import {
   copyFeatureInfo,
   withContextMenuFeature,
 } from './contextMenuFeature.ts'
-import { queueSortByTagDialog } from './sortGroup.ts'
+import { COLUMN_SORTS, queueSortByTagDialog } from './sortGroup.ts'
 
 import type { ResolvedBlock } from '../../shared/hitTestTypes.ts'
 import type { ColumnSortField, SortColumn } from '../../shared/types.ts'
@@ -52,7 +52,10 @@ import type { AlignmentsUnit } from '../constants.ts'
 import type { FeatureLookupModel } from './contextMenuFeature.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Feature } from '@jbrowse/core/util'
-import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
+import type {
+  FieldPredicate,
+  FieldsPatch,
+} from '@jbrowse/core/util/fieldPredicate'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { PanelStop } from '@jbrowse/sv-core'
 
@@ -72,9 +75,7 @@ interface HitMenuModel extends IStateTreeNode {
 // the same list, and nothing else.
 interface FilterModel {
   filterPredicates: FieldPredicate[]
-  setFilterFields: (
-    patch: Readonly<Record<string, readonly FieldPredicate[] | undefined>>,
-  ) => void
+  setFilterFields: (patch: FieldsPatch) => void
 }
 
 interface ContextMenuModel
@@ -463,12 +464,11 @@ export function getContextMenuItems(
         })
       },
     })
-    // Sort the pileup at the clicked column — the same criteria as the track
-    // menu's center-line sorts, but anchored where the user right-clicked
+    // Sort the pileup at the clicked column — the track menu's center-line
+    // sorts (`COLUMN_SORTS`), anchored where the user right-clicked
     // (`pos`/`refName` snapshotted like `block`, since closeContextMenu clears
-    // them before the onClick fires). Only the position-anchored criteria
-    // appear here; "start location" / "longest reads first" are whole-pileup
-    // orderings with no clicked position to anchor on.
+    // them before the onClick fires). The whole-pileup orderings have no
+    // clicked position to anchor on.
     if (sort && menuHit) {
       const { genomicPos: pos, block } = menuHit
       const { refName } = block
@@ -477,18 +477,12 @@ export function getContextMenuItems(
         icon: SwapVertIcon,
         type: 'subMenu',
         subMenu: [
-          {
-            label: 'Strand',
+          ...COLUMN_SORTS.map(({ field, label }) => ({
+            label,
             onClick: () => {
-              self.setSort({ field: 'strand', pos, refName })
+              self.setSort({ field, pos, refName })
             },
-          },
-          {
-            label: 'Base',
-            onClick: () => {
-              self.setSort({ field: 'base', pos, refName })
-            },
-          },
+          })),
           {
             label: 'Tag...',
             onClick: () => {
