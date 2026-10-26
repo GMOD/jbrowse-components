@@ -432,6 +432,7 @@ const names: Record<string, string[]> = {
   '@jbrowse/display-kit/FacetWritesMixin': ['default', 'facetForField'],
   '@jbrowse/display-kit/featureEncodingConfigSchema': ['featureEncodingConfigSchema'],
   '@jbrowse/display-kit/featureFilterConfigSchema': ['retiredFilterSpelling'],
+  '@jbrowse/display-kit/featureUtrsConfigSchema': ['featureUtrsConfigSchema'],
   '@jbrowse/display-kit/fetchEachRegion': ['callEachRegion', 'fetchAllRegions', 'fetchEachRegion', 'fetchRegionsBatched'],
   '@jbrowse/display-kit/fetchInputs': ['makeFetchInputs', 'makeSettingsFetchInputs', 'snapshotInputs'],
   '@jbrowse/display-kit/FetchMixin': ['default', 'fetchMixinLifecycle', 'makeFetchContext'],

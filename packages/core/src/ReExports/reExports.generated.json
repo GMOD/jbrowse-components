@@ -4471,6 +4471,13 @@
       ],
       "worker": "real"
     },
+    "@jbrowse/display-kit/featureUtrsConfigSchema": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "featureUtrsConfigSchema"
+      ],
+      "worker": "real"
+    },
     "@jbrowse/display-kit/fetchEachRegion": {
       "package": "@jbrowse/display-kit",
       "names": [

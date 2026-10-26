@@ -389,14 +389,27 @@ once per feature and memoized, and not at all when the slot holds a plain color:
 ```ts
 // the slot as written, not resolved: a jexl color read without a feature
 // evaluates against an empty context and hands back the fallout (adr-066)
-const utrConstant = isJexl(utrColor)
-  ? undefined
-  : cssColorToABGR(String(utrColor))
-const utr = (feature: Feature) =>
+const utrConstant =
+  utrColor === undefined
+    ? fillSet
+      ? undefined
+      : cssColorToABGR(utrDefaultColor)
+    : isJexl(utrColor)
+      ? undefined
+      : cssColorToABGR(String(utrColor))
+const utr = (feature: Feature, fill: PaintedFill) =>
   utrConstant ??
-  memo(utrByFeature, feature.id(), () =>
-    cssColorToABGR(String(readConfObject(conf, 'utrColor', { feature }))),
-  )
+  (utrColor === undefined
+    ? fill.packed
+    : memo(utrByFeature, feature.id(), () =>
+        cssColorToABGR(
+          String(
+            readConfObject(conf, ['utrs', 'encoding', 'color', 'value'], {
+              feature,
+            }),
+          ),
+        ),
+      ))
 ```
 
 `getConf` takes the context object in the same third position. Evaluate these
