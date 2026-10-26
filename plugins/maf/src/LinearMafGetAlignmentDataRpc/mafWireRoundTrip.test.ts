@@ -149,9 +149,8 @@ test('pack then place round-trips every aligned row field', () => {
       block.refSeq.replaceAll('-', '').length,
     )
     expect(got.rows.length).toBe(block.rows.length)
-    for (const [r, want] of block.rows.entries()) {
-      const row = got.rows[r]!
-      expect(row.sampleId).toBe(want.sampleId)
+    for (const want of block.rows) {
+      const row = got.rows.find(r => r.sampleId === want.sampleId)!
       expect(row.rowIndex).toBe(rowIndexBySrc.get(want.sampleId))
       expect(decoder.decode(row.alignmentBytes)).toBe(want.seq)
       expect(row.chr).toBe(want.chr)
@@ -169,9 +168,8 @@ test('pack then place round-trips every e-line row field', () => {
     const got = placed.blocks[b]!
     const want = block.empties ?? []
     expect(got.empties.length).toBe(want.length)
-    for (const [e, expected] of want.entries()) {
-      const empty = got.empties[e]!
-      expect(empty.sampleId).toBe(expected.sampleId)
+    for (const expected of want) {
+      const empty = got.empties.find(e => e.sampleId === expected.sampleId)!
       expect(empty.rowIndex).toBe(rowIndexBySrc.get(expected.sampleId))
       expect(empty.status).toBe(expected.status)
       expect(empty.chr).toBe(expected.chr)
