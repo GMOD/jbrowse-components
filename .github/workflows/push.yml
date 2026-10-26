@@ -668,6 +668,14 @@ jobs:
           aws cloudfront create-invalidation \
             --distribution-id ${{ env.CLOUDFRONT_DISTRIBUTION_ID }} \
             --paths "/storybook/${{ matrix.prefix }}/*"
+      - name: Prune examples-site chunks no recent deploy shipped
+        if:
+          github.ref == 'refs/heads/main' || (startsWith(github.ref,
+          'refs/tags/') && !contains(github.ref_name, '-'))
+        uses: ./.github/actions/prune-s3-chunks
+        with:
+          dir: products/${{ matrix.dir }}/examples-site/dist/_astro
+          prefix: storybook/${{ matrix.prefix }}/_astro/
 
   # Differential render test: build jbrowse-web, then render the CI_GATE_SUITES
   # views with both the canvas2d and (swiftshader) webgl backends and diff the

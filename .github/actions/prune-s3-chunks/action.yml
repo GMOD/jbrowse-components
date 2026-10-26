@@ -1,0 +1,71 @@
+name: Prune S3 chunks
+description:
+  Delete content-hashed chunks under an S3 prefix that no deploy of the last 30
+  days shipped
+
+inputs:
+  dir:
+    description: Local directory holding this build's chunks
+    required: true
+  prefix:
+    description:
+      Key prefix the chunks were synced to, with a trailing slash, e.g.
+      code/jb2/main/static/
+    required: true
+  bucket:
+    default: jbrowse.org
+
+# Old chunks stay so a tab still open on an earlier build can lazy-load them.
+# The deploy syncs chunks with --size-only, so a key's LastModified records its
+# first upload, and a build that still ships the key never refreshes it. Each
+# run therefore writes the keys it shipped to <prefix>.manifests/<time>.txt,
+# and a key survives while any manifest of the last 30 days names it. Deletion
+# also requires a LastModified over 30 days old, which protects chunks
+# uploaded before the first manifest existed.
+#
+# Deletes go 1000 keys per request, since the first run on a prefix that never
+# pruned has thousands to drop.
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      working-directory: ${{ inputs.dir }}
+      env:
+        BUCKET: ${{ inputs.bucket }}
+        PREFIX: ${{ inputs.prefix }}
+      run: |
+        work=$(mktemp -d)
+        manifests=${PREFIX}.manifests/
+        now=$(date -u +%Y%m%dT%H%M%SZ)
+        cutoff=$(date -u -d '30 days ago' +%Y%m%dT%H%M%SZ)
+        cutoff_iso=$(date -u -d '30 days ago' +%Y-%m-%dT%H:%M:%SZ)
+
+        find . -type f ! -name '*.map' | sed "s|^\./|$PREFIX|" | sort > "$work/current.txt"
+        if [ ! -s "$work/current.txt" ]; then
+          echo "::error::No chunks under $PWD; refusing to prune $PREFIX against an empty build."
+          exit 1
+        fi
+        aws s3 cp --quiet "$work/current.txt" "s3://$BUCKET/$manifests$now.txt"
+        aws s3 sync --quiet "s3://$BUCKET/$manifests" "$work/manifests"
+
+        for f in "$work"/manifests/*.txt; do
+          name=$(basename "$f" .txt)
+          if [[ "$name" < "$cutoff" ]]; then
+            echo "$manifests$name.txt" >> "$work/delete.txt"
+          else
+            cat "$f"
+          fi
+        done | sort -u > "$work/keep.txt"
+
+        aws s3api list-objects-v2 --bucket "$BUCKET" --prefix "$PREFIX" \
+          --query "Contents[?LastModified<'$cutoff_iso'].Key" --output json |
+          jq -r '.[]?' | grep -v "^$manifests" | sort > "$work/old.txt" || true
+        comm -13 "$work/keep.txt" "$work/old.txt" >> "$work/delete.txt"
+
+        echo "Pruning $(wc -l < "$work/delete.txt") keys under $PREFIX"
+        split -l 1000 "$work/delete.txt" "$work/batch."
+        for batch in "$work"/batch.*; do
+          [ -s "$batch" ] || continue
+          jq -Rn '{Objects: [inputs | {Key: .}], Quiet: true}' < "$batch" > "$work/request.json"
+          aws s3api delete-objects --bucket "$BUCKET" --delete "file://$work/request.json" > /dev/null
+        done

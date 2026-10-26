@@ -27,9 +27,8 @@ inputs:
 #
 # static/ is content-hashed, so browsers may keep it without re-checking, and
 # the sync skips any key already there at the same size.
-# index.html goes up after the chunks it names. Old chunks stay for 30 days so
-# tabs on the previous build can still lazy-load them; the prune drops only
-# chunks that are both absent from this build and that old.
+# index.html goes up after the chunks it names, and prune-s3-chunks then drops
+# what no deploy of the last 30 days shipped.
 runs:
   using: composite
   steps:
@@ -38,7 +37,6 @@ runs:
       env:
         PREFIX: ${{ inputs.prefix }}
         DELETE: ${{ inputs.delete }}
-        DISTRIBUTION_ID: ${{ inputs.distribution-id }}
       run: |
         cp test_data/config.json config.json
         DEST=s3://jbrowse.org/$PREFIX
@@ -48,12 +46,14 @@ runs:
         aws s3 sync "${delete[@]}" --exclude="*.map" --exclude="static/*" --exclude=index.html --exclude=config.json . "$DEST"
         aws s3 cp --cache-control no-cache config.json "$DEST/config.json"
         aws s3 cp --cache-control no-cache index.html "$DEST/index.html"
-        STATIC=$PREFIX/static/
-        CUTOFF=$(date -u -d '30 days ago' +%Y-%m-%dT%H:%M:%SZ)
-        find static -type f ! -name '*.map' | sed "s|^|$STATIC|" | sort > "$RUNNER_TEMP/current.txt"
-        aws s3api list-objects-v2 --bucket jbrowse.org --prefix "$STATIC" \
-          --query "Contents[?LastModified<'$CUTOFF'].Key" --output text | tr '\t' '\n' | sort > "$RUNNER_TEMP/old.txt"
-        comm -13 "$RUNNER_TEMP/current.txt" "$RUNNER_TEMP/old.txt" | grep -v "^None$" | grep . | while read -r key; do
-          aws s3 rm "s3://jbrowse.org/$key"
-        done || true
-        aws cloudfront create-invalidation --distribution-id "$DISTRIBUTION_ID" --paths "/$PREFIX/*"
+    - uses: ./.github/actions/prune-s3-chunks
+      with:
+        dir: products/jbrowse-web/build/static
+        prefix: ${{ inputs.prefix }}/static/
+    - shell: bash
+      env:
+        PREFIX: ${{ inputs.prefix }}
+        DISTRIBUTION_ID: ${{ inputs.distribution-id }}
+      run:
+        aws cloudfront create-invalidation --distribution-id "$DISTRIBUTION_ID"
+        --paths "/$PREFIX/*"
