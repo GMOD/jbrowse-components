@@ -7,7 +7,6 @@ import SwapVertIcon from '@mui/icons-material/SwapVert'
 import { TAG_FIELD_PREFIX, fieldTag } from '../../shared/facetLabels.ts'
 import {
   FACET_DIMENSIONS,
-  isReadDimension,
   pickFacetOptions,
 } from '../../shared/groupFeatures.ts'
 import { groupByRadioMenuItem } from './groupByMenu.ts'
@@ -219,17 +218,13 @@ export function queueSortByTagDialog(
 // Every offered dimension selects directly; a tag needs its name (+ optional
 // color-by-tag), so it goes last as a dialog-opener — mirroring the sort menu's
 // "Tag...". Its radio is the tag prefix, which no field can equal. A hidden
-// dimension belongs to another display's menu (mateAssembly is
-// LGVSyntenyDisplay's), so a stored one ticks None here.
+// dimension a config stored (`mateRefName`, `mateAssembly`) still draws its
+// sections, so it gets the checked, disabled radio any config-only field does.
 export function getGroupByMenuItem(model: GroupByMenuModel) {
   const field = model.facet?.field
   const tag = fieldTag(field)
-  const hidden =
-    field !== undefined &&
-    isReadDimension(field) &&
-    FACET_DIMENSIONS[field].hidden
   return groupByRadioMenuItem({
-    current: tag !== undefined ? TAG_FIELD_PREFIX : hidden ? undefined : field,
+    current: tag !== undefined ? TAG_FIELD_PREFIX : field,
     options: GROUP_OPTIONS,
     unit: model.unit,
     onSelect: field => {

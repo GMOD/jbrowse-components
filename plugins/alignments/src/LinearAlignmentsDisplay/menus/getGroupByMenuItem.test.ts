@@ -86,12 +86,13 @@ test('a stored dimension not offered in chain mode falls back to None', () => {
   expect(items.filter(i => i.checked).map(i => i.label)).toEqual(['None'])
 })
 
-// `hidden` dimensions belong to another display's menu (mateAssembly is
-// LGVSyntenyDisplay's), so this menu never offers them and must not leave the
-// group blank when a config stored one.
-test('a stored hidden dimension falls back to None', () => {
+// A `hidden` dimension has no radio here, but one a config stored still
+// draws its sections, so ticking None claimed an ungrouped track.
+test('a stored hidden dimension gets a checked, disabled radio', () => {
   const items = radios(makeModel({ field: 'mateAssembly' }).model)
-  expect(items.filter(i => i.checked).map(i => i.label)).toEqual(['None'])
+  expect(items.filter(i => i.checked)).toMatchObject([
+    { label: 'mateAssembly', disabled: true },
+  ])
 })
 
 // A field only a config writes has no radio of its own to pick it from, so
