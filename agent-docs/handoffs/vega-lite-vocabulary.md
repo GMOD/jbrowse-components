@@ -67,8 +67,10 @@ deployed. Still open, each needing no further call:
   `rowColor: { domain, range }` unknown, though `rowColorConfigSchema`'s
   preprocess lifts it at runtime.
 
-The cross-display color test is ready to build:
-[ideas/ready/cross-display-color-conformance-test.md](../ideas/ready/cross-display-color-conformance-test.md).
+The cross-display color test is built:
+`products/jbrowse-web/src/schemaTests/colorConformance.test.ts` runs one
+table of color specs through every display's resolver, and its `EXCEPTIONS`
+list names each divergence and can only shrink.
 
 ## Writers to update after each landing
 
