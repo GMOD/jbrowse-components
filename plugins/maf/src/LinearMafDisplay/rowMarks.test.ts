@@ -206,6 +206,15 @@ describe('identity is a row mark', () => {
     expect(display.encodedUpload.get(0)!.identity).toBe(before)
     dispose()
   })
+
+  it('tells the painters the cells carry the fill only under a constant', () => {
+    const { display, view } = createMafTestEnvironment().createDisplay()
+    seedRegion(display)
+    zoomPastBaseLevel(view)
+    expect(display.renderState.cellsFill).toBe(true)
+    display.colorByField('refNameRank')
+    expect(display.renderState.cellsFill).toBe(false)
+  })
 })
 
 describe('a plan or rank that comes out the same re-encodes nothing', () => {

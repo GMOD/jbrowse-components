@@ -1204,38 +1204,6 @@ export default function stateModelFactory(
       }))
       .views(self => ({
         /**
-         * #getter
-         * Render state passed to the GPU/Canvas2D backend each frame.
-         *
-         * `canvasHeight` is the whole canvas, stacked bands plus rows viewport,
-         * because the coverage band draws on the same canvas as the rows.
-         * `rowsTop` and `rowsHeight` are the rows band inside it.
-         */
-        get renderState(): MafGPURenderState {
-          // Never undefined: zero sources over a region with no blocks is valid
-          // state, and withholding it leaves the loading overlay spinning. The
-          // first-paint gate is `hasFetched`.
-          return {
-            canvasWidth: self.canvasWidthPx,
-            canvasHeight: self.rowsTopOffset + self.rowsHeight,
-            rowsTop: self.rowsTopOffset,
-            rowsHeight: self.rowsHeight,
-            coverage: self.coverageBandState,
-            conservation: {
-              top: self.topBands.top.conservation,
-              height: self.conservationBandActive
-                ? self.conservationDisplayHeight
-                : 0,
-            },
-            rowHeight: self.effectiveRowHeight,
-            rowProportion: self.rowProportion,
-            scrollTop: self.scrollTop,
-            palette: self.colorPalette,
-          }
-        },
-      }))
-      .views(self => ({
-        /**
          * #method
          * Where the rows `[startRow, endRow)` sit in their genomes across
          * the reference bp range `[startBp, endBp)`, the loci an "open this
@@ -1476,6 +1444,39 @@ export default function stateModelFactory(
          */
         get basePaints() {
           return basePaintsOf(self.rowPlan)
+        },
+      }))
+      .views(self => ({
+        /**
+         * #getter
+         * Render state passed to the GPU/Canvas2D backend each frame.
+         *
+         * `canvasHeight` is the whole canvas, stacked bands plus rows viewport,
+         * because the coverage band draws on the same canvas as the rows.
+         * `rowsTop` and `rowsHeight` are the rows band inside it.
+         */
+        get renderState(): MafGPURenderState {
+          // Never undefined: zero sources over a region with no blocks is valid
+          // state, and withholding it leaves the loading overlay spinning. The
+          // first-paint gate is `hasFetched`.
+          return {
+            canvasWidth: self.canvasWidthPx,
+            canvasHeight: self.rowsTopOffset + self.rowsHeight,
+            rowsTop: self.rowsTopOffset,
+            rowsHeight: self.rowsHeight,
+            coverage: self.coverageBandState,
+            conservation: {
+              top: self.topBands.top.conservation,
+              height: self.conservationBandActive
+                ? self.conservationDisplayHeight
+                : 0,
+            },
+            rowHeight: self.effectiveRowHeight,
+            rowProportion: self.rowProportion,
+            scrollTop: self.scrollTop,
+            cellsFill: self.rowPlan.color === undefined,
+            palette: self.colorPalette,
+          }
         },
       }))
       .views(self => ({

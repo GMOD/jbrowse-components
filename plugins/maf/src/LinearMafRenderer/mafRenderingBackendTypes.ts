@@ -37,6 +37,11 @@ export interface MafGPURenderState {
   /** rows-area scroll offset; every layer paints row i at `rowHeight*i - this` */
   scrollTop: number
   /**
+   * The cells carry the row's fill, a constant, so they tile it; under a
+   * field's fill they are only the bases painting over it.
+   */
+  cellsFill: boolean
+  /**
    * Full theme-derived color set (base palette + match/gap/mismatch/unknown/
    * insertion). The row marks resolve their colors at encode time, so what
    * reads this is the overlay and export layers drawn beside them — the

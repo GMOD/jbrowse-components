@@ -71,7 +71,12 @@ function rowBandPx(s: MafGPURenderState) {
 export const MAF_ROW_MARK = defineMark({
   shape: spanMark,
   channels: (d: MafRowsPayload) => d.cells,
-  params: cellSpanParams,
+  // a base painting over a field's fill abuts no run, so a seam would only
+  // widen it past its column on Canvas2D
+  params: (s: MafGPURenderState) => ({
+    ...cellSpanParams(s),
+    seamPx: s.cellsFill ? GAP_STROKE_OFFSET : 0,
+  }),
   band: rowsBand,
 })
 

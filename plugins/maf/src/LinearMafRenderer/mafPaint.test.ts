@@ -111,6 +111,7 @@ function state(binBp: number) {
     rowHeight: 10,
     rowProportion: 1,
     scrollTop: 0,
+    cellsFill: true,
     palette,
   }
 }
@@ -298,8 +299,9 @@ test('the mismatches paint over a field fill', () => {
     color: Uint32Array.of(0xff00ff00),
     count: 1,
   }
+  const s = { ...state(1), cellsFill: false }
   for (const mark of MAF_ROWS_MARKS) {
-    mark.paintBlock(ctx, { cells, identity: fill }, block(false), state(1))
+    mark.paintBlock(ctx, { cells, identity: fill }, block(false), s)
   }
   const mismatchX = (2 * BLOCK_WIDTH) / (END - START)
   const last = painted.findLast(
@@ -307,4 +309,6 @@ test('the mismatches paint over a field fill', () => {
   )
   expect(last?.color).not.toBe(painted[0]!.color)
   expect(painted[0]!.w).toBeGreaterThan(BLOCK_WIDTH / 2)
+  // no seam: the base abuts no run, and the GPU draws it its column wide
+  expect(last?.w).toBeCloseTo(PX_PER_BP)
 })

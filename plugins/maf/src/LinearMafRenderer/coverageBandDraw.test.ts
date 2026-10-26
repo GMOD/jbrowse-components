@@ -64,6 +64,7 @@ function state(coverage: CoverageBandState): MafGPURenderState {
     rowHeight: 10,
     rowProportion: 1,
     scrollTop: 0,
+    cellsFill: true,
     palette: {
       colorForBase: { a: 'green', c: 'blue', g: 'orange', t: 'red', n: 'grey' },
       matchColor: 'lightgrey',
