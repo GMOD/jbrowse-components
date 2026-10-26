@@ -1643,6 +1643,36 @@ export function allSessionTracks(session: {
 }
 
 /**
+ * #api
+ * A track config as the record a track selector lists: its id, the name it
+ * shows (`getTrackName`), the category path it nests under and its
+ * description. Raw member reads, so a frozen entry answers without hydrating.
+ */
+export function trackCatalogEntry(
+  conf: AnyTrackConfig,
+  session: { assemblies: AnyConfigurationModel[] },
+) {
+  return {
+    trackId: conf.trackId as string,
+    name: getTrackName(conf, session),
+    category: (conf.category as string[] | undefined) ?? [],
+    description: (conf.description as string | undefined) ?? '',
+  }
+}
+
+/**
+ * #api
+ * Every track the session can show, as {@link trackCatalogEntry} records.
+ */
+export function trackCatalog(session: {
+  tracks: TrackConfigEntry[]
+  connectionInstances?: { tracks: AnyConfigurationModel[] }[]
+  assemblies: AnyConfigurationModel[]
+}) {
+  return allSessionTracks(session).map(conf => trackCatalogEntry(conf, session))
+}
+
+/**
  * The session's annotation for `assemblyName`, as trackIds: what a view opened
  * on another genome starts with. Only FeatureTracks, not everything configured
  * for the assembly — an alignments track turned on behind the user's back

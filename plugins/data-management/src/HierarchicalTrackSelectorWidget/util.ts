@@ -1,4 +1,4 @@
-import { getTrackName } from '@jbrowse/core/util/tracks'
+import { trackCatalogEntry } from '@jbrowse/core/util/tracks'
 
 import { buildSearchText } from '../shared/searchText.ts'
 
@@ -50,12 +50,10 @@ export function trackNodeSourceFor(
     isSessionTrack?: boolean
   },
 ): TrackNodeSource {
-  const name = getTrackName(conf, session)
-  const ownCategories = (conf.category as string[] | undefined) ?? []
+  const { name, category, description } = trackCatalogEntry(conf, session)
   const categories = isSessionTrack
-    ? [sessionTracksCategory, ...ownCategories]
-    : ownCategories
-  const description = (conf.description as string | undefined) ?? ''
+    ? [sessionTracksCategory, ...category]
+    : category
   return {
     conf,
     name,

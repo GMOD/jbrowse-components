@@ -11,6 +11,7 @@ import {
   getTrackName,
   restoreFileHandles,
   stripFileExtension,
+  trackCatalog,
 } from './tracks.ts'
 
 import type { TrackConfigEntry } from '../configuration/index.ts'
@@ -478,4 +479,25 @@ describe('confAssemblyNames', () => {
     }
     expect(getConfAssemblyNamesOrNone(entry)).toEqual(['volvox'])
   })
+})
+
+test('trackCatalog lists every track as an id, a name (its id when unnamed) and a category path', () => {
+  const tracks: TrackConfigEntry[] = [
+    {
+      trackId: 'genes',
+      type: 'FeatureTrack',
+      name: 'Genes',
+      category: ['Annotation', 'RefSeq'],
+    },
+    { trackId: 'reads', type: 'AlignmentsTrack' },
+  ]
+  expect(trackCatalog({ tracks, assemblies: [] })).toEqual([
+    {
+      trackId: 'genes',
+      name: 'Genes',
+      category: ['Annotation', 'RefSeq'],
+      description: '',
+    },
+    { trackId: 'reads', name: 'reads', category: [], description: '' },
+  ])
 })

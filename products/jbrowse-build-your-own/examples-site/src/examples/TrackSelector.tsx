@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { allSessionTracks } from '@jbrowse/core/util/tracks'
+import { trackCatalog } from '@jbrowse/core/util/tracks'
 import {
   EmbedProvider,
   TrackStack,
@@ -22,28 +22,15 @@ const variantTrack = {
   displayDefaults: { height: 90 },
 }
 
-function listTracks(session: Session) {
-  return allSessionTracks(session).map(conf => {
-    const trackId: string = conf.trackId
-    const [category = 'Uncategorized'] =
-      (conf.category as string[] | undefined) ?? []
-    return {
-      trackId,
-      category,
-      name: (conf.name as string | undefined) || trackId,
-    }
-  })
-}
-
 const Sidebar = observer(function Sidebar({ session }: { session: Session }) {
   const [filter, setFilter] = useState('')
   const { view } = session
   const needle = filter.trim().toLowerCase()
   const groups = Map.groupBy(
-    listTracks(session).filter(e =>
+    trackCatalog(session).filter(e =>
       `${e.name} ${e.category}`.toLowerCase().includes(needle),
     ),
-    e => e.category,
+    e => e.category[0] ?? 'Uncategorized',
   )
   return (
     <div
@@ -173,7 +160,7 @@ const TrackSelector = observer(function TrackSelector() {
         <Sidebar session={session} />
         <TrackStack
           view={session.view}
-          trackIds={listTracks(session).map(e => e.trackId)}
+          trackIds={trackCatalog(session).map(e => e.trackId)}
           style={{ flex: 1, minWidth: 0 }}
         />
       </div>
