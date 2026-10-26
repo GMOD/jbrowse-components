@@ -1,6 +1,7 @@
 import { SimpleFeature } from '@jbrowse/core/util'
 
 import {
+  MAX_DISTINCT_VALUES,
   createAttributeChannels,
   declaredAttributes,
   writeFeatureAttribute,
@@ -49,7 +50,12 @@ test('a numeric column reports its span, missing as NaN', () => {
     { dn: 2 },
   ])
   expect(Array.from(attributes.dn!)).toEqual([0.5, Number.NaN, 2])
-  expect(attributeRanges.dn).toEqual({ min: 0.5, max: 2, missing: true })
+  expect(attributeRanges.dn).toEqual({
+    min: 0.5,
+    max: 2,
+    values: [0.5, 2],
+    missing: true,
+  })
 })
 
 // The label list is the fetch's own dictionary: a feature's channel value
@@ -103,7 +109,12 @@ test('a negative number is a value, and only NaN is missing', () => {
     { lfc: 2 },
   ])
   expect(Array.from(attributes.lfc!)).toEqual([-1.5, Number.NaN, 2])
-  expect(attributeRanges.lfc).toEqual({ min: -1.5, max: 2, missing: true })
+  expect(attributeRanges.lfc).toEqual({
+    min: -1.5,
+    max: 2,
+    values: [-1.5, 2],
+    missing: true,
+  })
 })
 
 // One stray sentinel would otherwise turn a numeric column into a text one
@@ -124,6 +135,24 @@ test('nan, inf, - and . read as missing, and text stays text', () => {
   expect(
     fill('kind', [{ kind: 'nan' }, { kind: 'INV' }]).attributeRanges.kind,
   ).toEqual({ labels: ['INV'], colors: {}, missing: true })
+})
+
+// The distinct numbers are what an ordinal scale keys, and what a number
+// written before the first label turns into: the file's 0.93, not float32's.
+test('a numeric column lists its distinct numbers, until there are too many', () => {
+  expect(
+    fill('grp', [{ grp: 0.93 }, { grp: 3 }, { grp: 0.93 }]).attributeRanges.grp,
+  ).toEqual({ min: 0.93, max: 3, values: [0.93, 3] })
+  expect(
+    fill('grp', [{ grp: 0.93 }, { grp: 'x' }]).attributeRanges.grp,
+  ).toEqual({ labels: ['0.93', 'x'], colors: {} })
+  const many = Array.from({ length: MAX_DISTINCT_VALUES + 1 }, (_, i) => ({
+    n: i,
+  }))
+  expect(fill('n', many).attributeRanges.n).toEqual({
+    min: 0,
+    max: MAX_DISTINCT_VALUES,
+  })
 })
 
 // A PAF adapter hands a `de:f:0.01` tag over as the text `0.01`.

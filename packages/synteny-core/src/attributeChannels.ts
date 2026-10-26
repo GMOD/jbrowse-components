@@ -83,6 +83,25 @@ export interface AttributeChannel {
   labels: string[]
   labelIndex: Map<string, number>
   labelColors: Record<string, string>
+  /** a declared column's distinct numbers by their float32 form, until too many */
+  distinct: Map<number, number> | undefined
+}
+
+/** The most distinct numbers a column reports, past which it reports none. */
+export const MAX_DISTINCT_VALUES = 1024
+
+const PRESET_NAMES: ReadonlySet<string> = new Set(PRESET_ATTRIBUTES)
+
+function noteDistinct(channel: AttributeChannel, index: number, value: number) {
+  const { distinct } = channel
+  const key = channel.array[index]!
+  if (distinct && !distinct.has(key)) {
+    if (distinct.size >= MAX_DISTINCT_VALUES) {
+      channel.distinct = undefined
+    } else {
+      distinct.set(key, value)
+    }
+  }
 }
 
 /** Read `name` off a feature as a number, NaN for anything that is not one. */
@@ -152,7 +171,11 @@ export function writeFeatureAttribute(
       for (let i = 0; i < index; i++) {
         const earlier = channel.array[i]!
         if (Number.isFinite(earlier)) {
-          channel.array[i] = internLabel(channel, String(earlier), undefined)
+          channel.array[i] = internLabel(
+            channel,
+            String(channel.distinct?.get(earlier) ?? earlier),
+            undefined,
+          )
         }
       }
     }
@@ -165,6 +188,9 @@ export function writeFeatureAttribute(
     )
   } else {
     writeAttribute(channel, index, value ?? Number.NaN)
+    if (value !== undefined) {
+      noteDistinct(channel, index, value)
+    }
   }
 }
 
@@ -188,6 +214,7 @@ export function createAttributeChannels(
     labels: [],
     labelIndex: new Map(),
     labelColors: {},
+    distinct: PRESET_NAMES.has(name) ? undefined : new Map<number, number>(),
   }))
   return {
     /** The resolved channels, in declaration order — what the hot loop walks. */
@@ -196,7 +223,8 @@ export function createAttributeChannels(
     finish(validCount: number) {
       const attributes: Record<string, Float32Array> = {}
       const attributeRanges: Record<string, AttributeRange> = {}
-      for (const { name, array, min, max, labels, labelColors } of list) {
+      for (const channel of list) {
+        const { name, array, min, max, labels, labelColors, distinct } = channel
         const kept = array.subarray(0, validCount)
         attributes[name] = kept
         const missing = kept.some(v => Number.isNaN(v)) ? { missing: true } : {}
@@ -205,7 +233,12 @@ export function createAttributeChannels(
         } else if (Number.isFinite(min)) {
           // an attribute nothing carried has no range to report, and reporting
           // [Infinity, -Infinity] would make a legend label nonsense
-          attributeRanges[name] = { min, max, ...missing }
+          attributeRanges[name] = {
+            min,
+            max,
+            ...(distinct ? { values: [...distinct.values()] } : {}),
+            ...missing,
+          }
         }
       }
       return { attributes, attributeRanges }

@@ -15,12 +15,14 @@ import { types } from '@jbrowse/mobx-state-tree'
 import { compareStructural } from 'mobx'
 
 import { SyntenyFilterMixin } from './SyntenyFilterMixin.ts'
+import { MAX_DISTINCT_VALUES } from './attributeChannels.ts'
 import { DEFAULT_RIBBON_CSS } from './colorFunctions.ts'
 import { colorByScales } from './colorLegend.ts'
 import {
   colorPaintOf,
   isAttributeLabels,
   isMeasureField,
+  labelsOf,
   resolveCategoricalMode,
 } from './colorRamps.ts'
 import { hidesUnlabelled, withHideUnlabelled } from './hideUnlabelledFilter.ts'
@@ -50,24 +52,29 @@ function isColumnField(field: string | undefined): field is string {
 
 // A label list only ever gains labels, in the order they were first seen, and
 // a label's file color is whichever was seen first; a row with no value, once
-// seen, stays in the key the same way. A text column meeting a span from an
-// earlier fetch takes over: the column is categorical.
-function widenOne(prev: AttributeRange, range: AttributeRange) {
-  if (isAttributeLabels(range)) {
+// seen, stays in the key the same way. Once any fetch meets text the column is
+// categorical, and a span's distinct numbers join its labels as text.
+function widenOne(
+  prev: AttributeRange,
+  range: AttributeRange,
+): AttributeRange | undefined {
+  const missing = !!(prev.missing || range.missing)
+  if (isAttributeLabels(range) || isAttributeLabels(prev)) {
     const prevLabels = isAttributeLabels(prev) ? prev : undefined
-    const seen = new Set(prevLabels?.labels)
-    const added = range.labels.filter(l => !seen.has(l))
-    const newColors = Object.entries(range.colors).filter(
+    const before = labelsOf(prev)
+    const seen = new Set(before)
+    const added = labelsOf(range).filter(l => !seen.has(l))
+    const colors = isAttributeLabels(range) ? range.colors : {}
+    const newColors = Object.entries(colors).filter(
       ([l]) => prevLabels?.colors[l] === undefined,
     )
-    const missing = !!(prevLabels?.missing || range.missing)
     return prevLabels &&
       added.length === 0 &&
       newColors.length === 0 &&
       missing === !!prevLabels.missing
       ? undefined
       : {
-          labels: [...(prevLabels?.labels ?? []), ...added],
+          labels: [...before, ...added],
           colors: {
             ...prevLabels?.colors,
             ...Object.fromEntries(newColors),
@@ -75,19 +82,36 @@ function widenOne(prev: AttributeRange, range: AttributeRange) {
           ...(missing ? { missing } : {}),
         }
   }
-  if (isAttributeLabels(prev)) {
-    return undefined
-  }
-  const missing = !!(prev.missing || range.missing)
+  const values = widenValues(prev.values, range.values)
   return range.min < prev.min ||
     range.max > prev.max ||
-    missing !== !!prev.missing
+    missing !== !!prev.missing ||
+    values?.length !== prev.values?.length
     ? {
         min: Math.min(prev.min, range.min),
         max: Math.max(prev.max, range.max),
+        ...(values ? { values } : {}),
         ...(missing ? { missing } : {}),
       }
     : undefined
+}
+
+// Distinct numbers only grow, in first-seen order, and either side having
+// too many to list leaves none.
+function widenValues(
+  prev: readonly number[] | undefined,
+  next: readonly number[] | undefined,
+) {
+  if (!prev || !next) {
+    return undefined
+  }
+  const seen = new Set(prev)
+  const added = next.filter(v => !seen.has(v))
+  return added.length === 0
+    ? prev
+    : prev.length + added.length > MAX_DISTINCT_VALUES
+      ? undefined
+      : [...prev, ...added]
 }
 
 // Widen `into` by `ranges`, returning `into` ITSELF when nothing moved: this is

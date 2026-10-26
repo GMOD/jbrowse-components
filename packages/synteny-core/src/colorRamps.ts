@@ -166,6 +166,8 @@ export interface AttributeSpan {
   max: number
   /** some row carried no number, so the missing-value color was painted */
   missing?: boolean
+  /** a declared column's distinct numbers in first-seen order, absent past `MAX_DISTINCT_VALUES` */
+  values?: readonly number[]
 }
 
 /**
@@ -193,6 +195,16 @@ export function isAttributeLabels(
   range: AttributeRange,
 ): range is AttributeLabels {
   return 'labels' in range
+}
+
+/**
+ * A range's labels: a label list's own, or a span's distinct numbers as
+ * text, which is how a number meets the labels of a column holding text.
+ */
+export function labelsOf(range: AttributeRange): readonly string[] {
+  return isAttributeLabels(range)
+    ? range.labels
+    : (range.values ?? []).map(String)
 }
 
 const labelSpans = new WeakMap<AttributeLabels, AttributeSpan | undefined>()

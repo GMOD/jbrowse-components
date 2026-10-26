@@ -307,11 +307,25 @@ export function makeCategoricalColorFunction(
 ) {
   const values = attributes[mode.attribute]
   const fetchRange = fetchRanges[mode.attribute]
-  const dict =
-    fetchRange && 'labels' in fetchRange ? fetchRange.labels : mode.labels
-  const lut = Uint32Array.from(dict, label =>
-    cssColorToABGR(categoricalColor(mode, label)),
-  )
+  const colorOf = (label: string) =>
+    cssColorToABGR(categoricalColor(mode, label))
+  if (!fetchRange || !isAttributeLabels(fetchRange)) {
+    const byNumber = new Map<number, number>()
+    for (const label of mode.labels) {
+      const key = Math.fround(labelNumber(label))
+      if (!Number.isNaN(key) && !byNumber.has(key)) {
+        byNumber.set(key, colorOf(label))
+      }
+    }
+    return (index: number) => {
+      const value = values?.[index]
+      return (
+        (value === undefined ? undefined : byNumber.get(value)) ??
+        unlabelledColor
+      )
+    }
+  }
+  const lut = Uint32Array.from(fetchRange.labels, colorOf)
   return (index: number) => {
     const value = values?.[index]
     return value === undefined || Number.isNaN(value)
