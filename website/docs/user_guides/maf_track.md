@@ -121,7 +121,8 @@ one color is collinear; a row that _changes color along its length_ is drawing
 blocks from more than one source chromosome, an immediate flag for a
 translocation or rearrangement. The ranking is per row, and a compact legend in
 the top-right names the scheme (main / 2nd / 3rd source). Like conservation, it
-is derived from the alignment with no extra data to fetch.
+is derived from the alignment with no extra data to fetch. The figure turns off
+**Show → Mismatches**, which at this zoom would cover most of the fill.
 
 <Figure src="/img/maf_color_by_chromosome.png" caption="The ce11 26-way colored by source chromosome, a row switching color where its blocks come from another chromosome."/>
 

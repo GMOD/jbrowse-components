@@ -232,8 +232,8 @@ export const mafSpecs: ScreenshotSpec[] = [
     readyText: 'chrI',
     readyTimeout: 90000,
     viewportWidth: 1250,
-    // Below 810 the frame clips the last species row.
-    viewportHeight: 810,
+    // Below 822 the frame clips the last species row.
+    viewportHeight: 822,
     actions: [
       // caePb3's S -> L codon. The ce11 row is the reference, whose tooltip
       // reads "Change: none". dy 68 lands on the second species row: 16px
@@ -269,8 +269,13 @@ export const mafSpecs: ScreenshotSpec[] = [
             {
               trackId: 'ce11.26way',
               rowHeight: 8,
-              // The reference row draws one constant color under this color.
-              alignments: { rowProportion: 0.9, reference: { show: false } },
+              // The reference row draws one constant color under this color,
+              // and the mismatches would bury the fill at this zoom.
+              alignments: {
+                rowProportion: 0.9,
+                reference: { show: false },
+                mismatches: { show: false },
+              },
               encoding: { color: 'refNameRank' },
             },
           ],
