@@ -634,11 +634,14 @@ jobs:
         run: pnpm --filter ${{ matrix.site }} smoke
       # Each site deploys from its own leg, after its smoke test, so a red site
       # never ships and a green one does not wait on the other three. The
-      # prefix is fixed and unversioned, so a site deploys to its root. _astro/
-      # is content-hashed, so its sync skips any key already there at the same
-      # size. No
-      # --delete: the site overlays the prefix without touching the historical
-      # per-ref Storybook subdirs (e.g. /storybook/lgv/v3.0.0/). Prerelease tags
+      # prefix is fixed and unversioned, so a site deploys to its root,
+      # overlaying it without touching the hundreds of historical per-ref
+      # Storybook subdirs beside it (e.g. /storybook/lgv/v3.0.0/).
+      #
+      # _astro/ is content-hashed, so its sync skips any key already there at
+      # the same size. The rest is a `cp`, not a `sync`: it is a few dozen small
+      # pages, and a sync of the prefix lists every one of those subdirs first,
+      # which took ~4 minutes to upload 51 files. Prerelease tags
       # (carrying a '-') are excluded, since a beta would replace the live demos
       # the embedded-component docs link to; release.yml's code/jb2/latest
       # deploy has the same guard.
@@ -661,7 +664,7 @@ jobs:
           aws s3 sync --size-only \
             --cache-control "public, max-age=31536000, immutable" \
             "$DIST/_astro" "$DEST/_astro"
-          aws s3 sync --exclude="_astro/*" "$DIST" "$DEST"
+          aws s3 cp --recursive --exclude="_astro/*" "$DIST" "$DEST"
           aws cloudfront create-invalidation \
             --distribution-id ${{ env.CLOUDFRONT_DISTRIBUTION_ID }} \
             --paths "/storybook/${{ matrix.prefix }}/*"
