@@ -140,15 +140,6 @@ python3 orthogroups_to_blocks.py Orthogroups.tsv -o tauschii.blocks \
   --pick single --max-copies 2
 ```
 
-Open the `grasses` set's hosted config
-(https://jbrowse.org/demos/orthofinder_grasses/config.json) as sorghum over rice
-over maize, with each genome's gene track on, and navigate the rows to
-`1:5,934,000-6,126,000[rev]`, `3:31,590,000-31,775,000` and
-`1:286,676,000-287,665,000 5:6,261,000-6,790,000[rev]`. Sorghum is the control:
-it shares the ancestry and lacks the duplication.
-
-<Figure caption="One rice locus between sorghum and maize from the grasses orthogroups track, a gene track under each row." src="/img/orthofinder_synteny/grasses_maize_wgd.png" />
-
 ### Matching gene ids between the table and the BEDs
 
 Column 4 of each BED must match the ids in the table exactly. The build script
@@ -305,7 +296,7 @@ band, and pick **Reference** in the palette button menu.
 ### The human HOXD cluster against four vertebrates
 
 Open human at `2:176,090,000-176,290,000`, the _HOXD_ cluster of body-axis
-patterning genes, with the human gene track and the orthogroups track on the
+patterning genes, with **human genes** and the orthogroups track on the
 [multi-way synteny display](/docs/user_guides/multiway_synteny_display). A lane
 (one horizontal strip per genome) for each of chicken, frog, gar and zebrafish
 draws under it.
@@ -321,8 +312,9 @@ inversions reorder the genes inside each arm.
 
 In the `drosophila` config, stack the flies as simulans, melanogaster, yakuba,
 melanogaster, pseudoobscura, melanogaster, virilis, so every band sets one fly
-against melanogaster. Pick **Reference** in the palette button menu to paint
-each ribbon by the melanogaster arm it leaves.
+against melanogaster, with `drosophila_orthogroups` in each band. Pick
+**Reference** in the palette button menu to paint each ribbon by the
+melanogaster arm it leaves.
 
 <Figure caption="Four flies stacked with melanogaster between each pair, ribbons colored by melanogaster arm." src="/img/orthofinder_synteny/drosophila.png" />
 
@@ -417,8 +409,9 @@ every band:
 
 The `solanaceae` set is tomato, potato, pepper and _Nicotiana attenuata_ (the
 row labelled tobacco), with coffee as the outgroup. Open the `solanaceae` config
-and stack them as for [wheat](#stacking-the-wheat-genomes) with **Show all
-regions - same bp per pixel**, so row length matches genome size.
+and stack them as for [wheat](#stacking-the-wheat-genomes), with
+`solanaceae_orthogroups` in each band and **Show all regions - same bp per
+pixel**, so row length matches genome size.
 
 <Figure caption="Four nightshades over coffee, stacked on OrthoFinder orthogroups at one bp per pixel." src="/img/orthofinder_synteny/solanaceae.png" />
 
@@ -428,6 +421,16 @@ Open the `grasses` config and stack the five grasses as for
 [wheat](#stacking-the-wheat-genomes), with `grasses_orthogroups` in each band.
 
 <Figure caption="Five grass genomes stacked on OrthoFinder orthogroups." src="/img/orthofinder_synteny/grasses.png" />
+
+### One rice locus against both maize copies
+
+Stack sorghum over rice over maize, with **sorghum genes**, **rice genes** and
+**maize genes** on, and navigate the rows to `1:5,934,000-6,126,000[rev]`,
+`3:31,590,000-31,775,000` and
+`1:286,676,000-287,665,000 5:6,261,000-6,790,000[rev]`. Sorghum is the control:
+it shares the ancestry and lacks the duplication.
+
+<Figure caption="One rice locus between sorghum and maize from the grasses orthogroups track, a gene track under each row." src="/img/orthofinder_synteny/grasses_maize_wgd.png" />
 
 ### A rice window against four grasses
 
