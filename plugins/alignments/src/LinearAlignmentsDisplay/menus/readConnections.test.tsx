@@ -127,7 +127,11 @@ describe('read connections menu', () => {
     expect(
       items.every(
         i =>
-          i.type === 'subHeader' || (!('helpText' in i) && staysOpenOnClick(i)),
+          i.type === 'subHeader' ||
+          (i.type !== 'divider' &&
+            'onClick' in i &&
+            !('helpText' in i) &&
+            staysOpenOnClick(i)),
       ),
     ).toBe(true)
   })
