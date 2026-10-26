@@ -175,6 +175,11 @@ cost is linear in lanes.
 - **Lane names**: `rows.labels` names a lane by any spelling of its assembly
   (`rowLabels`); a lane it leaves out shows its assembly's display name, or the
   label a source's header declares (`laneLabel`).
+- **The color key** floats in the gutter under the anchor lane (`legendTop`),
+  since at the top corner it hid the anchor's genes (TP53 in
+  `primate_tp53_lanes`). Where that gutter is shorter than the key, as at
+  hg38 17p's 1.2 Mb window, it covers the second lane's changes chip instead;
+  its close button clears either.
 - **Lane changes chip**: the header lists what the records state across the gaps
   the shown frame meets, largest first, two then a count, in the HPRC portal's
   words (`laneIndelsOf`'s `changes`, `laneHeaderRows`). Across each gap
