@@ -31,13 +31,11 @@ Minimal `GWASTrack` config. See the
 }
 ```
 
-LocusZoom-style coloring in two marks: every other point by its r² to
-the index SNP in five bins, then the index alone as a pink diamond over
-them, the key listing the bins highest first and the index in a separate row.
-The LD data is a second source on `GWASAdapter`, so it nests under
-`adapter`, while the plot goes in `displayDefaults`. The track menu's
-"Color by LD to index SNP" makes the same pair of each point mark of a
-plot, and leaves the rest of the plot as it was:
+LocusZoom-style coloring by r² to the index SNP. The LD data is a second
+source on `GWASAdapter`, so it nests under `adapter`; the track menu's
+"Color by LD to index SNP" then writes the plot, and the
+[GWAS track guide](/docs/config_guides/gwas_track#example) writes it out in
+`displayDefaults`:
 
 ```js
 {
@@ -52,52 +50,6 @@ plot, and leaves the rest of the plot as it was:
       type: 'PlinkLDTabixAdapter',
       uri: 'https://example.com/plink.ld.gz',
     },
-  },
-  displayDefaults: {
-    height: 400,
-    marks: [
-      {
-        mark: 'point',
-        transform: [
-          { type: 'filter', expr: "jexl:feature.ld_role != 'index'" },
-        ],
-        encoding: {
-          y: 'score',
-          color: {
-            field: 'r2',
-            scale: {
-              type: 'threshold',
-              domain: [0.2, 0.4, 0.6, 0.8],
-              range: ['#357ebd', '#46b8da', '#5cb85c', '#eea236', '#d43f3a'],
-            },
-            legend: {
-              title: 'r² to index SNP',
-              descending: true,
-              missingLabel: 'No LD data',
-            },
-          },
-        },
-      },
-      {
-        mark: 'point',
-        transform: [
-          { type: 'filter', expr: "jexl:feature.ld_role == 'index'" },
-        ],
-        encoding: {
-          y: 'score',
-          color: { value: '#c951c9' },
-          shape: {
-            field: 'ld_role',
-            scale: {
-              domain: ['index'],
-              range: ['diamond'],
-              names: ['Index SNP'],
-            },
-            legend: { title: '' },
-          },
-        },
-      },
-    ],
   },
 }
 ```
