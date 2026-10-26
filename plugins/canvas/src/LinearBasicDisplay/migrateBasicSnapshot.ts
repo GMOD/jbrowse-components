@@ -2,6 +2,13 @@ import { applyRetiredSpellings } from '@jbrowse/core/configuration'
 import { isJexl } from '@jbrowse/core/util/jexlStrings'
 
 import { legacyGeneGlyphMode } from './geneGlyphMode.ts'
+import {
+  SHOW_LABELS_MODES,
+  modeCanShowDescription,
+  modeCanShowName,
+} from './showLabelsMode.ts'
+
+import type { ShowLabelsMode } from './showLabelsMode.ts'
 
 function isRecord(x: unknown): x is Record<string, unknown> {
   return typeof x === 'object' && x !== null
@@ -85,12 +92,17 @@ export const basicRetired: Record<
   mouseover: (field: unknown) => ({ tooltip: { field } }),
   // v4's boolean, and the five-value enum the hosted demos and figure links
   // still carry; `auto` and `nameAndDescription` were the defaults
+  // each writes its show either way, since a settings bag lands on a config
+  // that may already hide the label
   showLabels: (value: unknown) => labelsShown(value),
   showDescriptions: (value: unknown) =>
-    value === false ? { labels: { description: { show: false } } } : {},
+    typeof value === 'boolean'
+      ? { labels: { description: { show: value } } }
+      : {},
   subfeatureLabels: (mode: unknown) => ({
     labels: {
-      subfeatures: mode === 'none' ? { show: false } : { placement: mode },
+      subfeatures:
+        mode === 'none' ? { show: false } : { show: true, placement: mode },
     },
   }),
   // the feature outline is cut, as ADR-240 cut the pileup's
@@ -103,16 +115,22 @@ export const basicRetired: Record<
   renderer: liftRenderer,
 }
 
+// v4's boolean switched the names alone; the enum names both
 function labelsShown(value: unknown) {
-  const labels = {
-    ...(value === false || value === 'none' || value === 'description'
-      ? { name: { show: false } }
-      : {}),
-    ...(value === 'none' || value === 'name'
-      ? { description: { show: false } }
-      : {}),
-  }
-  return Object.keys(labels).length > 0 ? { labels } : {}
+  return typeof value === 'boolean'
+    ? { labels: { name: { show: value } } }
+    : isShowLabelsMode(value)
+      ? {
+          labels: {
+            name: { show: modeCanShowName(value) },
+            description: { show: modeCanShowDescription(value) },
+          },
+        }
+      : {}
+}
+
+function isShowLabelsMode(value: unknown): value is ShowLabelsMode {
+  return SHOW_LABELS_MODES.includes(value as ShowLabelsMode)
 }
 
 export function migrateBasicConfigSnapshot(snap: Record<string, unknown>) {

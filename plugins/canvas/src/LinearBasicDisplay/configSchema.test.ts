@@ -237,6 +237,13 @@ describe('LinearBasicDisplay configSchema', () => {
         { renderer: { type: 'CanvasFeatureRenderer', showLabels: false } },
         [false, true],
       ],
+      [
+        {
+          showLabels: true,
+          renderer: { type: 'CanvasFeatureRenderer', showLabels: false },
+        },
+        [true, true],
+      ],
     ])('lifts the legacy %j onto the label parts', (legacy, expected) => {
       const config = schema.create(
         { displayId: 'test', type: 'LinearBasicDisplay', ...legacy },

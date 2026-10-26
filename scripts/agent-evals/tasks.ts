@@ -202,19 +202,21 @@ export const TASKS: EvalTask[] = [
   {
     name: 'hide-labels',
     prompt: 'Hide the feature labels on the gene track.',
-    solution: `return jb.trackModel('gff3tabix_genes').applyDisplaySettings({ showLabels: 'none' })`,
-    // showLabels, not a guess: jb.describeSlots on the gene display lists it
-    // with "none" among its modes, beside maxLabelFeatureDensity and
-    // subfeatureLabels, which are the two neighbours a guess lands on
+    solution: `return jb.trackModel('gff3tabix_genes').applyDisplaySettings({ labels: { name: { show: false }, description: { show: false } } })`,
+    // the label parts' `show`, not their neighbours a guess lands on:
+    // maxLabelFeatureDensity and labels.subfeatures
     grade: `
       const t = ${shownTrack('gff3tabix_genes')}
       const conf = t?.activeDisplay.configuration
       const read = slot => conf && jb.readConfObject(conf, slot)
+      const names = read(['labels', 'name', 'show'])
+      const descriptions = read(['labels', 'description', 'show'])
       return {
-        pass: read('showLabels') === 'none',
+        pass: names === false && descriptions === false,
         detail: {
-          showLabels: read('showLabels'),
-          subfeatureLabels: read('subfeatureLabels'),
+          names,
+          descriptions,
+          subfeatures: read(['labels', 'subfeatures', 'show']),
           displayMode: read('displayMode'),
         },
       }`,
