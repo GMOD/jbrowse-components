@@ -18,6 +18,11 @@ import {
 } from '@jbrowse/add-track-core'
 
 import { filterProblems } from './alignmentsFilterRules/filterFields.ts'
+import { basesEntryProblems } from './alignmentsLayerRules/basesFilterRules.ts'
+import {
+  alleleEntryProblems,
+  interbaseEntryProblems,
+} from './alignmentsLayerRules/layerFilterRules.ts'
 import { configManifest } from './configManifest.generated.ts'
 import { displayDefaultsForTrackType } from './displayDefaultKeys.ts'
 import { isRecord, liftToSnapshot } from './liftConfig.ts'
@@ -670,6 +675,76 @@ function checkAlignmentsFilter(
   }
 }
 
+const MAF_DISPLAY = 'LinearMafDisplay'
+
+// Each alignments layer filter, the displays drawing its layer, and its rules
+// copied from the plugins (`alignmentsLayerRules/`)
+const LAYER_FILTERS = [
+  {
+    path: ['coverage', 'interbase', 'filter'],
+    displays: [ALIGNMENTS_DISPLAY, MAF_DISPLAY],
+    problems: interbaseEntryProblems,
+  },
+  {
+    path: ['coverage', 'alleles', 'filter'],
+    displays: [ALIGNMENTS_DISPLAY, MAF_DISPLAY],
+    problems: alleleEntryProblems,
+  },
+  {
+    path: ['pileup', 'bases', 'filter'],
+    displays: [ALIGNMENTS_DISPLAY],
+    problems: basesEntryProblems,
+  },
+]
+
+// A written filter list's entries as `predicatesOf` reads them, a bare string
+// being `{ field, equal: true }`
+function filterEntriesOf(list: unknown): FieldPredicate[] {
+  return Array.isArray(list)
+    ? list.flatMap(entry =>
+        typeof entry === 'string'
+          ? [{ field: entry, equal: true }]
+          : isRecord(entry) && typeof entry.field === 'string'
+            ? [entry as FieldPredicate]
+            : [],
+      )
+    : []
+}
+
+// What the alignments and MAF displays' corner notices say of their layer
+// filters: an entry on a field the layer has no reading of, a test the field
+// does not take, or a floor past the field's range.
+function checkLayerFilters(
+  display: Record<string, unknown>,
+  type: string,
+  manifest: ConfigManifest,
+  where: string,
+  report: Report,
+) {
+  const lifted = liftToSnapshot(display, manifest.displays[type]?.slots ?? [])
+  for (const { path, displays, problems } of LAYER_FILTERS) {
+    if (displays.includes(type)) {
+      const written = path.reduce<unknown>(
+        (at, key) => (isRecord(at) ? at[key] : undefined),
+        lifted,
+      )
+      const at = `${where}.${path.join('.')}`
+      for (const message of problems(filterEntriesOf(written))) {
+        if (
+          !report.problems.some(p => p.where === at && p.message === message)
+        ) {
+          report.problems.push({
+            level: 'warning',
+            where: at,
+            message,
+            rule: 'alignments-layer-filter',
+          })
+        }
+      }
+    }
+  }
+}
+
 // A problem the color and scale rules and the mark rule list both reach, such
 // as the y axis's ends on a mark display, is reported once.
 function pushOnce(report: Report, problem: Problem) {
@@ -851,6 +926,9 @@ function checkMarkDisplays(
     if (node.type === ALIGNMENTS_DISPLAY) {
       checkAlignmentsFilter(node, manifest, where, report)
     }
+    if (typeof node.type === 'string') {
+      checkLayerFilters(node, node.type, manifest, where, report)
+    }
     const trackType = trackTypeOf(node)
     if (trackType && isRecord(node.displayDefaults)) {
       for (const display of displayDefaultsForTrackType(trackType, manifest)
@@ -870,6 +948,13 @@ function checkMarkDisplays(
             report,
           )
         }
+        checkLayerFilters(
+          defaults,
+          display,
+          manifest,
+          `${where}.displayDefaults`,
+          report,
+        )
       }
     }
     if (

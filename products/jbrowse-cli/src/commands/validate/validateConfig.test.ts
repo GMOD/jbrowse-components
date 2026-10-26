@@ -134,6 +134,58 @@ describe('validateConfig', () => {
     ])
   })
 
+  it('warns on an alignments layer filter entry the layer cannot apply, as the display does', () => {
+    const config = baseConfig()
+    Object.assign(config.tracks[0]!, {
+      displays: [
+        {
+          type: 'LinearAlignmentsDisplay',
+          pileup: { bases: { filter: [{ field: 'nope' }] } },
+          coverage: {
+            alleles: { filter: [{ field: 'fraction', gt: 0.2 }] },
+            interbase: {
+              filter: [
+                { field: 'depth', lte: 4 },
+                { field: 'fraction', gte: 30 },
+              ],
+            },
+          },
+        },
+      ],
+      displayDefaults: {
+        pileup: {
+          bases: { filter: [{ field: 'context', oneOf: ['CG', 'CHG'] }] },
+        },
+      },
+    })
+    expect(
+      warningsOf(config).map(p => `${p.rule} ${p.where}: ${p.message}`),
+    ).toEqual([
+      'alignments-layer-filter tracks[0].displayDefaults.pileup.bases.filter: pileup.bases.filter: context takes one of CG, CHG, CHH, or none to take all three, not ["CG","CHG"]',
+      'alignments-layer-filter tracks[0].displays[0].coverage.interbase.filter: coverage.interbase.filter: depth takes gte or gt, not {"field":"depth","lte":4}',
+      'alignments-layer-filter tracks[0].displays[0].coverage.interbase.filter: coverage.interbase.filter: fraction runs from 0 to 1, not {"field":"fraction","gte":30}',
+      'alignments-layer-filter tracks[0].displays[0].coverage.alleles.filter: coverage.alleles.filter: fraction takes gte, not {"field":"fraction","gt":0.2}',
+      'alignments-layer-filter tracks[0].displays[0].pileup.bases.filter: pileup.bases.filter: no field "nope"; it takes probability, context, code',
+    ])
+  })
+
+  it('warns on a MAF display coverage layer filter entry the layer cannot apply', () => {
+    const config = baseConfig()
+    Object.assign(config.tracks[0]!, {
+      displays: [
+        {
+          type: 'LinearMafDisplay',
+          coverage: { alleles: { filter: [{ field: 'depth', gte: 2 }] } },
+        },
+      ],
+    })
+    expect(
+      warningsOf(config).map(p => `${p.rule} ${p.where}: ${p.message}`),
+    ).toEqual([
+      'alignments-layer-filter tracks[0].displays[0].coverage.alleles.filter: coverage.alleles.filter: no field "depth"; it takes fraction',
+    ])
+  })
+
   it('accepts a GC content track with no sequenceAdapter at all', () => {
     const config = baseConfig()
     config.tracks[0]!.type = 'QuantitativeTrack'
