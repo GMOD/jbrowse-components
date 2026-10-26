@@ -1,8 +1,8 @@
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
-import { getConf, parsePlot } from '@jbrowse/core/configuration'
-import { onPatch } from '@jbrowse/mobx-state-tree'
+import { parsePlot } from '@jbrowse/core/configuration'
+import { getSnapshot, onPatch } from '@jbrowse/mobx-state-tree'
 
 import { PLOT_EXAMPLES } from './plotExamples.ts'
 import { createTestEnvironment } from './testEnv.ts'
@@ -43,7 +43,7 @@ test('facet, color and filter read back as the box shows them', () => {
     encoding: { color: { field: 'subtrack', scale: { range: ['red'] } } },
     filter: ["jexl:feature.type == 'gene'"],
   })
-  expect(getConf(d, 'facet')).toEqual({
+  expect(getSnapshot(d.configuration.facet)).toEqual({
     field: 'subtrack',
     sort: ['key5', 'key2', 'key3'],
   })

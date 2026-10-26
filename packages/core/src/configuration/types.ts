@@ -239,15 +239,21 @@ type SubSchemaOf<SCHEMA, K> =
         : never
       : never
 
-type SubSchemaSlotPath<SCHEMA> =
+// LEAF drops a path ending on a sub-schema, as a read must
+type SubSchemaSlotPath<SCHEMA, LEAF extends boolean> =
   SCHEMA extends ConfigurationSchemaType<infer D, any>
     ? IsAny<D> extends true
       ? readonly string[]
       : {
           [K in keyof D & string]: D[K] extends AnyConfigurationSchemaType
             ?
-                | readonly [K, ConfigurationSlotName<D[K]>]
-                | readonly [K, ...SubSchemaSlotPath<D[K]>]
+                | readonly [
+                    K,
+                    LEAF extends true
+                      ? ConfigurationLeafSlotName<D[K]>
+                      : ConfigurationSlotName<D[K]>,
+                  ]
+                | readonly [K, ...SubSchemaSlotPath<D[K], LEAF>]
             : D[K] extends
                   | IArrayType<any>
                   | IOptionalIType<IArrayType<any>, any>
@@ -259,16 +265,42 @@ type SubSchemaSlotPath<SCHEMA> =
     : readonly string[]
 
 /**
- * The array paths a read may take into `SCHEMA`, checked segment by segment
- * through sub-schemas. A pluggable union, a map or a `frozen` slot keeps an
- * unchecked tail; a list of sub-schemas has none, since `setConf` walks only
- * sub-schemas and a list is written whole. A one-segment path stays unchecked, since a generic class
+ * The array paths `setConf` may take into `SCHEMA`, checked segment by segment
+ * through sub-schemas, and ending on a slot or a whole sub-schema. A pluggable
+ * union, a map or a `frozen` slot keeps an unchecked tail; a list of
+ * sub-schemas has none, since `setConf` walks only sub-schemas and a list is
+ * written whole. A one-segment path stays unchecked, since a generic class
  * body with `SCHEMA` unresolved reads a slot that way (`FastaAdapterBase`).
  */
 export type ConfigurationSlotPath<SCHEMA> =
   | readonly []
   | readonly [string]
-  | SubSchemaSlotPath<SCHEMA>
+  | SubSchemaSlotPath<SCHEMA, false>
+
+/**
+ * The slot names a read (`getConf`, `readConfObject`) may take: every name in
+ * `ConfigurationSlotName` but a sub-schema's. A sub-schema reads as its
+ * snapshot, which omits each member at its default and types every member
+ * `any`, so a read names the member: `['labels', 'name', 'show']`.
+ */
+export type ConfigurationLeafSlotName<SCHEMA> =
+  IsAny<SCHEMA> extends true
+    ? string
+    : SCHEMA extends ConfigurationSchemaType<infer D, any>
+      ? IsAny<D> extends true
+        ? string
+        : {
+            [K in keyof D & string]: D[K] extends AnyConfigurationSchemaType
+              ? never
+              : K
+          }[keyof D & string]
+      : never
+
+/** `ConfigurationSlotPath` minus a path ending on a sub-schema, for reads */
+export type ConfigurationLeafSlotPath<SCHEMA> =
+  | readonly []
+  | readonly [string]
+  | SubSchemaSlotPath<SCHEMA, true>
 
 /** what a read of `PATH` into `SCHEMA` yields */
 export type ConfigurationSlotPathValue<SCHEMA, PATH> = PATH extends readonly [

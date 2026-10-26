@@ -19,9 +19,9 @@ import type { JexlInstance } from '../util/jexlStrings.ts'
 import type {
   AnyConfigurationModel,
   AnyConfigurationSnapshot,
+  ConfigurationLeafSlotName,
+  ConfigurationLeafSlotPath,
   ConfigurationSchemaForModel,
-  ConfigurationSlotName,
-  ConfigurationSlotPath,
   ConfigurationSlotPathValue,
   ConfigurationSlotValue,
 } from './types.ts'
@@ -86,7 +86,9 @@ function readSlot(
  * The types reject a snapshot, because a snapshot omits a slot at its
  * default. A `session.tracks` entry is one (`TrackConfigEntry`): read its
  * `trackId` and `type` directly, and a slot through a helper that supplies the
- * default, such as `getConfAssemblyNamesOrNone`.
+ * default, such as `getConfAssemblyNamesOrNone`. A sub-schema reads as its
+ * snapshot, so the types refuse a path ending on one, and a read names the
+ * member, as `['labels', 'name', 'show']` does.
  *
  * @param model - instance of ConfigurationSchema
  * @param slotPaths - array of paths to read
@@ -99,9 +101,9 @@ export function readConfObject(
 export function readConfObject<
   CONFMODEL extends AnyConfigurationModel,
   const SLOT extends
-    | ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>>
-    | ConfigurationSlotPath<ConfigurationSchemaForModel<CONFMODEL>> =
-    ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>>,
+    | ConfigurationLeafSlotName<ConfigurationSchemaForModel<CONFMODEL>>
+    | ConfigurationLeafSlotPath<ConfigurationSchemaForModel<CONFMODEL>> =
+    ConfigurationLeafSlotName<ConfigurationSchemaForModel<CONFMODEL>>,
 >(
   confObject: CONFMODEL,
   slotPath?: SLOT,

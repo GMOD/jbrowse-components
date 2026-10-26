@@ -17,7 +17,7 @@ test('the axis-following example resets the y scale and keeps the color', () => 
   expect(
     readConfObject(configuration, ['encoding', 'y', 'scale', 'domainMax']),
   ).toBeUndefined()
-  expect(readConfObject(configuration, ['encoding', 'color'])).toMatchObject({
-    value: '#c951c9',
-  })
+  expect(readConfObject(configuration, ['encoding', 'color', 'value'])).toBe(
+    '#c951c9',
+  )
 })

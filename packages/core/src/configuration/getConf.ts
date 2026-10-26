@@ -26,6 +26,8 @@ import {
 import type {
   AnyConfigurationModel,
   AnyConfigurationSnapshot,
+  ConfigurationLeafSlotName,
+  ConfigurationLeafSlotPath,
   ConfigurationSchemaForModel,
   ConfigurationSlotName,
   ConfigurationSlotPath,
@@ -51,9 +53,9 @@ export function getConf(model: {
 export function getConf<
   CONFMODEL extends AnyConfigurationModel,
   const SLOT extends
-    | ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>>
-    | ConfigurationSlotPath<ConfigurationSchemaForModel<CONFMODEL>> =
-    ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>>,
+    | ConfigurationLeafSlotName<ConfigurationSchemaForModel<CONFMODEL>>
+    | ConfigurationLeafSlotPath<ConfigurationSchemaForModel<CONFMODEL>> =
+    ConfigurationLeafSlotName<ConfigurationSchemaForModel<CONFMODEL>>,
 >(
   model: { configuration: CONFMODEL },
   slotPath: SLOT,

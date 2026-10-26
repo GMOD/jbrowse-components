@@ -36,7 +36,10 @@ export default class MafTabixAdapter extends MafSubAdapterBase<MafTabixAdapterCo
     return {
       type: 'BedTabixAdapter',
       bedGzLocation: this.getConf('bedGzLocation'),
-      index: this.getConf('index'),
+      index: {
+        location: this.getConf(['index', 'location']),
+        indexType: this.getConf(['index', 'indexType']),
+      },
     }
   }
 

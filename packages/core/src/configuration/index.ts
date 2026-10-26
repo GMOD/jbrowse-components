@@ -26,6 +26,8 @@ export type {
   ConfigNodeActions,
   ConfigNodeBrand,
   ConfigNodeProps,
+  ConfigurationLeafSlotName,
+  ConfigurationLeafSlotPath,
   ConfigurationSchemaForModel,
   ConfigurationSlotName,
   ConfigurationSlotPath,

@@ -174,10 +174,12 @@ test('a partial sub-schema write merges rather than replacing the node', () => {
   const display = makeDisplay()
   display.applyDisplaySettings({ scales: { y: { type: 'log' } } })
   display.applyDisplaySettings({ scales: { y: { domainMin: 5 } } })
-  expect(readConfObject(display.configuration, ['scales', 'y'])).toMatchObject({
-    type: 'log',
-    domainMin: 5,
-  })
+  expect(readConfObject(display.configuration, ['scales', 'y', 'type'])).toBe(
+    'log',
+  )
+  expect(
+    readConfObject(display.configuration, ['scales', 'y', 'domainMin']),
+  ).toBe(5)
 })
 
 // A sub-schema that takes a bare string takes one written value, so an object
@@ -204,9 +206,12 @@ test('null resets a member at any depth of a namespace', () => {
     scales: { y: { domainMin: null } },
   })
   expect(report).toEqual({ applied: ['scales'], unapplied: [], failed: [] })
-  const y = readConfObject(display.configuration, ['scales', 'y'])
-  expect(y.type).toBe('log')
-  expect(y.domainMin).toBeUndefined()
+  expect(readConfObject(display.configuration, ['scales', 'y', 'type'])).toBe(
+    'log',
+  )
+  expect(
+    readConfObject(display.configuration, ['scales', 'y', 'domainMin']),
+  ).toBeUndefined()
 
   display.applyDisplaySettings({ scales: { y: null } })
   expect(readConfObject(display.configuration, ['scales', 'y', 'type'])).toBe(

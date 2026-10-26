@@ -39,7 +39,13 @@ defaults:
 readConfObject(getContainingTrack(self).configuration, ['adapter', 'fetchSizeLimit'])
 ```
 
-An array path still returns `any`; only single-slot reads narrow.
+A sub-schema reads as a snapshot too, so on a concrete schema `getConf` and
+`readConfObject` refuse a name or path ending on one, and a read names the
+member, as `['labels', 'name', 'show']` does. `setConf` still takes the
+whole sub-schema, which it replaces. To see which members a config wrote, take
+`getSnapshot(conf.labels)` by name. A path through a pluggable union or a
+`frozen` slot keeps an unchecked tail, and a one-segment array path is
+unchecked.
 
 ## Forwarding a callback slot: read it raw, don't resolve it
 

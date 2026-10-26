@@ -339,7 +339,7 @@ describe('LinearBasicDisplay configSchema', () => {
       },
       { pluginManager: pm },
     )
-    expect(readConfObject(config, 'transcripts')).toEqual({
+    expect(getSnapshot(config.transcripts)).toEqual({
       types: ['mRNA'],
       field: 'flag',
       sort: ['yes'],

@@ -74,7 +74,8 @@ test('a feature track groups and colors through the two settings jb.help names, 
       color: { field: 'gene_biotype', scale: { domain: ['protein_coding'] } },
     },
   })
-  expect(jb.getConf(display, 'facet')).toEqual({ field: 'strand' })
+  expect(jb.getConf(display, ['facet', 'field'])).toBe('strand')
+  expect(jb.getConf(display, ['facet', 'sort'])).toEqual([])
   display.applyDisplaySettings({ facet: null })
   expect(display.plot.facet).toBeUndefined()
   expect(

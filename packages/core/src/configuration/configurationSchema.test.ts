@@ -1516,13 +1516,11 @@ describe('readConfObject path resolution', () => {
   // A top-level config can itself be a types.map (e.g. an assembly's per-key
   // configs). rawSlotValue falls back from property access to map.get() so the
   // same readConfObject API drills into map entries. Easy to break unknowingly.
-  // The two spellings of one nested read disagree: a sub-config slot read hands
-  // back a stripDefault'd snapshot, so reading a defaulted slot off *that*
-  // answers undefined ("no limit declared") instead of the default. A real bug —
-  // the byte gate read a BAM's 5Mb fetchSizeLimit that way and used the display's
-  // 1Mb (810c7fb8fd). The wrong spelling is now a compile error
-  // (configTypeNarrowing.test.ts); this pins the runtime asymmetry it guards, so
-  // the reason the type is load-bearing stays visible.
+  // A read ending on a sub-schema hands back its stripDefault'd snapshot, so a
+  // defaulted member read off *that* answers undefined ("no limit declared").
+  // A real bug: the byte gate read a BAM's 5Mb fetchSizeLimit that way and used
+  // the display's 1Mb (810c7fb8fd). The read is now a compile error
+  // (configTypeNarrowing.test.ts); this pins the runtime asymmetry it guards.
   describe('a slot read off a sub-config snapshot', () => {
     const schema = ConfigurationSchema('Track', {
       sub: ConfigurationSchema('Sub', {
@@ -1532,9 +1530,9 @@ describe('readConfObject path resolution', () => {
     const make = () => schema.create(undefined, { pluginManager })
 
     test('reads undefined for a defaulted slot: why the type forbids it', () => {
+      // @ts-expect-error -- a read may not end on a sub-schema
       const snap = readConfObject(make(), 'sub')
       expect(snap).toEqual({})
-      // @ts-expect-error -- a snapshot is not a readable config
       expect(readConfObject(snap, 'limit')).toBeUndefined()
     })
 

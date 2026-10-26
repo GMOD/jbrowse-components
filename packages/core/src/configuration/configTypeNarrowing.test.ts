@@ -244,32 +244,36 @@ describe('getConf slot-value type narrowing', () => {
     expect(true).toBe(true)
   })
 
-  // A sub-config slot read yields the parent's stripDefault'd snapshot, so
-  // reading a *defaulted* slot back off it answers undefined instead of the
-  // default. The whole fix is that the snapshot no longer types as `any`, which
-  // is what let it be fed back in: keep both halves, or the hazard returns
-  // silently. See readConfObject's doc comment and CONFIG_PATTERN.md.
-  test('a sub-config slot read is a snapshot, and not readable as a config', () => {
+  // A sub-schema reads as its stripDefault'd snapshot, so a defaulted member
+  // read back off it answers undefined instead of the default. The readers
+  // refuse a name or path ending on one, leaving the member path as the only
+  // spelling; setConf still takes a whole sub-schema, which it replaces.
+  test('a read ending on a sub-schema is a compile error', () => {
     const nested = ConfigurationSchema('ConfigNarrowingNested', {
       sub: ConfigurationSchema('ConfigNarrowingSub', {
         limit: { type: 'number', defaultValue: 5_000_000 },
+        deeper: ConfigurationSchema('ConfigNarrowingDeeper', {
+          size: { type: 'number', defaultValue: 3 },
+        }),
       }),
       plain: { type: 'number', defaultValue: 1 },
     })
     const check = (config: Instance<typeof nested>) => {
-      // the read is typed as transport data, NOT `any`
-      const sub = readConfObject(config, 'sub')
-      assertType<Equal<typeof sub, AnyConfigurationSnapshot>>()
+      // @ts-expect-error -- a sub-schema reads as a default-stripped snapshot
+      readConfObject(config, 'sub')
+      // @ts-expect-error -- so does one a path ends on
+      readConfObject(config, ['sub', 'deeper'])
+      // @ts-expect-error -- getConf takes the same names
+      getConf({ configuration: config }, 'sub')
+      setConf(config, ['sub', 'deeper'], { size: 4 })
 
-      // ...so the wrong spelling of a nested read cannot compile
-      // @ts-expect-error -- a snapshot is not a readable config
-      readConfObject(sub, 'limit')
+      const size = readConfObject(config, ['sub', 'deeper', 'size'])
+      assertType<Equal<typeof size, number>>()
 
-      // a whole-config read is that same snapshot, not a union of slot values
+      // a whole-config read is a snapshot, not a union of slot values
       const whole: AnyConfigurationSnapshot = readConfObject(config)
       void whole
 
-      // an ordinary slot still narrows to its own value type
       const plain = readConfObject(config, 'plain')
       assertType<Equal<typeof plain, number>>()
     }

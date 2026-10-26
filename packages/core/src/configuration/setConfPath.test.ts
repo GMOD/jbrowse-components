@@ -186,7 +186,7 @@ describe('a settings bag', () => {
     applyConfSettings(configuration, { scales: { y: { type: 'log' } } })
     applyConfSettings(configuration, { scales: { y: { domainMin: 5 } } })
     expect(configuration.scales.y).toBe(y)
-    expect(readConfObject(configuration, ['scales', 'y'])).toEqual({
+    expect(getSnapshot(configuration.scales.y)).toEqual({
       type: 'log',
       domainMin: 5,
     })
@@ -207,7 +207,7 @@ describe('a settings bag', () => {
     })
     expect(report.applied).toEqual([])
     expect(report.failed.map(f => f.key)).toEqual(['scales'])
-    expect(readConfObject(configuration, ['scales', 'y'])).toEqual({})
+    expect(getSnapshot(configuration.scales.y)).toEqual({})
   })
 
   test("runs the config's lift over the bag, and a namespace's over its part", () => {

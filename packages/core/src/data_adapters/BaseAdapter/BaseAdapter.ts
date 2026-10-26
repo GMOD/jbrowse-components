@@ -7,9 +7,9 @@ import { getAdapterId } from './getAdapterId.ts'
 import type PluginManager from '../../PluginManager.ts'
 import type {
   AnyConfigurationModel,
+  ConfigurationLeafSlotName,
+  ConfigurationLeafSlotPath,
   ConfigurationSchemaForModel,
-  ConfigurationSlotName,
-  ConfigurationSlotPath,
   ConfigurationSlotPathValue,
   ConfigurationSlotValue,
 } from '../../configuration/index.ts'
@@ -63,9 +63,9 @@ export class BaseAdapter<
   /** shorthand for `readConfObject(this.config, arg)` */
   getConf<
     const SLOT extends
-      | ConfigurationSlotName<ConfigurationSchemaForModel<CONF>>
-      | ConfigurationSlotPath<ConfigurationSchemaForModel<CONF>> =
-      ConfigurationSlotName<ConfigurationSchemaForModel<CONF>>,
+      | ConfigurationLeafSlotName<ConfigurationSchemaForModel<CONF>>
+      | ConfigurationLeafSlotPath<ConfigurationSchemaForModel<CONF>> =
+      ConfigurationLeafSlotName<ConfigurationSchemaForModel<CONF>>,
   >(
     arg: SLOT,
     args?: Record<string, unknown>,
