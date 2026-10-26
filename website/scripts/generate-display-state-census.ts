@@ -38,6 +38,7 @@ import { readFileSync } from 'node:fs'
 import { basename, dirname, join, relative, sep } from 'node:path'
 
 import {
+  SOURCE_SKIP_DIRS,
   checkOrWrite,
   isTsSource,
   markdownTableLines,
@@ -49,15 +50,6 @@ import { repoRoot } from './paths.ts'
 const docPath = join(repoRoot, 'agent-docs', 'ARCHITECTURE.md')
 
 const SCAN_ROOTS = ['plugins', 'packages', 'products']
-
-const SKIP_DIRS = new Set([
-  'node_modules',
-  'esm',
-  'dist',
-  'build',
-  'shaders',
-  '__pycache__',
-])
 
 // The plugin's own registration, not a harness's: test harnesses also
 // construct displays to drive, and none registers a display type this repo
@@ -74,7 +66,7 @@ interface Census {
 
 function countTags(dir: string) {
   const counts = { slots: 0, properties: 0, volatiles: 0 }
-  for (const file of walkFiles(dir, isTsSource, SKIP_DIRS)) {
+  for (const file of walkFiles(dir, isTsSource, SOURCE_SKIP_DIRS)) {
     const text = readFileSync(file, 'utf8')
     // The tag as JSDoc writes it, on its own line or as `/** #slot */`.
     // Anchored to the comment leader so a `#slot` inside prose about slots is
@@ -91,7 +83,11 @@ function countTags(dir: string) {
 function displayDirs() {
   const dirs: string[] = []
   for (const root of SCAN_ROOTS) {
-    for (const file of walkFiles(join(repoRoot, root), isTsSource, SKIP_DIRS)) {
+    for (const file of walkFiles(
+      join(repoRoot, root),
+      isTsSource,
+      SOURCE_SKIP_DIRS,
+    )) {
       if (!isRegistration(file)) {
         continue
       }

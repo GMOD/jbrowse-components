@@ -11,10 +11,12 @@
 import { readFileSync } from 'node:fs'
 import { join, relative } from 'node:path'
 
-import { format } from 'prettier'
-
-import { parseAttrs } from '../src/lib/inline-html.ts'
-import { checkOrWrite, walkFiles } from './check-utils.ts'
+import {
+  checkOrWrite,
+  figureTags,
+  formatMarkdown,
+  walkFiles,
+} from './check-utils.ts'
 import { desktopAutogenNames } from './desktop-figures.ts'
 import { docsDir, websiteDir } from './paths.ts'
 import { screenshotLiveUrls, screenshotSpecNames } from './screenshot-specs.ts'
@@ -49,17 +51,11 @@ function isJbrowseImg(name: string) {
   return name.startsWith('jbrowse-img/')
 }
 
-const figureRe = /<Figure\s+([\s\S]*?)\s*\/>/g
-
 const manifest: Record<string, FigureEntry> = {}
 
 for (const docPath of walkFiles(docsDir, name => /\.mdx?$/.test(name))) {
   const relPath = relative(websiteDir, docPath)
-  const text = readFileSync(docPath, 'utf8')
-  figureRe.lastIndex = 0
-  let match: RegExpExecArray | null
-  while ((match = figureRe.exec(text)) !== null) {
-    const attrs = parseAttrs(match[1]!)
+  for (const { attrs } of figureTags(readFileSync(docPath, 'utf8'))) {
     const src = attrs.src ?? ''
     const name = src.replace(/^\/img\//, '').replace(/\.png$/, '')
     if (!name) {
@@ -103,15 +99,16 @@ for (const docPath of walkFiles(docsDir, name => /\.mdx?$/.test(name))) {
 const sorted = Object.fromEntries(
   Object.entries(manifest).sort(([a], [b]) => a.localeCompare(b, 'en')),
 )
-// Formatted the way prettier formats it (which collapses a one-element array
-// onto a single line), because the manifest is tracked: writing raw
+// Formatted the way `pnpm format` formats it (which collapses a one-element
+// array onto a single line), because the manifest is tracked: writing raw
 // JSON.stringify output made every run rewrite ~200 unrelated lines, so a real
 // one-figure change was invisible in review under the formatting churn.
 checkOrWrite({
   path: MANIFEST_PATH,
-  content: await format(`${JSON.stringify(sorted, null, 2)}\n`, {
-    parser: 'json',
-  }),
+  content: formatMarkdown(
+    `${JSON.stringify(sorted, null, 2)}\n`,
+    MANIFEST_PATH,
+  ),
   label: 'website/scripts/figure-manifest.json',
   staleHint: 'run `pnpm autogen`',
 })

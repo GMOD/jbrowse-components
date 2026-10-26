@@ -123,7 +123,7 @@ for (const pkg of PACKAGES) {
       )
       failed = true
     }
-  } else {
+  } else if (readFileSync(manifestPath, 'utf8') !== next) {
     writeFileSync(manifestPath, next)
     console.log(
       `${pkg}: ${Object.keys(publishExports).length} publish export entries`,

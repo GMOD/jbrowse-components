@@ -14,7 +14,7 @@
 import { readFileSync, readdirSync, writeFileSync } from 'node:fs'
 import { join, relative } from 'node:path'
 
-import { format } from 'prettier'
+import { formatMarkdown } from '../website/scripts/check-utils.ts'
 
 const check = process.argv.includes('--check')
 const root = join(import.meta.dirname, '..')
@@ -87,9 +87,7 @@ for (const [packageName, dir] of [...dirByPackageName].sort(([, a], [, b]) =>
 
   const configPath = join(root, dir, 'tsconfig.build.esm.json')
   const current = readFileSync(configPath, 'utf8')
-  const updated = await format(JSON.stringify(config), {
-    filepath: configPath,
-  })
+  const updated = formatMarkdown(JSON.stringify(config), configPath)
 
   if (updated !== current) {
     if (check) {
@@ -104,14 +102,14 @@ for (const [packageName, dir] of [...dirByPackageName].sort(([, a], [, b]) =>
 // The root solution file, so `tsc --build tsconfig.build.json` builds the whole
 // graph in one process.
 const solutionPath = join(root, 'tsconfig.build.json')
-const solution = await format(
+const solution = formatMarkdown(
   JSON.stringify({
     files: [],
     references: [...dirByPackageName.values()]
       .sort()
       .map(dir => ({ path: `${dir}/tsconfig.build.esm.json` })),
   }),
-  { filepath: solutionPath },
+  solutionPath,
 )
 if (solution !== readFileSync(solutionPath, 'utf8')) {
   if (check) {

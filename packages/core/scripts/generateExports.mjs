@@ -231,7 +231,7 @@ if (process.argv.includes('--check')) {
     process.exit(1)
   }
   console.log('@jbrowse/core exports are up to date')
-} else {
+} else if (readFileSync(packageJsonPath, 'utf8') !== next) {
   writeFileSync(packageJsonPath, next)
 }
 

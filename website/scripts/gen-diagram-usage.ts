@@ -30,6 +30,7 @@ import { join, relative } from 'node:path'
 import {
   checkOrWrite,
   docFiles,
+  figureTags,
   formatMarkdown,
   markdownTableLines,
   spliceGeneratedBlock,
@@ -44,10 +45,7 @@ const readmePath = join(diagramsDir, 'README.md')
 // asks which docs name a figure, and that question is about the PNG's name.
 const SOURCE_EXT = /\.(dot|svg)$/
 
-// Every `<Figure src="…">` in the corpus check-captions.ts and
-// check-figure-refs.ts also walk.
-const FIGURE_RE = /<Figure\b[^>]*?\bsrc="([^"]*)"[^>]*?>/g
-const HEADING_RE = /^#{1,6}\s+(.*?)\s*$/
+const HEADING_RE = /^#{1,6}\s+(.*?)\s*$/gm
 
 interface Use {
   doc: string
@@ -56,29 +54,21 @@ interface Use {
 
 /**
  * Where each `/img/<name>.png` is embedded, with the nearest heading above it.
- *
- * Reads the file line by line rather than matching over the whole text so the
- * heading comes along without a second index pass. A figure above every heading
- * — the shape a page whose figure IS the page takes, dataflow.md today — gets
- * an empty section and its row names the doc alone.
+ * A figure above every heading — the shape a page whose figure IS the page
+ * takes, dataflow.md today — gets an empty section and its row names the doc
+ * alone.
  */
 function collectUses(): Map<string, Use[]> {
   const uses = new Map<string, Use[]>()
   for (const file of docFiles(docsDir)) {
     const doc = relative(docsDir, file)
-    let section = ''
-    for (const line of readFileSync(file, 'utf8').split('\n')) {
-      const heading = HEADING_RE.exec(line)
-      if (heading) {
-        section = heading[1]!
-        continue
-      }
-      for (const match of line.matchAll(FIGURE_RE)) {
-        const src = match[1]!
-        const name = /^\/img\/(.*)\.png$/.exec(src)?.[1]
-        if (name !== undefined) {
-          uses.set(name, [...(uses.get(name) ?? []), { doc, section }])
-        }
+    const text = readFileSync(file, 'utf8')
+    const headings = [...text.matchAll(HEADING_RE)]
+    for (const { attrs, index } of figureTags(text)) {
+      const name = /^\/img\/(.*)\.png$/.exec(attrs.src ?? '')?.[1]
+      if (name !== undefined) {
+        const section = headings.findLast(h => h.index < index)?.[1] ?? ''
+        uses.set(name, [...(uses.get(name) ?? []), { doc, section }])
       }
     }
   }

@@ -15,6 +15,7 @@ import { readFileSync } from 'node:fs'
 import { join, relative, sep } from 'node:path'
 
 import {
+  SOURCE_SKIP_DIRS,
   checkOrWrite,
   isTsSource,
   markdownTableLines,
@@ -26,15 +27,6 @@ import { repoRoot } from './paths.ts'
 const docPath = join(repoRoot, 'agent-docs', 'reference', 'SVG_EXPORT.md')
 
 const SCAN_ROOTS = ['plugins', 'packages', 'products']
-
-const SKIP_DIRS = new Set([
-  'node_modules',
-  'esm',
-  'dist',
-  'build',
-  'shaders',
-  '__pycache__',
-])
 
 // The declaration reads as a two-argument call to itself, so excluding it is
 // load-bearing rather than tidiness.
@@ -76,7 +68,11 @@ function callers() {
   const rows: Row[] = []
   const unreadable: string[] = []
   for (const root of SCAN_ROOTS) {
-    for (const file of walkFiles(join(repoRoot, root), isTsSource, SKIP_DIRS)) {
+    for (const file of walkFiles(
+      join(repoRoot, root),
+      isTsSource,
+      SOURCE_SKIP_DIRS,
+    )) {
       if (isCaller(file)) {
         const text = readFileSync(file, 'utf8')
         const path = relative(repoRoot, file).replaceAll(sep, '/')

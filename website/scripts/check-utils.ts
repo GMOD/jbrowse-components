@@ -15,6 +15,7 @@ import {
 import { createRequire } from 'node:module'
 import { dirname, join, resolve } from 'node:path'
 
+import { parseAttrs } from '../src/lib/inline-html.ts'
 import { docsDir, repoRoot } from './paths.ts'
 
 // True when invoked with `--check` (CI parity mode); false for a local rewrite.
@@ -95,6 +96,17 @@ export const BUILD_DIRS = new Set([
   'esm',
   'cjs',
   'build',
+])
+
+// What a scan of `plugins`/`packages`/`products` source skips: build output,
+// and the generated shader modules, Python caches and jest snapshots beside it.
+// `plugins/*/node_modules` holds the per-package `@jbrowse/*` links an install
+// creates, so walking into it re-reads the workspace under other paths.
+export const SOURCE_SKIP_DIRS = new Set([
+  ...BUILD_DIRS,
+  'shaders',
+  '__pycache__',
+  '__snapshots__',
 ])
 
 // A published doc page. CLAUDE.md files are agent instructions rather than
@@ -498,4 +510,13 @@ export function parseMetadata(content: string): Record<string, string> {
     }
   }
   return result
+}
+
+// Every `<Figure … />` in a doc's text, with its attributes and where it
+// starts. A tag may wrap across lines.
+export function figureTags(text: string) {
+  return [...text.matchAll(/<Figure\s+([\s\S]*?)\s*\/>/g)].map(m => ({
+    attrs: parseAttrs(m[1]!),
+    index: m.index,
+  }))
 }

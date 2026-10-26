@@ -20,6 +20,7 @@ import { join, relative } from 'node:path'
 import * as ts from 'typescript'
 
 import {
+  SOURCE_SKIP_DIRS,
   checkOrWrite,
   isTsSource,
   markdownTableLines,
@@ -301,7 +302,7 @@ function main() {
       // hooks a display does — reading, in this table, as another display
       // overriding them. No shipped display is named this way.
       name => isTsSource(name) && !/test(env|utils)\.tsx?$/i.test(name),
-      new Set(['node_modules', 'esm', 'dist', 'shaders', '__pycache__']),
+      SOURCE_SKIP_DIRS,
     )
     for (const file of files) {
       if (!unitOf(file)) {

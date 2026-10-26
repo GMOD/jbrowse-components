@@ -46,6 +46,7 @@ import { dirname, join, resolve as resolvePath } from 'node:path'
 import * as ts from 'typescript'
 
 import {
+  SOURCE_SKIP_DIRS,
   checkOrWrite,
   isFile,
   markdownTableLines,
@@ -244,10 +245,6 @@ function borrowedDisplayType(node: ts.Node): string | undefined {
 
 function collectRegistrations(): Registration[] {
   const out: Registration[] = []
-  // `plugins/*/node_modules` holds the per-package `@jbrowse/*` links a real
-  // install creates, so walking into it re-reads the whole workspace through
-  // symlinks — and finds the same registrations twice, under other paths.
-  const skip = new Set(['node_modules', 'dist', 'esm', '__snapshots__'])
   // Test support registers display types too, and those are not adoption: a
   // harness registers a stub with `ReactComponent: () => null`. Excluded by the
   // conventional names `testEnv.ts` and `testUtils.ts`; a harness under another
@@ -258,7 +255,7 @@ function collectRegistrations(): Registration[] {
   for (const file of walkFiles(
     join(repoRoot, 'plugins'),
     n => /\.tsx?$/.test(n) && !isTestSupport(n),
-    skip,
+    SOURCE_SKIP_DIRS,
   )) {
     const text = readFileSync(file, 'utf8')
     if (!text.includes('new DisplayType(')) {

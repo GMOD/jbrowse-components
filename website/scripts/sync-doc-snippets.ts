@@ -27,10 +27,10 @@
 // above DOC_FENCE_BASELINE, so the debt can only shrink.
 //
 // Run `pnpm sync-doc-snippets` to update, `--check` to fail on drift (CI).
-import { readFileSync, writeFileSync } from 'node:fs'
+import { readFileSync } from 'node:fs'
 import { join, relative } from 'node:path'
 
-import { check, docFiles } from './check-utils.ts'
+import { check, docFiles, writeFileAtomic } from './check-utils.ts'
 import {
   countUnIncludedFences,
   extractRegion,
@@ -87,6 +87,7 @@ const FENCE_BASELINE = Number(process.env.DOC_FENCE_BASELINE ?? '44')
 let unIncluded = 0
 const byPage: [string, number][] = []
 
+const rewrites: { path: string; content: string }[] = []
 for (const path of docFiles(docsDir)) {
   const text = readFileSync(path, 'utf8')
   const lines = text.split('\n')
@@ -164,15 +165,20 @@ for (const path of docFiles(docsDir)) {
 
   if (changed) {
     stale.push(path.replace(`${repoRoot}/`, ''))
-    if (!check) {
-      writeFileSync(path, out.join('\n'))
-    }
+    rewrites.push({ path, content: out.join('\n') })
   }
 }
 
+// A page with a broken marker stops the run before any page is written, so a
+// failed run leaves no half-synced set behind.
 if (problems.length > 0) {
   console.error(problems.join('\n'))
   process.exit(1)
+}
+if (!check) {
+  for (const { path, content } of rewrites) {
+    writeFileAtomic(path, content)
+  }
 }
 if (stale.length > 0) {
   if (check) {
