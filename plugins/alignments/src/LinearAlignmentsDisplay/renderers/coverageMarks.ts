@@ -2,9 +2,10 @@ import { coverageBandMarks } from '@jbrowse/alignments-core'
 import { normalizedRgbToABGR } from '@jbrowse/core/util/colorBits'
 
 import { effectiveBaseColors } from '../../features/mismatch/baseColors.ts'
+import { isModificationLayerField } from '../../shared/colorFieldDefs.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
-import type { RGBColor } from '../../shaders/colors.ts'
+import type { ColorPalette, RGBColor } from '../../shaders/colors.ts'
 import type { RenderState } from './rendererTypes.ts'
 import type {
   CoverageBandRegion,
@@ -57,25 +58,25 @@ export function coverageRegionOf(
   }
 }
 
-type BandColorState = Pick<RenderState, 'colors' | 'showModifications'>
+type BandColorState = Pick<RenderState, 'colors' | 'basesField'>
 
 const packRgb = (rgb: RGBColor) => normalizedRgbToABGR(rgb[0], rgb[1], rgb[2])
 
 // Memoized on the palette and the modifications mute, the way the base tables
 // are: the band's state is read per block per layer, and the nine packs are
 // the same bytes for every one of them.
-let colorMemo: (BandColorState & { packed: CoverageBandColors }) | undefined
+let colorMemo:
+  | { colors: ColorPalette; muted: boolean; packed: CoverageBandColors }
+  | undefined
 
 function bandColors(state: BandColorState): CoverageBandColors {
-  if (
-    colorMemo?.colors !== state.colors ||
-    colorMemo.showModifications !== state.showModifications
-  ) {
+  const muted = isModificationLayerField(state.basesField)
+  if (colorMemo?.colors !== state.colors || colorMemo.muted !== muted) {
     const { colors } = state
     const base = effectiveBaseColors(state)
     colorMemo = {
       colors,
-      showModifications: state.showModifications,
+      muted,
       packed: {
         coverage: packRgb(colors.colorCoverage),
         baseA: packRgb(base.A),

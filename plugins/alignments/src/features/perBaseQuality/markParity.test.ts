@@ -35,7 +35,7 @@ const DATA: PerBaseQualityUploadData = {
 // A plain fill apart from the theme's neutral, as `encoding.color.value` writes one, so
 // a painter reading the neutral cannot pass for one reading the plain fill.
 const STATE = makeTestRenderState({
-  showPerBaseQuality: true,
+  basesField: 'baseQuality',
   featureHeight: FEATURE_HEIGHT,
   featureSpacing: 0,
   canvasHeight: 500,

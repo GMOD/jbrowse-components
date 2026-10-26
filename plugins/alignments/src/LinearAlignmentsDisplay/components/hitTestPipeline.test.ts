@@ -452,7 +452,7 @@ describe('a modification call answers only while the mark draws', () => {
       100,
       55,
       resolved,
-      opts({ showModifications: true }),
+      opts({ basesField: 'modifications' }),
     )
     expect(result.type).toBe('modification')
   })
@@ -462,7 +462,7 @@ describe('a modification call answers only while the mark draws', () => {
       100,
       55,
       resolved,
-      opts({ showModifications: false }),
+      opts({ basesField: undefined }),
     )
     expect(result.type).not.toBe('modification')
   })

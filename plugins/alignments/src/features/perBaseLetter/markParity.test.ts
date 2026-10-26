@@ -99,7 +99,7 @@ function paintedFills(fadeByQuality: boolean, fadeLowFrequency: boolean) {
     DATA,
     BLOCK,
     makeTestRenderState({
-      showPerBaseLetter: true,
+      basesField: 'base',
       qualityOpacity: qualityOpacityOf(fadeByQuality),
       fadeLowFrequency,
     }),

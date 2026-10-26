@@ -54,5 +54,5 @@ export const PER_BASE_LETTER_MARK = defineMark({
       keys: data.perBaseLetterBases,
     }),
   params: (state: RenderState) => state,
-  enabled: s => s.showPerBaseLetter,
+  enabled: s => s.basesField === 'base',
 })

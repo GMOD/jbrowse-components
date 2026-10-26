@@ -11,7 +11,7 @@ function fillsOf(labels: VisibleLabel[]) {
   const palette = resolvePalette()
   const baseColors = {
     colors: buildColorPaletteFromPalette(palette),
-    showModifications: false,
+    basesField: undefined,
   }
   const fills = new Map<string, unknown>()
   const ctx: Parameters<typeof drawAlignmentLabels>[0] = {

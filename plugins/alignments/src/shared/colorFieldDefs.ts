@@ -3,6 +3,7 @@ import { COLOR_FIELDS } from './types.ts'
 
 import type {
   BaseLayer,
+  BaseLayerField,
   BodyFill,
   ColorFieldKind,
   ReadColorFieldKind,
@@ -194,7 +195,12 @@ export function isPerBaseField(kind: ColorFieldKind) {
 
 /** Whether the per-base layer draws modification marks. */
 export function paintsModifications(layer: BaseLayer | undefined) {
-  return layer !== undefined && isModificationField(layer.field)
+  return isModificationLayerField(layer?.field)
+}
+
+/** Whether a per-base layer field paints modification or bisulfite calls. */
+export function isModificationLayerField(field: BaseLayerField | undefined) {
+  return field !== undefined && isModificationField(field)
 }
 
 /** Whether the per-base layer draws a cell for every aligned base. */

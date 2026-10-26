@@ -4,6 +4,7 @@ import {
   rgb255,
   rgbaPrefix255,
 } from '../../LinearAlignmentsDisplay/colorUtils.ts'
+import { isModificationLayerField } from '../../shared/colorFieldDefs.ts'
 
 import type { RenderState } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
 import type { ColorPalette, RGBColor } from '../../shaders/colors.ts'
@@ -11,12 +12,12 @@ import type { ColorPalette, RGBColor } from '../../shaders/colors.ts'
 // Every function here reads exactly these two fields, so a caller holding the
 // palette — the coverage tooltip, which is not on a render path and has no
 // `RenderState` — can reach the same table without building one.
-export type BaseColorState = Pick<RenderState, 'colors' | 'showModifications'>
+export type BaseColorState = Pick<RenderState, 'colors' | 'basesField'>
 
 /**
- * The five per-base colors after the modifications-mode mute: when
- * `showModifications` is on they all collapse to `colorMutedSnpBase` so the
- * overlay stands out.
+ * The five per-base colors after the modifications-mode mute: while the
+ * per-base layer paints modification or bisulfite calls they all collapse to
+ * `colorMutedSnpBase` so the calls stand out.
  *
  * **The one place that rule is written**, for either backend — every table and
  * palette below reads it, and so does `GpuAlignmentsRenderer.writeUniforms`,
@@ -27,7 +28,9 @@ export type BaseColorState = Pick<RenderState, 'colors' | 'showModifications'>
  */
 export function effectiveBaseColors(state: BaseColorState) {
   const { colors } = state
-  const muted = state.showModifications ? colors.colorMutedSnpBase : undefined
+  const muted = isModificationLayerField(state.basesField)
+    ? colors.colorMutedSnpBase
+    : undefined
   return {
     A: muted ?? colors.colorBaseA,
     C: muted ?? colors.colorBaseC,
@@ -46,7 +49,7 @@ export function effectiveBaseColors(state: BaseColorState) {
 // upper-case the byte (`& ~0x20`) rather than folding it to N.
 //
 // It is N's own entry, muted or not, rather than a second reading of
-// `showModifications`: the GPU reaches this same case through mismatch.slang's
+// the mute: the GPU reaches this same case through mismatch.slang's
 // `default: colorBaseN`, so the fallback IS whatever N resolved to. Spelling it
 // as its own ternary is what once painted a stray IUPAC base blue on Canvas2D
 // while the GPU painted it grey.
@@ -68,7 +71,7 @@ function baseTable<T>(state: BaseColorState, of: (c: RGBColor) => T): T[] {
 let tableMemo:
   | {
       colors: ColorPalette
-      showModifications: boolean
+      muted: boolean
       css: string[]
       faded: string[]
       contrast: string[]
@@ -76,13 +79,11 @@ let tableMemo:
   | undefined
 
 function baseTables(state: BaseColorState) {
-  if (
-    tableMemo?.colors !== state.colors ||
-    tableMemo.showModifications !== state.showModifications
-  ) {
+  const muted = isModificationLayerField(state.basesField)
+  if (tableMemo?.colors !== state.colors || tableMemo.muted !== muted) {
     tableMemo = {
       colors: state.colors,
-      showModifications: state.showModifications,
+      muted,
       css: baseTable(state, rgb255),
       faded: baseTable(state, rgbaPrefix255),
       contrast: baseTable(state, c => getContrastText(rgb255(c))),
@@ -111,8 +112,8 @@ function baseTables(state: BaseColorState) {
 // time is how a dark-mode pileup came to draw connectors in the light palette's
 // colors.
 //
-// `showModifications` is in the key because it is the other half of
-// `effectiveBaseColors`: it mutes all five bases, so a palette-only key would
+// The mute is in the key because it is the other half of
+// `effectiveBaseColors`: it greys all five bases, so a palette-only key would
 // serve the unmuted table for the whole session after one modifications toggle.
 export function buildBaseCssMap(state: BaseColorState): string[] {
   return baseTables(state).css

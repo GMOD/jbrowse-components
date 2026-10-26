@@ -18,6 +18,7 @@ import { getCigarTypeLabel } from '../../shared/types.ts'
 import { readCount, supportLabel } from './tooltipUtils.ts'
 
 import type { ColorPalette } from '../../shaders/colors.ts'
+import type { BaseLayerField } from '../../shared/types.ts'
 import type { TooltipPayload } from './tooltipUtils.ts'
 import type { MouseState } from '@jbrowse/core/ui'
 
@@ -88,15 +89,11 @@ const AlignmentsTooltip = observer(function AlignmentsTooltip({
     mouseoverExtraInformation: TooltipPayload | undefined
     hoverCoverageBand: { topOffset: number; coverageHeight: number } | undefined
     themed: { colors: ColorPalette }
-    showModifications: boolean
+    baseLayer: { field: BaseLayerField } | undefined
   }
   mouseState: MouseState | undefined
 }) {
-  const {
-    mouseoverExtraInformation: tooltipData,
-    hoverCoverageBand,
-    showModifications,
-  } = model
+  const { mouseoverExtraInformation: tooltipData, hoverCoverageBand } = model
   const { classes } = useStyles()
 
   if (tooltipData === undefined || mouseState === undefined) {
@@ -143,7 +140,7 @@ const AlignmentsTooltip = observer(function AlignmentsTooltip({
       // cursor by construction rather than by a second spelling of the palette.
       const baseColors = buildBaseCssMap({
         colors: model.themed.colors,
-        showModifications,
+        basesField: model.baseLayer?.field,
       })
       return (
         <>

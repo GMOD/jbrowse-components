@@ -11,7 +11,7 @@ import type { ConnectorFeed } from '../../features/linkedReads/connectorFeed.ts'
 import type { QualityOpacity } from '../../features/mismatch/qualityOpacity.ts'
 import type { SashimiBandFeed } from '../../features/sashimi/bandFeed.ts'
 import type { ColorPalette } from '../../shaders/colors.ts'
-import type { ArcColorField } from '../../shared/types.ts'
+import type { ArcColorField, BaseLayerField } from '../../shared/types.ts'
 import type { AlignmentsUnit, ReadConnectionsMode } from '../constants.ts'
 import type { LinkRegion, LinkSizeScale } from '@jbrowse/render-core/marks'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
@@ -49,9 +49,8 @@ export interface RenderState {
   qualityOpacity: QualityOpacity
   showSoftClips: boolean
   showInterbase: boolean
-  showModifications: boolean
-  showPerBaseQuality: boolean
-  showPerBaseLetter: boolean
+  // The field `pileup.bases` paints, undefined while no per-base layer draws.
+  basesField: BaseLayerField | undefined
   // Canvas dimensions - passed in to avoid forced layout from reading clientWidth/clientHeight
   canvasWidth: number
   canvasHeight: number

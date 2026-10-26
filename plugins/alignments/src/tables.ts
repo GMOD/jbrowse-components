@@ -383,7 +383,7 @@ function markColors(palette: ColorPalette, baseLayer: BaseLayer | undefined) {
   const muted = paintsModifications(baseLayer)
   const bases = effectiveBaseColors({
     colors: palette,
-    showModifications: muted,
+    basesField: baseLayer?.field,
   })
   const hex = normalizedRgbToHex
   return {

@@ -1751,27 +1751,6 @@ export default function stateModelFactory(
       .views(self => ({
         /**
          * #getter
-         */
-        get showModifications() {
-          return paintsModifications(self.baseLayer)
-        },
-
-        /**
-         * #getter
-         */
-        get showPerBaseQuality() {
-          return self.baseLayer?.field === 'baseQuality'
-        },
-
-        /**
-         * #getter
-         */
-        get showPerBaseLetter() {
-          return self.baseLayer?.field === 'base'
-        },
-
-        /**
-         * #getter
          * Every read's slot by id, and every slot of a read fetched in more
          * than one displayed region (`buildReadIdIndex`).
          */
@@ -2566,9 +2545,7 @@ export default function stateModelFactory(
             qualityOpacity: self.mismatchQualityOpacity,
             showSoftClips: self.showSoftClips,
             showInterbase: self.showInterbase,
-            showModifications: self.showModifications,
-            showPerBaseQuality: self.showPerBaseQuality,
-            showPerBaseLetter: self.showPerBaseLetter,
+            basesField: self.baseLayer?.field,
             pileupTopOffset: self.coverageDisplayHeight,
             coverageTopOffset: 0,
             sections: buildSectionRenders(self.sections, {

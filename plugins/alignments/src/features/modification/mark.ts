@@ -1,6 +1,7 @@
 import { defineMark } from '@jbrowse/render-core/marks'
 
 import * as packedColorQuadShader from '../../shaders/slang/packedColorQuad.generated.ts'
+import { isModificationLayerField } from '../../shared/colorFieldDefs.ts'
 import { packColorCells } from '../perBaseQuality/mark.ts'
 import {
   Band,
@@ -29,7 +30,8 @@ const identity = (packed: number) => packed
 // query, which answers out of Hilbert order and picks by distance where every
 // mark scan walks rows backwards. That query answers to the mark's gate all the
 // same, which is why the gate is named.
-export const modificationsEnabled = (s: RenderState) => s.showModifications
+export const modificationsEnabled = (s: RenderState) =>
+  isModificationLayerField(s.basesField)
 
 export const MODIFICATION_MARK = defineMark({
   shape: pileupShape({

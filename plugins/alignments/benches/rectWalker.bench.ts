@@ -522,7 +522,7 @@ function pileupState(): RenderState {
     fadeLowFrequency: true,
     chainMode: true,
     showMismatches: true,
-    showModifications: false,
+    basesField: undefined,
     colors: {
       colorDeletion: [0.5, 0.5, 0.5],
       colorSkip: [0, 0, 1],

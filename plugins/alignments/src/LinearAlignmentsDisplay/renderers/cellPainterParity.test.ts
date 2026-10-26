@@ -5,6 +5,7 @@ import { PER_BASE_QUALITY_MARK } from '../../features/perBaseQuality/mark.ts'
 import { SOFTCLIP_BASES_MARK } from '../../features/softclipBases/mark.ts'
 import { makeTestRenderState } from '../testUtils.ts'
 
+import type { BaseLayerField } from '../../shared/types.ts'
 import type { PileupMark } from './pileupMarks.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
@@ -51,19 +52,19 @@ function recordingCtx() {
 
 const STATE = makeTestRenderState({
   showMismatches: true,
-  showModifications: true,
-  showPerBaseQuality: true,
-  showPerBaseLetter: true,
+  basesField: 'modifications',
   showSoftClips: true,
   canvasWidth: BLOCK_WIDTH,
   canvasHeight: 500,
 })
 
 // One mark of each kind, at TEST_BP on row 0. `contiguous` is the shape's own
-// setting: base walls take the half-pixel seam fudge, sparse marks don't.
+// setting: base walls take the half-pixel seam fudge, sparse marks don't. A
+// per-base mark names the `pileup.bases` field that draws it.
 const MARKS: {
   name: string
   mark: PileupMark
+  basesField?: BaseLayerField
   region: unknown
   contiguous: boolean
 }[] = [
@@ -92,6 +93,7 @@ const MARKS: {
   {
     name: 'baseQuality',
     mark: PER_BASE_QUALITY_MARK,
+    basesField: 'baseQuality',
     contiguous: true,
     region: {
       perBaseQualPositions: new Uint32Array([TEST_BP]),
@@ -102,6 +104,7 @@ const MARKS: {
   {
     name: 'base',
     mark: PER_BASE_LETTER_MARK,
+    basesField: 'base',
     contiguous: true,
     region: {
       perBaseLetterPositions: new Uint32Array([TEST_BP]),
@@ -131,7 +134,10 @@ function cellFor(p: (typeof MARKS)[number], reversed: boolean) {
     screenEndPx: BLOCK_WIDTH,
     reversed,
   }
-  p.mark.paintBlock(ctx, p.region as never, block, STATE)
+  p.mark.paintBlock(ctx, p.region as never, block, {
+    ...STATE,
+    basesField: p.basesField ?? STATE.basesField,
+  })
   expect(rects).toHaveLength(1)
   return rects[0]!
 }

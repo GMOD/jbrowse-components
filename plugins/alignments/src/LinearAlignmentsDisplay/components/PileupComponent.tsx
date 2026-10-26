@@ -373,7 +373,7 @@ const VisibleLabelsHost = observer(function VisibleLabelsHost({
       height={height}
       baseColors={{
         colors: model.themed.colors,
-        showModifications: model.showModifications,
+        basesField: model.baseLayer?.field,
       }}
     />
   )

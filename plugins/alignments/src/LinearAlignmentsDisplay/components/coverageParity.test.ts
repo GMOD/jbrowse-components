@@ -376,7 +376,7 @@ describe('coverage packing parity between GPU and Canvas2D', () => {
       showMismatches: false,
       qualityOpacity: OPAQUE_MISMATCHES,
       showSoftClips: false,
-      showModifications: false,
+      basesField: undefined,
       // `makeTestPalette` rather than the slots this case happens to read: the
       // surrounding state is an `as unknown as RenderState` cast, so a hand-cut
       // palette inside it is unchecked twice over. It was — `colorSkip` was
@@ -653,9 +653,7 @@ describe('renderBlocks canvasDrawn gating parity', () => {
       showSoftClips: false,
       showInterbase: false,
       showCoverageAlleles: true,
-      showModifications: false,
-      showPerBaseQuality: false,
-      showPerBaseLetter: false,
+      basesField: undefined,
       colors: fullColors,
       unit: 'read',
       showLinkedReadLines: false,

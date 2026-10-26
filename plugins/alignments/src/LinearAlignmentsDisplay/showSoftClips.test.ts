@@ -368,7 +368,6 @@ describe('alignments colorField', () => {
       filter: basesFilterOf([{ field: 'probability', gte: 0.5 }]),
     })
     expect(display.bodyColorKind).toBe('tag')
-    expect(display.showModifications).toBe(true)
     expect(display.rpcProps()).toMatchObject({
       colorField: 'tags.HP',
       baseLayer: { field: 'modifications' },
@@ -385,7 +384,7 @@ describe('alignments colorField', () => {
         },
       },
     })
-    expect(display.showModifications).toBe(true)
+    expect(display.baseLayer?.field).toBe('modifications')
     expect(display.rpcProps()).toMatchObject({
       colorField: undefined,
       baseLayer: {
@@ -429,7 +428,7 @@ describe('alignments colorField', () => {
     expect(display.baseLayer?.field).toBe('modifications')
     display.setBases({ show: true, field: 'baseQuality' })
     expect(display.colorField).toBe('strand')
-    expect(display.showPerBaseQuality).toBe(true)
+    expect(display.baseLayer?.field).toBe('baseQuality')
     display.setBases({ show: false })
     expect(display.baseLayer).toBeUndefined()
   })

@@ -79,9 +79,7 @@ function renderState(overrides: Partial<RenderState>) {
     qualityOpacity: OPAQUE_MISMATCHES,
     showMismatches: true,
     showSoftClips: true,
-    showModifications: true,
-    showPerBaseQuality: true,
-    showPerBaseLetter: true,
+    basesField: 'modifications',
     colors: makeTestPalette({
       colorBaseA: [0, 1, 0],
       colorBaseC: [0, 0, 1],
@@ -491,9 +489,17 @@ const MARKS: [
   ['mismatch', (scale, block, state) => sweep(mismatches(scale), block, state)],
   [
     'baseQuality',
-    (scale, block, state) => sweep(perBaseQuality(scale), block, state),
+    (scale, block, state) =>
+      sweep(perBaseQuality(scale), block, {
+        ...state,
+        basesField: 'baseQuality',
+      }),
   ],
-  ['base', (scale, block, state) => sweep(perBaseLetter(scale), block, state)],
+  [
+    'base',
+    (scale, block, state) =>
+      sweep(perBaseLetter(scale), block, { ...state, basesField: 'base' }),
+  ],
   [
     'softclipBases',
     (scale, block, state) => sweep(softclipBases(scale), block, state),

@@ -88,5 +88,5 @@ export const PER_BASE_QUALITY_MARK = defineMark({
       keys: data.perBaseQualScores,
     }),
   params: (state: RenderState) => state,
-  enabled: s => s.showPerBaseQuality,
+  enabled: s => s.basesField === 'baseQuality',
 })

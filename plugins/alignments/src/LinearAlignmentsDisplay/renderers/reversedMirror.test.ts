@@ -263,9 +263,6 @@ function state(overrides: Partial<RenderState> = {}): RenderState {
     showSoftClips: true,
     showInterbase: false,
     showCoverageAlleles: true,
-    showModifications: true,
-    showPerBaseQuality: true,
-    showPerBaseLetter: true,
     // The shared fixture rather than a literal inside the cast below: a literal
     // falls a field behind, and a layer that reads a color the cast let
     // through as undefined fails at MODULE scope
@@ -331,8 +328,18 @@ function mirrorX(m: Mark) {
 // pileup can't draw overlaps or either line layer (`shouldDrawOverlaps` and the
 // connLine/linkedReadLine gates all need a linked-reads layout), so without the
 // second config those three layers have no reversed coverage anywhere.
+// One plain config per per-base field, since `pileup.bases` paints one at a
+// time.
 const CONFIGS: { name: string; overrides: Partial<RenderState> }[] = [
-  { name: 'plain pileup', overrides: {} },
+  {
+    name: 'plain pileup, modifications',
+    overrides: { basesField: 'modifications' },
+  },
+  {
+    name: 'plain pileup, base quality',
+    overrides: { basesField: 'baseQuality' },
+  },
+  { name: 'plain pileup, base letters', overrides: { basesField: 'base' } },
   {
     name: 'linked reads (adds overlaps + connecting/linked-read lines)',
     overrides: {

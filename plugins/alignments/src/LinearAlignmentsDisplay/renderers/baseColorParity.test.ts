@@ -35,7 +35,7 @@ const BASE_SLOTS = [
 
 function renderState(showModifications: boolean) {
   return makeTestRenderState({
-    showModifications,
+    basesField: showModifications ? 'modifications' : undefined,
     // Five DISTINCT base colors, so a transposed slot shows as a mismatch
     // rather than as two equal greys.
     colors: makeTestPalette({

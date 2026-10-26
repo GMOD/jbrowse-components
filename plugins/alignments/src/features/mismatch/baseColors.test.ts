@@ -10,7 +10,7 @@ import type { RenderState } from '../../LinearAlignmentsDisplay/renderers/render
 
 function state(showModifications: boolean) {
   return {
-    showModifications,
+    basesField: showModifications ? 'modifications' : undefined,
     colors: {
       colorBaseA: [1, 0, 0],
       colorBaseC: [0, 1, 0],
@@ -84,7 +84,10 @@ describe('per-base canvas palette', () => {
   test('the memo reacts to a modifications toggle at a fixed palette', () => {
     const colors = state(false).colors
     const shared = (showModifications: boolean) =>
-      ({ showModifications, colors }) as RenderState
+      ({
+        basesField: showModifications ? 'modifications' : undefined,
+        colors,
+      }) as RenderState
     expect(buildBaseCssMap(shared(false))[65]).toBe('rgb(255,0,0)')
     expect(buildBaseCssMap(shared(true))[65]).toBe(GREY)
     expect(buildBaseCssMap(shared(false))[65]).toBe('rgb(255,0,0)')

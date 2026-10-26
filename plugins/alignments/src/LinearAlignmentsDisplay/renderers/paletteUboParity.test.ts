@@ -65,8 +65,8 @@ const SECTION: SectionRender = {
   connectorClipHeight: 0,
 }
 
-// The uniforms one block of one empty region leaves behind. showModifications
-// false, so `effectiveBaseColors` passes the five base colors through unmuted.
+// The uniforms one block of one empty region leaves behind. No per-base layer,
+// so `effectiveBaseColors` passes the five base colors through unmuted.
 function frameUniforms() {
   const hal = new MockHal(ALIGNMENTS_PASSES)
   const renderer = new GpuAlignmentsRenderer(hal)
@@ -94,7 +94,7 @@ function frameUniforms() {
       },
     ],
     makeTestRenderState({
-      showModifications: false,
+      basesField: undefined,
       colors: COLORS,
       readConnectionsColorField: 'pairOrientation',
       sections: [SECTION],

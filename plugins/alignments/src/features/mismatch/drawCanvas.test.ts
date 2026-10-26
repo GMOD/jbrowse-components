@@ -54,9 +54,7 @@ function baseState(overrides: Partial<RenderState> = {}): RenderState {
     showSoftClips: false,
     showInterbase: false,
     showCoverageAlleles: true,
-    showModifications: false,
-    showPerBaseQuality: false,
-    showPerBaseLetter: false,
+    basesField: undefined,
     canvasWidth: 100,
     canvasHeight: 100,
     colors: {
