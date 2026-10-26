@@ -8809,6 +8809,52 @@ export const configManifest: ConfigManifest = {
           ],
           "schema": "HicData",
           "writes": "members"
+        },
+        {
+          "name": "filter",
+          "type": "FieldPredicateConfigurationSchema[]",
+          "subSlots": [
+            {
+              "name": "field",
+              "type": "PredicateField"
+            },
+            {
+              "name": "equal",
+              "type": "((string | number | boolean) | undefined)"
+            },
+            {
+              "name": "lt",
+              "type": "(number | undefined)"
+            },
+            {
+              "name": "lte",
+              "type": "(number | undefined)"
+            },
+            {
+              "name": "gt",
+              "type": "(number | undefined)"
+            },
+            {
+              "name": "gte",
+              "type": "(number | undefined)"
+            },
+            {
+              "name": "oneOf",
+              "type": "((string | number | boolean)[] | undefined)"
+            },
+            {
+              "name": "range",
+              "type": "((number | null)[] | undefined)"
+            },
+            {
+              "name": "valid",
+              "type": "(boolean | undefined)"
+            }
+          ],
+          "schema": "FieldPredicate",
+          "shorthand": {
+            "string": "field"
+          }
         }
       ],
       "legacyKeys": [

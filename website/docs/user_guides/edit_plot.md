@@ -30,7 +30,7 @@ display:
 | Chord synteny display (`ChordSyntenyDisplay`)                         | `mark`                                                                                                      |
 | Chord variant display (`ChordVariantDisplay`)                         | `mark`, `encoding`                                                                                          |
 | Feature display (`LinearBasicDisplay`)                                | `filter`, `legend`, `encoding`, `mark`, `facet`, `labels`                                                   |
-| Hi-C contact matrix display (`LinearHicDisplay`)                      | `encoding`, `legend`                                                                                        |
+| Hi-C contact matrix display (`LinearHicDisplay`)                      | `encoding`, `legend`, `filter`                                                                              |
 | LD heatmap display (`LDTrackDisplay`)                                 | `encoding`, `legend`, `labels`                                                                              |
 | MAF display (`LinearMafDisplay`)                                      | `encoding`, `rows`, `rowColor`, `legend`, `coverage`, `alignments`, `conservation`                          |
 | Manhattan plot display (`LinearManhattanDisplay`)                     | `marks`, `transform`, `facet`, `rows`, `rowColor`, `encoding`, `origin`, `legend`, `filter`                 |

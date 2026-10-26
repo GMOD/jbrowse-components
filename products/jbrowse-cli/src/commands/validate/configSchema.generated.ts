@@ -15204,6 +15204,17 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/HicData"
           }
         },
+        "filter": {
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/FieldPredicate"
+            }
+          }
+        },
         "maxFeatureScreenDensity": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
@@ -20566,6 +20577,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "data": {
               "$ref": "#/$defs/LinearHicDisplaySlots/properties/data"
+            },
+            "filter": {
+              "$ref": "#/$defs/LinearHicDisplaySlots/properties/filter"
             },
             "maxFeatureScreenDensity": {
               "$ref": "#/$defs/LinearHicDisplaySlots/properties/maxFeatureScreenDensity"

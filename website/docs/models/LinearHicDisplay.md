@@ -95,6 +95,7 @@ From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`sc
 | <span id="getter-saturationquantile">**saturationQuantile**</span><br><code>number</code> | The quantile "Emphasize faint contacts" saturates at: `colorQuantile` while it clips, else the one ticking it writes. Each fetch asks the worker for this one whichever is drawn, so the toggle reselects nothing. |
 | <span id="getter-selectednormalization">**selectedNormalization**</span><br><code>string</code> | `data.normalization`, the one asked for. |
 | <span id="getter-colorfield">**colorField**</span><br><code>"observed" &#124; "observed/control" &#124; "observed/expected"</code> | `encoding.color.field`, what the fetch asks the worker to put in each cell. |
+| <span id="getter-countfloors">**countFloors**</span><br><code>HicCountFloors</code> | The `filter` list's floors on a cell's counts, which the worker applies before the ratio. |
 | <span id="getter-paintedcolorfield">**paintedColorField**</span><br><code>"observed" &#124; "observed/control" &#124; "observed/expected"</code> | The field the loaded cells are: observed/expected falls back to the counts where the file has no expected values at the binsize. |
 | <span id="getter-hasresolutions">**hasResolutions**</span><br><code>boolean</code> | Whether the binsize list has arrived; every resolution control gates on it. |
 | <span id="getter-activenormalization">**activeNormalization**</span><br><code>string</code> | The normalization to request: the selection where the file has it, else the next best it does. A getter, so a file lacking the selection never marks the track edited. |
@@ -145,14 +146,15 @@ From [BaseDisplay](../basedisplay): <span id="getter-parenttrack">[`parentTrack`
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="method-rpcprops">**rpcProps**</span><br><code>() =&gt; { normalization: string; field: HicColorField; }</code> | The settings that refetch. The binsize is zoom-derived and the quantile reselects on the main thread, so both ride as call arguments. |
+| <span id="method-rpcprops">**rpcProps**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>() =&gt; { normalization: string; field: HicColorField; floors: Hi…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>() =&gt; { normalization: string; field: HicColorField; floors: HicCountFloors; }</code></pre></dialog></span> | The settings that refetch. The binsize is zoom-derived and the quantile reselects on the main thread, so both ride as call arguments. |
 | <span id="method-hittest">**hitTest**</span><br><code>(mouseX: number, mouseY: number) =&gt; HicContactItem &#124; undefined</code> | The contact under a display-px point, through the inverse of the transform the matrix was drawn with. |
 | <span id="method-hoverhitat">**hoverHitAt**</span><br><code>(mouseX: number, mouseY: number) =&gt; HicContactItem &#124; undefined</code> | No contact while the matrix loads: a global display replaces its whole frame, so the cells it holds are on their way out. |
+| <span id="method-configproblemsof">**configProblemsOf**</span><br><code>(conf: AnyConfigurationModel) =&gt; string[]</code> | The schema's rules, then the `filter` entries the worker cannot apply. |
 | <span id="method-trackmenuitems">**trackMenuItems**</span><br><code>() =&gt; MenuItem[]</code> |  |
 | <span id="method-rendersvg">**renderSvg**</span><br><code>(opts: ExportSvgDisplayOptions) =&gt; Promise&lt;ReactNode&gt;</code> |  |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>12 inherited methods from 5 models</summary>
+<summary>11 inherited methods from 5 models</summary>
 
 From [TriangleMatrixMixin](../trianglematrixmixin): <span id="method-celltoscreen">[`cellToScreen`](../trianglematrixmixin#method-celltoscreen)</span>, <span id="method-screentocell">[`screenToCell`](../trianglematrixmixin#method-screentocell)</span>
 
@@ -162,7 +164,7 @@ From [LegendMixin](../legendmixin): <span id="method-colorscalesin">[`colorScale
 
 From [RegionTooLargeMixin](../regiontoolargemixin): <span id="method-resolvedbytelimit">[`resolvedByteLimit`](../regiontoolargemixin#method-resolvedbytelimit)</span>, <span id="method-gatefetchstate">[`gateFetchState`](../regiontoolargemixin#method-gatefetchstate)</span>
 
-From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`renderingProps`](../basedisplay#method-renderingprops)</span>, <span id="method-configproblemsof">[`configProblemsOf`](../basedisplay#method-configproblemsof)</span>, <span id="method-liftplot">[`liftPlot`](../basedisplay#method-liftplot)</span>, <span id="method-plotproblems">[`plotProblems`](../basedisplay#method-plotproblems)</span>, <span id="method-plotwrites">[`plotWrites`](../basedisplay#method-plotwrites)</span>
+From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`renderingProps`](../basedisplay#method-renderingprops)</span>, <span id="method-liftplot">[`liftPlot`](../basedisplay#method-liftplot)</span>, <span id="method-plotproblems">[`plotProblems`](../basedisplay#method-plotproblems)</span>, <span id="method-plotwrites">[`plotWrites`](../basedisplay#method-plotwrites)</span>
 
 </details>
 
