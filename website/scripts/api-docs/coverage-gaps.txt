@@ -48,7 +48,7 @@ Dotplot1DView
 LinearSyntenyViewHelper
 TimeTraveller
 
-# model members with no description (1298)
+# model members with no description (1295)
 # fix: write a sentence under the member’s #property/#volatile/#getter/#method/#action tag
 AddTrackModel.adapterHint
 AddTrackModel.altAssemblyName
@@ -593,24 +593,21 @@ LinearAlignmentsDisplay.setReadConnectionsPlacement
 LinearAlignmentsDisplay.setSashimiHeight
 LinearAlignmentsDisplay.setSashimiPlacement
 LinearAlignmentsDisplay.setShowCoverage
-LinearAlignmentsDisplay.setShowInterbaseIndicators
+LinearAlignmentsDisplay.setShowInterbase
 LinearAlignmentsDisplay.setShowMismatches
 LinearAlignmentsDisplay.setShowOrdinaryPairs
 LinearAlignmentsDisplay.setShowPileup
-LinearAlignmentsDisplay.setShowSashimiCounts
-LinearAlignmentsDisplay.setShowSoftClipping
+LinearAlignmentsDisplay.setShowSashimiLabels
+LinearAlignmentsDisplay.setShowSoftClips
 LinearAlignmentsDisplay.showConnectors
 LinearAlignmentsDisplay.showCoverage
-LinearAlignmentsDisplay.showInterbaseIndicators
+LinearAlignmentsDisplay.showInterbase
 LinearAlignmentsDisplay.showMismatches
-LinearAlignmentsDisplay.showModifications
-LinearAlignmentsDisplay.showPerBaseLetter
-LinearAlignmentsDisplay.showPerBaseQuality
 LinearAlignmentsDisplay.showPileup
 LinearAlignmentsDisplay.showReadConnections
 LinearAlignmentsDisplay.showSashimi
-LinearAlignmentsDisplay.showSashimiCounts
-LinearAlignmentsDisplay.showSoftClipping
+LinearAlignmentsDisplay.showSashimiLabels
+LinearAlignmentsDisplay.showSoftClips
 LinearAlignmentsDisplay.sortAtCenterLine
 LinearAlignmentsDisplay.startRenderingBackend
 LinearAlignmentsDisplay.unit
@@ -842,7 +839,7 @@ LinearMafDisplay.setShowAlignments
 LinearMafDisplay.setShowConservation
 LinearMafDisplay.setShowCoverage
 LinearMafDisplay.setShowFrames
-LinearMafDisplay.setShowInterbaseIndicators
+LinearMafDisplay.setShowInterbase
 LinearMafDisplay.setShowInversions
 LinearMafDisplay.setShowMismatches
 LinearMafDisplay.setShowReferenceRow
@@ -851,7 +848,7 @@ LinearMafDisplay.showAlignments
 LinearMafDisplay.showConservation
 LinearMafDisplay.showCoverage
 LinearMafDisplay.showFrames
-LinearMafDisplay.showInterbaseIndicators
+LinearMafDisplay.showInterbase
 LinearMafDisplay.showInversions
 LinearMafDisplay.showMismatches
 LinearMafDisplay.showReferenceRow

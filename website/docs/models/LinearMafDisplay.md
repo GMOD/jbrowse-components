@@ -114,7 +114,7 @@ From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`sc
 | <span id="getter-showcoveragealleles">**showCoverageAlleles**</span><br><code>boolean</code> | Whether the coverage band colors its allele segments, `coverage.alleles.show` |
 | <span id="getter-coverageminallelefraction">**coverageMinAlleleFraction**</span><br><code>number</code> |  |
 | <span id="getter-interbaseindicatorrule">**interbaseIndicatorRule**</span><br><code>InterbaseIndicatorRule</code> | `coverage.interbase.filter` as the worker's triangle rule. |
-| <span id="getter-showinterbaseindicators">**showInterbaseIndicators**</span><br><code>boolean</code> |  |
+| <span id="getter-showinterbase">**showInterbase**</span><br><code>boolean</code> |  |
 | <span id="getter-showconservation">**showConservation**</span><br><code>boolean</code> |  |
 | <span id="getter-conservationheight">**conservationHeight**</span><br><code>number</code> |  |
 | <span id="getter-conservationunit">**conservationUnit**</span><br><code>"base" &#124; "codon"</code> |  |
@@ -292,7 +292,7 @@ From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`rendering
 | <span id="action-setshowcoverage">**setShowCoverage**</span><br><code>(arg: boolean) =&gt; void</code> |  |
 | <span id="action-setshowcoveragealleles">**setShowCoverageAlleles**</span><br><code>(show: boolean) =&gt; void</code> | Turns the coverage band's allele colors on or off, `coverage.alleles.show` |
 | <span id="action-setcoverageminallelefraction">**setCoverageMinAlleleFraction**</span><br><code>(fraction: number) =&gt; void</code> |  |
-| <span id="action-setshowinterbaseindicators">**setShowInterbaseIndicators**</span><br><code>(arg: boolean) =&gt; void</code> |  |
+| <span id="action-setshowinterbase">**setShowInterbase**</span><br><code>(arg: boolean) =&gt; void</code> |  |
 | <span id="action-setshowalignments">**setShowAlignments**</span><br><code>(arg: boolean) =&gt; void</code> |  |
 | <span id="action-setshowconservation">**setShowConservation**</span><br><code>(arg: boolean) =&gt; void</code> |  |
 | <span id="action-setconservationunit">**setConservationUnit**</span><br><code>(arg: "base" &#124; "codon") =&gt; void</code> |  |
