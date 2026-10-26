@@ -2357,9 +2357,6 @@ importers:
       cli-progress:
         specifier: ^3.12.0
         version: 3.12.0
-      domains2genome:
-        specifier: ^2.3.0
-        version: 2.3.0
       serve-handler:
         specifier: ^6.1.7
         version: 6.1.7
@@ -7637,11 +7634,6 @@ packages:
   dom-serializer@2.0.0:
     resolution: {integrity: sha512-wIkAryiqt/nV5EQKqQpo3SToSOV9J0DnbJqwK7Wv/Trc92zIAYZ4FlMu+JPFW1DfGFt81ZTCGgDEabffXeLyJg==}
 
-  domains2genome@2.3.0:
-    resolution: {integrity: sha512-cIUOF5NeMbtd3aHuh2bwetyI+1z9b0t/51P/+hLOcmIE7I+z6CXA7cjj6ZtCO+8aIVwNHID1a4M4MgWgZ42uZA==}
-    engines: {node: '>=18.3.0'}
-    hasBin: true
-
   domelementtype@2.3.0:
     resolution: {integrity: sha512-OLETBj6w0OsagBwdXnPdN0cnMfF9opN69co+7ZrbfPGrdpPVNBUj02spi6B1N7wChLQiPn4CSH/zJvXw56gmHw==}
 
@@ -8196,9 +8188,6 @@ packages:
 
   function-bind@1.1.2:
     resolution: {integrity: sha512-7XHNxH7qX9xG5mIwxkhumTox/MIRNcOgDrxWsMt2pAr23WHp6MrRlN7FBSFpCpr+oVO0F744iUgR82nJMfG2SA==}
-
-  g2p_mapper@2.3.1:
-    resolution: {integrity: sha512-98h9iBRszDWUhTLVARBMZpJFrkmSZEvuL5jgTLHqXx8alnCzmTaoo5ptc7qRq89ppGYRDgGSGYOqSEb7rCPMvA==}
 
   galactus@2.0.2:
     resolution: {integrity: sha512-HmKyTFGomdAchz4umx8MwBnrnfFmdpwiTyGA4ZOF7rya2Lmgbc9qate4yweInL+0gUBVImhaz12SBGpW3SY4Yg==}
@@ -15754,11 +15743,6 @@ snapshots:
       domhandler: 5.0.3
       entities: 4.5.0
 
-  domains2genome@2.3.0:
-    dependencies:
-      '@gmod/gff-nostream': 5.6.2
-      g2p_mapper: 2.3.1
-
   domelementtype@2.3.0: {}
 
   domhandler@4.3.1:
@@ -16459,8 +16443,6 @@ snapshots:
     optional: true
 
   function-bind@1.1.2: {}
-
-  g2p_mapper@2.3.1: {}
 
   galactus@2.0.2(supports-color@8.1.1):
     dependencies:

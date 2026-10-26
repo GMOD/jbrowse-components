@@ -5,14 +5,14 @@
 # annotation.
 #
 # gffread translates each transcript's CDS, hmmscan calls Pfam domains on the
-# proteins with Pfam's own gathering thresholds, and `jbrowse
-# make-protein-features` places each domain back on the exons that encode it.
+# proteins with Pfam's own gathering thresholds, and domains2genome places each
+# domain back on the exons that encode it.
 # The script then builds a JBrowse with the genes and a domain track that draws
 # each transcript's domains on a row of its own.
 #
 # Requires: samtools, gffread, hmmscan + hmmpress (HMMER 3), bgzip + tabix
-#           (htslib), and node. A `jbrowse` on PATH runs if it has
-#           make-protein-features; otherwise npx fetches a CLI that does.
+#           (htslib), and node; npx fetches domains2genome and the JBrowse
+#           CLI.
 # Usage:    bash scripts/build_protein_domains.sh genome.fa genes.gff3 [outdir]
 #
 # Pfam-A.hmm (about 1.5 GB pressed) downloads into the output directory once.
@@ -50,11 +50,9 @@ mkdir -p "$OUTDIR"
 cd "$OUTDIR"
 APP=jbrowse2
 
-if jbrowse make-protein-features --help >/dev/null 2>&1; then
-  jb() { jbrowse "$@"; }
-else
-  jb() { npx -y '@jbrowse/cli@>=5.0.0-beta.18' "$@"; }
-fi
+# beta.18 is the first CLI whose `create` installs a JBrowse that draws the
+# domain track's spliced rows
+jb() { npx -y '@jbrowse/cli@>=5.0.0-beta.18' "$@"; }
 
 # ── The FASTA, uncompressed and indexed ──────────────────────────────────────
 # gffread cannot read a gzipped FASTA, so both it and JBrowse read a plain one
@@ -100,7 +98,8 @@ for pid in "${pids[@]}"; do wait "$pid"; done
 cat chunk.*.domtblout >pfam.domtblout
 rm -f chunk.*.fa chunk.*.domtblout
 
-jb make-protein-features genes.gff3 pfam.domtblout --out pfam.bed.gz
+npx -y 'domains2genome@>=2.3.0' genes.gff3 pfam.domtblout | bgzip >pfam.bed.gz
+tabix -f -p bed pfam.bed.gz
 
 # ── JBrowse ──────────────────────────────────────────────────────────────────
 [ -f "$APP/index.html" ] || jb create "$APP"

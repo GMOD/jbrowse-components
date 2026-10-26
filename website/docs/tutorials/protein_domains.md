@@ -17,8 +17,7 @@ out. We work through the honey bee RefSeq annotation and the _vav_ gene
 (LOC413488), whose isoforms differ at their first domain. We:
 
 - translate the gene models and call Pfam domains on the proteins with `hmmscan`
-- place each domain on the exons that encode it with
-  `jbrowse make-protein-features`
+- place each domain on the exons that encode it with `domains2genome`
 - load the domains as a track with one row per transcript, colored by Pfam
   family
 
@@ -30,11 +29,12 @@ out. We work through the honey bee RefSeq annotation and the _vav_ gene
 - `gffread`, which translates each transcript's CDS
 - HMMER (`hmmscan`, `hmmpress`), which calls the domains
 - htslib (`bgzip`, `tabix`), which indexes the domain file
-- `node`, for the [JBrowse CLI](/docs/cli)
+- `node`, whose `npx` runs
+  [domains2genome](https://github.com/GMOD/domains2genome)
 - samtools, for the FASTA index the [build script](#reproduce-it-end-to-end)
   writes
 
-<!-- TUTORIAL_INSTALL gffread,hmmer,htslib,samtools,node,jbrowse-cli START -->
+<!-- TUTORIAL_INSTALL gffread,hmmer,htslib,samtools,node START -->
 
 ```bash
 # Debian/Ubuntu
@@ -42,11 +42,9 @@ sudo apt install gffread hmmer tabix samtools nodejs
 # or conda, which has every tool above
 conda install -c bioconda -c conda-forge gffread hmmer htslib samtools \
   nodejs
-# any platform
-npm install -g @jbrowse/cli@next
 ```
 
-<!-- TUTORIAL_INSTALL gffread,hmmer,htslib,samtools,node,jbrowse-cli END -->
+<!-- TUTORIAL_INSTALL gffread,hmmer,htslib,samtools,node END -->
 
 ## The data
 
@@ -99,10 +97,10 @@ TSV output (`-f tsv`), which the next step reads in place of `pfam.domtblout`.
 
 ## Placing the domains on the exons
 
-`jbrowse make-protein-features` walks each transcript's CDS in the direction of
-translation and places each domain on the bases that encode it, on either strand
-and across introns. It writes a bgzipped, indexed BED with one row per domain
-per transcript:
+`domains2genome` walks each transcript's CDS in the direction of translation and
+places each domain on the bases that encode it, on either strand and across
+introns. It writes a BED with one row per domain per transcript, which bgzip
+compresses:
 
 <!-- from: scripts/build_protein_domains.sh -->
 
@@ -110,7 +108,15 @@ per transcript:
 # matches each protein to its transcript by transcript ID, CDS protein_id or
 # CDS ID, so gffread, NCBI and Ensembl protein names all work. Where HMMER hits
 # on one protein overlap, the lowest E-value is kept.
-jbrowse make-protein-features genes.gff3 pfam.domtblout --out pfam.bed.gz
+npx -y 'domains2genome@>=2.3.0' genes.gff3 pfam.domtblout | bgzip >pfam.bed.gz
+```
+
+tabix indexes the BED, so JBrowse reads only the region on screen:
+
+<!-- from: scripts/build_protein_domains.sh -->
+
+```bash
+tabix -f -p bed pfam.bed.gz
 ```
 
 - A domain crossing an intron is one row with a block per exon, as BED12 draws a
@@ -189,7 +195,7 @@ runs every step above on your own genome FASTA and GFF3. The script:
 1. Translates each transcript's CDS with gffread.
 2. Downloads and presses the Pfam library once, then calls domains with hmmscan,
    on chunks of the proteins at once.
-3. Places the domains on the exons with `jbrowse make-protein-features`.
+3. Places the domains on the exons with domains2genome.
 4. Builds a JBrowse with the genome, the genes and the domain track.
 
 ```bash
