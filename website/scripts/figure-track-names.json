@@ -1,0 +1,201 @@
+{
+  "https://jbrowse.org/demos/1000g/config.json": {
+    "1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf": "1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf",
+    "HG00096.final": "HG00096.final",
+    "HG00097.final": "HG00097.final",
+    "HG00113.final": "HG00113.final",
+    "HG02768.final": "HG02768_father",
+    "MANE.GRCh38.v1.4.refseq": "MANE 1.4 (w/ RefSeq IDs)",
+    "ncbi_refseq_109_hg38": "NCBI RefSeq analysis set (GFF3Tabix)"
+  },
+  "https://jbrowse.org/demos/cancer_sv/config.json": {
+    "COLO829_somatic_sv": "COLO829 somatic SVs (nanomonsv)",
+    "COLO829_tumor_ont": "COLO829 tumour (ONT R10, haplotagged)",
+    "der3_segments": "Where each segment came from",
+    "der3_vs_hg38": "Derivative allele vs hg38",
+    "K562_10x_sv": "K562 DNA breakpoints (10X linked reads, lifted to hg38)",
+    "K562_cn": "K562 copy-number segments (DepMap WGS)",
+    "K562_isoseq": "K562 PacBio Iso-Seq (ENCODE)",
+    "K562_star_fusion": "K562 STAR-Fusion calls (DepMap 24Q4)",
+    "ncbi_refseq_hg38": "NCBI RefSeq genes",
+    "reads_vs_der3": "Spanning reads realigned to the derivative"
+  },
+  "https://jbrowse.org/demos/cgiab/config.json": {
+    "grch38_cytobands": "Cytobands (UCSC hg38)",
+    "HG008-T_PacBio-HiFi-Revio_20240125_116x_GRCh38-GIABv3": "HG008-T_PacBio-HiFi-Revio_20240125_116x_GRCh38-GIABv3",
+    "hg008t_benchmark_sv": "HG008-T V0.5 draft benchmark somatic SVs",
+    "hg008t_somatic_cnv": "HG008-T somatic CNV",
+    "HG008T_v3.2_pif": "HG008T v3.2",
+    "hg38_ncbiRefSeq_ucsc": "NCBI RefSeq genes (hg38)"
+  },
+  "https://jbrowse.org/demos/circrna/config.json": {
+    "hela_rnaser_backsplice": "HeLa RNase R+ back-splice junctions (STAR chimeric)",
+    "hela_rnaser_reads": "HeLa RNase R+ RNA-seq (SRR1636985)",
+    "ncbi_refseq_genes": "NCBI RefSeq genes"
+  },
+  "https://jbrowse.org/demos/circular_synteny/config.json": {
+    "hg38ToMm39_gene_density": "Genes per 100 kb",
+    "hg38ToMm39_liftover": "hg38 to mm39 liftOver chain"
+  },
+  "https://jbrowse.org/demos/dtu/config.json": {
+    "dtu_muscle_vs_liver": "Transcript usage: skeletal muscle vs liver (satuRn)",
+    "liver_plus": "Liver RNA-seq, + strand (ENCSR135IAL)",
+    "muscle_plus": "Skeletal muscle RNA-seq, + strand (ENCSR609NZM)"
+  },
+  "https://jbrowse.org/demos/ecoli_orthologs/config.json": {
+    "ecoli_orthologs": "E. coli orthologs by gene symbol (44 genomes, RefSeq)"
+  },
+  "https://jbrowse.org/demos/ecoli_pangenome/config.json": {
+    "ecoli_ava": "E. coli pangenome (all-vs-all PAF)",
+    "ecoli_cactus_ava": "MC graph: all-vs-all synteny (halSynteny)",
+    "ecoli_cactus_maf": "MC graph: whole-genome alignment (MAF, vs K12)",
+    "ecoli_e146_ont": "E146 nanopore reads (vs K12)",
+    "ecoli_minigraph_segments": "minigraph graph: rGFA segments (browsable by locus)",
+    "ecoli_pggb_ava": "pggb graph: all-vs-all synteny (wfmash)",
+    "ecoli_pggb_depth": "pggb graph: pangenome depth (paths over K12)",
+    "ecoli_pggb_maf": "pggb graph: whole-genome alignment (MAF, vs K12)",
+    "ecoli_pggb_pav": "pggb graph: per-strain presence (odgi pav, vs K12)",
+    "ecoli_pggb_untangle": "pggb graph: synteny from the graph (odgi untangle)",
+    "ecoli_pggb_untangle_rows": "pggb graph: untangle per strain (orientation, vs K12)",
+    "ecoli_pggb_variants": "pggb graph: pangenome variants (vs K12)",
+    "K12_genes": "K12 genes",
+    "Sakai_genes": "Sakai genes"
+  },
+  "https://jbrowse.org/demos/fly_agent_synteny/config.json": {
+    "GCF_004382145.1-ncbiRefSeq": "NCBI RefSeq - RefSeq All",
+    "GCF_016746395.2-ncbiRefSeq": "NCBI RefSeq - RefSeq All",
+    "sim_vs_mau": "D. simulans vs D. mauritiana (minimap2 asm20)"
+  },
+  "https://jbrowse.org/demos/gene_density/config.json": {
+    "hg38_Alu_density": "Alu per kb",
+    "hg38_genes": "RefSeq curated genes",
+    "hg38_genes_density": "RefSeq genes per kb",
+    "hg38_L1_density": "L1 per kb",
+    "hg38_Simple_repeat_density": "Simple repeats per kb"
+  },
+  "https://jbrowse.org/demos/grape_peach_cacao/config.json": {
+    "GCF_000208745.1-ncbiRefSeq": "NCBI RefSeq - RefSeq All",
+    "GCF_000346465.2-ncbiRefSeq": "NCBI RefSeq - RefSeq All",
+    "GCF_030704535.1-ncbiRefSeq": "NCBI RefSeq - RefSeq All",
+    "grape_peach_anchors": "Grape peach synteny (MCScan, anchors)",
+    "grape_peach_anchors_simple": "Grape peach synteny (MCScan, simple anchors)",
+    "grape_peach_cacao_blocks": "Grape vs peach, cacao, arabidopsis, poplar, tomato, citrus (MCScan blocks)"
+  },
+  "https://jbrowse.org/demos/hg002/config.json": {
+    "hg002_genes_mat": "Genes (JHU Liftoff v0.6, HG002 v1.1 MAT)",
+    "hg002_genes_pat": "Genes (JHU Liftoff v0.6, HG002 v1.1 PAT)",
+    "hg002v1.2_mat_vs_pat": "Maternal vs paternal (Q100 chain)"
+  },
+  "https://jbrowse.org/demos/hg38_vertebrates/config.json": {
+    "hg38_liftover_multiway": "hg38 vs 8 UCSC genomes (liftOver chains)",
+    "hg38-ncbiRefSeq": "NCBI RefSeq - RefSeq All"
+  },
+  "https://jbrowse.org/demos/hprc/config.json": {
+    "hg38_ncbiRefSeq_ucsc": "NCBI RefSeq genes (hg38)",
+    "hprc_abca7_trgt": "TRGT repeat genotypes at ABCA7, 94 HPRC samples",
+    "hprc_kiv2_copies_all": "LPA KIV-2 copies by unit, all HPRC haplotypes",
+    "hprc_v2_1_walk_lanes": "HPRC v2.1 haplotypes vs GRCh38, read from the walk files"
+  },
+  "https://jbrowse.org/demos/hpylori/config.json": {
+    "26695_vs_chc155.pif": "26695_vs_chc155.pif",
+    "26695_vs_j99.pif": "26695_vs_j99.pif",
+    "chc155_vs_j99.pif": "chc155_vs_j99.pif",
+    "GCF_000307795.1-ncbiGff": "NCBI RefSeq - RefSeq All (GFF)",
+    "GCF_000982695.1-ncbiGff": "NCBI RefSeq - RefSeq All (GFF)",
+    "GCF_025998455.1-ncbiGff": "NCBI RefSeq - RefSeq All (GFF)"
+  },
+  "https://jbrowse.org/demos/oat_homoeologs/config.json": {
+    "oat_homoeologs": "Oat homoeologs (dN/dS)"
+  },
+  "https://jbrowse.org/demos/odp_linkage_groups/config.json": {
+    "BFL_EMU": "BFL vs EMU orthologs, colored by BCnS linkage group",
+    "BIN_HCA": "BIN vs HCA orthologs, colored by BCnS linkage group",
+    "EMU_CLAa": "EMU vs CLAa orthologs, colored by BCnS linkage group",
+    "RES_BFL": "RES vs BFL orthologs, colored by BCnS linkage group",
+    "RES_EMU": "RES vs EMU orthologs, colored by BCnS linkage group",
+    "RES_HCA": "RES vs HCA orthologs, colored by BCnS linkage group"
+  },
+  "https://jbrowse.org/demos/orthofinder_drosophila/config.json": {
+    "drosophila_blocks": "Drosophila collinear blocks (MCScanX)",
+    "drosophila_orthogroups": "Drosophila orthogroups (OrthoFinder)",
+    "melanogaster_genes": "melanogaster genes"
+  },
+  "https://jbrowse.org/demos/orthofinder_grasses/config.json": {
+    "grasses_orthogroups": "Grasses orthogroups (OrthoFinder)",
+    "maize_genes": "maize genes",
+    "rice_genes": "rice genes",
+    "sorghum_genes": "sorghum genes"
+  },
+  "https://jbrowse.org/demos/orthofinder_solanaceae/config.json": {
+    "solanaceae_orthogroups": "Solanaceae orthogroups (OrthoFinder)"
+  },
+  "https://jbrowse.org/demos/orthofinder_vertebrates/config.json": {
+    "human_genes": "human genes",
+    "vertebrates_orthogroups": "Vertebrates orthogroups (OrthoFinder)"
+  },
+  "https://jbrowse.org/demos/orthofinder_wheat/config.json": {
+    "wheat_orthogroups": "Wheat orthogroups (OrthoFinder)"
+  },
+  "https://jbrowse.org/demos/primate_orthologs/config.json": {
+    "primate_orthologs": "Primate orthologs by gene symbol (8 genomes, RefSeq)"
+  },
+  "https://jbrowse.org/demos/primate_selection/config.json": {
+    "human_genes": "Human genes (GRCh38, Ensembl 116)",
+    "primate_orthologs": "Human / rhesus orthologs (dN/dS)",
+    "rhesus_genes": "Rhesus macaque genes (Mmul_10, Ensembl 116)"
+  },
+  "https://jbrowse.org/demos/read_marks/config.json": {
+    "na12878_chr20_pair_counts": "NA12878 chr20, pairs of 2 to 10 kb per bin",
+    "na12878_chr20_pairs": "NA12878 chr20, pairs over 1 kb",
+    "na12878_read_depth": "NA12878 depth (1000 Genomes, 30x)",
+    "na12878_read_marks": "NA12878 insert size (1000 Genomes, 30x)",
+    "ncbi_refseq_hg38": "NCBI RefSeq genes"
+  },
+  "https://jbrowse.org/demos/t2t_apes_cactus/config.json": {
+    "hg38-ncbiRefSeq": "NCBI RefSeq - RefSeq All",
+    "t2t_apes_cactus": "T2T apes (Cactus alignment)"
+  },
+  "https://jbrowse.org/hubs/genark/GCF/003/254/395/GCF_003254395.2/config.json": {
+    "GCF_003254395.2-ncbiGff": "NCBI RefSeq - RefSeq All (GFF)"
+  },
+  "https://jbrowse.org/hubs/genark/GCF/040/938/575/GCF_040938575.1/config.json": {},
+  "https://jbrowse.org/pangenome/hprc-grch38/config.json": {
+    "hg38_ncbiRefSeq_ucsc": "NCBI RefSeq genes (hg38)",
+    "hprc_bubble_score": "HPRC release 2 graph: variability (segments per bubble)",
+    "hprc_minigraph_alleles": "HPRC release 2 graph: allele inventory",
+    "hprc_minigraph_bubbles": "HPRC release 2 bubbles",
+    "hprc_minigraph_segments": "HPRC v2.1 graph (rGFA segments)",
+    "hprc_v2_1_walk_lanes": "HPRC release 2 haplotypes vs GRCh38, read from the haplotype walk files"
+  },
+  "https://jbrowse.org/ucsc/anoGam3/config.json": {},
+  "https://jbrowse.org/ucsc/dm6/config.json": {
+    "dm6-ncbiRefSeqCurated": "NCBI RefSeq - RefSeq Curated"
+  },
+  "https://jbrowse.org/ucsc/hg38/config-staging.json": {
+    "hg38_liftOver_multiway": "hg38 vs 242 genomes (liftOver, multi-way)",
+    "hg38-ncbiRefSeq": "NCBI RefSeq - RefSeq All"
+  },
+  "https://jbrowse.org/ucsc/hg38/config.json": {
+    "hg38_to_panTro6_liftOver": "hg38 to Chimp (panTro6) liftOver",
+    "hg38-alllowmapandsegdupregions": "GIAB Problematic Regions - LowMap+SegDup",
+    "hg38-cCREregistry": "ENCODE cCREs - ENCODE4 cCREs",
+    "hg38-clinvarMain": "ClinVar Variants - ClinVar SNVs",
+    "hg38-cpgIslandExt": "CpG Islands",
+    "hg38-epdNewPromoter": "EPDnew Promoters - EPDnew v6",
+    "hg38-gnomad3MeanCoverage": "gnomAD v3 Genome Coverage - Mean Coverage",
+    "hg38-gnomadExomesVariantsV4_1": "gnomAD v4.1.1 - gnomAD v4.1.1 Exomes",
+    "hg38-multiz470way": "Multiz Alignments - 470-way Mammal Alignment (Hiller lab)",
+    "hg38-ncbiRefSeq": "NCBI RefSeq - RefSeq All",
+    "hg38-ncbiRefSeqCurated": "NCBI RefSeq - RefSeq Curated",
+    "hg38-phyloP100way": "Basewise Conservation (phyloP) - 100-way vertebrate alignment",
+    "hg38-phyloP470wayBW": "Basewise Conservation (phyloP) - 470 phyloP",
+    "hg38-rmsk": "RepeatMasker",
+    "hg38-unipDomain": "UniProt - Domains",
+    "hg38-wgEncodeRegMarkH3k27ac": "Layered H3K27Ac (hg19)",
+    "hg38-wgEncodeRegMarkH3k4me3": "Layered H3K4Me3 (hg19)"
+  },
+  "https://jbrowse.org/ucsc/mm39/config-staging.json": {
+    "mm39_liftOver_multiway": "mm39 vs 76 genomes (liftOver, multi-way)",
+    "mm39-ncbiRefSeq": "NCBI RefSeq - RefSeq All"
+  }
+}

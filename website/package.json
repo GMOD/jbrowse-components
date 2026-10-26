@@ -23,6 +23,7 @@
     "check-writing-tropes": "node scripts/check-writing-tropes.ts",
     "check-figure-actions": "node scripts/check-figure-actions.ts",
     "check-unshown-settings": "node scripts/check-unshown-settings.ts",
+    "check-figure-tracks": "node scripts/check-figure-tracks.ts",
     "check-remote-hosts": "node scripts/check-remote-hosts.ts",
     "check-links": "node scripts/check-links.ts",
     "check-external-links": "node scripts/check-external-links.ts",

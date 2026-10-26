@@ -307,6 +307,12 @@ const VALIDATORS: Validator[] = [
     argv: web('check-unshown-settings.ts', '--check'),
   },
   {
+    // And the tracks: a figure whose tracks the page never sets up is one a
+    // reader on their own instance cannot get.
+    name: 'no new tutorial figure track the page never names',
+    argv: web('check-figure-tracks.ts', '--check'),
+  },
+  {
     // Same ratchet shape, guarding what a scheduled figure sweep will fetch:
     // `--check` fails when a spec newly points at a server we do not run.
     name: 'no new third-party hosts in figure specs',
