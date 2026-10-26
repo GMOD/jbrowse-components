@@ -79,6 +79,39 @@ test("the view option reaches the engine's view, with the assembly name filled i
   })
 })
 
+describe('assemblies', () => {
+  const other = { name: 'other', uri: 'https://example.com/other.2bit' }
+
+  test('every genome reaches the config, and the view opens on the first', () => {
+    const state = createViewState({
+      assemblies: [assembly, other],
+      view: { loc: 'ctgA:1..100' },
+    })
+    expect(state.config.assemblies.map(a => readConfObject(a, 'name'))).toEqual(
+      ['volvox', 'other'],
+    )
+    expect(state.session.view.pendingLaunch).toMatchObject({
+      assembly: 'volvox',
+    })
+  })
+
+  test('view.assembly picks another', () => {
+    const state = createViewState({
+      assemblies: [assembly, other],
+      view: { assembly: 'other', loc: 'chr1:1..100' },
+    })
+    expect(state.session.view.pendingLaunch).toMatchObject({
+      assembly: 'other',
+    })
+  })
+
+  test('assembly and assemblies together is refused', () => {
+    expect(() => createViewState({ assembly, assemblies: [other] })).toThrow(
+      'pass assembly or assemblies, not both',
+    )
+  })
+})
+
 test('location and highlight are shorthands on the same blob', () => {
   const state = createViewState({
     assembly,

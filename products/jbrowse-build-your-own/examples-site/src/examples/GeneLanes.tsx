@@ -7,7 +7,9 @@ import {
   Toolbar,
   TrackStack,
 } from '@jbrowse/display-ui/embed'
-import { useCreateViewState } from '@jbrowse/react-app2'
+import ComparativeAdaptersPlugin from '@jbrowse/plugin-comparative-adapters'
+import LinearComparativeViewPlugin from '@jbrowse/plugin-linear-comparative-view'
+import { useCreateViewState } from '@jbrowse/react-linear-genome-view2'
 import { observer } from 'mobx-react'
 
 import type { LinearGenomeViewModel } from '@jbrowse/react-linear-genome-view2'
@@ -49,60 +51,52 @@ const Loci = observer(function Loci({ view }: { view: LinearGenomeViewModel }) {
 
 const GeneLanes = observer(function GeneLanes() {
   const state = useCreateViewState({
-    config: {
-      assemblies: genomes.map(name => ({
-        name,
-        uri: `${base}/${name}.chrom.sizes`,
+    plugins: [LinearComparativeViewPlugin, ComparativeAdaptersPlugin],
+    assemblies: genomes.map(name => ({
+      name,
+      uri: `${base}/${name}.chrom.sizes`,
+    })),
+    tracks: [
+      ...genomes.map(name => ({
+        trackId: `${name}_genes`,
+        name: `${name} genes`,
+        assemblyNames: [name],
+        uri: `${base}/${name}.gff.gz`,
       })),
-      tracks: [
-        ...genomes.map(name => ({
-          trackId: `${name}_genes`,
-          name: `${name} genes`,
-          assemblyNames: [name],
-          uri: `${base}/${name}.gff.gz`,
-        })),
-        {
-          type: 'SyntenyTrack',
-          trackId: 'orthologs',
-          name: 'E. coli orthologs by gene symbol',
-          assemblyNames: genomes,
-          adapter: {
-            type: 'MCScanBlocksAdapter',
-            mcscanBlocksLocation: { uri: `${base}/ecoli.blocks.gz` },
-            blockAssemblies: genomes,
-            bedLocations: genomes.map(name => ({
-              uri: `${base}/${name}.bed.gz`,
-            })),
-          },
-          displays: [
-            {
-              type: 'MultiWaySyntenyDisplay',
-              displayId: 'orthologs-MultiWaySyntenyDisplay',
-              encoding: { color: 'cluster' },
-              height: 330,
-              legend: { show: false },
-            },
-          ],
+      {
+        type: 'SyntenyTrack',
+        trackId: 'orthologs',
+        name: 'E. coli orthologs by gene symbol',
+        assemblyNames: genomes,
+        adapter: {
+          type: 'MCScanBlocksAdapter',
+          mcscanBlocksLocation: { uri: `${base}/ecoli.blocks.gz` },
+          blockAssemblies: genomes,
+          bedLocations: genomes.map(name => ({
+            uri: `${base}/${name}.bed.gz`,
+          })),
         },
-      ],
-      defaultSession: {
-        name: 'gene lanes',
-        views: [
+        displays: [
           {
-            type: 'LinearGenomeView',
-            assembly: 'MG1655',
-            loc: loci[0]!.loc,
-            tracks: ['orthologs'],
+            type: 'MultiWaySyntenyDisplay',
+            displayId: 'orthologs-MultiWaySyntenyDisplay',
+            encoding: { color: 'cluster' },
+            height: 330,
+            legend: { show: false },
           },
         ],
       },
+    ],
+    view: {
+      loc: loci[0]!.loc,
+      tracks: ['orthologs'],
     },
   })
   if (!state) {
     return null
   }
   const { session } = state
-  const view = session.views[0] as LinearGenomeViewModel
+  const { view } = session
   return (
     <EmbedProvider session={session}>
       <Loci view={view} />

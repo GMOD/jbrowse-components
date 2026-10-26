@@ -42,7 +42,14 @@ type AggregateTextSearchAdapters = ConfigSnapshot['aggregateTextSearchAdapters']
 // engine-construction inputs shared by the imperative createViewState and the
 // declarative <LinearGenomeView> component
 export interface CreateViewStateBaseOptions {
-  assembly: Assembly
+  /** the genome the view shows. Pass this or `assemblies` */
+  assembly?: Assembly
+  /**
+   * Several genomes, for tracks that span them — a multi-way synteny track, a
+   * pangenome. The view opens on `view.assembly`, else the first. Pass this or
+   * `assembly`
+   */
+  assemblies?: Assembly[]
   tracks?: Tracks
   internetAccounts?: InternetAccounts
   aggregateTextSearchAdapters?: AggregateTextSearchAdapters
@@ -111,13 +118,15 @@ export interface CreateViewStateBaseOptions {
    * The view to open, written flat the way a session spec or a config's view is
    * (ADR-099): where to navigate (`loc`), which tracks to show (`tracks`),
    * `highlight`, `tracklist`, and any of the view's own settings beside them
-   * (`hideHeader`, `axis`, `trackLabels`). `type` and `assembly` are
-   * filled in.
+   * (`hideHeader`, `axis`, `trackLabels`). `type` is filled in, and so is
+   * `assembly`, with the first of the engine's genomes.
    *
    * It is the default session's view, so it is read once at create, excludes
    * `defaultSession`, and a restored `session` replaces it.
    */
-  view?: Omit<InitState, 'assembly'> & LinearGenomeViewLaunchProps
+  view?: Omit<InitState, 'assembly'> & {
+    assembly?: string
+  } & LinearGenomeViewLaunchProps
 }
 
 // the imperative call adds the two session slots, plus two shorthands for view
@@ -146,9 +155,10 @@ export interface ViewStateOptions extends CreateViewStateBaseOptions {
  */
 export type AsyncViewStateOptions =
   | (ViewStateOptions & { jbrowseHub?: never })
-  | (Omit<ViewStateOptions, 'assembly'> & {
+  | (Omit<ViewStateOptions, 'assembly' | 'assemblies'> & {
       jbrowseHub: string
       assembly?: never
+      assemblies?: never
     })
 
 async function resolveJBrowseHub(
@@ -157,8 +167,8 @@ async function resolveJBrowseHub(
   if (opts.jbrowseHub === undefined) {
     return opts
   }
-  if ('assembly' in opts) {
-    throw new Error('pass assembly or jbrowseHub, not both')
+  if ('assembly' in opts || 'assemblies' in opts) {
+    throw new Error('pass assembly, assemblies or jbrowseHub, not two')
   }
   const { jbrowseHub, ...rest } = opts
   const hub = await resolveAssembly(jbrowseHub)
@@ -201,12 +211,23 @@ export async function createViewStateAsync(input: AsyncViewStateOptions) {
   return finishCreateViewState(opts, engine)
 }
 
+function genomesOf({ assembly, assemblies }: ViewStateOptions) {
+  if (assembly && assemblies) {
+    throw new Error('pass assembly or assemblies, not both')
+  }
+  const genomes = assemblies ?? (assembly ? [assembly] : [])
+  if (!genomes.length) {
+    throw new Error('pass assembly, assemblies or jbrowseHub')
+  }
+  return genomes
+}
+
 function finishCreateViewState(
   opts: ViewStateOptions,
   { model, pluginManager }: ReturnType<typeof createModel>,
 ): ViewModel {
+  const genomes = genomesOf(opts)
   const {
-    assembly,
     tracks,
     internetAccounts,
     configuration,
@@ -227,6 +248,7 @@ function finishCreateViewState(
       "pass view or defaultSession, not both: view is the default session's view",
     )
   }
+  const assemblyName = view?.assembly ?? genomes[0]!.name
   const loc =
     location === undefined || typeof location === 'string'
       ? location
@@ -238,7 +260,7 @@ function finishCreateViewState(
     view || loc || highlight
       ? {
           ...view,
-          assembly: assembly.name,
+          assembly: assemblyName,
           loc: loc ?? view?.loc,
           highlight: highlight ?? view?.highlight,
         }
@@ -273,10 +295,12 @@ function finishCreateViewState(
         // inside the *assembly* config schema, so until that has run the only
         // `uri` here is on the assembly itself — which is not a location node
         // and must not be rewritten as one.
-        assemblies: [local(expandAssemblyShorthand(assembly, pluginManager))],
+        assemblies: genomes.map(a =>
+          local(expandAssemblyShorthand(a, pluginManager)),
+        ),
         // a loose `{ trackId, uri }` has no location node until it is guessed
         tracks: tracks?.map(t =>
-          local(expandLooseTrackConfig(t, pluginManager, assembly.name)),
+          local(expandLooseTrackConfig(t, pluginManager, assemblyName)),
         ),
         internetAccounts,
         aggregateTextSearchAdapters: withPageBaseUri(
@@ -316,7 +340,7 @@ function finishCreateViewState(
     // navigation where the session already has regions, so a highlight alone
     // does not move it
     stateTree.session.view.setLaunch({
-      assembly: assembly.name,
+      assembly: assemblyName,
       loc,
       highlight,
     })
