@@ -2,7 +2,6 @@ import { Fragment, useState } from 'react'
 
 import { samFlagDescriptions, samFlagLabels } from '@jbrowse/cigar-utils'
 import { Dialog, TagTextField } from '@jbrowse/core/ui'
-import { lowerBoundOf, withLowerBound } from '@jbrowse/core/util/fieldPredicate'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import CloseIcon from '@mui/icons-material/Close'
 import ExpandLessIcon from '@mui/icons-material/ExpandLess'
@@ -23,12 +22,8 @@ import { observer } from 'mobx-react'
 
 import {
   DEFAULT_FLAG_MASKS,
-  entriesOn,
-  flagEntries,
-  flagMasksOf,
-  readNameOf,
-  tagEntries,
-  tagFiltersOf,
+  readFieldsEntries,
+  readFieldsFormOf,
 } from '../../shared/alignmentsFilter.ts'
 import LayerFilterSections from './LayerFilterSections.tsx'
 import {
@@ -216,6 +211,16 @@ interface TagRow {
   value: string
 }
 
+// An empty value box is an unset value, which passes any read carrying the
+// tag (`valid: true`)
+function tagsOfRows(rows: readonly TagRow[]): TagFilter[] {
+  return rows
+    .filter(r => r.tag !== '')
+    .map(r =>
+      r.value === '' ? { tag: r.tag } : { tag: r.tag, value: r.value },
+    )
+}
+
 function tagRowsOf(tags: readonly TagFilter[]): TagRow[] {
   return tags.length > 0
     ? tags.map((f, id) => ({ id, tag: f.tag, value: f.value ?? '' }))
@@ -349,9 +354,9 @@ const MapqFilterSection = observer(function MapqFilterSection(props: {
 // modifications) and the flag masks. Each filter has one home, so a choice
 // never applies on click in one place and on Submit in another.
 //
-// Submit and Reset touch only the fields shown: everything else, the
-// submenu's categories included, it preserves. The menu's "Clear all filters"
-// is what resets the whole filter.
+// Submit writes only the sections a user changed, and keeps the entries on
+// their fields the dialog cannot show (a tag's `oneOf`, a strict MAPQ floor).
+// The menu's "Clear all filters" is what resets the whole filter.
 //
 // Sections run in the order a user reaches for them, the flag masks last —
 // they used to open the dialog and outweigh the rest of it put together.
@@ -365,20 +370,14 @@ const FilterByTagDialog = observer(function FilterByTagDialog(props: {
 }) {
   const { model, handleClose } = props
   const predicates = model.filterPredicates
-  const [flagInclude, setFlagInclude] = useState(
-    () => flagMasksOf(predicates).include,
+  const [initial] = useState(() => readFieldsFormOf(predicates))
+  const [flagInclude, setFlagInclude] = useState(initial.flagInclude)
+  const [flagExclude, setFlagExclude] = useState(initial.flagExclude)
+  const [tagRows, setTagRows] = useState(() => tagRowsOf(initial.tags))
+  const [readName, setReadName] = useState(initial.readName)
+  const [minMapq, setMinMapq] = useState(
+    initial.minMapq === undefined ? '' : `${initial.minMapq}`,
   )
-  const [flagExclude, setFlagExclude] = useState(
-    () => flagMasksOf(predicates).exclude,
-  )
-  const [tagRows, setTagRows] = useState(() =>
-    tagRowsOf(tagFiltersOf(predicates)),
-  )
-  const [readName, setReadName] = useState(readNameOf(predicates) ?? '')
-  const [minMapq, setMinMapq] = useState(() => {
-    const floor = lowerBoundOf(predicates, 'mapq')
-    return floor === undefined ? '' : `${floor}`
-  })
   const [initialLayers] = useState(() => layerFilterStateOf(model))
   const [layers, setLayers] = useState(initialLayers)
 
@@ -394,24 +393,21 @@ const FilterByTagDialog = observer(function FilterByTagDialog(props: {
   }
 
   const handleSubmit = () => {
-    // An empty value box is an unset value, which passes any read carrying
-    // the tag (`valid: true`)
-    const tags = tagRows
-      .filter(r => r.tag !== '')
-      .map(r =>
-        r.value === '' ? { tag: r.tag } : { tag: r.tag, value: r.value },
-      )
-    const floor =
-      minMapq === '' || !Number.isFinite(Number(minMapq))
-        ? undefined
-        : Number(minMapq)
-    // The fields this dialog shows and no others, so the read categories the
-    // track menu edits carry through a Submit.
     model.setFilterFields({
-      ...flagEntries(flagInclude, flagExclude),
-      ...tagEntries(predicates, tags),
-      name: readName === '' ? [] : [{ field: 'name', equal: readName }],
-      mapq: withLowerBound(entriesOn(predicates, 'mapq'), 'mapq', floor),
+      ...readFieldsEntries(
+        predicates,
+        {
+          flagInclude,
+          flagExclude,
+          tags: tagsOfRows(tagRows),
+          readName,
+          minMapq:
+            minMapq === '' || !Number.isFinite(Number(minMapq))
+              ? undefined
+              : Number(minMapq),
+        },
+        { ...initial, tags: tagsOfRows(tagRowsOf(initial.tags)) },
+      ),
       ...layerFilterEntries(layers, initialLayers),
     })
     const basesPatch = layerBasesPatch(

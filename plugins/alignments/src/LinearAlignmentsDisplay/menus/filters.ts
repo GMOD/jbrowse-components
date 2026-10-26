@@ -4,7 +4,7 @@ import { filterMenuItems } from '@jbrowse/core/ui/filterMenuItems'
 import { makeRadioSubMenu } from '@jbrowse/core/ui/menuItems'
 import { getDialogHost } from '@jbrowse/core/util'
 import { MAPQ_BINS } from '@jbrowse/core/util/colorScale'
-import { lowerBoundOf, withLowerBound } from '@jbrowse/core/util/fieldPredicate'
+import { floorOf, withLowerBound } from '@jbrowse/core/util/fieldPredicate'
 import {
   categoryEntries,
   categoryFilterItem,
@@ -17,7 +17,7 @@ import { READ_CATEGORIES } from '../../shared/readCategoryFilters.ts'
 import type { ReadCategorySpec } from '../../shared/readCategoryFilters.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Reversible, Reversibles } from '@jbrowse/core/ui/filterMenuItems'
-import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
+import type { FieldPredicate, Floor } from '@jbrowse/core/util/fieldPredicate'
 
 const FilterByTagDialog = lazy(() => import('../dialogs/FilterByTagDialog.tsx'))
 
@@ -78,25 +78,36 @@ function readCategoryItem(
 }
 
 // The thresholds are the mapping-quality facet's bin edges. A value the dialog
-// wrote that is none of them gets a radio of its own.
-const MAPQ_THRESHOLDS: number[] = MAPQ_BINS.map(b => b.min)
+// wrote that is none of them, or a strict `gt`, gets a radio of its own.
+const MAPQ_THRESHOLDS: Floor[] = MAPQ_BINS.map(b => b.min)
   .filter(min => min > 0)
   .toReversed()
+  .map(min => ({ min, strict: false }))
+
+const floorKey = ({ min, strict }: Floor) => (strict ? `>${min}` : `${min}`)
 
 function minMapqItem(model: FiltersModel): MenuItem {
-  const current = lowerBoundOf(model.filterPredicates, 'mapq')
+  const current = floorOf(model.filterPredicates, 'mapq')
+  const currentKey = current === undefined ? 'all' : floorKey(current)
   const thresholds =
-    current === undefined || MAPQ_THRESHOLDS.includes(current)
+    current === undefined ||
+    MAPQ_THRESHOLDS.some(t => floorKey(t) === currentKey)
       ? MAPQ_THRESHOLDS
-      : [...MAPQ_THRESHOLDS, current].toSorted((a, b) => a - b)
+      : [...MAPQ_THRESHOLDS, current].toSorted((a, b) => a.min - b.min)
   return makeRadioSubMenu({
     label: 'Mapping quality',
-    value: current === undefined ? 'all' : `${current}`,
+    value: currentKey,
     options: [
       ['all', 'All reads'],
-      ...thresholds.map((min): [string, string] => [`${min}`, `MAPQ ${min}+`]),
+      ...thresholds.map((t): [string, string] => [
+        floorKey(t),
+        t.strict ? `MAPQ above ${t.min}` : `MAPQ ${t.min}+`,
+      ]),
     ],
     onChange: choice => {
+      if (choice === currentKey) {
+        return
+      }
       model.setFilterFields({
         mapq: withLowerBound(
           entriesOn(model.filterPredicates, 'mapq'),

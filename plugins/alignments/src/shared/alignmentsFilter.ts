@@ -1,7 +1,9 @@
 import { CIGAR_HAS_SKIP } from '@jbrowse/cigar-utils'
 import {
   compilePredicates,
+  floorOf,
   testsSomething,
+  withLowerBound,
 } from '@jbrowse/core/util/fieldPredicate'
 import {
   categoryEntries,
@@ -367,26 +369,34 @@ export function readNameOf(predicates: readonly FieldPredicate[]) {
   return equal === undefined ? undefined : String(equal)
 }
 
+// A tag entry the dialog's rows can show: a value, or any value
+function showsTag(p: FieldPredicate) {
+  return (
+    fieldTag(p.field) !== undefined &&
+    (p.equal !== undefined || p.valid === true)
+  )
+}
+
 /** The tags a read must carry, as the dialog's rows edit them. */
 export function tagFiltersOf(
   predicates: readonly FieldPredicate[],
 ): TagFilter[] {
-  return predicates.flatMap(p => {
-    const tag = fieldTag(p.field)
-    return tag !== undefined && (p.equal !== undefined || p.valid === true)
+  return predicates.flatMap(p =>
+    showsTag(p)
       ? [
           {
-            tag,
+            tag: fieldTag(p.field)!,
             ...(p.equal === undefined ? {} : { value: String(p.equal) }),
           },
         ]
-      : []
-  })
+      : [],
+  )
 }
 
 /**
- * The patch replacing every tag field: each tag's own entries, and an empty
- * list for a tag field written before and left out now.
+ * The patch replacing every tag entry the rows show: each tag's own entries,
+ * and an empty list for a tag field written before and left out now. Entries
+ * the rows cannot show, such as `oneOf` or a bound, stay.
  */
 export function tagEntries(
   written: readonly FieldPredicate[],
@@ -395,7 +405,7 @@ export function tagEntries(
   const patch: Record<string, FieldPredicate[]> = {}
   for (const p of written) {
     if (fieldTag(p.field) !== undefined) {
-      patch[p.field] = []
+      patch[p.field] = [...(patch[p.field] ?? []), ...(showsTag(p) ? [] : [p])]
     }
   }
   for (const { tag, value } of tags) {
@@ -408,6 +418,67 @@ export function tagEntries(
     }
   }
   return patch
+}
+
+/** The read fields the "More filters..." dialog edits, as it shows them. */
+export interface ReadFieldsForm {
+  flagInclude: number
+  flagExclude: number
+  tags: TagFilter[]
+  readName: string
+  minMapq: number | undefined
+}
+
+export function readFieldsFormOf(
+  predicates: readonly FieldPredicate[],
+): ReadFieldsForm {
+  const { include, exclude } = flagMasksOf(predicates)
+  return {
+    flagInclude: include,
+    flagExclude: exclude,
+    tags: tagFiltersOf(predicates),
+    readName: readNameOf(predicates) ?? '',
+    minMapq: floorOf(predicates, MAPQ_FIELD)?.min,
+  }
+}
+
+/**
+ * The patch a Submit writes: only the sections `form` changes from `initial`,
+ * each keeping the entries on its fields the dialog cannot show.
+ */
+export function readFieldsEntries(
+  written: readonly FieldPredicate[],
+  form: ReadFieldsForm,
+  initial = readFieldsFormOf(written),
+): Record<string, FieldPredicate[]> {
+  return {
+    ...(form.flagInclude === initial.flagInclude &&
+    form.flagExclude === initial.flagExclude
+      ? {}
+      : flagEntries(form.flagInclude, form.flagExclude)),
+    ...(JSON.stringify(form.tags) === JSON.stringify(initial.tags)
+      ? {}
+      : tagEntries(written, form.tags)),
+    ...(form.readName === initial.readName
+      ? {}
+      : {
+          name: [
+            ...entriesOn(written, 'name').filter(p => p.equal === undefined),
+            ...(form.readName === ''
+              ? []
+              : [{ field: 'name', equal: form.readName }]),
+          ],
+        }),
+    ...(form.minMapq === initial.minMapq
+      ? {}
+      : {
+          [MAPQ_FIELD]: withLowerBound(
+            entriesOn(written, MAPQ_FIELD),
+            MAPQ_FIELD,
+            form.minMapq,
+          ),
+        }),
+  }
 }
 
 // ---- the worker's three stages ----

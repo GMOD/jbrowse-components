@@ -11,6 +11,8 @@ import {
   junctionFilterOf,
   mergeFilter,
   predicatesOfFilterObject,
+  readFieldsEntries,
+  readFieldsFormOf,
   readNameOf,
   tagEntries,
   tagFiltersOf,
@@ -238,6 +240,44 @@ describe('the read fields the dialog edits', () => {
       { field: 'tags.RG', valid: true },
     ])
     expect(tagFiltersOf(after)).toEqual([{ tag: 'RG' }])
+  })
+
+  test('an untouched Submit writes nothing, so entries the dialog cannot show survive', () => {
+    const written: FieldPredicate[] = [
+      { field: 'tags.HP', oneOf: ['1', '2'] },
+      { field: 'tags.NM', lte: 2 },
+      { field: 'mapq', gt: 0 },
+      { field: 'name', oneOf: ['r1', 'r2'] },
+    ]
+    const form = readFieldsFormOf(written)
+    expect(withFields(written, readFieldsEntries(written, form))).toEqual(
+      written,
+    )
+  })
+
+  test('an edited section keeps the entries the dialog cannot show', () => {
+    const written: FieldPredicate[] = [
+      { field: 'tags.HP', oneOf: ['1', '2'] },
+      { field: 'tags.RG', equal: 'a' },
+      { field: 'name', oneOf: ['r1', 'r2'] },
+      { field: 'name', equal: 'r1' },
+      { field: 'mapq', gt: 0 },
+    ]
+    const form = readFieldsFormOf(written)
+    const after = withFields(
+      written,
+      readFieldsEntries(written, {
+        ...form,
+        tags: [{ tag: 'XS' }],
+        readName: '',
+      }),
+    )
+    expect(after).toEqual([
+      { field: 'tags.HP', oneOf: ['1', '2'] },
+      { field: 'name', oneOf: ['r1', 'r2'] },
+      { field: 'mapq', gt: 0 },
+      { field: 'tags.XS', valid: true },
+    ])
   })
 
   test('the read name', () => {

@@ -45,6 +45,17 @@ test('a minimum the dialog wrote gets a radio of its own, checked', () => {
   expect(row.label).toBe('Mapping quality')
 })
 
+test('a strict floor is labeled as one, and re-picking it keeps it strict', () => {
+  const { radios, model } = mapqRow([{ field: 'mapq', gt: 19 }])
+  expect(radios.map(r => r.label)).not.toContain('MAPQ 19+')
+  const checked = radios.find(r => r.checked)!
+  expect(checked.label).toBe('MAPQ above 19')
+  checked.onClick()
+  expect(model.setFilterFields).not.toHaveBeenCalledWith({
+    mapq: [{ field: 'mapq', gte: 19 }],
+  })
+})
+
 test('a floor change keeps the ceiling written on the same field', () => {
   const { radios, model } = mapqRow([
     { field: 'mapq', gte: 20 },
