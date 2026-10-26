@@ -69,12 +69,13 @@ deployed. Still open, each needing no further call:
   `scripts/generateMarkRules.ts` (`shared/filterFields.ts`).
   `layerFilterProblems` now lives in `packages/alignments-core`, but the CLI
   neither calls it nor carries the layers' field tables.
-- **A cross-display conformance test** (one spec table through every
-  display's color and predicate resolver, exceptions named and shrinking).
-- **`scale.scheme` on an ordinal scale** samples the ramp per domain value.
 - **Four config-doc Type cells** print factory source
-  (`markListSchema(...)`, `types.array(aggregateOpSchema)`); the generator
-  cannot follow a factory across files.
+  (`markListSchema(...)`, `types.array(aggregateOpSchema)`,
+  `multiQuantitativeDisplaySchemas(pluginManager)`). The generator resolves
+  the schema, but links only to a `#config` page or to the page's own slots.
+
+The cross-display color test waits on a call:
+[ideas/waiting-on-a-call/cross-display-color-conformance-test.md](../ideas/waiting-on-a-call/cross-display-color-conformance-test.md).
 
 ## Writers to update after each landing
 
