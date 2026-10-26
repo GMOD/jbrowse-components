@@ -54,6 +54,7 @@ interface Task {
 }
 
 const ALIGNMENTS = `an AlignmentsTrack with trackId "reads", name "Reads", on assembly "volvox", reading volvox-sorted.bam with its .bai index, whose LinearAlignmentsDisplay`
+const VCF = `a VariantTrack with trackId "variants", name "Variants", on assembly "volvox", reading volvox.filtered.vcf.gz with its .tbi index, whose LinearVariantDisplay`
 const BED = `a FeatureTrack with trackId "peaks", name "Peaks", on assembly "volvox", reading volvox-bed12.bed.gz with its .tbi index, whose LinearBasicDisplay`
 
 const lower = (v: unknown) => (typeof v === 'string' ? v.toLowerCase() : v)
@@ -295,6 +296,78 @@ const tasks: Task[] = [
       )
       expect(p, s.scheme === 'viridis', 'scheme')
       expect(p, s.domainMin === 0 && s.domainMax === 1000, 'domainMin/Max')
+      return p
+    },
+  },
+  {
+    name: 'variant-impact',
+    prompt: `Write ${VCF} colors each variant by its consequence impact, as annotated by SnpEff or VEP, with high-impact variants in #000000 and every other impact keeping JBrowse's default color.`,
+    solution: {
+      type: 'VariantTrack',
+      trackId: 'variants',
+      name: 'Variants',
+      assemblyNames: ['volvox'],
+      uri: 'volvox.filtered.vcf.gz',
+      displays: [
+        {
+          type: 'LinearVariantDisplay',
+          encoding: {
+            color: {
+              field: 'impact',
+              scale: { domain: ['HIGH'], range: ['#000000'] },
+            },
+          },
+        },
+      ],
+    },
+    check: track => {
+      const c = color(track, 'LinearVariantDisplay')
+      const s = (c.scale ?? {}) as Json
+      const p: string[] = []
+      expect(p, c.field === 'impact', `field ${JSON.stringify(c.field)}`)
+      expect(
+        p,
+        s.type === undefined || s.type === 'ordinal',
+        `type ${JSON.stringify(s.type)}`,
+      )
+      expect(p, same(s.domain, ['HIGH']), 'domain')
+      expect(p, same(s.range, ['#000000']), 'range')
+      return p
+    },
+  },
+  {
+    name: 'variant-svtype',
+    prompt: `Write ${VCF} colors each structural variant by its SV type: deletions in #ff0000, duplications in #0000ff, and every other type keeping JBrowse's default color.`,
+    solution: {
+      type: 'VariantTrack',
+      trackId: 'variants',
+      name: 'Variants',
+      assemblyNames: ['volvox'],
+      uri: 'volvox.filtered.vcf.gz',
+      displays: [
+        {
+          type: 'LinearVariantDisplay',
+          encoding: {
+            color: {
+              field: 'svType',
+              scale: { domain: ['DEL', 'DUP'], range: ['#ff0000', '#0000ff'] },
+            },
+          },
+        },
+      ],
+    },
+    check: track => {
+      const c = color(track, 'LinearVariantDisplay')
+      const s = (c.scale ?? {}) as Json
+      const p: string[] = []
+      expect(p, c.field === 'svType', `field ${JSON.stringify(c.field)}`)
+      expect(
+        p,
+        s.type === undefined || s.type === 'ordinal',
+        `type ${JSON.stringify(s.type)}`,
+      )
+      expect(p, same(s.domain, ['DEL', 'DUP']), 'domain')
+      expect(p, same(s.range, ['#ff0000', '#0000ff']), 'range')
       return p
     },
   },
