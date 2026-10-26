@@ -58,11 +58,15 @@ filter defaults, type checking in every product, threshold ramp fill,
 `span` → `rect`, with ggjbrowse re-pinned and the circular synteny demo
 deployed. Still open, each needing no further call:
 
-- **jb2hubs:** a gate running the oldest supported release's
-  `jbrowse validate` over generated configs, since a host now fails a track
-  on a value it does not know (ADR-120 amendment). `checkConfigCompat.mjs`
-  boots each host in `HOST_VERSIONS` but opens no track and runs no
-  `jbrowse validate`.
+- **jb2hubs:** its configs target the newest v5 tag and `main` (its ADR
+  0002, 2026-10-26 amendment), so they write beta.17's spellings until
+  beta.18 is hosted. Its todo `write-mains-spellings-at-beta18` then respells
+  every key main's `jbrowse validate` calls legacy, measured on hg38:
+  `mouseover`, `MultiLinearWiggleDisplay`, `jexlFilters`, `rows.domain`,
+  `showRowSeparators` and the view's `init`.
+- **Graph plugin:** `GraphAddTrackWorkflow/buildTrackConfig.ts` writes
+  `displayDefaults: { showLabels: 'none' }`, which beta.17 reads; respell it
+  to the label parts with the same release.
 
 The cross-display color test waits on a call:
 [ideas/waiting-on-a-call/cross-display-color-conformance-test.md](../ideas/waiting-on-a-call/cross-display-color-conformance-test.md).
@@ -73,8 +77,8 @@ The cross-display color test waits on a call:
   `liftFlatColor` and `retiredDisplayColor`, the multi-sample variant
   display's `retired`, `liftViewColor`, `retiredOrderSpelling` (when
   jb2hubs' `HOST_VERSIONS` floor reads `sort`), the y channel's lifts
-  (item 1), the feature display's `basicRetired` (`mouseover` and
-  `longestCoding` lift permanently, since jb2hubs and v4 hosts write them),
+  (item 1), the feature display's `basicRetired` (`mouseover` until jb2hubs
+  respells at beta.18; no writer of ours writes `longestCoding`),
   wiggle's `resolution` lift and `retiredState` key, and the tree
   sidebar's: `showTree`, `showBranchLength`, `showRowLabels`,
   `showRowSeparators` and `treeAreaWidth` on each row display, the
