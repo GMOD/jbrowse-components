@@ -22,6 +22,8 @@ export interface LegendHost extends IStateTreeNode {
   focusLegendEntry?(scaleId: string, value: string): void
   /** Px the on-screen key is pushed left from its own inset, clearing a column of text there. */
   legendRight?: number
+  /** Px the on-screen key is pushed down from its own inset, clearing rows of data it must not cover. */
+  legendTop?: number
   /**
    * A ceiling on the on-screen box's width, for a vocabulary whose labels
    * genuinely need the words; the export measures its own.

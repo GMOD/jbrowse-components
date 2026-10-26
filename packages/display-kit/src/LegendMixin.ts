@@ -78,6 +78,16 @@ export default function LegendMixin() {
       get legendRight(): number {
         return 0
       },
+      /**
+       * #getter
+       * Overridable hook (default 0): px the on-screen key is pushed down from
+       * the key's inset, for a display whose top rows hold the data a reader
+       * reads the rest against — the multi-way anchor lane. Not read by the
+       * export.
+       */
+      get legendTop(): number {
+        return 0
+      },
     }))
     .views(self => ({
       /**

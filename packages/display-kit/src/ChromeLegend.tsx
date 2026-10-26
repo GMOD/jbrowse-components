@@ -24,13 +24,13 @@ const ChromeLegend = observer(function ChromeLegend({
   if (!model.showLegend) {
     return null
   }
-  const { legendSpec, legendRight, legendMaxWidth } = model
+  const { legendSpec, legendRight, legendTop, legendMaxWidth } = model
   const captions = isAxisHost(model) ? axisCaptionsReservedPx(model) : 0
   return (
     <FloatingLegend
       sections={legendSpec.sections}
       title={legendSpec.title}
-      top={FLOATING_LEGEND_TOP_PX + captions}
+      top={FLOATING_LEGEND_TOP_PX + captions + (legendTop ?? 0)}
       right={FLOATING_LEGEND_RIGHT_PX + (legendRight ?? 0)}
       maxWidth={legendMaxWidth}
       onDismiss={() => {

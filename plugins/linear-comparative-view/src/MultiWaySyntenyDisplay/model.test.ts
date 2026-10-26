@@ -1036,6 +1036,19 @@ describe('the lane stack scrolls once lanes would crush', () => {
     expect(display.scrollTop).toBe(0)
   })
 
+  test('the key sits under the anchor lane, and rises with it on scroll', () => {
+    const display = createDisplay()
+    stageManyMates(display)
+    const { lanes, glyphHeight } = display.laneStack
+    const anchor = lanes.find(l => l.isAnchor)!
+    const foot = anchor.glyphTop + glyphHeight + display.geneLabelPx
+    expect(display.legendTop).toBe(foot)
+    display.setScrollTop(10)
+    expect(display.legendTop).toBe(foot - 10)
+    display.setScrollTop(1e6)
+    expect(display.legendTop).toBe(0)
+  })
+
   test('the render state carries the scroll and hitTest undoes it', () => {
     const display = createDisplay()
     stageManyMates(display)

@@ -2453,6 +2453,21 @@ export function stateModelFactory(
       get legendRight(): number {
         return SCALE_COLUMN_PX
       },
+      /**
+       * #getter
+       * the anchor lane's foot, so the key sits in the gutter under it rather
+       * than over the genes every lane is read against
+       */
+      get legendTop(): number {
+        const { rows, glyphHeight } = self.stackGeometry
+        const anchor = rows[0]
+        return anchor
+          ? Math.max(
+              0,
+              anchor.glyphTop + glyphHeight + self.geneLabelPx - self.scrollTop,
+            )
+          : 0
+      },
     }))
     .views(self => ({
       /**
