@@ -6,10 +6,8 @@ import {
   SUBFEATURE_LABELS,
 } from '../RenderFeatureDataRPC/renderConfig.ts'
 import baseConfigSchemaFactory from './baseConfigSchema.ts'
-import {
-  featureContainersConfigSchema,
-  featureTranscriptsConfigSchema,
-} from './featureTranscriptsConfigSchema.ts'
+import { featureContainersConfigSchema } from './featureContainersConfigSchema.ts'
+import { featureTranscriptsConfigSchema } from './featureTranscriptsConfigSchema.ts'
 import { GENE_GLYPH_MODES } from './geneGlyphMode.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
