@@ -17,26 +17,34 @@ import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 export const PLOT_SCAN_MAX_BP = 20_000
 
 /**
- * The window the field scan reads, from the left edge of what is on screen on
- * the track's genomes.
+ * The window the field scan reads: what is on screen of the first region on the
+ * track's genomes. The first static block alone starts left of the screen, so
+ * a sparse track's only feature in view could fall outside it.
  */
 export function plotScanRegions(
   host: RegionHost,
   onTrack: (assemblyName: string) => boolean,
 ): Region[] {
-  const block = host.staticBlocks.contentBlocks.find(b =>
-    onTrack(b.assemblyName),
-  )
-  return block
-    ? [
-        {
-          refName: block.refName,
-          start: block.start,
-          end: Math.min(block.end, block.start + PLOT_SCAN_MAX_BP),
-          assemblyName: block.assemblyName,
-        },
-      ]
-    : []
+  const blocks = host.staticBlocks.contentBlocks
+  const first = blocks.find(b => onTrack(b.assemblyName))
+  if (!first) {
+    return []
+  }
+  let { start, end } = first
+  for (const b of blocks) {
+    if (b.displayedRegionIndex === first.displayedRegionIndex) {
+      start = Math.min(start, b.start)
+      end = Math.max(end, b.end)
+    }
+  }
+  return [
+    {
+      refName: first.refName,
+      start,
+      end: Math.min(end, start + PLOT_SCAN_MAX_BP),
+      assemblyName: first.assemblyName,
+    },
+  ]
 }
 
 export async function fetchPlotFields({
