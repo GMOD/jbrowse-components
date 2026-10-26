@@ -197,5 +197,17 @@ export function pickDisplayConfig(snapshot: Record<string, unknown>) {
   picked.featureHeight = (
     source.mark as { height?: unknown } | undefined
   )?.height
+  const transcripts = source.transcripts as
+    | { types?: string[]; field?: string; sort?: string[] }
+    | undefined
+  if (transcripts) {
+    picked.transcriptTypes = transcripts.types
+    picked.canonicalTranscriptField = transcripts.field
+    picked.canonicalTranscriptTags = transcripts.sort
+  }
+  const containers = source.containers as { types?: string[] } | undefined
+  if (containers) {
+    picked.containerTypes = containers.types
+  }
   return picked as unknown as SettingsDisplayConfig
 }

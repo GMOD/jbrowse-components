@@ -541,6 +541,16 @@ test('a lane ranks isoforms by what its gene track’s feature display reads', (
       displays: [{ type: 'LinearBasicDisplay', ...display }],
     })
   expect(
+    settings({ transcripts: { sort: ['Ensembl'] } }).canonicalTranscriptTags,
+  ).toEqual(['Ensembl'])
+  expect(
+    settings({ transcripts: { field: 'flag' } }).canonicalTranscriptField,
+  ).toBe('flag')
+  expect(
+    settings({ transcripts: { types: ['lnc_RNA'] } }).transcriptTypes,
+  ).toEqual(['lnc_RNA'])
+  // the raw entry skips the display's lifts, so a v4 name still reads
+  expect(
     settings({ canonicalTranscriptTags: ['Ensembl'] }).canonicalTranscriptTags,
   ).toEqual(['Ensembl'])
   expect(settings({ transcriptTypes: ['lnc_RNA'] }).transcriptTypes).toEqual([

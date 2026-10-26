@@ -6,6 +6,10 @@ import {
   SUBFEATURE_LABELS,
 } from '../RenderFeatureDataRPC/renderConfig.ts'
 import baseConfigSchemaFactory from './baseConfigSchema.ts'
+import {
+  featureContainersConfigSchema,
+  featureTranscriptsConfigSchema,
+} from './featureTranscriptsConfigSchema.ts'
 import { GENE_GLYPH_MODES } from './geneGlyphMode.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -118,46 +122,16 @@ export default function configSchemaFactory(pluginManager: PluginManager) {
       ),
       /**
        * #slot
-       * feature types the `geneLike` filter field counts beside
-       * every gene, transcript and RNA type, plus the fallback for recognizing
-       * a CHILDLESS transcript as one of a gene's isoforms.
+       * How a gene's isoforms are read and ranked, a
+       * [](/docs/config/featuretranscripts) object.
        */
-      transcriptTypes: {
-        type: 'stringArray',
-        // Not the isoform test: keying that off this list dropped every
-        // `lnc_RNA`/`misc_RNA` isoform NCBI hangs off a gene, so the list is
-        // only the childless-transcript fallback and the gene-only gate.
-        defaultValue: GENE_GLYPH_DEFAULTS.transcriptTypes,
-      },
+      transcripts: featureTranscriptsConfigSchema,
       /**
        * #slot
-       * feature attribute holding an isoform's curated "this one represents
-       * the gene" tag.
+       * The top-level types whose children stack on rows of their own, a
+       * [](/docs/config/featurecontainers) object.
        */
-      canonicalTranscriptField: {
-        type: 'string',
-        defaultValue: GENE_GLYPH_DEFAULTS.canonicalTranscriptField,
-      },
-      /**
-       * #slot
-       * values of that attribute that mark an isoform as the gene's
-       * representative one, which is then ranked ahead of every other
-       * isoform: it is the transcript shown by `longestCoding`, and the first
-       * kept when `auto` caps a gene at the rows the track has.
-       */
-      canonicalTranscriptTags: {
-        type: 'stringArray',
-        defaultValue: GENE_GLYPH_DEFAULTS.canonicalTranscriptTags,
-      },
-      /**
-       * #slot
-       * top-level feature types that always stack their children on separate
-       * rows.
-       */
-      containerTypes: {
-        type: 'stringArray',
-        defaultValue: GENE_GLYPH_DEFAULTS.containerTypes,
-      },
+      containers: featureContainersConfigSchema,
       /**
        * #slot
        */

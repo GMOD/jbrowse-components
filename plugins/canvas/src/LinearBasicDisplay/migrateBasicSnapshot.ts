@@ -52,6 +52,10 @@ export const basicRetired: Record<
   color2: (connectorColor: unknown) => ({ connectorColor }),
   color3: (utrColor: unknown) => ({ utrColor }),
   featureHeight: (height: unknown) => ({ mark: { height } }),
+  transcriptTypes: (types: unknown) => ({ transcripts: { types } }),
+  canonicalTranscriptField: (field: unknown) => ({ transcripts: { field } }),
+  canonicalTranscriptTags: (sort: unknown) => ({ transcripts: { sort } }),
+  containerTypes: (types: unknown) => ({ containers: { types } }),
   // the feature outline is cut, as ADR-240 cut the pileup's
   outline: () => ({}),
   // a second grow ceiling, dead at its default; `growMaxHeight` is the one

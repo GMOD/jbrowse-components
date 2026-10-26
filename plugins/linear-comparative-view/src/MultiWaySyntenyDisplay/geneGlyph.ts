@@ -66,17 +66,20 @@ export function laneGeneFilter(entry?: TrackConfigEntry): string[] {
  */
 export function laneIsoformSettings(entry?: TrackConfigEntry): IsoformSettings {
   const display = featureDisplayOf(entry)
+  // the raw entry skips the display's lifts, so its v4 names are read too
+  const transcripts = (display?.transcripts ?? {}) as Record<string, unknown>
+  const field = transcripts.field ?? display?.canonicalTranscriptField
   return {
     transcriptTypes: strings(
-      display?.transcriptTypes,
+      transcripts.types ?? display?.transcriptTypes,
       GENE_GLYPH_DEFAULTS.transcriptTypes,
     ),
     canonicalTranscriptField:
-      typeof display?.canonicalTranscriptField === 'string'
-        ? display.canonicalTranscriptField
+      typeof field === 'string'
+        ? field
         : GENE_GLYPH_DEFAULTS.canonicalTranscriptField,
     canonicalTranscriptTags: strings(
-      display?.canonicalTranscriptTags,
+      transcripts.sort ?? display?.canonicalTranscriptTags,
       GENE_GLYPH_DEFAULTS.canonicalTranscriptTags,
     ),
   }

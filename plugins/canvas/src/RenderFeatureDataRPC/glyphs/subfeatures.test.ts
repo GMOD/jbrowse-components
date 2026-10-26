@@ -507,7 +507,7 @@ describe('layoutSubfeatures layout', () => {
         { displayId: 'shipped', type: 'LinearBasicDisplay' },
         { pluginManager: pm },
       ),
-      'canonicalTranscriptTags',
+      ['transcripts', 'sort'],
     )
 
     // Two tagged isoforms with the longer protein second, so only the list's

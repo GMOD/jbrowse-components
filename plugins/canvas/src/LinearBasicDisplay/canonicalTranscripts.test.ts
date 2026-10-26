@@ -7,8 +7,8 @@ test('canonicalTranscripts hands the panel the tags the worker ranks by', () => 
   const { display } = createTestEnvironment().createDisplay()
   expect(display.canonicalTranscripts).toEqual(DEFAULT_CANONICAL_TRANSCRIPTS)
 
-  setConf(display, 'canonicalTranscriptField', 'canonical')
-  setConf(display, 'canonicalTranscriptTags', ['yes'])
+  setConf(display, ['transcripts', 'field'], 'canonical')
+  setConf(display, ['transcripts', 'sort'], ['yes'])
   const { displayConfig } = display.rpcProps()
   expect(display.canonicalTranscripts).toEqual({
     field: displayConfig.canonicalTranscriptField,

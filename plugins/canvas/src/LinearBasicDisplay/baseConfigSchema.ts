@@ -51,7 +51,7 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
        * field of the feature's own (`{ field: "score", gte: 100 }`), a `jexl:`
        * expression that must hold (`"jexl:feature.type == 'gene'"`), or
        * `geneLike`, true for every gene, transcript and RNA type, the
-       * `transcriptTypes` and `containerTypes`, and a top-level CDS.
+       * `transcripts.types` and `containers.types`, and a top-level CDS.
        */
       filter: fieldPredicateList(),
       // Not a fallback for the byte axis: an index size cannot tell a few

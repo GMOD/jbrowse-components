@@ -29,7 +29,7 @@ describe('LinearBasicDisplay configSchema', () => {
     expect(readConfObject(config, ['mark', 'height'])).toBe(10)
     expect(readConfObject(config, 'displayMode')).toBe('normal')
     expect(readConfObject(config, 'geneGlyphMode')).toBe('auto')
-    expect(readConfObject(config, 'transcriptTypes')).toEqual([
+    expect(readConfObject(config, ['transcripts', 'types'])).toEqual([
       'mRNA',
       'transcript',
       'primary_transcript',
@@ -123,7 +123,7 @@ describe('LinearBasicDisplay configSchema', () => {
       { displayId: 'test', type: 'LinearBasicDisplay' },
       { pluginManager: pm },
     )
-    expect(readConfObject(config, 'transcriptTypes')).toEqual([
+    expect(readConfObject(config, ['transcripts', 'types'])).toEqual([
       'mRNA',
       'transcript',
       'primary_transcript',
@@ -302,6 +302,26 @@ describe('LinearBasicDisplay configSchema', () => {
       )
       expect(readConfObject(config, 'geneGlyphMode')).toBe('all')
     })
+  })
+
+  it('lifts the flat gene-structure names into transcripts and containers', () => {
+    const config = schema.create(
+      {
+        displayId: 'test',
+        type: 'LinearBasicDisplay',
+        transcriptTypes: ['mRNA'],
+        canonicalTranscriptField: 'flag',
+        canonicalTranscriptTags: ['yes'],
+        containerTypes: ['orf'],
+      },
+      { pluginManager: pm },
+    )
+    expect(readConfObject(config, 'transcripts')).toEqual({
+      types: ['mRNA'],
+      field: 'flag',
+      sort: ['yes'],
+    })
+    expect(readConfObject(config, ['containers', 'types'])).toEqual(['orf'])
   })
 
   describe('legacy color1/color2/color3 names', () => {
