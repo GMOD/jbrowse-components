@@ -239,8 +239,10 @@
           "displayId": "HG008_log2ratio-LinearWiggleDisplay",
           "mark": "point",
           "extent": "none",
-          "size": 1,
-          "encoding": { "y": { "scale": { "domainMin": -2, "domainMax": 2 } } },
+          "encoding": {
+            "size": 1,
+            "y": { "scale": { "domainMin": -2, "domainMax": 2 } }
+          },
           "height": 120
         }
       ]
@@ -293,8 +295,10 @@
           "type": "LinearWiggleDisplay",
           "displayId": "HG008-T_baf-LinearWiggleDisplay",
           "mark": "point",
-          "size": 1,
-          "encoding": { "y": { "scale": { "domainMin": 0, "domainMax": 1 } } },
+          "encoding": {
+            "size": 1,
+            "y": { "scale": { "domainMin": 0, "domainMax": 1 } }
+          },
           "height": 120
         }
       ]

@@ -4,6 +4,7 @@ import { encodingOptions } from '@jbrowse/display-kit/colorConfigSchema'
 import { yFieldChannelSchema } from '@jbrowse/wiggle-core'
 
 import { wiggleColorSchema } from './wiggleColorConfigSchema.ts'
+import { wiggleSizeSchema } from './wiggleSizeConfigSchema.ts'
 
 /**
  * #config WiggleEncoding
@@ -48,6 +49,18 @@ export const wiggleEncodingConfigSchema = ConfigurationSchema(
      * it spends color on the score and has no axis to rule.
      */
     y: yFieldChannelSchema({ fenceQuantile: DEFAULT_CLIP_QUANTILE }),
+    /**
+     * #slot size
+     * A point's diameter in px. The track menu's Scatter point size writes
+     * it.
+     */
+    size: wiggleSizeSchema,
+    /**
+     * #slot strokeWidth
+     * A line's width in px, Vega-Lite's stroke width. The track menu's Line
+     * width writes it.
+     */
+    strokeWidth: wiggleSizeSchema,
   },
   encodingOptions,
 )

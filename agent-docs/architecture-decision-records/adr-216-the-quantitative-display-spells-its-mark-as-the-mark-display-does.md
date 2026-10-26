@@ -36,6 +36,11 @@ for any of the three, a raw record answering its score for each. `y` stays a
 fetch key as written, so a summary pick refetches. v4's `summaryScoreMode`
 lifts onto `y`; the beta `aggregate` gets no lift. The Bin summary radio reads
 Mean, Minimum and Maximum, writes `y`, and hides while `y` names another field.
+Amended 2026-10-26: the one `size` splits into two channels, as ADR-238 spells
+them: `encoding.size`, a point's diameter, and `encoding.strokeWidth`, a line's
+width, each a `WiggleSize` whose bare number is its `value`. Neither maps a
+field. `size` and `lineWidth` shipped only in v5 betas (v4.3.0 has neither), so
+neither lifts.
 
 ## Context
 

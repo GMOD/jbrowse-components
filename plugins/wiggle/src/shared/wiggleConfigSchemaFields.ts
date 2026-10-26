@@ -8,12 +8,6 @@ export const wiggleConfigSchemaFields = {
       "The value bars grow from, and the cut a threshold color scale with an empty domain uses. The same slot, with the same meaning, as the mark display's origin",
     plot: true,
   },
-  size: {
-    type: 'maybeNumber',
-    description:
-      "the mark's size in px, the display's constant for what the mark display spells encoding.size: a point's diameter, 2 while unset, or a line's width, 1 while unset",
-    plot: true,
-  },
   // Not the mark display's `mark.gapBp` (declined 2026-10-25): that one is
   // bp and a worker fetch input, this one a spacing multiple baked at encode
   maxGapMultiple: {

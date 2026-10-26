@@ -52,7 +52,7 @@ export function isScatterMode(renderingType: string) {
 }
 
 // Both line renderings — the stepped bar-tops and the interpolated
-// point-to-point one — since they are exactly the ones `lineWidth` applies to.
+// point-to-point one — the ones `encoding.strokeWidth` applies to.
 export function isLineMode(renderingType: string) {
   const type = renderingTypeToInt(renderingType)
   return type === RENDERING_TYPE_LINE || type === RENDERING_TYPE_LINE_CENTER

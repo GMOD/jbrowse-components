@@ -119,17 +119,23 @@ export function WiggleCommonMixin() {
       },
       /**
        * #getter
-       * A line's width, the `size` slot or 1 px while unset.
+       * A line's width, `encoding.strokeWidth` or 1 px while unset.
        */
       get lineWidth(): number {
-        return getConf(confNode(self), 'size') ?? DEFAULT_LINE_WIDTH_PX
+        return (
+          getConf(confNode(self), ['encoding', 'strokeWidth', 'value']) ??
+          DEFAULT_LINE_WIDTH_PX
+        )
       },
       /**
        * #getter
-       * A point's diameter, the `size` slot or 2 px while unset.
+       * A point's diameter, `encoding.size` or 2 px while unset.
        */
       get size(): number {
-        return getConf(confNode(self), 'size') ?? DEFAULT_POINT_SIZE_PX
+        return (
+          getConf(confNode(self), ['encoding', 'size', 'value']) ??
+          DEFAULT_POINT_SIZE_PX
+        )
       },
       /**
        * #getter
@@ -339,8 +345,14 @@ export function WiggleCommonMixin() {
       /**
        * #action
        */
-      setSize(val?: number) {
-        setConf(confNode(self), 'size', val)
+      setPointSize(val?: number) {
+        setConf(confNode(self), ['encoding', 'size', 'value'], val)
+      },
+      /**
+       * #action
+       */
+      setStrokeWidth(val?: number) {
+        setConf(confNode(self), ['encoding', 'strokeWidth', 'value'], val)
       },
     }))
 }

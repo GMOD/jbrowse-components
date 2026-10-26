@@ -25,8 +25,8 @@ import type {
   WiggleMark,
   WiggleMarkObject,
 } from '../renderingTypes.ts'
+import type { WiggleCommonHost } from './WiggleCommonMixin.ts'
 import type { Extent } from './extentConfigSchemaFields.ts'
-import type { ConfigModelForFields } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { RadioOption } from '@jbrowse/core/ui/menuItems'
 import type { SummaryField } from '@jbrowse/wiggle-core/summaryFields'
@@ -105,19 +105,17 @@ export function makeRenderingTypeSubMenu(
   }
 }
 
-// One `size` slot, a point's diameter or a line's width, each with its own
-// default while unset, so the default is the unset slot and not either value.
 export function makeMarkSizeMenuItems(self: {
   renderingType: string
   size: number
   lineWidth: number
-  setSize: (n?: number) => void
-  configuration: ConfigModelForFields<{ size: { type: 'maybeNumber' } }>
+  setPointSize: (n?: number) => void
+  setStrokeWidth: (n?: number) => void
+  configuration: WiggleCommonHost['configuration']
 }): MenuItem[] {
-  const isDefault = readConfObject(self.configuration, 'size') === undefined
-  const set = (n?: number) => {
-    self.setSize(n)
-  }
+  const unset = (channel: 'size' | 'strokeWidth') =>
+    readConfObject(self.configuration, ['encoding', channel, 'value']) ===
+    undefined
   return isLineMode(self.renderingType)
     ? makeMarkSizeSubMenu({
         label: 'Line width',
@@ -125,8 +123,10 @@ export function makeMarkSizeMenuItems(self: {
         icon: LineWeightIcon,
         applies: true,
         value: () => self.lineWidth,
-        isDefault,
-        set,
+        isDefault: unset('strokeWidth'),
+        set: n => {
+          self.setStrokeWidth(n)
+        },
         min: 1,
         max: 10,
         step: 1,
@@ -135,8 +135,10 @@ export function makeMarkSizeMenuItems(self: {
         label: 'Scatter point size',
         applies: isScatterMode(self.renderingType),
         value: () => self.size,
-        isDefault,
-        set,
+        isDefault: unset('size'),
+        set: n => {
+          self.setPointSize(n)
+        },
       })
 }
 

@@ -437,10 +437,12 @@ export const svSpecs: ScreenshotSpec[] = [
               // BigWig zoom levels are discrete, so a lower resolution may not
               // add detail.
               data: { resolution: 50 },
-              size: 1,
               // Pinned: the outlier fence leaves a spike half the axis and
               // flattens the steps.
-              encoding: { y: { scale: { domainMin: 0, domainMax: 100 } } },
+              encoding: {
+                size: 1,
+                y: { scale: { domainMin: 0, domainMax: 100 } },
+              },
             },
           ],
         },
@@ -1110,8 +1112,10 @@ export const svSpecs: ScreenshotSpec[] = [
               trackId: 'hg008_baf',
               // Points, since a line averages the two LOH bands into 0.5.
               mark: 'point',
-              size: 1,
-              encoding: { y: { scale: { domainMin: 0, domainMax: 1 } } },
+              encoding: {
+                size: 1,
+                y: { scale: { domainMin: 0, domainMax: 1 } },
+              },
               height: 140,
             },
             benchmarkCnvLane(),
@@ -1283,6 +1287,7 @@ export const svSpecs: ScreenshotSpec[] = [
               // Pinned: the outlier fence's spike room flattens the arm step.
               mark: 'point',
               encoding: {
+                size: 1,
                 y: {
                   scale: { domainMin: 0, domainMax: 150 },
                   axis: { grid: true },
@@ -1290,7 +1295,6 @@ export const svSpecs: ScreenshotSpec[] = [
                 color: { value: '#0068d1' },
               },
               extent: 'none',
-              size: 1,
               data: { resolution: 10 },
               height: 180,
             },
@@ -1298,8 +1302,10 @@ export const svSpecs: ScreenshotSpec[] = [
               trackId: 'hg008_baf',
               // Points, since a line averages the two LOH bands into 0.5.
               mark: 'point',
-              size: 1,
-              encoding: { y: { scale: { domainMin: 0, domainMax: 1 } } },
+              encoding: {
+                size: 1,
+                y: { scale: { domainMin: 0, domainMax: 1 } },
+              },
               height: 140,
             },
             benchmarkCnvLane(),
@@ -1463,17 +1469,18 @@ export const svSpecs: ScreenshotSpec[] = [
             {
               trackId: 'hg008_depth',
               mark: 'point',
-              encoding: { color: { value: '#0068d1' } },
+              encoding: { size: 3, color: { value: '#0068d1' } },
               extent: 'none',
-              size: 3,
               height: 140,
               data: { resolution: 10 },
             },
             {
               trackId: 'hg008_baf',
               mark: 'point',
-              size: 2,
-              encoding: { y: { scale: { domainMin: 0, domainMax: 1 } } },
+              encoding: {
+                size: 2,
+                y: { scale: { domainMin: 0, domainMax: 1 } },
+              },
               height: 140,
             },
             benchmarkCnvLane(),
@@ -1513,19 +1520,21 @@ export const svSpecs: ScreenshotSpec[] = [
               trackId: 'hg008_depth',
               mark: 'point',
               encoding: {
+                size: 1,
                 y: { scale: { domainMin: 0, domainMax: 140 } },
                 color: { value: '#0068d1' },
               },
               extent: 'none',
-              size: 1,
               height: 140,
               data: { resolution: 10 },
             },
             {
               trackId: 'hg008_baf',
               mark: 'point',
-              size: 1,
-              encoding: { y: { scale: { domainMin: 0, domainMax: 1 } } },
+              encoding: {
+                size: 1,
+                y: { scale: { domainMin: 0, domainMax: 1 } },
+              },
               height: 140,
             },
             benchmarkCnvLane(),
@@ -1598,8 +1607,10 @@ export const svSpecs: ScreenshotSpec[] = [
             {
               trackId: 'hg008_baf',
               mark: 'point',
-              size: 1,
-              encoding: { y: { scale: { domainMin: 0, domainMax: 1 } } },
+              encoding: {
+                size: 1,
+                y: { scale: { domainMin: 0, domainMax: 1 } },
+              },
               height: 140,
             },
             benchmarkCnvLane(),

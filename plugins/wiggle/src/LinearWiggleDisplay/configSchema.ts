@@ -160,8 +160,9 @@ const linearWiggleDisplayConfigSchema = ConfigurationSchema(
      * about the `origin`, which a heatmap fades to from white there, and
      * several sources in one plot box each paint their row color.
      * `encoding.y` is the field plotted and the value axis it is drawn
-     * through: `field`, `scale`, `axis` and `rules`. The row axis beside
-     * `rows` is `axis`.
+     * through: `field`, `scale`, `axis` and `rules`. `encoding.size` is a
+     * point's diameter and `encoding.strokeWidth` a line's width, in px. The
+     * row axis beside `rows` is `axis`.
      * #example
      * ```json
      * {
@@ -224,7 +225,6 @@ const linearWiggleDisplayConfigSchema = ConfigurationSchema(
         }
         return mark ? { mark } : {}
       },
-      lineWidth: size => ({ size }),
     },
   },
 )

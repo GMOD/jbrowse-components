@@ -915,6 +915,8 @@ exports[`every registered schema slot default 1`] = `
     "encoding.color.scale.scheme": "maybeStringEnum = undefined of ["viridis","magma","inferno","cividis","juicebox","fall","reds","blues","redblue","purpleorange","redgreyblue","redyellowblue"]",
     "encoding.color.scale.type": "maybeStringEnum = undefined of ["linear","threshold"]",
     "encoding.color.value": "maybeColor = undefined",
+    "encoding.size.value": "maybeNumber = undefined",
+    "encoding.strokeWidth.value": "maybeNumber = undefined",
     "encoding.y.axis.grid": "boolean = false",
     "encoding.y.axis.title": "maybeString = undefined",
     "encoding.y.field": "featureField = "score"",
@@ -942,7 +944,6 @@ exports[`every registered schema slot default 1`] = `
     "rows.sort": "stringArray = []",
     "rows.tree": "maybeString = undefined",
     "rows.treeProvenance": "maybeFrozen = undefined",
-    "size": "maybeNumber = undefined",
   },
   "display: MultiWaySyntenyDisplay": {
     "data.resolution": "stringEnum = "auto" of ["auto","fine","coarse"]",

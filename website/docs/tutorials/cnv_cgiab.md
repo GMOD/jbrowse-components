@@ -300,7 +300,7 @@ We'll load the depth as points, the **Scatter** plot type:
     "type": "BigWigAdapter",
     "uri": "HG008-T.hificnv.depth.bw"
   },
-  "displayDefaults": { "mark": "point", "size": 1 }
+  "displayDefaults": { "mark": "point", "encoding": { "size": 1 } }
 }
 ```
 
@@ -358,8 +358,10 @@ makes the adapter fetch raw per-site values at the zoom levels of these figures:
   },
   "displayDefaults": {
     "mark": "point",
-    "size": 1,
-    "encoding": { "y": { "scale": { "domainMin": 0, "domainMax": 1 } } }
+    "encoding": {
+      "size": 1,
+      "y": { "scale": { "domainMin": 0, "domainMax": 1 } }
+    }
   }
 }
 ```

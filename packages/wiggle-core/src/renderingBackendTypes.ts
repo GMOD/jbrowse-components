@@ -70,10 +70,9 @@ export interface WiggleGPURenderState {
   // Drives rowHeight in both backends so it matches getRowHeight/findHit even
   // when a source has no features in the visible region.
   numRows: number
-  // A scatter point's diameter in px, the `size` slot.
+  // A scatter point's diameter in px, `encoding.size`.
   diameterPx: number
-  // Stroke thickness in px for line rendering. Default 1 matches the canvas
-  // default line width.
+  // A line's width in px, `encoding.strokeWidth`.
   lineWidth: number
   // The score xyplot bars grow from, the `origin` config slot.
   origin: number

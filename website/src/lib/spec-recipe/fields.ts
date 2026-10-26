@@ -702,11 +702,18 @@ function facetStep(
     : { path: picked }
 }
 
-// One shared slider row (makeScatterPointSizeMenuItem) under a submenu each
-// display titles for itself. The submenu label is what a reader looks for, so
-// it is what varies here.
-const POINT_SIZE_MENUS: Record<string, string> = {
-  LinearWiggleDisplay: 'Scatter point size',
+// The wiggle display's size sliders (makeMarkSizeMenuItems), each offered only
+// under the mark it sizes.
+function wiggleSizeStep(menu: string, plots: string): FieldRecipe {
+  return (value, { displayType }) => {
+    const px = typeof value === 'number' ? value : asRecord(value)?.value
+    return typeof px === 'number' && displayType === 'LinearWiggleDisplay'
+      ? {
+          path: `${TRACK_MENU} → ${menu} → drag the slider to ${px}px`,
+          note: `The submenu is offered only while the plot type is ${plots}.`,
+        }
+      : undefined
+  }
 }
 
 // One toggle, one place, on every display with a dendrogram sidebar
@@ -1888,16 +1895,8 @@ export const trackFields: Record<string, FieldRecipe> = {
           note: 'The value the bars grow from, which a threshold color with no domain of its own also cuts at. No menu row writes it.',
         }
       : undefined,
-  size: (value, { displayType }) => {
-    const menu = displayType ? POINT_SIZE_MENUS[displayType] : undefined
-    return typeof value === 'number' && menu
-      ? {
-          path: `${TRACK_MENU} → ${menu} → drag the slider to ${value}px`,
-          // sizeSubMenu gates the wiggle one on renderingType.includes('scatter')
-          note: 'The submenu is offered only while the plot type is one of the scatter renderings.',
-        }
-      : undefined
-  },
+  'encoding.size': wiggleSizeStep('Scatter point size', 'Scatter'),
+  'encoding.strokeWidth': wiggleSizeStep('Line width', 'a line'),
   'axis.tree': (value, { displayType }) => {
     if (typeof value !== 'boolean' || !displayType) {
       return undefined

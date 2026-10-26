@@ -15,7 +15,7 @@ export type WiggleRendering = (typeof WIGGLE_RENDERINGS)[number][0]
 /** What a quantitative plot draws each score as, the mark display's words. */
 export const WIGGLE_MARK_NAMES = ['bar', 'point', 'line', 'rect'] as const
 
-/** A point's diameter and a line's width in px while `size` is unset. */
+/** `encoding.size` and `encoding.strokeWidth` in px while unset. */
 export const DEFAULT_POINT_SIZE_PX = 2
 export const DEFAULT_LINE_WIDTH_PX = 1
 export type WiggleMark = (typeof WIGGLE_MARK_NAMES)[number]

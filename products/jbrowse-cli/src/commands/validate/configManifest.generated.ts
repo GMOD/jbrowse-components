@@ -7618,6 +7618,36 @@ export const configManifest: ConfigManifest = {
               "shorthand": {
                 "string": "field"
               }
+            },
+            {
+              "name": "size",
+              "type": "WiggleSizeConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "value",
+                  "type": "(number | undefined)"
+                }
+              ],
+              "schema": "WiggleSize",
+              "writes": "whole",
+              "shorthand": {
+                "number": "value"
+              }
+            },
+            {
+              "name": "strokeWidth",
+              "type": "WiggleSizeConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "value",
+                  "type": "(number | undefined)"
+                }
+              ],
+              "schema": "WiggleSize",
+              "writes": "whole",
+              "shorthand": {
+                "number": "value"
+              }
             }
           ],
           "schema": "WiggleEncoding",
@@ -7638,10 +7668,6 @@ export const configManifest: ConfigManifest = {
         {
           "name": "origin",
           "type": "number"
-        },
-        {
-          "name": "size",
-          "type": "(number | undefined)"
         },
         {
           "name": "maxGapMultiple",
@@ -7717,8 +7743,7 @@ export const configManifest: ConfigManifest = {
         "showRowLabels",
         "treeAreaWidth",
         "showRowSeparators",
-        "defaultRendering",
-        "lineWidth"
+        "defaultRendering"
       ],
       "droppedKeys": [
         "maxFeatureScreenDensity",

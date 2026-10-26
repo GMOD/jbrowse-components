@@ -8,7 +8,7 @@ export const PLOT_EXAMPLES = [
     description: 'viridis from the bottom of the axis to the top',
   },
   {
-    plot: '{ "mark": { "type": "line", "interpolate": "linear" }, "size": 2 }',
+    plot: '{ "mark": { "type": "line", "interpolate": "linear" }, "encoding": { "strokeWidth": 2 } }',
     description: 'a 2px line from one bin centre to the next',
   },
   {

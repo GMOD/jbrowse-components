@@ -177,7 +177,6 @@ test("each display's plot settings", () => {
       'origin',
       'rowColor',
       'rows',
-      'size',
     ],
     MultiWaySyntenyDisplay: [
       'encoding',

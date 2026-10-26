@@ -293,9 +293,10 @@ cat > baf_track.json <<JSON
   },
   "displayDefaults": {
     "mark": "point",
-    "size": 1,
-    "minScore": 0,
-    "maxScore": 1
+    "encoding": {
+      "size": 1,
+      "y": { "scale": { "domainMin": 0, "domainMax": 1 } }
+    }
   }
 }
 JSON

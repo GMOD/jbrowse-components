@@ -13485,6 +13485,35 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         }
       ]
     },
+    "WiggleSize": {
+      "title": "WiggleSize",
+      "anyOf": [
+        {
+          "description": "Shorthand for \`{ \\"value\\": ... }\`.",
+          "type": "number"
+        },
+        {
+          "title": "WiggleSize",
+          "type": "object",
+          "x-closed": true,
+          "properties": {
+            "value": {
+              "description": "px for every point or line; unset is the mark's own.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "number"
+              }
+            }
+          },
+          "patternProperties": {
+            "^_+comment": {}
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
     "WiggleEncoding": {
       "title": "WiggleEncoding",
       "type": "object",
@@ -13504,6 +13533,22 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           },
           "else": {
             "$ref": "#/$defs/YFieldChannel"
+          }
+        },
+        "size": {
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/WiggleSize"
+          }
+        },
+        "strokeWidth": {
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/WiggleSize"
           }
         }
       },
@@ -13589,15 +13634,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "origin": {
           "description": "The value bars grow from, and the cut a threshold color scale with an empty domain uses. The same slot, with the same meaning, as the mark display's origin.",
           "default": 0,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "number"
-          }
-        },
-        "size": {
-          "description": "the mark's size in px, the display's constant for what the mark display spells encoding.size: a point's diameter, 2 while unset, or a line's width, 1 while unset.",
           "if": {
             "type": "null"
           },
@@ -13741,10 +13777,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
         "defaultRendering": {
-          "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
-        },
-        "lineWidth": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
@@ -16674,9 +16706,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 }
               ]
             },
-            "size": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/size"
-            },
             "maxGapMultiple": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/maxGapMultiple"
             },
@@ -16833,9 +16862,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "defaultRendering": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/defaultRendering"
-            },
-            "lineWidth": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/lineWidth"
             },
             "marks": {
               "anyOf": [
@@ -18594,9 +18620,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 }
               ]
             },
-            "size": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/size"
-            },
             "maxGapMultiple": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/maxGapMultiple"
             },
@@ -18774,9 +18797,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "defaultRendering": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/defaultRendering"
-            },
-            "lineWidth": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/lineWidth"
             },
             "forceLoad": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/forceLoad"
@@ -19032,9 +19052,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 }
               ]
             },
-            "size": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/size"
-            },
             "maxGapMultiple": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/maxGapMultiple"
             },
@@ -19212,9 +19229,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "defaultRendering": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/defaultRendering"
-            },
-            "lineWidth": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/lineWidth"
             },
             "forceLoad": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/forceLoad"
@@ -19435,9 +19449,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "origin": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/origin"
             },
-            "size": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/size"
-            },
             "maxGapMultiple": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/maxGapMultiple"
             },
@@ -19524,9 +19535,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "defaultRendering": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/defaultRendering"
-            },
-            "lineWidth": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/lineWidth"
             }
           },
           "patternProperties": {
