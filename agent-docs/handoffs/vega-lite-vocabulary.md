@@ -58,15 +58,14 @@ filter defaults, type checking in every product, threshold ramp fill,
 `span` → `rect`, with ggjbrowse re-pinned and the circular synteny demo
 deployed. Still open, each needing no further call:
 
-- **jb2hubs:** its configs target the newest v5 tag and `main` (its ADR
-  0002, 2026-10-26 amendment), so they write beta.17's spellings until
-  beta.18 is hosted. Its todo `write-mains-spellings-at-beta18` then respells
-  every key main's `jbrowse validate` calls legacy, measured on hg38:
-  `mouseover`, `MultiLinearWiggleDisplay`, `jexlFilters`, `rows.domain`,
-  `showRowSeparators` and the view's `init`.
-- **Graph plugin:** `GraphAddTrackWorkflow/buildTrackConfig.ts` writes
-  `displayDefaults: { showLabels: 'none' }`, which beta.17 reads; respell it
-  to the label parts with the same release.
+- **jb2hubs and the graph plugin write main's spellings** (2026-10-26),
+  targeting `main` and, once hosted, v5.0.0-beta.18 (jb2hubs' ADR 0002
+  amendment and its todo `beta18-joins-host-versions`). The Trix adapter's
+  `textSearchAdapterId` and `metaFilePath` stay until the merge lambda
+  dedupes on `ixFilePath`.
+- **`jbrowse validate` misreads a lifted sub-schema:** it calls the flat
+  `rowColor: { domain, range }` unknown, though `rowColorConfigSchema`'s
+  preprocess lifts it at runtime.
 
 The cross-display color test is ready to build:
 [ideas/ready/cross-display-color-conformance-test.md](../ideas/ready/cross-display-color-conformance-test.md).
@@ -77,8 +76,8 @@ The cross-display color test is ready to build:
   `liftFlatColor` and `retiredDisplayColor`, the multi-sample variant
   display's `retired`, `liftViewColor`, `retiredOrderSpelling` (when
   jb2hubs' `HOST_VERSIONS` floor reads `sort`), the y channel's lifts
-  (item 1), the feature display's `basicRetired` (`mouseover` until jb2hubs
-  respells at beta.18; no writer of ours writes `longestCoding`),
+  (item 1), the feature display's `basicRetired` (no writer of ours writes
+  `mouseover` or `longestCoding` any more),
   wiggle's `resolution` lift and `retiredState` key, and the tree
   sidebar's: `showTree`, `showBranchLength`, `showRowLabels`,
   `showRowSeparators` and `treeAreaWidth` on each row display, the

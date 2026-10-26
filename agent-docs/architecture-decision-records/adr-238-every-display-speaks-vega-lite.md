@@ -249,9 +249,8 @@ against the code, checked the spelling twice.
   The two thresholds stay flat until a `view.*` predicate on each label
   part's `filter` replaces them, with the mark display's zoom bounds.
 - **`tooltip: { show, field }`** replaces `mouseover`, as the multi-sample
-  display's `tooltip` is a part. `mouseover` lifts until jb2hubs writes
-  `tooltip`, once a release reads it (the hub configs target the newest v5
-  tag and `main`).
+  display's `tooltip` is a part. `mouseover` lifts until the hosted hub
+  configs regenerate with `tooltip`.
 - **`geneGlyphMode: 'representative'`** replaces `longestCoding`, which
   lifts for v4 configs. The mode draws the first isoform by `transcripts.sort`.
 - **Cut:** `subParts` (the coding-transcript glyph draws its CDS and UTR
