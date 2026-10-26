@@ -23,10 +23,8 @@ import {
  * #config AlignmentsColor
  * #category display
  * The alignments displays' `encoding.color`: one color for every read in
- * `value`, or a field of each read. A read dimension colors by its fixed
- * levels (`strand`, `firstOfPairStrand`, `pairOrientation`, `insertSize`,
- * `insertSizeAndOrientation`, `mateRefName`) or bins (`mapq`, the four a
- * facet over it stacks), `tags.XX` reads a SAM tag, and any other name reads
+ * `value`, or a field of each read. A preset field, listed below, colors by
+ * its levels or bins, `tags.XX` reads a SAM tag, and any other name reads
  * the read as a facet over it does: `mateAssembly`, a feature attribute, a
  * dotted path into one or a `jexl:` expression. A string is the field.
  * `split`, `spliced`, `pairing` and `svSignal` color nothing: reads keep their
@@ -94,7 +92,7 @@ export const alignmentsColorConfigSchema = ConfigurationSchema(
     ...colorFieldSlot({
       fieldType: 'string',
       field:
-        'field to color each read by: strand, firstOfPairStrand, pairOrientation, insertSize, insertSizeAndOrientation and mateRefName color by their fixed levels and mapq by its four bins; tags.XX reads a SAM tag; any other name reads as a facet over it does: mateAssembly, a feature attribute, a dotted path or a jexl: expression; split, spliced, pairing and svSignal color nothing, as a facet sections by them',
+        'field to color each read by: a preset field by its levels or bins; tags.XX reads a SAM tag; any other name reads as a facet over it does: mateAssembly, a feature attribute, a dotted path or a jexl: expression; split, spliced, pairing and svSignal color nothing, as a facet sections by them',
     }),
     /**
      * #slot scale
@@ -110,7 +108,7 @@ export const alignmentsColorConfigSchema = ConfigurationSchema(
         }),
         ...colorDomainSlot({
           domain:
-            "for an ordinal scale, the values that take the range first, in order: a preset field's levels (strand 1 and -1; pairOrientation LR, RL, RR and LL; insertSize short, normal and long; under the insert-size and orientation fields, unmappedMate and interchrom, and in a chain under the orientation ones splitInverted, splitSameStrand, segmentInverted and segmentSameStrand; '' a read with no value), a MAPQ, 255 for unavailable, or a tag's values; for a threshold scale, the cut points, which over insertSize are the two between short, normal and long, where the sampled distribution otherwise sets them, and over mapq 1, 10 and 30",
+            "for an ordinal scale, the values that take the range first, in order: a preset field's levels, insertSize's short, normal and long, with unmappedMate and interchrom under both insert-size fields, '' a read with no value, a MAPQ, 255 for unavailable, or a tag's values; for a threshold scale, the cut points, which over insertSize are the two between short, normal and long, where the sampled distribution otherwise sets them",
         }),
         ...colorRangeSlot({
           range:

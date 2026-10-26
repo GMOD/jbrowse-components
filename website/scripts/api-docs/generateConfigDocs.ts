@@ -8,6 +8,7 @@ import {
   matchFormat,
   trackTypeForAdapter,
 } from '../../../packages/add-track-core/src/index.ts'
+import { UNIVERSAL_FIELD_PRESETS } from '../../../packages/core/src/util/colorScale.ts'
 import {
   hasSchemaDefinition,
   schemaProblems,
@@ -45,6 +46,7 @@ import {
   lookupByIdOrName,
   mapByKey,
   markdownTable,
+  tableCell,
   pageDescription,
   overviewSection,
   parseNode,
@@ -57,6 +59,7 @@ import {
   withHeaders,
 } from './util.ts'
 
+import type { FieldPresets } from '../../../packages/core/src/util/colorScale.ts'
 import type { Example, ExtractedNode, ReachedSchema } from './util.ts'
 
 interface Item {
@@ -702,6 +705,7 @@ export interface ManifestSlot {
   schema?: string
   writes?: 'whole' | 'members'
   liftsNumbers?: true
+  fieldPresets?: FieldPresets<string>
 }
 interface ManifestEntry {
   slots: ManifestSlot[]
@@ -1110,10 +1114,74 @@ function renderConfig(
       gotchaSection,
       docsSection,
       relatedSection,
+      presetFieldsSection(header.name),
       slotsSection,
       retiredSection,
     ),
   })
+}
+
+let presetsBySchema: Map<string, FieldPresets<string>> | undefined
+
+function fieldPresetsOf(schema: string) {
+  if (!presetsBySchema) {
+    const found = new Map<string, FieldPresets<string>>()
+    const visit = (slots: ManifestSlot[] = []) => {
+      for (const slot of slots) {
+        if (slot.schema && slot.fieldPresets) {
+          found.set(slot.schema, slot.fieldPresets)
+        }
+        visit(slot.subSlots)
+      }
+    }
+    for (const entry of Object.values(configManifest())) {
+      visit(entry.slots)
+    }
+    presetsBySchema = found
+  }
+  return presetsBySchema.get(schema)
+}
+
+const levelList = (levels: readonly string[] = []) =>
+  levels.map(level => `\`${level === '' ? "''" : level}\``).join(', ')
+
+// A color channel's named fields and what each paints while the config
+// leaves its scale unwritten, from the manifest `jbrowse validate` reads. A
+// channel whose other fields are categories lists the universal fields too,
+// unless it spells one of them its own way, as reads spell strand.
+function presetFieldsSection(name: string) {
+  const presets = fieldPresetsOf(name)
+  if (!presets) {
+    return ''
+  }
+  const universal =
+    presets['*']?.scale.type === 'ordinal' &&
+    !Object.keys(UNIVERSAL_FIELD_PRESETS).some(f => Object.hasOwn(presets, f))
+  const rows = Object.entries({
+    ...(universal ? UNIVERSAL_FIELD_PRESETS : {}),
+    ...presets,
+  })
+    .filter(([field]) => field !== '*')
+    .map(([field, { scale, legend }]) => {
+      const { type, domain, names, range, ...rest } = scale
+      const defaults = [
+        ...Object.entries(rest).map(([k, v]) => `\`${k}: ${String(v)}\``),
+        ...(range ? [`\`range\`: ${levelList(range)}`] : []),
+        ...(legend?.title ? [`key "${legend.title}"`] : []),
+      ]
+      return `| \`${field}\` | ${type} | ${levelList(domain)} | ${tableCell(names?.join(', '))} | ${defaults.join('; ')} |`
+    })
+  if (rows.length === 0) {
+    return ''
+  }
+  return section(
+    '## Preset fields',
+    `A \`field\` named here paints through its own scale while \`scale.type\` is unset, and \`range\` and \`names\` index its levels in order while \`domain\` is unwritten.${presets['*'] ? ` Any other field is ${presets['*'].scale.type}.` : ''}`,
+    markdownTable(
+      ['Field', 'Scale', 'Levels', 'Names', 'Other defaults'],
+      rows,
+    ),
+  )
 }
 
 // Keys an older config wrote that this schema still accepts, from the manifest

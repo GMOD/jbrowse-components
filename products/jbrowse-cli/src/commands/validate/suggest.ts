@@ -22,8 +22,11 @@ function editDistance(a: string, b: string) {
 // The nearest candidate, if it is near enough to be worth naming. The threshold
 // scales with length so `uri` doesn't match every other three-letter slot while
 // a longer typo still resolves.
-export function suggest(word: string, candidates: string[]) {
-  const limit = Math.max(2, Math.floor(word.length / 3))
+export function suggest(
+  word: string,
+  candidates: string[],
+  limit = Math.max(2, Math.floor(word.length / 3)),
+) {
   let best: string | undefined
   let bestScore = Infinity
   for (const candidate of candidates) {

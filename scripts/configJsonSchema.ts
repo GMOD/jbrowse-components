@@ -41,6 +41,7 @@ export interface SchemaMetadata {
     closed?: boolean
     retired?: Record<string, unknown>
     shorthandWith?: Record<string, unknown>
+    fieldPresets?: Record<string, unknown>
     preProcessSnapshot?: (snap: unknown) => unknown
     requires?: {
       id: string

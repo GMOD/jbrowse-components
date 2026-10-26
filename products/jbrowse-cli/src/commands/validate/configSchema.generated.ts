@@ -5025,7 +5025,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "scheme": {
-          "description": "a named ramp: a linear, log or symlog scale runs along it, and a threshold that writes cuts takes one color per interval from end to end, and an ordinal scale that lists a domain one per value; range's colors, where it lists any, win over it.",
+          "description": "a named ramp: a ramp scale runs along it, a threshold that writes cuts takes one color per interval from end to end, and an ordinal scale that lists a domain one per value; range's colors, where it lists any, win over it.",
           "if": {
             "type": "null"
           },
@@ -6106,7 +6106,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "domain": {
-          "description": "for an ordinal scale, the values that take the range first, in order: a preset field's levels (strand 1 and -1; pairOrientation LR, RL, RR and LL; insertSize short, normal and long; under the insert-size and orientation fields, unmappedMate and interchrom, and in a chain under the orientation ones splitInverted, splitSameStrand, segmentInverted and segmentSameStrand; '' a read with no value), a MAPQ, 255 for unavailable, or a tag's values; for a threshold scale, the cut points, which over insertSize are the two between short, normal and long, where the sampled distribution otherwise sets them, and over mapq 1, 10 and 30.",
+          "description": "for an ordinal scale, the values that take the range first, in order: a preset field's levels, insertSize's short, normal and long, with unmappedMate and interchrom under both insert-size fields, '' a read with no value, a MAPQ, 255 for unavailable, or a tag's values; for a threshold scale, the cut points, which over insertSize are the two between short, normal and long, where the sampled distribution otherwise sets them.",
           "if": {
             "type": "null"
           },
@@ -6182,7 +6182,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "scheme": {
-          "description": "a named ramp: a linear, log or symlog scale runs along it, and a threshold that writes cuts takes one color per interval from end to end, and an ordinal scale that lists a domain one per value; range's colors, where it lists any, win over it.",
+          "description": "a named ramp: a ramp scale runs along it, a threshold that writes cuts takes one color per interval from end to end, and an ordinal scale that lists a domain one per value; range's colors, where it lists any, win over it.",
           "if": {
             "type": "null"
           },
@@ -6327,7 +6327,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "field": {
-              "description": "field to color each read by: strand, firstOfPairStrand, pairOrientation, insertSize, insertSizeAndOrientation and mateRefName color by their fixed levels and mapq by its four bins; tags.XX reads a SAM tag; any other name reads as a facet over it does: mateAssembly, a feature attribute, a dotted path or a jexl: expression; split, spliced, pairing and svSignal color nothing, as a facet sections by them.",
+              "description": "field to color each read by: a preset field by its levels or bins; tags.XX reads a SAM tag; any other name reads as a facet over it does: mateAssembly, a feature attribute, a dotted path or a jexl: expression; split, spliced, pairing and svSignal color nothing, as a facet sections by them.",
               "default": "",
               "if": {
                 "type": "null"
@@ -8463,7 +8463,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "field": {
-              "description": "field to color each read by: strand, firstOfPairStrand, pairOrientation, insertSize, insertSizeAndOrientation and mateRefName color by their fixed levels and mapq by its four bins; tags.XX reads a SAM tag; any other name reads as a facet over it does: mateAssembly, a feature attribute, a dotted path or a jexl: expression; split, spliced, pairing and svSignal color nothing, as a facet sections by them.",
+              "description": "field to color each read by: a preset field by its levels or bins; tags.XX reads a SAM tag; any other name reads as a facet over it does: mateAssembly, a feature attribute, a dotted path or a jexl: expression; split, spliced, pairing and svSignal color nothing, as a facet sections by them.",
               "default": "",
               "if": {
                 "type": "null"
@@ -9372,7 +9372,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "scheme": {
-          "description": "a named ramp: a linear, log or symlog scale runs along it, and a threshold that writes cuts takes one color per interval from end to end, and an ordinal scale that lists a domain one per value; range's colors, where it lists any, win over it.",
+          "description": "a named ramp: a ramp scale runs along it, a threshold that writes cuts takes one color per interval from end to end, and an ordinal scale that lists a domain one per value; range's colors, where it lists any, win over it.",
           "if": {
             "type": "null"
           },
@@ -10098,7 +10098,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "scheme": {
-          "description": "a named ramp: a linear, log or symlog scale runs along it, and a threshold that writes cuts takes one color per interval from end to end, and an ordinal scale that lists a domain one per value; range's colors, where it lists any, win over it.",
+          "description": "a named ramp: a ramp scale runs along it, a threshold that writes cuts takes one color per interval from end to end, and an ordinal scale that lists a domain one per value; range's colors, where it lists any, win over it.",
           "if": {
             "type": "null"
           },
@@ -13670,7 +13670,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "scheme": {
-          "description": "a named ramp: a linear, log or symlog scale runs along it, and a threshold that writes cuts takes one color per interval from end to end, and an ordinal scale that lists a domain one per value; range's colors, where it lists any, win over it.",
+          "description": "a named ramp: a ramp scale runs along it, a threshold that writes cuts takes one color per interval from end to end, and an ordinal scale that lists a domain one per value; range's colors, where it lists any, win over it.",
           "if": {
             "type": "null"
           },
@@ -27809,7 +27809,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "scheme": {
-          "description": "a named ramp: a linear, log or symlog scale runs along it, and a threshold that writes cuts takes one color per interval from end to end, and an ordinal scale that lists a domain one per value; range's colors, where it lists any, win over it.",
+          "description": "a named ramp: a ramp scale runs along it, a threshold that writes cuts takes one color per interval from end to end, and an ordinal scale that lists a domain one per value; range's colors, where it lists any, win over it.",
           "if": {
             "type": "null"
           },

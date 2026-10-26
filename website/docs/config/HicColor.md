@@ -40,6 +40,17 @@ plot..." judge them as they judge any other display's.
 }
 ```
 
+## Preset fields
+
+A `field` named here paints through its own scale while `scale.type` is unset, and `range` and `names` index its levels in order while `domain` is unwritten.
+
+<!-- prettier-ignore -->
+| Field | Scale | Levels | Names | Other defaults |
+| --- | --- | --- | --- | --- |
+| `observed` | linear |  |  | `scheme: juicebox`; key "Contacts" |
+| `observed/expected` | log |  |  | `scheme: redblue`; `reverse: true`; `domainMin: 0.25`; `domainMax: 4`; `domainMid: 1`; key "Observed/expected" |
+| `observed/control` | log |  |  | `scheme: redblue`; `reverse: true`; `domainMin: 0.25`; `domainMax: 4`; `domainMid: 1`; key "Observed/control" |
+
 ## Config slots
 
 A setting written to it replaces it whole, since its members are alternatives: a member left out returns to its default. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.

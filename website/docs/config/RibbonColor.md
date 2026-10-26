@@ -59,6 +59,18 @@ through the same slots as the synteny view's
 }
 ```
 
+## Preset fields
+
+A `field` named here paints through its own scale while `scale.type` is unset, and `range` and `names` index its levels in order while `domain` is unwritten.
+
+<!-- prettier-ignore -->
+| Field | Scale | Levels | Names | Other defaults |
+| --- | --- | --- | --- | --- |
+| `mapq` | threshold | `1`, `10`, `30` | MAPQ 0 (multi-mapping), MAPQ 1-9 (low), MAPQ 10-29, MAPQ 30+ (high confidence) | `scheme: cividis`; key "Mapping quality" |
+| `identity` | linear |  |  | `domainMin: 0`; `domainMax: 1`; `scheme: redgreyblue`; key "Identity" |
+| `dnds` | linear |  |  | `domainMin: 0`; `domainMax: 2`; `domainMid: 1`; `scheme: redyellowblue`; `reverse: true`; key "dN/dS" |
+| `syntenicDepth` | threshold | `2`, `3` | One-to-one, Shared by 2 genes, Shared by 3 or more | `range`: `#bdbdbd`, `#fdae6b`, `#e6550d`; key "Syntenic depth" |
+
 ## Config slots
 
 A setting written to it replaces it whole, since its members are alternatives: a member left out returns to its default. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.

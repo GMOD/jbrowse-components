@@ -60,8 +60,8 @@ const lower = (v: unknown) => (typeof v === 'string' ? v.toLowerCase() : v)
 const same = (a: unknown, b: unknown) =>
   JSON.stringify(a, (_k, v: unknown) => lower(v)) ===
   JSON.stringify(b, (_k, v: unknown) => lower(v))
-const asStrings = (v: unknown) => (Array.isArray(v) ? v.map(x => String(x)) : v)
-const asNumbers = (v: unknown) => (Array.isArray(v) ? v.map(x => Number(x)) : v)
+const asStrings = (v: unknown) => (Array.isArray(v) ? v.map(String) : v)
+const asNumbers = (v: unknown) => (Array.isArray(v) ? v.map(Number) : v)
 
 // The display's settings, whether written as a displays entry or under
 // displayDefaults; a displays entry wins member by member.

@@ -503,7 +503,7 @@ export const colorRampSlots = {
     type: 'maybeStringEnum',
     model: types.enumeration('ColorScheme', [...COLOR_SCHEMES]),
     description:
-      "a named ramp: a linear, log or symlog scale runs along it, and a threshold that writes cuts takes one color per interval from end to end, and an ordinal scale that lists a domain one per value; range's colors, where it lists any, win over it",
+      "a named ramp: a ramp scale runs along it, a threshold that writes cuts takes one color per interval from end to end, and an ordinal scale that lists a domain one per value; range's colors, where it lists any, win over it",
   },
   ...colorReverseSlot,
   domainMid: {

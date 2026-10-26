@@ -823,7 +823,7 @@ function checkChannels(
     ].filter(f => f !== '*')
     const near =
       typeof field === 'string' && !presets.includes(field)
-        ? suggest(field, presets)
+        ? suggest(field, presets, 1)
         : undefined
     if (near) {
       warn(where, {
