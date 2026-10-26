@@ -64,8 +64,8 @@ export const HIC_FIELD_PRESETS = {
  * #config HicColor
  * #category display
  * The Hi-C display's `encoding.color`: a bin's `observed` contact count, or
- * its `observed/expected` ratio, through a `linear`, `symlog` or `log`
- * `scale.type` onto a named `scale.scheme`.
+ * its `observed/expected` or `observed/control` ratio, through a `linear`,
+ * `symlog` or `log` `scale.type` onto a named `scale.scheme`.
  *
  * - `observed`: an unset `scale.domainMax` follows the loaded counts,
  *   saturating at their `scale.domainQuantile`, the 95th percentile by
@@ -156,7 +156,8 @@ export const hicColorConfigSchema = ConfigurationSchema(
          */
         domainMin: {
           type: 'maybeNumber',
-          description: 'the bottom of the scale; unset is 0',
+          description:
+            'the bottom of the scale; unset follows the loaded values, whose extent starts at 0 since no value is below it',
         },
         /**
          * #slot scale.domainMax
@@ -168,17 +169,17 @@ export const hicColorConfigSchema = ConfigurationSchema(
         },
         /**
          * #slot scale.domainQuantile
-         * The value an unset `domainMax` follows: the loaded counts' quantile,
-         * `0.95` so faint off-diagonal contacts read, or at `1` their maximum.
-         * The track menu's "Emphasize faint contacts" toggles it. Every color
-         * ramp reads the word this way; a y scale's `fenceQuantile` is an
-         * outlier fence.
+         * The value an unset `domainMax` follows: the loaded values'
+         * quantile, `0.95` so faint off-diagonal contacts read, or at `1`
+         * their maximum. The track menu's "Emphasize faint contacts" toggles
+         * it. Only the top clips, since the values' extent starts at 0, the
+         * way an axis that starts at 0 adds 0 to the shared quantile extent.
          */
         domainQuantile: {
           type: 'number',
           defaultValue: 0.95,
           description:
-            'the quantile of the loaded counts an unset domainMax follows; 1 is their maximum',
+            'the quantile of the loaded values an unset domainMax follows; 1 is their maximum',
         },
       },
       colorScaleOptions('encoding.color.scale'),

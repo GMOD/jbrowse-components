@@ -127,8 +127,15 @@ test('hover reads a ratio expected count off its pair run', () => {
   }
   // distance 3 is the vector's second entry, its first being distance 2
   expect(expectedOf(data, item)).toBe(5)
+  const counts = payload('observed')
   expect(
-    expectedOf(payload('observed'), { ...item, region2Idx: 1 }),
+    expectedOf(
+      {
+        ...counts,
+        pairRuns: counts.pairRuns.map(run => ({ ...run, expected: undefined })),
+      },
+      item,
+    ),
   ).toBeUndefined()
 })
 

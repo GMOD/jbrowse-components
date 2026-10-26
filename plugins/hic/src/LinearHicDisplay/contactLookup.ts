@@ -219,10 +219,7 @@ function findRegion(regions: HicResultRegion[], u: number) {
  * observed/expected: its pair's run carries the pair's expected counts.
  */
 export function expectedOf(data: HicDataResult, item: HicContactItem) {
-  const run = data.pairRuns.find(
-    r => r.region1Idx === item.region1Idx && r.region2Idx === item.region2Idx,
-  )
-  const expected = run?.expected
+  const { expected } = runAt(data.pairRuns, item.index)
   return !expected
     ? undefined
     : expected.kind === 'inter'

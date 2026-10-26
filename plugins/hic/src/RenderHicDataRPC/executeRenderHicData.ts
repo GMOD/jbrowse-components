@@ -182,8 +182,8 @@ export async function executeRenderHicData({
   const operands =
     observedOut && controlOut
       ? {
-          observed: observedOut.slice(0, at),
-          control: controlOut.slice(0, at),
+          observed: observedOut.subarray(0, at),
+          control: controlOut.subarray(0, at),
         }
       : undefined
 
