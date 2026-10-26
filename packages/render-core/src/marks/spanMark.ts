@@ -1,5 +1,5 @@
 import { bpRangeXTuple } from '../blockClipUtils.ts'
-import { bpProjection, projectBp, spanLeft } from '../canvas2dUtils.ts'
+import { bpProjection, getDpr, projectBp, spanLeft } from '../canvas2dUtils.ts'
 import {
   drawnRowHeightPx,
   rowBandOffsetPx,
@@ -61,8 +61,10 @@ interface SpanFrame extends BpProjection {
   rowHeight: number
   scrollTop: number
   bandOffsetPx: number
+  bandHeightPx: number
   minWidthPx: number
   table: RowTable | undefined
+  dpr: number
   left: number
   top: number
   width: number
@@ -80,13 +82,21 @@ function spanFrame(block: RenderBlock, params: SpanParams): SpanFrame {
     rowHeight,
     scrollTop: params.scrollTop,
     bandOffsetPx: rowBandOffsetPx(rowHeight, rowProportion),
+    bandHeightPx: drawnRowHeightPx(rowHeight, rowProportion),
     minWidthPx: params.minWidthPx,
     table: params.rowTable,
+    dpr: getDpr(),
     left: 0,
     top: 0,
     width: 0,
-    height: drawnRowHeightPx(rowHeight, rowProportion),
+    height: 0,
   }
+}
+
+// A y on the device px the GPU's pixel-center rule puts a row edge on, so two
+// rows meeting on a fractional px share no blended seam on Canvas2D.
+function onDevicePx(y: number, dpr: number) {
+  return Math.round(y * dpr) / dpr
 }
 
 function placeSpan(c: SpanChannels, g: SpanFrame, i: number, seamPx = 0) {
@@ -97,8 +107,13 @@ function placeSpan(c: SpanChannels, g: SpanFrame, i: number, seamPx = 0) {
   const xa = projectBp(g, c.x[i]!)
   const xb = projectBp(g, c.x2[i]!)
   const width = Math.max(g.minWidthPx, Math.abs(xb - xa))
+  const top = g.bandOffsetPx + g.rowHeight * slot - g.scrollTop
   g.left = spanLeft(xa, xb, width + seamPx)
-  g.top = g.bandOffsetPx + g.rowHeight * slot - g.scrollTop
+  g.top = onDevicePx(top, g.dpr)
+  g.height = Math.max(
+    onDevicePx(top + g.bandHeightPx, g.dpr) - g.top,
+    1 / g.dpr,
+  )
   g.width = width
   return true
 }

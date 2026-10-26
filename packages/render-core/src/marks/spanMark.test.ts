@@ -232,6 +232,8 @@ describe('the hit test derived from ink', () => {
   })
 })
 
+// The painter the span shape retired, its rows on whole px as the shape now
+// puts them at a ratio of 1.
 const retiredSpan: Required<
   Pick<MarkShape<SpanChannels, SpanParams>, 'paintBlock' | 'ink'>
 > = {
@@ -248,11 +250,12 @@ const retiredSpan: Required<
       const xb = bpToPx(x2[i]!)
       const width = Math.max(minWidthPx, Math.abs(xb - xa))
       setFill(color[i]!)
+      const top = offset + rowHeight * row[i]! - scrollTop
       ctx.fillRect(
         spanLeft(xa, xb, width + seamPx),
-        offset + rowHeight * row[i]! - scrollTop,
+        Math.round(top),
         width + seamPx,
-        h,
+        Math.max(Math.round(top + h) - Math.round(top), 1),
       )
     }
   },
@@ -264,14 +267,16 @@ const retiredSpan: Required<
     const xa = toX(x[i]!)
     const xb = toX(x2[i]!)
     const width = Math.max(minWidthPx, Math.abs(xb - xa))
+    const top =
+      rowBandOffsetPx(rowHeight, rowProportion) +
+      rowHeight * row[i]! -
+      scrollTop
+    const h = drawnRowHeightPx(rowHeight, rowProportion)
     return {
       left: spanLeft(xa, xb, width),
-      top:
-        rowBandOffsetPx(rowHeight, rowProportion) +
-        rowHeight * row[i]! -
-        scrollTop,
+      top: Math.round(top),
       width,
-      height: drawnRowHeightPx(rowHeight, rowProportion),
+      height: Math.max(Math.round(top + h) - Math.round(top), 1),
     }
   },
 }
