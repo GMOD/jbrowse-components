@@ -15,6 +15,7 @@ import {
   isMeasureField,
   resolveCategoricalMode,
   resolveNumericMode,
+  spanOf,
   strandLevels,
 } from './colorRamps.ts'
 import { colorSchemes, legendChipColor } from './colorUtils.ts'
@@ -293,7 +294,8 @@ export function getColorBySwatch(
   // middle, which is what the end labels alone cannot say.
   const numeric = resolveNumericMode(field, attributeRanges, paint)
   if (numeric) {
-    const missing = attributeRanges?.[numeric.attribute]?.missing
+    const observed = attributeRanges?.[numeric.attribute]
+    const missing = observed && spanOf(observed)?.missing
     if (numeric.scale === 'threshold') {
       return {
         kind: 'chips',

@@ -14,6 +14,7 @@ import {
 import { colorEncodingOf } from '@jbrowse/display-kit/colorConfigSchema'
 import { SCALE_TYPE_LINEAR, rampMidNorm } from '@jbrowse/render-core/scoreScale'
 
+import { labelNumber } from './attributeValue.ts'
 import { SYNTENY_VIEW_FIELDS } from './syntenyColorConfigSchema.ts'
 
 import type {
@@ -194,6 +195,34 @@ export function isAttributeLabels(
   return 'labels' in range
 }
 
+const labelSpans = new WeakMap<AttributeLabels, AttributeSpan | undefined>()
+
+/**
+ * The span a ramp reads off a range: a label list's numbers, its text labels
+ * counting as missing, so a written ramp can run over a column holding text.
+ */
+export function spanOf(range: AttributeRange): AttributeSpan | undefined {
+  if (!isAttributeLabels(range)) {
+    return range
+  }
+  if (!labelSpans.has(range)) {
+    const numbers = range.labels.map(labelNumber).filter(n => !Number.isNaN(n))
+    labelSpans.set(
+      range,
+      numbers.length === 0
+        ? undefined
+        : {
+            min: numbers.reduce((a, b) => Math.min(a, b)),
+            max: numbers.reduce((a, b) => Math.max(a, b)),
+            ...(range.missing || numbers.length < range.labels.length
+              ? { missing: true }
+              : {}),
+          },
+    )
+  }
+  return labelSpans.get(range)
+}
+
 export interface CategoricalMode {
   attribute: string
   labels: string[]
@@ -274,7 +303,12 @@ export function resolveNumericMode(
   const attribute = attributeOf(field)
   const observed = ranges[attribute]
   const measure = isMeasureField(field)
-  if (!measure && observed && isAttributeLabels(observed)) {
+  if (
+    !measure &&
+    paint.type === undefined &&
+    observed &&
+    isAttributeLabels(observed)
+  ) {
     return undefined
   }
   const encoding = colorEncodingOf(
@@ -303,7 +337,7 @@ export function resolveNumericMode(
   if (encoding?.scale !== 'linear') {
     return undefined
   }
-  const span = observed && !isAttributeLabels(observed) ? observed : undefined
+  const span = observed && spanOf(observed)
   const [minValue, maxValue] = rampDomain(
     encoding.domainMin,
     encoding.domainMax,

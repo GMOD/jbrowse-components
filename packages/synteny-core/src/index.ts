@@ -236,8 +236,6 @@ export {
   createAttributeChannels,
   declaredAttributes,
   featureAttributeRanges,
-  isMissingText,
-  parseAttributeValue,
   readAttribute,
   readChannelValue,
   writeAttribute,
@@ -245,6 +243,7 @@ export {
   writeFeatureChannels,
 } from './attributeChannels.ts'
 export type { AttributeChannel } from './attributeChannels.ts'
+export { isMissingText, parseAttributeValue } from './attributeValue.ts'
 export {
   attributeTooltipLines,
   featureAttributes,

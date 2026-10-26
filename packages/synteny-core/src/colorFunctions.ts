@@ -13,7 +13,9 @@ import { sampleColorRamp } from '@jbrowse/core/util/colorRamp'
 import { thresholdIndex } from '@jbrowse/core/util/thresholdScale'
 import { rampMidT } from '@jbrowse/render-core/shaders/colorRampLut'
 
+import { labelNumber } from './attributeValue.ts'
 import {
+  isAttributeLabels,
   rampNorm,
   resolveCategoricalMode,
   resolveNumericMode,
@@ -401,6 +403,20 @@ interface ComparativeColorArgs {
   paint?: SyntenyColorPaint
 }
 
+// A fetch that met text in a column holds label indices; a ramp written over
+// it reads each label's number, its text labels as missing.
+function numericLanes(attribute: string, data: ColorFunctionInputs) {
+  const values = data.attributes[attribute]
+  const range = data.attributeRanges[attribute]
+  if (!values || !range || !isAttributeLabels(range)) {
+    return data.attributes
+  }
+  const numbers = range.labels.map(labelNumber)
+  return {
+    [attribute]: values.map(i => (Number.isNaN(i) ? i : numbers[i]!)),
+  }
+}
+
 function paintFunction({
   field,
   data,
@@ -446,7 +462,10 @@ function paintFunction({
   // above does not grow per measurement.
   const numeric = resolveNumericMode(field, attributeRanges, paint)
   if (numeric) {
-    return makeNumericColorFunction(numeric, data.attributes)
+    return makeNumericColorFunction(
+      numeric,
+      numericLanes(numeric.attribute, data),
+    )
   }
   const categorical = resolveCategoricalMode(field, attributeRanges)
   return categorical
