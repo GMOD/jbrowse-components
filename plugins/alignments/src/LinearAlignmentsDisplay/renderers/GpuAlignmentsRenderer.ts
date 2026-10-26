@@ -110,7 +110,7 @@ export class GpuAlignmentsRenderer
   // triangles, the point shader's larger struct, so it is sized as `uBand` is.
   private uCoverage: ArrayBuffer
   private regions = new Map<number, AlignmentsCoverageRegion>()
-  // Upload memo, written only by `sync`. Lives on the renderer rather than in a
+  // Upload memo, written only by `upload`. Lives on the renderer rather than in a
   // model-side `createRegionUploadSync` because this backend is whole-map synced
   // (one `upload('sources', …)` call owns every section), and because the renderer is
   // rebuilt with its HAL on a context loss — so the memo drops exactly when the

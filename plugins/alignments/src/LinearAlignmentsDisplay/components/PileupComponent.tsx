@@ -231,7 +231,7 @@ const ConnectionBandResizeHandles = observer(
                       model.readConnectionsHeight + dy,
                     )
                   }}
-                  title={`Drag to resize the arcs area${scope}`}
+                  title={`Drag to resize the read connections area${scope}`}
                 />
               ) : null}
 

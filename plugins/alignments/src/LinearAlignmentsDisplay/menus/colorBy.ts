@@ -208,9 +208,8 @@ function tagItem(model: AnyColorByModel): MenuItem {
       ])
     },
     {
-      // the only row here whose click opens a dialog rather than writing a
-      // value, so it dismisses the menu instead of the builder's default of
-      // staying open
+      // its click opens a dialog rather than writing a value, so it dismisses
+      // the menu instead of the builder's default of staying open
       keepMenuOpen: false,
     },
   )

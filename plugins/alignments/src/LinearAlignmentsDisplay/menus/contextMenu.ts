@@ -367,7 +367,7 @@ export function getHitMenuItems(
     // browser's menu — the one mark with something to offer that offered
     // nothing. Sorting the pileup by the base at a coverage column is also the
     // thing this band is right-clicked FOR, and it had no home: the track
-    // menu's "Sort by ▸ Base pair" anchors on the center line, not on the
+    // menu's "Sort by → Base" anchors on the center line, not on the
     // column whose bar you are pointing at.
     //
     // Anchored on the hit's own position rather than the raw cursor column,

@@ -53,7 +53,7 @@ interface ReadsModel
 // aren't the same kind of thing, not the row count. Adding subHeaders to group
 // it was tried and reverted: it bought three groups at the cost of four more
 // rows and two more row kinds, which is the opposite trade. The row cap moved to
-// "Read height" for the same reason — it was the one action among the
+// Advanced for the same reason — it was the one action among the
 // checkboxes. Anything new here should be a checkbox, or it belongs in another
 // menu.
 function softClippingItem(model: ReadsModel) {
@@ -96,9 +96,8 @@ export function getReadsMenuItems(model: ReadsModel) {
         model.setMismatchOpacityField(fade ? 'baseQuality' : undefined)
       },
     ),
-    // The worker forces soft clipping off in chain mode
-    // (`executeRenderAlignmentData`'s `effShowSoftClipping`), so the row greys
-    // out there rather than taking a click that draws nothing.
+    // `rpcProps` sends soft clipping off in chain mode, so the row greys out
+    // there rather than taking a click that draws nothing.
     softClippingItem(model),
     // The band's interbase row greys out rather than hides, unlike
     // LGVSyntenyDisplay's twin, which defaults `showCoverage` off and so would

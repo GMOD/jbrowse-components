@@ -57,7 +57,7 @@ export interface Canvas2DRegionMap {
 /**
  * Pure builder: turns the model's observable per-section inputs into the
  * regions map that `drawAlignmentBlocks` consumes, keyed by `sectionRegionKey`
- * so stacked groups don't collide. The on-screen Canvas2DAlignmentsRenderer.sync
+ * so stacked groups don't collide. The on-screen Canvas2DAlignmentsRenderer.upload
  * calls this directly, so on-screen and SVG export share one builder. Section 0
  * keys equal the raw region index, so ungrouped is byte-identical.
  */

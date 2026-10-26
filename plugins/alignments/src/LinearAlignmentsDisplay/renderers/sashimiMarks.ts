@@ -37,12 +37,6 @@ export interface SashimiBandState extends RenderState {
   sashimi: Record<SashimiSide, SashimiBand | undefined>
 }
 
-/**
- * Where a section's two sides draw. Up arcs hang off the histogram's zero
- * line, one scalebar offset above the coverage band's bottom, and may rise
- * into its top margin; down arcs hang from the top of the strip the layout
- * reserved, short of its bottom by the room a count label needs past an apex.
- */
 /** The state the sashimi marks draw and hit-test a section's bands by. */
 export function sashimiBandState(
   state: RenderState,
@@ -54,6 +48,12 @@ export function sashimiBandState(
   }
 }
 
+/**
+ * Where a section's two sides draw. Up arcs hang off the histogram's zero
+ * line, one scalebar offset above the coverage band's bottom, and may rise
+ * into its top margin; down arcs hang from the top of the strip the layout
+ * reserved, short of its bottom by the room a count label needs past an apex.
+ */
 export function sashimiBandsOf(
   state: RenderState,
   sec: SectionRender,

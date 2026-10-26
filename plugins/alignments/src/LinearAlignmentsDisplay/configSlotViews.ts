@@ -97,21 +97,6 @@ export function writtenFilterOf(
 }
 
 /**
- * Every track-menu toggle that is nothing but its config slot, read with
- * `getConf`. Config slots persist across hide/retick (#5591), unlike the MST
- * props these replaced.
- *
- * They live here rather than in the model chain because none of them reads the
- * model — only its `configuration`. The chain keeps them as one
- * `.views(configSlotViews)` link, so the composed TYPE is unchanged and every
- * read site is still `self.x`.
- *
- * **A getter that reads any OTHER model member does not belong here** — it
- * belongs in the chain, where `self` is the model so far. That is the line
- * between this file and model.ts, and it is why `collapseSections`, which reads
- * `canCollapseSections`, stayed behind despite also being a slot read.
- */
-/**
  * What a config says beside the schema's rules that the reads cannot draw as
  * written: a per-base `encoding.color.field`, levels a field does not have,
  * a `facet` the `unit` cannot group by, a column `sort` with no `pos`, and a
