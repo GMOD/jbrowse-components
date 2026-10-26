@@ -1163,7 +1163,9 @@ const levelList = (levels: readonly string[] = []) =>
 // leaves its scale unwritten, from the manifest `jbrowse validate` reads. A
 // channel whose other fields are categories lists the universal fields too,
 // unless it spells one of them its own way, as reads spell strand.
-function presetEntries(presets: FieldPresets<string>) {
+function presetEntries(
+  presets: FieldPresets<string>,
+): [string, FieldPresets<string>[string]][] {
   const universal =
     presets['*']?.scale.type === 'ordinal' &&
     !Object.keys(UNIVERSAL_FIELD_PRESETS).some(f => Object.hasOwn(presets, f))
