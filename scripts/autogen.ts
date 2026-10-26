@@ -546,10 +546,15 @@ if (fixStale && failed.length > 0) {
   // also read whole doc trees an earlier member splices into, which no `needs`
   // lists, so a rewrite there reruns every cheap member after it.
   const chain = selected.filter(g => !g.independent && !g.exclusive)
-  const downstreamOf = (g: Generator) =>
-    (g.needs ?? []).some(n => rewriting.has(n)) ||
-    (!g.wholeRepoProgram &&
-      chain.slice(0, chain.indexOf(g)).some(c => rewriting.has(c.name)))
+  const downstreamOf = (g: Generator) => {
+    const at = chain.indexOf(g)
+    return (
+      (g.needs ?? []).some(n => rewriting.has(n)) ||
+      (at > 0 &&
+        !g.wholeRepoProgram &&
+        chain.slice(0, at).some(c => rewriting.has(c.name)))
+    )
+  }
   for (let grew = true; grew;) {
     grew = false
     for (const g of selected) {

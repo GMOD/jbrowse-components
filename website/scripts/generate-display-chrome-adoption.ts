@@ -46,12 +46,11 @@ import { dirname, join, resolve as resolvePath } from 'node:path'
 import * as ts from 'typescript'
 
 import {
-  SOURCE_SKIP_DIRS,
   checkOrWrite,
   isFile,
   markdownTableLines,
+  sourceFiles,
   spliceGeneratedBlock,
-  walkFiles,
 } from './check-utils.ts'
 import { repoRoot } from './paths.ts'
 
@@ -252,10 +251,9 @@ function collectRegistrations(): Registration[] {
   // these names, never teaching the resolver the stub.
   const isTestSupport = (n: string) =>
     /^(testEnv|testUtils)\.tsx?$/.test(n) || /\.test\.tsx?$/.test(n)
-  for (const file of walkFiles(
-    join(repoRoot, 'plugins'),
+  for (const file of sourceFiles(
+    ['plugins'],
     n => /\.tsx?$/.test(n) && !isTestSupport(n),
-    SOURCE_SKIP_DIRS,
   )) {
     const text = readFileSync(file, 'utf8')
     if (!text.includes('new DisplayType(')) {

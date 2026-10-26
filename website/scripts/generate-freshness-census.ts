@@ -15,12 +15,11 @@ import { readFileSync } from 'node:fs'
 import { join, relative, sep } from 'node:path'
 
 import {
-  SOURCE_SKIP_DIRS,
   checkOrWrite,
   isTsSource,
   markdownTableLines,
+  sourceFiles,
   spliceGeneratedBlock,
-  walkFiles,
 } from './check-utils.ts'
 import { repoRoot } from './paths.ts'
 
@@ -68,11 +67,7 @@ function callers() {
   const rows: Row[] = []
   const unreadable: string[] = []
   for (const root of SCAN_ROOTS) {
-    for (const file of walkFiles(
-      join(repoRoot, root),
-      isTsSource,
-      SOURCE_SKIP_DIRS,
-    )) {
+    for (const file of sourceFiles([root], isTsSource)) {
       if (isCaller(file)) {
         const text = readFileSync(file, 'utf8')
         const path = relative(repoRoot, file).replaceAll(sep, '/')

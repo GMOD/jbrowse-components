@@ -22,11 +22,11 @@
 # rules. It stays a CI job.
 set -eu
 
-# The post-merge hook checks generated artifacts in the background after a land
-# and leaves this behind when one is stale. Reporting it here costs a stat and
+# The post-merge hook runs typecheck and both linters in the background after a
+# land and leaves this behind when one fails. Reporting it here costs a stat and
 # reaches someone about to add to the same tree; it never blocks, since what it
 # names is almost certainly not this commit's doing.
-staleness=$(git rev-parse --git-common-dir)/autogen-stale
+staleness=$(git rev-parse --git-common-dir)/main-red
 if [ -f "$staleness" ]; then
   echo >&2
   sed 's/^/pre-commit: /' "$staleness" >&2

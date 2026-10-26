@@ -1,7 +1,5 @@
-import { exec } from 'child_process'
 import fs from 'fs'
 import path from 'path'
-import { promisify } from 'util'
 
 import * as ts from 'typescript'
 
@@ -11,13 +9,12 @@ import {
   docFiles,
   isTsSource,
   isWebsiteDoc,
+  repoFiles,
   walkFiles,
 } from '../check-utils.ts'
 import { firstParagraph } from './agentText.ts'
 import { slotSpreadPairs, slotSpreadPart } from './enumConstants.ts'
 import { readDoc, writeDoc } from './format.ts'
-
-const exec2 = promisify(exec)
 
 const cwd = `${process.cwd()}/`
 
@@ -3300,25 +3297,16 @@ export function rewriteGroupedMarkerBlocks(
   return { changed, seen }
 }
 
-// Every source file the generators document, tracked plus untracked-but-not-
-// ignored (`--others --exclude-standard`).
-//
-// Without `--others` a brand-new file is invisible until it is `git add`ed, and
-// not just to the tag scan: the TypeScript program can't resolve imports of it
-// either, so every signature that flows through it silently degrades to `any`.
-// That reads as a mysterious doc regression with no cause in the diff, and it is
-// local-only — CI has nothing untracked, so the two disagree. `--exclude-standard`
-// keeps ignored scratch files out, leaving exactly the files that are about to be
-// committed anyway.
+// Every source file the generators document, from `repoFiles`, which says
+// which untracked files count. Leaving a new file out would hide more than its
+// tags: the TypeScript program can't resolve imports of it either, so every
+// signature that flows through it silently degrades to `any`.
 //
 // The `plugins` alternative is deliberately unanchored: it also matches
 // `example-plugins/`, the worked examples backing the developer guides, whose
 // LinearScoreDisplay config and model are documented pages.
 export async function getAllFiles() {
-  const { stdout } = await exec2(
-    String.raw`git ls-files --cached --others --exclude-standard | grep "\(plugins\|products\|packages\).*\.\(t\|j\)sx\?$"`,
+  return repoFiles().filter(f =>
+    /(plugins|products|packages).*\.(t|j)sx?$/.test(f),
   )
-  // `git ls-files` also lists files staged as added but since deleted from the
-  // worktree, which every generator downstream would then try to read.
-  return stdout.split('\n').filter(f => f && fs.existsSync(f))
 }

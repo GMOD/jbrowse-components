@@ -45,11 +45,9 @@
 # what is stale and commits it (Colin: "autogen only needs to run prepush").
 # Its ~34s here ran after every land and loaded every other agent.
 #
-# HOW YOU HEAR ABOUT IT. The background run leaves `autogen-stale` in the common
-# git dir -- named for the check it started as, kept because that path is what
-# pre-commit reaches for -- and pre-commit prints it on your next commit for the
-# cost of one stat. That is deliberately not a terminal
-# message from here: by the time the check finishes, the shell that ran the
+# HOW YOU HEAR ABOUT IT. The background run leaves `main-red` in the common git
+# dir, and pre-commit prints it on your next commit for the cost of one stat.
+# That is deliberately not a terminal message from here: by the time the check finishes, the shell that ran the
 # merge has moved on, and writing to its tty would land in the middle of
 # whatever is there now.
 #
@@ -57,14 +55,11 @@
 # used to answer wrongly. It named the head it checked at, so a drift that had
 # been sitting on main for twenty commits read as an accusation of whatever had
 # just landed -- and the reader either believed it or went hunting through
-# `git log -S` to find out otherwise. `autogen-stale-since` holds the head the
-# nag FIRST fired at, so a persisting one can say how far back it goes and say
-# outright that this land is not what staled it. The pair is cleared together,
-# here on a clean check and nowhere else: `pnpm autogen` used to clear it, from
-# when the marker reported artifacts alone, and kept doing so after typecheck
-# and the linters joined -- a regenerate wiped a nag about a type error, and a
-# filtered `pnpm autogen gallery` wiped one about anything. Leaving the anchor
-# behind would age the next unrelated drift by this one's lifetime.
+# `git log -S` to find out otherwise. `main-red-since` holds the head the nag
+# FIRST fired at, so a persisting one can say how far back it goes and say
+# outright that this land is not what broke it. The pair is cleared together,
+# here on a clean check and nowhere else. Leaving the anchor behind would age
+# the next unrelated failure by this one's lifetime.
 #
 # READ-ONLY, because the primary checkout is shared. `--check`, `--noEmit` and a
 # bare `lint:eslint` all report and write nothing, so this can never rewrite
@@ -82,7 +77,7 @@
 # marker says so rather than pretending otherwise.
 set -eu
 
-[ "${SKIP_AUTOGEN_CHECK:-}" = 1 ] && exit 0
+[ "${SKIP_POST_MERGE_CHECK:-}" = 1 ] && exit 0
 
 root=$(git rev-parse --show-toplevel 2>/dev/null) || exit 0
 cd "$root"
@@ -104,12 +99,12 @@ if [ -n "$range" ]; then
 fi
 
 common=$(git rev-parse --git-common-dir)
-marker=$common/autogen-stale
+marker=$common/main-red
 # The head the check FIRST failed at, kept across lands so a persisting
-# staleness can say how old it is instead of restamping itself onto whatever
+# failure can say how old it is instead of restamping itself onto whatever
 # landed most recently. Cleared with the marker.
-since=$common/autogen-stale-since
-lock=$common/autogen-check.lock
+since=$common/main-red-since
+lock=$common/post-merge-check.lock
 
 # One check at a time. Several agents landing in the same minute would otherwise
 # each start a run, and they would all reach the same answer. mkdir is the

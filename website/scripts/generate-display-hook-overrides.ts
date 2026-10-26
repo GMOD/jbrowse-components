@@ -20,12 +20,11 @@ import { join, relative } from 'node:path'
 import * as ts from 'typescript'
 
 import {
-  SOURCE_SKIP_DIRS,
   checkOrWrite,
   isTsSource,
   markdownTableLines,
+  sourceFiles,
   spliceGeneratedBlock,
-  walkFiles,
 } from './check-utils.ts'
 import { repoRoot } from './paths.ts'
 
@@ -295,14 +294,13 @@ function main() {
   const names = new Set(hookNames)
 
   for (const root of SCAN_ROOTS) {
-    const files = walkFiles(
-      join(repoRoot, root),
+    const files = sourceFiles(
+      [root],
       // `isTsSource` drops `*.test.ts` but not a test HARNESS, and a harness
       // that stands up a display to exercise a foundation declares the same
       // hooks a display does — reading, in this table, as another display
       // overriding them. No shipped display is named this way.
       name => isTsSource(name) && !/test(env|utils)\.tsx?$/i.test(name),
-      SOURCE_SKIP_DIRS,
     )
     for (const file of files) {
       if (!unitOf(file)) {

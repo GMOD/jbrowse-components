@@ -65,7 +65,7 @@
 # other agents running, before the fixers were scoped:
 #   pnpm figures:check       1.5s
 #   pnpm autogen --check    22.5s  `config/model/api docs` alone is 21s and
-#                                  the other 29 generators hide behind it in
+#                                  the other generators hide behind it in
 #                                  the pool
 #   pnpm check-docs          9.2s  31s of validators, pooled four at a time.
 #                                  Now the longest single gate here
@@ -293,8 +293,8 @@ slot_defaults_pid=$!
 #
 #   - No corpora at all. They are gitignored, so a fresh worktree has none
 #     (`pnpm figures:pull`, or the two symlinks in CLAUDE.md), and the
-#     jbrowse-img doc and tutorial-thumb generators then report OUT OF DATE
-#     rather than failing outright.
+#     jbrowse-img generators then report OUT OF DATE rather than failing
+#     outright.
 #   - Corpora ahead of figures.lock. A regen someone has not pushed yet is
 #     invisible to git and to CI: CI pulls the lock's sources, derives the
 #     committed thumb and agrees, while the same generators here derive from
@@ -305,7 +305,7 @@ slot_defaults_pid=$!
 # 34s answer trustworthy.
 #
 # When it is NOT trustworthy, drop the generators that read a figure and
-# regenerate the other fifteen — `--skip-figure-dependent`, which names what it
+# regenerate the rest — `--skip-figure-dependent`, which names what it
 # skipped. Running them anyway would be worse than not running them: they would
 # derive from the corpus on disk and write artifacts CI, deriving from the lock,
 # disagrees with, and the hook would then ask for a commit that makes the drift
@@ -333,7 +333,7 @@ fi
 # the ones that failed plus anything downstream reading their output. On the
 # push where nothing is stale, which is most of them, the check is the whole of
 # the autogen cost; on the push where something is, the rewrite is the three
-# tables that drifted rather than all thirty generators.
+# tables that drifted rather than every generator.
 #
 # EVERY GENERATOR, the whole-repo program included. This is the one place
 # autogen runs: post-merge and `pnpm verify --full` dropped it on 2026-10-23
@@ -344,9 +344,15 @@ fi
 # and model pages for post-merge to name after the land; now the push that
 # carries the change regenerates them. push.yml's `generated` job still runs a
 # bare `pnpm autogen --check` and uploads the rewrite as `autogen.patch`.
+#
+# AUTOGEN_TRACKED_ONLY: an untracked file here is another agent's work in
+# progress, and CI never sees it, so the generators read tracked sources only.
 astatus=0
-eval "$cmd_autogen --fix-stale $autogen_flags" \
-  >"$tmp/autogen.log" 2>&1 || astatus=$?
+(
+  AUTOGEN_TRACKED_ONLY=1
+  export AUTOGEN_TRACKED_ONLY
+  eval "$cmd_autogen --fix-stale $autogen_flags"
+) >"$tmp/autogen.log" 2>&1 || astatus=$?
 if [ "$astatus" != 0 ]; then
   echo >&2
   echo "pre-push: pnpm autogen failed" >&2

@@ -13,7 +13,7 @@ import {
   writeFileSync,
 } from 'node:fs'
 import { createRequire } from 'node:module'
-import { dirname, join, resolve } from 'node:path'
+import { dirname, join, resolve, sep } from 'node:path'
 
 import { parseAttrs } from '../src/lib/inline-html.ts'
 import { docsDir, repoRoot } from './paths.ts'
@@ -108,6 +108,56 @@ export const SOURCE_SKIP_DIRS = new Set([
   '__pycache__',
   '__snapshots__',
 ])
+
+// The files a generator reads as source, repo-relative: everything git
+// tracks, plus untracked files not ignored, since a new file is about to be
+// committed and an import of it would otherwise resolve to nothing. Under
+// AUTOGEN_TRACKED_ONLY=1, which the pre-push hook sets, tracked files only: in
+// the shared checkout an untracked file is another agent's work in progress,
+// and CI never sees it. Deduped, because a rebase with unmerged paths lists each
+// once per index stage, and limited to what is on disk, because a staged
+// deletion is still listed.
+let listedFiles: string[] | undefined
+export function repoFiles(): string[] {
+  listedFiles ??= [
+    ...new Set(
+      spawnSync(
+        'git',
+        [
+          'ls-files',
+          '-z',
+          '--cached',
+          ...(process.env.AUTOGEN_TRACKED_ONLY === '1'
+            ? []
+            : ['--others', '--exclude-standard']),
+        ],
+        { cwd: repoRoot, encoding: 'utf8', maxBuffer: 1 << 28 },
+      )
+        .stdout.split('\0')
+        .filter(Boolean),
+    ),
+  ].filter(f => existsSync(join(repoRoot, f)))
+  return listedFiles
+}
+
+// `walkFiles` over the source roots, answered from `repoFiles` so an ignored or
+// (under the hook) untracked file is never source. Absolute paths.
+export function sourceFiles(
+  roots: string[],
+  match: (name: string) => boolean,
+  skipDirs = SOURCE_SKIP_DIRS,
+): string[] {
+  return repoFiles()
+    .filter(f => {
+      const parts = f.split('/')
+      return (
+        roots.some(r => f.startsWith(`${r}/`)) &&
+        match(parts.at(-1)!) &&
+        !parts.slice(0, -1).some(d => skipDirs.has(d) || d.startsWith('.'))
+      )
+    })
+    .map(f => join(repoRoot, f.replaceAll('/', sep)))
+}
 
 // A published doc page. CLAUDE.md files are agent instructions rather than
 // pages, and they *describe* the marker syntax the generators scan for

@@ -13,11 +13,10 @@
 // A `#trackType` value is kept only when some config schema declares
 // `#config <that name>`, which is what drops `TextSearchAdapter` — a real tag
 // naming the slot a text-search adapter is configured under, and not a track.
-import { execFileSync } from 'node:child_process'
-import { existsSync, readFileSync } from 'node:fs'
+import { readFileSync } from 'node:fs'
 import path from 'node:path'
 
-import { checkOrWrite } from '../website/scripts/check-utils.ts'
+import { checkOrWrite, repoFiles } from '../website/scripts/check-utils.ts'
 
 const REPO_ROOT = path.resolve(import.meta.dirname, '..')
 const OUT = path.join(
@@ -25,15 +24,11 @@ const OUT = path.join(
   'packages/add-track-core/src/trackTypes.generated.ts',
 )
 
-const files = execFileSync(
-  'git',
-  ['ls-files', 'packages', 'plugins', 'products'],
-  { cwd: REPO_ROOT, encoding: 'utf8' },
+const files = repoFiles().filter(
+  f =>
+    /^(packages|plugins|products)\//.test(f) &&
+    (f.endsWith('.ts') || f.endsWith('.tsx')),
 )
-  .split('\n')
-  .filter(f => f.endsWith('.ts') || f.endsWith('.tsx'))
-  // git lists a deletion until it is staged, and autogen runs before the commit
-  .filter(f => existsSync(path.join(REPO_ROOT, f)))
 
 const configNames = new Set<string>()
 const trackTypeOf = new Map<string, string>()
