@@ -158,7 +158,9 @@ From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`sc
 | <span id="getter-linezoneheight">**lineZoneHeight**</span><br><code>number</code> | Height of the connector-line zone above the columns; 0 at genomic positions, where nothing needs connecting. |
 | <span id="getter-showvariantlane">**showVariantLane**</span><br><code>boolean</code> | Whether the variant lane, a strip of the records themselves above the genotype rows, is drawn: at genomic positions only, where it lines up with the cells under it. |
 | <span id="getter-variantlaneheight">**variantLaneHeight**</span><br><code>number</code> | Configured height of the variant lane. Raw: what the band spends is `topBands.laneHeight`. |
-| <span id="getter-variantlanelabels">**variantLaneLabels**</span><br><code>"auto" &#124; "description" &#124; "name" &#124; "nameAndDescription" &#124; "none"</code> | Which label kinds the variant lane asks for; what it draws is `laneRenderedLabels`. |
+| <span id="getter-variantlaneshowsnames">**variantLaneShowsNames**</span><br><code>boolean</code> | `variants.labels.name.show` |
+| <span id="getter-variantlaneshowsdescriptions">**variantLaneShowsDescriptions**</span><br><code>boolean</code> | `variants.labels.description.show` |
+| <span id="getter-variantlanelabels">**variantLaneLabels**</span><br><code>VariantLaneLabels</code> | The field each label kind the variant lane draws reads, empty where it is hidden; what it draws is `laneRenderedLabels`. |
 | <span id="getter-showrowseparators">**showRowSeparators**</span><br><code>boolean</code> |  |
 | <span id="getter-showtooltips">**showTooltips**</span><br><code>boolean</code> | Whether a hover draws the tooltip table. The crosshairs, the hovered-cell highlight and `hoveredFeature` keep working with it off. |
 | <span id="getter-facet">**facet**</span><br><code>FacetSetting &#124; undefined</code> | The `facet` object as written: the sample-metadata attribute whose values band the rows, and the band order; undefined leaves the existing order alone. |
@@ -325,7 +327,8 @@ From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`rendering
 | <span id="action-opensolidcolordialog">**openSolidColorDialog**</span><br><code>() =&gt; void</code> | the picker Color by's Solid color... opens |
 | <span id="action-setshowvariantlane">**setShowVariantLane**</span><br><code>(arg: boolean) =&gt; void</code> | Switch the variant lane on or off; it takes its space from the rows. |
 | <span id="action-setvariantlaneheight">**setVariantLaneHeight**</span><br><code>(arg: number) =&gt; void</code> | Resize the variant lane, clamped here because a drag can deliver any number and a band dragged shut has to stay grabbable. |
-| <span id="action-setvariantlanelabels">**setVariantLaneLabels**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(arg: "auto" &#124; "description" &#124; "name" &#124; "nameAndDescription" &#124;…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(arg: "auto" &#124; "description" &#124; "name" &#124; "nameAndDescription" &#124; "none") =&gt; void</code></pre></dialog></span> |  |
+| <span id="action-setvariantlaneshowsnames">**setVariantLaneShowsNames**</span><br><code>(show: boolean) =&gt; void</code> |  |
+| <span id="action-setvariantlaneshowsdescriptions">**setVariantLaneShowsDescriptions**</span><br><code>(show: boolean) =&gt; void</code> |  |
 | <span id="action-setvariantlayout">**setVariantLayout**</span><br><code>(arg: "columns" &#124; "genomic") =&gt; void</code> |  |
 | <span id="action-setlinezoneheight">**setLineZoneHeight**</span><br><code>(n: number) =&gt; void</code> |  |
 | <span id="action-setbackenddrawscolumns">**setBackendDrawsColumns**</span><br><code>(arg: boolean) =&gt; void</code> |  |

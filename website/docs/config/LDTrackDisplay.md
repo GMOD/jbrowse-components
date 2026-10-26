@@ -58,7 +58,9 @@ Display slots go on a display entry: `"displays": [{ "type": "LDTrackDisplay", .
 | <span id="slot-legend">**legend**</span><br>[HiddenLegend](../hiddenlegend) | The color ramp's key, off until asked for. |
 | <span id="slot-guides">**guides**</span><br>[LDGuides sub-schema](#slot-guidesshow) | The guides a hovered cell draws across the view at its pair's genomic positions. |
 | <span id="slot-guidesshow">**guides.show**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | on hover, draw guides across the view at the pair's genomic positions<br>_advanced_ |
-| <span id="slot-showlabels">**showLabels**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (none, name) = <code>'none'</code> | `name` draws each variant name above its tick mark and `none` draws no labels, two of the modes of the feature display `showLabels`<br>_advanced_ |
+| <span id="slot-labels">**labels**</span><br>[LDLabels sub-schema](#slot-labelsname) | The text drawn at each variant's tick mark. |
+| <span id="slot-labelsname">**labels.name**</span><br>[LDNameLabel sub-schema](#slot-labelsnameshow) | Each variant's name, above its tick mark. |
+| <span id="slot-labelsnameshow">**labels.name.show**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | draw each variant name above its tick mark<br>_advanced_ |
 | <span id="slot-tickheight">**tickHeight**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>6</code> | height of the tick marks at the genomic positions<br>_advanced_ |
 | <span id="slot-variantlayout">**variantLayout**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (genomic, columns) = <code>'columns'</code> | `'columns'` draws every SNP one uniform square wide; `'genomic'` sizes the cells by the genomic distance between SNPs. The multi-sample variant display takes the same slot for the same choice.<br>_advanced_ |
 | <span id="slot-height">**height**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>400</code> | default height of the display, the band above the triangle included |
@@ -91,3 +93,4 @@ An older config may still write these. Each loads without an error, and `jbrowse
 | `lengthCutoffFilter` | ignored |
 | `hweFilterThreshold` | ignored |
 | `callRateFilter` | ignored |
+| `showLabels` | moved into a current slot |

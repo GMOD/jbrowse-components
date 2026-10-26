@@ -62,21 +62,20 @@ Display slots go on a display entry: `"displays": [{ "type": "LinearVariantDispl
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
-| <span class="slot-group">Inherited from [LinearCanvasBaseDisplay](../linearcanvasbasedisplay)</span> | <span class="slot-group-count">16 slots</span> |
+| <span class="slot-group">Inherited from [LinearCanvasBaseDisplay](../linearcanvasbasedisplay)</span> | <span class="slot-group-count">15 slots</span> |
 | <span id="slot-filter">**filter**</span><br><code>fieldPredicateList()</code> | The features the display draws, a list of [](/docs/config/fieldpredicate) entries a feature must all pass: a field of the feature's own (`{ field: "score", gte: 100 }`), a `jexl:` expression that must hold (`"jexl:feature.type == 'gene'"`), or `geneLike`, true for every gene, transcript and RNA type, the `transcripts.types` and `containers.types`, and a top-level CDS. |
-| <span id="slot-mouseover">**mouseover**</span><br>[`string`](/docs/config_guides/slot_types#string) = <span class="cell-more"><button type="button" class="cell-more-trigger"><code>'jexl:get(feature,'_mouseOver')&#124;&#124;get(feature,'name')&#124;&#124;get(featu…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>'jexl:get(feature,'_mouseOver')&#124;&#124;get(feature,'name')&#124;&#124;get(feature,'function')&#124;&#124;get(feature,'id')'</code></pre></dialog></span> | text to display when the cursor hovers over a feature; left at the default, the tooltip adds the description line (`labels.description`) as a second row<br>_callback args:_ `feature` |
+| <span id="slot-tooltip">**tooltip**</span><br>[FeatureTooltip](../featuretooltip) | The box hovering a feature opens, a [](/docs/config/featuretooltip) object. |
 | <span id="slot-maxfeaturescreendensity">**maxFeatureScreenDensity**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>1</code> | maximum features per pixel before showing a "too many features" message<br>_advanced_ |
 | <span id="slot-legend">**legend**</span><br>[Legend](../legend) | The display's color key, when it has one: the key an `encoding.color` field derives, or a variant track's consequence-impact / SV-type presets. |
-| <span id="slot-showlabels">**showLabels**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (auto, nameAndDescription, name, description, none) = <code>'auto'</code> | Label text drawn beside each feature: "auto" adapts to zoom, dropping descriptions at maxDescriptionFeatureDensity and names at maxLabelFeatureDensity; "nameAndDescription", "name", "description", and "none" pin a choice at every zoom. Defaults to `auto`. Replaces the former showLabels on/off enum + showDescriptions boolean pair |
-| <span id="slot-maxlabelfeaturedensity">**maxLabelFeatureDensity**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>0.2</code> | In "auto" showLabels mode, hide labels when visible feature density (features/pixel) exceeds this value<br>_advanced_ |
-| <span id="slot-maxdescriptionfeaturedensity">**maxDescriptionFeatureDensity**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>0.1</code> | In "auto" showLabels mode, hide descriptions when visible feature density (features/pixel) exceeds this value. Lower than maxLabelFeatureDensity so descriptions drop before names<br>_advanced_ |
+| <span id="slot-maxlabelfeaturedensity">**maxLabelFeatureDensity**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>0.2</code> | hide the names, which `labels.name` shows, where the on-screen feature density (features per pixel) passes this; past it the gene names alone still draw while the genes are under it<br>_advanced_ |
+| <span id="slot-maxdescriptionfeaturedensity">**maxDescriptionFeatureDensity**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>0.1</code> | hide the descriptions, which `labels.description` shows, where the on-screen feature density (features per pixel) passes this or `maxLabelFeatureDensity`, whichever is lower<br>_advanced_ |
 | <span id="slot-encoding">**encoding**</span><br>[FeatureEncoding](../featureencoding) | The channels the features paint through: `encoding.color`, each feature's main fill. |
 | <span id="slot-mark">**mark**</span><br>[FeatureMark](../featuremark) | The box each feature draws as, a [](/docs/config/featuremark) object: `{ height: 6 }`. |
 | <span id="slot-displaymode">**displayMode**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (normal, compact, superCompact, collapsed) = <code>'normal'</code> | Feature height preset, `normal` by default; `compact` and `superCompact` shrink the rows, and `collapsed` packs every feature onto a single row with all labels hidden |
 | <span id="slot-facet">**facet**</span><br>[SectionFacet](../sectionfacet) | One labelled section of the track per value of a field: `"strand"`, or `{ field, sort }` with the order its sections stack in. |
-| <span id="slot-labels">**labels**</span><br>[CanvasFeatureLabels sub-schema](#slot-labelsname) | The fields a feature's name label and description line read. |
-| <span id="slot-labelsname">**labels.name**</span><br>[`featureField`](/docs/config_guides/slot_types#featurefield) = <code>'jexl:get(feature,'name') &#124;&#124; get(feature,'id')'</code> | the field each feature's name label reads, such as `gene_name`, or a `jexl:` expression over `feature`; the default reads the name, else the ID, and an empty value draws no name |
-| <span id="slot-labelsdescription">**labels.description**</span><br>[`featureField`](/docs/config_guides/slot_types#featurefield) = <span class="cell-more"><button type="button" class="cell-more-trigger"><code>'jexl:get(feature,'note') &#124;&#124; get(feature,'description') &#124;&#124; get(…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>'jexl:get(feature,'note') &#124;&#124; get(feature,'description') &#124;&#124; get(feature,'function')'</code></pre></dialog></span> | the field each feature's description line reads, such as `note`, or a `jexl:` expression over `feature`; the default reads `note`, else `description`, else `function`, and an empty value draws no description |
+| <span id="slot-labels">**labels**</span><br>[CanvasFeatureLabels sub-schema](#slot-labelsname) | The text drawn beside each feature, two parts with `show`. |
+| <span id="slot-labelsname">**labels.name**</span><br>[FeatureNameLabel](../featurenamelabel) | Each feature's name, a [](/docs/config/featurenamelabel) object. |
+| <span id="slot-labelsdescription">**labels.description**</span><br>[FeatureDescriptionLabel](../featuredescriptionlabel) | The line under each name, a [](/docs/config/featuredescriptionlabel) object. |
 | <span id="slot-heightmode">**heightMode**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (fixed, grow, fit) = <code>'fit'</code> | Track-sizing strategy — how the track responds when there are more features than fit (shared vocabulary with the alignments display, exposed in the "Track sizing" menu). `fit` (the default) keeps the track height and gives up descriptions, then isoforms, then names, then squeezes boxes down to 2px, and scrolls only what still overflows; `fixed` keeps a scrollable fixed height; `grow` expands the track to show all features. Orthogonal to the per-feature size set by `displayMode`, which fit never enlarges. |
 | <span id="slot-growmaxheight">**growMaxHeight**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>800</code> | Ceiling in pixels for the "autogrow track height" sizing mode; a track with more content than this grows to the ceiling and scrolls the rest. Does not apply to the fixed or fit modes<br>_advanced_ |
 | <span class="slot-group">Inherited from [BaseLinearDisplay](../baselineardisplay)</span> | <span class="slot-group-count">3 slots</span> |
@@ -92,6 +91,7 @@ An older config may still write these. Each loads without an error, and `jbrowse
 | Key | On load |
 | --- | --- |
 | `maxDisplayedBpPerPx` | ignored |
+| `mouseover` | moved into a current slot |
 | `jexlFilters` | moved into a current slot |
 | `color1` | moved into a current slot |
 | `color2` | ignored |
@@ -101,10 +101,12 @@ An older config may still write these. Each loads without an error, and `jbrowse
 | `canonicalTranscriptField` | moved into a current slot |
 | `canonicalTranscriptTags` | moved into a current slot |
 | `containerTypes` | moved into a current slot |
+| `showLabels` | moved into a current slot |
+| `showDescriptions` | moved into a current slot |
+| `subfeatureLabels` | moved into a current slot |
 | `outline` | ignored |
 | `maxHeight` | ignored |
 | `hideSourceFeatures` | ignored |
 | `impliedUTRs` | ignored |
 | `renderer` | moved into a current slot |
 | `color` | moved into a current slot |
-| `showDescriptions` | moved into a current slot |

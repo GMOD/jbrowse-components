@@ -100,7 +100,7 @@ Display slots go on a display entry: `"displays": [{ "type": "MultiWaySyntenyDis
 | Slot | Description |
 | --- | --- |
 | <span id="slot-encoding">**encoding**</span><br>[MultiWayGeneEncoding](../multiwaygeneencoding) | The channels the gene glyphs paint through: `encoding.color`, their fill. |
-| <span id="slot-utrcolor">**utrColor**</span><br>[`color`](/docs/config_guides/slot_types#color) = <code>'#357089'</code> | the fill color of the untranslated parts of a gene glyph, matching the canvas gene track default<br>_callback args:_ `feature` |
+| <span id="slot-utrs">**utrs**</span><br>[FeatureUtrs](../featureutrs) | The gene glyphs' UTR boxes, a [](/docs/config/featureutrs) object, as on the canvas gene track. Unset, a UTR takes its gene's fill, and the contrasting UTR blue where nothing sets one. |
 | <span id="slot-data">**data**</span><br>[SyntenyData](../syntenydata) | What the fetch reads, a [](/docs/config/syntenydata) object: `resolution` picks a tiered file's stored tier. |
 | <span id="slot-rows">**rows**</span><br>[LaneRows](../lanerows) | The lane order and the lanes drawn, which the Lanes menu, a header drag and the lane picker write. |
 | <span id="slot-ribbons">**ribbons**</span><br>[MultiWayRibbons](../multiwayribbons) | The bands joining each gene's placements in adjacent lanes: `ribbons.encoding.color` paints them and `ribbons.mark.interpolate` curves their sides. |
@@ -108,9 +108,9 @@ Display slots go on a display entry: `"displays": [{ "type": "MultiWaySyntenyDis
 | <span id="slot-lanegenetracks">**laneGeneTracks**</span><br>[`stringArray`](/docs/config_guides/slot_types#stringarray) = <code>[]</code> | the trackId of the gene track each lane draws, one per genome, or an entry spelling `{assembly}`, such as `{assembly}-ncbiRefSeq`, naming in each lane the track whose id has that lane's genome, or any of its aliases, written there. Plain ids outrank `{assembly}` entries, and an earlier entry outranks a later one. A lane whose genome no entry names draws the session's best-ranked annotation track for it, which on a config holding several gene sets per genome is whichever is declared first |
 | <span id="slot-legend">**legend**</span><br>[Legend](../legend) | The color key: the anchor lane's drawn gene colors, and what `ribbons.encoding.color` paints — the strand colors, the identity ramp, or a column's labels. Derived from what is on screen, so an `encoding.color` resolving to one color and a ribbon scale painting nothing key nothing. |
 | <span id="slot-showlaneticks">**showLaneTicks**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | draw each lane's coordinate ticks, at one interval shared by every lane. Equal spacing between two lanes means equal bp-per-pixel; a lane whose ticks crowd together is zoomed out. With this off, the header's span and multiple are the only scale shown |
-| <span id="slot-text">**text**</span><br>[`featureField`](/docs/config_guides/slot_types#featurefield) = <code>''</code> | The feature field, or jexl expression over `feature`, each lane's gene labels print; unset, the gene's name, else its ID. |
+| <span id="slot-labels">**labels**</span><br>[MultiWayGeneLabels sub-schema](#slot-labelsname) | The gene names each lane prints in a row under its genes, dropping a name where its neighbours leave it no room. The display's top-level `labels` are its genes', as its `encoding` is. |
+| <span id="slot-labelsname">**labels.name**</span><br>[FeatureNameLabel](../featurenamelabel) | Each gene's name, a [](/docs/config/featurenamelabel) object. |
 | <span id="slot-inlinelanenames">**inlineLaneNames**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | print each lane's genome name over the left end of its gene row, without its coordinates, instead of on a line above the genes. The stack then fits 12 px less per lane |
-| <span id="slot-showgenelabels">**showGeneLabels**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | print gene names in a row under each lane's genes, dropping a name where its neighbours leave it no room |
 | <span id="slot-lanelayers">**laneLayers**</span><br>[MultiWayLaneLayer](../multiwaylanelayer) | Rows of data every lane draws above its genes, each from that genome's own track: a GC or conservation bigWig per genome as bars, say |
 | <span id="slot-splitstrands">**splitStrands**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | draw each lane's genes in two rows either side of its line: the ones reading rightwards on screen above, leftwards below, so a flipped lane's genes turn over with it and a collinear block keeps one row down the stack. A lane too short for two rows draws one |
 | <span id="slot-height">**height**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>240</code> | default height for the track |
@@ -131,3 +131,6 @@ An older config may still write these. Each loads without an error, and `jbrowse
 | `jexlFilters` | moved into a current slot |
 | `drawCurves` | moved into a current slot |
 | `bridgeSkippedLanes` | ignored |
+| `text` | moved into a current slot |
+| `showGeneLabels` | moved into a current slot |
+| `utrColor` | moved into a current slot |
