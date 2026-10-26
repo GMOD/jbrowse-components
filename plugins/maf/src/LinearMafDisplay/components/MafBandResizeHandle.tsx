@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import { ResizeHandle } from '@jbrowse/core/ui'
 import { getContainingTrack } from '@jbrowse/core/util'
@@ -26,16 +26,17 @@ const useStyles = makeStyles()({
  * In fit mode (`rowHeight === 0`) the band eats into the rows area, so a drag
  * restretches every row each frame; the drag suppresses the dense letter
  * overlay, as the track-height handle does.
+ *
+ * Mounted only while its band draws. A band hidden under the pointer (a zoom
+ * onto the summary tier) sends no mouseleave, so unmounting reports inactive.
  */
 const MafBandResizeHandle = observer(function MafBandResizeHandle({
   model,
-  show,
   resize,
   top,
   onActiveChange,
 }: {
   model: LinearMafDisplayModel
-  show: boolean
   /** one drag delta; the model action reads the band's height itself */
   resize: (distance: number) => void
   top: number
@@ -50,8 +51,14 @@ const MafBandResizeHandle = observer(function MafBandResizeHandle({
   // Same flag as the track's resize handle; it lives on the track so two
   // handles share one gesture state.
   const track = getContainingTrack(model)
+  useEffect(
+    () => () => {
+      onActiveChange(false)
+    },
+    [onActiveChange],
+  )
 
-  return show ? (
+  return (
     <ResizeHandle
       onDrag={n => {
         resize(n)
@@ -81,7 +88,7 @@ const MafBandResizeHandle = observer(function MafBandResizeHandle({
       style={{ top }} // straddles the band/rows seam
       className={classes.handle}
     />
-  ) : null
+  )
 })
 
 export default MafBandResizeHandle

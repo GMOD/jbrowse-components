@@ -18,24 +18,26 @@ const MafBandHandles = observer(function MafBandHandles({
   const { topBands, coverageBandActive, conservationBandActive } = model
   return (
     <>
-      <MafBandResizeHandle
-        model={model}
-        show={coverageBandActive}
-        resize={n => {
-          model.resizeCoverageHeight(n)
-        }}
-        top={topBands.top.coverage + topBands.reserved.coverage - 4}
-        onActiveChange={onResizeActiveChange}
-      />
-      <MafBandResizeHandle
-        model={model}
-        show={conservationBandActive}
-        resize={n => {
-          model.resizeConservationHeight(n)
-        }}
-        top={topBands.top.conservation + topBands.reserved.conservation - 4}
-        onActiveChange={onResizeActiveChange}
-      />
+      {coverageBandActive ? (
+        <MafBandResizeHandle
+          model={model}
+          resize={n => {
+            model.resizeCoverageHeight(n)
+          }}
+          top={topBands.top.coverage + topBands.reserved.coverage - 4}
+          onActiveChange={onResizeActiveChange}
+        />
+      ) : null}
+      {conservationBandActive ? (
+        <MafBandResizeHandle
+          model={model}
+          resize={n => {
+            model.resizeConservationHeight(n)
+          }}
+          top={topBands.top.conservation + topBands.reserved.conservation - 4}
+          onActiveChange={onResizeActiveChange}
+        />
+      ) : null}
     </>
   )
 })
