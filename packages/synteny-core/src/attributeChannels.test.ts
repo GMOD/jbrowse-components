@@ -136,5 +136,5 @@ test('decimal text reads as its number', () => {
     Math.fround(0.01),
     Math.fround(0.2),
   ])
-  expect(attributeRanges.de).toMatchObject({ min: Math.fround(0.01) })
+  expect(attributeRanges.de).toMatchObject({ min: 0.01, max: 0.2 })
 })
