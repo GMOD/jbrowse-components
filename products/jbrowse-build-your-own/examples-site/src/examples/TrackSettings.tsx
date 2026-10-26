@@ -4,7 +4,10 @@ import {
   Toolbar,
   TrackStack,
 } from '@jbrowse/display-ui/embed'
-import { colorFieldOptions } from '@jbrowse/plugin-alignments'
+import {
+  colorFieldOptions,
+  isLinearAlignmentsDisplay,
+} from '@jbrowse/plugin-alignments'
 import { useCreateViewState } from '@jbrowse/react-linear-genome-view2'
 import { observer } from 'mobx-react'
 
@@ -59,12 +62,12 @@ const Settings = observer(function Settings({
           type="range"
           min={2}
           max={12}
-          value={display.featureHeight}
+          value={display.markHeight}
           onChange={event => {
             display.setMarkHeight(Number(event.target.value))
           }}
         />{' '}
-        {display.featureHeight}px
+        {display.markHeight}px
       </label>
     </Toolbar>
   )
@@ -97,12 +100,12 @@ const TrackSettings = observer(function TrackSettings() {
   }
   const { session } = state
   const { view } = session
-  const display = view.getTrack('na12878_exome')?.activeDisplay as
-    | LinearAlignmentsDisplayModel
-    | undefined
+  const display = view.getTrack('na12878_exome')?.activeDisplay
   return (
     <EmbedProvider session={session}>
-      {display ? <Settings display={display} /> : null}
+      {isLinearAlignmentsDisplay(display) ? (
+        <Settings display={display} />
+      ) : null}
       <TrackStack view={view}>
         <RegionSeams view={view} />
       </TrackStack>

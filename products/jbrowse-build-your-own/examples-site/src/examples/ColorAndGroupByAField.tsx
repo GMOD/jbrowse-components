@@ -4,10 +4,10 @@ import {
   Toolbar,
   TrackStack,
 } from '@jbrowse/display-ui/embed'
+import { isLinearBasicDisplay } from '@jbrowse/plugin-canvas'
 import { useCreateViewState } from '@jbrowse/react-linear-genome-view2'
 import { observer } from 'mobx-react'
 
-import type { LinearBasicDisplayModel } from '@jbrowse/plugin-canvas'
 import type { LinearGenomeViewModel } from '@jbrowse/react-linear-genome-view2'
 
 const fields = ['gene_biotype', 'strand', 'source']
@@ -50,10 +50,8 @@ const Channels = observer(function Channels({
 }: {
   view: LinearGenomeViewModel
 }) {
-  const display = view.getTrack('genes')?.activeDisplay as
-    | LinearBasicDisplayModel
-    | undefined
-  if (!display) {
+  const display = view.getTrack('genes')?.activeDisplay
+  if (!isLinearBasicDisplay(display)) {
     return null
   }
   return (

@@ -46,6 +46,7 @@ export type {
   LinearBasicDisplayModel,
   LinearCanvasBaseDisplayModel,
 } from './LinearBasicDisplay/index.ts'
+export { isLinearBasicDisplay } from './LinearBasicDisplay/isLinearBasicDisplay.ts'
 
 // Types in the inferred shape of the exported display models: unreachable from
 // this entry, tsc names them by source path in consumers' .d.ts.
