@@ -230,6 +230,17 @@ describe('rowSpanAtY', () => {
     expect(rowSpanAtY(makeModel(), 55, 55)).toEqual({ startRow: 1, endRow: 2 })
   })
 
+  test('below a pixel per row each edge is the row the hover names there', () => {
+    const model = makeModel({ effectiveRowHeight: 0.25 })
+    for (const y of [50, 61, 77]) {
+      const { rowIndex } = mafPointerAt(model, 0, y)
+      expect(rowSpanAtY(model, y, y)).toEqual({
+        startRow: rowIndex,
+        endRow: rowIndex + 1,
+      })
+    }
+  })
+
   test('a zero-height drag still selects the row it lands on', () => {
     expect(rowSpanAtY(makeModel(), 52, 52)).toEqual({ startRow: 0, endRow: 1 })
   })
