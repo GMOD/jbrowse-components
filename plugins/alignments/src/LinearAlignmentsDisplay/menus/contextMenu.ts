@@ -15,6 +15,7 @@ import SwapVertIcon from '@mui/icons-material/SwapVert'
 
 import {
   readNameOf,
+  entriesOn,
   tagEntries,
   tagFiltersOf,
 } from '../../shared/alignmentsFilter.ts'
@@ -208,7 +209,12 @@ function getFilterSubMenu(self: FilterModel, feat: Feature): MenuItem[] {
       label: 'Clear read/tag filters',
       icon: FilterAltOffIcon,
       onClick: () => {
-        self.setFilterFields({ name: [], ...tagEntries(predicates, []) })
+        self.setFilterFields({
+          name: entriesOn(predicates, 'name').filter(
+            p => p.equal === undefined,
+          ),
+          ...tagEntries(predicates, []),
+        })
       },
     })
   }

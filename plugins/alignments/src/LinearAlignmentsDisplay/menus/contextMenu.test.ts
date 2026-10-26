@@ -565,6 +565,24 @@ test('clear leaves the read categories alone', () => {
   ])
 })
 
+test('clear keeps the name and tag lists the rows did not write', () => {
+  const model = makeModel({
+    contextMenuFeature: makeFeature({ name: 'readABC' }),
+    written: [
+      { field: 'name', equal: 'readABC' },
+      { field: 'name', oneOf: ['r1', 'r2'] },
+      { field: 'tags.HP', oneOf: ['1', '2'] },
+    ],
+  })
+  findSubMenu(run(model), 'Filter')
+    .find(i => i.label === 'Clear read/tag filters')!
+    .onClick()
+  expect(model.written).toEqual([
+    { field: 'name', oneOf: ['r1', 'r2'] },
+    { field: 'tags.HP', oneOf: ['1', '2'] },
+  ])
+})
+
 test('no clear item without an active read/tag filter', () => {
   const model = makeModel({
     contextMenuFeature: makeFeature({ name: 'readABC' }),
