@@ -28,17 +28,6 @@ const LCT_LOC = 'chr2:134,000,000-137,150,000'
 // process before shrinking the window.
 const LCT_WIDE_LOC = LCT_LOC
 
-const DECODE_RECOMB_TRACK = {
-  type: 'QuantitativeTrack',
-  trackId: 'decode_recomb',
-  name: 'deCODE recombination rate (cM/Mb, pedigree)',
-  assemblyNames: ['hg38'],
-  adapter: {
-    type: 'BigWigAdapter',
-    uri: 'https://hgdownload.soe.ucsc.edu/gbdb/hg38/recombRate/recombAvg.bw',
-  },
-}
-
 const LCT_HIGHLIGHT = [
   {
     refName: 'chr2',
@@ -142,62 +131,21 @@ const agKaryotypeTrack = (
   }
 }
 
-// Per-site Weir & Cockerham Fst, the European panel against the other 2001
-// unrelated samples, from build_lct_ld.sh, which prints rs4988235's rank. Keep
-// it per site: 10 kb windows average the swept haplotype into the flanks.
-const LCT_FST_TRACK = {
-  type: 'QuantitativeTrack',
-  trackId: 'kgp_lct_fst',
-  name: 'Fst, European panel vs the other 1000 Genomes samples (Weir & Cockerham)',
-  assemblyNames: ['hg38'],
-  adapter: {
-    type: 'BigWigAdapter',
-    bigWigLocation: {
-      uri: 'https://jbrowse.org/demos/popgen/lct_1kg38_chr2_fst_eur_vs_rest.bw',
-      locationType: 'UriLocation',
-    },
-    // A zoom bin averages ninety variants into background and drops the peak.
-    resolutionMultiplier: 0.001,
-  },
-}
-
-const lctPanelTrack = (trackId: string, name: string, file: string) => ({
-  type: 'LDTrack',
-  trackId,
-  name,
-  assemblyNames: ['hg38'],
-  adapter: {
-    type: 'PlinkLDTabixAdapter',
-    uri: `https://jbrowse.org/demos/popgen/${file}`,
-  },
-  displays: [
-    {
-      type: 'LDTrackDisplay',
-      legend: { show: true },
-      height: 330,
-      variantLayout: 'genomic',
-    },
-  ],
-})
-
 export const ldSpecs: ScreenshotSpec[] = [
+  // Per-site Weir & Cockerham Fst, the European panel against the other 2001
+  // unrelated samples, from build_lct_ld.sh, which prints rs4988235's rank.
+  // Keep it per site: 10 kb windows average the swept haplotype into the
+  // flanks, and the page's resolutionMultiplier keeps a zoom bin from
+  // averaging ninety variants into background.
   {
     mode: 'url',
     name: 'ld/lct_pooled_vs_panel',
     url: sessionSpec(HG38_HUB, {
       sessionTracks: [
-        lctPanelTrack(
-          'kgp_lct_pooled',
-          'All 1000 Genomes populations pooled (r²)',
-          'lct_1kg38_chr2_pooled.ld.gz',
-        ),
-        lctPanelTrack(
-          'kgp_lct_panel',
-          'European panel only, where the sweep happened (r²)',
-          'lct_1kg38_chr2_eur.ld.gz',
-        ),
-        LCT_FST_TRACK,
-        DECODE_RECOMB_TRACK,
+        pageTrack(LD_HUMAN_DOC, 'kgp_lct_pooled'),
+        pageTrack(LD_HUMAN_DOC, 'kgp_lct_ld'),
+        pageTrack(LD_HUMAN_DOC, 'kgp_lct_fst'),
+        pageTrack(LD_HUMAN_DOC, 'decode_recomb'),
       ],
       views: [
         {
@@ -234,8 +182,8 @@ export const ldSpecs: ScreenshotSpec[] = [
             // triangle with itself. The 100 ceiling clips two hotspots on
             // purpose: autoscaled, the desert matches the quiet flanks. The
             // map matches the block's right edge only; the left one decays.
-            // DECODE_RECOMB_TRACK exists for its name: the hub's label
-            // "Recomb. deCODE Avg" reads as a setting.
+            // The page's own deCODE track, since the hub's label "Recomb.
+            // deCODE Avg" reads as a setting.
             {
               trackId: 'decode_recomb',
               encoding: { y: { scale: { domainMin: 0, domainMax: 100 } } },
@@ -243,7 +191,7 @@ export const ldSpecs: ScreenshotSpec[] = [
             },
             // 200 cuts the panel block's apex and keeps both of its edges.
             { trackId: 'kgp_lct_pooled', height: 200 },
-            { trackId: 'kgp_lct_panel', height: 200 },
+            { trackId: 'kgp_lct_ld', height: 200 },
           ],
         },
       ],
@@ -274,24 +222,10 @@ export const ldSpecs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'ld/lct_fst_scan',
     url: sessionSpec(HG38_HUB, {
-      sessionTracks: [
-        {
-          type: 'QuantitativeTrack',
-          trackId: 'kgp_lct_fst_scan',
-          name: 'Fst, European panel vs the other 1000 Genomes samples, across 40 Mb of chr2',
-          assemblyNames: ['hg38'],
-          adapter: {
-            type: 'BigWigAdapter',
-            bigWigLocation: {
-              uri: 'https://jbrowse.org/demos/popgen/lct_1kg38_chr2_fst_eur_vs_rest_scan.bw',
-              locationType: 'UriLocation',
-            },
-            // At ~27 kb/px the 40,960 bp zoom bin's max lifts the background
-            // to within 0.14 of the peak.
-            resolutionMultiplier: 0.001,
-          },
-        },
-      ],
+      // The page's resolutionMultiplier matters here: at ~27 kb/px the
+      // 40,960 bp zoom bin's max lifts the background to within 0.14 of the
+      // peak.
+      sessionTracks: [pageTrack(LD_HUMAN_DOC, 'kgp_lct_fst_scan')],
       views: [
         {
           type: 'LinearGenomeView',
@@ -450,9 +384,9 @@ export const ldSpecs: ScreenshotSpec[] = [
   // One row per haplotype under the r² triangle computed from them.
   //
   // Clustering makes the block: which allele is ALT flips site to site, so
-  // adapter order draws plaid at any row count. Don't group by population;
-  // grouping leaves each band in adapter order, and `rowColor` already shows
-  // population.
+  // adapter order draws plaid at any row count. Don't group or color rows by
+  // population: the figure's story is the genotype cluster, and a population
+  // axis reads as "group X carries the allele".
   //
   // rs4988235 (MAF 0.30) falls below the 0.35 filter, so the ClinVar lane marks
   // it independently of the columns.
@@ -506,9 +440,6 @@ export const ldSpecs: ScreenshotSpec[] = [
     // The dendrogram renders only after the clustering RPC lands.
     readySelector: '[data-testid="tree_sidebar_dendrogram"]',
     readyTimeout: 300000,
-    // The app warns, correctly, that the VCF lacks most of the samples table's
-    // rows, and the toast covers the matrix.
-    hideSelectors: ['.MuiSnackbar-root'],
     viewportHeight: 1224,
     // Matrix columns aren't genomic, so both cluster pills share one x.
     annotations: [

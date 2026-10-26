@@ -97,6 +97,21 @@ VCF uses `chr1`, so pass the alias file and both resolve.
 }
 ```
 
+The figures put NCBI's MANE transcripts above the matrix, one per gene, labelled
+by gene symbol:
+
+```json addtrack
+{
+  "trackId": "MANE.GRCh38.v1.4.refseq",
+  "name": "MANE 1.4 (w/ RefSeq IDs)",
+  "uri": "https://ftp.ncbi.nlm.nih.gov/refseq/MANE/trackhub/data/release_1.4/MANE.GRCh38.v1.4.refseq.bb",
+  "assemblyNames": ["hg38"],
+  "displayDefaults": {
+    "labels": { "description": "geneSymbol" }
+  }
+}
+```
+
 The cohort is a `VariantTrack` whose adapter reads the clinical TSV, shown in
 the multi-sample matrix display:
 
@@ -183,7 +198,7 @@ gutter.
 
 We open the matrix over _CDH1_'s exons (see [](/docs/user_guides/gene_track)):
 
-- Right-click _CDH1_ in the gene track.
+- Right-click _CDH1_ in the MANE track.
 - Choose **Collapse introns**, then **Replace current view**.
 
 <Video src="/media/tcga/mutations_collapse_introns.mp4" caption="The CDH1 transcript reshaped to its exons from the gene's menu, and the tumor matrix redrawn over it." />

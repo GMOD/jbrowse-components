@@ -223,11 +223,84 @@ among the many around them:
 }
 ```
 
+The same Fst run over 40 Mb of chr2, from
+[`build_lct_fst_scan.sh`](#reproduce-it-end-to-end), loads the same way:
+
+```json addtrack
+{
+  "type": "QuantitativeTrack",
+  "trackId": "kgp_lct_fst_scan",
+  "name": "Fst, European panel vs the other 1000 Genomes samples, across 40 Mb of chr2",
+  "assemblyNames": ["hg38"],
+  "adapter": {
+    "type": "BigWigAdapter",
+    "uri": "https://jbrowse.org/demos/popgen/lct_1kg38_chr2_fst_eur_vs_rest_scan.bw",
+    "resolutionMultiplier": 0.001
+  }
+}
+```
+
 ## The LCT block against Fst and the deCODE map
 
-Open the region the slice covers with that Fst track, the hub's **Recomb Rate -
-Recomb. deCODE Avg** track, and two copies of the `LDTrack` above, the second
-pointed at `https://jbrowse.org/demos/popgen/lct_1kg38_chr2_pooled.ld.gz`:
+We'll compare the triangle with two maps it does not depend on. The first is the
+gene track, NCBI's curated RefSeq models as UCSC serves them:
+
+```json addtrack
+{
+  "type": "FeatureTrack",
+  "trackId": "hg38-ncbiRefSeqCurated",
+  "name": "NCBI RefSeq - RefSeq Curated",
+  "assemblyNames": ["hg38"],
+  "adapter": {
+    "type": "Gff3TabixAdapter",
+    "gffGzLocation": {
+      "uri": "https://jbrowse.org/ucsc/hg38/ncbiRefSeqCurated.gff.gz"
+    },
+    "index": {
+      "indexType": "CSI",
+      "location": {
+        "uri": "https://jbrowse.org/ucsc/hg38/ncbiRefSeqCurated.gff.gz.csi"
+      }
+    }
+  }
+}
+```
+
+The second is deCODE's recombination rate, counted off crossovers in sequenced
+families:
+
+```json addtrack
+{
+  "trackId": "decode_recomb",
+  "name": "deCODE recombination rate (cM/Mb, pedigree)",
+  "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/recombRate/recombAvg.bw",
+  "assemblyNames": ["hg38"]
+}
+```
+
+The pooled triangle is a second `LDTrack` over the table PLINK wrote for
+`pooled.snvs.vcf.gz`:
+
+```json addtrack
+{
+  "type": "LDTrack",
+  "trackId": "kgp_lct_pooled",
+  "name": "All 1000 Genomes populations pooled (r²)",
+  "assemblyNames": ["hg38"],
+  "adapter": {
+    "type": "PlinkLDTabixAdapter",
+    "uri": "https://jbrowse.org/demos/popgen/lct_1kg38_chr2_pooled.ld.gz"
+  },
+  "displayDefaults": {
+    "variantLayout": "genomic",
+    "legend": { "show": true },
+    "height": 360
+  }
+}
+```
+
+Open the region the slice covers with the gene, Fst and deCODE tracks and both
+triangles:
 
 <Figure src="/img/ld/lct_sweep_two_scales.png" caption="Top: Fst per variant across chr2. Bottom: two LD triangles at one locus, differing only in which samples went in." links="Wide scan=ld/lct_fst_scan,The two triangles=ld/lct_pooled_vs_panel"/>
 
@@ -244,9 +317,7 @@ pointed at `https://jbrowse.org/demos/popgen/lct_1kg38_chr2_pooled.ld.gz`:
 
 The triangle summarises haplotypes, the variants on each chromosome along the
 block. A track over the multi-population VCF draws them below it in equal-width
-columns, one row per chromosome, with `rowColor` as a color scale on each row's
-label bar. For your own cohort, write a samples TSV with `name` and `population`
-columns and point `samplesTsvLocation` at it:
+columns, one row per chromosome:
 
 ```json addtrack loc=chr2:134,400,000-136,900,000
 {
@@ -254,24 +325,30 @@ columns and point `samplesTsvLocation` at it:
   "trackId": "kgp_lct_haplotypes",
   "name": "1000 Genomes haplotypes across LCT (one row per haplotype)",
   "assemblyNames": ["hg38"],
-  "adapter": {
-    "type": "VcfTabixAdapter",
-    "uri": "https://jbrowse.org/demos/popgen/lct_1kg38_chr2_6pop.vcf.gz",
-    "samplesTsvLocation": {
-      "uri": "https://jbrowse.org/genomes/hg19/1000g.sorted.csv.gz"
-    }
-  },
-  "displays": [
-    {
-      "type": "LinearMultiSampleVariantDisplay",
-      "variantLayout": "columns",
-      "unit": "haplotype",
-      "rowColor": "population",
-      "filter": [{ "field": "minorAlleleFrequency", "gte": 0.35 }],
-      "forceLoad": true,
-      "height": 700
-    }
-  ]
+  "uri": "https://jbrowse.org/demos/popgen/lct_1kg38_chr2_6pop.vcf.gz",
+  "displayDefaults": {
+    "variantLayout": "columns",
+    "unit": "haplotype",
+    "filter": [{ "field": "minorAlleleFrequency", "gte": 0.35 }],
+    "forceLoad": true,
+    "height": 700
+  }
+}
+```
+
+The lactase-persistence variant, `rs4988235`, falls below the matrix's frequency
+floor, so the figure marks it with UCSC's ClinVar track, filtered to that
+record:
+
+```json addtrack
+{
+  "trackId": "hg38-clinvarMain",
+  "name": "ClinVar Variants - ClinVar SNVs",
+  "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/bbi/clinvar/clinvarMain.bb",
+  "assemblyNames": ["hg38"],
+  "displayDefaults": {
+    "filter": ["jexl:feature.phenotypeList=='LACTASE PERSISTENCE'"]
+  }
 }
 ```
 
@@ -284,11 +361,8 @@ Cluster the rows by genotype two ways:
 
 <Figure src="/img/ld/lct_haploblock.png" caption="An LD triangle over the haplotypes it summarises, one row per chromosome, clustered by genotype."/>
 
-- In file order the matrix is a plaid. Clustering puts near-identical
-  chromosomes together, so a swept haplotype forms one slab.
-- The ClinVar track marks `rs4988235`, which falls below the frequency floor of
-  the matrix. It is the hub's ClinVar track filtered with
-  `jexl:feature.phenotypeList=='LACTASE PERSISTENCE'`.
+In file order the matrix is a plaid. Clustering puts near-identical chromosomes
+together, so a swept haplotype forms one slab.
 
 ### Subsampling populations for the haplotype matrix {#rows-have-to-be-worth-a-pixel}
 

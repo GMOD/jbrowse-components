@@ -77,6 +77,21 @@ BED uses `chr1`, so pass the alias file to map one onto the other.
 }
 ```
 
+The gene-level figures put NCBI's MANE transcripts above the segments, one per
+gene, labelled by gene symbol:
+
+```json addtrack
+{
+  "trackId": "MANE.GRCh38.v1.4.refseq",
+  "name": "MANE 1.4 (w/ RefSeq IDs)",
+  "uri": "https://ftp.ncbi.nlm.nih.gov/refseq/MANE/trackhub/data/release_1.4/MANE.GRCh38.v1.4.refseq.bb",
+  "assemblyNames": ["hg38"],
+  "displayDefaults": {
+    "labels": { "description": "geneSymbol" }
+  }
+}
+```
+
 The segments themselves are a `FeatureTrack` whose
 `LinearMultiRowFeatureDisplay` holds the row and color settings:
 
