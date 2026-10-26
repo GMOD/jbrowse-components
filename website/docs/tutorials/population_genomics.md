@@ -182,18 +182,25 @@ maps them to the bare `2L` the scans use:
 }
 ```
 
-The gene track is UCSC's RefSeq annotation of dm6:
+The gene track is UCSC's curated RefSeq annotation of dm6:
 
 ```json addtrack
 {
   "type": "FeatureTrack",
-  "trackId": "dm6_ncbiRefSeq",
-  "name": "NCBI RefSeq genes",
+  "trackId": "dm6-ncbiRefSeqCurated",
+  "name": "NCBI RefSeq - RefSeq Curated",
   "assemblyNames": ["dm6"],
   "adapter": {
     "type": "Gff3TabixAdapter",
-    "uri": "https://jbrowse.org/ucsc/dm6/ncbiRefSeq.gff.gz",
-    "csi": true
+    "gffGzLocation": {
+      "uri": "https://jbrowse.org/ucsc/dm6/ncbiRefSeqCurated.gff.gz"
+    },
+    "index": {
+      "indexType": "CSI",
+      "location": {
+        "uri": "https://jbrowse.org/ucsc/dm6/ncbiRefSeqCurated.gff.gz.csi"
+      }
+    }
   }
 }
 ```

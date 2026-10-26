@@ -174,7 +174,8 @@ beside it:
 
 Each genome also gets a gene track, which the
 [close-up](#what-an-anchor-looks-like-up-close) below turns to **Show only
-genes**. Swap the `uri` for your own GFF3, bgzipped and tabix-indexed
+genes**. The figures use each genome's **NCBI RefSeq - RefSeq All** track from
+its GenArk hub; swap the `uri` for your own GFF3, bgzipped and tabix-indexed
 ([prep](/docs/quickstart_web)):
 
 ```json addtrack

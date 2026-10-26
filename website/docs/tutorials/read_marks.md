@@ -75,6 +75,29 @@ must be the GRCh38 sequence the reads were aligned to.
 }
 ```
 
+The figures also show NCBI's RefSeq genes as a track:
+
+```json addtrack
+{
+  "type": "FeatureTrack",
+  "trackId": "ncbi_refseq_hg38",
+  "name": "NCBI RefSeq genes",
+  "assemblyNames": ["hg38"],
+  "adapter": {
+    "type": "Gff3TabixAdapter",
+    "gffGzLocation": {
+      "uri": "https://jbrowse.org/ucsc/hg38/ncbiRefSeq.gff.gz"
+    },
+    "index": {
+      "indexType": "CSI",
+      "location": {
+        "uri": "https://jbrowse.org/ucsc/hg38/ncbiRefSeq.gff.gz.csi"
+      }
+    }
+  }
+}
+```
+
 ## Plotting read depth as bars over the EFCAB8 deletion
 
 The window covers 30 kb of an _EFCAB8_ intron on chromosome 20, where the

@@ -127,6 +127,29 @@ that assembly first.
 }
 ```
 
+The figures also show NCBI's RefSeq genes as a track:
+
+```json addtrack
+{
+  "type": "FeatureTrack",
+  "trackId": "ncbi_refseq_hg38",
+  "name": "NCBI RefSeq genes",
+  "assemblyNames": ["hg38"],
+  "adapter": {
+    "type": "Gff3TabixAdapter",
+    "gffGzLocation": {
+      "uri": "https://jbrowse.org/ucsc/hg38/ncbiRefSeq.gff.gz"
+    },
+    "index": {
+      "indexType": "CSI",
+      "location": {
+        "uri": "https://jbrowse.org/ucsc/hg38/ncbiRefSeq.gff.gz.csi"
+      }
+    }
+  }
+}
+```
+
 ENCODE releases each Iso-Seq alignment unsorted. Sort each run, merge them into
 one BAM and index it:
 

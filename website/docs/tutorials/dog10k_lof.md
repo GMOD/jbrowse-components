@@ -88,6 +88,61 @@ GenBank accessions:
 }
 ```
 
+The figures also show NCBI's RefSeq genes and UCSC's CpG islands:
+
+```json addtrack
+{
+  "type": "FeatureTrack",
+  "trackId": "canFam4_ncbi_refseq",
+  "name": "NCBI RefSeq genes (canFam4)",
+  "assemblyNames": ["UU_Cfam_GSD_1.0"],
+  "adapter": {
+    "type": "Gff3TabixAdapter",
+    "gffGzLocation": {
+      "uri": "https://jbrowse.org/ucsc/canFam4/ncbiRefSeq.gff.gz"
+    },
+    "index": {
+      "indexType": "CSI",
+      "location": {
+        "uri": "https://jbrowse.org/ucsc/canFam4/ncbiRefSeq.gff.gz.csi"
+      }
+    }
+  }
+}
+```
+
+```json addtrack
+{
+  "type": "FeatureTrack",
+  "trackId": "dog10k_cyp1a2_cpg",
+  "name": "CpG islands (UCSC cpgIslandExt)",
+  "assemblyNames": ["UU_Cfam_GSD_1.0"],
+  "adapter": {
+    "type": "BedTabixAdapter",
+    "disableGeneHeuristic": true,
+    "columnNames": [
+      "chrom",
+      "chromStart",
+      "chromEnd",
+      "name",
+      "score",
+      "strand",
+      "percentGC",
+      "obsExpCpG",
+      "length"
+    ],
+    "uri": "https://jbrowse.org/code/jb2/main/test_data/dog10k/dog10k_cyp1a2_cpg.bed.gz"
+  },
+  "displayDefaults": {
+    "encoding": {
+      "color": {
+        "value": "#2e7d32"
+      }
+    }
+  }
+}
+```
+
 ## The CYP1A2 nonsense variant
 
 _CYP1A2_ is a drug-metabolizing cytochrome P450 in which dogs have a nonsense

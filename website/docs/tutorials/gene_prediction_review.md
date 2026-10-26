@@ -80,6 +80,17 @@ the assembly's refNames.
 }
 ```
 
+The figures show GENCODE's annotation as a track:
+
+```json addtrack
+{
+  "trackId": "gencode_47",
+  "name": "Gencode v47",
+  "uri": "https://jbrowse.org/genomes/GRCh38/gencode/gencode.v47.chr_patch_hapl_scaff.annotation.sorted.gff3.gz",
+  "assemblyNames": ["hg38"]
+}
+```
+
 ```json addtrack loc=chr22:49,987,402-50,067,759
 {
   "type": "FeatureTrack",

@@ -120,6 +120,28 @@ names the marker positions follow:
 }
 ```
 
+The figures also show NCBI's RefSeq genes as a track:
+
+```json addtrack
+{
+  "type": "FeatureTrack",
+  "trackId": "mm10_ncbi_refseq",
+  "name": "NCBI RefSeq genes (mm10)",
+  "assemblyNames": ["mm10"],
+  "adapter": {
+    "type": "GtfTabixAdapter",
+    "gtfGzLocation": {
+      "uri": "https://jbrowse.org/demos/bxd/mm10.ncbiRefSeq.sorted.gtf.gz"
+    },
+    "index": {
+      "location": {
+        "uri": "https://jbrowse.org/demos/bxd/mm10.ncbiRefSeq.sorted.gtf.gz.tbi"
+      }
+    }
+  }
+}
+```
+
 The painting track is a `FeatureTrack` with a
 [`LinearMultiRowFeatureDisplay`](/docs/user_guides/multirow_feature_track). In
 [grammar-of-graphics](/docs/config_guides/mark_display) terms, `rows` assigns

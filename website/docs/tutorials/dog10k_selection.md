@@ -87,6 +87,29 @@ GenBank accessions:
 }
 ```
 
+The figures also show NCBI's RefSeq genes as a track:
+
+```json addtrack
+{
+  "type": "FeatureTrack",
+  "trackId": "canFam4_ncbi_refseq",
+  "name": "NCBI RefSeq genes (canFam4)",
+  "assemblyNames": ["UU_Cfam_GSD_1.0"],
+  "adapter": {
+    "type": "Gff3TabixAdapter",
+    "gffGzLocation": {
+      "uri": "https://jbrowse.org/ucsc/canFam4/ncbiRefSeq.gff.gz"
+    },
+    "index": {
+      "indexType": "CSI",
+      "location": {
+        "uri": "https://jbrowse.org/ucsc/canFam4/ncbiRefSeq.gff.gz.csi"
+      }
+    }
+  }
+}
+```
+
 ## Scanning the genome for toy-versus-giant Fst peaks
 
 Body size is the trait, so the two groups are the breeds at its extremes: every

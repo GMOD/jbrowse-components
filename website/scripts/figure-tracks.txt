@@ -7,22 +7,15 @@
 # the menu label that adds it.
 tutorials/agent_synteny.md 2
 tutorials/allvsall_synteny.md 4
-tutorials/analyze_trio.md 1
 tutorials/bisulfite.md 3
-tutorials/bxd_qtl.md 2
 tutorials/cancer_sv.md 9
-tutorials/dog10k_lof.md 3
-tutorials/dog10k_selection.md 2
 tutorials/dog10k_svs.md 4
-tutorials/gene_prediction_review.md 1
 tutorials/genomes_proteins.md 4
 tutorials/genomes_synteny.md 10
 tutorials/hg002_haplotypes.md 3
 tutorials/hic_structural_variants.md 6
-tutorials/k562_fusions.md 4
 tutorials/ld_mosquitoes.md 3
 tutorials/mappability_qc.md 11
-tutorials/mcscan_synteny_grape_peach.md 4
 tutorials/orthofinder_synteny.md 6
 tutorials/pangenome_cactus.md 5
 tutorials/pangenome_cattle.md 7
@@ -32,12 +25,7 @@ tutorials/pangenome_hprc_repeats.md 6
 tutorials/pangenome_hprc.md 12
 tutorials/pangenome_mouse.md 4
 tutorials/pangenome_prepare_graph.md 6
-tutorials/population_cnv.md 3
-tutorials/population_genomics.md 1
-tutorials/read_marks.md 2
 tutorials/rnaseq.md 5
-tutorials/scatac_pseudobulk.md 1
 tutorials/scrna_pseudobulk.md 3
-tutorials/sv_multisamples.md 1
 tutorials/sv_visualization_cgiab.md 4
 tutorials/synteny_visualization.md 8

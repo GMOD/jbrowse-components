@@ -88,6 +88,34 @@ The copy-number bins are on GRCh38, so the tracks attach to hg38:
 }
 ```
 
+The figures also show NCBI's RefSeq genes. The locus figures read NCBI's own
+GFF:
+
+```json addtrack
+{
+  "trackId": "ncbi_refseq_109_hg38_latest",
+  "name": "NCBI RefSeq (GFF3Tabix)",
+  "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/ncbi_refseq/GRCh38_latest_genomic.sort.gff.gz",
+  "assemblyNames": ["hg38"]
+}
+```
+
+The whole-panel figure reads UCSC's copy:
+
+```json addtrack
+{
+  "trackId": "ncbi_refseq_hg38",
+  "name": "NCBI RefSeq genes",
+  "type": "FeatureTrack",
+  "assemblyNames": ["hg38"],
+  "adapter": {
+    "type": "Gff3TabixAdapter",
+    "uri": "https://jbrowse.org/ucsc/hg38/ncbiRefSeq.gff.gz",
+    "csi": true
+  }
+}
+```
+
 ## Load the panel as one heatmap track
 
 [QuicK-mer2](https://github.com/KiddLab/QuicK-mer2) counts k-mers that occur

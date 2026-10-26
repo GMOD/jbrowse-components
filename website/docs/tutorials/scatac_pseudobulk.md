@@ -134,6 +134,17 @@ draws empty unless the assembly has a name-alias table.
 }
 ```
 
+The figures also show NCBI's RefSeq genes as a track:
+
+```json addtrack
+{
+  "trackId": "ncbi_refseq_109_hg38_latest",
+  "name": "NCBI RefSeq (GFF3Tabix)",
+  "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/ncbi_refseq/GRCh38_latest_genomic.sort.gff.gz",
+  "assemblyNames": ["hg38"]
+}
+```
+
 ## Loading the BigWigs as a MultiWiggle track
 
 All the per-cell-type BigWigs go into one `MultiQuantitativeTrack` whose

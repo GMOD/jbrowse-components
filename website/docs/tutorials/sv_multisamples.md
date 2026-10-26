@@ -75,6 +75,17 @@ sequence the reads were aligned to, with the chromosome names the VCF uses.
 }
 ```
 
+The figures also show NCBI's RefSeq genes as a track:
+
+```json addtrack
+{
+  "trackId": "ncbi_refseq_109_hg38",
+  "name": "NCBI RefSeq analysis set (GFF3Tabix)",
+  "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/ncbi_refseq/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz",
+  "assemblyNames": ["hg38"]
+}
+```
+
 We'll add the callset as a variant track. Swap `uri` for your own VCF, which
 needs per-sample genotype columns and an index beside it:
 
