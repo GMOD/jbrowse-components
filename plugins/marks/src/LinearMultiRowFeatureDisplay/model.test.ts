@@ -206,21 +206,21 @@ test("a row's color paints its blocks while no mark or display color does", () =
 
 const WIDE = { ...REGION, end: 8_000_000 }
 
-function scanned(answers: (() => Promise<unknown>)[]) {
+function scanned(
+  answers: (() => Promise<unknown>)[],
+  config: Record<string, unknown> = {},
+) {
   const asked: unknown[] = []
-  const env = createTestEnvironment(
-    {},
-    {
-      region: WIDE,
-      rpcCall: (_sessionId, method, args) => {
-        if (method === 'MarkScanPlotFields') {
-          asked.push((args as { regions: unknown }).regions)
-          return answers[Math.min(asked.length, answers.length) - 1]!()
-        }
-        return new Promise(() => {})
-      },
+  const env = createTestEnvironment(config, {
+    region: WIDE,
+    rpcCall: (_sessionId, method, args) => {
+      if (method === 'MarkScanPlotFields') {
+        asked.push((args as { regions: unknown }).regions)
+        return answers[Math.min(asked.length, answers.length) - 1]!()
+      }
+      return new Promise(() => {})
     },
-  ).createDisplay()
+  }).createDisplay()
   return { ...env, asked }
 }
 
@@ -264,4 +264,39 @@ test("a failed scan is the display's error, and a retry scans again", async () =
   })
   expect(display.error).toBeUndefined()
   expect(asked).toHaveLength(2)
+})
+
+const DECLARED = { marks: RECT_MARKS, rows: 'name' }
+
+test("a declared plot whose first window holds no features offers the next window's fields", async () => {
+  const { display, view, asked } = scanned([NO_FEATURES, REPEATS], DECLARED)
+  await waitFor(() => {
+    expect(asked).toHaveLength(1)
+  })
+  await new Promise(resolve => setTimeout(resolve, 0))
+  expect(display.attributes).toEqual([])
+  view.setNewView(1, 1_000_000)
+  await waitFor(() => {
+    expect(display.attributes).toEqual(['name', 'repClass'])
+  })
+  expect(labels(subMenu(display.trackMenuItems(), 'One row per...'))).toContain(
+    'repClass',
+  )
+  expect(display.rowsField).toBe('name')
+})
+
+test('a declared plot draws on through a failed scan, and the next window scans again', async () => {
+  const { display, view, asked } = scanned(
+    [() => Promise.reject(new Error('network down')), REPEATS],
+    DECLARED,
+  )
+  await waitFor(() => {
+    expect(asked).toHaveLength(1)
+  })
+  await new Promise(resolve => setTimeout(resolve, 0))
+  expect(display.error).toBeUndefined()
+  view.setNewView(1, 1_000_000)
+  await waitFor(() => {
+    expect(display.attributes).toEqual(['name', 'repClass'])
+  })
 })

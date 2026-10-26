@@ -5,8 +5,7 @@ import { STRAND_FIELD } from '@jbrowse/core/util/categoricalField'
 import { isJexl } from '@jbrowse/core/util/jexlStrings'
 import ColorWritesMixin from '@jbrowse/display-kit/ColorWritesMixin'
 import SolidColorDialog from '@jbrowse/display-kit/SolidColorDialog'
-import { addDisposer, isAlive, types } from '@jbrowse/mobx-state-tree'
-import { when } from 'mobx'
+import { types } from '@jbrowse/mobx-state-tree'
 
 import { stateModelFactory as markStateModelFactory } from '../LinearMarkDisplay/model.ts'
 import { multiRowMenuItems } from './multiRowMenus.ts'
@@ -60,6 +59,12 @@ export function stateModelFactory(
        */
       get attributes(): readonly string[] {
         return self.plotFields?.attributes ?? []
+      },
+      /**
+       * #getter
+       */
+      get menusOfferPlotFields() {
+        return true
       },
       /**
        * #getter
@@ -141,21 +146,6 @@ export function stateModelFactory(
             handleClose,
           },
         ])
-      },
-      afterAttach() {
-        // The menus offer the scanned attributes whether or not the config
-        // declared a plot, so the scan runs once either way.
-        addDisposer(
-          self,
-          when(
-            () => self.host.initialized,
-            () => {
-              if (isAlive(self)) {
-                self.ensurePlotFields().catch(() => {})
-              }
-            },
-          ),
-        )
       },
     }))
     .views(self => {

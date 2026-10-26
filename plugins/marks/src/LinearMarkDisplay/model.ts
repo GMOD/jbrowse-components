@@ -418,6 +418,14 @@ export function stateModelFactory(
         },
         /**
          * #getter
+         * Overridable hook: whether the track menu offers the scanned fields,
+         * so a declared plot still scans, and rescans while it holds none.
+         */
+        get menusOfferPlotFields(): boolean {
+          return false
+        },
+        /**
+         * #getter
          * Overridable hook: the fields `adapterOptions` has the adapter write
          * onto a feature, which Edit plot offers beside the ones a scan of the
          * file found. Manhattan's LD join writes two.
@@ -2097,7 +2105,6 @@ export function stateModelFactory(
 
           async function scan(): Promise<PlotFields> {
             const active = self.plotScanRotation.begin()
-            self.setPlotFields(undefined)
             try {
               const fields = await fetchPlotFields({
                 self,
@@ -2276,8 +2283,10 @@ export function stateModelFactory(
       .actions(self => ({
         /**
          * #action
-         * Write the default plot off a scan of the current window, where the
-         * window holds features and nothing has been declared meanwhile.
+         * Scan the current window, and write the default plot off it where the
+         * window holds features and nothing has been declared meanwhile. A
+         * failed scan is the error of a display with nothing to draw; a
+         * declared plot draws on, and the next window scans again.
          */
         async decideDefaultPlot() {
           let fields: PlotFields
@@ -2285,7 +2294,11 @@ export function stateModelFactory(
             fields = await self.ensurePlotFields()
           } catch (error) {
             if (isAlive(self) && self.plotFieldsError === error) {
-              self.setError(error)
+              if (self.conf.marks.length === 0) {
+                self.setError(error)
+              } else {
+                console.warn(`Could not scan the features' fields: ${error}`)
+              }
             }
             return
           }
@@ -2347,14 +2360,18 @@ export function stateModelFactory(
           // while `marks` is empty, the features decide (`defaultPlot`), or the
           // dialog opens where they decide nothing. A window with no features
           // decides nothing, and the next window scans again; a failed scan is
-          // the display's error, and its retry scans again.
+          // the display's error, and its retry scans again. A display whose
+          // menus offer the fields scans the same way while it holds none.
           addDisposer(
             self,
             autorun(() => {
+              const decides =
+                !self.plotDefaultChecked && self.conf.marks.length === 0
+              const holdsFields =
+                self.plotFields !== undefined && !self.plotFields.empty
               if (
-                self.plotDefaultChecked ||
+                !(decides || (self.menusOfferPlotFields && !holdsFields)) ||
                 !self.host.initialized ||
-                self.conf.marks.length > 0 ||
                 self.error !== undefined ||
                 plotScanRegions(self.host, onTrackAssembly(self)).length === 0
               ) {
