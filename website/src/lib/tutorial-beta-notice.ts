@@ -9,9 +9,7 @@ function notice(version: string) {
 The tutorials target the JBrowse ${major} beta, and the ${currentVersion} release
 on the [download page](/download/) lacks some of what they show. To install the
 beta of JBrowse Web, run \`npm install -g @jbrowse/cli@next\`, then
-\`jbrowse create jbrowse2 --branch ${tag}\`. Desktop beta builds for Linux and
-macOS are on the [releases page](https://github.com/GMOD/jbrowse-components/releases);
-the Windows build waits on code signing.
+\`jbrowse create jbrowse2 --branch ${tag}\`. Desktop beta builds are not out yet.
 
 :::`
 }
