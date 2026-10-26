@@ -112,7 +112,7 @@ export function insertionForwardStart(
  * row's own bases precede it. Undefined when the block's reference never
  * reaches that column.
  */
-export function alignedColumnAt(
+function alignedColumnAt(
   block: MafBlock,
   row: MafAlignedRow,
   targetBp: number,

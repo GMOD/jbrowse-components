@@ -1,3 +1,5 @@
+import { codonTable } from '@jbrowse/core/util'
+
 import {
   codonConservation,
   computeVisibleCodonGlyphs,
@@ -6,7 +8,7 @@ import {
   enumerateCodons,
   findCodonAt,
   locateRegionCodons,
-  translateCodonBytes,
+  orientedTriplet,
 } from './codons.ts'
 import { emptyMafCoverage } from './components/coverageTestFixture.ts'
 
@@ -16,14 +18,16 @@ import type { MafFrameRecord } from '../types.ts'
 const enc = new TextEncoder()
 const b = (s: string) => enc.encode(s)
 
-describe('translateCodonBytes', () => {
-  const codon = (s: string, strand: number) =>
-    translateCodonBytes(
+describe('orientedTriplet', () => {
+  const codon = (s: string, strand: number) => {
+    const triplet = orientedTriplet(
       s.charCodeAt(0),
       s.charCodeAt(1),
       s.charCodeAt(2),
       strand,
     )
+    return triplet === undefined ? undefined : codonTable[triplet]
+  }
 
   test('forward strand', () => {
     expect(codon('ATG', 1)).toBe('M')

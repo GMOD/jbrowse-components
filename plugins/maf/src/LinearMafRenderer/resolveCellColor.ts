@@ -51,7 +51,7 @@ export function paintsMatchColor(
   return !colorMatches && sameBase(refByte, alnByte)
 }
 
-export function classifyCell(
+function classifyCell(
   refByte: number,
   alnByte: number,
   colorMatches: boolean,

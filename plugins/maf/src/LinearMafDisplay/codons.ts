@@ -61,7 +61,7 @@ export interface Codon {
  * codons, so an ambiguity code has no amino acid either way. `?? 'N'` stays for
  * a character that is not a base at all.
  */
-function orientedTriplet(
+export function orientedTriplet(
   b0: number,
   b1: number,
   b2: number,
@@ -76,22 +76,6 @@ function orientedTriplet(
   return strand === -1
     ? `${complementTable[c2] ?? 'N'}${complementTable[c1] ?? 'N'}${complementTable[c0] ?? 'N'}`
     : `${c0}${c1}${c2}`
-}
-
-/**
- * Translate the three reference-column bytes of a codon to a single-letter amino
- * acid, reverse-complementing for a `−`-strand gene. Returns undefined when any
- * position is a gap/space or the triplet isn't a standard codon (e.g. contains
- * `N`) — the caller then draws no residue there (a gap/deletion in that species).
- */
-export function translateCodonBytes(
-  b0: number,
-  b1: number,
-  b2: number,
-  strand: number,
-): string | undefined {
-  const triplet = orientedTriplet(b0, b1, b2, strand)
-  return triplet === undefined ? undefined : codonTable[triplet]
 }
 
 // The k-th reference position of an exon record in transcription order:
