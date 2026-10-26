@@ -235,9 +235,9 @@ the file's `itemRgb` still paints each block, and `scale.names` spells out the
 fifteen `scale.domain` colors in order. The merged file is hosted, so the track
 loads as it stands. The track omits three settings the PAX5 figure uses: a
 `rows.sort` naming every epigenome, grouped by tissue, and the `rowGroups` and
-`rowColor` built later in this section that color the label bars. The hosted
-demo config, https://jbrowse.org/code/jb2/main/test_data/config_demo.json, has
-the track with all three:
+`rowColor` built below that color the label bars. The hosted demo config,
+https://jbrowse.org/code/jb2/main/test_data/config_demo.json, has the track with
+all three:
 
 ```json addtrack loc=chr9:34,700,000-38,420,000
 {
@@ -301,11 +301,97 @@ the track with all three:
 Red is active TSS, yellow enhancer, green transcription, grey Polycomb, and
 speckled olive bivalent.
 
+With a row per epigenome in one track, a row is a few pixels tall and its label
+barely legible, so we group the rows by the Roadmap tissue groups with three
+settings:
+
+- [`rowGroups`](/docs/config/linearmultirowfeaturedisplay/#slot-rowgroups) tags
+  each row with a `group`, taking one `{ match, group }` per tissue, where
+  `match` is a regex over the row names
+- [`facet`](/docs/config/linearmultirowfeaturedisplay/#slot-facet) `"group"`
+  splits the display into stacked sections, one per tissue
+- [`rowColor`](/docs/config/linearmultirowfeaturedisplay/#slot-rowcolor) with
+  `field: "group"` is a color scale on each row's label bar that pairs each
+  tissue with a color
+
+The file's `itemRgb` still paints the blocks their state colors, so the tissue
+color appears on the label bar alone. Two of the nineteen tissues look like
+this:
+
+```json
+{
+  "rowGroups": [
+    { "match": "^(Adipose Nuclei)$", "group": "Adipose" },
+    {
+      "match": "^(Aorta|Fetal Heart|Left Ventricle|Right Atrium|Right Ventricle)$",
+      "group": "Heart"
+    }
+  ],
+  "facet": "group",
+  "rowColor": {
+    "field": "group",
+    "scale": {
+      "domain": ["Adipose", "Heart"],
+      "range": ["#AF5B39", "#D56F80"]
+    }
+  }
+}
+```
+
+The `GROUP` and `COLOR` columns of `EID_metadata.tab` supply both
+lists.[^encode2012] One `jq` call writes them from the `STD_NAME` column,
+escaping the regex metacharacters in the names:
+
+```bash
+jq -R -s 'split("\n")[1:-1] | map(split("\t")) | group_by(.[1])
+  | { rowGroups: map({ match: ("^(" + (map(.[4] | gsub("(?<c>[.()+*?\\[\\]^$|\\\\{}])"; "\\" + .c)) | join("|")) + ")$"),
+                       group: .[0][1] }),
+      rowColor: { field: "group",
+                  scale: { domain: map(.[0][1]), range: map(.[0][2]) } } }' EID_metadata.tab > tissues.json
+```
+
+Merge the two keys of `tissues.json` into the display. The build script also
+appends the mnemonic to a name that two epigenomes share, which a `STD_NAME`
+match leaves as one row.
+
+The hosted track orders the rows by tissue group through `rows.sort` and leaves
+`facet` out, so clustering runs over all the rows together and the label bars
+show which tissues a cluster spans. The PAX5 figure adds `facet` with this
+`sort`, which stacks the groups in the paper's order:
+
+```json
+{
+  "facet": {
+    "field": "group",
+    "sort": [
+      "IMR90",
+      "ESC",
+      "iPSC",
+      "ES-deriv",
+      "Blood & T-cell",
+      "HSC & B-cell",
+      "Mesench",
+      "Myosat",
+      "Epithelial",
+      "Neurosph",
+      "Thymus",
+      "Brain",
+      "Adipose",
+      "Muscle",
+      "Heart",
+      "Sm. Muscle",
+      "Digestive",
+      "Other",
+      "ENCODE2012"
+    ]
+  }
+}
+```
+
 Type `chr9:34,700,000-38,420,000` into the location box, the chr9 stretch from
-_FAM205A_ to _ALDH1B1_. The figure below adds a `facet` whose `sort` lists the
-tissue groups in the paper's order, which reproduces
-[Roadmap Epigenomics 2015](https://doi.org/10.1038/nature14248) Fig. 3a, all 127
-epigenomes. Over _PAX5_:
+_FAM205A_ to _ALDH1B1_. With the groups stacked in the paper's order, the track
+reproduces [Roadmap Epigenomics 2015](https://doi.org/10.1038/nature14248) Fig.
+3a, all 127 epigenomes. Over _PAX5_:
 
 - strong transcription with genic enhancers (green and yellow) marks only the B
   cells and the B-lymphoblastoid GM12878
@@ -370,99 +456,6 @@ tissue order with one derived from the data at whatever locus is in view.
 
 <Video src="/media/epigenomics/chromhmm_cluster.mp4" caption="Cluster rows by similarity on the Roadmap epigenome track, which redraws the rows in blocks with a dendrogram." />
 
-With a row per epigenome in one track, a row is a few pixels tall and its label
-barely legible, so we group the rows by the Roadmap tissue groups with three
-settings:
-
-- [`rowGroups`](/docs/config/linearmultirowfeaturedisplay/#slot-rowgroups) tags
-  each row with a `group`, taking one `{ match, group }` per tissue, where
-  `match` is a regex over the row names
-- [`facet`](/docs/config/linearmultirowfeaturedisplay/#slot-facet) `"group"`
-  splits the display into stacked sections, one per tissue
-- [`rowColor`](/docs/config/linearmultirowfeaturedisplay/#slot-rowcolor) with
-  `field: "group"` is a color scale on each row's label bar that pairs each
-  tissue with a color
-
-The file's `itemRgb` still paints the blocks their state colors, so the tissue
-color appears on the label bar alone. Two of the nineteen tissues look like
-this:
-
-```json
-{
-  "rowGroups": [
-    { "match": "^(Adipose Nuclei)$", "group": "Adipose" },
-    {
-      "match": "^(Aorta|Fetal Heart|Left Ventricle|Right Atrium|Right Ventricle)$",
-      "group": "Heart"
-    }
-  ],
-  "facet": "group",
-  "rowColor": {
-    "field": "group",
-    "scale": {
-      "domain": ["Adipose", "Heart"],
-      "range": ["#AF5B39", "#D56F80"]
-    }
-  }
-}
-```
-
-The `GROUP` and `COLOR` columns of `EID_metadata.tab` supply both lists. One
-`jq` call writes them from the `STD_NAME` column, escaping the regex
-metacharacters in the names:
-
-```bash
-jq -R -s 'split("\n")[1:-1] | map(split("\t")) | group_by(.[1])
-  | { rowGroups: map({ match: ("^(" + (map(.[4] | gsub("(?<c>[.()+*?\\[\\]^$|\\\\{}])"; "\\" + .c)) | join("|")) + ")$"),
-                       group: .[0][1] }),
-      rowColor: { field: "group",
-                  scale: { domain: map(.[0][1]), range: map(.[0][2]) } } }' EID_metadata.tab > tissues.json
-```
-
-Merge the two keys of `tissues.json` into the display. The build script also
-appends the mnemonic to a name that two epigenomes share, which a `STD_NAME`
-match leaves as one row.
-
-The hosted track orders the rows by tissue group through `rows.sort` and leaves
-`facet` out, so clustering runs over all the rows together and the label bars
-show which tissues a cluster spans. The PAX5 figure adds `facet` with this
-`sort`, which stacks the groups in the paper's order:
-
-```json
-{
-  "facet": {
-    "field": "group",
-    "sort": [
-      "IMR90",
-      "ESC",
-      "iPSC",
-      "ES-deriv",
-      "Blood & T-cell",
-      "HSC & B-cell",
-      "Mesench",
-      "Myosat",
-      "Epithelial",
-      "Neurosph",
-      "Thymus",
-      "Brain",
-      "Adipose",
-      "Muscle",
-      "Heart",
-      "Sm. Muscle",
-      "Digestive",
-      "Other",
-      "ENCODE2012"
-    ]
-  }
-}
-```
-
-The 19 groups in `EID_metadata.tab` include ENCODE2012. Roadmap folded the
-ENCODE 2012 reference epigenomes (GM12878, K562, HeLa-S3, HepG2, A549, HUVEC,
-NHEK and the rest) into the compendium as one group, which names a data source
-and spans several anatomies. The same file's `ANATOMY` column splits them finer,
-and `TYPE` sorts them by how the sample was collected.
-
 ## Reproduce it end to end
 
 [`build_chromhmm_multirow.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_chromhmm_multirow.sh)
@@ -524,3 +517,10 @@ gigabytes of scratch.
 - [](/docs/user_guides/clustering)
 - [](/docs/config_guides/tracks)
 - [](/docs/config_guides/grouping_and_ordering)
+
+[^encode2012]:
+    The groups in `EID_metadata.tab` include ENCODE2012. Roadmap folded the
+    ENCODE 2012 reference epigenomes (GM12878, K562, HeLa-S3, HepG2, A549,
+    HUVEC, NHEK and the rest) into the compendium as one group, which names a
+    data source and spans several anatomies. The same file's `ANATOMY` column
+    splits them finer, and `TYPE` sorts them by how the sample was collected.
