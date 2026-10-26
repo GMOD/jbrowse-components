@@ -558,6 +558,9 @@ describe('a marks list in a config file', () => {
       found(colored('bar', { field: 'type', scale: { unknown: 'grey' } })),
     ).toEqual([`warning unknown-domain ${color}.unknown`])
     expect(
+      found(colored('bar', { field: 'type', scale: { scheme: 'viridis' } })),
+    ).toEqual([`warning scheme-domain ${color}.scheme`])
+    expect(
       found(
         colored('bar', {
           field: 'type',
