@@ -5396,6 +5396,7 @@
         "LINK_ELSEWHERE",
         "LINK_NO_REGION",
         "NO_ROW_COLOR",
+        "RAMP_LINE_BANDS",
         "RAMP_NOT_A_NUMBER_COLOR",
         "RAMP_NO_VALUE_BITS",
         "RAMP_NO_VALUE_COLOR",
@@ -5431,6 +5432,7 @@
         "pointInsetPx",
         "pointInstance",
         "pointMark",
+        "rampAsThreshold",
         "rampUniforms",
         "rampValueBits",
         "recordPath",
@@ -5578,6 +5580,7 @@
         "SCALE_TYPE_SYMLOG",
         "denormalizeScore",
         "makeScoreNormalizer",
+        "makeUnclampedScoreNormalizer",
         "rampMidNorm",
         "scaleTypeCode"
       ],
