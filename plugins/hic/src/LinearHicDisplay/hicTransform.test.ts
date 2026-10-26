@@ -61,7 +61,7 @@ function makeData(contacts: { bin1: number; bin2: number }[], span: number) {
     binWidth: W,
     originBp: 0,
     binSize: 1000,
-    appliedNormalization: 'KR',
+    appliedNormalizations: ['KR'],
     appliedField: 'observed',
     regions: [
       {

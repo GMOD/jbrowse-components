@@ -298,12 +298,15 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
       },
       /**
        * #getter
-       * The normalization the loaded matrix has, which falls back per
-       * binsize (KR at 5 kb, nothing at 2.5 Mb is typical). The menu ticks
-       * this. Fetch-derived, so it stays out of `rpcProps()`.
+       * The normalizations the loaded matrix has, the requested one first.
+       * Each region pair falls back on its own, per binsize (KR at 5 kb,
+       * nothing at 2.5 Mb is typical) and per chromosome (chrY often lacks
+       * SCALE), so a view across chromosomes can hold more than one. The key
+       * names them all and the menu ticks from them. Fetch-derived, so it
+       * stays out of `rpcProps()`.
        */
-      get appliedNormalization(): string {
-        return self.rpcData?.appliedNormalization ?? self.activeNormalization
+      get appliedNormalizations(): string[] {
+        return self.rpcData?.appliedNormalizations ?? [self.activeNormalization]
       },
       /**
        * #getter
@@ -341,7 +344,7 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
         const { rpcData } = self
         const label = valueName(
           self.paintedFieldName,
-          self.appliedNormalization,
+          self.appliedNormalizations.join('/'),
           self.colorScaleType,
         )
         return self.rampColorScales({
@@ -376,7 +379,10 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
        * What the tooltip calls a bin's value.
        */
       get valueLabel(): string {
-        return valueName(self.paintedFieldName, self.appliedNormalization)
+        return valueName(
+          self.paintedFieldName,
+          self.appliedNormalizations.join('/'),
+        )
       },
     }))
     .views(self => ({

@@ -91,8 +91,11 @@ export interface HicDataResult {
   originBp: number
   /** the binsize this matrix was fetched at, in bp; hover loci read it */
   binSize: number
-  /** what the file applied, which falls back per binsize */
-  appliedNormalization: string
+  /**
+   * What the file applied, the requested normalization first: each region
+   * pair falls back on its own, per binsize and per chromosome.
+   */
+  appliedNormalizations: string[]
   /**
    * What the values are: the field asked for, or `observed` where it was
    * observed/expected and the file has no expected values at this binsize.

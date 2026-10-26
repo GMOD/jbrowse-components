@@ -183,8 +183,8 @@
 <!-- applied -->
 <g id="node14" class="node">
 <title>applied</title>
-<polygon fill="none" stroke="black" stroke-width="2" points="262.3,-36 126.3,-36 126.3,0 262.3,0 262.3,-36"/>
-<text xml:space="preserve" text-anchor="middle" x="194.3" y="-14.88" font-family="monospace" font-size="10.00">appliedNormalization</text>
+<polygon fill="none" stroke="black" stroke-width="2" points="265.3,-36 123.3,-36 123.3,0 265.3,0 265.3,-36"/>
+<text xml:space="preserve" text-anchor="middle" x="194.3" y="-14.88" font-family="monospace" font-size="10.00">appliedNormalizations</text>
 </g>
 <!-- active&#45;&gt;applied -->
 <g id="edge14" class="edge">
@@ -206,5 +206,5 @@
 <polygon fill="black" stroke="black" points="197.8,-136.79 194.3,-126.79 190.8,-136.79 197.8,-136.79"/>
 </g>
 </g>
-<!-- diagram-source-sha256 610fbee6a18e12c05865568d0681d855362b6f4691f776bbe3d7fdbcadee40ff -->
+<!-- diagram-source-sha256 b0e6468618b55891f0c9d5b7c1d523986d857723893a64d08424205a53330a1f -->
 </svg>

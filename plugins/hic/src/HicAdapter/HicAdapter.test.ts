@@ -309,20 +309,20 @@ test('an empty pair does not downgrade the reported normalization', async () => 
     { assemblyName: 'test', refName: '2', start: 0, end: 1000000 },
   ]
 
-  const { numContacts, appliedNormalization } =
+  const { numContacts, appliedNormalizations } =
     await adapter.getMultiRegionContactRecords(regions, {
       resolution: 100000,
       normalization: 'KR',
     })
 
   expect(numContacts).toBe(2)
-  expect(appliedNormalization).toBe('KR')
+  expect(appliedNormalizations).toEqual(['KR'])
 })
 
 // But a pair that did contribute contacts still speaks: partial coverage is a
-// real state, and the display must not claim a normalization only some of the
-// matrix received.
-test('a non-empty pair that fell back does downgrade the reported normalization', async () => {
+// real state (test.hic's chrY has no SCALE), so the matrix names every
+// normalization its pairs got rather than whichever pair came last.
+test('a non-empty pair that fell back is reported beside the requested one', async () => {
   const adapter = makeAdapter({
     getMetaData: () => Promise.resolve(metadata),
     getNormalizationOptions: () => Promise.resolve(['NONE', 'KR']),
@@ -338,12 +338,12 @@ test('a non-empty pair that fell back does downgrade the reported normalization'
     { assemblyName: 'test', refName: '2', start: 0, end: 1000000 },
   ]
 
-  const { appliedNormalization } = await adapter.getMultiRegionContactRecords(
+  const { appliedNormalizations } = await adapter.getMultiRegionContactRecords(
     regions,
     { resolution: 100000, normalization: 'KR' },
   )
 
-  expect(appliedNormalization).toBe('NONE')
+  expect(appliedNormalizations).toEqual(['KR', 'NONE'])
 })
 
 // Each normalization has its own expected vector, and a file can lack one

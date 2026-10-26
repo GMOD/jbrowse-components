@@ -74,7 +74,7 @@ function makeData(
     binWidth: W,
     originBp: 0,
     binSize: 1000,
-    appliedNormalization: 'KR',
+    appliedNormalizations: ['KR'],
     appliedField: 'observed',
     regions,
     pairRuns,

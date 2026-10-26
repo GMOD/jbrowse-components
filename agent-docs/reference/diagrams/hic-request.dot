@@ -32,7 +32,7 @@ digraph hic_request {
   active   [label="activeNormalization", style=bold]
   nextBest -> active
 
-  applied [label="appliedNormalization", style=bold]
+  applied [label="appliedNormalizations", style=bold]
   active -> applied [label=" the fetch answers"]
 
   call [label="RenderHicData"]

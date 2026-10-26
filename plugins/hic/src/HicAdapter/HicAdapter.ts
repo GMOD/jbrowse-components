@@ -54,8 +54,12 @@ export interface MultiRegionContacts {
   pairs: RegionPairContacts[]
   numContacts: number
   resolution: number
-  /** downgraded to what a pair actually got when any pair fell back */
-  appliedNormalization: string
+  /**
+   * What the pairs with contacts got, the requested normalization first: each
+   * pair falls back on its own, so a view across chromosomes can hold more
+   * than one. The requested one alone where no pair has contacts.
+   */
+  appliedNormalizations: string[]
 }
 
 interface HicContactOptions extends BaseOptions {
@@ -291,7 +295,7 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
       signal,
     )
 
-    let appliedNormalization = normalization
+    const applied = new Set<string>()
     let numContacts = 0
     const pairs: RegionPairContacts[] = []
     for (const [at, [i, j]] of pairIndices.entries()) {
@@ -301,9 +305,7 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
       }
       // Only a pair with contacts speaks: an empty one reports NONE whenever a
       // chromosome lacks a vector at this binsize.
-      if (pair.appliedNormalization !== normalization) {
-        appliedNormalization = pair.appliedNormalization
-      }
+      applied.add(pair.appliedNormalization)
       pairs.push({
         region1Idx: i,
         region2Idx: j,
@@ -315,7 +317,11 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
       numContacts += pair.records.bin1.length
     }
 
-    return { pairs, numContacts, resolution, appliedNormalization }
+    const appliedNormalizations =
+      applied.size === 0 || applied.has(normalization)
+        ? [normalization, ...[...applied].filter(n => n !== normalization)]
+        : [...applied]
+    return { pairs, numContacts, resolution, appliedNormalizations }
   }
 
   /**

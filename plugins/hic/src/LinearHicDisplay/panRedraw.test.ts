@@ -24,7 +24,7 @@ function makeHicResult(args: RenderHicDataArgs): HicDataResult {
     binWidth: args.binSize / Math.SQRT2,
     originBp: args.originBp,
     binSize: args.binSize,
-    appliedNormalization: args.normalization,
+    appliedNormalizations: [args.normalization],
     appliedField: 'observed',
     regions: [],
     pairRuns: [],

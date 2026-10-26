@@ -30,7 +30,7 @@ const DATA: HicDataResult = {
   binWidth: 4,
   originBp: 0,
   binSize: 1000,
-  appliedNormalization: 'NONE',
+  appliedNormalizations: ['NONE'],
   appliedField: 'observed',
   regions: [
     {

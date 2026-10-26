@@ -15,7 +15,7 @@ const DATA: HicDataResult = {
   binWidth: 4,
   originBp: 0,
   binSize: 1000,
-  appliedNormalization: 'KR',
+  appliedNormalizations: ['KR'],
   appliedField: 'observed',
   regions: [
     {
@@ -82,4 +82,11 @@ test('legend.title replaces the heading, and "" draws none', () => {
   expect(display.colorScales[0]?.title).toBe('Contacts')
   setConf(display, ['encoding', 'color', 'legend', 'title'], '')
   expect(display.colorScales[0]?.title).toBe('')
+})
+
+// a matrix whose pairs fell back apart names every normalization it holds
+test('the key names each normalization a mixed matrix holds', () => {
+  const display = loaded()
+  display.setRpcData({ ...DATA, appliedNormalizations: ['KR', 'NONE'] })
+  expect(display.colorScales[0]?.title).toBe('Contacts (KR/NONE) · 1Kbp')
 })

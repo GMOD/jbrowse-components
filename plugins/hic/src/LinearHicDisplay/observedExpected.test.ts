@@ -23,7 +23,7 @@ function payload(appliedField: HicColorField): HicDataResult {
     binWidth: 4,
     originBp: 0,
     binSize: 1000,
-    appliedNormalization: 'KR',
+    appliedNormalizations: ['KR'],
     appliedField,
     regions: [
       {

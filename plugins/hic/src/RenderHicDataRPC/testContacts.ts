@@ -52,6 +52,6 @@ export function toContacts(
     pairs,
     numContacts: contacts.length,
     resolution,
-    appliedNormalization,
+    appliedNormalizations: [appliedNormalization],
   }
 }

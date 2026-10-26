@@ -29,7 +29,7 @@ function baseSelf() {
     canStepResolutionCoarser: true,
     availableNormalizations: ['KR', 'VC', 'NONE'] as string[] | undefined,
     activeNormalization: 'KR',
-    appliedNormalization: 'KR',
+    appliedNormalizations: ['KR'],
     binSize: 25000 as number | undefined,
     resolution: 0,
     setLogScale: jest.fn(),
@@ -125,7 +125,7 @@ describe('hic track menu shape', () => {
   // file that lacks the user's choice shows the scheme it really used.
   it('ticks the normalization actually in effect', () => {
     const items = buildHicTrackMenuItems(
-      makeSelf({ activeNormalization: 'VC', appliedNormalization: 'VC' }),
+      makeSelf({ activeNormalization: 'VC', appliedNormalizations: ['VC'] }),
     )
     expect(
       subMenuOf(items, 'Normalization')
@@ -144,7 +144,7 @@ describe('hic track menu shape', () => {
         makeSelf({
           availableNormalizations: ['NONE', 'KR'],
           activeNormalization: 'KR',
-          appliedNormalization: 'NONE',
+          appliedNormalizations: ['NONE'],
         }),
       ),
       'Normalization',
@@ -155,6 +155,28 @@ describe('hic track menu shape', () => {
     const kr = rows.find(i => labelOf(i) === 'KR')!
     expect('helpText' in kr ? kr.helpText : undefined).toMatch(
       /Not available at the current resolution/,
+    )
+  })
+
+  // test.hic's chrY has no SCALE vector, so a view across chr22 and chrY
+  // holds both: the requested row stays ticked and says which pairs fell back
+  it('keeps the requested tick where only some pairs fell back, and says so', () => {
+    const rows = subMenuOf(
+      buildHicTrackMenuItems(
+        makeSelf({
+          availableNormalizations: ['NONE', 'SCALE'],
+          activeNormalization: 'SCALE',
+          appliedNormalizations: ['SCALE', 'NONE'],
+        }),
+      ),
+      'Normalization',
+    )
+    expect(rows.filter(i => 'checked' in i && i.checked).map(labelOf)).toEqual([
+      'SCALE',
+    ])
+    const scale = rows.find(i => labelOf(i) === 'SCALE')!
+    expect('helpText' in scale ? scale.helpText : undefined).toBe(
+      'Some chromosome pairs in view have no SCALE at the current resolution in this file and show NONE.',
     )
   })
 

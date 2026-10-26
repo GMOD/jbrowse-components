@@ -32,7 +32,7 @@ interface HicMenuSelf extends IStateTreeNode {
   canStepResolutionCoarser: boolean
   availableNormalizations: string[] | undefined
   activeNormalization: string
-  appliedNormalization: string
+  appliedNormalizations: string[]
   binSize: number | undefined
   resolution: number
   setLogScale: (log: boolean) => void
@@ -180,10 +180,15 @@ function fieldMenuItem(self: HicMenuSelf): MenuItem {
 }
 
 // The schemes the file offers, ticked by what the loaded matrix carries: a
-// file can hold a scheme at one binsize and not another.
+// file can hold a scheme at one binsize and not another, and for one
+// chromosome and not another.
 function normalizationMenuItems(self: HicMenuSelf): MenuItem[] {
   const avail = self.availableNormalizations
-  const { activeNormalization, appliedNormalization } = self
+  const { activeNormalization, appliedNormalizations } = self
+  const fallbacks = appliedNormalizations.filter(n => n !== activeNormalization)
+  const ticked = appliedNormalizations.includes(activeNormalization)
+    ? activeNormalization
+    : (fallbacks[0] ?? activeNormalization)
   return avail?.length
     ? [
         {
@@ -194,13 +199,14 @@ function normalizationMenuItems(self: HicMenuSelf): MenuItem[] {
               value: norm,
               label: norm,
               helpText:
-                norm === activeNormalization &&
-                appliedNormalization !== activeNormalization
-                  ? `Not available at the current resolution in this file — showing ${appliedNormalization}. Zoom to a finer binsize to use it.`
-                  : (NORM_HELP[norm] ??
-                    'Matrix normalization scheme provided by this .hic file.'),
+                norm !== activeNormalization || fallbacks.length === 0
+                  ? (NORM_HELP[norm] ??
+                    'Matrix normalization scheme provided by this .hic file.')
+                  : ticked === activeNormalization
+                    ? `Some chromosome pairs in view have no ${norm} at the current resolution in this file and show ${fallbacks.join(', ')}.`
+                    : `Not available at the current resolution in this file — showing ${fallbacks.join(', ')}. Zoom to a finer binsize to use it.`,
             })),
-            appliedNormalization,
+            ticked,
             norm => {
               self.setNormalization(norm)
             },

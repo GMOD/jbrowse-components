@@ -44,7 +44,7 @@ export async function executeRenderHicData({
     sessionId,
     adapterConfig,
   )
-  const { pairs, numContacts, appliedNormalization } = await (
+  const { pairs, numContacts, appliedNormalizations } = await (
     dataAdapter as HicAdapter
   ).getMultiRegionContactRecords(regions, {
     resolution: binSize,
@@ -212,7 +212,7 @@ export async function executeRenderHicData({
       binWidth: w,
       originBp,
       binSize,
-      appliedNormalization,
+      appliedNormalizations,
       appliedField,
       operands,
       regions: resultRegions,
