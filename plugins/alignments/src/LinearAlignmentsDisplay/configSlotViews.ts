@@ -51,6 +51,7 @@ import {
   drawnReadConnectionsOf,
   readConnectionsMarkOf,
 } from './constants.ts'
+import { declaredFiltersOf } from './dialogs/layerFilters.ts'
 
 import type { StrokeWidthSetting } from '../features/arcs/arcLineWidth.ts'
 import type {
@@ -627,13 +628,7 @@ export function configSlotViews(self: ConfigSlotSelf) {
      */
     get declaredFilters(): DeclaredFilters {
       const base = baseDisplayConfig(self)
-      const filterPredicates = mergeFilter(predicatesOf(base.filter))
-      return {
-        filterPredicates,
-        junctionFilter: junctionFilterOf(filterPredicates),
-        connectionFilter: connectionFilterOf(filterPredicates),
-        basesFilter: basesFilterOf(declaredBasesFilterOf(base)),
-      }
+      return declaredFiltersOf(base.filter, declaredBasesFilterOf(base))
     },
     /**
      * #getter

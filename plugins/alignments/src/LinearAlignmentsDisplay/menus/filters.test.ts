@@ -1,4 +1,5 @@
 import { mergeFilter } from '../../shared/alignmentsFilter.ts'
+import { declaredFiltersOf } from '../dialogs/layerFilters.ts'
 import { getFiltersMenuItems } from './filters.ts'
 
 import type { MenuItem } from '@jbrowse/core/ui'
@@ -7,6 +8,7 @@ import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
 function mapqRow(written: FieldPredicate[]) {
   const model = {
     filterPredicates: mergeFilter(written),
+    declaredFilters: declaredFiltersOf([], []),
     setFilterFields: jest.fn(),
     filterNarrowing: () => ({ count: 0, clear: () => {} }),
   }

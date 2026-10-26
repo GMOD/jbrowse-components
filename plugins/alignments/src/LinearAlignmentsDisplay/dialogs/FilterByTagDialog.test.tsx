@@ -6,31 +6,18 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 
 import {
   DEFAULT_FLAG_MASKS,
-  connectionFilterOf,
   flagMasksOf,
-  junctionFilterOf,
   mergeFilter,
   readNameOf,
   tagFiltersOf,
   withFields,
 } from '../../shared/alignmentsFilter.ts'
-import { DEFAULT_BASES_FILTER } from '../../shared/basesFilter.ts'
 import FilterByTagDialog from './FilterByTagDialog.tsx'
+import { declaredFiltersOf } from './layerFilters.ts'
 
 import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
 
 afterEach(cleanup)
-
-// What a track's config declares, as the display reads it for Reset
-function declaredFiltersOf(declared: FieldPredicate[]) {
-  const filterPredicates = mergeFilter(declared)
-  return {
-    filterPredicates,
-    junctionFilter: junctionFilterOf(filterPredicates),
-    connectionFilter: connectionFilterOf(filterPredicates),
-    basesFilter: DEFAULT_BASES_FILTER,
-  }
-}
 
 // The dialog over a written list, and that list as it applies after the last
 // Submit wrote its fields onto it
@@ -41,7 +28,7 @@ function renderDialog(
   const setFilterFields = jest.fn()
   const model = {
     filterPredicates: mergeFilter(written),
-    declaredFilters: declaredFiltersOf(declared),
+    declaredFilters: declaredFiltersOf(declared, []),
     setFilterFields,
   }
   render(
@@ -234,8 +221,8 @@ test('requiring a flag the defaults exclude clears its exclusion', () => {
     screen.getByLabelText('Require read is PCR or optical duplicate'),
   )
   expect(
-    screen.getByLabelText('Exclude read is PCR or optical duplicate').checked,
-  ).toBe(false)
+    screen.getByLabelText('Exclude read is PCR or optical duplicate'),
+  ).toHaveProperty('checked', false)
   submit()
   expect(flagMasksOf(submitted())).toEqual({
     include: DEFAULT_FLAG_MASKS.include | 0x400,
@@ -259,7 +246,7 @@ test('the Sashimi arcs section shows while the arcs draw, and writes its floor',
   const setFilterFields = jest.fn()
   const model = {
     filterPredicates: mergeFilter([]),
-    declaredFilters: declaredFiltersOf([]),
+    declaredFilters: declaredFiltersOf([], []),
     setFilterFields,
     showSashimi: true,
     junctionFilter: { minReads: 1 },

@@ -1,3 +1,4 @@
+import { predicatesOf } from '@jbrowse/core/util/fieldPredicate'
 import {
   categoryEntries,
   categoryOf,
@@ -11,11 +12,15 @@ import {
   DEFAULT_MIN_INTERCHROM_READS,
   DEFAULT_MIN_SASHIMI_READS,
   connectionEntries,
+  connectionFilterOf,
   junctionEntries,
+  junctionFilterOf,
+  mergeFilter,
 } from '../../shared/alignmentsFilter.ts'
 import {
   DEFAULT_BASES_FILTER,
   PROBABILITY,
+  basesFilterOf,
   codeEntries,
 } from '../../shared/basesFilter.ts'
 import { admitsCode } from '../../shared/types.ts'
@@ -41,6 +46,20 @@ export interface DeclaredFilters {
   junctionFilter: JunctionFilter
   connectionFilter: ConnectionFilter
   basesFilter: BasesFilter
+}
+
+/** `DeclaredFilters` off a written `filter` and `pileup.bases.filter`. */
+export function declaredFiltersOf(
+  filter: unknown,
+  basesFilter: unknown,
+): DeclaredFilters {
+  const filterPredicates = mergeFilter(predicatesOf(filter))
+  return {
+    filterPredicates,
+    junctionFilter: junctionFilterOf(filterPredicates),
+    connectionFilter: connectionFilterOf(filterPredicates),
+    basesFilter: basesFilterOf(basesFilter),
+  }
 }
 
 /**

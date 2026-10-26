@@ -15,14 +15,14 @@ import { entriesOn } from '../../shared/alignmentsFilter.ts'
 import { READ_CATEGORIES } from '../../shared/readCategoryFilters.ts'
 
 import type { ReadCategorySpec } from '../../shared/readCategoryFilters.ts'
+import type { LayerFiltersModel } from '../dialogs/layerFilters.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Reversible, Reversibles } from '@jbrowse/core/ui/filterMenuItems'
 import type { FieldPredicate, Floor } from '@jbrowse/core/util/fieldPredicate'
 
 const FilterByTagDialog = lazy(() => import('../dialogs/FilterByTagDialog.tsx'))
 
-interface FiltersModel {
-  filterPredicates: FieldPredicate[]
+interface FiltersModel extends LayerFiltersModel {
   setFilterFields: (
     patch: Readonly<Record<string, readonly FieldPredicate[] | undefined>>,
   ) => void
