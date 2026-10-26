@@ -12630,76 +12630,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         }
       ]
     },
-    "VariantsBandLabels": {
-      "title": "VariantsBandLabels",
-      "type": "object",
-      "x-closed": true,
-      "properties": {
-        "name": {
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "$ref": "#/$defs/FeatureNameLabel"
-          }
-        },
-        "description": {
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "$ref": "#/$defs/FeatureDescriptionLabel"
-          }
-        }
-      },
-      "patternProperties": {
-        "^_+comment": {}
-      },
-      "additionalProperties": false
-    },
-    "VariantsBand": {
-      "title": "VariantsBand",
-      "type": "object",
-      "x-closed": true,
-      "properties": {
-        "showLabels": {
-          "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
-        },
-        "show": {
-          "description": "draw the variants themselves above the genotype rows, at their genomic positions.",
-          "default": false,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "boolean"
-          }
-        },
-        "height": {
-          "description": "height of the band in pixels, taken from the rows.",
-          "default": 40,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "number"
-          }
-        },
-        "labels": {
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "$ref": "#/$defs/VariantsBandLabels"
-          }
-        }
-      },
-      "patternProperties": {
-        "^_+comment": {}
-      },
-      "additionalProperties": false
-    },
     "LinearMultiSampleVariantDisplaySlots": {
       "type": "object",
       "properties": {
@@ -12866,14 +12796,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "draw",
               "skip"
             ]
-          }
-        },
-        "variants": {
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "$ref": "#/$defs/VariantsBand"
           }
         },
         "maxFeatureScreenDensity": {
@@ -18620,9 +18542,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "referenceDrawingMode": {
               "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/referenceDrawingMode"
-            },
-            "variants": {
-              "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/variants"
             },
             "showTooltips": {
               "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/showTooltips"
