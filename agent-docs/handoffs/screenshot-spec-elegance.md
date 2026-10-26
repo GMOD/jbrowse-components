@@ -11,7 +11,7 @@ something, so the larger half of this list is app work.
 
 ## Next, each needing a capture A/B on ada
 
-- **The long delays (92 left).** 46 went on 2026-10-21: 40 ended an action
+- **The long delays** (`LONG_DELAY_BASELINE`, 87 on 2026-10-26). 46 went on 2026-10-21: 40 ended an action
   list on app work and were deleted, and 6 mid-list became
   `{ type: 'waitForAppSettled' }`. Their 40 figures came out byte-identical
   to a baseline shoot of the parent commit. What stays:

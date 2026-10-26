@@ -1,6 +1,6 @@
 ---
 name: vega-lite-vocabulary
-description: "ADR-238's migration of every display's settings to Vega-Lite's words. Landed: the predicate compiler and every filter, the synteny views' mark, axis, coord and data words, the alignments and MAF parts, the color channel (Pass A), the y channel (Pass B), wiggle and Hi-C `data`, the tree sidebar's axis, the pileup's `mark.height`, the comparative `indels` part, the band layers' filters, `pileup.bases.unmodified` and `coverage.alleles.show`. Open: Pass B's jb2hubs and lift cleanup, and the writers. Read before adding or renaming any display or view setting."
+description: "ADR-238's migration of every display's settings to Vega-Lite's words. Landed: the predicate compiler and every filter, the synteny views' mark, axis, coord and data words, the alignments and MAF parts, the color channel (Pass A), the y channel (Pass B), wiggle and Hi-C `data`, the tree sidebar's axis, the pileup's `mark.height`, the comparative `indels` part, the band layers' filters, `pileup.bases.unmodified` and `coverage.alleles.show`. Open: deleting the retired-spelling lifts once hosted configs regenerate, deploying the respelled demos, and the writers. Read before adding or renaming any display or view setting."
 ---
 
 # Vega-Lite vocabulary: what is left
@@ -30,19 +30,18 @@ Git history has each landing.
    channel"): wiggle's a `YFieldChannel`, the mark display's and Manhattan's a
    `YChannel` under `YEncoding`, the coverage band's at `coverage.encoding.y`.
    Each display's `YScalePaths` map sits beside its schema. What stays open:
-   - **jb2hubs, first** (deferred; Colin authorizes the respell): its output
-     must keep older hosts booting, and a host that predates `encoding.y`
-     boots and loses the scale settings. `hubtools/src/wiggleDisplay.ts` and
-     `alfaPopulations.ts` write `scales.y`. `enhanceConfig.ts`'s
-     `WIGGLE_DERIVED_KEYS` is `y`, `extent`, `aggregate` and `scales` today;
-     once jb2hubs respells, it and `COLOR_DERIVED_KEYS` both own `encoding`,
-     so a step taking one set whole drops the other's members.
-   - **Then delete the lifts:** `retiredScalesSpelling` on the alignments, MAF,
+   - **jb2hubs writes `encoding.y`** on its main (`05cef0fa`, `09cbdbca`,
+     2026-10-23), and its derivers own paths, so two share `encoding`
+     (`hubtools/src/derivedDisplay.ts`). A host that predates `encoding.y`
+     boots and loses the scale settings.
+   - **Delete the lifts once the hosted hub configs regenerate:** `retiredScalesSpelling` on the alignments, MAF,
      wiggle and mark displays, and the `y` lift on wiggle and MAF. Until then
      `jbrowse validate` warns on an old `scales`, in a display entry or a
      `displayDefaults`.
-   - **Demos:** `demos/{cgiab,dtu,read_marks}/config.json` are respelled and
-     not deployed (`scripts/deploy-demo.sh`).
+   - **Demos:** on 2026-10-26 `dtu` and `read_marks` (`encoding.y`), `arg`
+     (identity color `field`) and `hg002` (`representative`) differed from
+     their hosted copies (`scripts/deploy-demo.sh`). `apollo3` differs too and
+     stays, pinned to beta.8 (`demos/apollo3/README.md`).
    - The unlanded `chat-request-evals` branch writes 8 `scales.y` lines in
      `scripts/agent-evals/tasks.ts`.
 
@@ -89,9 +88,7 @@ deployed. Still open, each needing no further call:
   `showRowSeparators` and `treeAreaWidth` on each row display, the
   multi-sample variant display's `showSidebarLabels`, and display-kit's
   `liftRetiredRowState`.
-- **jb2hubs:** its unpushed branch `synteny-mark-interpolate` writes the
-  synteny view's `mark: { interpolate: 'bump' }` for `drawCurves: true`. Row
-  orders write `domain` beside `sort` for released hosts.
+- **jb2hubs:** row orders write `domain` beside `sort` for released hosts.
 - **ggjbrowse:** Its R code, docs and tutorials write every setting above in
   its current spelling. Each rename needs a ggjbrowse engine re-pin, an R
   respell and a tutorial re-knit (memory `a-config-rename-reaches-ggjbrowse`),

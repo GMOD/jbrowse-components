@@ -62,7 +62,10 @@ AC, 2026-10-24 and 2026-10-25:
   volvox and ARG configs say `scale.type: 'identity'` alone or with a `field`.
 - "One row per..." lists the attributes the scan's sample carries, with no row
   counts.
-- The tooltip names no feature; the feature name stays on the small-items list.
+- The tooltip names no feature:
+  [ideas/ready/the-mark-tooltip-names-the-feature.md](../ideas/ready/the-mark-tooltip-names-the-feature.md).
+- The default block color is the mark display's blue, not the feature track's
+  goldenrod.
 
 ## Rejected alternatives
 

@@ -1,6 +1,6 @@
 ---
 name: protein-figures-and-viz-features
-description: "Hero figures for the protein browser (genome view linked to one or two Mol* structures). Colin read the scan-vs-AlphaMissense pair as 'CRISPR matches prediction', not a story. The three-panel TP53 Y220C (wild type, empty pocket, drug filling it, one camera) is now the hero candidate awaiting his read; SNCA E46K is turned so Lys80 matches across panels."
+description: "Hero figures for the protein browser (genome view linked to Mol* structures), each showing what a variant does. On main: TP53 Y220C, KRAS G12C, SNCA E46K, BRCA1 M1775R and the CCR5 Δ32 set. Open: picking the hero among them (Colin left it to us), the HBB E6V and TP53 zinc prototypes, and more figures where genome evidence drives the structure."
 ---
 
 # Protein figures and 3D visualization features: what is left
