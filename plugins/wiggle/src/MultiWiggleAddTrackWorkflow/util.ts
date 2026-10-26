@@ -145,9 +145,17 @@ function classifyLocation(
   }
 }
 
+// Two or more scheme characters, so a Windows drive letter reads as a path,
+// where `#` and `?` are part of the filename.
+function pastedLocation(item: string): FileLocation {
+  return /^[a-z][a-z\d+.-]+:/i.test(item)
+    ? { uri: item, locationType: 'UriLocation' }
+    : { localPath: item, locationType: 'LocalPathLocation' }
+}
+
 export function itemToName(item: TrackItem) {
   return typeof item === 'string'
-    ? withoutExtension(getFileName({ uri: item, locationType: 'UriLocation' }))
+    ? withoutExtension(getFileName(pastedLocation(item)))
     : `${item.source ?? item.name ?? getFilenameFromAdapterConfig(item) ?? 'unnamed'}`
 }
 

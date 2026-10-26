@@ -82,6 +82,12 @@ describe('itemToName', () => {
     expect(itemToName('https://example.com/x.bw?v=1.2')).toBe('x')
   })
 
+  it('keeps a # in a pasted local path, which a filename may hold', () => {
+    expect(itemToName('/data/sample#2.bw')).toBe('sample#2')
+    expect(itemToName('C:\\data\\sample#2.bw')).toBe('sample#2')
+    expect(itemToName('https://example.com/sample.bw#frag')).toBe('sample')
+  })
+
   it('prefers source over name', () => {
     expect(itemToName({ source: 's', name: 'n' })).toBe('s')
   })
