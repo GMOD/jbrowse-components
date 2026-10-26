@@ -81,8 +81,24 @@ export abstract class MafTaiAdapterBase<
       reader,
       sink,
       (refSrc, start, end) =>
-        end > query.start && start < query.end && onQueriedChr(refSrc),
+        blockOverlaps(start, end, query) && onQueriedChr(refSrc),
     )
     reader.reportUnmatched()
   }
+}
+
+/**
+ * A block overlaps the query. A block spanning no reference base, a TAF run of
+ * insertion columns, sits at one interbase position; the region starting there
+ * keeps it, so a seam between two regions hands it to exactly one.
+ */
+export function blockOverlaps(
+  start: number,
+  end: number,
+  query: { start: number; end: number },
+) {
+  return (
+    (start === end ? start >= query.start : end > query.start) &&
+    start < query.end
+  )
 }
