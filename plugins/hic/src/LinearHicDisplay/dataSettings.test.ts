@@ -1,6 +1,5 @@
-import { getConf, readConfObject, setConf } from '@jbrowse/core/configuration'
+import { getConf, setConf } from '@jbrowse/core/configuration'
 
-import configSchemaFactory from './configSchema.ts'
 import { createTestEnvironment } from './testEnv.ts'
 
 function flush() {
@@ -8,19 +7,6 @@ function flush() {
     setTimeout(resolve, 0)
   })
 }
-
-const make = (snap: Record<string, unknown>) =>
-  configSchemaFactory().create({
-    type: 'LinearHicDisplay',
-    displayId: 'hic-test',
-    ...snap,
-  })
-
-test('the old resolutionBias and selectedNormalization lift under data, the bias flipped', () => {
-  const conf = make({ resolutionBias: 2, selectedNormalization: 'VC' })
-  expect(readConfObject(conf, ['data', 'resolution'])).toBe(-2)
-  expect(readConfObject(conf, ['data', 'normalization'])).toBe('VC')
-})
 
 async function displayWithLadder() {
   const { createDisplay, mockRpcCall } = createTestEnvironment()

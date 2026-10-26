@@ -69,14 +69,10 @@ const HicTrackConfigFactory = () => {
       explicitIdentifier: 'displayId',
       // v4's renderer block held a base color the ramp has no member for,
       // a cap on the triangle's height and a per-cell callback into the
-      // plugin's jexl functions. The on-figure binsize dropdown gave way to
-      // the legend title naming the binsize.
+      // plugin's jexl functions.
       retired: {
         ...retiredBaseDisplaySpellings,
         renderer: () => ({}),
-        showResolutionControls: () => ({}),
-        resolutionBias: bias => ({ data: { resolution: -Number(bias) } }),
-        selectedNormalization: normalization => ({ data: { normalization } }),
       },
     },
   )

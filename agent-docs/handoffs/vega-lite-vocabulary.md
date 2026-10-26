@@ -85,7 +85,6 @@ The cross-display color test waits on a call:
   jb2hubs' `HOST_VERSIONS` floor reads `sort`), the y channel's lifts
   (item 1), the feature display's `basicRetired` (`mouseover` and
   `longestCoding` lift permanently, since jb2hubs and v4 hosts write them),
-  Hi-C's `resolutionBias` and `selectedNormalization` lifts,
   wiggle's `resolution` lift and `retiredState` key, and the tree
   sidebar's: `showTree`, `showBranchLength`, `showRowLabels`,
   `showRowSeparators` and `treeAreaWidth` on each row display, the

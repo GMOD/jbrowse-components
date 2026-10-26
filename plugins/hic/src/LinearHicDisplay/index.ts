@@ -3,6 +3,7 @@ import { lazyWithPreload } from '@jbrowse/core/util/lazyWithPreload'
 
 import configSchemaFactory from './configSchema.ts'
 import { HIC_PLOT_EXAMPLES } from './plotExamples.ts'
+import { retiredState } from './retired.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -20,6 +21,7 @@ export default function LinearHicDisplayF(pluginManager: PluginManager) {
       rpcMethods: ['RenderHicData'],
       viewType: 'LinearGenomeView',
       plotExamples: HIC_PLOT_EXAMPLES,
+      retiredState,
       ReactComponent: lazyWithPreload(
         () => import('./components/ReactComponent.tsx'),
       ),
