@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "Protein domains draw as their own track, one row per transcript, from `jbrowse make-protein-features`' BED in the multi-row display with `rows: 'transcript'`. A gene track draws no other track's rows and no domain children: transcriptFeatures (ADR-242) and the proteinFeatures key join before it are deleted, and the GFF-children plan is declined. The projection from protein residues onto exons stays in the CLI. Supersedes ADR-242"
+summary: "Protein domains draw as their own track, one row per transcript, from `jbrowse make-protein-features`' BED in the multi-row display with `rows: 'transcript'`, each row named by the transcript's GFF3 Name as the gene track labels it. A gene track draws no other track's rows and no domain children: transcriptFeatures (ADR-242) and the proteinFeatures key join before it are deleted, and the GFF-children plan is declined. The projection from protein residues onto exons stays in the CLI. Supersedes ADR-242"
 ---
 
 # ADR-245: Protein domains are their own track
@@ -25,6 +25,12 @@ protein-coordinate calls on the exons across introns and on either strand, is
 - **The domain BED is a track** in the multi-row display with
   `rows: 'transcript'`, so each isoform's domains sit on a labelled row under
   the genes, colored by `name` with the display's own key.
+- **A reader pairs a row with its isoform by name.** `domains2genome` 2.2
+  writes the transcript's GFF3 `Name` in the `transcript` column, the text a
+  gene track labels the transcript with under `subfeatureLabels: 'below'`.
+  It falls back to the ID where another coding transcript writes the same
+  Name or ID. The tutorial's gene track also grows (`heightMode: 'grow'`),
+  since the fit ladder trims isoforms at the default height.
 - **A gene track draws only its own file.** The worker fetches no other
   track, and the glyph has no domain lanes, domain color or domain hit.
 - **A BED whose header names `proteinStart` and `proteinEnd`** still skips
@@ -40,4 +46,5 @@ protein-coordinate calls on the exons across introns and on either strand, is
 | `transcriptFeatures` (ADR-242): rows from listed tracks fit by exon shape | A render-time guess with tolerances; the worker opened every listed adapter per fetch, and a click could open the wrong track's details |
 | Domains as GFF children of each mRNA, drawn in the gene glyph | No annotation pipeline writes it, `gt gff3validator -typecheck so` rejects it and gffread drops the lines; users replace their gene track with our merged copy and cannot add domains to a hosted one; a gene with no mRNA, overlapping InterProScan analyses and GTF input each need a rule. The mRNA parent comes only from gff-nostream merging a CDS's lines once it has children; a parser that merges only abutting CDS segments is the first step if this returns |
 | The SO-strict form: a `polypeptide` that `Derives_from` the mRNA, domains under it | gff-nostream ignores `Derives_from`, so it draws as a separate feature |
+| Domain rows in the gene track's isoform order | The order is the gene track's layout, which another track can read only through the cross-track join this ADR declines; a reader pairs the rows by their shared names instead |
 | Fit-by-shape as an offline CLI step for UniProt's and UCSC's genome-placed BEDs | Those already draw as their own tracks; nobody has asked |
