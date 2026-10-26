@@ -133,10 +133,9 @@ export const mafColorConfigSchema = ConfigurationSchema(
          * #slot scale.reverse
          */
         reverse: {
-          type: 'boolean',
-          defaultValue: false,
+          type: 'maybeBoolean',
           description:
-            'turns the identity ramp round, so its last color paints the low end',
+            'turns the identity ramp round, so its last color paints the low end; unset runs as written',
         },
         /**
          * #slot scale.domainMin
