@@ -3660,6 +3660,7 @@ export default function stateModelFactory(
 // inferred model mentions; without it the ESM build reports TS2883.
 export type { ArcCategory } from '../shaders/palettes.ts'
 export type { DeclaredFilters } from './dialogs/layerFilters.ts'
+export type { GroupSize } from './groupLayout.ts'
 
 export type LinearAlignmentsDisplayStateModel = ReturnType<
   typeof stateModelFactory
