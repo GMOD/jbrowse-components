@@ -320,8 +320,7 @@ test('a turned-over row starts where its stated size puts it', async () => {
       .getFeatures(region)
       .pipe(toArray()),
   )
-  expect(feature!.get('alignments').mm10).toMatchObject({
-    strand: -1,
-    srcStart: 5000 - 7 - 3,
+  expect(feature!.get('alignments')).toMatchObject({
+    mm10: { strand: -1, srcStart: 5000 - 7 - 3 },
   })
 })
