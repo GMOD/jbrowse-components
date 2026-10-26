@@ -7,6 +7,7 @@
 //
 // Usage: node scripts/agent-evals/configDocsEval.ts [--model m] [--runs N]
 //        [--filter name] [--out dir] [--source dir] [--self-check]
+//        [--regrade dir]
 // --source reads docs and schema from another tree, such as a `git archive`
 // of the baseline commit, so the worktree can change while a run is going.
 import { execFileSync, spawn } from 'node:child_process'
@@ -15,6 +16,8 @@ import os from 'node:os'
 import path from 'node:path'
 import readline from 'node:readline'
 import { fileURLToPath } from 'node:url'
+
+import { UNIVERSAL_FIELD_PRESETS } from '../../packages/core/src/util/colorScale.ts'
 
 const repoRoot = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
@@ -80,6 +83,29 @@ function color(track: Json, type: string) {
   const encoding = (display(track, type).encoding ?? {}) as Json
   const c = encoding.color
   return (typeof c === 'string' ? { field: c } : (c ?? {})) as Json
+}
+
+type Universal = keyof typeof UNIVERSAL_FIELD_PRESETS
+
+// What each of a universal field's levels paints: a written color on its
+// key, by `domain` or else the field's own order, and every other level its
+// own color (`categoricalField`).
+function levelColors(field: Universal, scale: Json) {
+  const own = UNIVERSAL_FIELD_PRESETS[field].scale
+  const range = Array.isArray(scale.range) ? (scale.range as string[]) : []
+  const order = Array.isArray(scale.domain)
+    ? (scale.domain as unknown[]).map(String)
+    : own.domain
+  return Object.fromEntries(
+    own.domain.map((level, i) => {
+      const at = order.indexOf(level)
+      return [level, at !== -1 && at < range.length ? range[at] : own.range[i]]
+    }),
+  )
+}
+
+function ownColors(field: Universal, domain: string[], range: string[]) {
+  return levelColors(field, { domain, range })
 }
 
 function expect(problems: string[], ok: boolean, what: string) {
@@ -330,8 +356,15 @@ const tasks: Task[] = [
         s.type === undefined || s.type === 'ordinal',
         `type ${JSON.stringify(s.type)}`,
       )
-      expect(p, same(s.domain, ['HIGH']), 'domain')
-      expect(p, same(s.range, ['#000000']), 'range')
+      expect(p, s.unknown === undefined, 'unknown repaints the other levels')
+      expect(
+        p,
+        same(
+          levelColors('impact', s),
+          ownColors('impact', ['HIGH'], ['#000000']),
+        ),
+        `colors ${JSON.stringify(levelColors('impact', s))}`,
+      )
       return p
     },
   },
@@ -366,8 +399,15 @@ const tasks: Task[] = [
         s.type === undefined || s.type === 'ordinal',
         `type ${JSON.stringify(s.type)}`,
       )
-      expect(p, same(s.domain, ['DEL', 'DUP']), 'domain')
-      expect(p, same(s.range, ['#ff0000', '#0000ff']), 'range')
+      expect(p, s.unknown === undefined, 'unknown repaints the other levels')
+      expect(
+        p,
+        same(
+          levelColors('svType', s),
+          ownColors('svType', ['DEL', 'DUP'], ['#ff0000', '#0000ff']),
+        ),
+        `colors ${JSON.stringify(levelColors('svType', s))}`,
+      )
       return p
     },
   },
@@ -504,6 +544,35 @@ function validate(track: Json, dir: string) {
 }
 
 const selected = tasks.filter(t => !filter || t.name.includes(filter))
+
+// Scores a past run's tracks under the graders as they stand now.
+const regrade = flag('regrade', '')
+if (regrade) {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'config-docs-regrade-'))
+  let passed = 0
+  let total = 0
+  for (const file of fs.readdirSync(regrade).sort()) {
+    const task = selected.find(t => file.startsWith(`${t.name}-`))
+    if (!task) {
+      continue
+    }
+    const { record } = JSON.parse(
+      fs.readFileSync(path.join(regrade, file), 'utf8'),
+    ) as { record: { track?: Json } }
+    const problems = record.track
+      ? [...task.check(record.track), ...validate(record.track, dir)]
+      : ['no track']
+    total++
+    passed += problems.length ? 0 : 1
+    console.log(
+      `${problems.length ? 'FAIL' : 'PASS'} ${file}`,
+      problems.join('; '),
+    )
+  }
+  fs.rmSync(dir, { recursive: true, force: true })
+  console.log(`${passed}/${total} passed`)
+  process.exit(0)
+}
 
 // Each grader passes its solution and fails a track that sets nothing.
 if (args.includes('--self-check')) {
