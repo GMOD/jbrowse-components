@@ -126,10 +126,9 @@ function minMapqItem(model: FiltersModel): MenuItem {
  * flag, no SA tag and no CIGAR skip, so of the four only `svSignal` answers
  * there, by its SV-size indels, and its menu leaves them out.
  *
- * With them the group is always a submenu, which costs the dialog the extra hop
- * it used to save by being a lone top-level row. That is the right way round:
- * the categories are the everyday filters — an SV review toggles SV evidence
- * on and off several times a locus — and editing a bitmask is the rare one.
+ * The categories are the everyday filters — an SV review toggles SV evidence
+ * on and off several times a locus — and editing a bitmask is the rare one,
+ * so the dialog row follows them.
  */
 export function getFiltersMenuItems(
   model: FiltersModel,
@@ -142,21 +141,17 @@ export function getFiltersMenuItems(
       { model, handleClose },
     ])
   }
-  // With the categories, the dialog row follows them under its own name, since
-  // it holds every filter the submenu leaves out.
-  return readCategories
-    ? filterMenuItems({
-        narrowings: filterNarrowings(model, options),
-        subItems: [
-          minMapqItem(model),
-          ...MENU_CATEGORIES.map(c => readCategoryItem(model, c)),
-          ...more,
-          { label: MORE_FILTERS_LABEL, onClick: openDialog },
-        ],
-      })
-    : filterMenuItems({
-        narrowings: filterNarrowings(model, options),
-        subItems: [minMapqItem(model), ...more],
-        onEdit: openDialog,
-      })
+  // The dialog row comes last under its own name, since it holds every filter
+  // the submenu leaves out.
+  return filterMenuItems({
+    narrowings: filterNarrowings(model, options),
+    subItems: [
+      minMapqItem(model),
+      ...(readCategories
+        ? MENU_CATEGORIES.map(c => readCategoryItem(model, c))
+        : []),
+      ...more,
+      { label: MORE_FILTERS_LABEL, onClick: openDialog },
+    ],
+  })
 }

@@ -41,7 +41,12 @@ function makeRpcData(
 }
 
 // bpPerPx 0.1 → 10px/bp, so text renders (pxPerBp >= 6.5). bpToPx(bp) = bp*10.
-function run(rpcData: PileupDataResult, bpPerPx = 0.1, showMismatches = true) {
+function run(
+  rpcData: PileupDataResult,
+  bpPerPx = 0.1,
+  showMismatches = true,
+  showSoftClips = true,
+) {
   return computeVisibleLabels({
     view: {
       visibleRegions: [
@@ -60,6 +65,7 @@ function run(rpcData: PileupDataResult, bpPerPx = 0.1, showMismatches = true) {
     featureHeight: 10,
     featureSpacing: 2,
     showMismatches,
+    showSoftClips,
     qualityOpacity: OPAQUE_MISMATCHES,
     scrollTop: 0,
   })
@@ -116,6 +122,7 @@ test('a collapsed section (pileupHeight 0) draws no labels', () => {
     featureHeight: 10,
     featureSpacing: 2,
     showMismatches: true,
+    showSoftClips: true,
     qualityOpacity: OPAQUE_MISMATCHES,
     scrollTop: 0,
   })
@@ -167,6 +174,7 @@ describe('SNP letters carry the per-base quality fade', () => {
       featureHeight: 10,
       featureSpacing: 2,
       showMismatches: true,
+      showSoftClips: true,
       qualityOpacity: fade ? DEFAULT_QUALITY_FADE : OPAQUE_MISMATCHES,
       scrollTop: 0,
     }).filter(l => l.type === 'mismatch')
@@ -284,6 +292,7 @@ describe('a deletion wider than the view labels its visible part', () => {
       featureHeight: 10,
       featureSpacing: 2,
       showMismatches: true,
+      showSoftClips: true,
       qualityOpacity: OPAQUE_MISMATCHES,
       scrollTop: 0,
     }).find(l => l.type === 'deletion')
@@ -366,6 +375,28 @@ test('the (S<len>) summary is suppressed when per-base clip letters render', () 
   expect(
     mismatchTexts(makeRpcData({ ...softclipInterbase, ...softclipBasesAt30 })),
   ).toEqual(['T', 'G'])
+})
+
+// Turning soft clipping off drops the cells at once and the letters only when
+// a refetch replaces the data, so the letters follow the setting as the cells
+// do, and the summary comes back with them gone
+test('soft-clip letters follow the setting, not the data a refetch replaces', () => {
+  const softclipInterbase = {
+    interbasePositions: new Uint32Array([30]),
+    interbaseYs: new Uint16Array([2]),
+    interbaseLengths: new Uint32Array([2]),
+    interbaseTypes: new Uint8Array([INTERBASE_SOFTCLIP]),
+  }
+  const labels = run(
+    makeRpcData({ ...softclipInterbase, ...softclipBasesAt30 }),
+    0.1,
+    true,
+    false,
+  )
+  expect(labels.filter(l => l.type === 'mismatch')).toEqual([])
+  expect(labels.filter(l => l.type === 'softclip').map(l => l.text)).toEqual([
+    '(S2)',
+  ])
 })
 
 test('the (S<len>) summary still renders when no per-base clip data', () => {
@@ -460,6 +491,7 @@ describe('the zoom gate agrees with the per-feature fade', () => {
       featureHeight: 10,
       featureSpacing: 2,
       showMismatches: true,
+      showSoftClips: true,
       qualityOpacity: OPAQUE_MISMATCHES,
       scrollTop: 0,
     })
@@ -568,6 +600,7 @@ test('a grouped section near the top of its band stays visible after scrolling',
     featureHeight: 10,
     featureSpacing: 2,
     showMismatches: true,
+    showSoftClips: true,
     qualityOpacity: OPAQUE_MISMATCHES,
     scrollTop: 200,
   })

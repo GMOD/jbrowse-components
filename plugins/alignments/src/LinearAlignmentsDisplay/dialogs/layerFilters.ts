@@ -145,14 +145,46 @@ function percentOf(min: number) {
   return `${Number((min * 100).toFixed(2))}`
 }
 
+/**
+ * Which derived rows' filters narrow something drawn: the junctions while the
+ * sashimi arcs draw, the connections while the band or the connectors do.
+ */
+export function layersInEffect(
+  model: Pick<
+    LayerFiltersModel,
+    'showSashimi' | 'drawnReadConnections' | 'showConnectors'
+  >,
+) {
+  return {
+    junctions: model.showSashimi === true,
+    connections:
+      (model.drawnReadConnections !== undefined &&
+        model.drawnReadConnections !== 'off') ||
+      model.showConnectors === true,
+  }
+}
+
+/** Whether a `filter` field narrows something drawn, for the Filter by count. */
+export function filterFieldInEffect(
+  field: string,
+  layers: ReturnType<typeof layersInEffect>,
+) {
+  return field.startsWith('junction.')
+    ? layers.junctions
+    : field.startsWith('connection.') || field.startsWith('breakpoint.')
+      ? layers.connections
+      : true
+}
+
 /** The dialog's state off the display, each layer only while it draws. */
 export function layerFilterStateOf(model: LayerFiltersModel): LayerFilterState {
   const applied = basesRefinementsApplied(model)
   const types = model.detectedModificationTypes ?? []
   const bases = model.basesFilter
+  const layers = layersInEffect(model)
   return {
     alone: categoryOf(model.filterPredicates, 'alone'),
-    ...(model.showSashimi && model.junctionFilter
+    ...(layers.junctions && model.junctionFilter
       ? {
           junctions: {
             split: splitJunctionsCategory(model.junctionFilter),
@@ -160,9 +192,7 @@ export function layerFilterStateOf(model: LayerFiltersModel): LayerFilterState {
           },
         }
       : {}),
-    ...((model.drawnReadConnections !== undefined &&
-      model.drawnReadConnections !== 'off') ||
-    model.showConnectors
+    ...(layers.connections
       ? model.connectionFilter
         ? {
             connections: {

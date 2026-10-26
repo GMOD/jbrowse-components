@@ -75,6 +75,10 @@ interface ComputeVisibleLabelsParams {
   // PILEUP_MARKS and `softclipBases` is gated on `showSoftClips`, so
   // gating the whole pass left those two drawn and unlabelled.
   showMismatches: boolean
+  // The soft-clip letters' gate, `softclipBases`' own. The data alone lags
+  // the setting by a refetch, and letters drew over clipped ends no cell
+  // filled meanwhile.
+  showSoftClips: boolean
   // `pileup.mismatches.encoding.opacity`. The SNP letter has to honor it as
   // well as the box under it, or the fade does nothing at the one zoom it
   // applies at.
@@ -145,6 +149,7 @@ export function computeVisibleLabels(
     featureHeight,
     featureSpacing,
     showMismatches,
+    showSoftClips,
     qualityOpacity,
     scrollTop,
   } = params
@@ -302,7 +307,7 @@ export function computeVisibleLabels(
         softclipBaseYs,
         softclipBaseBases,
       } = rpcData
-      const hasSoftclipBases = softclipBasePositions.length > 0
+      const hasSoftclipBases = showSoftClips && softclipBasePositions.length > 0
       // Zoomed out, the only thing this loop can emit is the count on a 'large'
       // insertion — small-insertion `(N)`, clip summaries and the SNP letters
       // that read `insertionShadows` are all behind `canRenderText`. So when no

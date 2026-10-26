@@ -147,6 +147,7 @@ import {
   configSlotViews,
   requireReadsConf,
 } from './configSlotViews.ts'
+import { filterFieldInEffect, layersInEffect } from './dialogs/layerFilters.ts'
 import {
   applyChainStrandFrames,
   applyReadColorsByGroup,
@@ -2057,6 +2058,7 @@ export default function stateModelFactory(
             featureHeight: self.featureHeight,
             featureSpacing: self.featureSpacing,
             showMismatches: self.showMismatches,
+            showSoftClips: self.showSoftClips,
             qualityOpacity: self.mismatchQualityOpacity,
             scrollTop: self.scrollTop,
           })
@@ -3558,13 +3560,7 @@ export default function stateModelFactory(
             ...getFiltersMenuItems(self, {
               readCategories: true,
               more: getJunctionFilterItems(self),
-              counts: field =>
-                field.startsWith('junction.')
-                  ? self.showSashimi
-                  : field.startsWith('connection.') ||
-                      field.startsWith('breakpoint.')
-                    ? self.drawnReadConnections !== 'off' || self.showConnectors
-                    : true,
+              counts: field => filterFieldInEffect(field, layersInEffect(self)),
               narrowings: { bases: basesFilterNarrowing(self) },
             }),
             getGroupByMenuItem(self),
