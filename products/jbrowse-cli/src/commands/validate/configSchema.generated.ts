@@ -7821,7 +7821,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "x-closed": true,
           "properties": {
             "value": {
-              "description": "the alpha every resting chord draws at, 0 to 1, over its color's own; unset is 0.32.",
+              "description": "every resting chord's alpha; unset is 0.32.",
               "if": {
                 "type": "null"
               },
