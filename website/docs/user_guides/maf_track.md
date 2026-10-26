@@ -24,8 +24,8 @@ per-species rows resolve into individual bases, with positions where a species
 differs from the reference drawn as colored marks. The features below come from
 three track-menu submenus: **Color by** picks what fills the rows and the
 per-base coloring drawn over them, **Plot type** whether they draw as cells or
-as identity bars, and **Show** holds the bands and overlays that layer on top
-of them.
+as identity bars, and **Show** holds the bands and overlays that layer on top of
+them.
 
 ## Zooming out past the alignment
 
@@ -77,8 +77,8 @@ Its **Per-base coloring** block draws over the fill. **Every base** colors
 matching bases by base too, so the whole alignment reads as sequence, and
 **Codon changes (amino acids)**, below, colors each codon. Zoomed in, a letter
 marks every cell its base colors, in the case the file gives it; UCSC alignments
-lowercase soft-masked repeats. **Show → Mismatches** takes the differing
-bases, insertion markers and deletion counts off, leaving the fill.
+lowercase soft-masked repeats. **Show → Mismatches** takes the differing bases,
+insertion markers and deletion counts off, leaving the fill.
 
 **Plot type** › **Identity X-Y plot** draws identity as each row's bar height, a
 per-species wiggle. The bars take the fill: the heatmap's ramp under **Identity
@@ -127,12 +127,12 @@ is derived from the alignment with no extra data to fetch.
 
 ## Inversions (strand flips)
 
-**Show → Inversions (strand flips)** overlays a diagonal hatch on any block
-that aligns inverted relative to the consensus orientation of its source
-chromosome. Each block is compared to its scaffold's consensus, so an
-arbitrarily-oriented scaffold reads as collinear and only a genuine
-intra-scaffold strand flip is marked. It is an overlay, so it composes on top of
-any fill and per-base coloring.
+**Show → Inversions (strand flips)** overlays a diagonal hatch on any block that
+aligns inverted relative to the consensus orientation of its source chromosome.
+Each block is compared to its scaffold's consensus, so an arbitrarily-oriented
+scaffold reads as collinear and only a genuine intra-scaffold strand flip is
+marked. It is an overlay, so it composes on top of any fill and per-base
+coloring.
 
 ## Codon (amino-acid) view
 
@@ -143,10 +143,10 @@ species' row, marking the coding exons projected onto that species so the gene
 structure reads vertically across the whole alignment. The strip draws over
 whatever the rows are colored by, so it works with any **Color by** choice.
 
-**Codon changes (amino acids)**, under **Color by → Per-base coloring**,
-draws a per-codon layer over the rows in place of the mismatches: every species
-is translated in the reference reading frame, and each codon cell is colored by
-how its amino acid compares to the reference. Nonsynonymous changes stand out,
+**Codon changes (amino acids)**, under **Color by → Per-base coloring**, draws a
+per-codon layer over the rows in place of the mismatches: every species is
+translated in the reference reading frame, and each codon cell is colored by how
+its amino acid compares to the reference. Nonsynonymous changes stand out,
 synonymous (silent) changes get a faint tint, a stop the reference does not
 share is flagged, and conserved codons, including the gene's stop, show the
 fill. The residue is drawn on each codon once you zoom in far enough to read it,
