@@ -123,7 +123,7 @@ The blocks take the first of these that names a color:
 - [`encoding.color`](/docs/config/markdisplayencoding/#slot-color), a
   per-feature fill: a CSS color as its `value`, or a field whose values each
   take a color through a scale (a color per value, a color per interval between
-  cut points, or a gradient) with a key naming them. **Color by...** writes it.
+  cut points, or a gradient) with a key naming them. **Color by** writes it.
 - A feature's own color. A BED9 whose features state an `itemRgb` (ChromHMM
   state colors, for one) opens painted with them, as
   `encoding.color.scale.type: "identity"`; `scale.domain` and `scale.names` name
@@ -192,8 +192,8 @@ applies at render time, with no refetch.
 The rows divide the track height between them, as a multi-row wiggle's do, so
 more samples shrink the rows and the track keeps its height. Drag the track
 taller to give a deep cohort more room per row, or pick **Row height** to give
-each row a fixed height and scroll the rest. **Show... → Row separators** draws
-a line between rows once they are tall enough to hold one.
+each row a fixed height and scroll the rest. **Show → Row separators** draws a
+line between rows once they are tall enough to hold one.
 
 ## Ordering and clustering rows
 

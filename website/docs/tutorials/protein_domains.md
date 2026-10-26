@@ -169,7 +169,7 @@ assembly.
 
 To follow along on genomes.jbrowse.org, open the honey bee genome, add the track
 above, turn on the gene track, **NCBI RefSeq - RefSeq All (GFF)**, and go to
-`NC_037640.1:1,971,400-1,976,800`. In the gene track's menu, choose **Show... →
+`NC_037640.1:1,971,400-1,976,800`. In the gene track's menu, choose **Show →
 Subfeature labels → Below** to label each transcript with the name its domain
 row carries.
 

@@ -97,7 +97,7 @@ test('One row per... and Color by offer the scanned attributes and write the dis
   })
   const items = multiRowMenuItems(model)
   expect(labels(subMenu(items, 'One row per...'))).toEqual(['name', 'sample'])
-  const colorBy = labels(subMenu(items, 'Color by...'))
+  const colorBy = labels(subMenu(items, 'Color by'))
   expect(colorBy).toEqual(
     expect.arrayContaining(['Strand', 'itemRgb', 'name', 'sample', 'score']),
   )
