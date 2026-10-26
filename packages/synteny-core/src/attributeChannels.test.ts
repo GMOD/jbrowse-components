@@ -105,3 +105,23 @@ test('a negative number is a value, and only NaN is missing', () => {
   expect(Array.from(attributes.lfc!)).toEqual([-1.5, Number.NaN, 2])
   expect(attributeRanges.lfc).toEqual({ min: -1.5, max: 2, missing: true })
 })
+
+// One stray sentinel would otherwise turn a numeric column into a text one
+// for the whole session.
+test('nan, inf, - and . read as missing, and text stays text', () => {
+  const sentinels = ['nan', 'NaN', 'Inf', 'inf', '-inf', 'Infinity', '-', '.']
+  const { attributes, attributeRanges } = fill('dn', [
+    { dn: 0.5 },
+    ...sentinels.map(dn => ({ dn })),
+    { dn: 2 },
+  ])
+  expect(Array.from(attributes.dn!)).toEqual([
+    0.5,
+    ...sentinels.map(() => Number.NaN),
+    2,
+  ])
+  expect(attributeRanges.dn).toMatchObject({ min: 0.5, max: 2, missing: true })
+  expect(
+    fill('kind', [{ kind: 'nan' }, { kind: 'INV' }]).attributeRanges.kind,
+  ).toEqual({ labels: ['INV'], colors: {}, missing: true })
+})

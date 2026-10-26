@@ -1,6 +1,13 @@
 import { categoricalColor } from '@jbrowse/core/ui/colors'
+import { SimpleFeature } from '@jbrowse/core/util'
+import { NO_VALUE_LABEL } from '@jbrowse/core/util/categoricalField'
 import { abgrToCssRgba, cssColorToABGR } from '@jbrowse/core/util/colorBits'
 
+import { widenAttributeRanges } from './TrackColorsMixin.ts'
+import {
+  createAttributeChannels,
+  writeFeatureChannels,
+} from './attributeChannels.ts'
 import {
   DEFAULT_RIBBON_COLOR,
   MISSING_VALUE_COLOR,
@@ -16,6 +23,7 @@ import { getColorBySwatch } from './colorLegend.ts'
 import { resolveCategoricalMode } from './colorRamps.ts'
 
 import type { ColorFunctionInputs, RefNamePosition } from './colorFunctions.ts'
+import type { AttributeRange, SyntenyColorPaint } from './colorRamps.ts'
 
 // what `Assembly.getRefNamePosition` answers, for a fixed chromosome order
 function positionIn(order: readonly string[]) {
@@ -455,4 +463,92 @@ test('strand paints the range a color object writes, in domain order', () => {
     cssColorToABGR('gold'),
     cssColorToABGR('black'),
   ])
+})
+
+describe('a column read off the loaded data', () => {
+  function fetchOf(field: string, rows: Record<string, unknown>[]) {
+    const channels = createAttributeChannels([field], rows.length)
+    rows.forEach((row, i) => {
+      writeFeatureChannels(
+        channels.list,
+        i,
+        new SimpleFeature({
+          uniqueId: `f${i}`,
+          refName: 'chr1',
+          start: 0,
+          end: 1,
+          ...row,
+        }),
+      )
+    })
+    return channels.finish(rows.length)
+  }
+  const merged = (...fetches: ReturnType<typeof fetchOf>[]) =>
+    fetches.reduce<Record<string, AttributeRange>>(
+      (acc, f) => widenAttributeRanges(acc, f.attributeRanges),
+      {},
+    )
+  const painter = (
+    field: string,
+    fetch: ReturnType<typeof fetchOf>,
+    view: Record<string, AttributeRange>,
+    paint?: SyntenyColorPaint,
+  ) =>
+    createComparativeColorFunction({
+      field,
+      data: inputs(fetch),
+      trackColor: '#000',
+      defaultColor: DEFAULT_RIBBON_COLOR,
+      attributeRanges: view,
+      paint,
+    })
+
+  test('a written linear scale ramps a column holding text, and the text paints as missing', () => {
+    const mixed = fetchOf('x', [{ x: 0.5 }, { x: 2 }, { x: 'high' }])
+    const numbers = fetchOf('x', [{ x: 0.5 }, { x: 2 }])
+    const linear = { type: 'linear' } as const
+    const fn = painter('x', mixed, merged(mixed), linear)
+    const reference = painter('x', numbers, merged(numbers), linear)
+    expect(fn(0)).toBe(reference(0))
+    expect(fn(1)).toBe(reference(1))
+    expect(fn(0)).not.toBe(fn(1))
+    expect(fn(2)).toBe(MISSING_VALUE_COLOR)
+  })
+
+  test('an ordinal scale paints a numeric column one color per value', () => {
+    const ids = fetchOf('grp', [{ grp: 3 }, { grp: 1 }, { grp: 3 }, {}])
+    const view = merged(ids)
+    const ordinal = { type: 'ordinal' } as const
+    const mode = resolveCategoricalMode('grp', view, ordinal)
+    expect(mode?.labels).toEqual(['3', '1'])
+    const fn = painter('grp', ids, view, ordinal)
+    expect(fn(0)).toBe(cssColorToABGR(labelColor(mode!, '3')))
+    expect(fn(1)).toBe(cssColorToABGR(labelColor(mode!, '1')))
+    expect(fn(2)).toBe(fn(0))
+    expect(fn(0)).not.toBe(fn(1))
+    expect(fn(3)).toBe(UNLABELLED_COLOR)
+    const swatch = getColorBySwatch('grp', {
+      attributeRanges: view,
+      paint: ordinal,
+    })
+    expect(
+      swatch?.kind === 'chips' ? swatch.chips.map(c => c.label) : [],
+    ).toEqual(['3', '1', NO_VALUE_LABEL])
+  })
+
+  test("a fetch of numbers paints through the view's labels when another fetch held text", () => {
+    const text = fetchOf('grp', [
+      { grp: 'a' },
+      { grp: 'b' },
+      { grp: 'c' },
+      { grp: 'd' },
+    ])
+    const numbers = fetchOf('grp', [{ grp: 0.93 }, { grp: 3 }])
+    const view = merged(text, numbers)
+    const mode = resolveCategoricalMode('grp', view)!
+    const fn = painter('grp', numbers, view)
+    expect(fn(0)).toBe(cssColorToABGR(labelColor(mode, '0.93')))
+    expect(fn(1)).toBe(cssColorToABGR(labelColor(mode, '3')))
+    expect(fn(1)).not.toBe(cssColorToABGR(labelColor(mode, 'd')))
+  })
 })
