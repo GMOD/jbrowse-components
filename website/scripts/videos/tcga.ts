@@ -22,10 +22,10 @@ export const tcgaVideos: VideoSpec[] = [
       "Sorting a TCGA-BRCA copy-number stack by profile: 1104 tumors in barcode order, the track menu's Clustering item, and the bands that come back",
     goal: 'Cluster 1104 breast tumors by their copy number around ERBB2',
     url: tcgaVideoFixtures.unclusteredErbb2,
-    // 906px of app at the first frame, the last and its tallest, per the run's
+    // 912px of app at the first frame, the last and its tallest, per the run's
     // own content report, which is the whole clip: nothing here grows the app the
     // way a launch does, because a re-layout reorders the rows it already has.
-    viewportHeight: 910,
+    viewportHeight: 912,
     // The rows have to carry DATA before the camera starts, not just a first
     // paint: a tour that films clustering an empty canvas films nothing. The
     // stack is 1104 rows of a 5.7MB BED even at this window.
