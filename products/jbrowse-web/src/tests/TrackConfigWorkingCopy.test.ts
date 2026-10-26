@@ -54,10 +54,10 @@ test('one track shown in two views is two displays over one config', async () =>
 // as a `null`, where clearing the delta would revert the working copy to the
 // admin value.
 describe('unsetting an admin-configured slot', () => {
-  // gff3_custom_tooltips declares `subfeatureLabels: 'below'` on its
-  // LinearBasicDisplay
+  // gff3_custom_tooltips declares `labels.subfeatures.placement: 'below'` on
+  // its LinearBasicDisplay
   const ADMIN_TRACK = 'gff3_custom_tooltips'
-  const ADMIN_SLOT = 'subfeatureLabels'
+  const ADMIN_SLOT = ['labels', 'subfeatures', 'placement']
 
   beforeEach(() => {
     jest.useFakeTimers()

@@ -132,8 +132,8 @@ test('a short link uploads an encrypted session, not the session', async () => {
     const session = new URLSearchParams(new URL(url).hash.slice(1)).get(
       'session',
     )
-    expect(session).toMatch(/^share-sessId1[\w-]{11}$/)
-    const key = session!.slice(-11)
+    expect(session).toMatch(/^share-sessId1[\w-]{16}$/)
+    const key = session!.slice(-16)
     expect(
       [...service.state.requests, service.state.referer!].join(' '),
     ).not.toContain(key)

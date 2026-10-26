@@ -353,7 +353,7 @@ test('--config replaces an array and merges displayDefaults key by key', async (
       '--config',
       '{"assemblyNames":["c"],"displayDefaults":{"encoding":{"color":{"field":"name"}},"height":50}}',
       '--displayDefaults',
-      '{"mouseover":"jexl:feature.name"}',
+      '{"tooltip":"jexl:feature.name"}',
       '--height',
       '200',
     ])
@@ -362,7 +362,7 @@ test('--config replaces an array and merges displayDefaults key by key', async (
     expect(track.assemblyNames).toEqual(['c'])
     expect(track.displayDefaults).toEqual({
       encoding: { color: { field: 'name' } },
-      mouseover: 'jexl:feature.name',
+      tooltip: 'jexl:feature.name',
       height: 200,
     })
   })
@@ -382,13 +382,13 @@ test('--color, --height, and --displayDefaults merge into displayDefaults', asyn
       '--height',
       '200',
       '--displayDefaults',
-      '{"mouseover":"jexl:feature.name","encoding":{"color":{"value":"green"}}}',
+      '{"tooltip":"jexl:feature.name","encoding":{"color":{"value":"green"}}}',
     ])
 
     // typed --color wins over the color in --displayDefaults, --height parses to
-    // a number, and the unrelated mouseover is preserved
+    // a number, and the unrelated tooltip is preserved
     expect(readConf(ctx).tracks[0].displayDefaults).toEqual({
-      mouseover: 'jexl:feature.name',
+      tooltip: 'jexl:feature.name',
       encoding: { color: { value: 'jexl:feature.strand==1?"blue":"red"' } },
       height: 200,
     })

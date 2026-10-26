@@ -3747,10 +3747,11 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           "labels": {
             "description": "jexl:feature.note || feature.description || ''",
             "name": "jexl:feature.name || feature.id",
+            "subfeatures": {
+              "placement": "below",
+            },
           },
-          "mouseover": "jexl:\`\${feature.name} [\${feature.type}] at \${feature.start} - \${feature.end} (strand: \${(feature.strand == 1 ? '+' : feature.strand == -1 ? '-' : 'none'})\`",
-          "showLabels": "auto",
-          "subfeatureLabels": "below",
+          "tooltip": "jexl:\`\${feature.name} [\${feature.type}] at \${feature.start} - \${feature.end} (strand: \${(feature.strand == 1 ? '+' : feature.strand == -1 ? '-' : 'none'})\`",
           "type": "LinearBasicDisplay",
         },
       ],
@@ -3781,9 +3782,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           "labels": {
             "description": "jexl:feature.note || feature.description || ''",
             "name": "jexl:feature.name || feature.id",
+            "subfeatures": {
+              "placement": "below",
+            },
           },
-          "showLabels": "auto",
-          "subfeatureLabels": "below",
           "type": "LinearBasicDisplay",
         },
       ],
