@@ -1,36 +1,44 @@
-import { DEFAULT_BASES_FILTER } from '../../shared/basesFilter.ts'
+import { deepEqual } from '@jbrowse/core/util/deepEqual'
+
+import {
+  CODE,
+  PROBABILITY,
+  codeEntries,
+  probabilityEntries,
+} from '../../shared/basesFilter.ts'
 import { basesRefinementsApplied } from '../dialogs/layerFilters.ts'
 
+import type { LayerFiltersModel } from '../dialogs/layerFilters.ts'
 import type { ModificationsMenuModel } from './modificationsMenu.ts'
 import type { Reversible } from '@jbrowse/core/ui/filterMenuItems'
 
 /**
- * The per-base refinements in effect that differ from their defaults, for the
- * "Filter by" count, and the clear that returns them to the defaults. The
- * refinements themselves are edited in the "More filters..." dialog.
+ * The per-base refinements in effect that differ from what the track's config
+ * declares, for the "Filter by" count, and the clear that writes the declared
+ * ones back. The refinements themselves are edited in the "More filters..."
+ * dialog.
  */
 export function basesFilterNarrowing(
-  model: ModificationsMenuModel,
+  model: ModificationsMenuModel & Pick<LayerFiltersModel, 'declaredFilters'>,
 ): Reversible {
   const applied = basesRefinementsApplied(model)
   const filter = model.basesFilter
-  const moved = {
-    code: applied.code && filter.codes !== undefined,
-    probability:
-      applied.probability &&
-      (filter.probability.min !== DEFAULT_BASES_FILTER.probability.min ||
-        filter.probability.strict),
+  const declared = model.declaredFilters.basesFilter
+  const restores = {
+    ...(applied.code && !deepEqual(filter.codes, declared.codes)
+      ? { [CODE]: codeEntries(declared.codes) }
+      : {}),
+    ...(applied.probability &&
+    !deepEqual(filter.probability, declared.probability)
+      ? { [PROBABILITY]: probabilityEntries(declared.probability) }
+      : {}),
   }
-  const fields = Object.entries(moved)
-    .filter(([, isMoved]) => isMoved)
-    .map(([field]) => field)
+  const count = Object.keys(restores).length
   return {
-    count: fields.length,
+    count,
     clear: () => {
-      if (fields.length > 0) {
-        model.setBases({
-          filter: Object.fromEntries(fields.map(f => [f, undefined])),
-        })
+      if (count > 0) {
+        model.setBases({ filter: restores })
       }
     },
   }

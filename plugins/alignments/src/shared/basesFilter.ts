@@ -14,6 +14,7 @@ import type { BasesFilter } from './types.ts'
 import type {
   FieldPredicate,
   FieldsPatch,
+  Floor,
 } from '@jbrowse/core/util/fieldPredicate'
 import type { CytosineContext } from '@jbrowse/modifications-utils'
 
@@ -69,6 +70,14 @@ export function contextEntries(context: CytosineContext): FieldPredicate[] {
 /** The `code` entries drawing `codes`; every code while unset or empty. */
 export function codeEntries(codes: readonly string[] | undefined) {
   return codes?.length ? [{ field: CODE, oneOf: [...codes] }] : undefined
+}
+
+/** The `probability` entries writing `floor`; none at the default. */
+export function probabilityEntries({ min, strict }: Floor) {
+  const { probability } = DEFAULT_BASES_FILTER
+  return min === probability.min && strict === probability.strict
+    ? undefined
+    : [{ field: PROBABILITY, [strict ? 'gt' : 'gte']: min }]
 }
 
 /** The `pileup.bases.filter` entries the per-base layer cannot apply. */

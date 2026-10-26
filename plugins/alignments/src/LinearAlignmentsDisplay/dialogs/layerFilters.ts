@@ -19,10 +19,10 @@ import {
   mergeFilter,
 } from '../../shared/alignmentsFilter.ts'
 import {
-  DEFAULT_BASES_FILTER,
   PROBABILITY,
   basesFilterOf,
   codeEntries,
+  probabilityEntries,
 } from '../../shared/basesFilter.ts'
 import { admitsCode } from '../../shared/types.ts'
 
@@ -319,16 +319,10 @@ export function layerBasesPatch(
       ...(percent === undefined || !Number.isFinite(percent)
         ? {}
         : {
-            [PROBABILITY]:
-              percent / 100 === DEFAULT_BASES_FILTER.probability.min && !strict
-                ? undefined
-                : [
-                    {
-                      field: PROBABILITY,
-                      [strict ? 'gt' : 'gte']:
-                        Math.min(Math.max(percent, 0), 100) / 100,
-                    },
-                  ],
+            [PROBABILITY]: probabilityEntries({
+              min: Math.min(Math.max(percent, 0), 100) / 100,
+              strict,
+            }),
           }),
     },
   }

@@ -1,4 +1,5 @@
 import { basesFilterOf, withBasesFields } from '../../shared/basesFilter.ts'
+import { declaredFiltersOf } from '../dialogs/layerFilters.ts'
 import { clickMenuItem } from '../testUtils.ts'
 import { basesFilterNarrowing } from './basesFilterMenu.ts'
 import { cytosineContextItems } from './modificationsMenu.ts'
@@ -21,6 +22,7 @@ function makeModel(
   }: { types?: string[]; unmodified?: boolean; filter?: FieldPredicate[] } = {},
 ) {
   return {
+    declaredFilters: declaredFiltersOf([], []),
     detectedModificationTypes: types,
     bases: { show: field !== undefined, field, unmodified, filter },
     get baseLayer(): BaseLayer | undefined {

@@ -2,14 +2,19 @@ import { bootAlignmentsDisplay, clickMenuItem } from './testUtils.ts'
 
 import type { MenuItem } from '@jbrowse/core/ui'
 
-function createDisplay() {
+function createDisplay(declared: Record<string, unknown> = {}) {
   console.warn = jest.fn()
-  const { baseSession, mount } = bootAlignmentsDisplay({
-    trackConfig: {
-      displays: [{ type: 'LinearAlignmentsDisplay', displayId: 'd1' }],
-    },
-  })
-  const Session = baseSession.volatile(() => ({ rpcManager: {} }))
+  const trackConfig = {
+    displays: [
+      { type: 'LinearAlignmentsDisplay', displayId: 'd1', ...declared },
+    ],
+  }
+  const { baseSession, mount } = bootAlignmentsDisplay({ trackConfig })
+  const Session = baseSession
+    .volatile(() => ({ rpcManager: {} }))
+    .views(() => ({
+      baseTrackConfig: () => trackConfig,
+    }))
   return mount(Session, { configuration: 'd1' }).display
 }
 
@@ -36,6 +41,32 @@ describe('the Filter by count over every layer it filters', () => {
     expect(filterRow(display).label).toBe('Filter by (1)')
     clickMenuItem(filterRow(display).subMenu, 'Clear all filters')
     expect(display.basesFilter.probability.min).toBe(0.1)
+    expect(filterRow(display).label).toBe('Filter by')
+  })
+
+  test('a declared type list does not count, and Clear all filters restores it', () => {
+    const display = createDisplay({
+      pileup: { bases: { filter: [{ field: 'code', oneOf: ['m'] }] } },
+    })
+    display.setBases({ show: true, field: 'modifications' })
+    expect(filterRow(display).label).toBe('Filter by')
+    display.setBases({ filter: { code: [{ field: 'code', oneOf: ['h'] }] } })
+    expect(filterRow(display).label).toBe('Filter by (1)')
+    clickMenuItem(filterRow(display).subMenu, 'Clear all filters')
+    expect(display.basesFilter.codes).toEqual(['m'])
+    expect(filterRow(display).label).toBe('Filter by')
+  })
+
+  test('a declared strict floor does not count, and Clear all filters restores it', () => {
+    const display = createDisplay({
+      pileup: { bases: { filter: [{ field: 'probability', gt: 0.5 }] } },
+    })
+    display.setBases({ show: true, field: 'modifications' })
+    expect(filterRow(display).label).toBe('Filter by')
+    display.setBases({ filter: { probability: undefined } })
+    expect(filterRow(display).label).toBe('Filter by (1)')
+    clickMenuItem(filterRow(display).subMenu, 'Clear all filters')
+    expect(display.basesFilter.probability).toEqual({ min: 0.5, strict: true })
     expect(filterRow(display).label).toBe('Filter by')
   })
 
