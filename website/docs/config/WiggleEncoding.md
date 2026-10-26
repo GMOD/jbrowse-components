@@ -40,3 +40,5 @@ A setting written to it names members one by one: a member left out stays as it 
 | --- | --- |
 | <span id="slot-color">**color**</span><br>[WiggleColor](../wigglecolor) | One CSS color in `value`, or the score through a `scale`, with a key. |
 | <span id="slot-y">**y**</span><br>[YFieldChannel](../yfieldchannel) | The value axis, a [YFieldChannel](../yfieldchannel): `field`, the summary or column each mark plots, and the `scale`, `axis` and `rules` it is drawn through. `scale.fenceQuantile` starts at 0.99, fencing a spike. The density rendering draws no rule and does not widen to one: it spends color on the score and has no axis to rule. |
+| <span id="slot-size">**size**</span><br>[WiggleSize](../wigglesize) | A point's diameter in px. The track menu's Scatter point size writes it. |
+| <span id="slot-strokewidth">**strokeWidth**</span><br>[WiggleSize](../wigglesize) | A line's width in px, Vega-Lite's stroke width. The track menu's Line width writes it. |

@@ -31,5 +31,5 @@ A setting written to it names members one by one: a member left out stays as it 
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
-| <span id="slot-type">**type**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (bar, point, line, rect) = <code>'bar'</code> | bar, point, line or span |
+| <span id="slot-type">**type**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (bar, point, line, rect) = <code>'bar'</code> | bar, point, line or rect |
 | <span id="slot-interpolate">**interpolate**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (step, linear) = <code>'step'</code> | The path a `line` takes between scores: `step` holds each across its bin, as the data says; `linear` runs from one bin's centre to the next, smoother where the bins are few. Read by a line alone. |

@@ -34,8 +34,8 @@ From [ScoreScaleMixin](../scorescalemixin): <span id="volatile-unclippedfencequa
 | <span id="getter-resolution">**resolution**</span><br><code>number</code> | Points per pixel the fetch asks for, clamped to what the Resolution menu offers: the slot is reachable from a track config, which runs no setter, and `0` there divides by zero inside the adapter. |
 | <span id="getter-rpcdatamap">**rpcDataMap**</span><br><code>ReadonlyMap&lt;number, WiggleDataResult&gt;</code> | The fetched scores, keyed by displayedRegionIndex — the foundation's per-region store, narrowed. |
 | <span id="getter-origin">**origin**</span><br><code>number</code> | The value bars grow from, which a color scale also reads where its domain is unset. |
-| <span id="getter-linewidth">**lineWidth**</span><br><code>number</code> | A line's width, the `size` slot or 1 px while unset. |
-| <span id="getter-size">**size**</span><br><code>number</code> | A point's diameter, the `size` slot or 2 px while unset. |
+| <span id="getter-linewidth">**lineWidth**</span><br><code>number</code> | A line's width, `encoding.strokeWidth` or 1 px while unset. |
+| <span id="getter-size">**size**</span><br><code>number</code> | A point's diameter, `encoding.size` or 2 px while unset. |
 | <span id="getter-maxgapmultiple">**maxGapMultiple**</span><br><code>number</code> | Interpolated-line gap threshold, as a multiple of the track's own mean point spacing (see gapBreakLimit). 0 keeps one connected line. |
 | <span id="getter-extent">**extent**</span><br><code>"min-max" &#124; "none"</code> |  |
 | <span id="getter-renderingtype">**renderingType**</span><br><code>"density" &#124; "line" &#124; "linecenter" &#124; "scatter" &#124; "xyplot"</code> |  |
@@ -73,7 +73,8 @@ From [ScoreAxisMixin](../scoreaxismixin): <span id="getter-valuescales">[`valueS
 | <span id="action-setmark">**setMark**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(mark: "bar" &#124; "line" &#124; "point" &#124; "rect", interpolate?: "linear…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(mark: "bar" &#124; "line" &#124; "point" &#124; "rect", interpolate?: "linear" &#124; "step" &#124; undefined) =&gt; void</code></pre></dialog></span> | The plot's `mark.type`, and a line's `mark.interpolate`; any other type resets `interpolate`, which only a line reads. |
 | <span id="action-sety">**setY**</span><br><code>(field: string) =&gt; void</code> | The field plotted on the value axis: a stored summary (`score`, `minScore`, `maxScore`) or any feature field. |
 | <span id="action-setextent">**setExtent**</span><br><code>(val: "min-max" &#124; "none") =&gt; void</code> |  |
-| <span id="action-setsize">**setSize**</span><br><code>(val?: number &#124; undefined) =&gt; void</code> |  |
+| <span id="action-setpointsize">**setPointSize**</span><br><code>(val?: number &#124; undefined) =&gt; void</code> |  |
+| <span id="action-setstrokewidth">**setStrokeWidth**</span><br><code>(val?: number &#124; undefined) =&gt; void</code> |  |
 
 <details class="inherited-members" data-pagefind-ignore>
 <summary>9 inherited actions from one model</summary>
