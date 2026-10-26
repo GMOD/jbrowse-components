@@ -57,6 +57,13 @@ display type:
 - **State model:** [runtime API](../../models/lgvsyntenydisplay)
 - **Base config:** [BaseLinearAlignmentsDisplay](../baselinearalignmentsdisplay)
 
+## Color channels
+
+<!-- prettier-ignore -->
+| Setting | Page | `scale.type` | Preset fields |
+| --- | --- | --- | --- |
+| `encoding.color` | [LGVSyntenyColor](/docs/config/lgvsyntenycolor#preset-fields) | ordinal, linear, threshold | `strand`, `mapq`, `insertSize`, `firstOfPairStrand`, `pairOrientation`, `insertSizeAndOrientation`, `mateRefName` |
+
 ## Config slots
 
 Display slots go on a display entry: `"displays": [{ "type": "LGVSyntenyDisplay", ... }]`, or in the track's [`displayDefaults`](/docs/config_guides/tracks#configuring-displays) when this is its default display. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.

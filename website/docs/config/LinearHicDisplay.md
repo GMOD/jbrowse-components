@@ -41,6 +41,13 @@ Every LinearHicDisplay has a unique `displayId`, a required top-level field that
 - **Adapter:** [HicAdapter](../hicadapter)
 - **State model:** [runtime API](../../models/linearhicdisplay)
 
+## Color channels
+
+<!-- prettier-ignore -->
+| Setting | Page | `scale.type` | Preset fields |
+| --- | --- | --- | --- |
+| `encoding.color` | [HicColor](/docs/config/hiccolor#preset-fields) | linear, symlog, log | `observed`, `observed/expected`, `observed/control` |
+
 ## Config slots
 
 Display slots go on a display entry: `"displays": [{ "type": "LinearHicDisplay", ... }]`, or in the track's [`displayDefaults`](/docs/config_guides/tracks#configuring-displays) when this is its default display. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.

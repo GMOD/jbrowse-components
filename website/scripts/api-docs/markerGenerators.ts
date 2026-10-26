@@ -1,6 +1,7 @@
 import { writeAdapterBaseDocs } from './generateAdapterBaseDocs.ts'
 import { writeBgzfPoolSiteDocs } from './generateBgzfPoolSiteDocs.ts'
 import { writeColorDocs } from './generateColorDocs.ts'
+import { writeColorChannelDocs } from './generateConfigDocs.ts'
 import { writeCrossCuttingMixinDocs } from './generateCrossCuttingMixinDocs.ts'
 import { writeDisplayFoundationDocs } from './generateDisplayFoundationDocs.ts'
 import { writeElementPhaseDocs } from './generateElementPhaseDocs.ts'
@@ -73,6 +74,7 @@ export const MARKER_GENERATORS: MarkerGenerator[] = [
   { label: 'Helper package table', write: writeHelperPackageDocs },
   { label: 'Re-export module table', write: writeReExportDocs },
   { label: 'Slot type table', write: writeSlotTypeDocs },
+  { label: 'Color channel table', write: writeColorChannelDocs },
   {
     // The one generator whose source is a build script rather than TypeScript.
     // Same reason as the rest: the tutorial was restating values the script

@@ -45,6 +45,13 @@ for every viewer.
 - **State model:** [runtime API](../../models/linearmafdisplay)
 - **Base config:** [BaseLinearDisplay](../baselineardisplay)
 
+## Color channels
+
+<!-- prettier-ignore -->
+| Setting | Page | `scale.type` | Preset fields |
+| --- | --- | --- | --- |
+| `encoding.color` | [MafColor](/docs/config/mafcolor#preset-fields) | fixed by the field | `identity`, `refNameRank` |
+
 ## Config slots
 
 Display slots go on a display entry: `"displays": [{ "type": "LinearMafDisplay", ... }]`, or in the track's [`displayDefaults`](/docs/config_guides/tracks#configuring-displays) when this is its default display. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.

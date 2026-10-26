@@ -92,6 +92,15 @@ cluster, and ribbons colored by percent identity:
 - **State model:** [runtime API](../../models/multiwaysyntenydisplay)
 - **Base config:** [BaseLinearDisplay](../baselineardisplay)
 
+## Color channels
+
+<!-- prettier-ignore -->
+| Setting | Page | `scale.type` | Preset fields |
+| --- | --- | --- | --- |
+| `encoding.color` | [MultiWayGeneColor](/docs/config/multiwaygenecolor#preset-fields) | ordinal, threshold | `strand`, `svType`, `impact` |
+| `ribbons.encoding.color` | [RibbonColor](/docs/config/ribboncolor#preset-fields) | linear, threshold | `mapq`, `identity`, `dnds`, `syntenicDepth` |
+| `laneLayers.marks.encoding.color` | [MarkColor](/docs/config/markcolor#preset-fields) | ordinal, linear, log, symlog, threshold, identity | `strand`, `svType`, `impact`, `score` |
+
 ## Config slots
 
 Display slots go on a display entry: `"displays": [{ "type": "MultiWaySyntenyDisplay", ... }]`, or in the track's [`displayDefaults`](/docs/config_guides/tracks#configuring-displays) when this is its default display. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.

@@ -1128,6 +1128,7 @@ function renderConfig(
       docsSection,
       relatedSection,
       presetFieldsSection(header.name),
+      colorChannelsSection(header.name),
       slotsSection,
       retiredSection,
     ),
@@ -1162,28 +1163,30 @@ const levelList = (levels: readonly string[] = []) =>
 // leaves its scale unwritten, from the manifest `jbrowse validate` reads. A
 // channel whose other fields are categories lists the universal fields too,
 // unless it spells one of them its own way, as reads spell strand.
+function presetEntries(presets: FieldPresets<string>) {
+  const universal =
+    presets['*']?.scale.type === 'ordinal' &&
+    !Object.keys(UNIVERSAL_FIELD_PRESETS).some(f => Object.hasOwn(presets, f))
+  return Object.entries({
+    ...(universal ? UNIVERSAL_FIELD_PRESETS : {}),
+    ...presets,
+  }).filter(([field]) => field !== '*')
+}
+
 function presetFieldsSection(name: string) {
   const presets = fieldPresetsOf(name)
   if (!presets) {
     return ''
   }
-  const universal =
-    presets['*']?.scale.type === 'ordinal' &&
-    !Object.keys(UNIVERSAL_FIELD_PRESETS).some(f => Object.hasOwn(presets, f))
-  const rows = Object.entries({
-    ...(universal ? UNIVERSAL_FIELD_PRESETS : {}),
-    ...presets,
+  const rows = presetEntries(presets).map(([field, { scale, legend }]) => {
+    const { type, domain, names, range, ...rest } = scale
+    const defaults = [
+      ...Object.entries(rest).map(([k, v]) => `\`${k}: ${String(v)}\``),
+      ...(range ? [`\`range\`: ${levelList(range)}`] : []),
+      ...(legend?.title ? [`key "${legend.title}"`] : []),
+    ]
+    return `| \`${field}\` | ${type} | ${levelList(domain)} | ${tableCell(names?.join(', '))} | ${defaults.join('; ')} |`
   })
-    .filter(([field]) => field !== '*')
-    .map(([field, { scale, legend }]) => {
-      const { type, domain, names, range, ...rest } = scale
-      const defaults = [
-        ...Object.entries(rest).map(([k, v]) => `\`${k}: ${String(v)}\``),
-        ...(range ? [`\`range\`: ${levelList(range)}`] : []),
-        ...(legend?.title ? [`key "${legend.title}"`] : []),
-      ]
-      return `| \`${field}\` | ${type} | ${levelList(domain)} | ${tableCell(names?.join(', '))} | ${defaults.join('; ')} |`
-    })
   if (rows.length === 0) {
     return ''
   }
@@ -1194,6 +1197,83 @@ function presetFieldsSection(name: string) {
       ['Field', 'Scale', 'Levels', 'Names', 'Other defaults'],
       rows,
     ),
+  )
+}
+
+const SCHEMA_JSON = 'website/static/schema/v5/config.json'
+let schemaDefs: Record<string, { properties?: Record<string, unknown> }>
+
+function scaleTypesOf(scaleSchema: string | undefined) {
+  schemaDefs ??= (
+    JSON.parse(fs.readFileSync(SCHEMA_JSON, 'utf8')) as {
+      $defs: typeof schemaDefs
+    }
+  ).$defs
+  const type = scaleSchema
+    ? (schemaDefs[scaleSchema]?.properties?.type as
+        | { else?: { enum?: string[]; const?: string } }
+        | undefined)
+    : undefined
+  const { enum: types, const: only } = type?.else ?? {}
+  return types?.join(', ') ?? only ?? 'fixed by the field'
+}
+
+// Each color channel a display holds, at any depth, as table cells: where it
+// sits, its page, the scale types it takes and its preset fields.
+function colorChannelCells(display: string) {
+  const cells: string[][] = []
+  const visit = (slots: ManifestSlot[] = [], path: string[]) => {
+    for (const slot of slots) {
+      const at = [...path, slot.name]
+      if (slot.fieldPresets && slot.schema) {
+        const scale = slot.subSlots?.find(s => s.name === 'scale')?.schema
+        const fields = presetEntries(slot.fieldPresets).map(([field]) => field)
+        const anchor = fields.length ? '#preset-fields' : ''
+        cells.push([
+          `\`${at.join('.')}\``,
+          `[${slot.schema}](/docs/config/${slot.schema.toLowerCase()}${anchor})`,
+          scaleTypesOf(scale),
+          levelList(fields),
+        ])
+      } else {
+        visit(slot.subSlots, at)
+      }
+    }
+  }
+  visit(configManifest()[display]?.slots, [])
+  return cells
+}
+
+const CHANNEL_HEADERS = ['Setting', 'Page', '`scale.type`', 'Preset fields']
+const row = (cells: string[]) => `| ${cells.join(' | ')} |`
+
+// What a display can paint, so a reader choosing one sees it without
+// following the encoding pages down.
+function colorChannelsSection(name: string) {
+  const cells =
+    configManifest()[name]?.category === 'displays'
+      ? colorChannelCells(name)
+      : []
+  return cells.length
+    ? section(
+        '## Color channels',
+        markdownTable(CHANNEL_HEADERS, cells.map(row)),
+      )
+    : ''
+}
+
+// Every display's color channels in one table, for the config index.
+export function writeColorChannelDocs() {
+  const rows = Object.keys(configManifestTables().displays ?? {})
+    .sort((a, b) => a.localeCompare(b, 'en'))
+    .flatMap(display =>
+      colorChannelCells(display).map(cells =>
+        row([`[${display}](/docs/config/${display.toLowerCase()})`, ...cells]),
+      ),
+    )
+  return rewriteMarkerBlock(
+    'COLOR_CHANNELS',
+    markdownTable(['Display', ...CHANNEL_HEADERS], rows),
   )
 }
 
