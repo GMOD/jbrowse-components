@@ -178,8 +178,9 @@ export function drawXYPlot(row: RowDraw & { rgb: string }) {
   if (!clipped) {
     return
   }
-  // The strips go on after every bar, as the shader's second quad does, so a
-  // neighbour widened to the min-width floor cannot paint over one.
+  // After every bar, so no neighbour widened to the min-width floor covers a
+  // strip; the shader draws each strip right after its own bar, where the
+  // next bar can.
   setAbgrFill(ctx, CLIP_STRIP_COLOR)
   for (let i = 0; i < n; i++) {
     const side = clipSide(scores[i]!, domainY[0], domainY[1], scaleType)
