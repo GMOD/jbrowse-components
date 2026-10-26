@@ -2,8 +2,8 @@
 title: 'Structural variants (Cancer GIAB) part 2: copy number'
 sidebar_label: SVs (Cancer GIAB pt 2, copy number)
 description:
-  Load four published copy-number callsets and a depth and B-allele frequency
-  track for a hypodiploid tumor, and check copy number at four driver genes
+  Load published copy-number callsets and a depth and B-allele frequency track
+  for a hypodiploid tumor, and check copy number at driver genes
 guide_category: Tutorials
 tutorial_category: Cancer genomics
 ---

@@ -207,12 +207,3 @@ Open `GCF_040938575.1` from the site's header search for `axolotl`, and type
 - Pollard et al. (2010).
   [Detection of nonneutral substitution rates on mammalian phylogenies](https://pmc.ncbi.nlm.nih.gov/articles/PMC2798823/),
   the phyloP method
-- Bouaoun et al. (2016).
-  [TP53 variations in human cancers: new lessons from the IARC TP53 database and genomics data](https://pubmed.ncbi.nlm.nih.gov/27328919/),
-  the mutation distribution across TP53 codons
-- Cho et al. (1994).
-  [Crystal structure of a p53 tumor suppressor-DNA complex: understanding tumorigenic mutations](https://pubmed.ncbi.nlm.nih.gov/8023157/),
-  which hotspot residues contact the DNA and which hold the structure
-- Liao et al. (2023).
-  [A draft human pangenome reference](https://pubmed.ncbi.nlm.nih.gov/37165242/),
-  the HPRC assemblies the pangenome callset is built from

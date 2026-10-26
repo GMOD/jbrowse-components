@@ -58,12 +58,6 @@ download is needed. Reads of your own with `MM` and `ML` tags load by swapping
 
 </details>
 
-## Two parental alleles at the SNRPN imprinting center
-
-Every view below is at `chr15:24,948,000-24,962,000`, the _SNRPN_ imprinting
-center; type it into the location box once the tracks are loaded. The reads and
-the aggregate profile should agree on which allele is methylated.
-
 ## Loading GRCh38
 
 The track's `assemblyNames` has to name the assembly the reads were aligned to,
@@ -80,19 +74,57 @@ GRCh38.
 }
 ```
 
-The figures also show UCSC's CpG islands and the NCBI RefSeq genes. The hosted
-hg38 hub config, https://jbrowse.org/ucsc/hg38/config.json, has both:
+The figures also show UCSC's CpG islands and the NCBI RefSeq genes, both read
+from the files the hosted hg38 hub serves:
 
-- **CpG Islands** reads https://jbrowse.org/ucsc/hg38/cpgIslandExt.bed.gz with a
-  CSI index
-- **NCBI RefSeq - RefSeq All** reads
-  https://jbrowse.org/ucsc/hg38/ncbiRefSeq.gff.gz
+```json addtrack loc=chr15:24,948,000-24,962,000
+{
+  "type": "FeatureTrack",
+  "trackId": "cpg_islands",
+  "name": "CpG Islands",
+  "assemblyNames": ["hg38"],
+  "adapter": {
+    "type": "BedTabixAdapter",
+    "bedGzLocation": {
+      "uri": "https://jbrowse.org/ucsc/hg38/cpgIslandExt.bed.gz"
+    },
+    "index": {
+      "indexType": "CSI",
+      "location": {
+        "uri": "https://jbrowse.org/ucsc/hg38/cpgIslandExt.bed.gz.csi"
+      }
+    }
+  }
+}
+```
+
+```json addtrack loc=chr15:24,948,000-24,962,000
+{
+  "type": "FeatureTrack",
+  "trackId": "ncbi_refseq_all",
+  "name": "NCBI RefSeq - RefSeq All",
+  "assemblyNames": ["hg38"],
+  "adapter": {
+    "type": "Gff3TabixAdapter",
+    "gffGzLocation": {
+      "uri": "https://jbrowse.org/ucsc/hg38/ncbiRefSeq.gff.gz"
+    },
+    "index": {
+      "indexType": "CSI",
+      "location": {
+        "uri": "https://jbrowse.org/ucsc/hg38/ncbiRefSeq.gff.gz.csi"
+      }
+    }
+  }
+}
+```
 
 ## Per-read methylation from the alignments
 
-Load the modBAM as an alignments track. For your own reads, swap `uri` for a
-sorted modBAM or CRAM with the `.bai` or `.crai` beside it, aligned to the same
-assembly:
+Every view below is at `chr15:24,948,000-24,962,000`, the _SNRPN_ imprinting
+center, until the last section widens it. Load the modBAM as an alignments
+track. For your own reads, swap `uri` for a sorted modBAM or CRAM with the
+`.bai` or `.crai` beside it, aligned to the same assembly:
 
 ```json addtrack loc=chr15:24,948,000-24,962,000
 {
@@ -360,7 +392,6 @@ then type `chr15:22,200,000-26,900,000` to take in the whole imprinted domain:
 ## See also
 
 - [](/docs/user_guides/alignments_track#modifications-and-methylation)
-- [](/docs/user_guides/alignments_track#grouping-reads)
 - [](/docs/tutorials/bisulfite)
 - [](/docs/tutorials/analyze_trio)
 - [](/docs/tutorials/hg002_haplotypes)

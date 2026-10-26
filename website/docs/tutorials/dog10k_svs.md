@@ -2,22 +2,24 @@
 title: Structural variants (Dog10K)
 sidebar_label: Dog10K (SVs)
 description:
-  Genotype four classes of structural variant across dog breeds and read each
-  against the gene it sits in
+  Read a deletion, a duplication, an insertion and a retrogene footprint across
+  dog breeds, one row per animal under the gene each variant sits in
 guide_category: Tutorials
 tutorial_category: Population genomics
 tutorial_subcategory: Dog10K
 ---
 
 Dog breeds differ by large structural variants, some of them tied to a breed's
-traits. We slice loci out of the Dog10K callsets over HTTP and show each
-animal's genotype as one row, labelled by breed, under the gene the variant sits
-in:
+traits, such as a deletion in _NHEJ1_ behind Collie eye anomaly, a duplication
+of the amylase gene _AMY2B_, a SINE insertion in _RNASE1_, and the footprint an
+_FGF4_ retrogene leaves at its parent gene. We:
 
-- a deletion in _NHEJ1_ behind Collie eye anomaly
-- a duplication of the amylase gene _AMY2B_
-- a SINE insertion in _RNASE1_
-- the footprint an _FGF4_ retrogene leaves at its parent gene
+- slice the _NHEJ1_ locus out of a Dog10K callset over HTTP and load it as a
+  variant track, one row per animal labelled by breed
+- filter the window to the deletion record
+- load the _AMY2B_ and _RNASE1_ slices the same way
+- align the _FGF4_ retrocopies to their parent gene, where the callset records
+  them as intron deletions
 
 ## Prerequisites
 

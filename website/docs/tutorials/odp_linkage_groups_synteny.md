@@ -3,8 +3,8 @@ title: Synteny by ancestral linkage group (sponge, comb jelly, jellyfish)
 sidebar_label: Synteny (ancestral linkage groups)
 description:
   Load the ortholog tables odp colors by ancestral linkage group, sort each
-  genome's chromosomes against the other's, and follow the groups across six
-  animal genomes
+  genome's chromosomes against the other's, and follow the groups across animal
+  genomes
 guide_category: Tutorials
 tutorial_category: Synteny & comparative genomics
 tutorial_subcategory: Ortholog tables

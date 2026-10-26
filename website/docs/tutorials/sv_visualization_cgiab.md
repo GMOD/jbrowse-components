@@ -2,8 +2,8 @@
 title: 'Structural variants (Cancer GIAB) part 1: breakpoints'
 sidebar_label: SVs (Cancer GIAB pt 1, breakpoints)
 description:
-  Load a tumor/normal HiFi site's five somatic SV callsets and read one
-  translocation and one small deletion against the reads and the tumor assembly
+  Load a tumor/normal HiFi site's somatic SV callsets and read one translocation
+  and one small deletion against the reads and the tumor assembly
 guide_category: Tutorials
 tutorial_category: Cancer genomics
 ---

@@ -12,13 +12,13 @@ A pangenome graph stores the sequence several genomes share once, as a path
 every genome follows, and branches where they differ. We build one of five _E.
 coli_ strains with pggb and turn its outputs into JBrowse tracks on the K12
 genome. Most are **linear projections**, which flatten the graph onto K12's
-coordinates so it loads as an ordinary track:
+coordinates so it loads as an ordinary track. We:
 
-- synteny between the strains
-- the variants the graph calls against K12
-- the whole-genome alignment
-- depth and per-strain presence, which show the core and accessory genome
-- the graph itself, drawn as a track you browse by locus
+- load the alignment between the strains as a synteny track
+- load the variants the graph calls against K12
+- project the whole-genome alignment onto K12 as a MAF track
+- plot depth and per-strain presence to show the core and accessory genome
+- open the graph itself as a track you browse by locus
 
 :::caution Experimental
 

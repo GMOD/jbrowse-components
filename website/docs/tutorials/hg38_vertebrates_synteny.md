@@ -2,8 +2,8 @@
 title: Synteny from liftOver chains (hg38 and eight vertebrates)
 sidebar_label: Synteny (liftOver lanes, vertebrates)
 description:
-  Stack eight UCSC genomes under a human locus from the liftOver chains UCSC
-  already publishes, one indexed alignment per genome composed into one track
+  Stack UCSC genomes under a human locus from the liftOver chains UCSC already
+  publishes, one indexed alignment per genome composed into one track
 guide_category: Tutorials
 tutorial_category: Synteny & comparative genomics
 tutorial_subcategory: Whole-genome alignments

@@ -4,7 +4,7 @@ sidebar_label: Synteny (SyRI rearrangement types)
 description:
   Load the SyRI classification of the differences between assembled genomes, so
   each syntenic, inverted, translocated or duplicated region is a ribbon colored
-  by its type, in a stack of six Arabidopsis accessions and as lanes in the
+  by its type, in a stack of Arabidopsis accessions and as lanes in the
   reference coordinates
 guide_category: Tutorials
 tutorial_category: Synteny & comparative genomics

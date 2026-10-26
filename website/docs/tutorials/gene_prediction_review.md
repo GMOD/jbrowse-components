@@ -3,8 +3,8 @@ title: Reviewing a gene prediction (Tiberius)
 sidebar_label: Gene prediction review
 description:
   Compare gene predictions with an existing annotation, sort the disagreements
-  into four classes, and build a static review page that links each one back
-  into JBrowse
+  into classes, and build a static review page that links each one back into
+  JBrowse
 guide_category: Tutorials
 tutorial_category: Genes & annotation
 ---
@@ -12,7 +12,7 @@ tutorial_category: Genes & annotation
 We compare gene predictions from Tiberius, a deep-learning gene finder, on human
 chr22 with the GENCODE annotation, and:
 
-- sort the models that disagree into four classes
+- sort the models that disagree into classes
 - build a static review page with one card per model, each linking back into
   JBrowse
 - use the page's cards and filters, and the Disagreements track of junctions

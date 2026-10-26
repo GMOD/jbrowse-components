@@ -27,8 +27,8 @@ from. We:
 
 - the
   [JBrowse demo](https://jbrowse.org/code/jb2/main/?config=test_data/config_demo.json&assembly=hg19),
-  whose **GIAB** category in the track selector holds every track below, or your
-  own instance with hg19 loaded
+  whose **GIAB** category in the track selector holds the hg19 tracks below, or
+  your own instance with hg19 loaded
   ([assemblies guide](/docs/config_guides/assemblies))
 
 ## The data
@@ -115,11 +115,14 @@ band built from its own reads:
 
 ## Methylation by haplotype
 
-HG002's nanopore reads also carry 5mC calls in their `MM`/`ML` tags. On hg38,
-navigate to the SNRPN imprinting center at `chr15:24,948,000-24,962,000` and
-open **HG002 ONT reads (5mC, haplotagged)**. In its track menu, **Color by →
-Modifications** paints each CpG red where its 5mC call says methylated, and
-**Color by → Show unmodified in blue** adds blue where it says unmethylated:
+HG002's nanopore reads also carry 5mC calls in their `MM`/`ML` tags. These reads
+are aligned to hg38, so open the
+[demo on hg38](https://jbrowse.org/code/jb2/main/?config=test_data/config_demo.json&assembly=hg38),
+navigate to the _SNRPN_ imprinting center at `chr15:24,948,000-24,962,000` and
+open **HG002 ONT reads (5mC, haplotagged)** from the **Methylation** category.
+In its track menu, **Color by → Modifications** paints each CpG red where its
+5mC call says methylated, and **Color by → Show unmodified in blue** adds blue
+where it says unmethylated:
 
 <Figure caption="Color by → Modifications in the HG002 ONT track menu." src="/img/methylation/hg002_snrpn_color_menu.png" />
 

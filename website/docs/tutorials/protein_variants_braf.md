@@ -2,9 +2,8 @@
 title: 'Variants on protein structures part 6: BRAF V600 in the activation loop'
 sidebar_label: Proteins (variants pt 6, BRAF V600)
 description:
-  Open BRAF on codon 600, whose V600E change drives about half of melanomas,
-  beside a crystal structure of the V600E kinase, and read which of NCBI's
-  conserved sites of the kinase domain the codon falls in
+  Open BRAF on codon 600 beside a crystal structure of the V600E kinase, and
+  read which of NCBI's conserved sites of the kinase domain the codon falls in
 guide_category: Tutorials
 tutorial_category: Transcriptomics & proteins
 tutorial_subcategory: Variants on protein structures

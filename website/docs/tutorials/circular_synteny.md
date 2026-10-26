@@ -3,10 +3,8 @@ title: Synteny on a circle (human and mouse)
 sidebar_label: Synteny (circular, human and mouse)
 description:
   Put two genomes on one circular view, draw UCSC's liftOver chain between them
-  as ribbons straight from the copy jbrowse.org indexes, color the ribbons by
-  chromosome and by strand, read the mouse karyotype in human chromosomes, add a
-  gene density ring over both genomes, and check a ribbon and a ring value
-  against the files they came from
+  as ribbons, order one genome's arc to follow the other's, color the ribbons by
+  strand, and add a gene density ring over both genomes
 guide_category: Tutorials
 tutorial_category: Synteny & comparative genomics
 tutorial_subcategory: Whole-genome alignments
