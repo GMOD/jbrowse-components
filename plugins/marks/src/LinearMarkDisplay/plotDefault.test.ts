@@ -249,3 +249,10 @@ test('a pairwise alignment is one row, and one with no identity draws its spans'
   })
   expect(defaultPlot(blocks)?.marks).toEqual([{ mark: 'rect' }])
 })
+
+test("a bigBed's packed color column states a BED color, and its 0 does not", () => {
+  const scan = (reserved: number) =>
+    scanPlotFields(features([{ reserved }]), { listedSources: 0 }).bedColored
+  expect(scan(52685)).toBe(true)
+  expect(scan(0)).toBeFalsy()
+})

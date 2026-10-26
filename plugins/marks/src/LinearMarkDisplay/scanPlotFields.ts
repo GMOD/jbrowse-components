@@ -1,10 +1,26 @@
 import { MAX_LEGEND_ITEMS } from '@jbrowse/core/ui/legendSpec'
-import { featureBedColor } from '@jbrowse/core/util/colorBits'
+import {
+  BED_COLOR_FIELDS,
+  featureBedColor,
+  featureItemRgb,
+} from '@jbrowse/core/util/colorBits'
 import { matedBy } from '@jbrowse/core/util/featureTransforms'
 
 import type { Feature } from '@jbrowse/core/util'
 
 export const PLOT_FIELD_SAMPLE = 200
+
+// A bigBed's uint color column parses to UCSC's packed 0xRRGGBB, where 0 is
+// unset rather than black.
+function statesBedColor(feature: Feature) {
+  return (
+    featureBedColor(feature) !== undefined ||
+    BED_COLOR_FIELDS.some(field => {
+      const v = feature.get(field)
+      return typeof v === 'number' && v > 0 && !!featureItemRgb(v, true)
+    })
+  )
+}
 
 // Structure rather than data: a plot of `start` or of `uniqueId` says nothing,
 // and `subfeatures` is a tree.
@@ -170,7 +186,7 @@ export function scanPlotFields(
     const record = feature.toJSON()
     reads &&= typeof record.flags === 'number'
     spliced ||= isSpliced(feature)
-    bedColored ||= featureBedColor(feature) !== undefined
+    bedColored ||= statesBedColor(feature)
     for (const field of Object.keys(record)) {
       if (!STRUCTURE_FIELDS.has(field)) {
         attributes.add(field)
