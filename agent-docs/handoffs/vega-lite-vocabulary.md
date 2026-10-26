@@ -1,6 +1,6 @@
 ---
 name: vega-lite-vocabulary
-description: "ADR-238's migration of every display's settings to Vega-Lite's words. Landed: the predicate compiler and every filter, the synteny views' mark, axis, coord and data words, the alignments and MAF parts, the color channel (Pass A), the y channel (Pass B), wiggle and Hi-C `data`, the tree sidebar's axis, the pileup's `mark.height`, the comparative `indels` part, the band layers' filters, `pileup.bases.unmodified` and `coverage.alleles.show`. Open: deleting the retired-spelling lifts once hosted configs regenerate, deploying the respelled demos, and the writers. Read before adding or renaming any display or view setting."
+description: "ADR-238's migration of every display's settings to Vega-Lite's words. Landed: the predicate compiler and every filter, the synteny views' mark, axis, coord and data words, the alignments and MAF parts, the color channel (Pass A), the y channel (Pass B), wiggle and Hi-C `data`, the tree sidebar's axis, the pileup's `mark.height`, the comparative `indels` part, the band layers' filters, `pileup.bases.unmodified` and `coverage.alleles.show`. Open: deleting the retired-spelling lifts once hosted configs regenerate, and the writers. Read before adding or renaming any display or view setting."
 ---
 
 # Vega-Lite vocabulary: what is left
@@ -38,10 +38,8 @@ Git history has each landing.
      wiggle and mark displays, and the `y` lift on wiggle and MAF. Until then
      `jbrowse validate` warns on an old `scales`, in a display entry or a
      `displayDefaults`.
-   - **Demos:** on 2026-10-26 `dtu` and `read_marks` (`encoding.y`), `arg`
-     (identity color `field`) and `hg002` (`representative`) differed from
-     their hosted copies (`scripts/deploy-demo.sh`). `apollo3` differs too and
-     stays, pinned to beta.8 (`demos/apollo3/README.md`).
+   - **Demos:** every hosted `demos/` config matches its committed copy
+     except `apollo3`, pinned to beta.8 (`demos/apollo3/README.md`).
    - The unlanded `chat-request-evals` branch writes 8 `scales.y` lines in
      `scripts/agent-evals/tasks.ts`.
 
