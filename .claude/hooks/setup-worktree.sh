@@ -73,9 +73,11 @@ fi
 # Create the worktree unless a previous run already did. `git worktree add`
 # refuses an existing directory, and reusing one is the idempotent answer for a
 # retried EnterWorktree.
+created=
 if [ -e "$dir/.git" ]; then
   note "reusing existing worktree at $dir"
 else
+  created=1
   base=main
   git -C "$repo" show-ref --verify --quiet "refs/heads/$base" || base=HEAD
   # An existing branch is checked out as is, NOT re-branched from $base, so a
@@ -99,8 +101,12 @@ fi
 # typecheck and 34s for its first build:esm, against 4s and 5s seeded. tsc
 # compares the buildinfo's content hashes, so a stale entry is rebuilt, not
 # trusted. Runs before the install, which links bins into esm/ (jb2capture).
-# A plain copy, never a hardlink: tsc rewrites outputs in place.
-if (cd "$repo" && find . -name '*.tsbuildinfo' -not -path '*/node_modules/*' \
+# A plain copy, never a hardlink: tsc rewrites outputs in place. Only into a new
+# worktree: a reused one's caches describe its own edits, and the primary's,
+# copied over them with the primary's mtimes, let `tsc --build` skip those.
+if [ -z "$created" ]; then
+  note "kept the reused worktree's own tsc caches"
+elif (cd "$repo" && find . -name '*.tsbuildinfo' -not -path '*/node_modules/*' \
   -not -path './.claude/*' -printf '%h\n' |
   while read -r d; do
     [ -d "$dir/$d" ] || continue
