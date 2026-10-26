@@ -5,6 +5,13 @@ import { getScale } from './scale.ts'
 
 import type { YScaleTicks } from '@jbrowse/display-ui/yScaleTicks'
 
+function logTickLabel(v: number) {
+  const a = Math.abs(v)
+  return a !== 0 && (a < 1e-3 || a >= 1e4)
+    ? v.toExponential().replace(/\.?0*e\+?/, 'e')
+    : String(+v.toPrecision(6))
+}
+
 // Builds Y-axis tick positions for a wiggle-family display: tick values come
 // from d3's scale.ticks(4) at normal heights, or fall back to the domain
 // endpoints for short tracks.
@@ -60,7 +67,11 @@ export function computeYTicks(opts: {
   })
   const values = height < 100 ? [domainMin, domainMax] : scale.ticks(4)
   return {
-    items: values.map(v => ({ value: v, y: scale(v) })),
+    items: values.map(v => ({
+      value: v,
+      y: scale(v),
+      ...(scaleType === 'log' ? { label: logTickLabel(v) } : {}),
+    })),
     yTop,
     yBottom,
   }

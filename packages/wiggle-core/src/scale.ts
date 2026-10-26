@@ -19,6 +19,17 @@ export interface Scale {
   ticks(count?: number): number[]
 }
 
+// A log scale stays base 2, so its domain nices to powers of two, but ticks at
+// powers of ten: 2^-10 means nothing on an allele-frequency axis.
+function logTicks(spec: ScaleSpec, count = 10) {
+  const tens = scaleTicks({ ...spec, base: 10 }, count)
+  if (tens.length <= count * 2) {
+    return tens
+  }
+  const decades = tens.filter(t => /^-?1e/.test(t.toExponential()))
+  return decades.length >= 2 ? decades : scaleTicks(spec, count)
+}
+
 function buildScale(spec: ScaleSpec): Scale {
   const scale = ((x: number) => scaleValue(spec, x)) as Scale
   scale.domain = () => [...spec.domain]
@@ -29,7 +40,9 @@ function buildScale(spec: ScaleSpec): Scale {
   scale.ticks = (count?: number) =>
     spec.kind === 'symlog'
       ? symlogTicks(spec.domain, spec.constant ?? 1, count)
-      : scaleTicks(spec, count)
+      : spec.kind === 'log'
+        ? logTicks(spec, count)
+        : scaleTicks(spec, count)
   return scale
 }
 
