@@ -7,14 +7,7 @@ import { planMarks } from '@jbrowse/render-core/marks'
 import { canvasWideBlock } from '@jbrowse/render-core/renderBlock'
 import { Canvas2DRenderingBackendBase } from '@jbrowse/render-core/renderingBackendBase'
 
-import { SASHIMI_SIDES } from '../../features/sashimi/bandFeed.ts'
-import {
-  ARC_CLIPPED_MARKS,
-  ARC_LINK_MARKS,
-  ARC_MARKER_MARK,
-  arcBandState,
-} from './arcMarks.ts'
-import { CONNECTOR_MARK, connectorBandState } from './connectorMarks.ts'
+import { forEachBandPass } from './bandPasses.ts'
 import {
   ALIGNMENTS_COVERAGE_MARKS,
   coverageRegionOf,
@@ -22,12 +15,8 @@ import {
 } from './coverageMarks.ts'
 import { PILEUP_MARKS } from './pileupMarks.ts'
 import { sectionRegionKey, sectionRenderState } from './rendererTypes.ts'
-import { SASHIMI_MARKS, sashimiBandState } from './sashimiMarks.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
-import type { ArcBandFeed } from '../../features/arcs/bandFeed.ts'
-import type { ConnectorFeed } from '../../features/linkedReads/connectorFeed.ts'
-import type { SashimiBandFeed } from '../../features/sashimi/bandFeed.ts'
 import type { AlignmentsCoverageRegion } from './coverageMarks.ts'
 import type {
   AlignmentsRenderingBackend,
@@ -35,6 +24,7 @@ import type {
   RenderBlock,
   RenderState,
   SectionRender,
+  SectionSource,
 } from './rendererTypes.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
@@ -46,12 +36,10 @@ export interface Canvas2DRegion {
   coverage: AlignmentsCoverageRegion
 }
 
-/** What the Canvas2D painter draws from: each key's region and each section's connections and junctions. */
+/** What the Canvas2D painter draws from: each key's region and each section's sources, whose feeds the bands draw. */
 export interface Canvas2DRegionMap {
   regions: ReadonlyMap<number, Canvas2DRegion>
-  sectionFeeds: readonly ReadonlyMap<number, ArcBandFeed>[]
-  sashimiFeeds: readonly ReadonlyMap<number, SashimiBandFeed>[]
-  connectorFeeds: readonly ReadonlyMap<number, ConnectorFeed>[]
+  sections: readonly SectionSource[]
 }
 
 /**
@@ -85,12 +73,7 @@ function buildAlignmentsRegionMap(
       }
     }
   })
-  return {
-    regions,
-    sectionFeeds: sources.sections.map(section => section.arcFeeds),
-    sashimiFeeds: sources.sections.map(section => section.sashimiFeeds),
-    connectorFeeds: sources.sections.map(section => section.connectorFeeds),
-  }
+  return { regions, sections: sources.sections }
 }
 
 /**
@@ -112,15 +95,10 @@ export function drawAlignmentsToCtx(
   )
 }
 
-const NO_REGIONS: Canvas2DRegionMap = {
-  regions: new Map(),
-  sectionFeeds: [],
-  sashimiFeeds: [],
-  connectorFeeds: [],
-}
+const NO_REGIONS: Canvas2DRegionMap = { regions: new Map(), sections: [] }
 
 /**
- * On-screen Canvas2D backend. Thin shell: `sync` rebuilds the regions map
+ * On-screen Canvas2D backend. Thin shell: `upload` rebuilds the regions map
  * via the same pure `buildAlignmentsRegionMap` the SVG path uses; on-screen
  * and export can't drift. `renderBlocks` paints via the pure
  * `drawAlignmentBlocks` entry point.
@@ -164,7 +142,7 @@ export class Canvas2DAlignmentsRenderer
  */
 export function drawAlignmentBlocks(
   ctx: Ctx2D,
-  { regions, sectionFeeds, sashimiFeeds, connectorFeeds }: Canvas2DRegionMap,
+  { regions, sections }: Canvas2DRegionMap,
   blocks: RenderBlock[],
   state: RenderState,
 ) {
@@ -262,130 +240,57 @@ export function drawAlignmentBlocks(
       }
     },
   )
-  paintConnectorBands(ctx, connectorFeeds, state)
-  paintArcBands(ctx, sectionFeeds, blocks, state)
-  paintSashimiBands(ctx, sashimiFeeds, state)
+  paintBands(ctx, sections, blocks, state)
   return painted
 }
 
-// Each section's connectors over its pileup, in the GPU's order: the mark
-// over the whole canvas from every region's feed, clipped to the section's
-// connector band.
-function paintConnectorBands(
+// The bands over the blocks, in `forEachBandPass`' order, which the GPU
+// renderer draws too.
+function paintBands(
   ctx: Ctx2D,
-  connectorFeeds: readonly ReadonlyMap<number, ConnectorFeed>[],
-  state: RenderState,
-) {
-  const { canvasWidth } = state
-  state.sections.forEach((sec, s) => {
-    const feeds = connectorFeeds[s]
-    if (!feeds || feeds.size === 0 || sec.connectorClipHeight <= 0) {
-      return
-    }
-    const bandState = connectorBandState(state, sec)
-    withClip(
-      ctx,
-      0,
-      sec.connectorClipTop,
-      canvasWidth,
-      sec.connectorClipHeight,
-      () => {
-        for (const [regionIdx, feed] of feeds) {
-          CONNECTOR_MARK.paintBlock(
-            ctx,
-            feed,
-            canvasWideBlock(regionIdx, canvasWidth),
-            bandState,
-          )
-        }
-      },
-    )
-  })
-}
-
-// Each section's splice junctions over everything, in the GPU's order: each
-// side's mark over the whole canvas from every region's feed, clipped to the
-// side's band.
-function paintSashimiBands(
-  ctx: Ctx2D,
-  sashimiFeeds: readonly ReadonlyMap<number, SashimiBandFeed>[],
-  state: RenderState,
-) {
-  const { canvasWidth } = state
-  state.sections.forEach((sec, s) => {
-    const feeds = sashimiFeeds[s]
-    if (!feeds || feeds.size === 0) {
-      return
-    }
-    const bandState = sashimiBandState(state, sec)
-    SASHIMI_SIDES.forEach((side, m) => {
-      const band = bandState.sashimi[side]
-      if (band) {
-        withClip(ctx, 0, band.clipTop, canvasWidth, band.clipHeight, () => {
-          for (const [regionIdx, feed] of feeds) {
-            SASHIMI_MARKS[m]!.paintBlock(
-              ctx,
-              feed,
-              canvasWideBlock(regionIdx, canvasWidth),
-              bandState,
-            )
-          }
-        })
-      }
-    })
-  })
-}
-
-// Each section's read connections after every block, in the GPU's order: each
-// connection mark over the whole canvas from every region's feed, then block
-// by block the connections clipped to their block and the endpoint squares,
-// clipped to the band.
-function paintArcBands(
-  ctx: Ctx2D,
-  sectionFeeds: readonly ReadonlyMap<number, ArcBandFeed>[],
+  sections: readonly SectionSource[],
   blocks: RenderBlock[],
   state: RenderState,
 ) {
   const { canvasWidth, canvasHeight } = state
-  state.sections.forEach((sec, s) => {
-    const bandState = arcBandState(state, sec)
-    const feeds = sectionFeeds[s]
-    if (
-      !bandState ||
-      !feeds ||
-      feeds.size === 0 ||
-      bandState.arcBand.height <= 0
-    ) {
-      return
-    }
-    const band = bandState.arcBand
-    withClip(ctx, 0, band.top, canvasWidth, band.height, () => {
-      for (const mark of ARC_LINK_MARKS) {
-        for (const [regionIdx, feed] of feeds) {
-          mark.paintBlock(
-            ctx,
-            feed,
-            canvasWideBlock(regionIdx, canvasWidth),
-            bandState,
-          )
-        }
-      }
-    })
-    forEachClippedBlock(
-      ctx,
-      blocks,
-      canvasWidth,
-      canvasHeight,
-      block => feeds.get(block.displayedRegionIndex),
-      (feed, block, { scissorX, scissorW }) => {
-        withClip(ctx, scissorX, band.top, scissorW, band.height, () => {
-          const wide = canvasWideBlock(block.displayedRegionIndex, canvasWidth)
-          for (const mark of ARC_CLIPPED_MARKS) {
-            mark.paintBlock(ctx, feed, wide, bandState)
+  forEachBandPass(sections, state, {
+    visit(pass) {
+      withClip(ctx, 0, pass.top, canvasWidth, pass.height, () => {
+        for (const mark of pass.spanning) {
+          for (const [regionIdx, feed] of pass.feeds) {
+            mark.paintBlock(
+              ctx,
+              feed,
+              canvasWideBlock(regionIdx, canvasWidth),
+              pass.state,
+            )
           }
-          ARC_MARKER_MARK.paintBlock(ctx, feed, block, bandState)
-        })
-      },
-    )
+        }
+      })
+      const { perBlock } = pass
+      if (perBlock) {
+        forEachClippedBlock(
+          ctx,
+          blocks,
+          canvasWidth,
+          canvasHeight,
+          block => pass.feeds.get(block.displayedRegionIndex),
+          (feed, block, { scissorX, scissorW }) => {
+            withClip(ctx, scissorX, pass.top, scissorW, pass.height, () => {
+              const wide = canvasWideBlock(
+                block.displayedRegionIndex,
+                canvasWidth,
+              )
+              for (const mark of perBlock.wide) {
+                mark.paintBlock(ctx, feed, wide, pass.state)
+              }
+              for (const mark of perBlock.own) {
+                mark.paintBlock(ctx, feed, block, pass.state)
+              }
+            })
+          },
+        )
+      }
+    },
   })
 }

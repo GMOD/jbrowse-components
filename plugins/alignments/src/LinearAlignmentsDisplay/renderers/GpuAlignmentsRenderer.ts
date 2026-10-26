@@ -14,22 +14,10 @@ import { GpuRenderingBackendBase } from '@jbrowse/render-core/renderingBackendBa
 import { EMPTY_ARC_BAND_FEED } from '../../features/arcs/bandFeed.ts'
 import { LINKED_READ_LINE_MARK } from '../../features/linkedReads/mark.ts'
 import { READ_MARK } from '../../features/read/mark.ts'
-import {
-  EMPTY_SASHIMI_BAND_FEED,
-  SASHIMI_SIDES,
-} from '../../features/sashimi/bandFeed.ts'
-import {
-  ARC_BAND_MARKS,
-  ARC_CLIPPED_MARKS,
-  ARC_LINK_MARKS,
-  ARC_MARKER_MARK,
-  arcBandState,
-} from './arcMarks.ts'
-import {
-  CONNECTOR_MARK,
-  EMPTY_CONNECTOR_FEED,
-  connectorBandState,
-} from './connectorMarks.ts'
+import { EMPTY_SASHIMI_BAND_FEED } from '../../features/sashimi/bandFeed.ts'
+import { ARC_BAND_MARKS } from './arcMarks.ts'
+import { forEachBandPass } from './bandPasses.ts'
+import { CONNECTOR_MARK, EMPTY_CONNECTOR_FEED } from './connectorMarks.ts'
 import {
   ALIGNMENTS_COVERAGE_MARKS,
   type AlignmentsCoverageRegion,
@@ -44,7 +32,7 @@ import {
   writePileupPalette,
 } from './pileupUniforms.ts'
 import { sectionRegionKey, sectionRenderState } from './rendererTypes.ts'
-import { SASHIMI_MARKS, sashimiBandState } from './sashimiMarks.ts'
+import { SASHIMI_MARKS } from './sashimiMarks.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 import type { ArcBandFeed } from '../../features/arcs/bandFeed.ts'
@@ -56,6 +44,7 @@ import type {
   AlignmentsSources,
   RenderBlock,
   RenderState,
+  SectionSource,
 } from './rendererTypes.ts'
 import type { BlockClipResult } from '@jbrowse/render-core/blockClipUtils'
 import type { CanvasScale } from '@jbrowse/render-core/canvas2dUtils'
@@ -116,9 +105,7 @@ export class GpuAlignmentsRenderer
   // rebuilt with its HAL on a context loss — so the memo drops exactly when the
   // GPU buffers do, which is the part a hand-rolled model-side memo forgets.
   private uploaded = new Map<number, UploadedRegion>()
-  private sectionFeeds: ReadonlyMap<number, ArcBandFeed>[] = []
-  private sashimiFeeds: ReadonlyMap<number, SashimiBandFeed>[] = []
-  private connectorFeeds: ReadonlyMap<number, ConnectorFeed>[] = []
+  private sections: readonly SectionSource[] = []
   private textures: MarkTextureBinder
 
   constructor(hal: GpuHal) {
@@ -145,11 +132,7 @@ export class GpuAlignmentsRenderer
     // namespaced via sectionRegionKey; section 0 keys equal the raw region
     // index, so the ungrouped path is byte-identical to pre-grouping.
     this.regions.clear()
-    this.sectionFeeds = sources.sections.map(section => section.arcFeeds)
-    this.sashimiFeeds = sources.sections.map(section => section.sashimiFeeds)
-    this.connectorFeeds = sources.sections.map(
-      section => section.connectorFeeds,
-    )
+    this.sections = sources.sections
     const seen = new Set<number>()
     sources.sections.forEach((section, s) => {
       const { laidOutPileupMap, arcFeeds, sashimiFeeds, connectorFeeds } =
@@ -336,9 +319,7 @@ export class GpuAlignmentsRenderer
       }
     }
 
-    this.drawConnectorBands(state, scale, bufH)
-    this.drawArcBands(blocks, state, scale, bufH)
-    this.drawSashimiBands(state, scale, bufH)
+    this.drawBands(blocks, state, scale, bufH)
 
     this.hal.clearScissor()
     this.hal.clearViewport()
@@ -423,172 +404,86 @@ export class GpuAlignmentsRenderer
     return true
   }
 
-  // Each section's read connections, after every block: each connection mark
-  // over the whole canvas from every region's feed, so one crosses a seam
-  // whole and every region's ticks lie under every region's arcs, then block
-  // by block the connections clipped to their block, placed canvas-wide like
-  // the rest, and the endpoint squares over them. Scissored to the band.
-  private drawArcBands(
+  // The bands over the blocks, in `forEachBandPass`' order, which the Canvas2D
+  // painter draws too, each scissored to its strip.
+  private drawBands(
     blocks: RenderBlock[],
     state: RenderState,
     scale: CanvasScale,
     bufH: number,
   ) {
+    const { hal, uBand, textures } = this
     const { canvasWidth, canvasHeight } = state
-    state.sections.forEach((sec, s) => {
-      const bandState = arcBandState(state, sec)
-      const feeds = this.sectionFeeds[s]
-      if (!bandState || !feeds || feeds.size === 0) {
-        return
-      }
-      const band = bandState.arcBand
-      const strip = devicePxBand(band.top, band.height, scale.y, bufH)
-      if (strip.height <= 0) {
-        return
-      }
-      for (const mark of ARC_LINK_MARKS) {
-        for (const [regionIdx, feed] of feeds) {
-          const block = canvasWideBlock(regionIdx, canvasWidth)
-          const clip = clipBlock(block, canvasWidth, canvasHeight, scale)
-          if (clip) {
-            this.hal.setScissor(clip.pxX, strip.top, clip.pxW, strip.height)
-            drawMarks(
-              this.hal,
-              this.uBand,
-              [mark],
-              block,
-              clip,
-              feed,
-              bandState,
-              sectionRegionKey(s, regionIdx),
-              this.textures,
-            )
-          }
-        }
-      }
-      for (const block of blocks) {
-        const feed = feeds.get(block.displayedRegionIndex)
-        const clip = clipBlock(block, canvasWidth, canvasHeight, scale)
-        if (feed && clip) {
-          this.hal.setScissor(clip.pxX, strip.top, clip.pxW, strip.height)
-          const wide = canvasWideBlock(block.displayedRegionIndex, canvasWidth)
-          const wideClip = clipBlock(wide, canvasWidth, canvasHeight, scale)
-          if (wideClip) {
-            drawMarks(
-              this.hal,
-              this.uBand,
-              ARC_CLIPPED_MARKS,
-              wide,
-              wideClip,
-              feed,
-              bandState,
-              sectionRegionKey(s, block.displayedRegionIndex),
-              this.textures,
-            )
-          }
-          drawMarks(
-            this.hal,
-            this.uBand,
-            [ARC_MARKER_MARK],
-            block,
-            clip,
-            feed,
-            bandState,
-            sectionRegionKey(s, block.displayedRegionIndex),
-            this.textures,
-          )
-        }
-      }
-    })
-  }
-
-  // Each section's splice junctions, over everything: each side's mark over
-  // the whole canvas from every region's feed, so a junction crosses a
-  // collapsed intron whole, scissored to the side's band.
-  private drawSashimiBands(
-    state: RenderState,
-    scale: CanvasScale,
-    bufH: number,
-  ) {
-    const { canvasWidth, canvasHeight } = state
-    state.sections.forEach((sec, s) => {
-      const feeds = this.sashimiFeeds[s]
-      if (!feeds || feeds.size === 0) {
-        return
-      }
-      const bandState = sashimiBandState(state, sec)
-      SASHIMI_SIDES.forEach((side, m) => {
-        const band = bandState.sashimi[side]
-        const strip = band
-          ? devicePxBand(band.clipTop, band.clipHeight, scale.y, bufH)
-          : undefined
-        if (!strip || strip.height <= 0) {
+    forEachBandPass(this.sections, state, {
+      visit(pass) {
+        const strip = devicePxBand(pass.top, pass.height, scale.y, bufH)
+        if (strip.height <= 0) {
           return
         }
-        for (const [regionIdx, feed] of feeds) {
-          const block = canvasWideBlock(regionIdx, canvasWidth)
-          const clip = clipBlock(block, canvasWidth, canvasHeight, scale)
-          if (clip) {
-            this.hal.setScissor(clip.pxX, strip.top, clip.pxW, strip.height)
-            drawMarks(
-              this.hal,
-              this.uBand,
-              [SASHIMI_MARKS[m]!],
-              block,
-              clip,
-              feed,
-              bandState,
-              sectionRegionKey(s, regionIdx),
-              this.textures,
-            )
+        for (const mark of pass.spanning) {
+          for (const [regionIdx, feed] of pass.feeds) {
+            const block = canvasWideBlock(regionIdx, canvasWidth)
+            const clip = clipBlock(block, canvasWidth, canvasHeight, scale)
+            if (clip) {
+              hal.setScissor(clip.pxX, strip.top, clip.pxW, strip.height)
+              drawMarks(
+                hal,
+                uBand,
+                [mark],
+                block,
+                clip,
+                feed,
+                pass.state,
+                sectionRegionKey(pass.section, regionIdx),
+                textures,
+              )
+            }
           }
         }
-      })
-    })
-  }
-
-  // Each section's connectors over its pileup, from every region's feed, so a
-  // connector crosses a region seam whole, scissored to the section's
-  // connector band.
-  private drawConnectorBands(
-    state: RenderState,
-    scale: CanvasScale,
-    bufH: number,
-  ) {
-    const { canvasWidth, canvasHeight } = state
-    state.sections.forEach((sec, s) => {
-      const feeds = this.connectorFeeds[s]
-      if (!feeds || feeds.size === 0) {
-        return
-      }
-      const strip = devicePxBand(
-        sec.connectorClipTop,
-        sec.connectorClipHeight,
-        scale.y,
-        bufH,
-      )
-      if (strip.height <= 0) {
-        return
-      }
-      const bandState = connectorBandState(state, sec)
-      for (const [regionIdx, feed] of feeds) {
-        const block = canvasWideBlock(regionIdx, canvasWidth)
-        const clip = clipBlock(block, canvasWidth, canvasHeight, scale)
-        if (clip) {
-          this.hal.setScissor(clip.pxX, strip.top, clip.pxW, strip.height)
-          drawMarks(
-            this.hal,
-            this.uBand,
-            [CONNECTOR_MARK],
-            block,
-            clip,
-            feed,
-            bandState,
-            sectionRegionKey(s, regionIdx),
-            this.textures,
-          )
+        const { perBlock } = pass
+        if (perBlock) {
+          for (const block of blocks) {
+            const feed = pass.feeds.get(block.displayedRegionIndex)
+            const clip = clipBlock(block, canvasWidth, canvasHeight, scale)
+            if (feed && clip) {
+              const key = sectionRegionKey(
+                pass.section,
+                block.displayedRegionIndex,
+              )
+              hal.setScissor(clip.pxX, strip.top, clip.pxW, strip.height)
+              const wide = canvasWideBlock(
+                block.displayedRegionIndex,
+                canvasWidth,
+              )
+              const wideClip = clipBlock(wide, canvasWidth, canvasHeight, scale)
+              if (wideClip) {
+                drawMarks(
+                  hal,
+                  uBand,
+                  perBlock.wide,
+                  wide,
+                  wideClip,
+                  feed,
+                  pass.state,
+                  key,
+                  textures,
+                )
+              }
+              drawMarks(
+                hal,
+                uBand,
+                perBlock.own,
+                block,
+                clip,
+                feed,
+                pass.state,
+                key,
+                textures,
+              )
+            }
+          }
         }
-      }
+      },
     })
   }
 

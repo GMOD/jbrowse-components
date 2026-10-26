@@ -7,7 +7,11 @@ import {
 import { canvasWideBlock } from '@jbrowse/render-core/renderBlock'
 
 import { SASHIMI_SIDES } from '../../features/sashimi/bandFeed.ts'
-import { SASHIMI_MARKS } from '../renderers/sashimiMarks.ts'
+import {
+  SASHIMI_HITS,
+  SASHIMI_MARK,
+  SASHIMI_MARKS,
+} from '../renderers/sashimiMarks.ts'
 import { SASHIMI_FEATURE_ID_PREFIX } from './sashimiArcs.ts'
 
 import type {
@@ -38,8 +42,6 @@ export interface SashimiMarkHit {
   groupKey: string
 }
 
-const HITS = { up: 'upHits', down: 'downHits' } as const
-
 function oneInstance(
   feed: SashimiBandFeed,
   side: SashimiSide,
@@ -64,7 +66,7 @@ export function sashimiHighlight(
     return undefined
   }
   const recorder = recordPath()
-  SASHIMI_MARKS[SASHIMI_SIDES.indexOf(side)]!.paintBlock(
+  SASHIMI_MARK[side].paintBlock(
     recorder.ctx,
     oneInstance(feed, side, index),
     block,
@@ -113,7 +115,7 @@ export function resolveSashimiHover(
       regionKeys: feeds.keys(),
       candidates: (feed, mark) =>
         inBand(state, SASHIMI_SIDES[mark]!, yPx)
-          ? backToFront(0, feed[HITS[SASHIMI_SIDES[mark]!]].length)
+          ? backToFront(0, feed[SASHIMI_HITS[SASHIMI_SIDES[mark]!]].length)
           : [],
     },
   )
@@ -121,7 +123,7 @@ export function resolveSashimiHover(
     return undefined
   }
   const side = SASHIMI_SIDES[found.mark]!
-  const junction = found.region[HITS[side]][found.index]
+  const junction = found.region[SASHIMI_HITS[side]][found.index]
   const highlight = sashimiHighlight(
     found.region,
     side,
@@ -159,7 +161,7 @@ export function selectedSashimiHighlight(
   const key = featureId.slice(prefix.length)
   for (const [regionIdx, feed] of feeds) {
     for (const side of SASHIMI_SIDES) {
-      const index = feed[HITS[side]].findIndex(j => j.key === key)
+      const index = feed[SASHIMI_HITS[side]].findIndex(j => j.key === key)
       if (index !== -1) {
         return sashimiHighlight(
           feed,

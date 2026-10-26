@@ -114,15 +114,17 @@ function sideMark(side: SashimiSide) {
 }
 
 /**
- * The splice junctions, `up` then `down`, in `SASHIMI_SIDES` order: a dome
- * from donor to acceptor whose apex plots the junction's span and whose stroke
- * its read count. Each spans the view, so a junction crosses a collapsed
- * intron whole.
+ * The splice junctions by side: a dome from donor to acceptor whose apex plots
+ * the junction's span and whose stroke its read count. Each spans the view, so
+ * a junction crosses a collapsed intron whole.
  */
-export const SASHIMI_MARKS: Mark<SashimiBandFeed, SashimiBandState>[] = [
-  sideMark('up'),
-  sideMark('down'),
-]
+export const SASHIMI_MARK: Record<
+  SashimiSide,
+  Mark<SashimiBandFeed, SashimiBandState>
+> = { up: sideMark('up'), down: sideMark('down') }
+
+/** `SASHIMI_MARK` in `SASHIMI_SIDES` order, for the uploads and the hit chain. */
+export const SASHIMI_MARKS = SASHIMI_SIDES.map(side => SASHIMI_MARK[side])
 
 /** A junction's read count, at its arc's apex in canvas px. */
 export interface SashimiLabel {
@@ -132,7 +134,8 @@ export interface SashimiLabel {
   count: number
 }
 
-const HITS = { up: 'upHits', down: 'downHits' } as const
+/** The feed array holding each side's junctions, by side. */
+export const SASHIMI_HITS = { up: 'upHits', down: 'downHits' } as const
 
 /**
  * The count labels of every section, each where its mark says a label stands
@@ -157,7 +160,7 @@ export function sashimiLabels(
         const params = sideParams(band, state, side === 'down')
         for (const [regionIdx, feed] of feeds) {
           const block = canvasWideBlock(regionIdx, state.canvasWidth)
-          const hits = feed[HITS[side]]
+          const hits = feed[SASHIMI_HITS[side]]
           for (let i = 0; i < hits.length; i++) {
             const { key, count } = hits[i]!
             const apex = linkLabelAnchor(feed[side], block, state, params, i)
