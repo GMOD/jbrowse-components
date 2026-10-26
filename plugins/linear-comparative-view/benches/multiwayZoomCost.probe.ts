@@ -307,7 +307,12 @@ for (let step = 0; step < 19; step++, span *= 1.35) {
     })
   })
   const freshFills = () =>
-    geneColors(config, config.encoding.color.value, config.utrColor, pm.jexl)
+    geneColors(
+      config,
+      config.encoding.color.value,
+      config.utrs.encoding.color.value,
+      pm.jexl,
+    )
   const minOf = (f: () => void) => Math.min(...[0, 1, 2, 3, 4].map(() => ms(f)))
   let geneCount = 0
   let onCanvasCount = 0
@@ -369,8 +374,7 @@ for (let step = 0; step < 19; step++, span *= 1.35) {
   const tColor = minOf(() => {
     const fills = freshFills()
     for (const { gene } of spans) {
-      fills.fill(gene.feature, undefined)
-      fills.utr(gene.feature)
+      fills.utr(gene.feature, fills.fill(gene.feature, undefined))
     }
   })
   console.log(

@@ -31,7 +31,8 @@ function utrOf(snapshot: Record<string, unknown>) {
     conf.utrs.encoding.color.value,
     jexl,
   )
-  return colors.utr(gene, colors.fill(gene, undefined))
+  const { fill, utr } = colors
+  return utr(gene, fill(gene, undefined))
 }
 
 test('a UTR keeps the contrasting blue where nothing sets the fill', () => {

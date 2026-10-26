@@ -23,9 +23,9 @@ Amended 2026-10-23 for Pass B, the y channel (below): `encoding.y` carries
 tree sidebar's toggles go to an `axis` beside `rows`.
 
 Amended 2026-10-26 for the canvas feature display (below): its labels are
-parts with `show`, `mouseover` is `tooltip`, `longestCoding` is
-`representative`, and `subParts`, `connectorColor` and the per-feature
-`mark.height` callback are cut.
+parts with `show`, `mouseover` is `tooltip`, `utrColor` is
+`utrs.encoding.color`, `longestCoding` is `representative`, and `subParts`,
+`connectorColor` and the per-feature `mark.height` callback are cut.
 
 Colin's steer, on a review of the linear synteny view's settings: aim for
 ideal grammar-of-graphics terms rather than house ones ("things like
@@ -256,15 +256,19 @@ against the code, checked the spelling twice.
 - **Cut:** `subParts` (the coding-transcript glyph draws its CDS and UTR
   boxes), `connectorColor` (the glyph's lines take the theme's stroke color)
   and `mark.height`'s per-feature callback (`pileup.mark.height` takes none).
+- **`utrs: { encoding: { color } }`** replaces `utrColor` on both gene
+  glyphs, the canvas feature display's and the multi-way display's, as a
+  part's fill sits in its own `encoding` (`pileup.bases`, `readConnections`,
+  `ribbons`). display-kit's `FeatureUtrs` serves both. The color is a
+  constant or a per-feature jexl `value`, no field: a UTR takes a field's
+  color through its transcript's fill. Unset, a UTR takes its gene's fill,
+  and the contrasting UTR blue only where nothing sets one, which repaints
+  the multi-way UTRs under cluster or constant colors to match the gene
+  track above the lanes.
 - **Kept:** `displayMode`, igv.js's word for the same presets, which apply on
   the main thread and also step font size and row padding; `geneGlyphMode`
-  as a slot; `transcripts`; `containers`; `utrColor`; and
-  `encoding.color.value`'s callback, which colors per box where a `field`
-  reads the transcript.
-- **Open:** the multi-way display's `utrColor` is a color with a default,
-  where the canvas one is unset until written and then follows the fill.
-  Converging them repaints the multi-way UTRs under cluster colors, which
-  needs a capture first.
+  as a slot; `transcripts`; `containers`; and `encoding.color.value`'s
+  callback, which colors per box where a `field` reads the transcript.
 
 ### Mark, guides, coordinates
 
@@ -384,6 +388,7 @@ predicate in the layer's own `filter`:
 | `show: true \| false \| 'auto'` on a label part | `show` is a boolean on every part |
 | `displayMode`'s presets as written `mark.height` values, `collapsed` as a `layout` | The worker reads the height, so each preset click would refetch; the presets also step font size and padding |
 | `containers` as `unnest` | It names a data transform; only the layout changes, and filters, tables and counts see the same records |
+| A flat `utrColor`, or `encoding.utrColor` | Flat, it is the one fill left outside an `encoding`; under `encoding` it is a part-qualified channel, which Vega-Lite never spells (no `encoding.medianColor`) |
 | `labels.subfeatures.filter` defaulting to the cleavage-product types, in place of `placement: 'auto'` | A written `placement: 'below'` would then label only the cleavage products, and labeling every part would take `filter: [{ field: 'type' }]`, today's `below` spelled obscurely |
 
 ## Consequences

@@ -1638,7 +1638,9 @@ describe('SettingsInvalidate keys on the payload, not the reads', () => {
     const { display, mockRpcCall } = await loadedDisplay()
     const callsBefore = mockRpcCall.mock.calls.length
 
-    setConf(display, slot, value)
+    // a table mixing slot names and paths, which setConf's narrowing cannot
+    // follow
+    setConf(display, slot as 'height', value)
     jest.advanceTimersByTime(800)
     await jest.runAllTimersAsync()
 

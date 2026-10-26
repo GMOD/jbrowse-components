@@ -12,6 +12,13 @@ Accepted (2026-10-07). Settles the canvas `labels.name` → `text` rename of the
 chose this form. Extends
 [ADR-155](adr-155-a-slot-takes-a-callback-only-where-it-declares-one.md).
 
+Amended 2026-10-26 by
+[ADR-238](adr-238-every-display-speaks-vega-lite.md)'s feature display
+section: `labels.name` and `labels.description` are parts with `show` and a
+`field`, the `featureField` this record settled, and a bare string still
+names the field through the part's shorthand. The multi-way display's `text`
+is its `labels.name.field`, whose empty value now draws no name, as here.
+
 ## Context
 
 The feature label was spelt three ways: the feature display's

@@ -30,9 +30,6 @@ Each item needs a call before work. Check the ADR-238 spelling first.
 
 ## Multi-way display
 
-- `utrColor` is a color with a default, where the canvas display's is unset
-  until written and then follows the fill. Converging them repaints the UTRs
-  under cluster colors; capture both before choosing.
 - `hideUnlabelled` becomes a `ribbons.filter` entry `{ field, valid: true }`,
   and `showLaneTicks` becomes `axis.show`, which should then gate the anchor
   rule's ticks too. `text` and `showGeneLabels` are `labels.name` (ADR-238's
