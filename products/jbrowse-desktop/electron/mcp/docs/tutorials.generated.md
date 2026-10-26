@@ -115,7 +115,7 @@ Page: https://jbrowse.org/jb2/docs/tutorials/chromhmm/
 
 ## Synteny on a circle (human and mouse)
 
-Put two genomes on one circular view, draw UCSC's liftOver chain between them as ribbons straight from the copy jbrowse.org indexes, color the ribbons by chromosome and by strand, read the mouse karyotype in human chromosomes, add a gene density ring over both genomes, and check a ribbon and a ring value against the files they came from
+Put two genomes on one circular view, draw UCSC's liftOver chain between them as ribbons, order one genome's arc to follow the other's, color the ribbons by strand, and add a gene density ring over both genomes
 
 Page: https://jbrowse.org/jb2/docs/tutorials/circular_synteny/
 
@@ -137,7 +137,7 @@ Page: https://jbrowse.org/jb2/docs/tutorials/cli_desktop/
 
 ## Structural variants (Cancer GIAB) part 2: copy number
 
-Load four published copy-number callsets and a depth and B-allele frequency track for a hypodiploid tumor, and check copy number at four driver genes
+Load published copy-number callsets and a depth and B-allele frequency track for a hypodiploid tumor, and check copy number at driver genes
 
 Page: https://jbrowse.org/jb2/docs/tutorials/cnv_cgiab/
 
@@ -189,7 +189,7 @@ Page: https://jbrowse.org/jb2/docs/tutorials/dog10k_selection/
 
 ## Structural variants (Dog10K)
 
-Genotype four classes of structural variant across dog breeds and read each against the gene it sits in
+Read a deletion, a duplication, an insertion and a retrogene footprint across dog breeds, one row per animal under the gene each variant sits in
 
 Page: https://jbrowse.org/jb2/docs/tutorials/dog10k_svs/
 
@@ -266,7 +266,7 @@ Page: https://jbrowse.org/jb2/docs/tutorials/gene_density/
 
 ## Reviewing a gene prediction (Tiberius)
 
-Compare gene predictions with an existing annotation, sort the disagreements into four classes, and build a static review page that links each one back into JBrowse
+Compare gene predictions with an existing annotation, sort the disagreements into classes, and build a static review page that links each one back into JBrowse
 
 Page: https://jbrowse.org/jb2/docs/tutorials/gene_prediction_review/
 
@@ -333,7 +333,7 @@ Page: https://jbrowse.org/jb2/docs/tutorials/hg002_haplotypes/
 
 ## Synteny from liftOver chains (hg38 and eight vertebrates)
 
-Stack eight UCSC genomes under a human locus from the liftOver chains UCSC already publishes, one indexed alignment per genome composed into one track
+Stack UCSC genomes under a human locus from the liftOver chains UCSC already publishes, one indexed alignment per genome composed into one track
 
 Page: https://jbrowse.org/jb2/docs/tutorials/hg38_vertebrates_synteny/
 
@@ -422,7 +422,7 @@ Page: https://jbrowse.org/jb2/docs/tutorials/ld_mosquitoes/
 
 ## Local ancestry (Dog10K)
 
-Paint wolf-derived haplotype blocks in two wolfdog breeds, against 219 other breeds and eight held-out wolves, from the Dog10K phased panel
+Paint wolf-derived haplotype blocks in wolfdog breeds, against other breeds and held-out wolves, from the Dog10K phased panel
 
 Page: https://jbrowse.org/jb2/docs/tutorials/local_ancestry/
 
@@ -474,9 +474,10 @@ Page: https://jbrowse.org/jb2/docs/tutorials/methylation/
 - https://jbrowse.org/demos/methylation/HG002_chr15_imprinted_hp1.modkit.bed.gz
 - https://jbrowse.org/demos/methylation/HG002_chr15_imprinted_hp2.modkit.bed.gz
 - https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz
-- https://jbrowse.org/ucsc/hg38/config.json
 - https://jbrowse.org/ucsc/hg38/cpgIslandExt.bed.gz
+- https://jbrowse.org/ucsc/hg38/cpgIslandExt.bed.gz.csi
 - https://jbrowse.org/ucsc/hg38/ncbiRefSeq.gff.gz
+- https://jbrowse.org/ucsc/hg38/ncbiRefSeq.gff.gz.csi
 - https://ont-open-data.s3.amazonaws.com/giab_2023.05/analysis/hg002/sup/PAO83395.pass.cram
 - https://ont-open-data.s3.amazonaws.com/giab_2025.01/analysis/wf-human-variation/sup/HG002/PAW70337/output/SAMPLE.wf_mods.1.bedmethyl.gz
 - https://ont-open-data.s3.amazonaws.com/giab_2025.01/analysis/wf-human-variation/sup/HG002/PAW70337/output/SAMPLE.wf_mods.2.bedmethyl.gz
@@ -493,7 +494,7 @@ Page: https://jbrowse.org/jb2/docs/tutorials/multiway_synteny_grape_peach_cacao/
 
 ## Synteny by ancestral linkage group (sponge, comb jelly, jellyfish)
 
-Load the ortholog tables odp colors by ancestral linkage group, sort each genome's chromosomes against the other's, and follow the groups across six animal genomes
+Load the ortholog tables odp colors by ancestral linkage group, sort each genome's chromosomes against the other's, and follow the groups across animal genomes
 
 Page: https://jbrowse.org/jb2/docs/tutorials/odp_linkage_groups_synteny/
 
@@ -711,7 +712,7 @@ Page: https://jbrowse.org/jb2/docs/tutorials/protein_domains/
 
 ## Variants on protein structures part 6: BRAF V600 in the activation loop
 
-Open BRAF on codon 600, whose V600E change drives about half of melanomas, beside a crystal structure of the V600E kinase, and read which of NCBI's conserved sites of the kinase domain the codon falls in
+Open BRAF on codon 600 beside a crystal structure of the V600E kinase, and read which of NCBI's conserved sites of the kinase domain the codon falls in
 
 Page: https://jbrowse.org/jb2/docs/tutorials/protein_variants_braf/
 
@@ -860,7 +861,7 @@ Page: https://jbrowse.org/jb2/docs/tutorials/sv_multisamples/
 
 ## Structural variants (Cancer GIAB) part 1: breakpoints
 
-Load a tumor/normal HiFi site's five somatic SV callsets and read one translocation and one small deletion against the reads and the tumor assembly
+Load a tumor/normal HiFi site's somatic SV callsets and read one translocation and one small deletion against the reads and the tumor assembly
 
 Page: https://jbrowse.org/jb2/docs/tutorials/sv_visualization_cgiab/
 
@@ -898,7 +899,7 @@ Page: https://jbrowse.org/jb2/docs/tutorials/synteny_visualization/
 
 ## Rearrangements between genomes by type (SyRI)
 
-Load the SyRI classification of the differences between assembled genomes, so each syntenic, inverted, translocated or duplicated region is a ribbon colored by its type, in a stack of six Arabidopsis accessions and as lanes in the reference coordinates
+Load the SyRI classification of the differences between assembled genomes, so each syntenic, inverted, translocated or duplicated region is a ribbon colored by its type, in a stack of Arabidopsis accessions and as lanes in the reference coordinates
 
 Page: https://jbrowse.org/jb2/docs/tutorials/syri_synteny/
 
