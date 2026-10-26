@@ -63,12 +63,6 @@ deployed. Still open, each needing no further call:
   on a value it does not know (ADR-120 amendment). `checkConfigCompat.mjs`
   boots each host in `HOST_VERSIONS` but opens no track and runs no
   `jbrowse validate`.
-- **`jbrowse validate` misses what the runtime flags:** the alignments layer
-  filters (`basesFilterProblems`, the coverage `alleles` and `interbase`
-  filters). The read `filter`'s rules already reach the CLI through
-  `scripts/generateMarkRules.ts` (`shared/filterFields.ts`).
-  `layerFilterProblems` now lives in `packages/alignments-core`, but the CLI
-  neither calls it nor carries the layers' field tables.
 - **Four config-doc Type cells** print factory source
   (`markListSchema(...)`, `types.array(aggregateOpSchema)`,
   `multiQuantitativeDisplaySchemas(pluginManager)`). The generator resolves
