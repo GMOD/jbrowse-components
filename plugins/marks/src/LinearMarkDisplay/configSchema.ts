@@ -525,6 +525,9 @@ export function configSchemaFactory() {
       /**
        * #slot minWidthPx
        * Narrowest a bar or rect is painted, in px, grown off its start edge.
+       * Not Vega-Lite's `minBandSize` (declined 2026-10-25): render-core's
+       * rule and point marks read the same floor, and `minBandSize` names
+       * bar and rect alone.
        */
       minWidthPx: {
         type: 'number',
