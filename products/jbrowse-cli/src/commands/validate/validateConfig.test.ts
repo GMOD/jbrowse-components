@@ -275,8 +275,8 @@ describe('validateConfig', () => {
       ...config.tracks[0]!,
       type: 'FeatureTrack',
       adapter: { type: 'Gff3TabixAdapter', uri: 'g.gff.gz' },
-      // @ts-expect-error the pre-enum boolean
-      displays: [{ type: 'LinearBasicDisplay', showLabels: false }],
+      // @ts-expect-error the old renderer's value
+      displays: [{ type: 'LinearBasicDisplay', geneGlyphMode: 'longest' }],
     }
     expect(errorsOf(config)).toEqual([])
     expect(warningsOf(config)[0]?.message).toContain('legacy value')

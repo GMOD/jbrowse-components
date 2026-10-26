@@ -205,10 +205,13 @@ describe('the schema', () => {
   it('reports a field name written where a color goes', () => {
     const config = baseConfig()
     config.tracks[0]!.displays = [
-      { type: 'LinearBasicDisplay', utrColor: 'biotype' },
+      {
+        type: 'LinearBasicDisplay',
+        utrs: { encoding: { color: { value: 'biotype' } } },
+      },
     ]
     const [error] = schemaProblems(config)
-    expect(error?.where).toBe('tracks[0].displays[0].utrColor')
+    expect(error?.where).toBe('tracks[0].displays[0].utrs.encoding.color.value')
     expect(error?.message).toBe(
       'expected a CSS color (a name like "red", "#rrggbb", "rgb()" or "hsl()") or a "jexl:" expression, got "biotype"',
     )
@@ -229,7 +232,10 @@ describe('the schema', () => {
   ])('accepts the color %s', color => {
     const config = baseConfig()
     config.tracks[0]!.displays = [
-      { type: 'LinearBasicDisplay', utrColor: color },
+      {
+        type: 'LinearBasicDisplay',
+        utrs: { encoding: { color: { value: color } } },
+      },
     ]
     expect(schemaProblems(config)).toEqual([])
   })
@@ -239,7 +245,10 @@ describe('the schema', () => {
     color => {
       const config = baseConfig()
       config.tracks[0]!.displays = [
-        { type: 'LinearBasicDisplay', utrColor: color },
+        {
+          type: 'LinearBasicDisplay',
+          utrs: { encoding: { color: { value: color } } },
+        },
       ]
       expect(schemaProblems(config)).toEqual([])
     },
@@ -263,10 +272,13 @@ describe('the schema', () => {
   ])('refuses the color %j', color => {
     const config = baseConfig()
     config.tracks[0]!.displays = [
-      { type: 'LinearBasicDisplay', utrColor: color },
+      {
+        type: 'LinearBasicDisplay',
+        utrs: { encoding: { color: { value: color } } },
+      },
     ]
     expect(schemaProblems(config).map(p => p.where)).toEqual([
-      'tracks[0].displays[0].utrColor',
+      'tracks[0].displays[0].utrs.encoding.color.value',
     ])
   })
 
@@ -274,7 +286,11 @@ describe('the schema', () => {
   it('accepts null as a slot or sub-schema reset', () => {
     const config = baseConfig()
     config.tracks[0]!.displays = [
-      { type: 'LinearBasicDisplay', utrColor: null, height: null },
+      {
+        type: 'LinearBasicDisplay',
+        utrs: { encoding: { color: { value: null } } },
+        height: null,
+      },
       { type: 'LinearAlignmentsDisplay', encoding: { color: null } },
       {
         type: 'LinearWiggleDisplay',
@@ -385,13 +401,13 @@ describe('the schema', () => {
       ...config.tracks[0]!,
       type: 'FeatureTrack',
       adapter: { type: 'Gff3TabixAdapter', uri: 'g.gff.gz' },
-      displays: [{ type: 'LinearBasicDisplay', showLabels: false }],
+      displays: [{ type: 'LinearBasicDisplay', geneGlyphMode: 'longest' }],
     }
     expect(schemaProblems(config)).toEqual([])
     config.tracks[0].displays = [
-      { type: 'LinearBasicDisplay', showLabels: 'sometimes' },
+      { type: 'LinearBasicDisplay', geneGlyphMode: 'sometimes' },
     ]
-    expect(whereOf(config)).toEqual(['tracks[0].displays[0].showLabels'])
+    expect(whereOf(config)).toEqual(['tracks[0].displays[0].geneGlyphMode'])
   })
 
   // Configs the app loads and rewrites, which the schema has to admit too: a

@@ -54,6 +54,7 @@ exports[`display-kit public surface pins the subpath exports 1`] = `
   "./facetConfigSchema",
   "./featureEncodingConfigSchema",
   "./featureFilterConfigSchema",
+  "./featureUtrsConfigSchema",
   "./fetchEachRegion",
   "./fetchInputs",
   "./fieldPredicateConfigSchema",

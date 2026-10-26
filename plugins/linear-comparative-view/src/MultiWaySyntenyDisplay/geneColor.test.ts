@@ -25,13 +25,12 @@ function utrOf(snapshot: Record<string, unknown>) {
     displayId: 'utr',
     ...snapshot,
   })
-  const colors = geneColors(
+  const { fill, utr } = geneColors(
     conf,
     colorEncodingOf(colorSnapshotOf(conf.encoding.color)),
     conf.utrs.encoding.color.value,
     jexl,
   )
-  const { fill, utr } = colors
   return utr(gene, fill(gene, undefined))
 }
 
