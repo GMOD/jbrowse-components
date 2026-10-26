@@ -6,11 +6,9 @@ import {
 } from '@jbrowse/core/util/fieldPredicate'
 import { fieldPredicateList } from '@jbrowse/display-kit/fieldPredicateConfigSchema'
 
-import { layerFilterProblems } from './layerFilterProblems.ts'
+import { ALLELE_FRACTION, alleleEntryProblems } from './layerFilterRules.ts'
 
 import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
-
-const FRACTION = 'fraction'
 
 /**
  * #config CoverageAlleles
@@ -61,7 +59,7 @@ export const coverageAllelesConfigSchema = ConfigurationSchema(
 
 /** The least share of its position's depth an allele segment colors at. */
 export function alleleFloorOf(filter: unknown) {
-  return lowerBoundOf(predicatesOf(filter), FRACTION) ?? 0
+  return lowerBoundOf(predicatesOf(filter), ALLELE_FRACTION) ?? 0
 }
 
 /** The `alleles.filter` list with its `fraction` floor set; 0 removes it. */
@@ -71,14 +69,12 @@ export function withAlleleFloor(
 ): FieldPredicate[] {
   return withLowerBound(
     predicatesOf(filter),
-    FRACTION,
+    ALLELE_FRACTION,
     fraction > 0 ? fraction : undefined,
   )
 }
 
 /** The `alleles.filter` entries the band's draw cannot apply. */
 export function alleleFilterProblems(filter: unknown) {
-  return layerFilterProblems('coverage.alleles.filter', filter, {
-    [FRACTION]: { tests: ['gte'], max: 1 },
-  })
+  return alleleEntryProblems(predicatesOf(filter))
 }

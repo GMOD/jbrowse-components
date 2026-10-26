@@ -25,6 +25,7 @@
     "./CoverageTooltipTables": "./src/CoverageTooltipTables.tsx",
     "./coverageBandConfigSchema": "./src/coverageBandConfigSchema.ts",
     "./coverageMenuItems": "./src/coverageMenuItems.ts",
+    "./layerFilterRules": "./src/layerFilterRules.ts",
     "./variantSortColumn": "./src/variantSortColumn.ts"
   },
   "files": [
@@ -60,6 +61,7 @@
       "./CoverageTooltipTables": "./esm/CoverageTooltipTables.js",
       "./coverageBandConfigSchema": "./esm/coverageBandConfigSchema.js",
       "./coverageMenuItems": "./esm/coverageMenuItems.js",
+      "./layerFilterRules": "./esm/layerFilterRules.js",
       "./variantSortColumn": "./esm/variantSortColumn.js"
     }
   },

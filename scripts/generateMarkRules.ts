@@ -1,5 +1,5 @@
 // Copies the mark display's rule list, and the alignments display's filter
-// field rules, into `jbrowse validate`, so the validator reports what the
+// and layer filter field rules, into `jbrowse validate`, so the validator reports what the
 // display's corner notice reports, from one source. @jbrowse/cli
 // depends on neither @jbrowse/core nor a plugin, so it carries the rule list the
 // way it carries the config manifest: as committed output `pnpm autogen --check`
@@ -11,7 +11,7 @@
 // what keeps a copy from meaning something its source does not. That works
 // because the rule list's import closure is files beside it, imported by
 // relative path and so resolving the same way in the copy, plus one seam
-// (markRuleFacts.ts, filterRuleFacts.ts), whose only content is re-exports of
+// (markRuleFacts.ts, filterRuleFacts.ts, basesFilterRuleFacts.ts), whose only content is re-exports of
 // what the rules read from outside their directory. Each module the seam names imports nothing, is copied
 // whole like the rest, and the seam's counterpart is written here over the
 // copies. An import that breaks either rule fails this run.
@@ -48,6 +48,11 @@ const RULE_LISTS = [
     entry: 'plugins/alignments/src/shared/filterFields.ts',
     seam: 'filterRuleFacts.ts',
     out: 'alignmentsFilterRules',
+  },
+  {
+    entry: 'plugins/alignments/src/shared/basesFilterRules.ts',
+    seam: 'basesFilterRuleFacts.ts',
+    out: 'alignmentsLayerRules',
   },
 ]
 

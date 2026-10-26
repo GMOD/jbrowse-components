@@ -2,7 +2,7 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { floorOf, predicatesOf } from '@jbrowse/core/util/fieldPredicate'
 import { fieldPredicateList } from '@jbrowse/display-kit/fieldPredicateConfigSchema'
 
-import { layerFilterProblems } from './layerFilterProblems.ts'
+import { interbaseEntryProblems } from './layerFilterRules.ts'
 
 import type { Floor } from '@jbrowse/core/util/fieldPredicate'
 
@@ -82,8 +82,5 @@ export function interbaseIndicatorRuleOf(
 
 /** The `interbase.filter` entries the triangle rule cannot apply. */
 export function interbaseFilterProblems(filter: unknown) {
-  return layerFilterProblems('coverage.interbase.filter', filter, {
-    depth: { tests: ['gte', 'gt'] },
-    fraction: { tests: ['gte', 'gt'], max: 1 },
-  })
+  return interbaseEntryProblems(predicatesOf(filter))
 }
