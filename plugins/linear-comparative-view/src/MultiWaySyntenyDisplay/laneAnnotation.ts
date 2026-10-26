@@ -27,6 +27,22 @@ export interface LaneGeneTracksInputs {
 }
 
 /**
+ * A track's rank as a lane's unnamed gene track; `undefined` for an adapter
+ * that is no gene annotation, or a BED one whose `disableGeneHeuristic` says
+ * its blocks are not genes
+ */
+function fallbackRank(track: AnyTrackConfig) {
+  const adapter = track.adapter as
+    | { type?: unknown; disableGeneHeuristic?: unknown }
+    | undefined
+  return adapter?.disableGeneHeuristic === true
+    ? undefined
+    : annotationRank(
+        typeof adapter?.type === 'string' ? adapter.type : undefined,
+      )
+}
+
+/**
  * Each lane's gene track, keyed by the lane's own spelling: the one the
  * config names for its genome, else the best-ranked single-assembly annotation
  * track.
@@ -45,8 +61,7 @@ export function laneGeneTracksOf({
   const best = new Map<string, { rank: number; track: AnyTrackConfig }>()
   for (const track of tracks) {
     const names = getConfAssemblyNamesOrNone(track)
-    const type = (track.adapter as { type?: unknown } | undefined)?.type
-    const rank = annotationRank(typeof type === 'string' ? type : undefined)
+    const rank = fallbackRank(track)
     if (names.length === 1 && rank !== undefined) {
       const key = keyOf(names[0]!)
       const held = best.get(key)

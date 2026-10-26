@@ -63,6 +63,18 @@ describe('laneGeneTracksOf', () => {
     expect(run([gff], { b: [named] }).get('b')).toBe(named)
   })
 
+  test('a BED track whose blocks are not genes is no lane’s gene track', () => {
+    const regions = {
+      trackId: 'regions',
+      assemblyNames: ['a'],
+      adapter: { type: 'BedTabixAdapter', disableGeneHeuristic: true },
+    } as unknown as AnyTrackConfig
+    const bigBed = track('bigbed', ['a'], 'BigBedAdapter')
+    expect(run([regions]).size).toBe(0)
+    expect(run([regions, bigBed]).get('A')).toBe(bigBed)
+    expect(run([], { a: [regions] }).get('A')).toBe(regions)
+  })
+
   test('a track that is not annotation, or spans assemblies, is nobody’s', () => {
     const bam = track('bam', ['a'], 'BamAdapter')
     const both = track('both', ['a', 'b'], 'Gff3TabixAdapter')

@@ -131,7 +131,7 @@ export function configSchemaFactory() {
       laneGeneTracks: {
         type: 'stringArray',
         description:
-          "the trackId of the gene track each lane draws, one per genome, or an entry spelling `{assembly}`, such as `{assembly}-ncbiRefSeq`, naming in each lane the track whose id has that lane's genome, or any of its aliases, written there. Plain ids outrank `{assembly}` entries, and an earlier entry outranks a later one. A lane whose genome no entry names draws the session's best-ranked annotation track for it, which on a config holding several gene sets per genome is whichever is declared first",
+          "the trackId of the gene track each lane draws, one per genome, or an entry spelling `{assembly}`, such as `{assembly}-ncbiRefSeq`, naming in each lane the track whose id has that lane's genome, or any of its aliases, written there. Plain ids outrank `{assembly}` entries, and an earlier entry outranks a later one. A lane whose genome no entry names draws the session's best-ranked annotation track for it, which on a config holding several gene sets per genome is whichever is declared first, and never a BED track that sets `disableGeneHeuristic`",
         defaultValue: [],
       },
       /**
