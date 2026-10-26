@@ -701,13 +701,14 @@ const LAYER_FILTERS = [
 // being `{ field, equal: true }`
 function filterEntriesOf(list: unknown): FieldPredicate[] {
   return Array.isArray(list)
-    ? list.flatMap(entry =>
-        typeof entry === 'string'
-          ? [{ field: entry, equal: true }]
-          : isRecord(entry) && typeof entry.field === 'string'
-            ? [entry as FieldPredicate]
-            : [],
-      )
+    ? list
+        .map(entry =>
+          typeof entry === 'string' ? { field: entry, equal: true } : entry,
+        )
+        .filter(
+          (entry): entry is FieldPredicate =>
+            isRecord(entry) && typeof entry.field === 'string',
+        )
     : []
 }
 
