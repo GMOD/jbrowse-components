@@ -161,6 +161,9 @@ export type AsyncViewStateOptions =
       assemblies?: never
     })
 
+const ONE_GENOME_SOURCE =
+  'pass exactly one of assembly, assemblies and jbrowseHub'
+
 async function resolveJBrowseHub(
   opts: AsyncViewStateOptions,
 ): Promise<ViewStateOptions> {
@@ -168,7 +171,7 @@ async function resolveJBrowseHub(
     return opts
   }
   if ('assembly' in opts || 'assemblies' in opts) {
-    throw new Error('pass assembly, assemblies or jbrowseHub, not two')
+    throw new Error(ONE_GENOME_SOURCE)
   }
   const { jbrowseHub, ...rest } = opts
   const hub = await resolveAssembly(jbrowseHub)
@@ -212,12 +215,9 @@ export async function createViewStateAsync(input: AsyncViewStateOptions) {
 }
 
 function genomesOf({ assembly, assemblies }: ViewStateOptions) {
-  if (assembly && assemblies) {
-    throw new Error('pass assembly or assemblies, not both')
-  }
   const genomes = assemblies ?? (assembly ? [assembly] : [])
-  if (!genomes.length) {
-    throw new Error('pass assembly, assemblies or jbrowseHub')
+  if ((assembly && assemblies) || !genomes.length) {
+    throw new Error(ONE_GENOME_SOURCE)
   }
   return genomes
 }

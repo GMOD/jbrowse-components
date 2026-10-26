@@ -107,5 +107,5 @@ test('an assembly beside a jbrowseHub is refused', async () => {
   await expect(
     // @ts-expect-error a hub is a whole genome, so it excludes `assembly`
     createViewStateAsync(both),
-  ).rejects.toThrow('pass assembly or jbrowseHub, not both')
+  ).rejects.toThrow('pass exactly one of assembly, assemblies and jbrowseHub')
 })

@@ -107,7 +107,7 @@ describe('assemblies', () => {
 
   test('assembly and assemblies together is refused', () => {
     expect(() => createViewState({ assembly, assemblies: [other] })).toThrow(
-      'pass assembly or assemblies, not both',
+      'pass exactly one of assembly, assemblies and jbrowseHub',
     )
   })
 })
