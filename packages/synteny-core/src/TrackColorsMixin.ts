@@ -206,8 +206,9 @@ export function TrackColorsMixin({
          * ordering a text column's labels, `scale.range` coloring them and
          * `scale.names` naming them in the key, `scale.range` or
          * `scale.scheme`, `scale.reverse` and pinned ends reshaping a ramp,
-         * and `scale.type: 'threshold'` binning a number at `scale.domain`'s
-         * cuts; `{ value }` paints every alignment. Unset, the view's default
+         * `scale.type: 'threshold'` binning a number at `scale.domain`'s
+         * cuts, and `scale.type: 'ordinal'` painting a column's numbers one
+         * color each; `{ value }` paints every alignment. Unset, the view's default
          * paints: `query` on the circular view, the default scheme elsewhere.
          * Its `opacity` is a [](/docs/config/syntenyopacity) channel.
          */
@@ -516,7 +517,11 @@ export function TrackColorsMixin({
         const { scale, legend } = self.colorSetting
         const textColumn =
           isColumnField(field) &&
-          resolveCategoricalMode(field, self.attributeRanges) !== undefined
+          resolveCategoricalMode(
+            field,
+            self.attributeRanges,
+            self.colorPaint,
+          ) !== undefined
         // only a text column's rows are the reader's to order; a track
         // palette, a ramp and bins key what they key
         return colorByScales(field, {

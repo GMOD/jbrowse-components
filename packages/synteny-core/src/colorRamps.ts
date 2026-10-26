@@ -6,6 +6,7 @@ import {
   MEASURE_FIELD_PRESETS,
   withPreset,
 } from '@jbrowse/core/util/colorScale'
+import { groupKeyComparator } from '@jbrowse/core/util/groupKeys'
 import { formatScore } from '@jbrowse/core/util/numericUtils'
 import {
   thresholdCuts,
@@ -246,28 +247,65 @@ export interface CategoricalMode {
   palette: readonly string[]
 }
 
+const valueLabels = new WeakMap<AttributeSpan, string[]>()
+
+function valueLabelsOf(span: AttributeSpan) {
+  let labels = valueLabels.get(span)
+  if (!labels) {
+    labels = [...labelsOf(span)]
+    valueLabels.set(span, labels)
+  }
+  return labels
+}
+
 /**
- * How a column carrying text paints: one color per distinct label, dealt in
- * the order the view first saw them under the declared domain and range, so
- * a label keeps its color as others arrive. Undefined for a field whose
- * values are numbers, a preset, or the constant.
+ * How a column paints one color per distinct label: a column carrying text,
+ * or any declared column under a written `ordinal`, its numbers as text.
+ * Dealt in the order the view first saw them under the declared domain and
+ * range, so a label keeps its color as others arrive. Undefined for a column
+ * of numbers unless `ordinal` is written, a column under a written ramp or
+ * bins, a preset, or the constant.
  */
 export function resolveCategoricalMode(
   field: string | undefined,
   ranges?: Record<string, AttributeRange>,
+  paint: SyntenyColorPaint = {},
 ): CategoricalMode | undefined {
   const range = field === undefined ? undefined : ranges?.[field]
-  return field !== undefined && range && isAttributeLabels(range)
-    ? {
-        attribute: field,
-        labels: range.labels,
-        seen: range.seen ?? range.labels,
-        colors: range.colors,
-        missing: range.missing ?? false,
-        domain: range.domain ?? [],
-        palette: range.palette ?? [],
-      }
-    : undefined
+  if (
+    field === undefined ||
+    !range ||
+    paint.type === 'linear' ||
+    paint.type === 'threshold'
+  ) {
+    return undefined
+  }
+  if (isAttributeLabels(range)) {
+    return {
+      attribute: field,
+      labels: range.labels,
+      seen: range.seen ?? range.labels,
+      colors: range.colors,
+      missing: range.missing ?? false,
+      domain: range.domain ?? [],
+      palette: range.palette ?? [],
+    }
+  }
+  if (paint.type !== 'ordinal' || isMeasureField(field)) {
+    return undefined
+  }
+  const seen = valueLabelsOf(range)
+  const domain = paint.domain ?? []
+  return {
+    attribute: field,
+    labels:
+      domain.length > 0 ? [...seen].sort(groupKeyComparator(domain)) : seen,
+    seen,
+    colors: {},
+    missing: range.missing ?? false,
+    domain,
+    palette: paint.range ?? [],
+  }
 }
 
 const STRANDS = ['1', '-1'] as const
@@ -317,9 +355,8 @@ export function resolveNumericMode(
   const measure = isMeasureField(field)
   if (
     !measure &&
-    paint.type === undefined &&
-    observed &&
-    isAttributeLabels(observed)
+    (paint.type === 'ordinal' ||
+      (paint.type === undefined && observed && isAttributeLabels(observed)))
   ) {
     return undefined
   }
@@ -329,7 +366,12 @@ export function resolveNumericMode(
       field,
       scale: {
         ...paint,
-        type: paint.type ?? (measure ? undefined : 'linear'),
+        type:
+          paint.type === 'ordinal' || paint.type === undefined
+            ? measure
+              ? undefined
+              : 'linear'
+            : paint.type,
         domain: paint.domain ?? [],
         range: paint.range ?? [],
       },

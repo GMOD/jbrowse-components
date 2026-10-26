@@ -284,7 +284,7 @@ function ribbonPainter(
       return colorOf(0)
     }
   }
-  const categorical = resolveCategoricalMode(field, attributeRanges)
+  const categorical = resolveCategoricalMode(field, attributeRanges, paint)
   if (categorical) {
     const lut = new Map(
       categorical.labels.map(label => [

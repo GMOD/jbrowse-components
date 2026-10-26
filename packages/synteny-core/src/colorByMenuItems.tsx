@@ -175,6 +175,7 @@ export function colorByMenuItems(target: ColorByMenuTarget): MenuItem[] {
   const categorical = resolveCategoricalMode(
     target.field,
     target.attributeRanges,
+    target.paint,
   )
   const { trackColors } = target
   return [

@@ -9282,14 +9282,15 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "x-closed": true,
       "properties": {
         "type": {
-          "description": "linear runs a number along a ramp and threshold bins it at the cuts domain lists; unset, a measurement uses its preset scale and a column one read off its values.",
+          "description": "linear runs a number along a ramp, threshold bins it at the cuts domain lists, and ordinal paints a column's values one color each, numbers included (a measurement keeps its preset); a written type wins over the values, so a text value under linear or threshold paints as missing; unset, a measurement uses its preset scale and a column linear for numbers and ordinal once a value is text.",
           "if": {
             "type": "null"
           },
           "else": {
             "enum": [
               "linear",
-              "threshold"
+              "threshold",
+              "ordinal"
             ]
           }
         },
@@ -27754,14 +27755,15 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "x-closed": true,
       "properties": {
         "type": {
-          "description": "linear runs a number along a ramp and threshold bins it at the cuts domain lists; unset, a measurement uses its preset scale and a column one read off its values.",
+          "description": "linear runs a number along a ramp, threshold bins it at the cuts domain lists, and ordinal paints a column's values one color each, numbers included (a measurement keeps its preset); a written type wins over the values, so a text value under linear or threshold paints as missing; unset, a measurement uses its preset scale and a column linear for numbers and ordinal once a value is text.",
           "if": {
             "type": "null"
           },
           "else": {
             "enum": [
               "linear",
-              "threshold"
+              "threshold",
+              "ordinal"
             ]
           }
         },

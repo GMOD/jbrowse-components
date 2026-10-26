@@ -23,11 +23,12 @@ import type {
 
 /**
  * `scale.type` on a synteny color channel: `linear` or `threshold` names how a
- * number paints. Unset, a measurement takes its
- * preset's scale and a column's type is read off the fetched values, a ramp
- * over the span for numbers and a color per label for text.
+ * number paints, and `ordinal` paints a declared column one color per value,
+ * numbers included. Unset, a measurement takes its preset's scale and a
+ * column's type is read off the fetched values, a ramp over the span for
+ * numbers and a color per label for text.
  */
-export const SYNTENY_COLOR_SCALES = ['linear', 'threshold'] as const
+export const SYNTENY_COLOR_SCALES = ['linear', 'threshold', 'ordinal'] as const
 
 export type SyntenyColorScale = (typeof SYNTENY_COLOR_SCALES)[number]
 
@@ -62,7 +63,7 @@ export function syntenyColorScaleSlots(scaleName: string) {
     ...colorScaleTypeSlot({
       scales: SYNTENY_COLOR_SCALES,
       scaleName,
-      type: 'linear runs a number along a ramp and threshold bins it at the cuts domain lists; unset, a measurement uses its preset scale and a column one read off its values',
+      type: "linear runs a number along a ramp, threshold bins it at the cuts domain lists, and ordinal paints a column's values one color each, numbers included (a measurement keeps its preset); a written type wins over the values, so a text value under linear or threshold paints as missing; unset, a measurement uses its preset scale and a column linear for numbers and ordinal once a value is text",
     }),
     ...colorDomainSlot({
       domain:
@@ -95,8 +96,10 @@ export const syntenyColorLegendSlots = {
  * (`identity` and `dnds` on a ramp, `mapq` in the alignments display's bins,
  * `syntenicDepth` grey for a one-to-one ortholog and orange where genes share
  * one),
- * or a column the tracks declare in `attributeColumns`. A string is the
- * field.
+ * or a column the tracks declare in `attributeColumns`: a ramp for numbers
+ * and a color per label once a value is text, unless `scale.type` says
+ * otherwise (`ordinal` paints integer group ids a color each). A string is
+ * the field.
  *
  * #example
  * ```js

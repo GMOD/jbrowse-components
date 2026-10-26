@@ -1,5 +1,5 @@
 import type { ColorModeSurface, SyntenyColorSurface } from './colorModes.ts'
-import type { AttributeRange } from './colorRamps.ts'
+import type { AttributeRange, SyntenyColorPaint } from './colorRamps.ts'
 import type { ColorableTrack } from './trackColors.ts'
 
 export interface ColorByMenuTrack {
@@ -38,6 +38,7 @@ export function colorByMenuTargetFor(
     ],
     attributes: model.colorableAttributes,
     attributeRanges: model.attributeRanges,
+    paint: model.colorPaint,
     surface: model.colorSurface(),
     hideUnlabelled: model.hideUnlabelled,
     setColorField: field => {
@@ -71,6 +72,7 @@ export interface TrackColorsModel {
   colorableTracks: ColorableTrack[]
   colorableAttributes: string[]
   attributeRanges: Record<string, AttributeRange>
+  colorPaint: SyntenyColorPaint
   colorField: string | undefined
   impliedColorField: string | undefined
   colorValue: string | undefined
@@ -102,6 +104,8 @@ export interface ColorByMenuTarget {
    * it: a plain PAF has no dN/dS, and a CIGAR-less one no identity.
    */
   attributeRanges: Record<string, AttributeRange>
+  /** what the channel's `scale` writes, whose `type` can override the kind read off the data */
+  paint?: SyntenyColorPaint
   /** what draws the alignments, which some modes' help describes differently */
   surface: ColorModeSurface
   hideUnlabelled: boolean

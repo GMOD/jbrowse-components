@@ -31,7 +31,11 @@ import type { LaneSelectionModel } from './laneSelection.ts'
 import type { Lane } from './laneStack.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { RadioOption } from '@jbrowse/core/ui/menuItems'
-import type { AttributeRange, RibbonInterpolation } from '@jbrowse/synteny-core'
+import type {
+  AttributeRange,
+  RibbonInterpolation,
+  SyntenyColorPaint,
+} from '@jbrowse/synteny-core'
 
 export type HeaderLane = Pick<
   Lane,
@@ -71,6 +75,7 @@ export interface MultiWayMenuModel extends LaneHeaderModel, LaneSelectionModel {
   openRibbonSolidColorDialog: () => void
   ribbonColorAttributes: readonly string[]
   ribbonAttributeRanges: Record<string, AttributeRange>
+  ribbonPaint: SyntenyColorPaint
   hideUnlabelled: boolean
   setHideUnlabelled: (flag: boolean) => void
   showLaneTicks: boolean
@@ -316,6 +321,7 @@ export function ribbonColorMenuItems(model: MultiWayMenuModel): MenuItem[] {
     structuralFields: ['strand'],
     attributes: model.ribbonColorAttributes,
     attributeRanges: model.ribbonAttributeRanges,
+    paint: model.ribbonPaint,
     surface: 'lanes',
     hideUnlabelled: model.hideUnlabelled,
     setColorField: model.setRibbonColorField,

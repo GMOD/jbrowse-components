@@ -481,7 +481,7 @@ function paintFunction({
       numericLanes(numeric.attribute, data),
     )
   }
-  const categorical = resolveCategoricalMode(field, attributeRanges)
+  const categorical = resolveCategoricalMode(field, attributeRanges, paint)
   return categorical
     ? makeCategoricalColorFunction(
         categorical,

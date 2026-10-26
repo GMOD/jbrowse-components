@@ -322,7 +322,7 @@ export function getColorBySwatch(
       ...(missing ? { missingColor: missingColor ?? NO_CATEGORY_COLOR } : {}),
     }
   }
-  const categorical = resolveCategoricalMode(field, attributeRanges)
+  const categorical = resolveCategoricalMode(field, attributeRanges, paint)
   if (!categorical) {
     return undefined
   }

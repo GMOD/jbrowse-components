@@ -123,7 +123,7 @@ export function ribbonColorKey(
       },
     ]
   }
-  if (!resolveCategoricalMode(field, attributeRanges)) {
+  if (!resolveCategoricalMode(field, attributeRanges, paint)) {
     return []
   }
   const swatch = getColorBySwatch(field, {
@@ -189,7 +189,7 @@ export function ribbonColorScales(
       ...noValue,
     ]
   }
-  const textColumn = resolveCategoricalMode(field, attributeRanges)
+  const textColumn = resolveCategoricalMode(field, attributeRanges, paint)
   return [
     {
       kind: 'categorical',

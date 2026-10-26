@@ -285,3 +285,14 @@ describe('strand', () => {
     ).toEqual(['gold', 'black'])
   })
 })
+
+test('a color channel takes a written ordinal scale', () => {
+  expect(
+    colorPaintOf(
+      syntenyColorConfigSchema.create({
+        field: 'grp',
+        scale: { type: 'ordinal' },
+      }),
+    ).type,
+  ).toBe('ordinal')
+})
