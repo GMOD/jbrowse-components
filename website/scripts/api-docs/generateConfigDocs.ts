@@ -57,7 +57,7 @@ import {
   withHeaders,
 } from './util.ts'
 
-import type { Example, ExtractedNode } from './util.ts'
+import type { Example, ExtractedNode, ReachedSchema } from './util.ts'
 
 interface Item {
   name: string
@@ -69,9 +69,17 @@ interface Item {
   // `#config` page the nearest of them resolves to once every config is read
   schemaDeclIds?: string[]
   schemaPage?: { name: string; id: string }
-  // a sub-schema slot whose own slots are rows of this page: the schema's
-  // name, whether the slot holds a list of them, and the first of those rows
-  subSchema?: { name?: string; list: boolean; firstSlot: string }
+  schemas?: ReachedSchema[]
+  returnedCode?: string
+  // a sub-schema slot whose own slots are rows of this page, or of `page`: the
+  // schema's name, whether the slot holds a list of them, and the first of
+  // those rows
+  subSchema?: {
+    name?: string
+    list: boolean
+    firstSlot: string
+    page?: string
+  }
   // the slot's default is a parameter of the factory declaring it, so the
   // column names the arrangement rather than one caller's value
   parameterisedDefault?: boolean
@@ -268,6 +276,8 @@ export function accumulateConfig(
         ...item,
         name,
         schemaDeclIds: obj.valueDeclIds,
+        schemas: obj.valueSchemas,
+        returnedCode: obj.valueReturnedCode,
         parameterisedDefault: obj.parameterisedDefault,
       })
     } else if (seen.docs !== item.docs) {
@@ -1487,10 +1497,11 @@ function slotSourceCode(meta: SlotMeta) {
 
 // What a slot whose value isn't a `{ type, ... }` object holds, named and
 // linked: a schema with a page of its own, another element's config, or a
-// sub-schema whose slots are rows of this page. Undefined leaves
+// sub-schema whose slots are rows of this page or another. Undefined leaves
 // the source to stand in.
 function slotKind(item: Item, code: string | undefined) {
-  const pluggable = pluggableSlotType(code)
+  const pluggable =
+    pluggableSlotType(code) ?? pluggableSlotType(item.returnedCode)
   if (item.schemaPage) {
     return { name: item.schemaPage.name, href: `../${item.schemaPage.id}` }
   } else if (pluggable) {
@@ -1499,12 +1510,12 @@ function slotKind(item: Item, code: string | undefined) {
       href: pluggable.section && `/docs/config#${pluggable.section}`,
     }
   } else if (item.subSchema) {
-    const { name, list, firstSlot } = item.subSchema
+    const { name, list, firstSlot, page } = item.subSchema
     return {
       name: list
         ? `list of ${name ?? 'sub-schema'} entries`
         : `${name ?? ''} sub-schema`.trim(),
-      href: `#${slotAnchor(firstSlot)}`,
+      href: `${page ? `../${page}` : ''}#${slotAnchor(firstSlot)}`,
     }
   }
   return undefined
@@ -1582,7 +1593,7 @@ function slotGroupRow(from: string, count: number) {
 // slot is"), while the description is the column that actually needs the width;
 // as three columns they squeezed a paragraph of prose into a quarter of the
 // table.
-function slotRow(item: Item, schema: string) {
+export function slotRow(item: Item, schema: string) {
   const { meta } = slotMetaFor(item)
   const type = `${slotTypeCell(meta, item)}${liftsNumbers(schema, item.name) ? ' of strings or numbers' : ''}`
   const dflt = slotDefaultCell(item, meta)
@@ -2098,6 +2109,81 @@ function renderAgentConfig(
   }
 }
 
+export function linkedConfigs(byFile: Record<string, Config>) {
+  mergeSpreadSlots(byFile)
+  const withHeader = withHeaders(byFile)
+  const index: ConfigIndex = {
+    byDeclId: mapByKey(withHeader, c => c.header.declId),
+    byName: mapByKey(withHeader, c => c.header.name),
+  }
+  resolveInheritedSlotMeta(withHeader, index)
+  linkSlotSchemas(withHeader, index)
+  return { withHeader, index }
+}
+
+// Each sub-schema slot's link: the `#config` page its value names, else the
+// rows of its schema on this page, own or inherited, else the first page whose
+// own rows document a schema its value reaches.
+function linkSlotSchemas(configs: ConfigWithHeader[], index: ConfigIndex) {
+  const documented = new Map<string, { page: string; firstSlot: string }>()
+  for (const config of configs) {
+    const { header, slots } = config
+    const pageSlots = [
+      ...slots,
+      ...collectBaseConfigs(config, index).flatMap(base => base.slots),
+    ]
+    for (const slot of slots) {
+      const code = slotSourceCode(slotMetaFor(slot).meta)?.trim() ?? ''
+      const elementName = NAMED_ELEMENT_SLOT.exec(code)?.[1]
+      const schema =
+        slot.schemaDeclIds?.map(id => index.byDeclId.get(id)).find(Boolean) ??
+        (elementName ? index.byName.get(elementName) : undefined)
+      if (schema) {
+        slot.schemaPage = { name: schema.header.name, id: schema.header.id }
+      }
+      const first = pageSlots.find(
+        s =>
+          s.name.startsWith(`${slot.name}.`) &&
+          !isContainerSlot(s, slotMetaFor(s).meta, pageSlots),
+      )
+      if (first) {
+        const declared = manifestSlot(header.name, slot.name)
+        const reached = slot.schemas?.[0]
+        slot.subSchema = {
+          name:
+            declared?.schema ??
+            /^(?:types\.array\(\s*)?ConfigurationSchema\(\s*'([^']+)'/.exec(
+              code,
+            )?.[1] ??
+            reached?.name,
+          list: declared
+            ? declared.type.endsWith('[]')
+            : code.startsWith('types.array(') || !!reached?.list,
+          firstSlot: first.name,
+        }
+        const { name } = slot.subSchema
+        if (name && slots.includes(first) && !documented.has(name)) {
+          documented.set(name, { page: header.id, firstSlot: first.name })
+        }
+      }
+    }
+  }
+  for (const { header, slots } of configs) {
+    for (const slot of slots.filter(s => !s.schemaPage && !s.subSchema)) {
+      const reached = slot.schemas?.find(s => documented.has(s.name))
+      const rows = reached && documented.get(reached.name)
+      if (reached && rows) {
+        slot.subSchema = {
+          name: reached.name,
+          list: reached.list,
+          firstSlot: rows.firstSlot,
+          page: rows.page === header.id ? undefined : rows.page,
+        }
+      }
+    }
+  }
+}
+
 export function writeConfigDocs(
   byFile: Record<string, Config>,
   displayTypesByTrack: Map<string, string[]>,
@@ -2105,45 +2191,8 @@ export function writeConfigDocs(
   modelNames: Set<string>,
 ) {
   const dir = 'website/docs/config'
-  mergeSpreadSlots(byFile)
-  const withHeader = withHeaders(byFile)
-  const byDeclId = mapByKey(withHeader, c => c.header.declId)
-  const byName = mapByKey(withHeader, c => c.header.name)
-  const index: ConfigIndex = { byDeclId, byName }
-  resolveInheritedSlotMeta(withHeader, index)
-  for (const { header, slots } of withHeader) {
-    for (const slot of slots) {
-      const elementName = NAMED_ELEMENT_SLOT.exec(
-        slotSourceCode(slotMetaFor(slot).meta)?.trim() ?? '',
-      )?.[1]
-      const schema =
-        slot.schemaDeclIds?.map(id => byDeclId.get(id)).find(Boolean) ??
-        (elementName ? byName.get(elementName) : undefined)
-      if (schema) {
-        slot.schemaPage = { name: schema.header.name, id: schema.header.id }
-      }
-      const firstSlot = slots.find(
-        s =>
-          s.name.startsWith(`${slot.name}.`) &&
-          !isContainerSlot(s, slotMetaFor(s).meta, slots),
-      )?.name
-      if (firstSlot) {
-        const declared = manifestSlot(header.name, slot.name)
-        const code = slotSourceCode(slotMetaFor(slot).meta)?.trim() ?? ''
-        slot.subSchema = {
-          name:
-            declared?.schema ??
-            /^(?:types\.array\(\s*)?ConfigurationSchema\(\s*'([^']+)'/.exec(
-              code,
-            )?.[1],
-          list: declared
-            ? declared.type.endsWith('[]')
-            : code.startsWith('types.array('),
-          firstSlot,
-        }
-      }
-    }
-  }
+  const { withHeader, index } = linkedConfigs(byFile)
+  const { byName } = index
   // All before the write loop, so a run that would emit a blank cell, drop a
   // slot, or write one page for two types fails without having rewritten
   // anything.

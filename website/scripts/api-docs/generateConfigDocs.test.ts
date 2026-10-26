@@ -6,9 +6,11 @@ import { buildEnumConstantIndex } from './enumConstants.ts'
 import {
   accumulateConfig,
   exampleObjects,
+  linkedConfigs,
   looseTrackExample,
   mergeSpreadSlots,
   missingSlotNames,
+  slotRow,
   unknownExampleKeys,
 } from './generateConfigDocs.ts'
 import { createDocProgram, extractWithComment } from './util.ts'
@@ -360,6 +362,168 @@ ${spreadDoc.map(line => `   * ${line}`).join('\n')}
   test('prose before the first section fails', () => {
     expect(() => slotsOf(['Whose?', '#slot alpha', 'Alpha.'])).toThrow(
       /schema\.ts: .*prose before its first `#slot`/,
+    )
+  })
+})
+
+describe('a slot a schema factory builds', () => {
+  let dir: string
+
+  beforeEach(() => {
+    dir = fs.mkdtempSync(path.join(os.tmpdir(), 'jb-factory-slots-'))
+  })
+
+  afterEach(() => {
+    fs.rmSync(dir, { recursive: true, force: true })
+  })
+
+  const FILES = {
+    'base.ts': `
+const markSchema = ConfigurationSchema('FixtureMark', {
+  /**
+   * #slot marks.mark
+   * What the mark draws.
+   */
+  mark: { type: 'string', defaultValue: 'bar' },
+})
+export function markListSchema(defaults: unknown[]) {
+  return plotList(types.array(markSchema), defaults)
+}
+const opSchema = ConfigurationSchema('FixtureOp', {
+  /**
+   * #slot ops.op
+   * The summary.
+   */
+  op: { type: 'string', defaultValue: 'count' },
+})
+function displaySchemas(pluginManager: any) {
+  return types.array(
+    types.union(
+      ...pluginManager.getDisplayElements().map((d: any) => d.configSchema),
+    ),
+  )
+}
+/**
+ * #config FixtureBase
+ */
+export const fixtureBase = ConfigurationSchema('FixtureBase', {
+  /**
+   * #slot marks
+   * The marks.
+   */
+  marks: markListSchema([]),
+  /**
+   * #slot ops
+   * The summaries.
+   */
+  ops: types.array(opSchema),
+  /**
+   * #slot windowOps
+   * The summaries again.
+   */
+  windowOps: types.array(opSchema),
+  /**
+   * #slot displays
+   * The displays.
+   */
+  displays: displaySchemas(pluginManager),
+})
+`,
+    'derived.ts': `
+import { fixtureBase, markListSchema } from './base.ts'
+/**
+ * #config FixtureDerived
+ */
+export const fixtureDerived = ConfigurationSchema(
+  'FixtureDerived',
+  {
+    /**
+     * #slot marks
+     * The marks, a point by default.
+     */
+    marks: markListSchema([{ mark: 'point' }]),
+  },
+  {
+    /**
+     * #baseConfiguration
+     */
+    baseConfiguration: fixtureBase,
+  },
+)
+`,
+    'lane.ts': `
+import { markListSchema } from './base.ts'
+/**
+ * #config FixtureLane
+ */
+export const fixtureLane = ConfigurationSchema('FixtureLane', {
+  /**
+   * #slot marks
+   * The lane's marks.
+   */
+  marks: markListSchema([{ mark: 'bar' }]),
+})
+`,
+  }
+
+  function typeCells() {
+    const files = Object.entries(FILES).map(([name, text]) => {
+      const file = path.join(dir, name)
+      fs.writeFileSync(file, text)
+      return file
+    })
+    const program = createDocProgram(files)
+    buildEnumConstantIndex(program.sources)
+    const byFile: Record<string, Config> = {}
+    extractWithComment(
+      program,
+      obj => {
+        accumulateConfig(byFile, obj)
+      },
+      () => {},
+    )
+    const { withHeader } = linkedConfigs(byFile)
+    return Object.fromEntries(
+      withHeader.flatMap(({ header, slots }) =>
+        slots.map(s => [
+          `${header.name} ${s.name}`,
+          slotRow(s, header.name).split('<br>')[1]!.split(' | ')[0],
+        ]),
+      ),
+    )
+  }
+
+  test('links the rows its schema has on the page', () => {
+    expect(typeCells()['FixtureBase marks']).toBe(
+      '[list of FixtureMark entries](#slot-marksmark)',
+    )
+  })
+
+  test('links rows the page inherits from its base', () => {
+    expect(typeCells()['FixtureDerived marks']).toBe(
+      '[list of FixtureMark entries](#slot-marksmark)',
+    )
+  })
+
+  test('links rows another page documents', () => {
+    expect(typeCells()['FixtureLane marks']).toBe(
+      '[list of FixtureMark entries](../fixturebase#slot-marksmark)',
+    )
+  })
+
+  test('links rows another slot of the page documents', () => {
+    const cells = typeCells()
+    expect(cells['FixtureBase ops']).toBe(
+      '[list of FixtureOp entries](#slot-opsop)',
+    )
+    expect(cells['FixtureBase windowOps']).toBe(
+      '[list of FixtureOp entries](#slot-opsop)',
+    )
+  })
+
+  test("reads a display list off the factory's body", () => {
+    expect(typeCells()['FixtureBase displays']).toBe(
+      '[list of display configs](/docs/config#display)',
     )
   })
 })

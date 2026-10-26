@@ -59,6 +59,15 @@ export interface ExtractedNode {
   // first (`facet: facetConfigSchema`; `encoding: yEncodingSchema(...)`), so its row
   // can link the page of the first one that is a `#config`.
   valueDeclIds?: string[]
+  // For `#slot` nodes only: the `ConfigurationSchema('Name', …)` declarations
+  // the same walk reaches, each marked when a `types.array` holds it, so a
+  // slot a factory builds (`markListSchema([...])`) can link the rows that
+  // document its schema on whichever page has them.
+  valueSchemas?: ReachedSchema[]
+  // For `#slot` nodes only: what the factory the slot's value calls returns
+  // (`types.array(types.union(...))` for
+  // `multiQuantitativeDisplaySchemas(pluginManager)`).
+  valueReturnedCode?: string
   // For `#slot` nodes only: whether the slot's `defaultValue` names a parameter
   // of the factory declaring it, so the value is whatever each caller passed and
   // the source text names nothing a reader can look up.
@@ -84,6 +93,11 @@ export interface ExtractedNode {
 // binding, e.g. `TrackHeightMixin`), and by resolved name (works when the tag
 // sits on an inner factory whose result is re-exported, e.g.
 // `export const BaseDisplay = stateModelFactory()`).
+export interface ReachedSchema {
+  name: string
+  list: boolean
+}
+
 export interface ComposedRef {
   declId?: string
   name?: string
@@ -277,9 +291,7 @@ export function extractWithComment(
         baseDeclId: tags.includes('baseConfiguration')
           ? referencedDeclId(checker, node)
           : undefined,
-        valueDeclIds: tags.includes('slot')
-          ? referencedSchemaDeclIds(checker, node)
-          : undefined,
+        ...(tags.includes('slot') ? slotValueReferences(checker, node) : {}),
         parameterisedDefault: tags.includes('slot')
           ? hasParameterisedDefault(checker, node)
           : undefined,
@@ -1670,25 +1682,32 @@ function bindsAParameter(decl: ts.Declaration) {
 // names a factory whose schema is built by a call further in, so the walk goes
 // through a callee's returned expression and through a call's arguments as well
 // as its head. The caller keeps the first that is a `#config`, which is what
-// decides the page a row links to.
-function referencedSchemaDeclIds(checker: ts.TypeChecker, node: ts.Node) {
+// decides the page a row links to, and falls back to the rows documenting the
+// first `ConfigurationSchema` the walk names.
+function slotValueReferences(checker: ts.TypeChecker, node: ts.Node) {
   if (!ts.isPropertyAssignment(node)) {
-    return undefined
+    return {}
   }
   const ids: string[] = []
+  const schemas: ReachedSchema[] = []
   const seen = new Set<string>()
-  const queue = [{ expr: node.initializer, depth: 0 }]
+  const head = ts.isCallExpression(node.initializer)
+    ? node.initializer.expression
+    : undefined
+  let returnedCode: string | undefined
+  const queue = [{ expr: node.initializer, depth: 0, list: false }]
   while (queue.length) {
-    const { expr, depth } = queue.shift()!
+    const { expr, depth, list } = queue.shift()!
     if (depth > 4) {
       continue
     }
     if (ts.isNonNullExpression(expr) || ts.isParenthesizedExpression(expr)) {
-      queue.push({ expr: expr.expression, depth })
+      queue.push({ expr: expr.expression, depth, list })
     } else if (ts.isCallExpression(expr)) {
-      queue.push({ expr: expr.expression, depth })
+      queue.push({ expr: expr.expression, depth, list })
+      const inArray = list || isTypesMember(expr.expression, 'array')
       for (const arg of expr.arguments) {
-        queue.push({ expr: arg, depth: depth + 1 })
+        queue.push({ expr: arg, depth: depth + 1, list: inArray })
       }
     } else if (ts.isIdentifier(expr)) {
       const symbol = checker.getSymbolAtLocation(expr)
@@ -1699,14 +1718,37 @@ function referencedSchemaDeclIds(checker: ts.TypeChecker, node: ts.Node) {
       seen.add(id)
       ids.push(id)
       const decl = symbol && followAlias(checker, symbol).declarations?.[0]
+      const name = decl && configurationSchemaName(decl)
+      if (name) {
+        schemas.push({ name, list })
+      }
       const fn = decl && factoryFunction(decl)
       const returned = fn && returnedExpression(fn)
       if (returned) {
-        queue.push({ expr: returned, depth: depth + 1 })
+        if (expr === head) {
+          returnedCode = returned.getText()
+        }
+        queue.push({ expr: returned, depth: depth + 1, list })
       }
     }
   }
-  return ids.length ? ids : undefined
+  return {
+    valueDeclIds: ids.length ? ids : undefined,
+    valueSchemas: schemas.length ? schemas : undefined,
+    valueReturnedCode: returnedCode,
+  }
+}
+
+function configurationSchemaName(decl: ts.Declaration) {
+  const init = ts.isVariableDeclaration(decl) ? decl.initializer : undefined
+  const first =
+    init &&
+    ts.isCallExpression(init) &&
+    ts.isIdentifier(init.expression) &&
+    init.expression.text === 'ConfigurationSchema'
+      ? init.arguments[0]
+      : undefined
+  return first && ts.isStringLiteralLike(first) ? first.text : undefined
 }
 
 // Whether a `#stateModel` tag landed on something that can plausibly BUILD a

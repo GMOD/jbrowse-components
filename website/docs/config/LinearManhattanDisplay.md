@@ -94,7 +94,7 @@ Display slots go on a display entry: `"displays": [{ "type": "LinearManhattanDis
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
-| <span id="slot-marks">**marks**</span><br><code>markListSchema([MANHATTAN_MARK])</code> | The plot, as `LinearMarkDisplay` reads it: unwritten, a point per feature at its `score`. |
+| <span id="slot-marks">**marks**</span><br>[list of Mark entries](#slot-marksencodingshapevalue) | The plot, as `LinearMarkDisplay` reads it: unwritten, a point per feature at its `score`. |
 | <span id="slot-height">**height**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>100</code> | default height for the track |
 | <span class="slot-group">Inherited from [LinearMarkDisplay](../linearmarkdisplay)</span> | <span class="slot-group-count">39 slots</span> |
 | <span id="slot-marksencodingshapevalue">**marks.encoding.shape.value**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (circle, triangle-down, diamond, square) = <code>'circle'</code> | `circle`, `triangle-down`, `diamond` or `square`, or a jexl callback over `feature` returning one, for a point mark whose shape is not a scale.<br>_callback args:_ `feature` |
