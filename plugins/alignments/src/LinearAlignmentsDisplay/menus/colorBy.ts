@@ -63,30 +63,14 @@ export interface ModificationsModel extends ModificationsMenuModel {
   regionTooLarge: boolean
 }
 
-// A model that may or may not carry the modification fields.
-type AnyColorByModel = ColorByModel & Partial<ModificationsModel>
-
-// The modification fields always travel together, so one probe narrows the whole
-// group. Only a type guard for callers whose model genuinely lacks them —
-// whether a section is *offered* is the caller's explicit opt-in below, never
-// inferred from the model's shape. LGVSyntenyDisplay composes the alignments
-// state model, so it carries every field a probe could test; sniffing gave it
-// the paired-end and bisulfite sections even though a PAF block has no pairs and
-// no reads to bisulfite-convert.
-function modModel(model: AnyColorByModel): ModificationsModel | undefined {
-  return model.modificationsReady === undefined
-    ? undefined
-    : (model as ModificationsModel)
-}
-
 interface ColorByMenuOptions {
-  includeTagOption?: boolean
-  // Insert size / pair orientation / first-of-pair — meaningful only where reads
-  // come in pairs.
-  includePairedEnd?: boolean
-  // The MM/ML modification radios plus reference-based bisulfite.
-  includeModifications?: boolean
   colorOptions?: ColorFieldOption[]
+  // A display of reads, whose model offers what only reads carry: a tag, the
+  // paired-end colorings, and the modification and bisulfite layers. An
+  // explicit opt-in, never sniffed off the model's shape: LGVSyntenyDisplay
+  // composes this state model too, and a PAF block has no pairs, tags or
+  // basecaller calls.
+  reads?: ModificationsModel
 }
 
 // Derived from the shared COLOR_FIELD_DEFS registry (single source of menu
@@ -103,7 +87,7 @@ const pairedEndColorOptions = radioColorFieldOptions('pairedEnd')
 // list the file's comments keep describing.
 
 // A constant paints the reads while no field does
-function paintsConstant(model: AnyColorByModel) {
+function paintsConstant(model: ColorByModel) {
   return (
     model.colorField === undefined && model.writtenColor.value !== undefined
   )
@@ -112,7 +96,7 @@ function paintsConstant(model: AnyColorByModel) {
 // A plain radio naming a field: the read fill's, or a per-base layer's. The
 // plain fill's radio names none.
 function colorRadio(
-  model: AnyColorByModel,
+  model: ColorByModel,
   { label, field }: ColorFieldOption,
 ): MenuItem {
   const layer = baseLayerOfField(field)
@@ -136,7 +120,7 @@ function colorRadio(
 // The per-base layer draws over whatever fills the reads, so its radios are a
 // group of their own under a sub-header, with None as the way off (ADR-149).
 function baseLayerItems(
-  model: AnyColorByModel,
+  model: ColorByModel,
   options: ColorFieldOption[],
   mods: ModificationsModel | undefined,
 ): MenuItem[] {
@@ -154,7 +138,7 @@ function baseLayerItems(
 function tagColorScaleOf({
   colorField,
   colorEncoding,
-}: AnyColorByModel): TagColorScale {
+}: ColorByModel): TagColorScale {
   return colorFieldKindOf(colorField) === 'tag' &&
     typeof colorEncoding === 'object' &&
     colorEncoding.scale === 'linear'
@@ -165,7 +149,7 @@ function tagColorScaleOf({
 // A field only a config names (an attribute, `mateAssembly`, a `jexl:`
 // expression) has no row to pick it from, so it gets a checked, disabled one
 // of its own, as Group by's does, rather than ticking "Tag...".
-function configFieldItems(model: AnyColorByModel): MenuItem[] {
+function configFieldItems(model: ColorByModel): MenuItem[] {
   const { colorField } = model
   return colorField !== undefined &&
     colorFieldKindOf(colorField) === 'tag' &&
@@ -180,7 +164,7 @@ function configFieldItems(model: AnyColorByModel): MenuItem[] {
 }
 
 // The dialog opens on the tag in use, so the label names no tag.
-function tagItem(model: AnyColorByModel): MenuItem {
+function tagItem(model: ColorByModel): MenuItem {
   const tag = fieldTag(model.colorField)
   return radioItem(
     'Tag...',
@@ -277,16 +261,10 @@ export function getReadConnectionsColorItem(arcColor: {
 }
 
 export function getColorByMenuItem(
-  model: AnyColorByModel,
+  model: ColorByModel,
   options: ColorByMenuOptions = {},
 ) {
-  const {
-    colorOptions = basicColorOptions,
-    includeTagOption,
-    includePairedEnd,
-    includeModifications,
-  } = options
-  const mods = includeModifications ? modModel(model) : undefined
+  const { colorOptions = basicColorOptions, reads } = options
   const readOptions = colorOptions.filter(
     o => baseLayerOfField(o.field) === undefined,
   )
@@ -298,7 +276,7 @@ export function getColorByMenuItem(
       {
         rows: [
           ...readOptions.map(o => colorRadio(model, o)),
-          ...(includeTagOption ? [tagItem(model)] : []),
+          ...(reads ? [tagItem(model)] : []),
           ...configFieldItems(model),
           solidColorItem(paintsConstant(model), () => {
             model.pickSolidColor()
@@ -309,7 +287,7 @@ export function getColorByMenuItem(
       // above
       {
         header: 'Paired end',
-        rows: includePairedEnd
+        rows: reads
           ? pairedEndColorOptions
               .filter(o => !o.whileActive || model.colorField === o.field)
               .map(o => colorRadio(model, o))
@@ -317,7 +295,7 @@ export function getColorByMenuItem(
       },
       {
         header: 'Per-base coloring',
-        rows: baseLayerItems(model, layerOptions, mods),
+        rows: baseLayerItems(model, layerOptions, reads),
       },
     ],
   })

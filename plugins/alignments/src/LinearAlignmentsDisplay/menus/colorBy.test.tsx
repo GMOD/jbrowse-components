@@ -18,8 +18,8 @@ import type { Plot } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
 
-// Minimal model: enough for the field radios + the Paired end submenu (modModel is
-// "defined" whenever modificationsReady is set, even to false).
+// Minimal model: enough for the field radios, and passed as `reads` for the
+// sections only a display of reads offers.
 function makeModel() {
   return {
     colorField: undefined as string | undefined,
@@ -94,13 +94,7 @@ function allItems(
   model: Model,
   opts?: Parameters<typeof getColorByMenuItem>[1],
 ) {
-  const top = subMenuOf(
-    getColorByMenuItem(model, {
-      includePairedEnd: true,
-      includeModifications: true,
-      ...opts,
-    }),
-  )
+  const top = subMenuOf(getColorByMenuItem(model, { reads: model, ...opts }))
   return flatten(top)
 }
 
@@ -124,7 +118,7 @@ describe('color by menu', () => {
   test('the tag radio names no tag, and ticks while a tag colors', () => {
     const model = makeModel()
     const labels = (m: Model) =>
-      allItems(m, { includeTagOption: true })
+      allItems(m, { reads: model })
         .map(i => ('label' in i ? String(i.label) : ''))
         .filter(l => l.startsWith('Tag'))
     expect(labels(model)).toEqual(['Tag...'])
@@ -137,12 +131,13 @@ describe('color by menu', () => {
   test('a field only a config names gets a checked row of its own', () => {
     const model = makeModel()
     model.colorField = 'mateAssembly'
-    expect(byLabel(model, 'Tag...', { includeTagOption: true })).toMatchObject({
+    expect(byLabel(model, 'Tag...', { reads: model })).toMatchObject({
       checked: false,
     })
-    expect(
-      byLabel(model, 'mateAssembly', { includeTagOption: true }),
-    ).toMatchObject({ checked: true, disabled: true })
+    expect(byLabel(model, 'mateAssembly', { reads: model })).toMatchObject({
+      checked: true,
+      disabled: true,
+    })
   })
 
   // A radio row keeps the menu open by its type, which is right for every row
@@ -152,9 +147,7 @@ describe('color by menu', () => {
   // a menu the user then has to dismiss. Solid color opens its picker likewise.
   test('field rows stay open, the tag and solid color rows (dialogs) dismiss', () => {
     const model = makeModel()
-    const rows = allItems(model, { includeTagOption: true }).filter(
-      i => 'checked' in i,
-    )
+    const rows = allItems(model, { reads: model }).filter(i => 'checked' in i)
     expect(rows.length).toBeGreaterThan(1)
     for (const row of rows) {
       const label = 'label' in row ? String(row.label) : ''
@@ -291,34 +284,30 @@ describe('color by menu curation', () => {
     subMenuOf(getColorByMenuItem(makeModel(), opts)).map(i =>
       'label' in i ? i.label : '',
     )
-  const deepLabelsFor = (opts: Parameters<typeof getColorByMenuItem>[1]) =>
-    flatten(subMenuOf(getColorByMenuItem(makeModel(), opts))).map(i =>
-      'label' in i ? i.label : '',
-    )
+  const deepLabelsFor = (reads: boolean) => {
+    const model = makeModel()
+    return flatten(
+      subMenuOf(getColorByMenuItem(model, reads ? { reads: model } : {})),
+    ).map(i => ('label' in i ? i.label : ''))
+  }
 
   test('paired-end and modification sections are absent unless opted into', () => {
-    const labels = deepLabelsFor({})
+    const labels = deepLabelsFor(false)
     expect(labels).not.toContain('Paired end')
     expect(labels).not.toContain(BISULFITE_LABEL)
     expect(labels).not.toContain('Tag...')
   })
 
-  test('each section is opted into independently', () => {
-    expect(deepLabelsFor({ includePairedEnd: true })).toContain('Paired end')
-    expect(deepLabelsFor({ includePairedEnd: true })).not.toContain(
-      BISULFITE_LABEL,
-    )
-    expect(deepLabelsFor({ includeModifications: true })).toContain(
-      BISULFITE_LABEL,
-    )
-    expect(deepLabelsFor({ includeModifications: true })).not.toContain(
-      'Paired end',
-    )
+  test('a display of reads offers all three', () => {
+    const labels = deepLabelsFor(true)
+    expect(labels).toContain('Paired end')
+    expect(labels).toContain(BISULFITE_LABEL)
+    expect(labels).toContain('Tag...')
   })
 
   test('the paired-end radios sit in Color by itself, under their sub-header', () => {
     const rows = subMenuOf(
-      getColorByMenuItem(makeModel(), { includePairedEnd: true }),
+      getColorByMenuItem(makeModel(), { reads: makeModel() }),
     )
     const header = rows.findIndex(
       i => i.type === 'subHeader' && i.label === 'Paired end',
@@ -336,7 +325,7 @@ describe('color by menu curation', () => {
   test('Insert size and Pair orientation alone show only while they paint', () => {
     const model = makeModel()
     const labels = () =>
-      subMenuOf(getColorByMenuItem(model, { includePairedEnd: true })).map(i =>
+      subMenuOf(getColorByMenuItem(model, { reads: model })).map(i =>
         'label' in i ? i.label : '',
       )
     expect(labels()).toEqual(
@@ -375,9 +364,7 @@ describe('color by menu curation', () => {
   test('per-base coloring is a second radio group under a sub-header', () => {
     const model = makeModel()
     drawing(model, 'modifications')
-    const top = subMenuOf(
-      getColorByMenuItem(model, { includeModifications: true }),
-    )
+    const top = subMenuOf(getColorByMenuItem(model, { reads: model }))
     const header = top.findIndex(
       i => i.type === 'subHeader' && i.label === 'Per-base coloring',
     )

@@ -3549,11 +3549,7 @@ export default function stateModelFactory(
             disabledHelpText: 'Turn on Show → Pileup to change read height',
           }
           return [
-            getColorByMenuItem(self, {
-              includeTagOption: true,
-              includePairedEnd: true,
-              includeModifications: true,
-            }),
+            getColorByMenuItem(self, { reads: self }),
             getSortMenuItem(self, {
               disabledHelpText: self.sortReadsBlockedReason,
             }),
