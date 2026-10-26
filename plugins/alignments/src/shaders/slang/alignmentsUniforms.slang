@@ -88,7 +88,7 @@ public struct Uniforms {
   public uint colorBaseC;
   public uint colorBaseG;
   public uint colorBaseT;
-  // Also the muted grey the showModifications palette collapse writes, and what
+  // Also the muted grey a modifications or bisulfite layer collapses to, and what
   // a non-A/C/G/T base (e.g. N) takes. `effectiveBaseColors` resolves that on
   // the CPU into these five slots, so the shader has one base lookup and no
   // mode to branch on.

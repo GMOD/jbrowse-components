@@ -12,7 +12,7 @@ import type { TestRenderStateOverrides } from '../testUtils.ts'
 import type {
   AlignmentsSources,
   RenderState,
-  CoverageBandScale,
+  CoverageBandSettings,
 } from './rendererTypes.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
@@ -162,7 +162,7 @@ function state(overrides: TestRenderStateOverrides): RenderState {
   })
 }
 
-function inkFor(overrides: Partial<CoverageBandScale>) {
+function inkFor(overrides: Partial<CoverageBandSettings>) {
   const { ctx, ink } = inkRecordingCtx()
   drawAlignmentsToCtx(
     ctx,

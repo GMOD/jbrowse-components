@@ -318,29 +318,31 @@ function mirrorX(m: Mark) {
   return BLOCK_WIDTH - m.x - m.w
 }
 
-// Two configs, because layer gating decides what's even reachable. The plain
-// pileup can't draw overlaps or either line layer (`shouldDrawOverlaps` and the
-// connLine/linkedReadLine gates all need a linked-reads layout), so without the
-// second config those three layers have no reversed coverage anywhere.
-// One plain config per per-base field, since `pileup.bases` paints one at a
-// time.
-const CONFIGS: { name: string; overrides: Partial<RenderState> }[] = [
-  {
-    name: 'plain pileup, modifications',
-    overrides: { basesField: 'modifications' },
+// Layer gating decides what's even reachable: one plain config per per-base
+// field, since `pileup.bases` paints one at a time, and a linked-reads one,
+// since the plain pileup can't draw overlaps or either line layer
+// (`shouldDrawOverlaps` and the connLine/linkedReadLine gates all need a
+// linked-reads layout).
+const PLAIN: { name: string; overrides: Partial<RenderState> } = {
+  name: 'plain pileup, modifications',
+  overrides: { basesField: 'modifications' },
+}
+const LINKED: { name: string; overrides: Partial<RenderState> } = {
+  name: 'linked reads (adds overlaps + connecting/linked-read lines)',
+  overrides: {
+    unit: 'chain',
+    showLinkedReadLines: true,
+    basesField: 'modifications',
   },
+}
+const CONFIGS: { name: string; overrides: Partial<RenderState> }[] = [
+  PLAIN,
   {
     name: 'plain pileup, base quality',
     overrides: { basesField: 'baseQuality' },
   },
   { name: 'plain pileup, base letters', overrides: { basesField: 'base' } },
-  {
-    name: 'linked reads (adds overlaps + connecting/linked-read lines)',
-    overrides: {
-      unit: 'chain',
-      showLinkedReadLines: true,
-    },
-  },
+  LINKED,
 ]
 
 describe.each(CONFIGS)(
@@ -378,8 +380,8 @@ describe.each(CONFIGS)(
 // The linked-reads config must actually reach the layers it exists for,
 // otherwise it silently degrades into a duplicate of the plain one.
 it('the linked-reads config draws strictly more than the plain pileup', () => {
-  expect(drawAt(false, CONFIGS[1]!.overrides).length).toBeGreaterThan(
-    drawAt(false, CONFIGS[0]!.overrides).length,
+  expect(drawAt(false, LINKED.overrides).length).toBeGreaterThan(
+    drawAt(false, PLAIN.overrides).length,
   )
 })
 

@@ -18,7 +18,7 @@ import type { LinkRegion, LinkSizeScale } from '@jbrowse/render-core/marks'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 import type { RenderingBackend } from '@jbrowse/render-core/renderingBackendBase'
 
-export type CoverageBandScale = Omit<CoverageBandState, 'top' | 'colors'>
+export type CoverageBandSettings = Omit<CoverageBandState, 'top' | 'colors'>
 
 export interface RenderState {
   scrollTop: number
@@ -27,7 +27,7 @@ export interface RenderState {
   // The coverage band as the shared band draws and hit-tests it, less the
   // section's top and the palette. `height` is the RESERVED height, 0 while
   // the band is off, so nothing re-derives the gate from a flag beside it.
-  coverage: CoverageBandScale
+  coverage: CoverageBandSettings
   sashimiHeight: number
   showMismatches: boolean
   fadeLowFrequency: boolean

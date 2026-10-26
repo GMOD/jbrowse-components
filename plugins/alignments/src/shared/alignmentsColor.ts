@@ -18,7 +18,11 @@ import {
   impliedFieldOf,
 } from '@jbrowse/display-kit/colorConfigSchema'
 
-import { COLOR_FIELD_DEFS, colorFieldKindOf } from './colorFieldDefs.ts'
+import {
+  COLOR_FIELD_DEFS,
+  colorFieldKindOf,
+  isModificationLayerField,
+} from './colorFieldDefs.ts'
 import { TAG_FIELD_PREFIX } from './facetLabels.ts'
 import {
   INSERT_SIZE_LEVELS,
@@ -39,7 +43,6 @@ import type {
   BaseColorField,
   BasesFilter,
   ColorFieldKind,
-  ModificationLayer,
   ReadColorFieldKind,
   TagColorScale,
 } from './types.ts'
@@ -100,12 +103,6 @@ export function baseLayerOfField(field: string | undefined) {
 }
 
 const FACET_ONLY_FIELDS = new Set<string>(FACET_ONLY_DIMENSIONS)
-
-function isModificationLayerField(
-  field: BaseColorField,
-): field is ModificationLayer['field'] {
-  return field === 'modifications' || field === 'bisulfite'
-}
 
 const INSERT_SIZE_FIELDS = new Set<string>([
   'insertSize',

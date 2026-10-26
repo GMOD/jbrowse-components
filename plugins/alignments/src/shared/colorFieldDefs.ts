@@ -5,6 +5,7 @@ import type {
   BaseLayer,
   BaseLayerField,
   BodyFill,
+  ModificationLayer,
   ColorFieldKind,
   ReadColorFieldKind,
 } from './types.ts'
@@ -199,8 +200,10 @@ export function paintsModifications(layer: BaseLayer | undefined) {
 }
 
 /** Whether a per-base layer field paints modification or bisulfite calls. */
-export function isModificationLayerField(field: BaseLayerField | undefined) {
-  return field !== undefined && isModificationField(field)
+export function isModificationLayerField(
+  field: BaseLayerField | undefined,
+): field is ModificationLayer['field'] {
+  return field === 'modifications' || field === 'bisulfite'
 }
 
 /** Whether the per-base layer draws a cell for every aligned base. */

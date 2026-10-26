@@ -102,8 +102,6 @@ export type TagColorScale = 'ordinal' | 'linear'
  * The per-base layer `pileup.bases` draws. `unmodified` and `filter` are the
  * modifications and bisulfite fields' own.
  */
-export type BaseLayerField = BaseLayer['field']
-
 export type BaseLayer =
   | { field: 'baseQuality' }
   | { field: 'base' }
@@ -115,6 +113,9 @@ export type BaseLayer =
       unmodified: boolean
       filter: BasesFilter
     }
+
+/** The field `pileup.bases` paints. */
+export type BaseLayerField = BaseLayer['field']
 
 /** A modifications or bisulfite layer. */
 export type ModificationLayer = Extract<BaseLayer, { unmodified: boolean }>

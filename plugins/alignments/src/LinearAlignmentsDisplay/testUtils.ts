@@ -34,7 +34,7 @@ import type {
 import type { ReadColorCategory } from './colorUtils.ts'
 import type { LinearAlignmentsDisplayModel } from './model.ts'
 import type {
-  CoverageBandScale,
+  CoverageBandSettings,
   RenderState,
 } from './renderers/rendererTypes.ts'
 import type { MenuDivider, MenuItem, MenuSubHeader } from '@jbrowse/core/ui'
@@ -93,18 +93,9 @@ export function makeTestPalette({
   }
 }
 
-/**
- * A full `RenderState` with everything off and one full-height section, for
- * tests that drive a real renderer and care about a handful of fields.
- *
- * An explicit literal rather than a cast, for `makeTestPalette`'s reason: a
- * `as unknown as RenderState` fixture silently stops covering a field the type
- * gains, and the renderers read this straight through to `drawSection`, where
- * an array the fixture forgot is dereferenced unconditionally.
- */
 // Everything off in the coverage band, for a fixture to spread its own
 // fields over.
-export const TEST_COVERAGE: CoverageBandScale = {
+export const TEST_COVERAGE: CoverageBandSettings = {
   height: 0,
   domainMin: 0,
   domainMax: undefined,
@@ -120,9 +111,18 @@ export type TestRenderStateOverrides = Omit<
   Partial<RenderState>,
   'coverage'
 > & {
-  coverage?: Partial<CoverageBandScale>
+  coverage?: Partial<CoverageBandSettings>
 }
 
+/**
+ * A full `RenderState` with everything off and one full-height section, for
+ * tests that drive a real renderer and care about a handful of fields.
+ *
+ * An explicit literal rather than a cast, for `makeTestPalette`'s reason: a
+ * `as unknown as RenderState` fixture silently stops covering a field the type
+ * gains, and the renderers read this straight through to `drawSection`, where
+ * an array the fixture forgot is dereferenced unconditionally.
+ */
 export function makeTestRenderState(
   overrides: TestRenderStateOverrides = {},
 ): RenderState {

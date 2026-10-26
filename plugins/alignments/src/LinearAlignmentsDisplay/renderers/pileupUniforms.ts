@@ -173,9 +173,9 @@ export function writePileupFrame(
   f32[U.qualityOpacitySlope] = qualityOpacity.slope
   f32[U.qualityOpacityMin] = qualityOpacity.min
   f32[U.qualityOpacityMax] = qualityOpacity.max
-  // Chevron gating only — chain mode's effect on read COLOR is resolved on the
-  // CPU into `readColorCategories`, so the shader no longer branches on it for
-  // fills.
+  // The chevron gate and the overlap tint's color — chain mode's effect on
+  // read COLOR is resolved on the CPU into `readColorCategories`, so the
+  // shader no longer branches on it for fills.
   i32[UI.chainMode] = state.unit === 'chain' ? 1 : 0
   // The frame-level half of the outline gate, which the uniform is the natural
   // home for: `featSize.y` is `u.featHeight` for every read, so deciding it once

@@ -39,8 +39,8 @@ export const SOFTCLIP_BASES_MARK = defineMark({
     contiguous: true,
     // N has a palette entry; any other non-A/C/G/T byte takes the table's
     // pre-filled fallback, matching the GPU shader (mismatch.slang baseColor
-    // catch-all) and the mismatch draw — including its mute under
-    // showModifications.
+    // catch-all) and the mismatch draw — including its mute under a
+    // modifications or bisulfite layer.
     paint: state => ({
       rule: Paint.palette,
       opaqueCss: buildBaseCssMap(state),
