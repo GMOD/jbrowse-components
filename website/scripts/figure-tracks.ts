@@ -128,7 +128,7 @@ export interface UnnamedTrack {
 }
 
 // A name prose wraps across lines still names the track.
-const oneLine = (s: string) => s.replace(/\s+/g, ' ')
+const oneLine = (s: string) => s.replaceAll(/\s+/g, ' ')
 
 // The tutorials a page's Prerequisites section links: a page built on another's
 // tracks (cnv_cgiab on sv_visualization_cgiab) names them there.
