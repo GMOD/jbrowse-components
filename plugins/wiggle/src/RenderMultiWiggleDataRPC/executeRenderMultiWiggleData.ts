@@ -89,18 +89,18 @@ export async function executeRenderMultiWiggleData({
   // Otherwise a source with zero features in the fetched regions would be
   // absent from the payload, get echoed back on every later fetch, and stay
   // invisible even after navigating to where it has data.
+  const listing = isMulti
+    ? await dataAdapter.getSourcesAndWarnings?.(opts)
+    : undefined
   const orderedSources: SourceInfo[] = isMulti
     ? sourcesArg?.length
       ? sourcesArg
-      : await dataAdapter.getSources(regions)
+      : (listing?.sources ?? (await dataAdapter.getSources(regions)))
     : unionSourcesByName(
         sourcesArg ?? [],
         perSource.map(({ source }) => ({ name: source })),
       )
-
-  const warnings = isMulti
-    ? (await dataAdapter.getSourcesAndWarnings?.(opts))?.warnings
-    : undefined
+  const warnings = listing?.warnings
 
   // Every region carries the full source list — a source with no features here
   // still gets an entry, so row placement stays aligned across regions.

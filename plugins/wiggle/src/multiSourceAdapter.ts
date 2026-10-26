@@ -5,6 +5,7 @@ import type {
   BaseOptions,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Region } from '@jbrowse/core/util'
+import type { SourceInfo } from '@jbrowse/wiggle-core'
 
 export interface MultiSourceFetchOpts extends WiggleAdapterOptions {
   // Narrows the fan-out to the named subtracks. Absent means every subtrack.
@@ -21,12 +22,14 @@ export interface MultiSourceFetchOpts extends WiggleAdapterOptions {
 // The per-subtrack status fan-out that keeps N concurrent downloads from
 // clobbering one status field lives inside the adapter, so callers pass their
 // raw statusCallback through.
-export interface MultiSourceWiggleAdapter extends BaseFeatureDataAdapter {
+interface MultiSourceWiggleAdapter extends BaseFeatureDataAdapter {
   getMultiSourceFeatureArraysMulti(
     regions: Region[],
     opts: MultiSourceFetchOpts,
   ): Promise<{ source: string; raws: RawFeatureArrays[] }[]>
-  getSourcesAndWarnings?(opts?: BaseOptions): Promise<{ warnings: string[] }>
+  getSourcesAndWarnings?(
+    opts?: BaseOptions,
+  ): Promise<{ sources: SourceInfo[]; warnings: string[] }>
 }
 
 // Shared by the render RPC and the clustering score matrix so the two take the
