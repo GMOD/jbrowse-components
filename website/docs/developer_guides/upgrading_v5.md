@@ -23,8 +23,9 @@ before your users do.
 
 Most sessions and configs migrate through `preProcessSnapshot`:
 
-- canvas `color1` and `color3` become `encoding.color` and `utrColor`; `color2`
-  and `outline` drop, since the glyph's lines take the theme's stroke color
+- canvas `color1` and `color3` become `encoding.color` and
+  `utrs.encoding.color`; `color2` and `outline` drop, since the glyph's lines
+  take the theme's stroke color
 - a v4 session's `heightPreConfig` migrates onto the `height` slot
 - the LD display's `ldMetric` becomes `encoding.color.field`
 - the multi-sample variant display's `renderingMode: 'phased' | 'alleleCount'`

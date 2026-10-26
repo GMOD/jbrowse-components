@@ -73,7 +73,7 @@ export const basicRetired: Record<
   color1: (value: unknown) => ({ encoding: { color: { value } } }),
   // the glyph's lines take the theme's stroke color
   color2: () => ({}),
-  color3: (utrColor: unknown) => ({ utrColor }),
+  color3: (value: unknown) => ({ utrs: { encoding: { color: { value } } } }),
   // v4's per-feature height callback drops; `mark.height` is a number
   featureHeight: (height: unknown) =>
     isJexl(height) ? {} : { mark: { height } },

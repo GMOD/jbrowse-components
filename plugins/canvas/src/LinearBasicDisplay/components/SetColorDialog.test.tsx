@@ -4,7 +4,7 @@ import { fireEvent, render } from '@testing-library/react'
 
 import SetColorDialog from './SetColorDialog.tsx'
 
-// `withUtr` stands for a display with a `utrColor` slot, the feature display;
+// `withUtr` stands for a display with a `utrs` part, the feature display;
 // the variant display has none.
 function renderDialog(withUtr: boolean, value?: string) {
   const setColorValue = jest.fn()

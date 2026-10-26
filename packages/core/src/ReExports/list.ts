@@ -432,6 +432,7 @@ export default [
   '@jbrowse/display-kit/FacetWritesMixin',
   '@jbrowse/display-kit/featureEncodingConfigSchema',
   '@jbrowse/display-kit/featureFilterConfigSchema',
+  '@jbrowse/display-kit/featureUtrsConfigSchema',
   '@jbrowse/display-kit/fetchEachRegion',
   '@jbrowse/display-kit/fetchInputs',
   '@jbrowse/display-kit/FetchMixin',

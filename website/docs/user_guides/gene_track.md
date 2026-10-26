@@ -188,7 +188,7 @@ GFF3 attribute column to a scale. Under `ordinal` each value takes a distinct
 color; under `threshold` a number takes the color of the interval it falls in,
 between the cut points `scale.domain` lists, with one `scale.range` color per
 interval. A transcript's exons, CDS and UTRs take the transcript's value, and a
-UTR follows `encoding.color` unless `utrColor` overrides it.
+UTR follows `encoding.color` unless `utrs.encoding.color` overrides it.
 
 - **JBrowse lowercases attribute names.** `dIF=0.79` reads under the key `dif`,
   so the field is `dif`

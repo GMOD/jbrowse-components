@@ -1042,7 +1042,7 @@ export function buildLaneCells({
         lane.spansOf(refName, start, end),
       )
     const fill = colors.genes.fill(feature, cluster)
-    const utrColor = colors.genes.utr(feature)
+    const utrColor = colors.genes.utr(feature, fill)
     const row = geneRow(lane, glyphHeight, pxDir)
     const rowCenter = row.top + row.height / 2
     for (const [x1, x2] of introns) {

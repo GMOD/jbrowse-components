@@ -3,7 +3,7 @@ import SolidColorDialog from '@jbrowse/display-kit/SolidColorDialog'
 import { Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
-// The UTR picker shows only on a display that has a `utrColor` slot.
+// The UTR picker shows only on a display that has a `utrs` part.
 const SetColorDialog = observer(function SetColorDialog({
   model,
   handleClose,

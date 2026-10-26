@@ -190,6 +190,9 @@ export function pickDisplayConfig(snapshot: Record<string, unknown>) {
   const encoding = source.encoding as { color?: object } | undefined
   picked.color = workerColorOf(encoding?.color ?? {})
   picked.tooltip = (source.tooltip as { field?: unknown } | undefined)?.field
+  picked.utrColor = (
+    source.utrs as { encoding?: { color?: { value?: unknown } } } | undefined
+  )?.encoding?.color?.value
   // The fields alone: the `show` switches are the main thread's, so a label
   // toggle never refetches.
   const labels = source.labels as

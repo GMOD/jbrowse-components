@@ -5,10 +5,10 @@ digraph feature_color {
 
   b [label="one box", shape=oval]
   b -> utr
-  utr [label="a UTR whose utrColor is set"]
+  utr [label="a UTR whose\nutrs.encoding.color is set"]
   utr -> readutr [label=" yes"]
   utr -> readcol [label=" no"]
-  readutr [label="read utrColor"]
+  readutr [label="read utrs.encoding.color"]
   readcol [label="read color"]
 
   readutr -> set  readcol -> set

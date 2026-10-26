@@ -24,7 +24,9 @@ describe('LinearBasicDisplay configSchema', () => {
     expect(
       readConfObject(config, ['encoding', 'color', 'value']),
     ).toBeUndefined()
-    expect(readConfObject(config, 'utrColor')).toBeUndefined()
+    expect(
+      readConfObject(config, ['utrs', 'encoding', 'color', 'value']),
+    ).toBeUndefined()
     expect(readConfObject(config, ['mark', 'height'])).toBe(10)
     expect(readConfObject(config, 'displayMode')).toBe('normal')
     expect(readConfObject(config, 'geneGlyphMode')).toBe('auto')
@@ -361,7 +363,9 @@ describe('LinearBasicDisplay configSchema', () => {
       expect(readConfObject(config, ['encoding', 'color', 'value'])).toBe(
         'blue',
       )
-      expect(readConfObject(config, 'utrColor')).toBe('lightblue')
+      expect(
+        readConfObject(config, ['utrs', 'encoding', 'color', 'value']),
+      ).toBe('lightblue')
       expect(getSnapshot(config)).not.toHaveProperty('color2')
     })
 

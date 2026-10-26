@@ -381,8 +381,8 @@ value: {
 },
 ```
 
-The multi-way synteny display reads its gene `utrColor` that way, once per
-feature and memoized, and not at all when the slot holds a plain color:
+The multi-way synteny display reads its genes' `utrs.encoding.color` that way,
+once per feature and memoized, and not at all when the slot holds a plain color:
 
 <!-- include: plugins/linear-comparative-view/src/MultiWaySyntenyDisplay/geneColor.ts#contextVariableRead -->
 

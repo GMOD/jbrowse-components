@@ -109,8 +109,8 @@ group's regions cut out.
 
 One rule: **an unset slot means nothing asked, so the file gets to speak; any
 set value wins.** Unset is `undefined` rather than a concrete default, so every
-real color stays expressible. A UTR reads `utrColor` only when that slot is set
-and otherwise falls through to `encoding.color`, which is what makes the rule
+real color stays expressible. A UTR reads `utrs.encoding.color` only when that slot is
+set and otherwise falls through to `encoding.color`, which is what makes the rule
 hold for a whole transcript rather than for its coding part.
 
 Color-by-frame is applied last, over whatever fill was resolved. Outlines,

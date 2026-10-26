@@ -120,7 +120,7 @@ export default function stateModelFactory(
       // Raw slot rather than getConf: a jexl
       // color evaluated without a feature throws.
       get utrColor(): string {
-        const raw = this.conf.utrColor
+        const raw = this.conf.utrs.encoding.color.value
         return raw !== undefined && !isJexl(raw) ? raw : utrDefaultColor
       },
 
@@ -248,7 +248,7 @@ export default function stateModelFactory(
       },
 
       setUtrColor(color?: string) {
-        setConf(self, 'utrColor', color)
+        setConf(self, ['utrs', 'encoding', 'color', 'value'], color)
       },
     }))
     .views(self => ({

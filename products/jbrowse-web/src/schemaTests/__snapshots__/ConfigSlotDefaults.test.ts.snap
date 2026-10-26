@@ -581,7 +581,7 @@ exports[`every registered schema slot default 1`] = `
     "transcripts.field": "string = "tag"",
     "transcripts.sort": "stringArray = ["MANE Select","MANE_Select","RefSeq Select","Ensembl_canonical","MANE Plus Clinical","MANE_Plus_Clinical"]",
     "transcripts.types": "stringArray = ["mRNA","transcript","primary_transcript","V_gene_segment","C_gene_segment","D_gene_segment","J_gene_segment"]",
-    "utrColor": "maybeColor = undefined",
+    "utrs.encoding.color.value": "maybeColor = undefined",
   },
   "display: LinearHicDisplay": {
     "data.normalization": "string = "KR"",
@@ -998,7 +998,7 @@ exports[`every registered schema slot default 1`] = `
     "rows.treeProvenance": "maybeFrozen = undefined",
     "showLaneTicks": "boolean = true",
     "splitStrands": "boolean = true",
-    "utrColor": "color = "#357089"",
+    "utrs.encoding.color.value": "maybeColor = undefined",
   },
   "text search adapter: BigBedTextSearchAdapter": {
     "assemblyNames": "stringArray = []",

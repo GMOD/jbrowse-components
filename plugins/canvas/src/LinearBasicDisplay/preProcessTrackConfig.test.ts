@@ -13,7 +13,7 @@ type DisplaySnapshot = {
   showLabels?: unknown
   labels?: unknown
   encoding?: { color?: { value?: string } }
-  utrColor?: string
+  utrs?: unknown
   heightMode?: string
   height?: number
   maxHeight?: number
@@ -94,7 +94,7 @@ test('renames legacy color1/color2/color3/outline config slots', () => {
   })
   expect(out.displays![0]).toMatchObject({
     encoding: { color: { value: 'green' } },
-    utrColor: 'lightblue',
+    utrs: { encoding: { color: { value: 'lightblue' } } },
   })
   expect(out.displays![0]).not.toHaveProperty('outline')
   expect(out.displays![0]).not.toHaveProperty('color2')

@@ -3450,8 +3450,32 @@ export const configManifest: ConfigManifest = {
           "writes": "members"
         },
         {
-          "name": "utrColor",
-          "type": "(JexlString | (CssColor | undefined))"
+          "name": "utrs",
+          "type": "FeatureUtrsConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "encoding",
+              "type": "FeatureUtrEncodingConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "color",
+                  "type": "FeatureUtrColorConfigurationSchema",
+                  "subSlots": [
+                    {
+                      "name": "value",
+                      "type": "(JexlString | (CssColor | undefined))"
+                    }
+                  ],
+                  "schema": "FeatureUtrColor",
+                  "writes": "members"
+                }
+              ],
+              "schema": "FeatureUtrEncoding",
+              "writes": "members"
+            }
+          ],
+          "schema": "FeatureUtrs",
+          "writes": "members"
         },
         {
           "name": "geneGlyphMode",
@@ -3523,7 +3547,8 @@ export const configManifest: ConfigManifest = {
         "impliedUTRs",
         "renderer",
         "color",
-        "showChevrons"
+        "showChevrons",
+        "utrColor"
       ],
       "droppedKeys": [
         "maxFeatureScreenDensity",
@@ -5706,8 +5731,32 @@ export const configManifest: ConfigManifest = {
           "writes": "members"
         },
         {
-          "name": "utrColor",
-          "type": "(JexlString | CssColor)"
+          "name": "utrs",
+          "type": "FeatureUtrsConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "encoding",
+              "type": "FeatureUtrEncodingConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "color",
+                  "type": "FeatureUtrColorConfigurationSchema",
+                  "subSlots": [
+                    {
+                      "name": "value",
+                      "type": "(JexlString | (CssColor | undefined))"
+                    }
+                  ],
+                  "schema": "FeatureUtrColor",
+                  "writes": "members"
+                }
+              ],
+              "schema": "FeatureUtrEncoding",
+              "writes": "members"
+            }
+          ],
+          "schema": "FeatureUtrs",
+          "writes": "members"
         },
         {
           "name": "data",
@@ -6410,7 +6459,8 @@ export const configManifest: ConfigManifest = {
         "drawCurves",
         "bridgeSkippedLanes",
         "text",
-        "showGeneLabels"
+        "showGeneLabels",
+        "utrColor"
       ],
       "droppedKeys": [
         "maxFeatureScreenDensity",

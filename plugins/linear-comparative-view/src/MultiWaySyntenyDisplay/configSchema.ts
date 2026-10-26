@@ -1,6 +1,6 @@
 import { ConfigurationSchema, plotList } from '@jbrowse/core/configuration'
-import { utrDefaultColor } from '@jbrowse/core/ui/palette'
 import baseLinearDisplayConfigSchema from '@jbrowse/display-kit/configSchema'
+import { featureUtrsConfigSchema } from '@jbrowse/display-kit/featureUtrsConfigSchema'
 import { legendConfigSchema } from '@jbrowse/display-kit/legendConfigSchema'
 import { types } from '@jbrowse/mobx-state-tree'
 import { featureNameLabelConfigSchema } from '@jbrowse/plugin-canvas'
@@ -92,14 +92,11 @@ export function configSchemaFactory() {
       encoding: geneEncodingConfigSchema,
       /**
        * #slot
+       * The gene glyphs' UTR boxes, a [](/docs/config/featureutrs) object, as
+       * on the canvas gene track. Unset, a UTR takes its gene's fill, and the
+       * contrasting UTR blue where nothing sets one.
        */
-      utrColor: {
-        type: 'color',
-        description:
-          'the fill color of the untranslated parts of a gene glyph, matching the canvas gene track default',
-        defaultValue: utrDefaultColor,
-        contextVariable: ['feature'],
-      },
+      utrs: featureUtrsConfigSchema,
       /**
        * #slot data
        * What the fetch reads, a [](/docs/config/syntenydata) object:
@@ -220,6 +217,9 @@ export function configSchemaFactory() {
         text: (field: unknown) =>
           field ? { labels: { name: { field } } } : {},
         showGeneLabels: (show: unknown) => ({ labels: { name: { show } } }),
+        utrColor: (value: unknown) => ({
+          utrs: { encoding: { color: { value } } },
+        }),
       },
     },
   )

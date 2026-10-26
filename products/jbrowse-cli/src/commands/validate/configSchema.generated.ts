@@ -5470,6 +5470,64 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "additionalProperties": false
     },
+    "FeatureUtrColor": {
+      "title": "FeatureUtrColor",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "value": {
+          "description": "a CSS color, or a \`jexl:\` callback over \`feature\` returning one, painting every UTR box over its transcript's fill.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/CssColorOrJexl"
+          }
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
+    "FeatureUtrEncoding": {
+      "title": "FeatureUtrEncoding",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "color": {
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FeatureUtrColor"
+          }
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
+    "FeatureUtrs": {
+      "title": "FeatureUtrs",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "encoding": {
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FeatureUtrEncoding"
+          }
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
     "FeatureChevrons": {
       "title": "FeatureChevrons",
       "type": "object",
@@ -5748,13 +5806,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/FeatureLabels"
           }
         },
-        "utrColor": {
-          "description": "fill color for UTRs on gene/transcript glyphs. Unset, a feature's own BED itemRgb paints them too (matching UCSC's whole-item coloring), else a contrasting blue.",
+        "utrs": {
           "if": {
             "type": "null"
           },
           "else": {
-            "$ref": "#/$defs/CssColorOrJexl"
+            "$ref": "#/$defs/FeatureUtrs"
           }
         },
         "geneGlyphMode": {
@@ -5888,6 +5945,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
         "showChevrons": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "utrColor": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
@@ -11211,14 +11272,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/MultiWayGeneEncoding"
           }
         },
-        "utrColor": {
-          "description": "the fill color of the untranslated parts of a gene glyph, matching the canvas gene track default.",
-          "default": "#357089",
+        "utrs": {
           "if": {
             "type": "null"
           },
           "else": {
-            "$ref": "#/$defs/CssColorOrJexl"
+            "$ref": "#/$defs/FeatureUtrs"
           }
         },
         "data": {
@@ -11353,6 +11412,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
         "showGeneLabels": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "utrColor": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
@@ -16841,8 +16904,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "labels": {
               "$ref": "#/$defs/LinearBasicDisplaySlots/properties/labels"
             },
-            "utrColor": {
-              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/utrColor"
+            "utrs": {
+              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/utrs"
             },
             "geneGlyphMode": {
               "$ref": "#/$defs/LinearBasicDisplaySlots/properties/geneGlyphMode"
@@ -16973,6 +17036,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "showChevrons": {
               "$ref": "#/$defs/LinearBasicDisplaySlots/properties/showChevrons"
+            },
+            "utrColor": {
+              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/utrColor"
             },
             "rows": {
               "anyOf": [
@@ -20927,8 +20993,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "renderers": {
               "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/renderers"
             },
-            "utrColor": {
-              "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/utrColor"
+            "utrs": {
+              "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/utrs"
             },
             "rows": {
               "anyOf": [
@@ -20975,6 +21041,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "showGeneLabels": {
               "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/showGeneLabels"
+            },
+            "utrColor": {
+              "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/utrColor"
             },
             "marks": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/marks"

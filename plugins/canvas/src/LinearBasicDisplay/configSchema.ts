@@ -1,4 +1,5 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import { featureUtrsConfigSchema } from '@jbrowse/display-kit/featureUtrsConfigSchema'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import baseConfigSchemaFactory from './baseConfigSchema.ts'
@@ -18,7 +19,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * Draws the genes and other features of a `FeatureTrack`, from a BED, GFF or
  * similar file. The display adds the gene-glyph slots (isoforms, UTRs,
  * chevrons) to the shared canvas base. `encoding.color` paints each
- * feature's fill and `utrColor` its UTRs; the intron lines, chevrons and
+ * feature's fill and `utrs.encoding.color` its UTRs; the intron lines, chevrons and
  * strand arrows take the theme's stroke color.
  *
  * #example
@@ -59,13 +60,11 @@ export default function configSchemaFactory(pluginManager: PluginManager) {
       fetchSizeLimit: { type: 'number', defaultValue: 5_000_000 },
       /**
        * #slot
+       * The UTR boxes, a [](/docs/config/featureutrs) object. Unset, a UTR
+       * takes its transcript's fill, a feature's own BED itemRgb included
+       * (matching UCSC's whole-item coloring), else a contrasting blue.
        */
-      utrColor: {
-        type: 'maybeColor',
-        description:
-          "fill color for UTRs on gene/transcript glyphs. Unset, a feature's own BED itemRgb paints them too (matching UCSC's whole-item coloring), else a contrasting blue",
-        contextVariable: ['feature'],
-      },
+      utrs: featureUtrsConfigSchema,
       /**
        * #slot
        */
@@ -142,7 +141,10 @@ export default function configSchemaFactory(pluginManager: PluginManager) {
        */
       baseConfiguration: baseConfigSchemaFactory(pluginManager),
       explicitlyTyped: true,
-      retired: { showChevrons: show => ({ chevrons: { show } }) },
+      retired: {
+        showChevrons: show => ({ chevrons: { show } }),
+        utrColor: value => ({ utrs: { encoding: { color: { value } } } }),
+      },
     },
   )
 }

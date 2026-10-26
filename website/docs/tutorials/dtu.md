@@ -253,7 +253,7 @@ muscle-preferred above. A value on a cut takes the interval above it.
 
 - The key lists every interval under the `legend.title`, plus a `(no value)` row
   for uncalled transcripts.
-- A UTR follows `encoding.color` unless `utrColor` is set.
+- A UTR follows `encoding.color` unless `utrs.encoding.color` is set.
 - Clicking an isoform opens its numbers in the details panel.
 
 ```json addtrack loc=chr10:7,787,600-7,812,400

@@ -109,7 +109,7 @@ export function configSlotViews(self: ConfigSlotSelf) {
     get geneColorSettings(): GeneColorSettings {
       return {
         color: colorSnapshotOf(self.configuration.encoding.color),
-        utrColor: self.configuration.utrColor,
+        utrColor: self.configuration.utrs.encoding.color.value,
       }
     },
     /** #getter */

@@ -1,5 +1,5 @@
 import { readConfObject } from '@jbrowse/core/configuration'
-import { featureDefaultColor } from '@jbrowse/core/ui/palette'
+import { featureDefaultColor, utrDefaultColor } from '@jbrowse/core/ui/palette'
 import { dealShownKeyColors } from '@jbrowse/core/util/categoricalField'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { fieldReader } from '@jbrowse/core/util/fieldReader'
@@ -30,10 +30,14 @@ export interface GeneColorSettings {
   utrColor: unknown
 }
 
-/** Resolves a fill once per feature or value. Only `cluster` fields read `cluster`. */
+/**
+ * Resolves a fill once per feature or value. Only `cluster` fields read
+ * `cluster`. A UTR takes `fill`, the gene's, unless `utrs.encoding.color`
+ * names one, or nothing sets the fill.
+ */
 export interface GeneColors {
   fill: (feature: Feature, cluster: string | undefined) => PaintedFill
-  utr: (feature: Feature) => number
+  utr: (feature: Feature, fill: PaintedFill) => number
 }
 
 /**
@@ -89,20 +93,34 @@ export function geneColors(
   const painted = (css: string) =>
     memo(byCss, css, () => ({ css, packed: cssColorToABGR(css) }))
 
+  const field = colorFieldOf(encoding, held)
+  const fillSet = field !== undefined || typeof encoding === 'string'
   // #region contextVariableRead
   // the slot as written, not resolved: a jexl color read without a feature
   // evaluates against an empty context and hands back the fallout (adr-066)
-  const utrConstant = isJexl(utrColor)
-    ? undefined
-    : cssColorToABGR(String(utrColor))
-  const utr = (feature: Feature) =>
+  const utrConstant =
+    utrColor === undefined
+      ? fillSet
+        ? undefined
+        : cssColorToABGR(utrDefaultColor)
+      : isJexl(utrColor)
+        ? undefined
+        : cssColorToABGR(String(utrColor))
+  const utr = (feature: Feature, fill: PaintedFill) =>
     utrConstant ??
-    memo(utrByFeature, feature.id(), () =>
-      cssColorToABGR(String(readConfObject(conf, 'utrColor', { feature }))),
-    )
+    (utrColor === undefined
+      ? fill.packed
+      : memo(utrByFeature, feature.id(), () =>
+          cssColorToABGR(
+            String(
+              readConfObject(conf, ['utrs', 'encoding', 'color', 'value'], {
+                feature,
+              }),
+            ),
+          ),
+        ))
   // #endregion
 
-  const field = colorFieldOf(encoding, held)
   if (field) {
     const keyed = (key: string) =>
       memo(byKey, key, () => {
