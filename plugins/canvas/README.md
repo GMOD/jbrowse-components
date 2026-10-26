@@ -67,4 +67,16 @@ section's `label`. A section `facet.hidden` lists leaves every table.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/canvas/src/tables.ts)
 
+### isLinearBasicDisplay
+
+Whether a track's display is the feature display, for a host that reaches it
+through `view.getTrack(id)?.activeDisplay` to drive its own controls.
+
+```js
+// type signature
+(display: unknown) => display is LinearBasicDisplay
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/canvas/src/LinearBasicDisplay/isLinearBasicDisplay.ts)
+
 <!-- API_DOCS_END -->

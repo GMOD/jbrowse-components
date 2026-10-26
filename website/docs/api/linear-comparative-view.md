@@ -8,6 +8,18 @@ Auto-generated from exported functions tagged `#api` in the source. See
 [imports and re-exports](/docs/developer_guides/imports_and_reexports) for how to
 import these from a plugin.
 
+## isLinearSyntenyView
+
+Whether a session's view is a synteny view, for a host that finds it in
+`session.views` to draw it with `SyntenyStack`.
+
+```js
+// type signature
+(view: unknown) => view is LinearSyntenyView
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/LinearSyntenyView/isLinearSyntenyView.ts)
+
 ## multiwayTables
 
 A multi-genome synteny track as the multi-way display stacks it under a

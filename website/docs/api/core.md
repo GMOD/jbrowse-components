@@ -1748,6 +1748,34 @@ belongs to no interval.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
 
+## trackCatalog
+
+Every track the session can show, as trackCatalogEntry records.
+
+```js
+import { trackCatalog } from '@jbrowse/core/util/tracks'
+
+// type signature
+(session: { tracks: TrackConfigEntry[]; connectionInstances?: { tracks: AnyConfigurationModel[]; }[] | undefined; assemblies: AnyConfigurationModel[]; }) => { trackId: string; name: string; category: string[]; description: string; }[]
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/tracks.ts)
+
+## trackCatalogEntry
+
+A track config as the record a track selector lists: its id, the name it
+shows (`getTrackName`), the category path it nests under and its
+description. Raw member reads, so a frozen entry answers without hydrating.
+
+```js
+import { trackCatalogEntry } from '@jbrowse/core/util/tracks'
+
+// type signature
+(conf: AnyTrackConfig, session: { assemblies: AnyConfigurationModel[]; }) => { trackId: string; name: string; category: string[]; description: string; }
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/tracks.ts)
+
 ## TransformStep
 
 One step over the features before a layer is encoded, named by `type` the

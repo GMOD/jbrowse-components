@@ -8,6 +8,18 @@ JBrowse 2 linear comparative view
 
 Auto-generated from `#api` JSDoc tags in this package. Do not edit by hand.
 
+### isLinearSyntenyView
+
+Whether a session's view is a synteny view, for a host that finds it in
+`session.views` to draw it with `SyntenyStack`.
+
+```js
+// type signature
+(view: unknown) => view is LinearSyntenyView
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/LinearSyntenyView/isLinearSyntenyView.ts)
+
 ### multiwayTables
 
 A multi-genome synteny track as the multi-way display stacks it under a linear

@@ -60,6 +60,18 @@ V8. The adapters must be registered on `pluginManager`
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/tables.ts)
 
+### isLinearAlignmentsDisplay
+
+Whether a track's display is the reads display, for a host that reaches it
+through `view.getTrack(id)?.activeDisplay` to drive its own controls.
+
+```js
+// type signature
+(display: unknown) => display is LinearAlignmentsDisplayModel
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearAlignmentsDisplay/isLinearAlignmentsDisplay.ts)
+
 ### referenceSequence
 
 A region of the reference, as the sequence adapter a track's assembly names

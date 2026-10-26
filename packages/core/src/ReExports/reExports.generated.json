@@ -3220,6 +3220,7 @@
         "detectIndexLocation",
         "indexCandidateNames",
         "indexSpellings",
+        "pairIndexFiles",
         "siblingLocation"
       ],
       "worker": "real"
@@ -3911,6 +3912,8 @@
         "stripTrackIds",
         "toTrackConfigEntry",
         "toggleTrackGeneric",
+        "trackCatalog",
+        "trackCatalogEntry",
         "trackDisplayType",
         "viewCanDisplayTrack",
         "viewDisplayNames",
@@ -5148,6 +5151,7 @@
       "names": [
         "EmbedProvider",
         "EngineBoundary",
+        "Gridlines",
         "Highlights",
         "Legend",
         "LocationBox",
@@ -5163,7 +5167,8 @@
         "TrackStack",
         "TrackToggle",
         "ViewStatus",
-        "useLocationBox"
+        "useLocationBox",
+        "useRubberband"
       ],
       "worker": "stub",
       "uiVia": [
