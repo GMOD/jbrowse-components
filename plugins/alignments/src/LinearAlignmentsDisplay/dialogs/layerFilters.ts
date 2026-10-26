@@ -33,12 +33,24 @@ import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
 import type { CategoryFilter } from '@jbrowse/display-kit/categoryFilter'
 
 /**
+ * A display's filters as the track's config declares them, merged over the
+ * defaults as the live ones are: what the dialog's Reset returns it to.
+ */
+export interface DeclaredFilters {
+  filterPredicates: FieldPredicate[]
+  junctionFilter: JunctionFilter
+  connectionFilter: ConnectionFilter
+  basesFilter: BasesFilter
+}
+
+/**
  * What the "More filters..." dialog reads off a display beyond `filter`:
  * the layers whose own filters it offers while they draw. Optional, since a
  * display sharing the dialog (LGVSyntenyDisplay) may draw none of them.
  */
 export interface LayerFiltersModel {
   filterPredicates: FieldPredicate[]
+  declaredFilters: DeclaredFilters
   showSashimi?: boolean
   junctionFilter?: JunctionFilter
   drawnReadConnections?: ReadConnectionsMode
@@ -106,6 +118,7 @@ export interface LayerFilterState {
     types: string[]
     shown: string[]
     probabilityPercent?: string
+    strict: boolean
   }
 }
 
@@ -149,51 +162,18 @@ export function layerFilterStateOf(model: LayerFiltersModel): LayerFilterState {
             ...(applied.probability
               ? { probabilityPercent: percentOf(bases.probability.min) }
               : {}),
+            strict: bases.probability.strict,
           },
         }
       : {}),
   }
 }
 
-/** The same state at the defaults, for the dialog's Reset. */
-export function defaultLayerFilterState(
-  state: LayerFilterState,
+/** The same state at the track's declared filters, for the dialog's Reset. */
+export function declaredLayerFilterState(
+  model: LayerFiltersModel,
 ): LayerFilterState {
-  return {
-    alone: undefined,
-    ...(state.junctions
-      ? {
-          junctions: {
-            split: undefined,
-            minReads: `${DEFAULT_MIN_SASHIMI_READS}`,
-          },
-        }
-      : {}),
-    ...(state.connections
-      ? {
-          connections: {
-            offscreenMates: undefined,
-            interchrom: undefined,
-            minInterchromReads: `${DEFAULT_MIN_INTERCHROM_READS}`,
-          },
-        }
-      : {}),
-    ...(state.bases
-      ? {
-          bases: {
-            ...state.bases,
-            shown: state.bases.types,
-            ...(state.bases.probabilityPercent === undefined
-              ? {}
-              : {
-                  probabilityPercent: percentOf(
-                    DEFAULT_BASES_FILTER.probability.min,
-                  ),
-                }),
-          },
-        }
-      : {}),
-  }
+  return layerFilterStateOf({ ...model, ...model.declaredFilters })
 }
 
 function countOf(value: string, fallback: number) {
@@ -244,12 +224,12 @@ export function layerFilterEntries(
  */
 export function layerBasesPatch(
   state: LayerFilterState,
-  strict: boolean,
 ): BasesPatch | undefined {
   const { bases } = state
   if (!bases) {
     return undefined
   }
+  const { strict } = bases
   if (bases.types.length > 0 && bases.shown.length === 0) {
     return { show: false }
   }

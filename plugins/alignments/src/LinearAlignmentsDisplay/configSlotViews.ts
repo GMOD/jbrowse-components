@@ -5,6 +5,7 @@ import {
   withAlleleFloor,
 } from '@jbrowse/alignments-core/coverageBandConfigSchema'
 import { getConf, readConfObject, setConf } from '@jbrowse/core/configuration'
+import { baseDisplayConfig } from '@jbrowse/core/util/baseDisplayConfig'
 import { withPreset } from '@jbrowse/core/util/colorScale'
 import { predicatesOf } from '@jbrowse/core/util/fieldPredicate'
 import { filterFieldNarrowing } from '@jbrowse/core/util/jexlFilters'
@@ -80,6 +81,7 @@ import type {
   ReadConnectionsPlacement,
   SashimiPlacement,
 } from './constants.ts'
+import type { DeclaredFilters } from './dialogs/layerFilters.ts'
 import type { InterbaseIndicatorRule } from '@jbrowse/alignments-core/coverageBandConfigSchema'
 import type { Reversible } from '@jbrowse/core/ui/filterMenuItems'
 import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
@@ -170,6 +172,17 @@ export function requireReadsConf(self: ConfigSlotSelf) {
     )
   }
   return conf
+}
+
+function declaredBasesFilterOf(base: Record<string, unknown>) {
+  const { pileup } = base
+  const bases =
+    typeof pileup === 'object' && pileup !== null && 'bases' in pileup
+      ? pileup.bases
+      : undefined
+  return typeof bases === 'object' && bases !== null && 'filter' in bases
+    ? bases.filter
+    : undefined
 }
 
 function strokeWidthSettingOf(self: ConfigSlotSelf): StrokeWidthSetting {
@@ -605,6 +618,22 @@ export function configSlotViews(self: ConfigSlotSelf) {
       selects: (field: string) => boolean = () => true,
     ): Reversible {
       return filterFieldNarrowing(self, selects)
+    },
+    /**
+     * #getter
+     * `filter` and `pileup.bases.filter` as the track's config declares them,
+     * merged over the defaults: what "More filters..."'s Reset returns to, as
+     * "Clear all filters" does.
+     */
+    get declaredFilters(): DeclaredFilters {
+      const base = baseDisplayConfig(self)
+      const filterPredicates = mergeFilter(predicatesOf(base.filter))
+      return {
+        filterPredicates,
+        junctionFilter: junctionFilterOf(filterPredicates),
+        connectionFilter: connectionFilterOf(filterPredicates),
+        basesFilter: basesFilterOf(declaredBasesFilterOf(base)),
+      }
     },
     /**
      * #getter

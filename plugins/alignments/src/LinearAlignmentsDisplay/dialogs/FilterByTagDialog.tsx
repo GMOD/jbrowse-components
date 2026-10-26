@@ -34,7 +34,7 @@ import {
 } from './FilterForm.tsx'
 import LayerFilterSections from './LayerFilterSections.tsx'
 import {
-  defaultLayerFilterState,
+  declaredLayerFilterState,
   layerBasesPatch,
   layerFilterEntries,
   layerFilterStateOf,
@@ -123,9 +123,8 @@ const MaskField = observer(function MaskField(props: {
   )
 })
 
-// One row per SAM flag with a Require and an Exclude box, so the contradiction
-// a user can otherwise build without noticing — the same flag required AND
-// excluded, which empties the track — is two ticks on one line.
+// One row per SAM flag with a Require and an Exclude box. The filter holds one
+// `flags.X` entry per flag, so ticking one box clears the other.
 const FlagFilterSection = observer(function FlagFilterSection(props: {
   flagInclude: number
   flagExclude: number
@@ -195,6 +194,7 @@ const FlagFilterSection = observer(function FlagFilterSection(props: {
                     setFlagInclude(
                       toggleBit(flagInclude, index, event.target.checked),
                     )
+                    setFlagExclude(toggleBit(flagExclude, index, false))
                   }}
                   slotProps={{ input: { 'aria-label': `Require ${name}` } }}
                 />
@@ -206,6 +206,7 @@ const FlagFilterSection = observer(function FlagFilterSection(props: {
                     setFlagExclude(
                       toggleBit(flagExclude, index, event.target.checked),
                     )
+                    setFlagInclude(toggleBit(flagInclude, index, false))
                   }}
                   slotProps={{ input: { 'aria-label': `Exclude ${name}` } }}
                 />
@@ -345,15 +346,18 @@ const FilterByTagDialog = observer(function FilterByTagDialog(props: {
   const [initialLayers] = useState(() => layerFilterStateOf(model))
   const [layers, setLayers] = useState(initialLayers)
 
+  // Back to what the track's config declares, as "Clear all filters" is, for
+  // the fields this dialog shows. Fresh row ids remount the uncontrolled tag
+  // boxes.
   const handleReset = () => {
-    setFlagInclude(DEFAULT_FLAG_MASKS.include)
-    setFlagExclude(DEFAULT_FLAG_MASKS.exclude)
-    setTagRows([
-      { id: Math.max(...tagRows.map(r => r.id)) + 1, tag: '', value: '' },
-    ])
-    setReadName('')
-    setMinMapq('')
-    setLayers(defaultLayerFilterState(layers))
+    const declared = readFieldsFormOf(model.declaredFilters.filterPredicates)
+    const nextId = Math.max(...tagRows.map(r => r.id)) + 1
+    setFlagInclude(declared.flagInclude)
+    setFlagExclude(declared.flagExclude)
+    setTagRows(tagRowsOf(declared.tags).map(r => ({ ...r, id: r.id + nextId })))
+    setReadName(declared.readName)
+    setMinMapq(declared.minMapq === undefined ? '' : `${declared.minMapq}`)
+    setLayers(declaredLayerFilterState(model))
   }
 
   const handleSubmit = () => {
@@ -374,10 +378,7 @@ const FilterByTagDialog = observer(function FilterByTagDialog(props: {
       ),
       ...layerFilterEntries(layers, initialLayers),
     })
-    const basesPatch = layerBasesPatch(
-      layers,
-      model.basesFilter?.probability.strict ?? false,
-    )
+    const basesPatch = layerBasesPatch(layers)
     if (basesPatch) {
       model.setBases?.(basesPatch)
     }

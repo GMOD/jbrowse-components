@@ -5,7 +5,7 @@ import {
 } from '../../shared/alignmentsFilter.ts'
 import { basesFilterOf, withBasesFields } from '../../shared/basesFilter.ts'
 import {
-  defaultLayerFilterState,
+  declaredLayerFilterState,
   layerBasesPatch,
   layerFilterEntries,
   layerFilterStateOf,
@@ -23,6 +23,8 @@ interface ModelOptions {
   types?: string[]
   showSashimi?: boolean
   drawnReadConnections?: 'off' | 'arc' | 'cloud'
+  // What the track's config declares, for Reset
+  declared?: { filter?: FieldPredicate[]; bases?: FieldPredicate[] }
 }
 
 function makeModel({
@@ -33,6 +35,7 @@ function makeModel({
   types = ['m', 'h'],
   showSashimi = false,
   drawnReadConnections = 'off',
+  declared = {},
 }: ModelOptions = {}) {
   return {
     filterPredicates: filter,
@@ -47,6 +50,15 @@ function makeModel({
     connectionFilter: { minInterchromReads: 1 },
     get basesFilter() {
       return basesFilterOf(this.bases)
+    },
+    get declaredFilters() {
+      const filterPredicates = declared.filter ?? []
+      return {
+        filterPredicates,
+        junctionFilter: junctionFilterOf(filterPredicates),
+        connectionFilter: this.connectionFilter,
+        basesFilter: basesFilterOf(declared.bases ?? []),
+      }
     },
     get baseLayer(): BaseLayer | undefined {
       return layer === 'modifications' || layer === 'bisulfite'
@@ -78,7 +90,7 @@ function submit(
   const initial = layerFilterStateOf(model)
   const state = edit(initial)
   model.setFilterFields(layerFilterEntries(state, initial))
-  const patch = layerBasesPatch(state, false)
+  const patch = layerBasesPatch(state)
   if (patch) {
     model.setBases(patch)
   }
@@ -108,7 +120,7 @@ describe('the More filters... layer sections', () => {
       makeModel({ layer: 'modifications', unmodified: true }),
     )
     expect(blue.bases?.probabilityPercent).toBeUndefined()
-    expect(Object.keys(blue.bases ?? {})).toEqual(['types', 'shown'])
+    expect(Object.keys(blue.bases ?? {})).toEqual(['types', 'shown', 'strict'])
   })
 
   test('a Submit that changes nothing writes the filter back unchanged', () => {
@@ -155,17 +167,19 @@ describe('the More filters... layer sections', () => {
     expect(model.shown).toBe(false)
   })
 
-  test('Reset returns every shown layer to its defaults', () => {
+  // The track's config, not the built-in defaults: "Clear all filters" puts a
+  // declared filter back, so Reset in the dialog must not take it away.
+  test('Reset returns every shown layer to what the config declares', () => {
     const model = makeModel({
       layer: 'modifications',
-      bases: [
-        { field: 'probability', gte: 0.8 },
-        { field: 'code', oneOf: ['m'] },
-      ],
-      filter: [{ field: 'alone', equal: false }],
+      bases: [{ field: 'code', oneOf: ['m'] }],
+      declared: {
+        filter: [{ field: 'alone', equal: false }],
+        bases: [{ field: 'probability', gt: 0.8 }],
+      },
     })
-    submit(model, defaultLayerFilterState)
-    expect(model.filterPredicates).toEqual([])
-    expect(model.bases).toEqual([])
+    submit(model, () => declaredLayerFilterState(model))
+    expect(model.filterPredicates).toEqual([{ field: 'alone', equal: false }])
+    expect(model.bases).toEqual([{ field: 'probability', gt: 0.8 }])
   })
 })

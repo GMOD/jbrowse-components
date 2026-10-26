@@ -6,23 +6,44 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 
 import {
   DEFAULT_FLAG_MASKS,
+  connectionFilterOf,
   flagMasksOf,
+  junctionFilterOf,
   mergeFilter,
   readNameOf,
   tagFiltersOf,
   withFields,
 } from '../../shared/alignmentsFilter.ts'
+import { DEFAULT_BASES_FILTER } from '../../shared/basesFilter.ts'
 import FilterByTagDialog from './FilterByTagDialog.tsx'
 
 import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
 
 afterEach(cleanup)
 
+// What a track's config declares, as the display reads it for Reset
+function declaredFiltersOf(declared: FieldPredicate[]) {
+  const filterPredicates = mergeFilter(declared)
+  return {
+    filterPredicates,
+    junctionFilter: junctionFilterOf(filterPredicates),
+    connectionFilter: connectionFilterOf(filterPredicates),
+    basesFilter: DEFAULT_BASES_FILTER,
+  }
+}
+
 // The dialog over a written list, and that list as it applies after the last
 // Submit wrote its fields onto it
-function renderDialog(written: FieldPredicate[] = []) {
+function renderDialog(
+  written: FieldPredicate[] = [],
+  declared: FieldPredicate[] = [],
+) {
   const setFilterFields = jest.fn()
-  const model = { filterPredicates: mergeFilter(written), setFilterFields }
+  const model = {
+    filterPredicates: mergeFilter(written),
+    declaredFilters: declaredFiltersOf(declared),
+    setFilterFields,
+  }
   render(
     <ThemeProvider theme={createJBrowseTheme()}>
       <FilterByTagDialog model={model} handleClose={() => {}} />
@@ -176,15 +197,24 @@ test('resetting leaves the read categories alone', () => {
   expect(categoryOf(list, 'svSignal')).toBe('only')
 })
 
+// The config's floor, not the built-in none: "Clear all filters" restores a
+// declared filter, so the dialog's Reset must not drop it.
+test('resetting returns to the filter the track config declares', () => {
+  const { submitted } = renderDialog(
+    [{ field: 'mapq', gte: 30 }],
+    [{ field: 'mapq', gte: 20 }],
+  )
+  fireEvent.click(screen.getByText('Reset defaults'))
+  submit()
+  expect(lowerBoundOf(submitted(), 'mapq')).toBe(20)
+})
+
 test('no read-category control is offered here', () => {
   renderDialog([{ field: 'split', equal: true }])
   expect(screen.queryByText('Read categories')).toBeNull()
   expect(screen.queryByLabelText('Split reads: Only')).toBeNull()
 })
 
-// One row per flag with a Require and an Exclude box, so the same flag can be
-// required and excluded — a track that renders empty — and now says so on one
-// line rather than across two twelve-checkbox columns.
 test('the flag grid drives both masks off one row per flag', () => {
   const { submitted } = renderDialog()
   fireEvent.click(screen.getByLabelText('Require read paired'))
@@ -193,6 +223,23 @@ test('the flag grid drives both masks off one row per flag', () => {
   expect(flagMasksOf(submitted())).toEqual({
     include: DEFAULT_FLAG_MASKS.include | 0x1,
     exclude: DEFAULT_FLAG_MASKS.exclude | 0x100,
+  })
+})
+
+// The filter holds one `flags.X` entry per flag, so a flag both required and
+// excluded applied only as required while the grid showed both ticked
+test('requiring a flag the defaults exclude clears its exclusion', () => {
+  const { submitted } = renderDialog()
+  fireEvent.click(
+    screen.getByLabelText('Require read is PCR or optical duplicate'),
+  )
+  expect(
+    screen.getByLabelText('Exclude read is PCR or optical duplicate').checked,
+  ).toBe(false)
+  submit()
+  expect(flagMasksOf(submitted())).toEqual({
+    include: DEFAULT_FLAG_MASKS.include | 0x400,
+    exclude: DEFAULT_FLAG_MASKS.exclude & ~0x400,
   })
 })
 
@@ -212,6 +259,7 @@ test('the Sashimi arcs section shows while the arcs draw, and writes its floor',
   const setFilterFields = jest.fn()
   const model = {
     filterPredicates: mergeFilter([]),
+    declaredFilters: declaredFiltersOf([]),
     setFilterFields,
     showSashimi: true,
     junctionFilter: { minReads: 1 },
