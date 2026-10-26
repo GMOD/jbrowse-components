@@ -1,74 +1,18 @@
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
-import { usePointerDrag } from '@jbrowse/core/util/usePointerDrag'
 import {
   EmbedProvider,
+  Gridlines,
   RegionSeams,
   Scalebar,
   TrackStack,
+  useRubberband,
 } from '@jbrowse/display-ui/embed'
 import { useCreateViewState } from '@jbrowse/react-linear-genome-view2'
 import { observer } from 'mobx-react'
 
 import type { LinearGenomeViewModel } from '@jbrowse/react-linear-genome-view2'
-
-const Gridlines = observer(function Gridlines({
-  view,
-}: {
-  view: LinearGenomeViewModel
-}) {
-  const palette = usePalette()
-  const path = (major: boolean) =>
-    view.gridlineTicks
-      .filter(tick => tick.major === major)
-      .map(tick => `M${tick.x + 0.5} 0V100000`)
-      .join('')
-  return (
-    <svg
-      aria-hidden
-      style={{
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        height: '100%',
-        width: view.staticBlocks.totalWidthPx,
-        transform: `translateX(${view.staticBlocksTranslateX}px)`,
-        pointerEvents: 'none',
-      }}
-    >
-      <path d={path(false)} style={{ stroke: palette.gridlineMinor }} />
-      <path d={path(true)} style={{ stroke: palette.gridlineMajor }} />
-    </svg>
-  )
-})
-
-function useDragToZoom(view: LinearGenomeViewModel) {
-  const [range, setRange] = useState<{ left: number; right: number }>()
-  const start = useRef({ anchor: 0, origin: 0 })
-  const span = (clientX: number) => {
-    const { anchor, origin } = start.current
-    const x = Math.min(Math.max(clientX - origin, 0), view.width)
-    return { left: Math.min(anchor, x), right: Math.max(anchor, x) }
-  }
-  const props = usePointerDrag({
-    onDragStart(event) {
-      const origin = event.currentTarget.getBoundingClientRect().left
-      start.current = { anchor: event.clientX - origin, origin }
-    },
-    onDrag(event) {
-      setRange(span(event.clientX))
-    },
-    onDragEnd(event) {
-      const { left, right } = span(event.clientX)
-      setRange(undefined)
-      if (right - left >= 4) {
-        view.moveTo(view.pxToBp(left), view.pxToBp(right))
-      }
-    },
-  })
-  return { range, props }
-}
 
 const PointerGuide = observer(function PointerGuide({
   view,
@@ -124,7 +68,7 @@ const PointerGuide = observer(function PointerGuide({
 
 const Demo = observer(function Demo({ view }: { view: LinearGenomeViewModel }) {
   const palette = usePalette()
-  const { range, props } = useDragToZoom(view)
+  const { range, props } = useRubberband(view)
   const [pointerX, setPointerX] = useState<number>()
   return (
     <div

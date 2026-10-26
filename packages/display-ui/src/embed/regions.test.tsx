@@ -1,7 +1,7 @@
 import { types } from '@jbrowse/mobx-state-tree'
 import { act, render, screen } from '@testing-library/react'
 
-import { Highlights, RegionSeams, Scalebar } from './regions.tsx'
+import { Gridlines, Highlights, RegionSeams, Scalebar } from './regions.tsx'
 
 test('one span per padding span, in a layer translated into the viewport', () => {
   const { container } = render(
@@ -156,4 +156,25 @@ test("the session's two highlight switches hide the labels, then the bands", () 
     session.setHighlightsVisible(false)
   })
   expect(bandsOf()).toEqual([])
+})
+
+test('gridlines split major from minor ticks, in a layer translated into the viewport', () => {
+  const { container } = render(
+    <Gridlines
+      view={{
+        staticBlocks: { totalWidthPx: 800 },
+        staticBlocksTranslateX: -40,
+        gridlineTicks: [
+          { x: 10, major: true },
+          { x: 20, major: false },
+          { x: 30, major: false },
+        ],
+      }}
+    />,
+  )
+  const layer = container.querySelector<SVGElement>('[data-gridlines]')!
+  expect(layer.style.transform).toBe('translateX(-40px)')
+  expect(
+    [...layer.querySelectorAll('path')].map(p => p.getAttribute('d')),
+  ).toEqual(['M20.5 0V100000M30.5 0V100000', 'M10.5 0V100000'])
 })

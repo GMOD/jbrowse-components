@@ -32,6 +32,12 @@ export interface ScalebarView {
   }
 }
 
+export interface GridlinesView {
+  staticBlocks: { totalWidthPx: number }
+  staticBlocksTranslateX: number
+  gridlineTicks: readonly { x: number; major: boolean }[]
+}
+
 export interface HighlightsView extends IStateTreeNode {
   highlights: readonly {
     assemblyName?: string
@@ -83,6 +89,41 @@ export const RegionSeams = observer(function RegionSeams({
         />
       ))}
     </div>
+  )
+})
+
+/**
+ * A vertical rule at every scalebar tick, major ones darker, behind the
+ * tracks.
+ */
+export const Gridlines = observer(function Gridlines({
+  view,
+}: {
+  view: GridlinesView
+}) {
+  const palette = usePalette()
+  const path = (major: boolean) =>
+    view.gridlineTicks
+      .filter(tick => tick.major === major)
+      .map(tick => `M${tick.x + 0.5} 0V100000`)
+      .join('')
+  return (
+    <svg
+      aria-hidden
+      data-gridlines
+      style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        height: '100%',
+        width: view.staticBlocks.totalWidthPx,
+        transform: `translateX(${view.staticBlocksTranslateX}px)`,
+        pointerEvents: 'none',
+      }}
+    >
+      <path d={path(false)} style={{ stroke: palette.gridlineMinor }} />
+      <path d={path(true)} style={{ stroke: palette.gridlineMajor }} />
+    </svg>
   )
 })
 
