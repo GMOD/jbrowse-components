@@ -6,7 +6,9 @@
 // task asked for. A run scores the docs, not the validator.
 //
 // Usage: node scripts/agent-evals/configDocsEval.ts [--model m] [--runs N]
-//        [--filter name] [--out dir] [--self-check]
+//        [--filter name] [--out dir] [--source dir] [--self-check]
+// --source reads docs and schema from another tree, such as a `git archive`
+// of the baseline commit, so the worktree can change while a run is going.
 import { execFileSync, spawn } from 'node:child_process'
 import fs from 'node:fs'
 import os from 'node:os'
@@ -26,6 +28,7 @@ function flag(name: string, fallback: string) {
 const model = flag('model', 'sonnet')
 const filter = flag('filter', '')
 const runs = Number(flag('runs', '1'))
+const source = path.resolve(flag('source', repoRoot))
 const commit = execFileSync('git', ['rev-parse', '--short', 'HEAD'], {
   cwd: repoRoot,
   encoding: 'utf8',
@@ -329,13 +332,13 @@ const SYSTEM = `You are configuring JBrowse 2, a genome browser. Its documentati
 
 function sandbox() {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'config-docs-eval-'))
-  fs.cpSync(path.join(repoRoot, 'website/docs'), path.join(dir, 'docs'), {
+  fs.cpSync(path.join(source, 'website/docs'), path.join(dir, 'docs'), {
     recursive: true,
     filter: src => !/\.(png|jpe?g|gif|svg|webp|mp4|webm)$/i.test(src),
   })
   fs.mkdirSync(path.join(dir, 'schema'))
   fs.copyFileSync(
-    path.join(repoRoot, 'website/static/schema/v5/config.json'),
+    path.join(source, 'website/static/schema/v5/config.json'),
     path.join(dir, 'schema/config.json'),
   )
   return dir
@@ -343,6 +346,7 @@ function sandbox() {
 
 interface ResultEvent {
   type: string
+  api_error?: string
   num_turns?: number
   total_cost_usd?: number
   duration_ms?: number
@@ -448,11 +452,19 @@ if (args.includes('--self-check')) {
 
 fs.mkdirSync(outDir, { recursive: true })
 const records = []
-for (const task of selected) {
+let stopped: string | undefined
+scoring: for (const task of selected) {
   for (let run = 1; run <= runs; run++) {
     const dir = sandbox()
     const events = await claude(task.prompt, dir)
     const result = events.find(ev => ev.type === 'result')
+    const apiError = events.find(ev => ev.api_error)?.api_error
+    if (apiError) {
+      stopped = `${task.name}#${run}: ${apiError}`
+      console.log(`STOP ${stopped}, not scored`)
+      fs.rmSync(dir, { recursive: true, force: true })
+      break scoring
+    }
     const trackFile = path.join(dir, 'track.json')
     let track: Json | undefined
     let problems: string[] = []
@@ -494,6 +506,7 @@ const summary = {
   client: execFileSync('claude', ['--version'], { encoding: 'utf8' }).trim(),
   passed: records.filter(r => r.pass).length,
   total: records.length,
+  stopped,
   usd: Number(records.reduce((a, r) => a + r.usd, 0).toFixed(3)),
   turns: records.reduce((a, r) => a + r.turns, 0),
   records: records.map(({ track: _track, ...r }) => r),
