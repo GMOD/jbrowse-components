@@ -114,7 +114,14 @@ test("each display's plot settings", () => {
       'sort',
       'unit',
     ],
-    LinearBasicDisplay: ['encoding', 'facet', 'filter', 'labels', 'legend'],
+    LinearBasicDisplay: [
+      'encoding',
+      'facet',
+      'filter',
+      'labels',
+      'legend',
+      'mark',
+    ],
     LinearHicDisplay: ['encoding', 'legend'],
     LinearMafDisplay: [
       'alignments',
@@ -168,7 +175,14 @@ test("each display's plot settings", () => {
       'unit',
       'variants',
     ],
-    LinearVariantDisplay: ['encoding', 'facet', 'filter', 'labels', 'legend'],
+    LinearVariantDisplay: [
+      'encoding',
+      'facet',
+      'filter',
+      'labels',
+      'legend',
+      'mark',
+    ],
     LinearWiggleDisplay: [
       'encoding',
       'extent',

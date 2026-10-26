@@ -26,5 +26,5 @@ export const featureMarkConfigSchema = ConfigurationSchema(
       description: 'height of each feature body in pixels',
     },
   },
-  { closed: true },
+  { closed: true, plot: true },
 )
