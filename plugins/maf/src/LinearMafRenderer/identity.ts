@@ -1,5 +1,6 @@
 import {
   DASH,
+  LOWER_BIT,
   isGapByte,
   isUnknownBase,
   sameBase,
@@ -277,31 +278,61 @@ export function buildIdentityRuns(
     }
   }
 
+  let colBp = new Int32Array(0)
+  let colBase = new Uint8Array(0)
   for (const block of blocks) {
     const ref = block.refSeqBytes
+    if (colBp.length < ref.length) {
+      colBp = new Int32Array(ref.length)
+      colBase = new Uint8Array(ref.length)
+    }
+    let bp = block.startBp
+    for (let col = 0; col < ref.length; col++) {
+      const refByte = ref[col]!
+      if (refByte === DASH) {
+        colBp[col] = -1
+      } else {
+        colBp[col] = isUnknownBase(refByte) ? -1 : bp
+        colBase[col] = refByte | LOWER_BIT
+        bp++
+      }
+    }
     for (const { rowIndex: r, alignmentBytes: aln } of block.rows) {
       const len = Math.min(aln.length, ref.length)
-      let bp = block.startBp
+      let lo = bin[r]! * binBp
+      let edge = lo + binBp
+      let m = matches[r]!
+      let c = classified[r]!
+      let hi = binHi[r]!
       for (let col = 0; col < len; col++) {
-        const refByte = ref[col]!
-        if (refByte !== DASH) {
+        const p = colBp[col]!
+        if (p >= 0) {
           const a = aln[col]!
-          if (compares(refByte, a)) {
-            const b = Math.floor(bp / binBp)
-            if (b !== bin[r]) {
+          if (!isGapByte(a)) {
+            if (p >= edge || p < lo) {
+              matches[r] = m
+              classified[r] = c
+              binHi[r] = hi
               closeBin(r)
+              const b = Math.floor(p / binBp)
               bin[r] = b
-              binLo[r] = bp
+              binLo[r] = p
+              lo = b * binBp
+              edge = lo + binBp
+              m = 0
+              c = 0
             }
-            binHi[r] = bp
-            classified[r]!++
-            if (sameBase(a, refByte)) {
-              matches[r]!++
+            hi = p
+            c++
+            if ((a | LOWER_BIT) === colBase[col]) {
+              m++
             }
           }
-          bp++
         }
       }
+      matches[r] = m
+      classified[r] = c
+      binHi[r] = hi
     }
   }
   for (let r = 0; r < n; r++) {
@@ -326,14 +357,19 @@ export function identitySpans(
     x: runs.x,
     x2: runs.x2,
     row: runs.row,
-    color: Uint32Array.from(runs.step, s => lut[s]!),
+    color: identityRunColors(runs, lut),
     count: runs.count,
   }
 }
 
 /** Each run's ramp color, the X-Y plot's bars under an identity fill. */
 export function identityRunColors(runs: MafIdentityRuns, lut = identityLut()) {
-  return Uint32Array.from(runs.step, s => lut[s]!)
+  const { step } = runs
+  const color = new Uint32Array(step.length)
+  for (let i = 0; i < step.length; i++) {
+    color[i] = lut[step[i]!]!
+  }
+  return color
 }
 
 /** The X-Y plot: a bar per run as tall as its identity, in `colors`. */
@@ -341,10 +377,15 @@ export function identityBars(
   runs: MafIdentityRuns,
   colors: Uint32Array,
 ): MafIdentityBars {
+  const { step } = runs
+  const y = new Float32Array(step.length)
+  for (let i = 0; i < step.length; i++) {
+    y[i] = step[i]! / STEPS
+  }
   return {
     x: runs.x,
     x2: runs.x2,
-    y: Float32Array.from(runs.step, s => s / STEPS),
+    y,
     row: runs.row,
     color: colors,
     count: runs.count,
