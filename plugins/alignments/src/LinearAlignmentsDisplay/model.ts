@@ -180,7 +180,6 @@ import {
 import {
   featureSpacingForHeight,
   basesFilterNarrowing,
-  getColorByMenuItem,
   getContextMenuItems,
   getFeatureHeightMenuItem,
   getFiltersMenuItems,
@@ -189,6 +188,7 @@ import {
   getReadConnectionsBandItems,
   getReadConnectionsMenuItem,
   getReadConnectionsColorItem,
+  getReadsColorByMenuItem,
   getReadsMenuItems,
   getSashimiPlacementItems,
   getSortMenuItem,
@@ -3549,7 +3549,7 @@ export default function stateModelFactory(
             disabledHelpText: 'Turn on Show → Pileup to change read height',
           }
           return [
-            getColorByMenuItem(self, { reads: self }),
+            getReadsColorByMenuItem(self),
             getSortMenuItem(self, {
               disabledHelpText: self.sortReadsBlockedReason,
             }),

@@ -63,15 +63,8 @@ export interface ModificationsModel extends ModificationsMenuModel {
   regionTooLarge: boolean
 }
 
-interface ColorByMenuOptions {
-  colorOptions?: ColorFieldOption[]
-  // A display of reads, whose model offers what only reads carry: a tag, the
-  // paired-end colorings, and the modification and bisulfite layers. An
-  // explicit opt-in, never sniffed off the model's shape: LGVSyntenyDisplay
-  // composes this state model too, and a PAF block has no pairs, tags or
-  // basecaller calls.
-  reads?: ModificationsModel
-}
+/** A display of reads, which carries a tag, a pair and per-base calls. */
+export type ReadsColorByModel = ColorByModel & ModificationsModel
 
 // Derived from the shared COLOR_FIELD_DEFS registry (single source of menu
 // placement + shader path), in registry order so the menu is unchanged.
@@ -260,11 +253,33 @@ export function getReadConnectionsColorItem(arcColor: {
   }
 }
 
+/**
+ * Color by for a display of reads: the basic fields, a tag, the paired-end
+ * colorings and the modification and bisulfite layers.
+ */
+export function getReadsColorByMenuItem(model: ReadsColorByModel) {
+  return colorByItem(model, basicColorOptions, model)
+}
+
+/**
+ * Color by over `colorOptions` alone, with nothing only reads carry:
+ * LGVSyntenyDisplay composes the alignments state model, and a PAF block has
+ * no pairs, tags or basecaller calls.
+ */
 export function getColorByMenuItem(
   model: ColorByModel,
-  options: ColorByMenuOptions = {},
+  {
+    colorOptions = basicColorOptions,
+  }: { colorOptions?: ColorFieldOption[] } = {},
 ) {
-  const { colorOptions = basicColorOptions, reads } = options
+  return colorByItem(model, colorOptions, undefined)
+}
+
+function colorByItem(
+  model: ColorByModel,
+  colorOptions: ColorFieldOption[],
+  reads: ModificationsModel | undefined,
+) {
   const readOptions = colorOptions.filter(
     o => baseLayerOfField(o.field) === undefined,
   )

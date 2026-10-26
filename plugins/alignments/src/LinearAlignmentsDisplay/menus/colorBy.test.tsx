@@ -7,7 +7,7 @@ import {
   MODIFICATIONS_LABEL,
   UNMODIFIED_IN_BLUE_LABEL,
 } from './baseLayerLabels.ts'
-import { getColorByMenuItem } from './colorBy.ts'
+import { getColorByMenuItem, getReadsColorByMenuItem } from './colorBy.ts'
 
 import type {
   BaseColorField,
@@ -18,8 +18,8 @@ import type { Plot } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
 
-// Minimal model: enough for the field radios, and passed as `reads` for the
-// sections only a display of reads offers.
+// Minimal model: enough for the field radios and the sections only a display
+// of reads offers.
 function makeModel() {
   return {
     colorField: undefined as string | undefined,
@@ -87,15 +87,11 @@ function subMenuOf(item: MenuItem | undefined) {
 }
 
 // Flatten the Color by menu so the field radios and those nested under
-// "Paired end" are reachable by label. These specs describe the
-// alignments display's menu, which opts into every section — a caller that opts
-// out is covered by the curation tests below.
-function allItems(
-  model: Model,
-  opts?: Parameters<typeof getColorByMenuItem>[1],
-) {
-  const top = subMenuOf(getColorByMenuItem(model, { reads: model, ...opts }))
-  return flatten(top)
+// "Paired end" are reachable by label. These specs describe the alignments
+// display's menu; the menu without the reads sections is covered by the
+// curation tests below.
+function allItems(model: Model) {
+  return flatten(subMenuOf(getReadsColorByMenuItem(model)))
 }
 
 function flatten(items: MenuItem[]): MenuItem[] {
@@ -104,12 +100,8 @@ function flatten(items: MenuItem[]): MenuItem[] {
   )
 }
 
-function byLabel(
-  model: Model,
-  label: string,
-  opts?: Parameters<typeof getColorByMenuItem>[1],
-) {
-  return allItems(model, opts).find(i => 'label' in i && i.label === label)
+function byLabel(model: Model, label: string) {
+  return allItems(model).find(i => 'label' in i && i.label === label)
 }
 
 describe('color by menu', () => {
@@ -118,7 +110,7 @@ describe('color by menu', () => {
   test('the tag radio names no tag, and ticks while a tag colors', () => {
     const model = makeModel()
     const labels = (m: Model) =>
-      allItems(m, { reads: model })
+      allItems(m)
         .map(i => ('label' in i ? String(i.label) : ''))
         .filter(l => l.startsWith('Tag'))
     expect(labels(model)).toEqual(['Tag...'])
@@ -131,10 +123,10 @@ describe('color by menu', () => {
   test('a field only a config names gets a checked row of its own', () => {
     const model = makeModel()
     model.colorField = 'mateAssembly'
-    expect(byLabel(model, 'Tag...', { reads: model })).toMatchObject({
+    expect(byLabel(model, 'Tag...')).toMatchObject({
       checked: false,
     })
-    expect(byLabel(model, 'mateAssembly', { reads: model })).toMatchObject({
+    expect(byLabel(model, 'mateAssembly')).toMatchObject({
       checked: true,
       disabled: true,
     })
@@ -147,7 +139,7 @@ describe('color by menu', () => {
   // a menu the user then has to dismiss. Solid color opens its picker likewise.
   test('field rows stay open, the tag and solid color rows (dialogs) dismiss', () => {
     const model = makeModel()
-    const rows = allItems(model, { reads: model }).filter(i => 'checked' in i)
+    const rows = allItems(model).filter(i => 'checked' in i)
     expect(rows.length).toBeGreaterThan(1)
     for (const row of rows) {
       const label = 'label' in row ? String(row.label) : ''
@@ -287,7 +279,9 @@ describe('color by menu curation', () => {
   const deepLabelsFor = (reads: boolean) => {
     const model = makeModel()
     return flatten(
-      subMenuOf(getColorByMenuItem(model, reads ? { reads: model } : {})),
+      subMenuOf(
+        reads ? getReadsColorByMenuItem(model) : getColorByMenuItem(model),
+      ),
     ).map(i => ('label' in i ? i.label : ''))
   }
 
@@ -306,9 +300,7 @@ describe('color by menu curation', () => {
   })
 
   test('the paired-end radios sit in Color by itself, under their sub-header', () => {
-    const rows = subMenuOf(
-      getColorByMenuItem(makeModel(), { reads: makeModel() }),
-    )
+    const rows = subMenuOf(getReadsColorByMenuItem(makeModel()))
     const header = rows.findIndex(
       i => i.type === 'subHeader' && i.label === 'Paired end',
     )
@@ -325,7 +317,7 @@ describe('color by menu curation', () => {
   test('Insert size and Pair orientation alone show only while they paint', () => {
     const model = makeModel()
     const labels = () =>
-      subMenuOf(getColorByMenuItem(model, { reads: model })).map(i =>
+      subMenuOf(getReadsColorByMenuItem(model)).map(i =>
         'label' in i ? i.label : '',
       )
     expect(labels()).toEqual(
@@ -364,7 +356,7 @@ describe('color by menu curation', () => {
   test('per-base coloring is a second radio group under a sub-header', () => {
     const model = makeModel()
     drawing(model, 'modifications')
-    const top = subMenuOf(getColorByMenuItem(model, { reads: model }))
+    const top = subMenuOf(getReadsColorByMenuItem(model))
     const header = top.findIndex(
       i => i.type === 'subHeader' && i.label === 'Per-base coloring',
     )
