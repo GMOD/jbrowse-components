@@ -392,18 +392,22 @@ export interface ReadFieldsForm {
   tags: TagFilter[]
   readName: string
   minMapq: number | undefined
+  // a `gt` floor, kept through an edit of its number
+  mapqStrict: boolean
 }
 
 export function readFieldsFormOf(
   predicates: readonly FieldPredicate[],
 ): ReadFieldsForm {
   const { include, exclude } = flagMasksOf(predicates)
+  const mapq = floorOf(predicates, MAPQ_FIELD)
   return {
     flagInclude: include,
     flagExclude: exclude,
     tags: tagFiltersOf(predicates),
     readName: readNameOf(predicates) ?? '',
-    minMapq: floorOf(predicates, MAPQ_FIELD)?.min,
+    minMapq: mapq?.min,
+    mapqStrict: mapq?.strict ?? false,
   }
 }
 
@@ -434,13 +438,15 @@ export function readFieldsEntries(
               : [{ field: 'name', equal: form.readName }]),
           ],
         }),
-    ...(form.minMapq === initial.minMapq
+    ...(form.minMapq === initial.minMapq &&
+    form.mapqStrict === initial.mapqStrict
       ? {}
       : {
           [MAPQ_FIELD]: withLowerBound(
             entriesOn(written, MAPQ_FIELD),
             MAPQ_FIELD,
             form.minMapq,
+            form.mapqStrict,
           ),
         }),
   }

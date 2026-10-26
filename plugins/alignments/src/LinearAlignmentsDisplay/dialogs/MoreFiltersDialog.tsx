@@ -332,7 +332,7 @@ const TagFilterRows = observer(function TagFilterRows(props: {
 // never applies on click in one place and on Submit in another.
 //
 // Submit writes only the sections a user changed, and keeps the entries on
-// their fields the dialog cannot show (a tag's `oneOf`, a strict MAPQ floor).
+// their fields the dialog cannot show (a tag's `oneOf`, a MAPQ floor's `gt`).
 // The menu's "Clear all filters" is what resets the whole filter.
 //
 // One form, one label column: a box per field read as eight separate dialogs.
@@ -352,6 +352,7 @@ const MoreFiltersDialog = observer(function MoreFiltersDialog(props: {
   const [minMapq, setMinMapq] = useState(
     initial.minMapq === undefined ? '' : `${initial.minMapq}`,
   )
+  const [mapqStrict, setMapqStrict] = useState(initial.mapqStrict)
   const [initialLayers] = useState(() => layerFilterStateOf(model))
   const [layers, setLayers] = useState(initialLayers)
 
@@ -366,6 +367,7 @@ const MoreFiltersDialog = observer(function MoreFiltersDialog(props: {
     setTagRows(tagRowsOf(declared.tags).map(r => ({ ...r, id: r.id + nextId })))
     setReadName(declared.readName)
     setMinMapq(declared.minMapq === undefined ? '' : `${declared.minMapq}`)
+    setMapqStrict(declared.mapqStrict)
     setLayers(declaredLayerFilterState(model))
   }
 
@@ -386,6 +388,7 @@ const MoreFiltersDialog = observer(function MoreFiltersDialog(props: {
             minMapq === '' || !Number.isFinite(Number(minMapq))
               ? undefined
               : Number(minMapq),
+          mapqStrict,
         },
         { ...initial, tags: tagsOfRows(tagRowsOf(initial.tags)) },
       ),

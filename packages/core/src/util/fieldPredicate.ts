@@ -466,27 +466,28 @@ export function passesFloor(value: number, { min, strict }: Floor) {
 }
 
 /**
- * The predicate list with `field`'s lower bound set to `gte`, or removed with
- * undefined; a predicate left testing nothing drops out. What a slider on one
- * field writes.
+ * The predicate list with `field`'s lower bound set to `min`, a `gt` when
+ * `strict` and a `gte` otherwise, or removed with undefined; a predicate left
+ * testing nothing drops out. What a slider on one field writes.
  */
 export function withLowerBound(
   predicates: readonly FieldPredicate[],
   field: string,
-  gte: number | undefined,
+  min: number | undefined,
+  strict = false,
 ): FieldPredicate[] {
-  let placed = gte === undefined
+  const bound = min === undefined ? {} : { [strict ? 'gt' : 'gte']: min }
+  let placed = min === undefined
   const next = predicates.flatMap(p => {
     if (p.field !== field) {
       return [p]
     }
     const { gt: _gt, gte: _gte, ...rest } = p
-    const updated: FieldPredicate =
-      placed || gte === undefined ? rest : { ...rest, gte }
+    const updated: FieldPredicate = placed ? rest : { ...rest, ...bound }
     placed = true
     return testsSomething(updated) ? [updated] : []
   })
-  return placed ? next : [...next, { field, gte }]
+  return placed ? next : [...next, { field, ...bound }]
 }
 
 /**

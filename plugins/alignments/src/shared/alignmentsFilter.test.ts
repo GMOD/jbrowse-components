@@ -280,6 +280,14 @@ describe('the read fields the dialog edits', () => {
     ])
   })
 
+  test('a strict MAPQ floor stays strict when its number is edited', () => {
+    const written: FieldPredicate[] = [{ field: 'mapq', gt: 20 }]
+    const form = readFieldsFormOf(written)
+    expect(
+      withFields(written, readFieldsEntries(written, { ...form, minMapq: 30 })),
+    ).toEqual([{ field: 'mapq', gt: 30 }])
+  })
+
   test('the read name', () => {
     expect(readNameOf([{ field: 'name', equal: 'r1' }])).toBe('r1')
     expect(readNameOf([])).toBeUndefined()

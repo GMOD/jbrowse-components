@@ -167,6 +167,16 @@ describe('the slider helpers', () => {
     expect(withLowerBound(list, 'identity', undefined)).toEqual([list[0]])
   })
 
+  test('withLowerBound writes a strict bound as gt', () => {
+    expect(withLowerBound(list, 'length', 2000, true)).toEqual([
+      { field: 'length', lte: 5000, gt: 2000 },
+      { field: 'identity', gte: 0.9 },
+    ])
+    expect(withLowerBound([], 'length', 2000, true)).toEqual([
+      { field: 'length', gt: 2000 },
+    ])
+  })
+
   test('withLowerBound appends a predicate for a field not yet tested', () => {
     expect(withLowerBound([], 'length', 10000)).toEqual([
       { field: 'length', gte: 10000 },
