@@ -160,7 +160,7 @@ the cost is blank space under a stack whose lane was shrunk.
 **`fit` is the sole `heightMode` that also drives the read-height axis**; every
 special case follows, including the fit cap using the Normal height.
 `self.featureHeight` is the fit-squeezed value — editors that mutate the size
-read `configuredReadHeight`. `fittedHeightPx` is a **pitch**, `featureHeight`
+read `markHeight`. `fittedHeightPx` is a **pitch**, `featureHeight`
 a **body**; the volatile bridging them breaks a MobX cycle, so don't collapse
 it.
 
