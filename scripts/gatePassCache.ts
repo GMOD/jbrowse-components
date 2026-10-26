@@ -3,7 +3,8 @@
 // that brought nothing) skips them. 97 of 486 agent gate runs in the four days
 // to 2026-10-23 were such reruns, 2.6h of waiting.
 //
-// The key is the working tree as `git add -A` would commit it, the installed
+// The key is the working tree as `git add -A` would commit it, the index as it
+// stands (check-case-collisions reads `git ls-files`), the installed
 // node_modules, and the gate's argv, which carries the changed-file scope. An
 // untracked file over 4MB goes in by path, size and mtime instead, since
 // hashing a multi-GB data file would copy it into the object store. Only passes are stored,
@@ -50,6 +51,7 @@ function treeKey(root: string) {
       index,
     )
     const env = { GIT_INDEX_FILE: index }
+    const staged = git(root, ['write-tree'], env)
     git(root, ['add', '-u'], env)
     const untracked = git(root, ['ls-files', '-z', '-o', '--exclude-standard'])
       .split('\0')
@@ -72,6 +74,7 @@ function treeKey(root: string) {
     }
     return [
       git(root, ['write-tree'], env),
+      staged,
       stamp(join(root, 'node_modules/.modules.yaml')),
       ...big.map(f => `${f}\0${stamp(join(root, f))}`),
     ].join('\n')
