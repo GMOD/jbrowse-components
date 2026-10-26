@@ -122,7 +122,7 @@ export const hicColorConfigSchema = ConfigurationSchema(
           type: 'maybeStringEnum',
           model: types.enumeration('HicColorScaleType', [...HIC_COLOR_SCALES]),
           description:
-            "linear; symlog, d3's log(1 + count), which the Log scale toggle writes: it lifts sparse long-range bins off the floor and leaves only 0 transparent; or log, log2 of the count from a pinned domainMin or else 1, every bin at or below which draws transparent. Unset is the field's own, linear for observed",
+            "linear; symlog, d3's log(1 + count), which the Log scale toggle writes: it lifts sparse long-range bins off the floor, so only 0 paints as the domain's bottom does; or log, log2 of the count from a pinned domainMin or else 1, every bin at or below which paints as the domain's bottom does. Juicebox paints that bottom transparent. Unset is the field's own, linear for observed",
         },
         /**
          * #slot scale.scheme
