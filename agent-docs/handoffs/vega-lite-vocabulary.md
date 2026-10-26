@@ -71,8 +71,6 @@ deployed. Still open, each needing no further call:
   neither calls it nor carries the layers' field tables.
 - **A cross-display conformance test** (one spec table through every
   display's color and predicate resolver, exceptions named and shrinking).
-- **`encoding.y.scale.reverse`** for minus-strand bigWigs (v4 `inverted`);
-  shaders, Canvas2D twins, axis and band compare change, about 2-3 days.
 - **`scale.scheme` on an ordinal scale** samples the ramp per domain value.
 - **Four config-doc Type cells** print factory source
   (`markListSchema(...)`, `types.array(aggregateOpSchema)`); the generator

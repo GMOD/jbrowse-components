@@ -390,6 +390,7 @@ predicate in the layer's own `filter`:
 | `containers` as `unnest` | It names a data transform; only the layout changes, and filters, tables and counts see the same records |
 | A flat `utrColor`, or `encoding.utrColor` | Flat, it is the one fill left outside an `encoding`; under `encoding` it is a part-qualified channel, which Vega-Lite never spells (no `encoding.medianColor`) |
 | `labels.subfeatures.filter` defaulting to the cleavage-product types, in place of `placement: 'auto'` | A written `placement: 'below'` would then label only the cleavage products, and labeling every part would take `filter: [{ field: 'type' }]`, today's `below` spelled obscurely |
+| `encoding.y.scale.reverse`, the successor to wiggle's v4 `inverted` | No use case justified it (Colin, 2026-10-26): it would change the shaders, their Canvas2D twins, the axis and the band compare for about 2-3 days of work. `retiredScaleSpellings` drops `inverted` |
 
 ## Consequences
 
