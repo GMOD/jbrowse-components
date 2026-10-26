@@ -1809,7 +1809,7 @@ export default function stateModelFactory(
            */
           get rowsSources(): ReadonlyMap<number, MafRowsSource> {
             return join(
-              self.rpcDataMap,
+              self.detailOnScreen,
               self.summaryDataMap,
               self.framesDataMap,
             )

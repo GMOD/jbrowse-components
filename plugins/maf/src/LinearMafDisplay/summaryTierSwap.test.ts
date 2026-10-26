@@ -16,6 +16,13 @@ function summaryBars(display: LinearMafDisplayModel) {
   )
 }
 
+function cellCount(display: LinearMafDisplayModel) {
+  return [...display.encodedUpload.values()].reduce(
+    (n, p) => n + p.cells.count,
+    0,
+  )
+}
+
 function seedSources(display: LinearMafDisplayModel) {
   display.setSamples({
     samples: [
@@ -166,11 +173,13 @@ describe('the summary bars stand in until the alignment lands', () => {
 
     view.zoomTo(1)
     expect(summaryBars(display)).toEqual([])
+    expect(cellCount(display)).toBeGreaterThan(0)
 
     view.zoomTo(100)
     expect(display.coarseTierActive).toBe(true)
     expect(display.rpcDataMap.size).toBe(1)
     expect(summaryBars(display)).toHaveLength(2)
+    expect(cellCount(display)).toBe(0)
   })
 
   it('reads no cached alignment for hover, sort or navigation on the tier', () => {

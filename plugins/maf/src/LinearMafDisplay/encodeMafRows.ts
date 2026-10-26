@@ -92,9 +92,9 @@ export interface MafRowsEncodeProps {
 }
 
 /**
- * What one region's rows draw from: the detail tier's alignment, the summary
- * tier's records where they stand in, or both while the summary tier is up
- * over alignment still cached beneath it.
+ * What one region's rows draw from: the detail tier's alignment, or the
+ * summary tier's records while that tier is up or the alignment has yet to
+ * land.
  */
 export interface MafRowsSource {
   detail: MafRegionData | undefined
