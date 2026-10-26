@@ -115,7 +115,8 @@ function indexRowOf(features: Feature[], join: LdJoin) {
   let best = -Infinity
   for (const [i, f] of features.entries()) {
     const score: unknown = f.get('score')
-    const value = typeof score === 'number' ? score : -Infinity
+    const value =
+      typeof score === 'number' && !Number.isNaN(score) ? score : -Infinity
     if (f.get('start') === join.start && (row === -1 || value > best)) {
       row = i
       best = value

@@ -105,6 +105,23 @@ test('of two alleles at the index position, only the stronger is the index', asy
   ])
 })
 
+// a p-value of NA parses to NaN, which draws no point to carry the diamond
+test('an allele with no score is not the index over one with a score', async () => {
+  expect(
+    await joined(
+      [rec({ snpA: 'rsIndex', bpA: 100, snpB: 'rsB', bpB: 200, r2: 0.8 })],
+      { start: 99, refName: 'chr1' },
+      [
+        feat({ name: 'rsNA', start: 99, score: Number.NaN }),
+        feat({ name: 'rsIndex', start: 99, score: 8 }),
+      ],
+    ),
+  ).toEqual([
+    [undefined, undefined],
+    [1, 'index'],
+  ])
+})
+
 // The LD file is a second file with its own spelling of the contig. The query
 // goes out in that spelling, and a partner is keyed by its position on the
 // region's contig, which the features share whatever either file calls it.
