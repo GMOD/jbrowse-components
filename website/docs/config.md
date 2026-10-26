@@ -16,8 +16,8 @@ how configuration fits together, start with the
 [config guide](/docs/config_guide). For the file formats each adapter reads, see
 [supported file types](/docs/config_guides/file_types).
 
-Each display's color channels, the `scale.type` values each takes, and the
-fields with presets of their own:
+The table below lists each display's color channels, the `scale.type` values
+each takes, and the fields with presets of their own.
 
 <!-- COLOR_CHANNELS START -->
 
