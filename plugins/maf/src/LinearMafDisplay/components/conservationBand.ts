@@ -91,3 +91,16 @@ export function encodeConservation(
     count: y.length,
   }
 }
+
+/**
+ * The conservation bar painted over base `bp`, as its value and span: a
+ * window's mean identity, or a codon's amino-acid identity.
+ */
+export function conservationBarAt(bars: MafIdentityBars, bp: number) {
+  for (let i = 0; i < bars.count; i++) {
+    if (bars.x[i]! <= bp && bp < bars.x2[i]!) {
+      return { start: bars.x[i]!, end: bars.x2[i]!, identity: bars.y[i]! }
+    }
+  }
+  return undefined
+}

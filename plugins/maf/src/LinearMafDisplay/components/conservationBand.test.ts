@@ -1,4 +1,4 @@
-import { encodeConservation } from './conservationBand.ts'
+import { conservationBarAt, encodeConservation } from './conservationBand.ts'
 import { emptyMafCoverage } from './coverageTestFixture.ts'
 
 function bars(scores: number[], binBp: number, start = 100) {
@@ -45,4 +45,24 @@ test('an unclassifiable stretch breaks a run of one value', () => {
     [100, 101, 1],
     [102, 103, 1],
   ])
+})
+
+// The hover reads the bar the band paints, so a base inside a window answers
+// the window's mean rather than its own score.
+test('the bar under a base is the window it was averaged into', () => {
+  const b = encodeConservation(
+    {
+      ...emptyMafCoverage(100),
+      identityScores: Float32Array.from([1, 0.5, 1, 0.5, 1, 1, 1, 1]),
+      coverageStartPos: 100,
+    },
+    4,
+    0,
+  )
+  expect(conservationBarAt(b, 101)).toEqual({
+    start: 100,
+    end: 104,
+    identity: 0.75,
+  })
+  expect(conservationBarAt(b, 108)).toBeUndefined()
 })

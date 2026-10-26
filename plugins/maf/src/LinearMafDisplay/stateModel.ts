@@ -84,6 +84,7 @@ import {
   consensusStrandByRowChr,
 } from './components/computeVisibleInversions.ts'
 import { computeVisibleLabels } from './components/computeVisibleLabels.ts'
+import { conservationBarAt } from './components/conservationBand.ts'
 import { perRowChromRanks } from './components/drawSourceChrom.ts'
 import { findRowHoverAtBp } from './components/findRowHover.ts'
 import { summaryAt } from './components/summarySpans.ts'
@@ -1891,6 +1892,19 @@ export default function stateModelFactory(
                 self.rowGeometry(),
               )
             : []
+        },
+        /**
+         * #method
+         * The conservation bar painted over base `bp`, read from the bars the
+         * band draws, so a binned window or a codon answers as it paints.
+         */
+        conservationHoverInfo(displayedRegionIndex: number, bp: number) {
+          const bars =
+            self.encodedUpload.get(displayedRegionIndex)?.conservation
+          const bar = bars ? conservationBarAt(bars, bp) : undefined
+          return bar
+            ? { ...bar, codons: self.codonConservationActive }
+            : undefined
         },
         /**
          * #method

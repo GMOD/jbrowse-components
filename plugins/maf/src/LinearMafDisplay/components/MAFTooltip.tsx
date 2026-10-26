@@ -5,6 +5,7 @@ import {
   useTooltipTableStyles,
 } from '@jbrowse/alignments-core/CoverageTooltipTables'
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
+import { assembleLocString } from '@jbrowse/core/util'
 import { basePaintedAt } from '@jbrowse/core/util/Base1DUtils'
 import { observer } from 'mobx-react'
 
@@ -45,12 +46,35 @@ const MAFTooltip = observer(function MAFTooltip({
           view.pxToBp(Math.max(origMouseX, mouseState.x)),
         )
 
-  // Over the bands above the rows: the shared alignments-core tooltip bin
-  // carries depth, SNP and identity. `index` from pxToBp matches the rpcDataMap
-  // key.
+  // Over the bands above the rows: the conservation band answers with the bar
+  // it paints, and the coverage band with the shared alignments-core tooltip
+  // bin. `index` from pxToBp matches the rpcDataMap key.
   if (inBands) {
     if (p2.oob) {
       return null
+    }
+    const conservationTop = model.topBands.top.conservation
+    if (
+      model.conservationBandActive &&
+      mouseState.y >= conservationTop &&
+      mouseState.y < conservationTop + model.conservationDisplayHeight
+    ) {
+      const bar = model.conservationHoverInfo(p2.index, baseBp)
+      return bar ? (
+        <BaseTooltip clientPoint={clientPoint}>
+          <div className={classes.td}>
+            {assembleLocString({
+              refName: p2.refName,
+              start: bar.start,
+              end: bar.end,
+            })}
+          </div>
+          <div className={classes.td}>
+            {bar.codons ? 'Amino-acid identity' : 'Identity'}:{' '}
+            {(bar.identity * 100).toFixed(1)}%
+          </div>
+        </BaseTooltip>
+      ) : null
     }
     // The band's own hit test first: an insertion bar or triangle gets the
     // interbase table, kept apart from the depth table.
