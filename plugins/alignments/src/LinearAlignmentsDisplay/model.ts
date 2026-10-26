@@ -3729,6 +3729,7 @@ export default function stateModelFactory(
 // Re-exported so LGVSyntenyDisplay's emitted .d.ts can name every type the
 // inferred model mentions; without it the ESM build reports TS2883.
 export type { ArcCategory } from '../shaders/palettes.ts'
+export type { DeclaredFilters } from './dialogs/layerFilters.ts'
 
 export type LinearAlignmentsDisplayStateModel = ReturnType<
   typeof stateModelFactory
