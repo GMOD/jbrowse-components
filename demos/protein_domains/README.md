@@ -11,12 +11,13 @@ config here.
 `GCF_003254395.2_Amel_HAv3.1_genomic.fna.gz` and `_genomic.gff.gz`, the
 annotation the hub's `ncbiGff` track serves.
 
-- The hosted copy of 2026-10-26 was built with domains2genome 2.1, whose
-  `transcript` column held the mRNA's GFF3 ID (`rna-XM_006568477.3`).
-- Its `transcript` column was then rewritten through domains2genome 2.2's
-  `readCodingTranscripts` to the Name (`XM_006568477.3`) that 2.2 writes. Every
-  other column is unchanged.
-- A fresh run of the script writes the same file.
+- The hosted copy was built with domains2genome 2.1, whose `transcript` column
+  held the mRNA's GFF3 ID (`rna-XM_006568477.3`).
+- On 2026-10-26 its `transcript` column was rewritten through domains2genome
+  2.2's `readCodingTranscripts` to the Name (`XM_006568477.3`) that 2.2 and
+  later write. Every other column is unchanged.
+- A fresh run of the script writes the same transcript names. Its domain calls
+  can differ, since the script downloads Pfam's current release.
 
 Deploy it with
 `DEPLOY_DEMO_ALLOW_UNTRACKED=1 scripts/deploy-demo.sh pfam.bed.gz protein_domains/pfam.bed.gz`,
