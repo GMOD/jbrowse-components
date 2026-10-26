@@ -280,6 +280,14 @@ describe('color swatches under a per-feature jexl slot', () => {
     expect(display.featureColor).toBe('#ff0000')
     expect(display.utrColor).toBe('#00ff00')
   })
+
+  // an unset UTR color takes the feature's fill, so the swatch shows that
+  it('shows the feature color where the UTR color is unset', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display } = createDisplay()
+    display.setColorValue('#ff0000')
+    expect(display.utrColor).toBe('#ff0000')
+  })
 })
 
 describe('Color by > Strand', () => {

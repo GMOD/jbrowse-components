@@ -117,11 +117,15 @@ export default function stateModelFactory(
         return getConf(self, ['chevrons', 'show'])
       },
 
-      // Raw slot rather than getConf: a jexl
-      // color evaluated without a feature throws.
+      // Raw slot rather than getConf: a jexl color evaluated without a
+      // feature throws. Unset, a UTR takes the solid fill where one paints.
       get utrColor(): string {
         const raw = this.conf.utrs.encoding.color.value
-        return raw !== undefined && !isJexl(raw) ? raw : utrDefaultColor
+        return raw !== undefined && !isJexl(raw)
+          ? raw
+          : self.colorByMode === 'solid' && self.solidColor !== undefined
+            ? self.solidColor
+            : utrDefaultColor
       },
 
       get geneGlyphMode() {
