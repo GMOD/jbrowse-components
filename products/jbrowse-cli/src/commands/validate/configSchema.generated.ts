@@ -7808,6 +7808,35 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         }
       ]
     },
+    "ChordOpacity": {
+      "title": "ChordOpacity",
+      "anyOf": [
+        {
+          "description": "Shorthand for \`{ \\"value\\": ... }\`.",
+          "type": "number"
+        },
+        {
+          "title": "ChordOpacity",
+          "type": "object",
+          "x-closed": true,
+          "properties": {
+            "value": {
+              "description": "the alpha every resting chord draws at, 0 to 1, over its color's own; unset is 0.32.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "number"
+              }
+            }
+          },
+          "patternProperties": {
+            "^_+comment": {}
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
     "ChordEncoding": {
       "title": "ChordEncoding",
       "type": "object",
@@ -7819,6 +7848,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           },
           "else": {
             "$ref": "#/$defs/ChordColor"
+          }
+        },
+        "opacity": {
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/ChordOpacity"
           }
         }
       },
@@ -7853,16 +7890,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           },
           "else": {
             "$ref": "#/$defs/ChordEncoding"
-          }
-        },
-        "opacity": {
-          "description": "the alpha every resting chord draws at, over its color's own.",
-          "default": 0.32,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "number"
           }
         },
         "strokeColor": {
@@ -13782,8 +13809,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "reverse": {
-          "description": "turns the identity ramp round, so its last color paints the low end.",
-          "default": false,
+          "description": "turns the identity ramp round, so its last color paints the low end; unset runs as written.",
           "if": {
             "type": "null"
           },
@@ -17612,9 +17638,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/encoding"
                 }
               ]
-            },
-            "opacity": {
-              "$ref": "#/$defs/ChordVariantDisplaySlots/properties/opacity"
             },
             "strokeColor": {
               "$ref": "#/$defs/ChordVariantDisplaySlots/properties/strokeColor"

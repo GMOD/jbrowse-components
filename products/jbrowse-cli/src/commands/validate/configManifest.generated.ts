@@ -4562,14 +4562,25 @@ export const configManifest: ConfigManifest = {
                   }
                 }
               }
+            },
+            {
+              "name": "opacity",
+              "type": "ChordOpacityConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "value",
+                  "type": "(number | undefined)"
+                }
+              ],
+              "schema": "ChordOpacity",
+              "writes": "whole",
+              "shorthand": {
+                "number": "value"
+              }
             }
           ],
           "schema": "ChordEncoding",
           "writes": "members"
-        },
-        {
-          "name": "opacity",
-          "type": "number"
         }
       ],
       "legacyKeys": [
@@ -7767,7 +7778,7 @@ export const configManifest: ConfigManifest = {
                     },
                     {
                       "name": "reverse",
-                      "type": "boolean"
+                      "type": "(boolean | undefined)"
                     },
                     {
                       "name": "domainMin",
