@@ -39,7 +39,7 @@ import {
   rootConfigurationSlots,
   schemaProblems,
 } from './schemaValidate.ts'
-import { didYouMean } from './suggest.ts'
+import { didYouMean, suggest } from './suggest.ts'
 
 import type { FieldPredicate } from './alignmentsFilterRules/filterRuleFacts.ts'
 import type { ScaleProblem } from './markRules/colorScale.ts'
@@ -791,13 +791,15 @@ function channelMember(
   return at
 }
 
+type ChannelProblem = Omit<ScaleProblem, 'rule'> & { rule: string }
+
 // Each color channel under `slot`, at any depth (`encoding.color`,
 // `pileup.bases.encoding.color`), judged under its schema's fieldPresets.
 function checkChannels(
   written: unknown,
   slot: SlotEntry,
   where: string,
-  warn: (at: string, problem: ScaleProblem) => void,
+  warn: (at: string, problem: ChannelProblem) => void,
 ) {
   if (slot.fieldPresets) {
     for (const problem of colorProblems(
@@ -812,6 +814,19 @@ function checkChannels(
       slot.fieldPresets,
     )) {
       warn(where, problem)
+    }
+    const field = channelMember(written, slot, ['field'])
+    const presets = Object.keys(slot.fieldPresets).filter(f => f !== '*')
+    const near =
+      typeof field === 'string' && !presets.includes(field)
+        ? suggest(field, presets)
+        : undefined
+    if (near) {
+      warn(where, {
+        rule: 'field-near-preset',
+        slot: 'field',
+        message: `"${field}" is read as a feature attribute, not a preset field — did you mean "${near}"?`,
+      })
     }
     return
   }
@@ -837,7 +852,7 @@ function checkScaleSlots(
   if (!isRecord(lifted)) {
     return
   }
-  const warn = (at: string, { rule, slot, message }: ScaleProblem) => {
+  const warn = (at: string, { rule, slot, message }: ChannelProblem) => {
     pushOnce(report, {
       level: 'warning',
       where: `${at}.${slot}`,

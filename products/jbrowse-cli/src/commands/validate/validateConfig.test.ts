@@ -698,6 +698,18 @@ describe('validateConfig', () => {
       ])
     })
 
+    it('names the preset field a mistyped field is one edit from', () => {
+      expect(
+        found(display('LinearAlignmentsDisplay', { field: 'strnd' })),
+      ).toEqual([`field-near-preset ${where}.field`])
+      expect(
+        found(display('LinearAlignmentsDisplay', { field: 'tags.HP' })),
+      ).toEqual([])
+      expect(
+        found(display('LinearAlignmentsDisplay', { field: 'strand' })),
+      ).toEqual([])
+    })
+
     it('checks displayDefaults against the display the track offers', () => {
       expect(
         found({
