@@ -215,7 +215,7 @@ chr10  HAVANA  transcript  7788129  7807815  .  +  .
 
 The transcript statistics sit on the transcript row, and the exons, CDS and UTRs
 take the transcript value. The gene row has two more keys, which the track's
-`mouseover` reads:
+`tooltip` reads:
 
 - `dtu_transcripts`, the count of called isoforms
 - `dtu_top_dif`, the largest ΔIF among them
@@ -293,7 +293,7 @@ muscle-preferred above. A value on a cut takes the interval above it.
     "labels": {
       "name": "jexl:feature.transcript_name||feature.gene_name||feature.name||feature.id"
     },
-    "mouseover": "jexl:feature.gene_name+': '+feature.dtu_transcripts+' isoform(s) with a usage shift, largest ΔIF '+feature.dtu_top_dif"
+    "tooltip": "jexl:feature.gene_name+': '+feature.dtu_transcripts+' isoform(s) with a usage shift, largest ΔIF '+feature.dtu_top_dif"
   }
 }
 ```

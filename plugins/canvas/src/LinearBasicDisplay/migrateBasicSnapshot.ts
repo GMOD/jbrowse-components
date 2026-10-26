@@ -60,6 +60,8 @@ export const basicRetired: Record<
   canonicalTranscriptField: (field: unknown) => ({ transcripts: { field } }),
   canonicalTranscriptTags: (sort: unknown) => ({ transcripts: { sort } }),
   containerTypes: (types: unknown) => ({ containers: { types } }),
+  // permanent: jb2hubs writes `mouseover`, the one spelling v4 hosts read
+  mouseover: (field: unknown) => ({ tooltip: { field } }),
   // the feature outline is cut, as ADR-240 cut the pileup's
   outline: () => ({}),
   // a second grow ceiling, dead at its default; `growMaxHeight` is the one

@@ -6,9 +6,11 @@ import {
   cssColorToABGR as colorToUint32,
   featureBedColor,
 } from '@jbrowse/core/util/colorBits'
+import { fieldReader } from '@jbrowse/core/util/fieldReader'
+import { valueText } from '@jbrowse/core/util/groupKeys'
 
 import { LITERAL, STROKE, cdsFrameClass } from '../colorClasses.ts'
-import { DEFAULT_MOUSEOVER, defaultMouseover } from '../featureMouseover.ts'
+import { DEFAULT_TOOLTIP, defaultTooltip } from '../featureTooltip.ts'
 import { getFeatureName } from '../labelUtils.ts'
 import { readConfigValueSafe } from '../renderConfig.ts'
 import { isCDS, isUTR } from '../util.ts'
@@ -201,26 +203,36 @@ export function packColor({
 
 /**
  * The hover text of each feature record, evaluated worker-side because the
- * full feature is here: the default slot natively (`defaultMouseover`), any
- * other through jexl, where a throwing override degrades to the feature name
- * rather than failing the render. Resolved once per walk.
+ * full feature is here: the default field natively (`defaultTooltip`), any
+ * other through `fieldReader`, where a field that throws or reads nothing
+ * degrades to the feature name rather than failing the render. An empty field
+ * reads nothing. Resolved once per walk.
  */
 export function tooltipReader(
   config: RenderContext['config'],
   jexl: RenderContext['jexl'],
 ): (feature: Feature) => string {
-  return config.mouseover === DEFAULT_MOUSEOVER
-    ? defaultMouseover
-    : feature =>
-        String(
-          readConfigValueSafe<unknown>(
-            config,
-            'mouseover',
-            feature,
-            jexl,
-            getFeatureName(feature) ?? '',
-          ),
-        )
+  const { tooltip } = config
+  if (tooltip === DEFAULT_TOOLTIP) {
+    return defaultTooltip
+  }
+  if (!tooltip) {
+    return () => ''
+  }
+  const fallback = (feature: Feature) => getFeatureName(feature) ?? ''
+  let read: (feature: Feature) => unknown
+  try {
+    read = fieldReader(tooltip, jexl)
+  } catch {
+    return fallback
+  }
+  return feature => {
+    try {
+      return valueText(read(feature)) || fallback(feature)
+    } catch {
+      return fallback(feature)
+    }
+  }
 }
 
 export function featureTooltip(feature: Feature, ctx: RenderContext) {

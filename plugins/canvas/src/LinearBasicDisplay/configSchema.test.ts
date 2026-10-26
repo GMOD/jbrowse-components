@@ -378,13 +378,19 @@ describe('LinearBasicDisplay configSchema', () => {
   })
 })
 
-test('mouseover stays on the feature display, and lifts away on the shared base', () => {
+test('mouseover lifts to tooltip.field on the feature display, and away on the shared base', () => {
   const pm = createPluginManager()
   const basic = configSchemaFactory(pm).create(
-    { displayId: 'b', type: 'LinearBasicDisplay', mouseover: 'hover text' },
+    {
+      displayId: 'b',
+      type: 'LinearBasicDisplay',
+      mouseover: "jexl:get(feature,'product')",
+    },
     { pluginManager: pm },
   )
-  expect(readConfObject(basic, 'mouseover')).toBe('hover text')
+  expect(readConfObject(basic, ['tooltip', 'field'])).toBe(
+    "jexl:get(feature,'product')",
+  )
   const base = baseLinearDisplayConfigSchema.create(
     { displayId: 'a', mouseover: 'hover text' },
     { pluginManager: pm },

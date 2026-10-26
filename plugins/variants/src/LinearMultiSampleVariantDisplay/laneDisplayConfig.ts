@@ -55,7 +55,7 @@ export function laneDisplayConfig({
         : '',
     },
     // the lane's tooltip is `buildVariantLaneHit`, so none is evaluated here
-    mouseover: '',
+    tooltip: '',
     // Filtering already happened: the records reaching the lane are the ones
     // this display's own worker-side `configuredFilters()` admitted, so a second
     // pass here would be a second, differently-spelled filter.

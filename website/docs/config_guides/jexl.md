@@ -32,9 +32,8 @@ jexl: feature.parent // parent feature, e.g. the gene of an mRNA (undefined if n
 The [cookbook](/docs/cookbook#colors) has the common expressions (a lookup table
 by type, a threshold, a gradient, a label with a fallback), and the
 ["Jexl callback examples" track](https://jbrowse.org/code/jb2/main/?config=test_data/config_demo.json&assembly=hg19&tracks=jexl_callbacks_demo_hg19)
-on the hosted demo combines a lookup-table color with a template-string
-mouseover. `formatDetails` and `formatAbout` callbacks return an object, one key
-per row
+on the hosted demo combines a lookup-table color with a template-string tooltip.
+`formatDetails` and `formatAbout` callbacks return an object, one key per row
 ([customizing feature details](/docs/config_guides/customizing_feature_details)).
 
 ### Property access vs `get()` {#property-access-vs-get}
@@ -42,10 +41,10 @@ per row
 `feature.start` and `get(feature,'start')` are equivalent; `get()` also works on
 older JBrowse releases. What `feature` is depends on the callback:
 
-| Callback                                                                              | `feature` is                    | Property form | `get()` form |
-| ------------------------------------------------------------------------------------- | ------------------------------- | ------------- | ------------ |
-| Color, label, tooltip, filter (`encoding.color.value`, `name`, `mouseover`, `filter`) | a `SimpleFeature`               | yes           | yes          |
-| [`formatDetails`](/docs/config_guides/customizing_feature_details)                    | a plain object from the session | yes           | **no**       |
+| Callback                                                                            | `feature` is                    | Property form | `get()` form |
+| ----------------------------------------------------------------------------------- | ------------------------------- | ------------- | ------------ |
+| Color, label, tooltip, filter (`encoding.color.value`, `name`, `tooltip`, `filter`) | a `SimpleFeature`               | yes           | yes          |
+| [`formatDetails`](/docs/config_guides/customizing_feature_details)                  | a plain object from the session | yes           | **no**       |
 
 In JavaScript plugin code a `SimpleFeature` handed to your own function is the
 real object, read with `feature.get('start')`.

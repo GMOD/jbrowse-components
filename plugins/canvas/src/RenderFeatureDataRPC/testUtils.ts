@@ -54,7 +54,7 @@ export function mockDisplayConfig({
     canonicalTranscriptTags: ['MANE Select', 'RefSeq Select'],
     containerTypes: [],
     geneGlyphMode: 'all',
-    mouseover: `jexl:get(feature,'name')||get(feature,'id')`,
+    tooltip: `jexl:get(feature,'name')||get(feature,'id')`,
     filter: [],
     // the `maybeColor` slots default to unset, as a real config does
     utrColor: undefined,

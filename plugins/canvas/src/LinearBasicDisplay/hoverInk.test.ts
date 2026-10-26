@@ -1,3 +1,4 @@
+import { setConf } from '@jbrowse/core/configuration'
 import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { SimpleFeature } from '@jbrowse/core/util'
 
@@ -368,6 +369,16 @@ test('the tooltip drops a row the drawn name already says', () => {
 
   display.setHover('g1', undefined, ['GENE1'])
   expect(display.shownTooltipRows).toBeUndefined()
+})
+
+test('tooltip.show off opens no tooltip, and the hover stays', () => {
+  const { display } = setUp()
+  display.setHover('g1', undefined, ['exon 2/3'])
+  expect(display.shownTooltipRows).toEqual(['exon 2/3'])
+
+  setConf(display, ['tooltip', 'show'], false)
+  expect(display.shownTooltipRows).toBeUndefined()
+  expect(display.featureIdUnderMouse).toBe('g1')
 })
 
 test('the tooltip keeps a name its label does not draw', () => {

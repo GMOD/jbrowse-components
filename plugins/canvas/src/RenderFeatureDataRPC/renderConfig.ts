@@ -20,7 +20,7 @@ export type { DisplayMode, SubfeatureLabels } from './displayModes.ts'
 // The worker evaluates every feature up front, so an unguarded throw from a bad
 // jexl expression would fail the entire track render. `null` degrades to
 // `fallback` alongside `undefined`: jexl hands back a present-but-empty
-// attribute as null, which a color slot or `mouseover` would otherwise paint.
+// attribute as null, which a color slot would otherwise paint.
 export function readConfigValueSafe<T>(
   config: DisplayConfig,
   key: string | string[],
@@ -89,7 +89,8 @@ export interface DisplayConfig {
   canonicalTranscriptField: string
   canonicalTranscriptTags: string[]
   containerTypes: string[]
-  mouseover: string
+  // `tooltip.field`, flat here
+  tooltip: string
   // the display's `filter` list, its `jexl:` fields as written
   filter: FieldPredicate[]
   // `mark.height`, flat here
@@ -122,7 +123,7 @@ const WORKER_READS: Record<keyof SettingsDisplayConfig, true> = {
   canonicalTranscriptField: true,
   canonicalTranscriptTags: true,
   containerTypes: true,
-  mouseover: true,
+  tooltip: true,
   filter: true,
   featureHeight: true,
   color: true,
@@ -183,6 +184,7 @@ export function pickDisplayConfig(snapshot: Record<string, unknown>) {
   }
   const encoding = source.encoding as { color?: object } | undefined
   picked.color = workerColorOf(encoding?.color ?? {})
+  picked.tooltip = (source.tooltip as { field?: unknown } | undefined)?.field
   picked.featureHeight = (
     source.mark as { height?: unknown } | undefined
   )?.height

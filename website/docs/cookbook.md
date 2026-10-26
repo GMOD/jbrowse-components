@@ -127,7 +127,7 @@ and a theme. Every recipe below changes one piece of it.
       "displayDefaults": {
         "encoding": { "color": "strand" },
         "height": 200,
-        "mouseover": "jexl:feature.name"
+        "tooltip": "jexl:feature.name"
       }
     },
     {
@@ -294,7 +294,7 @@ pins which lines are drawn at every zoom, and `mouseover` is rendered as HTML:
       "description": "note"
     },
     "showLabels": "nameAndDescription",
-    "mouseover": "jexl:`${feature.name} [${feature.type}] ${feature.start}-${feature.end}`"
+    "tooltip": "jexl:`${feature.name} [${feature.type}] ${feature.start}-${feature.end}`"
   }
 }
 ```

@@ -1069,12 +1069,12 @@ export default function baseStateModelFactory(
       /**
        * #getter
        * The hover tooltip less any row that repeats a label drawn for the
-       * hovered feature or subfeature; undefined when nothing is left.
-       * "Copy tooltip text" still copies every row.
+       * hovered feature or subfeature; undefined when nothing is left or
+       * `tooltip.show` is off. "Copy tooltip text" still copies every row.
        */
       get shownTooltipRows(): string[] | undefined {
         const rows = self.mouseoverExtraInformation
-        if (!rows) {
+        if (!rows || !getConf(self, ['tooltip', 'show'])) {
           return undefined
         }
         const ids = [self.featureIdUnderMouse, self.subfeatureIdUnderMouse]

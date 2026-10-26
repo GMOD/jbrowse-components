@@ -263,7 +263,7 @@
               "value": "jexl:{CDS:'#d62728',exon:'#2ca02c',gene:'#1f77b4',mRNA:'#9467bd'}[feature.type] || 'gray'"
             }
           },
-          "mouseover": "jexl:`${feature.name} [${feature.type}] ${feature.start}-${feature.end}`"
+          "tooltip": "jexl:`${feature.name} [${feature.type}] ${feature.start}-${feature.end}`"
         }
       ]
     },

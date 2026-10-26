@@ -123,7 +123,7 @@ const config: DisplayConfig = {
   canonicalTranscriptTags: [...DEFAULT_CANONICAL_TRANSCRIPTS.tags],
   containerTypes: [],
   geneGlyphMode: 'all',
-  mouseover: '',
+  tooltip: '',
   filter: [],
   color: { value: undefined, field: '' },
   utrColor: undefined,

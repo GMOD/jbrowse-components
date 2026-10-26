@@ -8,7 +8,6 @@ import { retiredDisplayColor } from '@jbrowse/display-kit/retiredSettings'
 import { sectionFacetConfigSchema } from '@jbrowse/display-kit/sectionFacetConfigSchema'
 import { types } from '@jbrowse/mobx-state-tree'
 
-import { DEFAULT_MOUSEOVER } from '../RenderFeatureDataRPC/featureMouseover.ts'
 import { FEATURE_NAME_FIELD } from '../RenderFeatureDataRPC/featureNameField.ts'
 import { DISPLAY_MODES } from '../RenderFeatureDataRPC/renderConfig.ts'
 import {
@@ -16,6 +15,7 @@ import {
   MAX_LABEL_FEATURE_DENSITY,
 } from '../RenderFeatureDataRPC/zoomThresholds.ts'
 import { featureMarkConfigSchema } from './featureMarkConfigSchema.ts'
+import { featureTooltipConfigSchema } from './featureTooltipConfigSchema.ts'
 import {
   basicRetired,
   migrateBasicConfigSnapshot,
@@ -58,14 +58,10 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
       // large features from many tiny ones.
       /**
        * #slot
+       * The box hovering a feature opens, a [](/docs/config/featuretooltip)
+       * object.
        */
-      mouseover: {
-        type: 'string',
-        description:
-          'text to display when the cursor hovers over a feature; left at the default, the tooltip adds the description line (`labels.description`) as a second row',
-        defaultValue: DEFAULT_MOUSEOVER,
-        contextVariable: ['feature'],
-      },
+      tooltip: featureTooltipConfigSchema,
       /**
        * #slot
        */

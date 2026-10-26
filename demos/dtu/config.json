@@ -68,7 +68,7 @@
           "labels": {
             "name": "jexl:feature.transcript_name||feature.gene_name||feature.name||feature.id"
           },
-          "mouseover": "jexl:feature.gene_name+': '+feature.dtu_transcripts+' isoform(s) with a usage shift, largest ΔIF '+feature.dtu_top_dif"
+          "tooltip": "jexl:feature.gene_name+': '+feature.dtu_transcripts+' isoform(s) with a usage shift, largest ΔIF '+feature.dtu_top_dif"
         }
       ]
     },

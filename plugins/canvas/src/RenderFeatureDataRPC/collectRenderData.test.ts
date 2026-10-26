@@ -6,8 +6,8 @@ import { abgrToCssRgba, cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import createJexlInstance from '@jbrowse/core/util/jexl'
 
 import { collectRenderData } from './collectRenderData.ts'
-import { DEFAULT_MOUSEOVER } from './featureMouseover.ts'
 import { FEATURE_NAME_FIELD } from './featureNameField.ts'
+import { DEFAULT_TOOLTIP } from './featureTooltip.ts'
 import { findGlyph } from './glyphs/findGlyph.ts'
 import { layoutRepeatRegion } from './glyphs/repeatRegion.ts'
 import { layoutSubfeatures } from './glyphs/subfeatures.ts'
@@ -376,28 +376,34 @@ describe('collectRenderData polyprotein mature-peptide overlay', () => {
   })
 })
 
-describe('collectRenderData tooltip (mouseover slot)', () => {
-  it('evaluates a custom mouseover jexl override against the feature', () => {
+describe('collectRenderData tooltip (tooltip.field)', () => {
+  it('evaluates a custom tooltip jexl against the feature', () => {
     const feature = mockFeature({ type: 'gene', id: 'g1', start: 0, end: 50 })
     const cfg = mockDisplayConfig({
-      mouseover: `jexl:"score: "+get(feature,'id')`,
+      tooltip: `jexl:"score: "+get(feature,'id')`,
     })
     const result = collect(boxLayout(feature), { config: cfg })
     expect(result.flatbushItems[0]!.tooltip).toBe('score: g1')
   })
 
-  it('honors a plain (non-jexl) mouseover string', () => {
-    const feature = mockFeature({ type: 'gene', id: 'g1', start: 0, end: 50 })
-    const cfg = mockDisplayConfig({ mouseover: 'static text' })
+  it('reads a plain field name off the feature', () => {
+    const feature = mockFeature({
+      type: 'gene',
+      id: 'g1',
+      start: 0,
+      end: 50,
+      attributes: { product: 'kinase' },
+    })
+    const cfg = mockDisplayConfig({ tooltip: 'product' })
     const result = collect(boxLayout(feature), { config: cfg })
-    expect(result.flatbushItems[0]!.tooltip).toBe('static text')
+    expect(result.flatbushItems[0]!.tooltip).toBe('kinase')
   })
 
-  it('degrades to the feature name when a custom mouseover jexl throws', () => {
+  it('degrades to the feature name when a custom tooltip jexl throws', () => {
     const feature = mockFeature({ type: 'm6A', id: 'm1', start: 0, end: 50 })
     // references a jexl function not registered in this instance, which throws
     const cfg = mockDisplayConfig({
-      mouseover: `jexl:qvscore(get(feature,'identificationqv'))`,
+      tooltip: `jexl:qvscore(get(feature,'identificationqv'))`,
     })
     const result = collect(boxLayout(feature), { config: cfg })
     expect(result.flatbushItems[0]!.tooltip).toBe('m1')
@@ -405,7 +411,7 @@ describe('collectRenderData tooltip (mouseover slot)', () => {
 
   // An attribute present but empty comes back as null, not undefined — a VCF
   // INFO key, a JSON `null` — and jexl hands it straight through.
-  it('degrades to the feature name when a custom mouseover jexl reads a null attribute', () => {
+  it('degrades to the feature name when a custom tooltip jexl reads a null attribute', () => {
     const feature = mockFeature({
       type: 'gene',
       id: 'g1',
@@ -413,7 +419,7 @@ describe('collectRenderData tooltip (mouseover slot)', () => {
       end: 50,
       attributes: { note: null },
     })
-    const cfg = mockDisplayConfig({ mouseover: `jexl:get(feature,'note')` })
+    const cfg = mockDisplayConfig({ tooltip: `jexl:get(feature,'note')` })
     const result = collect(boxLayout(feature), { config: cfg })
     expect(result.flatbushItems[0]!.tooltip).toBe('g1')
   })
@@ -433,17 +439,17 @@ describe('collectRenderData tooltip (mouseover slot)', () => {
       attributes: { description: 'tumor protein p53' },
     })
     const labels = { name: 'name', description: 'description' }
-    const description = (mouseover: string) =>
+    const description = (tooltip: string) =>
       collect(boxLayout(feature), {
-        config: mockDisplayConfig({ mouseover, labels }),
+        config: mockDisplayConfig({ tooltip, labels }),
       }).flatbushItems[0]!.description
-    expect(description(DEFAULT_MOUSEOVER)).toBe('tumor protein p53')
+    expect(description(DEFAULT_TOOLTIP)).toBe('tumor protein p53')
     expect(description(`jexl:get(feature,'id')`)).toBeUndefined()
   })
 
   it('top-level feature tooltip is the single hover source (subfeatures carry no tooltip)', () => {
     const { layout } = twoExonTranscript()
-    const cfg = mockDisplayConfig({ mouseover: `jexl:get(feature,'id')` })
+    const cfg = mockDisplayConfig({ tooltip: `jexl:get(feature,'id')` })
     const result = collect(layout, { config: cfg })
     expect(result.flatbushItems[0]!.tooltip).toBe('tx1')
     expect(result.subfeatureInfos.every(s => !('tooltip' in s))).toBe(true)

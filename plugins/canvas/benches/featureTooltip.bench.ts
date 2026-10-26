@@ -1,4 +1,4 @@
-// What does the default `mouseover` cost the canvas worker, which evaluates it
+// What does the default `tooltip.field` cost the canvas worker, which evaluates it
 // for every feature whether or not anyone hovers?
 //
 //   node plugins/canvas/benches/featureTooltip.bench.ts
@@ -13,7 +13,7 @@
 //   emit             the emitters' walk, which reads the tooltip once per
 //                    feature record, the whole the share is taken of
 //   jexl             the default slot through jexl per record, which `emit`
-//                    paid before `defaultMouseover`
+//                    paid before `defaultTooltip`
 //   jexl-control     the same call through a second driver, the floor
 //   reader           `tooltipReader`'s answer for the default slot, the
 //                    native function `emit` pays now
@@ -25,7 +25,7 @@ import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 import { tooltipReader } from '../src/RenderFeatureDataRPC/collect/glyphColors.ts'
 import { processFeatureRecord } from '../src/RenderFeatureDataRPC/collect/glyphEmitters.ts'
 import { createCollector } from '../src/RenderFeatureDataRPC/collect/renderContext.ts'
-import { DEFAULT_MOUSEOVER } from '../src/RenderFeatureDataRPC/featureMouseover.ts'
+import { DEFAULT_TOOLTIP } from '../src/RenderFeatureDataRPC/featureTooltip.ts'
 import { findGlyph } from '../src/RenderFeatureDataRPC/glyphs/findGlyph.ts'
 import { getFeatureName } from '../src/RenderFeatureDataRPC/labelUtils.ts'
 import { readConfigValueSafe } from '../src/RenderFeatureDataRPC/renderConfig.ts'
@@ -47,7 +47,7 @@ const EXONS = 8
 const ISOFORMS = 2
 const GENE_BP = 20_000
 const jexl = createJexlInstance()
-const config = { ...mockDisplayConfig(), mouseover: DEFAULT_MOUSEOVER }
+const config = { ...mockDisplayConfig(), tooltip: DEFAULT_TOOLTIP }
 
 function makeGene(i: number) {
   const geneStart = i * GENE_BP
@@ -128,7 +128,7 @@ function jexlTooltip(f: Feature) {
   return String(
     readConfigValueSafe<unknown>(
       config,
-      'mouseover',
+      'tooltip',
       f,
       jexl,
       getFeatureName(f) ?? '',

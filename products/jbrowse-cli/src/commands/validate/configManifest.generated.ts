@@ -3192,8 +3192,23 @@ export const configManifest: ConfigManifest = {
           }
         },
         {
-          "name": "mouseover",
-          "type": "(JexlString | string)"
+          "name": "tooltip",
+          "type": "FeatureTooltipConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "show",
+              "type": "boolean"
+            },
+            {
+              "name": "field",
+              "type": "string"
+            }
+          ],
+          "schema": "FeatureTooltip",
+          "writes": "members",
+          "shorthand": {
+            "string": "field"
+          }
         },
         {
           "name": "maxFeatureScreenDensity",
@@ -3451,6 +3466,7 @@ export const configManifest: ConfigManifest = {
       ],
       "legacyKeys": [
         "maxDisplayedBpPerPx",
+        "mouseover",
         "jexlFilters",
         "color1",
         "color2",
@@ -3473,7 +3489,6 @@ export const configManifest: ConfigManifest = {
         "maxFeatureScreenDensity",
         "maxDisplayedBpPerPx",
         "fetchSizeLimit",
-        "mouseover",
         "color2",
         "outline",
         "maxHeight",
@@ -6508,8 +6523,23 @@ export const configManifest: ConfigManifest = {
           }
         },
         {
-          "name": "mouseover",
-          "type": "(JexlString | string)"
+          "name": "tooltip",
+          "type": "FeatureTooltipConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "show",
+              "type": "boolean"
+            },
+            {
+              "name": "field",
+              "type": "string"
+            }
+          ],
+          "schema": "FeatureTooltip",
+          "writes": "members",
+          "shorthand": {
+            "string": "field"
+          }
         },
         {
           "name": "maxFeatureScreenDensity",
@@ -6711,6 +6741,7 @@ export const configManifest: ConfigManifest = {
       ],
       "legacyKeys": [
         "maxDisplayedBpPerPx",
+        "mouseover",
         "jexlFilters",
         "color1",
         "color2",
@@ -6732,7 +6763,6 @@ export const configManifest: ConfigManifest = {
         "maxFeatureScreenDensity",
         "maxDisplayedBpPerPx",
         "fetchSizeLimit",
-        "mouseover",
         "color2",
         "outline",
         "maxHeight",

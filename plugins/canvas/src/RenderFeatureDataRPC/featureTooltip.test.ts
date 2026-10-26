@@ -4,16 +4,16 @@ import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 
 import baseConfigSchema from '../LinearBasicDisplay/baseConfigSchema.ts'
 import { tooltipReader } from './collect/glyphColors.ts'
-import { DEFAULT_MOUSEOVER, defaultMouseover } from './featureMouseover.ts'
+import { DEFAULT_TOOLTIP, defaultTooltip } from './featureTooltip.ts'
 import { readConfigValueSafe } from './renderConfig.ts'
 import { mockDisplayConfig } from './testUtils.ts'
 
 const jexl = createJexlInstance()
-const config = { ...mockDisplayConfig(), mouseover: DEFAULT_MOUSEOVER }
+const config = { ...mockDisplayConfig(), tooltip: DEFAULT_TOOLTIP }
 
 function throughJexl(feature: SimpleFeature) {
   return String(
-    readConfigValueSafe<unknown>(config, 'mouseover', feature, jexl, ''),
+    readConfigValueSafe<unknown>(config, 'tooltip', feature, jexl, ''),
   )
 }
 
@@ -37,20 +37,20 @@ test('the native default answers what the jexl default answers', () => {
     {},
   ]) {
     const f = feature(data)
-    expect(defaultMouseover(f)).toBe(throughJexl(f))
+    expect(defaultTooltip(f)).toBe(throughJexl(f))
   }
 })
 
 test('the schema default is the one the worker reads natively', () => {
   const schema = baseConfigSchema(new PluginManager([]))
-  expect(schema.create().mouseover).toBe(DEFAULT_MOUSEOVER)
+  expect(schema.create().tooltip.field).toBe(DEFAULT_TOOLTIP)
 })
 
-test('a written mouseover still evaluates through jexl', () => {
+test('a written tooltip field evaluates through jexl', () => {
   const read = tooltipReader(
-    { ...config, mouseover: `jexl:'start ' + get(feature,'start')` },
+    { ...config, tooltip: `jexl:'start ' + get(feature,'start')` },
     jexl,
   )
   expect(read(feature({}))).toBe('start 0')
-  expect(tooltipReader(config, jexl)).toBe(defaultMouseover)
+  expect(tooltipReader(config, jexl)).toBe(defaultTooltip)
 })

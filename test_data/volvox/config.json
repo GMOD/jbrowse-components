@@ -2941,7 +2941,7 @@
       },
       "displays": [
         {
-          "mouseover": "jexl:`${feature.name} [${feature.type}] at ${feature.start} - ${feature.end} (strand: ${(feature.strand == 1 ? '+' : feature.strand == -1 ? '-' : 'none'})`",
+          "tooltip": "jexl:`${feature.name} [${feature.type}] at ${feature.start} - ${feature.end} (strand: ${(feature.strand == 1 ? '+' : feature.strand == -1 ? '-' : 'none'})`",
           "labels": {
             "name": "jexl:feature.name || feature.id",
             "description": "jexl:feature.note || feature.description || ''"
