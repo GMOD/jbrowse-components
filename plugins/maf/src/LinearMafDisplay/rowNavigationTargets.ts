@@ -26,9 +26,10 @@ export interface RowNavigationInputs {
 /**
  * Where rows `[startRow, endRow)` sit in their own genomes across the
  * reference bp range `[startBp, endBp)`. A row with no aligned base in the
- * range, no fetched block covering it, or a genome not loaded as an assembly
- * contributes nothing. A sample id that names a loaded assembly stands in for
- * a missing `assemblyName`.
+ * range or no fetched block covering it contributes nothing, and so does one
+ * whose genome the session has no assembly for and no `assemblyConfigLocation`
+ * to load it from. A sample id that names a loaded assembly stands in for a
+ * missing `assemblyName`.
  */
 export function rowNavigationTargetsOf({
   sources,
@@ -46,11 +47,12 @@ export function rowNavigationTargetsOf({
     row < Math.min(endRow, sources.length);
     row++
   ) {
-    const source = sources[row]!
-    const assemblyName =
-      source.assemblyName ??
-      (hasAssembly(source.name) ? source.name : undefined)
-    if (assemblyName !== undefined) {
+    const { name, assemblyName: named, assemblyConfigLocation } = sources[row]!
+    const assemblyName = named ?? name
+    if (
+      hasAssembly(assemblyName) ||
+      (named !== undefined && assemblyConfigLocation !== undefined)
+    ) {
       assemblyNames.set(row, assemblyName)
     }
   }

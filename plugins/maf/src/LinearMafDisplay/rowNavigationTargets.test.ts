@@ -27,7 +27,15 @@ const region: MafRegionData = {
 
 const sources: MafSource[] = [
   { name: 'hg38', label: 'Human' },
-  { name: 'mm10', label: 'mm10', assemblyName: 'mouse' },
+  {
+    name: 'mm10',
+    label: 'mm10',
+    assemblyName: 'mouse',
+    assemblyConfigLocation: {
+      uri: 'mouse/config.json',
+      locationType: 'UriLocation',
+    },
+  },
   { name: 'rn6', label: 'rn6' },
 ]
 
@@ -62,6 +70,23 @@ test('a target carries the span in its own genome and the sample label', () => {
     end: 504,
     sampleLabel: 'Human',
   })
+})
+
+test('an assemblyName the session lacks, with no config to load it from, is no target', () => {
+  const unloadable: MafSource = {
+    name: 'mm10',
+    label: 'mm10',
+    assemblyName: 'mouse',
+  }
+  expect(
+    targets({ sources: [sources[0]!, unloadable] }).map(t => t.rowIndex),
+  ).toEqual([0])
+  expect(
+    targets({
+      sources: [sources[0]!, unloadable],
+      hasAssembly: () => true,
+    }).map(t => t.assemblyName),
+  ).toEqual(['hg38', 'mouse'])
 })
 
 test('only the requested rows are asked about', () => {
