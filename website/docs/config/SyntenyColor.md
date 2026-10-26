@@ -14,8 +14,10 @@ anchor assembly's, the track it came from, a measurement through its preset
 (`identity` and `dnds` on a ramp, `mapq` in the alignments display's bins,
 `syntenicDepth` grey for a one-to-one ortholog and orange where genes share
 one),
-or a column the tracks declare in `attributeColumns`. A string is the
-field.
+or a column the tracks declare in `attributeColumns`: a ramp for numbers
+and a color per label once a value is text, unless `scale.type` says
+otherwise (`ordinal` paints integer group ids a color each). A string is
+the field.
 
 ## Example usage
 
