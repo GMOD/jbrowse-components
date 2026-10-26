@@ -101,9 +101,9 @@ export const baseLinearAlignmentsDisplayConfigSchema = ConfigurationSchema(
      * overlap depth instead of row count — the compact reading for a track with
      * many sections (an all-vs-all synteny track's mate genomes). A section
      * expanded from its label chip opts back out and draws a true stack.
-     * Beside `facet` rather than in it, as Vega-Lite keeps `spacing` and
-     * `columns` beside its `facet`: `facet` is written whole, so a member
-     * there would reset on every pick of another field.
+     * Beside `facet` rather than in it, as Vega-Lite keeps the layout members
+     * `spacing` and `columns` beside its `facet`. The "Group by" menu's
+     * "Collapse groups to one row" writes it.
      */
     collapseSections: {
       type: 'boolean',
