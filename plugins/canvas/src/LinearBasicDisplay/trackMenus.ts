@@ -2,7 +2,6 @@ import { filterMenuItems, undoItems } from '@jbrowse/core/ui/filterMenuItems'
 import {
   TRACK_MENU_PRIORITY,
   radioItems,
-  toggleItem,
   withHint,
 } from '@jbrowse/core/ui/menuItems'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
@@ -55,14 +54,12 @@ export function inlineRadioGroup<T extends string>(
 
 // Structural for the same reason as `FeatureMenuSelf`;
 interface ShowSubmenuSelf extends HiddenGroupsModel, FacetSelf {
-  showOutline: boolean
   showLabelsMode: ShowLabelsMode
   displayMode: DisplayMode
   labelsFitHint: string | undefined
   hasLegendKey: boolean
   showLegend: boolean
   setShowLegend: (value: boolean) => void
-  setShowOutline: (value: boolean) => void
   setShowLabels: (mode: ShowLabelsMode) => void
 }
 
@@ -133,7 +130,6 @@ function featureSetRecoveryMenuItems(self: TrackMenuSelf): MenuItem[] {
 export function showSubmenuCheckboxItems(self: ShowSubmenuSelf): MenuItem[] {
   const { facet } = self
   return [
-    toggleItem('Outline', self.showOutline, self.setShowOutline),
     ...hiddenGroupsItems(self),
     ...resetSectionOrderItems(
       facet && {

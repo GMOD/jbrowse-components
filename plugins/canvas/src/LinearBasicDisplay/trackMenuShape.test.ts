@@ -204,7 +204,6 @@ describe('canvas track menu shape', () => {
     const show = subMenuOf(display.trackMenuItems(), 'Show...')
 
     expect(show.map(labelOf)).toEqual([
-      'Outline',
       'Chevrons',
       'Labels',
       'Auto',

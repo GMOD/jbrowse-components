@@ -1,4 +1,3 @@
-import { getConf } from '@jbrowse/core/configuration'
 import { featureDefaultColor } from '@jbrowse/core/ui/palette'
 import { STRAND_FIELD } from '@jbrowse/core/util/categoricalField'
 
@@ -18,21 +17,6 @@ export interface ColorHost {
 
 export function colorViews(self: ColorHost) {
   return {
-    /**
-     * #getter
-     */
-    get showOutline(): boolean {
-      return getConf(self, 'showOutline')
-    },
-
-    /**
-     * #getter
-     * The outline's color as written, undefined taking the theme's.
-     */
-    get outlineColor(): string | undefined {
-      return getConf(self, 'outlineColor')
-    },
-
     /**
      * #getter
      */

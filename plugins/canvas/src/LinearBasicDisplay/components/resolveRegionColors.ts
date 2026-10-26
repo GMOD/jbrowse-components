@@ -1,7 +1,4 @@
-import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
-
 import {
-  OUTLINE,
   carriesFieldTints,
   resolveColorLane,
   themedColorTable,
@@ -54,24 +51,6 @@ export function resolveRegionColors(
     arrowColors === data.arrowColors
     ? data
     : { ...data, rectColors, lineColors, arrowColors }
-}
-
-/**
- * The packed outline color: 0 while no outline shows, `outlineColor` where it
- * names one, else the palette's faint outline, since a fixed black vanishes on
- * a dark track. Display-wide, so it rides in the render state rather than in
- * each region's payload.
- */
-export function resolveOutlineColor(
-  show: boolean,
-  color: string | undefined,
-  palette: JBrowsePalette,
-) {
-  return !show
-    ? 0
-    : color
-      ? cssColorToABGR(color)
-      : themedColorTable(palette)[OUTLINE]!
 }
 
 export function resolveMapColors(

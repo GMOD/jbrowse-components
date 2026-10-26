@@ -16,7 +16,6 @@ import {
   makeFlatbushItem,
   packFixtureRects,
 } from '../RenderFeatureDataRPC/testUtils.ts'
-import { resolveOutlineColor } from './components/resolveRegionColors.ts'
 import { renderSvg } from './renderSvg.tsx'
 
 import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
@@ -104,12 +103,12 @@ function makeModel(overrides: Partial<LegendModel> = {}): LegendModel {
     id: 'test',
     height: 100,
     scrollTop: 0,
-    renderStateIn(palette) {
+    get renderState() {
       return {
         scrollY: this.scrollTop,
         canvasWidth: 798,
         canvasHeight: this.height,
-        outlineColor: resolveOutlineColor(false, undefined, palette),
+        outlineColor: 0,
         hideChevrons: false,
       }
     },

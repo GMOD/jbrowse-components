@@ -21,7 +21,6 @@ import type { FieldPalette } from '../RenderFeatureDataRPC/colorClasses.ts'
 import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
 import type { RenderState } from './components/canvasFeatureRenderingBackendTypes.ts'
 import type { FeatureGroupSection } from './facet.ts'
-import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 import type { HighlightRect } from '@jbrowse/display-kit/highlightHost'
 import type {
   LgvSvgBodyProps,
@@ -32,7 +31,7 @@ import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 export interface RenderSvgModel extends LgvSvgExportable {
   laidOutDataMap: ReadonlyMap<number, FeatureDataResult>
   fieldPalette: FieldPalette | undefined
-  renderStateIn: (palette: JBrowsePalette) => RenderState
+  renderState: RenderState
   // Drawn by the shell, over this body — not here. Declared so the export's
   // model still names every guide the figure carries.
   pinnedInk: HighlightRect[]
@@ -68,7 +67,7 @@ function CanvasFeaturesSvgBody({
   const renderPeptidesFlag = shouldRenderPeptideText(view.bpPerPx)
   // The screen's render state, scroll included, so a scrolled track exports
   // what is on screen.
-  const renderState = model.renderStateIn(palette)
+  const { renderState } = model
   const { scrollY } = renderState
   const fontSize = model.renderedLabelFontSize
   const labelContext = {

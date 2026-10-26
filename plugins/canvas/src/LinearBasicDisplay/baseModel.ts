@@ -79,10 +79,7 @@ import {
   forEachDisplayLabel,
   labelScrollBucket,
 } from './components/labelPositioning.ts'
-import {
-  resolveOutlineColor,
-  resolveRegionColors,
-} from './components/resolveRegionColors.ts'
+import { resolveRegionColors } from './components/resolveRegionColors.ts'
 import { featureColorKey, onScreenColorValues } from './derivedColorKey.ts'
 import { facetField, featureGroupSections, sectionIdsOf } from './facet.ts'
 import { featureContextMenuItems } from './featureContextMenu.ts'
@@ -495,28 +492,16 @@ export default function baseStateModelFactory(
     }))
     .views(self => ({
       /**
-       * #method
-       * `renderState` in another palette: the SVG export's, whose theme need
-       * not be the session's.
+       * #getter
        */
-      renderStateIn(palette: JBrowsePalette) {
+      get renderState() {
         return {
           scrollY: self.scrollTop,
           canvasWidth: self.canvasWidthPx,
           canvasHeight: self.height,
-          outlineColor: resolveOutlineColor(
-            self.showOutline,
-            self.outlineColor,
-            palette,
-          ),
+          outlineColor: 0,
           hideChevrons: !this.showChevrons,
         }
-      },
-      /**
-       * #getter
-       */
-      get renderState() {
-        return this.renderStateIn(getPaletteHost(self).palette)
       },
 
       /**
@@ -1310,13 +1295,6 @@ export default function baseStateModelFactory(
          */
         setFilter(filters?: string[]) {
           writeJexlFilters(self, filters ?? self.baseFilters())
-        },
-
-        /**
-         * #action
-         */
-        setShowOutline(value: boolean) {
-          setConf(self, 'showOutline', value)
         },
 
         /**

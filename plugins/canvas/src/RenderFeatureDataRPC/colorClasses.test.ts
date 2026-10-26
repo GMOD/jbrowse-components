@@ -3,17 +3,13 @@ import { SimpleFeature } from '@jbrowse/core/util'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import createJexlInstance from '@jbrowse/core/util/jexl'
 
-import {
-  resolveOutlineColor,
-  resolveRegionColors,
-} from '../LinearBasicDisplay/components/resolveRegionColors.ts'
+import { resolveRegionColors } from '../LinearBasicDisplay/components/resolveRegionColors.ts'
 import { createTestEnvironment } from '../LinearBasicDisplay/testEnv.ts'
 import { boxColor, strokeColor } from './collect/glyphColors.ts'
 import {
   FIELD_LIGHT_TINT,
   FIELD_MID_TINT,
   LITERAL,
-  OUTLINE,
   STROKE,
   cdsFrameClass,
   codonStripeClass,
@@ -83,20 +79,6 @@ describe('the worker emits a class where it cannot resolve a color', () => {
     // writes the lane
     expect(stroke.color).toBe(0)
     expect(stroke.colorClass).toBe(STROKE)
-  })
-
-  it('resolves an outline with no color of its own against the palette', () => {
-    const palette = resolvePalette()
-    expect(resolveOutlineColor(true, undefined, palette)).toBe(
-      themedColorTable(palette)[OUTLINE],
-    )
-    expect(resolveOutlineColor(false, 'red', palette)).toBe(0)
-    expect(resolveOutlineColor(true, 'red', palette)).toBe(
-      cssColorToABGR('red'),
-    )
-    expect(resolveOutlineColor(true, '#f0f', palette)).toBe(
-      cssColorToABGR('#f0f'),
-    )
   })
 
   // The codon stripe is two tints of the box it sits on, so a frame-colored box
@@ -189,16 +171,6 @@ describe('the theme is not an RPC cache key', () => {
   it('sends no theme in the worker payload', () => {
     const { display } = createTestEnvironment().createDisplay()
     expect(display.rpcProps()).not.toHaveProperty('theme')
-  })
-
-  it('nor is the outline, which the render state resolves against the palette', () => {
-    const { display } = createTestEnvironment().createDisplay()
-    const before = display.rpcProps()
-    display.setShowOutline(true)
-    expect(display.rpcProps()).toEqual(before)
-    expect(display.renderState.outlineColor).not.toBe(0)
-    display.setShowOutline(false)
-    expect(display.renderState.outlineColor).toBe(0)
   })
 
   it('nor is "Chevrons", which the render state carries', () => {

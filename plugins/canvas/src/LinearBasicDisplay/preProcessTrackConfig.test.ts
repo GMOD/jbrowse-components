@@ -96,8 +96,8 @@ test('renames legacy color1/color2/color3/outline config slots', () => {
     encoding: { color: { value: 'green' } },
     connectorColor: 'gray',
     utrColor: 'lightblue',
-    outlineColor: 'black',
   })
+  expect(out.displays![0]).not.toHaveProperty('outline')
 })
 
 test.each([

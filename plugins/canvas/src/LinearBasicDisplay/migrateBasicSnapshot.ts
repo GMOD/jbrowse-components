@@ -51,8 +51,8 @@ export const basicRetired: Record<
   color1: (value: unknown) => ({ encoding: { color: { value } } }),
   color2: (connectorColor: unknown) => ({ connectorColor }),
   color3: (utrColor: unknown) => ({ utrColor }),
-  outline: (outlineColor: unknown) =>
-    outlineColor ? { showOutline: true, outlineColor } : {},
+  // the feature outline is cut, as ADR-240 cut the pileup's
+  outline: () => ({}),
   // a second grow ceiling, dead at its default; `growMaxHeight` is the one
   maxHeight: () => ({}),
   hideSourceFeatures: () => ({}),

@@ -235,11 +235,11 @@ describe('the schema', () => {
   })
 
   it.each(['', '255,0,0', ' 0 , 128 , 255 '])(
-    'accepts the outline color %j',
+    'accepts the UTR color %j',
     color => {
       const config = baseConfig()
       config.tracks[0]!.displays = [
-        { type: 'LinearBasicDisplay', outlineColor: color },
+        { type: 'LinearBasicDisplay', utrColor: color },
       ]
       expect(schemaProblems(config)).toEqual([])
     },
@@ -263,10 +263,10 @@ describe('the schema', () => {
   ])('refuses the color %j', color => {
     const config = baseConfig()
     config.tracks[0]!.displays = [
-      { type: 'LinearBasicDisplay', outlineColor: color },
+      { type: 'LinearBasicDisplay', utrColor: color },
     ]
     expect(schemaProblems(config).map(p => p.where)).toEqual([
-      'tracks[0].displays[0].outlineColor',
+      'tracks[0].displays[0].utrColor',
     ])
   })
 
@@ -274,7 +274,7 @@ describe('the schema', () => {
   it('accepts null as a slot or sub-schema reset', () => {
     const config = baseConfig()
     config.tracks[0]!.displays = [
-      { type: 'LinearBasicDisplay', outlineColor: null, height: null },
+      { type: 'LinearBasicDisplay', utrColor: null, height: null },
       { type: 'LinearAlignmentsDisplay', encoding: { color: null } },
       {
         type: 'LinearWiggleDisplay',
