@@ -41,7 +41,7 @@ each takes, and the fields with presets of their own.
 | [](/docs/config/linearvariantdisplay) | `encoding.color` | [](/docs/config/featurecolor#preset-fields) | ordinal, threshold, linear, log, identity | `strand`, `svType`, `impact`, `score` |
 | [](/docs/config/linearwiggledisplay) | `encoding.color` | [](/docs/config/wigglecolor) | linear, threshold |  |
 | [](/docs/config/multiwaysyntenydisplay) | `encoding.color` | [](/docs/config/multiwaygenecolor#preset-fields) | ordinal, threshold | `strand`, `svType`, `impact` |
-| [](/docs/config/multiwaysyntenydisplay) | `ribbons.encoding.color` | [](/docs/config/ribboncolor#preset-fields) | linear, threshold | `mapq`, `identity`, `dnds`, `syntenicDepth` |
+| [](/docs/config/multiwaysyntenydisplay) | `ribbons.encoding.color` | [](/docs/config/ribboncolor#preset-fields) | linear, threshold, ordinal | `mapq`, `identity`, `dnds`, `syntenicDepth` |
 | [](/docs/config/multiwaysyntenydisplay) | `laneLayers.marks.encoding.color` | [](/docs/config/markcolor#preset-fields) | ordinal, linear, log, symlog, threshold, identity | `strand`, `svType`, `impact`, `score` |
 
 <!-- COLOR_CHANNELS END -->

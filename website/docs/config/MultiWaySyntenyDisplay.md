@@ -98,7 +98,7 @@ cluster, and ribbons colored by percent identity:
 | Setting | Page | `scale.type` | Preset fields |
 | --- | --- | --- | --- |
 | `encoding.color` | [](/docs/config/multiwaygenecolor#preset-fields) | ordinal, threshold | `strand`, `svType`, `impact` |
-| `ribbons.encoding.color` | [](/docs/config/ribboncolor#preset-fields) | linear, threshold | `mapq`, `identity`, `dnds`, `syntenicDepth` |
+| `ribbons.encoding.color` | [](/docs/config/ribboncolor#preset-fields) | linear, threshold, ordinal | `mapq`, `identity`, `dnds`, `syntenicDepth` |
 | `laneLayers.marks.encoding.color` | [](/docs/config/markcolor#preset-fields) | ordinal, linear, log, symlog, threshold, identity | `strand`, `svType`, `impact`, `score` |
 
 ## Config slots
