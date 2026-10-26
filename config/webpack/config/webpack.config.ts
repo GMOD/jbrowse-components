@@ -91,6 +91,12 @@ export default function webpackBuilder(): webpack.Configuration {
           test: /\.m?js$/,
           resolve: { fullySpecified: false },
         },
+        {
+          // webpack-dev-middleware 8.5's client is "type": "module" and takes
+          // named exports from its own .cjs files, which strict ESM refuses
+          test: /[\\/]webpack-dev-middleware[\\/]client[\\/].*\.js$/,
+          type: 'javascript/auto',
+        },
         ...(shouldUseSourceMap && isEnvProduction
           ? [
               {
