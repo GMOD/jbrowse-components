@@ -11,7 +11,6 @@ tutorials/analyze_trio.md 1
 tutorials/bisulfite.md 3
 tutorials/bxd_qtl.md 2
 tutorials/cancer_sv.md 9
-tutorials/cnv_cgiab.md 19
 tutorials/dog10k_lof.md 3
 tutorials/dog10k_selection.md 2
 tutorials/dog10k_svs.md 4
@@ -27,7 +26,7 @@ tutorials/mcscan_synteny_grape_peach.md 4
 tutorials/orthofinder_synteny.md 6
 tutorials/pangenome_cactus.md 5
 tutorials/pangenome_cattle.md 7
-tutorials/pangenome_ecoli.md 2
+tutorials/pangenome_ecoli.md 1
 tutorials/pangenome_hprc_haplotypes.md 3
 tutorials/pangenome_hprc_repeats.md 6
 tutorials/pangenome_hprc.md 12
@@ -39,6 +38,6 @@ tutorials/read_marks.md 2
 tutorials/rnaseq.md 5
 tutorials/scatac_pseudobulk.md 1
 tutorials/scrna_pseudobulk.md 3
-tutorials/sv_multisamples.md 3
+tutorials/sv_multisamples.md 1
 tutorials/sv_visualization_cgiab.md 4
 tutorials/synteny_visualization.md 8

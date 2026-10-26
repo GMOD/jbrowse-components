@@ -10,6 +10,7 @@ import { join } from 'node:path'
 import { check, checkOrWriteAll, docFiles, isFile } from './check-utils.ts'
 import {
   figureTracks,
+  prerequisiteTutorials,
   isRemote,
   namesFile,
   unnamedFigureTracks,
@@ -82,7 +83,11 @@ const names = network ? await fetchNames() : recorded
 
 const detail = new Map<string, UnnamedTrack[]>()
 for (const [doc, text] of texts) {
-  const hits = unnamedFigureTracks(text, names)
+  const context = prerequisiteTutorials(text).flatMap(slug => {
+    const prereq = texts.get(`tutorials/${slug}.md`)
+    return prereq ? [prereq] : []
+  })
+  const hits = unnamedFigureTracks(text, names, context)
   if (hits.length > 0) {
     detail.set(doc, hits)
   }

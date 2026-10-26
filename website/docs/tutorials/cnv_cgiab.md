@@ -334,7 +334,22 @@ bcftools mpileup -f GRCh38.fa -T hets.vcf.gz -a AD -q 1 -Q 0 tumor.bam |
 bedGraphToBigWig baf.bedgraph GRCh38.chrom.sizes HG008-T_baf.bcftools.bw
 ```
 
-Plot it with **Scatter** over a fixed 0 to 1 range.
+Plot it with **Scatter** over a fixed 0 to 1 range. The chromosome figures add
+UCSC's cytobands as a track:
+
+```json addtrack
+{
+  "type": "FeatureTrack",
+  "trackId": "grch38_cytobands",
+  "name": "Cytobands (UCSC hg38)",
+  "assemblyNames": ["GRCh38_GIABv3"],
+  "adapter": {
+    "type": "BedAdapter",
+    "uri": "https://jbrowse.org/ucsc/hg38/hg38.cytoBand.txt.gz",
+    "columnNames": ["chrom", "chromStart", "chromEnd", "name", "gieStain"]
+  }
+}
+```
 
 <Figure caption="Chromosome 3: the segmented copy ratio, the HiFiCNV depth and B-allele frequency over the benchmark CNV calls." src="/img/sv_cgiab/cnv_depth_baf.png" />
 
@@ -373,7 +388,17 @@ _CDKN2A_, _TP53_ and _SMAD4_
 ([Waddell et al. 2015](https://doi.org/10.1038/nature14169),
 [Bailey et al. 2016](https://doi.org/10.1038/nature16965)). Each copy-number
 figure below draws the gene's MANE Select (standard reference) transcript under
-the tracks.
+the tracks, from NCBI's MANE track labelled by gene symbol:
+
+```json addtrack
+{
+  "trackId": "mane_hg38",
+  "name": "MANE Select (NCBI RefSeq 1.4)",
+  "uri": "https://jbrowse.org/genomes/GRCh38/mane/MANE.GRCh38.v1.4.refseq.bb",
+  "assemblyNames": ["GRCh38_GIABv3"],
+  "displayDefaults": { "labels": { "name": "geneSymbol" } }
+}
+```
 
 For a first check, load the tumor and normal coverage from
 [goleft indexcov](https://github.com/brentp/goleft/tree/master/indexcov) as one
@@ -468,6 +493,17 @@ outputs for each sample's CRAM; swap in yours:
     },
     "height": 280
   }
+}
+```
+
+The figure adds the tumor's HiFi reads, from a slice of the CRAM part 1 loads:
+
+```json addtrack
+{
+  "trackId": "hg008_t_reads_cdkn2a",
+  "name": "HG008-T PacBio HiFi reads",
+  "uri": "https://jbrowse.org/demos/cgiab/HG008-T_PacBio-HiFi-Revio_116x.demo_slices.bam",
+  "assemblyNames": ["GRCh38_GIABv3"]
 }
 ```
 

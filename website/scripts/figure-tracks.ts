@@ -23,6 +23,8 @@ export interface FigureTracks {
   line: number
   config: string
   trackIds: string[]
+  // Names of the tracks the figure's session defines itself.
+  sessionNames: Record<string, string>
 }
 
 export const isRemote = (config: string) => /^https?:/.test(config)
@@ -58,9 +60,17 @@ function specTracks(spec: string) {
   if (!session.startsWith('spec-')) {
     return undefined
   }
+  const parsed = JSON.parse(session.slice('spec-'.length)) as {
+    sessionTracks?: { trackId: string; name?: string }[]
+  }
   const ids = new Set<string>()
-  collectTrackIds(JSON.parse(session.slice('spec-'.length)), ids)
-  return { config: query.get('config') ?? '', trackIds: [...ids] }
+  collectTrackIds(parsed, ids)
+  const sessionNames = Object.fromEntries(
+    (parsed.sessionTracks ?? []).flatMap(t =>
+      t.name ? [[t.trackId, t.name]] : [],
+    ),
+  )
+  return { config: query.get('config') ?? '', trackIds: [...ids], sessionNames }
 }
 
 export function figureTracks(text: string): FigureTracks[] {
@@ -120,21 +130,39 @@ export interface UnnamedTrack {
 // A name prose wraps across lines still names the track.
 const oneLine = (s: string) => s.replace(/\s+/g, ' ')
 
-export function unnamedFigureTracks(text: string, names: TrackNames) {
-  const flat = oneLine(text)
-  return figureTracks(text).flatMap(({ figure, line, config, trackIds }) =>
-    trackIds
-      .filter(id => !isSequenceTrack(config, id))
-      .map(trackId => ({
-        line,
-        figure,
-        trackId,
-        name: trackName(config, trackId, names),
-      }))
-      .filter(
-        t =>
-          !text.includes(t.trackId) &&
-          !(t.name && flat.includes(oneLine(t.name))),
-      ),
+// The tutorials a page's Prerequisites section links: a page built on another's
+// tracks (cnv_cgiab on sv_visualization_cgiab) names them there.
+export function prerequisiteTutorials(text: string) {
+  const section = /^## Prerequisites\n([\s\S]*?)(?=^## )/m.exec(text)?.[1] ?? ''
+  return [
+    ...new Set(
+      [...section.matchAll(/\/docs\/tutorials\/([\w-]+)/g)].map(m => m[1]!),
+    ),
+  ]
+}
+
+// `context` is the text of the pages the reader set up first.
+export function unnamedFigureTracks(
+  text: string,
+  names: TrackNames,
+  context: string[] = [],
+) {
+  const all = [text, ...context].join('\n')
+  const flat = oneLine(all)
+  return figureTracks(text).flatMap(
+    ({ figure, line, config, trackIds, sessionNames }) =>
+      trackIds
+        .filter(id => !isSequenceTrack(config, id))
+        .map(trackId => ({
+          line,
+          figure,
+          trackId,
+          name: sessionNames[trackId] ?? trackName(config, trackId, names),
+        }))
+        .filter(
+          t =>
+            !all.includes(t.trackId) &&
+            !(t.name && flat.includes(oneLine(t.name))),
+        ),
   )
 }
