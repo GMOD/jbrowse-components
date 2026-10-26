@@ -5025,7 +5025,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "scheme": {
-          "description": "a named ramp: a linear, log or symlog scale runs along it, and a threshold that writes cuts takes one color per interval from end to end; range's colors, where it lists any, win over it.",
+          "description": "a named ramp: a linear, log or symlog scale runs along it, and a threshold that writes cuts takes one color per interval from end to end, and an ordinal scale that lists a domain one per value; range's colors, where it lists any, win over it.",
           "if": {
             "type": "null"
           },
@@ -6176,7 +6176,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "scheme": {
-          "description": "a named ramp: a linear, log or symlog scale runs along it, and a threshold that writes cuts takes one color per interval from end to end; range's colors, where it lists any, win over it.",
+          "description": "a named ramp: a linear, log or symlog scale runs along it, and a threshold that writes cuts takes one color per interval from end to end, and an ordinal scale that lists a domain one per value; range's colors, where it lists any, win over it.",
           "if": {
             "type": "null"
           },
@@ -9329,7 +9329,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "scheme": {
-          "description": "a named ramp: a linear, log or symlog scale runs along it, and a threshold that writes cuts takes one color per interval from end to end; range's colors, where it lists any, win over it.",
+          "description": "a named ramp: a linear, log or symlog scale runs along it, and a threshold that writes cuts takes one color per interval from end to end, and an ordinal scale that lists a domain one per value; range's colors, where it lists any, win over it.",
           "if": {
             "type": "null"
           },
@@ -9887,7 +9887,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "scheme": {
-          "description": "a named ramp: a linear, log or symlog scale runs along it, and a threshold that writes cuts takes one color per interval from end to end; range's colors, where it lists any, win over it.",
+          "description": "a named ramp: a linear, log or symlog scale runs along it, and a threshold that writes cuts takes one color per interval from end to end, and an ordinal scale that lists a domain one per value; range's colors, where it lists any, win over it.",
           "if": {
             "type": "null"
           },
@@ -13472,7 +13472,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "scheme": {
-          "description": "a named ramp: a linear, log or symlog scale runs along it, and a threshold that writes cuts takes one color per interval from end to end; range's colors, where it lists any, win over it.",
+          "description": "a named ramp: a linear, log or symlog scale runs along it, and a threshold that writes cuts takes one color per interval from end to end, and an ordinal scale that lists a domain one per value; range's colors, where it lists any, win over it.",
           "if": {
             "type": "null"
           },
@@ -27576,7 +27576,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "scheme": {
-          "description": "a named ramp: a linear, log or symlog scale runs along it, and a threshold that writes cuts takes one color per interval from end to end; range's colors, where it lists any, win over it.",
+          "description": "a named ramp: a linear, log or symlog scale runs along it, and a threshold that writes cuts takes one color per interval from end to end, and an ordinal scale that lists a domain one per value; range's colors, where it lists any, win over it.",
           "if": {
             "type": "null"
           },

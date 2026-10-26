@@ -369,6 +369,7 @@ export interface ScaleProblem {
     | 'log-floor'
     | 'names-domain'
     | 'unknown-domain'
+    | 'scheme-domain'
     | 'unknown-scale'
     | 'invalid-scale'
   /** the slot to look at, relative to the object that holds the scale */
@@ -493,6 +494,7 @@ export function colorSlotsOf(
       domain: listOf(member('domain')),
       range: listOf(member('range')),
       names: listOf(member('names')),
+      scheme: stringOf(member('scheme')),
       unknown: stringOf(member('unknown')),
       invalid: stringOf(member('invalid')),
     },
@@ -592,6 +594,19 @@ export function colorProblems(
           'unknown paints every value domain leaves out, and with no domain that is every value; list the values that keep their own colors in domain',
       })
     }
+  }
+  if (
+    scale === 'ordinal' &&
+    written.scale?.scheme !== undefined &&
+    range.length === 0 &&
+    domain.length === 0
+  ) {
+    problems.push({
+      rule: 'scheme-domain',
+      slot: 'scale.scheme',
+      message:
+        'an ordinal scale samples its scheme once per domain value, and with no domain it paints the default palette; list the values in domain, or set type to linear for a ramp',
+    })
   }
   if (invalid !== undefined && scale !== 'ordinal') {
     problems.push({
