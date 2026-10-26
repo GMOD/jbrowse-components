@@ -91,9 +91,10 @@ type Universal = keyof typeof UNIVERSAL_FIELD_PRESETS
 // key, by `domain` or else the field's own order, and every other level its
 // own color (`categoricalField`).
 function levelColors(field: Universal, scale: Json) {
-  const own = UNIVERSAL_FIELD_PRESETS[field].scale
+  const own: { domain: readonly string[]; range: readonly string[] } =
+    UNIVERSAL_FIELD_PRESETS[field].scale
   const range = Array.isArray(scale.range) ? (scale.range as string[]) : []
-  const order = Array.isArray(scale.domain)
+  const order: readonly string[] = Array.isArray(scale.domain)
     ? (scale.domain as unknown[]).map(String)
     : own.domain
   return Object.fromEntries(
