@@ -248,6 +248,51 @@ describe('MultiWiggleAdapter.getAdapters with bigWigs config', () => {
     expect(adapters[0]!.source).toBe('sample.data')
   })
 
+  it('disambiguates by the directory before the query, not inside it', async () => {
+    const adapter = new MultiWiggleAdapter(
+      configSchema.create({
+        bigWigs: [
+          'https://h/cond1/sample.bw?token=a/b',
+          'https://h/cond2/sample.bw?token=a/b',
+        ],
+      }),
+      jest.fn().mockResolvedValue({ dataAdapter: { id: 'mock' } }),
+    )
+    const adapters = await adapter.getAdapters()
+    expect(adapters.map(a => a.source)).toEqual([
+      'cond1/sample',
+      'cond2/sample',
+    ])
+  })
+
+  it('names a dropped-file or file-handle member by its file', async () => {
+    const adapter = new MultiWiggleAdapter(
+      configSchema.create({
+        subadapters: [
+          {
+            type: 'BigWigAdapter',
+            bigWigLocation: {
+              locationType: 'BlobLocation',
+              blobId: 'b1',
+              name: 'dropped.bw',
+            },
+          },
+          {
+            type: 'BigWigAdapter',
+            bigWigLocation: {
+              locationType: 'FileHandleLocation',
+              handleId: 'h1',
+              name: 'opened.bw',
+            },
+          },
+        ],
+      }),
+      jest.fn().mockResolvedValue({ dataAdapter: { id: 'adapter-hash' } }),
+    )
+    const adapters = await adapter.getAdapters()
+    expect(adapters.map(a => a.source)).toEqual(['dropped', 'opened'])
+  })
+
   // The memo is what keeps every fetch, stats call and clustering run on a
   // track from rebuilding the subadapters; caching the rejection too meant one
   // failing subadapter permanently broke the track, with no way back short of
@@ -421,16 +466,18 @@ describe('MultiWiggleAdapter.getSources', () => {
 
   describe('with subadapters using blob', () => {
     beforeEach(() => {
-      const mockFile = new File(['data'], 'sample-blob.bw')
+      const blobLocation = {
+        locationType: 'BlobLocation',
+        blobId: 'b1',
+        name: 'sample-blob.bw',
+      }
 
       adapter = new MultiWiggleAdapter(
         configSchema.create({
           subadapters: [
             {
               type: 'BigWigAdapter',
-              bigWigLocation: {
-                blob: mockFile,
-              },
+              bigWigLocation: blobLocation,
             },
           ],
         }),
@@ -440,9 +487,7 @@ describe('MultiWiggleAdapter.getSources', () => {
         {
           source: 'blob-source',
           type: 'BigWigAdapter',
-          bigWigLocation: {
-            blob: mockFile,
-          },
+          bigWigLocation: blobLocation,
           dataAdapter: stubDataAdapter,
         },
       ])

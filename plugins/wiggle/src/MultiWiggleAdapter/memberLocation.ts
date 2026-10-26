@@ -1,6 +1,8 @@
 import { matchFormat } from '@jbrowse/add-track-core'
+import { getFileName } from '@jbrowse/core/util'
+import { isLocalPathLocation, isUriLocation } from '@jbrowse/core/util/types'
 
-import { getFilename } from '../util.ts'
+import { withoutExtension } from '../util.ts'
 
 import type { FileLocation } from '@jbrowse/core/util/types'
 
@@ -13,28 +15,31 @@ export function adapterSpec(adapterType: string) {
   return matchFormat('', adapterType)?.spec
 }
 
-export function getLocationPath(location?: FileLocation) {
-  return location === undefined
-    ? undefined
-    : 'uri' in location && location.uri
-      ? location.uri
-      : 'localPath' in location && location.localPath
-        ? location.localPath
-        : 'blob' in location && location.blob instanceof File
-          ? location.blob.name || undefined
-          : undefined
+function primaryLocation(config: MemberConfig): FileLocation | undefined {
+  const spec = config.type ? adapterSpec(config.type) : undefined
+  const location =
+    spec && 'locField' in spec
+      ? (config[spec.locField] as FileLocation | undefined)
+      : undefined
+  return (
+    location ??
+    (typeof config.uri === 'string'
+      ? { uri: config.uri, locationType: 'UriLocation' }
+      : undefined)
+  )
 }
 
 export function getPrimaryLocationPath(config: MemberConfig) {
-  const spec = config.type ? adapterSpec(config.type) : undefined
-  const path =
-    spec && 'locField' in spec
-      ? getLocationPath(config[spec.locField] as FileLocation | undefined)
+  const location = primaryLocation(config)
+  return isUriLocation(location)
+    ? location.uri.split(/[?#]/, 1)[0]
+    : isLocalPathLocation(location)
+      ? location.localPath
       : undefined
-  return path ?? (typeof config.uri === 'string' ? config.uri : undefined)
 }
 
 export function getFilenameFromAdapterConfig(config: MemberConfig) {
-  const path = getPrimaryLocationPath(config)
-  return path ? getFilename(path) : undefined
+  const location = primaryLocation(config)
+  const name = location ? getFileName(location) : ''
+  return name ? withoutExtension(name) : undefined
 }

@@ -2,6 +2,7 @@ import {
   addAndShowTrack,
   fileToLocation,
   getEnv,
+  getFileName,
   makeTrackId,
 } from '@jbrowse/core/util'
 import {
@@ -15,7 +16,7 @@ import {
   adapterSpec,
   getFilenameFromAdapterConfig,
 } from '../MultiWiggleAdapter/memberLocation.ts'
-import { getFilename } from '../util.ts'
+import { withoutExtension } from '../util.ts'
 
 import type { MemberConfig } from '../MultiWiggleAdapter/memberLocation.ts'
 import type { AnyTrackConfig } from '@jbrowse/core/configuration'
@@ -134,7 +135,7 @@ function classifyLocation(
 
 export function itemToName(item: TrackItem) {
   return typeof item === 'string'
-    ? getFilename(item)
+    ? withoutExtension(getFileName({ uri: item, locationType: 'UriLocation' }))
     : `${item.source ?? item.name ?? getFilenameFromAdapterConfig(item) ?? 'unnamed'}`
 }
 
@@ -164,7 +165,7 @@ export function classifyItem(item: TrackItem, guessers: Guessers) {
 // A dropped file pins its name as `source`, since a blob location carries no
 // path for the adapter to derive one from once the session reloads.
 export function classifyFile(file: File, guessers: Guessers) {
-  const name = getFilename(file.name)
+  const name = withoutExtension(file.name)
   return classifyLocation(fileToLocation(file), name, guessers, {
     source: name,
   })

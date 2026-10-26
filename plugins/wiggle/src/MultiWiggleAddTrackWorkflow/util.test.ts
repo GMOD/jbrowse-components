@@ -77,6 +77,7 @@ describe('itemToName', () => {
 
   it('names a URL item by the basename the track will label it with', () => {
     expect(itemToName('https://example.com/x.bw')).toBe('x')
+    expect(itemToName('https://example.com/x.bw?v=1.2')).toBe('x')
   })
 
   it('prefers source over name', () => {

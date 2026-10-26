@@ -12,7 +12,7 @@ named. Re-measure on a fresh build first.
   `GetConsensusSequence` and `MafGetSequences` a `preload()` body, as
   `RenderAlignmentData` has (`plugins/alignments/src/RenderAlignmentDataRPC/`).
 - Move `matedBy` into its own module.
-- Split `plugins/wiggle/src/util.ts` so its constants and `getFilename` stop
+- Split `plugins/wiggle/src/util.ts` so its constants and `withoutExtension` stop
   importing `markEncoding`.
 - Add `rpcMethods: ['CoreGetEncodedLayers']` to `LinearMarkDisplay` and
   `MultiWaySyntenyDisplay`; without it the first fetch waits an extra round trip
