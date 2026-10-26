@@ -1,6 +1,6 @@
 ---
 name: cross-display-color-conformance-test
-description: One table of color specs run through every display's color resolver, with the exceptions named. Waits on whether synteny's data-decided default scale stays. The predicate half would be vacuous, since compilePredicates is the one compiler.
+description: One table of color specs run through every display's color resolver, with the exceptions named, synteny's data-decided default among them. The predicate half would be vacuous, since compilePredicates is the one compiler.
 ---
 
 # A cross-display color conformance test
@@ -26,9 +26,9 @@ Each display picks its own default scale for a color `{ field }`:
 - the multi-sample variant display and the multi-way gene color: always
   ordinal;
 - wiggle: threshold, and an ordinal scale paints `MISCONFIGURED_COLOR`;
-- synteny: linear whenever the observed column is numeric
-  (`packages/synteny-core/src/colorRamps.ts`), the one default that the
-  loaded data decides.
+- synteny: linear whenever the observed column is numeric, ordinal once a
+  value is text (`packages/synteny-core/src/colorRamps.ts`), the one default
+  that the loaded data decides. A written `scale.type` overrides it.
 
 There are also smaller differences:
 
@@ -37,11 +37,11 @@ There are also smaller differences:
 - Synteny declares no `unknown` or `invalid`, though its closed schema refuses
   them loudly.
 
-## The call
+## The rule
 
-Should synteny's default scale come from the data? If it should not, the
-test gains one fewer exception and synteny moves to a static preset. Either
-way, the test lives in `products/jbrowse-web/src/schemaTests/`, since
+Synteny keeps inferring its default scale and stays a named exception,
+because its adapters parse column types and so state a column's kind only in
+the loaded data. The test lives in `products/jbrowse-web/src/schemaTests/`, since
 display-kit cannot import the plugins. It needs about 300–400 lines, mostly
 one adapter per display that turns that display's resolver output into one
 answer to "what color does value v get".

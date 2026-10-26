@@ -68,8 +68,8 @@ deployed. Still open, each needing no further call:
   `displayDefaults: { showLabels: 'none' }`, which beta.17 reads; respell it
   to the label parts with the same release.
 
-The cross-display color test waits on a call:
-[ideas/waiting-on-a-call/cross-display-color-conformance-test.md](../ideas/waiting-on-a-call/cross-display-color-conformance-test.md).
+The cross-display color test is ready to build:
+[ideas/ready/cross-display-color-conformance-test.md](../ideas/ready/cross-display-color-conformance-test.md).
 
 ## Writers to update after each landing
 
