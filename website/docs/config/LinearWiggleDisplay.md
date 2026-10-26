@@ -87,7 +87,7 @@ Taller track, log scale, custom color:
 <!-- prettier-ignore -->
 | Setting | Page | `scale.type` | Preset fields |
 | --- | --- | --- | --- |
-| `encoding.color` | [WiggleColor](/docs/config/wigglecolor) | linear, threshold |  |
+| `encoding.color` | [](/docs/config/wigglecolor) | linear, threshold |  |
 
 ## Config slots
 

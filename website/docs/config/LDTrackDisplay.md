@@ -51,7 +51,7 @@ Every LDTrackDisplay has a unique `displayId`, a required top-level field that i
 <!-- prettier-ignore -->
 | Setting | Page | `scale.type` | Preset fields |
 | --- | --- | --- | --- |
-| `encoding.color` | [LDColor](/docs/config/ldcolor#preset-fields) | linear | `r2`, `dprime` |
+| `encoding.color` | [](/docs/config/ldcolor#preset-fields) | linear | `r2`, `dprime` |
 
 ## Config slots
 

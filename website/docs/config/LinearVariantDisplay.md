@@ -60,7 +60,7 @@ Taller track. The `displayDefaults` object shorthand is equivalent to
 <!-- prettier-ignore -->
 | Setting | Page | `scale.type` | Preset fields |
 | --- | --- | --- | --- |
-| `encoding.color` | [FeatureColor](/docs/config/featurecolor#preset-fields) | ordinal, threshold, linear, log, identity | `strand`, `svType`, `impact`, `score` |
+| `encoding.color` | [](/docs/config/featurecolor#preset-fields) | ordinal, threshold, linear, log, identity | `strand`, `svType`, `impact`, `score` |
 
 ## Config slots
 

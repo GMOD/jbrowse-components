@@ -1231,7 +1231,7 @@ function colorChannelCells(display: string) {
         const anchor = fields.length ? '#preset-fields' : ''
         cells.push([
           `\`${at.join('.')}\``,
-          `[${slot.schema}](/docs/config/${slot.schema.toLowerCase()}${anchor})`,
+          `[](/docs/config/${slot.schema.toLowerCase()}${anchor})`,
           scaleTypesOf(scale),
           levelList(fields),
         ])
@@ -1268,7 +1268,7 @@ export function writeColorChannelDocs() {
     .sort((a, b) => a.localeCompare(b, 'en'))
     .flatMap(display =>
       colorChannelCells(display).map(cells =>
-        row([`[${display}](/docs/config/${display.toLowerCase()})`, ...cells]),
+        row([`[](/docs/config/${display.toLowerCase()})`, ...cells]),
       ),
     )
   return rewriteMarkerBlock(

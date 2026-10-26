@@ -50,7 +50,7 @@ for every viewer.
 <!-- prettier-ignore -->
 | Setting | Page | `scale.type` | Preset fields |
 | --- | --- | --- | --- |
-| `encoding.color` | [MafColor](/docs/config/mafcolor#preset-fields) | fixed by the field | `identity`, `refNameRank` |
+| `encoding.color` | [](/docs/config/mafcolor#preset-fields) | fixed by the field | `identity`, `refNameRank` |
 
 ## Config slots
 

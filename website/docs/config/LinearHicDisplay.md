@@ -46,7 +46,7 @@ Every LinearHicDisplay has a unique `displayId`, a required top-level field that
 <!-- prettier-ignore -->
 | Setting | Page | `scale.type` | Preset fields |
 | --- | --- | --- | --- |
-| `encoding.color` | [HicColor](/docs/config/hiccolor#preset-fields) | linear, symlog, log | `observed`, `observed/expected`, `observed/control` |
+| `encoding.color` | [](/docs/config/hiccolor#preset-fields) | linear, symlog, log | `observed`, `observed/expected`, `observed/control` |
 
 ## Config slots
 
