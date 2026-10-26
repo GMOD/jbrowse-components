@@ -1,6 +1,7 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { triangleMatrixConfigSchemaFields } from '@jbrowse/display-kit/TriangleMatrixMixin'
 import { retiredBaseDisplaySpellings } from '@jbrowse/display-kit/configSchema'
+import { fieldPredicateList } from '@jbrowse/display-kit/fieldPredicateConfigSchema'
 import { hiddenLegendConfigSchema } from '@jbrowse/display-kit/hiddenLegendConfigSchema'
 import { trackHeightConfigSchemaFields } from '@jbrowse/display-kit/trackHeightConfigSchemaFields'
 
@@ -60,6 +61,16 @@ const HicTrackConfigFactory = () => {
        * matrix normalization.
        */
       data: hicDataConfigSchema,
+      /**
+       * #slot filter
+       * Floors, written `gte` or `gt`, on the counts a cell is built from:
+       * `observed`, the map's count, and under observed/control `control`,
+       * the control's, both before the depth scaling. A cell below a floor is
+       * left out before its ratio, so a ratio of two near-empty bins does not
+       * speckle the triangle. A floor on `observed` alone drops the contacts
+       * a condition lost; floor `control`, or both, to keep them.
+       */
+      filter: fieldPredicateList(),
     },
     {
       explicitlyTyped: true,

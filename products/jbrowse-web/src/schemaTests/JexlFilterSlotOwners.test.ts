@@ -39,6 +39,7 @@ test('only the displays that read filter publish it', () => {
     'LGVSyntenyDisplay',
     'LinearAlignmentsDisplay',
     'LinearBasicDisplay',
+    'LinearHicDisplay',
     'LinearManhattanDisplay',
     'LinearMarkDisplay',
     'LinearMultiRowFeatureDisplay',

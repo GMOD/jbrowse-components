@@ -34,6 +34,7 @@ export async function executeRenderHicData({
     normalization,
     field,
     quantile,
+    floors = {},
     signal,
     statusCallback,
   } = args
@@ -70,6 +71,13 @@ export async function executeRenderHicData({
   // the two counts a control ratio was made of, for the hover
   const observedOut = overControl ? new Float32Array(numContacts) : undefined
   const controlOut = overControl ? new Float32Array(numContacts) : undefined
+
+  // a floor read as its bound and whether the bound itself is out, so the
+  // loop makes two compares; an unset floor passes every count
+  const obsMin = floors.observed?.min ?? Number.NEGATIVE_INFINITY
+  const obsStrict = floors.observed?.strict ?? false
+  const ctrlMin = floors.control?.min ?? Number.NEGATIVE_INFINITY
+  const ctrlStrict = floors.control?.strict ?? false
 
   const w = resolution / Math.SQRT2
   const resultRegions = buildResultRegions(regions, axisBlocks, resolution)
@@ -133,7 +141,11 @@ export async function executeRenderHicData({
           const count = counts[k]!
           // NaN is the .hic no-value marker, which `@gmod/hic` filters only on
           // its dense path
-          if (Number.isNaN(count)) {
+          if (
+            Number.isNaN(count) ||
+            count < obsMin ||
+            (obsStrict && count === obsMin)
+          ) {
             continue
           }
           let value = count
@@ -148,6 +160,9 @@ export async function executeRenderHicData({
             }
           } else if (ctrlCounts) {
             const ctrl = ctrlCounts[k]!
+            if (ctrl < ctrlMin || (ctrlStrict && ctrl === ctrlMin)) {
+              continue
+            }
             value = (count * toMean + 1) / (ctrl / toMean + 1)
             observedOut![at] = count
             controlOut![at] = ctrl

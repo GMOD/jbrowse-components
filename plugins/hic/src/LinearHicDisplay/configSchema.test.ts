@@ -120,7 +120,6 @@ describe('config surface', () => {
   // gate — every one of these was a documented promise nothing kept.
   test.each([
     'mouseover',
-    'filter',
     'maxFeatureScreenDensity',
     'fetchSizeLimit',
     'forceLoad',

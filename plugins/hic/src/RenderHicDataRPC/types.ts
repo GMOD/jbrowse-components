@@ -1,6 +1,7 @@
 import type { HicColorField } from '../LinearHicDisplay/hicColorConfigSchema.ts'
 import type { ExpectedValues } from '@gmod/hic'
 import type { Region } from '@jbrowse/core/util'
+import type { Floor } from '@jbrowse/core/util/fieldPredicate'
 import type { TriangleAxisBlock } from '@jbrowse/display-kit/triangleTransform'
 
 export interface RenderHicDataArgs {
@@ -19,6 +20,14 @@ export interface RenderHicDataArgs {
   field: HicColorField
   /** the quantile `quantileScore` answers */
   quantile: number
+  /** the `filter` list's floors, which drop a cell before its ratio; unset passes every cell */
+  floors?: HicCountFloors
+}
+
+/** A floor on each count a cell is built from, unset where none is written. */
+export interface HicCountFloors {
+  observed?: Floor
+  control?: Floor
 }
 
 export interface HicContactItem {

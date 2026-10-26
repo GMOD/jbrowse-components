@@ -84,9 +84,17 @@ GM12878:
       "uri": "https://encode-public.s3.amazonaws.com/2021/10/28/6f0cc163-86c7-4a68-baac-65af90f5a90d/ENCFF053VBX.hic"
     }
   },
-  "displayDefaults": { "encoding": { "color": "observed/control" } }
+  "displayDefaults": {
+    "encoding": { "color": "observed/control" },
+    "filter": [{ "field": "control", "gte": 5 }]
+  }
 }
 ```
+
+The [`filter`](/docs/config/linearhicdisplay/#slot-filter) leaves out a cell
+whose control count is below 5, so a ratio over a near-empty bin does not
+speckle the triangle. A floor on `control` keeps the contacts the map lost,
+which a floor on `observed` would drop.
 
 The track menu's **Compare with...** builds the same track from two tracks
 already loaded

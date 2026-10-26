@@ -2,6 +2,7 @@ import {
   ConfigurationReference,
   getConf,
   getSlotDefinition,
+  readConfObject,
   setConf,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
@@ -28,11 +29,13 @@ import { installUpload } from '@jbrowse/render-core/installUpload'
 import { computeCountStats } from '../RenderHicDataRPC/countStats.ts'
 import { findContactAt } from './contactLookup.ts'
 import { HIC_FIELD_PRESETS } from './hicColorConfigSchema.ts'
+import { hicCountFloors, hicFilterProblems } from './hicFilter.ts'
 import { buildHicTrackMenuItems } from './trackMenuItems.ts'
 
 import type { HicHeader } from '../HicAdapter/HicAdapter.ts'
 import type {
   HicContactItem,
+  HicCountFloors,
   HicDataResult,
 } from '../RenderHicDataRPC/types.ts'
 import type {
@@ -41,6 +44,7 @@ import type {
 } from './components/hicRenderingBackendTypes.ts'
 import type { HicTrackConfigModel } from './configSchema.ts'
 import type { HicColorField, HicColorScale } from './hicColorConfigSchema.ts'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { ColorSlots } from '@jbrowse/core/util/colorScale'
 import type { AdapterRead } from '@jbrowse/core/util/installPrerequisiteFetch'
@@ -210,6 +214,14 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
        */
       get colorField(): HicColorField {
         return getConf(self, ['encoding', 'color', 'field'])
+      },
+      /**
+       * #getter
+       * The `filter` list's floors on a cell's counts, which the worker
+       * applies before the ratio.
+       */
+      get countFloors(): HicCountFloors {
+        return hicCountFloors(getConf(self, 'filter'))
       },
     }))
     .views(self => ({
@@ -427,10 +439,15 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
        * quantile reselects on the main thread, so both ride as call
        * arguments.
        */
-      rpcProps(): { normalization: string; field: HicColorField } {
+      rpcProps(): {
+        normalization: string
+        field: HicColorField
+        floors: HicCountFloors
+      } {
         return {
           normalization: self.activeNormalization,
           field: self.colorField,
+          floors: self.countFloors,
         }
       },
       /**
@@ -565,8 +582,25 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
       },
     }))
     .views(self => {
-      const { trackMenuItems: superTrackMenuItems } = self
+      const {
+        trackMenuItems: superTrackMenuItems,
+        configProblemsOf: superConfigProblemsOf,
+      } = self
       return {
+        /**
+         * #method
+         * The schema's rules, then the `filter` entries the worker cannot
+         * apply.
+         */
+        configProblemsOf(conf: AnyConfigurationModel): string[] {
+          return [
+            ...superConfigProblemsOf(conf),
+            ...hicFilterProblems(
+              readConfObject(conf, 'filter'),
+              readConfObject(conf, ['encoding', 'color', 'field']),
+            ),
+          ]
+        },
         /**
          * #method
          */

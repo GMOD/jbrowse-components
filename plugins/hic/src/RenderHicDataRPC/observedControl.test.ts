@@ -5,14 +5,17 @@ import { executeRenderHicData } from './executeRenderHicData.ts'
 import { toContacts } from './testContacts.ts'
 
 import type { MultiRegionContacts } from '../HicAdapter/HicAdapter.ts'
-import type { HicDataResult } from './types.ts'
+import type { HicDataResult, RenderHicDataArgs } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 
 jest.mock('@jbrowse/core/data_adapters/dataAdapterCache', () => ({
   getAdapter: jest.fn(),
 }))
 
-async function render(contacts: MultiRegionContacts) {
+async function render(
+  contacts: MultiRegionContacts,
+  { field = 'observed/control', floors }: Partial<RenderHicDataArgs> = {},
+) {
   jest.mocked(getAdapter).mockResolvedValue({
     dataAdapter: {
       getMultiRegionContactRecords: () => Promise.resolve(contacts),
@@ -34,8 +37,9 @@ async function render(contacts: MultiRegionContacts) {
       originBp: 0,
       resolution: 10,
       normalization: 'KR',
-      field: 'observed/control',
+      field,
       quantile: 0.95,
+      floors,
     },
   })
   return (res as unknown as { value: HicDataResult }).value
@@ -123,4 +127,46 @@ test('a map over its control is the inverse of the control over the map', async 
   const forward = await one(9, 4, 3, 7)
   const backward = await one(4, 9, 7, 3)
   expect(forward * backward).toBeCloseTo(1, 6)
+})
+
+function controlledPairs() {
+  const contacts = twoPairs()
+  contacts.pairs[0]!.control = {
+    counts: Float32Array.of(4, 1),
+    depth: 1,
+    controlDepth: 1,
+  }
+  contacts.pairs[1]!.control = {
+    counts: Float32Array.of(3),
+    depth: 1,
+    controlDepth: 1,
+  }
+  return contacts
+}
+
+// the floors read the counts as the files serve them, before the depth scaling
+test('a control floor leaves out the cells its denominator is noise in', async () => {
+  const data = await render(controlledPairs(), {
+    floors: { control: { min: 3, strict: false } },
+  })
+  expect(Array.from(data.operands!.control)).toEqual([4, 3])
+  expect(data.pairRuns.map(run => [run.start, run.end])).toEqual([
+    [0, 1],
+    [1, 2],
+  ])
+})
+
+test('a strict floor leaves out the bound itself', async () => {
+  const data = await render(controlledPairs(), {
+    floors: { control: { min: 3, strict: true } },
+  })
+  expect(Array.from(data.operands!.control)).toEqual([4])
+})
+
+test('an observed floor applies to plain counts too', async () => {
+  const data = await render(twoPairs(), {
+    field: 'observed',
+    floors: { observed: { min: 1, strict: false } },
+  })
+  expect(values(data)).toEqual([9, 3])
 })

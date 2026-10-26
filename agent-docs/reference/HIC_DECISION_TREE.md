@@ -137,6 +137,13 @@ a pair, so a pair where they fall back apart reads both raw. Two builds share
 chromosome names and differ in coordinates, so `controlChromosomes.ts` refuses
 a control whose shared chromosome differs in length.
 
+**The `filter` is floors, applied before the ratio.** A ratio of two
+near-empty bins is noise, so `filter` takes `gte` or `gt` on `observed` and
+`control`, the counts as the files serve them. The worker reads each floor as a
+bound and a strictness, so the packing loop makes two inline compares per
+cell and calls no function. `hicFilter.ts` refuses any other field or test as
+a notice.
+
 **The quantile is a call argument outside the fetch key.** The worker selects
 for the quantile it was asked for, so a pan or zoom costs the main thread
 nothing. An edited percentile reselects over the loaded matrix on the main

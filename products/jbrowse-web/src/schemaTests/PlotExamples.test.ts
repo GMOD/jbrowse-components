@@ -122,7 +122,7 @@ test("each display's plot settings", () => {
       'legend',
       'mark',
     ],
-    LinearHicDisplay: ['encoding', 'legend'],
+    LinearHicDisplay: ['encoding', 'filter', 'legend'],
     LinearMafDisplay: [
       'alignments',
       'conservation',
