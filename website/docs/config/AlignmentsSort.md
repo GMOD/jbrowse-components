@@ -2,7 +2,7 @@
 id: alignmentssort
 title: AlignmentsSort
 description: "The alignments displays' sort setting: the pileup's row order, by the field it ranks the reads on."
-sidebar_label: Display -> AlignmentsSort
+sidebar_label: Display setting -> AlignmentsSort
 ---
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `alignments` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearAlignmentsDisplay/alignmentsSortConfigSchema.ts).

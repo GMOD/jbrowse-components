@@ -2,7 +2,7 @@
 id: coverageencoding
 title: CoverageEncoding
 description: "The coverage band's encoding: y, its depth axis, a YChannel. scale.constant starts at 1, which makes symlog exactly log(depth+1) with the knee at one read. scale.fenceQuantile stays at 1, the deepest…"
-sidebar_label: Display -> CoverageEncoding
+sidebar_label: Display setting -> CoverageEncoding
 ---
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/alignments-core/src/coverageEncodingConfigSchema.ts).

@@ -2,7 +2,7 @@
 id: variantcellcolor
 title: VariantCellColor
 description: "The multi-sample variant display's encoding.color: the hue of every genotype cell with an alt allele, which shadeByDosage then lightens for a heterozygote. Unset, the cells paint the genotype colors."
-sidebar_label: Display -> VariantCellColor
+sidebar_label: Display setting -> VariantCellColor
 ---
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `variants` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/LinearMultiSampleVariantDisplay/cellColorConfigSchema.ts).

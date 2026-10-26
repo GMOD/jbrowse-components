@@ -2,7 +2,7 @@
 id: alignmentsarccolor
 title: AlignmentsArcColor
 description: "The alignments displays' readConnections.encoding.color colors the read-connection arcs and the read cloud."
-sidebar_label: Display -> AlignmentsArcColor
+sidebar_label: Display setting -> AlignmentsArcColor
 ---
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `alignments` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearAlignmentsDisplay/alignmentsArcColorConfigSchema.ts).

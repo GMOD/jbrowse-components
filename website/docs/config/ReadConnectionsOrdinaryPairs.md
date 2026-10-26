@@ -2,7 +2,7 @@
 id: readconnectionsordinarypairs
 title: ReadConnectionsOrdinaryPairs
 description: "The read connections' ordinaryPairs layer: the pairs that carry no category, drawn as context beside the ones that do."
-sidebar_label: Display -> ReadConnectionsOrdinaryPairs
+sidebar_label: Display setting -> ReadConnectionsOrdinaryPairs
 ---
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `alignments` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearAlignmentsDisplay/readConnectionsOrdinaryPairsConfigSchema.ts).

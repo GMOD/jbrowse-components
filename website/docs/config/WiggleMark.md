@@ -2,7 +2,7 @@
 id: wigglemark
 title: WiggleMark
 description: "A wiggle display's mark, Vega-Lite's mark object: the type each score draws as, and a line's interpolate. A bare name is the type, so mark: \"rect\" and mark: { type: \"rect\" } are one config."
-sidebar_label: Display -> WiggleMark
+sidebar_label: Display setting -> WiggleMark
 ---
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `wiggle` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/shared/wiggleMarkConfigSchema.ts).

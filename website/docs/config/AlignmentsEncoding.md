@@ -2,7 +2,7 @@
 id: alignmentsencoding
 title: AlignmentsEncoding
 description: "The alignments displays' encoding, the channels the reads paint through."
-sidebar_label: Display -> AlignmentsEncoding
+sidebar_label: Display setting -> AlignmentsEncoding
 ---
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `alignments` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearAlignmentsDisplay/alignmentsEncodingConfigSchema.ts).

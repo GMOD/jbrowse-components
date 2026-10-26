@@ -2,7 +2,7 @@
 id: readconnectionsencoding
 title: ReadConnectionsEncoding
 description: "The read connections' encoding: the color and width each connection strokes at."
-sidebar_label: Display -> ReadConnectionsEncoding
+sidebar_label: Display setting -> ReadConnectionsEncoding
 ---
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `alignments` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearAlignmentsDisplay/readConnectionsEncodingConfigSchema.ts).

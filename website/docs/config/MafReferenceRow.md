@@ -2,7 +2,7 @@
 id: mafreferencerow
 title: MafReferenceRow
 description: "The MAF display's alignments.reference part: the reference species' own row, which every other row is scored against."
-sidebar_label: Display -> MafReferenceRow
+sidebar_label: Display setting -> MafReferenceRow
 ---
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `maf` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/maf/src/LinearMafDisplay/mafReferenceRowConfigSchema.ts).

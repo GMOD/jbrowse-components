@@ -2,7 +2,7 @@
 id: featuretooltip
 title: FeatureTooltip
 description: "The canvas feature displays' tooltip, the box hovering a feature opens: whether it shows, and the field its text reads. A bare string is the field."
-sidebar_label: Display -> FeatureTooltip
+sidebar_label: Display setting -> FeatureTooltip
 ---
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `canvas` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/canvas/src/LinearBasicDisplay/featureTooltipConfigSchema.ts).

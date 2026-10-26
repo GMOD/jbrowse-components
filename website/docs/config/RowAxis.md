@@ -2,7 +2,7 @@
 id: rowaxis
 title: RowAxis
 description: "The axis beside rows: the guide down the left of a row display, which draws the clustering tree and the row names. rows holds what the axis draws (rows.tree, rows.labels), and axis whether and how it…"
-sidebar_label: Display -> RowAxis
+sidebar_label: Display setting -> RowAxis
 ---
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/tree-sidebar/src/rowAxisConfigSchema.ts).

@@ -2,7 +2,7 @@
 id: readspileup
 title: ReadsPileup
 description: "LinearAlignmentsDisplay's pileup: the Pileup band with the per-base layer over the reads, bases, which a synteny block, having no qualities or basecaller tags, goes without."
-sidebar_label: Display -> ReadsPileup
+sidebar_label: Display setting -> ReadsPileup
 ---
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `alignments` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearAlignmentsDisplay/readsPileupConfigSchema.ts).

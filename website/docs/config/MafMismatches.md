@@ -2,7 +2,7 @@
 id: mafmismatches
 title: MafMismatches
 description: "The MAF display's alignments.mismatches layer: how each species differs from the reference, as each differing base in its own color with its letter, insertion markers and deletion counts, drawn over…"
-sidebar_label: Display -> MafMismatches
+sidebar_label: Display setting -> MafMismatches
 ---
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `maf` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/maf/src/LinearMafDisplay/mafMismatchesConfigSchema.ts).

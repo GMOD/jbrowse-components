@@ -2,7 +2,7 @@
 id: sectionfacet
 title: SectionFacet
 description: "The facet of a display that stacks labelled sections, each of which a reader can hide from its chip: Facet's field and sort, and the sections hidden."
-sidebar_label: Display -> SectionFacet
+sidebar_label: Display setting -> SectionFacet
 ---
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-kit/src/sectionFacetConfigSchema.ts).

@@ -379,6 +379,19 @@ function configCategory(name: string, explicit?: string): string {
   return suffixCategory(name, explicit, CONFIG_CATEGORIES)
 }
 
+// A display-category schema that is neither a display, by registration or by
+// naming its track, nor a base one extends is a value a display's slot holds
+// (`AlignmentsColor`).
+function pageCategory(header: ConfigHeader, links: DisplayLinkContext) {
+  const category = configCategory(header.name, header.category)
+  return category === 'Display' &&
+    !isBaseSchema(header, links) &&
+    !links.displayToTrackType.has(header.name) &&
+    configManifest()[header.name]?.category !== 'displays'
+    ? 'Display setting'
+    : category
+}
+
 // Everything renderConfig/displayTypesSection need to resolve a Track's
 // "Display types" links: which Displays declare `trackType: 'ThisTrack'`
 // (see DisplayTrackLink in util.ts), the config-doc index to turn a Display
@@ -1015,7 +1028,7 @@ function renderConfig(
   // type, default, and prose are the entire content of a slot, and they fit a
   // row, so nothing is duplicated between a summary and a detail view and a
   // 50-slot display page stays 50 lines rather than 250.
-  const category = configCategory(header.name, header.category)
+  const category = pageCategory(header, links)
   const isBase = isBaseSchema(header, links)
   const table = slotsTable(header.name, slots, bases)
   const slotsSection = table
@@ -2133,7 +2146,7 @@ function renderAgentConfig(
   links: DisplayLinkContext,
 ) {
   const { header, slots, filename } = cfg
-  const category = configCategory(header.name, header.category)
+  const category = pageCategory(header, links)
   const isBase = isBaseSchema(header, links)
   const seen = new Set<string>()
   const all = [

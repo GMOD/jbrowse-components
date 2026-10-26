@@ -2,7 +2,7 @@
 id: hiccolor
 title: HicColor
 description: "The Hi-C display's encoding.color: a bin's observed contact count, or its observed/expected or observed/control ratio, through a linear, symlog or log scale.type onto a named scale.scheme."
-sidebar_label: Display -> HicColor
+sidebar_label: Display setting -> HicColor
 ---
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `hic` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/hic/src/LinearHicDisplay/hicColorConfigSchema.ts).

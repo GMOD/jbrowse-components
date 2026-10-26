@@ -2,7 +2,7 @@
 id: featureencoding
 title: FeatureEncoding
 description: "The canvas feature displays' encoding, the channels the features paint through."
-sidebar_label: Display -> FeatureEncoding
+sidebar_label: Display setting -> FeatureEncoding
 ---
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-kit/src/featureEncodingConfigSchema.ts).

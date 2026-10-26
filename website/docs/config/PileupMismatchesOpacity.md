@@ -2,7 +2,7 @@
 id: pileupmismatchesopacity
 title: PileupMismatchesOpacity
 description: "The pileup's mismatches.encoding.opacity: unset, every mismatched base draws opaque; baseQuality fades each one by its Phred base quality through a linear scale, by default from transparent at 0 to…"
-sidebar_label: Display -> PileupMismatchesOpacity
+sidebar_label: Display setting -> PileupMismatchesOpacity
 ---
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `alignments` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearAlignmentsDisplay/pileupMismatchesOpacityConfigSchema.ts).

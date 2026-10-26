@@ -2,7 +2,7 @@
 id: rowcolor
 title: RowColor
 description: "The rowColor setting of the row displays: one ordinal color channel on the row axis. field names the row attribute whose values take the colors, name (the row itself) by default, and scale.domain and…"
-sidebar_label: Display -> RowColor
+sidebar_label: Display setting -> RowColor
 ---
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-kit/src/rowColorConfigSchema.ts).

@@ -2,7 +2,7 @@
 id: readconnectionsstrokewidth
 title: ReadConnectionsStrokeWidth
 description: "The read connections' encoding.strokeWidth, the width each arc or line strokes at."
-sidebar_label: Display -> ReadConnectionsStrokeWidth
+sidebar_label: Display setting -> ReadConnectionsStrokeWidth
 ---
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `alignments` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearAlignmentsDisplay/readConnectionsStrokeWidthConfigSchema.ts).

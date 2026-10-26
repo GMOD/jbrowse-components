@@ -2,7 +2,7 @@
 id: legend
 title: Legend
 description: "A display's legend: whether it draws its key, every channel's sections together. Hiding one section is the key's own close button, which the session forgets."
-sidebar_label: Display -> Legend
+sidebar_label: Display setting -> Legend
 ---
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-kit/src/legendConfigSchema.ts).

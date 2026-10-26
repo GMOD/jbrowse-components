@@ -2,7 +2,7 @@
 id: chordmark
 title: ChordMark
 description: "A chord display's mark: how far each chord or ribbon curves in toward the center. A chord's curve scales with its length, so two ends at one locus draw a point at the rim."
-sidebar_label: Display -> ChordMark
+sidebar_label: Display setting -> ChordMark
 ---
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `circular-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/circular-view/src/chords/chordMarkConfigSchema.ts).

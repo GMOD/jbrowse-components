@@ -2,7 +2,7 @@
 id: sashimilabels
 title: SashimiLabels
 description: "The sashimi band's labels layer: each junction's supporting-read count, drawn at its arc's apex."
-sidebar_label: Display -> SashimiLabels
+sidebar_label: Display setting -> SashimiLabels
 ---
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `alignments` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearAlignmentsDisplay/sashimiLabelsConfigSchema.ts).

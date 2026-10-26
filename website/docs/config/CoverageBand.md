@@ -2,7 +2,7 @@
 id: coverageband
 title: CoverageBand
 description: "The coverage histogram band of the alignments and MAF displays, their coverage setting: whether it draws, its height, the insertion and clip marks drawn in it (interbase), which allele segments it…"
-sidebar_label: Display -> CoverageBand
+sidebar_label: Display setting -> CoverageBand
 ---
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/alignments-core/src/coverageBandConfigSchema.ts).

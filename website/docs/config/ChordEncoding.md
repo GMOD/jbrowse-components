@@ -2,7 +2,7 @@
 id: chordencoding
 title: ChordEncoding
 description: "A variant chord display's encoding, the channels its chords paint through."
-sidebar_label: Display -> ChordEncoding
+sidebar_label: Display setting -> ChordEncoding
 ---
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `circular-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/circular-view/src/ChordVariantDisplay/models/chordEncodingConfigSchema.ts).

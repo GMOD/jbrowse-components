@@ -2,7 +2,7 @@
 id: facet
 title: Facet
 description: "The facet setting of the feature, multi-sample variant, multi-row and alignments displays: one labelled section of the track per value of a field. A string is the field; the object adds the order."
-sidebar_label: Display -> Facet
+sidebar_label: Display setting -> Facet
 ---
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-kit/src/facetConfigSchema.ts).

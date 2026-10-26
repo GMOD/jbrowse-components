@@ -2,7 +2,7 @@
 id: coverageinterbase
 title: CoverageInterbase
 description: "The coverage band's interbase layer: the insertion and clip count bars and their indicator triangles, drawn between the bases they sit between. Its filter picks the positions that earn a triangle."
-sidebar_label: Display -> CoverageInterbase
+sidebar_label: Display setting -> CoverageInterbase
 ---
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/alignments-core/src/coverageInterbaseConfigSchema.ts).

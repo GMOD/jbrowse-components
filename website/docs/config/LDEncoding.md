@@ -2,7 +2,7 @@
 id: ldencoding
 title: LDEncoding
 description: "The LD display's encoding: color, the statistic the cells paint."
-sidebar_label: Display -> LDEncoding
+sidebar_label: Display setting -> LDEncoding
 ---
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `variants` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/LDDisplay/ldEncodingConfigSchema.ts).

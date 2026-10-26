@@ -2,7 +2,7 @@
 id: coveragealleles
 title: CoverageAlleles
 description: "The coverage band's alleles layer: the colored segment each mismatched base takes in its position's depth bar."
-sidebar_label: Display -> CoverageAlleles
+sidebar_label: Display setting -> CoverageAlleles
 ---
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/alignments-core/src/coverageAllelesConfigSchema.ts).

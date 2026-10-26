@@ -2,7 +2,7 @@
 id: wigglecolor
 title: WiggleColor
 description: "The quantitative display's encoding.color: one CSS color for every mark, or the plotted score through a scale."
-sidebar_label: Display -> WiggleColor
+sidebar_label: Display setting -> WiggleColor
 ---
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `wiggle` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/shared/wiggleColorConfigSchema.ts).

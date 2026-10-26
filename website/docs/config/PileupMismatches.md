@@ -2,7 +2,7 @@
 id: pileupmismatches
 title: PileupMismatches
 description: "The pileup's mismatches layer: how each read differs from the reference, as per-base mismatches, insertion markers and deletion bars, and the opacity each mismatched base takes from its quality."
-sidebar_label: Display -> PileupMismatches
+sidebar_label: Display setting -> PileupMismatches
 ---
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `alignments` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearAlignmentsDisplay/pileupMismatchesConfigSchema.ts).

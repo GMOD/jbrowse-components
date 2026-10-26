@@ -2,7 +2,7 @@
 id: ldcolor
 title: LDColor
 description: "The LD display's encoding.color paints the statistic the cells show, r2 or dprime, through a linear scale onto a named scale.scheme. An unset scheme is the metric's own, reds for r² and blues for D'."
-sidebar_label: Display -> LDColor
+sidebar_label: Display setting -> LDColor
 ---
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `variants` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/LDDisplay/ldColorConfigSchema.ts).

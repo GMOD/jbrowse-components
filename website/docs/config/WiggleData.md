@@ -2,7 +2,7 @@
 id: wiggledata
 title: WiggleData
 description: "What a quantitative display's fetch reads of a tiered file: resolution is the points per pixel it asks for."
-sidebar_label: Display -> WiggleData
+sidebar_label: Display setting -> WiggleData
 ---
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `wiggle` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/shared/wiggleDataConfigSchema.ts).

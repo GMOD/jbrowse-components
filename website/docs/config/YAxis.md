@@ -2,7 +2,7 @@
 id: yaxis
 title: YAxis
 description: "A YChannel's axis, the guide it draws: its title and grid."
-sidebar_label: Display -> YAxis
+sidebar_label: Display setting -> YAxis
 ---
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/yAxisConfigSchema.ts).

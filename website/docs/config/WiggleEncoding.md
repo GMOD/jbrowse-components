@@ -2,7 +2,7 @@
 id: wiggleencoding
 title: WiggleEncoding
 description: "The quantitative display's encoding, the channels its marks paint through."
-sidebar_label: Display -> WiggleEncoding
+sidebar_label: Display setting -> WiggleEncoding
 ---
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `wiggle` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/shared/wiggleEncodingConfigSchema.ts).

@@ -2,7 +2,7 @@
 id: markdisplayencoding
 title: MarkDisplayEncoding
 description: "The mark display's encoding: the channels every mark reads unless it says otherwise, as ggplot2's plot-level aesthetics are each layer's. y is the value axis every mark's encoding.y is read through;…"
-sidebar_label: Display -> MarkDisplayEncoding
+sidebar_label: Display setting -> MarkDisplayEncoding
 ---
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `marks` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/marks/src/LinearMarkDisplay/markDisplayEncodingConfigSchema.ts).

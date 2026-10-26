@@ -2,7 +2,7 @@
 id: mafy
 title: MafY
 description: "The MAF display's encoding.y: the value a row's bar height shows. Its only value scale is the coverage band's coverage.encoding.y."
-sidebar_label: Display -> MafY
+sidebar_label: Display setting -> MafY
 ---
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `maf` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/maf/src/LinearMafDisplay/mafYConfigSchema.ts).

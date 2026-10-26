@@ -2,7 +2,7 @@
 id: mafcolor
 title: MafColor
 description: "The MAF display's encoding.color: what fills each species row's aligned cells, as alignments' encoding.color fills its reads."
-sidebar_label: Display -> MafColor
+sidebar_label: Display setting -> MafColor
 ---
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `maf` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/maf/src/LinearMafDisplay/mafColorConfigSchema.ts).

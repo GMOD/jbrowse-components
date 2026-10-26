@@ -2,7 +2,7 @@
 id: marklocus
 title: MarkLocus
 description: "A mark's far end as a position that may lie on another sequence: pos, the feature field holding its coordinate, and refName, the field holding the sequence it lies on, as a paired record states its…"
-sidebar_label: Display -> MarkLocus
+sidebar_label: Display setting -> MarkLocus
 ---
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `marks` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/marks/src/LinearMarkDisplay/markLocusConfigSchema.ts).

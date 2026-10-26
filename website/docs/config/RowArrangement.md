@@ -2,7 +2,7 @@
 id: rowarrangement
 title: RowArrangement
 description: "The rows setting of a display whose rows are samples or species rather than the values of a field."
-sidebar_label: Display -> RowArrangement
+sidebar_label: Display setting -> RowArrangement
 ---
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-kit/src/rowArrangementConfigSchema.ts).

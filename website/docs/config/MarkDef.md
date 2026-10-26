@@ -2,7 +2,7 @@
 id: markdef
 title: MarkDef
 description: "A marks entry's mark, Vega-Lite's mark object: the type it draws as, and the members one type alone reads, a line's or a link's interpolate, a rect's height and a line's gapBp."
-sidebar_label: Display -> MarkDef
+sidebar_label: Display setting -> MarkDef
 ---
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `marks` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/marks/src/LinearMarkDisplay/markDefConfigSchema.ts).

@@ -2,7 +2,7 @@
 id: readconnections
 title: ReadConnections
 description: "The alignments display's readConnections setting: the band of connections between mates and split segments, drawn as arcs or as the read cloud, which plots each pair at its insert size."
-sidebar_label: Display -> ReadConnections
+sidebar_label: Display setting -> ReadConnections
 ---
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `alignments` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearAlignmentsDisplay/readConnectionsConfigSchema.ts).

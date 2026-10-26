@@ -2,7 +2,7 @@
 id: featuretranscripts
 title: FeatureTranscripts
 description: "The feature display's transcripts: which children read as a gene's isoforms, and the order they rank in. field names the attribute holding a curated tag and sort the tag values that rank first, in…"
-sidebar_label: Display -> FeatureTranscripts
+sidebar_label: Display setting -> FeatureTranscripts
 ---
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `canvas` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/canvas/src/LinearBasicDisplay/featureTranscriptsConfigSchema.ts).

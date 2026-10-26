@@ -2,7 +2,7 @@
 id: ychannel
 title: YChannel
 description: "A value axis written as Vega-Lite's encoding.y: its scale, the axis guide it draws, and rules, reference lines at chosen values across every band the scale rules."
-sidebar_label: Display -> YChannel
+sidebar_label: Display setting -> YChannel
 ---
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/yChannelConfigSchema.ts).

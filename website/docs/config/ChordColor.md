@@ -2,7 +2,7 @@
 id: chordcolor
 title: ChordColor
 description: "A variant chord's encoding.color: a CSS color or jexl: callback in value for every chord, or a field of the record whose values each take a range color, with a key on the circle. svType paints the…"
-sidebar_label: Display -> ChordColor
+sidebar_label: Display setting -> ChordColor
 ---
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `circular-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/circular-view/src/ChordVariantDisplay/models/chordColorConfigSchema.ts).

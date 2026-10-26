@@ -2,7 +2,7 @@
 id: lgvsyntenycolor
 title: LGVSyntenyColor
 description: "The LGVSyntenyDisplay's encoding.color: the AlignmentsColor channel, painting strand while it names neither a field nor a constant. strand, mapq and mateRefName (the query contig) are the fields a…"
-sidebar_label: Display -> LGVSyntenyColor
+sidebar_label: Display setting -> LGVSyntenyColor
 ---
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `linear-comparative-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/LGVSyntenyDisplay/lgvSyntenyColorConfigSchema.ts).

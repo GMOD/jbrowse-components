@@ -2,7 +2,7 @@
 id: wigglesize
 title: WiggleSize
 description: "A quantitative mark's width in px, as color is its color: a point's size, its diameter, or a line's strokeWidth, its thickness."
-sidebar_label: Display -> WiggleSize
+sidebar_label: Display setting -> WiggleSize
 ---
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `wiggle` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/shared/wiggleSizeConfigSchema.ts).

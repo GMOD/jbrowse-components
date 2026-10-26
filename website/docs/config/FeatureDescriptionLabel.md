@@ -2,7 +2,7 @@
 id: featuredescriptionlabel
 title: FeatureDescriptionLabel
 description: "The feature displays' labels.description, the line drawn under each feature's name: whether it shows, and the field it reads. A bare string is the field."
-sidebar_label: Display -> FeatureDescriptionLabel
+sidebar_label: Display setting -> FeatureDescriptionLabel
 ---
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `canvas` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/canvas/src/LinearBasicDisplay/featureDescriptionLabelConfigSchema.ts).

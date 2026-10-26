@@ -2,7 +2,7 @@
 id: yencoding
 title: YEncoding
 description: "A display's encoding holding the y channel alone, whose marks each name the field their encoding.y reads through it."
-sidebar_label: Display -> YEncoding
+sidebar_label: Display setting -> YEncoding
 ---
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/yEncodingConfigSchema.ts).

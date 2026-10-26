@@ -2,7 +2,7 @@
 id: markcolor
 title: MarkColor
 description: "A mark's encoding.color: one CSS color or jexl: callback for every instance in value, or a field through scale, Vega-Lite's scale object: an ordinal scale (a range color per value), a linear, log or…"
-sidebar_label: Display -> MarkColor
+sidebar_label: Display setting -> MarkColor
 ---
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `marks` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/marks/src/LinearMarkDisplay/markColorConfigSchema.ts).

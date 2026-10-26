@@ -2,7 +2,7 @@
 id: ribboncolor
 title: RibbonColor
 description: "The multi-way synteny display's ribbons.encoding.color: one color for every ribbon, or a field each ribbon carries: the record's strand (the default, while the channel names neither a field nor a…"
-sidebar_label: Display -> RibbonColor
+sidebar_label: Display setting -> RibbonColor
 ---
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `linear-comparative-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/MultiWaySyntenyDisplay/ribbonColorConfigSchema.ts).

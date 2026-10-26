@@ -2,7 +2,7 @@
 id: multiwayribbons
 title: MultiWayRibbons
 description: "The multi-way synteny display's ribbons: the bands joining each gene's placements in adjacent lanes."
-sidebar_label: Display -> MultiWayRibbons
+sidebar_label: Display setting -> MultiWayRibbons
 ---
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `linear-comparative-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/MultiWaySyntenyDisplay/ribbonsConfigSchema.ts).

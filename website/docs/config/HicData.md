@@ -2,7 +2,7 @@
 id: hicdata
 title: HicData
 description: "What a Hi-C display's fetch reads of the file: resolution steps the binsize from the one the zoom picks, and normalization is the matrix normalization asked for."
-sidebar_label: Display -> HicData
+sidebar_label: Display setting -> HicData
 ---
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `hic` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/hic/src/LinearHicDisplay/hicDataConfigSchema.ts).

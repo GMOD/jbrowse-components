@@ -2,7 +2,7 @@
 id: rowaxiswithgrid
 title: RowAxisWithGrid
 description: "A RowAxis with grid, Vega-Lite's word for the lines an axis carries across the plot: here a hairline between adjacent rows."
-sidebar_label: Display -> RowAxisWithGrid
+sidebar_label: Display setting -> RowAxisWithGrid
 ---
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/tree-sidebar/src/rowAxisWithGridConfigSchema.ts).

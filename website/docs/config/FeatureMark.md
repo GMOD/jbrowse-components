@@ -2,7 +2,7 @@
 id: featuremark
 title: FeatureMark
 description: "The canvas feature displays' mark, the box each feature draws as: its height, as the alignments display's pileup.mark.height is each read's."
-sidebar_label: Display -> FeatureMark
+sidebar_label: Display setting -> FeatureMark
 ---
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `canvas` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/canvas/src/LinearBasicDisplay/featureMarkConfigSchema.ts).

@@ -2,7 +2,7 @@
 id: alignmentscolor
 title: AlignmentsColor
 description: "The alignments displays' encoding.color: one color for every read in value, or a field of each read."
-sidebar_label: Display -> AlignmentsColor
+sidebar_label: Display setting -> AlignmentsColor
 ---
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `alignments` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearAlignmentsDisplay/alignmentsColorConfigSchema.ts).

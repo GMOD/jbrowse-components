@@ -2,7 +2,7 @@
 id: marktransform
 title: MarkTransform
 description: "One step of a transform list, which runs over the region's features in order, each step reading what the one before it produced."
-sidebar_label: Display -> MarkTransform
+sidebar_label: Display setting -> MarkTransform
 ---
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `marks` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/marks/src/LinearMarkDisplay/markTransformConfigSchema.ts).

@@ -2,7 +2,7 @@
 id: featuresubfeaturelabels
 title: FeatureSubfeatureLabels
 description: "The feature display's labels.subfeatures, the names of a feature's parts: a gene's transcripts, a container's children, a polyprotein's cleavage products. collapsed draws none."
-sidebar_label: Display -> FeatureSubfeatureLabels
+sidebar_label: Display setting -> FeatureSubfeatureLabels
 ---
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `canvas` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/canvas/src/LinearBasicDisplay/featureSubfeatureLabelsConfigSchema.ts).

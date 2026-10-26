@@ -2,7 +2,7 @@
 id: featurecontainers
 title: FeatureContainers
 description: "The feature display's containers: the top-level types whose children always stack on rows of their own, as a proteoform's ORFs do."
-sidebar_label: Display -> FeatureContainers
+sidebar_label: Display setting -> FeatureContainers
 ---
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `canvas` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/canvas/src/LinearBasicDisplay/featureContainersConfigSchema.ts).

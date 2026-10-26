@@ -2,7 +2,7 @@
 id: marksize
 title: MarkSize
 description: "A mark's width in px, as color is its color: a point's size, its diameter, or a stroked mark's strokeWidth, a rule's or a line's thickness or a link's stroke."
-sidebar_label: Display -> MarkSize
+sidebar_label: Display setting -> MarkSize
 ---
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `marks` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/marks/src/LinearMarkDisplay/markSizeConfigSchema.ts).
