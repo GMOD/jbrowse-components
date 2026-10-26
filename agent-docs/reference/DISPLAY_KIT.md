@@ -114,7 +114,7 @@ green. Five getters across three plugins were found doing it; two were worth
 holding.
 
 The fix is an `autorunOnReadyView` reading them bare, named `*HitIndexes`
-(`CanvasHitIndexes`, `LaneHitIndexes`) so the set is greppable. Where the read
+(`CanvasHitIndexes`) so the set is greppable. Where the read
 goes through a structural `self`, **type it
 with the getters' real types**, not `unknown`: a rename otherwise reads
 `undefined`, establishes no dependency, and leaves a keep-alive holding nothing.
@@ -123,11 +123,10 @@ with the getters' real types**, not `unknown`: a rename otherwise reads
 This is the whole decision, and it inverts: subscribing moves the rebuild from
 "the track under the cursor, while hovering" to "every such display, on every
 change to its inputs". Canvas's `flatbushIndexes` is safe because it keys off
-`laidOutDataMap` and the DEBOUNCED `coarseBpPerPx`. `laneFlatbushIndexes` in
-plugin-variants is not, and says so at the getter: it walks `visibleRegions`
-(see "Read a scalar off the host"), so holding it would have bought a per-pan-frame
-Flatbush build on every variant track in the session. Give a getter canvas's
-dependencies before giving it canvas's autorun.
+`laidOutDataMap` and the DEBOUNCED `coarseBpPerPx`. A getter that walks
+`visibleRegions` is not (see "Read a scalar off the host"): holding it buys a
+per-pan-frame index build on every such track in the session. Give a getter
+canvas's dependencies before giving it canvas's autorun.
 
 The second precondition is that the getter is **safe to evaluate before data
 lands**, which a hover-only getter has never had to be. `genotypeSampleIndex` in

@@ -148,8 +148,8 @@ answer to both.
 - **Don't generalize the band allocators.** Sticky coverage, scrolling sections
   and a fixed top band differ where they should. What they share is the
   ten-line fold and the `Band` contract (ADR-096) — the allocators around it
-  (`belowCoverageBandsGeometry`, `computeStackedSections`,
-  `variantTopBandsGeometry`, MAF's `topBands`) stay per-display functions.
+  (`belowCoverageBandsGeometry`, `computeStackedSections`, MAF's `topBands`)
+  stay per-display functions.
 - **Don't package a consumer's fit chain until a second consumer exists.** The
   producing display's own chain is welded to its incremental layout memos and
   cannot consume the extraction, so a shared block would serve one caller.
