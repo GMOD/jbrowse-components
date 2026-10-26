@@ -92,11 +92,8 @@ export interface DisplayConfig {
   mouseover: string
   // the display's `filter` list, its `jexl:` fields as written
   filter: FieldPredicate[]
-  // `mark.height`, flat here. `number | string` because the slot declares
-  // `contextVariable: ['feature']` and so may hold a `jexl:` expression. Read it through `featureHeightPx`; the
-  // union makes any new direct read a type error rather than a Float32Array full
-  // of NaN.
-  featureHeight: number | string
+  // `mark.height`, flat here
+  featureHeight: number
   // The members a box reads: its value, the field whose values it ships, and
   // whether "0,0,0" is black. The scale is otherwise the main thread's, so a
   // recolor never refetches.

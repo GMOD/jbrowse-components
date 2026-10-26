@@ -156,3 +156,19 @@ test('a display height alongside renderer.height keeps both meanings', () => {
   expect(out.displays![0]!.height).toBe(200)
   expect(out.displays![0]!.mark).toEqual({ height: 12 })
 })
+
+test("a v4 renderer's per-feature height callback drops rather than failing the track", () => {
+  const out = evaluate({
+    type: 'FeatureTrack',
+    displays: [
+      {
+        type: 'LinearBasicDisplay',
+        renderer: {
+          type: 'CanvasFeatureRenderer',
+          height: "jexl:get(feature,'type')=='gene'?20:8",
+        },
+      },
+    ],
+  })
+  expect(out.displays![0]!.mark).toBeUndefined()
+})

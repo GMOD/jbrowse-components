@@ -1,4 +1,5 @@
 import { applyRetiredSpellings } from '@jbrowse/core/configuration'
+import { isJexl } from '@jbrowse/core/util/jexlStrings'
 
 import { legacyGeneGlyphMode } from './geneGlyphMode.ts'
 import { legacyShowLabelsToMode } from './showLabelsMode.ts'
@@ -52,7 +53,9 @@ export const basicRetired: Record<
   // the glyph's lines take the theme's stroke color
   color2: () => ({}),
   color3: (utrColor: unknown) => ({ utrColor }),
-  featureHeight: (height: unknown) => ({ mark: { height } }),
+  // v4's per-feature height callback drops; `mark.height` is a number
+  featureHeight: (height: unknown) =>
+    isJexl(height) ? {} : { mark: { height } },
   transcriptTypes: (types: unknown) => ({ transcripts: { types } }),
   canonicalTranscriptField: (field: unknown) => ({ transcripts: { field } }),
   canonicalTranscriptTags: (sort: unknown) => ({ transcripts: { sort } }),

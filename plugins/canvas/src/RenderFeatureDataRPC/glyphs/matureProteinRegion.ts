@@ -1,6 +1,6 @@
 import { reservesBelowLabelRow } from '../labelUtils.ts'
 import { getSubfeatures, isCDS, isCleavageProduct } from '../util.ts'
-import { boxLayout, featureHeightPx } from './glyphUtils.ts'
+import { boxLayout } from './glyphUtils.ts'
 
 import type { FeatureLayout, LayoutArgs } from '../types.ts'
 import type { Feature } from '@jbrowse/core/util'
@@ -57,9 +57,8 @@ function productRows(feature: Feature) {
 
 export function layoutMatureProteinRegion(args: LayoutArgs): FeatureLayout {
   const { feature, config, jexl } = args
-  // Every cleavage-product row is a uniform slice of the CDS's own height, so
-  // the rows stay even whatever a `featureHeight` expression returns.
-  const rowHeight = featureHeightPx(feature, args)
+  // Every cleavage-product row is a uniform slice of the CDS's own height.
+  const rowHeight = config.featureHeight
   const padding = 1
   const boxHeight = rowHeight - padding * 2
 

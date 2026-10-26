@@ -44,8 +44,8 @@ export interface FeatureLayout {
 export interface LayoutArgs {
   feature: Feature
   config: DisplayConfig
-  // Worker jexl, needed only where `featureHeight` holds an expression, which
-  // is why a test can call the layout functions without one.
+  // Worker jexl, for the subfeature label text a layout reserves rows for;
+  // a test can call the layout functions without one.
   jexl?: JexlInstance
   // A per-GENE override of a track-wide setting, so it rides beside the config
   // rather than in it.

@@ -340,17 +340,6 @@ describe('the schema', () => {
     expect(withColor("jexl:get(feature,'type')")).toEqual([])
   })
 
-  it('accepts a jexl: callback where a callback slot expects a number', () => {
-    const config = baseConfig()
-    config.tracks[0] = {
-      ...config.tracks[0]!,
-      type: 'FeatureTrack',
-      adapter: { type: 'Gff3TabixAdapter', uri: 'g.gff.gz' },
-      displays: [{ type: 'LinearBasicDisplay', featureHeight: 'jexl:5 + 5' }],
-    }
-    expect(schemaProblems(config)).toEqual([])
-  })
-
   it('refuses a jexl: callback where a slot declares no callback args', () => {
     const config = baseConfig()
     config.tracks[0]!.name = 'jexl:feature.name'

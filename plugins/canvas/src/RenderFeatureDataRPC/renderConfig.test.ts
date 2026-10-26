@@ -95,8 +95,7 @@ describe('pickDisplayConfig', () => {
   })
 
   it("sends mark.height as the worker's flat featureHeight", () => {
-    const height = "jexl:get(feature,'score') > 5 ? 20 : 8"
-    expect(pickDisplayConfig({ mark: { height } }).featureHeight).toBe(height)
+    expect(pickDisplayConfig({ mark: { height: 6 } }).featureHeight).toBe(6)
   })
 
   describe('reads encoding.color off a display node', () => {

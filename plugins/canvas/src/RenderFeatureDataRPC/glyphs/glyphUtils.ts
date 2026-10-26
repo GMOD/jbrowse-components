@@ -1,5 +1,4 @@
 import { LABEL_FONT_SIZE } from '../constants.ts'
-import { readConfigValueSafe } from '../renderConfig.ts'
 import { getSubfeatures, isCDS } from '../util.ts'
 
 import type { DisplayMode } from '../renderConfig.ts'
@@ -51,35 +50,6 @@ export function labelFontSize(displayMode: DisplayMode) {
   return LABEL_FONT_SIZE * LABEL_FONT_MULTIPLIERS[displayMode]
 }
 
-// Matches the config slot's own default, so a broken `featureHeight` expression
-// degrades to the standard row rather than to nothing.
-const FALLBACK_FEATURE_HEIGHT = 10
-
-// `featureHeight` is a per-feature callback slot, so reading it as a bare number
-// flows the expression STRING into a Float32Array height and the track paints
-// nothing. `feature` is a parameter rather than read off `args` because the
-// callers disagree about which one to resolve against — a child's own box, or
-// the container row its children ride on.
-export function featureHeightPx(feature: Feature, args: LayoutArgs): number {
-  const { config, jexl } = args
-  const raw = config.featureHeight
-  if (typeof raw === 'number') {
-    return raw
-  }
-  const value = jexl
-    ? readConfigValueSafe<unknown>(
-        config,
-        'featureHeight',
-        feature,
-        jexl,
-        FALLBACK_FEATURE_HEIGHT,
-      )
-    : undefined
-  return typeof value === 'number' && Number.isFinite(value)
-    ? value
-    : FALLBACK_FEATURE_HEIGHT
-}
-
 export function sortByPosition(children: FeatureLayout[]) {
   return [...children].sort((a, b) => {
     const aStart = a.feature.get('start')
@@ -113,7 +83,7 @@ export function layoutContainerGlyph(
 ): FeatureLayout {
   // The children draw at THIS height rather than their own, so an exon never
   // outgrows the row its introns are drawn on.
-  const heightPx = featureHeightPx(args.feature, args)
+  const heightPx = args.config.featureHeight
   const children = sortByPosition(
     subfeatures.map(child => boxLayout(child, heightPx)),
   )

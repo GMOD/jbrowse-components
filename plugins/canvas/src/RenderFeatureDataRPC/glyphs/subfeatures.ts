@@ -7,7 +7,7 @@ import {
 import { reservesBelowLabelRow } from '../labelUtils.ts'
 import { featureType, getSubfeatures } from '../util.ts'
 import { findGlyph } from './findGlyph.ts'
-import { TRANSCRIPT_PADDING_RATIO, featureHeightPx } from './glyphUtils.ts'
+import { TRANSCRIPT_PADDING_RATIO } from './glyphUtils.ts'
 
 import type { DisplayConfig } from '../renderConfig.ts'
 import type { IsoformStack } from '../rpcTypes.ts'
@@ -180,7 +180,7 @@ export function layoutSubfeatures(args: LayoutArgs): FeatureLayout {
 
   // Spent only on the inter-transcript gap below — each stacked child carries
   // whatever height its own glyph resolved.
-  const heightPx = featureHeightPx(feature, args)
+  const heightPx = args.config.featureHeight
 
   let subfeatures = [...getSubfeatures(feature)]
 
