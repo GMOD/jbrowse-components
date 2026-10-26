@@ -1,4 +1,9 @@
-import { blockHasRefGap, forEachInsertion } from './forEachInsertion.ts'
+import {
+  blockHasRefGap,
+  forEachInsertion,
+  forEachInsertionLength,
+  refGapRuns,
+} from './forEachInsertion.ts'
 
 import type { MafBlock } from '../mafRenderingBackendTypes.ts'
 
@@ -81,4 +86,27 @@ test('blockHasRefGap matches whether the walk can emit anything', () => {
   expect(runs('ACGT', 'CCCC')).toEqual([])
   // ...and a block with a gap does, which is why the skip has to be exact
   expect(runs('AC--T', 'ACGGT')).toHaveLength(1)
+})
+
+test('forEachInsertionLength over refGapRuns emits what forEachInsertion does', () => {
+  let seed = 11
+  const pick = (s: string) => {
+    seed = (seed * 1103515245 + 12345) % 2147483648
+    return s[Math.floor((seed / 2147483648) * s.length)]!
+  }
+  const text = (n: number, alphabet: string) =>
+    Array.from({ length: n }, () => pick(alphabet)).join('')
+  for (let t = 0; t < 2000; t++) {
+    const ref = b(text(1 + (t % 37), 'AC--'))
+    const aln = b(text(t % 41, 'AC-- '))
+    const walked: number[][] = []
+    forEachInsertion(ref, aln, 100, (anchorBp, length) => {
+      walked.push([anchorBp, length])
+    })
+    const fromRuns: number[][] = []
+    forEachInsertionLength(refGapRuns(ref), aln, 100, (anchorBp, length) => {
+      fromRuns.push([anchorBp, length])
+    })
+    expect(fromRuns).toEqual(walked)
+  }
 })

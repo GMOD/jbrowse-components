@@ -18,6 +18,54 @@ export function blockHasRefGap(block: MafBlock) {
 }
 
 /**
+ * A block's reference-gap runs as `[startCol, endCol, anchorOffset]` triples,
+ * `anchorOffset` being the reference bases before the run, so every row of the
+ * block can visit only these columns.
+ */
+export function refGapRuns(refBytes: Uint8Array) {
+  const runs: number[] = []
+  let refCount = 0
+  let i = 0
+  while (i < refBytes.length) {
+    if (refBytes[i] === DASH) {
+      const start = i
+      while (i < refBytes.length && refBytes[i] === DASH) {
+        i++
+      }
+      runs.push(start, i, refCount)
+    } else {
+      refCount++
+      i++
+    }
+  }
+  return runs
+}
+
+/**
+ * `forEachInsertion`'s `anchorBp` and `length` over a block's `refGapRuns`,
+ * visiting only the gap columns.
+ */
+export function forEachInsertionLength(
+  runs: readonly number[],
+  alnBytes: Uint8Array,
+  startBp: number,
+  cb: (anchorBp: number, length: number) => void,
+) {
+  for (let k = 0; k < runs.length; k += 3) {
+    const end = Math.min(runs[k + 1]!, alnBytes.length)
+    let length = 0
+    for (let i = runs[k]!; i < end; i++) {
+      if (!isGapByte(alnBytes[i]!)) {
+        length++
+      }
+    }
+    if (length > 0) {
+      cb(startBp + runs[k + 2]!, length)
+    }
+  }
+}
+
+/**
  * Walk a single aligned row against the reference and emit one callback per
  * insertion (a run of reference-gap columns where this sample carries bases).
  * Single source of truth for MAF's insertion geometry — used by rendering (the

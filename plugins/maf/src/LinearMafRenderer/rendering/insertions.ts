@@ -1,7 +1,11 @@
 import { EMPTY_INSERTIONS } from '@jbrowse/alignments-core'
 import { isGapByte } from '@jbrowse/core/util/alignedBytes'
 
-import { blockHasRefGap, forEachInsertion } from './forEachInsertion.ts'
+import {
+  blockHasRefGap,
+  forEachInsertionLength,
+  refGapRuns,
+} from './forEachInsertion.ts'
 
 import type {
   MafAlignedRow,
@@ -57,9 +61,10 @@ function placedInsertions(region: MafRegionData): Placed {
     const lastOfRow = new Map<number, { index: number; row: MafAlignedRow }>()
     for (const block of region.blocks) {
       if (blockHasRefGap(block)) {
+        const runs = refGapRuns(block.refSeqBytes)
         for (const r of block.rows) {
-          forEachInsertion(
-            block.refSeqBytes,
+          forEachInsertionLength(
+            runs,
             r.alignmentBytes,
             block.startBp,
             (anchorBp, len) => {
