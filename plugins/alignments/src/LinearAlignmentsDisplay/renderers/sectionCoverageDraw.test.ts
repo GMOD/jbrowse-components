@@ -86,9 +86,7 @@ test('each stacked section draws its coverage off its own region key', () => {
     [BLOCK],
     makeTestRenderState({
       canvasHeight: 200,
-      coverageHeight: 50,
-      coverageMinDepth: 0,
-      coverageMaxDepth: 24,
+      coverage: { height: 50, domainMin: 0, domainMax: 24 },
       sections: [section(0), section(100)],
     }),
   )

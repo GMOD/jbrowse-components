@@ -2525,26 +2525,28 @@ export default function stateModelFactory(
             scrollTop: self.scrollTop,
             featureHeight: self.featureHeight,
             featureSpacing: self.featureSpacing,
-            coverageHeight: self.belowCoverageBands.coverageHeight,
-            coverageMinDepth: self.coverageDepthDomain?.[0],
-            coverageMaxDepth: self.coverageDepthDomain?.[1],
-            coverageScaleType: self.coverageScaleType,
-            // The raw slot means "derive from the domain"; resolved here, where
-            // the domain is in hand, so every backend normalizes with one
-            // number.
-            coverageSymlogConstant: resolveSymlogConstant(
-              self.coverageDepthDomain?.[0] ?? 0,
-              self.coverageDepthDomain?.[1] ?? 0,
-              self.symlogConstant,
-            ),
-            coverageMinAlleleFraction: self.coverageMinAlleleFraction,
-            showCoverageAlleles: self.showCoverageAlleles,
+            coverage: {
+              height: self.belowCoverageBands.coverageHeight,
+              domainMin: self.coverageDepthDomain?.[0] ?? 0,
+              domainMax: self.coverageDepthDomain?.[1],
+              scaleType: self.coverageScaleType,
+              // The raw slot means "derive from the domain"; resolved here,
+              // where the domain is in hand, so every backend normalizes with
+              // one number.
+              symlogConstant: resolveSymlogConstant(
+                self.coverageDepthDomain?.[0] ?? 0,
+                self.coverageDepthDomain?.[1] ?? 0,
+                self.symlogConstant,
+              ),
+              minAlleleFraction: self.coverageMinAlleleFraction,
+              showAlleles: self.showCoverageAlleles,
+              showInterbase: self.showInterbase,
+            },
             sashimiHeight: self.bandHeights.sashimiHeight,
             showMismatches: self.showMismatches,
             fadeLowFrequency: self.fadeLowFrequency,
             qualityOpacity: self.mismatchQualityOpacity,
             showSoftClips: self.showSoftClips,
-            showInterbase: self.showInterbase,
             basesField: self.baseLayer?.field,
             pileupTopOffset: self.coverageDisplayHeight,
             coverageTopOffset: 0,

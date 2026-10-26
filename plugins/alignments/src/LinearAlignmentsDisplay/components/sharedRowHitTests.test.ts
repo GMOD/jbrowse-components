@@ -108,7 +108,7 @@ const OPTS: HitTestOptions = {
     showMismatches: true,
     showSoftClips: true,
     // 0 = the coverage band is off, so the row tests own every y
-    coverageHeight: 0,
+    coverage: { height: 0 },
   }),
   overPileup: true,
 }

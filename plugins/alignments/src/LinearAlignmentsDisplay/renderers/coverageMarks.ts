@@ -94,24 +94,13 @@ function bandColors(state: BandColorState): CoverageBandColors {
 }
 
 /**
- * The coverage band's half of a render state — the one lens from this
- * display's flat fields onto what the shared band draws and hit-tests by.
- * `coverageTopOffset` is 0 for the sticky ungrouped band; a grouped section
- * passes its scrolled top so the band scrolls with its section.
+ * The coverage band's half of a render state, with the section's top and the
+ * palette's packed colors. `coverageTopOffset` is 0 for the sticky ungrouped
+ * band; a grouped section passes its scrolled top so the band scrolls with
+ * its section.
  */
 export function coverageBandState(s: RenderState): CoverageBandState {
-  return {
-    height: s.coverageHeight,
-    top: s.coverageTopOffset,
-    domainMin: s.coverageMinDepth ?? 0,
-    domainMax: s.coverageMaxDepth,
-    scaleType: s.coverageScaleType,
-    symlogConstant: s.coverageSymlogConstant,
-    minAlleleFraction: s.coverageMinAlleleFraction,
-    showAlleles: s.showCoverageAlleles,
-    showInterbase: s.showInterbase,
-    colors: bandColors(s),
-  }
+  return { ...s.coverage, top: s.coverageTopOffset, colors: bandColors(s) }
 }
 
 /**

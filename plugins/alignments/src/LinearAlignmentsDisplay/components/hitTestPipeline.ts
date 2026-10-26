@@ -427,12 +427,8 @@ export function performHitTest(
 ): HitTestResult {
   const { state, overPileup } = options
   const {
-    showInterbase,
-    showCoverageAlleles,
-    coverageMinAlleleFraction,
+    coverage,
     coverageTopOffset,
-    coverageHeight,
-    coverageMaxDepth,
     featureHeight,
     featureSpacing,
     scrollTop,
@@ -453,12 +449,7 @@ export function performHitTest(
   // the pixel's dominant SNP. Both work at every zoom.
   const bandHit = hitCoverageBand(
     resolved.rpcData,
-    {
-      height: coverageHeight,
-      top: coverageTopOffset,
-      domainMax: coverageMaxDepth,
-      showInterbase,
-    },
+    { ...coverage, top: coverageTopOffset },
     boundsOf(resolved),
     canvasX,
     canvasY,
@@ -475,18 +466,15 @@ export function performHitTest(
     }
   }
 
-  // `coverageHeight` is the band's reserved height: 0 when the band is off,
-  // so an off band answers nothing without a flag to consult beside it.
-  if (coverageHeight > 0 && coverageY >= 0 && coverageY <= coverageHeight) {
+  // The band's reserved height is 0 when the band is off, so an off band
+  // answers nothing without a flag to consult beside it.
+  if (coverage.height > 0 && coverageY >= 0 && coverageY <= coverage.height) {
     const position = coverageBinAt(
       resolved.rpcData,
       basePos,
       bpPerPx,
       resolved.reversed,
-      {
-        showAlleles: showCoverageAlleles,
-        minAlleleFraction: coverageMinAlleleFraction,
-      },
+      coverage,
     )
     if (position !== undefined) {
       return { type: 'coverage', hit: { type: 'coverage', position }, resolved }

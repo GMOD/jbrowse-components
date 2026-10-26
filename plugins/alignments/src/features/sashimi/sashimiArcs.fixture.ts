@@ -82,7 +82,7 @@ export function computeSashimiArcs(opts: ComputeSashimiArcsOpts) {
   const state = makeTestRenderState({
     canvasWidth: opts.viewWidthPx,
     canvasHeight: 400,
-    coverageHeight: opts.coverageHeight,
+    coverage: { height: opts.coverageHeight },
     sashimiHeight: opts.sashimiHeight,
     linkRegions: linkRegionsOf(displayed),
     sections: [

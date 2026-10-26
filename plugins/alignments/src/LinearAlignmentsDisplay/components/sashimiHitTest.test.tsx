@@ -58,7 +58,7 @@ function scene(
   const base = makeTestRenderState({
     canvasWidth: 1000,
     canvasHeight: 300,
-    coverageHeight: 100,
+    coverage: { height: 100 },
     sashimiHeight: 40,
     linkRegions: layout.linkRegions,
     sections: [
@@ -120,7 +120,7 @@ describe('sashimiBandsOf', () => {
   // neighbouring band.
   it('draws no side whose band has no height', () => {
     const base = makeTestRenderState({
-      coverageHeight: 4,
+      coverage: { height: 4 },
       sashimiHeight: 3,
     })
     expect(
@@ -251,7 +251,11 @@ describe('sashimiLabels', () => {
 
   it('labels nothing in a band with no height', () => {
     const { feeds, state } = scene([junction(100, 300)])
-    expect(sashimiLabels({ ...state, coverageHeight: 4 }, [feeds])).toEqual([])
+    expect(
+      sashimiLabels({ ...state, coverage: { ...state.coverage, height: 4 } }, [
+        feeds,
+      ]),
+    ).toEqual([])
   })
 })
 

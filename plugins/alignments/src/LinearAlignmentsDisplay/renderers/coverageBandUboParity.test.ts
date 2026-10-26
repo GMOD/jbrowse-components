@@ -14,6 +14,7 @@ import {
 } from './GpuAlignmentsRenderer.ts'
 
 import type { PaletteColorKey, RGBColor } from '../../shaders/colors.ts'
+import type { TestRenderStateOverrides } from '../testUtils.ts'
 import type { AlignmentsSources, RenderState } from './rendererTypes.ts'
 
 /**
@@ -47,13 +48,9 @@ const COLORS = distinctPalette()
 // A band with a real clip band and a resolved domain, which is what
 // `drewCoverage` and `hasCoverageScale` between them require before any of this
 // is written at all.
-function bandState(overrides: Partial<RenderState> = {}) {
+function bandState(overrides: TestRenderStateOverrides = {}) {
   return makeTestRenderState({
     colors: COLORS,
-    showInterbase: true,
-    coverageHeight: 60,
-    coverageMaxDepth: 200,
-    coverageMinAlleleFraction: 0.1,
     sections: [
       {
         pileupTopOffset: 60,
@@ -67,6 +64,13 @@ function bandState(overrides: Partial<RenderState> = {}) {
       },
     ],
     ...overrides,
+    coverage: {
+      height: 60,
+      domainMax: 200,
+      minAlleleFraction: 0.1,
+      showInterbase: true,
+      ...overrides.coverage,
+    },
   })
 }
 
@@ -186,7 +190,7 @@ describe('the coverage band UBO', () => {
   // Canvas2D forms `relDepth * regionMaxDepth` and drew every bar full height.
   test('a typed max score of 0 puts no infinity in the buffer', () => {
     const { f32: degenerate } = bandUniforms(
-      bandState({ coverageMinDepth: -10, coverageMaxDepth: 0 }),
+      bandState({ coverage: { domainMin: -10, domainMax: 0 } }),
       40,
     )
     expect(degenerate[UNIFORM_OFFSET_F32.regionMaxDepth]).toBe(40)

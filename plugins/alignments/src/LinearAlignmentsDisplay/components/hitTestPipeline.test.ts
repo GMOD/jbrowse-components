@@ -21,7 +21,7 @@ import {
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 import type { ResolvedBlock } from '../../shared/hitTestTypes.ts'
-import type { RenderState } from '../renderers/rendererTypes.ts'
+import type { TestRenderStateOverrides } from '../testUtils.ts'
 import type { HitTestOptions } from './hitTestPipeline.ts'
 
 function countType(types: Uint8Array, code: number) {
@@ -117,13 +117,11 @@ function makeResolved(
 // The section's render state is what the marks read their gates off, so a
 // test that turns a layer off does it there.
 function opts(
-  state: Partial<RenderState> = {},
+  state: TestRenderStateOverrides = {},
   rest: Partial<Omit<HitTestOptions, 'state'>> = {},
 ): HitTestOptions {
   return {
     state: makeTestRenderState({
-      showInterbase: true,
-      coverageMinAlleleFraction: 0,
       pileupTopOffset: 50,
       coverageTopOffset: 0,
       featureHeight: 10,
@@ -132,8 +130,13 @@ function opts(
       unit: 'read',
       fadeLowFrequency: true,
       showMismatches: true,
-      coverageHeight: 50,
       ...state,
+      coverage: {
+        height: 50,
+        minAlleleFraction: 0,
+        showInterbase: true,
+        ...state.coverage,
+      },
     }),
     overPileup: true,
     ...rest,
@@ -167,7 +170,7 @@ describe('coverage hit — fires at all zoom levels', () => {
       100,
       30,
       resolved,
-      opts({ coverageHeight: 0 }),
+      opts({ coverage: { height: 0 } }),
     )
     expect(result.type).toBe('none')
   })
@@ -185,7 +188,7 @@ describe('the coverage bin snaps to a SNP only while the band colors alleles', (
       100,
       30,
       resolved,
-      opts({ showCoverageAlleles }),
+      opts({ coverage: { showAlleles: showCoverageAlleles } }),
     )
     return result.type === 'coverage' ? result.hit.position : undefined
   }
@@ -217,7 +220,7 @@ describe('indicator hit — fires at all zoom levels', () => {
       100,
       3,
       resolved,
-      opts({ showInterbase: false }),
+      opts({ coverage: { showInterbase: false } }),
     )
     expect(result.type).toBe('none')
   })

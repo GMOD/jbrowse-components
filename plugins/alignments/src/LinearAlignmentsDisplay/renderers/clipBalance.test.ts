@@ -4,7 +4,7 @@ import { buildArcBandFeeds } from '../../features/arcs/bandFeed.ts'
 import { ARC_SHAPE_ARC } from '../../features/arcs/shapes.ts'
 import { emptyArcsUploadData } from '../../features/arcs/types.ts'
 import { OPAQUE_MISMATCHES } from '../../features/mismatch/qualityOpacity.ts'
-import { makeTestPalette } from '../testUtils.ts'
+import { TEST_COVERAGE, makeTestPalette } from '../testUtils.ts'
 import { drawAlignmentsToCtx } from './Canvas2DAlignmentsRenderer.ts'
 
 import type { ArcsUploadData } from '../../features/arcs/types.ts'
@@ -164,18 +164,12 @@ function state(): RenderState {
     scrollTop: 0,
     featureHeight: 10,
     featureSpacing: 1,
-    coverageHeight: 50,
+    coverage: { ...TEST_COVERAGE, height: 50, domainMax: 50 },
     coverageYOffset: 5,
-    coverageMinDepth: 0,
-    coverageMaxDepth: 50,
-    coverageScaleType: 0 as const,
-    coverageSymlogConstant: 1,
     showMismatches: true,
     fadeLowFrequency: false,
     qualityOpacity: OPAQUE_MISMATCHES,
     showSoftClips: false,
-    showInterbase: false,
-    showCoverageAlleles: true,
     basesField: undefined,
     colors: makeTestPalette(),
     unit: 'read',

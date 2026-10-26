@@ -2,7 +2,7 @@ import { makePileupDataResult } from '../../RenderAlignmentDataRPC/testPileupDat
 import { arcStrokeScale } from '../../features/arcs/arcLineWidth.ts'
 import { OPAQUE_MISMATCHES } from '../../features/mismatch/qualityOpacity.ts'
 import { READ_COLOR_CATEGORY } from '../colorUtils.ts'
-import { makeTestPalette } from '../testUtils.ts'
+import { TEST_COVERAGE, makeTestPalette } from '../testUtils.ts'
 import { Canvas2DAlignmentsRenderer } from './Canvas2DAlignmentsRenderer.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
@@ -249,20 +249,14 @@ function state(overrides: Partial<RenderState> = {}): RenderState {
     // Coverage ON. The band's 0.8px fudge is what FUDGE_TOLERANCE_PX absorbs;
     // leaving the band out to dodge that noise is precisely what let its own
     // reversed bug through.
-    coverageHeight: COV_H,
+    coverage: { ...TEST_COVERAGE, height: COV_H, domainMax: 9 },
     coverageYOffset: 0,
-    coverageMaxDepth: 9,
-    coverageScaleType: 0 as const,
-    coverageSymlogConstant: 1,
-    coverageMinAlleleFraction: 0,
     showMismatches: true,
     fadeLowFrequency: false,
     qualityOpacity: OPAQUE_MISMATCHES,
     // ON so the soft-clip-base cell layer (gated on this) is reachable; the
     // insertion layer rides showMismatches, already on.
     showSoftClips: true,
-    showInterbase: false,
-    showCoverageAlleles: true,
     // The shared fixture rather than a literal inside the cast below: a literal
     // falls a field behind, and a layer that reads a color the cast let
     // through as undefined fails at MODULE scope

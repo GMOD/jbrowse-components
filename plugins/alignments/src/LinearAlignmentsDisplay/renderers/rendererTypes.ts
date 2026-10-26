@@ -13,42 +13,26 @@ import type { SashimiBandFeed } from '../../features/sashimi/bandFeed.ts'
 import type { ColorPalette } from '../../shaders/colors.ts'
 import type { ArcColorField, BaseLayerField } from '../../shared/types.ts'
 import type { AlignmentsUnit, ReadConnectionsMode } from '../constants.ts'
+import type { CoverageBandState } from '@jbrowse/alignments-core'
 import type { LinkRegion, LinkSizeScale } from '@jbrowse/render-core/marks'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 import type { RenderingBackend } from '@jbrowse/render-core/renderingBackendBase'
-import type { ScaleTypeCode } from '@jbrowse/render-core/scoreScale'
+
+export type CoverageBandScale = Omit<CoverageBandState, 'top' | 'colors'>
 
 export interface RenderState {
   scrollTop: number
   featureHeight: number
   featureSpacing: number
-  // The coverage band's RESERVED height — 0 when the band is off, so a painter
-  // or hit test reads one number and never re-derives the gate from a flag
-  // beside it. The model resolves it (`coverageDisplayHeight`).
-  coverageHeight: number
-  // The autoscaled coverage domain, `coverageDomain[0]` and `[1]`. Both ends,
-  // because a `minScore` bound moves the baseline the bars draw flat at — for a
-  // long time only the max was carried here and the min was silently dropped, so
-  // the setting did nothing. `undefined` until the debounced autoscale resolves;
-  // the coverage marks' params are the one place they are read, together.
-  coverageMinDepth: number | undefined
-  coverageMaxDepth: number | undefined
-  coverageScaleType: ScaleTypeCode
-  coverageSymlogConstant: number
-  // Allele-fraction floor for the band's colored segments: a segment whose
-  // share of its position's depth is below this is not drawn, and the grey
-  // depth bar shows through where it would have been. 0 colors every
-  // mismatch. Nothing to do with `fadeLowFrequency`, which is the
-  // PILEUP's depth-dependent fade.
-  coverageMinAlleleFraction: number
-  // Whether the band colors allele segments at all; off, every bar is grey.
-  showCoverageAlleles: boolean
+  // The coverage band as the shared band draws and hit-tests it, less the
+  // section's top and the palette. `height` is the RESERVED height, 0 while
+  // the band is off, so nothing re-derives the gate from a flag beside it.
+  coverage: CoverageBandScale
   sashimiHeight: number
   showMismatches: boolean
   fadeLowFrequency: boolean
   qualityOpacity: QualityOpacity
   showSoftClips: boolean
-  showInterbase: boolean
   // The field `pileup.bases` paints, undefined while no per-base layer draws.
   basesField: BaseLayerField | undefined
   // Canvas dimensions - passed in to avoid forced layout from reading clientWidth/clientHeight

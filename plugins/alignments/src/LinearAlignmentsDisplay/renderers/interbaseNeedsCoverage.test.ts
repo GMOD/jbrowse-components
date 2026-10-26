@@ -8,7 +8,12 @@ import {
 import { makeTestRenderState } from '../testUtils.ts'
 import { drawAlignmentsToCtx } from './Canvas2DAlignmentsRenderer.ts'
 
-import type { AlignmentsSources, RenderState } from './rendererTypes.ts'
+import type { TestRenderStateOverrides } from '../testUtils.ts'
+import type {
+  AlignmentsSources,
+  RenderState,
+  CoverageBandScale,
+} from './rendererTypes.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
 /**
@@ -139,11 +144,8 @@ const BLOCK = {
   reversed: false,
 }
 
-function state(overrides: Partial<RenderState>): RenderState {
+function state(overrides: TestRenderStateOverrides): RenderState {
   return makeTestRenderState({
-    coverageHeight: 50,
-    coverageMinDepth: 0,
-    coverageMaxDepth: 50,
     sections: [
       {
         pileupTopOffset: 50,
@@ -160,16 +162,21 @@ function state(overrides: Partial<RenderState>): RenderState {
   })
 }
 
-function inkFor(overrides: Partial<RenderState>) {
+function inkFor(overrides: Partial<CoverageBandScale>) {
   const { ctx, ink } = inkRecordingCtx()
-  drawAlignmentsToCtx(ctx, sources(), [BLOCK], state(overrides))
+  drawAlignmentsToCtx(
+    ctx,
+    sources(),
+    [BLOCK],
+    state({ coverage: { height: 50, domainMax: 50, ...overrides } }),
+  )
   return ink()
 }
 
 describe('the interbase toggle needs the coverage band', () => {
   it('changes nothing while the band is hidden', () => {
-    expect(inkFor({ coverageHeight: 0, showInterbase: true })).toBe(
-      inkFor({ coverageHeight: 0, showInterbase: false }),
+    expect(inkFor({ height: 0, showInterbase: true })).toBe(
+      inkFor({ height: 0, showInterbase: false }),
     )
   })
 

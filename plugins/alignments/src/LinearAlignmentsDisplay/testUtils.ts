@@ -33,7 +33,10 @@ import type {
 } from '../shaders/colors.ts'
 import type { ReadColorCategory } from './colorUtils.ts'
 import type { LinearAlignmentsDisplayModel } from './model.ts'
-import type { RenderState } from './renderers/rendererTypes.ts'
+import type {
+  CoverageBandScale,
+  RenderState,
+} from './renderers/rendererTypes.ts'
 import type { MenuDivider, MenuItem, MenuSubHeader } from '@jbrowse/core/ui'
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
 import type { IAnyModelType, Instance } from '@jbrowse/mobx-state-tree'
@@ -99,8 +102,29 @@ export function makeTestPalette({
  * gains, and the renderers read this straight through to `drawSection`, where
  * an array the fixture forgot is dereferenced unconditionally.
  */
+// Everything off in the coverage band, for a fixture to spread its own
+// fields over.
+export const TEST_COVERAGE: CoverageBandScale = {
+  height: 0,
+  domainMin: 0,
+  domainMax: undefined,
+  scaleType: 0,
+  symlogConstant: 1,
+  minAlleleFraction: 0,
+  showAlleles: true,
+  showInterbase: false,
+}
+
+/** `RenderState` overrides, whose `coverage` merges over `TEST_COVERAGE`. */
+export type TestRenderStateOverrides = Omit<
+  Partial<RenderState>,
+  'coverage'
+> & {
+  coverage?: Partial<CoverageBandScale>
+}
+
 export function makeTestRenderState(
-  overrides: Partial<RenderState> = {},
+  overrides: TestRenderStateOverrides = {},
 ): RenderState {
   return {
     canvasWidth: 200,
@@ -109,19 +133,11 @@ export function makeTestRenderState(
     scrollTop: 0,
     featureHeight: 10,
     featureSpacing: 1,
-    coverageHeight: 0,
-    coverageMinDepth: undefined,
-    coverageMaxDepth: undefined,
-    coverageScaleType: 0 as const,
-    coverageSymlogConstant: 1,
-    coverageMinAlleleFraction: 0,
-    showCoverageAlleles: true,
     sashimiHeight: 0,
     showMismatches: false,
     fadeLowFrequency: false,
     qualityOpacity: OPAQUE_MISMATCHES,
     showSoftClips: false,
-    showInterbase: false,
     basesField: undefined,
     colors: makeTestPalette(),
     unit: 'read',
@@ -144,6 +160,7 @@ export function makeTestRenderState(
       },
     ],
     ...overrides,
+    coverage: { ...TEST_COVERAGE, ...overrides.coverage },
   }
 }
 

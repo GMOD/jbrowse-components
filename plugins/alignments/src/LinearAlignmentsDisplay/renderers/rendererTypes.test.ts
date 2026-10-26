@@ -1,6 +1,7 @@
 import { arcStrokeScale } from '../../features/arcs/arcLineWidth.ts'
 import { OPAQUE_MISMATCHES } from '../../features/mismatch/qualityOpacity.ts'
 import { interbaseRangeEnds } from '../../shared/uploadTypes.ts'
+import { TEST_COVERAGE } from '../testUtils.ts'
 import { computeArcBand, pileupCellWidth } from './rendererTypes.ts'
 
 import type { ArcBandInput, RenderState } from './rendererTypes.ts'
@@ -42,20 +43,13 @@ function makeState(
     featureHeight: 10,
     featureSpacing: 2,
     coverageReservedPx: 0,
-    coverageHeight: 50,
+    coverage: { ...TEST_COVERAGE, height: 50 },
     coverageYOffset: 0,
-    coverageMinDepth: undefined,
-    coverageMaxDepth: undefined,
-    coverageScaleType: 0 as const,
-    coverageSymlogConstant: 1,
-    coverageMinAlleleFraction: 0,
     sashimiHeight: 0,
     showMismatches: true,
     fadeLowFrequency: true,
     qualityOpacity: OPAQUE_MISMATCHES,
     showSoftClips: false,
-    showInterbase: false,
-    showCoverageAlleles: true,
     basesField: undefined,
     canvasWidth: 800,
     canvasHeight: 600,

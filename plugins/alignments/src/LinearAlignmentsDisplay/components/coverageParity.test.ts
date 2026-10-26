@@ -19,7 +19,7 @@ import {
   ALIGNMENTS_PASSES,
   GpuAlignmentsRenderer,
 } from '../renderers/GpuAlignmentsRenderer.ts'
-import { makeTestPalette } from '../testUtils.ts'
+import { makeTestPalette, TEST_COVERAGE } from '../testUtils.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 import type { ColorPalette } from '../../shaders/colors.ts'
@@ -356,7 +356,11 @@ describe('coverage packing parity between GPU and Canvas2D', () => {
       canvasHeight: 200,
       featureHeight: 10,
       featureSpacing: 1,
-      coverageHeight: covH,
+      coverage: {
+        ...TEST_COVERAGE,
+        height: covH,
+        domainMax: COVERAGE_MAX_DEPTH,
+      },
       unit: 'read',
       showCoverage: true,
       pileupTopOffset: covH,
@@ -396,12 +400,9 @@ describe('coverage packing parity between GPU and Canvas2D', () => {
         colorSoftclipIndicator: [0, 0.5, 1],
         colorHardclipIndicator: [1, 0.5, 0],
       }),
-      showInterbase: false,
-      showCoverageAlleles: true,
       start: REGION_START,
       end: REGION_START + 20,
       scrollTop: 0,
-      coverageMaxDepth: COVERAGE_MAX_DEPTH,
     } as unknown as RenderState)
 
     // Coverage bins should produce rectangles
@@ -640,19 +641,12 @@ describe('renderBlocks canvasDrawn gating parity', () => {
       scrollTop: 0,
       featureHeight: 10,
       featureSpacing: 1,
-      coverageHeight: 0,
-      coverageMinDepth: 0,
-      coverageMaxDepth: 50,
-      coverageScaleType: 0 as const,
-      coverageSymlogConstant: 1,
-      coverageMinAlleleFraction: 0,
+      coverage: { ...TEST_COVERAGE, domainMax: 50 },
       sashimiHeight: 0,
       showMismatches: false,
       fadeLowFrequency: false,
       qualityOpacity: OPAQUE_MISMATCHES,
       showSoftClips: false,
-      showInterbase: false,
-      showCoverageAlleles: true,
       basesField: undefined,
       colors: fullColors,
       unit: 'read',
@@ -721,7 +715,7 @@ describe('renderBlocks canvasDrawn gating parity', () => {
       name: 'a coverage-only section with an empty pileup band',
       sync: true,
       section: { covClipHeight: 100, pileupClipTop: 100, pileupClipHeight: 0 },
-      extra: { coverageHeight: 100 },
+      extra: { coverage: { ...TEST_COVERAGE, height: 100 } },
       expected: true,
     },
     {
@@ -756,7 +750,7 @@ describe('renderBlocks canvasDrawn gating parity', () => {
       name: 'a block with no synced region',
       sync: false,
       section: { covClipHeight: 100, pileupClipHeight: 100 },
-      extra: { coverageHeight: 100 },
+      extra: { coverage: { ...TEST_COVERAGE, height: 100 } },
       expected: false,
     },
   ]

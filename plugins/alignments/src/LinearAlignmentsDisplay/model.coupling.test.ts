@@ -1560,12 +1560,12 @@ test('a region arrival invalidates renderState, not just the size gate', () => {
 test('coverage.alleles.show reaches renderState without a refetch', () => {
   const display = createDisplay()
   const rpcProps = display.rpcProps()
-  expect(display.renderState.showCoverageAlleles).toBe(true)
+  expect(display.renderState.coverage.showAlleles).toBe(true)
   display.setShowCoverageAlleles(false)
-  expect(display.renderState.showCoverageAlleles).toBe(false)
+  expect(display.renderState.coverage.showAlleles).toBe(false)
   expect(display.rpcProps()).toEqual(rpcProps)
   display.setShowCoverageAlleles(true)
-  expect(display.renderState.showCoverageAlleles).toBe(true)
+  expect(display.renderState.coverage.showAlleles).toBe(true)
 })
 
 // The upload autorun reads `sourceSections`, and `sync` packs ~9 GPU passes per

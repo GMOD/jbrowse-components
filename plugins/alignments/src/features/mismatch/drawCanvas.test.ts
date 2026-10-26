@@ -1,3 +1,4 @@
+import { TEST_COVERAGE } from '../../LinearAlignmentsDisplay/testUtils.ts'
 import { QUAL_UNAVAILABLE } from '../../shaders/slang/mismatch.consts.generated.ts'
 import { arcStrokeScale } from '../arcs/arcLineWidth.ts'
 import { MISMATCH_MARK } from './mark.ts'
@@ -41,19 +42,12 @@ function baseState(overrides: Partial<RenderState> = {}): RenderState {
     readConnectionsColorField: 'insertSizeAndOrientation',
     featureHeight: 10,
     featureSpacing: 0,
-    coverageHeight: 0,
-    coverageMinDepth: undefined,
-    coverageMaxDepth: undefined,
-    coverageScaleType: 0 as const,
-    coverageSymlogConstant: 1,
-    coverageMinAlleleFraction: 0,
+    coverage: TEST_COVERAGE,
     sashimiHeight: 0,
     showMismatches: true,
     fadeLowFrequency: false,
     qualityOpacity: OPAQUE_MISMATCHES,
     showSoftClips: false,
-    showInterbase: false,
-    showCoverageAlleles: true,
     basesField: undefined,
     canvasWidth: 100,
     canvasHeight: 100,
