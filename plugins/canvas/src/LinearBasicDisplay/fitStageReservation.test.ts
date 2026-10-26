@@ -152,12 +152,13 @@ const shapeName = (s: Shape) =>
 function standUp(shape: Shape, data: FeatureDataResult) {
   const { createDisplay } = createTestEnvironment()
   const { display } = createDisplay()
-  setConf(display, 'showLabels', shape.labels ? 'nameAndDescription' : 'none')
+  display.setShowNames(shape.labels)
+  display.setShowDescriptions(shape.labels)
   if (shape.everyIsoform) {
     setConf(display, 'geneGlyphMode', 'all')
   }
   if (shape.below) {
-    setConf(display, 'subfeatureLabels', 'below')
+    display.setSubfeatureLabels('below')
   }
   display.setRpcData(0, data, ctgA)
   display.setHeightMode(shape.heightMode)

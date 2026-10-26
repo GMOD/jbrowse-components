@@ -112,7 +112,7 @@ describe('LinearBasicDisplay configSchema', () => {
     )
     const snap = readConfObject(config)
     expect(snap.labels).toBeDefined()
-    expect(snap.labels.name).toBe("jexl:get(feature,'gene_name')")
+    expect(snap.labels.name.field).toBe("jexl:get(feature,'gene_name')")
   })
 
   it('readConfObject with specific key reads from slot correctly', () => {
@@ -172,8 +172,8 @@ describe('LinearBasicDisplay configSchema', () => {
         },
         { pluginManager: pm },
       )
-      expect(config.labels.description).toBe(expr)
-      expect(isCallbackValue(config.labels.description)).toBe(true)
+      expect(config.labels.description.field).toBe(expr)
+      expect(isCallbackValue(config.labels.description.field)).toBe(true)
     })
 
     it('display-level props take precedence over renderer props', () => {
@@ -215,70 +215,82 @@ describe('LinearBasicDisplay configSchema', () => {
       )
     })
 
-    it('converts boolean showLabels lifted from renderer to enum', () => {
-      const config = schema.create(
-        {
-          displayId: 'test',
-          type: 'LinearBasicDisplay',
-          renderer: { type: 'CanvasFeatureRenderer', showLabels: true },
-        },
-        { pluginManager: pm },
-      )
-      expect(readConfObject(config, 'showLabels')).toBe('auto')
-    })
-
-    it('converts boolean showLabels=false to the description rung', () => {
-      const config = schema.create(
-        {
-          displayId: 'test',
-          type: 'LinearBasicDisplay',
-          showLabels: false,
-        },
-        { pluginManager: pm },
-      )
-      expect(readConfObject(config, 'showLabels')).toBe('description')
-    })
+    const shown = (config: ReturnType<typeof schema.create>) => [
+      readConfObject(config, ['labels', 'name', 'show']),
+      readConfObject(config, ['labels', 'description', 'show']),
+    ]
 
     it.each([
-      [{ showLabels: true }, 'auto'],
-      [{ showLabels: true, showDescriptions: false }, 'auto'],
-      [{ showLabels: false }, 'description'],
-      [{ showLabels: false, showDescriptions: false }, 'none'],
-      [{ showLabels: 'auto', showDescriptions: false }, 'auto'],
-    ])('folds the legacy %s pair onto the unified enum', (legacy, expected) => {
+      [{ showLabels: true }, [true, true]],
+      [{ showLabels: true, showDescriptions: false }, [true, false]],
+      [{ showLabels: false }, [false, true]],
+      [{ showLabels: false, showDescriptions: false }, [false, false]],
+      [{ showDescriptions: false }, [true, false]],
+      [{ showLabels: 'auto' }, [true, true]],
+      [{ showLabels: 'nameAndDescription' }, [true, true]],
+      [{ showLabels: 'name' }, [true, false]],
+      [{ showLabels: 'description' }, [false, true]],
+      [{ showLabels: 'none' }, [false, false]],
+      [
+        { renderer: { type: 'CanvasFeatureRenderer', showLabels: false } },
+        [false, true],
+      ],
+    ])('lifts the legacy %j onto the label parts', (legacy, expected) => {
       const config = schema.create(
         { displayId: 'test', type: 'LinearBasicDisplay', ...legacy },
         { pluginManager: pm },
       )
-      expect(readConfObject(config, 'showLabels')).toBe(expected)
+      expect(shown(config)).toEqual(expected)
     })
 
-    it('leaves a unified-enum showLabels untouched', () => {
-      const config = schema.create(
-        {
-          displayId: 'test',
-          type: 'LinearBasicDisplay',
-          showLabels: 'description',
+    // jb2hubs writes `labels.name` as a bare string; the hide beside it must
+    // land next to the field rather than under the string
+    it.each([
+      {
+        displayId: 'test',
+        type: 'LinearBasicDisplay',
+        labels: { name: 'gene_name' },
+        showLabels: 'none',
+      },
+      {
+        displayId: 'test',
+        type: 'LinearBasicDisplay',
+        renderer: {
+          type: 'SvgFeatureRenderer',
+          labels: { name: 'gene_name' },
+          showLabels: 'none',
         },
-        { pluginManager: pm },
+      },
+    ])('keeps a hide beside a label field written bare (%#)', snapshot => {
+      const config = schema.create(snapshot, { pluginManager: pm })
+      expect(shown(config)).toEqual([false, false])
+      expect(readConfObject(config, ['labels', 'name', 'field'])).toBe(
+        'gene_name',
       )
-      expect(readConfObject(config, 'showLabels')).toBe('description')
     })
 
     it.each([
-      [{ showLabels: 'none', showDescriptions: false }, 'none'],
-      [{ showLabels: 'name', showDescriptions: true }, 'name'],
-      [{ showDescriptions: false }, 'auto'],
-    ])(
-      'keeps a unified-enum showLabels beside a stale showDescriptions %j',
-      (legacy, expected) => {
-        const config = schema.create(
-          { displayId: 'test', type: 'LinearBasicDisplay', ...legacy },
-          { pluginManager: pm },
-        )
-        expect(readConfObject(config, 'showLabels')).toBe(expected)
-      },
-    )
+      [{ subfeatureLabels: 'none' }, [false, 'auto']],
+      [{ subfeatureLabels: 'below' }, [true, 'below']],
+      [
+        {
+          renderer: {
+            type: 'CanvasFeatureRenderer',
+            subfeatureLabels: 'overlay',
+          },
+        },
+        [true, 'overlay'],
+      ],
+    ])('lifts the v4 %j onto labels.subfeatures', (legacy, expected) => {
+      const config = schema.create(
+        { displayId: 'test', type: 'LinearBasicDisplay', ...legacy },
+        { pluginManager: pm },
+      )
+      expect([
+        readConfObject(config, ['labels', 'subfeatures', 'show']),
+        readConfObject(config, ['labels', 'subfeatures', 'placement']),
+      ]).toEqual(expected)
+    })
 
     it('maps legacy geneGlyphMode "longest" lifted from renderer to "representative"', () => {
       const config = schema.create(

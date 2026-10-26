@@ -50,6 +50,7 @@ import {
 } from './LinearBasicDisplay/passes/shaders/chevron.js.generated.ts'
 import { isPlacedRow } from './LinearBasicDisplay/rowPlacement.ts'
 import { labelVisibility } from './LinearBasicDisplay/showLabelsMode.ts'
+import { subfeatureLabelsOf } from './RenderFeatureDataRPC/displayModes.ts'
 import { executeRenderFeatureData } from './RenderFeatureDataRPC/executeRenderFeatureData.ts'
 import { labelFontSize } from './RenderFeatureDataRPC/glyphs/glyphUtils.ts'
 import { pickDisplayConfig } from './RenderFeatureDataRPC/renderConfig.ts'
@@ -92,10 +93,10 @@ export interface FeatureTablesArgs {
    */
   regions?: TablesRegion[]
   /**
-   * The display's config as a track's `displays` entry writes it: `color`,
-   * `displayMode`, `showLabels`, `geneGlyphMode`, `subfeatureLabels`,
-   * `filter`, `featureHeight`, `facet` and the rest of a
-   * `LinearBasicDisplay`'s slots. Unset draws the default display.
+   * The display's config as a track's `displays` entry writes it:
+   * `encoding`, `displayMode`, `labels`, `geneGlyphMode`, `filter`, `mark`,
+   * `facet` and the rest of a `LinearBasicDisplay`'s slots. Unset draws the
+   * default display.
    */
   display?: Record<string, unknown>
   /**
@@ -376,7 +377,10 @@ export async function featureTables(
   // in the worker.
   const subfeatureLabels = collapsed
     ? 'none'
-    : readConfObject(conf, 'subfeatureLabels')
+    : subfeatureLabelsOf({
+        show: readConfObject(conf, ['labels', 'subfeatures', 'show']),
+        placement: readConfObject(conf, ['labels', 'subfeatures', 'placement']),
+      })
   const facet = facetSettingOf({
     field: readConfObject(conf, ['facet', 'field']),
     sort: readConfObject(conf, ['facet', 'sort']),
@@ -431,7 +435,8 @@ export async function featureTables(
   // counts its on-screen ids (`labelDensityPerPx`)
   const featureIds = new Set(shown.map(item => item.featureId))
   const visibility = labelVisibility({
-    mode: readConfObject(conf, 'showLabels'),
+    name: readConfObject(conf, ['labels', 'name', 'show']),
+    description: readConfObject(conf, ['labels', 'description', 'show']),
     collapsed,
     density: featureIds.size / widthPx,
     geneDensity: () => {

@@ -18,7 +18,10 @@ import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import SegmentIcon from '@mui/icons-material/Segment'
 import UnfoldLessIcon from '@mui/icons-material/UnfoldLess'
 
-import { SUBFEATURE_LABEL_OPTIONS } from '../RenderFeatureDataRPC/displayModes.ts'
+import {
+  SUBFEATURE_LABEL_OPTIONS,
+  subfeatureLabelsOf,
+} from '../RenderFeatureDataRPC/displayModes.ts'
 import {
   addTrimmedIsoformPicks,
   mergeIsoformPicks,
@@ -98,7 +101,10 @@ export default function stateModelFactory(
       },
 
       get subfeatureLabels(): DisplayConfig['subfeatureLabels'] {
-        return getConf(self, 'subfeatureLabels')
+        return subfeatureLabelsOf({
+          show: getConf(self, ['labels', 'subfeatures', 'show']),
+          placement: getConf(self, ['labels', 'subfeatures', 'placement']),
+        })
       },
 
       // Collapsed mode forces 'none' here rather than in the renderer, since
@@ -209,8 +215,12 @@ export default function stateModelFactory(
       },
     }))
     .actions(self => ({
+      // Member by member, so Off keeps the placement for the way back.
       setSubfeatureLabels(value: DisplayConfig['subfeatureLabels']) {
-        setConf(self, 'subfeatureLabels', value)
+        setConf(self, ['labels', 'subfeatures', 'show'], value !== 'none')
+        if (value !== 'none') {
+          setConf(self, ['labels', 'subfeatures', 'placement'], value)
+        }
       },
 
       setGeneGlyphMode(value: DisplayConfig['geneGlyphMode']) {

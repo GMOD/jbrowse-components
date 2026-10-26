@@ -1,6 +1,7 @@
-// The labels ride here rather than beside the radio because the website's
-// figure recipes name them, and that node script cannot load a module
-// importing React.
+/**
+ * @deprecated `labels.name.show` and `labels.description.show` replace the
+ * five-value `showLabels`; kept for plugins that imported it.
+ */
 export const SHOW_LABELS_OPTIONS = [
   { value: 'auto', label: 'Auto' },
   { value: 'nameAndDescription', label: 'Name + description' },
@@ -9,62 +10,55 @@ export const SHOW_LABELS_OPTIONS = [
   { value: 'none', label: 'None' },
 ] as const
 
+/** @deprecated see `SHOW_LABELS_OPTIONS` */
 export type ShowLabelsMode = (typeof SHOW_LABELS_OPTIONS)[number]['value']
 
+/** @deprecated see `SHOW_LABELS_OPTIONS` */
 export const SHOW_LABELS_MODES = SHOW_LABELS_OPTIONS.map(o => o.value)
 
+/** @deprecated read `labels.name.show` */
 export function modeCanShowName(mode: ShowLabelsMode) {
   return mode === 'auto' || mode === 'nameAndDescription' || mode === 'name'
 }
 
+/** @deprecated read `labels.description.show` */
 export function modeCanShowDescription(mode: ShowLabelsMode) {
   return (
     mode === 'auto' || mode === 'nameAndDescription' || mode === 'description'
   )
 }
 
-export function legacyShowLabelsToMode(
-  value: unknown,
-  showDescriptions: boolean,
-): ShowLabelsMode {
-  // v4's labels on with descriptions off has no home on the unified enum: it
-  // wants 'auto' rather than 'name', so the density gate is not forfeited.
-  return value === false ? (showDescriptions ? 'description' : 'none') : 'auto'
-}
-
 /**
- * Which labels a display shows under its `showLabels` mode at a feature
- * density (features per px): `auto` drops descriptions past
- * `maxDescriptionDensity` and names past `maxLabelDensity`, keeping gene names
- * (`geneNamesOnly`) while the genes alone are under it. A pinned mode skips
- * the density gate; collapsed shows none.
+ * Which labels a display draws at a feature density (features per px): a
+ * shown name past `maxLabelDensity` only where the genes alone are under it
+ * (`geneNamesOnly`), a shown description only under the lower of the two
+ * thresholds, and nothing while collapsed.
  */
 export function labelVisibility({
-  mode,
+  name,
+  description,
   collapsed,
   density,
   geneDensity,
   maxLabelDensity,
   maxDescriptionDensity,
 }: {
-  mode: ShowLabelsMode
+  name: boolean
+  description: boolean
   collapsed: boolean
   density: number
   geneDensity: () => number | undefined
   maxLabelDensity: number
   maxDescriptionDensity: number
 }) {
-  const auto = mode === 'auto'
-  const genes = auto && density > maxLabelDensity ? geneDensity() : undefined
+  const genes =
+    name && !collapsed && density > maxLabelDensity ? geneDensity() : undefined
   const geneNamesOnly = genes !== undefined && genes <= maxLabelDensity
   const showLabels =
-    !collapsed &&
-    modeCanShowName(mode) &&
-    (!auto || density <= maxLabelDensity || geneNamesOnly)
+    name && !collapsed && (density <= maxLabelDensity || geneNamesOnly)
   const showDescriptions =
+    description &&
     !collapsed &&
-    modeCanShowDescription(mode) &&
-    (!auto ||
-      (showLabels && !geneNamesOnly && density <= maxDescriptionDensity))
+    density <= Math.min(maxDescriptionDensity, maxLabelDensity)
   return { showLabels, geneNamesOnly, showDescriptions }
 }

@@ -97,7 +97,7 @@ import {
 import { featureSetActions, featureSetViews } from './featureSetViews.ts'
 import { showsSubfeatureLabels } from './fitLadder.ts'
 import { fitLadderViews, fitLadderVolatiles } from './fitLadderViews.ts'
-import { fitDrops, fitLadderNote, labelsFitHint } from './fitNotes.ts'
+import { fitDrops, fitLadderNote, labelFitHints } from './fitNotes.ts'
 import { heightViews } from './heightViews.ts'
 import { layoutRegionKey } from './layoutInputs.ts'
 import {
@@ -106,7 +106,11 @@ import {
 } from './layoutQueries.ts'
 import { facetOf, plotJexlProblems } from './plotProblems.ts'
 import { scanGroupByCandidates } from './scanGroupByCandidates.ts'
-import { labelVisibility, modeCanShowDescription } from './showLabelsMode.ts'
+import {
+  labelVisibility,
+  modeCanShowDescription,
+  modeCanShowName,
+} from './showLabelsMode.ts'
 import {
   canvasTrackMenuItems,
   colorBySubMenuItems,
@@ -114,7 +118,6 @@ import {
   featureHeightMenuItems,
   showSubmenuCheckboxItems,
   showSubmenuLegendItems,
-  showSubmenuRadioGroups,
 } from './trackMenus.ts'
 import {
   installYMorphAutorun,
@@ -557,22 +560,25 @@ export default function baseStateModelFactory(
 
       /**
        * #getter
+       * `labels.name.show`, the persisted intent before the density gate and
+       * collapsed mode have a say, so the menu's checkbox reflects the choice.
        */
-      get showLabelsMode() {
-        return getConf(self, 'showLabels')
+      get showNames(): boolean {
+        return getConf(self, ['labels', 'name', 'show'])
       },
 
       /**
        * #getter
-       * Which labels the `showLabels` mode shows at the on-screen feature
-       * density: names, descriptions, and whether only gene names survive.
+       * Which of the shown labels draw at the on-screen feature density:
+       * names, descriptions, and whether only gene names survive.
        */
       // Gated here rather than only at `renderedShowLabels`, so layout, hit
       // testing, the DOM overlay and the SVG export agree; otherwise rows
       // reserve label height nothing uses.
       get labelVisibility() {
         return labelVisibility({
-          mode: this.showLabelsMode,
+          name: this.showNames,
+          description: this.showDescriptions,
           collapsed: this.displayMode === 'collapsed',
           density: self.labelDensityPerPx,
           geneDensity: () => self.geneLabelDensityPerPx,
@@ -590,8 +596,8 @@ export default function baseStateModelFactory(
 
       /**
        * #getter
-       * `auto` past the name threshold, with the gene features alone still
-       * under it: gene names stay and every other name goes.
+       * Past the name threshold, with the gene features alone still under
+       * it: gene names stay and every other name goes.
        */
       get geneNamesOnly() {
         return this.labelVisibility.geneNamesOnly
@@ -599,18 +605,15 @@ export default function baseStateModelFactory(
 
       /**
        * #getter
+       * `labels.description.show`, the persisted intent, as `showNames` is.
        */
-      // The persisted intent, before the density gate and collapsed mode
-      // have a say, so the track menu's radio reflects the user's choice.
-      get showDescriptions() {
-        return modeCanShowDescription(this.showLabelsMode)
+      get showDescriptions(): boolean {
+        return getConf(self, ['labels', 'description', 'show'])
       },
 
       /**
        * #getter
        */
-      // Anded with `showLabels` so a config that inverts the two thresholds
-      // cannot leave descriptions painting after names are gone.
       get effectiveShowDescriptions() {
         return this.labelVisibility.showDescriptions
       },
@@ -930,11 +933,11 @@ export default function baseStateModelFactory(
       },
       /**
        * #getter
-       * The note on the selected "Labels" radio while the ladder is not
-       * honouring it (see `inertLabelHint`).
+       * The note on the Names and Descriptions checkboxes while the ladder
+       * is not honouring them.
        */
-      get labelsFitHint() {
-        return labelsFitHint(self.fitDrops)
+      get labelFitHints() {
+        return labelFitHints(self.fitDrops)
       },
     }))
     .views(yMorphViews)
@@ -1284,8 +1287,28 @@ export default function baseStateModelFactory(
         /**
          * #action
          */
+        setShowNames(show: boolean) {
+          setConf(self, ['labels', 'name', 'show'], show)
+        },
+
+        /**
+         * #action
+         */
+        setShowDescriptions(show: boolean) {
+          setConf(self, ['labels', 'description', 'show'], show)
+        },
+
+        /**
+         * #action
+         * @deprecated `setShowNames` and `setShowDescriptions`
+         */
         setShowLabels(value: ShowLabelsMode) {
-          setConf(self, 'showLabels', value)
+          setConf(self, ['labels', 'name', 'show'], modeCanShowName(value))
+          setConf(
+            self,
+            ['labels', 'description', 'show'],
+            modeCanShowDescription(value),
+          )
         },
 
         /**
@@ -1756,7 +1779,7 @@ export default function baseStateModelFactory(
        * #method
        */
       showSubmenuRadioGroups(): MenuItem[] {
-        return showSubmenuRadioGroups(self)
+        return []
       },
       /**
        * #method

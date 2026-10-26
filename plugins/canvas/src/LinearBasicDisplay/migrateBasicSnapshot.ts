@@ -2,10 +2,31 @@ import { applyRetiredSpellings } from '@jbrowse/core/configuration'
 import { isJexl } from '@jbrowse/core/util/jexlStrings'
 
 import { legacyGeneGlyphMode } from './geneGlyphMode.ts'
-import { legacyShowLabelsToMode } from './showLabelsMode.ts'
 
 function isRecord(x: unknown): x is Record<string, unknown> {
   return typeof x === 'object' && x !== null
+}
+
+// A label field written as the bare string its schema's shorthand lifts, as
+// the object, so a `showLabels` lift beside it lands next to the field rather
+// than under a string it cannot merge with. A display entry gets this from its
+// schema; a v4 `renderer` block, lifted by name, does not.
+function withLabelFields(props: Record<string, unknown>) {
+  const { labels } = props
+  if (!isRecord(labels)) {
+    return props
+  }
+  const asPart = (value: unknown) =>
+    typeof value === 'string' ? { field: value } : value
+  return {
+    ...props,
+    labels: Object.fromEntries(
+      Object.entries(labels).map(([key, value]) => [
+        key,
+        key === 'name' || key === 'description' ? asPart(value) : value,
+      ]),
+    ),
+  }
 }
 
 // A v4 `renderer` block's props become the display's own: `renderer.height`
@@ -23,7 +44,7 @@ function liftRenderer(renderer: unknown): Record<string, unknown> {
     ...rendererProps
   } = renderer
   return applyRetiredSpellings(basicRetired, {
-    ...rendererProps,
+    ...withLabelFields(rendererProps),
     ...(rendererHeight !== undefined
       ? { featureHeight: rendererHeight }
       : undefined),
@@ -62,6 +83,16 @@ export const basicRetired: Record<
   containerTypes: (types: unknown) => ({ containers: { types } }),
   // permanent: jb2hubs writes `mouseover`, the one spelling v4 hosts read
   mouseover: (field: unknown) => ({ tooltip: { field } }),
+  // v4's boolean, and the five-value enum the hosted demos and figure links
+  // still carry; `auto` and `nameAndDescription` were the defaults
+  showLabels: (value: unknown) => labelsShown(value),
+  showDescriptions: (value: unknown) =>
+    value === false ? { labels: { description: { show: false } } } : {},
+  subfeatureLabels: (mode: unknown) => ({
+    labels: {
+      subfeatures: mode === 'none' ? { show: false } : { placement: mode },
+    },
+  }),
   // the feature outline is cut, as ADR-240 cut the pileup's
   outline: () => ({}),
   // a second grow ceiling, dead at its default; `growMaxHeight` is the one
@@ -72,20 +103,20 @@ export const basicRetired: Record<
   renderer: liftRenderer,
 }
 
+function labelsShown(value: unknown) {
+  const labels = {
+    ...(value === false || value === 'none' || value === 'description'
+      ? { name: { show: false } }
+      : {}),
+    ...(value === 'none' || value === 'name'
+      ? { description: { show: false } }
+      : {}),
+  }
+  return Object.keys(labels).length > 0 ? { labels } : {}
+}
+
 export function migrateBasicConfigSnapshot(snap: Record<string, unknown>) {
   const result = { ...snap }
-  // A unified-enum value already present wins over a stale `showDescriptions`
-  // beside it, so a re-saved config is not rewritten.
-  if (
-    typeof result.showLabels === 'boolean' ||
-    (result.showLabels === undefined && result.showDescriptions !== undefined)
-  ) {
-    result.showLabels = legacyShowLabelsToMode(
-      result.showLabels,
-      result.showDescriptions !== false,
-    )
-  }
-  delete result.showDescriptions
   if (result.geneGlyphMode !== undefined) {
     result.geneGlyphMode = legacyGeneGlyphMode(result.geneGlyphMode)
   }

@@ -3227,10 +3227,6 @@ export const configManifest: ConfigManifest = {
           "writes": "members"
         },
         {
-          "name": "showLabels",
-          "type": "showLabels"
-        },
-        {
           "name": "maxLabelFeatureDensity",
           "type": "number"
         },
@@ -3393,18 +3389,64 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "labels",
-          "type": "CanvasFeatureLabelsConfigurationSchema",
+          "type": "FeatureLabelsConfigurationSchema",
           "subSlots": [
             {
               "name": "name",
-              "type": "string"
+              "type": "FeatureNameLabelConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "show",
+                  "type": "boolean"
+                },
+                {
+                  "name": "field",
+                  "type": "string"
+                }
+              ],
+              "schema": "FeatureNameLabel",
+              "writes": "members",
+              "shorthand": {
+                "string": "field"
+              }
             },
             {
               "name": "description",
-              "type": "string"
+              "type": "FeatureDescriptionLabelConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "show",
+                  "type": "boolean"
+                },
+                {
+                  "name": "field",
+                  "type": "string"
+                }
+              ],
+              "schema": "FeatureDescriptionLabel",
+              "writes": "members",
+              "shorthand": {
+                "string": "field"
+              }
+            },
+            {
+              "name": "subfeatures",
+              "type": "FeatureSubfeatureLabelsConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "show",
+                  "type": "boolean"
+                },
+                {
+                  "name": "placement",
+                  "type": "SubfeatureLabelPlacement"
+                }
+              ],
+              "schema": "FeatureSubfeatureLabels",
+              "writes": "members"
             }
           ],
-          "schema": "CanvasFeatureLabels",
+          "schema": "FeatureLabels",
           "writes": "members"
         },
         {
@@ -3414,10 +3456,6 @@ export const configManifest: ConfigManifest = {
         {
           "name": "geneGlyphMode",
           "type": "geneGlyphMode"
-        },
-        {
-          "name": "subfeatureLabels",
-          "type": "subfeatureLabels"
         },
         {
           "name": "chevrons",
@@ -3476,14 +3514,16 @@ export const configManifest: ConfigManifest = {
         "canonicalTranscriptField",
         "canonicalTranscriptTags",
         "containerTypes",
+        "showLabels",
+        "showDescriptions",
+        "subfeatureLabels",
         "outline",
         "maxHeight",
         "hideSourceFeatures",
         "impliedUTRs",
         "renderer",
         "color",
-        "showChevrons",
-        "showDescriptions"
+        "showChevrons"
       ],
       "droppedKeys": [
         "maxFeatureScreenDensity",
@@ -3496,10 +3536,6 @@ export const configManifest: ConfigManifest = {
         "impliedUTRs"
       ],
       "legacyValues": {
-        "showLabels": [
-          true,
-          false
-        ],
         "displayMode": [
           "reducedRepresentation",
           "collapse"
@@ -6558,10 +6594,6 @@ export const configManifest: ConfigManifest = {
           "writes": "members"
         },
         {
-          "name": "showLabels",
-          "type": "showLabels"
-        },
-        {
           "name": "maxLabelFeatureDensity",
           "type": "number"
         },
@@ -6728,11 +6760,41 @@ export const configManifest: ConfigManifest = {
           "subSlots": [
             {
               "name": "name",
-              "type": "string"
+              "type": "FeatureNameLabelConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "show",
+                  "type": "boolean"
+                },
+                {
+                  "name": "field",
+                  "type": "string"
+                }
+              ],
+              "schema": "FeatureNameLabel",
+              "writes": "members",
+              "shorthand": {
+                "string": "field"
+              }
             },
             {
               "name": "description",
-              "type": "string"
+              "type": "FeatureDescriptionLabelConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "show",
+                  "type": "boolean"
+                },
+                {
+                  "name": "field",
+                  "type": "string"
+                }
+              ],
+              "schema": "FeatureDescriptionLabel",
+              "writes": "members",
+              "shorthand": {
+                "string": "field"
+              }
             }
           ],
           "schema": "CanvasFeatureLabels",
@@ -6751,13 +6813,15 @@ export const configManifest: ConfigManifest = {
         "canonicalTranscriptField",
         "canonicalTranscriptTags",
         "containerTypes",
+        "showLabels",
+        "showDescriptions",
+        "subfeatureLabels",
         "outline",
         "maxHeight",
         "hideSourceFeatures",
         "impliedUTRs",
         "renderer",
-        "color",
-        "showDescriptions"
+        "color"
       ],
       "droppedKeys": [
         "maxFeatureScreenDensity",
@@ -6770,10 +6834,6 @@ export const configManifest: ConfigManifest = {
         "impliedUTRs"
       ],
       "legacyValues": {
-        "showLabels": [
-          true,
-          false
-        ],
         "displayMode": [
           "reducedRepresentation",
           "collapse"

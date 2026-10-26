@@ -5317,28 +5317,151 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         }
       ]
     },
-    "CanvasFeatureLabels": {
-      "title": "CanvasFeatureLabels",
+    "FeatureNameLabel": {
+      "title": "FeatureNameLabel",
+      "anyOf": [
+        {
+          "description": "Shorthand for \`{ \\"field\\": ... }\`.",
+          "default": "jexl:get(feature,'name') || get(feature,'id')",
+          "$ref": "#/$defs/FeatureField",
+          "type": "string"
+        },
+        {
+          "title": "FeatureNameLabel",
+          "type": "object",
+          "x-closed": true,
+          "properties": {
+            "show": {
+              "description": "draw a name beside each feature.",
+              "default": true,
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "boolean"
+              }
+            },
+            "field": {
+              "description": "the field the name reads, such as \`gene_name\`, or a \`jexl:\` expression over \`feature\`; the default reads the name, else the ID, and an empty value draws no name.",
+              "default": "jexl:get(feature,'name') || get(feature,'id')",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/FeatureField"
+              }
+            }
+          },
+          "patternProperties": {
+            "^_+comment": {}
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "FeatureDescriptionLabel": {
+      "title": "FeatureDescriptionLabel",
+      "anyOf": [
+        {
+          "description": "Shorthand for \`{ \\"field\\": ... }\`.",
+          "default": "jexl:get(feature,'note') || get(feature,'description') || get(feature,'function')",
+          "$ref": "#/$defs/FeatureField",
+          "type": "string"
+        },
+        {
+          "title": "FeatureDescriptionLabel",
+          "type": "object",
+          "x-closed": true,
+          "properties": {
+            "show": {
+              "description": "draw a description line under each feature.",
+              "default": true,
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "boolean"
+              }
+            },
+            "field": {
+              "description": "the field the description reads, such as \`note\`, or a \`jexl:\` expression over \`feature\`; the default reads \`note\`, else \`description\`, else \`function\`, and an empty value draws no description.",
+              "default": "jexl:get(feature,'note') || get(feature,'description') || get(feature,'function')",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/FeatureField"
+              }
+            }
+          },
+          "patternProperties": {
+            "^_+comment": {}
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "FeatureSubfeatureLabels": {
+      "title": "FeatureSubfeatureLabels",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "show": {
+          "description": "draw the names of a feature's parts.",
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
+        },
+        "placement": {
+          "description": "\`auto\` names a polyprotein's cleavage products on their rows and no other part; \`below\` and \`overlay\` name every part, under its row or over it.",
+          "default": "auto",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "enum": [
+              "auto",
+              "below",
+              "overlay"
+            ]
+          }
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
+    "FeatureLabels": {
+      "title": "FeatureLabels",
       "type": "object",
       "properties": {
         "name": {
-          "description": "the field each feature's name label reads, such as \`gene_name\`, or a \`jexl:\` expression over \`feature\`; the default reads the name, else the ID, and an empty value draws no name.",
-          "default": "jexl:get(feature,'name') || get(feature,'id')",
           "if": {
             "type": "null"
           },
           "else": {
-            "$ref": "#/$defs/FeatureField"
+            "$ref": "#/$defs/FeatureNameLabel"
           }
         },
         "description": {
-          "description": "the field each feature's description line reads, such as \`note\`, or a \`jexl:\` expression over \`feature\`; the default reads \`note\`, else \`description\`, else \`function\`, and an empty value draws no description.",
-          "default": "jexl:get(feature,'note') || get(feature,'description') || get(feature,'function')",
           "if": {
             "type": "null"
           },
           "else": {
-            "$ref": "#/$defs/FeatureField"
+            "$ref": "#/$defs/FeatureDescriptionLabel"
+          }
+        },
+        "subfeatures": {
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FeatureSubfeatureLabels"
           }
         }
       },
@@ -5546,36 +5669,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/Legend"
           }
         },
-        "showLabels": {
-          "description": "Label text drawn beside each feature: \\"auto\\" adapts to zoom, dropping descriptions at maxDescriptionFeatureDensity and names at maxLabelFeatureDensity; \\"nameAndDescription\\", \\"name\\", \\"description\\", and \\"none\\" pin a choice at every zoom. Defaults to \`auto\`. Replaces the former showLabels on/off enum + showDescriptions boolean pair.",
-          "default": "auto",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "anyOf": [
-              {
-                "enum": [
-                  "auto",
-                  "nameAndDescription",
-                  "name",
-                  "description",
-                  "none"
-                ]
-              },
-              {
-                "enum": [
-                  true,
-                  false
-                ],
-                "deprecated": true,
-                "description": "Legacy spellings a migration rewrites when the config loads."
-              }
-            ]
-          }
-        },
         "maxLabelFeatureDensity": {
-          "description": "In \\"auto\\" showLabels mode, hide labels when visible feature density (features/pixel) exceeds this value.",
+          "description": "hide the names, which \`labels.name\` shows, where the on-screen feature density (features per pixel) passes this; past it the gene names alone still draw while the genes are under it.",
           "default": 0.2,
           "if": {
             "type": "null"
@@ -5585,7 +5680,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "maxDescriptionFeatureDensity": {
-          "description": "In \\"auto\\" showLabels mode, hide descriptions when visible feature density (features/pixel) exceeds this value. Lower than maxLabelFeatureDensity so descriptions drop before names.",
+          "description": "hide the descriptions, which \`labels.description\` shows, where the on-screen feature density (features per pixel) passes this or \`maxLabelFeatureDensity\`, whichever is lower.",
           "default": 0.1,
           "if": {
             "type": "null"
@@ -5650,7 +5745,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "null"
           },
           "else": {
-            "$ref": "#/$defs/CanvasFeatureLabels"
+            "$ref": "#/$defs/FeatureLabels"
           }
         },
         "utrColor": {
@@ -5685,21 +5780,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 "deprecated": true,
                 "description": "Legacy spellings a migration rewrites when the config loads."
               }
-            ]
-          }
-        },
-        "subfeatureLabels": {
-          "description": "subfeature label display mode: \`auto\` (the default) names a polyprotein's cleavage products on their rows and nothing else; \`none\`, \`below\` or \`overlay\` apply to every part.",
-          "default": "auto",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "enum": [
-              "auto",
-              "none",
-              "below",
-              "overlay"
             ]
           }
         },
@@ -5771,6 +5851,18 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
+        "showLabels": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "showDescriptions": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "subfeatureLabels": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
         "outline": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
@@ -5796,10 +5888,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
         "showChevrons": {
-          "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
-        },
-        "showDescriptions": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
@@ -11442,6 +11530,32 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "unevaluatedProperties": false
     },
+    "CanvasFeatureLabels": {
+      "title": "CanvasFeatureLabels",
+      "type": "object",
+      "properties": {
+        "name": {
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FeatureNameLabel"
+          }
+        },
+        "description": {
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FeatureDescriptionLabel"
+          }
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
     "LinearVariantDisplaySlots": {
       "type": "object",
       "properties": {
@@ -11536,36 +11650,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/Legend"
           }
         },
-        "showLabels": {
-          "description": "Label text drawn beside each feature: \\"auto\\" adapts to zoom, dropping descriptions at maxDescriptionFeatureDensity and names at maxLabelFeatureDensity; \\"nameAndDescription\\", \\"name\\", \\"description\\", and \\"none\\" pin a choice at every zoom. Defaults to \`auto\`. Replaces the former showLabels on/off enum + showDescriptions boolean pair.",
-          "default": "auto",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "anyOf": [
-              {
-                "enum": [
-                  "auto",
-                  "nameAndDescription",
-                  "name",
-                  "description",
-                  "none"
-                ]
-              },
-              {
-                "enum": [
-                  true,
-                  false
-                ],
-                "deprecated": true,
-                "description": "Legacy spellings a migration rewrites when the config loads."
-              }
-            ]
-          }
-        },
         "maxLabelFeatureDensity": {
-          "description": "In \\"auto\\" showLabels mode, hide labels when visible feature density (features/pixel) exceeds this value.",
+          "description": "hide the names, which \`labels.name\` shows, where the on-screen feature density (features per pixel) passes this; past it the gene names alone still draw while the genes are under it.",
           "default": 0.2,
           "if": {
             "type": "null"
@@ -11575,7 +11661,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "maxDescriptionFeatureDensity": {
-          "description": "In \\"auto\\" showLabels mode, hide descriptions when visible feature density (features/pixel) exceeds this value. Lower than maxLabelFeatureDensity so descriptions drop before names.",
+          "description": "hide the descriptions, which \`labels.description\` shows, where the on-screen feature density (features per pixel) passes this or \`maxLabelFeatureDensity\`, whichever is lower.",
           "default": 0.1,
           "if": {
             "type": "null"
@@ -11687,6 +11773,18 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
+        "showLabels": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "showDescriptions": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "subfeatureLabels": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
         "outline": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
@@ -11708,10 +11806,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
         "color": {
-          "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
-        },
-        "showDescriptions": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
@@ -16625,9 +16719,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 }
               ]
             },
-            "showLabels": {
-              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/showLabels"
-            },
             "maxLabelFeatureDensity": {
               "$ref": "#/$defs/LinearBasicDisplaySlots/properties/maxLabelFeatureDensity"
             },
@@ -16690,9 +16781,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "geneGlyphMode": {
               "$ref": "#/$defs/LinearBasicDisplaySlots/properties/geneGlyphMode"
-            },
-            "subfeatureLabels": {
-              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/subfeatureLabels"
             },
             "chevrons": {
               "$ref": "#/$defs/LinearBasicDisplaySlots/properties/chevrons"
@@ -16784,6 +16872,15 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "containerTypes": {
               "$ref": "#/$defs/LinearBasicDisplaySlots/properties/containerTypes"
             },
+            "showLabels": {
+              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/showLabels"
+            },
+            "showDescriptions": {
+              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/showDescriptions"
+            },
+            "subfeatureLabels": {
+              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/subfeatureLabels"
+            },
             "outline": {
               "$ref": "#/$defs/LinearBasicDisplaySlots/properties/outline"
             },
@@ -16811,9 +16908,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "showChevrons": {
               "$ref": "#/$defs/LinearBasicDisplaySlots/properties/showChevrons"
-            },
-            "showDescriptions": {
-              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/showDescriptions"
             },
             "rows": {
               "anyOf": [
@@ -18015,9 +18109,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 }
               ]
             },
-            "showLabels": {
-              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/showLabels"
-            },
             "maxLabelFeatureDensity": {
               "$ref": "#/$defs/LinearVariantDisplaySlots/properties/maxLabelFeatureDensity"
             },
@@ -18106,6 +18197,15 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "containerTypes": {
               "$ref": "#/$defs/LinearVariantDisplaySlots/properties/containerTypes"
             },
+            "showLabels": {
+              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/showLabels"
+            },
+            "showDescriptions": {
+              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/showDescriptions"
+            },
+            "subfeatureLabels": {
+              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/subfeatureLabels"
+            },
             "outline": {
               "$ref": "#/$defs/LinearVariantDisplaySlots/properties/outline"
             },
@@ -18127,9 +18227,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                   "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/color"
                 }
               ]
-            },
-            "showDescriptions": {
-              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/showDescriptions"
             },
             "variantLayout": {
               "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/variantLayout"

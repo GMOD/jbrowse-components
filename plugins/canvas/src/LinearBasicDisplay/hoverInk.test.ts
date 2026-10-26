@@ -383,7 +383,8 @@ test('tooltip.show off opens no tooltip, and the hover stays', () => {
 
 test('the tooltip keeps a name its label does not draw', () => {
   const { display } = setUp()
-  display.setShowLabels('none')
+  display.setShowNames(false)
+  display.setShowDescriptions(false)
 
   display.setHover('g1', undefined, ['GENE1'])
   expect(display.shownTooltipRows).toEqual(['GENE1'])

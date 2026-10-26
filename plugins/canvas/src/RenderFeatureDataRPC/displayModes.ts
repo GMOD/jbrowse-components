@@ -33,3 +33,19 @@ export type SubfeatureLabels =
   (typeof SUBFEATURE_LABEL_OPTIONS)[number]['value']
 
 export const SUBFEATURE_LABELS = SUBFEATURE_LABEL_OPTIONS.map(o => o.value)
+
+export const SUBFEATURE_LABEL_PLACEMENTS = ['auto', 'below', 'overlay'] as const
+
+export type SubfeatureLabelPlacementSetting =
+  (typeof SUBFEATURE_LABEL_PLACEMENTS)[number]
+
+/** `labels.subfeatures` as the one mode the worker bakes. */
+export function subfeatureLabelsOf({
+  show,
+  placement,
+}: {
+  show: boolean
+  placement: SubfeatureLabelPlacementSetting
+}): SubfeatureLabels {
+  return show ? placement : 'none'
+}

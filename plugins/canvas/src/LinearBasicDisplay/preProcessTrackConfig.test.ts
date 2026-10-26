@@ -11,6 +11,7 @@ type DisplaySnapshot = {
   type?: string
   geneGlyphMode?: string
   showLabels?: unknown
+  labels?: unknown
   encoding?: { color?: { value?: string } }
   utrColor?: string
   heightMode?: string
@@ -52,12 +53,13 @@ test('remaps legacy geneGlyphMode "longest"', () => {
   expect(out.displays![0]!.geneGlyphMode).toBe('representative')
 })
 
-test('normalizes a boolean showLabels to its enum mode', () => {
+test('lifts a v4 boolean showLabels onto labels.name.show', () => {
   const out = evaluate({
     type: 'FeatureTrack',
-    displays: [{ type: 'LinearBasicDisplay', showLabels: true }],
+    displays: [{ type: 'LinearBasicDisplay', showLabels: false }],
   })
-  expect(typeof out.displays![0]!.showLabels).toBe('string')
+  expect(out.displays![0]!.showLabels).toBeUndefined()
+  expect(out.displays![0]!.labels).toEqual({ name: { show: false } })
 })
 
 test('matches the LinearFeatureDisplay alias too', () => {

@@ -198,19 +198,15 @@ describe('canvas track menu shape', () => {
     expect(display.genesFilter).toBeUndefined()
   })
 
-  it('offers the label rungs as one flat radio group', () => {
+  it('offers the labels as checkboxes beside the subfeature label radio', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
     const show = subMenuOf(display.trackMenuItems(), 'Show')
 
     expect(show.map(labelOf)).toEqual([
+      'Names',
+      'Descriptions',
       'Chevrons',
-      'Labels',
-      'Auto',
-      'Name + description',
-      'Name only',
-      'Description only',
-      'None',
       'Subfeature labels',
       'Auto',
       'Off',
@@ -219,19 +215,21 @@ describe('canvas track menu shape', () => {
     ])
   })
 
-  it('says so when the chosen label rung is suppressed by collapsed mode', () => {
+  it('says so when a ticked label is suppressed by collapsed mode', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
-    display.setShowLabels('nameAndDescription')
-
-    find(subMenuOf(display.trackMenuItems(), 'Show'), 'Name + description')
+    find(subMenuOf(display.trackMenuItems(), 'Show'), 'Names')
 
     display.setDisplayMode('collapsed')
     const inert = find(
       subMenuOf(display.trackMenuItems(), 'Show'),
-      'Name + description — hidden while collapsed',
+      'Names — hidden while collapsed',
     )
-    expect(inert.type === 'radio' && inert.checked).toBe(true)
+    expect(inert.type === 'checkbox' && inert.checked).toBe(true)
+    find(
+      subMenuOf(display.trackMenuItems(), 'Show'),
+      'Descriptions — hidden while collapsed',
+    )
   })
 
   it('says so for the subfeature label rung too', () => {

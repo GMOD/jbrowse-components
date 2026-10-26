@@ -8,19 +8,19 @@ import { retiredDisplayColor } from '@jbrowse/display-kit/retiredSettings'
 import { sectionFacetConfigSchema } from '@jbrowse/display-kit/sectionFacetConfigSchema'
 import { types } from '@jbrowse/mobx-state-tree'
 
-import { FEATURE_NAME_FIELD } from '../RenderFeatureDataRPC/featureNameField.ts'
 import { DISPLAY_MODES } from '../RenderFeatureDataRPC/renderConfig.ts'
 import {
   MAX_DESCRIPTION_FEATURE_DENSITY,
   MAX_LABEL_FEATURE_DENSITY,
 } from '../RenderFeatureDataRPC/zoomThresholds.ts'
+import { featureDescriptionLabelConfigSchema } from './featureDescriptionLabelConfigSchema.ts'
 import { featureMarkConfigSchema } from './featureMarkConfigSchema.ts'
+import { featureNameLabelConfigSchema } from './featureNameLabelConfigSchema.ts'
 import { featureTooltipConfigSchema } from './featureTooltipConfigSchema.ts'
 import {
   basicRetired,
   migrateBasicConfigSnapshot,
 } from './migrateBasicSnapshot.ts'
-import { SHOW_LABELS_MODES } from './showLabelsMode.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -82,21 +82,11 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
       /**
        * #slot
        */
-      showLabels: {
-        type: 'stringEnum',
-        model: types.enumeration('showLabels', [...SHOW_LABELS_MODES]),
-        description:
-          'Label text drawn beside each feature: "auto" adapts to zoom, dropping descriptions at maxDescriptionFeatureDensity and names at maxLabelFeatureDensity; "nameAndDescription", "name", "description", and "none" pin a choice at every zoom. Defaults to `auto`. Replaces the former showLabels on/off enum + showDescriptions boolean pair',
-        defaultValue: 'auto',
-      },
-      /**
-       * #slot
-       */
       maxLabelFeatureDensity: {
         type: 'number',
         defaultValue: MAX_LABEL_FEATURE_DENSITY,
         description:
-          'In "auto" showLabels mode, hide labels when visible feature density (features/pixel) exceeds this value',
+          'hide the names, which `labels.name` shows, where the on-screen feature density (features per pixel) passes this; past it the gene names alone still draw while the genes are under it',
         advanced: true,
       },
       /**
@@ -106,7 +96,7 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
         type: 'number',
         defaultValue: MAX_DESCRIPTION_FEATURE_DENSITY,
         description:
-          'In "auto" showLabels mode, hide descriptions when visible feature density (features/pixel) exceeds this value. Lower than maxLabelFeatureDensity so descriptions drop before names',
+          'hide the descriptions, which `labels.description` shows, where the on-screen feature density (features per pixel) passes this or `maxLabelFeatureDensity`, whichever is lower',
         advanced: true,
       },
       /**
@@ -139,32 +129,22 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
       facet: sectionFacetConfigSchema,
       /**
        * #slot labels
-       * The fields a feature's name label and description line read.
+       * The text drawn beside each feature, two parts with `show`.
        */
       labels: ConfigurationSchema(
         'CanvasFeatureLabels',
         {
           /**
            * #slot labels.name
+           * Each feature's name, a [](/docs/config/featurenamelabel) object.
            */
-          name: {
-            type: 'featureField',
-            description:
-              "the field each feature's name label reads, such as `gene_name`, or a `jexl:` expression over `feature`; the default reads the name, else the ID, and an empty value draws no name",
-            defaultValue: FEATURE_NAME_FIELD,
-          },
+          name: featureNameLabelConfigSchema,
           /**
            * #slot labels.description
+           * The line under each name, a
+           * [](/docs/config/featuredescriptionlabel) object.
            */
-          description: {
-            type: 'featureField',
-            description:
-              "the field each feature's description line reads, such as `note`, or a `jexl:` expression over `feature`; the default reads `note`, else `description`, else `function`, and an empty value draws no description",
-            // `function` is the only human-readable text on structural features
-            // that carry no note; read via get() since it is a reserved word in
-            // the grammar.
-            defaultValue: `jexl:get(feature,'note') || get(feature,'description') || get(feature,'function')`,
-          },
+          description: featureDescriptionLabelConfigSchema,
         },
         { plot: true },
       ),

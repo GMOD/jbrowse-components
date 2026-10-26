@@ -74,12 +74,17 @@ export function fitLadderNote(drops: FitDrops) {
     : undefined
 }
 
-// Subfeature labels are their own radio, so their drop is excluded here and
-// surfaced only in the track-sizing note.
-export function labelsFitHint(drops: FitDrops) {
-  if (drops.everyLabel) {
-    return 'hidden to fit'
+// The note on each label checkbox the ladder is not honouring. Subfeature
+// labels are their own radio, so their drop is surfaced only in the
+// track-sizing note.
+export function labelFitHints({ names, descriptions }: FitDrops) {
+  return {
+    names:
+      names === 'all'
+        ? 'hidden to fit'
+        : names === 'some'
+          ? 'some hidden to fit'
+          : undefined,
+    descriptions: descriptions ? 'hidden to fit' : undefined,
   }
-  const hidden = hiddenKinds({ ...drops, subfeatureLabels: false })
-  return hidden ? `${hidden} hidden to fit` : undefined
 }

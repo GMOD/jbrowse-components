@@ -1,12 +1,11 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 
-import {
-  GENE_GLYPH_DEFAULTS,
-  SUBFEATURE_LABELS,
-} from '../RenderFeatureDataRPC/renderConfig.ts'
 import baseConfigSchemaFactory from './baseConfigSchema.ts'
 import { featureContainersConfigSchema } from './featureContainersConfigSchema.ts'
+import { featureDescriptionLabelConfigSchema } from './featureDescriptionLabelConfigSchema.ts'
+import { featureNameLabelConfigSchema } from './featureNameLabelConfigSchema.ts'
+import { featureSubfeatureLabelsConfigSchema } from './featureSubfeatureLabelsConfigSchema.ts'
 import { featureTranscriptsConfigSchema } from './featureTranscriptsConfigSchema.ts'
 import { GENE_GLYPH_MODES } from './geneGlyphMode.ts'
 
@@ -78,15 +77,33 @@ export default function configSchemaFactory(pluginManager: PluginManager) {
         defaultValue: 'auto',
       },
       /**
-       * #slot
+       * #slot labels
+       * The text drawn beside each feature: the base's name and description,
+       * and the names of its parts.
        */
-      subfeatureLabels: {
-        type: 'stringEnum',
-        model: types.enumeration('subfeatureLabels', [...SUBFEATURE_LABELS]),
-        description:
-          "subfeature label display mode: `auto` (the default) names a polyprotein's cleavage products on their rows and nothing else; `none`, `below` or `overlay` apply to every part",
-        defaultValue: GENE_GLYPH_DEFAULTS.subfeatureLabels,
-      },
+      labels: ConfigurationSchema(
+        'FeatureLabels',
+        {
+          /**
+           * #slot labels.name
+           * Each feature's name, a [](/docs/config/featurenamelabel) object.
+           */
+          name: featureNameLabelConfigSchema,
+          /**
+           * #slot labels.description
+           * The line under each name, a
+           * [](/docs/config/featuredescriptionlabel) object.
+           */
+          description: featureDescriptionLabelConfigSchema,
+          /**
+           * #slot labels.subfeatures
+           * The names of a feature's parts, a
+           * [](/docs/config/featuresubfeaturelabels) object.
+           */
+          subfeatures: featureSubfeatureLabelsConfigSchema,
+        },
+        { plot: true },
+      ),
       /**
        * #slot chevrons
        * The arrows on a feature's intron lines.

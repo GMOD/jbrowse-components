@@ -1307,7 +1307,7 @@ function zoomAndSettle(view: LinearGenomeViewModel, bpPerPx: number) {
   view.setCoarseDynamicBlocks(view.dynamicBlocks, view.bpPerPx)
 }
 
-describe('showLabels auto density gate', () => {
+describe('label density gate', () => {
   function setup() {
     const env = createTestEnvironment()
     const { display, view } = env.createDisplay()
@@ -1334,18 +1334,20 @@ describe('showLabels auto density gate', () => {
     expect(display.densityStatsPerRegion.get(0)?.featureCount).toBe(500)
   })
 
-  it('a pinned rung shows names even above the density threshold', () => {
+  it('hides shown names past the density threshold, which raising keeps them', () => {
     const { display, view } = setup()
     display.setDensityStats(0, { featureCount: 500, regionWidthBp: 50_000 })
-    display.setShowLabels('nameAndDescription')
     zoomAndSettle(view, 62.5)
+    expect(display.showLabels).toBe(false)
+    setConf(display, 'maxLabelFeatureDensity', 1)
     expect(display.showLabels).toBe(true)
   })
 
   it('"none" hides names even at low density', () => {
     const { display, view } = setup()
     display.setDensityStats(0, { featureCount: 500, regionWidthBp: 50_000 })
-    display.setShowLabels('none')
+    display.setShowNames(false)
+    display.setShowDescriptions(false)
     zoomAndSettle(view, 20)
     expect(display.showLabels).toBe(false)
   })
@@ -1380,13 +1382,15 @@ describe('showLabels auto density gate', () => {
     expect(display.effectiveShowDescriptions).toBe(false)
   })
 
-  it('"description" paints descriptions with no name, past the density gate', () => {
+  it('draws descriptions with no names under the density gate', () => {
     const { display, view } = setup()
     display.setDensityStats(0, { featureCount: 500, regionWidthBp: 50_000 })
-    display.setShowLabels('description')
-    zoomAndSettle(view, 62.5)
+    display.setShowNames(false)
+    zoomAndSettle(view, 5)
     expect(display.showLabels).toBe(false)
     expect(display.effectiveShowDescriptions).toBe(true)
+    zoomAndSettle(view, 62.5)
+    expect(display.effectiveShowDescriptions).toBe(false)
   })
 
   function featuresOver(n: number, start: number, end: number) {
@@ -1622,17 +1626,19 @@ describe('SettingsInvalidate keys on the payload, not the reads', () => {
   }
 
   it.each([
-    ['showLabels', 'none'],
+    [['labels', 'name', 'show'], false],
+    [['labels', 'description', 'show'], false],
+    [['tooltip', 'show'], false],
     ['height', 600],
     ['heightMode', 'grow'],
     ['growMaxHeight', 900],
     ['maxLabelFeatureDensity', 0.05],
     ['maxDescriptionFeatureDensity', 0.01],
-  ])('a main-thread-only %s change does not refetch', async (slot, value) => {
+  ])('a main-thread-only %j change does not refetch', async (slot, value) => {
     const { display, mockRpcCall } = await loadedDisplay()
     const callsBefore = mockRpcCall.mock.calls.length
 
-    display.configuration.setSlot(slot, value)
+    setConf(display, slot, value)
     jest.advanceTimersByTime(800)
     await jest.runAllTimersAsync()
 
@@ -1704,7 +1710,7 @@ describe('SettingsInvalidate keys on the payload, not the reads', () => {
     const { display, mockRpcCall } = await loadedDisplay()
     const callsBefore = mockRpcCall.mock.calls.length
 
-    display.configuration.setSlot('subfeatureLabels', 'below')
+    display.setSubfeatureLabels('below')
     jest.advanceTimersByTime(800)
     await jest.runAllTimersAsync()
 
@@ -1755,7 +1761,7 @@ describe('SettingsInvalidate keys on the payload, not the reads', () => {
     const { display, mockRpcCall } = await loadedDisplay()
     // subfeatureLabels resolves to 'none' by default, where the collapsed
     // substitution is a no-op.
-    display.configuration.setSlot('subfeatureLabels', 'below')
+    display.setSubfeatureLabels('below')
     jest.advanceTimersByTime(800)
     await jest.runAllTimersAsync()
     const callsBefore = mockRpcCall.mock.calls.length

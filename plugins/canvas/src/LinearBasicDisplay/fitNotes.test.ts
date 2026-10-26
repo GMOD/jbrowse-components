@@ -1,4 +1,4 @@
-import { fitDrops, fitLadderNote, labelsFitHint } from './fitNotes.ts'
+import { fitDrops, fitLadderNote, labelFitHints } from './fitNotes.ts'
 
 import type { FitStage } from './fitLadder.ts'
 
@@ -138,27 +138,37 @@ describe('fitLadderNote', () => {
   })
 })
 
-describe('labelsFitHint', () => {
+describe('labelFitHints', () => {
   it('is absent when the ladder gave nothing up', () => {
-    expect(labelsFitHint(drops(stage('full'), true, true))).toBeUndefined()
+    expect(labelFitHints(drops(stage('full'), true, true))).toEqual({
+      names: undefined,
+      descriptions: undefined,
+    })
   })
 
-  it('says which part of the row went, or that all of it did', () => {
-    expect(labelsFitHint(drops(stage('labels'), true, true))).toBe(
-      'descriptions hidden to fit',
-    )
-    expect(labelsFitHint(drops(stage('decimated'), true, false))).toBe(
-      'some names hidden to fit',
-    )
-    expect(labelsFitHint(drops(stage('bodies'), true, true))).toBe(
-      'hidden to fit',
-    )
-    expect(labelsFitHint(drops(stage('labels'), false, true))).toBe(
-      'hidden to fit',
-    )
+  it('says on each checkbox which of its labels went', () => {
+    expect(labelFitHints(drops(stage('labels'), true, true))).toEqual({
+      names: undefined,
+      descriptions: 'hidden to fit',
+    })
+    expect(labelFitHints(drops(stage('decimated'), true, false))).toEqual({
+      names: 'some hidden to fit',
+      descriptions: undefined,
+    })
+    expect(labelFitHints(drops(stage('bodies'), true, true))).toEqual({
+      names: 'hidden to fit',
+      descriptions: 'hidden to fit',
+    })
+    expect(labelFitHints(drops(stage('labels'), false, true))).toEqual({
+      names: undefined,
+      descriptions: 'hidden to fit',
+    })
   })
 
   it('leaves the subfeature-label drop to the track-sizing note', () => {
-    expect(labelsFitHint(drops(stage('bare'), false, false))).toBeUndefined()
+    expect(labelFitHints(drops(stage('bare'), false, false))).toEqual({
+      names: undefined,
+      descriptions: undefined,
+    })
   })
 })

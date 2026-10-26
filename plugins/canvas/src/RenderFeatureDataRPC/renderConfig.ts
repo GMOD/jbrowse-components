@@ -2,7 +2,12 @@ import { readConfigValue as coreReadConfigValue } from '@jbrowse/core/configurat
 import { IDENTITY_SCALE } from '@jbrowse/core/util/colorScale'
 import { DEFAULT_CANONICAL_TRANSCRIPTS } from '@jbrowse/core/util/isoformRank'
 
-import type { SubfeatureLabels } from './displayModes.ts'
+import { subfeatureLabelsOf } from './displayModes.ts'
+
+import type {
+  SubfeatureLabelPlacementSetting,
+  SubfeatureLabels,
+} from './displayModes.ts'
 import type { Feature } from '@jbrowse/core/util'
 import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
 import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
@@ -185,6 +190,27 @@ export function pickDisplayConfig(snapshot: Record<string, unknown>) {
   const encoding = source.encoding as { color?: object } | undefined
   picked.color = workerColorOf(encoding?.color ?? {})
   picked.tooltip = (source.tooltip as { field?: unknown } | undefined)?.field
+  // The fields alone: the `show` switches are the main thread's, so a label
+  // toggle never refetches.
+  const labels = source.labels as
+    | Partial<
+        Record<'name' | 'description', { field?: string }> & {
+          subfeatures: {
+            show: boolean
+            placement: SubfeatureLabelPlacementSetting
+          }
+        }
+      >
+    | undefined
+  if (labels) {
+    picked.labels = {
+      name: labels.name?.field,
+      description: labels.description?.field,
+    }
+    if (labels.subfeatures) {
+      picked.subfeatureLabels = subfeatureLabelsOf(labels.subfeatures)
+    }
+  }
   picked.featureHeight = (
     source.mark as { height?: unknown } | undefined
   )?.height

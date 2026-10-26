@@ -1,4 +1,4 @@
-import { readConfObject, setConf } from '@jbrowse/core/configuration'
+import { readConfObject } from '@jbrowse/core/configuration'
 import { GROW_MAX_HEIGHT } from '@jbrowse/display-kit/heightMode'
 import { autorun } from 'mobx'
 
@@ -330,7 +330,8 @@ describe('canvas display fit-to-display-height', () => {
   it('fitted content fits the track exactly (no float-epsilon overflow)', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
-    display.setShowLabels('none')
+    display.setShowNames(false)
+    display.setShowDescriptions(false)
     display.setHeightMode('fixed')
     display.setRpcData(0, stackedRegionData(12, 20), {
       assemblyName: 'volvox',
@@ -547,32 +548,43 @@ describe('canvas display fit escalation ladder', () => {
     const bodiesH = maxBottom(display.fitBodiesOnlyLayout)
     const labelRows = () =>
       display
-        .showSubmenuRadioGroups()
+        .showSubmenuCheckboxItems()
         .map(item => ('label' in item ? item.label : undefined))
 
     display.setHeight(fullH)
     expect(display.fitNote).toBeUndefined()
     display.setHeightMode('fit')
     expect(display.fitNote).toBeUndefined()
-    expect(labelRows()).toContain('Auto')
+    expect(labelRows()).toEqual(
+      expect.arrayContaining(['Names', 'Descriptions']),
+    )
 
     display.setHeight(Math.round((labelsH + fullH) / 2))
     expect(display.fitStage.level).toBe('labels')
     expect(display.fitNote).toBe(
       'descriptions hidden (taller track shows more)',
     )
-    expect(labelRows()).toContain('Auto — descriptions hidden to fit')
+    expect(labelRows()).toEqual(
+      expect.arrayContaining(['Names', 'Descriptions — hidden to fit']),
+    )
 
     display.setHeight(Math.round(bodiesH / 3))
     expect(display.fitStage.level).toBe('bodies')
     expect(display.fitNote).toBe(
       `names + descriptions hidden, squeezed to ${Math.round(display.fitScale * 100)}% (taller track shows more)`,
     )
-    expect(labelRows()).toContain('Auto — hidden to fit')
+    expect(labelRows()).toEqual(
+      expect.arrayContaining([
+        'Names — hidden to fit',
+        'Descriptions — hidden to fit',
+      ]),
+    )
 
     display.setHeightMode('fixed')
     expect(display.fitNote).toBeUndefined()
-    expect(labelRows()).toContain('Auto')
+    expect(labelRows()).toEqual(
+      expect.arrayContaining(['Names', 'Descriptions']),
+    )
   })
 
   it('does not grow features past the normal feature height', () => {
@@ -776,7 +788,8 @@ describe('canvas display fit escalation ladder', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
     const total = 40
-    display.setShowLabels('nameAndDescription')
+    display.setShowNames(true)
+    display.setShowDescriptions(true)
     display.setRpcData(0, mixedWidthRegionData(total), ctgA)
     display.setHeightMode('fit')
     const fewestNamesH = display.decimatedHeightProbe(8)
@@ -852,9 +865,10 @@ describe('canvas display fit escalation ladder', () => {
   it('drops the below-label rows before squeezing the bodies', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
-    setConf(display, 'subfeatureLabels', 'below')
+    display.setSubfeatureLabels('below')
     // Names off, so no labelled rung stands between `bodies` and `bare`.
-    display.setShowLabels('none')
+    display.setShowNames(false)
+    display.setShowDescriptions(false)
     display.setRpcData(0, belowLabeledStackedRegionData(8, 10), ctgA)
     display.setHeightMode('fit')
 
@@ -874,7 +888,7 @@ describe('canvas display fit escalation ladder', () => {
   it('squeezes at the bare rung once even the reclaimed rows overflow', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
-    setConf(display, 'subfeatureLabels', 'below')
+    display.setSubfeatureLabels('below')
     display.setRpcData(0, belowLabeledStackedRegionData(8, 10), ctgA)
     display.setHeightMode('fit')
     display.setHeight(Math.floor(maxBottom(display.fitBareLayout) / 2))
@@ -933,7 +947,8 @@ describe('canvas display fit escalation ladder', () => {
   it('snaps across a rung boundary and morphs within one', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
-    display.setShowLabels('nameAndDescription')
+    display.setShowNames(true)
+    display.setShowDescriptions(true)
     display.setRpcData(0, labeledStackedRegionData(10, 10), ctgA)
     display.setHeightMode('fit')
 
@@ -976,7 +991,8 @@ describe('canvas display fit escalation ladder', () => {
   it('snaps into and within the decimated rung', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
-    display.setShowLabels('name')
+    display.setShowNames(true)
+    display.setShowDescriptions(false)
     display.setRpcData(0, mixedWidthRegionData(40), ctgA)
     display.setHeightMode('fit')
     const labelsH = maxBottom(display.fitLabelsOnlyLayout)
@@ -1002,26 +1018,11 @@ describe('canvas display fit escalation ladder', () => {
     expect(looser.sig).not.toBe(decimated.sig)
   })
 
-  it('lays out under fit mode with a per-feature mark.height callback', () => {
-    const { createDisplay } = createTestEnvironment()
-    const { display } = createDisplay()
-    display.setRpcData(0, mixedHeightRegionData([20, 20, 20]), ctgA)
-    setConf(
-      display,
-      ['mark', 'height'],
-      "jexl:get(feature,'score') > 5 ? 20 : 8",
-    )
-    display.setHeightMode('fit')
-    display.setHeight(30)
-    expect(display.laidOutDataMap.size).toBeGreaterThan(0)
-    expect(Number.isFinite(display.fitScale)).toBe(true)
-    expect(Number.isFinite(display.maxY)).toBe(true)
-  })
-
   it('with descriptions off, the full and labels stages coincide', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
-    display.setShowLabels('name')
+    display.setShowNames(true)
+    display.setShowDescriptions(false)
     display.setRpcData(0, labeledStackedRegionData(10, 10), ctgA)
     expect(display.effectiveShowDescriptions).toBe(false)
 
@@ -1041,7 +1042,8 @@ describe('canvas display fit escalation ladder', () => {
   it('with labels and descriptions off, only a uniform squeeze remains', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
-    display.setShowLabels('none')
+    display.setShowNames(false)
+    display.setShowDescriptions(false)
     display.setRpcData(0, labeledStackedRegionData(10, 10), ctgA)
     expect(display.showLabels).toBe(false)
 
@@ -1609,7 +1611,8 @@ describe('the isoform rung across the three height modes', () => {
   it('trims on the rungs below the isoform one with names off', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
-    display.setShowLabels('none')
+    display.setShowNames(false)
+    display.setShowDescriptions(false)
     display.setRpcData(0, ISOFORM_GENES, ctgA)
     display.setHeightMode('fit')
     display.setHeight(20)

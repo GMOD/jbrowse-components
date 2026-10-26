@@ -69,14 +69,15 @@ describe('Feature height submenu', () => {
   it('collapsed suppresses names + descriptions without clobbering the settings', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
-    display.setShowLabels('nameAndDescription')
+    display.setShowNames(true)
+    display.setShowDescriptions(true)
     expect(display.showLabels).toBe(true)
     expect(display.effectiveShowDescriptions).toBe(true)
 
     display.setDisplayMode('collapsed')
     expect(display.showLabels).toBe(false)
     expect(display.effectiveShowDescriptions).toBe(false)
-    expect(display.showLabelsMode).toBe('nameAndDescription')
+    expect(display.showNames).toBe(true)
     expect(display.showDescriptions).toBe(true)
     display.setDisplayMode('normal')
     expect(display.showLabels).toBe(true)

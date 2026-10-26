@@ -2,6 +2,7 @@ import { filterMenuItems, undoItems } from '@jbrowse/core/ui/filterMenuItems'
 import {
   TRACK_MENU_PRIORITY,
   radioItems,
+  toggleItem,
   withHint,
 } from '@jbrowse/core/ui/menuItems'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
@@ -22,11 +23,9 @@ import HeightIcon from '@mui/icons-material/Height'
 
 import { DISPLAY_MODE_OPTIONS } from '../RenderFeatureDataRPC/displayModes.ts'
 import { colorsWithGrouping } from './groupByColor.ts'
-import { SHOW_LABELS_OPTIONS } from './showLabelsMode.ts'
 
 import type { DisplayMode } from '../RenderFeatureDataRPC/renderConfig.ts'
 import type { FeatureFacet } from './facet.ts'
-import type { ShowLabelsMode } from './showLabelsMode.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Reversibles } from '@jbrowse/core/ui/filterMenuItems'
 import type { HiddenGroupsModel } from '@jbrowse/display-kit/groupByMenu'
@@ -54,13 +53,17 @@ export function inlineRadioGroup<T extends string>(
 
 // Structural for the same reason as `FeatureMenuSelf`;
 interface ShowSubmenuSelf extends HiddenGroupsModel, FacetSelf {
-  showLabelsMode: ShowLabelsMode
+  showNames: boolean
+  showDescriptions: boolean
+  showLabels: boolean
+  effectiveShowDescriptions: boolean
   displayMode: DisplayMode
-  labelsFitHint: string | undefined
+  labelFitHints: { names?: string; descriptions?: string }
   hasLegendKey: boolean
   showLegend: boolean
   setShowLegend: (value: boolean) => void
-  setShowLabels: (mode: ShowLabelsMode) => void
+  setShowNames: (show: boolean) => void
+  setShowDescriptions: (show: boolean) => void
 }
 
 interface FeatureHeightSelf extends HeightModeMenuModel {
@@ -139,6 +142,45 @@ export function showSubmenuCheckboxItems(self: ShowSubmenuSelf): MenuItem[] {
         },
       },
     ),
+    ...labelCheckboxItems(self),
+  ]
+}
+
+// A ticked label the track is not drawing says why: collapsed mode strips
+// labels before the fit ladder sees them, and the ladder before the density
+// gate.
+function labelCheckboxItems(self: ShowSubmenuSelf): MenuItem[] {
+  const hint = (shown: boolean, drawn: boolean, fitHint?: string) =>
+    !shown
+      ? undefined
+      : self.displayMode === 'collapsed'
+        ? 'hidden while collapsed'
+        : (fitHint ?? (drawn ? undefined : 'hidden at this zoom'))
+  return [
+    toggleItem(
+      withHint(
+        'Names',
+        hint(self.showNames, self.showLabels, self.labelFitHints.names),
+      ),
+      self.showNames,
+      show => {
+        self.setShowNames(show)
+      },
+    ),
+    toggleItem(
+      withHint(
+        'Descriptions',
+        hint(
+          self.showDescriptions,
+          self.effectiveShowDescriptions,
+          self.labelFitHints.descriptions,
+        ),
+      ),
+      self.showDescriptions,
+      show => {
+        self.setShowDescriptions(show)
+      },
+    ),
   ]
 }
 
@@ -147,18 +189,6 @@ export function showSubmenuLegendItems(self: ShowSubmenuSelf): MenuItem[] {
   return self.hasLegendKey
     ? [{ type: 'divider' }, legendCheckboxItem(self)]
     : []
-}
-
-export function showSubmenuRadioGroups(self: ShowSubmenuSelf): MenuItem[] {
-  return inlineRadioGroup(
-    'Labels',
-    self.showLabelsMode,
-    SHOW_LABELS_OPTIONS,
-    mode => {
-      self.setShowLabels(mode)
-    },
-    inertLabelHint(self, self.showLabelsMode, self.labelsFitHint),
-  )
 }
 
 // Collapsed wins over the fit note, since collapsed mode strips labels before
