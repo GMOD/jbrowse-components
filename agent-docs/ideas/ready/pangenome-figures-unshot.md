@@ -56,3 +56,16 @@ the release-2 files, and why CHM13 is the only donor worth loading.
   the CHM13 window, so the launch there opens three panels), and the GenArk route in `pangenome_hprc.md` makes any of the 464 haplotypes an
   openable donor, with `pangenome/hprc_haplotype_launch` and the
   `pangenome/hprc_out_to_haplotype` tour as the worked example.
+- **`pangenome_hprc_haplotypes` part 2 on the portal's own launches.** CFH
+  is taught as "click the example, then **Haplotypes**", but GSTT1 and FLNA/EMD
+  have the reader hand-pick ten and four haplotypes under **Choose lanes...**,
+  and all three figures pin a hand panel through `portalLanesView`
+  (`website/scripts/specs/genomes_pangenome.ts`), while the launch opens 32
+  lanes the structural-state reading allots (jb2hubs `pangenomePanels.ts`
+  `LANE_COUNT`, 40 px each). Teach GSTT1 and FLNA/EMD as the CFH section is,
+  drop the **Order lanes by structure** step (graph lanes already stack by
+  structure), and shoot what the launch opens, from its URL or from the
+  allotted lane list. Prose and figures change together, so the page never
+  reads one way and shows another. jb2hubs' "The reference lane draws these
+  genes too, but unnamed" (`pangenomeLinks.ts`) is stale since ADR-180 named
+  them.

@@ -153,6 +153,9 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       BaseViewModel,
       DiagonalizeProgressMixin(),
       ImportFormSyntenyMixin(),
+      // no `defaultColorField: 'strand'` as the multi-way ribbons have:
+      // declined 2026-10-26, since most synteny view figures draw on the red
+      // default, and strand would also turn every indel from blue to purple
       SyntenyViewMixin({ defaultOpacity: DEFAULT_ALPHA }),
       SyntenyFadeMixin(),
       types.model({
