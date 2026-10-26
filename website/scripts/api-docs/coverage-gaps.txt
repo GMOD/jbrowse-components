@@ -48,7 +48,7 @@ Dotplot1DView
 LinearSyntenyViewHelper
 TimeTraveller
 
-# model members with no description (1300)
+# model members with no description (1298)
 # fix: write a sentence under the member’s #property/#volatile/#getter/#method/#action tag
 AddTrackModel.adapterHint
 AddTrackModel.altAssemblyName
@@ -827,7 +827,6 @@ LinearHicDisplay.setSelectedNormalization
 LinearHicDisplay.startRenderingBackend
 LinearHicDisplay.stepResolution
 LinearHicDisplay.trackMenuItems
-LinearMafDisplay.basesRenderingActive
 LinearMafDisplay.coarseAdapterSlot
 LinearMafDisplay.colorField
 LinearMafDisplay.conservationHeight
@@ -835,10 +834,7 @@ LinearMafDisplay.conservationUnit
 LinearMafDisplay.coverageHeight
 LinearMafDisplay.coverageMinAlleleFraction
 LinearMafDisplay.fetchCoarseTier
-LinearMafDisplay.identityEncoding
 LinearMafDisplay.rowProportion
-LinearMafDisplay.rowsColor
-LinearMafDisplay.rowsY
 LinearMafDisplay.scrollViewportHeight
 LinearMafDisplay.setConservationUnit
 LinearMafDisplay.setCoverageMinAlleleFraction
@@ -849,6 +845,7 @@ LinearMafDisplay.setShowCoverage
 LinearMafDisplay.setShowFrames
 LinearMafDisplay.setShowInterbaseIndicators
 LinearMafDisplay.setShowInversions
+LinearMafDisplay.setShowMismatches
 LinearMafDisplay.setShowReferenceRow
 LinearMafDisplay.setYField
 LinearMafDisplay.showAlignments
@@ -857,6 +854,7 @@ LinearMafDisplay.showCoverage
 LinearMafDisplay.showFrames
 LinearMafDisplay.showInterbaseIndicators
 LinearMafDisplay.showInversions
+LinearMafDisplay.showMismatches
 LinearMafDisplay.showReferenceRow
 LinearMafDisplay.startRenderingBackend
 LinearMafDisplay.svgSidebar
