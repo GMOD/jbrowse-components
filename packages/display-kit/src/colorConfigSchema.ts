@@ -345,10 +345,11 @@ export function colorRangeSlot({
 }
 
 /**
- * The color for a value missing from `domain`, as d3's `ordinal.unknown`: unset,
+ * The color for a value missing from `domain`, as d3's `ordinal.unknown`:
+ * unset, a preset field's level keeps its own color and any other value takes
  * the next palette color where the display deals one; a color, that color;
- * `""`, no color from this setting, so a row keeps the color it already has, a
- * variant cell the alt hue, and a feature or mark the no-value grey. The key
+ * `""` paints a feature or mark the no-value grey and a variant cell the alt
+ * hue, and leaves a row the color it already has. The key
  * lists every value it paints as one row, Other. On a display that declares
  * `invalid`, a feature with no value takes that instead. `range` entries past
  * the domain go unread while it is set.
@@ -357,7 +358,7 @@ export const colorUnknownSlot = {
   unknown: {
     type: 'maybeColor',
     description:
-      'color for a value missing from domain: unset takes the next palette color where the display deals one, a color paints that color, "" adds no color from this setting, so a row keeps the color it already has, a variant cell takes the alt hue and a feature the no-value grey',
+      'color for a value missing from domain: unset, a preset field\'s level keeps its own color and any other value takes the next palette color where the display deals one; a color paints that color; "" paints a feature the no-value grey and a variant cell the alt hue, and leaves a row the color it already has',
   },
 } as const
 

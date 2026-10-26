@@ -4984,7 +4984,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "unknown": {
-          "description": "color for a value missing from domain: unset takes the next palette color where the display deals one, a color paints that color, \\"\\" adds no color from this setting, so a row keeps the color it already has, a variant cell takes the alt hue and a feature the no-value grey.",
+          "description": "color for a value missing from domain: unset, a preset field's level keeps its own color and any other value takes the next palette color where the display deals one; a color paints that color; \\"\\" paints a feature the no-value grey and a variant cell the alt hue, and leaves a row the color it already has.",
           "if": {
             "type": "null"
           },
@@ -7932,7 +7932,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "unknown": {
-          "description": "color for a value missing from domain: unset takes the next palette color where the display deals one, a color paints that color, \\"\\" adds no color from this setting, so a row keeps the color it already has, a variant cell takes the alt hue and a feature the no-value grey.",
+          "description": "color for a value missing from domain: unset, a preset field's level keeps its own color and any other value takes the next palette color where the display deals one; a color paints that color; \\"\\" paints a feature the no-value grey and a variant cell the alt hue, and leaves a row the color it already has.",
           "if": {
             "type": "null"
           },
@@ -9042,7 +9042,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "unknown": {
-          "description": "color for a value missing from domain: unset takes the next palette color where the display deals one, a color paints that color, \\"\\" adds no color from this setting, so a row keeps the color it already has, a variant cell takes the alt hue and a feature the no-value grey.",
+          "description": "color for a value missing from domain: unset, a preset field's level keeps its own color and any other value takes the next palette color where the display deals one; a color paints that color; \\"\\" paints a feature the no-value grey and a variant cell the alt hue, and leaves a row the color it already has.",
           "if": {
             "type": "null"
           },
@@ -10057,7 +10057,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "unknown": {
-          "description": "color for a value missing from domain: unset takes the next palette color where the display deals one, a color paints that color, \\"\\" adds no color from this setting, so a row keeps the color it already has, a variant cell takes the alt hue and a feature the no-value grey.",
+          "description": "color for a value missing from domain: unset, a preset field's level keeps its own color and any other value takes the next palette color where the display deals one; a color paints that color; \\"\\" paints a feature the no-value grey and a variant cell the alt hue, and leaves a row the color it already has.",
           "if": {
             "type": "null"
           },
@@ -12374,7 +12374,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "unknown": {
-          "description": "color for a value missing from domain: unset takes the next palette color where the display deals one, a color paints that color, \\"\\" adds no color from this setting, so a row keeps the color it already has, a variant cell takes the alt hue and a feature the no-value grey.",
+          "description": "color for a value missing from domain: unset, a preset field's level keeps its own color and any other value takes the next palette color where the display deals one; a color paints that color; \\"\\" paints a feature the no-value grey and a variant cell the alt hue, and leaves a row the color it already has.",
           "if": {
             "type": "null"
           },
@@ -12577,7 +12577,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "unknown": {
-          "description": "color for a value missing from domain: unset takes the next palette color where the display deals one, a color paints that color, \\"\\" adds no color from this setting, so a row keeps the color it already has, a variant cell takes the alt hue and a feature the no-value grey.",
+          "description": "color for a value missing from domain: unset, a preset field's level keeps its own color and any other value takes the next palette color where the display deals one; a color paints that color; \\"\\" paints a feature the no-value grey and a variant cell the alt hue, and leaves a row the color it already has.",
           "if": {
             "type": "null"
           },
