@@ -8116,7 +8116,7 @@ export const configManifest: ConfigManifest = {
                       "hsl(150, 45%, 42%)"
                     ],
                     "names": [
-                      "Main chromosome",
+                      "Main sequence",
                       "2nd source",
                       "3rd source",
                       "4th source",
