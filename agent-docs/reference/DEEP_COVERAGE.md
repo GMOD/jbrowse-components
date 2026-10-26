@@ -56,7 +56,7 @@ already controls that family.
 At 300x a 1% sequencing error rate is three reads at every position, so an
 un-floored band carries a permanent sliver of every base. The pileup always faded
 these through `featureFrequencyThreshold`; the band did not.
-`coverage.alleles.filter` (Coverage → "Color alleles above...") is the band's floor,
+`coverage.alleles.filter` (Advanced → "Coverage mismatch colors") is the band's floor,
 0 by default because a floor at 30x would hide real low-frequency variants in a
 somatic or pooled sample. It is a draw-time test in both backends against each
 segment's `segHeight`, so changing it repaints rather than refetches.

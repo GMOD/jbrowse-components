@@ -1097,7 +1097,7 @@ function categoryStep(
 // The alignments coverage band's allele-fraction floor, keyed by the slot value
 // its radio row writes (SNP_FREQUENCY_OPTIONS in alignments-core coverageMenuItems.ts).
 const SNP_FREQUENCY_ROWS: Record<string, string> = {
-  '0': 'All mismatches',
+  '0': 'Every mismatch',
   '0.01': 'Above 1%',
   '0.05': 'Above 5%',
   '0.1': 'Above 10%',
@@ -2004,7 +2004,7 @@ export const trackFields: Record<string, FieldRecipe> = {
       typeof floor === 'number' ? SNP_FREQUENCY_ROWS[String(floor)] : undefined
     return row
       ? {
-          path: `${TRACK_MENU} → Advanced → Color alleles in coverage → ${row}`,
+          path: `${TRACK_MENU} → Advanced → Coverage mismatch colors → ${row}`,
           note: 'At high depth every sequencing error paints a sliver on the coverage band, so a figure about the band\'s height wants a floor under what gets colored.',
         }
       : undefined

@@ -20,7 +20,7 @@ export interface CoverageMenuModel extends ScoreScaleModel {
 // of magnitude apart, and 0.2 is what IGV's coverage track defaults to. A
 // dialog would ask for a number nobody has a fourth digit of.
 const ALLELE_FRACTION_OPTIONS = [
-  { value: '0', label: 'All mismatches' },
+  { value: '0', label: 'Every mismatch' },
   { value: '0.01', label: 'Above 1%' },
   { value: '0.05', label: 'Above 5%' },
   { value: '0.1', label: 'Above 10%' },
@@ -65,7 +65,7 @@ export function getCoverageMenuItems(model: CoverageMenuModel): MenuItem[] {
       disabledHelpText: BAND_HIDDEN_HELP,
     }),
     {
-      label: 'Color alleles in coverage',
+      label: 'Coverage mismatch colors',
       disabled,
       disabledHelpText: BAND_HIDDEN_HELP,
       subMenu: radioItems(
@@ -111,7 +111,7 @@ export function interbaseIndicatorsMenuItem(model: {
 }
 
 /**
- * @deprecated the "Color alleles in coverage" radios in `getCoverageMenuItems`
+ * @deprecated the "Coverage mismatch colors" radios in `getCoverageMenuItems`
  * carry the on/off as their first row.
  *
  * The coverage band's "Coverage alleles" row, `coverage.alleles.show`: off, the

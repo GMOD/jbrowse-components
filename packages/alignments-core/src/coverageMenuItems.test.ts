@@ -2,7 +2,7 @@ import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
 
 import { getCoverageMenuItems } from './coverageMenuItems.ts'
 
-const ALLELES = 'Color alleles in coverage'
+const ALLELES = 'Coverage mismatch colors'
 
 // Both rows scale or color the coverage band and reach nothing else, and
 // neither carries the band's visibility toggle, so with the band hidden they
@@ -102,12 +102,12 @@ test('Off hides the alleles, and a fraction shows them at that floor', () => {
 // effect. Ties go to the lower row.
 test('an exact fraction ticks its own row', () => {
   expect(tickedLabels(menu(true, 0.05))).toEqual(['Above 5%'])
-  expect(tickedLabels(menu(true, 0))).toEqual(['All mismatches'])
+  expect(tickedLabels(menu(true, 0))).toEqual(['Every mismatch'])
 })
 
 test('a fraction between two options ticks the nearest, ties low', () => {
   expect(tickedLabels(menu(true, 0.15))).toEqual(['Above 10%'])
   expect(tickedLabels(menu(true, 0.17))).toEqual(['Above 20%'])
   expect(tickedLabels(menu(true, 0.5))).toEqual(['Above 20%'])
-  expect(tickedLabels(menu(true, 0.002))).toEqual(['All mismatches'])
+  expect(tickedLabels(menu(true, 0.002))).toEqual(['Every mismatch'])
 })

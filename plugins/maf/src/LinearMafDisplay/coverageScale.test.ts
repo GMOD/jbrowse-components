@@ -143,7 +143,7 @@ test('the track menu offers the shared coverage rows', () => {
   expect(labels(display.trackMenuItems())).toEqual(
     expect.arrayContaining([
       `${COVERAGE_AXIS_LABEL}...`,
-      'Color alleles in coverage',
+      'Coverage mismatch colors',
     ]),
   )
   expect(
