@@ -50,7 +50,6 @@ test('color by stranded rna-seq', async () => {
   )
   fireEvent.click(await screen.findByTestId('track_menu_icon', ...opts))
   fireEvent.click(await screen.findByText('Color by...'))
-  fireEvent.click(await screen.findByText('Paired end'))
   fireEvent.click(await screen.findByText('First-of-pair strand'))
   const display = await findDisplayPainted('pileup-display', delay)
   expectCanvasMatch(findCanvasIn(display), 0.1)

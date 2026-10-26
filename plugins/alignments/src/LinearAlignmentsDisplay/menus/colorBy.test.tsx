@@ -303,6 +303,21 @@ describe('color by menu curation', () => {
     )
   })
 
+  test('the paired-end radios sit in Color by itself, under their sub-header', () => {
+    const rows = subMenuOf(
+      getColorByMenuItem(makeModel(), { includePairedEnd: true }),
+    )
+    const header = rows.findIndex(
+      i => i.type === 'subHeader' && i.label === 'Paired end',
+    )
+    expect(header).toBeGreaterThan(0)
+    expect(rows[header + 1]).toMatchObject({
+      type: 'radio',
+      label: 'Insert size',
+    })
+    expect(rows.some(i => 'subMenu' in i)).toBe(false)
+  })
+
   test('curated colorOptions replace the basic radios', () => {
     expect(
       labelsFor({ colorOptions: colorFieldOptions(undefined, 'mateRefName') }),

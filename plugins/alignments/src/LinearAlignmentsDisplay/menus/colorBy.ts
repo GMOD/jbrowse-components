@@ -198,17 +198,6 @@ function tagItem(model: AnyColorByModel): MenuItem {
   )
 }
 
-// Plain field radios in a submenu — nothing here reads a modification field, so
-// it takes the bare model. Threading the `modModel` probe through it instead
-// silently dropped the whole section for a caller that opted in but carries no
-// modification state.
-function pairedEndItem(model: AnyColorByModel): MenuItem {
-  return {
-    label: 'Paired end',
-    subMenu: pairedEndColorOptions.map(o => colorRadio(model, o)),
-  }
-}
-
 // The Modifications radio shows once any type has loaded, greyed out while
 // types are still loading (unless the region is too large to ever detect
 // them); a ready display with zero detected types offers bisulfite only, which
@@ -287,11 +276,18 @@ export function getColorByMenuItem(
         rows: [
           ...readOptions.map(o => colorRadio(model, o)),
           ...(includeTagOption ? [tagItem(model)] : []),
-          ...(includePairedEnd ? [pairedEndItem(model)] : []),
           solidColorItem(paintsConstant(model), () => {
             model.pickSolidColor()
           }),
         ],
+      },
+      // the read fill again, so its radios tick one at a time with the rows
+      // above
+      {
+        header: 'Paired end',
+        rows: includePairedEnd
+          ? pairedEndColorOptions.map(o => colorRadio(model, o))
+          : [],
       },
       {
         header: 'Per-base coloring',

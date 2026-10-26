@@ -46,8 +46,6 @@ export const configVideos: VideoSpec[] = [
         text: 'Color by...',
         hold: 1000,
       },
-      { type: 'waitForText', text: 'Paired end' },
-      { type: 'click', text: 'Paired end', hold: 1000 },
       { type: 'waitForText', text: 'Insert size and orientation' },
       { type: 'click', text: 'Insert size and orientation' },
       { type: 'waitForAppSettled', timeout: 120000 },

@@ -207,9 +207,6 @@ function alignmentsColorStep(value: unknown): FieldStep | undefined {
   const path = [
     TRACK_MENU,
     'Color by...',
-    ...(menu.kind === 'radio' && menu.group === 'pairedEnd'
-      ? ['Paired end']
-      : []),
     SPECIAL_COLOR_MENUS[kind] ?? menu.label,
   ].join(' → ')
   const scale = scaleOf(color)
