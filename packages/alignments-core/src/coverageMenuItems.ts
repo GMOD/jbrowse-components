@@ -65,7 +65,7 @@ export function getCoverageMenuItems(model: CoverageMenuModel): MenuItem[] {
       disabledHelpText: BAND_HIDDEN_HELP,
     }),
     {
-      label: 'Coverage mismatch colors',
+      label: 'Coverage mismatch threshold',
       disabled,
       disabledHelpText: BAND_HIDDEN_HELP,
       subMenu: radioItems(
@@ -111,7 +111,7 @@ export function interbaseIndicatorsMenuItem(model: {
 }
 
 /**
- * @deprecated the "Coverage mismatch colors" radios in `getCoverageMenuItems`
+ * @deprecated the "Coverage mismatch threshold" radios in `getCoverageMenuItems`
  * carry the on/off as their first row.
  *
  * The coverage band's "Coverage alleles" row, `coverage.alleles.show`: off, the

@@ -2004,7 +2004,7 @@ export const trackFields: Record<string, FieldRecipe> = {
       typeof floor === 'number' ? SNP_FREQUENCY_ROWS[String(floor)] : undefined
     return row
       ? {
-          path: `${TRACK_MENU} → Advanced → Coverage mismatch colors → ${row}`,
+          path: `${TRACK_MENU} → Advanced → Coverage mismatch threshold → ${row}`,
           note: 'At high depth every sequencing error paints a sliver on the coverage band, so a figure about the band\'s height wants a floor under what gets colored.',
         }
       : undefined

@@ -2074,7 +2074,7 @@ describe('rows the layer menus hand to other menus', () => {
       'Edit plot...',
       'Coverage axis...',
       'Max layout height...',
-      'Coverage mismatch colors',
+      'Coverage mismatch threshold',
       'Track height',
     ])
 
@@ -2093,7 +2093,7 @@ describe('rows the layer menus hand to other menus', () => {
       'Edit plot...',
       'Coverage axis...',
       'Max layout height...',
-      'Coverage mismatch colors',
+      'Coverage mismatch threshold',
       'Track height',
       'Read connections color',
       'Read connections placement',

@@ -2,7 +2,7 @@ import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
 
 import { getCoverageMenuItems } from './coverageMenuItems.ts'
 
-const ALLELES = 'Coverage mismatch colors'
+const ALLELES = 'Coverage mismatch threshold'
 
 // Both rows scale or color the coverage band and reach nothing else, and
 // neither carries the band's visibility toggle, so with the band hidden they

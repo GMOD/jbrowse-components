@@ -143,7 +143,7 @@ test('the track menu offers the shared coverage rows', () => {
   expect(labels(display.trackMenuItems())).toEqual(
     expect.arrayContaining([
       `${COVERAGE_AXIS_LABEL}...`,
-      'Coverage mismatch colors',
+      'Coverage mismatch threshold',
     ]),
   )
   expect(
