@@ -1300,7 +1300,9 @@ export default function baseStateModelFactory(
 
         /**
          * #action
-         * @deprecated `setShowNames` and `setShowDescriptions`
+         * The five-value label mode, written as `setShowNames` and
+         * `setShowDescriptions`.
+         * @deprecated
          */
         setShowLabels(value: ShowLabelsMode) {
           setConf(self, ['labels', 'name', 'show'], modeCanShowName(value))

@@ -54,7 +54,15 @@ export const variantsBandConfigSchema = ConfigurationSchema(
     labels: ConfigurationSchema(
       'VariantsBandLabels',
       {
+        /**
+         * #slot labels.name
+         * Each record's ID.
+         */
         name: featureNameLabelConfigSchema,
+        /**
+         * #slot labels.description
+         * The line under each ID.
+         */
         description: featureDescriptionLabelConfigSchema,
       },
       { closed: true, plot: true },
