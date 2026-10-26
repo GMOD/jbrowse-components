@@ -10,8 +10,8 @@ import type { FeatureLayout } from '../types.ts'
 // the same exon walk anyway to place the cursor.
 //
 // Reads the FEATURE, never `layout.children`: that list is what the glyph
-// DRAWS, filtered by the display's `subParts` slot, so deriving coordinates
-// from it would make an HGVS position a function of two rendering settings.
+// DRAWS, CDS and UTR boxes rather than exons, so deriving coordinates from it
+// would make an HGVS position a function of the glyph.
 //
 // Exons come back in TRANSCRIPTION order, so index/2 + 1 is the exon number a
 // clinical report would use and a walk visits bases 5'→3'. Undefined unless the

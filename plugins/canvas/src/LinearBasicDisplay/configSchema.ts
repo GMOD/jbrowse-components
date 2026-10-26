@@ -17,8 +17,8 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * #config LinearBasicDisplay
  * #category display
  * Draws the genes and other features of a `FeatureTrack`, from a BED, GFF or
- * similar file. The display adds the gene-glyph slots (isoforms, subparts,
- * UTRs, chevrons) to the shared canvas base. The color slots `color`,
+ * similar file. The display adds the gene-glyph slots (isoforms, UTRs,
+ * chevrons) to the shared canvas base. The color slots `color`,
  * `connectorColor` and `utrColor` are display-level, set inside a track's
  * `displays` array, each a CSS color or a `jexl:` expression for per-feature
  * coloring.
@@ -130,14 +130,6 @@ export default function configSchemaFactory(pluginManager: PluginManager) {
        * [](/docs/config/featurecontainers) object.
        */
       containers: featureContainersConfigSchema,
-      /**
-       * #slot
-       */
-      subParts: {
-        type: 'string',
-        description: 'subparts for a glyph',
-        defaultValue: GENE_GLYPH_DEFAULTS.subParts,
-      },
     },
     {
       /**

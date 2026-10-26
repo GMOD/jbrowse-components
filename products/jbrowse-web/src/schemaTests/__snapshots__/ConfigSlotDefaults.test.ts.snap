@@ -575,7 +575,6 @@ exports[`every registered schema slot default 1`] = `
     "maxLabelFeatureDensity": "number = 0.2",
     "mouseover": "string = "jexl:get(feature,'_mouseOver')||get(feature,'name')||get(feature,'function')||get(feature,'id')"",
     "showLabels": "stringEnum = "auto" of ["auto","nameAndDescription","name","description","none"]",
-    "subParts": "string = "CDS,UTR,five_prime_UTR,three_prime_UTR"",
     "subfeatureLabels": "stringEnum = "auto" of ["auto","none","below","overlay"]",
     "transcripts.field": "string = "tag"",
     "transcripts.sort": "stringArray = ["MANE Select","MANE_Select","RefSeq Select","Ensembl_canonical","MANE Plus Clinical","MANE_Plus_Clinical"]",

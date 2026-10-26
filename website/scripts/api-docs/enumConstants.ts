@@ -58,7 +58,7 @@ const numericIndex = new Map<string, string | null>()
 
 // And for any literal a default names, or a member of a constant object:
 //
-//   defaultValue: GENE_GLYPH_DEFAULTS.subParts
+//   defaultValue: GENE_GLYPH_DEFAULTS.subfeatureLabels
 //   defaultValue: DEFAULT_BIN_AS
 //
 // rendered the way an inline default is, so the Default cell shows

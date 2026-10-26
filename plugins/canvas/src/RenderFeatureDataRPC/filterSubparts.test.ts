@@ -1,5 +1,4 @@
 import { getSubparts } from './filterSubparts.ts'
-import { mockDisplayConfig } from './testUtils.ts'
 
 import type { Feature } from '@jbrowse/core/util'
 
@@ -55,26 +54,9 @@ function transcript(type: string, cdsType = 'CDS') {
   })
 }
 
-// The slot is a comma list a human types, so an entry can arrive padded.
-describe('getSubparts subParts whitespace', () => {
-  it('keeps a type whose entry is padded', () => {
-    for (const subParts of [' CDS,UTR', 'CDS , UTR', 'CDS,UTR ', '\tCDS,UTR']) {
-      const config = mockDisplayConfig({
-        transcriptTypes: ['mRNA'],
-        subParts,
-      })
-      expect(typesOf(getSubparts(transcript('mRNA'), config))).toContain('CDS')
-    }
-  })
-})
-
 describe('getSubparts implied UTRs', () => {
-  const config = mockDisplayConfig({
-    transcriptTypes: ['mRNA', 'transcript', 'primary_transcript'],
-  })
-
   it('implies UTRs for mRNA', () => {
-    expect(typesOf(getSubparts(transcript('mRNA'), config))).toEqual([
+    expect(typesOf(getSubparts(transcript('mRNA')))).toEqual([
       'CDS',
       'five_prime_UTR',
       'three_prime_UTR',
@@ -82,13 +64,15 @@ describe('getSubparts implied UTRs', () => {
   })
 
   it('implies UTRs for primary_transcript (was previously skipped)', () => {
-    expect(
-      typesOf(getSubparts(transcript('primary_transcript'), config)),
-    ).toEqual(['CDS', 'five_prime_UTR', 'three_prime_UTR'])
+    expect(typesOf(getSubparts(transcript('primary_transcript')))).toEqual([
+      'CDS',
+      'five_prime_UTR',
+      'three_prime_UTR',
+    ])
   })
 
   it('implies UTRs around a lowercase cds', () => {
-    expect(typesOf(getSubparts(transcript('mRNA', 'cds'), config))).toEqual([
+    expect(typesOf(getSubparts(transcript('mRNA', 'cds')))).toEqual([
       'cds',
       'five_prime_UTR',
       'three_prime_UTR',
@@ -106,7 +90,7 @@ describe('getSubparts implied UTRs', () => {
         mockFeature({ type: 'CDS', start: 200, end: 400, strand: -1 }),
       ],
     })
-    const result = getSubparts(minus, config)
+    const result = getSubparts(minus)
     const left = result.find(f => f.get('start') === 100)
     const right = result.find(f => f.get('end') === 500)
     // upstream (left) on the minus strand is the 3' end
@@ -117,7 +101,7 @@ describe('getSubparts implied UTRs', () => {
   it('implies UTRs structurally regardless of feature type', () => {
     // UTR synthesis is structural rather than type-gated, so even a bare `gene`
     // with direct exon+CDS children gets implied UTRs.
-    expect(typesOf(getSubparts(transcript('gene'), config))).toEqual([
+    expect(typesOf(getSubparts(transcript('gene')))).toEqual([
       'CDS',
       'five_prime_UTR',
       'three_prime_UTR',
@@ -135,7 +119,7 @@ describe('getSubparts implied UTRs', () => {
         mockFeature({ type: 'three_prime_UTR', start: 400, end: 500 }),
       ],
     })
-    expect(typesOf(getSubparts(tx, config))).toEqual([
+    expect(typesOf(getSubparts(tx))).toEqual([
       'CDS',
       'five_prime_UTR',
       'three_prime_UTR',
@@ -151,7 +135,7 @@ describe('getSubparts implied UTRs', () => {
       end: 500,
       subfeatures: [mockFeature({ type: 'CDS', start: 200, end: 400 })],
     })
-    expect(typesOf(getSubparts(cdsOnly, config))).toEqual([
+    expect(typesOf(getSubparts(cdsOnly))).toEqual([
       'CDS',
       'five_prime_UTR',
       'three_prime_UTR',
@@ -171,7 +155,7 @@ describe('getSubparts implied UTRs', () => {
         mockFeature({ type: 'CDS', start: 200, end: 400 }),
       ],
     })
-    expect(typesOf(getSubparts(tightExon, config))).toEqual(['CDS'])
+    expect(typesOf(getSubparts(tightExon))).toEqual(['CDS'])
   })
 
   it('gives synthesized UTRs the transcript as their parent', () => {
@@ -179,7 +163,7 @@ describe('getSubparts implied UTRs', () => {
     // from the box it paints; without the handle a UTR answers undefined and
     // comes out the default color beside exons that took the callback's
     const tx = transcript('mRNA')
-    const utrs = getSubparts(tx, config).filter(f =>
+    const utrs = getSubparts(tx).filter(f =>
       String(f.get('type')).endsWith('UTR'),
     )
     expect(utrs).toHaveLength(2)
@@ -191,9 +175,6 @@ describe('getSubparts implied UTRs', () => {
   it('does not duplicate explicit UTRs with implied ones', () => {
     // Without the !hasUTRs guard a transcript with explicit UTRs and no exon
     // subfeatures gets a second, parent-derived set on top of the real ones.
-    const forced = mockDisplayConfig({
-      transcriptTypes: ['mRNA', 'transcript', 'primary_transcript'],
-    })
     const tx = mockFeature({
       type: 'mRNA',
       start: 100,
@@ -204,7 +185,7 @@ describe('getSubparts implied UTRs', () => {
         mockFeature({ type: 'three_prime_UTR', start: 400, end: 500 }),
       ],
     })
-    expect(typesOf(getSubparts(tx, forced))).toEqual([
+    expect(typesOf(getSubparts(tx))).toEqual([
       'CDS',
       'five_prime_UTR',
       'three_prime_UTR',
@@ -223,7 +204,7 @@ test('two implied UTR pieces cut from one exon side take distinct ids', () => {
       mockFeature({ type: 'CDS', start: 300, end: 400 }),
     ],
   })
-  const ids = getSubparts(tx, mockDisplayConfig())
+  const ids = getSubparts(tx)
     .filter(f => f.get('type') === 'five_prime_UTR')
     .map(f => f.id())
   expect(ids).toHaveLength(3)

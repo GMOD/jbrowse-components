@@ -3,7 +3,6 @@ import { SimpleFeature } from '@jbrowse/core/util'
 import { impliedUTRs } from './impliedUTRs.ts'
 import { featureType, getSubfeatures } from './util.ts'
 
-import type { DisplayConfig } from './renderConfig.ts'
 import type { Feature } from '@jbrowse/core/util'
 
 // A synthesized UTR carries the `parent` handle so anything reaching up from
@@ -28,26 +27,21 @@ function impliedUTRFeatures(parent: Feature, subs: Feature[]) {
   })
 }
 
-// The slot is one string for the whole track and this runs once per
-// transcript, so the split is kept for as long as the string stays the same.
-let allowedSubParts: { slot: string; types: Set<string> } | undefined
+// The boxes a coding transcript draws. Its exons stay out: the CDS and UTR
+// boxes, implied UTRs included, already tile them.
+const SUBPART_TYPES = new Set([
+  'cds',
+  'utr',
+  'five_prime_utr',
+  'three_prime_utr',
+])
 
-function allowedSubPartTypes(subParts: string) {
-  if (allowedSubParts?.slot !== subParts) {
-    allowedSubParts = {
-      slot: subParts,
-      types: new Set(subParts.split(',').map(t => t.trim().toLowerCase())),
-    }
-  }
-  return allowedSubParts.types
-}
-
-export function getSubparts(f: Feature, config: DisplayConfig) {
+export function getSubparts(f: Feature) {
   const subs = getSubfeatures(f)
   if (subs.length === 0) {
     return []
   }
-  const c = [...subs, ...impliedUTRFeatures(f, subs)]
-  const allowedTypes = allowedSubPartTypes(config.subParts)
-  return c.filter(child => allowedTypes.has(featureType(child).toLowerCase()))
+  return [...subs, ...impliedUTRFeatures(f, subs)].filter(child =>
+    SUBPART_TYPES.has(featureType(child).toLowerCase()),
+  )
 }

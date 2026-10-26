@@ -28,13 +28,12 @@ function mockFeature(opts: {
 
 const config = mockDisplayConfig()
 
-function coordsOf(feature: Feature, over?: Partial<typeof config>) {
-  const c = { ...config, ...over }
-  return transcriptCoords(findGlyph(feature, c)({ feature, config: c }))
+function coordsOf(feature: Feature) {
+  return transcriptCoords(findGlyph(feature, config)({ feature, config }))
 }
 
-function exonsOf(feature: Feature, over?: Partial<typeof config>) {
-  return coordsOf(feature, over)?.exons
+function exonsOf(feature: Feature) {
+  return coordsOf(feature)?.exons
 }
 
 function exonTranscript(strand: number) {
@@ -141,34 +140,6 @@ describe('transcriptCoords', () => {
       ],
     })
     expect(exonsOf(transcript)).toEqual([0, 20, 30, 100, 200, 300, 400, 500])
-  })
-
-  // The exons a coordinate is counted on come from the FEATURE, never from what
-  // the glyph drew — `subParts` decides the latter, and an
-  // HGVS position must not move when someone edits a rendering slot.
-  it('ignores the display slots that decide which subparts are drawn', () => {
-    const cdsUtr = mockFeature({
-      type: 'mRNA',
-      start: 0,
-      end: 500,
-      subfeatures: [
-        mockFeature({ type: 'five_prime_UTR', start: 0, end: 50 }),
-        mockFeature({ type: 'CDS', start: 50, end: 100 }),
-        mockFeature({ type: 'CDS', start: 200, end: 300 }),
-        mockFeature({ type: 'CDS', start: 400, end: 450 }),
-        mockFeature({ type: 'three_prime_UTR', start: 450, end: 500 }),
-      ],
-    })
-    const whole = [0, 100, 200, 300, 400, 500]
-    expect(exonsOf(cdsUtr, { subParts: 'CDS' })).toEqual(whole)
-
-    const cdsOnly = mockFeature({
-      type: 'mRNA',
-      start: 0,
-      end: 200,
-      subfeatures: [mockFeature({ type: 'CDS', start: 50, end: 150 })],
-    })
-    expect(exonsOf(cdsOnly, { subParts: 'CDS' })).toEqual([0, 200])
   })
 
   it('carries the coding extent, and omits it for a non-coding transcript', () => {

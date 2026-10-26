@@ -123,7 +123,6 @@ const config: DisplayConfig = {
   canonicalTranscriptTags: [...DEFAULT_CANONICAL_TRANSCRIPTS.tags],
   containerTypes: [],
   geneGlyphMode: 'all',
-  subParts: 'CDS,UTR,five_prime_UTR,three_prime_UTR',
   mouseover: '',
   filter: [],
   color: { value: undefined, field: '' },

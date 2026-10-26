@@ -1305,7 +1305,7 @@ function renderInlineDefault(node: ts.Expression): string | undefined {
     return `${ts.tokenToString(node.operator)}${node.operand.text}`
   }
   // Any other literal a name or a constant's member holds:
-  // `GENE_GLYPH_DEFAULTS.subParts` reads as its string. A long one goes to the
+  // `GENE_GLYPH_DEFAULTS.subfeatureLabels` reads as its string. A long one goes to the
   // code block, which reads it the same way.
   const literal = literalConstantValue(node)
   if (literal !== undefined) {

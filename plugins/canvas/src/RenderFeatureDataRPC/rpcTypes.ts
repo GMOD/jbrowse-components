@@ -287,7 +287,7 @@ export interface FlatbushItem extends HitItemBase {
   gene?: boolean
   // Whether "Collapse introns" has a gap to close here. Decided in the worker
   // because only the worker holds the whole feature: on the main thread an
-  // isoform the trim dropped and an exon the `subParts` slot left undrawn look
+  // isoform the trim dropped and an exon the glyph leaves undrawn look
   // like a feature that never had them. Absent in fixtures predating the field.
   collapsibleIntrons?: boolean
   // Present on a gene stacking more than one child.

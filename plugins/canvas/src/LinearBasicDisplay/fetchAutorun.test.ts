@@ -1597,7 +1597,6 @@ test('the worker payload is exactly the slots DisplayConfig declares', () => {
     'filter',
     'labels',
     'mouseover',
-    'subParts',
     'subfeatureLabels',
     'transcriptTypes',
     'utrColor',

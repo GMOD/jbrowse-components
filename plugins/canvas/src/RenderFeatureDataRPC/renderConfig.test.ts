@@ -90,10 +90,8 @@ describe('pickDisplayConfig', () => {
   it('lets a declared gene slot win over its default', () => {
     const picked = pickDisplayConfig({
       transcriptTypes: ['mRNA'],
-      subParts: 'CDS',
     })
     expect(picked.transcriptTypes).toEqual(['mRNA'])
-    expect(picked.subParts).toBe('CDS')
   })
 
   it("sends mark.height as the worker's flat featureHeight", () => {
