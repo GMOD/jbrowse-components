@@ -48,8 +48,8 @@ const PLACEMENT_OPTIONS: { value: ReadConnectionsPlacement; label: string }[] =
 
 const PAIR_BAND_OPTIONS: { value: ReadConnectionsMode; label: string }[] = [
   { value: 'off', label: 'None' },
-  { value: 'arc', label: 'Read arcs' },
-  { value: 'cloud', label: 'Read cloud' },
+  { value: 'link', label: 'Read arcs' },
+  { value: 'rule', label: 'Read cloud' },
 ]
 
 export const PAIR_BAND_LABEL = 'Pair band'

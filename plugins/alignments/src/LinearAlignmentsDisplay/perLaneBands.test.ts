@@ -95,7 +95,7 @@ function createEnv() {
 // is a reserved strip rather than a coverage overlay.
 function twoLanes() {
   const { view, display } = createEnv()
-  display.setDrawnReadConnections('arc')
+  display.setDrawnReadConnections('link')
   display.setReadConnectionsPlacement('down')
   display.setRpcData(
     0,
@@ -193,7 +193,7 @@ describe('the read cloud rules every lane that reserves an arc band', () => {
   // arc mode, since only read cloud puts |TLEN| on the axis at all.
   function twoCloudLanes() {
     const { view, display } = createEnv()
-    display.setDrawnReadConnections('cloud')
+    display.setDrawnReadConnections('rule')
     display.setReadConnectionsPlacement('down')
     display.setRpcData(
       0,
@@ -249,7 +249,7 @@ describe('the read cloud rules every lane that reserves an arc band', () => {
     // Same gate the renderers use to skip the pass: no arcs, no band, so
     // nothing to label. Lane A pairs, lane B does not.
     const { display } = createEnv()
-    display.setDrawnReadConnections('cloud')
+    display.setDrawnReadConnections('rule')
     display.setReadConnectionsPlacement('down')
     display.setRpcData(
       0,
@@ -272,7 +272,7 @@ describe('the read cloud rules every lane that reserves an arc band', () => {
 
   test('arc mode has no |TLEN| axis to rule', () => {
     const { display } = twoCloudLanes()
-    display.setDrawnReadConnections('arc')
+    display.setDrawnReadConnections('link')
     expect(tlen(display)).toBeUndefined()
   })
 })
@@ -287,7 +287,7 @@ describe('the read cloud rules every lane that reserves an arc band', () => {
 describe('the pooled below-coverage bands agree with the sections', () => {
   function ungrouped(mateBp?: number) {
     const { display } = createEnv()
-    display.setDrawnReadConnections('arc')
+    display.setDrawnReadConnections('link')
     display.setReadConnectionsPlacement('down')
     display.setRpcData(
       0,
@@ -328,7 +328,7 @@ describe('the pooled below-coverage bands agree with the sections', () => {
   // before dividing the viewport into rows. With no lane paired, connections on
   // has exactly as much room for rows as connections off.
   test('the fit row budget spends nothing on a strip no lane has', () => {
-    const seedTwoUnpairedLanes = (connections: 'arc' | 'off') => {
+    const seedTwoUnpairedLanes = (connections: 'link' | 'off') => {
       const { display } = createEnv()
       display.setHeightMode('fit')
       display.setDrawnReadConnections(connections)
@@ -355,7 +355,7 @@ describe('the pooled below-coverage bands agree with the sections', () => {
       )
       return display
     }
-    const on = seedTwoUnpairedLanes('arc')
+    const on = seedTwoUnpairedLanes('link')
     const off = seedTwoUnpairedLanes('off')
     expect(on.coverageDisplayHeight).toBe(off.coverageDisplayHeight)
     expect(on.fittedFeatureHeight).toBe(off.fittedFeatureHeight)
@@ -372,7 +372,7 @@ describe('the pooled below-coverage bands agree with the sections', () => {
     const seed = (secondLaneMate: number | undefined) => {
       const { display } = createEnv()
       display.setHeightMode('fit')
-      display.setDrawnReadConnections('arc')
+      display.setDrawnReadConnections('link')
       display.setReadConnectionsPlacement('down')
       display.facetByField('strand')
       display.setRpcData(

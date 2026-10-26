@@ -175,7 +175,7 @@ test('a track with no junctions hands the overlay the same empty array', () => {
 // buffer, once per pan frame.
 test('read connections on: a pan leaves the band feeds the same object', () => {
   const { view, display } = panningDisplay()
-  display.setDrawnReadConnections('arc')
+  display.setDrawnReadConnections('link')
   seedJunctions(display)
 
   const feeds = identityCounter<unknown>()

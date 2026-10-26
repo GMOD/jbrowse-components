@@ -661,7 +661,7 @@ describe('alignments readConnections (arcs)', () => {
     const { display } = createDisplay({
       readConnections: { show: true, mark: 'rule' },
     })
-    expect(display.drawnReadConnections).toBe('cloud')
+    expect(display.drawnReadConnections).toBe('rule')
   })
 
   it('keeps its mark while hidden', () => {
@@ -670,7 +670,7 @@ describe('alignments readConnections (arcs)', () => {
     })
     display.setDrawnReadConnections('off')
     expect(display.drawnReadConnections).toBe('off')
-    expect(display.readConnectionsMark).toBe('cloud')
+    expect(display.readConnectionsMark).toBe('rule')
   })
 })
 

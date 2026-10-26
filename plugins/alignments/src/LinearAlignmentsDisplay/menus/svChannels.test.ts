@@ -29,7 +29,7 @@ test('the preset writes all four settings, not a subset', () => {
   clickRow(display)
   expect(display.showPileup).toBe(false)
   expect(display.facet).toMatchObject({ field: 'pairOrientation' })
-  expect(display.drawnReadConnections).toBe('arc')
+  expect(display.drawnReadConnections).toBe('link')
   expect(display.showOrdinaryPairs).toBe(false)
 })
 

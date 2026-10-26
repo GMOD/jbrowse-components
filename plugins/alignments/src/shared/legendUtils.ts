@@ -824,7 +824,7 @@ export function arcColorCategoryLabel(
  * flat read-cloud lines are not arcs.
  */
 export function arcLegendTitle(readConnections: ReadConnectionsMode) {
-  return readConnections === 'cloud' ? 'Read cloud colors' : 'Arc colors'
+  return readConnections === 'rule' ? 'Read cloud colors' : 'Arc colors'
 }
 
 export function getArcLegendItems(

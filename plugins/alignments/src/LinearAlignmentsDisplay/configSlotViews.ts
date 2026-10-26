@@ -46,11 +46,7 @@ import {
 } from '../shared/basesFilter.ts'
 import { facetUnitNotices } from '../shared/groupFeatures.ts'
 import { sortOf, sortProblems } from './alignmentsSortConfigSchema.ts'
-import {
-  READ_CONNECTIONS_MARK_TYPE,
-  drawnReadConnectionsOf,
-  readConnectionsMarkOf,
-} from './constants.ts'
+import { drawnReadConnectionsOf } from './constants.ts'
 import { declaredFiltersOf } from './dialogs/layerFilters.ts'
 
 import type { StrokeWidthSetting } from '../features/arcs/arcLineWidth.ts'
@@ -403,9 +399,7 @@ export function configSlotViews(self: ConfigSlotSelf) {
     },
     /** #getter */
     get readConnectionsMark(): ReadConnectionsMark {
-      return readConnectionsMarkOf(
-        getConf(self, ['readConnections', 'mark', 'type']),
-      )
+      return getConf(self, ['readConnections', 'mark', 'type'])
     },
     /**
      * #getter
@@ -451,7 +445,7 @@ export function configSlotViews(self: ConfigSlotSelf) {
     get showOrdinaryPairs(): boolean {
       return ordinaryPairsShown(
         getConf(self, ['readConnections', 'ordinaryPairs', 'show']),
-        this.readConnectionsMark === 'cloud',
+        this.readConnectionsMark === 'rule',
       )
     },
     /**
@@ -773,11 +767,7 @@ export function configSlotActions(self: ConfigSlotSelf) {
       if (mode === 'off') {
         setConf(self, ['readConnections', 'show'], false)
       } else {
-        setConf(
-          self,
-          ['readConnections', 'mark', 'type'],
-          READ_CONNECTIONS_MARK_TYPE[mode],
-        )
+        setConf(self, ['readConnections', 'mark', 'type'], mode)
         setConf(self, ['readConnections', 'show'], true)
       }
     },

@@ -42,7 +42,7 @@ describe('the Filter by count over every layer it filters', () => {
   test('the submenu holds the everyday read filters, then the dialog, with no icons', () => {
     const display = createDisplay()
     display.setShowSashimi(true)
-    display.setDrawnReadConnections('arc')
+    display.setDrawnReadConnections('link')
     const rows = filterRow(display).subMenu
     expect(rows.map(i => ('label' in i ? i.label : i.type))).toEqual([
       'Mapping quality',

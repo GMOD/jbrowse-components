@@ -193,18 +193,18 @@ describe('alignments display cross-feature coupling', () => {
   // value the user picked carries across a switch.
   test('showOrdinaryPairs resolves per overlay until set', () => {
     const display = createDisplay()
-    display.setDrawnReadConnections('arc')
+    display.setDrawnReadConnections('link')
     expect(display.showOrdinaryPairs).toBe(true)
-    display.setDrawnReadConnections('cloud')
+    display.setDrawnReadConnections('rule')
     expect(display.showOrdinaryPairs).toBe(false)
 
     display.setShowOrdinaryPairs(true)
     expect(display.showOrdinaryPairs).toBe(true)
-    display.setDrawnReadConnections('arc')
+    display.setDrawnReadConnections('link')
     expect(display.showOrdinaryPairs).toBe(true)
 
     display.setShowOrdinaryPairs(undefined)
-    display.setDrawnReadConnections('cloud')
+    display.setDrawnReadConnections('rule')
     expect(display.showOrdinaryPairs).toBe(false)
   })
 })
@@ -411,13 +411,13 @@ describe('Read connections color menu visibility', () => {
 
   test('shown for read arcs', () => {
     const display = createDisplay()
-    display.setDrawnReadConnections('arc')
+    display.setDrawnReadConnections('link')
     expect(hasMenuItem(display.trackMenuItems(), ARC_COLOR)).toBe(true)
   })
 
   test('shown for read cloud', () => {
     const display = createDisplay()
-    display.setDrawnReadConnections('cloud')
+    display.setDrawnReadConnections('rule')
     expect(hasMenuItem(display.trackMenuItems(), ARC_COLOR)).toBe(true)
   })
 
@@ -461,7 +461,7 @@ describe('arc color follows the reads unless it names its own field', () => {
 
   test('the color radios write the field, Same as reads the empty one', () => {
     const display = createDisplay()
-    display.setDrawnReadConnections('arc')
+    display.setDrawnReadConnections('link')
     display.colorByField('insertSize')
     const arcMenu = () => menuSubItems(display.trackMenuItems(), ARC_COLOR)
     clickMenuItem(arcMenu(), 'Pair orientation')
@@ -480,7 +480,7 @@ describe('arc color follows the reads unless it names its own field', () => {
   // insert size and orientation named a picture that was not on screen
   test('under a read field no arc paints, the drawn default is the ticked row', () => {
     const display = createDisplay()
-    display.setDrawnReadConnections('arc')
+    display.setDrawnReadConnections('link')
     display.colorByField('strand')
     const arcMenu = () => menuSubItems(display.trackMenuItems(), ARC_COLOR)
     expect(findMenuItem(arcMenu(), 'Same as reads')).toBeUndefined()
@@ -2079,7 +2079,7 @@ describe('rows the layer menus hand to other menus', () => {
     ])
 
     // the arcs bring their everyday filter; the rest are in More filters...
-    display.setDrawnReadConnections('arc')
+    display.setDrawnReadConnections('link')
     display.setShowSashimi(true)
     expect(labelsUnder(display, 'Filter by')).toEqual([
       'Mapping quality',

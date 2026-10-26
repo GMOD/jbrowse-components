@@ -1711,7 +1711,7 @@ export default function stateModelFactory(
               },
               {
                 colorField: self.readConnectionsColorField,
-                cloud: self.drawnReadConnections === 'cloud',
+                cloud: self.drawnReadConnections === 'rule',
                 filter: self.connectionFilter,
                 showOrdinaryPairs: self.showOrdinaryPairs,
                 canonicalRefName: this.canonicalRefName,
@@ -2776,7 +2776,7 @@ export default function stateModelFactory(
          * zero.
          */
         get arcsYDomainBp() {
-          if (self.drawnReadConnections !== 'cloud') {
+          if (self.drawnReadConnections !== 'rule') {
             return undefined
           }
           // Maxed across every group and both halves by `resolveArcsByGroup`,

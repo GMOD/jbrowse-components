@@ -278,7 +278,7 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
               // same setting `resolveArcs` branches on, so the sentence the
               // hover prints and the rule that produced the tick cannot
               // disagree.
-              model.drawnReadConnections !== 'cloud',
+              model.drawnReadConnections !== 'rule',
             )
           : formatArcTooltip(
               hit,

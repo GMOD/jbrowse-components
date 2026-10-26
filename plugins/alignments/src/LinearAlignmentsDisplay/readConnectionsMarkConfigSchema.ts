@@ -1,7 +1,7 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 
-import { READ_CONNECTIONS_MARK_TYPES } from './constants.ts'
+import { READ_CONNECTIONS_MARKS } from './constants.ts'
 
 /**
  * #config ReadConnectionsMark
@@ -30,7 +30,7 @@ export const readConnectionsMarkConfigSchema = ConfigurationSchema(
     type: {
       type: 'stringEnum',
       model: types.enumeration('ReadConnectionsMarkType', [
-        ...READ_CONNECTIONS_MARK_TYPES,
+        ...READ_CONNECTIONS_MARKS,
       ]),
       defaultValue: 'link',
       description:

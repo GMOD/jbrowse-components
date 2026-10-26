@@ -20,41 +20,17 @@ export type { InsertionType } from '@jbrowse/alignments-core'
 export const ALIGNMENTS_UNITS = ['read', 'chain'] as const
 export type AlignmentsUnit = (typeof ALIGNMENTS_UNITS)[number]
 
-// The two marks the read-connection band draws, by the menu's words: 'arc'
-// rises with the span between its ends, and 'cloud' draws a flat line at
-// Y=|tlen|, the modal pairs left out unless `ordinaryPairs.show` keeps them.
-// Both color by `readConnections.color`. They share one band and the cloud
-// repurposes its Y axis, so they are one choice rather than two switches.
-export const READ_CONNECTIONS_MARKS = ['arc', 'cloud'] as const
+// The two marks the read-connection band draws, as `readConnections.mark.type`
+// spells them: a `link`, the arc rising with the span between a pair's ends,
+// and a `rule`, the read cloud's flat line at Y=|tlen|, which leaves the modal
+// pairs out unless `ordinaryPairs.show` keeps them. They share one band and the
+// cloud repurposes its Y axis, so they are one choice rather than two switches.
+export const READ_CONNECTIONS_MARKS = ['link', 'rule'] as const
 export type ReadConnectionsMark = (typeof READ_CONNECTIONS_MARKS)[number]
 
-// The same two marks as `readConnections.mark.type` spells them, Vega-Lite's
-// mark types: the arcs a link between a pair's ends, the cloud a rule.
-export const READ_CONNECTIONS_MARK_TYPES = ['link', 'rule'] as const
-export type ReadConnectionsMarkType =
-  (typeof READ_CONNECTIONS_MARK_TYPES)[number]
-
-export const READ_CONNECTIONS_MARK_TYPE = {
-  arc: 'link',
-  cloud: 'rule',
-} as const satisfies Record<ReadConnectionsMark, ReadConnectionsMarkType>
-
-export function readConnectionsMarkOf(
-  type: ReadConnectionsMarkType,
-): ReadConnectionsMark {
-  return type === 'rule' ? 'cloud' : 'arc'
-}
-
-// What the band draws, as the model's `drawnReadConnections` answers it: a
-// mark, or 'off' while `readConnections.show` is. The rows of the "Connection
-// overlay" radio, which writes `show` and `mark` together.
-export const READ_CONNECTIONS_OPTIONS = [
-  { value: 'off', label: 'None' },
-  { value: 'arc', label: 'Read arcs' },
-  { value: 'cloud', label: 'Read cloud' },
-] as const
-export type ReadConnectionsMode =
-  (typeof READ_CONNECTIONS_OPTIONS)[number]['value']
+// What the band draws, as the model's `drawnReadConnections` answers it: its
+// mark, or 'off' while `readConnections.show` is.
+export type ReadConnectionsMode = 'off' | ReadConnectionsMark
 
 export function drawnReadConnectionsOf(
   show: boolean,
@@ -63,16 +39,16 @@ export function drawnReadConnectionsOf(
   return show ? mark : 'off'
 }
 
+export const READ_CONNECTIONS_WIDTH_SCALES = ['log', 'linear'] as const
+export type ReadConnectionsWidthScale =
+  (typeof READ_CONNECTIONS_WIDTH_SCALES)[number]
+
 // Which side of the coverage band a layer draws on (`sashimi.placement`,
 // `readConnections.placement`): up over it, or down in a band below it. Each
 // layer holds its own setting, and only sashimi has 'auto',
 // which sends a junction down where it would cross another; arcs have no such
 // side assignment, so one shared enum would offer them a value that means
 // nothing. Sashimi's list sits beside the side-assignment algorithm it selects.
-export const READ_CONNECTIONS_WIDTH_SCALES = ['log', 'linear'] as const
-export type ReadConnectionsWidthScale =
-  (typeof READ_CONNECTIONS_WIDTH_SCALES)[number]
-
 export const READ_CONNECTIONS_PLACEMENTS = ['up', 'down'] as const
 export type ReadConnectionsPlacement =
   (typeof READ_CONNECTIONS_PLACEMENTS)[number]

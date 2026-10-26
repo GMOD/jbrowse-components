@@ -94,7 +94,7 @@ test('group draws per-section paired-end arcs', async () => {
   await findDisplayPainted('pileup-display', delay)
 
   const display = alignmentsDisplay(view)
-  display.setDrawnReadConnections('arc')
+  display.setDrawnReadConnections('link')
   display.facetByField('firstOfPairStrand')
 
   await waitFor(
@@ -128,7 +128,7 @@ test('group draws per-section read-cloud lines', async () => {
   await findDisplayPainted('pileup-display', delay)
 
   const display = alignmentsDisplay(view)
-  display.setDrawnReadConnections('cloud')
+  display.setDrawnReadConnections('rule')
   display.facetByField('firstOfPairStrand')
 
   await waitFor(

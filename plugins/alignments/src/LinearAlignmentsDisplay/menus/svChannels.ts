@@ -1,7 +1,6 @@
 import { toggleItem } from '@jbrowse/core/ui/menuItems'
 import { facetForField } from '@jbrowse/display-kit/FacetWritesMixin'
 
-import { READ_CONNECTIONS_MARK_TYPE } from '../constants.ts'
 import {
   SV_CHANNELS_LABEL,
   SV_CHANNELS_OFF,
@@ -30,7 +29,7 @@ export function svChannelsActive(model: SvChannelsModel) {
     facet: model.facet,
     readConnections: {
       show: model.showReadConnections,
-      mark: READ_CONNECTIONS_MARK_TYPE[model.readConnectionsMark],
+      mark: model.readConnectionsMark,
       ordinaryPairs: { show: model.showOrdinaryPairs },
     },
   })

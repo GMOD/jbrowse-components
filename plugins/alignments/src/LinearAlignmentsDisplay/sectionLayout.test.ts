@@ -49,7 +49,7 @@ test('belowCoverageBandsGeometry: coverage only => pileup right below coverage',
 test('belowCoverageBandsGeometry: down-mode arcs reserve their own band', () => {
   const r = belowCoverageBandsGeometry({
     ...baseBands,
-    drawnReadConnections: 'arc',
+    drawnReadConnections: 'link',
     readConnectionsDown: true,
   })
   expect(r.hasArcsBand).toBe(true)
@@ -65,7 +65,7 @@ test('belowCoverageBandsGeometry: down-mode arcs reserve their own band', () => 
 test('belowCoverageBandsGeometry: no arcs anywhere reserves no arc band', () => {
   const r = belowCoverageBandsGeometry({
     ...baseBands,
-    drawnReadConnections: 'arc',
+    drawnReadConnections: 'link',
     readConnectionsDown: true,
     hasArcs: false,
   })
@@ -79,7 +79,7 @@ test.each([true, false])(
   'belowCoverageBandsGeometry agrees with the one section (hasArcs %s)',
   hasArcs => {
     const settings = {
-      drawnReadConnections: 'arc',
+      drawnReadConnections: 'link',
       readConnectionsDown: true,
       showCoverage: true,
       coverageHeight: 45,
@@ -102,7 +102,7 @@ test.each([true, false])(
 test('belowCoverageBandsGeometry: up-mode arcs overlay coverage (no reserved band)', () => {
   const r = belowCoverageBandsGeometry({
     ...baseBands,
-    drawnReadConnections: 'arc',
+    drawnReadConnections: 'link',
     readConnectionsDown: false,
   })
   expect(r.hasArcsBand).toBe(false)
@@ -171,7 +171,7 @@ test('arc band then sashimi band stack below coverage', () => {
   expect(
     belowCoverageBandsGeometry({
       ...baseBands,
-      drawnReadConnections: 'arc',
+      drawnReadConnections: 'link',
       readConnectionsDown: true,
       readConnectionsHeight: 200,
       showSashimi: true,
@@ -194,7 +194,7 @@ test('down-mode arcs reserve a band per section, pushing pileups down', () => {
     {
       coverageHeight: 40,
       rowHeight: 10,
-      drawnReadConnections: 'arc',
+      drawnReadConnections: 'link',
       readConnectionsDown: true,
       readConnectionsHeight: 100,
     },
@@ -219,7 +219,7 @@ test('an arc-less lane reserves no arc band, so the ones with arcs shift up', ()
     {
       coverageHeight: 40,
       rowHeight: 10,
-      drawnReadConnections: 'arc',
+      drawnReadConnections: 'link',
       readConnectionsDown: true,
       readConnectionsHeight: 100,
     },
@@ -241,7 +241,7 @@ test('an arc-less lane drops its up-mode draw band too', () => {
       coverageHeight: 40,
       rowHeight: 10,
       coverageYOffset: 7,
-      drawnReadConnections: 'arc',
+      drawnReadConnections: 'link',
       readConnectionsDown: false,
       readConnectionsHeight: 100,
     },
@@ -278,7 +278,7 @@ test('both strips stack for a lane that has arcs and sashimi', () => {
     {
       coverageHeight: 40,
       rowHeight: 10,
-      drawnReadConnections: 'arc',
+      drawnReadConnections: 'link',
       readConnectionsDown: true,
       readConnectionsHeight: 100,
       showSashimi: true,
@@ -321,7 +321,7 @@ test('up-mode arcs overlay coverage: no reserved band, draw band at coverage top
       coverageHeight: 40,
       rowHeight: 10,
       coverageYOffset: 7,
-      drawnReadConnections: 'arc',
+      drawnReadConnections: 'link',
       readConnectionsDown: false,
       readConnectionsHeight: 100,
     },
@@ -443,7 +443,7 @@ test('the down-mode arc draw band is the strip the section reserves', () => {
   const { sections } = computeStackedSections([lane({ key: '', maxY: 4 })], {
     coverageHeight: 45,
     rowHeight: 10,
-    drawnReadConnections: 'arc',
+    drawnReadConnections: 'link',
     readConnectionsDown: true,
     readConnectionsHeight: 35,
   })
@@ -577,7 +577,7 @@ const ungroupedArcs: SectionsLayout = computeStackedSections(
   {
     coverageHeight: 40,
     rowHeight: 10,
-    drawnReadConnections: 'arc',
+    drawnReadConnections: 'link',
     readConnectionsDown: true,
     readConnectionsHeight: 100,
   },
@@ -588,7 +588,7 @@ const groupedArcs: SectionsLayout = computeStackedSections(
   {
     coverageHeight: 40,
     rowHeight: 10,
-    drawnReadConnections: 'arc',
+    drawnReadConnections: 'link',
     readConnectionsDown: true,
     readConnectionsHeight: 100,
   },

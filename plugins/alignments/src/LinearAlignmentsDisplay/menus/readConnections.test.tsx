@@ -29,7 +29,7 @@ function makeModel() {
       return this.drawnReadConnections !== 'off'
     },
     get readConnectionsMark(): ReadConnectionsMark {
-      return this.drawnReadConnections === 'cloud' ? 'cloud' : 'arc'
+      return this.drawnReadConnections === 'rule' ? 'rule' : 'link'
     },
     readConnectionsPlacement: 'down' as ReadConnectionsPlacement,
     setReadConnectionsPlacement(placement: ReadConnectionsPlacement) {
@@ -101,7 +101,7 @@ function checked(model: Model) {
 describe('read connections menu', () => {
   test('is checkboxes, then the Pair band radios, with no "?"', () => {
     const model = makeModel()
-    model.drawnReadConnections = 'arc'
+    model.drawnReadConnections = 'link'
     const items = rows(model)
     expect(labelsOf(items)).toEqual([
       'Link mates and supplementary alignments',
@@ -148,9 +148,9 @@ describe('read connections menu', () => {
     const model = makeModel()
     expect(checked(model)).toEqual(['None'])
     click(rows(model), 'Read arcs')
-    expect(model.drawnReadConnections).toBe('arc')
+    expect(model.drawnReadConnections).toBe('link')
     click(rows(model), 'Read cloud')
-    expect(model.drawnReadConnections).toBe('cloud')
+    expect(model.drawnReadConnections).toBe('rule')
     expect(checked(model)).toEqual(['Ordinary pairs', 'Read cloud'])
     click(rows(model), 'None')
     expect(model.drawnReadConnections).toBe('off')
@@ -159,7 +159,7 @@ describe('read connections menu', () => {
   test('"Ordinary pairs" appears only while the band draws', () => {
     const model = makeModel()
     expect(labelsOf(rows(model))).not.toContain('Ordinary pairs')
-    model.drawnReadConnections = 'cloud'
+    model.drawnReadConnections = 'rule'
     click(rows(model), 'Ordinary pairs')
     expect(model.showOrdinaryPairs).toBe(false)
   })
@@ -170,7 +170,7 @@ describe('band rows for Advanced', () => {
     const model = makeModel()
     model.showConnectors = true
     expect(getReadConnectionsBandItems(model)).toEqual([])
-    model.drawnReadConnections = 'cloud'
+    model.drawnReadConnections = 'rule'
     expect(labelsOf(getReadConnectionsBandItems(model))).toEqual([
       'Read connections placement',
       'Read connections line width',
@@ -179,7 +179,7 @@ describe('band rows for Advanced', () => {
 
   test('placement switches on click', () => {
     const model = makeModel()
-    model.drawnReadConnections = 'arc'
+    model.drawnReadConnections = 'link'
     const item = byLabel(
       getReadConnectionsBandItems(model),
       'Read connections placement',
@@ -192,7 +192,7 @@ describe('band rows for Advanced', () => {
   // first paint is its Suspense fallback.
   test('the line width slider writes the width the renderers read', async () => {
     const model = makeModel()
-    model.drawnReadConnections = 'arc'
+    model.drawnReadConnections = 'link'
     const item = byLabel(
       getReadConnectionsBandItems(model),
       'Read connections line width',

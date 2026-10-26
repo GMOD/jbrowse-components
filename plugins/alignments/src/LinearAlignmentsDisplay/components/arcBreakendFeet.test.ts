@@ -77,7 +77,7 @@ function twoContigDisplay(
     },
   ])
   applyView(view, 40, 0)
-  display.setDrawnReadConnections('arc')
+  display.setDrawnReadConnections('link')
   // The mismapping floor, off. It defaults to 2 reads clustered at one
   // breakpoint, so a one-read fixture draws NOTHING — no arc and no tick — and
   // every case here would pass its assertion on an empty section list.
@@ -266,7 +266,7 @@ test('a SAME-CHROMOSOME cross-region arc draws none', () => {
     { assemblyName: 'volvox', start: 1500, end: 10_000, refName: 'ctgA' },
   ])
   applyView(view, 10, 0)
-  display.setDrawnReadConnections('arc')
+  display.setDrawnReadConnections('link')
   display.setRpcData(
     0,
     {

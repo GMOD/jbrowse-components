@@ -22,7 +22,7 @@ interface ModelOptions {
   unmodified?: boolean
   types?: string[]
   showSashimi?: boolean
-  drawnReadConnections?: 'off' | 'arc' | 'cloud'
+  drawnReadConnections?: 'off' | 'link' | 'rule'
   // What the track's config declares, for Reset
   declared?: { filter?: FieldPredicate[]; bases?: FieldPredicate[] }
 }
@@ -104,7 +104,7 @@ describe('the More filters... layer sections', () => {
         layerFilterStateOf(
           makeModel({
             showSashimi: true,
-            drawnReadConnections: 'arc',
+            drawnReadConnections: 'link',
             layer: 'modifications',
           }),
         ),

@@ -117,7 +117,7 @@ describe('computeArcBand', () => {
   it('is undefined when readConnectionsHeight is 0', () => {
     expect(
       computeArcBand(
-        makeState({ drawnReadConnections: 'arc', readConnectionsHeight: 0 }),
+        makeState({ drawnReadConnections: 'link', readConnectionsHeight: 0 }),
       ),
     ).toBeUndefined()
   })
@@ -126,7 +126,7 @@ describe('computeArcBand', () => {
     expect(
       computeArcBand(
         makeState({
-          drawnReadConnections: 'arc',
+          drawnReadConnections: 'link',
           readConnectionsHeight: 60,
           coverageReservedPx: 80,
         }),
@@ -138,7 +138,7 @@ describe('computeArcBand', () => {
     expect(
       computeArcBand(
         makeState({
-          drawnReadConnections: 'arc',
+          drawnReadConnections: 'link',
           readConnectionsHeight: 60,
           coverageReservedPx: 0,
         }),
@@ -154,7 +154,7 @@ describe('computeArcBand', () => {
     expect(
       computeArcBand(
         makeState({
-          drawnReadConnections: 'arc',
+          drawnReadConnections: 'link',
           readConnectionsHeight: 60,
           coverageReservedPx: 80,
           coverageYOffset: 5,
@@ -170,7 +170,7 @@ describe('computeArcBand', () => {
     expect(
       computeArcBand(
         makeState({
-          drawnReadConnections: 'arc',
+          drawnReadConnections: 'link',
           readConnectionsHeight: 60,
           coverageReservedPx: 0,
           coverageYOffset: 5,
@@ -183,7 +183,7 @@ describe('computeArcBand', () => {
     expect(
       computeArcBand(
         makeState({
-          drawnReadConnections: 'arc',
+          drawnReadConnections: 'link',
           readConnectionsHeight: 60,
           readConnectionsDown: true,
           coverageReservedPx: 80,
@@ -196,7 +196,7 @@ describe('computeArcBand', () => {
     expect(
       computeArcBand(
         makeState({
-          drawnReadConnections: 'arc',
+          drawnReadConnections: 'link',
           readConnectionsHeight: 60,
           readConnectionsDown: true,
           coverageReservedPx: 0,

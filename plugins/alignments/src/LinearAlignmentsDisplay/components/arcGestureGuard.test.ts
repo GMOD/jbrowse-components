@@ -84,7 +84,7 @@ function setup({ down }: { down: boolean }) {
   const { view, display, session, openedWidgets } =
     createTestAlignmentsDisplay()
   applyView(view, 10, 0)
-  display.setDrawnReadConnections('arc')
+  display.setDrawnReadConnections('link')
   display.setReadConnectionsPlacement(down ? 'down' : 'up')
   display.setRpcData(
     0,
@@ -166,7 +166,7 @@ function arcPixelOver(
   }
   t.display.setDrawnReadConnections('off')
   const found = arcPixels.find(([x, y]) => t.hover(x, y) === underneath)
-  t.display.setDrawnReadConnections('arc')
+  t.display.setDrawnReadConnections('link')
   return found
 }
 
@@ -193,7 +193,7 @@ test('an arc over an interbase bar: the hover names the arc, and so do the other
 
   t.display.closeContextMenu()
   t.openedWidgets.length = 0
-  t.display.setDrawnReadConnections('arc')
+  t.display.setDrawnReadConnections('link')
 
   expect(t.hover(x, y)).toBe('arc')
   t.click(x, y)
@@ -229,7 +229,7 @@ test('clicking an arc with nothing under it keeps the selection', () => {
   expect(t.session.selection).toBeUndefined()
 
   t.session.setSelection(feature)
-  t.display.setDrawnReadConnections('arc')
+  t.display.setDrawnReadConnections('link')
   t.click(x, y)
   expect(t.session.selection).toBe(feature)
 })

@@ -21,7 +21,7 @@ function arcDisplay() {
   const { view, display } = createTestAlignmentsDisplay()
   // wide enough that the read and its mate are both on screen
   view.setNewView(10, 0)
-  display.setDrawnReadConnections('arc')
+  display.setDrawnReadConnections('link')
   display.setRpcData(
     0,
     { groups: [{ key: '', label: '', data: oneReadWithMate(5000) }] },

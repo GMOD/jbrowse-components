@@ -571,7 +571,7 @@ describe('FetchVisibleRegions autorun', () => {
     })
 
     const callsBefore = mockRpcCall.mock.calls.length
-    display.setDrawnReadConnections('arc')
+    display.setDrawnReadConnections('link')
     jest.advanceTimersByTime(800)
     await jest.runAllTimersAsync()
 
@@ -585,7 +585,7 @@ describe('FetchVisibleRegions autorun', () => {
     mockRpcCall.mockResolvedValue(makeEmptyGroupedData())
     const { display } = createDisplay()
 
-    display.setDrawnReadConnections('arc')
+    display.setDrawnReadConnections('link')
     jest.advanceTimersByTime(400)
     await waitFor(() => {
       expect(display.loadedRegions.size).toBe(1)
