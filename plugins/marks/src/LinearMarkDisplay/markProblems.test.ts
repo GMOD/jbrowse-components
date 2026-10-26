@@ -845,6 +845,19 @@ test('unknown with no domain paints every value of an ordinal color', () => {
   ])
 })
 
+test('a scheme on an ordinal color samples a listed domain, and warns with none', () => {
+  const colored = (scale: Record<string, unknown>) => [
+    {
+      mark: 'bar',
+      encoding: { y: 'score', color: { field: 'type', scale } },
+    },
+  ]
+  expect(found(colored({ domain: ['a', 'b'], scheme: 'viridis' }))).toEqual([])
+  expect(found(colored({ scheme: 'viridis' }))).toEqual([
+    'warning scheme-domain mark 0 encoding.color.scale.scheme',
+  ])
+})
+
 test('names name the domain values of a shape, and a constant shape names none', () => {
   const shaped = (shape: unknown) => [
     { mark: 'point', encoding: { y: 'score', shape } },
