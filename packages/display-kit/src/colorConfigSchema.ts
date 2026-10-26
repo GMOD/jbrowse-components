@@ -1010,6 +1010,8 @@ export const colorConfigSchema = ConfigurationSchema(
      * #slot value
      * A CSS color, or a jexl callback over `feature` returning one. Unset, a
      * feature's own BED itemRgb paints it if it has one, else goldenrod.
+     * Alignments' `value` is constant-only; here a callback stays, since the
+     * worker evaluates it per box, where a `field` reads the transcript.
      */
     value: {
       type: 'maybeColor',
