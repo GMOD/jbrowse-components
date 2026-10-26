@@ -1,137 +1,19 @@
-import { makeStyles } from '@jbrowse/core/util/tss-react'
-import {
-  Checkbox,
-  FormControlLabel,
-  MenuItem,
-  Paper,
-  TextField,
-  Typography,
-} from '@mui/material'
+import { Checkbox, FormControlLabel, MenuItem, TextField } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import {
   cytosineContextOptions,
   getModificationName,
 } from '../../shared/modificationData.ts'
+import { CategoryRow, FormHeading, FormRow, NumberRow } from './FilterForm.tsx'
 
 import type { LayerFilterState } from './layerFilters.ts'
-import type { CategoryFilter } from '@jbrowse/display-kit/categoryFilter'
 import type { CytosineContext } from '@jbrowse/modifications-utils'
 
-const useStyles = makeStyles()(theme => ({
-  paper: {
-    padding: theme.spacing(1),
-    margin: theme.spacing(1),
-  },
-  // label column sized to its longest label, as the flag grid is
-  rows: {
-    display: 'grid',
-    gridTemplateColumns: 'auto auto',
-    justifyContent: 'start',
-    alignItems: 'center',
-    columnGap: theme.spacing(2),
-    rowGap: theme.spacing(1),
-    marginTop: theme.spacing(1),
-  },
-  field: {
-    minWidth: 200,
-  },
-}))
-
-const ALL = 'all'
-
-// All / Only / Hide over one category, the menu's three radios as a select
-const CategoryRow = observer(function CategoryRow({
-  label,
-  all,
-  only,
-  exclude,
-  value,
-  onChange,
-}: {
-  label: string
-  all: string
-  only: string
-  exclude: string
-  value: CategoryFilter | undefined
-  onChange: (value: CategoryFilter | undefined) => void
-}) {
-  const { classes } = useStyles()
-  return (
-    <>
-      <Typography variant="body2">{label}</Typography>
-      <TextField
-        variant="outlined"
-        select
-        size="small"
-        className={classes.field}
-        value={value ?? ALL}
-        slotProps={{ htmlInput: { 'aria-label': label } }}
-        onChange={event => {
-          const v = event.target.value
-          onChange(v === ALL ? undefined : (v as CategoryFilter))
-        }}
-      >
-        <MenuItem value={ALL}>{all}</MenuItem>
-        <MenuItem value="only">{only}</MenuItem>
-        <MenuItem value="exclude">{exclude}</MenuItem>
-      </TextField>
-    </>
-  )
-})
-
-const NumberRow = observer(function NumberRow({
-  label,
-  value,
-  min,
-  max,
-  onChange,
-}: {
-  label: string
-  value: string
-  min: number
-  max?: number
-  onChange: (value: string) => void
-}) {
-  const { classes } = useStyles()
-  return (
-    <>
-      <Typography variant="body2">{label}</Typography>
-      <TextField
-        variant="outlined"
-        size="small"
-        type="number"
-        className={classes.field}
-        value={value}
-        slotProps={{ htmlInput: { min, max, 'aria-label': label } }}
-        onChange={event => {
-          onChange(event.target.value)
-        }}
-      />
-    </>
-  )
-})
-
-const Section = observer(function Section({
-  title,
-  children,
-}: {
-  title: string
-  children: React.ReactNode
-}) {
-  const { classes } = useStyles()
-  return (
-    <Paper className={classes.paper} variant="outlined">
-      <Typography>{title}</Typography>
-      <div className={classes.rows}>{children}</div>
-    </Paper>
-  )
-})
-
 /**
- * The dialog's sections over what a layer draws from the reads: the reads
- * with no mate in view, then each layer drawing — Sashimi arcs, read
- * connections, modifications — with its own filters.
+ * The dialog's sections over what a layer draws from the reads: each layer
+ * drawing — Sashimi arcs, read connections, modifications — with its own
+ * filters.
  */
 const LayerFilterSections = observer(function LayerFilterSections({
   state,
@@ -143,20 +25,9 @@ const LayerFilterSections = observer(function LayerFilterSections({
   const { junctions, connections, bases } = state
   return (
     <>
-      <Section title="Reads">
-        <CategoryRow
-          label="Reads with no mate in view"
-          all="All reads"
-          only="Only reads with no mate in view"
-          exclude="Hide reads with no mate in view"
-          value={state.alone}
-          onChange={alone => {
-            setState({ ...state, alone })
-          }}
-        />
-      </Section>
       {junctions ? (
-        <Section title="Sashimi arcs">
+        <>
+          <FormHeading>Sashimi arcs</FormHeading>
           <CategoryRow
             label="Split-read junctions"
             all="All junctions"
@@ -175,10 +46,11 @@ const LayerFilterSections = observer(function LayerFilterSections({
               setState({ ...state, junctions: { ...junctions, minReads } })
             }}
           />
-        </Section>
+        </>
       ) : null}
       {connections ? (
-        <Section title="Read connections">
+        <>
+          <FormHeading>Read connections</FormHeading>
           <CategoryRow
             label="Off-screen mate connections"
             all="All connections"
@@ -216,39 +88,37 @@ const LayerFilterSections = observer(function LayerFilterSections({
               })
             }}
           />
-        </Section>
+        </>
       ) : null}
       {bases ? (
-        <Section title="Modifications">
+        <>
+          <FormHeading>Modifications</FormHeading>
           {bases.types.length > 0 ? (
-            <>
-              <Typography variant="body2">Modification types</Typography>
-              <div>
-                {bases.types.map(t => (
-                  <FormControlLabel
-                    key={t}
-                    label={getModificationName(t)}
-                    control={
-                      <Checkbox
-                        size="small"
-                        checked={bases.shown.includes(t)}
-                        onChange={(_, checked) => {
-                          setState({
-                            ...state,
-                            bases: {
-                              ...bases,
-                              shown: checked
-                                ? [...bases.shown, t]
-                                : bases.shown.filter(s => s !== t),
-                            },
-                          })
-                        }}
-                      />
-                    }
-                  />
-                ))}
-              </div>
-            </>
+            <FormRow label="Modification types">
+              {bases.types.map(t => (
+                <FormControlLabel
+                  key={t}
+                  label={getModificationName(t)}
+                  control={
+                    <Checkbox
+                      size="small"
+                      checked={bases.shown.includes(t)}
+                      onChange={(_, checked) => {
+                        setState({
+                          ...state,
+                          bases: {
+                            ...bases,
+                            shown: checked
+                              ? [...bases.shown, t]
+                              : bases.shown.filter(s => s !== t),
+                          },
+                        })
+                      }}
+                    />
+                  }
+                />
+              ))}
+            </FormRow>
           ) : null}
           {bases.probabilityPercent === undefined ? null : (
             <NumberRow
@@ -262,12 +132,12 @@ const LayerFilterSections = observer(function LayerFilterSections({
             />
           )}
           {bases.context === undefined ? null : (
-            <>
-              <Typography variant="body2">Cytosine context</Typography>
+            <FormRow label="Cytosine context">
               <TextField
                 variant="outlined"
                 select
                 size="small"
+                fullWidth
                 value={bases.context}
                 slotProps={{ htmlInput: { 'aria-label': 'Cytosine context' } }}
                 onChange={event => {
@@ -286,9 +156,9 @@ const LayerFilterSections = observer(function LayerFilterSections({
                   </MenuItem>
                 ))}
               </TextField>
-            </>
+            </FormRow>
           )}
-        </Section>
+        </>
       ) : null}
     </>
   )

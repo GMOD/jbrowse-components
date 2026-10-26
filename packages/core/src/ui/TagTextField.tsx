@@ -30,6 +30,8 @@ interface OwnProps {
   helperText?: TextFieldProps['helperText']
   /** data-testid forwarded to the inner <input> (used by screenshot specs). */
   inputTestId?: string
+  /** The inner <input>'s accessible name, for a field drawn without a label. */
+  inputAriaLabel?: string
   /**
    * One-click shortcuts for common tags (e.g. HP, RG) shown as chips above the
    * field, so users don't have to know and type the two-letter code. Clicking a
@@ -60,6 +62,7 @@ const TagTextField = observer(function TagTextField(props: Props) {
     onValueChange,
     helperText,
     inputTestId,
+    inputAriaLabel,
     quickPicks,
     ...rest
   } = props
@@ -102,6 +105,7 @@ const TagTextField = observer(function TagTextField(props: Props) {
           htmlInput: {
             maxLength: 2,
             'data-testid': inputTestId,
+            'aria-label': inputAriaLabel,
           },
         }}
         onChange={event => {

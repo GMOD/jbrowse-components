@@ -108,7 +108,7 @@ test('tag filters beyond the first survive a submit', () => {
 
 test('an empty read name is stored as absent, not as an empty string', () => {
   const { submitted } = renderDialog([{ field: 'name', equal: 'read1' }])
-  fireEvent.change(screen.getByPlaceholderText('Enter read name'), {
+  fireEvent.change(screen.getByLabelText('Read name'), {
     target: { value: '' },
   })
   submit()
@@ -149,7 +149,7 @@ test('a submit preserves the read categories it does not show', () => {
     { field: 'svSignal', equal: true },
     { field: 'split', equal: true },
   ])
-  fireEvent.change(screen.getByPlaceholderText('Enter read name'), {
+  fireEvent.change(screen.getByLabelText('Read name'), {
     target: { value: 'readA' },
   })
   submit()

@@ -14,7 +14,6 @@ import {
   DialogContent,
   IconButton,
   Link,
-  Paper,
   TextField,
   Typography,
 } from '@mui/material'
@@ -25,6 +24,14 @@ import {
   readFieldsEntries,
   readFieldsFormOf,
 } from '../../shared/alignmentsFilter.ts'
+import {
+  CategoryRow,
+  FilterForm,
+  FormHeading,
+  FormRow,
+  FormWide,
+  NumberRow,
+} from './FilterForm.tsx'
 import LayerFilterSections from './LayerFilterSections.tsx'
 import {
   defaultLayerFilterState,
@@ -38,40 +45,41 @@ import type { LayerFiltersModel } from './layerFilters.ts'
 import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
 
 const useStyles = makeStyles()(theme => ({
-  paper: {
-    padding: theme.spacing(1),
-    margin: theme.spacing(1),
-  },
-  field: {
-    margin: theme.spacing(1),
+  tagRows: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'flex-start',
+    gap: theme.spacing(1),
   },
   tagRow: {
     display: 'flex',
     gap: theme.spacing(1),
-    alignItems: 'flex-start',
-    marginTop: theme.spacing(1),
+    alignItems: 'center',
+    width: '100%',
+  },
+  tagName: {
+    width: 90,
+    flex: 'none',
   },
   // `auto` for the label column and `justifyContent: start`, NOT `1fr`: a
   // fraction hands it every spare pixel of the dialog, which put ~450px of
   // whitespace between "read paired" and the box that answers for it — the
   // wide-table problem, where the eye loses the row on the way across. Sizing
   // to the longest label keeps each row readable as one line.
-  grid: {
+  flagGrid: {
     display: 'grid',
+    gridTemplateColumns: 'auto repeat(2, auto)',
     alignItems: 'center',
     justifyContent: 'start',
     columnGap: theme.spacing(2),
   },
-  flagGrid: {
-    gridTemplateColumns: 'auto repeat(2, auto)',
-  },
-  heading: {
+  flagHeading: {
     textAlign: 'center',
   },
   maskRow: {
     display: 'flex',
     gap: theme.spacing(2),
-    margin: theme.spacing(1, 0),
+    margin: theme.spacing(1.5, 0),
   },
   checkbox: {
     margin: 0,
@@ -79,8 +87,10 @@ const useStyles = makeStyles()(theme => ({
     justifySelf: 'center',
   },
   sectionButton: {
-    justifyContent: 'flex-start',
+    padding: 0,
+    minWidth: 0,
     textTransform: 'none',
+    font: 'inherit',
   },
 }))
 
@@ -97,6 +107,7 @@ const MaskField = observer(function MaskField(props: {
   return (
     <TextField
       label={label}
+      variant="outlined"
       size="small"
       value={flag}
       onChange={event => {
@@ -112,96 +123,98 @@ const MaskField = observer(function MaskField(props: {
   )
 })
 
-// One row per SAM flag with a Require and an Exclude box, rather than two
-// twelve-checkbox columns each captioned with a sentence. Half the height, the
-// flag named once, and the contradiction a user can otherwise build without
-// noticing — the same flag required AND excluded, which empties the track — is
-// now two ticks on one line.
+// One row per SAM flag with a Require and an Exclude box, so the contradiction
+// a user can otherwise build without noticing — the same flag required AND
+// excluded, which empties the track — is two ticks on one line.
 const FlagFilterSection = observer(function FlagFilterSection(props: {
   flagInclude: number
   flagExclude: number
   setFlagInclude: (arg: number) => void
   setFlagExclude: (arg: number) => void
 }) {
-  const { classes, cx } = useStyles()
+  const { classes } = useStyles()
   const { flagInclude, flagExclude, setFlagInclude, setFlagExclude } = props
   const atDefault =
     flagInclude === DEFAULT_FLAG_MASKS.include &&
     flagExclude === DEFAULT_FLAG_MASKS.exclude
-  // Open when it is doing something beyond the default. The masks are the
-  // dialog's expert control and its tallest section, so it stays out of the way
-  // of the fields above until a track is actually filtered by one.
+  // Open when it is doing something beyond the default: the masks are the
+  // dialog's expert control and its tallest section.
   const [open, setOpen] = useState(!atDefault)
   const site = 'https://broadinstitute.github.io/picard/explain-flags.html'
 
   return (
-    <Paper className={classes.paper} variant="outlined">
-      <Button
-        fullWidth
-        color="inherit"
-        className={classes.sectionButton}
-        endIcon={open ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-        onClick={() => {
-          setOpen(!open)
-        }}
-      >
-        SAM flags
-      </Button>
-      <Collapse in={open}>
-        <Typography variant="body2">
-          A read must have every Require flag and none of the Exclude flags.
-          Refer to <Link href={site}>{site}</Link> for details.
-        </Typography>
-        <div className={classes.maskRow}>
-          <MaskField
-            label="Require mask"
-            flag={flagInclude}
-            setFlag={setFlagInclude}
-          />
-          <MaskField
-            label="Exclude mask"
-            flag={flagExclude}
-            setFlag={setFlagExclude}
-          />
-        </div>
-        <div className={cx(classes.grid, classes.flagGrid)}>
-          <span />
-          <Typography variant="caption" className={classes.heading}>
-            Require
+    <>
+      <FormHeading>
+        <Button
+          color="inherit"
+          className={classes.sectionButton}
+          endIcon={open ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+          onClick={() => {
+            setOpen(!open)
+          }}
+        >
+          SAM flags
+        </Button>
+      </FormHeading>
+      <FormWide>
+        <Collapse in={open}>
+          <Typography variant="body2">
+            A read must have every Require flag and none of the Exclude flags (
+            <Link href={site}>flag reference</Link>).
           </Typography>
-          <Typography variant="caption" className={classes.heading}>
-            Exclude
-          </Typography>
-          {samFlagLabels.map((name, index) => (
-            <Fragment key={name}>
-              <label title={samFlagDescriptions[index]}>{name}</label>
-              <Checkbox
-                size="small"
-                className={classes.checkbox}
-                checked={Boolean(flagInclude & (1 << index))}
-                onChange={event => {
-                  setFlagInclude(
-                    toggleBit(flagInclude, index, event.target.checked),
-                  )
-                }}
-                slotProps={{ input: { 'aria-label': `Require ${name}` } }}
-              />
-              <Checkbox
-                size="small"
-                className={classes.checkbox}
-                checked={Boolean(flagExclude & (1 << index))}
-                onChange={event => {
-                  setFlagExclude(
-                    toggleBit(flagExclude, index, event.target.checked),
-                  )
-                }}
-                slotProps={{ input: { 'aria-label': `Exclude ${name}` } }}
-              />
-            </Fragment>
-          ))}
-        </div>
-      </Collapse>
-    </Paper>
+          <div className={classes.maskRow}>
+            <MaskField
+              label="Require mask"
+              flag={flagInclude}
+              setFlag={setFlagInclude}
+            />
+            <MaskField
+              label="Exclude mask"
+              flag={flagExclude}
+              setFlag={setFlagExclude}
+            />
+          </div>
+          <div className={classes.flagGrid}>
+            <span />
+            <Typography variant="caption" className={classes.flagHeading}>
+              Require
+            </Typography>
+            <Typography variant="caption" className={classes.flagHeading}>
+              Exclude
+            </Typography>
+            {samFlagLabels.map((name, index) => (
+              <Fragment key={name}>
+                <Typography variant="body2" title={samFlagDescriptions[index]}>
+                  {name}
+                </Typography>
+                <Checkbox
+                  size="small"
+                  className={classes.checkbox}
+                  checked={Boolean(flagInclude & (1 << index))}
+                  onChange={event => {
+                    setFlagInclude(
+                      toggleBit(flagInclude, index, event.target.checked),
+                    )
+                  }}
+                  slotProps={{ input: { 'aria-label': `Require ${name}` } }}
+                />
+                <Checkbox
+                  size="small"
+                  className={classes.checkbox}
+                  checked={Boolean(flagExclude & (1 << index))}
+                  onChange={event => {
+                    setFlagExclude(
+                      toggleBit(flagExclude, index, event.target.checked),
+                    )
+                  }}
+                  slotProps={{ input: { 'aria-label': `Exclude ${name}` } }}
+                />
+              </Fragment>
+            ))}
+          </div>
+        </Collapse>
+      </FormWide>
+    </>
   )
 })
 
@@ -227,9 +240,10 @@ function tagRowsOf(tags: readonly TagFilter[]): TagRow[] {
     : [{ id: 0, tag: '', value: '' }]
 }
 
-// One row per tag filter, AND-ed. TagTextField is uncontrolled, so each row is
-// keyed by a stable id rather than its index.
-const TagFilterSection = observer(function TagFilterSection(props: {
+// One row per tag filter, AND-ed: a read must carry every tag with its value.
+// TagTextField is uncontrolled, so each row is keyed by a stable id rather
+// than its index.
+const TagFilterRows = observer(function TagFilterRows(props: {
   rows: TagRow[]
   setRows: (rows: TagRow[]) => void
 }) {
@@ -240,116 +254,67 @@ const TagFilterSection = observer(function TagFilterSection(props: {
   }
 
   return (
-    <Paper className={classes.paper} variant="outlined">
-      <Typography>Filter by tag</Typography>
-      <Typography variant="body2" color="text.secondary">
-        Keeps only reads that carry every tag with its value.
-      </Typography>
-      {rows.map(row => (
-        <div key={row.id} className={classes.tagRow}>
-          <TagTextField
-            variant="outlined"
-            size="small"
-            defaultValue={row.tag}
-            helperText="e.g. HP, RG, NM"
-            onValueChange={value => {
-              update(row.id, { tag: value ?? '' })
-            }}
-          />
-          <TextField
-            label="Tag value"
-            variant="outlined"
-            size="small"
-            margin="none"
-            value={row.value}
-            placeholder="any"
-            helperText="Empty matches any value"
-            onChange={event => {
-              update(row.id, { value: event.target.value })
-            }}
-          />
-          {rows.length > 1 ? (
-            <IconButton
-              aria-label="Remove tag filter"
-              onClick={() => {
-                setRows(rows.filter(r => r.id !== row.id))
+    <FormRow label="Tags">
+      <div className={classes.tagRows}>
+        {rows.map(row => (
+          <div key={row.id} className={classes.tagRow}>
+            <TagTextField
+              variant="outlined"
+              size="small"
+              label={undefined}
+              inputAriaLabel="Tag name"
+              placeholder="Tag"
+              className={classes.tagName}
+              defaultValue={row.tag}
+              onValueChange={value => {
+                update(row.id, { tag: value ?? '' })
               }}
-            >
-              <CloseIcon />
-            </IconButton>
-          ) : null}
-        </div>
-      ))}
-      <Button
-        size="small"
-        onClick={() => {
-          setRows([
-            ...rows,
-            { id: Math.max(...rows.map(r => r.id)) + 1, tag: '', value: '' },
-          ])
-        }}
-      >
-        Add tag filter
-      </Button>
-    </Paper>
-  )
-})
-
-const ReadNameFilterSection = observer(function ReadNameFilterSection(props: {
-  readName: string
-  setReadName: (arg: string) => void
-}) {
-  const { classes } = useStyles()
-  const { readName, setReadName } = props
-
-  return (
-    <Paper className={classes.paper} variant="outlined">
-      <Typography>Filter by read name</Typography>
-      <TextField
-        className={classes.field}
-        fullWidth
-        variant="outlined"
-        size="small"
-        value={readName}
-        placeholder="Enter read name"
-        onChange={event => {
-          setReadName(event.target.value)
-        }}
-      />
-    </Paper>
-  )
-})
-
-const MapqFilterSection = observer(function MapqFilterSection(props: {
-  minMapq: string
-  setMinMapq: (arg: string) => void
-}) {
-  const { classes } = useStyles()
-  const { minMapq, setMinMapq } = props
-
-  return (
-    <Paper className={classes.paper} variant="outlined">
-      <Typography>Minimum mapping quality</Typography>
-      <TextField
-        className={classes.field}
-        variant="outlined"
-        size="small"
-        type="number"
-        value={minMapq}
-        placeholder="Any"
-        slotProps={{ htmlInput: { min: 0, max: 254 } }}
-        onChange={event => {
-          setMinMapq(event.target.value)
-        }}
-      />
-    </Paper>
+            />
+            <TextField
+              variant="outlined"
+              size="small"
+              fullWidth
+              value={row.value}
+              placeholder="Any value"
+              slotProps={{ htmlInput: { 'aria-label': 'Tag value' } }}
+              onChange={event => {
+                update(row.id, { value: event.target.value })
+              }}
+            />
+            {rows.length > 1 ? (
+              <IconButton
+                size="small"
+                aria-label="Remove tag filter"
+                onClick={() => {
+                  setRows(rows.filter(r => r.id !== row.id))
+                }}
+              >
+                <CloseIcon fontSize="small" />
+              </IconButton>
+            ) : null}
+          </div>
+        ))}
+        <Button
+          size="small"
+          onClick={() => {
+            setRows([
+              ...rows,
+              { id: Math.max(...rows.map(r => r.id)) + 1, tag: '', value: '' },
+            ])
+          }}
+        >
+          Add tag filter
+        </Button>
+      </div>
+    </FormRow>
   )
 })
 
 // "More filters...": every filter the "Filter by..." submenu leaves out. The
 // submenu keeps the read categories a user flips several times at a locus
-// (SV evidence, split and spliced reads) and mapping quality; this holds the
-// rest — a read name, a tag and its value, the reads with no mate in view, the
+// (SV evidence, split and spliced reads), mapping quality presets and, while
+// the arcs draw, non-canonical junctions; this holds the rest — a read name,
+// an exact mapping quality floor, the reads with no mate in view, tags, the
 // filters of each layer drawing (Sashimi arcs, read connections,
 // modifications) and the flag masks. Each filter has one home, so a choice
 // never applies on click in one place and on Submit in another.
@@ -358,8 +323,7 @@ const MapqFilterSection = observer(function MapqFilterSection(props: {
 // their fields the dialog cannot show (a tag's `oneOf`, a strict MAPQ floor).
 // The menu's "Clear all filters" is what resets the whole filter.
 //
-// Sections run in the order a user reaches for them, the flag masks last —
-// they used to open the dialog and outweigh the rest of it put together.
+// One form, one label column: a box per field read as eight separate dialogs.
 const FilterByTagDialog = observer(function FilterByTagDialog(props: {
   model: LayerFiltersModel & {
     setFilterFields: (
@@ -437,19 +401,48 @@ const FilterByTagDialog = observer(function FilterByTagDialog(props: {
         }}
       >
         <DialogContent>
-          <ReadNameFilterSection
-            readName={readName}
-            setReadName={setReadName}
-          />
-          <MapqFilterSection minMapq={minMapq} setMinMapq={setMinMapq} />
-          <TagFilterSection rows={tagRows} setRows={setTagRows} />
-          <LayerFilterSections state={layers} setState={setLayers} />
-          <FlagFilterSection
-            flagInclude={flagInclude}
-            flagExclude={flagExclude}
-            setFlagInclude={setFlagInclude}
-            setFlagExclude={setFlagExclude}
-          />
+          <FilterForm>
+            <FormHeading>Reads</FormHeading>
+            <FormRow label="Read name">
+              <TextField
+                variant="outlined"
+                size="small"
+                fullWidth
+                value={readName}
+                placeholder="Any read"
+                slotProps={{ htmlInput: { 'aria-label': 'Read name' } }}
+                onChange={event => {
+                  setReadName(event.target.value)
+                }}
+              />
+            </FormRow>
+            <NumberRow
+              label="Min mapping quality"
+              value={minMapq}
+              min={0}
+              max={254}
+              placeholder="Any"
+              onChange={setMinMapq}
+            />
+            <CategoryRow
+              label="Reads with no mate in view"
+              all="All reads"
+              only="Only reads with no mate in view"
+              exclude="Hide reads with no mate in view"
+              value={layers.alone}
+              onChange={alone => {
+                setLayers({ ...layers, alone })
+              }}
+            />
+            <TagFilterRows rows={tagRows} setRows={setTagRows} />
+            <LayerFilterSections state={layers} setState={setLayers} />
+            <FlagFilterSection
+              flagInclude={flagInclude}
+              flagExclude={flagExclude}
+              setFlagInclude={setFlagInclude}
+              setFlagExclude={setFlagExclude}
+            />
+          </FilterForm>
         </DialogContent>
         <DialogActions>
           <Button
