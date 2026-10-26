@@ -2,6 +2,7 @@ import {
   rowIndexAt,
   rowsUnderPointer,
 } from '@jbrowse/core/util/rowStackGeometry'
+import { pxPerBpOf } from '@jbrowse/render-core/canvas2dUtils'
 import {
   drawnRowHeightPx,
   rowBandOffsetPx,
@@ -14,6 +15,7 @@ import {
   hitTestMouse,
   makeTooltipRow,
 } from '../../shared/wiggleHitTest.ts'
+import { WIGGLE_MIN_PX } from '../../util.ts'
 
 import type { MouseRegion } from '../../shared/wiggleHitTest.ts'
 import type { WiggleHoveredFeature, WiggleTooltipRow } from '../../util.ts'
@@ -24,7 +26,8 @@ interface VisibleSource {
   color?: string
 }
 
-// Overlay mode: every visible source's score at the cursor bp becomes a row.
+// Overlay mode: every visible source's score at the cursor bp, or at the
+// nearest mark within `reachBp`, becomes a row.
 // The header coord is the cursor bp itself — picking one source's feature
 // interval would be arbitrary across sources with different bin widths. Rows
 // follow visibleSources order (the on-screen legend order).
@@ -37,6 +40,7 @@ export function findOverlayHit(
   data: WiggleDataResult,
   visibleSources: VisibleSource[],
   bp: number,
+  reachBp: number,
   refName: string,
   showsMinMax: boolean,
 ): WiggleHoveredFeature | undefined {
@@ -45,7 +49,12 @@ export function findOverlayHit(
   for (const src of visibleSources) {
     const ds = dataByName.get(src.name)
     if (ds) {
-      const i = findFeatureAtBp(ds.featurePositions, ds.numFeatures, bp)
+      const i = findFeatureAtBp(
+        ds.featurePositions,
+        ds.numFeatures,
+        bp,
+        reachBp,
+      )
       if (i !== -1) {
         rows.push(makeTooltipRow(ds, i, showsMinMax, src.name, src.color))
       }
@@ -73,6 +82,7 @@ export function findRowHit(
   data: WiggleDataResult,
   visibleSources: VisibleSource[],
   bp: number,
+  reachBp: number,
   offsetY: number,
   rowHeight: number,
   refName: string,
@@ -86,7 +96,9 @@ export function findRowHit(
     ? paintedRowAt(offsetY, rowHeight, visibleSources.length)
     : rowIndexAt(offsetY, { rowHeight })
   const src = visibleSources[rowIndex]
-  return src ? sourceHit(data, src, bp, refName, showsMinMax) : undefined
+  return src
+    ? sourceHit(data, src, bp, reachBp, refName, showsMinMax)
+    : undefined
 }
 
 // The last row whose painted cell covers `offsetY`, or -1 where none does.
@@ -104,12 +116,13 @@ function sourceHit(
   data: WiggleDataResult,
   src: VisibleSource,
   bp: number,
+  reachBp: number,
   refName: string,
   showsMinMax: boolean,
 ) {
   const ds = data.sources.find(s => s.name === src.name)
   return ds
-    ? findSourceHit(ds, bp, refName, showsMinMax, src.name, src.color)
+    ? findSourceHit(ds, bp, reachBp, refName, showsMinMax, src.name, src.color)
     : undefined
 }
 
@@ -122,6 +135,7 @@ export interface WiggleHitModel {
   markSources: VisibleSource[]
   rpcDataMap: ReadonlyMap<number, WiggleDataResult>
   tooltipShowsMinMax: boolean
+  size: number
   isOverlay: boolean
   isDensityMode: boolean
   showTree: boolean
@@ -151,6 +165,7 @@ export function findWiggleHit(
     markSources: sources,
     rpcDataMap,
     tooltipShowsMinMax,
+    size,
     isOverlay,
     isDensityMode,
   } = model
@@ -162,6 +177,7 @@ export function findWiggleHit(
     return undefined
   }
   const { data, bp, region } = hit
+  const reachBp = Math.max(WIGGLE_MIN_PX, size / 2) / pxPerBpOf(region)
   // A lone source names its bin, as a row does; only several sources sharing
   // a box fall back to the cursor base
   return !isOverlay
@@ -169,6 +185,7 @@ export function findWiggleHit(
         data,
         sources,
         bp,
+        reachBp,
         offsetY - rowsTopOffset,
         effectiveRowHeight,
         region.refName,
@@ -176,8 +193,22 @@ export function findWiggleHit(
         isDensityMode,
       )
     : sources.length === 1
-      ? sourceHit(data, sources[0]!, bp, region.refName, tooltipShowsMinMax)
-      : findOverlayHit(data, sources, bp, region.refName, tooltipShowsMinMax)
+      ? sourceHit(
+          data,
+          sources[0]!,
+          bp,
+          reachBp,
+          region.refName,
+          tooltipShowsMinMax,
+        )
+      : findOverlayHit(
+          data,
+          sources,
+          bp,
+          reachBp,
+          region.refName,
+          tooltipShowsMinMax,
+        )
 }
 
 // Where a right-click landed, as a genomic coordinate rather than as which

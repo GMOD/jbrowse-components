@@ -8,30 +8,45 @@ import type { WiggleHoveredFeature, WiggleTooltipRow } from '../util.ts'
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util/simpleFeature'
 import type { WiggleSourceData } from '@jbrowse/wiggle-core'
 
-// Binary search for the feature at a given base-pair offset.
-// featurePositions is sorted by start (featurePositions[i*2]), so we find the
-// rightmost feature whose start <= bpOffset, then confirm bpOffset < its end.
+/**
+ * The feature drawn over base `bp`: the one containing it, else the nearer
+ * of its neighbours whose edge lies within `reachBp` of the base's middle,
+ * since a mark can draw wider than its bases. `featurePositions` is sorted by
+ * start, and a source's bins don't overlap, so its ends are sorted too.
+ */
 export function findFeatureAtBp(
   featurePositions: Uint32Array,
   numFeatures: number,
-  bpOffset: number,
+  bp: number,
+  reachBp = 0,
 ) {
   let lo = 0
   let hi = numFeatures - 1
-  let found = -1
+  let left = -1
   while (lo <= hi) {
     const mid = (lo + hi) >> 1
-    if (featurePositions[mid * 2]! <= bpOffset) {
-      found = mid
+    if (featurePositions[mid * 2]! <= bp) {
+      left = mid
       lo = mid + 1
     } else {
       hi = mid - 1
     }
   }
-  if (found === -1) {
-    return -1
+  const centre = bp + 0.5
+  const leftGap =
+    left === -1
+      ? Number.POSITIVE_INFINITY
+      : centre - featurePositions[left * 2 + 1]!
+  if (leftGap < 0) {
+    return left
   }
-  return bpOffset < featurePositions[found * 2 + 1]! ? found : -1
+  const right = left + 1
+  const rightGap =
+    right < numFeatures
+      ? featurePositions[right * 2]! - centre
+      : Number.POSITIVE_INFINITY
+  const gap = Math.min(leftGap, rightGap)
+  return gap > reachBp ? -1 : gap === leftGap ? left : right
 }
 
 // Spread-friendly helper: returns `{ summary, minScore, maxScore }` when the
@@ -103,13 +118,14 @@ export function wiggleFeatureWidgetData(
 export function findSourceHit(
   source: WiggleSourceData,
   bp: number,
+  reachBp: number,
   refName: string,
   showsMinMax: boolean,
   name?: string,
   color?: string,
 ): WiggleHoveredFeature | undefined {
   const { featurePositions, numFeatures } = source
-  const i = findFeatureAtBp(featurePositions, numFeatures, bp)
+  const i = findFeatureAtBp(featurePositions, numFeatures, bp, reachBp)
   return i === -1
     ? undefined
     : {

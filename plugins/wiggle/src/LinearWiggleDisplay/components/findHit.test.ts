@@ -55,6 +55,7 @@ describe('findOverlayHit', () => {
       data,
       [{ name: 's1' }, { name: 's2' }, { name: 's3' }],
       50,
+      0,
       'chr1',
       false,
     )
@@ -77,7 +78,7 @@ describe('findOverlayHit', () => {
         makeSource('s2', [{ start: 0, end: 100, score: 10 }]),
       ],
     }
-    const result = findOverlayHit(data, [{ name: 's1' }], 50, 'chr1', false)
+    const result = findOverlayHit(data, [{ name: 's1' }], 50, 0, 'chr1', false)
     expect(result?.rows).toHaveLength(1)
     expect(result?.rows[0]?.source).toBe('s1')
   })
@@ -93,6 +94,7 @@ describe('findOverlayHit', () => {
       data,
       [{ name: 's1' }, { name: 's2' }],
       50,
+      0,
       'chr1',
       false,
     )
@@ -104,7 +106,7 @@ describe('findOverlayHit', () => {
     const data = {
       sources: [makeSource('s1', [{ start: 200, end: 300, score: 5 }])],
     }
-    const result = findOverlayHit(data, [{ name: 's1' }], 50, 'chr1', false)
+    const result = findOverlayHit(data, [{ name: 's1' }], 50, 0, 'chr1', false)
     expect(result).toBeUndefined()
   })
 
@@ -114,7 +116,7 @@ describe('findOverlayHit', () => {
         makeSource('s1', [{ start: 0, end: 100, score: 5, min: 1, max: 9 }]),
       ],
     }
-    const result = findOverlayHit(data, [{ name: 's1' }], 50, 'chr1', true)
+    const result = findOverlayHit(data, [{ name: 's1' }], 50, 0, 'chr1', true)
     expect(result?.rows[0]).toEqual({
       source: 's1',
       score: 5,
@@ -130,7 +132,7 @@ describe('findOverlayHit', () => {
         makeSource('s1', [{ start: 0, end: 100, score: 5, min: 1, max: 9 }]),
       ],
     }
-    const result = findOverlayHit(data, [{ name: 's1' }], 50, 'chr1', false)
+    const result = findOverlayHit(data, [{ name: 's1' }], 50, 0, 'chr1', false)
     expect(result?.rows[0]).toEqual({ source: 's1', score: 5 })
   })
 
@@ -140,7 +142,7 @@ describe('findOverlayHit', () => {
         makeSource('s1', [{ start: 0, end: 100, score: 5, min: 5, max: 5 }]),
       ],
     }
-    const result = findOverlayHit(data, [{ name: 's1' }], 50, 'chr1', true)
+    const result = findOverlayHit(data, [{ name: 's1' }], 50, 0, 'chr1', true)
     expect(result?.rows[0]).toEqual({ source: 's1', score: 5 })
   })
 
@@ -151,7 +153,7 @@ describe('findOverlayHit', () => {
     const data = {
       sources: [makeSource('s1', [{ start: 0, end: 100, score: 5 }])],
     }
-    const result = findOverlayHit(data, [{ name: 's1' }], 50, 'chr1', false)
+    const result = findOverlayHit(data, [{ name: 's1' }], 50, 0, 'chr1', false)
     expect(result?.start).toBe(50)
     expect(result?.end).toBe(51)
     expect(assembleLocString({ refName: 'chr1', start: 50, end: 51 })).toBe(
@@ -172,7 +174,7 @@ describe('findRowHit', () => {
       ],
     }
     // rowHeight=20, offsetY=25 → row 1 (s2)
-    const result = findRowHit(data, sources, 50, 25, 20, 'chr1', false)
+    const result = findRowHit(data, sources, 50, 0, 25, 20, 'chr1', false)
     expect(result).toEqual({
       refName: 'chr1',
       start: 0,
@@ -192,7 +194,7 @@ describe('findRowHit', () => {
         makeSource(s.name, [{ start: 0, end: 100, score: i }]),
       ),
     }
-    const result = findRowHit(data, many, 50, 2, 0.4, 'chr1', false)
+    const result = findRowHit(data, many, 50, 0, 2, 0.4, 'chr1', false)
     expect(result?.rows).toEqual([{ source: 's6', score: 6 }])
   })
 
@@ -206,7 +208,8 @@ describe('findRowHit', () => {
       ),
     }
     const at = (y: number) =>
-      findRowHit(data, many, 50, y, 0.3, 'chr1', false, true)?.rows[0]?.source
+      findRowHit(data, many, 50, 0, y, 0.3, 'chr1', false, true)?.rows[0]
+        ?.source
     expect(at(2)).toBe('s9')
     // the last row's 1px cell overhangs its slot past the end of the stack
     expect(at(3)).toBe('s11')
@@ -217,8 +220,8 @@ describe('findRowHit', () => {
     const data = {
       sources: [makeSource('s1', [{ start: 0, end: 100, score: 5 }])],
     }
-    const aboveAll = findRowHit(data, sources, 50, -1, 20, 'chr1', false)
-    const belowAll = findRowHit(data, sources, 50, 200, 20, 'chr1', false)
+    const aboveAll = findRowHit(data, sources, 50, 0, -1, 20, 'chr1', false)
+    const belowAll = findRowHit(data, sources, 50, 0, 200, 20, 'chr1', false)
     expect(aboveAll).toBeUndefined()
     expect(belowAll).toBeUndefined()
   })
@@ -228,7 +231,7 @@ describe('findRowHit', () => {
       sources: [makeSource('s1', [{ start: 0, end: 100, score: 5 }])],
     }
     // row 1 (s2) but data only has s1
-    const result = findRowHit(data, sources, 50, 25, 20, 'chr1', false)
+    const result = findRowHit(data, sources, 50, 0, 25, 20, 'chr1', false)
     expect(result).toBeUndefined()
   })
 
@@ -236,7 +239,16 @@ describe('findRowHit', () => {
     const data = {
       sources: [makeSource('s1', [{ start: 200, end: 300, score: 5 }])],
     }
-    const result = findRowHit(data, [{ name: 's1' }], 50, 5, 20, 'chr1', false)
+    const result = findRowHit(
+      data,
+      [{ name: 's1' }],
+      50,
+      0,
+      5,
+      20,
+      'chr1',
+      false,
+    )
     expect(result).toBeUndefined()
   })
 
@@ -245,7 +257,16 @@ describe('findRowHit', () => {
       sources: [makeSource('s1', [{ start: 100, end: 500, score: 7 }])],
     }
     // bp 250 falls inside the [100, 500] feature
-    const result = findRowHit(data, [{ name: 's1' }], 250, 5, 20, 'chr1', false)
+    const result = findRowHit(
+      data,
+      [{ name: 's1' }],
+      250,
+      0,
+      5,
+      20,
+      'chr1',
+      false,
+    )
     expect(result?.start).toBe(100)
     expect(result?.end).toBe(500)
   })
@@ -256,7 +277,16 @@ describe('findRowHit', () => {
         makeSource('s1', [{ start: 0, end: 100, score: 5, min: 1, max: 9 }]),
       ],
     }
-    const result = findRowHit(data, [{ name: 's1' }], 50, 5, 20, 'chr1', true)
+    const result = findRowHit(
+      data,
+      [{ name: 's1' }],
+      50,
+      0,
+      5,
+      20,
+      'chr1',
+      true,
+    )
     expect(result?.rows[0]).toMatchObject({
       summary: true,
       minScore: 1,
@@ -289,6 +319,7 @@ describe('findWiggleHit', () => {
         ],
       ]),
       tooltipShowsMinMax: false,
+      size: 2,
       isOverlay: false,
       isDensityMode: false,
       showTree: false,
@@ -375,5 +406,59 @@ describe('findWiggleHit', () => {
   test('a zero-height display is a miss rather than NaN row math', () => {
     const model = makeModel({ effectiveRowHeight: 0 })
     expect(findWiggleHit(model, regions, 50, 0)).toBeUndefined()
+  })
+
+  // 50 bp/px: a 1 bp record draws a bar WIGGLE_MIN_PX wide, a point `size`
+  // across, so its mark covers pixels no base of it does.
+  describe('a mark drawn wider than its bases', () => {
+    const zoomedOut = [{ ...regions[0]!, end: 5000 }]
+    const sparse = (records: number[], over: Partial<WiggleHitModel> = {}) =>
+      makeModel({
+        rpcDataMap: new Map([
+          [
+            0,
+            {
+              sources: [
+                makeSource(
+                  's1',
+                  records.map(start => ({
+                    start,
+                    end: start + 1,
+                    score: start,
+                  })),
+                ),
+              ],
+            },
+          ],
+        ]),
+        ...over,
+      })
+    const scoreAt = (model: WiggleHitModel, x: number) =>
+      findWiggleHit(model, zoomedOut, x, 5)?.rows[0]?.score
+
+    test('a hover on the bar past its base finds it', () => {
+      expect(scoreAt(sparse([1000]), 21)).toBe(1000)
+      expect(scoreAt(sparse([1000]), 23)).toBeUndefined()
+    })
+
+    test('a point reaches its radius', () => {
+      expect(scoreAt(sparse([1000], { size: 10 }), 24)).toBe(1000)
+      expect(scoreAt(sparse([1000], { size: 10 }), 26)).toBeUndefined()
+    })
+
+    test('the nearest of two marks in reach wins', () => {
+      expect(scoreAt(sparse([1000, 1100]), 20.6)).toBe(1000)
+      expect(scoreAt(sparse([1000, 1100]), 21.4)).toBe(1100)
+    })
+
+    test('overlaid sources each report the mark in reach', () => {
+      const model = sparse([1000], {
+        isOverlay: true,
+        markSources: [{ name: 's1' }, { name: 's2' }],
+      })
+      expect(findWiggleHit(model, zoomedOut, 21, 5)?.rows).toMatchObject([
+        { source: 's1', score: 1000 },
+      ])
+    })
   })
 })

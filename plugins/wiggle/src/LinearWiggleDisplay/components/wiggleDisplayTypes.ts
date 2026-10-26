@@ -28,6 +28,7 @@ export interface WiggleDisplayModel extends WiggleGpuDisplayModel {
   // `valueScales` and the SVG export are laid out against
   plotGeometry: WigglePlotGeometry
   tooltipShowsMinMax: boolean
+  size: number
   isRowLayout: boolean
   isOverlay: boolean
   isDensityMode: boolean

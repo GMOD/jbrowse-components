@@ -20,6 +20,10 @@ import type { WiggleDataResult } from '@jbrowse/wiggle-core'
 // bp only has a score in the region it was fetched for, and the caller has
 // already resolved which one (`loadedRegionIndexAt`).
 //
+// Exact at `bp`, without the reach a hover gets for a mark drawn wider than
+// its bases: a session's `sortRowsBy` replays the coordinate at any zoom, and
+// a reach measured in pixels would rank the rows differently at each.
+//
 // Reading the score is the whole of what is wiggle-specific here. Sinking the
 // rows with no score at `bp` — a gap, or a subtrack whose file doesn't cover
 // this contig — and staying stable otherwise is `orderRowsByValueAt`'s, shared
