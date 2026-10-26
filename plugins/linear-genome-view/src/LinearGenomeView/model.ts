@@ -61,6 +61,7 @@ import {
 import { observable, when } from 'mobx'
 
 import {
+  fetchResults,
   handleSelectedRegion,
   isOpenInView,
   navToOption,
@@ -138,20 +139,71 @@ export interface SearchPickerRow {
 }
 
 /**
- * The hits of a name search that point at more than one place, waiting for the
- * user to choose. A host draws them however it likes: the Material view shows
- * a dialog, and `SearchPicker` in `@jbrowse/display-ui/embed` a plain list.
+ * A name search's hits as a host lists them: what `view.search` returns, and
+ * what the picker holds.
  */
-export interface SearchPickerState {
+export interface SearchHits {
   query: string
   assemblyName: string
-  /** one row per place, hits in a track the view already shows first */
+  /** one row per hit, hits in a track the view already shows first */
   rows: SearchPickerRow[]
-  /** navigates to the row's place, reports a failure and closes the picker */
+  /** lands on the row's place and reports a failure */
   pick: (id: string) => Promise<unknown>
 }
 
+/**
+ * The hits of a name search that point at more than one place, waiting for the
+ * user to choose; its `pick` also closes the picker. A host draws them however
+ * it likes: the Material view shows a dialog, and `SearchPicker` in
+ * `@jbrowse/display-ui/embed` a plain list.
+ */
+export type SearchPickerState = SearchHits
+
 export type { PaddingSpan } from './util.ts'
+
+function searchHitsOf(
+  model: LinearGenomeViewModel,
+  results: BaseResult[],
+  query: string,
+  assemblyName: string,
+  land: (result: BaseResult) => Promise<unknown>,
+): SearchHits {
+  const session = getSession(model)
+  const assembly = session.assemblyManager.get(assemblyName)
+  const ordered = [...results].sort(
+    (a, b) => Number(isOpenInView(b, model)) - Number(isOpenInView(a, model)),
+  )
+  return {
+    query,
+    assemblyName,
+    rows: ordered.map(result => {
+      const location = result.getLocation() ?? ''
+      const trackId = result.getTrackId()
+      return {
+        id: result.getId(),
+        label: result.getLabel(),
+        location:
+          assembly && location
+            ? canonicalLocString(location, assembly)
+            : location,
+        trackName: trackId ? (session.getTrackById(trackId)?.name ?? '') : '',
+      }
+    }),
+    pick: async id => {
+      const picked = ordered.find(result => result.getId() === id)
+      try {
+        if (picked) {
+          await land(picked)
+        }
+      } catch (e) {
+        console.error(e)
+        if (isAlive(model)) {
+          getNotificationSink(model).notifyError(`${e}`, e)
+        }
+      }
+    },
+  }
+}
 
 export interface HighlightRegion {
   assemblyName?: string
@@ -1572,49 +1624,59 @@ export function stateModelFactory(pluginManager: PluginManager) {
             assemblyName,
           }),
       ) {
-        const session = getSession(self)
-        const assembly = session.assemblyManager.get(assemblyName)
-        const ordered = [...searchResults].sort(
-          (a, b) =>
-            Number(isOpenInView(b, self as LinearGenomeViewModel)) -
-            Number(isOpenInView(a, self as LinearGenomeViewModel)),
+        const hits = searchHitsOf(
+          self as LinearGenomeViewModel,
+          searchResults,
+          searchQuery,
+          assemblyName,
+          onPick,
         )
         const picker: SearchPickerState = {
-          query: searchQuery,
-          assemblyName,
-          rows: ordered.map(result => {
-            const location = result.getLocation() ?? ''
-            const trackId = result.getTrackId()
-            return {
-              id: result.getId(),
-              label: result.getLabel(),
-              location:
-                assembly && location
-                  ? canonicalLocString(location, assembly)
-                  : location,
-              trackName: trackId
-                ? (session.getTrackById(trackId)?.name ?? '')
-                : '',
-            }
-          }),
+          ...hits,
           pick: async id => {
-            const picked = ordered.find(result => result.getId() === id)
-            try {
-              if (picked) {
-                await onPick(picked)
-              }
-            } catch (e) {
-              console.error(e)
-              if (isAlive(self)) {
-                getNotificationSink(self).notifyError(`${e}`, e)
-              }
-            }
+            await hits.pick(id)
             if (isAlive(self) && self.searchPicker === picker) {
               self.closeSearchPicker()
             }
           },
         }
         self.searchPicker = picker
+      },
+
+      /**
+       * #action
+       * Search the view's assembly by name, for a host listing the hits
+       * itself. A row's `pick` lands as the search box does: it navigates
+       * there and shows the track the hit's index came from.
+       */
+      async search(
+        query: string,
+        opts?: { signal?: AbortSignal },
+      ): Promise<SearchHits> {
+        const assemblyName = self.assemblyNames[0] ?? self.launchAssemblyName
+        if (!assemblyName) {
+          throw new Error('the view has no assembly to search yet')
+        }
+        const { assemblyManager, textSearchManager } = getSession(self)
+        const results = await fetchResults({
+          queryString: query,
+          assemblyName,
+          textSearchManager,
+          assembly: await assemblyManager.waitForAssembly(assemblyName),
+          signal: opts?.signal,
+        })
+        return searchHitsOf(
+          self as LinearGenomeViewModel,
+          results,
+          query,
+          assemblyName,
+          result =>
+            navToOption({
+              option: result,
+              model: self as LinearGenomeViewModel,
+              assemblyName,
+            }),
+        )
       },
 
       /**

@@ -36,7 +36,7 @@ export const pages: ExamplePage[] = [
     slug: 'search-results',
     title: 'Search results as a list',
     description:
-      'fetchResults returns the matches, and the page lists them as buttons.',
+      'view.search returns the matches, and the page lists them as buttons.',
     group: 'Navigation',
   },
   {

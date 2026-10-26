@@ -3,29 +3,24 @@ import { useState } from 'react'
 import { useDebounce } from '@jbrowse/core/util/hooks'
 import { useFetch } from '@jbrowse/core/util/useFetch'
 import { EmbedProvider, TrackStack } from '@jbrowse/display-ui/embed'
-import { fetchResults } from '@jbrowse/plugin-linear-genome-view'
 import { useCreateViewState } from '@jbrowse/react-linear-genome-view2'
 import { observer } from 'mobx-react'
 
-import type { ViewModel } from '@jbrowse/react-linear-genome-view2'
+import type { LinearGenomeViewModel } from '@jbrowse/react-linear-genome-view2'
 
 const SearchPanel = observer(function SearchPanel({
-  session,
+  view,
 }: {
-  session: ViewModel['session']
+  view: LinearGenomeViewModel
 }) {
   const [query, setQuery] = useState('BRCA1')
   const debounced = useDebounce(query.trim(), 300)
-  const { data, error, isLoading } = useFetch(
-    debounced || null,
-    async (queryString: string, signal: AbortSignal) =>
-      fetchResults({
-        queryString,
-        signal,
-        assemblyName: 'hg38',
-        textSearchManager: session.textSearchManager,
-        assembly: await session.assemblyManager.waitForAssembly('hg38'),
-      }),
+  const {
+    data: hits,
+    error,
+    isLoading,
+  } = useFetch(debounced || null, (text: string, signal: AbortSignal) =>
+    view.search(text, { signal }),
   )
   return (
     <div style={{ display: 'grid', gap: 4, width: 380, maxWidth: '100%' }}>
@@ -42,7 +37,7 @@ const SearchPanel = observer(function SearchPanel({
           {error instanceof Error ? error.message : String(error)}
         </span>
       ) : null}
-      {data?.length ? (
+      {hits?.rows.length ? (
         <ul
           data-testid="search-results"
           style={{
@@ -54,36 +49,20 @@ const SearchPanel = observer(function SearchPanel({
             fontSize: '0.8rem',
           }}
         >
-          {data.map(result => {
-            const location = result.getLocation()
-            const trackId = result.getTrackId()
-            return (
-              <li key={result.getId()}>
-                <button
-                  type="button"
-                  disabled={!location}
-                  style={{ width: '100%', textAlign: 'left' }}
-                  onClick={() => {
-                    const { view } = session
-                    if (location) {
-                      setQuery('')
-                      view
-                        .navToLocString(location, 'hg38', 0.2)
-                        .then(() =>
-                          trackId ? view.launchTrack(trackId) : undefined,
-                        )
-                        .catch((e: unknown) => {
-                          session.notifyError(`${e}`, e)
-                        })
-                    }
-                  }}
-                >
-                  <strong>{result.getDisplayString()}</strong> {location}{' '}
-                  {trackId}
-                </button>
-              </li>
-            )
-          })}
+          {hits.rows.map(row => (
+            <li key={row.id}>
+              <button
+                type="button"
+                style={{ width: '100%', textAlign: 'left' }}
+                onClick={() => {
+                  setQuery('')
+                  void hits.pick(row.id)
+                }}
+              >
+                <strong>{row.label}</strong> {row.location} {row.trackName}
+              </button>
+            </li>
+          ))}
         </ul>
       ) : (
         <span style={{ fontSize: '0.8rem', opacity: 0.6 }}>
@@ -129,7 +108,7 @@ const SearchResults = observer(function SearchResults() {
   return (
     <EmbedProvider session={state.session}>
       <div style={{ paddingBottom: 8 }}>
-        <SearchPanel session={state.session} />
+        <SearchPanel view={state.session.view} />
       </div>
       <TrackStack view={state.session.view} />
     </EmbedProvider>

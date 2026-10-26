@@ -152,6 +152,7 @@ export type {
 export type { ScalebarRefNameLabel } from './LinearGenomeView/util.ts'
 export type {
   HighlightRegion,
+  SearchHits,
   SearchPickerRow,
   SearchPickerState,
 } from './LinearGenomeView/model.ts'

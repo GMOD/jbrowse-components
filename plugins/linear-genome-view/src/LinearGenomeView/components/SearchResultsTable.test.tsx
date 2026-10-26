@@ -155,3 +155,15 @@ test('a new search closes the picker the last one raised', async () => {
   await model.navToLocString('ctgA:1..100', 'volvox')
   expect(model.searchPicker).toBeUndefined()
 })
+
+test('view.search hands back the rows the picker would list, and a pick lands', async () => {
+  const { model } = await setup()
+  await model.navToLocString('ctgA:1..100', 'volvox')
+  const found = await model.search('ctgA')
+  expect(found.rows.map((r: { label: string }) => r.label)).toEqual(['ctgA'])
+  await model.navToLocString('ctgA:500..600', 'volvox')
+  const before = model.bpPerPx
+  await found.pick(found.rows[0].id)
+  expect(model.searchPicker).toBeUndefined()
+  expect(model.bpPerPx).toBeGreaterThan(before)
+})
