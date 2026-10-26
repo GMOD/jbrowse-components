@@ -299,8 +299,8 @@ We'll stack peach over grape over cacao. Then:
 
 - Navigate the rows to `chrG7:18,565,100-18,700,100`, `chr11:787,000-914,000`
   and `chr9:3,898,700-4,003,700`.
-- Turn on each genome's **NCBI RefSeq - RefSeq All** track with **Show only
-  genes**.
+- Turn on each genome's **NCBI RefSeq - RefSeq All** track with **Filter by →
+  Genes → Only genes**.
 - Pick **Color by value → Syntenic depth** on the palette button in the view
   header.
 
@@ -396,9 +396,9 @@ config, so name your own `trackId` instead):
 
 <Figure caption="The grape gene track above multi-way lanes from one MCScan blocks track. A chain of ribbons bridges past a lane that places nothing." src="/img/multiway_synteny/lgv_track_lanes.png" />
 
-Each lane header gives the lane's start, with `[rev]` where its gene order runs
+Each lane header gives the lane's range, with `[rev]` where its gene order runs
 against grape's, and its span as a multiple of the grape window. `rows.sort` in
-the session above pins peach and cacao to the top. The
+the session above sets the lane order, peach and cacao first. The
 [multi-way synteny display guide](/docs/user_guides/multiway_synteny_display)
 covers the headers, lane order and lane menus.
 

@@ -1203,8 +1203,8 @@ export const syntenySpecs: ScreenshotSpec[] = [
     viewportHeight: 660,
   },
 
-  // Strand color is what shows siamang's lane as inverted, since mirroring
-  // draws it straight.
+  // Strand color is what shows siamang's lane as inverted, since the flipped
+  // lane draws it straight.
   {
     mode: 'url',
     name: 'multiway_synteny/primate_tp53_lanes',

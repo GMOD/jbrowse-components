@@ -233,12 +233,12 @@ with the same genes in the same order.
 
 <Figure caption="TP53 on hg38 over eight UCSC genome lanes in tree order, ribbons colored by strand." src="/img/multiway_synteny/hg38_vertebrates_tp53.png" />
 
-Navigate to `chr17:15,200,000-16,400,000`, eight megabases toward the
-centromere, near _PMP22_. The region is a hotspot of segmental duplications
-(long repeated copies of sequence): every genome places it as several blocks,
-and many of those blocks run the other way against their neighbours.
+Navigate to `chr17:15,200,000-16,400,000`, toward the centromere, near _PMP22_.
+The region is a hotspot of segmental duplications (long repeated copies of
+sequence): every genome places it as several blocks, and many of those blocks
+run the other way against their neighbours.
 
-A lane whose blocks mostly run backwards along hg38 draws mirrored, so its
+A lane whose blocks mostly run backwards along hg38 draws flipped, so its
 ribbons run straight on screen while the strand color still marks each of them
 as an inversion. Inside a lane, a ribbon crosses where one block runs against
 its neighbour, as in the dog and cow lanes.
@@ -251,12 +251,11 @@ chain that places the left.
 
 The gorilla lane header names chr17 beside chr5, the chromosome the lane drew.
 Part of the window aligns to chr17, the homologous chromosome, so the chr5 frame
-misses some of what the alignment places. Four items on the lane header menu set
-the frame:
+misses some of what the alignment places. The lane header menu sets the frame:
 
 - **Show chr17 in this lane** pins the lane onto chr17.
-- **Show chr5:80,472,173..81,176,598 in this lane**, on the marmoset lane, pins
-  it onto the stretch its header names.
+- **Show ⟨stretch⟩ in this lane**, on the marmoset lane, pins it onto the
+  stretch its header names after `also at`.
 - **Flip lane** turns the lane the other way on the same contig, for a lane
   whose blocks split about evenly between the two orientations.
 - **Let the lane choose its orientation** hands the choice back.
