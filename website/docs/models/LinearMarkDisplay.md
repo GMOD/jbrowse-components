@@ -94,7 +94,7 @@ From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`sc
 | <span id="getter-markview">**markView**</span><br><code>MarkView</code> | The marks at the view's zoom: whether each draws, inside its `minBpPerPx`..`maxBpPerPx` range where 0 is no bound. |
 | <span id="getter-marksizes">**markSizes**</span><br><code>number[]</code> | Each mark's px, a point's `encoding.size` or a stroked mark's `encoding.strokeWidth` number, its type's default where none is written, and 0 for a bar, span or text, which draw none. |
 | <span id="getter-markrowproportions">**markRowProportions**</span><br><code>number[]</code> | Each mark's `mark.height.band`, which a span alone reads. |
-| <span id="getter-rowproportion">**rowProportion**</span><br><code>number &#124; undefined</code> | The proportion the Row height dialog shows: the first span's, or undefined where no mark is a span, so the dialog asks for none. |
+| <span id="getter-rowproportion">**rowProportion**</span><br><code>number &#124; undefined</code> | The proportion the Row height dialog shows: the first sized span's, or undefined where no span has a height, so the dialog asks for none. |
 | <span id="getter-haslinkmark">**hasLinkMark**</span><br><code>boolean</code> | Whether any mark is a link, whose feet place through the view's regions rather than the block's own range. |
 | <span id="getter-pointsize">**pointSize**</span><br><code>number</code> | The size the Point size menu shows: the first point mark's, or the default where no mark is a point. |
 | <span id="getter-encodings">**encodings**</span><br><code>MarkEncoding[]</code> | The declared marks' encodings, as the worker takes them. |
@@ -238,7 +238,7 @@ From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`rendering
 | Member | Description |
 | --- | --- |
 | <span id="action-setsourcelisting">**setSourceListing**</span><br><code>(read: AdapterRead&lt;RowSourceListing &#124; null&gt;) =&gt; void</code> |  |
-| <span id="action-setrowproportion">**setRowProportion**</span><br><code>(n: number) =&gt; void</code> | Write every span mark's `mark.height.band`. |
+| <span id="action-setrowproportion">**setRowProportion**</span><br><code>(n: number) =&gt; void</code> | Write every sized span's `mark.height.band`; a band-0 span stays the line it draws. |
 | <span id="action-setfittoheight">**setFitToHeight**</span><br><code>() =&gt; void</code> | Fit the rows to the plot. The `height` getter is the slot itself, so nothing needs seeding on the way in. |
 | <span id="action-togglecategory">**toggleCategory**</span><br><code>(field: string, values: readonly string[]) =&gt; void</code> | Hide a key row's categories, or show them all again where any is hidden: `field` the color's, `''` under an identity color. |
 | <span id="action-showallcategories">**showAllCategories**</span><br><code>() =&gt; void</code> |  |
@@ -259,6 +259,7 @@ From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`rendering
 | <span id="action-openplotform">**openPlotForm**</span><br><code>(draft: Plot) =&gt; void</code> | The text box's "Back to form", opened on its draft. |
 | <span id="action-fetchneeded">**fetchNeeded**</span><br><code>(needed: IndexedRegion[]) =&gt; Promise&lt;void&gt;</code> | Fetch each needed region widened to the edges of the widest bin a shared step or a mark drawing at this zoom cuts, so no bin a drawn mark plots is cut at the fetch edge. |
 | <span id="action-startrenderingbackend">**startRenderingBackend**</span><br><code>(backend: MarkRenderingBackend) =&gt; void</code> | identity encode — the stored payload is what the backend uploads |
+| <span id="action-decidedefaultplot">**decideDefaultPlot**</span><br><code>() =&gt; Promise&lt;void&gt;</code> | Write the default plot off a scan of the current window, where the window holds features and nothing has been declared meanwhile. |
 | <span id="action-rendersvg">**renderSvg**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(opts?: ExportSvgDisplayOptions &#124; undefined) =&gt; Promise&lt;ReactEl…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(opts?: ExportSvgDisplayOptions &#124; undefined) =&gt; Promise&lt;ReactElement&lt;unknown, string &#124; JSXElementConstructor&lt;any&gt;&gt; &#124; Iterable&lt;ReactNode&gt; &#124; AwaitedReactNode&gt;</code></pre></dialog></span> |  |
 
 <details class="inherited-members" data-pagefind-ignore>
