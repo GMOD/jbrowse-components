@@ -95,9 +95,8 @@ The cross-display color test waits on a call:
   its current spelling. Each rename needs a ggjbrowse engine re-pin, an R
   respell and a tutorial re-knit (memory `a-config-rename-reaches-ggjbrowse`),
   since the closed-schema bundle drops an old key silently. A new key needs
-  the re-pin too. The pin, `7b5c202f44`, predates the feature display's
-  amendment: `R/features.R` still documents `showLabels`,
-  `subfeatureLabels`, `featureHeight` and `longestCoding`. `dog10k_lof` waits
+  the re-pin too. The pin, `d0feecc145`, carries the feature display's
+  amendment. `dog10k_lof` waits
   on the callset host's certificate.
 - **Figure specs:** [screenshot-spec-elegance.md](screenshot-spec-elegance.md)
   owns the respell. It can use the landed words now: filters (plain-equality
