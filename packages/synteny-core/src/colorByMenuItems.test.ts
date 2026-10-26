@@ -97,6 +97,7 @@ function viewModel(tracks: number, reference = false): TrackColorsModel {
     })),
     colorableAttributes: [],
     attributeRanges: {},
+    colorPaint: {},
     colorField: undefined,
     impliedColorField: undefined,
     colorValue: undefined,

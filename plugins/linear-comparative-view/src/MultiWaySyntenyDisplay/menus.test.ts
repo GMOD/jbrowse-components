@@ -166,6 +166,7 @@ function trackModel({
     openRibbonSolidColorDialog: () => {},
     ribbonColorAttributes: [],
     ribbonAttributeRanges: {},
+    ribbonPaint: {},
     hideUnlabelled: false,
     setHideUnlabelled: () => {},
     showLaneTicks: true,
