@@ -234,3 +234,19 @@ test("a field's own vocabulary is the domain unknown reads", () => {
   expect(strand.color('1')).toBe('tomato')
   expect(strand.color('7')).toBe('grey')
 })
+
+test('a written range leaves the levels it does not reach their own colors', () => {
+  const byOrder = categoricalField('svType', { range: ['#ff0000', '#0000ff'] })
+  const byDomain = categoricalField('svType', {
+    domain: ['DUP', 'DEL'],
+    range: ['#0000ff', '#ff0000'],
+  })
+  for (const sv of [byOrder, byDomain]) {
+    expect(sv.color('DEL')).toBe('#ff0000')
+    expect(sv.color('DUP')).toBe('#0000ff')
+    expect(sv.color('INS')).toBe('#800080')
+  }
+  expect(
+    categoricalField('strand', { range: ['red', 'blue'] }).color('0'),
+  ).toBe('goldenrod')
+})

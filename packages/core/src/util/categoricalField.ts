@@ -102,6 +102,28 @@ export function keyNames(
  * missing level (strand's `0`), which keeps the grey or the level's own color
  * while unset.
  */
+// The keys a field with colors of its own pairs, colored ones first: each
+// written color on its `order` key, and every level `range` leaves out on
+// its own color.
+function withOwnColors(
+  order: readonly string[],
+  range: readonly string[],
+  ownOrder: readonly string[],
+  ownRange: readonly string[],
+): [string[], string[]] {
+  const written = new Map(
+    order.slice(0, range.length).map((k, i) => [k, range[i]!]),
+  )
+  const own = new Map(ownOrder.map((k, i) => [k, ownRange[i]]))
+  const keys = [...new Set([...order, ...ownOrder])]
+  const colorOf = (key: string) => written.get(key) ?? own.get(key)
+  const colored = keys.filter(key => colorOf(key) !== undefined)
+  return [
+    [...colored, ...keys.filter(key => colorOf(key) === undefined)],
+    colored.map(key => colorOf(key)!),
+  ]
+}
+
 export function categoricalField(
   field: string,
   {
@@ -125,10 +147,9 @@ export function categoricalField(
   const vocabulary = universalPresetOf(field)
   const ownOrder = vocabulary?.scale.domain ?? []
   const order = domain.length > 0 ? domain : ownOrder
-  const [paired, colors] =
-    range.length > 0 || !vocabulary
-      ? [order, range]
-      : [ownOrder, vocabulary.scale.range ?? []]
+  const [paired, colors] = vocabulary
+    ? withOwnColors(order, range, ownOrder, vocabulary.scale.range ?? [])
+    : [order, range]
   const declared = keyNames(order, labels)
   const own = vocabulary && keyNames(ownOrder, vocabulary.scale.names)
   const named = (key: string) => declared.get(key) ?? own?.get(key)
