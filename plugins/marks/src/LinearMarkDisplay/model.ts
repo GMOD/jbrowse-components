@@ -292,6 +292,12 @@ function markSizeOf({ mark, encoding }: Pick<MarkConfig, 'mark' | 'encoding'>) {
   return markSizePx(mark.type, px && encoding[px].value)
 }
 
+// A span with a height: one at band 0 draws a line, as a spliced feature's
+// does under its blocks, and Row height leaves it a line.
+function isSizedRect({ mark }: Pick<MarkConfig, 'mark'>) {
+  return mark.type === 'rect' && mark.height.band > 0
+}
+
 /** The marks at the view's zoom: which draw. */
 export interface MarkView {
   visible: boolean[]
@@ -542,12 +548,11 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * The proportion the Row height dialog shows: the first span's, or
-         * undefined where no mark is a span, so the dialog asks for none.
+         * The proportion the Row height dialog shows: the first sized span's,
+         * or undefined where no span has a height, so the dialog asks for none.
          */
         get rowProportion(): number | undefined {
-          return self.conf.marks.find(m => m.mark.type === 'rect')?.mark.height
-            .band
+          return self.conf.marks.find(isSizedRect)?.mark.height.band
         },
         /**
          * #getter
@@ -1803,11 +1808,12 @@ export function stateModelFactory(
       .actions(self => ({
         /**
          * #action
-         * Write every span mark's `mark.height.band`.
+         * Write every sized span's `mark.height.band`; a band-0 span stays
+         * the line it draws.
          */
         setRowProportion(n: number) {
           for (const mark of self.conf.marks) {
-            if (mark.mark.type === 'rect') {
+            if (isSizedRect(mark)) {
               setConf(mark, ['mark', 'height', 'band'], n)
             }
           }

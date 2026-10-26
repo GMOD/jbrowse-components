@@ -115,6 +115,13 @@ test("a spliced painting's rows sort and cluster on its blocks, not the line und
   expect(model.rowCompare?.mark).toBe(1)
 })
 
+test("Row height sizes a spliced painting's blocks and leaves the line under them a line", () => {
+  const model = display({ rows: 'sample', marks: SPLICED_MARKS })
+  expect(model.rowProportion).toBe(1)
+  model.setRowProportion(0.5)
+  expect(model.markRowProportions).toEqual([0, 0.5])
+})
+
 test('an identity color over a field paints the colors the field holds, with no notice', () => {
   const model = display({
     rows: 'sample',
