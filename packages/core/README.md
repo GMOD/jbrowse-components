@@ -1858,7 +1858,9 @@ Read the value at a path of a live config node, such as a track's
 The types reject a snapshot, because a snapshot omits a slot at its default. A
 `session.tracks` entry is one (`TrackConfigEntry`): read its `trackId` and
 `type` directly, and a slot through a helper that supplies the default, such as
-`getConfAssemblyNamesOrNone`.
+`getConfAssemblyNamesOrNone`. A sub-schema reads as its snapshot, so the types
+refuse a path ending on one, and a read names the member, as
+`['labels', 'name', 'show']` does.
 
 ```js
 import { readConfObject } from '@jbrowse/core/configuration'
