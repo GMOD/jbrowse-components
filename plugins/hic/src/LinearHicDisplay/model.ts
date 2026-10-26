@@ -30,6 +30,7 @@ import { findContactAt } from './contactLookup.ts'
 import { HIC_FIELD_PRESETS } from './hicColorConfigSchema.ts'
 import { buildHicTrackMenuItems } from './trackMenuItems.ts'
 
+import type { HicHeader } from '../HicAdapter/HicAdapter.ts'
 import type {
   HicContactItem,
   HicDataResult,
@@ -67,13 +68,6 @@ function valueName(
   return qualifiers.length
     ? `${field.name} (${qualifiers.join(', ')})`
     : field.name
-}
-
-interface HicFileInfo {
-  norms: string[] | undefined
-  resolutions: number[]
-  /** whether the adapter names a control the ratio can divide by */
-  hasControl: boolean
 }
 
 /**
@@ -139,7 +133,7 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
        * The file's normalizations and binsizes, stamped with the adapter
        * config they answer.
        */
-      fileInfo: undefined as AdapterRead<HicFileInfo> | undefined,
+      fileInfo: undefined as AdapterRead<HicHeader> | undefined,
     }))
     .views(self => ({
       /**
@@ -526,7 +520,7 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
       /**
        * #action
        */
-      setFileInfo(read: AdapterRead<HicFileInfo>) {
+      setFileInfo(read: AdapterRead<HicHeader>) {
         self.fileInfo = read
       },
       /**
@@ -602,22 +596,18 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
         installPrerequisiteFetch(self, {
           report: { statusWindow: self.statusWindow },
           run: async (adapterConfig, ctx) =>
-            (await ctx.callRpc('CoreGetInfo', { adapterConfig })) as {
-              norms?: string[]
-              resolutions?: number[]
-              hasControl?: boolean
-            },
-          commit: ({
-            adapterConfig,
-            value: { norms, resolutions, hasControl = false },
-          }) => {
+            (await ctx.callRpc('CoreGetInfo', {
+              adapterConfig,
+            })) as Partial<HicHeader> | null,
+          commit: ({ adapterConfig, value }) => {
+            const resolutions = value?.resolutions
             if (resolutions?.length) {
               self.setFileInfo({
                 adapterConfig,
                 value: {
-                  norms,
+                  norms: value?.norms ?? [],
                   resolutions: [...resolutions].sort((a, b) => a - b),
-                  hasControl,
+                  hasControl: !!value?.hasControl,
                 },
               })
             } else {
