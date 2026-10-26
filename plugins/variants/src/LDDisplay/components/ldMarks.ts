@@ -61,8 +61,9 @@ function ldShape(
         viewOffsetX: p.viewOffsetX,
         uniformW: p.uniformW,
         band: p.band,
-        domainMin: p.domainMin,
-        domainMax: p.domainMax,
+        domainMin: p.color.domain[0],
+        domainMax: p.color.domain[1],
+        rampMidNorm: p.color.midNorm,
       })
     },
     paintBlock(ctx, data, _block, frame, p) {
@@ -100,7 +101,7 @@ function ldParams(state: LDRenderState, data: LDUploadData): LDCellParams {
 
 const channels = (data: LDUploadData) => data
 
-const textures = (state: LDRenderState) => ({ colorRamp: state.colorRamp })
+const textures = (state: LDRenderState) => ({ colorRamp: state.color.ramp })
 
 export const LD_MARKS = [
   defineMark({ shape: uniformShape, channels, params: ldParams, textures }),

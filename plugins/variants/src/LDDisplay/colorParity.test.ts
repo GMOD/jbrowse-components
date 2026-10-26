@@ -87,10 +87,7 @@ describe.each(['r2', 'dprime'] as const)('a default %s track', metric => {
   })
 
   test('samples it at the raw value, the domain being 0 to 1', () => {
-    expect(displayDrawing(metric).renderState).toMatchObject({
-      domainMin: 0,
-      domainMax: 1,
-    })
+    expect(displayDrawing(metric).renderState.color.domain).toEqual([0, 1])
   })
 
   test('keys the ramp it keyed before', () => {

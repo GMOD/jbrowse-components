@@ -5,17 +5,21 @@ import { MockHal } from '@jbrowse/render-core/hal'
 import { paintMarkBlocks } from '@jbrowse/render-core/marks'
 import { GpuMarkBackend } from '@jbrowse/render-core/marks/backend'
 import { canvasWideBlocks } from '@jbrowse/render-core/renderBlock'
+import { SCALE_TYPE_LINEAR } from '@jbrowse/render-core/scoreScale'
 
 import { bandCellCount, bandPairIndex } from '../../RenderLDDataRPC/ldBand.ts'
 import { drawLDBlocks } from './drawLDBlocks.ts'
 import { LD_MARKS, interleaveLDInstances } from './ldMarks.ts'
+import { GLSL_FRAGMENT as ldGenomicGlsl } from './shaders/ldGenomic.glsl.generated.ts'
 import {
   UNIFORM_OFFSET_F32 as U,
   UNIFORM_OFFSET_U32 as UU,
 } from './shaders/ldGenomic.iface.generated.ts'
+import { WGSL_SOURCE as ldGenomicWgsl } from './shaders/ldGenomic.wgsl.generated.ts'
 import { INSTANCE_STRIDE_BYTES as UNIFORM_STRIDE } from './shaders/ldUniform.iface.generated.ts'
 
 import type { LDRenderState, LDUploadData } from './ldRenderingBackendTypes.ts'
+import type { MatrixColorState } from '@jbrowse/display-kit/MatrixRampMixin'
 import type { MarkContext2D } from '@jbrowse/render-core/marks'
 
 Object.defineProperty(window, 'devicePixelRatio', { value: 1, writable: true })
@@ -37,17 +41,26 @@ function makeColorRamp() {
 const REDS = rampLutOf({ scheme: 'reds' })
 const BLUES = rampLutOf({ scheme: 'blues' })
 
-function makeRenderState(overrides?: Partial<LDRenderState>): LDRenderState {
+function makeRenderState({
+  color,
+  ...overrides
+}: Partial<Omit<LDRenderState, 'color'>> & {
+  color?: Partial<MatrixColorState>
+} = {}): LDRenderState {
   return {
     canvasWidth: 800,
     canvasHeight: 600,
     yScalar: 1,
     viewScale: 1,
     viewOffsetX: 0,
-    domainMin: 0,
-    domainMax: 1,
-    colorRamp: REDS,
     ...overrides,
+    color: {
+      domain: [0, 1],
+      scaleType: SCALE_TYPE_LINEAR,
+      midNorm: 0.5,
+      ramp: REDS,
+      ...color,
+    },
   }
 }
 
@@ -158,8 +171,7 @@ describe('the LD mark list', () => {
         viewScale: 2,
         viewOffsetX: 30,
         yScalar: 0.5,
-        domainMin: 0.2,
-        domainMax: 0.8,
+        color: { domain: [0.2, 0.8], midNorm: 0.25 },
       }),
     )
 
@@ -174,6 +186,7 @@ describe('the LD mark list', () => {
     expect(u32[UU.band]).toBe(7)
     expect(f32[U.domainMin]).toBeCloseTo(0.2)
     expect(f32[U.domainMax]).toBeCloseTo(0.8)
+    expect(f32[U.rampMidNorm]).toBe(0.25)
   })
 
   // The ramp is the marks' `textures`, read off the render state rather than
@@ -197,10 +210,18 @@ describe('the LD mark list', () => {
     expect(texCalls[0]!.args[3]).toBe(1)
     expect(hal.getTexture('main')).toEqual(REDS)
 
-    backend.renderBlocks(blocks, regions, makeRenderState({ domainMax: 0.5 }))
+    backend.renderBlocks(
+      blocks,
+      regions,
+      makeRenderState({ color: { domain: [0, 0.5] } }),
+    )
     expect(hal.callsOf('uploadTexture').length).toBe(1)
 
-    backend.renderBlocks(blocks, regions, makeRenderState({ colorRamp: BLUES }))
+    backend.renderBlocks(
+      blocks,
+      regions,
+      makeRenderState({ color: { ramp: BLUES } }),
+    )
     expect(hal.callsOf('uploadTexture').length).toBe(2)
     expect(hal.getTexture('main')).toEqual(BLUES)
   })
@@ -347,7 +368,7 @@ describe('the LD painter', () => {
   })
 
   it('places ldValue within a pinned domain, as the shader does', () => {
-    const pinned = makeRenderState({ domainMin: 0.25, domainMax: 0.75 })
+    const pinned = makeRenderState({ color: { domain: [0.25, 0.75] } })
     const at = (v: number) =>
       paint(makeOneCell({ ldValues: new Float32Array([v]) }), pinned).ctx
         .fillStyle
@@ -355,6 +376,26 @@ describe('the LD painter', () => {
     expect(at(0.625)).toBe(rampFill(REDS, 0.75))
     expect(at(0.1)).toBe(rampFill(REDS, 0))
     expect(at(0.9)).toBe(rampFill(REDS, 1))
+  })
+
+  // a middle at 0.25 reads a value halfway up the domain two thirds of the
+  // way along the ramp
+  it('reads the ramp through its middle, as the shader does', () => {
+    const at = (v: number, midNorm: number) =>
+      paint(
+        makeOneCell({ ldValues: new Float32Array([v]) }),
+        makeRenderState({ color: { midNorm } }),
+      ).ctx.fillStyle
+    expect(at(0.5, 0.25)).toBe(at(2 / 3, 0.5))
+    expect(at(0.5, 0.25)).not.toBe(at(0.5, 0.5))
+  })
+
+  it.each([
+    ['WGSL', ldGenomicWgsl],
+    ['GLSL', ldGenomicGlsl],
+  ])('%s reads the ramp through its middle', (_name, src) => {
+    expect(src).toMatch(/rampMidT_0\(normalizeScore_0\(/)
+    expect(src).toMatch(/rampMidNorm_0\)/)
   })
 
   // No alpha gate in the painter: both preset ramps are opaque, and the
@@ -437,7 +478,7 @@ describe('drawLDBlocks over a real band', () => {
         viewScale: 1,
         yScalar: 1,
         viewOffsetX: 0,
-        colorRamp: makeColorRamp(),
+        color: { ramp: makeColorRamp() },
       }),
       10_000,
     )
@@ -507,7 +548,7 @@ describe('drawLDBlocks over a cell nothing computed', () => {
         viewScale: 1,
         yScalar: 1,
         viewOffsetX: 0,
-        colorRamp: makeColorRamp(),
+        color: { ramp: makeColorRamp() },
       }),
       10_000,
     )

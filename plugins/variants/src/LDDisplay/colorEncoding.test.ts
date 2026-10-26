@@ -65,10 +65,9 @@ test.each(CASES)('paints what the shared ramp does: %j', color => {
     color.domainMax ?? 1,
   ])
   expect(display.colorDomain).toEqual(shared.domain)
-  expect(display.renderState).toMatchObject({
-    domainMin: display.colorDomain[0],
-    domainMax: display.colorDomain[1],
-    colorRamp: display.colorRamp,
+  expect(display.renderState.color).toMatchObject({
+    domain: display.colorDomain,
+    ramp: display.colorRamp,
   })
 })
 

@@ -25,6 +25,7 @@ public struct Uniforms {
   public uint   band;
   public float  domainMin;
   public float  domainMax;
+  public float  rampMidNorm;
 };
 
 // Genome-space cell corner -> clip space. Both variants lay cells out as
@@ -58,8 +59,10 @@ public float4 ldRampColor(float ldValue, Uniforms u, Sampler2D<float4> ramp) {
   }
   return rampColorPremultiplied(
     ramp,
-    normalizeScore(
-      ldValue, u.domainMin, u.domainMax, LD_COLOR_SCALE_LINEAR, 1.0));
+    rampMidT(
+      normalizeScore(
+        ldValue, u.domainMin, u.domainMax, LD_COLOR_SCALE_LINEAR, 1.0),
+      u.rampMidNorm));
 }
 
 // Decode flat lower-triangular instance index `idx` into (i, j) with i > j,

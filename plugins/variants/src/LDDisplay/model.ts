@@ -5,7 +5,6 @@ import {
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
 import { reservedPx } from '@jbrowse/core/util/bandLayout'
-import { rampDomain, stopsFromRampLut } from '@jbrowse/core/util/colorRamp'
 import GlobalFetchMixin from '@jbrowse/display-kit/GlobalFetchMixin'
 import LegendMixin from '@jbrowse/display-kit/LegendMixin'
 import MatrixRampMixin from '@jbrowse/display-kit/MatrixRampMixin'
@@ -264,16 +263,14 @@ export default function stateModelFactory(configSchema: LDDisplayConfigSchema) {
       get paintedColorField(): LDMetric {
         return self.effectiveLdMetric
       },
-    }))
-    .views(self => ({
       /**
        * #getter
-       * The domain the statistic is colored over: each pinned end holds, and
-       * an open one is the statistic's own 0 or 1.
+       * What an open end of the color domain follows: the statistic's own 0
+       * to 1, not the loaded values, so one r² paints one color on every
+       * track.
        */
-      get colorDomain(): [number, number] {
-        const { domainMin, domainMax } = self.colorEncoding
-        return rampDomain(domainMin, domainMax, LD_VALUE_EXTENT)
+      get colorExtent(): readonly [number, number] {
+        return LD_VALUE_EXTENT
       },
     }))
     .views(self => ({
@@ -283,28 +280,18 @@ export default function stateModelFactory(configSchema: LDDisplayConfigSchema) {
        * pinned inside the statistic's 0 to 1 reads `≤` or `≥`.
        */
       get colorScales(): ColorScale[] {
-        return [
-          {
-            kind: 'ramp',
-            id: 'ld',
-            title: ldMetricLabel(self.effectiveLdMetric),
-            domain: self.colorDomain,
-            stops: stopsFromRampLut(self.colorRamp, 11),
-            extent: LD_VALUE_EXTENT,
-          },
-        ]
+        const [min, max] = LD_VALUE_EXTENT
+        return self.rampColorScales({
+          id: 'ld',
+          title: ldMetricLabel(self.effectiveLdMetric),
+          extent: { min, max },
+        })
       },
       /**
        * #getter
        */
       get renderState(): LDRenderState {
-        const [domainMin, domainMax] = self.colorDomain
-        return {
-          ...self.triangleFrame,
-          domainMin,
-          domainMax,
-          colorRamp: self.colorRamp,
-        }
+        return { ...self.triangleFrame, color: self.matrixColor }
       },
       /**
        * #getter

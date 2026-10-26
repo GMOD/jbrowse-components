@@ -5,6 +5,7 @@ import {
   makeScoreNormalizer,
   SCALE_TYPE_LINEAR,
 } from '@jbrowse/render-core/scoreScale'
+import { rampMidT } from '@jbrowse/render-core/shaders/colorRampLut'
 
 import { bandRowFirstColumn } from '../../RenderLDDataRPC/ldBand.ts'
 
@@ -27,14 +28,16 @@ export function drawLDBlocks(
   if (numCells === 0) {
     return
   }
-  const { viewScale, domainMin, domainMax, colorRamp } = state
+  const { viewScale, color } = state
+  const [domainMin, domainMax] = color.domain
+  const { midNorm } = color
   const normalize = makeScoreNormalizer(
     domainMin,
     domainMax,
     SCALE_TYPE_LINEAR,
     1,
   )
-  const fillStyleLut = makeRampFillStyleLut(colorRamp)
+  const fillStyleLut = makeRampFillStyleLut(color.ramp)
   const { minSum, maxSum } = enterTriangleCellSpace(ctx, state, width)
   const n = boundaries.length - 1
   let k = 0
@@ -49,7 +52,7 @@ export function drawLDBlocks(
       if (!ldValueComputed(ldVal) || sum > maxSum || sum + cw + ch < minSum) {
         continue
       }
-      ctx.fillStyle = fillStyleLut(normalize(ldVal))
+      ctx.fillStyle = fillStyleLut(rampMidT(normalize(ldVal), midNorm))
       ctx.fillRect(
         px * viewScale,
         py * viewScale,

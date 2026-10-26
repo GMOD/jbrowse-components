@@ -1,8 +1,12 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { COLOR_SCHEMES } from '@jbrowse/core/util/colorSchemes'
 import {
+  colorChannelOptions,
+  colorLegendOptions,
+  colorRampSlots,
   colorScaleOptions,
   colorScaleTypeSlot,
+  colorTitleSlot,
 } from '@jbrowse/display-kit/colorConfigSchema'
 import { types } from '@jbrowse/mobx-state-tree'
 
@@ -109,15 +113,25 @@ export const ldColorConfigSchema = ConfigurationSchema(
           description:
             'the value the top color paints, everything above it too; unset is 1',
         },
+        /**
+         * #slot scale.domainMid
+         * The value the ramp's middle stop sits at; unset, the stops spread
+         * evenly across the domain.
+         */
+        domainMid: colorRampSlots.domainMid,
       },
       colorScaleOptions('encoding.color.scale'),
     ),
+    /**
+     * #slot legend
+     * The key this channel draws: `title` replaces the metric's name, and
+     * `""` draws none.
+     */
+    legend: ConfigurationSchema(
+      'LDColorLegend',
+      { ...colorTitleSlot },
+      colorLegendOptions,
+    ),
   },
-  {
-    shorthand: 'field',
-    writes: 'whole',
-    plot: true,
-    closed: true,
-    fieldPresets: LD_FIELD_PRESETS,
-  },
+  colorChannelOptions('encoding.color', LD_FIELD_PRESETS),
 )

@@ -24,6 +24,7 @@ export const UNIFORM_OFFSET_F32 = {
   uniformW: 5,
   domainMin: 7,
   domainMax: 8,
+  rampMidNorm: 9,
 } as const
 
 // Word indices into a Uint32Array view over the uniform buffer.
@@ -41,6 +42,7 @@ export interface Uniforms {
   band: number
   domainMin: number
   domainMax: number
+  rampMidNorm: number
 }
 
 export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
@@ -55,6 +57,7 @@ export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
   u32[6] = uniforms.band
   f32[7] = uniforms.domainMin
   f32[8] = uniforms.domainMax
+  f32[9] = uniforms.rampMidNorm
 }
 
 export const INSTANCE_STRIDE_BYTES = 4

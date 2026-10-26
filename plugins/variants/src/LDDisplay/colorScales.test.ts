@@ -1,4 +1,5 @@
 import { setConf } from '@jbrowse/core/configuration'
+import { stopsFromRampLut } from '@jbrowse/core/util/colorRamp'
 
 import { createTestEnvironment } from './testEnv.ts'
 
@@ -41,4 +42,24 @@ test('an end pinned inside 0 to 1 keys as at-most or at-least', () => {
   expect(display.legendSpec.sections[0]!.items[0]).toMatchObject({
     gradient: { minLabel: '≤0.2', maxLabel: '≥0.8' },
   })
+})
+
+// equal distances from the middle take equal colors on the GPU, Canvas2D and
+// the key alike, so all three read one number
+test('domainMid moves the ramp middle on every surface', () => {
+  const { display } = createTestEnvironment().createDisplay()
+  expect(display.renderState.color.midNorm).toBe(0.5)
+  setConf(display, ['encoding', 'color', 'scale', 'domainMid'], 0.25)
+  expect(display.renderState.color.midNorm).toBe(0.25)
+  expect(display.colorScales[0]).toMatchObject({
+    stops: stopsFromRampLut(display.colorRamp, 11, 0.25),
+  })
+})
+
+test('legend.title replaces the metric name, and "" draws none', () => {
+  const { display } = createTestEnvironment().createDisplay()
+  setConf(display, ['encoding', 'color', 'legend', 'title'], 'Linkage')
+  expect(display.colorScales[0]!.title).toBe('Linkage')
+  setConf(display, ['encoding', 'color', 'legend', 'title'], '')
+  expect(display.colorScales[0]!.title).toBe('')
 })

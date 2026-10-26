@@ -1,4 +1,5 @@
 import type { LDDataResult } from '../../RenderLDDataRPC/types.ts'
+import type { MatrixColorState } from '@jbrowse/display-kit/MatrixRampMixin'
 import type { TriangleFrame } from '@jbrowse/display-kit/TriangleMatrixMixin'
 import type { PerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
 
@@ -14,11 +15,9 @@ export type LDUploadData = Pick<
   | 'cellSizes'
 >
 
-/** The frame plus `encoding.color`'s ramp and domain. */
+/** The frame plus `encoding.color` as the painters read it. */
 export interface LDRenderState extends TriangleFrame {
-  domainMin: number
-  domainMax: number
-  colorRamp: Uint8Array
+  color: MatrixColorState
 }
 
 export type LDRenderingBackend = PerRegionRenderingBackend<
