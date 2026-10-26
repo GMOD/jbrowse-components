@@ -713,7 +713,7 @@ describe('where a config holds a marks list', () => {
   const base = () => configOf([{ mark: 'bar', encoding: { y: 'score' } }])
 
   // Why the walk is the whole file and an untyped node carrying `marks` is a
-  // mark display's: no display type but the mark display and the one built on
+  // mark display's: no display type but the mark display and the ones built on
   // it declares the slot on itself, and the multi-way lane layers carry one
   // under their `layers`, which only their own `marks` list names.
   it('finds a marks slot on the mark displays alone', () => {
@@ -726,7 +726,11 @@ describe('where a config holds a marks list', () => {
           isRecord(entry) && declares(entry.slots) ? [type] : [],
         ),
       ),
-    ).toEqual(['LinearManhattanDisplay', 'LinearMarkDisplay'])
+    ).toEqual([
+      'LinearManhattanDisplay',
+      'LinearMarkDisplay',
+      'LinearMultiRowFeatureDisplay',
+    ])
   })
 
   it('finds it in displayDefaults', () => {

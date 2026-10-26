@@ -150,9 +150,13 @@ test("each display's plot settings", () => {
     LinearMultiRowFeatureDisplay: [
       'encoding',
       'facet',
+      'filter',
       'legend',
+      'marks',
+      'origin',
       'rowColor',
       'rows',
+      'transform',
     ],
     LinearMultiSampleVariantDisplay: [
       'encoding',

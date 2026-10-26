@@ -41,6 +41,7 @@ test('only the displays that read filter publish it', () => {
     'LinearBasicDisplay',
     'LinearManhattanDisplay',
     'LinearMarkDisplay',
+    'LinearMultiRowFeatureDisplay',
     'LinearMultiSampleVariantDisplay',
     'LinearVariantDisplay',
   ])

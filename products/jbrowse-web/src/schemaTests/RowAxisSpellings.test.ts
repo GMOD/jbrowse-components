@@ -20,6 +20,8 @@ const ROW_DISPLAYS = [
 
 const GRID_DISPLAYS = new Set([
   'LinearWiggleDisplay',
+  'LinearMarkDisplay',
+  'LinearManhattanDisplay',
   'LinearMultiSampleVariantDisplay',
   'LinearMultiRowFeatureDisplay',
 ])
@@ -123,14 +125,12 @@ test("a variant track's axis labels reach its mark display", () => {
   expect(axisOf(track, 'LinearMarkDisplay', 'labels')).toBe(false)
 })
 
-test('a MAF track takes the axis members it declares and names grid', () => {
-  const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
+test('a MAF track takes the axis members it declares, and its mark display the grid', () => {
   const track = hydrate(
     'MafTrack',
     { type: 'MafTabixAdapter', uri: 'a.bed.gz' },
     { axis: { grid: true, tree: false } },
   )
   expect(axisOf(track, 'LinearMafDisplay', 'tree')).toBe(false)
-  expect(warn).toHaveBeenCalledWith(expect.stringContaining('"axis.grid"'))
-  warn.mockRestore()
+  expect(axisOf(track, 'LinearMarkDisplay', 'grid')).toBe(true)
 })
