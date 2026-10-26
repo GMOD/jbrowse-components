@@ -3053,6 +3053,7 @@
       "package": "@jbrowse/core",
       "names": [
         "compilePredicates",
+        "entriesOn",
         "floorOf",
         "isExpressionEntry",
         "lowerBoundOf",
@@ -3065,6 +3066,8 @@
         "unreadInEveryRegion",
         "unreadRecordFields",
         "upperBoundOf",
+        "withField",
+        "withFields",
         "withLowerBound",
         "withUpperBound"
       ],

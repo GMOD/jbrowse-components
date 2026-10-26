@@ -26,8 +26,8 @@ import {
   fetchResults,
   renderToSvg as renderLinearToSvg,
   trackCategory,
+  writeFilter,
   writeMembers,
-  writeReadFilter,
 } from '@jbrowse/plugin-linear-genome-view'
 import { createViewStateAsync } from '@jbrowse/react-app2'
 import { createCanvas, loadImage } from '@napi-rs/canvas'
@@ -772,7 +772,7 @@ const renderCircular: ModeRenderer = async ctx => {
 // tracks on them: with no track there is nothing to connect and the export is a
 // stack of empty rulers. The modifiers that follow a --track reach the panels
 // through breakpointTracks, which is the one route a panel's launch blob has,
-// and their read filter and member writes through `writeReadFilter` and
+// and their filter and member writes through `writeFilter` and
 // `writeMembers` once each panel has opened.
 //
 // The view's panels are its `views`, one entry per panel, which is why this
@@ -805,10 +805,9 @@ const renderBreakpoint: ModeRenderer = async ctx => {
     await whenViewReady(panel, model.session)
     for (const { trackId, opts: modifiers } of flagTracks) {
       const category = trackCategory(model.session, trackId, modifiers)
-      const drawn = writeReadFilter(
-        panel.tracks.find(t => t.configuration.trackId === trackId)
-          ?.displays[0],
-        category,
+      const drawn = writeFilter(
+        panel,
+        trackId,
         buildDisplaySnapshot(category, modifiers, () => {}),
       )
       if (drawn) {

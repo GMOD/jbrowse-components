@@ -6,32 +6,63 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 // writes onto the opened display. What a real display makes of a read filter
 // is readFilterModifiers.test.ts.
 
-function fakeView() {
+// `configured`, given, is the display config of a display with no
+// `setFilterFields`, as every one but alignments is
+function fakeView(configured?: Record<string, unknown>) {
   const calls: unknown[] = []
   const filters: unknown[] = []
-  const display = {
-    setFilterFields(patch: unknown) {
-      filters.push(patch)
-    },
+  const display = configured
+    ? {}
+    : {
+        setFilterFields(patch: unknown) {
+          filters.push(patch)
+        },
+      }
+  const track = {
+    configuration: { trackId: 't' },
+    displays: [display],
+    activeDisplay: { configuration: configured ?? {} },
   }
   const view = {
     centerLineInfo: undefined,
+    tracks: [] as (typeof track)[],
     showTrack(_id: string, _t: unknown, snap: unknown) {
       calls.push(snap)
-      return { displays: [display] }
+      return track
     },
     async launchTrack(_id: string, _t: unknown, snap: unknown) {
       calls.push(snap)
-      return { displays: [display] }
+      view.tracks = [track]
+      return track
     },
   }
   return { view: view as unknown as LinearGenomeViewModel, calls, filters }
 }
 
-test("a feature track's filter rides in on the snapshot, its shorthand read", async () => {
-  const { view, calls } = fakeView()
+// A filter in the open snapshot would replace the configured list, so every
+// display takes it by field once open
+test("a feature track's filter merges by field, its shorthand read", async () => {
+  const { view, calls } = fakeView({})
   await applyDisplayOpts(view, 't', 'feature', ['{"filter":["geneLike"]}'])
-  expect(calls[0]).toEqual({ filter: [{ field: 'geneLike', equal: true }] })
+  expect(calls).toEqual([{}, { filter: [{ field: 'geneLike', equal: true }] }])
+})
+
+test("a variant track's launch filter keeps the configured fields it does not name", async () => {
+  const { view, calls } = fakeView({
+    filter: [
+      { field: 'minorAlleleFrequency', gte: 0.05 },
+      { field: 'QUAL', gte: 10 },
+    ],
+  })
+  await applyDisplayOpts(view, 't', 'variant', [
+    '{"filter":[{"field":"QUAL","gte":30}]}',
+  ])
+  expect(calls.at(-1)).toEqual({
+    filter: [
+      { field: 'minorAlleleFrequency', gte: 0.05 },
+      { field: 'QUAL', gte: 30 },
+    ],
+  })
 })
 
 // A read filter in the open snapshot would replace the configured list, so it

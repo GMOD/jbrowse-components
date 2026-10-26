@@ -582,3 +582,61 @@ export function replaceField(
     ? [...rest, ...entries]
     : [...rest.slice(0, at), ...entries, ...rest.slice(at)]
 }
+
+/** The entries on `field`, in list order. */
+export function entriesOn(
+  predicates: readonly FieldPredicate[],
+  field: string,
+): FieldPredicate[] {
+  return predicates.filter(p => p.field === field)
+}
+
+function sameEntries(
+  a: readonly FieldPredicate[],
+  b: readonly FieldPredicate[],
+) {
+  return (
+    a.length === b.length &&
+    a.every((p, i) => JSON.stringify(p) === JSON.stringify(b[i]))
+  )
+}
+
+/**
+ * The written list with `field`'s entries replaced, by field over the slot's
+ * `defaults` (ADR-240): `undefined` returns the field to its defaults, and an
+ * empty list clears it, which over a field with defaults writes the bare
+ * `{ field }` that removes them. Entries equal to the defaults are left
+ * unwritten. Every other field keeps what was written.
+ */
+export function withField(
+  written: readonly FieldPredicate[],
+  field: string,
+  entries: readonly FieldPredicate[] | undefined,
+  defaults: readonly FieldPredicate[] = [],
+): FieldPredicate[] {
+  const fieldDefaults = entriesOn(defaults, field)
+  return replaceField(
+    written,
+    field,
+    entries === undefined || sameEntries(entries, fieldDefaults)
+      ? []
+      : entries.length === 0
+        ? fieldDefaults.length > 0
+          ? [{ field }]
+          : []
+        : entries,
+  )
+}
+
+/** `withField` over several fields at once. */
+export function withFields(
+  written: readonly FieldPredicate[],
+  patch: Readonly<Record<string, readonly FieldPredicate[] | undefined>>,
+  defaults: readonly FieldPredicate[] = [],
+): FieldPredicate[] {
+  let next = [...written]
+  for (const [field, entries] of Object.entries(patch)) {
+    next = withField(next, field, entries, defaults)
+  }
+  return next
+}

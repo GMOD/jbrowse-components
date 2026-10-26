@@ -96,8 +96,10 @@ Desktop, in `@jbrowse/launch-args` (GMOD/jbrowse-components#4303).
 ## Declined: img through `loadSessionSpec`
 
 A spec track entry and `applyDisplayOpts` already meet at
-`view.launchTrack(trackId, {}, snapshot)`, and the read filter rides in on that
-snapshot. jb2export keeps its own path for:
+`view.launchTrack(trackId, {}, snapshot)`. A `filter` stays out of that
+snapshot, whose list would replace the configured one: once the track opens,
+`writeFilter` merges it by field over the display's configured list, for every
+display category. jb2export keeps its own path for:
 
 - `loadSessionSpec` itself: its `setSession` replaces the session a `--session`
   or `--defaultSession` supplied.

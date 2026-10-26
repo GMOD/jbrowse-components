@@ -117,6 +117,7 @@ export {
   launchTrackInit,
   launchTrackWithModifiers,
   trackCategory,
+  writeFilter,
   writeMembers,
   writeReadFilter,
 } from './TrackModifiers/index.ts'

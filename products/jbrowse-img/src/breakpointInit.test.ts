@@ -101,6 +101,17 @@ describe('breakpointTracks', () => {
     ])
   })
 
+  // `writeFilter` merges it over the configured list once each panel opens
+  it('keeps every track’s filter out of the panel TrackInit', () => {
+    expect(
+      breakpointTracks(
+        undefined,
+        [{ trackId: 'v', opts: ['{"filter":[{"field":"QUAL","gte":30}]}'] }],
+        () => 'variant',
+      ),
+    ).toEqual([{ trackId: 'v' }])
+  })
+
   // A split view is about the reads joining its panels, and a pileup deeper
   // than its track otherwise cuts off whichever reads start last.
   it('lays an alignments track out SV evidence first, unless the track says otherwise', () => {

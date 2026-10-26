@@ -1,6 +1,9 @@
 import { CIGAR_HAS_SKIP } from '@jbrowse/cigar-utils'
 import {
+  withField as coreWithField,
+  withFields as coreWithFields,
   compilePredicates,
+  entriesOn,
   floorOf,
   testsSomething,
   withLowerBound,
@@ -54,6 +57,7 @@ import type {
  * the splice junctions and the connections between reads.
  */
 
+export { entriesOn } from '@jbrowse/core/util/fieldPredicate'
 export {
   FLAG_FIELDS,
   FLAG_FIELD_PREFIX,
@@ -106,63 +110,23 @@ export function mergeFilter(
   ]
 }
 
-/** The entries on `field`, in list order. */
-export function entriesOn(
-  predicates: readonly FieldPredicate[],
-  field: string,
-): FieldPredicate[] {
-  return predicates.filter(p => p.field === field)
-}
-
-function sameEntries(
-  a: readonly FieldPredicate[],
-  b: readonly FieldPredicate[],
-) {
-  return (
-    a.length === b.length &&
-    a.every((p, i) => JSON.stringify(p) === JSON.stringify(b[i]))
-  )
-}
-
-/**
- * The written list with `field`'s entries replaced: `undefined` returns the
- * field to its defaults, and an empty list clears it, which over a field with
- * defaults writes the bare `{ field }` that removes them. Entries equal to the
- * defaults are left unwritten. Every other field keeps what was written.
- */
+/** Core's `withField`, over the alignments defaults. */
 export function withField(
   written: readonly FieldPredicate[],
   field: string,
   entries: readonly FieldPredicate[] | undefined,
   defaults: readonly FieldPredicate[] = ALIGNMENTS_FILTER_DEFAULTS,
 ): FieldPredicate[] {
-  const fieldDefaults = entriesOn(defaults, field)
-  const next =
-    entries === undefined || sameEntries(entries, fieldDefaults)
-      ? []
-      : entries.length === 0
-        ? fieldDefaults.length > 0
-          ? [{ field }]
-          : []
-        : entries
-  const at = written.findIndex(p => p.field === field)
-  const rest = written.filter(p => p.field !== field)
-  return at === -1
-    ? [...rest, ...next]
-    : [...rest.slice(0, at), ...next, ...rest.slice(at)]
+  return coreWithField(written, field, entries, defaults)
 }
 
-/** `withField` over several fields at once. */
+/** Core's `withFields`, over the alignments defaults. */
 export function withFields(
   written: readonly FieldPredicate[],
   patch: Readonly<Record<string, readonly FieldPredicate[] | undefined>>,
   defaults: readonly FieldPredicate[] = ALIGNMENTS_FILTER_DEFAULTS,
 ): FieldPredicate[] {
-  let next = [...written]
-  for (const [field, entries] of Object.entries(patch)) {
-    next = withField(next, field, entries, defaults)
-  }
-  return next
+  return coreWithFields(written, patch, defaults)
 }
 
 /** The read fields alone, which is what the worker is handed. */
