@@ -119,10 +119,9 @@ are the display's settings of those names, in the shape a config file takes
 them: `facet` stacks a section per value of a field, in the order its `sort`
 lists; `encoding.color` is a field for one color per value, or `{ "value": … }`
 holding a CSS color or a jexl expression; `filter` is the list of tests **Filter
-by...** edits: `jexl:` expressions that must hold, and `geneLike` for the
-gene-like features. Applying a spec changes only the channels it names, an
-object replaces the setting whole, and `null` clears one. Each of these pastes
-as it is:
+by** edits: `jexl:` expressions that must hold, and `geneLike` for the gene-like
+features. Applying a spec changes only the channels it names, an object replaces
+the setting whole, and `null` clears one. Each of these pastes as it is:
 
 - `{ "facet": "strand" }` one section per strand
 - `{ "facet": { "field": "gene_biotype", "sort": ["protein_coding", "lncRNA"] } }`

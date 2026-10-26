@@ -1,14 +1,10 @@
-import { Checkbox, FormControlLabel, MenuItem, TextField } from '@mui/material'
+import { Checkbox, FormControlLabel } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import {
-  cytosineContextOptions,
-  getModificationName,
-} from '../../shared/modificationData.ts'
+import { getModificationName } from '../../shared/modificationData.ts'
 import { CategoryRow, FormHeading, FormRow, NumberRow } from './FilterForm.tsx'
 
 import type { LayerFilterState } from './layerFilters.ts'
-import type { CytosineContext } from '@jbrowse/modifications-utils'
 
 /**
  * The dialog's sections over what a layer draws from the reads: each layer
@@ -130,33 +126,6 @@ const LayerFilterSections = observer(function LayerFilterSections({
                 setState({ ...state, bases: { ...bases, probabilityPercent } })
               }}
             />
-          )}
-          {bases.context === undefined ? null : (
-            <FormRow label="Cytosine context">
-              <TextField
-                variant="outlined"
-                select
-                size="small"
-                fullWidth
-                value={bases.context}
-                slotProps={{ htmlInput: { 'aria-label': 'Cytosine context' } }}
-                onChange={event => {
-                  setState({
-                    ...state,
-                    bases: {
-                      ...bases,
-                      context: event.target.value as CytosineContext,
-                    },
-                  })
-                }}
-              >
-                {cytosineContextOptions.map(o => (
-                  <MenuItem key={o.value} value={o.value}>
-                    {o.label}
-                  </MenuItem>
-                ))}
-              </TextField>
-            </FormRow>
           )}
         </>
       ) : null}

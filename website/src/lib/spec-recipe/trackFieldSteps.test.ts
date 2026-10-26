@@ -321,6 +321,6 @@ test('a per-base methylation layer is one Color by radio, its filter Filter by r
     ),
   ).toEqual([
     'Track menu → Color by → Bisulfite / EM-seq',
-    'Track menu → Filter by → More filters... → Modifications → Cytosine context → CHG',
+    'Track menu → Color by → Cytosine context → CHG',
   ])
 })

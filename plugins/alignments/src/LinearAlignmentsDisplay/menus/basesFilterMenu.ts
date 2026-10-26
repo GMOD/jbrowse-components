@@ -20,7 +20,6 @@ export function basesFilterNarrowing(
       applied.probability &&
       (filter.probability.min !== DEFAULT_BASES_FILTER.probability.min ||
         filter.probability.strict),
-    context: applied.context && filter.context !== DEFAULT_BASES_FILTER.context,
   }
   const fields = Object.entries(moved)
     .filter(([, isMoved]) => isMoved)

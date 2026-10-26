@@ -17,6 +17,7 @@ import { READ_CATEGORIES } from '../../../../plugins/alignments/src/shared/readC
 import { cytosineContextOptions } from '../../../../plugins/alignments/src/shared/modificationData.ts'
 import {
   BISULFITE_LABEL,
+  CYTOSINE_CONTEXT_LABEL,
   MODIFICATIONS_LABEL,
   UNMODIFIED_IN_BLUE_LABEL,
 } from '../../../../plugins/alignments/src/LinearAlignmentsDisplay/menus/baseLayerLabels.ts'
@@ -259,7 +260,7 @@ const basesStep: FieldRecipe = value => {
     ...(context
       ? [
           {
-            path: `${MORE_FILTERS} → Modifications → Cytosine context → ${context.label}`,
+            path: `${TRACK_MENU} → Color by → ${CYTOSINE_CONTEXT_LABEL} → ${context.label}`,
           },
         ]
       : []),

@@ -18,6 +18,7 @@ import { fieldTag } from '../../shared/facetLabels.ts'
 import { MODIFICATIONS_LABEL } from './baseLayerLabels.ts'
 import { bisulfiteRadio } from './bisulfiteMenu.ts'
 import {
+  cytosineContextItems,
   modificationsRadio,
   unmodifiedInBlueItems,
 } from './modificationsMenu.ts'
@@ -229,6 +230,7 @@ function modificationsItems(model: ModificationsModel): MenuItem[] {
         : []),
     bisulfiteRadio(model),
     ...unmodifiedInBlueItems(model),
+    ...cytosineContextItems(model),
   ]
 }
 

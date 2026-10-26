@@ -284,8 +284,8 @@ is a color channel for each base, here set from the `bisulfite` field. The
 `pileup.bases` to the `bisulfite` field, which paints each read's methylated
 cytosines red. Two more rows refine it:
 
-- **Filter by → More filters... → Cytosine context** picks **CpG**, **CHG**,
-  **CHH** or **All cytosines**
+- **Color by → Cytosine context** picks **CpG**, **CHG**, **CHH** or **All
+  cytosines**
 - **Color by → Show unmodified in blue** also paints converted sites blue,
   separating an unmethylated cytosine from a position with no cytosine. The
   figure and clip further down leave it off

@@ -17,7 +17,6 @@ import {
   DEFAULT_BASES_FILTER,
   PROBABILITY,
   codeEntries,
-  contextEntries,
 } from '../../shared/basesFilter.ts'
 import { admitsCode } from '../../shared/types.ts'
 
@@ -32,7 +31,6 @@ import type {
 import type { ReadConnectionsMode } from '../constants.ts'
 import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
 import type { CategoryFilter } from '@jbrowse/display-kit/categoryFilter'
-import type { CytosineContext } from '@jbrowse/modifications-utils'
 
 /**
  * What the "More filters..." dialog reads off a display beyond `filter`:
@@ -78,26 +76,17 @@ export function splitJunctionsPatch(
 }
 
 /**
- * Which per-base refinements the drawn layer applies: the type list wherever
- * modifications draw, the probability floor in the by-type view (the blue
- * view paints every call), and the cytosine context under bisulfite and in
- * the blue view of cytosine methylation.
+ * Which per-base filters the drawn layer applies: the type list wherever
+ * modifications draw, and the probability floor in the by-type view (the blue
+ * view paints every call). The cytosine context is a Color by row
+ * (`cytosineContextItems`), since it picks what the coloring scores.
  */
-export function basesRefinementsApplied(model: {
-  baseLayer?: BaseLayer
-  detectedModificationTypes?: string[]
-}) {
+export function basesRefinementsApplied(model: { baseLayer?: BaseLayer }) {
   const layer = model.baseLayer
   const isMods = layer?.field === 'modifications'
-  const cytosineMeth = (model.detectedModificationTypes ?? []).some(
-    k => k === 'm' || k === 'h',
-  )
   return {
     code: isMods,
     probability: isMods && !layer.unmodified,
-    context:
-      layer?.field === 'bisulfite' ||
-      (isMods && layer.unmodified && cytosineMeth),
   }
 }
 
@@ -117,7 +106,6 @@ export interface LayerFilterState {
     types: string[]
     shown: string[]
     probabilityPercent?: string
-    context?: CytosineContext
   }
 }
 
@@ -153,15 +141,14 @@ export function layerFilterStateOf(model: LayerFiltersModel): LayerFilterState {
           }
         : {}
       : {}),
-    ...(bases && (applied.code || applied.context)
+    ...(bases && applied.code
       ? {
           bases: {
-            types: applied.code ? types : [],
+            types,
             shown: types.filter(t => admitsCode(bases, t)),
             ...(applied.probability
               ? { probabilityPercent: percentOf(bases.probability.min) }
               : {}),
-            ...(applied.context ? { context: bases.context } : {}),
           },
         }
       : {}),
@@ -203,9 +190,6 @@ export function defaultLayerFilterState(
                     DEFAULT_BASES_FILTER.probability.min,
                   ),
                 }),
-            ...(state.bases.context === undefined
-              ? {}
-              : { context: DEFAULT_BASES_FILTER.context }),
           },
         }
       : {}),
@@ -298,9 +282,6 @@ export function layerBasesPatch(
                     },
                   ],
           }),
-      ...(bases.context === undefined
-        ? {}
-        : { context: contextEntries(bases.context) }),
     },
   }
 }

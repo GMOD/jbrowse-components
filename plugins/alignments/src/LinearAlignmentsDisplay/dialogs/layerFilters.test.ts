@@ -100,15 +100,15 @@ describe('the More filters... layer sections', () => {
     ).toEqual(['alone', 'junctions', 'connections', 'bases'])
   })
 
-  test('the probability floor shows in the by-type view, the context in the blue view', () => {
+  // the cytosine context is a Color by row, so neither view shows it here
+  test('the probability floor shows in the by-type view only', () => {
     const byType = layerFilterStateOf(makeModel({ layer: 'modifications' }))
     expect(byType.bases).toMatchObject({ probabilityPercent: '10' })
-    expect(byType.bases?.context).toBeUndefined()
     const blue = layerFilterStateOf(
       makeModel({ layer: 'modifications', unmodified: true }),
     )
-    expect(blue.bases).toMatchObject({ context: 'CG' })
     expect(blue.bases?.probabilityPercent).toBeUndefined()
+    expect(Object.keys(blue.bases ?? {})).toEqual(['types', 'shown'])
   })
 
   test('a Submit that changes nothing writes the filter back unchanged', () => {
