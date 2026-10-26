@@ -132,6 +132,19 @@ describe('color by menu', () => {
     expect(labels(model)).toEqual(['Tag...'])
   })
 
+  // Every non-preset field bakes like a tag, so "Tag..." ticked over a config's
+  // `mateAssembly` and opened its dialog empty
+  test('a field only a config names gets a checked row of its own', () => {
+    const model = makeModel()
+    model.colorField = 'mateAssembly'
+    expect(byLabel(model, 'Tag...', { includeTagOption: true })).toMatchObject({
+      checked: false,
+    })
+    expect(
+      byLabel(model, 'mateAssembly', { includeTagOption: true }),
+    ).toMatchObject({ checked: true, disabled: true })
+  })
+
   // A radio row keeps the menu open by its type, which is right for every row
   // that just writes a field — users try several, and the menu is an observer so
   // the ticks move live. The tag row is the one exception: its click opens a

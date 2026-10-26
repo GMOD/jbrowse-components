@@ -10,7 +10,9 @@ import {
 import { baseLayerOfField, tagColorFor } from '../../shared/alignmentsColor.ts'
 import {
   ARC_COLOR_OPTIONS,
+  DEFAULT_ARC_COLOR_FIELD,
   SAME_AS_READS_LABEL,
+  isArcColorField,
 } from '../../shared/arcColorOptions.ts'
 import { colorFieldKindOf } from '../../shared/colorFieldDefs.ts'
 import { radioColorFieldOptions } from '../../shared/colorFieldOptions.ts'
@@ -160,14 +162,29 @@ function tagColorScaleOf({
     : 'ordinal'
 }
 
+// A field only a config names (an attribute, `mateAssembly`, a `jexl:`
+// expression) has no row to pick it from, so it gets a checked, disabled one
+// of its own, as Group by's does, rather than ticking "Tag...".
+function configFieldItems(model: AnyColorByModel): MenuItem[] {
+  const { colorField } = model
+  return colorField !== undefined &&
+    colorFieldKindOf(colorField) === 'tag' &&
+    fieldTag(colorField) === undefined
+    ? [
+        radioItem(colorField, true, () => {}, {
+          disabled: true,
+          disabledHelpText: "Set in the track's config",
+        }),
+      ]
+    : []
+}
+
 // The dialog opens on the tag in use, so the label names no tag.
 function tagItem(model: AnyColorByModel): MenuItem {
-  const { colorField } = model
-  const isTag = colorFieldKindOf(colorField) === 'tag'
-  const tag = fieldTag(colorField)
+  const tag = fieldTag(model.colorField)
   return radioItem(
     'Tag...',
-    isTag,
+    tag !== undefined,
     () => {
       getDialogHost(model).queueDialog((handleClose: () => void) => [
         TagDialog,
@@ -235,19 +252,24 @@ function modificationsItems(model: ModificationsModel): MenuItem[] {
 }
 
 /** The arcs, read cloud and connectors' own color field, for "Advanced". */
+// "Same as reads" only while the reads paint a field an arc can; under any
+// other read fill an unset field draws the default, so that radio is ticked.
 export function getReadConnectionsColorItem(arcColor: {
   own: ArcColorField | undefined
+  readField: string | undefined
   setField: (field?: ArcColorField) => void
 }): MenuItem {
+  const followsReads = isArcColorField(arcColor.readField)
+  const rows: readonly { value: ArcColorField | ''; label: string }[] =
+    followsReads
+      ? [{ value: '', label: SAME_AS_READS_LABEL }, ...ARC_COLOR_OPTIONS]
+      : ARC_COLOR_OPTIONS
   return {
     label: 'Read connections color',
     type: 'subMenu',
     subMenu: radioItems(
-      [
-        { value: '' as const, label: SAME_AS_READS_LABEL },
-        ...ARC_COLOR_OPTIONS,
-      ],
-      arcColor.own ?? '',
+      rows,
+      arcColor.own ?? (followsReads ? '' : DEFAULT_ARC_COLOR_FIELD),
       field => {
         arcColor.setField(field || undefined)
       },
@@ -278,6 +300,7 @@ export function getColorByMenuItem(
         rows: [
           ...readOptions.map(o => colorRadio(model, o)),
           ...(includeTagOption ? [tagItem(model)] : []),
+          ...configFieldItems(model),
           solidColorItem(paintsConstant(model), () => {
             model.pickSolidColor()
           }),

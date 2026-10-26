@@ -475,6 +475,19 @@ describe('arc color follows the reads unless it names its own field', () => {
       checked: true,
     })
   })
+
+  // An arc cannot paint strand, so "Same as reads" ticked over arcs drawn by
+  // insert size and orientation named a picture that was not on screen
+  test('under a read field no arc paints, the drawn default is the ticked row', () => {
+    const display = createDisplay()
+    display.setDrawnReadConnections('arc')
+    display.colorByField('strand')
+    const arcMenu = () => menuSubItems(display.trackMenuItems(), ARC_COLOR)
+    expect(findMenuItem(arcMenu(), 'Same as reads')).toBeUndefined()
+    expect(
+      findMenuItem(arcMenu(), 'Insert size and orientation'),
+    ).toMatchObject({ checked: true })
+  })
 })
 
 // Sort and the read SIZE rows act only on the pileup rows, so they grey out

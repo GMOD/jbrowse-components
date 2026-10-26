@@ -34,7 +34,7 @@ export const SAME_AS_READS_LABEL = 'Same as reads'
 /** What an arc paints when neither it nor the reads name a field it can. */
 export const DEFAULT_ARC_COLOR_FIELD: ArcColorField = 'insertSizeAndOrientation'
 
-function isArcColorField(field?: string): field is ArcColorField {
+export function isArcColorField(field?: string): field is ArcColorField {
   return (ARC_COLOR_FIELDS as readonly (string | undefined)[]).includes(field)
 }
 
