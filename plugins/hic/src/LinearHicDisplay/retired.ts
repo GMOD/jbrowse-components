@@ -9,6 +9,8 @@ const V4_NORMALIZATION = 'KR'
  * lifted into the config slots that hold it now. v4's `resolution` doubled
  * the binsize density per menu step, so its log2 is the step count; the Log
  * toggle wrote `useLogScale`, which is `symlog` as the toggle writes today.
+ * v4 ran every scheme low to high as written, viridis dark at the low counts,
+ * so a lifted scheme pins `reverse` off.
  */
 export const retiredState: RetiredDisplayState = {
   keys: [
@@ -33,7 +35,9 @@ export const retiredState: RetiredDisplayState = {
         : 0
     const scale = {
       ...(useLogScale === true ? { type: 'symlog' } : {}),
-      ...(typeof colorScheme === 'string' ? { scheme: colorScheme } : {}),
+      ...(typeof colorScheme === 'string'
+        ? { scheme: colorScheme, reverse: false }
+        : {}),
     }
     const data = {
       ...(steps === 0 ? {} : { resolution: steps }),

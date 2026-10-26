@@ -30,6 +30,10 @@ test('a v4 share link keeps its normalization, log scale, scheme, layout and leg
   expect(readConfObject(conf, ['encoding', 'color', 'scale', 'scheme'])).toBe(
     'viridis',
   )
+  // v4 drew viridis dark at the low counts, where unset reverses it
+  expect(readConfObject(conf, ['encoding', 'color', 'scale', 'reverse'])).toBe(
+    false,
+  )
   expect(readConfObject(conf, 'heightMode')).toBe('fit')
   expect(readConfObject(conf, ['legend', 'show'])).toBe(true)
 })
