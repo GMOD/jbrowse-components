@@ -49,7 +49,11 @@ export const proteinDomainsSpecs: ScreenshotSpec[] = [
           assembly: ASSEMBLY,
           loc: 'NC_037640.1:1,971,400-1,976,800',
           tracks: [
-            { trackId: `${ASSEMBLY}-ncbiGff`, height: 110 },
+            {
+              trackId: `${ASSEMBLY}-ncbiGff`,
+              height: 170,
+              subfeatureLabels: 'below',
+            },
             {
               trackId: 'pfam_domains',
               height: 120,

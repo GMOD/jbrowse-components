@@ -106,7 +106,8 @@ jb make-protein-features genes.gff3 pfam.domtblout --out pfam.bed.gz
 [ -f "$APP/index.html" ] || jb create "$APP"
 jb add-assembly "$FA" --name "$ASM" --load copy --force --out "$APP"
 jb add-track genes.gff3.gz --trackId genes --name Genes -a "$ASM" \
-  --load copy --force --out "$APP"
+  --load copy --force --out "$APP" \
+  --config '{"displays":[{"type":"LinearBasicDisplay","displayId":"genes-LinearBasicDisplay","subfeatureLabels":"below"}]}'
 jb add-track pfam.bed.gz --trackId pfam_domains --name "Pfam domains" \
   -a "$ASM" --load copy --force --out "$APP" \
   --config '{"displays":[{"type":"LinearMultiRowFeatureDisplay","displayId":"pfam_domains-LinearMultiRowFeatureDisplay","rows":"transcript","marks":[{"mark":{"type":"rect","height":{"band":0}}},{"mark":{"type":"rect","height":{"band":0.7}},"transform":[{"type":"flatten","keepEmpty":true}]}],"encoding":{"color":{"field":"name","legend":{"title":"Pfam family"}}}}]}'
