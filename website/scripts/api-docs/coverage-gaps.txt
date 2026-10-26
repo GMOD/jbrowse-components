@@ -48,7 +48,7 @@ Dotplot1DView
 LinearSyntenyViewHelper
 TimeTraveller
 
-# model members with no description (1300)
+# model members with no description (1298)
 # fix: write a sentence under the member’s #property/#volatile/#getter/#method/#action tag
 AddTrackModel.adapterHint
 AddTrackModel.altAssemblyName
@@ -715,14 +715,12 @@ LinearCanvasBaseDisplay.setHover
 LinearCanvasBaseDisplay.setMorphProgress
 LinearCanvasBaseDisplay.setSequenceHoverPosition
 LinearCanvasBaseDisplay.setShowLabels
-LinearCanvasBaseDisplay.setShowOutline
 LinearCanvasBaseDisplay.settledMaxY
 LinearCanvasBaseDisplay.showAllHidden
 LinearCanvasBaseDisplay.showAminoAcids
 LinearCanvasBaseDisplay.showDescriptions
 LinearCanvasBaseDisplay.showLabels
 LinearCanvasBaseDisplay.showLabelsMode
-LinearCanvasBaseDisplay.showOutline
 LinearCanvasBaseDisplay.showSubmenuCheckboxItems
 LinearCanvasBaseDisplay.showSubmenuRadioGroups
 LinearCanvasBaseDisplay.soloFeature

@@ -93,7 +93,7 @@ A setting written to it replaces it whole, since its members are alternatives: a
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
-| <span id="slot-value">**value**</span><br>[`maybeColor`](/docs/config_guides/slot_types#the-maybe-types) | A CSS color, or a jexl callback over `feature` returning one. Unset, a feature's own BED itemRgb paints it if it has one, else goldenrod.<br>_callback args:_ `feature` |
+| <span id="slot-value">**value**</span><br>[`maybeColor`](/docs/config_guides/slot_types#the-maybe-types) | A CSS color, or a jexl callback over `feature` returning one. Unset, a feature's own BED itemRgb paints it if it has one, else goldenrod. Alignments' `value` is constant-only; here a callback stays, since the worker evaluates it per box, where a `field` reads the transcript.<br>_callback args:_ `feature` |
 | <span id="slot-scale">**scale**</span><br>[FeatureColorScale sub-schema](#slot-scaletype) | How the field's values map to colors, Vega-Lite's scale object. |
 | <span id="slot-legend">**legend**</span><br>[FeatureColorLegend sub-schema](#slot-legendtitle) | The key this channel draws. |
 | <span id="slot-field">**field**</span><br>[`featureField`](/docs/config_guides/slot_types#featurefield) = <code>''</code> | a feature field, or a jexl expression over feature, whose values each take one range color, with a key; a transcript and its parts paint the transcript's value, or its gene's where the transcript has none; strand paints forward tomato and reverse cornflowerblue unless scale.domain or scale.range says otherwise |
