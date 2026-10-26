@@ -16,6 +16,7 @@ import {
   writeApiReadmes,
 } from './generateApiDocs.ts'
 import { accumulateConfig, writeConfigDocs } from './generateConfigDocs.ts'
+import { writeConfigTypeIndex } from './generateConfigTypeIndex.ts'
 import {
   assertEveryDisplayDeclaresAViewType,
   writeDisplayTypeDocs,
@@ -126,8 +127,8 @@ async function main() {
     } else {
       displayTypesByTrack.set(trackType, [displayName])
     }
-    // a display on several track types keeps the first — its home, whose
-    // adapters the "compatible adapters" section lists
+    // a display on several track types keeps the first its `trackType` array
+    // lists — its home, whose adapters the "compatible adapters" section lists
     if (!displayToTrackType.has(displayName)) {
       displayToTrackType.set(displayName, trackType)
     }
@@ -162,6 +163,7 @@ async function main() {
     displayToTrackType,
     modelNames,
   )
+  writeConfigTypeIndex()
   const modelGaps = writeModelDocs(models, configNames)
   writeAgentTypeDocs({
     models: modelGaps.agentPages,

@@ -56,6 +56,11 @@ export function accumulateApi(
     const group = explicitGroup || groupFromFilename(obj.filename)
     const id = groupId(group)
     byGroup[id] ??= { group, id, exports: [] }
+    if (byGroup[id].group !== group) {
+      throw new Error(
+        `${repoRelative(obj.filename)}: #api group "${group}" and "${byGroup[id].group}" both render to website/docs/api/${id}.md — rename one`,
+      )
+    }
     byGroup[id].exports.push({
       name: obj.name,
       docs,
@@ -174,7 +179,6 @@ ${section(...sorted.map(exp => renderExport(exp, '##')))}
 
 export function writeApiDocs(byGroup: Record<string, ApiGroup>) {
   const dir = 'website/docs/api'
-  fs.mkdirSync(dir, { recursive: true })
   for (const grp of Object.values(byGroup)) {
     writePage(`${dir}/${grp.id}.md`, renderGroup(grp))
   }

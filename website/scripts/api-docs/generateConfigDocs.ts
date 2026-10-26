@@ -260,16 +260,21 @@ export function accumulateConfig(
     file.identifier = item
   } else if (obj.type === 'preProcessSnapshot') {
     file.preProcess = item
-  } else if (
-    obj.type === 'slot' &&
-    !file.slots.some(s => s.name === slotPathOf(obj, item.name))
-  ) {
-    file.slots.push({
-      ...item,
-      name: slotPathOf(obj, item.name),
-      schemaDeclIds: obj.valueDeclIds,
-      parameterisedDefault: obj.parameterisedDefault,
-    })
+  } else if (obj.type === 'slot') {
+    const name = slotPathOf(obj, item.name)
+    const seen = file.slots.find(s => s.name === name)
+    if (!seen) {
+      file.slots.push({
+        ...item,
+        name,
+        schemaDeclIds: obj.valueDeclIds,
+        parameterisedDefault: obj.parameterisedDefault,
+      })
+    } else if (seen.docs !== item.docs) {
+      throw new Error(
+        `${file.filename}: two \`#slot ${name}\` blocks with different text — the page would show only the first`,
+      )
+    }
   }
 }
 
@@ -691,6 +696,7 @@ export interface ManifestSlot {
 interface ManifestEntry {
   slots: ManifestSlot[]
   shorthandKeys?: string[]
+  displayTypes?: string[]
   // Displays only: the MST properties of the display's STATE model, which a
   // session snapshot sets and a track config cannot. Lets the example gate say
   // which wrong place a key is in rather than only that it is wrong.
@@ -717,6 +723,7 @@ const EXAMPLE_CHECKED_CATEGORIES = new Set([
   'displays',
 ])
 
+let manifestTables: ManifestCategories | undefined
 let manifestByType: Record<string, TypedManifestEntry> | undefined
 let adapterShorthands: Record<string, ManifestEntry> | undefined
 
@@ -733,6 +740,7 @@ function readManifest() {
       // no shorthand, which reads as a fact rather than as a missing file.
       throw new Error(`could not read adapter shorthands from ${MANIFEST}`)
     }
+    manifestTables = parsed
     adapterShorthands = parsed.adapters
     // Every type table, each entry tagged with the category it came from — the
     // two gates that read this want different subsets, and a gate that widened
@@ -749,7 +757,15 @@ function readManifest() {
         .filter(([, entry]) => Array.isArray(entry.slots)),
     )
   }
-  return { adapters: adapterShorthands, byType: manifestByType! }
+  return {
+    tables: manifestTables!,
+    adapters: adapterShorthands,
+    byType: manifestByType!,
+  }
+}
+
+export function configManifestTables() {
+  return readManifest().tables
 }
 
 function shorthandKeysByAdapter() {
@@ -2089,7 +2105,6 @@ export function writeConfigDocs(
   modelNames: Set<string>,
 ) {
   const dir = 'website/docs/config'
-  fs.mkdirSync(dir, { recursive: true })
   mergeSpreadSlots(byFile)
   const withHeader = withHeaders(byFile)
   const byDeclId = mapByKey(withHeader, c => c.header.declId)

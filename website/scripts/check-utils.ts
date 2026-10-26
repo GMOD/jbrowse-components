@@ -8,6 +8,7 @@ import {
   existsSync,
   readFileSync,
   readdirSync,
+  renameSync,
   statSync,
   writeFileSync,
 } from 'node:fs'
@@ -286,6 +287,15 @@ export function spliceGeneratedBlock({
   )
 }
 
+// Written beside the target and renamed over it, so a generator running in
+// autogen's pool beside another that reads this file sees the old bytes or the
+// new ones, never half of them.
+export function writeFileAtomic(path: string, content: string) {
+  const tmp = `${path}.${process.pid}.tmp`
+  writeFileSync(tmp, content)
+  renameSync(tmp, path)
+}
+
 interface Generated {
   path: string
   content: string
@@ -312,7 +322,7 @@ export function checkOrWriteAll(generated: Generated[], staleHint: string) {
   )
   if (!check) {
     for (const { path, content } of stale) {
-      writeFileSync(path, content)
+      writeFileAtomic(path, content)
       console.log(`wrote ${path}`)
     }
     if (stale.length === 0) {

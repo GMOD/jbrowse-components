@@ -58,9 +58,10 @@ interface Generator {
   exclusive?: boolean
   // Writes only files no other generator writes, and that only generators
   // naming it in `needs` read, so a rewrite runs it in a pool beside the
-  // ordered doc chain. Everything without either flag
-  // splices blocks into `website/docs` and `agent-docs`, where two generators
-  // rewriting one page at once lose a block, and so keeps this list's order.
+  // ordered doc chain. Everything without either flag splices blocks into
+  // `website/docs` and `agent-docs`, where two generators rewriting one page at
+  // once lose a block, and so keeps this list's order. `--fix-stale` treats a
+  // chain member as reading every member before it.
   independent?: boolean
   // Generators whose output this one reads; a rewrite waits for them.
   needs?: string[]
@@ -149,15 +150,6 @@ const GENERATORS: Generator[] = [
     name: 'agent tutorial index',
     argv: web('gen-agent-tutorial-index.ts'),
     independent: true,
-    needs: ['live links'],
-  },
-  {
-    // spec-recipe-unmapped.txt, and recipe-path-labels.ts when an exemption
-    // there has stopped covering anything.
-    name: 'spec recipe unmapped list',
-    argv: web('check-spec-recipes.ts'),
-    independent: true,
-    // imports liveLinks.generated.ts
     needs: ['live links'],
   },
   { name: 'guide indexes', argv: web('generate-guide-indexes.ts') },
@@ -280,9 +272,9 @@ const GENERATORS: Generator[] = [
   },
   {
     // The config-slot manifest `jbrowse validate` checks against, read out of
-    // the live ConfigurationSchema objects, plus the jbrowse-authoring skill's
-    // config-types.md index. It bundles the live source tree, add-track-core's
-    // generated map included.
+    // the live ConfigurationSchema objects, and edit_plot.md's PLOT_SETTINGS
+    // block. It bundles the live source tree, add-track-core's generated map
+    // included.
     name: 'config schema manifest',
     argv: rootScript('generateConfigManifest.ts'),
     independent: true,
@@ -298,10 +290,21 @@ const GENERATORS: Generator[] = [
     needs: ['config schema manifest'],
   },
   {
+    // spec-recipe-unmapped.txt, and recipe-path-labels.ts when an exemption
+    // there has stopped covering anything. Imports liveLinks.generated.ts, and
+    // configManifest.generated.ts and displayTable.generated.ts through
+    // spec-recipe/recipe.ts.
+    name: 'spec recipe unmapped list',
+    argv: web('check-spec-recipes.ts'),
+    independent: true,
+    needs: ['live links', 'config schema manifest'],
+  },
+  {
     // The generated pages under website/docs/{config,models,api}, the marker
     // blocks that need the whole-repo program (DISPLAY_TYPES, GOTCHA,
-    // SPEC_KEYS, ...), each package's API_DOCS README block,
-    // and api-docs/coverage-gaps.txt. generateConfigDocs reads the shorthand
+    // SPEC_KEYS, ...), each package's API_DOCS README block, the
+    // jbrowse-authoring skill's config-types.md, and
+    // api-docs/coverage-gaps.txt. generateConfigDocs reads the shorthand
     // keys out of the manifest, and generateApiDocs each export's import
     // specifier out of reExports.generated.json.
     name: 'config/model/api docs',
@@ -538,13 +541,20 @@ await (checking ? checkAll() : rewriteAll())
 // again to reach the four that moved was most of what a push waited on.
 if (fixStale && failed.length > 0) {
   const rewriting = new Set(failed.map(f => f.name))
-  // Its output is a downstream generator's input, so a rewrite here leaves that
-  // one stale however its own check just answered.
+  // A rewrite leaves stale whatever reads its output, however that one's own
+  // check just answered. `needs` names those readers. The doc chain's members
+  // also read whole doc trees an earlier member splices into, which no `needs`
+  // lists, so a rewrite there reruns every cheap member after it.
+  const chain = selected.filter(g => !g.independent && !g.exclusive)
+  const downstreamOf = (g: Generator) =>
+    (g.needs ?? []).some(n => rewriting.has(n)) ||
+    (!g.wholeRepoProgram &&
+      chain.slice(0, chain.indexOf(g)).some(c => rewriting.has(c.name)))
   for (let grew = true; grew;) {
     grew = false
-    for (const { name, needs = [] } of selected) {
-      if (!rewriting.has(name) && needs.some(n => rewriting.has(n))) {
-        rewriting.add(name)
+    for (const g of selected) {
+      if (!rewriting.has(g.name) && downstreamOf(g)) {
+        rewriting.add(g.name)
         grew = true
       }
     }

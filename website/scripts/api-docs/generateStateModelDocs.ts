@@ -592,7 +592,6 @@ export function writeModelDocs(
   configNames: Set<string>,
 ) {
   const dir = 'website/docs/models'
-  fs.mkdirSync(dir, { recursive: true })
   const withHeader = withHeaders(byFile)
   assertUniquePages(
     '#stateModel',

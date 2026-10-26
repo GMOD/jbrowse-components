@@ -16,6 +16,7 @@
 // next loop that scripts/autogen.ts exists to end — and these are exactly the
 // case where it bites, since one source edit routinely staleness two of them at
 // once (a `#color` tag renders into both a guide and the spec).
+import { formatWithOxfmt, splicedDocs, staleDocs } from './format.ts'
 import { MARKER_GENERATORS } from './markerGenerators.ts'
 import { assertMarkersAndDocsAgree, getAllFiles, sourceCorpus } from './util.ts'
 
@@ -39,16 +40,26 @@ if (!selected.length) {
 }
 
 const corpus = sourceCorpus(await getAllFiles())
+const touched = selected.map(({ label, write }) => ({
+  label,
+  docs: write(corpus),
+}))
+// The raw splice differs from the committed doc whenever the formatter would
+// reflow the block, so a doc counts as stale only if it still differs once
+// formatted, the way the write run below commits it.
+const differs = new Set(check ? staleDocs() : [])
 const stale = new Map<string, string[]>()
-
-for (const { label, write } of selected) {
-  const docs = write(corpus)
-  if (check && docs.length) {
-    stale.set(label, docs)
+for (const { label, docs } of touched) {
+  const moved = check ? docs.filter(d => differs.has(d)) : docs
+  if (check && moved.length) {
+    stale.set(label, moved)
   }
   console.log(
-    `${label}: ${docs.length ? `${docs.length} ${check ? 'stale' : 'rewritten'}` : 'up to date'}`,
+    `${label}: ${moved.length ? `${moved.length} ${check ? 'stale' : 'rewritten'}` : 'up to date'}`,
   )
+}
+if (!check) {
+  await formatWithOxfmt(splicedDocs())
 }
 
 // Only the generated-but-rendered-nowhere half: this run invokes the

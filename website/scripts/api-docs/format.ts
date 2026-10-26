@@ -1,8 +1,14 @@
 import { execFile } from 'child_process'
 import fs from 'fs'
+import path from 'path'
 import { promisify } from 'util'
 
-import { check, formatMarkdown, oxfmtBin } from '../check-utils.ts'
+import {
+  check,
+  formatMarkdown,
+  oxfmtBin,
+  writeFileAtomic,
+} from '../check-utils.ts'
 
 // Every path written this run, whether spliced into a doc or written whole.
 const written = new Set<string>()
@@ -46,7 +52,8 @@ export function readDoc(file: string) {
 // `staleDocs` compares the final text against what is committed.
 export function writeDoc(file: string, content: string) {
   if (!check) {
-    fs.writeFileSync(file, content)
+    fs.mkdirSync(path.dirname(file), { recursive: true })
+    writeFileAtomic(file, content)
   }
   docText.set(file, content)
   written.add(file)
@@ -157,5 +164,9 @@ export function staleDocs() {
 // its comment says why, and the one-file-at-a-time counterpart lives beside it
 // as `formatMarkdown`.
 export async function formatWithOxfmt(paths: string[]) {
+  // oxfmt given no path formats the whole tree
+  if (paths.length === 0) {
+    return
+  }
   await promisify(execFile)(process.execPath, [oxfmtBin(), ...paths])
 }
