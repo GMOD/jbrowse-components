@@ -299,8 +299,10 @@ function SvInspectorViewF(pluginManager: PluginManager) {
                   type: 'ChordVariantDisplay',
                   displayId: `${trackId}-chord-display`,
                   onChordClick: 'jexl:defaultOnChordClick(feature, track)',
-                  encoding: { color: { field: SV_TYPE_FIELD } },
-                  opacity: CHORD_ALPHA,
+                  encoding: {
+                    color: { field: SV_TYPE_FIELD },
+                    opacity: CHORD_ALPHA,
+                  },
                 },
               ],
             }

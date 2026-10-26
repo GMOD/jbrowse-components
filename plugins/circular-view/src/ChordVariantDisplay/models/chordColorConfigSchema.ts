@@ -27,7 +27,7 @@ export const CHORD_DEFAULT_COLOR = 'rgb(255,133,0)'
  *
  * #example
  * ```js
- * { type: 'ChordVariantDisplay', encoding: { color: 'svType' }, opacity: 0.45 }
+ * { type: 'ChordVariantDisplay', encoding: { color: 'svType', opacity: 0.45 } }
  * ```
  */
 export const chordColorConfigSchema = ConfigurationSchema(

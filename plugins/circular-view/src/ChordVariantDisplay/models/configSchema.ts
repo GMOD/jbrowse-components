@@ -64,8 +64,7 @@ function liftRendererStrokeColor(snap: Record<string, unknown>) {
  *     {
  *       type: 'ChordVariantDisplay',
  *       displayId: 'sv-ChordVariantDisplay',
- *       encoding: { color: 'svType' },
- *       opacity: 0.45,
+ *       encoding: { color: 'svType', opacity: 0.45 },
  *     },
  *   ],
  * }
@@ -93,18 +92,9 @@ function configSchemaF(_pluginManager: PluginManager) {
       /**
        * #slot encoding
        * The channels each resting chord paints through: `encoding.color`,
-       * its line color.
+       * its line color, and `encoding.opacity`, its alpha.
        */
       encoding: chordEncodingConfigSchema,
-      /**
-       * #slot
-       */
-      opacity: {
-        type: 'number',
-        description:
-          "the alpha every resting chord draws at, over its color's own",
-        defaultValue: 0.32,
-      },
     },
     {
       explicitIdentifier: 'displayId',

@@ -127,7 +127,7 @@ test('a constant color keys as one row, a field as the values it paints', async 
   expect(display.colorScales).toEqual([])
 
   setConf(display, ['encoding', 'color'], 'svType')
-  setConf(display, 'opacity', 0.45)
+  setConf(display, ['encoding', 'opacity'], 0.45)
   const [feature] = display.chordLanes.features
   expect(display.chordStrokes.get(feature)).toBe('#e41a1c')
   expect(display.shapeAlpha).toBe(0.45)

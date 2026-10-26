@@ -2,6 +2,7 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { encodingOptions } from '@jbrowse/display-kit/colorConfigSchema'
 
 import { chordColorConfigSchema } from './chordColorConfigSchema.ts'
+import { chordOpacityConfigSchema } from './chordOpacityConfigSchema.ts'
 
 /**
  * #config ChordEncoding
@@ -24,6 +25,12 @@ export const chordEncodingConfigSchema = ConfigurationSchema(
      * each take a color with a key on the circle.
      */
     color: chordColorConfigSchema,
+    /**
+     * #slot opacity
+     * The alpha of every resting chord, a [](/docs/config/chordopacity)
+     * object; a number is its `value`.
+     */
+    opacity: chordOpacityConfigSchema,
   },
   encodingOptions,
 )

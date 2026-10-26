@@ -47,6 +47,7 @@ import { chordLabel } from '../../chords/chordLabel.ts'
 import { chordEndsAt } from '../../chords/chordStage.ts'
 import { DIMMED_OPACITY } from '../../chords/shaders/chordStage.generated.ts'
 import { CHORD_DEFAULT_COLOR } from './chordColorConfigSchema.ts'
+import { DEFAULT_CHORD_OPACITY } from './chordOpacityConfigSchema.ts'
 
 import type { ChordCell } from '../../chords/chordMarks.ts'
 import type { ChordLanes } from '../../chords/chordStage.ts'
@@ -345,10 +346,13 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
       },
       /**
        * #getter
-       * `opacity`, over each chord's color's own alpha
+       * `encoding.opacity`, over each chord's color's own alpha
        */
       get shapeAlpha(): number {
-        return getConf(self, 'opacity')
+        return (
+          getConf(self, ['encoding', 'opacity', 'value']) ??
+          DEFAULT_CHORD_OPACITY
+        )
       },
       /**
        * #method
