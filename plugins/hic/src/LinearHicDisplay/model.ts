@@ -42,7 +42,7 @@ import type {
   HicRenderState,
   HicRenderingBackend,
 } from './components/hicRenderingBackendTypes.ts'
-import type { HicTrackConfigModel } from './configSchema.ts'
+import type { HicTrackConfig, HicTrackConfigModel } from './configSchema.ts'
 import type { HicColorField, HicColorScale } from './hicColorConfigSchema.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
@@ -221,7 +221,7 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
        * applies before the ratio.
        */
       get countFloors(): HicCountFloors {
-        return hicCountFloors(getConf(self, 'filter'))
+        return hicCountFloors(self.configuration.filter)
       },
     }))
     .views(self => ({
@@ -593,11 +593,12 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
          * apply.
          */
         configProblemsOf(conf: AnyConfigurationModel): string[] {
+          const hic = conf as HicTrackConfig
           return [
             ...superConfigProblemsOf(conf),
             ...hicFilterProblems(
-              readConfObject(conf, 'filter'),
-              readConfObject(conf, ['encoding', 'color', 'field']),
+              hic.filter,
+              readConfObject(hic, ['encoding', 'color', 'field']),
             ),
           ]
         },
