@@ -100,21 +100,31 @@ test('runs of one row do not merge across an unaligned stretch', () => {
   ])
 })
 
-test('each row keeps its own windows', () => {
+// in row order, so at sub-pixel rows the row painted last is the one the hover
+// names, as the cells do
+test('each row keeps its own windows, and the runs come in row order', () => {
   expect(
-    runs([
-      block(100, 'ACGT', [
-        [0, 'ACGT'],
-        [1, 'TTTT'],
-      ]),
-    ]).sort(),
-  ).toEqual(
-    [
-      [0, 100, 104, 100],
-      [1, 100, 103, 0],
-      [1, 103, 104, 100],
-    ].sort(),
-  )
+    runs(
+      [
+        block(100, 'ACGTACGTACGTACG', [
+          [0, 'ACGTACGTACGTACG'],
+          [1, 'ACGTAGGGGGGTACG'],
+        ]),
+      ],
+      5,
+    ),
+  ).toEqual([
+    [0, 100, 115, 100],
+    [1, 100, 105, 100],
+    [1, 105, 110, 20],
+    [1, 110, 115, 100],
+  ])
+})
+
+test('a reference position past 2^31 classifies', () => {
+  expect(runs([block(2 ** 31 + 10, 'AC', [[0, 'AC']])])).toEqual([
+    [0, 2 ** 31 + 10, 2 ** 31 + 12, 100],
+  ])
 })
 
 test('the heatmap paints each run its ramp color, and the bars stand at it', () => {

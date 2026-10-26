@@ -278,12 +278,12 @@ export function buildIdentityRuns(
     }
   }
 
-  let colBp = new Int32Array(0)
+  let colBp = new Float64Array(0)
   let colBase = new Uint8Array(0)
   for (const block of blocks) {
     const ref = block.refSeqBytes
     if (colBp.length < ref.length) {
-      colBp = new Int32Array(ref.length)
+      colBp = new Float64Array(ref.length)
       colBase = new Uint8Array(ref.length)
     }
     let bp = block.startBp
@@ -339,13 +339,36 @@ export function buildIdentityRuns(
     closeBin(r)
     emitRun(r)
   }
-  return {
-    x: x.slice(0, count),
-    x2: x2.slice(0, count),
-    row: row.slice(0, count),
-    step: step.slice(0, count),
+  return inRowOrder({ x, x2, row, step, count }, n)
+}
+
+// A row's runs emit as its walk closes them and its last at the end, so rows
+// interleave. In row order, each row paints over the rows above it, as the
+// cells do, and the row the hover names is the one painted last.
+function inRowOrder(runs: MafIdentityRuns, rows: number): MafIdentityRuns {
+  const { count } = runs
+  const next = new Uint32Array(rows + 1)
+  for (let i = 0; i < count; i++) {
+    next[runs.row[i]! + 1]!++
+  }
+  for (let r = 0; r < rows; r++) {
+    next[r + 1]! += next[r]!
+  }
+  const out: MafIdentityRuns = {
+    x: new Uint32Array(count),
+    x2: new Uint32Array(count),
+    row: new Uint32Array(count),
+    step: new Uint8Array(count),
     count,
   }
+  for (let i = 0; i < count; i++) {
+    const j = next[runs.row[i]!]!++
+    out.x[j] = runs.x[i]!
+    out.x2[j] = runs.x2[i]!
+    out.row[j] = runs.row[i]!
+    out.step[j] = runs.step[i]!
+  }
+  return out
 }
 
 /** The identity heatmap: each run's cells in its ramp color. */
