@@ -5172,6 +5172,27 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "additionalProperties": false
     },
+    "FeatureMark": {
+      "title": "FeatureMark",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "height": {
+          "description": "height of each feature body in pixels.",
+          "default": 10,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/NumberOrJexl"
+          }
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
     "SectionFacet": {
       "title": "SectionFacet",
       "anyOf": [
@@ -5297,6 +5318,90 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           },
           "else": {
             "type": "boolean"
+          }
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
+    "FeatureTranscripts": {
+      "title": "FeatureTranscripts",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "types": {
+          "default": [
+            "mRNA",
+            "transcript",
+            "primary_transcript",
+            "V_gene_segment",
+            "C_gene_segment",
+            "D_gene_segment",
+            "J_gene_segment"
+          ],
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "field": {
+          "default": "tag",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
+        },
+        "sort": {
+          "default": [
+            "MANE Select",
+            "MANE_Select",
+            "RefSeq Select",
+            "Ensembl_canonical",
+            "MANE Plus Clinical",
+            "MANE_Plus_Clinical"
+          ],
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
+    "FeatureContainers": {
+      "title": "FeatureContainers",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "types": {
+          "default": [
+            "proteoform_orf"
+          ],
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         }
       },
@@ -5457,33 +5562,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/FeatureEncoding"
           }
         },
-        "showOutline": {
-          "description": "draw an outline around each feature.",
-          "default": false,
+        "mark": {
           "if": {
             "type": "null"
           },
           "else": {
-            "type": "boolean"
-          }
-        },
-        "outlineColor": {
-          "description": "the outline's color while showOutline draws one; unset takes the theme's.",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "$ref": "#/$defs/CssColor"
-          }
-        },
-        "featureHeight": {
-          "description": "height in pixels of the main body of each feature in the normal display mode; compact draws it at 0.6 of this and superCompact at 0.3.",
-          "default": 10,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "$ref": "#/$defs/NumberOrJexl"
+            "$ref": "#/$defs/FeatureMark"
           }
         },
         "displayMode": {
@@ -5584,66 +5668,20 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/FeatureChevrons"
           }
         },
-        "transcriptTypes": {
-          "default": [
-            "mRNA",
-            "transcript",
-            "primary_transcript",
-            "V_gene_segment",
-            "C_gene_segment",
-            "D_gene_segment",
-            "J_gene_segment"
-          ],
+        "transcripts": {
           "if": {
             "type": "null"
           },
           "else": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "$ref": "#/$defs/FeatureTranscripts"
           }
         },
-        "canonicalTranscriptField": {
-          "default": "tag",
+        "containers": {
           "if": {
             "type": "null"
           },
           "else": {
-            "$ref": "#/$defs/PlainString"
-          }
-        },
-        "canonicalTranscriptTags": {
-          "default": [
-            "MANE Select",
-            "MANE_Select",
-            "RefSeq Select",
-            "Ensembl_canonical",
-            "MANE Plus Clinical",
-            "MANE_Plus_Clinical"
-          ],
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          }
-        },
-        "containerTypes": {
-          "default": [
-            "proteoform_orf"
-          ],
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "$ref": "#/$defs/FeatureContainers"
           }
         },
         "subParts": {
@@ -5673,6 +5711,26 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
         "color3": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "featureHeight": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "transcriptTypes": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "canonicalTranscriptField": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "canonicalTranscriptTags": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "containerTypes": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
@@ -11499,33 +11557,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/FeatureEncoding"
           }
         },
-        "showOutline": {
-          "description": "draw an outline around each feature.",
-          "default": false,
+        "mark": {
           "if": {
             "type": "null"
           },
           "else": {
-            "type": "boolean"
-          }
-        },
-        "outlineColor": {
-          "description": "the outline's color while showOutline draws one; unset takes the theme's.",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "$ref": "#/$defs/CssColor"
-          }
-        },
-        "featureHeight": {
-          "description": "height in pixels of the main body of each feature in the normal display mode; compact draws it at 0.6 of this and superCompact at 0.3.",
-          "default": 10,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "$ref": "#/$defs/NumberOrJexl"
+            "$ref": "#/$defs/FeatureMark"
           }
         },
         "displayMode": {
@@ -11588,6 +11625,26 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
         "color3": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "featureHeight": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "transcriptTypes": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "canonicalTranscriptField": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "canonicalTranscriptTags": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "containerTypes": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
@@ -16417,14 +16474,15 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 }
               ]
             },
-            "showOutline": {
-              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/showOutline"
-            },
-            "outlineColor": {
-              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/outlineColor"
-            },
-            "featureHeight": {
-              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/featureHeight"
+            "mark": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearBasicDisplaySlots/properties/mark"
+                },
+                {
+                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/mark"
+                }
+              ]
             },
             "displayMode": {
               "$ref": "#/$defs/LinearBasicDisplaySlots/properties/displayMode"
@@ -16463,17 +16521,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "chevrons": {
               "$ref": "#/$defs/LinearBasicDisplaySlots/properties/chevrons"
             },
-            "transcriptTypes": {
-              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/transcriptTypes"
+            "transcripts": {
+              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/transcripts"
             },
-            "canonicalTranscriptField": {
-              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/canonicalTranscriptField"
-            },
-            "canonicalTranscriptTags": {
-              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/canonicalTranscriptTags"
-            },
-            "containerTypes": {
-              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/containerTypes"
+            "containers": {
+              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/containers"
             },
             "subParts": {
               "$ref": "#/$defs/LinearBasicDisplaySlots/properties/subParts"
@@ -16525,6 +16577,21 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "color3": {
               "$ref": "#/$defs/LinearBasicDisplaySlots/properties/color3"
             },
+            "featureHeight": {
+              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/featureHeight"
+            },
+            "transcriptTypes": {
+              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/transcriptTypes"
+            },
+            "canonicalTranscriptField": {
+              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/canonicalTranscriptField"
+            },
+            "canonicalTranscriptTags": {
+              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/canonicalTranscriptTags"
+            },
+            "containerTypes": {
+              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/containerTypes"
+            },
             "outline": {
               "$ref": "#/$defs/LinearBasicDisplaySlots/properties/outline"
             },
@@ -16555,9 +16622,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "showDescriptions": {
               "$ref": "#/$defs/LinearBasicDisplaySlots/properties/showDescriptions"
-            },
-            "mark": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/mark"
             },
             "rows": {
               "anyOf": [
@@ -17618,7 +17682,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "type": "object",
           "properties": {
             "mark": {
-              "$ref": "#/$defs/ChordVariantDisplaySlots/properties/mark"
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/ChordVariantDisplaySlots/properties/mark"
+                },
+                {
+                  "$ref": "#/$defs/LinearVariantDisplaySlots/properties/mark"
+                }
+              ]
             },
             "onChordClick": {
               "$ref": "#/$defs/ChordVariantDisplaySlots/properties/onChordClick"
@@ -17770,15 +17841,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "maxDescriptionFeatureDensity": {
               "$ref": "#/$defs/LinearVariantDisplaySlots/properties/maxDescriptionFeatureDensity"
             },
-            "showOutline": {
-              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/showOutline"
-            },
-            "outlineColor": {
-              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/outlineColor"
-            },
-            "featureHeight": {
-              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/featureHeight"
-            },
             "displayMode": {
               "$ref": "#/$defs/LinearVariantDisplaySlots/properties/displayMode"
             },
@@ -17832,6 +17894,21 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "color3": {
               "$ref": "#/$defs/LinearVariantDisplaySlots/properties/color3"
+            },
+            "featureHeight": {
+              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/featureHeight"
+            },
+            "transcriptTypes": {
+              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/transcriptTypes"
+            },
+            "canonicalTranscriptField": {
+              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/canonicalTranscriptField"
+            },
+            "canonicalTranscriptTags": {
+              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/canonicalTranscriptTags"
+            },
+            "containerTypes": {
+              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/containerTypes"
             },
             "outline": {
               "$ref": "#/$defs/LinearVariantDisplaySlots/properties/outline"

@@ -3333,16 +3333,16 @@ export const configManifest: ConfigManifest = {
           "writes": "members"
         },
         {
-          "name": "showOutline",
-          "type": "boolean"
-        },
-        {
-          "name": "outlineColor",
-          "type": "(CssColor | undefined)"
-        },
-        {
-          "name": "featureHeight",
-          "type": "(JexlString | number)"
+          "name": "mark",
+          "type": "FeatureMarkConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "height",
+              "type": "(JexlString | number)"
+            }
+          ],
+          "schema": "FeatureMark",
+          "writes": "members"
         },
         {
           "name": "displayMode",
@@ -3421,20 +3421,36 @@ export const configManifest: ConfigManifest = {
           "writes": "members"
         },
         {
-          "name": "transcriptTypes",
-          "type": "string[]"
+          "name": "transcripts",
+          "type": "FeatureTranscriptsConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "types",
+              "type": "string[]"
+            },
+            {
+              "name": "field",
+              "type": "string"
+            },
+            {
+              "name": "sort",
+              "type": "string[]"
+            }
+          ],
+          "schema": "FeatureTranscripts",
+          "writes": "members"
         },
         {
-          "name": "canonicalTranscriptField",
-          "type": "string"
-        },
-        {
-          "name": "canonicalTranscriptTags",
-          "type": "string[]"
-        },
-        {
-          "name": "containerTypes",
-          "type": "string[]"
+          "name": "containers",
+          "type": "FeatureContainersConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "types",
+              "type": "string[]"
+            }
+          ],
+          "schema": "FeatureContainers",
+          "writes": "members"
         },
         {
           "name": "subParts",
@@ -3447,6 +3463,11 @@ export const configManifest: ConfigManifest = {
         "color1",
         "color2",
         "color3",
+        "featureHeight",
+        "transcriptTypes",
+        "canonicalTranscriptField",
+        "canonicalTranscriptTags",
+        "containerTypes",
         "outline",
         "maxHeight",
         "hideSourceFeatures",
@@ -3461,6 +3482,7 @@ export const configManifest: ConfigManifest = {
         "maxDisplayedBpPerPx",
         "fetchSizeLimit",
         "mouseover",
+        "outline",
         "maxHeight",
         "hideSourceFeatures",
         "impliedUTRs"
@@ -6630,16 +6652,16 @@ export const configManifest: ConfigManifest = {
           "writes": "members"
         },
         {
-          "name": "showOutline",
-          "type": "boolean"
-        },
-        {
-          "name": "outlineColor",
-          "type": "(CssColor | undefined)"
-        },
-        {
-          "name": "featureHeight",
-          "type": "(JexlString | number)"
+          "name": "mark",
+          "type": "FeatureMarkConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "height",
+              "type": "(JexlString | number)"
+            }
+          ],
+          "schema": "FeatureMark",
+          "writes": "members"
         },
         {
           "name": "displayMode",
@@ -6696,6 +6718,11 @@ export const configManifest: ConfigManifest = {
         "color1",
         "color2",
         "color3",
+        "featureHeight",
+        "transcriptTypes",
+        "canonicalTranscriptField",
+        "canonicalTranscriptTags",
+        "containerTypes",
         "outline",
         "maxHeight",
         "hideSourceFeatures",
@@ -6709,6 +6736,7 @@ export const configManifest: ConfigManifest = {
         "maxDisplayedBpPerPx",
         "fetchSizeLimit",
         "mouseover",
+        "outline",
         "maxHeight",
         "hideSourceFeatures",
         "impliedUTRs"
