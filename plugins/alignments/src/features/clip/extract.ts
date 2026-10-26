@@ -3,7 +3,7 @@ import type { HardclipData, SoftclipData } from '../../shared/webglRpcTypes.ts'
 // Both clip emitters, together because the `clip` pass draws both kinds from one
 // merged interbase partition and `extractCigarFeatures` calls them from the same
 // CIGAR walk. Only the soft one reads the read's sequence, and only when
-// `showSoftClipping` is on — that `sequence` field is the whole input to the
+// `showSoftClips` is on — that `sequence` field is the whole input to the
 // separate `softclipBases` pass (features/softclipBases/buildArrays.ts), so the
 // bar and the letters share an extraction and diverge downstream.
 export function emitSoftclip(

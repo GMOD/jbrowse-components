@@ -61,11 +61,11 @@ export {
 } from './compactnessPresets.ts'
 
 // One radio group: the pixel-size presets, Custom, and fitting the reads to
-// the track. Picking a size drops back to fixed (`setReadHeight`).
+// the track. Picking a size drops back to fixed (`setMarkHeight`).
 interface FeatureHeightModel {
-  configuredReadHeight: number
+  markHeight: number
   heightMode: HeightMode
-  setReadHeight: (height?: number) => void
+  setMarkHeight: (height?: number) => void
   setHeightMode: (mode: HeightMode) => void
 }
 
@@ -75,7 +75,7 @@ export function getFeatureHeightMenuItem(
   gate: ContentGate = {},
 ) {
   const fit = model.heightMode === 'fit'
-  const height = model.configuredReadHeight
+  const height = model.markHeight
   const matchesPreset = (preset: { height: number }) => height === preset.height
   return {
     label: `${capitalizeFirst(noun)} height`,
@@ -85,7 +85,7 @@ export function getFeatureHeightMenuItem(
     subMenu: [
       ...PRESETS.map(preset =>
         radioItem(preset.label, !fit && matchesPreset(preset), () => {
-          model.setReadHeight(preset.height)
+          model.setMarkHeight(preset.height)
         }),
       ),
       {
@@ -102,9 +102,9 @@ export function getFeatureHeightMenuItem(
               title: `Custom ${noun} height`,
               description: `Adjust the ${noun} height. The spacing between ${noun}s is derived from it — a 1px gap once ${noun}s are tall enough, otherwise flush. Setting the height to 1 makes the display very compact.`,
               label: `${capitalizeFirst(noun)} height (px)`,
-              initialValue: model.configuredReadHeight,
+              initialValue: model.markHeight,
               onSubmit: (height: number) => {
-                model.setReadHeight(height)
+                model.setMarkHeight(height)
               },
               handleClose,
             },

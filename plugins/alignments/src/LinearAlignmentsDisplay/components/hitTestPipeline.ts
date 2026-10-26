@@ -427,7 +427,7 @@ export function performHitTest(
 ): HitTestResult {
   const { state, overPileup } = options
   const {
-    showInterbaseIndicators,
+    showInterbase,
     showCoverageAlleles,
     coverageMinAlleleFraction,
     coverageTopOffset,
@@ -457,7 +457,7 @@ export function performHitTest(
       height: coverageHeight,
       top: coverageTopOffset,
       domainMax: coverageMaxDepth,
-      showInterbase: showInterbaseIndicators,
+      showInterbase,
     },
     boundsOf(resolved),
     canvasX,

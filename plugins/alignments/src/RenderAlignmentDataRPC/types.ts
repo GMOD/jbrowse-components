@@ -34,7 +34,7 @@ export interface RenderAlignmentDataArgs extends GatedFetchArgs {
   // full SortColumn), so changing sort position within a tag sort doesn't
   // invalidate the fetched data — main-thread layout re-runs instead.
   sortTag?: string
-  showSoftClipping?: boolean
+  showSoftClips?: boolean
   // Tier-1 refetch (in rpcProps): when the coverage band is off — the
   // LGVSyntenyDisplay default — the worker skips every band computation and
   // returns an empty coverage depth array, avoiding the ~regionWidth×8-byte
@@ -148,7 +148,7 @@ export interface WorkerPileupData {
   mismatchFrequencies: Uint8Array // 0-255 representing 0-100% frequency at position
   mismatchQuals: Uint8Array // per-base Phred quality; QUAL_UNAVAILABLE (255) = none. 0 is a score.
 
-  // Soft clip base data - per-base rendering for showSoftClipping feature
+  // Soft clip base data - per-base rendering for showSoftClips feature
   // Absolute genomic uint32 position for each base
   softclipBasePositions: Uint32Array
   softclipBaseBases: Uint8Array // ASCII character code

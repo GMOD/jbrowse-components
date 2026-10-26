@@ -72,7 +72,7 @@ interface ComputeVisibleLabelsParams {
   featureSpacing: number
   // Gates the three label groups whose MARKS answer to it — deletion,
   // insertion, mismatch — and no more. `clip` is unconditional in
-  // PILEUP_MARKS and `softclipBases` is gated on `showSoftClipping`, so
+  // PILEUP_MARKS and `softclipBases` is gated on `showSoftClips`, so
   // gating the whole pass left those two drawn and unlabelled.
   showMismatches: boolean
   // `pileup.mismatches.encoding.opacity`. The SNP letter has to honor it as

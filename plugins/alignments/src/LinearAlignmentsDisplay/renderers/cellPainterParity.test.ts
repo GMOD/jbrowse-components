@@ -54,7 +54,7 @@ const STATE = makeTestRenderState({
   showModifications: true,
   showPerBaseQuality: true,
   showPerBaseLetter: true,
-  showSoftClipping: true,
+  showSoftClips: true,
   canvasWidth: BLOCK_WIDTH,
   canvasHeight: 500,
 })

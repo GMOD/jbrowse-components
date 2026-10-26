@@ -1,7 +1,7 @@
 import type { SoftclipData } from '../../shared/webglRpcTypes.ts'
 
 // Builds per-base arrays from softclip sequences (only populated when
-// showSoftClipping is on). Each base in each clipped sequence becomes one
+// showSoftClips is on). Each base in each clipped sequence becomes one
 // instance in the softclip-bases pass. Bases at clipStart < regionStart
 // are clipped by the GPU rasterizer, so we don't filter on regionStart here.
 export function buildSoftclipBaseArrays(softclips: SoftclipData[]) {

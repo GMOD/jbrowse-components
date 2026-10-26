@@ -91,8 +91,8 @@ interface ShowModel
   setShowPileup: (show: boolean) => void
   showMismatches: boolean
   setShowMismatches: (show: boolean) => void
-  showInterbaseIndicators: boolean
-  setShowInterbaseIndicators: (show: boolean) => void
+  showInterbase: boolean
+  setShowInterbase: (show: boolean) => void
   showCoverageAlleles: boolean
   setShowCoverageAlleles: (show: boolean) => void
 }
@@ -129,7 +129,7 @@ export function getSyntenyShowMenuItems(model: ShowModel) {
     }),
     // Only while the coverage band is drawn. Every interbase mark lives in
     // that band — the coverage marks draw under `showCoverage`, and the
-    // hit test gates on `showCoverage && showInterbaseIndicators` — and this
+    // hit test gates on `showCoverage && showInterbase` — and this
     // display defaults coverage OFF, unlike the alignments display it borrows
     // the menu shape from. So on a synteny track the toggle spent most of its
     // life unable to change anything a user could see. It previously said so
@@ -149,8 +149,8 @@ export function getSyntenyShowMenuItems(model: ShowModel) {
           ),
           toggleItem(
             'Interbase indicators',
-            model.showInterbaseIndicators,
-            model.setShowInterbaseIndicators,
+            model.showInterbase,
+            model.setShowInterbase,
             {
               helpText:
                 'Mark insertions in the other assembly, which occupy no ' +

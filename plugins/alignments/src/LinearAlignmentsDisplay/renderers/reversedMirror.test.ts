@@ -178,7 +178,7 @@ function pileupData(): PileupDataResult {
     numSoftclips: 0,
     numHardclips: 0,
     // Two soft-clipped bases (a per-base 1bp-cell layer, gated on
-    // showSoftClipping) just left of read 0's aligned start. These paint via
+    // showSoftClips) just left of read 0's aligned start. These paint via
     // makeCellLeftMapper like the other cell layers, so a reversed block must
     // mirror them cell-for-cell.
     softclipBasePositions: new Uint32Array([1002, 1003]),
@@ -256,12 +256,12 @@ function state(overrides: Partial<RenderState> = {}): RenderState {
     coverageSymlogConstant: 1,
     coverageMinAlleleFraction: 0,
     showMismatches: true,
-    fadeLowFrequencyMismatches: false,
+    fadeLowFrequency: false,
     qualityOpacity: OPAQUE_MISMATCHES,
     // ON so the soft-clip-base cell layer (gated on this) is reachable; the
     // insertion layer rides showMismatches, already on.
-    showSoftClipping: true,
-    showInterbaseIndicators: false,
+    showSoftClips: true,
+    showInterbase: false,
     showCoverageAlleles: true,
     showModifications: true,
     showPerBaseQuality: true,
@@ -392,7 +392,7 @@ it('the soft-clip-base and insertion layers are non-vacuous', () => {
   // Turning soft-clipping off must remove marks — proves the layer is gated
   // and currently drawing, not dead.
   expect(marks.length).toBeGreaterThan(
-    drawAt(false, { showSoftClipping: false }).length,
+    drawAt(false, { showSoftClips: false }).length,
   )
   // Soft-clip base at bp 1002 → cell left edge at x = 40 (unique: coverage
   // starts at bp 1006 = x 120, nothing else paints this far left).

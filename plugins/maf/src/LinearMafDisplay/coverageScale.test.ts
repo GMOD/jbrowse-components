@@ -71,7 +71,7 @@ test('the SNP floor and the interbase toggle reach the band', () => {
     coverage: { alleles: { filter: [{ field: 'fraction', gte: 0.2 }] } },
   })
   expect(display.coverageBandState.minAlleleFraction).toBe(0.2)
-  display.setShowInterbaseIndicators(false)
+  display.setShowInterbase(false)
   expect(display.coverageBandState.showInterbase).toBe(false)
   display.setShowCoverageAlleles(false)
   expect(display.coverageBandState.showAlleles).toBe(false)

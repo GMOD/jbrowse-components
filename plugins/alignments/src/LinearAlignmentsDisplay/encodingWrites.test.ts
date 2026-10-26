@@ -119,8 +119,8 @@ describe('the Line width menu keeps the widening with support', () => {
   test('a width is the one-read end of the default curve', () => {
     const display = createDisplay()
     const defaults = display.readConnectionsStrokeScale
-    display.setReadConnectionsLineWidth(2)
-    expect(display.readConnectionsLineWidth).toBe(2)
+    display.setReadConnectionsStrokeWidth(2)
+    expect(display.readConnectionsStrokeWidth).toBe(2)
     expect(display.readConnectionsStrokeScale).toEqual({
       ...defaults,
       range: defaults.range.map(px => px * 2),
@@ -130,9 +130,9 @@ describe('the Line width menu keeps the widening with support', () => {
   test('1 px draws what unset draws, and a reset unsets it', () => {
     const display = createDisplay()
     const defaults = display.readConnectionsStrokeScale
-    display.setReadConnectionsLineWidth(1)
+    display.setReadConnectionsStrokeWidth(1)
     expect(display.readConnectionsStrokeScale).toEqual(defaults)
-    display.setReadConnectionsLineWidth()
+    display.setReadConnectionsStrokeWidth()
     expect(display.readConnectionsStrokeScale).toEqual(defaults)
   })
 })

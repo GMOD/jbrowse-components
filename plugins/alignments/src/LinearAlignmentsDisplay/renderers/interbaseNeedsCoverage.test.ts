@@ -12,7 +12,7 @@ import type { AlignmentsSources, RenderState } from './rendererTypes.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
 /**
- * Interbase marks live in the coverage band, so `showInterbaseIndicators` can
+ * Interbase marks live in the coverage band, so `showInterbase` can
  * only change the picture while `showCoverage` is on — the conjunction the
  * band's marks state per layer and `drawAlignmentBlocks` states once, for the
  * band as a whole.
@@ -168,16 +168,16 @@ function inkFor(overrides: Partial<RenderState>) {
 
 describe('the interbase toggle needs the coverage band', () => {
   it('changes nothing while the band is hidden', () => {
-    expect(inkFor({ coverageHeight: 0, showInterbaseIndicators: true })).toBe(
-      inkFor({ coverageHeight: 0, showInterbaseIndicators: false }),
+    expect(inkFor({ coverageHeight: 0, showInterbase: true })).toBe(
+      inkFor({ coverageHeight: 0, showInterbase: false }),
     )
   })
 
   // The control. Without it the case above passes for a fixture whose interbase
   // feeds are empty, which is the way an A/B like this goes quietly green.
   it('changes the picture while the band is shown', () => {
-    expect(inkFor({ showInterbaseIndicators: true })).not.toBe(
-      inkFor({ showInterbaseIndicators: false }),
+    expect(inkFor({ showInterbase: true })).not.toBe(
+      inkFor({ showInterbase: false }),
     )
   })
 })

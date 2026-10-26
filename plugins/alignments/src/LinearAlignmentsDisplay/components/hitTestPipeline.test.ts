@@ -122,7 +122,7 @@ function opts(
 ): HitTestOptions {
   return {
     state: makeTestRenderState({
-      showInterbaseIndicators: true,
+      showInterbase: true,
       coverageMinAlleleFraction: 0,
       pileupTopOffset: 50,
       coverageTopOffset: 0,
@@ -130,7 +130,7 @@ function opts(
       featureSpacing: 2,
       scrollTop: 0,
       unit: 'read',
-      fadeLowFrequencyMismatches: true,
+      fadeLowFrequency: true,
       showMismatches: true,
       coverageHeight: 50,
       ...state,
@@ -209,7 +209,7 @@ describe('indicator hit — fires at all zoom levels', () => {
     expect(result.type).toBe('indicator')
   })
 
-  it('does not return indicator when showInterbaseIndicators is false', () => {
+  it('does not return indicator when showInterbase is false', () => {
     const resolved = makeResolved({
       ...indicatorFields([{ position: 10000, colorType: 1 }]),
     })
@@ -217,7 +217,7 @@ describe('indicator hit — fires at all zoom levels', () => {
       100,
       3,
       resolved,
-      opts({ showInterbaseIndicators: false }),
+      opts({ showInterbase: false }),
     )
     expect(result.type).toBe('none')
   })
@@ -361,7 +361,7 @@ describe('detailed hit tests still fire when bpPerPx <= threshold', () => {
       100,
       60,
       lowFreqMismatchZoomedOut(),
-      opts({ fadeLowFrequencyMismatches: false }),
+      opts({ fadeLowFrequency: false }),
     )
     expect(result.type).toBe('cigar')
     if (result.type === 'cigar') {
@@ -422,7 +422,7 @@ describe('detailed hit tests still fire when bpPerPx <= threshold', () => {
       100,
       60,
       lowFreqInsertionZoomedOut(),
-      opts({ fadeLowFrequencyMismatches: false }),
+      opts({ fadeLowFrequency: false }),
     )
     expect(result.type).toBe('cigar')
     if (result.type === 'cigar') {
@@ -911,7 +911,7 @@ describe('showMismatches off stops hit-testing the layers it stops drawing', () 
 describe('soft-clipped bases resolve to their read', () => {
   // The worker only fills `softclipBasePositions` with the setting on, and the
   // mark reads the same setting as its gate.
-  const SOFTCLIP_OPTS = opts({ showSoftClipping: true })
+  const SOFTCLIP_OPTS = opts({ showSoftClips: true })
   // bpPerPx=1; read aligned over [0,100], 20 clipped bases drawn at [100,120).
   function clippedRead() {
     return {
@@ -990,7 +990,7 @@ describe('clip hit gates on frequency like every other mark', () => {
       100,
       60,
       lowFreqClip(),
-      opts({ fadeLowFrequencyMismatches: false }),
+      opts({ fadeLowFrequency: false }),
     )
     expect(result.type).toBe('cigar')
     if (result.type === 'cigar') {
@@ -1043,7 +1043,7 @@ describe('deletion hit gates on frequency like every other mark', () => {
       100,
       60,
       deletion(0),
-      opts({ fadeLowFrequencyMismatches: false }),
+      opts({ fadeLowFrequency: false }),
     )
     expect(result.type).toBe('cigar')
     if (result.type === 'cigar') {

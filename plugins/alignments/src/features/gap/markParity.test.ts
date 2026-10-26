@@ -53,16 +53,13 @@ const GAPS: GapUploadData = {
   gapFrequencies: new Uint8Array([255, 0, 255, 0]),
 }
 
-function state(
-  showMismatches = true,
-  fadeLowFrequencyMismatches = true,
-): RenderState {
+function state(showMismatches = true, fadeLowFrequency = true): RenderState {
   return {
     scrollTop: 0,
     featureHeight: FEATURE_HEIGHT,
     featureSpacing: 0,
     canvasHeight: 1000,
-    fadeLowFrequencyMismatches,
+    fadeLowFrequency,
     qualityOpacity: OPAQUE_MISMATCHES,
     showMismatches,
     pileupTopOffset: 0,

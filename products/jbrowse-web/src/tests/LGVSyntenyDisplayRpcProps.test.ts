@@ -136,7 +136,7 @@ test('the override still carries the inherited alignments fields', async () => {
       'sortTag',
       'filter',
       'colorField',
-      'showSoftClipping',
+      'showSoftClips',
       'showCoverage',
     ]),
   )
@@ -144,7 +144,7 @@ test('the override still carries the inherited alignments fields', async () => {
     sortTag: undefined,
     colorField: undefined,
     filter: expect.anything(),
-    showSoftClipping: expect.any(Boolean),
+    showSoftClips: expect.any(Boolean),
     showCoverage: expect.any(Boolean),
   })
 })

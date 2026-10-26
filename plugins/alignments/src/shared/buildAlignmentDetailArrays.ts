@@ -27,7 +27,7 @@ import type { StatusCallback } from '@jbrowse/core/util'
  * of detail arrays produced (and the order in which they're built) cannot
  * drift between the pileup and chain executors.
  *
- * `showSoftClipping=false` (the default) produces zero-length softclip-base
+ * `showSoftClips=false` (the default) produces zero-length softclip-base
  * arrays — chain mode uses this so softclip fields are still present in the
  * result with the correct shape.
  */
@@ -41,7 +41,7 @@ export async function buildAlignmentDetailArrays({
   modifications,
   perBaseQualities,
   perBaseLetters,
-  showSoftClipping = false,
+  showSoftClips = false,
   statusCallback,
 }: {
   features: FeatureData[]
@@ -53,15 +53,13 @@ export async function buildAlignmentDetailArrays({
   modifications: ModificationEntry[]
   perBaseQualities: PerBaseColumns
   perBaseLetters: PerBaseColumns
-  showSoftClipping?: boolean
+  showSoftClips?: boolean
   statusCallback: StatusCallback | undefined
 }) {
   return updateStatus('Processing alignments', statusCallback, async () => ({
     gapArrays: buildGapArrays(gaps),
     mismatchArrays: buildMismatchArrays(mismatches),
-    softclipBaseArrays: buildSoftclipBaseArrays(
-      showSoftClipping ? softclips : [],
-    ),
+    softclipBaseArrays: buildSoftclipBaseArrays(showSoftClips ? softclips : []),
     interbaseArrays: buildInterbaseArrays(insertions, softclips, hardclips),
     modificationArrays: buildModificationArrays(modifications),
     perBaseQualityArrays: buildPerBaseQualityArrays(perBaseQualities),

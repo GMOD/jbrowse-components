@@ -22,7 +22,7 @@ function context(groups: { key: string; rows: number }[]): GroupLayoutContext {
     rawByGroup: new Map(groups.map(g => [g.key, stackedReads(g.rows)])),
     unit: 'read',
     sortColumn: undefined,
-    showSoftClipping: false,
+    showSoftClips: false,
     layoutOrder: 'position' as const,
     regions: new Map([[0, { refName: 'ctgA', start: 0, end: 1000 }]]),
     collapseSections: false,

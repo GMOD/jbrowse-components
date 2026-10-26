@@ -49,9 +49,9 @@ function makeModel() {
     setShowOrdinaryPairs(v?: boolean) {
       this.showOrdinaryPairs = v ?? true
     },
-    readConnectionsLineWidth: 1,
-    setReadConnectionsLineWidth(v?: number) {
-      this.readConnectionsLineWidth = v ?? 1
+    readConnectionsStrokeWidth: 1,
+    setReadConnectionsStrokeWidth(v?: number) {
+      this.readConnectionsStrokeWidth = v ?? 1
     },
     showPileup: true,
     facet: undefined as Facet | undefined,
@@ -206,6 +206,6 @@ describe('band rows for Advanced', () => {
       await screen.findByTestId('read-connections-line-width-slider')
     ).querySelector('input')!
     fireEvent.change(input, { target: { value: 3 } })
-    expect(model.readConnectionsLineWidth).toBe(3)
+    expect(model.readConnectionsStrokeWidth).toBe(3)
   })
 })

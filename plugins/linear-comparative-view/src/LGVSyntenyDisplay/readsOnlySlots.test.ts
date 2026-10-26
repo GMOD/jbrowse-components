@@ -39,7 +39,7 @@ test('the model answers the four off and fetches no junctions', () => {
   display.setShowCoverage(true)
   expect(display.hasSashimi).toBe(false)
   expect(display.showSashimi).toBe(false)
-  expect(display.showSashimiCounts).toBe(false)
+  expect(display.showSashimiLabels).toBe(false)
   expect(display.baseLayer).toBeUndefined()
   expect(display.basesFilter).toEqual({
     probability: { min: 0.1, strict: false },

@@ -34,11 +34,11 @@ interface ReadsModel
   setShowPileup: (show: boolean) => void
   showMismatches: boolean
   setShowMismatches: (show: boolean) => void
-  showSoftClipping: boolean
-  setShowSoftClipping: (show: boolean) => void
+  showSoftClips: boolean
+  setShowSoftClips: (show: boolean) => void
   unit: AlignmentsUnit
-  showInterbaseIndicators: boolean
-  setShowInterbaseIndicators: (show: boolean) => void
+  showInterbase: boolean
+  setShowInterbase: (show: boolean) => void
   mismatchOpacityField: MismatchOpacityField | undefined
   setMismatchOpacityField: (field?: MismatchOpacityField) => void
 }
@@ -59,9 +59,9 @@ interface ReadsModel
 function softClippingItem(model: ReadsModel) {
   return toggleItem(
     'Soft clipping',
-    model.showSoftClipping,
+    model.showSoftClips,
     value => {
-      model.setShowSoftClipping(value)
+      model.setShowSoftClips(value)
     },
     model.unit === 'chain'
       ? {

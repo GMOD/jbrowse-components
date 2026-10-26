@@ -32,13 +32,13 @@ interface ReadConnectionsBandModel {
   drawnReadConnections: ReadConnectionsMode
   readConnectionsPlacement: ReadConnectionsPlacement
   setReadConnectionsPlacement: (placement: ReadConnectionsPlacement) => void
-  readConnectionsLineWidth: number
-  setReadConnectionsLineWidth: (width?: number) => void
+  readConnectionsStrokeWidth: number
+  setReadConnectionsStrokeWidth: (width?: number) => void
 }
 
 // The width a one-read connection strokes at under the default
 // `encoding.strokeWidth` scale, for the is-default marker.
-const DEFAULT_READ_CONNECTIONS_LINE_WIDTH = 1
+const DEFAULT_READ_CONNECTIONS_STROKE_WIDTH = 1
 
 const PLACEMENT_OPTIONS: { value: ReadConnectionsPlacement; label: string }[] =
   [
@@ -119,14 +119,15 @@ export function getReadConnectionsBandItems(
       max: 5,
       step: 0.5,
       unit: 'px',
-      getValue: () => model.readConnectionsLineWidth,
+      getValue: () => model.readConnectionsStrokeWidth,
       isDefault:
-        model.readConnectionsLineWidth === DEFAULT_READ_CONNECTIONS_LINE_WIDTH,
+        model.readConnectionsStrokeWidth ===
+        DEFAULT_READ_CONNECTIONS_STROKE_WIDTH,
       onChange: width => {
-        model.setReadConnectionsLineWidth(width)
+        model.setReadConnectionsStrokeWidth(width)
       },
       onReset: () => {
-        model.setReadConnectionsLineWidth()
+        model.setReadConnectionsStrokeWidth()
       },
     }),
   ]

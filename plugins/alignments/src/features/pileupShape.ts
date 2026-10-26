@@ -669,7 +669,7 @@ export function pileupShape(
       const { bpPerPx } = f
       const genomicPos = bpAtPxExact(xPx, block)
       const basePos = bpAtPx(xPx, block)
-      const fadeLowFrequency = state.fadeLowFrequencyMismatches
+      const fadeLowFrequency = state.fadeLowFrequency
       const cellBased = pivot === 'cell'
       let best: MarkHit | undefined
       let bestDistSq = maxDistSq

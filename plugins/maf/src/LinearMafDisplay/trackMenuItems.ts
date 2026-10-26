@@ -79,8 +79,8 @@ interface MafMenuSelf
   setShowRowLabels: (arg: boolean) => void
   showBranchLength: boolean
   treeHasBranchLengths: boolean
-  showInterbaseIndicators: boolean
-  setShowInterbaseIndicators: (f: boolean) => void
+  showInterbase: boolean
+  setShowInterbase: (f: boolean) => void
   setShowCoverageAlleles: (f: boolean) => void
   showAlignments: boolean
   showConservation: boolean

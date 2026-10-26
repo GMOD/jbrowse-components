@@ -62,7 +62,7 @@ function fetchResult(features: Feature[]) {
   const extracted = extractFeatureArrays(
     features,
     (f: Feature) => buildBaseFeatureData(f, undefined),
-    { showSoftClipping: false, region, perBaseBinBp: 1 },
+    { showSoftClips: false, region, perBaseBinBp: 1 },
   )
   const { readArrays } = buildBaseReadArrays(extracted.features, undefined)
   return makePileupDataResult({

@@ -62,7 +62,7 @@ const buildFeatureData = (f: Feature): FeatureData => ({
 function extract(features: Feature[], colorField: string) {
   return extractFeatureArrays(features, buildFeatureData, {
     colorField,
-    showSoftClipping: false,
+    showSoftClips: false,
     region,
     perBaseBinBp: 1,
   })
@@ -180,7 +180,7 @@ describe('tag sort values', () => {
       buildFeatureData,
       {
         colorField: 'tags.HP',
-        showSoftClipping: false,
+        showSoftClips: false,
         region,
         perBaseBinBp: 1,
         sortTag,
@@ -252,7 +252,7 @@ describe('an intron that only touches a region edge', () => {
   })
   const skipsIn = (start: number, end: number) =>
     extractFeatureArrays([spliced], buildFeatureData, {
-      showSoftClipping: false,
+      showSoftClips: false,
       region: { refName: 'ctgA', start, end, assemblyName: 'volvox' },
       perBaseBinBp: 1,
     }).gaps.filter(g => g.type === 'skip')
@@ -285,7 +285,7 @@ describe('modification type detection', () => {
   const detected = (features: Feature[], spec?: { field: 'modifications' }) =>
     extractFeatureArrays(features, buildFeatureData, {
       baseLayer: spec && layerForTest(spec),
-      showSoftClipping: false,
+      showSoftClips: false,
       region,
       perBaseBinBp: 1,
     }).detectedModifications
@@ -322,7 +322,7 @@ describe('the SA lookup', () => {
   }
   const saOf = (read: Read) =>
     extractFeatureArrays([read], buildFeatureData, {
-      showSoftClipping: false,
+      showSoftClips: false,
       region,
       perBaseBinBp: 1,
     }).suppAlignments

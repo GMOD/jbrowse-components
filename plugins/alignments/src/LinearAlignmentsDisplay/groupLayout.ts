@@ -143,7 +143,7 @@ export interface GroupLayoutContext {
   rawByGroup: ReadonlyMap<string, ReadonlyMap<number, ChainedPileupData>>
   unit: AlignmentsUnit
   sortColumn: SortColumn | undefined
-  showSoftClipping: boolean
+  showSoftClips: boolean
   layoutOrder: LayoutOrder
   // Region bounds by displayed-region index, so multi-region layout can locate
   // the sort position's region and detect the single-refName case.
@@ -195,7 +195,7 @@ function layoutOneGroup(
     : buildLaidOutPileupMap({
         dataMap,
         sortColumn: ctx.sortColumn,
-        showSoftClipping: ctx.showSoftClipping,
+        showSoftClips: ctx.showSoftClips,
         regions: ctx.regions,
         rowCap: cap,
         layoutOrder: ctx.layoutOrder,
@@ -425,7 +425,7 @@ export function layoutGroupRowCounts(
           : pileupLayoutMaxY({
               dataMap,
               sortColumn: ctx.sortColumn,
-              showSoftClipping: ctx.showSoftClipping,
+              showSoftClips: ctx.showSoftClips,
               regions: ctx.regions,
               rowCap: ceilingCap(maxRows),
               layoutOrder: ctx.layoutOrder,

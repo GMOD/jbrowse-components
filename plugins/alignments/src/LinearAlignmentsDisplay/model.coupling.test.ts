@@ -749,14 +749,14 @@ describe('ordering controls in chain mode', () => {
     display.setUnit('chain')
     const before = JSON.stringify(display.rpcProps())
 
-    display.setShowSoftClipping(true)
-    expect(display.showSoftClipping).toBe(true)
-    expect(display.rpcProps().showSoftClipping).toBe(false)
+    display.setShowSoftClips(true)
+    expect(display.showSoftClips).toBe(true)
+    expect(display.rpcProps().showSoftClips).toBe(false)
     expect(JSON.stringify(display.rpcProps())).toBe(before)
 
     // ...and it is a real fetch input again the moment the mode is left
     display.setUnit('read')
-    expect(display.rpcProps().showSoftClipping).toBe(true)
+    expect(display.rpcProps().showSoftClips).toBe(true)
   })
 })
 
@@ -1694,7 +1694,7 @@ describe('upload tiers: what a settings change does to the laid-out payloads', (
     const before = region0(display)
 
     // Read height is a genuine layout input — it sets how many rows fit.
-    display.setReadHeight(display.configuredReadHeight + 3)
+    display.setMarkHeight(display.markHeight + 3)
 
     expect(region0(display).readYs).not.toBe(before.readYs)
   })

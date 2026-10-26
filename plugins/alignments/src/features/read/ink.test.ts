@@ -34,7 +34,7 @@ const state = {
   scrollTop: 0,
   canvasHeight: 1000,
   qualityOpacity: OPAQUE_MISMATCHES,
-  fadeLowFrequencyMismatches: false,
+  fadeLowFrequency: false,
   showMismatches: true,
   unit: 'read',
   colors: makeTestPalette({

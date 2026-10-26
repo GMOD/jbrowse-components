@@ -19,8 +19,8 @@ function makeModel() {
     setShowSashimi(v: boolean) {
       this.showSashimi = v
     },
-    showSashimiCounts: false,
-    setShowSashimiCounts() {},
+    showSashimiLabels: false,
+    setShowSashimiLabels() {},
     sashimiPlacement: 'auto' as SashimiPlacement,
     setSashimiPlacement(mode: SashimiPlacement) {
       this.sashimiPlacement = mode

@@ -1338,7 +1338,7 @@ export async function alignmentTables(
     'softClips',
     'show',
   ])
-  const showSoftClipping = !chain && softClippingAsked
+  const showSoftClips = !chain && softClippingAsked
   const facetNode = conf.facet
   const facetSetting = facetSettingOf({
     field: readConfObject(facetNode, 'field'),
@@ -1354,7 +1354,7 @@ export async function alignmentTables(
     baseLayer,
     sortTag: chain ? undefined : sortTag,
     facet: workerFacet(facetSetting, unit),
-    showSoftClipping,
+    showSoftClips,
     interbaseIndicators: interbaseIndicatorRuleOf(
       conf.coverage.interbase.filter,
     ),
@@ -1432,7 +1432,7 @@ export async function alignmentTables(
             dataMap: sectionData.get(key)!,
             sortColumn,
             layoutOrder,
-            showSoftClipping,
+            showSoftClips,
             regions: regionBounds,
           }),
         ]),

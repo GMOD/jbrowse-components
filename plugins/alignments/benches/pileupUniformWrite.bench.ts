@@ -220,7 +220,7 @@ interface FrameState {
   featureSpacing: number
   chainMode: boolean
   showStroke: boolean
-  fadeLowFrequencyMismatches: boolean
+  fadeLowFrequency: boolean
   qualityOpacity: QualityOpacity
   dpr: number
 }
@@ -231,7 +231,7 @@ const STATE: FrameState = {
   featureSpacing: 1,
   chainMode: false,
   showStroke: true,
-  fadeLowFrequencyMismatches: true,
+  fadeLowFrequency: true,
   qualityOpacity: OPAQUE_MISMATCHES,
   dpr: 2,
 }
@@ -281,7 +281,7 @@ function pokeFrame(
   f32[F.covOffset] = top
   f32[F.featHeight] = STATE.featureHeight
   f32[F.featSpacing] = STATE.featureSpacing
-  i32[I.fadeLowFrequencyMismatches] = STATE.fadeLowFrequencyMismatches ? 1 : 0
+  i32[I.fadeLowFrequency] = STATE.fadeLowFrequency ? 1 : 0
   f32[F.qualityOpacityZero] = STATE.qualityOpacity.zero
   f32[F.qualityOpacitySlope] = STATE.qualityOpacity.slope
   f32[F.qualityOpacityMin] = STATE.qualityOpacity.min
@@ -349,7 +349,7 @@ function ctrlFrame(
   f32[F.covOffset] = top
   f32[F.featHeight] = STATE.featureHeight
   f32[F.featSpacing] = STATE.featureSpacing
-  i32[I.fadeLowFrequencyMismatches] = STATE.fadeLowFrequencyMismatches ? 1 : 0
+  i32[I.fadeLowFrequency] = STATE.fadeLowFrequency ? 1 : 0
   f32[F.qualityOpacityZero] = STATE.qualityOpacity.zero
   f32[F.qualityOpacitySlope] = STATE.qualityOpacity.slope
   f32[F.qualityOpacityMin] = STATE.qualityOpacity.min
@@ -403,7 +403,7 @@ function totalValues(block: Block, top: number): Uniforms {
     featSpacing: STATE.featureSpacing,
     chainMode: STATE.chainMode ? 1 : 0,
     showStroke: STATE.showStroke ? 1 : 0,
-    fadeLowFrequencyMismatches: STATE.fadeLowFrequencyMismatches ? 1 : 0,
+    fadeLowFrequency: STATE.fadeLowFrequency ? 1 : 0,
     qualityOpacityZero: STATE.qualityOpacity.zero,
     qualityOpacitySlope: STATE.qualityOpacity.slope,
     qualityOpacityMin: STATE.qualityOpacity.min,
@@ -505,7 +505,7 @@ function templateValues(): Uniforms {
     featSpacing: STATE.featureSpacing,
     chainMode: STATE.chainMode ? 1 : 0,
     showStroke: STATE.showStroke ? 1 : 0,
-    fadeLowFrequencyMismatches: STATE.fadeLowFrequencyMismatches ? 1 : 0,
+    fadeLowFrequency: STATE.fadeLowFrequency ? 1 : 0,
     qualityOpacityZero: STATE.qualityOpacity.zero,
     qualityOpacitySlope: STATE.qualityOpacity.slope,
     qualityOpacityMin: STATE.qualityOpacity.min,
@@ -628,7 +628,7 @@ function viewFrame(scratch: ArrayBuffer, block: Block, top: number) {
   f32[F.covOffset] = top
   f32[F.featHeight] = STATE.featureHeight
   f32[F.featSpacing] = STATE.featureSpacing
-  i32[I.fadeLowFrequencyMismatches] = STATE.fadeLowFrequencyMismatches ? 1 : 0
+  i32[I.fadeLowFrequency] = STATE.fadeLowFrequency ? 1 : 0
   f32[F.qualityOpacityZero] = STATE.qualityOpacity.zero
   f32[F.qualityOpacitySlope] = STATE.qualityOpacity.slope
   f32[F.qualityOpacityMin] = STATE.qualityOpacity.min
@@ -733,7 +733,7 @@ function hoistValues(block: Block, top: number): Uniforms {
     featSpacing: STATE.featureSpacing,
     chainMode: STATE.chainMode ? 1 : 0,
     showStroke: STATE.showStroke ? 1 : 0,
-    fadeLowFrequencyMismatches: STATE.fadeLowFrequencyMismatches ? 1 : 0,
+    fadeLowFrequency: STATE.fadeLowFrequency ? 1 : 0,
     qualityOpacityZero: STATE.qualityOpacity.zero,
     qualityOpacitySlope: STATE.qualityOpacity.slope,
     qualityOpacityMin: STATE.qualityOpacity.min,
@@ -821,7 +821,7 @@ function gateFrame(
   f32[F.covOffset] = top
   f32[F.featHeight] = STATE.featureHeight
   f32[F.featSpacing] = STATE.featureSpacing
-  i32[I.fadeLowFrequencyMismatches] = STATE.fadeLowFrequencyMismatches ? 1 : 0
+  i32[I.fadeLowFrequency] = STATE.fadeLowFrequency ? 1 : 0
   f32[F.qualityOpacityZero] = STATE.qualityOpacity.zero
   f32[F.qualityOpacitySlope] = STATE.qualityOpacity.slope
   f32[F.qualityOpacityMin] = STATE.qualityOpacity.min
@@ -841,12 +841,12 @@ const GATE_LAYERS: GateLayer[] = [
   { id: 'linkedReadLine', enabled: s => s.showStroke },
   { id: 'read', enabled: () => true },
   { id: 'overlap', enabled: s => s.showStroke },
-  { id: 'mod', enabled: s => s.fadeLowFrequencyMismatches },
-  { id: 'perBaseQual', enabled: s => s.fadeLowFrequencyMismatches },
+  { id: 'mod', enabled: s => s.fadeLowFrequency },
+  { id: 'perBaseQual', enabled: s => s.fadeLowFrequency },
   { id: 'skip', enabled: () => true },
-  { id: 'deletion', enabled: s => s.fadeLowFrequencyMismatches },
-  { id: 'mismatch', enabled: s => s.fadeLowFrequencyMismatches },
-  { id: 'insertion', enabled: s => s.fadeLowFrequencyMismatches },
+  { id: 'deletion', enabled: s => s.fadeLowFrequency },
+  { id: 'mismatch', enabled: s => s.fadeLowFrequency },
+  { id: 'insertion', enabled: s => s.fadeLowFrequency },
   { id: 'clip', enabled: () => true },
   { id: 'softclipBases', enabled: s => s.showStroke },
   { id: 'perBaseLetter', enabled: s => s.showStroke },
@@ -916,7 +916,7 @@ function preseedFrame(
   f32[F.covOffset] = top
   f32[F.featHeight] = STATE.featureHeight
   f32[F.featSpacing] = STATE.featureSpacing
-  i32[I.fadeLowFrequencyMismatches] = STATE.fadeLowFrequencyMismatches ? 1 : 0
+  i32[I.fadeLowFrequency] = STATE.fadeLowFrequency ? 1 : 0
   f32[F.qualityOpacityZero] = STATE.qualityOpacity.zero
   f32[F.qualityOpacitySlope] = STATE.qualityOpacity.slope
   f32[F.qualityOpacityMin] = STATE.qualityOpacity.min
@@ -973,12 +973,12 @@ const PRESEED_MARKS: MarkArm[] = [
   preseedMark('linkedReadLine', s => s.showStroke),
   preseedMark('read', () => true),
   preseedMark('overlap', s => s.showStroke),
-  preseedMark('mod', s => s.fadeLowFrequencyMismatches),
-  preseedMark('perBaseQual', s => s.fadeLowFrequencyMismatches),
+  preseedMark('mod', s => s.fadeLowFrequency),
+  preseedMark('perBaseQual', s => s.fadeLowFrequency),
   preseedMark('skip', () => true),
-  preseedMark('deletion', s => s.fadeLowFrequencyMismatches),
-  preseedMark('mismatch', s => s.fadeLowFrequencyMismatches),
-  preseedMark('insertion', s => s.fadeLowFrequencyMismatches),
+  preseedMark('deletion', s => s.fadeLowFrequency),
+  preseedMark('mismatch', s => s.fadeLowFrequency),
+  preseedMark('insertion', s => s.fadeLowFrequency),
   preseedMark('clip', () => true),
   preseedMark('softclipBases', s => s.showStroke),
   preseedMark('perBaseLetter', s => s.showStroke),
@@ -1049,7 +1049,7 @@ function planFrame(
   f32[F.covOffset] = top
   f32[F.featHeight] = STATE.featureHeight
   f32[F.featSpacing] = STATE.featureSpacing
-  i32[I.fadeLowFrequencyMismatches] = STATE.fadeLowFrequencyMismatches ? 1 : 0
+  i32[I.fadeLowFrequency] = STATE.fadeLowFrequency ? 1 : 0
   f32[F.qualityOpacityZero] = STATE.qualityOpacity.zero
   f32[F.qualityOpacitySlope] = STATE.qualityOpacity.slope
   f32[F.qualityOpacityMin] = STATE.qualityOpacity.min
@@ -1084,12 +1084,12 @@ const PLAN_MARKS: PlanMark[] = [
   planMark('linkedReadLine', s => s.showStroke),
   planMark('read', undefined),
   planMark('overlap', s => s.showStroke),
-  planMark('mod', s => s.fadeLowFrequencyMismatches),
-  planMark('perBaseQual', s => s.fadeLowFrequencyMismatches),
+  planMark('mod', s => s.fadeLowFrequency),
+  planMark('perBaseQual', s => s.fadeLowFrequency),
   planMark('skip', undefined),
-  planMark('deletion', s => s.fadeLowFrequencyMismatches),
-  planMark('mismatch', s => s.fadeLowFrequencyMismatches),
-  planMark('insertion', s => s.fadeLowFrequencyMismatches),
+  planMark('deletion', s => s.fadeLowFrequency),
+  planMark('mismatch', s => s.fadeLowFrequency),
+  planMark('insertion', s => s.fadeLowFrequency),
   planMark('clip', undefined),
   planMark('softclipBases', s => s.showStroke),
   planMark('perBaseLetter', s => s.showStroke),

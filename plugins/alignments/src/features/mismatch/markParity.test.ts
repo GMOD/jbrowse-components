@@ -43,7 +43,7 @@ function state(): RenderState {
     scrollTop: 0,
     canvasHeight: 500,
     qualityOpacity: OPAQUE_MISMATCHES,
-    fadeLowFrequencyMismatches: true,
+    fadeLowFrequency: true,
     showMismatches: true,
     colors: {
       colorBaseA: rgb(0, 1, 0),

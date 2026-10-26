@@ -111,7 +111,7 @@ test('a pan re-merges nothing and rebuilds no feed', () => {
 // a pan re-projects, and only while they are shown.
 test('with count labels on, a pan re-projects the labels alone', () => {
   const { view, display } = panningDisplay()
-  display.setShowSashimiCounts(true)
+  display.setShowSashimiLabels(true)
   seedJunctions(display)
 
   const feeds = identityCounter<unknown>()
@@ -139,7 +139,7 @@ test('with count labels on, a pan re-projects the labels alone', () => {
 // instead of reconciling a list of empty sections per frame.
 test('a track with no junctions hands the overlay the same empty array', () => {
   const { view, display } = panningDisplay()
-  display.setShowSashimiCounts(true)
+  display.setShowSashimiLabels(true)
   display.setRpcData(
     0,
     {

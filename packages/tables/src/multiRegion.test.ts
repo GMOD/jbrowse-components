@@ -103,7 +103,7 @@ test('a read crossing a seam is listed in both regions under one key, on one row
   const laid = buildLaidOutPileupMap({
     dataMap: new Map(data.map((d, i) => [i, d])),
     sortColumn: undefined,
-    showSoftClipping: false,
+    showSoftClips: false,
     regions: new Map(regions.map((r, i) => [i, r])),
   })
   regions.forEach((_, i) => {

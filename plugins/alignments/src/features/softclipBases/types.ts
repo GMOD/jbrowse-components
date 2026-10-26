@@ -1,6 +1,6 @@
 // Worker → main-thread payload for the soft-clip bases overlay: one entry per
-// clipped base of every read, present only while `showSoftClipping` is on (the
-// worker builds it from `showSoftClipping ? softclips : []`).
+// clipped base of every read, present only while `showSoftClips` is on (the
+// worker builds it from `showSoftClips ? softclips : []`).
 //
 // A subset of `CigarUploadData` by construction — the packer is handed the wide
 // payload and a mark over the narrow one accepts it — stated here so the mark,

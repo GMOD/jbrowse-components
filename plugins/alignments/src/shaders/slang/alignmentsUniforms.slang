@@ -63,7 +63,7 @@ public struct Uniforms {
   public int showStroke;
   // 1 = filter low-freq mismatches/insertions/gaps by coverage depth (default);
   // 0 = show all at full alpha (user has disabled frequency filtering)
-  public int fadeLowFrequencyMismatches;
+  public int fadeLowFrequency;
   // `pileup.mismatches.encoding.opacity` as mismatch.slang's `qualityFade`
   // reads it (`QualityOpacity` in TS).
   public float qualityOpacityZero;
@@ -259,7 +259,7 @@ public float frequencyAlpha(float base, float freq) {
 //
 // Every fading pass must go through this rather than reassembling the gate
 // locally — a hand-rolled copy is how the clip pass silently lost its
-// fadeLowFrequencyMismatches check. `frequencyFade()` in rendererTypes.ts calls
+// fadeLowFrequency check. `frequencyFade()` in rendererTypes.ts calls
 // the generated twin of this, adding the two things that are the CPU side's
 // alone: reading the toggle off the render state, and normalizing the worker's
 // frequency byte.
@@ -275,7 +275,7 @@ public float frequencyFadeGate(float base, float freq, bool fadeLowFrequency) {
 }
 
 public float frequencyFade(float base, float freq, Uniforms u) {
-  return frequencyFadeGate(base, freq, u.fadeLowFrequencyMismatches != 0);
+  return frequencyFadeGate(base, freq, u.fadeLowFrequency != 0);
 }
 
 // How much of an indel marker this zoom has earned, from its own on-screen

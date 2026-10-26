@@ -44,21 +44,21 @@ function presetRow(
   return row as { checked?: boolean; onClick?: () => void } | undefined
 }
 
-describe('alignments showSoftClipping', () => {
+describe('alignments showSoftClips', () => {
   it('is off unless the track config says otherwise', () => {
-    expect(createDisplay().display.showSoftClipping).toBe(false)
+    expect(createDisplay().display.showSoftClips).toBe(false)
     expect(
       createDisplay({ pileup: { softClips: { show: true } } }).display
-        .showSoftClipping,
+        .showSoftClips,
     ).toBe(true)
   })
 
-  it('setShowSoftClipping writes the slot both ways', () => {
+  it('setShowSoftClips writes the slot both ways', () => {
     const { display } = createDisplay({ pileup: { softClips: { show: true } } })
-    display.setShowSoftClipping(false)
-    expect(display.showSoftClipping).toBe(false)
-    display.setShowSoftClipping(true)
-    expect(display.showSoftClipping).toBe(true)
+    display.setShowSoftClips(false)
+    expect(display.showSoftClips).toBe(false)
+    display.setShowSoftClips(true)
+    expect(display.showSoftClips).toBe(true)
   })
 })
 
@@ -104,19 +104,19 @@ describe('alignments fit-to-display-height', () => {
     expect(display.fitHeightToDisplay).toBe(true)
   })
 
-  it('setReadHeight exits fit mode', () => {
+  it('setMarkHeight exits fit mode', () => {
     const { display } = createDisplay()
     display.setHeightMode('fit')
     expect(display.fitHeightToDisplay).toBe(true)
 
-    display.setReadHeight(20)
+    display.setMarkHeight(20)
     expect(display.fitHeightToDisplay).toBe(false)
     expect(display.heightMode).toBe('fixed')
-    expect(display.configuredReadHeight).toBe(20)
+    expect(display.markHeight).toBe(20)
   })
 
   // The "Custom..." height dialog edits the fixed config, so it must seed from
-  // `configuredReadHeight` — the resolved `featureHeight` becomes the
+  // `markHeight` — the resolved `featureHeight` becomes the
   // fractional fit pitch in Compressed mode, which the dialog would then bake.
   it('exposes configured feature size independent of the fit squeeze', () => {
     const { display } = createDisplay()
@@ -128,7 +128,7 @@ describe('alignments fit-to-display-height', () => {
     expect(display.featureSpacing).toBe(1)
 
     // ...but the configured size the dialog edits stays at the config base
-    expect(display.configuredReadHeight).toBe(7)
+    expect(display.markHeight).toBe(7)
   })
 })
 
@@ -188,15 +188,15 @@ describe('alignments pileup.mismatches.encoding.opacity (fade by base quality)',
 describe('alignments sashimi.labels.show (sashimi arc counts)', () => {
   it('is off by default', () => {
     const { display } = createDisplay()
-    expect(display.showSashimiCounts).toBe(false)
+    expect(display.showSashimiLabels).toBe(false)
   })
 
-  it('setShowSashimiCounts writes the slot both ways', () => {
+  it('setShowSashimiLabels writes the slot both ways', () => {
     const { display } = createDisplay({ sashimi: { labels: { show: true } } })
-    display.setShowSashimiCounts(false)
-    expect(display.showSashimiCounts).toBe(false)
-    display.setShowSashimiCounts(true)
-    expect(display.showSashimiCounts).toBe(true)
+    display.setShowSashimiLabels(false)
+    expect(display.showSashimiLabels).toBe(false)
+    display.setShowSashimiLabels(true)
+    expect(display.showSashimiLabels).toBe(true)
   })
 })
 
@@ -258,9 +258,9 @@ describe('alignments grow (auto-height) mode', () => {
     display.setHeightMode('grow')
     expect(display.autoHeight).toBe(true)
 
-    display.setReadHeight(3)
+    display.setMarkHeight(3)
     expect(display.autoHeight).toBe(true)
-    expect(display.configuredReadHeight).toBe(3)
+    expect(display.markHeight).toBe(3)
   })
 })
 

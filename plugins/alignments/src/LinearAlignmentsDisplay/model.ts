@@ -649,13 +649,13 @@ export default function stateModelFactory(
           /**
            * #getter
            * The read body height: the fitted pitch minus `featureSpacing` in
-           * fit mode, else `configuredReadHeight`, which is what editors
+           * fit mode, else `markHeight`, which is what editors
            * that write the size read.
            */
           get featureHeight(): number {
             return this.isFitting
               ? self.fittedHeightPx - this.featureSpacing
-              : self.configuredReadHeight
+              : self.markHeight
           },
 
           /**
@@ -666,7 +666,7 @@ export default function stateModelFactory(
            */
           get featureSpacing(): number {
             return featureSpacingForHeight(
-              this.isFitting ? self.fittedHeightPx : self.configuredReadHeight,
+              this.isFitting ? self.fittedHeightPx : self.markHeight,
             )
           },
 
@@ -1402,7 +1402,7 @@ export default function stateModelFactory(
               rawByGroup: this.chainedByGroup,
               unit: self.unit,
               sortColumn: this.sortColumn,
-              showSoftClipping: self.showSoftClipping,
+              showSoftClips: self.showSoftClips,
               layoutOrder: self.layoutOrder,
               regions: self.loadedRegions,
               collapseSections: this.collapseSections,
@@ -2562,10 +2562,10 @@ export default function stateModelFactory(
             showCoverageAlleles: self.showCoverageAlleles,
             sashimiHeight: self.bandHeights.sashimiHeight,
             showMismatches: self.showMismatches,
-            fadeLowFrequencyMismatches: self.fadeLowFrequency,
+            fadeLowFrequency: self.fadeLowFrequency,
             qualityOpacity: self.mismatchQualityOpacity,
-            showSoftClipping: self.showSoftClipping,
-            showInterbaseIndicators: self.showInterbaseIndicators,
+            showSoftClips: self.showSoftClips,
+            showInterbase: self.showInterbase,
             showModifications: self.showModifications,
             showPerBaseQuality: self.showPerBaseQuality,
             showPerBaseLetter: self.showPerBaseLetter,
@@ -2614,7 +2614,7 @@ export default function stateModelFactory(
          * observer stops.
          */
         get sashimiLabels(): readonly SashimiLabel[] {
-          return self.showSashimiCounts && self.drawsSashimi
+          return self.showSashimiLabels && self.drawsSashimi
             ? sashimiLabels(
                 this.renderState,
                 self.themed.sourceSections.map(sec => sec.sashimiFeeds),
@@ -2860,8 +2860,7 @@ export default function stateModelFactory(
             // there.
             sortTag: self.unit === 'chain' ? undefined : self.sortTag,
             facet: workerFacet(self.effectiveFacet, self.unit),
-            showSoftClipping:
-              self.unit === 'chain' ? false : self.showSoftClipping,
+            showSoftClips: self.unit === 'chain' ? false : self.showSoftClips,
             // The worker skips the whole coverage-band pipeline, including the
             // per-bp GPU depth buffer that overflows the device limit at
             // chromosome scale, when the band is off.
@@ -3257,7 +3256,7 @@ export default function stateModelFactory(
            * Fit derives the size, so a chosen size would be dormant: picking
            * one drops back to fixed.
            */
-          setReadHeight(height?: number) {
+          setMarkHeight(height?: number) {
             if (self.fitHeightToDisplay) {
               self.setHeightMode('fixed')
             }

@@ -57,7 +57,7 @@ const scrolled: Partial<RenderState> = {
   featureSpacing: 2,
   pileupTopOffset: 3,
   scrollTop: 5,
-  fadeLowFrequencyMismatches: true,
+  fadeLowFrequency: true,
   unit: 'chain',
   collapseSections: false,
 }
@@ -67,7 +67,7 @@ const compact: Partial<RenderState> = {
   featureSpacing: 0,
   pileupTopOffset: 0,
   scrollTop: 0,
-  fadeLowFrequencyMismatches: false,
+  fadeLowFrequency: false,
   unit: 'read',
   collapseSections: true,
 }
@@ -78,7 +78,7 @@ function renderState(overrides: Partial<RenderState>) {
     canvasHeight: 62,
     qualityOpacity: OPAQUE_MISMATCHES,
     showMismatches: true,
-    showSoftClipping: true,
+    showSoftClips: true,
     showModifications: true,
     showPerBaseQuality: true,
     showPerBaseLetter: true,
@@ -208,7 +208,7 @@ function gapCase(
           passesFrequencyGate(
             length > 0 ? bpPerPx / length : bpPerPx,
             r.gapFrequencies[i]!,
-            state.fadeLowFrequencyMismatches,
+            state.fadeLowFrequency,
           ))
       )
     },
@@ -251,7 +251,7 @@ function mismatchCase(
       passesFrequencyGate(
         bpPerPxOf(block),
         r.mismatchFrequencies[i]!,
-        state.fadeLowFrequencyMismatches,
+        state.fadeLowFrequency,
       ),
   }
 }
@@ -443,7 +443,7 @@ function insertions(scale: number): Case<InterbaseUploadData> {
           passesFrequencyGate(
             bpPerPx,
             r.interbaseFrequencies[i]!,
-            state.fadeLowFrequencyMismatches,
+            state.fadeLowFrequency,
           ))
       )
     },
@@ -472,7 +472,7 @@ function clips(scale: number): Case<InterbaseUploadData> {
         passesFrequencyGate(
           bpPerPx,
           r.interbaseFrequencies[i]!,
-          state.fadeLowFrequencyMismatches,
+          state.fadeLowFrequency,
         )
       )
     },

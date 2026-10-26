@@ -41,5 +41,5 @@ out on purpose: `isChainData` narrows on them.
   paths: it applies only when every laid-out region is on its refName.
 - **`partitionBySort` is not a span test.** A right-edge clip sits at the read's
   exclusive end, so `end > sortPos` alone drops the reads the sort is about.
-- `showSoftClipping` belongs in `rpcProps`: the worker gates per-base extraction
-  on it.
+- `showSoftClips` belongs in `rpcProps`: the worker gates per-base extraction on
+  it.

@@ -38,17 +38,17 @@ export interface RenderState {
   // Allele-fraction floor for the band's colored segments: a segment whose
   // share of its position's depth is below this is not drawn, and the grey
   // depth bar shows through where it would have been. 0 colors every
-  // mismatch. Nothing to do with `fadeLowFrequencyMismatches`, which is the
+  // mismatch. Nothing to do with `fadeLowFrequency`, which is the
   // PILEUP's depth-dependent fade.
   coverageMinAlleleFraction: number
   // Whether the band colors allele segments at all; off, every bar is grey.
   showCoverageAlleles: boolean
   sashimiHeight: number
   showMismatches: boolean
-  fadeLowFrequencyMismatches: boolean
+  fadeLowFrequency: boolean
   qualityOpacity: QualityOpacity
-  showSoftClipping: boolean
-  showInterbaseIndicators: boolean
+  showSoftClips: boolean
+  showInterbase: boolean
   showModifications: boolean
   showPerBaseQuality: boolean
   showPerBaseLetter: boolean
@@ -305,11 +305,7 @@ export function frequencyFade(
   base: number,
   frequencyByte: number,
 ) {
-  return frequencyFadeGate(
-    base,
-    frequencyByte / 255,
-    state.fadeLowFrequencyMismatches,
-  )
+  return frequencyFadeGate(base, frequencyByte / 255, state.fadeLowFrequency)
 }
 
 // Width (CSS px) of one 1bp pileup cell for the Canvas2D "colored rect per base"

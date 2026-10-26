@@ -45,7 +45,7 @@ import type { ModificationType } from '@jbrowse/modifications-utils'
 interface ExtractOpts {
   colorField?: string
   baseLayer?: BaseLayer
-  showSoftClipping: boolean
+  showSoftClips: boolean
   region: Region
   sortTag?: string
   // Genomic bp one per-base cell stands for (`subPixelBinBp`, resolved on the
@@ -76,7 +76,7 @@ export function extractFeatureArrays<T extends FeatureData>(
   const {
     colorField,
     baseLayer,
-    showSoftClipping,
+    showSoftClips,
     region,
     sortTag,
     perBaseBinBp,
@@ -235,7 +235,7 @@ export function extractFeatureArrays<T extends FeatureData>(
         featureStart,
         strand,
         cigarOutput,
-        showSoftClipping,
+        showSoftClips,
         region.start - 1,
         region.end + 1,
       )
@@ -247,7 +247,7 @@ export function extractFeatureArrays<T extends FeatureData>(
         featureStart,
         strand,
         cigarOutput,
-        showSoftClipping,
+        showSoftClips,
         region.start - 1,
         region.end + 1,
       )

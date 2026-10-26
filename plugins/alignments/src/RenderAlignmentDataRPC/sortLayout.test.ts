@@ -1425,7 +1425,7 @@ describe('computeMultiRegionLayout', () => {
         [1, exon2()],
       ],
       regions,
-      showSoftClipping: true,
+      showSoftClips: true,
     })
     expect(off.rowMap.get('b0')).toBe(off.rowMap.get('b1'))
     expect(on.rowMap.get('b0')).not.toBe(on.rowMap.get('b1'))
@@ -1709,7 +1709,7 @@ describe('the pileup sort is gated on refName in the single-region path too', ()
         pos: 50,
         refName: sortRefName,
       },
-      showSoftClipping: false,
+      showSoftClips: false,
       regions: new Map([[0, { refName: regionRefName, start: 0, end: 100 }]]),
     })
     return [...out.get(0)!.readYs]
@@ -1734,7 +1734,7 @@ describe('the pileup sort is gated on refName in the single-region path too', ()
         pos: 50,
         refName: 'chr1',
       },
-      showSoftClipping: false,
+      showSoftClips: false,
     })
     expect([...out.get(0)!.readYs]).toEqual([2, 0, 1])
   })

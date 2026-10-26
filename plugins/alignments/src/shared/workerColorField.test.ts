@@ -54,7 +54,7 @@ const buildFeatureData = (f: Feature): FeatureData => ({
 function extracted(field: string | undefined) {
   const out = extractFeatureArrays([makeFeature()], buildFeatureData, {
     ...splitFieldForTest(field),
-    showSoftClipping: false,
+    showSoftClips: false,
     region,
     perBaseBinBp: 1,
     // lowercased: extractBisulfite compares read bases against a lowercase ref

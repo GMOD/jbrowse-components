@@ -106,7 +106,7 @@ const OPTS: HitTestOptions = {
     featureHeight: 10,
     featureSpacing: 2,
     showMismatches: true,
-    showSoftClipping: true,
+    showSoftClips: true,
     // 0 = the coverage band is off, so the row tests own every y
     coverageHeight: 0,
   }),

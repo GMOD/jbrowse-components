@@ -38,7 +38,7 @@ function overlappingReadsContext(): GroupLayoutContext {
     ]),
     unit: 'read',
     sortColumn: undefined,
-    showSoftClipping: false,
+    showSoftClips: false,
     layoutOrder: 'position' as const,
     regions: new Map([[0, { refName: 'ctgA', start: 0, end: 1000 }]]),
     collapseSections: false,

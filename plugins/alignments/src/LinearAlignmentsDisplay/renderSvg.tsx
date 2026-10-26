@@ -66,7 +66,7 @@ function AlignmentsSvgBody({
   const state = { ...model.renderState, canvasWidth, colors: themed.colors }
   const labels = model.visibleLabels
   const sections = themed.sourceSections
-  const sashimiCounts = model.showSashimiCounts
+  const sashimiCounts = model.showSashimiLabels
     ? sashimiLabels(
         state,
         sections.map(sec => sec.sashimiFeeds),

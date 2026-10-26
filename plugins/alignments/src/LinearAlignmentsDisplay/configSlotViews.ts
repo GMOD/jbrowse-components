@@ -201,7 +201,7 @@ export function configSlotViews(self: ConfigSlotSelf) {
       return getConf(self, ['coverage', 'height'])
     },
     /** #getter */
-    get showInterbaseIndicators(): boolean {
+    get showInterbase(): boolean {
       return getConf(self, ['coverage', 'interbase', 'show'])
     },
     /**
@@ -235,7 +235,7 @@ export function configSlotViews(self: ConfigSlotSelf) {
      * from it, not the fractional fit pitch `featureHeight` resolves to in fit
      * mode, or opening the dialog while compressed would bake the squeeze.
      */
-    get configuredReadHeight(): number {
+    get markHeight(): number {
       return getConf(self, ['pileup', 'mark', 'height'])
     },
     /** #getter */
@@ -247,7 +247,7 @@ export function configSlotViews(self: ConfigSlotSelf) {
       return getConf(self, ['pileup', 'mismatches', 'show'])
     },
     /** #getter */
-    get showSoftClipping(): boolean {
+    get showSoftClips(): boolean {
       return getConf(self, ['pileup', 'softClips', 'show'])
     },
     /** #getter */
@@ -354,7 +354,7 @@ export function configSlotViews(self: ConfigSlotSelf) {
       return this.showCoverage ? this.sashimiPlacement : 'down'
     },
     /** #getter */
-    get showSashimiCounts(): boolean {
+    get showSashimiLabels(): boolean {
       const conf = readsConfOf(self.configuration)
       return conf ? readConfObject(conf, ['sashimi', 'labels', 'show']) : false
     },
@@ -432,7 +432,7 @@ export function configSlotViews(self: ConfigSlotSelf) {
      * The width a one-read connection strokes at, which the Line width menu
      * shows.
      */
-    get readConnectionsLineWidth(): number {
+    get readConnectionsStrokeWidth(): number {
       return this.readConnectionsStrokeScale.range[0]
     },
     /**
@@ -661,7 +661,7 @@ export function configSlotActions(self: ConfigSlotSelf) {
     /**
      * #action
      */
-    setShowInterbaseIndicators(show: boolean) {
+    setShowInterbase(show: boolean) {
       setConf(self, ['coverage', 'interbase', 'show'], show)
     },
 
@@ -701,7 +701,7 @@ export function configSlotActions(self: ConfigSlotSelf) {
     /**
      * #action
      */
-    setShowSoftClipping(value: boolean) {
+    setShowSoftClips(value: boolean) {
       setConf(self, ['pileup', 'softClips', 'show'], value)
     },
 
@@ -746,7 +746,7 @@ export function configSlotActions(self: ConfigSlotSelf) {
     /**
      * #action
      */
-    setShowSashimiCounts(show: boolean) {
+    setShowSashimiLabels(show: boolean) {
       setConf(requireReadsConf(self), ['sashimi', 'labels', 'show'], show)
     },
 
@@ -785,7 +785,7 @@ export function configSlotActions(self: ConfigSlotSelf) {
      * scale type and range ratio, or a constant width; undefined returns to
      * the default 1 px.
      */
-    setReadConnectionsLineWidth(width?: number) {
+    setReadConnectionsStrokeWidth(width?: number) {
       setConf(
         self,
         ['readConnections', 'encoding', 'strokeWidth'],

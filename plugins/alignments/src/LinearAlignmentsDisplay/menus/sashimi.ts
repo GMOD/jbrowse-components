@@ -18,8 +18,8 @@ const SASHIMI_PLACEMENT_OPTIONS: { value: SashimiPlacement; label: string }[] =
 export interface SashimiModel {
   showSashimi: boolean
   setShowSashimi: (show: boolean) => void
-  showSashimiCounts: boolean
-  setShowSashimiCounts: (show: boolean) => void
+  showSashimiLabels: boolean
+  setShowSashimiLabels: (show: boolean) => void
 }
 
 interface SashimiPlacementModel {
@@ -68,8 +68,8 @@ export function sashimiShowItems(model: SashimiModel): MenuItem[] {
     }),
     ...(model.showSashimi
       ? [
-          toggleItem('Sashimi read counts', model.showSashimiCounts, show => {
-            model.setShowSashimiCounts(show)
+          toggleItem('Sashimi read counts', model.showSashimiLabels, show => {
+            model.setShowSashimiLabels(show)
           }),
         ]
       : []),

@@ -24,8 +24,8 @@ import type { SoftclipBasesUploadData } from './types.ts'
 // two neutral values. Hittable at every zoom with no significance gate: nothing
 // fades these, so there is no faded mark to hand back to the read underneath.
 //
-// `softclipBasePositions` is empty unless `showSoftClipping` is on (the worker
-// builds it from `showSoftClipping ? softclips : []`), so the gate here is the
+// `softclipBasePositions` is empty unless `showSoftClips` is on (the worker
+// builds it from `showSoftClips ? softclips : []`), so the gate here is the
 // same setting stated at the draw.
 export const SOFTCLIP_BASES_MARK = defineMark({
   shape: pileupShape({
@@ -54,5 +54,5 @@ export const SOFTCLIP_BASES_MARK = defineMark({
       keys: data.softclipBaseBases,
     }),
   params: (state: RenderState) => state,
-  enabled: s => s.showSoftClipping,
+  enabled: s => s.showSoftClips,
 })

@@ -55,7 +55,7 @@ interface GroupContext {
   // alignments-core/src/readIdentity.ts.
   readIdPrefix: string | undefined
   region: Region
-  showSoftClipping: boolean
+  showSoftClips: boolean
   showCoverage: boolean
   interbaseIndicators: InterbaseIndicatorRule | undefined
   junctions: boolean
@@ -123,7 +123,7 @@ async function buildGroupResult(
   const {
     readIdPrefix,
     region,
-    showSoftClipping,
+    showSoftClips,
     showCoverage,
     interbaseIndicators,
     junctions,
@@ -164,7 +164,7 @@ async function buildGroupResult(
     modifications,
     perBaseQualities,
     perBaseLetters,
-    showSoftClipping,
+    showSoftClips,
     statusCallback,
   })
 
@@ -281,7 +281,7 @@ export async function executeRenderAlignmentData({
     sortTag,
     facet,
     lodTier,
-    showSoftClipping = false,
+    showSoftClips = false,
     showCoverage = true,
     interbaseIndicators,
     junctions = true,
@@ -354,7 +354,7 @@ export async function executeRenderAlignmentData({
     jexl: pluginManager.jexl,
     colorField,
     baseLayer,
-    showSoftClipping,
+    showSoftClips,
     region,
     sortTag,
     perBaseBinBp,
@@ -441,7 +441,7 @@ export async function executeRenderAlignmentData({
   const ctx: GroupContext = {
     readIdPrefix,
     region,
-    showSoftClipping,
+    showSoftClips,
     showCoverage,
     interbaseIndicators,
     junctions,

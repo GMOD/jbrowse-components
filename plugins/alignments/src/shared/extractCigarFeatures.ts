@@ -124,7 +124,7 @@ function makeCigarEmitter(
   featureStart: number,
   strand: number,
   output: CigarEmitOutput,
-  showSoftClipping: boolean,
+  showSoftClips: boolean,
 ): MismatchCallback {
   // Resolved once per read, and only if a skip actually turns up: it costs two
   // `feature.get()` calls, and most reads have no skip at all. Hoisted out of
@@ -132,7 +132,7 @@ function makeCigarEmitter(
   // getEffectiveStrand.
   let skipStrand: number | undefined
   let seq: string | undefined
-  let seqResolved = !showSoftClipping
+  let seqResolved = !showSoftClips
   return (type, start, length, base, qual, _altbase, cliplen) => {
     if (type === MISMATCH_TYPE) {
       emitMismatch(
@@ -202,7 +202,7 @@ export function extractCigarFeatures(
   featureStart: number,
   strand: number,
   output: CigarEmitOutput,
-  showSoftClipping: boolean,
+  showSoftClips: boolean,
   windowStart?: number,
   windowEnd?: number,
 ) {
@@ -218,7 +218,7 @@ export function extractCigarFeatures(
       featureStart,
       strand,
       output,
-      showSoftClipping,
+      showSoftClips,
     ),
     WINDOW,
   )
@@ -243,7 +243,7 @@ export function extractCigarFeaturesFromString(
   featureStart: number,
   strand: number,
   output: CigarEmitOutput,
-  showSoftClipping: boolean,
+  showSoftClips: boolean,
   windowStart?: number,
   windowEnd?: number,
 ) {
@@ -266,7 +266,7 @@ export function extractCigarFeaturesFromString(
       featureStart,
       strand,
       output,
-      showSoftClipping,
+      showSoftClips,
     ),
   )
 }

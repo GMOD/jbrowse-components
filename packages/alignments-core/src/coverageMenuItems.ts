@@ -93,14 +93,14 @@ export function getCoverageMenuItems(model: CoverageMenuModel): MenuItem[] {
  */
 export function interbaseIndicatorsMenuItem(model: {
   showCoverage: boolean
-  showInterbaseIndicators: boolean
-  setShowInterbaseIndicators: (show: boolean) => void
+  showInterbase: boolean
+  setShowInterbase: (show: boolean) => void
 }): MenuItem {
   return toggleItem(
     'Insertion and clip markers',
-    model.showInterbaseIndicators,
+    model.showInterbase,
     show => {
-      model.setShowInterbaseIndicators(show)
+      model.setShowInterbase(show)
     },
     {
       disabled: !model.showCoverage,

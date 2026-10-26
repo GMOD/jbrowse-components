@@ -67,7 +67,7 @@ function state(fadeLowFrequency = true): RenderState {
     featureHeight: FEATURE_HEIGHT,
     featureSpacing: 0,
     canvasHeight: 1000,
-    fadeLowFrequencyMismatches: fadeLowFrequency,
+    fadeLowFrequency,
     qualityOpacity: OPAQUE_MISMATCHES,
     pileupTopOffset: 0,
     colors: {

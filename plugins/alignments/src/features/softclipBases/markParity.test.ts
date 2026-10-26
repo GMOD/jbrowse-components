@@ -32,7 +32,7 @@ const CELLS: SoftclipBasesUploadData = {
 const READ_OF = ['read-a', 'read-a', 'read-a', 'read-b']
 
 const STATE = makeTestRenderState({
-  showSoftClipping: true,
+  showSoftClips: true,
   featureHeight: FEATURE_HEIGHT,
   featureSpacing: 0,
   canvasHeight: 500,

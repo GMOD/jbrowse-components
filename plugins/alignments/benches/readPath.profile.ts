@@ -82,7 +82,7 @@ const readIdPrefix = ''
 const buildFeatureData = (f: any) => buildBaseFeatureData(f, readIdPrefix)
 const extractOpts = {
   colorBy: undefined,
-  showSoftClipping: false,
+  showSoftClips: false,
   region: { refName: REFNAME, start: START, end: END, assemblyName: 'volvox' },
   sortTag: undefined,
   regionSequence,

@@ -50,7 +50,7 @@ export type CoverageLayerId =
  * to catch rather than a compile error.
  *
  * What stays per display is the GATING, which genuinely differs: MAF has no
- * `showInterbaseIndicators` setting and no modification data at all.
+ * `showInterbase` setting and no modification data at all.
  */
 export const COVERAGE_BAND_LAYER_ORDER: readonly CoverageLayerId[] = [
   'coverage',

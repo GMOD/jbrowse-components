@@ -614,14 +614,12 @@ function partitionStartSorted(
  */
 export function computeLayout(
   data: WorkerPileupData,
-  showSoftClipping?: boolean,
+  showSoftClips?: boolean,
   maxRows = Number.POSITIVE_INFINITY,
   layoutOrder: LayoutOrder = 'position',
 ) {
   const numReads = data.readKeys.length
-  const expansions = showSoftClipping
-    ? buildSoftclipExpansions(data)
-    : undefined
+  const expansions = showSoftClips ? buildSoftclipExpansions(data) : undefined
 
   const readYs = new Uint16Array(numReads)
 
@@ -631,7 +629,7 @@ export function computeLayout(
   // largest-first can't (its order isn't start-sorted). Extents are precomputed
   // only when an ordering (or the row-scan below) will read them — the plain
   // start-monotone fast path reads readPositions directly and needs none.
-  const needsExtents = layoutOrder === 'length' || showSoftClipping
+  const needsExtents = layoutOrder === 'length' || showSoftClips
   const ext = needsExtents
     ? buildReadExtents(data, expansions, numReads)
     : undefined
@@ -645,7 +643,7 @@ export function computeLayout(
     ? buildLiftedFirstOrder(data, numReads, lifted)
     : layoutOrder === 'length'
       ? buildLargeFirstOrder(data, ext!, numReads)
-      : showSoftClipping
+      : showSoftClips
         ? buildSoftclipOrder(data, ext!, numReads)
         : buildCanonicalOrder(data, numReads)
 
@@ -683,14 +681,12 @@ export function computeLayout(
 export function computeSortedLayout(
   data: WorkerPileupData,
   sortColumn: SortColumn,
-  showSoftClipping?: boolean,
+  showSoftClips?: boolean,
   maxRows = Number.POSITIVE_INFINITY,
 ) {
   const { readPositions } = data
   const numReads = data.readKeys.length
-  const expansions = showSoftClipping
-    ? buildSoftclipExpansions(data)
-    : undefined
+  const expansions = showSoftClips ? buildSoftclipExpansions(data) : undefined
 
   const { ranked: overlapping, rest: nonOverlapping } = partitionBySort(
     data,
@@ -862,7 +858,7 @@ function segmentExtentsByRefName(extents: Map<ReadKey, ReadExtent>) {
  * region boundaries by featureId. Returns rowMap<featureId, row> for
  * distributing rows back to each region's readYs array.
  *
- * `showSoftClipping` expands each read's extent by its soft clips (unioned
+ * `showSoftClips` expands each read's extent by its soft clips (unioned
  * across the regions it appears in). `sortColumn` applies the localized sort at
  * `sortColumn.pos` — but only when every region shares one refName (the
  * collapse-introns case), where reads live on a single coordinate axis so the
@@ -873,14 +869,14 @@ export function computeMultiRegionLayout({
   entries,
   regions,
   sortColumn,
-  showSoftClipping,
+  showSoftClips,
   maxRows = Number.POSITIVE_INFINITY,
   layoutOrder = 'position',
 }: {
   entries: [number, WorkerPileupData][]
   regions?: ReadonlyMap<number, RegionBounds>
   sortColumn?: SortColumn
-  showSoftClipping?: boolean
+  showSoftClips?: boolean
   maxRows?: number
   layoutOrder?: LayoutOrder
 }) {
@@ -895,7 +891,7 @@ export function computeMultiRegionLayout({
   const liftedTierById = new Map<ReadKey, number>()
   for (const [idx, data] of entries) {
     const numReads = data.readKeys.length
-    const exp = showSoftClipping ? buildSoftclipExpansions(data) : undefined
+    const exp = showSoftClips ? buildSoftclipExpansions(data) : undefined
     const ext = buildReadExtents(data, exp, numReads)
     const refName = regions?.get(idx)?.refName
     const lifted = liftedTiers(layoutOrder, data, numReads)
@@ -1083,7 +1079,7 @@ export function withoutLayout(data: WorkerPileupData): LaidOutPileupData {
 export interface PileupLayoutArgs {
   dataMap: ReadonlyMap<number, WorkerPileupData>
   sortColumn: SortColumn | undefined
-  showSoftClipping: boolean | undefined
+  showSoftClips: boolean | undefined
   regions?: ReadonlyMap<number, RegionBounds>
   // The cap AND which policy set it, so a clipped region can record what clipped
   // it. Defaults to no cap at all.
@@ -1101,7 +1097,7 @@ function computePileupRowLayout(
   {
     dataMap,
     sortColumn,
-    showSoftClipping,
+    showSoftClips,
     regions,
     rowCap = UNCAPPED,
     layoutOrder,
@@ -1135,8 +1131,8 @@ function computePileupRowLayout(
     const [idx, data] = withReads[0]!
     const activeSort = sortForRegions(sortColumn, [idx], regions)
     const { readYs, maxY, truncated } = activeSort
-      ? computeSortedLayout(data, activeSort, showSoftClipping, maxRows)
-      : computeLayout(data, showSoftClipping, maxRows, layoutOrder)
+      ? computeSortedLayout(data, activeSort, showSoftClips, maxRows)
+      : computeLayout(data, showSoftClips, maxRows, layoutOrder)
     return {
       empties,
       laid: countOnly ? [] : [{ idx, data, readYs }],
@@ -1148,7 +1144,7 @@ function computePileupRowLayout(
     entries: withReads,
     regions,
     sortColumn,
-    showSoftClipping,
+    showSoftClips,
     maxRows,
     layoutOrder,
   })
@@ -1170,7 +1166,7 @@ function computePileupRowLayout(
  * input, each carrying the Y arrays and `maxY` this pass derived.
  *
  * Intended to be called from a MobX-cached getter so layout recomputes only
- * when `rpcDataMap`, `sortColumn`, or `showSoftClipping` change.
+ * when `rpcDataMap`, `sortColumn`, or `showSoftClips` change.
  */
 export function buildLaidOutPileupMap(
   args: PileupLayoutArgs,

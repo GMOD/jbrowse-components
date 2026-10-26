@@ -519,7 +519,7 @@ function pileupState(): RenderState {
     canvasWidth: FRAME.canvasWidth,
     canvasHeight: FRAME.canvasHeight,
     qualityOpacity: OPAQUE_MISMATCHES,
-    fadeLowFrequencyMismatches: true,
+    fadeLowFrequency: true,
     chainMode: true,
     showMismatches: true,
     showModifications: false,

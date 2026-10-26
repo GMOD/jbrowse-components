@@ -101,7 +101,7 @@ function paintedFills(fadeByQuality: boolean, fadeLowFrequency: boolean) {
     makeTestRenderState({
       showPerBaseLetter: true,
       qualityOpacity: qualityOpacityOf(fadeByQuality),
-      fadeLowFrequencyMismatches: fadeLowFrequency,
+      fadeLowFrequency,
     }),
   )
   return fills
