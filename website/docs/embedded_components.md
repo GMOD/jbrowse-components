@@ -99,6 +99,9 @@ const state = createViewState({
   `createLinearGenomeView` takes the same name as its `assembly`. The circular
   view takes a list, `jbrowseHub: ['hg38', 'mm39']`, for two genomes on one
   circle.
+- **`assemblies: [...]`** in place of `assembly` loads several genomes into the
+  linear view, for a track that spans them, such as a multi-way synteny track.
+  The view opens on `view.assembly`, else the first.
 - **`localFiles`**, a `name -> bytes` map, serves a host whose data is in a
   process, not at a URL: a notebook kernel, an R session, anywhere with no web
   server and no CORS. `tracks` then refers to a registered name as if it were a
@@ -127,12 +130,17 @@ these draw it:
 
 - **`EmbedProvider`** wraps the page. It mounts `DisplayUIProvider` (the plain,
   Material-free overlays a track draws while it loads or fails), the theme
-  palette and `Notifications`.
+  palette and `Notifications`. `overlays` replaces part of the plain set, and
+  `chrome="material"` keeps JBrowse's own Material UI chrome.
 - **`EngineBoundary`** wraps the component that calls `useCreateViewState` and
   draws a build that throws, such as a hub genome that does not exist.
 - **`TrackStack`** draws a view's tracks and handles pan and zoom. `Track`,
-  `Scalebar`, `LocationBox`, `Legend`, `ResizeHandle` and the rest are the
-  pieces to place beside it.
+  `Scalebar`, `Gridlines`, `LocationBox`, `Legend`, `ResizeHandle` and the rest
+  are the pieces to place beside it.
+- **The view's own methods** serve controls you draw: `view.search(query)`
+  returns a name search's hits as rows with a `pick`, `view.showFiles(files)`
+  opens a file picker's selection as tracks, and `view.setHighlights([...])`
+  takes highlights written as a session's `highlight` writes them.
 
 Install them as direct dependencies. Under pnpm a package your code imports must
 be in your own `package.json`, and `mobx-react` is needed to write an `observer`
