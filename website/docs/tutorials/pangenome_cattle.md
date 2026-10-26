@@ -164,9 +164,6 @@ table's `lineage` column through `domain` to `range`. The config also sets:
   writes each breed beside its row
 - `unit: "haplotype"` draws one row per assembly, each being one haplotype, with
   a second alternate allele in a separate color
-- `variants` draws each call once in a band above the rows, across the reference
-  span it replaces, labelled with its VCF ID (the graph nodes that bound it) and
-  the allele change
 
 ```json addtrack loc=chr23:27,508,000-27,536,000
 {
@@ -185,7 +182,6 @@ table's `lineage` column through `domain` to `range`. The config also sets:
     {
       "type": "LinearMultiSampleVariantDisplay",
       "unit": "haplotype",
-      "variants": { "show": true },
       "rows": {
         "sort": [
           "ANG",
