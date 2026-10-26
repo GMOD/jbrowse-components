@@ -301,7 +301,7 @@ it:
 }
 ```
 
-The hg38 row carries UCSC's RefSeq genes:
+On the hg38 row, the figures draw UCSC's RefSeq genes:
 
 ```json addtrack
 {

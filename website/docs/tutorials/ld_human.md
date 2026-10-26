@@ -223,8 +223,9 @@ among the many around them:
 }
 ```
 
-The same Fst run over 40 Mb of chr2, from
-[`build_lct_fst_scan.sh`](#reproduce-it-end-to-end), loads the same way:
+Running the Fst step over 40 Mb of chr2, as
+[`build_lct_fst_scan.sh`](#reproduce-it-end-to-end) does, gives a wide scan that
+loads the same way:
 
 ```json addtrack
 {
