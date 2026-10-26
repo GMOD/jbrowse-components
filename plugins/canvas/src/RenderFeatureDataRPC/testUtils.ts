@@ -57,7 +57,6 @@ export function mockDisplayConfig({
     mouseover: `jexl:get(feature,'name')||get(feature,'id')`,
     filter: [],
     // the `maybeColor` slots default to unset, as a real config does
-    connectorColor: undefined,
     utrColor: undefined,
     labels: {
       name: '',

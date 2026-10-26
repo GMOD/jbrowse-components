@@ -146,7 +146,7 @@ it as MAF's `maxRowsHeight` does, so its rows stay legible.
 
 Every `rpcProps()` field is an RPC cache key, so a change fires
 `SettingsInvalidate` and every visible region refetches.
-`encoding.color.value`, `utrColor` and `connectorColor` are per-feature jexl
+`encoding.color.value` and `utrColor` are per-feature jexl
 callbacks only the worker can evaluate, so editing one re-downloads and
 re-parses every region. Theme
 colors leave as color classes and the color scale resolves on the main thread

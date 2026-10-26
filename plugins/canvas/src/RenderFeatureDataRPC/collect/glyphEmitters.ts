@@ -32,7 +32,7 @@ import {
   isRetrotransposonBody,
   matureProteinColor,
   repeatSubpartColor,
-  strokeColor,
+  THEMED_STROKE,
 } from './glyphColors.ts'
 import { aminoAcidsByFeature, aminoAcidsInSpans } from './peptideMapping.ts'
 
@@ -142,7 +142,7 @@ function processTranscriptLayout(
     labelRowsAbove,
   } = place
   const transcriptFeature = transcript.feature
-  const stroke = strokeColor(transcriptFeature, ctx)
+  const stroke = THEMED_STROKE
 
   emitIntronLines(
     {
@@ -339,7 +339,7 @@ function processMatureProteinLayout(
       feature: layout.feature,
       topPx: baseTopPx,
       height: layout.height,
-      stroke: strokeColor(layout.feature, ctx),
+      stroke: THEMED_STROKE,
       flatbushIdx,
       labelRowsAbove: place.labelRowsAbove,
     },
@@ -357,7 +357,7 @@ function processRepeatRegionLayout(
 ) {
   const { baseTopPx, flatbushIdx, labelRowsAbove } = place
   const { feature } = layout
-  const stroke = strokeColor(feature, ctx)
+  const stroke = THEMED_STROKE
   collector.lines.push({
     start: feature.get('start'),
     end: feature.get('end'),

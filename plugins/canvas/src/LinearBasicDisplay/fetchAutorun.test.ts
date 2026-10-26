@@ -1591,7 +1591,6 @@ test('the worker payload is exactly the slots DisplayConfig declares', () => {
     'canonicalTranscriptField',
     'canonicalTranscriptTags',
     'color',
-    'connectorColor',
     'containerTypes',
     'featureHeight',
     'filter',

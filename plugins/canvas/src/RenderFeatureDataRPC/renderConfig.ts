@@ -102,7 +102,6 @@ export interface DisplayConfig {
   // recolor never refetches.
   color: WorkerColor
   // `maybeColor` slots, as `color.value`.
-  connectorColor: string | undefined
   utrColor: string | undefined
   labels: {
     name: string
@@ -130,7 +129,6 @@ const WORKER_READS: Record<keyof SettingsDisplayConfig, true> = {
   filter: true,
   featureHeight: true,
   color: true,
-  connectorColor: true,
   utrColor: true,
   labels: true,
 }
@@ -151,7 +149,6 @@ export type GeneGlyphSettings = Pick<
   | 'canonicalTranscriptField'
   | 'canonicalTranscriptTags'
   | 'containerTypes'
-  | 'connectorColor'
   | 'utrColor'
 >
 
@@ -169,7 +166,6 @@ export const GENE_GLYPH_DEFAULTS: GeneGlyphSettings = {
   canonicalTranscriptField: DEFAULT_CANONICAL_TRANSCRIPTS.field,
   canonicalTranscriptTags: [...DEFAULT_CANONICAL_TRANSCRIPTS.tags],
   containerTypes: ['proteoform_orf'],
-  connectorColor: undefined,
   utrColor: undefined,
 }
 

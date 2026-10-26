@@ -5,7 +5,7 @@ import createJexlInstance from '@jbrowse/core/util/jexl'
 
 import { resolveRegionColors } from '../LinearBasicDisplay/components/resolveRegionColors.ts'
 import { createTestEnvironment } from '../LinearBasicDisplay/testEnv.ts'
-import { boxColor, strokeColor } from './collect/glyphColors.ts'
+import { boxColor } from './collect/glyphColors.ts'
 import {
   FIELD_LIGHT_TINT,
   FIELD_MID_TINT,
@@ -61,24 +61,6 @@ describe('the worker emits a class where it cannot resolve a color', () => {
     })
     expect(color).toBe('red')
     expect(colorClass).toBe(LITERAL)
-  })
-
-  it('classes the connector stroke when connectorColor is unset', () => {
-    const feature = new SimpleFeature({
-      uniqueId: 'f1',
-      refName: 'ctgA',
-      start: 0,
-      end: 10,
-    })
-    const stroke = strokeColor(feature, {
-      config: mockDisplayConfig(),
-      colorByFrame: false,
-      jexl,
-    })
-    // nothing to pack: the class names the color and the main-thread encode
-    // writes the lane
-    expect(stroke.color).toBe(0)
-    expect(stroke.colorClass).toBe(STROKE)
   })
 
   // The codon stripe is two tints of the box it sits on, so a frame-colored box

@@ -25,7 +25,6 @@ describe('LinearBasicDisplay configSchema', () => {
       readConfObject(config, ['encoding', 'color', 'value']),
     ).toBeUndefined()
     expect(readConfObject(config, 'utrColor')).toBeUndefined()
-    expect(readConfObject(config, 'connectorColor')).toBeUndefined()
     expect(readConfObject(config, ['mark', 'height'])).toBe(10)
     expect(readConfObject(config, 'displayMode')).toBe('normal')
     expect(readConfObject(config, 'geneGlyphMode')).toBe('auto')
@@ -46,12 +45,10 @@ describe('LinearBasicDisplay configSchema', () => {
         displayId: 'test',
         type: 'LinearBasicDisplay',
         encoding: { color: { value: 'red' } },
-        connectorColor: 'blue',
       },
       { pluginManager: pm },
     )
     expect(readConfObject(config, ['encoding', 'color', 'value'])).toBe('red')
-    expect(readConfObject(config, 'connectorColor')).toBe('blue')
   })
 
   it('accepts JEXL color expression', () => {
@@ -337,7 +334,7 @@ describe('LinearBasicDisplay configSchema', () => {
   })
 
   describe('legacy color1/color2/color3 names', () => {
-    it('maps color1/color2/color3/outline onto the new names', () => {
+    it('maps color1 and color3 onto the new names, dropping color2 and outline', () => {
       const config = schema.create(
         {
           displayId: 'test',
@@ -352,8 +349,8 @@ describe('LinearBasicDisplay configSchema', () => {
       expect(readConfObject(config, ['encoding', 'color', 'value'])).toBe(
         'blue',
       )
-      expect(readConfObject(config, 'connectorColor')).toBe('gray')
       expect(readConfObject(config, 'utrColor')).toBe('lightblue')
+      expect(getSnapshot(config)).not.toHaveProperty('color2')
     })
 
     it('maps a legacy jexl color1 expression onto encoding.color', () => {

@@ -539,7 +539,6 @@ exports[`every registered schema slot default 1`] = `
   },
   "display: LinearBasicDisplay": {
     "chevrons.show": "boolean = true",
-    "connectorColor": "maybeColor = undefined",
     "containers.types": "stringArray = ["proteoform_orf"]",
     "displayMode": "stringEnum = "normal" of ["normal","compact","superCompact","collapsed"]",
     "encoding.color.field": "featureField = """,

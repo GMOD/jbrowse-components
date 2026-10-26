@@ -126,7 +126,6 @@ const config: DisplayConfig = {
   mouseover: '',
   filter: [],
   color: { value: undefined, field: '' },
-  connectorColor: undefined,
   utrColor: undefined,
   labels: { name: '', description: '' },
 }

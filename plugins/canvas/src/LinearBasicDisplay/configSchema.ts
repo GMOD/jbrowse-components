@@ -18,10 +18,9 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * #category display
  * Draws the genes and other features of a `FeatureTrack`, from a BED, GFF or
  * similar file. The display adds the gene-glyph slots (isoforms, UTRs,
- * chevrons) to the shared canvas base. The color slots `color`,
- * `connectorColor` and `utrColor` are display-level, set inside a track's
- * `displays` array, each a CSS color or a `jexl:` expression for per-feature
- * coloring.
+ * chevrons) to the shared canvas base. `encoding.color` paints each
+ * feature's fill and `utrColor` its UTRs; the intron lines, chevrons and
+ * strand arrows take the theme's stroke color.
  *
  * #example
  * A complete `FeatureTrack` config (e.g. genes from a GFF3) to paste into
@@ -59,17 +58,6 @@ export default function configSchemaFactory(pluginManager: PluginManager) {
        * a single gene can trip a tighter gate.
        */
       fetchSizeLimit: { type: 'number', defaultValue: 5_000_000 },
-      /**
-       * #slot
-       */
-      // `maybeColor` for the same reason as `color`: the default is
-      // derive-from-theme, not a color.
-      connectorColor: {
-        type: 'maybeColor',
-        description:
-          'color of the connecting/intron lines between feature segments (defaults to the theme text color)',
-        contextVariable: ['feature'],
-      },
       /**
        * #slot
        */

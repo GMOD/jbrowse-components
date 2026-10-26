@@ -12,7 +12,6 @@ type DisplaySnapshot = {
   geneGlyphMode?: string
   showLabels?: unknown
   encoding?: { color?: { value?: string } }
-  connectorColor?: string
   utrColor?: string
   heightMode?: string
   height?: number
@@ -93,10 +92,10 @@ test('renames legacy color1/color2/color3/outline config slots', () => {
   })
   expect(out.displays![0]).toMatchObject({
     encoding: { color: { value: 'green' } },
-    connectorColor: 'gray',
     utrColor: 'lightblue',
   })
   expect(out.displays![0]).not.toHaveProperty('outline')
+  expect(out.displays![0]).not.toHaveProperty('color2')
 })
 
 test.each([

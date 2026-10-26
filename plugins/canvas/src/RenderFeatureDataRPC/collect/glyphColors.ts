@@ -175,29 +175,11 @@ export function boxColor(
 }
 
 /**
- * A themed stroke has nothing to pack, so its color slot carries 0 and the
- * main-thread encode overwrites the lane from the class before anything draws.
+ * The intron lines, chevrons, strand arrows and repeat backbones: a themed
+ * stroke has nothing to pack, so its color slot carries 0 and the main-thread
+ * encode writes the lane from the class before anything draws.
  */
-export function strokeColor(feature: Feature, ctx: RenderContext): PackedColor {
-  const { config, jexl } = ctx
-  // A throwing jexl falls back to `undefined` alongside an unset slot, so both
-  // degrade to the themed stroke rather than crashing the render.
-  const configured =
-    config.connectorColor === undefined
-      ? undefined
-      : readConfigValueSafe<string | undefined>(
-          config,
-          'connectorColor',
-          feature,
-          jexl,
-          undefined,
-        )
-  return packColor(
-    configured === undefined
-      ? { color: undefined, colorClass: STROKE }
-      : { color: configured, colorClass: LITERAL },
-  )
-}
+export const THEMED_STROKE: PackedColor = { color: 0, colorClass: STROKE }
 
 export interface PackedColor {
   color: number

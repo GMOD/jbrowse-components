@@ -25,5 +25,5 @@ digraph feature_color {
   framecol [label="the frame color replaces the fill"]
   keep     [label="the fill stands"]
 
-  stroke [label="outline, connector and strand arrow:\nconnectorColor, or the theme's\nsecondary text color with its alpha"]
+  stroke [label="intron line, chevron and strand arrow:\nthe theme's secondary text color\nwith its alpha"]
 }

@@ -11,7 +11,7 @@ import {
   TRANSL_EXCEPT_HIGHLIGHT,
   boxColor,
   packColor,
-  strokeColor,
+  THEMED_STROKE,
 } from './glyphColors.ts'
 
 import type { SubfeatureLabelPlacement } from '../labelUtils.ts'
@@ -246,7 +246,7 @@ export function emitTopLevelStrandArrow(
         feature,
         topPx: place.baseTopPx,
         height: layout.height,
-        stroke: strokeColor(feature, ctx),
+        stroke: THEMED_STROKE,
         flatbushIdx: place.flatbushIdx,
         labelRowsAbove: place.labelRowsAbove,
       },

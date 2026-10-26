@@ -49,7 +49,8 @@ export const basicRetired: Record<
   (value: unknown) => Record<string, unknown>
 > = {
   color1: (value: unknown) => ({ encoding: { color: { value } } }),
-  color2: (connectorColor: unknown) => ({ connectorColor }),
+  // the glyph's lines take the theme's stroke color
+  color2: () => ({}),
   color3: (utrColor: unknown) => ({ utrColor }),
   featureHeight: (height: unknown) => ({ mark: { height } }),
   transcriptTypes: (types: unknown) => ({ transcripts: { types } }),
