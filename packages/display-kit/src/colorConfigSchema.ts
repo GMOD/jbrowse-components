@@ -503,7 +503,7 @@ export const colorRampSlots = {
     type: 'maybeStringEnum',
     model: types.enumeration('ColorScheme', [...COLOR_SCHEMES]),
     description:
-      "a named ramp: a linear, log or symlog scale runs along it, and a threshold that writes cuts takes one color per interval from end to end; range's colors, where it lists any, win over it",
+      "a named ramp: a linear, log or symlog scale runs along it, and a threshold that writes cuts takes one color per interval from end to end, and an ordinal scale that lists a domain one per value; range's colors, where it lists any, win over it",
   },
   ...colorReverseSlot,
   domainMid: {
@@ -637,17 +637,18 @@ function listed(values: readonly string[]) {
 }
 
 /**
- * A threshold's colors where it writes cuts and no `range`: its `scheme`, the
- * written one or its field preset's, sampled one color per interval from end
- * to end. Without a scheme the display's own default colors stand.
+ * The colors of a scale that writes a `domain` and no `range`: its `scheme`,
+ * the written one or its field preset's, sampled from end to end into
+ * `count` colors, one per ordinal value or threshold interval. Without a
+ * scheme the display's own default colors stand.
  */
-function thresholdRange(scale: ColorScaleSetting) {
+function schemeRange(scale: ColorScaleSetting, count: number) {
   const listedRange = listed(scale.range)
   const { domain, scheme, reverse } = scale
   return (
     listedRange ??
     (domain.length > 0 && scheme !== undefined
-      ? stopsFromRampLut(rampLutOf({ scheme, reverse }), domain.length + 1).map(
+      ? stopsFromRampLut(rampLutOf({ scheme, reverse }), count).map(
           stop => stop.color,
         )
       : undefined)
@@ -682,7 +683,7 @@ export function colorEncodingOf<V extends string | undefined>(
         field,
         scale,
         domain: listed(s.domain),
-        range: listed(s.range),
+        range: schemeRange(s, s.domain.length),
         names: listed(s.names ?? []),
         unknown: s.unknown,
         invalid: s.invalid,
@@ -692,7 +693,7 @@ export function colorEncodingOf<V extends string | undefined>(
         field,
         scale,
         domain: [...s.domain],
-        range: thresholdRange(s),
+        range: schemeRange(s, s.domain.length + 1),
         names: listed(s.names ?? []),
         descending: color.legend.descending,
       }

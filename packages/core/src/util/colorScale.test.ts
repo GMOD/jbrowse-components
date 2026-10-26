@@ -233,6 +233,19 @@ test("a preset's domain is the order names follow, and a threshold with no cuts 
   ).toEqual(['names-domain'])
 })
 
+test('an ordinal scheme with no domain paints the default palette', () => {
+  expect(rules(scaled({ scheme: 'viridis' }, 'type'))).toEqual([
+    'scheme-domain',
+  ])
+  expect(rules(scaled({ scheme: 'viridis', domain: ['a'] }, 'type'))).toEqual(
+    [],
+  )
+  expect(
+    rules(scaled({ scheme: 'viridis', range: ['red', 'blue'] }, 'type')),
+  ).toEqual([])
+  expect(rules(scaled({ scheme: 'viridis' }, 'score'), 'linear')).toEqual([])
+})
+
 test('invalid outside an ordinal scale paints nothing', () => {
   expect(rules(scaled({ domain: ['a'], invalid: 'grey' }, 'type'))).toEqual([])
   expect(rules(scaled({ invalid: 'grey' }, 'score'), 'linear')).toEqual([

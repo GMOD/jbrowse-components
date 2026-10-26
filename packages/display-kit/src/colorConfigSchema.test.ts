@@ -166,6 +166,28 @@ test('a threshold writing cuts and no range spreads its scheme, else leaves the 
   ).toEqual(['red', 'blue'])
 })
 
+test('an ordinal scale listing its domain and no range samples its scheme per value', () => {
+  const rangeOf = (scale: Record<string, unknown>) => {
+    const encoding = encodingOf({
+      field: 'x',
+      scale: { type: 'ordinal', ...scale },
+    })
+    return typeof encoding === 'object' && 'range' in encoding
+      ? encoding.range
+      : undefined
+  }
+  const sampled = rangeOf({ domain: ['a', 'b', 'c'], scheme: 'viridis' })
+  expect(sampled).toHaveLength(3)
+  expect(new Set(sampled).size).toBe(3)
+  expect(
+    rangeOf({ domain: ['a', 'b'], scheme: 'viridis', reverse: true }),
+  ).toEqual(rangeOf({ domain: ['a', 'b'], scheme: 'viridis' })?.toReversed())
+  expect(rangeOf({ scheme: 'viridis' })).toBeUndefined()
+  expect(rangeOf({ domain: ['a'], scheme: 'viridis', range: ['red'] })).toEqual(
+    ['red'],
+  )
+})
+
 test('a field name written as the constant is refused with the field spelling', () => {
   const create = (value: string) =>
     colorConfigSchema.create({ value }, { pluginManager })
