@@ -403,7 +403,7 @@ test('the published signal is idle after the end time even if no frame advanced'
   }
 })
 
-test('a ribbon the old frame drew wide is kept for a move that starts magnified', () => {
+test('a ribbon too thin to read is kept, for the frame and for a move that starts magnified', () => {
   const frame = (refName: string): RowFrame => ({
     refName,
     min: 1000,
@@ -459,6 +459,6 @@ test('a ribbon the old frame drew wide is kept for a move that starts magnified'
     const cell = cells.get('ribbons:1')!
     return cell.kind === 'ribbons' ? cell.data.instanceCount : -1
   }
-  expect(gutter(frame('m1'), frame('m1'))).toBe(0)
+  expect(gutter(frame('m1'), frame('m1'))).toBe(1)
   expect(gutter(narrowFrom(frame('m1')), narrowFrom(frame('m1')))).toBe(1)
 })

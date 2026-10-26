@@ -16,8 +16,10 @@ import {
   getFeatureName,
 } from '@jbrowse/plugin-canvas'
 import {
+  attributeTooltipLines,
   categoricalColor,
   colorSchemes,
+  isAttributeLabels,
   makeNumericColorFunction,
   readChannelValue,
   resolveCategoricalMode,
@@ -35,7 +37,6 @@ import { lanePairKey } from './alignmentOps.ts'
 import { annotatedSpans, geneGlyphGeometry } from './geneGlyph.ts'
 import { STRAND_GAP_PX } from './laneStack.ts'
 import {
-  frameMagnification,
   frameOpenings,
   frameReachPx,
   frameTickXs,
@@ -69,8 +70,6 @@ import type {
   SyntenyOpacitySnapshot,
 } from '@jbrowse/synteny-core'
 
-// narrower ribbons are clutter; the boxes they join still draw in the lanes
-const MIN_RIBBON_PX = 2
 const BOX_ALPHA = 64
 // a bridge crosses the skipped lane's genes, so it draws under adjacent ribbons
 const BRIDGE_ALPHA = 0.4
@@ -90,20 +89,6 @@ export function boxesKey(row: number) {
 export const BANDS_KEY = 'bands'
 export function outlineKey(key: string) {
   return `${key}:outline`
-}
-
-// magnified, since a transition can draw a span wider than it was packed
-function wideEnough(s1: Span, s2: Span, upper: Lane, lower: Lane) {
-  return (
-    Math.max(
-      Math.abs(s1[1] - s1[0]) * magnification(upper),
-      Math.abs(s2[1] - s2[0]) * magnification(lower),
-    ) >= MIN_RIBBON_PX
-  )
-}
-
-function magnification(lane: Lane) {
-  return lane.frame ? frameMagnification(lane.frame) : 1
 }
 
 function locOn(lane: Lane, refName: string, start: number, end: number) {
@@ -319,6 +304,27 @@ function ribbonPainter(
     }
   }
   return () => slotColor
+}
+
+/**
+ * A hovered ribbon's tooltip: its locations, then the numeric channels its
+ * record carries, in the lines the synteny views print them in
+ */
+export function ribbonTooltip(
+  label: string,
+  record: Feature,
+  attributeRanges: Record<string, AttributeRange>,
+) {
+  const values: Record<string, number> = {}
+  for (const [name, range] of Object.entries(attributeRanges)) {
+    const value = isAttributeLabels(range)
+      ? Number.NaN
+      : readChannelValue(record, name)
+    if (Number.isFinite(value)) {
+      values[name] = value
+    }
+  }
+  return [label, ...attributeTooltipLines(values)].join('\n')
 }
 
 /** Each ribbon's color, its alpha scaled by the opacity and the ribbon's fade. */
@@ -593,7 +599,6 @@ export function buildRibbonGeometry({
           const strand = orientations[i]! * far.orientations[j]!
           if (
             statedTogether(intervals[i], far.intervals[j]) &&
-            wideEnough(s1, s2, upper, farLane) &&
             (!passes || passes({ record, strand }))
           ) {
             const target = targetOfGroup(key, group)
@@ -646,12 +651,7 @@ export function buildRibbonGeometry({
       )
       const s2 = lower.spanOf(mate.refName, mate.start, mate.end)
       const strand = link.get('strand') === -1 ? -1 : 1
-      if (
-        s1 &&
-        s2 &&
-        wideEnough(s1, s2, upper, lower) &&
-        (!passes || passes({ record: link, strand }))
-      ) {
+      if (s1 && s2 && (!passes || passes({ record: link, strand }))) {
         const idx = targets.length
         linkTarget.set(link.id(), idx)
         targets.push({

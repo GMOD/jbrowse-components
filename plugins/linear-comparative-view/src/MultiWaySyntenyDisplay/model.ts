@@ -190,6 +190,7 @@ import {
   glyphsKey,
   outlineKey,
   ribbonFeatureId,
+  ribbonTooltip,
 } from './multiwayGeometry.ts'
 import { multiwayBlocks } from './multiwayMarks.ts'
 import {
@@ -2854,8 +2855,19 @@ export function stateModelFactory(
             ? undefined
             : self.ribbonGeometry.targets[targetIdx]
         const record =
-          hit && self.ribbonRecords.get(hit.key)?.get(hit.instanceIndex)
-        return target && record ? { ...target, feature: record } : target
+          (hit && self.ribbonRecords.get(hit.key)?.get(hit.instanceIndex)) ??
+          target?.feature
+        return target && record
+          ? {
+              ...target,
+              feature: record,
+              label: ribbonTooltip(
+                target.label,
+                record,
+                self.ribbonAttributeRanges,
+              ),
+            }
+          : undefined
       },
     }))
     .views(self => ({

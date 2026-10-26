@@ -14,6 +14,7 @@ import {
   withAbgrAlpha,
 } from '@jbrowse/core/util/colorBits'
 import { UNIVERSAL_FIELD_PRESETS } from '@jbrowse/core/util/colorScale'
+import { attributeTooltipLines } from '@jbrowse/synteny-core'
 
 import {
   KIND_BASE,
@@ -31,6 +32,7 @@ import {
   mismatchColor,
   buildTickGeometry,
   glyphHitAt,
+  ribbonTooltip,
 } from './multiwayGeometry.ts'
 import { PX_ORIGIN } from './multiwayRenderTypes.ts'
 
@@ -751,6 +753,26 @@ describe('the ribbons', () => {
     ])
   })
 
+  test('a hovered ribbon lists its record’s numeric channels under its locations', () => {
+    const record = new SimpleFeature({
+      ...pairFeature('g1', 100, 200).toJSON(),
+      identity: 0.98712,
+      mappingQual: 60,
+      group: 'A1a',
+    })
+    const lines = ribbonTooltip('g1\ngrape chr1:101..200', record, {
+      identity: { min: 0.9, max: 1 },
+      mappingQual: { min: 0, max: 60 },
+      ks: { min: 0, max: 1 },
+      group: { labels: ['A1a'], colors: {} },
+    }).split('\n')
+    expect(lines.slice(0, 2)).toEqual(['g1', 'grape chr1:101..200'])
+    expect(lines.slice(2)).toEqual(
+      attributeTooltipLines({ identity: 0.98712, mappingQual: 60 }),
+    )
+    expect(lines).toHaveLength(4)
+  })
+
   test('a filter draws only the ribbons that pass it, by length or strand', () => {
     const s = stack({
       features: [
@@ -883,7 +905,7 @@ describe('the ribbons', () => {
     },
   )
 
-  test('leave out a pair too thin to read on both ends', () => {
+  test('keep a pair too thin to read, which the pass fades by its width as the synteny view does', () => {
     const s = stack({ features: [pairFeature('g1', 100, 101)] })
     const { cells } = buildRibbonGeometry({
       stack: s,
@@ -891,7 +913,7 @@ describe('the ribbons', () => {
       ribbonColor: 'grey',
       drawCurves: false,
     })
-    expect(ribbonData(cells, 'ribbons:0').instanceCount).toBe(0)
+    expect(ribbonData(cells, 'ribbons:0').instanceCount).toBe(1)
   })
 
   test('draw an alignment-level source’s direct records between mate lanes, from the second gutter', () => {
