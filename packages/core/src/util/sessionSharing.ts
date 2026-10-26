@@ -133,7 +133,7 @@ export function shareEndpoint(shareURL: string, path: 'share' | 'load') {
 
 // The key's length in a `share-` value, which is how a reader finds where a
 // server-named id ends
-const SHARE_KEY_LENGTH = 11
+const SHARE_KEY_LENGTH = 16
 
 // The id a session is offered to the share service under: a hash of the key, so
 // a link holding only the key can find it
@@ -150,8 +150,8 @@ async function shareSessionToDynamo(
   referer: string,
 ) {
   // the server returns the ciphertext to anyone holding the session id, so the
-  // key alone guards it: 64 bits, in SHARE_KEY_LENGTH base64url characters
-  const key = toBase64Url(crypto.getRandomValues(new Uint8Array(8)))
+  // key alone guards it: 96 bits, in SHARE_KEY_LENGTH base64url characters
+  const key = toBase64Url(crypto.getRandomValues(new Uint8Array(12)))
   const offeredId = await shareIdForKey(key)
 
   const data = new FormData()

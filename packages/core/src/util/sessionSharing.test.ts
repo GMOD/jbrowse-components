@@ -57,8 +57,8 @@ describe('encodeSessionParam short mode', () => {
     fetchMock.resetMocks()
   })
 
-  // 64 bits: the share service hands the ciphertext to anyone with the id
-  it('puts a fresh 11-character key after the id', async () => {
+  // 96 bits: the share service hands the ciphertext to anyone with the id
+  it('puts a fresh 16-character key after the id', async () => {
     fetchMock.mockResponse(JSON.stringify({ sessionId: 'id1' }))
     const share = async () =>
       (
@@ -69,7 +69,7 @@ describe('encodeSessionParam short mode', () => {
         )
       ).sessionParam
     const [a, b] = await Promise.all([share(), share()])
-    expect(a).toMatch(/^share-id1[\w-]{11}$/)
+    expect(a).toMatch(/^share-id1[\w-]{16}$/)
     expect(a).not.toBe(b)
   })
 })
@@ -110,7 +110,7 @@ describe('readSharedSession', () => {
     const { sessionParam, storedId } = await upload({ takesOffers: true })
     const key = sessionParam.slice('share-'.length)
 
-    expect(key).toMatch(/^[\w-]{11}$/)
+    expect(key).toMatch(/^[\w-]{16}$/)
     expect(JSON.parse(await readSharedSession(loadUrl, sessionParam))).toEqual(
       session,
     )
@@ -121,7 +121,7 @@ describe('readSharedSession', () => {
 
   it('reads a link with its key after the id, sending only the id', async () => {
     const { sessionParam } = await upload()
-    const key = sessionParam.slice(-11)
+    const key = sessionParam.slice(-16)
 
     expect(JSON.parse(await readSharedSession(loadUrl, sessionParam))).toEqual(
       session,
@@ -134,7 +134,7 @@ describe('readSharedSession', () => {
   // bigger for nothing
   it('stores the deflated bytes themselves, encrypted', async () => {
     const { sessionParam, stored } = await upload()
-    const bytes = await aesDecryptBytes(stored, sessionParam.slice(-11))
+    const bytes = await aesDecryptBytes(stored, sessionParam.slice(-16))
     // a zlib stream's header byte, where base64 text would start with a letter
     expect(bytes[0]).toBe(0x78)
   })
@@ -173,7 +173,7 @@ describe('readSharedSession', () => {
     await expect(
       readSharedSession(
         loadUrl,
-        `${sessionParam.slice(0, -11)}${'w'.repeat(11)}`,
+        `${sessionParam.slice(0, -16)}${'w'.repeat(16)}`,
       ),
     ).rejects.toThrow(/key in the link is wrong/)
   })
@@ -182,7 +182,7 @@ describe('readSharedSession', () => {
     const { sessionParam, stored } = await upload()
     let wrongKey = ''
     for (let i = 0; !wrongKey; i++) {
-      const candidate = `${i}`.padStart(11, 'w')
+      const candidate = `${i}`.padStart(16, 'w')
       try {
         await aesDecryptBytes(stored, candidate)
         wrongKey = candidate
@@ -190,7 +190,7 @@ describe('readSharedSession', () => {
     }
 
     await expect(
-      readSharedSession(loadUrl, `${sessionParam.slice(0, -11)}${wrongKey}`),
+      readSharedSession(loadUrl, `${sessionParam.slice(0, -16)}${wrongKey}`),
     ).rejects.toThrow(/key in the link is wrong/)
   })
 })
