@@ -74,14 +74,13 @@ GRCh38.
 }
 ```
 
-The figures also show UCSC's CpG islands and the NCBI RefSeq genes, both read
-from the files the hosted hg38 hub serves:
+The figures also show UCSC's CpG islands and the NCBI RefSeq genes:
 
 ```json addtrack loc=chr15:24,948,000-24,962,000
 {
   "type": "FeatureTrack",
-  "trackId": "cpg_islands",
-  "name": "CpG Islands",
+  "trackId": "cpgisland_ucsc_hg38",
+  "name": "UCSC CpG islands",
   "assemblyNames": ["hg38"],
   "adapter": {
     "type": "BedTabixAdapter",
@@ -100,22 +99,11 @@ from the files the hosted hg38 hub serves:
 
 ```json addtrack loc=chr15:24,948,000-24,962,000
 {
-  "type": "FeatureTrack",
-  "trackId": "ncbi_refseq_all",
-  "name": "NCBI RefSeq - RefSeq All",
+  "trackId": "ncbi_refseq_109_hg38_latest",
+  "name": "NCBI RefSeq (GFF3Tabix)",
+  "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/ncbi_refseq/GRCh38_latest_genomic.sort.gff.gz",
   "assemblyNames": ["hg38"],
-  "adapter": {
-    "type": "Gff3TabixAdapter",
-    "gffGzLocation": {
-      "uri": "https://jbrowse.org/ucsc/hg38/ncbiRefSeq.gff.gz"
-    },
-    "index": {
-      "indexType": "CSI",
-      "location": {
-        "uri": "https://jbrowse.org/ucsc/hg38/ncbiRefSeq.gff.gz.csi"
-      }
-    }
-  }
+  "displayDefaults": { "filter": ["geneLike"] }
 }
 ```
 

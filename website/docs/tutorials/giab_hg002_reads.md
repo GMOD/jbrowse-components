@@ -54,21 +54,10 @@ The `facet` setting opens the track already split by `HP`:
 
 ```json addtrack
 {
-  "type": "AlignmentsTrack",
-  "trackId": "hg002_ont_hp",
-  "name": "HG002 ONT, phased",
+  "trackId": "hg002_nanopore_hp",
+  "name": "HG002 ONT",
+  "uri": "https://jbrowse.org/demos/hg002/HG002.ONTrel2.HP.hs37d5.demo_slices.bam",
   "assemblyNames": ["hg19"],
-  "adapter": {
-    "type": "BamAdapter",
-    "bamLocation": {
-      "uri": "https://jbrowse.org/demos/hg002/HG002.ONTrel2.HP.hs37d5.demo_slices.bam"
-    },
-    "index": {
-      "location": {
-        "uri": "https://jbrowse.org/demos/hg002/HG002.ONTrel2.HP.hs37d5.demo_slices.bam.bai"
-      }
-    }
-  },
   "displayDefaults": {
     "facet": { "field": "tags.HP" },
     "encoding": { "color": "tags.HP" }
@@ -78,15 +67,16 @@ The `facet` setting opens the track already split by `HP`:
 
 ## A heterozygous deletion in one haplotype
 
-Navigate to `1:63,005,000-63,008,000` and open **HG002 BAM ultralong
-nanopore+whatshap**. From the track menu, **Group by → Tag...** asks for the tag
-name and lists the values it finds in view:
+Navigate to `1:63,005,000-63,008,000` and open the demo's **HG002 BAM ultralong
+nanopore+whatshap**, the same reads as **HG002 ONT**, beside **HG002 GIAB
+consensus SV (VCF)**. From the track menu, **Group by → Tag...** asks for the
+tag name and lists the values it finds in view:
 
 <Figure caption="Group by → Tag... with HP typed as the tag." src="/img/alignments/haplotype_groupby.png" />
 
 Grouped by `HP` and colored by the same tag, the pileup splits into one section
-per haplotype, plus a section for untagged reads. The deletion from the GIAB SV
-track shows as a gap in one section only:
+per haplotype, plus a section for untagged reads. The deletion from the SV track
+shows as a gap in one section only:
 
 <Figure caption="HG002 nanopore reads grouped by HP tag under the GIAB SV benchmark track." src="/img/smalldel.png" />
 
@@ -96,8 +86,20 @@ options.
 
 ## One insertion across three platforms
 
-Navigate to `1:55,705,770-55,706,090` and open the nanopore, PacBio and Illumina
-tracks together. JBrowse draws the insertion inside each long read as a purple
+The PacBio reads are a slice of the GIAB Sequel run, hosted beside the demo:
+
+```json addtrack
+{
+  "trackId": "hg002_pacbio_chr1_insertion_slice",
+  "name": "HG002 PacBio Sequel 15kb (chr1 slice)",
+  "uri": "https://jbrowse.org/demos/hg002/HG002.Sequel.15kb.chr1_insertion.bam",
+  "assemblyNames": ["hg19"]
+}
+```
+
+Navigate to `1:55,705,770-55,706,090` and open it with the demo's **HG002 dbVar
+variant calls**, **HG002 BAM ultralong nanopore+whatshap** and **HG002 Illumina
+hs37d5.2x250**. JBrowse draws the insertion inside each long read as a purple
 mark. The 250 bp Illumina reads stop at its edges, and **Show → Soft clipping**
 in the Illumina track menu draws the unaligned bases they carry past them:
 
@@ -119,10 +121,11 @@ HG002's nanopore reads also carry 5mC calls in their `MM`/`ML` tags. These reads
 are aligned to hg38, so open the
 [demo on hg38](https://jbrowse.org/code/jb2/main/?config=test_data/config_demo.json&assembly=hg38),
 navigate to the _SNRPN_ imprinting center at `chr15:24,948,000-24,962,000` and
-open **HG002 ONT reads (5mC, haplotagged)** from the **Methylation** category.
-In its track menu, **Color by → Modifications** paints each CpG red where its
-5mC call says methylated, and **Color by → Show unmodified in blue** adds blue
-where it says unmethylated:
+open **HG002 ONT reads (5mC, haplotagged)** from the **Methylation** category,
+under **UCSC CpG islands** and **NCBI RefSeq (GFF3Tabix)** from **Annotation**.
+In the reads' track menu, **Color by → Modifications** paints each CpG red where
+its 5mC call says methylated, and **Color by → Show unmodified in blue** adds
+blue where it says unmethylated:
 
 <Figure caption="Color by → Modifications in the HG002 ONT track menu." src="/img/methylation/hg002_snrpn_color_menu.png" />
 

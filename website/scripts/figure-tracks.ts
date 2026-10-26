@@ -117,7 +117,11 @@ export interface UnnamedTrack {
   name?: string
 }
 
+// A name prose wraps across lines still names the track.
+const oneLine = (s: string) => s.replace(/\s+/g, ' ')
+
 export function unnamedFigureTracks(text: string, names: TrackNames) {
+  const flat = oneLine(text)
   return figureTracks(text).flatMap(({ figure, line, config, trackIds }) =>
     trackIds
       .filter(id => !isSequenceTrack(config, id))
@@ -128,7 +132,9 @@ export function unnamedFigureTracks(text: string, names: TrackNames) {
         name: trackName(config, trackId, names),
       }))
       .filter(
-        t => !text.includes(t.trackId) && !(t.name && text.includes(t.name)),
+        t =>
+          !text.includes(t.trackId) &&
+          !(t.name && flat.includes(oneLine(t.name))),
       ),
   )
 }

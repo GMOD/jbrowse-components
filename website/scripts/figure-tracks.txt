@@ -18,15 +18,12 @@ tutorials/dog10k_svs.md 4
 tutorials/gene_prediction_review.md 1
 tutorials/genomes_proteins.md 4
 tutorials/genomes_synteny.md 10
-tutorials/giab_hg002_reads.md 15
 tutorials/hg002_haplotypes.md 3
 tutorials/hic_structural_variants.md 6
 tutorials/k562_fusions.md 4
-tutorials/ld_human.md 10
 tutorials/ld_mosquitoes.md 3
 tutorials/mappability_qc.md 11
 tutorials/mcscan_synteny_grape_peach.md 4
-tutorials/methylation.md 14
 tutorials/orthofinder_synteny.md 6
 tutorials/pangenome_cactus.md 5
 tutorials/pangenome_cattle.md 7
@@ -45,5 +42,3 @@ tutorials/scrna_pseudobulk.md 3
 tutorials/sv_multisamples.md 3
 tutorials/sv_visualization_cgiab.md 4
 tutorials/synteny_visualization.md 8
-tutorials/tcga_cohort_cnv.md 1
-tutorials/tcga_cohort_mutations.md 2
