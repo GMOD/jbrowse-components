@@ -71,10 +71,9 @@ test('observed/expected paints a log ramp diverging at 1, red where enriched', (
     domainMid: 1,
   })
   expect(display.colorDomain).toEqual([0.25, 4])
-  expect(display.renderState).toMatchObject({
+  expect(display.renderState.color).toMatchObject({
     scaleType: SCALE_TYPE_LOG,
-    domainMin: 0.25,
-    domainMax: 4,
+    domain: [0.25, 4],
     midNorm: 0.5,
   })
 })

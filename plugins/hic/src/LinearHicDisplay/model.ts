@@ -6,7 +6,6 @@ import {
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
 import { getBpDisplayStr } from '@jbrowse/core/util'
-import { rampDomain } from '@jbrowse/core/util/colorRamp'
 import {
   installPrerequisiteFetch,
   readFor,
@@ -25,14 +24,8 @@ import { rpcArgs } from '@jbrowse/display-kit/rpcArgs'
 import { triangleAxis } from '@jbrowse/display-kit/triangleTransform'
 import { getSnapshot, types } from '@jbrowse/mobx-state-tree'
 import { installUpload } from '@jbrowse/render-core/installUpload'
-import {
-  denormalizeScore,
-  rampMidNorm,
-  scaleTypeCode,
-} from '@jbrowse/render-core/scoreScale'
 
 import { computeCountStats } from '../RenderHicDataRPC/countStats.ts'
-import { legendStops } from './components/colorRamp.ts'
 import { findContactAt } from './contactLookup.ts'
 import { HIC_FIELD_PRESETS } from './hicColorConfigSchema.ts'
 import { buildHicTrackMenuItems } from './trackMenuItems.ts'
@@ -57,25 +50,23 @@ import type React from 'react'
 // The fallback order when the selected normalization is not in the file.
 const NORMALIZATION_PREFERENCE = ['KR', 'SCALE', 'VC_SQRT', 'VC']
 
-// The key's and the tooltip's name for a value: the field, its normalization
-// and, for a count, a scale other than linear. A ratio is always log.
-const FIELD_NAMES = {
-  observed: 'Contacts',
-  'observed/expected': 'Observed/expected',
-  'observed/control': 'Observed/control',
-} as const satisfies Record<HicColorField, string>
-
+// The key's and the tooltip's name for a value: the field's own title, its
+// normalization and, for a count, a scale other than linear. A ratio is always
+// log.
 function valueName(
-  field: HicColorField,
+  field: { name: string; isCount: boolean },
   normalization: string,
   scale?: HicColorScale,
 ) {
   const qualifiers = [
     normalization === 'NONE' ? undefined : normalization,
-    field === 'observed' && scale !== 'linear' ? scale : undefined,
+    field.isCount && scale !== undefined && scale !== 'linear'
+      ? scale
+      : undefined,
   ].filter(q => q !== undefined)
-  const name = FIELD_NAMES[field]
-  return qualifiers.length ? `${name} (${qualifiers.join(', ')})` : name
+  return qualifiers.length
+    ? `${field.name} (${qualifiers.join(', ')})`
+    : field.name
 }
 
 interface HicFileInfo {
@@ -281,19 +272,20 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
     .views(self => ({
       /**
        * #getter
-       * The domain the counts are colored over, as every ramp spans one: a
-       * pinned end holds, and an open one follows the loaded counts from 0,
-       * the top at their `colorQuantile` below 1, else their maximum.
+       * What an open end of the color domain follows: the loaded values from
+       * 0, which is where a count's extent starts, to their `colorQuantile`
+       * below 1, else their maximum.
        */
-      get colorDomain(): [number, number] {
+      get colorExtent(): readonly [number, number] {
         const data = self.rpcData
-        const { domainMin, domainMax } = self.colorEncoding
-        const loadedMax = !data
-          ? 0
-          : self.colorFollowsPercentile
-            ? self.loadedQuantileScore
-            : data.maxScore
-        return rampDomain(domainMin, domainMax, [0, loadedMax])
+        return [
+          0,
+          !data
+            ? 0
+            : self.colorFollowsPercentile
+              ? self.loadedQuantileScore
+              : data.maxScore,
+        ]
       },
     }))
     .views(self => ({
@@ -317,24 +309,13 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
       },
       /**
        * #getter
+       * The painted field's name for the key and the tooltip.
        */
-      get scaleType() {
-        return scaleTypeCode(self.colorScaleType)
-      },
-      /**
-       * #getter
-       * Where `encoding.color.scale.domainMid` sits on the normalized ramp,
-       * 0.5 unset, so a diverging scheme centres on it and equal distances
-       * from it take equal colors.
-       */
-      get colorMidNorm(): number {
-        const [lo, hi] = self.colorDomain
-        return rampMidNorm(
-          lo,
-          hi,
-          scaleTypeCode(self.colorScaleType),
-          self.colorEncoding.domainMid,
-        )
+      get paintedFieldName() {
+        return {
+          name: self.colorFieldTitle,
+          isCount: self.paintedColorField === 'observed',
+        }
       },
       /**
        * #getter
@@ -354,51 +335,29 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
     .views(self => ({
       /**
        * #getter
-       * The count ramp, once there is a domain to span. The ends are where
-       * the ramp paints them, and a top below the largest loaded count reads
-       * `≥`. The title names the loaded binsize, so a figure carries it,
-       * unless `encoding.color.legend.title` replaces it.
+       * The value ramp. A top below the largest loaded value reads `≥`. The
+       * title names the loaded binsize, so a figure carries it, unless
+       * `encoding.color.legend.title` replaces it.
        */
       get colorScales(): ColorScale[] {
-        const [lo, hi] = self.colorDomain
-        const { scaleType, rpcData } = self
-        const domain: [number, number] = [
-          denormalizeScore(0, lo, hi, scaleType, 1),
-          hi,
-        ]
-        if (!(domain[1] > domain[0])) {
-          return []
-        }
+        const { rpcData } = self
         const label = valueName(
-          self.paintedColorField,
+          self.paintedFieldName,
           self.appliedNormalization,
           self.colorScaleType,
         )
-        const title: string | undefined = getConf(self, [
-          'encoding',
-          'color',
-          'legend',
-          'title',
-        ])
-        return [
-          {
-            kind: 'ramp',
-            id: 'contacts',
-            title:
-              title ??
-              (rpcData
-                ? `${label} · ${getBpDisplayStr(rpcData.resolution)}`
-                : label),
-            domain,
-            stops: legendStops(self.colorRamp, self.colorMidNorm),
-            // a ratio's smallest value is not scored, and one below the
-            // bottom of a fixed domain is the usual case
-            extent: [
-              self.paintedColorField === 'observed' ? domain[0] : 0,
-              rpcData?.maxScore ?? 0,
-            ],
+        return self.rampColorScales({
+          id: 'contacts',
+          title: rpcData
+            ? `${label} · ${getBpDisplayStr(rpcData.resolution)}`
+            : label,
+          // the counts start at the key's bottom; a ratio's smallest value
+          // is not scored, and one below a fixed domain's bottom is usual
+          extent: {
+            min: self.paintedColorField === 'observed' ? undefined : 0,
+            max: rpcData?.maxScore ?? 0,
           },
-        ]
+        })
       },
       /**
        * #getter
@@ -422,7 +381,7 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
        * What the tooltip calls a bin's value.
        */
       get valueLabel(): string {
-        return valueName(self.paintedColorField, self.appliedNormalization)
+        return valueName(self.paintedFieldName, self.appliedNormalization)
       },
     }))
     .views(self => ({
@@ -451,15 +410,7 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
        * #getter
        */
       get renderState(): HicRenderState {
-        const [domainMin, domainMax] = self.colorDomain
-        return {
-          ...self.triangleFrame,
-          domainMin,
-          domainMax,
-          scaleType: self.scaleType,
-          midNorm: self.colorMidNorm,
-          colorRamp: self.colorRamp,
-        }
+        return { ...self.triangleFrame, color: self.matrixColor }
       },
     }))
     .views(self => ({

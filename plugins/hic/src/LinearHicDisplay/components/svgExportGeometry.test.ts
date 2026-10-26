@@ -32,11 +32,12 @@ function exportBin(yScalar: number) {
     },
     {
       yScalar,
-      domainMin: 0,
-      domainMax: 1,
-      scaleType: SCALE_TYPE_LINEAR,
-      midNorm: 0.5,
-      colorRamp: rampLutOf({ scheme: 'fall' }),
+      color: {
+        domain: [0, 1],
+        scaleType: SCALE_TYPE_LINEAR,
+        midNorm: 0.5,
+        ramp: rampLutOf({ scheme: 'fall' }),
+      },
       viewScale: 1,
       viewOffsetX: 0,
       canvasWidth: 10_000,

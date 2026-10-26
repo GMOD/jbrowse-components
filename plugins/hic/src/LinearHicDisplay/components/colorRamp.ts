@@ -1,11 +1,6 @@
-import { stopsFromRampLut } from '@jbrowse/core/util/colorRamp'
 import { makeRampFillStyleLut } from '@jbrowse/render-core/canvas2dUtils'
 
 import { MIN_VISIBLE_ALPHA } from './shaders/hic.consts.generated.ts'
-
-export function legendStops(ramp: Uint8Array, midNorm: number) {
-  return stopsFromRampLut(ramp, 11, midNorm)
-}
 
 /**
  * The ramp's fill for a normalized `t`, or undefined where the fragment shader

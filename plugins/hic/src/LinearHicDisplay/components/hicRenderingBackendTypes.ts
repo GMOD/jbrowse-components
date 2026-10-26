@@ -1,14 +1,9 @@
+import type { MatrixColorState } from '@jbrowse/display-kit/MatrixRampMixin'
 import type { TriangleFrame } from '@jbrowse/display-kit/TriangleMatrixMixin'
 import type { PerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
-import type { ScaleTypeCode } from '@jbrowse/render-core/scoreScale'
 
 export interface HicRenderState extends TriangleFrame {
-  domainMin: number
-  domainMax: number
-  scaleType: ScaleTypeCode
-  /** `rampMidNorm` of `color.domainMid`, 0.5 unset */
-  midNorm: number
-  colorRamp: Uint8Array
+  color: MatrixColorState
 }
 
 // `binWidth` is the payload's, so a frame never scales one fetch's bins by

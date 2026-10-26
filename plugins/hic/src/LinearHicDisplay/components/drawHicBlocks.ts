@@ -34,17 +34,16 @@ export function drawHicBlocks(
   if (numContacts === 0) {
     return
   }
-  const {
-    viewScale,
-    yScalar,
+  const { viewScale, yScalar, color } = state
+  const [domainMin, domainMax] = color.domain
+  const { midNorm } = color
+  const normalize = makeScoreNormalizer(
     domainMin,
     domainMax,
-    scaleType,
-    midNorm,
-    colorRamp,
-  } = state
-  const normalize = makeScoreNormalizer(domainMin, domainMax, scaleType, 1)
-  const fillStyleLut = makeHicFillStyleLut(colorRamp)
+    color.scaleType,
+    1,
+  )
+  const fillStyleLut = makeHicFillStyleLut(color.ramp)
   const { minSum, maxSum } = enterTriangleCellSpace(ctx, state, width)
   const lo = minSum - 2 * binWidth
   const maxDiff = (height * Math.SQRT2) / (viewScale * yScalar) + binWidth

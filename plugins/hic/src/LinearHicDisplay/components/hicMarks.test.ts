@@ -22,6 +22,7 @@ import type {
   HicRenderState,
   HicUploadData,
 } from './hicRenderingBackendTypes.ts'
+import type { MatrixColorState } from '@jbrowse/display-kit/MatrixRampMixin'
 import type { MarkContext2D } from '@jbrowse/render-core/marks'
 
 Object.defineProperty(window, 'devicePixelRatio', { value: 1, writable: true })
@@ -44,19 +45,26 @@ function makeData({
   }
 }
 
-function makeRenderState(overrides?: Partial<HicRenderState>): HicRenderState {
+function makeRenderState({
+  color,
+  ...overrides
+}: Partial<Omit<HicRenderState, 'color'>> & {
+  color?: Partial<MatrixColorState>
+} = {}): HicRenderState {
   return {
     canvasWidth: 800,
     canvasHeight: 600,
     yScalar: 1,
-    domainMin: 0,
-    domainMax: 100,
-    scaleType: SCALE_TYPE_LINEAR,
-    midNorm: 0.5,
-    colorRamp: rampLutOf({ scheme: 'juicebox' }),
     viewScale: 1,
     viewOffsetX: 0,
     ...overrides,
+    color: {
+      domain: [0, 100],
+      scaleType: SCALE_TYPE_LINEAR,
+      midNorm: 0.5,
+      ramp: rampLutOf({ scheme: 'juicebox' }),
+      ...color,
+    },
   }
 }
 
@@ -110,8 +118,7 @@ describe('the hic mark list', () => {
       makeData(),
       makeRenderState({
         viewOffsetX: 400,
-        scaleType: SCALE_TYPE_LOG,
-        midNorm: 0.25,
+        color: { scaleType: SCALE_TYPE_LOG, midNorm: 0.25 },
       }),
     )
 
@@ -185,7 +192,7 @@ describe('the hic mark list', () => {
     backend.renderBlocks(
       blocks,
       regions,
-      makeRenderState({ colorRamp: rampLutOf({ scheme: 'viridis' }) }),
+      makeRenderState({ color: { ramp: rampLutOf({ scheme: 'viridis' }) } }),
     )
     expect(hal.callsOf('uploadTexture').length).toBe(2)
     expect(hal.getTexture('main')).toEqual(rampLutOf({ scheme: 'viridis' }))
@@ -306,7 +313,7 @@ describe('the hic painter', () => {
   it('reads the ramp through its middle', () => {
     const halfway = paint(
       makeData({ positions: [0, 0], counts: [50] }),
-      makeRenderState({ midNorm: 0.25 }),
+      makeRenderState({ color: { midNorm: 0.25 } }),
     )
     const twoThirds = paint(makeData({ positions: [0, 0], counts: [200 / 3] }))
     const centred = paint(makeData({ positions: [0, 0], counts: [50] }))
@@ -319,7 +326,7 @@ describe('the hic painter', () => {
     const linear = paint(makeData({ positions: [0, 0], counts: [50] }))
     const log = paint(
       makeData({ positions: [0, 0], counts: [50] }),
-      makeRenderState({ scaleType: SCALE_TYPE_LOG }),
+      makeRenderState({ color: { scaleType: SCALE_TYPE_LOG } }),
     )
 
     expect(linear.fillStyle).not.toBe(log.fillStyle)

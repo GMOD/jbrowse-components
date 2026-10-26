@@ -1,7 +1,7 @@
-import { rampLutOf } from '@jbrowse/core/util/colorRamp'
+import { rampLutOf, stopsFromRampLut } from '@jbrowse/core/util/colorRamp'
 import { COLOR_SCHEMES } from '@jbrowse/core/util/colorSchemes'
 
-import { legendStops, makeHicFillStyleLut } from './colorRamp.ts'
+import { makeHicFillStyleLut } from './colorRamp.ts'
 import { MIN_VISIBLE_ALPHA } from './shaders/hic.consts.generated.ts'
 
 import type { ColorSchemeName } from '@jbrowse/core/util/colorSchemes'
@@ -134,7 +134,7 @@ describe('color ramps', () => {
     '%s legend samples the same source as the ramp',
     scheme => {
       const ramp = generateColorRamp(scheme)
-      const stops = legendStops(ramp, 0.5)
+      const stops = stopsFromRampLut(ramp, 11, 0.5)
       expect(stops).toHaveLength(11)
       expect(stops[0]!.offset).toBe(0)
       expect(stops[10]!.offset).toBe(1)

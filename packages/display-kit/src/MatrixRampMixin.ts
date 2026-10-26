@@ -1,6 +1,11 @@
 import { getConf, setConf } from '@jbrowse/core/configuration'
-import { rampLutOf } from '@jbrowse/core/util/colorRamp'
+import { rampLutOf, stopsFromRampLut } from '@jbrowse/core/util/colorRamp'
+import { continuousColorScale } from '@jbrowse/core/util/markEncoding'
 import { getSnapshot, types } from '@jbrowse/mobx-state-tree'
+import {
+  denormalizeScore,
+  scaleTypeCode,
+} from '@jbrowse/render-core/scoreScale'
 
 import {
   colorForScheme,
@@ -9,9 +14,11 @@ import {
 } from './colorConfigSchema.ts'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { ColorSlots, FieldPreset } from '@jbrowse/core/util/colorScale'
 import type { ColorSchemeName } from '@jbrowse/core/util/colorSchemes'
 import type { ContinuousRef } from '@jbrowse/core/util/markEncoding'
+import type { ScaleTypeCode } from '@jbrowse/render-core/scoreScale'
 
 type RampScale = ContinuousRef['scale']
 
@@ -30,16 +37,28 @@ export interface MatrixColorEncoding<F extends string> extends ContinuousRef {
   scheme: ColorSchemeName
 }
 
+/** `encoding.color` as every matrix painter reads it: the GPU's uniforms and texture, the Canvas2D fill. */
+export interface MatrixColorState {
+  domain: readonly [number, number]
+  scaleType: ScaleTypeCode
+  /** where `domainMid` sits on the normalized ramp, 0.5 unset */
+  midNorm: number
+  /** `colorRamp`, the 256-entry table */
+  ramp: Uint8Array
+}
+
 // Every display composing this is a BaseDisplay whose schema has an
 // `encoding.color` over the presets' fields, which the mixin's own `self`
 // cannot see.
 const confNode = (self: object) =>
   self as { configuration: AnyConfigurationModel }
 
+const UNIT_EXTENT = [0, 1] as const
+
 /**
  * #stateModel MatrixRampMixin
  * #category display
- * #crossCuttingMixin A matrix display's `encoding.color` as it paints: the painted field through its preset's ramp (`colorEncoding`), that ramp's scheme, direction and 256-entry table (`colorScheme`, `colorReverse`, `colorRamp`), and the scheme pick (`setColorScheme`). A display that may paint a field other than the written one, because the file could not serve it, answers `paintedColorField`. The domain stays the display's: one follows the loaded values, another spans its statistic's fixed range
+ * #crossCuttingMixin A matrix display's `encoding.color` as it paints: the painted field through its preset's ramp (`colorEncoding`), that ramp's scheme, direction and 256-entry table (`colorScheme`, `colorReverse`, `colorRamp`), the domain and middle stop it spans over the display's `colorExtent` (`colorDomain`, `colorMidNorm`), all four as the painters read them (`matrixColor`), the legend's ramp (`rampColorScales`), and the scheme pick (`setColorScheme`). A display that may paint a field other than the written one, because the file could not serve it, answers `paintedColorField`; one whose values follow the data, rather than a statistic's fixed range, answers `colorExtent`
  */
 export default function MatrixRampMixin<F extends string>(
   presets: MatrixFieldPresets<F>,
@@ -54,6 +73,14 @@ export default function MatrixRampMixin<F extends string>(
        */
       get paintedColorField(): F {
         return getConf(confNode(self), ['encoding', 'color', 'field'])
+      },
+      /**
+       * #getter
+       * Overridable hook: what an unset end of the domain follows, the unit
+       * interval unless the display overrides it with its loaded values.
+       */
+      get colorExtent(): readonly [number, number] {
+        return UNIT_EXTENT
       },
     }))
     .views(self => ({
@@ -125,6 +152,96 @@ export default function MatrixRampMixin<F extends string>(
           scheme: self.colorScheme,
           reverse: self.colorReverse,
         })
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * `colorEncoding` over `colorExtent`: each pinned end holds and an open
+       * one follows the extent, as the mark display's ramps do.
+       */
+      get colorScale() {
+        return continuousColorScale(self.colorEncoding, self.colorExtent)
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       */
+      get colorDomain(): [number, number] {
+        return self.colorScale.domain
+      },
+      /**
+       * #getter
+       * Where `domainMid` sits on the normalized ramp, 0.5 unset, so a
+       * diverging scheme centres on it and equal distances from it take equal
+       * colors.
+       */
+      get colorMidNorm(): number {
+        return self.colorScale.midNorm
+      },
+      /**
+       * #getter
+       */
+      get matrixColor(): MatrixColorState {
+        return {
+          domain: self.colorScale.domain,
+          scaleType: scaleTypeCode(self.colorScaleType),
+          midNorm: self.colorScale.midNorm,
+          ramp: self.colorRamp,
+        }
+      },
+      /**
+       * #getter
+       * The painted field's own key title, from its preset.
+       */
+      get colorFieldTitle(): string {
+        return presets[self.paintedColorField].legend?.title ?? ''
+      },
+      /**
+       * #method
+       * The legend's ramp, once there is a domain to span: its bottom where
+       * the scale paints it, a log scale's floor included, titled by
+       * `encoding.color.legend.title` where written, else `title`. An end of
+       * the domain the loaded values run past reads `≤` or `≥`; an unset
+       * `min` is the key's own bottom.
+       */
+      rampColorScales({
+        id,
+        title,
+        extent: { min, max },
+      }: {
+        id: string
+        title: string
+        extent: { min?: number; max: number }
+      }): ColorScale[] {
+        const { domain, midNorm } = self.colorScale
+        const [lo, hi] = domain
+        const bottom = denormalizeScore(
+          0,
+          lo,
+          hi,
+          scaleTypeCode(self.colorScaleType),
+          1,
+        )
+        const written: string | undefined = getConf(confNode(self), [
+          'encoding',
+          'color',
+          'legend',
+          'title',
+        ])
+        return hi > bottom
+          ? [
+              {
+                kind: 'ramp',
+                id,
+                title: written ?? title,
+                domain: [bottom, hi],
+                stops: stopsFromRampLut(self.colorRamp, 11, midNorm),
+                extent: [min ?? bottom, max],
+              },
+            ]
+          : []
       },
     }))
     .actions(self => ({

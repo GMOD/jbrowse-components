@@ -1,5 +1,6 @@
 import { setConf } from '@jbrowse/core/configuration'
 import { legendSpecOf } from '@jbrowse/core/ui/colorScale'
+import { stopsFromRampLut } from '@jbrowse/core/util/colorRamp'
 import {
   SCALE_TYPE_LOG,
   SCALE_TYPE_SYMLOG,
@@ -7,7 +8,6 @@ import {
 } from '@jbrowse/render-core/scoreScale'
 
 import { packTestInstances } from '../testInstances.ts'
-import { legendStops } from './components/colorRamp.ts'
 import { MIN_VISIBLE_ALPHA } from './components/shaders/hic.consts.generated.ts'
 import { INSTANCE_STRIDE_WORDS } from './components/shaders/hic.iface.generated.ts'
 import { createTestEnvironment } from './testEnv.ts'
@@ -100,21 +100,21 @@ test('a new percentile reselects the loaded counts and refetches nothing', () =>
 test('a pinned top holds whatever the loaded counts are', () => {
   const display = loaded()
   setConf(display, ['encoding', 'color', 'scale', 'domainMax'], 1000)
-  expect(display.renderState).toMatchObject({ domainMin: 0, domainMax: 1000 })
+  expect(display.renderState.color.domain).toEqual([0, 1000])
   display.setRpcData({ ...DATA, maxScore: 5, quantileScore: 2 })
-  expect(display.renderState.domainMax).toBe(1000)
+  expect(display.renderState.color.domain[1]).toBe(1000)
 })
 
 // equal distances from the middle take equal colors, on the GPU, Canvas2D
 // and the key alike, so all three read one number
 test('domainMid moves the ramp middle on every surface', () => {
   const display = loaded()
-  expect(display.renderState.midNorm).toBe(0.5)
+  expect(display.renderState.color.midNorm).toBe(0.5)
   setConf(display, ['encoding', 'color', 'scale', 'domainMid'], 10)
   expect(display.colorDomain).toEqual([0, 40])
-  expect(display.renderState.midNorm).toBe(0.25)
+  expect(display.renderState.color.midNorm).toBe(0.25)
   expect(display.colorScales[0]).toMatchObject({
-    stops: legendStops(display.colorRamp, 0.25),
+    stops: stopsFromRampLut(display.colorRamp, 11, 0.25),
   })
 })
 
@@ -129,7 +129,7 @@ test('a pinned top gives a key before any data lands', () => {
 test('a log key starts where the ramp does', () => {
   const display = loaded()
   setConf(display, ['encoding', 'color', 'scale', 'type'], 'log')
-  expect(display.renderState.scaleType).toBe(SCALE_TYPE_LOG)
+  expect(display.renderState.color.scaleType).toBe(SCALE_TYPE_LOG)
   expect(display.colorScales[0]).toMatchObject({
     title: 'Contacts (log) · 1Kbp',
     domain: [1, 40],
@@ -142,7 +142,10 @@ test('a log key starts where the ramp does', () => {
 test('the Log scale toggle keeps counts at or below 1 visible', () => {
   const display = loaded()
   display.setLogScale(true)
-  const { scaleType, domainMin, domainMax } = display.renderState
+  const {
+    scaleType,
+    domain: [domainMin, domainMax],
+  } = display.renderState.color
   expect(scaleType).toBe(SCALE_TYPE_SYMLOG)
   expect(display.colorScales[0]).toMatchObject({
     title: 'Contacts (symlog) · 1Kbp',

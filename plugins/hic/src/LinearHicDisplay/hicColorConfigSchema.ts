@@ -30,26 +30,34 @@ export type HicColorField = (typeof HIC_COLOR_FIELDS)[number]
 
 export const DEFAULT_HIC_COLOR_SCHEME: ColorSchemeName = 'juicebox'
 
-const RATIO_PRESET = {
-  scale: {
-    type: 'log',
-    scheme: 'redblue',
-    reverse: true,
-    domainMin: 0.25,
-    domainMax: 4,
-    domainMid: 1,
-  },
+const RATIO_SCALE = {
+  type: 'log',
+  scheme: 'redblue',
+  reverse: true,
+  domainMin: 0.25,
+  domainMax: 4,
+  domainMid: 1,
 } as const
 
 /**
- * Each field's ramp while the config leaves it unwritten. A ratio diverges
- * around 1 on a log scale over a fixed quarter to fourfold, so two tracks, and
- * two conditions, read one color for one ratio; enrichment paints red.
+ * Each field's ramp and key title while the config leaves them unwritten. A
+ * ratio diverges around 1 on a log scale over a fixed quarter to fourfold, so
+ * two tracks, and two conditions, read one color for one ratio; enrichment
+ * paints red.
  */
 export const HIC_FIELD_PRESETS = {
-  observed: { scale: { type: 'linear', scheme: DEFAULT_HIC_COLOR_SCHEME } },
-  'observed/expected': RATIO_PRESET,
-  'observed/control': RATIO_PRESET,
+  observed: {
+    scale: { type: 'linear', scheme: DEFAULT_HIC_COLOR_SCHEME },
+    legend: { title: 'Contacts' },
+  },
+  'observed/expected': {
+    scale: RATIO_SCALE,
+    legend: { title: 'Observed/expected' },
+  },
+  'observed/control': {
+    scale: RATIO_SCALE,
+    legend: { title: 'Observed/control' },
+  },
 } as const satisfies MatrixFieldPresets<HicColorField>
 
 /**

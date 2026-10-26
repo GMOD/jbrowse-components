@@ -72,7 +72,7 @@ describe.each(['linear', 'symlog', 'log'] as const)('a %s scale', scale => {
       color.domainMax ?? loadedMax,
     ])
     expect(display.colorDomain).toEqual(shared.domain)
-    expect(display.renderState.scaleType).toBe(scaleTypeCode(scale))
+    expect(display.renderState.color.scaleType).toBe(scaleTypeCode(scale))
   })
 })
 

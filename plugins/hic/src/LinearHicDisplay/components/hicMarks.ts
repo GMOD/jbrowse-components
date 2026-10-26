@@ -27,12 +27,12 @@ const contactMark: MarkShape<HicUploadData, HicContactParams> = {
       canvasSize: [frame.canvasWidth, frame.canvasHeight],
       binWidth: p.binWidth,
       yScalar: p.yScalar,
-      domainMin: p.domainMin,
-      domainMax: p.domainMax,
+      domainMin: p.color.domain[0],
+      domainMax: p.color.domain[1],
       viewScale: p.viewScale,
       viewOffsetX: p.viewOffsetX,
-      scaleType: p.scaleType,
-      rampMidNorm: p.midNorm,
+      scaleType: p.color.scaleType,
+      rampMidNorm: p.color.midNorm,
     })
   },
 
@@ -49,6 +49,6 @@ export const HIC_MARKS = [
       ...state,
       binWidth: data.binWidth,
     }),
-    textures: (state: HicRenderState) => ({ colorRamp: state.colorRamp }),
+    textures: (state: HicRenderState) => ({ colorRamp: state.color.ramp }),
   }),
 ]
