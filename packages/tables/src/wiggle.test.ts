@@ -173,6 +173,7 @@ test('a multi-wiggle stacks its sources in the order rows.sort gives', async () 
     display: { rows: { field: 'source', sort: domain } },
   })
   expect(t.sources.name).toEqual(domain)
+  expect([...new Set(t.bins.source)]).toEqual(domain)
   domain.forEach((name, row) => {
     const rows = t.marks.row.filter((_, i) => t.marks.source[i] === name)
     expect(rows.length).toBeGreaterThan(0)

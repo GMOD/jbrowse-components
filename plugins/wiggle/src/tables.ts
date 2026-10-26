@@ -359,11 +359,10 @@ export async function wiggleTables(
     min: [] as number[],
     max: [] as number[],
   }
+  const rowOrder = sources.map(source => data.sources.indexOf(source))
   results.forEach((result, regionIndex) => {
-    for (const source of orderRowsByDomain(
-      result.sources,
-      readConfObject(conf.rows, 'sort'),
-    )) {
+    for (const k of rowOrder) {
+      const source = result.sources[k]!
       for (let i = 0; i < source.numFeatures; i++) {
         bins.region.push(regionIndex)
         bins.source.push(source.name)
