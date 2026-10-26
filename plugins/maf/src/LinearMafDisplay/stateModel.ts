@@ -1356,7 +1356,7 @@ export default function stateModelFactory(
         /**
          * #getter
          * The orientation each (row, source chromosome) is measured against for
-         * the inversion indicator (`consensusStrandByRowChr`). Memoized because
+         * the inversion indicator (`consensusStrandByRowRefName`). Memoized because
          * it walks every block and row of every loaded region while its
          * consumer runs on every pan and zoom. Empty when the indicator is off.
          */

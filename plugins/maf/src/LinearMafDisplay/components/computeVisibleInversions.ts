@@ -26,7 +26,7 @@ export type StrandConsensus = ReadonlyMap<number, ReadonlyMap<string, number>>
 
 interface ComputeVisibleInversionsParams extends MafOverlayParams {
   /**
-   * From `consensusStrandByRowChr` over all loaded regions. Passed in, not
+   * From `consensusStrandByRowRefName` over all loaded regions. Passed in, not
    * derived here, because that walk covers the whole buffered region while this
    * runs on every pan and zoom; the model memoizes it (`inversionConsensus`).
    */

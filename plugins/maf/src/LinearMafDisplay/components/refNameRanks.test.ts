@@ -3,7 +3,7 @@ import { perRowRefNameRanks, refNameRankLabel } from './refNameRanks.ts'
 import type { MafRegionData } from '../../LinearMafRenderer/mafRenderingBackendTypes.ts'
 
 // Minimal region factory: one block spanning [startBp,endBp) with the given
-// per-row (rowIndex,chr) entries. Only the fields perRowChromRanks reads are set.
+// per-row (rowIndex, srcRefName) entries. Only the fields perRowRefNameRanks reads are set.
 function region(
   blocks: { startBp: number; endBp: number; rows: [number, string][] }[],
 ): MafRegionData {
@@ -33,7 +33,7 @@ describe('refNameRankLabel', () => {
   })
 })
 
-describe('perRowChromRanks', () => {
+describe('perRowRefNameRanks', () => {
   test('a row on a single chromosome ranks it 0 (maxRank 0)', () => {
     const { ranks, maxRank } = perRowRefNameRanks([
       region([{ startBp: 0, endBp: 100, rows: [[0, 'chrA']] }]),

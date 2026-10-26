@@ -81,7 +81,7 @@ async function loadFrom(dir: string, label: string): Promise<Arm> {
     inversions: named(inversionsMod, 'computeVisibleInversions', label),
     consensus: named(
       inversionsMod,
-      'consensusStrandByRowChr',
+      'consensusStrandByRowRefName',
       label,
     ) as unknown as ConsensusFn,
   }
@@ -371,7 +371,7 @@ try {
     const frames = makeFrames(shape, regionEnd, FRAMES)
     const viewportHeight = shape.rows * GEOMETRY.rowHeight
     // Built from the same blocks each side sees, and by each side's own
-    // `consensusStrandByRowChr`, so no arm inherits another's Map.
+    // `consensusStrandByRowRefName`, so no arm inherits another's Map.
     const consensusFor = (arm: Arm) =>
       arm.consensus(new Map([[0, { blocks, coverage }]]) as never)
 

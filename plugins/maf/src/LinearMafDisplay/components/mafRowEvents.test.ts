@@ -56,7 +56,7 @@ test('only rows whose strand differs from their consensus are inverted', () => {
   ])
 })
 
-// `consensusStrandByRowChr` is scored across every loaded region, so a region
+// `consensusStrandByRowRefName` is scored across every loaded region, so a region
 // landing elsewhere can flip which of this one's blocks read as inverted — the
 // cache has to belong to the consensus that built it.
 test('inverted rows are keyed by consensus as well as region', () => {

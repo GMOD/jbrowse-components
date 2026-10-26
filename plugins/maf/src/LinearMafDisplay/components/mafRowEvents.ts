@@ -38,7 +38,7 @@ function invertedRowsOf(block: MafBlock, consensus: StrandConsensus) {
  * consensus orientation. Filled per block on first touch: walking a 54k-block
  * region eagerly cost 145ms in the first frame after a fetch.
  *
- * Keyed on the consensus as well as the region, since `consensusStrandByRowChr`
+ * Keyed on the consensus as well as the region, since `consensusStrandByRowRefName`
  * scores every loaded region and a landing region can flip which blocks read as
  * inverted.
  */
