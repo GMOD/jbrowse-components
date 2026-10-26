@@ -10,7 +10,7 @@ import type { SourceInfo, WiggleFeatureArrays } from '@jbrowse/wiggle-core'
 export {
   LINE_INTERPOLATIONS,
   WIGGLE_MARK_NAMES,
-  WIGGLE_RENDERINGS,
+  WIGGLE_PLOTS,
   markOf,
   renderingOf,
 } from './renderingTypes.ts'

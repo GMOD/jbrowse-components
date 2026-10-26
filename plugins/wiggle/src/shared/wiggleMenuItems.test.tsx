@@ -88,8 +88,8 @@ test('stepping finer doubles the resolution', () => {
 })
 
 const PLOTS = [
-  ['xyplot', 'Bar plot'],
-  ['density', 'Density'],
+  ['xyplot', { type: 'bar' }, 'Bar plot'],
+  ['density', { type: 'rect' }, 'Density'],
 ] as const
 
 // minimal stand-in for the display: the two axes a leaf writes, and the raw
@@ -161,4 +161,15 @@ test('one leaf writes both axes in one action', () => {
   }
   density.onClick()
   expect(self.writes).toEqual([{ mark: { type: 'rect' }, rowLayout: true }])
+})
+
+test('a flat leaf writes its mark and leaves the layout alone', () => {
+  const { self, item } = plotMenu(1)
+  const density = rowsOf(item).find(i => 'label' in i && i.label === 'Density')
+  if (!density || !('onClick' in density)) {
+    throw new Error('no Density row')
+  }
+  density.onClick()
+  expect(self.writes).toEqual([{ mark: 'rect', interpolate: undefined }])
+  expect(checkedIn(item)).toEqual(['Bar plot'])
 })

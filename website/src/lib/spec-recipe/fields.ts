@@ -52,7 +52,7 @@ import {
 } from '../../../../plugins/canvas/src/RenderFeatureDataRPC/displayModes.ts'
 import { getHeightModeOptions } from '../../../../packages/display-kit/src/heightMode.ts'
 import {
-  WIGGLE_RENDERINGS,
+  WIGGLE_PLOTS,
   renderingOf,
 } from '../../../../plugins/wiggle/src/renderingTypes.ts'
 
@@ -1111,8 +1111,8 @@ const BIN_SUMMARIES: Record<string, string> = {
 // The 'Plot type' menu radios come straight from the exported wiggle table, so
 // the wording can't drift from the menu.
 function plotTypeStep(rendering: string): FieldStep | undefined {
-  const radio = WIGGLE_RENDERINGS.find(([v]) => v === rendering)
-  return radio ? { path: `${TRACK_MENU} → Plot type → ${radio[1]}` } : undefined
+  const radio = WIGGLE_PLOTS.find(([v]) => v === rendering)
+  return radio ? { path: `${TRACK_MENU} → Plot type → ${radio[2]}` } : undefined
 }
 
 // A plot's `mark` names its type; the canvas displays' names the box height.

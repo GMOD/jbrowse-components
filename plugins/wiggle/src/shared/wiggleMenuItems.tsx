@@ -1,9 +1,5 @@
 import { readConfObject } from '@jbrowse/core/configuration'
-import {
-  makeRadioSubMenu,
-  radioItems,
-  toggleItem,
-} from '@jbrowse/core/ui/menuItems'
+import { radioItem, radioItems, toggleItem } from '@jbrowse/core/ui/menuItems'
 import {
   makeMarkSizeSubMenu,
   makeResolutionSubMenuItem,
@@ -12,7 +8,6 @@ import { isSummaryField } from '@jbrowse/wiggle-core/summaryFields'
 import LineWeightIcon from '@mui/icons-material/LineWeight'
 import ShowChartIcon from '@mui/icons-material/ShowChart'
 
-import { markOf } from '../renderingTypes.ts'
 import {
   RESOLUTION_MAX,
   RESOLUTION_MIN,
@@ -32,17 +27,9 @@ import type { RadioOption } from '@jbrowse/core/ui/menuItems'
 import type { SummaryField } from '@jbrowse/wiggle-core/summaryFields'
 
 const LAYOUTS = [
-  ['rows', 'Multi-row'],
-  ['overlay', 'Overlapping'],
+  [true, 'Multi-row'],
+  [false, 'Overlapping'],
 ] as const
-
-// `<layout>:<renderingType>`, and MENU-LOCAL. The model still holds the two
-// axes apart — five `renderingType` names that say what a source is drawn as,
-// `rows` that says where it sits — and nothing outside this file reads a key
-// (ADR-143). Reviving the nine names as config values
-// is what put the layout back inside a plot name, where `isOverlayMode` had to
-// recover it by string-set membership.
-const leafKey = (layout: string, rendering: string) => `${layout}:${rendering}`
 
 // The plot and the layout, picked in one click: a group per layout, the same
 // five plots inside each. Flat five plots plus a "One row per source" checkbox
@@ -60,7 +47,7 @@ export function makeRenderingTypeSubMenu(
     setPlot: (plot: { mark: WiggleMarkObject; rowLayout: boolean }) => void
     discoveredRows: readonly unknown[]
   },
-  renderings: readonly (readonly [string, string])[],
+  plots: readonly (readonly [string, WiggleMarkObject, string])[],
 ): MenuItem {
   // One source has no layout axis to drill through, so it meets the five plots
   // flat. It also cannot go on rows usefully — a lone row raises the tree and
@@ -68,40 +55,31 @@ export function makeRenderingTypeSubMenu(
   // refuses a single row. Grouped while on rows, so a track whose sources
   // dropped to one can still get back to one box.
   if (!self.isRowLayout && self.discoveredRows.length <= 1) {
-    return makeRadioSubMenu({
+    return {
       label: 'Plot type',
       icon: ShowChartIcon,
-      value: self.renderingType,
-      onChange: t => {
-        const { type, interpolate } = markOf(t)!
-        self.setMark(type, interpolate)
-      },
-      options: renderings,
-    })
+      subMenu: plots.map(([rendering, mark, label]) =>
+        radioItem(label, self.renderingType === rendering, () => {
+          self.setMark(mark.type, mark.interpolate)
+        }),
+      ),
+    }
   }
-  const current = leafKey(
-    self.isRowLayout ? 'rows' : 'overlay',
-    self.renderingType,
-  )
   return {
     label: 'Plot type',
     icon: ShowChartIcon,
-    subMenu: LAYOUTS.map(([layout, layoutLabel]) =>
-      makeRadioSubMenu({
-        label: layoutLabel,
-        value: current,
-        onChange: key => {
-          const cut = key.indexOf(':')
-          self.setPlot({
-            mark: markOf(key.slice(cut + 1))!,
-            rowLayout: key.slice(0, cut) === 'rows',
-          })
-        },
-        options: renderings.map(
-          ([value, label]) => [leafKey(layout, value), label] as const,
+    subMenu: LAYOUTS.map(([rowLayout, layoutLabel]) => ({
+      label: layoutLabel,
+      subMenu: plots.map(([rendering, mark, label]) =>
+        radioItem(
+          label,
+          self.isRowLayout === rowLayout && self.renderingType === rendering,
+          () => {
+            self.setPlot({ mark, rowLayout })
+          },
         ),
-      }),
-    ),
+      ),
+    })),
   }
 }
 

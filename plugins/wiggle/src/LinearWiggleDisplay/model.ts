@@ -71,7 +71,7 @@ import {
   makeRenderingTypeSubMenu,
   makeResolutionSubMenu,
 } from '../shared/wiggleMenuItems.tsx'
-import { WIGGLE_RENDERINGS } from '../util.ts'
+import { WIGGLE_PLOTS } from '../util.ts'
 import { sortSourcesByScoreAt } from './sortSourcesByScoreAt.ts'
 import { sourceWarnings, sourcesFromRegionData } from './sourcesLogic.ts'
 
@@ -851,7 +851,7 @@ export default function stateModelFactory(
           ...(self.hasLegendKey ? [legendCheckboxItem(self)] : []),
         ]
         return [
-          makeRenderingTypeSubMenu(self, WIGGLE_RENDERINGS),
+          makeRenderingTypeSubMenu(self, WIGGLE_PLOTS),
           ...makeResolutionSubMenu(self),
           makeScoreAxisMenuItem(
             self,
