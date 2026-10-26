@@ -494,9 +494,9 @@
           "type": "LinearWiggleDisplay",
           "displayId": "brca1_sge_missense-LinearWiggleDisplay",
           "mark": "point",
-          "size": 9,
           "legend": { "show": false },
           "encoding": {
+            "size": 9,
             "y": { "scale": { "domainMin": -2.6, "domainMax": 0.8 } },
             "color": {
               "scale": {

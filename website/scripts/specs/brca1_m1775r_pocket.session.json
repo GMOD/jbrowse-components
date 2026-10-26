@@ -899,8 +899,8 @@
       },
       "displayDefaults": {
         "mark": "point",
-        "size": 11,
         "encoding": {
+          "size": 11,
           "y": {
             "scale": { "domainMin": -2.6, "domainMax": 0.8 },
             "axis": { "title": "Function score" }

@@ -1586,9 +1586,9 @@
           "type": "LinearWiggleDisplay",
           "displayId": "tp53-sge-LinearWiggleDisplay",
           "mark": "point",
-          "size": 11,
           "legend": { "show": false },
           "encoding": {
+            "size": 11,
             "y": {
               "scale": { "domainMin": -2, "domainMax": 3.0 },
               "axis": { "title": "loss of function ↑" },
