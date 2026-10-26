@@ -16,7 +16,7 @@ field.
 ## Example usage
 
 ```js
-{ type: 'ChordVariantDisplay', encoding: { color: 'svType' }, opacity: 0.45 }
+{ type: 'ChordVariantDisplay', encoding: { color: 'svType', opacity: 0.45 } }
 ```
 
 ## Config slots

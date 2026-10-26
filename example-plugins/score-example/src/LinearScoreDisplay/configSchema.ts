@@ -24,6 +24,9 @@ export const configSchema = ConfigurationSchema(
      */
     encoding: ConfigurationSchema('LinearScoreEncoding', {
       color: ConfigurationSchema('LinearScoreColor', {
+        /**
+         * #slot encoding.color.value
+         */
         value: {
           type: 'color',
           defaultValue: '#0068d1',
@@ -31,6 +34,9 @@ export const configSchema = ConfigurationSchema(
         },
       }),
       y: ConfigurationSchema('LinearScoreY', {
+        /**
+         * #slot encoding.y.field
+         */
         field: {
           type: 'string',
           defaultValue: 'score',

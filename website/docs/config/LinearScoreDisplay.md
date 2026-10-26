@@ -33,5 +33,6 @@ Display slots go on a display entry: `"displays": [{ "type": "LinearScoreDisplay
 | Slot | Description |
 | --- | --- |
 | <span id="slot-height">**height**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>100</code> | height of the display in pixels |
-| <span id="slot-color">**color**</span><br>[`color`](/docs/config_guides/slot_types#color) = <code>'#0068d1'</code> | fill color for every score box |
-| <span id="slot-scorecolumn">**scoreColumn**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>'score'</code> | feature attribute read as the score (box height); normalized per region |
+| <span id="slot-encoding">**encoding**</span><br>[LinearScoreEncoding sub-schema](#slot-encodingcolorvalue) | The channels each box paints through, spelled as the built-in displays spell theirs: `color.value` fills every box, and `y.field` names the feature attribute read as the box height. |
+| <span id="slot-encodingcolorvalue">**encoding.color.value**</span><br>[`color`](/docs/config_guides/slot_types#color) = <code>'#0068d1'</code> | fill color for every score box |
+| <span id="slot-encodingyfield">**encoding.y.field**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>'score'</code> | feature attribute read as the score (box height); normalized per region |

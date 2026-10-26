@@ -31,8 +31,7 @@ hovered chord darkens it and a selected one takes the theme's highlight:
     {
       type: 'ChordVariantDisplay',
       displayId: 'sv-ChordVariantDisplay',
-      encoding: { color: 'svType' },
-      opacity: 0.45,
+      encoding: { color: 'svType', opacity: 0.45 },
     },
   ],
 }
@@ -56,8 +55,7 @@ Display slots go on a display entry: `"displays": [{ "type": "ChordVariantDispla
 | --- | --- |
 | <span id="slot-mark">**mark**</span><br>[ChordMark](../chordmark) | How far each chord curves toward the center, a [](/docs/config/chordmark) object |
 | <span id="slot-onchordclick">**onChordClick**</span><br>[`maybeString`](/docs/config_guides/slot_types#the-maybe-types) | a jexl callback run when a chord is clicked, in place of opening the record's details; unset opens the details<br>_callback args:_ `feature`, `track` |
-| <span id="slot-encoding">**encoding**</span><br>[ChordEncoding](../chordencoding) | The channels each resting chord paints through: `encoding.color`, its line color. |
-| <span id="slot-opacity">**opacity**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>0.32</code> | the alpha every resting chord draws at, over its color's own |
+| <span id="slot-encoding">**encoding**</span><br>[ChordEncoding](../chordencoding) | The channels each resting chord paints through: `encoding.color`, its line color, and `encoding.opacity`, its alpha. |
 
 ## Retired keys
 

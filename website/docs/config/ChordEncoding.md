@@ -24,3 +24,4 @@ A setting written to it names members one by one: a member left out stays as it 
 | Slot | Description |
 | --- | --- |
 | <span id="slot-color">**color**</span><br>[ChordColor](../chordcolor) | The line color of each resting chord: `{ value }`, a CSS color or `jexl:` callback, or a field of the record, `svType` say, whose values each take a color with a key on the circle. |
+| <span id="slot-opacity">**opacity**</span><br>[ChordOpacity](../chordopacity) | The alpha of every resting chord, a [](/docs/config/chordopacity) object; a number is its `value`. |

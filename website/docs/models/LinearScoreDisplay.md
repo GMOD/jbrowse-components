@@ -30,7 +30,7 @@ The display attaches to any `FeatureTrack`, so a track naming it in
     {
       type: 'LinearScoreDisplay',
       displayId: 'genes_with_scores-LinearScoreDisplay',
-      scoreColumn: 'score',
+      encoding: { y: { field: 'score' } },
     },
   ],
 }

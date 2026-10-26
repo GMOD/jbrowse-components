@@ -18,10 +18,12 @@ export const chordOpacityConfigSchema = ConfigurationSchema(
   {
     /**
      * #slot value
+     * The alpha every resting chord draws at, 0 to 1, over its color's own;
+     * unset is 0.32.
      */
     value: {
       type: 'maybeNumber',
-      description: `the alpha every resting chord draws at, 0 to 1, over its color's own; unset is ${DEFAULT_CHORD_OPACITY}`,
+      description: "every resting chord's alpha; unset is 0.32",
     },
   },
   { shorthand: 'value', writes: 'whole', closed: true },
