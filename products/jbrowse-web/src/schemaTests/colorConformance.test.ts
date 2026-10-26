@@ -62,7 +62,6 @@ import type { AttributeRange } from '../../../../packages/synteny-core/src/color
 import type { MultiWaySyntenyDisplayConfig } from '../../../../plugins/linear-comparative-view/src/MultiWaySyntenyDisplay/configSchema.ts'
 import type { ConfigSlotSelf } from '../../../../plugins/maf/src/LinearMafDisplay/configSlotViews.ts'
 import type { MarkConfig } from '../../../../plugins/marks/src/LinearMarkDisplay/configSchema.ts'
-import type { StepChannels } from '../../../../plugins/marks/src/LinearMarkDisplay/stepChannels.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { ColorSlots } from '@jbrowse/core/util/colorScale'
 import type { EncodedChannels } from '@jbrowse/core/util/markEncoding'
@@ -343,9 +342,11 @@ function mark({ color, values }: Spec): Answer[] | string {
   } as unknown as MarkConfig
   const source = markColorOf(markConfig, {}, {})
   const count = values.length
-  const base = {
+  const base: EncodedChannels = {
     count,
     skipped: 0,
+    yMin: 0,
+    yMax: 0,
     x: new Uint32Array(count),
     x2: new Uint32Array(count),
   }
@@ -364,7 +365,7 @@ function mark({ color, values }: Spec): Answer[] | string {
           domain: [],
           entries: keys.map(value => ({ value, color: 0 })),
         },
-      } satisfies EncodedChannels,
+      },
       source,
     )
     return values.map((_, i) => (layer.color as Uint32Array)[i]!)
@@ -375,7 +376,7 @@ function mark({ color, values }: Spec): Answer[] | string {
         ...base,
         colorValue: Float32Array.from(numbers(values)),
         scale: { kind: 'threshold', field: source.encoding.field, domain: [] },
-      } satisfies EncodedChannels,
+      },
       source,
     )
     const colors = paintColors(layer, count, paintScaleOf(layer.scale))
