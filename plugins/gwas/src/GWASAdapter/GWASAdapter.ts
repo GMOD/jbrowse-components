@@ -11,9 +11,10 @@ import { getScoreTransform } from './scoreTransforms.ts'
 import { TOP_HIT_FACT, topHitsOf } from './topHit.ts'
 
 import type { GWASAdapterConfig } from './configSchema.ts'
-import type { GWASFetchOptions, LdJoin, LdToIndex, ldOf } from './ldJoin.ts'
+import type { GWASFetchOptions, JoinedLd, LdJoin, LdToIndex } from './ldJoin.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
+import type { BedFeatureData } from '@jbrowse/plugin-bed'
 
 export default class GWASAdapter extends BedTabixAdapter {
   declare config: GWASAdapterConfig
@@ -67,15 +68,20 @@ export default class GWASAdapter extends BedTabixAdapter {
     return ldToIndex(dataAdapter, join, opts)
   }
 
-  private rewritten(f: Feature, ld?: ReturnType<typeof ldOf>) {
+  protected override featureOf(data: BedFeatureData) {
     const transform = this.scoreTransform
-    const score = f.get('score')
-    const rescored = transform !== undefined && score !== undefined
-    return rescored || ld
+    if (transform && data.score !== undefined) {
+      data.score = transform(data.score)
+    }
+    return super.featureOf(data)
+  }
+
+  private joined(f: Feature, ld?: JoinedLd) {
+    return ld
       ? new SimpleFeature({
           ...f.toJSON(),
-          ...(rescored ? { score: transform(score) } : {}),
-          ...(ld ? { [LD_FIELD]: ld.r2, [LD_ROLE_FIELD]: ld.role } : {}),
+          [LD_FIELD]: ld.r2,
+          [LD_ROLE_FIELD]: ld.role,
         })
       : f
   }
@@ -97,7 +103,7 @@ export default class GWASAdapter extends BedTabixAdapter {
         if (unjoined) {
           opts.notices?.push(INDEX_SNP_MISSING)
         }
-        const features = loaded.map((f, i) => this.rewritten(f, joined[i]))
+        const features = loaded.map((f, i) => this.joined(f, joined[i]))
         if (facts) {
           facts[TOP_HIT_FACT] = topHitsOf(features, region)
         }

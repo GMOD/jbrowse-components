@@ -37,6 +37,9 @@ export const MANHATTAN_MARK = {
 /** The index SNP's color, apart from every r² bin. */
 export const LD_INDEX_COLOR = '#c951c9'
 
+// jexl, since a mark's `filter` step takes no field predicate and the partners'
+// test needs ADR-238's unbuilt `not`. Measured 2026-10-26 over a million BED
+// features: this filter ~200 ms warm, a compiled predicate ~25 ms
 const LD_PARTNERS_FILTER = {
   type: 'filter' as const,
   expr: `jexl:feature.${LD_ROLE_FIELD} != 'index'`,

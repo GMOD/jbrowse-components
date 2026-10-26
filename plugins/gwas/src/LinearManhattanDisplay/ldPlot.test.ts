@@ -200,19 +200,55 @@ test("LD coloring makes the default plot LocusZoom's, as the add-track workflow 
   expect(display.plot.transform).toEqual(transform)
 })
 
-const DEMO_LD_PLOT = (
-  JSON.parse(
-    fs.readFileSync(
-      path.resolve(__dirname, '../../../../test_data/config_gwas.json'),
-      'utf8',
+function readRepoFile(file: string) {
+  return fs.readFileSync(path.resolve(__dirname, '../../../../', file), 'utf8')
+}
+
+function demoLdPlot(file: string, trackId: string) {
+  return (
+    JSON.parse(readRepoFile(file)) as {
+      tracks: {
+        trackId: string
+        displays: { marks: Record<string, unknown>[] }[]
+      }[]
+    }
+  ).tracks.find(t => t.trackId === trackId)!.displays[0]!.marks
+}
+
+const DEMO_LD_PLOT = demoLdPlot('test_data/config_gwas.json', 'sle_gwas_ld')
+
+// A copy may set its own point size, and writes the threshold cuts as numbers
+function sizeless(marks: unknown) {
+  return JSON.parse(
+    JSON.stringify(marks, (key, value: unknown) =>
+      key === 'size'
+        ? undefined
+        : key === 'domain' && Array.isArray(value)
+          ? value.map(String)
+          : value,
     ),
-  ) as {
-    tracks: {
-      trackId: string
-      displays: { marks: Record<string, unknown>[] }[]
-    }[]
-  }
-).tracks.find(t => t.trackId === 'sle_gwas_ld')!.displays[0]!.marks
+  ) as unknown
+}
+
+test.each([
+  ['the SLE demo', DEMO_LD_PLOT],
+  [
+    'the LocusZoom demo',
+    demoLdPlot('test_data/gwas/locuszoom_ld.json', 'giant_bmi_ld'),
+  ],
+  [
+    'the GWAS track guide',
+    (
+      JSON.parse(
+        /```json addtrack\n([\s\S]*?"ldAdapter"[\s\S]*?)\n```/.exec(
+          readRepoFile('website/docs/config_guides/gwas_track.md'),
+        )![1]!,
+      ) as { displayDefaults: { marks: unknown } }
+    ).displayDefaults.marks,
+  ],
+])('%s writes out the plot LD coloring makes', (_, marks) => {
+  expect(sizeless(marks)).toEqual(sizeless(LD_MARKS))
+})
 
 // Unticking and ticking again leaves the plot as it was, so the session delta
 // drops `marks` and the track follows its admin's plot again.

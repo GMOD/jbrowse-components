@@ -1,6 +1,6 @@
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 
-import { LD_WINDOW_BP, joinLd, ldOf, ldToIndex } from './ldJoin.ts'
+import { LD_WINDOW_BP, joinLd, ldToIndex } from './ldJoin.ts'
 
 import type { LdJoin } from './ldJoin.ts'
 import type { NoAssemblyRegion } from '@jbrowse/core/util/types'
@@ -40,13 +40,14 @@ function source(
   }
 }
 
-function feat(p: { name?: string; start: number }) {
+function feat(p: { name?: string; start: number; score?: number }) {
   return new SimpleFeature({
-    uniqueId: String(p.start),
+    uniqueId: `${p.start}-${p.name}`,
     refName: '1',
     start: p.start,
     end: p.start + 1,
     ...(p.name === undefined ? {} : { name: p.name }),
+    ...(p.score === undefined ? {} : { score: p.score }),
   })
 }
 
@@ -56,10 +57,7 @@ async function joined(
   features: SimpleFeature[],
 ) {
   const ld = await ldToIndex(source(join.refName, records), join)
-  return features.map(f => {
-    const out = ldOf(f, ld, join)
-    return [out?.r2, out?.role]
-  })
+  return joinLd(features, ld, join).joined.map(out => [out?.r2, out?.role])
 }
 
 test('the index reads r² 1 and each partner its own, either orientation', async () => {
@@ -82,6 +80,28 @@ test('the index reads r² 1 and each partner its own, either orientation', async
     [0.8, 'partner'],
     [0.4, 'partner'],
     [undefined, undefined],
+  ])
+})
+
+// Pan-UKBB and FinnGen list a multi-allelic site as one row per allele, and
+// `indexSnp` names only the position.
+test('of two alleles at the index position, only the stronger is the index', async () => {
+  expect(
+    await joined(
+      [rec({ snpA: 'rsIndex', bpA: 100, snpB: 'rsB', bpB: 200, r2: 0.8 })],
+      { start: 99, refName: 'chr1' },
+      [
+        feat({ name: 'rsWeak', start: 99, score: 4 }),
+        feat({ name: 'rsIndex', start: 99, score: 9 }),
+        feat({ name: 'rsTied', start: 99, score: 9 }),
+        feat({ name: 'rsB', start: 199, score: 6 }),
+      ],
+    ),
+  ).toEqual([
+    [undefined, undefined],
+    [1, 'index'],
+    [undefined, undefined],
+    [0.8, 'partner'],
   ])
 })
 

@@ -14,6 +14,7 @@ import { readTabixHeaderLines } from '@jbrowse/core/util/tabix'
 
 import { featureData, makeParser, parseNamesFromHeader } from '../util.ts'
 
+import type { FeatureData } from '../util.ts'
 import type { BedTabixAdapterConfig } from './configSchema.ts'
 import type BED from '@gmod/bed'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -115,6 +116,11 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter<BedTabixAdap
     )
   }
 
+  // a subclass rewrites a parsed row here, before it is a feature
+  protected featureOf(data: FeatureData): Feature {
+    return new SimpleFeature(data)
+  }
+
   public getFeatures(query: Region, opts?: BaseOptions) {
     const { signal, statusCallback } = opts ?? {}
     return ObservableCreate<Feature>(async observer => {
@@ -142,7 +148,7 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter<BedTabixAdap
         { splitLine, start, end, offset }: Row,
       ) => {
         observer.next(
-          new SimpleFeature(
+          this.featureOf(
             featureData({
               splitLine,
               refName: query.refName,

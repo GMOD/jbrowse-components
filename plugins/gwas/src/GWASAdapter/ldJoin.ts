@@ -97,38 +97,64 @@ export async function ldToIndex(
   return { byName, byStart }
 }
 
+/** A feature's r² to the index and its part in the join. */
+export interface JoinedLd {
+  r2: number
+  role: 'index' | 'partner'
+}
+
+const INDEX: JoinedLd = { r2: 1, role: 'index' }
+
 /**
- * A feature's r² to the index and its part in the join, or undefined where it
- * has neither. The index SNP joins whether or not the LD file names it.
+ * The index SNP's row: the highest-scoring row at its position, the first
+ * among equals, or -1 where the region holds none. A multi-allelic site lists
+ * a row per allele, and only one of them is the index.
  */
-export function ldOf(
+function indexRowOf(features: Feature[], join: LdJoin) {
+  let row = -1
+  let best = -Infinity
+  for (const [i, f] of features.entries()) {
+    const score: unknown = f.get('score')
+    const value = typeof score === 'number' ? score : -Infinity
+    if (f.get('start') === join.start && (row === -1 || value > best)) {
+      row = i
+      best = value
+    }
+  }
+  return row
+}
+
+/**
+ * A partner's r² to the index, or undefined for none. Another allele at the
+ * index's position joins nothing, since `ldToIndex` keys no pair at it.
+ */
+function partnerOf(
   feature: Feature,
   ld: LdToIndex,
   join: LdJoin,
-): { r2: number; role: 'index' | 'partner' } | undefined {
+): JoinedLd | undefined {
   const name: unknown = feature.get('name')
   const start = feature.get('start')
-  if (start === join.start) {
-    return { r2: 1, role: 'index' }
-  }
   const r2 =
-    (isNamedSnp(name) ? ld.byName.get(name) : undefined) ??
-    ld.byStart.get(start)
+    start === join.start
+      ? undefined
+      : ((isNamedSnp(name) ? ld.byName.get(name) : undefined) ??
+        ld.byStart.get(start))
   return r2 === undefined ? undefined : { r2, role: 'partner' }
 }
 
 /**
  * Each feature's part in the join, and whether the region shows the index
- * while the LD file names no partner of it at all. A partner the GWAS file
- * lacks, or one outside a narrow region, is ordinary and goes unremarked.
+ * while the LD file names no partner of it at all. The index joins whether or
+ * not the LD file names it. A partner the GWAS file lacks, or one outside a
+ * narrow region, is ordinary and goes unremarked.
  */
 export function joinLd(features: Feature[], ld: LdToIndex, join: LdJoin) {
-  const joined = features.map(f => ldOf(f, ld, join))
+  const index = indexRowOf(features, join)
   return {
-    joined,
-    unjoined:
-      ld.byName.size === 0 &&
-      ld.byStart.size === 0 &&
-      joined.some(l => l?.role === 'index'),
+    joined: features.map((f, i) =>
+      i === index ? INDEX : partnerOf(f, ld, join),
+    ),
+    unjoined: ld.byName.size === 0 && ld.byStart.size === 0 && index !== -1,
   }
 }
