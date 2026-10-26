@@ -100,17 +100,16 @@ export async function readTaiSlice({
     span
 
   const file = openLocation(location, pluginManager)
-  const buffer = await unzip(
-    await updateStatus(
-      'Downloading alignments',
-      statusCallback,
-      () =>
-        toEnd
-          ? readToEnd(file, startBlock, readLength, signal)
-          : file.read(readLength, startBlock, { signal }),
-      signal,
-    ),
+  const compressed = await updateStatus(
+    'Downloading alignments',
+    statusCallback,
+    () =>
+      toEnd
+        ? readToEnd(file, startBlock, readLength, signal)
+        : file.read(readLength, startBlock, { signal }),
+    signal,
   )
+  const buffer = await unzip(compressed)
 
   const startOffset = firstEntry.virtualOffset.dataPosition
   const nextOffset = nextEntry?.virtualOffset.dataPosition ?? 0
@@ -123,7 +122,27 @@ export async function readTaiSlice({
 
   // subarray (not slice) — TextDecoder.decode handles either, and subarray
   // avoids a Uint8Array copy of what can be a sizable chunk.
-  return buffer.subarray(startOffset, endOffset)
+  const slice = buffer.subarray(startOffset, endOffset)
+  const atFileEnd =
+    endOffset === buffer.length && (toEnd || compressed.length < readLength)
+  return atFileEnd ? endingInNewline(slice) : slice
+}
+
+const NEWLINE = 10
+
+/**
+ * The parsers drop a block whose last line has no newline, as a read cut it.
+ * At the end of the file nothing cut it, so a file whose last line has none
+ * gets one.
+ */
+function endingInNewline(slice: Uint8Array) {
+  if (slice.length === 0 || slice.at(-1) === NEWLINE) {
+    return slice
+  }
+  const ended = new Uint8Array(slice.length + 1)
+  ended.set(slice)
+  ended[slice.length] = NEWLINE
+  return ended
 }
 
 /**

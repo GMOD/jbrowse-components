@@ -28,11 +28,11 @@ const taffy = (name: string, extra = {}) =>
 
 // `stanzas.maf.gz.tai` is written by hand: `taffy index` refuses a MAF whose
 // reference row is on the `-` strand, which the fourth stanza is.
-const maf = (samples: string[] = []) =>
+const maf = (samples: string[] = [], name = 'stanzas') =>
   new BgzipMafAdapter(
     bgzipMafConfigSchema.create({
-      mafGzLocation: local('stanzas.maf.gz'),
-      taiLocation: local('stanzas.maf.gz.tai'),
+      mafGzLocation: local(`${name}.maf.gz`),
+      taiLocation: local(`${name}.maf.gz.tai`),
       samples,
     }),
   )
@@ -126,6 +126,14 @@ const CASES: [
   ['MAF, every stanza', () => maf(), region('chr1', 0, 5000), undefined, 4],
   ['MAF, a narrow query', () => maf(), region('chr1', 105, 110), undefined, 2],
   ['MAF, the next contig', () => maf(), region('chr2', 0, 6000), undefined, 1],
+  // the same file less its final newline, which no read cut
+  [
+    'MAF, a last line with no newline',
+    () => maf([], 'stanzasNoFinalNewline'),
+    region('chr2', 0, 6000),
+    undefined,
+    1,
+  ],
   [
     'MAF, a sample set and a subtree',
     () => maf(['hg38', 'mm10', '3', 'rn6']),
