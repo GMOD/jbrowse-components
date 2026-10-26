@@ -11,6 +11,8 @@
 // region, so a reused region skips the walk and a real fetch, which always
 // lands a new region, pays it.
 //   place       `placeMafRegionData` over the packed wire
+//   placeReordered  the same with the rows in reverse file order, as after a
+//               cluster, where every block's rows are sorted by row index
 //   channels    `buildMafChannels` over a cold region
 //   insertions  `mafInsertionChannels` over a cold region
 //   encode      `encodeMafRows` whole, over a cold region
@@ -224,6 +226,9 @@ for (const species of SPECIES) {
     const rowIndexBySrc = new Map(
       Array.from({ length: species }, (_, i) => [`sp${i}`, i]),
     )
+    const reordered = new Map(
+      [...rowIndexBySrc.keys()].map((name, i) => [name, species - 1 - i]),
+    )
     const packed = pack(features)
     const props = encodePropsOf(binBp, rowIndexBySrc)
     const used = new WeakSet<object>()
@@ -243,9 +248,10 @@ for (const species of SPECIES) {
     }
     const arms: Record<string, () => number> = {
       place: () => armPlace(packed, rowIndexBySrc),
+      placeReordered: () => armPlace(packed, reordered),
       sum: () => armSum(packed, rowIndexBySrc, props),
     }
-    const order = ['place', ...Object.keys(cold), 'sum']
+    const order = ['place', 'placeReordered', ...Object.keys(cold), 'sum']
     const best: Record<string, number> = {}
     const counts: Record<string, number> = {}
     for (let r = 0; r < rounds + 2; r++) {
@@ -284,6 +290,7 @@ for (const species of SPECIES) {
       cells: counts.channels,
       insertions: counts.insertions,
       placeMs: ms('place'),
+      placeReorderedMs: ms('placeReordered'),
       channelsMs: ms('channels'),
       insertionsMs: ms('insertions'),
       encodeMs: ms('encode'),

@@ -28,33 +28,35 @@ function wireData(rows: string[], empties: string[] = []): MafWireRegionData {
   )
 }
 
-test('places rows at their index in the drawn row list', () => {
-  // The worker emits in its own order; the display's order is the only one that
-  // decides a row's position.
+// The worker emits in file order; the display's order alone decides a row's
+// position, and the block lists its rows in that order because the painters
+// draw them in list order and the hit test answers the highest index where
+// sub-pixel rows overlap.
+test('places rows at their index in the drawn row list, in that order', () => {
   const { blocks } = placeMafRegionData(
     wireData(['hg38', 'mm10', 'rn6']),
     new Map([
       ['rn6', 0],
-      ['mm10', 1],
-      ['hg38', 2],
+      ['hg38', 1],
+      ['mm10', 2],
     ]),
   )
   expect(blocks[0]!.rows.map(r => [r.sampleId, r.rowIndex])).toEqual([
-    ['hg38', 2],
-    ['mm10', 1],
     ['rn6', 0],
+    ['hg38', 1],
+    ['mm10', 2],
   ])
 })
 
 test('places e-line rows the same way', () => {
   const { blocks } = placeMafRegionData(
-    wireData([], ['mm10']),
+    wireData([], ['mm10', 'hg38']),
     new Map([
       ['hg38', 0],
       ['mm10', 1],
     ]),
   )
-  expect(blocks[0]!.empties.map(e => e.rowIndex)).toEqual([1])
+  expect(blocks[0]!.empties.map(e => e.rowIndex)).toEqual([0, 1])
 })
 
 // The case the RPC's row order used to get wrong: a session arrives with a

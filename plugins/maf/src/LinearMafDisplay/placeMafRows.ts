@@ -19,6 +19,10 @@ import type {
  *
  * Every sequence field is an `arena.subarray` view, so no bases are copied here
  * or on any later reorder.
+ *
+ * Each block lists its rows in `rowIndex` order, the order the painters draw
+ * them in. Below a pixel per row the drawn bands overlap, and the hit test
+ * answers the highest index as the one painted last.
  */
 export function placeMafRegionData(
   data: MafWireRegionData,
@@ -114,6 +118,8 @@ export function placeMafRegionData(
       }
     }
 
+    sortByRowIndex(rows)
+    sortByRowIndex(empties)
     const refOffset = blockRefOffset[block]!
     blocks.push({
       startBp: blockStartBp[block]!,
@@ -131,5 +137,14 @@ export function placeMafRegionData(
     blocks,
     coverage: data.coverage,
     refSampleId: data.refSampleId,
+  }
+}
+
+function sortByRowIndex(rows: { rowIndex: number }[]) {
+  for (let i = 1; i < rows.length; i++) {
+    if (rows[i]!.rowIndex < rows[i - 1]!.rowIndex) {
+      rows.sort((a, b) => a.rowIndex - b.rowIndex)
+      return
+    }
   }
 }
