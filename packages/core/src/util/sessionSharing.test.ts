@@ -171,8 +171,27 @@ describe('readSharedSession', () => {
     const { sessionParam } = await upload()
 
     await expect(
-      readSharedSession(loadUrl, `${sessionParam.slice(0, -11)}wrongkey123`),
-    ).rejects.toThrow(/key in the link is wrong|incomplete or damaged/)
+      readSharedSession(
+        loadUrl,
+        `${sessionParam.slice(0, -11)}${'w'.repeat(11)}`,
+      ),
+    ).rejects.toThrow(/key in the link is wrong/)
+  })
+
+  it('says the key is wrong when a wrong key happens to unpad', async () => {
+    const { sessionParam, stored } = await upload()
+    let wrongKey = ''
+    for (let i = 0; !wrongKey; i++) {
+      const candidate = `${i}`.padStart(11, 'w')
+      try {
+        await aesDecryptBytes(stored, candidate)
+        wrongKey = candidate
+      } catch {}
+    }
+
+    await expect(
+      readSharedSession(loadUrl, `${sessionParam.slice(0, -11)}${wrongKey}`),
+    ).rejects.toThrow(/key in the link is wrong/)
   })
 })
 

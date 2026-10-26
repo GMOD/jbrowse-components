@@ -135,9 +135,8 @@ export function shareEndpoint(shareURL: string, path: 'share' | 'load') {
 // server-named id ends
 const SHARE_KEY_LENGTH = 11
 
-// The id a session is offered to the share service under. A hash of the key, so
-// a link holding only the key can find it, and the service, which sees only
-// this, cannot recover the key.
+// The id a session is offered to the share service under: a hash of the key, so
+// a link holding only the key can find it
 async function shareIdForKey(key: string) {
   return toBase64Url(await sha256(`jbrowse-share-id:${key}`)).slice(0, 16)
 }
@@ -299,5 +298,6 @@ export async function readSharedSession(
     payload.slice(0, -SHARE_KEY_LENGTH) || (await shareIdForKey(key))
   const ciphertext = await fetchCiphertext(loadUrl, sessionId, signal)
   const bytes = await decrypt(() => aesDecryptBytes(ciphertext, key))
-  return inflate(() => bytes)
+  // a wrong key yields valid padding about once in 256 tries, and then garbage
+  return decrypt(() => inflate(() => bytes))
 }
