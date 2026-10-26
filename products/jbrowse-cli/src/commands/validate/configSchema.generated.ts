@@ -9410,7 +9410,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "invalid": {
-          "description": "the color of a pair with no value for the field, whose alpha every ribbon takes; unset, rgba(130,130,130,0.3).",
+          "description": "color for a feature with no value under an ordinal scale's field; unset, the display's no-value color.",
           "if": {
             "type": "null"
           },
@@ -9530,6 +9530,143 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         }
       ]
     },
+    "SyntenyOpacityScale": {
+      "title": "SyntenyOpacityScale",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "type": {
+          "description": "threshold, or unset to follow the field.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "const": "threshold"
+          }
+        },
+        "domain": {
+          "description": "labels, or threshold cut points.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "anyOf": [
+              {
+                "type": "array",
+                "items": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "number"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        "range": {
+          "description": "opacities along the domain.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "anyOf": [
+              {
+                "type": "array",
+                "items": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "number"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        "domainMin": {
+          "description": "value at the faintest end; unset follows the field.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
+        },
+        "domainMax": {
+          "description": "value at the most opaque end; unset follows the field.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
+    "SyntenyOpacity": {
+      "title": "SyntenyOpacity",
+      "anyOf": [
+        {
+          "description": "Shorthand for \`{ \\"value\\": ... }\`.",
+          "type": "number"
+        },
+        {
+          "description": "Shorthand for \`{ \\"field\\": ... }\`.",
+          "default": "",
+          "$ref": "#/$defs/PlainString",
+          "type": "string"
+        },
+        {
+          "title": "SyntenyOpacity",
+          "type": "object",
+          "x-closed": true,
+          "properties": {
+            "value": {
+              "description": "every alignment's opacity; unset is the view's default.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "number"
+              }
+            },
+            "field": {
+              "description": "measurement or attributeColumns column; empty is value.",
+              "default": "",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/PlainString"
+              }
+            },
+            "scale": {
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/SyntenyOpacityScale"
+              }
+            }
+          },
+          "patternProperties": {
+            "^_+comment": {}
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
     "MultiWayRibbonsEncoding": {
       "title": "MultiWayRibbonsEncoding",
       "type": "object",
@@ -9541,6 +9678,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           },
           "else": {
             "$ref": "#/$defs/RibbonColor"
+          }
+        },
+        "opacity": {
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/SyntenyOpacity"
           }
         }
       },
@@ -9592,6 +9737,17 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           },
           "else": {
             "$ref": "#/$defs/SyntenyMark"
+          }
+        },
+        "filter": {
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/FieldPredicate"
+            }
           }
         }
       },
@@ -11304,18 +11460,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/MultiWayRibbons"
           }
         },
-        "hideUnlabelled": {
-          "description": "under a text column, draw only the ribbons whose pair has a label.",
-          "default": false,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "boolean"
-          }
-        },
         "laneGeneTracks": {
-          "description": "the trackId of the gene track each lane draws, one per genome, or an entry spelling \`{assembly}\`, such as \`{assembly}-ncbiRefSeq\`, naming in each lane the track whose id has that lane's genome, or any of its aliases, written there. Plain ids outrank \`{assembly}\` entries, and an earlier entry outranks a later one. A lane whose genome no entry names draws the session's best-ranked annotation track for it, which on a config holding several gene sets per genome is whichever is declared first.",
+          "description": "the trackId of the gene track each lane draws, one per genome, or an entry spelling \`{assembly}\`, such as \`{assembly}-ncbiRefSeq\`, naming in each lane the track whose id has that lane's genome, or any of its aliases, written there. Plain ids outrank \`{assembly}\` entries, and an earlier entry outranks a later one. A lane whose genome no entry names draws the session's best-ranked annotation track for it, which on a config holding several gene sets per genome is whichever is declared first, and never a BED track that sets \`disableGeneHeuristic\`.",
           "if": {
             "type": "null"
           },
@@ -11404,6 +11550,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
         "bridgeSkippedLanes": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "hideUnlabelled": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
@@ -21059,9 +21209,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "ribbons": {
               "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/ribbons"
             },
-            "hideUnlabelled": {
-              "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/hideUnlabelled"
-            },
             "laneGeneTracks": {
               "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/laneGeneTracks"
             },
@@ -21085,6 +21232,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "bridgeSkippedLanes": {
               "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/bridgeSkippedLanes"
+            },
+            "hideUnlabelled": {
+              "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/hideUnlabelled"
             },
             "text": {
               "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/text"
@@ -27730,6 +27880,15 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             ]
           }
+        },
+        "invalid": {
+          "description": "color for a feature with no value under an ordinal scale's field; unset, the display's no-value color.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/CssColor"
+          }
         }
       },
       "patternProperties": {
@@ -27833,143 +27992,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               },
               "else": {
                 "$ref": "#/$defs/SyntenyColorLegend"
-              }
-            }
-          },
-          "patternProperties": {
-            "^_+comment": {}
-          },
-          "additionalProperties": false
-        }
-      ]
-    },
-    "SyntenyOpacityScale": {
-      "title": "SyntenyOpacityScale",
-      "type": "object",
-      "x-closed": true,
-      "properties": {
-        "type": {
-          "description": "threshold, or unset to follow the field.",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "const": "threshold"
-          }
-        },
-        "domain": {
-          "description": "labels, or threshold cut points.",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "anyOf": [
-              {
-                "type": "array",
-                "items": {
-                  "anyOf": [
-                    {
-                      "type": "string"
-                    },
-                    {
-                      "type": "number"
-                    }
-                  ]
-                }
-              }
-            ]
-          }
-        },
-        "range": {
-          "description": "opacities along the domain.",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "anyOf": [
-              {
-                "type": "array",
-                "items": {
-                  "anyOf": [
-                    {
-                      "type": "string"
-                    },
-                    {
-                      "type": "number"
-                    }
-                  ]
-                }
-              }
-            ]
-          }
-        },
-        "domainMin": {
-          "description": "value at the faintest end; unset follows the field.",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "number"
-          }
-        },
-        "domainMax": {
-          "description": "value at the most opaque end; unset follows the field.",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "number"
-          }
-        }
-      },
-      "patternProperties": {
-        "^_+comment": {}
-      },
-      "additionalProperties": false
-    },
-    "SyntenyOpacity": {
-      "title": "SyntenyOpacity",
-      "anyOf": [
-        {
-          "description": "Shorthand for \`{ \\"value\\": ... }\`.",
-          "type": "number"
-        },
-        {
-          "description": "Shorthand for \`{ \\"field\\": ... }\`.",
-          "default": "",
-          "$ref": "#/$defs/PlainString",
-          "type": "string"
-        },
-        {
-          "title": "SyntenyOpacity",
-          "type": "object",
-          "x-closed": true,
-          "properties": {
-            "value": {
-              "description": "every alignment's opacity; unset is the view's default.",
-              "if": {
-                "type": "null"
-              },
-              "else": {
-                "type": "number"
-              }
-            },
-            "field": {
-              "description": "measurement or attributeColumns column; empty is value.",
-              "default": "",
-              "if": {
-                "type": "null"
-              },
-              "else": {
-                "$ref": "#/$defs/PlainString"
-              }
-            },
-            "scale": {
-              "if": {
-                "type": "null"
-              },
-              "else": {
-                "$ref": "#/$defs/SyntenyOpacityScale"
               }
             }
           },

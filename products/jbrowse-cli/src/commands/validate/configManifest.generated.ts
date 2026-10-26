@@ -5972,6 +5972,56 @@ export const configManifest: ConfigManifest = {
                     }
                   },
                   "impliedField": "strand"
+                },
+                {
+                  "name": "opacity",
+                  "type": "SyntenyOpacityConfigurationSchema",
+                  "subSlots": [
+                    {
+                      "name": "value",
+                      "type": "(number | undefined)"
+                    },
+                    {
+                      "name": "field",
+                      "type": "string"
+                    },
+                    {
+                      "name": "scale",
+                      "type": "SyntenyOpacityScaleConfigurationSchema",
+                      "subSlots": [
+                        {
+                          "name": "type",
+                          "type": "(SyntenyOpacityScaleType | undefined)"
+                        },
+                        {
+                          "name": "domain",
+                          "type": "string[]",
+                          "liftsNumbers": true
+                        },
+                        {
+                          "name": "range",
+                          "type": "string[]",
+                          "liftsNumbers": true
+                        },
+                        {
+                          "name": "domainMin",
+                          "type": "(number | undefined)"
+                        },
+                        {
+                          "name": "domainMax",
+                          "type": "(number | undefined)"
+                        }
+                      ],
+                      "schema": "SyntenyOpacityScale",
+                      "writes": "members"
+                    }
+                  ],
+                  "schema": "SyntenyOpacity",
+                  "writes": "whole",
+                  "shorthand": {
+                    "number": "value",
+                    "string": "field"
+                  }
                 }
               ],
               "schema": "MultiWayRibbonsEncoding",
@@ -5988,14 +6038,56 @@ export const configManifest: ConfigManifest = {
               ],
               "schema": "SyntenyMark",
               "writes": "members"
+            },
+            {
+              "name": "filter",
+              "type": "FieldPredicateConfigurationSchema[]",
+              "subSlots": [
+                {
+                  "name": "field",
+                  "type": "PredicateField"
+                },
+                {
+                  "name": "equal",
+                  "type": "((string | number | boolean) | undefined)"
+                },
+                {
+                  "name": "lt",
+                  "type": "(number | undefined)"
+                },
+                {
+                  "name": "lte",
+                  "type": "(number | undefined)"
+                },
+                {
+                  "name": "gt",
+                  "type": "(number | undefined)"
+                },
+                {
+                  "name": "gte",
+                  "type": "(number | undefined)"
+                },
+                {
+                  "name": "oneOf",
+                  "type": "((string | number | boolean)[] | undefined)"
+                },
+                {
+                  "name": "range",
+                  "type": "((number | null)[] | undefined)"
+                },
+                {
+                  "name": "valid",
+                  "type": "(boolean | undefined)"
+                }
+              ],
+              "schema": "FieldPredicate",
+              "shorthand": {
+                "string": "field"
+              }
             }
           ],
           "schema": "MultiWayRibbons",
           "writes": "members"
-        },
-        {
-          "name": "hideUnlabelled",
-          "type": "boolean"
         },
         {
           "name": "laneGeneTracks",
@@ -6458,6 +6550,7 @@ export const configManifest: ConfigManifest = {
         "jexlFilters",
         "drawCurves",
         "bridgeSkippedLanes",
+        "hideUnlabelled",
         "text",
         "showGeneLabels",
         "utrColor"
@@ -6467,7 +6560,8 @@ export const configManifest: ConfigManifest = {
         "maxDisplayedBpPerPx",
         "fetchSizeLimit",
         "mouseover",
-        "bridgeSkippedLanes"
+        "bridgeSkippedLanes",
+        "hideUnlabelled"
       ],
       "stateModelProps": [
         "id",

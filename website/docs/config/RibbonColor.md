@@ -20,7 +20,7 @@ through the same slots as the synteny view's
 ```js
 {
   type: 'MultiWaySyntenyDisplay',
-  ribbons: { encoding: { color: { value: 'rgba(130,130,130,0.3)' } } },
+  ribbons: { encoding: { color: { value: 'grey' } } },
 }
 ```
 
@@ -67,7 +67,6 @@ A setting written to it replaces it whole, since its members are alternatives: a
 | Slot | Description |
 | --- | --- |
 | <span id="slot-value">**value**</span><br>[`maybeColor`](/docs/config_guides/slot_types#the-maybe-types) | The color of every ribbon while no field paints. |
-| <span id="slot-scale">**scale**</span><br>[RibbonColorScale sub-schema](#slot-scaleinvalid) | How the field's values map to colors, Vega-Lite's scale object. |
-| <span id="slot-scaleinvalid">**scale.invalid**</span><br>[`maybeColor`](/docs/config_guides/slot_types#the-maybe-types) | The color of a pair with no value for the field, Vega-Lite's word for a missing value's output; its alpha is every ribbon's under the field. |
+| <span id="slot-scale">**scale**</span><br>RibbonColorScale sub-schema | How the field's values map to colors, Vega-Lite's scale object. |
 | <span id="slot-legend">**legend**</span><br>RibbonColorLegend sub-schema | The key this channel draws. |
 | <span id="slot-field">**field**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | field to color each ribbon by: strand reads the relative strand between the two lanes the ribbon joins (the two placements' orientations multiplied out, not the drawn twist, so a flipped lane still shows its inversions); identity and dnds paint their preset ramps, mapq its bins and syntenicDepth one-to-one against shared orthologs, as the synteny view's do; any other name is a column the table declares in attributeColumns, a ramp over the values seen for numbers and one color per label for text (or the color a color column put beside it) |
