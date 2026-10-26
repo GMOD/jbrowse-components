@@ -22,10 +22,15 @@ import {
 import { connectorColorShift } from '../features/arcs/arcColors.ts'
 import { arcSlotCategory } from '../shaders/palettes.ts'
 import { linkedReadColorSlot } from '../shaders/slang/alignmentsUniforms.js.generated.ts'
-import { mergeFilter } from '../shared/alignmentsFilter.ts'
+import {
+  DEFAULT_MIN_INTERCHROM_READS,
+  DEFAULT_MIN_SASHIMI_READS,
+  mergeFilter,
+} from '../shared/alignmentsFilter.ts'
 import { layerForTest } from '../shared/splitFieldForTest.ts'
 import { CHAIN_FRAME_REV, CHAIN_SUPP_PRESENT } from '../shared/types.ts'
 import { READ_COLOR_CATEGORY_BY_INDEX } from './colorUtils.ts'
+import { declaredLayerFilterState } from './dialogs/layerFilters.ts'
 import { applyReadColorsByGroup } from './groupLayout.ts'
 import { sectionOrderOf } from './menus/groupByMenu.ts'
 import {
@@ -1134,6 +1139,20 @@ describe('read categories + filter submenu', () => {
     display.filterNarrowing().clear()
     expect(display.writtenFilter).toEqual([])
     expect(display.filterPredicates).toEqual(mergeFilter([]))
+  })
+
+  // An MST instance's views don't survive a spread, so a Reset built from
+  // `{ ...display }` saw no layer drawing and dropped every layer's section
+  test('More filters... Reset keeps each drawn layer at its declared values', () => {
+    const display = createDisplay()
+    display.setShowSashimi(true)
+    display.setDrawnReadConnections('link')
+    display.setJunctionFilter({ minReads: 7 })
+    display.setConnectionFilter({ minInterchromReads: 9 })
+    expect(declaredLayerFilterState(display)).toMatchObject({
+      junctions: { minReads: `${DEFAULT_MIN_SASHIMI_READS}` },
+      connections: { minInterchromReads: `${DEFAULT_MIN_INTERCHROM_READS}` },
+    })
   })
 })
 

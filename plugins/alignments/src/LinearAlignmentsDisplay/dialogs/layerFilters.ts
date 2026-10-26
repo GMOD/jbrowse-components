@@ -176,29 +176,40 @@ export function filterFieldInEffect(
       : true
 }
 
-/** The dialog's state off the display, each layer only while it draws. */
-export function layerFilterStateOf(model: LayerFiltersModel): LayerFilterState {
+type FilterValues = Pick<
+  LayerFiltersModel,
+  'filterPredicates' | 'junctionFilter' | 'connectionFilter' | 'basesFilter'
+>
+
+/**
+ * The dialog's state off the display, each layer only while it draws, its
+ * values read from `filters`.
+ */
+export function layerFilterStateOf(
+  model: LayerFiltersModel,
+  filters: FilterValues = model,
+): LayerFilterState {
   const applied = basesRefinementsApplied(model)
   const types = model.detectedModificationTypes ?? []
-  const bases = model.basesFilter
+  const { junctionFilter, connectionFilter, basesFilter: bases } = filters
   const layers = layersInEffect(model)
   return {
-    alone: categoryOf(model.filterPredicates, 'alone'),
-    ...(layers.junctions && model.junctionFilter
+    alone: categoryOf(filters.filterPredicates, 'alone'),
+    ...(layers.junctions && junctionFilter
       ? {
           junctions: {
-            split: splitJunctionsCategory(model.junctionFilter),
-            minReads: `${model.junctionFilter.minReads}`,
+            split: splitJunctionsCategory(junctionFilter),
+            minReads: `${junctionFilter.minReads}`,
           },
         }
       : {}),
     ...(layers.connections
-      ? model.connectionFilter
+      ? connectionFilter
         ? {
             connections: {
-              offscreenMates: model.connectionFilter.offscreenMates,
-              interchrom: model.connectionFilter.interchrom,
-              minInterchromReads: `${model.connectionFilter.minInterchromReads}`,
+              offscreenMates: connectionFilter.offscreenMates,
+              interchrom: connectionFilter.interchrom,
+              minInterchromReads: `${connectionFilter.minInterchromReads}`,
             },
           }
         : {}
@@ -222,7 +233,7 @@ export function layerFilterStateOf(model: LayerFiltersModel): LayerFilterState {
 export function declaredLayerFilterState(
   model: LayerFiltersModel,
 ): LayerFilterState {
-  return layerFilterStateOf({ ...model, ...model.declaredFilters })
+  return layerFilterStateOf(model, model.declaredFilters)
 }
 
 function countOf(value: string, fallback: number) {
