@@ -2274,6 +2274,39 @@ export function stateModelFactory(
         },
       }))
       .actions(self => ({
+        /**
+         * #action
+         * Write the default plot off a scan of the current window, where the
+         * window holds features and nothing has been declared meanwhile.
+         */
+        async decideDefaultPlot() {
+          let fields: PlotFields
+          try {
+            fields = await self.ensurePlotFields()
+          } catch (error) {
+            if (isAlive(self) && self.plotFieldsError === error) {
+              self.setError(error)
+            }
+            return
+          }
+          if (
+            !isAlive(self) ||
+            fields.empty ||
+            self.plotDefaultChecked ||
+            self.conf.marks.length > 0
+          ) {
+            return
+          }
+          self.setPlotDefaultChecked()
+          const plot = self.defaultPlotOf(fields)
+          if (plot) {
+            self.applyDefaultPlot(plot)
+          } else {
+            self.openMarkPlotDialog()
+          }
+        },
+      }))
+      .actions(self => ({
         afterAttach() {
           installPrerequisiteFetch(self, {
             name: 'MarkRowSources',
@@ -2310,32 +2343,24 @@ export function stateModelFactory(
             },
           })
           // Nothing declared draws nothing, and the Display types menu offers
-          // this display on every feature, alignments and variant track. So the
-          // first time it is shown with an empty `marks`, the features decide
-          // (`defaultPlot`), or the dialog opens where they decide nothing.
+          // this display on every feature, alignments and variant track. So
+          // while `marks` is empty, the features decide (`defaultPlot`), or the
+          // dialog opens where they decide nothing. A window with no features
+          // decides nothing, and the next window scans again; a failed scan is
+          // the display's error, and its retry scans again.
           addDisposer(
             self,
-            autorun(async () => {
+            autorun(() => {
               if (
                 self.plotDefaultChecked ||
                 !self.host.initialized ||
-                self.conf.marks.length > 0
+                self.conf.marks.length > 0 ||
+                self.error !== undefined ||
+                plotScanRegions(self.host, onTrackAssembly(self)).length === 0
               ) {
                 return
               }
-              self.setPlotDefaultChecked()
-              const fields = await self
-                .ensurePlotFields()
-                .catch(() => undefined)
-              if (!isAlive(self) || !fields || self.conf.marks.length > 0) {
-                return
-              }
-              const plot = self.defaultPlotOf(fields)
-              if (plot) {
-                self.applyDefaultPlot(plot)
-              } else {
-                self.openMarkPlotDialog()
-              }
+              void self.decideDefaultPlot()
             }),
           )
         },

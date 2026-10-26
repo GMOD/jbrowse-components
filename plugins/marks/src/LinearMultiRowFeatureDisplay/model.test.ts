@@ -1,5 +1,6 @@
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { colorAt } from '@jbrowse/core/util/markEncoding'
+import { waitFor } from '@testing-library/react'
 
 import { REGION, features, workerResult } from '../LinearMarkDisplay/testEnv.ts'
 import { multiRowMenuItems } from './multiRowMenus.ts'
@@ -201,4 +202,66 @@ test("a row's color paints its blocks while no mark or display color does", () =
   model.colorByField('sample')
   const [recolored] = [...model.rpcDataMap.values()][0]!.layers
   expect(recolored!.colorKey ?? recolored!.color).not.toBe(layer!.color)
+})
+
+const WIDE = { ...REGION, end: 8_000_000 }
+
+function scanned(answers: (() => Promise<unknown>)[]) {
+  const asked: unknown[] = []
+  const env = createTestEnvironment(
+    {},
+    {
+      region: WIDE,
+      rpcCall: (_sessionId, method, args) => {
+        if (method === 'MarkScanPlotFields') {
+          asked.push((args as { regions: unknown }).regions)
+          return answers[Math.min(asked.length, answers.length) - 1]!()
+        }
+        return new Promise(() => {})
+      },
+    },
+  ).createDisplay()
+  return { ...env, asked }
+}
+
+const NO_FEATURES = () =>
+  Promise.resolve({ numeric: [], categorical: [], empty: true })
+const REPEATS = () =>
+  Promise.resolve({
+    numeric: [],
+    categorical: [],
+    attributes: ['name', 'repClass'],
+  })
+
+test('a window with no features decides no plot, and the next window scans again', async () => {
+  const { display, view, asked } = scanned([NO_FEATURES, REPEATS])
+  await waitFor(() => {
+    expect(asked).toHaveLength(1)
+  })
+  await new Promise(resolve => setTimeout(resolve, 0))
+  expect(display.conf.marks).toHaveLength(0)
+  expect(display.plotDefaultChecked).toBe(false)
+  view.setNewView(1, 1_000_000)
+  await waitFor(() => {
+    expect(display.markTypes).toEqual(['rect'])
+  })
+  expect(display.rowsField).toBe('repClass')
+  expect(asked).toHaveLength(2)
+})
+
+test("a failed scan is the display's error, and a retry scans again", async () => {
+  const { display, asked } = scanned([
+    () => Promise.reject(new Error('network down')),
+    REPEATS,
+  ])
+  await waitFor(() => {
+    expect(String(display.error)).toMatch('network down')
+  })
+  expect(display.conf.marks).toHaveLength(0)
+  display.reload()
+  await waitFor(() => {
+    expect(display.markTypes).toEqual(['rect'])
+  })
+  expect(display.error).toBeUndefined()
+  expect(asked).toHaveLength(2)
 })

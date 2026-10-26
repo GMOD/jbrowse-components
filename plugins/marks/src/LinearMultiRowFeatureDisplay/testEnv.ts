@@ -10,7 +10,16 @@ import { stateModelFactory } from './model.ts'
 
 import type { LinearMultiRowFeatureDisplayModel } from './model.ts'
 
-export function createTestEnvironment(displayConfig: Record<string, unknown>) {
+export function createTestEnvironment(
+  displayConfig: Record<string, unknown>,
+  {
+    region = REGION,
+    rpcCall,
+  }: {
+    region?: typeof REGION
+    rpcCall?: (sessionId: string, method: string, args: unknown) => unknown
+  } = {},
+) {
   return createDisplayTestEnvironment<LinearMultiRowFeatureDisplayModel>({
     plugins: [new LinearGenomeViewPlugin(), new WigglePlugin()],
     trackType: 'FeatureTrack',
@@ -20,10 +29,11 @@ export function createTestEnvironment(displayConfig: Record<string, unknown>) {
     stateModel: (pm, schema) => stateModelFactory(pm, schema),
     viewModel: linearGenomeViewStateModelFactory,
     displayConfig,
-    regions: [REGION],
-    assemblyRegions: [REGION],
+    regions: [region],
+    assemblyRegions: [region],
     onViewReady: view => {
       view.showAllRegions()
     },
+    rpcCall,
   })
 }

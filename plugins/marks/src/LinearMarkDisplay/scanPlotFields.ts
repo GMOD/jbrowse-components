@@ -90,6 +90,8 @@ export interface PlotFields {
   spliced?: true
   /** A scanned feature states its own BED color as an `r,g,b` triple. */
   bedColored?: true
+  /** The scan read no features, so it decides no default plot. */
+  empty?: true
 }
 
 function isSpliced(feature: Feature) {
@@ -213,5 +215,6 @@ export function scanPlotFields(
     ...(attributes.size > 0 ? { attributes: [...attributes].sort() } : {}),
     ...(spliced ? { spliced: true as const } : {}),
     ...(bedColored ? { bedColored: true as const } : {}),
+    ...(features.length === 0 ? { empty: true as const } : {}),
   }
 }

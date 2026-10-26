@@ -49,7 +49,7 @@ export async function fetchPlotFields({
   opts?: { signal?: AbortSignal; statusCallback?: StatusCallback }
 }): Promise<PlotFields> {
   return regions.length === 0
-    ? { numeric: [], categorical: [] }
+    ? { numeric: [], categorical: [], empty: true }
     : getSession(self).rpcManager.call(
         getRpcSessionId(self),
         'MarkScanPlotFields',
