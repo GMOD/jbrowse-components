@@ -192,8 +192,7 @@ The VCF names each sample by its Dog10K ID. In
 sample rows and names them, and `rowColor` is a color scale on each row's label
 bar. The session below sets both for two animals, and the figure names every row
 the same way. **Edit colors/arrangement...** in the track menu writes both as
-you rename and recolor rows by hand, and **Advanced → Edit plot...** shows them
-as text.
+you rename and recolor rows by hand.
 
 ```json session config=test_data/dog10k/config.json
 {
