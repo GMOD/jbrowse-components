@@ -138,6 +138,28 @@ test('drops records whose src is not in the current source set', () => {
   expect(spans.records.map(r => r.start)).toEqual([150])
 })
 
+// at sub-pixel rows the hover names the highest row under the cursor, so that
+// row paints last whatever order the file lists its species in
+test('bars come in row order, each row in file order', () => {
+  const spans = encodeSummarySpans(
+    [
+      rec({ src: 'rn6', start: 100 }),
+      rec({ src: 'panTro6', start: 100 }),
+      rec({ src: 'rn6', start: 200 }),
+      rec({ src: 'mm10', start: 100 }),
+    ],
+    rowIndexBySrc,
+    MATCH,
+  )
+  expect([...spans.row]).toEqual([0, 1, 2, 2])
+  expect(spans.records.map(r => `${r.src}:${r.start}`)).toEqual([
+    'panTro6:100',
+    'mm10:100',
+    'rn6:100',
+    'rn6:200',
+  ])
+})
+
 test('clamps sub-pixel blocks to a minimum 1px width', () => {
   expect(paint([rec({ start: 100, end: 101 })], block(1000))).toMatchObject([
     { w: 1 },

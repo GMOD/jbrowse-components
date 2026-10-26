@@ -53,10 +53,10 @@ describe('cullMafRows', () => {
     )
     expect(culled.summary!.records).toEqual([
       records[0],
-      records[2],
       records[4],
+      records[2],
     ])
-    expect([...culled.summary!.row]).toEqual([0, 1, 0])
+    expect([...culled.summary!.row]).toEqual([0, 0, 1])
     expect(culled.summary!.count).toBe(3)
   })
 

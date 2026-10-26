@@ -24,7 +24,8 @@ export function summaryBarAlpha(score: number) {
  * The zoom-out per-species presence bars as `span` channels: one instance per
  * summary block per species, across the block's reference extent on the
  * species' row, in the alignment `matchColor` at a score-proportional alpha. A
- * record whose `src` names no display row draws nothing.
+ * record whose `src` names no display row draws nothing. The bars come in row
+ * order, as the cells do, so the row the hover names is the one painted last.
  *
  * `records[i]` is the record instance `i` draws. The painter reads none of it,
  * but the hover does: `leftStatus`/`rightStatus` say what sits between two
@@ -37,34 +38,36 @@ export function encodeSummarySpans(
   matchColor: string,
 ): MafSummarySpans {
   const base = cssColorToABGR(matchColor)
-  const cap = records.length
-  const x = new Uint32Array(cap)
-  const x2 = new Uint32Array(cap)
-  const row = new Uint32Array(cap)
-  const color = new Uint32Array(cap)
-  const kept: MafSummaryRecord[] = []
-  for (const r of records) {
-    const rowIndex = rowIndexBySrc.get(r.src)
+  const placed: { record: MafSummaryRecord; rowIndex: number }[] = []
+  for (const record of records) {
+    const rowIndex = rowIndexBySrc.get(record.src)
     if (rowIndex !== undefined) {
-      const i = kept.length
-      x[i] = r.start
-      x2[i] = r.end
-      row[i] = rowIndex
-      color[i] = withAbgrAlpha(base, Math.round(summaryBarAlpha(r.score) * 255))
-      kept.push(r)
+      placed.push({ record, rowIndex })
     }
   }
-  const count = kept.length
-  return count === cap
-    ? { x, x2, row, color, count, records: kept }
-    : {
-        x: x.slice(0, count),
-        x2: x2.slice(0, count),
-        row: row.slice(0, count),
-        color: color.slice(0, count),
-        count,
-        records: kept,
-      }
+  placed.sort((a, b) => a.rowIndex - b.rowIndex)
+  const count = placed.length
+  const x = new Uint32Array(count)
+  const x2 = new Uint32Array(count)
+  const row = new Uint32Array(count)
+  const color = new Uint32Array(count)
+  for (const [i, { record, rowIndex }] of placed.entries()) {
+    x[i] = record.start
+    x2[i] = record.end
+    row[i] = rowIndex
+    color[i] = withAbgrAlpha(
+      base,
+      Math.round(summaryBarAlpha(record.score) * 255),
+    )
+  }
+  return {
+    x,
+    x2,
+    row,
+    color,
+    count,
+    records: placed.map(p => p.record),
+  }
 }
 
 /**
