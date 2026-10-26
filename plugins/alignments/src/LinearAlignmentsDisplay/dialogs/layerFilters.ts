@@ -106,7 +106,6 @@ export interface LayerFilterState {
   alone: CategoryFilter | undefined
   junctions?: {
     split: CategoryFilter | undefined
-    nonCanonical: CategoryFilter | undefined
     minReads: string
   }
   connections?: {
@@ -137,7 +136,6 @@ export function layerFilterStateOf(model: LayerFiltersModel): LayerFilterState {
       ? {
           junctions: {
             split: splitJunctionsCategory(model.junctionFilter),
-            nonCanonical: model.junctionFilter.nonCanonical,
             minReads: `${model.junctionFilter.minReads}`,
           },
         }
@@ -180,7 +178,6 @@ export function defaultLayerFilterState(
       ? {
           junctions: {
             split: undefined,
-            nonCanonical: undefined,
             minReads: `${DEFAULT_MIN_SASHIMI_READS}`,
           },
         }
@@ -238,7 +235,6 @@ export function layerFilterEntries(
             ? {}
             : junctionEntries(splitJunctionsPatch(junctions.split))),
           ...junctionEntries({
-            nonCanonical: junctions.nonCanonical,
             minReads: countOf(junctions.minReads, DEFAULT_MIN_SASHIMI_READS),
           }),
         }

@@ -1295,9 +1295,9 @@ function filterFieldStep(
     }
   }
   if (field === 'junction.canonical' && alignments) {
-    // in the dialog only while the arcs draw
+    // a Filter by... row only while the arcs draw
     return categoryStep(
-      `${MORE_FILTERS} → Sashimi arcs → Non-canonical junctions`,
+      `${TRACK_MENU} → Filter by... → Non-canonical junctions`,
       equal === true ? 'exclude' : equal === false ? 'only' : undefined,
       'non-canonical junctions',
       'Hiding drops every arc whose intron does not begin and end with one of the six canonical dinucleotide pairs. At depth those are mostly alignment artefacts, and the support floor removes them only by also removing a real junction few reads carry.',

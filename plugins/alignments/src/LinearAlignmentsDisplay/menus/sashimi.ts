@@ -1,7 +1,12 @@
 import { radioItems, toggleItem } from '@jbrowse/core/ui/menuItems'
+import { categoryFilterItem } from '@jbrowse/display-kit/categoryFilter'
 
+import { junctionEntries } from '../../shared/alignmentsFilter.ts'
+
+import type { JunctionFilter } from '../../shared/types.ts'
 import type { SashimiPlacement } from '../constants.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
+import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
 
 const SASHIMI_PLACEMENT_OPTIONS: { value: SashimiPlacement; label: string }[] =
   [
@@ -24,10 +29,38 @@ interface SashimiPlacementModel {
   setSashimiPlacement: (placement: SashimiPlacement) => void
 }
 
+interface JunctionFilterModel {
+  showSashimi: boolean
+  junctionFilter: JunctionFilter
+  setFilterFields: (
+    patch: Readonly<Record<string, readonly FieldPredicate[] | undefined>>,
+  ) => void
+}
+
 /**
- * The arcs' rows in "Show...": the arcs, and while they draw their counts.
- * Their junction filters are in the "More filters..." dialog.
+ * The everyday junction filter, for "Filter by...", while the arcs draw. The
+ * split-read and min-reads filters are in the "More filters..." dialog.
  */
+export function getJunctionFilterItems(model: JunctionFilterModel): MenuItem[] {
+  return model.showSashimi
+    ? [
+        categoryFilterItem(
+          {
+            noun: 'Non-canonical junctions',
+            all: 'All junctions',
+            only: 'Only non-canonical junctions',
+            exclude: 'Hide non-canonical junctions',
+          },
+          model.junctionFilter.nonCanonical,
+          nonCanonical => {
+            model.setFilterFields(junctionEntries({ nonCanonical }))
+          },
+        ),
+      ]
+    : []
+}
+
+/** The arcs' rows in "Show...": the arcs, and while they draw their counts. */
 export function sashimiShowItems(model: SashimiModel): MenuItem[] {
   return [
     toggleItem('Sashimi arcs', model.showSashimi, show => {

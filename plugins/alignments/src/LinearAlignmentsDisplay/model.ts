@@ -185,6 +185,7 @@ import {
   getFeatureHeightMenuItem,
   getFiltersMenuItems,
   getGroupByMenuItem,
+  getJunctionFilterItems,
   getReadConnectionsBandItems,
   getReadConnectionsMenuItem,
   getReadConnectionsColorItem,
@@ -3632,6 +3633,7 @@ export default function stateModelFactory(
             }),
             ...getFiltersMenuItems(self, {
               readCategories: true,
+              more: getJunctionFilterItems(self),
               counts: field =>
                 field.startsWith('junction.')
                   ? self.showSashimi

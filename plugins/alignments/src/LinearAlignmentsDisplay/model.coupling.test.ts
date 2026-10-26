@@ -2065,7 +2065,7 @@ describe('rows the layer menus hand to other menus', () => {
       'Track height',
     ])
 
-    // the layers' own filters are in the More filters... dialog
+    // the arcs bring their everyday filter; the rest are in More filters...
     display.setDrawnReadConnections('arc')
     display.setShowSashimi(true)
     expect(labelsUnder(display, 'Filter by...')).toEqual([
@@ -2073,6 +2073,7 @@ describe('rows the layer menus hand to other menus', () => {
       'SV evidence',
       'Split reads',
       'Spliced reads',
+      'Non-canonical junctions',
       'More filters...',
     ])
     expect(labelsUnder(display, 'Advanced')).toEqual([

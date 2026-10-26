@@ -167,16 +167,6 @@ const LayerFilterSections = observer(function LayerFilterSections({
               setState({ ...state, junctions: { ...junctions, split } })
             }}
           />
-          <CategoryRow
-            label="Non-canonical junctions"
-            all="All junctions"
-            only="Only non-canonical junctions"
-            exclude="Hide non-canonical junctions"
-            value={junctions.nonCanonical}
-            onChange={nonCanonical => {
-              setState({ ...state, junctions: { ...junctions, nonCanonical } })
-            }}
-          />
           <NumberRow
             label="Min reads at a junction"
             value={junctions.minReads}

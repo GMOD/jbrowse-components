@@ -50,9 +50,22 @@ describe('the Filter by... count over every layer it filters', () => {
       'SV evidence',
       'Split reads',
       'Spliced reads',
+      'Non-canonical junctions',
       'More filters...',
     ])
     expect(rows.some(i => 'icon' in i && i.icon)).toBe(false)
+  })
+
+  test('the non-canonical junctions row filters and counts while the arcs draw', () => {
+    const display = createDisplay()
+    display.setShowSashimi(true)
+    clickMenuItem(filterRow(display).subMenu, 'Hide non-canonical junctions')
+    expect(display.junctionFilter.nonCanonical).toBe('exclude')
+    expect(filterRow(display).label).toBe('Filter by... (1)')
+    display.setShowSashimi(false)
+    expect(
+      filterRow(display).subMenu.map(i => ('label' in i ? i.label : i.type)),
+    ).not.toContain('Non-canonical junctions')
   })
 
   test('a junction floor stops counting while the arcs are off', () => {

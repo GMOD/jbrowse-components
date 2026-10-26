@@ -30,5 +30,5 @@ export {
   getReadConnectionsMenuItem,
 } from './readConnections.ts'
 export { getReadsMenuItems } from './reads.ts'
-export { getSashimiPlacementItems } from './sashimi.ts'
+export { getJunctionFilterItems, getSashimiPlacementItems } from './sashimi.ts'
 export { getGroupByMenuItem, getSortMenuItem } from './sortGroup.ts'

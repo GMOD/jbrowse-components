@@ -262,7 +262,7 @@ test("a filter list's entries are the rows that write them", () => {
   ).toEqual([
     'Track menu → Filter by... → Split reads → Only split reads',
     'Track menu → Filter by... → More filters... → Sashimi arcs → Min reads at a junction → 3',
-    'Track menu → Filter by... → More filters... → Sashimi arcs → Non-canonical junctions → Hide non-canonical junctions',
+    'Track menu → Filter by... → Non-canonical junctions → Hide non-canonical junctions',
   ])
   expect(
     stepPaths('filter', [{ field: 'mapq', gte: 20 }], 'LinearAlignmentsDisplay'),
