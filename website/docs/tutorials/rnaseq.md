@@ -251,6 +251,53 @@ The
 [circRNA demo](https://jbrowse.org/code/jb2/main/?config=https://jbrowse.org/demos/circrna/config.json)
 holds HeLa RNA-seq treated with RNase R, which digests linear RNA and leaves the
 circles, aligned that way on hg38, and STAR's own back-splice table beside it.
+The reads load as an alignments track with sashimi counts shown:
+
+```json addtrack
+{
+  "type": "AlignmentsTrack",
+  "trackId": "hela_rnaser_reads",
+  "name": "HeLa RNase R+ RNA-seq (SRR1636985)",
+  "assemblyNames": ["hg38"],
+  "uri": "https://jbrowse.org/demos/circrna/SRR1636985.slice.bam",
+  "displayDefaults": {
+    "height": 300,
+    "sashimi": { "labels": { "show": true } },
+    "filter": [{ "field": "mapq", "gte": 1 }]
+  }
+}
+```
+
+The back-splice table is a BED of junctions, drawn as arcs whose width scales
+with the read count:
+
+```json addtrack
+{
+  "type": "FeatureTrack",
+  "trackId": "hela_rnaser_backsplice",
+  "name": "HeLa RNase R+ back-splice junctions (STAR chimeric)",
+  "assemblyNames": ["hg38"],
+  "uri": "https://jbrowse.org/demos/circrna/SRR1636985.backsplice.bed.gz",
+  "displays": [
+    {
+      "type": "LinearMarkDisplay",
+      "marks": [
+        {
+          "mark": "link",
+          "encoding": {
+            "strokeWidth": {
+              "field": "score",
+              "scale": { "type": "log", "range": [1, 8] }
+            }
+          }
+        },
+        { "mark": "text", "encoding": { "text": "score" }, "maxBpPerPx": 50 }
+      ]
+    }
+  ]
+}
+```
+
 At _ZKSCAN1_ the circle spans two exons:
 
 <Figure caption="ZKSCAN1: the STAR back-splice table above the reads, and over their coverage a splice arc and the back-splice as a teal duplication-type split junction." src="/img/circrna/zkscan1_backsplice.png" links="Open this view=circrna/zkscan1_backsplice" />

@@ -64,6 +64,22 @@ the tracks go on an hg38 assembly that spells them the same way.
 }
 ```
 
+The figures also show NCBI's RefSeq genes as a track:
+
+```json addtrack
+{
+  "trackId": "ncbi_refseq_hg38",
+  "name": "NCBI RefSeq genes",
+  "type": "FeatureTrack",
+  "assemblyNames": ["hg38"],
+  "adapter": {
+    "type": "Gff3TabixAdapter",
+    "uri": "https://jbrowse.org/ucsc/hg38/ncbiRefSeq.gff.gz",
+    "csi": true
+  }
+}
+```
+
 ## Generating per-cell-type BigWigs
 
 Clustering and labeling happen upstream, in Seurat, scanpy, or whatever produced
@@ -266,7 +282,7 @@ points at a store with the same layout, built by the reproduce script below:
 ```json addtrack
 {
   "type": "MultiQuantitativeTrack",
-  "trackId": "pbmc5k_scrna_percell",
+  "trackId": "pbmc5k_scrna_percell_hg38",
   "name": "Per-cell coverage (marker loci)",
   "category": ["Single cell"],
   "assemblyNames": ["hg38"],

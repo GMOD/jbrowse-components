@@ -92,6 +92,17 @@ adding any track.
 }
 ```
 
+The figures also show NCBI's MANE transcripts as the gene track:
+
+```json addtrack
+{
+  "trackId": "mane_hg38",
+  "name": "MANE 1.0",
+  "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/mane/mane.1.0.bb",
+  "assemblyNames": ["hg38"]
+}
+```
+
 ## Adding the Hi-C and contact-domain tracks
 
 The `.hic` files are tens of GB, and JBrowse requests only the bins on screen.
@@ -272,8 +283,20 @@ sits in the middle of each:
 }
 ```
 
-The K562 track uses
-`https://encode-public.s3.amazonaws.com/2021/10/28/1180b7b2-99fd-429a-bfe1-f76cc8aa751a/ENCFF699RSL.bigWig`.
+```json addtrack
+{
+  "trackId": "hic_k562_compartments",
+  "name": "K562 compartment eigenvector (ENCFF699RSL)",
+  "uri": "https://encode-public.s3.amazonaws.com/2021/10/28/1180b7b2-99fd-429a-bfe1-f76cc8aa751a/ENCFF699RSL.bigWig",
+  "assemblyNames": ["hg38"],
+  "displayDefaults": {
+    "encoding": {
+      "y": { "scale": { "domainMin": -0.012, "domainMax": 0.012 } }
+    }
+  }
+}
+```
+
 On an eigenvector track already open, **Y axis... → Range** writes the same two
 ends. Open both eigenvector tracks over _EBF1_ on chr5:
 

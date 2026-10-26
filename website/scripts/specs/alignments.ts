@@ -17,6 +17,7 @@ import {
   sessionSpec,
   trackMenuIcon,
 } from '../screenshot-spec-helpers.ts'
+import { pageTrack } from './pageTrack.ts'
 
 import type { Annotation, ScreenshotSpec } from '../screenshot-spec-types.ts'
 
@@ -1075,17 +1076,23 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'rnaseq/longread_isoseq',
-    url: lgvSession(DEMO_CONFIG, {
-      assembly: 'hg19',
-      loc: 'chr7:5,566,000-5,571,000',
-      trackLabels: 'offset',
-      tracks: [
-        'ncbi_gff_hg19',
+    url: sessionSpec(DEMO_CONFIG, {
+      sessionTracks: [pageTrack('tutorials/rnaseq.md', 'alzheimers_isoseq')],
+      views: [
         {
-          trackId: 'hg_isoforms.fasta_bam',
-          coverage: { height: 120 },
-          pileup: { mark: { height: 1 } },
-          height: 620,
+          type: 'LinearGenomeView',
+          assembly: 'hg19',
+          loc: 'chr7:5,566,000-5,571,000',
+          trackLabels: 'offset',
+          tracks: [
+            'ncbi_gff_hg19',
+            {
+              trackId: 'alzheimers_isoseq',
+              coverage: { height: 120 },
+              pileup: { mark: { height: 1 } },
+              height: 620,
+            },
+          ],
         },
       ],
     }),
