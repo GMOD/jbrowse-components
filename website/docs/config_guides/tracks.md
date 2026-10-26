@@ -109,6 +109,9 @@ slot by that name takes the value:
   value no display takes fails the track's load, naming why.
 - **A name no display defines is ignored**, with a console warning so typos show
   up.
+- **A `type` narrows it to one display**: `"type": "LinearVariantDisplay"` sends
+  every setting there alone, and a display the track does not offer fails the
+  load.
 
 A `displays` array gives precise control: two displays with different values for
 one setting, a non-default display type, or an explicit `displayId` (default

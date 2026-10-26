@@ -14,7 +14,7 @@ import type { AnyConfigurationModel } from '../../configuration/index.ts'
 // A track with two displays whose color slots differ ('color' vs 'baseColor'),
 // to exercise slot-name routing of the `displayDefaults: {...}` object shorthand
 // end to end through real config creation.
-function makePluginManager() {
+function makePluginManager(alignmentsColorSlot = 'baseColor') {
   const pluginManager = new PluginManager()
   pluginManager.addTrackType(
     () =>
@@ -56,15 +56,18 @@ function makePluginManager() {
     })
   pluginManager.addDisplayType(() => displayType('LinearBasicDisplay', 'color'))
   pluginManager.addDisplayType(() =>
-    displayType('LinearAlignmentsDisplay', 'baseColor'),
+    displayType('LinearAlignmentsDisplay', alignmentsColorSlot),
   )
   pluginManager.createPluggableElements()
   pluginManager.configure()
   return pluginManager
 }
 
-function createTrack(snapshot: Record<string, unknown>) {
-  const pluginManager = makePluginManager()
+function createTrack(
+  snapshot: Record<string, unknown>,
+  alignmentsColorSlot?: string,
+) {
+  const pluginManager = makePluginManager(alignmentsColorSlot)
   const TrackConfig = pluginManager.getTrackType('FeatureTrack').configSchema
   return TrackConfig.create(snapshot, {
     pluginManager,
@@ -104,6 +107,33 @@ test('settings route by slot name across displays', () => {
   expect(
     readConfObject(display(conf, 'LinearAlignmentsDisplay'), 'baseColor'),
   ).toBe('red')
+})
+
+test('a type in displayDefaults routes every setting to that display alone', () => {
+  const conf = createTrack(
+    {
+      trackId: 'mytrack',
+      type: 'FeatureTrack',
+      displayDefaults: { type: 'LinearAlignmentsDisplay', color: 'green' },
+    },
+    'color',
+  )
+  expect(
+    readConfObject(display(conf, 'LinearAlignmentsDisplay'), 'color'),
+  ).toBe('green')
+  expect(readConfObject(display(conf, 'LinearBasicDisplay'), 'color')).toBe(
+    'goldenrod',
+  )
+})
+
+test('a displayDefaults type the track does not offer is an error', () => {
+  expect(() =>
+    createTrack({
+      trackId: 'mytrack',
+      type: 'FeatureTrack',
+      displayDefaults: { type: 'LinearWiggleDisplay', color: 'green' },
+    }),
+  ).toThrow(/not a display of a FeatureTrack/)
 })
 
 test('the explicit displays array form passes through untouched', () => {

@@ -288,7 +288,8 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
        * For the common case, prefer the `displayDefaults` shorthand instead — an
        * object of appearance settings (e.g. `displayDefaults: { color: 'green' }`)
        * that JBrowse routes to whichever display uses each setting, so you don't
-       * have to name the display or write the array.
+       * have to name the display or write the array. A `type` in it names the
+       * one display it reaches.
        *
        * See the [track config guide](/docs/config_guides/tracks/#configuring-displays).
        */

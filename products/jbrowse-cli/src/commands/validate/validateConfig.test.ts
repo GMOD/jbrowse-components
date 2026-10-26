@@ -717,6 +717,27 @@ describe('validateConfig', () => {
       ).toEqual([`field-near-preset ${where}.field`])
     })
 
+    it('reads a displayDefaults type as the one display it reaches', () => {
+      const typed = (type: string) =>
+        onTrack({
+          displayDefaults: {
+            type,
+            encoding: { color: { field: 'strnd' } },
+          },
+        })
+      expect(errorsOf(typed('LinearAlignmentsDisplay'))).toEqual([])
+      expect(
+        warningsOf(typed('LinearAlignmentsDisplay')).map(
+          p => `${p.rule} ${p.where}`,
+        ),
+      ).toEqual([
+        'field-near-preset tracks[0].displayDefaults.encoding.color.field',
+      ])
+      expect(errorsOf(typed('LinearWiggleDisplay')).map(p => p.where)).toEqual([
+        'tracks[0].displayDefaults.type',
+      ])
+    })
+
     it('checks displayDefaults against the display the track offers', () => {
       expect(
         found({

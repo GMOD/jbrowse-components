@@ -16945,6 +16945,16 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Display settings routed to whichever of this track's displays takes each value, so the track need not name a display or write the \`displays\` array.",
           "type": "object",
           "properties": {
+            "type": {
+              "enum": [
+                "LinearBasicDisplay",
+                "LinearWiggleDisplay",
+                "LinearManhattanDisplay",
+                "LinearMarkDisplay",
+                "LinearMultiRowFeatureDisplay"
+              ],
+              "description": "One of the displays, which then takes every setting here alone."
+            },
             "fetchSizeLimit": {
               "anyOf": [
                 {
@@ -17702,6 +17712,13 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Display settings routed to whichever of this track's displays takes each value, so the track need not name a display or write the \`displays\` array.",
           "type": "object",
           "properties": {
+            "type": {
+              "enum": [
+                "LinearAlignmentsDisplay",
+                "LinearMarkDisplay"
+              ],
+              "description": "One of the displays, which then takes every setting here alone."
+            },
             "fetchSizeLimit": {
               "anyOf": [
                 {
@@ -18103,6 +18120,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Display settings routed to whichever of this track's displays takes each value, so the track need not name a display or write the \`displays\` array.",
           "type": "object",
           "properties": {
+            "type": {
+              "enum": [
+                "LinearReferenceSequenceDisplay"
+              ],
+              "description": "One of the displays, which then takes every setting here alone."
+            },
             "height": {
               "$ref": "#/$defs/LinearReferenceSequenceDisplaySlots/properties/height"
             },
@@ -18307,6 +18330,15 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Display settings routed to whichever of this track's displays takes each value, so the track need not name a display or write the \`displays\` array.",
           "type": "object",
           "properties": {
+            "type": {
+              "enum": [
+                "ChordVariantDisplay",
+                "LinearVariantDisplay",
+                "LinearMultiSampleVariantDisplay",
+                "LinearMarkDisplay"
+              ],
+              "description": "One of the displays, which then takes every setting here alone."
+            },
             "mark": {
               "anyOf": [
                 {
@@ -18910,6 +18942,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Display settings routed to whichever of this track's displays takes each value, so the track need not name a display or write the \`displays\` array.",
           "type": "object",
           "properties": {
+            "type": {
+              "enum": [
+                "LDTrackDisplay"
+              ],
+              "description": "One of the displays, which then takes every setting here alone."
+            },
             "height": {
               "$ref": "#/$defs/LDTrackDisplaySlots/properties/height"
             },
@@ -19174,6 +19212,13 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Display settings routed to whichever of this track's displays takes each value, so the track need not name a display or write the \`displays\` array.",
           "type": "object",
           "properties": {
+            "type": {
+              "enum": [
+                "LinearWiggleDisplay",
+                "LinearMarkDisplay"
+              ],
+              "description": "One of the displays, which then takes every setting here alone."
+            },
             "mark": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/mark"
             },
@@ -19606,6 +19651,13 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Display settings routed to whichever of this track's displays takes each value, so the track need not name a display or write the \`displays\` array.",
           "type": "object",
           "properties": {
+            "type": {
+              "enum": [
+                "LinearWiggleDisplay",
+                "LinearMarkDisplay"
+              ],
+              "description": "One of the displays, which then takes every setting here alone."
+            },
             "mark": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/mark"
             },
@@ -20038,6 +20090,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Display settings routed to whichever of this track's displays takes each value, so the track need not name a display or write the \`displays\` array.",
           "type": "object",
           "properties": {
+            "type": {
+              "enum": [
+                "LinearWiggleDisplay"
+              ],
+              "description": "One of the displays, which then takes every setting here alone."
+            },
             "mark": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/mark"
             },
@@ -20320,6 +20378,13 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Display settings routed to whichever of this track's displays takes each value, so the track need not name a display or write the \`displays\` array.",
           "type": "object",
           "properties": {
+            "type": {
+              "enum": [
+                "LinearMafDisplay",
+                "LinearMarkDisplay"
+              ],
+              "description": "One of the displays, which then takes every setting here alone."
+            },
             "fetchSizeLimit": {
               "anyOf": [
                 {
@@ -20719,6 +20784,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Display settings routed to whichever of this track's displays takes each value, so the track need not name a display or write the \`displays\` array.",
           "type": "object",
           "properties": {
+            "type": {
+              "enum": [
+                "LinearHicDisplay"
+              ],
+              "description": "One of the displays, which then takes every setting here alone."
+            },
             "height": {
               "$ref": "#/$defs/LinearHicDisplaySlots/properties/height"
             },
@@ -20933,6 +21004,17 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Display settings routed to whichever of this track's displays takes each value, so the track need not name a display or write the \`displays\` array.",
           "type": "object",
           "properties": {
+            "type": {
+              "enum": [
+                "ChordSyntenyDisplay",
+                "DotplotDisplay",
+                "LinearSyntenyDisplay",
+                "LGVSyntenyDisplay",
+                "MultiWaySyntenyDisplay",
+                "LinearMarkDisplay"
+              ],
+              "description": "One of the displays, which then takes every setting here alone."
+            },
             "mark": {
               "$ref": "#/$defs/ChordSyntenyDisplaySlots/properties/mark"
             },
@@ -21464,6 +21546,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Display settings routed to whichever of this track's displays takes each value, so the track need not name a display or write the \`displays\` array.",
           "type": "object",
           "properties": {
+            "type": {
+              "enum": [
+                "LinearManhattanDisplay"
+              ],
+              "description": "One of the displays, which then takes every setting here alone."
+            },
             "height": {
               "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/height"
             },

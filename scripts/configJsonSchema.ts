@@ -1191,14 +1191,19 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
       title: `${track.name}DisplayDefaults`,
       description:
         "Display settings routed to whichever of this track's displays takes each value, so the track need not name a display or write the `displays` array.",
-      ...closed(
-        Object.fromEntries(
+      ...closed({
+        type: {
+          enum: displays,
+          description:
+            'One of the displays, which then takes every setting here alone.',
+        },
+        ...Object.fromEntries(
           [...declared].map(([key, slots]) => [
             key,
             slots.length === 1 ? slots[0]! : { anyOf: slots },
           ]),
         ),
-      ),
+      }),
     }
     def.anyOf = [{ required: ['adapter'] }, { required: ['uri'] }]
   }

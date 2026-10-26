@@ -170,7 +170,8 @@ export function mergeOverridesIntoDisplays(
  * **array**, so users can set display settings without naming the display type
  * or nesting in `displays:[{type,...}]`. `displayDefaults:{color:'green'}` routes
  * each setting to the display type(s) whose slot takes it, folding them into
- * the entries the `displays` array has (explicit props win). A key whose every
+ * the entries the `displays` array has (explicit props win). A `type` naming
+ * one of the track's displays routes every setting to that display alone. A key whose every
  * taker is missing from the array, a display the track's adapter cannot feed,
  * is reported rather than giving the track that display.
  *
@@ -216,11 +217,20 @@ export function expandTrackConfigShorthand(
     return snap
   }
 
+  const { type: only, ...settings } = shorthand
+  const offered = trackType.displayTypes.map(d => d.name)
+  if (only !== undefined && !offered.includes(only as string)) {
+    throw new Error(
+      `Track "${trackId}": displayDefaults.type ${JSON.stringify(only)} is not a display of a ${type}, which offers ${offered.join(', ')}`,
+    )
+  }
   const displaySchemas = new Map(
-    trackType.displayTypes.map(d => [d.name, d.configSchema]),
+    trackType.displayTypes
+      .filter(d => only === undefined || d.name === only)
+      .map(d => [d.name, d.configSchema]),
   )
   const { overrides, reached, unknownKeys, refused } = collectDisplayOverrides(
-    shorthand,
+    settings,
     displaySchemas,
   )
   for (const key of unknownKeys) {

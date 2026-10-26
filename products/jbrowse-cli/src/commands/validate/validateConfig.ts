@@ -315,8 +315,7 @@ function warnDisplayDefaults(
     return
   }
   const found = new Report()
-  for (const display of displayDefaultsForTrackType(trackType, manifest)
-    .displayTypes) {
+  for (const display of displaysTaking(trackType, defaults, manifest)) {
     const entry = manifest.displays[display]
     if (entry) {
       warnSlots(
@@ -908,6 +907,19 @@ function trackTypeOf(node: Record<string, unknown>) {
   )
 }
 
+// The track's displays a `displayDefaults` reaches: the one its `type` names,
+// or all of them.
+function displaysTaking(
+  trackType: string,
+  defaults: Record<string, unknown>,
+  manifest: ConfigManifest,
+) {
+  const { displayTypes } = displayDefaultsForTrackType(trackType, manifest)
+  return defaults.type === undefined
+    ? displayTypes
+    : displayTypes.filter(display => display === defaults.type)
+}
+
 // The shorthand router hands a `displayDefaults` key only to the displays
 // whose slot takes its value (`collectDisplayOverrides`), so a categorical
 // color on a FeatureTrack never reaches its quantitative display's `score`
@@ -919,6 +931,7 @@ function displayDefaultsReaching(
   return Object.fromEntries(
     Object.entries(defaults).filter(
       ([key, value]) =>
+        key !== 'type' &&
         schemaProblems({ type: display, [key]: value }, `/$defs/${display}`)
           .length === 0,
     ),
@@ -951,8 +964,11 @@ function checkMarkDisplays(
     }
     const trackType = trackTypeOf(node)
     if (trackType && isRecord(node.displayDefaults)) {
-      for (const display of displayDefaultsForTrackType(trackType, manifest)
-        .displayTypes) {
+      for (const display of displaysTaking(
+        trackType,
+        node.displayDefaults,
+        manifest,
+      )) {
         const defaults = displayDefaultsReaching(display, node.displayDefaults)
         checkScaleSlots(
           defaults,
