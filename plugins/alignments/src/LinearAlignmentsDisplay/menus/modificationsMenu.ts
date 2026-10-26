@@ -8,9 +8,9 @@ import {
 import type { BaseLayer, BasesFilter, BasesPatch } from '../../shared/types.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 
-// The MM/ML modification layer's radio in Color by.... It leaves `unmodified`
+// The MM/ML modification layer's radio in Color by. It leaves `unmodified`
 // and `filter` alone, so switching layers keeps the blue view and the
-// Filter by... refinements (basesFilterMenu.ts). Reference-based bisulfite is
+// Filter by refinements (basesFilterMenu.ts). Reference-based bisulfite is
 // the sibling radio, in bisulfiteMenu.ts.
 export interface ModificationsMenuModel {
   baseLayer: BaseLayer | undefined

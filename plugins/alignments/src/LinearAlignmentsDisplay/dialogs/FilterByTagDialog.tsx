@@ -310,7 +310,7 @@ const TagFilterRows = observer(function TagFilterRows(props: {
   )
 })
 
-// "More filters...": every filter the "Filter by..." submenu leaves out. The
+// "More filters...": every filter the "Filter by" submenu leaves out. The
 // submenu keeps the read categories a user flips several times at a locus
 // (SV evidence, split and spliced reads), mapping quality presets and, while
 // the arcs draw, non-canonical junctions; this holds the rest — a read name,

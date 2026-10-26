@@ -18,7 +18,7 @@ import type { MenuItem } from './MenuTypes.ts'
  * - an undo derived from the state's ABSENCE, so it vanished with the thing it
  *   undid (the canvas color key's "×" was a one-way door for the session);
  * - a count derived from a different predicate than the state's actual effect
- *   ("Filter by... (1)" for opening the filter dialog and pressing Submit).
+ *   ("Filter by (1)" for opening the filter dialog and pressing Submit).
  *
  * The pairing rule that used to live in a comment — *every filter counted must
  * be reset by the clear, or the menu offers a recovery that doesn't recover* —
@@ -102,7 +102,7 @@ export interface FilterMenuOpts {
 }
 
 /**
- * The "Filter by..." family, in the one shape every display uses.
+ * The "Filter by" family, in the one shape every display uses.
  *
  * On a track with nothing to recover this is the single dialog opener, because
  * a submenu wrapping one row is pure indirection. Once filters are on — or a
@@ -124,7 +124,7 @@ export function filterMenuItems({
   priority,
 }: FilterMenuOpts): MenuItem[] {
   const count = activeCount(narrowings)
-  const label = count > 0 ? `Filter by... (${count})` : 'Filter by...'
+  const label = count > 0 ? `Filter by (${count})` : 'Filter by'
   const editItem: MenuItem[] = onEdit
     ? [
         {
@@ -153,8 +153,9 @@ export function filterMenuItems({
   if (!rows.length) {
     return []
   }
-  // the lone dialog opener stays a top-level row rather than a one-item submenu
+  // the lone dialog opener stays a top-level row rather than a one-item
+  // submenu, and takes the "..." of a row that opens a dialog
   return rows.length === 1 && onEdit
-    ? [{ label, icon: FilterAltIcon, priority, onClick: onEdit }]
+    ? [{ label: `${label}...`, icon: FilterAltIcon, priority, onClick: onEdit }]
     : [{ label, icon: FilterAltIcon, priority, type: 'subMenu', subMenu: rows }]
 }

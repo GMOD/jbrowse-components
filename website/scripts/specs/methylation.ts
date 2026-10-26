@@ -183,7 +183,7 @@ const snrpnReadsPanel = ({
     ],
   })
 
-const SNRPN_COLOR_PATH = ['Color by...', MODIFICATIONS_LABEL]
+const SNRPN_COLOR_PATH = ['Color by', MODIFICATIONS_LABEL]
 
 export const methylationVideoFixtures = {
   ungrouped: snrpnReadsPanel(),
@@ -421,9 +421,9 @@ export const methylationSpecs: ScreenshotSpec[] = [
     tooltip: 'hide',
     actions: [
       trackMenuIcon('HG002_snrpn_5mC_reads'),
-      ...menuCascade(['Group by...', 'Tag...']),
+      ...menuCascade(['Group by', 'Tag...']),
     ],
-    annotations: cascadeBoxes(['Group by...', 'Tag...']),
+    annotations: cascadeBoxes(['Group by', 'Tag...']),
   },
 
   {

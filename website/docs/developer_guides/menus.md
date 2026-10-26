@@ -208,7 +208,7 @@ the Material UI barrel into every host that installs the plugin.
 | `makeRadioSubMenu` | a radio group wrapped in a submenu row |
 | `radioItem` | one radio setting row; the singular of `radioItems` |
 | `radioItems` | a radio group, one row per option |
-| `showLegendCheckboxItem` | a "Show legend" checkbox outside a "Show..." submenu |
+| `showLegendCheckboxItem` | a "Show legend" checkbox outside a "Show" submenu |
 | `subMenuIfAny` | a submenu row, or no row while it has nothing to hold |
 | `toggleItem` | a checkbox row whose setter takes the new value |
 | `TRACK_MENU_PRIORITY` | the `priority` of each shared track menu row, higher first |

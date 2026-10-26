@@ -16,13 +16,13 @@ test('a declared range sends a canvas color to Edit plot', () => {
 
 test('a constant is the value member, and a bare string names the field', () => {
   expect(colorStep({ value: 'red' }, 'LinearBasicDisplay')?.path).toBe(
-    'Track menu → Color by... → Solid color... → red',
+    'Track menu → Color by → Solid color... → red',
   )
   expect(colorStep('biotype', 'LinearBasicDisplay')?.path).toBe(
-    'Track menu → Color by... → Attribute... → biotype',
+    'Track menu → Color by → Attribute... → biotype',
   )
   expect(colorStep('impact', 'LinearVariantDisplay')?.path).toBe(
-    'Track menu → Color by... → Consequence impact',
+    'Track menu → Color by → Consequence impact',
   )
 })
 

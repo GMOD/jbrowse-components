@@ -23,7 +23,7 @@ function createDisplay(displayConfig?: Record<string, unknown>) {
 function colorByRows(display: LinearVariantDisplayModel) {
   const colorBy = display
     .colorMenuItems()
-    .find(i => 'label' in i && i.label === 'Color by...')
+    .find(i => 'label' in i && i.label === 'Color by')
   return colorBy && 'subMenu' in colorBy ? resolveSubMenu(colorBy) : []
 }
 

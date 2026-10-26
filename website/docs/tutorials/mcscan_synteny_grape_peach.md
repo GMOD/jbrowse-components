@@ -274,8 +274,8 @@ name needs the full `displays` array:
 
 ## A single gene pair up close {#what-an-anchor-looks-like-up-close}
 
-Zoom to one block with both gene tracks on and set to **Filter by... → Genes →
-Only genes**.
+Zoom to one block with both gene tracks on and set to **Filter by → Genes → Only
+genes**.
 
 <Figure caption="One MCScan block with both gene tracks set to Only genes. Each ribbon is one .anchors line, spanning the two genes it pairs." src="/img/mcscan_synteny/gene_level.png" />
 

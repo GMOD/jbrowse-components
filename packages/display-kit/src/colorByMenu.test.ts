@@ -31,7 +31,7 @@ test('each block in turn, then Additional coloring', () => {
     ],
     additional: [{ label: 'Arc color', subMenu: [] }],
   })
-  expect(item.label).toBe('Color by...')
+  expect(item.label).toBe('Color by')
   expect(shape(item.subMenu)).toEqual([
     'Normal',
     'Strand',

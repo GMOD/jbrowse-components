@@ -43,7 +43,7 @@ const COOKBOOK_MULTIWIG_TRACK = {
   },
 }
 
-// The object **Color by... -> Strand** writes, as docs/cookbook.md teaches it.
+// The object **Color by -> Strand** writes, as docs/cookbook.md teaches it.
 const STRAND_COLOR = { field: 'strand' }
 
 // The recipe docs/cookbook.md teaches.

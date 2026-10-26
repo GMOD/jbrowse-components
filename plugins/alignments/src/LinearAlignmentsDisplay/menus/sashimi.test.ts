@@ -58,7 +58,7 @@ function click(items: MenuItem[], label: string) {
   row.onClick()
 }
 
-describe('sashimi rows in Show...', () => {
+describe('sashimi rows in Show', () => {
   test('the counts appear only while the arcs draw', () => {
     const model = makeModel()
     expect(labelsOf(sashimiShowItems(model))).toEqual(['Sashimi arcs'])

@@ -34,7 +34,7 @@ import type { PopoverOrigin } from '@mui/material'
 
 export type { MenuItemsGetter } from './MenuTypes.ts'
 
-// Compact section headers so tall menus (e.g. a display's flat "Show..."
+// Compact section headers so tall menus (e.g. a display's flat "Show"
 // settings list with several subHeader-separated radio groups) stay short.
 // Row heights are left at the MUI default.
 const useStyles = makeStyles()(theme => ({

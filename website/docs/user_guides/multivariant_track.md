@@ -39,8 +39,8 @@ homozygosity, and population structure become visible at a glance.
 ## Filtering by allele frequency and missingness
 
 Two inline sliders in the track menu thin a dense callset down to the variants
-worth looking at. Both are under **Track menu → Filter by...** and re-fetch as
-you release the slider:
+worth looking at. Both are under **Track menu → Filter by** and re-fetch as you
+release the slider:
 
 - **Minor allele frequency** hides variants whose minor allele frequency falls
   below the threshold, so singletons and near-monomorphic sites drop out and the
@@ -99,7 +99,7 @@ stays disabled until the view holds phased or haploid genotypes.
 
 If the VCF's `INFO` field has SnpEff `ANN` or VEP `CSQ` annotations, each
 variant's alt-allele cells can be colored by the severity of its most severe
-predicted consequence. From the track menu, open **Color by...** and choose
+predicted consequence. From the track menu, open **Color by** and choose
 **Consequence impact** under **Cells**. The entry stays visible where no variant
 in view is annotated, but is greyed out and names why: _(checking for SnpEff/VEP
 annotations...)_ while the variants load, then _(no SnpEff/VEP annotations in
@@ -128,9 +128,9 @@ To have the track load already colored this way, set the display's
 
 Structural variants can be colored by their class: each alt-allele cell takes
 the color of its variant's structural-variant type. From the track menu, open
-**Color by...** and choose **SV type** under **Cells**. Like the consequence
-option it greys out rather than disappearing, reading _(no structural variants
-in view)_ where the variants in view hold none.
+**Color by** and choose **SV type** under **Cells**. Like the consequence option
+it greys out rather than disappearing, reading _(no structural variants in
+view)_ where the variants in view hold none.
 
 Each class has one fixed color, the same on every display that paints SV type,
 so a deletion is the same red here, on the single-variant display, on a mark
@@ -156,7 +156,7 @@ A track loads already colored by SV type with `encoding.color` set to
 
 ## Coloring by any field
 
-**Color by... → Field...** colors each alt-allele cell by a field of its record.
+**Color by → Field...** colors each alt-allele cell by a field of its record.
 The dialog lists the file's columns (QUAL, FILTER, ID, ALT), every INFO field
 its header declares, with the header's description, and the computed values such
 as `maf` and `missingness`; any other field name or a `jexl:` expression can be

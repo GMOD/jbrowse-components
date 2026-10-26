@@ -137,8 +137,8 @@ them is inverted on many X chromosomes (Small et al. 1997). From any
 - **HPRC release 2 bubbles** in the track selector adds the graph's bubbles.
   `gfatools bubble` flags one as `inversion` when its paths disagree about
   orientation.
-- **Filter by... → Edit filters...** on that track keeps the flagged ones with
-  this filter:
+- **Filter by → Edit filters...** on that track keeps the flagged ones with this
+  filter:
 
   ```text
   jexl:feature.inversion

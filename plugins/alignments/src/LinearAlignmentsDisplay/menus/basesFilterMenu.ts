@@ -6,7 +6,7 @@ import type { Reversible } from '@jbrowse/core/ui/filterMenuItems'
 
 /**
  * The per-base refinements in effect that differ from their defaults, for the
- * "Filter by..." count, and the clear that returns them to the defaults. The
+ * "Filter by" count, and the clear that returns them to the defaults. The
  * refinements themselves are edited in the "More filters..." dialog.
  */
 export function basesFilterNarrowing(

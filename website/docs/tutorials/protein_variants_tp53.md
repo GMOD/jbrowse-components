@@ -82,7 +82,7 @@ the genome view and the structure read them from the alignment:
 
 - in the alignment view's menu, click **Show domains on the genome**, which adds
   a domain track to the genome view
-- in the genome view's menu, untick **Show... → CDS reading frame colors**
+- in the genome view's menu, untick **Show → CDS reading frame colors**
 - in the protein view's palette menu, pick **Domains from the alignment**
 - type
   `chr17:7675069-7675107[rev] chr17:7674201-7674239[rev] chr17:7673783-7673821[rev]`

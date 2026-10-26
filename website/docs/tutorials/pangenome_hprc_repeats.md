@@ -102,7 +102,7 @@ open it from the HPRC page:
 - Open the [HPRC page](https://genomes.jbrowse.org/pangenomes/hprc), click the
   **LPA** example, and click **Graph** under **More about this window**. JBrowse
   opens on `chr6:160,525,000-160,655,000`.
-- Tick **Show... → Show bubble halos** in the graph track's menu.
+- Tick **Show → Show bubble halos** in the graph track's menu.
 
 The strip along the top of the track draws each reference segment at its
 position on the ruler, in the color of its node below.

@@ -86,7 +86,7 @@ function subMenuOf(item: MenuItem | undefined) {
   return item && 'subMenu' in item ? resolveSubMenu(item) : []
 }
 
-// Flatten the Color by... menu so the field radios and those nested under
+// Flatten the Color by menu so the field radios and those nested under
 // "Paired end" are reachable by label. These specs describe the
 // alignments display's menu, which opts into every section — a caller that opts
 // out is covered by the curation tests below.
@@ -335,7 +335,7 @@ describe('color by menu curation', () => {
     ).toEqual(['Normal', 'Query name', 'Solid color...'])
   })
 
-  // The per-base layer draws over the read fill, so Color by... holds two
+  // The per-base layer draws over the read fill, so Color by holds two
   // radio groups, each with one row ticked, the second under its sub-header.
   test('per-base coloring is a second radio group under a sub-header', () => {
     const model = makeModel()

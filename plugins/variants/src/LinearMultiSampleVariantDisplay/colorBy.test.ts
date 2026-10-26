@@ -3,7 +3,7 @@ import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
 
 import { createTestEnvironment } from './testEnv.ts'
 
-// Runtime "Color by...→Samples" wiring: setColorBy writes colorBy onto the
+// Runtime "Color by→Samples" wiring: setColorBy writes colorBy onto the
 // display's config and nothing else — the tint resolves on every read of
 // `sources`. colorByAttributes lists the samplesTsv metadata keys the user can
 // band by.
@@ -148,7 +148,7 @@ test('the Samples menu ticks a configured attribute the samples lack', () => {
   display.setSources([{ name: 'HG001', population: 'EUR' }])
   const colorBy = display
     .trackMenuItems()
-    .find(i => 'label' in i && i.label === 'Color by...')
+    .find(i => 'label' in i && i.label === 'Color by')
   const items = colorBy && 'subMenu' in colorBy ? resolveSubMenu(colorBy) : []
   const tissue = items.find(i => 'label' in i && i.label === 'Tissue')
   expect(tissue && 'checked' in tissue && tissue.checked).toBe(true)
@@ -163,7 +163,7 @@ test('the Samples menu ticks Each row where the dialog picked sample colors', ()
   display.setSources([{ name: 'HG001', population: 'EUR' }])
   const colorBy = display
     .trackMenuItems()
-    .find(i => 'label' in i && i.label === 'Color by...')
+    .find(i => 'label' in i && i.label === 'Color by')
   const items = colorBy && 'subMenu' in colorBy ? resolveSubMenu(colorBy) : []
   const ticked = items.flatMap(i =>
     'checked' in i && i.checked && 'label' in i ? [i.label] : [],

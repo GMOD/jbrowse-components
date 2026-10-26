@@ -449,7 +449,7 @@ test('hiding a key category drops its spans from the plot and the hover, and fet
   ])
   expect(menuLabels(display)).toEqual(
     expect.arrayContaining([
-      'Filter by... (1)',
+      'Filter by (1)',
       '  Show all categories',
       'Categories (1 hidden)',
       '  liver',

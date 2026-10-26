@@ -380,7 +380,7 @@ attaches, with its size in the tooltip.
 
 ## Bubbles, genes and walks on the drawing
 
-**Show... → Show bubble halos** in the track menu draws the graph's bubbles on
+**Show → Show bubble halos** in the track menu draws the graph's bubbles on
 every node layout. Each bubble is a halo along the bubble's nodes, colored by
 its type, with a label naming the type, and the legend lists each color. The
 option starts off, because on a base-level cut every SNP's halo is a blob. The
@@ -395,9 +395,9 @@ an opened bubble, so a superbubble opens level by level.
 The graph draws the session's gene track onto the backbone. Exons are dark
 stretches along their reference nodes, and each gene's name is pinned under the
 backbone at the gene's midpoint. An allele has no reference coordinates and
-shows no exon. **Show... → Show genes on the backbone** in the track menu turns
-the genes off, and **Gene track** in its **Graph settings...** picks the track
-when the assembly has more than one.
+shows no exon. **Show → Show genes on the backbone** in the track menu turns the
+genes off, and **Gene track** in its **Graph settings...** picks the track when
+the assembly has more than one.
 
 A graph with walks, such as a GBZ cut or a GFA with P or W lines, supports three
 more displays. **Node width** in the track menu's **Graph settings...** draws a
@@ -548,7 +548,7 @@ way to locate a rank>0 allele, because those alleles have no reference
 coordinates.
 
 The reverse direction, a lane's pointer lighting the segment under it, is off by
-default, since every track's pointer crosses some segment. **Show... → Hover
+default, since every track's pointer crosses some segment. **Show → Hover
 highlight → Everything** turns it on, along with edge hover. It then works from
 any track, because a gene gives a coordinate, and rGFA segments do not overlap
 on a stable sequence, so one backbone segment covers the coordinate.

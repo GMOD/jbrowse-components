@@ -94,7 +94,7 @@ import {
 // on its spec entry is the fix.
 
 export interface FieldStep {
-  // click path through the UI, e.g. "Track menu → Color by... → Paired end"
+  // click path through the UI, e.g. "Track menu → Color by → Paired end"
   path: string
   // what the setting does, when the label alone doesn't say it
   note?: string
@@ -206,7 +206,7 @@ function alignmentsColorStep(value: unknown): FieldStep | undefined {
   const { menu } = COLOR_FIELD_DEFS[kind]
   const path = [
     TRACK_MENU,
-    'Color by...',
+    'Color by',
     SPECIAL_COLOR_MENUS[kind] ?? menu.label,
   ].join(' → ')
   const scale = scaleOf(color)
@@ -221,7 +221,7 @@ function alignmentsColorStep(value: unknown): FieldStep | undefined {
 }
 
 // The alignments displays' `pileup.bases`: the per-base layer's radio in the
-// same Color by... menu, and the Filter by... rows its filter narrows.
+// same Color by menu, and the Filter by rows its filter narrows.
 const basesStep: FieldRecipe = value => {
   const bases = asRecord(value)
   const color = channelOf(asRecord(bases?.encoding)?.color)
@@ -244,14 +244,14 @@ const basesStep: FieldRecipe = value => {
     : COLOR_FIELD_DEFS[field].menu.label
   return [
     {
-      path: `${TRACK_MENU} → Color by... → ${label}`,
+      path: `${TRACK_MENU} → Color by → ${label}`,
       note:
         field === 'modifications'
           ? 'Needs MM/ML modification tags in your BAM/CRAM.'
           : undefined,
     },
     ...(isMethylation && unmodified
-      ? [{ path: `${TRACK_MENU} → Color by... → ${UNMODIFIED_IN_BLUE_LABEL}` }]
+      ? [{ path: `${TRACK_MENU} → Color by → ${UNMODIFIED_IN_BLUE_LABEL}` }]
       : []),
     ...(field === 'modifications' && filter.some(p => p?.field === 'code')
       ? [{ path: `${MORE_FILTERS} → Modifications → Modification types` }]
@@ -277,7 +277,7 @@ function namesAlignmentsColor(value: unknown) {
   )
 }
 
-// The alignments display and LGVSyntenyDisplay build their "Group by..." submenu
+// The alignments display and LGVSyntenyDisplay build their "Group by" submenu
 // from the same groupByRadioMenuItem over the same dimension registry, so one
 // path serves both: every dimension is a radio carrying its registry label, and
 // a tag is the 'Tag...' item that opens a dialog for the tag itself.
@@ -303,7 +303,7 @@ function alignmentsFacetStep(value: unknown): FieldStep | undefined {
   const tag = fieldTag(field)
   if (tag) {
     return {
-      path: `${TRACK_MENU} → Group by... → Tag... → enter "${tag}"`,
+      path: `${TRACK_MENU} → Group by → Tag... → enter "${tag}"`,
       note:
         tag === 'HP'
           ? 'HP is the haplotype tag written by phasing tools like WhatsHap or Longphase.'
@@ -316,7 +316,7 @@ function alignmentsFacetStep(value: unknown): FieldStep | undefined {
   const hidden = asList(asRecord(value)?.hidden) ?? []
   return label
     ? {
-        path: `${TRACK_MENU} → Group by... → ${label}`,
+        path: `${TRACK_MENU} → Group by → ${label}`,
         note:
           field === 'mateAssembly'
             ? `Synteny tracks only: one section per assembly on the other side of the alignment.${
@@ -374,7 +374,7 @@ const MULTI_SAMPLE_VARIANT_DISPLAYS = new Set([
 ])
 
 // Mirrors the canvas display's own `colorByMode` getter (colorViews.ts), which
-// is what decides which of the "Color by..." radios reads as checked: an
+// is what decides which of the "Color by" radios reads as checked: an
 // `encoding.color.field` of `strand` is 'strand', any other field is
 // 'attribute', and with no field painting it is 'default', whatever
 // `encoding.color.value` holds.
@@ -415,7 +415,7 @@ const VARIANT_CELL_PRESET_FIELDS: Record<string, string> = {
 /**
  * The displays composing the canvas base display, which is where the two
  * channel objects and the dialogs that write them live: `encoding.color` under
- * Color by... and `facet` under Group by..., with Sections for the drawn order.
+ * Color by and `facet` under Group by, with Sections for the drawn order.
  * `LinearVariantDisplay` is on the same base as `LinearBasicDisplay` and
  * renames its vocabulary, so every channel step below is a step in one of
  * those menus and one list gates them all.
@@ -451,7 +451,7 @@ function colorStep(
     return asList(geneScale.domain) || asList(geneScale.range)
       ? {
           path: `${TRACK_MENU} → Advanced → Edit plot...`,
-          note: 'The Color by... radios paint a gene by cluster, name or strand. A field expression with its own scale domain and range is the color channel, which Edit plot takes as text.',
+          note: 'The Color by radios paint a gene by cluster, name or strand. A field expression with its own scale domain and range is the color channel, which Edit plot takes as text.',
         }
       : undefined
   }
@@ -502,7 +502,7 @@ function colorStep(
     if (!hasChannelMenus(displayType)) {
       return undefined
     }
-    const colorBy = `${TRACK_MENU} → Color by...`
+    const colorBy = `${TRACK_MENU} → Color by`
     const preset =
       displayType === 'LinearVariantDisplay'
         ? VARIANT_PRESET_FIELDS[field]
@@ -523,7 +523,7 @@ function colorStep(
 }
 
 // The MAF display's `encoding.color`: a field named bare or as `{ field }`,
-// each one a Color by... row.
+// each one a Color by row.
 function mafColorStep(value: unknown): FieldStep | undefined {
   const field = asString(channelOf(value)?.field)
   const label =
@@ -543,7 +543,7 @@ function variantCellColorStep(
   if (!field) {
     return undefined
   }
-  const cells = `${TRACK_MENU} → Color by... → Cells`
+  const cells = `${TRACK_MENU} → Color by → Cells`
   const preset = VARIANT_CELL_PRESET_FIELDS[field]
   if (preset) {
     return { path: `${cells} → ${preset}` }
@@ -584,7 +584,7 @@ function constantColorStep(
   if (!hasChannelMenus(displayType)) {
     return undefined
   }
-  const colorBy = `${TRACK_MENU} → Color by...`
+  const colorBy = `${TRACK_MENU} → Color by`
   const preset =
     displayType === 'LinearVariantDisplay'
       ? VARIANT_COLOR_PRESETS[value]
@@ -595,7 +595,7 @@ function constantColorStep(
       ? { path: `${colorBy} → Solid color... → ${value}` }
       : {
           path: `${TRACK_MENU} → Settings → color`,
-          note: `A per-feature expression. The Color by... radios write a solid color, a field's palette, and ${
+          note: `A per-feature expression. The Color by radios write a solid color, a field's palette, and ${
             displayType === 'LinearVariantDisplay'
               ? 'the SV-type and consequence-impact presets'
               : 'the strand colors'
@@ -618,7 +618,7 @@ function rowColorStep(
     MULTI_SAMPLE_VARIANT_DISPLAYS.has(displayType)
   ) {
     return {
-      path: `${TRACK_MENU} → Color by... → Samples → ${capitalizeFirst(attribute)}`,
+      path: `${TRACK_MENU} → Color by → Samples → ${capitalizeFirst(attribute)}`,
       note: `The Samples section lists whichever metadata columns your samples carry, so "${attribute}" appears only if yours have it.`,
     }
   }
@@ -667,7 +667,7 @@ function facetStep(
   }
   if (displayType === 'LinearMultiRowFeatureDisplay') {
     return {
-      path: `${TRACK_MENU} → Group by... → ${field}`,
+      path: `${TRACK_MENU} → Group by → ${field}`,
       note: `The submenu lists the attributes the loaded rows carry.${
         ordered ? ' This figure also fixes the band order, which the config sets.' : ''
       }`,
@@ -675,7 +675,7 @@ function facetStep(
   }
   if (displayType && MULTI_SAMPLE_VARIANT_DISPLAYS.has(displayType)) {
     return {
-      path: `${TRACK_MENU} → Group by... → ${capitalizeFirst(field)}`,
+      path: `${TRACK_MENU} → Group by → ${capitalizeFirst(field)}`,
       note: `The submenu lists whichever metadata columns your samples carry, so "${field}" appears only if yours have it.${
         ordered
           ? ' The band order has no menu row of its own; the figure declares it in the track config.'
@@ -686,7 +686,7 @@ function facetStep(
   if (!hasChannelMenus(displayType)) {
     return undefined
   }
-  const groupBy = `${TRACK_MENU} → Group by...`
+  const groupBy = `${TRACK_MENU} → Group by`
   const picked =
     field === 'strand'
       ? `${groupBy} → Strand`
@@ -731,9 +731,9 @@ const CIGAR_MODES: Record<string, string> = Object.fromEntries(
   CIGAR_MODE_OPTIONS.map(o => [o.value, o.label]),
 )
 
-// The MAF display's `encoding.color` is its Color by... radio, whose labels
+// The MAF display's `encoding.color` is its Color by radio, whose labels
 // are imported, and `y` its Plot type radio.
-const MAF_COLOR_BY = `${TRACK_MENU} → Color by...`
+const MAF_COLOR_BY = `${TRACK_MENU} → Color by`
 
 // The displays whose menu carries tree-sidebar's shared "Row height" submenu,
 // with the presets each passes it; the multi-sample variant display passes
@@ -878,7 +878,7 @@ function yStep(
   }
 }
 
-// Every display that filters names the item 'Filter by...' — the canvas base
+// Every display that filters names the item 'Filter by' — the canvas base
 // (trackMenus.ts), the alignments/LGVSynteny one (menus/filters.ts, which adds
 // a count when filters are active), and the multi-sample variant one. So unlike
 // most of this table the label does not vary; only which displays have it does.
@@ -898,7 +898,7 @@ const ARC_COLORS: Record<string, string> = Object.fromEntries([
   ...ARC_COLOR_OPTIONS.map(o => [o.value, o.label]),
 ])
 
-// The alignments 'Sort by...' radios, spelled as menus/sortGroup.ts builds
+// The alignments 'Sort by' radios, spelled as menus/sortGroup.ts builds
 // each, noun included. The center-line rows sit under their own sub-header,
 // which a path does not name.
 function sortByLabel(field: string, noun: string) {
@@ -937,7 +937,7 @@ const SHOW_SUBMENU_DISPLAYS = new Set([
   'LGVSyntenyDisplay',
 ])
 
-// Every display whose 'Show...' submenu builds its row with `legendCheckboxItem`
+// Every display whose 'Show' submenu builds its row with `legendCheckboxItem`
 // (display-kit's LegendMixin), so the label is the same on all of them. The
 // displays beyond the set above have none of its read-oriented rows, so they
 // join the legend alone rather than that set, which also answers showCoverage
@@ -958,7 +958,7 @@ const SHOW_LEGEND_DISPLAYS = new Set([
 ])
 
 // The displays composing LinearCanvasBaseDisplay, so they share its whole track
-// menu: the size submenu, the flattened "Show..." one, and the right-click item
+// menu: the size submenu, the flattened "Show" one, and the right-click item
 // that writes `featureHighlights`. LinearVariantDisplay is in it because it
 // renames its noun rather than its behaviour — its menu row reads "Highlight
 // variant" and is the same item, and its size submenu is titled with the same
@@ -1068,9 +1068,9 @@ const readSizeStep: FieldRecipe = (value, { noun, displayType }) => {
 // A category filter's three radios (menus/categoryFilterItem.ts): every row,
 // only the category's, or none of them.
 // The alignments "More filters..." dialog, which holds every filter the
-// "Filter by..." submenu leaves out, in sections named for what they filter
+// "Filter by" submenu leaves out, in sections named for what they filter
 // (dialogs/LayerFilterSections.tsx).
-const MORE_FILTERS = `${TRACK_MENU} → Filter by... → More filters...`
+const MORE_FILTERS = `${TRACK_MENU} → Filter by → More filters...`
 
 function categoryStep(
   menu: string,
@@ -1156,15 +1156,15 @@ const layerCheckbox = (label: string, note?: string): FieldRecipe => {
 }
 
 // Same label in the same submenu on both displays that have the slot: the
-// alignments "Show..." menu (menus/reads.ts) and LGVSyntenyDisplay's trimmed
+// alignments "Show" menu (menus/reads.ts) and LGVSyntenyDisplay's trimmed
 // copy of it (LGVSyntenyDisplay/menus.ts), so one path serves both. The
 // quality fade's checkbox writes `encoding.opacity.field` alone; a written
 // scale has no row.
 const mismatchesLayer = layerCheckbox(
-  'Show... → Mismatches',
+  'Show → Mismatches',
   'Per-base differences read from the CIGAR (and cs tag, on synteny tracks). Worth unchecking when zoomed out far enough that each one is sub-pixel and they paint over the block structure.',
 )
-const mismatchesFade = checkbox('Show... → Fade low-quality mismatches')
+const mismatchesFade = checkbox('Show → Fade low-quality mismatches')
 const mismatchesStep: FieldRecipe = (value, context) => {
   const opacity = channelOf(asRecord(asRecord(value)?.encoding)?.opacity)
   const field = asString(opacity?.field)
@@ -1178,7 +1178,7 @@ const mismatchesStep: FieldRecipe = (value, context) => {
 }
 
 // A display's `filter` list, each entry as the row that writes it: an
-// expression is a "Filter by..." dialog entry, a read category one of the
+// expression is a "Filter by" dialog entry, a read category one of the
 // alignments category radios (their labels off `READ_CATEGORIES`, which the
 // menu builds its rows from, so a renamed one cannot leave figures naming a
 // row that is gone), and each field below the slider or radio that writes it.
@@ -1223,7 +1223,7 @@ const filterListStep: FieldRecipe = (value, context) => {
       ? [
           {
             path: categories
-              .map(step => `${TRACK_MENU} → Filter by... → ${step}`)
+              .map(step => `${TRACK_MENU} → Filter by → ${step}`)
               .join(', then '),
             note: 'A read filter drops reads in the worker before layout, so it thins the coverage histogram along with the pileup.',
           },
@@ -1235,7 +1235,7 @@ const filterListStep: FieldRecipe = (value, context) => {
           {
             path: isAlignmentsOnlyField(context.displayType)
               ? MORE_FILTERS
-              : `${TRACK_MENU} → Filter by... → Edit filters...`,
+              : `${TRACK_MENU} → Filter by → Edit filters...`,
           },
         ]
       : []),
@@ -1263,27 +1263,27 @@ function filterFieldStep(
 ): FieldStep | undefined {
   const alignments = isAlignmentsOnlyField(displayType)
   if (field === 'geneLike') {
-    // the category row LinearBasicDisplay adds to "Filter by..." (model.ts)
+    // the category row LinearBasicDisplay adds to "Filter by" (model.ts)
     return categoryStep(
-      `${TRACK_MENU} → Filter by... → Genes`,
+      `${TRACK_MENU} → Filter by → Genes`,
       categoryOf(equal),
       'genes',
       'Genes counts every gene, transcript and RNA type, the configured transcript and container types, and a top-level CDS; the rest of a GFF, such as NCBI region and match rows, is not a gene.',
     )
   }
-  // the two inline sliders under the multi-sample variant "Filter by..."
+  // the two inline sliders under the multi-sample variant "Filter by"
   // submenu (multiSampleVariantMenuItems.ts); both refetch on release
   const maf = fixed(gte)
   if (field === 'minorAlleleFrequency' && maf !== undefined) {
     return {
-      path: `${TRACK_MENU} → Filter by... → Minor allele frequency → ${maf.toFixed(2)}`,
+      path: `${TRACK_MENU} → Filter by → Minor allele frequency → ${maf.toFixed(2)}`,
       note: 'Hides variants whose minor allele frequency is below this.',
     }
   }
   const missing = fixed(lte)
   if (field === 'missingness' && missing !== undefined) {
     return {
-      path: `${TRACK_MENU} → Filter by... → Missingness → ${missing.toFixed(2)}`,
+      path: `${TRACK_MENU} → Filter by → Missingness → ${missing.toFixed(2)}`,
       note: 'Hides variants whose fraction of no-call genotypes is above this.',
     }
   }
@@ -1295,9 +1295,9 @@ function filterFieldStep(
     }
   }
   if (field === 'junction.canonical' && alignments) {
-    // a Filter by... row only while the arcs draw
+    // a Filter by row only while the arcs draw
     return categoryStep(
-      `${TRACK_MENU} → Filter by... → Non-canonical junctions`,
+      `${TRACK_MENU} → Filter by → Non-canonical junctions`,
       equal === true ? 'exclude' : equal === false ? 'only' : undefined,
       'non-canonical junctions',
       'Hiding drops every arc whose intron does not begin and end with one of the six canonical dinucleotide pairs. At depth those are mostly alignment artefacts, and the support floor removes them only by also removing a real junction few reads carry.',
@@ -1328,7 +1328,7 @@ function expressionsStep(
 ): FieldStep | undefined {
   return filters.length && displayType && FILTER_MENU_DISPLAYS.has(displayType)
     ? {
-        path: `${TRACK_MENU} → Filter by... → add ${filters.length === 1 ? 'the expression' : `the ${filters.length} expressions`}`,
+        path: `${TRACK_MENU} → Filter by → add ${filters.length === 1 ? 'the expression' : `the ${filters.length} expressions`}`,
         note: `This figure filters on ${filters.map(f => `\`${f.replace(/^jexl:/, '')}\``).join(', ')}.`,
       }
     : undefined
@@ -1420,7 +1420,7 @@ export const GRAPH_LABELS: Record<string, string[]> = {
     'Layout',
     'Color',
     'Haplotypes',
-    'Show...',
+    'Show',
     'Show bubble halos',
     'Show deletion edges',
     'Show genes on the backbone',
@@ -1473,14 +1473,14 @@ const graphSettingsField =
       : undefined
   }
 
-// A checkbox of the Show... submenu, which the track menu and the standalone
+// A checkbox of the Show submenu, which the track menu and the standalone
 // view's menu both carry.
 const graphCheckbox =
   (label: string): FieldRecipe =>
   (value, context) =>
     typeof value === 'boolean'
       ? {
-          path: `${graphSurface(context, 'Graph view menu')} → Show... → ${label} (${value ? 'checked' : 'unchecked'})`,
+          path: `${graphSurface(context, 'Graph view menu')} → Show → ${label} (${value ? 'checked' : 'unchecked'})`,
         }
       : undefined
 
@@ -1624,7 +1624,7 @@ export const trackFields: Record<string, FieldRecipe> = {
     typeof value === 'boolean' &&
     displayType === 'LinearMultiRowFeatureDisplay'
       ? {
-          path: `${TRACK_MENU} → Show... → Row separators (${value ? 'checked' : 'unchecked'})`,
+          path: `${TRACK_MENU} → Show → Row separators (${value ? 'checked' : 'unchecked'})`,
         }
       : undefined,
   // Which attribute becomes the rows. The submenu's options are discovered from
@@ -1696,7 +1696,7 @@ export const trackFields: Record<string, FieldRecipe> = {
   'axis.labels': (value, { displayType }) =>
     typeof value === 'boolean' && displayType === 'LinearWiggleDisplay'
       ? {
-          path: `${TRACK_MENU} → Show... → Row labels (${value ? 'checked' : 'unchecked'})`,
+          path: `${TRACK_MENU} → Show → Row labels (${value ? 'checked' : 'unchecked'})`,
           note: value
             ? undefined
             : 'The labels only become worth turning off once the rows are too short to carry text, which is where they fall back to a bare column of color swatches.',
@@ -1707,7 +1707,7 @@ export const trackFields: Record<string, FieldRecipe> = {
     displayType &&
     TREE_SIDEBAR_DISPLAYS.has(displayType)
       ? {
-          path: `${TRACK_MENU} → Show... → Tree branch lengths (${checked(value)})`,
+          path: `${TRACK_MENU} → Show → Tree branch lengths (${checked(value)})`,
           note: 'Checked, tree nodes sit at their branch lengths, as a dendrogram; unchecked, they space evenly by topology. The item is disabled until the tree is showing and carries branch lengths.',
         }
       : undefined,
@@ -1716,7 +1716,7 @@ export const trackFields: Record<string, FieldRecipe> = {
     displayType &&
     MULTI_SAMPLE_VARIANT_DISPLAYS.has(displayType)
       ? {
-          path: `${TRACK_MENU} → Show... → Variant lane (${checked(value)})`,
+          path: `${TRACK_MENU} → Show → Variant lane (${checked(value)})`,
           note: 'Draws the variants at their genomic positions in a lane above the genotype rows. Offered only while "Layout → Genotype matrix" is unchecked.',
         }
       : undefined,
@@ -1782,7 +1782,7 @@ export const trackFields: Record<string, FieldRecipe> = {
     const label = field ? sortByLabel(field, noun) : undefined
     return label && isAlignmentsOnlyField(displayType)
       ? {
-          path: `${TRACK_MENU} → Sort by... → ${label}`,
+          path: `${TRACK_MENU} → Sort by → ${label}`,
           note: field!.startsWith('tags.')
             ? CENTRE_LINE_NOTE
             : SORT_NOTES[field!],
@@ -1794,7 +1794,7 @@ export const trackFields: Record<string, FieldRecipe> = {
     displayType &&
     SHOW_LEGEND_DISPLAYS.has(displayType)
       ? {
-          path: `${TRACK_MENU} → Show... → Legend (${value ? 'checked' : 'unchecked'})`,
+          path: `${TRACK_MENU} → Show → Legend (${value ? 'checked' : 'unchecked'})`,
         }
       : undefined,
   'coverage.show': (value, { displayType }) =>
@@ -1803,7 +1803,7 @@ export const trackFields: Record<string, FieldRecipe> = {
     (SHOW_SUBMENU_DISPLAYS.has(displayType) ||
       displayType === 'LinearMafDisplay')
       ? {
-          path: `${TRACK_MENU} → Show... → Coverage (${value ? 'checked' : 'unchecked'})`,
+          path: `${TRACK_MENU} → Show → Coverage (${value ? 'checked' : 'unchecked'})`,
         }
       : undefined,
   collapseSections: (value, { displayType }) =>
@@ -1811,26 +1811,26 @@ export const trackFields: Record<string, FieldRecipe> = {
     displayType &&
     SHOW_SUBMENU_DISPLAYS.has(displayType)
       ? {
-          path: `${TRACK_MENU} → Show... → Collapse groups to one row (${value ? 'checked' : 'unchecked'})`,
+          path: `${TRACK_MENU} → Show → Collapse groups to one row (${value ? 'checked' : 'unchecked'})`,
           note: 'Offered only once the reads are grouped, since it is what the groups collapse into.',
         }
       : undefined,
   'ribbons.encoding.color': (value, { displayType }) => {
     const label = syntenyColorMode(value)?.label
     return label && displayType === 'MultiWaySyntenyDisplay'
-      ? { path: `${TRACK_MENU} → Color by... → Ribbons → ${label}` }
+      ? { path: `${TRACK_MENU} → Color by → Ribbons → ${label}` }
       : undefined
   },
   inlineLaneNames: (value, { displayType }) =>
     typeof value === 'boolean' && displayType === 'MultiWaySyntenyDisplay'
       ? {
-          path: `${TRACK_MENU} → Show... → Lane names on the gene row (${value ? 'checked' : 'unchecked'})`,
+          path: `${TRACK_MENU} → Show → Lane names on the gene row (${value ? 'checked' : 'unchecked'})`,
         }
       : undefined,
   showGeneLabels: (value, { displayType }) =>
     typeof value === 'boolean' && displayType === 'MultiWaySyntenyDisplay'
       ? {
-          path: `${TRACK_MENU} → Show... → Gene labels (${value ? 'checked' : 'unchecked'})`,
+          path: `${TRACK_MENU} → Show → Gene labels (${value ? 'checked' : 'unchecked'})`,
         }
       : undefined,
   'coverage.encoding.y': yStep(channelYMembers),
@@ -1852,7 +1852,7 @@ export const trackFields: Record<string, FieldRecipe> = {
   'conservation.show': (value, { displayType }) =>
     typeof value === 'boolean' && displayType === 'LinearMafDisplay'
       ? {
-          path: `${TRACK_MENU} → Show... → Conservation (${value ? 'checked' : 'unchecked'})`,
+          path: `${TRACK_MENU} → Show → Conservation (${value ? 'checked' : 'unchecked'})`,
         }
       : undefined,
   'conservation.unit': (value, { displayType }) => {
@@ -1874,7 +1874,7 @@ export const trackFields: Record<string, FieldRecipe> = {
     const show = (value as { show?: unknown } | undefined)?.show
     return typeof show === 'boolean' && displayType === 'LinearMafDisplay'
       ? {
-          path: `${TRACK_MENU} → Show... → Reference row (${show ? 'checked' : 'unchecked'})`,
+          path: `${TRACK_MENU} → Show → Reference row (${show ? 'checked' : 'unchecked'})`,
         }
       : undefined
   },
@@ -1901,7 +1901,7 @@ export const trackFields: Record<string, FieldRecipe> = {
     const state = value ? 'checked' : 'unchecked'
     return TREE_SIDEBAR_DISPLAYS.has(displayType)
       ? {
-          path: `${TRACK_MENU} → Show... → ${TREE_SIDEBAR_TOGGLE} (${state})`,
+          path: `${TRACK_MENU} → Show → ${TREE_SIDEBAR_TOGGLE} (${state})`,
           note:
             displayType === 'LinearWiggleDisplay'
               ? 'On by default. The item is disabled until there is a tree to show, and drops out entirely under an Overlapping plot, which collapses every source onto one row for a dendrogram to align to.'
@@ -1958,7 +1958,7 @@ export const trackFields: Record<string, FieldRecipe> = {
     const label =
       typeof value === 'string' ? SHOW_LABELS_MODES[value] : undefined
     return label && displayType && CANVAS_DISPLAYS.has(displayType)
-      ? { path: `${TRACK_MENU} → Show... → Labels → ${label}` }
+      ? { path: `${TRACK_MENU} → Show → Labels → ${label}` }
       : undefined
   },
   // layout the reader sets to taste: a step per track buries the settings
@@ -1971,19 +1971,19 @@ export const trackFields: Record<string, FieldRecipe> = {
   ),
   readConnections: fromTable('Read connections', READ_CONNECTIONS),
   'pileup.softClips': layerCheckbox(
-    'Show... → Soft clipping',
+    'Show → Soft clipping',
     'Reveals clipped bases — the signal that a read spans a breakpoint.',
   ),
   'pileup.connectors': layerCheckbox(
     'Read connections → Pileup connectors',
     "Draws a read's alignments joined by a curve rather than a straight line. Worth it when the two ends sit in different displayed regions, where the curve reads as one read crossing the gap.",
   ),
-  // Sits directly under "Coverage" in the alignments "Show..." submenu
+  // Sits directly under "Coverage" in the alignments "Show" submenu
   // (menus/reads.ts). Unchecking it leaves the coverage band alone, which is
   // what a figure comparing depth across samples wants: at whole-gene zoom a
   // 30x pileup is a solid mass and only the curve carries the comparison.
   'pileup.show': checkbox(
-    'Show... → Pileup',
+    'Show → Pileup',
     'Drops the stacked-read band and keeps the coverage curve, so several samples can be compared on depth alone.',
   ),
   // A radio list of five fractions rather than a number entry
@@ -2008,7 +2008,7 @@ export const trackFields: Record<string, FieldRecipe> = {
   // histogram wants: the arcs are strand-colored too, from the XS/TS tag, and
   // outdraw it.
   'sashimi.show': checkbox(
-    'Show... → Sashimi arcs',
+    'Show → Sashimi arcs',
     'Hides the splice-junction arcs and keeps the coverage band underneath them.',
   ),
   'pileup.mismatches': mismatchesStep,
@@ -2018,18 +2018,18 @@ export const trackFields: Record<string, FieldRecipe> = {
   referenceDrawingMode: value =>
     typeof value === 'string'
       ? {
-          path: `${TRACK_MENU} → Show... → Reference alleles (${
+          path: `${TRACK_MENU} → Show → Reference alleles (${
             value === 'skip' ? 'unchecked' : 'checked'
           })`,
           note: 'Off fills the lane solid grey and paints only ALT alleles, which reads better when a cell means "carries the variant". Turn it on where homozygous reference is itself the state of interest.',
         }
       : undefined,
-  // Three sibling checkboxes in the reference-sequence track's Show... submenu
+  // Three sibling checkboxes in the reference-sequence track's Show submenu
   // (LinearReferenceSequenceDisplay.trackMenuItems)
-  forward: layerCheckbox('Show... → Forward'),
-  reverse: layerCheckbox('Show... → Reverse'),
-  translation: layerCheckbox('Show... → Translation'),
-  'sashimi.labels': layerCheckbox('Show... → Sashimi read counts'),
+  forward: layerCheckbox('Show → Forward'),
+  reverse: layerCheckbox('Show → Reverse'),
+  translation: layerCheckbox('Show → Translation'),
+  'sashimi.labels': layerCheckbox('Show → Sashimi read counts'),
   'readConnections.placement': fromTable(
     'Advanced → Read connections placement',
     READ_CONNECTIONS_PLACEMENT,
@@ -2192,7 +2192,7 @@ function syntenyRowPath(viewType: string | undefined, row: string) {
 // Where the color radios sit in each view that paints synteny.
 function colorMenuPath(viewType: string | undefined) {
   return viewType === 'CircularView'
-    ? 'View menu → Color by...'
+    ? 'View menu → Color by'
     : viewType === 'LinearSyntenyView'
       ? 'Synteny view header → palette button'
       : viewType === 'DotplotView'
@@ -2356,7 +2356,7 @@ export const viewFields: Record<string, FieldRecipe> = {
     const { grid, labels } = asRecord(value) ?? {}
     const gridPath =
       viewType === 'LinearGenomeView'
-        ? 'View menu → Show... → Guidelines'
+        ? 'View menu → Show → Guidelines'
         : viewType === 'LinearSyntenyView'
           ? settingsPath(viewType, 'Location markers')
           : settingsPath(viewType, 'Gridlines')
@@ -2455,7 +2455,7 @@ export const viewFields: Record<string, FieldRecipe> = {
   showCenterLine: value =>
     typeof value === 'boolean'
       ? {
-          path: `View menu → Show... → Center line (${value ? 'checked' : 'unchecked'})`,
+          path: `View menu → Show → Center line (${value ? 'checked' : 'unchecked'})`,
         }
       : undefined,
   tracklist: value =>
@@ -2463,19 +2463,19 @@ export const viewFields: Record<string, FieldRecipe> = {
   trackLabels: value => {
     const option = typeof value === 'string' ? TRACK_LABELS[value] : undefined
     return option
-      ? { path: `View menu → Show... → ${option}` }
+      ? { path: `View menu → Show → ${option}` }
       : undefined
   },
   colorByFrame: value =>
     typeof value === 'boolean'
       ? {
-          path: `View menu → Show... → CDS reading frame colors (${value ? 'checked' : 'unchecked'})`,
+          path: `View menu → Show → CDS reading frame colors (${value ? 'checked' : 'unchecked'})`,
         }
       : undefined,
   showAminoAcids: value =>
     typeof value === 'boolean'
       ? {
-          path: `View menu → Show... → Amino acids when zoomed in (${value ? 'checked' : 'unchecked'})`,
+          path: `View menu → Show → Amino acids when zoomed in (${value ? 'checked' : 'unchecked'})`,
         }
       : undefined,
   // The checkbox carries the placeholder's visibility, so it reads the inverse
@@ -2484,7 +2484,7 @@ export const viewFields: Record<string, FieldRecipe> = {
   hideNoTracksActive: value =>
     typeof value === 'boolean'
       ? {
-          path: `View menu → Show... → No tracks active button (${value ? 'unchecked' : 'checked'})`,
+          path: `View menu → Show → No tracks active button (${value ? 'unchecked' : 'checked'})`,
         }
       : undefined,
   // the linear synteny view's ribbon curve, the Curved lines checkbox

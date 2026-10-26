@@ -4,10 +4,10 @@ const page = (body: string) => `---\ntitle: x\n---\n\n${body}\n`
 
 test('a menu path with no figure after it is unshown', () => {
   const text = page(
-    '## Color the reads\n\nSet **Color by... → Modifications** from the track menu.',
+    '## Color the reads\n\nSet **Color by → Modifications** from the track menu.',
   )
   expect(unshownSettings(text)).toEqual([
-    { line: 7, path: 'Color by... → Modifications' },
+    { line: 7, path: 'Color by → Modifications' },
   ])
 })
 
@@ -17,16 +17,14 @@ test('a figure in the section, or the one after it, shows the setting', () => {
     '\n## Reading it\n\n<Figure src="/img/a.png" />',
     '\n## Reading it\n\n<Video src="/media/a.mp4" />',
   ]) {
-    const text = page(
-      `## Color\n\nSet **Color by... → Modifications**.\n${tail}`,
-    )
+    const text = page(`## Color\n\nSet **Color by → Modifications**.\n${tail}`)
     expect(unshownSettings(text)).toEqual([])
   }
 })
 
 test('two sections on is too far', () => {
   const text = page(
-    '## Color\n\nSet **Color by... → Modifications**.\n\n## Then\n\ntext\n\n## Later\n\n<Figure src="/img/a.png" />',
+    '## Color\n\nSet **Color by → Modifications**.\n\n## Then\n\ntext\n\n## Later\n\n<Figure src="/img/a.png" />',
   )
   expect(unshownSettings(text)).toHaveLength(1)
 })
@@ -49,26 +47,24 @@ test('opening a file or installing a plugin draws nothing of its own', () => {
 })
 
 test('a menu path inside a fence, or past See also, is not an instruction', () => {
-  const fenced = page(
-    '## Color\n\n```text\n**Color by... → Modifications**\n```',
-  )
+  const fenced = page('## Color\n\n```text\n**Color by → Modifications**\n```')
   expect(unshownSettings(fenced)).toEqual([])
-  const tail = page('## See also\n\n- **Color by... → Modifications**')
+  const tail = page('## See also\n\n- **Color by → Modifications**')
   expect(unshownSettings(tail)).toEqual([])
 })
 
 test('a menu path wrapped across two lines is found once, on its first line', () => {
   const text = page(
-    '## Color\n\nThe reads stay grey until **Color by... →\nModifications** paints them.\n\nMore text.',
+    '## Color\n\nThe reads stay grey until **Color by →\nModifications** paints them.\n\nMore text.',
   )
   expect(unshownSettings(text)).toEqual([
-    { line: 7, path: 'Color by... → Modifications' },
+    { line: 7, path: 'Color by → Modifications' },
   ])
 })
 
 test("a path in the opening's list, before any heading, is not counted", () => {
   const text = page(
-    'We:\n\n- color the reads with **Color by... → Modifications**\n\n## Then\n\ntext',
+    'We:\n\n- color the reads with **Color by → Modifications**\n\n## Then\n\ntext',
   )
   expect(unshownSettings(text)).toEqual([])
 })

@@ -1683,7 +1683,7 @@ function stateModelFactory(pluginManager: PluginManager) {
           ...(self.chordSyntenyDisplays.length > 0
             ? [
                 {
-                  label: 'Color by...',
+                  label: 'Color by',
                   icon: PaletteIcon,
                   type: 'subMenu' as const,
                   subMenu: colorByMenuItems(colorByMenuTargetFor(self)),

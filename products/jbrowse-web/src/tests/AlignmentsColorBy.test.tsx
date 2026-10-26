@@ -32,7 +32,7 @@ test('color by tag', async () => {
   view.setNewView(0.8, 49437)
   fireEvent.click(await screen.findByTestId(hts('volvox_cram'), ...opts))
   fireEvent.click(await screen.findByTestId('track_menu_icon', ...opts))
-  fireEvent.click(await screen.findByText('Color by...'))
+  fireEvent.click(await screen.findByText('Color by'))
   fireEvent.click(await screen.findByText('Tag...'))
   fireEvent.change(await screen.findByLabelText('Tag name', ...opts), {
     target: { value: 'HP' },
@@ -49,7 +49,7 @@ test('color by stranded rna-seq', async () => {
     await screen.findByTestId(hts('paired_end_stranded_rnaseq'), ...opts),
   )
   fireEvent.click(await screen.findByTestId('track_menu_icon', ...opts))
-  fireEvent.click(await screen.findByText('Color by...'))
+  fireEvent.click(await screen.findByText('Color by'))
   fireEvent.click(await screen.findByText('First-of-pair strand'))
   const display = await findDisplayPainted('pileup-display', delay)
   expectCanvasMatch(findCanvasIn(display), 0.1)

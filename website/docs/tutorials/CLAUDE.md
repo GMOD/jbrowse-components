@@ -59,8 +59,9 @@ ratchet's backlog. What follows is what no check sees.
 - A gene symbol is `_italic_` in prose and bare in captions, headings, titles
   and link labels; a protein product is roman. `mappability_qc` is the page to
   copy. oxfmt picks the emphasis marker.
-- A menu path in prose spells the app's label, ellipsis included:
-  `**Color by... → Show unmodified in blue**`. A caption keeps the path bare.
+- A menu path in prose spells the app's label, with the ellipsis a row that
+  opens a dialog carries: `**Color by → Tag...**`. A caption keeps the path
+  bare.
 - `Add track` (FAB menu) and `Add track...` (track hamburger) are both real
   labels.
 

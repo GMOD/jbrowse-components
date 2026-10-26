@@ -16,9 +16,9 @@ import type { MenuItem } from '@jbrowse/core/ui'
 const HOVER = { genotype: '0|1', name: 'HG002' }
 
 function showSubmenu(items: MenuItem[]) {
-  const show = items.find(i => 'label' in i && i.label === 'Show...')
+  const show = items.find(i => 'label' in i && i.label === 'Show')
   if (!show || !('subMenu' in show)) {
-    throw new Error('no "Show..." submenu in the track menu')
+    throw new Error('no "Show" submenu in the track menu')
   }
   return resolveSubMenu(show)
 }
@@ -28,7 +28,7 @@ function tooltipItem(items: MenuItem[]) {
     i => 'label' in i && i.label === 'Tooltips',
   )
   if (!item || !('type' in item) || item.type !== 'checkbox') {
-    throw new Error('no "Tooltips" checkbox in the "Show..." submenu')
+    throw new Error('no "Tooltips" checkbox in the "Show" submenu')
   }
   return item
 }
@@ -69,7 +69,7 @@ describe('showTooltips', () => {
     })
   })
 
-  it('offers the checkbox in the "Show..." submenu of both layouts', () => {
+  it('offers the checkbox in the "Show" submenu of both layouts', () => {
     const { display: matrix } = createMatrixTestEnvironment().createDisplay()
     for (const display of [regularDisplay(), matrix]) {
       const item = tooltipItem(display.trackMenuItems())

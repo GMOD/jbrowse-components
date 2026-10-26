@@ -5,7 +5,7 @@ import { subMenuIfAny } from './MenuTypes.ts'
 import type { MenuItem } from './MenuTypes.ts'
 
 /**
- * The "Show..." submenu every display groups its visibility toggles under, and
+ * The "Show" submenu every display groups its visibility toggles under, and
  * the empty-omit that goes with it: a display whose toggles are all
  * inapplicable right now (wiggle in density mode with no cross hatches, a
  * multi-row painting with no legend) drops the row rather than opening an empty
@@ -18,7 +18,7 @@ import type { MenuItem } from './MenuTypes.ts'
  */
 export function makeShowSubMenu(items: MenuItem[]): MenuItem[] {
   return subMenuIfAny({
-    label: 'Show...',
+    label: 'Show',
     icon: VisibilityIcon,
     subMenu: items,
   })

@@ -36,7 +36,7 @@ test('toggle subfeature labels and verify eden.1 label appears', async () => {
   view.tracks[0].displays[0].setHeightMode('fixed')
 
   fireEvent.click(await screen.findByTestId('track_menu_icon', ...opts))
-  fireEvent.click(await screen.findByText('Show...', ...opts))
+  fireEvent.click(await screen.findByText('Show', ...opts))
   fireEvent.click(await screen.findByText('Subfeature labels', ...opts))
   fireEvent.click(await screen.findByText('Below', ...opts))
 

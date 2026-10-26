@@ -13,9 +13,9 @@ sized, or filtered.
 <Figure caption="An alignments track: coverage on top, pileup below. Mismatches show as colored ticks in the pileup and colored segments in the coverage bars." src="/img/volvox_alignments.png" />
 
 A coverage bar that is part red means that fraction of reads have a mismatch
-there. The track menu's **Show... → Coverage** and **Show... → Pileup** toggles
-turn either panel off independently: coverage-only is compact for surveying
-depth across many samples, and pileup-only gives the reads the vertical space.
+there. The track menu's **Show → Coverage** and **Show → Pileup** toggles turn
+either panel off independently: coverage-only is compact for surveying depth
+across many samples, and pileup-only gives the reads the vertical space.
 
 ## Sorting reads
 
@@ -25,16 +25,16 @@ up.
 
 <Figure caption="Sort by base groups reads by the nucleotide they have at the sorted position." src="/img/alignments_sort_by_base.png" />
 
-The track menu's **Sort by...** groups reads the same way against the _center
-line_ (a 1bp indicator at the middle of the view), and also sorts by strand,
-mapping quality, or any BAM tag. Four more order the whole layout instead:
+The track menu's **Sort by** groups reads the same way against the _center line_
+(a 1bp indicator at the middle of the view), and also sorts by strand, mapping
+quality, or any BAM tag. Four more order the whole layout instead:
 
-- **Sort by... → Longest reads first** puts the widest reads at the top.
-- **Sort by... → Spliced reads first** puts the reads with a reference skip
-  (`N`) in the CIGAR there.
-- **Sort by... → Split reads first** puts the reads aligned in pieces there, the
+- **Sort by → Longest reads first** puts the widest reads at the top.
+- **Sort by → Spliced reads first** puts the reads with a reference skip (`N`)
+  in the CIGAR there.
+- **Sort by → Split reads first** puts the reads aligned in pieces there, the
   ones with an `SA` tag.
-- **Sort by... → SV evidence first** puts the split reads on top, then the reads
+- **Sort by → SV evidence first** puts the split reads on top, then the reads
   with an insertion or deletion of 50 bp or more, then the pairs the aligner did
   not call concordant: at a breakpoint those are the reads crossing it. A read
   counts only when both ends are placed: a split read whose other pieces all sit
@@ -42,7 +42,7 @@ mapping quality, or any BAM tag. Four more order the whole layout instead:
 
 ## Color by
 
-The track menu's **Color by...** offers several schemes.
+The track menu's **Color by** offers several schemes.
 
 ### Strand
 
@@ -82,7 +82,7 @@ The track menu's **Color by...** offers several schemes.
 
 ### A read tag
 
-**Color by... → Tag...** asks for a tag name and how to color it: **A color per
+**Color by → Tag...** asks for a tag name and how to color it: **A color per
 value** for a tag like `HP` (haplotype) or `RG` (read group), or **A gradient
 over numbers** for a numeric tag like `NM` (edit distance).
 
@@ -92,10 +92,10 @@ For a BAM/CRAM with MM/ML modification calls (nanopore, PacBio), **Color by →
 Modifications** paints them in two modes:
 
 - **Modifications** marks only where the MM tag reports a modified base, so an
-  unmethylated region looks empty. In **Filter by... → More filters...**, the
+  unmethylated region looks empty. In **Filter by → More filters...**, the
   Modifications section raises the probability cutoff and restricts to one type
   such as 5mC
-- **Color by... → Show unmodified in blue** (IGV's "2-color") also paints the
+- **Color by → Show unmodified in blue** (IGV's "2-color") also paints the
   not-modified side blue. For cytosine data it fills every CpG in context,
   including ones the basecaller left implicit, inferred from the reference. The
   same section's cytosine context picks CpG/CHG/CHH
@@ -114,18 +114,18 @@ call density doubles as a chromatin-accessibility readout.
 ### Bisulfite and EM-seq
 
 Bisulfite (WGBS) and EM-seq reads have no MM/ML tags; methylation is in the C→T
-conversion itself. **Color by... → Bisulfite / EM-seq** reads it off the aligned
+conversion itself. **Color by → Bisulfite / EM-seq** reads it off the aligned
 bases against the reference, so a plain BAM from a bisulfite-aware aligner
 colors without a methylation caller. Methylated cytosines paint red, **Color
 by... → Show unmodified in blue** paints the converted sites too, and the
-Modifications section of **Filter by... → More filters...** picks the CG, CHG or
+Modifications section of **Filter by → More filters...** picks the CG, CHG or
 CHH context, which plant genomes methylate in all three. The
 [bisulfite tutorial](/docs/tutorials/bisulfite) runs it on _Arabidopsis_ data.
 
 ### Pair orientation and insert size
 
-For paired-end data, **Color by... → Pair orientation** and **Color by... →
-Insert size** highlight discordant pairs, the main way to scan short reads for
+For paired-end data, **Color by → Pair orientation** and **Color by → Insert
+size** highlight discordant pairs, the main way to scan short reads for
 structural variants: unexpectedly large inserts turn red, small ones pink, and
 abnormal orientations get separate colors. **Insert size and orientation**
 paints whichever cue is strongest. The
@@ -142,8 +142,8 @@ than coloring alone. See the
 
 ## Grouping reads
 
-The track menu's **Group by...** splits the pileup into one coverage+pileup
-section per value of a dimension. It is a radio list, one dimension at a time:
+The track menu's **Group by** splits the pileup into one coverage+pileup section
+per value of a dimension. It is a radio list, one dimension at a time:
 **Strand**, **First-of-pair strand**, **Pair orientation**, **Split read (SA
 tag)** (separating reads crossing a breakpoint from those spanning it intact),
 **Mapping quality**, and **Tag...**, which opens a dialog for the tag name (`HP`
@@ -152,7 +152,7 @@ scale and reads missing the tag collect in a trailing "none" section. Grouping
 caps at 40 sections; past that the tail merges into one "N merged values"
 section, and the tag dialog refuses a tag that would reach the cap, telling you
 how many distinct values it found in view first. Drag a section's chip onto
-another section to move it there; **Show... → Reset section
+another section to move it there; **Show → Reset section
 order**<!-- menu-path-ok --> returns them to the sorted order.
 
 The `facet` setting pre-groups a track, spelled as on the feature tracks: a
@@ -180,7 +180,7 @@ writes the same object:
 }
 ```
 
-<Figure caption="Group by... → Tag... over GIAB HG002 nanopore reads opens a dialog for the tag name, which reports the values it finds in view." src="/img/alignments/haplotype_groupby.png" />
+<Figure caption="Group by → Tag... over GIAB HG002 nanopore reads opens a dialog for the tag name, which reports the values it finds in view." src="/img/alignments/haplotype_groupby.png" />
 
 Each section has a label chip that controls the section's height:
 
@@ -191,12 +191,12 @@ Each section has a label chip that controls the section's height:
   turns into **Fit to view** to hand it back.
 - Right-click a chip to hide that section. Its reads leave the shared coverage
   scale, the legend and the arcs with it, which is how to read the rest of the
-  stack without the section that dominates it. **Show... → Show N hidden
-  groups** puts them back.<!-- menu-path-ok -->
+  stack without the section that dominates it. **Show → Show N hidden groups**
+  puts them back.<!-- menu-path-ok -->
 - Dragging the boundary below a section resizes that section alone.
 
-**Show... → Collapse groups to one row** draws every section as a single row
-with overlap depth as darker shading, the compact reading for a track with many
+**Show → Collapse groups to one row** draws every section as a single row with
+overlap depth as darker shading, the compact reading for a track with many
 groups; expanding one section from its chip opts that one back out to a true
 stack.
 
@@ -212,8 +212,8 @@ reads sit on one haplotype; see
 [phasing heterozygous SVs](/docs/user_guides/sv_visualization#phasing-heterozygous-svs).
 
 Each section's coverage band is built from only the reads grouped into that
-section. Group by **Strand** and turn off **Show... → Pileup** for a forward and
-a reverse histogram on a shared scale, each colored by the mismatches in that
+section. Group by **Strand** and turn off **Show → Pileup** for a forward and a
+reverse histogram on a shared scale, each colored by the mismatches in that
 strand's reads. On a strand-specific paired-end library group by **First-of-pair
 strand** instead, since there the transcript strand is which mate the read is;
 the [RNA-seq tutorial](/docs/tutorials/rnaseq#strand-specific-rna-seq) shows
@@ -286,9 +286,9 @@ Insertions larger than 10bp also draw a purple rectangle in the pileup.
 ## Soft clipping
 
 Bases at a read's end that don't align are **soft-clipped** (kept in the read)
-or **hard-clipped** (dropped). Soft-clipped bases are hidden by default;
-**Show... → Soft clipping** in the track menu reveals them. Clusters of them
-often mark a structural-variant breakpoint.
+or **hard-clipped** (dropped). Soft-clipped bases are hidden by default; **Show
+→ Soft clipping** in the track menu reveals them. Clusters of them often mark a
+structural-variant breakpoint.
 
 A read with no `SEQ` field (secondary reads among them) has no clipped bases to
 draw, so its clip indicator appears black.
@@ -297,7 +297,7 @@ draw, so its clip indicator appears black.
 
 ## Filtering reads
 
-The track menu's **Filter by...** hides reads by SAM flag (drop duplicates and
+The track menu's **Filter by** hides reads by SAM flag (drop duplicates and
 secondaries, or keep only properly-paired reads), by read name, or by tag value
 (`HP:1` for one haplotype, `HP:*` for any read with the tag). The splicing
 radios keep only spliced reads (a reference skip, `N`, in the CIGAR) or only
@@ -326,16 +326,15 @@ non-canonical. The motif shows in the arc's tooltip, and a junction with no
 strand-tagged reads takes the strand its motif implies, so untagged STAR output
 still colors by strand. This needs a sequence adapter on the assembly.
 
-**Show... → Sashimi arcs** turns them on and off, and **Show... → Sashimi read
+**Show → Sashimi arcs** turns them on and off, and **Show → Sashimi read
 counts** prints each junction's supporting-read count on its arc. While the arcs
 draw:
 
-- **Filter by... → Non-canonical junctions → Hide non-canonical junctions**
-  drops junctions whose motif is none of the three canonical pairs. On deep
-  RNA-seq the thin arcs are mostly these, so it is the filter to reach for
-  first. **Only non-canonical junctions** keeps just those, for checking an
-  aligner's output
-- The Sashimi arcs section of **Filter by... → More filters...** shows, hides or
+- **Filter by → Non-canonical junctions → Hide non-canonical junctions** drops
+  junctions whose motif is none of the three canonical pairs. On deep RNA-seq
+  the thin arcs are mostly these, so it is the filter to reach for first. **Only
+  non-canonical junctions** keeps just those, for checking an aligner's output
+- The Sashimi arcs section of **Filter by → More filters...** shows, hides or
   keeps only the **Split-read junctions** that split alignments (SA tag) imply
   beside the N-gap splices, and **Min reads at a junction** drops the junctions
   with fewer reads

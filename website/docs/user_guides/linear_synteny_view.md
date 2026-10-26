@@ -288,7 +288,7 @@ inside **Rows**:
   other row is sorted against its neighbour nearer it, so a stack whose groups
   are one genome's chromosomes is anchored on that genome
   (`diagonalizeAnchorRow` on the view)
-- **Show...** for the header's own search boxes
+- **Show** for the header's own search boxes
 - **Export SVG...**
 
 <Figure caption="Human against chimp across an RB1 intron, from a liftOver chain with RepeatMasker on both. Colored indels paints a missing L1HS as a wedge." src="/img/synteny_human_chimp_cigar_modes.png" />

@@ -194,7 +194,7 @@ ortholog group, named by its gene symbol, to a color:
   breaks the column.
 - A gene no group claims is grey.
 - A key naming the groups appears in the top right once the window holds few
-  enough to list. Untick **Show... → Legend** in the track menu to hide it.
+  enough to list. Untick **Show → Legend** in the track menu to hide it.
 
 ```json addtrack
 {
@@ -250,8 +250,8 @@ In a linear genome view on human, the track draws a lane per primate under the
 human axis, each in that genome's coordinates. Each lane's header names the
 chromosome and span, with `[rev]` where the lane runs against human
 ([lane headers](/docs/user_guides/multiway_synteny_display#reading-a-lane-header)).
-The ribbons color by strand by default (**Color by... → Strand**, under
-**Ribbons** on the track menu): each ribbon shows whether its two lanes agree in
+The ribbons color by strand by default (**Color by → Strand**, under **Ribbons**
+on the track menu): each ribbon shows whether its two lanes agree in
 orientation. The session below opens the _TP53_ neighbourhood:
 
 ```json session config=https://jbrowse.org/demos/primate_orthologs/config.json

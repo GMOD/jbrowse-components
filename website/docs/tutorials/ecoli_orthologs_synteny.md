@@ -197,9 +197,9 @@ In [grammar-of-graphics](/docs/config_guides/mark_display) terms, the display's
   whole stack.
 - A gene no group claims is grey, which marks the genes specific to a strain at
   a glance.
-- **Show... → Legend** in the track menu turns on the key. The demo config hides
-  it because the cluster window holds dozens of groups, and the display omits it
-  in any window with more than thirty.
+- **Show → Legend** in the track menu turns on the key. The demo config hides it
+  because the cluster window holds dozens of groups, and the display omits it in
+  any window with more than thirty.
 
 Lanes stack in order of how many of the window's genes each genome places, most
 first. The default height scrolls the stack inside the track, so the session

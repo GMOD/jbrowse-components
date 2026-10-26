@@ -636,7 +636,7 @@ sorted after. A `sort` orders the sections and leaves the set of sections
 unchanged.
 
 When a reader drags a section's chip onto another section, the display writes
-the drawn order back as the facet's `sort`, and **Show... → Reset section
+the drawn order back as the facet's `sort`, and **Show → Reset section
 order**<!-- menu-path-ok --> clears it. A hidden section leaves the legend and
 the value axis along with the plot.
 

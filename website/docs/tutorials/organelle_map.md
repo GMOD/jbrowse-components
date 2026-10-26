@@ -184,9 +184,8 @@ sequence's name and length in the middle:
 The config sets the track's facet and color, and the track menu offers both too,
 under the circular view menu's **Tracks** item:
 
-- **Group by...** with `strand` splits the ring into a row per strand
-- **Color by... → Attribute...** with `type` colors each feature by its GFF3
-  type
+- **Group by** with `strand` splits the ring into a row per strand
+- **Color by → Attribute...** with `type` colors each feature by its GFF3 type
 
 The track's `height` is how much of the circle it asks for. A ring takes at most
 half the circle's radius, and a track that asks for more lays its rows out in

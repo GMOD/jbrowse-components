@@ -54,7 +54,7 @@ export const genomesBasicsVideos: VideoSpec[] = [
   {
     name: 'genomes_basics/gnomad_filter',
     description:
-      'gnomAD v4.1.1 Exomes over TP53 cut down to its predicted loss-of-function records: Track menu, Filter by..., an annot is pLoF row filled in on the filter dialog, and the lane redrawing under it',
+      'gnomAD v4.1.1 Exomes over TP53 cut down to its predicted loss-of-function records: Track menu, Filter by, an annot is pLoF row filled in on the filter dialog, and the lane redrawing under it',
     goal: 'Filter gnomAD over TP53 down to its loss-of-function variants',
     url: unfilteredGnomad,
     // Sized to the DIALOG, which the run's content report cannot see: it
@@ -83,8 +83,8 @@ export const genomesBasicsVideos: VideoSpec[] = [
         say: "Filter the track from its menu: feature.annot == 'pLoF'",
         hold: 1200,
       },
-      { type: 'waitForText', text: 'Filter by...' },
-      { type: 'click', text: 'Filter by...' },
+      { type: 'waitForText', text: 'Filter by' },
+      { type: 'click', text: 'Filter by' },
       { type: 'click', text: 'Edit filters...' },
       { type: 'waitForSelector', selector: filterText },
       // The dialog opens empty, since this track declares no filters of its

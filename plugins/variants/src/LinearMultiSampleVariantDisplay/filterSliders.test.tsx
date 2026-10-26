@@ -6,7 +6,7 @@ import { createTestEnvironment } from './testEnv.ts'
 
 import type { MenuItem } from '@jbrowse/core/ui'
 
-// The MAF/missingness filters are inline slider rows in "Filter by...", wired
+// The MAF/missingness filters are inline slider rows in "Filter by", wired
 // to the config slots the worker reads via rpcProps. (They pass commitOnRelease
 // so a real drag only refetches on release; jsdom can't express a mid-drag —
 // MUI fires onChangeCommitted straight away for a hidden-input change — so the
@@ -23,11 +23,11 @@ describe('multi-sample variant filter sliders', () => {
     return item && 'subMenu' in item ? resolveSubMenu(item) : []
   }
 
-  // The custom row for one slider inside "Filter by...", by its `label`.
+  // The custom row for one slider inside "Filter by", by its `label`.
   function sliderRow(model: ReturnType<typeof makeModel>, label: string) {
     const filterBy = model
       .trackMenuItems()
-      .find(item => 'label' in item && item.label === 'Filter by...')
+      .find(item => 'label' in item && item.label === 'Filter by')
     const row = subMenuOf(filterBy).find(
       item => 'label' in item && item.label === label,
     )

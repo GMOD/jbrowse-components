@@ -173,7 +173,7 @@ human, each in that genome's own coordinates. Each lane header names the
 chromosome and the span the lane shows, with `[rev]` where the lane runs against
 human.
 
-The ribbons color by strand (**Color by... → Strand**, under **Ribbons** in the
+The ribbons color by strand (**Color by → Strand**, under **Ribbons** in the
 track menu), blue where a lane runs against the one above it. The session below
 opens on _ERBB2_:
 

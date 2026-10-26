@@ -344,8 +344,8 @@ The Zarr store covers chr3:162.5-163.2 Mb, where a 22 kb deletion sits inside a
 The HGSVC3 track holds every insertion and deletion, and a filter keeps the long
 ones.
 
-**Filter by... → Edit filters...** in the track menu takes a `filter`. Enter
-this one to drop every record under 5 kb:
+**Filter by → Edit filters...** in the track menu takes a `filter`. Enter this
+one to drop every record under 5 kb:
 
 ```text
 jexl:alleleLength(feature)>=5000

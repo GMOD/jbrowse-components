@@ -1,6 +1,6 @@
 // Flags a UI menu path written with anything but the corpus separator, `→`.
 //
-// A menu path is prose that walks a reader through the app: **Color by... →
+// A menu path is prose that walks a reader through the app: **Color by →
 // Paired end → First-of-pair strand**. 20 files spell that with `→` and a
 // handful had drifted to `>`, `▸`, `->` and the `&rarr;` entity, sometimes
 // inside backticks instead of bold. Nothing enforced it, and the spelling is
@@ -13,7 +13,7 @@
 //
 // Two shapes, because the separator lands in two places:
 //   BETWEEN two spans   `Launch` -> `Linear read vs ref`
-//   INSIDE one span     **Show... > Coverage**
+//   INSIDE one span     **Show > Coverage**
 //
 // The inside-one-span form is restricted to **bold**, never backticks, which is
 // what keeps jexl comparisons (`feature.score > 7.3`) and shell redirects
@@ -44,7 +44,7 @@ const RULES = [
     what: 'menu path between two labels',
   },
   {
-    // **Show... > Coverage**. Bold only — see the note above.
+    // **Show > Coverage**. Bold only — see the note above.
     re: /\*\*[^*]*\s(?:->|>|▸)\s[^*]*\*\*/,
     what: 'menu path inside one bold label',
   },
@@ -54,7 +54,7 @@ const RULES = [
     what: 'HTML-entity or non-standard arrow',
   },
   {
-    // **Color by... Consequence impact** — a path with no separator at all,
+    // **Color by Consequence impact** — a path with no separator at all,
     // which the rules above cannot see because there is no wrong character to
     // match on. `Foo...` is this app's convention for an entry that opens a
     // submenu or dialog, so trailing words after one are a second menu level

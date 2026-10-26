@@ -316,8 +316,7 @@ in a linear genome view on grape:
   All** track.
 - Turn on **Grape vs peach, cacao, arabidopsis, poplar, tomato, citrus (MCScan
   blocks)**, which draws every mate in one pileup.
-- Pick **Group by... → Mate assembly** to facet the track into one lane per
-  genome.
+- Pick **Group by → Mate assembly** to facet the track into one lane per genome.
 
 <Figure caption="One grape locus against six other plants, the blocks track grouped by mate assembly, one lane per genome." src="/img/multiway_synteny/blocks_one_vs_all.png" />
 

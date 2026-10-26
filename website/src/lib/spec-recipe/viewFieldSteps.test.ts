@@ -38,7 +38,7 @@ test('the circular view holds the filter rows in its view menu', () => {
 test('the color radios sit in the circular view menu and the comparative headers', () => {
   const color = 'strand'
   expect(stepPaths('encoding.color', color, 'CircularView')).toEqual([
-    'View menu → Color by... → Strand',
+    'View menu → Color by → Strand',
   ])
   expect(stepPaths('encoding.color', color, 'DotplotView')).toEqual([
     'Dotplot header → palette button → Strand',
@@ -69,7 +69,7 @@ test('hiding unlabelled rows is a valid predicate the color menu writes', () => 
     'Synteny view header → palette button → Hide unlabelled rows (checked)',
   ])
   expect(stepPaths('filter', filter, 'CircularView')).toEqual([
-    'View menu → Color by... → Hide unlabelled rows (checked)',
+    'View menu → Color by → Hide unlabelled rows (checked)',
   ])
   expect(stepPaths('filter', filter, 'LinearGenomeView')).toEqual([])
 })
@@ -83,7 +83,7 @@ test('the legend toggle of the circular view is in its view menu', () => {
 
 test('an axis grid names the menu each view keeps it in', () => {
   expect(stepPaths('axis', { grid: false }, 'LinearGenomeView')).toEqual([
-    'View menu → Show... → Guidelines (unchecked)',
+    'View menu → Show → Guidelines (unchecked)',
   ])
   expect(
     stepPaths('axis', { grid: false, labels: false }, 'DotplotView'),

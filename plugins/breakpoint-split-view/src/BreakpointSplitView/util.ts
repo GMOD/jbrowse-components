@@ -47,7 +47,7 @@ interface OverlayDisplayBase extends Partial<ReadSource> {
    * surfaces as `undefined` here, not as a type error.
    */
   bezierArcScope?: 'all' | 'crossRegion' | 'none'
-  /** the "Filter by..." contract, `JexlFilterSource`, on displays that have one */
+  /** the "Filter by" contract, `JexlFilterSource`, on displays that have one */
   configuredFilters?: () => string[]
   withFeatureById?: (
     featureId: string,

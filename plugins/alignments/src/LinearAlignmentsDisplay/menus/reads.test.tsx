@@ -13,7 +13,7 @@ import type { MenuItem } from '@jbrowse/core/ui'
 
 afterEach(cleanup)
 
-// Only the fields "Show..." reads.
+// Only the fields "Show" reads.
 function makeModel(
   overrides?: Partial<{
     canCollapseSections: boolean
@@ -60,7 +60,7 @@ function makeModel(
 function subMenuOf(model: ReturnType<typeof makeModel>) {
   const [showItem] = getReadsMenuItems(model)
   if (!showItem || !('subMenu' in showItem)) {
-    throw new Error('expected a "Show..." submenu')
+    throw new Error('expected a "Show" submenu')
   }
   return resolveSubMenu(showItem)
 }
@@ -118,7 +118,7 @@ test('the toggles fire against the model', () => {
 
 // This menu switches layers on and off; it does not decide which reads exist.
 // The read categories that used to end it are filters — they drop reads in the
-// worker — and now live under "Filter by..." (menus/filters.ts).
+// worker — and now live under "Filter by" (menus/filters.ts).
 test('no read-category filter is offered here', () => {
   const { queryByText } = renderRows(subMenuOf(makeModel()))
   expect(queryByText('Show reads without a mate')).toBeNull()
@@ -151,8 +151,8 @@ test('the interbase toggle follows the coverage band', () => {
 })
 
 // The coverage band's allele coloring is one radio group under Advanced
-// (alignments-core coverageMenuItems.ts), so Show... carries no allele row.
-test('Show... carries no coverage allele row', () => {
+// (alignments-core coverageMenuItems.ts), so Show carries no allele row.
+test('Show carries no coverage allele row', () => {
   expect(
     subMenuOf(makeModel()).some(
       r => 'label' in r && r.label === 'Coverage alleles',

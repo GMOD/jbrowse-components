@@ -53,7 +53,7 @@ test('no phase set can paint the no-call color', () => {
 })
 
 // FORMAT is a colon-separated field list, so the PS test has to be an exact
-// token match. A substring test enabled "Color by...→Phase set" on files whose
+// token match. A substring test enabled "Color by→Phase set" on files whose
 // FORMAT merely spells those two letters inside another field name, where the
 // coloring then found no PS on any sample and silently painted allele colors.
 describe('featureHasPhaseSet', () => {

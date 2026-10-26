@@ -1392,7 +1392,7 @@ export default function baseStateModelFactory(
       /**
        * #method
        * Everything this display is doing to narrow what the user sees, each
-       * declared once, so the "Filter by... (n)" count, its undo rows and
+       * declared once, so the "Filter by (n)" count, its undo rows and
        * "Clear all filters" cannot disagree; a method, not a getter,
        * because a getter cannot be super-captured.
        */
@@ -1759,7 +1759,7 @@ export default function baseStateModelFactory(
       },
       /**
        * #method
-       * Overridable hook (default none): the rows "Filter by..." lists
+       * Overridable hook (default none): the rows "Filter by" lists
        * beside the dialog, one per `filter` member a display adds.
        */
       filterSubMenuItems(): MenuItem[] {
@@ -1769,7 +1769,7 @@ export default function baseStateModelFactory(
     .views(self => ({
       /**
        * #method
-       * Flattened "Show..." submenu: all checkbox toggles first, then the
+       * Flattened "Show" submenu: all checkbox toggles first, then the
        * radio groups (each under a subHeader), then the legend.
        */
       showSubmenuMenuItems(): MenuItem[] {
@@ -1792,7 +1792,7 @@ export default function baseStateModelFactory(
 
       /**
        * #method
-       * The "Color by..." radio choices (solid/strand/attribute).
+       * The "Color by" radio choices (solid/strand/attribute).
        */
       colorBySubMenuItems(): MenuItem[] {
         return colorBySubMenuItems(self)
@@ -1801,7 +1801,7 @@ export default function baseStateModelFactory(
     .views(self => ({
       /**
        * #method
-       * Color-related track menu entries: a single "Color by..." entry
+       * Color-related track menu entries: a single "Color by" entry
        * whose radios pick the track's own color or a field, and whose
        * "Solid color..." item opens the solid+UTR color picker.
        */

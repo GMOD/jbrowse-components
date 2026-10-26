@@ -172,7 +172,7 @@ test('group by mate assembly from the Group by submenu', async () => {
     await findDisplayPainted('pileup-display', delay)
 
     fireEvent.click(await screen.findByTestId('track_menu_icon', ...opts))
-    fireEvent.click(await screen.findByText('Group by...'))
+    fireEvent.click(await screen.findByText('Group by'))
     fireEvent.click(await screen.findByText('Mate assembly'))
 
     const display = view.tracks[0]!.displays[0]!
@@ -194,14 +194,14 @@ test('sort by longest features first from the Sort by submenu', async () => {
     // `length` is the synteny config default, so flip it off through "Start
     // position" first and prove the radio brings it back.
     fireEvent.click(await screen.findByTestId('track_menu_icon', ...opts))
-    fireEvent.click(await screen.findByText('Sort by...'))
+    fireEvent.click(await screen.findByText('Sort by'))
     fireEvent.click(await screen.findByText('Start position'))
     await waitFor(() => {
       expect(display.layoutOrder).toBe('position')
     }, delay)
 
     fireEvent.click(await screen.findByTestId('track_menu_icon', ...opts))
-    fireEvent.click(await screen.findByText('Sort by...'))
+    fireEvent.click(await screen.findByText('Sort by'))
     fireEvent.click(await screen.findByText('Longest features first'))
     await waitFor(() => {
       expect(display.layoutOrder).toBe('length')
@@ -213,7 +213,7 @@ test('sort by longest features first from the Sort by submenu', async () => {
 // differences render, which is what makes this checkbox worth carrying on a
 // synteny track. Toggling it must actually repaint; a dead layer would leave
 // the canvas byte-identical.
-test('Show... → Mismatches is a live layer on a synteny track', async () => {
+test('Show → Mismatches is a live layer on a synteny track', async () => {
   await mockConsoleWarn(async () => {
     const { view } = await createView()
 
@@ -231,7 +231,7 @@ test('Show... → Mismatches is a live layer on a synteny track', async () => {
     expect(display.showMismatches).toBe(true)
 
     fireEvent.click(await screen.findByTestId('track_menu_icon', ...opts))
-    fireEvent.click(await screen.findByText('Show...'))
+    fireEvent.click(await screen.findByText('Show'))
     fireEvent.click(await screen.findByText('Mismatches'))
     await waitFor(() => {
       expect(display.showMismatches).toBe(false)

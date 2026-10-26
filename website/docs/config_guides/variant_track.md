@@ -124,7 +124,7 @@ default display, so preset its slots in a `displays` array; they are listed on
 `value`, a CSS color or a jexl expression, paints every alt cell of a variant,
 the [helper functions](#helper-functions-for-jexl-color-expressions) included. A
 `field` gives each of its values a color, with a key. Three fields are the track
-menu's **Color by...** presets: `impact` for
+menu's **Color by** presets: `impact` for
 [consequence impact](/docs/user_guides/multivariant_track#coloring-by-consequence-impact-snpeffvep-annotations),
 `svType` for [SV type](/docs/user_guides/multivariant_track#coloring-by-sv-type)
 and `phaseSet` for the phase set in phased mode. Any other field is read off the

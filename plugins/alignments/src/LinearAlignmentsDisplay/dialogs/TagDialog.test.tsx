@@ -30,7 +30,7 @@ function renderDialog(initialTag?: string, colorScale?: TagColorScale) {
 
 const tagInput = () => screen.getByLabelText('Tag name')
 
-// Both entry points ("Sort by... → Tag..." and the read right-click menu) label
+// Both entry points ("Sort by → Tag..." and the read right-click menu) label
 // the row with the tag in use, so opening it has to show that tag — reopening
 // tweaks the sort rather than resetting it, like the color and group dialogs.
 test('pre-fills the tag being sorted on, and can submit it unchanged', () => {

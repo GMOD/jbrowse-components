@@ -403,7 +403,7 @@ export interface FacetDimension<K extends ReadDimension = ReadDimension> {
   // Whether chain mode HONORS the dimension is `isChainFacetable`.
   fragmentLevel: boolean
   // Not meaningful for ordinary alignment reads, so it is kept out of the general
-  // "Group by..." radios and surfaced by the display that supports it —
+  // "Group by" radios and surfaced by the display that supports it —
   // LGVSyntenyDisplay's menus.ts owns mateAssembly.
   hidden?: boolean
   key: (feature: Feature) => GroupKey

@@ -26,7 +26,7 @@ export const methylationVideos: VideoSpec[] = [
   {
     name: 'methylation/open_modbam',
     description:
-      'The haplotagged modBAM opened by URL and painted with its 5mC calls: File, Open track..., the URL pasted in, then Color by... → Modifications and Show unmodified in blue from the new track menu',
+      'The haplotagged modBAM opened by URL and painted with its 5mC calls: File, Open track..., the URL pasted in, then Color by → Modifications and Show unmodified in blue from the new track menu',
     goal: 'Open a modBAM by URL and paint its reads by methylation',
     url: readsAbsent,
     viewportHeight: 740,
@@ -44,10 +44,10 @@ export const methylationVideos: VideoSpec[] = [
         say: 'Then color the reads by their modification calls',
         hold: 1200,
       },
-      { type: 'waitForSelector', selector: cascade('submenu', 'Color by...') },
+      { type: 'waitForSelector', selector: cascade('submenu', 'Color by') },
       {
         type: 'click',
-        selector: cascade('submenu', 'Color by...'),
+        selector: cascade('submenu', 'Color by'),
         hold: 1000,
       },
       { type: 'waitForSelector', selector: MODIFICATIONS },
@@ -102,8 +102,8 @@ export const methylationVideos: VideoSpec[] = [
         say: 'Group the reads by their HP haplotype tag',
         hold: 1200,
       },
-      { type: 'waitForText', text: 'Group by...' },
-      { type: 'click', text: 'Group by...', hold: 1200 },
+      { type: 'waitForText', text: 'Group by' },
+      { type: 'click', text: 'Group by', hold: 1200 },
       { type: 'waitForText', text: 'Tag...' },
       { type: 'click', text: 'Tag...' },
       { type: 'waitForText', text: 'Group by tag' },

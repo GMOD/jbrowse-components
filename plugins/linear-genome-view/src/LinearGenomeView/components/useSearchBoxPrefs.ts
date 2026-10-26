@@ -34,7 +34,7 @@ export type SearchBoxPrefs = ReturnType<typeof useSearchBoxPrefs>
 /**
  * The menu rows that drive those prefs. "Stacked" rather than "Vertical": the
  * two headers name the same state and had drifted apart on it once already.
- * A caller spreading the rows into a "Show..." submenu passes `'Search boxes'`
+ * A caller spreading the rows into a "Show" submenu passes `'Search boxes'`
  * as the toggle's label.
  */
 export function searchBoxMenuItems(

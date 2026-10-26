@@ -106,14 +106,14 @@ interface CellDataBase {
   // one's scale.
   colorRead: CellHueRead
   // Whether any visible variant carries a SnpEff/VEP annotation, gating the
-  // "Color by...→Consequence impact" menu option.
+  // "Color by→Consequence impact" menu option.
   hasConsequence: boolean
   // Whether any visible variant is a structural variant, gating the "Color
   // by...→SV type" menu option, and the color assigned to each present SV type
   // so the legend swatches match the painted cells exactly.
   hasSvType: boolean
   // Whether any visible variant declares a phase set (PS in FORMAT), gating the
-  // "Color by...→Phase set" menu option.
+  // "Color by→Phase set" menu option.
   hasPhaseSet: boolean
   simplifiedFeatures: SimplifiedVariantFeature[]
   // Interned genotype payload (see shared/genotypeCodec.ts): the distinct

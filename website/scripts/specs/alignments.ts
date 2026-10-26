@@ -272,10 +272,10 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
       {
         actions: [
           { type: 'click', selector: '[data-testid="track_menu_icon"]' },
-          ...menuCascade(['Show...', 'Soft clipping']),
+          ...menuCascade(['Show', 'Soft clipping']),
         ],
         annotations: [
-          { type: 'box', anchor: { text: 'Show...' } },
+          { type: 'box', anchor: { text: 'Show' } },
           { type: 'box', anchor: { text: 'Soft clipping' } },
         ],
       },
@@ -287,7 +287,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
           { type: 'press', key: 'Escape' },
           { type: 'press', key: 'Escape' },
           { type: 'waitForText', text: 'Soft clipping', hidden: true },
-          { type: 'waitForText', text: 'Show...', hidden: true },
+          { type: 'waitForText', text: 'Show', hidden: true },
           // the focused track menu icon keeps its tooltip up until a click
           // elsewhere blurs it
           { type: 'click', selector: 'body' },
@@ -468,7 +468,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     actions: [
       { type: 'click', selector: '[data-testid="track_menu_icon"]' },
       { type: 'delay', ms: 500 },
-      ...menuCascade(['Filter by...', 'More filters...']),
+      ...menuCascade(['Filter by', 'More filters...']),
       { type: 'click', text: 'More filters...' },
       { type: 'waitForText', text: 'Add tag filter' },
       // the tag box, then Tab to its value box
@@ -784,7 +784,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
         dy: -60,
         maxWidth: 340,
         fontSize: 16,
-        // both callouts name their Color by... radio (baseLayerLabels.ts)
+        // both callouts name their Color by radio (baseLayerLabels.ts)
         text: `${MODIFICATIONS_LABEL}: only the calls in the MM tag`,
       },
       {
@@ -862,14 +862,14 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
             selector:
               '[data-testid="track_menu_icon"][data-trackid="hg002_nanopore_hp"]',
           },
-          { type: 'waitForText', text: 'Group by...' },
-          { type: 'hover', text: 'Group by...' },
+          { type: 'waitForText', text: 'Group by' },
+          { type: 'hover', text: 'Group by' },
           // "None" is the submenu's first radio, present even when ungrouped
           { type: 'waitForText', text: 'None' },
           { type: 'delay', ms: 800 },
         ],
         annotations: [
-          { type: 'box', anchor: { text: 'Group by...' } },
+          { type: 'box', anchor: { text: 'Group by' } },
           { type: 'box', anchor: { text: 'Tag...' } },
         ],
       },
@@ -951,9 +951,9 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     tooltip: 'hide',
     actions: [
       trackMenuIcon('illumina_hg002'),
-      ...menuCascade(['Show...', 'Soft clipping']),
+      ...menuCascade(['Show', 'Soft clipping']),
     ],
-    annotations: cascadeBoxes(['Show...', 'Soft clipping']),
+    annotations: cascadeBoxes(['Show', 'Soft clipping']),
   },
 
   {

@@ -112,7 +112,7 @@ test('hiding a section is per key and drops with the grouping', () => {
   expect(display.truncatedFeatureCount).toBe(0)
   const show = display
     .trackMenuItems()
-    .find(i => 'label' in i && i.label === 'Show...')!
+    .find(i => 'label' in i && i.label === 'Show')!
   expect(
     resolveSubMenu(show as Parameters<typeof resolveSubMenu>[0]).map(i =>
       'label' in i ? i.label : undefined,
@@ -199,7 +199,7 @@ function labelsOf(items: MenuItem[]) {
 test('Group by is a radio submenu: strand picks directly, attribute names its field', () => {
   const { createDisplay } = createTestEnvironment()
   const { display } = createDisplay()
-  const rows = () => menuRows(display.trackMenuItems(), 'Group by...')
+  const rows = () => menuRows(display.trackMenuItems(), 'Group by')
   expect(labelsOf(rows())).toEqual(['None', 'Strand', 'Attribute...'])
   ;(rows()[1] as { onClick: () => void }).onClick()
   expect(display.facet?.field).toBe('strand')
@@ -215,13 +215,13 @@ test('Group by is a radio submenu: strand picks directly, attribute names its fi
   expect(display.facet).toBeUndefined()
 })
 
-test('no Sections row; the reset sits in Show... once the order is pinned', () => {
+test('no Sections row; the reset sits in Show once the order is pinned', () => {
   const { createDisplay } = createTestEnvironment()
   const { display } = createDisplay()
   display.setRpcData(0, strandedRegionData(), ctgA)
   display.facetByField('biotype')
   expect(labelsOf(display.trackMenuItems())).not.toContain('Sections')
-  const show = () => menuRows(display.trackMenuItems(), 'Show...')
+  const show = () => menuRows(display.trackMenuItems(), 'Show')
   expect(labelsOf(show())).not.toContain('Reset section order')
   display.applyPlot({
     facet: { field: 'biotype', sort: ['protein_coding', 'lncRNA'] },

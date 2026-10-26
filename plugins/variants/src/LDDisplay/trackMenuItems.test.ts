@@ -54,12 +54,7 @@ function subMenuOf(items: MenuItem[], label: string) {
 test('the menu is metric, scheme, show and layout', () => {
   const items = buildLDTrackMenuItems(makeSelf())
 
-  expect(labels(items)).toEqual([
-    'LD metric',
-    'Color scheme',
-    'Show...',
-    'Layout',
-  ])
+  expect(labels(items)).toEqual(['LD metric', 'Color scheme', 'Show', 'Layout'])
   expect(labels(subMenuOf(items, 'LD metric')!)).toEqual([
     'R² (squared correlation)',
     "D' (normalized D)",
@@ -129,7 +124,7 @@ test('the metric help says the values are read from the file', () => {
 
 test('Show carries the visibility toggles, legend last, and Layout the rest', () => {
   const items = buildLDTrackMenuItems(makeSelf())
-  expect(labels(subMenuOf(items, 'Show...')!)).toEqual([
+  expect(labels(subMenuOf(items, 'Show')!)).toEqual([
     'Variant labels',
     'Vertical guides on hover',
     'Legend',

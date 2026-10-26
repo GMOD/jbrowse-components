@@ -285,7 +285,7 @@ indexed against K12.
 
 - The node panel lists them as `samples`; a track reads them as
   `feature.samples` and their count as `feature.sampleCount`.
-- **Color by... → Attribute...** with `sampleCount` gives each count a separate
+- **Color by → Attribute...** with `sampleCount` gives each count a separate
   color.
 - For more than a handful of haplotypes, **Edit plot...** in the same dialog
   takes a ramp, here red for a segment on one haplotype to grey for a segment on

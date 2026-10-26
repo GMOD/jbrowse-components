@@ -138,7 +138,7 @@ and press **Open in JBrowse**, which opens the whole chromosome with the graph's
 variants under 10 kb folded into the reference. Type
 `chr13:119,440,000-119,600,000` to draw the segments there. Then:
 
-- in the graph track's menu, tick **Show... → Show bubble halos**
+- in the graph track's menu, tick **Show → Show bubble halos**
 - turn on the bubbles track in the track selector
 
 C57BL/6J has a multi-exon deletion at _Nnt_ (nicotinamide nucleotide
@@ -169,7 +169,7 @@ intron at `chr11:34,516,045-34,560,497`. To open it:
 
 - Paste that region into the portal page's **Gene or region** box and click
   **Graph**.
-- In the graph track's menu, tick **Show... → Show bubble halos**.
+- In the graph track's menu, tick **Show → Show bubble halos**.
 
 <Figure caption="The Dock2 intron bubble in the bubbles track, the allele inventory and the graph. Each charcoal loop is sequence the reference lacks." src="/img/pangenome/mouse_dock2.png" />
 

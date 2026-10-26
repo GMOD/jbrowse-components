@@ -128,8 +128,8 @@ columns:
 }
 ```
 
-The subset is a filter, which **Filter by... → Edit filters...** in the track
-menu edits to keep other traits.
+The subset is a filter, which **Filter by → Edit filters...** in the track menu
+edits to keep other traits.
 
 <Figure src="/img/protein/hbb_gwas_catalog.png" caption="The GWAS Catalog under HBB, and the copy filtered to rs334's strongest record for each trait, labeled with its trait." />
 
@@ -181,8 +181,8 @@ one color in every view:
 
 - in the alignment view's menu, click **Show domains on the genome**, which adds
   a domain track to the genome view
-- in the genome view's menu, untick **Show... → CDS reading frame colors**,
-  whose frame colors would mix with the domain colors
+- in the genome view's menu, untick **Show → CDS reading frame colors**, whose
+  frame colors would mix with the domain colors
 - type `chr11:5226956-5227046[rev] chr11:5226750-5226799[rev]` into the location
   box, which adds the start of exon 2 beside codon 7
 - in the protein view's palette menu, pick **Domains from the alignment**

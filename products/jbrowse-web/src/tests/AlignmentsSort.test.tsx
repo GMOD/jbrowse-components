@@ -34,7 +34,7 @@ test('selects a sort, sort by base', async () => {
   )
   fireEvent.click(await screen.findByTestId('track_menu_icon', ...opts))
 
-  fireEvent.click(await screen.findByText('Sort by...'))
+  fireEvent.click(await screen.findByText('Sort by'))
   fireEvent.click(await screen.findByText('Base'))
   const display1 = await findDisplayPainted('pileup-display', delay)
   expectCanvasMatch(findCanvasIn(display1), 0.1)

@@ -273,7 +273,7 @@ export const bigwigSpecs: ScreenshotSpec[] = [
       {
         actions: [
           { type: 'click', selector: '[data-testid="view_menu_icon"]' },
-          ...menuCascade(['Show...', 'Show all regions in assembly']),
+          ...menuCascade(['Show', 'Show all regions in assembly']),
           // After waitForRasterize's two frames the compositor can still show
           // the view body white behind the popover.
           { type: 'delay', ms: 1000 },
@@ -283,7 +283,7 @@ export const bigwigSpecs: ScreenshotSpec[] = [
             type: 'circle',
             anchor: { selector: '[data-testid="view_menu_icon"]' },
           },
-          ...cascadeBoxes(['Show...', 'Show all regions in assembly']),
+          ...cascadeBoxes(['Show', 'Show all regions in assembly']),
         ],
       },
       {

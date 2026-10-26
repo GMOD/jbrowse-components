@@ -598,7 +598,7 @@ export function configSlotViews(self: ConfigSlotSelf) {
     /**
      * #method
      * How `filter` differs from what the track's config declares, as a count
-     * of the fields that moved: the "Filter by..." count, and what "Clear all
+     * of the fields that moved: the "Filter by" count, and what "Clear all
      * filters" writes back. `selects` narrows it to the fields in effect.
      */
     filterNarrowing(

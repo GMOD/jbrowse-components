@@ -38,7 +38,7 @@ interface JunctionFilterModel {
 }
 
 /**
- * The everyday junction filter, for "Filter by...", while the arcs draw. The
+ * The everyday junction filter, for "Filter by", while the arcs draw. The
  * split-read and min-reads filters are in the "More filters..." dialog.
  */
 export function getJunctionFilterItems(model: JunctionFilterModel): MenuItem[] {
@@ -60,7 +60,7 @@ export function getJunctionFilterItems(model: JunctionFilterModel): MenuItem[] {
     : []
 }
 
-/** The arcs' rows in "Show...": the arcs, and while they draw their counts. */
+/** The arcs' rows in "Show": the arcs, and while they draw their counts. */
 export function sashimiShowItems(model: SashimiModel): MenuItem[] {
   return [
     toggleItem('Sashimi arcs', model.showSashimi, show => {

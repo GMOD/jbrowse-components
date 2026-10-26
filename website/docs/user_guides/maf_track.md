@@ -22,8 +22,8 @@ what you can do once the track is on screen.
 Zoomed out, each pixel summarizes the alignment beneath it. Zoom in and the
 per-species rows resolve into individual bases, with positions where a species
 differs from the reference drawn as colored marks. The features below come from
-three track-menu submenus: **Color by...** picks what colors the rows, **Plot
-type** whether they draw as cells or as identity bars, and **Show...** holds the
+three track-menu submenus: **Color by** picks what colors the rows, **Plot
+type** whether they draw as cells or as identity bars, and **Show** holds the
 bands and overlays that layer on top of them.
 
 ## Zooming out past the alignment
@@ -54,12 +54,12 @@ them is refused.
 
 ## Conservation and per-row identity
 
-The **Show... → Conservation** band plots, at each reference base, the fraction
-of aligned species whose base matches the reference, a quick read of which
-regions are conserved versus divergent. It is computed from the alignment
-itself, so no extra files are needed.
+The **Show → Conservation** band plots, at each reference base, the fraction of
+aligned species whose base matches the reference, a quick read of which regions
+are conserved versus divergent. It is computed from the alignment itself, so no
+extra files are needed.
 
-The **Color by...** menu breaks the same signal out per species, so you can see
+The **Color by** menu breaks the same signal out per species, so you can see
 _which_ genomes diverge in a region:
 
 - **Mismatches (SNPs vs reference)**, the default, is the per-base coloring
@@ -75,7 +75,7 @@ _which_ genomes diverge in a region:
 per-species wiggle. The two menus combine: bars colored by identity take the
 heatmap's ramp, and bars under any other coloring draw in one color.
 
-In a display config **Color by...** is `encoding.color` (`mismatch`, `base`,
+In a display config **Color by** is `encoding.color` (`mismatch`, `base`,
 `identity`, and the `chromosome` and `codon` options below) and the X-Y plot is
 `encoding.y: "identity"`.
 
@@ -101,7 +101,7 @@ the guide tree (dendrogram) down the left.
 
 ## Color by source chromosome
 
-**Source chromosome**, in the same **Color by...** menu, replaces the per-base
+**Source chromosome**, in the same **Color by** menu, replaces the per-base
 coloring with a structural view. Within each species row, the source chromosomes
 its blocks come from (in that species' own genome) are ranked by coverage: the
 row's main chromosome gets the primary color, and blocks from a different source
@@ -116,29 +116,29 @@ extra data to fetch.
 
 ## Inversions (strand flips)
 
-**Show... → Inversions (strand flips)** overlays a diagonal hatch on any block
-that aligns inverted relative to the consensus orientation of its source
-chromosome. Each block is compared to its scaffold's consensus, so an
-arbitrarily-oriented scaffold reads as collinear and only a genuine
-intra-scaffold strand flip is marked. It is an overlay, so it composes on top of
-the base, codon, or per-row identity rendering.
+**Show → Inversions (strand flips)** overlays a diagonal hatch on any block that
+aligns inverted relative to the consensus orientation of its source chromosome.
+Each block is compared to its scaffold's consensus, so an arbitrarily-oriented
+scaffold reads as collinear and only a genuine intra-scaffold strand flip is
+marked. It is an overlay, so it composes on top of the base, codon, or per-row
+identity rendering.
 
 ## Codon (amino-acid) view
 
 When the track has a CDS-frames file configured (a UCSC `mafFrames` annotation
 on the display), two coding-aware options appear. **CDS frames** (off by
-default, under **Show...**) draws a thin reading-frame-colored strip on each
+default, under **Show**) draws a thin reading-frame-colored strip on each
 species' row, marking the coding exons projected onto that species so the gene
 structure reads vertically across the whole alignment. The strip draws over
-whatever the rows are colored by, so it works with any **Color by...** choice.
+whatever the rows are colored by, so it works with any **Color by** choice.
 
-**Codon changes (amino acids)**, a **Color by...** option, switches the
-per-sample rows from per-base SNP coloring to a per-codon view: every species is
-translated in the reference reading frame, and each codon cell is colored by how
-its amino acid compares to the reference. Nonsynonymous changes stand out,
-synonymous (silent) changes get a faint tint, a stop the reference does not
-share is flagged, and conserved codons, including the gene's stop, stay clean.
-The residue is drawn on each codon once you zoom in far enough to read it.
+**Codon changes (amino acids)**, a **Color by** option, switches the per-sample
+rows from per-base SNP coloring to a per-codon view: every species is translated
+in the reference reading frame, and each codon cell is colored by how its amino
+acid compares to the reference. Nonsynonymous changes stand out, synonymous
+(silent) changes get a faint tint, a stop the reference does not share is
+flagged, and conserved codons, including the gene's stop, stay clean. The
+residue is drawn on each codon once you zoom in far enough to read it.
 
 <!-- COLOR_TABLE maf START -->
 
@@ -225,8 +225,8 @@ the species row has that species' gene track where the session has one.
 The sidebar at the left shows the species labels, drawn as a dendrogram when the
 track is configured with a Newick guide tree.
 
-- **Show... → Tree** toggles the dendrogram and **Row labels** the species
-  names, and **Tree branch lengths** draws the tree to scale.
+- **Show → Tree** toggles the dendrogram and **Row labels** the species names,
+  and **Tree branch lengths** draws the tree to scale.
 - **Edit row arrangement...** reorders, relabels and recolors rows. The
   display's [`rows`](/docs/config/linearmafdisplay/#slot-rows) setting holds the
   arrangement, so it survives unticking the track and an undo takes it back. Its

@@ -241,7 +241,7 @@ the view's `encoding.color` is a color scale, a `field` mapped to colors. The
 circle opens on `"field": "query"`, which colors by the first genome's
 chromosomes, human here. To color by strand instead:
 
-- **Color by... → Strand** in the view's menu paints the reverse alignments a
+- **Color by → Strand** in the view's menu paints the reverse alignments a
   second color, and **Show legend** names the two.
 - In a session, set `"encoding": { "color": "strand" }` on the view.
 

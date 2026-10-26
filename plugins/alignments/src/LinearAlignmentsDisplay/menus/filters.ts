@@ -120,7 +120,7 @@ function minMapqItem(model: FiltersModel): MenuItem {
 }
 
 /**
- * The "Filter by..." family for an alignments display.
+ * The "Filter by" family for an alignments display.
  *
  * `readCategories` adds the four whole-read filters, and `more` the rows on
  * data derived from reads (connections, junctions). LGVSyntenyDisplay shares

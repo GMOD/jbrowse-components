@@ -202,9 +202,9 @@ function trackModel({
 test('the track menu is Color by, Lanes and Show', () => {
   const { model } = trackModel()
   expect(labelsOf(multiWayTrackMenuItems(model))).toEqual([
-    'Color by...',
+    'Color by',
     'Lanes',
-    'Show...',
+    'Show',
   ])
   expect(labelsOf(showSubMenuItems(model))).toEqual([
     'Lane ticks',
@@ -262,7 +262,7 @@ test('Name colors genes by the field their label reads, the name else the ID', (
   expect(calls).toEqual([`gene color ${FEATURE_NAME_FIELD}`])
 })
 
-// The Genes block of Color by..., between its header and the Ribbons one
+// The Genes block of Color by, between its header and the Ribbons one
 function genesOf(model: Parameters<typeof multiWayTrackMenuItems>[0]) {
   const colorBy = subMenuOf(multiWayTrackMenuItems(model)[0])
   return colorBy.slice(1, labelsOf(colorBy).indexOf('Ribbons'))

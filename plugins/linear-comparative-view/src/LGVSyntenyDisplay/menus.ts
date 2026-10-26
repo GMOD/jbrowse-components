@@ -97,7 +97,7 @@ interface ShowModel
   setShowCoverageAlleles: (show: boolean) => void
 }
 
-// Visibility of the rendering layers, mirroring the alignments "Show..." menu
+// Visibility of the rendering layers, mirroring the alignments "Show" menu
 // (reads.ts) but only the layers a synteny block can populate: SyntenyFeature
 // implements forEachMismatch off the cs tag / CIGAR, so mismatches and insertion
 // indicators are real, while soft clipping and the base-quality fade have no

@@ -123,7 +123,7 @@ ribbon, a dotplot point and a circle's ribbon draw at different densities.
 ## colorByMenuItems
 
 The color-by menu shared by the dotplot and linear-synteny palette buttons
-and the multi-way synteny track's Color by...: the structural modes the
+and the multi-way synteny track's Color by: the structural modes the
 surface paints, the measurements one hop in, the text-column rows while one
 is painting, and the per-track swatches once more than one track overlays.
 

@@ -190,7 +190,7 @@ and a theme. Every recipe below changes one piece of it.
 
 `encoding.color` is a CSS color as `{ "value": … }`, or a field that paints each
 feature by its value and draws a key saying what each color means. This is the
-setting **Color by... → Strand** writes, so forward stays red everywhere in the
+setting **Color by → Strand** writes, so forward stays red everywhere in the
 app, synteny ribbons included:
 
 ```json addtrack

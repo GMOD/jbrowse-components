@@ -15,7 +15,7 @@ caller runs first. With an _Arabidopsis thaliana_ WGBS run we:
 
 - align the reads with bwameth
 - load the BAM with the TAIR10 hub assembly
-- color each read by its CpG, CHG and CHH methylation with **Color by... →
+- color each read by its CpG, CHG and CHH methylation with **Color by →
   Bisulfite / EM-seq**
 - load gene and transposon tracks beside the reads to compare gene-body
   methylation with transposon silencing
@@ -280,13 +280,13 @@ is a color channel for each base, here set from the `bisulfite` field. The
 
 ## Coloring the reads by cytosine context
 
-**Color by... → Bisulfite / EM-seq** in the alignments track menu sets
+**Color by → Bisulfite / EM-seq** in the alignments track menu sets
 `pileup.bases` to the `bisulfite` field, which paints each read's methylated
 cytosines red. Two more rows refine it:
 
-- **Filter by... → More filters... → Cytosine context** picks **CpG**, **CHG**,
+- **Filter by → More filters... → Cytosine context** picks **CpG**, **CHG**,
   **CHH** or **All cytosines**
-- **Color by... → Show unmodified in blue** also paints converted sites blue,
+- **Color by → Show unmodified in blue** also paints converted sites blue,
   separating an unmethylated cytosine from a position with no cytosine. The
   figure and clip further down leave it off
 

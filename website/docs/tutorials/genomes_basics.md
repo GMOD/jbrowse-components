@@ -135,7 +135,7 @@ where every track in the figure has a call.
 
 The **gnomAD v4.1.1 - gnomAD v4.1.1 Exomes** track, under Variation and Repeats,
 opens as a dense run of variant records over _TP53_, one block of color.
-**Filter by... → Edit filters...** in the track menu takes one
+**Filter by → Edit filters...** in the track menu takes one
 [jexl](/docs/config_guides/jexl) expression per line, and a record has to pass
 every line. **Insert field…** lists the file's columns with the description the
 file gives each, and writes the one you pick at the cursor:

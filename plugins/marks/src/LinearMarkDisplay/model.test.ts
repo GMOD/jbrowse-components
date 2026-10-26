@@ -2431,7 +2431,7 @@ test('a facet domain orders the folded sections and stays off the worker request
   expect(rowsOf(display)).toEqual([2, 0, 1])
 })
 
-test('a pinned facet domain orders the sections off the worker request, and Show... offers the reset', () => {
+test('a pinned facet domain orders the sections off the worker request, and Show offers the reset', () => {
   const { display } = facetedEnvironment().createDisplay()
   display.setRpcData(0, facetResult([0, 1, 2]), REGION)
   const labels = (items: MenuItem[]) =>
@@ -2439,7 +2439,7 @@ test('a pinned facet domain orders the sections off the worker request, and Show
   const show = () => {
     const item = display
       .trackMenuItems()
-      .find(i => 'label' in i && i.label === 'Show...')
+      .find(i => 'label' in i && i.label === 'Show')
     return resolveSubMenu(item as Parameters<typeof resolveSubMenu>[0])
   }
   expect(labels(display.trackMenuItems())).not.toContain('Sections')
@@ -2525,7 +2525,7 @@ test('the Show submenu brings a hidden section back', () => {
   display.hideGroup('a')
   const show = display
     .trackMenuItems()
-    .find(i => 'label' in i && i.label === 'Show...')
+    .find(i => 'label' in i && i.label === 'Show')
   const row = (show && 'subMenu' in show ? resolveSubMenu(show) : []).find(
     i => 'label' in i && i.label === 'Show 1 hidden group',
   )

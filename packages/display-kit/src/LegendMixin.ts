@@ -144,7 +144,7 @@ export default function LegendMixin() {
 }
 
 /**
- * The "Legend" row of a display's "Show..." submenu, for a display composing
+ * The "Legend" row of a display's "Show" submenu, for a display composing
  * `LegendMixin`. A display with no key to show (`hasLegendKey`) leaves the row
  * out, and every display lists it last.
  */

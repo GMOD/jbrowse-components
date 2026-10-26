@@ -4,8 +4,8 @@ import type { MenuItem } from './MenuTypes.ts'
 import type { SettingRowOptions } from './toggleMenuItems.ts'
 
 /**
- * The "Show legend" checkbox for a menu with no "Show..." submenu, such as the
- * circular view's. Inside "Show..." the row reads "Legend"
+ * The "Show legend" checkbox for a menu with no "Show" submenu, such as the
+ * circular view's. Inside "Show" the row reads "Legend"
  * (`legendCheckboxItem` in `@jbrowse/display-kit/LegendMixin`).
  *
  * The `showLegend` **config slots** stay per display: their default values
@@ -16,7 +16,7 @@ import type { SettingRowOptions } from './toggleMenuItems.ts'
  * their `legend.show`; their key's close button hides it for the current mode
  * only.
  */
-/** #menuBuilder showLegendCheckboxItem | a "Show legend" checkbox outside a "Show..." submenu */
+/** #menuBuilder showLegendCheckboxItem | a "Show legend" checkbox outside a "Show" submenu */
 export function showLegendCheckboxItem(
   checked: boolean,
   onToggle: () => void,

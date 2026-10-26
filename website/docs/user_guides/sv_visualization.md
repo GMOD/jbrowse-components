@@ -45,7 +45,7 @@ reads, then the views that show both sides of a breakpoint at once.
 
 ### Pair orientation
 
-**Color by... → Pair orientation** colors each read by the strands its two mates
+**Color by → Pair orientation** colors each read by the strands its two mates
 aligned to. The colors follow
 [IGV's](https://igv.org/doc/desktop/#UserGuide/tracks/alignments/paired_end_alignments/)
 and assume a standard `fr` (Illumina) library. SOLiD-style orientations are not
@@ -133,9 +133,9 @@ the pileup states it.
 
 ### Insert size
 
-**Color by... → Insert size** colors a read by how far apart its mates aligned:
-red for larger than expected, pink for smaller, light grey for normal. Expected
-is a band around the median insert.[^mad]
+**Color by → Insert size** colors a read by how far apart its mates aligned: red
+for larger than expected, pink for smaller, light grey for normal. Expected is a
+band around the median insert.[^mad]
 
 <!-- COLOR_TABLE alignments-insert-size START -->
 
@@ -261,8 +261,8 @@ band.
 [Read cloud](/docs/user_guides/alignments_track#read-cloud) lays pairs out on
 the Y axis by the log distance between mates, so the insertion pairs lift clear
 of the background and how many reads span a breakpoint is countable. Chains with
-supplementary alignments are joined by an orange line, and **Filter by...**
-keeps or hides the SV evidence and the reads without a mate.
+supplementary alignments are joined by an orange line, and **Filter by** keeps
+or hides the SV evidence and the reads without a mate.
 
 <Figure caption="Read cloud colored by insert size, reads stratified by log distance between mates." src="/img/alignments/read_cloud.png" />
 

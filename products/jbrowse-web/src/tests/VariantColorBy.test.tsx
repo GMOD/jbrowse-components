@@ -43,10 +43,10 @@ interface VariantDisplay {
   setShowLegend: (value: boolean) => void
 }
 
-// LinearVariantDisplay collapses the inherited "Color" + "Color by..." pair into
-// a single "Color by..." entry (no UTR picker, no strand option) and a solid
+// LinearVariantDisplay collapses the inherited "Color" + "Color by" pair into
+// a single "Color by" entry (no UTR picker, no strand option) and a solid
 // color set through it must flow to the model.
-test('variant display exposes one "Color by..." menu and applies a solid color', async () => {
+test('variant display exposes one "Color by" menu and applies a solid color', async () => {
   const { view } = await createView(config)
 
   await view.navToLocString('ctgA:1..50000')
@@ -56,7 +56,7 @@ test('variant display exposes one "Color by..." menu and applies a solid color',
   const display = view.tracks[0]!.displays[0] as VariantDisplay
 
   const colorItems = display.colorMenuItems()
-  expect(colorItems.map(item => item.label)).toEqual(['Color by...'])
+  expect(colorItems.map(item => item.label)).toEqual(['Color by'])
   expect(colorItems[0]!.subMenu?.map(item => item.label)).toEqual([
     'Default',
     'Consequence impact',

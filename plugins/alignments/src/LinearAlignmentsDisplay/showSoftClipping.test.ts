@@ -179,7 +179,7 @@ describe('alignments pileup.mismatches.encoding.opacity (fade by base quality)',
   it('the top-level Show menu exposes the fade-by-quality toggle', () => {
     const { display } = createDisplay()
     // Top-level Show item, not nested under Advanced.
-    const show = menuSubItems(display.trackMenuItems(), 'Show...')
+    const show = menuSubItems(display.trackMenuItems(), 'Show')
     clickMenuItem(show, 'Fade low-quality mismatches')
     expect(display.mismatchOpacityField).toBe('baseQuality')
   })

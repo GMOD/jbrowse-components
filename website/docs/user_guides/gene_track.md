@@ -62,10 +62,10 @@ Track-menu toggles:
 
 - Display mode - _Normal_, _Compact_, or _Super-compact_ feature heights
 - Show subfeature labels - each transcript's name on its row
-- Show... → Chevrons - strand chevrons along the intron lines (on by default)
-- Filter by... → Genes - _Only genes_ hides non-gene features, _Hide genes_ the
+- Show → Chevrons - strand chevrons along the intron lines (on by default)
+- Filter by → Genes - _Only genes_ hides non-gene features, _Hide genes_ the
   genes
-- Group by... - _Strand_ packs the forward-strand features into one labelled
+- Group by - _Strand_ packs the forward-strand features into one labelled
   section above the reverse-strand ones, unstranded features last, so convergent
   and divergent neighbours read apart. _Attribute..._ opens a dialog for a
   feature attribute, `biotype` or `source` say, and packs one section per value,
@@ -74,12 +74,12 @@ Track-menu toggles:
 ## Grouping features into sections
 
 Each section has a chip naming it, and the × on a chip hides that section. The
-**Show N hidden** chip at the top of the track, or **Show... → Show N hidden
+**Show N hidden** chip at the top of the track, or **Show → Show N hidden
 groups**,<!-- menu-path-ok --> puts every hidden section back, and changing the
 grouping clears them. Drag a chip onto another section to move its section
-there; **Show... → Reset section order** returns them to the sorted order.
+there; **Show → Reset section order** returns them to the sorted order.
 
-<Video src="/media/ui/gene_track_sections.mp4" caption="NCBI RefSeq genes grouped and colored by gene_biotype from Group by..., then the protein_coding chip dragged to the top." />
+<Video src="/media/ui/gene_track_sections.mp4" caption="NCBI RefSeq genes grouped and colored by gene_biotype from Group by, then the protein_coding chip dragged to the top." />
 
 The `facet` setting pre-groups a track, so a shared link opens grouped. As a
 string it names the field: a feature attribute, a dotted path into a structured
@@ -174,11 +174,11 @@ this way.
 
 ## Color by CDS
 
-**Show... → CDS reading frame colors**, in the linear genome view's hamburger
-menu, tints each CDS segment by the frame it is read in, so one color is one
-frame across the view. Frame is constant within a segment, so a color change
-across a junction is a frame shift. The setting applies to every gene track in
-the view, and JBrowse remembers it across sessions.
+**Show → CDS reading frame colors**, in the linear genome view's hamburger menu,
+tints each CDS segment by the frame it is read in, so one color is one frame
+across the view. Frame is constant within a segment, so a color change across a
+junction is a frame shift. The setting applies to every gene track in the view,
+and JBrowse remembers it across sessions.
 
 <Figure caption="Color by CDS on BRCA1. Top: the menu toggle. Bottom: each codon tinted by reading frame with its amino acid drawn over it." src="/img/gene_track_color_by_cds.png" />
 
@@ -212,8 +212,7 @@ The track draws the translated protein on coding features by default. Zooming
 in, the amino acids first appear as alternating per-codon shading, then at
 roughly base-pair resolution as single-letter code over each codon, in register
 with the reference sequence track. Turn off **Amino acids when zoomed in**, in
-the view menu's **Show...** submenu, to keep the view from fetching the
-reference.
+the view menu's **Show** submenu, to keep the view from fetching the reference.
 
 The translation follows the transcript's strand and CDS phase, splitting codons
 that straddle an exon boundary. A CDS with a `transl_table` attribute (NCBI

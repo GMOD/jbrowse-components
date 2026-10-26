@@ -175,7 +175,7 @@ mean copy number, with `scale.names` naming each interval in the key:
 
 <Figure src="/img/tcga/cohort_cnv_genome.png" caption="TCGA-BRCA copy number, one row per tumor, colored by the interval its log2 ratio falls in." />
 
-**Show... → Legend** keys the colors actually present, and the **Categories**
+**Show → Legend** keys the colors actually present, and the **Categories**
 submenu beside it hides individual categories, so you can drop the states or
 classes you aren't reading and leave the rest painted. The submenu counts what
 is hidden and offers **Show all categories** to put them back.
@@ -250,9 +250,8 @@ A band marks a group by position, which stays readable over many groups where
 colors alone are hard to tell apart, so facet a long list of groups and use the
 colors as a second cue.
 
-**Show... → Tree** toggles the dendrogram once one has been computed, and
-**Show... → Row labels** the labels beside it, which are useful with no
-clustering run.
+**Show → Tree** toggles the dendrogram once one has been computed, and **Show →
+Row labels** the labels beside it, which are useful with no clustering run.
 
 A row that
 [`rowColor`](/docs/config/linearmultirowfeaturedisplay/#slot-rowcolor) colors by

@@ -169,7 +169,7 @@ Set these on each gene track:
 - `geneGlyphMode` draws one representative transcript per gene, the RefSeq or
   MANE Select one where the file tags it and the longest coding one otherwise,
   so the track is one row deep
-- **Color by... → Strand** paints forward red and reverse blue, matching the
+- **Color by → Strand** paints forward red and reverse blue, matching the
   ribbons
 - at this zoom the labels come from a second track over the same GFF under a
   separate `trackId`, with **Filter by...** set to

@@ -264,16 +264,16 @@ In a plain linear genome view, where no second row names a target assembly, the
 file. Clicking an alignment can launch a synteny view against its mate, the
 strain it aligns to.
 
-**Group by...** in the track menu is a facet: it splits the track into stacked
+**Group by** in the track menu is a facet: it splits the track into stacked
 sections, one per value of a field. Three track-menu items set the pileup up for
 reading strain by strain:
 
-1. **Group by... → Mate assembly** gives each strain a section. Untick **Show...
-   → Collapse groups to one row** to stack every section, or expand one from its
+1. **Group by → Mate assembly** gives each strain a section. Untick **Show →
+   Collapse groups to one row** to stack every section, or expand one from its
    label.
-2. **Group by... → Hide self-alignment lane** drops the section for the strain
+2. **Group by → Hide self-alignment lane** drops the section for the strain
    you're viewing. The figures below have it ticked.
-3. **Show... → Coverage** adds a histogram of how many other strains cover each
+3. **Show → Coverage** adds a histogram of how many other strains cover each
    base.
 
 The figure below shows K-12's phenylacetate (paa) operon, where some strains

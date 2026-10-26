@@ -20,7 +20,7 @@ function filter(count: number): Reversibles {
   return { filter: { count, clear: () => {} } }
 }
 
-test('a lone dialog opener stays a top-level row', () => {
+test('a lone dialog opener stays a top-level row, with the dialog "..."', () => {
   const items = filterMenuItems({ narrowings: filter(0), onEdit: () => {} })
   expect(labels(items)).toEqual(['Filter by...'])
   expect(items[0] && 'subMenu' in items[0]).toBe(false)
@@ -28,7 +28,7 @@ test('a lone dialog opener stays a top-level row', () => {
 
 test('the count rides the label once something is filtering', () => {
   const items = filterMenuItems({ narrowings: filter(3), onEdit: () => {} })
-  expect(labels(items)).toEqual(['Filter by... (3)'])
+  expect(labels(items)).toEqual(['Filter by (3)'])
 })
 
 // The recovery row is the whole reason the group earns a submenu, so it may not
@@ -42,7 +42,7 @@ test('Clear all filters appears only while a filter is on', () => {
   expect(labels(unfiltered)).toEqual(['Filter by...'])
 
   const filtered = filterMenuItems({ narrowings: filter(1), onEdit: () => {} })
-  expect(labels(filtered)).toEqual(['Filter by... (1)'])
+  expect(labels(filtered)).toEqual(['Filter by (1)'])
   expect(labels(subMenu(filtered))).toEqual([
     'Edit filters...',
     'Clear all filters',

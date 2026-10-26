@@ -383,7 +383,7 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
   },
 
   // The track starts unfiltered: with a filter in effect, `filterMenuItems`
-  // turns the row into a "Filter by... (1)" submenu, a different click path.
+  // turns the row into a "Filter by (1)" submenu, a different click path.
   {
     mode: 'url',
     name: 'genomes_basics/gnomad_filter_menu',
@@ -407,14 +407,14 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
       {
         actions: [
           trackMenuIcon(GNOMAD_TRACK_ID),
-          { type: 'waitForText', text: 'Filter by...' },
+          { type: 'waitForText', text: 'Filter by' },
         ],
-        annotations: cascadeBoxes(['Filter by...']),
+        annotations: cascadeBoxes(['Filter by']),
         viewportHeight: 560,
       },
       {
         actions: [
-          { type: 'click', text: 'Filter by...' },
+          { type: 'click', text: 'Filter by' },
           { type: 'click', text: 'Edit filters...' },
           { type: 'waitForSelector', selector: FILTER_TEXT },
           { type: 'type', selector: FILTER_TEXT, value: GNOMAD_PLOF },

@@ -482,15 +482,15 @@ describe('arc color follows the reads unless it names its own field', () => {
 // band-options pattern. Group-by and filters are NOT gated: both still affect
 // the coverage band when the pileup is off.
 describe('pileup-only menus grey out when the pileup is hidden', () => {
-  test('Sort by... is enabled with the pileup shown, disabled when hidden', () => {
+  test('Sort by is enabled with the pileup shown, disabled when hidden', () => {
     const display = createDisplay()
     display.setShowPileup(true)
     expect(
-      findMenuItem(display.trackMenuItems(), 'Sort by...')?.disabled,
+      findMenuItem(display.trackMenuItems(), 'Sort by')?.disabled,
     ).toBeFalsy()
 
     display.setShowPileup(false)
-    const item = findMenuItem(display.trackMenuItems(), 'Sort by...')
+    const item = findMenuItem(display.trackMenuItems(), 'Sort by')
     expect(item?.disabled).toBe(true)
     expect(item?.disabledHelpText).toBeTruthy()
   })
@@ -514,7 +514,7 @@ describe('pileup-only menus grey out when the pileup is hidden', () => {
     expect(hasMenuItem(advanced, 'Max layout height...')).toBe(false)
   })
 
-  test.each(['Group by...', 'Filter by...'])(
+  test.each(['Group by', 'Filter by'])(
     '%s stays enabled with the pileup hidden (still affects coverage)',
     label => {
       const display = createDisplay()
@@ -530,10 +530,10 @@ describe('pileup-only menus grey out when the pileup is hidden', () => {
 // aren't alike, not when there are many. The row cap is an action, so it sits
 // in "Advanced" with the other rarely changed sizing control.
 describe('the row cap sits with the other sizing controls', () => {
-  test('"Advanced" offers it and "Show..." and "Read height" do not', () => {
+  test('"Advanced" offers it and "Show" and "Read height" do not', () => {
     const display = createDisplay()
     const items = display.trackMenuItems()
-    for (const menu of ['Show...', 'Read height']) {
+    for (const menu of ['Show', 'Read height']) {
       expect(
         hasMenuItem(menuSubItems(items, menu), 'Max layout height...'),
       ).toBe(false)
@@ -543,9 +543,9 @@ describe('the row cap sits with the other sizing controls', () => {
     ).toBe(true)
   })
 
-  test('"Show..." is checkboxes end to end', () => {
+  test('"Show" is checkboxes end to end', () => {
     const display = createDisplay()
-    const show = menuSubItems(display.trackMenuItems(), 'Show...')
+    const show = menuSubItems(display.trackMenuItems(), 'Show')
     expect(show.length).toBeGreaterThan(0)
     expect(show.map(i => i.type)).toEqual(show.map(() => 'checkbox'))
   })
@@ -612,14 +612,14 @@ describe('sort refName normalization', () => {
 // `canCollapseSections` already does, or a sort is a silent no-op (and a tag
 // sort refetches the region for values nothing reads).
 describe('ordering controls in chain mode', () => {
-  test('"Sort by..." greys out, naming chain mode as the reason', () => {
+  test('"Sort by" greys out, naming chain mode as the reason', () => {
     const display = createDisplay()
     display.setUnit('read')
     expect(display.canSortReads).toBe(true)
 
     display.setUnit('chain')
     expect(display.canSortReads).toBe(false)
-    const item = findMenuItem(display.trackMenuItems(), 'Sort by...')
+    const item = findMenuItem(display.trackMenuItems(), 'Sort by')
     expect(item?.disabled).toBe(true)
     expect(item?.disabledHelpText).toMatch(
       /Link mates and supplementary alignments/,
@@ -634,10 +634,10 @@ describe('ordering controls in chain mode', () => {
       hit: { block: makeContextMenuBlock(), genomicPos: 50 },
       featureId: 'read1',
     })
-    expect(hasMenuItem(display.contextMenuItems(), 'Sort by...')).toBe(true)
+    expect(hasMenuItem(display.contextMenuItems(), 'Sort by')).toBe(true)
 
     display.setUnit('chain')
-    expect(hasMenuItem(display.contextMenuItems(), 'Sort by...')).toBe(false)
+    expect(hasMenuItem(display.contextMenuItems(), 'Sort by')).toBe(false)
     // the rest of the menu is untouched — only the ordering rows go
     expect(
       hasMenuItem(display.contextMenuItems(), 'Open feature details'),
@@ -650,7 +650,7 @@ describe('ordering controls in chain mode', () => {
     expect(
       hasMenuItem(display.contextMenuItems(), 'Open feature details'),
     ).toBe(true)
-    expect(hasMenuItem(display.contextMenuItems(), 'Sort by...')).toBe(false)
+    expect(hasMenuItem(display.contextMenuItems(), 'Sort by')).toBe(false)
   })
 
   // `rpcProps()` is the fetch cache key (through `settingsFetchInputs`), so
@@ -1023,18 +1023,18 @@ describe('curved connectors', () => {
 })
 
 // The read categories drop reads in the worker, so they are filters and live
-// under "Filter by..." — not "Show...", which is now layers only, and not "Read
+// under "Filter by" — not "Show", which is now layers only, and not "Read
 // connections". Their old home is the regression this pins.
 describe('read categories + filter submenu', () => {
-  test('the categories are under "Filter by...", not "Show..."', () => {
+  test('the categories are under "Filter by", not "Show"', () => {
     const display = createDisplay()
     const items = display.trackMenuItems()
-    const filters = menuSubItems(items, 'Filter by...')
+    const filters = menuSubItems(items, 'Filter by')
     for (const noun of ['SV evidence', 'Split reads', 'Spliced reads']) {
       expect(hasMenuItem(filters, noun)).toBe(true)
     }
 
-    const show = menuSubItems(items, 'Show...')
+    const show = menuSubItems(items, 'Show')
     expect(hasMenuItem(show, 'Show only split alignments')).toBe(false)
   })
 
@@ -1046,7 +1046,7 @@ describe('read categories + filter submenu', () => {
     // search starts inside the filters.
     clickMenuItem(
       menuSubItems(
-        menuSubItems(display.trackMenuItems(), 'Filter by...'),
+        menuSubItems(display.trackMenuItems(), 'Filter by'),
         'SV evidence',
       ),
       'Hide SV evidence',
@@ -1056,7 +1056,7 @@ describe('read categories + filter submenu', () => {
     // and back to the absent state, with no entry left on the field
     clickMenuItem(
       menuSubItems(
-        menuSubItems(display.trackMenuItems(), 'Filter by... (1)'),
+        menuSubItems(display.trackMenuItems(), 'Filter by (1)'),
         'SV evidence',
       ),
       'All reads',
@@ -1068,16 +1068,16 @@ describe('read categories + filter submenu', () => {
   test('an active category shows in the count, its row keeping its name', () => {
     const display = createDisplay()
     display.setFilterFields({ svSignal: [{ field: 'svSignal', equal: false }] })
-    const filters = menuSubItems(display.trackMenuItems(), 'Filter by... (1)')
+    const filters = menuSubItems(display.trackMenuItems(), 'Filter by (1)')
     expect(hasMenuItem(filters, 'SV evidence')).toBe(true)
   })
 
   // The label is the only place the track chrome admits a filter is hiding
   // reads, and a category not counted there was the bug: three of these used to
-  // hide reads while it read "Filter by..." with no number at all.
+  // hide reads while it read "Filter by" with no number at all.
   test('the count is the fields the filter moved', () => {
     const display = createDisplay()
-    expect(findMenuItem(display.trackMenuItems(), 'Filter by...')).toBeDefined()
+    expect(findMenuItem(display.trackMenuItems(), 'Filter by')).toBeDefined()
 
     display.setFilterFields({
       name: [{ field: 'name', equal: 'readA' }],
@@ -1086,7 +1086,7 @@ describe('read categories + filter submenu', () => {
       split: [{ field: 'split', equal: true }],
     })
     expect(
-      findMenuItem(display.trackMenuItems(), 'Filter by... (4)'),
+      findMenuItem(display.trackMenuItems(), 'Filter by (4)'),
     ).toBeDefined()
   })
 
@@ -1920,7 +1920,7 @@ describe('per-lane state belongs to one grouping key space', () => {
     expect(display.facet).toEqual({ field: 'tags.RG', sort: [] })
   })
 
-  test('a lane drop writes the drawn order as the domain without a refetch, and Show... offers the reset', () => {
+  test('a lane drop writes the drawn order as the domain without a refetch, and Show offers the reset', () => {
     const display = createDisplay({ withRegions: true })
     display.facetByField('tags.HP')
     seedGroups(display, [
@@ -1929,7 +1929,7 @@ describe('per-lane state belongs to one grouping key space', () => {
     ])
     expect(hasMenuItem(display.trackMenuItems(), 'Sections')).toBe(false)
     const reset = () =>
-      menuSubItems(display.trackMenuItems(), 'Show...').find(
+      menuSubItems(display.trackMenuItems(), 'Show').find(
         r => 'label' in r && r.label === 'Reset section order',
       ) as { onClick: () => void } | undefined
     expect(reset()).toBeUndefined()
@@ -2051,10 +2051,10 @@ describe('rows the layer menus hand to other menus', () => {
     )
   }
 
-  test('reach "Filter by..." and "Advanced" once their layer draws', () => {
+  test('reach "Filter by" and "Advanced" once their layer draws', () => {
     const display = createDisplay()
     display.setShowSashimi(false)
-    expect(labelsUnder(display, 'Filter by...')).not.toContain(
+    expect(labelsUnder(display, 'Filter by')).not.toContain(
       'Inter-chromosomal pairs',
     )
     expect(labelsUnder(display, 'Advanced')).toEqual([
@@ -2068,7 +2068,7 @@ describe('rows the layer menus hand to other menus', () => {
     // the arcs bring their everyday filter; the rest are in More filters...
     display.setDrawnReadConnections('arc')
     display.setShowSashimi(true)
-    expect(labelsUnder(display, 'Filter by...')).toEqual([
+    expect(labelsUnder(display, 'Filter by')).toEqual([
       'Mapping quality',
       'SV evidence',
       'Split reads',
@@ -2089,10 +2089,10 @@ describe('rows the layer menus hand to other menus', () => {
     ])
   })
 
-  test('the sashimi toggles sit in "Show..."', () => {
+  test('the sashimi toggles sit in "Show"', () => {
     const display = createDisplay()
     display.setShowSashimi(true)
-    expect(labelsUnder(display, 'Show...')).toEqual(
+    expect(labelsUnder(display, 'Show')).toEqual(
       expect.arrayContaining(['Sashimi arcs', 'Sashimi read counts']),
     )
     expect(hasMenuItem(display.trackMenuItems(), 'Sashimi placement')).toBe(

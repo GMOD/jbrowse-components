@@ -44,7 +44,7 @@ a config you open unchanged and saves your edits to a separate session file.
 
 Open the track's menu from the track label, then:
 
-- Choose **Color by... → Insert size and orientation**, which leaves
+- Choose **Color by → Insert size and orientation**, which leaves
   normally-paired reads gray and colors the rest by how they disagree with the
   reference.
 - Choose **Read connections → Link mates and supplementary alignments**, which

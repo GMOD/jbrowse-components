@@ -363,7 +363,7 @@ const labelOf = (item: MenuItem) => ('label' in item ? item.label : undefined)
 
 function colorByRows(display: { trackMenuItems: () => MenuItem[] }) {
   return subMenuOf(
-    display.trackMenuItems().find(i => labelOf(i) === 'Color by...'),
+    display.trackMenuItems().find(i => labelOf(i) === 'Color by'),
   )
 }
 
@@ -405,7 +405,7 @@ test("the view's Tracks menu carries the display's Color by and Edit plot", asyn
   const [trackItem] = subMenuOf(view.tracksMenuItem())
   const rows = subMenuOf(trackItem)
   expect(rows.map(labelOf)).toEqual(
-    expect.arrayContaining(['Color by...', 'Advanced']),
+    expect.arrayContaining(['Color by', 'Advanced']),
   )
   expect(
     subMenuOf(rows.find(i => labelOf(i) === 'Advanced')).map(labelOf),

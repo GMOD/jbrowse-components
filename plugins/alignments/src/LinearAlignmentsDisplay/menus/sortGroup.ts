@@ -166,7 +166,7 @@ export function getSortMenuItem(
     ),
   }
   return {
-    label: 'Sort by...',
+    label: 'Sort by',
     type: 'subMenu' as const,
     icon: SwapVertIcon,
     disabled: opts?.disabledHelpText !== undefined,

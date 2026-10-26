@@ -45,7 +45,7 @@ interface ReadsModel
 
 // Visibility of the rendering layers. Read connections live in their own menu.
 //
-// **Layers only.** Which reads exist is "Filter by...": the read categories
+// **Layers only.** Which reads exist is "Filter by": the read categories
 // drop reads in the worker rather than hiding drawn ones. What is left here is
 // one kind of thing: a switch on something already fetched.
 //

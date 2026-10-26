@@ -540,7 +540,7 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
     .views(self => ({
       /**
        * #method
-       * Color by... and Advanced → Edit plot..., which the circular view
+       * Color by and Advanced → Edit plot..., which the circular view
        * shows under its Tracks menu
        */
       trackMenuItems(): MenuItem[] {

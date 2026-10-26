@@ -117,7 +117,7 @@ function setTagFilter(self: FilterModel, tag: string, value: string) {
 //
 // `sort` false collapses the pair to the bare details item — for a display whose
 // sort menu doesn't offer the position-anchored modes (LGVSyntenyDisplay), where
-// the submenu's sort peer would set an ordering its own "Sort by..." radio group
+// the submenu's sort peer would set an ordering its own "Sort by" radio group
 // can't show as checked.
 function sortAndDetailsSubMenu({
   self,
@@ -438,7 +438,7 @@ function openSplitViewItems(
 // `sort` false drops every position-anchored sort, the same option
 // `getHitMenuItems` takes — for chain mode, whose rows are chains and whose
 // layout is handed no `sort` at all, so the items would set a slot nothing
-// reads (the track menu's "Sort by..." is gated on the same condition).
+// reads (the track menu's "Sort by" is gated on the same condition).
 export function getContextMenuItems(
   self: ContextMenuModel,
   { sort = true }: { sort?: boolean } = {},
@@ -473,7 +473,7 @@ export function getContextMenuItems(
       const { genomicPos: pos, block } = menuHit
       const { refName } = block
       items.push({
-        label: 'Sort by...',
+        label: 'Sort by',
         icon: SwapVertIcon,
         type: 'subMenu',
         subMenu: [

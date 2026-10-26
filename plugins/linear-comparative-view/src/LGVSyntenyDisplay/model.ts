@@ -250,13 +250,13 @@ function stateModelFactory(schema: LGVSyntenyDisplayConfigModel) {
       contextMenuItems(): MenuItem[] {
         // The mismatch / interbase-indicator details come from the base
         // alignments display: this display renders those same layers off the
-        // PAF cs/CIGAR (see its "Show..." menu), so a right-click on one has
+        // PAF cs/CIGAR (see its "Show" menu), so a right-click on one has
         // to reach its details — before this, a right-click on an interbase
         // indicator (which carries no feature) produced no menu at all. The
         // read-specific half of the base menu (mate, read/HP/RG filters, read
         // name + sequence copies) is what a PAF block has no answer for, and
         // is replaced by the feature items. `sort: false` because the curated
-        // "Sort by..." menu offers no position-anchored mode.
+        // "Sort by" menu offers no position-anchored mode.
         return [
           ...getHitMenuItems(self, { sort: false }),
           ...featureMenuItems(self),
@@ -273,7 +273,7 @@ function stateModelFactory(schema: LGVSyntenyDisplayConfigModel) {
       trackMenuItems() {
         const pileupGate = {
           disabled: !self.showPileup,
-          disabledHelpText: `Turn on "Show... → Alignments" to change ${self.featureNoun} height`,
+          disabledHelpText: `Turn on "Show → Alignments" to change ${self.featureNoun} height`,
         }
         return [
           // Paired-end and modification/bisulfite coloring are deliberately

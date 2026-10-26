@@ -44,7 +44,7 @@ function makeModel(
   }
 }
 
-describe('the per-base refinements in the Filter by... count', () => {
+describe('the per-base refinements in the Filter by count', () => {
   test('nothing counts at the defaults', () => {
     expect(basesFilterNarrowing(makeModel('modifications')).count).toBe(0)
   })

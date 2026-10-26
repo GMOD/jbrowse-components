@@ -60,7 +60,7 @@ describe('the color key', () => {
     const showItems = () => {
       const show = display
         .trackMenuItems()
-        .find((i: MenuItem) => 'label' in i && i.label === 'Show...')
+        .find((i: MenuItem) => 'label' in i && i.label === 'Show')
       return show && 'subMenu' in show ? resolveSubMenu(show) : []
     }
     const legendItem = () =>
@@ -294,7 +294,7 @@ describe('derived color key', () => {
     it('offers no pin', () => {
       const item = coloredDisplay('biotype')
         .trackMenuItems()
-        .find(i => 'label' in i && i.label === 'Color by...')!
+        .find(i => 'label' in i && i.label === 'Color by')!
       expect(
         resolveSubMenu(item as Parameters<typeof resolveSubMenu>[0]).map(
           i => 'label' in i && i.label,

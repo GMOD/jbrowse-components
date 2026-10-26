@@ -46,7 +46,7 @@ test("a new section forgets the previous section's instruction", () => {
 
 test('a menu path wrapped across two lines prompts the tag', () => {
   const text = page(
-    '## Color\n\nThe genes stay grey until **Color by... →\nAttribute...** names a field.\n\n<Figure src="/img/a.png" />',
+    '## Color\n\nThe genes stay grey until **Color by →\nAttribute...** names a field.\n\n<Figure src="/img/a.png" />',
   )
   expect(unpromptedTags(text)).toEqual([])
 })

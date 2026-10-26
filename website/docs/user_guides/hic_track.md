@@ -41,7 +41,7 @@ open so you can step repeatedly. Stepping applies a persistent offset from the
 auto-selected level, so resolution still tracks your zoom, just shifted.
 **Reset** returns to auto.
 
-<Figure caption="Show... → Legend adds the color scale, its title naming the normalization and the binsize on screen." src="/img/hic/overlay_controls.png" />
+<Figure caption="Show → Legend adds the color scale, its title naming the normalization and the binsize on screen." src="/img/hic/overlay_controls.png" />
 
 ## Adjusting the color scale
 

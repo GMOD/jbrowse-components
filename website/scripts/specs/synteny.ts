@@ -3031,8 +3031,8 @@ export const syntenySpecs: ScreenshotSpec[] = [
     tooltip: 'hide',
     actions: [
       { type: 'click', selector: '[data-testid="track_menu_icon"]' },
-      { type: 'waitForText', text: 'Color by...' },
-      { type: 'hover', text: 'Color by...' },
+      { type: 'waitForText', text: 'Color by' },
+      { type: 'hover', text: 'Color by' },
       { type: 'waitForText', text: 'Attribute...' },
       { type: 'click', text: 'Attribute...' },
       { type: 'waitForText', text: 'Color by attribute' },

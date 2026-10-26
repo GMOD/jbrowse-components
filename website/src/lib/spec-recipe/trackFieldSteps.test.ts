@@ -95,41 +95,41 @@ function stepPaths(
   return step === undefined ? [] : [step].flat().map(s => s.path)
 }
 
-test('a legend toggle is the same Show... row on every display that has a legend', () => {
+test('a legend toggle is the same Show row on every display that has a legend', () => {
   for (const displayType of [
     'LinearBasicDisplay',
     'LinearMultiSampleVariantDisplay',
     'LinearMarkDisplay',
   ]) {
     expect(stepPaths('legend.show', false, displayType)).toEqual([
-      'Track menu → Show... → Legend (unchecked)',
+      'Track menu → Show → Legend (unchecked)',
     ])
   }
   expect(stepPaths('legend.show', true, undefined)).toEqual([])
   expect(stepPaths('legend.show', true, 'LinearArcDisplay')).toEqual([])
 })
 
-test('the variant lane toggle is a multi-sample Show... row', () => {
+test('the variant lane toggle is a multi-sample Show row', () => {
   expect(
     stepPaths('variants.show', true, 'LinearMultiSampleVariantDisplay'),
-  ).toEqual(['Track menu → Show... → Variant lane (checked)'])
+  ).toEqual(['Track menu → Show → Variant lane (checked)'])
   expect(stepPaths('variants.show', true, 'LinearBasicDisplay')).toEqual([])
 })
 
 test('branch lengths are the toggle beside Tree', () => {
   expect(stepPaths('axis.branchLength', false, 'LinearMafDisplay')).toEqual([
-    'Track menu → Show... → Tree branch lengths (unchecked)',
+    'Track menu → Show → Tree branch lengths (unchecked)',
   ])
   expect(stepPaths('axis.branchLength', false, 'LinearBasicDisplay')).toEqual([])
 })
 
-test('the tree and row separator toggles are Show... rows', () => {
+test('the tree and row separator toggles are Show rows', () => {
   expect(stepPaths('axis.tree', false, 'LinearMafDisplay')).toEqual([
-    'Track menu → Show... → Tree (unchecked)',
+    'Track menu → Show → Tree (unchecked)',
   ])
   expect(
     stepPaths('axis.grid', true, 'LinearMultiRowFeatureDisplay'),
-  ).toEqual(['Track menu → Show... → Row separators (checked)'])
+  ).toEqual(['Track menu → Show → Row separators (checked)'])
 })
 
 test('a row color table is the arrangement dialog, and a column name stays a Samples row', () => {
@@ -139,18 +139,18 @@ test('a row color table is the arrangement dialog, and a column name stays a Sam
   ])
   expect(
     stepPaths('rowColor', 'group', 'LinearMultiSampleVariantDisplay'),
-  ).toEqual(['Track menu → Color by... → Samples → Group'])
+  ).toEqual(['Track menu → Color by → Samples → Group'])
   expect(stepPaths('rowColor', table, 'LinearBasicDisplay')).toEqual([])
 })
 
-test('a multi-row facet is a Group by... row named for its field', () => {
+test('a multi-row facet is a Group by row named for its field', () => {
   expect(
     stepPaths(
       'facet',
       { field: 'group', domain: ['x', 'y'] },
       'LinearMultiRowFeatureDisplay',
     ),
-  ).toEqual(['Track menu → Group by... → group'])
+  ).toEqual(['Track menu → Group by → group'])
 })
 
 test('rows are lanes on a multi-way track and a layout on a wiggle track', () => {
@@ -231,9 +231,9 @@ test('alignments fit is a Read height radio and autogrow an Advanced → Track h
 test("a filter list's entries are the rows that write them", () => {
   expect(
     stepPaths('filter', ['jexl:feature.score > 5'], 'LinearBasicDisplay'),
-  ).toEqual(['Track menu → Filter by... → add the expression'])
+  ).toEqual(['Track menu → Filter by → add the expression'])
   expect(stepPaths('filter', ['geneLike'], 'LinearBasicDisplay')).toEqual([
-    'Track menu → Filter by... → Genes → Only genes',
+    'Track menu → Filter by → Genes → Only genes',
   ])
   expect(
     stepPaths(
@@ -241,14 +241,14 @@ test("a filter list's entries are the rows that write them", () => {
       [{ field: 'geneLike', equal: false }],
       'LinearBasicDisplay',
     ),
-  ).toEqual(['Track menu → Filter by... → Genes → Hide genes'])
+  ).toEqual(['Track menu → Filter by → Genes → Hide genes'])
   expect(
     stepPaths(
       'filter',
       [{ field: 'missingness', lte: 0.1 }],
       'LinearMultiSampleVariantDisplay',
     ),
-  ).toEqual(['Track menu → Filter by... → Missingness → 0.10'])
+  ).toEqual(['Track menu → Filter by → Missingness → 0.10'])
   expect(
     stepPaths(
       'filter',
@@ -260,13 +260,13 @@ test("a filter list's entries are the rows that write them", () => {
       'LinearAlignmentsDisplay',
     ),
   ).toEqual([
-    'Track menu → Filter by... → Split reads → Only split reads',
-    'Track menu → Filter by... → More filters... → Sashimi arcs → Min reads at a junction → 3',
-    'Track menu → Filter by... → Non-canonical junctions → Hide non-canonical junctions',
+    'Track menu → Filter by → Split reads → Only split reads',
+    'Track menu → Filter by → More filters... → Sashimi arcs → Min reads at a junction → 3',
+    'Track menu → Filter by → Non-canonical junctions → Hide non-canonical junctions',
   ])
   expect(
     stepPaths('filter', [{ field: 'mapq', gte: 20 }], 'LinearAlignmentsDisplay'),
-  ).toEqual(['Track menu → Filter by... → More filters...'])
+  ).toEqual(['Track menu → Filter by → More filters...'])
 })
 
 test('data flattens member by member, and each display reads its own resolution', () => {
@@ -292,7 +292,7 @@ test('data flattens member by member, and each display reads its own resolution'
   ])
 })
 
-test('a per-base methylation layer is one Color by... radio, its filter Filter by... rows', () => {
+test('a per-base methylation layer is one Color by radio, its filter Filter by rows', () => {
   expect(
     stepPaths(
       'pileup.bases',
@@ -305,9 +305,9 @@ test('a per-base methylation layer is one Color by... radio, its filter Filter b
       'LinearAlignmentsDisplay',
     ),
   ).toEqual([
-    'Track menu → Color by... → Modifications',
-    'Track menu → Color by... → Show unmodified in blue',
-    'Track menu → Filter by... → More filters... → Modifications → Modification types',
+    'Track menu → Color by → Modifications',
+    'Track menu → Color by → Show unmodified in blue',
+    'Track menu → Filter by → More filters... → Modifications → Modification types',
   ])
   expect(
     stepPaths(
@@ -320,7 +320,7 @@ test('a per-base methylation layer is one Color by... radio, its filter Filter b
       'LinearAlignmentsDisplay',
     ),
   ).toEqual([
-    'Track menu → Color by... → Bisulfite / EM-seq',
-    'Track menu → Filter by... → More filters... → Modifications → Cytosine context → CHG',
+    'Track menu → Color by → Bisulfite / EM-seq',
+    'Track menu → Filter by → More filters... → Modifications → Cytosine context → CHG',
   ])
 })

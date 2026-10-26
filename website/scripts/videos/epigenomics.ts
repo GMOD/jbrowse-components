@@ -24,7 +24,7 @@ const WGBS_MENU = trackMenu(wgbsTrackId)
 // `::-p-text(CHG)` step is one layout change away from clicking a wiggle row.
 const colorCascade = (kind: 'submenu' | 'menuitem', label: string) =>
   `[data-testid="cascading-${kind}-${label.toLowerCase().replaceAll(/\s+/g, '_')}"]`
-const FILTER_BY = colorCascade('submenu', 'Filter by...')
+const FILTER_BY = colorCascade('submenu', 'Filter by')
 const CYTOSINE_CONTEXT = colorCascade('submenu', 'Cytosine context')
 const CONTEXT = (label: string) => colorCascade('menuitem', label)
 // The one thing in the app bar with no handler on it, so a click or a hover
@@ -33,7 +33,7 @@ const WORDMARK = '[aria-label="JBrowse"]'
 
 // One trip through the cascade to set one cytosine context, ending on the
 // recolored pileup with nothing over it. The fixture already colors by
-// bisulfite, so the context is a Filter by... row.
+// bisulfite, so the context is a Filter by row.
 const pickContext = (label: string): VideoStep[] => [
   {
     type: 'click',
@@ -79,7 +79,7 @@ export const epigenomicsVideos: VideoSpec[] = [
   {
     name: 'epigenomics/bisulfite_contexts',
     description:
-      'Cycling one Arabidopsis WGBS pileup through the plant cytosine contexts: Filter by..., Cytosine context, then CHG and CHH over a gene body and an LTR element that answer differently',
+      'Cycling one Arabidopsis WGBS pileup through the plant cytosine contexts: Filter by, Cytosine context, then CHG and CHH over a gene body and an LTR element that answer differently',
     goal: 'Recolor one plant WGBS pileup by each cytosine context in turn',
     url: cpgPileup,
     // genes + the repeat lane + the aggregate's three rows + one 200px pileup +

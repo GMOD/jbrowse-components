@@ -50,7 +50,7 @@ export interface CategoryFilterLabels {
 // filter reads and writes the same way wherever it sits.
 //
 // The row names the category alone, never its current choice: the menu's
-// "Filter by... (n)" count says a filter is on. Help text, where a caller
+// "Filter by (n)" count says a filter is on. Help text, where a caller
 // passes it, sits on the row rather than on all three radios.
 export function categoryFilterItem(
   { noun, all, only, exclude, helpText }: CategoryFilterLabels,

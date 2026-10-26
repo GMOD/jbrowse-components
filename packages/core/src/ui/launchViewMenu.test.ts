@@ -42,11 +42,11 @@ describe('nestLaunchInAdvanced', () => {
 
   test('moves Launch to the end of Advanced', () => {
     const items = nestLaunchInAdvanced([
-      row('Color by...'),
+      row('Color by'),
       sub('Launch', [row('Consensus')]),
       sub('Advanced', [row('Edit plot...')]),
     ])
-    expect(labels(items)).toEqual(['Color by...', 'Advanced'])
+    expect(labels(items)).toEqual(['Color by', 'Advanced'])
     const advanced = items[1]!
     expect(
       'subMenu' in advanced ? labels(resolveSubMenu(advanced)) : [],
@@ -54,7 +54,7 @@ describe('nestLaunchInAdvanced', () => {
   })
 
   test('keeps Launch where it is on a menu without Advanced', () => {
-    const items = [row('Color by...'), sub('Launch', [row('Consensus')])]
+    const items = [row('Color by'), sub('Launch', [row('Consensus')])]
     expect(nestLaunchInAdvanced(items)).toBe(items)
   })
 })

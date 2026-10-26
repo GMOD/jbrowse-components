@@ -540,7 +540,7 @@ the other four skip. To see it:
 
 <Figure caption="1.6 kb of K12 past flhD as tracks above and as the graph track below. The shaded span is the IS1 element." src="/img/pangenome_cactus/graph_bubble.png" />
 
-In the track menu, **Show... → Show deletion edges** hides the dashed link the
+In the track menu, **Show → Show deletion edges** hides the dashed link the
 graph draws for the other four strains' route, which is labelled with the length
 of the node it skips.
 

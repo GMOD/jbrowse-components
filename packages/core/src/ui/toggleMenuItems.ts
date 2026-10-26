@@ -3,7 +3,7 @@ import type { CheckboxMenuItem, MenuItem, RadioMenuItem } from './MenuTypes.ts'
 // Neither helper sets `keepMenuOpen`: `CascadingMenu` keeps a checkbox/radio row
 // open by its type (`staysOpenOnClick`), so a settings row states nothing and a
 // hand-written literal behaves identically — which is what stops a new menu from
-// regressing by omission, the way MAF's "Show..." menu did. The flag is left for
+// regressing by omission, the way MAF's "Show" menu did. The flag is left for
 // the rows that genuinely dismiss (a dialog opener passes `keepMenuOpen: false`).
 
 // The row decorations no builder here decides for itself. `helpText` claims a

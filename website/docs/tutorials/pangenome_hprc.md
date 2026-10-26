@@ -246,8 +246,8 @@ that allele. We'll add it to the graph launch's session:
   [its default](/docs/config/vcftabixadapter/#slot-fetchsizelimit). The VCF
   spells out each inserted allele, which puts the MHC class II window over the
   default.
-- **Filter by... → Edit filters...** in the track menu shows the filter and
-  changes it.
+- **Filter by → Edit filters...** in the track menu shows the filter and changes
+  it.
 - **Advanced → Edit plot...** in the track menu shows `unit` and `filter` as
   text and applies edits live.
 

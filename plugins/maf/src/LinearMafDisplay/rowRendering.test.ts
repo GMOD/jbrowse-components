@@ -79,7 +79,7 @@ describe('the track menu writes color and the bar height apart', () => {
   it('lists the color fields, and the scheme only under identity', () => {
     const { display, view } = createMafTestEnvironment().createDisplay()
     zoomPastBaseLevel(view)
-    const colorBy = () => subMenu(display.trackMenuItems(), 'Color by...')
+    const colorBy = () => subMenu(display.trackMenuItems(), 'Color by')
     expect(labels(colorBy())).toEqual(
       expect.arrayContaining([
         'Mismatches (SNPs vs reference)',
@@ -105,7 +105,7 @@ describe('the track menu writes color and the bar height apart', () => {
         row.onClick()
       }
     }
-    pick('Color by...', 'Identity to reference')
+    pick('Color by', 'Identity to reference')
     pick('Plot type', 'Identity X-Y plot')
     expect(display.identityEncoding).toBe('rampBars')
   })

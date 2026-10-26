@@ -87,7 +87,7 @@ the genome view and the structure read them from the alignment:
 
 - in the alignment view's menu, click **Show domains on the genome**, which adds
   a domain track to the genome view
-- in the genome view's menu, untick **Show... → CDS reading frame colors**
+- in the genome view's menu, untick **Show → CDS reading frame colors**
 - type `chr12:25245328-25245372[rev] chr12:25227320-25227364[rev]` into the
   location box, which puts codon 61, in the next exon, beside codons 12 and 13,
   and highlight it as `Q61`

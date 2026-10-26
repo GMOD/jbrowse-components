@@ -45,7 +45,7 @@ describe('canvas track menu shape', () => {
 
     for (const group of [
       subMenuOf(items, 'Gene glyph'),
-      subMenuOf(items, 'Show...'),
+      subMenuOf(items, 'Show'),
       subMenuOf(items, 'Feature height'),
     ]) {
       for (const item of group) {
@@ -62,7 +62,7 @@ describe('canvas track menu shape', () => {
   it('keeps the menu open for the color radio that writes a setting, not the dialog openers', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
-    const colorBy = subMenuOf(display.trackMenuItems(), 'Color by...')
+    const colorBy = subMenuOf(display.trackMenuItems(), 'Color by')
 
     expect(
       colorBy.map(i => [
@@ -88,13 +88,13 @@ describe('canvas track menu shape', () => {
       .map(labelOf)
 
     expect(rendered).toEqual([
-      'Show...',
+      'Show',
       'Feature height',
-      'Color by...',
-      'Group by...',
+      'Color by',
+      'Group by',
       'Gene glyph',
       'Clear 1 highlight',
-      'Filter by...',
+      'Filter by',
       'Advanced',
     ])
   })
@@ -114,7 +114,7 @@ describe('canvas track menu shape', () => {
 
     const items: MenuItem[] = display.trackMenuItems()
     expect(find(items, 'Unpin 2 features').priority).toBe(
-      find(items, 'Filter by...').priority,
+      find(items, 'Filter by').priority,
     )
 
     const unpin = find(items, 'Unpin 2 features')
@@ -127,15 +127,15 @@ describe('canvas track menu shape', () => {
     )
   })
 
-  it('lists the recovery rows under Filter by... beside the gene category', () => {
+  it('lists the recovery rows under Filter by beside the gene category', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
 
     const items: MenuItem[] = display.trackMenuItems()
-    expect(labelOf(find(items, 'Filter by...'))).toBe('Filter by...')
+    expect(labelOf(find(items, 'Filter by'))).toBe('Filter by')
 
     display.hideFeature('gene1')
-    const filtering = subMenuOf(display.trackMenuItems(), 'Filter by... (1)')
+    const filtering = subMenuOf(display.trackMenuItems(), 'Filter by (1)')
     expect(filtering.map(labelOf)).toEqual([
       'Edit filters...',
       'Genes',
@@ -152,12 +152,12 @@ describe('canvas track menu shape', () => {
     display.toggleSoloFeature('gene2')
     expect(activeCount(display.featureNarrowings())).toBe(0)
     const collecting: MenuItem[] = display.trackMenuItems()
-    expect(collecting.some(i => labelOf(i) === 'Filter by... (1)')).toBe(false)
+    expect(collecting.some(i => labelOf(i) === 'Filter by (1)')).toBe(false)
 
     display.applySolo()
     expect(activeCount(display.featureNarrowings())).toBe(1)
     expect(
-      subMenuOf(display.trackMenuItems(), 'Filter by... (1)').map(labelOf),
+      subMenuOf(display.trackMenuItems(), 'Filter by (1)').map(labelOf),
     ).toContain('Clear all filters')
 
     clearAll(display.featureNarrowings())
@@ -175,14 +175,14 @@ describe('canvas track menu shape', () => {
     expect(
       display
         .trackMenuItems()
-        .some((i: MenuItem) => labelOf(i) === 'Filter by... (2)'),
+        .some((i: MenuItem) => labelOf(i) === 'Filter by (2)'),
     ).toBe(true)
   })
 
-  it('offers the gene category under Filter by..., all, only or hidden', () => {
+  it('offers the gene category under Filter by, all, only or hidden', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
-    const filter = subMenuOf(display.trackMenuItems(), 'Filter by...')
+    const filter = subMenuOf(display.trackMenuItems(), 'Filter by')
     expect(filter.map(labelOf)).toEqual(['Edit filters...', 'Genes'])
     const genes = subMenuOf(filter, 'Genes')
     expect(genes.map(labelOf)).toEqual([
@@ -193,7 +193,7 @@ describe('canvas track menu shape', () => {
 
     click(find(genes, 'Hide genes'))
     expect(display.genesFilter).toBe('exclude')
-    const after = subMenuOf(display.trackMenuItems(), 'Filter by... (1)')
+    const after = subMenuOf(display.trackMenuItems(), 'Filter by (1)')
     click(find(subMenuOf(after, 'Genes'), 'All features'))
     expect(display.genesFilter).toBeUndefined()
   })
@@ -201,7 +201,7 @@ describe('canvas track menu shape', () => {
   it('offers the label rungs as one flat radio group', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
-    const show = subMenuOf(display.trackMenuItems(), 'Show...')
+    const show = subMenuOf(display.trackMenuItems(), 'Show')
 
     expect(show.map(labelOf)).toEqual([
       'Chevrons',
@@ -224,11 +224,11 @@ describe('canvas track menu shape', () => {
     const { display } = createDisplay()
     display.setShowLabels('nameAndDescription')
 
-    find(subMenuOf(display.trackMenuItems(), 'Show...'), 'Name + description')
+    find(subMenuOf(display.trackMenuItems(), 'Show'), 'Name + description')
 
     display.setDisplayMode('collapsed')
     const inert = find(
-      subMenuOf(display.trackMenuItems(), 'Show...'),
+      subMenuOf(display.trackMenuItems(), 'Show'),
       'Name + description — hidden while collapsed',
     )
     expect(inert.type === 'radio' && inert.checked).toBe(true)
@@ -238,15 +238,15 @@ describe('canvas track menu shape', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
     display.setSubfeatureLabels('below')
-    find(subMenuOf(display.trackMenuItems(), 'Show...'), 'Below')
+    find(subMenuOf(display.trackMenuItems(), 'Show'), 'Below')
 
     display.setDisplayMode('collapsed')
     const inert = find(
-      subMenuOf(display.trackMenuItems(), 'Show...'),
+      subMenuOf(display.trackMenuItems(), 'Show'),
       'Below — hidden while collapsed',
     )
     expect(inert.type === 'radio' && inert.checked).toBe(true)
-    find(subMenuOf(display.trackMenuItems(), 'Show...'), 'Off')
+    find(subMenuOf(display.trackMenuItems(), 'Show'), 'Off')
   })
 })
 
@@ -284,12 +284,12 @@ describe('color swatches under a per-feature jexl slot', () => {
   })
 })
 
-describe('Color by... > Strand', () => {
+describe('Color by > Strand', () => {
   it('colors by the strand field, which reads back as strand', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
     const strand = find(
-      subMenuOf(display.trackMenuItems(), 'Color by...'),
+      subMenuOf(display.trackMenuItems(), 'Color by'),
       'Strand',
     ) as { onClick: () => void }
     strand.onClick()
@@ -298,9 +298,9 @@ describe('Color by... > Strand', () => {
   })
 })
 
-describe('Color by... > Solid color...', () => {
+describe('Color by > Solid color...', () => {
   const ticked = (display: { trackMenuItems: () => MenuItem[] }) =>
-    subMenuOf(display.trackMenuItems(), 'Color by...')
+    subMenuOf(display.trackMenuItems(), 'Color by')
       .filter(item => 'checked' in item && item.checked)
       .map(item => ('label' in item ? item.label : ''))
 
@@ -337,7 +337,7 @@ describe('the Default color rung', () => {
     const { display } = createDisplay()
     display.colorByField('strand')
     const item = find(
-      subMenuOf(display.trackMenuItems(), 'Color by...'),
+      subMenuOf(display.trackMenuItems(), 'Color by'),
       'Default',
     ) as { onClick: () => void }
     item.onClick()
@@ -351,7 +351,7 @@ describe('the Default color rung', () => {
     display.setColorValue('#ff0000')
     expect(display.colorByMode).toBe('solid')
     ;(
-      find(subMenuOf(display.trackMenuItems(), 'Color by...'), 'Default') as {
+      find(subMenuOf(display.trackMenuItems(), 'Color by'), 'Default') as {
         onClick: () => void
       }
     ).onClick()
@@ -364,7 +364,7 @@ describe('the Default color rung', () => {
     const { display } = createDisplay()
     const own = "jexl:get(feature,'type')=='CDS'?'red':'blue'"
     display.setColorValue(own)
-    const colorBy = () => subMenuOf(display.trackMenuItems(), 'Color by...')
+    const colorBy = () => subMenuOf(display.trackMenuItems(), 'Color by')
     ;(find(colorBy(), 'Strand') as { onClick: () => void }).onClick()
     expect(display.colorByMode).toBe('strand')
     display.colorByField('biotype')

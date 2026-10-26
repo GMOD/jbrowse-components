@@ -159,20 +159,20 @@ It finds the strand two ways:
 In a deep pileup, reads with a skip sit among many more that have none. Three
 track-menu settings pull the splicing evidence out.
 
-**Sort by... → Spliced reads first** gives every read whose CIGAR has a skip the
+**Sort by → Spliced reads first** gives every read whose CIGAR has a skip the
 lowest rows, so the junction-spanning reads sit together at the top of the
 pileup.
 
 <Figure caption="The ACTB pileup in file order above, sorted with spliced reads first below." src="/img/rnaseq/sort_spliced_first.png" links="File order=rnaseq/deep_pileup_file_order,Spliced first=rnaseq/deep_pileup_spliced_first" />
 
-**Filter by... → Spliced reads → Only spliced reads** sets a `filter` that drops
+**Filter by → Spliced reads → Only spliced reads** sets a `filter` that drops
 every read without a skip, and the coverage histogram follows, leaving the
 junction-spanning evidence alone. **Hide spliced reads** in the same submenu is
 the complement.
 
-**Filter by... → Non-canonical junctions → Hide non-canonical junctions** drops
+**Filter by → Non-canonical junctions → Hide non-canonical junctions** drops
 every arc whose intron does not begin and end with GT-AG, GC-AG or AT-AC on
-either strand. Raising **Min reads at a junction** in **Filter by... → More
+either strand. Raising **Min reads at a junction** in **Filter by → More
 filters...** also drops thin arcs, along with any real junction few reads
 support.
 
@@ -189,17 +189,17 @@ The surfeit locus is a tight cluster of genes on alternating strands (_RPL7A_,
 _SURF1_, _SURF2_, _SURF4_). Type `chr9:136,214,000-136,229,000` into the
 location box, then pick this path from the track menu:
 
-**Color by... → First-of-pair strand**
+**Color by → First-of-pair strand**
 
 <Figure caption="The surfeit locus colored by first-of-pair strand." src="/img/rnaseq/strand_specific.png" />
 
 Grouping the reads by first-of-pair strand shows transcript strand over a whole
 gene.
 
-**Group by... → First-of-pair strand** applies a `facet`, one section per group,
+**Group by → First-of-pair strand** applies a `facet`, one section per group,
 each with a coverage histogram from only that group's reads, forward and reverse
-on one autoscaled axis. Turning off **Show... → Pileup** leaves the two
-histograms alone.
+on one autoscaled axis. Turning off **Show → Pileup** leaves the two histograms
+alone.
 
 On chr6, _NELFE_ and _SKIV2L_ sit back to back on opposite strands. Type
 `chr6:31,920,500-31,933,000` into the location box:
@@ -231,8 +231,8 @@ short read across that joint aligns in two pieces, and the aligner writes the
 second piece into the read's `SA` tag. The sashimi band counts split-read
 junctions beside the N-gap splices, one arc per junction, and colors each by its
 class. A back-splice is a duplication-type split, drawn in the teal of an RL
-pair. **Split-read junctions → Hide split-read junctions** in **Filter by... →
-More filters...** turns them off.
+pair. **Split-read junctions → Hide split-read junctions** in **Filter by → More
+filters...** turns them off.
 
 STAR writes those `SA` tags only in chimeric mode. With its defaults it
 soft-clips the joint, and no back-splice arc appears:

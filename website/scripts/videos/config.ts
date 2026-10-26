@@ -16,7 +16,7 @@ export const configVideos: VideoSpec[] = [
   {
     name: 'config/settings_to_json',
     description:
-      'Two settings clicked onto a volvox CRAM and the session they are named in: Color by... and Read connections, then Share and the readable session panel under its link',
+      'Two settings clicked onto a volvox CRAM and the session they are named in: Color by and Read connections, then Share and the readable session panel under its link',
     goal: 'Set two read options, then open the session that records them',
     url: defaultsSession,
     // Sized to what overhangs the app, which the run's content report cannot
@@ -43,7 +43,7 @@ export const configVideos: VideoSpec[] = [
       // on a radio the app had already filled in.
       {
         type: 'click',
-        text: 'Color by...',
+        text: 'Color by',
         hold: 1000,
       },
       { type: 'waitForText', text: 'Insert size and orientation' },

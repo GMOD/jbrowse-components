@@ -84,7 +84,7 @@ the genome view and the structure read them from the alignment:
 
 - in the alignment view's menu, click **Show domains on the genome**, which adds
   a domain track to the genome view
-- in the genome view's menu, untick **Show... → CDS reading frame colors**
+- in the genome view's menu, untick **Show → CDS reading frame colors**
 - in the protein view's palette menu, pick **Domains from the alignment**
 
 <Figure src="/img/protein/braf_domains_three_views.png" caption="BRAF in three linked views, colored by the alignment's domains and sites: the genome's domain track, the alignment's rows and the 4MNF cartoon, with each site's side chains as sticks." />

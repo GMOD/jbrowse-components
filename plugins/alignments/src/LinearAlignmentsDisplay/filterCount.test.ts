@@ -17,16 +17,15 @@ function filterRow(display: ReturnType<typeof createDisplay>) {
   const row = display
     .trackMenuItems()
     .find(
-      (i: MenuItem) =>
-        'label' in i && String(i.label).startsWith('Filter by...'),
+      (i: MenuItem) => 'label' in i && String(i.label).startsWith('Filter by'),
     )
   if (!row || !('subMenu' in row) || !Array.isArray(row.subMenu)) {
-    throw new Error('no Filter by... submenu')
+    throw new Error('no Filter by submenu')
   }
   return row as { label: string; subMenu: MenuItem[] }
 }
 
-describe('the Filter by... count over every layer it filters', () => {
+describe('the Filter by count over every layer it filters', () => {
   test('a modification floor counts, and Clear all filters resets it', () => {
     const display = createDisplay()
     display.setBases({
@@ -34,10 +33,10 @@ describe('the Filter by... count over every layer it filters', () => {
       field: 'modifications',
       filter: { probability: [{ field: 'probability', gte: 0.8 }] },
     })
-    expect(filterRow(display).label).toBe('Filter by... (1)')
+    expect(filterRow(display).label).toBe('Filter by (1)')
     clickMenuItem(filterRow(display).subMenu, 'Clear all filters')
     expect(display.basesFilter.probability.min).toBe(0.1)
-    expect(filterRow(display).label).toBe('Filter by...')
+    expect(filterRow(display).label).toBe('Filter by')
   })
 
   test('the submenu holds the everyday read filters, then the dialog, with no icons', () => {
@@ -61,7 +60,7 @@ describe('the Filter by... count over every layer it filters', () => {
     display.setShowSashimi(true)
     clickMenuItem(filterRow(display).subMenu, 'Hide non-canonical junctions')
     expect(display.junctionFilter.nonCanonical).toBe('exclude')
-    expect(filterRow(display).label).toBe('Filter by... (1)')
+    expect(filterRow(display).label).toBe('Filter by (1)')
     display.setShowSashimi(false)
     expect(
       filterRow(display).subMenu.map(i => ('label' in i ? i.label : i.type)),
@@ -71,8 +70,8 @@ describe('the Filter by... count over every layer it filters', () => {
   test('a junction floor stops counting while the arcs are off', () => {
     const display = createDisplay()
     display.setJunctionFilter({ minReads: 50 })
-    expect(filterRow(display).label).toBe('Filter by... (1)')
+    expect(filterRow(display).label).toBe('Filter by (1)')
     display.setShowSashimi(false)
-    expect(filterRow(display).label).toBe('Filter by...')
+    expect(filterRow(display).label).toBe('Filter by')
   })
 })

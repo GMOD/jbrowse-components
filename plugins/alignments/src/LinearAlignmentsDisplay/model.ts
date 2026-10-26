@@ -737,7 +737,7 @@ export default function stateModelFactory(
 
           /**
            * #getter
-           * Whether collapsing can take effect, so whether the "Show..." menu
+           * Whether collapsing can take effect, so whether the "Show" menu
            * offers the toggle. Chain mode never collapses (`collapsesRows`).
            * The menu omits the row rather than disabling it: a click would
            * write a slot no getter reads.
@@ -757,7 +757,7 @@ export default function stateModelFactory(
             return self.unit === 'chain'
               ? 'Chain rows are ordered by chain — turn off "Link mates and supplementary alignments" to sort reads'
               : !self.showPileup
-                ? 'Turn on Show... → Pileup to sort reads'
+                ? 'Turn on Show → Pileup to sort reads'
                 : this.collapseSortBlockedReason
           },
 
@@ -775,14 +775,14 @@ export default function stateModelFactory(
                   this.groupRowCaps.has(g.key) &&
                   !self.collapsedGroups.has(g.key),
               )
-              ? 'Every group is drawn on one row — turn off Show... → "Collapse groups to one row", or expand a group from its label, to sort'
+              ? 'Every group is drawn on one row — turn off Show → "Collapse groups to one row", or expand a group from its label, to sort'
               : undefined
           },
 
           /**
            * #getter
            * Whether an explicit read ordering can take effect. The track menu's
-           * "Sort by..." and the context menu's position-anchored sorts both
+           * "Sort by" and the context menu's position-anchored sorts both
            * read it.
            */
           get canSortReads() {
@@ -3620,7 +3620,7 @@ export default function stateModelFactory(
         trackMenuItems() {
           const pileupGate = {
             disabled: !self.showPileup,
-            disabledHelpText: 'Turn on Show... → Pileup to change read height',
+            disabledHelpText: 'Turn on Show → Pileup to change read height',
           }
           return [
             getColorByMenuItem(self, {
@@ -3681,7 +3681,7 @@ export default function stateModelFactory(
          * #method
          */
         contextMenuItems() {
-          // Same gate as the track menu's "Sort by...": these write the same
+          // Same gate as the track menu's "Sort by": these write the same
           // slot.
           return getContextMenuItems(self, { sort: self.canSortReads })
         },

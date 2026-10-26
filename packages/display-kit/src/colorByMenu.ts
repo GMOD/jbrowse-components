@@ -33,7 +33,7 @@ export function colorByMenuItem({
   additional?: MenuItem[]
 }): SubMenuItem & { type: 'subMenu'; subMenu: MenuItem[] } {
   return {
-    label: 'Color by...',
+    label: 'Color by',
     type: 'subMenu',
     icon: PaletteIcon,
     subMenu: [

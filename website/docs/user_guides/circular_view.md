@@ -106,7 +106,7 @@ alignment file, and it is offered on a two-genome circle with a synteny track
 and nowhere else.
 
 A synteny circle, of one genome or two, opens with each ribbon in the ideogram
-color of the first genome's chromosome it leaves. **Color by...** in the view's
+color of the first genome's chromosome it leaves. **Color by** in the view's
 menu offers what the linear synteny view's palette offers: either genome's
 chromosome, strand, identity or another measurement, a column the track
 declares, or one color per track when several overlay. **Opacity**, **Identity
@@ -119,7 +119,7 @@ in the linear synteny view, so a circle of tens of thousands of short alignments
 shows where they pile up. `render: { antialias: false }` on the view draws every
 ribbon at full opacity.
 
-<Figure src="/img/circular_synteny/color_by_strand.png" caption="Color by... → Strand on the human and mouse circle." />
+<Figure src="/img/circular_synteny/color_by_strand.png" caption="Color by → Strand on the human and mouse circle." />
 
 Hovering a ribbon or a chord highlights it and names it in a tooltip; clicking
 opens its details. Ribbons and chords draw on the GPU, so a circle holding tens

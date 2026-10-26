@@ -132,7 +132,7 @@ The track config sets three things:
   apart they sit, with a connector band from each column to its position
 - [`encoding.color`](/docs/config/variantcellencoding/#slot-color) is a color
   scale, and its `field` set to `impact` colors each cell by its VEP impact tier
-  from `CSQ`, the same as **Color by... → Consequence impact** in the track menu
+  from `CSQ`, the same as **Color by → Consequence impact** in the track menu
 - [`samplesTsvLocation`](/docs/config/vcftabixadapter/#slot-samplestsvlocation)
   makes the clinical columns available to facet and color rows by
 
@@ -151,8 +151,7 @@ and `facet.sort` pins the sections you want first.
 color scale on each row's label bar, so it puts the matching color strip in the
 gutter.
 
-**Group by...** and **Color by... → Samples** in the track menu set the same two
-keys.
+**Group by** and **Color by → Samples** in the track menu set the same two keys.
 
 ```json addtrack loc=chr16:68,730,000-68,842,000
 {
@@ -300,7 +299,7 @@ On the matrix:
 
 - **Clustering → Cluster rows by genotype...** gathers every mutated sample into
   one block (see [](/docs/user_guides/clustering)).
-- **Filter by... → Minor allele frequency** keeps the recurrent mutations (see
+- **Filter by → Minor allele frequency** keeps the recurrent mutations (see
   [filtering by allele frequency and missingness](/docs/user_guides/multivariant_track#filtering-by-allele-frequency-and-missingness)).
 
 ## Use your own cohort

@@ -46,7 +46,7 @@ function storedRadio<T extends string>(
 }
 
 /**
- * The "Group by..." radio submenu every in-track grouping shares. Grouping is
+ * The "Group by" radio submenu every in-track grouping shares. Grouping is
  * one dimension at a time, so it is a single radio group, "None" plus one per
  * offered dimension, mirroring a sort menu where the current choice is visible
  * at a glance and a common one is a click away with no dialog round-trip.
@@ -101,7 +101,7 @@ export function groupByRadioMenuItem<T extends string, X extends string = T>({
           disabledHelpText: e.disabledHelpText,
         }
   return {
-    label: 'Group by...',
+    label: 'Group by',
     icon: WorkspacesIcon,
     type: 'subMenu' as const,
     subMenu: [
@@ -129,7 +129,7 @@ export interface HiddenGroupsModel {
 
 /**
  * The menu's way back from a chip's hide button, beside the topmost chip's
- * "N hidden" button. Spread into a display's "Show..." menu, and absent while
+ * "N hidden" button. Spread into a display's "Show" menu, and absent while
  * nothing is hidden: a row reading "Show hidden groups (0)" is a row about a
  * feature most tracks never use.
  */

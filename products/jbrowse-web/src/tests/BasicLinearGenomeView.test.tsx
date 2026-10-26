@@ -193,7 +193,7 @@ test('click to display center line with correct value', async () => {
 
   // opens the view menu and selects show center line
   fireEvent.click(await findByTestId('view_menu_icon', ...opts))
-  fireEvent.click(await findByText('Show...', ...opts))
+  fireEvent.click(await findByText('Show', ...opts))
   fireEvent.click(await findByText('Center line', ...opts))
   expect(view.showCenterLine).toBe(true)
   expect(view.centerLineInfo?.refName).toBe('ctgA')

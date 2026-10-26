@@ -78,9 +78,9 @@ async function syntenyDisplay() {
 function colorByLabels(display: Awaited<ReturnType<typeof syntenyDisplay>>) {
   const colorBy = display
     .trackMenuItems()
-    .find(i => 'label' in i && i.label === 'Color by...')
+    .find(i => 'label' in i && i.label === 'Color by')
   if (!colorBy || !('subMenu' in colorBy)) {
-    throw new Error('no Color by... menu')
+    throw new Error('no Color by menu')
   }
   return resolveSubMenu(colorBy).map(i => ('label' in i ? i.label : ''))
 }

@@ -622,7 +622,7 @@ export function stateModelFactory(
         /**
          * #getter
          * Whether any visible variant has a SnpEff/VEP annotation, gating
-         * the "Color by...→Consequence impact" menu option.
+         * the "Color by→Consequence impact" menu option.
          */
         get hasConsequence() {
           return self.cellData?.hasConsequence ?? false
@@ -638,7 +638,7 @@ export function stateModelFactory(
         /**
          * #getter
          * Whether any visible variant declares a phase set (PS in FORMAT),
-         * gating the "Color by...→Phase set" menu option.
+         * gating the "Color by→Phase set" menu option.
          */
         get hasPhaseSet() {
           return self.cellData?.hasPhaseSet ?? false
@@ -1076,7 +1076,7 @@ export function stateModelFactory(
         /**
          * #getter
          * `TreeSidebarMixin`'s hook: the samplesTsv attributes, the ones
-         * "Color by..." offers.
+         * "Color by" offers.
          */
         get rowColorFields(): readonly string[] {
           return this.colorByAttributes

@@ -115,10 +115,10 @@ export function showTreeSidebarMenuItem(self: TreeSidebarMenuModel): MenuItem {
 
 /**
  * The two tree-display controls, as one group every row display opens its
- * "Show..." submenu with. They used to be split between that submenu and the
+ * "Show" submenu with. They used to be split between that submenu and the
  * Clustering one, differently per display: a reader who found "Tree"
  * under Clustering on a variant track looked there on a MAF track and found
- * nothing. Both are visibility toggles, and "Show..." is where those live;
+ * nothing. Both are visibility toggles, and "Show" is where those live;
  * Clustering is the operation.
  *
  * Spread into the submenu rather than returned as one item, so a display with
@@ -263,7 +263,7 @@ function withRowCountGate(runItem: NormalMenuItem, rowCount: number) {
 // layouts for one concept.
 //
 // The tree-display toggles are deliberately NOT here: they are visibility
-// settings and sit in "Show..." with the rest (`treeSidebarShowMenuItems`).
+// settings and sit in "Show" with the rest (`treeSidebarShowMenuItems`).
 // Nor is undoing a run, which is `resetRowOrderMenuItems`, top-level.
 //
 // `rowCount` is the list the run would cluster, and the run row's "needs at

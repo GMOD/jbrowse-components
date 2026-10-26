@@ -18,7 +18,7 @@ function subMenuOf(items: MenuItem[], label: string) {
 }
 
 function showSubMenu(display: { trackMenuItems: () => MenuItem[] }) {
-  const items = subMenuOf(display.trackMenuItems(), 'Show...')
+  const items = subMenuOf(display.trackMenuItems(), 'Show')
   const start = items.findIndex(
     i => i.type === 'subHeader' && i.label === 'Labels',
   )

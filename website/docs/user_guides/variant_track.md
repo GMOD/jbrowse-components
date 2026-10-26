@@ -7,9 +7,9 @@ guide_category: Track types
 A variant track displays VCF records, one glyph per call, and a click opens a
 per-sample genotype table. The track menu's **Display types** switches to a
 multi-sample view (one row per sample), an LD heatmap, or a paired-arc view for
-breakends. **Color by...** buckets variants by SnpEff/VEP consequence severity
-or SV type with one click, or colors by any INFO field via a jexl expression
-(e.g. minor allele frequency).
+breakends. **Color by** buckets variants by SnpEff/VEP consequence severity or
+SV type with one click, or colors by any INFO field via a jexl expression (e.g.
+minor allele frequency).
 
 <Figure caption="Variant track marking an SNV beside the alignment track evidence." src="/img/variant_with_pileup.png" />
 
@@ -48,7 +48,7 @@ trio's genotypes this way to check whether a call is inherited.
 
 ## Coloring variants
 
-**Color by...** in the track menu:
+**Color by** in the track menu:
 
 - **Consequence impact** buckets each variant by the severity of its most severe
   predicted consequence, read from SnpEff `ANN` or VEP `CSQ` in the INFO field:

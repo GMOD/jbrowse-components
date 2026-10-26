@@ -47,14 +47,14 @@ const OFF = 'off'
 // and above what fraction its bars color the alleles, which is about what the
 // bars are colored with rather than the scale. One radio group answers both
 // allele questions, since a floor means nothing with the alleles off. The
-// band's on/off and interbase toggles live in each display's "Show..." menu.
+// band's on/off and interbase toggles live in each display's "Show" menu.
 //
 // Both grey out with the band hidden: every setting here feeds the band's
 // draw and its hit test and nothing else, and neither row could turn it back
 // on, so each names that switch instead. At depth 500 every sequencing error
 // paints a sliver, so without a floor the band carries a permanent rainbow.
 const BAND_HIDDEN_HELP =
-  'These settings scale the coverage band — turn on "Show... → Coverage" first'
+  'These settings scale the coverage band — turn on "Show → Coverage" first'
 
 export function getCoverageMenuItems(model: CoverageMenuModel): MenuItem[] {
   const disabled = !model.showCoverage
@@ -105,7 +105,7 @@ export function interbaseIndicatorsMenuItem(model: {
     {
       disabled: !model.showCoverage,
       disabledHelpText:
-        'Interbase marks are drawn in the coverage band — turn on "Show... → Coverage" first',
+        'Interbase marks are drawn in the coverage band — turn on "Show → Coverage" first',
     },
   )
 }
@@ -132,7 +132,7 @@ export function coverageAllelesMenuItem(model: {
     {
       disabled: !model.showCoverage,
       disabledHelpText:
-        'Alleles are colored in the coverage band — turn on "Show... → Coverage" first',
+        'Alleles are colored in the coverage band — turn on "Show → Coverage" first',
     },
   )
 }

@@ -71,14 +71,14 @@ function itemIn(items: MenuItem[], label: string) {
 }
 
 describe('the wiggle display Clustering submenu', () => {
-  it('offers the run item, and the tree toggles sit under Show... in a row mode', () => {
+  it('offers the run item, and the tree toggles sit under Show in a row mode', () => {
     const { display } = makeDisplay()
     const items = display.trackMenuItems()
 
     expect(labels(subMenuOf(items, 'Clustering'))).toEqual([
       'Cluster rows by score...',
     ])
-    expect(labels(subMenuOf(items, 'Show...'))).toEqual([
+    expect(labels(subMenuOf(items, 'Show'))).toEqual([
       'Tree',
       'Tree branch lengths',
       'Row separators',
@@ -95,9 +95,9 @@ describe('the wiggle display Clustering submenu', () => {
     // the tree is hidden because one plot box is one row — `hierarchy` is the
     // gate, and these controls follow it
     expect(display.hierarchy).toBeUndefined()
-    expect(
-      labels(subMenuOf(display.trackMenuItems(), 'Show...')),
-    ).not.toContain('Tree')
+    expect(labels(subMenuOf(display.trackMenuItems(), 'Show'))).not.toContain(
+      'Tree',
+    )
   })
 
   it('keeps the tree controls once a clustered row mode comes back', () => {
@@ -108,7 +108,7 @@ describe('the wiggle display Clustering submenu', () => {
     display.setRowLayout(true)
 
     expect(display.hierarchy).toBeDefined()
-    expect(labels(subMenuOf(display.trackMenuItems(), 'Show...'))).toContain(
+    expect(labels(subMenuOf(display.trackMenuItems(), 'Show'))).toContain(
       'Tree',
     )
   })
@@ -198,7 +198,7 @@ describe('the wiggle display track menu', () => {
 
   it('keeps the menu open on every toggle, like the rest of the app', () => {
     const { display } = makeDisplay()
-    const items = subMenuOf(display.trackMenuItems(), 'Show...')
+    const items = subMenuOf(display.trackMenuItems(), 'Show')
 
     expect(items.every(i => 'onClick' in i && staysOpenOnClick(i))).toBe(true)
   })
@@ -234,8 +234,8 @@ describe('the wiggle display track menu', () => {
     const offered = (display: { trackMenuItems: () => MenuItem[] }) => {
       const items = display.trackMenuItems()
       return (
-        labels(items).includes('Show...') &&
-        labels(subMenuOf(items, 'Show...')).includes('Legend')
+        labels(items).includes('Show') &&
+        labels(subMenuOf(items, 'Show')).includes('Legend')
       )
     }
 

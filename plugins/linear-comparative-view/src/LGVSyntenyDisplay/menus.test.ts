@@ -29,7 +29,7 @@ function items(model: ReturnType<typeof makeModel>) {
 }
 
 // No "One row per group" here: that toggle is the group's drawn height, not a
-// dimension, so the "Show..." menu carries it (`collapseSectionsItems`).
+// dimension, so the "Show" menu carries it (`collapseSectionsItems`).
 test('offers None plus the synteny-applicable dimensions, then the self lane', () => {
   expect(items(makeModel('mateAssembly')).map(i => i.label)).toEqual([
     'None',

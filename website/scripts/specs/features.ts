@@ -188,14 +188,14 @@ export const featuresSpecs: ScreenshotSpec[] = [
       {
         actions: [
           { type: 'click', selector: '[data-testid="view_menu_icon"]' },
-          ...menuCascade(['Show...', 'CDS reading frame colors']),
+          ...menuCascade(['Show', 'CDS reading frame colors']),
         ],
         annotations: [
           {
             type: 'circle',
             anchor: { selector: '[data-testid="view_menu_icon"]' },
           },
-          ...cascadeBoxes(['Show...', 'CDS reading frame colors']),
+          ...cascadeBoxes(['Show', 'CDS reading frame colors']),
         ],
       },
       {

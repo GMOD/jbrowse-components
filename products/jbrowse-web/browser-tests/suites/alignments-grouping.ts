@@ -46,7 +46,7 @@ async function loadPileup(page: Page) {
   await delay(1000)
 }
 
-// Track menu → Group by... → <label>, the route a user takes. The dimension
+// Track menu → Group by → <label>, the route a user takes. The dimension
 // radios `keepMenuOpen`, so both the submenu and the track menu are still
 // standing afterwards and each needs dismissing — otherwise the next call's
 // click on the menu icon lands on the open menu's backdrop instead.
@@ -54,7 +54,7 @@ async function groupByMenu(page: Page, label: string) {
   const menuIcon = await findByTestId(page, 'track_menu_icon', 10000)
   await menuIcon.click()
   await delay(300)
-  await (await findByText(page, 'Group by...', 10000)).hover()
+  await (await findByText(page, 'Group by', 10000)).hover()
   await delay(400)
   await (await findByText(page, label, 10000)).click()
   await delay(300)

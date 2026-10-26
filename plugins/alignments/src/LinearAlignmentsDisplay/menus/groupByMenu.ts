@@ -35,7 +35,7 @@ export interface CollapseSectionsModel {
   setCollapseSections: (flag: boolean) => void
 }
 
-// Spread into a display's "Show..." menu next to the pileup toggle: collapsing is
+// Spread into a display's "Show" menu next to the pileup toggle: collapsing is
 // how tall a group is drawn, so it belongs with the layout controls.
 //
 // Absent rather than disabled when it can't take effect (`canCollapseSections` —

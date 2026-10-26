@@ -16,7 +16,7 @@ function subMenu(items: MenuItem[], label: string): MenuItem[] {
 }
 
 function colorRows(display: ReturnType<typeof createDisplay>) {
-  return subMenu(display.trackMenuItems() as MenuItem[], 'Color by...').filter(
+  return subMenu(display.trackMenuItems() as MenuItem[], 'Color by').filter(
     i => 'type' in i && i.type === 'radio',
   )
 }
@@ -83,7 +83,7 @@ function labelsOf(items: MenuItem[]) {
   return items.map(i => ('label' in i ? i.label : undefined))
 }
 
-test('a lane drop writes the drawn order as the domain, and Show... offers the reset', () => {
+test('a lane drop writes the drawn order as the domain, and Show offers the reset', () => {
   const display = createDisplay({
     trackAssemblyNames: ['volvox', 'volvox_random', 'volvox_two'],
   })
@@ -91,7 +91,7 @@ test('a lane drop writes the drawn order as the domain, and Show... offers the r
   seedSections(display, ['volvox_random', 'volvox_two'])
   const items = () => display.trackMenuItems() as MenuItem[]
   expect(labelsOf(items())).not.toContain('Sections')
-  expect(labelsOf(subMenu(items(), 'Show...'))).not.toContain(
+  expect(labelsOf(subMenu(items(), 'Show'))).not.toContain(
     'Reset section order',
   )
 
@@ -104,5 +104,5 @@ test('a lane drop writes the drawn order as the domain, and Show... offers the r
     'volvox_two',
     'volvox_random',
   ])
-  expect(labelsOf(subMenu(items(), 'Show...'))).toContain('Reset section order')
+  expect(labelsOf(subMenu(items(), 'Show'))).toContain('Reset section order')
 })

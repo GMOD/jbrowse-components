@@ -82,7 +82,7 @@ describe('hic track menu shape', () => {
   it('keeps the menu open for every settings row', () => {
     const items = buildHicTrackMenuItems(makeSelf())
     const rows = [
-      ...subMenuOf(items, 'Show...'),
+      ...subMenuOf(items, 'Show'),
       ...subMenuOf(items, 'Layout'),
       ...subMenuOf(items, 'Color scheme'),
       ...subMenuOf(items, 'Normalization'),
@@ -169,7 +169,7 @@ describe('hic track menu shape', () => {
       }),
     )
     expect(items.map(labelOf)).toEqual([
-      'Show...',
+      'Show',
       'Layout',
       'Values',
       'Color scheme',

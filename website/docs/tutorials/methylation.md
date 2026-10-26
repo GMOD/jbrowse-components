@@ -105,7 +105,7 @@ assembly:
 
 **File → Open track...** also opens the file by URL and infers the `.bai`.
 
-**Color by... → Modifications** in the track menu paints each read with its 5mC
+**Color by → Modifications** in the track menu paints each read with its 5mC
 calls:
 
 - On its own it paints the positions the MM tag reports as modified
@@ -116,7 +116,7 @@ The
 [alignments track guide](/docs/user_guides/alignments_track#modifications-and-methylation)
 covers both modes and the probability and cytosine-context filters.
 
-<Video src="/media/methylation/open_modbam.mp4" caption="The modBAM opened by URL and colored from its track menu with Color by... → Modifications and Show unmodified in blue." />
+<Video src="/media/methylation/open_modbam.mp4" caption="The modBAM opened by URL and colored from its track menu with Color by → Modifications and Show unmodified in blue." />
 
 <Figure caption="HG002 ONT reads over the SNRPN CpG island in both modification color modes. The bottom mode fills every unmarked CpG in blue." src="/img/methylation/hg002_snrpn_mod_modes.png" links="Modified only=methylation/hg002_snrpn_marked_only,Every CpG=methylation/hg002_snrpn_fill_unmarked" />
 
@@ -176,11 +176,11 @@ subtrack per type, with a vertical bar per CpG on a percent-methylation axis:
 
 Each long read is one DNA molecule, so reads with an `HP` haplotype tag (from
 WhatsHap, HiPhase or ONT's `wf-human-variation`) separate by allele. In
-[grammar-of-graphics](/docs/config_guides/mark_display) terms, **Group by...**
-sets a `facet`, which splits the display into stacked sections, one per value of
-a field.
+[grammar-of-graphics](/docs/config_guides/mark_display) terms, **Group by** sets
+a `facet`, which splits the display into stacked sections, one per value of a
+field.
 
-Pick **Group by... → Tag...** in the track menu and enter `HP`. The pileup then
+Pick **Group by → Tag...** in the track menu and enter `HP`. The pileup then
 stacks into:
 
 - one band per haplotype, one methylated over the island and the other
@@ -191,7 +191,7 @@ The dialog also offers to color reads by the tag; with methylation coloring on,
 that box starts unchecked, and leaving it unchecked keeps the coloring.
 **Advanced → Edit plot...** shows the resulting `facet` as text.
 
-<Video src="/media/methylation/group_by_hp.mp4" caption="Group by... → Tag... with HP, splitting the pileup by haplotype." />
+<Video src="/media/methylation/group_by_hp.mp4" caption="Group by → Tag... with HP, splitting the pileup by haplotype." />
 
 <Figure caption="HG002 ONT reads over the SNRPN CpG island colored by 5mC. Top: file order. Bottom: grouped by the HP tag." src="/img/methylation/hg002_snrpn_group_by_hp.png" links="Ungrouped=methylation/hg002_snrpn_ungrouped,Grouped by HP=methylation/hg002_snrpn_grouped" />
 

@@ -1,7 +1,7 @@
 // The mirror of `figure-actions.ts`. That one finds a figure nobody was told
 // how to reach; this one finds the instruction whose result nobody is shown.
 //
-// A display setting makes a visual claim. `Color by... → Modifications` paints
+// A display setting makes a visual claim. `Color by → Modifications` paints
 // the reads and `Cluster rows by similarity` reorders them, so a path written
 // with no figure under it leaves the reader to imagine the result.
 //

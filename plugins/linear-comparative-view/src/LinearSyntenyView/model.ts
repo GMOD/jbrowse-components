@@ -1294,7 +1294,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
          * what varies with the stack under "Rows", each synteny track's menu
          * under "Tracks", then Export SVG. Every
          * render setting is in `SyntenySettingsMenu` instead.
-         * `ViewOptionsMenuButton` passes the "Show..." submenu as
+         * `ViewOptionsMenuButton` passes the "Show" submenu as
          * `extraSubMenus`, since the search box prefs are React state.
          */
         headerMenuItems(extraSubMenus: MenuItem[] = []): MenuItem[] {

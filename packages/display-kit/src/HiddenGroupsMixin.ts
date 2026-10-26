@@ -92,7 +92,7 @@ export default function HiddenGroupsMixin() {
       /**
        * #action
        * Drop a section from the stack. Reversed by `showAllGroups`, which
-       * the "Show..." menu offers while anything is hidden, since a hidden
+       * the "Show" menu offers while anything is hidden, since a hidden
        * section has no chip to restore it.
        */
       hideGroup(key: string) {

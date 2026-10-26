@@ -46,7 +46,7 @@ The view's gridlines stop at the anchor, the one lane they fit.
 
 ## Ribbons
 
-- **Color by... → Strand**, under **Ribbons** in the track menu, is the default:
+- **Color by → Strand**, under **Ribbons** in the track menu, is the default:
   red where the two lanes a ribbon joins run the same way, blue where one is
   reversed. A lane drawn reversed has its ribbons run straight on screen while
   the color still marks them as inverted.

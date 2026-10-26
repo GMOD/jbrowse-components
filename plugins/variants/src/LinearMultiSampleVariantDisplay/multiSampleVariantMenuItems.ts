@@ -77,7 +77,7 @@ function rowColorItems(self: LinearMultiSampleVariantDisplayModel): MenuItem[] {
   }))
 }
 
-// Items for the "Show..." submenu; the subtree filter has its own entry via
+// Items for the "Show" submenu; the subtree filter has its own entry via
 // `clusteringMenuItem`.
 export function variantShowSubmenuItems(
   self: LinearMultiSampleVariantDisplayModel,

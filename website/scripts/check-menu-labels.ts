@@ -24,7 +24,7 @@
 //
 // **It cannot see a PATH.** Each segment is asked for on its own, so a path
 // assembled from two labels that both exist and never appear together passes:
-// two synteny pages documented `Color by... → dN/dS` — "Color by..." is the
+// two synteny pages documented `Color by → dN/dS` — "Color by" is the
 // variants plugin's menu, and the synteny track's is "Color by value" — and
 // this check was green on both while a reader following either found no such
 // item. Seeing adjacency means reading the `subMenu` trees the menus are built
@@ -119,7 +119,7 @@ const EXTERNAL_PLUGIN_PAGES = new Map([
 ])
 
 // Prose names for an affordance rather than labels the app renders: the docs
-// write "**Track menu → Filter by...**" to say *where* to click, and no string
+// write "**Track menu → Filter by**" to say *where* to click, and no string
 // in the source says "Track menu". Only ever the first segment. Listed instead
 // of left to chance — most of them (`Add`, `File`, `Tools`) do match some
 // unrelated literal somewhere and were passing by accident, which is not the

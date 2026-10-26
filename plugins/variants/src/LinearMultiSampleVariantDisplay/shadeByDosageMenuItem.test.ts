@@ -13,7 +13,7 @@ test('the dosage ramp is offered in allele-count mode only', () => {
     display.setUnit(unit)
     const colorBy = display
       .trackMenuItems()
-      .find(item => 'label' in item && item.label === 'Color by...')
+      .find(item => 'label' in item && item.label === 'Color by')
     return (
       colorBy && 'subMenu' in colorBy ? resolveSubMenu(colorBy) : []
     ).some(item => 'label' in item && item.label === 'Shade by dosage')
@@ -25,7 +25,7 @@ test('the dosage ramp is offered in allele-count mode only', () => {
 function colorByRows(display: { trackMenuItems: () => MenuItem[] }) {
   const colorBy = display
     .trackMenuItems()
-    .find(item => 'label' in item && item.label === 'Color by...')
+    .find(item => 'label' in item && item.label === 'Color by')
   return colorBy && 'subMenu' in colorBy ? resolveSubMenu(colorBy) : []
 }
 
