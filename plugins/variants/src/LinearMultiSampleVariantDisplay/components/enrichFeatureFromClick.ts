@@ -5,11 +5,7 @@ import type { VariantFeatureInfo } from '../../shared/types.ts'
 export function enrichFeatureFromClick(
   baseFeature: { id(): string; toJSON(): Record<string, unknown> },
   featureInfo: VariantFeatureInfo | undefined,
-  // Which sample's cell was clicked, when one was. Omitted by the variant lane,
-  // whose marks are records: the widget's "Sample:" card is keyed off
-  // `clickedSample`, and a lane click has no sample to name — stamping an empty
-  // one would put a blank card on the record's own details.
-  clickResult?: {
+  clickResult: {
     sampleName: string
     genotype: string
     alleles: string
@@ -32,13 +28,9 @@ export function enrichFeatureFromClick(
             type: featureInfo.type,
           }
         : {}),
-      ...(clickResult
-        ? {
-            clickedSample: clickResult.sampleName,
-            clickedGenotype: clickResult.genotype,
-            clickedAlleles: clickResult.alleles,
-          }
-        : {}),
+      clickedSample: clickResult.sampleName,
+      clickedGenotype: clickResult.genotype,
+      clickedAlleles: clickResult.alleles,
     },
   })
 }

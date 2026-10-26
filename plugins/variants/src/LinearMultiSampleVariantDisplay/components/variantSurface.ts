@@ -17,7 +17,7 @@ interface SurfaceModel {
 
 /**
  * One pointer-responsive surface of a multi-sample variant display — the
- * genotype rows, the matrix, the variant lane — in its own coordinate frame.
+ * genotype rows or the matrix — in its own coordinate frame.
  * `getHit` takes a point relative to the surface's element; `enrich` turns a
  * hit into the `SimpleFeature` a click or a right-click acts on; `onHover`
  * writes whatever display-specific highlight state the surface keeps beside
@@ -64,9 +64,8 @@ export function hoverVariantSurface<H>(
  * read it would act on the wrong cell. Both drop the hover first so the
  * tooltip does not linger behind the widget or the menu.
  *
- * Typed to `HTMLElement`, not the canvas: the rows bind them on their canvas,
- * while the lane's canvas is an `OverlayCanvas` (`pointerEvents: none`) and
- * binds them on a transparent div over it.
+ * Typed to `HTMLElement`, not the canvas, so a surface can bind them on a
+ * transparent div over an `OverlayCanvas` (`pointerEvents: none`).
  */
 export function variantSurfaceHandlers<H>(
   model: SurfaceModel,

@@ -86,7 +86,7 @@ Each channel carries one variable through one scale.
 - **The main thread paints the hue and the shade (ADR-203).** The worker reads
   what the hue needs off each variant (`cellHueOf`'s `read`: a field's value as
   text, or a `jexl:` callback's color) and ships it beside each cell's
-  `altDosageByte`; `LinearMultiSampleVariantDisplay/paintCells.ts` repaints the alt cells and the lane
+  `altDosageByte`; `LinearMultiSampleVariantDisplay/paintCells.ts` repaints the alt cells
   from them, each color map a computed apart from row placement. So the dosage
   is the byte, in the cells and the key's het swatch (`HET_DOSAGE`) alike. A
   phase-set hue is per cell and stays the worker's.
@@ -100,8 +100,6 @@ Each channel carries one variable through one scale.
 - **Cross-mode identity**: INS takes `palette.insertion`, and the phased allele
   colors come from a palette the SV scale does not touch — red cannot mean
   "deletion" in one mode and "secondary alt" in another.
-- **The lane's record color is `hue(variant)`**, not a constant of its own. A
-  goldenrod mark over blue cells was a hue standing for nothing.
 
 ## The legend lists what was painted
 
@@ -254,7 +252,7 @@ model**, so `startRenderingBackend` tags which backend is attached
 draws; across a switch the old backend is sent an empty map until the other
 chrome's backend arrives.
 
-Columns are for genotype PATTERN, not spans: the lane and the reference toggle are genomic-position features and answer off in columns.
+Columns are for genotype PATTERN, not spans: the reference toggle is a genomic-position feature and answers off in columns.
 
 **Each display names the slot's checkbox for its own picture**, so the two check
 for opposite values: "Layout → Genotype matrix" here (columns), "Size cells by
@@ -263,16 +261,13 @@ and was reverted on 2026-09-30.
 
 ## Bands above the rows
 
-`variantTopBands.ts` resolves both bands, and **the layout reserving a strip and
-the painter filling it read that one function**.
+The columns layout reserves one band above the rows, the connector zone.
 
-- `rowsHeaderHeight` is the bands' total; `rowsTopOffset` adds the focus
-  chip's line and is where rows begin; `lineZoneHeight` is the connector zone
-  alone, not an offset.
+- `rowsHeaderHeight` is `lineZoneHeight`; `rowsTopOffset` adds the focus
+  chip's line and is where rows begin.
 - **A band comes out of `availableHeight`, never `height`.**
-- **Off spends 0 px, not a clamped minimum**, or every committed figure moves.
 - **A band a layout cannot paint answers 0 there** (`lineZoneHeight` at genomic
-  positions, the lane in columns), whatever the config says.
+  positions), whatever the config says.
 - A drag-resized height goes on a config slot, clamped via `clampBandHeight`
   (`@jbrowse/core/util/bandHeight`, shared with the alignments and MAF bands).
   `boundBandHeight` is its read-time twin: a _stated_ height — config, menu,
@@ -288,62 +283,14 @@ gave the edge fade zero width. Anything anchored to the right edge, or that
 applies `rowsTopOffset` itself, goes on the display's own box, where
 `RowsPanel` mounts the scrollbar and the row labels.
 
-The lane **is** a plugin-canvas feature band, not a painter of ours. It is not a
-_hosted_ `LinearVariantDisplay` — a track renders one display, and a second one
-would parse the same VCF again — but it holds that display's payload and runs
-that display's functions:
-
-`buildLaneRenderData` rebuilds `SimpleFeature`s from the cell payload (the span,
-ID, description and SO type are all already on the wire) and hands them to
-plugin-canvas's `buildFeatureRenderData`; `computeLaidOutData` packs them;
-`resolveFitLadder` compacts the stack into `laneHeight`; `paintFeatureBand`
-paints it; `forEachDisplayLabel` + `paintLabels` letter it;
-`performMultiRegionHitDetection` picks. So overlap packing, paint order, label
-placement, outlines and the click target are decided once — there, for both
-displays — and the band cannot drift from the display it stands in for.
-
-- **Main thread, and no second fetch.** Everything a variant _record_ is already
-  rides in the payload, so the band costs no RPC change and no extra bytes, and
-  `variants.show` stays a render-tier setting a toggle must not refetch. The
-  pass is per record (thousands), not per cell (millions), and plugin-canvas
-  packs main-thread anyway.
-- **The lane never thins its records.** The shared painter fades each piled
-  sub-pixel mark to alpha 0.3, so a pixel's shade is the count of marks under
-  it. Keeping one record per half-pixel bin lightened a 4-per-pixel stretch from
-  0.91 to 0.81 mean shade. The cost of 100k records (about 0.65 s to build and
-  0.5-0.75 s to pack on the main thread) is `LinearVariantDisplay`'s too, so it
-  belongs to plugin-canvas's layout.
-- **The lane is one row** (`flattenRows`, ADR-037), so a nested record cannot
-  stack under the one holding it. Stacking was the first form and was dropped
-  (ad1fa4d8ee): the callset it was measured on stacked to 68px, and the fit
-  ladder paid for that in the 40px band with every name. The packer drops a
-  record's name and description where they would overprint a kept one, and a
-  long record's labels claim its whole span, since a label that fits inside
-  slides with the viewport.
-- **The color crosses over as a per-feature jexl.** `buildLaneRenderData` stamps
-  each rebuilt feature with the `laneColor` attribute the display already
-  resolved for the alt cells, and the lane's `encoding.color` is a jexl
-  reading it — which is how a lane mark stays the color of the column under
-  it. Not the BED `itemRgb` path `boxColor` falls through to: that takes an
-  `r,g,b` triple and drops the alpha a jexl-authored cell color can carry.
-- **`variantTopBands` no longer splits the band.** Mark strip, label strip and
-  "do the labels fit" were ours and are now the fit ladder's; that file answers
-  only how many pixels the band gets, plus which label kinds the slot asked for
-  (`wantsName` / `wantsDescription`). What is drawn is `laneRenderedLabels`.
-- **What is still ours** is what plugin-canvas has no opinion on: the record
-  tooltip table (`buildVariantLaneHit`, sample fields left empty so one
-  `hoveredFeature` slot serves both bands), the gestures (`variantSurface.ts` —
-  hover off the chrome's `onPointerPosition`, click and right-click on a div
-  because `OverlayCanvas` is `pointerEvents: none`), and
-  `breakendSplitViewMenuItem`.
+**The display draws no record strip.** A track shows one display, so the
+records themselves, with nesting, labels and a layout of their own, are a
+`LinearVariantDisplay` track over the same VCF above this one (ADR-250).
 
 ## How wide a cell draws
 
 A cell is its record's reference span floored at `MIN_CELL_PX`, insertions
-included, and its hover box and click target are the cell mark's own ink. The
-**lane**'s marks, their hover box and their click target are plugin-canvas's
-layout (see "Bands above the rows"), and its hit test resolves two overlapping
-marks by paint order.
+included, and its hover box and click target are the cell mark's own ink.
 
 **Edges go in in RECORD order, `toX(start)` then `toX(end)`** — never sorted,
 never pre-snapped. `snappedCellLeftPx` hangs the 2px floor off the record's
@@ -352,10 +299,8 @@ in `packages/render-core/CLAUDE.md`). Snapping first puts both edges of a
 sub-pixel record on one pixel, making a pivot comparison a no-op in the exact
 case it exists for.
 
-**The band does not widen an insertion at all.** A plugin-canvas box is its
-reference span, and that plugin has no insertion-length glyph — its own
-`LinearVariantDisplay` draws a 65 kb `<INS>` as a 2px box too. The cell and
-lane hovers name the inserted bp (`buildVariantHit`, `buildVariantLaneHit`).
+**The cell hover names the inserted bp** (`buildVariantHit`): a cell is the
+reference span, which is about 1 bp for any insertion.
 
 ## Connectors and allele counting
 

@@ -143,7 +143,7 @@ const DISPLAY_CONFIG_KEYS = Object.keys(
 /**
  * The half of the worker's settings that shapes a multi-part glyph. Only the
  * feature display declares these as slots; a display drawing single records
- * (the variant display, the variant lane) sends these values.
+ * (the variant display) sends these values.
  */
 export type GeneGlyphSettings = Pick<
   SettingsDisplayConfig,

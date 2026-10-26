@@ -5,7 +5,6 @@ import {
   doBeforeEach,
   findDisplayPainted,
   getSavedSvg,
-  getSavedSvgs,
   setup,
 } from './util.tsx'
 
@@ -89,58 +88,13 @@ test('the matrix export spreads rows in fit mode, below the connector lines', as
   expect(connectors?.length).toBeGreaterThan(10)
 }, 45000)
 
-test('the regular export spreads rows in fit mode, and the variant lane takes its height from them', async () => {
+test('the regular export spreads rows in fit mode', async () => {
   const { view, info } = await openMultiSampleVariantDisplay({
     displayType: 'regular',
   })
   await findDisplayPainted(info.displayTestId, { timeout: 40000 })
-  const display: LinearMultiSampleVariantDisplayModel =
-    view.tracks[0].displays[0]
 
-  const height = display.height
-  const rowsBefore = display.availableHeight
   await view.exportSvg({ rasterizeLayers: false })
 
-  display.setShowVariantLane(true)
-  const { laneHeight } = display.topBands
-  await view.exportSvg({ rasterizeLayers: false })
-
-  // two exports in one test, so index rather than getSavedSvg()
-  const [withoutLane, svg] = getSavedSvgs() as [string, string]
-  const before = cellRowYs(withoutLane)
-
-  // the lane-less export IS the fit-mode one, so the same setup answers both
-  expectFitModeSpread(withoutLane)
-
-  // the track did not grow; the rows gave up the band
-  expect(laneHeight).toBeGreaterThan(0)
-  expect(display.height).toBe(height)
-  expect(display.availableHeight).toBe(rowsBefore - laneHeight)
-
-  // rows, labels and dendrogram all move into one group below the band
-  expect(svg).toContain(`transform="translate(0 ${laneHeight})"`)
-
-  // and the band is actually painted. Everything the lane draws sits ahead of
-  // that translate in the document (`SvgVariantOverlay` puts the band above the
-  // group the rows, labels and dendrogram share), so the marks are the rects in
-  // front of it — of which a lane-less export has none.
-  const bandSvg = svg.slice(
-    0,
-    svg.indexOf(`transform="translate(0 ${laneHeight})"`),
-  )
-  expect([...bandSvg.matchAll(/<rect/g)].length).toBeGreaterThan(0)
-  expect(cellRowYs(svg).rectCount).toBeGreaterThan(before.rectCount)
-
-  // The band holds a laid-out stack that fits the height it was given — the fit
-  // ladder's whole job, and the reason overlapping records stack onto rows here
-  // instead of overdrawing one another.
-  expect(display.laneLaidOutDataMap.size).toBeGreaterThan(0)
-  expect(display.laneContentHeight).toBeGreaterThan(0)
-  expect(display.laneContentHeight).toBeLessThanOrEqual(laneHeight)
-
-  // the labels are exported too, and are the records' own IDs — this VCF's are
-  // rs-numbers, so a lettered lane is one that found real names rather than
-  // drawing empty strings
-  expect(display.laneRenderedLabels.showLabels).toBe(true)
-  expect(svg).toMatch(/<text[^>]*>rs\d+</)
+  expectFitModeSpread(getSavedSvg())
 }, 60000)

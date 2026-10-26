@@ -81,7 +81,6 @@ function setup() {
   // value until an input moves
   const dispose = autorun(() => {
     void display.perRegionCellMap
-    void display.regionFeatureColors
   })
   return { display, dispose }
 }
@@ -90,7 +89,7 @@ const cells = (display: ReturnType<typeof setup>['display']) => [
   ...display.perRegionCellMap.get(0)!.cellColors,
 ]
 
-test('a recolor repaints the loaded cells, the lane and the key', () => {
+test('a recolor repaints the loaded cells and the key', () => {
   const { display, dispose } = setup()
   const key = display.rpcProps()
   expect(cells(display)).toEqual(new Array(3).fill(het('#aa0000')))
@@ -99,9 +98,6 @@ test('a recolor repaints the loaded cells, the lane and the key', () => {
   display.applyPlot(afIn(['#00aa00']))
   expect(display.rpcProps()).toEqual(key)
   expect(cells(display)).toEqual(new Array(3).fill(het('#00aa00')))
-  expect([...display.regionFeatureColors.get(0)!]).toEqual([
-    getCachedABGR('#00aa00'),
-  ])
 
   display.setShadeByDosage(false)
   expect(cells(display)).toEqual(new Array(3).fill(getCachedABGR('#00aa00')))
@@ -132,7 +128,6 @@ test('values read for another field paint as though none were read', () => {
 test('a key label repaints nothing, and a reorder or shading moves only what it reads', () => {
   const { display, dispose } = setup()
   const colors = display.regionCellColors
-  const lane = display.regionFeatureColors
   const rows = display.placedRegionRows
 
   display.applyPlot(
@@ -148,7 +143,6 @@ test('a key label repaints nothing, and a reorder or shading moves only what it 
     }),
   )
   expect(display.regionCellColors).toBe(colors)
-  expect(display.regionFeatureColors).toBe(lane)
 
   display.setRowOrder([{ name: 'S1' }, { name: 'S0' }, { name: 'S2' }])
   expect(display.regionCellColors).toBe(colors)
@@ -157,7 +151,6 @@ test('a key label repaints nothing, and a reorder or shading moves only what it 
   const placed = display.placedRegionRows
   display.setShadeByDosage(false)
   expect(display.placedRegionRows).toBe(placed)
-  expect(display.regionFeatureColors).toBe(lane)
   expect(display.regionCellColors).not.toBe(colors)
   dispose()
 })

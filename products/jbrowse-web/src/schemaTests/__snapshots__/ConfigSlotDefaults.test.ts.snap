@@ -858,12 +858,6 @@ exports[`every registered schema slot default 1`] = `
     "tooltip.show": "boolean = true",
     "unit": "stringEnum = "sample" of ["sample","haplotype"]",
     "variantLayout": "stringEnum = "genomic" of ["genomic","columns"]",
-    "variants.height": "number = 40",
-    "variants.labels.description.field": "featureField = "jexl:get(feature,'note') || get(feature,'description') || get(feature,'function')"",
-    "variants.labels.description.show": "boolean = true",
-    "variants.labels.name.field": "featureField = "jexl:get(feature,'name') || get(feature,'id')"",
-    "variants.labels.name.show": "boolean = true",
-    "variants.show": "boolean = false",
   },
   "display: LinearReferenceSequenceDisplay": {
     "fetchSizeLimit": "number = 1000000",

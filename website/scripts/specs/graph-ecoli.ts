@@ -406,7 +406,6 @@ function pggbLocusSession(
                 {
                   trackId: PGGB_VARIANTS_TRACK,
                   type: 'LinearMultiSampleVariantDisplay',
-                  variants: { show: true },
                   height: 110,
                 },
               ]

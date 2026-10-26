@@ -1,23 +1,20 @@
 import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
+import { SIDEBAR_HINT_LINE_PX } from '@jbrowse/tree-sidebar'
 
 import { variantTrackMenuItems } from './multiSampleVariantMenuItems.ts'
 import { createTestEnvironment } from './testEnv.ts'
 
-test('the layout is a fetch input, and columns spend no band on the lane', () => {
-  const { display } = createTestEnvironment({
-    displayConfig: { variants: { show: true } },
-  }).createDisplay()
+test('the layout is a fetch input, and only columns reserve a connector zone', () => {
+  const { display } = createTestEnvironment().createDisplay()
   expect(display.rpcProps().layout).toBe('genomic')
-  expect(display.showVariantLane).toBe(true)
   expect(display.lineZoneHeight).toBe(0)
+  expect(display.rowsTopOffset).toBe(0)
 
   display.setVariantLayout('columns')
 
   expect(display.rpcProps().layout).toBe('columns')
   // columns draw reference cells whatever the setting says
   expect(display.rpcProps()).toHaveProperty('referenceDrawingMode', 'draw')
-  expect(display.showVariantLane).toBe(false)
-  expect(display.topBands.laneHeight).toBe(0)
   expect(display.lineZoneHeight).toBe(20)
   expect(display.rowsTopOffset).toBe(20)
 })
@@ -46,4 +43,14 @@ test('Layout → Genotype matrix switches the layout both ways', () => {
   expect(matrixItem().checked).toBe(true)
   matrixItem().onClick()
   expect(display.variantLayout).toBe('genomic')
+})
+
+test('a kept subset puts the focus chip in a line above the rows', () => {
+  const { display } = createTestEnvironment().createDisplay()
+  const height = display.availableHeight
+
+  display.setRowFocus(['a'])
+
+  expect(display.rowsTopOffset).toBe(SIDEBAR_HINT_LINE_PX)
+  expect(display.availableHeight).toBe(height - SIDEBAR_HINT_LINE_PX)
 })

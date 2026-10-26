@@ -45,7 +45,7 @@ function reader(
 }
 
 // What the worker reads off one variant, painted as the main thread paints
-// the lane
+// the variant's color
 function hue(encoding: ColorEncoding | undefined) {
   const { value } = reader(encoding)
   return (feature: Feature) => {

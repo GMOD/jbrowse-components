@@ -85,6 +85,12 @@ list names each divergence and can only shrink.
   `showRowSeparators` and `treeAreaWidth` on each row display, the
   multi-sample variant display's `showSidebarLabels`, and display-kit's
   `liftRetiredRowState`.
+- **jb2hubs and the graph plugin write the removed `variants` band**
+  (ADR-250): jb2hubs' `pangenomeLinks.ts` and `bovine-arsucd12.json` write
+  `variants: { show, height, showLabels }`, and `MATRIX_HEIGHT_PX +
+  VARIANT_LANE_HEIGHT_PX` sizes the display for a strip that no longer draws.
+  The graph plugin's figure sessions are unchecked. A closed-schema bundle
+  drops the key silently, so hosted configs lose the strip, not the track.
 - **ggjbrowse:** Its R code, docs and tutorials write every setting above in
   its current spelling. Each rename needs a ggjbrowse engine re-pin, an R
   respell and a tutorial re-knit (memory `a-config-rename-reaches-ggjbrowse`),

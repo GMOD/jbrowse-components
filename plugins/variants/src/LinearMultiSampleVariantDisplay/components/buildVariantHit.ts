@@ -29,10 +29,8 @@ export interface VariantTooltipFields {
 // so `hoverVariantSurface` skips redundant setHoveredFeature calls. The region
 // term matters when overlapping displayed regions show two copies of one
 // record: without it, sliding onto the second copy deduped away the `onHover`
-// that moves the highlight box. Typed wider than the fields so the model's own hover slot can be keyed
-// too. A variant-lane hover names no sample and carries no genotype, so its key
-// is the record's id plus the region, which is exactly the identity that lane
-// needs.
+// that moves the highlight box. Typed wider than the fields so the model's own
+// hover slot can be keyed too.
 export function variantTooltipKey(f: {
   name: string
   genotype: string
@@ -76,46 +74,6 @@ export function buildVariantHit({
     insertion: insertedBp > 0 ? `${insertedBp}bp` : '',
     sampleName,
     name,
-    featureId,
-    displayedRegionIndex,
-  }
-}
-
-/**
- * The same fields for a hover that names a RECORD rather than a (record, sample)
- * cell: the variant lane's marks, where there is one mark per variant and no row
- * under the cursor to read a genotype off.
- *
- * The three fields that name a sample are `''` rather than absent, so one hover
- * slot serves both bands: `getTooltipRows` drops an empty value,
- * so the table is the record's rows alone, and `hoveredTooltipSource` reads the
- * empty `name` as "no sample row whose metadata to merge in".
- *
- * `alleles` is `REF > ALT` here, not the resolved pair a genotype names — the
- * record's own alleles are the only allele fact a lane mark carries, and they
- * are what a `LinearVariantDisplay` would report for the same click. Multiple
- * ALTs are listed rather than summarized as "multiple ALT alleles" (the cells'
- * wording, which exists because a genotype's *color* stops being decodable past
- * two alts) since the row spells them out.
- */
-export function buildVariantLaneHit({
-  info,
-  featureId,
-  displayedRegionIndex,
-}: {
-  info: VariantFeatureInfo
-  featureId: string
-  displayedRegionIndex?: number
-}): VariantTooltipFields {
-  return {
-    genotype: '',
-    sampleName: '',
-    name: '',
-    alleles: `${info.ref} > ${info.alt.join(',')}`,
-    featureName: info.name,
-    description: info.description,
-    length: getBpDisplayStr(info.length),
-    insertion: info.insertedBp > 0 ? `${info.insertedBp}bp` : '',
     featureId,
     displayedRegionIndex,
   }

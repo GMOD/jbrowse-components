@@ -13,7 +13,6 @@ import {
   SimpleFeature,
 } from '@jbrowse/core/util'
 import { createAdapterMetadataFetch } from '@jbrowse/core/util/adapterMetadata'
-import { clampBandHeight } from '@jbrowse/core/util/bandHeight'
 import {
   CATEGORICAL_FIELD_PRESETS,
   withPreset,
@@ -47,7 +46,6 @@ import {
   colorSnapshotOf,
   paintedColorEncoding,
 } from '@jbrowse/display-kit/colorConfigSchema'
-import { autorunOnReadyView } from '@jbrowse/display-kit/displayAutoruns'
 import { facetSettingOf } from '@jbrowse/display-kit/facetConfigSchema'
 import { fetchRegionsBatched } from '@jbrowse/display-kit/fetchEachRegion'
 import { onTrackAssembly } from '@jbrowse/display-kit/foundationView'
@@ -56,21 +54,7 @@ import { editPlotMenuItems } from '@jbrowse/display-kit/plotMenu'
 import { rpcArgs } from '@jbrowse/display-kit/rpcArgs'
 import { stableIdentityComputed } from '@jbrowse/display-kit/stableIdentityComputed'
 import { getEnv, isAlive, types } from '@jbrowse/mobx-state-tree'
-import {
-  HEIGHT_MULTIPLIERS,
-  MIN_FIT_BOX_PX,
-  buildFeatureFlatbushIndex,
-  computeLaidOutData,
-  createContentHeightProbe,
-  labelFontSize,
-  minDrawnBoxHeight,
-  resolveFitLadder,
-  scaleLaidOutData,
-  solveLabelRoomFactor,
-  squeezeFloorScale,
-} from '@jbrowse/plugin-canvas'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
-import { makeBpMapper, spanRect } from '@jbrowse/render-core/canvas2dUtils'
 import { installUpload } from '@jbrowse/render-core/installUpload'
 import { inkOfInstances, shiftInk } from '@jbrowse/render-core/marks'
 import {
@@ -109,24 +93,14 @@ import {
   fadeCellColors,
   recordDensityAlpha,
 } from './densityFade.ts'
-import { laneDisplayConfig } from './laneDisplayConfig.ts'
-import { buildLaneRenderData } from './laneRenderData.ts'
 import { VARIANT_MATRIX_MARKS } from './matrix/variantMatrixMarks.ts'
 import {
   variantContextMenuItems,
   variantTrackMenuItems,
 } from './multiSampleVariantMenuItems.ts'
-import {
-  paintCellColors,
-  paintFeatureColors,
-  paintedColorKeys,
-} from './paintCells.ts'
+import { paintCellColors, paintedColorKeys } from './paintCells.ts'
 import { placeVariantRows } from './placeVariantRows.ts'
 import { getVariantColorScales } from './variantLegend.ts'
-import {
-  VARIANT_LANE_BOUNDS,
-  variantTopBandsGeometry,
-} from './variantTopBands.ts'
 
 import type { SimplifiedVariantFeature } from '../VariantRPC/analyzeVariants.ts'
 import type { CellDataResult } from '../VariantRPC/executeVariantCellData.ts'
@@ -149,7 +123,6 @@ import type {
   VariantMatrixRenderingBackend,
 } from './matrix/variantMatrixRenderingBackendTypes.ts'
 import type { Placed } from './placeVariantRows.ts'
-import type { VariantLaneLabels } from './variantTopBands.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
@@ -166,14 +139,6 @@ import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
 import type { RegionHost } from '@jbrowse/display-kit/regionHost'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type {
-  FeatureDataResult,
-  FlatbushRegionIndexes,
-  HitFeatureResult,
-  LabelRoomFactorFreeInputs,
-  LayoutInputs,
-  LayoutRegionData,
-} from '@jbrowse/plugin-canvas'
 import type {
   RowAlias,
   RowBanding,
@@ -256,21 +221,6 @@ function fetchRegionsForLayout(
   }
   return view.bufferedVisibleRegions.filter(b => onTrack(b.region.assemblyName))
 }
-
-/**
- * plugin-canvas's own `featureHeight` default, so a lane mark and the same
- * record in a `LinearVariantDisplay` start from one height.
- */
-const LANE_FEATURE_HEIGHT = 10
-
-/**
- * `compact` fits two labeled rows in a 40px band, and leaves the fit ladder
- * room to grow a sparse window up to normal size.
- */
-const LANE_DISPLAY_MODE = 'compact' as const
-
-/** No pins in a band: the feature there is the display's, not the lane's. */
-const NO_PINNED_FEATURES: ReadonlySet<string> = new Set()
 
 /**
  * The GPU program each layout draws with, tagged so the one upload lifecycle
@@ -408,12 +358,6 @@ export function stateModelFactory(
         hoveredCell: undefined as HoveredCell | undefined,
         /**
          * #volatile
-         * The lane mark under the pointer — plugin-canvas's hit result, so
-         * `hoverInk` highlights the box the lane painted.
-         */
-        hoveredLaneMark: undefined as HitFeatureResult | undefined,
-        /**
-         * #volatile
          * The matrix cell under the pointer, in the equal-width column layout.
          */
         hoveredMatrixCell: undefined as MatrixHoveredCell | undefined,
@@ -436,12 +380,6 @@ export function stateModelFactory(
           /**
            * #action
            */
-          setHoveredLaneMark(mark?: HitFeatureResult) {
-            self.hoveredLaneMark = mark
-          },
-          /**
-           * #action
-           */
           setHoveredMatrixCell(cell?: MatrixHoveredCell) {
             self.hoveredMatrixCell = cell
           },
@@ -453,7 +391,6 @@ export function stateModelFactory(
           clearHoveredFeature() {
             superClearHoveredFeature()
             self.hoveredCell = undefined
-            self.hoveredLaneMark = undefined
             self.hoveredMatrixCell = undefined
           },
         }
@@ -518,7 +455,7 @@ export function stateModelFactory(
         return {
           /**
            * #method
-           * The payload's record behind a cell or a lane mark.
+           * The payload's record behind a cell.
            */
           featureInfoById(featureId: string) {
             return self.cellData
@@ -527,7 +464,7 @@ export function stateModelFactory(
           },
           /**
            * #method
-           * The payload's positional record behind a cell or a lane mark.
+           * The payload's positional record behind a cell.
            */
           simplifiedFeatureById(featureId: string) {
             return self.cellData
@@ -571,7 +508,7 @@ export function stateModelFactory(
         },
         /**
          * #method
-         * The record a click on the rows, the lane or the matrix resolved to,
+         * The record a click on the rows or the matrix resolved to,
          * positional fields only: its genotypes are in the cell payload.
          */
         featureById(featureId: string): Feature | undefined {
@@ -686,53 +623,6 @@ export function stateModelFactory(
          */
         get lineZoneHeight(): number {
           return this.atGenomicPositions ? 0 : getConf(self, 'lineZoneHeight')
-        },
-        /**
-         * #getter
-         * Whether the variant lane, a strip of the records themselves above the
-         * genotype rows, is drawn: at genomic positions only, where it lines
-         * up with the cells under it.
-         */
-        get showVariantLane(): boolean {
-          return this.atGenomicPositions && getConf(self, ['variants', 'show'])
-        },
-        /**
-         * #getter
-         * Configured height of the variant lane. Raw: what the band spends is
-         * `topBands.laneHeight`.
-         */
-        get variantLaneHeight(): number {
-          return getConf(self, ['variants', 'height'])
-        },
-        /**
-         * #getter
-         * `variants.labels.name.show`
-         */
-        get variantLaneShowsNames(): boolean {
-          return getConf(self, ['variants', 'labels', 'name', 'show'])
-        },
-        /**
-         * #getter
-         * `variants.labels.description.show`
-         */
-        get variantLaneShowsDescriptions(): boolean {
-          return getConf(self, ['variants', 'labels', 'description', 'show'])
-        },
-        /**
-         * #getter
-         * The field each label kind the variant lane draws reads, empty where
-         * it is hidden; what it draws is `laneRenderedLabels`.
-         */
-        get variantLaneLabels(): VariantLaneLabels {
-          const field = (kind: 'name' | 'description', shown: boolean) =>
-            shown ? getConf(self, ['variants', 'labels', kind, 'field']) : ''
-          return {
-            name: field('name', this.variantLaneShowsNames),
-            description: field(
-              'description',
-              this.variantLaneShowsDescriptions,
-            ),
-          }
         },
 
         /**
@@ -953,38 +843,6 @@ export function stateModelFactory(
               CellSolidColorDialog,
               { model: self, handleClose },
             ])
-          },
-          /**
-           * #action
-           * Switch the variant lane on or off; it takes its space from the
-           * rows.
-           */
-          setShowVariantLane(arg: boolean) {
-            setConf(self, ['variants', 'show'], arg)
-          },
-          /**
-           * #action
-           * Resize the variant lane, clamped here because a drag can deliver
-           * any number and a band dragged shut has to stay grabbable.
-           */
-          setVariantLaneHeight(arg: number) {
-            setConf(
-              self,
-              ['variants', 'height'],
-              clampBandHeight(self.variantLaneHeight, arg, VARIANT_LANE_BOUNDS),
-            )
-          },
-          /**
-           * #action
-           */
-          setVariantLaneShowsNames(show: boolean) {
-            setConf(self, ['variants', 'labels', 'name', 'show'], show)
-          },
-          /**
-           * #action
-           */
-          setVariantLaneShowsDescriptions(show: boolean) {
-            setConf(self, ['variants', 'labels', 'description', 'show'], show)
           },
           /**
            * #action
@@ -1339,25 +1197,11 @@ export function stateModelFactory(
           },
           /**
            * #getter
-           * The bands stacked above the rows — the variant lane and the
-           * connector-line zone — resolved once. Both the layout below and the
-           * painters read this instead of summing the bands themselves: see `variantTopBands.ts`.
-           */
-          get topBands() {
-            return variantTopBandsGeometry({
-              showVariantLane: self.showVariantLane,
-              variantLaneHeight: self.variantLaneHeight,
-              variantLaneLabels: self.variantLaneLabels,
-              lineZoneHeight: self.lineZoneHeight,
-            })
-          },
-          /**
-           * #getter
-           * `TreeSidebarMixin`'s hook: the variant lane and the connector-line
-           * zone, which `rowsTopOffset` stacks the focus chip's line under.
+           * `TreeSidebarMixin`'s hook: the connector-line zone, which
+           * `rowsTopOffset` stacks the focus chip's line under.
            */
           get rowsHeaderHeight() {
-            return this.topBands.bottom
+            return self.lineZoneHeight
           },
           /**
            * #getter
@@ -1421,8 +1265,8 @@ export function stateModelFactory(
         /**
          * #getter
          * The hovered thing as the tooltip table reads it: the record's fields
-         * over the hovered row's sample metadata. A lane hover names no row and
-         * is the record's fields alone. Undefined with `tooltip.show` off.
+         * over the hovered row's sample metadata. Undefined with `tooltip.show`
+         * off.
          */
         get hoveredTooltipSource() {
           const { hoveredFeature, sourceMap } = self
@@ -1770,25 +1614,6 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * Each fetched region's lane colors, which neither shading nor the
-         * phased mode moves.
-         */
-        get regionFeatureColors() {
-          const { cellData, cellHue, cellHueValuesRead } = self
-          const out = new Map<number, Uint32Array>()
-          if (cellData) {
-            for (const k in cellData.perRegionCellData) {
-              const data = cellData.perRegionCellData[k]!
-              out.set(
-                Number(k),
-                paintFeatureColors(data, cellHue, cellHueValuesRead),
-              )
-            }
-          }
-          return out
-        },
-        /**
-         * #getter
          * Each fetched region with its rows placed on screen. A computed apart
          * from the colors, so a recolor leaves it standing.
          */
@@ -1945,17 +1770,12 @@ export function stateModelFactory(
       .views(self => ({
         /**
          * #getter
-         * The box of the hovered genotype cell or lane mark, for the
-         * chrome's highlight. A cell is its instance through the cell mark's
-         * ink, moved down by the bands above the rows; a lane mark is the box
-         * plugin-canvas laid out and painted, in the lane at the top.
+         * The box of the hovered genotype cell, for the chrome's highlight: its
+         * instance through the cell mark's ink, moved down by the bands above
+         * the rows.
          */
         get hoverInk(): HighlightRect[] {
-          const {
-            hoveredCell: cell,
-            hoveredLaneMark: lane,
-            hoveredMatrixCell: matrixCell,
-          } = self
+          const { hoveredCell: cell, hoveredMatrixCell: matrixCell } = self
           if (matrixCell) {
             const { left } = self.columnGeometry
             const top = self.rowsTopOffset
@@ -1986,29 +1806,6 @@ export function stateModelFactory(
             }
             return [{ ...ink, top: ink.top + self.rowsTopOffset }]
           }
-          if (lane) {
-            const region = self.host.visibleRegions.find(
-              r => r.displayedRegionIndex === lane.displayedRegionIndex,
-            )
-            if (!region) {
-              return []
-            }
-            const { feature } = lane
-            const { left, width } = spanRect(
-              makeBpMapper(region),
-              feature.startBp,
-              feature.endBp,
-              1,
-            )
-            return [
-              {
-                left,
-                top: feature.topPx,
-                width,
-                height: feature.bottomPx - feature.topPx,
-              },
-            ]
-          }
           return []
         },
         /**
@@ -2027,262 +1824,6 @@ export function stateModelFactory(
           const out = new Map<number, Flatbush>()
           for (const [regionIdx, region] of self.perRegionCellMap) {
             out.set(regionIdx, Flatbush.from(region.featureIndexData))
-          }
-          return out
-        },
-        /**
-         * #getter
-         * The plugin-canvas display config the lane's band is laid out with. See
-         * `laneDisplayConfig` — a literal, because a band has no config schema.
-         */
-        get laneDisplayConfig() {
-          return laneDisplayConfig({
-            labels: self.variantLaneLabels,
-            featureHeight: LANE_FEATURE_HEIGHT,
-          })
-        },
-        /**
-         * #getter
-         * The label size the lane's marks are lettered at — plugin-canvas's, for
-         * the lane's display mode, so the width its packer reserved is the width
-         * the text draws at.
-         */
-        get laneFontSize() {
-          return labelFontSize(LANE_DISPLAY_MODE)
-        },
-      }))
-      // separate block so the lane chain reads its siblings off `self`
-      .views(self => ({
-        /**
-         * #getter
-         * The lane's marks as plugin-canvas render data, one entry per fetched
-         * region, empty while the band is off. Keyed off the fetched payload
-         * and the **displayed regions'** bounds, never the row-placed map or
-         * `visibleRegions`, which would rebuild it per reorder or per frame.
-         */
-        get laneRenderDataMap(): ReadonlyMap<number, LayoutRegionData> {
-          const out = new Map<number, LayoutRegionData>()
-          // the payload is read only once the band is on, so an arrival
-          // wakes nothing downstream while it is off
-          const cellData =
-            self.canRender && self.topBands.laneHeight > 0
-              ? self.cellData
-              : undefined
-          if (cellData) {
-            const config = self.laneDisplayConfig
-            const { jexl } = getEnv<{ pluginManager: PluginManager }>(
-              self,
-            ).pluginManager
-            const { displayedRegions } = self.view
-            const featureColors = self.regionFeatureColors
-            for (const k in cellData.perRegionCellData) {
-              const displayedRegionIndex = Number(k)
-              const data = cellData.perRegionCellData[k]!
-              const region = displayedRegions[displayedRegionIndex]
-              if (region && data.featureInfo.length) {
-                out.set(
-                  displayedRegionIndex,
-                  buildLaneRenderData({
-                    data: {
-                      ...data,
-                      featureColors: featureColors.get(displayedRegionIndex)!,
-                    },
-                    region: {
-                      displayedRegionIndex,
-                      assemblyName: region.assemblyName,
-                      refName: region.refName,
-                      start: region.start,
-                      end: region.end,
-                    },
-                    config,
-                    jexl,
-                  }),
-                )
-              }
-            }
-          }
-          return out
-        },
-        /**
-         * #getter
-         * What the lane's packer reads, minus the label reservation each fit
-         * rung varies. `coarseBpPerPx`, so packing does not recompute per frame
-         * of a zoom.
-         */
-        get laneLayoutInputs(): Omit<
-          LayoutInputs,
-          'showLabels' | 'showDescriptions'
-        > {
-          const reversedRegions = new Set<number>()
-          const { displayedRegions } = self.view
-          for (let i = 0; i < displayedRegions.length; i++) {
-            if (displayedRegions[i]!.reversed) {
-              reversedRegions.add(i)
-            }
-          }
-          return {
-            bpPerPx: self.view.coarseBpPerPx,
-            reversedRegions,
-            displayMode: LANE_DISPLAY_MODE,
-            pinnedFeatureIds: NO_PINNED_FEATURES,
-            // one row: the band's records share pixels, and the packer drops a
-            // label that would overprint a kept one (VARIANTS_DISPLAY.md)
-            flattenRows: true,
-          }
-        },
-      }))
-      .views(self => ({
-        /**
-         * #method
-         * One fit candidate: the lane's row packed with the given label
-         * reservation. Non-incremental, a band holding thousands of marks.
-         */
-        laneLayoutAt(
-          showLabels: boolean,
-          showDescriptions: boolean,
-        ): Map<number, FeatureDataResult> {
-          return computeLaidOutData(self.laneRenderDataMap, {
-            ...self.laneLayoutInputs,
-            showLabels,
-            showDescriptions,
-          })
-        },
-        /**
-         * #getter
-         * Inputs for the `decimated` rung, whose whitespace factor is solved
-         * against the band height. Descriptions are already gone by that rung.
-         */
-        get laneDecimatedInputs(): LabelRoomFactorFreeInputs {
-          return {
-            ...self.laneLayoutInputs,
-            showLabels: self.topBands.wantsName,
-            showDescriptions: false,
-            labelDecimation: 'fitWidth',
-          }
-        },
-      }))
-      .views(self => ({
-        /**
-         * #getter
-         * The rung the lane keeps and the scale that fills the band with it:
-         * plugin-canvas's fit ladder, run against `laneHeight`.
-         */
-        get laneFitStage() {
-          const bodies = () => self.laneLayoutAt(false, false)
-          const full = self.laneLayoutAt(
-            self.topBands.wantsName,
-            self.topBands.wantsDescription,
-          )
-          const labelsOnly = () =>
-            self.topBands.wantsDescription
-              ? self.laneLayoutAt(self.topBands.wantsName, false)
-              : full
-          const decimated = () => {
-            // the solve and the commit pack through one builder
-            const factor = self.topBands.wantsName
-              ? solveLabelRoomFactor(
-                  createContentHeightProbe(
-                    self.laneRenderDataMap,
-                    self.laneDecimatedInputs,
-                  ),
-                  self.topBands.laneHeight,
-                )
-              : undefined
-            return factor === undefined
-              ? labelsOnly()
-              : computeLaidOutData(self.laneRenderDataMap, {
-                  ...self.laneDecimatedInputs,
-                  labelRoomFactor: factor,
-                })
-          }
-          const shortestBox = minDrawnBoxHeight(full)
-          const names = {
-            showLabels: self.topBands.wantsName,
-            showDescriptions: false,
-            dropBelowLabelRows: false,
-          }
-          return resolveFitLadder(
-            [
-              {
-                level: 'full',
-                reserved: {
-                  ...names,
-                  showDescriptions: self.topBands.wantsDescription,
-                },
-                layout: () => full,
-              },
-              { level: 'labels', reserved: names, layout: labelsOnly },
-              { level: 'decimated', reserved: names, layout: decimated },
-              {
-                level: 'bodies',
-                reserved: { ...names, showLabels: false },
-                layout: bodies,
-              },
-            ],
-            self.topBands.laneHeight,
-            // the floor a track's squeeze bottoms out at
-            squeezeFloorScale(shortestBox, MIN_FIT_BOX_PX),
-            // a sparse band fills up to normal feature height
-            1 / HEIGHT_MULTIPLIERS[LANE_DISPLAY_MODE],
-          )
-        },
-      }))
-      .views(self => ({
-        /**
-         * #getter
-         * What the lane's painter, its labels and its hit test all read: the
-         * resolved stack, scaled only when the fit grew or squeezed it.
-         */
-        get laneLaidOutDataMap(): ReadonlyMap<number, FeatureDataResult> {
-          const { layout, scale } = self.laneFitStage
-          return scale === 1 ? layout : scaleLaidOutData(layout, scale)
-        },
-        /**
-         * #getter
-         * The band's drawn height: the kept rung's stack, scaled, at most
-         * `laneHeight`.
-         */
-        get laneContentHeight() {
-          const { contentHeight, scale } = self.laneFitStage
-          return Math.min(self.topBands.laneHeight, contentHeight * scale)
-        },
-        /**
-         * #getter
-         * Which label kinds the lane actually paints: what the kept rung
-         * reserved, so a box never reserves width for a description the band
-         * had no room to draw.
-         */
-        get laneRenderedLabels() {
-          const { showLabels, showDescriptions } = self.laneFitStage
-          return { showLabels, showDescriptions }
-        },
-      }))
-      .views(self => ({
-        /**
-         * #getter
-         * Per-region hit index over the lane's laid-out marks, off the stack
-         * that was painted and the RENDERED label flags, a label's overhang
-         * being part of its hit box. Its dependencies are debounced, so the
-         * `LaneHitIndexes` autorun holds it alive across pointer frames.
-         */
-        get laneFlatbushIndexes() {
-          const { showLabels, showDescriptions } = self.laneRenderedLabels
-          const { reversedRegions } = self.laneLayoutInputs
-          const bpPerPx = self.view.coarseBpPerPx
-          const out = new Map<number, FlatbushRegionIndexes>()
-          for (const [displayedRegionIndex, data] of self.laneLaidOutDataMap) {
-            out.set(displayedRegionIndex, {
-              feature: buildFeatureFlatbushIndex(
-                data.flatbushItems,
-                data.floatingLabelsData,
-                bpPerPx,
-                reversedRegions.has(displayedRegionIndex),
-                { showLabels, showDescriptions, fontSize: self.laneFontSize },
-              ),
-              // A VCF record has no subfeatures, so `layoutBox` emits none and
-              // there is no second index to search.
-              subfeature: null,
-            })
           }
           return out
         },
@@ -2363,14 +1904,6 @@ export function stateModelFactory(
             async () =>
               (await import('./setupMultiSampleVariantAutoruns.ts'))
                 .setupMultiSampleVariantAutoruns,
-          )
-          // read only from untracked pointer handlers, so held alive here
-          autorunOnReadyView(
-            self,
-            () => {
-              void self.laneFlatbushIndexes
-            },
-            { name: 'LaneHitIndexes' },
           )
         },
       }))

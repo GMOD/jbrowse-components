@@ -69,7 +69,7 @@
 <text xml:space="preserve" text-anchor="middle" x="881" y="-92.75" font-family="monospace" font-size="10.00">variantLayout: &#39;genomic&#39;</text>
 <text xml:space="preserve" text-anchor="middle" x="881" y="-80" font-family="monospace" font-size="10.00">row = sample or haplotype</text>
 <text xml:space="preserve" text-anchor="middle" x="881" y="-67.25" font-family="monospace" font-size="10.00">column = the record&#39;s genomic span</text>
-<text xml:space="preserve" text-anchor="middle" x="881" y="-54.5" font-family="monospace" font-size="10.00">variant lane, insertion glyphs</text>
+<text xml:space="preserve" text-anchor="middle" x="881" y="-54.5" font-family="monospace" font-size="10.00">insertion glyphs</text>
 </g>
 <!-- pattern&#45;&gt;regular -->
 <g id="edge5" class="edge">
@@ -106,5 +106,5 @@
 <text xml:space="preserve" text-anchor="middle" x="117" y="-40.01" font-family="Times,serif" font-size="14.00"> pairwise LD</text>
 </g>
 </g>
-<!-- diagram-source-sha256 7a13426704ed651e87b33b8c54f98a92026e2dac61f582ff7a47dfa69c5e8b2f -->
+<!-- diagram-source-sha256 63178c5c938e262a4f1baed98b382fc02336a3d692baa68ba6bd670bf5c66b6e -->
 </svg>

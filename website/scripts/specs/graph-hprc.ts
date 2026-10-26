@@ -113,7 +113,6 @@ export const hprcClusterFixtures = {
           hprcSegmentsLane(MHC_CLASSII_REGION),
           {
             trackId: PGBI_TRACK,
-            variants: { show: true },
             height: 340,
             filter: ALLELE_FILTER,
           },
@@ -589,7 +588,6 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
             hg38GeneLane(60),
             {
               trackId: PGBI_TRACK,
-              variants: { show: true },
               // 462 rows are a texture at any affordable height
               height: 340,
               filter: ALLELE_FILTER,

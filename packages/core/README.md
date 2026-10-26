@@ -96,12 +96,11 @@ import { asTable } from '@jbrowse/core/util/featureTable'
 ### Band
 
 One band of a display's vertical stack — a coverage histogram, an arc strip, a
-conservation row, a variant lane. The contract is the pair: `active` is whether
-the band exists right now (the display pre-ANDs its settings half, `showX`, with
-its data half, "some lane has ink"), and `height` is the stated height when it
-does. Consumers read pixels through reservedPx or stackBands, never by
-re-combining the pair — the re-combination is where the reserver and the painter
-historically drifted.
+conservation row. The contract is the pair: `active` is whether the band exists
+right now (the display pre-ANDs its settings half, `showX`, with its data half,
+"some lane has ink"), and `height` is the stated height when it does. Consumers
+read pixels through reservedPx or stackBands, never by re-combining the pair —
+the re-combination is where the reserver and the painter historically drifted.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/bandLayout.ts)
 

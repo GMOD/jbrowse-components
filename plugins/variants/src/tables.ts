@@ -132,7 +132,7 @@ function legendOf(scales: ColorScale[]) {
  * #api
  * A region of a multi-sample VCF as the multi-sample variant display fetches,
  * filters and paints it, as tables: `variants`, each record the display
- * keeps, with its lane color and its `filter`; `info`, each INFO key's
+ * keeps, with its color and its `filter`; `info`, each INFO key's
  * values aligned to `variants`, and `infoFields`, the header's declaration
  * of each key; `annotations`, each record's SnpEff `ANN` or VEP `CSQ`
  * consequences, a row per record and consequence, which then leave `info`
@@ -303,7 +303,7 @@ export async function variantTables(
   const keys = new Map<string, number>()
   for (const { region: regionIndex, data } of perRegion) {
     const offset = variants.start.length
-    const laneColors = paintFeatureColors(data, cellHue, true)
+    const featureColors = paintFeatureColors(data, cellHue, true)
     data.featureInfo.forEach((info, f) => {
       if (!keys.has(info.featureId)) {
         keys.set(info.featureId, keys.size)
@@ -315,7 +315,7 @@ export async function variantTables(
       variants.ref.push(info.ref)
       variants.alt.push(info.alt.join(','))
       variants.type.push(info.type)
-      variants.color.push(abgrToHex(laneColors[f]!))
+      variants.color.push(abgrToHex(featureColors[f]!))
       variants.region.push(regionIndex)
       variants.key.push(keys.get(info.featureId)!)
     })

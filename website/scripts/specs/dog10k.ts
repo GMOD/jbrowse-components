@@ -367,19 +367,13 @@ function fgf4SyntenySession(parent: string, retro: Record<string, string>) {
                 trackId: 'canFam4_ncbi_refseq',
                 height: 60,
               },
-              // One track per VCF per view: a second `tracks` entry with the
-              // same trackId silently replaces the first. `variants.show` draws
-              // the record lane inside this display.
-              //
-              // 370 = 55 rows x 6 px + the 40 px lane, in fit-to-height mode.
-              // Below 6 px a row draws a bare swatch with no name
-              // (MIN_TEXT_ROW_HEIGHT).
+              // 330 = 55 rows x 6 px, in fit-to-height mode. Below 6 px a row
+              // draws a bare swatch with no name (MIN_TEXT_ROW_HEIGHT).
               {
                 trackId: 'dog10k_fgf4_svs',
                 type: 'LinearMultiSampleVariantDisplay',
-                height: 370,
+                height: 330,
                 rowColor: 'group',
-                variants: { show: true },
               },
             ],
           },
@@ -552,7 +546,6 @@ export const dog10kSpecs: ScreenshotSpec[] = [
         },
         {
           trackId: 'dog10k_amy2b_svs',
-          variants: { show: true },
           height: 900,
           ...AMY2B_ROWS,
         },
@@ -617,7 +610,6 @@ export const dog10kSpecs: ScreenshotSpec[] = [
         },
         {
           trackId: 'dog10k_rnase1_svs',
-          variants: { show: true },
           height: 900,
           ...AMY2B_ROWS,
         },
@@ -889,7 +881,6 @@ export const dog10kSpecs: ScreenshotSpec[] = [
         {
           trackId: 'dog10k_cyp1a2_snvs',
           type: 'LinearMultiSampleVariantDisplay',
-          variants: { show: true },
           height: 500,
           ...CYP_ROWS,
           // Only the stop-gained site: every wolf here carries 38,261,650, and

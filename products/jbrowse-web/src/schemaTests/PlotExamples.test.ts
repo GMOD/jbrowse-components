@@ -173,7 +173,6 @@ test("each display's plot settings", () => {
       'rowColor',
       'rows',
       'unit',
-      'variants',
     ],
     LinearVariantDisplay: [
       'encoding',

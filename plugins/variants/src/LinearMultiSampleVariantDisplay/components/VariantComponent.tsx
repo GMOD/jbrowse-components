@@ -145,7 +145,6 @@ export function variantRowsSurface(
     },
     onHover: hit => {
       model.setHoveredCell(hit?.cell)
-      model.setHoveredLaneMark(undefined)
     },
   }
 }

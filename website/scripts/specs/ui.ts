@@ -292,7 +292,6 @@ const rhdPanel = (sortRowsBy?: RowSortSpec) =>
           {
             trackId: 'kgp_sv_matrix',
             type: 'LinearMultiSampleVariantDisplay',
-            variants: { show: true },
             forceLoad: true,
             sortRowsBy,
             height: 290,
@@ -577,7 +576,6 @@ export const uiSpecs: ScreenshotSpec[] = [
               trackId: '1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf',
               type: 'LinearMultiSampleVariantDisplay',
               sortRowsBy: INVERSION_SORT,
-              variants: { show: true },
               forceLoad: true,
               height: 400,
             },
@@ -614,7 +612,6 @@ export const uiSpecs: ScreenshotSpec[] = [
               trackId: '1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf',
               type: 'LinearMultiSampleVariantDisplay',
               sortRowsBy: INVERSION_SORT,
-              variants: { show: true },
               forceLoad: true,
               height: 400,
               encoding: { color: 'svType' },

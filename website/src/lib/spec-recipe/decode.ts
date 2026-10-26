@@ -174,7 +174,6 @@ const BAND_OBJECTS = new Set([
   'sashimi',
   'readConnections',
   'conservation',
-  'variants',
   'alignments',
   'legend',
   'ribbons',

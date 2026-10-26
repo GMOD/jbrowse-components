@@ -74,7 +74,6 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
               // here drops real indels.
               trackId: 'ecoli_pggb_variants',
               type: 'LinearMultiSampleVariantDisplay',
-              variants: { show: true },
               // Below 170 the track clips its key's Insertions section.
               unit: 'haplotype',
               height: 170,

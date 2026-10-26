@@ -1709,15 +1709,6 @@ export const trackFields: Record<string, FieldRecipe> = {
           note: 'Checked, tree nodes sit at their branch lengths, as a dendrogram; unchecked, they space evenly by topology. The item is disabled until the tree is showing and carries branch lengths.',
         }
       : undefined,
-  'variants.show': (value, { displayType }) =>
-    typeof value === 'boolean' &&
-    displayType &&
-    MULTI_SAMPLE_VARIANT_DISPLAYS.has(displayType)
-      ? {
-          path: `${TRACK_MENU} → Show → Variant lane (${checked(value)})`,
-          note: 'Draws the variants at their genomic positions in a lane above the genotype rows. Offered only while "Layout → Genotype matrix" is unchecked.',
-        }
-      : undefined,
   featureHighlights: (value, { displayType, noun }) =>
     Array.isArray(value) &&
     displayType &&

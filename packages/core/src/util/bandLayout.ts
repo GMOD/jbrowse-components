@@ -5,7 +5,7 @@ import type { BandBounds } from './bandHeight.ts'
 /**
  * #api core/util
  * One band of a display's vertical stack — a coverage histogram, an arc strip,
- * a conservation row, a variant lane. The contract is the pair: `active` is
+ * a conservation row. The contract is the pair: `active` is
  * whether the band exists right now (the display pre-ANDs its settings half,
  * `showX`, with its data half, "some lane has ink"), and `height` is the stated
  * height when it does. Consumers read pixels through {@link reservedPx} or

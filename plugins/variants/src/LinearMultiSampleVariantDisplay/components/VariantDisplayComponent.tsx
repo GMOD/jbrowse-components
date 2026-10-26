@@ -11,9 +11,6 @@ import VariantMatrixBody, {
 import { VARIANT_MATRIX_MARKS } from '../matrix/variantMatrixMarks.ts'
 import Crosshair from './MultiSampleVariantCrosshairs.tsx'
 import VariantBody, { variantRowsSurface } from './VariantComponent.tsx'
-import VariantLaneOverlay, {
-  variantLaneSurface,
-} from './VariantLaneOverlay.tsx'
 import VariantRowSeparators from './VariantRowSeparators.tsx'
 import { VARIANT_MARKS } from './variantMarks.ts'
 import { hoverVariantSurface } from './variantSurface.ts'
@@ -41,13 +38,9 @@ const layoutBackends: Record<
     }),
 }
 
-// The sidebar overlays only the rows, so its x-gate applies there alone; the
-// lane band spans the full width above.
 function hoverGenomic(model: Model, state: MouseState) {
   const { rowsTopOffset } = model
-  if (state.y < rowsTopOffset) {
-    hoverVariantSurface(model, variantLaneSurface(model), state.x, state.y)
-  } else if (state.x < treeSidebarRightEdge(model)) {
+  if (state.y < rowsTopOffset || state.x < treeSidebarRightEdge(model)) {
     model.clearHoveredFeature()
   } else {
     hoverVariantSurface(
@@ -117,9 +110,7 @@ const VariantDisplayComponent = observer(function VariantDisplayComponent({
     >
       {({ canvasRef, mouseTracker }) => (
         <>
-          {genomic ? (
-            <VariantLaneOverlay model={model} />
-          ) : (
+          {genomic ? null : (
             <PointerLayer
               mouseTracker={mouseTracker}
               rowsTopOffset={rowsTopOffset}
@@ -145,19 +136,13 @@ const VariantDisplayComponent = observer(function VariantDisplayComponent({
             )}
             <VariantRowSeparators model={model} />
           </RowsPanel>
-          {/* Crosshairs only over the rows. The lane's marks are hoverable, so
-              the genomic layout keeps the tooltip above them. */}
           <PointerLayer
             mouseTracker={mouseTracker}
             rowsTopOffset={rowsTopOffset}
           >
             {(mouseState, inRows) =>
-              mouseState && (genomic || inRows) ? (
-                <Crosshair
-                  mouseState={mouseState}
-                  model={model}
-                  crosshairs={inRows}
-                />
+              mouseState && inRows ? (
+                <Crosshair mouseState={mouseState} model={model} />
               ) : null
             }
           </PointerLayer>

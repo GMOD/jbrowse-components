@@ -124,7 +124,7 @@ test('values read for another color paint as though none were read', () => {
   expect(cellColors[5]).toBe(het('#00aa00'))
 })
 
-test("the lane takes each variant's full-dose hue", () => {
+test('each variant takes its full-dose hue', () => {
   const { featureColors } = paintCells(cells(), byValue, alleleCount)
   expect([...featureColors]).toEqual([
     getCachedABGR('#aa0000'),

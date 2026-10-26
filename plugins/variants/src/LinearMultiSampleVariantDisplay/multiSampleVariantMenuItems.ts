@@ -1,6 +1,6 @@
 import { makeSizeMenu } from '@jbrowse/core/ui'
 import { filterMenuItems } from '@jbrowse/core/ui/filterMenuItems'
-import { makeRadioSubMenu, toggleItem } from '@jbrowse/core/ui/menuItems'
+import { makeRadioSubMenu } from '@jbrowse/core/ui/menuItems'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import { assembleLocString, getDialogHost } from '@jbrowse/core/util'
 import { SV_TYPE_FIELD } from '@jbrowse/core/util/categoricalField'
@@ -112,42 +112,6 @@ export function variantShowSubmenuItems(
         self.setShowTooltips(!self.showTooltips)
       },
     },
-    ...(self.atGenomicPositions
-      ? [
-          {
-            label: 'Variant lane',
-            helpText:
-              'Draw the variants themselves in a lane above the genotype rows, at their genomic positions and in whatever "Color by → Cells" is set to — the relationship the coverage band has to a pileup. The lane takes its height from the rows rather than growing the track',
-            type: 'checkbox' as const,
-            checked: self.showVariantLane,
-            onClick: () => {
-              self.setShowVariantLane(!self.showVariantLane)
-            },
-          },
-          // plugin-canvas's own choices under its own names
-          ...(self.showVariantLane
-            ? [
-                {
-                  label: 'Variant lane labels',
-                  helpText:
-                    'Which text is drawn under each mark. The lane is one row, so a label is drawn only where it clears the previous one — they thin out as you zoom out, and a line is dropped when the lane is too short to hold the mark and the text',
-                  subMenu: [
-                    toggleItem('IDs', self.variantLaneShowsNames, show => {
-                      self.setVariantLaneShowsNames(show)
-                    }),
-                    toggleItem(
-                      'Descriptions',
-                      self.variantLaneShowsDescriptions,
-                      show => {
-                        self.setVariantLaneShowsDescriptions(show)
-                      },
-                    ),
-                  ],
-                },
-              ]
-            : []),
-        ]
-      : []),
     legendCheckboxItem(self),
   ]
 }

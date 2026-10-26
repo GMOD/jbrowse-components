@@ -95,7 +95,8 @@ column no stack could have shown.
 
 **A fixed-height density band opts out of rows entirely.** `flattenRows` packs
 every feature onto row 0 the way `displayMode: 'collapsed'` does, without that
-mode's label suppression. The multi-sample variant lane takes it: the band is 40px
+mode's label suppression. The multi-sample variant lane took it until ADR-250
+removed the lane, leaving `flattenRows` no caller: the band was 40px
 holding a whole callset, its records are meant to share pixels rather than each
 claim a row, and stacking them honestly needs 68px — which cost the band every
 name through the fit ladder. Its old flatness came from the reservation bug, so

@@ -34,7 +34,7 @@ function hueTable(data: CellHueValues, hue: CellHue, valuesRead: boolean) {
   return { hues, valueHue }
 }
 
-/** Each variant's lane color: its hue at full dose, the alt hue by default. */
+/** Each variant's color: its hue at full dose, the alt hue by default. */
 export function paintFeatureColors(
   data: CellHueValues,
   hue: CellHue,

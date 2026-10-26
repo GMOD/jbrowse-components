@@ -470,7 +470,6 @@ export const mafSpecs: ScreenshotSpec[] = [
             },
             {
               trackId: 'hprc2_pgbi_grch38',
-              variants: { show: true },
               height: 240,
               filter: HPRC_PGBI_ALLELES,
               runClustering: true,

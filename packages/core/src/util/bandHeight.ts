@@ -2,7 +2,7 @@
 // sashimi band, a MAF coverage / conservation band), in px. It exists so the
 // drag handle stays grabbable, which is a constraint on dragging, not on what
 // config may declare. Bands with their own vocabulary of "too small" pass their
-// own (the variant lane's 8 is where a record stops reading as a mark).
+// own.
 export const MIN_BAND_HEIGHT = 20
 
 /** The legal range for one band. Both ends are optional and both are px. */

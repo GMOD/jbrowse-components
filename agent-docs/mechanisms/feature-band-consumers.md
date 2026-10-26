@@ -51,7 +51,7 @@ choice between them is not a matter of taste:
 | --- | --- | --- |
 | another view of a payload the host already has | own bands, pure section math | `belowCoverageBandsGeometry`, `computeStackedSections` |
 | the same band two hosts draw | package it — buffers, passes, layer order | `coverageBandBuffers` in `packages/render-core/src/coverageBand.ts` |
-| another display's whole record rendering | consume that pipeline as functions | `buildLaneRenderData` → `paintFeatureBand` |
+| another display's whole record rendering | consume that pipeline as functions | `buildFeatureRenderData` → `computeLaidOutData` → `paintFeatureBand`; no consumer since the variant lane left (ADR-250) |
 | the same display with different data | inherit the model | `LGVSyntenyDisplay` |
 
 Row two and row three are the same idea at different maturities. A band with two
@@ -70,22 +70,18 @@ producing display makes.
 Where it is not, the work is to purify the chain first — which is the same work as
 making it unit-testable without booting a tree, so it is owed anyway.
 
-## "Lane" is three words
+## "Lane" is two words
 
-The word names a different thing in each plugin that uses it, and the variant
-lane is the one that is a band:
+The word names a different thing in each plugin that uses it:
 
-- **A variant lane** is one band of the multi-sample variant stack — the analogue
-  of the coverage band over a pileup, not of anything below.
 - **An `AlignmentLane`** is a group section: the whole coverage → arcs → sashimi →
   pileup stack, repeated once per group key, with ungrouped as the one-lane case.
   Its bands are what this doc is about; the lane itself is the fold run per lane.
 - **A MultiWaySynteny lane** is a proportional genome row with its own tiling
   geometry (`laneStack.ts`), and reserves no strip over a plot at all.
 
-So "add a lane" is a band question in variants, a grouping question in
-alignments, and a row question in synteny. Ask which before reaching for the
-fold.
+So "add a lane" is a grouping question in alignments and a row question in
+synteny. Ask which before reaching for the fold.
 
 ## What a band consumer owes, and the failure behind each
 
@@ -124,12 +120,10 @@ sabotage tests keep the enforcement honest.
   (`rowsTopOffset`, `findSectionAtY`), and both write the display's one hover —
   a band hit with its row fields left empty, never a second slot. Alignments
   writes `hoverCoverageBand` on every branch because one branch once forgot it
-  (`useAlignmentsBase.ts`); variants leaves a lane hit's sample fields empty so
-  `hoveredTooltipSource` serves both bands.
+  (`useAlignmentsBase.ts`).
 - **Every band with a height slot drags.** The slot, the `clampBandHeight`
   setter and a handle at the band's seam arrive together; a band that only a
-  menu can size is the odd one out the next reader files as a bug. The variant
-  lane shipped menu-only and got its handle after the fact.
+  menu can size is the odd one out the next reader files as a bug.
 
 A tenth, learned by one plugin so far and owed by any display that runs the
 fold per lane: **a display-global height with per-lane activation is summed per
@@ -174,6 +168,4 @@ where they were and add a registry on top. ADR-096 is that contract for the two
 rules a fold can carry; this doc keeps teaching the rest.
 
 Subsystem depth stays where it is:
-[reference/MULTI_SAMPLE_VARIANTS.md](../reference/MULTI_SAMPLE_VARIANTS.md) for
-the variant lane's payload, [reference/ARC_BAND.md](../reference/ARC_BAND.md) for
-the alignments bands.
+[reference/ARC_BAND.md](../reference/ARC_BAND.md) for the alignments bands.

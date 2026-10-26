@@ -10,9 +10,8 @@ import type React from 'react'
 // the tree/label sidebar, inside the export shell's clip. Row content and sidebar are
 // translated below `rowsTopOffset` together — the same offset the on-screen
 // canvas and `TreeSidebar` take — so a display with bands above its rows can't
-// export its rows 20px high while its labels stay put. `variantLane` and
-// `lineZone` draw in those bands (the variant strip, and the columns layout's
-// connector lines, in that stacking order — see variantTopBands.ts).
+// export its rows 20px high while its labels stay put. `lineZone` draws in
+// those bands: the columns layout's connector lines.
 // The color key is the export shell's, off the same `colorScales` the screen
 // keys by.
 //
@@ -24,19 +23,15 @@ const SvgVariantOverlay = ({
   width,
   overlays,
   text,
-  variantLane,
   lineZone,
   children,
 }: {
   model: RenderSvgBaseModel
   width: number
-  // false for a reader that samples only the display's canvas: the lane, the
-  // connector zone, the separators and the sidebar are all drawn over it
+  // false for a reader that samples only the display's canvas: the connector
+  // zone, the separators and the sidebar are all drawn over it
   overlays: boolean
   text?: ExportTextStyle
-  // The variant lane's own painted band, from the display that draws one.
-  // Untranslated: it sits at the top of the display, above `lineZone`.
-  variantLane?: React.ReactNode
   lineZone?: React.ReactNode
   children: React.ReactNode
 }) => {
@@ -50,7 +45,6 @@ const SvgVariantOverlay = ({
   } = model
   return (
     <>
-      {overlays ? variantLane : null}
       {overlays ? lineZone : null}
       <g transform={`translate(0 ${rowsTopOffset})`}>
         {children}

@@ -109,13 +109,6 @@ test('a legend toggle is the same Show row on every display that has a legend', 
   expect(stepPaths('legend.show', true, 'LinearArcDisplay')).toEqual([])
 })
 
-test('the variant lane toggle is a multi-sample Show row', () => {
-  expect(
-    stepPaths('variants.show', true, 'LinearMultiSampleVariantDisplay'),
-  ).toEqual(['Track menu → Show → Variant lane (checked)'])
-  expect(stepPaths('variants.show', true, 'LinearBasicDisplay')).toEqual([])
-})
-
 test('branch lengths are the toggle beside Tree', () => {
   expect(stepPaths('axis.branchLength', false, 'LinearMafDisplay')).toEqual([
     'Track menu → Show → Tree branch lengths (unchecked)',

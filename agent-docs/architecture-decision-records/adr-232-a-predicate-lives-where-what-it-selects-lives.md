@@ -10,6 +10,10 @@ summary: "A predicate lives where what it selects lives: a display's `filter` ho
 Accepted (2026-10-17), to build in the [order of work](#order-of-work) before
 the 5.0.0 tag freezes config slot paths (ADR-120).
 
+Amended by [ADR-250](adr-250-the-multi-sample-variant-display-draws-no-variant-lane.md)
+(2026-10-26): the `variants` band this ADR named and kept is removed, so the
+variant-lane parts below no longer apply.
+
 Colin's steer: the alignments display's settings are linked, a filter applies
 across its parts, and a value that menu actions keep in step is "just
 duplicated in config"; he wants config to be elegant, with a "shared source of

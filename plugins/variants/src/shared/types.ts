@@ -20,7 +20,7 @@ export interface Source {
 export type ProcessedSource = Source & { sampleName: string }
 
 /**
- * What a right-click on a genotype cell or a lane mark resolved to: the record
+ * What a right-click on a genotype cell resolved to: the record
  * under it, already a `Feature`, plus where the menu opens.
  */
 export interface VariantContextMenuInfo extends ContextMenuAnchor {

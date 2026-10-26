@@ -1,4 +1,4 @@
-import { buildVariantHit, buildVariantLaneHit } from './buildVariantHit.ts'
+import { buildVariantHit } from './buildVariantHit.ts'
 import { getTooltipRows } from './getTooltipRows.ts'
 
 import type { VariantFeatureInfo } from '../../shared/types.ts'
@@ -33,15 +33,11 @@ test('a site with no ALT alleles builds a tooltip instead of throwing', () => {
   expect(fields.alleles).toBe('ref(A)|ref(A)')
 })
 
-// The variant lane's marks are records, so its hit names no sample. The three
-// sample fields are empty rather than absent precisely so one hover slot serves
-// both bands: `getTooltipRows` drops an empty value, so what the reader sees is
-// the record's rows alone.
-describe('a variant-lane hit', () => {
+describe('a genotype hit', () => {
   const info: VariantFeatureInfo = {
     featureId: 'rs123',
     ref: 'A',
-    alt: ['T', 'G'],
+    alt: ['T', 'G', 'C'],
     name: 'rs123',
     description: 'SNV',
     length: 1,
@@ -49,42 +45,29 @@ describe('a variant-lane hit', () => {
     type: 'SNV',
     genotypeCodes: new Uint32Array(),
   }
+  const hit = (over: Partial<VariantFeatureInfo>, insertedBp = 0) =>
+    buildVariantHit({
+      info: { ...info, ...over },
+      genotype: '0|1',
+      sampleName: 'HG001',
+      name: 'HG001',
+      featureId: 'v0',
+      insertedBp,
+    })
 
-  test('reports the records own alleles, with no genotype or sample rows', () => {
-    const rows = getTooltipRows(buildVariantLaneHit({ info, featureId: 'v0' }))
-    expect(rows).toEqual([
-      { key: 'featureName', label: 'Name', value: 'rs123' },
-      { key: 'alleles', label: 'Alleles', value: 'A > T,G' },
-      { key: 'length', label: 'Length', value: '1bp' },
-      { key: 'description', label: 'Description', value: 'SNV' },
-    ])
+  test('summarizes multiple ALTs, whose colors stop being decodable', () => {
+    expect(hit({}).description).toBe('multiple ALT alleles')
   })
 
-  test('names no sample row, which is what leaves the metadata merge nothing to find', () => {
-    expect(buildVariantLaneHit({ info, featureId: 'v0' }).name).toBe('')
-  })
-
-  test('spells out multiple ALTs where a genotype hover summarizes them', () => {
-    const threeAlts = { ...info, alt: ['T', 'G', 'C'] }
-    expect(
-      buildVariantLaneHit({ info: threeAlts, featureId: 'v0' }),
-    ).toMatchObject({ alleles: 'A > T,G,C', description: 'SNV' })
-    expect(
-      buildVariantHit({
-        info: threeAlts,
-        genotype: '0|1',
-        sampleName: 'HG001',
-        name: 'HG001',
-        featureId: 'v0',
-        insertedBp: threeAlts.insertedBp,
-      }).description,
-    ).toBe('multiple ALT alleles')
-  })
-
-  test('an insertion reports the bp its marker counts', () => {
-    const ins = { ...info, insertedBp: 42 }
-    expect(buildVariantLaneHit({ info: ins, featureId: 'v0' }).insertion).toBe(
-      '42bp',
+  test('names the genotype and the record in the tooltip rows', () => {
+    const rows = getTooltipRows(hit({ alt: ['T'] }))
+    expect(rows.map(r => r.key)).toEqual(
+      expect.arrayContaining(['featureName', 'genotype', 'alleles']),
     )
+  })
+
+  test('an insertion reports the bp this cell carries, none for a reference cell', () => {
+    expect(hit({ alt: ['T'], insertedBp: 42 }, 42).insertion).toBe('42bp')
+    expect(hit({ alt: ['T'], insertedBp: 42 }, 0).insertion).toBe('')
   })
 })

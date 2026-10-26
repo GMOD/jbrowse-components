@@ -77,9 +77,8 @@ const dock2Spec: ScreenshotSpec = {
   ],
 }
 
-const bovineVariantLane = (height: number) => ({
+const bovineVariants = (height: number) => ({
   trackId: 'bovine_pangenome_vcf',
-  variants: { show: true },
   height,
 })
 
@@ -128,7 +127,7 @@ export const mouseCattleGraphSpecs: ScreenshotSpec[] = [
   bovineLocusSpec(
     'pangenome/bovine_polled',
     'chr1:2,428,800-2,429,800',
-    [bovineOmia, bovineVariantLane(260)],
+    [bovineOmia, bovineVariants(260)],
     580,
     {
       highlight: [
@@ -148,7 +147,7 @@ export const mouseCattleGraphSpecs: ScreenshotSpec[] = [
       'chr6:70,080,000-70,180,000',
       [
         bovineGenes,
-        bovineVariantLane(300),
+        bovineVariants(300),
         graphTrack('bovine_minigraph_segments', {
           color: { field: 'position' },
           bubbleSpread: 'compress',
@@ -166,7 +165,7 @@ export const mouseCattleGraphSpecs: ScreenshotSpec[] = [
       'chr5:98,575,000-98,615,000',
       [
         bovineGenes,
-        bovineVariantLane(300),
+        bovineVariants(300),
         graphTrack('bovine_minigraph_segments', {
           color: { field: 'position' },
           bubbleSpread: 'compress',
@@ -199,7 +198,7 @@ export const mouseCattleGraphSpecs: ScreenshotSpec[] = [
       'chr23:27,508,000-27,536,000',
       [
         bovineGenes,
-        bovineVariantLane(260),
+        bovineVariants(260),
         {
           trackId: 'bovine_minigraph_alleles',
           coverage: { show: false },

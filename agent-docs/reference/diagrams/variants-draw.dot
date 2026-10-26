@@ -19,7 +19,7 @@ digraph variant_draw {
   remap [label="rowRemap / rowUnmap\na row with nothing to draw goes\nto the hidden-row sentinel"]
   order -> remap -> bands
 
-  bands [label="top bands: variant lane,\nthen connector zone\nrows begin at rowsTopOffset"]
+  bands [label="top band: connector zone\nrows begin at rowsTopOffset"]
   bands -> fit
   fit [label="rowHeight slot is 0"]
   fit -> fitauto [label=" yes"]
@@ -36,8 +36,7 @@ digraph variant_draw {
 
   overlays [label="overlays, in paint order", shape=oval]
   gpu -> overlays  c2d -> overlays
-  overlays -> lane -> glyphs -> conn -> legend
-  lane   [label="variant lane"]
+  overlays -> glyphs -> conn -> legend
   glyphs [label="insertion glyphs, where the\nmarker is wider than the cell"]
   conn   [label="connector lines (matrix)"]
   legend [label="floating legend, sidebar tree,\nrow labels"]

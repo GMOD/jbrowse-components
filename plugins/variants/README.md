@@ -48,7 +48,7 @@ record, a record calling no genotype included:
 
 A region of a multi-sample VCF as the multi-sample variant display fetches,
 filters and paints it, as tables: `variants`, each record the display keeps,
-with its lane color and its `filter`; `info`, each INFO key's values aligned to
+with its color and its `filter`; `info`, each INFO key's values aligned to
 `variants`, and `infoFields`, the header's declaration of each key;
 `annotations`, each record's SnpEff `ANN` or VEP `CSQ` consequences, a row per
 record and consequence, which then leave `info` (`consequenceTables`); `cells`,
