@@ -38,8 +38,8 @@ same framed state.
 
 **Colors come from `usePalette()`**, never `getPaletteHost` or the session:
 the export dialog picks a theme the session need not be showing. A model input
-built from the theme gets a twin taking the palette (`renderStateIn`,
-`colorPaletteIn`, `rowsEncodePropsIn`), and the body calls that. Patching a
+built from the theme gets a twin taking the palette (`colorPaletteIn`,
+`rowsEncodePropsIn`), and the body calls that. Patching a
 palette into the getter's output re-copies model logic into the export.
 
 **Several inputs off one palette share one twin.** The alignments display's
