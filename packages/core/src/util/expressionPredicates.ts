@@ -29,10 +29,12 @@ function predicateOf(
   const type = lane === 'number' ? 'number' : 'string'
   switch (c.op) {
     case '==': {
-      return typeof c.value === type ? { field, equal: c.value! } : undefined
+      return typeof c.value === type && c.value !== ''
+        ? { field, equal: c.value! }
+        : undefined
     }
     case 'in': {
-      return c.value.every(v => typeof v === type)
+      return c.value.every(v => typeof v === type && v !== '')
         ? { field, oneOf: c.value as (string | number)[] }
         : undefined
     }
@@ -55,8 +57,8 @@ function predicateOf(
  * the same on a typed lane as jexl tests it on the row: a field with a
  * number lane compared with a number, or one with a label lane matched
  * against text, as in `feature.score >= 10 && feature.type == 'gene'`.
- * Anything else, such as `!=`, a pattern or a list field, answers undefined
- * and runs as written.
+ * Anything else, such as `!=`, a pattern, a list field or a match on `''`,
+ * which a predicate reads as missing, answers undefined and runs as written.
  */
 export function expressionPredicates(
   expr: string,

@@ -1409,7 +1409,7 @@ test('a request split before its row-by-row steps answers what splitting after t
 })
 
 // A table as the worker encodes one: a Float32 score lane and a coded type
-function typedTable() {
+function typedTable(labels = ['exon', 'gene', 'CDS']) {
   const scores = [4, 10, 12.5, 30, Number.NaN, 0.9]
   const types = [0, 1, 1, 0, 1, 2]
   return new ColumnTable(
@@ -1440,7 +1440,7 @@ function typedTable() {
         {
           kind: 'category',
           codes: Uint8Array.from(types),
-          labels: ['exon', 'gene', 'CDS'],
+          labels,
           at: undefined,
         },
       ],
@@ -1465,6 +1465,24 @@ test.each([
         'start',
       )
     // `!!` keeps the expression from reading as conditions
+    expect(kept(`jexl:${expr}`)).toEqual(kept(`jexl:!!(${expr})`))
+    expect(kept(`jexl:${expr}`).length).toBeGreaterThan(0)
+  },
+)
+
+// a predicate reads '' as missing, which jexl's == does not
+test.each(["feature.type == ''", "feature.type in ['', 'CDS']"])(
+  'a jexl filter matching empty text keeps the rows jexl keeps: %s',
+  expr => {
+    const kept = (e: string) =>
+      rows(
+        runTransforms(
+          typedTable(['exon', '', 'CDS']),
+          [{ type: 'filter', expr: e }],
+          jexl,
+        ),
+        'start',
+      )
     expect(kept(`jexl:${expr}`)).toEqual(kept(`jexl:!!(${expr})`))
     expect(kept(`jexl:${expr}`).length).toBeGreaterThan(0)
   },
