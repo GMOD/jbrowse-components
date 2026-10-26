@@ -1,4 +1,8 @@
-import { declaredSnapshot } from '@jbrowse/core/configuration'
+import {
+  declaredSnapshot,
+  getConfigurationSchemaMetadata,
+  preProcessSnapshotWith,
+} from '@jbrowse/core/configuration'
 import {
   BaseFeatureDataAdapter,
   cachedSetup,
@@ -400,8 +404,8 @@ export default class MultiWiggleAdapter
     )
   }
 
-  // A row's attributes are the keys its subadapter config carries beyond the
-  // adapter's own slots, which would otherwise list a file location as a column.
+  // A row's attributes are the keys the adapter's schema neither declares nor
+  // lifts, as its `uri` shorthand lifts `uri` and `baseUri` into a location.
   private withoutAdapterSlots(
     type: string | undefined,
     conf: Record<string, unknown>,
@@ -409,14 +413,16 @@ export default class MultiWiggleAdapter
     const schema = type
       ? this.pluginManager?.getAdapterType(type).configSchema
       : undefined
-    const slots = schema
-      ? new Set(Object.keys(declaredSnapshot(schema, conf)))
-      : undefined
-    return slots
-      ? Object.fromEntries(
-          Object.entries(conf).filter(([key]) => !slots.has(key)),
-        )
-      : conf
+    const meta = schema ? getConfigurationSchemaMetadata(schema) : undefined
+    if (!schema || !meta) {
+      return conf
+    }
+    const slots = declaredSnapshot(schema, conf)
+    return Object.fromEntries(
+      Object.entries(
+        preProcessSnapshotWith(meta, conf, { routesUndeclared: true }),
+      ).filter(([key]) => !(key in slots)),
+    )
   }
 
   getSourcesAndWarnings = cachedSetup({

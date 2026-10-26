@@ -1234,3 +1234,27 @@ test("a subadapter's row metadata stays off the config its adapter is created fr
     bigWigLocation: { uri: 'https://x/a.bw', baseUri: undefined },
   })
 })
+
+test('a member written by the uri shorthand lists no location as a row attribute', async () => {
+  const adapter = new MultiWiggleAdapter(
+    configSchema.create({
+      subadapters: [
+        {
+          type: 'BigWigAdapter',
+          uri: 'a.bw',
+          baseUri: 'https://x/',
+          group: 'Islet',
+        },
+        { type: 'BigWigAdapter', uri: 'https://x/b.bw' },
+      ],
+    }),
+    jest.fn().mockResolvedValue({ dataAdapter: {} }),
+    {
+      getAdapterType: () => ({ configSchema: bigWigConfigSchema }),
+    } as unknown as PluginManager,
+  )
+  expect(await adapter.getSources([])).toEqual([
+    { name: 'a', source: 'a', group: 'Islet' },
+    { name: 'b', source: 'b' },
+  ])
+})
