@@ -919,7 +919,7 @@ async function searchByNameResolvesNames(page, slug) {
   const out = []
   if (slug === 'search-results') {
     // No interaction for this one: the dropdown's box starts on `BRCA1`, so a
-    // populated list is the evidence that `fetchResults` reached the hosted index
+    // populated list is the evidence that `view.search` reached the hosted index
     // and parsed it. Both columns are checked — `BRCA1P1` (a prefix hit, not the
     // typed query itself) proves the query matched, `genes` proves the row was
     // decoded rather than guessed.
@@ -941,7 +941,7 @@ async function searchByNameResolvesNames(page, slug) {
       )
       out.push(
         'the dropdown searched for BRCA1 and did not list BRCA1P1 from ' +
-          `genes — fetchResults or the hosted trix index is not ` +
+          `genes — view.search or the hosted trix index is not ` +
           `answering. List read:\n${listed}`,
       )
     }
