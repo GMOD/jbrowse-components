@@ -29,16 +29,16 @@ function seedRegion(display: LinearMafDisplayModel) {
           startBp: 100,
           refSeq: 'ACGTACGTAC',
           rows: [
-            { sampleId: 'hg38', seq: 'ACGTACGTAC', chr: 'chr1' },
-            { sampleId: 'panTro4', seq: 'ACGTACGTAC', chr: 'chr1' },
+            { sampleId: 'hg38', seq: 'ACGTACGTAC', srcRefName: 'chr1' },
+            { sampleId: 'panTro4', seq: 'ACGTACGTAC', srcRefName: 'chr1' },
           ],
         },
         {
           startBp: 110,
           refSeq: 'ACG',
           rows: [
-            { sampleId: 'hg38', seq: 'ACG', chr: 'chr1' },
-            { sampleId: 'panTro4', seq: 'ACG', chr: 'chr7' },
+            { sampleId: 'hg38', seq: 'ACG', srcRefName: 'chr1' },
+            { sampleId: 'panTro4', seq: 'ACG', srcRefName: 'chr7' },
           ],
         },
       ],
@@ -132,9 +132,9 @@ describe('the source-sequence fill is a row mark', () => {
     display.colorByField('refNameRank')
     const payload = display.encodedUpload.get(0)!
     expect(payload.cells.count).toBe(0)
-    expect(payload.sourceChrom).toMatchObject({ count: 4 })
-    expect([...payload.sourceChrom!.x]).toEqual([100, 100, 110, 110])
-    expect([...payload.sourceChrom!.row]).toEqual([0, 1, 0, 1])
+    expect(payload.refNameRank).toMatchObject({ count: 4 })
+    expect([...payload.refNameRank!.x]).toEqual([100, 100, 110, 110])
+    expect([...payload.refNameRank!.row]).toEqual([0, 1, 0, 1])
     expect(payload.identity).toBeUndefined()
     expect(payload.identityBars).toBeUndefined()
   })
@@ -143,7 +143,7 @@ describe('the source-sequence fill is a row mark', () => {
     const { display } = createMafTestEnvironment().createDisplay()
     seedRegion(display)
     const payload = display.encodedUpload.get(0)!
-    expect(payload.sourceChrom).toBeUndefined()
+    expect(payload.refNameRank).toBeUndefined()
     expect(payload.cells.count).toBeGreaterThan(0)
   })
 
@@ -156,10 +156,10 @@ describe('the source-sequence fill is a row mark', () => {
     seedRegion(display)
     display.colorByField('refNameRank')
     const dispose = observed(display)
-    const before = display.encodedUpload.get(0)!.sourceChrom
+    const before = display.encodedUpload.get(0)!.refNameRank
     view.horizontalScroll(500)
     expect(view.offsetPx).toBeGreaterThan(0)
-    expect(display.encodedUpload.get(0)!.sourceChrom).toBe(before)
+    expect(display.encodedUpload.get(0)!.refNameRank).toBe(before)
     dispose()
   })
 })
@@ -228,7 +228,7 @@ describe('a plan or rank that comes out the same re-encodes nothing', () => {
     display.colorByField('refNameRank')
     const dispose = observed(display)
     const before = display.encodedUpload.get(0)
-    const ranks = display.sourceChromRanks
+    const ranks = display.refNameRanks
     stageDetailRegion(
       display,
       1,
@@ -237,13 +237,13 @@ describe('a plan or rank that comes out the same re-encodes nothing', () => {
           {
             startBp: 200,
             refSeq: 'ACG',
-            rows: [{ sampleId: 'hg38', seq: 'ACG', chr: 'chr1' }],
+            rows: [{ sampleId: 'hg38', seq: 'ACG', srcRefName: 'chr1' }],
           },
         ],
         { coverage: emptyMafCoverage(200) },
       ),
     )
-    expect(display.sourceChromRanks).toBe(ranks)
+    expect(display.refNameRanks).toBe(ranks)
     expect(display.encodedUpload.get(0)).toBe(before)
     dispose()
   })

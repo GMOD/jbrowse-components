@@ -723,9 +723,10 @@ field `key` names, so `rows: "species"` reads one value per species from the
 features themselves. The adapter lists its species too, so every species has a
 row whether or not the loaded regions align it, in the guide tree's order with
 the tree drawn beside the rows, as on the MAF display. Each row keeps its
-block's reference span and has the species' `chr`, `srcStart`, `strand`,
-`srcSize` and `seq`; a rect colored by `chr` is the MAF display's color by
-source chromosome:
+block's reference span and has the species' `srcRefName`, `srcStart`, `strand`,
+`srcSize` and `seq`; a rect colored by `srcRefName` colors each block by the
+sequence it comes from in that species, as the MAF display's `refNameRank` fill
+does by rank:
 
 ```json addtrack
 {
@@ -751,7 +752,7 @@ source chromosome:
         {
           "mark": "rect",
           "encoding": {
-            "color": { "field": "chr", "scale": { "type": "ordinal" } }
+            "color": { "field": "srcRefName", "scale": { "type": "ordinal" } }
           }
         }
       ]

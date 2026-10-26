@@ -24,7 +24,7 @@ const insertion: MafHover = {
   kind: 'insertion',
   length: 4,
   sequence: 'ACGT',
-  chr: 'chr2',
+  srcRefName: 'chr2',
   pos: 900,
   strand: 1,
   sampleLabel: 'mm10',

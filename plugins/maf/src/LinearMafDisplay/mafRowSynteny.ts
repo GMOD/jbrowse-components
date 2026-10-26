@@ -88,7 +88,7 @@ export function buildMafRowSynteny({
   idPrefix: string
 }): MafRowSynteny | undefined {
   const features: MafRowSyntenyFeature[] = []
-  let chr: string | undefined
+  let srcRefName: string | undefined
   let lo = Number.POSITIVE_INFINITY
   let hi = Number.NEGATIVE_INFINITY
   let minusBlocks = 0
@@ -102,9 +102,9 @@ export function buildMafRowSynteny({
     const row = block.rows.find(r => r.rowIndex === rowIndex)
     if (
       !row ||
-      row.chr === undefined ||
+      row.srcRefName === undefined ||
       row.srcStart === undefined ||
-      (chr !== undefined && row.chr !== chr)
+      (srcRefName !== undefined && row.srcRefName !== srcRefName)
     ) {
       continue
     }
@@ -156,7 +156,7 @@ export function buildMafRowSynteny({
     if (a === undefined || b === undefined) {
       continue
     }
-    chr ??= row.chr
+    srcRefName ??= row.srcRefName
     const mateStart = Math.min(a, b)
     const mateEnd = Math.max(a, b) + 1
     lo = Math.min(lo, mateStart)
@@ -177,7 +177,7 @@ export function buildMafRowSynteny({
       syntenyId,
       mate: {
         uniqueId: `${uniqueId}_mate`,
-        refName: row.chr,
+        refName: row.srcRefName,
         start: mateStart,
         end: mateEnd,
         assemblyName: mateAssembly,
@@ -185,11 +185,11 @@ export function buildMafRowSynteny({
       },
     })
   }
-  return chr === undefined
+  return srcRefName === undefined
     ? undefined
     : {
         features,
-        refName: chr,
+        refName: srcRefName,
         start: lo,
         end: hi,
         reversed: minusBlocks * 2 > features.length,

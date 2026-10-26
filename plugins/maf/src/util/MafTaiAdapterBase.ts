@@ -1,7 +1,7 @@
 import { MafAdapterBase } from './MafAdapterBase.ts'
 import { MafStanzaReader } from './mafStanzaReader.ts'
 import { makeSourceResolver } from './parseAssemblyName.ts'
-import { makeRefChrFilter } from './taiIndex.ts'
+import { makeRefNameFilter } from './taiIndex.ts'
 import { readTaiSlice, taiRegionByteSize } from './taiSlice.ts'
 
 import type { MafBlockSink } from './mafBlockSink.ts'
@@ -61,7 +61,7 @@ export abstract class MafTaiAdapterBase<
     const reader = new MafStanzaReader(
       makeSourceResolver(await this.sampleIds(opts)),
     )
-    const onQueriedChr = makeRefChrFilter(query.refName)
+    const onQueriedRefName = makeRefNameFilter(query.refName)
     const slice = await readTaiSlice({
       index: setup.index,
       refName: query.refName,
@@ -81,7 +81,7 @@ export abstract class MafTaiAdapterBase<
       reader,
       sink,
       (refSrc, start, end) =>
-        blockOverlaps(start, end, query) && onQueriedChr(refSrc),
+        blockOverlaps(start, end, query) && onQueriedRefName(refSrc),
     )
     reader.reportUnmatched()
   }

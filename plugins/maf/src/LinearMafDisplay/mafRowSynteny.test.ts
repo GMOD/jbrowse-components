@@ -22,7 +22,7 @@ function block(
     rows: rows.map(({ aln, ...rest }, rowIndex) => ({
       rowIndex,
       alignmentBytes: enc.encode(aln),
-      chr: 'chr2',
+      srcRefName: 'chr2',
       srcStart: 1000,
       strand: 1,
       srcSize: 5000,

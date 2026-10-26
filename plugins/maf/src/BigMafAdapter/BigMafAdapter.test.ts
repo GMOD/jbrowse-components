@@ -196,7 +196,7 @@ describe('getFeatures answers the MafFeatures the old parse did', () => {
     const rows = alignmentsOf(spec)
     expect(spec.get('seq')).toBe('gcagctgaaaaca')
     expect(rows.hg18).toStrictEqual({
-      chr: 'chr7',
+      srcRefName: 'chr7',
       srcStart: 27707221,
       seq: 'gcagctgaaaaca',
       strand: 1,
@@ -212,14 +212,14 @@ describe('getFeatures answers the MafFeatures the old parse did', () => {
     expect(
       (spec.get('empties') as Record<string, EmptyRecord>).mm4,
     ).toMatchObject({ status: 'I', size: 13 })
-    expect(rows['HG002.1']).toMatchObject({ chr: 'chr7', srcStart: 200 })
+    expect(rows['HG002.1']).toMatchObject({ srcRefName: 'chr7', srcStart: 200 })
     const late = alignmentsOf(rebuilt[5]!)
     expect(late.panTro1!.context).toMatchObject({ leftStatus: 'N' })
     expect(late.baboon!.context).toBeUndefined()
     expect(Object.keys(late)).toEqual(['hg18', 'panTro1', 'baboon'])
     const twice = alignmentsOf(rebuilt[1]!)
     expect(twice.mm10!.context).toMatchObject({ leftStatus: 'N' })
-    expect(twice['mm10~2']).toMatchObject({ chr: 'chr2', srcStart: 99 })
+    expect(twice['mm10~2']).toMatchObject({ srcRefName: 'chr2', srcStart: 99 })
     expect(twice['mm10~2']!.context).toBeUndefined()
   })
 })

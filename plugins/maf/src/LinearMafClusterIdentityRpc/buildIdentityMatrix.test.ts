@@ -28,7 +28,7 @@ function block({
     alignments: Object.fromEntries(
       Object.entries(rows).map(([id, seq]) => [
         id,
-        { seq, srcStart: start, chr: refName },
+        { seq, srcStart: start, srcRefName: refName },
       ]),
     ),
     empties: {},

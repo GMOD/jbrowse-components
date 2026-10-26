@@ -25,7 +25,7 @@ const session = {
 function target(sampleLabel: string) {
   return {
     assemblyName: 'mm10',
-    chr: 'chr2',
+    srcRefName: 'chr2',
     start: 1000,
     end: 1020,
     sampleLabel,

@@ -1,7 +1,7 @@
 import { spanRect } from '@jbrowse/render-core/canvas2dUtils'
 
 import { regionInvertedRows } from './mafRowEvents.ts'
-import { rowChromBp } from './rowChromBp.ts'
+import { rowRefNameBp } from './rowRefNameBp.ts'
 import { eachVisibleRegion, rowViewport } from './visibleRegionGeometry.ts'
 
 import type { MafRegionData } from '../../LinearMafRenderer/mafRenderingBackendTypes.ts'
@@ -42,14 +42,19 @@ interface ComputeVisibleInversionsParams extends MafOverlayParams {
  * is arbitrary: an inversion differs from the consensus of its own scaffold,
  * not any `-`-strand block.
  */
-export function consensusStrandByRowChr(
+export function consensusStrandByRowRefName(
   rpcDataMap: ReadonlyMap<number, MafRegionData>,
 ): Map<number, Map<string, number>> {
   const consensus = new Map<number, Map<string, number>>()
-  for (const [rowIndex, byChr] of rowChromBp(rpcDataMap.values())) {
+  for (const [rowIndex, byRefName] of rowRefNameBp(rpcDataMap.values())) {
     consensus.set(
       rowIndex,
-      new Map([...byChr].map(([chr, t]) => [chr, t.fwd >= t.rev ? 1 : -1])),
+      new Map(
+        [...byRefName].map(([srcRefName, t]) => [
+          srcRefName,
+          t.fwd >= t.rev ? 1 : -1,
+        ]),
+      ),
     )
   }
   return consensus

@@ -11,9 +11,9 @@ import {
   getCodonLegendItems,
 } from '../LinearMafRenderer/util.ts'
 import {
-  SOURCE_CHROM_PALETTE,
-  sourceChromLegendItems,
-} from './components/drawSourceChrom.ts'
+  REF_NAME_RANK_PALETTE,
+  refNameRankLegendItems,
+} from './components/refNameRanks.ts'
 import { createMafTestEnvironment } from './testEnv.ts'
 
 import type { MenuItem } from '@jbrowse/core/ui'
@@ -68,8 +68,8 @@ describe('each row rendering keys itself from what it paints', () => {
 
   describe('source chromosome', () => {
     it('shows one row per rank while the palette still changes', () => {
-      expect(sourceChromLegendItems(0)).toHaveLength(1)
-      expect(sourceChromLegendItems(1)).toHaveLength(2)
+      expect(refNameRankLegendItems(0)).toHaveLength(1)
+      expect(refNameRankLegendItems(1)).toHaveLength(2)
     })
 
     // Both the color and the label saturate at the palette's last slot, so a
@@ -78,8 +78,8 @@ describe('each row rendering keys itself from what it paints', () => {
     // repeat an identical "Other source" row per extra rank, growing the key
     // over the rows it sits on.
     it('stops at the palette instead of repeating its last entry', () => {
-      const items = sourceChromLegendItems(40)
-      expect(items).toHaveLength(SOURCE_CHROM_PALETTE.length)
+      const items = refNameRankLegendItems(40)
+      expect(items).toHaveLength(REF_NAME_RANK_PALETTE.length)
       expect(new Set(items.map(i => i.label)).size).toBe(items.length)
       expect(new Set(items.map(i => i.color)).size).toBe(items.length)
     })

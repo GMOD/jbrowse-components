@@ -76,7 +76,7 @@ function target(sampleLabel: string, start: number) {
   return {
     assemblyName: 'mm10',
     assemblyConfigLocation: undefined,
-    chr: 'chr2',
+    refName: 'chr2',
     start,
     end: start + 20,
     sampleLabel,

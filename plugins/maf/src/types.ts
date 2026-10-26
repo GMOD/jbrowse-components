@@ -51,7 +51,7 @@ export interface AlignmentContext {
  */
 export interface AlignmentRecord {
   /** Chromosome/contig name */
-  chr: string
+  srcRefName: string
   /**
    * Start in the species' own sequence, not the reference: the `s` line's
    * `start`, counted from the reverse complement on a `-` row
@@ -74,7 +74,7 @@ export interface AlignmentRecord {
  */
 export interface EmptyRecord {
   /** Chromosome/contig name */
-  chr: string
+  srcRefName: string
   /** Start of the non-aligning region in the species' own sequence */
   srcStart: number
   /** Size in bp of the non-aligning region */

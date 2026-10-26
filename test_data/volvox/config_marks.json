@@ -1256,7 +1256,7 @@
               "mark": "rect",
               "encoding": {
                 "color": {
-                  "field": "chr",
+                  "field": "srcRefName",
                   "scale": { "type": "ordinal" }
                 }
               }

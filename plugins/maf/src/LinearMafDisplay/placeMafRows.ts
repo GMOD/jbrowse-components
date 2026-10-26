@@ -33,7 +33,7 @@ export function placeMafRegionData(
     rowOffset,
     rowLength,
     rowSample,
-    rowChr,
+    rowRefName,
     rowStart,
     rowStrand,
     rowSrcSize,
@@ -49,14 +49,14 @@ export function placeMafRegionData(
     blockRowStart,
     blockEmptyStart,
     emptySample,
-    emptyChr,
+    emptyRefName,
     emptyStatus,
     emptyStart,
     emptySize,
     emptyStrand,
     emptySrcSize,
     sampleIds,
-    chrNames,
+    refNames,
   } = data
 
   // The species-to-screen-row projection, resolved once per region; -1 means
@@ -74,7 +74,7 @@ export function placeMafRegionData(
           rowIndex,
           sampleId: sampleIds[rowSample[i]!],
           alignmentBytes: arena.subarray(offset, offset + rowLength[i]!),
-          chr: chrNames[rowChr[i]!],
+          srcRefName: refNames[rowRefName[i]!],
           srcStart: rowStart[i]!,
           strand: rowStrand[i]!,
           // 0 is the wire's "the adapter supplied none"; a real srcSize is
@@ -109,7 +109,7 @@ export function placeMafRegionData(
           rowIndex,
           sampleId: sampleIds[emptySample[i]!],
           status,
-          chr: chrNames[emptyChr[i]!] ?? '',
+          srcRefName: refNames[emptyRefName[i]!] ?? '',
           srcStart: emptyStart[i]!,
           size: emptySize[i]!,
           strand: emptyStrand[i]!,

@@ -15,7 +15,7 @@ import type {
 
 export interface SampleNavigationTarget {
   assemblyName: string
-  chr: string
+  refName: string
   start: number
   end: number
   sampleLabel: string
@@ -23,13 +23,13 @@ export interface SampleNavigationTarget {
   assemblyConfigLocation?: UriLocation
 }
 
-/** `chr:start-end`, 1-based inclusive, from the half-open span. */
+/** `refName:start-end`, 1-based inclusive, from the half-open span. */
 export function navigationLocString({
-  chr,
+  refName,
   start,
   end,
 }: SampleNavigationTarget) {
-  return `${chr}:${start + 1}-${end}`
+  return `${refName}:${start + 1}-${end}`
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

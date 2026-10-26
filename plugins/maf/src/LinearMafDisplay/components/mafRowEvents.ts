@@ -24,8 +24,8 @@ function invertedRowsOf(block: MafBlock, consensus: StrandConsensus) {
   for (const row of block.rows) {
     if (
       row.strand !== undefined &&
-      row.chr !== undefined &&
-      row.strand !== consensus.get(row.rowIndex)?.get(row.chr)
+      row.srcRefName !== undefined &&
+      row.strand !== consensus.get(row.rowIndex)?.get(row.srcRefName)
     ) {
       ;(rows ??= []).push(row.rowIndex)
     }

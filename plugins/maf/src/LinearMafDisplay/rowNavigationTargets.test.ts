@@ -16,7 +16,7 @@ const region: MafRegionData = {
       rows: [0, 1, 2].map(rowIndex => ({
         rowIndex,
         alignmentBytes: enc.encode('acgta'),
-        chr: `chr${rowIndex}`,
+        srcRefName: `chr${rowIndex}`,
         srcStart: 500,
         strand: 1,
       })),
@@ -65,7 +65,7 @@ test('a row navigates under its assemblyName, else a sample id that is an assemb
 test('a target carries the span in its own genome and the sample label', () => {
   expect(targets()[0]).toMatchObject({
     rowIndex: 0,
-    chr: 'chr0',
+    refName: 'chr0',
     start: 501,
     end: 504,
     sampleLabel: 'Human',

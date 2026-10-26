@@ -23,7 +23,7 @@ export interface MafBlockSink {
     text: string,
     from: number,
     to: number,
-    chr: string,
+    srcRefName: string,
     srcStart: number,
     strand: number,
     srcSize: number | undefined,

@@ -8,7 +8,7 @@ import type { LinearMafDisplayModel } from './stateModel.ts'
 
 // Two blocks on one row, the first from chrA and the second from chrB, so the
 // row has a rank order to report.
-function loadTwoChromBlocks(display: LinearMafDisplayModel) {
+function loadTwoRefNameBlocks(display: LinearMafDisplayModel) {
   display.setSamples({
     samples: [{ name: 'sp1', label: 'sp1' }],
     treeNewick: undefined,
@@ -22,12 +22,12 @@ function loadTwoChromBlocks(display: LinearMafDisplayModel) {
         {
           startBp: 100,
           refSeq: 'AAAAAAAAAA',
-          rows: [{ sampleId: 'sp1', seq: 'AAAAAAAAAA', chr: 'chrA' }],
+          rows: [{ sampleId: 'sp1', seq: 'AAAAAAAAAA', srcRefName: 'chrA' }],
         },
         {
           startBp: 200,
           refSeq: 'AAA',
-          rows: [{ sampleId: 'sp1', seq: 'AAA', chr: 'chrB' }],
+          rows: [{ sampleId: 'sp1', seq: 'AAA', srcRefName: 'chrB' }],
         },
       ],
       { coverage: emptyMafCoverage(0), refSampleId: undefined },
@@ -35,13 +35,13 @@ function loadTwoChromBlocks(display: LinearMafDisplayModel) {
   )
 }
 
-describe('sourceChromRanks', () => {
+describe('refNameRanks', () => {
   it('ranks a row by aligned bp, longest first', () => {
     const { display } = createMafTestEnvironment().createDisplay()
     display.colorByField('refNameRank')
-    loadTwoChromBlocks(display)
+    loadTwoRefNameBlocks(display)
 
-    const { ranks, maxRank } = display.sourceChromRanks
+    const { ranks, maxRank } = display.refNameRanks
     expect(ranks.get(0)?.get('chrA')).toBe(0)
     expect(ranks.get(0)?.get('chrB')).toBe(1)
     expect(maxRank).toBe(1)
@@ -60,11 +60,11 @@ describe('sourceChromRanks', () => {
       ],
     })
     display.colorByField('refNameRank')
-    loadTwoChromBlocks(display)
+    loadTwoRefNameBlocks(display)
 
-    let latest = display.sourceChromRanks
+    let latest = display.refNameRanks
     const dispose = autorun(() => {
-      latest = display.sourceChromRanks
+      latest = display.refNameRanks
     })
     const before = latest
     view.horizontalScroll(500)

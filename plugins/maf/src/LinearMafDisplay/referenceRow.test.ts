@@ -37,7 +37,7 @@ function landRegion(
         {
           startBp: 100,
           refSeq: 'AAAA',
-          rows: [{ sampleId: refSampleId, seq: 'AAAA', chr: 'chr1' }],
+          rows: [{ sampleId: refSampleId, seq: 'AAAA', srcRefName: 'chr1' }],
         },
       ],
       { coverage: emptyMafCoverage(0), refSampleId },

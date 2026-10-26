@@ -15,7 +15,7 @@ function emptyRow(
   return {
     rowIndex,
     status,
-    chr: 'c',
+    srcRefName: 'c',
     srcStart: 0,
     size: 10,
     strand: 1,

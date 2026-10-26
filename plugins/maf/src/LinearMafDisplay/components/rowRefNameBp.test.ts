@@ -1,5 +1,5 @@
 import { emptyMafCoverage } from './coverageTestFixture.ts'
-import { rowChromBp } from './rowChromBp.ts'
+import { rowRefNameBp } from './rowRefNameBp.ts'
 
 import type {
   MafAlignedRow,
@@ -26,21 +26,21 @@ function region(
 
 test('sums each strand per row and chromosome across regions', () => {
   const a = region([
-    { startBp: 0, endBp: 30, rows: [{ chr: 'chrA', strand: 1 }] },
-    { startBp: 30, endBp: 40, rows: [{ chr: 'chrA', strand: -1 }] },
+    { startBp: 0, endBp: 30, rows: [{ srcRefName: 'chrA', strand: 1 }] },
+    { startBp: 30, endBp: 40, rows: [{ srcRefName: 'chrA', strand: -1 }] },
   ])
   const b = region([
     {
       startBp: 100,
       endBp: 105,
       rows: [
-        { chr: 'chrA', strand: -1 },
-        { rowIndex: 1, chr: 'chrB' },
+        { srcRefName: 'chrA', strand: -1 },
+        { rowIndex: 1, srcRefName: 'chrB' },
         { rowIndex: 2, strand: 1 },
       ],
     },
   ])
-  const totals = rowChromBp([a, b])
+  const totals = rowRefNameBp([a, b])
   expect(totals.get(0)?.get('chrA')).toEqual({ fwd: 30, rev: 15 })
   expect(totals.get(1)?.get('chrB')).toEqual({ fwd: 5, rev: 0 })
   expect(totals.has(2)).toBe(false)
@@ -48,9 +48,9 @@ test('sums each strand per row and chromosome across regions', () => {
 
 test('a cached region contributes afresh to every total', () => {
   const a = region([
-    { startBp: 0, endBp: 10, rows: [{ chr: 'chrA', strand: 1 }] },
+    { startBp: 0, endBp: 10, rows: [{ srcRefName: 'chrA', strand: 1 }] },
   ])
-  expect(rowChromBp([a]).get(0)?.get('chrA')).toEqual({ fwd: 10, rev: 0 })
-  expect(rowChromBp([a, a]).get(0)?.get('chrA')).toEqual({ fwd: 20, rev: 0 })
-  expect(rowChromBp([a]).get(0)?.get('chrA')).toEqual({ fwd: 10, rev: 0 })
+  expect(rowRefNameBp([a]).get(0)?.get('chrA')).toEqual({ fwd: 10, rev: 0 })
+  expect(rowRefNameBp([a, a]).get(0)?.get('chrA')).toEqual({ fwd: 20, rev: 0 })
+  expect(rowRefNameBp([a]).get(0)?.get('chrA')).toEqual({ fwd: 10, rev: 0 })
 })

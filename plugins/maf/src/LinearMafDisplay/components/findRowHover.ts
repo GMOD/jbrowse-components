@@ -22,7 +22,7 @@ import type { AlignmentContext, MafStatus } from '../../types.ts'
 export interface CellHit {
   kind: 'cell'
   base: string
-  chr?: string
+  srcRefName?: string
   /** 0-based forward-strand genomic coord of this base (undefined if unknown) */
   pos?: number
   strand?: number
@@ -39,7 +39,7 @@ export interface InsertionHit {
    * sample's own forward strand
    */
   sequence: string
-  chr?: string
+  srcRefName?: string
   /**
    * 0-based forward-strand genomic coord of the first inserted base in
    * alignment order; on a '-' row that is the run's highest coordinate — see
@@ -58,7 +58,7 @@ export interface DeletionHit {
 export interface EmptyHit {
   kind: 'empty'
   status: MafStatus
-  chr: string
+  srcRefName: string
   /** 0-based forward-strand start of the bridged span */
   srcStart: number
   size: number
@@ -151,7 +151,7 @@ function cellHitInRow(
   return {
     kind: 'cell',
     base: String.fromCharCode(code),
-    chr: row.chr,
+    srcRefName: row.srcRefName,
     pos: forwardPos(row, baseOffset),
     strand: row.strand,
     context: row.context,
@@ -234,7 +234,7 @@ function describeInsertion(
             kind: 'insertion',
             length,
             sequence,
-            chr: row.chr,
+            srcRefName: row.srcRefName,
             pos: forwardPos(row, baseOffset),
             strand: row.strand,
           })
@@ -273,7 +273,7 @@ function emptyHit(e: MafEmptyRow): EmptyHit {
   return {
     kind: 'empty',
     status: e.status,
-    chr: e.chr,
+    srcRefName: e.srcRefName,
     srcStart: e.strand === -1 ? e.srcSize - e.srcStart - e.size : e.srcStart,
     size: e.size,
     strand: e.strand,

@@ -261,15 +261,15 @@ describe('getFeatures answers the MafFeatures the old parse did', () => {
       f => f.get('alignments') as Record<string, unknown>,
     )
     expect(first!.panTro6).toStrictEqual({
-      chr: 'chr3',
+      srcRefName: 'chr3',
       srcStart: 40,
       seq: 'ACTT',
       strand: -1,
       srcSize: 5000,
     })
     expect(Object.keys(twice!)).toEqual(['hg38', 'mm10', 'mm10~2', 'panTro6'])
-    expect(twice!.mm10).toMatchObject({ chr: 'chr9', srcStart: 15 })
-    expect(twice!['mm10~2']).toMatchObject({ chr: 'chr2', srcStart: 99 })
+    expect(twice!.mm10).toMatchObject({ srcRefName: 'chr9', srcStart: 15 })
+    expect(twice!['mm10~2']).toMatchObject({ srcRefName: 'chr2', srcStart: 99 })
     expect(Object.keys(indexed!)).toEqual(['3', '12', 'hg38', 'panTro6'])
     expect(Object.keys(malformed!)).toEqual(['hg38', 'panTro6', 'rn6'])
     expect(malformed!.panTro6).toMatchObject({ srcStart: 52, srcSize: NaN })

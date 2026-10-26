@@ -1,5 +1,5 @@
 import { mafBlocksOf } from '../util/parsedBlocks.fixture.ts'
-import { makeRefChrFilter } from '../util/taiIndex.ts'
+import { makeRefNameFilter } from '../util/taiIndex.ts'
 
 import type { ParsedAssemblyName } from '../util/parseAssemblyName.ts'
 
@@ -7,8 +7,8 @@ import type { ParsedAssemblyName } from '../util/parseAssemblyName.ts'
 const resolve = (token: string): ParsedAssemblyName | undefined => {
   const i = token.indexOf('.')
   return i === -1
-    ? { assemblyName: token, chr: '' }
-    : { assemblyName: token.slice(0, i), chr: token.slice(i + 1) }
+    ? { assemblyName: token, refName: '' }
+    : { assemblyName: token.slice(0, i), refName: token.slice(i + 1) }
 }
 
 const collect = (text: string) => mafBlocksOf(text, resolve)
@@ -40,7 +40,7 @@ test('parses a tab-separated block', () => {
   expect(f!.seq).toBe('ACGTACGTAC')
   expect(Object.keys(f!.alignments).sort()).toEqual(['GRCh38', 'HG002'])
   expect(f!.alignments.HG002).toEqual({
-    chr: '1.chr1',
+    srcRefName: '1.chr1',
     srcStart: 50,
     seq: 'ACGTACGTAT',
     strand: 1,
@@ -93,7 +93,7 @@ test('i/e/q lines and comments do not become aligned rows', () => {
 test('e lines become bridged rows', () => {
   const [f] = collect(withExtras)
   expect(f!.empties.HG003).toEqual({
-    chr: '1.chr1',
+    srcRefName: '1.chr1',
     srcStart: 10,
     size: 5,
     strand: 1,
@@ -172,7 +172,7 @@ test('an empty slice yields nothing', () => {
 
 // The reference row's own source token, carried so the adapter can tell a block
 // of the queried chromosome from one the over-generous read pulled in from the
-// next. See `makeRefChrFilter`.
+// next. See `makeRefNameFilter`.
 test('carries the reference row source token', () => {
   expect(collect(tabbed).map(f => f.refSrc)).toEqual(['GRCh38.chr1'])
 })
@@ -275,7 +275,7 @@ describe('a minus-strand reference row', () => {
 // chromosome. Filtering on the span alone emitted them at real positions on the
 // queried scaffold.
 test('the adapter filter keeps only the queried chromosome', () => {
-  const twoChrs = [
+  const twoRefNames = [
     'a',
     's\thg38.chr1\t100\t10\t+\t248956422\tACGTACGTAC',
     '',
@@ -283,9 +283,9 @@ test('the adapter filter keeps only the queried chromosome', () => {
     's\thg38.chr2\t100\t10\t+\t242193529\tTTTTTTTTTT',
     '',
   ].join('\n')
-  const onChr1 = makeRefChrFilter('chr1')
+  const onChr1 = makeRefNameFilter('chr1')
   const query = { start: 0, end: 1000 }
-  const kept = collect(twoChrs).filter(
+  const kept = collect(twoRefNames).filter(
     f => f.end > query.start && f.start < query.end && onChr1(f.refSrc),
   )
   expect(kept.map(f => f.refSrc)).toEqual(['hg38.chr1'])

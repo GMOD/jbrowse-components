@@ -40,7 +40,7 @@ function targetFor(sample: SampleConfigEntry) {
   return {
     assemblyName: sample.assemblyName!,
     assemblyConfigLocation: sample.assemblyConfigLocation,
-    chr: 'chrA',
+    refName: 'chrA',
     start: 5489,
     end: 5664,
     sampleLabel: sample.label ?? sample.id,

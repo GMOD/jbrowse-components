@@ -10,7 +10,7 @@ import type { RecordKey } from '../util/recordSlots.ts'
 
 interface Token {
   key: RecordKey
-  chr: string
+  srcRefName: string
 }
 
 const ZERO = 48
@@ -52,7 +52,7 @@ export class MafTabixBlockReader {
 
   private from: number[] = []
   private to: number[] = []
-  private chr: string[] = []
+  private srcRefName: string[] = []
   private srcStart: number[] = []
   private size: number[] = []
   private strand: number[] = []
@@ -76,7 +76,10 @@ export class MafTabixBlockReader {
     if (token === undefined) {
       const parsed = this.resolver.resolve(name)
       token = parsed?.assemblyName
-        ? { key: this.rows.key(parsed.assemblyName), chr: parsed.chr }
+        ? {
+            key: this.rows.key(parsed.assemblyName),
+            srcRefName: parsed.refName,
+          }
         : null
       this.tokens.set(name, token)
     }
@@ -144,7 +147,7 @@ export class MafTabixBlockReader {
           )
           this.from[slot] = c4 + 1
           this.to[slot] = to
-          this.chr[slot] = token.chr
+          this.srcRefName[slot] = token.srcRefName
           this.srcStart[slot] = parseDecimal(text, c0 + 1, c1)
           this.size[slot] = parseDecimal(text, c1 + 1, c2)
           this.strand[slot] = text.charCodeAt(c2 + 1) === DASH ? -1 : 1
@@ -197,7 +200,7 @@ export class MafTabixBlockReader {
         text,
         this.from[slot]!,
         this.to[slot]!,
-        this.chr[slot]!,
+        this.srcRefName[slot]!,
         this.srcStart[slot]!,
         this.strand[slot]!,
         this.srcSize[slot],
@@ -231,7 +234,7 @@ export class MafTabixBlockReader {
         seq,
         0,
         seq.length,
-        this.chr[slot]!,
+        this.srcRefName[slot]!,
         srcSize - this.srcStart[slot]! - this.size[slot]!,
         -this.strand[slot]!,
         srcSize,

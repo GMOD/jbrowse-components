@@ -9,9 +9,9 @@ import {
 
 import { emptyMafCoverage } from '../LinearMafDisplay/components/coverageTestFixture.ts'
 import {
-  SOURCE_CHROM_PALETTE,
-  encodeSourceChromSpans,
-} from '../LinearMafDisplay/components/drawSourceChrom.ts'
+  REF_NAME_RANK_PALETTE,
+  encodeRefNameRankSpans,
+} from '../LinearMafDisplay/components/refNameRanks.ts'
 import { EMPTY_MAF_CELLS } from './mafChannels.ts'
 import { MAF_MARKS, MAF_SOURCE_CHROM_MARK } from './mafMarks.ts'
 
@@ -89,9 +89,9 @@ function mafBlock(
     endBp,
     refSeqBytes: bytes,
     empties: [],
-    rows: rows.map(([rowIndex, chr]) => ({
+    rows: rows.map(([rowIndex, srcRefName]) => ({
       rowIndex,
-      chr,
+      srcRefName,
       alignmentBytes: bytes,
     })),
   }
@@ -115,7 +115,7 @@ function paint(blocks: MafBlock[], reversed = false) {
     ctx,
     {
       cells: EMPTY_MAF_CELLS,
-      sourceChrom: encodeSourceChromSpans(blocks, RANKS),
+      refNameRank: encodeRefNameRankSpans(blocks, RANKS),
     },
     block(reversed),
     STATE,
@@ -157,7 +157,7 @@ describe('color by source chromosome, as a span mark', () => {
   })
 
   test('a rank past the palette takes its last entry, and a row with no chr draws nothing', () => {
-    const { color, row } = encodeSourceChromSpans(
+    const { color, row } = encodeRefNameRankSpans(
       [
         mafBlock(1100, 1150, [
           [0, 'chrI'],
@@ -175,15 +175,15 @@ describe('color by source chromosome, as a span mark', () => {
   })
 
   test('each palette entry packs to its CSS conversion', () => {
-    const { color } = encodeSourceChromSpans(
+    const { color } = encodeRefNameRankSpans(
       [
         mafBlock(
           0,
           1,
-          SOURCE_CHROM_PALETTE.map((_, r) => [r, 'c']),
+          REF_NAME_RANK_PALETTE.map((_, r) => [r, 'c']),
         ),
       ],
-      new Map(SOURCE_CHROM_PALETTE.map((_, r) => [r, new Map([['c', r]])])),
+      new Map(REF_NAME_RANK_PALETTE.map((_, r) => [r, new Map([['c', r]])])),
     )
     expect([...(color as Uint32Array)].map(abgrToCssRgba)).toEqual(RANK_RGBA)
   })
@@ -205,7 +205,7 @@ describe('color by source chromosome, as a span mark', () => {
     const backend = new GpuMarkBackend(hal, MAF_MARKS)
     const payload = {
       cells: EMPTY_MAF_CELLS,
-      sourceChrom: encodeSourceChromSpans(
+      refNameRank: encodeRefNameRankSpans(
         [mafBlock(1100, 1150, [[0, 'chrI']])],
         RANKS,
       ),
@@ -217,7 +217,7 @@ describe('color by source chromosome, as a span mark', () => {
       coverage: { height: 0 },
     } as MafGPURenderState)
     const draws = hal.draws()
-    expect(draws.map(d => d.passId)).toEqual(['mafSourceChrom', 'span'])
+    expect(draws.map(d => d.passId)).toEqual(['mafRefNameRank', 'span'])
     const dpr = getDpr()
     expect(draws[0]!.scissor).toEqual({
       x: 0,

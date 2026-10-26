@@ -35,7 +35,7 @@ function inputs(
     ),
     colorKeyTitle: 'Key',
     oneBaseCells: false,
-    maxSourceChromRank: 3,
+    maxRefNameRank: 3,
     showsFrames: false,
     rowColorScales: [],
     ...overrides,
@@ -66,9 +66,9 @@ test('the fill keys itself, then the codon layer, frames and row colors', () => 
 
 test('refNameRank keys one entry per rank', () => {
   const [scale] = mafColorScales(
-    inputs('refNameRank', {}, { maxSourceChromRank: 2 }),
+    inputs('refNameRank', {}, { maxRefNameRank: 2 }),
   )
-  expect(scale!.id).toBe('sourceChrom')
+  expect(scale!.id).toBe('refNameRank')
   expect(scale!.kind === 'categorical' && scale!.entries.length).toBe(3)
 })
 

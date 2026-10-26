@@ -6,7 +6,7 @@ import type { MafWireRegionData } from '../LinearMafRenderer/mafRenderingBackend
  * A flat walk of the top-level fields, which is all it needs to be now that the
  * wire is columnar: the sequence arena, the per-row/per-block columns, and the
  * coverage packers are all top-level typed arrays. The dictionaries
- * (`sampleIds`, `chrNames`) and `refSampleId` are plain values and clone.
+ * (`sampleIds`, `refNames`) and `refSampleId` are plain values and clone.
  *
  * The length of this list is the point. It used to nest two levels down to
  * reach `blocks[].rows[].alignmentBytes` — one buffer per row, so tens of

@@ -69,7 +69,7 @@ export interface MafGPURenderState {
 //
 // Adding a per-row field therefore means adding a parallel typed array here,
 // never a property on a row object. Strings go through a dictionary
-// (`sampleIds`/`chrNames`) so a repeated species or contig name is cloned once
+// (`sampleIds`/`refNames`) so a repeated species or contig name is cloned once
 // per region rather than once per row.
 //
 // Rows still name their species and nothing else — screen position is assigned
@@ -94,8 +94,8 @@ export interface MafWireRegionData {
   rowLength: Uint32Array
   /** index into `sampleIds` */
   rowSample: Uint32Array
-  /** index into `chrNames` */
-  rowChr: Uint32Array
+  /** index into `refNames` */
+  rowRefName: Uint32Array
   rowStart: Uint32Array
   /** +1/-1 */
   rowStrand: Int8Array
@@ -137,7 +137,7 @@ export interface MafWireRegionData {
   // chained. Drawn as a single/double line or pale bar across the block's
   // reference extent (see emptyLines.ts).
   emptySample: Uint32Array
-  emptyChr: Uint32Array
+  emptyRefName: Uint32Array
   /** `MAF_STATUS_WIRE` code */
   emptyStatus: Uint8Array
   emptyStart: Uint32Array
@@ -147,7 +147,7 @@ export interface MafWireRegionData {
 
   // ---- dictionaries; small, so structured-cloned rather than transferred ----
   sampleIds: string[]
-  chrNames: string[]
+  refNames: string[]
 
   coverage: MafCoverageRegion
   /**
@@ -179,7 +179,7 @@ export interface MafAlignedRow {
   // Per-row species coords + context, retained for hover tooltips only (the
   // per-base color encoder and coverage code ignore them). Optional because
   // they are tooltip metadata, not needed to render.
-  chr?: string
+  srcRefName?: string
   srcStart?: number
   strand?: number
   srcSize?: number
@@ -285,7 +285,7 @@ export interface MafGpuProps {
 export interface MafRowsPayload {
   cells: SpanChannels
   /** Each row's aligned blocks colored by source-chromosome rank. */
-  sourceChrom?: SpanChannels
+  refNameRank?: SpanChannels
   /** The summary tier's per-species presence bars. */
   summary?: MafSummarySpans
   /** The identity heatmap's cells. */

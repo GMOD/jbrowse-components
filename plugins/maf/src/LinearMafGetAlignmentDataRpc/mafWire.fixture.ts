@@ -17,7 +17,7 @@ import type { MafWirePacked } from './mafWirePacker.ts'
 export interface TestWireRow {
   sampleId: string
   seq: string
-  chr?: string
+  srcRefName?: string
   srcStart?: number
   strand?: number
   srcSize?: number
@@ -41,7 +41,7 @@ export function packTestWire(blocks: TestWireBlock[]): MafWirePacked {
         row.seq,
         0,
         row.seq.length,
-        row.chr ?? '',
+        row.srcRefName ?? '',
         row.srcStart ?? 0,
         row.strand ?? 1,
         row.srcSize,

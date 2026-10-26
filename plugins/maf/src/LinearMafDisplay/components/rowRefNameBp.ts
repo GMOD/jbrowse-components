@@ -10,45 +10,51 @@ export interface StrandBp {
  * `rowIndex -> chr -> StrandBp`, nested rather than keyed on a joined string
  * so the walk over every block × row allocates nothing per cell.
  */
-export type RowChromBp = Map<number, Map<string, StrandBp>>
+export type RowRefNameBp = Map<number, Map<string, StrandBp>>
 
 /**
  * Per region, keyed on the region object, since `placeMafRegionData` builds a
  * fresh one per fetch and reorder, when its baked `rowIndex` stops being true.
  */
-const regionCache = new WeakMap<MafRegionData, RowChromBp>()
+const regionCache = new WeakMap<MafRegionData, RowRefNameBp>()
 
 function addBp(
-  totals: RowChromBp,
+  totals: RowRefNameBp,
   rowIndex: number,
-  chr: string,
+  srcRefName: string,
   fwd: number,
   rev: number,
 ) {
-  let byChr = totals.get(rowIndex)
-  if (byChr === undefined) {
-    byChr = new Map()
-    totals.set(rowIndex, byChr)
+  let byRefName = totals.get(rowIndex)
+  if (byRefName === undefined) {
+    byRefName = new Map()
+    totals.set(rowIndex, byRefName)
   }
-  const t = byChr.get(chr)
+  const t = byRefName.get(srcRefName)
   if (t === undefined) {
-    byChr.set(chr, { fwd, rev })
+    byRefName.set(srcRefName, { fwd, rev })
   } else {
     t.fwd += fwd
     t.rev += rev
   }
 }
 
-function regionRowChromBp(region: MafRegionData) {
+function regionRowRefNameBp(region: MafRegionData) {
   let totals = regionCache.get(region)
   if (totals === undefined) {
     totals = new Map()
     for (const block of region.blocks) {
       const len = block.endBp - block.startBp
       for (const row of block.rows) {
-        if (row.chr !== undefined) {
+        if (row.srcRefName !== undefined) {
           const rev = row.strand === -1
-          addBp(totals, row.rowIndex, row.chr, rev ? 0 : len, rev ? len : 0)
+          addBp(
+            totals,
+            row.rowIndex,
+            row.srcRefName,
+            rev ? 0 : len,
+            rev ? len : 0,
+          )
         }
       }
     }
@@ -62,12 +68,12 @@ function regionRowChromBp(region: MafRegionData) {
  * the row's strand: the one walk behind both the source-chromosome ranks and
  * the inversion consensus.
  */
-export function rowChromBp(regions: Iterable<MafRegionData>): RowChromBp {
-  const totals: RowChromBp = new Map()
+export function rowRefNameBp(regions: Iterable<MafRegionData>): RowRefNameBp {
+  const totals: RowRefNameBp = new Map()
   for (const region of regions) {
-    for (const [rowIndex, byChr] of regionRowChromBp(region)) {
-      for (const [chr, { fwd, rev }] of byChr) {
-        addBp(totals, rowIndex, chr, fwd, rev)
+    for (const [rowIndex, byRefName] of regionRowRefNameBp(region)) {
+      for (const [srcRefName, { fwd, rev }] of byRefName) {
+        addBp(totals, rowIndex, srcRefName, fwd, rev)
       }
     }
   }

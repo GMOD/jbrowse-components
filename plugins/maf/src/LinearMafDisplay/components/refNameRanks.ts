@@ -2,7 +2,7 @@ import { keyNames } from '@jbrowse/core/util/categoricalField'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 
 import { blockIndexAtBp } from '../../LinearMafRenderer/blockAtBp.ts'
-import { rowChromBp } from './rowChromBp.ts'
+import { rowRefNameBp } from './rowRefNameBp.ts'
 
 import type {
   MafAlignedRow,
@@ -12,13 +12,13 @@ import type {
 import type { LegendItem } from '@jbrowse/core/ui'
 import type { SpanChannels } from '@jbrowse/render-core/marks'
 
-// Per-rank palette for color-by-source-chromosome. Coloring is by a
-// chromosome's rank within its own species row (`perRowChromRanks`), not its
-// name, so every row's main chromosome shares rank 0's calm color and a
-// minority source chromosome (the rearrangement signal) picks up a saturated
+// Per-rank palette for the `refNameRank` fill. Coloring is by a source
+// sequence's rank within its own species row (`perRowRefNameRanks`), not its
+// name, so every row's main sequence shares rank 0's calm color and a
+// minority source sequence (the rearrangement signal) picks up a saturated
 // accent.
-export const SOURCE_CHROM_PALETTE = [
-  'hsl(210, 55%, 55%)', // rank 0 — primary (main chromosome), calm blue
+export const REF_NAME_RANK_PALETTE = [
+  'hsl(210, 55%, 55%)', // rank 0 — primary (main sequence), calm blue
   'hsl(28, 85%, 55%)', // rank 1 — orange
   'hsl(350, 70%, 57%)', // rank 2 — crimson
   'hsl(275, 45%, 58%)', // rank 3 — purple
@@ -27,33 +27,31 @@ export const SOURCE_CHROM_PALETTE = [
 
 // Legend labels paired with the palette (index = rank); tail ranks reuse the
 // last "other" label, matching the clamped color.
-export const SOURCE_CHROM_RANK_LABELS = [
-  'Main chromosome',
+export const REF_NAME_RANK_LABELS = [
+  'Main sequence',
   '2nd source',
   '3rd source',
   '4th source',
   'Other source',
 ]
 
-export function sourceChromRankLabel(rank: number): string {
-  return SOURCE_CHROM_RANK_LABELS[
-    Math.min(rank, SOURCE_CHROM_RANK_LABELS.length - 1)
-  ]!
+export function refNameRankLabel(rank: number): string {
+  return REF_NAME_RANK_LABELS[Math.min(rank, REF_NAME_RANK_LABELS.length - 1)]!
 }
 
 /**
- * The color key for the source-chromosome rendering: one row per rank present
+ * The color key for the `refNameRank` fill: one row per rank present
  * in view, capped at the palette's last entry, where color and label both
- * saturate ("Other source"). A lone "Main chromosome" entry means nothing in
+ * saturate ("Other source"). A lone "Main sequence" entry means nothing in
  * view is rearranged. A rank `encoding.color.scale.names` names takes that
  * name, and a written `scale.range` its colors.
  */
-export function sourceChromLegendItems(
+export function refNameRankLegendItems(
   maxRank: number,
   {
     domain = [],
     names = [],
-    range = SOURCE_CHROM_PALETTE,
+    range = REF_NAME_RANK_PALETTE,
   }: {
     domain?: readonly (string | number)[]
     names?: readonly string[]
@@ -63,7 +61,7 @@ export function sourceChromLegendItems(
   const keyed = keyNames(domain, names)
   const shown = Math.min(maxRank, range.length - 1) + 1
   return Array.from({ length: shown }, (_, rank) => ({
-    label: keyed.get(String(rank)) ?? sourceChromRankLabel(rank),
+    label: keyed.get(String(rank)) ?? refNameRankLabel(rank),
     color: range[rank]!,
   }))
 }
@@ -75,21 +73,21 @@ export function sourceChromLegendItems(
  * so the span encode and the legend getter can share it and never disagree
  * about which color a row's chromosome gets.
  */
-export function perRowChromRanks(regions: Iterable<MafRegionData>): {
+export function perRowRefNameRanks(regions: Iterable<MafRegionData>): {
   ranks: Map<number, Map<string, number>>
   maxRank: number
 } {
   const ranks = new Map<number, Map<string, number>>()
   let maxRank = 0
-  for (const [rowIndex, byChr] of rowChromBp(regions)) {
-    const ordered = [...byChr]
-      .filter(([chr]) => chr)
-      .map(([chr, { fwd, rev }]) => [chr, fwd + rev] as const)
+  for (const [rowIndex, byRefName] of rowRefNameBp(regions)) {
+    const ordered = [...byRefName]
+      .filter(([srcRefName]) => srcRefName)
+      .map(([srcRefName, { fwd, rev }]) => [srcRefName, fwd + rev] as const)
       .sort((a, b) => b[1] - a[1])
     if (ordered.length > 0) {
       const rankMap = new Map<string, number>()
-      for (const [i, [chr]] of ordered.entries()) {
-        rankMap.set(chr, i)
+      for (const [i, [srcRefName]] of ordered.entries()) {
+        rankMap.set(srcRefName, i)
       }
       ranks.set(rowIndex, rankMap)
       maxRank = Math.max(maxRank, ordered.length - 1)
@@ -98,9 +96,9 @@ export function perRowChromRanks(regions: Iterable<MafRegionData>): {
   return { ranks, maxRank }
 }
 
-const RANK_ABGR = SOURCE_CHROM_PALETTE.map(cssColorToABGR)
+const RANK_ABGR = REF_NAME_RANK_PALETTE.map(cssColorToABGR)
 
-const DEFAULT_RANK_KEY = SOURCE_CHROM_PALETTE.join('\n')
+const DEFAULT_RANK_KEY = REF_NAME_RANK_PALETTE.join('\n')
 const MAX_RANK_TABLES = 16
 const rankTables = new Map<string, readonly number[]>()
 
@@ -109,8 +107,8 @@ const rankTables = new Map<string, readonly number[]>()
  * colors where it lists any, else `SOURCE_CHROM_PALETTE`. The same array for
  * the same range, so a color edit that leaves it alone re-encodes nothing.
  */
-export function sourceChromRankColors(
-  range: readonly string[] = SOURCE_CHROM_PALETTE,
+export function refNameRankColors(
+  range: readonly string[] = REF_NAME_RANK_PALETTE,
 ) {
   const key = range.join('\n')
   if (range.length === 0 || key === DEFAULT_RANK_KEY) {
@@ -130,10 +128,10 @@ export function sourceChromRankColors(
 /**
  * The color-by-source-chromosome rows as `span` channels: one instance per
  * aligned row per block, across the block's reference extent, colored by the
- * row's rank for its source chromosome. A row the adapter named no `chr` for
+ * row's rank for its source chromosome. A row the adapter named no `srcRefName` for
  * draws nothing. Blocks outer, rows inner, which is the paint order.
  */
-export function encodeSourceChromSpans(
+export function encodeRefNameRankSpans(
   blocks: readonly MafBlock[],
   ranks: ReadonlyMap<number, ReadonlyMap<string, number>>,
   rankColors: readonly number[] = RANK_ABGR,
@@ -141,7 +139,7 @@ export function encodeSourceChromSpans(
   let count = 0
   for (const { rows } of blocks) {
     for (const row of rows) {
-      if (row.chr) {
+      if (row.srcRefName) {
         count++
       }
     }
@@ -151,15 +149,15 @@ export function encodeSourceChromSpans(
   const row = new Uint32Array(count)
   const color = new Uint32Array(count)
   const last = rankColors.length - 1
-  const chrOfRow: (string | undefined)[] = []
+  const refNameOfRow: (string | undefined)[] = []
   const colorOfRow: number[] = []
   let i = 0
   for (const { startBp, endBp, rows } of blocks) {
-    for (const { rowIndex, chr } of rows) {
-      if (chr) {
-        if (chrOfRow[rowIndex] !== chr) {
-          const rank = ranks.get(rowIndex)?.get(chr) ?? 0
-          chrOfRow[rowIndex] = chr
+    for (const { rowIndex, srcRefName } of rows) {
+      if (srcRefName) {
+        if (refNameOfRow[rowIndex] !== srcRefName) {
+          const rank = ranks.get(rowIndex)?.get(srcRefName) ?? 0
+          refNameOfRow[rowIndex] = srcRefName
           colorOfRow[rowIndex] = rankColors[Math.min(rank, last)]!
         }
         x[i] = startBp
@@ -198,7 +196,7 @@ function rowAt(rows: readonly MafAlignedRow[], rowIndex: number) {
  * (`placeMafRegionData`), so the row is a binary search, and of two lines on
  * one row (a paralog) it takes the last, the one the spans paint on top.
  */
-export function sourceChromBarColors(
+export function refNameRankBarColors(
   blocks: readonly MafBlock[],
   bars: { x: Uint32Array; row: Uint32Array; count: number },
   ranks: ReadonlyMap<number, ReadonlyMap<string, number>>,
@@ -208,8 +206,11 @@ export function sourceChromBarColors(
   const colors = new Uint32Array(bars.count)
   for (let i = 0; i < bars.count; i++) {
     const b = blockIndexAtBp(blocks, bars.x[i]!)
-    const chr = b === -1 ? undefined : rowAt(blocks[b]!.rows, bars.row[i]!)?.chr
-    const rank = chr ? (ranks.get(bars.row[i]!)?.get(chr) ?? 0) : 0
+    const srcRefName =
+      b === -1 ? undefined : rowAt(blocks[b]!.rows, bars.row[i]!)?.srcRefName
+    const rank = srcRefName
+      ? (ranks.get(bars.row[i]!)?.get(srcRefName) ?? 0)
+      : 0
     colors[i] = rankColors[Math.min(rank, last)]!
   }
   return colors

@@ -34,7 +34,7 @@ function minusStrand(startBp: number) {
   const base = block(startBp, 'AAAA', ['AAAA'])
   return {
     ...base,
-    rows: base.rows.map(row => ({ ...row, chr: 'chr1', strand: -1 })),
+    rows: base.rows.map(row => ({ ...row, srcRefName: 'chr1', strand: -1 })),
   }
 }
 
@@ -46,9 +46,9 @@ test('a block is walked once, however many times it is asked for', () => {
 test('only rows whose strand differs from their consensus are inverted', () => {
   const base = block(0, 'AAAA', ['AAAA', 'AAAA', 'AAAA', 'AAAA'])
   const rows = [
-    { ...base.rows[0]!, chr: 'chr1', strand: -1 },
-    { ...base.rows[1]!, chr: 'chr1', strand: 1 },
-    { ...base.rows[2]!, chr: 'chr1' },
+    { ...base.rows[0]!, srcRefName: 'chr1', strand: -1 },
+    { ...base.rows[1]!, srcRefName: 'chr1', strand: 1 },
+    { ...base.rows[2]!, srcRefName: 'chr1' },
     { ...base.rows[3]!, strand: -1 },
   ]
   expect(regionInvertedRows(region([{ ...base, rows }]), forward)(0)).toEqual([

@@ -33,7 +33,7 @@ export function rowContinues(prev: MafAlignedRow, next: MafAlignedRow) {
   return (
     prev.srcStart === undefined ||
     next.srcStart === undefined ||
-    (prev.chr === next.chr &&
+    (prev.srcRefName === next.srcRefName &&
       prev.strand === next.strand &&
       next.srcStart === prev.srcStart + alignedBases(prev.alignmentBytes))
   )

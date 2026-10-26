@@ -134,22 +134,22 @@ test('repeated species and contig names are interned, not repeated', () => {
       startBp: 0,
       refSeq: 'AC',
       rows: [
-        { sampleId: 'hg38', seq: 'AC', chr: 'chr1' },
-        { sampleId: 'mm10', seq: 'AC', chr: 'chr1' },
+        { sampleId: 'hg38', seq: 'AC', srcRefName: 'chr1' },
+        { sampleId: 'mm10', seq: 'AC', srcRefName: 'chr1' },
       ],
     },
     {
       startBp: 10,
       refSeq: 'AC',
-      rows: [{ sampleId: 'hg38', seq: 'AC', chr: 'chr2' }],
+      rows: [{ sampleId: 'hg38', seq: 'AC', srcRefName: 'chr2' }],
     },
   ])
   expect(packed.sampleIds).toEqual(['hg38', 'mm10'])
-  expect(packed.chrNames).toEqual(['chr1', 'chr2'])
+  expect(packed.refNames).toEqual(['chr1', 'chr2'])
   // hg38 in both blocks is the same dictionary entry
   expect(packed.rowSample[0]).toBe(packed.rowSample[2])
-  expect(packed.rowChr[0]).toBe(packed.rowChr[1])
-  expect(packed.rowChr[2]).toBe(1)
+  expect(packed.rowRefName[0]).toBe(packed.rowRefName[1])
+  expect(packed.rowRefName[2]).toBe(1)
 })
 
 // MAF-tabix and TAF never produce `i` lines, so they must not pay for five
@@ -231,7 +231,7 @@ test('empties are ranged per block alongside rows', () => {
         {
           sampleId: 'b',
           status: 'C',
-          chr: 'chrX',
+          srcRefName: 'chrX',
           srcStart: 5,
           size: 9,
           strand: -1,
@@ -244,7 +244,7 @@ test('empties are ranged per block alongside rows', () => {
   expect(Array.from(packed.blockEmptyStart)).toEqual([0, 1, 1])
   expect(packed.emptyStrand[0]).toBe(-1)
   expect(packed.emptySize[0]).toBe(9)
-  expect(packed.chrNames[packed.emptyChr[0]!]).toBe('chrX')
+  expect(packed.refNames[packed.emptyRefName[0]!]).toBe('chrX')
 })
 
 test('columns and arena grow and right-size', () => {

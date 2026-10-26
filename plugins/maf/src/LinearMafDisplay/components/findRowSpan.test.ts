@@ -31,7 +31,7 @@ const plusStrand = region([
       {
         rowIndex: 0,
         alignmentBytes: enc.encode('acgta'),
-        chr: 'chrX',
+        srcRefName: 'chrX',
         srcStart: 500,
         strand: 1,
       },
@@ -42,7 +42,7 @@ const plusStrand = region([
 
 test('span of a + strand row is its own coordinates over the ref range', () => {
   expect(findRowSpan(plusStrand, 101, 104, 0)).toEqual({
-    chr: 'chrX',
+    refName: 'chrX',
     start: 501,
     end: 504,
   })
@@ -58,7 +58,7 @@ test('gaps in the sample are excluded from the span', () => {
         {
           rowIndex: 0,
           alignmentBytes: enc.encode('--gt-'),
-          chr: 'chrX',
+          srcRefName: 'chrX',
           srcStart: 500,
           strand: 1,
         },
@@ -67,7 +67,7 @@ test('gaps in the sample are excluded from the span', () => {
     },
   ])
   expect(findRowSpan(r, 100, 105, 0)).toEqual({
-    chr: 'chrX',
+    refName: 'chrX',
     start: 500,
     end: 502,
   })
@@ -83,7 +83,7 @@ test('a − strand row mirrors through srcSize', () => {
         {
           rowIndex: 0,
           alignmentBytes: enc.encode('acgta'),
-          chr: 'chrX',
+          srcRefName: 'chrX',
           srcStart: 10,
           strand: -1,
           srcSize: 1000,
@@ -94,7 +94,7 @@ test('a − strand row mirrors through srcSize', () => {
   ])
   // baseOffsets 1..3 map to 1000-1-10-offset = 988..986
   expect(findRowSpan(r, 101, 104, 0)).toEqual({
-    chr: 'chrX',
+    refName: 'chrX',
     start: 986,
     end: 989,
   })
@@ -110,7 +110,7 @@ test('span extends across adjacent blocks on the same chromosome', () => {
         {
           rowIndex: 0,
           alignmentBytes: enc.encode('ac'),
-          chr: 'chrX',
+          srcRefName: 'chrX',
           srcStart: 500,
           strand: 1,
         },
@@ -125,7 +125,7 @@ test('span extends across adjacent blocks on the same chromosome', () => {
         {
           rowIndex: 0,
           alignmentBytes: enc.encode('gt'),
-          chr: 'chrX',
+          srcRefName: 'chrX',
           srcStart: 600,
           strand: 1,
         },
@@ -134,7 +134,7 @@ test('span extends across adjacent blocks on the same chromosome', () => {
     },
   ])
   expect(findRowSpan(r, 100, 112, 0)).toEqual({
-    chr: 'chrX',
+    refName: 'chrX',
     start: 500,
     end: 602,
   })
@@ -150,7 +150,7 @@ test('a block on a different chromosome does not extend the span', () => {
         {
           rowIndex: 0,
           alignmentBytes: enc.encode('ac'),
-          chr: 'chrX',
+          srcRefName: 'chrX',
           srcStart: 500,
           strand: 1,
         },
@@ -165,7 +165,7 @@ test('a block on a different chromosome does not extend the span', () => {
         {
           rowIndex: 0,
           alignmentBytes: enc.encode('gt'),
-          chr: 'chr7',
+          srcRefName: 'chr7',
           srcStart: 900,
           strand: 1,
         },
@@ -174,7 +174,7 @@ test('a block on a different chromosome does not extend the span', () => {
     },
   ])
   expect(findRowSpan(r, 100, 112, 0)).toEqual({
-    chr: 'chrX',
+    refName: 'chrX',
     start: 500,
     end: 502,
   })

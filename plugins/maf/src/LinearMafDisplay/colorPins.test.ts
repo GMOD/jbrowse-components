@@ -5,7 +5,7 @@ import { identitySpans } from '../LinearMafRenderer/identity.ts'
 import { packMafCellColorConfig } from '../LinearMafRenderer/resolveCellColor.ts'
 import { getMafColorPalette } from '../LinearMafRenderer/util.ts'
 import { emptyMafCoverage } from './components/coverageTestFixture.ts'
-import { encodeSourceChromSpans } from './components/drawSourceChrom.ts'
+import { encodeRefNameRankSpans } from './components/refNameRanks.ts'
 import { createMafTestEnvironment, stageDetailRegion } from './testEnv.ts'
 
 import type { MafBlock } from '../LinearMafRenderer/mafRenderingBackendTypes.ts'
@@ -66,13 +66,19 @@ test('each source chromosome rank paints as it did, clamped at the fifth', () =>
     startBp: rank,
     endBp: rank + 1,
     refSeqBytes: new Uint8Array(0),
-    rows: [{ rowIndex: 0, chr: `c${rank}`, alignmentBytes: new Uint8Array(0) }],
+    rows: [
+      {
+        rowIndex: 0,
+        srcRefName: `c${rank}`,
+        alignmentBytes: new Uint8Array(0),
+      },
+    ],
     empties: [],
   }))
   const ranks = new Map([
     [0, new Map(blocks.map((_, rank) => [`c${rank}`, rank]))],
   ])
-  expect(hex(encodeSourceChromSpans(blocks, ranks).color)).toEqual(
+  expect(hex(encodeRefNameRankSpans(blocks, ranks).color)).toEqual(
     RANK_ABGR_HEX,
   )
 })
@@ -131,9 +137,7 @@ function makeDisplay() {
   return createMafTestEnvironment({ framesAdapter: {} }).createDisplay()
 }
 
-function stageTwoChromosomes(
-  display: ReturnType<typeof makeDisplay>['display'],
-) {
+function stageTwoRefNames(display: ReturnType<typeof makeDisplay>['display']) {
   display.setSamples({
     samples: [{ name: 'sp1', label: 'sp1' }],
     treeNewick: undefined,
@@ -147,12 +151,12 @@ function stageTwoChromosomes(
         {
           startBp: 100,
           refSeq: 'AAAAAAAAAA',
-          rows: [{ sampleId: 'sp1', seq: 'AAAAAAAAAA', chr: 'chrA' }],
+          rows: [{ sampleId: 'sp1', seq: 'AAAAAAAAAA', srcRefName: 'chrA' }],
         },
         {
           startBp: 200,
           refSeq: 'AAA',
-          rows: [{ sampleId: 'sp1', seq: 'AAA', chr: 'chrB' }],
+          rows: [{ sampleId: 'sp1', seq: 'AAA', srcRefName: 'chrB' }],
         },
       ],
       { coverage: emptyMafCoverage(0), refSampleId: undefined },
@@ -227,15 +231,15 @@ describe('each field keys as it did', () => {
   })
 
   test('refNameRank keys one entry per rank in view', () => {
-    expect(keyOf('refNameRank', 16, stageTwoChromosomes)).toEqual([
+    expect(keyOf('refNameRank', 16, stageTwoRefNames)).toEqual([
       {
         kind: 'categorical',
-        id: 'sourceChrom',
+        id: 'refNameRank',
         title: 'Source sequence',
         entries: [
           {
-            value: 'Main chromosome',
-            label: 'Main chromosome',
+            value: 'Main sequence',
+            label: 'Main sequence',
             color: 'hsl(210, 55%, 55%)',
           },
           {

@@ -41,7 +41,7 @@ export interface MafSourceLine {
 
 /** Where {@link applyMafLine} files a line's row, by resolved sample id. */
 export interface MafLineTarget {
-  row(sampleId: string, chr: string, line: MafSourceLine): void
+  row(sampleId: string, srcRefName: string, line: MafSourceLine): void
   context(sampleId: string, context: AlignmentContext): void
   empty(sampleId: string, empty: EmptyRecord): void
 }
@@ -92,7 +92,7 @@ export function applyMafLine(
     }
     const resolved = resolve(src)
     if (resolved?.assemblyName) {
-      out.row(resolved.assemblyName, resolved.chr, parsed)
+      out.row(resolved.assemblyName, resolved.refName, parsed)
     }
     return parsed
   }
@@ -120,7 +120,7 @@ export function applyMafLine(
   const resolved = resolve(src)
   if (resolved?.assemblyName && status) {
     out.empty(resolved.assemblyName, {
-      chr: resolved.chr,
+      srcRefName: resolved.refName,
       srcStart: Number.parseInt(parts[2]!, 10),
       size: Number.parseInt(parts[3]!, 10),
       strand: parseStrand(parts[4]),

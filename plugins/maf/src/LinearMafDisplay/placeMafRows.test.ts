@@ -16,7 +16,7 @@ function wireData(rows: string[], empties: string[] = []): MafWireRegionData {
         empties: empties.map(sampleId => ({
           sampleId,
           status: 'C' as const,
-          chr: 'chr1',
+          srcRefName: 'chr1',
           srcStart: 0,
           size: 4,
           strand: 1,

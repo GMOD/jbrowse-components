@@ -228,7 +228,7 @@ export function readTafBlock(
     if (parsed?.assemblyName) {
       reader.addRow(
         parsed.assemblyName,
-        parsed.chr,
+        parsed.refName,
         row.start,
         row.length,
         row.strand,

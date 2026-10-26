@@ -1,4 +1,4 @@
-import { perRowChromRanks, sourceChromRankLabel } from './drawSourceChrom.ts'
+import { perRowRefNameRanks, refNameRankLabel } from './refNameRanks.ts'
 
 import type { MafRegionData } from '../../LinearMafRenderer/mafRenderingBackendTypes.ts'
 
@@ -12,9 +12,9 @@ function region(
       startBp: b.startBp,
       endBp: b.endBp,
       refSeqBytes: new Uint8Array(),
-      rows: b.rows.map(([rowIndex, chr]) => ({
+      rows: b.rows.map(([rowIndex, srcRefName]) => ({
         rowIndex,
-        chr,
+        srcRefName,
         alignmentBytes: new Uint8Array(),
         srcStart: 0,
         strand: 1,
@@ -24,18 +24,18 @@ function region(
   } as unknown as MafRegionData
 }
 
-describe('sourceChromRankLabel', () => {
+describe('refNameRankLabel', () => {
   test('rank 0 is the main chromosome', () => {
-    expect(sourceChromRankLabel(0)).toBe('Main chromosome')
+    expect(refNameRankLabel(0)).toBe('Main sequence')
   })
   test('deep ranks clamp to the last label', () => {
-    expect(sourceChromRankLabel(99)).toBe('Other source')
+    expect(refNameRankLabel(99)).toBe('Other source')
   })
 })
 
 describe('perRowChromRanks', () => {
   test('a row on a single chromosome ranks it 0 (maxRank 0)', () => {
-    const { ranks, maxRank } = perRowChromRanks([
+    const { ranks, maxRank } = perRowRefNameRanks([
       region([{ startBp: 0, endBp: 100, rows: [[0, 'chrA']] }]),
     ])
     expect(ranks.get(0)?.get('chrA')).toBe(0)
@@ -44,7 +44,7 @@ describe('perRowChromRanks', () => {
 
   test('within a row, the higher-bp chromosome is rank 0', () => {
     // chrA covers 100bp, chrB covers 30bp in row 0 -> chrA rank 0, chrB rank 1
-    const { ranks, maxRank } = perRowChromRanks([
+    const { ranks, maxRank } = perRowRefNameRanks([
       region([
         { startBp: 0, endBp: 100, rows: [[0, 'chrA']] },
         { startBp: 200, endBp: 230, rows: [[0, 'chrB']] },
@@ -56,7 +56,7 @@ describe('perRowChromRanks', () => {
   })
 
   test('rank is scoped per row — same name can be rank 0 in one row, rank 1 in another', () => {
-    const { ranks } = perRowChromRanks([
+    const { ranks } = perRowRefNameRanks([
       region([
         // row 0: mostly chrX; row 1: mostly chrY with a little chrX
         {

@@ -62,7 +62,7 @@ export function scanMafTabixEntry(
   }
   return {
     assemblyName: parsed.assemblyName,
-    chr: parsed.chr,
+    srcRefName: parsed.refName,
     srcStart: parseInt(text.slice(c0 + 1, c1), 10),
     strand: text.charCodeAt(c2 + 1) === MINUS_CHAR ? -1 : 1,
     srcSize: parseInt(text.slice(c3 + 1, c4), 10),
@@ -89,12 +89,12 @@ class MafStanzaRows implements MafLineTarget {
   empties: Record<string, EmptyRecord> = {}
   private lastRowId = new Map<string, string>()
 
-  row(sampleId: string, chr: string, line: MafSourceLine) {
+  row(sampleId: string, srcRefName: string, line: MafSourceLine) {
     const { alignments } = this
     const rowId = freeRowId(sampleId, id => Object.hasOwn(alignments, id))
     this.lastRowId.set(sampleId, rowId)
     alignments[rowId] = {
-      chr,
+      srcRefName,
       srcStart: line.start,
       seq: line.seq,
       strand: line.strand,
@@ -150,10 +150,11 @@ export function legacyMafTabixFeatures(
         }
         const entry = scanMafTabixEntry(encoded, from, to, resolver.resolve)
         if (entry) {
-          const { assemblyName, chr, srcStart, strand, srcSize, seq } = entry
+          const { assemblyName, srcRefName, srcStart, strand, srcSize, seq } =
+            entry
           alignments[
             freeRowId(assemblyName, id => Object.hasOwn(alignments, id))
-          ] = { chr, srcStart, strand, srcSize, seq }
+          ] = { srcRefName, srcStart, strand, srcSize, seq }
         }
         if (from === 0) {
           firstEntrySeq = (

@@ -14,11 +14,11 @@ function strandStr(strand?: number) {
   return strand === -1 ? '-' : '+'
 }
 
-function locationStr(chr?: string, pos?: number, strand?: number) {
-  if (!chr || pos === undefined) {
+function locationStr(srcRefName?: string, pos?: number, strand?: number) {
+  if (!srcRefName || pos === undefined) {
     return undefined
   }
-  return `${chr}:${toLocale(pos + 1)} (${strandStr(strand)})`
+  return `${srcRefName}:${toLocale(pos + 1)} (${strandStr(strand)})`
 }
 
 const Row = observer(function Row({
@@ -98,7 +98,7 @@ const HoverContents = observer(function HoverContents({
   const location = `${refName}:${toLocale(coord)}`
 
   if (hover.kind === 'cell') {
-    const loc = locationStr(hover.chr, hover.pos, hover.strand)
+    const loc = locationStr(hover.srcRefName, hover.pos, hover.strand)
     const ctx = hover.context
     return (
       <TableShell caption={`Alignment - ${location}`}>
@@ -125,7 +125,7 @@ const HoverContents = observer(function HoverContents({
     // The lowest forward coordinate of the run, which the widget spans from;
     // `hover.pos` is the run's far end on a '-' row.
     const loc = locationStr(
-      hover.chr,
+      hover.srcRefName,
       hover.pos === undefined
         ? undefined
         : insertionForwardStart(hover.pos, hover.length, hover.strand),
@@ -161,7 +161,7 @@ const HoverContents = observer(function HoverContents({
       <Row label="Status" value={describeMafStatus(hover.status)} />
       <Row
         label="Location"
-        value={`${hover.chr}:${toLocale(hover.srcStart + 1)} (${strandStr(hover.strand)}), ${toLocale(hover.size)} bp`}
+        value={`${hover.srcRefName}:${toLocale(hover.srcStart + 1)} (${strandStr(hover.strand)}), ${toLocale(hover.size)} bp`}
       />
     </TableShell>
   )

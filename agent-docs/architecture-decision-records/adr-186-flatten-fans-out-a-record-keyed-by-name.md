@@ -46,13 +46,15 @@ reference axis.
 - **MAF's `AlignmentRecord` and `EmptyRecord` call the species coordinate
   `srcStart`**, pairing with `srcSize` as the MAF `s` and `e` lines' `start`
   pairs with theirs. The fanned species row then keeps the block's reference
-  `start` and `end` and carries `chr`, `srcStart`, `strand`, `srcSize` and
-  `seq`.
+  `start` and `end` and carries `srcRefName`, `srcStart`, `strand`, `srcSize`
+  and `seq`. (Amended 2026-10-26: the species' sequence name was `chr`; it
+  takes the house word with the same `src` prefix, since a bare `refName`
+  would shadow the block's reference `refName` on the fanned row.)
 - **The mark display attaches to a MafTrack.** `rows: "species"` over
   `{ type: "flatten", field: "alignments", key: "species" }` gives one row
   per species from the features themselves, as `rows` over any other field
-  does, and a `span` colored by `chr` is the MAF display's color-by-source-
-  chromosome mode.
+  does, and a `span` colored by `srcRefName` colors each block by its source
+  sequence, as the MAF display's `refNameRank` fill does by rank.
 
 ## Consequences
 

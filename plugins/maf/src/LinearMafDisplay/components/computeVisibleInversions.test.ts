@@ -1,6 +1,6 @@
 import {
   computeVisibleInversions,
-  consensusStrandByRowChr,
+  consensusStrandByRowRefName,
 } from './computeVisibleInversions.ts'
 import { emptyMafCoverage } from './coverageTestFixture.ts'
 
@@ -61,7 +61,7 @@ function visibleInversions(
   return computeVisibleInversions({
     view: v,
     rpcDataMap,
-    consensus: consensusStrandByRowChr(rpcDataMap),
+    consensus: consensusStrandByRowRefName(rpcDataMap),
     ...opts,
   })
 }
@@ -72,9 +72,9 @@ test('flags the block that bucks its scaffold consensus, not the majority', () =
     [
       0,
       region([
-        block(100, 30, [{ chr: 'chrA', strand: 1 }]),
-        block(150, 30, [{ chr: 'chrA', strand: -1 }]),
-        block(200, 30, [{ chr: 'chrA', strand: 1 }]),
+        block(100, 30, [{ srcRefName: 'chrA', strand: 1 }]),
+        block(150, 30, [{ srcRefName: 'chrA', strand: -1 }]),
+        block(200, 30, [{ srcRefName: 'chrA', strand: 1 }]),
       ]),
     ],
   ])
@@ -90,8 +90,8 @@ test('a wholly reverse-oriented scaffold is NOT all inversions', () => {
     [
       0,
       region([
-        block(100, 30, [{ chr: 'scaf9', strand: -1 }]),
-        block(150, 30, [{ chr: 'scaf9', strand: -1 }]),
+        block(100, 30, [{ srcRefName: 'scaf9', strand: -1 }]),
+        block(150, 30, [{ srcRefName: 'scaf9', strand: -1 }]),
       ]),
     ],
   ])
@@ -105,10 +105,10 @@ test('consensus is per (row, source chromosome)', () => {
     [
       0,
       region([
-        block(100, 40, [{ chr: 'chrA', strand: 1 }]),
-        block(150, 10, [{ chr: 'chrA', strand: -1 }]), // inverted vs chrA (+)
-        block(200, 40, [{ chr: 'chrB', strand: -1 }]),
-        block(250, 10, [{ chr: 'chrB', strand: 1 }]), // inverted vs chrB (−)
+        block(100, 40, [{ srcRefName: 'chrA', strand: 1 }]),
+        block(150, 10, [{ srcRefName: 'chrA', strand: -1 }]), // inverted vs chrA (+)
+        block(200, 40, [{ srcRefName: 'chrB', strand: -1 }]),
+        block(250, 10, [{ srcRefName: 'chrB', strand: 1 }]), // inverted vs chrB (−)
       ]),
     ],
   ])
@@ -119,7 +119,7 @@ test('consensus is per (row, source chromosome)', () => {
 
 test('rows without strand or chr are ignored', () => {
   const rpcDataMap = new Map([
-    [0, region([block(100, 30, [{ strand: -1 }, { chr: 'chrA' }])])],
+    [0, region([block(100, 30, [{ strand: -1 }, { srcRefName: 'chrA' }])])],
   ])
   expect(visibleInversions(rpcDataMap)).toHaveLength(0)
 })
@@ -138,9 +138,9 @@ test('blocks outside the visible span emit no marker but still set consensus', (
       0,
       region([
         // visible, − strand
-        block(100, 30, [{ chr: 'chrA', strand: -1 }]),
+        block(100, 30, [{ srcRefName: 'chrA', strand: -1 }]),
         // off-screen, and enough + bp to make + the scaffold consensus
-        block(300, 300, [{ chr: 'chrA', strand: 1 }]),
+        block(300, 300, [{ srcRefName: 'chrA', strand: 1 }]),
       ]),
     ],
   ])
@@ -161,8 +161,8 @@ test('a block straddling the visible start still draws', () => {
       0,
       region([
         // starts before the visible span, ends inside it
-        block(150, 100, [{ chr: 'chrA', strand: -1 }]),
-        block(300, 300, [{ chr: 'chrA', strand: 1 }]),
+        block(150, 100, [{ srcRefName: 'chrA', strand: -1 }]),
+        block(300, 300, [{ srcRefName: 'chrA', strand: 1 }]),
       ]),
     ],
   ])

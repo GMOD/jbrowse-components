@@ -13,9 +13,9 @@ import {
 import { types } from '@jbrowse/mobx-state-tree'
 
 import {
-  SOURCE_CHROM_PALETTE,
-  SOURCE_CHROM_RANK_LABELS,
-} from './components/drawSourceChrom.ts'
+  REF_NAME_RANK_PALETTE,
+  REF_NAME_RANK_LABELS,
+} from './components/refNameRanks.ts'
 import { MAF_COLOR_FIELDS } from './rowPlan.ts'
 
 import type { MafColorField } from './rowPlan.ts'
@@ -33,9 +33,9 @@ export const MAF_FIELD_PRESETS = {
   refNameRank: {
     scale: {
       type: 'ordinal',
-      domain: SOURCE_CHROM_PALETTE.map((_, rank) => String(rank)),
-      range: SOURCE_CHROM_PALETTE,
-      names: SOURCE_CHROM_RANK_LABELS,
+      domain: REF_NAME_RANK_PALETTE.map((_, rank) => String(rank)),
+      range: REF_NAME_RANK_PALETTE,
+      names: REF_NAME_RANK_LABELS,
     },
     legend: { title: 'Source sequence' },
   },

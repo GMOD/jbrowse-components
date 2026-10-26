@@ -84,12 +84,12 @@ import {
 } from './components/computeVisibleFrames.ts'
 import {
   computeVisibleInversions,
-  consensusStrandByRowChr,
+  consensusStrandByRowRefName,
 } from './components/computeVisibleInversions.ts'
 import { computeVisibleLabels } from './components/computeVisibleLabels.ts'
 import { conservationBarAt } from './components/conservationBand.ts'
-import { perRowChromRanks } from './components/drawSourceChrom.ts'
 import { findRowHoverAtBp } from './components/findRowHover.ts'
+import { perRowRefNameRanks } from './components/refNameRanks.ts'
 import { summaryAt } from './components/summarySpans.ts'
 import { configSlotActions, configSlotViews } from './configSlotViews.ts'
 import { coverageTooltipBinAt } from './coverageTooltipBin.ts'
@@ -1362,7 +1362,7 @@ export default function stateModelFactory(
          */
         get inversionConsensus(): StrandConsensus {
           return self.showInversions
-            ? consensusStrandByRowChr(self.rpcDataMap)
+            ? consensusStrandByRowRefName(self.rpcDataMap)
             : new Map<number, Map<string, number>>()
         },
       }))
@@ -1636,7 +1636,7 @@ export default function stateModelFactory(
         },
       }))
       .views(self => {
-        let last: ReturnType<typeof perRowChromRanks> | undefined
+        let last: ReturnType<typeof perRowRefNameRanks> | undefined
         return {
           /**
            * #getter
@@ -1646,10 +1646,10 @@ export default function stateModelFactory(
            * the ranks are, so a fetch that ranks nothing new re-encodes only
            * its own region.
            */
-          get sourceChromRanks(): ReturnType<typeof perRowChromRanks> {
+          get refNameRanks(): ReturnType<typeof perRowRefNameRanks> {
             const next =
               self.rowPlan.color === 'refNameRank'
-                ? perRowChromRanks(self.rpcDataMap.values())
+                ? perRowRefNameRanks(self.rpcDataMap.values())
                 : { ranks: new Map<number, Map<string, number>>(), maxRank: 0 }
             if (!last || !compareStructural(next, last)) {
               last = next
@@ -1704,7 +1704,7 @@ export default function stateModelFactory(
                 colorEncoding: self.colorEncoding,
                 colorKeyTitle: self.colorKeyTitle,
                 oneBaseCells: self.encodeBinBp === 1,
-                maxSourceChromRank: self.sourceChromRanks.maxRank,
+                maxRefNameRank: self.refNameRanks.maxRank,
                 showsFrames: self.visibleFrames.length > 0,
                 rowColorScales: self.rowColorScales,
               })
@@ -1770,11 +1770,11 @@ export default function stateModelFactory(
               palette: colorPalette,
               binBp: self.encodeBinBp,
             },
-            sourceChromRanks:
+            refNameRanks:
               self.rowPlan.color === 'refNameRank'
-                ? self.sourceChromRanks.ranks
+                ? self.refNameRanks.ranks
                 : undefined,
-            sourceChromColors: self.sourceChromColors,
+            refNameRankPalette: self.refNameRankPalette,
             rowIndexBySrc: self.rowIndexBySrc,
             codons:
               (self.codonCellsActive || self.codonConservationActive) &&

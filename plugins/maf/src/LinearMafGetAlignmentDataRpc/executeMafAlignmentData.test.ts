@@ -45,7 +45,7 @@ function feature(
 }
 
 function row(seq: string, srcStart = 0): AlignmentRecord {
-  return { chr: 'chr1', srcStart, strand: 1, srcSize: 1000, seq }
+  return { srcRefName: 'chr1', srcStart, strand: 1, srcSize: 1000, seq }
 }
 
 // This suite never passes a `byteLimit`, so the executor measures nothing and
@@ -171,7 +171,7 @@ test('a species seen only on an e line is discovered and packed as an empty', as
       { hg38: row('ACGT') },
       {
         canFam: {
-          chr: 'chr5',
+          srcRefName: 'chr5',
           srcStart: 7,
           size: 3,
           strand: -1,

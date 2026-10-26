@@ -42,7 +42,7 @@ describe('the color encoding is the field through its preset', () => {
         scale: 'ordinal',
         domain: ['0', '1', '2', '3', '4'],
         names: [
-          'Main chromosome',
+          'Main sequence',
           '2nd source',
           '3rd source',
           '4th source',
@@ -68,7 +68,7 @@ describe('the color encoding is the field through its preset', () => {
 })
 
 describe('the key reads the encoding', () => {
-  function chromosomeKey(color: Record<string, unknown>) {
+  function refNameRankKey(color: Record<string, unknown>) {
     const { display, view } = displayWith({ field: 'refNameRank', ...color })
     view.zoomTo(16)
     view.setCoarseDynamicBlocks(view.dynamicBlocks, view.bpPerPx)
@@ -76,16 +76,16 @@ describe('the key reads the encoding', () => {
   }
 
   test('a written legend.title heads it, and "" draws none', () => {
-    expect(chromosomeKey({ legend: { title: 'Scaffold' } })).toMatchObject({
+    expect(refNameRankKey({ legend: { title: 'Scaffold' } })).toMatchObject({
       title: 'Scaffold',
     })
-    expect(chromosomeKey({ legend: { title: '' } })).toMatchObject({
+    expect(refNameRankKey({ legend: { title: '' } })).toMatchObject({
       title: '',
     })
   })
 
   test('written scale.names name the ranks', () => {
-    expect(chromosomeKey({ scale: { names: ['Home'] } })).toMatchObject({
+    expect(refNameRankKey({ scale: { names: ['Home'] } })).toMatchObject({
       entries: [{ label: 'Home' }],
     })
   })

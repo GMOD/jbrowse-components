@@ -92,13 +92,13 @@ test('a flatten over alignments answers one row per species on the reference spa
   const first = rows[0]!
   expect(first.get('species')).toBe('volvox')
   expect([first.get('start'), first.get('end')]).toEqual([0, 100])
-  expect(first.get('chr')).toBe('ctgA')
+  expect(first.get('srcRefName')).toBe('ctgA')
   expect(first.get('srcStart')).toBe(0)
   expect(first.get('strand')).toBe(1)
   expect(first.get('seq')).toHaveLength(100)
   const sim = rows[1]!
   expect(sim.get('species')).toBe('simvolvox')
-  expect([sim.get('start'), sim.get('end'), sim.get('chr')]).toEqual([
+  expect([sim.get('start'), sim.get('end'), sim.get('srcRefName')]).toEqual([
     0,
     100,
     'chrA',

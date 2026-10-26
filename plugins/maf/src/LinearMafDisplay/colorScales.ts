@@ -6,7 +6,7 @@ import {
   getCodonLegendItems,
   getFrameLegendItems,
 } from '../LinearMafRenderer/util.ts'
-import { sourceChromLegendItems } from './components/drawSourceChrom.ts'
+import { refNameRankLegendItems } from './components/refNameRanks.ts'
 
 import type { RowPlan } from './rowPlan.ts'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
@@ -19,7 +19,7 @@ export interface MafColorScaleInputs {
   colorEncoding: FieldColorEncoding | string | undefined
   colorKeyTitle: string
   oneBaseCells: boolean
-  maxSourceChromRank: number
+  maxRefNameRank: number
   showsFrames: boolean
   rowColorScales: ColorScale[]
 }
@@ -43,7 +43,7 @@ function fillScales({
   colorEncoding,
   colorKeyTitle,
   oneBaseCells,
-  maxSourceChromRank,
+  maxRefNameRank,
 }: MafColorScaleInputs): ColorScale[] {
   const fill = typeof colorEncoding === 'object' ? colorEncoding : undefined
   return plan.color === 'identity'
@@ -57,10 +57,10 @@ function fillScales({
     : plan.color === 'refNameRank'
       ? [
           categoricalScale(
-            'sourceChrom',
+            'refNameRank',
             colorKeyTitle,
-            sourceChromLegendItems(
-              maxSourceChromRank,
+            refNameRankLegendItems(
+              maxRefNameRank,
               fill?.scale === 'ordinal' ? fill : {},
             ),
           ),

@@ -169,12 +169,12 @@ export function ensureBigMafFixture(
       .text.trimEnd()
       .split('\n')
       .map(line => {
-        const [chr, start, end, , , entries] = line.split('\t')
+        const [srcRefName, start, end, , , entries] = line.split('\t')
         const stanza = entries!.split(',').map(entry => {
           const [src, from, size, strand, srcSize, seq] = entry.split(':')
           return `s ${src} ${from} ${size} ${strand} ${srcSize} ${seq}`
         })
-        return `${chr}\t${start}\t${end}\t${['a score=0', ...stanza].join(';')}`
+        return `${srcRefName}\t${start}\t${end}\t${['a score=0', ...stanza].join(';')}`
       })
     const bedPath = join(dir, `${name}.bed`)
     const asPath = join(dir, 'bigMaf.as')

@@ -20,11 +20,11 @@ import {
   locateRegionCodons,
 } from './codons.ts'
 import { encodeConservation } from './components/conservationBand.ts'
-import {
-  encodeSourceChromSpans,
-  sourceChromBarColors,
-} from './components/drawSourceChrom.ts'
 import { paintedBpRange } from './components/paintedBpRange.ts'
+import {
+  encodeRefNameRankSpans,
+  refNameRankBarColors,
+} from './components/refNameRanks.ts'
 import { encodeSummarySpans } from './components/summarySpans.ts'
 
 import type {
@@ -75,9 +75,9 @@ export interface MafRowsEncodeProps {
   identityColors: Uint32Array
   gpu: MafGpuProps
   /** The rows' source-sequence ranks, while `refNameRank` fills the rows. */
-  sourceChromRanks: ReadonlyMap<number, ReadonlyMap<string, number>> | undefined
-  /** each rank's packed color (`sourceChromRankColors`) */
-  sourceChromColors: readonly number[]
+  refNameRanks: ReadonlyMap<number, ReadonlyMap<string, number>> | undefined
+  /** each rank's packed color (`refNameRankColors`) */
+  refNameRankPalette: readonly number[]
   rowIndexBySrc: ReadonlyMap<string, number>
   /**
    * The codons to locate, while the codon layer or the band's codon mode
@@ -135,8 +135,8 @@ export function encodeMafRows(
     value,
     identityColors,
     gpu,
-    sourceChromRanks,
-    sourceChromColors,
+    refNameRanks,
+    refNameRankPalette,
     rowIndexBySrc,
     codons: codonProps,
     conservation,
@@ -153,7 +153,7 @@ export function encodeMafRows(
       ? locateRegionCodons(detail, frames, codonProps.anchor)
       : undefined
   const bandColor = cssColorToABGR(palette.conservationColor)
-  const ranks = plan.color === 'refNameRank' ? sourceChromRanks : undefined
+  const ranks = plan.color === 'refNameRank' ? refNameRanks : undefined
   return {
     cells:
       detail && rect && (plan.color === undefined || plan.perBase)
@@ -179,9 +179,9 @@ export function encodeMafRows(
             binBp,
           )
         : undefined,
-    sourceChrom:
+    refNameRank:
       rect && ranks && detail
-        ? encodeSourceChromSpans(detail.blocks, ranks, sourceChromColors)
+        ? encodeRefNameRankSpans(detail.blocks, ranks, refNameRankPalette)
         : undefined,
     summary:
       summary &&
@@ -194,11 +194,11 @@ export function encodeMafRows(
             plan.color === 'identity'
               ? identityRunColors(runs, identityColors)
               : ranks
-                ? sourceChromBarColors(
+                ? refNameRankBarColors(
                     detail.blocks,
                     runs,
                     ranks,
-                    sourceChromColors,
+                    refNameRankPalette,
                   )
                 : new Uint32Array(runs.count).fill(
                     cssColorToABGR(value ?? XYPLOT_BAR_COLOR),
@@ -298,7 +298,7 @@ export function cullMafRows(
   })
   const {
     cells,
-    sourceChrom,
+    refNameRank,
     summary,
     identity,
     identityBars,
@@ -315,7 +315,7 @@ export function cullMafRows(
     conservation:
       conservation && pickBars(conservation, shown(conservation, true)),
     cells: pickSpans(cells, shown(cells)),
-    sourceChrom: sourceChrom && pickSpans(sourceChrom, shown(sourceChrom)),
+    refNameRank: refNameRank && pickSpans(refNameRank, shown(refNameRank)),
     identity: identity && pickSpans(identity, shown(identity)),
     identityBars: identityBars && pickBars(identityBars, shown(identityBars)),
     summary: summary &&

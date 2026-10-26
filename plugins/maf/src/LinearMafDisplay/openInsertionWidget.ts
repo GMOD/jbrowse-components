@@ -15,14 +15,14 @@ export function openInsertionWidget(
   node: IStateTreeNode,
   hover: InsertionHit & { sampleLabel: string },
 ) {
-  const { length, sequence, chr, pos, strand, sampleLabel } = hover
+  const { length, sequence, srcRefName, pos, strand, sampleLabel } = hover
   const start =
     pos === undefined ? 0 : insertionForwardStart(pos, length, strand)
   openFeatureWidget(node, {
-    uniqueId: `maf-insertion-${chr}-${start}-${sampleLabel}`,
+    uniqueId: `maf-insertion-${srcRefName}-${start}-${sampleLabel}`,
     type: 'insertion',
     name: `Insertion (${length}bp)`,
-    refName: chr ?? '',
+    refName: srcRefName ?? '',
     start,
     end: start + length,
     length,

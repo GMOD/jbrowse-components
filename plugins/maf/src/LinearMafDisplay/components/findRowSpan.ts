@@ -10,7 +10,7 @@ import type {
 
 /** An aligned sample's own coordinates, half-open, forward strand. */
 export interface RowSpan {
-  chr: string
+  refName: string
   start: number
   end: number
 }
@@ -25,9 +25,12 @@ function widenRowSpan(
   startBp: number,
   endBp: number,
 ) {
-  const chr = row.chr
+  const refName = row.srcRefName
   const current = spans.get(row.rowIndex)
-  if (chr !== undefined && (current === undefined || current.chr === chr)) {
+  if (
+    refName !== undefined &&
+    (current === undefined || current.refName === refName)
+  ) {
     const ref = block.refSeqBytes
     const aln = row.alignmentBytes
     const len = Math.min(ref.length, aln.length)
@@ -64,11 +67,11 @@ function widenRowSpan(
         row.rowIndex,
         current
           ? {
-              chr,
+              refName,
               start: Math.min(current.start, min),
               end: Math.max(current.end, max + 1),
             }
-          : { chr, start: min, end: max + 1 },
+          : { refName, start: min, end: max + 1 },
       )
     }
   }

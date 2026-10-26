@@ -13,7 +13,7 @@ import {
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
 import { identityLut } from '../LinearMafRenderer/identity.ts'
-import { sourceChromRankColors } from './components/drawSourceChrom.ts'
+import { refNameRankColors } from './components/refNameRanks.ts'
 import { MAF_FIELD_PRESETS } from './mafColorConfigSchema.ts'
 
 import type { LinearMafDisplayConfigModel } from './configSchema.ts'
@@ -185,9 +185,9 @@ export function configSlotViews(self: ConfigSlotSelf) {
      * `encoding.color.scale.range`'s while `encoding.color` is refNameRank.
      * One array per range, as `identityColors`.
      */
-    get sourceChromColors(): readonly number[] {
+    get refNameRankPalette(): readonly number[] {
       const color = this.colorEncoding
-      return sourceChromRankColors(
+      return refNameRankColors(
         typeof color === 'object' &&
           color.field === 'refNameRank' &&
           color.scale === 'ordinal'

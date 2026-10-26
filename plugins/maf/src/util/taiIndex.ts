@@ -1,4 +1,4 @@
-import { parseAssemblyAndChr } from './parseAssemblyName.ts'
+import { parseAssemblyAndRefName } from './parseAssemblyName.ts'
 
 export interface VirtualOffset {
   blockPosition: number // offset of the compressed data block
@@ -6,13 +6,13 @@ export interface VirtualOffset {
 }
 
 export interface ByteRange {
-  chrStart: number
+  start: number
   virtualOffset: VirtualOffset
 }
 
 /**
  * A parsed `.tai`. A `Map` because the key order is load-bearing —
- * `nextChrStartBlock` reads "the chromosome after this one" off it and means
+ * `nextRefNameStartBlock` reads "the chromosome after this one" off it and means
  * next *in the file*, which a plain object cannot express: JS enumerates
  * integer-like keys numerically, so an Ensembl-style index (`1`..`22`) put `2`
  * after `1` whatever the file's order.
@@ -26,7 +26,7 @@ const BGZF_BLOCK_SIZE = 65536
 /**
  * The chromosome named by a `.tai` source token (`assembly.chr`, or
  * `assembly.version.chr` for a haplotype genome like `Species1.1.chr3`), split
- * by the same `parseAssemblyAndChr` the MAF-tabix and bigMaf paths use. A bare
+ * by the same `parseAssemblyAndRefName` the MAF-tabix and bigMaf paths use. A bare
  * token with no assembly prefix is the chromosome itself.
  *
  * Taking the last dotted segment — which this replaces — mangled any chromosome
@@ -36,9 +36,9 @@ const BGZF_BLOCK_SIZE = 65536
  * interleave two chromosomes' offsets and break `selectIndexEntries`' ascending
  * binary search.
  */
-export function chrFromSourceName(name: string) {
-  const { assemblyName, chr } = parseAssemblyAndChr(name)
-  return chr === '' ? assemblyName : chr
+export function refNameOfSource(name: string) {
+  const { assemblyName, refName } = parseAssemblyAndRefName(name)
+  return refName === '' ? assemblyName : refName
 }
 
 /**
@@ -49,28 +49,28 @@ export function chrFromSourceName(name: string) {
  * chromosome, so filtering on numeric overlap alone put the next chromosome's
  * blocks at real positions on the queried scaffold.
  *
- * Compared through `chrFromSourceName`, which is how the `.tai` keys
+ * Compared through `refNameOfSource`, which is how the `.tai` keys
  * `getRefNames` advertises are built, so both sides are in one namespace.
  * Memoized like `makeSourceResolver`: one source token, tens of thousands of
  * blocks.
  */
-export function makeRefChrFilter(refName: string) {
+export function makeRefNameFilter(refName: string) {
   const answers = new Map<string, boolean>()
   return (sourceName: string) => {
-    let onChr = answers.get(sourceName)
-    if (onChr === undefined) {
-      onChr = chrFromSourceName(sourceName) === refName
-      answers.set(sourceName, onChr)
+    let onRefName = answers.get(sourceName)
+    if (onRefName === undefined) {
+      onRefName = refNameOfSource(sourceName) === refName
+      answers.set(sourceName, onRefName)
     }
-    return onChr
+    return onRefName
   }
 }
 
 /**
  * Parse a `.tai` Taffy index into per-chromosome byte-range entries.
  *
- * Each row is tab-separated `chr  chrStart  virtualOffset`. A `*` in the chr
- * column marks a *relative* row whose chrStart/virtualOffset are deltas added
+ * Each row is tab-separated `chr  start  virtualOffset`. A `*` in the chr
+ * column marks a *relative* row whose start/virtualOffset are deltas added
  * to the running absolute values of the previous row (mirrors taffy's tai
  * writer). The absolute virtual offset is split into a bgzf (block, data)
  * coordinate.
@@ -81,34 +81,34 @@ export function parseTaiIndex(text: string): IndexData {
     .map(f => f.trim())
     .filter(line => line !== '')
   const entries: IndexData = new Map()
-  let lastChr = ''
-  let lastChrStart = 0
+  let lastRefName = ''
+  let lastStart = 0
   let lastRawVirtualOffset = 0
 
   for (const line of lines) {
-    const [chr, chrStart, virtualOffset] = line.split('\t')
-    const isRelative = chr === '*'
-    const currChr = isRelative ? lastChr : chrFromSourceName(chr!)
+    const [sourceName, start, virtualOffset] = line.split('\t')
+    const isRelative = sourceName === '*'
+    const entryRefName = isRelative ? lastRefName : refNameOfSource(sourceName!)
 
     const absVirtualOffset = isRelative
       ? lastRawVirtualOffset + +virtualOffset!
       : +virtualOffset!
-    const absChrStart = isRelative ? lastChrStart + +chrStart! : +chrStart!
+    const absStart = isRelative ? lastStart + +start! : +start!
 
     const blockPosition = Math.floor(absVirtualOffset / BGZF_BLOCK_SIZE)
     const dataPosition = absVirtualOffset % BGZF_BLOCK_SIZE
 
-    let chrEntries = entries.get(currChr)
-    if (chrEntries === undefined) {
-      chrEntries = []
-      entries.set(currChr, chrEntries)
+    let refNameEntries = entries.get(entryRefName)
+    if (refNameEntries === undefined) {
+      refNameEntries = []
+      entries.set(entryRefName, refNameEntries)
     }
-    chrEntries.push({
-      chrStart: absChrStart,
+    refNameEntries.push({
+      start: absStart,
       virtualOffset: { blockPosition, dataPosition },
     })
-    lastChr = currChr
-    lastChrStart = absChrStart
+    lastRefName = entryRefName
+    lastStart = absStart
     lastRawVirtualOffset = absVirtualOffset
   }
   return entries
@@ -148,7 +148,7 @@ export function selectIndexEntries(
   queryStart: number,
   queryEnd: number,
 ) {
-  const getKey = (r: ByteRange) => r.chrStart
+  const getKey = (r: ByteRange) => r.start
   const startIdx = lowerBound(records, queryStart, getKey)
   const endIdx = lowerBound(records, queryEnd, getKey)
   return {
@@ -168,15 +168,15 @@ export function selectIndexEntries(
  * File order is the whole point, which is why `IndexData` is a `Map` — see its
  * own comment for what an object's integer-like key ordering did to this.
  */
-export function nextChrStartBlock(index: IndexData, refName: string) {
+export function nextRefNameStartBlock(index: IndexData, refName: string) {
   let seenRefName = false
   let next: ByteRange[] | undefined
-  for (const [chr, entries] of index) {
+  for (const [entryRefName, entries] of index) {
     if (seenRefName) {
       next = entries
       break
     }
-    seenRefName = chr === refName
+    seenRefName = entryRefName === refName
   }
   return next?.[0]?.virtualOffset.blockPosition
 }
@@ -253,7 +253,7 @@ export function queryBlockSpan(
     const startBlock = firstEntry.virtualOffset.blockPosition
     const bound = nextEntry
       ? nextEntry.virtualOffset.blockPosition
-      : nextChrStartBlock(index, refName)
+      : nextRefNameStartBlock(index, refName)
     const endBlock = bound ?? startBlock
     span = {
       firstEntry,

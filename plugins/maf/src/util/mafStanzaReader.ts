@@ -28,7 +28,7 @@ export class MafStanzaReader implements MafLineTarget {
   private empties = new RecordSlots()
 
   private seq: string[] = []
-  private chr: string[] = []
+  private srcRefName: string[] = []
   private srcStart: number[] = []
   private size: number[] = []
   private strand: number[] = []
@@ -82,10 +82,10 @@ export class MafStanzaReader implements MafLineTarget {
     this.refSeq = seq
   }
 
-  row(sampleId: string, chr: string, line: MafSourceLine) {
+  row(sampleId: string, srcRefName: string, line: MafSourceLine) {
     this.addRow(
       sampleId,
-      chr,
+      srcRefName,
       line.start,
       line.size,
       line.strand,
@@ -96,7 +96,7 @@ export class MafStanzaReader implements MafLineTarget {
 
   addRow(
     sampleId: string,
-    chr: string,
+    srcRefName: string,
     srcStart: number,
     size: number,
     strand: number,
@@ -111,7 +111,7 @@ export class MafStanzaReader implements MafLineTarget {
     }
     const slot = rows.slot(key)
     this.seq[slot] = seq
-    this.chr[slot] = chr
+    this.srcRefName[slot] = srcRefName
     this.srcStart[slot] = srcStart
     this.size[slot] = size
     this.strand[slot] = strand
@@ -221,7 +221,7 @@ export class MafStanzaReader implements MafLineTarget {
         seq,
         0,
         seq.length,
-        this.chr[slot]!,
+        this.srcRefName[slot]!,
         this.srcStart[slot]!,
         this.strand[slot]!,
         this.srcSize[slot],

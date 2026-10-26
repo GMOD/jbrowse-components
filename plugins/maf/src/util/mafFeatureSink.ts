@@ -53,7 +53,7 @@ export class MafFeatureSink implements MafBlockSink {
     text: string,
     from: number,
     to: number,
-    chr: string,
+    srcRefName: string,
     srcStart: number,
     strand: number,
     srcSize: number | undefined,
@@ -62,8 +62,8 @@ export class MafFeatureSink implements MafBlockSink {
     const seq = text.slice(from, to)
     this.alignments[sampleId] =
       context === undefined
-        ? { chr, srcStart, seq, strand, srcSize }
-        : { chr, srcStart, seq, strand, srcSize, context }
+        ? { srcRefName, srcStart, seq, strand, srcSize }
+        : { srcRefName, srcStart, seq, strand, srcSize, context }
   }
 
   addEmpty(sampleId: string, empty: EmptyRecord) {

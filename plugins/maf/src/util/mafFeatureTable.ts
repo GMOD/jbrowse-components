@@ -65,7 +65,7 @@ function contextOf(packed: MafWirePacked, i: number) {
 }
 
 function tableOfPacked(packed: MafWirePacked, blocks: Blocks) {
-  const { arena, sampleIds, chrNames } = packed
+  const { arena, sampleIds, refNames } = packed
   const number = (values: Uint32Array | Int8Array): Column => ({
     kind: 'number',
     values,
@@ -74,7 +74,7 @@ function tableOfPacked(packed: MafWirePacked, blocks: Blocks) {
   const category = (codes: Uint32Array): Column => ({
     kind: 'category',
     codes,
-    labels: chrNames,
+    labels: refNames,
     at: undefined,
   })
   const species = (codes: Uint32Array): Column => ({
@@ -86,7 +86,7 @@ function tableOfPacked(packed: MafWirePacked, blocks: Blocks) {
   const rows = new ColumnTable(
     packed.rowOffset.length,
     new Map<string, Column>([
-      ['chr', category(packed.rowChr)],
+      ['srcRefName', category(packed.rowRefName)],
       ['srcStart', number(packed.rowStart)],
       ['strand', number(packed.rowStrand)],
       [
@@ -110,7 +110,7 @@ function tableOfPacked(packed: MafWirePacked, blocks: Blocks) {
   const empties = new ColumnTable(
     packed.emptySample.length,
     new Map<string, Column>([
-      ['chr', category(packed.emptyChr)],
+      ['srcRefName', category(packed.emptyRefName)],
       ['srcStart', number(packed.emptyStart)],
       ['size', number(packed.emptySize)],
       ['strand', number(packed.emptyStrand)],

@@ -1,6 +1,6 @@
 export interface ParsedAssemblyName {
   assemblyName: string
-  chr: string
+  refName: string
 }
 
 /**
@@ -11,7 +11,7 @@ export interface ParsedAssemblyName {
  * sample are two distinct sequences in the alignment, so collapsing them onto
  * `sample` makes them the same key in the per-block `alignments` record and the
  * second silently overwrites the first — a diploid assembly would lose half its
- * rows. `chr` becomes the contig, which is what color-by-source-chromosome and
+ * rows. `refName` becomes the contig, which is what color-by-source-chromosome and
  * the inversion consensus key on.
  *
  * Recognised rather than guessed: PanSN is a written spec (`#` is its declared
@@ -31,7 +31,7 @@ function splitPanSn(token: string): ParsedAssemblyName | undefined {
   const second = token.indexOf('#', first + 1)
   // `sample#contig` (no haplotype field) is tolerated as the two-field form
   const cut = second === -1 ? first : second
-  return { assemblyName: token.slice(0, cut), chr: token.slice(cut + 1) }
+  return { assemblyName: token.slice(0, cut), refName: token.slice(cut + 1) }
 }
 
 /**
@@ -55,7 +55,7 @@ const VERSIONED_ACCESSION_REGEX =
  *   sequence, chr is empty — see `VERSIONED_ACCESSION_REGEX`
  * - Single string with no separators: assemblyName is the entire string, chr is
  *   empty
- * - `assembly.chr`: Single dot separates assembly name from chromosome
+ * - `assembly.chr`: Single dot separates assembly name from refName
  * - `assembly.version.chr`: Two dots where middle part is numeric (version number)
  *   - assemblyName includes the version (e.g., "hg38.1" from "hg38.1.chr1")
  * - `assembly.chr.more`: Two dots where middle part is non-numeric
@@ -65,55 +65,55 @@ const VERSIONED_ACCESSION_REGEX =
  * split: a haplotype-suffixed genome (`Species1.1.chr3`) otherwise discovers as
  * `Species1` with chr `1.chr3`. bigMaf and TAF used a first-dot splitter until
  * they were unified here, so the same alignment produced different rows and a
- * different `row.chr` (which drives color-by-source-chromosome and the
+ * different `row.srcRefName` (which drives color-by-source-chromosome and the
  * inversion consensus) depending on which file format it was read from.
  * `matchSampleId` remains preferred whenever a sample set exists — it resolves
  * exactly instead of heuristically.
  */
-export function parseAssemblyAndChr(
-  assemblyAndChr: string,
+export function parseAssemblyAndRefName(
+  sourceName: string,
 ): ParsedAssemblyName {
-  const panSn = splitPanSn(assemblyAndChr)
+  const panSn = splitPanSn(sourceName)
   if (panSn) {
     return panSn
   }
-  if (VERSIONED_ACCESSION_REGEX.test(assemblyAndChr)) {
+  if (VERSIONED_ACCESSION_REGEX.test(sourceName)) {
     return {
-      assemblyName: assemblyAndChr,
-      chr: '',
+      assemblyName: sourceName,
+      refName: '',
     }
   }
-  const firstDotIndex = assemblyAndChr.indexOf('.')
+  const firstDotIndex = sourceName.indexOf('.')
   if (firstDotIndex === -1) {
     return {
-      assemblyName: assemblyAndChr,
-      chr: '',
+      assemblyName: sourceName,
+      refName: '',
     }
   }
 
-  const secondDotIndex = assemblyAndChr.indexOf('.', firstDotIndex + 1)
+  const secondDotIndex = sourceName.indexOf('.', firstDotIndex + 1)
   if (secondDotIndex === -1) {
     return {
-      assemblyName: assemblyAndChr.slice(0, firstDotIndex),
-      chr: assemblyAndChr.slice(firstDotIndex + 1),
+      assemblyName: sourceName.slice(0, firstDotIndex),
+      refName: sourceName.slice(firstDotIndex + 1),
     }
   }
 
-  const secondPart = assemblyAndChr.slice(firstDotIndex + 1, secondDotIndex)
+  const secondPart = sourceName.slice(firstDotIndex + 1, secondDotIndex)
   // A version segment is a plain run of digits; `/^\d+$/` avoids the unary-`+`
   // coercion accepting `0x1f`, `1e3`, `Infinity`, or whitespace-padded numbers.
   const isNumeric = /^\d+$/.test(secondPart)
 
   if (isNumeric) {
     return {
-      assemblyName: assemblyAndChr.slice(0, secondDotIndex),
-      chr: assemblyAndChr.slice(secondDotIndex + 1),
+      assemblyName: sourceName.slice(0, secondDotIndex),
+      refName: sourceName.slice(secondDotIndex + 1),
     }
   }
 
   return {
-    assemblyName: assemblyAndChr.slice(0, firstDotIndex),
-    chr: assemblyAndChr.slice(firstDotIndex + 1),
+    assemblyName: sourceName.slice(0, firstDotIndex),
+    refName: sourceName.slice(firstDotIndex + 1),
   }
 }
 
@@ -144,14 +144,14 @@ export function matchSampleId(
   sampleIds: Set<string>,
 ): ParsedAssemblyName | undefined {
   if (sampleIds.has(token)) {
-    return { assemblyName: token, chr: '' }
+    return { assemblyName: token, refName: '' }
   }
   // Right to left, so the longest (most specific) prefix wins.
   for (let i = token.length - 1; i > 0; i--) {
     if (SOURCE_SEPARATORS.has(token[i]!)) {
       const candidate = token.slice(0, i)
       if (sampleIds.has(candidate)) {
-        return { assemblyName: candidate, chr: token.slice(i + 1) }
+        return { assemblyName: candidate, refName: token.slice(i + 1) }
       }
     }
   }
@@ -172,7 +172,7 @@ function quoteList(values: Iterable<string>, limit: number, total: number) {
 /**
  * Resolve a `genome.sequence` source token to its sample. Wraps the choice all
  * three adapters were spelling for themselves — `matchSampleId` against a known
- * set, `parseAssemblyAndChr` when there is none — so the two paths cannot drift
+ * set, `parseAssemblyAndRefName` when there is none — so the two paths cannot drift
  * apart between formats.
  *
  * It also watches for the one way a correct-looking config renders nothing.
@@ -197,7 +197,7 @@ export function makeSourceResolver(sampleIds?: Set<string>) {
   // Memoized because a region has only as many distinct source tokens as it has
   // species-and-contig pairs — a couple dozen — while it has one *row* per
   // species per block, which on a 26-way is tens of thousands. Both resolvers
-  // are string walks (`matchSampleId` scans right to left, `parseAssemblyAndChr`
+  // are string walks (`matchSampleId` scans right to left, `parseAssemblyAndRefName`
   // hunts dots and runs a regex), so without this they re-derive the same answer
   // for `ce11.chrI` thousands of times per fetch. Every adapter benefits: bigMaf
   // resolves once per s/i/e line, TAF once per row instruction.
@@ -227,7 +227,7 @@ export function makeSourceResolver(sampleIds?: Set<string>) {
           }
         }
       } else {
-        parsed = parseAssemblyAndChr(token)
+        parsed = parseAssemblyAndRefName(token)
       }
       cache.set(token, parsed)
       return parsed

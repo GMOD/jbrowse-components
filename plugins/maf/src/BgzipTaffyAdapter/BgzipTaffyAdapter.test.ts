@@ -560,13 +560,13 @@ describe('blockToFeature', () => {
     expect(feature).toBeDefined()
     expect(feature!.alignments).toHaveProperty('hg38')
     expect(feature!.alignments).toHaveProperty('mm10')
-    expect(feature!.alignments.hg38!.chr).toBe('chr1')
-    expect(feature!.alignments.mm10!.chr).toBe('chr2')
+    expect(feature!.alignments.hg38!.srcRefName).toBe('chr1')
+    expect(feature!.alignments.mm10!.srcRefName).toBe('chr2')
   })
 
   // Discovery (no sampleFilter) used a first-dot split here while MAF-tabix
   // used the version-aware one, so the same haplotype-suffixed genome became a
-  // different row — and carried a different `chr` into color-by-source-
+  // different row — and carried a different `srcRefName` into color-by-source-
   // chromosome and the inversion consensus — depending on file format.
   test('no sampleFilter — a haplotype suffix stays on the sample id', () => {
     const block = {
@@ -574,7 +574,7 @@ describe('blockToFeature', () => {
     }
     const aln = tafBlockOf(block, splitResolve)!.alignments
     expect(aln['HG002.1']).toBeDefined()
-    expect(aln['HG002.1']!.chr).toBe('chr1')
+    expect(aln['HG002.1']!.srcRefName).toBe('chr1')
   })
 
   // ...but a dotted contig accession is still all chromosome.
@@ -583,7 +583,7 @@ describe('blockToFeature', () => {
       rows: [makeRow('hg38.CM000663.2', 'ACGT')],
     }
     const aln = tafBlockOf(block, splitResolve)!.alignments
-    expect(aln.hg38!.chr).toBe('CM000663.2')
+    expect(aln.hg38!.srcRefName).toBe('CM000663.2')
   })
 
   test('sampleFilter with plain names — rows not in filter are dropped', () => {
@@ -615,14 +615,14 @@ describe('blockToFeature', () => {
     expect(aln['Species1.1']).toBeDefined()
     expect(aln['Species1.2']).toBeDefined()
     expect(aln['Species2.1']).toBeUndefined()
-    expect(aln['Species1.1']!.chr).toBe('chr3')
+    expect(aln['Species1.1']!.srcRefName).toBe('chr3')
     expect(aln['Species1.2']!.seq).toBe('TGCA')
   })
 
   // A pangenome TAF names its rows PanSN (`sample#haplotype#contig`) — what
   // cactus/taffy emit, and what this repo's own E. coli pangenome build writes.
-  // Discovery used to take the whole signal as the sample and leave `chr` empty,
-  // so every contig became its own row and both the features that key on `chr`
+  // Discovery used to take the whole signal as the sample and leave `srcRefName` empty,
+  // so every contig became its own row and both the features that key on `srcRefName`
   // (color-by-source-chromosome, the inversion consensus) had nothing to key on.
   test('PanSN rows discover per haplotype, with the contig as chr', () => {
     const block = {
@@ -634,7 +634,7 @@ describe('blockToFeature', () => {
     }
     const aln = tafBlockOf(block, splitResolve)!.alignments
     expect(Object.keys(aln)).toEqual(['K12#1', 'HG002#1', 'HG002#2'])
-    expect(aln['HG002#1']!.chr).toBe('chr1')
+    expect(aln['HG002#1']!.srcRefName).toBe('chr1')
   })
 
   test('PanSN rows narrow to a configured sample set', () => {
@@ -646,7 +646,7 @@ describe('blockToFeature', () => {
       makeSourceResolver(new Set(['K12#1'])).resolve,
     )!.alignments
     expect(Object.keys(aln)).toEqual(['K12#1'])
-    expect(aln['K12#1']!.chr).toBe('chr')
+    expect(aln['K12#1']!.srcRefName).toBe('chr')
   })
 
   test('returns undefined for a block with no rows', () => {
@@ -818,7 +818,7 @@ describe('BgzipTaffyAdapter integration tests', () => {
   })
 
   test('adapter fetches the chromosome tail past the last index entry', async () => {
-    // chrI's last .tai entry is at chrStart ~15,053,438; a query starting after
+    // chrI's last .tai entry is at start ~15,053,438; a query starting after
     // it and running past the chromosome end exercises the read past the last index entry
     // (read to the end of the file).
     const adapter = new BgzipTaffyAdapter(
@@ -996,7 +996,7 @@ describe('BgzipTaffyAdapter integration tests', () => {
     expect(organismNames.length).toBeGreaterThan(0)
 
     const firstOrganism = alignments[organismNames[0]!]
-    expect(firstOrganism).toHaveProperty('chr')
+    expect(firstOrganism).toHaveProperty('srcRefName')
     expect(firstOrganism).toHaveProperty('srcStart')
     expect(firstOrganism).toHaveProperty('seq')
   })

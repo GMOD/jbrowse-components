@@ -120,7 +120,7 @@ interface Shape {
 interface Row {
   rowIndex: number
   alignmentBytes: Uint8Array
-  chr: string
+  srcRefName: string
   strand: number
 }
 
@@ -166,7 +166,7 @@ function makeBlocks(s: Shape) {
       rows.push({
         rowIndex: r,
         alignmentBytes: enc.encode(row),
-        chr: `chr${r}`,
+        srcRefName: `chr${r}`,
         strand: (b + r) % s.invertedEvery === 0 ? -1 : 1,
       })
     }

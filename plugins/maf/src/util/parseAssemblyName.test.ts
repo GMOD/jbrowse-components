@@ -1,7 +1,7 @@
 import {
   makeSourceResolver,
   matchSampleId,
-  parseAssemblyAndChr,
+  parseAssemblyAndRefName,
 } from './parseAssemblyName.ts'
 
 describe('matchSampleId (sample-set aware splitting)', () => {
@@ -10,23 +10,23 @@ describe('matchSampleId (sample-set aware splitting)', () => {
   test('haplotype-suffixed sample with a contig', () => {
     expect(matchSampleId('Species1.1.chr3', samples)).toEqual({
       assemblyName: 'Species1.1',
-      chr: 'chr3',
+      refName: 'chr3',
     })
   })
 
   test('haplotype-suffixed sample with a dotted accession contig', () => {
     expect(matchSampleId('Species1.2.CM012345.1', samples)).toEqual({
       assemblyName: 'Species1.2',
-      chr: 'CM012345.1',
+      refName: 'CM012345.1',
     })
   })
 
   test('bare sample token with no contig (regression: do not drop .1)', () => {
-    // `parseAssemblyAndChr` would mis-split this to `Species1` + `1`; with the
+    // `parseAssemblyAndRefName` would mis-split this to `Species1` + `1`; with the
     // known set we resolve it exactly.
     expect(matchSampleId('Species1.1', samples)).toEqual({
       assemblyName: 'Species1.1',
-      chr: '',
+      refName: '',
     })
   })
 
@@ -34,7 +34,7 @@ describe('matchSampleId (sample-set aware splitting)', () => {
     const overlapping = new Set(['Species1', 'Species1.1'])
     expect(matchSampleId('Species1.1.chr3', overlapping)).toEqual({
       assemblyName: 'Species1.1',
-      chr: 'chr3',
+      refName: 'chr3',
     })
   })
 
@@ -44,7 +44,7 @@ describe('matchSampleId (sample-set aware splitting)', () => {
     const bare = new Set(['Species1'])
     expect(matchSampleId('Species1.1.chr3', bare)).toEqual({
       assemblyName: 'Species1',
-      chr: '1.chr3',
+      refName: '1.chr3',
     })
   })
 
@@ -53,116 +53,116 @@ describe('matchSampleId (sample-set aware splitting)', () => {
   })
 })
 
-describe('parseAssemblyAndChr (shared sample-discovery split)', () => {
+describe('parseAssemblyAndRefName (shared sample-discovery split)', () => {
   test('no dot - entire string is assembly name', () => {
-    const result = parseAssemblyAndChr('hg38')
+    const result = parseAssemblyAndRefName('hg38')
     expect(result).toEqual({
       assemblyName: 'hg38',
-      chr: '',
+      refName: '',
     })
   })
 
   test('single dot - simple assembly.chr format', () => {
-    const result = parseAssemblyAndChr('hg38.chr1')
+    const result = parseAssemblyAndRefName('hg38.chr1')
     expect(result).toEqual({
       assemblyName: 'hg38',
-      chr: 'chr1',
+      refName: 'chr1',
     })
   })
 
   test('single dot - assembly.refName format with non-chr name', () => {
-    const result = parseAssemblyAndChr('mm10.scaffold_1')
+    const result = parseAssemblyAndRefName('mm10.scaffold_1')
     expect(result).toEqual({
       assemblyName: 'mm10',
-      chr: 'scaffold_1',
+      refName: 'scaffold_1',
     })
   })
 
   test('two dots with numeric version - assembly.version.chr format', () => {
-    const result = parseAssemblyAndChr('hg38.1.chr1')
+    const result = parseAssemblyAndRefName('hg38.1.chr1')
     expect(result).toEqual({
       assemblyName: 'hg38.1',
-      chr: 'chr1',
+      refName: 'chr1',
     })
   })
 
   test('two dots with multi-digit numeric version', () => {
-    const result = parseAssemblyAndChr('GRCh38.123.chrX')
+    const result = parseAssemblyAndRefName('GRCh38.123.chrX')
     expect(result).toEqual({
       assemblyName: 'GRCh38.123',
-      chr: 'chrX',
+      refName: 'chrX',
     })
   })
 
   test('two dots with non-numeric middle - assembly.chr.more format', () => {
-    const result = parseAssemblyAndChr('mm10.chr1.random')
+    const result = parseAssemblyAndRefName('mm10.chr1.random')
     expect(result).toEqual({
       assemblyName: 'mm10',
-      chr: 'chr1.random',
+      refName: 'chr1.random',
     })
   })
 
   test('two dots with non-numeric middle - chr_Un type naming', () => {
-    const result = parseAssemblyAndChr('hg38.chrUn_gl000220')
+    const result = parseAssemblyAndRefName('hg38.chrUn_gl000220')
     expect(result).toEqual({
       assemblyName: 'hg38',
-      chr: 'chrUn_gl000220',
+      refName: 'chrUn_gl000220',
     })
   })
 
   test('three dots with numeric version - assembly.version.chr.more format', () => {
-    const result = parseAssemblyAndChr('GRCh38.1.chr1.random')
+    const result = parseAssemblyAndRefName('GRCh38.1.chr1.random')
     expect(result).toEqual({
       assemblyName: 'GRCh38.1',
-      chr: 'chr1.random',
+      refName: 'chr1.random',
     })
   })
 
   test('empty string', () => {
-    const result = parseAssemblyAndChr('')
+    const result = parseAssemblyAndRefName('')
     expect(result).toEqual({
       assemblyName: '',
-      chr: '',
+      refName: '',
     })
   })
 
   test('just a dot', () => {
-    const result = parseAssemblyAndChr('.')
+    const result = parseAssemblyAndRefName('.')
     expect(result).toEqual({
       assemblyName: '',
-      chr: '',
+      refName: '',
     })
   })
 
   test('leading dot', () => {
-    const result = parseAssemblyAndChr('.chr1')
+    const result = parseAssemblyAndRefName('.chr1')
     expect(result).toEqual({
       assemblyName: '',
-      chr: 'chr1',
+      refName: 'chr1',
     })
   })
 
   test('trailing dot', () => {
-    const result = parseAssemblyAndChr('hg38.')
+    const result = parseAssemblyAndRefName('hg38.')
     expect(result).toEqual({
       assemblyName: 'hg38',
-      chr: '',
+      refName: '',
     })
   })
 
   test('real world example - UCSC style', () => {
-    const result = parseAssemblyAndChr('hg19.chr6_ssto_hap7')
+    const result = parseAssemblyAndRefName('hg19.chr6_ssto_hap7')
     expect(result).toEqual({
       assemblyName: 'hg19',
-      chr: 'chr6_ssto_hap7',
+      refName: 'chr6_ssto_hap7',
     })
   })
 
   test('real world example - Ensembl style with numeric', () => {
-    const result = parseAssemblyAndChr('GRCh37.1.1')
+    const result = parseAssemblyAndRefName('GRCh37.1.1')
     expect(result).toEqual({
       assemblyName: 'GRCh37.1',
-      chr: '1',
+      refName: '1',
     })
   })
 })
@@ -173,23 +173,23 @@ describe('parseAssemblyAndChr (shared sample-discovery split)', () => {
 // for the accession itself resolved nothing at all.
 describe('bare versioned accessions', () => {
   test('a RefSeq accession is the whole sequence name', () => {
-    expect(parseAssemblyAndChr('NC_000001.11')).toEqual({
+    expect(parseAssemblyAndRefName('NC_000001.11')).toEqual({
       assemblyName: 'NC_000001.11',
-      chr: '',
+      refName: '',
     })
   })
 
   test('an assembly accession too', () => {
-    expect(parseAssemblyAndChr('GCA_000001405.15')).toEqual({
+    expect(parseAssemblyAndRefName('GCA_000001405.15')).toEqual({
       assemblyName: 'GCA_000001405.15',
-      chr: '',
+      refName: '',
     })
   })
 
   test('a prefixed accession still splits on the assembly', () => {
-    expect(parseAssemblyAndChr('hg38.NC_000001.11')).toEqual({
+    expect(parseAssemblyAndRefName('hg38.NC_000001.11')).toEqual({
       assemblyName: 'hg38',
-      chr: 'NC_000001.11',
+      refName: 'NC_000001.11',
     })
   })
 
@@ -201,77 +201,77 @@ describe('bare versioned accessions', () => {
       'MN908947.3',
       'JAHKSE010000001.1',
     ]) {
-      expect(parseAssemblyAndChr(accession)).toEqual({
+      expect(parseAssemblyAndRefName(accession)).toEqual({
         assemblyName: accession,
-        chr: '',
+        refName: '',
       })
     }
   })
 
   test('a sample id with an Ensembl chromosome is untouched', () => {
-    for (const [token, assemblyName, chr] of [
+    for (const [token, assemblyName, refName] of [
       ['NA12878.1', 'NA12878', '1'],
       ['HG00438.2', 'HG00438', '2'],
       ['HG002.1', 'HG002', '1'],
     ]) {
-      expect(parseAssemblyAndChr(token!)).toEqual({ assemblyName, chr })
+      expect(parseAssemblyAndRefName(token!)).toEqual({ assemblyName, refName })
     }
   })
 
   test('an underscore-bearing assembly name is untouched', () => {
-    expect(parseAssemblyAndChr('Homo_sapiens.1')).toEqual({
+    expect(parseAssemblyAndRefName('Homo_sapiens.1')).toEqual({
       assemblyName: 'Homo_sapiens',
-      chr: '1',
+      refName: '1',
     })
   })
 })
 
 describe('real-world MAF format parsing', () => {
   test('ce10.chrI from UCSC 7-way alignment', () => {
-    const result = parseAssemblyAndChr('ce10.chrI')
+    const result = parseAssemblyAndRefName('ce10.chrI')
     expect(result).toEqual({
       assemblyName: 'ce10',
-      chr: 'chrI',
+      refName: 'chrI',
     })
   })
 
   test('caePb3.Scfld02_18 scaffold format', () => {
-    const result = parseAssemblyAndChr('caePb3.Scfld02_18')
+    const result = parseAssemblyAndRefName('caePb3.Scfld02_18')
     expect(result).toEqual({
       assemblyName: 'caePb3',
-      chr: 'Scfld02_18',
+      refName: 'Scfld02_18',
     })
   })
 
   test('caeRem4.Crem_Contig16 contig format', () => {
-    const result = parseAssemblyAndChr('caeRem4.Crem_Contig16')
+    const result = parseAssemblyAndRefName('caeRem4.Crem_Contig16')
     expect(result).toEqual({
       assemblyName: 'caeRem4',
-      chr: 'Crem_Contig16',
+      refName: 'Crem_Contig16',
     })
   })
 
   test('cb4.chrI C. briggsae format', () => {
-    const result = parseAssemblyAndChr('cb4.chrI')
+    const result = parseAssemblyAndRefName('cb4.chrI')
     expect(result).toEqual({
       assemblyName: 'cb4',
-      chr: 'chrI',
+      refName: 'chrI',
     })
   })
 })
 
 describe('refName renaming compatibility', () => {
-  test('parseAssemblyAndChr extracts chr correctly for refName alias matching', () => {
+  test('parseAssemblyAndRefName extracts refName correctly for refName alias matching', () => {
     // When a file uses "chrI" but assembly has alias "I" -> "chrI"
     // The chr portion extracted here should match what renameRegionsIfNeeded expects
-    const { chr } = parseAssemblyAndChr('ce10.chrI')
-    expect(chr).toBe('chrI')
+    const { refName } = parseAssemblyAndRefName('ce10.chrI')
+    expect(refName).toBe('chrI')
   })
 
   test('assembly name is isolated from chr for assembly-based lookups', () => {
     // The assembly name (e.g., "ce10") is used to look up reference sequence
     // It should not include the chr portion
-    const { assemblyName } = parseAssemblyAndChr('ce10.chrI')
+    const { assemblyName } = parseAssemblyAndRefName('ce10.chrI')
     expect(assemblyName).toBe('ce10')
   })
 })
@@ -295,7 +295,7 @@ describe('makeSourceResolver reports a sample set that matches nothing', () => {
     const r = makeSourceResolver(new Set(['hg38']))
     expect(r.resolve('hg38.chr1')).toEqual({
       assemblyName: 'hg38',
-      chr: 'chr1',
+      refName: 'chr1',
     })
     expect(r.resolve('panTro4.chr1')).toBeUndefined()
     r.reportUnmatched()
@@ -334,7 +334,7 @@ describe('makeSourceResolver reports a sample set that matches nothing', () => {
     const r = makeSourceResolver()
     expect(r.resolve('hg38.chr1')).toEqual({
       assemblyName: 'hg38',
-      chr: 'chr1',
+      refName: 'chr1',
     })
     r.reportUnmatched()
     expect(warn).not.toHaveBeenCalled()
@@ -365,7 +365,7 @@ describe('makeSourceResolver reports a sample set that matches nothing', () => {
     // ...and the memo did not corrupt the answers themselves
     expect(r.resolve('hg38.chr2')).toEqual({
       assemblyName: 'hg38',
-      chr: 'chr2',
+      refName: 'chr2',
     })
   })
 
@@ -382,18 +382,18 @@ describe('makeSourceResolver reports a sample set that matches nothing', () => {
 // PanSN (`sample#haplotype#contig`) is a written spec with `#` as its declared
 // delimiter, and this repo's own `build_ecoli_pangenome_graph.sh` emits it. The
 // resolver knew only `.`, so a PanSN file discovered one row per *contig* named
-// with the whole token and an empty `chr` — and with a configured `samples` list
+// with the whole token and an empty `refName` — and with a configured `samples` list
 // it matched nothing whatsoever.
 describe('PanSN source tokens', () => {
   test('discovery keeps the haplotype on the row and the contig as chr', () => {
-    expect(parseAssemblyAndChr('HG002#1#chr1')).toEqual({
+    expect(parseAssemblyAndRefName('HG002#1#chr1')).toEqual({
       assemblyName: 'HG002#1',
-      chr: 'chr1',
+      refName: 'chr1',
     })
     // this repo's E. coli pangenome naming
-    expect(parseAssemblyAndChr('K12#1#chr')).toEqual({
+    expect(parseAssemblyAndRefName('K12#1#chr')).toEqual({
       assemblyName: 'K12#1',
-      chr: 'chr',
+      refName: 'chr',
     })
   })
 
@@ -401,35 +401,35 @@ describe('PanSN source tokens', () => {
   // per-block `alignments` record, so the second would overwrite the first and a
   // diploid assembly would lose half its rows.
   test('two haplotypes of one sample stay two rows', () => {
-    expect(parseAssemblyAndChr('HG002#1#chr1').assemblyName).not.toBe(
-      parseAssemblyAndChr('HG002#2#chr1').assemblyName,
+    expect(parseAssemblyAndRefName('HG002#1#chr1').assemblyName).not.toBe(
+      parseAssemblyAndRefName('HG002#2#chr1').assemblyName,
     )
   })
 
   test('tolerates the two-field form and a contig containing #', () => {
-    expect(parseAssemblyAndChr('HG002#chr1')).toEqual({
+    expect(parseAssemblyAndRefName('HG002#chr1')).toEqual({
       assemblyName: 'HG002',
-      chr: 'chr1',
+      refName: 'chr1',
     })
-    expect(parseAssemblyAndChr('HG002#1#ctg#7')).toEqual({
+    expect(parseAssemblyAndRefName('HG002#1#ctg#7')).toEqual({
       assemblyName: 'HG002#1',
-      chr: 'ctg#7',
+      refName: 'ctg#7',
     })
   })
 
   test('matches at a # boundary, longest id first', () => {
     expect(matchSampleId('K12#1#chr', new Set(['K12']))).toEqual({
       assemblyName: 'K12',
-      chr: '1#chr',
+      refName: '1#chr',
     })
     expect(matchSampleId('K12#1#chr', new Set(['K12#1']))).toEqual({
       assemblyName: 'K12#1',
-      chr: 'chr',
+      refName: 'chr',
     })
     // both listed: the more specific one wins, as with dotted haplotypes
     expect(matchSampleId('K12#1#chr', new Set(['K12', 'K12#1']))).toEqual({
       assemblyName: 'K12#1',
-      chr: 'chr',
+      refName: 'chr',
     })
   })
 
@@ -437,17 +437,17 @@ describe('PanSN source tokens', () => {
   // nothing, or resolve one to a longer id the config explicitly listed — it
   // never invents a genome.
   test('leaves dotted tokens resolving exactly as before', () => {
-    expect(parseAssemblyAndChr('hg38.chr1')).toEqual({
+    expect(parseAssemblyAndRefName('hg38.chr1')).toEqual({
       assemblyName: 'hg38',
-      chr: 'chr1',
+      refName: 'chr1',
     })
-    expect(parseAssemblyAndChr('Species1.1.chr3')).toEqual({
+    expect(parseAssemblyAndRefName('Species1.1.chr3')).toEqual({
       assemblyName: 'Species1.1',
-      chr: 'chr3',
+      refName: 'chr3',
     })
     expect(matchSampleId('mm10.chr1.random', new Set(['mm10']))).toEqual({
       assemblyName: 'mm10',
-      chr: 'chr1.random',
+      refName: 'chr1.random',
     })
     expect(matchSampleId('nope.chr1', new Set(['mm10']))).toBeUndefined()
   })

@@ -29,7 +29,7 @@ test('returns cell hit with base + forward-strand position', () => {
         {
           rowIndex: 0,
           alignmentBytes: enc.encode('acgta'),
-          chr: 'chrX',
+          srcRefName: 'chrX',
           srcStart: 100,
           strand: 1,
         },
@@ -40,7 +40,7 @@ test('returns cell hit with base + forward-strand position', () => {
   expect(findRowHoverAtBp(r, at(102), 0, 1, 1, 20)).toMatchObject({
     kind: 'cell',
     base: 'g',
-    chr: 'chrX',
+    srcRefName: 'chrX',
     pos: 102,
     strand: 1,
   })
@@ -58,7 +58,7 @@ test('resolves an insertion (reference-gap columns) over the abutting base', () 
         {
           rowIndex: 0,
           alignmentBytes: enc.encode('accA'),
-          chr: 'chrX',
+          srcRefName: 'chrX',
           srcStart: 100,
           strand: 1,
         },
@@ -71,7 +71,7 @@ test('resolves an insertion (reference-gap columns) over the abutting base', () 
     kind: 'insertion',
     length: 2,
     sequence: 'cc',
-    chr: 'chrX',
+    srcRefName: 'chrX',
     // first inserted base is the 2nd non-gap base of the sample → srcStart + 1
     pos: 101,
   })
@@ -94,7 +94,7 @@ test('a minus-row insertion runs leftward from the reported position', () => {
         {
           rowIndex: 0,
           alignmentBytes: enc.encode('accA'),
-          chr: 'chrY',
+          srcRefName: 'chrY',
           srcStart: 100,
           strand: -1,
           srcSize: 1000,
@@ -126,7 +126,7 @@ test('mirrors position through srcSize for reverse-strand rows', () => {
         {
           rowIndex: 0,
           alignmentBytes: enc.encode('acg'),
-          chr: 'chrY',
+          srcRefName: 'chrY',
           srcStart: 100,
           strand: -1,
           srcSize: 1000,
@@ -188,7 +188,7 @@ test('returns empty hit when the row is bridged (e line) at this block', () => {
         {
           rowIndex: 1,
           status: 'I',
-          chr: 'mm.chr1',
+          srcRefName: 'mm.chr1',
           srcStart: 5,
           size: 13,
           strand: 1,
@@ -200,7 +200,7 @@ test('returns empty hit when the row is bridged (e line) at this block', () => {
   expect(findRowHoverAtBp(r, at(101), 1, 1, 1, 20)).toEqual({
     kind: 'empty',
     status: 'I',
-    chr: 'mm.chr1',
+    srcRefName: 'mm.chr1',
     srcStart: 5,
     size: 13,
     strand: 1,
@@ -218,7 +218,7 @@ test('a minus-strand bridged span reports forward coordinates beside its aligned
         {
           rowIndex: 0,
           alignmentBytes: enc.encode('acg'),
-          chr: 'mm.chr1',
+          srcRefName: 'mm.chr1',
           srcStart: 1000,
           srcSize,
           strand: -1,
@@ -235,7 +235,7 @@ test('a minus-strand bridged span reports forward coordinates beside its aligned
         {
           rowIndex: 0,
           status: 'I',
-          chr: 'mm.chr1',
+          srcRefName: 'mm.chr1',
           srcStart: 1003,
           size: 50,
           strand: -1,
@@ -307,7 +307,7 @@ test('a large insertion on a row too short for its count hovers as the narrow ba
         {
           rowIndex: 0,
           alignmentBytes: enc.encode(aln),
-          chr: 'chrX',
+          srcRefName: 'chrX',
           srcStart: 100,
           strand: 1,
         },
@@ -329,7 +329,7 @@ test('a merged insertion marker hovers as the longest insertion it draws', () =>
         {
           rowIndex: 0,
           alignmentBytes: enc.encode('AAcAAAAgggggAA'),
-          chr: 'chrX',
+          srcRefName: 'chrX',
           srcStart: 100,
           strand: 1,
         },
@@ -360,7 +360,7 @@ test('an insertion anchored at a block end hovers from past the block', () => {
         {
           rowIndex: 0,
           alignmentBytes: enc.encode('aacc'),
-          chr: 'chrX',
+          srcRefName: 'chrX',
           srcStart: 100,
           strand: 1,
         },
@@ -382,7 +382,7 @@ test('an insertion split across abutting blocks hovers as one', () => {
   const row = (alignment: string, srcStart: number) => ({
     rowIndex: 0,
     alignmentBytes: enc.encode(alignment),
-    chr: 'chrX',
+    srcRefName: 'chrX',
     srcStart,
     strand: 1,
   })
@@ -420,7 +420,7 @@ test('two runs at one anchor across a contig break stay two insertions', () => {
         {
           rowIndex: 0,
           alignmentBytes: enc.encode('aac'),
-          chr: 'chr5',
+          srcRefName: 'chr5',
           srcStart: 100,
           strand: 1,
         },
@@ -435,7 +435,7 @@ test('two runs at one anchor across a contig break stay two insertions', () => {
         {
           rowIndex: 0,
           alignmentBytes: enc.encode('ggaa'),
-          chr: 'chr7',
+          srcRefName: 'chr7',
           srcStart: 500,
           strand: 1,
         },
@@ -447,7 +447,7 @@ test('two runs at one anchor across a contig break stay two insertions', () => {
     kind: 'insertion',
     length: 1,
     sequence: 'c',
-    chr: 'chr5',
+    srcRefName: 'chr5',
   })
 })
 
@@ -461,7 +461,7 @@ test('a binned marker hovers as the insertion it draws, not its neighbour at the
         {
           rowIndex: 0,
           alignmentBytes: enc.encode('aac'),
-          chr: 'chr2',
+          srcRefName: 'chr2',
           srcStart: 500,
           strand: 1,
         },
@@ -476,7 +476,7 @@ test('a binned marker hovers as the insertion it draws, not its neighbour at the
         {
           rowIndex: 0,
           alignmentBytes: enc.encode('ggaa'),
-          chr: 'chr3',
+          srcRefName: 'chr3',
           srcStart: 10,
           strand: 1,
         },
@@ -488,6 +488,6 @@ test('a binned marker hovers as the insertion it draws, not its neighbour at the
     kind: 'insertion',
     length: 2,
     sequence: 'gg',
-    chr: 'chr3',
+    srcRefName: 'chr3',
   })
 })

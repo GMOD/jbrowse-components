@@ -15,14 +15,14 @@ const blocks = [
     'chr1',
     {
       hg38: {
-        chr: 'chr1',
+        srcRefName: 'chr1',
         srcStart: 100,
         strand: 1,
         srcSize: 5000,
         seq: 'ACGT--ACGT',
       },
       panTro6: {
-        chr: 'chr3',
+        srcRefName: 'chr3',
         srcStart: 40,
         strand: -1,
         srcSize: 900,
@@ -34,7 +34,7 @@ const blocks = [
           rightCount: 12,
         },
       },
-      mm10: { chr: 'chr9', srcStart: 7, strand: 1, seq: '--GTAAACGA' },
+      mm10: { srcRefName: 'chr9', srcStart: 7, strand: 1, seq: '--GTAAACGA' },
     },
     'ACGT--ACGT',
   ),
@@ -45,18 +45,24 @@ const blocks = [
     'chr1',
     {
       hg38: {
-        chr: 'chr1',
+        srcRefName: 'chr1',
         srcStart: 108,
         strand: 1,
         srcSize: 5000,
         seq: 'TTAG',
       },
-      mm10: { chr: 'chr9', srcStart: 15, strand: 1, srcSize: 60, seq: 'TCAG' },
+      mm10: {
+        srcRefName: 'chr9',
+        srcStart: 15,
+        strand: 1,
+        srcSize: 60,
+        seq: 'TCAG',
+      },
     },
     'TTAG',
     {
       panTro6: {
-        chr: 'chr3',
+        srcRefName: 'chr3',
         srcStart: 48,
         size: 30,
         strand: -1,
@@ -82,9 +88,15 @@ function rowsOf(table: FeatureTable) {
     return {
       id: row.id(),
       json: row.toJSON(),
-      fields: ['start', 'end', 'species', 'state', 'base', 'chr', 'strand'].map(
-        f => row.get(f),
-      ),
+      fields: [
+        'start',
+        'end',
+        'species',
+        'state',
+        'base',
+        'srcRefName',
+        'strand',
+      ].map(f => row.get(f)),
     }
   })
 }
@@ -148,7 +160,7 @@ test('a row stating no strand reads +1, as the MAF display draws it', async () =
         0,
         2,
         'chr1',
-        { hg38: { chr: 'chr1', srcStart: 0, seq: 'AC' } },
+        { hg38: { srcRefName: 'chr1', srcStart: 0, seq: 'AC' } },
         'AC',
       ),
     ]),
@@ -168,8 +180,8 @@ test('a species named like an array index lists first, as the record does', asyn
     2,
     'chr1',
     {
-      hg38: { chr: 'chr1', srcStart: 0, strand: 1, seq: 'AC' },
-      '7': { chr: 'chr2', srcStart: 5, strand: 1, seq: 'AG' },
+      hg38: { srcRefName: 'chr1', srcStart: 0, strand: 1, seq: 'AC' },
+      '7': { srcRefName: 'chr2', srcStart: 5, strand: 1, seq: 'AG' },
     },
     'AC',
   )

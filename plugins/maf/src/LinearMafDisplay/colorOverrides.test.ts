@@ -6,7 +6,7 @@ import { autorun } from 'mobx'
 import { testWireRegionData } from '../LinearMafGetAlignmentDataRpc/mafWire.fixture.ts'
 import { identityLut } from '../LinearMafRenderer/identity.ts'
 import { emptyMafCoverage } from './components/coverageTestFixture.ts'
-import { sourceChromRankColors } from './components/drawSourceChrom.ts'
+import { refNameRankColors } from './components/refNameRanks.ts'
 import { createMafTestEnvironment, stageDetailRegion } from './testEnv.ts'
 
 import type { LinearMafDisplayModel } from './stateModel.ts'
@@ -38,12 +38,12 @@ function stageTwoIdentities(display: LinearMafDisplayModel) {
         {
           startBp: 0,
           refSeq: 'A'.repeat(64),
-          rows: [{ sampleId: 'sp1', seq: 'A'.repeat(64), chr: 'chrA' }],
+          rows: [{ sampleId: 'sp1', seq: 'A'.repeat(64), srcRefName: 'chrA' }],
         },
         {
           startBp: 64,
           refSeq: 'A'.repeat(64),
-          rows: [{ sampleId: 'sp1', seq: 'C'.repeat(64), chr: 'chrB' }],
+          rows: [{ sampleId: 'sp1', seq: 'C'.repeat(64), srcRefName: 'chrB' }],
         },
       ],
       { coverage: emptyMafCoverage(0), refSampleId: undefined },
@@ -154,43 +154,43 @@ describe('identity', () => {
 })
 
 describe('refNameRank', () => {
-  function chromosomeDisplay(color: Record<string, unknown> = {}) {
+  function refNameRankDisplay(color: Record<string, unknown> = {}) {
     const display = displayWith({ field: 'refNameRank', ...color })
     stageTwoIdentities(display)
     return display
   }
 
   test('unwritten, the ranks paint the palette the pins hold', () => {
-    expect(chromosomeDisplay().sourceChromColors).toBe(sourceChromRankColors())
+    expect(refNameRankDisplay().refNameRankPalette).toBe(refNameRankColors())
   })
 
   test('a written range paints the ranks and keys them, stopping at its last', () => {
-    const display = chromosomeDisplay({ scale: { range: ['red', 'blue'] } })
+    const display = refNameRankDisplay({ scale: { range: ['red', 'blue'] } })
     expect([
-      ...(display.encodedUpload.get(0)!.sourceChrom!.color as Uint32Array),
+      ...(display.encodedUpload.get(0)!.refNameRank!.color as Uint32Array),
     ]).toEqual([cssColorToABGR('red'), cssColorToABGR('blue')])
     expect(display.colorScales[0]).toMatchObject({
-      id: 'sourceChrom',
+      id: 'refNameRank',
       entries: [
-        { label: 'Main chromosome', color: 'red' },
+        { label: 'Main sequence', color: 'red' },
         { label: '2nd source', color: 'blue' },
       ],
     })
     expect(
-      chromosomeDisplay({ scale: { range: ['red'] } }).colorScales[0],
+      refNameRankDisplay({ scale: { range: ['red'] } }).colorScales[0],
     ).toMatchObject({
       entries: [{ color: 'red' }],
     })
   })
 
   test('renaming the key keeps the rank colors', () => {
-    const display = chromosomeDisplay({ scale: { range: ['red', 'blue'] } })
-    const before = display.sourceChromColors
+    const display = refNameRankDisplay({ scale: { range: ['red', 'blue'] } })
+    const before = display.refNameRankPalette
     setConf(display, ['encoding', 'color'], {
       field: 'refNameRank',
       scale: { range: ['red', 'blue'] },
       legend: { title: 'Scaffold' },
     })
-    expect(display.sourceChromColors).toBe(before)
+    expect(display.refNameRankPalette).toBe(before)
   })
 })

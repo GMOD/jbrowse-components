@@ -142,7 +142,7 @@ export class MafWirePacker implements MafBlockSink {
   private rowOffset = u32()
   private rowLength = u32()
   private rowSample = u32()
-  private rowChr = u32()
+  private rowRefName = u32()
   private rowStart = u32()
   private rowStrand = i8()
   private rowSrcSize = u32()
@@ -155,7 +155,7 @@ export class MafWirePacker implements MafBlockSink {
   private blockEmptyStart = u32()
 
   private emptySample = u32()
-  private emptyChr = u32()
+  private emptyRefName = u32()
   private emptyStatus = u8()
   private emptyStart = u32()
   private emptySize = u32()
@@ -253,7 +253,7 @@ export class MafWirePacker implements MafBlockSink {
     text: string,
     from: number,
     to: number,
-    chr: string,
+    srcRefName: string,
     srcStart: number,
     strand: number,
     srcSize: number | undefined,
@@ -264,7 +264,7 @@ export class MafWirePacker implements MafBlockSink {
     this.rowOffset.set(i, offset)
     this.rowLength.set(i, length)
     this.rowSample.set(i, this.samples.indexOf(sampleId))
-    this.rowChr.set(i, this.chrs.indexOf(chr))
+    this.rowRefName.set(i, this.chrs.indexOf(srcRefName))
     this.rowStart.set(i, srcStart)
     this.rowStrand.set(i, strand)
     this.rowSrcSize.set(i, srcSize ?? 0)
@@ -288,7 +288,7 @@ export class MafWirePacker implements MafBlockSink {
   addEmpty(sampleId: string, empty: EmptyRecord) {
     const i = this.emptyCount++
     this.emptySample.set(i, this.samples.indexOf(sampleId))
-    this.emptyChr.set(i, this.chrs.indexOf(empty.chr))
+    this.emptyRefName.set(i, this.chrs.indexOf(empty.srcRefName))
     this.emptyStatus.set(i, encodeMafStatus(empty.status))
     this.emptyStart.set(i, empty.srcStart)
     this.emptySize.set(i, empty.size)
@@ -318,7 +318,7 @@ export class MafWirePacker implements MafBlockSink {
       rowOffset: this.rowOffset.finish(rows),
       rowLength: this.rowLength.finish(rows),
       rowSample: this.rowSample.finish(rows),
-      rowChr: this.rowChr.finish(rows),
+      rowRefName: this.rowRefName.finish(rows),
       rowStart: this.rowStart.finish(rows),
       rowStrand: this.rowStrand.finish(rows),
       rowSrcSize: this.rowSrcSize.finish(rows),
@@ -337,7 +337,7 @@ export class MafWirePacker implements MafBlockSink {
       blockEmptyStart: this.blockEmptyStart.finish(blocks + 1),
 
       emptySample: this.emptySample.finish(empties),
-      emptyChr: this.emptyChr.finish(empties),
+      emptyRefName: this.emptyRefName.finish(empties),
       emptyStatus: this.emptyStatus.finish(empties),
       emptyStart: this.emptyStart.finish(empties),
       emptySize: this.emptySize.finish(empties),
@@ -345,7 +345,7 @@ export class MafWirePacker implements MafBlockSink {
       emptySrcSize: this.emptySrcSize.finish(empties),
 
       sampleIds: this.samples.values,
-      chrNames: this.chrs.values,
+      refNames: this.chrs.values,
     }
   }
 }
