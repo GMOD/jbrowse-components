@@ -111,7 +111,7 @@ const CE11_GENE_TRACK = {
 }
 
 // The first sixteen samples in callset order, both haplotypes each, plus
-// the reference. parseAssemblyAndChr keeps the numeric second field of
+// the reference. parseAssemblyAndRefName keeps the numeric second field of
 // `HG00235.2.CM094400.1` with the genome, so a row is
 // `<sample>.<haplotype>`.
 const HPRC_MAF_ROWS = [

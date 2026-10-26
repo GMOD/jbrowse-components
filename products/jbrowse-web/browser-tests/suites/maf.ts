@@ -57,7 +57,7 @@ const fitToHeightSpec = {
   ],
 }
 
-const sourceChromSpec = {
+const refNameRankSpec = {
   views: [
     {
       type: 'LinearGenomeView',
@@ -351,7 +351,7 @@ const suite: TestSuite = {
     {
       name: 'source chromosome rows',
       fn: async page => {
-        await navigateWithSessionSpec(page, sourceChromSpec)
+        await navigateWithSessionSpec(page, refNameRankSpec)
         await waitForDisplayDrawn(page, 'volvox_maf-LinearMafDisplay')
         await waitForDataLoaded(page)
         await dualSnapshot(page, 'maf-source-chrom-canvas', CANVAS)

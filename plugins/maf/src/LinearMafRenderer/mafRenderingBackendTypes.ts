@@ -284,7 +284,7 @@ export interface MafGpuProps {
  */
 export interface MafRowsPayload {
   cells: SpanChannels
-  /** Each row's aligned blocks colored by source-chromosome rank. */
+  /** Each row's aligned blocks colored by their `refNameRank`. */
   refNameRank?: SpanChannels
   /** The summary tier's per-species presence bars. */
   summary?: MafSummarySpans

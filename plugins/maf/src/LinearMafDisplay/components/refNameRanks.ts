@@ -104,7 +104,7 @@ const rankTables = new Map<string, readonly number[]>()
 
 /**
  * Each rank's packed color, the last painting every rank past it: `range`'s
- * colors where it lists any, else `SOURCE_CHROM_PALETTE`. The same array for
+ * colors where it lists any, else `REF_NAME_RANK_PALETTE`. The same array for
  * the same range, so a color edit that leaves it alone re-encodes nothing.
  */
 export function refNameRankColors(
@@ -126,7 +126,7 @@ export function refNameRankColors(
 }
 
 /**
- * The color-by-source-chromosome rows as `span` channels: one instance per
+ * The `refNameRank` fill as `span` channels: one instance per
  * aligned row per block, across the block's reference extent, colored by the
  * row's rank for its source chromosome. A row the adapter named no `srcRefName` for
  * draws nothing. Blocks outer, rows inner, which is the paint order.

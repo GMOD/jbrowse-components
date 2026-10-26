@@ -13,7 +13,7 @@ import {
   encodeRefNameRankSpans,
 } from '../LinearMafDisplay/components/refNameRanks.ts'
 import { EMPTY_MAF_CELLS } from './mafChannels.ts'
-import { MAF_MARKS, MAF_SOURCE_CHROM_MARK } from './mafMarks.ts'
+import { MAF_MARKS, MAF_REF_NAME_RANK_MARK } from './mafMarks.ts'
 
 import type { MafBlock, MafGPURenderState } from './mafRenderingBackendTypes.ts'
 import type { MarkContext2D } from '@jbrowse/render-core/marks'
@@ -111,7 +111,7 @@ const RANKS = new Map([
 
 function paint(blocks: MafBlock[], reversed = false) {
   const { ctx, rects } = recordingCtx()
-  MAF_SOURCE_CHROM_MARK.paintBlock(
+  MAF_REF_NAME_RANK_MARK.paintBlock(
     ctx,
     {
       cells: EMPTY_MAF_CELLS,

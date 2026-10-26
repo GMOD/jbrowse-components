@@ -140,8 +140,8 @@ export const MAF_CONSERVATION_MARK = defineMark({
   band: (s: MafGPURenderState) => s.conservation,
 })
 
-/** Each row's aligned blocks, colored by source-chromosome rank. */
-export const MAF_SOURCE_CHROM_MARK = defineMark({
+/** Each row's aligned blocks, colored by their `refNameRank`. */
+export const MAF_REF_NAME_RANK_MARK = defineMark({
   shape: passOf(spanMark, 'mafRefNameRank'),
   channels: (d: MafRowsPayload) => d.refNameRank,
   params: blockSpanParams,
@@ -198,7 +198,7 @@ export const MAF_INSERTION_MARK = defineMark({
 export const MAF_ROWS_MARKS: Mark<MafRowsPayload, MafGPURenderState>[] = [
   MAF_IDENTITY_MARK,
   MAF_IDENTITY_BAR_MARK,
-  MAF_SOURCE_CHROM_MARK,
+  MAF_REF_NAME_RANK_MARK,
   MAF_SUMMARY_MARK,
   MAF_ROW_MARK,
   MAF_CODON_MARK,

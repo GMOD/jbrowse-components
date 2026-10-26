@@ -9,7 +9,7 @@ import type { MafBlock } from '../mafRenderingBackendTypes.ts'
  * Free, and it answers for every row at once: a block's `endBp` is `startBp`
  * plus its count of non-gap reference bytes (the worker's own definition), so
  * the two agreeing with the column count means the reference has no `-` in it,
- * and `forEachInsertion` can only fire inside a reference-gap run. Most blocks
+ * and an insertion can only sit inside a reference-gap run. Most blocks
  * of a real MAF have none, so the insertion walk skips them without visiting a
  * row.
  */
@@ -68,9 +68,8 @@ export function forEachInsertionLength(
 /**
  * Walk a single aligned row against the reference and emit one callback per
  * insertion (a run of reference-gap columns where this sample carries bases).
- * Single source of truth for MAF's insertion geometry — used by rendering (the
- * on-screen overlay + Canvas2D export) and the hover hit-test, so they can't
- * disagree on where insertions are or how long they are.
+ * The hover reads it; the painters read `forEachInsertionLength`, which a test
+ * holds to the same anchors and lengths.
  *
  * - `anchorBp`: absolute genomic coord the marker sits before (the next
  *   reference base after the run).
