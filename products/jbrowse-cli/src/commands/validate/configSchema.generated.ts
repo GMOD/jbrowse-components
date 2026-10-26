@@ -12910,6 +12910,35 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "else": {
             "type": "number"
           }
+        },
+        "domainMid": {
+          "description": "the value the ramp's middle stop sits at, so a diverging ramp centres somewhere other than the middle of the domain, both sides on one scale: the farther end of the domain reaches its end color and equal distances from the middle take equal colors; unset, the stops are evenly spaced across it.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
+    "LDColorLegend": {
+      "title": "LDColorLegend",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "title": {
+          "description": "key title; unset keeps the display's own heading, \\"\\" draws none.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         }
       },
       "patternProperties": {
@@ -12923,9 +12952,19 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         {
           "description": "Shorthand for \`{ \\"field\\": ... }\`.",
           "default": "r2",
-          "enum": [
-            "r2",
-            "dprime"
+          "allOf": [
+            {
+              "enum": [
+                "r2",
+                "dprime"
+              ]
+            },
+            {
+              "not": {
+                "$ref": "#/$defs/CssColorEntry"
+              },
+              "errorMessage": "is a color, and a bare string is the field. To paint every feature it, write { \\"value\\": <the color> }"
+            }
           ],
           "type": "string"
         },
@@ -12941,9 +12980,19 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 "type": "null"
               },
               "else": {
-                "enum": [
-                  "r2",
-                  "dprime"
+                "allOf": [
+                  {
+                    "enum": [
+                      "r2",
+                      "dprime"
+                    ]
+                  },
+                  {
+                    "not": {
+                      "$ref": "#/$defs/CssColorEntry"
+                    },
+                    "errorMessage": "is a color, and a bare string is the field. To paint every feature it, write { \\"value\\": <the color> }"
+                  }
                 ]
               }
             },
@@ -12953,6 +13002,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               },
               "else": {
                 "$ref": "#/$defs/LDColorScale"
+              }
+            },
+            "legend": {
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/LDColorLegend"
               }
             }
           },
@@ -14918,7 +14975,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "domainMin": {
-          "description": "the bottom of the scale; unset is 0.",
+          "description": "the bottom of the scale; unset follows the loaded values, whose extent starts at 0 since no value is below it.",
           "if": {
             "type": "null"
           },
@@ -14936,7 +14993,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "domainQuantile": {
-          "description": "the quantile of the loaded counts an unset domainMax follows; 1 is their maximum.",
+          "description": "the quantile of the loaded values an unset domainMax follows; 1 is their maximum.",
           "default": 0.95,
           "if": {
             "type": "null"
@@ -15168,18 +15225,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
         "renderer": {
-          "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
-        },
-        "showResolutionControls": {
-          "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
-        },
-        "resolutionBias": {
-          "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
-        },
-        "selectedNormalization": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
@@ -20539,15 +20584,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "renderer": {
               "$ref": "#/$defs/LinearHicDisplaySlots/properties/renderer"
-            },
-            "showResolutionControls": {
-              "$ref": "#/$defs/LinearHicDisplaySlots/properties/showResolutionControls"
-            },
-            "resolutionBias": {
-              "$ref": "#/$defs/LinearHicDisplaySlots/properties/resolutionBias"
-            },
-            "selectedNormalization": {
-              "$ref": "#/$defs/LinearHicDisplaySlots/properties/selectedNormalization"
             }
           },
           "patternProperties": {
@@ -25468,6 +25504,30 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "heightPreConfig": {
+          "deprecated": true,
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
+        },
+        "activeNormalization": {
+          "deprecated": true,
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
+        },
+        "colorScheme": {
+          "deprecated": true,
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
+        },
+        "mode": {
+          "deprecated": true,
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
+        },
+        "resolution": {
+          "deprecated": true,
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
+        },
+        "showLegend": {
+          "deprecated": true,
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
+        },
+        "useLogScale": {
           "deprecated": true,
           "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
         }

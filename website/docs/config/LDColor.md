@@ -40,4 +40,7 @@ A setting written to it replaces it whole, since its members are alternatives: a
 | <span id="slot-scalereverse">**scale.reverse**</span><br>[`maybeBoolean`](/docs/config_guides/slot_types#the-maybe-types) | Unset turns round viridis, magma, inferno and cividis, which run dark at their low end, since an unpainted cell is the page behind the matrix. |
 | <span id="slot-scaledomainmin">**scale.domainMin**</span><br>[`maybeNumber`](/docs/config_guides/slot_types#the-maybe-types) | the value the bottom color paints, everything below it too; unset is 0 |
 | <span id="slot-scaledomainmax">**scale.domainMax**</span><br>[`maybeNumber`](/docs/config_guides/slot_types#the-maybe-types) | the value the top color paints, everything above it too; unset is 1 |
+| <span id="slot-scaledomainmid">**scale.domainMid**</span><br><code>colorRampSlots.domainMid</code> | The value the ramp's middle stop sits at; unset, the stops spread evenly across the domain. |
+| <span id="slot-legend">**legend**</span><br>[LDColorLegend sub-schema](#slot-legendtitle) | The key this channel draws: `title` replaces the metric's name, and `""` draws none. |
 | <span id="slot-scaletype">**scale.type**</span><br>[`maybeStringEnum`](/docs/config_guides/slot_types#the-maybe-types) (linear) | linear, the one scale; unset is linear |
+| <span id="slot-legendtitle">**legend.title**</span><br>[`maybeString`](/docs/config_guides/slot_types#the-maybe-types) | key title; unset keeps the display's own heading, "" draws none |

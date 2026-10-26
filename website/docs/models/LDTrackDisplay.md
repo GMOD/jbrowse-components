@@ -77,18 +77,18 @@ From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`sc
 | <span id="getter-dprimeavailable">**dprimeAvailable**</span><br><code>boolean</code> |  |
 | <span id="getter-focalsnpindex">**focalSnpIndex**</span><br><code>number</code> | Index of the focal SNP in `snps`, or -1. |
 | <span id="getter-paintedcolorfield">**paintedColorField**</span><br><code>LDMetric</code> | The loaded metric, so a stale triangle during a metric switch keeps its hue. |
-| <span id="getter-colordomain">**colorDomain**</span><br><code>[number, number]</code> | The domain the statistic is colored over: each pinned end holds, and an open one is the statistic's own 0 or 1. |
+| <span id="getter-colorextent">**colorExtent**</span><br><code>readonly [number, number]</code> | What an open end of the color domain follows: the statistic's own 0 to 1, not the loaded values, so one r² paints one color on every track. |
 | <span id="getter-colorscales">**colorScales**</span><br><code>ColorScale[]</code> | The ramp the cells paint through, titled by the loaded metric. An end pinned inside the statistic's 0 to 1 reads `≤` or `≥`. |
 | <span id="getter-renderstate">**renderState**</span><br><code>LDRenderState</code> |  |
 | <span id="getter-matrixtop">**matrixTop**</span><br><code>number</code> | The band above the matrix: the connector lines in columns, the labels at genomic positions when they are on, else nothing. |
 | <span id="getter-connectorlinecoords">**connectorLineCoords**</span><br><code>ConnectorCoord[]</code> | Each column tied to its SNP's genomic x, for the connector lines. |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>83 inherited getters from 10 models</summary>
+<summary>88 inherited getters from 10 models</summary>
 
 From [TriangleMatrixMixin](../trianglematrixmixin): <span id="getter-heightmode">[`heightMode`](../trianglematrixmixin#getter-heightmode)</span>, <span id="getter-canvaswidth">[`canvasWidth`](../trianglematrixmixin#getter-canvaswidth)</span>, <span id="getter-viewtransform">[`viewTransform`](../trianglematrixmixin#getter-viewtransform)</span>, <span id="getter-matrixregions">[`matrixRegions`](../trianglematrixmixin#getter-matrixregions)</span>, <span id="getter-matrixheight">[`matrixHeight`](../trianglematrixmixin#getter-matrixheight)</span>, <span id="getter-matrixblocks">[`matrixBlocks`](../trianglematrixmixin#getter-matrixblocks)</span>, <span id="getter-yscalar">[`yScalar`](../trianglematrixmixin#getter-yscalar)</span>, <span id="getter-triangletransform">[`triangleTransform`](../trianglematrixmixin#getter-triangletransform)</span>, <span id="getter-triangleframe">[`triangleFrame`](../trianglematrixmixin#getter-triangleframe)</span>
 
-From [MatrixRampMixin](../matrixrampmixin): <span id="getter-colorencoding">[`colorEncoding`](../matrixrampmixin#getter-colorencoding)</span>, <span id="getter-colorscaletype">[`colorScaleType`](../matrixrampmixin#getter-colorscaletype)</span>, <span id="getter-colorscheme">[`colorScheme`](../matrixrampmixin#getter-colorscheme)</span>, <span id="getter-colorreverse">[`colorReverse`](../matrixrampmixin#getter-colorreverse)</span>, <span id="getter-colorramp">[`colorRamp`](../matrixrampmixin#getter-colorramp)</span>
+From [MatrixRampMixin](../matrixrampmixin): <span id="getter-colorencoding">[`colorEncoding`](../matrixrampmixin#getter-colorencoding)</span>, <span id="getter-colorscaletype">[`colorScaleType`](../matrixrampmixin#getter-colorscaletype)</span>, <span id="getter-colorscheme">[`colorScheme`](../matrixrampmixin#getter-colorscheme)</span>, <span id="getter-colorreverse">[`colorReverse`](../matrixrampmixin#getter-colorreverse)</span>, <span id="getter-colorramp">[`colorRamp`](../matrixrampmixin#getter-colorramp)</span>, <span id="getter-colorscale">[`colorScale`](../matrixrampmixin#getter-colorscale)</span>, <span id="getter-colordomain">[`colorDomain`](../matrixrampmixin#getter-colordomain)</span>, <span id="getter-colormidnorm">[`colorMidNorm`](../matrixrampmixin#getter-colormidnorm)</span>, <span id="getter-matrixcolor">[`matrixColor`](../matrixrampmixin#getter-matrixcolor)</span>, <span id="getter-colorfieldtitle">[`colorFieldTitle`](../matrixrampmixin#getter-colorfieldtitle)</span>
 
 From [LegendMixin](../legendmixin): <span id="getter-showlegend">[`showLegend`](../legendmixin#getter-showlegend)</span>, <span id="getter-legendright">[`legendRight`](../legendmixin#getter-legendright)</span>, <span id="getter-legendspec">[`legendSpec`](../legendmixin#getter-legendspec)</span>, <span id="getter-haslegendkey">[`hasLegendKey`](../legendmixin#getter-haslegendkey)</span>
 
@@ -121,9 +121,11 @@ From [BaseDisplay](../basedisplay): <span id="getter-parenttrack">[`parentTrack`
 | <span id="method-rendersvg">**renderSvg**</span><br><code>(opts: ExportSvgDisplayOptions) =&gt; Promise&lt;ReactNode&gt;</code> |  |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>11 inherited methods from 4 models</summary>
+<summary>12 inherited methods from 5 models</summary>
 
 From [TriangleMatrixMixin](../trianglematrixmixin): <span id="method-celltoscreen">[`cellToScreen`](../trianglematrixmixin#method-celltoscreen)</span>, <span id="method-screentocell">[`screenToCell`](../trianglematrixmixin#method-screentocell)</span>
+
+From [MatrixRampMixin](../matrixrampmixin): <span id="method-rampcolorscales">[`rampColorScales`](../matrixrampmixin#method-rampcolorscales)</span>
 
 From [LegendMixin](../legendmixin): <span id="method-colorscalesin">[`colorScalesIn`](../legendmixin#method-colorscalesin)</span>, <span id="method-legendspecin">[`legendSpecIn`](../legendmixin#method-legendspecin)</span>
 

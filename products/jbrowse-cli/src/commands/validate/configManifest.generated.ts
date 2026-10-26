@@ -7423,9 +7423,25 @@ export const configManifest: ConfigManifest = {
                     {
                       "name": "domainMax",
                       "type": "(number | undefined)"
+                    },
+                    {
+                      "name": "domainMid",
+                      "type": "(number | undefined)"
                     }
                   ],
                   "schema": "LDColorScale",
+                  "writes": "members"
+                },
+                {
+                  "name": "legend",
+                  "type": "LDColorLegendConfigurationSchema",
+                  "subSlots": [
+                    {
+                      "name": "title",
+                      "type": "(string | undefined)"
+                    }
+                  ],
+                  "schema": "LDColorLegend",
                   "writes": "members"
                 }
               ],
@@ -8728,6 +8744,9 @@ export const configManifest: ConfigManifest = {
                   "scale": {
                     "type": "linear",
                     "scheme": "juicebox"
+                  },
+                  "legend": {
+                    "title": "Contacts"
                   }
                 },
                 "observed/expected": {
@@ -8738,6 +8757,9 @@ export const configManifest: ConfigManifest = {
                     "domainMin": 0.25,
                     "domainMax": 4,
                     "domainMid": 1
+                  },
+                  "legend": {
+                    "title": "Observed/expected"
                   }
                 },
                 "observed/control": {
@@ -8748,6 +8770,9 @@ export const configManifest: ConfigManifest = {
                     "domainMin": 0.25,
                     "domainMax": 4,
                     "domainMid": 1
+                  },
+                  "legend": {
+                    "title": "Observed/control"
                   }
                 }
               },
@@ -8792,18 +8817,14 @@ export const configManifest: ConfigManifest = {
         "fetchSizeLimit",
         "mouseover",
         "jexlFilters",
-        "renderer",
-        "showResolutionControls",
-        "resolutionBias",
-        "selectedNormalization"
+        "renderer"
       ],
       "droppedKeys": [
         "maxFeatureScreenDensity",
         "maxDisplayedBpPerPx",
         "fetchSizeLimit",
         "mouseover",
-        "renderer",
-        "showResolutionControls"
+        "renderer"
       ],
       "stateModelProps": [
         "id",
@@ -12054,6 +12075,14 @@ export const configManifest: ConfigManifest = {
     "LinearMafDisplay": [
       "subtreeFilter",
       "treeAreaWidth"
+    ],
+    "LinearHicDisplay": [
+      "activeNormalization",
+      "colorScheme",
+      "mode",
+      "resolution",
+      "showLegend",
+      "useLogScale"
     ],
     "LinearSyntenyDisplay": [
       "alpha",

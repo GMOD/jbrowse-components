@@ -67,6 +67,3 @@ An older config may still write these. Each loads without an error, and `jbrowse
 | `mouseover` | ignored |
 | `jexlFilters` | moved into a current slot |
 | `renderer` | ignored |
-| `showResolutionControls` | ignored |
-| `resolutionBias` | moved into a current slot |
-| `selectedNormalization` | moved into a current slot |

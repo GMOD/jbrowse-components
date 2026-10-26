@@ -58,7 +58,7 @@ From [BaseDisplay](../basedisplay): <span id="property-id">[`id`](../basedisplay
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="volatile-fileinfo">**fileInfo**</span><br><code>AdapterRead&lt;HicFileInfo&gt; &#124; undefined</code> | The file's normalizations and binsizes, stamped with the adapter config they answer. |
+| <span id="volatile-fileinfo">**fileInfo**</span><br><code>AdapterRead&lt;HicHeader&gt; &#124; undefined</code> | The file's normalizations and binsizes, stamped with the adapter config they answer. |
 
 <details class="inherited-members" data-pagefind-ignore>
 <summary>25 inherited volatiles from 8 models</summary>
@@ -99,13 +99,12 @@ From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`sc
 | <span id="getter-hasresolutions">**hasResolutions**</span><br><code>boolean</code> | Whether the binsize list has arrived; every resolution control gates on it. |
 | <span id="getter-activenormalization">**activeNormalization**</span><br><code>string</code> | The normalization to request: the selection where the file has it, else the next best it does. A getter, so a file lacking the selection never marks the track edited. |
 | <span id="getter-loadedquantilescore">**loadedQuantileScore**</span><br><code>number</code> | The loaded counts' `saturationQuantile`: the worker's answer, or after an edit a selection over the loaded matrix, so a new percentile refetches nothing. The next fetch asks the worker for the new one. |
-| <span id="getter-colordomain">**colorDomain**</span><br><code>[number, number]</code> | The domain the counts are colored over, as every ramp spans one: a pinned end holds, and an open one follows the loaded counts from 0, the top at their `colorQuantile` below 1, else their maximum. |
+| <span id="getter-colorextent">**colorExtent**</span><br><code>readonly [number, number]</code> | What an open end of the color domain follows: the loaded values from 0, which is where a count's extent starts, to their `colorQuantile` below 1, else their maximum. |
 | <span id="getter-awaitingprerequisite">**awaitingPrerequisite**</span><br><code>boolean</code> | Retry is two-stage: the contact fetch declines until the header it needs lands, and the header's arrival wakes it. `infoFetchFailure.test.ts` pins it. |
 | <span id="getter-appliednormalization">**appliedNormalization**</span><br><code>string</code> | The normalization the loaded matrix has, which falls back per binsize (KR at 5 kb, nothing at 2.5 Mb is typical). The menu ticks this. Fetch-derived, so it stays out of `rpcProps()`. |
-| <span id="getter-scaletype">**scaleType**</span><br><code>ScaleTypeCode</code> |  |
-| <span id="getter-colormidnorm">**colorMidNorm**</span><br><code>number</code> | Where `encoding.color.scale.domainMid` sits on the normalized ramp, 0.5 unset, so a diverging scheme centres on it and equal distances from it take equal colors. |
+| <span id="getter-paintedfieldname">**paintedFieldName**</span><br><code>{ name: string; isCount: boolean; }</code> | The painted field's name for the key and the tooltip. |
 | <span id="getter-autoresolutionidx">**autoResolutionIdx**</span><br><code>number</code> | The binsize index auto mode picks: the largest at most 2 bp/px, about half a bin per pixel, else the finest. |
-| <span id="getter-colorscales">**colorScales**</span><br><code>ColorScale[]</code> | The count ramp, once there is a domain to span. The ends are where the ramp paints them, and a top below the largest loaded count reads `≥`. The title names the loaded binsize, so a figure carries it, unless `encoding.color.legend.title` replaces it. |
+| <span id="getter-colorscales">**colorScales**</span><br><code>ColorScale[]</code> | The value ramp. A top below the largest loaded value reads `≥`. The title names the loaded binsize, so a figure carries it, unless `encoding.color.legend.title` replaces it. |
 | <span id="getter-effectiveresolutionidx">**effectiveResolutionIdx**</span><br><code>number</code> | The index in effect after `resolutionSteps`, clamped so steps set at another zoom cannot index out of range. |
 | <span id="getter-valuelabel">**valueLabel**</span><br><code>string</code> | What the tooltip calls a bin's value. |
 | <span id="getter-effectiveresolution">**effectiveResolution**</span><br><code>number &#124; undefined</code> |  |
@@ -115,13 +114,13 @@ From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`sc
 | <span id="getter-viewsignature">**viewSignature**</span><br><code>string &#124; undefined</code> | The static blocks plus the binsize, so a pan inside them redraws and only a block entering or a binsize step refetches. Undefined until the header lands. |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>83 inherited getters from 11 models</summary>
+<summary>88 inherited getters from 11 models</summary>
 
 From [PointerHoverMixin](../pointerhovermixin): <span id="getter-hoveredfeature">[`hoveredFeature`](../pointerhovermixin#getter-hoveredfeature)</span>
 
 From [TriangleMatrixMixin](../trianglematrixmixin): <span id="getter-heightmode">[`heightMode`](../trianglematrixmixin#getter-heightmode)</span>, <span id="getter-matrixtop">[`matrixTop`](../trianglematrixmixin#getter-matrixtop)</span>, <span id="getter-canvaswidth">[`canvasWidth`](../trianglematrixmixin#getter-canvaswidth)</span>, <span id="getter-viewtransform">[`viewTransform`](../trianglematrixmixin#getter-viewtransform)</span>, <span id="getter-matrixregions">[`matrixRegions`](../trianglematrixmixin#getter-matrixregions)</span>, <span id="getter-matrixheight">[`matrixHeight`](../trianglematrixmixin#getter-matrixheight)</span>, <span id="getter-matrixblocks">[`matrixBlocks`](../trianglematrixmixin#getter-matrixblocks)</span>, <span id="getter-yscalar">[`yScalar`](../trianglematrixmixin#getter-yscalar)</span>, <span id="getter-triangletransform">[`triangleTransform`](../trianglematrixmixin#getter-triangletransform)</span>, <span id="getter-triangleframe">[`triangleFrame`](../trianglematrixmixin#getter-triangleframe)</span>
 
-From [MatrixRampMixin](../matrixrampmixin): <span id="getter-colorencoding">[`colorEncoding`](../matrixrampmixin#getter-colorencoding)</span>, <span id="getter-colorscaletype">[`colorScaleType`](../matrixrampmixin#getter-colorscaletype)</span>, <span id="getter-colorscheme">[`colorScheme`](../matrixrampmixin#getter-colorscheme)</span>, <span id="getter-colorreverse">[`colorReverse`](../matrixrampmixin#getter-colorreverse)</span>, <span id="getter-colorramp">[`colorRamp`](../matrixrampmixin#getter-colorramp)</span>
+From [MatrixRampMixin](../matrixrampmixin): <span id="getter-colorencoding">[`colorEncoding`](../matrixrampmixin#getter-colorencoding)</span>, <span id="getter-colorscaletype">[`colorScaleType`](../matrixrampmixin#getter-colorscaletype)</span>, <span id="getter-colorscheme">[`colorScheme`](../matrixrampmixin#getter-colorscheme)</span>, <span id="getter-colorreverse">[`colorReverse`](../matrixrampmixin#getter-colorreverse)</span>, <span id="getter-colorramp">[`colorRamp`](../matrixrampmixin#getter-colorramp)</span>, <span id="getter-colorscale">[`colorScale`](../matrixrampmixin#getter-colorscale)</span>, <span id="getter-colordomain">[`colorDomain`](../matrixrampmixin#getter-colordomain)</span>, <span id="getter-colormidnorm">[`colorMidNorm`](../matrixrampmixin#getter-colormidnorm)</span>, <span id="getter-matrixcolor">[`matrixColor`](../matrixrampmixin#getter-matrixcolor)</span>, <span id="getter-colorfieldtitle">[`colorFieldTitle`](../matrixrampmixin#getter-colorfieldtitle)</span>
 
 From [LegendMixin](../legendmixin): <span id="getter-showlegend">[`showLegend`](../legendmixin#getter-showlegend)</span>, <span id="getter-legendright">[`legendRight`](../legendmixin#getter-legendright)</span>, <span id="getter-legendspec">[`legendSpec`](../legendmixin#getter-legendspec)</span>, <span id="getter-haslegendkey">[`hasLegendKey`](../legendmixin#getter-haslegendkey)</span>
 
@@ -153,9 +152,11 @@ From [BaseDisplay](../basedisplay): <span id="getter-parenttrack">[`parentTrack`
 | <span id="method-rendersvg">**renderSvg**</span><br><code>(opts: ExportSvgDisplayOptions) =&gt; Promise&lt;ReactNode&gt;</code> |  |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>11 inherited methods from 4 models</summary>
+<summary>12 inherited methods from 5 models</summary>
 
 From [TriangleMatrixMixin](../trianglematrixmixin): <span id="method-celltoscreen">[`cellToScreen`](../trianglematrixmixin#method-celltoscreen)</span>, <span id="method-screentocell">[`screenToCell`](../trianglematrixmixin#method-screentocell)</span>
+
+From [MatrixRampMixin](../matrixrampmixin): <span id="method-rampcolorscales">[`rampColorScales`](../matrixrampmixin#method-rampcolorscales)</span>
 
 From [LegendMixin](../legendmixin): <span id="method-colorscalesin">[`colorScalesIn`](../legendmixin#method-colorscalesin)</span>, <span id="method-legendspecin">[`legendSpecIn`](../legendmixin#method-legendspecin)</span>
 
@@ -175,7 +176,7 @@ From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`rendering
 | <span id="action-setlogscale">**setLogScale**</span><br><code>(log: boolean) =&gt; void</code> | The Log scale toggle: `encoding.color.scale.type` symlog, which keeps every nonzero count visible, or unset for `observed`'s linear preset. |
 | <span id="action-setcolorfollowspercentile">**setColorFollowsPercentile**</span><br><code>(f: boolean) =&gt; void</code> |  |
 | <span id="action-setselectednormalization">**setSelectedNormalization**</span><br><code>(f: string) =&gt; void</code> |  |
-| <span id="action-setfileinfo">**setFileInfo**</span><br><code>(read: AdapterRead&lt;HicFileInfo&gt;) =&gt; void</code> |  |
+| <span id="action-setfileinfo">**setFileInfo**</span><br><code>(read: AdapterRead&lt;HicHeader&gt;) =&gt; void</code> |  |
 | <span id="action-resetresolution">**resetResolution**</span><br><code>() =&gt; void</code> |  |
 | <span id="action-setresolutionidx">**setResolutionIdx**</span><br><code>(idx: number) =&gt; void</code> | Lock to `availableResolutions[idx]`, clamped, stored as an offset from the auto pick so the choice keeps its meaning across zoom. |
 | <span id="action-setresolution">**setResolution**</span><br><code>(binSize: number) =&gt; void</code> | Lock to a binsize the file offers; any other is ignored. |

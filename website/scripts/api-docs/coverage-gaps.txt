@@ -48,7 +48,7 @@ Dotplot1DView
 LinearSyntenyViewHelper
 TimeTraveller
 
-# model members with no description (1295)
+# model members with no description (1296)
 # fix: write a sentence under the member’s #property/#volatile/#getter/#method/#action tag
 AddTrackModel.adapterHint
 AddTrackModel.altAssemblyName
@@ -816,7 +816,6 @@ LinearHicDisplay.effectiveResolution
 LinearHicDisplay.renderState
 LinearHicDisplay.renderSvg
 LinearHicDisplay.resetResolution
-LinearHicDisplay.scaleType
 LinearHicDisplay.setColorFollowsPercentile
 LinearHicDisplay.setFileInfo
 LinearHicDisplay.setSelectedNormalization
@@ -1010,8 +1009,10 @@ MafSequenceWidget.hoverHighlight
 MafSequenceWidget.regions
 MafSequenceWidget.samples
 MafSequenceWidget.setHoverHighlight
+MatrixRampMixin.colorDomain
 MatrixRampMixin.colorScaleType
 MatrixRampMixin.colorScheme
+MatrixRampMixin.matrixColor
 MultiWaySyntenyDisplay.adapterCapabilities
 MultiWaySyntenyDisplay.adapterDeclaresLanes
 MultiWaySyntenyDisplay.adapterPairsOnAnchor

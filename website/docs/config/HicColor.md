@@ -1,15 +1,15 @@
 ---
 id: hiccolor
 title: HicColor
-description: "The Hi-C display's encoding.color: a bin's observed contact count, or its observed/expected ratio, through a linear, symlog or log scale.type onto a named scale.scheme."
+description: "The Hi-C display's encoding.color: a bin's observed contact count, or its observed/expected or observed/control ratio, through a linear, symlog or log scale.type onto a named scale.scheme."
 sidebar_label: Display -> HicColor
 ---
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `hic` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/hic/src/LinearHicDisplay/hicColorConfigSchema.ts).
 
 The Hi-C display's `encoding.color`: a bin's `observed` contact count, or
-its `observed/expected` ratio, through a `linear`, `symlog` or `log`
-`scale.type` onto a named `scale.scheme`.
+its `observed/expected` or `observed/control` ratio, through a `linear`,
+`symlog` or `log` `scale.type` onto a named `scale.scheme`.
 
 - `observed`: an unset `scale.domainMax` follows the loaded counts,
   saturating at their `scale.domainQuantile`, the 95th percentile by
@@ -53,8 +53,8 @@ A setting written to it replaces it whole, since its members are alternatives: a
 | <span id="slot-scalescheme">**scale.scheme**</span><br>[`maybeStringEnum`](/docs/config_guides/slot_types#the-maybe-types) (viridis, magma, inferno, cividis, juicebox, fall, reds, blues, redblue, purpleorange, redgreyblue, redyellowblue) | the named ramp the field runs across; unset is the field's own, juicebox for count, which fades from transparent to red |
 | <span id="slot-scalereverse">**scale.reverse**</span><br>[`maybeBoolean`](/docs/config_guides/slot_types#the-maybe-types) | Unset turns round viridis, magma, inferno and cividis, which run dark at their low end, since an unpainted bin is the page behind the matrix; the field's own scheme keeps the field's direction. |
 | <span id="slot-scaledomainmid">**scale.domainMid**</span><br><code>colorRampSlots.domainMid</code> | The value the ramp's middle stop sits at, so a diverging scheme centres on it and equal distances from it take equal colors; unset, the stops spread evenly across the domain. |
-| <span id="slot-scaledomainmin">**scale.domainMin**</span><br>[`maybeNumber`](/docs/config_guides/slot_types#the-maybe-types) | the bottom of the scale; unset is 0 |
+| <span id="slot-scaledomainmin">**scale.domainMin**</span><br>[`maybeNumber`](/docs/config_guides/slot_types#the-maybe-types) | the bottom of the scale; unset follows the loaded values, whose extent starts at 0 since no value is below it |
 | <span id="slot-scaledomainmax">**scale.domainMax**</span><br>[`maybeNumber`](/docs/config_guides/slot_types#the-maybe-types) | the top of the scale's domain; unset follows the loaded counts |
-| <span id="slot-scaledomainquantile">**scale.domainQuantile**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>0.95</code> | The value an unset `domainMax` follows: the loaded counts' quantile, `0.95` so faint off-diagonal contacts read, or at `1` their maximum. The track menu's "Emphasize faint contacts" toggles it. Every color ramp reads the word this way; a y scale's `fenceQuantile` is an outlier fence. |
+| <span id="slot-scaledomainquantile">**scale.domainQuantile**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>0.95</code> | The value an unset `domainMax` follows: the loaded values' quantile, `0.95` so faint off-diagonal contacts read, or at `1` their maximum. The track menu's "Emphasize faint contacts" toggles it. Only the top clips, since the values' extent starts at 0, the way an axis that starts at 0 adds 0 to the shared quantile extent. |
 | <span id="slot-legend">**legend**</span><br>[HicColorLegend sub-schema](#slot-legendtitle) | The key this channel draws: `title` replaces the heading naming the field and binsize, and `""` draws none. |
 | <span id="slot-legendtitle">**legend.title**</span><br>[`maybeString`](/docs/config_guides/slot_types#the-maybe-types) | key title; unset keeps the display's own heading, "" draws none |
