@@ -11766,13 +11766,17 @@ export const configManifest: ConfigManifest = {
     "LinearAlignmentsDisplay": [
       "PileupDisplay",
       "SNPCoverageDisplay",
+      "autoscale",
       "colorBy",
       "colorBySetting",
+      "constraints",
+      "displayCrossHatches",
       "drawProperPairs",
       "drawSingletons",
       "filterBy",
       "filterBySetting",
       "hideMismatchesSetting",
+      "scale",
       "showLegend",
       "sortedBy",
       "trackMaxHeight"
