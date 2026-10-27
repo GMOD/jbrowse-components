@@ -76,6 +76,5 @@ export const pileupConfigSchema = ConfigurationSchema(
   {
     closed: true,
     plot: true,
-    retired: { readHeight: height => ({ mark: { height } }) },
   },
 )

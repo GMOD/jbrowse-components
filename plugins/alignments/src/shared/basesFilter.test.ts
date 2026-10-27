@@ -1,10 +1,8 @@
 import PluginManager from '@jbrowse/core/PluginManager'
 import { readConfObject } from '@jbrowse/core/configuration'
-import { preprocessTrackConfigSnapshot } from '@jbrowse/core/pluggableElementTypes/models'
 import { predicatesOf } from '@jbrowse/core/util/fieldPredicate'
 
 import configSchemaFactory from '../LinearAlignmentsDisplay/configSchema.ts'
-import AlignmentsPlugin from '../index.ts'
 import {
   DEFAULT_BASES_FILTER,
   basesFilterOf,
@@ -123,41 +121,4 @@ test("a v4 colorBy's modification settings land in the bases layer", () => {
   expect(readConfObject(conf, ['pileup', 'bases', 'unmodified', 'show'])).toBe(
     true,
   )
-})
-
-test.each([
-  ['all', true],
-  ['calls', true],
-  ['hidden', false],
-])(
-  "a beta modifications.unmodified '%s' lifts to pileup.bases.unmodified.show",
-  (unmodified, show) => {
-    const conf = create({ modifications: { unmodified } })
-    expect(
-      readConfObject(conf, ['pileup', 'bases', 'unmodified', 'show']),
-    ).toBe(show)
-  },
-)
-
-test('a beta modifications.unmodified reaches the display through displayDefaults', () => {
-  const pluginManager = new PluginManager([new AlignmentsPlugin()])
-  pluginManager.createPluggableElements()
-  pluginManager.configure()
-  const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
-  const out = preprocessTrackConfigSnapshot(pluginManager, {
-    type: 'AlignmentsTrack',
-    trackId: 't',
-    name: 't',
-    assemblyNames: ['volvox'],
-    adapter: { type: 'BamAdapter', uri: 'a.bam' },
-    displayDefaults: { modifications: { unmodified: 'all' } },
-  })
-  expect(warn).not.toHaveBeenCalled()
-  warn.mockRestore()
-  const display = (out.displays as Record<string, unknown>[]).find(
-    d => d.type === 'LinearAlignmentsDisplay',
-  )
-  expect(
-    readConfObject(create(display!), ['pileup', 'bases', 'unmodified', 'show']),
-  ).toBe(true)
 })

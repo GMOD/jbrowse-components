@@ -94,18 +94,6 @@ test('a v4 read size and layout cap lift into pileup', () => {
   expect(readConfObject(conf, ['pileup', 'maxLayoutHeight'])).toBe(900)
 })
 
-test('a beta pileup.readHeight lifts into pileup.mark.height', () => {
-  const conf = create({ pileup: { readHeight: 2 } })
-  expect(readConfObject(conf, ['pileup', 'mark', 'height'])).toBe(2)
-})
-
-test('a beta coverage.minAlleleFraction lifts into the alleles filter', () => {
-  const conf = create({ coverage: { minAlleleFraction: 0.2 } })
-  expect(predicatesOf(conf.coverage.alleles.filter)).toEqual([
-    { field: 'fraction', gte: 0.2 },
-  ])
-})
-
 test("a display's own v4 read size beats its renderer's", () => {
   const conf = create({
     featureHeight: 3,

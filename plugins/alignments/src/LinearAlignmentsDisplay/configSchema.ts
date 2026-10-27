@@ -2,7 +2,6 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 import { baseLinearAlignmentsDisplayConfigSchema } from './baseConfigSchema.ts'
 import { readsPileupConfigSchema } from './readsPileupConfigSchema.ts'
-import { liftModifications } from './retired.ts'
 import { sashimiConfigSchema } from './sashimiConfigSchema.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -126,7 +125,6 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
        */
       baseConfiguration: baseLinearAlignmentsDisplayConfigSchema,
       explicitlyTyped: true,
-      retired: { modifications: liftModifications },
     },
   )
 }

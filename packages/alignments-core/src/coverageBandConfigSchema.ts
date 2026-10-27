@@ -83,11 +83,6 @@ export const coverageBandConfigSchema = ConfigurationSchema(
   {
     closed: true,
     plot: true,
-    retired: {
-      minAlleleFraction: gte => ({
-        alleles: { filter: [{ field: 'fraction', gte }] },
-      }),
-    },
   },
 )
 

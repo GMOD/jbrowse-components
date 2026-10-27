@@ -155,21 +155,6 @@ export function colorSlotsOf(value: unknown): DisplayEntry {
   }
 }
 
-/**
- * @deprecated The v5 beta's `modifications: { unmodified }`, which ggjbrowse
- * releases before its v5 re-pin write: `calls` and `all` are
- * `pileup.bases.unmodified.show`, and `hidden` its `false`, which a stored
- * delta needs to beat a base that shows it.
- */
-export const liftModifications: RetiredSpelling = value =>
-  isObject(value) && typeof value.unmodified === 'string'
-    ? {
-        pileup: {
-          bases: { unmodified: { show: value.unmodified !== 'hidden' } },
-        },
-      }
-    : {}
-
 // v4's `mismatchAlpha` switched the fade by base quality
 function mismatchFadeOf(on: unknown) {
   return { encoding: { opacity: { field: on ? 'baseQuality' : null } } }
@@ -220,9 +205,7 @@ function subDisplaySlotsOf(block: unknown, band: 'pileup' | 'coverage') {
  * now, and its `filterBy` the read fields; `liftV4Filter` reads those three
  * together. Its read size and layout cap are `pileup`'s `mark.height` and
  * `maxLayoutHeight`. The coverage display's scale slots land on the band's
- * `coverage.encoding.y`. `flipStrandLongReadChains` went: a split segment's
- * strand against its molecule is a level of the orientation fields, which
- * `encoding.color.scale.range` recolors. v4's arc `lineWidth` stroked every
+ * `coverage.encoding.y`. v4's arc `lineWidth` stroked every
  * arc alike, which `readConnections.encoding.strokeWidth.value` does.
  */
 // #region retired
@@ -246,7 +229,6 @@ export const retiredConfigSpellings: Record<string, RetiredSpelling> = {
   mismatchAlpha: v => ({ pileup: { mismatches: mismatchFadeOf(v) } }),
   hideLargeIndels: () => ({}),
   minSubfeatureWidth: () => ({}),
-  flipStrandLongReadChains: () => ({}),
   // last: where two lifts land on one member the first declared wins, and a
   // display's own featureHeight or mismatchAlpha beats its renderer's
   renderers: rendererSlotsOf,
