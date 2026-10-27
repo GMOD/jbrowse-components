@@ -4450,8 +4450,7 @@
       "package": "@jbrowse/display-kit",
       "names": [
         "facetConfigSchema",
-        "facetSettingOf",
-        "retiredOrderSpelling"
+        "facetSettingOf"
       ],
       "worker": "real"
     },
@@ -4874,8 +4873,6 @@
       "package": "@jbrowse/display-kit",
       "names": [
         "RETIRED_ROW_STATE_KEYS",
-        "isFlatColor",
-        "liftFlatColor",
         "liftRetiredRowState",
         "moveDisplayDefaults"
       ],

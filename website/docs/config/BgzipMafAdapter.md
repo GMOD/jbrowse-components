@@ -55,12 +55,3 @@ Adapter slots go inside the track's `adapter`: `"adapter": { "type": "BgzipMafAd
 | <span id="slot-summaryadapter">**summaryAdapter**</span><br>[`maybeFrozen`](/docs/config_guides/slot_types#the-maybe-types) | optional swappable sub-adapter (a BedTabixAdapter over a maf2bed --summary BED, or a BigBedAdapter over UCSC bigMafSummary.bb) used for cheap zoom-out rendering; leave it unset to disable. The `.tai` makes a read cost the span on screen rather than the blocks that span touches, but span is only half of the cost. Cost is span × depth, and measured against HPRC's v2.1 index the constant is about **19 compressed bytes per bp** at 464 haplotypes, flat from 100 kb up: 1 Mb is a 19 MB read and chr1 whole is 4.4 GB. So a deep alignment still runs out, just linearly instead of by block |
 | <span id="slot-samplestsvlocation">**samplesTsvLocation**</span><br>[`maybeFileLocation`](/docs/config_guides/slot_types#the-maybe-types) | optional tab-separated table of per-sample metadata. It needs a header row, and its first column is the sample name exactly as the adapter spells it: a VCF sample, a MultiWiggle subtrack's name, a MAF species id. Every other column (`population`, `tissue`, ...) becomes an attribute of that sample, which the multi-row displays group, sort, color and tooltip rows by; a MAF adapter reads the `label`, `color` and `assemblyName` columns onto its species rows, over its `samples` entries. The table also narrows the adapter's samples to the ones it lists, and a table naming none of them is an error. An adapter that names no samples (a MAF track discovering its species from the file) takes the table's rows as its samples |
 | <span id="slot-framesadapter">**framesAdapter**</span><br>[`maybeFrozen`](/docs/config_guides/slot_types#the-maybe-types) | optional sub-adapter (typically a BigBedAdapter over a UCSC multiz<N>wayFrames.bb) supplying each species' CDS reading frames for the frames strip, the codon view and the codon conservation band; leave it unset to disable |
-
-## Retired keys
-
-An older config may still write these. Each loads without an error, and `jbrowse validate` reports it as stale.
-
-<!-- prettier-ignore -->
-| Key | On load |
-| --- | --- |
-| `annotationAdapter` | moved into a current slot |

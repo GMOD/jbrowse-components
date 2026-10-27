@@ -313,7 +313,7 @@ accepts them.
 
 ```js
 // type signature
-readonly ["colorBy", "alpha", "color", "cigarMode", "drawCigar"]
+readonly ["colorBy", "alpha", "drawCigar"]
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/liftSyntenyViewSettings.ts)
@@ -325,9 +325,8 @@ view: `colorBy` (a mode string), `alpha` and `minAlignmentLength` sat on each
 synteny display, and land as `encoding.color`, `encoding.opacity` and a
 `filter` predicate on `length`.
 An older genomes-portal launch link puts the mode string on the view
-itself, which lifts the same way, and a jb2hubs desktop link writes the
-view's `color`, which lands as `encoding.color`. The view's own
-`cigarMode` and `drawCigar` land as the `indels` part.
+itself, which lifts the same way. The dotplot's own `drawCigar` lands as
+the `indels` part.
 
 ```js
 // type signature
