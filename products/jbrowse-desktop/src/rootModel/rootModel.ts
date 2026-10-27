@@ -1,6 +1,7 @@
 import { lazy } from 'react'
 
 import {
+  AssemblyManager,
   HistoryManagementMixin,
   RootAppMenuMixin,
   aboutMenuItem,
@@ -16,7 +17,6 @@ import {
   getSnapshot,
   types,
 } from '@jbrowse/mobx-state-tree'
-import { AssemblyManager } from '@jbrowse/plugin-data-management'
 import {
   BaseRootModelFactory,
   InternetAccountsRootModelMixin,
