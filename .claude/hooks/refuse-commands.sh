@@ -26,31 +26,58 @@ if grep -Eq "${start}git([[:space:]]+-C[[:space:]]+[^[:space:]]+)?[[:space:]]+me
 fi
 
 # A merge refused in the same message as the cleanup (parallel calls, a `;`
-# chain) still runs the removal, so the check is on the worktree itself.
-removal=$(grep -oE "git([[:space:]]+-C[[:space:]]+[^[:space:]]+)?[[:space:]]+worktree[[:space:]]+remove([[:space:]]+(-f|--force))*[[:space:]]+[^[:space:];&|)]+" <<<"$cmd" | head -1)
-if [ -n "$removal" ]; then
-  # A relative path resolves against a `cd <dir>` before it, not the session's
-  # cwd, which can be the worktree being removed. Every `cd` in the command is
-  # a candidate, the cwd too, and any one naming an unlanded worktree refuses.
-  repo=$(sed -nE 's/^git[[:space:]]+-C[[:space:]]+([^[:space:]]+).*/\1/p' <<<"$removal")
-  repo=${repo//[\"\']/}
-  path=${removal##*[[:space:]]}
-  path=${path//[\"\']/}
-  while IFS= read -r base; do
-    base=${base//[\"\']/}
-    case $base in '') base=$cwd ;; /*) ;; *) base="$cwd/$base" ;; esac
-    from=$repo
-    case $from in '' | /*) ;; *) from="$base/$from" ;; esac
-    target=$path
-    case $target in /*) ;; *) target="${from:-$base}/$target" ;; esac
-    if git -C "$target" rev-parse -q --verify HEAD >/dev/null 2>&1 &&
-      ! git -C "$target" merge-base --is-ancestor HEAD main 2>/dev/null; then
-      refuse "Refused: $target holds commits main lacks. Land them first (the merge alone, then read its result), or ask the user before discarding them."
-    fi
+# chain) still runs the removal, so the check is on the worktree itself. Git
+# takes a worktree by any path to it or by its path's unique trailing
+# components (`git worktree remove my-branch`), so the hook matches the
+# argument against `git worktree list` instead of resolving it alone.
+# A relative path resolves against the cwd, which can be the worktree being
+# removed, or a `cd`/`pushd` in the command, each alone and stacked on the
+# ones before it. Any reading that names an unlanded worktree refuses.
+expand() {
+  local p=${1//[\"\']/}
+  case $p in '~') p=$HOME ;; '~/'*) p=$HOME/${p:2} ;; esac
+  case $p in /*) ;; *) p=$2/$p ;; esac
+  realpath -m -- "$p"
+}
+removals=$(grep -oE "git([[:space:]]+-C[[:space:]]+[^[:space:]]+)?[[:space:]]+worktree[[:space:]]+remove([[:space:]]+(-f|--force))*[[:space:]]+[^[:space:];&|)]+" <<<"$cmd")
+if [ -n "$removals" ]; then
+  bases=("$(expand "$cwd" /)")
+  stacked=${bases[0]}
+  while IFS= read -r dir; do
+    case $dir in '' | -*) continue ;; esac
+    bases+=("$(expand "$dir" "$cwd")")
+    stacked=$(expand "$dir" "$stacked")
+    bases+=("$stacked")
   done < <(
-    echo
-    grep -oE "(^|[;&|(])[[:space:]]*cd[[:space:]]+[^[:space:];&|)]+" <<<"$cmd" |
-      sed -E 's/.*cd[[:space:]]+//'
+    grep -oE "(^|[;&|(])[[:space:]]*(cd|pushd)[[:space:]]+[^[:space:];&|)]+" <<<"$cmd" |
+      sed -E 's/.*(cd|pushd)[[:space:]]+//'
   )
+  while IFS= read -r removal; do
+    repo=$(sed -nE 's/^git[[:space:]]+-C[[:space:]]+([^[:space:]]+).*/\1/p' <<<"$removal")
+    arg=${removal##*[[:space:]]}
+    arg=${arg//[\"\']/}
+    suffix=$(sed -E 's#^(\./)+##; s#/+$##' <<<"$arg")
+    targets=()
+    worktrees=
+    for base in "${bases[@]}"; do
+      from=$base
+      [ -z "$repo" ] || from=$(expand "$repo" "$base")
+      targets+=("$(expand "$arg" "$from")")
+      for dir in "$from" "${targets[-1]}"; do
+        worktrees+=$(git -C "$dir" worktree list --porcelain 2>/dev/null | sed -n 's/^worktree //p')$'\n'
+      done
+    done
+    while IFS= read -r wt; do
+      named=
+      case /$suffix/ in //* | */./* | */../*) ;; *) [[ $wt == */"$suffix" ]] && named=1 ;; esac
+      for t in "${targets[@]}"; do
+        [ "$(realpath -m -- "$wt")" = "$t" ] && named=1
+      done
+      if [ -n "$named" ] && git -C "$wt" rev-parse -q --verify HEAD >/dev/null 2>&1 &&
+        ! git -C "$wt" merge-base --is-ancestor HEAD main 2>/dev/null; then
+        refuse "Refused: $wt holds commits main lacks. Land them first (the merge alone, then read its result), or ask the user before discarding them."
+      fi
+    done < <(grep -v '^$' <<<"$worktrees" | sort -u)
+  done <<<"$removals"
 fi
 exit 0
