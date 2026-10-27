@@ -80,3 +80,4 @@ export {
   waitReady,
 } from './JbApi/index.ts'
 export type { JbApi } from './JbApi/index.ts'
+export { default as AppWidgetsPlugin } from './AppWidgets/index.ts'

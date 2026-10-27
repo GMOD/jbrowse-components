@@ -84,7 +84,6 @@
     "@jbrowse/plugin-linear-genome-view": "workspace:^",
     "@jbrowse/plugin-maf": "workspace:^",
     "@jbrowse/plugin-marks": "workspace:^",
-    "@jbrowse/plugin-menus": "workspace:^",
     "@jbrowse/plugin-rdf": "workspace:^",
     "@jbrowse/plugin-sequence": "workspace:^",
     "@jbrowse/plugin-spreadsheet-view": "workspace:^",

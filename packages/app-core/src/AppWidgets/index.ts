@@ -10,8 +10,8 @@ import ImportSessionWidgetF from './ImportSessionWidget/index.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { SessionWithWidgets } from '@jbrowse/core/util'
 
-export default class MenusPlugin extends Plugin {
-  name = 'MenusPlugin'
+export default class AppWidgetsPlugin extends Plugin {
+  name = 'AppWidgetsPlugin'
 
   install(pluginManager: PluginManager) {
     AboutWidgetF(pluginManager)

@@ -522,7 +522,7 @@ export default function rootModelFactory({
               // and Linux there was no manual update check and no way to reach
               // the MCP setup text, which is built from this install's own
               // paths and so cannot be looked up. The links that menu also has
-              // are already in plugin-menus' Help widget, which appends below
+              // are already in app-core's Help widget, which appends below
               // these — hence the divider.
               {
                 label: 'Help',

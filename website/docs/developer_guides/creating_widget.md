@@ -13,7 +13,7 @@ Register a widget in `index.ts`. `HelpWidget` is a whole one — the config
 schema, the state model and the registration, in the file that exports the
 plugin-install function:
 
-<!-- include: plugins/menus/src/HelpWidget/index.ts -->
+<!-- include: packages/app-core/src/AppWidgets/HelpWidget/index.ts -->
 
 ```ts
 import { ConfigurationSchema } from '@jbrowse/core/configuration'

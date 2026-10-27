@@ -1,3 +1,4 @@
+import { AppWidgetsPlugin } from '@jbrowse/app-core'
 import Alignments from '@jbrowse/plugin-alignments'
 import Authentication from '@jbrowse/plugin-authentication'
 import Bed from '@jbrowse/plugin-bed'
@@ -20,7 +21,6 @@ import LinearComparativeView from '@jbrowse/plugin-linear-comparative-view'
 import LinearGenomeView from '@jbrowse/plugin-linear-genome-view'
 import Maf from '@jbrowse/plugin-maf'
 import Marks from '@jbrowse/plugin-marks'
-import Menus from '@jbrowse/plugin-menus'
 import RDF from '@jbrowse/plugin-rdf'
 import Sequence from '@jbrowse/plugin-sequence'
 import SpreadsheetViewPlugin from '@jbrowse/plugin-spreadsheet-view'
@@ -46,7 +46,7 @@ const corePlugins = [
   JobsManagementPlugin,
   LegacyJBrowse,
   LinearComparativeView,
-  Menus,
+  AppWidgetsPlugin,
   RDF,
   Sequence,
   Variants,

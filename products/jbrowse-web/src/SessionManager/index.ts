@@ -14,7 +14,7 @@ export const stateModel = types.model('SessionManager', {
   type: types.literal('SessionManager'),
 })
 
-// The "Recent sessions" widget. Here rather than in plugin-menus because only
+// The "Recent sessions" widget. Here rather than in app-core because only
 // jbrowse-web has the autosave database it lists.
 export default class SessionManagerPlugin extends Plugin {
   name = 'SessionManagerPlugin'

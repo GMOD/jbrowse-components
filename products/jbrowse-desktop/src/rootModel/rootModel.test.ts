@@ -31,7 +31,7 @@ function saveCount() {
 
 // The app's own order (see pluginManagers.tsx): configure() comes after the
 // root model exists and has been handed to the manager, because a plugin's
-// configure reads pluginManager.rootModel — that is how plugin-menus adds its
+// configure reads pluginManager.rootModel — that is how AppWidgetsPlugin adds its
 // items to the Help menu, and configuring first left them off entirely.
 function createRootModel() {
   const pluginManager = new PluginManager(corePlugins.map(P => new P()))
@@ -131,7 +131,7 @@ test('flushSession reports a failed save rather than rejecting', async () => {
 })
 
 // The native Help menu that carries these is macOS-only, so on Windows and
-// Linux they are the only route to either. plugin-menus contributes About and
+// Linux they are the only route to either. AppWidgetsPlugin contributes About and
 // Help into the same menu, so the merge is what is worth pinning: a second
 // "Help" menu, or an item landing in the wrong one, takes them off the bar
 // without anything failing.
