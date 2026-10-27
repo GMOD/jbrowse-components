@@ -3,10 +3,12 @@ import { rampLutOf } from '@jbrowse/core/util/colorRamp'
 
 import { WIGGLE_NEG_COLOR_DEFAULT, WIGGLE_POS_COLOR_DEFAULT } from '../util.ts'
 import {
+  paintedWiggleColor,
   resolveWiggleColor,
   wiggleColorEncoding,
   wiggleColorProblems,
   wiggleColorWritten,
+  wiggleColorsBySource,
 } from './wiggleColor.ts'
 import { wiggleColorSchema } from './wiggleColorConfigSchema.ts'
 
@@ -221,10 +223,38 @@ test('a ramp takes its transform from the y scale, so log is refused', () => {
   ).toBe('linear')
 })
 
-test('the channel declares no field, and implies score', () => {
+test('the channel reads score or source, and a written scale implies score', () => {
   const meta = getConfigurationSchemaMetadata(wiggleColorSchema)
-  expect(meta?.definition).not.toHaveProperty('field')
   expect(meta?.options.impliedField).toBe('score')
+  expect(wiggleColorSchema.create({ field: 'source' }).field).toBe('source')
+  expect(() => wiggleColorSchema.create({ field: 'pvalue' })).toThrow()
+})
+
+test('a color writing nothing colors by source on bars, score on a heatmap', () => {
+  expect(wiggleColorsBySource(color({}), false)).toBe(true)
+  expect(wiggleColorsBySource(color({}), true)).toBe(false)
+  expect(wiggleColorsBySource(color({ field: 'source' }), true)).toBe(true)
+  expect(wiggleColorsBySource(color({ field: 'score' }), false)).toBe(false)
+  expect(
+    wiggleColorsBySource(color({ scale: { range: ['a', 'b'] } }), false),
+  ).toBe(false)
+})
+
+test('a source color paints the pair where a row has no color, and says what it ignores', () => {
+  const painted = paintedWiggleColor(
+    color({ field: 'source', scale: { type: 'linear' } }),
+    { rect: true, origin: 0 },
+  )
+  expect(painted.scale.type).toBeUndefined()
+  expect(
+    wiggleColorProblems(
+      color({ field: 'source', scale: { range: ['red', 'blue'] } }),
+      'xyplot',
+    ),
+  ).toEqual([expect.stringContaining('set the colors in rowColor')])
+  expect(wiggleColorProblems(color({ field: 'source' }), 'density')).toEqual([
+    expect.stringContaining('leaving the score unencoded'),
+  ])
 })
 
 test('a written value or painted scale member is written; key names alone are not', () => {

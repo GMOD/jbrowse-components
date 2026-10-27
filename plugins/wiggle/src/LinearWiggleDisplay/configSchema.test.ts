@@ -32,14 +32,17 @@ test('the points per pixel are data.resolution', () => {
   ).toBe(4)
 })
 
-// The channel colors the score it plots, and a subtrack's color is
-// `rowColor`'s, so it names no field at all.
-test('the channel takes no field', () => {
+// The channel colors the score it plots or the subtrack, and nothing else.
+test('the channel takes score or source as its field', () => {
   for (const field of ['score', 'source']) {
-    expect(() =>
-      refusingUndeclaredKeys(() => create({ encoding: { color: { field } } })),
-    ).toThrow('WiggleColor takes')
+    expect(
+      readConfObject(create({ encoding: { color: { field } } }), [
+        ...COLOR,
+        'field',
+      ]),
+    ).toBe(field)
   }
+  expect(() => create({ encoding: { color: { field: 'depth' } } })).toThrow()
 })
 
 test('the channel carries the scale and the slots it reads', () => {

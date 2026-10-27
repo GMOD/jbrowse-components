@@ -195,7 +195,7 @@ function listed(display: Display, why: string, ...specs: string[]) {
 }
 
 const WIGGLE_SCORE_ONLY =
-  'colors only the score it plots, so it declares no field; its ramp spans the y domain, and its scale is linear or threshold'
+  'colors the score it plots or the subtrack, so it takes no other field; its ramp spans the y domain, and its scale is linear or threshold'
 
 const MAF_FIELDS =
   'fills cells by identity or refNameRank alone, each with its one scale, so it declares no other field and no scale.type'

@@ -98,7 +98,7 @@
 <polygon fill="none" stroke="black" stroke-width="2" points="1509,-127.38 1337,-127.38 1337,-81.12 1509,-81.12 1509,-127.38"/>
 <text xml:space="preserve" text-anchor="middle" x="1423" y="-113.88" font-family="monospace" font-size="10.00">resolveWiggleColor:</text>
 <text xml:space="preserve" text-anchor="middle" x="1423" y="-101.12" font-family="monospace" font-size="10.00">posColor, negColor, pivot,</text>
-<text xml:space="preserve" text-anchor="middle" x="1423" y="-88.38" font-family="monospace" font-size="10.00">rampLut, perSource</text>
+<text xml:space="preserve" text-anchor="middle" x="1423" y="-88.38" font-family="monospace" font-size="10.00">rampLut</text>
 </g>
 <!-- encoding&#45;&gt;resolved -->
 <g id="edge9" class="edge">
@@ -174,5 +174,5 @@
 <polygon fill="black" stroke="black" points="1792.11,-128.85 1801.3,-123.59 1790.83,-121.97 1792.11,-128.85"/>
 </g>
 </g>
-<!-- diagram-source-sha256 c412879e2451b6ba91ce3d04b4b514321231d419588e0d2868f18c7f4b090ef0 -->
+<!-- diagram-source-sha256 13377818e5564fdbd9155ec6caf672295ee8a62cac43a23c0b11bec4731bb3d2 -->
 </svg>

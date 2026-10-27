@@ -14,7 +14,10 @@ It can be reconsidered; the conditions are below. Amended 2026-10-20: the
 density fade to each row's own color went (a heatmap reads its color scale,
 WIGGLE_DISPLAY.md), so of the color reasons below only the line's row color
 above the cut stands; and render-core's line reads a ramp along y as wiggle's
-does, so the two lines now color alike.
+does, so the two lines now color alike. Amended 2026-10-27: a subtrack's
+color paints both sides of the cut
+([ADR-251](adr-251-a-wiggle-color-over-source-paints-each-subtrack-whole.md)),
+so that last color reason is gone too.
 
 ## Context
 

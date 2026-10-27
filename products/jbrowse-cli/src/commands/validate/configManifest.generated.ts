@@ -7743,6 +7743,10 @@ export const configManifest: ConfigManifest = {
               "type": "WiggleColorConfigurationSchema",
               "subSlots": [
                 {
+                  "name": "field",
+                  "type": "WiggleColorField"
+                },
+                {
                   "name": "value",
                   "type": "(CssColor | undefined)"
                 },
@@ -7803,6 +7807,11 @@ export const configManifest: ConfigManifest = {
                 "string": "field"
               },
               "fieldPresets": {
+                "source": {
+                  "scale": {
+                    "type": "ordinal"
+                  }
+                },
                 "*": {
                   "scale": {
                     "type": "threshold"

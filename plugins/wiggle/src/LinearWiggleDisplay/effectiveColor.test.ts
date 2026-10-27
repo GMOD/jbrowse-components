@@ -124,14 +124,13 @@ test('the plot reads back what was written', () => {
   expect(display.plot.encoding).toEqual({ color: { value: 'green' } })
 })
 
-// The channel colors the score it plots, and a subtrack's color is
-// `rowColor`'s, so it takes no field and no ordinal scale.
-test('the color refuses a field, a bare string and an ordinal scale', () => {
+// The channel reads the score it plots or the subtrack, whose colors are
+// `rowColor`'s, so it takes no other field and no ordinal scale.
+test('the color refuses another field and an ordinal scale', () => {
   const display = makeDisplay(['a'], true)
   for (const color of [
     { field: 'pvalue', scale: { type: 'threshold' } },
-    { field: 'score' },
-    'source',
+    'pvalue',
     { scale: { type: 'ordinal' } },
   ] as const) {
     expect(() => {

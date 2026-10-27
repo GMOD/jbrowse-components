@@ -136,8 +136,9 @@ const linearWiggleDisplayConfigSchema = ConfigurationSchema(
      * #slot rowColor
      * The color a reader set on a named subtrack, as `scale.domain` and
      * `scale.range` pairs, ahead of the adapter's color and the palette: its
-     * plot while `encoding.color` is unset, and otherwise, or under a score
-     * gradient, the tint beside its label.
+     * plot, on both sides of the `origin`, while `encoding.color` colors by
+     * `source`, and otherwise, or under a score gradient, the tint beside its
+     * label.
      * #example
      * ```json
      * {
@@ -151,10 +152,11 @@ const linearWiggleDisplayConfigSchema = ConfigurationSchema(
     /**
      * #slot encoding
      * The channels the marks paint through. `encoding.color` is one CSS
-     * color in `value`, or the score through a `scale` — `threshold` for
-     * solid bands, `linear` for a gradient; unset, it is the pos/neg pair
-     * about the `origin`, which a heatmap fades to from white there, and
-     * several sources in one plot box each paint their row color.
+     * color in `value`, the score through a `scale` — `threshold` for solid
+     * bands, `linear` for a gradient — or `source`, each subtrack in its row
+     * color. Unset, it colors by `source` on bars, points and lines, so a
+     * subtrack with no color draws the pos/neg pair about the `origin`, and
+     * a heatmap fades to that pair from white there.
      * `encoding.y` is the field plotted and the value axis it is drawn
      * through: `field`, `scale`, `axis` and `rules`. `encoding.size` is a
      * point's diameter and `encoding.strokeWidth` a line's width, in px. The

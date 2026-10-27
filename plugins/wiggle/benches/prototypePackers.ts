@@ -34,11 +34,10 @@ function countOf(sources: SourceRenderData[], band: boolean) {
 
 // What a color change would upload instead of re-encoding every region: two
 // ABGR words per row, 8 bytes a row, straight off gpuProps — the same rule
-// buildSourceRenderData applies per layer (a source's own color above the
-// pivot, the shared negColor below it, the pos color on both sides where
-// several sources share one plot).
+// buildSourceRenderData applies per layer (a source's own color on both sides
+// of the pivot, else the pair).
 export function buildRowColorTable(gpuProps: WiggleGpuProps) {
-  const { sources, wiggleColor, perSource } = gpuProps
+  const { sources, wiggleColor } = gpuProps
   const defaultPos = cssColorToNormalizedRgb(wiggleColor.posColor)
   const defaultNeg = normalizedRgbToABGR(
     ...cssColorToNormalizedRgb(wiggleColor.negColor),
@@ -50,7 +49,7 @@ export function buildRowColorTable(gpuProps: WiggleGpuProps) {
       ...(color ? cssColorToNormalizedRgb(color) : defaultPos),
     )
     table[i * 2] = pos
-    table[i * 2 + 1] = perSource ? pos : defaultNeg
+    table[i * 2 + 1] = color ? pos : defaultNeg
   }
   return table
 }

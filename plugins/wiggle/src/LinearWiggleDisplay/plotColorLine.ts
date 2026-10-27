@@ -11,7 +11,9 @@ import type { ColorSetting } from '@jbrowse/display-kit/colorConfigSchema'
 /**
  * How much of the picture two swatches can say: `edit` offers them, `read`
  * shows what paints beside the reason they cannot replace it, and `hide` is
- * where a color per subtrack paints and the grid below is already the control.
+ * where a color per subtrack paints and the grid below is already the control:
+ * a shared plot's dealt colors, or a written `source` color, which a pair
+ * written over it would drop.
  */
 export type PlotColorMode = 'edit' | 'read' | 'hide'
 
@@ -117,7 +119,7 @@ export function plotColorOf(model: {
     model.isDensityMode && wigglePairOf(model.colorSetting) !== undefined
   const line = plotColorLine(
     model.wiggleColor,
-    model.rowPaletteDeals,
+    model.rowPaletteDeals || model.colorSetting.field === 'source',
     heatmapPair,
   )
   return {

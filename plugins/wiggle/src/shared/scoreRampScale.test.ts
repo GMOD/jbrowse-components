@@ -41,7 +41,6 @@ function makeModel(symlogConstant: number, scheme?: 'viridis') {
       ...RAMP,
       rampLut: scheme ? rampLutOf({ scheme }) : HEATMAP_LUT,
       rampMid: scheme ? undefined : 0,
-      perSource: false,
     },
   }
 }

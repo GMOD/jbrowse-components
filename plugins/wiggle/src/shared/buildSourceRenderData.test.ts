@@ -46,7 +46,6 @@ const baseColor: ResolvedWiggleColor = {
 const baseGpuProps: WiggleGpuProps = {
   sources: [{ name: 'default' }],
   rowLayout: true,
-  perSource: false,
   wiggleColor: baseColor,
   origin: 0,
   summaryField: 'score',
@@ -149,7 +148,6 @@ describe('buildSourceRenderData summaryField (bicolor, no solid color)', () => {
           { name: 'b', color: '#ff00ff' },
         ],
         rowLayout: false,
-        perSource: true,
         summaryField: 'score',
         effectiveExtent: 'min-max',
         renderingType: 'linecenter',
@@ -272,11 +270,30 @@ describe('buildSourceRenderData pos/neg coloring', () => {
           { name: 'b', color: '#ff00ff' },
         ],
         rowLayout: false,
-        perSource: true,
       },
     )
     expect(layers.map(l => l.rowIndex)).toEqual([0, 0])
     expect(layers.every(l => !l.colorsAbgr)).toBe(true)
+  })
+
+  // The y position already shows the sign, so a row's own color paints both
+  // sides of the cut, and a row with none paints the pair.
+  test('a row per source: a colored row is its color on both sides', () => {
+    const [colored, plain] = buildSourceRenderData(
+      {
+        sources: [
+          ...makeData().sources,
+          { ...makeData().sources[0]!, name: 'b' },
+        ],
+      },
+      {
+        ...baseGpuProps,
+        sources: [{ name: 'default', color: '#00ff00' }, { name: 'b' }],
+      },
+    )
+    expect(colored!.colorsAbgr).toBeUndefined()
+    const [above, below] = plain!.colorsAbgr!
+    expect(above).not.toBe(below)
   })
 
   // A lone plot in the box is the classic pos/neg picture, whatever the facet

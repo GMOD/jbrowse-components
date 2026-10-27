@@ -19,7 +19,7 @@ digraph wiggle_color {
   encoding [label="colorEncodingOf:\nthe one resolver every\ndisplay's color goes through"]
   shared -> encoding  row -> encoding  heat -> encoding
 
-  resolved [label="resolveWiggleColor:\nposColor, negColor, pivot,\nrampLut, perSource", style=bold]
+  resolved [label="resolveWiggleColor:\nposColor, negColor, pivot,\nrampLut", style=bold]
   encoding -> resolved
 
   density [label="a gradient paints every mark, so a\nhue set on a row would replace the\nscale it is read by: the row color\nstays on its label bar"]

@@ -85,9 +85,6 @@ export interface WiggleGpuProps {
   // Whether the display puts its sources on rows, one each (`rows: 'source'`).
   // Otherwise every source is drawn on row 0 in one shared plot.
   rowLayout: boolean
-  // Whether each source paints its own color on both sides of the cut, as
-  // sources sharing one plot do while their row color paints it.
-  perSource: boolean
   // The `color` object resolved: the pair each mode partitions by and the
   // value they part at.
   wiggleColor: ResolvedWiggleColor
@@ -120,15 +117,12 @@ export function buildSourceRenderData(
   const {
     sources,
     rowLayout,
-    perSource,
     wiggleColor,
     origin,
     summaryField,
     effectiveExtent: extent,
     renderingType,
   } = gpuProps
-  // A color per source paints both sides of the cut in it, so the plot reads
-  // as one color each; otherwise the pair stands.
   const { pivot, cuts } = wiggleColor
   const innerColors = wiggleColor.innerColors.map(c =>
     cssColorToNormalizedRgb(c),
@@ -158,16 +152,16 @@ export function buildSourceRenderData(
         ? cssColorToNormalizedRgb(orderedSource.color)
         : defaultPosColor
       const row = rowLayout ? i : 0
-      // With a row each the neg side keeps the shared negColor even when the
-      // source has a color of its own, so signed data still reads as a pos/neg
-      // plot. Do NOT "fix" this to paint the whole row in the source's color.
+      // A source's own color is the subtrack's, so it paints both sides of
+      // the cut, where the y position already shows the sign; a source with
+      // none paints the plot's pair (ADR-251).
       const layers = sourceLayers({
         source,
         summaryField,
         extent,
         renderingType: renderingTypeInt,
         posColor,
-        negColor: perSource ? posColor : defaultNegColor,
+        negColor: orderedSource.color ? posColor : defaultNegColor,
         pivot,
         origin,
         cuts,

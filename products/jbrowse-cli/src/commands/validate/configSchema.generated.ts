@@ -13810,14 +13810,60 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "title": "WiggleColor",
       "anyOf": [
         {
-          "type": "string",
-          "description": "Shorthand for \`{ \\"field\\": ... }\`."
+          "description": "Shorthand for \`{ \\"field\\": ... }\`.",
+          "default": "",
+          "examples": [
+            "source"
+          ],
+          "allOf": [
+            {
+              "enum": [
+                "",
+                "score",
+                "source"
+              ]
+            },
+            {
+              "not": {
+                "$ref": "#/$defs/CssColorEntry"
+              },
+              "errorMessage": "is a color, and a bare string is the field. To paint every feature it, write { \\"value\\": <the color> }"
+            }
+          ],
+          "type": "string"
         },
         {
           "title": "WiggleColor",
           "type": "object",
           "x-closed": true,
           "properties": {
+            "field": {
+              "description": "score for the plotted value through scale, source for each subtrack in its row color; unset, a written scale maps score and an empty color source.",
+              "default": "",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "allOf": [
+                  {
+                    "enum": [
+                      "",
+                      "score",
+                      "source"
+                    ]
+                  },
+                  {
+                    "not": {
+                      "$ref": "#/$defs/CssColorEntry"
+                    },
+                    "errorMessage": "is a color, and a bare string is the field. To paint every feature it, write { \\"value\\": <the color> }"
+                  }
+                ]
+              },
+              "examples": [
+                "source"
+              ]
+            },
             "value": {
               "description": "CSS color painting every bar.",
               "if": {

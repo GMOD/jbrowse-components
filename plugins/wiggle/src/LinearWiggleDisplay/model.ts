@@ -320,6 +320,7 @@ export default function stateModelFactory(
         return wiggleMarkColoring({
           colorSetting: self.colorSetting,
           wiggleColor: this.wiggleColor,
+          rect: self.isDensityMode,
         })
       },
 
@@ -361,7 +362,7 @@ export default function stateModelFactory(
       /**
        * #getter
        * `TreeSidebarMixin`'s hook: a subtrack's color paints its plot while
-       * nothing else colors it: no score gradient, and no declared `color`.
+       * the plot colors by `source` (`wiggleColorsBySource`).
        */
       get rowColorPaintsMarks(): boolean {
         return this.markColoring.rowColorPaintsMarks
@@ -579,7 +580,6 @@ export default function stateModelFactory(
           ...self.sharedGpuProps(),
           sources: self.markSources,
           rowLayout: self.isRowLayout,
-          perSource: self.rowPaletteDeals,
         }
       },
 

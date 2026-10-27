@@ -1,3 +1,4 @@
+import { plotColorOf } from './plotColorLine.ts'
 import { createTestEnvironment, makeSource } from './testEnv.ts'
 
 import type { WiggleMark } from '../util.ts'
@@ -64,6 +65,36 @@ describe('a written color paints every mark', () => {
       '#aa0000',
       '#0000aa',
     ])
+  })
+})
+
+describe('the field says what the color reads', () => {
+  it('score keeps the pair beside colored subtracks', () => {
+    const display = makeDisplay({
+      rows: true,
+      displayConfig: { encoding: { color: { field: 'score' } } },
+    })
+    expect(markColors(display)).toEqual([undefined, undefined])
+    expect(display.wiggleColor.posColor).not.toBe(display.wiggleColor.negColor)
+  })
+
+  it('source paints the subtracks under a heatmap, flat, and says so', () => {
+    const display = makeDisplay({
+      rows: true,
+      mark: 'rect',
+      displayConfig: { encoding: { color: 'source' } },
+    })
+    expect(markColors(display)).toEqual(['#aa0000', '#0000aa'])
+    expect(display.scoreGradientPaints).toBe(false)
+  })
+
+  it('a written source color hides the pair swatches a write would drop it with', () => {
+    const display = makeDisplay({
+      rows: true,
+      fileColors: false,
+      displayConfig: { encoding: { color: 'source' } },
+    })
+    expect(plotColorOf(display).line.mode).toBe('hide')
   })
 })
 

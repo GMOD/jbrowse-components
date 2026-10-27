@@ -160,7 +160,6 @@ function props(renderingType: string, extent: string): WiggleGpuProps {
   return {
     sources: sourceList,
     rowLayout: true,
-    perSource: false,
     origin: 0,
     wiggleColor: {
       posColor: WIGGLE_POS_COLOR_DEFAULT,

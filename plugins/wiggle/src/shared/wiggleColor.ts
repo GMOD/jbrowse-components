@@ -22,11 +22,12 @@ import type { ColorSetting } from '@jbrowse/display-kit/colorConfigSchema'
 
 /**
  * The `encoding.color` channel as written, the key's `scale.names` and
- * `legend.title` with it. The channel names no field, so `field` is `''`
- * until `paintedWiggleColor` implies `score`.
+ * `legend.title` with it. `field` is `''` while unwritten, until
+ * `paintedWiggleColor` implies `score`.
  */
 export function wiggleColorSettingOf(color: AnyConfigurationModel) {
-  return { ...colorSnapshotOf(color), field: '' } as ColorSetting
+  const setting = colorSnapshotOf(color)
+  return { ...setting, field: setting.field ?? '' } as ColorSetting
 }
 
 function lutColor(lut: Uint8Array, entry: number) {
@@ -78,20 +79,35 @@ export function wiggleColorWritten({
 }
 
 /**
- * How a plot spends color, for the model and `wiggleTables` alike. A written
- * `encoding.color` paints every mark, and so does a gradient. Unset, a
- * source's marks take its row color.
+ * Whether the plot colors by `source`, each subtrack in its row color on both
+ * sides of the cut: as written, or where `encoding.color` writes nothing on
+ * bars, points and lines. A heatmap writing nothing ramps the score.
+ */
+export function wiggleColorsBySource(color: ColorSetting, rect: boolean) {
+  return (
+    color.field === 'source' ||
+    (!color.field && !rect && !wiggleColorWritten(color))
+  )
+}
+
+/**
+ * How a plot spends color, for the model and `wiggleTables` alike: whether a
+ * gradient paints the score, and whether each source's marks take its row
+ * color (`wiggleColorsBySource`).
  */
 export function wiggleMarkColoring({
   colorSetting,
   wiggleColor,
+  rect,
 }: {
   colorSetting: ColorSetting
   wiggleColor: ResolvedWiggleColor
+  rect: boolean
 }) {
-  const gradientPaints = scoreGradientPaints(wiggleColor)
-  const written = wiggleColorWritten(colorSetting)
-  return { gradientPaints, rowColorPaintsMarks: !written && !gradientPaints }
+  return {
+    gradientPaints: scoreGradientPaints(wiggleColor),
+    rowColorPaintsMarks: wiggleColorsBySource(colorSetting, rect),
+  }
 }
 
 /** Whether several sources share one plot box, where only color tells them apart. */
@@ -160,12 +176,29 @@ export function wigglePairOf({ value, scale }: ColorSetting) {
  * side of the cut, a threshold, and a heatmap (`rect`) fades to it from white
  * at the origin, a `linear` ramp with its middle stop there
  * (`scale.domainMid` moves it). A written `threshold` paints solid bands and
- * a written `linear` a ramp on every mark.
+ * a written `linear` a ramp on every mark. Over `source` it is the pair a
+ * subtrack with no row color paints, solid on every mark.
  */
 export function paintedWiggleColor<C extends ColorSetting>(
   color: C,
   { rect, origin }: { rect: boolean; origin: number },
 ): C {
+  if (color.field === 'source') {
+    return paintedWiggleColor(
+      {
+        ...color,
+        field: '',
+        value: undefined,
+        scale: {
+          type: undefined,
+          domain: [],
+          range: [],
+          names: color.scale.names,
+        },
+      },
+      { rect: false, origin },
+    )
+  }
   const implied = withImpliedField(color, WIGGLE_IMPLIED_FIELD)
   if (!rect || color.value !== undefined || color.scale.type) {
     return implied
@@ -188,10 +221,25 @@ export function paintedWiggleColor<C extends ColorSetting>(
 
 /**
  * What `encoding.color` says beside the schema's rules that the plot cannot
- * paint as written: threshold cuts past the ones the shader reads, and one
- * color on a heatmap, which paints it flat.
+ * paint as written: threshold cuts past the ones the shader reads, one color
+ * on a heatmap, which paints it flat, and a `source` color's own scale, which
+ * the row colors replace.
  */
 export function wiggleColorProblems(color: ColorSetting, rendering: string) {
+  if (color.field === 'source') {
+    return [
+      ...(wiggleColorWritten(color)
+        ? [
+            'encoding.color: a color over source paints each subtrack its row color, so its value and scale paint nothing; set the colors in rowColor',
+          ]
+        : []),
+      ...(rendering === 'density'
+        ? [
+            'encoding.color.field: a heatmap over source paints each subtrack one flat color, leaving the score unencoded',
+          ]
+        : []),
+    ]
+  }
   const encoding = wiggleColorEncoding(
     paintedWiggleColor(color, { rect: rendering === 'density', origin: 0 }),
   )

@@ -85,10 +85,10 @@ its label bar in every layout that has row labels.
 
 - `colorEncoding` resolves the object through display-kit's `colorEncodingOf`,
   as every display's color does, and `resolveWiggleColor` turns that into
-  `{ posColor, negColor, pivot, rampLut }`, which with gpuProps' `perSource`
-  is the whole of what the encoder and both backends read: the pair every mode
-  partitions by, the value they part at, the density LUT, and whether a source
-  paints its own color on both sides.
+  `{ posColor, negColor, pivot, rampLut }`, which with each source's color is
+  the whole of what the encoder and both backends read: the pair every mode
+  partitions by, the value they part at, the density LUT, and the color a
+  source paints on both sides where it has one.
 - **In density, `encoding.color` is a scale, not an identity**, so every cell
   reads the one ramp and a row's `rowColor` shows only on the label bar.
 - The color key follows the scale, so which channel it reads and what an unset

@@ -84,7 +84,7 @@ box and the export's clip translate. Wiggle-core's `ScorePlotChrome` and
 `ScorePlotSvgFrame` take it as a prop defaulting to the single-plot box, which
 is what the Manhattan and mark displays (no such getter) draw in.
 
-**`encoding.color` maps `score` alone; a subtrack's color is `rowColor`'s.**
+**`encoding.color` maps `score` or `source`; a subtrack's color is `rowColor`'s** (ADR-251).
 Unset, `effectiveColor` is the pair about the `origin` a quantitative track has
 always drawn: no `scale.type`, and a `scale.range` of the color below and the
 color above (`wigglePairOf`). Each mark draws the pair in its own idiom —
@@ -95,10 +95,11 @@ between entries 127 and 128, a channel off), and `densityColorParity.test.ts`
 holds the retired fade's arithmetic as the oracle. A written scale means one
 thing on every mark: `threshold` paints solid bands on a heatmap as on bars,
 and `linear` a ramp.
-Several sources sharing one plot box (`sharesPanel`) are told apart by the row
-palette instead, which deals each one a tableau10 color by name while
-`rowColorPaintsMarks`, and `perSource` then paints each on both sides of the
-cut. `colorEncoding` resolves the color through display-kit's
+A color over `source`, written or implied by a color writing nothing on bars,
+points and lines (`wiggleColorsBySource`), paints each subtrack its row color
+on both sides of the cut, and a subtrack with none the pair. Several sources
+sharing one plot box (`sharesPanel`) are dealt a tableau10 color each by name
+under it. `colorEncoding` resolves the color through display-kit's
 `colorEncodingOf`, the one resolver every display's color object goes through,
 and `resolveWiggleColor` turns that into
 `{ posColor, negColor, pivot, rampLut, rampMid }`, which is the whole
@@ -110,10 +111,10 @@ by its score's position, `rampMid`, the config's `scale.domainMid`, on its
 middle stop, and a line and its min-max band by the score at each fragment's
 height, and never reads `origin`. The gradient follows the y domain and y
 scale, so the color declares no `scale.domainMin`/`scale.domainMax` and no
-`log`. The field is always `score`, and `threshold`, `linear` and `none` the
-`scale.type`s the schema admits, since a two-sided plot has nothing to paint a
-cut over subtrack names with; `resolveWiggleColor`'s `categorical` arm paints
-the misconfiguration grey only to cover the shared encoding union.
+`log`. Over `score`, `threshold`, `linear` and none are the `scale.type`s the schema
+admits; `source` reads no scale, and `paintedWiggleColor` resolves it to the
+pair a subtrack with no color paints, so `resolveWiggleColor`'s `categorical`
+arm paints the misconfiguration grey only to cover the shared encoding union.
 ADR-144, ADR-153.
 
 **Everything shared over the geometry is `wiggleDisplayViews`**:
@@ -346,10 +347,9 @@ resolved `rowColor` and writes the dialog's submit. `group` has no config home,
 so a `group` pasted into the bulk editor is not kept.
 
 **`markSources` is what the plot paints**, by one rule the model and
-`wiggleTables` share (`wiggleMarkColoring`, `wiggleMarkSources`). A written
-`encoding.color` or a gradient paints every mark, so no source color reaches
-them.
-Unset, a source's marks take its `rowColor`. A file's own `color` reaches the
+`wiggleTables` share (`wiggleMarkColoring`, `wiggleMarkSources`). A color
+over `score`, written or a gradient, paints every mark, so no source color
+reaches them. Over `source`, a source's marks take its `rowColor`. A file's own `color` reaches the
 marks only through `rowColor`, never past a heatmap's ramp, where a fade to
 each row's file color once keyed nothing and spent hue on two variables. The
 encoder and the tooltip read `markSources`; the label bar

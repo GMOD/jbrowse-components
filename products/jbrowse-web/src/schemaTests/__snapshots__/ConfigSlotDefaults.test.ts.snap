@@ -913,6 +913,7 @@ exports[`every registered schema slot default 1`] = `
     "axis.tree": "boolean = true",
     "axis.width": "number = 80",
     "data.resolution": "number = 1",
+    "encoding.color.field": "stringEnum = "" of ["","score","source"]",
     "encoding.color.legend.title": "maybeString = undefined",
     "encoding.color.scale.domain": "stringArray = []",
     "encoding.color.scale.domainMid": "maybeNumber = undefined",

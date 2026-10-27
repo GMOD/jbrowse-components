@@ -151,14 +151,11 @@ Declined on 2026-09-30: track- or view-level facets, and a free y per section.
   ([ADR-110](../architecture-decision-records/adr-110-a-display-declares-what-is-highlighted.md)):
   an in-shader predicate would make the Canvas2D fallback repaint the whole
   display per mousemove.
-- **One channel carries two variables on the quantitative display's rows.**
-  With `encoding.color` unset, a row per subtrack paints a bar or line in its
-  row color above the cut and in the shared negative color below it
-  (`buildSourceRenderData`), so signed data still reads as signed. No color
-  object states it: the hue is the row's and the side is the value's. A
-  heatmap does not do it, since a gradient there paints every row alike
-  (WIGGLE_DISPLAY.md), and ADR-227 keeps it as a reason the plots stay off
-  render-core's one-field color.
+- **A heatmap's color domain is the y scale's.** Under the quantitative
+  display's `rect` the ramp's ends, placement, fence and group are
+  `encoding.y.scale`'s, where nothing sits on y; ADR-251's open section has
+  the call. Its rows no longer split one hue between two variables: a color
+  over `source` paints each subtrack whole (ADR-251).
 - **No per-layer data on the mark display, and no `lookup` join.** No measurement
   backs it, and each source multiplies the refName renaming, byte gate and zoom
   range a display runs once today. It reopens when a named plot needs two files

@@ -222,6 +222,7 @@ export async function wiggleTables(
   const { gradientPaints, rowColorPaintsMarks } = wiggleMarkColoring({
     colorSetting: setting,
     wiggleColor,
+    rect: density,
   })
   const paletteDeals =
     wiggleSharesPanel(rowLayout, sources.length) && rowColorPaintsMarks
@@ -253,7 +254,6 @@ export async function wiggleTables(
     buildSourceRenderData(result, {
       sources: markSources,
       rowLayout: true,
-      perSource: paletteDeals,
       wiggleColor,
       origin,
       summaryField,
