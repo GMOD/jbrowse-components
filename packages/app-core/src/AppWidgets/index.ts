@@ -6,6 +6,7 @@ import InfoIcon from '@mui/icons-material/Info'
 import AboutWidgetF from './AboutWidget/index.ts'
 import HelpWidgetF from './HelpWidget/index.ts'
 import ImportSessionWidgetF from './ImportSessionWidget/index.ts'
+import PluginStoreWidgetF from './PluginStoreWidget/index.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { SessionWithWidgets } from '@jbrowse/core/util'
@@ -17,6 +18,7 @@ export default class AppWidgetsPlugin extends Plugin {
     AboutWidgetF(pluginManager)
     HelpWidgetF(pluginManager)
     ImportSessionWidgetF(pluginManager)
+    PluginStoreWidgetF(pluginManager)
   }
 
   configure(pluginManager: PluginManager) {

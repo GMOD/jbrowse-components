@@ -1,9 +1,9 @@
+import ClearableSearchField from '@jbrowse/core/ui/ClearableSearchField'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import GradeIcon from '@mui/icons-material/Grade'
 import HistoryIcon from '@mui/icons-material/History'
 import { observer } from 'mobx-react'
 
-import ClearableSearchField from '../../../shared/ClearableSearchField.tsx'
 import ShoppingCart from '../ShoppingCart.tsx'
 import BadgeDropdownTracks from './BadgeDropdownTracks.tsx'
 import HamburgerMenu from './HamburgerMenu.tsx'

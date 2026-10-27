@@ -1,12 +1,12 @@
 import { useState } from 'react'
 
 import { Menu } from '@jbrowse/core/ui'
+import ClearableSearchField from '@jbrowse/core/ui/ClearableSearchField'
 import MoreVert from '@mui/icons-material/MoreVert'
 import { Grid, IconButton } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import ShoppingCart from '../../HierarchicalTrackSelectorWidget/components/ShoppingCart.tsx'
-import ClearableSearchField from '../../shared/ClearableSearchField.tsx'
 
 import type { HierarchicalTrackSelectorModel } from '../../HierarchicalTrackSelectorWidget/model.ts'
 import type { FacetedModel } from '../facetedModel.ts'

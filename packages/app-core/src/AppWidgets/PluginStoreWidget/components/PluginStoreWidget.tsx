@@ -1,6 +1,7 @@
 import { lazy } from 'react'
 
 import { ErrorMessage, LoadingEllipses } from '@jbrowse/core/ui'
+import ClearableSearchField from '@jbrowse/core/ui/ClearableSearchField'
 import { getSession, installablePlugins, isElectron } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { isSessionWithPermanentPlugins } from '@jbrowse/core/util/types'
@@ -17,7 +18,6 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import ClearableSearchField from '../../shared/ClearableSearchField.tsx'
 import InstalledPluginsList from './InstalledPluginsList.tsx'
 import PermanentPluginSafeModeAlert from './PermanentPluginSafeModeAlert.tsx'
 import PluginCard from './PluginCard.tsx'

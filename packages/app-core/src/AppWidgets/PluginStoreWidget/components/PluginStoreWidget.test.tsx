@@ -1,4 +1,3 @@
-import { DialogQueue } from '@jbrowse/app-core'
 import Plugin from '@jbrowse/core/Plugin'
 import { forgetFetchedPlugins } from '@jbrowse/core/checkPlugins'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
@@ -8,6 +7,7 @@ import { ThemeProvider } from '@mui/material'
 import { render, waitFor } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
 
+import { DialogQueue } from '../../../ui/index.ts'
 import PluginStoreWidget from './PluginStoreWidget.tsx'
 
 import type { PluginStoreModel } from '../model.ts'

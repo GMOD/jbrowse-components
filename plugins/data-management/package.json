@@ -55,7 +55,6 @@
   },
   "sideEffects": false,
   "devDependencies": {
-    "@jbrowse/app-core": "workspace:*",
     "@jbrowse/plugin-alignments": "workspace:^",
     "@jbrowse/plugin-bed": "workspace:^",
     "@jbrowse/plugin-gwas": "workspace:^",
