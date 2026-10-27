@@ -59,8 +59,10 @@ once per display that embeds it, so read the trend, not the size.
    - The hosted apollo3 demo runs the `v5.0.0-beta.8` build and serves an
      older config (`featureHeight`, `layoutOrder`). Move the pin and deploy
      `demos/apollo3/config.json` together, never the config alone.
-   - A hosted config's mark rule reads `svtype` where main's preset field is
-     `svType` (the one validate warning left on the 2026-10-27 sample).
+   - jb2hubs' `hubtools/src/wiggleDisplay.ts` and ggjbrowse (`R/wiggle.R`,
+     its tests and the population-genomics tutorial) write the wiggle
+     display's beta `extent`, which main spells `mark.extent`. Once both
+     move, delete `retired.extent` from `LinearWiggleDisplay`'s schema.
 2. **Plugin ABI.** The served list leaves out render-core's shader subpaths.
    `@jbrowse/tables` and `@jbrowse/launch-args` ship with v5 at its version,
    betas included (Colin, 2026-10-27). Left: baseline
@@ -80,12 +82,15 @@ once per display that embeds it, so read the trend, not the size.
   beta-only one. No test checks the gate, since v4 shipped no JSON schema and
   so `scripts/check-config-slot-paths.ts` has no v4 baseline. A `git grep -w <key>
   v4.3.0` over the legacy keys in `website/static/schema/v5/config.json` finds
-  six missing from v4.3.0 on 2026-10-27, each from an earlier release. Three
-  `retired` entries appear in no release tag, so they are beta-only and break
-  this gate: `CytobandAdapter.cytobandsLocation`, a track's
-  `textSearchIndexingAttributes` and `LinearWiggleDisplay.extent`.
+  six missing from v4.3.0 on 2026-10-27, each from an earlier release, so
+  the check greps every v1–v4 tag. Only `LinearWiggleDisplay.extent`
+  is beta-only, waiting on its writers (step 1). v1.3.1–v1.3.5 declared
+  `textSearchIndexingAttributes`, and desktop's open-sequence dialog wrote
+  `cytobandsLocation` from v2.10.0 through v4.3.0, so both stay.
 - `jbrowse validate` reports no warning outside plugin-registered types on
-  hosted configs, `demos/` and the tutorials (step 3).
+  hosted configs, `demos/` and the tutorials (step 3). On an adapter that
+  derives no `svType`, validate reads `svtype` as the file's own column, so
+  the gnomAD-SV bigBeds no longer warn.
 - The v5 release draft and the schema use the same spellings, including the
   word "experimental" for `LinearMarkDisplay`.
 - CHANGELOG has a v5 section. The migration table is generated
