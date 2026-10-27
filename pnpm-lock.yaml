@@ -1630,33 +1630,6 @@ importers:
         specifier: workspace:^
         version: link:../linear-genome-view
 
-  plugins/jobs-management:
-    dependencies:
-      '@jbrowse/core':
-        specifier: workspace:^
-        version: link:../../packages/core
-      '@jbrowse/mobx-state-tree':
-        specifier: ^6.10.0
-        version: 6.10.0(mobx@7.1.1)
-      '@mui/icons-material':
-        specifier: ^9.5.0
-        version: 9.5.0(@mui/material@9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(@types/react@19.3.0)(react@19.3.1)
-      '@mui/material':
-        specifier: ^9.5.0
-        version: 9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
-      mobx:
-        specifier: ^7.1.1
-        version: 7.1.1
-      mobx-react:
-        specifier: ^10.0.2
-        version: 10.0.2(mobx@7.1.1)(react@19.3.1)
-      react:
-        specifier: '>=19.0.0'
-        version: 19.3.1
-      react-dom:
-        specifier: '>=19.0.0'
-        version: 19.3.1(react@19.3.1)
-
   plugins/legacy-jbrowse:
     dependencies:
       '@gmod/nclist':
@@ -2064,24 +2037,6 @@ importers:
         specifier: '>=19.0.0'
         version: 19.3.1(react@19.3.1)
 
-  plugins/text-indexing:
-    dependencies:
-      '@jbrowse/core':
-        specifier: workspace:^
-        version: link:../../packages/core
-      '@jbrowse/text-indexing':
-        specifier: workspace:^
-        version: link:../../packages/text-indexing
-      '@jbrowse/text-indexing-core':
-        specifier: workspace:^
-        version: link:../../packages/text-indexing-core
-      react:
-        specifier: '>=19.0.0'
-        version: 19.3.1
-      react-dom:
-        specifier: '>=19.0.0'
-        version: 19.3.1(react@19.3.1)
-
   plugins/trix:
     dependencies:
       '@gmod/trix':
@@ -2417,9 +2372,6 @@ importers:
       '@jbrowse/plugin-hic':
         specifier: workspace:^
         version: link:../../plugins/hic
-      '@jbrowse/plugin-jobs-management':
-        specifier: workspace:^
-        version: link:../../plugins/jobs-management
       '@jbrowse/plugin-legacy-jbrowse':
         specifier: workspace:^
         version: link:../../plugins/legacy-jbrowse
@@ -2447,9 +2399,6 @@ importers:
       '@jbrowse/plugin-sv-inspector':
         specifier: workspace:^
         version: link:../../plugins/sv-inspector
-      '@jbrowse/plugin-text-indexing':
-        specifier: workspace:^
-        version: link:../../plugins/text-indexing
       '@jbrowse/plugin-trix':
         specifier: workspace:^
         version: link:../../plugins/trix
@@ -3139,9 +3088,6 @@ importers:
       '@jbrowse/plugin-hic':
         specifier: workspace:^
         version: link:../../plugins/hic
-      '@jbrowse/plugin-jobs-management':
-        specifier: workspace:^
-        version: link:../../plugins/jobs-management
       '@jbrowse/plugin-legacy-jbrowse':
         specifier: workspace:^
         version: link:../../plugins/legacy-jbrowse

@@ -3,10 +3,10 @@ import { destroy, types } from '@jbrowse/mobx-state-tree'
 
 import jobsModelFactory from './indexJobsModel.ts'
 
-import type { JobState } from '../../../plugins/jobs-management/src/JobsListWidget/jobModel.ts'
-import type { JobInput } from '../../../plugins/jobs-management/src/JobsListWidget/model.ts'
+import type { JobState } from '../../../packages/app-core/src/AppWidgets/JobsListWidget/jobModel.ts'
+import type { JobInput } from '../../../packages/app-core/src/AppWidgets/JobsListWidget/model.ts'
 import type { TextJobsEntry } from './indexJobsModel.ts'
-import type { JobsListModel } from '@jbrowse/plugin-jobs-management'
+import type { JobsListModel } from '@jbrowse/app-core'
 import type { Track } from '@jbrowse/text-indexing-core'
 
 interface RpcArgs {

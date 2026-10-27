@@ -16,7 +16,6 @@ import GridBookmarkPlugin from '@jbrowse/plugin-grid-bookmark'
 import GtfPlugin from '@jbrowse/plugin-gtf'
 import Gwas from '@jbrowse/plugin-gwas'
 import HicPlugin from '@jbrowse/plugin-hic'
-import JobsManagementPlugin from '@jbrowse/plugin-jobs-management'
 import LegacyJBrowse from '@jbrowse/plugin-legacy-jbrowse'
 import LinearComparativeView from '@jbrowse/plugin-linear-comparative-view'
 import LinearGenomeView from '@jbrowse/plugin-linear-genome-view'
@@ -26,10 +25,11 @@ import RDF from '@jbrowse/plugin-rdf'
 import Sequence from '@jbrowse/plugin-sequence'
 import SpreadsheetViewPlugin from '@jbrowse/plugin-spreadsheet-view'
 import SvInspectorPlugin from '@jbrowse/plugin-sv-inspector'
-import TextIndex from '@jbrowse/plugin-text-indexing'
 import TrixPlugin from '@jbrowse/plugin-trix'
 import Variants from '@jbrowse/plugin-variants'
 import Wiggle from '@jbrowse/plugin-wiggle'
+
+import TextIndex from './TextIndexing/index.ts'
 
 const corePlugins = [
   Canvas,
@@ -43,7 +43,6 @@ const corePlugins = [
   DotplotView,
   Gff3,
   GtfPlugin,
-  JobsManagementPlugin,
   LegacyJBrowse,
   LinearComparativeView,
   AppWidgetsPlugin,

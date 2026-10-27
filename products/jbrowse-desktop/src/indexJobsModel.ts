@@ -1,6 +1,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 
+import { getOrCreateJobsListWidget } from '@jbrowse/app-core'
 import {
   formatBytes,
   statusFraction,
@@ -13,7 +14,6 @@ import {
   isAlive,
   types,
 } from '@jbrowse/mobx-state-tree'
-import { getOrCreateJobsListWidget } from '@jbrowse/plugin-jobs-management'
 import {
   createTextSearchConf,
   findTrackConfigsToIndex,
