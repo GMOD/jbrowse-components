@@ -123,6 +123,9 @@ const suite: TestSuite = {
           ['17', 'chr17:1..'],
           ['chrM', 'chrM:1..'],
           ['KI270706', 'chr1_KI270706v1_random:1..'],
+          // a BRCA1 synonym: the index holds it once, on the gene, not on
+          // each of the gene's 368 transcripts
+          ['FANCS', 'chr17:43,0'],
         ] as const) {
           const { loc, picker, messages } = await search(page, query)
           expectThat(
@@ -142,8 +145,10 @@ const suite: TestSuite = {
         const brca = await search(page, 'BRCA')
         expectThat(
           'a bare prefix asks, with the genes it names first',
-          brca.picker?.[0] === 'BRCA1' && brca.picker.includes('BRCA2'),
-          brca.picker?.slice(0, 5),
+          brca.picker?.[0] === 'BRCA1' &&
+            brca.picker.includes('BRCA2') &&
+            brca.picker.length < 30,
+          brca.picker,
         )
 
         const phrase = await search(page, 'breast cancer')
