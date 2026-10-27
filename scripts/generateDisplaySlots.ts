@@ -44,7 +44,7 @@ const byType = [...slotPathsByType(schema)]
         ].sort(),
       ] as const,
   )
-  .sort(([a], [b]) => a.localeCompare(b))
+  .sort(([a], [b]) => a.localeCompare(b, 'en'))
 
 const body = byType
   .map(([type, paths]) => `  ${type}: ${JSON.stringify(paths)},`)
