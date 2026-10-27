@@ -3,7 +3,7 @@ import { paintMarkBlocks } from '@jbrowse/render-core/marks'
 import { GpuMarkBackend } from '@jbrowse/render-core/marks/backend'
 import { sharedBackendKey } from '@jbrowse/render-core/sharedBackendKey'
 
-import { rectShader as featureGlyphShader } from '../../../canvas/src/LinearBasicDisplay/passes/index.ts'
+import { rectShader as featureGlyphShader } from '../../../features/src/LinearBasicDisplay/passes/index.ts'
 import { UNIFORM_OFFSET_F32 as SYNTENY_U } from '../LinearSyntenyDisplay/shaders/syntenyFillStraight.generated.ts'
 import { createSyntenyPicker } from '../LinearSyntenyDisplay/syntenyPickEngine.ts'
 import { KIND_BASE } from '../LinearSyntenyRPC/syntenyKinds.ts'

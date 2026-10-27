@@ -25,7 +25,7 @@ const toolsDir = path.join(root, 'packages/shader-tools')
 const sharedDir = path.join(root, 'packages/render-core/src/shaders')
 const shader = path.join(
   root,
-  'plugins/canvas/src/LinearBasicDisplay/passes/shaders/rect.slang',
+  'plugins/features/src/LinearBasicDisplay/passes/shaders/rect.slang',
 )
 const slangc = process.env.SLANGC ?? path.join(root, '.cache/slangc/bin/slangc')
 

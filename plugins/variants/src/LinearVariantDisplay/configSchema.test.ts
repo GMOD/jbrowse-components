@@ -1,6 +1,6 @@
 import PluginManager from '@jbrowse/core/PluginManager'
 import { fullConfSnapshot } from '@jbrowse/core/configuration'
-import { GENE_GLYPH_DEFAULTS } from '@jbrowse/plugin-canvas'
+import { GENE_GLYPH_DEFAULTS } from '@jbrowse/plugin-features'
 
 import configSchemaF from './configSchema.ts'
 

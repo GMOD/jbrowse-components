@@ -10,7 +10,7 @@ import type { Region } from '@jbrowse/core/util/types'
  *
  * This is the "navigate the view you are looking at" half of a launcher, as
  * against `session.addView`, which opens a second one. Two features do it —
- * plugin-canvas's collapsed introns and plugin-alignments' "view mate region" —
+ * plugin-features's collapsed introns and plugin-alignments' "view mate region" —
  * and both had their own copy of the same fifteen lines, including the same two
  * decisions worth stating once:
  *

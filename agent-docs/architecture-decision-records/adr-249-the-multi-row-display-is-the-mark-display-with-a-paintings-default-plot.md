@@ -19,7 +19,7 @@ with `rows` and a color (GRAMMAR_OF_GRAPHICS.md rule 2). Of the 134 commits
 touching it in the month to 2026-10-24, about 90 repeated a cross-cutting pass
 (channel spelling, row colors, facet writes, sort, legend) on a second engine.
 
-`plugins/canvas/benches/multiRowOnMarks.bench.ts`, deleted with the engine,
+`plugins/features/benches/multiRowOnMarks.bench.ts`, deleted with the engine,
 timed each RPC executor's work over the same fetched features on a laptop on
 AC, 2026-10-24 and 2026-10-25:
 

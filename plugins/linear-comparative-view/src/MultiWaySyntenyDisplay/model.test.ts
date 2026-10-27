@@ -11,7 +11,7 @@ import { NO_CATEGORY_COLOR } from '@jbrowse/core/util/color'
 import { rampLutOf, stopsFromRampLut } from '@jbrowse/core/util/colorRamp'
 import { takeSnackbarAction, testAssembly } from '@jbrowse/display-test-utils'
 import { addMiddleware, getSnapshot } from '@jbrowse/mobx-state-tree'
-import { FEATURE_NAME_FIELD } from '@jbrowse/plugin-canvas'
+import { FEATURE_NAME_FIELD } from '@jbrowse/plugin-features'
 import {
   categoricalColor,
   declaredLanesOf,

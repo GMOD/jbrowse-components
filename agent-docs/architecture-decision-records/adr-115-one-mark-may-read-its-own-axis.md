@@ -28,7 +28,7 @@ Answers the per-mark scale
 GenomeSpy's position is that layout is a transform: a row is a field a step
 computes, not a thing a display does before it draws. The tree's biggest
 hand-written code is exactly what that position is about — canvas's packer
-(`plugins/canvas/src/LinearBasicDisplay/packRef.ts`) and alignments'
+(`plugins/features/src/LinearBasicDisplay/packRef.ts`) and alignments'
 `sortLayout.ts` — and the mark display's `row` channel was a field a config
 had to already have. `{ shape: 'span', encoding: { row: 'sampleIndex' } }`
 drew a strip per sample and nothing drew a pileup, because nothing computed

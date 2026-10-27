@@ -776,9 +776,6 @@ importers:
       '@jbrowse/plugin-bed':
         specifier: workspace:^
         version: link:../../plugins/bed
-      '@jbrowse/plugin-canvas':
-        specifier: workspace:^
-        version: link:../../plugins/canvas
       '@jbrowse/plugin-comparative-adapters':
         specifier: workspace:^
         version: link:../../plugins/comparative-adapters
@@ -788,6 +785,9 @@ importers:
       '@jbrowse/plugin-dotplot-view':
         specifier: workspace:^
         version: link:../../plugins/dotplot-view
+      '@jbrowse/plugin-features':
+        specifier: workspace:^
+        version: link:../../plugins/features
       '@jbrowse/plugin-gff3':
         specifier: workspace:^
         version: link:../../plugins/gff3
@@ -1153,55 +1153,6 @@ importers:
         specifier: workspace:^
         version: link:../../packages/cigar-utils
 
-  plugins/canvas:
-    dependencies:
-      '@jbrowse/core':
-        specifier: workspace:^
-        version: link:../../packages/core
-      '@jbrowse/display-kit':
-        specifier: workspace:^
-        version: link:../../packages/display-kit
-      '@jbrowse/display-ui':
-        specifier: workspace:^
-        version: link:../../packages/display-ui
-      '@jbrowse/mobx-state-tree':
-        specifier: ^6.10.0
-        version: 6.10.0(mobx@7.1.1)
-      '@jbrowse/plugin-linear-genome-view':
-        specifier: workspace:^
-        version: link:../linear-genome-view
-      '@jbrowse/render-core':
-        specifier: workspace:^
-        version: link:../../packages/render-core
-      '@jbrowse/tree-sidebar':
-        specifier: workspace:^
-        version: link:../../packages/tree-sidebar
-      '@mui/icons-material':
-        specifier: ^9.5.0
-        version: 9.5.0(@mui/material@9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(@types/react@19.3.0)(react@19.3.1)
-      '@mui/material':
-        specifier: ^9.5.0
-        version: 9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
-      mobx:
-        specifier: ^7.1.1
-        version: 7.1.1
-      mobx-react:
-        specifier: ^10.0.2
-        version: 10.0.2(mobx@7.1.1)(react@19.3.1)
-      react:
-        specifier: '>=19.0.0'
-        version: 19.3.1
-      react-dom:
-        specifier: '>=19.0.0'
-        version: 19.3.1(react@19.3.1)
-      rxjs:
-        specifier: ^7.8.2
-        version: 7.8.2
-    devDependencies:
-      '@jbrowse/display-test-utils':
-        specifier: workspace:^
-        version: link:../../packages/display-test-utils
-
   plugins/circular-view:
     dependencies:
       '@jbrowse/core':
@@ -1415,6 +1366,55 @@ importers:
       react-dom:
         specifier: '>=19.0.0'
         version: 19.3.1(react@19.3.1)
+
+  plugins/features:
+    dependencies:
+      '@jbrowse/core':
+        specifier: workspace:^
+        version: link:../../packages/core
+      '@jbrowse/display-kit':
+        specifier: workspace:^
+        version: link:../../packages/display-kit
+      '@jbrowse/display-ui':
+        specifier: workspace:^
+        version: link:../../packages/display-ui
+      '@jbrowse/mobx-state-tree':
+        specifier: ^6.10.0
+        version: 6.10.0(mobx@7.1.1)
+      '@jbrowse/plugin-linear-genome-view':
+        specifier: workspace:^
+        version: link:../linear-genome-view
+      '@jbrowse/render-core':
+        specifier: workspace:^
+        version: link:../../packages/render-core
+      '@jbrowse/tree-sidebar':
+        specifier: workspace:^
+        version: link:../../packages/tree-sidebar
+      '@mui/icons-material':
+        specifier: ^9.5.0
+        version: 9.5.0(@mui/material@9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(@types/react@19.3.0)(react@19.3.1)
+      '@mui/material':
+        specifier: ^9.5.0
+        version: 9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+      mobx:
+        specifier: ^7.1.1
+        version: 7.1.1
+      mobx-react:
+        specifier: ^10.0.2
+        version: 10.0.2(mobx@7.1.1)(react@19.3.1)
+      react:
+        specifier: '>=19.0.0'
+        version: 19.3.1
+      react-dom:
+        specifier: '>=19.0.0'
+        version: 19.3.1(react@19.3.1)
+      rxjs:
+        specifier: ^7.8.2
+        version: 7.8.2
+    devDependencies:
+      '@jbrowse/display-test-utils':
+        specifier: workspace:^
+        version: link:../../packages/display-test-utils
 
   plugins/gccontent:
     dependencies:
@@ -1657,12 +1657,12 @@ importers:
       '@jbrowse/plugin-alignments':
         specifier: workspace:^
         version: link:../alignments
-      '@jbrowse/plugin-canvas':
-        specifier: workspace:^
-        version: link:../canvas
       '@jbrowse/plugin-comparative-adapters':
         specifier: workspace:^
         version: link:../comparative-adapters
+      '@jbrowse/plugin-features':
+        specifier: workspace:^
+        version: link:../features
       '@jbrowse/plugin-linear-genome-view':
         specifier: workspace:^
         version: link:../linear-genome-view
@@ -2052,9 +2052,9 @@ importers:
       '@jbrowse/mobx-state-tree':
         specifier: ^6.10.0
         version: 6.10.0(mobx@7.1.1)
-      '@jbrowse/plugin-canvas':
+      '@jbrowse/plugin-features':
         specifier: workspace:^
-        version: link:../canvas
+        version: link:../features
       '@jbrowse/plugin-linear-genome-view':
         specifier: workspace:^
         version: link:../linear-genome-view
@@ -2180,12 +2180,12 @@ importers:
       '@jbrowse/plugin-alignments':
         specifier: workspace:*
         version: link:../../../plugins/alignments
-      '@jbrowse/plugin-canvas':
-        specifier: workspace:*
-        version: link:../../../plugins/canvas
       '@jbrowse/plugin-comparative-adapters':
         specifier: workspace:*
         version: link:../../../plugins/comparative-adapters
+      '@jbrowse/plugin-features':
+        specifier: workspace:*
+        version: link:../../../plugins/features
       '@jbrowse/plugin-linear-comparative-view':
         specifier: workspace:*
         version: link:../../../plugins/linear-comparative-view
@@ -2310,9 +2310,6 @@ importers:
       '@jbrowse/plugin-breakpoint-split-view':
         specifier: workspace:^
         version: link:../../plugins/breakpoint-split-view
-      '@jbrowse/plugin-canvas':
-        specifier: workspace:^
-        version: link:../../plugins/canvas
       '@jbrowse/plugin-circular-view':
         specifier: workspace:^
         version: link:../../plugins/circular-view
@@ -2328,6 +2325,9 @@ importers:
       '@jbrowse/plugin-dotplot-view':
         specifier: workspace:^
         version: link:../../plugins/dotplot-view
+      '@jbrowse/plugin-features':
+        specifier: workspace:^
+        version: link:../../plugins/features
       '@jbrowse/plugin-gccontent':
         specifier: workspace:^
         version: link:../../plugins/gccontent
@@ -2516,9 +2516,9 @@ importers:
       '@jbrowse/plugin-alignments':
         specifier: workspace:^
         version: link:../../plugins/alignments
-      '@jbrowse/plugin-canvas':
+      '@jbrowse/plugin-features':
         specifier: workspace:^
-        version: link:../../plugins/canvas
+        version: link:../../plugins/features
       '@jbrowse/plugin-hic':
         specifier: workspace:^
         version: link:../../plugins/hic
@@ -2573,9 +2573,6 @@ importers:
       '@jbrowse/plugin-breakpoint-split-view':
         specifier: workspace:^
         version: link:../../plugins/breakpoint-split-view
-      '@jbrowse/plugin-canvas':
-        specifier: workspace:^
-        version: link:../../plugins/canvas
       '@jbrowse/plugin-circular-view':
         specifier: workspace:^
         version: link:../../plugins/circular-view
@@ -2591,6 +2588,9 @@ importers:
       '@jbrowse/plugin-dotplot-view':
         specifier: workspace:^
         version: link:../../plugins/dotplot-view
+      '@jbrowse/plugin-features':
+        specifier: workspace:^
+        version: link:../../plugins/features
       '@jbrowse/plugin-gccontent':
         specifier: workspace:^
         version: link:../../plugins/gccontent
@@ -2862,15 +2862,15 @@ importers:
       '@jbrowse/plugin-bed':
         specifier: workspace:^
         version: link:../../plugins/bed
-      '@jbrowse/plugin-canvas':
-        specifier: workspace:^
-        version: link:../../plugins/canvas
       '@jbrowse/plugin-config':
         specifier: workspace:^
         version: link:../../plugins/config
       '@jbrowse/plugin-data-management':
         specifier: workspace:^
         version: link:../../plugins/data-management
+      '@jbrowse/plugin-features':
+        specifier: workspace:^
+        version: link:../../plugins/features
       '@jbrowse/plugin-gccontent':
         specifier: workspace:^
         version: link:../../plugins/gccontent
@@ -3020,9 +3020,6 @@ importers:
       '@jbrowse/plugin-breakpoint-split-view':
         specifier: workspace:^
         version: link:../../plugins/breakpoint-split-view
-      '@jbrowse/plugin-canvas':
-        specifier: workspace:^
-        version: link:../../plugins/canvas
       '@jbrowse/plugin-circular-view':
         specifier: workspace:^
         version: link:../../plugins/circular-view
@@ -3038,6 +3035,9 @@ importers:
       '@jbrowse/plugin-dotplot-view':
         specifier: workspace:^
         version: link:../../plugins/dotplot-view
+      '@jbrowse/plugin-features':
+        specifier: workspace:^
+        version: link:../../plugins/features
       '@jbrowse/plugin-gccontent':
         specifier: workspace:^
         version: link:../../plugins/gccontent

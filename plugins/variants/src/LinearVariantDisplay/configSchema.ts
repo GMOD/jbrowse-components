@@ -1,5 +1,5 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import { linearCanvasBaseDisplayConfigSchemaFactory } from '@jbrowse/plugin-canvas'
+import { linearCanvasBaseDisplayConfigSchemaFactory } from '@jbrowse/plugin-features'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 

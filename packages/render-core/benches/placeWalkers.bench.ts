@@ -70,12 +70,12 @@
 import { execSync } from 'node:child_process'
 import { performance } from 'node:perf_hooks'
 
-import { MIN_DENSITY_ALPHA } from '../../../plugins/canvas/src/LinearBasicDisplay/components/sharedRendererConstants.ts'
-import { rectShape } from '../../../plugins/canvas/src/LinearBasicDisplay/marks/featureGlyphShapes.ts'
+import { MIN_DENSITY_ALPHA } from '../../../plugins/features/src/LinearBasicDisplay/components/sharedRendererConstants.ts'
+import { rectShape } from '../../../plugins/features/src/LinearBasicDisplay/marks/featureGlyphShapes.ts'
 import {
   rectDrawsOutline,
   rectSpanPx,
-} from '../../../plugins/canvas/src/LinearBasicDisplay/passes/shaders/rect.js.generated.ts'
+} from '../../../plugins/features/src/LinearBasicDisplay/passes/shaders/rect.js.generated.ts'
 import { cellMark } from '../../../plugins/variants/src/LinearMultiSampleVariantDisplay/components/cellMark.ts'
 import { drawnCellHeightPx } from '../../../plugins/variants/src/LinearMultiSampleVariantDisplay/components/shaders/variant.js.generated.ts'
 import { snapVariantCellX } from '../../../plugins/variants/src/LinearMultiSampleVariantDisplay/components/snapVariantCellX.ts'
@@ -110,7 +110,7 @@ import {
 import type {
   FeatureGlyphParams,
   RectChannels,
-} from '../../../plugins/canvas/src/LinearBasicDisplay/marks/featureGlyphShapes.ts'
+} from '../../../plugins/features/src/LinearBasicDisplay/marks/featureGlyphShapes.ts'
 import type {
   CellChannels,
   CellParams,

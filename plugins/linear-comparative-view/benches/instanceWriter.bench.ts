@@ -33,7 +33,7 @@
 // believed; a faster pack that writes different bytes is not a faster pack.
 // Nothing to import, so `export {}` is what makes this a module rather than a
 // global script — without it its top-level declarations collide with the
-// sibling bench in plugins/canvas under one `tsc` run.
+// sibling bench in plugins/features under one `tsc` run.
 export {}
 
 const STRIDE_WORDS = 8

@@ -51,7 +51,7 @@ choice between them is not a matter of taste:
 | --- | --- | --- |
 | another view of a payload the host already has | own bands, pure section math | `belowCoverageBandsGeometry`, `computeStackedSections` |
 | the same band two hosts draw | package it — buffers, passes, layer order | `coverageBandBuffers` in `packages/render-core/src/coverageBand.ts` |
-| another display's whole record rendering | consume that pipeline as functions | none in tree since the variant lane left (ADR-250); it ran plugin-canvas's layout, fit and paint calls over the cell payload |
+| another display's whole record rendering | consume that pipeline as functions | none in tree since the variant lane left (ADR-250); it ran plugin-features's layout, fit and paint calls over the cell payload |
 | the same display with different data | inherit the model | `LGVSyntenyDisplay` |
 
 Row two and row three are the same idea at different maturities. A band with two

@@ -21,7 +21,7 @@ const DENSITY_SAMPLE_TIMEOUT_MS = 5000
  * the estimate is precise" into "grow until the verdict is decided", which at
  * whole-genome zoom is one window instead of thirteen.
  *
- * The probe stays ignorant of what the budget means — `plugins/canvas`'s
+ * The probe stays ignorant of what the budget means — `plugins/features`'s
  * `densityProbeGate` owns both numbers, so the comparison that refuses a region
  * lives beside the one the banner re-derives rather than in a second copy here.
  */

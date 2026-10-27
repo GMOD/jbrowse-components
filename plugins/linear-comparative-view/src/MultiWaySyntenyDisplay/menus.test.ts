@@ -1,5 +1,5 @@
 import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
-import { FEATURE_NAME_FIELD } from '@jbrowse/plugin-canvas'
+import { FEATURE_NAME_FIELD } from '@jbrowse/plugin-features'
 
 import { laneRegion } from './laneHeader.ts'
 import {

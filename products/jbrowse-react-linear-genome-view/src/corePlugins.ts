@@ -1,9 +1,9 @@
 import Alignments from '@jbrowse/plugin-alignments'
 import Authentication from '@jbrowse/plugin-authentication'
 import BED from '@jbrowse/plugin-bed'
-import Canvas from '@jbrowse/plugin-canvas'
 import Config from '@jbrowse/plugin-config'
 import DataManagement from '@jbrowse/plugin-data-management'
+import Features from '@jbrowse/plugin-features'
 import GCContent from '@jbrowse/plugin-gccontent'
 import GFF3 from '@jbrowse/plugin-gff3'
 import GTF from '@jbrowse/plugin-gtf'
@@ -18,7 +18,7 @@ import Variants from '@jbrowse/plugin-variants'
 import Wiggle from '@jbrowse/plugin-wiggle'
 
 const corePlugins = [
-  Canvas,
+  Features,
   Alignments,
   Authentication,
   BED,

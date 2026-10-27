@@ -6,7 +6,7 @@ import type { LaneGene } from './geneGlyph.ts'
 import type { FetchRegion } from './layoutMultiWay.ts'
 import type { TrackConfigEntry } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
-import type { IsoformSettings } from '@jbrowse/plugin-canvas'
+import type { IsoformSettings } from '@jbrowse/plugin-features'
 import type { LodTier } from '@jbrowse/synteny-core'
 
 /** `templateRegions` is what a template layer reads, none past its cap */

@@ -164,7 +164,7 @@ Two escape hatches mirror the ones `export-consts` already had:
 - **`//! js-export-out: <path>`** writes the twin to a repo-relative path
   instead of beside the shader, for a Canvas2D consumer in a package that cannot
   depend on the shader's own. `insertionBarWidthPx` lands in
-  `@jbrowse/alignments-core`, which plugin-alignments, plugin-maf, plugin-canvas
+  `@jbrowse/alignments-core`, which plugin-alignments, plugin-maf, plugin-features
   and plugin-variants all read.
 - **Imported `static const`s resolve.** The constant evaluator now reads the
   modules a shader `import`s, so a pass can write `CURVE_SEGMENTS * 6u` where it
@@ -222,7 +222,7 @@ the part a scanner cannot know and the part that says whether the bar was met.
 | `insertion.slang` | `insertionBarWidthPx` (+ the four thresholds via `export-consts`) | `@jbrowse/alignments-core` `labelConstants.ts` — the insertion marker's width, read by two plugins' renderers and three hit tests |
 | `read.slang` | `showChevron` | `features/read/drawCanvas.ts` — "Mirror of read.slang `showChev`"; the first export needing bit operations |
 | `gap.slang` | `intronAlpha` | `rendererTypes.ts` — a hand-expanded smoothstep, under a "keep these in sync" comment on *each* side |
-| `rowRect.slang` | `drawnRowHeightPx`, `rowBandOffsetPx` (+ `MIN_DRAWN_ROW_PX`) | `plugins/canvas` `rowBand.ts` — the row band the painter and the hover box inset from |
+| `rowRect.slang` | `drawnRowHeightPx`, `rowBandOffsetPx` (+ `MIN_DRAWN_ROW_PX`) | `plugins/features` `rowBand.ts` — the row band the painter and the hover box inset from |
 | `variant.slang` | `drawnCellHeightPx` | `Canvas2DVariantRenderer` + `variantCellLookup` — `Math.max(rowHeight, 2)` twice, so a cell could paint taller than it picks |
 | `manhattan.slang` | `INDEX_GLYPH_SCALE` via `export-consts` | `Canvas2DManhattanRenderer` — a re-typed `1.6`, previously guarded by a test that scraped the `.slang` with a regex |
 | `variant.slang` | `snapCellEdgePx`, `snappedCellWidthPx` | `snapVariantCellX.ts` — the half-canvas-offset pixel snap, which is parity rather than an approximation to `Math.round` only because someone worked the clip-space algebra out by hand |
@@ -400,7 +400,7 @@ next reader will take for already-shared. `chevronFirstVisible` /
 `chevronLastVisible` are the fourth, and `vs_main` now makes no scalar decision
 of its own.
 
-Applied to the rest of `plugins/canvas`'s entry points in the same pass, which is
+Applied to the rest of `plugins/features`'s entry points in the same pass, which is
 what the rule asks for: `continuation.slang`'s luminance pick, height shrink and
 overhang gate; `arrow.slang`'s width gate; `rect.slang`'s outline-room test. None
 of those had drifted — they are in the table above because the one that had gave

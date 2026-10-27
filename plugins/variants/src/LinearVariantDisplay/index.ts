@@ -14,7 +14,7 @@ export default function LinearVariantDisplayF(pluginManager: PluginManager) {
   // products legitimately ship variants without the linear stack —
   // jbrowse-react-circular-genome-view installs it for the chord display alone —
   // so skipping is the answer, not pulling canvas into their bundle.
-  if (pluginManager.hasPlugin('CanvasPlugin')) {
+  if (pluginManager.hasPlugin('FeaturesPlugin')) {
     pluginManager.addDisplayType(() => {
       const configSchema = configSchemaF(pluginManager)
       // Borrow the registered component rather than import one across the plugin

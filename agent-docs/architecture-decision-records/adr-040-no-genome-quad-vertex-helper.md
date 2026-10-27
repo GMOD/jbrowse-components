@@ -188,7 +188,7 @@ second `flipX` double-flips reversed blocks (silent correctness bug).
 1. Author the `genomeQuad` Slang module exposing the skeleton via an
    interface/generic.
 2. Rewrite **one** shader to consume it. Best first target: **`rect`**
-   (`plugins/canvas/src/LinearBasicDisplay/passes/shaders/rect.slang`). Stretch:
+   (`plugins/features/src/LinearBasicDisplay/passes/shaders/rect.slang`). Stretch:
    **`arrow`** (center-snap + extra fields) to prove the extra-per-mark-fields
    path.
 3. Run `pnpm gen:shaders`; **diff regenerated `rect.iface.generated.ts`
@@ -214,10 +214,10 @@ rejected the composition helper as single-consumer.
 - Shared Slang modules:
   `packages/render-core/src/shaders/{hpmath,colorPack,pointGlyph,diagonalGrid,rowRect}.slang`.
 - Canonical concrete shader + generated output:
-  `plugins/canvas/src/LinearBasicDisplay/passes/shaders/rect.slang` and its
+  `plugins/features/src/LinearBasicDisplay/passes/shaders/rect.slang` and its
   `rect.generated.ts` / `rect.iface.generated.ts`.
 - Pass assembly: `packages/render-core/src/slangPass.ts`,
-  `plugins/canvas/src/LinearBasicDisplay/passes/index.ts`.
+  `plugins/features/src/LinearBasicDisplay/passes/index.ts`.
 - Attribute safety net (keep green):
   `assertVertexInputsMatch` in
   `packages/shader-tools/src/shader-codegen/assertVertexInputs.ts`, run by

@@ -39,18 +39,18 @@ same rule with inputs the step lacks, or (c) something else.
 | the same file's other paths — `placeRectCapped`, `computeSortedLayout`, `computeMultiRegionLayout` | 340–352, 657–704, 817–962 | a `maxRows` cap with a truncation sentinel; the reads a position sort ranks placed first; each read's extent unioned across regions on a per-refName placement axis | (b) |
 | the same file's placement orders — soft-clip expansion, largest-first, spliced-first | 99–130, 457–529 | the comparator is a display setting, and soft clipping widens the interval the packer sees | (b) |
 | `plugins/alignments/src/LinearAlignmentsDisplay/computeChainLayout.ts` `buildChainRowMap` | 38–69 | first fit over chains merged by name across regions, ordered by packing distance rather than start | (b) |
-| `plugins/canvas/src/LinearBasicDisplay/packRef.ts` `packPreparedRef` | 443–512 | first fit in screen px through `GranularRectLayout`: per-feature heights, its own 10000px `maxHeight` | (b) |
+| `plugins/features/src/LinearBasicDisplay/packRef.ts` `packPreparedRef` | 443–512 | first fit in screen px through `GranularRectLayout`: per-feature heights, its own 10000px `maxHeight` | (b) |
 | the same file's inputs — label reservations, strand-arrow padding, isoform trims, priority order, pile reservations | 48–71, 253–294, 329–394, 398–441 | the packed extent is widened by the label that will overhang it and the arrow that will draw past it; the insertion order is pinned features, then last frame's row; a collapsed pile is booked out of row 0 | (b) |
-| `plugins/canvas/src/LinearBasicDisplay/layout.ts` | 33–87, 222–301 | regions grouped by refName so a feature crossing a block seam packs once, and a layout instance that persists across renders and seeds from the previous rows | (b) |
-| `plugins/canvas/src/LinearBasicDisplay/densityCollapse.ts` | 95–174 | a sweep-line depth counter in screen px, per committed row, answering which ids sit in a pile ≥ 3 deep | (b) vs `coverage` |
+| `plugins/features/src/LinearBasicDisplay/layout.ts` | 33–87, 222–301 | regions grouped by refName so a feature crossing a block seam packs once, and a layout instance that persists across renders and seeds from the previous rows | (b) |
+| `plugins/features/src/LinearBasicDisplay/densityCollapse.ts` | 95–174 | a sweep-line depth counter in screen px, per committed row, answering which ids sit in a pile ≥ 3 deep | (b) vs `coverage` |
 | `packages/alignments-core/src/coverageCompute.ts` | 25–187 | per-base depth as a difference array, with deletion and skip events subtracting and forward and reverse filled in the same walk | (b) vs `coverage` |
 | `packages/alignments-core/src/densityBins.ts` `densityToUniformBins` | 23–61 | an area-weighted resample: an interval spanning three bins contributes to all three, and the bin width follows `bpPerPx` | (b) vs `bin` + `aggregate` |
-| `plugins/canvas/src/MultiRowClusterFeaturesRPC/buildMultiRowMatrix.ts` | 32–140 | pixel bins with last-covering-wins, the clustering matrix's columns | (b) vs `bin` |
-| `plugins/canvas/src/RenderFeatureDataRPC/glyphs/subfeatures.ts` `layoutSubfeatures` | 247–345 | one row per isoform whatever the overlap, ranked and of variable height — a tier, not a packing | (c) |
+| `plugins/features/src/MultiRowClusterFeaturesRPC/buildMultiRowMatrix.ts` | 32–140 | pixel bins with last-covering-wins, the clustering matrix's columns | (b) vs `bin` |
+| `plugins/features/src/RenderFeatureDataRPC/glyphs/subfeatures.ts` `layoutSubfeatures` | 247–345 | one row per isoform whatever the overlap, ranked and of variable height — a tier, not a packing | (c) |
 | `plugins/alignments/src/LinearAlignmentsDisplay/spanOverlaps.ts` | 23–63 | a position covered by `d` spans emitted `d − 1` times, deliberately not deduplicated, so stacked alpha tints carry the depth | (c) |
 | `plugins/alignments/src/LinearAlignmentsDisplay/collapsedLayout.ts` | 62–80 | row 0 for everything; there is no placement pass | (c) |
 | `plugins/variants/src/LinearMultiSampleVariantDisplay/placeVariantRows.ts` | 32–49 | a permutation from worker row to screen row — a row is a sample | (c) |
-| `plugins/canvas/src/MultiRowGetFeaturesRPC/packMultiRowFeatures.ts` | 202–296 | a row is a partition value, interned in first-seen order | (c) |
+| `plugins/features/src/MultiRowGetFeaturesRPC/packMultiRowFeatures.ts` | 202–296 | a row is a partition value, interned in first-seen order | (c) |
 | `plugins/alignments/src/features/sashimi/junctions.ts` | 256–339 | greedy two-coloring into an up band and a down band, heaviest junction first, per refName | (c) |
 | `plugins/arc/src/shared/arcLayout.ts` `layOutArcs` | 132–184 | no lane assignment at all: arcs overlap and the height is a jexl slot | (c) |
 | `plugins/linear-comparative-view/src/MultiWaySyntenyDisplay/laneStack.ts` | 22–73 | a lane is a genome and the height is divided between them; dotplot places by 2D coordinate | (c) |

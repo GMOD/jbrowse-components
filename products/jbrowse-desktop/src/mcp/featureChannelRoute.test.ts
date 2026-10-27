@@ -5,7 +5,7 @@ import corePlugins from '../corePlugins.ts'
 import rootModelFactory from '../rootModel/rootModel.ts'
 import sessionModelFactory from '../sessionModel/sessionModel.ts'
 
-import type { LinearCanvasBaseDisplayModel } from '@jbrowse/plugin-canvas/LinearBasicDisplay/baseStateModel'
+import type { LinearCanvasBaseDisplayModel } from '@jbrowse/plugin-features/LinearBasicDisplay/baseStateModel'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 jest.mock('../makeWorkerInstance.ts', () => ({

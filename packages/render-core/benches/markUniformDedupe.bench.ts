@@ -46,7 +46,7 @@ import {
   continuationShape,
   lineShape,
   rectShape,
-} from '../../../plugins/canvas/src/LinearBasicDisplay/marks/featureGlyphShapes.ts'
+} from '../../../plugins/features/src/LinearBasicDisplay/marks/featureGlyphShapes.ts'
 import {
   coverageBarShape,
   coverageInterbaseShape,
@@ -57,7 +57,7 @@ import { clipBlock } from '../src/blockClipUtils.ts'
 import { devicePxBand } from '../src/canvas2dUtils.ts'
 import { defineMark } from '../src/marks/types.ts'
 
-import type { FeatureGlyphParams } from '../../../plugins/canvas/src/LinearBasicDisplay/marks/featureGlyphShapes.ts'
+import type { FeatureGlyphParams } from '../../../plugins/features/src/LinearBasicDisplay/marks/featureGlyphShapes.ts'
 import type {
   CoverageBandParams,
   CoverageBandRegion,

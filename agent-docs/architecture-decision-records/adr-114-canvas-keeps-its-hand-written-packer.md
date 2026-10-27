@@ -20,7 +20,7 @@ Four packers that were hand-written spellings of `encodeFeatures` call it
 now — the mark display, Manhattan, the example plugin and wiggle's array-less
 fallback ([MARK_ENCODING.md](../reference/MARK_ENCODING.md) §"A reader in a
 channel's place"). Canvas's `packRenderArrays`
-(`plugins/canvas/src/RenderFeatureDataRPC/packRenderArrays.ts`) was the fifth,
+(`plugins/features/src/RenderFeatureDataRPC/packRenderArrays.ts`) was the fifth,
 and it is the odd one: a gene arrives as one feature and leaves as exons, CDS
 segments, codon stripes, UTRs, intron lines and a strand arrow. The obvious
 read is that the missing piece is a fan-out transform in front of the encoder.
@@ -80,7 +80,7 @@ can answer.
 
 The packer against the two steps it sits behind, and against the same
 primitives through `flatten` plus `encodeFeatures`
-(`plugins/canvas/benches/packRenderArrays.bench.ts`, 20,000 genes, two
+(`plugins/features/benches/packRenderArrays.bench.ts`, 20,000 genes, two
 isoforms of eight CDS segments each, 700,000 primitives):
 
 <!-- BEGIN GENERATED MEASUREMENT canvas-packer-vs-encoder -->

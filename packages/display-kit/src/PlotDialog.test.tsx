@@ -26,7 +26,7 @@ function setup({
     plotKeys: ['marks', 'facet', 'rows', 'scales'],
     plot,
     // no schema here, so a draft lands over the plot key by key; a display's
-    // own lift is pinned in plugins/canvas's plotDialog.test.tsx
+    // own lift is pinned in plugins/features's plotDialog.test.tsx
     liftPlot: () => {
       throw new Error('no schema')
     },

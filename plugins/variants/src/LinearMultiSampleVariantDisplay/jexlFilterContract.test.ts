@@ -3,7 +3,7 @@ import { setConf } from '@jbrowse/core/configuration'
 import { activeCount } from '@jbrowse/core/ui/filterMenuItems'
 import { predicatesOf } from '@jbrowse/core/util/fieldPredicate'
 import { filterFieldNarrowing } from '@jbrowse/core/util/jexlFilters'
-import CanvasPlugin from '@jbrowse/plugin-canvas'
+import FeaturesPlugin from '@jbrowse/plugin-features'
 import LinearGenomeViewPlugin from '@jbrowse/plugin-linear-genome-view'
 
 import VariantsPlugin from '../index.ts'
@@ -29,7 +29,7 @@ import type { LinearMultiSampleVariantDisplayModel } from './model.ts'
 // it draws a file of already-computed pairs and has no features to filter.
 //
 // `LinearBasicDisplay` has always had the whole contract; it is asserted in
-// plugins/canvas's own suite.
+// plugins/features's own suite.
 
 const variantConfigSchema = variantConfigSchemaFactory()
 const variant =
@@ -140,7 +140,7 @@ describe.each(CASES)('%s jexl filters', (_name, createDisplay) => {
 test("a v4.3 session's jexlFiltersSetting on a variant display lands in its filter slot, prefixed", () => {
   const pluginManager = new PluginManager([
     new LinearGenomeViewPlugin(),
-    new CanvasPlugin(),
+    new FeaturesPlugin(),
     new VariantsPlugin(),
   ])
   pluginManager.createPluggableElements()

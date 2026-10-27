@@ -5,7 +5,7 @@ description: "Draws the genes and other features of a FeatureTrack, from a BED, 
 sidebar_label: Display -> LinearBasicDisplay
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `canvas` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/canvas/src/LinearBasicDisplay/configSchema.ts).
+Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `features` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/features/src/LinearBasicDisplay/configSchema.ts).
 
 Draws the genes and other features of a `FeatureTrack`, from a BED, GFF or
 similar file. The display adds the gene-glyph slots (isoforms, UTRs,

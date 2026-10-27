@@ -80,7 +80,7 @@ export function localConfigPath(
 }
 
 // Plugins every figure is drawn through regardless of what its session names, so
-// a change in them can't be narrowed by type. plugin-canvas is the shared
+// a change in them can't be narrowed by type. plugin-features is the shared
 // renderer, and it also owns the DEFAULT display of track types whose config
 // omits `displays` (a bare FeatureTrack renders a canvas LinearBasicDisplay that
 // no session or config file ever mentions) — without this, a canvas change would

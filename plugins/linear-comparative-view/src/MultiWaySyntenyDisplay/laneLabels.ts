@@ -1,5 +1,5 @@
 import { measureText } from '@jbrowse/core/util/measureText'
-import { computeLabelLeftPx, keepFeatureLabel } from '@jbrowse/plugin-canvas'
+import { computeLabelLeftPx, keepFeatureLabel } from '@jbrowse/plugin-features'
 
 import type { LaneGene } from './geneGlyph.ts'
 import type { Lane } from './laneStack.ts'

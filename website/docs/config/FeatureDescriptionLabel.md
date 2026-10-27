@@ -5,7 +5,7 @@ description: "The feature displays' labels.description, the line drawn under eac
 sidebar_label: Display setting -> FeatureDescriptionLabel
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `canvas` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/canvas/src/LinearBasicDisplay/featureDescriptionLabelConfigSchema.ts).
+Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `features` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/features/src/LinearBasicDisplay/featureDescriptionLabelConfigSchema.ts).
 
 The feature displays' `labels.description`, the line drawn under each
 feature's name: whether it `show`s, and the `field` it reads. A bare string

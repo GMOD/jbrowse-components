@@ -59,7 +59,7 @@
   },
   "devDependencies": {
     "@jbrowse/plugin-alignments": "workspace:^",
-    "@jbrowse/plugin-canvas": "workspace:^",
+    "@jbrowse/plugin-features": "workspace:^",
     "@jbrowse/plugin-hic": "workspace:^",
     "@jbrowse/plugin-variants": "workspace:^",
     "@jbrowse/plugin-wiggle": "workspace:^",

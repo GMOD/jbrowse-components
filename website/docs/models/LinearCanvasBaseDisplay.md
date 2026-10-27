@@ -5,7 +5,7 @@ description: "Shared GPU-accelerated feature display base for canvas-rendered tr
 sidebar_label: Display -> LinearCanvasBaseDisplay
 ---
 
-Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Provided by the `canvas` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/canvas/src/LinearBasicDisplay/baseModel.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Provided by the `features` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/features/src/LinearBasicDisplay/baseModel.ts).
 
 Shared GPU-accelerated feature display base for canvas-rendered tracks.
 

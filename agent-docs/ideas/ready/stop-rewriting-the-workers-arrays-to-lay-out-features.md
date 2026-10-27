@@ -10,7 +10,7 @@ what v5.0.0 turns on. The wide version wants a session of its own and changes a
 plugin-ABI type; the cheap wire-format half is real and still nothing the
 release turns on.
 
-`computeLaidOutData` (`plugins/canvas/src/LinearBasicDisplay/layout.ts`) clones
+`computeLaidOutData` (`plugins/features/src/LinearBasicDisplay/layout.ts`) clones
 each region before it can add the per-feature row offset into it, because
 `applyHeightScale` and `applyLayoutToRegion` both mutate. This entry used to
 propose keeping the row offset in a `Float32Array` beside the raw result and
@@ -73,7 +73,7 @@ The cost is the churn: `FlatbushItem` and `SubfeatureInfo` are read by the hover
 readout, the context menu, the highlight resolver, the label layer, `renderSvg`,
 `hitTesting`, `layout`, and the LD display — about 30 source
 files and 25 test files — and `FlatbushItem` is exported from
-`plugins/canvas/src/index.ts`, so it is a plugin-ABI change too
+`plugins/features/src/index.ts`, so it is a plugin-ABI change too
 (`reference/PLUGIN_ABI_STABILITY.md`). A half-landed conversion is worse than
 either end, so this wants a session of its own.
 

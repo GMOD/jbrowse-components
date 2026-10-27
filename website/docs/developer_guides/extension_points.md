@@ -431,7 +431,7 @@ A point declaring `args: undefined` has its whole payload in `props` and reads
 nothing back. Register on it with **`listenToExtensionPoint`**, whose callback
 returns nothing:
 
-<!-- include: plugins/canvas/src/index.ts#searchResultSelected -->
+<!-- include: plugins/features/src/index.ts#searchResultSelected -->
 
 ```typescript
 pluginManager.listenToExtensionPoint(
@@ -1017,7 +1017,7 @@ A retired **value** in a slot the display still declares is the schema's
 
 `retiredTypes` names the display types this one replaced, on the `DisplayType`:
 
-<!-- include: plugins/canvas/src/LinearBasicDisplay/index.ts#migration -->
+<!-- include: plugins/features/src/LinearBasicDisplay/index.ts#migration -->
 
 ```typescript
 retiredTypes: [{ type: 'LinearFeatureDisplay' }],

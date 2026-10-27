@@ -5,7 +5,7 @@ description: "Holds the slots shared by the canvas-drawn linear feature displays
 sidebar_label: Display -> LinearCanvasBaseDisplay
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `canvas` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/canvas/src/LinearBasicDisplay/baseConfigSchema.ts).
+Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `features` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/features/src/LinearBasicDisplay/baseConfigSchema.ts).
 
 Holds the slots shared by the canvas-drawn linear feature displays, which
 stack overlapping features in rows (pileup-style glyphs).

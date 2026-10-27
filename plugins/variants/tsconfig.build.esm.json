@@ -9,7 +9,7 @@
     { "path": "../../packages/render-core/tsconfig.build.esm.json" },
     { "path": "../../packages/sv-core/tsconfig.build.esm.json" },
     { "path": "../../packages/tree-sidebar/tsconfig.build.esm.json" },
-    { "path": "../canvas/tsconfig.build.esm.json" },
+    { "path": "../features/tsconfig.build.esm.json" },
     { "path": "../linear-genome-view/tsconfig.build.esm.json" }
   ]
 }

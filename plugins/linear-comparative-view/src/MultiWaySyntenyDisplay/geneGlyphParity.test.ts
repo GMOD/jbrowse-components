@@ -2,14 +2,14 @@ import { SimpleFeature } from '@jbrowse/core/util'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { DEFAULT_CANONICAL_TRANSCRIPTS } from '@jbrowse/core/util/isoformRank'
 import createJexlInstance from '@jbrowse/core/util/jexl'
-import { buildFeatureRenderData } from '@jbrowse/plugin-canvas'
+import { buildFeatureRenderData } from '@jbrowse/plugin-features'
 
 import { LaneGene } from './geneGlyph.ts'
 import { buildLaneCells } from './multiwayGeometry.ts'
 import { PX_ORIGIN } from './multiwayRenderTypes.ts'
 
 import type { Lane } from './laneStack.ts'
-import type { DisplayConfig } from '@jbrowse/plugin-canvas'
+import type { DisplayConfig } from '@jbrowse/plugin-features'
 
 // An identity px map: a lane's px less PX_ORIGIN is the feature track's bp.
 const HEIGHT = 10

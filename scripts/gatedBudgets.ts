@@ -227,7 +227,7 @@ export function collectGateOptInSites(): string[] {
 export const DISPLAY_TIERS = [
   {
     name: 'LinearBasicDisplay',
-    file: 'plugins/canvas/src/LinearBasicDisplay/configSchema.ts',
+    file: 'plugins/features/src/LinearBasicDisplay/configSchema.ts',
     applies: 'every inheriting adapter under this display',
   },
   {
@@ -263,7 +263,7 @@ export const GATE_OPT_IN_SITES: Record<string, string> = {
     'BamAdapter/CramAdapter declare 5 Mb, which outranks any display value',
   'plugins/marks/src/LinearMarkDisplay/model.ts':
     'baseLinearDisplayConfigSchema: the mark display spreads regionTooLargeConfigSchemaFields and declares no limit of its own, so a tabix feature adapter is read at the base 1 Mb and BAM/CRAM/VCF at the 5 Mb they declare',
-  'plugins/canvas/src/shared/CanvasFeatureGateMixin.ts': 'LinearBasicDisplay',
+  'plugins/features/src/shared/CanvasFeatureGateMixin.ts': 'LinearBasicDisplay',
   'plugins/maf/src/LinearMafDisplay/stateModel.ts': 'LinearMafDisplay',
   'plugins/variants/src/LinearMultiSampleVariantDisplay/model.ts':
     'VcfTabixAdapter/SplitVcfTabixAdapter declare 5 Mb',

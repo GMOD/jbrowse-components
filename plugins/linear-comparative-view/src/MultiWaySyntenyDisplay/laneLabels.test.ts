@@ -1,6 +1,6 @@
 import { SimpleFeature } from '@jbrowse/core/util'
 import { measureText } from '@jbrowse/core/util/measureText'
-import { getFeatureName } from '@jbrowse/plugin-canvas'
+import { getFeatureName } from '@jbrowse/plugin-features'
 
 import { LaneGene } from './geneGlyph.ts'
 import { GENE_LABEL_FONT_PX, placeLaneLabels } from './laneLabels.ts'

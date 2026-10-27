@@ -1,12 +1,12 @@
 import PluginManager from '@jbrowse/core/PluginManager'
 import { preprocessTrackConfigSnapshot } from '@jbrowse/core/pluggableElementTypes/models'
-import CanvasPlugin from '@jbrowse/plugin-canvas'
+import FeaturesPlugin from '@jbrowse/plugin-features'
 
 import VariantsPlugin from '../index.ts'
 
 function multiSampleEntries(displays: Record<string, unknown>[]) {
   const pluginManager = new PluginManager([
-    new CanvasPlugin(),
+    new FeaturesPlugin(),
     new VariantsPlugin(),
   ])
   pluginManager.createPluggableElements()

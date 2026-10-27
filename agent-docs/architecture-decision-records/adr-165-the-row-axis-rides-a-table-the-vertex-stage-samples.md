@@ -52,7 +52,7 @@ per-instance records, so a reorder, a focus, a hide or a recolor re-packed
 whole regions: the mark display's `facetRegion` rewrote and filtered every
 lane per region, and the multi-row feature display re-encoded on
 `rowIndexByValue` and `rowColorsByIndex`. Measured before this change on a
-shared box at load 30 (`plugins/canvas/benches/rowTableRepack.bench.ts`,
+shared box at load 30 (`plugins/features/benches/rowTableRepack.bench.ts`,
 `plugins/marks/benches/rowTableRepack.bench.ts`, min of 15 rounds, controls
 0.82–1.38x), per loaded region:
 
@@ -158,7 +158,7 @@ pass. Its transport — a second texture binding in both HALs, or the ramp and
 the table in one texture — is stage 2's decision. The bench of its cost today
 stays as the baseline.
 
-**A hidden key's instances stay in the buffer.** `plugins/canvas/benches/rowTableFrame.probe.ts`
+**A hidden key's instances stay in the buffer.** `plugins/features/benches/rowTableFrame.probe.ts`
 draws the span pass's own GLSL on a bare WebGL2 context, 1000 rows and 500k
 instances, 10 rows kept, 30 interleaved frames, on this box's Intel UHD
 Graphics 630 through ANGLE:

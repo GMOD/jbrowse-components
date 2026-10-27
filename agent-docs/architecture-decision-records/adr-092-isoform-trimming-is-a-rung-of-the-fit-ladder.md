@@ -13,7 +13,7 @@ presentation, fixed-mode measurement). Supersedes
 [ADR-075](adr-075-the-isoform-cap-runs-in-the-worker.md), which called for
 exactly this the moment something needed per-isoform structure on the main
 thread. The mechanism is `solveIsoformCount` in
-`plugins/canvas/src/LinearBasicDisplay/fitLadder.ts`, `trimIsoformStack` and
+`plugins/features/src/LinearBasicDisplay/fitLadder.ts`, `trimIsoformStack` and
 `applyIsoformTrim` in `isoformTrim.ts`, and `IsoformStack` in
 `RenderFeatureDataRPC/rpcTypes.ts`.
 

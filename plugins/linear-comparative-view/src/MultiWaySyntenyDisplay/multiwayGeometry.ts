@@ -14,7 +14,7 @@ import {
   UTR_HEIGHT_FRACTION,
   centerShrink,
   getFeatureName,
-} from '@jbrowse/plugin-canvas'
+} from '@jbrowse/plugin-features'
 import {
   attributeTooltipLines,
   colorSchemes,

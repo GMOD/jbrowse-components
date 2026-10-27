@@ -116,10 +116,10 @@ describe('workspace layering', () => {
       // reads their adapters' output and display settings.
       '@jbrowse/tables -> @jbrowse/plugin-alignments',
       '@jbrowse/tables -> @jbrowse/plugin-bed',
-      '@jbrowse/tables -> @jbrowse/plugin-canvas',
       '@jbrowse/tables -> @jbrowse/plugin-comparative-adapters',
       '@jbrowse/tables -> @jbrowse/plugin-config',
       '@jbrowse/tables -> @jbrowse/plugin-dotplot-view',
+      '@jbrowse/tables -> @jbrowse/plugin-features',
       '@jbrowse/tables -> @jbrowse/plugin-gff3',
       '@jbrowse/tables -> @jbrowse/plugin-gtf',
       '@jbrowse/tables -> @jbrowse/plugin-linear-comparative-view',

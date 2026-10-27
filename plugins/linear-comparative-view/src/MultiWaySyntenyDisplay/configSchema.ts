@@ -3,7 +3,7 @@ import baseLinearDisplayConfigSchema from '@jbrowse/display-kit/configSchema'
 import { featureUtrsConfigSchema } from '@jbrowse/display-kit/featureUtrsConfigSchema'
 import { legendConfigSchema } from '@jbrowse/display-kit/legendConfigSchema'
 import { types } from '@jbrowse/mobx-state-tree'
-import { featureNameLabelConfigSchema } from '@jbrowse/plugin-canvas'
+import { featureNameLabelConfigSchema } from '@jbrowse/plugin-features'
 import { syntenyDataConfigSchema } from '@jbrowse/synteny-core'
 
 import { geneEncodingConfigSchema } from './geneEncodingConfigSchema.ts'

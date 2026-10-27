@@ -32,7 +32,7 @@ import {
   readColorFieldOf,
   writtenReadCategoryColors,
 } from '../../../../plugins/alignments/src/shared/alignmentsColor.ts'
-import { featureColorViews } from '../../../../plugins/canvas/src/shared/featureColorViews.ts'
+import { featureColorViews } from '../../../../plugins/features/src/shared/featureColorViews.ts'
 import {
   dealGeneColors,
   geneColorEncodingOf,

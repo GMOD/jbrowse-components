@@ -55,7 +55,7 @@ describe('repoPathRefs', () => {
 
   test('skips an elision marker', () => {
     expect(
-      repoPathRefs('`plugins/canvas/.../renderLifecycleGate.test.ts`'),
+      repoPathRefs('`plugins/features/.../renderLifecycleGate.test.ts`'),
     ).toEqual([])
   })
 

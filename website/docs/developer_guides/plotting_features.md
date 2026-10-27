@@ -770,8 +770,8 @@ other by a sweep test. See [](/docs/developer_guides/creating_gpu_display).
   each region's fetch hands the adapter
 - `plugins/variants/src/LinearMultiSampleVariantDisplay/` - a display that
   defines a custom shape (`cellMark.ts`) beside its shader
-- `plugins/canvas/src/LinearBasicDisplay/` - the fullest reference: the generic
-  feature display, five marks over one payload
+- `plugins/features/src/LinearBasicDisplay/` - the fullest reference: the
+  generic feature display, five marks over one payload
 - `plugins/sequence/src/LinearReferenceSequenceDisplay/` - a plugin-local shape
   under two marks, with its letters on an overlay
 

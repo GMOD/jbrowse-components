@@ -5,7 +5,7 @@ description: "GPU-accelerated feature display with gene-specific UI on top of th
 sidebar_label: Display -> LinearBasicDisplay
 ---
 
-Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Provided by the `canvas` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/canvas/src/LinearBasicDisplay/model.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Provided by the `features` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/features/src/LinearBasicDisplay/model.ts).
 
 GPU-accelerated feature display with gene-specific UI on top of the shared
 canvas base display (`LinearCanvasBaseDisplay`).

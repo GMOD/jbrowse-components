@@ -4,7 +4,7 @@ import {
   Toolbar,
   TrackStack,
 } from '@jbrowse/display-ui/embed'
-import { isLinearBasicDisplay } from '@jbrowse/plugin-canvas'
+import { isLinearBasicDisplay } from '@jbrowse/plugin-features'
 import { useCreateViewState } from '@jbrowse/react-linear-genome-view2'
 import { observer } from 'mobx-react'
 

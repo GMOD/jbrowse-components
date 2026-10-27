@@ -1,6 +1,6 @@
 import { SimpleFeature } from '@jbrowse/core/util'
 import { DEFAULT_CANONICAL_TRANSCRIPTS } from '@jbrowse/core/util/isoformRank'
-import { GENE_GLYPH_DEFAULTS } from '@jbrowse/plugin-canvas'
+import { GENE_GLYPH_DEFAULTS } from '@jbrowse/plugin-features'
 
 import {
   LaneGene,

@@ -39,7 +39,7 @@ interface CenterKeepingView {
  * A caller building a view SNAPSHOT does: it has no model to call
  * `fitAllRegions()` on, and naming `bpPerPx`/`offsetPx` instead is dropped
  * whenever the snapshot also carries a `windowWidthBp` — which one copied off an
- * existing view always does. plugin-canvas's collapsed-intron launch is that
+ * existing view always does. plugin-features's collapsed-intron launch is that
  * caller. A live view calls `fitAllRegions()`.
  *
  * `width` enters only through the zoom-in floor, which bites for a region set

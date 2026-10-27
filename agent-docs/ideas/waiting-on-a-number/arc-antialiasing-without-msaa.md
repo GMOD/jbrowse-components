@@ -612,7 +612,7 @@ as the all-4x build of the same scenes. No `PipelineDescriptor` object is
 reachable from two displays' pass lists: every list is built from `slangPass`
 calls in its own module, and the only descriptors exported across module
 boundaries (`RectPass`, `LinePass`, `ArrowPass`, `ContinuationPass` in
-`plugins/canvas/src/LinearBasicDisplay/passes/index.ts`) have one consumer. That
+`plugins/features/src/LinearBasicDisplay/passes/index.ts`) have one consumer. That
 stays true only as long as it does; a shared shape module (`rowRect.slang` is
 the precedent, MAF and multi-row) would compile two variants the day one side
 went 4x, and the cost would be one extra compile per shared pass, not per

@@ -1,5 +1,5 @@
 import { readConfObject } from '@jbrowse/core/configuration'
-import { FEATURE_NAME_FIELD } from '@jbrowse/plugin-canvas'
+import { FEATURE_NAME_FIELD } from '@jbrowse/plugin-features'
 
 import { configSchemaFactory } from './configSchema.ts'
 

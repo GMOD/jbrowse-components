@@ -17,7 +17,7 @@ import {
   sectionRowMenuItems,
   showHiddenItems,
 } from '@jbrowse/display-kit/groupByMenu'
-import { FEATURE_NAME_FIELD } from '@jbrowse/plugin-canvas'
+import { FEATURE_NAME_FIELD } from '@jbrowse/plugin-features'
 import { colorByMenuItems } from '@jbrowse/synteny-core'
 import SwapVertIcon from '@mui/icons-material/SwapVert'
 

@@ -25,7 +25,7 @@ governing `clearDisplaySpecificData`, which runs on a displayed-regions change,
 on a viewport move past an error or a cancel, and on `reload()`.
 
 **Naming reconciled to current source.** The decision holds and is live in
-`plugins/canvas/src/LinearBasicDisplay/baseModel.ts`, but the symbols in the
+`plugins/features/src/LinearBasicDisplay/baseModel.ts`, but the symbols in the
 original code blocks were renamed. Map:
 
 | ADR (original) | Current source |

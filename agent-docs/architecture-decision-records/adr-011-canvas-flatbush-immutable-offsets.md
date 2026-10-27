@@ -11,7 +11,7 @@ Rejected
 
 ## Context
 
-`computeLaidOutData` (`plugins/canvas/src/LinearBasicDisplay/layout.ts`) packs
+`computeLaidOutData` (`plugins/features/src/LinearBasicDisplay/layout.ts`) packs
 features into rows with `GranularRectLayout`, then calls `applyLayoutToRegion`
 which mutates `topPx`/`bottomPx` on cloned `flatbushItems` and `subfeatureInfos`.
 The clone is necessary because the raw RPC data is shared across multiple layout

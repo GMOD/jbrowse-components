@@ -11,7 +11,7 @@ import {
   volvoxConfigWithTracks,
 } from './util.tsx'
 
-import type { LinearBasicDisplayModel } from '@jbrowse/plugin-canvas'
+import type { LinearBasicDisplayModel } from '@jbrowse/plugin-features'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 setup()

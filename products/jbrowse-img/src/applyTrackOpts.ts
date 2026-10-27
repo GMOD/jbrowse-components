@@ -27,7 +27,7 @@ import type {
   ReadCategoryKey,
   ReadDimension,
 } from '@jbrowse/plugin-alignments'
-import type { LinearBasicDisplayModel } from '@jbrowse/plugin-canvas'
+import type { LinearBasicDisplayModel } from '@jbrowse/plugin-features'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type {
   LinearMultiSampleVariantDisplayModel,

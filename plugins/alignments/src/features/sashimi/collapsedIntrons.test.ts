@@ -6,7 +6,7 @@ import { computeSashimiArcs } from './sashimiArcs.fixture.ts'
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 import type { ComputeSashimiArcsOpts } from './sashimiArcs.fixture.ts'
 
-// Collapsed introns (plugins/canvas CollapseIntronsDialog) are the one routine
+// Collapsed introns (plugins/features CollapseIntronsDialog) are the one routine
 // way a single refName becomes many displayedRegions: each exon is padded by a
 // window (100bp by default) and the merged result becomes the region list, so
 // the introns between them vanish from screen space entirely. A minus-strand

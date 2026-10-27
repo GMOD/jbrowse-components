@@ -1,7 +1,7 @@
 import PluginManager from '@jbrowse/core/PluginManager'
 import { applyConfSettings, readConfObject } from '@jbrowse/core/configuration'
 import { predicatesOf } from '@jbrowse/core/util/fieldPredicate'
-import CanvasPlugin from '@jbrowse/plugin-canvas'
+import FeaturesPlugin from '@jbrowse/plugin-features'
 import LinearGenomeViewPlugin from '@jbrowse/plugin-linear-genome-view'
 
 import VariantsPlugin from '../index.ts'
@@ -120,7 +120,7 @@ describe('the display config schema', () => {
     it("a v4.3 session's renderingModeSetting lands in the unit slot", () => {
       const pluginManager = new PluginManager([
         new LinearGenomeViewPlugin(),
-        new CanvasPlugin(),
+        new FeaturesPlugin(),
         new VariantsPlugin(),
       ])
       pluginManager.createPluggableElements()

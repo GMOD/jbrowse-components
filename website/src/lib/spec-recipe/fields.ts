@@ -23,7 +23,7 @@ import {
 } from '../../../../plugins/alignments/src/LinearAlignmentsDisplay/menus/baseLayerLabels.ts'
 import { isJexl } from '../../../../packages/core/src/util/jexlStrings.ts'
 // Straight from core, not through plugins/variants' re-export of it: that
-// module reached the whole plugins/canvas entrypoint ->
+// module reached the whole plugins/features entrypoint ->
 // BaseDisplayModel.tsx, and `node` cannot load a .tsx, so check-spec-recipes.ts
 // died on ERR_UNKNOWN_FILE_EXTENSION before running a single check.
 import { capitalizeFirst } from '../../../../packages/core/src/util/stringUtils.ts'
@@ -48,11 +48,11 @@ import {
 } from '../../../../packages/synteny-core/src/colorModes.ts'
 import { paintedField } from '../../../../packages/synteny-core/src/syntenyColorBy.ts'
 import { SETTINGS_SURFACE_LABELS } from '../../../../packages/synteny-core/src/settingsSurfaces.ts'
-import { GENE_GLYPH_MODE_OPTIONS } from '../../../../plugins/canvas/src/LinearBasicDisplay/geneGlyphMode.ts'
+import { GENE_GLYPH_MODE_OPTIONS } from '../../../../plugins/features/src/LinearBasicDisplay/geneGlyphMode.ts'
 import {
   DISPLAY_MODE_OPTIONS,
   SUBFEATURE_LABEL_OPTIONS,
-} from '../../../../plugins/canvas/src/RenderFeatureDataRPC/displayModes.ts'
+} from '../../../../plugins/features/src/RenderFeatureDataRPC/displayModes.ts'
 import { getHeightModeOptions } from '../../../../packages/display-kit/src/heightMode.ts'
 import {
   WIGGLE_PLOTS,

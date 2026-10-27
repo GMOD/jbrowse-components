@@ -95,7 +95,7 @@ test('the scan finds the reload declarations it is about', () => {
     'packages/display-kit/src/FetchMixin.ts',
     'packages/display-kit/src/MultiRegionDisplayMixin.ts',
     'packages/display-kit/src/KeyedFetchMixin.ts',
-    'plugins/canvas/src/LinearBasicDisplay/baseModel.ts',
+    'plugins/features/src/LinearBasicDisplay/baseModel.ts',
     'packages/core/src/pluggableElementTypes/models/BaseDisplayModel.tsx',
   ]) {
     expect(files).toContain(expected)

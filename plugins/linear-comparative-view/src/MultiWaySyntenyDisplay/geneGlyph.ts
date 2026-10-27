@@ -10,12 +10,12 @@ import {
   GENE_GLYPH_DEFAULTS,
   mergeSpans,
   representativeIsoform,
-} from '@jbrowse/plugin-canvas'
+} from '@jbrowse/plugin-features'
 
 import type { Span } from './layoutMultiWay.ts'
 import type { TrackConfigEntry } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
-import type { GlyphSpan, IsoformSettings } from '@jbrowse/plugin-canvas'
+import type { GlyphSpan, IsoformSettings } from '@jbrowse/plugin-features'
 
 // an NCBI-style GFF3's `region` row would otherwise paint the lane end to end
 const CONTAINER_TYPES = new Set(['region', 'chromosome', 'contig', 'scaffold'])

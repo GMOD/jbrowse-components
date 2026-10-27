@@ -5,7 +5,7 @@ description: "The canvas feature displays' tooltip, the box hovering a feature o
 sidebar_label: Display setting -> FeatureTooltip
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `canvas` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/canvas/src/LinearBasicDisplay/featureTooltipConfigSchema.ts).
+Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `features` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/features/src/LinearBasicDisplay/featureTooltipConfigSchema.ts).
 
 The canvas feature displays' `tooltip`, the box hovering a feature opens:
 whether it `show`s, and the `field` its text reads. A bare string is the

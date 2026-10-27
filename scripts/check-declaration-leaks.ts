@@ -1,5 +1,5 @@
 // Fails when an emitted `.d.ts` names a *source* path of another workspace
-// package, e.g. `import("@jbrowse/plugin-canvas/src/…/hitTesting.ts").FooType`.
+// package, e.g. `import("@jbrowse/plugin-features/src/…/hitTesting.ts").FooType`.
 // Published tarballs ship `esm/`, not `src/`, so those specifiers don't resolve
 // for consumers and surface as errors unless they set `skipLibCheck` (see
 // https://github.com/GMOD/jbrowse-components/issues/4678).

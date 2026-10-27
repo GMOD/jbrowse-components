@@ -669,7 +669,7 @@ function writerParams(attrs: readonly InstanceAttr[]) {
  * asks for — separate drivers per arm, a control arm, min of interleaved
  * rounds, identity checked before timing — over 100k/500k/2M:
  *
- * - `plugins/canvas/benches/instanceWriter.bench.ts`, against multi-row's
+ * - `plugins/features/benches/instanceWriter.bench.ts`, against multi-row's
  *   previous form (an append inside a callback bumping a counter captured in a
  *   closure): the writer is **0.86-0.96x, i.e. faster**, because V8 heap-
  *   allocates a mutated closure variable and a field on a monomorphic object

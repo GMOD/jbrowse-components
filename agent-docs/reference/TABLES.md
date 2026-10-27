@@ -371,7 +371,7 @@ section at once as the display runs it:
 A host has no assembly, so a split read whose SA tag spells its contig
 another way than the BAM does reads as interchromosomal.
 
-`@jbrowse/plugin-canvas/tables` (`featureTables`) does the same for a feature
+`@jbrowse/plugin-features/tables` (`featureTables`) does the same for a feature
 track. It takes the `LinearBasicDisplay`'s config as a track's `displays`
 entry writes it and a `bpPerPx`, runs the feature worker, then the display's
 own layout under its `heightMode` and `height` (the fit ladder,

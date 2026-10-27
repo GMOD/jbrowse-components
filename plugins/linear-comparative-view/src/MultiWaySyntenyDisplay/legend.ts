@@ -2,7 +2,7 @@ import {
   MAX_LEGEND_ENTRIES,
   derivedColorScale,
 } from '@jbrowse/core/util/legendCandidates'
-import { getFeatureName } from '@jbrowse/plugin-canvas'
+import { getFeatureName } from '@jbrowse/plugin-features'
 import {
   colorByScales,
   colorByShortLabel,

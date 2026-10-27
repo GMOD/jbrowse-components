@@ -311,7 +311,7 @@ Simplest to most complex:
   and a letters layer
 - `plugins/wiggle/src/LinearWiggleDisplay/renderSvg.tsx` - score plot with scale
   bar
-- `plugins/canvas/src/LinearBasicDisplay/renderSvg.tsx` - features + labels
+- `plugins/features/src/LinearBasicDisplay/renderSvg.tsx` - features + labels
   layers
 - `plugins/alignments/src/LinearAlignmentsDisplay/renderSvg.tsx` - coverage,
   pileup, arcs

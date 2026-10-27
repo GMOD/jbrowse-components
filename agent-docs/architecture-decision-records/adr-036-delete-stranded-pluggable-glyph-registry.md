@@ -23,7 +23,7 @@ it. Zero registrations, zero reads.
 This was not accidental cruft. It was built deliberately in `ec0dd8920a`
 ("Create pluggable glyph system for canvas feature renderer", #5311), extended
 in `a5ed10f7d2` (#5365), and shipped with a 355-line README
-(`plugins/canvas/src/CanvasFeatureRenderer/glyphs/README.md`) documenting how to
+(`plugins/features/src/CanvasFeatureRenderer/glyphs/README.md`) documenting how to
 write custom glyphs. It had a real consumer:
 
 ```ts
@@ -46,7 +46,7 @@ Two things made this invisible in-tree and costly out-of-tree:
 - **It still type-checked.** `addGlyphType()` succeeded and returned normally;
   the registration simply went nowhere. From outside, a silently-no-op API is
   indistinguishable from a working one.
-- **The name collides with a live, unrelated type.** `plugins/canvas`'s
+- **The name collides with a live, unrelated type.** `plugins/features`'s
   `RenderFeatureDataRPC/types.ts` exports its *own* `GlyphType` — a closed string
   union (`'Box' | 'ProcessedTranscript' | …`) closed by a `never` exhaustiveness
   check in `glyphEmitters.ts`. Grepping for `GlyphType` finds live hits, so the
@@ -64,7 +64,7 @@ TypeRecord, `'glyph'` element-type group, `'glyph'` creation phase, `case 'glyph
 dispatch, and the three accessors in `PluginManager.ts`; the import, union member,
 and re-export in `pluggableElementTypes/index.ts`.
 
-`plugins/canvas`'s own `GlyphType` union is **untouched** — it is the live one.
+`plugins/features`'s own `GlyphType` union is **untouched** — it is the live one.
 
 ### Why not reconnect it instead
 

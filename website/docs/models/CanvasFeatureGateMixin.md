@@ -5,7 +5,7 @@ description: "The density axis of the region-too-large gate, composed after Mult
 sidebar_label: Mixin -> CanvasFeatureGateMixin
 ---
 
-Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Provided by the `canvas` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/canvas/src/shared/CanvasFeatureGateMixin.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Provided by the `features` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/features/src/shared/CanvasFeatureGateMixin.ts).
 
 The density axis of the region-too-large gate, composed after
 `MultiRegionDisplayMixin`. A display opts in by composing this and calling

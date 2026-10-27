@@ -13,7 +13,7 @@ trigger the amendment below names: the fit ladder needed per-isoform structure
 on the main thread. The text stands as the record of why the worker version
 existed, and its amendment as the list of what had to cross the boundary. The
 mechanism it describes was `collapseIsoforms` in
-`plugins/canvas/src/RenderFeatureDataRPC/glyphs/subfeatures.ts` and
+`plugins/features/src/RenderFeatureDataRPC/glyphs/subfeatures.ts` and
 `effectiveMaxIsoforms` in `LinearBasicDisplay/model.ts`.
 
 ## Context

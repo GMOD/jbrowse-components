@@ -8,7 +8,7 @@ import type { SyntenyOutlineChannels } from '../LinearSyntenyDisplay/syntenyRibb
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
 import type { PaintedFill } from './geneColor.ts'
 import type { Feature } from '@jbrowse/core/util'
-import type { RegionRenderData } from '@jbrowse/plugin-canvas'
+import type { RegionRenderData } from '@jbrowse/plugin-features'
 import type { BarChannels, MarkColorScale } from '@jbrowse/render-core/marks'
 import type { PerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
 import type { FrameDimensions } from '@jbrowse/render-core/renderingBackendBase'

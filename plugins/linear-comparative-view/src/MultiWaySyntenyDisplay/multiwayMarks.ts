@@ -1,4 +1,4 @@
-import { featureGlyphMarks } from '@jbrowse/plugin-canvas'
+import { featureGlyphMarks } from '@jbrowse/plugin-features'
 import { CANVAS_SEAM_PX } from '@jbrowse/render-core/canvas2dUtils'
 import { barMark, defineMark } from '@jbrowse/render-core/marks'
 import { canvasWideBlock } from '@jbrowse/render-core/renderBlock'

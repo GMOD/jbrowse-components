@@ -14,7 +14,7 @@ misspelt expression loads, and the display's worker finds it.
 What the worker does with one, as of 2026-10-07: a `facet`, a `rows.field`, a
 `clusterField`, a quantitative `y` and a mark channel reject the fetch, and the
 track shows the syntax error; a feature label draws no label
-(`plugins/canvas/src/RenderFeatureDataRPC/labelUtils.ts`); the multi-way `text`
+(`plugins/features/src/RenderFeatureDataRPC/labelUtils.ts`); the multi-way `text`
 logs and falls back to the name (`geneTextOf` in
 `plugins/linear-comparative-view/src/MultiWaySyntenyDisplay/model.ts`).
 

@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs'
 import path from 'node:path'
 import { pathToFileURL } from 'node:url'
 
-import { MAX_LABEL_FEATURE_DENSITY } from '../../../plugins/canvas/src/RenderFeatureDataRPC/zoomThresholds.ts'
+import { MAX_LABEL_FEATURE_DENSITY } from '../../../plugins/features/src/RenderFeatureDataRPC/zoomThresholds.ts'
 import { createTablesEngine } from './index.ts'
 import { BIGBED, DOG_VCF, GFF3 } from './volvox.fixture.ts'
 

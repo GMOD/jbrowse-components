@@ -3,12 +3,12 @@ import Alignments from '@jbrowse/plugin-alignments'
 import Authentication from '@jbrowse/plugin-authentication'
 import Bed from '@jbrowse/plugin-bed'
 import BreakpointSplitView from '@jbrowse/plugin-breakpoint-split-view'
-import Canvas from '@jbrowse/plugin-canvas'
 import CircularView from '@jbrowse/plugin-circular-view'
 import ComparativeAdapters from '@jbrowse/plugin-comparative-adapters'
 import Config from '@jbrowse/plugin-config'
 import DataManagement from '@jbrowse/plugin-data-management'
 import DotplotView from '@jbrowse/plugin-dotplot-view'
+import Features from '@jbrowse/plugin-features'
 import GCContent from '@jbrowse/plugin-gccontent'
 import Gff3 from '@jbrowse/plugin-gff3'
 import GtfPlugin from '@jbrowse/plugin-gtf'
@@ -28,7 +28,7 @@ import Variants from '@jbrowse/plugin-variants'
 import Wiggle from '@jbrowse/plugin-wiggle'
 
 const corePlugins = [
-  Canvas,
+  Features,
   LinearGenomeView,
   Alignments,
   Authentication,

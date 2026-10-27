@@ -48,7 +48,7 @@
     "@jbrowse/plugin-alignments": "workspace:^",
     "@jbrowse/plugin-authentication": "workspace:^",
     "@jbrowse/plugin-bed": "workspace:^",
-    "@jbrowse/plugin-canvas": "workspace:^",
+    "@jbrowse/plugin-features": "workspace:^",
     "@jbrowse/plugin-config": "workspace:^",
     "@jbrowse/plugin-data-management": "workspace:^",
     "@jbrowse/plugin-gccontent": "workspace:^",

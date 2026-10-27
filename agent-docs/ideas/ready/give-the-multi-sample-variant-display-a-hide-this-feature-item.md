@@ -1,6 +1,6 @@
 ---
 name: give-the-multi-sample-variant-display-a-hide-this-feature-item
-description: `plugins/canvas` has `hideFeature` and the multi-sample variant displays do not, so a single dominating variant cannot be taken out of the picture — a copy of a mechanism that has since moved to `featureSetViews.ts` and `featureContextMenu.ts`
+description: `plugins/features` has `hideFeature` and the multi-sample variant displays do not, so a single dominating variant cannot be taken out of the picture — a copy of a mechanism that has since moved to `featureSetViews.ts` and `featureContextMenu.ts`
 ---
 
 # Give the multi-sample variant display a "hide this feature" item
@@ -11,7 +11,7 @@ rewrite dropped, which is what kept the tooltip toggle ahead of it on the
 release list — that one landed as the `showTooltips` config slot and its
 "Show..." checkbox, so this is the entry's remaining half.
 
-`plugins/canvas` has `hideFeature` and the multi-sample variant displays do not,
+`plugins/features` has `hideFeature` and the multi-sample variant displays do not,
 so a single dominating variant cannot be taken out of the picture the way a
 feature can on a basic display.
 

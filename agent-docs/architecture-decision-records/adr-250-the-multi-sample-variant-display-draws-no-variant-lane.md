@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "The multi-sample variant display draws no variant lane: the `variants` band (`show`, `height`, `labels`), its overlay, hit test, menu entries, SVG export band and `variantTopBands.ts` are deleted, and `rowsHeaderHeight` is the connector zone alone. The records themselves, with nesting, labels and a layout of their own, are a `LinearVariantDisplay` track over the same VCF above the genotype display, as `multisv_rhd` already composes it. The lane was one 40px row (`flattenRows`, ADR-037) taken out of the genotype rows, so a nested SV could not stack under the one holding it. Amends ADR-232, which named and kept the band, and ADR-037, whose `flattenRows` opt-out leaves plugin-canvas with it"
+summary: "The multi-sample variant display draws no variant lane: the `variants` band (`show`, `height`, `labels`), its overlay, hit test, menu entries, SVG export band and `variantTopBands.ts` are deleted, and `rowsHeaderHeight` is the connector zone alone. The records themselves, with nesting, labels and a layout of their own, are a `LinearVariantDisplay` track over the same VCF above the genotype display, as `multisv_rhd` already composes it. The lane was one 40px row (`flattenRows`, ADR-037) taken out of the genotype rows, so a nested SV could not stack under the one holding it. Amends ADR-232, which named and kept the band, and ADR-037, whose `flattenRows` opt-out leaves plugin-features with it"
 ---
 
 # ADR-250: The multi-sample variant display draws no variant lane
@@ -8,7 +8,7 @@ summary: "The multi-sample variant display draws no variant lane: the `variants`
 ## Status
 
 Accepted (2026-10-26), Colin: the lane is "completely unadequate at showing
-nested SV", the display needs "true plugins/canvas layouts for these", and the
+nested SV", the display needs "true plugins/features layouts for these", and the
 lane "is not helping much". Amends ADR-232, which renamed the band `variants`
 and froze its slot paths for 5.0.0, and ADR-037, whose `flattenRows` opt-out
 the lane was the only consumer of.
@@ -65,7 +65,7 @@ The display has no lane.
   specs, so each figure gains the band's 40px for its rows. The figures need a
   reshoot, and a figure that read its records off the strip wants a
   `LinearVariantDisplay` track in its session.
-- **plugin-canvas loses what only the lane used.** `flattenRows` and the
+- **plugin-features loses what only the lane used.** `flattenRows` and the
   one-row label drop it enabled, `paintFeatureBand`, and the index's block of
   band-as-functions exports go. The layout, fit and hit-test functions stay,
   unexported, for the feature display's own use.

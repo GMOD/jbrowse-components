@@ -885,7 +885,7 @@ function declaresName(src: ts.SourceFile, name: string) {
 /**
  * The module that actually declares `name`, following `export { A as B } from
  * './p'` chains. One hop is not enough: a plugin's entry point re-exports
- * through the *display's* barrel, so `@jbrowse/plugin-canvas` →
+ * through the *display's* barrel, so `@jbrowse/plugin-features` →
  * `LinearBasicDisplay/index.ts` → `baseModel.ts`, and stopping at the barrel
  * names a file that holds two different models. Which one matters, because the
  * barrel is where `LinearBasicDisplay`'s model and the base every other canvas

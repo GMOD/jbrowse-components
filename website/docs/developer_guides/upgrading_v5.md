@@ -840,6 +840,13 @@ walking a menu, where the failure reads as "my item was never added" rather than
 "the submenu is called something else". Import `LAUNCH_LABEL` from
 `@jbrowse/core/ui` rather than repeating the string.
 
+## `@jbrowse/plugin-canvas` is `@jbrowse/plugin-features`
+
+The plugin that provides `LinearBasicDisplay`, the feature track's display, is
+published as `@jbrowse/plugin-features` and registers as `FeaturesPlugin`. Its
+exports are unchanged. Code importing `@jbrowse/plugin-canvas` or calling
+`pluginManager.hasPlugin('CanvasPlugin')` needs the new names.
+
 ## Removals with no replacement
 
 **dockview is gone from the workspace.** `useDockviewController`,

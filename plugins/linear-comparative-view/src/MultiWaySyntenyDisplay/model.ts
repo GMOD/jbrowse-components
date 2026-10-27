@@ -57,7 +57,7 @@ import { heldColorSlots } from '@jbrowse/display-kit/heldColorSlots'
 import { editPlotMenuItems } from '@jbrowse/display-kit/plotMenu'
 import { sameAsLast } from '@jbrowse/display-kit/stableIdentityComputed'
 import { isAlive, isStateTreeNode, types } from '@jbrowse/mobx-state-tree'
-import { FEATURE_NAME_FIELD, getFeatureName } from '@jbrowse/plugin-canvas'
+import { FEATURE_NAME_FIELD, getFeatureName } from '@jbrowse/plugin-features'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import {
   markColorOf,

@@ -3,10 +3,10 @@
   "references": [
     { "path": "../../plugins/alignments/tsconfig.build.esm.json" },
     { "path": "../../plugins/bed/tsconfig.build.esm.json" },
-    { "path": "../../plugins/canvas/tsconfig.build.esm.json" },
     { "path": "../../plugins/comparative-adapters/tsconfig.build.esm.json" },
     { "path": "../../plugins/config/tsconfig.build.esm.json" },
     { "path": "../../plugins/dotplot-view/tsconfig.build.esm.json" },
+    { "path": "../../plugins/features/tsconfig.build.esm.json" },
     { "path": "../../plugins/gff3/tsconfig.build.esm.json" },
     { "path": "../../plugins/gtf/tsconfig.build.esm.json" },
     { "path": "../../plugins/linear-comparative-view/tsconfig.build.esm.json" },

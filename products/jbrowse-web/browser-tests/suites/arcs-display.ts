@@ -15,7 +15,7 @@ import { lgvSnapshotTest } from '../suiteHelpers.ts'
 
 import type { TestCase, TestSuite } from '../types.ts'
 import type { LinearAlignmentsDisplayModel } from '@jbrowse/plugin-alignments'
-import type { LinearBasicDisplayModel } from '@jbrowse/plugin-canvas'
+import type { LinearBasicDisplayModel } from '@jbrowse/plugin-features'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type { Page } from 'puppeteer'
 

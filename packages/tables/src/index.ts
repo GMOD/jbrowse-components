@@ -7,13 +7,13 @@ import {
   registerAlignmentsAdapters,
 } from '@jbrowse/plugin-alignments/tables'
 import BedPlugin from '@jbrowse/plugin-bed'
-import {
-  featureAttributeTables,
-  featureTables,
-} from '@jbrowse/plugin-canvas/tables'
 import { contigTables } from '@jbrowse/plugin-comparative-adapters/tables'
 import { registerConfigAdapters } from '@jbrowse/plugin-config/adapters'
 import { dotplotTables } from '@jbrowse/plugin-dotplot-view/tables'
+import {
+  featureAttributeTables,
+  featureTables,
+} from '@jbrowse/plugin-features/tables'
 import GFF3Plugin from '@jbrowse/plugin-gff3'
 import GtfPlugin from '@jbrowse/plugin-gtf'
 import {
@@ -41,9 +41,9 @@ import { contigNamesOf, fileRegions } from './fileRegions.ts'
 import type { AssemblyConfig } from './assembly.ts'
 import type { TablesRegion } from '@jbrowse/core/data_adapters/tables'
 import type { AlignmentTablesArgs as AlignmentReadArgs } from '@jbrowse/plugin-alignments/tables'
-import type { FeatureTablesArgs as FeatureReadArgs } from '@jbrowse/plugin-canvas/tables'
 import type { ContigTablesArgs } from '@jbrowse/plugin-comparative-adapters/tables'
 import type { DotplotTablesArgs } from '@jbrowse/plugin-dotplot-view/tables'
+import type { FeatureTablesArgs as FeatureReadArgs } from '@jbrowse/plugin-features/tables'
 import type {
   MultiWayTablesArgs,
   SyntenyTablesArgs,
@@ -52,7 +52,7 @@ import type { VariantTablesArgs as VariantReadArgs } from '@jbrowse/plugin-varia
 import type { WiggleTablesArgs as WiggleReadArgs } from '@jbrowse/plugin-wiggle/tables'
 
 export type { AlignmentTables } from '@jbrowse/plugin-alignments/tables'
-export type { FeatureTables } from '@jbrowse/plugin-canvas/tables'
+export type { FeatureTables } from '@jbrowse/plugin-features/tables'
 export type {
   ContigTables,
   ContigTablesArgs,

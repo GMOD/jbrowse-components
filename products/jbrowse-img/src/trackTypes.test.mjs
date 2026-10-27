@@ -108,7 +108,7 @@ const renderGff = (...opts) =>
 // `encoding.color` describes the FEATURE, so it reaches a transcript's UTRs
 // too and the whole track lands on one color; only an explicit
 // `utrs.encoding.color` contrasts them again. That rule is boxColor's
-// (plugins/canvas), and this asserts the end-to-end consequence of it — which
+// (plugins/features), and this asserts the end-to-end consequence of it — which
 // is why the count to match is BOTH defaults and not just the goldenrod one.
 test('color:<css color> repaints a feature track, UTRs included', async () => {
   const plain = fillCounts(await renderGff())

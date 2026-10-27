@@ -29,7 +29,7 @@ each a separate spelling of one mark's geometry:
 | alignments | `HighlightOverlay.tsx` + `computeHighlightBoxes.ts` (+ test) | `readPositions` / `readYs` through `spanRect`, section tiers by hand |
 | multi-row | `MultiRowHoverHighlight.tsx` + `blockScreenRect.ts` (+ test) | the hit's bp span through `spanRect` and `rowBand`, one px wider than the painting |
 | variants (cells) | `HoveredCellHighlight` in `VariantComponent.tsx` | the cell's bp span through `snapVariantCellX` and `drawnCellHeightPx` |
-| variants (lane) | `HoveredMarkHighlight` in `VariantLaneOverlay.tsx` | plugin-canvas's laid-out item through `spanRect` |
+| variants (lane) | `HoveredMarkHighlight` in `VariantLaneOverlay.tsx` | plugin-features's laid-out item through `spanRect` |
 | gwas | `HoverHighlight.tsx` | a screen point the hit carried, `axisPlotBox` for the inset |
 | the mark display | none | — the zero baseline: a config-authored display with no hover cue |
 
@@ -100,7 +100,7 @@ grown to the ring's radius). The example plugin's `score` shape declares
   answered first, where the nearest CENTRE is the glyph under the cursor.
   `drawAgainstHit.test.ts` pins the two-glyph case. It is the one shape whose
   ink and hit differ, and the reason `hitNearest` stays a member.
-- **The variants' lane hover moved too**, though its box is plugin-canvas's
+- **The variants' lane hover moved too**, though its box is plugin-features's
   layout item and not an instance's ink: the host is structural and takes
   rects, and one guide per display beats two.
 - **The hit types stay per display.** A `MarkHitInfo`, a `MultiRowHit`, a

@@ -38,7 +38,7 @@
     "@jbrowse/plugin-authentication": "workspace:^",
     "@jbrowse/plugin-bed": "workspace:^",
     "@jbrowse/plugin-breakpoint-split-view": "workspace:^",
-    "@jbrowse/plugin-canvas": "workspace:^",
+    "@jbrowse/plugin-features": "workspace:^",
     "@jbrowse/plugin-circular-view": "workspace:^",
     "@jbrowse/plugin-comparative-adapters": "workspace:^",
     "@jbrowse/plugin-config": "workspace:^",
