@@ -4,6 +4,21 @@ export function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
 
+// The member a bare string or number written in a sub-schema's place lifts
+// into, by its `shorthand`.
+function bareTarget({ shorthand = {} }: SlotEntry, value: unknown) {
+  return typeof value === 'string'
+    ? shorthand.string
+    : typeof value === 'number'
+      ? shorthand.number
+      : undefined
+}
+
+function liftedBare(slot: SlotEntry, value: unknown) {
+  const target = bareTarget(slot, value)
+  return target === undefined ? value : { [target]: value }
+}
+
 function liftSlot(member: unknown, slot: SlotEntry): unknown {
   if (slot.subSlots) {
     const { subSlots, shorthand = {} } = slot
@@ -11,12 +26,7 @@ function liftSlot(member: unknown, slot: SlotEntry): unknown {
       return liftToSnapshot({ [shorthand.list]: member }, subSlots)
     }
     const lift = (item: unknown) => {
-      const target =
-        typeof item === 'string'
-          ? shorthand.string
-          : typeof item === 'number'
-            ? shorthand.number
-            : undefined
+      const target = bareTarget(slot, item)
       return liftToSnapshot(
         target === undefined ? item : { [target]: item },
         subSlots,
@@ -46,4 +56,31 @@ export function liftToSnapshot(value: unknown, slots: SlotEntry[]): unknown {
         }),
       )
     : value
+}
+
+/**
+ * Two settings bags as one, `over` written after `under` as the app folds
+ * them (core's `mergeConfSettings`): a sub-schema writing its members one by
+ * one merges member by member, a bare value its shorthand lifts included, and
+ * any other slot or a channel takes `over`'s value whole. A key no slot
+ * declares, a plugin's, merges as plain JSON. A value merged with nothing
+ * keeps its written spelling.
+ */
+export function mergeBySlots(
+  under: Record<string, unknown>,
+  over: Record<string, unknown>,
+  slots: SlotEntry[] = [],
+): Record<string, unknown> {
+  const out = { ...under }
+  for (const [key, value] of Object.entries(over)) {
+    const slot = slots.find(s => s.name === key)
+    const members = !slot || (slot.subSlots && slot.writes === 'members')
+    const prior = slot ? liftedBare(slot, out[key]) : out[key]
+    const next = slot ? liftedBare(slot, value) : value
+    out[key] =
+      members && isRecord(prior) && isRecord(next)
+        ? mergeBySlots(prior, next, slot?.subSlots)
+        : value
+  }
+  return out
 }

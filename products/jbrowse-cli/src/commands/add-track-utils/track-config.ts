@@ -4,7 +4,11 @@ import { syntenyAdapterTypes } from '@jbrowse/launch-args'
 
 import { isURL } from '../../types/common.ts'
 import { parseCommaSeparatedString } from '../../utils.ts'
-import { displayDefaultsForTrackType } from '../validate/displayDefaultKeys.ts'
+import {
+  displayDefaultSlots,
+  displayDefaultsForTrackType,
+} from '../validate/displayDefaultKeys.ts'
+import { mergeBySlots } from '../validate/liftConfig.ts'
 import { suggest } from '../validate/suggest.ts'
 import { parseJsonFlag } from './validators.ts'
 
@@ -74,9 +78,10 @@ export function buildTrackConfig({
 
 // Fold the --color / --height convenience flags and any --displayDefaults JSON
 // into one displayDefaults object, layered over a displayDefaults already
-// present in --config, merging nested objects key by key. Precedence: --config < --displayDefaults < typed flags,
-// so the most specific flag a user reaches for wins. Returns undefined when
-// nothing was supplied, so the track omits displayDefaults entirely.
+// present in --config as the app layers them (`mergeBySlots`). Precedence:
+// --config < --displayDefaults < typed flags, so the most specific flag a user
+// reaches for wins. Returns undefined when nothing was supplied, so the track
+// omits displayDefaults entirely.
 //
 // Takes `trackType` so it can refuse a key none of that track's displays
 // declares: expandTrackConfigShorthand drops an unmatched key with a console
@@ -103,7 +108,8 @@ export function mergeDisplayDefaults({
     const asNumber = Number(height)
     typed.height = Number.isNaN(asNumber) ? height : asNumber
   }
-  const merged = deepMerge(deepMerge(existing, fromJson), typed)
+  const slots = displayDefaultSlots(trackType)
+  const merged = mergeBySlots(mergeBySlots(existing, fromJson, slots), typed)
   // the constant replaces the color whole, a field written before it included
   if (color !== undefined) {
     merged.encoding = { ...encodingOf(merged), color: { value: color } }

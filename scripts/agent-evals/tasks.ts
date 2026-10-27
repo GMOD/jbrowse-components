@@ -408,7 +408,7 @@ export const TASKS: EvalTask[] = [
     grade: `
       const d = ${shownTrack('volvox_test_vcf')}?.activeDisplay
       const marks = d?.plot?.marks ?? []
-      return { pass: d?.type === 'LinearMarkDisplay' && marks.some(m => m.mark === 'point'), detail: { type: d?.type, marks } }`,
+      return { pass: d?.type === 'LinearMarkDisplay' && marks.some(m => (m.mark?.type ?? m.mark) === 'point'), detail: { type: d?.type, marks } }`,
   },
   {
     name: 'edit-session-document',
