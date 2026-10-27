@@ -4,6 +4,8 @@ import { observer } from 'mobx-react'
 
 import ConfigurationTextField from './ConfigurationTextField.tsx'
 
+// The field holds a draft only while focused, so an in-progress "-" or "1."
+// survives typing, and an undo or a menu write shows once focus leaves.
 /** #slotEditor numeric text field */
 const NumberEditor = observer(function NumberEditor({
   slot,
@@ -17,24 +19,23 @@ const NumberEditor = observer(function NumberEditor({
   }
   integer?: boolean
 }) {
-  const [val, setVal] = useState(
-    slot.value === undefined ? '' : String(slot.value),
-  )
+  const [draft, setDraft] = useState<string>()
   return (
     <ConfigurationTextField
       label={slot.name}
       helperText={slot.description}
-      value={val}
+      value={draft ?? (slot.value === undefined ? '' : String(slot.value))}
       onChange={evt => {
         const v = evt.target.value
-        setVal(v)
+        setDraft(v)
         const num = Number(v)
-        // commit only valid values; the text buffer preserves in-progress
-        // entries like "-" or "1." without writing garbage to the config
         const valid = integer ? Number.isInteger(num) : Number.isFinite(num)
         if (v !== '' && valid) {
           slot.set(num)
         }
+      }}
+      onBlur={() => {
+        setDraft(undefined)
       }}
     />
   )

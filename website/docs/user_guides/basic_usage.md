@@ -245,10 +245,13 @@ settings to config**.
 
 <Figure caption="Track actions → Settings in the track menu." src="/img/edit_track_settings.png" />
 
-The editor has a filter box to search options by name and tucks rarely-needed
-settings behind a **Show advanced settings** toggle. With more than one display
-type, only the active display's settings are expanded. **Reset track settings**
-in the track menu reverts to the underlying config.
+The form shows the track's name, description, category and data files, and the
+settings of the display this view draws. What the display draws (color,
+grouping, filters) is under the track menu's **Advanced → Edit plot...**.
+
+- **Edit as JSON...** edits every setting as `config.json` writes it. A key the
+  track does not take is refused under the text.
+- **Reset track settings** in the track menu reverts to the underlying config.
 
 The [display settings tutorial](/docs/tutorials/display_settings) covers the
 same settings as persistent defaults in `config.json`, and as overrides in a URL

@@ -1168,7 +1168,7 @@ export const uiSpecs: ScreenshotSpec[] = [
       {
         actions: [
           { type: 'click', text: 'Settings' },
-          { type: 'waitForText', text: 'Filter options' },
+          { type: 'waitForText', text: 'Edit as JSON...' },
           { type: 'delay', ms: 1000 },
         ],
         annotations: [

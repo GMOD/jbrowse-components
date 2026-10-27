@@ -3,815 +3,738 @@
 exports[`renders all the different types of built-in slots 1`] = `
 <div>
   <div
-    class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 MuiAccordion-root MuiAccordion-rounded Mui-expanded css-HASH-MuiPaper-root-MuiAccordion-root"
-    style="--Paper-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);"
+    class="css-HASH"
+    data-testid="configEditor"
   >
-    <h3
-      class="MuiAccordion-heading css-HASH-MuiAccordion-heading"
+    <h6
+      class="MuiTypography-root MuiTypography-h6 css-HASH-MuiTypography-root"
     >
-      <button
-        aria-expanded="true"
-        class="MuiButtonBase-root MuiAccordionSummary-root Mui-expanded css-HASH-MuiButtonBase-root-MuiAccordionSummary-root"
-        tabindex="0"
-        type="button"
-      >
-        <span
-          class="MuiAccordionSummary-content Mui-expanded css-HASH-MuiAccordionSummary-content"
-        >
-          <p
-            class="MuiTypography-root MuiTypography-body1 css-HASH-MuiTypography-root"
-          >
-            <span>
-              Configuration
-            </span>
-          </p>
-        </span>
-        <span
-          class="MuiAccordionSummary-expandIconWrapper Mui-expanded css-HASH-MuiAccordionSummary-expandIconWrapper"
-        >
-          <svg
-            aria-hidden="true"
-            class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-HASH-MuiSvgIcon-root"
-            data-testid="ExpandMoreIcon"
-            focusable="false"
-            viewBox="0 0 24 24"
-          >
-            <path
-              d="M16.59 8.59 12 13.17 7.41 8.59 6 10l6 6 6-6z"
-            />
-          </svg>
-        </span>
-      </button>
-    </h3>
+      General
+    </h6>
     <div
-      class="MuiCollapse-root MuiCollapse-vertical MuiCollapse-entered css-HASH-MuiCollapse-root"
-      style="min-height: 0px;"
+      class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-HASH-MuiPaper-root"
+      style="--Paper-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);"
     >
       <div
-        class="MuiCollapse-wrapper MuiCollapse-vertical css-HASH-MuiCollapse-wrapper"
+        class="css-HASH"
       >
         <div
-          class="MuiCollapse-wrapperInner MuiCollapse-vertical css-HASH-MuiCollapse-wrapperInner"
+          class="MuiFormControl-root MuiFormControl-marginDense MuiFormControl-fullWidth MuiTextField-root css-HASH-MuiFormControl-root-MuiTextField-root"
+        >
+          <label
+            class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-sizeSmall MuiInputLabel-standard MuiFormLabel-colorPrimary MuiFormLabel-filled MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-sizeSmall MuiInputLabel-standard css-HASH-MuiFormLabel-root-MuiInputLabel-root"
+            data-shrink="true"
+            for="_r_6_"
+            id="_r_6_-label"
+          >
+            stringTest
+          </label>
+          <div
+            class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall css-HASH-MuiInputBase-root-MuiInput-root"
+          >
+            <input
+              aria-describedby="_r_6_-helper-text"
+              aria-invalid="false"
+              class="MuiInputBase-input MuiInput-input css-HASH-MuiInputBase-input-MuiInput-input"
+              id="_r_6_"
+              type="text"
+              value="string1"
+            />
+          </div>
+          <div
+            class="MuiFormHelperText-root MuiFormHelperText-sizeSmall MuiFormHelperText-filled css-HASH-MuiFormHelperText-root"
+            id="_r_6_-helper-text"
+          >
+            <span>
+              stringTest
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div
+      class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-HASH-MuiPaper-root"
+      style="--Paper-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);"
+    >
+      <div
+        class="css-HASH"
+      >
+        <div
+          class="MuiBox-root css-HASH"
+        >
+          <label
+            class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-animated MuiInputLabel-shrink MuiFormLabel-colorPrimary MuiInputLabel-root MuiInputLabel-animated MuiInputLabel-shrink css-HASH-MuiFormLabel-root-MuiInputLabel-root"
+            data-shrink="true"
+            id="_r_7_"
+          >
+            fileLocationTest
+          </label>
+        </div>
+        <div
+          aria-describedby="_r_8_"
+          aria-labelledby="_r_7_"
+          class="MuiBox-root css-HASH"
+          role="group"
         >
           <div
-            class="MuiAccordion-region css-HASH-MuiAccordion-region"
-            role="region"
+            aria-label="file, url, or account picker"
+            class="MuiToggleButtonGroup-root MuiToggleButtonGroup-horizontal css-HASH-MuiToggleButtonGroup-root"
+            role="group"
+          >
+            <button
+              aria-label="local file"
+              aria-pressed="false"
+              class="MuiButtonBase-root MuiToggleButtonGroup-grouped MuiToggleButton-root MuiToggleButton-sizeSmall MuiToggleButton-standard MuiToggleButtonGroup-grouped MuiToggleButtonGroup-firstButton css-HASH-MuiButtonBase-root-MuiToggleButton-root"
+              tabindex="0"
+              type="button"
+              value="file"
+            >
+              File
+            </button>
+            <button
+              aria-label="url"
+              aria-pressed="true"
+              class="MuiButtonBase-root MuiToggleButtonGroup-grouped MuiToggleButton-root Mui-selected MuiToggleButton-sizeSmall MuiToggleButton-standard MuiToggleButtonGroup-grouped MuiToggleButtonGroup-lastButton css-HASH-MuiButtonBase-root-MuiToggleButton-root"
+              tabindex="-1"
+              type="button"
+              value="url"
+            >
+              URL
+            </button>
+          </div>
+          <div
+            class="MuiFormControl-root MuiFormControl-marginDense MuiFormControl-fullWidth MuiTextField-root css-HASH-MuiFormControl-root-MuiTextField-root"
+          >
+            <label
+              class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-sizeSmall MuiInputLabel-outlined MuiFormLabel-colorPrimary MuiFormLabel-filled MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-sizeSmall MuiInputLabel-outlined css-HASH-MuiFormLabel-root-MuiInputLabel-root"
+              data-shrink="true"
+              for="_r_9_"
+              id="_r_9_-label"
+            >
+              Enter URL
+            </label>
+            <div
+              class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall css-HASH-MuiInputBase-root-MuiOutlinedInput-root"
+            >
+              <input
+                aria-invalid="false"
+                class="MuiInputBase-input MuiOutlinedInput-input css-HASH-MuiInputBase-input-MuiOutlinedInput-input"
+                data-testid="urlInput"
+                id="_r_9_"
+                type="text"
+                value="/path/to/my.file"
+              />
+              <fieldset
+                aria-hidden="true"
+                class="MuiOutlinedInput-notchedOutline css-HASH-MuiNotchedOutlined-root-MuiOutlinedInput-notchedOutline"
+              >
+                <legend
+                  class="css-HASH-MuiNotchedOutlined-root"
+                >
+                  <span>
+                    Enter URL
+                  </span>
+                </legend>
+              </fieldset>
+            </div>
+          </div>
+        </div>
+        <p
+          class="MuiFormHelperText-root css-HASH-MuiFormHelperText-root"
+          id="_r_8_"
+        >
+          fileLocationTest
+        </p>
+      </div>
+    </div>
+    <div
+      class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-HASH-MuiPaper-root"
+      style="--Paper-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);"
+    >
+      <div
+        class="css-HASH"
+      >
+        <label
+          class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-animated MuiFormLabel-colorPrimary MuiInputLabel-root MuiInputLabel-animated css-HASH-MuiFormLabel-root-MuiInputLabel-root"
+        >
+          stringArrayTest
+        </label>
+        <ul
+          class="MuiList-root css-HASH-MuiList-root"
+        >
+          <li
+            class="MuiListItem-root MuiListItem-dense MuiListItem-padding css-HASH-MuiListItem-root"
           >
             <div
-              class="MuiAccordionDetails-root css-HASH-MuiAccordionDetails-root"
-              data-testid="configEditor"
+              class="MuiFormControl-root MuiFormControl-marginDense MuiFormControl-fullWidth MuiTextField-root css-HASH-MuiFormControl-root-MuiTextField-root"
             >
               <div
-                class="MuiFormControl-root MuiFormControl-marginDense MuiFormControl-fullWidth MuiTextField-root css-HASH-MuiFormControl-root-MuiTextField-root"
+                class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall MuiInputBase-adornedEnd css-HASH-MuiInputBase-root-MuiInput-root"
               >
-                <label
-                  class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-sizeSmall MuiInputLabel-standard MuiFormLabel-colorPrimary MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-sizeSmall MuiInputLabel-standard css-HASH-MuiFormLabel-root-MuiInputLabel-root"
-                  data-shrink="true"
-                  for="_r_6_"
-                  id="_r_6_-label"
-                >
-                  Filter options
-                </label>
+                <input
+                  aria-invalid="false"
+                  class="MuiInputBase-input MuiInput-input css-HASH-MuiInputBase-input-MuiInput-input"
+                  id="_r_a_"
+                  type="text"
+                  value="string1"
+                />
                 <div
-                  class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall MuiInputBase-adornedStart css-HASH-MuiInputBase-root-MuiInput-root"
+                  class="MuiInputAdornment-root MuiInputAdornment-positionEnd MuiInputAdornment-standard MuiInputAdornment-sizeSmall css-HASH-MuiInputAdornment-root"
                 >
-                  <div
-                    class="MuiInputAdornment-root MuiInputAdornment-positionStart MuiInputAdornment-standard MuiInputAdornment-sizeSmall css-HASH-MuiInputAdornment-root"
+                  <button
+                    class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-HASH-MuiButtonBase-root-MuiIconButton-root"
+                    tabindex="0"
+                    type="button"
                   >
-                    <span
-                      aria-hidden="true"
-                      class="notranslate"
-                    >
-                      ​
-                    </span>
                     <svg
                       aria-hidden="true"
-                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-HASH-MuiSvgIcon-root"
-                      data-testid="SearchIcon"
+                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-HASH-MuiSvgIcon-root"
+                      data-testid="DeleteIcon"
                       focusable="false"
                       viewBox="0 0 24 24"
                     >
                       <path
-                        d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"
+                        d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6zM19 4h-3.5l-1-1h-5l-1 1H5v2h14z"
                       />
                     </svg>
-                  </div>
-                  <input
-                    aria-invalid="false"
-                    class="MuiInputBase-input MuiInput-input css-HASH-MuiInputBase-input-MuiInput-input"
-                    id="_r_6_"
-                    type="text"
-                    value=""
-                  />
+                  </button>
                 </div>
               </div>
+            </div>
+          </li>
+          <li
+            class="MuiListItem-root MuiListItem-dense MuiListItem-padding css-HASH-MuiListItem-root"
+          >
+            <div
+              class="MuiFormControl-root MuiFormControl-marginDense MuiFormControl-fullWidth MuiTextField-root css-HASH-MuiFormControl-root-MuiTextField-root"
+            >
               <div
-                class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-HASH-MuiPaper-root"
-                style="--Paper-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);"
+                class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall MuiInputBase-adornedEnd css-HASH-MuiInputBase-root-MuiInput-root"
               >
+                <input
+                  aria-invalid="false"
+                  class="MuiInputBase-input MuiInput-input css-HASH-MuiInputBase-input-MuiInput-input"
+                  id="_r_c_"
+                  type="text"
+                  value="string2"
+                />
                 <div
-                  class="css-HASH"
+                  class="MuiInputAdornment-root MuiInputAdornment-positionEnd MuiInputAdornment-standard MuiInputAdornment-sizeSmall css-HASH-MuiInputAdornment-root"
                 >
-                  <div
-                    class="MuiFormControl-root MuiFormControl-marginDense MuiFormControl-fullWidth MuiTextField-root css-HASH-MuiFormControl-root-MuiTextField-root"
+                  <button
+                    class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-HASH-MuiButtonBase-root-MuiIconButton-root"
+                    tabindex="0"
+                    type="button"
                   >
-                    <label
-                      class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-sizeSmall MuiInputLabel-standard MuiFormLabel-colorPrimary MuiFormLabel-filled MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-sizeSmall MuiInputLabel-standard css-HASH-MuiFormLabel-root-MuiInputLabel-root"
-                      data-shrink="true"
-                      for="_r_7_"
-                      id="_r_7_-label"
+                    <svg
+                      aria-hidden="true"
+                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-HASH-MuiSvgIcon-root"
+                      data-testid="DeleteIcon"
+                      focusable="false"
+                      viewBox="0 0 24 24"
                     >
-                      stringTest
-                    </label>
-                    <div
-                      class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall css-HASH-MuiInputBase-root-MuiInput-root"
-                    >
-                      <input
-                        aria-describedby="_r_7_-helper-text"
-                        aria-invalid="false"
-                        class="MuiInputBase-input MuiInput-input css-HASH-MuiInputBase-input-MuiInput-input"
-                        id="_r_7_"
-                        type="text"
-                        value="string1"
+                      <path
+                        d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6zM19 4h-3.5l-1-1h-5l-1 1H5v2h14z"
                       />
-                    </div>
-                    <div
-                      class="MuiFormHelperText-root MuiFormHelperText-sizeSmall MuiFormHelperText-filled css-HASH-MuiFormHelperText-root"
-                      id="_r_7_-helper-text"
-                    >
-                      <span>
-                        stringTest
-                      </span>
-                    </div>
-                  </div>
+                    </svg>
+                  </button>
                 </div>
               </div>
+            </div>
+          </li>
+          <li
+            class="MuiListItem-root MuiListItem-dense MuiListItem-padding css-HASH-MuiListItem-root"
+          >
+            <div
+              class="MuiFormControl-root MuiFormControl-marginDense MuiFormControl-fullWidth MuiTextField-root css-HASH-MuiFormControl-root-MuiTextField-root"
+            >
               <div
-                class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-HASH-MuiPaper-root"
-                style="--Paper-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);"
+                class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall MuiInputBase-adornedEnd css-HASH-MuiInputBase-root-MuiInput-root"
+              >
+                <input
+                  aria-invalid="false"
+                  class="MuiInputBase-input MuiInput-input css-HASH-MuiInputBase-input-MuiInput-input"
+                  id="_r_e_"
+                  placeholder="add new"
+                  type="text"
+                  value=""
+                />
+                <div
+                  class="MuiInputAdornment-root MuiInputAdornment-positionEnd MuiInputAdornment-standard MuiInputAdornment-sizeSmall css-HASH-MuiInputAdornment-root"
+                >
+                  <button
+                    class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-HASH-MuiButtonBase-root-MuiIconButton-root"
+                    data-testid="stringArrayAdd-stringArrayTest"
+                    disabled=""
+                    tabindex="-1"
+                    type="button"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-HASH-MuiSvgIcon-root"
+                      data-testid="AddIcon"
+                      focusable="false"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6z"
+                      />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </li>
+        </ul>
+        <p
+          class="MuiFormHelperText-root css-HASH-MuiFormHelperText-root"
+        >
+          stringArrayTest
+        </p>
+      </div>
+    </div>
+    <div
+      class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-HASH-MuiPaper-root"
+      style="--Paper-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);"
+    >
+      <div
+        class="css-HASH"
+      >
+        <label
+          class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-animated MuiFormLabel-colorPrimary MuiInputLabel-root MuiInputLabel-animated css-HASH-MuiFormLabel-root-MuiInputLabel-root"
+        >
+          stringArrayMapTest
+        </label>
+        <div
+          class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation8 MuiCard-root css-HASH-MuiPaper-root-MuiCard-root"
+          style="--Paper-shadow: 0px 5px 5px -3px rgba(0,0,0,0.2),0px 8px 10px 1px rgba(0,0,0,0.14),0px 3px 14px 2px rgba(0,0,0,0.12);"
+        >
+          <div
+            class="MuiCardHeader-root css-HASH-MuiCardHeader-root"
+          >
+            <div
+              class="MuiCardHeader-content css-HASH-MuiCardHeader-content"
+            >
+              <span
+                class="MuiTypography-root MuiTypography-h5 MuiCardHeader-title css-HASH-MuiTypography-root"
+              >
+                key1
+              </span>
+            </div>
+            <div
+              class="MuiCardHeader-action css-HASH-MuiCardHeader-action"
+            >
+              <button
+                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-HASH-MuiButtonBase-root-MuiIconButton-root"
+                tabindex="0"
+                type="button"
+              >
+                <svg
+                  aria-hidden="true"
+                  class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-HASH-MuiSvgIcon-root"
+                  data-testid="DeleteIcon"
+                  focusable="false"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6zM19 4h-3.5l-1-1h-5l-1 1H5v2h14z"
+                  />
+                </svg>
+              </button>
+            </div>
+          </div>
+          <div
+            class="MuiCardContent-root css-HASH-MuiCardContent-root"
+          >
+            <ul
+              class="MuiList-root css-HASH-MuiList-root"
+            >
+              <li
+                class="MuiListItem-root MuiListItem-dense MuiListItem-padding css-HASH-MuiListItem-root"
               >
                 <div
-                  class="css-HASH"
+                  class="MuiFormControl-root MuiFormControl-marginDense MuiFormControl-fullWidth MuiTextField-root css-HASH-MuiFormControl-root-MuiTextField-root"
                 >
                   <div
-                    class="MuiBox-root css-HASH"
+                    class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall MuiInputBase-adornedEnd css-HASH-MuiInputBase-root-MuiInput-root"
                   >
-                    <label
-                      class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-animated MuiInputLabel-shrink MuiFormLabel-colorPrimary MuiInputLabel-root MuiInputLabel-animated MuiInputLabel-shrink css-HASH-MuiFormLabel-root-MuiInputLabel-root"
-                      data-shrink="true"
-                      id="_r_8_"
-                    >
-                      fileLocationTest
-                    </label>
-                  </div>
-                  <div
-                    aria-describedby="_r_9_"
-                    aria-labelledby="_r_8_"
-                    class="MuiBox-root css-HASH"
-                    role="group"
-                  >
+                    <input
+                      aria-invalid="false"
+                      class="MuiInputBase-input MuiInput-input css-HASH-MuiInputBase-input-MuiInput-input"
+                      id="_r_h_"
+                      type="text"
+                      value="string1"
+                    />
                     <div
-                      aria-label="file, url, or account picker"
-                      class="MuiToggleButtonGroup-root MuiToggleButtonGroup-horizontal css-HASH-MuiToggleButtonGroup-root"
-                      role="group"
+                      class="MuiInputAdornment-root MuiInputAdornment-positionEnd MuiInputAdornment-standard MuiInputAdornment-sizeSmall css-HASH-MuiInputAdornment-root"
                     >
                       <button
-                        aria-label="local file"
-                        aria-pressed="false"
-                        class="MuiButtonBase-root MuiToggleButtonGroup-grouped MuiToggleButton-root MuiToggleButton-sizeSmall MuiToggleButton-standard MuiToggleButtonGroup-grouped MuiToggleButtonGroup-firstButton css-HASH-MuiButtonBase-root-MuiToggleButton-root"
+                        class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-HASH-MuiButtonBase-root-MuiIconButton-root"
                         tabindex="0"
                         type="button"
-                        value="file"
                       >
-                        File
-                      </button>
-                      <button
-                        aria-label="url"
-                        aria-pressed="true"
-                        class="MuiButtonBase-root MuiToggleButtonGroup-grouped MuiToggleButton-root Mui-selected MuiToggleButton-sizeSmall MuiToggleButton-standard MuiToggleButtonGroup-grouped MuiToggleButtonGroup-lastButton css-HASH-MuiButtonBase-root-MuiToggleButton-root"
-                        tabindex="-1"
-                        type="button"
-                        value="url"
-                      >
-                        URL
-                      </button>
-                    </div>
-                    <div
-                      class="MuiFormControl-root MuiFormControl-marginDense MuiFormControl-fullWidth MuiTextField-root css-HASH-MuiFormControl-root-MuiTextField-root"
-                    >
-                      <label
-                        class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-sizeSmall MuiInputLabel-outlined MuiFormLabel-colorPrimary MuiFormLabel-filled MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-sizeSmall MuiInputLabel-outlined css-HASH-MuiFormLabel-root-MuiInputLabel-root"
-                        data-shrink="true"
-                        for="_r_a_"
-                        id="_r_a_-label"
-                      >
-                        Enter URL
-                      </label>
-                      <div
-                        class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall css-HASH-MuiInputBase-root-MuiOutlinedInput-root"
-                      >
-                        <input
-                          aria-invalid="false"
-                          class="MuiInputBase-input MuiOutlinedInput-input css-HASH-MuiInputBase-input-MuiOutlinedInput-input"
-                          data-testid="urlInput"
-                          id="_r_a_"
-                          type="text"
-                          value="/path/to/my.file"
-                        />
-                        <fieldset
-                          aria-hidden="true"
-                          class="MuiOutlinedInput-notchedOutline css-HASH-MuiNotchedOutlined-root-MuiOutlinedInput-notchedOutline"
-                        >
-                          <legend
-                            class="css-HASH-MuiNotchedOutlined-root"
-                          >
-                            <span>
-                              Enter URL
-                            </span>
-                          </legend>
-                        </fieldset>
-                      </div>
-                    </div>
-                  </div>
-                  <p
-                    class="MuiFormHelperText-root css-HASH-MuiFormHelperText-root"
-                    id="_r_9_"
-                  >
-                    fileLocationTest
-                  </p>
-                </div>
-              </div>
-              <div
-                class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-HASH-MuiPaper-root"
-                style="--Paper-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);"
-              >
-                <div
-                  class="css-HASH"
-                >
-                  <label
-                    class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-animated MuiFormLabel-colorPrimary MuiInputLabel-root MuiInputLabel-animated css-HASH-MuiFormLabel-root-MuiInputLabel-root"
-                  >
-                    stringArrayTest
-                  </label>
-                  <ul
-                    class="MuiList-root css-HASH-MuiList-root"
-                  >
-                    <li
-                      class="MuiListItem-root MuiListItem-dense MuiListItem-padding css-HASH-MuiListItem-root"
-                    >
-                      <div
-                        class="MuiFormControl-root MuiFormControl-marginDense MuiFormControl-fullWidth MuiTextField-root css-HASH-MuiFormControl-root-MuiTextField-root"
-                      >
-                        <div
-                          class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall MuiInputBase-adornedEnd css-HASH-MuiInputBase-root-MuiInput-root"
-                        >
-                          <input
-                            aria-invalid="false"
-                            class="MuiInputBase-input MuiInput-input css-HASH-MuiInputBase-input-MuiInput-input"
-                            id="_r_b_"
-                            type="text"
-                            value="string1"
-                          />
-                          <div
-                            class="MuiInputAdornment-root MuiInputAdornment-positionEnd MuiInputAdornment-standard MuiInputAdornment-sizeSmall css-HASH-MuiInputAdornment-root"
-                          >
-                            <button
-                              class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-HASH-MuiButtonBase-root-MuiIconButton-root"
-                              tabindex="0"
-                              type="button"
-                            >
-                              <svg
-                                aria-hidden="true"
-                                class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-HASH-MuiSvgIcon-root"
-                                data-testid="DeleteIcon"
-                                focusable="false"
-                                viewBox="0 0 24 24"
-                              >
-                                <path
-                                  d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6zM19 4h-3.5l-1-1h-5l-1 1H5v2h14z"
-                                />
-                              </svg>
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </li>
-                    <li
-                      class="MuiListItem-root MuiListItem-dense MuiListItem-padding css-HASH-MuiListItem-root"
-                    >
-                      <div
-                        class="MuiFormControl-root MuiFormControl-marginDense MuiFormControl-fullWidth MuiTextField-root css-HASH-MuiFormControl-root-MuiTextField-root"
-                      >
-                        <div
-                          class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall MuiInputBase-adornedEnd css-HASH-MuiInputBase-root-MuiInput-root"
-                        >
-                          <input
-                            aria-invalid="false"
-                            class="MuiInputBase-input MuiInput-input css-HASH-MuiInputBase-input-MuiInput-input"
-                            id="_r_d_"
-                            type="text"
-                            value="string2"
-                          />
-                          <div
-                            class="MuiInputAdornment-root MuiInputAdornment-positionEnd MuiInputAdornment-standard MuiInputAdornment-sizeSmall css-HASH-MuiInputAdornment-root"
-                          >
-                            <button
-                              class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-HASH-MuiButtonBase-root-MuiIconButton-root"
-                              tabindex="0"
-                              type="button"
-                            >
-                              <svg
-                                aria-hidden="true"
-                                class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-HASH-MuiSvgIcon-root"
-                                data-testid="DeleteIcon"
-                                focusable="false"
-                                viewBox="0 0 24 24"
-                              >
-                                <path
-                                  d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6zM19 4h-3.5l-1-1h-5l-1 1H5v2h14z"
-                                />
-                              </svg>
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </li>
-                    <li
-                      class="MuiListItem-root MuiListItem-dense MuiListItem-padding css-HASH-MuiListItem-root"
-                    >
-                      <div
-                        class="MuiFormControl-root MuiFormControl-marginDense MuiFormControl-fullWidth MuiTextField-root css-HASH-MuiFormControl-root-MuiTextField-root"
-                      >
-                        <div
-                          class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall MuiInputBase-adornedEnd css-HASH-MuiInputBase-root-MuiInput-root"
-                        >
-                          <input
-                            aria-invalid="false"
-                            class="MuiInputBase-input MuiInput-input css-HASH-MuiInputBase-input-MuiInput-input"
-                            id="_r_f_"
-                            placeholder="add new"
-                            type="text"
-                            value=""
-                          />
-                          <div
-                            class="MuiInputAdornment-root MuiInputAdornment-positionEnd MuiInputAdornment-standard MuiInputAdornment-sizeSmall css-HASH-MuiInputAdornment-root"
-                          >
-                            <button
-                              class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-HASH-MuiButtonBase-root-MuiIconButton-root"
-                              data-testid="stringArrayAdd-stringArrayTest"
-                              disabled=""
-                              tabindex="-1"
-                              type="button"
-                            >
-                              <svg
-                                aria-hidden="true"
-                                class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-HASH-MuiSvgIcon-root"
-                                data-testid="AddIcon"
-                                focusable="false"
-                                viewBox="0 0 24 24"
-                              >
-                                <path
-                                  d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6z"
-                                />
-                              </svg>
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </li>
-                  </ul>
-                  <p
-                    class="MuiFormHelperText-root css-HASH-MuiFormHelperText-root"
-                  >
-                    stringArrayTest
-                  </p>
-                </div>
-              </div>
-              <div
-                class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-HASH-MuiPaper-root"
-                style="--Paper-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);"
-              >
-                <div
-                  class="css-HASH"
-                >
-                  <label
-                    class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-animated MuiFormLabel-colorPrimary MuiInputLabel-root MuiInputLabel-animated css-HASH-MuiFormLabel-root-MuiInputLabel-root"
-                  >
-                    stringArrayMapTest
-                  </label>
-                  <div
-                    class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation8 MuiCard-root css-HASH-MuiPaper-root-MuiCard-root"
-                    style="--Paper-shadow: 0px 5px 5px -3px rgba(0,0,0,0.2),0px 8px 10px 1px rgba(0,0,0,0.14),0px 3px 14px 2px rgba(0,0,0,0.12);"
-                  >
-                    <div
-                      class="MuiCardHeader-root css-HASH-MuiCardHeader-root"
-                    >
-                      <div
-                        class="MuiCardHeader-content css-HASH-MuiCardHeader-content"
-                      >
-                        <span
-                          class="MuiTypography-root MuiTypography-h5 MuiCardHeader-title css-HASH-MuiTypography-root"
-                        >
-                          key1
-                        </span>
-                      </div>
-                      <div
-                        class="MuiCardHeader-action css-HASH-MuiCardHeader-action"
-                      >
-                        <button
-                          class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-HASH-MuiButtonBase-root-MuiIconButton-root"
-                          tabindex="0"
-                          type="button"
-                        >
-                          <svg
-                            aria-hidden="true"
-                            class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-HASH-MuiSvgIcon-root"
-                            data-testid="DeleteIcon"
-                            focusable="false"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6zM19 4h-3.5l-1-1h-5l-1 1H5v2h14z"
-                            />
-                          </svg>
-                        </button>
-                      </div>
-                    </div>
-                    <div
-                      class="MuiCardContent-root css-HASH-MuiCardContent-root"
-                    >
-                      <ul
-                        class="MuiList-root css-HASH-MuiList-root"
-                      >
-                        <li
-                          class="MuiListItem-root MuiListItem-dense MuiListItem-padding css-HASH-MuiListItem-root"
-                        >
-                          <div
-                            class="MuiFormControl-root MuiFormControl-marginDense MuiFormControl-fullWidth MuiTextField-root css-HASH-MuiFormControl-root-MuiTextField-root"
-                          >
-                            <div
-                              class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall MuiInputBase-adornedEnd css-HASH-MuiInputBase-root-MuiInput-root"
-                            >
-                              <input
-                                aria-invalid="false"
-                                class="MuiInputBase-input MuiInput-input css-HASH-MuiInputBase-input-MuiInput-input"
-                                id="_r_i_"
-                                type="text"
-                                value="string1"
-                              />
-                              <div
-                                class="MuiInputAdornment-root MuiInputAdornment-positionEnd MuiInputAdornment-standard MuiInputAdornment-sizeSmall css-HASH-MuiInputAdornment-root"
-                              >
-                                <button
-                                  class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-HASH-MuiButtonBase-root-MuiIconButton-root"
-                                  tabindex="0"
-                                  type="button"
-                                >
-                                  <svg
-                                    aria-hidden="true"
-                                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-HASH-MuiSvgIcon-root"
-                                    data-testid="DeleteIcon"
-                                    focusable="false"
-                                    viewBox="0 0 24 24"
-                                  >
-                                    <path
-                                      d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6zM19 4h-3.5l-1-1h-5l-1 1H5v2h14z"
-                                    />
-                                  </svg>
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-                        </li>
-                        <li
-                          class="MuiListItem-root MuiListItem-dense MuiListItem-padding css-HASH-MuiListItem-root"
-                        >
-                          <div
-                            class="MuiFormControl-root MuiFormControl-marginDense MuiFormControl-fullWidth MuiTextField-root css-HASH-MuiFormControl-root-MuiTextField-root"
-                          >
-                            <div
-                              class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall MuiInputBase-adornedEnd css-HASH-MuiInputBase-root-MuiInput-root"
-                            >
-                              <input
-                                aria-invalid="false"
-                                class="MuiInputBase-input MuiInput-input css-HASH-MuiInputBase-input-MuiInput-input"
-                                id="_r_k_"
-                                type="text"
-                                value="string2"
-                              />
-                              <div
-                                class="MuiInputAdornment-root MuiInputAdornment-positionEnd MuiInputAdornment-standard MuiInputAdornment-sizeSmall css-HASH-MuiInputAdornment-root"
-                              >
-                                <button
-                                  class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-HASH-MuiButtonBase-root-MuiIconButton-root"
-                                  tabindex="0"
-                                  type="button"
-                                >
-                                  <svg
-                                    aria-hidden="true"
-                                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-HASH-MuiSvgIcon-root"
-                                    data-testid="DeleteIcon"
-                                    focusable="false"
-                                    viewBox="0 0 24 24"
-                                  >
-                                    <path
-                                      d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6zM19 4h-3.5l-1-1h-5l-1 1H5v2h14z"
-                                    />
-                                  </svg>
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-                        </li>
-                        <li
-                          class="MuiListItem-root MuiListItem-dense MuiListItem-padding css-HASH-MuiListItem-root"
-                        >
-                          <div
-                            class="MuiFormControl-root MuiFormControl-marginDense MuiFormControl-fullWidth MuiTextField-root css-HASH-MuiFormControl-root-MuiTextField-root"
-                          >
-                            <div
-                              class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall MuiInputBase-adornedEnd css-HASH-MuiInputBase-root-MuiInput-root"
-                            >
-                              <input
-                                aria-invalid="false"
-                                class="MuiInputBase-input MuiInput-input css-HASH-MuiInputBase-input-MuiInput-input"
-                                id="_r_m_"
-                                placeholder="add new"
-                                type="text"
-                                value=""
-                              />
-                              <div
-                                class="MuiInputAdornment-root MuiInputAdornment-positionEnd MuiInputAdornment-standard MuiInputAdornment-sizeSmall css-HASH-MuiInputAdornment-root"
-                              >
-                                <button
-                                  class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-HASH-MuiButtonBase-root-MuiIconButton-root"
-                                  data-testid="stringArrayAdd-"
-                                  disabled=""
-                                  tabindex="-1"
-                                  type="button"
-                                >
-                                  <svg
-                                    aria-hidden="true"
-                                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-HASH-MuiSvgIcon-root"
-                                    data-testid="AddIcon"
-                                    focusable="false"
-                                    viewBox="0 0 24 24"
-                                  >
-                                    <path
-                                      d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6z"
-                                    />
-                                  </svg>
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-                        </li>
-                      </ul>
-                      <p
-                        class="MuiFormHelperText-root css-HASH-MuiFormHelperText-root"
-                      >
-                        Values associated with entry key1
-                      </p>
-                    </div>
-                  </div>
-                  <div
-                    class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation8 MuiCard-root css-HASH-MuiPaper-root-MuiCard-root"
-                    style="--Paper-shadow: 0px 5px 5px -3px rgba(0,0,0,0.2),0px 8px 10px 1px rgba(0,0,0,0.14),0px 3px 14px 2px rgba(0,0,0,0.12);"
-                  >
-                    <div
-                      class="MuiCardHeader-root css-HASH-MuiCardHeader-root"
-                    >
-                      <div
-                        class="MuiCardHeader-content css-HASH-MuiCardHeader-content"
-                      >
-                        <div
-                          class="MuiFormControl-root MuiFormControl-marginDense MuiFormControl-fullWidth MuiTextField-root css-HASH-MuiFormControl-root-MuiTextField-root"
-                        >
-                          <div
-                            class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall MuiInputBase-adornedEnd css-HASH-MuiInputBase-root-MuiInput-root"
-                          >
-                            <input
-                              aria-invalid="false"
-                              class="MuiInputBase-input MuiInput-input css-HASH-MuiInputBase-input-MuiInput-input"
-                              id="_r_o_"
-                              placeholder="add new"
-                              type="text"
-                              value=""
-                            />
-                            <div
-                              class="MuiInputAdornment-root MuiInputAdornment-positionEnd MuiInputAdornment-standard MuiInputAdornment-sizeSmall css-HASH-MuiInputAdornment-root"
-                            >
-                              <button
-                                class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-HASH-MuiButtonBase-root-MuiIconButton-root"
-                                disabled=""
-                                tabindex="-1"
-                                type="button"
-                              >
-                                <svg
-                                  aria-hidden="true"
-                                  class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-HASH-MuiSvgIcon-root"
-                                  data-testid="AddIcon"
-                                  focusable="false"
-                                  viewBox="0 0 24 24"
-                                >
-                                  <path
-                                    d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6z"
-                                  />
-                                </svg>
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <p
-                    class="MuiFormHelperText-root css-HASH-MuiFormHelperText-root"
-                  >
-                    stringArrayMapTest
-                  </p>
-                </div>
-              </div>
-              <div
-                class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-HASH-MuiPaper-root"
-                style="--Paper-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);"
-              >
-                <div
-                  class="css-HASH"
-                >
-                  <div
-                    class="MuiFormControl-root MuiFormControl-marginDense MuiFormControl-fullWidth MuiTextField-root css-HASH-MuiFormControl-root-MuiTextField-root"
-                  >
-                    <label
-                      class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-sizeSmall MuiInputLabel-standard MuiFormLabel-colorPrimary MuiFormLabel-filled MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-sizeSmall MuiInputLabel-standard css-HASH-MuiFormLabel-root-MuiInputLabel-root"
-                      data-shrink="true"
-                      for="_r_q_"
-                      id="_r_q_-label"
-                    >
-                      numberTest
-                    </label>
-                    <div
-                      class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall css-HASH-MuiInputBase-root-MuiInput-root"
-                    >
-                      <input
-                        aria-describedby="_r_q_-helper-text"
-                        aria-invalid="false"
-                        class="MuiInputBase-input MuiInput-input css-HASH-MuiInputBase-input-MuiInput-input"
-                        id="_r_q_"
-                        type="text"
-                        value="88.5"
-                      />
-                    </div>
-                    <div
-                      class="MuiFormHelperText-root MuiFormHelperText-sizeSmall MuiFormHelperText-filled css-HASH-MuiFormHelperText-root"
-                      id="_r_q_-helper-text"
-                    >
-                      <span>
-                        numberTest
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div
-                class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-HASH-MuiPaper-root"
-                style="--Paper-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);"
-              >
-                <div
-                  class="css-HASH"
-                >
-                  <div
-                    class="MuiFormControl-root MuiFormControl-marginDense MuiFormControl-fullWidth MuiTextField-root css-HASH-MuiFormControl-root-MuiTextField-root"
-                  >
-                    <label
-                      class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-sizeSmall MuiInputLabel-standard MuiFormLabel-colorPrimary MuiFormLabel-filled MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-sizeSmall MuiInputLabel-standard css-HASH-MuiFormLabel-root-MuiInputLabel-root"
-                      data-shrink="true"
-                      for="_r_r_"
-                      id="_r_r_-label"
-                    >
-                      integerTest
-                    </label>
-                    <div
-                      class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall css-HASH-MuiInputBase-root-MuiInput-root"
-                    >
-                      <input
-                        aria-describedby="_r_r_-helper-text"
-                        aria-invalid="false"
-                        class="MuiInputBase-input MuiInput-input css-HASH-MuiInputBase-input-MuiInput-input"
-                        id="_r_r_"
-                        type="text"
-                        value="42"
-                      />
-                    </div>
-                    <div
-                      class="MuiFormHelperText-root MuiFormHelperText-sizeSmall MuiFormHelperText-filled css-HASH-MuiFormHelperText-root"
-                      id="_r_r_-helper-text"
-                    >
-                      <span>
-                        integerTest
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div
-                class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-HASH-MuiPaper-root"
-                style="--Paper-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);"
-              >
-                <div
-                  class="css-HASH"
-                >
-                  <div
-                    class="css-HASH"
-                  >
-                    <div
-                      class="MuiFormControl-root MuiFormControl-marginDense MuiFormControl-fullWidth MuiTextField-root css-HASH-MuiFormControl-root-MuiTextField-root"
-                    >
-                      <label
-                        class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-sizeSmall MuiInputLabel-standard MuiFormLabel-colorPrimary MuiFormLabel-filled MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-sizeSmall MuiInputLabel-standard css-HASH-MuiFormLabel-root-MuiInputLabel-root"
-                        data-shrink="true"
-                        for="_r_s_"
-                        id="_r_s_-label"
-                      >
-                        colorTest
-                      </label>
-                      <div
-                        class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall css-HASH-MuiInputBase-root-MuiInput-root"
-                      >
-                        <input
-                          aria-describedby="_r_s_-helper-text"
-                          aria-invalid="false"
-                          class="MuiInputBase-input MuiInput-input css-HASH-MuiInputBase-input-MuiInput-input"
-                          id="_r_s_"
-                          type="text"
-                          value="#396494"
-                        />
-                      </div>
-                      <div
-                        class="MuiFormHelperText-root MuiFormHelperText-sizeSmall MuiFormHelperText-filled css-HASH-MuiFormHelperText-root"
-                        id="_r_s_-helper-text"
-                      >
-                        <span>
-                          colorTest
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div
-                class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-HASH-MuiPaper-root"
-                style="--Paper-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);"
-              >
-                <div
-                  class="css-HASH"
-                >
-                  <div
-                    class="MuiFormControl-root MuiFormControl-marginDense css-HASH-MuiFormControl-root"
-                  >
-                    <label
-                      class="MuiFormControlLabel-root MuiFormControlLabel-labelPlacementEnd css-HASH-MuiFormControlLabel-root"
-                    >
-                      <span
-                        class="MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium PrivateSwitchBase-root MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium Mui-checked MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium css-HASH-MuiButtonBase-root-MuiSwitchBase-root-MuiCheckbox-root"
-                      >
-                        <input
-                          checked=""
-                          class="PrivateSwitchBase-input css-HASH-MuiSwitchBase-root"
-                          data-indeterminate="false"
-                          type="checkbox"
-                        />
                         <svg
                           aria-hidden="true"
                           class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-HASH-MuiSvgIcon-root"
-                          data-testid="CheckBoxIcon"
+                          data-testid="DeleteIcon"
                           focusable="false"
                           viewBox="0 0 24 24"
                         >
                           <path
-                            d="M19 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.11 0 2-.9 2-2V5c0-1.1-.89-2-2-2zm-9 14l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"
+                            d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6zM19 4h-3.5l-1-1h-5l-1 1H5v2h14z"
                           />
                         </svg>
-                      </span>
-                      <span
-                        class="MuiTypography-root MuiTypography-body1 MuiFormControlLabel-label css-HASH-MuiTypography-root"
-                      >
-                        booleanTest
-                      </span>
-                    </label>
-                    <p
-                      class="MuiFormHelperText-root MuiFormHelperText-sizeSmall MuiFormHelperText-contained css-HASH-MuiFormHelperText-root"
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </li>
+              <li
+                class="MuiListItem-root MuiListItem-dense MuiListItem-padding css-HASH-MuiListItem-root"
+              >
+                <div
+                  class="MuiFormControl-root MuiFormControl-marginDense MuiFormControl-fullWidth MuiTextField-root css-HASH-MuiFormControl-root-MuiTextField-root"
+                >
+                  <div
+                    class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall MuiInputBase-adornedEnd css-HASH-MuiInputBase-root-MuiInput-root"
+                  >
+                    <input
+                      aria-invalid="false"
+                      class="MuiInputBase-input MuiInput-input css-HASH-MuiInputBase-input-MuiInput-input"
+                      id="_r_j_"
+                      type="text"
+                      value="string2"
+                    />
+                    <div
+                      class="MuiInputAdornment-root MuiInputAdornment-positionEnd MuiInputAdornment-standard MuiInputAdornment-sizeSmall css-HASH-MuiInputAdornment-root"
                     >
-                      booleanTest
-                    </p>
+                      <button
+                        class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-HASH-MuiButtonBase-root-MuiIconButton-root"
+                        tabindex="0"
+                        type="button"
+                      >
+                        <svg
+                          aria-hidden="true"
+                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-HASH-MuiSvgIcon-root"
+                          data-testid="DeleteIcon"
+                          focusable="false"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6zM19 4h-3.5l-1-1h-5l-1 1H5v2h14z"
+                          />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </li>
+              <li
+                class="MuiListItem-root MuiListItem-dense MuiListItem-padding css-HASH-MuiListItem-root"
+              >
+                <div
+                  class="MuiFormControl-root MuiFormControl-marginDense MuiFormControl-fullWidth MuiTextField-root css-HASH-MuiFormControl-root-MuiTextField-root"
+                >
+                  <div
+                    class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall MuiInputBase-adornedEnd css-HASH-MuiInputBase-root-MuiInput-root"
+                  >
+                    <input
+                      aria-invalid="false"
+                      class="MuiInputBase-input MuiInput-input css-HASH-MuiInputBase-input-MuiInput-input"
+                      id="_r_l_"
+                      placeholder="add new"
+                      type="text"
+                      value=""
+                    />
+                    <div
+                      class="MuiInputAdornment-root MuiInputAdornment-positionEnd MuiInputAdornment-standard MuiInputAdornment-sizeSmall css-HASH-MuiInputAdornment-root"
+                    >
+                      <button
+                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-HASH-MuiButtonBase-root-MuiIconButton-root"
+                        data-testid="stringArrayAdd-"
+                        disabled=""
+                        tabindex="-1"
+                        type="button"
+                      >
+                        <svg
+                          aria-hidden="true"
+                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-HASH-MuiSvgIcon-root"
+                          data-testid="AddIcon"
+                          focusable="false"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6z"
+                          />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </li>
+            </ul>
+            <p
+              class="MuiFormHelperText-root css-HASH-MuiFormHelperText-root"
+            >
+              Values associated with entry key1
+            </p>
+          </div>
+        </div>
+        <div
+          class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation8 MuiCard-root css-HASH-MuiPaper-root-MuiCard-root"
+          style="--Paper-shadow: 0px 5px 5px -3px rgba(0,0,0,0.2),0px 8px 10px 1px rgba(0,0,0,0.14),0px 3px 14px 2px rgba(0,0,0,0.12);"
+        >
+          <div
+            class="MuiCardHeader-root css-HASH-MuiCardHeader-root"
+          >
+            <div
+              class="MuiCardHeader-content css-HASH-MuiCardHeader-content"
+            >
+              <div
+                class="MuiFormControl-root MuiFormControl-marginDense MuiFormControl-fullWidth MuiTextField-root css-HASH-MuiFormControl-root-MuiTextField-root"
+              >
+                <div
+                  class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall MuiInputBase-adornedEnd css-HASH-MuiInputBase-root-MuiInput-root"
+                >
+                  <input
+                    aria-invalid="false"
+                    class="MuiInputBase-input MuiInput-input css-HASH-MuiInputBase-input-MuiInput-input"
+                    id="_r_n_"
+                    placeholder="add new"
+                    type="text"
+                    value=""
+                  />
+                  <div
+                    class="MuiInputAdornment-root MuiInputAdornment-positionEnd MuiInputAdornment-standard MuiInputAdornment-sizeSmall css-HASH-MuiInputAdornment-root"
+                  >
+                    <button
+                      class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-HASH-MuiButtonBase-root-MuiIconButton-root"
+                      disabled=""
+                      tabindex="-1"
+                      type="button"
+                    >
+                      <svg
+                        aria-hidden="true"
+                        class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-HASH-MuiSvgIcon-root"
+                        data-testid="AddIcon"
+                        focusable="false"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6z"
+                        />
+                      </svg>
+                    </button>
                   </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
+        <p
+          class="MuiFormHelperText-root css-HASH-MuiFormHelperText-root"
+        >
+          stringArrayMapTest
+        </p>
       </div>
     </div>
+    <div
+      class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-HASH-MuiPaper-root"
+      style="--Paper-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);"
+    >
+      <div
+        class="css-HASH"
+      >
+        <div
+          class="MuiFormControl-root MuiFormControl-marginDense MuiFormControl-fullWidth MuiTextField-root css-HASH-MuiFormControl-root-MuiTextField-root"
+        >
+          <label
+            class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-sizeSmall MuiInputLabel-standard MuiFormLabel-colorPrimary MuiFormLabel-filled MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-sizeSmall MuiInputLabel-standard css-HASH-MuiFormLabel-root-MuiInputLabel-root"
+            data-shrink="true"
+            for="_r_p_"
+            id="_r_p_-label"
+          >
+            numberTest
+          </label>
+          <div
+            class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall css-HASH-MuiInputBase-root-MuiInput-root"
+          >
+            <input
+              aria-describedby="_r_p_-helper-text"
+              aria-invalid="false"
+              class="MuiInputBase-input MuiInput-input css-HASH-MuiInputBase-input-MuiInput-input"
+              id="_r_p_"
+              type="text"
+              value="88.5"
+            />
+          </div>
+          <div
+            class="MuiFormHelperText-root MuiFormHelperText-sizeSmall MuiFormHelperText-filled css-HASH-MuiFormHelperText-root"
+            id="_r_p_-helper-text"
+          >
+            <span>
+              numberTest
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div
+      class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-HASH-MuiPaper-root"
+      style="--Paper-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);"
+    >
+      <div
+        class="css-HASH"
+      >
+        <div
+          class="MuiFormControl-root MuiFormControl-marginDense MuiFormControl-fullWidth MuiTextField-root css-HASH-MuiFormControl-root-MuiTextField-root"
+        >
+          <label
+            class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-sizeSmall MuiInputLabel-standard MuiFormLabel-colorPrimary MuiFormLabel-filled MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-sizeSmall MuiInputLabel-standard css-HASH-MuiFormLabel-root-MuiInputLabel-root"
+            data-shrink="true"
+            for="_r_q_"
+            id="_r_q_-label"
+          >
+            integerTest
+          </label>
+          <div
+            class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall css-HASH-MuiInputBase-root-MuiInput-root"
+          >
+            <input
+              aria-describedby="_r_q_-helper-text"
+              aria-invalid="false"
+              class="MuiInputBase-input MuiInput-input css-HASH-MuiInputBase-input-MuiInput-input"
+              id="_r_q_"
+              type="text"
+              value="42"
+            />
+          </div>
+          <div
+            class="MuiFormHelperText-root MuiFormHelperText-sizeSmall MuiFormHelperText-filled css-HASH-MuiFormHelperText-root"
+            id="_r_q_-helper-text"
+          >
+            <span>
+              integerTest
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div
+      class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-HASH-MuiPaper-root"
+      style="--Paper-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);"
+    >
+      <div
+        class="css-HASH"
+      >
+        <div
+          class="css-HASH"
+        >
+          <div
+            class="MuiFormControl-root MuiFormControl-marginDense MuiFormControl-fullWidth MuiTextField-root css-HASH-MuiFormControl-root-MuiTextField-root"
+          >
+            <label
+              class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-sizeSmall MuiInputLabel-standard MuiFormLabel-colorPrimary MuiFormLabel-filled MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-sizeSmall MuiInputLabel-standard css-HASH-MuiFormLabel-root-MuiInputLabel-root"
+              data-shrink="true"
+              for="_r_r_"
+              id="_r_r_-label"
+            >
+              colorTest
+            </label>
+            <div
+              class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall css-HASH-MuiInputBase-root-MuiInput-root"
+            >
+              <input
+                aria-describedby="_r_r_-helper-text"
+                aria-invalid="false"
+                class="MuiInputBase-input MuiInput-input css-HASH-MuiInputBase-input-MuiInput-input"
+                id="_r_r_"
+                type="text"
+                value="#396494"
+              />
+            </div>
+            <div
+              class="MuiFormHelperText-root MuiFormHelperText-sizeSmall MuiFormHelperText-filled css-HASH-MuiFormHelperText-root"
+              id="_r_r_-helper-text"
+            >
+              <span>
+                colorTest
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div
+      class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-HASH-MuiPaper-root"
+      style="--Paper-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);"
+    >
+      <div
+        class="css-HASH"
+      >
+        <div
+          class="MuiFormControl-root MuiFormControl-marginDense css-HASH-MuiFormControl-root"
+        >
+          <label
+            class="MuiFormControlLabel-root MuiFormControlLabel-labelPlacementEnd css-HASH-MuiFormControlLabel-root"
+          >
+            <span
+              class="MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium PrivateSwitchBase-root MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium Mui-checked MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium css-HASH-MuiButtonBase-root-MuiSwitchBase-root-MuiCheckbox-root"
+            >
+              <input
+                checked=""
+                class="PrivateSwitchBase-input css-HASH-MuiSwitchBase-root"
+                data-indeterminate="false"
+                type="checkbox"
+              />
+              <svg
+                aria-hidden="true"
+                class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-HASH-MuiSvgIcon-root"
+                data-testid="CheckBoxIcon"
+                focusable="false"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  d="M19 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.11 0 2-.9 2-2V5c0-1.1-.89-2-2-2zm-9 14l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"
+                />
+              </svg>
+            </span>
+            <span
+              class="MuiTypography-root MuiTypography-body1 MuiFormControlLabel-label css-HASH-MuiTypography-root"
+            >
+              booleanTest
+            </span>
+          </label>
+          <p
+            class="MuiFormHelperText-root MuiFormHelperText-sizeSmall MuiFormHelperText-contained css-HASH-MuiFormHelperText-root"
+          >
+            booleanTest
+          </p>
+        </div>
+      </div>
+    </div>
+    <button
+      class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-sizeSmall MuiButton-colorPrimary css-HASH-MuiButtonBase-root-MuiButton-root"
+      tabindex="0"
+      type="button"
+    >
+      <span
+        class="MuiButton-icon MuiButton-startIcon css-HASH-MuiButton-startIcon"
+      >
+        <svg
+          aria-hidden="true"
+          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-HASH-MuiSvgIcon-root"
+          data-testid="DataObjectIcon"
+          focusable="false"
+          viewBox="0 0 24 24"
+        >
+          <path
+            d="M4 7v2c0 .55-.45 1-1 1H2v4h1c.55 0 1 .45 1 1v2c0 1.65 1.35 3 3 3h3v-2H7c-.55 0-1-.45-1-1v-2c0-1.3-.84-2.42-2-2.83v-.34C5.16 11.42 6 10.3 6 9V7c0-.55.45-1 1-1h3V4H7C5.35 4 4 5.35 4 7m17 3c-.55 0-1-.45-1-1V7c0-1.65-1.35-3-3-3h-3v2h3c.55 0 1 .45 1 1v2c0 1.3.84 2.42 2 2.83v.34c-1.16.41-2 1.52-2 2.83v2c0 .55-.45 1-1 1h-3v2h3c1.65 0 3-1.35 3-3v-2c0-.55.45-1 1-1h1v-4z"
+          />
+        </svg>
+      </span>
+      Edit as JSON...
+    </button>
   </div>
   ,
 </div>
@@ -820,152 +743,75 @@ exports[`renders all the different types of built-in slots 1`] = `
 exports[`renders with just the required model elements 1`] = `
 <div>
   <div
-    class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 MuiAccordion-root MuiAccordion-rounded Mui-expanded css-HASH-MuiPaper-root-MuiAccordion-root"
-    style="--Paper-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);"
+    class="css-HASH"
+    data-testid="configEditor"
   >
-    <h3
-      class="MuiAccordion-heading css-HASH-MuiAccordion-heading"
+    <h6
+      class="MuiTypography-root MuiTypography-h6 css-HASH-MuiTypography-root"
     >
-      <button
-        aria-expanded="true"
-        class="MuiButtonBase-root MuiAccordionSummary-root Mui-expanded css-HASH-MuiButtonBase-root-MuiAccordionSummary-root"
-        tabindex="0"
-        type="button"
-      >
-        <span
-          class="MuiAccordionSummary-content Mui-expanded css-HASH-MuiAccordionSummary-content"
-        >
-          <p
-            class="MuiTypography-root MuiTypography-body1 css-HASH-MuiTypography-root"
-          >
-            <span>
-              Configuration
-            </span>
-          </p>
-        </span>
-        <span
-          class="MuiAccordionSummary-expandIconWrapper Mui-expanded css-HASH-MuiAccordionSummary-expandIconWrapper"
-        >
-          <svg
-            aria-hidden="true"
-            class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-HASH-MuiSvgIcon-root"
-            data-testid="ExpandMoreIcon"
-            focusable="false"
-            viewBox="0 0 24 24"
-          >
-            <path
-              d="M16.59 8.59 12 13.17 7.41 8.59 6 10l6 6 6-6z"
-            />
-          </svg>
-        </span>
-      </button>
-    </h3>
+      General
+    </h6>
     <div
-      class="MuiCollapse-root MuiCollapse-vertical MuiCollapse-entered css-HASH-MuiCollapse-root"
-      style="min-height: 0px;"
+      class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-HASH-MuiPaper-root"
+      style="--Paper-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);"
     >
       <div
-        class="MuiCollapse-wrapper MuiCollapse-vertical css-HASH-MuiCollapse-wrapper"
+        class="css-HASH"
       >
         <div
-          class="MuiCollapse-wrapperInner MuiCollapse-vertical css-HASH-MuiCollapse-wrapperInner"
+          class="MuiFormControl-root MuiFormControl-marginDense MuiFormControl-fullWidth MuiTextField-root css-HASH-MuiFormControl-root-MuiTextField-root"
         >
-          <div
-            class="MuiAccordion-region css-HASH-MuiAccordion-region"
-            role="region"
+          <label
+            class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-sizeSmall MuiInputLabel-standard MuiFormLabel-colorPrimary MuiFormLabel-filled MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-sizeSmall MuiInputLabel-standard css-HASH-MuiFormLabel-root-MuiInputLabel-root"
+            data-shrink="true"
+            for="_r_2_"
+            id="_r_2_-label"
           >
-            <div
-              class="MuiAccordionDetails-root css-HASH-MuiAccordionDetails-root"
-              data-testid="configEditor"
-            >
-              <div
-                class="MuiFormControl-root MuiFormControl-marginDense MuiFormControl-fullWidth MuiTextField-root css-HASH-MuiFormControl-root-MuiTextField-root"
-              >
-                <label
-                  class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-sizeSmall MuiInputLabel-standard MuiFormLabel-colorPrimary MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-sizeSmall MuiInputLabel-standard css-HASH-MuiFormLabel-root-MuiInputLabel-root"
-                  data-shrink="true"
-                  for="_r_2_"
-                  id="_r_2_-label"
-                >
-                  Filter options
-                </label>
-                <div
-                  class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall MuiInputBase-adornedStart css-HASH-MuiInputBase-root-MuiInput-root"
-                >
-                  <div
-                    class="MuiInputAdornment-root MuiInputAdornment-positionStart MuiInputAdornment-standard MuiInputAdornment-sizeSmall css-HASH-MuiInputAdornment-root"
-                  >
-                    <span
-                      aria-hidden="true"
-                      class="notranslate"
-                    >
-                      ​
-                    </span>
-                    <svg
-                      aria-hidden="true"
-                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-HASH-MuiSvgIcon-root"
-                      data-testid="SearchIcon"
-                      focusable="false"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"
-                      />
-                    </svg>
-                  </div>
-                  <input
-                    aria-invalid="false"
-                    class="MuiInputBase-input MuiInput-input css-HASH-MuiInputBase-input-MuiInput-input"
-                    id="_r_2_"
-                    type="text"
-                    value=""
-                  />
-                </div>
-              </div>
-              <div
-                class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-HASH-MuiPaper-root"
-                style="--Paper-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);"
-              >
-                <div
-                  class="css-HASH"
-                >
-                  <div
-                    class="MuiFormControl-root MuiFormControl-marginDense MuiFormControl-fullWidth MuiTextField-root css-HASH-MuiFormControl-root-MuiTextField-root"
-                  >
-                    <label
-                      class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-sizeSmall MuiInputLabel-standard MuiFormLabel-colorPrimary MuiFormLabel-filled MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-sizeSmall MuiInputLabel-standard css-HASH-MuiFormLabel-root-MuiInputLabel-root"
-                      data-shrink="true"
-                      for="_r_3_"
-                      id="_r_3_-label"
-                    >
-                      foo
-                    </label>
-                    <div
-                      class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall css-HASH-MuiInputBase-root-MuiInput-root"
-                    >
-                      <input
-                        aria-describedby="_r_3_-helper-text"
-                        aria-invalid="false"
-                        class="MuiInputBase-input MuiInput-input css-HASH-MuiInputBase-input-MuiInput-input"
-                        id="_r_3_"
-                        type="text"
-                        value="bar"
-                      />
-                    </div>
-                    <div
-                      class="MuiFormHelperText-root MuiFormHelperText-sizeSmall MuiFormHelperText-filled css-HASH-MuiFormHelperText-root"
-                      id="_r_3_-helper-text"
-                    >
-                      <span />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+            foo
+          </label>
+          <div
+            class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall css-HASH-MuiInputBase-root-MuiInput-root"
+          >
+            <input
+              aria-describedby="_r_2_-helper-text"
+              aria-invalid="false"
+              class="MuiInputBase-input MuiInput-input css-HASH-MuiInputBase-input-MuiInput-input"
+              id="_r_2_"
+              type="text"
+              value="bar"
+            />
+          </div>
+          <div
+            class="MuiFormHelperText-root MuiFormHelperText-sizeSmall MuiFormHelperText-filled css-HASH-MuiFormHelperText-root"
+            id="_r_2_-helper-text"
+          >
+            <span />
           </div>
         </div>
       </div>
     </div>
+    <button
+      class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-sizeSmall MuiButton-colorPrimary css-HASH-MuiButtonBase-root-MuiButton-root"
+      tabindex="0"
+      type="button"
+    >
+      <span
+        class="MuiButton-icon MuiButton-startIcon css-HASH-MuiButton-startIcon"
+      >
+        <svg
+          aria-hidden="true"
+          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-HASH-MuiSvgIcon-root"
+          data-testid="DataObjectIcon"
+          focusable="false"
+          viewBox="0 0 24 24"
+        >
+          <path
+            d="M4 7v2c0 .55-.45 1-1 1H2v4h1c.55 0 1 .45 1 1v2c0 1.65 1.35 3 3 3h3v-2H7c-.55 0-1-.45-1-1v-2c0-1.3-.84-2.42-2-2.83v-.34C5.16 11.42 6 10.3 6 9V7c0-.55.45-1 1-1h3V4H7C5.35 4 4 5.35 4 7m17 3c-.55 0-1-.45-1-1V7c0-1.65-1.35-3-3-3h-3v2h3c.55 0 1 .45 1 1v2c0 1.3.84 2.42 2 2.83v.34c-1.16.41-2 1.52-2 2.83v2c0 .55-.45 1-1 1h-3v2h3c1.65 0 3-1.35 3-3v-2c0-.55.45-1 1-1h1v-4z"
+          />
+        </svg>
+      </span>
+      Edit as JSON...
+    </button>
   </div>
   ,
 </div>

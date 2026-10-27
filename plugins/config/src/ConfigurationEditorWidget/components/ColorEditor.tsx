@@ -1,7 +1,6 @@
 import { Suspense, lazy, useState } from 'react'
 
 import { isCssColor } from '@jbrowse/core/util/colorBits'
-import { isJexl } from '@jbrowse/core/util/jexlStrings'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
@@ -27,9 +26,8 @@ const useStyles = makeStyles()({
 // refuses what is not a color, so text that does not parse yet stays a draft
 // in the field and reaches the slot once it does; leaving the field drops an
 // unparsed draft. "Unset" is reachable through the slot's reset button, which
-// is where every other slot type puts it. Only a slot declaring a
-// `contextVariable` takes a `jexl:` callback, which an entry of a color list
-// never does.
+// is where every other slot type puts it. A `jexl:` callback is typed in
+// the callback editor the slot's toggle opens, never here.
 /** #slotEditor text field beside a swatch that opens a color picker */
 const ColorEditor = observer(function ColorEditor({
   slot,
@@ -38,11 +36,9 @@ const ColorEditor = observer(function ColorEditor({
     name: string
     value: string | undefined
     description: string
-    contextVariable?: string[]
     set: (arg: string) => void
   }
 }) {
-  const admitsJexl = !!slot.contextVariable?.length
   const { classes } = useStyles()
   const [draft, setDraft] = useState<string>()
   const value = slot.value ?? ''
@@ -58,7 +54,7 @@ const ColorEditor = observer(function ColorEditor({
         className={classes.field}
         onChange={event => {
           const text = event.target.value
-          if (isCssColor(text) || (admitsJexl && isJexl(text))) {
+          if (isCssColor(text)) {
             slot.set(text)
             setDraft(undefined)
           } else {

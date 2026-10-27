@@ -10,8 +10,9 @@ import type { SessionWithConfigEditing } from '@jbrowse/core/util'
 
 /**
  * #stateModel ConfigurationEditorWidget
- * Widget for editing a config model's slots in a form: holds the target
- * configuration and debounce-saves edits back to the session.
+ * Widget for a config's settings: a short form over the common ones and a JSON
+ * editor over all of them. Holds the target configuration and debounce-saves
+ * edits back to the session.
  */
 export default function stateModelFactory(_pluginManager: PluginManager) {
   return types
@@ -26,8 +27,8 @@ export default function stateModelFactory(_pluginManager: PluginManager) {
       trackId: types.maybe(types.string),
     })
     .volatile(() => ({
-      // a config the session cannot resolve by trackId: an assembly, a
-      // connection, or a track a view holds inline
+      // a config the session cannot resolve by trackId, such as a track a
+      // view holds inline
       inlineTarget: undefined as AnyConfigurationModel | undefined,
       // displayId of the display active in the view this editor was opened
       // from; its config accordion expands by default while the track's other
@@ -82,8 +83,8 @@ export default function stateModelFactory(_pluginManager: PluginManager) {
         },
         afterCreate() {
           // Saves through updateTrackConfiguration as a per-track delta. A
-          // config with no trackId (assembly/connection) finds no home there,
-          // so the edit stays on the live MST node for this session.
+          // config the session holds no entry for finds no home there, so the
+          // edit stays on the live MST node for this session.
           //
           // BaseTrackModel runs a sibling saver on a shown track's working
           // copy, which this widget edits too; this one covers a track that is

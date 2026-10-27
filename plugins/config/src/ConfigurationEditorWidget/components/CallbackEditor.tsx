@@ -37,7 +37,6 @@ function validateAndSetCode(
     slot.set(jexlCode)
     setCodeError(undefined)
   } catch (e) {
-    console.error(e)
     setCodeError(e)
   }
 }
@@ -56,22 +55,24 @@ const CallbackEditor = observer(function CallbackEditor({
 }) {
   const { classes } = useStyles()
 
-  const [code, setCode] = useState(slot.value)
+  const [draft, setDraft] = useState<string>()
   const [codeError, setCodeError] = useState<unknown>()
   const [, startTransition] = useTransition()
-
-  // if default value is a callback, will have to remove jexl:
-  // do this last
   return (
     <MonospaceTextField
       className={classes.callbackEditor}
-      value={code}
+      value={draft ?? slot.value}
       error={codeError}
       onChange={value => {
-        setCode(value)
+        setDraft(value)
         startTransition(() => {
           validateAndSetCode(value, slot, setCodeError)
         })
+      }}
+      onBlur={() => {
+        if (!codeError) {
+          setDraft(undefined)
+        }
       }}
     >
       <p>{slot.description}</p>

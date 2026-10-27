@@ -1,5 +1,3 @@
-import { useState } from 'react'
-
 import {
   isCallbackValue,
   toCallbackValue,
@@ -104,6 +102,11 @@ const StringEnumEditor = observer(function StringEnumEditor({
       value={slot.value ?? UNSET_CHOICE}
       label={slot.name}
       select
+      slotProps={
+        nullable
+          ? { select: { displayEmpty: true }, inputLabel: { shrink: true } }
+          : undefined
+      }
       helperText={slot.description}
       onChange={evt => {
         const { value } = evt.target
@@ -185,28 +188,18 @@ const SlotEditor = observer(function SlotEditor({
   slot: SlotFacade
 }) {
   const { classes } = useSlotEditorStyles()
-  const { type } = slot
-  // editor mode is UI-only state, derived once from whether the stored value is
-  // a jexl callback. Toggling rewrites the value; typing a "jexl:" prefix into a
-  // value field does not auto-swap the editor, since this state only changes on
-  // the explicit toggle. A featureField's `jexl:` expression is a field, typed
-  // in its own text field.
+  const { type, modified } = slot
+  // A featureField's `jexl:` expression is a field, typed in its own text
+  // field, since a featureField declares no contextVariable.
   const callback = slot.contextVariable.length > 0
-  const [callbackMode, setCallbackMode] = useState(
-    () => callback && isCallbackValue(slot.value),
-  )
-  // bumped on reset to remount the value editor: the buffered editors (number,
-  // json, callback) seed internal state from slot.value only on mount, so an
-  // external set wouldn't otherwise show in the field
-  const [resetNonce, setResetNonce] = useState(0)
+  const callbackMode = callback && isCallbackValue(slot.value)
   const ValueComponent: React.ComponentType<any> = callbackMode
     ? CallbackEditor
     : valueComponents[type]
-  const { modified } = slot
   return (
     <Paper className={classes.paper}>
       <div className={classes.paperContent}>
-        <ValueComponent key={resetNonce} slot={slot} />
+        <ValueComponent slot={slot} />
       </div>
       {modified ? (
         <div className={classes.resetButton}>
@@ -215,8 +208,6 @@ const SlotEditor = observer(function SlotEditor({
               aria-label="reset to default"
               onClick={() => {
                 slot.set(slot.defaultValue)
-                setCallbackMode(callback && isCallbackValue(slot.defaultValue))
-                setResetNonce(nonce => nonce + 1)
               }}
             >
               <RestartAltIcon />
@@ -236,20 +227,16 @@ const SlotEditor = observer(function SlotEditor({
             <IconButton
               color={callbackMode ? 'primary' : 'default'}
               onClick={() => {
-                if (callbackMode) {
-                  slot.set(
-                    toFixedValue(
-                      slot.value,
-                      type,
-                      slot.defaultValue,
-                      slot.pluginManager.jexl,
-                    ),
-                  )
-                  setCallbackMode(false)
-                } else {
-                  slot.set(toCallbackValue(slot.value))
-                  setCallbackMode(true)
-                }
+                slot.set(
+                  callbackMode
+                    ? toFixedValue(
+                        slot.value,
+                        type,
+                        slot.defaultValue,
+                        slot.pluginManager.jexl,
+                      )
+                    : toCallbackValue(slot.value),
+                )
               }}
             >
               <CodeIcon />

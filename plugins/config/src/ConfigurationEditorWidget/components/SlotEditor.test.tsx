@@ -1,4 +1,4 @@
-import { fireEvent, render } from '@testing-library/react'
+import { render } from '@testing-library/react'
 
 import SlotEditor from './SlotEditor.tsx'
 
@@ -20,16 +20,10 @@ function enumSlot(overrides: Partial<SlotFacade>) {
   } as unknown as SlotFacade
 }
 
-// a MUI select renders its options only once opened
-function openChoices(slot: SlotFacade) {
-  const result = render(<SlotEditor slot={slot} />)
-  fireEvent.mouseDown(result.getByRole('combobox'))
-  return result
-}
-
-test('a maybeStringEnum slot labels its unset choice', () => {
-  const { getByText } = openChoices(enumSlot({}))
-  expect(getByText('default')).toBeTruthy()
+// MUI draws an empty-valued selection blank unless told to show it
+test('a maybeStringEnum slot shows its unset choice as selected', () => {
+  const { getByRole } = render(<SlotEditor slot={enumSlot({})} />)
+  expect(getByRole('combobox').textContent).toBe('default')
 })
 
 test('a featureField holding a jexl: expression edits it as text', () => {

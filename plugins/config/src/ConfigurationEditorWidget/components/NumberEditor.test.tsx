@@ -1,4 +1,5 @@
-import { fireEvent, render } from '@testing-library/react'
+import { act, fireEvent, render } from '@testing-library/react'
+import { observable, runInAction } from 'mobx'
 
 import NumberEditor from './NumberEditor.tsx'
 
@@ -51,6 +52,33 @@ test('integer mode rejects non-integer input', () => {
   expect(slot.set).not.toHaveBeenCalled()
   fireEvent.change(getByDisplayValue('1.5'), { target: { value: '100' } })
   expect(slot.set).toHaveBeenCalledWith(100)
+})
+
+test('a value written elsewhere shows once the field loses focus', () => {
+  // an observable slot, since RTL's first rerender remounts the field
+  const slot = observable({
+    name: 'height',
+    value: 42,
+    description: 'test',
+    set: jest.fn(),
+  })
+  const { getByLabelText } = render(<NumberEditor slot={slot} />)
+  const field = getByLabelText('height') as HTMLInputElement
+  act(() => {
+    runInAction(() => {
+      slot.value = 7
+    })
+  })
+  expect(field.value).toBe('7')
+  fireEvent.change(field, { target: { value: '1.' } })
+  act(() => {
+    runInAction(() => {
+      slot.value = 9
+    })
+  })
+  expect(field.value).toBe('1.')
+  fireEvent.blur(field)
+  expect(field.value).toBe('9')
 })
 
 test('a plain number slot gets no placeholder', () => {

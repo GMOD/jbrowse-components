@@ -15,6 +15,12 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
+function printJson(value: unknown) {
+  return value === undefined ? '' : JSON.stringify(value, null, 2)
+}
+
+// The text is a draft while focused, and an unparsed one stays until it
+// parses, so leaving the field never drops what was typed.
 /** #slotEditor monospace textarea holding arbitrary JSON */
 const JsonEditor = observer(function JsonEditor({
   slot,
@@ -27,29 +33,27 @@ const JsonEditor = observer(function JsonEditor({
   }
 }) {
   const { classes } = useStyles()
-  // A `maybeFrozen` slot is `undefined` when unset, and `JSON.stringify(undefined)`
-  // returns the *value* `undefined` rather than a string — which handed
-  // MonospaceTextField an undefined `value` and made the field uncontrolled
-  // until the first keystroke (React then warns on the switch).
-  const [contents, setContents] = useState(() =>
-    slot.value === undefined ? '' : JSON.stringify(slot.value, null, 2),
-  )
+  const [draft, setDraft] = useState<string>()
   const [error, setError] = useState<unknown>()
-
   return (
     <MonospaceTextField
       className={classes.jsonEditor}
       label={slot.name}
-      value={contents}
+      value={draft ?? printJson(slot.value)}
       error={error}
       helperText={slot.description}
       onChange={val => {
-        setContents(val)
+        setDraft(val)
         try {
           slot.set(JSON.parse(val))
           setError(undefined)
         } catch (e) {
           setError(e)
+        }
+      }}
+      onBlur={() => {
+        if (!error) {
+          setDraft(undefined)
         }
       }}
     />

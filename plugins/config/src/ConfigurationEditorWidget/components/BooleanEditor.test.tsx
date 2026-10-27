@@ -1,10 +1,11 @@
-import { fireEvent, render } from '@testing-library/react'
+import { fireEvent, render, within } from '@testing-library/react'
 
 import BooleanEditor from './BooleanEditor.tsx'
 
 test('reflects a plain boolean slot and writes the flip', () => {
   const slot = {
     name: 'testBoolean',
+    type: 'boolean',
     value: false,
     description: 'test',
     set: jest.fn(),
@@ -16,15 +17,20 @@ test('reflects a plain boolean slot and writes the flip', () => {
   expect(slot.set).toHaveBeenCalledWith(true)
 })
 
-// A `maybeBoolean` slot is undefined when unset, and the checkbox has no state
-// for that — it draws unchecked rather than going uncontrolled.
-test('an unset maybeBoolean slot shows unchecked', () => {
+test('an unset maybeBoolean slot shows default, not off, and can go back to it', () => {
   const slot = {
     name: 'showSoftClipping',
-    value: undefined,
+    type: 'maybeBoolean',
+    value: true as boolean | undefined,
     description: 'test',
     set: jest.fn(),
   }
+  const unset = render(<BooleanEditor slot={{ ...slot, value: undefined }} />)
+  expect(unset.getByRole('combobox').textContent).toBe('default')
+  unset.unmount()
   const { getByRole } = render(<BooleanEditor slot={slot} />)
-  expect((getByRole('checkbox') as HTMLInputElement).checked).toBe(false)
+  expect(getByRole('combobox').textContent).toBe('on')
+  fireEvent.mouseDown(getByRole('combobox'))
+  fireEvent.click(within(getByRole('listbox')).getByText('default'))
+  expect(slot.set).toHaveBeenCalledWith(undefined)
 })
