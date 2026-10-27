@@ -3,6 +3,10 @@ import { getFileName, makeIndexType } from '@jbrowse/core/util/tracks'
 
 import type { FileLocation } from '@jbrowse/core/util/types'
 
+// Not core's format table: it claims only `.ld` and `.vcor` names, and its
+// `makeIndex` keeps only a location's `uri` and `baseUri`, dropping an
+// internet account that `siblingLocation` keeps.
+
 // `.bgz` is the name htslib's own tools give a bgzipped file
 export function isTabixLocation(loc: FileLocation): boolean {
   return /\.b?gz$/.test(getFileName(loc))
