@@ -734,6 +734,18 @@ describe('validateConfig', () => {
       ).toEqual([`field-near-preset ${where}.field`])
     })
 
+    it('takes a field that spells a preset inside a longer or recased name as a real attribute', () => {
+      const markTrack = (field: string) =>
+        found({
+          type: 'FeatureTrack',
+          adapter: { type: 'BedTabixAdapter', uri: 'x.bed.gz' },
+          ...display('LinearBasicDisplay', { field }),
+        })
+      expect(markTrack('zscore')).toEqual([])
+      expect(markTrack('Score')).toEqual([])
+      expect(markTrack('scre')).toEqual([`field-near-preset ${where}.field`])
+    })
+
     it('reads a displayDefaults type as the one display it reaches', () => {
       const typed = (type: string) =>
         onTrack({

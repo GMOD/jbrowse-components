@@ -830,7 +830,11 @@ function checkChannels(
       typeof field === 'string' && !presets.includes(field)
         ? suggest(field, presets, 1)
         : undefined
-    if (near) {
+    const extendsPreset =
+      typeof field === 'string' &&
+      near !== undefined &&
+      field.toLowerCase().includes(near.toLowerCase())
+    if (near && !extendsPreset) {
       warn(where, {
         rule: 'field-near-preset',
         slot: 'field',
