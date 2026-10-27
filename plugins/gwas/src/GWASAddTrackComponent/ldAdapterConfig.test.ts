@@ -83,15 +83,14 @@ test('.gz local path with no index → tabix adapter, derives sibling .tbi', () 
   })
 })
 
-test('.gz blob upload with no index → tabix adapter, index left undefined', () => {
-  const ld = {
-    blobId: 'b1',
-    name: 'plink.ld.gz',
-    locationType: 'BlobLocation' as const,
-  }
-  expect(buildLdAdapterConfig(ld)).toEqual({
-    type: 'PlinkLDTabixAdapter',
-    ldLocation: ld,
-    index: { indexType: 'TBI', location: undefined },
+test('a name outside the format table still reads as an LD table', () => {
+  expect(typeOf(uri('http://host/sle_r2.txt.gz'))).toBe('PlinkLDTabixAdapter')
+  expect(typeOf(uri('http://host/sle_r2.txt'))).toBe('PlinkLDAdapter')
+})
+
+test("a derived index keeps the file's internet account", () => {
+  const ld = { ...uri('http://host/plink.ld.gz'), internetAccountId: 'acct' }
+  expect(buildLdAdapterConfig(ld)).toMatchObject({
+    index: { location: { internetAccountId: 'acct' } },
   })
 })

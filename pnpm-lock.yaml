@@ -1531,6 +1531,9 @@ importers:
 
   plugins/gwas:
     dependencies:
+      '@jbrowse/add-track-core':
+        specifier: workspace:^
+        version: link:../../packages/add-track-core
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
