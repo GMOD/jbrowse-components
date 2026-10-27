@@ -107,10 +107,10 @@ in the window. The engine refuses an args key the call does
 not take, naming it, so a host's misspelled or renamed key fails rather than
 drops; each call's key list is checked against its args type
 (`ArgKeys` in `src/index.ts`). A BED, GFF or VCF lists only contigs holding records, so
-for those a contig of the call's sequence counts as the file's. `alignmentTables` also returns `settings`, the
-four band objects resolved (`coverage`, `pileup`, `sashimi`,
-`readConnections`), which decide which bands a host stacks, so the host
-composes from the config rather than restating its defaults. The engine also serves the colors a
+for those a contig of the call's sequence counts as the file's. `alignmentTables`'s
+`config` holds the four band objects resolved (`coverage`, `pileup`,
+`sashimi`, `readConnections`), which decide which bands a host stacks, so the
+host composes from the config rather than restating its defaults. The engine also serves the colors a
 host should draw in (`alignmentColors`), read off the palette rather than
 copied.
 
@@ -267,7 +267,7 @@ through the assembly's sequence adapter, for a host drawing them under a
 pileup; the bundle serves it as `jbrowse.sequence`. The coverage band's
 stacks come back as the worker packs them for the display: `alleleCoverage`
 (each mismatch position's alleles as fractions of its bar, `from` and `to`,
-with the `depth` there, empty while `settings.coverage.alleles.show` is false)
+with the `depth` there, empty while `config.coverage.alleles.show` is false)
 and `modificationCoverage` (each modification state's share, in its color and
 opacity), decoded through alignments-core's own
 segment readers, so a host stacks what the display stacks. The interbase
@@ -275,7 +275,7 @@ histogram comes back the same way, as `interbaseCoverage` (each position's
 insertions, soft clips and hard clips stacked in that order, `from` and `to`
 in reads), with `indicators` (the positions whose events pass the display's
 share of the local depth, and the most common `type` there). The display
-draws neither while `settings.coverage.interbase.show` is false.
+draws neither while `config.coverage.interbase.show` is false.
 
 **`alignmentMarkAlpha` draws a mark as the pileup does at a host's zoom.**
 A host's px per bp depends on its figure, so the host calls it once per

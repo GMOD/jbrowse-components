@@ -38,7 +38,7 @@ test('a region on a contig the file lacks reads empty and names the contigs it h
   expect((await engine.alignments(BAM)).missingContigs[0]).toBe('')
 })
 
-test('an alignments table reports the settings its bands are composed from', async () => {
+test('an alignments table reports the band settings it composed in its config', async () => {
   const t = await engine.alignments({
     ...BAM,
     display: {
@@ -47,7 +47,7 @@ test('an alignments table reports the settings its bands are composed from', asy
       pileup: { mark: { height: 3 } },
     },
   })
-  expect(t.settings).toMatchObject({
+  expect(t.config).toMatchObject({
     coverage: { show: false, height: 45 },
     pileup: { show: true, fadeLowFrequency: true, mark: { height: 3 } },
     sashimi: { height: 50, labels: { show: false } },

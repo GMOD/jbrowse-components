@@ -1472,8 +1472,7 @@ export async function alignmentTables(
         : []
     }),
   )
-  const bands = composingBands(conf)
-  const tables = drawnBands(bands, {
+  const tables = drawnBands(conf, {
     ...joinSections(pileups, t => t.reads.start.length),
     ...joinSections(
       regions.flatMap((_, i) =>
@@ -1538,7 +1537,6 @@ export async function alignmentTables(
       coverageInset: YSCALEBAR_LABEL_OFFSET,
       interbaseTop: interbaseEdgePx(0, 0),
     },
-    settings: bands,
     readPitch: {
       featureHeight,
       featureSpacing: featureSpacingForHeight(featureHeight),
@@ -1702,20 +1700,6 @@ function markLegends(
 }
 
 /**
- * The display's four bands, resolved, which decide which a host stacks, what
- * each hides and how many pixels each takes, so a host composes the track from
- * the config it was read with rather than restating the defaults.
- */
-function composingBands(conf: DisplayConf) {
-  return {
-    coverage: fullConfSnapshot(conf.coverage),
-    pileup: fullConfSnapshot(conf.pileup),
-    sashimi: fullConfSnapshot(conf.sashimi),
-    readConnections: fullConfSnapshot(conf.readConnections),
-  }
-}
-
-/**
  * The tables each band's or layer's `show` turns off with it, as the display
  * then draws none of them.
  */
@@ -1759,13 +1743,11 @@ const BAND_TABLES: readonly {
 ]
 
 function shown(
-  bands: ReturnType<typeof composingBands>,
+  conf: DisplayConf,
   band: (typeof BAND_TABLES)[number]['band'],
   layer?: string,
-) {
-  const part = bands[band]
-  const node = layer ? (part[layer] as Record<string, unknown>) : part
-  return node.show === true
+): boolean {
+  return readConfObject(conf, layer ? [band, layer, 'show'] : [band, 'show'])
 }
 
 /**
@@ -1777,10 +1759,10 @@ function drawnBands<
   T extends Record<string, Record<string, unknown[]>> & {
     gaps: { type: string[] }
   },
->(bands: ReturnType<typeof composingBands>, tables: T) {
+>(conf: DisplayConf, tables: T) {
   const hidden = new Set<string>(
     BAND_TABLES.flatMap(({ band, layer, tables }) =>
-      shown(bands, band, layer) ? [] : tables,
+      shown(conf, band, layer) ? [] : tables,
     ),
   )
   const drawn = Object.fromEntries(
@@ -1791,7 +1773,7 @@ function drawnBands<
         : table,
     ]),
   ) as T
-  return shown(bands, 'pileup', 'mismatches')
+  return shown(conf, 'pileup', 'mismatches')
     ? drawn
     : {
         ...drawn,
