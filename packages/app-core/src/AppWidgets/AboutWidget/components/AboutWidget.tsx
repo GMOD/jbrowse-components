@@ -29,6 +29,8 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
+const currentYear = new Date().getFullYear()
+
 const AboutWidget = observer(function AboutWidget({
   model,
 }: {
@@ -69,7 +71,7 @@ const AboutWidget = observer(function AboutWidget({
       </Typography>
       <br />
       <Typography align="center">
-        {`© 2019-${new Date().getFullYear()} The Evolutionary Software Foundation`}
+        {`© 2019-${currentYear} The Evolutionary Software Foundation`}
       </Typography>
 
       <div className={classes.accordions}>

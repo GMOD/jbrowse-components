@@ -75,7 +75,7 @@ test("a CIGAR spans the record's own coordinates", () => {
   // parser asserts it on the way in; nothing checked it here, and the demo
   // chain track ships 215 records that violate it by up to 20kb.
   for (const r of [...chainRecords, ...pafRecords]) {
-    const cg = r.extra.cg as string
+    const cg = r.extra.cg!
     expect(getLengthOnRef(cg)).toBe(r.tend - r.tstart)
     expect(getLength(cg)).toBe(r.qend - r.qstart)
   }
