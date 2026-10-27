@@ -363,18 +363,23 @@ describe('validateConfig', () => {
     expect(warningsOf(config)[0]?.message).toContain('legacy value')
   })
 
-  it("warns on v4's summaryScoreMode, which the schema lifts to y", () => {
+  it("warns on v4's renderers block, which the schema lifts to y", () => {
     const config = baseConfig()
     config.tracks[0] = {
       ...config.tracks[0]!,
       type: 'QuantitativeTrack',
       adapter: { type: 'BigWigAdapter', uri: 'coverage.bw' },
       // @ts-expect-error the v4 spelling
-      displays: [{ type: 'LinearWiggleDisplay', summaryScoreMode: 'avg' }],
+      displays: [
+        {
+          type: 'LinearWiggleDisplay',
+          renderers: { XYPlotRenderer: { summaryScoreMode: 'avg' } },
+        },
+      ],
     }
     expect(errorsOf(config)).toEqual([])
     expect(warningsOf(config).map(w => w.where)).toEqual([
-      'tracks[0].displays[0].summaryScoreMode',
+      'tracks[0].displays[0].renderers',
     ])
     expect(warningsOf(config)[0]?.message).toContain('legacy key')
   })
@@ -385,9 +390,9 @@ describe('validateConfig', () => {
       ...config.tracks[0]!,
       type: 'QuantitativeTrack',
       adapter: { type: 'BigWigAdapter', uri: 'coverage.bw' },
-      // @ts-expect-error the early v5 and v4 spellings
+      // @ts-expect-error the v4 spellings
       displayDefaults: {
-        scales: { y: { domainMax: 5 } },
+        displayCrossHatches: true,
         scaleType: 'log',
         minimalTicks: true,
       },
@@ -395,7 +400,7 @@ describe('validateConfig', () => {
     expect(errorsOf(config)).toEqual([])
     const warnings = warningsOf(config)
     expect(warnings.map(w => w.where)).toEqual([
-      'tracks[0].displayDefaults.scales',
+      'tracks[0].displayDefaults.displayCrossHatches',
       'tracks[0].displayDefaults.scaleType',
       'tracks[0].displayDefaults.minimalTicks',
     ])
@@ -404,24 +409,24 @@ describe('validateConfig', () => {
     }
   })
 
-  it('warns rather than errors on a retired slot and a retired member', () => {
+  it('warns rather than errors on retired slots', () => {
     const config = baseConfig()
     config.tracks[0] = {
       ...config.tracks[0]!,
-      // @ts-expect-error the betas' unmodified setting
+      // @ts-expect-error v4's read cloud settings
       displays: [
         {
           type: 'LinearAlignmentsDisplay',
-          modifications: { unmodified: 'all' },
-          pileup: { readHeight: 3 },
+          featureHeight: 3,
+          hideMismatches: true,
         },
       ],
     }
     expect(errorsOf(config)).toEqual([])
     const warnings = warningsOf(config)
     expect(warnings.map(w => w.where).toSorted()).toEqual([
-      'tracks[0].displays[0].modifications',
-      'tracks[0].displays[0].pileup.readHeight',
+      'tracks[0].displays[0].featureHeight',
+      'tracks[0].displays[0].hideMismatches',
     ])
     for (const { message } of warnings) {
       expect(message).toContain('legacy key')
@@ -432,8 +437,8 @@ describe('validateConfig', () => {
     const config = baseConfig()
     config.tracks[0] = {
       ...config.tracks[0]!,
-      // @ts-expect-error the betas' unmodified setting
-      displayDefaults: { modifications: { unmodified: 'all' } },
+      // @ts-expect-error v4's read cloud setting
+      displayDefaults: { hideMismatches: true },
     }
     expect(errorsOf(config)).toEqual([])
   })

@@ -172,12 +172,12 @@ describe('the schema', () => {
     config.tracks[0]!.displays = [
       {
         type: 'LinearAlignmentsDisplay',
-        pileup: { readHeigth: 3 },
+        featureHeigth: 3,
       },
     ]
     const [error] = schemaProblems(config)
-    expect(error?.where).toContain('readHeigth')
-    expect(error?.message).not.toContain('"readHeight"')
+    expect(error?.where).toContain('featureHeigth')
+    expect(error?.message).not.toContain('"featureHeight"')
   })
 
   it('says a display warns and loads without an undeclared slot', () => {
@@ -769,9 +769,9 @@ describe('the schema', () => {
     expect(error?.message).toContain('unknown display property')
     expect(error?.message).not.toContain('heightPreConfig')
     const [slot] = schemaProblems(
-      sessionDisplay({ type: 'LinearBasicDisplay', showChevronz: true }),
+      sessionDisplay({ type: 'LinearBasicDisplay', transcriptTypez: [] }),
     )
-    expect(slot?.message).not.toContain('showChevrons')
+    expect(slot?.message).not.toContain('transcriptTypes')
   })
 
   it('accepts a session display key a migration still lifts', () => {
