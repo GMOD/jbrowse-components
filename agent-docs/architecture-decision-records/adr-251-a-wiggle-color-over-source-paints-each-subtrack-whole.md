@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "The wiggle display's `encoding.color` takes a `field`, `score` or `source`. `source` paints each subtrack its resolved row color (`rowColor`, then the file's `color`, then the palette over a shared plot) on both sides of the `origin`, and reads no `scale`; a subtrack with no color paints the score's pair. A color writing nothing colors by `source` on bars, points and lines and ramps the score on a heatmap, so a lone BigWig keeps its pair. The split default goes: a row per subtrack no longer paints its row color above the cut and the shared negative color below it, since the y position already shows the sign. `perSource` leaves gpuProps. ADR-207's deleted `source` switch returns as a field of the one color object. A heatmap's color domain stays on `encoding.y.scale`, left for a call. Amended the same day: the mark display's categorical color over the field the rows split on takes the row colors too"
+summary: "The wiggle display's `encoding.color` takes a `field`, `score` or `source`. `source` paints each subtrack its resolved row color (`rowColor`, then the file's `color`, then the palette over a shared plot) on both sides of the `origin`, and reads no `scale`; a subtrack with no color paints the score's pair. A color writing nothing colors by `source` on bars, points and lines and ramps the score on a heatmap, so a lone BigWig keeps its pair. The split default goes: a row per subtrack no longer paints its row color above the cut and the shared negative color below it, since the y position already shows the sign. `perSource` leaves gpuProps. ADR-207's deleted `source` switch returns as a field of the one color object. A heatmap's ramp keeps reading `encoding.y.scale`, the plotted value's one scale, whichever mark places the value. Amended the same day: the mark display's categorical color over the field the rows split on takes the row colors too"
 ---
 
 # ADR-251: A wiggle color over source paints each subtrack whole
@@ -76,19 +76,32 @@ review's second color finding, is open below.
   moves. The methylation tutorial's track, which repeats its subadapter
   colors there, draws as before.
 
-## Open: a heatmap's color domain
+## A heatmap's ramp reads the y scale
 
-Under `mark: 'rect'` nothing sits on y, yet the ramp's ends, its log or
-symlog placement, its outlier fence and its shared-axis group are
-`encoding.y.scale`'s, and the Score range dialog writes there. Every other
-display's ramp carries its own `domainMin` and `domainMax`, as Vega-Lite's
-heatmap does. On `rect`, `encoding.color.scale.type` already says pair or
-threshold or ramp, so moving them there collides:
-`log` would have to mean the ramp's placement too, and an unset type, the
-pair fading through white, would have no log form. The call is whether a
-heatmap's color takes `type`, `domainMin` and `domainMax` and leaves the
-fence and group on y, or the y scale stays the heatmap's value scale under
-its own name.
+Decided 2026-10-27, Colin asking the session to make the call. Under
+`mark: 'rect'` nothing sits on y, yet the ramp's ends, its log or symlog
+placement, its outlier fence and its shared-axis group are
+`encoding.y.scale`'s, and the Score range dialog writes there. They stay
+there.
+
+- **The plotted value has one scale, and the mark only chooses where it
+  lands.** A wiggle color maps the value `y` plots (`score` stands for it
+  whatever field `y` names), so its ends are the y scale's on every mark, as
+  a gradient over bars already reads them (ADR-175, ADR-185). Moving them
+  onto the color on `rect` alone would spell one concept in two places
+  depending on the mark, against GRAMMAR_OF_GRAPHICS.md's rule 2, one object
+  per concept.
+- **Plot type is one click.** Bars and a heatmap of the same track show the
+  same numbers, so a pinned range, a log placement and a fence carry across
+  the switch. Under a color-owned domain the switch drops a pinned range, or
+  the menu copies it, a second write to keep two settings equal.
+- **`group` shares one range across tracks**, and a bar track and a heatmap
+  track in one group keep agreeing.
+- The color holds what only a color says: the ramp or threshold, `range`,
+  `scheme`, `reverse`, the cuts and `domainMid`, all in the value's units.
+- The guide follows: on a heatmap the ramp key takes the axis's place
+  (`scoreRampReplacesAxis`), so the y scale's one guide still shows its
+  domain.
 
 ## Rejected
 
@@ -97,3 +110,4 @@ its own name.
 | `source` with its own `scale.domain` and `range` | Two homes for the subtrack-to-color map, `rowColor` and the channel, which is ADR-164's trap |
 | A per-row negative color (UCSC's `altColor`) | Spends a second hue on the sign the y position already shows |
 | Keeping the split as the unset default | Hue changes meaning at the cut on a row that a written `source` paints whole |
+| A heatmap's color taking `type`, `domainMin` and `domainMax` on `rect`, the fence and group left on y | One value scale spelled in two places by mark, a pinned range lost on a Plot type switch, and `scale.type` already meaning pair, threshold or ramp there, so `log` would take a second meaning and the unset pair would have no log form |

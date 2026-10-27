@@ -151,11 +151,11 @@ Declined on 2026-09-30: track- or view-level facets, and a free y per section.
   ([ADR-110](../architecture-decision-records/adr-110-a-display-declares-what-is-highlighted.md)):
   an in-shader predicate would make the Canvas2D fallback repaint the whole
   display per mousemove.
-- **A heatmap's color domain is the y scale's.** Under the quantitative
-  display's `rect` the ramp's ends, placement, fence and group are
-  `encoding.y.scale`'s, where nothing sits on y; ADR-251's open section has
-  the call. Its rows no longer split one hue between two variables: a color
-  over `source` paints each subtrack whole (ADR-251).
+- **A quantitative heatmap's ramp reads the y scale.** Under the
+  quantitative display's `rect` nothing sits on y, and the ramp's ends,
+  placement, fence and group are still `encoding.y.scale`'s: the plotted
+  value has one scale whichever mark places it, so a Plot type switch keeps
+  a pinned range (ADR-251). Don't re-propose a color-owned domain there.
 - **No per-layer data on the mark display, and no `lookup` join.** No measurement
   backs it, and each source multiplies the refName renaming, byte gate and zoom
   range a display runs once today. It reopens when a named plot needs two files

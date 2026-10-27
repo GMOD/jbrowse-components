@@ -44,9 +44,6 @@ history has each landing.
      except `apollo3`, pinned to beta.8 (`demos/apollo3/README.md`).
    - The unlanded `chat-request-evals` branch writes 8 `scales.y` lines in
      `scripts/agent-evals/tasks.ts`.
-2. **A wiggle heatmap's color domain** waits on Colin's call, set out in
-   ADR-251's open section: under `mark: 'rect'` the ramp's ends, placement,
-   fence and group are `encoding.y.scale`'s.
 
 ADR-238's 2026-10-27 amendment rules the layout words, the multi-way
 leftovers and the zoom and density gates. One multi-way gap stays open:
