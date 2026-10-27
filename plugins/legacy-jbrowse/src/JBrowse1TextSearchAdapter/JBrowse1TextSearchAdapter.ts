@@ -14,8 +14,9 @@ import type { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterC
 
 interface SearchResults {
   prefix: ({ name: string } | string)[]
-  // generate-names.pl record: [name, trackIndex, ?, refName, start, end]
-  exact: [string, number, string, string, number, number][]
+  // generate-names.pl record: [name, trackIndex, ?, refName, start, end], start
+  // 0-based and, in some records, a string
+  exact: [string, number, string, string, number | string, number | string][]
 }
 
 type IndexFile = Record<string, SearchResults>
@@ -72,7 +73,7 @@ export default class JBrowse1TextSearchAdapter
       ...results.exact.map(
         ([name, trackIndex, , refName, start, end]) =>
           new BaseResult({
-            locString: `${refName || name}:${start}-${end}`,
+            locString: `${refName || name}:${Number(start) + 1}-${end}`,
             label: name,
             trackId: tracks[trackIndex],
             exact: true,

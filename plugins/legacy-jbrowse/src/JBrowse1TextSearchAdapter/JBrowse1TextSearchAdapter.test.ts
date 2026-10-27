@@ -60,7 +60,7 @@ test('search upper case', async () => {
   expect(results2.length).toBeGreaterThan(0)
   expect(results2[0] instanceof BaseResult).toBeTruthy()
   expect(results2[0]!.getLabel()).toEqual('Apple3')
-  expect(results2[0]!.getLocation()).toEqual('ctgA:17399-23000')
+  expect(results2[0]!.getLocation()).toEqual('ctgA:17400-23000')
 })
 
 test('search lower case', async () => {
@@ -97,5 +97,5 @@ test('search lower case', async () => {
   expect(results2.length).toBeGreaterThan(0)
   expect(results2[0] instanceof BaseResult).toBeTruthy()
   expect(results2[0]!.getLabel()).toEqual('Apple3')
-  expect(results2[0]!.getLocation()).toEqual('ctgA:17399-23000')
+  expect(results2[0]!.getLocation()).toEqual('ctgA:17400-23000')
 })

@@ -21,6 +21,20 @@ function decodeURIComponentNoThrow(uri: string) {
   }
 }
 
+// a record is ["loc"|"trackId"|"attr1"|...] with commas pre-encoded as pipes;
+// swap them back to parse it as a JSON array, then URI-decode. A record that
+// does not parse is skipped rather than failing the whole query
+function parseRecord(data: string) {
+  try {
+    const fields = JSON.parse(data.replaceAll('|', ',')) as unknown
+    return Array.isArray(fields) && fields.length >= 2
+      ? fields.map(f => decodeURIComponentNoThrow(String(f)))
+      : undefined
+  } catch {
+    return undefined
+  }
+}
+
 // Build a search-result snippet: a window of `w` characters either side of
 // where `term` matched, ellipsized on whichever side was cut. Nothing like the
 // core `shorten`, which just elides a long name.
@@ -85,13 +99,14 @@ export default class TrixTextSearchAdapter
     // and the keystroke that asked for them is 50ms stale by now
     checkAbortSignal(args.signal)
     const formatted = results
-      .map(([term, data]) => {
-        // record is ["loc"|"trackId"|"attr1"|...] with commas pre-encoded as
-        // pipes; swap them back to parse it as a JSON array, then URI-decode
-        const [loc, trackId, ...attrs] = (
-          JSON.parse(data.replaceAll('|', ',')) as string[]
-        ).map(decodeURIComponentNoThrow)
-        return { term, loc, trackId, attrs }
+      .flatMap(([term, data]) => {
+        const fields = parseRecord(data)
+        if (!fields) {
+          console.warn('skipping unreadable trix record', data)
+          return []
+        }
+        const [loc, trackId, ...attrs] = fields as [string, string, ...string[]]
+        return [{ term, loc, trackId, attrs }]
       })
       // multi-word search: keep only entries whose attributes contain every word
       .filter(({ attrs }) => {

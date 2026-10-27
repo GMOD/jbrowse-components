@@ -1,3 +1,5 @@
+import fs from 'node:fs'
+import os from 'node:os'
 import path from 'node:path'
 
 import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
@@ -149,5 +151,34 @@ describe('TrixTextSearchAdapter', () => {
       .searchIndex({ queryString: 'apple', signal })
       .catch((e: unknown) => e)
     expect(isAbortException(thrown)).toBe(true)
+  })
+})
+
+describe('an unreadable record', () => {
+  it('is skipped while the rest of the query still answers', async () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'trix-'))
+    const ix = path.join(dir, 'x.ix')
+    const ixx = path.join(dir, 'x.ixx')
+    fs.writeFileSync(
+      ix,
+      'apple ["ctgA%3A1..10"|"t"|"Apple"],1 not-a-record,1\n',
+    )
+    fs.writeFileSync(ixx, '')
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
+    try {
+      const adapter = new Adapter(
+        configSchema.create({
+          type: 'TrixTextSearchAdapter',
+          ixFilePath: { localPath: ix, locationType: 'LocalPathLocation' },
+          ixxFilePath: { localPath: ixx, locationType: 'LocalPathLocation' },
+        }),
+      )
+      const results = await adapter.searchIndex({ queryString: 'apple' })
+      expect(results.map(r => r.getLocation())).toEqual(['ctgA:1..10'])
+      expect(warn).toHaveBeenCalledTimes(1)
+    } finally {
+      warn.mockRestore()
+      fs.rmSync(dir, { recursive: true, force: true })
+    }
   })
 })
