@@ -649,7 +649,7 @@ async function runOnce(task: EvalTask, run: number, attempt: number) {
     /timed out|no page carrying/.test(
       `${error} ${JSON.stringify(verdict.detail)}`,
     )
-  if (!(stalled && attempt === 1)) {
+  if (!(stalled && attempt === 1 && retries)) {
     rows.push({ task: task.name, run, pass: row.pass })
   }
   console.log(
