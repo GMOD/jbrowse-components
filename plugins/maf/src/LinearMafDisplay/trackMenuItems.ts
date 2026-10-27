@@ -269,11 +269,11 @@ function plotTypeMenuItem(self: MafMenuSelf): MenuItem {
   return makeRadioSubMenu({
     label: withHint(
       'Plot type',
-      self.yField && self.coarseTierActive
-        ? ZOOM_IN_FOR_BAND
-        : self.yField && self.zoomedToBaseLevel
-          ? ZOOM_OUT_FOR_IDENTITY
-          : undefined,
+      self.yField && self.rowPlan.mark === 'rect'
+        ? self.coarseTierActive
+          ? ZOOM_IN_FOR_BAND
+          : ZOOM_OUT_FOR_IDENTITY
+        : undefined,
     ),
     value: self.yField ?? 'cells',
     onChange: plot => {
