@@ -725,7 +725,8 @@ function interbase(d: WorkerPileupData, paint: MarkColors) {
 /**
  * The junctions the reads' skips and split reads support, merged as the
  * sashimi band merges them: each once, with its supporting-read count, its
- * `class` and `source` as the filter's `junction` fields name them, the
+ * `class` and `source` as the filter's `junction` fields name them, its
+ * split class (`split`, '' for a splice junction), the
  * strand its reads' tags or its splice motif give a splice junction (0 where
  * neither says, and for a split junction), and the motif where the reference
  * was read. Every junction, down to a single
@@ -742,7 +743,6 @@ function junctions(
   regionInfos: RegionInfo[],
   paint: MarkColors,
   thresholds: MarkThresholds,
-  shownSplits: Set<ArcSplitCategory>,
 ) {
   const contigOrder = new Map<string, number>()
   for (const { refName } of regionInfos) {
@@ -758,22 +758,17 @@ function junctions(
   )
   const footRegion = (refName: string, bp: number) =>
     regionIndexOf(regionInfos, refName, bp) ?? -1
-  const shown = merged.map(j => passesJunctionFilter(j, thresholds.junctions))
-  for (const [i, j] of merged.entries()) {
-    if (j.split && shown[i]) {
-      shownSplits.add(j.split)
-    }
-  }
   return {
     start: merged.map(j => j.start),
     end: merged.map(j => j.end),
     count: merged.map(j => j.count),
     class: merged.map(j => junctionClass(j.split)),
+    split: merged.map(j => j.split ?? ''),
     source: merged.map(j => junctionSource(junctionClass(j.split))),
     strand: merged.map(j => j.strand),
     motif: merged.map(j => spliceMotifLabel(j.motif) ?? ''),
     color: merged.map(j => paint.junction(j)),
-    shown,
+    shown: merged.map(j => passesJunctionFilter(j, thresholds.junctions)),
     arcHeight: merged.map(j =>
       sashimiArcHeightFraction(Math.abs(j.end - j.start)),
     ),
@@ -1447,7 +1442,6 @@ export async function alignmentTables(
       : undefined,
   )
   const paint = markColors(colors.palette, baseLayer)
-  const shownSplits = new Set<ArcSplitCategory>()
   const thresholds: MarkThresholds = {
     minAlleleFraction: alleleFloorOf(conf.coverage.alleles.filter),
     junctions: junctionFilterOf(filterOf(conf)),
@@ -1533,7 +1527,6 @@ export async function alignmentTables(
             regionInfos,
             paint,
             thresholds,
-            shownSplits,
           ),
         },
       })),
@@ -1542,7 +1535,7 @@ export async function alignmentTables(
   })
   return {
     ...tables,
-    ...markLegends(tables, paint, shownSplits),
+    ...markLegends(tables, paint),
     sections: {
       key: order.map(g => g.key),
       label: order.map(g => g.label),
@@ -1679,13 +1672,18 @@ function markLegends(
   tables: {
     mismatches: { base: string[] }
     alleleCoverage: { base: string[] }
-    junctions: { strand: number[]; source: string[]; shown: boolean[] }
+    junctions: {
+      strand: number[]
+      source: string[]
+      split: (ArcSplitCategory | '')[]
+      shown: boolean[]
+    }
     interbaseCoverage: { type: InterbaseTypeName[] }
     indicators: { type: InterbaseTypeName[] }
   },
   paint: MarkColors,
-  shownSplits: ReadonlySet<ArcSplitCategory>,
 ) {
+  const shownJunction = (i: number) => tables.junctions.shown[i]
   const bases = new Set([
     ...tables.mismatches.base,
     ...tables.alleleCoverage.base,
@@ -1695,12 +1693,19 @@ function markLegends(
     sashimiLegend(
       new Set(
         tables.junctions.strand.filter(
-          (_, i) =>
-            tables.junctions.shown[i] && tables.junctions.source[i] === 'gap',
+          (_, i) => shownJunction(i) && tables.junctions.source[i] === 'gap',
         ),
       ),
       resolvePalette().alignmentFill,
-      { classes: shownSplits, palette: paint.palette },
+      {
+        classes: new Set(
+          tables.junctions.split.filter(
+            (split, i): split is ArcSplitCategory =>
+              split !== '' && shownJunction(i),
+          ),
+        ),
+        palette: paint.palette,
+      },
     ),
   )
   const events = new Set([

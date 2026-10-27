@@ -1107,6 +1107,19 @@ test('a junction says whether the display shows it, its arc height and its strok
   })
 })
 
+test('the junction key lists the split classes shown, and nothing while the sashimi band is hidden', async () => {
+  const t = await engine.alignments(LONG_READS)
+  const splits = new Set(t.junctions.split.filter(s => s !== ''))
+  expect(splits.size).toBeGreaterThan(0)
+  expect(t.junctionLegend.label).toHaveLength(splits.size)
+  const hidden = await engine.alignments({
+    ...LONG_READS,
+    display: { sashimi: { show: false } },
+  })
+  expect(hidden.junctions.split).toEqual([])
+  expect(hidden.junctionLegend).toEqual({ label: [], color: [] })
+})
+
 test('an allele segment is shown where its share of the depth passes coverage.alleles.filter', async () => {
   const all = await engine.alignments(BAM)
   expect(all.alleleCoverage.shown.every(Boolean)).toBe(true)

@@ -129,9 +129,14 @@ copied.
   through `effectiveBaseColors`, so under a `modifications` or `bisulfite`
   layer every base is the muted grey.
 - `baseLegend` (empty while the bases are muted), `junctionLegend` (the
-  sashimi band's own strand key, over the junctions shown) and
+  sashimi band's own strand and split-class key, over the junctions shown,
+  empty while the band is hidden) and
   `interbaseLegend` come back as `legend` does, each with its title, keying
   only what the tables paint.
+- `junctions` has `split`, a split junction's class (`splitForward`,
+  `splitBack`, `splitInvLL` or `splitInvRR`, '' for a splice junction). `class`
+  calls both inversion classes `inversion`; `split`, `color` and the key
+  tell them apart.
 - `junctions` has `shown`, true where the junction passes the `junction` filter fields
   (the browser counts a junction whose motif it never read as canonical), `arcHeight`
   (`sashimiArcHeightFraction`) and `strokeWidth` (`sashimiStrokeWidth`, in
