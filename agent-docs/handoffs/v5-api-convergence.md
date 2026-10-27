@@ -53,16 +53,18 @@ once per display that embeds it, so read the trend, not the size.
 ## Next
 
 1. **jbrowse-img modifiers that write nothing.** `modifierSlots.test.ts`
-   checks every modifier against the schema, and exempts two:
-   - `force:` writes `forceLoad`, which `LinearWiggleDisplay` and
-     `LinearHicDisplay` don't declare (`UNGATED`). Batch adds `force:true` to
-     every track, so narrowing the modifier warns on every BigWig.
-   - `heightMode:` and `featureHeight:` write slots
-     `LinearMultiRowFeatureDisplay` and `LinearMultiSampleVariantDisplay`
-     don't declare.
+   checks every modifier on every display of its category, and
+   `WRITES_NOTHING` lists the displays a modifier misses. Most have nothing to
+   write (no size gate for `force:`, a comparative view sizing `height:`). The
+   gap: `heightMode:` and `featureHeight:` write slots
+   `LinearMultiRowFeatureDisplay` and `LinearMultiSampleVariantDisplay` don't
+   declare, so `display:multivariant heightMode:grow` writes nothing. Batch
+   adds `force:true` to every track, so narrowing that modifier warns on every
+   BigWig.
 2. **Writers outside the tree.** jb2hubs with its hosted configs and both
    genomes sites, JBrowseR, ggjbrowse (engine and tutorials re-knit), the
-   graph plugin and the figure specs write main's spellings. Left:
+   graph plugin (`facet.sort` from bandage-core 12) and the figure specs write
+   main's spellings. Left:
    - The hosted apollo3 demo runs the `v5.0.0-beta.8` build and serves an
      older config (`featureHeight`, `layoutOrder`). Move the pin and deploy
      `demos/apollo3/config.json` together, never the config alone.
@@ -73,13 +75,23 @@ once per display that embeds it, so read the trend, not the size.
    betas included (Colin, 2026-10-27). Left: baseline
    `reExports.generated.json` and the exports map at the release candidate
    (`reference/PLUGIN_ABI_STABILITY.md`).
+4. **Plugin displays go unchecked.** `jbrowse validate` warns on each
+   plugin-registered type and checks none of its slots, so a plugin display
+   that respells a shared word (`facet`, `encoding`, `rows`) fails nowhere.
+   The graph plugin's `facet.domain` survived core's rename to `sort` that
+   way. Every warning `demos/` raises is one of these: `GraphTrack`,
+   `ArgTrack`, `ApolloPlugin`.
 
 ## Release candidate gates
 
 - The meter shows no shared-path change since the last respell landed.
-- Every `retired` entry maps a v4.3.0 name.
-- `jbrowse validate` reports no warning on hosted configs, `demos/` and the
-  tutorials.
+- Every `retired` entry maps a name a v1–v4 release declared, none a
+  beta-only one. No test checks the gate, since v4 shipped no JSON schema and
+  so `scripts/check-config-slot-paths.ts` has no v4 baseline. A `git grep -w <key>
+  v4.3.0` over the legacy keys in `website/static/schema/v5/config.json` finds
+  six missing from v4.3.0 on 2026-10-27, each from an earlier release.
+- `jbrowse validate` reports no warning outside plugin-registered types on
+  hosted configs, `demos/` and the tutorials (step 4).
 - The v5 release draft and the schema use the same spellings, including the
   word "experimental" for `LinearMarkDisplay`.
 - A migration page generated from the `retired` maps exists, and CHANGELOG has
