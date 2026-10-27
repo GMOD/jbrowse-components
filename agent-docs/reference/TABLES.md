@@ -546,10 +546,9 @@ two calls.
 - `multiway` lays the stack out as the display does over `display.height`
   (240 px unless set) and returns where it put things, in px down from the
   stack's top: `height`, each lane's `yTop` and `yBottom`, and each ribbon's
-  `yTop` and `yBottom`. A ribbon's `thin` flag and fade depend on its
-  gutter's height, so a host draws at these heights, and sets
-  `display.height` for a taller or shorter figure, rather than laying out
-  gutters of its own.
+  `yTop` and `yBottom`. The engine measures each ribbon's `thin` flag and
+  fade at its gutter's height, so a host draws at these heights and sets
+  `display.height` for a taller or shorter figure.
 
 ## In grammar-of-graphics terms
 
