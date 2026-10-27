@@ -12,10 +12,7 @@ import { autorun } from 'mobx'
 
 import { TreeSidebarMixin } from './TreeSidebarMixin.ts'
 import { getLeafNames } from './clusterUtils.ts'
-import {
-  retiredRowAxisSpellings,
-  rowAxisConfigSchema,
-} from './rowAxisConfigSchema.ts'
+import { rowAxisConfigSchema } from './rowAxisConfigSchema.ts'
 import { SIDEBAR_HINT_LINE_PX } from './treeSidebarGeometry.ts'
 
 import type { TreeSidebarHost } from './TreeSidebarMixin.ts'
@@ -65,15 +62,11 @@ test('the host type checks the slot names the mixin reads through it', () => {
   ]).toHaveLength(6)
 })
 
-const configSchema = ConfigurationSchema(
-  'TestTreeDisplay',
-  {
-    axis: rowAxisConfigSchema,
-    rows: rowArrangementConfigSchema,
-    rowColor: rowColorConfigSchema,
-  },
-  { retired: retiredRowAxisSpellings },
-)
+const configSchema = ConfigurationSchema('TestTreeDisplay', {
+  axis: rowAxisConfigSchema,
+  rows: rowArrangementConfigSchema,
+  rowColor: rowColorConfigSchema,
+})
 
 function makeDisplay(configuration: Record<string, unknown> = {}) {
   return types
@@ -121,21 +114,6 @@ describe('the tree toggles', () => {
     for (const [other] of others(slot)) {
       expect(m[other]).toBe(true)
     }
-  })
-
-  it('reads the v5 beta spellings as axis members', () => {
-    const m = makeDisplay({
-      showTree: false,
-      showBranchLength: false,
-      showRowLabels: false,
-      treeAreaWidth: 120,
-    })
-    expect(getSnapshot(m.configuration).axis).toEqual({
-      tree: false,
-      branchLength: false,
-      labels: false,
-      width: 120,
-    })
   })
 
   it('writes the width to axis.width', () => {

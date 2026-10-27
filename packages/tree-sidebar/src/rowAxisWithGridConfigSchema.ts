@@ -1,11 +1,6 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
-import {
-  retiredRowAxisSpellings,
-  rowAxisConfigSchema,
-} from './rowAxisConfigSchema.ts'
-
-import type { RetiredSpelling } from '@jbrowse/core/configuration'
+import { rowAxisConfigSchema } from './rowAxisConfigSchema.ts'
 
 /**
  * #config RowAxisWithGrid
@@ -41,9 +36,3 @@ export const rowAxisWithGridConfigSchema = ConfigurationSchema(
     baseConfiguration: rowAxisConfigSchema,
   },
 )
-
-export const retiredRowAxisWithGridSpellings: Record<string, RetiredSpelling> =
-  {
-    ...retiredRowAxisSpellings,
-    showRowSeparators: grid => ({ axis: { grid } }),
-  }

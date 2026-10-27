@@ -8,10 +8,7 @@ import { legendConfigSchema } from '@jbrowse/display-kit/legendConfigSchema'
 import { rowColorConfigSchema } from '@jbrowse/display-kit/rowColorConfigSchema'
 import { sampleRowsConfigSchema } from '@jbrowse/display-kit/sampleRowsConfigSchema'
 import { trackHeightConfigSchemaFields } from '@jbrowse/display-kit/trackHeightConfigSchemaFields'
-import {
-  retiredRowAxisSpellings,
-  rowAxisConfigSchema,
-} from '@jbrowse/tree-sidebar/rowAxisConfigSchema'
+import { rowAxisConfigSchema } from '@jbrowse/tree-sidebar/rowAxisConfigSchema'
 import { rowHeightConfigSchemaFields } from '@jbrowse/tree-sidebar/rowHeightConfigSchemaFields'
 import { retiredScalesSpelling } from '@jbrowse/wiggle-core'
 
@@ -38,7 +35,6 @@ const retiredMafSpellings: Record<string, RetiredSpelling> = {
   showAsUpperCase: () => ({}),
   y: field => ({ encoding: { y: { field } } }),
   scales: retiredScalesSpelling(COVERAGE_Y_PATHS.members),
-  ...retiredRowAxisSpellings,
 }
 
 /**

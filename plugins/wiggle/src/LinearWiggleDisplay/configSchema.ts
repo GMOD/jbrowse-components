@@ -3,10 +3,7 @@ import { retiredBaseDisplaySpellings } from '@jbrowse/display-kit/configSchema'
 import { legendConfigSchema } from '@jbrowse/display-kit/legendConfigSchema'
 import { rowColorConfigSchema } from '@jbrowse/display-kit/rowColorConfigSchema'
 import { trackHeightConfigSchemaFields } from '@jbrowse/display-kit/trackHeightConfigSchemaFields'
-import {
-  retiredRowAxisWithGridSpellings,
-  rowAxisWithGridConfigSchema,
-} from '@jbrowse/tree-sidebar/rowAxisWithGridConfigSchema'
+import { rowAxisWithGridConfigSchema } from '@jbrowse/tree-sidebar/rowAxisWithGridConfigSchema'
 import {
   retiredAxisSpellings,
   retiredScaleSpellings,
@@ -210,7 +207,6 @@ const linearWiggleDisplayConfigSchema = ConfigurationSchema(
       ...retiredAxisSpellings(WIGGLE_Y_PATHS.members),
       ...retiredScaleSpellings(WIGGLE_Y_PATHS.members),
       ...retiredConfigSpellings,
-      ...retiredRowAxisWithGridSpellings,
       defaultRendering: rendering => {
         if (rendering === null) {
           return { mark: null }

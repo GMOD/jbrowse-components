@@ -12,10 +12,7 @@ import { rowColorConfigSchema } from '@jbrowse/display-kit/rowColorConfigSchema'
 import { rowsConfigSchema } from '@jbrowse/display-kit/rowsConfigSchema'
 import { trackHeightConfigSchemaFields } from '@jbrowse/display-kit/trackHeightConfigSchemaFields'
 import { types } from '@jbrowse/mobx-state-tree'
-import {
-  retiredRowAxisWithGridSpellings,
-  rowAxisWithGridConfigSchema,
-} from '@jbrowse/tree-sidebar/rowAxisWithGridConfigSchema'
+import { rowAxisWithGridConfigSchema } from '@jbrowse/tree-sidebar/rowAxisWithGridConfigSchema'
 import { rowGroupConfigSchema } from '@jbrowse/tree-sidebar/rowGroupConfigSchema'
 import { rowHeightConfigSchemaFields } from '@jbrowse/tree-sidebar/rowHeightConfigSchemaFields'
 import { retiredScalesSpelling } from '@jbrowse/wiggle-core'
@@ -543,7 +540,6 @@ export function configSchemaFactory() {
       retired: {
         scales: retiredScalesSpelling(MARK_Y_PATHS.members),
         ...retiredBaseDisplaySpellings,
-        ...retiredRowAxisWithGridSpellings,
       },
       preProcessSnapshot: checkMarks,
     },

@@ -7,10 +7,7 @@ import { retiredDisplayColor } from '@jbrowse/display-kit/retiredSettings'
 import { rowColorConfigSchema } from '@jbrowse/display-kit/rowColorConfigSchema'
 import { sampleRowsConfigSchema } from '@jbrowse/display-kit/sampleRowsConfigSchema'
 import { types } from '@jbrowse/mobx-state-tree'
-import {
-  retiredRowAxisWithGridSpellings,
-  rowAxisWithGridConfigSchema,
-} from '@jbrowse/tree-sidebar/rowAxisWithGridConfigSchema'
+import { rowAxisWithGridConfigSchema } from '@jbrowse/tree-sidebar/rowAxisWithGridConfigSchema'
 import { rowHeightConfigSchemaFields } from '@jbrowse/tree-sidebar/rowHeightConfigSchemaFields'
 
 import {
@@ -280,8 +277,8 @@ export default function configSchemaFactory() {
        */
       baseConfiguration: baseLinearDisplayConfigSchema,
       explicitlyTyped: true,
-      // v4's two multi-sample displays spelt the sidebar labels and the
-      // reference-allele paint as booleans, named a color scheme
+      // v4's two multi-sample displays spelt the sidebar's tree and labels and
+      // the reference-allele paint as booleans, named a color scheme
       // `encoding.color` has no member for, and carried the wiggle scale slots
       // the matrix never read.
       retired: {
@@ -292,7 +289,7 @@ export default function configSchemaFactory() {
           unit: v === 'phased' ? 'haplotype' : 'sample',
         }),
         showSidebarLabels: (labels: unknown) => ({ axis: { labels } }),
-        ...retiredRowAxisWithGridSpellings,
+        showTree: (tree: unknown) => ({ axis: { tree } }),
         showReferenceAlleles: (draw: unknown) => ({
           referenceDrawingMode: draw ? 'draw' : 'skip',
         }),

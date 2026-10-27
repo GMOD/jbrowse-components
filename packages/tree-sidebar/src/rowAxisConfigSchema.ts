@@ -1,9 +1,6 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
-import type {
-  ConfigModelForFields,
-  RetiredSpelling,
-} from '@jbrowse/core/configuration'
+import type { ConfigModelForFields } from '@jbrowse/core/configuration'
 import type { rowArrangementConfigSchema } from '@jbrowse/display-kit/rowArrangementConfigSchema'
 import type { rowColorConfigSchema } from '@jbrowse/display-kit/rowColorConfigSchema'
 
@@ -66,13 +63,6 @@ export const rowAxisConfigSchema = ConfigurationSchema(
   },
   { closed: true },
 )
-
-export const retiredRowAxisSpellings: Record<string, RetiredSpelling> = {
-  showTree: tree => ({ axis: { tree } }),
-  showBranchLength: branchLength => ({ axis: { branchLength } }),
-  showRowLabels: labels => ({ axis: { labels } }),
-  treeAreaWidth: width => ({ axis: { width } }),
-}
 
 export type TreeSidebarConfigModel = ConfigModelForFields<{
   axis: typeof rowAxisConfigSchema

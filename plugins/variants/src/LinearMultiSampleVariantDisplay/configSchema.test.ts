@@ -62,11 +62,7 @@ describe('the display config schema', () => {
 
     it.each([
       [{ showTree: false }, 'tree', false],
-      [{ showBranchLength: false }, 'branchLength', false],
-      [{ showRowLabels: false }, 'labels', false],
       [{ showSidebarLabels: false }, 'labels', false],
-      [{ showRowSeparators: true }, 'grid', true],
-      [{ treeAreaWidth: 140 }, 'width', 140],
     ] as const)('lifts %j onto axis.%s', (snap, member, value) => {
       const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
       expect(readConfObject(make(snap), ['axis', member])).toBe(value)
