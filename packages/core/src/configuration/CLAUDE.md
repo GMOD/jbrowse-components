@@ -20,7 +20,8 @@ callback slot raw, and reference resolution (ADR-084).
 - **Code combining two raw bags lifts both sides' shorthands and retired
   spellings first** — `canonicalSpelling`, or member by member as
   `mergeConfSettings` does. Merged raw, a bare `mark: "line"` replaces the whole
-  `mark` object instead of its `type`.
+  `mark` object instead of its `type`. A new merge path joins
+  `schemaTests/ShorthandMerges.test.ts`, which holds the others to it.
 - **A new write path wraps its `create` in `refusingUndeclaredKeys`** (ADR-221),
   or a typo becomes a console line.
 - An arg-less read of a `jexl:` slot still evaluates, against all-`undefined`

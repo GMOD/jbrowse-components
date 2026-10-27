@@ -1,3 +1,4 @@
+import { configManifest } from './configManifest.generated.ts'
 import { displayDefaultSlots } from './displayDefaultKeys.ts'
 import { liftToSnapshot, mergeBySlots } from './liftConfig.ts'
 
@@ -69,3 +70,60 @@ describe('mergeBySlots, over the slots a track type writes', () => {
     ).toEqual({ thing: { a: 1, b: 3 } })
   })
 })
+
+// Every member-written sub-schema with a string shorthand on every display
+// the manifest carries, so a new one is held to the merge the day the
+// manifest regenerates with it.
+function memberShorthands(slots: SlotEntry[], path: string[] = []) {
+  return slots.flatMap(
+    (slot): { path: string[]; target: string; other: string }[] => {
+      if (!slot.subSlots || slot.writes !== 'members') {
+        return []
+      }
+      const here = [...path, slot.name]
+      const target = slot.shorthand?.string
+      const other = slot.subSlots.find(s => s.name !== target)?.name
+      return [
+        ...(target && other ? [{ path: here, target, other }] : []),
+        ...memberShorthands(slot.subSlots, here),
+      ]
+    },
+  )
+}
+
+const nested = (path: string[], value: unknown) =>
+  path.reduceRight<unknown>(
+    (inner, key) => ({ [key]: inner }),
+    value,
+  ) as Record<string, unknown>
+
+const at = (bag: unknown, path: string[]) =>
+  path.reduce<unknown>(
+    (node, key) => (node as Record<string, unknown>)[key],
+    bag,
+  )
+
+const cases = Object.entries(configManifest.displays).flatMap(([name, entry]) =>
+  memberShorthands(entry.slots).map(c => ({ ...c, name, slots: entry.slots })),
+)
+
+test('the manifest walk finds the member-written shorthands', () => {
+  expect(cases.map(c => c.path.join('.'))).toEqual(
+    expect.arrayContaining(['mark', 'labels.name']),
+  )
+})
+
+test.each(cases.map(c => [`${c.name} ${c.path.join('.')}`, c] as const))(
+  '%s: a bare value over the object form keeps its other members',
+  (_label, { path, target, other, slots }) => {
+    const merged = mergeBySlots(
+      nested(path, { [target]: 'old', [other]: 'kept' }),
+      nested(path, 'bare'),
+      slots,
+    )
+    expect(at(merged, path)).toMatchObject({
+      [target]: 'bare',
+      [other]: 'kept',
+    })
+  },
+)

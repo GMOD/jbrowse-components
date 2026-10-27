@@ -51,7 +51,7 @@ export type {
   SessionWithSessionTracks,
   SessionWithSessionTracksType,
 } from './SessionTracks.ts'
-export { hydratedForms } from './hydratedForms.ts'
+export { displayForms, hydratedForms } from './hydratedForms.ts'
 export type { HydratedForms } from './hydratedForms.ts'
 export { getShareableSessionSnapshot } from './shareableSnapshot.ts'
 export {

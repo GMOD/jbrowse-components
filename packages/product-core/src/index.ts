@@ -45,6 +45,7 @@ export {
   getShareableSessionSnapshot,
   copyTrackSnapshot,
   finalizeSession,
+  displayForms,
   hydratedForms,
   isBaseSession,
   isSession,
