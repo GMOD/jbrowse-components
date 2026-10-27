@@ -42,6 +42,9 @@ once per display that embeds it, so read the trend, not the size.
   10-22 alone moved about 3000 paths each way in one sub-schema move.
 - Stable already: CLI commands and flags, session-spec format, registered type
   names, the MCP tool set.
+- Writers: jbrowse-img's modifiers and README, the `jb` copies and the R
+  export's reader tables each have a test against the committed schema, so a
+  respell that misses one fails there.
 - Conformance: `scripts/slotNames.test.ts` refuses a new `show*`, `hide*`,
   `min*` or `max*` slot outside its allowlist, and each exception
   `colorConformance.test.ts` still lists is intended, its config page saying
@@ -58,9 +61,14 @@ once per display that embeds it, so read the trend, not the size.
    - `retiredDisplayColor`/`liftFlatColor`: no carrier found in local or
      hosted hub configs; it goes with `liftViewColor`, a view key.
    - The synteny view keys' `cigarMode`, beta-only.
-2. **Generate the writers.** _Claimed 2026-10-27 (agent worktree)._ The jbrowse-img modifier tables, the `jb`
-   surface description and the R export lag every rename because hand-kept
-   copies drift. Derive each from the schema.
+2. **jbrowse-img modifiers that write nothing.** `modifierSlots.test.ts`
+   checks every modifier against the schema, and exempts two:
+   - `force:` writes `forceLoad`, which `LinearWiggleDisplay` and
+     `LinearHicDisplay` don't declare (`UNGATED`). Batch adds `force:true` to
+     every track, so narrowing the modifier warns on every BigWig.
+   - `heightMode:` and `featureHeight:` write slots
+     `LinearMultiRowFeatureDisplay` and `LinearMultiSampleVariantDisplay`
+     don't declare.
 3. **Writers outside the tree.** _Claimed 2026-10-27 (agent, jb2hubs/JBrowseR/ggjbrowse)._ jb2hubs and its hosted configs, the ggjbrowse
    pin, the graph plugin, the `apollo3` demo and the figure specs
    (`handoffs/screenshot-spec-elegance.md`). Known stale spellings:
