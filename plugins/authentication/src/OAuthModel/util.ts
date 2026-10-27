@@ -1,5 +1,4 @@
-export interface OAuthWindowParams {
-  internetAccountId: string
+export interface OAuthRedirectParams {
   expectedState: string
   exchangeAuthorizationCode: (
     code: string,
@@ -30,7 +29,7 @@ export function parseOAuthError(text: string) {
  */
 export async function finishOAuthRedirect(
   redirectUri: string,
-  params: OAuthWindowParams,
+  params: OAuthRedirectParams,
 ): Promise<string | undefined> {
   const redirectUrl = new URL(redirectUri)
   // Both halves: the code flow answers in the query string, the implicit flow
@@ -74,9 +73,7 @@ export async function finishOAuthRedirect(
 
 /**
  * The redirect URI a message event carries, if it is this account's popup
- * reporting back, and undefined otherwise. Synchronous, so a caller can tell a
- * relevant message from an unrelated one before finishing it — finishing can
- * take a round trip of its own.
+ * reporting back, and undefined otherwise.
  */
 export function getOAuthRedirectUri(
   event: MessageEvent,
@@ -108,48 +105,32 @@ export function getOAuthRedirectUri(
     : undefined
 }
 
-/**
- * Parses an OAuth redirect message event. Returns the token if the event
- * completes the flow, undefined if the event isn't this account's redirect.
- * Throws on any OAuth error.
- */
-export async function finishOAuthWindow(
-  event: MessageEvent,
-  params: OAuthWindowParams,
-): Promise<string | undefined> {
-  const redirectUri = getOAuthRedirectUri(event, params.internetAccountId)
-  return redirectUri === undefined
-    ? undefined
-    : finishOAuthRedirect(redirectUri, params)
-}
-
 // How often the popup is checked for having been closed, and how many
 // consecutive closed readings it takes to call the flow cancelled.
 const POLL_INTERVAL_MS = 500
 const CLOSED_POLLS_TO_CANCEL = 2
 
 /**
- * Returns a promise that resolves to the token when the OAuth popup posts its
- * redirect back. The listener is self-contained and cleaned up when the promise
- * settles.
+ * Resolves to the token once this account's popup posts back a redirect that
+ * `finish` completes, and rejects if `finish` throws or the popup closes with
+ * no redirect in hand. Messages from anything else are ignored. The listener
+ * and the poll both go when the promise settles.
  *
- * Given a `watch`, closing the popup without completing the flow rejects rather
- * than leaving the promise pending — and pending is not a benign state here,
- * because `getToken` caches this promise and hands it to every later request:
- * one dismissed login window left the account dead for the rest of the session,
- * showing nothing. Same failure the blocked-popup check in `getTokenViaAuthFlow`
- * covers, reached the other way.
+ * Pending is not a safe state to leave this promise in: `getToken` caches it
+ * and hands it to every later request, so a dismissed login window that never
+ * rejected would leave the account dead, showing nothing, for the rest of the
+ * session.
  */
-export function waitForOAuthMessage(
-  finish: (event: MessageEvent) => Promise<string | undefined>,
-  watch?: {
-    popup: Pick<Window, 'closed'>
-    /** whether an event is this popup's redirect, tested synchronously */
-    isOwnMessage: (event: MessageEvent) => boolean
-  },
-): Promise<string> {
+export function waitForOAuthMessage({
+  popup,
+  internetAccountId,
+  finish,
+}: {
+  popup: Pick<Window, 'closed'>
+  internetAccountId: string
+  finish: (redirectUri: string) => Promise<string | undefined>
+}): Promise<string> {
   return new Promise((resolve, reject) => {
-    let timer: ReturnType<typeof setInterval> | undefined
     let finishing = false
     let closedPolls = 0
     const settle = (act: () => void) => {
@@ -158,10 +139,13 @@ export function waitForOAuthMessage(
       act()
     }
     const listener = async (event: MessageEvent) => {
-      const own = watch?.isOwnMessage(event) ?? false
-      finishing ||= own
+      const redirectUri = getOAuthRedirectUri(event, internetAccountId)
+      if (redirectUri === undefined) {
+        return
+      }
+      finishing = true
       try {
-        const token = await finish(event)
+        const token = await finish(redirectUri)
         if (token !== undefined) {
           settle(() => {
             resolve(token)
@@ -174,33 +158,28 @@ export function waitForOAuthMessage(
         })
         return
       }
-      // a redirect of ours that completed nothing — a provider that came back
-      // with neither token, code nor error. Hand the popup back to the
-      // watchdog rather than latching it off for good.
-      if (own) {
-        finishing = false
-      }
+      // a provider that came back with neither token, code nor error: hand
+      // the popup back to the watchdog
+      finishing = false
     }
     window.addEventListener('message', listener)
 
-    if (watch) {
-      timer = setInterval(() => {
-        // A closed popup only means cancellation while no redirect of ours has
-        // arrived: the popup posts and *then* closes itself, and the code flow
-        // then spends a token exchange finishing. Hence both the `finishing`
-        // latch and a poll of grace for the gap between the post and this
-        // listener running.
-        if (finishing || !watch.popup.closed) {
-          closedPolls = 0
-          return
-        }
-        closedPolls += 1
-        if (closedPolls >= CLOSED_POLLS_TO_CANCEL) {
-          settle(() => {
-            reject(new Error('OAuth flow was cancelled'))
-          })
-        }
-      }, POLL_INTERVAL_MS)
-    }
+    // A closed popup only means cancellation while no redirect of ours is
+    // being finished: the popup posts and *then* closes itself, and the code
+    // flow spends a token exchange finishing. Hence both the `finishing` latch
+    // and a poll of grace for the gap between the post and the listener
+    // running.
+    const timer = setInterval(() => {
+      if (finishing || !popup.closed) {
+        closedPolls = 0
+        return
+      }
+      closedPolls += 1
+      if (closedPolls >= CLOSED_POLLS_TO_CANCEL) {
+        settle(() => {
+          reject(new Error('OAuth flow was cancelled'))
+        })
+      }
+    }, POLL_INTERVAL_MS)
   })
 }

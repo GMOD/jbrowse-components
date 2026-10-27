@@ -17,8 +17,6 @@ import { OAuthLoginPrompt } from '../lazyLoginForms.ts'
 import { getAccountSession, getResponseError, proveToken } from '../util.ts'
 import {
   finishOAuthRedirect,
-  finishOAuthWindow,
-  getOAuthRedirectUri,
   parseOAuthError,
   waitForOAuthMessage,
 } from './util.ts'
@@ -27,7 +25,7 @@ import type {
   OAuthInternetAccountConfig,
   OAuthInternetAccountConfigModel,
 } from './configSchema.ts'
-import type { OAuthWindowParams } from './util.ts'
+import type { OAuthRedirectParams } from './util.ts'
 import type { UriLocation } from '@jbrowse/core/util'
 import type { DialogHost } from '@jbrowse/core/util/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -377,8 +375,7 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
 
         const url = new URL(self.authEndpoint)
         url.search = new URLSearchParams(data).toString()
-        const oauthParams: OAuthWindowParams = {
-          internetAccountId: self.internetAccountId,
+        const oauthParams: OAuthRedirectParams = {
           expectedState: state,
           exchangeAuthorizationCode: async (code, uri) =>
             self.exchangeAuthorizationForAccessToken(code, uri, codeVerifier),
@@ -421,15 +418,12 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
           // no await between the open and this listener, so the redirect
           // message cannot be delivered before we are listening
           const waitForToken = (popup: Window) =>
-            waitForOAuthMessage(
-              event => finishOAuthWindow(event, oauthParams),
-              {
-                popup,
-                isOwnMessage: event =>
-                  getOAuthRedirectUri(event, self.internetAccountId) !==
-                  undefined,
-              },
-            )
+            waitForOAuthMessage({
+              popup,
+              internetAccountId: self.internetAccountId,
+              finish: redirectUri =>
+                finishOAuthRedirect(redirectUri, oauthParams),
+            })
           // A popup only opens while the page holds transient activation, and
           // a session that loads an authenticated track has none — so the open
           // is what trips the pop-up blocker, on a share link the user did

@@ -1,14 +1,15 @@
 import {
   finishOAuthRedirect,
-  finishOAuthWindow,
+  getOAuthRedirectUri,
   waitForOAuthMessage,
 } from './util.ts'
 
-import type { OAuthWindowParams } from './util.ts'
+import type { OAuthRedirectParams } from './util.ts'
 
-function makeParams(overrides?: Partial<OAuthWindowParams>): OAuthWindowParams {
+function makeParams(
+  overrides?: Partial<OAuthRedirectParams>,
+): OAuthRedirectParams {
   return {
-    internetAccountId: 'testAccount',
     expectedState: 'st',
     exchangeAuthorizationCode: async () => 'exchanged-token',
     storeToken: () => {},
@@ -110,23 +111,23 @@ describe('finishOAuthRedirect', () => {
   })
 })
 
-describe('finishOAuthWindow', () => {
-  it('completes the flow for this account', async () => {
-    const event = makeRedirectEvent(
-      'http://localhost/auth?code=auth-code&state=st',
+describe('getOAuthRedirectUri', () => {
+  it('returns the redirect this account posts back', () => {
+    const event = makeRedirectEvent('http://localhost/auth?code=c&state=st')
+    expect(getOAuthRedirectUri(event, 'testAccount')).toBe(
+      'http://localhost/auth?code=c&state=st',
     )
-    expect(await finishOAuthWindow(event, makeParams())).toBe('exchanged-token')
   })
 
-  it('returns undefined when event name does not match', async () => {
+  it('returns undefined when event name does not match', () => {
     const event = makeEvent({
       name: 'JBrowseAuthWindow-otherAccount',
       redirectUri: 'http://x/?code=abc',
     })
-    expect(await finishOAuthWindow(event, makeParams())).toBeUndefined()
+    expect(getOAuthRedirectUri(event, 'testAccount')).toBeUndefined()
   })
 
-  it('ignores a message from another origin', async () => {
+  it('ignores a message from another origin', () => {
     const event = makeEvent(
       {
         name: 'JBrowseAuthWindow-testAccount',
@@ -134,77 +135,107 @@ describe('finishOAuthWindow', () => {
       },
       'https://evil.example.com',
     )
-    expect(await finishOAuthWindow(event, makeParams())).toBeUndefined()
+    expect(getOAuthRedirectUri(event, 'testAccount')).toBeUndefined()
   })
 
-  it('ignores messages whose data is not an object', async () => {
+  it('ignores messages whose data is not an object', () => {
     for (const data of [null, undefined, 'a string', 42]) {
       expect(
-        await finishOAuthWindow(makeEvent(data), makeParams()),
+        getOAuthRedirectUri(makeEvent(data), 'testAccount'),
       ).toBeUndefined()
     }
   })
 
-  it('ignores a matching message with no redirectUri', async () => {
-    const event = makeEvent({ name: 'JBrowseAuthWindow-testAccount' })
-    expect(await finishOAuthWindow(event, makeParams())).toBeUndefined()
+  it('ignores a matching message with no string redirectUri', () => {
+    for (const data of [
+      { name: 'JBrowseAuthWindow-testAccount' },
+      { name: 'JBrowseAuthWindow-testAccount', redirectUri: 42 },
+    ]) {
+      expect(
+        getOAuthRedirectUri(makeEvent(data), 'testAccount'),
+      ).toBeUndefined()
+    }
   })
 })
 
 describe('waitForOAuthMessage', () => {
-  it('resolves when finish returns a token', async () => {
-    const promise = waitForOAuthMessage(async () => 'my-token')
-    window.dispatchEvent(new MessageEvent('message', { data: {} }))
+  function wait(
+    finish: (redirectUri: string) => Promise<string | undefined>,
+    popup = { closed: false },
+  ) {
+    return waitForOAuthMessage({
+      popup,
+      internetAccountId: 'testAccount',
+      finish,
+    })
+  }
+
+  function postRedirect(redirectUri = 'http://localhost/auth?code=c') {
+    window.dispatchEvent(makeRedirectEvent(redirectUri))
+  }
+
+  it('finishes the redirect this account posts back', async () => {
+    const finish = jest.fn(async () => 'my-token')
+    const promise = wait(finish)
+    postRedirect('http://localhost/auth?code=abc')
     expect(await promise).toBe('my-token')
+    expect(finish).toHaveBeenCalledWith('http://localhost/auth?code=abc')
+  })
+
+  it('never hands another message to finish', async () => {
+    const finish = jest.fn(async () => 'my-token')
+    const promise = wait(finish)
+    window.dispatchEvent(makeEvent(null))
+    window.dispatchEvent(
+      makeEvent({ name: 'JBrowseAuthWindow-otherAccount', redirectUri: 'x' }),
+    )
+    postRedirect()
+    expect(await promise).toBe('my-token')
+    expect(finish).toHaveBeenCalledTimes(1)
   })
 
   it('rejects when finish throws', async () => {
-    const promise = waitForOAuthMessage(async () => {
+    const promise = wait(async () => {
       throw new Error('auth failed')
     })
-    window.dispatchEvent(new MessageEvent('message', { data: {} }))
+    postRedirect()
     await expect(promise).rejects.toThrow('auth failed')
   })
 
   it('keeps waiting when finish returns undefined', async () => {
     let callCount = 0
-    const promise = waitForOAuthMessage(async () => {
+    const promise = wait(async () => {
       callCount++
       return callCount < 3 ? undefined : 'final-token'
     })
-    window.dispatchEvent(new MessageEvent('message', { data: {} }))
-    window.dispatchEvent(new MessageEvent('message', { data: {} }))
-    window.dispatchEvent(new MessageEvent('message', { data: {} }))
+    postRedirect()
+    postRedirect()
+    postRedirect()
     expect(await promise).toBe('final-token')
   })
 
   it('removes the event listener after resolving', async () => {
-    let callCount = 0
-    const promise = waitForOAuthMessage(async () => {
-      callCount++
-      return 'token'
-    })
-    window.dispatchEvent(new MessageEvent('message', { data: {} }))
+    const finish = jest.fn(async () => 'token')
+    const promise = wait(finish)
+    postRedirect()
     await promise
-    // Fire more events — listener should be gone, callCount should not increase
-    window.dispatchEvent(new MessageEvent('message', { data: {} }))
-    window.dispatchEvent(new MessageEvent('message', { data: {} }))
-    expect(callCount).toBe(1)
+    postRedirect()
+    postRedirect()
+    expect(finish).toHaveBeenCalledTimes(1)
   })
 
   it('removes the event listener after rejecting', async () => {
-    let callCount = 0
-    const promise = waitForOAuthMessage(async () => {
-      callCount++
+    const finish = jest.fn(async () => {
       throw new Error('fail')
     })
-    window.dispatchEvent(new MessageEvent('message', { data: {} }))
+    const promise = wait(finish)
+    postRedirect()
     await expect(promise).rejects.toThrow('fail')
-    window.dispatchEvent(new MessageEvent('message', { data: {} }))
-    expect(callCount).toBe(1)
+    postRedirect()
+    expect(finish).toHaveBeenCalledTimes(1)
   })
 
-  describe('with a popup to watch', () => {
+  describe('watching the popup', () => {
     beforeEach(() => {
       jest.useFakeTimers()
     })
@@ -216,10 +247,7 @@ describe('waitForOAuthMessage', () => {
     // progress — it is an account that will never authenticate again
     it('rejects when the user closes the popup', async () => {
       const popup = { closed: false }
-      const promise = waitForOAuthMessage(async () => undefined, {
-        popup,
-        isOwnMessage: () => false,
-      })
+      const promise = wait(async () => undefined, popup)
       popup.closed = true
       jest.advanceTimersByTime(2000)
       await expect(promise).rejects.toThrow('OAuth flow was cancelled')
@@ -231,14 +259,14 @@ describe('waitForOAuthMessage', () => {
     it('does not cancel a redirect that is still being finished', async () => {
       const popup = { closed: false }
       let finishRedirect: (token: string) => void
-      const promise = waitForOAuthMessage(
+      const promise = wait(
         async () =>
           new Promise<string>(resolve => {
             finishRedirect = resolve
           }),
-        { popup, isOwnMessage: () => true },
+        popup,
       )
-      window.dispatchEvent(new MessageEvent('message', { data: {} }))
+      postRedirect()
       await Promise.resolve()
 
       popup.closed = true
@@ -247,13 +275,21 @@ describe('waitForOAuthMessage', () => {
       expect(await promise).toBe('exchanged-token')
     })
 
+    it('cancels after a redirect of ours that completed nothing', async () => {
+      const popup = { closed: false }
+      const promise = wait(async () => undefined, popup)
+      postRedirect('http://localhost/auth?state=st')
+      await Promise.resolve()
+
+      popup.closed = true
+      jest.advanceTimersByTime(2000)
+      await expect(promise).rejects.toThrow('OAuth flow was cancelled')
+    })
+
     it('stops polling once the flow completes', async () => {
       const popup = { closed: false }
-      const promise = waitForOAuthMessage(async () => 'token', {
-        popup,
-        isOwnMessage: () => true,
-      })
-      window.dispatchEvent(new MessageEvent('message', { data: {} }))
+      const promise = wait(async () => 'token', popup)
+      postRedirect()
       expect(await promise).toBe('token')
 
       popup.closed = true
