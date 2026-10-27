@@ -1,9 +1,10 @@
+import { getEnv } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { ConfigurationEditor } from '@jbrowse/plugin-config'
 import { Button, DialogActions, DialogContent } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { AbstractSessionModel } from '@jbrowse/core/util'
 
 const useStyles = makeStyles()({
   container: {
@@ -12,13 +13,18 @@ const useStyles = makeStyles()({
   },
 })
 const AssemblyEditor = observer(function AssemblyEditor({
+  session,
   assembly,
   onClose,
 }: {
+  session: AbstractSessionModel
   assembly: AnyConfigurationModel
   onClose: () => void
 }) {
   const { classes } = useStyles()
+  const ConfigurationEditor = getEnv(session).pluginManager.getWidgetType(
+    'ConfigurationEditorWidget',
+  ).ReactComponent
   return (
     <>
       <DialogContent>

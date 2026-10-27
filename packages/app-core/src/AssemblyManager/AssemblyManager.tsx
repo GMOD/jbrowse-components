@@ -31,6 +31,7 @@ const AssemblyManager = observer(function AssemblyManager({
     >
       {editingAssembly ? (
         <AssemblyEditor
+          session={session}
           assembly={editingAssembly}
           onClose={() => {
             setEditingAssembly(undefined)

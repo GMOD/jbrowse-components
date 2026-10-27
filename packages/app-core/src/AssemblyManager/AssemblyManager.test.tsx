@@ -4,6 +4,21 @@ import { fireEvent, render, waitFor } from '@testing-library/react'
 
 import AssemblyManager from './AssemblyManager.tsx'
 
+jest.mock('@jbrowse/core/util', () => ({
+  ...jest.requireActual('@jbrowse/core/util'),
+  getEnv: () => ({
+    pluginManager: {
+      getWidgetType: (name: string) => ({
+        ReactComponent: ({
+          model,
+        }: {
+          model: { target: { name: string } }
+        }) => <div>{`${name} on ${model.target.name}`}</div>,
+      }),
+    },
+  }),
+}))
+
 const assemblies = [
   {
     name: 'testAssembly',
@@ -125,4 +140,21 @@ test('closes when the Close button is clicked', () => {
   )
   fireEvent.click(getByText('Close'))
   expect(onClose).toHaveBeenCalled()
+})
+
+test('edits an assembly in the registered configuration editor', async () => {
+  const { getByTestId, findByText, getByText } = render(
+    <AssemblyManager
+      // @ts-expect-error
+      session={mockRootModel.session}
+      rootModel={mockRootModel}
+      onClose={() => {}}
+    />,
+  )
+  fireEvent.click(getByTestId('testAssembly-edit'))
+  expect(
+    await findByText('ConfigurationEditorWidget on testAssembly'),
+  ).toBeTruthy()
+  fireEvent.click(getByText('Back'))
+  expect(await findByText('Add new assembly')).toBeTruthy()
 })
