@@ -261,6 +261,9 @@ importers:
       typescript7:
         specifier: npm:typescript@^7.0.2
         version: typescript@7.0.2
+      webgpu:
+        specifier: 0.6.2
+        version: 0.6.2(supports-color@8.1.1)
       webpack:
         specifier: 5.112.2
         version: 5.112.2(clean-css@5.3.3)(csso@5.0.5)(esbuild@0.28.2)(html-minifier-terser@6.1.0)(lightningcss@1.33.0)(postcss@8.5.31)(sharp@0.35.5(@types/node@26.6.5))(svgo@4.1.0)(webpack-cli@7.2.3)
@@ -681,7 +684,11 @@ importers:
         specifier: '>=19.0.0'
         version: 19.3.1
 
-  packages/shader-tools: {}
+  packages/shader-tools:
+    dependencies:
+      webgpu:
+        specifier: ^0.6.2
+        version: 0.6.2(supports-color@8.1.1)
 
   packages/sv-core:
     dependencies:
@@ -10894,6 +10901,9 @@ packages:
   webdriver-bidi-protocol@1.0.1:
     resolution: {integrity: sha512-WXWs/aXF2a6Al1Z2/V/7Gp2oPZOAAmHjJOTmv4KCXRJ122IMj3tSSMc6a4q3K4QOmhQbse/Ahr+oTVJOU2dUiw==}
 
+  webgpu@0.6.2:
+    resolution: {integrity: sha512-3L4GfmqJLvYUIEWJngEQY+2HQiUlAFkg8+P8NDDj3Xx5hHHIFO/r8JW+ynfqBj7kHN4mbnwO74uB+lrRtLhp4Q==}
+
   webidl-conversions@7.0.0:
     resolution: {integrity: sha512-VwddBukDzu71offAQR975unBIGqfKZpM+8ZX6ySk8nYhVoo5CYaZyzt3YBvYtRtO+aoGlqxPg/B87NGVZ/fu6g==}
     engines: {node: '>=12'}
@@ -19633,6 +19643,13 @@ snapshots:
   web-namespaces@2.0.1: {}
 
   webdriver-bidi-protocol@1.0.1: {}
+
+  webgpu@0.6.2(supports-color@8.1.1):
+    dependencies:
+      '@webgpu/types': 0.1.74
+      debug: 4.4.3(supports-color@8.1.1)
+    transitivePeerDependencies:
+      - supports-color
 
   webidl-conversions@7.0.0: {}
 

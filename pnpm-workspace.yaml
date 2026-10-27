@@ -74,6 +74,9 @@ allowBuilds:
   puppeteer: true
   sharp: true
   unrs-resolver: true
+  # Its postinstall only clears macOS quarantine, which an npm tarball never
+  # carries; the prebuilt dawn.node needs no build step.
+  webgpu: false
 minimumReleaseAge: '1440'
 minimumReleaseAgeExclude:
   - '@gmod/*'
