@@ -50,9 +50,11 @@ export function withRowColors(
       scale?.kind === 'categorical' &&
       scale.field === rowColors.field
     ) {
+      // a feature with no value is no row, so the color's own `invalid` stays
+      const rowAbgr = (name: string) => (name ? abgrOf(name) : undefined)
       const painted = new Uint32Array(layer.count)
       for (let k = 0; k < layer.count; k++) {
-        painted[k] = abgrOf(names[row[k]!] ?? '') ?? color[k]!
+        painted[k] = rowAbgr(names[row[k]!] ?? '') ?? color[k]!
       }
       return {
         ...layer,
@@ -61,7 +63,7 @@ export function withRowColors(
           ...scale,
           entries: scale.entries.map(e => ({
             ...e,
-            color: abgrOf(e.value) ?? e.color,
+            color: rowAbgr(e.value) ?? e.color,
           })),
         },
       }

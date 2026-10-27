@@ -91,3 +91,30 @@ it('coloring one row leaves the palette colors of the others where they were', (
   expect(after.dad).toBe(before.dad)
   expect(after.kid).toBe(before.kid)
 })
+
+it('a row-colored value the domain leaves out keeps its own key row, not Other', () => {
+  const display = loaded(
+    {
+      field: 'source',
+      scale: { domain: ['mom'], range: ['#00ff00'], unknown: '#888888' },
+    },
+    { scale: { domain: ['kid'], range: ['#ffff00'] } },
+  )
+  expect(keyColors(display)).toMatchObject({ kid: YELLOW })
+})
+
+it('a written range a row color replaces is named in the corner', () => {
+  const display = loaded(
+    {
+      field: 'source',
+      scale: { domain: ['mom', 'kid'], range: ['#00ff00', '#ffff00'] },
+    },
+    { scale: { domain: ['mom'], range: ['#0000ff'] } },
+  )
+  expect(display.cornerNotices).toContainEqual(
+    expect.stringContaining('mom paint their row colors'),
+  )
+  expect(
+    loaded('source', MOM_DAD).cornerNotices.some(n => n.includes('row colors')),
+  ).toBe(false)
+})

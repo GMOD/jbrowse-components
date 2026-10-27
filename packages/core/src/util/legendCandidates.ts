@@ -157,8 +157,11 @@ export function derivedColorScale<T>(
     ({ values, color }) => {
       const sorted = values.toSorted(field.compare)
       const value = sorted[0]!
+      // a value the domain leaves out can still paint a color of its own, as
+      // a row color does, and then it is not the Other row
       const other =
         unknown !== undefined &&
+        cssColorToABGR(unknown.color) === color &&
         sorted.some(v => unknown.paints(v)) &&
         sorted.every(v => v === '' || v === noValue || unknown.paints(v))
       return {

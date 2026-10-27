@@ -14,6 +14,7 @@ import {
   pluralize,
 } from '@jbrowse/core/util'
 import { categoricalField } from '@jbrowse/core/util/categoricalField'
+import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { rampDomain } from '@jbrowse/core/util/colorRamp'
 import { IDENTITY_SCALE } from '@jbrowse/core/util/colorScale'
 import { createAbortRotation } from '@jbrowse/core/util/createAbortRotation'
@@ -1667,6 +1668,45 @@ export function stateModelFactory(
         },
         /**
          * #getter
+         * A color over the rows' field whose written `range` names a color a
+         * row's own replaces (`withRowColors`), one line per color object.
+         */
+        get rowColorNotices(): string[] {
+          if (!self.drawsRows || !self.rowColorPaintsMarks) {
+            return []
+          }
+          const rows = self.resolvedRowColors
+          const lines = self.conf.marks.flatMap((m, i) => {
+            const source = self.markColors[i]
+            if (
+              source?.kind !== 'categories' ||
+              source.encoding.field !== self.rowsField
+            ) {
+              return []
+            }
+            const { domain = [], range = [] } = source.encoding
+            const replaced = domain.map(String).filter((value, j) => {
+              const row = rows.get(value)
+              const own = range[j]
+              return (
+                row !== undefined &&
+                own !== undefined &&
+                cssColorToABGR(row) !== cssColorToABGR(own)
+              )
+            })
+            const path = saysColor(m.encoding.color)
+              ? `marks[${i}].encoding.color`
+              : 'encoding.color'
+            return replaced.length > 0
+              ? [
+                  `${path}.scale.range: ${replaced.join(', ')} paint their row colors; set those in rowColor`,
+                ]
+              : []
+          })
+          return [...new Set(lines)]
+        },
+        /**
+         * #getter
          * The shape keys whose unlisted values collide on one shape, each
          * with the domain Pin distinct shapes writes.
          */
@@ -1684,6 +1724,7 @@ export function stateModelFactory(
             ...self.configNotices,
             ...this.dataNotices,
             ...this.displayNotices,
+            ...this.rowColorNotices,
             ...this.sharedKeys.map(sharedKeyNotice),
           ]
         },
@@ -1699,6 +1740,7 @@ export function stateModelFactory(
           return [
             ...this.dataNotices,
             ...this.displayNotices,
+            ...this.rowColorNotices,
             ...this.sharedKeys.map(sharedKeyNotice),
             ...(total > 0 && skipped === total
               ? [
