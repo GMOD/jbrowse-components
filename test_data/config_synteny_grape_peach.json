@@ -58,20 +58,6 @@
         "id": "test1",
         "displayName": "Grape vs Peach - MCScan (Python version) synteny",
         "type": "LinearSyntenyView",
-        "tracks": [
-          {
-            "id": "J4VCa6xoWN",
-            "type": "SyntenyTrack",
-            "configuration": "grape_peach_synteny_mcscan",
-            "displays": [
-              {
-                "id": "v9h9kOmHjU",
-                "type": "LinearSyntenyDisplay",
-                "configuration": "grape_peach_synteny_mcscan-LinearSyntenyDisplay"
-              }
-            ]
-          }
-        ],
         "views": [
           {
             "id": "test1_1",
@@ -115,26 +101,30 @@
             "showCenterLine": false,
             "showCytobands": true
           }
+        ],
+        "levels": [
+          {
+            "tracks": [
+              {
+                "id": "J4VCa6xoWN",
+                "type": "SyntenyTrack",
+                "configuration": "grape_peach_synteny_mcscan",
+                "displays": [
+                  {
+                    "id": "v9h9kOmHjU",
+                    "type": "LinearSyntenyDisplay",
+                    "configuration": "grape_peach_synteny_mcscan-LinearSyntenyDisplay"
+                  }
+                ]
+              }
+            ]
+          }
         ]
       },
       {
         "id": "d1asEMtmS",
         "displayName": "Grape vs Peach - PAF file synteny",
         "type": "LinearSyntenyView",
-        "tracks": [
-          {
-            "id": "0JxrbvMHE0",
-            "type": "SyntenyTrack",
-            "configuration": "fileName-1606319049337",
-            "displays": [
-              {
-                "id": "nX0MnvhRZS",
-                "type": "LinearSyntenyDisplay",
-                "configuration": "fileName-1606319049337-LinearSyntenyDisplay"
-              }
-            ]
-          }
-        ],
         "views": [
           {
             "id": "z4UaSu11M",
@@ -1731,6 +1721,24 @@
             "trackLabels": "overlapping",
             "showCenterLine": false,
             "showCytobands": true
+          }
+        ],
+        "levels": [
+          {
+            "tracks": [
+              {
+                "id": "0JxrbvMHE0",
+                "type": "SyntenyTrack",
+                "configuration": "fileName-1606319049337",
+                "displays": [
+                  {
+                    "id": "nX0MnvhRZS",
+                    "type": "LinearSyntenyDisplay",
+                    "configuration": "fileName-1606319049337-LinearSyntenyDisplay"
+                  }
+                ]
+              }
+            ]
           }
         ]
       }

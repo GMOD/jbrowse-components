@@ -130,13 +130,6 @@
     },
     {
       "values": {
-        "spelling": "LinearArcDisplay.renderer",
-        "kind": "unmapped",
-        "configs": 1
-      }
-    },
-    {
-      "values": {
         "spelling": "QuantitativeTrack.autoscale",
         "kind": "unmapped",
         "configs": 1
@@ -376,6 +369,13 @@
     {
       "values": {
         "spelling": "HicAdapter.resolutionMultiplier",
+        "kind": "dropped",
+        "configs": 1
+      }
+    },
+    {
+      "values": {
+        "spelling": "LinearArcDisplay.renderer",
         "kind": "dropped",
         "configs": 1
       }

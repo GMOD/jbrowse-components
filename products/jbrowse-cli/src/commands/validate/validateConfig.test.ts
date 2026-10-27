@@ -504,6 +504,30 @@ describe('validateConfig', () => {
   // `renderer` is lifted into current slots by LinearBasicDisplay, and silently
   // dropped by LinearWiggleDisplay. Same key, different verdict — which is why
   // the manifest records it per type rather than globally.
+  it("reads a key a retired display type's migrate drops as never read", () => {
+    const config = baseConfig()
+    config.tracks[0] = {
+      ...config.tracks[0]!,
+      type: 'FeatureTrack',
+      adapter: { type: 'BedTabixAdapter', uri: 'arcs.bed.gz' },
+      // @ts-expect-error the v4 arc display's renderer
+      displays: [
+        {
+          type: 'LinearArcDisplay',
+          displayId: 'd',
+          renderer: { type: 'ArcRenderer', height: 'jexl:100' },
+        },
+      ],
+    }
+    expect(errorsOf(config)).toEqual([])
+    expect(warningsOf(config)).toEqual([
+      expect.objectContaining({
+        where: 'tracks[0].displays[0].renderer',
+        message: expect.stringContaining('never read'),
+      }),
+    ])
+  })
+
   it('distinguishes a migrated legacy key from a dropped one', () => {
     const withBasic = baseConfig()
     withBasic.tracks[0] = {

@@ -31,7 +31,7 @@ export function liftViewLevelTracks(snap: Snap | undefined) {
   return {
     ...rest,
     ...(recipes.length ? { tracks: recipes } : {}),
-    levels: [{ level: 0, tracks: built }],
+    levels: [{ tracks: built }],
   }
 }
 

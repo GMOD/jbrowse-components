@@ -8938,14 +8938,16 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "x-closed": true,
       "properties": {
         "type": {
-          "description": "ordinal a range color per value of field; threshold a range color per interval between the cut points in domain; unset follows field.",
+          "description": "ordinal a range color per value of field; threshold a range color per interval between the cut points in domain; linear or log a color along a ramp from domainMin to domainMax; unset is linear for score and ordinal for any other field.",
           "if": {
             "type": "null"
           },
           "else": {
             "enum": [
               "ordinal",
-              "threshold"
+              "threshold",
+              "linear",
+              "log"
             ]
           }
         },
@@ -8973,7 +8975,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "range": {
-          "description": "CSS colors the domain takes, in order, continuing into the default palette past its end; under threshold one per interval, one more than the cuts.",
+          "description": "CSS colors the domain takes, in order, continuing into the default palette past its end; under threshold one per interval, one more than the cuts; under linear or log the ramp's stops, winning over scheme.",
           "if": {
             "type": "null"
           },
@@ -8982,37 +8984,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "items": {
               "$ref": "#/$defs/CssColorEntry"
             }
-          }
-        },
-        "scheme": {
-          "description": "a named ramp sampled end to end: an ordinal scale that lists a domain takes one color per value, and a threshold that writes cuts one per interval; range's colors, where it lists any, win over it.",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "enum": [
-              "viridis",
-              "magma",
-              "inferno",
-              "cividis",
-              "juicebox",
-              "fall",
-              "reds",
-              "blues",
-              "redblue",
-              "purpleorange",
-              "redgreyblue",
-              "redyellowblue"
-            ]
-          }
-        },
-        "reverse": {
-          "description": "turns the ramp round, so its last color paints the bottom of a ramp's domain or a threshold's lowest interval; unset follows the field's preset, else runs as written.",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "boolean"
           }
         },
         "unknown": {
@@ -9055,6 +9026,74 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             ]
           }
+        },
+        "scheme": {
+          "description": "a named ramp: a ramp scale runs along it, a threshold that writes cuts takes one color per interval from end to end, and an ordinal scale that lists a domain one per value; range's colors, where it lists any, win over it.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "enum": [
+              "viridis",
+              "magma",
+              "inferno",
+              "cividis",
+              "juicebox",
+              "fall",
+              "reds",
+              "blues",
+              "redblue",
+              "purpleorange",
+              "redgreyblue",
+              "redyellowblue"
+            ]
+          }
+        },
+        "reverse": {
+          "description": "turns the ramp round, so its last color paints the bottom of a ramp's domain or a threshold's lowest interval; unset follows the field's preset, else runs as written.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
+        },
+        "domainMid": {
+          "description": "the value the ramp's middle stop sits at, so a diverging ramp centres somewhere other than the middle of the domain, both sides on one scale: the farther end of the domain reaches its end color and equal distances from the middle take equal colors; unset, the stops are evenly spaced across it.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
+        },
+        "domainMin": {
+          "description": "the bottom of a ramp's domain; unset follows the loaded values.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
+        },
+        "domainMax": {
+          "description": "the top of a ramp's domain; unset follows the loaded values.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
+        },
+        "domainQuantile": {
+          "description": "the quantile an open end of a ramp follows over the loaded values: 1 their extremes, 0.99 clips the outermost 1% at each end, each sign measured on its own.",
+          "default": 1,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         }
       },
       "patternProperties": {
@@ -9088,6 +9127,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         {
           "description": "Shorthand for \`{ \\"field\\": ... }\`.",
           "default": "",
+          "examples": [
+            "score"
+          ],
           "allOf": [
             {
               "$ref": "#/$defs/FeatureField"
@@ -9133,7 +9175,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                     "errorMessage": "is a color, and a bare string is the field. To paint every feature it, write { \\"value\\": <the color> }"
                   }
                 ]
-              }
+              },
+              "examples": [
+                "score"
+              ]
             },
             "scale": {
               "if": {
@@ -9424,6 +9469,15 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 }
               }
             ]
+          }
+        },
+        "unknown": {
+          "description": "color for a value missing from domain: unset, a preset field's level keeps its own color and any other value takes the next palette color where the display deals one; a color paints that color; \\"\\" paints a feature the no-value grey and a variant cell the alt hue, and leaves a row the color it already has.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/CssColor"
           }
         },
         "invalid": {
@@ -12264,14 +12318,16 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "x-closed": true,
       "properties": {
         "type": {
-          "description": "ordinal a range color per value of field; threshold a range color per interval between the cut points in domain; unset follows field.",
+          "description": "ordinal a range color per value of field; threshold a range color per interval between the cut points in domain; linear or log a color along a ramp from domainMin to domainMax; unset is linear for score and ordinal for any other field.",
           "if": {
             "type": "null"
           },
           "else": {
             "enum": [
               "ordinal",
-              "threshold"
+              "threshold",
+              "linear",
+              "log"
             ]
           }
         },
@@ -12299,7 +12355,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "range": {
-          "description": "CSS colors the domain takes, in order, continuing into the default palette past its end; under threshold one per interval, one more than the cuts.",
+          "description": "CSS colors the domain takes, in order, continuing into the default palette past its end; under threshold one per interval, one more than the cuts; under linear or log the ramp's stops, winning over scheme.",
           "if": {
             "type": "null"
           },
@@ -12308,37 +12364,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "items": {
               "$ref": "#/$defs/CssColorEntry"
             }
-          }
-        },
-        "scheme": {
-          "description": "a named ramp sampled end to end: an ordinal scale that lists a domain takes one color per value, and a threshold that writes cuts one per interval; range's colors, where it lists any, win over it.",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "enum": [
-              "viridis",
-              "magma",
-              "inferno",
-              "cividis",
-              "juicebox",
-              "fall",
-              "reds",
-              "blues",
-              "redblue",
-              "purpleorange",
-              "redgreyblue",
-              "redyellowblue"
-            ]
-          }
-        },
-        "reverse": {
-          "description": "turns the ramp round, so its last color paints the bottom of a ramp's domain or a threshold's lowest interval; unset follows the field's preset, else runs as written.",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "boolean"
           }
         },
         "unknown": {
@@ -12381,6 +12406,74 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             ]
           }
+        },
+        "scheme": {
+          "description": "a named ramp: a ramp scale runs along it, a threshold that writes cuts takes one color per interval from end to end, and an ordinal scale that lists a domain one per value; range's colors, where it lists any, win over it.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "enum": [
+              "viridis",
+              "magma",
+              "inferno",
+              "cividis",
+              "juicebox",
+              "fall",
+              "reds",
+              "blues",
+              "redblue",
+              "purpleorange",
+              "redgreyblue",
+              "redyellowblue"
+            ]
+          }
+        },
+        "reverse": {
+          "description": "turns the ramp round, so its last color paints the bottom of a ramp's domain or a threshold's lowest interval; unset follows the field's preset, else runs as written.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
+        },
+        "domainMid": {
+          "description": "the value the ramp's middle stop sits at, so a diverging ramp centres somewhere other than the middle of the domain, both sides on one scale: the farther end of the domain reaches its end color and equal distances from the middle take equal colors; unset, the stops are evenly spaced across it.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
+        },
+        "domainMin": {
+          "description": "the bottom of a ramp's domain; unset follows the loaded values.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
+        },
+        "domainMax": {
+          "description": "the top of a ramp's domain; unset follows the loaded values.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
+        },
+        "domainQuantile": {
+          "description": "the quantile an open end of a ramp follows over the loaded values: 1 their extremes, 0.99 clips the outermost 1% at each end, each sign measured on its own.",
+          "default": 1,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         }
       },
       "patternProperties": {
@@ -12414,6 +12507,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         {
           "description": "Shorthand for \`{ \\"field\\": ... }\`.",
           "default": "",
+          "examples": [
+            "score"
+          ],
           "allOf": [
             {
               "$ref": "#/$defs/FeatureField"
@@ -12459,7 +12555,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                     "errorMessage": "is a color, and a bare string is the field. To paint every feature it, write { \\"value\\": <the color> }"
                   }
                 ]
-              }
+              },
+              "examples": [
+                "score"
+              ]
             },
             "scale": {
               "if": {
@@ -16030,6 +16129,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "jexlFilters": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "renderer": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "color": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
       }
     },
@@ -17014,10 +17121,24 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "$ref": "#/$defs/LinearBasicDisplaySlots/properties/impliedUTRs"
             },
             "renderer": {
-              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/renderer"
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearBasicDisplaySlots/properties/renderer"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/renderer"
+                }
+              ]
             },
             "color": {
-              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/color"
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearBasicDisplaySlots/properties/color"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/color"
+                }
+              ]
             },
             "rows": {
               "anyOf": [
@@ -17581,6 +17702,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "origin": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/origin"
+            },
+            "renderer": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/renderer"
+            },
+            "color": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/color"
             }
           },
           "patternProperties": {
@@ -18000,6 +18127,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 },
                 {
                   "$ref": "#/$defs/LinearVariantDisplaySlots/properties/renderer"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/renderer"
                 }
               ]
             },
@@ -18198,6 +18328,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 },
                 {
                   "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/color"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/color"
                 }
               ]
             },
@@ -18940,6 +19073,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "filter": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/filter"
+            },
+            "renderer": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/renderer"
+            },
+            "color": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/color"
             }
           },
           "patternProperties": {
@@ -19304,6 +19443,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "filter": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/filter"
+            },
+            "renderer": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/renderer"
+            },
+            "color": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/color"
             }
           },
           "patternProperties": {
@@ -19900,6 +20045,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "filter": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/filter"
+            },
+            "renderer": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/renderer"
+            },
+            "color": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/color"
             }
           },
           "patternProperties": {
@@ -20316,6 +20467,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 },
                 {
                   "$ref": "#/$defs/LinearSyntenyDisplaySlots/properties/renderer"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/renderer"
                 }
               ]
             },
@@ -20611,6 +20765,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "origin": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/origin"
+            },
+            "color": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/color"
             }
           },
           "patternProperties": {
@@ -27194,6 +27351,15 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 }
               }
             ]
+          }
+        },
+        "unknown": {
+          "description": "color for a value missing from domain: unset, a preset field's level keeps its own color and any other value takes the next palette color where the display deals one; a color paints that color; \\"\\" paints a feature the no-value grey and a variant cell the alt hue, and leaves a row the color it already has.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/CssColor"
           }
         },
         "invalid": {

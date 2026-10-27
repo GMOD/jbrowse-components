@@ -5660,14 +5660,6 @@ export const configManifest: ConfigManifest = {
                       "type": "CssColorEntry[]"
                     },
                     {
-                      "name": "scheme",
-                      "type": "(ColorScheme | undefined)"
-                    },
-                    {
-                      "name": "reverse",
-                      "type": "(boolean | undefined)"
-                    },
-                    {
                       "name": "unknown",
                       "type": "(CssColor | undefined)"
                     },
@@ -5679,6 +5671,30 @@ export const configManifest: ConfigManifest = {
                       "name": "names",
                       "type": "string[]",
                       "liftsNumbers": true
+                    },
+                    {
+                      "name": "scheme",
+                      "type": "(ColorScheme | undefined)"
+                    },
+                    {
+                      "name": "reverse",
+                      "type": "(boolean | undefined)"
+                    },
+                    {
+                      "name": "domainMid",
+                      "type": "(number | undefined)"
+                    },
+                    {
+                      "name": "domainMin",
+                      "type": "(number | undefined)"
+                    },
+                    {
+                      "name": "domainMax",
+                      "type": "(number | undefined)"
+                    },
+                    {
+                      "name": "domainQuantile",
+                      "type": "number"
                     }
                   ],
                   "schema": "MultiWayGeneColorScale",
@@ -5703,6 +5719,11 @@ export const configManifest: ConfigManifest = {
                 "string": "field"
               },
               "fieldPresets": {
+                "score": {
+                  "scale": {
+                    "type": "linear"
+                  }
+                },
                 "*": {
                   "scale": {
                     "type": "ordinal"
@@ -5855,6 +5876,10 @@ export const configManifest: ConfigManifest = {
                           "name": "names",
                           "type": "string[]",
                           "liftsNumbers": true
+                        },
+                        {
+                          "name": "unknown",
+                          "type": "(CssColor | undefined)"
                         },
                         {
                           "name": "invalid",
@@ -7188,14 +7213,6 @@ export const configManifest: ConfigManifest = {
                       "type": "CssColorEntry[]"
                     },
                     {
-                      "name": "scheme",
-                      "type": "(ColorScheme | undefined)"
-                    },
-                    {
-                      "name": "reverse",
-                      "type": "(boolean | undefined)"
-                    },
-                    {
                       "name": "unknown",
                       "type": "(CssColor | undefined)"
                     },
@@ -7207,6 +7224,30 @@ export const configManifest: ConfigManifest = {
                       "name": "names",
                       "type": "string[]",
                       "liftsNumbers": true
+                    },
+                    {
+                      "name": "scheme",
+                      "type": "(ColorScheme | undefined)"
+                    },
+                    {
+                      "name": "reverse",
+                      "type": "(boolean | undefined)"
+                    },
+                    {
+                      "name": "domainMid",
+                      "type": "(number | undefined)"
+                    },
+                    {
+                      "name": "domainMin",
+                      "type": "(number | undefined)"
+                    },
+                    {
+                      "name": "domainMax",
+                      "type": "(number | undefined)"
+                    },
+                    {
+                      "name": "domainQuantile",
+                      "type": "number"
                     }
                   ],
                   "schema": "VariantCellColorScale",
@@ -7231,6 +7272,11 @@ export const configManifest: ConfigManifest = {
                 "string": "field"
               },
               "fieldPresets": {
+                "score": {
+                  "scale": {
+                    "type": "linear"
+                  }
+                },
                 "*": {
                   "scale": {
                     "type": "ordinal"
@@ -10527,13 +10573,17 @@ export const configManifest: ConfigManifest = {
         "maxFeatureScreenDensity",
         "maxDisplayedBpPerPx",
         "mouseover",
-        "jexlFilters"
+        "jexlFilters",
+        "renderer",
+        "color"
       ],
       "droppedKeys": [
         "maxFeatureScreenDensity",
         "maxDisplayedBpPerPx",
         "fetchSizeLimit",
-        "mouseover"
+        "mouseover",
+        "renderer",
+        "color"
       ],
       "aliases": [
         "LinearArcDisplay",

@@ -86,16 +86,15 @@ The manifest generator asks the app's own code, so the validator runs none:
   (`liftViewLevelTracks`) moves built track snapshots into `levels[0].tracks`.
   The generator runs each view's preprocessor over one built track and records
   where it lands (`builtTracksAt`).
+- **A key a retired display type's `migrate` consumes**: `renderer` and
+  `color` on `LinearArcDisplay`, which the arc migrate strips (ADR-163). The
+  generator runs each `migrate` over a probe entry, records the keys it reads
+  that the successor does not declare, and calls one dropped when its value
+  lands nowhere in the result. A hand-written arc `height` jexl drops with
+  `renderer`.
 - **A display a track drops**: the generator runs `preprocessTrackConfigSnapshot`
   over each track type with each display type and records the entries it
   removes (`droppedDisplays`). The JSON schema takes any key on such an entry.
-
-## Validator gap: the app lifts it, `jbrowse validate` errors
-
-`renderer` on `LinearArcDisplay`: the retired type's `migrate` strips it
-(ADR-163) before the mark display's schema sees the entry. The validator
-resolves the alias but runs no `migrate`. A hand-written arc `height` jexl
-drops with it.
 
 ## Let drop: cosmetic v4 settings
 

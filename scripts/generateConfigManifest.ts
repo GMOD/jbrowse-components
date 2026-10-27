@@ -660,6 +660,45 @@ function retiredTypeValuesOf(entry) {
   return out
 }
 
+// The keys a retired type's \`migrate\` reads off an entry that the successor
+// does not declare, \`renderer\` on the v4 arc displays say. Each is a legacy
+// key of the successor; one whose value the result carries nowhere is dropped.
+function retiredTypeKeysOf(entry, slots) {
+  const declared = new Set(slots.map(slot => slot.name))
+  const legacy = new Set()
+  const dropped = new Set()
+  for (const { type, migrate } of entry.retiredTypes ?? []) {
+    if (!migrate) {
+      continue
+    }
+    const read = new Set()
+    const probe = new Proxy(
+      { type },
+      {
+        get(target, key) {
+          if (typeof key === 'string') {
+            read.add(key)
+          }
+          return Reflect.get(target, key)
+        },
+      },
+    )
+    migrate(probe)
+    const consumed = [...read].filter(
+      key => key !== 'type' && !declared.has(key),
+    )
+    for (const key of consumed) {
+      const sentinel = { probe: key }
+      const out = JSON.stringify(migrate({ type, [key]: sentinel }))
+      legacy.add(key)
+      if (!out.includes(JSON.stringify(sentinel))) {
+        dropped.add(key)
+      }
+    }
+  }
+  return { legacy: [...legacy], dropped: [...dropped] }
+}
+
 function collect(group, getType) {
   const record = pm.getElementTypeRecord(group)
   const out = {}
@@ -683,8 +722,22 @@ function collect(group, getType) {
     ) {
       adapterProblems.push(\`\${name}'s config schema is not closed\`)
     }
-    const legacyKeys = unwarned(() => legacyKeysOf(entry.configSchema, slots))
-    const droppedKeys = droppedKeysOf(entry.configSchema)
+    const retiredKeys =
+      group === 'display'
+        ? retiredTypeKeysOf(entry, slots)
+        : { legacy: [], dropped: [] }
+    const legacyKeys = [
+      ...new Set([
+        ...unwarned(() => legacyKeysOf(entry.configSchema, slots)),
+        ...retiredKeys.legacy,
+      ]),
+    ]
+    const droppedKeys = [
+      ...new Set([
+        ...droppedKeysOf(entry.configSchema),
+        ...retiredKeys.dropped,
+      ]),
+    ]
     const probed = unwarned(() => legacyValuesOf(entry.configSchema, slots))
     const retiredValues = group === 'display' ? retiredTypeValuesOf(entry) : {}
     const droppedDisplays = group === 'track' ? droppedDisplaysOf(name) : []

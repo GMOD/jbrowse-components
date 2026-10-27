@@ -444,20 +444,6 @@
       {
         "id": "1Brqh2UJa",
         "type": "LinearSyntenyView",
-        "tracks": [
-          {
-            "id": "IlfiBA7ufg",
-            "type": "SyntenyTrack",
-            "configuration": "dotplot_track",
-            "displays": [
-              {
-                "id": "YVqf0qowGL",
-                "type": "LinearSyntenyDisplay",
-                "configuration": "dotplot_track-LinearSyntenyDisplay"
-              }
-            ]
-          }
-        ],
         "views": [
           {
             "id": "cNZkcZ30H8",
@@ -722,6 +708,24 @@
             "hideHeaderOverview": false,
             "trackLabels": "overlapping",
             "showCenterLine": false
+          }
+        ],
+        "levels": [
+          {
+            "tracks": [
+              {
+                "id": "IlfiBA7ufg",
+                "type": "SyntenyTrack",
+                "configuration": "dotplot_track",
+                "displays": [
+                  {
+                    "id": "YVqf0qowGL",
+                    "type": "LinearSyntenyDisplay",
+                    "configuration": "dotplot_track-LinearSyntenyDisplay"
+                  }
+                ]
+              }
+            ]
           }
         ]
       }

@@ -7,7 +7,7 @@ test('built tracks on the view become level 0', () => {
     liftViewLevelTracks({ type: 'LinearSyntenyView', tracks: [built] }),
   ).toEqual({
     type: 'LinearSyntenyView',
-    levels: [{ level: 0, tracks: [built] }],
+    levels: [{ tracks: [built] }],
   })
 })
 
@@ -16,12 +16,12 @@ test('recipes stay behind for the launcher', () => {
     liftViewLevelTracks({ tracks: [built, 'a_track', { trackId: 'b_track' }] }),
   ).toEqual({
     tracks: ['a_track', { trackId: 'b_track' }],
-    levels: [{ level: 0, tracks: [built] }],
+    levels: [{ tracks: [built] }],
   })
 })
 
 test('a snapshot that already has levels is left alone', () => {
-  const snap = { levels: [{ level: 0, tracks: [] }], tracks: [built] }
+  const snap = { levels: [{ tracks: [] }], tracks: [built] }
   expect(liftViewLevelTracks(snap)).toBe(snap)
 })
 
