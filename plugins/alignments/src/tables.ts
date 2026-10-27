@@ -205,6 +205,7 @@ import type {
 } from './LinearAlignmentsDisplay/colorUtils.ts'
 import type { LinearAlignmentsDisplayConfigModel as DisplayConf } from './LinearAlignmentsDisplay/configSchema.ts'
 import type { AlignmentsUnit } from './LinearAlignmentsDisplay/constants.ts'
+import type { LaidOutByGroup } from './LinearAlignmentsDisplay/groupLayout.ts'
 import type { PileupMismatchesOpacitySnapshot } from './LinearAlignmentsDisplay/pileupMismatchesOpacityConfigSchema.ts'
 import type { RegionBounds } from './RenderAlignmentDataRPC/sortLayout.ts'
 import type {
@@ -422,7 +423,7 @@ function colorReads(
     field: string | undefined
   },
   baseLayer: BaseLayer | undefined,
-  byGroup: ReadonlyMap<string, ReadonlyMap<number, LaidOutPileupData>>,
+  byGroup: LaidOutByGroup,
   readColorOpts: ReadColorOpts,
   facet: { field: string; sort?: readonly string[] } | undefined,
   refNamePosition: RefNamePosition | undefined,
@@ -837,6 +838,14 @@ function sectionConnections(
 /** The display's `filter` merged over the defaults, as the display applies it. */
 function filterOf(conf: DisplayConf) {
   return mergeFilter(predicatesOf(conf.filter))
+}
+
+/** The config a table reports: the display's, its filter as it applied. */
+function resolvedConfig(
+  conf: DisplayConf,
+  filter: ReturnType<typeof filterOf>,
+): Record<string, unknown> {
+  return { ...fullConfSnapshot(conf), filter }
 }
 
 /**
@@ -1541,7 +1550,7 @@ export async function alignmentTables(
       featureHeight,
       featureSpacing: featureSpacingForHeight(featureHeight),
     },
-    config: { ...fullConfSnapshot(conf), filter },
+    config: resolvedConfig(conf, filter),
     warnings: layoutWarnings({
       sortField: readConfObject(conf.sort, 'field'),
       sortColumn,
@@ -1648,7 +1657,7 @@ function markLegends(
   },
   paint: MarkColors,
 ) {
-  const shownJunction = (i: number) => tables.junctions.shown[i]
+  const shownJunction = (i: number) => tables.junctions.shown[i] === true
   const bases = new Set([
     ...tables.mismatches.base,
     ...tables.alleleCoverage.base,
@@ -1704,12 +1713,11 @@ function markLegends(
  * then draws none of them.
  */
 const BAND_TABLES: readonly {
-  band: 'pileup' | 'coverage' | 'sashimi'
-  layer?: 'mismatches' | 'interbase' | 'alleles'
+  shown: (conf: DisplayConf) => boolean
   tables: readonly string[]
 }[] = [
   {
-    band: 'pileup',
+    shown: conf => readConfObject(conf.pileup, 'show'),
     tables: [
       'reads',
       'mismatches',
@@ -1722,9 +1730,12 @@ const BAND_TABLES: readonly {
       'overlaps',
     ],
   },
-  { band: 'pileup', layer: 'mismatches', tables: ['mismatches', 'insertions'] },
   {
-    band: 'coverage',
+    shown: mismatchesShown,
+    tables: ['mismatches', 'insertions'],
+  },
+  {
+    shown: conf => readConfObject(conf.coverage, 'show'),
     tables: [
       'coverage',
       'alleleCoverage',
@@ -1734,20 +1745,21 @@ const BAND_TABLES: readonly {
     ],
   },
   {
-    band: 'coverage',
-    layer: 'interbase',
+    shown: conf => readConfObject(conf.coverage.interbase, 'show'),
     tables: ['interbaseCoverage', 'indicators'],
   },
-  { band: 'coverage', layer: 'alleles', tables: ['alleleCoverage'] },
-  { band: 'sashimi', tables: ['junctions'] },
+  {
+    shown: conf => readConfObject(conf.coverage.alleles, 'show'),
+    tables: ['alleleCoverage'],
+  },
+  {
+    shown: conf => readConfObject(conf.sashimi, 'show'),
+    tables: ['junctions'],
+  },
 ]
 
-function shown(
-  conf: DisplayConf,
-  band: (typeof BAND_TABLES)[number]['band'],
-  layer?: string,
-): boolean {
-  return readConfObject(conf, layer ? [band, layer, 'show'] : [band, 'show'])
+function mismatchesShown(conf: DisplayConf): boolean {
+  return readConfObject(conf.pileup.mismatches, 'show')
 }
 
 /**
@@ -1761,9 +1773,7 @@ function drawnBands<
   },
 >(conf: DisplayConf, tables: T) {
   const hidden = new Set<string>(
-    BAND_TABLES.flatMap(({ band, layer, tables }) =>
-      shown(conf, band, layer) ? [] : tables,
-    ),
+    BAND_TABLES.flatMap(({ shown, tables }) => (shown(conf) ? [] : tables)),
   )
   const drawn = Object.fromEntries(
     Object.entries(tables).map(([name, table]) => [
@@ -1773,7 +1783,7 @@ function drawnBands<
         : table,
     ]),
   ) as T
-  return shown(conf, 'pileup', 'mismatches')
+  return mismatchesShown(conf)
     ? drawn
     : {
         ...drawn,
