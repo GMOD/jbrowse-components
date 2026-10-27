@@ -8,9 +8,9 @@ sidebar_label: Internet Account -> TokenEntryInternetAccount
 Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Provided by the `authentication` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/authentication/src/tokenEntryModelFactory.ts).
 
 Shared base for internet accounts whose token the user supplies through a
-dialog (HTTP Basic, external token). Such accounts differ in their
-discriminating `type` and the dialog form used to collect the token, both
-passed here. The base is not registered itself; see HTTPBasicInternetAccount
+dialog (HTTP Basic, external token). Such accounts differ in their `type`,
+which also names the model, and the dialog form that collects the token,
+both passed here. The base is not registered itself; see HTTPBasicInternetAccount
 and ExternalTokenInternetAccount.
 
 ## Properties
@@ -34,4 +34,4 @@ and ExternalTokenInternetAccount.
 | Member | Description |
 | --- | --- |
 | <span id="action-gettokenfromuser">**getTokenFromUser**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(resolve: (token: string) =&gt; void, reject: (error: Error) =&gt; vo…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(resolve: (token: string) =&gt; void, reject: (error: Error) =&gt; void) =&gt; void</code></pre></dialog></span> | Prompt the user for a token via the account's dialog form, resolving with the entered token or rejecting if the user cancels. |
-| <span id="action-validatetoken">**validateToken**</span><br><code>(token: string, location: UriLocation) =&gt; Promise&lt;string&gt;</code> | Optionally validate the token with a HEAD request before use, per the `validateWithHEAD` config slot. |
+| <span id="action-validatetoken">**validateToken**</span><br><code>(token: string, location: UriLocation) =&gt; Promise&lt;string&gt;</code> | Optionally validate the token with a HEAD request before use, per the `validateWithHEAD` config slot. Only a 401 drops the token: there is nothing to renew it with, so the next read re-opens the dialog. |

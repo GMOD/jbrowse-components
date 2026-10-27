@@ -23,7 +23,7 @@ recolors or removes the selected ones.
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="volatile-selectedkeys">**selectedKeys**</span><br><code>Set&lt;string&gt;</code> | a row's key holds its coordinates and its place in the session's list, so a key left stale by a removal elsewhere selects nothing rather than a neighbour |
+| <span id="volatile-selectedids">**selectedIds**</span><br><code>Set&lt;string&gt;</code> | a row's id holds its coordinates and its place in the session's list, so an id left stale by a removal elsewhere selects nothing rather than a neighbour |
 
 ## Getters
 
@@ -38,7 +38,7 @@ recolors or removes the selected ones.
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="action-setselectedkeys">**setSelectedKeys**</span><br><code>(keys: Set&lt;string&gt;) =&gt; void</code> |  |
+| <span id="action-setselectedids">**setSelectedIds**</span><br><code>(ids: Set&lt;string&gt;) =&gt; void</code> |  |
 | <span id="action-importhighlights">**importHighlights**</span><br><code>(highlights: HighlightType[]) =&gt; void</code> |  |
 | <span id="action-removeselectedhighlights">**removeSelectedHighlights**</span><br><code>() =&gt; void</code> |  |
 | <span id="action-recolorselectedhighlights">**recolorSelectedHighlights**</span><br><code>(color: string) =&gt; void</code> |  |

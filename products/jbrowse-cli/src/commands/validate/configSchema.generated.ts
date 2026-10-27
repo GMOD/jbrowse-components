@@ -21252,16 +21252,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/PlainString"
           }
         },
-        "state": {
-          "description": "optional state for the authorization call.",
-          "default": "",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "$ref": "#/$defs/PlainString"
-          }
-        },
         "responseType": {
           "description": "the type of response from the authorization endpoint. can be 'token' or 'code'.",
           "default": "code",
@@ -21594,16 +21584,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/PlainString"
           }
         },
-        "state": {
-          "description": "optional state for the authorization call.",
-          "default": "",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "$ref": "#/$defs/PlainString"
-          }
-        },
         "responseType": {
           "description": "the type of response from the authorization endpoint. can be 'token' or 'code'.",
           "default": "code",
@@ -21741,16 +21721,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "scopes": {
           "description": "optional scopes for the authorization call.",
           "default": "https://www.googleapis.com/auth/drive.readonly",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "$ref": "#/$defs/PlainString"
-          }
-        },
-        "state": {
-          "description": "optional state for the authorization call.",
-          "default": "",
           "if": {
             "type": "null"
           },
@@ -27020,7 +26990,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "type": "boolean"
         },
         "trackSelectorType": {
-          "const": "hierarchical"
+          "type": "string"
         },
         "showCenterLine": {
           "type": "boolean"

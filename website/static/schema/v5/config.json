@@ -20605,16 +20605,6 @@
             "$ref": "#/$defs/PlainString"
           }
         },
-        "state": {
-          "description": "optional state for the authorization call.",
-          "default": "",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "$ref": "#/$defs/PlainString"
-          }
-        },
         "responseType": {
           "description": "the type of response from the authorization endpoint. can be 'token' or 'code'.",
           "default": "code",
@@ -20941,16 +20931,6 @@
             "$ref": "#/$defs/PlainString"
           }
         },
-        "state": {
-          "description": "optional state for the authorization call.",
-          "default": "",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "$ref": "#/$defs/PlainString"
-          }
-        },
         "responseType": {
           "description": "the type of response from the authorization endpoint. can be 'token' or 'code'.",
           "default": "code",
@@ -21084,16 +21064,6 @@
         "scopes": {
           "description": "optional scopes for the authorization call.",
           "default": "https://www.googleapis.com/auth/drive.readonly",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "$ref": "#/$defs/PlainString"
-          }
-        },
-        "state": {
-          "description": "optional state for the authorization call.",
-          "default": "",
           "if": {
             "type": "null"
           },
@@ -25965,7 +25935,7 @@
           "type": "boolean"
         },
         "trackSelectorType": {
-          "const": "hierarchical"
+          "type": "string"
         },
         "showCenterLine": {
           "type": "boolean"

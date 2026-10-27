@@ -11608,10 +11608,6 @@ export const configManifest: ConfigManifest = {
           "type": "string"
         },
         {
-          "name": "state",
-          "type": "string"
-        },
-        {
           "name": "responseType",
           "type": "string"
         }
@@ -11740,10 +11736,6 @@ export const configManifest: ConfigManifest = {
           "type": "string"
         },
         {
-          "name": "state",
-          "type": "string"
-        },
-        {
           "name": "responseType",
           "type": "string"
         }
@@ -11797,10 +11789,6 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "scopes",
-          "type": "string"
-        },
-        {
-          "name": "state",
           "type": "string"
         },
         {

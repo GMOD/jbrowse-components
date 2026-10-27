@@ -202,6 +202,7 @@ export default [
   '@jbrowse/core/ui/BaseTooltip',
   '@jbrowse/core/ui/buildExtraTrackMenuItems',
   '@jbrowse/core/ui/CascadingMenuButton',
+  '@jbrowse/core/ui/ClearableSearchField',
   '@jbrowse/core/ui/ColorPicker',
   '@jbrowse/core/ui/colors',
   '@jbrowse/core/ui/colorScale',

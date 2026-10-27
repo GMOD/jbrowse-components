@@ -31,9 +31,9 @@ Each section ends with the members a composed model contributes, linked to the p
 | <span id="getter-selectorlabel">**selectorLabel**</span><br><code>string</code> |  |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>10 inherited getters from one model</summary>
+<summary>9 inherited getters from one model</summary>
 
-From [OAuthInternetAccount](../oauthinternetaccount): <span id="getter-conf">[`conf`](../oauthinternetaccount#getter-conf)</span>, <span id="getter-authendpoint">[`authEndpoint`](../oauthinternetaccount#getter-authendpoint)</span>, <span id="getter-tokenendpoint">[`tokenEndpoint`](../oauthinternetaccount#getter-tokenendpoint)</span>, <span id="getter-needspkce">[`needsPKCE`](../oauthinternetaccount#getter-needspkce)</span>, <span id="getter-clientid">[`clientId`](../oauthinternetaccount#getter-clientid)</span>, <span id="getter-scopes">[`scopes`](../oauthinternetaccount#getter-scopes)</span>, <span id="getter-state">[`state`](../oauthinternetaccount#getter-state)</span>, <span id="getter-responsetype">[`responseType`](../oauthinternetaccount#getter-responsetype)</span>, <span id="getter-refreshtokenkey">[`refreshTokenKey`](../oauthinternetaccount#getter-refreshtokenkey)</span>, <span id="getter-authflowparams">[`authFlowParams`](../oauthinternetaccount#getter-authflowparams)</span>
+From [OAuthInternetAccount](../oauthinternetaccount): <span id="getter-conf">[`conf`](../oauthinternetaccount#getter-conf)</span>, <span id="getter-authendpoint">[`authEndpoint`](../oauthinternetaccount#getter-authendpoint)</span>, <span id="getter-tokenendpoint">[`tokenEndpoint`](../oauthinternetaccount#getter-tokenendpoint)</span>, <span id="getter-needspkce">[`needsPKCE`](../oauthinternetaccount#getter-needspkce)</span>, <span id="getter-clientid">[`clientId`](../oauthinternetaccount#getter-clientid)</span>, <span id="getter-scopes">[`scopes`](../oauthinternetaccount#getter-scopes)</span>, <span id="getter-responsetype">[`responseType`](../oauthinternetaccount#getter-responsetype)</span>, <span id="getter-refreshtokenkey">[`refreshTokenKey`](../oauthinternetaccount#getter-refreshtokenkey)</span>, <span id="getter-authflowparams">[`authFlowParams`](../oauthinternetaccount#getter-authflowparams)</span>
 
 </details>
 

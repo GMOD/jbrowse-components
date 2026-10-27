@@ -1,14 +1,15 @@
 ---
 id: configurationeditorwidget
 title: ConfigurationEditorWidget
-description: "Widget for editing a config model's slots in a form: holds the target configuration and debounce-saves edits back to the session."
+description: "Widget for a config's settings: a short form over the common ones and a JSON editor over all of them. Holds the target configuration and debounce-saves edits back to the session."
 sidebar_label: Widget -> ConfigurationEditorWidget
 ---
 
 Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Provided by the `config` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/config/src/ConfigurationEditorWidget/model.ts).
 
-Widget for editing a config model's slots in a form: holds the target
-configuration and debounce-saves edits back to the session.
+Widget for a config's settings: a short form over the common ones and a JSON
+editor over all of them. Holds the target configuration and debounce-saves
+edits back to the session.
 
 ## Properties
 

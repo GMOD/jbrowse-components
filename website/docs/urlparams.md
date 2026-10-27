@@ -477,7 +477,7 @@ restores natively:
 | [`showCytobands`](/docs/models/lineargenomeview#property-showcytobands) | whether to show the "cytobands" in the overview scale bar (the resolved, capability-gated value is the `effectiveShowCytobands` getter) |
 | [`showTrackOutlines`](/docs/models/lineargenomeview#property-showtrackoutlines) | show the track outlines |
 | [`trackLabels`](/docs/models/lineargenomeview#property-tracklabels) | how to display the track labels, can be "overlapping", "offset", or "hidden", or empty string "" (which uses the LinearGenomeViewPlugin config default). The resolved value is the `effectiveTrackLabels` getter. See the LinearGenomeViewPlugin docs at https://jbrowse.org/jb2/docs/config/lineargenomeviewconfigschema/ for how the config is used |
-| [`trackSelectorType`](/docs/models/lineargenomeview#property-trackselectortype) | vestigial: the hierarchical selector is the only one that exists, so this value is ignored. Retained because saved sessions and share links persist it. |
+| [`trackSelectorType`](/docs/models/lineargenomeview#property-trackselectortype) | ignored: the hierarchical selector is the only one. Declared because saved sessions and share links carry it. |
 | [`windowStartBp`](/docs/models/lineargenomeview#property-windowstartbp) | Left edge of the viewport, in linearized bp — the concatenated `displayedRegions` space that `offsetPx` indexes, which has no inter-region padding, so the two differ only by `bpPerPx`. May be negative when the view is scrolled past the left end.<br><br>The view stores the genomic window it frames rather than the pixels that framed it, because pixels mean nothing without the width they were measured at and a snapshot does not include one. A session authored in a 1000px window therefore shows the same region when opened at 500px, as the same location given as a `&loc=` does: both ways to share a view store intent. |
 | [`windowWidthBp`](/docs/models/lineargenomeview#property-windowwidthbp) | Width of the viewport in bp. Zero means "not established yet": no width has been measured, so there is nothing to divide by. The first measure fills it in, and `bpPerPx` is `windowWidthBp / width` from then on. |
 
@@ -659,7 +659,7 @@ restores natively:
 | [`render`](/docs/models/syntenyfademixin#property-render) | How the ribbons rasterize, a [](/docs/config/syntenyrender) object: `antialias` fades a sub-pixel ribbon by its on-screen width, so an unfiltered whole-genome view doesn't read as a full-opacity hairball. Unset, it fades once sub-pixel ribbons dominate a display and leaves a sparse comparison at full alpha; `true` and `false` fix it. Resolved view-wide by `fadeThinAlignments`. |
 | [`spacingPx`](/docs/models/circularview#property-spacingpx) | the gap drawn between adjacent chromosome arcs |
 | [`trackColors`](/docs/models/trackcolorsmixin#property-trackcolors) | trackId -> explicit color under `encoding.color: 'track'`. Absent means the track takes an automatic slot from the palette. |
-| [`trackSelectorType`](/docs/models/circularview#property-trackselectortype) | ignored, kept because saved sessions carry it |
+| [`trackSelectorType`](/docs/models/circularview#property-trackselectortype) | ignored: the hierarchical selector is the only one. Declared because saved sessions and share links carry it. |
 
 <!-- SPEC_KEYS CircularView END -->
 
@@ -728,7 +728,7 @@ restores natively:
 | [`minimized`](/docs/models/baseviewmodel#property-minimized) | collapse the view to its header bar and keep it in the session |
 | [`parkedColors`](/docs/models/parkedcolormixin#property-parkedcolors) | By color object, the field the last write away from one left, with its members |
 | [`trackColors`](/docs/models/trackcolorsmixin#property-trackcolors) | trackId -> explicit color under `encoding.color: 'track'`. Absent means the track takes an automatic slot from the palette. |
-| [`trackSelectorType`](/docs/models/dotplotview#property-trackselectortype) | vestigial: the hierarchical selector is the only one that exists, so this value is ignored. Retained because saved sessions and share links persist it. |
+| [`trackSelectorType`](/docs/models/dotplotview#property-trackselectortype) | ignored: the hierarchical selector is the only one. Declared because saved sessions and share links carry it. |
 | [`vview`](/docs/models/dotplotview#property-vview) | the vertical axis, the counterpart to `hview`. A spec writes `views[1]`. |
 
 <!-- SPEC_KEYS DotplotView END -->
@@ -850,7 +850,7 @@ restores natively:
 | [`parkedColors`](/docs/models/parkedcolormixin#property-parkedcolors) | By color object, the field the last write away from one left, with its members |
 | [`render`](/docs/models/syntenyfademixin#property-render) | How the ribbons rasterize, a [](/docs/config/syntenyrender) object: `antialias` fades a sub-pixel ribbon by its on-screen width, so an unfiltered whole-genome view doesn't read as a full-opacity hairball. Unset, it fades once sub-pixel ribbons dominate a display and leaves a sparse comparison at full alpha; `true` and `false` fix it. Resolved view-wide by `fadeThinAlignments`. |
 | [`trackColors`](/docs/models/trackcolorsmixin#property-trackcolors) | trackId -> explicit color under `encoding.color: 'track'`. Absent means the track takes an automatic slot from the palette. |
-| [`trackSelectorType`](/docs/models/linearsyntenyview#property-trackselectortype) | Ignored: the hierarchical selector is the only one. Declared because sessions and share links still contain it. |
+| [`trackSelectorType`](/docs/models/linearsyntenyview#property-trackselectortype) | ignored: the hierarchical selector is the only one. Declared because saved sessions and share links carry it. |
 
 <!-- SPEC_KEYS LinearSyntenyView END -->
 

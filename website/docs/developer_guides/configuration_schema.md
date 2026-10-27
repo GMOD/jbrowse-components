@@ -130,8 +130,8 @@ typed, a slot can be edited graphically without an author writing any UI.
 <!-- prettier-ignore -->
 | `type` | MST model | Reads as | Config editor renders |
 | --- | --- | --- | --- |
-| <code>boolean</code> | <code>types.boolean</code> | <code>boolean</code> | checkbox |
-| <code>maybeBoolean</code> | <code>types.maybe(types.boolean)</code> | <code>boolean &#124; undefined</code> | checkbox |
+| <code>boolean</code> | <code>types.boolean</code> | <code>boolean</code> | checkbox, or a default/on/off dropdown for `maybeBoolean` |
+| <code>maybeBoolean</code> | <code>types.maybe(types.boolean)</code> | <code>boolean &#124; undefined</code> | checkbox, or a default/on/off dropdown for `maybeBoolean` |
 | <code>color</code> | <code>CssColorType</code> | <code>string</code> | text field beside a swatch that opens a color picker |
 | <code>maybeColor</code> | <code>types.maybe(CssColorType)</code> | <code>string &#124; undefined</code> | text field beside a swatch that opens a color picker |
 | <code>colorArray</code> | <code>types.array(CssColorEntryType)</code> | <code>string[]</code> | a text field and color picker per entry, with add and delete |

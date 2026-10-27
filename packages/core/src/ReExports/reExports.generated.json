@@ -1609,6 +1609,16 @@
         "@mui/material/Tooltip"
       ]
     },
+    "@jbrowse/core/ui/ClearableSearchField": {
+      "package": "@jbrowse/core",
+      "names": [
+        "default"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "@mui/material"
+      ]
+    },
     "@jbrowse/core/ui/ColorPicker": {
       "package": "@jbrowse/core",
       "names": [
@@ -2480,6 +2490,7 @@
         "progressLabel",
         "rIC",
         "radToDeg",
+        "rankRefNames",
         "readSessionFromDynamo",
         "readSharedSession",
         "reducePrecision",
@@ -3177,6 +3188,7 @@
     "@jbrowse/core/util/highlights": {
       "package": "@jbrowse/core",
       "names": [
+        "HIGHLIGHT_ALPHA",
         "coerceHighlight",
         "getHighlightColor",
         "highlightKey",

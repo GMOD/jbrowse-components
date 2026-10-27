@@ -5,7 +5,7 @@ description: "Widget backing the plugin store: holds the text and tag filters ap
 sidebar_label: Widget -> PluginStoreWidget
 ---
 
-Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Provided by the `data-management` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/data-management/src/PluginStoreWidget/model.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/app-core/src/AppWidgets/PluginStoreWidget/model.ts).
 
 Widget backing the plugin store: holds the text and tag filters applied to the
 installable plugin list and the view it was opened from.

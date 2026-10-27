@@ -32,9 +32,9 @@ Each section ends with the members a composed model contributes, linked to the p
 | <span id="getter-authflowparams">**authFlowParams**</span><br><code>{ token_access_type: string; }</code> | Dropbox issues a refresh token only when the authorization request asks for offline access, and spells that `token_access_type` where other providers use `access_type` — so it belongs here rather than on every OAuth account. |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>9 inherited getters from one model</summary>
+<summary>8 inherited getters from one model</summary>
 
-From [OAuthInternetAccount](../oauthinternetaccount): <span id="getter-conf">[`conf`](../oauthinternetaccount#getter-conf)</span>, <span id="getter-authendpoint">[`authEndpoint`](../oauthinternetaccount#getter-authendpoint)</span>, <span id="getter-tokenendpoint">[`tokenEndpoint`](../oauthinternetaccount#getter-tokenendpoint)</span>, <span id="getter-needspkce">[`needsPKCE`](../oauthinternetaccount#getter-needspkce)</span>, <span id="getter-clientid">[`clientId`](../oauthinternetaccount#getter-clientid)</span>, <span id="getter-scopes">[`scopes`](../oauthinternetaccount#getter-scopes)</span>, <span id="getter-state">[`state`](../oauthinternetaccount#getter-state)</span>, <span id="getter-responsetype">[`responseType`](../oauthinternetaccount#getter-responsetype)</span>, <span id="getter-refreshtokenkey">[`refreshTokenKey`](../oauthinternetaccount#getter-refreshtokenkey)</span>
+From [OAuthInternetAccount](../oauthinternetaccount): <span id="getter-conf">[`conf`](../oauthinternetaccount#getter-conf)</span>, <span id="getter-authendpoint">[`authEndpoint`](../oauthinternetaccount#getter-authendpoint)</span>, <span id="getter-tokenendpoint">[`tokenEndpoint`](../oauthinternetaccount#getter-tokenendpoint)</span>, <span id="getter-needspkce">[`needsPKCE`](../oauthinternetaccount#getter-needspkce)</span>, <span id="getter-clientid">[`clientId`](../oauthinternetaccount#getter-clientid)</span>, <span id="getter-scopes">[`scopes`](../oauthinternetaccount#getter-scopes)</span>, <span id="getter-responsetype">[`responseType`](../oauthinternetaccount#getter-responsetype)</span>, <span id="getter-refreshtokenkey">[`refreshTokenKey`](../oauthinternetaccount#getter-refreshtokenkey)</span>
 
 </details>
 
