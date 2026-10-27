@@ -282,9 +282,6 @@ export default function configSchemaFactory() {
       // `encoding.color` has no member for, and carried the wiggle scale slots
       // the matrix never read.
       retired: {
-        showTooltips: show => ({ tooltip: { show } }),
-        // an insertion draws at its reference span; the hover names its bp
-        showInsertionGlyphs: () => ({}),
         renderingMode: (v: unknown) => ({
           unit: v === 'phased' ? 'haplotype' : 'sample',
         }),

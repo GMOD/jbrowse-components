@@ -169,10 +169,10 @@ export default function ldTrackDisplayConfigSchema() {
         lengthCutoffFilter: () => ({}),
         hweFilterThreshold: () => ({}),
         callRateFilter: () => ({}),
-        // v4's boolean, and the beta 'name' | 'none'
-        showLabels: shown => ({
-          labels: { name: { show: shown === true || shown === 'name' } },
-        }),
+        showLabels: shown =>
+          typeof shown === 'boolean'
+            ? { labels: { name: { show: shown } } }
+            : {},
       },
     },
   )

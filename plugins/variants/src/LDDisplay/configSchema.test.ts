@@ -112,12 +112,10 @@ describe('labels.name', () => {
     expect(readConfObject(make(), ['labels', 'name', 'show'])).toBe(false)
   })
 
-  // a boolean on LDTrackDisplay through v4.3.0, then 'name' | 'none'
+  // a boolean on LDTrackDisplay through v4.3.0
   test.each([
     [true, true],
     [false, false],
-    ['name', true],
-    ['none', false],
   ])('lifts the old showLabels %j', (old, shown) => {
     expect(
       readConfObject(make({ showLabels: old }), ['labels', 'name', 'show']),
