@@ -156,9 +156,10 @@ The 2026-07 RFC-001 decisions that stand:
 
 ## Measured: what v5 cost one out-of-tree plugin
 
-Apollo (`GMOD/Apollo3`, `jbrowse_5`) is the one substantial external plugin
-tracking main. It pins jbrowse by committed tarball, so typechecking its same
-source against its own pin and against main gave a clean control.
+Apollo (`GMOD/Apollo3`, then on its `jbrowse_5` branch) was the one
+substantial external plugin tracking main. It pinned jbrowse by committed
+tarball, so typechecking its same source against its own pin and against main
+gave a clean control.
 
 - **A core dependency bump on a package whose types cross the plugin boundary is an ABI event.**
   When core's `@jbrowse/mobx-state-tree` and `@mui/material` ranges moved
@@ -168,6 +169,9 @@ source against its own pin and against main gave a clean control.
   cannot reach a second copy of the module it augments. No checker sees this
   class
   ([ideas/waiting-on-a-call/a-dependency-bump-is-an-abi-event.md](../ideas/waiting-on-a-call/a-dependency-bump-is-an-abi-event.md)).
+  It recurred at beta.18: core moved to `@jbrowse/mobx-state-tree@^6.10.0`,
+  Apollo's `v2` lockfile kept 6.9.0 beside it, and its typecheck went from 0
+  errors to about 400 until Apollo raised its own range.
 
 ## Ledger: behavior changes external plugins inherit
 

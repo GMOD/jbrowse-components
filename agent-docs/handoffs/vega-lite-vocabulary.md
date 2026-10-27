@@ -40,8 +40,7 @@ history has each landing.
      wiggle and mark displays, and the `y` lift on wiggle and MAF. Until then
      `jbrowse validate` warns on an old `scales`, in a display entry or a
      `displayDefaults`.
-   - **Demos:** every hosted `demos/` config matches its committed copy
-     except `apollo3`, pinned to beta.8 (`demos/apollo3/README.md`).
+   - **Demos:** every hosted `demos/` config matches its committed copy.
    - The unlanded `chat-request-evals` branch writes 8 `scales.y` lines in
      `scripts/agent-evals/tasks.ts`.
 

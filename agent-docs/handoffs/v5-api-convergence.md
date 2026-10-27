@@ -56,9 +56,6 @@ once per display that embeds it, so read the trend, not the size.
    genomes sites, JBrowseR, ggjbrowse (engine and tutorials re-knit), the
    graph plugin (`facet.sort` from bandage-core 12) and the figure specs write
    main's spellings. Left:
-   - The hosted apollo3 demo runs the `v5.0.0-beta.8` build and serves an
-     older config (`featureHeight`, `layoutOrder`). Move the pin and deploy
-     `demos/apollo3/config.json` together, never the config alone.
    - jb2hubs' `hubtools/src/wiggleDisplay.ts` and ggjbrowse (`R/wiggle.R`,
      its tests and the population-genomics tutorial) write `mark.extent` in
      place of the wiggle display's beta `extent` (2026-10-27). A grep that
