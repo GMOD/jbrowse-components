@@ -4889,7 +4889,8 @@
     "@jbrowse/display-kit/rowColorConfigSchema": {
       "package": "@jbrowse/display-kit",
       "names": [
-        "rowColorConfigSchema"
+        "rowColorConfigSchema",
+        "rowColorForOtherRows"
       ],
       "worker": "real"
     },

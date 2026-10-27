@@ -26,7 +26,8 @@ already has. A string is the field.
 
 A channel of its own beside `rows`, not `rows.color`: it has its own
 `field`, palette and key, so a write of `rows` replaces the arrangement
-and leaves the colors. Nor is it `encoding.color`, which on wiggle and the
+and leaves the colors. A pick of another rows field in a menu or the Edit
+plot form drops the `name` pairs, which name the old field's rows. Nor is it `encoding.color`, which on wiggle and the
 mark display paints by value.
 
 ## Example usage
@@ -60,8 +61,8 @@ A setting written to it replaces it whole: a member left out returns to its defa
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
-| <span id="slot-field">**field**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>'name'</code> | the row attribute whose values take the colors: name, the row itself, or an attribute of the rows, such as a column of a multi-sample variant adapter's samplesTsvLocation, e.g. population, or a subtrack's group |
+| <span id="slot-field">**field**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>'name'</code> | The row attribute whose values take the colors. Under `name` with no `scale`, stacked rows keep only a file's own colors, since the palette deals only where the rows share one panel; list the rows in `scale.domain` to color them. |
 | <span id="slot-scale">**scale**</span><br>[RowColorScale sub-schema](#slot-scaledomain) | Which color each value of the field takes. |
 | <span id="slot-scaledomain">**scale.domain**</span><br>[`stringArray`](/docs/config_guides/slot_types#stringarray) = <code>[]</code> | the field's values that get a color, in order: under name, rows by name |
 | <span id="slot-scalerange">**scale.range**</span><br>[`colorArray`](/docs/config_guides/slot_types#colorarray) = <code>[]</code> | the CSS color each value in domain takes, in the same order |
-| <span id="slot-scaleunknown">**scale.unknown**</span><br>[`maybeColor`](/docs/config_guides/slot_types#the-maybe-types) | color for a value missing from domain: unset, a preset field's level keeps its own color and any other value takes the next palette color where the display deals one; a color paints that color; "" paints a feature the no-value grey and a variant cell the alt hue, and leaves a row the color it already has |
+| <span id="slot-scaleunknown">**scale.unknown**</span><br>[`maybeColor`](/docs/config_guides/slot_types#the-maybe-types) | color for a value missing from domain. Unset: the next palette color where the display deals one, and the levels a preset field names, such as strand's, keep their own colors. A color: that color. "": no color dealt, so a feature paints the no-value grey, a variant cell the alt hue, and a row keeps the color it already has |

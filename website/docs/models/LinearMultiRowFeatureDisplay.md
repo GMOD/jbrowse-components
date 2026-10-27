@@ -146,7 +146,7 @@ From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`rendering
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="action-setrowsfield">**setRowsField**</span><br><code>(field: string) =&gt; void</code> | One row per value of `field`; another field than the one in force drops the arrangement (`rowsForField`). |
+| <span id="action-setrowsfield">**setRowsField**</span><br><code>(field: string) =&gt; void</code> | One row per value of `field`; another field than the one in force drops the arrangement (`rowsForField`) and the row colors paired with the old rows' names (`rowColorForOtherRows`). |
 | <span id="action-colorbyitemrgb">**colorByItemRgb**</span><br><code>() =&gt; void</code> | Color by's itemRgb: each feature its file's color, through a fieldless identity `encoding.color`, so a black triple paints black. |
 | <span id="action-opensolidcolordialog">**openSolidColorDialog**</span><br><code>() =&gt; void</code> | The picker Color by's Solid color... opens. |
 
