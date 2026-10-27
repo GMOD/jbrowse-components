@@ -225,23 +225,15 @@ function refuseOverRows(result: object, rowLimit: number | undefined) {
 const LISTED_CONTIGS = 20
 
 /**
- * For each region whose contig is not one the file has, what to tell the
+ * For each region whose contig is not one of `names`, what to tell the
  * reader, naming the file's contigs: its tables come back empty, as the
  * browser draws a track with no such contig, and a host can say why. Empty
  * where the contig is there, or the adapter cannot list its contigs.
  */
-async function missingContigs(
-  pluginManager: PluginManager,
-  { adapterConfig, sequenceAdapter, regions }: RegionArgs,
+function missingContigsOf(
+  names: string[],
+  regions: { refName: string; originalRefName?: string }[],
 ) {
-  if (regions.length === 0) {
-    return []
-  }
-  const names = await contigNamesOf(
-    pluginManager,
-    adapterConfig,
-    sequenceAdapter,
-  )
   const has = new Set(names)
   const listed = names.slice(0, LISTED_CONTIGS).join(', ')
   const more =
@@ -253,6 +245,38 @@ async function missingContigs(
       ? ''
       : `${refName} is not a contig of this file, whose contigs are ${listed}${more}`,
   )
+}
+
+async function missingContigs(
+  pluginManager: PluginManager,
+  { adapterConfig, sequenceAdapter, regions }: RegionArgs,
+) {
+  return regions.length === 0
+    ? []
+    : missingContigsOf(
+        await contigNamesOf(pluginManager, adapterConfig, sequenceAdapter),
+        regions,
+      )
+}
+
+/** `missingContigs` for one axis of a comparative file, on its assembly's side. */
+async function axisMissingContigs(
+  pluginManager: PluginManager,
+  adapterConfig: Record<string, unknown>,
+  assemblyName: string | undefined,
+  regions: { refName: string }[],
+) {
+  return regions.length === 0
+    ? []
+    : missingContigsOf(
+        await contigNamesOf(
+          pluginManager,
+          adapterConfig,
+          undefined,
+          assemblyName,
+        ),
+        regions,
+      )
 }
 
 /**
@@ -401,17 +425,66 @@ export function createTablesEngine() {
     ),
     variantDensityAlpha,
     alignmentMarkAlpha,
-    synteny: call('synteny', SYNTENY_ARGS, (args: SyntenyTablesArgs) =>
-      syntenyTables(pluginManager, args),
-    ),
-    dotplot: call('dotplot', DOTPLOT_ARGS, (args: DotplotTablesArgs) =>
-      dotplotTables(pluginManager, args),
-    ),
+    synteny: call('synteny', SYNTENY_ARGS, async (args: SyntenyTablesArgs) => {
+      const tables = await syntenyTables(pluginManager, args)
+      const [query, target] = tables.assemblyNames
+      return {
+        ...tables,
+        missingContigs: {
+          query: await axisMissingContigs(
+            pluginManager,
+            args.adapterConfig,
+            query,
+            args.query.regions,
+          ),
+          target: await axisMissingContigs(
+            pluginManager,
+            args.adapterConfig,
+            target,
+            args.target.regions,
+          ),
+        },
+      }
+    }),
+    dotplot: call('dotplot', DOTPLOT_ARGS, async (args: DotplotTablesArgs) => {
+      const tables = await dotplotTables(pluginManager, args)
+      const [x, y] = tables.assemblyNames
+      return {
+        ...tables,
+        missingContigs: {
+          x: await axisMissingContigs(
+            pluginManager,
+            args.adapterConfig,
+            x,
+            args.x.regions,
+          ),
+          y: await axisMissingContigs(
+            pluginManager,
+            args.adapterConfig,
+            y,
+            args.y.regions,
+          ),
+        },
+      }
+    }),
     contigs: call('contigs', CONTIGS_ARGS, (args: ContigTablesArgs) =>
       contigTables(pluginManager, args),
     ),
-    multiway: call('multiway', MULTIWAY_ARGS, (args: MultiWayTablesArgs) =>
-      multiwayTables(pluginManager, args),
+    multiway: call(
+      'multiway',
+      MULTIWAY_ARGS,
+      async (args: MultiWayTablesArgs) => {
+        const tables = await multiwayTables(pluginManager, args)
+        return {
+          ...tables,
+          missingContigs: await axisMissingContigs(
+            pluginManager,
+            args.adapterConfig,
+            tables.lanes.assembly[0],
+            args.anchor.regions,
+          ),
+        }
+      },
     ),
     sequence: call(
       'sequence',

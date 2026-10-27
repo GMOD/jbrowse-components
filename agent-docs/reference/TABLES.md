@@ -98,7 +98,12 @@ and `clips` stay.
 `missingContigs` to each table, one per region: where the region's contig is
 not one the file lists, the tables come back empty, as the browser draws such
 a track, and its entry says so and names the file's contigs, so a host can
-tell a typo from a quiet region. The engine refuses an args key the call does
+tell a typo from a quiet region. The comparative calls check each axis
+against the contigs the file lists for that axis's assembly (`getRefNames`):
+`synteny` returns `missingContigs` as `query` and `target`, `dotplot` as `x`
+and `y`, and `multiway` one entry per anchor region. `multiway` also refuses
+a `rows.kept` lane the file holds no sequence for, naming the lanes it has
+in the window. The engine refuses an args key the call does
 not take, naming it, so a host's misspelled or renamed key fails rather than
 drops; each call's key list is checked against its args type
 (`ArgKeys` in `src/index.ts`). A BED, GFF or VCF lists only contigs holding records, so

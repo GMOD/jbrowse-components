@@ -294,3 +294,26 @@ test('a PAF comes back as the dotplot lays out and colors it', async () => {
   expect(plain.legend.label.slice(0, 2)).toEqual(['forward', 'reverse'])
   expect(t.skipped.count).toBe(0)
 })
+
+test('an axis region on a contig the file lacks says so', async () => {
+  const chrA = { refName: 'chrA', start: 0, end: 1000 }
+  const t = await engine.synteny({
+    ...INV_INDELS,
+    query: {
+      ...INV_INDELS.query,
+      regions: [...INV_INDELS.query.regions, chrA],
+    },
+  })
+  expect(t.missingContigs).toEqual({
+    query: ['', 'chrA is not a contig of this file, whose contigs are ctgA'],
+    target: [''],
+  })
+  const d = await engine.dotplot({
+    ...INV_INDELS_DOTPLOT,
+    y: { ...INV_INDELS_DOTPLOT.y, regions: [chrA] },
+  })
+  expect(d.missingContigs).toEqual({
+    x: [''],
+    y: ['chrA is not a contig of this file, whose contigs are ctgA'],
+  })
+})

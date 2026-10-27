@@ -1,4 +1,5 @@
 import { fullConfSnapshot, readConfObject } from '@jbrowse/core/configuration'
+import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { rampKeyOf } from '@jbrowse/core/ui/rampKey'
 import { dedupe } from '@jbrowse/core/util'
@@ -61,6 +62,7 @@ import {
   laneBpOfOpened,
   laneFetchRegion,
   laneOpeningsOf,
+  rowAssembliesOf,
   tickIntervalFor,
 } from './MultiWaySyntenyDisplay/layoutMultiWay.ts'
 import { ribbonColorScales } from './MultiWaySyntenyDisplay/legend.ts'
@@ -89,6 +91,7 @@ import type {
   Span,
 } from './MultiWaySyntenyDisplay/layoutMultiWay.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { AnyDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { Feature } from '@jbrowse/core/util'
 import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
@@ -177,6 +180,33 @@ function shownGroups(groups: MultiWayGroup[], axis: ComparativeAxis) {
         ]
       : []
   })
+}
+
+/**
+ * Refuses a `rows.kept` lane the file holds no sequence for, naming the lanes
+ * it has here, as the adapter refuses an anchor assembly it lacks.
+ */
+async function refuseUnknownLanes(
+  kept: readonly string[],
+  known: readonly string[],
+  dataAdapter: AnyDataAdapter,
+) {
+  const has = new Set(known)
+  const unknown: string[] = []
+  for (const name of kept.filter(name => !has.has(name))) {
+    const contigs =
+      dataAdapter instanceof BaseFeatureDataAdapter
+        ? await dataAdapter.getRefNames({ assemblyName: name })
+        : [name]
+    if (contigs.length === 0) {
+      unknown.push(name)
+    }
+  }
+  if (unknown.length > 0) {
+    throw new Error(
+      `rows.kept names ${unknown.join(', ')}, which this file has no lane for; its lanes here are ${[...has].join(', ')}`,
+    )
+  }
 }
 
 const displayConfigSchema = configSchemaFactory()
@@ -485,9 +515,20 @@ export async function multiwayTables(
   const openingsOf = laneOpeningsOf(groups)
   const rowsVsAnchor = rowsReadAgainstAnchor(capabilities, starAnchor)
   const fetches = laneFetchesFor(features, rowsVsAnchor, starAnchor)
+  const placeless = fetched.deletions.map(d => d.assemblyName)
+  await refuseUnknownLanes(
+    settings.kept,
+    [
+      anchor,
+      ...declared.map(lane => lane.name),
+      ...configured,
+      ...rowAssembliesOf(groups, [], keyOf, placeless),
+    ],
+    dataAdapter,
+  )
   const rows = laneRowsOf({
     groups,
-    placeless: fetched.deletions.map(d => d.assemblyName),
+    placeless,
     anchor,
     preferred: stacksByStructure(capabilities, fetches)
       ? [

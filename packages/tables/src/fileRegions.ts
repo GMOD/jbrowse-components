@@ -39,6 +39,7 @@ async function contigsOf(
   pluginManager: PluginManager,
   adapterConfig: Record<string, unknown>,
   sequenceAdapter: Record<string, unknown> | undefined,
+  assemblyName?: string,
 ): Promise<Contig[]> {
   const dataAdapter = await tablesAdapter(
     pluginManager,
@@ -51,25 +52,29 @@ async function contigsOf(
   const refNames: string[] =
     'getRefNames' in dataAdapter
       ? await (
-          dataAdapter as { getRefNames: () => Promise<string[]> }
-        ).getRefNames()
+          dataAdapter as {
+            getRefNames: (opts: { assemblyName?: string }) => Promise<string[]>
+          }
+        ).getRefNames({ assemblyName })
       : []
   const listed = NAMES_FROM_RECORDS.has(String(adapterConfig.type))
   return refNames.map(refName => ({ refName, hasData: listed ? true : null }))
 }
 
 /**
- * The contig names a file has. An adapter listing only contigs with records
- * adds the sequence's, since a sequence contig the file holds no record on is
- * empty there, not missing.
+ * The contig names a file has, on `assemblyName`'s side for a comparative
+ * file. An adapter listing only contigs with records adds the sequence's,
+ * since a sequence contig the file holds no record on is empty there, not
+ * missing.
  */
 export async function contigNamesOf(
   pluginManager: PluginManager,
   adapterConfig: Record<string, unknown>,
   sequenceAdapter: Record<string, unknown> | undefined,
+  assemblyName?: string,
 ) {
   const names = (
-    await contigsOf(pluginManager, adapterConfig, sequenceAdapter)
+    await contigsOf(pluginManager, adapterConfig, sequenceAdapter, assemblyName)
   ).map(c => c.refName)
   if (!sequenceAdapter || !NAMES_FROM_RECORDS.has(String(adapterConfig.type))) {
     return names

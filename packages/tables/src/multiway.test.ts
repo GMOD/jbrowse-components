@@ -100,6 +100,40 @@ test('the rows slot orders the lanes and keeps the ones it names', async () => {
     hidden: ['volvox_ins'],
   })
   expect(hidden.assemblyNames).toEqual(['volvox', 'volvox_del'])
+  await expect(
+    engine.multiway({
+      ...ALL_VS_ALL,
+      display: { rows: { kept: ['volvox_dl'] } },
+    }),
+  ).rejects.toThrow(
+    'rows.kept names volvox_dl, which this file has no lane for; its lanes here are volvox, volvox_ins, volvox_del',
+  )
+})
+
+test('an anchor region on a contig the file lacks says so', async () => {
+  const t = await engine.multiway({
+    ...ALL_VS_ALL,
+    anchor: {
+      ...ALL_VS_ALL.anchor,
+      regions: [
+        { refName: 'ctgA', start: 0, end: 50_001 },
+        { refName: 'chrA', start: 0, end: 1000 },
+      ],
+    },
+  })
+  expect(t.missingContigs).toEqual([
+    '',
+    'chrA is not a contig of this file, whose contigs are ctgA',
+  ])
+  const empty = await engine.multiway({
+    ...ALL_VS_ALL,
+    anchor: {
+      ...ALL_VS_ALL.anchor,
+      regions: [{ refName: 'chrA', start: 0, end: 1000 }],
+    },
+    display: { rows: { kept: ['volvox_del'] } },
+  })
+  expect(empty.ribbons.alignment).toEqual([])
 })
 
 test('ribbons color by strand, keyed against the lane above', async () => {
