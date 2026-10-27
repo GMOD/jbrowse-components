@@ -168,5 +168,4 @@ An older config may still write these. Each loads without an error, and `jbrowse
 | `inverted` | ignored |
 | `numStdDev` | ignored |
 | `minimalTicks` | ignored |
-| `color` | moved into a current slot |
 | `minorAlleleFrequencyFilter` | moved into a current slot |

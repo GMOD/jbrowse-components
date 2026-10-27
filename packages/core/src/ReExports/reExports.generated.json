@@ -4877,8 +4877,7 @@
         "isFlatColor",
         "liftFlatColor",
         "liftRetiredRowState",
-        "moveDisplayDefaults",
-        "retiredDisplayColor"
+        "moveDisplayDefaults"
       ],
       "worker": "real"
     },

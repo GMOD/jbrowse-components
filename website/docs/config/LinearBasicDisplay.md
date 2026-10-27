@@ -120,4 +120,3 @@ An older config may still write these. Each loads without an error, and `jbrowse
 | `maxHeight` | ignored |
 | `impliedUTRs` | ignored |
 | `renderer` | moved into a current slot |
-| `color` | moved into a current slot |
