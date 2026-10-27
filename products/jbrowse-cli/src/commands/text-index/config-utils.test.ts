@@ -68,6 +68,15 @@ describe('getTrackConfigs', () => {
     expect(tracks.map(t => t.trackId)).toEqual(['gff3_track', 'vcf_track'])
   })
 
+  test('a track naming its assembly by an alias belongs to it', () => {
+    const aliased: Config = {
+      assemblies: [{ name: 'GRCh38', aliases: ['hg38'] } as Assembly],
+      tracks: [{ ...mockConfig.tracks![0]!, assemblyNames: ['hg38'] }],
+    }
+    expect(getTrackConfigs(aliased, undefined, 'GRCh38')).toHaveLength(1)
+    expect(getTrackConfigs(aliased, undefined, 'hg38')).toHaveLength(1)
+  })
+
   test('returns all supported tracks when trackIds is empty array', () => {
     const tracks = getTrackConfigs(mockConfig, [], 'test_assembly')
     expect(tracks.map(t => t.trackId)).toEqual(['gff3_track', 'vcf_track'])

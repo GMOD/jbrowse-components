@@ -1,5 +1,5 @@
 {
-  "dateCreated": "2026-08-17T21:52:10.213Z",
+  "dateCreated": "2026-10-27T19:46:55.984Z",
   "tracks": [
     {
       "trackId": "volvox_sv_test",
@@ -88,6 +88,24 @@
     },
     {
       "trackId": "volvox_filtered_vcf",
+      "attributesIndexed": ["Name", "ID", "Note"],
+      "excludedTypes": ["CDS", "exon"],
+      "adapterConf": {
+        "type": "VcfTabixAdapter",
+        "vcfGzLocation": {
+          "uri": "volvox.filtered.vcf.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "volvox.filtered.vcf.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "trackId": "volvox_filtered_vcf_assembly_alias",
       "attributesIndexed": ["Name", "ID", "Note"],
       "excludedTypes": ["CDS", "exon"],
       "adapterConf": {

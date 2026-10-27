@@ -73,13 +73,30 @@ export function formatDryRun(trackConfigs: Track[]): string {
   return trackConfigs.map(t => `${t.trackId}\t${t.adapter?.type}`).join('\n')
 }
 
+// an assembly's name for each name or alias it goes by, so a track naming an
+// assembly by an alias still belongs to it
+function canonicalAssemblyName(config: Config) {
+  const byName = new Map<string, string>()
+  for (const { name, aliases = [] } of config.assemblies ??
+    (config.assembly ? [config.assembly] : [])) {
+    for (const n of [name, ...aliases]) {
+      byName.set(n, name)
+    }
+  }
+  return (name: string) => byName.get(name) ?? name
+}
+
 // why a track was left out, or undefined if it is indexable
 function skipReason(
   track: Track,
   assemblyName: string | undefined,
   excludeSet: Set<string>,
+  canonical: (name: string) => string,
 ) {
-  if (assemblyName && !track.assemblyNames.includes(assemblyName)) {
+  if (
+    assemblyName &&
+    !track.assemblyNames.some(n => canonical(n) === canonical(assemblyName))
+  ) {
     return `not in assembly '${assemblyName}'`
   } else if (excludeSet.has(track.trackId)) {
     return 'excluded with --excludeTracks'
@@ -116,8 +133,9 @@ export function getTrackConfigs(
     : tracks
 
   const excludeSet = new Set(excludeTrackIds)
+  const canonical = canonicalAssemblyName(config)
   return requested.filter(track => {
-    const reason = skipReason(track, assemblyName, excludeSet)
+    const reason = skipReason(track, assemblyName, excludeSet, canonical)
     // only narrate skips for tracks the user named: sweeping a multi-assembly
     // config otherwise prints a line per track per assembly
     if (reason && trackIds?.length) {
