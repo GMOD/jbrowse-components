@@ -1,3 +1,4 @@
+import { parseSmallFasta } from '@gmod/indexedfasta'
 import {
   BaseSequenceAdapter,
   cachedSetup,
@@ -11,51 +12,6 @@ import { sequenceFeatures } from '../sequenceFeatures.ts'
 import type { UnindexedFastaAdapterConfig } from './configSchema.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { NoAssemblyRegion } from '@jbrowse/core/util/types'
-
-// ';' lines (the original FASTA comment marker, used by FHR metadata headers)
-// and blank lines before the first record would otherwise become a contig. A
-// loop rather than one anchored regex, which overflows the stack on millions
-// of lines.
-function skipLeadingComments(text: string) {
-  const lineBreak = /\r\n?|\n/g
-  let start = 0
-  while (start < text.length) {
-    lineBreak.lastIndex = start
-    const match = lineBreak.exec(text)
-    const end = match ? match.index : text.length
-    if (text[start] !== ';' && /\S/.test(text.slice(start, end))) {
-      break
-    }
-    start = match ? lineBreak.lastIndex : end
-  }
-  return text.slice(start)
-}
-
-// Split on a '>' that starts a line, not on every '>': a description line is
-// free text and may well contain one ("gene A>B"), and splitting there both
-// invents a contig out of the tail of the description and leaves the real
-// contig with an empty sequence — silently, since every piece still parses.
-export function parseSmallFasta(text: string) {
-  return new Map(
-    skipLeadingComments(text)
-      .split(/^>/m)
-      .filter(t => /\S/.test(t))
-      .map(entryText => {
-        const [defLine, ...seqLines] = entryText.split(/\r?\n/)
-        // any whitespace ends the name, as samtools does it, so a tab-separated
-        // description doesn't get folded into the refName
-        const [id, ...description] = defLine!.split(/\s+/)
-        const sequence = seqLines.join('').replaceAll(/\s/g, '')
-        return [
-          id!,
-          {
-            description: description.join(' '),
-            sequence,
-          },
-        ] as const
-      }),
-  )
-}
 
 export default class UnindexedFastaAdapter extends BaseSequenceAdapter<UnindexedFastaAdapterConfig> {
   public async getRefNames(opts?: BaseOptions) {
@@ -88,8 +44,8 @@ export default class UnindexedFastaAdapter extends BaseSequenceAdapter<Unindexed
     )
 
     const fasta = new Map<string, { description: string; sequence: string }>()
-    for (const [refName, val] of res) {
-      const name = this.getConf('rewriteRefNames', { refName }) || refName
+    for (const { id, ...val } of res) {
+      const name = this.getConf('rewriteRefNames', { refName: id }) || id
       fasta.set(name, val)
     }
     return { fasta }

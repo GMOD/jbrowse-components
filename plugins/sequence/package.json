@@ -34,7 +34,7 @@
     "clean": "rimraf esm *.tsbuildinfo"
   },
   "dependencies": {
-    "@gmod/indexedfasta": "^5.0.13",
+    "@gmod/indexedfasta": "^5.0.14",
     "@gmod/twobit": "^6.0.14",
     "@jbrowse/core": "workspace:^",
     "@jbrowse/display-kit": "workspace:^",

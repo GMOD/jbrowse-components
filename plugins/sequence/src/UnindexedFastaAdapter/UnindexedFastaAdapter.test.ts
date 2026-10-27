@@ -1,7 +1,7 @@
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
-import Adapter, { parseSmallFasta } from './UnindexedFastaAdapter.ts'
+import Adapter from './UnindexedFastaAdapter.ts'
 import configSchema from './configSchema.ts'
 
 function makeAdapter(file: string) {
@@ -42,30 +42,6 @@ test('; comment lines before the first record are skipped', async () => {
     { refName: 'ctgA', start: 0, end: 20 },
     { refName: 'ctgB', start: 0, end: 8 },
   ])
-})
-
-describe('parseSmallFasta leading comments', () => {
-  const records = '>chr1 desc one\nACGTACGT\nAC\n>chr2\nTTTT\n'
-  const expected = [
-    ['chr1', { description: 'desc one', sequence: 'ACGTACGTAC' }],
-    ['chr2', { description: '', sequence: 'TTTT' }],
-  ]
-
-  test('a comment ended by a lone \\r does not swallow the first record', () => {
-    expect([...parseSmallFasta(`;c\r${records}`)]).toEqual(expected)
-  })
-
-  test('CRLF comment and blank lines', () => {
-    const crlf = records.replaceAll('\n', '\r\n')
-    expect([...parseSmallFasta(`;one\r\n\r\n;two\r\n${crlf}`)]).toEqual(
-      expected,
-    )
-  })
-
-  test('millions of leading lines do not overflow the stack', () => {
-    const text = ';c\n'.repeat(1_500_000) + '\n'.repeat(1_500_000) + records
-    expect([...parseSmallFasta(text)]).toEqual(expected)
-  })
 })
 
 test('clamps a region running past the end of the contig', async () => {

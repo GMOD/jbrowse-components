@@ -1964,8 +1964,8 @@ importers:
   plugins/sequence:
     dependencies:
       '@gmod/indexedfasta':
-        specifier: ^5.0.13
-        version: 5.0.13
+        specifier: ^5.0.14
+        version: 5.0.14
       '@gmod/twobit':
         specifier: ^6.0.14
         version: 6.0.14
@@ -4840,8 +4840,8 @@ packages:
   '@gmod/hic@2.2.0':
     resolution: {integrity: sha512-IpH8XuPvKMH/pOtj6b5F3VbGGCfKQAzrBt/J2aBSWnODHGSNUmIJ2RATt4DUaMWFnFIuNWe5K//XuEaODU6FEA==}
 
-  '@gmod/indexedfasta@5.0.13':
-    resolution: {integrity: sha512-qZhpJqGZVB5JJgXur2dnGLvcEmGO0wsoGkr3ETpxH42TgL7UFOAiSHCB/mPhcycCuISwaQw4IpfCXJuKPxVLxA==}
+  '@gmod/indexedfasta@5.0.14':
+    resolution: {integrity: sha512-EvLxxcrl+sj7d0S4Rb+QRVDHMegv6HAmI+mqrNLSs9UGAvXObwc/hc8Ke+vs+eJsVRdwovFZA2cFlh1RTPcHdg==}
 
   '@gmod/inflate@1.0.0':
     resolution: {integrity: sha512-sYVWYJyl8gyU/Q8FqpEe682Kpv527ZVwln2dDqJXr1/lRPWfjCJGuVTxR78SPZAgoRYDDtIUsN3D4if3F7/cBA==}
@@ -5541,13 +5541,6 @@ packages:
 
   '@napi-rs/wasm-runtime@1.2.4':
     resolution: {integrity: sha512-AJxoUD2/15ESHbvpcyjU274nsAPLuOtPHCk0vKJM5pj//Fg/B1FXNWjPnXTT9PymCYYiHo4zPj0ZomXBKhoy7g==}
-    engines: {node: ^20.19.0 || ^22.13.0 || >=23.5.0}
-    peerDependencies:
-      '@emnapi/core': ^1.7.1 || ^2.0.0-alpha.4
-      '@emnapi/runtime': ^1.7.1 || ^2.0.0-alpha.4
-
-  '@napi-rs/wasm-runtime@1.2.5':
-    resolution: {integrity: sha512-HshSvXzmBxNzqejd3k/KemgQ3hdREUYFRRrgxOZ+gPljDIsO2SDZrVZMd4Z/HsxudQbE62OVyVFE8z9BCurfjA==}
     engines: {node: ^20.19.0 || ^22.13.0 || >=23.5.0}
     peerDependencies:
       '@emnapi/core': ^1.7.1 || ^2.0.0-alpha.4
@@ -11284,7 +11277,7 @@ snapshots:
     dependencies:
       '@emnapi/core': 1.11.3
       '@emnapi/runtime': 1.11.3
-      '@napi-rs/wasm-runtime': 1.2.5(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)
+      '@napi-rs/wasm-runtime': 1.2.6(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)
     optional: true
 
   '@astrojs/compiler-binding-win32-arm64-msvc@0.5.2':
@@ -12891,7 +12884,7 @@ snapshots:
       '@gmod/shared-read-cache': 2.1.0
       generic-filehandle2: 2.5.1
 
-  '@gmod/indexedfasta@5.0.13':
+  '@gmod/indexedfasta@5.0.14':
     dependencies:
       '@gmod/bgzf-filehandle': 6.8.2
       '@gmod/shared-read-cache': 2.1.0
@@ -13666,13 +13659,6 @@ snapshots:
       '@emnapi/runtime': 1.11.3
       '@tybys/wasm-util': 0.10.4
 
-  '@napi-rs/wasm-runtime@1.2.5(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)':
-    dependencies:
-      '@emnapi/core': 1.11.3
-      '@emnapi/runtime': 1.11.3
-      '@tybys/wasm-util': 0.10.4
-    optional: true
-
   '@napi-rs/wasm-runtime@1.2.6(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)':
     dependencies:
       '@emnapi/core': 1.10.0
@@ -13684,6 +13670,13 @@ snapshots:
     dependencies:
       '@emnapi/core': 1.11.1
       '@emnapi/runtime': 1.11.1
+      '@tybys/wasm-util': 0.10.4
+    optional: true
+
+  '@napi-rs/wasm-runtime@1.2.6(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)':
+    dependencies:
+      '@emnapi/core': 1.11.3
+      '@emnapi/runtime': 1.11.3
       '@tybys/wasm-util': 0.10.4
     optional: true
 
