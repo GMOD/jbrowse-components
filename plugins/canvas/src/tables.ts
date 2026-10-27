@@ -383,6 +383,14 @@ export async function featureTables(
   const sectionOf = facet ? sectionIdsOf(facet) : undefined
   const isHidden = (item: SectionStamp) =>
     !!sectionOf && hiddenGroupKeys.has(sectionOf(item).key)
+  const config = fullConfSnapshot(conf)
+  const workerConfig = {
+    ...pickDisplayConfig(config),
+    subfeatureLabels,
+    ...(facet === undefined || facet.field === STRAND_FIELD
+      ? {}
+      : { facetField: facet.field }),
+  }
   const raws = await Promise.all(
     regions.map(async r => {
       const result = await executeRenderFeatureData({
@@ -392,13 +400,7 @@ export async function featureTables(
           adapterConfig,
           sequenceAdapter,
           region: { assemblyName: '', ...r },
-          displayConfig: {
-            ...pickDisplayConfig(fullConfSnapshot(conf)),
-            subfeatureLabels,
-            ...(facet === undefined || facet.field === STRAND_FIELD
-              ? {}
-              : { facetField: facet.field }),
-          },
+          displayConfig: workerConfig,
           geneGlyphMode: resolvedGeneGlyphMode(
             readConfObject(conf, 'geneGlyphMode'),
             bpPerPx,
@@ -559,7 +561,7 @@ export async function featureTables(
       sectionLabelHeight: facet ? GROUP_LABEL_HEIGHT : 0,
     },
     bpPerPx,
-    config: fullConfSnapshot(conf),
+    config,
   }
 }
 
