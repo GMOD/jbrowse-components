@@ -78,7 +78,8 @@ export const rowArrangementConfigSchema = ConfigurationSchema(
     /**
      * #slot treeProvenance
      * The locus and settings `tree` was computed from; unset for a tree that
-     * arrived as data.
+     * arrived as data. A clustering run writes it with `tree`; a config
+     * copies the two together or leaves both out.
      */
     treeProvenance: {
       type: 'maybeFrozen',

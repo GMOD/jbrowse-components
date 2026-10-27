@@ -58,7 +58,11 @@ export const rowColorConfigSchema = ConfigurationSchema(
   'RowColor',
   {
     /**
-     * #slot
+     * #slot field
+     * The row attribute whose values take the colors. Under `name` with no
+     * `scale`, stacked rows keep only a file's own colors, since the palette
+     * deals only where the rows share one panel; list the rows in
+     * `scale.domain` to color them.
      */
     field: {
       type: 'string',

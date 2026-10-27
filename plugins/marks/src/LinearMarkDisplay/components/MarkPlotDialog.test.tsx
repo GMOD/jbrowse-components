@@ -528,7 +528,7 @@ describe('the plot as a whole', () => {
 
     it('retyped to its field, keeps the arrangement', () => {
       const { apply, written } = setup({ ...BAR, rows })
-      typeInto(['stran', 'strand'])
+      typeInto(['str', 'strand'])
       expect(screen.getByTestId('rows-order')).toHaveValue('-1, 1')
       fireEvent.click(apply())
       expect(written.mock.calls[0]![0]).not.toHaveProperty('rows')
@@ -536,7 +536,7 @@ describe('the plot as a whole', () => {
 
     it('another field drops it, and the order box with it', () => {
       const { apply, written, writes } = setup({ ...BAR, rows })
-      typeInto(['stran', 'name'])
+      typeInto(['str', 'name'])
       expect(screen.getByTestId('rows-order')).toHaveValue('')
       fireEvent.click(apply())
       expect(written).toHaveBeenCalledWith(writes({ rows: { field: 'name' } }))

@@ -363,7 +363,7 @@ export const colorUnknownSlot = {
   unknown: {
     type: 'maybeColor',
     description:
-      'color for a value missing from domain: unset, a preset field\'s level keeps its own color and any other value takes the next palette color where the display deals one; a color paints that color; "" paints a feature the no-value grey and a variant cell the alt hue, and leaves a row the color it already has',
+      'color for a value missing from domain. Unset: the next palette color where the display deals one, and the levels a preset field names, such as strand\'s, keep their own colors. A color: that color. "": no color dealt, so a feature paints the no-value grey, a variant cell the alt hue, and a row keeps the color it already has',
   },
 } as const
 
