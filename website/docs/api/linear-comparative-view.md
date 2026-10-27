@@ -32,11 +32,15 @@ each gutter draws in paint order, a trapezoid from a span on its upper
 lane to a span on its lower one, with its color and the alpha it
 composites at; `alignments`, the records the ribbons draw; `legend`, the
 key; and `config`, the display's config with its defaults filled. Positions are genomic on each lane, and px across the view's
-`width`, where a lane's own frame puts them.
+`width`, where a lane's own frame puts them. Heights are px down from the
+stack's top as the display lays it out over `display.height`: `height` is
+the whole stack, each lane's `yTop` and `yBottom` bound its gene boxes,
+and each ribbon's bound its gutter, the height its `thin` flag and fade
+are measured at.
 
 ```js
 // type signature
-(pluginManager: PluginManager, { adapterConfig, anchor: anchorArgs, pins, hidden, display, }: MultiWayTablesArgs) => Promise<{ field: string | undefined; tickInterval: number; rowsVsAnchor: boolean; config: Record<…>; assemblyNames: string[]; legend: {…}; legendTitle: string; ramps: {…}[]; ribbons: {…}; alignments: {…}; blocks: {…}; lanes: {…}; segments: { lane: number[]; chrom: string[]; start: number[]; end: number[]; x1: number[]; x2: number[]; }; }>
+(pluginManager: PluginManager, { adapterConfig, anchor: anchorArgs, pins, hidden, display, }: MultiWayTablesArgs) => Promise<{ height: number; tickInterval: number; rowsVsAnchor: boolean; config: Record<…>; legend: {…}; legendTitle: string; ramps: {…}[]; ribbons: {…}; alignments: {…}; blocks: {…}; lanes: {…}; segments: { lane: number[]; chrom: string[]; start: number[]; end: number[]; x1: number[]; x2: number[]; }; }>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/multiwayTables.ts)
@@ -102,11 +106,14 @@ labels the strips along the band's edges paint, in px;
 `legend` and `ramps`, the key; and `config`, the view's settings with
 their defaults filled, `encoding.color` and `encoding.opacity` as config objects. For a host that draws
 them itself, such as R through V8. Positions are genomic, on the axis's
-region named by `queryRegion` and `targetRegion`.
+region named by `queryRegion` and `targetRegion`; a ribbon's
+`queryX1`/`queryX2` and `targetX1`/`targetX2` are its feet in px across
+the row's `width`, the regions end to end with no gap, each foot clamped
+to its region, X1 joining X1 along one edge and X2 joining X2.
 
 ```js
 // type signature
-(pluginManager: PluginManager, { adapterConfig, query, target, view: written }: SyntenyTablesArgs) => Promise<{ config: {…}; field: string | undefined; alpha: number; fadeThin: boolean; assemblyNames: string[]; hasCigar: boolean; legend: {…}; legendTitle: string; ramps: {…}[]; alignments: {…}; ribbons: {…}; offscreen: {…}; offscreenContigs: {…}; offscreenStrip: { marks: {…}; labels: { label: string[]; x: number[]; y: number[]; color: string[]; alpha: number[]; halo: string[]; axis: ("query" | "target")[]; }; fontPx: number; }; }>
+(pluginManager: PluginManager, { adapterConfig, query, target, view: written }: SyntenyTablesArgs) => Promise<{ config: {…}; alpha: number; assemblyNames: string[]; legend: {…}; legendTitle: string; ramps: {…}[]; alignments: {…}; ribbons: {…}; offscreen: {…}; offscreenContigs: {…}; offscreenStrip: { marks: { x: number[]; y: number[]; width: number[]; height: number[]; color: string[]; alpha: number[]; axis: ("query" | "target")[]; }; labels: { label: string[]; x: number[]; y: number[]; color: string[]; alpha: number[]; halo: string[]; axis: ("query" | "target")[]; }; fontPx: number; }; }>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/tables.ts)

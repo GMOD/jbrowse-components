@@ -34,6 +34,7 @@ edits back to the session.
 | Member | Description |
 | --- | --- |
 | <span id="getter-target">**target**</span><br><code>AnyConfigurationModel &#124; undefined</code> |  |
+| <span id="getter-base">**base**</span><br><code>AnyConfigurationModel &#124; undefined</code> | the track's config as the session's base holds it (its config.json entry, or the one the session added it with), which a slot's reset returns to; undefined for an inline target |
 
 ## Actions
 

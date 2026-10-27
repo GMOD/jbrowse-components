@@ -11,7 +11,8 @@ import these from a plugin.
 ## dotplotTables
 
 A dotplot as the display fetches, lays out and colors it, as tables:
-`alignments`, each block with its span on each axis, its strand, name and
+`alignments`, each block with the span of it each axis shows (`length`
+stays the whole block's query span), its strand, name and
 measurements, in the color the view's `encoding.color` paints it; `segments`, the
 lines the plot draws in paint order, one per block, or one per CIGAR step
 where a block is wide enough on screen for its CIGAR to show, each from
@@ -24,7 +25,7 @@ them itself, such as R through V8.
 
 ```js
 // type signature
-(pluginManager: PluginManager, { adapterConfig, x, y, view: written }: DotplotTablesArgs) => Promise<{ config: {…}; field: string | undefined; alpha: number; assemblyNames: string[]; skipped: {…}; legend: {…}; legendTitle: string; ramps: {…}[]; alignments: {…}; segments: { alignment: number[]; op: string[]; xRegion: number[]; xChrom: string[]; xStart: number[]; xEnd: number[]; yRegion: number[]; yChrom: string[]; yStart: number[]; yEnd: number[]; color: string[]; alpha: number[]; }; }>
+(pluginManager: PluginManager, { adapterConfig, x, y, view: written }: DotplotTablesArgs) => Promise<{ config: {…}; alpha: number; assemblyNames: string[]; skipped: {…}; legend: {…}; legendTitle: string; ramps: {…}[]; alignments: {…}; segments: { alignment: number[]; op: string[]; xRegion: number[]; xChrom: string[]; xStart: number[]; xEnd: number[]; yRegion: number[]; yChrom: string[]; yStart: number[]; yEnd: number[]; color: string[]; alpha: number[]; }; }>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/dotplot-view/src/tables.ts)
