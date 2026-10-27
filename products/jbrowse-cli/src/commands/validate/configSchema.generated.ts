@@ -5909,10 +5909,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "renderer": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
-        },
-        "color": {
-          "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
       }
     },
@@ -12084,10 +12080,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "renderer": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
-        },
-        "color": {
-          "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
       }
     },
@@ -12986,10 +12978,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
         "minimalTicks": {
-          "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
-        },
-        "color": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
@@ -17130,16 +17118,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 }
               ]
             },
-            "color": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearBasicDisplaySlots/properties/color"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/color"
-                }
-              ]
-            },
             "rows": {
               "anyOf": [
                 {
@@ -17294,6 +17272,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                   "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/rowHeight"
                 }
               ]
+            },
+            "color": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/color"
             }
           },
           "patternProperties": {
@@ -18321,19 +18302,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "impliedUTRs": {
               "$ref": "#/$defs/LinearVariantDisplaySlots/properties/impliedUTRs"
             },
-            "color": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearVariantDisplaySlots/properties/color"
-                },
-                {
-                  "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/color"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/color"
-                }
-              ]
-            },
             "variantLayout": {
               "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/variantLayout"
             },
@@ -18439,6 +18407,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "origin": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/origin"
+            },
+            "color": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/color"
             }
           },
           "patternProperties": {

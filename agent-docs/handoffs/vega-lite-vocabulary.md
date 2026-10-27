@@ -82,12 +82,11 @@ list names each divergence and can only shrink.
 
 ## Writers to update after each landing
 
-- **Lifts to drop once hosted configs regenerate:** display-kit's
-  `liftFlatColor` and `retiredDisplayColor`, `liftViewColor`, the MAF
-  adapters' `annotationAdapter` (the hosted mouseStrains configs write it),
-  and `retiredOrderSpelling` (jb2hubs' bovine and arabidopsis pangenome
-  configs write `rows.domain` with no `sort`). The other entries in these
-  displays' `retired` maps lift v4.3.0 spellings and stay.
+- **Lifts to drop once ada uploads and deploys:** `liftViewColor` and
+  `liftFlatColor`, and `retiredOrderSpelling` (`rows.domain`), which the
+  deployed genomes site's launch links write, and the MAF adapters'
+  `annotationAdapter`, which the hosted mouseStrains configs carry. The other
+  entries in these displays' `retired` maps lift v4.3.0 spellings and stay.
 - **jb2hubs' hosted bovine config still writes the removed `variants` band**
   (ADR-250): jb2hubs stopped writing it (`19eeecbe06`), and the hosted copy
   loses the key at the next `pangenome-config/upload.sh`. A closed-schema bundle

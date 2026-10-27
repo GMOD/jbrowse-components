@@ -981,7 +981,10 @@ test.each([
 // Every mark's ramp resolves on the display over the extent the regions
 // union, a text's as a span's, so an open end says nothing.
 test('an unpinned color ramp says nothing, on a text or a span', () => {
-  const ramp = { field: 'score', scale: 'linear', range: ['white', 'red'] }
+  const ramp = {
+    field: 'score',
+    scale: { type: 'linear', range: ['white', 'red'] },
+  }
   expect(
     noticesOf([{ mark: 'text', encoding: { text: 'name', color: ramp } }]),
   ).toEqual([])

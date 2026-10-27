@@ -4,7 +4,6 @@ import { featureEncodingConfigSchema } from '@jbrowse/display-kit/featureEncodin
 import { fieldPredicateList } from '@jbrowse/display-kit/fieldPredicateConfigSchema'
 import { heightModeConfigSchemaFields } from '@jbrowse/display-kit/heightModeConfigSchemaFields'
 import { legendConfigSchema } from '@jbrowse/display-kit/legendConfigSchema'
-import { retiredDisplayColor } from '@jbrowse/display-kit/retiredSettings'
 import { sectionFacetConfigSchema } from '@jbrowse/display-kit/sectionFacetConfigSchema'
 import { types } from '@jbrowse/mobx-state-tree'
 
@@ -131,7 +130,7 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
        */
       baseConfiguration: baseLinearDisplayConfigSchema,
       explicitlyTyped: true,
-      retired: { ...basicRetired, ...retiredDisplayColor },
+      retired: basicRetired,
       preProcessSnapshot: snap => migrateBasicConfigSnapshot(snap),
     },
   )

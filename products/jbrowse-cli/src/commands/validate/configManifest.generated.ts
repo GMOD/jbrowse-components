@@ -3539,8 +3539,7 @@ export const configManifest: ConfigManifest = {
         "outline",
         "maxHeight",
         "impliedUTRs",
-        "renderer",
-        "color"
+        "renderer"
       ],
       "droppedKeys": [
         "maxFeatureScreenDensity",
@@ -6984,8 +6983,7 @@ export const configManifest: ConfigManifest = {
         "outline",
         "maxHeight",
         "impliedUTRs",
-        "renderer",
-        "color"
+        "renderer"
       ],
       "droppedKeys": [
         "maxFeatureScreenDensity",
@@ -7385,7 +7383,6 @@ export const configManifest: ConfigManifest = {
         "inverted",
         "numStdDev",
         "minimalTicks",
-        "color",
         "minorAlleleFrequencyFilter"
       ],
       "droppedKeys": [

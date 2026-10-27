@@ -52,15 +52,16 @@ once per display that embeds it, so read the trend, not the size.
 
 ## Next
 
-1. **The last beta-only lifts.** The 2026-10-27 sweep deleted every other one;
-   these four wait on a writer:
-   - MAF adapters' `annotationAdapter`: the hosted genark `mouseStrains`
-     configs carry it until jb2hubs regenerates them.
-   - Facet and rows `domain` → `sort`: jb2hubs' `bovine-arsucd12.json` and
-     `arabidopsis-tair10.json` pangenome configs write it.
-   - `retiredDisplayColor`/`liftFlatColor`: no carrier found in local or
-     hosted hub configs; it goes with `liftViewColor`, a view key.
-   - The synteny view keys' `cigarMode`, beta-only.
+1. **The last beta-only lifts.** jb2hubs writes main's spellings (its
+   `1364164`, `d8de3fc`, `0ee536d`), and the pangenome configs are hosted in
+   them. The rest waits on ada, which refused ssh on 2026-10-27:
+   - MAF adapters' `annotationAdapter`: upload the regenerated `mouseStrains`
+     configs.
+   - Facet and rows `domain` → `sort`, the synteny view's `cigarMode`, and
+     `liftViewColor` with `liftFlatColor`: redeploy the genomes site, whose
+     launch links still write them.
+   - jb2hubs' UCSC rebuild, which drops `sequenceAdapter` (71 configs) and the
+     multi-way GC layer's `windowSize`/`windowDelta` (217).
 2. **jbrowse-img modifiers that write nothing.** `modifierSlots.test.ts`
    checks every modifier against the schema, and exempts two:
    - `force:` writes `forceLoad`, which `LinearWiggleDisplay` and

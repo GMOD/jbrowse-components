@@ -3,7 +3,6 @@ import { categoricalValueColor } from '@jbrowse/core/ui/colors'
 import { NO_CATEGORY_COLOR } from '@jbrowse/core/util/color'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { DEFAULT_MARK_COLOR } from '@jbrowse/core/util/markEncoding'
-import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import { isThreshold } from '@jbrowse/render-core/marks'
 
 import { findMarkHit } from './findMarkHit.ts'
@@ -907,35 +906,6 @@ test('the render state says which marks color by their own y', () => {
 // Hosted jb2hubs configs still write a mark's color flat
 // (`hubtools/src/alfaPopulations.ts`); the deprecated lift reads it as the
 // channel, so the population colors still paint.
-test("a hosted hub's flat categorical color loads as the ordinal channel", () => {
-  const display = loaded([
-    {
-      mark: 'bar',
-      encoding: {
-        y: 'score',
-        color: {
-          field: 'type',
-          scale: 'categorical',
-          domain: ['a', 'b'],
-          range: ['#ff0000', '#0000ff'],
-        },
-      },
-    },
-  ])
-  expect(getSnapshot(display.conf.marks[0]!.encoding.color)).toEqual({
-    field: 'type',
-    scale: {
-      type: 'ordinal',
-      domain: ['a', 'b'],
-      range: ['#ff0000', '#0000ff'],
-    },
-  })
-  expect(display.layerRequests[0]!.encoding.color).toEqual({
-    field: 'type',
-    scale: 'ordinal',
-  })
-})
-
 // A key's names and the rows it lists are the legend's; the worker paints
 // without them, so editing one refetches nothing.
 test("a color's legend.values and scale.names edit the key without a fetch", () => {

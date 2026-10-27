@@ -24,7 +24,7 @@ const rowColorKey = (display: ReturnType<typeof loaded>) =>
   display.legendSpec.sections.find(s => s.id === 'rowColor')?.items ?? []
 
 it('keys nothing by name, whose labels are the key', () => {
-  const display = loaded({ domain: ['mom'], range: ['#00f'] })
+  const display = loaded({ scale: { domain: ['mom'], range: ['#00f'] } })
   expect(display.resolvedRowColors.get('mom')).toBe('#00f')
   expect(display.rowColorScales).toEqual([])
   expect(rowColorKey(display)).toEqual([])

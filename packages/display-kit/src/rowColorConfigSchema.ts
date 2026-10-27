@@ -6,7 +6,6 @@ import {
   colorScaleOptions,
   colorUnknownSlot,
 } from './colorConfigSchema.ts'
-import { isFlatColor, liftFlatColor } from './retiredSettings.ts'
 
 /**
  * #config RowColor
@@ -89,9 +88,5 @@ export const rowColorConfigSchema = ConfigurationSchema(
     writes: 'whole',
     plot: true,
     closed: true,
-    // @deprecated: hosted jb2hubs configs write `rowColor`'s scale members
-    // flat; goes with `liftFlatColor`.
-    preProcessSnapshot: snap =>
-      isFlatColor(snap) ? liftFlatColor(snap, 'field') : snap,
   },
 )

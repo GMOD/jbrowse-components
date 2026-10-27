@@ -100,18 +100,6 @@ test('a variant color field reaches every variant display', () => {
   }
 })
 
-// jb2hubs' hosted configs still write a display's flat `color`, which the
-// displays that retired it lift (`retiredDisplayColor`)
-test('the flat color hosted hub configs write reaches the displays that lift it', () => {
-  const conf = hydrate('VariantTrack', { color: { field: 'svType' } })
-  for (const type of [
-    'LinearVariantDisplay',
-    'LinearMultiSampleVariantDisplay',
-  ]) {
-    expect(colorOf(conf, type)).toEqual({ field: 'svType' })
-  }
-})
-
 // `r2` is a field the GWAS adapter joins, so `{ field: 'r2' }` is a field
 // like any other to the routing and reaches the feature display, where it
 // paints a field the features lack (ADR-135).

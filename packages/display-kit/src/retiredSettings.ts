@@ -151,12 +151,12 @@ export function isFlatColor(color: unknown) {
 }
 
 /**
- * @deprecated The color object as hosted jb2hubs configs still spell it,
- * flat, before ADR-240's channel object, lifted to the channel: scale members
- * under `scale`, `labels` as `scale.names`, `categorical` as `ordinal`, the
- * key's under `legend`. `bare` is what a bare string meant where it was
- * written. Goes once the hosted hub configs regenerate in the channel's
- * spelling.
+ * @deprecated A synteny view's color object as the deployed genomes site's
+ * launch links still spell it, flat, before ADR-240's channel object, lifted
+ * to the channel: scale members under `scale`, `labels` as `scale.names`,
+ * `categorical` as `ordinal`, the key's under `legend`. `bare` is what a bare
+ * string meant where it was written. Goes with `liftViewColor` once the site
+ * redeploys from jb2hubs main.
  */
 export function liftFlatColor(
   color: unknown,
@@ -186,15 +186,4 @@ export function liftFlatColor(
     }
   }
   return out
-}
-
-/**
- * @deprecated A display's `color` before `encoding.color`, which hosted
- * jb2hubs configs still write, a bare string being the constant. Goes with
- * `liftFlatColor`.
- */
-export const retiredDisplayColor = {
-  color: (color: unknown) => ({
-    encoding: { color: liftFlatColor(color, 'value') },
-  }),
 }

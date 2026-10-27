@@ -17,10 +17,6 @@ import {
   colorInvalidSlot,
   colorUnknownSlot,
 } from '@jbrowse/display-kit/colorConfigSchema'
-import {
-  isFlatColor,
-  liftFlatColor,
-} from '@jbrowse/display-kit/retiredSettings'
 
 import { MARK_COLOR_SCALES } from './markVocabulary.ts'
 
@@ -31,23 +27,6 @@ export const markLegendOptions = {
     Array.isArray(snap.values)
       ? { ...snap, values: snap.values.map(String) }
       : snap,
-}
-
-// @deprecated: hosted jb2hubs configs write a mark's color flat, `{ field,
-// scale: 'categorical', domain, range }`; goes with `liftFlatColor`. Only a
-// color naming its field is one, so a bare `{ scale: 'ordinal' }` meets the
-// refusal every color channel gives it, here as on a feature display.
-function markColorOptions() {
-  const options = colorChannelOptions('encoding.color', FEATURE_FIELD_PRESETS)
-  return {
-    ...options,
-    preProcessSnapshot: (snap: Record<string, unknown> = {}) =>
-      options.preProcessSnapshot(
-        isFlatColor(snap) && 'field' in snap
-          ? liftFlatColor(snap, 'field')
-          : snap,
-      ),
-  }
 }
 
 /**
@@ -233,5 +212,5 @@ export const markColorSchema = ConfigurationSchema(
       markLegendOptions,
     ),
   },
-  markColorOptions(),
+  colorChannelOptions('encoding.color', FEATURE_FIELD_PRESETS),
 )
