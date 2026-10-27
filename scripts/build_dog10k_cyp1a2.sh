@@ -15,10 +15,11 @@
 # Requires: bcftools (>= 1.17, with libcurl support), htslib (tabix), curl,
 #           python3.
 # Usage:    bash scripts/build_dog10k_cyp1a2.sh [outdir]
+#           SHARE=file:///path/to/dog10k-mirror bash scripts/build_dog10k_cyp1a2.sh
 set -euo pipefail
 
 OUTDIR="${1:-dog10k_cyp1a2_build}"
-SHARE=https://kiddlabshare.med.umich.edu/dog10K
+SHARE="${SHARE:-https://kiddlabshare.med.umich.edu/dog10K}"
 SNVS=$SHARE/SNP_and_indel_calls_2021-10-17/AutoAndXPAR.SNPs.vqsr99.vcf.gz
 REGION=chr30:38258000-38265000
 
@@ -27,6 +28,7 @@ cd "$OUTDIR"
 
 [ -f samples.txt ] || curl -fsSL -o samples.txt \
   "$SHARE/sample-information/dog10K-alignment-sample-table.2022-02-23-v7.txt"
+cp samples.txt dog10k_sample_table.tsv
 
 # ── Where the stop codon is ─────────────────────────────────────────────────
 # Rebuild the CDS from the reference and the RefSeq exon structure, translate
@@ -114,8 +116,10 @@ bcftools query -r chr30:38261635-38261636 -i 'POS=38261635' \
 # rather than measured once and written into the prose.
 echo
 echo "The same site over every canid in the callset:"
-bcftools query -r chr30:38261635-38261636 -i 'POS=38261635' \
-  -f '[%SAMPLE=%GT\n]' "$SNVS" > cyp_all.gt
+bcftools view -r chr30:38261635 -i 'POS=38261635' \
+  -Oz -o dog10k_cyp1a2_stop_site.vcf.gz "$SNVS"
+tabix -f -p vcf dog10k_cyp1a2_stop_site.vcf.gz
+bcftools query -f '[%SAMPLE=%GT\n]' dog10k_cyp1a2_stop_site.vcf.gz > cyp_all.gt
 
 python3 - <<'PY'
 import collections
@@ -150,4 +154,5 @@ print(f'  wild canids: {dict(groups)}, {len(carrying)} of {len(wild)} carrying')
 PY
 
 echo
-echo "Wrote $(pwd)/dog10k_cyp1a2_snvs.vcf.gz (plus its .tbi)."
+echo "Wrote $(pwd)/dog10k_cyp1a2_snvs.vcf.gz and dog10k_cyp1a2_stop_site.vcf.gz"
+echo "(each with its .tbi), and dog10k_sample_table.tsv."
