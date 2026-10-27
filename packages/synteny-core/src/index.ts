@@ -257,7 +257,6 @@ export {
   dnDsRatio,
   isAttributeLabels,
   isMeasureField,
-  paintRange,
   rampNorm,
   resolveCategoricalMode,
   resolveNumericMode,

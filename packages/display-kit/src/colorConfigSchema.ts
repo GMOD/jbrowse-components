@@ -674,10 +674,15 @@ function schemeRange(
  * sampled once per domain value, else none, for a reader that resolves the
  * scale off its slots rather than through `colorEncodingOf`.
  */
-export function ordinalRange(
-  scale: Pick<ColorScaleSetting, 'domain' | 'range' | 'scheme' | 'reverse'>,
-): readonly string[] {
-  return schemeRange(scale, scale.domain.length) ?? []
+export function ordinalRange({
+  domain = [],
+  range = [],
+  scheme,
+  reverse,
+}: Partial<
+  Pick<ColorScaleSetting, 'domain' | 'range' | 'scheme' | 'reverse'>
+>): readonly string[] {
+  return schemeRange({ domain, range, scheme, reverse }, domain.length) ?? []
 }
 
 /** A color that maps a field: every form of {@link ColorEncoding} but the constant. */

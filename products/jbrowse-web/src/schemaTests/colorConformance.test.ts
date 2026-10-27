@@ -556,7 +556,7 @@ function synteny({ color, values }: Spec): Answer[] | string {
     attributeRanges: orderAttributeLabels(
       fetched,
       domain,
-      ordinalRange({ domain, range: scale.range, scheme: scale.scheme }),
+      ordinalRange({ ...scale, domain }),
     ),
     paint: colorPaintOf(node),
   })

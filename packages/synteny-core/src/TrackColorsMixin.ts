@@ -9,6 +9,7 @@ import {
   colorForField,
   colorForValue,
   colorSnapshotOf,
+  ordinalRange,
 } from '@jbrowse/display-kit/colorConfigSchema'
 import { types } from '@jbrowse/mobx-state-tree'
 import { compareStructural } from 'mobx'
@@ -22,7 +23,6 @@ import {
   isAttributeLabels,
   isMeasureField,
   labelsOf,
-  paintRange,
   resolveCategoricalMode,
 } from './colorRamps.ts'
 import { hidesUnlabelled, withHideUnlabelled } from './hideUnlabelledFilter.ts'
@@ -370,7 +370,7 @@ export function TrackColorsMixin({
        * domain value
        */
       get colorRange(): readonly string[] {
-        return paintRange(this.colorPaint)
+        return ordinalRange(this.colorPaint)
       },
       /**
        * #getter

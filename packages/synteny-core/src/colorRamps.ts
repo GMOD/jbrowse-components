@@ -113,20 +113,6 @@ export function colorPaintOf({ scale }: SyntenyColorConfig): SyntenyColorPaint {
 }
 
 /**
- * #api
- * The colors an ordinal paint deals in domain order: its `range`, else its
- * `scheme`, reversed under `reverse`, sampled once per domain value.
- */
-export function paintRange({
-  domain = [],
-  range = [],
-  scheme,
-  reverse,
-}: SyntenyColorPaint): readonly string[] {
-  return ordinalRange({ domain, range, scheme, reverse })
-}
-
-/**
  * A numeric field on a ramp: the attribute it reads, the ramp's stops, the
  * domain a value is read against and where the middle stop sits in it, and
  * the key's end labels.
@@ -321,7 +307,7 @@ export function resolveCategoricalMode(
     colors: {},
     missing: range.missing ?? false,
     domain,
-    palette: paintRange(paint),
+    palette: ordinalRange(paint),
   }
 }
 
