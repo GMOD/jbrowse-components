@@ -22,11 +22,12 @@ test('a BigWig region comes back as the wiggle display scales and colors it', as
   for (const table of [t.bins, t.marks]) {
     expect(new Set(Object.values(table).map(c => c.length)).size).toBe(1)
   }
-  expect([t.mark, t.interpolate, t.rendering]).toEqual([
+  expect([t.mark, t.interpolate, t.summaryField]).toEqual([
     'bar',
     'step',
-    'xyplot',
+    'score',
   ])
+  expect(t.scoreScale.type).toBe('linear')
   expect(t.marks.start).toHaveLength(n)
   const pos = new Set<string>()
   const neg = new Set<string>()
@@ -37,7 +38,7 @@ test('a BigWig region comes back as the wiggle display scales and colors it', as
   expect(pos.size).toBe(1)
   expect(neg.size).toBe(1)
   expect(pos).not.toEqual(neg)
-  const [lo, hi] = t.domain
+  const [lo, hi] = t.scoreScale.domain
   expect(lo).toBeLessThanOrEqual(Math.min(...t.bins.score))
   expect(hi).toBeGreaterThanOrEqual(Math.max(...t.bins.score))
 
@@ -45,7 +46,7 @@ test('a BigWig region comes back as the wiggle display scales and colors it', as
     ...SIGNED_BIGWIG,
     display: { encoding: { y: { scale: { domainMin: -50, domainMax: 300 } } } },
   })
-  expect(pinned.domain).toEqual([-50, 300])
+  expect(pinned.scoreScale.domain).toEqual([-50, 300])
 
   const ruled = await engine.wiggle({
     ...SIGNED_BIGWIG,
@@ -62,6 +63,18 @@ test('a BigWig region comes back as the wiggle display scales and colors it', as
     color: ['#787878', '#ff0000'],
     label: ['', 'gain'],
   })
+})
+
+test('summaryField names the bin summary encoding.y plots, and scoreScale its axis', async () => {
+  const t = await engine.wiggle({
+    ...SIGNED_BIGWIG,
+    display: {
+      encoding: { y: { field: 'maxScore', scale: { type: 'symlog' } } },
+    },
+  })
+  expect(t.summaryField).toBe('maxScore')
+  expect(t.scoreScale.type).toBe('symlog')
+  expect(t.scoreScale.symlogConstant).toBeGreaterThan(0)
 })
 
 test('a zoomed-out min-max extent draws the max and min bands around the mean', async () => {
@@ -82,7 +95,7 @@ test('a zoomed-out min-max extent draws the max and min bands around the mean', 
   })
   expect(t.bins.max.some((max, i) => max > t.bins.score[i]!)).toBe(true)
   expect(new Set(t.marks.color).size).toBe(3)
-  expect(t.domain[1]).toBeGreaterThanOrEqual(Math.max(...t.bins.max))
+  expect(t.scoreScale.domain[1]).toBeGreaterThanOrEqual(Math.max(...t.bins.max))
 
   const max = await engine.wiggle({
     ...wide,
@@ -135,7 +148,9 @@ test('density keys its ramp as the display does, and a bar plot keys none', asyn
   expect(t.ramps).toHaveLength(1)
   const [ramp] = t.ramps
   expect(ramp!.title).toBe('Score')
-  expect([ramp!.minLabel, ramp!.maxLabel]).toEqual(t.domain.map(String))
+  expect([ramp!.minLabel, ramp!.maxLabel]).toEqual(
+    t.scoreScale.domain.map(String),
+  )
   expect(ramp!.offset[0]).toBe(0)
   expect(ramp!.offset.at(-1)).toBe(1)
   expect(ramp!.color).toHaveLength(ramp!.offset.length)
@@ -323,10 +338,12 @@ describe('several regions share the one domain the display autoscales to', () =>
       Promise.all([read([low], density), read([high], density)]),
       read([low, high], density),
     ])
-    expect(alone[0].domain).not.toEqual(alone[1].domain)
+    expect(alone[0].scoreScale.domain).not.toEqual(alone[1].scoreScale.domain)
     const scores = [...alone[0].bins.score, ...alone[1].bins.score]
-    expect(both.domain[0]).toBeLessThanOrEqual(Math.min(...scores))
-    expect(both.domain[1]).toBeGreaterThanOrEqual(Math.max(...scores))
+    expect(both.scoreScale.domain[0]).toBeLessThanOrEqual(Math.min(...scores))
+    expect(both.scoreScale.domain[1]).toBeGreaterThanOrEqual(
+      Math.max(...scores),
+    )
     const colorOf = new Map<number, Set<string>>()
     both.marks.score.forEach((score, i) => {
       colorOf.set(

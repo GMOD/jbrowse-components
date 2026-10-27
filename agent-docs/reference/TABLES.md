@@ -431,18 +431,21 @@ layer encoder (`buildSourceRenderData`):
   takes the color of the band between the cuts its score is in
   (`thresholdBandOf`); a min-max band comes back in pieces split at the cuts, each in its band's
   color, as the display fills it. Under a gradient, a heatmap's unset pair
-  included, the color is the shared ramp's (`makeDensityLutFillFn`) over the
-  resolved domain.
+  included, the color is the shared ramp's (`scoreRampFill`, which the key's
+  bar samples too) over the resolved domain.
 - `run` numbers the layers' stretches, one per layer, since the display
   draws an interpolated line across every hole.
 - The sources stack in the order `rows.sort` gives them
   (`orderRowsByDomain`, the tree sidebar's own rule), each on its `row`
   under a row layout and all on row 0 in a shared panel.
-- `domain`, `scaleType` and `symlogConstant` are the axis `encoding.y`
-  resolves to, and `rules` the reference lines it draws.
+- `scoreScale` is the axis `encoding.y` resolves to, its `domain`, `type`
+  and `symlogConstant`, shaped as the alignments tables' `coverageScale`, and
+  `rules` the reference lines it draws.
+- `summaryField` names the bin summary the display plots (`score`,
+  `minScore` or `maxScore`, from `summaryFieldOf`), which `bins` holds as
+  `score`, `min` and `max`.
 - `mark` and `interpolate` are the config's `mark.type` and
-  `mark.interpolate`. `rendering`, the v4 plot name they map to, stays for
-  ggjbrowse's readers until they move.
+  `mark.interpolate`, which say what v4 called the `rendering`.
 - `ramps` holds the score's color bar where one ramp paints every row
   (`scoreGradientPaints`, the display's own rule): density, or a declared
   gradient.

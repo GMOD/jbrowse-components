@@ -8,7 +8,6 @@ import {
 import { rowsSettingOf } from '@jbrowse/display-kit/rowsConfigSchema'
 import { DEFAULT_RULE_COLOR } from '@jbrowse/display-ui/yAxisConstants'
 import { thresholdBandOf } from '@jbrowse/render-core/marks'
-import { scaleTypeCode } from '@jbrowse/render-core/scoreScale'
 import { orderRowsByDomain } from '@jbrowse/tree-sidebar/arrangeRows'
 import { rowColorSettingOf } from '@jbrowse/tree-sidebar/rowColorChoice'
 import {
@@ -34,8 +33,7 @@ import { executeRenderMultiWiggleData } from './RenderMultiWiggleDataRPC/execute
 import { renderingOf } from './renderingTypes.ts'
 import { RESOLUTION_MAX, RESOLUTION_MIN } from './shared/WiggleCommonMixin.ts'
 import { buildSourceRenderData } from './shared/buildSourceRenderData.ts'
-import { makeDensityLutFillFn } from './shared/getDensityColor.ts'
-import { scoreRampScale } from './shared/scoreRampScale.ts'
+import { scoreRampFill, scoreRampScale } from './shared/scoreRampScale.ts'
 import { WHISKER_BAND_OPACITY } from './shared/shaders/wiggleBand.consts.generated.ts'
 import {
   paintedWiggleColor,
@@ -88,17 +86,21 @@ export interface WiggleTablesArgs {
 
 /**
  * #api
- * A region, or several, of a quantitative track as the wiggle display fetches, scales and
- * colors it, as tables: `bins`, each source's scores as the worker ships them
- * at this zoom (the bin's score, and its min and max where the file
- * summarizes); `marks`, the layers the display's encoder builds from them in
- * paint order (the plotted summary, and under a min-max extent the tinted max and
- * min bands, or a line's min-to-max `band`), each mark in the color it paints
- * and reaching down to `low`, the band's min or the origin bars grow from; `domain`, the score axis the
- * display autoscales to under `encoding.y`; `rules`, the reference lines it
- * draws; and `ramps`, the color bar its key shows where one ramp paints every
- * row (`rampKeyOf`). For a host that draws them itself, such as R through V8. The
- * adapters must be registered on `pluginManager` (`registerWiggleAdapters`).
+ * A region, or several, of a quantitative track as the wiggle display
+ * fetches, scales and colors it, as tables: `bins`, each source's scores as
+ * the worker ships them at this zoom (the bin's score, and its min and max
+ * where the file summarizes); `summaryField`, which of them the display plots
+ * (`score`, `minScore` or `maxScore`); `marks`, the layers the display's
+ * encoder builds from them in paint order (the plotted summary, and under a
+ * min-max extent the tinted max and min bands, or a line's min-to-max
+ * `band`), each mark in the color it paints and reaching down to `low`, the
+ * band's min or the origin bars grow from; `scoreScale`, the score axis the
+ * display autoscales to under `encoding.y`, its `domain`, `type` and
+ * `symlogConstant`; `rules`, the reference lines it draws; `ramps`, the color
+ * bar its key shows where one ramp paints every row (`rampKeyOf`); and
+ * `warnings`, the samples file's. For a host that draws them itself, such as
+ * R through V8. The adapters must be registered on `pluginManager`
+ * (`registerWiggleAdapters`).
  */
 export async function wiggleTables(
   pluginManager: PluginManager,
@@ -198,10 +200,11 @@ export async function wiggleTables(
       }),
     d => d,
   )
+  const rawConstant: number = readYMember(conf, WIGGLE_Y_PATHS, 'constant')
   const symlogConstant = resolveSymlogConstant(
     domain[0],
     domain[1],
-    readYMember(conf, WIGGLE_Y_PATHS, 'constant'),
+    rawConstant,
   )
 
   const rowLayout = !!rowsSettingOf({
@@ -231,18 +234,7 @@ export async function wiggleTables(
     { rowColorPaintsMarks, paletteDeals, anyRowColored: rowColors.size > 0 },
   )
   const { rampLut, rampMid } = wiggleColor
-  const ramp =
-    gradientPaints && rampLut
-      ? rampKeyOf(
-          scoreRampScale(
-            domain,
-            scaleType,
-            readYMember(conf, WIGGLE_Y_PATHS, 'constant'),
-            { rampLut, rampMid },
-            readYMember(conf, WIGGLE_Y_PATHS, 'title') || 'Score',
-          ),
-        )
-      : undefined
+  const scoreRamp = gradientPaints && rampLut ? { rampLut, rampMid } : undefined
   const regionLayers = results.map(result =>
     buildSourceRenderData(result, {
       sources: markSources,
@@ -258,18 +250,8 @@ export async function wiggleTables(
       row: rowLayout ? layer.rowIndex : 0,
     })),
   )
-  const scaleCode = scaleTypeCode(scaleType)
   const rampFill =
-    gradientPaints && rampLut
-      ? makeDensityLutFillFn(
-          domain[0],
-          domain[1],
-          scaleCode,
-          rampLut,
-          rampMid,
-          symlogConstant,
-        )
-      : undefined
+    scoreRamp && scoreRampFill(domain, scaleType, rawConstant, scoreRamp)
 
   const marks = {
     region: [] as number[],
@@ -381,14 +363,23 @@ export async function wiggleTables(
       color: rules.map(r => r.color),
       label: rules.map(r => r.label),
     },
-    ramps: ramp ? [ramp] : [],
-    domain,
-    scaleType,
-    symlogConstant,
+    ramps: scoreRamp
+      ? [
+          rampKeyOf(
+            scoreRampScale(
+              domain,
+              scaleType,
+              rawConstant,
+              scoreRamp,
+              readYMember(conf, WIGGLE_Y_PATHS, 'title') || 'Score',
+            ),
+          ),
+        ]
+      : [],
+    scoreScale: { domain, type: scaleType, symlogConstant },
+    summaryField,
     mark,
     interpolate,
-    /** @deprecated v4's name for the plot, which `mark` and `interpolate` say */
-    rendering: renderingType,
     origin,
     rowLayout,
     height: readConfObject(conf, 'height'),

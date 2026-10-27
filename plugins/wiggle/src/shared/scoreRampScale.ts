@@ -23,6 +23,26 @@ export interface ScoreRamp {
 const STEPS = 16
 
 /**
+ * The CSS color the gradient paints a score, through the LUT both renderers
+ * index. `symlogConstant` is the raw slot, as `scoreRampScale` takes it.
+ */
+export function scoreRampFill(
+  [min, max]: [number, number],
+  scaleType: string,
+  symlogConstant: number,
+  ramp: ScoreRamp,
+) {
+  return makeDensityLutFillFn(
+    min,
+    max,
+    scaleTypeCode(scaleType),
+    ramp.rampLut,
+    ramp.rampMid,
+    resolveSymlogConstant(min, max, symlogConstant),
+  )
+}
+
+/**
  * The gradient as a `RampScale`, sampled from the live color function rather
  * than its stops. `rampMidT` reads both sides of `rampMid` on one scale, so
  * with the middle off-center the nearer end stops short of its stop: a
@@ -45,14 +65,7 @@ export function scoreRampScale(
   const [min, max] = domain
   const type = scaleTypeCode(scaleType)
   const c = resolveSymlogConstant(min, max, symlogConstant)
-  const colorAt = makeDensityLutFillFn(
-    min,
-    max,
-    type,
-    ramp.rampLut,
-    ramp.rampMid,
-    c,
-  )
+  const colorAt = scoreRampFill(domain, scaleType, symlogConstant, ramp)
   const suffix =
     scaleType === 'log' ? ' (log)' : scaleType === 'symlog' ? ' (symlog)' : ''
   return {

@@ -201,7 +201,7 @@ test.each([
     expect(bare.bins.score.length).toBeGreaterThan(0)
     expect(bare.bins).toEqual(direct.bins)
     expect(bare.marks).toEqual(direct.marks)
-    expect(bare.domain).toEqual(direct.domain)
+    expect(bare.scoreScale).toEqual(direct.scoreScale)
   },
 )
 
