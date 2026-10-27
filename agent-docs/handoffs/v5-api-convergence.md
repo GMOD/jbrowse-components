@@ -59,8 +59,8 @@ once per display that embeds it, so read the trend, not the size.
    - The hosted apollo3 demo runs the `v5.0.0-beta.8` build and serves an
      older config (`featureHeight`, `layoutOrder`). Move the pin and deploy
      `demos/apollo3/config.json` together, never the config alone.
-   - The Trix `textSearchAdapterId`/`metaFilePath` keys in jb2hubs' GenArk and
-     UCSC writers wait on the config-merger lambda deduping by `ixFilePath`.
+   - A hosted config's mark rule reads `svtype` where main's preset field is
+     `svType` (the one validate warning left on the 2026-10-27 sample).
 2. **Plugin ABI.** The served list leaves out render-core's shader subpaths.
    `@jbrowse/tables` and `@jbrowse/launch-args` ship with v5 at its version,
    betas included (Colin, 2026-10-27). Left: baseline
