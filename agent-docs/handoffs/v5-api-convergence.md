@@ -45,10 +45,15 @@ once per display that embeds it, so read the trend, not the size.
 
 ## Next
 
-1. **Delete the beta-only shims** (claimed 2026-10-27, agent branch). Remove
-   each `retired*`/`lift*` entry whose spelling never shipped in v4.3.0 (or in
-   the v4-era `jbrowse-plugin-mafviewer`). Keep those that map a shipped
-   spelling.
+1. **The last beta-only lifts.** The 2026-10-27 sweep deleted every other one;
+   these four wait on a writer:
+   - MAF adapters' `annotationAdapter`: the hosted genark `mouseStrains`
+     configs carry it until jb2hubs regenerates them.
+   - Facet and rows `domain` → `sort`: jb2hubs' `bovine-arsucd12.json` and
+     `arabidopsis-tair10.json` pangenome configs write it.
+   - `retiredDisplayColor`/`liftFlatColor`: no carrier found in local or
+     hosted hub configs; it goes with `liftViewColor`, a view key.
+   - The synteny view keys' `cigarMode`, beta-only.
 2. **Conformance suite.** `scripts/slotNames.test.ts` refuses a new `show*`,
    `hide*`, `min*` or `max*` slot outside its allowlist. Left: empty
    `colorConformance.test.ts`'s `EXCEPTIONS`, or document each entry as
@@ -69,7 +74,14 @@ once per display that embeds it, so read the trend, not the size.
      `snpCovHeight` to `coverage.height`.
 5. **Writers outside the tree.** jb2hubs and its hosted configs, the ggjbrowse
    pin, the graph plugin, the `apollo3` demo and the figure specs
-   (`handoffs/screenshot-spec-elegance.md`).
+   (`handoffs/screenshot-spec-elegance.md`). Known stale spellings:
+   - jb2hubs: `hubtools/src/enhanceConfig.test.ts` writes `scales.y`, plus
+     the two writers in step 1.
+   - JBrowseR: `README.Rmd`, `vignettes/JBrowseR.Rmd` and
+     `vignettes/articles/live-browser.Rmd` write `scales = list(y = …)` on a
+     `LinearMarkDisplay`, now `encoding.y`; its bundled htmlwidgets need a
+     re-pin.
+   - ggjbrowse: re-pin the bundled `inst/js/jbrowse-tables.js`.
 6. **Plugin ABI.** Curate the served list so internals nobody reads (shader
    constants) stop reaching plugins. Baseline `reExports.generated.json` and
    the exports map at the release candidate

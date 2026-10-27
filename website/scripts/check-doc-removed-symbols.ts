@@ -59,6 +59,10 @@ const ABSENT_ON_PURPOSE = new Map([
     'CROSS_BACKEND_GATE names the GWAS bar pad whose removal it measures, as the worked example of what the gate cannot see',
   ],
   ['beginUpload', 'the GPU docs named the retired upload transaction'],
+  [
+    'showInsertionGlyphs',
+    "VARIANTS_DISPLAY says why the multi-sample display's insertion marker was cut",
+  ],
   ['endUpload', 'the GPU docs, the same sentence'],
   ['retainRegion', 'the GPU docs, the same sentence'],
   [
