@@ -270,3 +270,92 @@ export function matchRefNames(
   }
   return out
 }
+
+/** How a refName matched a typed query, best first */
+export type RefNameMatchTier = 'exact' | 'prefix' | 'substring'
+
+const tierRank = { exact: 0, prefix: 1, substring: 2 } as const
+
+function tierOf(name: string, query: string): RefNameMatchTier | undefined {
+  return name === query
+    ? 'exact'
+    : name.startsWith(query)
+      ? 'prefix'
+      : name.includes(query)
+        ? 'substring'
+        : undefined
+}
+
+/**
+ * The canonical refNames a plain (non-glob) query names, best match first: a
+ * name or alias equal to the query, then ones it prefixes, then ones containing
+ * it, each tier in assembly order and at most `limit` in all. A region takes
+ * the best tier any of its names reached, so typing an alias exactly makes its
+ * canonical name exact.
+ *
+ * The dropdown's list and the search results both read this, so a contig the
+ * box lists because its name contains the text is one Enter can reach.
+ *
+ * The scan stops once `limit` regions have matched by prefix, since no later
+ * substring match can displace them; an exact match past that point is still
+ * looked for.
+ */
+export function rankRefNames(
+  assembly: RefNameMatchSource | undefined,
+  inputValue: string,
+  limit: number,
+) {
+  const query = inputValue.toLowerCase()
+  const candidates = assembly?.allRefNames ?? []
+  const best = new Map<string, RefNameMatchTier>()
+  let strong = 0
+  let stoppedEarly = false
+  const consider = (name: string, tier: RefNameMatchTier) => {
+    const canonical = assembly?.getCanonicalRefName(name) ?? name
+    const prev = best.get(canonical)
+    if (prev === undefined || tierRank[tier] < tierRank[prev]) {
+      if (
+        tier !== 'substring' &&
+        (prev === undefined || prev === 'substring')
+      ) {
+        strong++
+      }
+      best.set(canonical, tier)
+    }
+  }
+  for (const name of candidates) {
+    const tier = tierOf(name.toLowerCase(), query)
+    if (tier) {
+      consider(name, tier)
+      if (strong >= limit) {
+        stoppedEarly = true
+        break
+      }
+    }
+  }
+  if (stoppedEarly && ![...best.values()].includes('exact')) {
+    const exact = candidates.find(name => name.toLowerCase() === query)
+    if (exact !== undefined) {
+      consider(exact, 'exact')
+    }
+  }
+
+  const byTier: Record<RefNameMatchTier, string[]> = {
+    exact: [],
+    prefix: [],
+    substring: [],
+  }
+  let placed = 0
+  for (const { refName } of assembly?.regions ?? []) {
+    const tier = best.get(refName)
+    if (tier) {
+      byTier[tier].push(refName)
+      if (++placed === best.size) {
+        break
+      }
+    }
+  }
+  return (['exact', 'prefix', 'substring'] as const)
+    .flatMap(tier => byTier[tier].map(refName => ({ refName, tier })))
+    .slice(0, limit)
+}

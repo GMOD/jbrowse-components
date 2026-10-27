@@ -7,6 +7,7 @@ import {
   getSession,
   matchRefNames,
   MAX_GLOB_REGIONS,
+  rankRefNames,
   UnknownRefNameError,
 } from '@jbrowse/core/util'
 import { isAlive } from '@jbrowse/mobx-state-tree'
@@ -44,8 +45,8 @@ declare module '@jbrowse/core/PluginManager' {
 }
 
 // Budget for refName suggestions from a query. Deliberately far below the
-// autocomplete's ~100-row display cap: refNames are returned ahead of the text
-// search hits, so a scaffold-heavy assembly would otherwise fill every row with
+// autocomplete's ~100-row display cap: exact and prefix refName hits are
+// returned ahead of the text search hits, so a scaffold-heavy assembly would otherwise fill every row with
 // scaffolds and push the gene hits out of the list entirely. Raising this to
 // match the display cap looks like a consistency fix and is not one.
 const MAX_REFNAME_HITS = 10
@@ -472,12 +473,12 @@ async function searchNames({
   // not itself kick off the lazy load. A load failure just leaves allRefNames
   // undefined, so this still returns whatever the text search turned up
   await assembly?.load().catch(() => {})
-  const refNameResults = assembly
+  const { strong, weak } = assembly
     ? searchRefNames(assembly, queryString, searchType)
-    : []
+    : { strong: [], weak: [] }
 
   return {
-    results: dedupe([...refNameResults, ...(report?.results ?? [])], elt =>
+    results: dedupe([...strong, ...(report?.results ?? []), ...weak], elt =>
       elt.getId(),
     ),
     indexCount: report?.indexCount ?? 0,
@@ -512,36 +513,28 @@ export function nameNotFound(
         )
 }
 
-// Scan assembly refnames for query matches, resolving aliases (e.g. 'contigB')
-// to the canonical refname ('ctgB') so the dropdown shows the name that matches
-// the FASTA / displayed regions. allRefNames can hold ~10^6 entries, so stop
-// once enough unique canonical hits accumulate rather than lowercasing and
-// scanning the entire list on every keystroke.
+// The refNames a query names, through the same ranking the dropdown's fallback
+// list uses. A refName the query is only a substring of is the weakest kind of
+// hit, so it goes behind the text-search results rather than ahead of them
 function searchRefNames(
   assembly: Assembly,
   queryString: string,
   searchType?: SearchType,
 ) {
-  const q = queryString.toLowerCase()
-  // canonical name -> whether any alias of it matched the query exactly, so
-  // "contigb" is an exact hit on ctgB even though the canonical name is not
-  // the query. Same collapsing as before, now carrying the flag through it
-  const canonicalHits = new Map<string, boolean>()
-  for (const ref of assembly.allRefNames ?? []) {
-    const lower = ref.toLowerCase()
-    const exact = lower === q
-    const isMatch = searchType === 'exact' ? exact : lower.startsWith(q)
-    if (isMatch) {
-      const canonical = assembly.getCanonicalRefName2(ref)
-      canonicalHits.set(canonical, exact || !!canonicalHits.get(canonical))
-      if (canonicalHits.size >= MAX_REFNAME_HITS) {
-        break
-      }
-    }
+  const hits = rankRefNames(assembly, queryString, MAX_REFNAME_HITS)
+    .filter(({ tier }) => searchType !== 'exact' || tier === 'exact')
+    .map(({ refName, tier }) => ({
+      tier,
+      result: new RefSequenceResult({
+        label: refName,
+        refName,
+        exact: tier === 'exact',
+      }),
+    }))
+  return {
+    strong: hits.filter(h => h.tier !== 'substring').map(h => h.result),
+    weak: hits.filter(h => h.tier === 'substring').map(h => h.result),
   }
-  return [...canonicalHits].map(
-    ([r, exact]) => new RefSequenceResult({ label: r, refName: r, exact }),
-  )
 }
 
 // splits on the last instance of a character

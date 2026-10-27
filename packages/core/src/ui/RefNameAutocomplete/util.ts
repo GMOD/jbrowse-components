@@ -3,6 +3,7 @@ import { getBpDisplayStr, measureText, toLocale } from '../../util/index.ts'
 import {
   MAX_GLOB_REGIONS,
   matchRefNames,
+  rankRefNames,
 } from '../../util/selectNamedRegions.ts'
 
 import type { RefNameMatchSource } from '../../util/selectNamedRegions.ts'
@@ -94,23 +95,22 @@ function literalRefName(
  * when it comes back empty (typed queries otherwise resolve through
  * fetchResults).
  *
- * The matching itself is `matchRefNames`, in core beside the glob semantics,
- * because Enter answers for the same typed text and the two must not each grow
- * their own reading of it. What is left here is presentation: how many rows to
- * materialize, and the bulk row.
+ * A plain query ranks through `rankRefNames`, the reading the search results
+ * use too, so the list shown while a search is in flight is the refName part of
+ * what it settles to. A glob goes through `matchRefNames`, which Enter on the
+ * same text answers with.
  *
- * **AN EXACT REFNAME BEATS THE GLOB READING here too**, the rule
- * `selectNamedRegions` states and `searchUtils` orders its glob branch after.
- * `*` is a legal refName character and GRCh38's ALT decoys are HLA allele names,
- * so `HLA-A*01:01:01:01` is a contig somebody typed in full — offering "Show all
- * 4 regions matching HLA-A*01:01:01:01" above it is the box promising a set that
- * Enter, on the same text, does not open. The individual matches still list: the
- * pattern reading is not wrong, it is just not what leads.
+ * **AN EXACT REFNAME BEATS THE GLOB READING**, the rule `selectNamedRegions`
+ * states and `searchUtils` orders its glob branch after. `*` is a legal refName
+ * character and GRCh38's ALT decoys are HLA allele names, so
+ * `HLA-A*01:01:01:01` is a contig somebody typed in full — offering "Show all 4
+ * regions matching HLA-A*01:01:01:01" above it is the box promising a set that
+ * Enter, on the same text, does not open. The individual matches still list:
+ * the pattern reading is not wrong, it is just not what leads.
  *
  * A glob may gather up to MAX_GLOB_REGIONS for that bulk row; a plain query
- * never needs more than the visible list, so it keeps the tighter bound and the
- * cost it always had. Collecting one past MAX_OPTIONS is what lets `cap` render
- * its "keep typing" hint.
+ * never needs more than the visible list. Collecting one past MAX_OPTIONS is
+ * what lets `cap` render its "keep typing" hint.
  */
 export function getRefNameOptions(
   assembly: RefNameMatchSource | undefined,
@@ -118,6 +118,14 @@ export function getRefNameOptions(
 ) {
   const literal = literalRefName(assembly, inputValue)
   const isGlob = literal === undefined && inputValue.includes('*')
+  const toOption = (refName: string): Option => ({
+    result: new RefSequenceResult({ refName, label: refName }),
+  })
+  if (!inputValue.includes('*')) {
+    return rankRefNames(assembly, inputValue, MAX_OPTIONS + 1).map(
+      ({ refName }) => toOption(refName),
+    )
+  }
   const matches = matchRefNames(
     assembly,
     inputValue,
@@ -130,9 +138,7 @@ export function getRefNameOptions(
     literal !== undefined && matches.includes(literal)
       ? [literal, ...matches.filter(refName => refName !== literal)]
       : matches
-  const options: Option[] = ordered.slice(0, MAX_OPTIONS + 1).map(refName => ({
-    result: new RefSequenceResult({ refName, label: refName }),
-  }))
+  const options = ordered.slice(0, MAX_OPTIONS + 1).map(toOption)
   return isGlob && matches.length > 1 && matches.length <= MAX_GLOB_REGIONS
     ? [selectAllOption(matches, inputValue), ...options]
     : options

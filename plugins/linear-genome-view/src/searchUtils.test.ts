@@ -24,10 +24,14 @@ function fakeAssembly(
   allRefNames: string[],
   canonical: Record<string, string> = {},
 ) {
+  const resolve = (ref: string) => canonical[ref] ?? ref
   return {
     load: async () => {},
     allRefNames,
-    getCanonicalRefName2: (ref: string) => canonical[ref] ?? ref,
+    regions: [...new Set(allRefNames.map(resolve))].map(refName => ({
+      refName,
+    })),
+    getCanonicalRefName: resolve,
   } as unknown as Assembly
 }
 
@@ -60,11 +64,12 @@ describe('fetchResults refname matching', () => {
 
   it('short-circuits instead of walking every refname once the cap is reached', async () => {
     const refs = Array.from({ length: 1000 }, (_, i) => `chr${i}`)
-    const getCanonicalRefName2 = jest.fn((ref: string) => ref)
+    const getCanonicalRefName = jest.fn((ref: string) => ref)
     const assembly = {
       load: async () => {},
       allRefNames: refs,
-      getCanonicalRefName2,
+      regions: refs.map(refName => ({ refName })),
+      getCanonicalRefName,
     } as unknown as Assembly
 
     const results = await fetchResults({
@@ -76,7 +81,7 @@ describe('fetchResults refname matching', () => {
     expect(results).toHaveLength(10)
     // resolution runs per match until the cap, so a 1000-entry all-matching
     // list must not be walked in full — proves the loop breaks
-    expect(getCanonicalRefName2).toHaveBeenCalledTimes(10)
+    expect(getCanonicalRefName).toHaveBeenCalledTimes(10)
   })
 
   it('matches the whole name for an exact search', async () => {
@@ -88,6 +93,39 @@ describe('fetchResults refname matching', () => {
         assembly: fakeAssembly(['chr1', 'chr10', 'chr11']),
       }),
     ).toEqual(['chr1'])
+  })
+
+  it('reaches a refName the query is only a substring of', async () => {
+    // the dropdown lists chrUn_KI270706v1 for "KI270706", so Enter on the same
+    // text has to reach it too
+    expect(
+      await labels({
+        queryString: 'KI270706',
+        assemblyName,
+        assembly: fakeAssembly(['chr1', 'chrUn_KI270706v1']),
+      }),
+    ).toEqual(['chrUn_KI270706v1'])
+  })
+
+  it('ranks an exact refName first, then prefixes, then substrings', async () => {
+    expect(
+      await labels({
+        queryString: 'ctg',
+        assemblyName,
+        assembly: fakeAssembly(['xctg', 'ctgA', 'ctg']),
+      }),
+    ).toEqual(['ctg', 'ctgA', 'xctg'])
+  })
+
+  it('finds an exact refName past a cap of prefix hits', async () => {
+    const refs = [...Array.from({ length: 20 }, (_, i) => `chr1${i}`), 'chr1']
+    const found = await labels({
+      queryString: 'chr1',
+      assemblyName,
+      assembly: fakeAssembly(refs),
+    })
+    expect(found).toHaveLength(10)
+    expect(found[0]).toBe('chr1')
   })
 
   it('resolves aliases to a single canonical refname', async () => {

@@ -174,10 +174,14 @@ export {
   MAX_GLOB_REGIONS,
   matchRefNames,
   parseRegionNames,
+  rankRefNames,
   resolveNamedRegions,
   selectNamedRegions,
 } from './selectNamedRegions.ts'
-export type { RefNameMatchSource } from './selectNamedRegions.ts'
+export type {
+  RefNameMatchSource,
+  RefNameMatchTier,
+} from './selectNamedRegions.ts'
 export { isValidTag, tagRegex } from './tags.ts'
 export { formatRelativeTime } from './formatRelativeTime.ts'
 export { fetchJson } from './fetchJson.ts'
