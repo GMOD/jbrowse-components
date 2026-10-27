@@ -4,11 +4,11 @@
 3 ["ctgA%3A11300..19000"|"volvox-rev-del-annotations"|"EDEN.3"|"EDEN.3"|"Eden%20splice%20form%203"],1
 a ["ctgA%3A11000..11000"|"volvox-rev-del-annotations"|"FakeSNP"|"FakeSNP1"|"This%20is%20a%20fake%20SNP%20that%20should%20appear%20at%201000%20with%20length%201"],1
 agt221.3 ["ctgA%3A17500..18000"|"volvox-rev-del-annotations"|"agt221.3"|"Match4"],1
-agt221.5 ["ctgA%3A11050..11500"|"volvox-rev-del-annotations"|"agt221.5"],1 ["ctgA%3A11050..17300"|"volvox-rev-del-annotations"|"agt221.5"|"Match3"],2 ["ctgA%3A15000..15500"|"volvox-rev-del-annotations"|"agt221.5"],3 ["ctgA%3A17000..17300"|"volvox-rev-del-annotations"|"agt221.5"],4
+agt221.5 ["ctgA%3A11050..17300"|"volvox-rev-del-annotations"|"agt221.5"|"Match3"],1
 agt767.3 ["ctgA%3A18000..19000"|"volvox-rev-del-annotations"|"agt767.3"|"Match6"],1
-agt767.5 ["ctgA%3A11150..11500"|"volvox-rev-del-annotations"|"agt767.5"],1 ["ctgA%3A11150..17200"|"volvox-rev-del-annotations"|"agt767.5"|"Match5"],2 ["ctgA%3A15000..15500"|"volvox-rev-del-annotations"|"agt767.5"],3 ["ctgA%3A17000..17200"|"volvox-rev-del-annotations"|"agt767.5"],4
-agt830.3 ["ctgA%3A15410..15500"|"volvox-rev-del-annotations"|"agt830.3"],1 ["ctgA%3A15410..17503"|"volvox-rev-del-annotations"|"agt830.3"|"Match2"],2 ["ctgA%3A17000..17503"|"volvox-rev-del-annotations"|"agt830.3"],3
-agt830.5 ["ctgA%3A11050..11500"|"volvox-rev-del-annotations"|"agt830.5"],1 ["ctgA%3A11050..13202"|"volvox-rev-del-annotations"|"agt830.5"|"Match1"],2 ["ctgA%3A13000..13202"|"volvox-rev-del-annotations"|"agt830.5"],3
+agt767.5 ["ctgA%3A11150..17200"|"volvox-rev-del-annotations"|"agt767.5"|"Match5"],1
+agt830.3 ["ctgA%3A15410..17503"|"volvox-rev-del-annotations"|"agt830.3"|"Match2"],1
+agt830.5 ["ctgA%3A11050..13202"|"volvox-rev-del-annotations"|"agt830.5"|"Match1"],1
 an ["ctgA%3A11659..11984"|"volvox-rev-del-annotations"|"f07"|"This%20is%20an%20example"],1 ["ctgB%3A-38341..-38016"|"volvox-rev-del-annotations"|"f07"|"This%20is%20an%20example"],2
 another ["ctgA%3A13014..16130"|"volvox-rev-del-annotations"|"f06"|"This%20is%20another%20example"],1 ["ctgB%3A-36986..-33870"|"volvox-rev-del-annotations"|"f06"|"This%20is%20another%20example"],2
 appear ["ctgA%3A11000..11000"|"volvox-rev-del-annotations"|"FakeSNP"|"FakeSNP1"|"This%20is%20a%20fake%20SNP%20that%20should%20appear%20at%201000%20with%20length%201"],1

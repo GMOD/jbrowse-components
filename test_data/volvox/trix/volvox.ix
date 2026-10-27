@@ -5,11 +5,11 @@
 7-transmembrane ["ctgA%3A17023..17675"|"gff3tabix_genes"|"m08"|"7-transmembrane"],1 ["ctgA%3A18048..18552"|"gff3tabix_genes"|"m07"|"7-transmembrane"],2 ["ctgA%3A37497..40559"|"gff3tabix_genes"|"m15"|"7-transmembrane"],3
 a ["ctgA%3A1000..1000"|"gff3tabix_genes"|"FakeSNP"|"FakeSNP1"|"This%20is%20a%20fake%20SNP%20that%20should%20appear%20at%201000%20with%20length%201"],1
 agt221.3 ["ctgA%3A7500..8000"|"gff3tabix_genes"|"agt221.3"|"Match4"],1
-agt221.5 ["ctgA%3A1050..1500"|"gff3tabix_genes"|"agt221.5"],1 ["ctgA%3A1050..7300"|"gff3tabix_genes"|"agt221.5"|"Match3"],2 ["ctgA%3A5000..5500"|"gff3tabix_genes"|"agt221.5"],3 ["ctgA%3A7000..7300"|"gff3tabix_genes"|"agt221.5"],4
+agt221.5 ["ctgA%3A1050..7300"|"gff3tabix_genes"|"agt221.5"|"Match3"],1
 agt767.3 ["ctgA%3A8000..9000"|"gff3tabix_genes"|"agt767.3"|"Match6"],1
-agt767.5 ["ctgA%3A1150..1500"|"gff3tabix_genes"|"agt767.5"],1 ["ctgA%3A1150..7200"|"gff3tabix_genes"|"agt767.5"|"Match5"],2 ["ctgA%3A5000..5500"|"gff3tabix_genes"|"agt767.5"],3 ["ctgA%3A7000..7200"|"gff3tabix_genes"|"agt767.5"],4
-agt830.3 ["ctgA%3A5410..5500"|"gff3tabix_genes"|"agt830.3"],1 ["ctgA%3A5410..7503"|"gff3tabix_genes"|"agt830.3"|"Match2"],2 ["ctgA%3A7000..7503"|"gff3tabix_genes"|"agt830.3"],3
-agt830.5 ["ctgA%3A1050..1500"|"gff3tabix_genes"|"agt830.5"],1 ["ctgA%3A1050..3202"|"gff3tabix_genes"|"agt830.5"|"Match1"],2 ["ctgA%3A3000..3202"|"gff3tabix_genes"|"agt830.5"],3
+agt767.5 ["ctgA%3A1150..7200"|"gff3tabix_genes"|"agt767.5"|"Match5"],1
+agt830.3 ["ctgA%3A5410..7503"|"gff3tabix_genes"|"agt830.3"|"Match2"],1
+agt830.5 ["ctgA%3A1050..3202"|"gff3tabix_genes"|"agt830.5"|"Match1"],1
 an ["ctgA%3A1659..1984"|"gff3tabix_genes"|"f07"|"This%20is%20an%20example"],1 ["ctgB%3A1659..1984"|"gff3tabix_genes"|"f07"|"This%20is%20an%20example"],2
 and ["ctgA%3A17400..23000"|"gff3tabix_genes"|"Apple3"|"rna-Apple3"|"mRNA%20with%20both%20CDSs%20and%20UTRs"],1
 another ["ctgA%3A3014..6130"|"gff3tabix_genes"|"f06"|"This%20is%20another%20example"],1 ["ctgB%3A3014..6130"|"gff3tabix_genes"|"f06"|"This%20is%20another%20example"],2
