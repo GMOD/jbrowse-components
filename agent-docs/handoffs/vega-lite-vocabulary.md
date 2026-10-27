@@ -43,6 +43,12 @@ Git history has each landing.
      except `apollo3`, pinned to beta.8 (`demos/apollo3/README.md`).
    - The unlanded `chat-request-evals` branch writes 8 `scales.y` lines in
      `scripts/agent-evals/tasks.ts`.
+2. **The wiggle display's grammar round.** _Claimed 2026-10-27
+   (`wiggle-grammar`)._ `extent` moves to `mark.extent`, `maxGapMultiple` goes,
+   the menu says Heatmap and Point size, and the tables export `mark` for
+   `rendering`. Then one ADR: a color over `source` reads the row colors as
+   its scale, the split negative color under stacked rows goes, and a
+   heatmap's color owns its domain.
 
 ADR-238's 2026-10-27 amendment rules the layout words, the multi-way
 leftovers and the zoom and density gates. One multi-way gap stays open:
