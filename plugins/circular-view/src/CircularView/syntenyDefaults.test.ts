@@ -151,10 +151,11 @@ describe('the thin fade', () => {
 // starts there.
 test('a declared ramp reaches the chords and the key', async () => {
   const { circle, display } = await launch({
-    color: {
-      field: 'identity',
-      domainMin: 0.5,
-      range: ['#ff0000', '#0000ff'],
+    encoding: {
+      color: {
+        field: 'identity',
+        scale: { domainMin: 0.5, range: ['#ff0000', '#0000ff'] },
+      },
     },
   })
   expect(display.ribbonLanes.color[0]! & 0xffffff).toBe(

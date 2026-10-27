@@ -84,7 +84,7 @@ test('the display settings reach the tables', async () => {
 
   const constant = await engine.features({
     ...GFF3,
-    display: { ...GROW, color: { value: '#123456' } },
+    display: { ...GROW, encoding: { color: { value: '#123456' } } },
   })
   expect(constant.rects.color).toContain('#123456')
 })
@@ -92,7 +92,7 @@ test('the display settings reach the tables', async () => {
 test('a color field paints through its scale and keys what it painted', async () => {
   const t = await engine.features({
     ...GFF3,
-    display: { ...GROW, color: { field: 'type' } },
+    display: { ...GROW, encoding: { color: { field: 'type' } } },
   })
   expect(t.legend.label.length).toBeGreaterThan(1)
   expect(new Set(t.rects.color).size).toBeGreaterThan(1)
