@@ -26,6 +26,11 @@ Amended 2026-10-09: the plan's last open item, `facet.hidden`, landed as the
 feature displays, alignments and the mark display), applied only while the
 stack groups by the facet's own field, and the plan doc closed with it.
 
+Amended 2026-10-27 by [ADR-237](adr-237-a-facet-takes-two-writes.md)'s
+amendment: a multi-row field change drops the arrangement. Kept, as the third
+step below says, it relabeled, hid or drew a tree over the new field's rows
+wherever the two fields share a value.
+
 ## Context
 
 The tree-sidebar displays kept a reader's arrangement in display state:

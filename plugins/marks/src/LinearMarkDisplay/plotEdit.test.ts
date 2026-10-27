@@ -1,5 +1,11 @@
 import { withChannel } from './markEdit.ts'
-import { stepFields, withAggregateOp, withSplitField } from './plotEdit.ts'
+import {
+  splitOrder,
+  stepFields,
+  withAggregateOp,
+  withSplitField,
+  withSplitOrder,
+} from './plotEdit.ts'
 
 import type { MarkPlot } from './markPlot.ts'
 
@@ -60,18 +66,63 @@ test("a formula's field is offered as what its expression answers", () => {
   expect(overwritten.numeric).toContain('count')
 })
 
-test('a split field retyped through empty keeps the order and the steps the setting held', () => {
+describe('the split field, typed a keystroke at a time', () => {
   const facet = {
     field: 'HP',
-    domain: ['1', '2'],
+    sort: ['1', '2'],
+    hidden: ['2'],
     transform: [{ type: 'pileup' }],
   }
-  let plot: MarkPlot = { marks: [], facet }
-  for (const text of ['H', '', 'P', 'PS']) {
-    plot = withSplitField(plot, 'facet', text, facet)
+  const retype = (key: 'facet' | 'rows', base: object, texts: string[]) => {
+    let plot: MarkPlot = { marks: [], [key]: base }
+    for (const text of texts) {
+      plot = withSplitField(plot, key, text, base)
+    }
+    return plot[key]
   }
-  expect(plot.facet).toEqual({ ...facet, field: 'PS' })
-  expect(withSplitField({ marks: [], facet }, 'facet', '').facet).toBeNull()
+
+  test('retyped back to its field through empty, the facet keeps everything', () => {
+    expect(retype('facet', facet, ['H', '', 'H', 'HP'])).toBe(facet)
+  })
+
+  test('another field drops the sections and keeps the steps', () => {
+    expect(retype('facet', facet, ['H', '', 'P', 'PS'])).toEqual({
+      field: 'PS',
+      transform: [{ type: 'pileup' }],
+    })
+  })
+
+  test('another rows field drops the arrangement, which names the old values', () => {
+    const rows = {
+      field: 'HP',
+      sort: ['2', '1'],
+      labels: { 1: 'Maternal' },
+      tree: '(1,2);',
+      kept: ['1'],
+    }
+    expect(retype('rows', rows, ['H', 'HP'])).toBe(rows)
+    expect(retype('rows', rows, ['P', 'PS'])).toEqual({ field: 'PS' })
+  })
+
+  test('an empty field clears the setting', () => {
+    expect(withSplitField({ marks: [], facet }, 'facet', '').facet).toBeNull()
+  })
+})
+
+test('the order box edits sort, and a rows order typed by hand drops the tree', () => {
+  const rows = { field: 'HP', sort: ['1', '2'], tree: '(1,2);', labels: {} }
+  const plot: MarkPlot = {
+    marks: [],
+    rows,
+    facet: { field: 'PS', sort: ['a'] },
+  }
+  expect(splitOrder(plot, 'rows')).toBe('1, 2')
+  expect(withSplitOrder(plot, 'rows', '2, 1').rows).toEqual({
+    field: 'HP',
+    sort: ['2', '1'],
+    labels: {},
+  })
+  expect(withSplitOrder(plot, 'facet', '').facet).toEqual({ field: 'PS' })
 })
 
 test('a new aggregate op keeps the name its output is read by', () => {

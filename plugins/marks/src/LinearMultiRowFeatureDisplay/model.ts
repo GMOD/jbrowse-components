@@ -5,7 +5,8 @@ import { STRAND_FIELD } from '@jbrowse/core/util/categoricalField'
 import { isJexl } from '@jbrowse/core/util/jexlStrings'
 import ColorWritesMixin from '@jbrowse/display-kit/ColorWritesMixin'
 import SolidColorDialog from '@jbrowse/display-kit/SolidColorDialog'
-import { types } from '@jbrowse/mobx-state-tree'
+import { rowsForField } from '@jbrowse/display-kit/rowsConfigSchema'
+import { getSnapshot, types } from '@jbrowse/mobx-state-tree'
 
 import { stateModelFactory as markStateModelFactory } from '../LinearMarkDisplay/model.ts'
 import { multiRowMenuItems } from './multiRowMenus.ts'
@@ -111,10 +112,16 @@ export function stateModelFactory(
     .actions(self => ({
       /**
        * #action
-       * One row per value of `field`.
+       * One row per value of `field`; another field than the one in force
+       * drops the arrangement (`rowsForField`).
        */
       setRowsField(field: string) {
-        setConf(self.conf, ['rows', 'field'], field)
+        const current =
+          getSnapshot<Record<string, unknown> | undefined>(self.conf.rows) ?? {}
+        const next = rowsForField(current, field)
+        if (next !== current) {
+          setConf(self.conf, 'rows', next)
+        }
       },
       /**
        * #action

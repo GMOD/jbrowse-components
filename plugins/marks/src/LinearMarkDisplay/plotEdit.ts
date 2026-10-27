@@ -5,6 +5,8 @@ import {
   stepWrites,
   stepsOutput,
 } from '@jbrowse/core/util/stepOutputs'
+import { facetForField } from '@jbrowse/display-kit/FacetWritesMixin'
+import { rowsForField } from '@jbrowse/display-kit/rowsConfigSchema'
 
 import { AUTO_BIN } from './autoBin.ts'
 import {
@@ -63,14 +65,16 @@ export function splitField(plot: MarkPlot, key: 'facet' | 'rows'): string {
 
 /** The order a plot's `facet` or `rows` lists its values in, as text. */
 export function splitOrder(plot: MarkPlot, key: 'facet' | 'rows'): string {
-  return textOfList(channelObject(plot[key])?.domain)
+  return textOfList(channelObject(plot[key])?.sort)
 }
 
 /**
- * The plot with its `facet` or `rows` splitting by `field`, keeping the rest
- * of the object: an empty field clears the setting, as `null` does in the
- * JSON box. `base` is the setting as it stood when the edit began, so a field
- * retyped through empty keeps the order and the steps the setting held.
+ * The plot with its `facet` or `rows` splitting by `field`: an empty field
+ * clears the setting, as `null` does in the JSON box. `base` is the setting
+ * as it stood when the edit began, and the field is judged against it, since
+ * every keystroke writes: retyping the base's field keeps its order, hidden
+ * sections and arrangement, and another field drops them as a menu pick does
+ * (`facetForField`, `rowsForField`), keeping the steps.
  */
 export function withSplitField(
   plot: MarkPlot,
@@ -81,22 +85,31 @@ export function withSplitField(
   if (field === '') {
     return { ...plot, [key]: null }
   }
-  const held = channelObject(plot[key]) ?? channelObject(base)
-  return { ...plot, [key]: { ...held, field } }
+  const held = channelObject(base) ?? channelObject(plot[key]) ?? {}
+  return {
+    ...plot,
+    [key]:
+      key === 'facet' ? facetForField(held, field) : rowsForField(held, field),
+  }
 }
 
+/**
+ * The plot with its `facet` or `rows` listing `text`'s values first. A rows
+ * order typed by hand drops the tree, which the order no longer follows.
+ */
 export function withSplitOrder(
   plot: MarkPlot,
   key: 'facet' | 'rows',
   text: string,
 ): MarkPlot {
-  const held = channelObject(plot[key])
-  const domain = listOfText(text)
-  const { domain: _dropped, ...rest } = held ?? {}
-  return {
-    ...plot,
-    [key]: domain ? { ...rest, domain } : { ...rest },
-  }
+  const held = channelObject(plot[key]) ?? {}
+  const { sort: _sort, ...rest } = key === 'rows' ? withoutTree(held) : held
+  const sort = listOfText(text)
+  return { ...plot, [key]: sort ? { ...rest, sort } : rest }
+}
+
+function withoutTree({ tree: _tree, treeProvenance: _p, ...rest }: Snapshot) {
+  return rest
 }
 
 /** The axis members the form edits, at the mark display's y paths. */

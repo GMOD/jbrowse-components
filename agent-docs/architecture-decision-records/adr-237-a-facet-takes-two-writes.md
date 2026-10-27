@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "Every display whose menus pick a facet composes display-kit's `FacetWritesMixin`, whose `facetByField(field)` (`''` ungroups) and `setFacetDomain(domain)` rewrite the `facet` object as written through `facetForField`: the field already grouping keeps its order and hidden sections, a new one starts with none, and members about something else, the mark display's per-section `transform`, stay. The per-display `setFacet` actions (four signatures) and the mark display's `setFacetField` go. The scroll reset a facet change triggers runs from `HiddenGroupsMixin`'s `dropGroupState`, so a facet written by `applyPlot`, an agent or a share link resets it too, and the SV-channels preset is one `applyPlot`. Color by's Default and Solid color... move onto `ColorWritesMixin` in the same pass"
+summary: "Every display whose menus pick a facet composes display-kit's `FacetWritesMixin`, whose `facetByField(field)` (`''` ungroups) and `setFacetDomain(domain)` rewrite the `facet` object as written through `facetForField`: the field already grouping keeps its order and hidden sections, a new one starts with none, and members about something else, the mark display's per-section `transform`, stay. The per-display `setFacet` actions (four signatures) and the mark display's `setFacetField` go. The scroll reset a facet change triggers runs from `HiddenGroupsMixin`'s `dropGroupState`, so a facet written by `applyPlot`, an agent or a share link resets it too, and the SV-channels preset is one `applyPlot`. Color by's Default and Solid color... move onto `ColorWritesMixin` in the same pass. Amended 2026-10-27: `rows` takes the same rule through `rowsForField`, so a pick of another field drops the arrangement"
 ---
 
 # ADR-237: A facet takes two writes
@@ -10,6 +10,14 @@ summary: "Every display whose menus pick a facet composes display-kit's `FacetWr
 Accepted (2026-10-20). The facet counterpart of
 [ADR-223](adr-223-a-color-object-takes-two-writes-and-applyplot.md), from the
 2026-10-20 grammar write-API audit and its design review.
+
+Amended 2026-10-27: `rows` takes the same rule. `rowsForField` (display-kit)
+keeps the arrangement for the field in force and drops `sort`, `labels`,
+`tree`, `treeProvenance` and `kept` for another, since they name the old
+field's values. Multi-row's One row per... and the mark display's Edit plot
+form write through it. Wiggle's Multi-row/Overlapping toggle still writes the
+field alone, since overlaid sources are still the rows the arrangement names.
+`setFacetDomain` is now `setFacetSort`, and the facet's `domain` is `sort`.
 
 ## Context
 

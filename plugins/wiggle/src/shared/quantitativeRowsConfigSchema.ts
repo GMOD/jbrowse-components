@@ -37,5 +37,10 @@ export const quantitativeRowsConfigSchema = ConfigurationSchema(
         'source for one row per subtrack, or empty for one plot every source shares',
     },
   },
-  { baseConfiguration: rowsConfigSchema },
+  {
+    /**
+     * #baseConfiguration
+     */
+    baseConfiguration: rowsConfigSchema,
+  },
 )

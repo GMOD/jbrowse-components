@@ -10,7 +10,8 @@ import { rowsConfigSchema } from './rowsConfigSchema.ts'
  * nothing else a row could be: the multi-sample variant display and the
  * multiple alignment display. `sample` is the one field, so the object is
  * the arrangement a reader gives the rows, written whole as every display's
- * `rows` is; `rows: "sample"` names the field and arranges nothing.
+ * `rows` is. Nothing needs `rows: "sample"`, and writing it clears the
+ * arrangement.
  *
  * #example
  * ```js
@@ -38,5 +39,10 @@ export const sampleRowsConfigSchema = ConfigurationSchema(
       description: 'sample, the one field a row can be',
     },
   },
-  { baseConfiguration: rowsConfigSchema },
+  {
+    /**
+     * #baseConfiguration
+     */
+    baseConfiguration: rowsConfigSchema,
+  },
 )

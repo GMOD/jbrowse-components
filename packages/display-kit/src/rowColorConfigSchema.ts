@@ -27,9 +27,10 @@ import {
  * `scale.domain` lists take a color and every other row keeps the color it
  * already has. A string is the field.
  *
- * Declined 2026-10-25: moving it to `encoding.color`, which on wiggle and the
- * mark display paints by value and is resolved against this channel, or to
- * `rows.color`, which a write of the `rows` shorthand would wipe.
+ * A channel of its own beside `rows`, not `rows.color`: it has its own
+ * `field`, palette and key, so a write of `rows` replaces the arrangement
+ * and leaves the colors. Nor is it `encoding.color`, which on wiggle and the
+ * mark display paints by value.
  *
  * #example
  * ```js

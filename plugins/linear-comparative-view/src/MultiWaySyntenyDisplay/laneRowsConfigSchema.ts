@@ -37,5 +37,10 @@ export const laneRowsConfigSchema = ConfigurationSchema(
       description: 'assembly, the one field a lane can be',
     },
   },
-  { baseConfiguration: rowsConfigSchema },
+  {
+    /**
+     * #baseConfiguration
+     */
+    baseConfiguration: rowsConfigSchema,
+  },
 )

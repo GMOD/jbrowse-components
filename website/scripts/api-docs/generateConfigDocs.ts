@@ -886,7 +886,7 @@ function liftsNumbers(schema: string, slot: string) {
 function writesLine(name: string) {
   const writes = schemaWrites(name)
   return writes === 'whole'
-    ? 'A setting written to it replaces it whole, since its members are alternatives: a member left out returns to its default.'
+    ? 'A setting written to it replaces it whole: a member left out returns to its default.'
     : writes === 'members'
       ? 'A setting written to it names members one by one: a member left out stays as it is, and `null` resets one.'
       : ''

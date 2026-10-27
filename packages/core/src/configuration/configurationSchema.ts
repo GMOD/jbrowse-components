@@ -99,9 +99,9 @@ export interface ConfigurationSchemaOptions<
    * How a settings bag (a share link, a session spec, an agent's call,
    * `displayDefaults` folding into a display) writes this sub-schema. `members`,
    * the default, names members one by one and leaves the rest. `whole` replaces
-   * the object, for one whose members are alternatives: `{ field }` written
-   * over `{ field, domain }` is a facet with no domain, where a merge would
-   * leave the old domain standing.
+   * the object, for one whose members hang together: `{ field }` written over
+   * `{ field, sort }` is a facet with no order, where a merge would leave the
+   * old field's order standing.
    */
   writes?: 'whole' | 'members'
   /**
@@ -240,7 +240,7 @@ function checkShorthand(
   }
   if (shorthand !== undefined && writes === undefined) {
     throw new Error(
-      `${modelName} declares a shorthand, so it declares writes: 'whole' where its members are alternatives a settings bag replaces together, or 'members' where a bag names them one by one`,
+      `${modelName} declares a shorthand, so it declares writes: 'whole' where its members hang together and a settings bag replaces them at once, or 'members' where a bag names them one by one`,
     )
   }
 }

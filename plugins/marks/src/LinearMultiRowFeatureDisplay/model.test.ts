@@ -1,5 +1,6 @@
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { colorAt } from '@jbrowse/core/util/markEncoding'
+import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import { waitFor } from '@testing-library/react'
 
 import { REGION, features, workerResult } from '../LinearMarkDisplay/testEnv.ts'
@@ -109,6 +110,21 @@ test('One row per... and Color by offer the scanned attributes and write the dis
   expect(model.colorByMode).toBe('itemRgb')
   model.colorByField('strand')
   expect(model.colorByMode).toBe('strand')
+})
+
+test('One row per... another field drops the arrangement, and the field in force keeps it', () => {
+  const rows = {
+    field: 'sample',
+    sort: ['b', 'a'],
+    labels: { a: 'A' },
+    tree: '(a,b);',
+    kept: ['a'],
+  }
+  const model = display({ rows, marks: RECT_MARKS })
+  model.setRowsField('sample')
+  expect(getSnapshot(model.conf.rows)).toEqual(rows)
+  model.setRowsField('name')
+  expect(getSnapshot(model.conf.rows)).toEqual({ field: 'name' })
 })
 
 test("a spliced painting's rows sort and cluster on its blocks, not the line under them", () => {
