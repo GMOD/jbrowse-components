@@ -384,7 +384,16 @@ describe('optionDetail', () => {
     lengthOf: (refName: string) =>
       refName === 'chr1' ? 248_956_422 : undefined,
     placesOf: (results: BaseResult[]) => groupByPlace(results),
+    refNameOf: (refName: string) => (refName === '17' ? 'chr17' : refName),
   }
+
+  it('names the sequence as the assembly does and a single base once', () => {
+    const result = new BaseResult({
+      label: 'rs1',
+      locString: '17:43044295..43044295',
+    })
+    expect(optionDetail(result, lookups)).toBe('chr17:43,044,295')
+  })
 
   it('says where a hit goes and which track it came from', () => {
     const result = new BaseResult({

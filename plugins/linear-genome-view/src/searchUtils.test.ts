@@ -11,6 +11,7 @@ import {
 } from './searchUtils.ts'
 
 import type { LinearGenomeViewModel } from './index.ts'
+import type TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 
@@ -106,6 +107,36 @@ describe('fetchResults refname matching', () => {
         r => r.getLabel(),
       ),
     ).toEqual(['ctgA'])
+  })
+
+  it('drops a hit on a sequence the assembly does not have', async () => {
+    // RefSeq's index carries hits on patch scaffolds hg38 lacks; no view can
+    // open them
+    const assembly = {
+      ...fakeAssembly(['chr17']),
+      initialized: true,
+      isValidRefName: (ref: string) => ref === 'chr17',
+    } as unknown as Assembly
+    const textSearchManager = {
+      searchIndexes: async () => ({
+        results: [
+          new BaseResult({ label: 'TP53', locString: 'chr17:1..100' }),
+          new BaseResult({ label: 'TP53', locString: 'NW_021160004.1:1..100' }),
+        ],
+        indexCount: 1,
+        failures: [],
+      }),
+    } as unknown as TextSearchManager
+    expect(
+      (
+        await fetchResults({
+          queryString: 'TP53',
+          assemblyName,
+          assembly,
+          textSearchManager,
+        })
+      ).map(r => r.getLocation()),
+    ).toEqual(['chr17:1..100'])
   })
 
   it('reaches a refName the query is only a substring of', async () => {

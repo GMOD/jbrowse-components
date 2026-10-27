@@ -1,5 +1,5 @@
 import { RefSequenceResult } from '@jbrowse/core/TextSearch/BaseResults'
-import { groupByPlace } from '@jbrowse/core/TextSearch/places'
+import { groupByPlace, landsInAssembly } from '@jbrowse/core/TextSearch/places'
 import {
   dedupe,
   getEnv,
@@ -418,15 +418,20 @@ export async function handleSelectedRegion({
       return true
     } else {
       // no search hits: still try to resolve the input as a locstring (bare
-      // refname, "ref start end" triplet, etc). if that also can't find a
-      // refname AND the input is a single bare token (a plausible gene name),
-      // reframe the unknown-ref error as a name miss; keep the specific ref
-      // error for coordinate/multi-part queries
+      // refname, "ref start end" triplet, etc). If that also can't find a
+      // refname and the input names no sequence and no coordinate — a gene
+      // name, or a phrase like "breast cancer" — reframe the unknown-ref error
+      // as a name miss; keep the specific ref error for coordinate-shaped input
       try {
         await navToLocstrings()
         return true
       } catch (e) {
-        const isPlainName = !input.includes(':') && !input.includes(' ')
+        const isPlainName =
+          !input.includes(':') &&
+          input
+            .trim()
+            .split(/\s+/)
+            .every(token => !isRef(token) && !/^\d[\d,]*$/.test(token))
         if (e instanceof UnknownRefNameError && isPlainName) {
           throw nameNotFound(input, assemblyName, found)
         } else {
@@ -479,8 +484,13 @@ async function searchNames({
     : { strong: [], weak: [] }
 
   return {
-    results: dedupe([...strong, ...(report?.results ?? []), ...weak], elt =>
-      elt.getId(),
+    results: dedupe(
+      [
+        ...strong,
+        ...(report?.results ?? []).filter(r => landsInAssembly(r, assembly)),
+        ...weak,
+      ],
+      elt => elt.getId(),
     ),
     indexCount: report?.indexCount ?? 0,
     failures: report?.failures ?? [],

@@ -57,6 +57,7 @@ const SearchOption = observer(function SearchOption({
       return region ? region.end - region.start : undefined
     },
     placesOf: results => groupByPlace(results, assembly),
+    refNameOf: refName => assembly?.getCanonicalRefName2(refName) ?? refName,
   })
   return (
     <li key={key} className={cx(className, classes.row)} {...rest}>

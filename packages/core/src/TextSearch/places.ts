@@ -15,9 +15,27 @@ export function canonicalLocString(locString: string, assembly: Assembly) {
       ...loc,
       refName: assembly.getCanonicalRefName2(loc.refName),
     })
-  } catch (e) {
-    console.warn('failed to parse location string', locString, e)
+  } catch {
     return locString
+  }
+}
+
+/**
+ * Whether a hit goes somewhere this assembly has. An index built from a source
+ * with more sequences than the assembly (RefSeq's patch scaffolds against
+ * hg38) holds hits no view can open. A hit with no location, or an assembly
+ * not yet loaded, is kept.
+ */
+export function landsInAssembly(result: BaseResult, assembly?: Assembly) {
+  const locString = result.getLocation()
+  if (!locString || !assembly?.initialized) {
+    return true
+  }
+  try {
+    parseLocString(locString, refName => assembly.isValidRefName(refName))
+    return true
+  } catch {
+    return false
   }
 }
 

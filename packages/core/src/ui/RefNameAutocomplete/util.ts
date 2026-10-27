@@ -170,11 +170,19 @@ export function getDeduplicatedResult(results: BaseResult[]): Option[] {
   )
 }
 
-function formatLocString(locString: string) {
+// in the assembly's own name for the sequence, since an index may spell it by
+// an alias, and a single base as one coordinate
+function formatLocString(
+  locString: string,
+  refNameOf: (refName: string) => string,
+) {
   const match = /^(.+):(\d+)\.\.(\d+)$/.exec(locString)
-  return match
-    ? `${match[1]}:${toLocale(Number(match[2]))}-${toLocale(Number(match[3]))}`
-    : locString
+  if (!match) {
+    return locString
+  }
+  const [, refName, start, end] = match
+  const at = `${refNameOf(refName!)}:${toLocale(Number(start))}`
+  return start === end ? at : `${at}-${toLocale(Number(end))}`
 }
 
 /**
@@ -191,9 +199,10 @@ export function optionDetail(
     trackNameOf: (trackId: string) => string | undefined
     lengthOf: (refName: string) => number | undefined
     placesOf: (results: BaseResult[]) => BaseResult[][]
+    refNameOf: (refName: string) => string
   },
 ): string | undefined {
-  const { trackNameOf, lengthOf, placesOf } = lookups
+  const { trackNameOf, lengthOf, placesOf, refNameOf } = lookups
   const locString = result.getLocation()
   const trackId = result.getTrackId()
   const sequence = result.results?.find(r => r instanceof RefSequenceResult)
@@ -204,7 +213,7 @@ export function optionDetail(
     const only = places.length === 1 ? places[0]![0]!.getLocation() : undefined
     return only === undefined
       ? `${places.length} matches`
-      : formatLocString(only)
+      : formatLocString(only, refNameOf)
   } else if (!locString || /\s/.test(locString)) {
     return undefined
   } else if (result instanceof RefSequenceResult) {
@@ -212,7 +221,9 @@ export function optionDetail(
     return length === undefined ? undefined : getBpDisplayStr(length)
   } else {
     const trackName = trackId === undefined ? undefined : trackNameOf(trackId)
-    return [formatLocString(locString), trackName].filter(Boolean).join(' · ')
+    return [formatLocString(locString, refNameOf), trackName]
+      .filter(Boolean)
+      .join(' · ')
   }
 }
 
