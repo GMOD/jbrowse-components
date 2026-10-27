@@ -247,6 +247,24 @@ import { canonicalizeViewRefName } from '@jbrowse/core/util'
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/mstUtils.ts)
 
+### canonicalSpelling
+
+A settings bag as its schema spells it, at every depth of the sub-schemas it
+declares: a bare value as the object its `shorthand` lifts it into, and a
+`retired` spelling as the members that replaced it. Two bags combine member by
+member only in this form; merged raw, a bare `mark: "line"` replaces a whole
+`mark` object where it meant its `type`. The bag itself, by identity, when it
+already spells everything so.
+
+```js
+import { canonicalSpelling } from '@jbrowse/core/configuration'
+
+// type signature
+(schema: ConfigurationSchemaMetadata, snapshot: Record<string, unknown>) => Record<string, unknown>
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/snapshotPreprocess.ts)
+
 ### categoricalField
 
 `labels` names the `domain`'s values in a key, one each in order, where a config
