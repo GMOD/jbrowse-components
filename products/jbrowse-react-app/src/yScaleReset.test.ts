@@ -45,7 +45,13 @@ interface Session {
   addView: (type: string, snap: Record<string, unknown>) => View
 }
 
-const oldSpelling = { scales: { y: { domainMax: 9, title: 'AF', rules: [3] } } }
+const y = { scale: { domainMax: 9 }, axis: { title: 'AF' }, rules: [3] }
+
+// the alignments display's value axis is its coverage band's
+const baseOf = (displayType: string) =>
+  displayType === 'LinearAlignmentsDisplay'
+    ? { coverage: { encoding: { y } } }
+    : { encoding: { y } }
 
 test.each([
   ['QuantitativeTrack', 'LinearWiggleDisplay', 'BigWigAdapter', 'config'],
@@ -53,7 +59,7 @@ test.each([
   ['FeatureTrack', 'LinearMarkDisplay', 'BedTabixAdapter', 'config'],
   ['QuantitativeTrack', 'LinearWiggleDisplay', 'BigWigAdapter', 'session'],
 ])(
-  'a %s base written scales.y is what its %s resets to (%s, %s base)',
+  'a %s base written encoding.y is what its %s resets to (%s, %s base)',
   async (type, displayType, adapterType, source) => {
     const track = {
       type,
@@ -62,7 +68,11 @@ test.each([
       assemblyNames: ['volvox'],
       adapter: { type: adapterType, uri: 'x' },
       displays: [
-        { type: displayType, displayId: `t-${displayType}`, ...oldSpelling },
+        {
+          type: displayType,
+          displayId: `t-${displayType}`,
+          ...baseOf(displayType),
+        },
       ],
     }
     const state = createViewState({

@@ -1,5 +1,4 @@
 import {
-  applyConfSettings,
   readConfObject,
   refusingUndeclaredKeys,
 } from '@jbrowse/core/configuration'
@@ -144,28 +143,6 @@ test.each([
     const conf = create({ encoding: { y: 'maxScore' }, ...retired })
     expect(readConfObject(conf, [...Y, 'field'])).toBe('maxScore')
     expect(readConfObject(conf, [...Y, ...path])).toBe(value)
-  },
-)
-
-test.each([{ scales: null }, { scales: { y: null } }])(
-  'a settings bag %j resets the y scale and keeps the field',
-  bag => {
-    const conf = create({
-      encoding: {
-        y: {
-          field: 'maxScore',
-          scale: { type: 'log', domainMax: 9 },
-          axis: { title: 'AF' },
-          rules: [3],
-        },
-      },
-    })
-    applyConfSettings(conf, bag)
-    expect(readConfObject(conf, [...Y, 'field'])).toBe('maxScore')
-    expect(readConfObject(conf, [...Y, 'scale', 'type'])).toBe('linear')
-    expect(readConfObject(conf, [...Y, 'scale', 'domainMax'])).toBeUndefined()
-    expect(readConfObject(conf, [...Y, 'axis', 'title'])).toBeUndefined()
-    expect(conf.encoding.y.rules).toHaveLength(0)
   },
 )
 
