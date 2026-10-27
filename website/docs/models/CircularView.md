@@ -119,7 +119,7 @@ From [BaseViewModel](../baseviewmodel): <span id="volatile-width">[`width`](../b
 | Member | Description |
 | --- | --- |
 | <span id="getter-showlegend">**showLegend**</span><br><code>boolean</code> | `legend.show`: whether the key draws |
-| <span id="getter-owntracks">**ownTracks**</span><br><code>any[]</code> | the tracks this view holds itself, for the census |
+| <span id="getter-owntracks">**ownTracks**</span><br><code>TrackModelOf&lt;DisplayModel&gt;[]</code> | the tracks this view holds itself, for the census |
 | <span id="getter-width">**width**</span><br><code>number</code> |  |
 | <span id="getter-circleregions">**circleRegions**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(Region &#124; { circular: boolean; assemblyName: string; refName: s…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(Region &#124; { circular: boolean; assemblyName: string; refName: string; start: number; end: number; reversed?: boolean &#124; undefined; })[]</code></pre></dialog></span> | `displayedRegions`, each marked `circular` where it is a whole sequence its assembly lists in `circularRefNames` |
 | <span id="getter-fitlayout">**fitLayout**</span><br><code>FitLayout</code> | the circle that fills the box: its scale, radius and padding |

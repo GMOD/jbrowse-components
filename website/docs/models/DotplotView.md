@@ -95,7 +95,7 @@ From [BaseViewModel](../baseviewmodel): <span id="volatile-width">[`width`](../b
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="getter-owntracks">**ownTracks**</span><br><code>any[]</code> | The census entry for this view: the tracks it holds itself. Declared rather than derived — see `BaseViewModel.ownTracks`. |
+| <span id="getter-owntracks">**ownTracks**</span><br><code>TrackModelOf&lt;DisplayModel&gt;[]</code> | The census entry for this view: the tracks it holds itself. Declared rather than derived — see `BaseViewModel.ownTracks`. |
 | <span id="getter-width">**width**</span><br><code>number</code> |  |
 | <span id="getter-borderx">**borderX**</span><br><code>number</code> | Left margin: fits the vertical (vview) axis labels. Derived purely from that axis's regions + zoom — never from viewWidth — so it can't feed back through viewWidth = width - borderX into a render loop. |
 | <span id="getter-bordery">**borderY**</span><br><code>number</code> | Bottom margin: fits the horizontal (hview) axis labels. See borderX. |

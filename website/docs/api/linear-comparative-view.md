@@ -83,7 +83,7 @@ defaults to a `TrackStack`:
 
 ```js
 // type signature
-({ view, renderRow, style, }: { view: LinearSyntenyView; renderRow?: ((row: ModelInstanceTypeProps<any> & any, index: number) => ReactNode) | undefined; style?: CSSProperties | undefined; }) => Element
+({ view, renderRow, style, }: { view: LinearSyntenyView; renderRow?: ((row: LinearGenomeView, index: number) => ReactNode) | undefined; style?: CSSProperties | undefined; }) => Element
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/LinearSyntenyView/SyntenyStack.tsx)
