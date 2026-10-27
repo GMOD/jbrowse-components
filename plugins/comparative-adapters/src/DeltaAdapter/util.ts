@@ -76,7 +76,9 @@ export function paf_delta2paf(buffer: Uint8Array, opts?: BaseOptions) {
     }
     let blen = 0
     const cigar_str = []
-    cigar.push(rrem << 4)
+    if (rrem > 0) {
+      cigar.push(rrem << 4)
+    }
     for (const entry of cigar) {
       const rlen = entry >> 4
       blen += rlen

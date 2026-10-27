@@ -49,6 +49,17 @@ describe('paf_delta2paf', () => {
     expect(r!.extra.numMatches).toBe(99)
   })
 
+  test('an alignment ending on an indel writes no empty run after it', () => {
+    const [r] = paf_delta2paf(
+      enc(`${HEAD}>refA qryA 1000 1000
+1 11 1 10 1 1 0
+11
+0
+`),
+    )
+    expect(r!.extra.cg).toBe('10M1D')
+  })
+
   test('a reversed query is reported forward with strand -1', () => {
     const [r] = paf_delta2paf(
       enc(`${HEAD}>refA qryA 1000 1000
