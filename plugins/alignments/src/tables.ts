@@ -432,7 +432,7 @@ function positionIn(refNames: readonly string[]): RefNamePosition {
 function colorReads(
   node: AnyConfigurationModel,
   baseLayer: BaseLayer | undefined,
-  laidByGroup: ReadonlyMap<string, ReadonlyMap<number, LaidOutPileupData>>,
+  byGroup: ReadonlyMap<string, ReadonlyMap<number, LaidOutPileupData>>,
   readColorOpts: ReadColorOpts,
   facet: { field: string; sort?: readonly string[] } | undefined,
   refNamePosition: RefNamePosition | undefined,
@@ -441,18 +441,6 @@ function colorReads(
   const setting = alignmentsColorSnapshotOf(node)
   const encoding = alignmentsColorEncoding(setting)
   const colorField = readColorFieldOf(encoding)
-  const band = pinnedInsertSizeBand(encoding)
-  const byGroup = new Map(
-    [...laidByGroup].map(([key, map]) => [
-      key,
-      new Map(
-        [...map].map(([idx, laid]) => [
-          idx,
-          band ? { ...laid, insertSizeStats: band } : laid,
-        ]),
-      ),
-    ]),
-  )
   const bakedScale = isBakedField(colorField)
     ? bakedColorScale(
         colorField,
@@ -548,7 +536,6 @@ function colorReads(
     palette,
     declared,
     readField: colorField,
-    insertSizeBand: band,
     legend: {
       label: legend.map(item => item.label),
       color: legend.map(item => cssColorToHex(item.color!)),
@@ -1298,9 +1285,10 @@ export async function alignmentTables(
     type: 'LinearAlignmentsDisplay',
     displayId: 'tables',
   })
-  const colorField = readColorFieldOf(
-    alignmentsColorEncoding(alignmentsColorSettingOf(conf.encoding.color)),
+  const colorEncoding = alignmentsColorEncoding(
+    alignmentsColorSettingOf(conf.encoding.color),
   )
+  const colorField = readColorFieldOf(colorEncoding)
   const baseLayer = baseLayerOf(
     conf.pileup.bases,
     basesFilterOf(conf.pileup.bases.filter),
@@ -1379,7 +1367,11 @@ export async function alignmentTables(
       `every section at ${lociOf(regions)} is hidden; facet.hidden lists them all`,
     )
   }
-  const rawByGroup = buildRawDataByGroup(fetched, hidden)
+  const rawByGroup = buildRawDataByGroup(
+    fetched,
+    hidden,
+    pinnedInsertSizeBand(colorEncoding),
+  )
   const sectionData = new Map(
     order.map(({ key }) => [key, rawByGroup.get(key)!]),
   )
@@ -1449,20 +1441,9 @@ export async function alignmentTables(
     minAlleleFraction: alleleFloorOf(conf.coverage.alleles.filter),
     junctions: junctionFilterOf(filterOf(conf)),
   }
-  const band = colors.insertSizeBand
   const connections = readConnectionTables(
     conf,
-    new Map(
-      order.map(({ key }) => [
-        key,
-        new Map(
-          [...sectionData.get(key)!].map(([idx, data]) => [
-            idx,
-            band ? { ...data, insertSizeStats: band } : data,
-          ]),
-        ),
-      ]),
-    ),
+    sectionData,
     regionInfos,
     colors,
   )
