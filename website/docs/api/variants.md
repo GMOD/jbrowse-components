@@ -68,7 +68,7 @@ draws them itself, such as R through V8. The adapters must be registered on
 
 ```js
 // type signature
-(pluginManager: PluginManager, { adapterConfig, sequenceAdapter, region, regions, display, byteLimit, }: VariantTablesArgs) => Promise<{ cells: {…}; rows: {…}; legend: {…}; ramps: {…}[]; rowLegend: {…}; rowLegendTitle: string; bands: {…}; config: Record<…>; warnings: string[]; annotations: {…}; annotationFields: {…}; info: Record<…>; infoFields: {…}; variants: { start: number[]; end: number[]; id: string[]; name: string[]; ref: string[]; alt: string[]; type: string[]; color: string[]; filter: (string | null)[]; region: number[]; key: number[]; }; }>
+(pluginManager: PluginManager, { adapterConfig, sequenceAdapter, regions, display, byteLimit, }: VariantTablesArgs) => Promise<{ cells: {…}; rows: {…}; legend: {…}; ramps: {…}[]; rowLegend: {…}; rowLegendTitle: string; bands: {…}; config: Record<…>; warnings: string[]; annotations: {…}; annotationFields: {…}; info: Record<…>; infoFields: {…}; variants: { start: number[]; end: number[]; id: string[]; name: string[]; ref: string[]; alt: string[]; type: string[]; color: string[]; filter: (string | null)[]; region: number[]; key: number[]; }; }>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/tables.ts)
