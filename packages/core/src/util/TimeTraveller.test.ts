@@ -43,6 +43,21 @@ test('records initial state and a change', () => {
   expect(undo.canUndo).toBe(true)
 })
 
+// a color-picker drag writes on every pointer move; however long the drag, it
+// is one undo step while no two moves are 300 ms apart
+test('a burst that outlasts the debounce without pausing records one step', () => {
+  const { target, undo } = makeStores()
+  for (let i = 1; i <= 60; i++) {
+    target.setValue(i)
+    jest.advanceTimersByTime(16)
+  }
+  flushDebounce()
+
+  expect(undo.history).toHaveLength(2)
+  undo.undo()
+  expect(target.value).toBe(0)
+})
+
 test('undo restores previous value', () => {
   const { target, undo } = makeStores()
   target.setValue(42)
