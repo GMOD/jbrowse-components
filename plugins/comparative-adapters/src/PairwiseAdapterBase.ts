@@ -83,6 +83,24 @@ export abstract class PairwiseAdapterBase<
   }
 
   /**
+   * The refNames on the sides facing `assemblyName`, for an in-memory adapter
+   * holding one refName index per side. `sideIndexes` runs only when a side
+   * faces it: an assembly this adapter does not carry answers `[]` whatever
+   * the file says, so it costs no download.
+   */
+  protected async facingRefNames(
+    assemblyName: string | undefined,
+    sideIndexes: () => Promise<readonly ReadonlyMap<string, unknown>[]>,
+  ) {
+    const sides = this.facingSides(assemblyName)
+    if (sides.length === 0) {
+      return []
+    }
+    const indexes = await sideIndexes()
+    return [...new Set(sides.flatMap(side => [...indexes[side]!.keys()]))]
+  }
+
+  /**
    * `facingSides` for a feature query, where an assembly this adapter does not
    * carry is an error rather than an empty answer: the region should have been
    * respelled before it crossed to the worker, and answering `[]` here drew an

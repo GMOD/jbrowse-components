@@ -1,8 +1,8 @@
 import { openLocation } from '@jbrowse/core/util/io'
 
 import PAFAdapter from '../PAFAdapter/PAFAdapter.ts'
-import { loadPafRecords } from '../PAFAdapter/util.ts'
-import { collectLines, parsePAFLine } from '../util.ts'
+import { loadPafRecords, pafBufferParser } from '../PAFAdapter/util.ts'
+import { parsePAFLine } from '../util.ts'
 
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 
@@ -10,13 +10,7 @@ export default class MashMapAdapter extends PAFAdapter {
   async setupPre(opts?: BaseOptions) {
     return loadPafRecords({
       file: openLocation(this.getConf('outLocation'), this.pluginManager),
-      parse: (buffer, parseOpts) =>
-        collectLines({
-          buffer,
-          label: 'Processing alignments',
-          parseLine: parseMashMapLine,
-          opts: parseOpts,
-        }),
+      parse: pafBufferParser(parseMashMapLine),
       opts,
     })
   }

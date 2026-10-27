@@ -118,14 +118,12 @@ export function indexPafRecords(records: PAFRecord[]) {
   ] as const
 }
 
-export function parsePafBuffer(buffer: Uint8Array, opts?: BaseOptions) {
-  return collectLines({
-    buffer,
-    label: 'Processing alignments',
-    parseLine: parsePAFLine,
-    opts,
-  })
+export function pafBufferParser(parseLine: (line: string) => PAFRecord) {
+  return (buffer: Uint8Array, opts?: BaseOptions) =>
+    collectLines({ buffer, label: 'Processing alignments', parseLine, opts })
 }
+
+export const parsePafBuffer = pafBufferParser(parsePAFLine)
 
 /**
  * The whole setup of every in-memory pairwise adapter: download the file, hand

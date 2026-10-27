@@ -1,6 +1,6 @@
 import { SimpleFeature, doesIntersect2 } from '@jbrowse/core/util'
 
-import { parseBed, readFiles } from './util.ts'
+import { getOrCreate, parseBed, readFiles } from './util.ts'
 
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
@@ -51,12 +51,7 @@ export function partnerCounts(
 ) {
   const partners = new Map<string, Set<string>>()
   const link = (gene: string, partner: string) => {
-    let set = partners.get(gene)
-    if (!set) {
-      set = new Set()
-      partners.set(gene, set)
-    }
-    set.add(partner)
+    getOrCreate(partners, gene, () => new Set()).add(partner)
   }
   for (const [nameA, nameB] of links) {
     link(`${assemblyA}\t${nameA}`, `${assemblyB}\t${nameB}`)
@@ -208,12 +203,7 @@ export function indexBlockRows(rows: BlockRow[]): BlockRowIndex {
         buckets = new Map()
         for (const row of rows) {
           const refName = side === 0 ? row.a.refName : row.b.refName
-          let bucket = buckets.get(refName)
-          if (bucket === undefined) {
-            bucket = []
-            buckets.set(refName, bucket)
-          }
-          bucket.push(row)
+          getOrCreate(buckets, refName, () => []).push(row)
         }
         sides[side] = buckets
       }

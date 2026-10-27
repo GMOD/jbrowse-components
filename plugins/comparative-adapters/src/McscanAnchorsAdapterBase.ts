@@ -98,10 +98,10 @@ export abstract class McscanAnchorsAdapterBase<
     // after — reading it first downloaded and parsed the anchors file and both
     // BEDs to return [].
     const { assemblyNames } = sharedAnchorsConf(this)
-    if (opts.assemblyName === undefined) {
-      return []
-    }
-    if (!assemblyNames.includes(opts.assemblyName)) {
+    if (
+      opts.assemblyName === undefined ||
+      !assemblyNames.includes(opts.assemblyName)
+    ) {
       return []
     }
     const { feats } = await this.setup(opts)

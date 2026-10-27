@@ -39,15 +39,10 @@ export default class PAFAdapter extends PairwiseAdapterBase {
   }
 
   async getRefNames(opts: BaseOptions = {}) {
-    // Resolved before the setup: an assembly this adapter does not carry has
-    // the same answer whatever the file says, and reading it first was
-    // downloading and parsing a whole PAF to return [].
-    const sides = this.facingSides(opts.assemblyName)
-    if (sides.length === 0) {
-      return []
-    }
-    const { byRefName } = await this.setup(opts)
-    return [...new Set(sides.flatMap(side => [...byRefName[side].keys()]))]
+    return this.facingRefNames(
+      opts.assemblyName,
+      async () => (await this.setup(opts)).byRefName,
+    )
   }
 
   async getContigLengths(side: 0 | 1, opts: BaseOptions = {}) {
