@@ -167,3 +167,40 @@ test('view.search hands back the rows the picker would list, and a pick lands', 
   expect(model.searchPicker).toBeUndefined()
   expect(model.bpPerPx).toBeGreaterThan(before)
 })
+
+test('a long list can be narrowed, and Enter lands on the one row left', async () => {
+  const { model } = await setup()
+  const many = Array.from(
+    { length: 12 },
+    (_, i) =>
+      new BaseResult({
+        label: `HOXA${i + 1}`,
+        locString: `ctgA:${i * 50 + 1}..${i * 50 + 20}`,
+        trackId: 'genes',
+      }),
+  )
+  model.setSearchResults(many, 'HOXA', 'volvox')
+  render(<SearchResultsDialog model={model} />)
+  await screen.findByText('12 matches for')
+  const filter = screen.getByPlaceholderText(
+    'Filter by name, location or track',
+  )
+  fireEvent.change(filter, { target: { value: 'hoxa1' } })
+  // HOXA1, HOXA10, HOXA11, HOXA12
+  expect(screen.getAllByText('Go')).toHaveLength(4)
+  fireEvent.change(filter, { target: { value: 'hoxa11' } })
+  expect(screen.getAllByText('Go')).toHaveLength(1)
+  fireEvent.keyDown(filter, { key: 'Enter' })
+  await waitFor(() => {
+    expect(model.searchPicker).toBeUndefined()
+  })
+  expect(model.displayedRegions[0]?.refName).toBe('ctgA')
+})
+
+test('a short list shows no filter', async () => {
+  const { model } = await setup()
+  model.setSearchResults(hits, 'EDEN', 'volvox')
+  render(<SearchResultsDialog model={model} />)
+  await screen.findByText('2 matches for')
+  expect(screen.queryByPlaceholderText(/Filter/)).toBeNull()
+})

@@ -20,7 +20,7 @@ const SearchResultsDialog = observer(function SearchResultsDialog({
       title="Search results"
     >
       <Typography>
-        Showing results for <b>{searchPicker.query}</b>
+        {searchPicker.rows.length} matches for <b>{searchPicker.query}</b>
       </Typography>
       <SearchResultsTable picker={searchPicker} />
     </InfoDialog>
