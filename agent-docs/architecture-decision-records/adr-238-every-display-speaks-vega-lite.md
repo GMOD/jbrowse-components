@@ -398,8 +398,8 @@ predicate in the layer's own `filter`:
   `{ field, oneOf }`" is reversed: a field predicate compiles to a lane
   compare, which jexl cannot.
 - `domain: null` is each display's own autoscale method, not one algorithm.
-- A user-written filter list drops the default flag predicates it does not
-  repeat.
+- A user-written filter list replaces the default predicates only on the
+  fields it names (ADR-240).
 - The predicate compiler and the flag fusion are benched against today's
   `flagInclude`/`flagExclude`/`minMapq` path before the alignments display
   moves, since GRAMMAR_OF_GRAPHICS.md rule 3 holds a declared form to 1.00x
