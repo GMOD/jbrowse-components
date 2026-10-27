@@ -51,8 +51,7 @@
         {
           "type": "LinearWiggleDisplay",
           "displayId": "synthetic_tiers_line_avg-LinearWiggleDisplay",
-          "mark": "line",
-          "extent": "none"
+          "mark": { "type": "line", "extent": "none" }
         }
       ]
     },
@@ -72,8 +71,7 @@
         {
           "type": "LinearWiggleDisplay",
           "displayId": "synthetic_tiers_line_whiskers-LinearWiggleDisplay",
-          "mark": "line",
-          "extent": "min-max"
+          "mark": { "type": "line", "extent": "min-max" }
         }
       ]
     },
@@ -93,8 +91,7 @@
         {
           "type": "LinearWiggleDisplay",
           "displayId": "synthetic_tiers_xyplot_avg-LinearWiggleDisplay",
-          "mark": "bar",
-          "extent": "none"
+          "mark": { "type": "bar", "extent": "none" }
         }
       ]
     },
@@ -114,8 +111,7 @@
         {
           "type": "LinearWiggleDisplay",
           "displayId": "synthetic_tiers_xyplot_whiskers-LinearWiggleDisplay",
-          "mark": "bar",
-          "extent": "min-max"
+          "mark": { "type": "bar", "extent": "min-max" }
         }
       ]
     },
@@ -149,9 +145,8 @@
         {
           "type": "LinearWiggleDisplay",
           "displayId": "synthetic_tiers_multiline_whiskers-LinearWiggleDisplay",
-          "mark": "line",
-          "rows": "",
-          "extent": "min-max"
+          "mark": { "type": "line", "extent": "min-max" },
+          "rows": ""
         }
       ]
     }

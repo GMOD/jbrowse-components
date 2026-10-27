@@ -592,7 +592,7 @@ test('the coverage band\u2019s depth axis is the display\u2019s: nice-rounded ov
 
   const log = await engine.alignments({
     ...BAM,
-    display: { scales: { y: { type: 'log' } } },
+    display: { coverage: { encoding: { y: { scale: { type: 'log' } } } } },
   })
   expect(log.coverageScale.type).toBe('log')
   expect(log.coverageScale.domain[0]).toBe(1)

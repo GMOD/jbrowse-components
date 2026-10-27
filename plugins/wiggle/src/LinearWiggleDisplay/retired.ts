@@ -120,12 +120,12 @@ function summaryOf(mode: unknown): DisplayEntry {
   return typeof mode !== 'string'
     ? {}
     : mode === 'whiskers'
-      ? { ...field('score'), extent: 'min-max' }
+      ? { ...field('score'), mark: { extent: 'min-max' } }
       : {
           ...field(
             mode === 'min' ? 'minScore' : mode === 'max' ? 'maxScore' : 'score',
           ),
-          extent: 'none',
+          mark: { extent: 'none' },
         }
 }
 
@@ -135,7 +135,7 @@ const V4_RENDERERS = ['XYPlotRenderer', 'LinePlotRenderer', 'DensityRenderer']
 /**
  * v4's `renderers` block, as the display's `retired` reads it: its colors
  * become `encoding.color` and its `summaryScoreMode` `encoding.y.field` and
- * `extent`, and everything else in it is let go. The scale slots beside it are
+ * `mark.extent`, and everything else in it is let go. The scale slots beside it are
  * `retiredScaleSpellings`. A display-level `color`, `posColor` and `negColor`
  * get no lift: v4 read them only from a renderer block and from session
  * state, which both lift the pair together, and ignored them on a display

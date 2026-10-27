@@ -21,7 +21,7 @@ import type {
   WiggleMarkObject,
 } from '../renderingTypes.ts'
 import type { WiggleCommonHost } from './WiggleCommonMixin.ts'
-import type { Extent } from './extentConfigSchemaFields.ts'
+import type { Extent } from './wiggleMarkConfigSchema.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { RadioOption } from '@jbrowse/core/ui/menuItems'
 import type { SummaryField } from '@jbrowse/wiggle-core/summaryFields'

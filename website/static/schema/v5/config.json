@@ -13100,6 +13100,16 @@
               "else": {
                 "enum": ["step", "linear"]
               }
+            },
+            "extent": {
+              "description": "the span drawn around each bin's plotted value: 'min-max' draws the bin's stored min and max with it, as a lighter band, while `encoding.y` names a stored summary.",
+              "default": "min-max",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "enum": ["min-max", "none"]
+              }
             }
           },
           "patternProperties": {
@@ -13699,32 +13709,12 @@
             "type": "number"
           }
         },
-        "maxGapMultiple": {
-          "description": "Interpolated line only: break the line where consecutive points sit further apart than this multiple of the track's own mean point spacing, instead of drawing one long chord across the hole. Scaled to the data rather than a fixed bp distance so it holds at every zoom. 0 keeps one connected line.",
-          "default": 0,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "number"
-          }
-        },
         "legend": {
           "if": {
             "type": "null"
           },
           "else": {
             "$ref": "#/$defs/Legend"
-          }
-        },
-        "extent": {
-          "description": "the span drawn around each bin's plotted value: 'min-max' draws the bin's stored min and max with it, as a lighter band, while `y` names a stored summary.",
-          "default": "min-max",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "enum": ["min-max", "none"]
           }
         },
         "axis": {
@@ -13788,6 +13778,10 @@
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
         "renderers": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "extent": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
@@ -16659,12 +16653,6 @@
                 }
               ]
             },
-            "maxGapMultiple": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/maxGapMultiple"
-            },
-            "extent": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/extent"
-            },
             "axis": {
               "anyOf": [
                 {
@@ -16707,6 +16695,9 @@
             },
             "renderers": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/renderers"
+            },
+            "extent": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/extent"
             },
             "defaultRendering": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/defaultRendering"
@@ -18355,9 +18346,6 @@
                 }
               ]
             },
-            "maxGapMultiple": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/maxGapMultiple"
-            },
             "legend": {
               "anyOf": [
                 {
@@ -18367,9 +18355,6 @@
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/legend"
                 }
               ]
-            },
-            "extent": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/extent"
             },
             "axis": {
               "anyOf": [
@@ -18457,6 +18442,9 @@
             },
             "renderers": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/renderers"
+            },
+            "extent": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/extent"
             },
             "defaultRendering": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/defaultRendering"
@@ -18714,9 +18702,6 @@
                 }
               ]
             },
-            "maxGapMultiple": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/maxGapMultiple"
-            },
             "legend": {
               "anyOf": [
                 {
@@ -18726,9 +18711,6 @@
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/legend"
                 }
               ]
-            },
-            "extent": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/extent"
             },
             "axis": {
               "anyOf": [
@@ -18816,6 +18798,9 @@
             },
             "renderers": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/renderers"
+            },
+            "extent": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/extent"
             },
             "defaultRendering": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/defaultRendering"
@@ -19038,14 +19023,8 @@
             "origin": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/origin"
             },
-            "maxGapMultiple": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/maxGapMultiple"
-            },
             "legend": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/legend"
-            },
-            "extent": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/extent"
             },
             "axis": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/axis"
@@ -19091,6 +19070,9 @@
             },
             "renderers": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/renderers"
+            },
+            "extent": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/extent"
             },
             "defaultRendering": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/defaultRendering"

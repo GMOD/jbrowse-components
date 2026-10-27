@@ -7642,6 +7642,10 @@ export const configManifest: ConfigManifest = {
             {
               "name": "interpolate",
               "type": "LineInterpolation"
+            },
+            {
+              "name": "extent",
+              "type": "Extent"
             }
           ],
           "schema": "WiggleMark",
@@ -7948,10 +7952,6 @@ export const configManifest: ConfigManifest = {
           "type": "number"
         },
         {
-          "name": "maxGapMultiple",
-          "type": "number"
-        },
-        {
           "name": "legend",
           "type": "LegendConfigurationSchema",
           "subSlots": [
@@ -7962,10 +7962,6 @@ export const configManifest: ConfigManifest = {
           ],
           "schema": "Legend",
           "writes": "members"
-        },
-        {
-          "name": "extent",
-          "type": "Extent"
         },
         {
           "name": "axis",
@@ -8011,6 +8007,7 @@ export const configManifest: ConfigManifest = {
         "numStdDev",
         "inverted",
         "renderers",
+        "extent",
         "defaultRendering"
       ],
       "droppedKeys": [

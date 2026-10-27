@@ -32,17 +32,17 @@ const SMN_HIGHLIGHT = [
 const mappabilityTrack = {
   trackId: 'hg38-umap100Quantitative',
   encoding: { y: { field: 'minScore', scale: { domainMin: 0, domainMax: 1 } } },
-  extent: 'none' as const,
+  mark: { extent: 'none' as const },
   height: 70,
 }
 
 // At 2 kb/px the default min-max extent paints the low-coverage block full
-// height; `extent: 'none'` draws the mean alone.
+// height; `mark.extent: 'none'` draws the mean alone.
 const gnomadCoverageTrack = (height = 70, extent?: string) => ({
   trackId: 'hg38-gnomad3MeanCoverage',
   encoding: { y: { scale: { domainMin: 0, domainMax: 40 } } },
   height,
-  ...(extent ? { extent } : {}),
+  ...(extent ? { mark: { extent } } : {}),
 })
 
 const geneTrack = (height: number, onlyGenes: boolean) => ({

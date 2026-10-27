@@ -3,7 +3,7 @@ import { createBaseTrackConfig } from '@jbrowse/core/pluggableElementTypes/model
 import { types } from '@jbrowse/mobx-state-tree'
 import {
   linearWiggleDisplayConfigSchema,
-  extentConfigSchemaFields,
+  wiggleMarkWithoutExtent,
 } from '@jbrowse/plugin-wiggle'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -11,11 +11,9 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 const gcWiggleConfigSchema = ConfigurationSchema(
   'LinearWiggleDisplay',
   {
-    ...extentConfigSchemaFields({
-      extent: 'none',
-      extentDescription:
-        "a GC window has one score and no min or max to draw, so 'none'",
-    }),
+    mark: wiggleMarkWithoutExtent(
+      "a GC window has one score and no min or max to draw, so 'none'",
+    ),
   },
   { baseConfiguration: linearWiggleDisplayConfigSchema },
 )
@@ -64,7 +62,7 @@ const configSchema = (pluginManager: PluginManager) =>
       /**
        * #slot
        * As on [every track](../basetrack#slot-displays), except that a
-       * `LinearWiggleDisplay` entry defaults to `extent: 'none'`.
+       * `LinearWiggleDisplay` entry defaults to `mark.extent: 'none'`.
        */
       displays: types.array(
         types.union(

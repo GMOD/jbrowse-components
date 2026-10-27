@@ -22,14 +22,13 @@ import type {
   WiggleRendering,
 } from '../renderingTypes.ts'
 import type { WiggleHoveredFeature } from '../util.ts'
-import type {
-  Extent,
-  extentConfigSchemaFields,
-} from './extentConfigSchemaFields.ts'
 import type { wiggleConfigSchemaFields } from './wiggleConfigSchemaFields.ts'
 import type { wiggleDataConfigSchema } from './wiggleDataConfigSchema.ts'
 import type { wiggleEncodingConfigSchema } from './wiggleEncodingConfigSchema.ts'
-import type { wiggleMarkConfigSchema } from './wiggleMarkConfigSchema.ts'
+import type {
+  Extent,
+  wiggleMarkConfigSchema,
+} from './wiggleMarkConfigSchema.ts'
 import type { ConfigModelForFields } from '@jbrowse/core/configuration'
 import type { Region } from '@jbrowse/core/util'
 import type { RegionStoreSelf } from '@jbrowse/display-kit/MultiRegionDisplayMixin'
@@ -37,12 +36,11 @@ import type { RegionHost } from '@jbrowse/display-kit/regionHost'
 import type { WiggleDataResult } from '@jbrowse/wiggle-core'
 
 type WiggleCommonConfigModel = ConfigModelForFields<
-  typeof wiggleConfigSchemaFields &
-    ReturnType<typeof extentConfigSchemaFields> & {
-      mark: typeof wiggleMarkConfigSchema
-      encoding: typeof wiggleEncodingConfigSchema
-      data: typeof wiggleDataConfigSchema
-    }
+  typeof wiggleConfigSchemaFields & {
+    mark: typeof wiggleMarkConfigSchema
+    encoding: typeof wiggleEncodingConfigSchema
+    data: typeof wiggleDataConfigSchema
+  }
 >
 
 /** The whole of what `WiggleCommonMixin` needs a composing display to be. */
@@ -141,7 +139,7 @@ export function WiggleCommonMixin() {
        * #getter
        */
       get extent(): Extent {
-        return getConf(confNode(self), 'extent')
+        return getConf(confNode(self), ['mark', 'extent'])
       },
       /**
        * #getter
@@ -332,7 +330,7 @@ export function WiggleCommonMixin() {
        * #action
        */
       setExtent(val: Extent) {
-        setConf(confNode(self), 'extent', val)
+        setConf(confNode(self), ['mark', 'extent'], val)
       },
       /**
        * #action

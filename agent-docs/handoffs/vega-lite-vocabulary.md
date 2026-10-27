@@ -98,6 +98,12 @@ list names each divergence and can only shrink.
   the re-pin too. The engine and tutorial pin is `d0feecc145`, which writes
   the feature display's amendment. `dog10k_lof` keeps its `557791197f` knit
   until the callset host's certificate is renewed.
+- **The wiggle `mark.extent` move:** ggjbrowse's `R/wiggle.R`, its man pages,
+  `test-wiggle.R` and tutorials write a display-level `extent`, and jb2hubs'
+  `hubtools/src/wiggleDisplay.ts` and `derivedDisplay.ts`
+  (`WIGGLE_DERIVED_PATHS`) do too. The wiggle display's `retired.extent`
+  lifts it, so the hosted configs keep loading; respell each once a release
+  ships `mark.extent`, since jb2hubs' host floor is the latest release.
 - **Figure specs:** [screenshot-spec-elegance.md](screenshot-spec-elegance.md)
   owns the respell. It can use the landed words now: filters (plain-equality
   jexl entries become predicates), constant color, legends, rows, facet and

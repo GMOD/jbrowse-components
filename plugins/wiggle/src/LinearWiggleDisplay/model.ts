@@ -558,7 +558,7 @@ export default function stateModelFactory(
        * #method
        * `y` is a fetch key as written, so picking another stored summary
        * refetches arrays the worker already shipped; `extent` is not
-       * (WIGGLE_DISPLAY.md, "`y`, `extent`").
+       * (WIGGLE_DISPLAY.md, "`y`, `mark.extent`").
        */
       rpcProps() {
         return self.sharedRpcProps()

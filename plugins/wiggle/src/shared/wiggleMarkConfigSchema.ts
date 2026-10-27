@@ -3,12 +3,16 @@ import { types } from '@jbrowse/mobx-state-tree'
 
 import { LINE_INTERPOLATIONS, WIGGLE_MARK_NAMES } from '../renderingTypes.ts'
 
+export const EXTENTS = ['min-max', 'none'] as const
+export type Extent = (typeof EXTENTS)[number]
+
 /**
  * #config WiggleMark
  * #category display
  * A wiggle display's `mark`, Vega-Lite's mark object: the `type` each score
- * draws as, and a line's `interpolate`. A bare name is the `type`, so
- * `mark: "rect"` and `mark: { type: "rect" }` are one config.
+ * draws as, a line's `interpolate`, and the `extent` drawn around each bin. A
+ * bare name is the `type`, so `mark: "rect"` and `mark: { type: "rect" }` are
+ * one config.
  *
  * #example
  * ```json
@@ -19,7 +23,7 @@ import { LINE_INTERPOLATIONS, WIGGLE_MARK_NAMES } from '../renderingTypes.ts'
  * ```json
  * {
  *   "type": "LinearWiggleDisplay",
- *   "mark": { "type": "line", "interpolate": "linear" }
+ *   "mark": { "type": "line", "interpolate": "linear", "extent": "none" }
  * }
  * ```
  */
@@ -47,6 +51,35 @@ export const wiggleMarkConfigSchema = ConfigurationSchema(
       defaultValue: 'step',
       description: 'step or linear, for a line',
     },
+    /**
+     * #slot
+     * The span drawn around each bin's plotted value, as Vega-Lite's
+     * `errorband` names it: `min-max` draws the bin's stored min and max as a
+     * lighter band, while `encoding.y` names a stored summary. A `rect` draws
+     * none.
+     */
+    extent: {
+      type: 'stringEnum',
+      model: types.enumeration('Extent', [...EXTENTS]),
+      defaultValue: 'min-max',
+      description:
+        "the span drawn around each bin's plotted value: 'min-max' draws the bin's stored min and max with it, as a lighter band, while `encoding.y` names a stored summary",
+    },
   },
   { shorthand: 'type', writes: 'members', plot: true, closed: true },
 )
+
+/** The `mark` of a track type whose wiggle display draws no band by default. */
+export function wiggleMarkWithoutExtent(description?: string) {
+  return ConfigurationSchema(
+    'WiggleMark',
+    {
+      extent: {
+        type: 'stringEnum',
+        defaultValue: 'none',
+        ...(description ? { description } : {}),
+      },
+    },
+    { baseConfiguration: wiggleMarkConfigSchema },
+  )
+}

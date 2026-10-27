@@ -1,3 +1,6 @@
+import { readConfObject } from '@jbrowse/core/configuration'
+
+import configSchema from './configSchema.ts'
 import { foldMultiWiggleRendering, retiredState } from './retired.ts'
 
 test.each([
@@ -47,11 +50,26 @@ test.each([
   (mode, field, extent) => {
     expect(retiredState.lift({ summaryScoreMode: mode })).toMatchObject({
       encoding: { y: { field } },
-      extent,
+      mark: { extent },
     })
     expect(retiredState.keys).toContain('summaryScoreMode')
   },
 )
+
+test('a v4 session’s plot and summary mode load as one mark', () => {
+  const lifted = retiredState.lift({
+    rendererTypeNameState: 'linecenter',
+    summaryScoreMode: 'whiskers',
+  })
+  const conf = configSchema.create({
+    type: 'LinearWiggleDisplay',
+    displayId: 'test',
+    ...lifted,
+  })
+  expect(readConfObject(conf, ['mark', 'type'])).toBe('line')
+  expect(readConfObject(conf, ['mark', 'interpolate'])).toBe('linear')
+  expect(readConfObject(conf, ['mark', 'extent'])).toBe('min-max')
+})
 
 test('a v4 session’s resolution is data.resolution', () => {
   expect(retiredState.lift({ resolution: 5 })).toMatchObject({

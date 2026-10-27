@@ -165,7 +165,7 @@ export const ldSpecs: ScreenshotSpec[] = [
             // blank lane; ld/lct_fst_scan is the wide view.
             {
               trackId: 'kgp_lct_fst',
-              mark: 'point',
+              mark: { type: 'point', extent: 'none' },
               encoding: {
                 size: 2,
                 y: {
@@ -174,7 +174,6 @@ export const ldSpecs: ScreenshotSpec[] = [
                 },
                 color: { value: '#0068d1' },
               },
-              extent: 'none',
               height: 140,
             },
             // The 2019 deCODE map, counted off crossovers. HapMap and hg38's
@@ -240,7 +239,7 @@ export const ldSpecs: ScreenshotSpec[] = [
             },
             {
               trackId: 'kgp_lct_fst_scan',
-              mark: 'point',
+              mark: { type: 'point', extent: 'none' },
               encoding: {
                 size: 2,
                 y: {
@@ -249,7 +248,6 @@ export const ldSpecs: ScreenshotSpec[] = [
                 },
                 color: { value: '#0068d1' },
               },
-              extent: 'none',
               // Matches ld/lct_pooled_vs_panel's Fst axis, so the peak sits at
               // the same height in both.
               height: 230,

@@ -1111,13 +1111,27 @@ function plotTypeStep(rendering: string): FieldStep | undefined {
 }
 
 // A plot's `mark` names its type; the canvas displays' names the box height.
+function extentStep(value: unknown): FieldStep | undefined {
+  return typeof value === 'string'
+    ? {
+        path: `${TRACK_MENU} → Resolution → Bin summary → Show min and max (${
+          value === 'min-max' ? 'checked' : 'unchecked'
+        })`,
+      }
+    : undefined
+}
+
 const markStep: FieldRecipe = (value, context) => {
   const mark = typeof value === 'string' ? { type: value } : asRecord(value)
-  return typeof mark?.type === 'string'
-    ? plotTypeStep(renderingOf(mark.type, String(mark.interpolate ?? 'step')))
-    : typeof mark?.height === 'number'
-      ? readSizeStep(mark.height, context)
-      : undefined
+  const extent = extentStep(mark?.extent)
+  const shape =
+    typeof mark?.type === 'string'
+      ? plotTypeStep(renderingOf(mark.type, String(mark.interpolate ?? 'step')))
+      : typeof mark?.height === 'number'
+        ? readSizeStep(mark.height, context)
+        : undefined
+  const steps = [shape, extent].filter(s => s !== undefined)
+  return steps.length > 1 ? steps : steps[0]
 }
 
 function resolutionLabel(n: number) {
@@ -2072,14 +2086,6 @@ export const trackFields: Record<string, FieldRecipe> = {
     path: `${TRACK_MENU} → Advanced → Max layout height... → ${n}`,
   })),
   mark: markStep,
-  extent: value =>
-    typeof value === 'string'
-      ? {
-          path: `${TRACK_MENU} → Resolution → Bin summary → Show min and max (${
-            value === 'min-max' ? 'checked' : 'unchecked'
-          })`,
-        }
-      : undefined,
   // `showLabels` and `showDescriptions` have no entry: both lift onto `labels`
   // at load, so one showing up in the gap report is a spec to respell, not a
   // handler to add.

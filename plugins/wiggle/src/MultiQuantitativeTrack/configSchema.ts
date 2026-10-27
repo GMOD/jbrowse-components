@@ -39,7 +39,7 @@ const configSchema = (pluginManager: PluginManager) => {
        * #slot
        * As on [every track](../basetrack#slot-displays), except that a
        * `LinearWiggleDisplay` entry defaults to `rows: 'source'`,
-       * `extent: 'none'` and `height: 200`.
+       * `mark.extent: 'none'` and `height: 200`.
        */
       displays: multiQuantitativeDisplaySchemas(pluginManager),
     },

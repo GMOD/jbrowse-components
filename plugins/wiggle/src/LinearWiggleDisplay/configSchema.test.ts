@@ -211,7 +211,31 @@ test("v4's renderer summaryScoreMode is y maxScore, extent none", () => {
     renderers: { XYPlotRenderer: { summaryScoreMode: 'max' } },
   })
   expect(readConfObject(conf, [...Y, 'field'])).toBe('maxScore')
-  expect(readConfObject(conf, 'extent')).toBe('none')
+  expect(readConfObject(conf, ['mark', 'extent'])).toBe('none')
+})
+
+// Both lift into `mark`, and a bare string there would win over the object
+// the other writes
+test("v4's rendering and summary mode both land on the mark", () => {
+  const conf = create({
+    defaultRendering: 'line',
+    renderers: { LinePlotRenderer: { summaryScoreMode: 'whiskers' } },
+  })
+  expect(readConfObject(conf, ['mark', 'type'])).toBe('line')
+  expect(readConfObject(conf, ['mark', 'extent'])).toBe('min-max')
+  const center = create({
+    defaultRendering: 'linecenter',
+    renderers: { LinePlotRenderer: { summaryScoreMode: 'avg' } },
+  })
+  expect(readConfObject(center, ['mark', 'interpolate'])).toBe('linear')
+  expect(readConfObject(center, ['mark', 'extent'])).toBe('none')
+})
+
+test('a display-level extent lands on the mark beside a bare mark name', () => {
+  const conf = create({ mark: 'line', extent: 'none' })
+  expect(readConfObject(conf, ['mark', 'type'])).toBe('line')
+  expect(readConfObject(conf, ['mark', 'extent'])).toBe('none')
+  expect(readConfObject(create({}), ['mark', 'extent'])).toBe('min-max')
 })
 
 test('a v4 renderers block keeps its color beside its summary mode', () => {

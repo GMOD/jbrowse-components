@@ -75,9 +75,9 @@ Zoomed out, JBrowse reads precomputed summary bins from a BigWig, and
 drawn: **Minimum**, **Maximum** or **Mean**, which write
 [`encoding.y.field`](/docs/config/yfieldchannel/#slot-field) as `minScore`,
 `maxScore` or `score`. **Show min and max** draws the bin's min to max around it
-([`extent`](/docs/config/linearwiggledisplay/#slot-extent)): a bar plot nests
-the darker bar inside the lighter min-to-max range, and a line plot fills min to
-max as a translucent band behind the line, stepped or interpolated to match it.
+([`mark.extent`](/docs/config/wigglemark/#slot-extent)): a bar plot nests the
+darker bar inside the lighter min-to-max range, and a line plot fills min to max
+as a translucent band behind the line, stepped or interpolated to match it.
 Density mode draws no min and max, since it maps score to color. Where the
 source serves raw values, such as a bedGraph or a BigWig zoomed all the way in,
 the three are one number and neither setting changes anything. A field naming

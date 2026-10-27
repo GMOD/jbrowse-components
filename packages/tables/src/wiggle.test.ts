@@ -57,9 +57,15 @@ test('a BigWig region comes back as the wiggle display scales and colors it', as
 
 test('a zoomed-out min-max extent draws the max and min bands around the mean', async () => {
   const wide = { ...COVERAGE_BIGWIG, bpPerPx: 1000 }
-  const plain = await engine.wiggle({ ...wide, display: { extent: 'none' } })
+  const plain = await engine.wiggle({
+    ...wide,
+    display: { mark: { extent: 'none' } },
+  })
   expect(new Set(plain.marks.layer).size).toBe(1)
-  const t = await engine.wiggle({ ...wide, display: { extent: 'min-max' } })
+  const t = await engine.wiggle({
+    ...wide,
+    display: { mark: { extent: 'min-max' } },
+  })
   expect(new Set(t.marks.layer).size).toBe(3)
   t.bins.score.forEach((score, i) => {
     expect(t.bins.min[i]).toBeLessThanOrEqual(score)
@@ -71,13 +77,16 @@ test('a zoomed-out min-max extent draws the max and min bands around the mean', 
 
   const max = await engine.wiggle({
     ...wide,
-    display: { encoding: { y: { field: 'maxScore' } }, extent: 'none' },
+    display: {
+      encoding: { y: { field: 'maxScore' } },
+      mark: { extent: 'none' },
+    },
   })
   expect(max.marks.score).toEqual(t.bins.max)
 
   const line = await engine.wiggle({
     ...wide,
-    display: { mark: 'line', extent: 'min-max' },
+    display: { mark: { type: 'line', extent: 'min-max' } },
   })
   const band = line.marks.band.map((b, i) => i).filter(i => line.marks.band[i])
   expect(band).toHaveLength(line.bins.start.length)
@@ -142,7 +151,7 @@ test('a line takes the color of the band between the cuts its score is in', asyn
     const t = await engine.wiggle({
       ...SIGNED_BIGWIG,
       bpPerPx: 1000,
-      display: { mark, encoding, extent: 'none' },
+      display: { mark: { type: mark, extent: 'none' }, encoding },
     })
     t.marks.score.forEach((score, i) => {
       if (!t.marks.band[i]) {
@@ -262,8 +271,7 @@ test('an interpolated line is one run, as the display draws it', async () => {
     ...COVERAGE_BIGWIG,
     bpPerPx: 5,
     display: {
-      mark: { type: 'line', interpolate: 'linear' },
-      extent: 'none',
+      mark: { type: 'line', interpolate: 'linear', extent: 'none' },
     },
   })
   expect(marks.run.length).toBeGreaterThan(1)

@@ -184,7 +184,6 @@ test("each display's plot settings", () => {
     ],
     LinearWiggleDisplay: [
       'encoding',
-      'extent',
       'legend',
       'mark',
       'origin',

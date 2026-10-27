@@ -218,7 +218,7 @@ floored at 1 or the shader seeds the row transform with Infinity.
   2026-10-27: a broken line reads as missing data whether or not data is
   missing there, and nothing wrote the slot.
 
-## `y`, `extent`, and the effective extent
+## `y`, `mark.extent`, and the effective extent
 
 `score`, `minScore` and `maxScore` are the three values a zoom bin stores
 (`@jbrowse/wiggle-core/summaryFields`). A `y` naming one picks its array on
@@ -233,8 +233,8 @@ meaning and is gone. A `y` naming another field reads it in the worker,
 ships no min or max, and hides the Bin summary radio, since a click there
 would overwrite it.
 
-`extent: 'min-max'` draws the bin's min and max around the plotted summary,
-Vega-Lite's boxplot `extent`. `effectiveExtent` resolves to `none` under
+`mark.extent: 'min-max'` draws the bin's min and max around the plotted
+summary, Vega-Lite's `errorband` `extent`, on the mark as `interpolate` is. `effectiveExtent` resolves to `none` under
 density, and the autoscale domain, the menu, the tooltip and `gpuProps` all
 read it. **`extent` is not a fetch key**: one fetch ships mean, min and max
 together, so a switch re-encodes and refetches nothing. **`y` is one, as

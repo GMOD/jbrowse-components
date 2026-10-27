@@ -483,8 +483,7 @@ outputs for each sample's CRAM; swap in yours:
     ]
   },
   "displayDefaults": {
-    "mark": "bar",
-    "extent": "none",
+    "mark": { "type": "bar", "extent": "none" },
     "encoding": {
       "y": {
         "scale": { "domainMin": 0, "domainMax": 80 },

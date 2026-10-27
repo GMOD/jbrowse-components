@@ -9,7 +9,6 @@ import {
   retiredScaleSpellings,
 } from '@jbrowse/wiggle-core'
 
-import { extentConfigSchemaFields } from '../shared/extentConfigSchemaFields.ts'
 import { quantitativeRowsConfigSchema } from '../shared/quantitativeRowsConfigSchema.ts'
 import { wiggleConfigSchemaFields } from '../shared/wiggleConfigSchemaFields.ts'
 import { wiggleDataConfigSchema } from '../shared/wiggleDataConfigSchema.ts'
@@ -98,7 +97,8 @@ const linearWiggleDisplayConfigSchema = ConfigurationSchema(
      * The shape each score is drawn as, using the mark display's names: `bar`
      * draws a bar from the `origin` to the score, `point` a point at it,
      * `line` a line through the scores, stepped or as `interpolate` says, and
-     * `rect` a strip whose color is the score. The track menu's Plot type
+     * `rect` a strip whose color is the score. `extent` is the band of each
+     * bin's min and max drawn around it. The track menu's Plot type
      * writes it. v4's `defaultRendering` loads as its `mark`: `xyplot` a bar,
      * `scatter` a point, `density` a rect, `line` a stepped line and
      * `linecenter` a linear one.
@@ -187,7 +187,6 @@ const linearWiggleDisplayConfigSchema = ConfigurationSchema(
      * source colors where several share one plot.
      */
     legend: legendConfigSchema,
-    ...extentConfigSchemaFields({ extent: 'min-max' }),
     /**
      * #slot axis
      * The row axis down the left of the subtrack rows: the clustering tree,
@@ -204,13 +203,16 @@ const linearWiggleDisplayConfigSchema = ConfigurationSchema(
       ...retiredAxisSpellings(WIGGLE_Y_PATHS.members),
       ...retiredScaleSpellings(WIGGLE_Y_PATHS.members),
       ...retiredConfigSpellings,
+      extent: extent => ({ mark: { extent } }),
+      // The object form, so a v4 `summaryScoreMode` lifting `mark.extent`
+      // beside it merges rather than losing to a bare string
       defaultRendering: rendering => {
         if (rendering === null) {
-          return { mark: null }
+          return { mark: { type: null } }
         }
+        const named = WIGGLE_MARK_NAMES.find(name => name === rendering)
         const mark =
-          markOf(String(rendering)) ??
-          WIGGLE_MARK_NAMES.find(name => name === rendering)
+          markOf(String(rendering)) ?? (named ? { type: named } : undefined)
         if (!mark) {
           console.warn(
             `LinearWiggleDisplay has no rendering ${JSON.stringify(rendering)}: drawing the default mark`,

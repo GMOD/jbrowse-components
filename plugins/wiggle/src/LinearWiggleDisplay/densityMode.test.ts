@@ -26,7 +26,7 @@ function makeDisplay() {
   const { createDisplay } = createTestEnvironment()
   const { display, view } = createDisplay()
   view.setCoarseDynamicBlocks(view.dynamicBlocks, view.bpPerPx)
-  display.configuration.setSlot('extent', 'min-max')
+  display.configuration.mark.setSlot('extent', 'min-max')
   display.setRpcData(
     0,
     { sources: [makeBinnedSource('a')] },

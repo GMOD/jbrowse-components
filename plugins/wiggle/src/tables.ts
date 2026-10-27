@@ -74,7 +74,7 @@ export interface WiggleTablesArgs {
   regions?: TablesRegion[]
   /**
    * The display's config as a track's `displays` entry writes it for a
-   * `LinearWiggleDisplay`: `mark`, `extent`, `origin`, `encoding`, `rows`,
+   * `LinearWiggleDisplay`: `mark`, `origin`, `encoding`, `rows`,
    * `data` and the rest of its slots. Unset reads the default display.
    */
   display?: Record<string, unknown>
@@ -154,7 +154,9 @@ export async function wiggleTables(
   const summaryField = summaryFieldOf(
     readConfObject(conf, ['encoding', 'y', 'field']),
   )
-  const extent: string = density ? 'none' : readConfObject(conf, 'extent')
+  const extent: string = density
+    ? 'none'
+    : readConfObject(conf, ['mark', 'extent'])
   const origin: number = readConfObject(conf, 'origin')
   const setting = wiggleColorSettingOf(conf.encoding.color)
   const wiggleColor = resolveWiggleColor(

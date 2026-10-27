@@ -836,7 +836,7 @@ export const svSpecs: ScreenshotSpec[] = [
               // Bars on a fixed axis: 2 kb bins put ~17 points across this
               // window.
               trackId: 'hg008_depth',
-              mark: 'bar',
+              mark: { type: 'bar', extent: 'none' },
               encoding: {
                 y: {
                   scale: { domainMin: 0, domainMax: 140 },
@@ -844,7 +844,6 @@ export const svSpecs: ScreenshotSpec[] = [
                 },
                 color: { value: '#0068d1' },
               },
-              extent: 'none',
               height: 180,
             },
             benchmarkCnvLane(),
@@ -1195,12 +1194,11 @@ export const svSpecs: ScreenshotSpec[] = [
             },
             {
               trackId: 'hg008_depth',
-              mark: 'bar',
+              mark: { type: 'bar', extent: 'none' },
               encoding: {
                 y: { scale: { domainMin: 0, domainMax: 140 } },
                 color: { value: '#0068d1' },
               },
-              extent: 'none',
               height: 110,
             },
             benchmarkCnvLane(),
@@ -1285,7 +1283,7 @@ export const svSpecs: ScreenshotSpec[] = [
             {
               trackId: 'hg008_depth',
               // Pinned: the outlier fence's spike room flattens the arm step.
-              mark: 'point',
+              mark: { type: 'point', extent: 'none' },
               encoding: {
                 size: 1,
                 y: {
@@ -1294,7 +1292,6 @@ export const svSpecs: ScreenshotSpec[] = [
                 },
                 color: { value: '#0068d1' },
               },
-              extent: 'none',
               data: { resolution: 10 },
               height: 180,
             },
@@ -1415,8 +1412,7 @@ export const svSpecs: ScreenshotSpec[] = [
             HG008_BICSEQ2_LANE,
             {
               trackId: 'hg008_tn_perbase',
-              mark: 'bar',
-              extent: 'none',
+              mark: { type: 'bar', extent: 'none' },
               encoding: {
                 y: {
                   scale: { domainMin: 0, domainMax: 80 },
@@ -1468,9 +1464,8 @@ export const svSpecs: ScreenshotSpec[] = [
             HG008_BICSEQ2_LANE,
             {
               trackId: 'hg008_depth',
-              mark: 'point',
+              mark: { type: 'point', extent: 'none' },
               encoding: { size: 3, color: { value: '#0068d1' } },
-              extent: 'none',
               height: 140,
               data: { resolution: 10 },
             },
@@ -1518,13 +1513,12 @@ export const svSpecs: ScreenshotSpec[] = [
             HG008_BICSEQ2_LANE,
             {
               trackId: 'hg008_depth',
-              mark: 'point',
+              mark: { type: 'point', extent: 'none' },
               encoding: {
                 size: 1,
                 y: { scale: { domainMin: 0, domainMax: 140 } },
                 color: { value: '#0068d1' },
               },
-              extent: 'none',
               height: 140,
               data: { resolution: 10 },
             },

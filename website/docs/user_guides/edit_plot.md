@@ -40,7 +40,7 @@ display:
 | Multi-way synteny display (`MultiWaySyntenyDisplay`)                  | `encoding`, `rows`, `ribbons`, `legend`, `labels`, `laneLayers`                                             |
 | Synteny alignments display (`LGVSyntenyDisplay`)                      | `unit`, `filter`, `facet`, `sort`, `encoding`, `legend`, `coverage`, `pileup`, `readConnections`            |
 | Variant display (`LinearVariantDisplay`)                              | `filter`, `legend`, `encoding`, `mark`, `facet`, `labels`                                                   |
-| Wiggle display (`LinearWiggleDisplay`)                                | `mark`, `rows`, `rowColor`, `encoding`, `origin`, `legend`, `extent`                                        |
+| Wiggle display (`LinearWiggleDisplay`)                                | `mark`, `rows`, `rowColor`, `encoding`, `origin`, `legend`                                                  |
 
 <!-- END GENERATED PLOT_SETTINGS -->
 

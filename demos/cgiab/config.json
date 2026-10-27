@@ -237,8 +237,7 @@
         {
           "type": "LinearWiggleDisplay",
           "displayId": "HG008_log2ratio-LinearWiggleDisplay",
-          "mark": "point",
-          "extent": "none",
+          "mark": { "type": "point", "extent": "none" },
           "encoding": {
             "size": 1,
             "y": { "scale": { "domainMin": -2, "domainMax": 2 } }

@@ -13523,6 +13523,19 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                   "linear"
                 ]
               }
+            },
+            "extent": {
+              "description": "the span drawn around each bin's plotted value: 'min-max' draws the bin's stored min and max with it, as a lighter band, while \`encoding.y\` names a stored summary.",
+              "default": "min-max",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "enum": [
+                  "min-max",
+                  "none"
+                ]
+              }
             }
           },
           "patternProperties": {
@@ -14135,35 +14148,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "number"
           }
         },
-        "maxGapMultiple": {
-          "description": "Interpolated line only: break the line where consecutive points sit further apart than this multiple of the track's own mean point spacing, instead of drawing one long chord across the hole. Scaled to the data rather than a fixed bp distance so it holds at every zoom. 0 keeps one connected line.",
-          "default": 0,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "number"
-          }
-        },
         "legend": {
           "if": {
             "type": "null"
           },
           "else": {
             "$ref": "#/$defs/Legend"
-          }
-        },
-        "extent": {
-          "description": "the span drawn around each bin's plotted value: 'min-max' draws the bin's stored min and max with it, as a lighter band, while \`y\` names a stored summary.",
-          "default": "min-max",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "enum": [
-              "min-max",
-              "none"
-            ]
           }
         },
         "axis": {
@@ -14227,6 +14217,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
         "renderers": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "extent": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
@@ -17169,12 +17163,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 }
               ]
             },
-            "maxGapMultiple": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/maxGapMultiple"
-            },
-            "extent": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/extent"
-            },
             "axis": {
               "anyOf": [
                 {
@@ -17217,6 +17205,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "renderers": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/renderers"
+            },
+            "extent": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/extent"
             },
             "defaultRendering": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/defaultRendering"
@@ -18918,9 +18909,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 }
               ]
             },
-            "maxGapMultiple": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/maxGapMultiple"
-            },
             "legend": {
               "anyOf": [
                 {
@@ -18930,9 +18918,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/legend"
                 }
               ]
-            },
-            "extent": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/extent"
             },
             "axis": {
               "anyOf": [
@@ -19020,6 +19005,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "renderers": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/renderers"
+            },
+            "extent": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/extent"
             },
             "defaultRendering": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/defaultRendering"
@@ -19288,9 +19276,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 }
               ]
             },
-            "maxGapMultiple": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/maxGapMultiple"
-            },
             "legend": {
               "anyOf": [
                 {
@@ -19300,9 +19285,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/legend"
                 }
               ]
-            },
-            "extent": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/extent"
             },
             "axis": {
               "anyOf": [
@@ -19390,6 +19372,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "renderers": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/renderers"
+            },
+            "extent": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/extent"
             },
             "defaultRendering": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/defaultRendering"
@@ -19622,14 +19607,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "origin": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/origin"
             },
-            "maxGapMultiple": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/maxGapMultiple"
-            },
             "legend": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/legend"
-            },
-            "extent": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/extent"
             },
             "axis": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/axis"
@@ -19675,6 +19654,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "renderers": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/renderers"
+            },
+            "extent": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/extent"
             },
             "defaultRendering": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/defaultRendering"
