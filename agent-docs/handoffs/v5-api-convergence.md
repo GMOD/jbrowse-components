@@ -60,9 +60,16 @@ once per display that embeds it, so read the trend, not the size.
      older config (`featureHeight`, `layoutOrder`). Move the pin and deploy
      `demos/apollo3/config.json` together, never the config alone.
    - jb2hubs' `hubtools/src/wiggleDisplay.ts` and ggjbrowse (`R/wiggle.R`,
-     its tests and the population-genomics tutorial) write the wiggle
-     display's beta `extent`, which main spells `mark.extent`. Once both
-     move, delete `retired.extent` from `LinearWiggleDisplay`'s schema.
+     its tests and the population-genomics tutorial) write `mark.extent` in
+     place of the wiggle display's beta `extent` (2026-10-27). A grep that
+     day found `extent` in none of jb2hubs' checked-in configs nor a sample
+     of the hosted ones, since no hub's trackDb sets `mean+whiskers`. What keeps `retired.extent` on `LinearWiggleDisplay`'s
+     schema:
+     - Both commits sit on local main, unpushed.
+     - ggjbrowse installs from GitHub, so an install made before the push
+       still sends `display = list(extent = )`. Delete `retired.extent` once
+       the push has been out for a while, or at ggjbrowse's first tagged
+       release.
 2. **Plugin ABI.** The served list leaves out render-core's shader subpaths.
    `@jbrowse/tables` and `@jbrowse/launch-args` ship with v5 at its version,
    betas included (Colin, 2026-10-27). Left: baseline
@@ -84,7 +91,7 @@ once per display that embeds it, so read the trend, not the size.
   v4.3.0` over the legacy keys in `website/static/schema/v5/config.json` finds
   six missing from v4.3.0 on 2026-10-27, each from an earlier release, so
   the check greps every v1–v4 tag. Only `LinearWiggleDisplay.extent`
-  is beta-only, waiting on its writers (step 1). v1.3.1–v1.3.5 declared
+  is beta-only, waiting on the ggjbrowse push (step 1). v1.3.1–v1.3.5 declared
   `textSearchIndexingAttributes`, and desktop's open-sequence dialog wrote
   `cytobandsLocation` from v2.10.0 through v4.3.0, so both stay.
 - `jbrowse validate` reports no warning outside plugin-registered types on
