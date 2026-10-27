@@ -141,10 +141,6 @@ export default function configSchemaFactory(pluginManager: PluginManager) {
        */
       baseConfiguration: baseConfigSchemaFactory(pluginManager),
       explicitlyTyped: true,
-      retired: {
-        showChevrons: show => ({ chevrons: { show } }),
-        utrColor: value => ({ utrs: { encoding: { color: { value } } } }),
-      },
     },
   )
 }

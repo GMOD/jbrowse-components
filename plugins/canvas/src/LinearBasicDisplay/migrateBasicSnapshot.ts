@@ -85,8 +85,6 @@ export const basicRetired: Record<
   featureHeight: (height: unknown) =>
     isJexl(height) ? {} : { mark: { height } },
   transcriptTypes: (types: unknown) => ({ transcripts: { types } }),
-  canonicalTranscriptField: (field: unknown) => ({ transcripts: { field } }),
-  canonicalTranscriptTags: (sort: unknown) => ({ transcripts: { sort } }),
   containerTypes: (types: unknown) => ({ containers: { types } }),
   // permanent: jb2hubs writes `mouseover`, the one spelling v4 hosts read
   mouseover: (field: unknown) => ({ tooltip: { field } }),
@@ -109,7 +107,6 @@ export const basicRetired: Record<
   outline: () => ({}),
   // a second grow ceiling, dead at its default; `growMaxHeight` is the one
   maxHeight: () => ({}),
-  hideSourceFeatures: () => ({}),
   // implied UTRs always draw (ADR-238: one behaviour)
   impliedUTRs: () => ({}),
   renderer: liftRenderer,

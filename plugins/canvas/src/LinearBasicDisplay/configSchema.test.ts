@@ -340,17 +340,11 @@ describe('LinearBasicDisplay configSchema', () => {
         displayId: 'test',
         type: 'LinearBasicDisplay',
         transcriptTypes: ['mRNA'],
-        canonicalTranscriptField: 'flag',
-        canonicalTranscriptTags: ['yes'],
         containerTypes: ['orf'],
       },
       { pluginManager: pm },
     )
-    expect(getSnapshot(config.transcripts)).toEqual({
-      types: ['mRNA'],
-      field: 'flag',
-      sort: ['yes'],
-    })
+    expect(getSnapshot(config.transcripts)).toEqual({ types: ['mRNA'] })
     expect(readConfObject(config, ['containers', 'types'])).toEqual(['orf'])
   })
 

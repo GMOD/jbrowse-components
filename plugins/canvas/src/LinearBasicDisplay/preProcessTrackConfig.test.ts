@@ -108,14 +108,6 @@ test.each([
   expect(out.displays![0]!.maxHeight).toBeUndefined()
 })
 
-test.each([
-  { type: 'LinearBasicDisplay', hideSourceFeatures: false },
-  { type: 'LinearBasicDisplay', renderer: { hideSourceFeatures: false } },
-])('drops the retired hideSourceFeatures slot from %j', display => {
-  const out = evaluate({ type: 'FeatureTrack', displays: [display] })
-  expect(out.displays![0]).not.toHaveProperty('hideSourceFeatures')
-})
-
 test('lifts style slots out of the old renderer sub-config', () => {
   const out = evaluate({
     type: 'FeatureTrack',
