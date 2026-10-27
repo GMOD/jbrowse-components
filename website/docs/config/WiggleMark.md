@@ -1,15 +1,16 @@
 ---
 id: wigglemark
 title: WiggleMark
-description: "A wiggle display's mark, Vega-Lite's mark object: the type each score draws as, and a line's interpolate. A bare name is the type, so mark: \"rect\" and mark: { type: \"rect\" } are one config."
+description: "A wiggle display's mark, Vega-Lite's mark object: the type each score draws as, a line's interpolate, and the extent drawn around each bin."
 sidebar_label: Display setting -> WiggleMark
 ---
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `wiggle` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/shared/wiggleMarkConfigSchema.ts).
 
 A wiggle display's `mark`, Vega-Lite's mark object: the `type` each score
-draws as, and a line's `interpolate`. A bare name is the `type`, so
-`mark: "rect"` and `mark: { type: "rect" }` are one config.
+draws as, a line's `interpolate`, and the `extent` drawn around each bin. A
+bare name is the `type`, so `mark: "rect"` and `mark: { type: "rect" }` are
+one config.
 
 ## Example usage
 
@@ -20,7 +21,7 @@ draws as, and a line's `interpolate`. A bare name is the `type`, so
 ```json
 {
   "type": "LinearWiggleDisplay",
-  "mark": { "type": "line", "interpolate": "linear" }
+  "mark": { "type": "line", "interpolate": "linear", "extent": "none" }
 }
 ```
 
@@ -33,3 +34,4 @@ A setting written to it names members one by one: a member left out stays as it 
 | --- | --- |
 | <span id="slot-type">**type**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (bar, point, line, rect) = <code>'bar'</code> | bar, point, line or rect |
 | <span id="slot-interpolate">**interpolate**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (step, linear) = <code>'step'</code> | The path a `line` takes between scores: `step` holds each across its bin, as the data says; `linear` runs from one bin's centre to the next, smoother where the bins are few. Read by a line alone. |
+| <span id="slot-extent">**extent**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (min-max, none) = <code>'min-max'</code> | The span drawn around each bin's plotted value, as Vega-Lite's `errorband` names it: `min-max` draws the bin's stored min and max as a lighter band, while `encoding.y` names a stored summary. A `rect` draws none. |

@@ -55,7 +55,7 @@ export {
 export { bedGraphFormatOptions } from './saveTrackFormats/bedGraph.ts'
 // The `mark` a track type drawing no min-max band declares, so gccontent
 // states its default without restating the enumeration.
-export { wiggleMarkWithoutExtent } from './shared/wiggleMarkConfigSchema.ts'
+export { wiggleMarkWithoutExtent } from './shared/wiggleMarkWithoutExtent.ts'
 // Score-plot pieces that moved to `@jbrowse/wiggle-core`, re-exported under the
 // names this plugin published them as.
 export { WiggleScoreConfigMixin } from '@jbrowse/wiggle-core'

@@ -1,16 +1,16 @@
 ---
 id: wigglecolor
 title: WiggleColor
-description: "The quantitative display's encoding.color: one CSS color for every mark, or the plotted score through a scale."
+description: "The quantitative display's encoding.color: one CSS color for every mark, the plotted score through a scale, or each subtrack in its row color. field is score, which stands for the plotted value…"
 sidebar_label: Display setting -> WiggleColor
 ---
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `wiggle` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/shared/wiggleColorConfigSchema.ts).
 
 The quantitative display's `encoding.color`: one CSS color for every mark,
-or the plotted score through a scale. The channel names no field, since a
-quantitative display colors only the value it plots: `score` stands for
-it, whatever field `y` names.
+the plotted score through a scale, or each subtrack in its row color.
+`field` is `score`, which stands for the plotted value whatever field `y`
+names, or `source`, the subtrack.
 
 - `threshold` paints a solid color each side of one cut, the `origin`
   where `scale.domain` names none, and a color per band where it names
@@ -23,9 +23,13 @@ it, whatever field `y` names.
   and a heatmap (`mark: 'rect'`) fading to each from white at it, a ramp
   whose middle stop `scale.domainMid` moves
 
-A subtrack's own color is `rowColor`'s. A wiggle colors per signal rather
-than per feature, so a `jexl:` callback over a feature has nothing to read
-here.
+`source` paints each subtrack its row color, `rowColor`'s entry, else the
+file's `color`, else a palette color where several share one plot, on both
+sides of the `origin`; a subtrack with none paints the score's pair. A
+color writing nothing does the same on bars, points and lines, so a lone
+BigWig keeps its pair, and a heatmap ramps the score. A wiggle colors per
+signal rather than per feature, so a `jexl:` callback over a feature has
+nothing to read here.
 
 ## Example usage
 
@@ -52,6 +56,13 @@ here.
 }
 ```
 
+Subtracks in their row colors, as they paint while `encoding.color` is
+unset:
+
+```js
+{ type: 'LinearWiggleDisplay', encoding: { color: 'source' } }
+```
+
 A copy-number heatmap, white at two copies, blue losses and red gains:
 
 ```js
@@ -63,6 +74,15 @@ A copy-number heatmap, white at two copies, blue losses and red gains:
 }
 ```
 
+## Preset fields
+
+A `field` named here paints through its own scale while `scale.type` is unset, and `range` and `names` index its levels in order while `domain` is unwritten. Any other field is threshold.
+
+<!-- prettier-ignore -->
+| Field | Scale | Levels | Names | Other defaults |
+| --- | --- | --- | --- | --- |
+| `source` | ordinal |  |  |  |
+
 ## Config slots
 
 A setting written to it replaces it whole, since its members are alternatives: a member left out returns to its default. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
@@ -70,6 +90,7 @@ A setting written to it replaces it whole, since its members are alternatives: a
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
+| <span id="slot-field">**field**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) ("", score, source) = <code>''</code> | `score` for the plotted value, through `scale`; `source` for each subtrack's row color, which reads no `scale`. Unset, a color writing a `scale` maps `score`, and one writing nothing maps `source` on bars, points and lines and `score` on a heatmap. |
 | <span id="slot-value">**value**</span><br>[`maybeColor`](/docs/config_guides/slot_types#the-maybe-types) | One CSS color for every mark, a density cell included, so a heatmap under one is a flat strip. Unset, the display paints the pair about the `origin`, and several sources sharing one plot box each paint their row color. |
 | <span id="slot-scale">**scale**</span><br>[WiggleColorScale sub-schema](#slot-scaletype) | The scale from the score to a color. `threshold` paints each band between two of its cuts, solid, on every mark; `linear` runs `range`, else `scheme`, else viridis across the y domain through `encoding.y.scale.type`, with `domainMid` at the middle stop, coloring each bar, point and density cell by its score; a one-color `range` paints flat, so one color is `value`. With `type` unset, `range` is the pair about the `origin`: a threshold on bars, points and lines, and on a heatmap a ramp through white at the origin. |
 | <span id="slot-legend">**legend**</span><br>[WiggleColorLegend sub-schema](#slot-legendtitle) | The key this channel draws. |

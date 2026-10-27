@@ -1,22 +1,11 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { createBaseTrackConfig } from '@jbrowse/core/pluggableElementTypes/models'
 import { types } from '@jbrowse/mobx-state-tree'
-import {
-  linearWiggleDisplayConfigSchema,
-  wiggleMarkWithoutExtent,
-} from '@jbrowse/plugin-wiggle'
+import { linearWiggleDisplayConfigSchema } from '@jbrowse/plugin-wiggle'
+
+import { gcWiggleConfigSchema } from './gcWiggleConfigSchema.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
-
-const gcWiggleConfigSchema = ConfigurationSchema(
-  'LinearWiggleDisplay',
-  {
-    mark: wiggleMarkWithoutExtent(
-      "a GC window has one score and no min or max to draw, so 'none'",
-    ),
-  },
-  { baseConfiguration: linearWiggleDisplayConfigSchema },
-)
 
 /**
  * #config GCContentTrack

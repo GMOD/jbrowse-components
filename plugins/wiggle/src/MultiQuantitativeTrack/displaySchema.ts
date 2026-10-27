@@ -4,7 +4,7 @@ import { types } from '@jbrowse/mobx-state-tree'
 
 import linearWiggleDisplayConfigSchema from '../LinearWiggleDisplay/configSchema.ts'
 import { quantitativeRowsConfigSchema } from '../shared/quantitativeRowsConfigSchema.ts'
-import { wiggleMarkWithoutExtent } from '../shared/wiggleMarkConfigSchema.ts'
+import { wiggleMarkWithoutExtent } from '../shared/wiggleMarkWithoutExtent.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 

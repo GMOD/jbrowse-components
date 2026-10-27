@@ -68,18 +68,3 @@ export const wiggleMarkConfigSchema = ConfigurationSchema(
   },
   { shorthand: 'type', writes: 'members', plot: true, closed: true },
 )
-
-/** The `mark` of a track type whose wiggle display draws no band by default. */
-export function wiggleMarkWithoutExtent(description?: string) {
-  return ConfigurationSchema(
-    'WiggleMark',
-    {
-      extent: {
-        type: 'stringEnum',
-        defaultValue: 'none',
-        ...(description ? { description } : {}),
-      },
-    },
-    { baseConfiguration: wiggleMarkConfigSchema },
-  )
-}

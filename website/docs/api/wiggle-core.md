@@ -37,67 +37,6 @@ reaches 0 under `zero`.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/autoscale.ts)
 
-## DEFAULT_GAP_BREAK_MULTIPLE
-
-Default `multiple` for the wiggle interpolated line — the `maxGapMultiple`
-config slot's default. 0 means the line never breaks: one connected polyline
-across every hole, which is how the interpolated line behaved before gap
-breaking existed.
-
-OFF BY DEFAULT, deliberately and after having been on. It shipped at 20 and
-the calibration behind that number still holds — a hole worth breaking on runs
-orders of magnitude past the mean, and bbi's reduced zoom levels emit
-fixed-width bins so the series tiles (measured on volvox_microarray.bw at
-three zooms: 500 bins, every gap exactly 1.0x the mean, no break at any
-threshold). What changed is the call about whether a reader wants the break at
-all: "we added this feature awhile back but i dont think i like it now. might
-consider going back to not skipping". A broken line reads as missing data
-whether or not
-data is missing there, and the chord across a hole is at least continuous with
-what the neighbouring points say.
-
-The mechanism stays, whole, because it is the only way to get the other
-behavior back: set `maxGapMultiple` on the track, 20 being the calibrated
-value. `gapBreakLimit` itself is unchanged, so a caller passing a positive
-multiple gets the same limit.
-
-```js
-// type signature
-0
-```
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/gapBreak.ts)
-
-## gapBreakLimit
-
-How far apart two consecutive points of an interpolated (point-to-point) line
-may be before the span between them counts as a hole rather than a segment to
-draw. Returns `Infinity` when there is nothing to decide, so a caller can
-always compare against it unguarded.
-
-The limit is a multiple of the series' *mean* spacing rather than an
-absolute distance, so one number works across zoom levels and data types: reduced BigWig bins get wider as you zoom out, so any fixed bp
-threshold would be either useless at one end or destructive at the other. It
-also lets the same rule serve a bp axis (wiggle's linecenter) and a px one —
-the caller picks the space, this only cares that the units are consistent.
-
-Mean, not median: it is O(1) from the endpoints, and it errs the safe way. Holes
-in a series inflate its mean, which raises the limit and so breaks
-*less* — a line that stays connected is the status quo, whereas a spuriously
-broken one destroys data the user can see nowhere else. Sorting for a true
-median would cost O(n log n) per source per region on the encode path, for a
-threshold this coarse.
-
-`count < 3` returns Infinity: two points have no "typical" spacing to be
-unusual against, so there is nothing to call a hole.
-
-```js
-// type signature
-({ first, last, count, multiple, }: { first: number; last: number; count: number; multiple: number; }) => number
-```
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/gapBreak.ts)
-
 ## getEffectiveScores
 
 The per-feature array a summary field names: `minScore` and `maxScore` the
