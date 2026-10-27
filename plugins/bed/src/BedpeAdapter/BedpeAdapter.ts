@@ -2,14 +2,14 @@ import {
   BaseFeatureDataAdapter,
   cachedSetup,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
+import {
+  buildPairedIntervalTree,
+  intervalTreeFeatures,
+} from '@jbrowse/core/data_adapters/intervalTreeFeatures'
 import { fetchAndMaybeUnzip } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { parseLineByLine } from '@jbrowse/core/util/parseLineByLine'
 
-import {
-  buildPairedIntervalTree,
-  intervalTreeFeatures,
-} from '../adapterUtil.ts'
 import { resolveColumnNames } from '../util.ts'
 import { featureData } from './util.ts'
 

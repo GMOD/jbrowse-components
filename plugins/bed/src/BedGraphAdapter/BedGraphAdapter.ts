@@ -2,10 +2,10 @@ import {
   BaseFeatureDataAdapter,
   cachedSetup,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
+import { intervalTreeFeatures } from '@jbrowse/core/data_adapters/intervalTreeFeatures'
 import { IntervalTree, fetchAndMaybeUnzip } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 
-import { intervalTreeFeatures } from '../adapterUtil.ts'
 import { makeBedGraphFeature } from '../bedGraphUtil.ts'
 import { bucketBedLines, resolveColumnNames } from '../util.ts'
 

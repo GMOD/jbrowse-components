@@ -1,8 +1,9 @@
-import { IntervalTree } from '@jbrowse/core/util'
-import { ObservableCreate } from '@jbrowse/core/util/rxjs'
+import { IntervalTree } from '../util/IntervalTree.ts'
+import { ObservableCreate } from '../util/rxjs.ts'
 
-import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
-import type { Feature, Region } from '@jbrowse/core/util'
+import type { Feature } from '../util/simpleFeature.ts'
+import type { Region } from '../util/types/index.ts'
+import type { BaseOptions } from './BaseAdapter/index.ts'
 
 // `getFeatures` for an in-memory interval-tree adapter: one tree per refName,
 // built once and rebuilt after a failure. `loadData` is awaited with each
@@ -45,7 +46,7 @@ export function intervalTreeFeatures(
 
 // Build one interval tree for a refName from paired-feature buckets, inserting
 // the records that start on this ref (feats1, flip=false) and those whose mate
-// starts here (feats2, flip=true). Shared by BedpeAdapter and StarFusionAdapter.
+// starts here (feats2, flip=true).
 export function buildPairedIntervalTree(
   feats1: Record<string, string[]>,
   feats2: Record<string, string[]>,

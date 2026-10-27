@@ -8,6 +8,7 @@ import LinearVariantDisplayF from './LinearVariantDisplay/index.ts'
 import PlinkLDAdapterF from './PlinkLDAdapter/index.ts'
 import LDDataRPCMethodsF from './RenderLDDataRPC/index.ts'
 import SplitVcfTabixAdapterF from './SplitVcfTabixAdapter/index.ts'
+import StarFusionAdapterF from './StarFusionAdapter/index.ts'
 import VariantFeatureWidgetF from './VariantFeatureWidget/index.ts'
 import { MultiSampleVariantClusterGenotypeMatrix } from './VariantRPC/MultiSampleVariantClusterGenotypeMatrix.ts'
 import { MultiSampleVariantGetCellData } from './VariantRPC/MultiSampleVariantGetCellData.ts'
@@ -42,6 +43,7 @@ export default class VariantsPlugin extends Plugin {
     VcfTabixAdapterF(pluginManager)
     SplitVcfTabixAdapterF(pluginManager)
     PlinkLDAdapterF(pluginManager)
+    StarFusionAdapterF(pluginManager)
     VariantFeatureWidgetF(pluginManager)
     VariantTrackF(pluginManager)
     LDTrackF(pluginManager)
@@ -103,6 +105,11 @@ export default class VariantsPlugin extends Plugin {
 }
 
 export { default as VcfFeature } from './VcfFeature/index.ts'
+export {
+  parseStarFusionBreakpoint,
+  starFusionColumns,
+} from './StarFusionAdapter/starFusion.ts'
+export type { FusionBreakpoint } from './StarFusionAdapter/starFusion.ts'
 
 export type { LinearVariantDisplayModel } from './LinearVariantDisplay/model.ts'
 export type { LinearMultiSampleVariantDisplayModel } from './LinearMultiSampleVariantDisplay/model.ts'

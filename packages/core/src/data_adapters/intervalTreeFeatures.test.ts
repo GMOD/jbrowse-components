@@ -1,10 +1,10 @@
-import { IntervalTree } from '@jbrowse/core/util'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
-import { intervalTreeFeatures } from './adapterUtil.ts'
+import { IntervalTree } from '../util/IntervalTree.ts'
+import { intervalTreeFeatures } from './intervalTreeFeatures.ts'
 
-import type { Feature } from '@jbrowse/core/util'
+import type { Feature } from '../util/simpleFeature.ts'
 
 const query = { assemblyName: 'a', refName: 'chr1', start: 0, end: 10 }
 

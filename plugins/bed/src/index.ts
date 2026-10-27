@@ -7,7 +7,6 @@ import BedTabixAdapterF from './BedTabixAdapter/index.ts'
 import BedpeAdapterF from './BedpeAdapter/index.ts'
 import BigBedAdapterF from './BigBedAdapter/index.ts'
 import BigBedTextSearchAdapterF from './BigBedTextSearchAdapter/index.ts'
-import StarFusionAdapterF from './StarFusionAdapter/index.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -23,7 +22,6 @@ export default class BedPlugin extends Plugin {
     BigBedTextSearchAdapterF(pluginManager)
     BedAdapterF(pluginManager)
     BedpeAdapterF(pluginManager)
-    StarFusionAdapterF(pluginManager)
     BedTabixAdapterF(pluginManager)
     BedGraphAdapterF(pluginManager)
     BedGraphTabixAdapterF(pluginManager)

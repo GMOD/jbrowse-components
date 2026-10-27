@@ -1,7 +1,7 @@
 import {
   parseStarFusionBreakpoint,
   starFusionColumns,
-} from '@jbrowse/core/util/starFusion'
+} from '@jbrowse/plugin-variants'
 
 import { isNumber } from './isNumber.ts'
 import { bufferToLines } from './util.ts'

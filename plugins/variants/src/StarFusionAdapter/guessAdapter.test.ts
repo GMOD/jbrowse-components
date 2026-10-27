@@ -1,11 +1,11 @@
 import PluginManager from '@jbrowse/core/PluginManager'
 
-import BedPlugin from './index.ts'
+import VariantsPlugin from '../index.ts'
 
 import type { FileLocation } from '@jbrowse/core/util/types'
 
 function setup() {
-  const pluginManager = new PluginManager([new BedPlugin()])
+  const pluginManager = new PluginManager([new VariantsPlugin()])
   pluginManager.createPluggableElements()
   pluginManager.configure()
   const guessAdapter = pluginManager.evaluateExtensionPoint(

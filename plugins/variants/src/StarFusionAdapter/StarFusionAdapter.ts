@@ -2,18 +2,15 @@ import {
   BaseFeatureDataAdapter,
   cachedSetup,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { SimpleFeature, fetchAndMaybeUnzip } from '@jbrowse/core/util'
-import { openLocation } from '@jbrowse/core/util/io'
-import { parseLineByLine } from '@jbrowse/core/util/parseLineByLine'
-import {
-  parseStarFusionBreakpoint,
-  starFusionColumns,
-} from '@jbrowse/core/util/starFusion'
-
 import {
   buildPairedIntervalTree,
   intervalTreeFeatures,
-} from '../adapterUtil.ts'
+} from '@jbrowse/core/data_adapters/intervalTreeFeatures'
+import { SimpleFeature, fetchAndMaybeUnzip } from '@jbrowse/core/util'
+import { openLocation } from '@jbrowse/core/util/io'
+import { parseLineByLine } from '@jbrowse/core/util/parseLineByLine'
+
+import { parseStarFusionBreakpoint, starFusionColumns } from './starFusion.ts'
 
 import type { StarFusionAdapterConfig } from './configSchema.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'

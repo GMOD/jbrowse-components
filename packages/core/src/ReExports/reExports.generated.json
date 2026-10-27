@@ -1042,6 +1042,14 @@
       ],
       "worker": "real"
     },
+    "@jbrowse/core/data_adapters/intervalTreeFeatures": {
+      "package": "@jbrowse/core",
+      "names": [
+        "buildPairedIntervalTree",
+        "intervalTreeFeatures"
+      ],
+      "worker": "real"
+    },
     "@jbrowse/core/data_adapters/tables": {
       "package": "@jbrowse/core",
       "names": [
@@ -3750,14 +3758,6 @@
         "isFeature",
         "jexlFeatureProxy",
         "unwrapFeature"
-      ],
-      "worker": "real"
-    },
-    "@jbrowse/core/util/starFusion": {
-      "package": "@jbrowse/core",
-      "names": [
-        "parseStarFusionBreakpoint",
-        "starFusionColumns"
       ],
       "worker": "real"
     },
