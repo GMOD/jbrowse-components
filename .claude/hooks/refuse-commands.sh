@@ -28,18 +28,23 @@ fi
 # A merge refused in the same message as the cleanup (parallel calls, a `;`
 # chain) still runs the removal, so the check is on the worktree itself. Git
 # takes a worktree by any path to it or by its path's unique trailing
-# components (`git worktree remove my-branch`), so the hook matches the
-# argument against `git worktree list`. A relative path resolves against the
-# cwd, which can be the worktree being removed, or a `cd`/`pushd` in the
-# command, each alone and stacked on the ones before it. Any reading that
-# names an unlanded worktree refuses.
+# components (`git worktree remove my-branch`), so the hook matches each
+# non-option word after `remove` against `git worktree list`. A relative path
+# resolves against the cwd, which can be the worktree being removed, or a
+# `cd`/`pushd` in the command, each alone and stacked on the ones before it,
+# then any `-C`. Any reading that names an unlanded worktree refuses.
+# A fragment cut from inside a quoted `bash -c '…'` has unbalanced quotes,
+# which xargs refuses, so it splits on whitespace with the quotes dropped.
+words() {
+  xargs printf '%s\n' <<<"$1" 2>/dev/null || tr -d "\"'" <<<"$1" | tr -s '[:space:]' '\n'
+}
 expand() {
-  local p=${1//[\"\']/}
+  local p=$1
   case $p in '~') p=$HOME ;; '~/'*) p=$HOME/${p:2} ;; esac
   case $p in /*) ;; *) p=$2/$p ;; esac
   realpath -m -- "$p"
 }
-removals=$(grep -oE "git([[:space:]]+-C[[:space:]]+[^[:space:]]+)?[[:space:]]+worktree[[:space:]]+remove([[:space:]]+(-f|--force))*[[:space:]]+[^[:space:];&|)]+" <<<"$cmd")
+removals=$(grep -oE "\bgit[[:space:]]([^;&|)]*[[:space:]])?worktree[[:space:]]+remove\b[^;&|)]*" <<<"$cmd")
 if [ -n "$removals" ]; then
   bases=("$(expand "$cwd" /)")
   stacked=${bases[0]}
@@ -49,35 +54,52 @@ if [ -n "$removals" ]; then
     stacked=$(expand "$dir" "$stacked")
     bases+=("$stacked")
   done < <(
-    grep -oE "(^|[;&|(])[[:space:]]*(cd|pushd)[[:space:]]+[^[:space:];&|)]+" <<<"$cmd" |
-      sed -E 's/.*(cd|pushd)[[:space:]]+//'
+    grep -oE "(^|[;&|('\"])[[:space:]]*(cd|pushd)[[:space:]]+[^;&|)]+" <<<"$cmd" |
+      sed -E 's/.*(cd|pushd)[[:space:]]+//' |
+      while IFS= read -r rest; do words "$rest" | head -1; done
   )
   while IFS= read -r removal; do
-    repo=$(sed -nE 's/^git[[:space:]]+-C[[:space:]]+([^[:space:]]+).*/\1/p' <<<"$removal")
-    arg=${removal##*[[:space:]]}
-    arg=${arg//[\"\']/}
-    suffix=$(sed -E 's#^(\./)+##; s#/+$##' <<<"$arg")
+    mapfile -t ws < <(words "$removal")
+    repos=()
+    paths=()
+    after=
+    for ((i = 0; i < ${#ws[@]}; i++)); do
+      if [ -n "$after" ]; then
+        case ${ws[i]} in -*) ;; *) paths+=("${ws[i]}") ;; esac
+      elif [ "${ws[i]}" = -C ]; then
+        repos+=("${ws[++i]}")
+      elif [ "${ws[i]}" = remove ] && [ "$i" -gt 0 ] && [ "${ws[i - 1]}" = worktree ]; then
+        after=1
+      fi
+    done
     targets=()
-    worktrees=
+    dirs=()
     for base in "${bases[@]}"; do
       from=$base
-      [ -z "$repo" ] || from=$(expand "$repo" "$base")
-      targets+=("$(expand "$arg" "$from")")
-      for dir in "$from" "${targets[-1]}"; do
-        worktrees+=$(git -C "$dir" worktree list --porcelain 2>/dev/null | sed -n 's/^worktree //p')$'\n'
+      for r in "${repos[@]}"; do from=$(expand "$r" "$from"); done
+      dirs+=("$from")
+      for p in "${paths[@]}"; do
+        targets+=("$(expand "$p" "$from")")
+        dirs+=("${targets[-1]}")
       done
     done
     while IFS= read -r wt; do
+      real=$(realpath -m -- "$wt")
       named=
-      case /$suffix/ in //* | */./* | */../*) ;; *) [[ $wt == */"$suffix" ]] && named=1 ;; esac
-      for t in "${targets[@]}"; do
-        [ "$(realpath -m -- "$wt")" = "$t" ] && named=1
+      for t in "${targets[@]}"; do [ "$real" = "$t" ] && named=1; done
+      for p in "${paths[@]}"; do
+        suffix=$(sed -E 's#^(\./)+##; s#/+$##' <<<"$p")
+        case /$suffix/ in //* | */./* | */../*) ;; *) [[ $wt == */"$suffix" ]] && named=1 ;; esac
       done
       if [ -n "$named" ] && git -C "$wt" rev-parse -q --verify HEAD >/dev/null 2>&1 &&
         ! git -C "$wt" merge-base --is-ancestor HEAD main 2>/dev/null; then
         refuse "Refused: $wt holds commits main lacks. Land them first (the merge alone, then read its result), or ask the user before discarding them."
       fi
-    done < <(grep -v '^$' <<<"$worktrees" | sort -u)
+    done < <(
+      printf '%s\n' "${dirs[@]}" | sort -u |
+        while IFS= read -r d; do git -C "$d" worktree list --porcelain 2>/dev/null; done |
+        sed -n 's/^worktree //p' | sort -u
+    )
   done <<<"$removals"
 fi
 exit 0
