@@ -217,14 +217,16 @@ export function ScoreScaleMixin(paths: YScalePaths) {
       },
       /**
        * #action
-       * @deprecated v4's name for `setDomainMin`
+       * v4's name for `setDomainMin`.
+       * @deprecated
        */
       setMinScore(val?: number) {
         writeAxis(self, paths, 'domainMin', val)
       },
       /**
        * #action
-       * @deprecated v4's name for `setDomainMax`
+       * v4's name for `setDomainMax`.
+       * @deprecated
        */
       setMaxScore(val?: number) {
         writeAxis(self, paths, 'domainMax', val)
