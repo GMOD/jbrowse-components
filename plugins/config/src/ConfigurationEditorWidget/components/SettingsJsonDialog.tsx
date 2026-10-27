@@ -81,6 +81,7 @@ const SettingsJsonDialog = observer(function SettingsJsonDialog({
     >
       <ExternalLink href={referenceUrl(target)}>Config reference</ExternalLink>
       <MonospaceTextField
+        fullWidth
         value={text}
         error={error}
         helperText="The config as config.json would write it. A setting deleted from it returns to its default."
