@@ -110,7 +110,7 @@ drops; each call's key list is checked against its args type
 for those a contig of the call's sequence counts as the file's. `alignmentTables`'s
 `config` holds the four band objects resolved (`coverage`, `pileup`,
 `sashimi`, `readConnections`), which decide which bands a host stacks, so the
-host composes from the config rather than restating its defaults. The engine also serves the colors a
+host composes the track from the config and restates none of its defaults. The engine also serves the colors a
 host should draw in (`alignmentColors`), read off the palette rather than
 copied.
 
