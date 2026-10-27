@@ -134,13 +134,7 @@ An older config may still write these. Each loads without an error, and `jbrowse
 <!-- prettier-ignore -->
 | Key | On load |
 | --- | --- |
-| `scales` | moved into a current slot |
 | `maxFeatureScreenDensity` | ignored |
 | `maxDisplayedBpPerPx` | ignored |
 | `mouseover` | ignored |
 | `jexlFilters` | moved into a current slot |
-| `showTree` | moved into a current slot |
-| `showBranchLength` | moved into a current slot |
-| `showRowLabels` | moved into a current slot |
-| `treeAreaWidth` | moved into a current slot |
-| `showRowSeparators` | moved into a current slot |

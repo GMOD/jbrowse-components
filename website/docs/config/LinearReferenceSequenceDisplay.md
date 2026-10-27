@@ -71,6 +71,3 @@ An older config may still write these. Each loads without an error, and `jbrowse
 | Key | On load |
 | --- | --- |
 | `renderer` | ignored |
-| `showForward` | moved into a current slot |
-| `showReverse` | moved into a current slot |
-| `showTranslation` | moved into a current slot |

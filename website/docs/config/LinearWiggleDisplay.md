@@ -115,8 +115,6 @@ An older config may still write these. Each loads without an error, and `jbrowse
 <!-- prettier-ignore -->
 | Key | On load |
 | --- | --- |
-| `scales` | moved into a current slot |
-| `y` | moved into a current slot |
 | `maxFeatureScreenDensity` | ignored |
 | `maxDisplayedBpPerPx` | ignored |
 | `fetchSizeLimit` | ignored |
@@ -130,13 +128,5 @@ An older config may still write these. Each loads without an error, and `jbrowse
 | `maxScore` | moved into a current slot |
 | `numStdDev` | ignored |
 | `inverted` | ignored |
-| `color` | moved into a current slot |
 | `renderers` | moved into a current slot |
-| `summaryScoreMode` | moved into a current slot |
-| `resolution` | moved into a current slot |
-| `showTree` | moved into a current slot |
-| `showBranchLength` | moved into a current slot |
-| `showRowLabels` | moved into a current slot |
-| `treeAreaWidth` | moved into a current slot |
-| `showRowSeparators` | moved into a current slot |
 | `defaultRendering` | moved into a current slot |

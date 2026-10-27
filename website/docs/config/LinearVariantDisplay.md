@@ -103,15 +103,12 @@ An older config may still write these. Each loads without an error, and `jbrowse
 | `color3` | moved into a current slot |
 | `featureHeight` | moved into a current slot |
 | `transcriptTypes` | moved into a current slot |
-| `canonicalTranscriptField` | moved into a current slot |
-| `canonicalTranscriptTags` | moved into a current slot |
 | `containerTypes` | moved into a current slot |
 | `showLabels` | moved into a current slot |
 | `showDescriptions` | moved into a current slot |
 | `subfeatureLabels` | moved into a current slot |
 | `outline` | ignored |
 | `maxHeight` | ignored |
-| `hideSourceFeatures` | ignored |
 | `impliedUTRs` | ignored |
 | `renderer` | moved into a current slot |
 | `color` | moved into a current slot |

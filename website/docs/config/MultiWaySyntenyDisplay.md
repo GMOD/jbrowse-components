@@ -138,9 +138,3 @@ An older config may still write these. Each loads without an error, and `jbrowse
 | `maxDisplayedBpPerPx` | ignored |
 | `mouseover` | ignored |
 | `jexlFilters` | moved into a current slot |
-| `drawCurves` | moved into a current slot |
-| `bridgeSkippedLanes` | ignored |
-| `hideUnlabelled` | ignored |
-| `text` | moved into a current slot |
-| `showGeneLabels` | moved into a current slot |
-| `utrColor` | moved into a current slot |

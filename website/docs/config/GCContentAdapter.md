@@ -74,4 +74,3 @@ An older config may still write these. Each loads without an error, and `jbrowse
 | --- | --- |
 | `windowSize` | moved into a current slot |
 | `windowDelta` | moved into a current slot |
-| `gcMode` | moved into a current slot |

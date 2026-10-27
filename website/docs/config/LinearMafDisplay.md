@@ -84,12 +84,3 @@ An older config may still write these. Each loads without an error, and `jbrowse
 | `maxDisplayedBpPerPx` | ignored |
 | `mouseover` | ignored |
 | `jexlFilters` | moved into a current slot |
-| `rowProportion` | moved into a current slot |
-| `showAllLetters` | ignored |
-| `showAsUpperCase` | ignored |
-| `y` | moved into a current slot |
-| `scales` | moved into a current slot |
-| `showTree` | moved into a current slot |
-| `showBranchLength` | moved into a current slot |
-| `showRowLabels` | moved into a current slot |
-| `treeAreaWidth` | moved into a current slot |

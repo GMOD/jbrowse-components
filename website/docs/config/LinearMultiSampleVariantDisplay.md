@@ -156,15 +156,9 @@ An older config may still write these. Each loads without an error, and `jbrowse
 | `maxDisplayedBpPerPx` | ignored |
 | `mouseover` | ignored |
 | `jexlFilters` | moved into a current slot |
-| `showTooltips` | moved into a current slot |
-| `showInsertionGlyphs` | ignored |
 | `renderingMode` | moved into a current slot |
 | `showSidebarLabels` | moved into a current slot |
 | `showTree` | moved into a current slot |
-| `showBranchLength` | moved into a current slot |
-| `showRowLabels` | moved into a current slot |
-| `treeAreaWidth` | moved into a current slot |
-| `showRowSeparators` | moved into a current slot |
 | `showReferenceAlleles` | moved into a current slot |
 | `colorBy` | ignored |
 | `autoscale` | ignored |

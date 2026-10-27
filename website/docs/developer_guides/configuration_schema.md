@@ -215,7 +215,6 @@ the base linear display schema:
    */
   baseConfiguration: baseLinearDisplayConfigSchema,
   explicitlyTyped: true,
-  retired: retiredMafSpellings,
 },
 ```
 

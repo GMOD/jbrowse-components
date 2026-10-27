@@ -987,7 +987,6 @@ export const retiredConfigSpellings: Record<string, RetiredSpelling> = {
   snpCoverageDisplay: block => subDisplaySlotsOf(block, 'coverage'),
   defaultRendering: () => ({}),
   colorScheme: () => ({}),
-  scales: retiredScalesSpelling(COVERAGE_Y_PATHS.members),
   ...retiredScaleSpellings(COVERAGE_Y_PATHS.members),
   multiTicks: () => ({}),
   jitter: () => ({}),
@@ -1001,7 +1000,6 @@ export const retiredConfigSpellings: Record<string, RetiredSpelling> = {
   mismatchAlpha: v => ({ pileup: { mismatches: mismatchFadeOf(v) } }),
   hideLargeIndels: () => ({}),
   minSubfeatureWidth: () => ({}),
-  flipStrandLongReadChains: () => ({}),
   // last: where two lifts land on one member the first declared wins, and a
   // display's own featureHeight or mismatchAlpha beats its renderer's
   renderers: rendererSlotsOf,

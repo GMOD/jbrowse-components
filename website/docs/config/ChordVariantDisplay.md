@@ -74,6 +74,4 @@ An older config may still write these. Each loads without an error, and `jbrowse
 | `strokeColor` | moved into a current slot |
 | `strokeColorSelected` | ignored |
 | `strokeColorHover` | ignored |
-| `colorSelected` | ignored |
-| `colorHover` | ignored |
 | `renderer` | moved into a current slot |

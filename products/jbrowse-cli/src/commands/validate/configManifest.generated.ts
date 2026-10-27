@@ -1069,8 +1069,7 @@ export const configManifest: ConfigManifest = {
       ],
       "legacyKeys": [
         "windowSize",
-        "windowDelta",
-        "gcMode"
+        "windowDelta"
       ],
       "shorthandKeys": []
     },
@@ -3527,20 +3526,15 @@ export const configManifest: ConfigManifest = {
         "color3",
         "featureHeight",
         "transcriptTypes",
-        "canonicalTranscriptField",
-        "canonicalTranscriptTags",
         "containerTypes",
         "showLabels",
         "showDescriptions",
         "subfeatureLabels",
         "outline",
         "maxHeight",
-        "hideSourceFeatures",
         "impliedUTRs",
         "renderer",
-        "color",
-        "showChevrons",
-        "utrColor"
+        "color"
       ],
       "droppedKeys": [
         "maxFeatureScreenDensity",
@@ -3549,7 +3543,6 @@ export const configManifest: ConfigManifest = {
         "color2",
         "outline",
         "maxHeight",
-        "hideSourceFeatures",
         "impliedUTRs"
       ],
       "legacyValues": {
@@ -4129,9 +4122,6 @@ export const configManifest: ConfigManifest = {
               "writes": "members"
             }
           ],
-          "legacyKeys": [
-            "minAlleleFraction"
-          ],
           "schema": "CoverageBand",
           "writes": "members"
         },
@@ -4341,9 +4331,6 @@ export const configManifest: ConfigManifest = {
               "writes": "members"
             }
           ],
-          "legacyKeys": [
-            "readHeight"
-          ],
           "schema": "ReadsPileup",
           "writes": "members"
         },
@@ -4497,7 +4484,6 @@ export const configManifest: ConfigManifest = {
         "snpCoverageDisplay",
         "defaultRendering",
         "colorScheme",
-        "scales",
         "scaleType",
         "autoscale",
         "minScore",
@@ -4514,9 +4500,7 @@ export const configManifest: ConfigManifest = {
         "mismatchAlpha",
         "hideLargeIndels",
         "minSubfeatureWidth",
-        "flipStrandLongReadChains",
-        "renderers",
-        "modifications"
+        "renderers"
       ],
       "droppedKeys": [
         "maxFeatureScreenDensity",
@@ -4532,8 +4516,7 @@ export const configManifest: ConfigManifest = {
         "jitter",
         "hideSmallIndels",
         "hideLargeIndels",
-        "minSubfeatureWidth",
-        "flipStrandLongReadChains"
+        "minSubfeatureWidth"
       ],
       "aliases": [
         "LinearPileupDisplay",
@@ -4682,15 +4665,11 @@ export const configManifest: ConfigManifest = {
         "strokeColor",
         "strokeColorSelected",
         "strokeColorHover",
-        "colorSelected",
-        "colorHover",
         "renderer"
       ],
       "droppedKeys": [
         "strokeColorSelected",
-        "strokeColorHover",
-        "colorSelected",
-        "colorHover"
+        "strokeColorHover"
       ],
       "stateModelProps": [
         "id",
@@ -5329,9 +5308,6 @@ export const configManifest: ConfigManifest = {
               "writes": "members"
             }
           ],
-          "legacyKeys": [
-            "minAlleleFraction"
-          ],
           "schema": "LGVSyntenyCoverage",
           "writes": "members"
         },
@@ -5447,9 +5423,6 @@ export const configManifest: ConfigManifest = {
               "name": "fadeLowFrequency",
               "type": "boolean"
             }
-          ],
-          "legacyKeys": [
-            "readHeight"
           ],
           "schema": "Pileup",
           "writes": "members"
@@ -5584,7 +5557,6 @@ export const configManifest: ConfigManifest = {
         "snpCoverageDisplay",
         "defaultRendering",
         "colorScheme",
-        "scales",
         "scaleType",
         "autoscale",
         "minScore",
@@ -5601,7 +5573,6 @@ export const configManifest: ConfigManifest = {
         "mismatchAlpha",
         "hideLargeIndels",
         "minSubfeatureWidth",
-        "flipStrandLongReadChains",
         "renderers"
       ],
       "droppedKeys": [
@@ -5618,8 +5589,7 @@ export const configManifest: ConfigManifest = {
         "jitter",
         "hideSmallIndels",
         "hideLargeIndels",
-        "minSubfeatureWidth",
-        "flipStrandLongReadChains"
+        "minSubfeatureWidth"
       ],
       "stateModelProps": [
         "id",
@@ -6567,21 +6537,13 @@ export const configManifest: ConfigManifest = {
         "maxFeatureScreenDensity",
         "maxDisplayedBpPerPx",
         "mouseover",
-        "jexlFilters",
-        "drawCurves",
-        "bridgeSkippedLanes",
-        "hideUnlabelled",
-        "text",
-        "showGeneLabels",
-        "utrColor"
+        "jexlFilters"
       ],
       "droppedKeys": [
         "maxFeatureScreenDensity",
         "maxDisplayedBpPerPx",
         "fetchSizeLimit",
-        "mouseover",
-        "bridgeSkippedLanes",
-        "hideUnlabelled"
+        "mouseover"
       ],
       "stateModelProps": [
         "id",
@@ -6653,10 +6615,7 @@ export const configManifest: ConfigManifest = {
         }
       ],
       "legacyKeys": [
-        "renderer",
-        "showForward",
-        "showReverse",
-        "showTranslation"
+        "renderer"
       ],
       "droppedKeys": [
         "renderer"
@@ -6987,15 +6946,12 @@ export const configManifest: ConfigManifest = {
         "color3",
         "featureHeight",
         "transcriptTypes",
-        "canonicalTranscriptField",
-        "canonicalTranscriptTags",
         "containerTypes",
         "showLabels",
         "showDescriptions",
         "subfeatureLabels",
         "outline",
         "maxHeight",
-        "hideSourceFeatures",
         "impliedUTRs",
         "renderer",
         "color"
@@ -7007,7 +6963,6 @@ export const configManifest: ConfigManifest = {
         "color2",
         "outline",
         "maxHeight",
-        "hideSourceFeatures",
         "impliedUTRs"
       ],
       "legacyValues": {
@@ -7366,15 +7321,9 @@ export const configManifest: ConfigManifest = {
         "maxDisplayedBpPerPx",
         "mouseover",
         "jexlFilters",
-        "showTooltips",
-        "showInsertionGlyphs",
         "renderingMode",
         "showSidebarLabels",
         "showTree",
-        "showBranchLength",
-        "showRowLabels",
-        "treeAreaWidth",
-        "showRowSeparators",
         "showReferenceAlleles",
         "colorBy",
         "autoscale",
@@ -7391,7 +7340,6 @@ export const configManifest: ConfigManifest = {
         "maxDisplayedBpPerPx",
         "fetchSizeLimit",
         "mouseover",
-        "showInsertionGlyphs",
         "colorBy",
         "autoscale",
         "minScore",
@@ -8000,8 +7948,6 @@ export const configManifest: ConfigManifest = {
         }
       ],
       "legacyKeys": [
-        "scales",
-        "y",
         "maxFeatureScreenDensity",
         "maxDisplayedBpPerPx",
         "fetchSizeLimit",
@@ -8015,15 +7961,7 @@ export const configManifest: ConfigManifest = {
         "maxScore",
         "numStdDev",
         "inverted",
-        "color",
         "renderers",
-        "summaryScoreMode",
-        "resolution",
-        "showTree",
-        "showBranchLength",
-        "showRowLabels",
-        "treeAreaWidth",
-        "showRowSeparators",
         "defaultRendering"
       ],
       "droppedKeys": [
@@ -8546,9 +8484,6 @@ export const configManifest: ConfigManifest = {
               "writes": "members"
             }
           ],
-          "legacyKeys": [
-            "minAlleleFraction"
-          ],
           "schema": "CoverageBand",
           "writes": "members"
         },
@@ -8676,24 +8611,13 @@ export const configManifest: ConfigManifest = {
         "maxFeatureScreenDensity",
         "maxDisplayedBpPerPx",
         "mouseover",
-        "jexlFilters",
-        "rowProportion",
-        "showAllLetters",
-        "showAsUpperCase",
-        "y",
-        "scales",
-        "showTree",
-        "showBranchLength",
-        "showRowLabels",
-        "treeAreaWidth"
+        "jexlFilters"
       ],
       "droppedKeys": [
         "maxFeatureScreenDensity",
         "maxDisplayedBpPerPx",
         "fetchSizeLimit",
-        "mouseover",
-        "showAllLetters",
-        "showAsUpperCase"
+        "mouseover"
       ],
       "stateModelProps": [
         "id",
@@ -9754,16 +9678,10 @@ export const configManifest: ConfigManifest = {
         }
       ],
       "legacyKeys": [
-        "scales",
         "maxFeatureScreenDensity",
         "maxDisplayedBpPerPx",
         "mouseover",
-        "jexlFilters",
-        "showTree",
-        "showBranchLength",
-        "showRowLabels",
-        "treeAreaWidth",
-        "showRowSeparators"
+        "jexlFilters"
       ],
       "droppedKeys": [
         "maxFeatureScreenDensity",
@@ -10599,16 +10517,10 @@ export const configManifest: ConfigManifest = {
         }
       ],
       "legacyKeys": [
-        "scales",
         "maxFeatureScreenDensity",
         "maxDisplayedBpPerPx",
         "mouseover",
-        "jexlFilters",
-        "showTree",
-        "showBranchLength",
-        "showRowLabels",
-        "treeAreaWidth",
-        "showRowSeparators"
+        "jexlFilters"
       ],
       "droppedKeys": [
         "maxFeatureScreenDensity",
@@ -11447,16 +11359,10 @@ export const configManifest: ConfigManifest = {
         }
       ],
       "legacyKeys": [
-        "scales",
         "maxFeatureScreenDensity",
         "maxDisplayedBpPerPx",
         "mouseover",
-        "jexlFilters",
-        "showTree",
-        "showBranchLength",
-        "showRowLabels",
-        "treeAreaWidth",
-        "showRowSeparators"
+        "jexlFilters"
       ],
       "droppedKeys": [
         "maxFeatureScreenDensity",
