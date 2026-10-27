@@ -70,7 +70,7 @@ export function DesktopSessionTrackMenuMixin(pluginManager: PluginManager) {
                   label: base.textSearching ? 'Re-index track' : 'Index track',
                   onClick: () => {
                     const rootModel = getParent<DesktopRootModel>(self)
-                    const { trackId, assemblyNames, textSearching } = base
+                    const { trackId, name, assemblyNames, textSearching } = base
                     rootModel.jobsManager.queueJob({
                       indexingParams: {
                         attributes:
@@ -85,6 +85,7 @@ export function DesktopSessionTrackMenuMixin(pluginManager: PluginManager) {
                       // jobs are keyed by name; trackId is unique so two tracks
                       // sharing a display name won't collide
                       name: trackId,
+                      label: name,
                     })
                   },
                   icon: Indexing,

@@ -204,6 +204,19 @@ test('queueJob shows the widget and files the job as queued', () => {
   expect(jobsManager.jobsQueue).toHaveLength(1)
 })
 
+test('queueing a track that is already running files it once and leaves it running', () => {
+  const { jobsManager, widget } = setup()
+  jobsManager.queueJob(makeEntry({ label: 'Volvox genes' }))
+  widget.addJob({ name: 'job1', state: 'running' })
+
+  jobsManager.queueJob(makeEntry({ label: 'Volvox genes' }))
+
+  expect(jobsManager.jobsQueue).toHaveLength(1)
+  expect(widget.jobs).toEqual([
+    expect.objectContaining({ state: 'running', label: 'Volvox genes' }),
+  ])
+})
+
 test('a successful perTrack run indexes only the supported adapters', async () => {
   const tracks = [
     makeTrack('t1', 'Gff3TabixAdapter'),

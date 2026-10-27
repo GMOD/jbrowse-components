@@ -63,6 +63,7 @@ interface TrackTextIndexing {
 
 export interface TextJobsEntry {
   name: string
+  label?: string
   statusMessage?: string
   indexingParams: TrackTextIndexing
 }
@@ -229,8 +230,15 @@ export default function jobsModelFactory() {
       queueJob(props: TextJobsEntry) {
         const jobStatusWidget = self.getJobStatusWidget()
         self.session.showWidget(jobStatusWidget)
+        // the running entry stays at the head of the queue until it finishes,
+        // so this also refuses a job that is running; filing it again would
+        // move the running card to Queued, out of reach of its Cancel
+        if (self.jobsQueue.some(j => j.name === props.name)) {
+          return
+        }
         jobStatusWidget.addJob({
           name: props.name,
+          label: props.label,
           state: 'queued',
           statusMessage: props.statusMessage,
           progressPct: undefined,

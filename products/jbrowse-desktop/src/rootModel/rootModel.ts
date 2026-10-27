@@ -7,7 +7,7 @@ import {
   summarizeSession,
 } from '@jbrowse/app-core'
 import assemblyConfigSchemaF from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
-import { DNA } from '@jbrowse/core/ui/Icons'
+import { DNA, Indexing } from '@jbrowse/core/ui/Icons'
 import {
   addDisposer,
   applySnapshot,
@@ -512,6 +512,15 @@ export default function rootModelFactory({
                             onClose: handleClose,
                           },
                         ],
+                      )
+                    },
+                  },
+                  {
+                    label: 'Jobs list',
+                    icon: Indexing,
+                    onClick: () => {
+                      self.session.showWidget(
+                        self.jobsManager.getJobStatusWidget(),
                       )
                     },
                   },
