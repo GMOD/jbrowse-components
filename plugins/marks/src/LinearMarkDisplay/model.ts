@@ -152,7 +152,7 @@ import { DEFAULT_POINT_DIAMETER_PX } from './markVocabulary.ts'
 import { MARK_Y_PATHS } from './markYPaths.ts'
 import { sharedKeyNotice, sharedKeysOf } from './pinDistinct.ts'
 import { defaultPlot } from './plotDefault.ts'
-import { withRowColors } from './rowColors.ts'
+import { withRowColors, withRowScale } from './rowColors.ts'
 import {
   byCategoryBlocks,
   categoriesByColor,
@@ -745,6 +745,19 @@ export function stateModelFactory(
         },
         /**
          * #getter
+         * `markColors` as they paint: a categorical color over the rows'
+         * field takes each row's color where it has one (`withRowScale`).
+         */
+        get paintedMarkColors(): ColorSource[] {
+          const colors = this.drawsRows ? self.resolvedRowColors : undefined
+          return colors
+            ? self.markColors.map(source =>
+                withRowScale(source, self.rowsField, colors),
+              )
+            : self.markColors
+        },
+        /**
+         * #getter
          * The `rowGroups` entries whose `match` compiles.
          */
         get rowGroupMatchers() {
@@ -964,7 +977,7 @@ export function stateModelFactory(
         // sent them.
         const colored = createEncodeMemo(
           () => self.featurePayloads,
-          () => sameColors(self.markColors),
+          () => sameColors(self.paintedMarkColors),
           withMarkColors,
         )
         const keyed = createEncodeMemo(

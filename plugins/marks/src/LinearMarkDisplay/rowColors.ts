@@ -1,6 +1,45 @@
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 
+import type { ColorSource } from './markColor.ts'
 import type { MarkRegionData } from './markList.ts'
+
+/**
+ * A categorical color over the field the rows split on, painting each value
+ * in its row's color where the row has one (ADR-251), and the color's own
+ * `domain` and `range` for the rest. Any other color as it came.
+ */
+export function withRowScale(
+  source: ColorSource,
+  rowsField: string,
+  colors: ReadonlyMap<string, string>,
+): ColorSource {
+  if (
+    source.kind !== 'categories' ||
+    source.encoding.field !== rowsField ||
+    colors.size === 0
+  ) {
+    return source
+  }
+  const { domain = [], range = [] } = source.encoding
+  const rest = domain.map(String).filter(value => !colors.has(value))
+  const paired = new Map(domain.map((value, i) => [String(value), range[i]]))
+  const colored = rest.filter(value => paired.get(value) !== undefined)
+  const uncolored = rest.filter(value => paired.get(value) === undefined)
+  return {
+    ...source,
+    encoding: {
+      ...source.encoding,
+      domain: [...colors.keys(), ...colored, ...uncolored],
+      // a range past the domain deals its spare colors to unlisted values,
+      // which only stays so while every listed value has its own
+      range: [
+        ...colors.values(),
+        ...colored.map(value => paired.get(value)!),
+        ...(uncolored.length === 0 ? range.slice(domain.length) : []),
+      ],
+    },
+  }
+}
 
 /** Which marks paint in their rows' colors, and each row's color by name. */
 export interface RowColors {

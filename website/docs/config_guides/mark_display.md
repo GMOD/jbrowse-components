@@ -704,9 +704,11 @@ shift+wheel resizes them. `0`, the default, fits them to the plot again, and
 presets also set every rect's `mark.height.band`, so the rows stand apart.
 
 The display's [`rowColor`](/docs/config/linearmarkdisplay/#slot-rowcolor) paints
-the bar beside each row's label and leaves the marks' colors unchanged.
-`{ "scale": { "domain": ["tumor"], "range": ["#e15759"] } }` pairs a row's value
-with a color, the form **Edit colors/arrangement...** writes.
+the bar beside each row's label, a mark naming no color, and a mark colored by
+the field the rows split on, `"color": "source"` under `"rows": "source"`. A
+row's own color there beats the mark's `scale.range`, which colors the rows that
+have none. `{ "scale": { "domain": ["tumor"], "range": ["#e15759"] } }` pairs a
+row's value with a color, the form **Edit colors/arrangement...** writes.
 
 `facet` and `rows` both split the features on a field, and differ in what a
 value gets: a facet section is as deep as its packing and has a chip, where a

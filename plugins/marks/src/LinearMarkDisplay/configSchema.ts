@@ -455,8 +455,9 @@ export function configSchemaFactory() {
       rows: rowsConfigSchema,
       /**
        * #slot rowColor
-       * The bar beside each row's label; the marks keep their color. Under
-       * the default field `name`, a row's value paired with a color in
+       * The bar beside each row's label, and the color of a mark naming
+       * none, or of a mark colored by the rows' own field. Under the default
+       * field `name`, a row's value paired with a color in
        * `scale.domain`/`scale.range`, which the arrangement dialog writes.
        */
       rowColor: rowColorConfigSchema,

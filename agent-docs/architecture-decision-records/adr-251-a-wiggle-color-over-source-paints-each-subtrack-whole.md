@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "The wiggle display's `encoding.color` takes a `field`, `score` or `source`. `source` paints each subtrack its resolved row color (`rowColor`, then the file's `color`, then the palette over a shared plot) on both sides of the `origin`, and reads no `scale`; a subtrack with no color paints the score's pair. A color writing nothing colors by `source` on bars, points and lines and ramps the score on a heatmap, so a lone BigWig keeps its pair. The split default goes: a row per subtrack no longer paints its row color above the cut and the shared negative color below it, since the y position already shows the sign. `perSource` leaves gpuProps. ADR-207's deleted `source` switch returns as a field of the one color object. A heatmap's color domain stays on `encoding.y.scale`, left for a call"
+summary: "The wiggle display's `encoding.color` takes a `field`, `score` or `source`. `source` paints each subtrack its resolved row color (`rowColor`, then the file's `color`, then the palette over a shared plot) on both sides of the `origin`, and reads no `scale`; a subtrack with no color paints the score's pair. A color writing nothing colors by `source` on bars, points and lines and ramps the score on a heatmap, so a lone BigWig keeps its pair. The split default goes: a row per subtrack no longer paints its row color above the cut and the shared negative color below it, since the y position already shows the sign. `perSource` leaves gpuProps. ADR-207's deleted `source` switch returns as a field of the one color object. A heatmap's color domain stays on `encoding.y.scale`, left for a call. Amended the same day: the mark display's categorical color over the field the rows split on takes the row colors too"
 ---
 
 # ADR-251: A wiggle color over source paints each subtrack whole
@@ -67,9 +67,12 @@ review's second color finding, is open below.
   its own color, since a pair written over it would recolor every subtrack.
 - GRAMMAR_OF_GRAPHICS.md drops its "one channel carries two variables" gap,
   and ADR-227 its last color reason.
-- The mark display's written `{ field: 'source' }` still deals the categorical
-  palette rather than the subtrack colors:
-  [a-mark-colored-by-source-takes-the-subtrack-colors](../ideas/waiting-on-a-call/a-mark-colored-by-source-takes-the-subtrack-colors.md).
+- Amended 2026-10-27, the mark display: a categorical color over the field
+  the rows split on paints each row its resolved row color, as a mark naming
+  no color already did (`withRowScale`, read by `paintedMarkColors`). A
+  written `domain` and `range` color the rows with none, so the methylation
+  tutorial's track, which repeats its subadapter colors there, draws as
+  before.
 
 ## Open: a heatmap's color domain
 
