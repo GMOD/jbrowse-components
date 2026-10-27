@@ -23,8 +23,10 @@ only the positional form. That pass aligned them by hand and added `jb.view`,
 `trackModel`'s `viewId` and `addTrack`'s `settleMs` to all three, again by hand.
 
 `products/jbrowse-desktop/src/mcp/docsRoster.test.ts` pins that every `jb.X`
-any copy names is a member the live object has. It does not pin signatures or
-that every member is described anywhere.
+any copy names is a member the live object has, and that each display slot
+the jb copies name, by dotted path or by a `slot ({ key })` shape, is one the
+committed schema has. It does not pin signatures or that every member is
+described anywhere.
 
 ## The generated version
 

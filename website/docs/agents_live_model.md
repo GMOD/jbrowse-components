@@ -205,11 +205,11 @@ object binding a field (`encoding.color`, `rowColor`, `pileup.bases`, `facet`,
 `null` member resets that member. A string is the one-value form, the facet's
 field or the color's field, and an object spells the rest out:
 `facet: { field, sort }` orders the sections,
-`color: { field, scale: { domain, range } }` under `encoding` hands the
-`scale.domain` values the `scale.range` colors in order. A field is a feature
-attribute, a dotted path such as `INFO.SVTYPE`, or `strand`; an alignments
-track's facet field is a read dimension (`pairOrientation`, `mapq`, ...) or a
-tag (`tags.HP`). The `filter` is a list of `jexl:` expressions, such as
+`encoding.color: { field, scale: { domain, range } }` hands the `scale.domain`
+values the `scale.range` colors in order. A field is a feature attribute, a
+dotted path such as `INFO.SVTYPE`, or `strand`; an alignments track's facet
+field is a read dimension (`pairOrientation`, `mapq`, ...) or a tag (`tags.HP`).
+The `filter` is a list of `jexl:` expressions, such as
 `["jexl:feature.type == 'gene'"]`.
 
 "Advanced → Edit plot..." in the track menu shows a display's plot as text.

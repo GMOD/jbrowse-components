@@ -3,6 +3,9 @@ import path from 'node:path'
 
 import { createJbApi } from '@jbrowse/app-core'
 
+import { slotPathsByType } from '../../../../scripts/configSlotPaths.ts'
+import { configManifest } from '../../../jbrowse-cli/src/commands/validate/configManifest.generated.ts'
+import { configJsonSchema } from '../../../jbrowse-cli/src/commands/validate/configSchema.generated.ts'
 import { CODE_TIMEOUT_DEFAULT_MS } from '../../electron/mcp/budgets.ts'
 import {
   DOC_TOPICS,
@@ -201,4 +204,160 @@ describe('getFeatures names the same options everywhere', () => {
       expect([...optionsIn(copies[copy])].sort()).toEqual([...expected].sort())
     })
   }
+})
+
+// The copies name display slots by hand, and a respell leaves them naming a
+// slot no display has. Two spellings are read: a dotted path (`encoding.y`),
+// and a shape beside its slot, `sort ({ field, pos })` or
+// `facet: { field, sort }`, whose braces name the keys and whose quoted
+// values (`mark: 'bar' | 'point'`) are checked where the schema lists them.
+const pathsByType = slotPathsByType(configJsonSchema)
+const displayPaths = Object.keys(configManifest.displays).map(
+  type =>
+    new Set(
+      [...(pathsByType.get(type) ?? [])].map(p =>
+        p.replaceAll(/\[\]|\{\}/g, ''),
+      ),
+    ),
+)
+const topSlots = new Set(
+  displayPaths.flatMap(paths => [...paths].map(p => p.split(/[.=]/)[0]!)),
+)
+const QUOTED = /^'[^']*'(?:\s*\|\s*'[^']*')*$/
+
+function closing(text: string, open: number) {
+  let depth = 0
+  for (let i = open; i < text.length; i++) {
+    const c = text.charAt(i)
+    if ('([{'.includes(c)) {
+      depth++
+    } else if (')]}'.includes(c) && --depth === 0) {
+      return i
+    }
+  }
+  return text.length
+}
+
+function members(body: string) {
+  const items: string[] = []
+  let start = 0
+  for (let i = 0; i < body.length; i++) {
+    const c = body.charAt(i)
+    if ('([{'.includes(c)) {
+      i = closing(body, i)
+    } else if (c === ',') {
+      items.push(body.slice(start, i))
+      start = i + 1
+    }
+  }
+  return [...items, body.slice(start)]
+}
+
+type Named = Map<string, string[]>
+
+function objectSlots(body: string, at: string, out: Named) {
+  for (const item of members(body)) {
+    const key =
+      /^\s*(\w+)\??(?:\s*:\s*([\s\S]*?))?\s*$/.exec(item) ??
+      /^\s*(\w+)\?\s/.exec(item)
+    if (key) {
+      const slot = `${at}.${key[1]}`
+      const value = key[2]?.trim() ?? ''
+      out.set(
+        slot,
+        QUOTED.test(value)
+          ? [...value.matchAll(/'([^']*)'/g)].map(m => m[1]!)
+          : [],
+      )
+      shapesIn(value, slot, out)
+    }
+  }
+}
+
+function shapesIn(text: string, at: string, out: Named) {
+  for (let i = 0; i < text.length; i++) {
+    const c = text.charAt(i)
+    if ('([{'.includes(c)) {
+      const end = closing(text, i)
+      const body = text.slice(i + 1, end)
+      if (c === '{') {
+        objectSlots(body, at, out)
+      } else {
+        shapesIn(body, at, out)
+      }
+      i = end
+    }
+  }
+}
+
+function namedSlots(text: string) {
+  const out: Named = new Map()
+  let read = 0
+  for (const m of text.matchAll(
+    /(?<![\w.$])([a-z]\w*(?:\.[a-zA-Z]\w*)*)( \(|: \{|(?![\w(.]))/g,
+  )) {
+    const [token, slot = '', opener = ''] = m
+    if (m.index >= read && topSlots.has(slot.split('.')[0]!)) {
+      if (opener) {
+        const open = m.index + token.length - 1
+        read = closing(text, open)
+        const body = text.slice(open + 1, read)
+        if (opener === ' (') {
+          shapesIn(body, slot, out)
+        } else {
+          objectSlots(body, slot, out)
+        }
+      } else if (slot.includes('.')) {
+        out.set(slot, [])
+      }
+    }
+  }
+  return out
+}
+
+// a value is checked only where every display declaring the slot lists its
+// values
+function unknownSlots(text: string) {
+  return [...namedSlots(text)].flatMap(([slot, values]) => {
+    const declaring = displayPaths.filter(paths => paths.has(slot))
+    const listed = (paths: Set<string>) =>
+      [...paths].some(p => p.startsWith(`${slot}=`))
+    return declaring.length === 0
+      ? [slot]
+      : values
+          .filter(v =>
+            declaring.every(
+              paths => listed(paths) && !paths.has(`${slot}=${v}`),
+            ),
+          )
+          .map(v => `${slot}=${v}`)
+  })
+}
+
+// the copies describing jb; the other served topics are config guides, whose
+// prose names slots relative to the one under discussion
+describe('the jb copies name only display slots the schema has', () => {
+  for (const copy of [
+    'instructions',
+    'toolDescriptions',
+    'help',
+    'live-model',
+    'overview',
+    'skill',
+  ] as const) {
+    it(copy, () => {
+      expect(unknownSlots(copies[copy])).toEqual([])
+    })
+  }
+
+  it('reads the shapes jb.help gives its slots', () => {
+    expect([...namedSlots(copies.help).keys()]).toEqual(
+      expect.arrayContaining([
+        'sort.field',
+        'encoding.y.scale.fenceQuantile',
+        'marks.encoding.strokeWidth',
+        'marks.minBpPerPx',
+      ]),
+    )
+  })
 })
