@@ -1,22 +1,11 @@
 import Plugin from '@jbrowse/core/Plugin'
 
-import BlastTabularAdapterF from './BlastTabularAdapter/index.ts'
-import ChainAdapterF from './ChainAdapter/index.ts'
 import ComparativeAddTrackComponentF from './ComparativeAddTrackComponent/index.tsx'
-import DeltaAdapterF from './DeltaAdapter/index.ts'
 import MCScanAddTrackComponentF from './MCScanAddTrackComponent/index.tsx'
-import MCScanAnchorsAdapterF from './MCScanAnchorsAdapter/index.ts'
-import MCScanBlocksAdapterF from './MCScanBlocksAdapter/index.ts'
 import MCScanBlocksAddTrackComponentF from './MCScanBlocksAddTrackComponent/index.tsx'
-import MCScanSimpleAnchorsAdapterF from './MCScanSimpleAnchorsAdapter/index.ts'
-import MashMapAdapterF from './MashMapAdapter/index.ts'
 import MultiGenomeAddTrackComponentF from './MultiGenomeAddTrackComponent/index.tsx'
-import MultiGenomeIndexedPAFAdapterF from './MultiGenomeIndexedPAFAdapter/index.ts'
-import MultiGenomePAFAdapterF from './MultiGenomePAFAdapter/index.ts'
-import MultiPairwiseSyntenyAdapterF from './MultiPairwiseSyntenyAdapter/index.ts'
-import PAFAdapterF from './PAFAdapter/index.ts'
-import PairwiseIndexedPAFAdapterF from './PairwiseIndexedPAFAdapter/index.ts'
 import SyntenyTrackF from './SyntenyTrack/index.tsx'
+import { registerComparativeAdapters } from './registerComparativeAdapters.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -24,23 +13,12 @@ export default class ComparativeAdaptersPlugin extends Plugin {
   name = 'ComparativeAdaptersPlugin'
 
   install(pluginManager: PluginManager) {
-    MultiGenomePAFAdapterF(pluginManager)
-    MultiGenomeIndexedPAFAdapterF(pluginManager)
-    PAFAdapterF(pluginManager)
-    PairwiseIndexedPAFAdapterF(pluginManager)
-    MultiPairwiseSyntenyAdapterF(pluginManager)
-    DeltaAdapterF(pluginManager)
-    ChainAdapterF(pluginManager)
-    MCScanAnchorsAdapterF(pluginManager)
-    MCScanBlocksAdapterF(pluginManager)
-    MCScanSimpleAnchorsAdapterF(pluginManager)
-    MashMapAdapterF(pluginManager)
-    BlastTabularAdapterF(pluginManager)
+    registerComparativeAdapters(pluginManager)
     ComparativeAddTrackComponentF(pluginManager)
     MCScanAddTrackComponentF(pluginManager)
     MCScanBlocksAddTrackComponentF(pluginManager)
     MultiGenomeAddTrackComponentF(pluginManager)
-    // the track type every adapter above declares itself for; it is a bare base
+    // the track type every comparative adapter declares itself for; a bare base
     // track, so it needs none of the synteny views
     SyntenyTrackF(pluginManager)
   }
