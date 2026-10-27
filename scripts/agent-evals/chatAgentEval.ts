@@ -18,12 +18,14 @@
 //        [--runs N] [--out dir] [--build dir] [--plugin dir] [--budget usd]
 //        [--system-prompt file] [--set dev|heldout|tutorials|all] [--price-in usd/M] [--price-out usd/M]
 //        [--provider anthropic|ollama] [--ollama-url url] [--cpu] [--no-think]
-//        [--num-ctx tokens]
+//        [--num-ctx tokens] [--solutions]
 //
 // --cpu sets num_gpu 0 on each Ollama request and launches Chrome with
 // --disable-gpu, so nothing loads onto a GPU. --no-think turns off Ollama's
 // reasoning, which a slow CPU model can spend a whole turn on. --num-ctx sets
 // Ollama's context window, whose small default silently truncates the prompt.
+// --solutions runs each task's solution in place of the model, to check the
+// page and its graders with the plugin loaded.
 import { execFileSync } from 'node:child_process'
 import fs from 'node:fs'
 import http from 'node:http'
@@ -449,6 +451,7 @@ const rows: { task: string; run: number; pass: boolean }[] = []
 const profileStalls = args.includes('--profile-stalls')
 const waitMs = Number(flag('wait', '240')) * 1000
 const retries = !args.includes('--no-retry')
+const solutions = args.includes('--solutions')
 
 async function profilePage(page: Page) {
   const client = await page.createCDPSession()
@@ -486,7 +489,7 @@ async function runOnce(task: EvalTask, run: number, attempt: number) {
   await page.setViewport({ width: 1400, height: 900 })
   const pageLog: string[] = []
   page.on('console', m =>
-    pageLog.push(`${m.type()}: ${m.text().slice(0, 200)}`),
+    pageLog.push(`${m.type()}: ${m.text().slice(0, 400)}`),
   )
   page.on('pageerror', e =>
     pageLog.push(`pageerror: ${String(e).slice(0, 300)}`),
@@ -498,6 +501,21 @@ async function runOnce(task: EvalTask, run: number, attempt: number) {
       localStorage.setItem('chatbot-settings', s)
       localStorage.setItem('chatbot-vault', v)
       localStorage.setItem('chatbot-jb-approval', 'off')
+      // a worker that fails its boot posts the reason and is terminated, and
+      // the page then logs only "RPC worker was terminated" for every call
+      const NativeWorker = window.Worker
+      window.Worker = class extends NativeWorker {
+        constructor(...a: ConstructorParameters<typeof Worker>) {
+          super(...a)
+          this.addEventListener('message', e => {
+            if (e.data?.message === 'error') {
+              console.error(
+                `worker boot failed: ${e.data.error?.message ?? e.data.error}`,
+              )
+            }
+          })
+        }
+      }
     },
     settings,
     vault,
@@ -535,41 +553,47 @@ async function runOnce(task: EvalTask, run: number, attempt: number) {
        return true`,
       30_000,
     )
-    const input = await page.waitForSelector(
-      'textarea[aria-label="Message input"]',
-      { timeout: 45_000 },
-    )
-    await input!.type(task.prompt.replaceAll('WORK', work))
-    await page.click('button[aria-label="Send message"]')
-    const sentAt = Date.now()
-    const profileTimer = profileStalls
-      ? setTimeout(() => {
-          profilePage(page).catch((e: unknown) => {
-            console.log('profile failed', String(e))
-          })
-        }, 60_000)
-      : undefined
-    while (Date.now() - sentAt < waitMs) {
-      await sleep(1000)
-      const pw = await page.$('input[type="password"]')
-      if (pw) {
-        await pw.type(PASSWORD)
-        await page.keyboard.press('Enter')
-        continue
+    if (solutions) {
+      const solved = await evaluateLive(task.solution ?? 'return ""', 120_000)
+      answer = typeof solved === 'string' ? solved : ''
+      await sleep(5000)
+    } else {
+      const input = await page.waitForSelector(
+        'textarea[aria-label="Message input"]',
+        { timeout: 45_000 },
+      )
+      await input!.type(task.prompt.replaceAll('WORK', work))
+      await page.click('button[aria-label="Send message"]')
+      const sentAt = Date.now()
+      const profileTimer = profileStalls
+        ? setTimeout(() => {
+            profilePage(page).catch((e: unknown) => {
+              console.log('profile failed', String(e))
+            })
+          }, 60_000)
+        : undefined
+      while (Date.now() - sentAt < waitMs) {
+        await sleep(1000)
+        const pw = await page.$('input[type="password"]')
+        if (pw) {
+          await pw.type(PASSWORD)
+          await page.keyboard.press('Enter')
+          continue
+        }
+        const generating = await page.$('button[aria-label="Stop generating"]')
+        const idle = stats.active === 0 && Date.now() - stats.lastEnd > 4000
+        if (stats.started > startedBefore && !generating && idle) {
+          break
+        }
       }
-      const generating = await page.$('button[aria-label="Stop generating"]')
-      const idle = stats.active === 0 && Date.now() - stats.lastEnd > 4000
-      if (stats.started > startedBefore && !generating && idle) {
-        break
+      clearTimeout(profileTimer)
+      answer = await page.$$eval(
+        '[data-role="assistant"]',
+        els => (els.at(-1) as HTMLElement | undefined)?.innerText ?? '',
+      )
+      if (!answer) {
+        error = await page.evaluate(() => document.body.innerText.slice(-700))
       }
-    }
-    clearTimeout(profileTimer)
-    answer = await page.$$eval(
-      '[data-role="assistant"]',
-      els => (els.at(-1) as HTMLElement | undefined)?.innerText ?? '',
-    )
-    if (!answer) {
-      error = await page.evaluate(() => document.body.innerText.slice(-700))
     }
   } catch (e) {
     error = e instanceof Error ? e.message : String(e)
