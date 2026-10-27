@@ -22,8 +22,9 @@ Predicate `filter` on every display and view; the synteny views' `mark`,
 alignments and MAF `{ show }` parts; the chord displays' `mark.depth`;
 Pass A, `encoding.color` on every display with `legend.show` display-wide; and
 Pass B, `encoding.y` on every value axis; the feature display's amendment
-(labels parts, `tooltip`, `mark.height`, `representative`, `utrs`).
-Git history has each landing.
+(labels parts, `tooltip`, `mark.height`, `representative`, `utrs`); and the
+wiggle display's `mark.extent` and `encoding.color.field` (ADR-251). Git
+history has each landing.
 
 ## Next
 
@@ -43,12 +44,9 @@ Git history has each landing.
      except `apollo3`, pinned to beta.8 (`demos/apollo3/README.md`).
    - The unlanded `chat-request-evals` branch writes 8 `scales.y` lines in
      `scripts/agent-evals/tasks.ts`.
-2. **The wiggle display's grammar round.** _Claimed 2026-10-27
-   (`wiggle-grammar`)._ `extent` moves to `mark.extent`, `maxGapMultiple` goes,
-   the menu says Heatmap and Point size, and the tables export `mark` for
-   `rendering`. Then one ADR: a color over `source` reads the row colors as
-   its scale, the split negative color under stacked rows goes, and a
-   heatmap's color owns its domain.
+2. **A wiggle heatmap's color domain** waits on Colin's call, set out in
+   ADR-251's open section: under `mark: 'rect'` the ramp's ends, placement,
+   fence and group are `encoding.y.scale`'s.
 
 ADR-238's 2026-10-27 amendment rules the layout words, the multi-way
 leftovers and the zoom and density gates. One multi-way gap stays open:
