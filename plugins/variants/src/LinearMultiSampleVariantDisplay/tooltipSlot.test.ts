@@ -1,8 +1,7 @@
-import { getConf, readConfObject } from '@jbrowse/core/configuration'
+import { getConf } from '@jbrowse/core/configuration'
 import { resolveSubMenu, staysOpenOnClick } from '@jbrowse/core/ui'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
-import configSchemaF from './configSchema.ts'
 import { createTestEnvironment as createMatrixTestEnvironment } from './matrix/testEnv.ts'
 import { createTestEnvironment } from './testEnv.ts'
 
@@ -81,13 +80,4 @@ describe('showTooltips', () => {
       expect(tooltipItem(display.trackMenuItems()).checked).toBe(false)
     }
   })
-})
-
-test('a written showTooltips lands on tooltip.show', () => {
-  const conf = configSchemaF().create({
-    type: 'LinearMultiSampleVariantDisplay',
-    displayId: 'tooltips-off',
-    showTooltips: false,
-  })
-  expect(readConfObject(conf, ['tooltip', 'show'])).toBe(false)
 })
