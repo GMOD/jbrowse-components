@@ -62,13 +62,14 @@ once per display that embeds it, so read the trend, not the size.
    surface description and the R export lag every rename because hand-kept
    copies drift. Derive each from the schema.
 4. **v4.3.0 validate gaps.** `reference/V4_CONFIG_COVERAGE.md` holds the
-   count and the unmapped spellings. Every v4.3.0 config opens in the app, but
-   `jbrowse validate` fails 17 of 34 files, mostly on keys the app accepts:
-   - Give the Trix adapter dropped entries for `textSearchAdapterId` and
-     `metaFilePath`, which every v4 `jbrowse text-index` run wrote.
-   - Teach validate the lifts it misses: `minorAlleleFrequencyFilter`, the
-     session's flat `LinearSyntenyView.tracks`, and the dropped
-     `LinearGCContentDisplay`.
+   count and the unmapped spellings. Every v4.3.0 config opens in the app;
+   `jbrowse validate` fails 14 of 34 files, mostly on keys v4.3.0 never
+   declared. Left:
+   - Validate resolves a retired display type's old name without running its
+     `migrate`, so `LinearArcDisplay.renderer` still fails.
+   - `test_data/yeast_synteny/config.json` and
+     `test_data/config_synteny_grape_peach.json` write the flat synteny
+     `tracks` layout, now a warning; move them to `levels[0].tracks`.
    - Lifts that keep a color or height, ranked last: multi-variant `colorBy`
      to `rowColor`, session `trackDisplayMode` to `displayMode`, session
      `snpCovHeight` to `coverage.height`.
