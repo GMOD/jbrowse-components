@@ -44,6 +44,12 @@ function formSlots(schema: AnyConfigurationModel, omit: string[] = []) {
   )
 }
 
+// the same member of the base config, which a reset returns to
+function inBase(base: AnyConfigurationModel | undefined, name: string) {
+  const member: unknown = base?.[name]
+  return isConfigurationModel(member) ? member : undefined
+}
+
 function subSchemas(schema: AnyConfigurationModel) {
   return Object.keys(getMembers(schema).properties).flatMap(name => {
     const member: unknown = schema[name]
@@ -53,13 +59,15 @@ function subSchemas(schema: AnyConfigurationModel) {
 
 const Slots = observer(function Slots({
   schema,
+  base,
   omit,
 }: {
   schema: AnyConfigurationModel
+  base?: AnyConfigurationModel
   omit?: string[]
 }) {
   return formSlots(schema, omit).map(name => (
-    <SlotEditor key={name} slot={makeSlotFacade(schema, name)} />
+    <SlotEditor key={name} slot={makeSlotFacade(schema, name, base)} />
   ))
 })
 
@@ -88,31 +96,41 @@ const Section = observer(function Section({
 
 // Where the data comes from: the config's own adapter, and the adapter of
 // each sub-schema holding one (an assembly's `sequence` and `refNameAliases`).
-function dataSources(target: AnyConfigurationModel) {
-  return [['Data', target] as const, ...subSchemas(target)].flatMap(
-    ([title, schema]) => {
-      const adapter: unknown = schema.adapter
-      return isConfigurationModel(adapter) ? [[title, adapter] as const] : []
-    },
-  )
+function dataSources(
+  target: AnyConfigurationModel,
+  base: AnyConfigurationModel | undefined,
+) {
+  return [
+    ['Data', target, base] as const,
+    ...subSchemas(target).map(
+      ([name, schema]) => [name, schema, inBase(base, name)] as const,
+    ),
+  ].flatMap(([title, schema, schemaBase]) => {
+    const adapter: unknown = schema.adapter
+    return isConfigurationModel(adapter)
+      ? [{ title, adapter, base: inBase(schemaBase, 'adapter') }]
+      : []
+  })
 }
 
 // An adapter's slots and those of its sub-schemas (a BAM's `index`)
 const DataSection = observer(function DataSection({
   title,
   adapter,
+  base,
 }: {
   title: string
   adapter: AnyConfigurationModel
+  base?: AnyConfigurationModel
 }) {
   return (
     <Section title={title}>
-      <Slots schema={adapter} />
+      <Slots schema={adapter} base={base} />
       {subSchemas(adapter)
         .filter(([, sub]) => formSlots(sub).length)
         .map(([name, sub]) => (
           <Section key={name} title={name} nested>
-            <Slots schema={sub} />
+            <Slots schema={sub} base={inBase(base, name)} />
           </Section>
         ))}
     </Section>
@@ -123,8 +141,10 @@ const DataSection = observer(function DataSection({
 // are what "Edit plot..." edits, so the form leaves them to it.
 const DisplaySection = observer(function DisplaySection({
   display,
+  base,
 }: {
   display: AnyConfigurationModel
+  base?: AnyConfigurationModel
 }) {
   const { classes } = useStyles()
   const plotKeys = plotKeysOf(display)
@@ -144,17 +164,17 @@ const DisplaySection = observer(function DisplaySection({
           menu&apos;s Advanced → Edit plot...
         </Typography>
       ) : null}
-      <Slots schema={display} omit={plotKeys} />
+      <Slots schema={display} base={base} omit={plotKeys} />
     </Section>
   )
 })
 
 function activeDisplay(
-  target: AnyConfigurationModel,
+  target: AnyConfigurationModel | undefined,
   displayId: string | undefined,
 ) {
   const displays: unknown =
-    displayId === undefined ? undefined : target.displays
+    displayId === undefined ? undefined : target?.displays
   return Array.isArray(displays)
     ? (displays as AnyConfigurationModel[]).find(
         display => readConfObject(display, 'displayId') === displayId,
@@ -166,18 +186,20 @@ function activeDisplay(
  * A short form over the settings most edits touch: the config's own slots,
  * where its data comes from, and the displayed display's own slots. "Edit as
  * JSON..." holds the whole config, every nested and advanced setting included.
+ * With a `base`, a slot's reset returns it to the base's value.
  */
 const ConfigurationEditor = observer(function ConfigurationEditor({
   model,
 }: {
   model: {
     target?: AnyConfigurationModel
+    base?: AnyConfigurationModel
     expandedDisplayId?: string
   }
 }) {
   const { classes } = useStyles()
   const [editingJson, setEditingJson] = useState(false)
-  const { target } = model
+  const { target, base } = model
   if (!target) {
     return <Typography>No configuration target</Typography>
   }
@@ -196,12 +218,17 @@ const ConfigurationEditor = observer(function ConfigurationEditor({
         </Typography>
       ) : null}
       <Section title="General">
-        <Slots schema={target} />
+        <Slots schema={target} base={base} />
       </Section>
-      {dataSources(target).map(([title, adapter]) => (
-        <DataSection key={title} title={title} adapter={adapter} />
+      {dataSources(target, base).map(source => (
+        <DataSection key={source.title} {...source} />
       ))}
-      {display ? <DisplaySection display={display} /> : null}
+      {display ? (
+        <DisplaySection
+          display={display}
+          base={activeDisplay(base, model.expandedDisplayId)}
+        />
+      ) : null}
       <Button
         variant="outlined"
         startIcon={<DataObjectIcon />}

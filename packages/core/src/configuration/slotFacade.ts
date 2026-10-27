@@ -1,5 +1,6 @@
 import { asModelType, getSnapshot } from '@jbrowse/mobx-state-tree'
 
+import { deepEqual } from '../util/deepEqual.ts'
 import { getEnumerationValues } from '../util/mst-reflection.ts'
 import { getEnv } from '../util/mstUtils.ts'
 import { slotWriteRefusal } from './configurationSlot.ts'
@@ -104,12 +105,16 @@ export interface SlotFacade {
   pluginManager: PluginManager
   readonly value: unknown
   /**
-   * Whether the slot holds a non-default value. Each slot is `stripDefault`-
-   * wrapped, so an at-default slot is omitted from the config snapshot — the
-   * same signal the persistence/delta layer uses (robust for map/array slots
-   * where a live-value `deepEqual` against the plain default would misfire).
+   * Whether the slot differs from what a reset returns it to: the base config's
+   * value where the facade has a base, else the slot's default. Compared as
+   * snapshots, where each `stripDefault`-wrapped slot at its default is
+   * omitted — the same signal the persistence/delta layer uses.
    */
   readonly modified: boolean
+  /** What a reset writes: the base config's value, else the default. */
+  readonly resetValue: unknown
+  /** Whether a reset returns to a base config rather than the default. */
+  resetsToBase: boolean
   set: (val: unknown) => void
 }
 
@@ -151,9 +156,14 @@ export function getSlotDefinition(
   return def
 }
 
+/**
+ * `base` is the same schema's node as a saved config holds it, such as the
+ * track's config.json entry, which `modified` and a reset then measure from.
+ */
 export function makeSlotFacade(
   node: AnyConfigurationModel,
   slotName: string,
+  base?: AnyConfigurationModel,
 ): SlotFacade {
   const definition = getSlotDefinition(node, slotName)
   const {
@@ -174,8 +184,21 @@ export function makeSlotFacade(
       return node[slotName]
     },
     get modified() {
-      return slotName in (getSnapshot(node) as Record<string, unknown>)
+      const own = getSnapshot<Record<string, unknown>>(node)
+      return base
+        ? !deepEqual(
+            own[slotName],
+            getSnapshot<Record<string, unknown>>(base)[slotName],
+          )
+        : slotName in own
     },
+    get resetValue() {
+      const saved = base
+        ? getSnapshot<Record<string, unknown>>(base)
+        : undefined
+      return saved && slotName in saved ? saved[slotName] : defaultValue
+    },
+    resetsToBase: !!base,
     set(val: unknown) {
       setConf(node, slotName, val)
     },

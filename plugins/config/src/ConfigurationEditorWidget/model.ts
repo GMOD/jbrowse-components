@@ -1,7 +1,16 @@
 import { getSession } from '@jbrowse/core/util'
-import { getEditableTrackConfigById } from '@jbrowse/core/util/types'
+import {
+  getEditableTrackConfigById,
+  isSessionWithBaseTrackConfig,
+} from '@jbrowse/core/util/types'
 import { ElementId } from '@jbrowse/core/util/types/mst'
-import { addDisposer, getSnapshot, types } from '@jbrowse/mobx-state-tree'
+import {
+  addDisposer,
+  getEnv,
+  getSnapshot,
+  getType,
+  types,
+} from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -43,6 +52,30 @@ export default function stateModelFactory(_pluginManager: PluginManager) {
         return self.trackId === undefined
           ? self.inlineTarget
           : getEditableTrackConfigById(getSession(self), self.trackId)
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * the track's config as the session's base holds it (its config.json
+       * entry, or the one the session added it with), which a slot's reset
+       * returns to; undefined for an inline target
+       */
+      get base(): AnyConfigurationModel | undefined {
+        const { target, trackId } = self
+        const session = getSession(self)
+        const saved =
+          target &&
+          trackId !== undefined &&
+          isSessionWithBaseTrackConfig(session)
+            ? session.baseTrackConfig(trackId)
+            : undefined
+        return saved && target
+          ? (getType(target).create(
+              saved,
+              getEnv(target),
+            ) as AnyConfigurationModel)
+          : undefined
       },
     }))
     .actions(self => {

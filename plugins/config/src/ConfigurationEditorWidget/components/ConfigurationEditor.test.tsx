@@ -140,15 +140,15 @@ test('reset-to-default appears only when a slot differs, and reverts it', () => 
   )
 
   // at the default value there is nothing to reset
-  expect(queryByLabelText('reset to default')).toBeNull()
+  expect(queryByLabelText('Reset to default')).toBeNull()
 
   fireEvent.change(getByLabelText('myName'), { target: { value: 'edited' } })
   expect(readConfObject(target, 'myName')).toBe('edited')
 
   // now modified, the reset control shows; clicking it restores the default
-  fireEvent.click(getByLabelText('reset to default'))
+  fireEvent.click(getByLabelText('Reset to default'))
   expect(readConfObject(target, 'myName')).toBe('original')
-  expect(queryByLabelText('reset to default')).toBeNull()
+  expect(queryByLabelText('Reset to default')).toBeNull()
 })
 
 // The URL field writes `{ uri: '' }` when cleared, which a maybeFileLocation
@@ -290,4 +290,77 @@ test('the JSON editor refuses an undeclared key and a new trackId', () => {
   })
   expect(getByText(/trackId must stay "t1"/, { selector: 'p' })).toBeTruthy()
   expect(apply.closest('button')!.disabled).toBe(true)
+})
+
+test("with a base, a slot's reset returns to the base's value, not the default", () => {
+  const base = trackConfig()
+  const target = trackConfig()
+  const { getByLabelText, queryAllByLabelText } = render(
+    <ThemeProvider theme={createJBrowseTheme()}>
+      <ConfigurationEditor
+        model={{ target, base, expandedDisplayId: 't1-a' }}
+      />
+    </ThemeProvider>,
+  )
+  // "Reads" differs from the schema default but is what the base holds
+  const reset = "Reset to the track's config"
+  expect(queryAllByLabelText(reset)).toHaveLength(0)
+  fireEvent.change(getByLabelText('name'), { target: { value: 'Edited' } })
+  fireEvent.change(getByLabelText('height'), { target: { value: '300' } })
+  expect(queryAllByLabelText(reset)).toHaveLength(2)
+  fireEvent.click(queryAllByLabelText(reset)[0]!)
+  fireEvent.click(getByLabelText(reset))
+  expect(readConfObject(target, 'name')).toBe('Reads')
+  expect(readConfObject(target.displays[0]!, 'height')).toBe(100)
+  expect(queryAllByLabelText(reset)).toHaveLength(0)
+})
+
+// fills in an `OtherDisplay` entry the snapshot leaves out, as a track type
+// fills in each display its adapter feeds
+const FillingTrackSchema = ConfigurationSchema(
+  'FillingTrack',
+  {
+    displays: types.array(types.union(DisplaySchema, OtherDisplaySchema)),
+  },
+  {
+    explicitIdentifier: 'trackId',
+    closed: true,
+    preProcessSnapshot: snap => {
+      const displays = (snap.displays ?? []) as { type: string }[]
+      return displays.some(d => d.type === 'OtherDisplay')
+        ? snap
+        : {
+            ...snap,
+            displays: [
+              ...displays,
+              {
+                type: 'OtherDisplay',
+                displayId: `${snap.trackId}-OtherDisplay`,
+              },
+            ],
+          }
+    },
+  },
+)
+
+test('the JSON leaves out a display the track fills in, and keeps one it would not', () => {
+  const target = FillingTrackSchema.create(
+    {
+      trackId: 't2',
+      displays: [{ type: 'TestDisplay', displayId: 't2-TestDisplay' }],
+    },
+    { pluginManager },
+  )
+  const { getByText, getByTestId } = render(
+    <ThemeProvider theme={createJBrowseTheme()}>
+      <ConfigurationEditor model={{ target }} />
+    </ThemeProvider>,
+  )
+  fireEvent.click(getByText('Edit as JSON...'))
+  const printed = JSON.parse(
+    (getByTestId('settingsJson') as HTMLTextAreaElement).value,
+  )
+  expect(printed.displays).toEqual([
+    { type: 'TestDisplay', displayId: 't2-TestDisplay' },
+  ])
 })

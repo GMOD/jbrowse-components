@@ -249,6 +249,7 @@ The form shows the track's name, description, category and data files, and the
 settings of the display this view draws. What the display draws (color,
 grouping, filters) is under the track menu's **Advanced → Edit plot...**.
 
+- A field's reset button returns it to the track's config.
 - **Edit as JSON...** edits every setting as `config.json` writes it. A key the
   track does not take is refused under the text.
 - **Reset track settings** in the track menu reverts to the underlying config.

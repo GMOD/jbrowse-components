@@ -10,6 +10,7 @@ import {
   SubmitDialog,
 } from '@jbrowse/core/ui'
 import { isObject } from '@jbrowse/core/util'
+import { deepEqual } from '@jbrowse/core/util/deepEqual'
 import {
   applySnapshot,
   getEnv,
@@ -26,6 +27,55 @@ function referenceUrl(target: AnyConfigurationModel) {
   return name
     ? `https://jbrowse.org/jb2/docs/config/${name.toLowerCase()}/`
     : 'https://jbrowse.org/jb2/docs/config_guide/'
+}
+
+type Snapshot = Record<string, unknown>
+
+// a display entry a track writes for itself when its config names none: its
+// type and the id the track derives from it
+function isStubDisplay(display: unknown, trackId: unknown) {
+  if (!isObject(display)) {
+    return false
+  }
+  const { type, displayId, ...rest } = display
+  return Object.keys(rest).length === 0 && displayId === `${trackId}-${type}`
+}
+
+function withDisplays(snapshot: Snapshot, displays: unknown[]) {
+  const { displays: _all, ...rest } = snapshot
+  return displays.length ? { ...rest, displays } : rest
+}
+
+// The snapshot without the display entries a track fills in by itself, where
+// leaving them out loads the same config: the declared order picks the
+// default display, so the stubs leading it may have to stay.
+function printedSnapshot(target: AnyConfigurationModel): Snapshot {
+  const snapshot = getSnapshot<Snapshot>(target)
+  const { displays, trackId } = snapshot
+  if (!Array.isArray(displays)) {
+    return snapshot
+  }
+  let last = displays.length
+  while (last > 0 && isStubDisplay(displays[last - 1], trackId)) {
+    last--
+  }
+  const prefixes = Array.from({ length: displays.length - last }, (_, i) =>
+    displays.slice(0, last + i),
+  )
+  return (
+    [displays.filter(d => !isStubDisplay(d, trackId)), ...prefixes]
+      .map(list => withDisplays(snapshot, list))
+      .find(candidate => {
+        try {
+          return deepEqual(
+            getSnapshot(getType(target).create(candidate, getEnv(target))),
+            snapshot,
+          )
+        } catch {
+          return false
+        }
+      }) ?? snapshot
+  )
 }
 
 // Reads the text as the config would load it, refusing what a write refuses:
@@ -58,7 +108,7 @@ const SettingsJsonDialog = observer(function SettingsJsonDialog({
   handleClose: () => void
 }) {
   const [text, setText] = useState(() =>
-    JSON.stringify(getSnapshot(target), null, 2),
+    JSON.stringify(printedSnapshot(target), null, 2),
   )
   // a draft is checked by building a whole config, which typing outpaces
   const checked = useDeferredValue(text)
@@ -84,7 +134,7 @@ const SettingsJsonDialog = observer(function SettingsJsonDialog({
         fullWidth
         value={text}
         error={error}
-        helperText="The config as config.json would write it. A setting deleted from it returns to its default."
+        helperText="The config as config.json would write it. A setting deleted from it returns to its default, and a display it leaves out takes the track type's defaults."
         inputTestId="settingsJson"
         onChange={setText}
       />

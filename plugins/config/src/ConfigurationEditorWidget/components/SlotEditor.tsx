@@ -196,6 +196,9 @@ const SlotEditor = observer(function SlotEditor({
   const ValueComponent: React.ComponentType<any> = callbackMode
     ? CallbackEditor
     : valueComponents[type]
+  const resetLabel = slot.resetsToBase
+    ? "Reset to the track's config"
+    : 'Reset to default'
   return (
     <Paper className={classes.paper}>
       <div className={classes.paperContent}>
@@ -203,11 +206,11 @@ const SlotEditor = observer(function SlotEditor({
       </div>
       {modified ? (
         <div className={classes.resetButton}>
-          <Tooltip title="Reset to default">
+          <Tooltip title={resetLabel}>
             <IconButton
-              aria-label="reset to default"
+              aria-label={resetLabel}
               onClick={() => {
-                slot.set(slot.defaultValue)
+                slot.set(slot.resetValue)
               }}
             >
               <RestartAltIcon />
