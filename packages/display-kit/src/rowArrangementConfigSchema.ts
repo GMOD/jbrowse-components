@@ -1,7 +1,5 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
-import { retiredOrderSpelling } from './facetConfigSchema.ts'
-
 /** The members a reader's arrangement writes, every one a config member. */
 export const ROW_ARRANGEMENT_MEMBERS = [
   'sort',
@@ -102,7 +100,6 @@ export const rowArrangementConfigSchema = ConfigurationSchema(
   },
   {
     closed: true,
-    retired: retiredOrderSpelling,
     preProcessSnapshot: (snap = {}) => ({
       ...snap,
       ...stringList(snap, 'sort'),

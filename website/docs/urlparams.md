@@ -812,7 +812,7 @@ strand, with curved ribbons and stronger opacity:
 ```
 
 The v4 spellings `colorBy` and `alpha` still open, as `encoding.color` and
-`encoding.opacity`, and the betas' `cigarMode` and `drawCigar` as `indels`.
+`encoding.opacity`, and the dotplot's `drawCigar` as `indels`.
 
 <!-- SPEC_KEYS LinearSyntenyView START -->
 

@@ -78,10 +78,9 @@ test('by type, a path drops its type and its union member markers', () => {
   )
 })
 
-test('the published schema lists a nested slot, a retired key and an enum member', () => {
+test('the published schema lists a nested slot and an enum member', () => {
   const paths = new Set(slotPaths(configJsonSchema))
   expect(paths).toContain('LinearWiggleDisplay.encoding.y.scale.domainMin')
-  expect(paths).toContain('LinearAlignmentsDisplay.facet.domain')
   expect(paths).toContain('CytobandAdapter.cytobandsLocation')
   expect(paths).toContain('LinearWiggleDisplay.mark=bar')
   expect(paths).toContain('config.configuration')

@@ -52,17 +52,7 @@ once per display that embeds it, so read the trend, not the size.
 
 ## Next
 
-1. **The last beta-only lifts.** jb2hubs writes main's spellings (its
-   `1364164`, `d8de3fc`, `0ee536d`), and the pangenome configs are hosted in
-   them. The rest waits on ada, which refused ssh on 2026-10-27:
-   - MAF adapters' `annotationAdapter`: upload the regenerated `mouseStrains`
-     configs.
-   - Facet and rows `domain` → `sort`, the synteny view's `cigarMode`, and
-     `liftViewColor` with `liftFlatColor`: redeploy the genomes site, whose
-     launch links still write them.
-   - jb2hubs' UCSC rebuild, which drops `sequenceAdapter` (71 configs) and the
-     multi-way GC layer's `windowSize`/`windowDelta` (217).
-2. **jbrowse-img modifiers that write nothing.** `modifierSlots.test.ts`
+1. **jbrowse-img modifiers that write nothing.** `modifierSlots.test.ts`
    checks every modifier against the schema, and exempts two:
    - `force:` writes `forceLoad`, which `LinearWiggleDisplay` and
      `LinearHicDisplay` don't declare (`UNGATED`). Batch adds `force:true` to
@@ -70,17 +60,18 @@ once per display that embeds it, so read the trend, not the size.
    - `heightMode:` and `featureHeight:` write slots
      `LinearMultiRowFeatureDisplay` and `LinearMultiSampleVariantDisplay`
      don't declare.
-3. **Writers outside the tree.** _Claimed 2026-10-27 (agent, jb2hubs/JBrowseR/ggjbrowse)._ jb2hubs and its hosted configs, the ggjbrowse
-   pin, the graph plugin, the `apollo3` demo and the figure specs
-   (`handoffs/screenshot-spec-elegance.md`). Known stale spellings:
-   - jb2hubs: `hubtools/src/enhanceConfig.test.ts` writes `scales.y`, plus
-     the two writers in step 1.
-   - JBrowseR: `README.Rmd`, `vignettes/JBrowseR.Rmd` and
-     `vignettes/articles/live-browser.Rmd` write `scales = list(y = …)` on a
-     `LinearMarkDisplay`, now `encoding.y`; its bundled htmlwidgets need a
-     re-pin.
-   - ggjbrowse: re-pin the bundled `inst/js/jbrowse-tables.js`.
-4. **Plugin ABI.** The served list leaves out render-core's shader subpaths.
+2. **Writers outside the tree.** jb2hubs, its hosted configs and the
+   production genomes site, JBrowseR and ggjbrowse write main's spellings, so
+   the beta-only lifts are gone. Left:
+   - The graph plugin, the `apollo3` demo and the figure specs
+     (`handoffs/screenshot-spec-elegance.md`).
+   - The staging genomes site, whose links write `rows.domain` and
+     `cigarMode` until its next `run.sh`.
+   - ggjbrowse's knitted tutorials: `docs/tutorials/dog10k_lof.md` shows
+     `rows = list(domain = …)` until a re-knit.
+   - The Trix `textSearchAdapterId`/`metaFilePath` keys in jb2hubs' GenArk and
+     UCSC writers wait on the config-merger lambda deduping by `ixFilePath`.
+3. **Plugin ABI.** The served list leaves out render-core's shader subpaths.
    `@jbrowse/tables` and `@jbrowse/launch-args` ship with v5 at its version,
    betas included (Colin, 2026-10-27). Left: baseline
    `reExports.generated.json` and the exports map at the release candidate

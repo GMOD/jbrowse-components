@@ -19,32 +19,6 @@ test('a snapshot with no colorBy is left alone', () => {
   expect(liftSyntenyViewSettings(snap)).toBe(snap)
 })
 
-// jb2hubs' desktop links write the view's `color` as it was before `encoding`
-test("a view's color lands as encoding.color, a bare string the constant", () => {
-  expect(liftSyntenyViewSettings({ color: { field: 'query' } })).toEqual({
-    encoding: { color: { field: 'query' } },
-  })
-  expect(liftSyntenyViewSettings({ color: 'grey' })).toEqual({
-    encoding: { color: { value: 'grey' } },
-  })
-  expect(
-    liftSyntenyViewSettings({
-      color: { field: 'identity', scale: 'threshold', domain: [0.9] },
-    }),
-  ).toEqual({
-    encoding: {
-      color: { field: 'identity', scale: { type: 'threshold', domain: [0.9] } },
-    },
-  })
-  expect(
-    liftSyntenyViewSettings({
-      color: { field: 'query' },
-      colorBy: 'strand',
-      encoding: { opacity: 0.4 },
-    }),
-  ).toEqual({ encoding: { color: { field: 'query' }, opacity: 0.4 } })
-})
-
 // v4.3.0 held colorBy, alpha and minAlignmentLength on each synteny display
 test('a v4.3.0 display setting lands on the view', () => {
   const lifted = liftSyntenyViewSettings({
@@ -102,14 +76,7 @@ test("a view's alpha is encoding.opacity's constant, which wins if written", () 
   ).toEqual({ encoding: { opacity: { field: 'identity' } } })
 })
 
-test('cigarMode and drawCigar land as the indels part', () => {
-  expect(liftSyntenyViewSettings({ cigarMode: 'off' })).toEqual({
-    indels: { show: false },
-  })
-  expect(liftSyntenyViewSettings({ cigarMode: 'matches' })).toEqual({
-    indels: { encoding: { opacity: { value: 0 } } },
-  })
-  expect(liftSyntenyViewSettings({ cigarMode: 'full' })).toEqual({})
+test("the dotplot's v4.3.0 drawCigar lands as the indels part", () => {
   expect(liftSyntenyViewSettings({ drawCigar: false })).toEqual({
     indels: { show: false },
   })

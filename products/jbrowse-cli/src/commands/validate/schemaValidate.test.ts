@@ -434,17 +434,6 @@ describe('the schema', () => {
     expect(schemaProblems(alignments)).toEqual([])
   })
 
-  it('accepts a legacy key a nested schema retires', () => {
-    const alignments = baseConfig()
-    alignments.tracks[0]!.displays = [
-      {
-        type: 'LinearAlignmentsDisplay',
-        facet: { field: 'strand', domain: ['-', '+'] },
-      },
-    ]
-    expect(schemaProblems(alignments)).toEqual([])
-  })
-
   it('accepts the useWorkspaces a v4 session carries', () => {
     const config = baseConfig()
     Object.assign(config.defaultSession, { useWorkspaces: false })

@@ -1,4 +1,4 @@
-import { liftFlatColor, liftRetiredRowState } from './retiredSettings.ts'
+import { liftRetiredRowState } from './retiredSettings.ts'
 
 test('a v4 quantitative row answers to its source, and its name is the label', () => {
   expect(
@@ -53,42 +53,4 @@ test('the tree, the focus and the sidebar come across', () => {
 
 test('an instance with no row state lifts nothing', () => {
   expect(liftRetiredRowState({ type: 'LinearWiggleDisplay' })).toEqual({})
-})
-
-test('a flat color lifts to the channel, categorical as ordinal', () => {
-  expect(
-    liftFlatColor(
-      {
-        field: 'source',
-        scale: 'categorical',
-        domain: ['EUR'],
-        labels: ['European'],
-        title: 'Population',
-      },
-      'value',
-    ),
-  ).toEqual({
-    field: 'source',
-    scale: { type: 'ordinal', domain: ['EUR'], names: ['European'] },
-    legend: { title: 'Population' },
-  })
-})
-
-test('a nested scale or legend beside a flat member wins member by member', () => {
-  expect(
-    liftFlatColor(
-      {
-        field: 'source',
-        scale: { type: 'ordinal', range: ['red'] },
-        legend: { title: 'Nested' },
-        domain: ['a'],
-        title: 'Flat',
-      },
-      'value',
-    ),
-  ).toEqual({
-    field: 'source',
-    scale: { type: 'ordinal', range: ['red'], domain: ['a'] },
-    legend: { title: 'Nested' },
-  })
 })

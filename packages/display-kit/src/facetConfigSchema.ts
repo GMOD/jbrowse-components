@@ -2,14 +2,6 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 import { normalizeChannel } from './colorConfigSchema.ts'
 
-/**
- * The beta name of `sort`, which jb2hubs' hub configs write beside it on
- * `facet` and `rows` for hosts that predate it.
- */
-export const retiredOrderSpelling = {
-  domain: (sort: unknown) => ({ sort }),
-}
-
 /** The `facet` object as written: a field, and the order its sections stack in. */
 export interface FacetSetting {
   field: string
@@ -85,7 +77,6 @@ export const facetConfigSchema = ConfigurationSchema(
     writes: 'whole',
     plot: true,
     closed: true,
-    retired: retiredOrderSpelling,
     preProcessSnapshot: snap => normalizeChannel(snap, 'facet'),
   },
 )

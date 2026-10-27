@@ -14,13 +14,3 @@ test('a comment key rides along unrefused', () => {
     getSnapshot(Display.create({ facet: { field: 'strand', _comment: 'x' } })),
   ).toEqual({ facet: { field: 'strand' } })
 })
-
-// hosted hub configs jb2hubs generated before the rename
-const BETA = 'domain'
-test('a facet written with the beta `domain` reads as its `sort`', () => {
-  expect(
-    getSnapshot(
-      Display.create({ facet: { field: 'strand', [BETA]: ['-1', '1'] } }),
-    ),
-  ).toEqual({ facet: { field: 'strand', sort: ['-1', '1'] } })
-})

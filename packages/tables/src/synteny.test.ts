@@ -77,18 +77,10 @@ test('the indels part draws the ops colored, the matches alone, or the block alo
   expect(matches.legend.label).toEqual(['match'])
 })
 
-test("a beta view's cigarMode and drawCigar still draw as the indels part", async () => {
-  const off = await engine.synteny({
-    ...INV_INDELS,
-    // @ts-expect-error the betas' cigarMode
-    view: { cigarMode: 'off' },
-  })
-  expect(new Set(off.ribbons.kind)).toEqual(new Set(['match']))
-  expect(off.ribbons.kind).toHaveLength(7)
-  expect(off.config.indels).toMatchObject({ show: false })
+test("a v4.3.0 dotplot's drawCigar still draws as the indels part", async () => {
   const plain = await engine.dotplot({
     ...INV_INDELS_DOTPLOT,
-    // @ts-expect-error the betas' drawCigar
+    // @ts-expect-error v4.3.0's drawCigar
     view: { drawCigar: false },
   })
   expect(plain.segments.op).toEqual(new Array(7).fill('match'))

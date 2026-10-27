@@ -3,10 +3,7 @@ import {
   tabixIndexSchema,
 } from '@jbrowse/core/configuration'
 
-import {
-  mafAdapterConfigSchemaFields,
-  retiredMafAdapterSpellings,
-} from '../util/mafAdapterConfigSchemaFields.ts'
+import { mafAdapterConfigSchemaFields } from '../util/mafAdapterConfigSchemaFields.ts'
 import { expandMafShorthand, tabixIndexSlot } from '../util/mafShorthand.ts'
 
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -70,7 +67,6 @@ const configSchema = ConfigurationSchema(
   },
   {
     explicitlyTyped: true,
-    retired: retiredMafAdapterSpellings,
     closed: true,
     /**
      * #preProcessSnapshot

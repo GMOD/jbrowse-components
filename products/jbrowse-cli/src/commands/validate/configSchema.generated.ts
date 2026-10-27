@@ -3145,10 +3145,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "nhUri": {
           "description": "Shorthand the adapter's snapshot normalizer expands."
-        },
-        "annotationAdapter": {
-          "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
       }
     },
@@ -3264,10 +3260,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "nhUri": {
           "description": "Shorthand the adapter's snapshot normalizer expands."
-        },
-        "annotationAdapter": {
-          "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
       }
     },
@@ -3369,10 +3361,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "nhUri": {
           "description": "Shorthand the adapter's snapshot normalizer expands."
-        },
-        "annotationAdapter": {
-          "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
       }
     },
@@ -3495,10 +3483,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "nhUri": {
           "description": "Shorthand the adapter's snapshot normalizer expands."
-        },
-        "annotationAdapter": {
-          "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
       }
     },
@@ -5251,10 +5235,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "type": "object",
           "x-closed": true,
           "properties": {
-            "domain": {
-              "deprecated": true,
-              "description": "Legacy key: a migration rewrites it into current slots when the config loads."
-            },
             "field": {
               "description": "feature field (or jexl expression) to facet over, one labelled section per value; \`strand\` for one per strand, and empty for no sections.",
               "default": "",
@@ -9233,10 +9213,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "type": "object",
           "x-closed": true,
           "properties": {
-            "domain": {
-              "deprecated": true,
-              "description": "Legacy key: a migration rewrites it into current slots when the config loads."
-            },
             "sort": {
               "description": "the row order: the rows listed lead, in this order; the rest keep their source's order (a VCF's samples, a multi-BigWig's subtracks), or sort where the rows are values found on features.",
               "if": {
@@ -12183,10 +12159,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "type": "object",
           "x-closed": true,
           "properties": {
-            "domain": {
-              "deprecated": true,
-              "description": "Legacy key: a migration rewrites it into current slots when the config loads."
-            },
             "sort": {
               "description": "the row order: the rows listed lead, in this order; the rest keep their source's order (a VCF's samples, a multi-BigWig's subtracks), or sort where the rows are values found on features.",
               "if": {
@@ -12704,10 +12676,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "type": "object",
           "x-closed": true,
           "properties": {
-            "domain": {
-              "deprecated": true,
-              "description": "Legacy key: a migration rewrites it into current slots when the config loads."
-            },
             "field": {
               "description": "feature field (or jexl expression) to facet over, one labelled section per value; \`strand\` for one per strand, and empty for no sections.",
               "default": "",
@@ -13562,10 +13530,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "type": "object",
           "x-closed": true,
           "properties": {
-            "domain": {
-              "deprecated": true,
-              "description": "Legacy key: a migration rewrites it into current slots when the config loads."
-            },
             "sort": {
               "description": "the row order: the rows listed lead, in this order; the rest keep their source's order (a VCF's samples, a multi-BigWig's subtracks), or sort where the rows are values found on features.",
               "if": {
@@ -15438,10 +15402,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "type": "object",
           "x-closed": true,
           "properties": {
-            "domain": {
-              "deprecated": true,
-              "description": "Legacy key: a migration rewrites it into current slots when the config loads."
-            },
             "field": {
               "description": "feature field (or jexl expression) to facet over, one labelled section per value; \`strand\` for one per strand, and empty for no sections.",
               "default": "",
@@ -15531,10 +15491,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "type": "object",
           "x-closed": true,
           "properties": {
-            "domain": {
-              "deprecated": true,
-              "description": "Legacy key: a migration rewrites it into current slots when the config loads."
-            },
             "sort": {
               "description": "the row order: the rows listed lead, in this order; the rest keep their source's order (a VCF's samples, a multi-BigWig's subtracks), or sort where the rows are values found on features.",
               "if": {
@@ -28715,14 +28671,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "deprecated": true,
           "description": "Legacy spelling the view's own preProcessSnapshot converts."
         },
-        "color": {
-          "deprecated": true,
-          "description": "Legacy spelling the view's own preProcessSnapshot converts."
-        },
-        "cigarMode": {
-          "deprecated": true,
-          "description": "Legacy spelling the view's own preProcessSnapshot converts."
-        },
         "drawCigar": {
           "deprecated": true,
           "description": "Legacy spelling the view's own preProcessSnapshot converts."
@@ -29116,14 +29064,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Legacy spelling the view's own preProcessSnapshot converts."
         },
         "alpha": {
-          "deprecated": true,
-          "description": "Legacy spelling the view's own preProcessSnapshot converts."
-        },
-        "color": {
-          "deprecated": true,
-          "description": "Legacy spelling the view's own preProcessSnapshot converts."
-        },
-        "cigarMode": {
           "deprecated": true,
           "description": "Legacy spelling the view's own preProcessSnapshot converts."
         },

@@ -69,12 +69,6 @@ test('a property a composed mixin contributes lands too', async () => {
 })
 
 // jb2hubs' desktop links write the view's color as it was before `encoding`
-test("a view's color lands as encoding.color, and says nothing", async () => {
-  const view = await open({ views: ROWS, color: { field: 'query' } })
-  expect(colorOf(view)).toEqual({ field: 'query' })
-  expect(warnings()).toEqual([])
-})
-
 // The spec is the session: a color written as the channel comes back as the
 // channel, and the reader refuses the shapes a config cannot hold.
 test('color round-trips a session spec and names a stray key', async () => {
@@ -221,9 +215,4 @@ test('the tracks lift leaves the levels to the launch', async () => {
   const view = await open({ views: ROWS, tracks: [['a_track']] })
   expect(view.launch).toEqual({ views: ROWS, tracks: [['a_track']] })
   expect(getSnapshot(view).levels).toEqual([])
-})
-
-test('a beta cigarMode lands as the indels part', async () => {
-  const view = await open({ views: ROWS, cigarMode: 'off' })
-  expect(view.cigarMode).toBe('off')
 })

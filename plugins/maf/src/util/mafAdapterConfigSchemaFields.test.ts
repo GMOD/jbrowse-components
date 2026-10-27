@@ -1,7 +1,4 @@
-import {
-  getConfigurationSchemaDefinition,
-  readConfObject,
-} from '@jbrowse/core/configuration'
+import { getConfigurationSchemaDefinition } from '@jbrowse/core/configuration'
 
 import bgzipMaf from '../BgzipMafAdapter/configSchema.ts'
 import bgzipTaffy from '../BgzipTaffyAdapter/configSchema.ts'
@@ -59,12 +56,3 @@ test('summaryAdapter keeps its type across the four', () => {
     )
   }
 })
-
-test.each(NAMES)(
-  '%s lifts the beta annotationAdapter to framesAdapter',
-  name => {
-    const frames = { type: 'BigBedAdapter', uri: 'frames.bb' }
-    const conf = SCHEMAS[name].create({ type: name, annotationAdapter: frames })
-    expect(readConfObject(conf, 'framesAdapter')).toEqual(frames)
-  },
-)

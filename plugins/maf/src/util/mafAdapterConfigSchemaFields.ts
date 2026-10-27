@@ -1,12 +1,5 @@
 import { samplesTsvAdapterConfigSchemaFields } from '@jbrowse/core/util/samplesTsv'
 
-import type { RetiredSpelling } from '@jbrowse/core/configuration'
-
-/** The beta name of `framesAdapter`, which jb2hubs configs still write. */
-export const retiredMafAdapterSpellings: Record<string, RetiredSpelling> = {
-  annotationAdapter: framesAdapter => ({ framesAdapter }),
-}
-
 /**
  * The slots every MAF adapter has beyond its own file format, the ones
  * `MafAdapterBase` reads. The config-doc generator renders a spread slot's

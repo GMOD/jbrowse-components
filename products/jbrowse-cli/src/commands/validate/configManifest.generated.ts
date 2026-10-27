@@ -1108,9 +1108,6 @@ export const configManifest: ConfigManifest = {
           "type": "(frozen | undefined)"
         }
       ],
-      "legacyKeys": [
-        "annotationAdapter"
-      ],
       "shorthandKeys": [
         "uri",
         "baseUri",
@@ -1152,9 +1149,6 @@ export const configManifest: ConfigManifest = {
           "type": "(frozen | undefined)"
         }
       ],
-      "legacyKeys": [
-        "annotationAdapter"
-      ],
       "shorthandKeys": [
         "uri",
         "baseUri",
@@ -1191,9 +1185,6 @@ export const configManifest: ConfigManifest = {
           "name": "framesAdapter",
           "type": "(frozen | undefined)"
         }
-      ],
-      "legacyKeys": [
-        "annotationAdapter"
       ],
       "shorthandKeys": [
         "uri",
@@ -1251,9 +1242,6 @@ export const configManifest: ConfigManifest = {
           "name": "framesAdapter",
           "type": "(frozen | undefined)"
         }
-      ],
-      "legacyKeys": [
-        "annotationAdapter"
       ],
       "shorthandKeys": [
         "uri",
@@ -3375,9 +3363,6 @@ export const configManifest: ConfigManifest = {
               "liftsNumbers": true
             }
           ],
-          "legacyKeys": [
-            "domain"
-          ],
           "schema": "SectionFacet",
           "writes": "whole",
           "shorthand": {
@@ -3674,9 +3659,6 @@ export const configManifest: ConfigManifest = {
               "type": "string[]",
               "liftsNumbers": true
             }
-          ],
-          "legacyKeys": [
-            "domain"
           ],
           "schema": "SectionFacet",
           "writes": "whole",
@@ -4860,9 +4842,6 @@ export const configManifest: ConfigManifest = {
               "liftsNumbers": true
             }
           ],
-          "legacyKeys": [
-            "domain"
-          ],
           "schema": "SectionFacet",
           "writes": "whole",
           "shorthand": {
@@ -5804,9 +5783,6 @@ export const configManifest: ConfigManifest = {
               "name": "field",
               "type": "LaneRowsField"
             }
-          ],
-          "legacyKeys": [
-            "domain"
           ],
           "schema": "LaneRows",
           "writes": "whole",
@@ -6911,9 +6887,6 @@ export const configManifest: ConfigManifest = {
               "liftsNumbers": true
             }
           ],
-          "legacyKeys": [
-            "domain"
-          ],
           "schema": "SectionFacet",
           "writes": "whole",
           "shorthand": {
@@ -7152,9 +7125,6 @@ export const configManifest: ConfigManifest = {
               "type": "SampleRowsField"
             }
           ],
-          "legacyKeys": [
-            "domain"
-          ],
           "schema": "SampleRows",
           "writes": "whole",
           "shorthand": {
@@ -7351,9 +7321,6 @@ export const configManifest: ConfigManifest = {
               "type": "string[]",
               "liftsNumbers": true
             }
-          ],
-          "legacyKeys": [
-            "domain"
           ],
           "schema": "Facet",
           "writes": "whole",
@@ -7684,9 +7651,6 @@ export const configManifest: ConfigManifest = {
               "name": "field",
               "type": "QuantitativeRowsField"
             }
-          ],
-          "legacyKeys": [
-            "domain"
           ],
           "schema": "QuantitativeRows",
           "writes": "whole",
@@ -8261,9 +8225,6 @@ export const configManifest: ConfigManifest = {
               "name": "field",
               "type": "SampleRowsField"
             }
-          ],
-          "legacyKeys": [
-            "domain"
           ],
           "schema": "SampleRows",
           "writes": "whole",
@@ -9332,9 +9293,6 @@ export const configManifest: ConfigManifest = {
               "type": "(filterConfigurationSchema | formulaConfigurationSchema | binConfigurationSchema | aggregateConfigurationSchema | windowConfigurationSchema | coverageConfigurationSchema | flattenConfigurationSchema | cellsConfigurationSchema | pileupConfigurationSchema | mateConfigurationSchema)[]"
             }
           ],
-          "legacyKeys": [
-            "domain"
-          ],
           "schema": "MarkFacet",
           "writes": "whole",
           "shorthand": {
@@ -9371,9 +9329,6 @@ export const configManifest: ConfigManifest = {
               "name": "field",
               "type": "string"
             }
-          ],
-          "legacyKeys": [
-            "domain"
           ],
           "schema": "Rows",
           "writes": "whole",
@@ -10171,9 +10126,6 @@ export const configManifest: ConfigManifest = {
               "type": "(filterConfigurationSchema | formulaConfigurationSchema | binConfigurationSchema | aggregateConfigurationSchema | windowConfigurationSchema | coverageConfigurationSchema | flattenConfigurationSchema | cellsConfigurationSchema | pileupConfigurationSchema | mateConfigurationSchema)[]"
             }
           ],
-          "legacyKeys": [
-            "domain"
-          ],
           "schema": "MarkFacet",
           "writes": "whole",
           "shorthand": {
@@ -10210,9 +10162,6 @@ export const configManifest: ConfigManifest = {
               "name": "field",
               "type": "string"
             }
-          ],
-          "legacyKeys": [
-            "domain"
           ],
           "schema": "Rows",
           "writes": "whole",
@@ -11017,9 +10966,6 @@ export const configManifest: ConfigManifest = {
               "type": "(filterConfigurationSchema | formulaConfigurationSchema | binConfigurationSchema | aggregateConfigurationSchema | windowConfigurationSchema | coverageConfigurationSchema | flattenConfigurationSchema | cellsConfigurationSchema | pileupConfigurationSchema | mateConfigurationSchema)[]"
             }
           ],
-          "legacyKeys": [
-            "domain"
-          ],
           "schema": "MarkFacet",
           "writes": "whole",
           "shorthand": {
@@ -11056,9 +11002,6 @@ export const configManifest: ConfigManifest = {
               "name": "field",
               "type": "string"
             }
-          ],
-          "legacyKeys": [
-            "domain"
           ],
           "schema": "Rows",
           "writes": "whole",
@@ -11962,8 +11905,6 @@ export const configManifest: ConfigManifest = {
       ],
       "passThrough": [
         "alpha",
-        "cigarMode",
-        "color",
         "colorBy",
         "drawCigar"
       ]
@@ -12004,8 +11945,6 @@ export const configManifest: ConfigManifest = {
       ],
       "passThrough": [
         "alpha",
-        "cigarMode",
-        "color",
         "colorBy",
         "drawCigar"
       ],

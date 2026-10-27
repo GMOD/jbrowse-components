@@ -1,5 +1,3 @@
-import { liftFlatColor } from '@jbrowse/display-kit/retiredSettings'
-
 // v4.3.0's synteny `colorBy` modes and the field each paints now; `default`
 // paints no field
 const V4_FIELDS: Record<string, string | undefined> = {
@@ -23,23 +21,6 @@ function withChannel(snap: Snap, channel: string, value: unknown) {
   return value === undefined || encoding[channel] !== undefined
     ? snap
     : { ...snap, encoding: { ...encoding, [channel]: value } }
-}
-
-/**
- * @deprecated The view's `color` before `encoding.color`, which jb2hubs'
- * desktop links still write, a bare string being the constant. Goes once
- * jb2hubs writes `encoding.color`.
- */
-function liftViewColor(snap: Snap) {
-  if (!('color' in snap)) {
-    return snap
-  }
-  const { color, ...rest } = snap
-  return withChannel(
-    rest,
-    'color',
-    color === undefined ? undefined : liftFlatColor(color, 'value'),
-  )
 }
 
 function liftColorBy(snap: Snap) {
@@ -82,19 +63,13 @@ function liftMinLength(snap: Snap) {
 }
 
 function liftIndels(snap: Snap) {
-  if (!('cigarMode' in snap) && !('drawCigar' in snap)) {
+  if (!('drawCigar' in snap)) {
     return snap
   }
-  const { cigarMode, drawCigar, ...rest } = snap
-  const lifted =
-    cigarMode === 'off' || drawCigar === false
-      ? { show: false }
-      : cigarMode === 'matches'
-        ? { encoding: { opacity: { value: 0 } } }
-        : undefined
-  return rest.indels !== undefined || lifted === undefined
+  const { drawCigar, ...rest } = snap
+  return rest.indels !== undefined || drawCigar !== false
     ? rest
-    : { ...rest, indels: lifted }
+    : { ...rest, indels: { show: false } }
 }
 
 // the displays a v4.3.0 session held these settings on: each level's tracks on
@@ -122,13 +97,7 @@ const DISPLAY_SETTINGS = ['colorBy', 'alpha', 'minAlignmentLength'] as const
  * and dotplot views name as their launch keys' `passThrough` so a validator
  * accepts them.
  */
-export const LIFTED_VIEW_KEYS = [
-  'colorBy',
-  'alpha',
-  'color',
-  'cigarMode',
-  'drawCigar',
-] as const
+export const LIFTED_VIEW_KEYS = ['colorBy', 'alpha', 'drawCigar'] as const
 
 /**
  * #api
@@ -158,16 +127,13 @@ function liftDisplaySettings(snap: Snap) {
  * synteny display, and land as `encoding.color`, `encoding.opacity` and a
  * `filter` predicate on `length`.
  * An older genomes-portal launch link puts the mode string on the view
- * itself, which lifts the same way, and a jb2hubs desktop link writes the
- * view's `color`, which lands as `encoding.color`. The view's own
- * `cigarMode` and `drawCigar` land as the `indels` part.
+ * itself, which lifts the same way. The dotplot's own `drawCigar` lands as
+ * the `indels` part.
  */
 export function liftSyntenyViewSettings(snap: Snap | undefined) {
   return snap
     ? liftIndels(
-        liftMinLength(
-          liftAlpha(liftColorBy(liftViewColor(liftDisplaySettings(snap)))),
-        ),
+        liftMinLength(liftAlpha(liftColorBy(liftDisplaySettings(snap)))),
       )
     : snap
 }
