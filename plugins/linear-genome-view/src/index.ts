@@ -116,7 +116,7 @@ export { applyInitHighlights } from './LinearGenomeView/afterAttach.ts'
 export {
   launchTrackInit,
   launchTrackWithModifiers,
-  trackCategory,
+  openedDisplayType,
   writeFilter,
   writeMembers,
   writeReadFilter,

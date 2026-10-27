@@ -274,6 +274,14 @@ const GENERATORS: Generator[] = [
     needs: ['adapter track type map'],
   },
   {
+    // packages/launch-args/src/displaySlots.generated.ts: each display's slot
+    // paths, which gate where a track modifier lands.
+    name: 'launch-args display slots',
+    argv: rootScript('generateDisplaySlots.ts'),
+    independent: true,
+    needs: ['config schema manifest'],
+  },
+  {
     // Writes nothing: the schema above still admits every slot path and enum
     // member in scripts/configSlotPaths.v<major>.txt, which a stable release
     // freezes.

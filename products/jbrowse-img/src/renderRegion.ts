@@ -25,7 +25,7 @@ import { renderToSvg as renderSyntenyToSvg } from '@jbrowse/plugin-linear-compar
 import {
   fetchResults,
   renderToSvg as renderLinearToSvg,
-  trackCategory,
+  openedDisplayType,
   writeFilter,
   writeMembers,
 } from '@jbrowse/plugin-linear-genome-view'
@@ -595,7 +595,7 @@ const renderLinear: ModeRenderer = async ctx => {
   // so they land above the file-type (--bam/--gff/--hic/...) tracks readData
   // built — argv order top-to-bottom, same convention as every other stacked
   // view in this CLI (synteny levels, multi-way assemblies). Both then take the
-  // same path: the display category comes from the display the view opens the
+  // same path: the display type comes from the display the view opens the
   // track as, so modifiers (height:, color:, …) route to the right display slots
   // whichever way the track got there.
   const toOpen = [...flagTracks, ...(data.openTracks ?? [])]
@@ -605,7 +605,7 @@ const renderLinear: ModeRenderer = async ctx => {
       await applyDisplayOpts(
         view,
         trackId,
-        trackCategory(model.session, trackId, opts),
+        openedDisplayType(model.session, trackId, opts),
         opts,
         // the reads joining a row's windows take its top rows, and a column
         // sort would put every read at the column above them
@@ -791,7 +791,7 @@ const renderBreakpoint: ModeRenderer = async ctx => {
       flagTracks = [...showTracks, ...(data.openTracks ?? [])]
       const panels = (from: Config) =>
         breakpointInit(from, opts, showTracks, (trackId, modifiers) =>
-          trackCategory(model.session, trackId, modifiers),
+          openedDisplayType(model.session, trackId, modifiers),
         )
       specPanels = panels({ ...data, openTracks: undefined })
       return { views: panels(data) }
@@ -804,16 +804,16 @@ const renderBreakpoint: ModeRenderer = async ctx => {
   for (const panel of view.views) {
     await whenViewReady(panel, model.session)
     for (const { trackId, opts: modifiers } of flagTracks) {
-      const category = trackCategory(model.session, trackId, modifiers)
+      const displayType = openedDisplayType(model.session, trackId, modifiers)
       const drawn = writeFilter(
         panel,
         trackId,
-        buildDisplaySnapshot(category, modifiers, () => {}),
+        buildDisplaySnapshot(displayType, modifiers, () => {}),
       )
       if (drawn) {
         drawnFilters.set(trackId, drawn)
       }
-      writeMembers(panel, trackId, memberWrites(category, modifiers))
+      writeMembers(panel, trackId, memberWrites(displayType, modifiers))
     }
   }
   const spec: ViewSpec | undefined = specPanels && {

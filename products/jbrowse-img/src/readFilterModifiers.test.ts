@@ -90,7 +90,12 @@ async function filtered(configured: FieldPredicate[], opts: string[]) {
     'LinearGenomeView',
     {},
   )) as LinearGenomeViewModel
-  const spec = await applyDisplayOpts(view, 'reads', 'alignments', opts)
+  const spec = await applyDisplayOpts(
+    view,
+    'reads',
+    'LinearAlignmentsDisplay',
+    opts,
+  )
   const display = view.tracks[0]!.displays[0] as {
     writtenFilter: FieldPredicate[]
     junctionFilter: Record<string, unknown>

@@ -1,5 +1,8 @@
 import { getSession } from '@jbrowse/core/util'
-import { requestedDisplayType } from '@jbrowse/launch-args/displaySettings'
+import {
+  displayCategory,
+  requestedDisplayType,
+} from '@jbrowse/launch-args/displaySettings'
 import { launchTrackWithModifiers } from '@jbrowse/plugin-linear-genome-view'
 
 import type { AssertNever, AssertTrue, Covers } from './types.ts'
@@ -11,7 +14,6 @@ import type {
   ALIGNMENTS_COLOR_FIELDS,
   ALIGNMENTS_COMPACTNESS,
   COLOR_SCHEMES,
-  Category,
   DisplaySnapshot,
   FACET_ONLY_FIELDS,
   FilterEntry,
@@ -97,40 +99,46 @@ const CARD_GROW_MAX_HEIGHT = 250
 export async function applyDisplayOpts(
   view: LinearGenomeViewModel,
   trackId: string,
-  category: Category,
+  displayType: string | undefined,
   opts: string[],
   sortAt?: VariantSortColumn,
   joined = false,
 ) {
-  const entry = await launchTrackWithModifiers(view, trackId, category, opts, {
-    adjust: ({ snap, sort }) => {
-      if (category !== 'alignments') {
-        return
-      }
-      if (joined) {
-        if (snap.readConnections?.show === undefined) {
-          snap.readConnections = {
-            show: true,
-            mark: 'link',
-            ...snap.readConnections,
+  const entry = await launchTrackWithModifiers(
+    view,
+    trackId,
+    displayType,
+    opts,
+    {
+      adjust: ({ snap, sort }) => {
+        if (displayCategory(displayType) !== 'alignments') {
+          return
+        }
+        if (joined) {
+          if (snap.readConnections?.show === undefined) {
+            snap.readConnections = {
+              show: true,
+              mark: 'link',
+              ...snap.readConnections,
+            }
+          }
+          snap.sort ??= 'svSignal'
+        }
+        if (sortAt) {
+          const [region] = view.displayedRegions
+          if (!sort && region) {
+            snap.sort = { ...sortAt, refName: region.refName }
+          }
+          // one row height on every card of a run: a shallow pileup takes the
+          // room it needs, and a deep one stops at the ceiling
+          if (snap.heightMode === undefined && snap.height === undefined) {
+            snap.heightMode = 'grow'
+            snap.growMaxHeight ??= CARD_GROW_MAX_HEIGHT
           }
         }
-        snap.sort ??= 'svSignal'
-      }
-      if (sortAt) {
-        const [region] = view.displayedRegions
-        if (!sort && region) {
-          snap.sort = { ...sortAt, refName: region.refName }
-        }
-        // one row height on every card of a run: a shallow pileup takes the
-        // room it needs, and a deep one stops at the ceiling
-        if (snap.heightMode === undefined && snap.height === undefined) {
-          snap.heightMode = 'grow'
-          snap.growMaxHeight ??= CARD_GROW_MAX_HEIGHT
-        }
-      }
+      },
     },
-  })
+  )
   if (!entry) {
     const reason = lastSessionError(view)
     const displayType = requestedDisplayType(opts)

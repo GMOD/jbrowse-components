@@ -1,12 +1,14 @@
-import { buildDisplaySnapshot } from '@jbrowse/launch-args/displaySettings'
+import {
+  buildDisplaySnapshot,
+  displayCategory,
+} from '@jbrowse/launch-args/displaySettings'
 
 import type { Config, OpenTrack, Opts } from './types.ts'
 import type { TrackInit } from '@jbrowse/core/util/tracks'
 import type { Entry } from '@jbrowse/launch-args'
-import type { Category } from '@jbrowse/launch-args/displaySettings'
 import type { BreakpointSplitViewInitView } from '@jbrowse/plugin-breakpoint-split-view'
 
-type CategoryOf = (trackId: string, opts: string[]) => Category
+type DisplayTypeOf = (trackId: string, opts: string[]) => string | undefined
 
 // The `views` array a BreakpointSplitView is opened with, built from CLI flags.
 // Pure, and split out of renderRegion.ts for the reason comparativeInit.ts is:
@@ -80,15 +82,15 @@ export function breakpointLocs(argv: Entry[] | undefined, loc?: string) {
 export function breakpointTracks(
   openTracks: OpenTrack[] | undefined,
   showTracks: OpenTrack[],
-  categoryOf: CategoryOf = () => 'other',
+  displayTypeOf: DisplayTypeOf = () => undefined,
 ): TrackInit[] {
   return [...showTracks, ...(openTracks ?? [])].map(({ trackId, opts }) => {
-    const category = categoryOf(trackId, opts)
+    const opensAs = displayTypeOf(trackId, opts)
     const {
       snap: { filter: _filter, ...snap },
       sort,
       displayType,
-    } = buildDisplaySnapshot(category, opts)
+    } = buildDisplaySnapshot(opensAs, opts)
     if (sort) {
       // The center-line sort is resolved against a view's centerLineInfo, and
       // there is no single view here — one panel per --loc, each at its own
@@ -104,7 +106,9 @@ export function breakpointTracks(
       // (`svSignalTier`), so a pileup deeper than its track cuts off the
       // reads that carry none. Ahead of the snapshot, so a `sort=position` of
       // the track's own wins.
-      ...(category === 'alignments' ? { sort: 'svSignal' } : {}),
+      ...(displayCategory(opensAs) === 'alignments'
+        ? { sort: 'svSignal' }
+        : {}),
       ...snap,
       ...(displayType ? { type: displayType } : {}),
     }
@@ -143,7 +147,7 @@ export function breakpointInit(
   data: Config,
   opts: Opts,
   showTracks: OpenTrack[],
-  categoryOf?: CategoryOf,
+  displayTypeOf?: DisplayTypeOf,
 ): BreakpointSplitViewInitView[] {
   const locs = breakpointLocs(opts.argv, opts.loc)
   if (locs.length < 2) {
@@ -153,6 +157,6 @@ export function breakpointInit(
         'Quote a single --loc only to put SEVERAL windows in one panel.',
     )
   }
-  const tracks = breakpointTracks(data.openTracks, showTracks, categoryOf)
+  const tracks = breakpointTracks(data.openTracks, showTracks, displayTypeOf)
   return locs.map(loc => ({ assembly: data.assembly.name, loc, tracks }))
 }

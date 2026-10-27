@@ -1,5 +1,6 @@
 import { samFlagNames } from '@jbrowse/cigar-utils'
 
+import { displaySlotPaths } from './displaySlots.generated.ts'
 import {
   invalidModifierValue,
   parseBool,
@@ -76,6 +77,62 @@ export function displayCategory(displayType: string | undefined): Category {
     (displayType ? lookup(categoryByDisplayType, displayType) : undefined) ??
     'other'
   )
+}
+
+// A display's slot paths, and which of them hold sub-slots: a written path is
+// declared where it is a slot, or sits inside one that holds no sub-slots (a
+// frozen object, a list).
+const slotIndex = new Map<
+  string,
+  { slots: Set<string>; parents: Set<string> }
+>()
+
+function slotIndexOf(displayType: string) {
+  let index = slotIndex.get(displayType)
+  if (!index) {
+    const paths = lookup(displaySlotPaths, displayType)
+    if (!paths) {
+      return undefined
+    }
+    const parents = new Set<string>()
+    for (const path of paths) {
+      const segments = path.split('.')
+      for (let i = 1; i < segments.length; i++) {
+        parents.add(segments.slice(0, i).join('.'))
+      }
+    }
+    index = { slots: new Set(paths), parents }
+    slotIndex.set(displayType, index)
+  }
+  return index
+}
+
+function declares(
+  index: { slots: Set<string>; parents: Set<string> },
+  path: string,
+) {
+  const segments = path.split('.')
+  return segments.some((_, i) => {
+    const prefix = segments.slice(0, i + 1).join('.')
+    return (
+      index.slots.has(prefix) && (prefix === path || !index.parents.has(prefix))
+    )
+  })
+}
+
+function isPlainObject(v: unknown): v is Record<string, unknown> {
+  return v !== null && typeof v === 'object' && !Array.isArray(v)
+}
+
+// The leaf paths `after` writes that `before` did not hold as they are
+function changedPaths(before: unknown, after: unknown, at = ''): string[] {
+  if (isPlainObject(after) && Object.keys(after).length > 0) {
+    const was = isPlainObject(before) ? before : {}
+    return Object.entries(after).flatMap(([key, value]) =>
+      changedPaths(was[key], value, at ? `${at}.${key}` : key),
+    )
+  }
+  return JSON.stringify(before) === JSON.stringify(after) ? [] : [at]
 }
 
 // `Object.hasOwn` because every table here is keyed by raw command-line input,
@@ -424,15 +481,18 @@ const CANVAS = ['feature', 'variant'] as const satisfies readonly Category[]
 
 /**
  * One `prefix:val1:val2` modifier: the display categories it writes for, and
- * what it folds into the settings. `byCategory` marks a modifier whose write
+ * what it folds into the settings, which lands only where the opened display
+ * declares every slot it writes. `byCategory` marks a modifier whose write
  * itself differs by category, which a caller that cannot name the category
- * has to refuse. `values` is how many it reads, one unless it says: `rest`
- * gives `val2` everything after `val1`, colons included, and a value past the
- * count throws.
+ * has to refuse. `vacuous` marks one a display without its slot already
+ * satisfies, so it is skipped there unsaid. `values` is how many it reads, one
+ * unless it says: `rest` gives `val2` everything after `val1`, colons
+ * included, and a value past the count throws.
  */
 interface Modifier {
   on: readonly Category[]
   byCategory?: true
+  vacuous?: true
   values?: 2 | 'rest'
   apply: (
     result: DisplaySettings,
@@ -490,8 +550,10 @@ const modifiers: Record<string, Modifier> = {
       r.snap.height = parseNum('height', v)
     },
   },
+  // a display that never gates a large region has nothing to force
   force: {
     on: ALL_CATEGORIES,
+    vacuous: true,
     apply: (r, v) => {
       r.snap.forceLoad = parseBool('force', v)
     },
@@ -747,10 +809,12 @@ export const trackModifierNames = Object.keys(modifiers)
 // of files is a reasonable thing to script.
 function applyModifier(
   result: DisplaySettings,
-  category: Category | undefined,
+  opened: string | undefined,
   [prefix = '', ...values]: string[],
   warn: (message: string) => void,
 ) {
+  const displayType = result.displayType ?? opened
+  const category = displayType ? displayCategory(displayType) : undefined
   const modifier = lookup(modifiers, prefix)
   if (!modifier) {
     throw new Error(
@@ -766,19 +830,42 @@ function applyModifier(
     )
   } else {
     const [val1, val2] = modifierArgs(prefix, modifier, values)
+    const before = structuredClone(result)
     modifier.apply(result, val1, val2, category)
+    const landsOn = result.displayType ?? displayType
+    const index = landsOn ? slotIndexOf(landsOn) : undefined
+    const undeclared = index
+      ? [
+          ...changedPaths(before.snap, result.snap),
+          ...changedPaths(before.sort, result.sort, 'sort'),
+        ].filter(path => !declares(index, path))
+      : []
+    if (undeclared.length > 0) {
+      Object.assign(result, before)
+      for (const key of ['sort', 'displayType'] as const) {
+        if (!(key in before)) {
+          delete result[key]
+        }
+      }
+      if (!modifier.vacuous) {
+        warn(
+          `track option "${prefix}" has no effect on ${landsOn}, which has no ${undeclared.join(', ')} setting`,
+        )
+      }
+    }
   }
 }
 
 /**
- * A track's modifiers read into display settings, for the display `category`
- * names. Without a category, a modifier whose write depends on it throws, and
- * every other one writes its setting for the display to accept or refuse. A
- * member write is `memberWrites`'s, and `warn` hears of a modifier aimed at
- * another kind of track.
+ * A track's modifiers read into display settings for `displayType`, the
+ * display the track opens as. A named modifier writes only slots that display
+ * declares. Without a display type, a modifier whose write depends on it
+ * throws, and every other one writes its setting for the display to accept or
+ * refuse. A member write is `memberWrites`'s, and `warn` hears of a modifier
+ * that does nothing on the display.
  */
 export function buildDisplaySnapshot(
-  category: Category | undefined,
+  displayType: string | undefined,
   opts: string[],
   warn = (message: string) => {
     console.warn(`Warning: ${message}`)
@@ -802,7 +889,7 @@ export function buildDisplaySnapshot(
         }
       }
     } else {
-      applyModifier(result, category, opt.split(':'), warn)
+      applyModifier(result, displayType, opt.split(':'), warn)
     }
   }
   return result
@@ -821,10 +908,10 @@ export function checkModifiers(opts: string[]) {
       continue
     }
     let refusal: unknown
-    const taken = ALL_CATEGORIES.some(category => {
+    const taken = categorizedDisplayTypes.some(displayType => {
       let applies = true
       try {
-        buildDisplaySnapshot(category, [opt], () => {
+        buildDisplaySnapshot(displayType, [opt], () => {
           applies = false
         })
         return applies
@@ -846,11 +933,13 @@ export function checkModifiers(opts: string[]) {
  * track's `color:<scheme>`, which names one member of the color channel the
  * track already configures.
  */
-export function memberWrites(category: Category | undefined, opts: string[]) {
+export function memberWrites(displayType: string | undefined, opts: string[]) {
   return opts.flatMap(opt =>
     isMemberWrite(opt)
       ? [opt]
-      : category === 'hic' && opt.startsWith('color:')
+      : displayType !== undefined &&
+          displayCategory(displayType) === 'hic' &&
+          opt.startsWith('color:')
         ? [`encoding.color.scale.scheme=${opt.slice('color:'.length)}`]
         : [],
   )

@@ -52,16 +52,7 @@ once per display that embeds it, so read the trend, not the size.
 
 ## Next
 
-1. **jbrowse-img modifiers that write nothing.** `modifierSlots.test.ts`
-   checks every modifier on every display of its category, and
-   `WRITES_NOTHING` lists the displays a modifier misses. Most have nothing to
-   write (no size gate for `force:`, a comparative view sizing `height:`). The
-   gap: `heightMode:` and `featureHeight:` write slots
-   `LinearMultiRowFeatureDisplay` and `LinearMultiSampleVariantDisplay` don't
-   declare, so `display:multivariant heightMode:grow` writes nothing. Batch
-   adds `force:true` to every track, so narrowing that modifier warns on every
-   BigWig.
-2. **Writers outside the tree.** jb2hubs with its hosted configs and both
+1. **Writers outside the tree.** jb2hubs with its hosted configs and both
    genomes sites, JBrowseR, ggjbrowse (engine and tutorials re-knit), the
    graph plugin (`facet.sort` from bandage-core 12) and the figure specs write
    main's spellings. Left:
@@ -70,12 +61,12 @@ once per display that embeds it, so read the trend, not the size.
      `demos/apollo3/config.json` together, never the config alone.
    - The Trix `textSearchAdapterId`/`metaFilePath` keys in jb2hubs' GenArk and
      UCSC writers wait on the config-merger lambda deduping by `ixFilePath`.
-3. **Plugin ABI.** The served list leaves out render-core's shader subpaths.
+2. **Plugin ABI.** The served list leaves out render-core's shader subpaths.
    `@jbrowse/tables` and `@jbrowse/launch-args` ship with v5 at its version,
    betas included (Colin, 2026-10-27). Left: baseline
    `reExports.generated.json` and the exports map at the release candidate
    (`reference/PLUGIN_ABI_STABILITY.md`).
-4. **Plugin displays go unchecked.** `jbrowse validate` warns on each
+3. **Plugin displays go unchecked.** `jbrowse validate` warns on each
    plugin-registered type and checks none of its slots, so a plugin display
    that respells a shared word (`facet`, `encoding`, `rows`) fails nowhere.
    The graph plugin's `facet.domain` survived core's rename to `sort` that
@@ -91,7 +82,7 @@ once per display that embeds it, so read the trend, not the size.
   v4.3.0` over the legacy keys in `website/static/schema/v5/config.json` finds
   six missing from v4.3.0 on 2026-10-27, each from an earlier release.
 - `jbrowse validate` reports no warning outside plugin-registered types on
-  hosted configs, `demos/` and the tutorials (step 4).
+  hosted configs, `demos/` and the tutorials (step 3).
 - The v5 release draft and the schema use the same spellings, including the
   word "experimental" for `LinearMarkDisplay`.
 - A migration page generated from the `retired` maps exists, and CHANGELOG has

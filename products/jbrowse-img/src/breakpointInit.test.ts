@@ -89,7 +89,7 @@ describe('breakpointTracks', () => {
       breakpointTracks(
         undefined,
         [{ trackId: 'tumor_bam', opts: ['height:240', 'force:true'] }],
-        () => 'alignments',
+        () => 'LinearAlignmentsDisplay',
       ),
     ).toEqual([
       {
@@ -115,17 +115,19 @@ describe('breakpointTracks', () => {
   // A split view is about the reads joining its panels, and a pileup deeper
   // than its track otherwise cuts off whichever reads start last.
   it('lays an alignments track out SV evidence first, unless the track says otherwise', () => {
-    const sortOf = (opts: string[], category: 'alignments' | 'other') =>
+    const sortOf = (opts: string[], displayType: string) =>
       (
         breakpointTracks(
           undefined,
           [{ trackId: 't', opts }],
-          () => category,
+          () => displayType,
         )[0] as { sort?: string }
       ).sort
-    expect(sortOf([], 'alignments')).toBe('svSignal')
-    expect(sortOf(['sort=position'], 'alignments')).toBe('position')
-    expect(sortOf([], 'other')).toBeUndefined()
+    expect(sortOf([], 'LinearAlignmentsDisplay')).toBe('svSignal')
+    expect(sortOf(['sort=position'], 'LinearAlignmentsDisplay')).toBe(
+      'position',
+    )
+    expect(sortOf([], 'LinearMafDisplay')).toBeUndefined()
   })
 })
 

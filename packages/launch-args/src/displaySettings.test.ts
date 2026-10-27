@@ -7,49 +7,67 @@ import {
   memberWrites,
 } from './displaySettings.ts'
 
+// the display each category's tests open their track as
+const DISPLAY = {
+  alignments: 'LinearAlignmentsDisplay',
+  wiggle: 'LinearWiggleDisplay',
+  feature: 'LinearBasicDisplay',
+  variant: 'LinearVariantDisplay',
+  hic: 'LinearHicDisplay',
+  other: 'LinearMafDisplay',
+} as const
+
 // buildDisplaySnapshot turns a track's modifier list into a declarative display
 // snapshot (passed to showTrack), instead of a sequence of setter actions.
 
 describe('alignments modifiers', () => {
   test('a facet or color field is the slot write the display spells', () => {
-    expect(buildDisplaySnapshot('alignments', ['facet=tags.HP']).snap).toEqual({
+    expect(
+      buildDisplaySnapshot('LinearAlignmentsDisplay', ['facet=tags.HP']).snap,
+    ).toEqual({
       facet: 'tags.HP',
     })
   })
 
   test('color:tag and color:attribute point at encoding.color.field', () => {
-    expect(() => buildDisplaySnapshot('alignments', ['color:tag:XS'])).toThrow(
-      /encoding\.color\.field=tags\.<TAG>/,
-    )
     expect(() =>
-      buildDisplaySnapshot('feature', ['color:attribute:gene_biotype']),
+      buildDisplaySnapshot('LinearAlignmentsDisplay', ['color:tag:XS']),
+    ).toThrow(/encoding\.color\.field=tags\.<TAG>/)
+    expect(() =>
+      buildDisplaySnapshot('LinearBasicDisplay', [
+        'color:attribute:gene_biotype',
+      ]),
     ).toThrow(/encoding\.color\.field=<name>/)
   })
 
   test('height parses a number', () => {
-    const { snap } = buildDisplaySnapshot('alignments', ['height:400'])
+    const { snap } = buildDisplaySnapshot('LinearAlignmentsDisplay', [
+      'height:400',
+    ])
     expect(snap.height).toBe(400)
   })
 
   test('arcs:cloud and arcs:down map to readConnections fields', () => {
     expect(
-      buildDisplaySnapshot('alignments', ['arcs:cloud']).snap,
+      buildDisplaySnapshot('LinearAlignmentsDisplay', ['arcs:cloud']).snap,
     ).toMatchObject({ readConnections: { show: true, mark: 'rule' } })
     expect(
-      buildDisplaySnapshot('alignments', ['arcs:down']).snap,
+      buildDisplaySnapshot('LinearAlignmentsDisplay', ['arcs:down']).snap,
     ).toMatchObject({
       readConnections: { show: true, mark: 'link', placement: 'down' },
     })
   })
 
   test('the unit is a slot write that leaves the curved connectors alone', () => {
-    const { snap } = buildDisplaySnapshot('alignments', ['unit=chain'])
+    const { snap } = buildDisplaySnapshot('LinearAlignmentsDisplay', [
+      'unit=chain',
+    ])
     expect(snap).toMatchObject({ unit: 'chain' })
     expect(snap).not.toHaveProperty('pileup')
   })
 
   test('the curved-connector overlay is a band member, which waits for the display', () => {
-    const { snap } = buildDisplaySnapshot('alignments', [
+    const { snap } = buildDisplaySnapshot('LinearAlignmentsDisplay', [
       'pileup.connectors.show=true',
     ])
     expect(snap).toEqual({})
@@ -57,43 +75,51 @@ describe('alignments modifiers', () => {
 
   test('sashimi:off hides arcs; sashimi:down sets the placement', () => {
     expect(
-      buildDisplaySnapshot('alignments', ['sashimi:off']).snap,
+      buildDisplaySnapshot('LinearAlignmentsDisplay', ['sashimi:off']).snap,
     ).toMatchObject({ sashimi: { show: false } })
     expect(
-      buildDisplaySnapshot('alignments', ['sashimi:down']).snap,
+      buildDisplaySnapshot('LinearAlignmentsDisplay', ['sashimi:down']).snap,
     ).toMatchObject({ sashimi: { show: true, placement: 'down' } })
   })
 
   test('sort is returned as an intent (resolved against the view)', () => {
-    const { sort, snap } = buildDisplaySnapshot('alignments', ['sort:base'])
+    const { sort, snap } = buildDisplaySnapshot('LinearAlignmentsDisplay', [
+      'sort:base',
+    ])
     expect(sort).toEqual({ field: 'base' })
     expect(snap.sort).toBeUndefined()
   })
 
   test('sort:basePair is the base field, its name before v5', () => {
-    const { sort } = buildDisplaySnapshot('alignments', ['sort:basePair'])
+    const { sort } = buildDisplaySnapshot('LinearAlignmentsDisplay', [
+      'sort:basePair',
+    ])
     expect(sort).toEqual({ field: 'base' })
   })
 
   test('sort:tag:HP is the tags.HP field, and a tag sort names its tag', () => {
-    const { sort } = buildDisplaySnapshot('alignments', ['sort:tag:HP'])
+    const { sort } = buildDisplaySnapshot('LinearAlignmentsDisplay', [
+      'sort:tag:HP',
+    ])
     expect(sort).toEqual({ field: 'tags.HP' })
-    expect(() => buildDisplaySnapshot('alignments', ['sort:tag'])).toThrow(
-      /tag:<TAG>/,
-    )
+    expect(() =>
+      buildDisplaySnapshot('LinearAlignmentsDisplay', ['sort:tag']),
+    ).toThrow(/tag:<TAG>/)
   })
 
   test('force sets the declarative forceLoad config slot', () => {
-    expect(buildDisplaySnapshot('alignments', ['force:true']).snap).toEqual({
+    expect(
+      buildDisplaySnapshot('LinearAlignmentsDisplay', ['force:true']).snap,
+    ).toEqual({
       forceLoad: true,
     })
     expect(
-      buildDisplaySnapshot('alignments', []).snap.forceLoad,
+      buildDisplaySnapshot('LinearAlignmentsDisplay', []).snap.forceLoad,
     ).toBeUndefined()
   })
 
   test('featureHeight preset maps to per-read height (spacing is derived)', () => {
-    const { snap } = buildDisplaySnapshot('alignments', [
+    const { snap } = buildDisplaySnapshot('LinearAlignmentsDisplay', [
       'featureHeight:super-compact',
     ])
     expect(snap).toMatchObject({ pileup: { mark: { height: 1 } } })
@@ -102,13 +128,13 @@ describe('alignments modifiers', () => {
 
   test('featureHeight numeric sets pileup.mark.height on alignments', () => {
     expect(
-      buildDisplaySnapshot('alignments', ['featureHeight:4']).snap.pileup?.mark
-        ?.height,
+      buildDisplaySnapshot('LinearAlignmentsDisplay', ['featureHeight:4']).snap
+        .pileup?.mark?.height,
     ).toBe(4)
   })
 
   test('a band modifier keeps the members a JSON modifier wrote', () => {
-    const { snap } = buildDisplaySnapshot('alignments', [
+    const { snap } = buildDisplaySnapshot('LinearAlignmentsDisplay', [
       '{"pileup":{"softClips":{"show":true}},"readConnections":{"height":100},"sashimi":{"labels":{"show":true}}}',
       'featureHeight:4',
       'arcs:down',
@@ -128,14 +154,14 @@ describe('alignments modifiers', () => {
 
   test('featureHeight rejects a non-numeric, non-preset value', () => {
     expect(() =>
-      buildDisplaySnapshot('alignments', ['featureHeight:bogus']),
+      buildDisplaySnapshot('LinearAlignmentsDisplay', ['featureHeight:bogus']),
     ).toThrow(/Invalid featureHeight/)
   })
 
   test('a non-numeric height rejects instead of writing NaN', () => {
-    expect(() => buildDisplaySnapshot('alignments', ['height:8o'])).toThrow(
-      /Invalid height/,
-    )
+    expect(() =>
+      buildDisplaySnapshot('LinearAlignmentsDisplay', ['height:8o']),
+    ).toThrow(/Invalid height/)
   })
 
   test.each([
@@ -158,31 +184,35 @@ describe('alignments modifiers', () => {
     'minmax:0:10',
     'resolution:fine',
   ])('%s is no modifier: its slot is the spelling', opt => {
-    expect(() => buildDisplaySnapshot('alignments', [opt])).toThrow(
-      `unknown track option "${opt.split(':')[0]}:"`,
-    )
+    expect(() =>
+      buildDisplaySnapshot('LinearAlignmentsDisplay', [opt]),
+    ).toThrow(`unknown track option "${opt.split(':')[0]}:"`)
   })
 })
 
 describe('feature modifiers', () => {
   test('the facet is one slot on a feature and a variant track', () => {
-    expect(buildDisplaySnapshot('feature', ['facet=strand']).snap).toEqual({
+    expect(
+      buildDisplaySnapshot('LinearBasicDisplay', ['facet=strand']).snap,
+    ).toEqual({
       facet: 'strand',
     })
-    expect(buildDisplaySnapshot('variant', ['facet=INFO.SVTYPE']).snap).toEqual(
-      { facet: 'INFO.SVTYPE' },
-    )
+    expect(
+      buildDisplaySnapshot('LinearVariantDisplay', ['facet=INFO.SVTYPE']).snap,
+    ).toEqual({ facet: 'INFO.SVTYPE' })
   })
 
   test('featureHeight preset maps to displayMode for canvas features', () => {
-    const { snap } = buildDisplaySnapshot('feature', [
+    const { snap } = buildDisplaySnapshot('LinearBasicDisplay', [
       'featureHeight:super-compact',
     ])
     expect(snap.displayMode).toBe('superCompact')
   })
 
   test('featureHeight numeric sets mark.height on canvas features', () => {
-    const { snap } = buildDisplaySnapshot('feature', ['featureHeight:4'])
+    const { snap } = buildDisplaySnapshot('LinearBasicDisplay', [
+      'featureHeight:4',
+    ])
     expect(snap.mark).toEqual({ height: 4 })
   })
 
@@ -190,7 +220,7 @@ describe('feature modifiers', () => {
   // `--gff genes.gff.gz sashimi:down` looked like it had worked.
   test('alignment-only modifiers warn on a feature track', () => {
     const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined)
-    const { snap } = buildDisplaySnapshot('feature', [
+    const { snap } = buildDisplaySnapshot('LinearBasicDisplay', [
       'arcs:up',
       'sashimi:down',
     ])
@@ -207,34 +237,41 @@ describe('feature modifiers', () => {
 
   test('heightMode sets each track-height strategy', () => {
     expect(
-      buildDisplaySnapshot('feature', ['heightMode:fit']).snap.heightMode,
+      buildDisplaySnapshot('LinearBasicDisplay', ['heightMode:fit']).snap
+        .heightMode,
     ).toBe('fit')
     expect(
-      buildDisplaySnapshot('feature', ['heightMode:grow']).snap.heightMode,
+      buildDisplaySnapshot('LinearBasicDisplay', ['heightMode:grow']).snap
+        .heightMode,
     ).toBe('grow')
     expect(
-      buildDisplaySnapshot('feature', ['heightMode:fixed']).snap.heightMode,
+      buildDisplaySnapshot('LinearBasicDisplay', ['heightMode:fixed']).snap
+        .heightMode,
     ).toBe('fixed')
-    expect(buildDisplaySnapshot('feature', []).snap.heightMode).toBeUndefined()
+    expect(
+      buildDisplaySnapshot('LinearBasicDisplay', []).snap.heightMode,
+    ).toBeUndefined()
   })
 
   test('heightMode:mode:N sets both the strategy and the track height', () => {
-    const { snap } = buildDisplaySnapshot('feature', ['heightMode:fit:200'])
+    const { snap } = buildDisplaySnapshot('LinearBasicDisplay', [
+      'heightMode:fit:200',
+    ])
     expect(snap.height).toBe(200)
     expect(snap.heightMode).toBe('fit')
   })
 
   test('an unknown heightMode rejects', () => {
-    expect(() => buildDisplaySnapshot('feature', ['heightMode:bogus'])).toThrow(
-      /Invalid heightMode value "bogus". Expected fixed, grow, fit./,
-    )
+    expect(() =>
+      buildDisplaySnapshot('LinearBasicDisplay', ['heightMode:bogus']),
+    ).toThrow(/Invalid heightMode value "bogus". Expected fixed, grow, fit./)
   })
 
   // heightMode's optional second arg used to swallow a typo (`Number.isFinite`
   // guard), silently rendering at the default height
   test('a non-numeric heightMode height rejects', () => {
     expect(() =>
-      buildDisplaySnapshot('feature', ['heightMode:fit:20o']),
+      buildDisplaySnapshot('LinearBasicDisplay', ['heightMode:fit:20o']),
     ).toThrow(/Invalid heightMode/)
   })
 
@@ -243,10 +280,11 @@ describe('feature modifiers', () => {
   test('the canvas-base modifiers apply to feature and variant alike', () => {
     for (const category of ['feature', 'variant'] as const) {
       expect(
-        buildDisplaySnapshot(category, ['heightMode:grow']).snap.heightMode,
+        buildDisplaySnapshot(DISPLAY[category], ['heightMode:grow']).snap
+          .heightMode,
       ).toBe('grow')
       expect(
-        buildDisplaySnapshot(category, ['featureHeight:compact']).snap
+        buildDisplaySnapshot(DISPLAY[category], ['featureHeight:compact']).snap
           .displayMode,
       ).toBe('compact')
     }
@@ -254,20 +292,24 @@ describe('feature modifiers', () => {
 
   test('alignments heightMode shares the full fixed/grow/fit vocabulary', () => {
     expect(
-      buildDisplaySnapshot('alignments', ['heightMode:fit']).snap.heightMode,
+      buildDisplaySnapshot('LinearAlignmentsDisplay', ['heightMode:fit']).snap
+        .heightMode,
     ).toBe('fit')
     expect(
-      buildDisplaySnapshot('alignments', ['heightMode:grow']).snap.heightMode,
+      buildDisplaySnapshot('LinearAlignmentsDisplay', ['heightMode:grow']).snap
+        .heightMode,
     ).toBe('grow')
     expect(
-      buildDisplaySnapshot('alignments', ['heightMode:fixed']).snap.heightMode,
+      buildDisplaySnapshot('LinearAlignmentsDisplay', ['heightMode:fixed']).snap
+        .heightMode,
     ).toBe('fixed')
   })
 
   test('heightMode is ignored on a display type without the notion', () => {
     const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined)
     expect(
-      buildDisplaySnapshot('wiggle', ['heightMode:fixed']).snap.heightMode,
+      buildDisplaySnapshot('LinearWiggleDisplay', ['heightMode:fixed']).snap
+        .heightMode,
     ).toBeUndefined()
     expect(warn).toHaveBeenCalledWith(
       expect.stringContaining('"heightMode" has no effect on a wiggle track'),
@@ -278,7 +320,7 @@ describe('feature modifiers', () => {
 
 describe('alignments settings a static export cannot reach any other way', () => {
   test('display-chrome settings are slot writes, band members wait for the display', () => {
-    const { snap } = buildDisplaySnapshot('alignments', [
+    const { snap } = buildDisplaySnapshot('LinearAlignmentsDisplay', [
       'showOutline=false',
       'legend.show=true',
       'pileup.maxLayoutHeight=4000',
@@ -289,7 +331,7 @@ describe('alignments settings a static export cannot reach any other way', () =>
   })
 
   const filterOf = (opts: string[]) =>
-    buildDisplaySnapshot('alignments', opts).snap.filter!
+    buildDisplaySnapshot('LinearAlignmentsDisplay', opts).snap.filter!
   const testedOf = (opts: string[]) =>
     filterOf(opts).filter(p => Object.keys(p).length > 1)
 
@@ -305,7 +347,9 @@ describe('alignments settings a static export cannot reach any other way', () =>
       { field: 'mapq', gte: 20 },
       { field: 'split', equal: true },
     ])
-    expect(() => buildDisplaySnapshot('alignments', ['mapq:high'])).toThrow()
+    expect(() =>
+      buildDisplaySnapshot('LinearAlignmentsDisplay', ['mapq:high']),
+    ).toThrow()
   })
 
   test('a later modifier on a field replaces the earlier one', () => {
@@ -322,9 +366,9 @@ describe('alignments settings a static export cannot reach any other way', () =>
   })
 
   test('an unknown category value names the three that work', () => {
-    expect(() => buildDisplaySnapshot('alignments', ['spliced:true'])).toThrow(
-      /all, only, exclude/,
-    )
+    expect(() =>
+      buildDisplaySnapshot('LinearAlignmentsDisplay', ['spliced:true']),
+    ).toThrow(/all, only, exclude/)
   })
 
   // samtools' -f / -F, in that order, over all twelve flag fields
@@ -375,7 +419,7 @@ describe('alignments settings a static export cannot reach any other way', () =>
 
   test('an unknown flag name lists the vocabulary', () => {
     expect(() =>
-      buildDisplaySnapshot('alignments', ['flags::SECONDRY']),
+      buildDisplaySnapshot('LinearAlignmentsDisplay', ['flags::SECONDRY']),
     ).toThrow(/PAIRED, PROPER_PAIR/)
   })
 
@@ -423,7 +467,9 @@ describe('alignments settings a static export cannot reach any other way', () =>
     ['mapq:20:30', /"mapq:" takes one value, so ":30"/],
     ['color:red:x:y', /"color:" takes one value, so ":x:y"/],
   ])('a stray value in %s throws', (opt, message) => {
-    expect(() => buildDisplaySnapshot('alignments', [opt])).toThrow(message)
+    expect(() =>
+      buildDisplaySnapshot('LinearAlignmentsDisplay', [opt]),
+    ).toThrow(message)
   })
 
   test('a tag filter with no value passes any read carrying the tag', () => {
@@ -497,7 +543,9 @@ describe('alignments settings a static export cannot reach any other way', () =>
     [7, /is not an object/],
   ])('a bag entry %j throws', (entry, message) => {
     expect(() =>
-      buildDisplaySnapshot('alignments', [JSON.stringify({ filter: [entry] })]),
+      buildDisplaySnapshot('LinearAlignmentsDisplay', [
+        JSON.stringify({ filter: [entry] }),
+      ]),
     ).toThrow(message)
     expect(() => {
       checkModifiers([JSON.stringify({ filter: [entry] })])
@@ -506,7 +554,7 @@ describe('alignments settings a static export cannot reach any other way', () =>
 
   test("v4's object form is refused", () => {
     expect(() =>
-      buildDisplaySnapshot('alignments', [
+      buildDisplaySnapshot('LinearAlignmentsDisplay', [
         '{"filter":{"junctions":{"nonCanonical":"exclude"}}}',
         'split:only',
       ]),
@@ -515,7 +563,7 @@ describe('alignments settings a static export cannot reach any other way', () =>
 
   test('the new alignments modifiers warn on a wiggle track', () => {
     const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined)
-    const { snap } = buildDisplaySnapshot('wiggle', [
+    const { snap } = buildDisplaySnapshot('LinearWiggleDisplay', [
       'sashimi:up',
       'flags:2:1540',
     ])
@@ -528,7 +576,7 @@ describe('alignments settings a static export cannot reach any other way', () =>
 
 describe('score settings', () => {
   test('a whole-setting slot write joins the snapshot', () => {
-    const { snap } = buildDisplaySnapshot('wiggle', [
+    const { snap } = buildDisplaySnapshot('LinearWiggleDisplay', [
       'mark=point',
       'origin=5',
       'color:purple',
@@ -541,7 +589,7 @@ describe('score settings', () => {
   })
 
   test('a member of the value scale waits for the display', () => {
-    const { snap } = buildDisplaySnapshot('wiggle', [
+    const { snap } = buildDisplaySnapshot('LinearWiggleDisplay', [
       'scales.y.type=log',
       'scales.y.domainMax=1024',
     ])
@@ -557,23 +605,28 @@ describe('score settings', () => {
 // bad slot value.
 describe('color routing', () => {
   test('color names a field on alignments and a solid color on wiggle', () => {
-    expect(buildDisplaySnapshot('alignments', ['color:strand']).snap).toEqual({
+    expect(
+      buildDisplaySnapshot('LinearAlignmentsDisplay', ['color:strand']).snap,
+    ).toEqual({
       encoding: { color: 'strand' },
     })
-    expect(buildDisplaySnapshot('wiggle', ['color:purple']).snap).toEqual({
+    expect(
+      buildDisplaySnapshot('LinearWiggleDisplay', ['color:purple']).snap,
+    ).toEqual({
       encoding: { color: { value: 'purple' } },
     })
   })
 
   test('color names a facet dimension as a read field', () => {
     expect(
-      buildDisplaySnapshot('alignments', ['color:mateAssembly']).snap,
+      buildDisplaySnapshot('LinearAlignmentsDisplay', ['color:mateAssembly'])
+        .snap,
     ).toEqual({ encoding: { color: 'mateAssembly' } })
   })
 
   test('baseColor draws over the reads, so it combines with a read color', () => {
     expect(
-      buildDisplaySnapshot('alignments', [
+      buildDisplaySnapshot('LinearAlignmentsDisplay', [
         'color:mapq',
         'baseColor:methylation',
       ]).snap,
@@ -588,7 +641,7 @@ describe('color routing', () => {
       },
     })
     expect(
-      buildDisplaySnapshot('alignments', [
+      buildDisplaySnapshot('LinearAlignmentsDisplay', [
         'featureHeight:compact',
         'baseColor:baseQuality',
       ]).snap,
@@ -602,24 +655,24 @@ describe('color routing', () => {
 
   test('a per-base name on color: says which modifier draws it', () => {
     expect(() =>
-      buildDisplaySnapshot('alignments', ['color:methylation']),
+      buildDisplaySnapshot('LinearAlignmentsDisplay', ['color:methylation']),
     ).toThrow(/baseColor:methylation/)
     expect(() =>
-      buildDisplaySnapshot('alignments', ['baseColor:strand']),
+      buildDisplaySnapshot('LinearAlignmentsDisplay', ['baseColor:strand']),
     ).toThrow(/baseQuality/)
   })
 
   test('a read category on color: names the facet that groups by it', () => {
     for (const field of ['pairing', 'split', 'spliced', 'svSignal']) {
       expect(() =>
-        buildDisplaySnapshot('alignments', [`color:${field}`]),
+        buildDisplaySnapshot('LinearAlignmentsDisplay', [`color:${field}`]),
       ).toThrow(`facet=${field}`)
     }
   })
 
   test('a whole-setting slot write joins the snapshot and a member write waits for the display', () => {
     expect(
-      buildDisplaySnapshot('alignments', [
+      buildDisplaySnapshot('LinearAlignmentsDisplay', [
         'color:mapq',
         'encoding.color.scale.domain=1,2',
         'pileup.bases.unmodified.show=true',
@@ -630,7 +683,7 @@ describe('color routing', () => {
 
   test('a JSON option merges into what earlier options wrote', () => {
     expect(
-      buildDisplaySnapshot('alignments', [
+      buildDisplaySnapshot('LinearAlignmentsDisplay', [
         'color:purple',
         '{"encoding":{"color":{"scale":{"range":["rgb(1,2,3)"]}}},"height":300}',
       ]).snap,
@@ -643,7 +696,9 @@ describe('color routing', () => {
   })
 
   test('anything else on alignments is a CSS color for every read', () => {
-    expect(buildDisplaySnapshot('alignments', ['color:purple']).snap).toEqual({
+    expect(
+      buildDisplaySnapshot('LinearAlignmentsDisplay', ['color:purple']).snap,
+    ).toEqual({
       encoding: { color: { value: 'purple' } },
     })
   })
@@ -653,26 +708,29 @@ describe('color routing', () => {
   // be written for them and dropped as an unknown MST key.
   test('color sets a solid color on the canvas-based displays', () => {
     for (const category of ['feature', 'variant'] as const) {
-      const { snap } = buildDisplaySnapshot(category, ['color:red'])
+      const { snap } = buildDisplaySnapshot(DISPLAY[category], ['color:red'])
       expect(snap).toEqual({ encoding: { color: { value: 'red' } } })
     }
   })
 
   test('color:strand names the field the canvas displays color by', () => {
     for (const category of ['feature', 'variant'] as const) {
-      expect(buildDisplaySnapshot(category, ['color:strand']).snap).toEqual({
+      expect(
+        buildDisplaySnapshot(DISPLAY[category], ['color:strand']).snap,
+      ).toEqual({
         encoding: { color: 'strand' },
       })
     }
     // wiggle has no strand notion — 'strand' stays a literal color there
     expect(
-      buildDisplaySnapshot('wiggle', ['color:strand']).snap.encoding?.color,
+      buildDisplaySnapshot('LinearWiggleDisplay', ['color:strand']).snap
+        .encoding?.color,
     ).toEqual({ value: 'strand' })
   })
 
   test("a color field picked over another's channel keeps none of its scale", () => {
     expect(
-      buildDisplaySnapshot('alignments', [
+      buildDisplaySnapshot('LinearAlignmentsDisplay', [
         '{"encoding":{"color":{"field":"mapq","scale":{"domain":[0,60]}}}}',
         'color:strand',
       ]).snap.encoding?.color,
@@ -683,26 +741,30 @@ describe('color routing', () => {
     const scaled =
       '{"encoding":{"color":{"field":"mapq","scale":{"domain":[0,60]}}}}'
     expect(
-      buildDisplaySnapshot('alignments', [scaled, 'color:mapq']).snap.encoding
-        ?.color,
+      buildDisplaySnapshot('LinearAlignmentsDisplay', [scaled, 'color:mapq'])
+        .snap.encoding?.color,
     ).toEqual({ field: 'mapq', scale: { domain: [0, 60] } })
     expect(
-      buildDisplaySnapshot('alignments', ['color:purple', 'color:strand']).snap
-        .encoding?.color,
+      buildDisplaySnapshot('LinearAlignmentsDisplay', [
+        'color:purple',
+        'color:strand',
+      ]).snap.encoding?.color,
     ).toEqual({ value: 'purple', field: 'strand' })
   })
 
   test('color names the ramp on a hic track, and refuses what is not a scheme', () => {
     const opts = ['color:viridis', 'encoding.color.scale.reverse=true']
-    expect(buildDisplaySnapshot('hic', opts).snap).toEqual({})
-    expect(memberWrites('hic', opts)).toEqual([
+    expect(buildDisplaySnapshot('LinearHicDisplay', opts).snap).toEqual({})
+    expect(memberWrites('LinearHicDisplay', opts)).toEqual([
       'encoding.color.scale.scheme=viridis',
       'encoding.color.scale.reverse=true',
     ])
-    expect(memberWrites('alignments', ['color:strand'])).toEqual([])
-    expect(() => buildDisplaySnapshot('hic', ['color:red'])).toThrow(
-      /Invalid color value "red"\. Expected a color scheme: viridis, /,
+    expect(memberWrites('LinearAlignmentsDisplay', ['color:strand'])).toEqual(
+      [],
     )
+    expect(() =>
+      buildDisplaySnapshot('LinearHicDisplay', ['color:red']),
+    ).toThrow(/Invalid color value "red"\. Expected a color scheme: viridis, /)
   })
 })
 
@@ -725,18 +787,22 @@ describe('modifier values are validated the same way everywhere', () => {
     ['feature', 'heightMode:bogus', /Invalid heightMode/],
     ['variant', 'display:', /Missing display/],
   ] as const)('%s track: %s rejects', (category, opt, message) => {
-    expect(() => buildDisplaySnapshot(category, [opt])).toThrow(message)
+    expect(() => buildDisplaySnapshot(DISPLAY[category], [opt])).toThrow(
+      message,
+    )
   })
 
   test('force reads as a flag: bare or :true is on, :false is off', () => {
-    expect(buildDisplaySnapshot('alignments', ['force']).snap.forceLoad).toBe(
-      true,
-    )
     expect(
-      buildDisplaySnapshot('alignments', ['force:true']).snap.forceLoad,
+      buildDisplaySnapshot('LinearAlignmentsDisplay', ['force']).snap.forceLoad,
     ).toBe(true)
     expect(
-      buildDisplaySnapshot('alignments', ['force:false']).snap.forceLoad,
+      buildDisplaySnapshot('LinearAlignmentsDisplay', ['force:true']).snap
+        .forceLoad,
+    ).toBe(true)
+    expect(
+      buildDisplaySnapshot('LinearAlignmentsDisplay', ['force:false']).snap
+        .forceLoad,
     ).toBe(false)
   })
 })
@@ -744,12 +810,13 @@ describe('modifier values are validated the same way everywhere', () => {
 describe('display type selection', () => {
   test('display:multivariant aliases to the multi-sample display', () => {
     expect(
-      buildDisplaySnapshot('variant', ['display:multivariant']).displayType,
+      buildDisplaySnapshot('LinearVariantDisplay', ['display:multivariant'])
+        .displayType,
     ).toBe('LinearMultiSampleVariantDisplay')
   })
 
   test('display:multivariantmatrix is the multi-sample display in columns', () => {
-    const { displayType, snap } = buildDisplaySnapshot('variant', [
+    const { displayType, snap } = buildDisplaySnapshot('LinearVariantDisplay', [
       'display:multivariantmatrix',
     ])
     expect(displayType).toBe('LinearMultiSampleVariantDisplay')
@@ -758,43 +825,47 @@ describe('display type selection', () => {
 
   test('an unknown display value passes through verbatim', () => {
     expect(
-      buildDisplaySnapshot('variant', ['display:SomeOtherDisplay']).displayType,
+      buildDisplaySnapshot('LinearVariantDisplay', ['display:SomeOtherDisplay'])
+        .displayType,
     ).toBe('SomeOtherDisplay')
   })
 
   test('no display modifier leaves displayType undefined (track default)', () => {
-    expect(buildDisplaySnapshot('variant', []).displayType).toBeUndefined()
+    expect(
+      buildDisplaySnapshot('LinearVariantDisplay', []).displayType,
+    ).toBeUndefined()
   })
 })
 
 test('a {...} token is merged as raw JSON', () => {
-  const { snap } = buildDisplaySnapshot('alignments', [
+  const { snap } = buildDisplaySnapshot('LinearAlignmentsDisplay', [
     '{"encoding":{"color":"strand"}}',
   ])
   expect(snap.encoding?.color).toBe('strand')
 })
 
 test('an unknown modifier throws, naming the known ones', () => {
-  expect(() => buildDisplaySnapshot('alignments', ['colour:red'])).toThrow(
-    /unknown track option "colour:"; the options are height, .*color/,
-  )
+  expect(() =>
+    buildDisplaySnapshot('LinearAlignmentsDisplay', ['colour:red']),
+  ).toThrow(/unknown track option "colour:"; the options are height, .*color/)
 })
 
 // The modifier table is keyed by raw CLI input, so a name inherited from
 // Object.prototype read as a known modifier and died on its undefined `on` list
 test('an Object.prototype key is an unknown modifier, not a crash', () => {
   for (const name of ['constructor', 'toString', 'hasOwnProperty']) {
-    expect(() => buildDisplaySnapshot('alignments', [`${name}:x`])).toThrow(
-      `unknown track option "${name}:"`,
-    )
+    expect(() =>
+      buildDisplaySnapshot('LinearAlignmentsDisplay', [`${name}:x`]),
+    ).toThrow(`unknown track option "${name}:"`)
   }
   // the alias tables are keyed the same way
   expect(
-    buildDisplaySnapshot('variant', ['display:constructor']).displayType,
+    buildDisplaySnapshot('LinearVariantDisplay', ['display:constructor'])
+      .displayType,
   ).toBe('constructor')
-  expect(buildDisplaySnapshot('alignments', ['sort:constructor']).sort).toEqual(
-    { field: 'constructor' },
-  )
+  expect(
+    buildDisplaySnapshot('LinearAlignmentsDisplay', ['sort:constructor']).sort,
+  ).toEqual({ field: 'constructor' })
 })
 
 // `index:` is consumed at config-build time (readData) but still rides in a
@@ -802,7 +873,7 @@ test('an Object.prototype key is an unknown modifier, not a crash', () => {
 // warning like a typo.
 test('index: is a recognized no-op, not an unknown-option warning', () => {
   const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined)
-  const { snap } = buildDisplaySnapshot('feature', [
+  const { snap } = buildDisplaySnapshot('LinearBasicDisplay', [
     'index:https://x/y.bed.gz.csi',
     'height:100',
   ])

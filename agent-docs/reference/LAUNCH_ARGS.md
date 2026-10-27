@@ -33,6 +33,11 @@ Desktop, in `@jbrowse/launch-args` (GMOD/jbrowse-components#4303).
   `launchTrackInit` opens a session spec track entry, applying its
   `modifiers` after the view navigates. The LGV's init and a synteny view's
   rows call it, so the ready marker waits on every modifier.
+- A named modifier lands only where the display it opens as declares every
+  slot it writes, which `displaySlots.generated.ts` (from the committed config
+  schema, three segments deep) lists per display type; elsewhere it warns. The
+  callers pass that display type, not a category, and `force:` is skipped
+  unsaid on a display without `forceLoad`, so batch's `force:true` stays quiet.
 - `checkModifiers` (displaySettings) refuses a modifier no kind of track
   takes, so a bad one stops Desktop's plan and capture at the command line.
 - Desktop: `electron/launchTarget.ts` (`findLaunchTarget`),

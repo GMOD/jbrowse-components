@@ -24,10 +24,7 @@ import {
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
 import type { TrackInit } from '@jbrowse/core/util/tracks'
-import type {
-  Category,
-  DisplaySettings,
-} from '@jbrowse/launch-args/displaySettings'
+import type { DisplaySettings } from '@jbrowse/launch-args/displaySettings'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 /** The linear view a command line's tracks open in, as these helpers read it. */
@@ -58,45 +55,43 @@ export interface ModifierView {
 }
 
 /**
- * The category of the display a linear view opens `conf` as, read off the
- * display picker so it follows `display:` and the adapter rather than a list
- * of track types.
+ * The display a linear view opens `conf` as, read off the display picker so it
+ * follows `display:` and the adapter rather than a list of track types.
  */
-function displayCategoryOf(
+function displayTypeOf(
   pluginManager: PluginManager,
   conf: { type: string },
   modifiers: string[],
   displayType?: string,
-): Category {
-  return displayCategory(
-    trackDisplayType(
-      pluginManager,
-      conf,
-      'LinearGenomeView',
-      requestedDisplayType(modifiers) ?? displayType,
-    ),
+) {
+  return trackDisplayType(
+    pluginManager,
+    conf,
+    'LinearGenomeView',
+    requestedDisplayType(modifiers) ?? displayType,
   )
 }
 
 /**
- * `displayCategoryOf` for a track the session holds; `displayType` is the
- * display the caller opens it as when no `display:` modifier names one.
+ * `displayTypeOf` for a track the session holds, undefined for one it does
+ * not; `displayType` is the display the caller opens it as when no
+ * `display:` modifier names one.
  */
-export function trackCategory(
+export function openedDisplayType(
   session: { getTrackById: (trackId: string) => unknown },
   trackId: string,
   modifiers: string[],
   displayType?: string,
-): Category {
+): string | undefined {
   const conf = session.getTrackById(trackId)
   return conf
-    ? displayCategoryOf(
+    ? displayTypeOf(
         getEnv(session).pluginManager,
         (isStateTreeNode(conf) ? getSnapshot(conf) : conf) as { type: string },
         modifiers,
         displayType,
       )
-    : 'other'
+    : undefined
 }
 
 const consoleWarn = (message: string) => {
@@ -106,20 +101,20 @@ const consoleWarn = (message: string) => {
 // a track's modifiers split at the open: the settings it opens with, and the
 // member writes that wait for the opened display
 interface ModifierLaunch {
-  category: Category
+  displayType: string | undefined
   settings: DisplaySettings
   members: string[]
 }
 
 function modifierLaunch(
-  category: Category,
+  displayType: string | undefined,
   modifiers: string[],
   warn = consoleWarn,
 ): ModifierLaunch {
   return {
-    category,
-    settings: buildDisplaySnapshot(category, modifiers, warn),
-    members: memberWrites(category, modifiers),
+    displayType,
+    settings: buildDisplaySnapshot(displayType, modifiers, warn),
+    members: memberWrites(displayType, modifiers),
   }
 }
 
@@ -190,11 +185,11 @@ export function writeFilter(
  */
 export function writeReadFilter(
   display: unknown,
-  category: Category,
+  displayType: string | undefined,
   settings: DisplaySettings,
 ) {
   const { filter } = settings.snap
-  if (category !== 'alignments' || !filter) {
+  if (displayCategory(displayType) !== 'alignments' || !filter) {
     return undefined
   }
   const filterDisplay = display as FilterDisplay | undefined
@@ -242,7 +237,7 @@ interface LaunchOptions {
 export async function launchTrackWithModifiers(
   view: ModifierView,
   trackId: string,
-  category: Category,
+  displayType: string | undefined,
   modifiers: string[],
   {
     displaySnapshot = {},
@@ -251,7 +246,7 @@ export async function launchTrackWithModifiers(
     warn = consoleWarn,
   }: LaunchOptions = {},
 ) {
-  const launch = modifierLaunch(category, modifiers, warn)
+  const launch = modifierLaunch(displayType, modifiers, warn)
   const { snap, sort } = launch.settings
   const at = sort && centerSort(view, trackId, sort.field, warn)
   if (at) {
@@ -300,7 +295,7 @@ export async function launchTrackInit(
     await launchTrackWithModifiers(
       view,
       trackId,
-      trackCategory(
+      openedDisplayType(
         session,
         trackId,
         modifiers,

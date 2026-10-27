@@ -43,7 +43,9 @@ function fakeView(configured?: Record<string, unknown>) {
 // display takes it by field once open
 test("a feature track's filter merges by field, its shorthand read", async () => {
   const { view, calls } = fakeView({})
-  await applyDisplayOpts(view, 't', 'feature', ['{"filter":["geneLike"]}'])
+  await applyDisplayOpts(view, 't', 'LinearBasicDisplay', [
+    '{"filter":["geneLike"]}',
+  ])
   expect(calls).toEqual([{}, { filter: [{ field: 'geneLike', equal: true }] }])
 })
 
@@ -54,7 +56,7 @@ test("a variant track's launch filter keeps the configured fields it does not na
       { field: 'QUAL', gte: 10 },
     ],
   })
-  await applyDisplayOpts(view, 't', 'variant', [
+  await applyDisplayOpts(view, 't', 'LinearVariantDisplay', [
     '{"filter":[{"field":"QUAL","gte":30}]}',
   ])
   expect(calls.at(-1)).toEqual({
@@ -69,14 +71,17 @@ test("a variant track's launch filter keeps the configured fields it does not na
 // is written onto the opened display by field instead
 test('a read filter follows the open, the other settings ride the snapshot', async () => {
   const { view, calls, filters } = fakeView()
-  await applyDisplayOpts(view, 't', 'alignments', ['height:400', 'split:only'])
+  await applyDisplayOpts(view, 't', 'LinearAlignmentsDisplay', [
+    'height:400',
+    'split:only',
+  ])
   expect(calls).toEqual([{ height: 400 }])
   expect(filters).toEqual([{ split: [{ field: 'split', equal: true }] }])
 })
 
 test('every read filter modifier lands in the one write after the open', async () => {
   const { view, calls, filters } = fakeView()
-  await applyDisplayOpts(view, 't', 'alignments', [
+  await applyDisplayOpts(view, 't', 'LinearAlignmentsDisplay', [
     'mapq:20',
     'filterTag:RG:lane3',
     'filterTag:RG:lane4',
@@ -94,16 +99,12 @@ test('every read filter modifier lands in the one write after the open', async (
 
 describe("batch's one-row junction", () => {
   it('draws an alignments track’s read arcs, the SV evidence first, unless the track says otherwise', async () => {
-    const snapOf = async (modifiers: string[], category = 'alignments') => {
+    const snapOf = async (
+      modifiers: string[],
+      displayType = 'LinearAlignmentsDisplay',
+    ) => {
       const { view, calls } = fakeView()
-      await applyDisplayOpts(
-        view,
-        't',
-        category as 'alignments',
-        modifiers,
-        undefined,
-        true,
-      )
+      await applyDisplayOpts(view, 't', displayType, modifiers, undefined, true)
       return calls[0]
     }
     expect(await snapOf([])).toEqual({
@@ -118,7 +119,7 @@ describe("batch's one-row junction", () => {
       readConnections: { show: true, mark: 'link', height: 100 },
       sort: 'svSignal',
     })
-    expect(await snapOf([], 'feature')).toEqual({})
+    expect(await snapOf([], 'LinearBasicDisplay')).toEqual({})
   })
 })
 
@@ -139,7 +140,7 @@ describe("batch's per-record sort", () => {
 
   it('sorts an alignments track at the variant, in the view’s refName', async () => {
     const { view, calls } = sortableView()
-    await applyDisplayOpts(view, 't', 'alignments', [], sortAt)
+    await applyDisplayOpts(view, 't', 'LinearAlignmentsDisplay', [], sortAt)
     expect(calls[0]).toEqual({
       sort: { ...sortAt, refName: 'chr3' },
       heightMode: 'grow',
@@ -153,7 +154,13 @@ describe("batch's per-record sort", () => {
       ['heightMode:fit', { heightMode: 'fit' }],
     ] as const) {
       const { view, calls } = sortableView()
-      await applyDisplayOpts(view, 't', 'alignments', [modifier], sortAt)
+      await applyDisplayOpts(
+        view,
+        't',
+        'LinearAlignmentsDisplay',
+        [modifier],
+        sortAt,
+      )
       expect(calls[0]).toEqual({
         ...expected,
         sort: { ...sortAt, refName: 'chr3' },
@@ -163,7 +170,13 @@ describe("batch's per-record sort", () => {
 
   it('yields to a sort the track states', async () => {
     const { view, calls } = sortableView()
-    await applyDisplayOpts(view, 't', 'alignments', ['sort:strand'], sortAt)
+    await applyDisplayOpts(
+      view,
+      't',
+      'LinearAlignmentsDisplay',
+      ['sort:strand'],
+      sortAt,
+    )
     expect(calls[0]).toMatchObject({
       sort: { field: 'strand' },
       heightMode: 'grow',
@@ -173,7 +186,7 @@ describe("batch's per-record sort", () => {
 
   it('leaves a track of another kind alone', async () => {
     const { view, calls } = sortableView()
-    await applyDisplayOpts(view, 't', 'variant', [], sortAt)
+    await applyDisplayOpts(view, 't', 'LinearVariantDisplay', [], sortAt)
     expect(calls[0]).toEqual({})
   })
 })
@@ -182,6 +195,6 @@ test('a track the view could not open names the display it was asked for', async
   const { view } = fakeView()
   ;(view as { launchTrack: unknown }).launchTrack = async () => undefined
   await expect(
-    applyDisplayOpts(view, 't', 'alignments', ['display:marks']),
+    applyDisplayOpts(view, 't', 'LinearAlignmentsDisplay', ['display:marks']),
   ).rejects.toThrow('Failed to open track "t" with display "LinearMarkDisplay"')
 })

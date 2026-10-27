@@ -7,7 +7,6 @@ import fs from 'node:fs'
 import path from 'node:path'
 
 import {
-  ALL_CATEGORIES,
   buildDisplaySnapshot,
   categorizedDisplayTypes,
   displayCategory,
@@ -28,8 +27,26 @@ const pathsByType = slotPathsByType(configJsonSchema)
 const displayTypes = Object.keys(configManifest.displays)
 const viewTypes = Object.keys(configManifest.views)
 
-const displaysOf = (category: Category) =>
-  categorizedDisplayTypes.filter(type => displayCategory(type) === category)
+const slotsByType = new Map(
+  [...pathsByType].map(([type, paths]) => [
+    type,
+    new Set([...paths].map(p => p.replace(/=.*$/, '').replaceAll('[]', ''))),
+  ]),
+)
+
+// a written path is declared where it is a slot, or sits inside one that
+// holds no sub-slots
+const declaresSlot = (type: string, slot: string) => {
+  const slots = slotsByType.get(type) ?? new Set<string>()
+  const segments = slot.split('.')
+  return segments.some((_, i) => {
+    const prefix = segments.slice(0, i + 1).join('.')
+    return (
+      slots.has(prefix) &&
+      (prefix === slot || ![...slots].some(s => s.startsWith(`${prefix}.`)))
+    )
+  })
+}
 
 const fits = (data: object, pointer: string) =>
   schemaProblems(data, pointer).length === 0
@@ -90,46 +107,6 @@ const SAMPLES: Record<string, string[] | Partial<Record<Category, string[]>>> =
     },
   }
 
-// The displays a modifier writes nothing on, by modifier
-const WRITES_NOTHING: Record<string, readonly string[]> = {
-  // runBatch hands every track `force:true`; these have no size gate to lift
-  force: [
-    'LinearWiggleDisplay',
-    'LinearHicDisplay',
-    'LDTrackDisplay',
-    'LinearSyntenyDisplay',
-    'DotplotDisplay',
-    'ChordSyntenyDisplay',
-    'ChordVariantDisplay',
-  ],
-  // the comparative views size these
-  height: [
-    'LinearSyntenyDisplay',
-    'DotplotDisplay',
-    'ChordSyntenyDisplay',
-    'ChordVariantDisplay',
-  ],
-  color: [
-    'LDTrackDisplay',
-    'LinearReferenceSequenceDisplay',
-    'LinearSyntenyDisplay',
-    'DotplotDisplay',
-    'ChordSyntenyDisplay',
-  ],
-  // gaps: `display:multivariant heightMode:grow` writes nothing
-  heightMode: [
-    'LinearMultiRowFeatureDisplay',
-    'LinearMultiSampleVariantDisplay',
-  ],
-  featureHeight: [
-    'LinearMultiRowFeatureDisplay',
-    'LinearMultiSampleVariantDisplay',
-  ],
-}
-
-const writesNothing = (name: string, type: string) =>
-  WRITES_NOTHING[name]?.includes(type) ?? false
-
 const samplesFor = (name: string, category: Category) => {
   const samples = SAMPLES[name] ?? []
   return Array.isArray(samples) ? samples : (samples[category] ?? [])
@@ -145,59 +122,53 @@ test('every display a category names is one the schema declares', () => {
   ).toEqual([])
 })
 
-function modifierRefusals(name: string) {
-  const refused = new Set<string>()
-  let applied = 0
-  for (const category of ALL_CATEGORIES) {
-    for (const sample of samplesFor(name, category)) {
-      const opt = `${name}:${sample}`
-      const warnings: string[] = []
-      const result = buildDisplaySnapshot(category, [opt], message => {
-        warnings.push(message)
-      })
-      if (warnings.length > 0) {
-        continue
-      }
-      applied += 1
-      const members = memberWrites(category, [opt])
-      const settings = {
-        ...result.snap,
-        ...(result.sort
-          ? { sort: { ...result.sort, pos: 0, refName: 'chr1' } }
-          : {}),
-        ...(members.length ? memberPatch(members, () => undefined) : {}),
-      }
-      const types = result.displayType
-        ? [result.displayType]
-        : displaysOf(category)
-      for (const type of types) {
-        if (!displayTaking([type], settings)) {
-          refused.add(type)
-        }
-      }
-    }
-  }
-  return { refused: [...refused], applied }
-}
-
-describe('each modifier writes settings every display of its category takes', () => {
+describe('each modifier writes only settings the display it lands on takes', () => {
   for (const name of trackModifierNames) {
     it(name, () => {
-      const { refused, applied } = modifierRefusals(name)
-      expect(refused.filter(type => !writesNothing(name, type))).toEqual([])
+      const refused: string[] = []
+      let applied = 0
+      for (const displayType of categorizedDisplayTypes) {
+        for (const sample of samplesFor(name, displayCategory(displayType))) {
+          const opt = `${name}:${sample}`
+          const warnings: string[] = []
+          const result = buildDisplaySnapshot(displayType, [opt], message => {
+            warnings.push(message)
+          })
+          const members = memberWrites(displayType, [opt])
+          const settings = {
+            ...result.snap,
+            ...(result.sort
+              ? { sort: { ...result.sort, pos: 0, refName: 'chr1' } }
+              : {}),
+            ...(members.length ? memberPatch(members, () => undefined) : {}),
+          }
+          for (const warning of warnings) {
+            const slots = /which has no (.*) setting/.exec(warning)?.[1]
+            for (const slot of slots?.split(', ') ?? []) {
+              if (!displayTypes.some(t => declaresSlot(t, slot))) {
+                refused.push(
+                  `${displayType} ${opt}: no display declares ${slot}`,
+                )
+              }
+            }
+          }
+          if (warnings.length > 0) {
+            continue
+          }
+          applied += 1
+          if (Object.keys(settings).length === 0) {
+            continue
+          }
+          const type = result.displayType ?? displayType
+          if (!displayTaking([type], settings)) {
+            refused.push(`${type} ${opt}: ${JSON.stringify(settings)}`)
+          }
+        }
+      }
+      expect(refused).toEqual([])
       expect(applied).toBeGreaterThan(0)
     })
   }
-})
-
-test('every display a modifier is listed as writing nothing on refuses it', () => {
-  const stale = Object.entries(WRITES_NOTHING).flatMap(([name, types]) => {
-    const { refused } = modifierRefusals(name)
-    return types
-      .filter(type => !refused.includes(type))
-      .map(t => `${name} ${t}`)
-  })
-  expect(stale).toEqual([])
 })
 
 const readme = fs.readFileSync(path.join(__dirname, '..', 'README.md'), 'utf8')

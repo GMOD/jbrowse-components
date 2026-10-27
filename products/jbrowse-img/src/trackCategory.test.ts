@@ -5,8 +5,9 @@ import { getEnv } from '@jbrowse/core/util'
 import {
   buildDisplaySnapshot,
   categorizedDisplayTypes,
+  displayCategory,
 } from '@jbrowse/launch-args/displaySettings'
-import { trackCategory } from '@jbrowse/plugin-linear-genome-view'
+import { openedDisplayType } from '@jbrowse/plugin-linear-genome-view'
 import { createViewStateAsync } from '@jbrowse/react-app2'
 
 import { trackTypes } from './makeConfigs.ts'
@@ -63,6 +64,14 @@ const hosted = [
     },
   },
 ]
+
+function trackCategory(
+  session: Parameters<typeof openedDisplayType>[0],
+  trackId: string,
+  opts: string[],
+) {
+  return displayCategory(openedDisplayType(session, trackId, opts))
+}
 
 async function makeSession() {
   const files = readData({
@@ -154,7 +163,7 @@ describe('a track whose display no translating modifier targets', () => {
   test.each(['heightMode:fit', 'featureHeight:compact', 'sashimi:up'])(
     '%s warns and writes nothing',
     opt => {
-      expect(buildDisplaySnapshot('other', [opt]).snap).toEqual({})
+      expect(buildDisplaySnapshot('LinearMafDisplay', [opt]).snap).toEqual({})
       expect(warn).toHaveBeenCalledWith(
         expect.stringContaining('has no effect on this track type'),
       )
@@ -163,12 +172,58 @@ describe('a track whose display no translating modifier targets', () => {
 
   test('height, force and a constant color still apply', () => {
     expect(
-      buildDisplaySnapshot('other', ['height:200', 'force', 'color:strand'])
-        .snap,
+      buildDisplaySnapshot('LinearMafDisplay', [
+        'height:200',
+        'force',
+        'color:strand',
+      ]).snap,
     ).toEqual({
       height: 200,
       forceLoad: true,
       encoding: { color: { value: 'strand' } },
     })
+  })
+})
+
+describe('a modifier lands only where the display declares its slot', () => {
+  const warn = jest.fn()
+  afterEach(() => {
+    warn.mockClear()
+  })
+
+  test.each([
+    ['heightMode:fit', 'LinearMultiRowFeatureDisplay', 'heightMode'],
+    ['featureHeight:3', 'LinearMultiSampleVariantDisplay', 'mark.height'],
+  ])('%s on %s warns, naming %s', (opt, displayType, slot) => {
+    expect(buildDisplaySnapshot(displayType, [opt], warn).snap).toEqual({})
+    expect(warn).toHaveBeenCalledWith(
+      expect.stringContaining(
+        `no effect on ${displayType}, which has no ${slot}`,
+      ),
+    )
+  })
+
+  test('force: is skipped unsaid on a display that never gates', () => {
+    for (const displayType of ['LinearWiggleDisplay', 'LinearHicDisplay']) {
+      expect(
+        buildDisplaySnapshot(displayType, ['force:true'], warn).snap,
+      ).toEqual({})
+    }
+    expect(warn).not.toHaveBeenCalled()
+    expect(
+      buildDisplaySnapshot('LinearAlignmentsDisplay', ['force:true'], warn)
+        .snap,
+    ).toEqual({ forceLoad: true })
+  })
+
+  test('the same modifiers still write where the display declares them', () => {
+    expect(
+      buildDisplaySnapshot(
+        'LinearBasicDisplay',
+        ['heightMode:fit', 'featureHeight:3'],
+        warn,
+      ).snap,
+    ).toEqual({ heightMode: 'fit', mark: { height: 3 } })
+    expect(warn).not.toHaveBeenCalled()
   })
 })
