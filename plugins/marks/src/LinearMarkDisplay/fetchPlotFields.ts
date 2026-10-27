@@ -20,9 +20,10 @@ const PLOT_SCAN_STEP_BP = PLOT_SCAN_MAX_BP / 2
 
 /**
  * The window the field scan reads: `PLOT_SCAN_MAX_BP` on the first region on
- * the track's genomes from the screen's left edge, snapped down to a
- * half-window grid so the window still covers the screen and a pan rescans
- * only once it crosses a grid line.
+ * the track's genomes from the lowest coordinate on screen (its left edge, or
+ * its right in a reversed region), snapped down to a half-window grid so the
+ * window still covers the screen and a pan rescans only once it crosses a
+ * grid line.
  */
 export function plotScanRegions(
   host: RegionHost,

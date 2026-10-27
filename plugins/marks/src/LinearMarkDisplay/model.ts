@@ -1937,6 +1937,21 @@ export function stateModelFactory(
           statusWindow: self.statusWindow,
         }),
       }))
+      .views(self => {
+        const scanWindow = stableIdentityComputed(() =>
+          plotScanRegions(self.host, onTrackAssembly(self)),
+        )
+        return {
+          /**
+           * #getter
+           * The window a field scan reads now (`plotScanRegions`), the same
+           * array while a pan stays inside its grid step
+           */
+          get plotScanWindow(): Region[] {
+            return scanWindow.get()
+          },
+        }
+      })
       .views(self => ({
         /**
          * #getter
@@ -2090,7 +2105,7 @@ export function stateModelFactory(
          * scan a newer one aborted answers with the newer one's fields.
          */
         ensurePlotFields() {
-          const regions = plotScanRegions(self.host, onTrackAssembly(self))
+          const regions = self.plotScanWindow
           const held = self.plotFieldsPromise
           if (
             held &&
@@ -2373,7 +2388,7 @@ export function stateModelFactory(
                 !(decides || (self.menusOfferPlotFields && !holdsFields)) ||
                 !self.host.initialized ||
                 self.error !== undefined ||
-                plotScanRegions(self.host, onTrackAssembly(self)).length === 0
+                self.plotScanWindow.length === 0
               ) {
                 return
               }
