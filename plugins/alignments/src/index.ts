@@ -65,6 +65,7 @@ export {
   getColorByMenuItem,
   getFeatureHeightMenuItem,
   getFiltersMenuItems,
+  getReadsColorByMenuItem,
   getTrackSizingItems,
   getHitMenuItems,
   getSortMenuItem,
