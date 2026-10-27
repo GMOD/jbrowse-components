@@ -30,7 +30,15 @@
 //   //! layout-out: <path>      instance stride + per-view offset maps only
 //   //! consts-out: <path>      the `export-consts` values only
 //   //! js-export-out: <path>   the `js-export` twins
-import { execFileSync, spawn, spawnSync } from 'node:child_process'
+//
+// Every artifact carries an `// inputs:` stamp, a hash of the `.slang` and
+// everything it imports (see stamp.ts). Flags:
+//   --check      say which generated files are stale, without slangc
+//   --watch      rebuild on every .slang save
+//   --no-cache   recompile every file; otherwise a file whose stamp and
+//                toolchain match a `.cache/shaders` entry is not recompiled
+import { execFileSync, fork, spawnSync } from 'node:child_process'
+import { createHash } from 'node:crypto'
 import {
   chmodSync,
   existsSync,
@@ -40,6 +48,7 @@ import {
   readdirSync,
   rmSync,
   statSync,
+  watch,
   writeFileSync,
 } from 'node:fs'
 import { availableParallelism, tmpdir } from 'node:os'
@@ -95,7 +104,7 @@ import {
   resolveTextureFilters,
   stripComments,
 } from './shader-codegen/parseDirectives.ts'
-import { readImports } from './shader-codegen/readImports.ts'
+import { createImportResolver } from './shader-codegen/readImports.ts'
 import {
   findCombinedSamplers,
   findEntryPoint,
@@ -114,27 +123,29 @@ import {
   emitRefusal,
   parseWgsl,
 } from './shader-codegen/wgslToJs.ts'
+import { inputsHash, readStamp, stampArtifact } from './stamp.ts'
+import { openTint } from './tint.ts'
 
 import type { DprBlockUse } from './shader-codegen/assertDprDeclared.ts'
 import type { SharedUniformBlock } from './shader-codegen/assertUniformLayout.ts'
 import type { ShaderScan } from './shader-codegen/liftReport.ts'
 import type { JsExportFn } from './shader-codegen/parseDirectives.ts'
+import type { SlangFile } from './shader-codegen/readImports.ts'
 import type { Reflection } from './shader-codegen/reflection.ts'
+import type { SpawnRequest, SpawnResult } from './spawner.ts'
+import type { WgslValidator } from './tint.ts'
 
-// How this script gives up, wherever it gives up. `main`'s failures already
-// carry the tool's own diagnostic and a Node stack on top of one buries it; the
-// setup below `main` runs at module scope, where a throw gets no handler at all
-// and prints nothing but a stack.
+// How this script gives up, wherever it gives up. `build`'s failures already
+// carry the tool's own diagnostic and a Node stack on top of one buries it.
 function fail(message: string): never {
   console.error(`\ngen:shaders failed: ${message}`)
   process.exit(1)
 }
 
+const ARGS = process.argv.slice(2)
+const hasFlag = (name: string) => ARGS.includes(`--${name}`)
 const flagValue = (name: string) =>
-  process.argv
-    .slice(2)
-    .find(a => a.startsWith(`--${name}=`))
-    ?.slice(name.length + 3)
+  ARGS.find(a => a.startsWith(`--${name}=`))?.slice(name.length + 3)
 
 // The tree to scan for `*.slang` and the base for cache/log paths. Deriving it
 // from this file's own location worked only while the package was repo-private:
@@ -145,16 +156,18 @@ const PROJECT_ROOT = path.resolve(
   flagValue('root') ?? process.env.JBROWSE_SHADER_ROOT ?? process.cwd(),
 )
 
+/** Repo-relative and `/`-separated, as every message and stamp spells it. */
+const rel = (p: string) =>
+  path.relative(PROJECT_ROOT, p).split(path.sep).join('/')
+
 const SLANG_VERSION = 'v2026.5.2'
 const SLANGC_CACHE = `${PROJECT_ROOT}/.cache/slangc/bin/slangc`
+const BUILD_CACHE = `${PROJECT_ROOT}/.cache/shaders`
 
-// `naga` (WGSL) and `glslangValidator` (GLSL-ES) are optional validators: they
-// don't affect the generated output (that's driven entirely by the pinned
-// slangc + the codegen), only whether we catch a bad shader at build time.
-// Unlike slangc they aren't auto-fetched, so probe for them once and skip with
-// a one-line warning if absent — a contributor can always regenerate; CI
-// installs both so validation still runs there. Set NAGA=''/GLSLANG='' to
-// silence the warning and force-skip.
+// glslangValidator is optional: it affects whether a bad GLSL-ES shader is
+// caught at build time, never the output. Unlike slangc it isn't auto-fetched,
+// so probe for it once and skip with a one-line warning if absent; CI installs
+// it. Set GLSLANG='' to silence the warning and force-skip.
 function resolveValidator(bin: string, label: string) {
   if (!bin) {
     return undefined
@@ -169,11 +182,23 @@ function resolveValidator(bin: string, label: string) {
   }
   return bin
 }
-const NAGA = resolveValidator(process.env.NAGA ?? 'naga', 'naga')
-const GLSLANG = resolveValidator(
-  process.env.GLSLANG ?? 'glslangValidator',
-  'glslangValidator',
-)
+
+// Tint is in-process through the `webgpu` package, a devDependency here and
+// optional for an out-of-tree plugin.
+function tintInstalled() {
+  try {
+    import.meta.resolve('webgpu')
+    return true
+  } catch {
+    console.warn(
+      `  warn: the webgpu package is not installed; skipping Tint, the WGSL ` +
+        `validator WebGPU browsers run. Install it to validate generated ` +
+        `shaders locally.`,
+    )
+    return false
+  }
+}
+
 // Shaders live alongside their plugin, but shared modules (hpmath, etc.) live
 // in render-core so any shader can `import hpmath;`. In this repo that's the
 // workspace path; for an out-of-tree plugin it's the installed package, which
@@ -259,63 +284,111 @@ function ensureSlangc() {
   return SLANGC_CACHE
 }
 
-const SLANGC = ensureSlangc()
+interface Validators {
+  tint: boolean
+  glslang: string | undefined
+}
 
-// Run a build tool (slangc/naga/glslang), surfacing its diagnostic on failure.
-// Async, and that is the whole build's wall clock: this is called ~5 times per
-// shader (three slangc invocations, naga, two glslangValidator runs) and every
-// one of those is an independent process doing ~0.7s of work on one core. Run
-// serially — as this did — ~40 shaders is several hundred sequential spawns.
+interface Toolchain {
+  slangc: string
+  tint: WgslValidator | undefined
+  glslang: string | undefined
+}
+
+// Opened on the first file the cache cannot answer, so a fully cached build
+// neither fetches slangc nor starts Dawn.
+let toolchain: Promise<Toolchain> | undefined
+async function startToolchain(validators: Validators): Promise<Toolchain> {
+  return {
+    slangc: ensureSlangc(),
+    tint: validators.tint ? await openTint() : undefined,
+    glslang: validators.glslang,
+  }
+}
+const openToolchain = (validators: Validators) =>
+  (toolchain ??= startToolchain(validators))
+
+// The children start in spawner.ts rather than here: see its header.
+function openSpawner() {
+  const helper = fork(
+    path.join(
+      import.meta.dirname,
+      `spawner${path.extname(import.meta.filename)}`,
+    ),
+    [],
+    { execArgv: [], stdio: ['ignore', 'inherit', 'inherit', 'ipc'] },
+  )
+  const pending = new Map<number, (result: SpawnResult) => void>()
+  let nextId = 0
+  helper.unref()
+  helper.channel?.unref()
+  helper.on('message', (result: SpawnResult) => {
+    pending.get(result.id)?.(result)
+    pending.delete(result.id)
+    if (pending.size === 0) {
+      helper.channel?.unref()
+    }
+  })
+  helper.on('exit', (status, signal) => {
+    for (const [id, resolve] of pending) {
+      resolve({
+        id,
+        status: null,
+        signal: null,
+        output: '',
+        error: `the spawner process died (${signal ?? status})`,
+      })
+    }
+    pending.clear()
+  })
+  return (bin: string, args: string[]) =>
+    new Promise<SpawnResult>(resolve => {
+      const id = nextId++
+      pending.set(id, resolve)
+      helper.channel?.ref()
+      helper.send({ id, bin, args } satisfies SpawnRequest)
+    })
+}
+let spawner: ReturnType<typeof openSpawner> | undefined
+
+// Run a build tool (slangc, glslangValidator), surfacing its diagnostic on
+// failure. Called ~4 times per shader, each an independent process doing ~0.7s
+// of work on one core, so the pool runs them concurrently.
 //
-// Collecting the output by hand rather than through promisify(execFile) keeps
-// the failure message the tool's OWN diagnostic (file:line and all) instead of
-// an exception whose Buffer fields dump as raw byte arrays. stdout is in the
-// message too, not just stderr: glslangValidator reports on stdout, so a GLSL
-// validation failure used to print an empty reason.
+// The failure message is the tool's OWN diagnostic (file:line and all), with
+// stdout included: glslangValidator reports on stdout.
+//
 // It RESOLVES with the failure rather than rejecting, and that is deliberate.
 // Validators are started early and awaited late, so a rejection could land
 // while this file's task is awaiting something else — a rejection nobody is
 // handling yet, which Node answers by killing the process, losing the pool and
-// every other file's diagnostic along with this one's. (Found the honest way:
-// naga rejected a bad shader and took the whole build down with it.) A promise
-// that cannot reject cannot do that, whenever it settles. Call `runOrThrow`
-// where the failure should stop the file immediately.
-function run(bin: string, args: string[]) {
-  return new Promise<Error | undefined>(resolve => {
-    const child = spawn(bin, args, { stdio: ['ignore', 'pipe', 'pipe'] })
-    let out = ''
-    child.stdout.setEncoding('utf8')
-    child.stderr.setEncoding('utf8')
-    child.stdout.on('data', (chunk: string) => (out += chunk))
-    child.stderr.on('data', (chunk: string) => (out += chunk))
-    child.on('error', err => {
-      resolve(new Error(`${path.basename(bin)}: ${err.message}`))
-    })
-    child.on('close', (status, signal) => {
-      if (status === 0) {
-        resolve(undefined)
-        return
-      }
-      // The tool's own diagnostic leads; how the process ended is a footnote.
-      // slangc SIGSEGVs on some ordinary source errors AFTER printing a perfect
-      // `error[E30015]: undefined identifier` with a caret — and a message
-      // opening with "killed by SIGSEGV" sends the reader hunting a toolchain
-      // bug over their own typo.
-      const name = path.basename(bin)
-      const how = signal ? `killed by ${signal}` : `exited with ${status}`
-      const diagnostic = out.trim()
-      resolve(
-        new Error(
-          diagnostic
-            ? `${name} reported:\n\n${diagnostic}\n\n(${name} ${how})`
-            : `${name} ${how}, with no diagnostic`,
-        ),
-      )
-    })
-  })
+// every other file's diagnostic along with this one's. Call `runOrThrow` where
+// the failure should stop the file immediately.
+async function run(bin: string, args: string[]) {
+  const result = await (spawner ??= openSpawner())(bin, args)
+  const name = path.basename(bin)
+  if (result.error) {
+    return new Error(`${name}: ${result.error}`)
+  }
+  if (result.status === 0) {
+    return undefined
+  }
+  // The tool's own diagnostic leads; how the process ended is a footnote.
+  // slangc SIGSEGVs on some ordinary source errors AFTER printing a perfect
+  // `error[E30015]: undefined identifier` with a caret — and a message opening
+  // with "killed by SIGSEGV" sends the reader hunting a toolchain bug over
+  // their own typo.
+  const how = result.signal
+    ? `killed by ${result.signal}`
+    : `exited with ${result.status}`
+  const diagnostic = result.output.trim()
+  return new Error(
+    diagnostic
+      ? `${name} reported:\n\n${diagnostic}\n\n(${name} ${how})`
+      : `${name} ${how}, with no diagnostic`,
+  )
 }
 
-// `run`, for the calls whose failure must stop this file right here.
 async function runOrThrow(bin: string, args: string[]) {
   const error = await run(bin, args)
   if (error) {
@@ -357,92 +430,97 @@ function walk(dir: string, suffix: string, out: string[] = []) {
 // else is in flight.
 type Log = (line: string) => void
 
-// Every artifact this run produced, absolute. `assertNoOrphans` reads it: an
-// artifact nobody wrote is one whose `.slang` was deleted or renamed, or whose
-// `//! *-out` directive was dropped — and it stays committed, frozen at its last
-// value, with its importers none the wiser. CI's staleness gate cannot see that
-// case by construction (there's no diff and the file is tracked), so the driver
-// has to be the one to say it.
-const WRITTEN = new Set<string>()
+/**
+ * What one `.slang` contributes to the build: its artifacts, and the facts the
+ * whole-tree checks read. Plain JSON, because a cache hit answers with the
+ * stored copy instead of compiling.
+ */
+interface FileResult {
+  /** Repo-relative paths of every artifact the file wrote. */
+  artifacts: string[]
+  /** Every name its `//! js-export` names. */
+  exported: string[]
+  /**
+   * What its compiled WGSL turned out to contain, for the liftability
+   * inventory. Entry-point shaders only, which suffices: slangc inlines every
+   * function the draw path reaches, modules' included.
+   */
+  scan?: ShaderScan
+  /**
+   * Its reflected uniform layout, tagged with the `.slang` whose struct it
+   * instantiates. Nothing a single compile sees can tell that its layout of a
+   * shared struct differs from a sibling's, so the group is compared after.
+   */
+  uniformBlock?: SharedUniformBlock
+  /** The same reads, for the dead-field half of the dpr check. */
+  dprUse?: DprBlockUse
+  /** Uniform blocks `assertUniformLayoutMatches` compared. */
+  uniformBlocksCompared: number
+  /** Whether the shader converts CSS px to device px (0 or 1). */
+  dprShaders: number
+}
 
-// What each entry-point shader's compiled WGSL turned out to contain, for the
-// liftability inventory. Collected here rather than in a separate pass because
-// the WGSL is already in hand and re-running slangc over ~40 shaders to produce
-// a report is how a report ends up behind a flag nobody passes.
-//
-// Entry-point shaders only, and that is sufficient: slangc inlines every
-// function the draw path reaches, including the ones authored in the modules a
-// shader imports, so a module's decisions appear under each shader that uses
-// them. A module nothing imports has no live functions to lift by definition.
-const SCANS: ShaderScan[] = []
-
-// Every name any `//! js-export` names, tree-wide. Filled by `writeJsExports`,
-// which is the one place that resolves the directive the same way for a module
-// and for a shader with entry points — and tree-wide because a module's export
-// is inlined into every importer's WGSL, so it shows up in a dozen scans while
-// being declared once.
-const EXPORTED = new Set<string>()
-
-// How many emitted uniform blocks `assertUniformLayoutMatches` actually compared,
-// summed over the tree. Per shader, "this backend declared no uniform block" is a
-// legitimate answer — Slang eliminates a block the entry points never read. Over
-// a whole tree it is not: it would mean slangc renamed the declaration and every
-// shader is now skipped, which is the one failure a per-shader guard cannot see.
-let UNIFORM_BLOCKS_COMPARED = 0
-
-// How many shaders were found to convert CSS px to device px, tree-wide. Zero
-// over a full build means `assertDprDeclared`'s call patterns stopped matching
-// what slangc emits, not that the tree stopped antialiasing.
-let DPR_SHADERS = 0
-
-// The same reads, kept whole so the dead-field half can group them by the
-// module declaring the block — a shared block legitimately carries a field only
-// some of its passes read.
-const DPR_USES: DprBlockUse[] = []
-
-// Every shader's reflected uniform layout, tagged with the `.slang` file whose
-// struct declaration it is an instance of. A whole-tree collection because the
-// claim is about a GROUP of shaders: nothing a single compile sees can tell
-// that its layout of a shared struct differs from a sibling's.
-const UNIFORM_BLOCKS: SharedUniformBlock[] = []
+interface FileContext {
+  log: Log
+  slangRel: string
+  stamp: string
+  tools: Toolchain
+  /** Every artifact path any file in this build has written, absolute. */
+  claimed: Set<string>
+  result: FileResult
+}
 
 const LIFT_REPORT_PATH = 'agent-docs/reference/SHADER_LIFT_INVENTORY.md'
+
+const BANNER = header('x')[0]!.split(' from ')[0]!
+
+// Rewriting a file with what it already holds only moves its mtime, which a
+// dev server answers with a reload.
+function writeIfChanged(absPath: string, contents: string) {
+  if (existsSync(absPath) && readFileSync(absPath, 'utf8') === contents) {
+    return false
+  }
+  writeFileSync(absPath, contents)
+  return true
+}
 
 // Write a generated artifact and record it. All artifact writes go through here
 // or through `writeOut`; a `writeFileSync` that doesn't will read as an orphan.
 //
-// Two writers for one path is a build error rather than a race. `assertOutPaths
-// Unique` catches the case it can see — two `//! *-out` directives naming the
-// same file — but it compares directives against directives, so a `//! layout-
-// out` aimed at some other shader's own `<base>.generated.ts` slips past it and
-// silently overwrites a full generated module with a layout stub. Checking at
-// the write covers every pair of writers, whatever their source, without
-// needing to predict which paths a file will produce. Files compile
-// concurrently, so which write lands first is nondeterministic; that this fires
-// is not.
-function emit(log: Log, absPath: string, contents: string) {
-  if (WRITTEN.has(absPath)) {
+// Two writers for one path is a build error rather than a race.
+// `assertOutPathsUnique` catches the case it can see — two `//! *-out`
+// directives naming the same file — but a `//! layout-out` aimed at some other
+// shader's own `<base>.generated.ts` slips past it and would silently
+// overwrite a full generated module with a layout stub. Checking at the write
+// covers every pair of writers. Files compile concurrently, so which write
+// lands first is nondeterministic; that this fires is not.
+function emit(ctx: FileContext, absPath: string, contents: string) {
+  if (ctx.claimed.has(absPath)) {
     throw new Error(
-      `${absPath.replace(`${PROJECT_ROOT}/`, '')} is written twice in one ` +
-        `build. Two shaders (or one shader's directive and another's default ` +
-        `output path) claim it, and which one survives depends on which ` +
-        `finished last. Only one may own a generated file.`,
+      `${rel(absPath)} is written twice in one build. Two shaders (or one ` +
+        `shader's directive and another's default output path) claim it, and ` +
+        `which one survives depends on which finished last. Only one may own ` +
+        `a generated file.`,
     )
   }
-  writeFileSync(absPath, contents)
-  WRITTEN.add(absPath)
-  log(`  ok: ${absPath.replace(`${PROJECT_ROOT}/`, '')}`)
+  ctx.claimed.add(absPath)
+  ctx.result.artifacts.push(rel(absPath))
+  if (
+    writeIfChanged(absPath, stampArtifact(contents, ctx.stamp, ctx.slangRel))
+  ) {
+    ctx.log(`  ok: ${rel(absPath)}`)
+  }
 }
 
 // Write a `//! layout-out` / `//! consts-out` artifact at a repo-relative path.
 // Both exist so a package that can't import the owning plugin still gets its
 // numbers from the shader rather than a hand-kept SYNC copy.
-function writeOut(log: Log, relPath: string, contents: string) {
-  emit(log, path.join(PROJECT_ROOT, relPath), contents)
+function writeOut(ctx: FileContext, relPath: string, contents: string) {
+  emit(ctx, path.join(PROJECT_ROOT, relPath), contents)
 }
 
 function writeConstsOut(
-  log: Log,
+  ctx: FileContext,
   source: string,
   base: string,
   exportedConsts: Record<string, number> | undefined,
@@ -456,7 +534,7 @@ function writeConstsOut(
       `//! consts-out needs a //! export-consts directive naming what to write`,
     )
   }
-  writeOut(log, constsOut, emitConsts(base, exportedConsts))
+  writeOut(ctx, constsOut, emitConsts(base, exportedConsts))
 }
 
 // Slang dead-code-eliminates anything an entry point can't reach, so asking
@@ -523,6 +601,7 @@ function parseModuleName(source: string, slangPath: string) {
 // A module's functions are only reachable through an import, so its WGSL has to
 // be conjured by the wrapper above.
 async function compileJsExportWrapper(
+  ctx: FileContext,
   slangPath: string,
   source: string,
   base: string,
@@ -535,7 +614,7 @@ async function compileJsExportWrapper(
     const wrapperPath = path.join(tmp, `${base}JsExportWrapper.slang`)
     writeFileSync(wrapperPath, buildJsExportWrapper(moduleName, fns))
     const wgslOut = path.join(tmp, `${base}.wgsl`)
-    await runOrThrow(SLANGC, [
+    await runOrThrow(ctx.tools.slangc, [
       wrapperPath,
       '-target',
       'wgsl',
@@ -557,9 +636,8 @@ async function compileJsExportWrapper(
 // `import` such a file anyway. The emitter lifts only what an export reaches, so
 // the vertex/fragment support code alongside it is ignored rather than refused.
 async function writeJsExports(
-  log: Log,
-  slangPath: string,
-  source: string,
+  ctx: FileContext,
+  file: ShaderFile,
   base: string,
   shaderWgsl?: string,
 ) {
@@ -568,31 +646,30 @@ async function writeJsExports(
   // shader merely imports (see parseJsExports). A module's wrapper cannot see
   // past its own module, so it gets its own source only.
   const fns = parseJsExports(
-    source,
-    shaderWgsl ? readImportedSources(slangPath, source) : [],
+    file.source,
+    shaderWgsl ? file.imports.map(m => m.source) : [],
   )
   if (!fns) {
     return
   }
-  for (const fn of fns) {
-    EXPORTED.add(fn.name)
-  }
+  ctx.result.exported.push(...fns.map(f => f.name))
   const wgsl =
-    shaderWgsl ?? (await compileJsExportWrapper(slangPath, source, base, fns))
+    shaderWgsl ??
+    (await compileJsExportWrapper(ctx, file.path, file.source, base, fns))
   const contents = emitJsTwins(
     base,
     wgsl,
     fns.map(f => f.name),
     header(base),
   )
-  const out = parseOutPath(source, 'js-export')
+  const out = parseOutPath(file.source, 'js-export')
   if (out) {
-    writeOut(log, out, contents)
+    writeOut(ctx, out, contents)
     return
   }
   emit(
-    log,
-    path.join(path.dirname(slangPath), `${base}.js.generated.ts`),
+    ctx,
+    path.join(path.dirname(file.path), `${base}.js.generated.ts`),
     contents,
   )
 }
@@ -607,44 +684,41 @@ function isModuleFile(source: string) {
   return /^\s*module\s+\w+\s*;/m.test(code) && !code.includes('[shader(')
 }
 
-const importsOf = (slangPath: string, source: string) =>
-  readImports(slangPath, source, SHARED_INCLUDE)
-
-const readImportedSources = (slangPath: string, source: string) =>
-  importsOf(slangPath, source).map(m => m.source)
+interface ShaderFile extends SlangFile {
+  /** Everything it imports, transitively. */
+  imports: SlangFile[]
+}
 
 // Which `.slang` file declares the struct a shader's uniform block is an
 // instance of — the shader itself, or one of the modules it imports.
 //
 // The struct NAME comes from reflection rather than being assumed to be
-// `Uniforms`: two of the six shared declarations are not called that
+// `Uniforms`: two of the shared declarations are not called that
 // (`RowRectUniforms`, `FeatureGlyphUniforms`), and hardcoding the common
-// spelling would have dropped their 7 shaders out of the parity check while
+// spelling would have dropped their shaders out of the parity check while
 // reporting nothing.
-function uniformStructOwner(
-  slangPath: string,
-  source: string,
-  structName: string,
-) {
+function uniformStructOwner(file: ShaderFile, structName: string) {
   const declares = (text: string) =>
     new RegExp(String.raw`\bstruct\s+${structName}\b`).test(stripComments(text))
-  return declares(source)
-    ? slangPath
-    : importsOf(slangPath, source).find(m => declares(m.source))?.path
+  return declares(file.source)
+    ? file.path
+    : file.imports.find(m => declares(m.source))?.path
 }
 
-async function compileOne(log: Log, slangPath: string, source: string) {
+async function compileOne(ctx: FileContext, file: ShaderFile) {
+  const { slangc, tint, glslang } = ctx.tools
+  const slangPath = file.path
+  const source = file.source
   const targets = parseTargets(source)
   const base = path.basename(slangPath, '.slang')
   const dir = path.dirname(slangPath)
-  const importedFiles = importsOf(slangPath, source)
-  const imported = importedFiles.map(m => m.source)
+  const imported = file.imports.map(m => m.source)
   const tmp = mkdtempSync(path.join(tmpdir(), `build-shaders-${base}-`))
   try {
     const wgslOut = path.join(tmp, `${base}.wgsl`)
     const reflectionOut = path.join(tmp, `${base}.reflection.json`)
 
-    const slangcArgs = [
+    await runOrThrow(slangc, [
       slangPath,
       '-target',
       'wgsl',
@@ -656,22 +730,27 @@ async function compileOne(log: Log, slangPath: string, source: string) {
       dir,
       '-I',
       SHARED_INCLUDE,
-    ]
-    await runOrThrow(SLANGC, slangcArgs)
+    ])
     const wgsl = readFileSync(wgslOut, 'utf8')
-    // The two validators only ever read what slangc wrote, so they overlap with
-    // the rest of this file's work rather than blocking it.
-    //
-    // `deferred` is not decoration. A validator that rejects while this function
-    // is awaiting something ELSE is a rejection nobody is handling yet, and Node
-    // kills the process for it — losing the pool, the other files' diagnostics
-    // and this one's, in favour of an unhandled-rejection stack trace. Turning
-    // the rejection into a resolved value at the moment the promise is created
-    // means the failure waits, intact, for the `await` below. (Found the honest
-    // way: naga rejected a bad shader and took the whole build down with it.)
+    // The validators only ever read what slangc wrote, so they overlap with
+    // the rest of this file's work rather than blocking it. Each promise
+    // resolves with its failure instead of rejecting (see `run`), so a failure
+    // waits, intact, for the `await` below.
     const validations: Promise<Error | undefined>[] = []
-    if (NAGA) {
-      validations.push(run(NAGA, [wgslOut]))
+    if (tint) {
+      validations.push(
+        tint(wgsl).then(
+          message =>
+            message
+              ? new Error(
+                  `Tint, the WGSL validator WebGPU browsers run, rejected ` +
+                    `slangc's output:\n\n${message}`,
+                )
+              : undefined,
+          (error: unknown) =>
+            error instanceof Error ? error : new Error(String(error)),
+        ),
+      )
     }
 
     const moduleReflection = JSON.parse(
@@ -688,14 +767,15 @@ async function compileOne(log: Log, slangPath: string, source: string) {
 
     // Each entry point compiled alone, the one compile where slangc says which
     // bindings it reads. For a shader targeting GLSL that is the stage's GLSL
-    // compile; otherwise only its reflection is kept.
+    // compile; otherwise only its reflection is kept. slangc 2026.5.2 refuses
+    // one invocation per stage pair (E00070 for every `-entry`/`-o` order).
     const stageTarget = glsl ? 'glsl' : 'wgsl'
     const aloneOut = (entry: string) =>
       path.join(tmp, `${base}.${entry}.${stageTarget}`)
     const alone = await Promise.all(
       moduleReflection.entryPoints.map(async e => {
         const out = aloneOut(e.name)
-        await runOrThrow(SLANGC, [
+        await runOrThrow(slangc, [
           slangPath,
           '-target',
           stageTarget,
@@ -760,10 +840,10 @@ async function compileOne(log: Log, slangPath: string, source: string) {
       const processedFragOut = path.join(tmp, `${base}.frag.es.glsl`)
       writeFileSync(processedVertOut, glslVertex)
       writeFileSync(processedFragOut, glslFragment)
-      if (GLSLANG) {
+      if (glslang) {
         validations.push(
-          run(GLSLANG, ['-S', 'vert', processedVertOut]),
-          run(GLSLANG, ['-S', 'frag', processedFragOut]),
+          run(glslang, ['-S', 'vert', processedVertOut]),
+          run(glslang, ['-S', 'frag', processedFragOut]),
         )
       }
 
@@ -775,8 +855,7 @@ async function compileOne(log: Log, slangPath: string, source: string) {
     }
 
     // Both fail the build before anything is written. The first validator to
-    // have failed is rethrown; the others' messages are lost, which is the same
-    // thing a serial build did and one bad shader is one fix.
+    // have failed is rethrown; one bad shader is one fix.
     const validationError = (await Promise.all(validations)).find(Boolean)
     if (validationError) {
       throw validationError
@@ -786,13 +865,9 @@ async function compileOne(log: Log, slangPath: string, source: string) {
     // only one of them is what the GPU runs. Make them agree about the bindings
     // here, where the message can name the shader — see assertBindingsMatchWgsl.
     const bindings = classifyBindings(`${base}.slang`, reflection)
-    assertBindingsMatchWgsl(
-      path.relative(PROJECT_ROOT, slangPath),
-      bindings,
-      wgsl,
-    )
+    assertBindingsMatchWgsl(ctx.slangRel, bindings, wgsl)
     assertStageReadsMatchWgsl(
-      path.relative(PROJECT_ROOT, slangPath),
+      ctx.slangRel,
       bindings,
       reflection.entryPoints,
       wgsl,
@@ -803,7 +878,7 @@ async function compileOne(log: Log, slangPath: string, source: string) {
     const instance = instanceAttrsFor(reflection)
     if (instance) {
       assertVertexInputsMatch(
-        path.relative(PROJECT_ROOT, slangPath),
+        ctx.slangRel,
         instance.attrs,
         { wgsl, glslVertex },
         instance.source === 'attributes',
@@ -816,15 +891,15 @@ async function compileOne(log: Log, slangPath: string, source: string) {
     // outputs, and a disagreement puts every uniform in the shader one word off.
     const uniforms = uniformFieldsFor(reflection)
     if (uniforms) {
-      UNIFORM_BLOCKS_COMPARED += assertUniformLayoutMatches(
-        path.relative(PROJECT_ROOT, slangPath),
+      ctx.result.uniformBlocksCompared = assertUniformLayoutMatches(
+        ctx.slangRel,
         uniforms.fields,
         uniforms.totalBytes,
         { wgsl, glslVertex },
       )
       const dprCalled = dprConsumersCalled({ wgsl, glslVertex, glslFragment })
-      DPR_SHADERS += assertDprDeclared(
-        path.relative(PROJECT_ROOT, slangPath),
+      ctx.result.dprShaders = assertDprDeclared(
+        ctx.slangRel,
         uniforms.fields.map(f => f.name),
         dprCalled,
       )
@@ -832,7 +907,7 @@ async function compileOne(log: Log, slangPath: string, source: string) {
       // above compares a shader against its OWN emitted source, so shaders
       // sharing one declaration each pass it however far apart the group has
       // drifted.
-      const owner = uniformStructOwner(slangPath, source, uniforms.structName)
+      const owner = uniformStructOwner(file, uniforms.structName)
       if (!owner) {
         throw new Error(
           `the uniform block is an instance of 'struct ` +
@@ -844,18 +919,18 @@ async function compileOne(log: Log, slangPath: string, source: string) {
             `resolve it.`,
         )
       }
-      UNIFORM_BLOCKS.push({
-        shader: path.relative(PROJECT_ROOT, slangPath),
-        owner: path.relative(PROJECT_ROOT, owner),
+      ctx.result.uniformBlock = {
+        shader: ctx.slangRel,
+        owner: rel(owner),
         fields: uniforms.fields,
         totalBytes: uniforms.totalBytes,
-      })
-      DPR_USES.push({
-        shader: path.relative(PROJECT_ROOT, slangPath),
-        owner: path.relative(PROJECT_ROOT, owner),
+      }
+      ctx.result.dprUse = {
+        shader: ctx.slangRel,
+        owner: rel(owner),
         fieldNames: uniforms.fields.map(f => f.name),
         reads: readsDprUniform({ wgsl, glslVertex, glslFragment }),
-      })
+      }
     }
 
     const textures = findCombinedSamplers(reflection)
@@ -872,12 +947,9 @@ async function compileOne(log: Log, slangPath: string, source: string) {
       blend: parseBlend(source),
       coverage: parseCoverage(source),
       textureFilters: resolveTextureFilters(
-        path.relative(PROJECT_ROOT, slangPath),
+        ctx.slangRel,
         source,
-        importedFiles.map(m => ({
-          path: path.relative(PROJECT_ROOT, m.path),
-          source: m.source,
-        })),
+        file.imports.map(m => ({ path: rel(m.path), source: m.source })),
         textures.map(t => t.name),
       ),
       instanceWriter: parseInstanceWriter(source),
@@ -887,22 +959,22 @@ async function compileOne(log: Log, slangPath: string, source: string) {
     // modules before that check leaves a half-updated set on disk when it fires.
     const iface = emitInterface(codegenInputs)
     emit(
-      log,
+      ctx,
       path.join(dir, `${base}.generated.ts`),
       emitShaderModule(codegenInputs),
     )
-    emit(log, path.join(dir, `${base}.iface.generated.ts`), iface)
+    emit(ctx, path.join(dir, `${base}.iface.generated.ts`), iface)
     for (const [target, text] of [
       ['wgsl', emitWgslText(codegenInputs)],
       ['glsl', emitGlslText(codegenInputs)],
     ] as const) {
       if (text !== undefined) {
-        emit(log, path.join(dir, shaderTextFile(base, target)), text)
+        emit(ctx, path.join(dir, shaderTextFile(base, target)), text)
       }
     }
     if (codegenInputs.exportedConsts) {
       emit(
-        log,
+        ctx,
         path.join(dir, `${base}.consts.generated.ts`),
         emitConsts(base, codegenInputs.exportedConsts),
       )
@@ -911,7 +983,7 @@ async function compileOne(log: Log, slangPath: string, source: string) {
     const layoutOut = parseOutPath(source, 'layout')
     if (layoutOut) {
       writeOut(
-        log,
+        ctx,
         layoutOut,
         emitLayoutOnly({
           baseName: base,
@@ -920,8 +992,8 @@ async function compileOne(log: Log, slangPath: string, source: string) {
         }),
       )
     }
-    writeConstsOut(log, source, base, codegenInputs.exportedConsts)
-    await writeJsExports(log, slangPath, source, base, wgsl)
+    writeConstsOut(ctx, source, base, codegenInputs.exportedConsts)
+    await writeJsExports(ctx, file, base, wgsl)
 
     // Read the WGSL back through the emitter's own parser. Deliberately the
     // same parser rather than a second opinion: the point of the inventory is
@@ -932,21 +1004,24 @@ async function compileOne(log: Log, slangPath: string, source: string) {
     // only refused when the emitter reaches the call. Reporting it as liftable
     // sends a reader to `//! js-export` for a rejection; see `emitRefusal`.
     const parsed = parseWgsl(wgsl)
-    const inSubset = []
-    const refused = [...parsed.refused]
+    const scan: ShaderScan = {
+      shader: ctx.slangRel,
+      inSubset: [],
+      refused: [...parsed.refused],
+    }
     for (const fn of parsed.fns) {
       const reason = emitRefusal(parsed, fn.name)
       if (reason === undefined) {
-        inSubset.push(fn)
+        scan.inSubset.push({
+          name: fn.name,
+          params: fn.params,
+          returnType: fn.returnType,
+        })
       } else {
-        refused.push({ name: fn.name, reason })
+        scan.refused.push({ name: fn.name, reason })
       }
     }
-    SCANS.push({
-      shader: path.relative(PROJECT_ROOT, slangPath),
-      inSubset,
-      refused,
-    })
+    ctx.result.scan = scan
   } finally {
     rmSync(tmp, { recursive: true, force: true })
   }
@@ -954,39 +1029,102 @@ async function compileOne(log: Log, slangPath: string, source: string) {
 
 // A module compiles to nothing on its own; it contributes only the artifacts
 // its directives ask for.
-async function emitModuleArtifacts(
-  log: Log,
-  slangPath: string,
-  source: string,
-) {
-  const base = path.basename(slangPath, '.slang')
+async function emitModuleArtifacts(ctx: FileContext, file: ShaderFile) {
+  const base = path.basename(file.path, '.slang')
   const exportedConsts = parseExportedConsts(
-    source,
-    readImportedSources(slangPath, source),
+    file.source,
+    file.imports.map(m => m.source),
   )
   if (exportedConsts) {
     emit(
-      log,
-      path.join(path.dirname(slangPath), `${base}.generated.ts`),
+      ctx,
+      path.join(path.dirname(file.path), `${base}.generated.ts`),
       emitConsts(base, exportedConsts),
     )
   }
-  writeConstsOut(log, source, base, exportedConsts)
-  await writeJsExports(log, slangPath, source, base)
+  writeConstsOut(ctx, file.source, base, exportedConsts)
+  await writeJsExports(ctx, file, base)
+}
+
+// The codegen itself is an input to every artifact, though not to the stamp:
+// a stamp moving on every codegen edit would rewrite every generated file.
+// The cache keys on it instead.
+function hashOwnSources() {
+  const hash = createHash('sha256')
+  const files = walkAll(import.meta.dirname)
+    .filter(p => /\.(ts|js)$/.test(p) && !/\.test\.(ts|js)$/.test(p))
+    .sort()
+  for (const p of files) {
+    hash.update(`\0${path.relative(import.meta.dirname, p)}\0`)
+    hash.update(readFileSync(p))
+  }
+  return hash.digest('hex')
+}
+
+function walkAll(dir: string): string[] {
+  return readdirSync(dir, { withFileTypes: true }).flatMap(e =>
+    e.isDirectory()
+      ? walkAll(path.join(dir, e.name))
+      : [path.join(dir, e.name)],
+  )
+}
+
+const stampOf = (file: ShaderFile) =>
+  inputsHash(
+    SLANG_VERSION,
+    { path: rel(file.path), source: file.source },
+    file.imports.map(m => ({ path: rel(m.path), source: m.source })),
+  )
+
+const cachePath = (key: string) => path.join(BUILD_CACHE, `${key}.json`)
+
+// A hit needs every artifact the entry lists to be on disk under this stamp:
+// a checkout that moved a generated file back, or deleted one, recompiles.
+function readCached(key: string, stamp: string) {
+  let result: FileResult
+  try {
+    result = JSON.parse(readFileSync(cachePath(key), 'utf8')) as FileResult
+  } catch {
+    return undefined
+  }
+  const current = result.artifacts.every(a => {
+    const abs = path.join(PROJECT_ROOT, a)
+    return (
+      existsSync(abs) && readStamp(readFileSync(abs, 'utf8'))?.hash === stamp
+    )
+  })
+  return current ? result : undefined
+}
+
+function writeCached(key: string, result: FileResult) {
+  mkdirSync(BUILD_CACHE, { recursive: true })
+  writeFileSync(cachePath(key), JSON.stringify(result))
+}
+
+// After a full build, an entry no file used is one no file will use again
+// until its inputs come back.
+function pruneCache(used: ReadonlySet<string>) {
+  if (!existsSync(BUILD_CACHE)) {
+    return
+  }
+  for (const entry of readdirSync(BUILD_CACHE)) {
+    if (!used.has(entry.replace(/\.json$/, ''))) {
+      rmSync(path.join(BUILD_CACHE, entry), { force: true })
+    }
+  }
 }
 
 // Committed artifacts that carry our banner but that this run did not write.
 // Only meaningful after a FULL build — given an explicit path list, every other
 // shader's artifacts are "not written" for the ordinary reason.
-function assertNoOrphans() {
-  const banner = header('x')[0]!.split(' from ')[0]!
+function assertNoOrphans(written: ReadonlySet<string>) {
   const orphans = walk(PROJECT_ROOT, '.generated.ts')
-    .filter(p => !WRITTEN.has(p))
-    .filter(p => readFileSync(p, 'utf8').startsWith(banner))
+    .filter(p => !written.has(p))
+    .filter(p => readFileSync(p, 'utf8').startsWith(BANNER))
   if (orphans.length > 0) {
     throw new Error(
       `${orphans.length} generated file(s) that no .slang produces:\n${orphans
-        .map(p => `  ${p.replace(`${PROJECT_ROOT}/`, '')}`)
+        .map(p => `  ${rel(p)}`)
         .join(
           '\n',
         )}\nA renamed or deleted shader, or a dropped //! layout-out / ` +
@@ -997,52 +1135,125 @@ function assertNoOrphans() {
   }
 }
 
-async function main() {
-  const argPaths = process.argv.slice(2).filter(a => !a.startsWith('--'))
+// The lift report's consumer scan reads every .ts in the tree; a watch session
+// rereads only the files whose mtime moved.
+const consumerTexts = new Map<string, { mtimeMs: number; text: string }>()
+function readConsumers() {
+  return [...walk(PROJECT_ROOT, '.ts'), ...walk(PROJECT_ROOT, '.tsx')]
+    .filter(p => !p.endsWith('.generated.ts'))
+    .map(p => {
+      const { mtimeMs } = statSync(p)
+      let entry = consumerTexts.get(p)
+      if (entry?.mtimeMs !== mtimeMs) {
+        entry = { mtimeMs, text: readFileSync(p, 'utf8') }
+        consumerTexts.set(p, entry)
+      }
+      return { path: rel(p), text: entry.text }
+    })
+}
+
+interface BuildOptions {
+  paths: string[]
+  useCache: boolean
+  validators: Validators
+}
+
+async function build({ paths: argPaths, useCache, validators }: BuildOptions) {
+  const started = performance.now()
+  const resolveImports = createImportResolver(SHARED_INCLUDE)
   const paths = argPaths.length > 0 ? argPaths : walk(PROJECT_ROOT, '.slang')
-  const files = paths.map(p => ({ path: p, source: readFileSync(p, 'utf8') }))
+  const files: ShaderFile[] = paths.map(p => {
+    const source = readFileSync(p, 'utf8')
+    return { path: p, source, imports: resolveImports(p, source) }
+  })
   assertOutPathsUnique(files)
+  const toolHash = hashOwnSources()
+  const keyOf = (stamp: string) =>
+    createHash('sha256')
+      .update(`${toolHash}\0${JSON.stringify(validators)}\0${stamp}`)
+      .digest('hex')
+      .slice(0, 32)
   // Leave a couple of cores for everything else on the machine (and for this
   // process, which does the codegen between spawns).
   const limit = Math.max(1, availableParallelism() - 2)
-  console.log(`Found ${files.length} .slang file(s); building ${limit}-way`)
+  const results = new Map<string, FileResult>()
+  const usedKeys = new Set<string>()
+  const claimed = new Set<string>()
+  let compiled = 0
 
   const failures = await pool(files, limit, async file => {
-    const lines: string[] = [file.path.replace(`${PROJECT_ROOT}/`, '')]
-    const log: Log = line => lines.push(line)
+    const slangRel = rel(file.path)
+    const stamp = stampOf(file)
+    const key = keyOf(stamp)
+    usedKeys.add(key)
+    const hit = useCache ? readCached(key, stamp) : undefined
+    if (hit) {
+      for (const a of hit.artifacts) {
+        claimed.add(path.join(PROJECT_ROOT, a))
+      }
+      results.set(file.path, hit)
+      return
+    }
+    compiled++
+    const lines: string[] = [slangRel]
+    const ctx: FileContext = {
+      log: line => lines.push(line),
+      slangRel,
+      stamp,
+      tools: await openToolchain(validators),
+      claimed,
+      result: {
+        artifacts: [],
+        exported: [],
+        uniformBlocksCompared: 0,
+        dprShaders: 0,
+      },
+    }
+    let done = false
     try {
       await (isModuleFile(file.source)
-        ? emitModuleArtifacts(log, file.path, file.source)
-        : compileOne(log, file.path, file.source))
+        ? emitModuleArtifacts(ctx, file)
+        : compileOne(ctx, file))
+      results.set(file.path, ctx.result)
+      writeCached(key, ctx.result)
+      done = true
     } finally {
-      // Print what did land even when the compile threw, so the failure report
-      // at the end reads against the same progress a serial build showed.
-      console.log(lines.join('\n'))
+      // What landed prints even when the compile threw, so the failure report
+      // at the end reads against it. A file that rewrote nothing prints
+      // nothing.
+      if (!done || lines.length > 1) {
+        console.log(lines.join('\n'))
+      }
     }
   })
 
   if (failures.length > 0) {
     for (const { item, error } of failures) {
       const message = error instanceof Error ? error.message : String(error)
-      console.error(
-        `\n${item.path.replace(`${PROJECT_ROOT}/`, '')}: ${message}`,
-      )
+      console.error(`\n${rel(item.path)}: ${message}`)
     }
     throw new Error(
       `${failures.length} of ${files.length} .slang file(s) failed`,
     )
   }
+  const all = files.map(f => results.get(f.path)!)
   // Before the whole-tree block below, because a scoped run compiling two
   // members of one group is a real comparison and gets to make it. What a
   // scoped run cannot see is the shader it did NOT compile — the stale
   // generated module left behind by regenerating a subset — so the count is a
   // tree-wide claim even though the comparison is not.
-  const sharedStructs = assertSharedUniformBlocksAgree(UNIFORM_BLOCKS)
-  // Both are whole-tree claims, so both are meaningful only after a FULL build.
-  // Given an explicit path list the scan covers those shaders alone, and
-  // writing the report from it would delete every other shader's rows.
+  const sharedStructs = assertSharedUniformBlocksAgree(
+    all.flatMap(r => (r.uniformBlock ? [r.uniformBlock] : [])),
+  )
+  // Whole-tree claims, so meaningful only after a FULL build. Given an
+  // explicit path list the scan covers those shaders alone, and writing the
+  // report from it would delete every other shader's rows.
   if (argPaths.length === 0) {
-    if (UNIFORM_BLOCKS_COMPARED === 0) {
+    const uniformBlocksCompared = all.reduce(
+      (n, r) => n + r.uniformBlocksCompared,
+      0,
+    )
+    if (uniformBlocksCompared === 0) {
       throw new Error(
         `no shader's uniform block was compared against its emitted source. ` +
           `Every shader in the tree read as "Slang eliminated the block", which ` +
@@ -1052,9 +1263,10 @@ async function main() {
       )
     }
     console.log(
-      `  ok: ${UNIFORM_BLOCKS_COMPARED} uniform block(s) agree with their emitted layout`,
+      `  ok: ${uniformBlocksCompared} uniform block(s) agree with their emitted layout`,
     )
-    if (DPR_SHADERS === 0) {
+    const dprShaders = all.reduce((n, r) => n + r.dprShaders, 0)
+    if (dprShaders === 0) {
       throw new Error(
         `no shader was found to convert CSS px to device px, so the ` +
           `devicePixelRatio check compared nothing. Nine did when it landed ` +
@@ -1064,9 +1276,9 @@ async function main() {
           `antialias against a constant unnoticed.`,
       )
     }
-    assertNoDeadDprUniform(DPR_USES)
+    assertNoDeadDprUniform(all.flatMap(r => (r.dprUse ? [r.dprUse] : [])))
     console.log(
-      `  ok: ${DPR_SHADERS} shader(s) converting CSS px to device px declare the ratio`,
+      `  ok: ${dprShaders} shader(s) converting CSS px to device px declare the ratio`,
     )
     if (sharedStructs === 0) {
       throw new Error(
@@ -1081,54 +1293,175 @@ async function main() {
     console.log(
       `  ok: ${sharedStructs} shared uniform struct(s) lay out identically in every shader compiled against them`,
     )
-    assertNoOrphans()
+    assertNoOrphans(claimed)
+    const scans = all.flatMap(r => (r.scan ? [r.scan] : []))
+    const exported = new Set(all.flatMap(r => r.exported))
     // Skips come from every file, modules included — see `collectSkips`.
     const skips = collectSkips(
-      files.map(f => ({
-        shader: f.path.replace(`${PROJECT_ROOT}/`, ''),
-        skips: parseJsSkips(f.source),
-      })),
+      files.map(f => ({ shader: rel(f.path), skips: parseJsSkips(f.source) })),
     )
-    assertJsSkipsResolve(SCANS, EXPORTED, skips)
-    // Who imports each twin. A whole-tree read, so it belongs with the other
-    // whole-tree claims here rather than in the per-file compile: consumers of
-    // a module-authored export live anywhere, and `walk` already skips
-    // node_modules, dist, esm and every dotted directory (agent worktrees
-    // included).
-    const consumers = [
-      ...walk(PROJECT_ROOT, '.ts'),
-      ...walk(PROJECT_ROOT, '.tsx'),
-    ]
-      .filter(p => !p.endsWith('.generated.ts'))
-      .map(p => ({
-        path: path.relative(PROJECT_ROOT, p),
-        text: readFileSync(p, 'utf8'),
-      }))
-    writeFileSync(
-      path.join(PROJECT_ROOT, LIFT_REPORT_PATH),
-      emitLiftReport(
-        SCANS,
-        EXPORTED,
-        skips,
-        collectExportUses(consumers, EXPORTED),
-      ),
-    )
-    console.log(`  ok: ${LIFT_REPORT_PATH}`)
+    assertJsSkipsResolve(scans, exported, skips)
+    if (
+      writeIfChanged(
+        path.join(PROJECT_ROOT, LIFT_REPORT_PATH),
+        emitLiftReport(
+          scans,
+          exported,
+          skips,
+          collectExportUses(readConsumers(), exported),
+        ),
+      )
+    ) {
+      console.log(`  ok: ${LIFT_REPORT_PATH}`)
+    }
+    if (useCache) {
+      pruneCache(usedKeys)
+    }
   } else {
-    // Say so, rather than skipping in silence. A path-scoped run is the one the
-    // shared-worktree guidance recommends, so this is the mode people actually
-    // use — and a shader edit that adds a Candidates row would then produce no
-    // local signal at all, surfacing hours later as a red CI job.
+    // Say so, rather than skipping in silence: a shader edit that adds a
+    // Candidates row would then produce no local signal at all, surfacing
+    // hours later as a red CI job.
     console.log(
       `\nnote: ${LIFT_REPORT_PATH} was NOT updated — it is a whole-tree ` +
         `artifact and this run was scoped to ${argPaths.length} path(s). Run ` +
         `\`pnpm gen:shaders\` with no arguments before committing.`,
     )
   }
+  const seconds = ((performance.now() - started) / 1000).toFixed(1)
+  console.log(
+    `${files.length} .slang file(s) in ${seconds}s: ${compiled} compiled, ` +
+      `${files.length - compiled} unchanged`,
+  )
+}
+
+/**
+ * Every way the committed artifacts can disagree with the sources, found by
+ * hashing the sources again: no slangc, no compile, well under a second. A
+ * failed compile leaves its old artifacts behind, and this is what notices.
+ */
+function staleArtifacts() {
+  const resolveImports = createImportResolver(SHARED_INCLUDE)
+  const stamps = new Map<string, string>()
+  const problems = new Map<string, string[]>()
+  const note = (slangRel: string, problem: string) => {
+    problems.set(slangRel, [...(problems.get(slangRel) ?? []), problem])
+  }
+  for (const p of walk(PROJECT_ROOT, '.slang')) {
+    const source = readFileSync(p, 'utf8')
+    stamps.set(
+      rel(p),
+      stampOf({ path: p, source, imports: resolveImports(p, source) }),
+    )
+    const own = path.join(
+      path.dirname(p),
+      `${path.basename(p, '.slang')}.generated.ts`,
+    )
+    if (!isModuleFile(source) && !existsSync(own)) {
+      note(rel(p), `${rel(own)} does not exist`)
+    }
+  }
+  for (const p of walk(PROJECT_ROOT, '.generated.ts')) {
+    const text = readFileSync(p, 'utf8')
+    if (!text.startsWith(BANNER)) {
+      continue
+    }
+    const stamp = readStamp(text)
+    if (!stamp) {
+      note(rel(p), 'carries no inputs stamp')
+    } else if (!stamps.has(stamp.slangPath)) {
+      note(stamp.slangPath, `no longer exists, and ${rel(p)} came from it`)
+    } else if (stamps.get(stamp.slangPath) !== stamp.hash) {
+      note(stamp.slangPath, 'changed since its generated files were made')
+    }
+  }
+  return problems
+}
+
+function check() {
+  const problems = staleArtifacts()
+  if (problems.size === 0) {
+    console.log('Every generated shader artifact is current.')
+    return
+  }
+  const lines = [...problems].flatMap(([slangRel, list]) => [
+    slangRel,
+    ...[...new Set(list)].map(p => `  ${p}`),
+  ])
+  fail(
+    `${problems.size} shader source(s) disagree with their generated ` +
+      `files:\n\n${lines.join('\n')}\n\nRun \`pnpm gen:shaders\`. If it ` +
+      `already ran, it failed on these: its output says why.`,
+  )
+}
+
+async function watchBuild(options: BuildOptions) {
+  const watched = new Set<string>()
+  const buildOnce = async () => {
+    try {
+      await build(options)
+    } catch (e) {
+      console.error(
+        `\ngen:shaders failed: ${e instanceof Error ? e.message : String(e)}`,
+      )
+    }
+    // A new shader directory is watched from the build that found it.
+    for (const dir of new Set([
+      SHARED_INCLUDE,
+      ...walk(PROJECT_ROOT, '.slang').map(p => path.dirname(p)),
+    ])) {
+      if (!watched.has(dir)) {
+        watched.add(dir)
+        watch(dir, (_event, name) => {
+          if (name?.endsWith('.slang')) {
+            schedule()
+          }
+        })
+      }
+    }
+    console.log('\nwatching for .slang changes')
+  }
+  // Builds run one at a time. A save during a build queues one more, and a
+  // save while that one still waits to start joins it.
+  let queue = buildOnce()
+  let queued = false
+  let timer: NodeJS.Timeout | undefined
+  // An editor's save is several events; one build answers them all.
+  const schedule = () => {
+    clearTimeout(timer)
+    timer = setTimeout(() => {
+      if (!queued) {
+        queued = true
+        queue = queue.then(() => {
+          queued = false
+          return buildOnce()
+        })
+      }
+    }, 100)
+  }
+  await queue
 }
 
 try {
-  await main()
+  if (hasFlag('check')) {
+    check()
+  } else {
+    const options: BuildOptions = {
+      paths: ARGS.filter(a => !a.startsWith('--')),
+      useCache: !hasFlag('no-cache'),
+      validators: {
+        tint: tintInstalled(),
+        glslang: resolveValidator(
+          process.env.GLSLANG ?? 'glslangValidator',
+          'glslangValidator',
+        ),
+      },
+    }
+    if (hasFlag('watch')) {
+      await watchBuild(options)
+    } else {
+      await build(options)
+    }
+  }
 } catch (e) {
   // run() already put the tool's diagnostic in the Error message; print just
   // that (no Node stack / raw Buffer dump) and fail the build.

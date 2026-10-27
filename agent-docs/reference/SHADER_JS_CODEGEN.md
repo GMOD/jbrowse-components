@@ -62,10 +62,11 @@ compiles and puts tens of KB in the always-loaded chunk
    hand-maintained `exports` map (`generateExports.mjs` is `@jbrowse/core`-only).
 
 
-**A `.slang` that fails to compile leaves its `.generated.ts` untouched**, so `tsc`
-and jest pass off the stale module. Grep the emitted WGSL for what you just wrote.
-The likeliest cause: a pass naming a packed color uniform must `import
-colorPack;` itself, since Slang does not re-export through an import.
+**A `.slang` that fails to compile leaves its old artifacts in place**, and `tsc`
+and jest pass against them; `gen:shaders --check`, which `pnpm verify` runs,
+names the shader. The likeliest cause: a pass naming a packed color uniform must
+`import colorPack;` itself, since a plain `import` does not re-export (an
+`__exported import` does).
 
 ## Bumping `SLANG_VERSION`
 

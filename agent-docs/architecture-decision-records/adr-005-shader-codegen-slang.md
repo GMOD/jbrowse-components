@@ -147,7 +147,8 @@ Vertex-buffer passes leave `@binding(0)` unused.
 
 A build-time step compiles each `.slang` to:
 
-1. `*.wgsl` — for WebGPU (validated with naga in CI)
+1. `*.wgsl` — for WebGPU (validated with Tint, through Dawn's node binding;
+   naga until 2026-10, which accepted derivatives in non-uniform control flow)
 2. `*.vert.glsl` + `*.frag.glsl` — for WebGL2, via Slang's GLSL target +
    `vulkanGlslToWebgl2.ts` post-processor (validated with glslangValidator in
    CI). Compute shaders skip this step.
@@ -270,8 +271,9 @@ no longer expressible.
 - Slang's GLSL output needs a post-processor. The current regex covers all
   observed Vulkan-isms; if Slang emits a new one, `glslangValidator` in CI
   catches it but a human has to extend the post-processor.
-- Slang's WGSL output is marked "experimental" in their docs. naga validation in
-  CI mitigates — if a regression appears, we catch it before release.
+- Slang's WGSL output is marked "experimental" in their docs. Tint validation
+  in `gen:shaders` mitigates — if a regression appears, we catch it before
+  release.
 - Contributors editing shaders must learn Slang syntax (HLSL-flavored; not a
   steep curve — the spike ported two shaders in ~15 minutes each).
 - Three authoring rules for dual-target shaders (use `ATTR` semantics, use

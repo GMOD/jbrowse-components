@@ -126,9 +126,9 @@ clock.
 - **Offline preprocessors.** `maf2bed`, a Rust CLI on crates.io, writes the
   coarse summary tier a whole-chromosome MAF view reads, which moves the work
   out of the browser altogether.
-- **Build tooling.** CI validates every generated WGSL shader with `naga`, the
-  wgpu project's own compiler, installed with `cargo install`. It costs a CI
-  cache entry, and a reader never loads it.
+- **Build tooling.** `pnpm gen:shaders` validates every generated WGSL shader
+  with Tint, the validator inside Chrome, through Dawn's node binding (the
+  `webgpu` package). It is a devDependency, and a reader never loads it.
 
 ## How the decision gets made
 

@@ -74,8 +74,8 @@ failure class actually observed in this path is one the swap does not address.
 
 ### What holds the current output honest
 
-`glslangValidator` (GLSL ES) and `naga` (WGSL) both run in the `Shaders` CI job
-on every push, alongside `pnpm gen:shaders && git diff --exit-code` for
+`glslangValidator` (GLSL ES) and Tint (WGSL, naga until 2026-10) both run in
+the `Shaders` CI job on every push, alongside `pnpm gen:shaders && git diff --exit-code` for
 staleness and an untracked-artifact check. A regex that produces invalid ES
 fails the build; it cannot reach a user's GPU.
 

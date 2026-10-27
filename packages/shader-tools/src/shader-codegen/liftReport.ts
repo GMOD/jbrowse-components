@@ -30,11 +30,14 @@ import { demangle } from './slangcMangling.ts'
 import type { JsSkip } from './parseDirectives.ts'
 import type { WgslFn, WgslRefusal } from './wgslToJs.ts'
 
+/** What the report reads of a function: no body, so a scan caches as JSON. */
+export type WgslSignature = Pick<WgslFn, 'name' | 'params' | 'returnType'>
+
 export interface ShaderScan {
   /** Repo-relative path of the `.slang`. */
   shader: string
   /** Every function in its compiled WGSL the emitter could read. */
-  inSubset: WgslFn[]
+  inSubset: WgslSignature[]
   /** …and every one it could not. */
   refused: WgslRefusal[]
 }
@@ -138,7 +141,7 @@ export function collectExportUses(
 }
 
 /** Signature as the report prints it, e.g. `(f32, f32) -> f32`. */
-function signatureOf(fn: WgslFn) {
+function signatureOf(fn: WgslSignature) {
   const params = fn.params.map(p => p.type).join(', ')
   return `(${params}) -> ${fn.returnType}`
 }

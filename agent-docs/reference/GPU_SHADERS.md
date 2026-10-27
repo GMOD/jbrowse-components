@@ -18,8 +18,19 @@ desktop GLSL down; the SPIRV-Cross alternative was declined in
 Authoring conventions: [ADR-005](../architecture-decision-records/adr-005-shader-codegen-slang.md).
 
 **Never hand-edit `*.generated.ts`.** Edit the `.slang` and run `pnpm
-gen:shaders` (check its exit code). CI regenerates and diffs, and the build
-refuses a `.generated.ts` no `.slang` produces any more.
+gen:shaders`. CI regenerates with `--no-cache` and diffs, and the build refuses a
+`.generated.ts` no `.slang` produces any more.
+
+- **`gen:shaders` stamps every artifact `// inputs: <hash> <slang path>`**. It
+  hashes the `.slang` and its transitive imports with comments, indentation and
+  blank lines removed, so a comment edit regenerates nothing.
+- **`gen:shaders --check`** rehashes the sources without slangc, in under a
+  second, and names every shader whose artifacts are stale, including one whose
+  compile failed and left the old artifacts in place. `pnpm verify` runs it.
+- **A rebuild compiles only what changed.** `.cache/shaders` keys each file's
+  result on its stamp, the shader-tools source and the validators present: a
+  full build of 75 files takes about 15 s cold and 1.5 s with nothing changed.
+- **`gen:shaders --watch`** rebuilds on every `.slang` save.
 
 **One suffix, one meaning: `_BYTES` / `_WORDS` are units; `_F32` / `_U32` /
 `_I32` are typed-array views.** `INSTANCE_OFFSET_F32` / `_U32` / `_I32` each hold
@@ -29,9 +40,13 @@ not compile. A package that cannot import the plugin owning the `.slang`
 
 ### WGSL validates what GLSL waves through
 
-A shader can pass `pnpm gen:shaders`, run on WebGL2, and fail `createShaderModule`
-on WebGPU. The only signal is a `[GPU] UNCAPTURED ERROR` / `GPUPipelineError` in a
-WebGPU browser.
+A shader can compile for WebGL2 and fail `createShaderModule` on WebGPU.
+`gen:shaders` runs Tint, the validator inside Chrome, through Dawn's node binding
+(the `webgpu` devDependency, on Dawn's null backend, so no GPU is needed). naga
+30 accepts both rules below where Tint refuses the first.
+`packages/render-core/src/hal/webgpuHalDawn.test.ts` then builds, binds and draws
+every pass through `WebGPUHal` on Dawn, which holds the vertex layout, blend
+state and bind group layout to the same validation a browser applies.
 
 - **Derivatives (`ddx`/`ddy`/`fwidth`) must sit in uniform control flow.**
   Branching on a varying and taking a derivative inside the branch fails. Pick

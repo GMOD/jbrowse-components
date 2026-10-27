@@ -66,8 +66,6 @@ Worktree workflow is in `~/.claude/CLAUDE.md`. Here, additionally:
   `reference/COMPILER_TERNARY_FINDING.md`.
 - `pnpm autogen` answers any "X is out of date", and only that. **Don't run it
   before landing**: pre-push regenerates stale artifacts and commits them.
-  **Check `pnpm gen:shaders`'s exit code** — a failed compile leaves the stale
-  `.generated.ts` passing.
 - Removing a plugin export, session member or extension point fails quietly:
   `reference/PLUGIN_ABI_STABILITY.md`.
 - Deploy demos with `scripts/deploy-demo.sh`, never `aws s3 cp` (no versioning).

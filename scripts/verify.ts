@@ -49,7 +49,7 @@ interface Gate {
   // none of them is its kind of file.
   argv: string[] | ((files: string[]) => string[] | undefined)
   // Skipped with a warning when the binary is absent, rather than failing the
-  // run. Same treatment build-shaders gives naga and glslangValidator: a
+  // run. Same treatment build-shaders gives Tint and glslangValidator: a
   // contributor without the tool installed still gets every other gate, and CI
   // installs it so the check still happens before merge.
   optionalBinary?: string
@@ -112,6 +112,18 @@ const GATES: Gate[] = [
     name: 'case collisions',
     concurrent: true,
     argv: nodeScript('check-case-collisions.ts'),
+  },
+  // Under a second and needs no slangc: each generated shader artifact's
+  // inputs stamp, against its sources hashed again. A failed `gen:shaders`
+  // leaves the old artifacts compiling, and this is what notices.
+  {
+    name: 'shader stamps',
+    concurrent: true,
+    argv: [
+      process.execPath,
+      join(root, 'packages/shader-tools/src/build-shaders.ts'),
+      '--check',
+    ],
   },
   {
     name: 'spelling',

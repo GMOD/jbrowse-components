@@ -374,19 +374,15 @@ jobs:
         run: pnpm check-docs
 
   # slangc is auto-fetched + version-pinned by the build script, so the
-  # generated output is deterministic; naga validates the WGSL (WebGPU) output
-  # and glslang-tools the GLSL-ES fallback. A stale *.generated.ts (hand-edited,
-  # or a .slang changed without running gen:shaders) fails the diff.
+  # generated output is deterministic; Tint (the `webgpu` devDependency, Dawn's
+  # validator) checks the WGSL and glslang-tools the GLSL-ES fallback. A stale
+  # *.generated.ts (hand-edited, or a .slang changed without running
+  # gen:shaders) fails the diff.
   shaders:
     name: Shaders
     if: ${{ !contains(github.event.head_commit.message, '[update docs only]') }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    env:
-      # build-shaders.ts probes for `naga` and validates when it is present.
-      # Pinned so a naga release can't redden CI on an unchanged shader, and so
-      # the cache key below means one exact binary.
-      NAGA_VERSION: '30.0.0'
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
@@ -394,30 +390,17 @@ jobs:
       - uses: ./.github/actions/setup
         with:
           apt-packages: glslang-tools
-      # Was `cargo install naga-cli` unconditionally: a from-source build on
-      # every run of every branch, ~53s, for a binary that only changes when the
-      # pin above does.
-      - name: Restore naga
-        id: naga
-        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: ~/.cargo/bin/naga
-          key: naga-cli-${{ runner.os }}-${{ env.NAGA_VERSION }}
-      - name: Install naga (WGSL validator)
-        if: steps.naga.outputs.cache-hit != 'true'
-        run: cargo install naga-cli --locked --version "${NAGA_VERSION}"
-      # build-shaders probes for both validators and skips with a warning when
-      # one is absent, which is right for a contributor and wrong here: this job
-      # is the only place any generated WGSL or GLSL is validated at all, so a
-      # cache entry that restored an unrunnable binary would turn the whole
-      # check into a green no-op nobody reads the log of.
+      # build-shaders skips a validator it cannot find, with a warning, which is
+      # right for a contributor and wrong here: a missing glslangValidator would
+      # turn the GLSL check into a green no-op nobody reads the log of.
       - name: Check the validators actually run
         run: |
-          naga --version
           glslangValidator --version
+          node -e "import('webgpu')"
       - name: Check generated shaders are up to date
         run: |
-          pnpm gen:shaders
+          # No cache: a hand edit under an intact stamp has to reach the diff.
+          pnpm gen:shaders --no-cache
           # The liftability inventory is generated too, and is the point of the
           # check as much as the twins are: a shader edit that makes a new
           # function liftable adds a row to its Candidates table, and that row

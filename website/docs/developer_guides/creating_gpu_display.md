@@ -278,14 +278,22 @@ float4 fs_main(VsOut fragIn) : SV_Target {
 Run the codegen after every edit. In your own repo:
 
 ```bash
-pnpm add -D @jbrowse/shader-tools
-npx jbrowse-build-shaders
+pnpm add -D @jbrowse/shader-tools webgpu
+npx jbrowse-build-shaders --watch
 ```
 
 `jbrowse-build-shaders` scans from the project root for `*.slang`, fetches a
 pinned `slangc` on first use, and writes each `*.generated.ts` next to its
 source (`hpmath` / `colorPack` resolve from your installed
 `@jbrowse/render-core`). Inside this repo the same tool is `pnpm gen:shaders`.
+
+- **`webgpu`** is optional. With it installed, the build validates the WGSL with
+  Tint, the validator inside Chrome. A shader WebGPU would refuse then fails the
+  build, where otherwise the browser would fall back to WebGL2 for it.
+- **`--watch`** rebuilds on each save. Every run recompiles only the files whose
+  sources changed since the last one.
+- **`--check`** reports which generated files are stale without compiling, for a
+  CI step or a pre-commit hook.
 
 One `.slang` file with entry points produces up to six modules, and **which
 module you import determines what your users download**. A bundler treats a
@@ -936,7 +944,8 @@ lists what each backend refuses to allocate.
 - Shader uniforms use CSS pixels: don't scale `canvas_width`/`canvas_height` by
   `devicePixelRatio` before writing them.
 - Never edit `*.generated.ts`. Always edit `.slang` and run `pnpm gen:shaders`;
-  CI enforces this with `git diff --exit-code`.
+  CI enforces this with `git diff --exit-code`, and `pnpm verify` runs
+  `gen:shaders --check`.
 - A shape's data comes from the model: `rpcDataMap` is the single source of
   truth and is passed into `renderBlocks`; `installUpload` releases each
   departed key through `hal.deleteRegion(key)`.
