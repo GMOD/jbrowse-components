@@ -51,6 +51,7 @@ export { default as ConnectionType } from './ConnectionType.ts'
 export { default as TrackType } from './TrackType.ts'
 export { default as WidgetType } from './WidgetType.ts'
 export { default as ViewType } from './ViewType.ts'
+export type { KeyboardShortcut } from './ViewType.ts'
 export { default as DisplayType } from './DisplayType.ts'
 export type {
   DisplayEntry,

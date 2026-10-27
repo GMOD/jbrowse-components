@@ -3,46 +3,85 @@ import { isTextEntryFocused } from '@jbrowse/core/util/isTextEntryFocused'
 import { addDisposer } from '@jbrowse/mobx-state-tree'
 
 import type { LinearGenomeViewModel } from './model.ts'
+import type { KeyboardShortcut } from '@jbrowse/core/pluggableElementTypes'
 
-/**
- * Sets up keyboard shortcuts for the LinearGenomeView
- * - Ctrl/Cmd + ArrowLeft: slide left
- * - Ctrl/Cmd + ArrowRight: slide right
- * - Ctrl/Cmd + ArrowUp: zoom in
- * - Ctrl/Cmd + ArrowDown: zoom out
- * - Ctrl/Cmd + Shift + D: highlight the region in view
- * - Ctrl/Cmd + Shift + M: go to the newest highlight
- */
+interface LgvShortcut extends KeyboardShortcut {
+  code: string
+  shift?: boolean
+  run: (self: LinearGenomeViewModel) => void
+}
+
+// every entry also needs Ctrl or Cmd; an arrow fires with or without Shift
+export const lgvKeyboardShortcuts: readonly LgvShortcut[] = [
+  {
+    keys: 'Ctrl/Cmd + ←',
+    description: 'Pan left',
+    code: 'ArrowLeft',
+    run: self => {
+      self.slide(-0.9)
+    },
+  },
+  {
+    keys: 'Ctrl/Cmd + →',
+    description: 'Pan right',
+    code: 'ArrowRight',
+    run: self => {
+      self.slide(0.9)
+    },
+  },
+  {
+    keys: 'Ctrl/Cmd + ↑',
+    description: 'Zoom in',
+    code: 'ArrowUp',
+    run: self => {
+      self.zoom(self.bpPerPx / 2)
+    },
+  },
+  {
+    keys: 'Ctrl/Cmd + ↓',
+    description: 'Zoom out',
+    code: 'ArrowDown',
+    run: self => {
+      self.zoom(self.bpPerPx * 2)
+    },
+  },
+  {
+    keys: 'Ctrl/Cmd + Shift + D',
+    description: 'Highlight the region in view',
+    code: 'KeyD',
+    shift: true,
+    run: self => {
+      self.highlightCurrentRegion()
+      getSession(self).notify('Region highlighted.', 'success')
+    },
+  },
+  {
+    keys: 'Ctrl/Cmd + Shift + M',
+    description: 'Go to the newest highlight',
+    code: 'KeyM',
+    shift: true,
+    run: self => {
+      void self.navigateNewestHighlight()
+    },
+  },
+]
+
 export function setupKeyboardHandler(self: LinearGenomeViewModel) {
   if (typeof document === 'undefined') {
     return
   }
   function handler(e: KeyboardEvent) {
-    const session = getSession(self)
     if (
-      session.focusedViewId === self.id &&
+      getSession(self).focusedViewId === self.id &&
       (e.ctrlKey || e.metaKey) &&
       !isTextEntryFocused()
     ) {
-      if (e.code === 'ArrowLeft') {
+      const shortcut = lgvKeyboardShortcuts.find(
+        s => s.code === e.code && (!s.shift || e.shiftKey),
+      )
+      if (shortcut) {
         e.preventDefault()
-        self.slide(-0.9)
-      } else if (e.code === 'ArrowRight') {
-        e.preventDefault()
-        self.slide(0.9)
-      } else if (e.code === 'ArrowUp') {
-        e.preventDefault()
-        self.zoom(self.bpPerPx / 2)
-      } else if (e.code === 'ArrowDown') {
-        e.preventDefault()
-        self.zoom(self.bpPerPx * 2)
-      } else if (e.shiftKey && e.code === 'KeyD') {
-        e.preventDefault()
-        self.highlightCurrentRegion()
-        session.notify('Region highlighted.', 'success')
-      } else if (e.shiftKey && e.code === 'KeyM') {
-        e.preventDefault()
-        void self.navigateNewestHighlight()
+        shortcut.run(self)
       }
     }
   }

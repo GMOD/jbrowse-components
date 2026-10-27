@@ -18,6 +18,11 @@ interface ViewMetadata {
   hiddenFromGUI?: boolean
 }
 
+export interface KeyboardShortcut {
+  keys: string
+  description: string
+}
+
 export default class ViewType extends LazyStateModelElement {
   protected readonly group = 'view'
 
@@ -29,6 +34,8 @@ export default class ViewType extends LazyStateModelElement {
   launchKeys?: LaunchKeyRegistration<unknown, string>
 
   displayTypes: DisplayType[] = []
+
+  keyboardShortcuts: readonly KeyboardShortcut[]
 
   viewMetadata: ViewMetadata = {}
 
@@ -48,6 +55,7 @@ export default class ViewType extends LazyStateModelElement {
     launchKeys?: LaunchKeyRegistration<unknown, string>
     extendedName?: string
     viewMetadata?: ViewMetadata
+    keyboardShortcuts?: readonly KeyboardShortcut[]
     ReactComponent: ViewComponentType
     aliases?: string[]
   }) {
@@ -56,6 +64,7 @@ export default class ViewType extends LazyStateModelElement {
     this.viewMetadata = stuff.viewMetadata ?? {}
     this.launchKeys = stuff.launchKeys
     this.extendedName = stuff.extendedName
+    this.keyboardShortcuts = stuff.keyboardShortcuts ?? []
   }
 
   /**

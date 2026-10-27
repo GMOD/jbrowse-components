@@ -71,7 +71,7 @@ export default function DotplotViewF(pluginManager: PluginManager) {
   as every built-in view does, so the view's whole component tree stays out of
   the initial bundle until a session opens one.
 
-`ViewType` takes two more options:
+`ViewType` takes three more options:
 
 - **`extendedName`** names another view type whose displays yours should also
   accept. Display types register against exactly one view type, so a subtype of
@@ -81,6 +81,10 @@ export default function DotplotViewF(pluginManager: PluginManager) {
 - **`viewMetadata: { hiddenFromGUI: true }`** keeps the type out of the view
   launcher's dropdown, for a view that only ever arrives from a spec, a
   connection, or another view's action.
+- **`keyboardShortcuts`** — `{ keys, description }` rows the Help widget lists
+  under the view's `displayName`. Have your key handler read the same array, as
+  `LinearGenomeView`'s `lgvKeyboardShortcuts` does, so the list matches what the
+  keys do.
 
 The registry entry the snippet annotates against also types the call that opens
 the view. `await session.launchView('DotplotView', { ... })` checks the snapshot

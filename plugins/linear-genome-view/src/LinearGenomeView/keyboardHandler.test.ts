@@ -17,14 +17,19 @@ function focusedView() {
   return view
 }
 
-function ctrlArrowUp() {
+function ctrlKey(code: string, shiftKey = false) {
   const event = new KeyboardEvent('keydown', {
-    code: 'ArrowUp',
+    code,
     ctrlKey: true,
+    shiftKey,
     cancelable: true,
   })
   document.dispatchEvent(event)
   return event
+}
+
+function ctrlArrowUp() {
+  return ctrlKey('ArrowUp')
 }
 
 afterEach(() => {
@@ -41,4 +46,12 @@ test('ctrl+arrow in a text field is left to the field', () => {
   document.body.innerHTML = '<input />'
   document.querySelector('input')!.focus()
   expect(ctrlArrowUp().defaultPrevented).toBe(false)
+})
+
+test('ctrl+shift+D highlights the region in view, ctrl+D alone does not', () => {
+  const view = focusedView()
+  expect(ctrlKey('KeyD').defaultPrevented).toBe(false)
+  expect(view.highlights.length).toBe(0)
+  expect(ctrlKey('KeyD', true).defaultPrevented).toBe(true)
+  expect(view.highlights.length).toBe(1)
 })

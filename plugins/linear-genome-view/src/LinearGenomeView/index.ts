@@ -1,6 +1,7 @@
 import { ViewType } from '@jbrowse/core/pluggableElementTypes'
 import { lazyWithPreload } from '@jbrowse/core/util/lazyWithPreload'
 
+import { lgvKeyboardShortcuts } from './keyboardHandler.ts'
 import { lgvLaunchKeys } from './launchKeys.ts'
 import { stateModelFactory } from './model.ts'
 
@@ -51,6 +52,7 @@ export default function LinearGenomeViewF(pluginManager: PluginManager) {
       displayName: 'Linear genome view',
       stateModel,
       launchKeys: lgvLaunchKeys,
+      keyboardShortcuts: lgvKeyboardShortcuts,
       ReactComponent: lazyWithPreload(
         () => import('./components/LinearGenomeView.tsx'),
       ),

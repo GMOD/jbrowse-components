@@ -1,5 +1,5 @@
 import { ExternalLink } from '@jbrowse/core/ui'
-import { getSession } from '@jbrowse/core/util'
+import { getEnv, getSession } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import {
   Table,
@@ -28,23 +28,6 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-// The keyboard shortcuts have existed since the LGV grew `keyboardHandler.ts`
-// and were, until this list, written down nowhere a user could reach — so in
-// practice they did not exist. They belong here rather than in a dialog of their
-// own: this widget is already what the Help menu opens, and a second surface
-// would be one more thing to find. If the list ever outgrows a paragraph, that
-// is the moment to reconsider, not before.
-//
-// Spelled "Ctrl/Cmd" rather than branched on the platform: every reliable way to
-// detect macOS is deprecated (`navigator.platform`) or a user-agent sniff, and
-// naming both modifiers costs one word.
-const shortcuts = [
-  ['Ctrl/Cmd + ←', 'Pan left'],
-  ['Ctrl/Cmd + →', 'Pan right'],
-  ['Ctrl/Cmd + ↑', 'Zoom in'],
-  ['Ctrl/Cmd + ↓', 'Zoom out'],
-]
-
 const HelpWidget = observer(function Help({
   model,
 }: {
@@ -52,6 +35,11 @@ const HelpWidget = observer(function Help({
 }) {
   const { classes } = useStyles()
   const root = model ? getSession(model) : { version: '' }
+  const views = model
+    ? getEnv(model)
+        .pluginManager.getViewElements()
+        .filter(v => v.keyboardShortcuts.length > 0)
+    : []
   return (
     <div className={classes.root}>
       <Typography variant="h4" align="center">
@@ -88,23 +76,30 @@ const HelpWidget = observer(function Help({
         </li>
       </ul>
 
-      <div className={classes.section}>
-        <Typography variant="h6">Keyboard shortcuts</Typography>
-        <Typography>
-          These act on the focused view. Tab moves between views, or click one;
-          the focused view is the one with the arrow beside its title.
-        </Typography>
-        <Table size="small">
-          <TableBody>
-            {shortcuts.map(([keys, description]) => (
-              <TableRow key={keys}>
-                <TableCell className={classes.key}>{keys}</TableCell>
-                <TableCell>{description}</TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
+      {views.length > 0 ? (
+        <div className={classes.section}>
+          <Typography variant="h6">Keyboard shortcuts</Typography>
+          <Typography>
+            These act on the focused view. Tab moves between views, or click
+            one; the focused view is the one with the arrow beside its title.
+          </Typography>
+          {views.map(view => (
+            <div key={view.name} className={classes.section}>
+              <Typography variant="subtitle1">{view.displayName}</Typography>
+              <Table size="small">
+                <TableBody>
+                  {view.keyboardShortcuts.map(({ keys, description }) => (
+                    <TableRow key={keys}>
+                      <TableCell className={classes.key}>{keys}</TableCell>
+                      <TableCell>{description}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          ))}
+        </div>
+      ) : null}
     </div>
   )
 })
