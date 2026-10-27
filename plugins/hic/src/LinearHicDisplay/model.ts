@@ -59,9 +59,10 @@ const NORMALIZATION_PREFERENCE = ['KR', 'SCALE', 'VC_SQRT', 'VC']
 // log.
 function valueName(
   field: { name: string; isCount: boolean },
-  normalization: string,
+  normalizations: readonly string[],
   scale?: HicColorScale,
 ) {
+  const normalization = normalizations.join('/')
   const qualifiers = [
     normalization === 'NONE' ? undefined : normalization,
     field.isCount && scale !== undefined && scale !== 'linear'
@@ -344,7 +345,7 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
         const { rpcData } = self
         const label = valueName(
           self.paintedFieldName,
-          self.appliedNormalizations.join('/'),
+          self.appliedNormalizations,
           self.colorScaleType,
         )
         return self.rampColorScales({
@@ -379,10 +380,7 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
        * What the tooltip calls a bin's value.
        */
       get valueLabel(): string {
-        return valueName(
-          self.paintedFieldName,
-          self.appliedNormalizations.join('/'),
-        )
+        return valueName(self.paintedFieldName, self.appliedNormalizations)
       },
     }))
     .views(self => ({
