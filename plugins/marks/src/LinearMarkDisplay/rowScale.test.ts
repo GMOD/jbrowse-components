@@ -1,12 +1,9 @@
-import { withRowScale } from './rowColors.ts'
 import {
   REGION,
   createTestEnvironment,
   features,
   workerResult,
 } from './testEnv.ts'
-
-import type { ColorSource } from './markColor.ts'
 
 const FAMILY = features([
   { source: 'mom', start: 0, end: 400, score: 7 },
@@ -32,13 +29,17 @@ const keyColors = (display: ReturnType<typeof loaded>) =>
       .map(item => [item.label, item.color]),
   )
 
+const BLUE = 'rgba(0,0,255,1)'
+const RED = 'rgba(255,0,0,1)'
+const YELLOW = 'rgba(255,255,0,1)'
+const MOM_DAD = {
+  scale: { domain: ['mom', 'dad'], range: ['#0000ff', '#ff0000'] },
+}
+
 it('a color over the rows field paints each row its row color', () => {
-  const display = loaded('source', {
-    scale: { domain: ['mom', 'dad'], range: ['#0000ff', '#ff0000'] },
-  })
-  expect(keyColors(display)).toMatchObject({
-    mom: 'rgba(0,0,255,1)',
-    dad: 'rgba(255,0,0,1)',
+  expect(keyColors(loaded('source', MOM_DAD))).toMatchObject({
+    mom: BLUE,
+    dad: RED,
   })
 })
 
@@ -50,46 +51,18 @@ it("a row color beats the mark's own range, which colors the rows with none", ()
     },
     { scale: { domain: ['mom'], range: ['#0000ff'] } },
   )
-  expect(keyColors(display)).toMatchObject({
-    mom: 'rgba(0,0,255,1)',
-    kid: 'rgba(255,255,0,1)',
-  })
+  expect(keyColors(display)).toMatchObject({ mom: BLUE, kid: YELLOW })
 })
 
-it('a color over another field keeps its own scale', () => {
-  const source: ColorSource = {
-    kind: 'categories',
-    encoding: {
-      field: 'strand',
-      scale: 'ordinal',
-      domain: ['1'],
-      range: ['#00ff00'],
-    },
-  }
-  expect(withRowScale(source, 'source', new Map([['1', '#000']]))).toBe(source)
-})
-
-it('a range past the domain keeps dealing its spare colors', () => {
-  const out = withRowScale(
-    {
-      kind: 'categories',
-      encoding: {
-        field: 'source',
-        scale: 'ordinal',
-        domain: ['kid'],
-        range: ['#ffff00', '#00ffff'],
-      },
-    },
-    'source',
-    new Map([['mom', '#0000ff']]),
+it('a domain written for its order alone still paints the row colors', () => {
+  const display = loaded(
+    { field: 'source', scale: { domain: ['kid', 'mom', 'dad'] } },
+    MOM_DAD,
   )
-  expect(out.kind === 'categories' && out.encoding).toMatchObject({
-    domain: ['kid', 'mom'],
-    range: ['#ffff00', '#0000ff', '#00ffff'],
-  })
+  expect(keyColors(display)).toMatchObject({ mom: BLUE, dad: RED })
 })
 
-// The key names the written domain by position, so it keeps its order.
+// The key names the written domain by position.
 it('the key still names each written value', () => {
   const display = loaded(
     {
@@ -100,31 +73,21 @@ it('the key still names each written value', () => {
         names: ['Kid', 'Mother'],
       },
     },
-    { scale: { domain: ['mom', 'dad'], range: ['#0000ff', '#ff0000'] } },
+    MOM_DAD,
   )
   expect(keyColors(display)).toMatchObject({
-    Kid: 'rgba(255,255,0,1)',
-    Mother: 'rgba(0,0,255,1)',
-    dad: 'rgba(255,0,0,1)',
+    Kid: YELLOW,
+    Mother: BLUE,
+    dad: RED,
   })
 })
 
-it('a written value with no color ends the colored run', () => {
-  const out = withRowScale(
-    {
-      kind: 'categories',
-      encoding: {
-        field: 'source',
-        scale: 'ordinal',
-        domain: ['mom', 'kid', 'dad'],
-        range: ['#00ff00'],
-      },
-    },
-    'source',
-    new Map([['dad', '#ff0000']]),
+it('coloring one row leaves the palette colors of the others where they were', () => {
+  const before = keyColors(loaded('source'))
+  const after = keyColors(
+    loaded('source', { scale: { domain: ['mom'], range: ['#0000ff'] } }),
   )
-  expect(out.kind === 'categories' && out.encoding).toMatchObject({
-    domain: ['mom', 'kid', 'dad'],
-    range: ['#00ff00'],
-  })
+  expect(after.mom).toBe(BLUE)
+  expect(after.dad).toBe(before.dad)
+  expect(after.kid).toBe(before.kid)
 })

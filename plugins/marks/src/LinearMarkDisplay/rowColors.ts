@@ -1,88 +1,72 @@
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 
-import type { ColorSource } from './markColor.ts'
 import type { MarkRegionData } from './markList.ts'
 
 /**
- * A categorical color over the field the rows split on, painting each value
- * in its row's color where the row has one (ADR-251), and the color's own
- * `domain` and `range` for the rest. Any other color as it came.
- *
- * The written `domain` keeps its order, since the key pairs `scale.names`
- * with it by position; the rows' other colored values follow it. A written
- * value with no color of either kind ends the colored run, and the values
- * from it on take the palette, as a `domain` longer than its `range` does.
+ * Which marks paint in their rows' colors, each row's color by name, and the
+ * field the rows split on, whose categorical color takes them too.
  */
-export function withRowScale(
-  source: ColorSource,
-  rowsField: string,
-  colors: ReadonlyMap<string, string>,
-): ColorSource {
-  if (
-    source.kind !== 'categories' ||
-    source.encoding.field !== rowsField ||
-    colors.size === 0
-  ) {
-    return source
-  }
-  const { domain = [], range = [] } = source.encoding
-  const written = domain.map(String)
-  const listed = new Set(written)
-  const extra = [...colors.keys()].filter(value => !listed.has(value))
-  const own = written.map((value, i) => colors.get(value) ?? range[i])
-  const gap = own.indexOf(undefined)
-  return {
-    ...source,
-    encoding: {
-      ...source.encoding,
-      domain: [...written, ...extra],
-      range:
-        gap === -1
-          ? [
-              ...(own as string[]),
-              ...extra.map(value => colors.get(value)!),
-              // the spare range past the domain still deals to unlisted values
-              ...range.slice(written.length),
-            ]
-          : (own.slice(0, gap) as string[]),
-    },
-  }
-}
-
-/** Which marks paint in their rows' colors, and each row's color by name. */
 export interface RowColors {
   marks: readonly boolean[]
   colors: ReadonlyMap<string, string>
+  field: string
 }
 
 /**
  * The region with each instance of a mark `rowColors` lists taking its row's
- * color, the layer's own constant where the row has none. A keyed region
- * only: its `row` lane holds the keys `names` spells.
+ * color where the row has one. A mark naming no color keeps its constant on
+ * the rows with none. A categorical color over the rows' field keeps what its
+ * scale dealt them, and its key entries take the row colors too, so a written
+ * `range` colors only the rows with none and no palette slot moves (ADR-251).
+ * A keyed region only: its `row` lane holds the keys `names` spells.
  */
 export function withRowColors(
   region: MarkRegionData,
   rowColors: RowColors,
   names: readonly string[],
 ): MarkRegionData {
-  const abgrOfKey = new Map<number, number | undefined>()
-  const abgrOf = (key: number) => {
-    if (!abgrOfKey.has(key)) {
-      const css = rowColors.colors.get(names[key] ?? '')
-      abgrOfKey.set(key, css === undefined ? undefined : cssColorToABGR(css))
+  const abgrOfName = new Map<string, number | undefined>()
+  const abgrOf = (name: string) => {
+    if (!abgrOfName.has(name)) {
+      const css = rowColors.colors.get(name)
+      abgrOfName.set(name, css === undefined ? undefined : cssColorToABGR(css))
     }
-    return abgrOfKey.get(key)
+    return abgrOfName.get(name)
   }
   const layers = region.layers.map((layer, i) => {
-    const { row, color } = layer
-    if (!rowColors.marks[i] || !row || typeof color !== 'number') {
+    const { row, color, scale } = layer
+    if (!rowColors.marks[i] || !row) {
       return layer
     }
-    const painted = new Uint32Array(layer.count)
-    for (let k = 0; k < layer.count; k++) {
-      painted[k] = abgrOf(row[k]!) ?? color
+    if (typeof color === 'number') {
+      const painted = new Uint32Array(layer.count)
+      for (let k = 0; k < layer.count; k++) {
+        painted[k] = abgrOf(names[row[k]!] ?? '') ?? color
+      }
+      return { ...layer, color: painted }
     }
-    return { ...layer, color: painted }
+    if (
+      color instanceof Uint32Array &&
+      scale?.kind === 'categorical' &&
+      scale.field === rowColors.field
+    ) {
+      const painted = new Uint32Array(layer.count)
+      for (let k = 0; k < layer.count; k++) {
+        painted[k] = abgrOf(names[row[k]!] ?? '') ?? color[k]!
+      }
+      return {
+        ...layer,
+        color: painted,
+        scale: {
+          ...scale,
+          entries: scale.entries.map(e => ({
+            ...e,
+            color: abgrOf(e.value) ?? e.color,
+          })),
+        },
+      }
+    }
+    return layer
   })
   return layers.every((layer, i) => layer === region.layers[i])
     ? region

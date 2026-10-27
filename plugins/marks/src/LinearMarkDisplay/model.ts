@@ -152,7 +152,7 @@ import { DEFAULT_POINT_DIAMETER_PX } from './markVocabulary.ts'
 import { MARK_Y_PATHS } from './markYPaths.ts'
 import { sharedKeyNotice, sharedKeysOf } from './pinDistinct.ts'
 import { defaultPlot } from './plotDefault.ts'
-import { withRowColors, withRowScale } from './rowColors.ts'
+import { withRowColors } from './rowColors.ts'
 import {
   byCategoryBlocks,
   categoriesByColor,
@@ -745,19 +745,6 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * `markColors` as they paint: a categorical color over the rows'
-         * field takes each row's color where it has one (`withRowScale`).
-         */
-        get paintedMarkColors(): ColorSource[] {
-          const colors = this.drawsRows ? self.resolvedRowColors : undefined
-          return colors
-            ? self.markColors.map(source =>
-                withRowScale(source, self.rowsField, colors),
-              )
-            : self.markColors
-        },
-        /**
-         * #getter
          * The `rowGroups` entries whose `match` compiles.
          */
         get rowGroupMatchers() {
@@ -977,7 +964,7 @@ export function stateModelFactory(
         // sent them.
         const colored = createEncodeMemo(
           () => self.featurePayloads,
-          () => sameColors(self.paintedMarkColors),
+          () => sameColors(self.markColors),
           withMarkColors,
         )
         const keyed = createEncodeMemo(
@@ -992,19 +979,26 @@ export function stateModelFactory(
           unsplitRegion,
         )
         // A mark naming no color, under a display naming none, paints each
-        // row in the row's color where the row has one.
+        // row in the row's color where the row has one, and so does a
+        // categorical color over the rows' own field (ADR-251).
         const rowColorPaint = stableIdentityComputed(
           (): RowColors | undefined => {
             if (!self.drawsRows || !self.rowColorPaintsMarks) {
               return undefined
             }
+            const field = self.rowsField
             const declared = saysColor(self.conf.encoding.color)
-            const marks = self.conf.marks.map(
-              m => !declared && !saysColor(m.encoding.color),
-            )
+            const marks = self.conf.marks.map((m, i) => {
+              const source = self.markColors[i]
+              return (
+                (!declared && !saysColor(m.encoding.color)) ||
+                (source?.kind === 'categories' &&
+                  source.encoding.field === field)
+              )
+            })
             const colors = self.resolvedRowColors
             return marks.includes(true) && colors.size > 0
-              ? { marks, colors }
+              ? { marks, colors, field }
               : undefined
           },
         )

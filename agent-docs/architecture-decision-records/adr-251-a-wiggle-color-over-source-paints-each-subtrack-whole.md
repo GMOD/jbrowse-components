@@ -69,10 +69,12 @@ review's second color finding, is open below.
   and ADR-227 its last color reason.
 - Amended 2026-10-27, the mark display: a categorical color over the field
   the rows split on paints each row its resolved row color, as a mark naming
-  no color already did (`withRowScale`, read by `paintedMarkColors`). A
-  written `domain` and `range` color the rows with none, so the methylation
-  tutorial's track, which repeats its subadapter colors there, draws as
-  before.
+  no color already did (`withRowColors`). The scale deals as written and the
+  row colors then replace its colors on the rows that have one, instances
+  and key entries both, so a written `range` colors only the rows with none,
+  `scale.names` keeps pairing with the written `domain`, and no palette slot
+  moves. The methylation tutorial's track, which repeats its subadapter
+  colors there, draws as before.
 
 ## Open: a heatmap's color domain
 
