@@ -16,22 +16,8 @@ import { mafAlignmentsConfigSchema } from './mafAlignmentsConfigSchema.ts'
 import { mafConservationConfigSchema } from './mafConservationConfigSchema.ts'
 import { mafEncodingConfigSchema } from './mafEncodingConfigSchema.ts'
 
-import type {
-  ConfigurationSlotPath,
-  RetiredSpelling,
-} from '@jbrowse/core/configuration'
+import type { ConfigurationSlotPath } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-
-/**
- * The v4 mafviewer plugin's row settings, top-level there. Letters now follow
- * `encoding.color` and keep the file's case, so the two letter settings lift
- * to nothing.
- */
-const retiredMafSpellings: Record<string, RetiredSpelling> = {
-  rowProportion: v => ({ alignments: { rowProportion: v } }),
-  showAllLetters: () => ({}),
-  showAsUpperCase: () => ({}),
-}
 
 /**
  * #config LinearMafDisplay
@@ -165,7 +151,6 @@ export default function configSchemaF() {
        */
       baseConfiguration: baseLinearDisplayConfigSchema,
       explicitlyTyped: true,
-      retired: retiredMafSpellings,
     },
     // #endregion
   )
