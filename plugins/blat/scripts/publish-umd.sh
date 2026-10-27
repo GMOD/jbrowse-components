@@ -13,7 +13,11 @@
 #   on the hosts already loading it. Those SHOULD reach existing configs.
 #
 #   Mint v2 when the plugin starts requiring something of the host that v1 did
-#   not, and leave v1 in place answering older configs.
+#   not, and leave v1 in place answering older configs. check-umd-floor.ts
+#   finds that case: it fails when the bundle imports something the newest
+#   release before this commit does not serve.
+#
+# release.yml runs this on every tag.
 #
 # Uploading with `aws s3 cp` alone is not enough: CloudFront (E13LGELJOT4GQO,
 # fronting jbrowse.org) serves the previously-cached object for hours, so the
@@ -29,6 +33,9 @@ s3_dir="s3://jbrowse.org/plugins/jbrowse-plugin-blat/dist/${version}"
 here="$(cd "$(dirname "$0")/.." && pwd)"
 
 cd "$here"
+if [[ -z "${SKIP_FLOOR_CHECK:-}" ]]; then
+  node scripts/check-umd-floor.ts
+fi
 pnpm build:umd
 
 aws s3 cp "dist/${bundle}" "${s3_dir}/" --content-type application/javascript
