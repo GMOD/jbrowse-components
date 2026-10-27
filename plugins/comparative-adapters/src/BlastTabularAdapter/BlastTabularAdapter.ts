@@ -133,7 +133,7 @@ const REQUIRED_COLUMNS = [
 ] as const
 
 function createBlastLineParser(columns: string) {
-  const columnNames = columns.trim().split(' ') as (keyof BlastRecord)[]
+  const columnNames = columns.trim().split(/\s+/) as (keyof BlastRecord)[]
   const requiredIndices = {} as Record<
     (typeof REQUIRED_COLUMNS)[number],
     number

@@ -202,3 +202,26 @@ test('a self-alignment whose hits are written from both ends draws each locus on
     ]),
   )
 })
+
+test('a columns list may separate its names with any run of whitespace', async () => {
+  const path = join(mkdtempSync(join(tmpdir(), 'blast-cols-')), 'hits.tsv')
+  writeFileSync(path, 'q1\ts1\t11\t20\t101\t110\t97.5\n')
+  const adapter = new Adapter(
+    MyConfigSchema.create({
+      blastTableLocation: {
+        localPath: path,
+        locationType: 'LocalPathLocation',
+      },
+      columns: 'qseqid  sseqid\tqstart qend  sstart send pident',
+      assemblyNames: ['a', 'b'],
+    }),
+  )
+  const [feature] = await firstValueFrom(
+    adapter
+      .getFeatures({ refName: 'q1', start: 0, end: 100, assemblyName: 'a' })
+      .pipe(toArray()),
+  )
+  expect(feature?.get('start')).toBe(10)
+  expect(feature?.get('end')).toBe(20)
+  expect(feature?.get('identity')).toBe(0.975)
+})
