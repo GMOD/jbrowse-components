@@ -64,6 +64,9 @@ export type SearchType = 'full' | 'prefix' | 'exact'
 // is its own to apply.
 export interface BaseTextSearchArgs {
   queryString: string
+  // 'exact' lets an adapter skip work that can only find inexact hits; either
+  // way it marks each hit's `exact`, which is what the search box reads.
+  // Nothing reads 'full'
   searchType?: SearchType
   signal?: AbortSignal
 }

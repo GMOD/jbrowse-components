@@ -95,6 +95,19 @@ describe('fetchResults refname matching', () => {
     ).toEqual(['chr1'])
   })
 
+  it('finds the assembly itself when handed the session', async () => {
+    const session = {
+      assemblyManager: {
+        waitForAssembly: async () => fakeAssembly(['chr1', 'ctgA']),
+      },
+    } as unknown as AbstractSessionModel
+    expect(
+      (await fetchResults({ session, queryString: 'ctg', assemblyName })).map(
+        r => r.getLabel(),
+      ),
+    ).toEqual(['ctgA'])
+  })
+
   it('reaches a refName the query is only a substring of', async () => {
     // the dropdown lists chrUn_KI270706v1 for "KI270706", so Enter on the same
     // text has to reach it too

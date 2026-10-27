@@ -20,6 +20,7 @@ import type TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { SearchType } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type {
+  AbstractSessionModel,
   AssemblyHost,
   NotificationSink,
   TrackCatalog,
@@ -486,8 +487,35 @@ async function searchNames({
   }
 }
 
-export async function fetchResults(args: SearchArgs) {
-  return (await searchNames(args)).results
+interface SessionSearchArgs {
+  session: Pick<AbstractSessionModel, 'assemblyManager' | 'textSearchManager'>
+  queryString: string
+  assemblyName: string
+  searchType?: SearchType
+  signal?: AbortSignal
+}
+
+/**
+ * The search box's hits for a query: refNames and text-index results, merged.
+ * Pass the session and the function finds the index manager and the assembly
+ * itself; passing `textSearchManager` and `assembly` is the older form.
+ */
+export async function fetchResults(args: SessionSearchArgs | SearchArgs) {
+  if ('session' in args) {
+    const { session, ...rest } = args
+    const assembly = await session.assemblyManager
+      .waitForAssembly(args.assemblyName)
+      .catch(() => undefined)
+    return (
+      await searchNames({
+        ...rest,
+        textSearchManager: session.textSearchManager,
+        assembly,
+      })
+    ).results
+  } else {
+    return (await searchNames(args)).results
+  }
 }
 
 // A miss says when an index could not answer: with none answering it is a

@@ -92,6 +92,7 @@ export default class TextSearchManager {
     )
   }
 
+  /** @deprecated read `relevantIndexes`, which also names each index's track */
   relevantAdapters(assemblyName: string) {
     return this.relevantIndexes(assemblyName).map(index => index.conf)
   }
@@ -129,6 +130,7 @@ export default class TextSearchManager {
     ]
   }
 
+  /** @deprecated `relevantIndexes` answers this */
   getAdaptersWithAssembly(
     matches: (names: string[] | undefined) => boolean,
     confs: AnyConfigurationModel[],
@@ -138,6 +140,7 @@ export default class TextSearchManager {
     )
   }
 
+  /** @deprecated `relevantIndexes` answers this */
   getTrackAdaptersWithAssembly(
     matches: (names: string[] | undefined) => boolean,
     confs: AnyTrackConfig[],
@@ -168,6 +171,7 @@ export default class TextSearchManager {
       })
   }
 
+  /** @deprecated `searchIndexes` also says how many indexes answered or failed */
   async search(args: BaseTextSearchArgs, assemblyName: string) {
     return (await this.searchIndexes(args, assemblyName)).results
   }

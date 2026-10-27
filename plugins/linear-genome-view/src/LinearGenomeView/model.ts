@@ -1657,12 +1657,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
         if (!assemblyName) {
           throw new Error('the view has no assembly to search yet')
         }
-        const { assemblyManager, textSearchManager } = getSession(self)
         const results = await fetchResults({
+          session: getSession(self),
           queryString: query,
           assemblyName,
-          textSearchManager,
-          assembly: await assemblyManager.waitForAssembly(assemblyName),
           signal: opts?.signal,
         })
         return searchHitsOf(

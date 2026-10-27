@@ -42,12 +42,10 @@ const LinearGenomeViewImportForm = observer(
   }) {
     const { classes } = useStyles()
     const session = getSession(model)
-    const { textSearchManager } = session
     const { error: viewError } = model
     const {
       selectedAssemblyName: selectedAsm,
       setSelectedAssemblyName,
-      assembly,
       assemblyError,
       regions,
     } = useAssemblySelection(session, 'lgv')
@@ -156,9 +154,8 @@ const LinearGenomeViewImportForm = observer(
                 <RefNameAutocomplete
                   fetchResults={(queryString, signal) =>
                     fetchResults({
+                      session,
                       queryString,
-                      assembly,
-                      textSearchManager,
                       assemblyName: selectedAsm,
                       signal,
                     })

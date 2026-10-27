@@ -71,10 +71,8 @@ const SearchBox = observer(function SearchBox({
 }) {
   const palette = usePalette()
   const session = getSession(model)
-  const { textSearchManager, assemblyManager } = session
   const { assemblyNames } = model
   const assemblyName = assemblyNames[0]!
-  const assembly = assemblyManager.get(assemblyName)
   const { recentLocations, addRecentLocation, clearRecentLocations } =
     useRecentLocations(assemblyName)
 
@@ -102,13 +100,7 @@ const SearchBox = observer(function SearchBox({
       }}
       assemblyName={assemblyName}
       fetchResults={(queryString, signal) =>
-        fetchResults({
-          queryString,
-          assemblyName,
-          textSearchManager,
-          assembly,
-          signal,
-        })
+        fetchResults({ session, queryString, assemblyName, signal })
       }
       session={session}
       value={model.coarseVisibleLocStrings}
