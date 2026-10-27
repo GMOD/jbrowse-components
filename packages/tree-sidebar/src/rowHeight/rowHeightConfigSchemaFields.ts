@@ -12,10 +12,8 @@ import type { ConfigModelForFields } from '@jbrowse/core/configuration'
  * by the track height. Three displays wrote that `number` / `0` pair out by
  * hand, and two of the three descriptions had already drifted apart by a word.
  *
- * The description is the parameter because it is the part that genuinely
- * differs: rows the user can scroll to (maf, the multi-sample variant displays)
- * versus a painting that grows to its content and has nowhere to scroll (the
- * multi-row feature display).
+ * The description is the parameter because it is the part that differs: the
+ * mark display's rows exist only under `rows`, so its sentence says so.
  *
  * **Write it as the whole explanation.** A slot reached by spreading a table
  * renders on its config page from this `description` alone: this file declares

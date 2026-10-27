@@ -40,11 +40,34 @@ second dialog field.
 `effectiveRowHeight` is the cross-plugin ABI. `applyRowResizeWheel.ts` (core)
 and `TreeDrawingModel` (tree-sidebar `types.ts`) read it by that name off a model
 they were handed, so the duck types stay even though the mixin declares the
-getter. `wiggle/LinearWiggleDisplay` and
-`canvas/LinearMultiRowFeatureDisplay` are always-fit and expose
-`effectiveRowHeight` with no `rowHeight`;
-`alignments/LinearAlignmentsDisplay`'s `rowHeight` is a per-read pitch, an
-unrelated concept.
+getter. `wiggle/LinearWiggleDisplay` is always-fit and exposes
+`effectiveRowHeight` with no `rowHeight`. `marks/LinearMultiRowFeatureDisplay`
+is a mark display subtype and takes the mark display's `rowHeight`, pinned only
+under `rows`. `alignments/LinearAlignmentsDisplay`'s `rowHeight` is a per-read
+pitch, an unrelated concept.
+
+### Against `heightMode`
+
+`rowHeight` and the single-lane displays' `heightMode`
+(`packages/display-kit/src/heightMode.ts`) answer the same two questions: is
+the item's height pinned, and is the track's?
+
+| Track height | Item height pinned           | Item height derived |
+| ------------ | ---------------------------- | ------------------- |
+| pinned       | `fixed`, or `rowHeight: N`   | `fit`, or `rowHeight: 0` |
+| derived      | `grow` (single-lane only)    | none                |
+
+- `mark.height` sizes a glyph in a packed lane, whose row
+  pitch follows from it. `rowHeight` sizes a labelled row's band, and the mark
+  display sizes its glyph inside that band (`mark.height.band`).
+- Single-lane `fit` shrinks glyphs down from `mark.height` and never enlarges
+  them, so the mode and the size stay two slots there. Multi-row fit divides
+  the plot with no ceiling, so one slot with a `0` sentinel holds both states.
+- jbrowse-img's `heightMode:` and `featureHeight:` warn and write nothing on a
+  multi-row display; `rowHeight=N` and `height:N` are the writes there.
+- Multi-row displays get no `grow`: a multi-row display never sizes its height
+  from its row count. If one ever gains `grow`, or a ceiling for fit, the
+  sentinel can no longer hold its states and `heightMode` becomes the slot.
 
 ### Sub-pixel fit heights are legitimate
 
