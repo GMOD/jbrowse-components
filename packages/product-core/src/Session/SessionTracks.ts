@@ -17,11 +17,7 @@ import {
 import { compareStructural, computed } from 'mobx'
 
 import { TracksManagerSessionMixin } from './Tracks.ts'
-import {
-  deltaInCurrentSpelling,
-  displayWholeAt,
-  hydratedTrackForm,
-} from './hydratedForms.ts'
+import { displayForms, hydratedTrackForm } from './hydratedForms.ts'
 import { assertNotReaddedDifferently } from './readdedTrackConf.ts'
 import { assertTrackConfOutlivesItsAssemblies } from './temporaryAssemblyTracks.ts'
 
@@ -32,7 +28,7 @@ import type {
   AnyTrackConfig,
   TrackConfigEntry,
 } from '@jbrowse/core/configuration'
-import type { WholeAt } from '@jbrowse/core/util'
+import type { DisplayForms } from '@jbrowse/core/util'
 import type {
   IAnyStateTreeNode,
   IAnyType,
@@ -72,9 +68,9 @@ function sessionEntries(self: { sessionTracks: IAnyStateTreeNode }) {
 function deltaHasChanges(
   base: PlainTrackConfig,
   delta: PlainTrackConfig,
-  wholeAt: WholeAt,
+  forms: DisplayForms,
 ): boolean {
-  return flattenTrackConfigDelta(base, delta, wholeAt).length > 0
+  return flattenTrackConfigDelta(base, delta, forms).length > 0
 }
 
 // The assemblies a track config names that the config.json does not carry.
@@ -140,8 +136,7 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
   // both sides go through the same schema first; a base is memoized per
   // frozen-base identity, which is stable until a jbrowse.tracks write.
   const hydrate = hydratedTrackForm(pluginManager)
-  const wholeAt = displayWholeAt(pluginManager)
-  const inCurrentSpelling = deltaInCurrentSpelling(pluginManager)
+  const forms = displayForms(pluginManager)
   const canonicalBaseCache = new WeakMap<object, TrackConfigEntry>()
   function toPlainConfig(base: TrackConfigEntry): TrackConfigEntry {
     const cached = canonicalBaseCache.get(base)
@@ -153,11 +148,7 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
     return hydrated
   }
   function mergedOver(plainBase: TrackConfigEntry, delta: PlainTrackConfig) {
-    return mergeTrackConfig(
-      plainBase,
-      inCurrentSpelling(plainBase, delta),
-      wholeAt,
-    )
+    return mergeTrackConfig(plainBase, delta, forms)
   }
   return TracksManagerSessionMixin(pluginManager)
     .named('SessionTracksManagerSessionMixin')
@@ -382,11 +373,7 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
           const delta = deltaFor(trackId)
           const base = delta ? baseFor(trackId) : undefined
           return delta && base
-            ? flattenTrackConfigDelta(
-                base,
-                inCurrentSpelling(base, delta),
-                wholeAt,
-              )
+            ? flattenTrackConfigDelta(base, delta, forms)
             : []
         },
       }
@@ -430,11 +417,11 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
             const delta = diffTrackConfig(
               plainBase,
               getSnapshot(track),
-              wholeAt,
+              forms,
             ) as PlainTrackConfig
             // a legacy override identical to its base contributes no changed
             // slots: drop it rather than migrate a content-free delta
-            if (deltaHasChanges(plainBase, delta, wholeAt)) {
+            if (deltaHasChanges(plainBase, delta, forms)) {
               deltas[track.trackId] = delta
             }
           }
@@ -655,10 +642,10 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
             const delta = diffTrackConfig(
               plainBase,
               inTrackForm(trackConf),
-              wholeAt,
+              forms,
             ) as PlainTrackConfig
             // an edit that nets back to the base clears any prior override
-            if (deltaHasChanges(plainBase, delta, wholeAt)) {
+            if (deltaHasChanges(plainBase, delta, forms)) {
               // Two views showing the same track each run BaseTrackModel's
               // persist reaction against the shared config node, so a single edit
               // calls this twice with an identical delta (and the config editor

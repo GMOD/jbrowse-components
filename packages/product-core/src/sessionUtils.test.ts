@@ -21,7 +21,7 @@ import type { HostedBaseConfig } from './sessionUtils.ts'
 const asWritten: HydratedForms = {
   track: t => t,
   assembly: a => a,
-  wholeAt: () => false,
+  displays: { wholeAt: () => false, canonical: (_, d) => d },
 }
 
 function hub(config: HostedBaseConfig) {
@@ -36,7 +36,7 @@ const stripsDefaults: HydratedForms = {
     Array.isArray(aliases) && aliases.length === 0
       ? rest
       : { ...rest, aliases },
-  wholeAt: () => false,
+  displays: { wholeAt: () => false, canonical: (_, d) => d },
 }
 
 const Item = types.model('Item', {

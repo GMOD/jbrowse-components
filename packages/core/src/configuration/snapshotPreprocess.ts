@@ -180,21 +180,40 @@ export function liftRetiredSpellings(
   return Object.keys(spellings).some(key => key in snapshot)
     ? applyRetiredSpellings(
         spellings,
-        withMemberShorthandsLifted(schema, snapshot),
+        membersInCanonicalSpelling(schema, snapshot),
         name => declared.has(name),
       )
     : snapshot
+}
+
+/**
+ * #api core/configuration
+ * A settings bag as its schema spells it, at every depth of the sub-schemas
+ * it declares: a bare value as the object its `shorthand` lifts it into, and
+ * a `retired` spelling as the members that replaced it. Two bags combine
+ * member by member only in this form; merged raw, a bare `mark: "line"`
+ * replaces a whole `mark` object where it meant its `type`. The bag itself,
+ * by identity, when it already spells everything so.
+ */
+export function canonicalSpelling(
+  schema: ConfigurationSchemaMetadata,
+  snapshot: Record<string, unknown>,
+) {
+  return liftRetiredSpellings(
+    schema,
+    membersInCanonicalSpelling(schema, snapshot),
+  )
 }
 
 // A member written in its shorthand, `filter: ['jexl:…']` or `encoding: { y:
 // 'maxScore' }`, as the object it lifts into, so a retired spelling lifting
 // into the same member lands beside it rather than under a value it cannot
 // merge with.
-function withMemberShorthandsLifted(
+function membersInCanonicalSpelling(
   { definition }: ConfigurationSchemaMetadata,
   snapshot: Record<string, unknown>,
 ) {
-  const out = { ...snapshot }
+  let out = snapshot
   for (const [key, value] of Object.entries(snapshot)) {
     const member = Object.hasOwn(definition, key) ? definition[key] : undefined
     const meta = isBareConfigurationSchemaType(member)
@@ -202,9 +221,13 @@ function withMemberShorthandsLifted(
       : undefined
     if (meta) {
       const lifted = liftShorthand(meta, value)
-      out[key] = isPlainObject(lifted)
-        ? withMemberShorthandsLifted(meta, lifted)
+      const next = isPlainObject(lifted)
+        ? canonicalSpelling(meta, lifted)
         : lifted
+      if (next !== value) {
+        out = out === snapshot ? { ...snapshot } : out
+        out[key] = next
+      }
     }
   }
   return out

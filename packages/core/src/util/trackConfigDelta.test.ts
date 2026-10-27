@@ -4,6 +4,8 @@ import {
   mergeTrackConfig,
 } from './trackConfigDelta.ts'
 
+import type { DisplayForms } from './trackConfigDelta.ts'
+
 interface Display {
   type?: string
   displayId: string
@@ -493,8 +495,11 @@ test('flatten reports a renderer type swap inside a display', () => {
 })
 
 describe('an object the display writes whole', () => {
-  const wholeAt = (type: string, path: readonly string[]) =>
-    type === 'LinearVariantDisplay' && path.join('.') === 'color'
+  const forms: DisplayForms = {
+    wholeAt: (type, path) =>
+      type === 'LinearVariantDisplay' && path.join('.') === 'color',
+    canonical: (_, display) => display,
+  }
   const withColor = (color: Record<string, unknown>) => {
     const conf = clone(base)
     conf.displays[1]!.color = color
@@ -504,38 +509,37 @@ describe('an object the display writes whole', () => {
   const strandPick = withColor({ field: 'strand' })
 
   test('a pick stores the object whole, and replaces the base', () => {
-    const delta = diffTrackConfig(typeColors, strandPick, wholeAt)
+    const delta = diffTrackConfig(typeColors, strandPick, forms)
     expect(asCfg(delta).displays).toEqual([
       { displayId: 'vcf-Linear', color: { field: 'strand' } },
     ])
-    expect(mergeTrackConfig(typeColors, delta, wholeAt)).toEqual(strandPick)
+    expect(mergeTrackConfig(typeColors, delta, forms)).toEqual(strandPick)
   })
 
   test("an admin's later member stays out of the user's pick", () => {
-    const delta = diffTrackConfig(typeColors, strandPick, wholeAt)
+    const delta = diffTrackConfig(typeColors, strandPick, forms)
     const adminAddsRange = withColor({
       field: 'type',
       domain: ['SNV', 'INDEL'],
       range: ['red', 'blue'],
     })
     expect(
-      asCfg(mergeTrackConfig(adminAddsRange, delta, wholeAt)).displays[1]!
-        .color,
+      asCfg(mergeTrackConfig(adminAddsRange, delta, forms)).displays[1]!.color,
     ).toEqual({ field: 'strand' })
   })
 
   test('a reset is one null, and the change list names each member it moved', () => {
     const reset = clone(typeColors)
     delete reset.displays[1]!.color
-    const delta = diffTrackConfig(typeColors, reset, wholeAt)
+    const delta = diffTrackConfig(typeColors, reset, forms)
     expect(asCfg(delta).displays).toEqual([
       { displayId: 'vcf-Linear', color: null },
     ])
     expect(
       flattenTrackConfigDelta(
         typeColors,
-        diffTrackConfig(typeColors, strandPick, wholeAt),
-        wholeAt,
+        diffTrackConfig(typeColors, strandPick, forms),
+        forms,
       ).map(c => [c.path.join('.'), c.to]),
     ).toEqual([
       ['displays.LinearVariantDisplay.color.field', 'strand'],
@@ -557,9 +561,59 @@ describe('an object the display writes whole', () => {
               },
             ],
           },
-          wholeAt,
+          forms,
         ),
       ).displays[1]!.color,
     ).toEqual({ field: 'strand' })
+  })
+})
+
+describe('a stored delta in a spelling the base does not use', () => {
+  const asType = (display: Record<string, unknown>) =>
+    typeof display.mark === 'string'
+      ? { ...display, mark: { type: display.mark } }
+      : display
+  const seen: string[] = []
+  const forms: DisplayForms = {
+    wholeAt: () => false,
+    canonical: (type, display) => {
+      seen.push(type)
+      return asType(display)
+    },
+  }
+  const wiggle = {
+    trackId: 'w',
+    displays: [
+      {
+        type: 'LinearWiggleDisplay',
+        displayId: 'w-LinearWiggleDisplay',
+        mark: { type: 'bar', extent: 'none' },
+      },
+    ],
+  }
+  const bareLine = {
+    trackId: 'w',
+    displays: [{ displayId: 'w-LinearWiggleDisplay', mark: 'line' }],
+  }
+
+  test('a bare name merges as the member it names', () => {
+    expect(mergeTrackConfig(wiggle, bareLine, forms).displays).toEqual([
+      {
+        type: 'LinearWiggleDisplay',
+        displayId: 'w-LinearWiggleDisplay',
+        mark: { type: 'line', extent: 'none' },
+      },
+    ])
+    expect(seen).toContain('LinearWiggleDisplay')
+  })
+
+  test('the change list names the member, not the object', () => {
+    expect(
+      flattenTrackConfigDelta(wiggle, bareLine, forms).map(c => [
+        c.path.join('.'),
+        c.from,
+        c.to,
+      ]),
+    ).toEqual([['displays.LinearWiggleDisplay.mark.type', 'bar', 'line']])
   })
 })

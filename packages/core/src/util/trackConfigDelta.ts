@@ -12,6 +12,12 @@
  *   - `diffTrackConfig(base, edited)` — the minimal delta
  *   - `mergeTrackConfig(base, delta)` — reconstruct the effective config
  *
+ * The base is hydrated, while a stored delta keeps whatever spelling it was
+ * written in: a hand-written `mark: "line"`, a retired name. So the merge and
+ * the change list read each delta display in its schema's canonical spelling
+ * (`DisplayForms.canonical`) first, or a bare name would replace the whole
+ * object the base writes.
+ *
  * A delta is a JSON Merge Patch (RFC 7396) over the base, so a `null` member is
  * a reset: the merge removes the member and the schema's default applies. That
  * is ADR-146's spelling of a reset, and the diff writes one wherever the base
@@ -77,9 +83,22 @@ function isDisplayArray(v: Json): v is JsonObject[] {
  */
 export type WholeAt = (displayType: string, path: readonly string[]) => boolean
 
+/**
+ * What a delta walk reads off the display schemas: which objects a display
+ * writes whole, and a display's settings in canonical spelling
+ * (`canonicalSpelling`). A walk given none reads the config as plain JSON.
+ */
+export interface DisplayForms {
+  wholeAt: WholeAt
+  canonical: (
+    displayType: string,
+    display: Record<string, unknown>,
+  ) => Record<string, unknown>
+}
+
 // Where a walk stands: inside a display of `type`, at `path` within it.
 interface At {
-  wholeAt?: WholeAt
+  forms?: DisplayForms
   type?: string
   path: string[]
 }
@@ -96,7 +115,7 @@ const displayAt = (at: At, ...displays: (JsonObject | undefined)[]): At => ({
 })
 
 const isWhole = (at: At) =>
-  at.type !== undefined && !!at.wholeAt?.(at.type, at.path)
+  at.type !== undefined && !!at.forms?.wholeAt(at.type, at.path)
 
 const UNCHANGED = Symbol('unchanged')
 
@@ -111,6 +130,17 @@ function baseDisplayFor(baseDisplays: JsonObject[], d: JsonObject) {
       ? undefined
       : baseDisplays.find(b => b.type === d.type))
   )
+}
+
+function inCanonicalSpelling(
+  at: At,
+  display: JsonObject,
+  baseDisplay: JsonObject | undefined,
+) {
+  const { type } = displayAt(at, display, baseDisplay)
+  return type === undefined || !at.forms
+    ? display
+    : (at.forms.canonical(type, display) as JsonObject)
 }
 
 function diffValue(base: Json, edited: Json, at: At): Json | typeof UNCHANGED {
@@ -164,10 +194,10 @@ function diffValue(base: Json, edited: Json, at: At): Json | typeof UNCHANGED {
 export function diffTrackConfig(
   base: Record<string, unknown>,
   edited: Record<string, unknown>,
-  wholeAt?: WholeAt,
+  forms?: DisplayForms,
 ): Record<string, unknown> {
   const d = diffValue(base as JsonObject, edited as JsonObject, {
-    wholeAt,
+    forms,
     path: [],
   })
   const delta = d === UNCHANGED ? {} : (d as JsonObject)
@@ -182,10 +212,10 @@ function mergeValue(base: Json, delta: Json, at: At): Json {
     const baseDisplays = isDisplayArray(base) ? base : []
     const deltaByBaseId = new Map<string, JsonObject>()
     const added: JsonObject[] = []
-    for (const d of delta) {
-      const id = baseDisplayFor(baseDisplays, d)?.displayId as
-        | string
-        | undefined
+    for (const stored of delta) {
+      const baseDisplay = baseDisplayFor(baseDisplays, stored)
+      const d = inCanonicalSpelling(at, stored, baseDisplay)
+      const id = baseDisplay?.displayId as string | undefined
       if (id !== undefined) {
         const onId = { ...d, displayId: id }
         const earlier = deltaByBaseId.get(id)
@@ -252,10 +282,10 @@ function withoutNulls(o: JsonObject) {
 export function mergeTrackConfig<BASE extends Record<string, unknown>>(
   base: BASE,
   delta: Record<string, unknown>,
-  wholeAt?: WholeAt,
+  forms?: DisplayForms,
 ): BASE {
   return mergeValue(base as JsonObject, delta as JsonObject, {
-    wholeAt,
+    forms,
     path: [],
   }) as BASE
 }
@@ -306,9 +336,10 @@ function walkDelta(
 ): void {
   if (isDisplayArray(delta)) {
     const baseDisplays = isDisplayArray(base) ? base : []
-    for (const editedDisplay of delta) {
-      const id = editedDisplay.displayId as string
-      const baseDisplay = baseDisplayFor(baseDisplays, editedDisplay)
+    for (const stored of delta) {
+      const id = stored.displayId as string
+      const baseDisplay = baseDisplayFor(baseDisplays, stored)
+      const editedDisplay = inCanonicalSpelling(at, stored, baseDisplay)
       const label = (editedDisplay.type ?? baseDisplay?.type ?? id) as string
       // recurse into every display (missing base ⇒ {}) so only real slot edits
       // surface — a display present only for its {type, displayId} stub yields
@@ -351,11 +382,11 @@ function walkDelta(
 export function flattenTrackConfigDelta(
   base: Record<string, unknown>,
   delta: Record<string, unknown>,
-  wholeAt?: WholeAt,
+  forms?: DisplayForms,
 ): TrackConfigChange[] {
   const out: TrackConfigChange[] = []
   walkDelta(base as JsonObject, delta as JsonObject, [], out, {
-    wholeAt,
+    forms,
     path: [],
   })
   return out

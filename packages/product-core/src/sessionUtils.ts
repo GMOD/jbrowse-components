@@ -16,7 +16,7 @@ import { asArray, isRecord } from './snapshotUtils.ts'
 
 import type { HydratedForms } from './Session/hydratedForms.ts'
 import type { PluginDefinition } from '@jbrowse/core/pluginDefinitions'
-import type { WholeAt } from '@jbrowse/core/util'
+import type { DisplayForms } from '@jbrowse/core/util'
 import type {
   IAnyStateTreeNode,
   IAnyType,
@@ -576,14 +576,14 @@ function splitTracksAgainstBase(
   tracks: TrackSnapshot[],
   baseTracks: TrackSnapshot[],
   form: HydratedForms['track'],
-  wholeAt: WholeAt,
+  displays: DisplayForms,
 ) {
   const baseById = new Map(baseTracks.map(t => [t.trackId, t]))
   const addedTracks = tracks.filter(t => !baseById.has(t.trackId))
   const editDeltas = Object.fromEntries(
     tracks.flatMap((track): [string, Record<string, unknown>][] => {
       const base = baseById.get(track.trackId)
-      const delta = base && editedDelta(base, track, form, wholeAt)
+      const delta = base && editedDelta(base, track, form, displays)
       return delta ? [[track.trackId, delta]] : []
     }),
   )
@@ -597,11 +597,11 @@ function editedDelta<T extends Record<string, unknown>>(
   base: T,
   edited: T,
   form: (conf: T) => T,
-  wholeAt?: WholeAt,
+  displays?: DisplayForms,
 ) {
   const hydratedBase = form(base)
-  const delta = diffTrackConfig(hydratedBase, form(edited), wholeAt)
-  return flattenTrackConfigDelta(hydratedBase, delta, wholeAt).length > 0
+  const delta = diffTrackConfig(hydratedBase, form(edited), displays)
+  return flattenTrackConfigDelta(hydratedBase, delta, displays).length > 0
     ? delta
     : undefined
 }
@@ -795,7 +795,7 @@ export function planWebExport(
         tracks,
         base.config.tracks ?? [],
         base.forms.track,
-        base.forms.wholeAt,
+        base.forms.displays,
       )
     : undefined
 
