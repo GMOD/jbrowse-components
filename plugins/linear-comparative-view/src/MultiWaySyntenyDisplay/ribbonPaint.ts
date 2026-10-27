@@ -7,6 +7,7 @@ import {
   createOpacityFunction,
   opacityFadeOf,
   opacityLevel,
+  SYNTENY_VIEW_FIELDS,
   writeFeatureChannels,
 } from '@jbrowse/synteny-core'
 
@@ -22,16 +23,16 @@ import type {
 /** Every ribbon's opacity while `ribbons.encoding.opacity` is unset. */
 export const RIBBON_OPACITY = 0.3
 
-// The fields a comparative lane answers from something other than an
-// attribute channel
 const LANE_FIELDS: ReadonlySet<string> = new Set([
-  'strand',
+  ...SYNTENY_VIEW_FIELDS,
   'length',
-  'track',
-  'query',
-  'target',
-  'reference',
 ])
+
+// a lane pair joins many sequences, so the sequence-name fields leave each
+// ribbon its own color
+function paintedField(field: string | undefined) {
+  return field === 'query' || field === 'target' ? undefined : field
+}
 
 /**
  * Each ribbon's color, through the synteny views' color, opacity and filter
@@ -93,7 +94,7 @@ export function ribbonPaintOf({
     attributeRanges: fetchRanges,
   }
   const colorAt = createComparativeColorFunction({
-    field,
+    field: paintedField(field),
     data,
     trackColor: ribbonColor,
     defaultColor: cssColorToABGR(ribbonColor),

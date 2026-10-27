@@ -38,3 +38,20 @@ test('one record paints and filters each pair by its own strand', () => {
     forward,
   ])
 })
+
+// a lane joins many sequences, so the two-way views' sequence-name fields
+// name nothing a ribbon could be colored by
+test.each(['query', 'target', 'reference'])(
+  '%s paints the ribbon color',
+  field => {
+    const paint = ribbonPaintOf({
+      records: [record],
+      field,
+      ribbonColor: 'grey',
+      attributeRanges: {},
+      opacity: { value: 1 },
+      filter: [],
+    })
+    expect(paint(record, 1)).toBe(cssColorToABGR('grey'))
+  },
+)
