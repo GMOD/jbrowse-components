@@ -1,5 +1,5 @@
 import { parseCommaSeparatedString, writeJsonFile } from '../../utils.ts'
-import { createTrixAdapter } from './adapter-utils.ts'
+import { createTrixAdapter, indexFileOf } from './adapter-utils.ts'
 import {
   formatDryRun,
   getTrackConfigs,
@@ -12,7 +12,7 @@ import {
   validateTrackConfigs,
 } from './validators.ts'
 
-import type { Track } from '../../base.ts'
+import type { SearchIndexEntry, Track } from '../../base.ts'
 import type { TextIndexFlags } from './index.ts'
 
 export async function perTrackIndex(flags: TextIndexFlags): Promise<void> {
@@ -77,17 +77,21 @@ export async function perTrackIndex(flags: TextIndexFlags): Promise<void> {
     indexed.push(trackConfig)
   }
 
-  // a track that already carried an adapter keeps it — re-indexing under --force
-  // refreshes the trix files the existing adapter already points at. The rest
-  // gain one naming the files just written. getTrackConfigs returns elements of
-  // config.tracks, so every indexed track is somewhere in configTracks.
+  // a track keeps an adapter that already names the files just written, however
+  // it spells them; any other adapter — none, desktop's own index, one written
+  // by hand — is replaced, or --force would refresh files nothing reads.
+  // getTrackConfigs returns elements of config.tracks, so every indexed track is
+  // somewhere in configTracks.
   const newAdapters = new Map(
-    indexed
-      .filter(track => !track.textSearching?.textSearchAdapter)
-      .map(track => [
-        track.trackId,
-        createTrixAdapter(track.trackId, track.assemblyNames),
-      ]),
+    indexed.flatMap(({ trackId, assemblyNames, textSearching }) => {
+      const adapter = createTrixAdapter(trackId, assemblyNames)
+      const existing = textSearching?.textSearchAdapter as
+        | SearchIndexEntry
+        | undefined
+      return existing && indexFileOf(existing) === adapter.ixFilePath.uri
+        ? []
+        : [[trackId, adapter] as const]
+    }),
   )
   const updatedTracks = configTracks.map(track => {
     const textSearchAdapter = newAdapters.get(track.trackId)

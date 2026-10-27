@@ -554,3 +554,57 @@ test('a trackId with a slash indexes to the path its adapter names', async () =>
     ).toBe(true)
   })
 })
+
+test('--force points a track at the files it just wrote', async () => {
+  await runInTmpDir(async ctx => {
+    const gff3File = dataDir('volvox.sort.gff3.gz')
+    fs.copyFileSync(gff3File, path.join(ctx.dir, path.basename(gff3File)))
+    fs.writeFileSync(
+      path.join(ctx.dir, 'config.json'),
+      JSON.stringify({
+        assemblies: [{ name: 'volvox' }],
+        tracks: [
+          {
+            type: 'FeatureTrack',
+            trackId: 'genes',
+            assemblyNames: ['volvox'],
+            adapter: {
+              type: 'Gff3TabixAdapter',
+              gffGzLocation: {
+                uri: 'volvox.sort.gff3.gz',
+                locationType: 'UriLocation',
+              },
+            },
+            textSearching: {
+              textSearchAdapter: {
+                type: 'TrixTextSearchAdapter',
+                ixFilePath: {
+                  localPath: '/desktop/userData/genes-index.ix',
+                  locationType: 'LocalPathLocation',
+                },
+                ixxFilePath: {
+                  localPath: '/desktop/userData/genes-index.ixx',
+                  locationType: 'LocalPathLocation',
+                },
+                assemblyNames: ['volvox'],
+              },
+            },
+          },
+        ],
+      }),
+    )
+
+    const { error } = await runCommand([
+      'text-index',
+      '--perTrack',
+      '--force',
+      '--target=config.json',
+    ])
+    expect(error).toBeUndefined()
+    const conf = readJSON(path.join(ctx.dir, 'config.json'))
+    expect(conf.tracks[0].textSearching.textSearchAdapter.ixFilePath).toEqual({
+      uri: 'trix/genes.ix',
+      locationType: 'UriLocation',
+    })
+  })
+})
