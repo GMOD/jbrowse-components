@@ -27,7 +27,7 @@ function reopen(session: Session) {
 test('an exported workspace keeps its tabs', () => {
   const session = createTestSession()
   const [first, second] = addViews(session, 2)
-  session.moveViewToNewTab(second)
+  session.moveViewToNewTab(second!)
 
   const reopened = reopen(session)
 
@@ -82,8 +82,8 @@ test('a session saved with workspaces off opens as the stack it showed', () => {
 test('a view closed before export does not come back as a phantom tab entry', () => {
   const session = createTestSession()
   const [first, second] = addViews(session, 2)
-  session.moveViewToNewTab(second)
-  session.removeView(session.views[1])
+  session.moveViewToNewTab(second!)
+  session.removeView(session.views[1]!)
 
   const reopened = reopen(session)
   expect(reopened.tabs.flatMap(t => [...t.viewIds])).toEqual([first])

@@ -68,7 +68,7 @@ test('a lone view is offered none of the moves that change nothing', async () =>
   session.addView('StubView', { displayName: 'only' })
   session.homeUnassignedViews(session.views.map(v => v.id))
   const user = userEvent.setup()
-  await openViewOptions(user, session.views[0])
+  await openViewOptions(user, session.views[0]!)
 
   expect(await screen.findByText('Copy view')).toBeTruthy()
   for (const label of moveLabels) {
@@ -82,7 +82,7 @@ test('a view alone in one of two tabs can split but not move to a new tab', asyn
   session.moveViewToNewTab(third!.id)
   session.moveViewToNewTab(second!.id)
   expect(session.tabContainingView(first!.id)!.tab.viewIds).toHaveLength(1)
-  await openViewOptions(user, session.views[2])
+  await openViewOptions(user, session.views[2]!)
 
   expect(await screen.findByText('Move to split view (right)')).toBeTruthy()
   expect(screen.getByText('Move to split view (below)')).toBeTruthy()
@@ -91,7 +91,7 @@ test('a view alone in one of two tabs can split but not move to a new tab', asyn
 
 test('a view can be moved into a new tab or either split', async () => {
   const { session, user } = setup()
-  await openViewOptions(user, session.views[0])
+  await openViewOptions(user, session.views[0]!)
 
   expect(await screen.findByText('Move to new tab')).toBeTruthy()
   expect(screen.getByText('Move to split view (right)')).toBeTruthy()
@@ -104,7 +104,7 @@ test('a view moves into another tab, by that tab’s name, at its bottom', async
   session.moveViewToNewTab(third!.id)
   const target = session.tabContainingView(third!.id)!.tab.id
 
-  await openViewOptions(user, first)
+  await openViewOptions(user, first!)
   await user.click(await screen.findByText('Move to tab'))
   await user.click(await screen.findByText('third'))
 
@@ -118,7 +118,7 @@ test('a view moves into another tab, by that tab’s name, at its bottom', async
 
 test('with one tab there is no tab to move to', async () => {
   const { session, user } = setup()
-  await openViewOptions(user, session.views[0])
+  await openViewOptions(user, session.views[0]!)
 
   expect(await screen.findByText('Move to new tab')).toBeTruthy()
   expect(screen.queryByText('Move to tab')).toBeNull()

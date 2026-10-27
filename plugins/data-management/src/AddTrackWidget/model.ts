@@ -1,6 +1,7 @@
 import {
   getSession,
   isRootModelWithInternetAccounts,
+  isTrackContainer,
   isUriLocation,
   makeTrackId,
 } from '@jbrowse/core/util'
@@ -131,9 +132,10 @@ export default function f(pluginManager: PluginManager) {
        */
       get trackContainer(): TrackContainer | undefined {
         const { view, trackContainerId } = self
-        return trackContainerId === undefined
-          ? view
-          : view?.trackContainerFor?.(trackContainerId)
+        if (trackContainerId !== undefined) {
+          return view?.trackContainerFor?.(trackContainerId)
+        }
+        return isTrackContainer(view) ? view : undefined
       },
     }))
     .actions(self => ({
@@ -423,7 +425,10 @@ export default function f(pluginManager: PluginManager) {
        * #getter
        */
       get assembly() {
-        return self.altAssemblyName || self.trackContainer?.assemblyNames?.[0]
+        return (
+          self.altAssemblyName ||
+          (self.trackContainer ?? self.view)?.assemblyNames?.[0]
+        )
       },
 
       /**

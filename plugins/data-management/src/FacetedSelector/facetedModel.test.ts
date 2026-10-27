@@ -4,6 +4,8 @@ import { autorun } from 'mobx'
 
 import { MIN_PANEL_WIDTH, facetedStateTreeF } from './facetedModel.ts'
 
+import type { HierarchicalTrackSelectorModel } from '../HierarchicalTrackSelectorWidget/model.ts'
+
 jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
 
 afterEach(() => {
@@ -42,7 +44,7 @@ function setup() {
       { assemblyName: 'volMyt1', refName: 'ctgA', start: 0, end: 1000 },
     ],
   })
-  const model = view.activateTrackSelector()
+  const model = view.activateTrackSelector() as HierarchicalTrackSelectorModel
   const faceted = facetedStateTreeF().create({})
   faceted.setTrackSource(
     () => model.allTrackConfigurations,

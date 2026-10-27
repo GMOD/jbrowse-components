@@ -8,6 +8,7 @@ import { resolveAssemblies } from './index.ts'
 
 import type { CreateAppOptions } from './createApp.ts'
 import type { UriLocation } from '@jbrowse/core/util'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 jest.mock('./makeWorkerInstance', () => () => {})
 
@@ -76,7 +77,7 @@ test('a launch key and a persisted property both land written flat', async () =>
     ],
   })
 
-  const view = controller.viewState.session.views[0]!
+  const view = controller.viewState.session.views[0] as LinearGenomeViewModel
   expect(view.launch).toMatchObject({ assembly: 'volvox', loc: 'ctgA:1-10' })
   expect(view.colorByFrame).toBe(true)
 
@@ -107,7 +108,9 @@ test('a flat view warns about nothing, a nested init is refused', async () => {
   expect(warn).toHaveBeenCalledWith(
     'LinearGenomeView nests its settings under "init", which is deprecated: write every setting directly on the view object.',
   )
-  expect(nested.viewState.session.views[0]!.pendingLaunch).toBeDefined()
+  expect(
+    (nested.viewState.session.views[0] as LinearGenomeViewModel).pendingLaunch,
+  ).toBeDefined()
   nested.destroy()
 
   warn.mockRestore()
@@ -122,7 +125,7 @@ test('addView takes the flat shape too', async () => {
     colorByFrame: true,
   })
 
-  const view = controller.viewState.session.views[0]!
+  const view = controller.viewState.session.views[0] as LinearGenomeViewModel
   expect(view.id).toBe(id)
   expect(view.launch).toMatchObject({ assembly: 'volvox' })
   expect(view.colorByFrame).toBe(true)

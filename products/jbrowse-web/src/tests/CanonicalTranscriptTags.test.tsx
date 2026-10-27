@@ -11,6 +11,8 @@ import {
   volvoxConfigWithTracks,
 } from './util.tsx'
 
+import type { LinearBasicDisplayModel } from '@jbrowse/plugin-canvas'
+
 setup()
 
 // The whole path from column 9 to the chip, over a GFF3 written the way real
@@ -35,7 +37,7 @@ beforeEach(() => {
 const delay = { timeout: 30000 }
 
 test('the chip names the tag that picked the transcripts on screen', async () => {
-  const { view, session } = await createView(config)
+  const { view } = await createView(config)
   await view.navToLocString('ctgA:1..40,000')
   fireEvent.click(
     await screen.findByTestId(hts('gff3tabix_canonical_tags'), {}, delay),
@@ -45,8 +47,8 @@ test('the chip names the tag that picked the transcripts on screen', async () =>
   // MANEG's `tag=MANE Select` and GENCG's `tag=…,MANE_Select,…` are one curated
   // decision spelled two ways, so they count as one rule and it is the majority;
   // ENSG carries only `Ensembl_canonical`, and PLAING carries nothing at all.
-  const display = session.views[0].tracks[0].displays[0]
-  expect(display.geneGlyphNotice.picks).toEqual({
+  const display = view.tracks[0]!.displays[0] as LinearBasicDisplayModel
+  expect(display.geneGlyphNotice?.picks).toEqual({
     byTag: { 'MANE Select': 2, 'Ensembl canonical': 1 },
     byLength: 1,
     byCap: 0,

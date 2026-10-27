@@ -55,6 +55,17 @@ function clampDrawerWidth(width: number, availableWidth: number) {
   return Math.max(minDrawerWidth, Math.min(Math.round(width), max))
 }
 
+// what `editConfiguration` calls on the config plugin's editor widget
+interface ConfigurationEditor extends Widget {
+  setTrackId(trackId: string): void
+  setTarget(target: AnyConfigurationModel | undefined): void
+  setExpandedDisplayId(displayId: string | undefined): void
+}
+
+function isConfigurationEditor(widget: Widget): widget is ConfigurationEditor {
+  return 'setTrackId' in widget && 'setTarget' in widget
+}
+
 /**
  * #stateModel DrawerWidgetSessionMixin
  * Adds the widget drawer to a session: the open widgets, which one is
@@ -92,7 +103,11 @@ export function DrawerWidgetSessionMixin(pluginManager: PluginManager) {
        * #property
        */
       activeWidgets: types.stripDefault(
-        types.map(types.safeReference(widgetStateModelType)),
+        types.map(
+          types.safeReference(widgetStateModelType, {
+            acceptsUndefined: false,
+          }),
+        ),
         {},
       ),
 
@@ -105,12 +120,6 @@ export function DrawerWidgetSessionMixin(pluginManager: PluginManager) {
       /**
        * #getter
        */
-      // annotated rather than inferred: a widget's state model comes from a
-      // plugin, so `pluggableMstType` is `IAnyType` and its Instance is `any` —
-      // which silently made this getter, and every read of it off a concrete
-      // session, unchecked. `Widget` is the contract `SessionWithWidgets`
-      // already declares, so this only brings the concrete model into line with
-      // what plugins narrowing to that interface have always seen.
       get visibleWidget(): Widget | undefined {
         if (isAlive(self)) {
           // returns most recently added item in active widgets
@@ -357,6 +366,11 @@ export function DrawerWidgetSessionMixin(pluginManager: PluginManager) {
           'ConfigurationEditorWidget',
           'configEditor',
         )
+        if (!isConfigurationEditor(editor)) {
+          throw new Error(
+            `the registered ${editor.type} has no setTrackId or setTarget, so it cannot edit a configuration`,
+          )
+        }
         // A shown track edits its working copy, so the editor edits that same
         // node, and follows it when an undo replaces it (ADR-032). A node the
         // session does not resolve by id, such as a track a view holds

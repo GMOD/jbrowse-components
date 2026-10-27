@@ -1,5 +1,7 @@
 import { createTestSession } from '@jbrowse/web/testUtils'
 
+import type { AddTrackModel } from './model.ts'
+
 jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
 
 function addAsm(session: ReturnType<typeof createTestSession>, name: string) {
@@ -43,7 +45,7 @@ test('reopening add-track widget for a different view resets stale assembly', ()
   // open from view A and enter some data, then close without submitting
   const w1 = session.addWidget('AddTrackWidget', 'addTrackWidget', {
     view: viewA.id,
-  })
+  }) as AddTrackModel
   expect(w1.assembly).toBe('asmA')
   w1.setTrackData({ uri: 'foo.bam', locationType: 'UriLocation' })
   w1.setAssembly('asmA')
@@ -53,7 +55,7 @@ test('reopening add-track widget for a different view resets stale assembly', ()
   // reopen from view B: form must reset so the track targets view B's assembly
   const w2 = session.addWidget('AddTrackWidget', 'addTrackWidget', {
     view: viewB.id,
-  })
+  }) as AddTrackModel
   expect(w2.assembly).toBe('asmB')
   expect(w2.altAssemblyName).toBe('')
   expect(w2.trackData).toBeUndefined()
@@ -71,13 +73,13 @@ test('reopening add-track widget for the same view preserves entered data', () =
 
   const w1 = session.addWidget('AddTrackWidget', 'addTrackWidget', {
     view: viewA.id,
-  })
+  }) as AddTrackModel
   w1.setTrackData({ uri: 'foo.bam', locationType: 'UriLocation' })
   session.showWidget(w1)
   session.hideWidget(w1)
 
   const w2 = session.addWidget('AddTrackWidget', 'addTrackWidget', {
     view: viewA.id,
-  })
+  }) as AddTrackModel
   expect(w2.trackData).toEqual({ uri: 'foo.bam', locationType: 'UriLocation' })
 })

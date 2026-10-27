@@ -8,6 +8,8 @@ import {
 import { doPasteConfigSubmit } from './components/doPasteConfigSubmit.ts'
 import { doSubmit } from './components/doSubmit.ts'
 
+import type { AddTrackModel } from './model.ts'
+
 jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
 
 const SEQ = (name: string) => ({
@@ -41,7 +43,7 @@ function readVsRefPanel() {
   })
   const widget = session.addWidget('AddTrackWidget', 'addTrackWidget', {
     view: view.id,
-  })
+  }) as AddTrackModel
   widget.setTrackData({ uri: 'foo.bam', locationType: 'UriLocation' })
   return { session, view, widget }
 }
@@ -85,7 +87,7 @@ test('an ordinary assembly still goes to a session list', () => {
   })
   const widget = session.addWidget('AddTrackWidget', 'addTrackWidget', {
     view: view.id,
-  })
+  }) as AddTrackModel
   widget.setTrackData({ uri: 'foo.bam', locationType: 'UriLocation' })
 
   doSubmit({ model: widget })

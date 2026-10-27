@@ -5,6 +5,7 @@ import { render, waitFor } from '@testing-library/react'
 import JBrowse from './JBrowse.tsx'
 
 import type { ViewModel } from '../createModel.ts'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 const assemblies = [
   {
@@ -57,7 +58,7 @@ test('<JBrowse /> maps the views prop into session.views', async () => {
   expect(views).toHaveLength(1)
   expect(views[0]!.type).toBe('LinearGenomeView')
   // the settings must actually reach the view model, not be dropped
-  expect(views[0]!.pendingLaunch).toMatchObject({
+  expect((views[0] as LinearGenomeViewModel).pendingLaunch).toMatchObject({
     assembly: 'volvox',
     loc: 'ctgA:1-10',
   })

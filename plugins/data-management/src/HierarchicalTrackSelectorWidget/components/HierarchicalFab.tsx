@@ -79,7 +79,11 @@ const HierarchicalFab = observer(function HierarchicalFab({
           <MenuItem
             onClick={() => {
               setAnchorEl(null)
-              showAddTrackWidget(session, model.view.id, model.trackContainerId)
+              showAddTrackWidget(
+                session,
+                model.view?.id,
+                model.trackContainerId,
+              )
             }}
           >
             Add track

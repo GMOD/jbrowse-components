@@ -2,9 +2,13 @@ import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
 
 import { createTestSessionAsync } from '../rootModel/test_util.ts'
 
-import type { MenuItem } from '@jbrowse/core/ui'
+import type { DisplayTypeRegistry } from '@jbrowse/core/PluginManager'
+import type { Instance } from '@jbrowse/mobx-state-tree'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 jest.mock('../makeWorkerInstance', () => () => {})
+
+type LGVSyntenyDisplayModel = Instance<DisplayTypeRegistry['LGVSyntenyDisplay']>
 
 // The LGVSyntenyDisplay composes the alignments state model, so it inherits
 // every read-oriented color scheme unless its menu curates them away. These
@@ -66,12 +70,8 @@ async function syntenyDisplay() {
       ],
     },
   })
-  // displays[0] is `any`, so annotate to keep phantom getters from typechecking
-  const display = session.views[0].tracks[0].displays[0] as {
-    trackMenuItems: () => MenuItem[]
-    colorField: string
-    colorByField: (field: string) => void
-  }
+  const view = session.views[0] as LinearGenomeViewModel
+  const display = view.tracks[0]!.displays[0] as LGVSyntenyDisplayModel
   return display
 }
 

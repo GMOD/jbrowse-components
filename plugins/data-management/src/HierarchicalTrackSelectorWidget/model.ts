@@ -2,6 +2,7 @@ import { getConf, readConfObject } from '@jbrowse/core/configuration'
 import {
   getSession,
   isSessionWithSessionTracks,
+  isTrackContainer,
   localStorageGetJSON,
   localStorageGetStringArray,
   localStorageSetJSON,
@@ -34,6 +35,7 @@ import type {
 } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyTrackConfig } from '@jbrowse/core/configuration'
+import type { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes'
 import type { TrackContainer } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
@@ -251,9 +253,10 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
        */
       get trackContainer(): TrackContainer | undefined {
         const { view, trackContainerId } = self
-        return trackContainerId === undefined
-          ? view
-          : view?.trackContainerFor?.(trackContainerId)
+        if (trackContainerId !== undefined) {
+          return view?.trackContainerFor?.(trackContainerId)
+        }
+        return isTrackContainer(view) ? view : undefined
       },
     }))
     .views(self => {
@@ -405,7 +408,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      setView(view: unknown) {
+      setView(view: IBaseViewModel | undefined) {
         self.view = view
       },
       /**

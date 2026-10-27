@@ -23,7 +23,10 @@ import { BaseSessionModel, isBaseSession } from './BaseSession.ts'
 import { DrawerWidgetSessionMixin } from './DrawerWidgets.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { ViewSnapshotInput } from '@jbrowse/core/PluginManager'
+import type {
+  ViewModelOf,
+  ViewSnapshotInput,
+} from '@jbrowse/core/PluginManager'
 import type { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes'
 import type { ReorderDirection } from '@jbrowse/core/util'
 import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
@@ -150,7 +153,7 @@ export function MultipleViewsSessionMixin(pluginManager: PluginManager) {
         const idx = self.views.findIndex(v => v.id === id)
         const scope = scopeIds && new Set(scopeIds)
         self.views = cast(
-          reorderWithin(self.views, idx, direction, v =>
+          reorderWithin<IBaseViewModel>(self.views, idx, direction, v =>
             scope ? scope.has(v.id) : true,
           ),
         )
@@ -252,7 +255,9 @@ export function MultipleViewsSessionMixin(pluginManager: PluginManager) {
          * that order. The panel assignment array holds membership only.
          */
         orderViews(ids: string[]) {
-          self.views = cast(applyOrderWithin(self.views, ids, v => v.id))
+          self.views = cast(
+            applyOrderWithin<IBaseViewModel>(self.views, ids, v => v.id),
+          )
         },
 
         /**
@@ -263,13 +268,13 @@ export function MultipleViewsSessionMixin(pluginManager: PluginManager) {
         addView<N extends string>(
           typeName: N,
           initialState?: NoInfer<ViewSnapshotInput<N>>,
-        ) {
+        ): ViewModelOf<N> {
           assertViewStateModelLoaded(typeName)
           const length = self.views.push({
             ...initialState,
             type: typeName,
           })
-          return self.views[length - 1]
+          return self.views[length - 1] as ViewModelOf<N>
         },
 
         /**

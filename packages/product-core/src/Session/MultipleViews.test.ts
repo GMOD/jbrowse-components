@@ -15,6 +15,9 @@ import { autorun, onReactionError } from 'mobx'
 
 import { MultipleViewsSessionMixin } from './MultipleViews.ts'
 
+import type { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes'
+import type { Instance } from '@jbrowse/mobx-state-tree'
+
 // `views` is a pluggableMstType union, so a view can only be added for a type
 // the plugin manager knows. Two flat ones, because replaceView's whole point is
 // swapping one type for another.
@@ -41,6 +44,10 @@ const fakeContainerView = types.model('FakeContainerView', {
   type: types.literal('FakeContainerView'),
   views: types.array(fakeLinearView),
 })
+
+interface FakeContainerViewModel extends IBaseViewModel {
+  views: Instance<typeof fakeLinearView>[]
+}
 
 // A view that reaches OUTSIDE its own tree when it is taken out of a session,
 // which is the shape both comparative views have — they give back the
@@ -174,7 +181,7 @@ test('replaceView returns a live view, and the old one is gone', () => {
   const session = sessionWithThreeViews()
   const replacedId = session.views[0]!.id
 
-  const created = session.replaceView(session.views[0], 'FakeSyntenyView')
+  const created = session.replaceView(session.views[0]!, 'FakeSyntenyView')
 
   expect(session.views).toHaveLength(3)
   expect(session.views.some(v => v.id === replacedId)).toBe(false)
@@ -210,7 +217,7 @@ test('replaceView is one undoable step', () => {
     snapshots.push(snap)
   })
 
-  session.replaceView(session.views[1], 'FakeSyntenyView')
+  session.replaceView(session.views[1]!, 'FakeSyntenyView')
 
   expect(snapshots).toHaveLength(1)
 })
@@ -233,7 +240,7 @@ test('a widget referencing the replaced view is dropped, not rebound', () => {
   const replacedId = replaced.id
   const widget = session.addWidget('FakeViewWidget', 'w1', {
     view: replacedId,
-  })!
+  })
   session.showWidget(widget)
   expect(widget.view).toBe(replaced)
 
@@ -263,9 +270,9 @@ function sessionWithSubViewWidget() {
   const session = createSession()
   const container = session.addView('FakeContainerView', {
     views: [{ type: 'FakeLinearView' }],
-  })
+  }) as FakeContainerViewModel
   const sub = container.views[0]!
-  const widget = session.addWidget('FakeViewWidget', 'w1', { view: sub.id })!
+  const widget = session.addWidget('FakeViewWidget', 'w1', { view: sub.id })
   session.showWidget(widget)
   return { session, container, sub, widget }
 }
@@ -384,7 +391,7 @@ test('a replaced view keeps its position among its panel-mates', () => {
   }
   const panelAIds = new Set([session.views[0]!.id, session.views[2]!.id])
 
-  const created = session.replaceView(session.views[2], 'FakeSyntenyView')
+  const created = session.replaceView(session.views[2]!, 'FakeSyntenyView')
 
   // still third overall, so still second of the two panel-A views
   expect(session.views[2]).toBe(created)
@@ -415,7 +422,7 @@ test('replaceView leaves another view’s focus alone', () => {
   const focused = session.views[0]!.id
   session.setFocusedViewId(focused)
 
-  session.replaceView(session.views[1], 'FakeSyntenyView')
+  session.replaceView(session.views[1]!, 'FakeSyntenyView')
 
   expect(session.focusedViewId).toBe(focused)
 })
@@ -441,7 +448,7 @@ test('removing a container view clears a focus on one of its rows', () => {
   const session = sessionWithThreeViews()
   const container = session.addView('FakeContainerView', {
     views: [{ type: 'FakeLinearView' }, { type: 'FakeLinearView' }],
-  })
+  }) as FakeContainerViewModel
   const row = container.views[1]!.id
   session.setFocusedViewId(row)
 
@@ -455,7 +462,7 @@ test('removing another view leaves the focus alone', () => {
   const focused = session.views[0]!.id
   session.setFocusedViewId(focused)
 
-  session.removeView(session.views[1])
+  session.removeView(session.views[1]!)
 
   expect(session.focusedViewId).toBe(focused)
 })

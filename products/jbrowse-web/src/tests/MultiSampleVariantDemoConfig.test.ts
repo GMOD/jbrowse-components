@@ -5,6 +5,7 @@ import corePlugins from '../corePlugins.ts'
 import { createTestSessionAsync } from '../rootModel/test_util.ts'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 jest.mock('../makeWorkerInstance', () => () => {})
 
@@ -142,7 +143,8 @@ test('old MultiLinearVariantDisplay instance resolves on session restore', async
     },
   })
 
-  const displays = session.views[0].tracks[0].displays
+  const view = session.views[0] as LinearGenomeViewModel
+  const displays = view.tracks[0]!.displays
   expect(displays.length).toBe(1)
-  expect(displays[0].type).toBe('LinearMultiSampleVariantDisplay')
+  expect(displays[0]!.type).toBe('LinearMultiSampleVariantDisplay')
 })

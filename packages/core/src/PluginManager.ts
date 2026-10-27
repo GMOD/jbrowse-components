@@ -26,8 +26,10 @@ import type TrackType from './pluggableElementTypes/TrackType.ts'
 import type ViewType from './pluggableElementTypes/ViewType.ts'
 import type WidgetType from './pluggableElementTypes/WidgetType.ts'
 import type { PluggableElementType } from './pluggableElementTypes/index.ts'
+import type { BaseConnectionModel } from './pluggableElementTypes/models/BaseConnectionModelFactory.ts'
 import type { DisplayModel } from './pluggableElementTypes/models/BaseDisplayModel.tsx'
 import type { TrackModelOf } from './pluggableElementTypes/models/BaseTrackModel.ts'
+import type { IBaseViewModel } from './pluggableElementTypes/models/BaseViewModel.ts'
 // Side-effect type imports, for the augmentations rather than for a name. Every
 // plugin's `install`/`configure` takes a PluginManager, so a declaration this
 // module pulls in is one every plugin's program contains — and a registry
@@ -55,6 +57,7 @@ import type {
   AbstractRootModel,
   AbstractSessionModel,
   SimpleFeatureSerialized,
+  Widget,
 } from './util/index.ts'
 import type { DisplaySnapshot, TrackSnapshot } from './util/tracks.ts'
 /* eslint-enable unicorn/require-module-specifiers */
@@ -63,6 +66,7 @@ import type {
   IAnyType,
   IStateTreeNode,
   IType,
+  Instance,
   SnapshotIn,
 } from '@jbrowse/mobx-state-tree'
 import type { ComponentType, ReactNode } from 'react'
@@ -85,6 +89,23 @@ export type PluggableStateModelUnion<NODE, SNAPSHOT> = IType<
   SNAPSHOT,
   NODE
 >
+
+export interface ViewSnapshot {
+  id: string
+  type: string
+  [key: string]: unknown
+}
+
+export interface WidgetSnapshot {
+  id: string
+  type: string
+  [key: string]: unknown
+}
+
+export interface ConnectionSnapshot {
+  type: string
+  [key: string]: unknown
+}
 
 /**
  * Every pluggable element group, in the order `elementCreationSchedule` builds
@@ -409,6 +430,13 @@ export type DisplayTypeName = keyof DisplayTypeRegistry
 export type ViewSnapshotInput<N extends string> = N extends ViewTypeName
   ? Omit<SnapshotIn<ViewTypeRegistry[N]>, 'type'> & { type?: N }
   : Record<string, unknown>
+
+/**
+ * What `addView(name, snapshot)` hands back for a view type name: the view's
+ * own model for a registered name, the base view otherwise.
+ */
+export type ViewModelOf<N extends string> = IBaseViewModel &
+  (N extends ViewTypeName ? Instance<ViewTypeRegistry[N]> : unknown)
 
 /**
  * what a plugin knows of an assembly the session does not hold, answered
@@ -997,6 +1025,18 @@ export default class PluginManager {
     groupName: 'display',
     fieldName: 'stateModel',
   ): PluggableStateModelUnion<DisplayModel, DisplaySnapshot>
+  pluggableMstType(
+    groupName: 'view',
+    fieldName: 'stateModel',
+  ): PluggableStateModelUnion<IBaseViewModel, ViewSnapshot>
+  pluggableMstType(
+    groupName: 'widget',
+    fieldName: 'stateModel',
+  ): PluggableStateModelUnion<Widget, WidgetSnapshot>
+  pluggableMstType(
+    groupName: 'connection',
+    fieldName: 'stateModel',
+  ): PluggableStateModelUnion<Instance<BaseConnectionModel>, ConnectionSnapshot>
   pluggableMstType(
     groupName: PluggableElementTypeGroup,
     fieldName: string,

@@ -6,6 +6,7 @@ import { createTestSessionAsync } from '../rootModel/test_util.ts'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 jest.mock('../makeWorkerInstance', () => () => {})
 
@@ -71,7 +72,10 @@ function addViaMenu(session: Awaited<ReturnType<typeof makeSession>>) {
   const refseqConf =
     session.assemblyManager.get('volvox')!.configuration.sequence
   const addGc = session
-    .getTrackListMenuItems(refseqConf, session.views[0])
+    .getTrackListMenuItems(
+      refseqConf,
+      session.views[0] as LinearGenomeViewModel,
+    )
     .find(item => 'label' in item && item.label === 'Add GC content track')
   if (!addGc || !('onClick' in addGc)) {
     throw new Error('no "Add GC content track" row')
@@ -87,7 +91,10 @@ test('hierarchical track selector menu offers "Add GC content track" on refseq',
   // session.tracks
   const refseqConf =
     session.assemblyManager.get('volvox')!.configuration.sequence
-  const items = session.getTrackListMenuItems(refseqConf, session.views[0])
+  const items = session.getTrackListMenuItems(
+    refseqConf,
+    session.views[0] as LinearGenomeViewModel,
+  )
   const addGc = items.find(
     item => 'label' in item && item.label === 'Add GC content track',
   )
@@ -110,7 +117,7 @@ test('in-view track menu offers "Add GC content track" on refseq', async () => {
     session.assemblyManager.get('volvox')!.configuration.sequence
   const items = session.getTrackActionMenuItems({
     config: refseqConf,
-    view: session.views[0],
+    view: session.views[0] as LinearGenomeViewModel,
   })
   const trackActions = items.find(
     item => 'label' in item && item.label === 'Track actions',
@@ -132,22 +139,23 @@ test('standalone GCContentTrack display does not double-wrap its adapter', async
   ])
   // the menu row shows the new track through the async launchTrack path
   addViaMenu(session)
+  const view = session.views[0] as LinearGenomeViewModel
   await waitFor(() => {
     expect(
-      session.views[0].tracks.some(
+      view.tracks.some(
         (t: { configuration: AnyConfigurationModel }) =>
           readConfObject(t.configuration, 'type') === 'GCContentTrack',
       ),
     ).toBe(true)
   })
 
-  const shown = session.views[0].tracks.find(
+  const shown = view.tracks.find(
     (t: { configuration: AnyConfigurationModel }) =>
       readConfObject(t.configuration, 'type') === 'GCContentTrack',
   )!
   // the wiggle display reads the track's GCContentAdapter as it is, not
   // wrapped in another one
-  const { adapterConfig } = shown.displays[0]
+  const { adapterConfig } = shown.displays[0]!
   expect(adapterConfig.type).toBe('GCContentAdapter')
   expect(adapterConfig.sequenceAdapter).toBeUndefined()
 })
@@ -215,13 +223,15 @@ test('GCContentTrack display wraps a bare sequence adapter', async () => {
     },
   })
 
-  const view = session.views[0]
+  const view = session.views[0] as LinearGenomeViewModel
   await waitFor(() => {
     expect(view.tracks.length).toBe(1)
   })
-  const { adapterConfig } = view.tracks[0].displays[0]
+  const { adapterConfig } = view.tracks[0]!.displays[0]!
   expect(adapterConfig.type).toBe('GCContentAdapter')
-  expect(adapterConfig.sequenceAdapter.type).toBe('FromConfigSequenceAdapter')
+  expect(adapterConfig.sequenceAdapter).toMatchObject({
+    type: 'FromConfigSequenceAdapter',
+  })
 })
 
 // The gccontent plugin contributes this item through Core-extraTrackMenuItems,
@@ -229,8 +239,8 @@ test('GCContentTrack display wraps a bare sequence adapter', async () => {
 // label menu. Both displays of a reference sequence track used to carry a copy
 // of their own as well, so an open track offered it twice.
 function labelMenuItems(session: Awaited<ReturnType<typeof makeSession>>) {
-  const view = session.views[0]
-  const track = view.tracks[0]
+  const view = session.views[0] as LinearGenomeViewModel
+  const track = view.tracks[0]!
   // the two sources TrackLabelMenu concatenates
   return [
     ...session.getTrackActionMenuItems({ config: track.configuration, view }),

@@ -14,8 +14,8 @@ import type {
   AbstractSessionModel,
   SessionWithPublishTrackConf,
   TrackContainer,
+  Widget,
 } from './types/index.ts'
-import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 /**
  * Whether the target track list currently displays any of the track's
@@ -39,7 +39,7 @@ export function containerDisplaysAssembly(
 }
 
 /** the slice of the add-track widget every workflow's submit path writes to */
-export interface AddTrackWidgetSelf extends IStateTreeNode {
+export interface AddTrackWidgetSelf extends Widget {
   /**
    * Where a submitted track opens: the view, or one track list within it when
    * the widget was opened from a synteny level's track selector. Not the same

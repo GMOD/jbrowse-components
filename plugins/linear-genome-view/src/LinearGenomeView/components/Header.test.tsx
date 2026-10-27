@@ -45,10 +45,7 @@ async function renderHeader() {
         },
       ],
     },
-  }) as {
-    views: LinearGenomeViewModel[]
-    addAssemblyConf: (conf: unknown) => void
-  }
+  })
   session.addAssemblyConf({
     name: 'volvox',
     sequence: {
@@ -68,7 +65,7 @@ async function renderHeader() {
       },
     },
   })
-  const model = session.views[0]!
+  const model = session.views[0] as LinearGenomeViewModel
   model.setWidth(800)
   await waitFor(() => {
     expect(model.initialized).toBe(true)

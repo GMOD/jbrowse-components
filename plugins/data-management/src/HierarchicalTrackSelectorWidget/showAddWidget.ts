@@ -7,7 +7,7 @@ import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 export function showAddTrackWidget(
   session: IStateTreeNode,
-  viewId: string,
+  viewId: string | undefined,
   trackContainerId?: string,
 ) {
   if (isSessionModelWithWidgets(session)) {

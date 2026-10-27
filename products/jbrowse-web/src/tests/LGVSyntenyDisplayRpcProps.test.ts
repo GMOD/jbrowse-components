@@ -1,6 +1,12 @@
 import { createTestSessionAsync } from '../rootModel/test_util.ts'
 
+import type { DisplayTypeRegistry } from '@jbrowse/core/PluginManager'
+import type { Instance } from '@jbrowse/mobx-state-tree'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+
 jest.mock('../makeWorkerInstance', () => () => {})
+
+type LGVSyntenyDisplayModel = Instance<DisplayTypeRegistry['LGVSyntenyDisplay']>
 
 // The tiered adapter points at a file that does not exist, which the fetch mock
 // answers with a 404; these specs read the model, not the data.
@@ -93,15 +99,8 @@ async function syntenyDisplay(adapter: Record<string, unknown>) {
       ],
     },
   })
-  const view = session.views[0] as { bpPerPx: number }
-  // displays[0] is `any`, so annotate to keep phantom getters from typechecking
-  const display = session.views[0].tracks[0].displays[0] as {
-    rpcProps: () => Record<string, unknown>
-    lodTier: 'fine' | 'coarse'
-    hasLodCapableAdapter: boolean
-    setResolution: (arg: 'auto' | 'fine' | 'coarse') => void
-    trackMenuItems: () => { label?: string }[]
-  }
+  const view = session.views[0] as LinearGenomeViewModel
+  const display = view.tracks[0]!.displays[0] as LGVSyntenyDisplayModel
   return { view, display }
 }
 
@@ -176,9 +175,9 @@ test('an adapter with no coarse tier asks for the fine tier and offers no menu',
 test('a tiered adapter offers the level-of-detail menu', async () => {
   const { display } = await syntenyDisplay(tiered())
   expect(display.hasLodCapableAdapter).toBe(true)
-  expect(display.trackMenuItems().map(i => i.label)).toContain(
-    'Level of detail',
-  )
+  expect(
+    display.trackMenuItems().map(i => ('label' in i ? i.label : '')),
+  ).toContain('Level of detail')
 })
 
 // The bug this whole resolution point exists for: pinning a tier must move the

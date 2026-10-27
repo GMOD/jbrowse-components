@@ -40,9 +40,10 @@ function openFeatureWidget(
   widgetId: string,
   featureData: unknown,
 ) {
-  session.showWidget?.(
-    session.addWidget?.(widgetType, widgetId, { featureData }),
-  )
+  const widget = session.addWidget?.(widgetType, widgetId, { featureData })
+  if (widget) {
+    session.showWidget?.(widget)
+  }
 }
 
 // Both openers serialize their features at click time, not per render: every

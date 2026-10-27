@@ -188,12 +188,17 @@ const BaseViewModel = types
 
 export default BaseViewModel
 
-// the base view does not have type but any derived type needs to add type, so
-// just add it here
-export type IBaseViewModel = Instance<typeof BaseViewModel> & {
-  type: string
-  assemblyNames?: string[]
-}
+// every derived view adds `type`; the optional hooks are the ones only some
+// views implement
+export type IBaseViewModel = Instance<typeof BaseViewModel> &
+  Pick<
+    AbstractViewModel,
+    | 'type'
+    | 'assemblyNames'
+    | 'trackContainerFor'
+    | 'trackContainers'
+    | 'regionHost'
+  >
 
 export const BaseViewModelWithDisplayedRegions = BaseViewModel.props({
   displayedRegions: types.array(Region),

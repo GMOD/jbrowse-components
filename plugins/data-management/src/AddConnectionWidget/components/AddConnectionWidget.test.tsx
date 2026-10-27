@@ -6,9 +6,11 @@ import { userEvent } from '@testing-library/user-event'
 
 import AddConnectionWidget2 from './AddConnectionWidget.tsx'
 
+import type { Widget } from '@jbrowse/core/util'
+
 jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
 
-function AddConnectionWidget({ model }: { model: unknown }) {
+function AddConnectionWidget({ model }: { model: Widget }) {
   return (
     <ThemeProvider theme={createJBrowseTheme()}>
       <AddConnectionWidget2 model={model} />

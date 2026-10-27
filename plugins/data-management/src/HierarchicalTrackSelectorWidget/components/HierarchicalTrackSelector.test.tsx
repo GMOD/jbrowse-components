@@ -59,7 +59,8 @@ test('sm uncategorized tracks', async () => {
       },
     ],
   })
-  const model = firstView.activateTrackSelector()
+  const model =
+    firstView.activateTrackSelector() as HierarchicalTrackSelectorModel
 
   const { findAllByTestId: f } = render(
     <ThemeProvider theme={createJBrowseTheme()}>
@@ -84,12 +85,13 @@ test('sm categorized tracks', async () => {
   })
   await firstView.launchTrack(session.sessionTracks[0]!.trackId)
   await firstView.launchTrack(session.sessionTracks[1]!.trackId)
-  firstView.tracks[0].configuration.setSlot('category', ['Foo Category'])
-  firstView.tracks[1].configuration.setSlot('category', [
+  firstView.tracks[0]!.configuration.setSlot('category', ['Foo Category'])
+  firstView.tracks[1]!.configuration.setSlot('category', [
     'Foo Category',
     'Bar Category',
   ])
-  const model = firstView.activateTrackSelector()
+  const model =
+    firstView.activateTrackSelector() as HierarchicalTrackSelectorModel
 
   const { findAllByTestId: f } = render(
     <ThemeProvider theme={createJBrowseTheme()}>
@@ -119,7 +121,8 @@ test('localstorage preference - collapse categorized tracks', async () => {
   })
   await firstView.launchTrack('fooC')
   await firstView.launchTrack('barC')
-  const model = firstView.activateTrackSelector()
+  const model =
+    firstView.activateTrackSelector() as HierarchicalTrackSelectorModel
 
   const { findAllByTestId: f } = render(
     <ThemeProvider theme={createJBrowseTheme()}>
@@ -158,7 +161,8 @@ test('configuration preference - collapse categorized tracks', async () => {
   })
   await firstView.launchTrack('fooC')
   await firstView.launchTrack('barC')
-  const model = firstView.activateTrackSelector()
+  const model =
+    firstView.activateTrackSelector() as HierarchicalTrackSelectorModel
 
   const { findAllByTestId: f } = render(
     <ThemeProvider theme={createJBrowseTheme()}>
@@ -214,7 +218,8 @@ test('unsorted categories', async () => {
     ],
   })
 
-  const model = firstView.activateTrackSelector()
+  const model =
+    firstView.activateTrackSelector() as HierarchicalTrackSelectorModel
 
   const { findAllByTestId } = render(
     <ThemeProvider theme={createJBrowseTheme()}>
@@ -252,7 +257,8 @@ test('configuration preference - sorting categories', async () => {
     ],
   })
 
-  const model = firstView.activateTrackSelector()
+  const model =
+    firstView.activateTrackSelector() as HierarchicalTrackSelectorModel
 
   const { findAllByTestId } = render(
     <ThemeProvider theme={createJBrowseTheme()}>
@@ -290,7 +296,8 @@ test('configuration preference - sorting track names', async () => {
     ],
   })
 
-  const model = firstView.activateTrackSelector()
+  const model =
+    firstView.activateTrackSelector() as HierarchicalTrackSelectorModel
 
   const { findAllByTestId } = render(
     <ThemeProvider theme={createJBrowseTheme()}>
@@ -322,7 +329,8 @@ test('localstorage preference - sorting categories', async () => {
     ],
   })
 
-  const model = firstView.activateTrackSelector()
+  const model =
+    firstView.activateTrackSelector() as HierarchicalTrackSelectorModel
 
   const { findAllByTestId } = render(
     <ThemeProvider theme={createJBrowseTheme()}>
@@ -355,7 +363,8 @@ test('localstorage preference - sorting track names', async () => {
     ],
   })
 
-  const model = firstView.activateTrackSelector()
+  const model =
+    firstView.activateTrackSelector() as HierarchicalTrackSelectorModel
 
   const { findAllByTestId } = render(
     <ThemeProvider theme={createJBrowseTheme()}>

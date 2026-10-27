@@ -16,7 +16,7 @@ export interface FeatureDetailsModel
   extends IStateTreeNode, SequenceHoverTarget {
   maxDepth: number | undefined
   sequenceFeatureDetails: SequenceFeatureDetailsModel
-  view: { assemblyNames: string[] } | undefined
+  view: { assemblyNames?: string[] } | undefined
   canonicalTranscripts?: CanonicalTranscripts
 }
 

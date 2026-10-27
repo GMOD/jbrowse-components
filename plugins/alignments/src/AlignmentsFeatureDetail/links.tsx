@@ -1,6 +1,10 @@
 import { ActionLink } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
-import { launchBreakpointSplitView, navToLoc } from '@jbrowse/sv-core'
+import {
+  launchBreakpointSplitView,
+  linearGenomeViewOf,
+  navToLoc,
+} from '@jbrowse/sv-core'
 import { observer } from 'mobx-react'
 
 import type { AlignmentFeatureWidgetModel } from './stateModelFactory.ts'
@@ -50,7 +54,7 @@ export const LaunchBreakpointSplitViewLink = observer(
         onClick={() => {
           launchBreakpointSplitView({
             session: getSession(model),
-            view: model.view,
+            view: linearGenomeViewOf(model.view),
             assemblyName,
             feature,
             stops,

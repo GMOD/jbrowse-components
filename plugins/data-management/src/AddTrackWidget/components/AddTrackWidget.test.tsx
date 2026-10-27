@@ -6,6 +6,8 @@ import AddTrackWidget from './AddTrackWidget.tsx'
 import ConfirmTrack from './ConfirmTrack.tsx'
 import TextIndexingConfig from './TextIndexingConfig.tsx'
 
+import type { AddTrackModel } from '../model.ts'
+
 jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
 
 // the widget type's loader preloads it; rendering the component directly does not
@@ -96,7 +98,7 @@ function getSession() {
 
   const model = session.addWidget('AddTrackWidget', 'addTrackWidget', {
     view: view.id,
-  })
+  }) as AddTrackModel
   return { session, model }
 }
 

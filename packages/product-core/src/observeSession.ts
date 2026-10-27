@@ -16,8 +16,8 @@ import type { AbstractSessionModel } from '@jbrowse/core/util'
 
 // The root and its views are duck-typed rather than imported. product-core
 // cannot name a concrete product's session type without a root<->session cycle
-// (see BaseRootModel), and `session.views` is a pluggable MST type, i.e. `any` —
-// so a real shape here is what keeps these reads checked at all.
+// (see BaseRootModel), and a root's `session` reads as `any`, so a real shape
+// here is what keeps these reads checked at all.
 type OpenTracks = { configuration: { trackId: string } }[]
 
 interface ObservedView {

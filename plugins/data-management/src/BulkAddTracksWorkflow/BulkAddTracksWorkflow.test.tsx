@@ -5,6 +5,8 @@ import { fireEvent, render, waitFor } from '@testing-library/react'
 import BulkAddTracksWorkflow from './BulkAddTracksWorkflow.tsx'
 import { bulkInput } from './bulkInput.ts'
 
+import type { AddTrackModel } from '../AddTrackWidget/model.ts'
+
 jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
 
 function getSession() {
@@ -29,7 +31,7 @@ function getSession() {
   })
   const model = session.addWidget('AddTrackWidget', 'addTrackWidget', {
     view: view.id,
-  })
+  }) as AddTrackModel
   return { session, model }
 }
 

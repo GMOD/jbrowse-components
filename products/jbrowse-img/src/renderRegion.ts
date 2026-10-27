@@ -53,6 +53,7 @@ import type { ViewSpec } from './spec.ts'
 import type { Config, OpenTrack, Opts, Track } from './types.ts'
 import type { ViewSnapshotInput } from '@jbrowse/core/PluginManager'
 import type { SnackbarMessage } from '@jbrowse/core/ui/SnackbarModel'
+import type { AbstractViewModel } from '@jbrowse/core/util'
 import type { SettleableView } from '@jbrowse/core/util/whenViewSettled'
 import type { Entry } from '@jbrowse/launch-args'
 import type { LinearAlignmentsDisplayModel } from '@jbrowse/plugin-alignments'
@@ -404,12 +405,6 @@ async function readyView<T extends InitView>(view: T, ctx: ModeContext) {
   return view
 }
 
-// session.views[] elements are typed `any` (pluggableMstType), so the view-type
-// discriminator is read through this rather than off `any`.
-function sessionViewType(session: Model['session']): string | undefined {
-  return session.views[0]?.type
-}
-
 // The session holds a view this subcommand cannot draw. Casting it and rendering
 // anyway died several statements later on a field the other view type has no
 // version of, which reads as a corrupt session rather than as the wrong
@@ -486,7 +481,7 @@ async function addLaunchView<T extends InitView, N extends string>(
   settingsFromSpec?: (spec: ViewSpec) => SpecSettings,
 ) {
   const { session } = ctx.model
-  const suppliedType = ctx.spec ? undefined : sessionViewType(session)
+  const suppliedType = ctx.spec ? undefined : session.views[0]?.type
   if (suppliedType !== undefined && suppliedType !== viewType) {
     throw wrongViewTypeError(ctx.opts, suppliedType)
   }
@@ -505,9 +500,9 @@ async function addLaunchView<T extends InitView, N extends string>(
       'the session fixes the view, so --view would be dropped; put its settings in the session',
     )
   }
-  const view =
+  const view: AbstractViewModel =
     suppliedType === viewType
-      ? session.views[0]
+      ? session.views[0]!
       : ctx.spec && settingsFromSpec
         ? await session.launchView<string>(
             viewType,
@@ -517,7 +512,8 @@ async function addLaunchView<T extends InitView, N extends string>(
             viewType,
             withViewSettings(makeSettings(), ctx.opts.view),
           )
-  return readyView(view as T, ctx)
+  // a view of type `viewType` is a `T`, which no type can say of a name
+  return readyView(view as unknown as T, ctx)
 }
 
 const renderLinear: ModeRenderer = async ctx => {

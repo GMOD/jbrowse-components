@@ -386,7 +386,7 @@ export interface Region {
 }
 
 export interface ViewWithAssemblyNames {
-  assemblyNames: string[]
+  assemblyNames?: string[]
 }
 
 /**
@@ -394,7 +394,7 @@ export interface ViewWithAssemblyNames {
  * Returns undefined if the view or assemblyNames are not available.
  */
 export function getAssemblyName(view?: ViewWithAssemblyNames) {
-  return view?.assemblyNames[0]
+  return view?.assemblyNames?.[0]
 }
 
 /**

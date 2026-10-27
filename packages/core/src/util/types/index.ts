@@ -249,7 +249,7 @@ export interface AbstractSessionModel
   pruneConnectionTrackConfig?: (trackId: string) => void
   hydrateConnection?: (connectionId: string) => void
   adminMode: boolean
-  showWidget?: (widget: unknown) => void
+  showWidget?: (widget: Widget) => void
   addWidget?: (
     typeName: string,
     id: string,
@@ -549,7 +549,7 @@ export function isSessionWithShareURL(
   )
 }
 
-export interface Widget {
+export interface Widget extends IStateTreeNode {
   type: string
   id: string
   view?: { id: string }
@@ -586,8 +586,8 @@ export interface SessionWithWidgets extends AbstractSessionModel {
     initialState?: Record<string, unknown>,
     configuration?: { type: string },
   ): Widget
-  showWidget(widget: unknown): void
-  hideWidget(widget: unknown): void
+  showWidget(widget: Widget): void
+  hideWidget(widget: Widget): void
 }
 
 /**
@@ -778,6 +778,16 @@ export interface TrackContainer {
   launchToggleTrack: (trackId: string) => Promise<unknown>
   hideTrack: (trackId: string) => unknown
   toggleTrack: (trackId: string) => unknown
+}
+
+export function isTrackContainer(thing: unknown): thing is TrackContainer {
+  return (
+    typeof thing === 'object' &&
+    thing !== null &&
+    'tracks' in thing &&
+    'showTrack' in thing &&
+    'hideTrack' in thing
+  )
 }
 
 /** minimum interface that all view state models must implement */

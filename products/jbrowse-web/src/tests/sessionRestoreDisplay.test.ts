@@ -1,5 +1,7 @@
 import { createTestSessionAsync } from '../rootModel/test_util.ts'
 
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+
 jest.mock('../makeWorkerInstance', () => () => {})
 
 // Regression: on session restore the view has no measured width yet
@@ -63,5 +65,6 @@ test('canvas display survives session restore before view width is measured', as
     },
   })
 
-  expect(session.views[0].tracks[0].displays.length).toBe(1)
+  const view = session.views[0] as LinearGenomeViewModel
+  expect(view.tracks[0]!.displays.length).toBe(1)
 })

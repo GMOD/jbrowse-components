@@ -122,6 +122,7 @@ export {
   isSessionWithSessionTracks,
   isSessionWithShareURL,
   isSessionWithViewReplacement,
+  isTrackContainer,
   isTrackModel,
   isTrackViewModel,
   isUriLocation,

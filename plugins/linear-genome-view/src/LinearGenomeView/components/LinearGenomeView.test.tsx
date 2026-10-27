@@ -42,7 +42,7 @@ test('renders setup wizard', async () => {
   const session = createTestSession()
   session.addAssemblyConf(assemblyConf)
   session.addView('LinearGenomeView', { id: 'lgv' })
-  const model = session.views[0]
+  const model = session.views[0] as LinearGenomeViewModel
   model.setWidth(800)
   const { findByText } = render(<LGV model={model} />)
   expect(model.displayedRegions.length).toEqual(0)
@@ -65,7 +65,7 @@ test('import form renders before the view width is measured', async () => {
   const session = createTestSession()
   session.addAssemblyConf(assemblyConf)
   session.addView('LinearGenomeView', { id: 'lgv' })
-  const model = session.views[0]
+  const model = session.views[0] as LinearGenomeViewModel
   // deliberately do NOT setWidth. In the import-form state model.initialized
   // reduces to "has a width been measured", but the form does not depend on
   // width; previously the whole form was gated on model.initialized and stayed

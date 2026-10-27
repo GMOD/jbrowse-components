@@ -5,6 +5,8 @@ import { render, waitFor } from '@testing-library/react'
 
 import TrackSourceSelect from './components/TrackSourceSelect.tsx'
 
+import type { AddTrackModel } from './model.ts'
+
 jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
 
 // The files the probe is allowed to find. `mock`-prefixed so jest lets the
@@ -27,7 +29,11 @@ function widget(present: string[]) {
     mockPresent.add(p)
   }
   const session = createTestSession()
-  return session.addWidget('AddTrackWidget', 'addTrackWidget', {})
+  return session.addWidget(
+    'AddTrackWidget',
+    'addTrackWidget',
+    {},
+  ) as AddTrackModel
 }
 
 const uri = (u: string) => ({ uri: u, locationType: 'UriLocation' as const })

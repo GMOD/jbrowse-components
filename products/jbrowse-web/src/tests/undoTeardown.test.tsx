@@ -19,6 +19,7 @@ import {
 } from './util.tsx'
 
 import type { WebRootModel } from '../rootModel/rootModel.ts'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 setup()
 
@@ -96,7 +97,7 @@ test('undo and redo across a closed view do not read the view they took out', as
     history.undo()
   })
   expect(session.views).toHaveLength(1)
-  const restored = session.views[0]!
+  const restored = session.views[0] as LinearGenomeViewModel
   await findAnyDisplayPainted(delay)
   await waitFor(() => {
     expect(restored.initialized).toBe(true)

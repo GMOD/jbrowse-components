@@ -13,6 +13,8 @@ import { observer } from 'mobx-react'
 import ConfigureConnection from './ConfigureConnection.tsx'
 import ConnectionTypeSelect from './ConnectionTypeSelect.tsx'
 
+import type { Widget } from '@jbrowse/core/util'
+
 const useStyles = makeStyles()(theme => ({
   root: {
     marginTop: theme.spacing(1),
@@ -34,7 +36,7 @@ const steps = ['Select a Connection Type', 'Configure Connection']
 const AddConnectionWidget = observer(function AddConnectionWidget({
   model,
 }: {
-  model: unknown
+  model: Widget
 }) {
   const [activeStep, setActiveStep] = useState(0)
   const { classes } = useStyles()

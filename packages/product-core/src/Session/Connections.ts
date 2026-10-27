@@ -90,7 +90,7 @@ export function ConnectionManagementSessionMixin(pluginManager: PluginManager) {
               type,
               configuration,
             })
-            return self.connectionInstances[length - 1]
+            return self.connectionInstances[length - 1]!
           }
         },
 
