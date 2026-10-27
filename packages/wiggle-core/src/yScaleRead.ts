@@ -1,15 +1,37 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 
-import type { ValueScaleRuleConfig } from './yChannelConfigSchema.ts'
+import type {
+  ValueScaleRuleConfig,
+  YChannelConfigSchema,
+} from './yChannelConfigSchema.ts'
 import type { YMember, YScalePaths } from './yScalePaths.ts'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type {
+  AnyConfigurationModel,
+  ConfigurationSlotPathValue,
+} from '@jbrowse/core/configuration'
 
-/** One y scale member's setting. */
-export function readYMember(
+interface YMemberPathInChannel {
+  type: ['scale', 'type']
+  zero: ['scale', 'zero']
+  domainMin: ['scale', 'domainMin']
+  domainMax: ['scale', 'domainMax']
+  fence: ['scale', 'fenceQuantile']
+  constant: ['scale', 'constant']
+  group: ['scale', 'group']
+  title: ['axis', 'title']
+  grid: ['axis', 'grid']
+}
+
+/** What a read of one y scale member yields, off the schema every y channel shares. */
+export type YMemberValue<M extends Exclude<YMember, 'rules'>> =
+  ConfigurationSlotPathValue<YChannelConfigSchema, YMemberPathInChannel[M]>
+
+/** One y scale member's setting; `yRuleNodes` reads the rules. */
+export function readYMember<M extends Exclude<YMember, 'rules'>>(
   conf: AnyConfigurationModel,
   paths: YScalePaths,
-  member: YMember,
-): any {
+  member: M,
+): YMemberValue<M> {
   return readConfObject(conf, [...paths.members[member]])
 }
 

@@ -20,7 +20,11 @@ import type { ValueScaleRule } from '@jbrowse/display-ui'
 const confOf = (self: object) =>
   (self as { configuration: AnyConfigurationModel }).configuration
 
-function readY(self: object, paths: YScalePaths, member: YMember) {
+function readY<M extends Exclude<YMember, 'rules'>>(
+  self: object,
+  paths: YScalePaths,
+  member: M,
+) {
   return readYMember(confOf(self), paths, member)
 }
 

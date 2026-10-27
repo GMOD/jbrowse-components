@@ -4,12 +4,14 @@ import { observer } from 'mobx-react'
 
 import { drawImageOntoCanvasContext } from '../util/offscreenCanvasPonyfill.ts'
 
+import type { WorkerImageData } from '../util/offscreenCanvasPonyfill.ts'
+
 const PrerenderedCanvas = observer(function PrerenderedCanvas(props: {
   width: number
   height: number
   highResolutionScaling?: number
   style?: React.CSSProperties
-  imageData?: unknown
+  imageData?: WorkerImageData
   showSoftClip?: boolean
   blockKey?: string
 }) {

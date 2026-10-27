@@ -374,6 +374,8 @@ function stateModelFactory() {
           (self as unknown as DisplayModel).configuration,
         )
       },
+    }))
+    .views(self => ({
       /**
        * #getter
        * Every line the display has to say about what it cannot draw as
@@ -381,16 +383,17 @@ function stateModelFactory() {
        * then `liveNotices`.
        */
       get notices(): string[] {
-        const { configNotices } = self as unknown as { configNotices: string[] }
-        return [...configNotices, ...self.liveNotices]
+        return [...self.configNotices, ...self.liveNotices]
       },
+    }))
+    .views(self => ({
       /**
        * #getter
        * The lines the display chrome's corner chip lists: `notices`, less any
        * a display shows in a separate chip.
        */
       get cornerNotices(): string[] {
-        return (self as unknown as { notices: string[] }).notices
+        return self.notices
       },
       /**
        * #getter
