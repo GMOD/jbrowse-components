@@ -1938,6 +1938,7 @@
       "names": [
         "TRACK_MENU_PRIORITY",
         "checkboxItem",
+        "highlightListMenuItems",
         "makeRadioSubMenu",
         "radioItem",
         "radioItems",

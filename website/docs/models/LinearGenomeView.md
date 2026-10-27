@@ -230,7 +230,7 @@ From [BaseViewModel](../baseviewmodel): <span id="getter-effectivebodymounted">[
 | <span id="method-centerat">**centerAt**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(coord: number, refName: string, displayedRegionIndex?: number…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(coord: number, refName: string, displayedRegionIndex?: number &#124; undefined) =&gt; void</code></pre></dialog></span> | scrolls the view to center on the given bp. if that is not in any of the displayed regions, does nothing |
 | <span id="method-pxtobp">**pxToBp**</span><br><code>(px: number) =&gt; PxToBpResult</code> |  |
 | <span id="method-rubberbandclickmenuitems">**rubberbandClickMenuItems**</span><br><code>(clickOffset: BpOffset) =&gt; MenuItem[]</code> |  |
-| <span id="method-highlightmenuitems">**highlightMenuItems**</span><br><code>(_highlight: HighlightType) =&gt; MenuItem[]</code> | returns menu items for a highlight context menu. plugins can extend this via Core-extendPluggableElement to add items |
+| <span id="method-highlightmenuitems">**highlightMenuItems**</span><br><code>(_highlight: HighlightType) =&gt; MenuItem[]</code> | a highlight chip's menu rows after Dismiss; extend this to add one |
 
 ## Actions
 

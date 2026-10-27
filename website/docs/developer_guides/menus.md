@@ -205,6 +205,7 @@ the Material UI barrel into every host that installs the plugin.
 | Builder | Description |
 | --- | --- |
 | `checkboxItem` | one checkbox setting row |
+| `highlightListMenuItems` | "Open highlight list", or nothing in a product without the widget |
 | `makeRadioSubMenu` | a radio group wrapped in a submenu row |
 | `radioItem` | one radio setting row; the singular of `radioItems` |
 | `radioItems` | a radio group, one row per option |
