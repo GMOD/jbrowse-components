@@ -152,6 +152,17 @@ test("a modifier writes the fields it names over the entry's own", async () => {
   ])
 }, 60000)
 
+test("a modifier's color replaces the entry's whole, as every bag writes a channel", async () => {
+  const { display } = await launched({
+    trackId: 'genes',
+    encoding: { color: { field: 'strand' } },
+    modifiers: ['color:red'],
+  })
+  expect((display().encoding as { color: unknown }).color).toEqual({
+    value: 'red',
+  })
+}, 60000)
+
 test("the entry's display type picks what a modifier writes", async () => {
   const { view, messages } = await launched({
     trackId: 'genes',

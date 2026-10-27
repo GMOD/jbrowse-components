@@ -1,3 +1,4 @@
+import { mergeConfSettings } from '@jbrowse/core/configuration'
 import { getEnv, getSession } from '@jbrowse/core/util'
 import { basePaintedAt } from '@jbrowse/core/util/Base1DUtils'
 import {
@@ -229,6 +230,29 @@ interface LaunchOptions {
   warn?: (message: string) => void
 }
 
+// The modifiers' settings written over the entry's own as a settings bag
+// writes them (`mergeConfSettings`): a namespace such as `pileup` member by
+// member, a bare value lifted first, and a channel such as `encoding.color`
+// whole, so a `color:` modifier is not mixed into the entry's color by field.
+// Plain JSON where no registered display type says which is which.
+function overEntry(
+  view: ModifierView,
+  displayType: string | undefined,
+  entry: Record<string, unknown>,
+  over: Record<string, unknown>,
+) {
+  const pluginManager = isStateTreeNode(view)
+    ? getEnv(view).pluginManager
+    : undefined
+  return displayType && pluginManager?.displayTypes.has(displayType)
+    ? mergeConfSettings(
+        pluginManager.getDisplayType(displayType).configSchema,
+        entry,
+        over,
+      )
+    : mergeSettings(structuredClone(entry), over)
+}
+
 /**
  * Open `trackId` in `view` with its command-line modifiers applied, and return
  * the session-spec track entry that reopens it as drawn, or undefined when the
@@ -253,10 +277,10 @@ export async function launchTrackWithModifiers(
     snap.sort = at
   }
   adjust?.(launch.settings)
-  // a modifier writing an object (`filter`, `pileup`) writes the members it
-  // names over the entry's own
-  const launched = mergeSettings(
-    structuredClone(displaySnapshot),
+  const launched = overEntry(
+    view,
+    displayType,
+    displaySnapshot,
     launchSnapshot(launch),
   )
   const opened = await view.launchTrack(trackId, trackSnapshot, launched)
