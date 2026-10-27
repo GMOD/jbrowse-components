@@ -1,7 +1,9 @@
 # BLAT plugin
 
 Bundled in **jbrowse-desktop only**: BLAT is niche, and web would pay for it in
-cold-load bundle size.
+cold-load bundle size. Moving it to jb2plugins was declined: desktop bundles it,
+and no product bundles an outside plugin. Its UMD build (`scripts/umdBuild.ts`,
+loaded by `src/umdBundle.test.ts`) is also the repo's only runtime-plugin build.
 
 Facts not in the source:
 
