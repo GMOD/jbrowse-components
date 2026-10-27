@@ -746,7 +746,7 @@ describe('validateConfig', () => {
       ).toEqual([`field-near-preset ${where}.field`])
     })
 
-    it('takes a field that spells a preset inside a longer or recased name as a real attribute', () => {
+    it('takes a prefixed or capitalized preset name as a real attribute', () => {
       const markTrack = (field: string) =>
         found({
           type: 'FeatureTrack',
@@ -755,7 +755,9 @@ describe('validateConfig', () => {
         })
       expect(markTrack('zscore')).toEqual([])
       expect(markTrack('Score')).toEqual([])
-      expect(markTrack('scre')).toEqual([`field-near-preset ${where}.field`])
+      for (const typo of ['scre', 'scores', 'svtype']) {
+        expect(markTrack(typo)).toEqual([`field-near-preset ${where}.field`])
+      }
     })
 
     it('reads a displayDefaults type as the one display it reaches', () => {

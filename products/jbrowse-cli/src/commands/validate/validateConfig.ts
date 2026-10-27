@@ -810,11 +810,12 @@ function checkChannels(
       typeof field === 'string' && !presets.includes(field)
         ? suggest(field, presets, 1)
         : undefined
-    const extendsPreset =
+    const namesOwnAttribute =
       typeof field === 'string' &&
       near !== undefined &&
-      field.toLowerCase().includes(near.toLowerCase())
-    if (near && !extendsPreset) {
+      ((field.length > near.length && field.endsWith(near)) ||
+        field === near.charAt(0).toUpperCase() + near.slice(1))
+    if (near && !namesOwnAttribute) {
       warn(where, {
         rule: 'field-near-preset',
         slot: 'field',
