@@ -1,8 +1,6 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { regionTooLargeConfigSchemaFields } from '@jbrowse/display-kit/regionTooLargeConfigSchemaFields'
 
-const rowShow = (part: string) => (show: unknown) => ({ [part]: { show } })
-
 /**
  * #config LinearReferenceSequenceDisplay
  * Draws a `ReferenceSequenceTrack` as rows of bases: the forward strand, the
@@ -109,13 +107,8 @@ export const configSchema = ConfigurationSchema(
   {
     explicitIdentifier: 'displayId',
     explicitlyTyped: true,
-    retired: {
-      // v4's renderer block held the row height
-      renderer: () => ({}),
-      showForward: rowShow('forward'),
-      showReverse: rowShow('reverse'),
-      showTranslation: rowShow('translation'),
-    },
+    // v4's renderer block held the row height
+    retired: { renderer: () => ({}) },
   },
 )
 
