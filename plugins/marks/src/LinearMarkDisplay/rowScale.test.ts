@@ -84,7 +84,47 @@ it('a range past the domain keeps dealing its spare colors', () => {
     new Map([['mom', '#0000ff']]),
   )
   expect(out.kind === 'categories' && out.encoding).toMatchObject({
-    domain: ['mom', 'kid'],
-    range: ['#0000ff', '#ffff00', '#00ffff'],
+    domain: ['kid', 'mom'],
+    range: ['#ffff00', '#0000ff', '#00ffff'],
+  })
+})
+
+// The key names the written domain by position, so it keeps its order.
+it('the key still names each written value', () => {
+  const display = loaded(
+    {
+      field: 'source',
+      scale: {
+        domain: ['kid', 'mom'],
+        range: ['#ffff00', '#00ff00'],
+        names: ['Kid', 'Mother'],
+      },
+    },
+    { scale: { domain: ['mom', 'dad'], range: ['#0000ff', '#ff0000'] } },
+  )
+  expect(keyColors(display)).toMatchObject({
+    Kid: 'rgba(255,255,0,1)',
+    Mother: 'rgba(0,0,255,1)',
+    dad: 'rgba(255,0,0,1)',
+  })
+})
+
+it('a written value with no color ends the colored run', () => {
+  const out = withRowScale(
+    {
+      kind: 'categories',
+      encoding: {
+        field: 'source',
+        scale: 'ordinal',
+        domain: ['mom', 'kid', 'dad'],
+        range: ['#00ff00'],
+      },
+    },
+    'source',
+    new Map([['dad', '#ff0000']]),
+  )
+  expect(out.kind === 'categories' && out.encoding).toMatchObject({
+    domain: ['mom', 'kid', 'dad'],
+    range: ['#00ff00'],
   })
 })

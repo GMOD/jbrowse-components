@@ -7,6 +7,11 @@ import type { MarkRegionData } from './markList.ts'
  * A categorical color over the field the rows split on, painting each value
  * in its row's color where the row has one (ADR-251), and the color's own
  * `domain` and `range` for the rest. Any other color as it came.
+ *
+ * The written `domain` keeps its order, since the key pairs `scale.names`
+ * with it by position; the rows' other colored values follow it. A written
+ * value with no color of either kind ends the colored run, and the values
+ * from it on take the palette, as a `domain` longer than its `range` does.
  */
 export function withRowScale(
   source: ColorSource,
@@ -21,22 +26,25 @@ export function withRowScale(
     return source
   }
   const { domain = [], range = [] } = source.encoding
-  const rest = domain.map(String).filter(value => !colors.has(value))
-  const paired = new Map(domain.map((value, i) => [String(value), range[i]]))
-  const colored = rest.filter(value => paired.get(value) !== undefined)
-  const uncolored = rest.filter(value => paired.get(value) === undefined)
+  const written = domain.map(String)
+  const listed = new Set(written)
+  const extra = [...colors.keys()].filter(value => !listed.has(value))
+  const own = written.map((value, i) => colors.get(value) ?? range[i])
+  const gap = own.indexOf(undefined)
   return {
     ...source,
     encoding: {
       ...source.encoding,
-      domain: [...colors.keys(), ...colored, ...uncolored],
-      // a range past the domain deals its spare colors to unlisted values,
-      // which only stays so while every listed value has its own
-      range: [
-        ...colors.values(),
-        ...colored.map(value => paired.get(value)!),
-        ...(uncolored.length === 0 ? range.slice(domain.length) : []),
-      ],
+      domain: [...written, ...extra],
+      range:
+        gap === -1
+          ? [
+              ...(own as string[]),
+              ...extra.map(value => colors.get(value)!),
+              // the spare range past the domain still deals to unlisted values
+              ...range.slice(written.length),
+            ]
+          : (own.slice(0, gap) as string[]),
     },
   }
 }
