@@ -3,8 +3,6 @@ import { predicatesOf } from '@jbrowse/core/util/fieldPredicate'
 import { isJexl } from '@jbrowse/core/util/jexlStrings'
 import { persistTrackConfigNow } from '@jbrowse/core/util/mstUtils'
 import {
-  colorEncodingOf,
-  colorFieldOf,
   colorSnapshotOf,
   ordinalRange,
 } from '@jbrowse/display-kit/colorConfigSchema'
@@ -15,6 +13,7 @@ import {
   withHideUnlabelled,
 } from '@jbrowse/synteny-core'
 
+import { geneColorEncodingOf } from './geneColor.ts'
 import { laneLayersPx } from './laneLayers.ts'
 import { geneLabelRowPx } from './laneStack.ts'
 import { paintedRibbonColor } from './ribbonColorConfigSchema.ts'
@@ -143,14 +142,15 @@ export function configSlotViews(self: ConfigSlotSelf) {
     },
     /** #getter */
     get geneColorEncoding() {
-      return colorEncodingOf(this.geneColorSettings.color)
+      return geneColorEncodingOf(this.geneColorSettings.color)
     },
     /**
      * #getter
      * undefined while `encoding.color.value` paints
      */
     get geneColorField(): string | undefined {
-      return colorFieldOf(this.geneColorEncoding)?.field
+      const encoding = this.geneColorEncoding
+      return typeof encoding === 'object' ? encoding.field : undefined
     },
     /**
      * #getter

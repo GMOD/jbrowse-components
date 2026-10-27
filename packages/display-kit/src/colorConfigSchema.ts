@@ -67,11 +67,16 @@ export const DISCRETE_COLOR_SCALES = [
   'threshold',
 ] as const
 
-/** The scales FeatureColor paints: a range color per value or per bin, a ramp, or each feature's own color. */
-export const FEATURE_COLOR_SCALES = [
+/** The scales of a color object whose field paints a range color per value or per bin, or a color along a ramp. */
+export const FIELD_COLOR_SCALES = [
   ...DISCRETE_COLOR_SCALES,
   'linear',
   'log',
+] as const
+
+/** The scales FeatureColor paints: a field's, or each feature's own color. */
+export const FEATURE_COLOR_SCALES = [
+  ...FIELD_COLOR_SCALES,
   IDENTITY_SCALE,
 ] as const
 

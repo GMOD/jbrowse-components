@@ -101,7 +101,7 @@ import {
   releaseHideUnlabelled,
   ribbonColorFieldOf,
 } from './configSlotViews.ts'
-import { dealGeneColors, geneColors } from './geneColor.ts'
+import { dealGeneColors, geneColorRampOf, geneColors } from './geneColor.ts'
 import { laneGeneTracksOf } from './laneAnnotation.ts'
 import { nudgeDecision, sameDecisions } from './laneDecision.ts'
 import {
@@ -273,6 +273,7 @@ import type {
   HighlightStyle,
 } from '@jbrowse/display-kit/highlightHost'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
+import type { ValueRamp } from '@jbrowse/display-kit/valueRamp'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { ColorSource } from '@jbrowse/plugin-marks'
 import type { MarkColorScale } from '@jbrowse/render-core/marks'
@@ -717,6 +718,21 @@ export function stateModelFactory(
     .views(self => ({
       /**
        * #getter
+       * The boxes' features and every lane gene's, which a gene color field
+       * reads together
+       */
+      get geneColorFeatures(): Feature[] {
+        return [
+          ...(self.features ?? []),
+          ...[...(self.laneGenes.held?.values() ?? [])].flatMap(({ genes }) =>
+            genes.map(gene => gene.feature),
+          ),
+        ]
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
        * `geneColorSlots` once every value the boxes and lane genes show is
        * dealt as one batch, so the two take colors apart whichever lands first
        */
@@ -725,14 +741,21 @@ export function stateModelFactory(
           self.geneColorEncoding,
           self.geneColorSlots,
           getEnv(self).pluginManager.jexl,
-          [
-            ...(self.features ?? []),
-            ...[...(self.laneGenes.held?.values() ?? [])].flatMap(({ genes }) =>
-              genes.map(gene => gene.feature),
-            ),
-          ],
+          self.geneColorFeatures,
         )
         return self.geneColorSlots
+      },
+      /**
+       * #getter
+       * The ramp a numeric gene color field paints along, over the values the
+       * boxes and lane genes show
+       */
+      get geneColorRamp(): ValueRamp | undefined {
+        return geneColorRampOf(
+          self.geneColorEncoding,
+          getEnv(self).pluginManager.jexl,
+          () => self.geneColorFeatures,
+        )
       },
     }))
     .views(self => {
@@ -742,23 +765,28 @@ export function stateModelFactory(
       interface Held {
         data: unknown
         settings: string
+        ramp: ValueRamp | undefined
         colors: GeneColors
       }
       const colorsFor = (prev: Held | undefined, data: unknown): Held => {
         const settings = JSON.stringify(self.geneColorSettings)
+        const ramp = self.geneColorRamp
         return prev !== undefined &&
           prev.data === data &&
-          prev.settings === settings
+          prev.settings === settings &&
+          prev.ramp === ramp
           ? prev
           : {
               data,
               settings,
+              ramp,
               colors: geneColors(
                 self.configuration,
                 self.geneColorEncoding,
                 self.geneColorSettings.utrColor,
                 jexl,
                 self.dealtGeneColorSlots,
+                ramp,
               ),
             }
       }
@@ -2323,6 +2351,10 @@ export function stateModelFactory(
         const onScreen: Span = [0, self.canvasWidthPx]
         const encoding = self.geneColorEncoding
         const { title } = self.geneColorSettings.color.legend
+        const ramp = self.geneColorRamp
+        if (ramp) {
+          return ramp.keyScales('genes', title ?? self.geneColorField)
+        }
         const field = colorFieldOf(encoding, self.geneColorSlots)
         const keyOf = (hits: GlyphHit[]): ColorScale[] => {
           if (field) {

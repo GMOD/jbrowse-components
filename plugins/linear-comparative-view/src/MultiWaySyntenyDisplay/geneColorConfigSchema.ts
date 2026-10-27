@@ -1,12 +1,15 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import {
-  DISCRETE_COLOR_SCALES,
-  colorDiscreteSchemeSlots,
+  FEATURE_FIELD_PRESETS,
+  FIELD_COLOR_SCALES,
   colorChannelOptions,
+  colorDomainEndsSlots,
+  colorDomainQuantileSlot,
   colorDomainSlot,
   colorFieldSlot,
   colorLegendOptions,
   colorNamesSlot,
+  colorRampSlots,
   colorRangeSlot,
   colorScaleOptions,
   colorScaleTypeSlot,
@@ -20,8 +23,9 @@ import {
  * #category display
  * The multi-way synteny display's gene `encoding.color`: a CSS color or
  * `jexl:` callback in `value`, or a field whose values each take a range
- * color, or whose numbers each take the color of the interval between cut
- * points they fall in, with a key. A string is the field.
+ * color, whose numbers each take the color of the interval between cut
+ * points they fall in, or whose numbers run along a color ramp, with a key. A
+ * string is the field.
  *
  * #example
  * ```js
@@ -57,9 +61,9 @@ export const geneColorConfigSchema = ConfigurationSchema(
       'MultiWayGeneColorScale',
       {
         ...colorScaleTypeSlot({
-          scales: DISCRETE_COLOR_SCALES,
+          scales: FIELD_COLOR_SCALES,
           scaleName: 'MultiWayGeneColorScaleType',
-          type: 'ordinal a range color per value of field; threshold a range color per interval between the cut points in domain; unset follows field',
+          type: 'ordinal a range color per value of field; threshold a range color per interval between the cut points in domain; linear or log a color along a ramp from domainMin to domainMax; unset is linear for score and ordinal for any other field',
         }),
         ...colorDomainSlot({
           domain:
@@ -67,12 +71,14 @@ export const geneColorConfigSchema = ConfigurationSchema(
         }),
         ...colorRangeSlot({
           range:
-            'CSS colors the domain takes, in order, continuing into the default palette past its end; under threshold one per interval, one more than the cuts',
+            "CSS colors the domain takes, in order, continuing into the default palette past its end; under threshold one per interval, one more than the cuts; under linear or log the ramp's stops, winning over scheme",
         }),
-        ...colorDiscreteSchemeSlots,
         ...colorUnknownSlot,
         ...colorInvalidSlot,
         ...colorNamesSlot,
+        ...colorRampSlots,
+        ...colorDomainEndsSlots,
+        ...colorDomainQuantileSlot,
       },
       colorScaleOptions('encoding.color.scale'),
     ),
@@ -86,5 +92,5 @@ export const geneColorConfigSchema = ConfigurationSchema(
       colorLegendOptions,
     ),
   },
-  colorChannelOptions('encoding.color'),
+  colorChannelOptions('encoding.color', FEATURE_FIELD_PRESETS),
 )

@@ -2,14 +2,10 @@ import {
   STRAND_FIELD,
   dealKeyColors,
 } from '@jbrowse/core/util/categoricalField'
-import { NO_CATEGORY_COLOR } from '@jbrowse/core/util/color'
-import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
-import { stopsFromRampLut } from '@jbrowse/core/util/colorRamp'
 import { withPreset } from '@jbrowse/core/util/colorScale'
 import { isJexl } from '@jbrowse/core/util/jexlStrings'
 import { continuousColorScale } from '@jbrowse/core/util/markEncoding'
 import { quantileExtent } from '@jbrowse/core/util/quantileExtent'
-import { rampGapScales } from '@jbrowse/core/util/thresholdScale'
 import {
   FEATURE_FIELD_PRESETS,
   categoricalColorField,
@@ -20,6 +16,12 @@ import {
 } from '@jbrowse/display-kit/colorConfigSchema'
 import { heldColorSlots } from '@jbrowse/display-kit/heldColorSlots'
 import { stableIdentityComputed } from '@jbrowse/display-kit/stableIdentityComputed'
+import {
+  numericText,
+  rampEncodingOf,
+  rampKeyScales,
+  rampTextColor,
+} from '@jbrowse/display-kit/valueRamp'
 
 import { createFieldPalette } from '../RenderFeatureDataRPC/colorClasses.ts'
 import { workerColorOf } from '../RenderFeatureDataRPC/renderConfig.ts'
@@ -46,15 +48,7 @@ export interface FeatureColorHost {
   >
 }
 
-// The value text a ramp reads: blank is no number, where `Number` reads 0.
-function numericText(text: string) {
-  return text.trim() === '' ? Number.NaN : Number(text)
-}
-
 const NO_EXTENT: [number, number] = [Infinity, -Infinity]
-
-// Enough to read the ramp's shape without the bar becoming a table of stops.
-const RAMP_KEY_STOPS = 8
 
 function featureColorSettingOf({ conf }: FeatureColorHost): ColorSetting {
   return colorSnapshotOf(conf.encoding.color)
@@ -89,13 +83,7 @@ export function featureColorViews(self: FeatureColorHost) {
   const loaded = stableIdentityComputed(() => {
     const current = encoding.get()
     const field = typeof current === 'object' ? current.field : undefined
-    const quantile =
-      typeof current === 'object' &&
-      (current.scale === 'linear' ||
-        current.scale === 'log' ||
-        current.scale === 'symlog')
-        ? (current.domainQuantile ?? 1)
-        : 1
+    const quantile = rampEncodingOf(current)?.domainQuantile ?? 1
     let min = Infinity
     let max = -Infinity
     let missing = false
@@ -257,11 +245,8 @@ export function featureColorViews(self: FeatureColorHost) {
      * values where an end is left open.
      */
     get colorRamp() {
-      const current = this.colorEncoding
-      return typeof current === 'object' &&
-        (current.scale === 'linear' ||
-          current.scale === 'log' ||
-          current.scale === 'symlog')
+      const current = rampEncodingOf(this.colorEncoding)
+      return current
         ? continuousColorScale(
             current,
             current.domainMin !== undefined && current.domainMax !== undefined
@@ -280,10 +265,7 @@ export function featureColorViews(self: FeatureColorHost) {
     get paintColorValue(): ((value: string) => string) | undefined {
       const ramp = this.colorRamp
       if (ramp) {
-        return text =>
-          text === ''
-            ? NO_CATEGORY_COLOR
-            : abgrToCssRgba(ramp.colorOf(numericText(text)))
+        return text => rampTextColor(ramp, text)
       }
       const field = this.paintedColorField
       return field && (value => field.color(field.key(value)))
@@ -320,19 +302,13 @@ export function featureColorViews(self: FeatureColorHost) {
     rampColorScales(id: string): ColorScale[] {
       const ramp = this.colorRamp
       return ramp
-        ? [
-            {
-              kind: 'ramp',
-              id,
-              title: this.colorKeyTitle,
-              domain: ramp.domain,
-              stops: stopsFromRampLut(ramp.lut, RAMP_KEY_STOPS, ramp.midNorm),
-              // unclipped, unlike colorValueExtent under a domainQuantile, so
-              // the key marks an end the data runs past
-              extent: loaded.get().extremes,
-            },
-            ...rampGapScales(`${id}-gaps`, this.colorValueGaps),
-          ]
+        ? rampKeyScales(
+            id,
+            this.colorKeyTitle,
+            ramp,
+            loaded.get().extremes,
+            this.colorValueGaps,
+          )
         : []
     },
   }

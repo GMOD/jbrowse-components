@@ -28,6 +28,7 @@ import type {
 import type { HeldSlots } from '@jbrowse/core/ui/colors'
 import type { CategoricalField } from '@jbrowse/core/util/categoricalField'
 import type { ColorEncoding } from '@jbrowse/core/util/markEncoding'
+import type { ValueRamp } from '@jbrowse/display-kit/valueRamp'
 
 // Pure scale builders, split out of the display model so they can be
 // unit-tested without instantiating the display model. The model's
@@ -228,6 +229,7 @@ function getCellColorScale(
 export function getVariantColorScales({
   color,
   colorSlots,
+  ramp,
   ...inputs
 }: VariantLegendInputs & {
   // The alt cells' hue as the display resolved its `encoding.color`; undefined
@@ -236,14 +238,31 @@ export function getVariantColorScales({
   // The slots an ordinal `encoding.color` deals its values into
   // (`heldColorSlots`).
   colorSlots?: HeldSlots
+  // The ramp a numeric field paints along (`CellHue.ramp`).
+  ramp?: ValueRamp
 }): ColorScale[] {
+  const field = cellHueField(color)
+  if (ramp && field !== undefined) {
+    const shaded = inputs.unit !== 'haplotype' && inputs.shadeByDosage
+    return [
+      ...ramp.keyScales('recordField', keyTitle(inputs, field)),
+      {
+        kind: 'categorical',
+        id: 'recordFieldAbsent',
+        entries: [
+          ...(shaded ? [entry(DOSAGE_NOTE)] : []),
+          ...absentDataEntries(inputs),
+        ],
+      },
+    ]
+  }
   // Phase-set coloring exists only on the phased path — the allele-count cell
   // loop never reads PS — so outside phased mode the cells are genotype-colored
   // and the legend has to say that instead of describing a scheme that isn't on
   // screen. Resolved here rather than by forbidding the combination, since
   // unit can change after the color is chosen.
   const cellScale = getCellColorScale(
-    cellHueField(color) === PHASE_SET_FIELD && inputs.unit !== 'haplotype'
+    field === PHASE_SET_FIELD && inputs.unit !== 'haplotype'
       ? undefined
       : color,
     inputs,

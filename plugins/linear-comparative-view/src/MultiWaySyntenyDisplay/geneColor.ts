@@ -3,8 +3,14 @@ import { featureDefaultColor, utrDefaultColor } from '@jbrowse/core/ui/palette'
 import { dealShownKeyColors } from '@jbrowse/core/util/categoricalField'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { fieldReader } from '@jbrowse/core/util/fieldReader'
+import { valueText } from '@jbrowse/core/util/groupKeys'
 import { isJexl } from '@jbrowse/core/util/jexlStrings'
-import { colorFieldOf } from '@jbrowse/display-kit/colorConfigSchema'
+import {
+  FEATURE_FIELD_PRESETS,
+  colorEncodingOf,
+  colorFieldOf,
+} from '@jbrowse/display-kit/colorConfigSchema'
+import { rampEncodingOf, valueRampOf } from '@jbrowse/display-kit/valueRamp'
 
 import type { MultiWaySyntenyDisplayConfig } from './configSchema.ts'
 import type { HeldSlots } from '@jbrowse/core/ui/colors'
@@ -14,6 +20,7 @@ import type {
   ColorSetting,
   FieldColorEncoding,
 } from '@jbrowse/display-kit/colorConfigSchema'
+import type { ValueRamp } from '@jbrowse/display-kit/valueRamp'
 
 /** paints each gene and box by its ortholog group, one color down the stack */
 export const CLUSTER_FIELD = 'cluster'
@@ -38,6 +45,40 @@ export interface GeneColorSettings {
 export interface GeneColors {
   fill: (feature: Feature, cluster: string | undefined) => PaintedFill
   utr: (feature: Feature, fill: PaintedFill) => number
+}
+
+/** What the gene `encoding.color` paints, `score` a ramp as on a feature track. */
+export function geneColorEncodingOf(setting: ColorSetting) {
+  return colorEncodingOf(setting, FEATURE_FIELD_PRESETS)
+}
+
+function readText(read: (feature: Feature) => unknown, feature: Feature) {
+  try {
+    return valueText(read(feature))
+  } catch {
+    // a jexl field that throws on a feature paints it no value
+    return ''
+  }
+}
+
+/**
+ * The ramp a numeric field paints along, over the values the features
+ * `features` lists carry, or undefined while the encoding paints no ramp.
+ */
+export function geneColorRampOf(
+  encoding: string | undefined | FieldColorEncoding,
+  jexl: JexlInstance,
+  features: () => Iterable<Feature>,
+): ValueRamp | undefined {
+  const ramp = rampEncodingOf(encoding)
+  if (ramp) {
+    const read = fieldReader(ramp.field, jexl)
+    return valueRampOf(
+      ramp,
+      Array.from(features(), feature => readText(read, feature)),
+    )
+  }
+  return undefined
 }
 
 /**
@@ -77,7 +118,8 @@ function memo<K, V>(map: Map<K, V>, key: K, make: () => V) {
 
 /**
  * `encoding` is `geneColorEncoding`; `utrColor` is the slot as written;
- * `held`, where an ordinal field deals its colors.
+ * `held`, where an ordinal field deals its colors; `ramp`, the one a numeric
+ * field paints along (`geneColorRampOf`).
  */
 export function geneColors(
   conf: MultiWaySyntenyDisplayConfig,
@@ -85,6 +127,7 @@ export function geneColors(
   utrColor: unknown,
   jexl: JexlInstance,
   held?: HeldSlots,
+  ramp?: ValueRamp,
 ): GeneColors {
   const byCss = new Map<string, PaintedFill>()
   const byKey = new Map<string, PaintedFill>()
@@ -94,7 +137,11 @@ export function geneColors(
     memo(byCss, css, () => ({ css, packed: cssColorToABGR(css) }))
 
   const field = colorFieldOf(encoding, held)
-  const fillSet = field !== undefined || typeof encoding === 'string'
+  const rampField = ramp && rampEncodingOf(encoding)?.field
+  const fillSet =
+    field !== undefined ||
+    rampField !== undefined ||
+    typeof encoding === 'string'
   // #region contextVariableRead
   // the slot as written, not resolved: a jexl color read without a feature
   // evaluates against an empty context and hands back the fallout (adr-066)
@@ -134,6 +181,16 @@ export function geneColors(
         read
           ? memo(byFeature, feature.id(), () => keyed(field.key(read(feature))))
           : keyed(field.key(cluster)),
+      utr,
+    }
+  }
+  if (ramp && rampField !== undefined) {
+    const read = fieldReader(rampField, jexl)
+    return {
+      fill: feature =>
+        memo(byFeature, feature.id(), () =>
+          painted(ramp.colorOf(readText(read, feature))),
+        ),
       utr,
     }
   }

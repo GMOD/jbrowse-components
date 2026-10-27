@@ -13,6 +13,7 @@ import {
   solidColorItem,
 } from '@jbrowse/display-kit/colorByMenu'
 import { groupByRadioMenuItem } from '@jbrowse/display-kit/groupByMenu'
+import { rampEncodingOf } from '@jbrowse/display-kit/valueRamp'
 import {
   resetRowOrderMenuItems,
   rowOrderMenuItems,
@@ -142,7 +143,9 @@ export function variantTrackMenuItems(
   self: LinearMultiSampleVariantDisplayModel,
 ): MenuItem[] {
   const loaded = !!self.cellData
-  const hueField = recordHueField(self.colorEncoding)?.field
+  const hueField =
+    rampEncodingOf(self.colorEncoding)?.field ??
+    recordHueField(self.colorEncoding)?.field
   const recordField = hueField === SV_TYPE_FIELD ? undefined : hueField
   const phaseSet = needs(
     'Phase set',

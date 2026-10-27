@@ -6,12 +6,11 @@ import { rampKeyOf } from '@jbrowse/core/ui/rampKey'
 import { capitalizeFirst } from '@jbrowse/core/util'
 import { abgrToHex, cssColorToHex } from '@jbrowse/core/util/colorBits'
 import {
-  CATEGORICAL_FIELD_PRESETS,
+  FEATURE_FIELD_PRESETS,
   withPreset,
 } from '@jbrowse/core/util/colorScale'
 import { predicatesOf } from '@jbrowse/core/util/fieldPredicate'
 import {
-  colorEncodingOf,
   colorSnapshotOf,
   paintedColorEncoding,
   pairedColorsOf,
@@ -47,7 +46,7 @@ import {
 } from './VariantRPC/genotypeMatrixEncoding.ts'
 import VcfAdapterF from './VcfAdapter/index.ts'
 import VcfTabixAdapterF from './VcfTabixAdapter/index.ts'
-import { cellHueOf } from './shared/cellHue.ts'
+import { cellColorEncodingOf, cellHueOf } from './shared/cellHue.ts'
 import { buildSampleIndex, decodeGenotype } from './shared/genotypeCodec.ts'
 import {
   expandPhasedRows,
@@ -170,7 +169,7 @@ export async function variantTables(
     displayId: 'tables',
   })
   const colorSetting = colorSnapshotOf(conf.encoding.color)
-  const encoding = colorEncodingOf(colorSetting)
+  const encoding = cellColorEncodingOf(colorSetting)
   const slots: HeldSlots | undefined =
     typeof encoding === 'object' && encoding.scale === 'ordinal'
       ? new Map()
@@ -300,10 +299,16 @@ export async function variantTables(
     color: [] as string[],
     region: [] as number[],
   }
+  const paintHue = cellHueOf(
+    paintedColorEncoding(encoding),
+    colorSetting.field,
+    slots,
+    perRegion.flatMap(({ data }) => data.colorValues),
+  )
   const keys = new Map<string, number>()
   for (const { region: regionIndex, data } of perRegion) {
     const offset = variants.start.length
-    const featureColors = paintFeatureColors(data, cellHue, true)
+    const featureColors = paintFeatureColors(data, paintHue, true)
     data.featureInfo.forEach((info, f) => {
       if (!keys.has(info.featureId)) {
         keys.set(info.featureId, keys.size)
@@ -319,7 +324,7 @@ export async function variantTables(
       variants.region.push(regionIndex)
       variants.key.push(keys.get(info.featureId)!)
     })
-    const colors = paintCellColors(data, cellHue, {
+    const colors = paintCellColors(data, paintHue, {
       phased: unit === 'haplotype',
       shade,
       valuesRead: true,
@@ -362,13 +367,13 @@ export async function variantTables(
     hasNoCall: value.hasNoCall,
     paintedDomain: paintedColorKeys(
       perRegion.map(({ data }) => data),
-      cellHue,
+      paintHue,
     ),
     shadeByDosage: shade,
     color: encoding,
     colorSlots: slots,
-    colorTitle: withPreset(colorSetting, CATEGORICAL_FIELD_PRESETS).legend
-      .title,
+    ramp: paintHue.ramp,
+    colorTitle: withPreset(colorSetting, FEATURE_FIELD_PRESETS).legend.title,
   })
   return {
     variants,

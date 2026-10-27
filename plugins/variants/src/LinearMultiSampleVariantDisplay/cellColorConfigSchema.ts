@@ -1,12 +1,15 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import {
-  DISCRETE_COLOR_SCALES,
-  colorDiscreteSchemeSlots,
+  FEATURE_FIELD_PRESETS,
+  FIELD_COLOR_SCALES,
   colorChannelOptions,
+  colorDomainEndsSlots,
+  colorDomainQuantileSlot,
   colorDomainSlot,
   colorFieldSlot,
   colorLegendOptions,
   colorNamesSlot,
+  colorRampSlots,
   colorRangeSlot,
   colorScaleOptions,
   colorScaleTypeSlot,
@@ -27,7 +30,7 @@ import {
  * structural-variant class; `phaseSet`, the FORMAT PS block, in phased mode.
  * Any other field is read off the record — `INFO.CLNSIG`, `QUAL`, or a
  * `jexl:` expression — and a numeric one cut into intervals by a `threshold`
- * scale. A string is the field.
+ * scale or run along a `linear` or `log` ramp. A string is the field.
  *
  * #example
  * ```js
@@ -75,9 +78,9 @@ export const cellColorConfigSchema = ConfigurationSchema(
       'VariantCellColorScale',
       {
         ...colorScaleTypeSlot({
-          scales: DISCRETE_COLOR_SCALES,
+          scales: FIELD_COLOR_SCALES,
           scaleName: 'VariantCellColorScaleType',
-          type: 'ordinal a range color per value of field; threshold a range color per interval between the cut points in domain; unset follows field',
+          type: 'ordinal a range color per value of field; threshold a range color per interval between the cut points in domain; linear or log a color along a ramp from domainMin to domainMax; unset is linear for score and ordinal for any other field',
         }),
         ...colorDomainSlot({
           domain:
@@ -85,12 +88,14 @@ export const cellColorConfigSchema = ConfigurationSchema(
         }),
         ...colorRangeSlot({
           range:
-            'CSS colors the domain takes, in order, continuing into the default palette past its end; under threshold one per interval, one more than the cuts',
+            "CSS colors the domain takes, in order, continuing into the default palette past its end; under threshold one per interval, one more than the cuts; under linear or log the ramp's stops, winning over scheme",
         }),
-        ...colorDiscreteSchemeSlots,
         ...colorUnknownSlot,
         ...colorInvalidSlot,
         ...colorNamesSlot,
+        ...colorRampSlots,
+        ...colorDomainEndsSlots,
+        ...colorDomainQuantileSlot,
       },
       colorScaleOptions('encoding.color.scale'),
     ),
@@ -104,5 +109,5 @@ export const cellColorConfigSchema = ConfigurationSchema(
       colorLegendOptions,
     ),
   },
-  colorChannelOptions('encoding.color'),
+  colorChannelOptions('encoding.color', FEATURE_FIELD_PRESETS),
 )

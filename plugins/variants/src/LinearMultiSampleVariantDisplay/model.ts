@@ -14,7 +14,7 @@ import {
 } from '@jbrowse/core/util'
 import { createAdapterMetadataFetch } from '@jbrowse/core/util/adapterMetadata'
 import {
-  CATEGORICAL_FIELD_PRESETS,
+  FEATURE_FIELD_PRESETS,
   withPreset,
 } from '@jbrowse/core/util/colorScale'
 import { deepEqual } from '@jbrowse/core/util/deepEqual'
@@ -42,7 +42,6 @@ import MultiRegionDisplayMixin from '@jbrowse/display-kit/MultiRegionDisplayMixi
 import StoredHoverMixin from '@jbrowse/display-kit/StoredHoverMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import {
-  colorEncodingOf,
   colorSnapshotOf,
   paintedColorEncoding,
 } from '@jbrowse/display-kit/colorConfigSchema'
@@ -64,7 +63,12 @@ import {
   loadedRegionIndexAt,
 } from '@jbrowse/tree-sidebar'
 
-import { cellHueField, cellHueOf, sameHueRead } from '../shared/cellHue.ts'
+import {
+  cellColorEncodingOf,
+  cellHueField,
+  cellHueOf,
+  sameHueRead,
+} from '../shared/cellHue.ts'
 import {
   HIDDEN_ROW,
   INTERNAL_SOURCE_KEYS,
@@ -680,7 +684,7 @@ export function stateModelFactory(
          * threshold scale (`shared/cellHue.ts`).
          */
         get colorEncoding() {
-          return colorEncodingOf(this.colorSetting)
+          return cellColorEncodingOf(this.colorSetting)
         },
         /**
          * #getter
@@ -1078,16 +1082,20 @@ export function stateModelFactory(
         return {
           /**
            * #getter
-           * Where the alt cells' hue comes from: what the worker reads and how
-           * the main thread paints it (`cellHueOf`).
+           * The painted `encoding.color` and the field kept beside it, which
+           * `cellHue` resolves.
            */
-          get cellHue() {
+          get cellHueInput() {
+            return hueInput.get()
+          },
+          /**
+           * #getter
+           * What the worker reads off each variant for the alt cells' hue,
+           * apart from the loaded values a ramp follows.
+           */
+          get cellHueRead() {
             const { encoding, keptField } = hueInput.get()
-            return cellHueOf(
-              encoding,
-              keptField,
-              heldColorSlots(self, encoding),
-            )
+            return cellHueOf(encoding, keptField).read
           },
         }
       })
@@ -1103,7 +1111,7 @@ export function stateModelFactory(
             siteFilter: self.siteFilter,
             filters: self.filters,
             unit: self.unit,
-            color: self.cellHue.read,
+            color: self.cellHueRead,
             referenceDrawingMode: self.atGenomicPositions
               ? self.referenceDrawingMode
               : 'draw',
@@ -1116,7 +1124,27 @@ export function stateModelFactory(
          * none.
          */
         get cellHueValuesRead() {
-          return sameHueRead(self.cellData?.colorRead, self.cellHue.read)
+          return sameHueRead(self.cellData?.colorRead, self.cellHueRead)
+        },
+        /**
+         * #getter
+         * Where the alt cells' hue comes from: what the worker reads and how
+         * the main thread paints it (`cellHueOf`), a ramp over the values
+         * every fetched region read.
+         */
+        get cellHue() {
+          const { encoding, keptField } = self.cellHueInput
+          const { cellData } = self
+          return cellHueOf(
+            encoding,
+            keptField,
+            heldColorSlots(self, encoding),
+            cellData && this.cellHueValuesRead
+              ? Object.values(cellData.perRegionCellData).flatMap(
+                  d => d.colorValues,
+                )
+              : [],
+          )
         },
       }))
       .views(self => ({
@@ -1845,10 +1873,9 @@ export function stateModelFactory(
               shadeByDosage: self.shadeByDosage,
               color: self.colorEncoding,
               colorSlots: heldColorSlots(self, self.colorEncoding),
-              colorTitle: withPreset(
-                self.colorSetting,
-                CATEGORICAL_FIELD_PRESETS,
-              ).legend.title,
+              ramp: self.cellHue.ramp,
+              colorTitle: withPreset(self.colorSetting, FEATURE_FIELD_PRESETS)
+                .legend.title,
             }),
             ...self.rowColorScales,
           ]

@@ -3,7 +3,12 @@ import { dealKeyColors } from '@jbrowse/core/util/categoricalField'
 import { fieldReader } from '@jbrowse/core/util/fieldReader'
 import { valueText } from '@jbrowse/core/util/groupKeys'
 import { isJexl } from '@jbrowse/core/util/jexlStrings'
-import { colorFieldOf } from '@jbrowse/display-kit/colorConfigSchema'
+import {
+  FEATURE_FIELD_PRESETS,
+  colorEncodingOf,
+  colorFieldOf,
+} from '@jbrowse/display-kit/colorConfigSchema'
+import { rampEncodingOf, valueRampOf } from '@jbrowse/display-kit/valueRamp'
 
 import { ALT_HUE } from './cellFill.ts'
 import { PHASE_SET_FIELD } from './getPhasedColor.ts'
@@ -13,6 +18,13 @@ import type { HeldSlots } from '@jbrowse/core/ui/colors'
 import type { Feature } from '@jbrowse/core/util'
 import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
 import type { ColorEncoding } from '@jbrowse/core/util/markEncoding'
+import type { ColorSetting } from '@jbrowse/display-kit/colorConfigSchema'
+import type { ValueRamp } from '@jbrowse/display-kit/valueRamp'
+
+/** What `encoding.color` paints the alt cells with, `score` a ramp as on a feature track. */
+export function cellColorEncodingOf(setting: ColorSetting) {
+  return colorEncodingOf(setting, FEATURE_FIELD_PRESETS)
+}
 
 /** The field a color encoding names, or undefined for a constant. */
 export function cellHueField(encoding: ColorEncoding | undefined) {
@@ -65,9 +77,10 @@ export type CellHueRead = string | { field: string } | undefined
  * Where the alt cells' hue comes from: `read`, what the worker reads off each
  * variant, a field without its scale so recoloring one refetches nothing;
  * `hueOf`, a read value's color; `keyOf`, the key row it files under;
- * `deal`, which sees a region's values before `hueOf` paints any; and
- * `constant`, the hue of every alt cell with no value of its own. No paint
- * member set paints the genotype colors.
+ * `deal`, which sees a region's values before `hueOf` paints any;
+ * `ramp`, the ramp a numeric field paints along; and `constant`, the hue of
+ * every alt cell with no value of its own. No paint member set paints the
+ * genotype colors.
  */
 export interface CellHue {
   read: CellHueRead
@@ -75,18 +88,21 @@ export interface CellHue {
   hueOf?: (value: string) => string
   keyOf?: (value: string) => string
   deal?: (values: readonly string[]) => void
+  ramp?: ValueRamp
 }
 
 /**
  * The hue an `encoding.color` paints. `keptField` is the field the display
  * parked (`ParkedColorMixin`): its values are read while a constant or the
  * genotype colors paint, so returning to it refetches nothing. A phase set is
- * the exception, since reading it paints it.
+ * the exception, since reading it paints it. `loaded` holds the values every
+ * fetched region read, which an open end of a ramp follows.
  */
 export function cellHueOf(
   encoding: ColorEncoding | undefined,
   keptField?: string,
   held?: HeldSlots,
+  loaded: Iterable<string> = [],
 ): CellHue {
   if (typeof encoding === 'string' && isJexl(encoding)) {
     return { read: encoding, hueOf: css => css }
@@ -94,6 +110,11 @@ export function cellHueOf(
   const field = cellHueField(encoding)
   if (field === PHASE_SET_FIELD) {
     return { read: { field } }
+  }
+  const rampEncoding = rampEncodingOf(encoding)
+  if (rampEncoding) {
+    const ramp = valueRampOf(rampEncoding, loaded)
+    return { read: { field: rampEncoding.field }, hueOf: ramp.colorOf, ramp }
   }
   const record = recordHueField(encoding, held)
   if (record) {

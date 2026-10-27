@@ -11,7 +11,6 @@ import createJexlInstance from '@jbrowse/core/util/jexl'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 import {
   colorConfigSchema,
-  colorEncodingOf,
   colorSnapshotOf,
   ordinalRange,
 } from '@jbrowse/display-kit/colorConfigSchema'
@@ -36,6 +35,8 @@ import {
 import { featureColorViews } from '../../../../plugins/canvas/src/shared/featureColorViews.ts'
 import {
   dealGeneColors,
+  geneColorEncodingOf,
+  geneColorRampOf,
   geneColors,
 } from '../../../../plugins/linear-comparative-view/src/MultiWaySyntenyDisplay/geneColor.ts'
 import { geneColorConfigSchema } from '../../../../plugins/linear-comparative-view/src/MultiWaySyntenyDisplay/geneColorConfigSchema.ts'
@@ -48,7 +49,10 @@ import {
 } from '../../../../plugins/marks/src/LinearMarkDisplay/markColor.ts'
 import { markColorSchema } from '../../../../plugins/marks/src/LinearMarkDisplay/markColorConfigSchema.ts'
 import { cellColorConfigSchema } from '../../../../plugins/variants/src/LinearMultiSampleVariantDisplay/cellColorConfigSchema.ts'
-import { cellHueOf } from '../../../../plugins/variants/src/shared/cellHue.ts'
+import {
+  cellColorEncodingOf,
+  cellHueOf,
+} from '../../../../plugins/variants/src/shared/cellHue.ts'
 import { makeDensityLutFillFn } from '../../../../plugins/wiggle/src/shared/getDensityColor.ts'
 import {
   paintedWiggleColor,
@@ -189,21 +193,13 @@ function listed(display: Display, why: string, ...specs: string[]) {
   return specs.map(spec => ({ display, spec, why }))
 }
 
-const ORDINAL_DEFAULT =
-  'an unset scale.type is ordinal on every field, where canvas runs score along a ramp'
-
 const WIGGLE_SCORE_ONLY =
   'colors only the score it plots, so it declares no field; its ramp spans the y domain, and its scale is linear or threshold'
 
 const MAF_FIELDS =
   'fills cells by identity or refNameRank alone, each with its one scale, so it declares no other field and no scale.type'
 
-const DISCRETE_SCALES =
-  'paints ordinal and threshold scales alone, so its scale declares no linear ramp'
-
 const EXCEPTIONS: readonly Exception[] = [
-  ...listed('variant', ORDINAL_DEFAULT, 'numeric field, no scale'),
-  ...listed('multiway', ORDINAL_DEFAULT, 'numeric field, no scale'),
   ...listed(
     'wiggle',
     'an unset scale.type is the bicolor pair cut at the origin',
@@ -225,18 +221,6 @@ const EXCEPTIONS: readonly Exception[] = [
     'synteny',
     'declares no scale.unknown, which its closed schema refuses',
     'ordinal domain, range, unknown, invalid',
-  ),
-  ...listed(
-    'variant',
-    DISCRETE_SCALES,
-    'linear, pinned ends, scheme, reverse',
-    'linear over the data, scheme',
-  ),
-  ...listed(
-    'multiway',
-    DISCRETE_SCALES,
-    'linear, pinned ends, scheme, reverse',
-    'linear over the data, scheme',
   ),
   ...listed(
     'wiggle',
@@ -389,9 +373,10 @@ function variant({ color, values }: Spec): Answer[] | string {
     return node
   }
   const hue = cellHueOf(
-    colorEncodingOf(colorSnapshotOf(node)),
+    cellColorEncodingOf(colorSnapshotOf(node)),
     undefined,
     new Map(),
+    values.map(text),
   )
   hue.deal?.(values.map(text))
   return values.map(v =>
@@ -405,7 +390,7 @@ function multiway({ color, values }: Spec): Answer[] | string {
     return node
   }
   const jexl = createJexlInstance()
-  const encoding = colorEncodingOf(colorSnapshotOf(node))
+  const encoding = geneColorEncodingOf(colorSnapshotOf(node))
   const held = new Map()
   const features = values.map(
     (v, i) =>
@@ -421,7 +406,8 @@ function multiway({ color, values }: Spec): Answer[] | string {
   const conf = {
     encoding: { color: node },
   } as unknown as MultiWaySyntenyDisplayConfig
-  const colors = geneColors(conf, encoding, undefined, jexl, held)
+  const ramp = geneColorRampOf(encoding, jexl, () => features)
+  const colors = geneColors(conf, encoding, undefined, jexl, held, ramp)
   return features.map(f => colors.fill(f, undefined).packed)
 }
 
