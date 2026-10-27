@@ -17,15 +17,9 @@ import {
 } from '@jbrowse/plugin-canvas'
 import {
   attributeTooltipLines,
-  categoricalColor,
   colorSchemes,
   isAttributeLabels,
-  makeNumericColorFunction,
-  parseAttributeValue,
   readChannelValue,
-  resolveCategoricalMode,
-  resolveNumericMode,
-  strandLevels,
 } from '@jbrowse/synteny-core'
 
 import {
@@ -44,8 +38,7 @@ import {
   groupSpansLanes,
 } from './layoutMultiWay.ts'
 import { PX_ORIGIN } from './multiwayRenderTypes.ts'
-import { ribbonFilterOf } from './ribbonFilter.ts'
-import { ribbonOpacityOf } from './ribbonOpacity.ts'
+import { ribbonPaintOf } from './ribbonPaint.ts'
 
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
 import type { AlignmentOpsById, LaneLinks } from './alignmentOps.ts'
@@ -62,7 +55,6 @@ import type {
   RibbonRef,
   RibbonTarget,
 } from './multiwayRenderTypes.ts'
-import type { RibbonOpacity } from './ribbonOpacity.ts'
 import type { Feature } from '@jbrowse/core/util'
 import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
 import type {
@@ -259,51 +251,6 @@ class RibbonBuilder {
 }
 
 /**
- * `strand` colors by the record's strand against the anchor, not the drawn
- * twist, since a flipped lane draws its inversions straight.
- */
-function ribbonPainter(
-  field: string | undefined,
-  slotColor: number,
-  attributeRanges: Record<string, AttributeRange>,
-  paint: SyntenyColorPaint = {},
-): (strand: number, feature: Feature) => number {
-  if (field === 'strand') {
-    const [pos, neg] = strandLevels(paint).map(level =>
-      cssColorToABGR(level.color),
-    )
-    return (strand: number) => (strand < 0 ? neg! : pos!)
-  }
-  const numeric = resolveNumericMode(field, attributeRanges, paint)
-  if (numeric) {
-    const value = new Float32Array(1)
-    const colorOf = makeNumericColorFunction(numeric, {
-      [numeric.attribute]: value,
-    })
-    return (_strand: number, feature: Feature) => {
-      value[0] = readChannelValue(feature, numeric.attribute)
-      return colorOf(0)
-    }
-  }
-  const categorical = resolveCategoricalMode(field, attributeRanges, paint)
-  if (categorical) {
-    const lut = new Map(
-      categorical.labels.map(label => [
-        label,
-        cssColorToABGR(categoricalColor(categorical, label)),
-      ]),
-    )
-    return (_strand: number, feature: Feature) => {
-      const value = parseAttributeValue(feature.get(categorical.attribute))
-      return (
-        (value === undefined ? undefined : lut.get(String(value))) ?? slotColor
-      )
-    }
-  }
-  return () => slotColor
-}
-
-/**
  * A hovered ribbon's tooltip: its locations, then the numeric channels its
  * record carries, in the lines the synteny views print them in
  */
@@ -322,22 +269,6 @@ export function ribbonTooltip(
     }
   }
   return [label, ...attributeTooltipLines(values)].join('\n')
-}
-
-/** Each ribbon's color, its alpha scaled by the opacity and the ribbon's fade. */
-function ribbonColorer(
-  field: string | undefined,
-  slotColor: number,
-  attributeRanges: Record<string, AttributeRange>,
-  { level, fadeOf }: RibbonOpacity,
-  paint?: SyntenyColorPaint,
-) {
-  const paintOf = ribbonPainter(field, slotColor, attributeRanges, paint)
-  return (strand: number, feature: Feature) => {
-    const painted = paintOf(strand, feature)
-    const share = fadeOf ? level * fadeOf(feature) : level
-    return withAbgrAlpha(painted, Math.round((painted >>> 24) * share))
-  }
 }
 
 export interface RibbonGeometry {
@@ -490,6 +421,22 @@ function addAlignmentDetail(
   return false
 }
 
+// Every record a ribbon can draw: each lane's placed runs and each lane
+// pair's direct links
+function* ribbonRecords(
+  lanes: Lane[],
+  laneLinks: ReadonlyMap<string, LaneLinks> | undefined,
+) {
+  for (const lane of lanes) {
+    for (const { features } of lane.placements.values()) {
+      yield* features
+    }
+  }
+  for (const { links } of laneLinks?.values() ?? []) {
+    yield* links
+  }
+}
+
 export function buildRibbonGeometry({
   stack,
   anchorOps = new Map(),
@@ -519,15 +466,15 @@ export function buildRibbonGeometry({
   rowsVsAnchor?: boolean
 }): RibbonGeometry {
   const { lanes, glyphHeight } = stack
-  const color = cssColorToABGR(ribbonColor)
-  const colorOf = ribbonColorer(
-    ribbonColorField,
-    color,
+  const paintOf = ribbonPaintOf({
+    records: ribbonRecords(lanes, laneLinks),
+    field: ribbonColorField,
+    ribbonColor,
     attributeRanges,
-    ribbonOpacityOf(opacity, attributeRanges),
+    opacity,
+    filter,
     paint,
-  )
-  const passes = ribbonFilterOf(filter)
+  })
   const mismatch = mismatchColor(ribbonColorField)
   const cells = new Map<string, MultiWayCell>()
   const layers: RibbonLayer[] = []
@@ -593,13 +540,11 @@ export function buildRibbonGeometry({
       spans.forEach((s1, i) => {
         far.spans.forEach((s2, j) => {
           const record = far.features[j]!
-          const strand = orientations[i]! * far.orientations[j]!
-          if (
-            statedTogether(intervals[i], far.intervals[j]) &&
-            (!passes || passes({ record, strand }))
-          ) {
+          const painted = statedTogether(intervals[i], far.intervals[j])
+            ? paintOf(record, orientations[i]! * far.orientations[j]!)
+            : undefined
+          if (painted !== undefined) {
             const target = targetOfGroup(key, group)
-            const painted = colorOf(strand, record)
             const fill = bridged
               ? withAbgrAlpha(
                   painted,
@@ -647,8 +592,9 @@ export function buildRibbonGeometry({
         link.get('end'),
       )
       const s2 = lower.spanOf(mate.refName, mate.start, mate.end)
-      const strand = link.get('strand') === -1 ? -1 : 1
-      if (s1 && s2 && (!passes || passes({ record: link, strand }))) {
+      const fill =
+        s1 && s2 ? paintOf(link, link.get('strand') === -1 ? -1 : 1) : undefined
+      if (s1 && s2 && fill !== undefined) {
         const idx = targets.length
         linkTarget.set(link.id(), idx)
         targets.push({
@@ -664,7 +610,6 @@ export function buildRibbonGeometry({
             locOn(lower, mate.refName, mate.start, mate.end),
           ].join('\n'),
         })
-        const fill = colorOf(strand, link)
         const tiled =
           fill >>> 24 !== 0 &&
           addAlignmentDetail(

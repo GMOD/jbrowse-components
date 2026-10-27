@@ -2,7 +2,7 @@ import { SimpleFeature } from '@jbrowse/core/util'
 import { cssColorToABGR, withAbgrAlpha } from '@jbrowse/core/util/colorBits'
 import { colorSchemes } from '@jbrowse/synteny-core'
 
-import { RIBBON_OPACITY } from './ribbonOpacity.ts'
+import { RIBBON_OPACITY } from './ribbonPaint.ts'
 import { createDisplayWithSession } from './testEnv.ts'
 
 import type { MultiWaySyntenyDisplayModel } from './model.ts'
