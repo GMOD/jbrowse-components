@@ -1,0 +1,10 @@
+;~schema: https://w3id.org/fair-bioheaders/fhr/v0.4.0
+;~schemaVersion: '2.0'
+;~genome: tricky_deflines.fa with an FHR-style header
+;see >ctgB below
+
+>ctgA gene A>B fusion candidate
+ACGTACGTAC
+GTACGTACGT
+>ctgB	tab separated description
+TTTTAAAA

@@ -12,13 +12,32 @@ import type { UnindexedFastaAdapterConfig } from './configSchema.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { NoAssemblyRegion } from '@jbrowse/core/util/types'
 
+// ';' lines (the original FASTA comment marker, used by FHR metadata headers)
+// and blank lines before the first record would otherwise become a contig. A
+// loop rather than one anchored regex, which overflows the stack on millions
+// of lines.
+function skipLeadingComments(text: string) {
+  const lineBreak = /\r\n?|\n/g
+  let start = 0
+  while (start < text.length) {
+    lineBreak.lastIndex = start
+    const match = lineBreak.exec(text)
+    const end = match ? match.index : text.length
+    if (text[start] !== ';' && /\S/.test(text.slice(start, end))) {
+      break
+    }
+    start = match ? lineBreak.lastIndex : end
+  }
+  return text.slice(start)
+}
+
 // Split on a '>' that starts a line, not on every '>': a description line is
 // free text and may well contain one ("gene A>B"), and splitting there both
 // invents a contig out of the tail of the description and leaves the real
 // contig with an empty sequence — silently, since every piece still parses.
-function parseSmallFasta(text: string) {
+export function parseSmallFasta(text: string) {
   return new Map(
-    text
+    skipLeadingComments(text)
       .split(/^>/m)
       .filter(t => /\S/.test(t))
       .map(entryText => {
