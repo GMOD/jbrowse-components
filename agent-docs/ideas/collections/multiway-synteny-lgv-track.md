@@ -239,3 +239,12 @@ nameless source; `laneGeneAdapters` cost or correctness with hundreds of
 tracks; the picker
 above ~10 lanes; anything at 44 or 464 lanes beyond the height assertion.
 
+
+**`multiwayTables` places a mate lane up to ~8 px off the display.** On
+ggjbrowse's TP53 gallery stack (hg38 over panTro6, gorGor6 and ponAbe3), each
+lane jb2export draws starts tens to about two thousand bp from the engine's
+at the same 250 bp/px view. Both run `decideLanesOn`, but the display reads
+its anchor over `staticBlocks`, wider than the view, while the engine reads
+the view alone, so their chain groups may differ. Nobody has confirmed that
+cause yet; the test is to have the engine fetch the static blocks' span and
+compare.

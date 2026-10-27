@@ -18,8 +18,6 @@ against ggjbrowse's main before fixing it.
   the row, which reads as fine stripes.
 - The strand facet could stack every section's coverage above every section's
   reads, the old R layout, as an option in both apps.
-- A gene track over a multi-way stack (`autoplot(m, above = genes)`) clips
-  its bottom feature's label.
 - The `dog10k_lof` tutorial page was not re-knit at the 2026-10-23 pin: its
   callset host, kiddlabshare.med.umich.edu, serves an expired TLS certificate,
   so the knit and ggjbrowse's Docs CI fail on it. Re-knit it with ggjbrowse's
