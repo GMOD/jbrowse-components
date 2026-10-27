@@ -4,7 +4,11 @@ import { configManifest } from '../products/jbrowse-cli/src/commands/validate/co
  */
 /* eslint-disable unicorn/no-thenable -- `if`/`then` are JSON Schema keywords */
 import { configJsonSchema } from '../products/jbrowse-cli/src/commands/validate/configSchema.generated.ts'
-import { sessionKeyPaths, slotPaths } from './configSlotPaths.ts'
+import {
+  sessionKeyPaths,
+  slotPaths,
+  slotPathsByType,
+} from './configSlotPaths.ts'
 
 const ref = (name: string) => ({ $ref: `#/$defs/${name}` })
 
@@ -64,6 +68,14 @@ test('one line per slot path and enum member, rooted at the registered type', ()
     'DemoTrack.type',
     'config.tracks',
   ])
+})
+
+test('by type, a path drops its type and its union member markers', () => {
+  const byType = slotPathsByType(schema)
+  expect([...byType.keys()]).toEqual(['DemoTrack', 'config'])
+  expect([...byType.get('DemoTrack')!]).toEqual(
+    expect.arrayContaining(['mode=a', 'scales.y.domainMin', 'steps[].expr']),
+  )
 })
 
 test('the published schema lists a nested slot, a retired key and an enum member', () => {

@@ -87,6 +87,26 @@ export function slotPaths(schema: JsonSchema) {
   return [...paths].sort()
 }
 
+/**
+ * Each registered type's slot paths below its name, without the union
+ * member markers: `pileup.bases.show` and `heightMode=fit` under
+ * `LinearAlignmentsDisplay`.
+ */
+export function slotPathsByType(schema: JsonSchema) {
+  const byType = new Map<string, Set<string>>()
+  for (const line of slotPaths(schema)) {
+    const eq = line.indexOf('=')
+    const path = eq === -1 ? line : line.slice(0, eq)
+    const [type = '', ...rest] = path.replaceAll(/<[^>]*>/g, '').split('.')
+    if (rest.length > 0) {
+      const paths = byType.get(type) ?? new Set<string>()
+      paths.add(`${rest.join('.')}${eq === -1 ? '' : line.slice(eq)}`)
+      byType.set(type, paths)
+    }
+  }
+  return byType
+}
+
 interface ViewKeys {
   launchKeys: string[]
   passThrough?: string[]
