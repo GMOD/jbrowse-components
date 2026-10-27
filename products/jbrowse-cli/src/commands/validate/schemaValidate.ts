@@ -161,16 +161,23 @@ function typeOf(data: unknown) {
 }
 
 // Whether an object schema is for this `type`: a def names it as a const or an
-// alias enum, a dispatching union lists it in its hint.
-function admitsType(schema: Schema, type: string) {
+// alias enum, a dispatching union lists it in its hint, or a union holds such a
+// branch (a view's track entry, whose built snapshot branch names track types).
+function admitsType(schema: Schema, type: string, depth = 0): boolean {
   const prop = (schema.properties as Schema | undefined)?.type as
     | Schema
     | undefined
   const hint = (prop?.anyOf as Schema[] | undefined)?.[0]
-  return [prop, hint].some(
-    p =>
-      p &&
-      (p.const === type || (Array.isArray(p.enum) && p.enum.includes(type))),
+  return (
+    [prop, hint].some(
+      p =>
+        p &&
+        (p.const === type || (Array.isArray(p.enum) && p.enum.includes(type))),
+    ) ||
+    (depth < 2 &&
+      ((schema.anyOf as Schema[] | undefined) ?? []).some(b =>
+        admitsType(resolve(b), type, depth + 1),
+      ))
   )
 }
 

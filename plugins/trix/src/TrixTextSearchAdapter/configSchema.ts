@@ -79,6 +79,14 @@ const TrixTextSearchAdapter = ConfigurationSchema(
   },
   {
     explicitlyTyped: true,
+    // v4's `jbrowse text-index` wrote the id and the `_meta.json` location
+    // into every entry, beside v4's `tracks` slot. Nothing reads any of them:
+    // the search manager caches an adapter by a hash of its config.
+    retired: {
+      textSearchAdapterId: () => ({}),
+      metaFilePath: () => ({}),
+      tracks: () => ({}),
+    },
     /**
      * #preProcessSnapshot
      *

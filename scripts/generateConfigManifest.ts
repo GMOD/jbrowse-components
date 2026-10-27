@@ -73,6 +73,7 @@ const SCHEMA_SITE_OUT = path.join(REPO_ROOT, 'website/static', SCHEMA_URL_PATH)
 const ENTRY = `
 import { readFileSync } from 'node:fs'
 import PluginManager from '@jbrowse/core/PluginManager'
+import { preprocessTrackConfigSnapshot } from '@jbrowse/core/pluggableElementTypes/models'
 import { trackDisplayType } from '@jbrowse/core/util/tracks'
 import { defaultDisplayIn } from '../../website/src/lib/spec-recipe/displays.ts'
 import { migratedDisplayInstanceKeys } from '@jbrowse/product-core'
@@ -247,6 +248,7 @@ function collectViews() {
       continue
     }
     const registration = entry.launchKeys
+    const builtTracksAt = builtTracksAtOf(entry)
     out[name] = {
       stateModelProps,
       // A view that registers none takes settings only as declared properties,
@@ -256,9 +258,54 @@ function collectViews() {
         ? { passThrough: [...registration.passThrough].sort() }
         : {}),
       ...(entry.aliases?.length ? { aliases: entry.aliases } : {}),
+      ...(builtTracksAt ? { builtTracksAt } : {}),
     }
   }
   return out
+}
+
+// Where the view's snapshot preprocessor moves a built track snapshot written
+// on its own \`tracks\`, when that is another property: v4.3.0's flat
+// synteny layout. Staying on \`tracks\` is a view's current form, and landing
+// under \`launch\` hands it to the launcher, which takes recipes only.
+const PROBE_TRACK = 'probe-track'
+
+function builtTracksAtOf(entry) {
+  let snap
+  try {
+    snap = modelOf(entry.stateModel)?.applySnapshotPreProcessor({
+      type: entry.name,
+      tracks: [{ type: 'FeatureTrack', configuration: PROBE_TRACK }],
+    })
+  } catch {
+    return undefined
+  }
+  const at = arrayHoldingProbe(snap, '')
+  return at === undefined || at === 'tracks' || at.startsWith('launch')
+    ? undefined
+    : at
+}
+
+function arrayHoldingProbe(node, at) {
+  if (Array.isArray(node)) {
+    if (node.some(item => item?.configuration === PROBE_TRACK)) {
+      return at
+    }
+    for (const [i, item] of node.entries()) {
+      const found = arrayHoldingProbe(item, \`\${at}[\${i}]\`)
+      if (found !== undefined) {
+        return found
+      }
+    }
+  } else if (node && typeof node === 'object') {
+    for (const [key, value] of Object.entries(node)) {
+      const found = arrayHoldingProbe(value, at ? \`\${at}.\${key}\` : key)
+      if (found !== undefined) {
+        return found
+      }
+    }
+  }
+  return undefined
 }
 
 // A snapshot normalizer lets an adapter accept keys its schema never declares —
@@ -437,6 +484,8 @@ const LEGACY_CANDIDATES = {
   pileupDisplay: { type: 'LinearPileupDisplay' },
   snpCoverageDisplay: { type: 'LinearSNPCoverageDisplay' },
   defaultRendering: 'probe',
+  // above 0, since a 0 kept every variant and lifts to nothing
+  minorAlleleFrequencyFilter: 0.05,
   showDescriptions: false,
   color1: PROBE_COLOR,
   color2: PROBE_COLOR,
@@ -569,6 +618,29 @@ function legacyValuesOf(configSchema, declaredSlots) {
   return out
 }
 
+// The display types, retired names included, that a track's own preprocessing
+// removes from its \`displays\` (a reference sequence track's v4 GC content
+// display), so the entry and every setting in it are never read.
+function droppedDisplaysOf(trackType) {
+  return pm
+    .getDisplayElements()
+    .flatMap(d => [d.name, ...(d.aliases ?? [])])
+    .filter(type => {
+      try {
+        const { displays } = unwarned(() =>
+          preprocessTrackConfigSnapshot(pm, {
+            type: trackType,
+            trackId: 'probe',
+            displays: [{ type, displayId: 'probe-display' }],
+          }),
+        )
+        return !displays.some(d => d.displayId === 'probe-display')
+      } catch {
+        return false
+      }
+    })
+}
+
 // The slot values a display's retired types spelt, which their \`migrate\`
 // rewrites and the schema probe above cannot reach. A value the slot still
 // accepts is a current spelling, so it is left out.
@@ -615,6 +687,7 @@ function collect(group, getType) {
     const droppedKeys = droppedKeysOf(entry.configSchema)
     const probed = unwarned(() => legacyValuesOf(entry.configSchema, slots))
     const retiredValues = group === 'display' ? retiredTypeValuesOf(entry) : {}
+    const droppedDisplays = group === 'track' ? droppedDisplaysOf(name) : []
     const legacyValues = Object.fromEntries(
       [...new Set([...Object.keys(probed), ...Object.keys(retiredValues)])].map(
         slot => [
@@ -642,6 +715,7 @@ function collect(group, getType) {
       ...(group === 'track'
         ? { displayTypes: (entry.displayTypes ?? []).map(d => d.name) }
         : {}),
+      ...(droppedDisplays.length ? { droppedDisplays } : {}),
       // What a display node in a saved session may carry.
       ...(group === 'display'
         ? { stateModelProps: stateModelPropsOf(entry.stateModel) }
@@ -734,6 +808,7 @@ const schema = buildConfigJsonSchema({
   legacyKeysOf: (group, name) => groupOf(group)[name]?.legacyKeys ?? [],
   legacyValuesOf: (group, name) => groupOf(group)[name]?.legacyValues ?? {},
   shorthandKeysOf: (group, name) => groupOf(group)[name]?.shorthandKeys ?? [],
+  droppedDisplaysOf: name => manifest.tracks[name]?.droppedDisplays ?? [],
 })
 
 function groupOf(group) {

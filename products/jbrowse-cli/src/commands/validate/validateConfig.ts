@@ -288,17 +288,38 @@ function checkTrack(
     )
   }
   if (Array.isArray(track.displays)) {
+    const trackType = trackTypeOf(track)
     for (const [i, display] of track.displays.entries()) {
-      checkPluggable(
-        display,
-        manifest.displays,
-        'display',
-        `${where}.displays[${i}]`,
-        report,
-      )
+      const at = `${where}.displays[${i}]`
+      if (!warnDroppedDisplay(display, trackType, manifest, at, report)) {
+        checkPluggable(display, manifest.displays, 'display', at, report)
+      }
     }
   }
   warnDisplayDefaults(track, manifest, where, report)
+}
+
+// Warns on a display entry whose type its track removes on load, and says
+// whether it did, so the caller leaves the entry's settings unjudged
+function warnDroppedDisplay(
+  display: unknown,
+  trackType: string | undefined,
+  manifest: ConfigManifest,
+  where: string,
+  report: Report,
+) {
+  const type = isRecord(display) ? display.type : undefined
+  const dropped =
+    typeof type === 'string' &&
+    trackType !== undefined &&
+    !!manifest.tracks[trackType]?.droppedDisplays?.includes(type)
+  if (dropped) {
+    report.warn(
+      `${where}.type`,
+      `a ${trackType} drops its "${type}" display when the config loads, so the entry is never read. The config loads, and the entry can be deleted`,
+    )
+  }
+  return dropped
 }
 
 // Each display a `displayDefaults` key reaches judges it as its own entry
@@ -343,14 +364,26 @@ function checkAssembly(
   report: Report,
 ) {
   const sequence = assembly.sequence
+  const where = `assemblies[${index}].sequence`
   if (isRecord(sequence) && isRecord(sequence.adapter)) {
     checkPluggable(
       sequence.adapter,
       manifest.adapters,
       'adapter',
-      `assemblies[${index}].sequence.adapter`,
+      `${where}.adapter`,
       report,
     )
+  }
+  if (isRecord(sequence) && Array.isArray(sequence.displays)) {
+    for (const [i, display] of sequence.displays.entries()) {
+      warnDroppedDisplay(
+        display,
+        'ReferenceSequenceTrack',
+        manifest,
+        `${where}.displays[${i}]`,
+        report,
+      )
+    }
   }
 }
 
@@ -488,6 +521,17 @@ function checkSessionView(
     return
   }
   checkViewReferences(view, where, report, ctx)
+
+  if (
+    entry.builtTracksAt &&
+    Array.isArray(view.tracks) &&
+    view.tracks.some(t => isRecord(t) && !('trackId' in t))
+  ) {
+    report.warn(
+      `${where}.tracks`,
+      `built track snapshots on the view's own "tracks" are a legacy layout the view moves to "${entry.builtTracksAt}" — the session loads, but write them there`,
+    )
+  }
 
   // A warning, not an error: v5 unwraps the nesting on the way in, so the
   // settings do arrive.

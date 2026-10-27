@@ -960,6 +960,100 @@ describe('validateConfig', () => {
     expect(warningsOf(config)[0]?.message).toContain('legacy display-instance')
   })
 
+  // Each one opens in the app: the validator reads what the app's own lift or
+  // drop does to it off the manifest.
+  describe('a v4.3.0 spelling the app lifts or drops outside a retired map', () => {
+    const at = (problems: { where: string; message: string }[]) =>
+      problems.map(p => `${p.where}: ${p.message}`)
+
+    it('says the id, meta file and track list v4 wrote into a search index are never read', () => {
+      const config = {
+        ...baseConfig(),
+        aggregateTextSearchAdapters: [
+          {
+            type: 'TrixTextSearchAdapter',
+            textSearchAdapterId: 'hg38-index',
+            ixFilePath: { uri: 'trix/hg38.ix' },
+            ixxFilePath: { uri: 'trix/hg38.ixx' },
+            metaFilePath: { uri: 'trix/hg38_meta.json' },
+            tracks: ['sample_bam'],
+            assemblyNames: ['hg38'],
+          },
+        ],
+      }
+      expect(errorsOf(config)).toEqual([])
+      expect(warningsOf(config).map(p => p.where)).toEqual([
+        'aggregateTextSearchAdapters[0].textSearchAdapterId',
+        'aggregateTextSearchAdapters[0].metaFilePath',
+        'aggregateTextSearchAdapters[0].tracks',
+      ])
+      for (const { message } of warningsOf(config)) {
+        expect(message).toContain('never read')
+      }
+    })
+
+    it("warns on the multi-sample display's minorAlleleFrequencyFilter, which its preprocessor lifts into filter", () => {
+      const config = baseConfig()
+      config.tracks[0] = {
+        type: 'VariantTrack',
+        trackId: 'cohort',
+        name: 'Cohort',
+        assemblyNames: ['hg38'],
+        adapter: { type: 'VcfTabixAdapter', uri: 'cohort.vcf.gz' },
+        // @ts-expect-error the base config's track carries no displays
+        displays: [
+          {
+            type: 'MultiLinearVariantDisplay',
+            displayId: 'cohort-multi',
+            minorAlleleFrequencyFilter: 0.1,
+          },
+        ],
+      }
+      config.defaultSession.views = []
+      expect(errorsOf(config)).toEqual([])
+      expect(at(warningsOf(config))).toEqual([
+        'tracks[0].displays[0].minorAlleleFrequencyFilter: "minorAlleleFrequencyFilter" is a legacy key that a migration rewrites into current slots — the config loads, but check the settings inside it landed',
+      ])
+    })
+
+    it("says a reference sequence track's GC content display is dropped whole", () => {
+      const config = baseConfig()
+      Object.assign(config.assemblies[0]!.sequence, {
+        displays: [
+          { type: 'LinearReferenceSequenceDisplay' },
+          { type: 'LinearGCContentDisplay', windowSize: 10, windowDelta: 10 },
+        ],
+      })
+      expect(errorsOf(config)).toEqual([])
+      expect(at(warningsOf(config))).toEqual([
+        'assemblies[0].sequence.displays[1].type: a ReferenceSequenceTrack drops its "LinearGCContentDisplay" display when the config loads, so the entry is never read. The config loads, and the entry can be deleted',
+      ])
+    })
+
+    it("warns on a synteny view's built tracks written on the view, which it moves into levels", () => {
+      const config = baseConfig()
+      const built = {
+        type: 'SyntenyTrack',
+        configuration: 'aln',
+        displays: [
+          {
+            type: 'LinearSyntenyDisplay',
+            configuration: 'aln-LinearSyntenyDisplay',
+          },
+        ],
+      }
+      config.defaultSession.views = [
+        { type: 'LinearSyntenyView', tracks: [built] },
+        { type: 'LinearSyntenyView', levels: [{ tracks: [built] }] },
+        { type: 'LinearGenomeView', tracks: [built] },
+      ]
+      expect(errorsOf(config)).toEqual([])
+      expect(at(warningsOf(config))).toEqual([
+        'defaultSession.views[0].tracks: built track snapshots on the view\'s own "tracks" are a legacy layout the view moves to "levels[0].tracks" — the session loads, but write them there',
+      ])
+    })
+  })
+
   it('notes that plugin-registered types cannot be checked', () => {
     const config = { ...baseConfig(), plugins: [{ name: 'X', umdUrl: 'x.js' }] }
     expect(validateConfig(config).notes[0]).toContain('plugin(s)')

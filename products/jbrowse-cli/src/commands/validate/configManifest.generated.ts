@@ -2044,6 +2044,12 @@ export const configManifest: ConfigManifest = {
       ],
       "displayTypes": [
         "LinearReferenceSequenceDisplay"
+      ],
+      "droppedDisplays": [
+        "LinearWiggleDisplay",
+        "MultiLinearWiggleDisplay",
+        "LinearGCContentDisplay",
+        "LinearGCContentTrackDisplay"
       ]
     },
     "VariantTrack": {
@@ -7333,7 +7339,8 @@ export const configManifest: ConfigManifest = {
         "inverted",
         "numStdDev",
         "minimalTicks",
-        "color"
+        "color",
+        "minorAlleleFrequencyFilter"
       ],
       "droppedKeys": [
         "maxFeatureScreenDensity",
@@ -11448,6 +11455,16 @@ export const configManifest: ConfigManifest = {
           "type": "string[]"
         }
       ],
+      "legacyKeys": [
+        "textSearchAdapterId",
+        "metaFilePath",
+        "tracks"
+      ],
+      "droppedKeys": [
+        "textSearchAdapterId",
+        "metaFilePath",
+        "tracks"
+      ],
       "shorthandKeys": [
         "uri",
         "baseUri"
@@ -11939,7 +11956,8 @@ export const configManifest: ConfigManifest = {
         "color",
         "colorBy",
         "drawCigar"
-      ]
+      ],
+      "builtTracksAt": "levels[0].tracks"
     },
     "SpreadsheetView": {
       "stateModelProps": [

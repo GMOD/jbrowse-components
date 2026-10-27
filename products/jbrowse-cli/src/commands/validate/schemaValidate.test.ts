@@ -689,6 +689,17 @@ describe('the schema', () => {
     expect(whereOf(config)).toEqual(['tracks[0].displays[0].bogus'])
   })
 
+  it("accepts any key on a display the track drops, and only that track's", () => {
+    const config = baseConfig()
+    const gc = { type: 'LinearGCContentDisplay', windowSize: 10 }
+    const sequence = config.assemblies[0]!.sequence as Record<string, unknown>
+    sequence.displays = [gc]
+    expect(schemaProblems(config)).toEqual([])
+    sequence.displays = []
+    config.tracks[0]!.displays = [gc]
+    expect(whereOf(config)).toEqual(['tracks[0].displays[0].windowSize'])
+  })
+
   // An unknown type is loud on load (MST throws), and is often a plugin's, so
   // the schema lets it through with its keys unchecked.
   it('passes a type the core plugins do not register', () => {
@@ -906,6 +917,33 @@ describe('the schema', () => {
         },
       ]
       expect(schemaProblems(config)).toEqual([])
+    })
+
+    // a v4.3.0 session's flat synteny layout, which the view lifts into its
+    // first level
+    it('reports a bad key inside a built track on a synteny view, not the track', () => {
+      const config = baseConfig()
+      config.defaultSession.views = [
+        {
+          type: 'LinearSyntenyView',
+          tracks: [
+            {
+              type: 'SyntenyTrack',
+              configuration: 'aln',
+              displays: [
+                {
+                  type: 'LinearSyntenyDisplay',
+                  configuration: 'aln-LinearSyntenyDisplay',
+                  height: 100,
+                },
+              ],
+            },
+          ],
+        },
+      ]
+      expect(whereOf(config)).toEqual([
+        'defaultSession.views[0].tracks[0].displays[0].height',
+      ])
     })
 
     it('says nothing about the keys of a view type it does not know', () => {

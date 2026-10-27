@@ -146,6 +146,8 @@ export interface Deps {
   legacyKeysOf: (group: string, name: string) => string[]
   legacyValuesOf: (group: string, name: string) => Record<string, unknown[]>
   shorthandKeysOf: (group: string, name: string) => string[]
+  /** The display types a track's preprocessing removes from its `displays`. */
+  droppedDisplaysOf: (track: string) => string[]
 }
 
 // The forms `isCssColor` parses, as one alternation: JSON Schema patterns carry
@@ -265,6 +267,41 @@ function dispatch(
     },
     then: ref(defName(entry)),
   }))
+}
+
+// A track's `displays` schema admitting any key on an entry whose type the
+// track drops on load, which nothing reads
+function admittingDropped(schema: unknown, dropped: string[]): JsonSchema {
+  if (Array.isArray(schema)) {
+    return schema.map(s =>
+      admittingDropped(s, dropped),
+    ) as unknown as JsonSchema
+  }
+  if (typeof schema !== 'object' || schema === null) {
+    return schema as JsonSchema
+  }
+  if ((schema as JsonSchema).$ref === '#/$defs/Display') {
+    return {
+      if: {
+        type: 'object',
+        properties: { type: { enum: dropped } },
+        required: ['type'],
+      },
+      then: {
+        type: 'object',
+        deprecated: true,
+        description:
+          'A display this track drops when the config loads, so none of its settings are read.',
+      },
+      else: schema,
+    }
+  }
+  return Object.fromEntries(
+    Object.entries(schema).map(([key, value]) => [
+      key,
+      admittingDropped(value, dropped),
+    ]),
+  )
 }
 
 function typeHint(names: string[]): JsonSchema {
@@ -1206,6 +1243,14 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
       }),
     }
     def.anyOf = [{ required: ['adapter'] }, { required: ['uri'] }]
+    const dropped = deps.droppedDisplaysOf(track.name)
+    const slots = defs[`${track.name}Slots`]!.properties as Record<
+      string,
+      JsonSchema
+    >
+    if (dropped.length && slots.displays) {
+      slots.displays = admittingDropped(slots.displays, dropped)
+    }
   }
 
   const trackUnion = union(

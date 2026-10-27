@@ -85,6 +85,11 @@ export interface TypeEntry {
   shorthandKeys?: string[]
   /** Tracks only: the display types this track offers. */
   displayTypes?: string[]
+  /**
+   * Tracks only: the display types, retired names included, that the track's
+   * preprocessing removes from its `displays`, so the entry is never read.
+   */
+  droppedDisplays?: string[]
   /** Old type names this type still answers to. */
   aliases?: string[]
   /**
@@ -116,6 +121,12 @@ export interface ViewEntry {
   passThrough?: string[]
   /** Old type names this view still answers to. */
   aliases?: string[]
+  /**
+   * Where the view's preprocessor moves a built track snapshot written on its
+   * own `tracks` (`levels[0].tracks`), for a view whose current form keeps
+   * them elsewhere.
+   */
+  builtTracksAt?: string
 }
 
 export type ViewGroup = Record<string, ViewEntry>

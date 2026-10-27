@@ -12893,6 +12893,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "color": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "minorAlleleFrequencyFilter": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
       }
     },
@@ -16421,6 +16425,18 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "baseUri": {
           "type": "string",
           "description": "Shorthand: a base URL \`uri\` resolves against."
+        },
+        "textSearchAdapterId": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "metaFilePath": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "tracks": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
       }
     },
@@ -17611,7 +17627,30 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "else": {
             "type": "array",
             "items": {
-              "$ref": "#/$defs/Display"
+              "if": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "enum": [
+                      "LinearWiggleDisplay",
+                      "MultiLinearWiggleDisplay",
+                      "LinearGCContentDisplay",
+                      "LinearGCContentTrackDisplay"
+                    ]
+                  }
+                },
+                "required": [
+                  "type"
+                ]
+              },
+              "then": {
+                "type": "object",
+                "deprecated": true,
+                "description": "A display this track drops when the config loads, so none of its settings are read."
+              },
+              "else": {
+                "$ref": "#/$defs/Display"
+              }
             }
           }
         },
@@ -18252,6 +18291,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "minimalTicks": {
               "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/minimalTicks"
+            },
+            "minorAlleleFrequencyFilter": {
+              "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/minorAlleleFrequencyFilter"
             },
             "marks": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/marks"
