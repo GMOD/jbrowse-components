@@ -14,12 +14,12 @@ function createDisplay(display: Record<string, unknown> = {}) {
 
 test('the coverage axis floors at 0 while its scale.zero is on, and unticking Always include 0 lifts it', () => {
   const display = createDisplay()
-  expect(display.minScoreBound).toBe(0)
+  expect(display.resolvedDomainMin).toBe(0)
   display.setScaleZero(false)
-  expect(display.minScoreBound).toBeUndefined()
+  expect(display.resolvedDomainMin).toBeUndefined()
   expect(
     createDisplay({ coverage: { encoding: { y: { scale: { zero: false } } } } })
-      .minScoreBound,
+      .resolvedDomainMin,
   ).toBeUndefined()
 })
 
@@ -29,7 +29,7 @@ test('a pinned bottom stays pinned either way', () => {
       encoding: { y: { scale: { domainMin: 5, zero: false } } },
     },
   })
-  expect(display.minScoreBound).toBe(5)
+  expect(display.resolvedDomainMin).toBe(5)
 })
 
 test("the corner notice reads the coverage scale's ends by the color ramp's rule", () => {

@@ -19,7 +19,7 @@ const Display = types
     get autoscaleGroup() {
       return self.group
     },
-    get manualMaxScore() {
+    get domainMax() {
       return self.max
     },
   }))

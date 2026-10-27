@@ -49,9 +49,8 @@ const AxisEditor = observer(function AxisEditor({
   onReset: () => void
 }) {
   const { classes } = useStyles()
-  const { scaleType, manualMinScore, manualMaxScore, fenceQuantile } = display
-  const bothPinned =
-    manualMinScore !== undefined && manualMaxScore !== undefined
+  const { scaleType, domainMin, domainMax, fenceQuantile } = display
+  const bothPinned = domainMin !== undefined && domainMax !== undefined
   const zeroBlocker =
     scaleType === 'log'
       ? 'A log axis has no 0'

@@ -46,10 +46,10 @@ export default observer(function RangeFields({
 }: {
   display: ScoreAxisDisplay
 }) {
-  const { manualMinScore, manualMaxScore, scaleType, autoscaleRange } = display
+  const { domainMin, domainMax, scaleType, autoscaleRange } = display
   const [text, setText] = useState({
-    min: manualMinScore === undefined ? '' : `${manualMinScore}`,
-    max: manualMaxScore === undefined ? '' : `${manualMaxScore}`,
+    min: domainMin === undefined ? '' : `${domainMin}`,
+    max: domainMax === undefined ? '' : `${domainMax}`,
   })
   const latest = useRef(text)
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined)
@@ -62,13 +62,13 @@ export default observer(function RangeFields({
     if (
       isAlive(display) &&
       problem(min, max, display.scaleType) === undefined &&
-      (min !== display.manualMinScore || max !== display.manualMaxScore)
+      (min !== display.domainMin || max !== display.domainMax)
     ) {
-      if (min !== display.manualMinScore) {
-        display.setMinScore(min)
+      if (min !== display.domainMin) {
+        display.setDomainMin(min)
       }
-      if (max !== display.manualMaxScore) {
-        display.setMaxScore(max)
+      if (max !== display.domainMax) {
+        display.setDomainMax(max)
       }
     }
   }

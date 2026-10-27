@@ -27,10 +27,10 @@ const assemblies = [
 ]
 
 interface ScaleDisplay {
-  manualMaxScore: number | undefined
+  domainMax: number | undefined
   scaleTitle: string
   scoreRules: { value: number }[]
-  setMaxScore: (max: number) => void
+  setDomainMax: (max: number) => void
   setScoreRules: (rules: number[]) => void
   resetYScale: () => void
 }
@@ -95,10 +95,10 @@ test.each([
       expect(view.getTrack('t')).toBeTruthy()
     })
     const display = view.getTrack('t')!.displays[0]!
-    display.setMaxScore(50)
+    display.setDomainMax(50)
     display.setScoreRules([])
     display.resetYScale()
-    expect(display.manualMaxScore).toBe(9)
+    expect(display.domainMax).toBe(9)
     expect(display.scaleTitle).toBe('AF')
     expect(display.scoreRules).toEqual([{ value: 3 }])
   },

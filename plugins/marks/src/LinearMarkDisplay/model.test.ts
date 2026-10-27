@@ -468,8 +468,8 @@ test("the display's y scale is the axis: its type and its pinned ends", () => {
   )
   const { display } = createDisplay()
   expect(display.scaleType).toBe('log')
-  expect(display.minScoreBound).toBe(1)
-  expect(display.maxScoreBound).toBe(1000)
+  expect(display.resolvedDomainMin).toBe(1)
+  expect(display.resolvedDomainMax).toBe(1000)
   display.setRpcData(0, result([{ y: [3, 8] }]), REGION)
   expect(display.domain).toEqual([1, 1000])
   expect(display.valueScales[0]!.scaleType).toBe('log')
@@ -482,7 +482,7 @@ test('nothing declared is the linear autoscaled form it always was', () => {
   ])
   const { display } = createDisplay()
   expect(display.scaleType).toBe('linear')
-  expect(display.hasManualScoreBounds).toBe(false)
+  expect(display.pinsDomain).toBe(false)
   display.setRpcData(0, result([{ y: [3, 8] }]), REGION)
   expect(display.domain).toEqual([0, 8])
 })
@@ -547,8 +547,8 @@ test('one end of the declared domain pins and the other autoscales', () => {
     { encoding: { y: { scale: { domainMax: 50 } } } },
   )
   const { display } = createDisplay()
-  expect(display.minScoreBound).toBeUndefined()
-  expect(display.maxScoreBound).toBe(50)
+  expect(display.resolvedDomainMin).toBeUndefined()
+  expect(display.resolvedDomainMax).toBe(50)
 })
 
 test("pinning the current range lands on the display's scale", () => {
@@ -559,13 +559,13 @@ test("pinning the current range lands on the display's scale", () => {
   display.setRpcData(0, result([{ y: [3, 40] }]), REGION)
   const drawn = display.domain!
   expect(drawn[1]).toBeGreaterThanOrEqual(40)
-  display.setMinScore(drawn[0])
-  display.setMaxScore(drawn[1])
+  display.setDomainMin(drawn[0])
+  display.setDomainMax(drawn[1])
   expect([
     display.conf.encoding.y.scale.domainMin,
     display.conf.encoding.y.scale.domainMax,
   ]).toEqual(drawn)
-  expect(display.hasManualScoreBounds).toBe(true)
+  expect(display.pinsDomain).toBe(true)
 })
 
 test('the score menu edits encoding.y, the one place the axis is written', () => {
@@ -574,15 +574,15 @@ test('the score menu edits encoding.y, the one place the axis is written', () =>
     { mark: 'point', encoding: { y: 'other' } },
   ])
   const { display } = createDisplay()
-  display.setMaxScore(200)
+  display.setDomainMax(200)
   expect(display.conf.encoding.y.scale.domainMax).toBe(200)
-  expect(display.maxScoreBound).toBe(200)
+  expect(display.resolvedDomainMax).toBe(200)
   display.setScaleType('log')
   expect(display.conf.encoding.y.scale.type).toBe('log')
   expect(display.scaleType).toBe('log')
-  display.setMaxScore(undefined)
+  display.setDomainMax(undefined)
   expect(display.conf.encoding.y.scale.domainMax).toBeUndefined()
-  expect(display.hasManualScoreBounds).toBe(false)
+  expect(display.pinsDomain).toBe(false)
 })
 
 test('an unpinned ramp domain is the union of the loaded regions extremes', () => {

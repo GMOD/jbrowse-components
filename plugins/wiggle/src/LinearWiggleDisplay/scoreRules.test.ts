@@ -88,9 +88,16 @@ it('lifts the axis to a rule the visible data never reaches', () => {
 // and the rule drops as before.
 it('leaves an explicitly bounded axis alone', () => {
   const display = makeDisplay([90])
-  display.setMaxScore(40)
+  display.setDomainMax(40)
   expect(display.domain?.[1]).toBe(40)
   expect(ruleMarksOf(display)).toEqual([])
+})
+
+it("v4's setMinScore and setMaxScore still pin the domain", () => {
+  const display = makeDisplay([])
+  display.setMinScore(-5)
+  display.setMaxScore(40)
+  expect([display.domainMin, display.domainMax]).toEqual([-5, 40])
 })
 
 it('a rule written after load redraws and rescales', () => {

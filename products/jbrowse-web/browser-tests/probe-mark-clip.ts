@@ -100,7 +100,7 @@ async function main() {
 
   await page.evaluate(() => {
     const d = (window as any).JBrowseSession.views[0].tracks[0].displays[0]
-    d.setMaxScore(2000)
+    d.setDomainMax(2000)
   })
   await delay(2500)
   console.log(

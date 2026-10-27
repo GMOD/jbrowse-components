@@ -1186,8 +1186,8 @@ ScoreScaleMixin.scaleType
 ScoreScaleMixin.setAutoscaleGroup
 ScoreScaleMixin.setFenceQuantile
 ScoreScaleMixin.setGrid
-ScoreScaleMixin.setMaxScore
-ScoreScaleMixin.setMinScore
+ScoreScaleMixin.setDomainMax
+ScoreScaleMixin.setDomainMin
 ScoreScaleMixin.setScaleType
 ScoreScaleMixin.setScaleZero
 ScoreScaleMixin.unclippedFenceQuantile

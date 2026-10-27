@@ -30,16 +30,16 @@ function menu(
     scaleZero: true,
     fenceQuantile: 1,
     clipFenceQuantile: 0.99,
-    manualMinScore: undefined,
-    manualMaxScore: undefined,
-    minScoreBound: undefined,
-    maxScoreBound: undefined,
-    hasManualScoreBounds: false,
+    domainMin: undefined,
+    domainMax: undefined,
+    resolvedDomainMin: undefined,
+    resolvedDomainMax: undefined,
+    pinsDomain: false,
     setScaleType: () => {},
     setScaleZero: () => {},
     setFenceQuantile: () => {},
-    setMinScore: () => {},
-    setMaxScore: () => {},
+    setDomainMin: () => {},
+    setDomainMax: () => {},
   })
   return Object.assign(items, { state })
 }

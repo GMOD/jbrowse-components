@@ -60,7 +60,7 @@ describe('the Y axis row', () => {
   // the drawer shows the range and scale; the row names no setting
   it('names no setting, whatever is pinned', () => {
     const display = makeDisplay()
-    display.setMinScore(190)
+    display.setDomainMin(190)
     display.setScaleType('log')
     expect(label(display)).toBe('Y axis...')
   })

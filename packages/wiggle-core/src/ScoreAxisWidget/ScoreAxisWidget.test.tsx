@@ -110,7 +110,7 @@ test('each control writes the scale at once and saves it to the session', () => 
 
 test('a setter called off the panel, as a menu or an agent does, saves too', () => {
   const { display } = open()
-  display.setMinScore(3)
+  display.setDomainMin(3)
   display.setAutoscaleGroup('g1')
   expect(persists).toBe(2)
 })
@@ -119,13 +119,13 @@ test('Reset to defaults puts every scale member back, keeps the field, and saves
   const { display } = open({
     configuration: { encoding: { y: { field: 'maxScore' } } },
   })
-  display.setMinScore(3)
+  display.setDomainMin(3)
   display.setScaleType('log')
   display.setGrid(true)
   display.setScoreRules([5])
   persists = 0
   fireEvent.click(screen.getByRole('button', { name: 'Reset to defaults' }))
-  expect(display.manualMinScore).toBeUndefined()
+  expect(display.domainMin).toBeUndefined()
   expect(display.scaleType).toBe('linear')
   expect(display.grid).toBe(false)
   expect(display.scoreRules).toEqual([])
@@ -137,11 +137,11 @@ test('Reset to defaults puts every scale member back, keeps the field, and saves
 test('Reset to defaults returns to the base config, not past it', () => {
   mockBase = { encoding: { y: { scale: { domainMax: 9 } } } }
   const { display } = open()
-  display.setMinScore(3)
-  display.setMaxScore(50)
+  display.setDomainMin(3)
+  display.setDomainMax(50)
   fireEvent.click(screen.getByRole('button', { name: 'Reset to defaults' }))
-  expect(display.manualMinScore).toBeUndefined()
-  expect(display.manualMaxScore).toBe(9)
+  expect(display.domainMin).toBeUndefined()
+  expect(display.domainMax).toBe(9)
   mockBase = {}
 })
 
@@ -157,16 +157,16 @@ test('a typed min writes once the typing pauses, and on blur', () => {
   fireEvent.change(field('Min'), { target: { value: '1' } })
   fireEvent.change(field('Min'), { target: { value: '19' } })
   fireEvent.change(field('Min'), { target: { value: '190' } })
-  expect(display.manualMinScore).toBeUndefined()
+  expect(display.domainMin).toBeUndefined()
   act(() => {
     jest.advanceTimersByTime(300)
   })
-  expect(display.manualMinScore).toBe(190)
+  expect(display.domainMin).toBe(190)
   expect(persists).toBe(1)
 
   fireEvent.change(field('Max'), { target: { value: '300' } })
   fireEvent.blur(field('Max'))
-  expect(display.manualMaxScore).toBe(300)
+  expect(display.domainMax).toBe(300)
 })
 
 test('text that is not a number is held back rather than read as auto', () => {
@@ -178,7 +178,7 @@ test('text that is not a number is held back rather than read as auto', () => {
   act(() => {
     jest.advanceTimersByTime(300)
   })
-  expect(display.manualMinScore).toBe(5)
+  expect(display.domainMin).toBe(5)
   screen.getByText(/Enter a number/)
 })
 

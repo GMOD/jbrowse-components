@@ -124,14 +124,14 @@ export function ScoreScaleMixin(paths: YScalePaths) {
        * #getter
        * The lower bound the config pins, `undefined` where it pins none.
        */
-      get manualMinScore(): number | undefined {
+      get domainMin(): number | undefined {
         return readY(self, paths, 'domainMin')
       },
       /**
        * #getter
        * The upper bound the config pins, `undefined` where it pins none.
        */
-      get manualMaxScore(): number | undefined {
+      get domainMax(): number | undefined {
         return readY(self, paths, 'domainMax')
       },
       /**
@@ -206,11 +206,25 @@ export function ScoreScaleMixin(paths: YScalePaths) {
       /**
        * #action
        */
+      setDomainMin(val?: number) {
+        writeAxis(self, paths, 'domainMin', val)
+      },
+      /**
+       * #action
+       */
+      setDomainMax(val?: number) {
+        writeAxis(self, paths, 'domainMax', val)
+      },
+      /**
+       * #action
+       * @deprecated v4's name for `setDomainMin`
+       */
       setMinScore(val?: number) {
         writeAxis(self, paths, 'domainMin', val)
       },
       /**
        * #action
+       * @deprecated v4's name for `setDomainMax`
        */
       setMaxScore(val?: number) {
         writeAxis(self, paths, 'domainMax', val)

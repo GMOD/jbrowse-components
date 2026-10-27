@@ -60,7 +60,7 @@ test('the y scale reaches the band, its axis and its marks alike', () => {
 
 test('a pinned maximum pins the band', () => {
   const display = displayWith()
-  display.setMaxScore(100)
+  display.setDomainMax(100)
   expect(display.coverageDepthDomain).toEqual([0, 100])
   expect(display.coverageBandState.domainMax).toBe(100)
 })

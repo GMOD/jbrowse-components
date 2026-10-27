@@ -165,12 +165,14 @@ test("content's axis is the fraction's own [0, 1], skew's follows the data", asy
     assemblyName: 'volvox',
   }
   display.setRpcData(0, { sources: [], valueDomain: [0, 1] }, region)
-  expect([display.minScoreBound, display.maxScoreBound]).toEqual([0, 1])
-  display.setMaxScore(0.75)
-  expect([display.minScoreBound, display.maxScoreBound]).toEqual([0, 0.75])
+  expect([display.resolvedDomainMin, display.resolvedDomainMax]).toEqual([0, 1])
+  display.setDomainMax(0.75)
+  expect([display.resolvedDomainMin, display.resolvedDomainMax]).toEqual([
+    0, 0.75,
+  ])
   display.setRpcData(0, { sources: [] }, region)
-  display.setMaxScore(undefined)
-  expect([display.minScoreBound, display.maxScoreBound]).toEqual([
+  display.setDomainMax(undefined)
+  expect([display.resolvedDomainMin, display.resolvedDomainMax]).toEqual([
     undefined,
     undefined,
   ])

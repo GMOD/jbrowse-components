@@ -11,29 +11,30 @@ import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 // multi-wiggle, manhattan, alignments coverage, the mark display) exposes this
 // exact shape, so the Y axis row and its drawer widget consume it without
 // per-display adapters. Two pairs, and which one a consumer wants is which
-// question it is asking: manualMinScore/manualMaxScore is what the config
-// really pins (undefined = nothing pinned), which is what the widget's fields
-// show; minScoreBound/maxScoreBound is
-// where each end of the axis resolved to (undefined = autoscale this end),
-// which is what a domain computes from. hasManualScoreBounds is the third
-// question, and the only one of the three that survives a `defaultScoreDomain`
-// override. All of them come from `ScoreAxisMixin`.
+// question it is asking: domainMin/domainMax is what the config really pins
+// (undefined = nothing pinned), which is what the widget's fields show;
+// resolvedDomainMin/resolvedDomainMax is where each end of the axis resolved
+// to (undefined = autoscale this end), which is what a domain computes from.
+// pinsDomain is the third question, and the only one of the three that
+// survives a `defaultScoreDomain` override. All of them come from
+// `ScoreAxisMixin`. Each is named for `encoding.y.scale`'s `domainMin` and
+// `domainMax`, never `minScore`, a stored summary field `encoding.y` can plot.
 export interface ScoreScaleModel extends IStateTreeNode {
   scaleType: string
   scaleZero: boolean
   fenceQuantile: number
   clipFenceQuantile: number
-  manualMinScore: number | undefined
-  manualMaxScore: number | undefined
-  minScoreBound: number | undefined
-  maxScoreBound: number | undefined
-  hasManualScoreBounds: boolean
+  domainMin: number | undefined
+  domainMax: number | undefined
+  resolvedDomainMin: number | undefined
+  resolvedDomainMax: number | undefined
+  pinsDomain: boolean
   autoscaleRange: [number, number] | undefined
   autoscaledDomain: [number, number] | undefined
   setScaleType: (v: string) => void
   setScaleZero: (zero: boolean) => void
-  setMinScore: (n?: number) => void
-  setMaxScore: (n?: number) => void
+  setDomainMin: (n?: number) => void
+  setDomainMax: (n?: number) => void
   setFenceQuantile: (quantile: number) => void
 }
 

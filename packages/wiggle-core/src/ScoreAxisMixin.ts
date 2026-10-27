@@ -18,7 +18,7 @@ import type { ValueScale, YAxis } from '@jbrowse/display-ui'
  * declaration is written.
  *
  * The axis contract apart from where it is written down. `scaleType`,
- * `manualMinScore` and `manualMaxScore` are declared here with neutral answers
+ * `domainMin` and `domainMax` are declared here with neutral answers
  * and a composing display overrides them, so the bounds, the "is anything
  * pinned" question, the ticks and the cross-hatches derive the same way
  * wherever the declaration lives. {@link ScoreScaleMixin} is the one composer
@@ -27,7 +27,7 @@ import type { ValueScale, YAxis } from '@jbrowse/display-ui'
  * writing its scale down somewhere else would answer.
  *
  * The setters are not here. A display cannot set what it has not said where to
- * put, so `setScaleType`/`setMinScore`/`setMaxScore` belong to whichever
+ * put, so `setScaleType`/`setDomainMin`/`setDomainMax` belong to whichever
  * composer owns the declaration — one owner, whichever it is.
  */
 export function ScoreAxisMixin() {
@@ -54,14 +54,14 @@ export function ScoreAxisMixin() {
        * Overridable: the lower bound the config really pins, `undefined`
        * where nothing does.
        */
-      get manualMinScore(): number | undefined {
+      get domainMin(): number | undefined {
         return undefined
       },
       /**
        * #getter
        * Overridable: the upper bound the config really pins.
        */
-      get manualMaxScore(): number | undefined {
+      get domainMax(): number | undefined {
         return undefined
       },
       /**
@@ -149,7 +149,7 @@ export function ScoreAxisMixin() {
         return range
           ? getNiceDomain({
               domain: range,
-              bounds: [this.minScoreBound, this.maxScoreBound],
+              bounds: [this.resolvedDomainMin, this.resolvedDomainMax],
               scaleType: self.scaleType,
               zero: self.axisReachesZero,
             })
@@ -159,15 +159,15 @@ export function ScoreAxisMixin() {
        * #getter
        * Resolved lower bound; `undefined` means autoscale this end.
        */
-      get minScoreBound(): number | undefined {
-        return self.manualMinScore ?? self.defaultScoreDomain[0]
+      get resolvedDomainMin(): number | undefined {
+        return self.domainMin ?? self.defaultScoreDomain[0]
       },
       /**
        * #getter
        * Resolved upper bound; `undefined` means autoscale this end.
        */
-      get maxScoreBound(): number | undefined {
-        return self.manualMaxScore ?? self.defaultScoreDomain[1]
+      get resolvedDomainMax(): number | undefined {
+        return self.domainMax ?? self.defaultScoreDomain[1]
       },
       /**
        * #getter
@@ -178,10 +178,8 @@ export function ScoreAxisMixin() {
        * min/max row with the range in force, and a caption off the resolved
        * pair named a range on every freshly opened GC content track.
        */
-      get hasManualScoreBounds(): boolean {
-        return (
-          self.manualMinScore !== undefined || self.manualMaxScore !== undefined
-        )
+      get pinsDomain(): boolean {
+        return self.domainMin !== undefined || self.domainMax !== undefined
       },
       /**
        * #getter
