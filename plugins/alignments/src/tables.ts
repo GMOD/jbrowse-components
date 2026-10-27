@@ -442,7 +442,7 @@ function colorReads(
   baseLayer: BaseLayer | undefined,
   laidByGroup: ReadonlyMap<string, ReadonlyMap<number, LaidOutPileupData>>,
   readColorOpts: ReadColorOpts,
-  facet: { field: string; domain?: readonly string[] } | undefined,
+  facet: { field: string; sort?: readonly string[] } | undefined,
   refNamePosition: RefNamePosition | undefined,
   overlaps: 'chain' | undefined,
 ) {

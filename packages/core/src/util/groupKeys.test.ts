@@ -2,7 +2,6 @@ import {
   MAX_GROUPS,
   OVERFLOW_GROUP_KEY,
   capGroupKeys,
-  carryGroupDomain,
   compareGroupKeys,
   groupKeyComparator,
   groupKeySpaceOf,
@@ -71,9 +70,9 @@ test('the catch-all stays out of the merge', () => {
   expect(sectionOf(`v${MAX_GROUPS}`)).toBe(OVERFLOW_GROUP_KEY)
 })
 
-test('the key space is the field, never the domain', () => {
+test('the key space is the field, never the sort', () => {
   const plain = groupKeySpaceOf({ field: 'biotype' })
-  expect(groupKeySpaceOf({ field: 'biotype', domain: ['lncRNA'] })).toBe(plain)
+  expect(groupKeySpaceOf({ field: 'biotype', sort: ['lncRNA'] })).toBe(plain)
   expect(groupKeySpaceOf({ field: 'gene_type' })).not.toBe(plain)
   expect(groupKeySpaceOf(undefined)).toBe('')
 })
@@ -112,25 +111,6 @@ test('the order is transitive, so every input order sorts the same', () => {
     permutations(keys).map(p => p.sort(compareGroupKeys).join('|')),
   )
   expect([...sorted]).toEqual(['-10|-2|1.10|1.5|-5x|1.7x|a|'])
-})
-
-test('a re-pick of the same field keeps the domain; a reorder or a new field does not', () => {
-  const current: { field: string; domain?: string[] } = {
-    field: 'biotype',
-    domain: ['lncRNA'],
-  }
-  expect(carryGroupDomain({ field: 'biotype' }, current)).toEqual(current)
-  expect(carryGroupDomain({ field: 'biotype', domain: [] }, current)).toEqual({
-    field: 'biotype',
-    domain: [],
-  })
-  expect(carryGroupDomain({ field: 'gene_type' }, current)).toEqual({
-    field: 'gene_type',
-  })
-  expect(carryGroupDomain(undefined, current)).toBeUndefined()
-  expect(carryGroupDomain({ field: 'biotype' }, undefined)).toEqual({
-    field: 'biotype',
-  })
 })
 
 test("a list holding only a missing value is the catch-all, as a VCF's `.` arrives", () => {

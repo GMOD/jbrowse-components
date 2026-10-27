@@ -297,7 +297,7 @@ cat > "$APP"/config.json <<'JSON'
       "displays": [
         {
           "type": "LinearMultiSampleVariantDisplay",
-          "facet": { "field": "karyotype", "domain": ["Standard", "In(2L)t"] },
+          "facet": { "field": "karyotype", "sort": ["Standard", "In(2L)t"] },
           "rowColor": "karyotype",
           "height": 300
         }

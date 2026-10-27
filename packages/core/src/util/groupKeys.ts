@@ -102,18 +102,17 @@ export function compareGroupKeys(a: string, b: string) {
 }
 
 /**
- * The order a facet stacks its sections in. `domain` is the channel's
- * declared order: the keys it lists come first, in that order, and the rest
- * follow under `compareGroupKeys`. Every categorical channel in the tree
- * reads its domain this way, so a listed value is a placement and an
- * unlisted one is not an error.
+ * The order a facet's `sort` or a categorical scale's `domain` declares: the
+ * keys it lists come first, in that order, and the rest follow under
+ * `compareGroupKeys`. A listed value is a placement and an unlisted one is not
+ * an error.
  */
-export function groupKeyComparator(domain?: readonly string[]) {
-  if (!domain?.length) {
+export function groupKeyComparator(order?: readonly string[]) {
+  if (!order?.length) {
     return compareGroupKeys
   }
   const rank = new Map<string, number>()
-  domain.forEach((key, i) => {
+  order.forEach((key, i) => {
     if (!rank.has(key)) {
       rank.set(key, i)
     }
@@ -123,35 +122,6 @@ export function groupKeyComparator(domain?: readonly string[]) {
     const rb = rank.get(b) ?? Infinity
     return ra !== rb ? (ra < rb ? -1 : 1) : compareGroupKeys(a, b)
   }
-}
-
-/**
- * The order and hidden sections a re-pick keeps: a facet set from a menu or
- * dialog names neither, so one naming the field the current facet already
- * reads carries the current `domain` and `hidden` along. A member the next
- * facet names passes through, an empty one included.
- */
-export function carryGroupDomain<
-  T extends {
-    field: string
-    domain?: readonly string[]
-    hidden?: readonly string[]
-  },
->(next: T | undefined, current: T | undefined): T | undefined {
-  if (next === undefined || next.field !== current?.field) {
-    return next
-  }
-  const domain =
-    next.domain === undefined && current.domain !== undefined
-      ? { domain: current.domain }
-      : {}
-  const hidden =
-    next.hidden === undefined && current.hidden?.length
-      ? { hidden: current.hidden }
-      : {}
-  return Object.keys(domain).length || Object.keys(hidden).length
-    ? { ...next, ...domain, ...hidden }
-    : next
 }
 
 /**
@@ -167,7 +137,7 @@ export function overflowLabel(count: number) {
  * Which section each key stacks into once the cap applies: the first
  * `MAX_GROUPS` keys in natural order keep their own and the rest fold into
  * the overflow section. The catch-all `''` is held out of the merge, since
- * "lacking the value" is an answer users look for. A domain orders the
+ * "lacking the value" is an answer users look for. A `sort` orders the
  * sections and never decides which exist, so reordering them changes no
  * key's section.
  */
@@ -198,11 +168,11 @@ export interface GroupId {
  * Identity of the key space a facet hands out keys in: its field. A key means
  * nothing on its own, since `''` is both the ungrouped section and every
  * field's catch-all, so anything keyed by group key is dropped when this
- * moves. The `domain` only orders the keys and is no part of the space, so a
+ * moves. The `sort` only orders the keys and is no part of the space, so a
  * reorder keeps what a reader hid.
  */
 export function groupKeySpaceOf(
-  facet: { field: string; domain?: readonly string[] } | undefined,
+  facet: { field: string; sort?: readonly string[] } | undefined,
 ) {
   return facet?.field ?? ''
 }
