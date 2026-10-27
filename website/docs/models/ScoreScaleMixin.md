@@ -43,8 +43,8 @@ Each section ends with the members a composed model contributes, linked to the p
 | <span id="getter-fencequantile">**fenceQuantile**</span><br><code>number</code> | The y scale's fence quantile: what an unpinned end follows, 1 the extremes and below it that quantile of each sign. |
 | <span id="getter-clipfencequantile">**clipFenceQuantile**</span><br><code>number</code> | The quantile "Clip extreme outliers" fences at: the one an untick this session wrote over, else the scale's own default where that is below 1, else 0.99. |
 | <span id="getter-symlogconstant">**symlogConstant**</span><br><code>number</code> | Raw slot; `0` means "derive from the domain". Resolve it with `resolveSymlogConstant` once the domain is known. |
-| <span id="getter-manualminscore">**manualMinScore**</span><br><code>number &#124; undefined</code> | The lower bound the config pins, `undefined` where it pins none. |
-| <span id="getter-manualmaxscore">**manualMaxScore**</span><br><code>number &#124; undefined</code> | The upper bound the config pins, `undefined` where it pins none. |
+| <span id="getter-domainmin">**domainMin**</span><br><code>number &#124; undefined</code> | The lower bound the config pins, `undefined` where it pins none. |
+| <span id="getter-domainmax">**domainMax**</span><br><code>number &#124; undefined</code> | The upper bound the config pins, `undefined` where it pins none. |
 | <span id="getter-autoscalegroup">**autoscaleGroup**</span><br><code>string &#124; undefined</code> | The y scale's autoscale group, `undefined` while it names none. |
 | <span id="getter-scaletitle">**scaleTitle**</span><br><code>string</code> | The y axis title, `''` while unset |
 | <span id="getter-grid">**grid**</span><br><code>boolean</code> | The y axis grid |
@@ -54,7 +54,7 @@ Each section ends with the members a composed model contributes, linked to the p
 <details class="inherited-members" data-pagefind-ignore>
 <summary>9 inherited getters from one model</summary>
 
-From [ScoreAxisMixin](../scoreaxismixin): <span id="getter-defaultscoredomain">[`defaultScoreDomain`](../scoreaxismixin#getter-defaultscoredomain)</span>, <span id="getter-valuescales">[`valueScales`](../scoreaxismixin#getter-valuescales)</span>, <span id="getter-autoscalerange">[`autoscaleRange`](../scoreaxismixin#getter-autoscalerange)</span>, <span id="getter-axisreacheszero">[`axisReachesZero`](../scoreaxismixin#getter-axisreacheszero)</span>, <span id="getter-autoscaleddomain">[`autoscaledDomain`](../scoreaxismixin#getter-autoscaleddomain)</span>, <span id="getter-minscorebound">[`minScoreBound`](../scoreaxismixin#getter-minscorebound)</span>, <span id="getter-maxscorebound">[`maxScoreBound`](../scoreaxismixin#getter-maxscorebound)</span>, <span id="getter-hasmanualscorebounds">[`hasManualScoreBounds`](../scoreaxismixin#getter-hasmanualscorebounds)</span>, <span id="getter-axes">[`axes`](../scoreaxismixin#getter-axes)</span>
+From [ScoreAxisMixin](../scoreaxismixin): <span id="getter-defaultscoredomain">[`defaultScoreDomain`](../scoreaxismixin#getter-defaultscoredomain)</span>, <span id="getter-valuescales">[`valueScales`](../scoreaxismixin#getter-valuescales)</span>, <span id="getter-autoscalerange">[`autoscaleRange`](../scoreaxismixin#getter-autoscalerange)</span>, <span id="getter-axisreacheszero">[`axisReachesZero`](../scoreaxismixin#getter-axisreacheszero)</span>, <span id="getter-autoscaleddomain">[`autoscaledDomain`](../scoreaxismixin#getter-autoscaleddomain)</span>, <span id="getter-resolveddomainmin">[`resolvedDomainMin`](../scoreaxismixin#getter-resolveddomainmin)</span>, <span id="getter-resolveddomainmax">[`resolvedDomainMax`](../scoreaxismixin#getter-resolveddomainmax)</span>, <span id="getter-pinsdomain">[`pinsDomain`](../scoreaxismixin#getter-pinsdomain)</span>, <span id="getter-axes">[`axes`](../scoreaxismixin#getter-axes)</span>
 
 </details>
 
@@ -66,8 +66,10 @@ From [ScoreAxisMixin](../scoreaxismixin): <span id="getter-defaultscoredomain">[
 | <span id="action-setscaletype">**setScaleType**</span><br><code>(scaleType: string) =&gt; void</code> |  |
 | <span id="action-setscalezero">**setScaleZero**</span><br><code>(zero: boolean) =&gt; void</code> |  |
 | <span id="action-setfencequantile">**setFenceQuantile**</span><br><code>(quantile: number) =&gt; void</code> |  |
-| <span id="action-setminscore">**setMinScore**</span><br><code>(val?: number &#124; undefined) =&gt; void</code> |  |
-| <span id="action-setmaxscore">**setMaxScore**</span><br><code>(val?: number &#124; undefined) =&gt; void</code> |  |
+| <span id="action-setdomainmin">**setDomainMin**</span><br><code>(val?: number &#124; undefined) =&gt; void</code> |  |
+| <span id="action-setdomainmax">**setDomainMax**</span><br><code>(val?: number &#124; undefined) =&gt; void</code> |  |
+| <span id="action-setminscore">**setMinScore**</span><br><code>(val?: number &#124; undefined) =&gt; void</code> | v4's name for `setDomainMin`. |
+| <span id="action-setmaxscore">**setMaxScore**</span><br><code>(val?: number &#124; undefined) =&gt; void</code> | v4's name for `setDomainMax`. |
 | <span id="action-setautoscalegroup">**setAutoscaleGroup**</span><br><code>(group?: string &#124; undefined) =&gt; void</code> |  |
 | <span id="action-setgrid">**setGrid**</span><br><code>(grid: boolean) =&gt; void</code> |  |
 | <span id="action-setscorerules">**setScoreRules**</span><br><code>(rules: (number &#124; ValueScaleRule)[]) =&gt; void</code> | Replaces the y scale's rules whole, each entry in a form the config takes: a number, or `{ value, color, label }`. |

@@ -27,14 +27,13 @@ accessors move together, matching `rowAxisConfigSchema` + `TreeSidebarMixin`.
 
 **What stays per display is the value, not the declaration.** The per-display
 members are `autoRowHeight`, because the height available to rows is a different
-quantity in each (canvas's `fitTargetHeight`, maf's `rowsHeight`, variants'
+quantity in each (the mark display's plot, maf's `rowsHeight`, variants'
 `availableHeight`), and `setFitToHeight`, because seeding the `height` slot on
 the way in is required exactly where the `height` getter is content-derived
 and wrong where it is the slot itself.
 
-`effectiveRowHeight` is overridable, and one display overrides it: the
-multi-row feature painting caps the row stack at the canvas limit, since it
-sizes its canvas to its content instead of scrolling a viewport.
+`effectiveRowHeight` is overridable, and one display overrides it: the mark
+display honours a pinned `rowHeight` only while it draws rows.
 
 ## Getters
 
