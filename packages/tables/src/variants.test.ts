@@ -195,13 +195,8 @@ test('a facet stacks the rows in a band per value of the samples file’s attrib
   })
   expect(t.bands.label[0]).toBe('Gray wolf')
   expect(t.bands.label.slice(1)).toEqual([...t.bands.label.slice(1)].sort())
-  expect(t.bands.start[0]).toBe(0)
-  expect(t.bands.end.at(-1)).toBe(t.rows.name.length)
-  t.bands.key.forEach((key, i) => {
-    for (let r = t.bands.start[i]!; r < t.bands.end[i]!; r++) {
-      expect(t.rows.band[r]).toBe(key)
-    }
-  })
+  const runs = t.rows.band.filter((band, r) => band !== t.rows.band[r - 1])
+  expect(runs).toEqual(t.bands.key)
   const plain = await engine.variants(DOG_SV)
   expect(plain.bands.key).toEqual([])
   expect(new Set(plain.rows.band)).toEqual(new Set(['']))

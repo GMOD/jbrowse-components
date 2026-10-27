@@ -15,7 +15,6 @@ import { scaleLaidOutData } from './LinearBasicDisplay/applyLayout.ts'
 import { labelColors } from './LinearBasicDisplay/components/labelColors.ts'
 import { forEachDisplayLabel } from './LinearBasicDisplay/components/labelPositioning.ts'
 import {
-  PEPTIDE_FONT_FAMILY,
   PEPTIDE_HALO_COLOR,
   forEachRenderedPeptide,
   peptideBaselinePx,
@@ -556,7 +555,6 @@ export async function featureTables(
       arrowStemHalfHeight: STEM_HALF_H_PX,
       chevronWidth: CHEVRON_W_PX,
       chevronHeight: CHEVRON_H_PX,
-      aminoAcidFont: PEPTIDE_FONT_FAMILY,
       aminoAcidHalo: cssColorToHex(PEPTIDE_HALO_COLOR),
       sectionLabelHeight: facet ? GROUP_LABEL_HEIGHT : 0,
     },

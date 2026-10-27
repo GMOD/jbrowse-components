@@ -116,9 +116,10 @@ export interface VariantTablesArgs {
  * genotype, its `dosage` and the fill the display paints it; `rows`, the
  * rows the cells name, top to bottom as the display arranges them by `rows`
  * and stacks them in `facet`'s bands, each with its label and band; `bands`,
- * each band's value, label and the rows it spans; and `legend`, `legendTitle` and `ramps`,
- * the key the display shows. Under `referenceDrawingMode: 'skip'`, the default,
- * a reference call draws no cell. Several regions share the rows and the key,
+ * each band's value and label, in stacking order; `legend`, `legendTitle`
+ * and `ramps`, the key the display shows; and `warnings`, the samples file's.
+ * Under `referenceDrawingMode: 'skip'`, the default, a reference call draws
+ * no cell. Several regions share the rows and the key,
  * as the display's regions do: a record crossing regions is listed in each,
  * under one `key`, every `variants` and `cells` row names its `region`'s
  * index, and `cells.variant` indexes the joined `variants`. For a host that
@@ -360,8 +361,6 @@ export async function variantTables(
     bands: {
       key: banded.bands.map(b => b.key),
       label: banded.bands.map(b => b.label),
-      start: banded.bands.map(b => b.start),
-      end: banded.bands.map(b => b.end),
     },
     config: fullConfSnapshot(conf),
     warnings: listing.warnings,
