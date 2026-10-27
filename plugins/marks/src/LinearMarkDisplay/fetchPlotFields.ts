@@ -19,33 +19,41 @@ export const PLOT_SCAN_MAX_BP = 20_000
 const PLOT_SCAN_STEP_BP = PLOT_SCAN_MAX_BP / 2
 
 /**
- * The window the field scan reads: `PLOT_SCAN_MAX_BP` on the first region on
- * the track's genomes from the lowest coordinate on screen (its left edge, or
- * its right in a reversed region), snapped down to a half-window grid so the
- * window still covers the screen and a pan rescans only once it crosses a
- * grid line.
+ * The windows the field scan reads: `PLOT_SCAN_MAX_BP` across the regions on
+ * screen on the track's genomes, each from its lowest coordinate on screen
+ * (its left edge, or its right in a reversed region) snapped down to a
+ * half-window grid, so the windows still cover the screen and a pan rescans
+ * only once it crosses a grid line. A region shorter than the budget leaves
+ * the rest to the next, so a whole-genome view's small first contig does not
+ * leave the scan empty.
  */
 export function plotScanRegions(
   host: RegionHost,
   onTrack: (assemblyName: string) => boolean,
 ): Region[] {
-  const visible = host.visibleRegions.find(r => onTrack(r.assemblyName))
-  const region = visible && host.displayedRegions[visible.displayedRegionIndex]
-  if (!visible || !region) {
-    return []
+  const scans: Region[] = []
+  let budget = PLOT_SCAN_MAX_BP
+  for (const visible of host.visibleRegions) {
+    const region = host.displayedRegions[visible.displayedRegionIndex]
+    if (budget <= 0) {
+      break
+    }
+    if (region && onTrack(visible.assemblyName)) {
+      const start = Math.max(
+        region.start,
+        Math.floor(visible.start / PLOT_SCAN_STEP_BP) * PLOT_SCAN_STEP_BP,
+      )
+      const end = Math.min(region.end, start + budget)
+      scans.push({
+        refName: visible.refName,
+        start,
+        end,
+        assemblyName: visible.assemblyName,
+      })
+      budget -= end - start
+    }
   }
-  const start = Math.max(
-    region.start,
-    Math.floor(visible.start / PLOT_SCAN_STEP_BP) * PLOT_SCAN_STEP_BP,
-  )
-  return [
-    {
-      refName: visible.refName,
-      start,
-      end: Math.min(region.end, start + PLOT_SCAN_MAX_BP),
-      assemblyName: visible.assemblyName,
-    },
-  ]
+  return scans
 }
 
 export async function fetchPlotFields({

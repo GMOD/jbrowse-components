@@ -1955,16 +1955,15 @@ export function stateModelFactory(
       .views(self => ({
         /**
          * #getter
-         * The window the held field scan read, for the dialog to name.
+         * The windows the held field scan read, for the dialog to name.
          */
         get plotScanLocus(): string | undefined {
-          const [region] = self.plotScanned
-          return region
-            ? assembleLocString({
-                refName: region.refName,
-                start: region.start,
-                end: region.end,
-              })
+          return self.plotScanned.length > 0
+            ? self.plotScanned
+                .map(({ refName, start, end }) =>
+                  assembleLocString({ refName, start, end }),
+                )
+                .join(', ')
             : undefined
         },
       }))
