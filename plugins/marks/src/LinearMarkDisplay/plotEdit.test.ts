@@ -73,13 +73,10 @@ describe('the split field, typed a keystroke at a time', () => {
     hidden: ['2'],
     transform: [{ type: 'pileup' }],
   }
-  const retype = (key: 'facet' | 'rows', base: object, texts: string[]) => {
-    let plot: MarkPlot = { marks: [], [key]: base }
-    for (const text of texts) {
-      plot = withSplitField(plot, key, text, base)
-    }
-    return plot[key]
-  }
+  const typed = (base: MarkPlot, key: 'facet' | 'rows', texts: string[]) =>
+    texts.reduce((plot, text) => withSplitField(plot, key, text, base), base)
+  const retype = (key: 'facet' | 'rows', setting: object, texts: string[]) =>
+    typed({ marks: [], [key]: setting }, key, texts)[key]
 
   test('retyped back to its field through empty, the facet keeps everything', () => {
     expect(retype('facet', facet, ['H', '', 'H', 'HP'])).toBe(facet)
@@ -102,6 +99,19 @@ describe('the split field, typed a keystroke at a time', () => {
     }
     expect(retype('rows', rows, ['H', 'HP'])).toBe(rows)
     expect(retype('rows', rows, ['P', 'PS'])).toEqual({ field: 'PS' })
+  })
+
+  test("another rows field drops the row colors paired with the old rows' names", () => {
+    const rowColor = {
+      scale: { domain: ['1'], range: ['#f00', '#0f0'], unknown: '' },
+    }
+    const base: MarkPlot = { marks: [], rows: { field: 'HP' }, rowColor }
+    expect(typed(base, 'rows', ['P', 'PS']).rowColor).toEqual({
+      scale: { range: ['#0f0'], unknown: '' },
+    })
+    expect(typed(base, 'rows', ['H', '', 'HP']).rowColor).toBe(rowColor)
+    const byGroup: MarkPlot = { ...base, rowColor: { field: 'group' } }
+    expect(typed(byGroup, 'rows', ['PS']).rowColor).toEqual({ field: 'group' })
   })
 
   test('an empty field clears the setting', () => {

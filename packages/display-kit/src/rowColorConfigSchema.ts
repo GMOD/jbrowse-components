@@ -29,7 +29,8 @@ import {
  *
  * A channel of its own beside `rows`, not `rows.color`: it has its own
  * `field`, palette and key, so a write of `rows` replaces the arrangement
- * and leaves the colors. Nor is it `encoding.color`, which on wiggle and the
+ * and leaves the colors. A pick of another rows field in a menu or the Edit
+ * plot form drops the `name` pairs, which name the old field's rows. Nor is it `encoding.color`, which on wiggle and the
  * mark display paints by value.
  *
  * #example
@@ -91,3 +92,25 @@ export const rowColorConfigSchema = ConfigurationSchema(
     closed: true,
   },
 )
+
+/**
+ * `rowColor` once the rows take another field. Under `name` its `domain`
+ * names the old field's rows, so those pairs go; the `range` past them, the
+ * colors every other row deals from first, and `unknown` stay. Colors by an
+ * attribute stay whole.
+ */
+export function rowColorForOtherRows(
+  rowColor: Record<string, unknown>,
+): Record<string, unknown> {
+  const { field = 'name' } = rowColor
+  const scale = (rowColor.scale ?? {}) as Record<string, unknown>
+  const { domain, range, ...rest } = scale
+  if (field !== 'name' || !Array.isArray(domain) || domain.length === 0) {
+    return rowColor
+  }
+  const spare = Array.isArray(range) ? range.slice(domain.length) : []
+  return {
+    ...rowColor,
+    scale: { ...rest, ...(spare.length > 0 ? { range: spare } : {}) },
+  }
+}

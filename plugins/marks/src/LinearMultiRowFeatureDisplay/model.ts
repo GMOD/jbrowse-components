@@ -5,6 +5,7 @@ import { STRAND_FIELD } from '@jbrowse/core/util/categoricalField'
 import { isJexl } from '@jbrowse/core/util/jexlStrings'
 import ColorWritesMixin from '@jbrowse/display-kit/ColorWritesMixin'
 import SolidColorDialog from '@jbrowse/display-kit/SolidColorDialog'
+import { rowColorForOtherRows } from '@jbrowse/display-kit/rowColorConfigSchema'
 import { rowsForField } from '@jbrowse/display-kit/rowsConfigSchema'
 import { getSnapshot, types } from '@jbrowse/mobx-state-tree'
 
@@ -17,7 +18,10 @@ import type { PlotFields } from '../LinearMarkDisplay/scanPlotFields.ts'
 import type { LinearMultiRowFeatureDisplayConfigModel } from './configSchema.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { MenuItem } from '@jbrowse/core/ui'
-import type { Instance } from '@jbrowse/mobx-state-tree'
+import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
+
+const snapshotOf = (node: IAnyStateTreeNode) =>
+  getSnapshot<Record<string, unknown> | undefined>(node) ?? {}
 
 /**
  * #stateModel LinearMultiRowFeatureDisplay
@@ -113,14 +117,19 @@ export function stateModelFactory(
       /**
        * #action
        * One row per value of `field`; another field than the one in force
-       * drops the arrangement (`rowsForField`).
+       * drops the arrangement (`rowsForField`) and the row colors paired with
+       * the old rows' names (`rowColorForOtherRows`).
        */
       setRowsField(field: string) {
-        const current =
-          getSnapshot<Record<string, unknown> | undefined>(self.conf.rows) ?? {}
+        const current = snapshotOf(self.conf.rows)
         const next = rowsForField(current, field)
         if (next !== current) {
           setConf(self.conf, 'rows', next)
+          const rowColor = snapshotOf(self.conf.rowColor)
+          const kept = rowColorForOtherRows(rowColor)
+          if (kept !== rowColor) {
+            setConf(self.conf, 'rowColor', kept)
+          }
         }
       },
       /**

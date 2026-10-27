@@ -41,7 +41,7 @@ const SplitControls = observer(function SplitControls({
 }) {
   const [order, setOrder] = useState(() => splitOrder(plot, kind))
   const field = splitField(plot, kind)
-  const base = useRef<unknown>(undefined)
+  const base = useRef<MarkPlot | undefined>(undefined)
   return (
     <div style={{ display: 'flex', gap: 8 }}>
       <Autocomplete
@@ -50,7 +50,7 @@ const SplitControls = observer(function SplitControls({
         options={[...options]}
         inputValue={field}
         onFocus={() => {
-          base.current = plot[kind]
+          base.current = plot
         }}
         onBlur={() => {
           base.current = undefined

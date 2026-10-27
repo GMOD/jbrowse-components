@@ -127,6 +127,16 @@ test('One row per... another field drops the arrangement, and the field in force
   expect(getSnapshot(model.conf.rows)).toEqual({ field: 'name' })
 })
 
+test("One row per... another field drops the row colors paired with the old rows' names", () => {
+  const model = display({
+    rows: 'sample',
+    rowColor: { scale: { domain: ['a'], range: ['#f00'], unknown: '' } },
+    marks: RECT_MARKS,
+  })
+  model.setRowsField('name')
+  expect(getSnapshot(model.conf.rowColor)).toEqual({ scale: { unknown: '' } })
+})
+
 test("a spliced painting's rows sort and cluster on its blocks, not the line under them", () => {
   const model = display({ rows: 'sample', marks: SPLICED_MARKS })
   expect(model.rowCompare?.mark).toBe(1)

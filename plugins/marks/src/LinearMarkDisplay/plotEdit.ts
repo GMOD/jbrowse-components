@@ -6,6 +6,7 @@ import {
   stepsOutput,
 } from '@jbrowse/core/util/stepOutputs'
 import { facetForField } from '@jbrowse/display-kit/FacetWritesMixin'
+import { rowColorForOtherRows } from '@jbrowse/display-kit/rowColorConfigSchema'
 import { rowsForField } from '@jbrowse/display-kit/rowsConfigSchema'
 
 import { AUTO_BIN } from './autoBin.ts'
@@ -70,27 +71,31 @@ export function splitOrder(plot: MarkPlot, key: 'facet' | 'rows'): string {
 
 /**
  * The plot with its `facet` or `rows` splitting by `field`: an empty field
- * clears the setting, as `null` does in the JSON box. `base` is the setting
- * as it stood when the edit began, and the field is judged against it, since
+ * clears the setting, as `null` does in the JSON box. `base` is the plot as
+ * it stood when the edit began, and the field is judged against it, since
  * every keystroke writes: retyping the base's field keeps its order, hidden
- * sections and arrangement, and another field drops them as a menu pick does
- * (`facetForField`, `rowsForField`), keeping the steps.
+ * sections, arrangement and row colors, and another field drops what names
+ * the old field's values, as a menu pick does (`facetForField`,
+ * `rowsForField`, `rowColorForOtherRows`), keeping the steps.
  */
 export function withSplitField(
   plot: MarkPlot,
   key: 'facet' | 'rows',
   field: string,
-  base: unknown = plot[key],
+  base: MarkPlot = plot,
 ): MarkPlot {
   if (field === '') {
     return { ...plot, [key]: null }
   }
-  const held = channelObject(base) ?? channelObject(plot[key]) ?? {}
-  return {
-    ...plot,
-    [key]:
-      key === 'facet' ? facetForField(held, field) : rowsForField(held, field),
+  const held = channelObject(base[key]) ?? channelObject(plot[key]) ?? {}
+  if (key === 'facet') {
+    return { ...plot, facet: facetForField(held, field) }
   }
+  const rows = rowsForField(held, field)
+  const baseColor = channelObject(base.rowColor)
+  const rowColor =
+    baseColor && rows !== held ? rowColorForOtherRows(baseColor) : baseColor
+  return { ...plot, rows, ...(rowColor ? { rowColor } : {}) }
 }
 
 /**
