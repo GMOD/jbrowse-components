@@ -264,22 +264,28 @@ describe('getDeduplicatedResult', () => {
     expect(option!.result.getDisplayString()).toBe('chr1:1..100')
   })
 
-  it('collapses hits sharing a display string into one multi-result option', () => {
+  it('collapses hits sharing a name into one multi-result option', () => {
+    // one index carries the gene's aliases and so a longer display string
     const dupes = [
-      new BaseResult({ label: 'BRCA', displayString: 'chr1:1..100' }),
-      new BaseResult({ label: 'BRCA', displayString: 'chr1:1..100' }),
+      new BaseResult({ label: 'HOXA10-AS', locString: 'chr7:1..100' }),
+      new BaseResult({
+        label: 'HOXA10-AS',
+        displayString: 'HOXA10-AS (HOXA-AS4)',
+        locString: 'chr7:1..100',
+      }),
     ]
     const result = getDeduplicatedResult(dupes)
 
     expect(result).toHaveLength(1)
     expect(result[0]!.result.results).toHaveLength(2)
-    expect(result[0]!.result.getLabel()).toBe('chr1:1..100')
+    expect(result[0]!.result.getLabel()).toBe('HOXA10-AS')
+    expect(result[0]!.result.getDisplayString()).toBe('HOXA10-AS')
   })
 
-  it('preserves distinct display strings as separate options', () => {
+  it('preserves distinct names as separate options', () => {
     const result = getDeduplicatedResult([
       new BaseResult({ label: 'a', displayString: 'chr1:1..100' }),
-      new BaseResult({ label: 'b', displayString: 'chr2:1..100' }),
+      new BaseResult({ label: 'b', displayString: 'chr1:1..100' }),
     ])
     expect(result).toHaveLength(2)
   })

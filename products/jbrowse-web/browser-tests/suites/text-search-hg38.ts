@@ -34,6 +34,7 @@ async function search(page: Page, query: string) {
   await page.keyboard.up('Control')
   await page.keyboard.press('Backspace')
   await input!.type(query)
+  const options = await settledOptions(page)
   await page.keyboard.press('Enter')
   let last = ''
   for (let i = 0; i < 100; i++) {
@@ -52,11 +53,35 @@ async function search(page: Page, query: string) {
     }
     last = now
   }
-  return JSON.parse(last) as {
-    loc: string
-    picker?: string[]
-    messages: string[]
+  return {
+    options,
+    ...(JSON.parse(last) as {
+      loc: string
+      picker?: string[]
+      messages: string[]
+    }),
   }
+}
+
+// the dropdown rows once the typed query's search has landed and stopped moving
+async function settledOptions(page: Page) {
+  let last = ''
+  let stableFor = 0
+  for (let i = 0; i < 150 && stableFor < 5; i++) {
+    await delay(100)
+    const now = await page.evaluate(() =>
+      JSON.stringify(
+        document.querySelector('.MuiAutocomplete-loading')
+          ? 'loading'
+          : [...document.querySelectorAll('[role="option"]')].map(
+              o => (o as HTMLElement).innerText.split('\n')[0],
+            ),
+      ),
+    )
+    stableFor = now === last && now !== '"loading"' ? stableFor + 1 : 0
+    last = now
+  }
+  return JSON.parse(last) as string[]
 }
 
 function expectThat(what: string, ok: boolean, got: unknown) {
@@ -106,6 +131,13 @@ const suite: TestSuite = {
             { loc, picker, messages },
           )
         }
+
+        const hoxa = await search(page, 'HOXA10-AS')
+        expectThat(
+          'a gene two tracks index is one row',
+          hoxa.options.filter(o => o.startsWith('HOXA10-AS')).length === 1,
+          hoxa.options,
+        )
 
         const brca = await search(page, 'BRCA')
         expectThat(

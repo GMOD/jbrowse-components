@@ -76,7 +76,7 @@ export function groupByPlace(results: BaseResult[], assembly?: Assembly) {
   for (const [i, result] of results.entries()) {
     const locString = result.getLocation()
     if (locString) {
-      const name = result.getDisplayString()
+      const name = result.getLabel()
       const key = [
         name,
         resolved ? canonicalLocString(locString, assembly) : locString,

@@ -144,12 +144,14 @@ export function getRefNameOptions(
     : options
 }
 
-// group hits sharing a display string into a single multi-result option (the
-// picker pops a dialog), leaving unique hits as plain options
+// group hits naming one thing into a single multi-result option (the picker
+// pops a dialog), leaving unique hits as plain options. Keyed by the name, not
+// the display string: two indexes holding one gene, one of them with its
+// aliases, give it two display strings and would otherwise list it twice
 export function getDeduplicatedResult(results: BaseResult[]): Option[] {
   const m = new Map<string, BaseResult[]>()
   for (const result of results) {
-    const key = result.getDisplayString()
+    const key = result.getLabel()
     const dupes = m.get(key)
     if (dupes) {
       dupes.push(result)
@@ -157,14 +159,14 @@ export function getDeduplicatedResult(results: BaseResult[]): Option[] {
       m.set(key, [result])
     }
   }
-  return [...m].map(([displayString, dupes]) =>
+  return [...m].map(([label, dupes]) =>
     dupes.length === 1
       ? { result: dupes[0]! }
       : {
           result: new BaseResult({
-            displayString,
+            label,
+            displayString: dupes[0]!.getDisplayString(),
             results: dupes,
-            label: displayString,
           }),
         },
   )
