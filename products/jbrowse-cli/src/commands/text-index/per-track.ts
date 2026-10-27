@@ -1,3 +1,5 @@
+import { trixFileUris } from '@jbrowse/text-indexing-core'
+
 import { parseCommaSeparatedString, writeJsonFile } from '../../utils.ts'
 import { createTrixAdapter, indexFileOf } from './adapter-utils.ts'
 import {
@@ -88,7 +90,7 @@ export async function perTrackIndex(flags: TextIndexFlags): Promise<void> {
       const existing = textSearching?.textSearchAdapter as
         | SearchIndexEntry
         | undefined
-      return existing && indexFileOf(existing) === adapter.ixFilePath.uri
+      return existing && indexFileOf(existing) === trixFileUris(trackId).ix
         ? []
         : [[trackId, adapter] as const]
     }),

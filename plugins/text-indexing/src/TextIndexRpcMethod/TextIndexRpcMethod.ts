@@ -3,7 +3,6 @@ import { checkAbortSignal } from '@jbrowse/core/util/aborting'
 import { indexTracks } from '@jbrowse/text-indexing'
 
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
-import type { indexType } from '@jbrowse/text-indexing'
 import type { IndexingPolicy, Track } from '@jbrowse/text-indexing-core'
 
 // No `signal` and no `statusCallback`: both come from `RpcHandles`, which
@@ -14,8 +13,6 @@ import type { IndexingPolicy, Track } from '@jbrowse/text-indexing-core'
 interface TextIndexRpcMethodArgs {
   outLocation: string
   policy?: IndexingPolicy
-  assemblies?: string[]
-  indexType?: indexType
   tracks: Track[]
 }
 
@@ -32,23 +29,13 @@ export class TextIndexRpcMethod extends RpcMethodType<'TextIndexRpcMethod'> {
   name = 'TextIndexRpcMethod' as const
 
   async execute(args: RpcExecuteArgs<'TextIndexRpcMethod'>) {
-    const {
-      tracks,
-      outLocation,
-      policy,
-      assemblies,
-      indexType,
-      signal,
-      statusCallback,
-    } = args
+    const { tracks, outLocation, policy, signal, statusCallback } = args
 
     checkAbortSignal(signal)
     await indexTracks({
       outDir: outLocation,
       tracks,
       policy,
-      assemblyNames: assemblies,
-      indexType,
       statusCallback,
       signal,
     })

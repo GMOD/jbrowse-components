@@ -1,10 +1,6 @@
 import path from 'node:path'
 
-import {
-  formatDryRun,
-  prepareIndexDriverFlags,
-  sanitizeNameForPath,
-} from './config-utils.ts'
+import { formatDryRun, prepareIndexDriverFlags } from './config-utils.ts'
 import { indexDriver, prepareFileTrackConfigs } from './indexing-utils.ts'
 import { validateFileInput } from './validators.ts'
 
@@ -35,10 +31,7 @@ export async function indexFileList(flags: TextIndexFlags): Promise<void> {
   if (dryrun) {
     console.log(formatDryRun(trackConfigs))
   } else {
-    const name =
-      trackConfigs.length > 1
-        ? 'aggregate'
-        : sanitizeNameForPath(path.basename(file[0]!))
+    const name = trackConfigs.length > 1 ? 'aggregate' : path.basename(file[0]!)
 
     await indexDriver({
       trackConfigs,

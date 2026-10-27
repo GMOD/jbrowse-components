@@ -298,7 +298,6 @@ export default function jobsModelFactory() {
           await rpcManager.call('indexTracksSessionId', 'TextIndexRpcMethod', {
             tracks: trackConfigs,
             policy: { attributes, exclude },
-            assemblies,
             outLocation,
             signal: controller.signal,
             statusCallback: status => {

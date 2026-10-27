@@ -9,12 +9,12 @@ import {
 
 import type { Config, Track } from '../../base.ts'
 
-function validatePrefixSize(value?: string | number): number | undefined {
+function validatePrefixSize(value?: string): number | undefined {
   if (!value) {
     return undefined
   }
-  const parsed = typeof value === 'number' ? value : parseInt(value, 10)
-  if (Number.isNaN(parsed) || parsed <= 0) {
+  const parsed = Number(value)
+  if (!Number.isInteger(parsed) || parsed <= 0) {
     throw new Error(
       `Invalid prefixSize: "${value}". Must be a positive number.`,
     )
@@ -27,7 +27,7 @@ export function prepareIndexDriverFlags(flags: {
   exclude: string
   include?: string
   quiet?: boolean
-  prefixSize?: string | number
+  prefixSize?: string
 }) {
   return {
     policy: {
@@ -144,5 +144,3 @@ export function getTrackConfigs(
     return !reason
   })
 }
-
-export { sanitizeForFilename as sanitizeNameForPath } from '@jbrowse/text-indexing-core'

@@ -91,13 +91,12 @@ describe('utils for text indexing', () => {
 
 describe('createReadlineInterface', () => {
   it('gunzips a signed URL', async () => {
-    const lines = []
-    for await (const line of createReadlineInterface(
-      Readable.from([gzipSync('a\nb\n')]),
-      'https://example.com/genes.gff3.gz?X-Amz-Signature=abc',
-    )) {
-      lines.push(line)
-    }
+    const lines = await Array.fromAsync(
+      createReadlineInterface(
+        Readable.from([gzipSync('a\nb\n')]),
+        'https://example.com/genes.gff3.gz?X-Amz-Signature=abc',
+      ),
+    )
     expect(lines).toEqual(['a', 'b'])
   })
 })
