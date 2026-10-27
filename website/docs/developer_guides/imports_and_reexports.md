@@ -168,18 +168,9 @@ externalizing and checks each import by name:
 - on an older host that lacks a name, the plugin throws an error naming it on
   first use
 
-```js
-import { hostShim } from '@jbrowse/core/ReExports/hostShim'
-import * as esbuild from 'esbuild'
-
-await esbuild.build({
-  entryPoints: ['src/index.ts'],
-  bundle: true,
-  format: 'esm',
-  outdir: 'dist',
-  plugins: [hostShim({ pluginName: 'MyPlugin' })],
-})
-```
+Pass `hostShim({ pluginName: 'MyPlugin' })` in esbuild's `plugins`;
+[BLAT's UMD build](https://github.com/GMOD/jbrowse-components/blob/main/plugins/blat/scripts/build-umd.ts)
+is a working one.
 
 The installed `@jbrowse/core` is the oldest host the plugin supports. To find an
 import a newer host dropped, build with `write: false` against that host's
