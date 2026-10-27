@@ -406,13 +406,18 @@ const MoreFiltersDialog = observer(function MoreFiltersDialog(props: {
     if (masksConflict) {
       return
     }
+    const declared = model.declaredFilters.filterPredicates
     model.setFilterFields({
       ...readFieldsEntries(
         predicates,
         readFieldsOf(form),
         readFieldsOf(initial),
+        { predicates: declared, reading: readFieldsOf(readsFormOf(declared)) },
       ),
-      ...layerFilterEntries(layers, initialLayers, predicates),
+      ...layerFilterEntries(layers, initialLayers, predicates, {
+        predicates: declared,
+        reading: declaredLayerFilterState(model),
+      }),
     })
     const basesPatch = layerBasesPatch(layers, initialLayers)
     if (basesPatch) {

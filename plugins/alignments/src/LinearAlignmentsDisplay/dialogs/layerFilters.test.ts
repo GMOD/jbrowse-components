@@ -170,6 +170,25 @@ describe('the More filters... layer sections', () => {
     ])
   })
 
+  test('Reset writes a field back as the config declares it', () => {
+    const declared = [{ field: 'junction.reads', gt: 4 }]
+    const model = makeModel({
+      filter: [{ field: 'junction.reads', gte: 7 }],
+      showSashimi: true,
+      declared: { filter: declared },
+    })
+    const reset = declaredLayerFilterState(model)
+    model.setFilterFields(
+      layerFilterEntries(
+        reset,
+        layerFilterStateOf(model),
+        model.filterPredicates,
+        { predicates: model.declaredFilters.filterPredicates, reading: reset },
+      ),
+    )
+    expect(model.filterPredicates).toEqual(declared)
+  })
+
   test('hiding split-read junctions writes junction.source', () => {
     const model = makeModel({ showSashimi: true })
     submit(model, s => ({

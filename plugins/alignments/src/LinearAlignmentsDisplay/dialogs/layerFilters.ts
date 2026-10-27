@@ -17,6 +17,7 @@ import {
   junctionEntries,
   junctionFilterOf,
   mergeFilter,
+  sectionEntries,
 } from '../../shared/alignmentsFilter.ts'
 import {
   PROBABILITY,
@@ -26,6 +27,7 @@ import {
 } from '../../shared/basesFilter.ts'
 import { admitsCode } from '../../shared/types.ts'
 
+import type { Declared } from '../../shared/alignmentsFilter.ts'
 import type {
   BaseLayer,
   BasesFilter,
@@ -248,17 +250,21 @@ function countOf(value: string, fallback: number) {
 
 /**
  * The `filter` entries the state writes, by field: only the fields it changed
- * from `initial`, so a declared entry the dialog shows another way (a `gt`
- * floor, an `lte` cap, a `junction.class` list under the split-read choice)
- * stays as written. A changed floor keeps `written`'s other tests on its
- * field.
+ * from `initial` (`sectionEntries`), so a declared entry the dialog shows
+ * another way (a `gt` floor, an `lte` cap, a `junction.class` list under the
+ * split-read choice) stays as written, and returns as written on Reset. A
+ * changed floor keeps `written`'s other tests on its field.
  */
 export function layerFilterEntries(
   state: LayerFilterState,
   initial: LayerFilterState,
   written: readonly FieldPredicate[] = [],
+  declared?: Declared<LayerFilterState>,
 ): Record<string, FieldPredicate[]> {
-  const { junctions, connections } = state
+  const section = (
+    of: (s: LayerFilterState) => unknown,
+    entries: () => Record<string, FieldPredicate[]>,
+  ) => sectionEntries(of, state, initial, declared, entries)
   const sashimiReads = (s: LayerFilterState) =>
     countOf(s.junctions?.minReads ?? '', DEFAULT_MIN_SASHIMI_READS)
   const interchromReads = (s: LayerFilterState) =>
@@ -266,36 +272,41 @@ export function layerFilterEntries(
       s.connections?.minInterchromReads ?? '',
       DEFAULT_MIN_INTERCHROM_READS,
     )
+  const { junctions, connections } = state
   return {
-    ...(state.alone === initial.alone
-      ? {}
-      : { alone: categoryEntries('alone', state.alone) }),
+    ...section(
+      s => s.alone,
+      () => ({ alone: categoryEntries('alone', state.alone) }),
+    ),
     ...(junctions
       ? {
-          ...(junctions.split === initial.junctions?.split
-            ? {}
-            : junctionEntries(splitJunctionsPatch(junctions.split))),
-          ...(sashimiReads(state) === sashimiReads(initial)
-            ? {}
-            : junctionEntries({ minReads: sashimiReads(state) }, written)),
+          ...section(
+            s => s.junctions?.split,
+            () => junctionEntries(splitJunctionsPatch(junctions.split)),
+          ),
+          ...section(sashimiReads, () =>
+            junctionEntries({ minReads: sashimiReads(state) }, written),
+          ),
         }
       : {}),
     ...(connections
-      ? connectionEntries(
-          {
-            ...(connections.offscreenMates ===
-            initial.connections?.offscreenMates
-              ? {}
-              : { offscreenMates: connections.offscreenMates }),
-            ...(connections.interchrom === initial.connections?.interchrom
-              ? {}
-              : { interchrom: connections.interchrom }),
-            ...(interchromReads(state) === interchromReads(initial)
-              ? {}
-              : { minInterchromReads: interchromReads(state) }),
-          },
-          written,
-        )
+      ? {
+          ...section(
+            s => s.connections?.offscreenMates,
+            () =>
+              connectionEntries({ offscreenMates: connections.offscreenMates }),
+          ),
+          ...section(
+            s => s.connections?.interchrom,
+            () => connectionEntries({ interchrom: connections.interchrom }),
+          ),
+          ...section(interchromReads, () =>
+            connectionEntries(
+              { minInterchromReads: interchromReads(state) },
+              written,
+            ),
+          ),
+        }
       : {}),
   }
 }

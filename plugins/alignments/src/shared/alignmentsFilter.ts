@@ -1,4 +1,5 @@
 import { CIGAR_HAS_SKIP } from '@jbrowse/cigar-utils'
+import { deepEqual } from '@jbrowse/core/util/deepEqual'
 import {
   withField as coreWithField,
   withFields as coreWithFields,
@@ -431,6 +432,40 @@ export function readFieldsFormOf(
   }
 }
 
+/** A filter as the config declares it, and as a dialog reads it. */
+export interface Declared<T> {
+  predicates: readonly FieldPredicate[]
+  reading: T
+}
+
+/**
+ * What one section of a filter dialog writes on Submit, by the section's
+ * reading `of` a whole reading: nothing while it reads as it opened; the
+ * declared entries on its fields, as written, while it reads as the config
+ * declares them, so Reset restores a `gt` or an `lte` the dialog shows another
+ * way; and `entries` otherwise.
+ */
+export function sectionEntries<R>(
+  of: (reading: R) => unknown,
+  now: R,
+  opened: R,
+  declared: Declared<R> | undefined,
+  entries: () => Record<string, FieldPredicate[]>,
+): Record<string, FieldPredicate[]> {
+  if (deepEqual(of(now), of(opened))) {
+    return {}
+  }
+  const fields = entries()
+  return declared && deepEqual(of(now), of(declared.reading))
+    ? Object.fromEntries(
+        Object.keys(fields).map(field => [
+          field,
+          entriesOn(declared.predicates, field),
+        ]),
+      )
+    : fields
+}
+
 /**
  * The patch a Submit writes: only the sections `form` changes from `initial`,
  * each keeping the entries on its fields the dialog cannot show.
@@ -439,36 +474,43 @@ export function readFieldsEntries(
   written: readonly FieldPredicate[],
   form: ReadFieldsForm,
   initial = readFieldsFormOf(written),
+  declared?: Declared<ReadFieldsForm>,
 ): Record<string, FieldPredicate[]> {
+  const section = (
+    of: (f: ReadFieldsForm) => unknown,
+    entries: () => Record<string, FieldPredicate[]>,
+  ) => sectionEntries(of, form, initial, declared, entries)
   return {
-    ...(form.flagInclude === initial.flagInclude &&
-    form.flagExclude === initial.flagExclude
-      ? {}
-      : flagEntries(form.flagInclude, form.flagExclude)),
-    ...(JSON.stringify(form.tags) === JSON.stringify(initial.tags)
-      ? {}
-      : tagEntries(written, form.tags)),
-    ...(form.readName === initial.readName
-      ? {}
-      : {
-          name: [
-            ...entriesOn(written, 'name').filter(p => p.equal === undefined),
-            ...(form.readName === ''
-              ? []
-              : [{ field: 'name', equal: form.readName }]),
-          ],
-        }),
-    ...(form.minMapq === initial.minMapq &&
-    form.mapqStrict === initial.mapqStrict
-      ? {}
-      : {
-          [MAPQ_FIELD]: withLowerBound(
-            entriesOn(written, MAPQ_FIELD),
-            MAPQ_FIELD,
-            form.minMapq,
-            form.mapqStrict,
-          ),
-        }),
+    ...section(
+      f => [f.flagInclude, f.flagExclude],
+      () => flagEntries(form.flagInclude, form.flagExclude),
+    ),
+    ...section(
+      f => f.tags,
+      () => tagEntries(written, form.tags),
+    ),
+    ...section(
+      f => f.readName,
+      () => ({
+        name: [
+          ...entriesOn(written, 'name').filter(p => p.equal === undefined),
+          ...(form.readName === ''
+            ? []
+            : [{ field: 'name', equal: form.readName }]),
+        ],
+      }),
+    ),
+    ...section(
+      f => [f.minMapq, f.mapqStrict],
+      () => ({
+        [MAPQ_FIELD]: withLowerBound(
+          entriesOn(written, MAPQ_FIELD),
+          MAPQ_FIELD,
+          form.minMapq,
+          form.mapqStrict,
+        ),
+      }),
+    ),
   }
 }
 
