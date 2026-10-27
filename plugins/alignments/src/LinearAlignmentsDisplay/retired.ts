@@ -351,6 +351,8 @@ const INSTANCE_SLOTS: Record<string, (value: unknown) => DisplayEntry> = {
   filterBySetting: wholeFilterOf,
   sortedBy: sortSlot,
   trackMaxHeight: value => ({ pileup: { maxLayoutHeight: value } }),
+  snpCovHeight: value =>
+    typeof value === 'number' ? { coverage: { height: value } } : {},
   hideMismatchesSetting: value => ({
     pileup: { mismatches: { show: !value } },
   }),

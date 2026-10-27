@@ -24218,6 +24218,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "jexlFiltersSetting": {
           "deprecated": true,
           "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
+        },
+        "trackDisplayMode": {
+          "deprecated": true,
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
         }
       }
     },
@@ -24320,6 +24324,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
         },
         "showLegend": {
+          "deprecated": true,
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
+        },
+        "snpCovHeight": {
           "deprecated": true,
           "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
         },

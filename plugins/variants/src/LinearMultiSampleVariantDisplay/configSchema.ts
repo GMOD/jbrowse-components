@@ -278,9 +278,9 @@ export default function configSchemaFactory() {
       baseConfiguration: baseLinearDisplayConfigSchema,
       explicitlyTyped: true,
       // v4's two multi-sample displays spelt the sidebar's tree and labels and
-      // the reference-allele paint as booleans, named a color scheme
-      // `encoding.color` has no member for, and carried the wiggle scale slots
-      // the matrix never read.
+      // the reference-allele paint as booleans, named the row color's
+      // attribute `colorBy`, and carried the wiggle scale slots the matrix
+      // never read.
       retired: {
         renderingMode: (v: unknown) => ({
           unit: v === 'phased' ? 'haplotype' : 'sample',
@@ -290,7 +290,8 @@ export default function configSchemaFactory() {
         showReferenceAlleles: (draw: unknown) => ({
           referenceDrawingMode: draw ? 'draw' : 'skip',
         }),
-        colorBy: () => ({}),
+        colorBy: (field: unknown) =>
+          typeof field === 'string' && field ? { rowColor: field } : {},
         autoscale: () => ({}),
         minScore: () => ({}),
         maxScore: () => ({}),

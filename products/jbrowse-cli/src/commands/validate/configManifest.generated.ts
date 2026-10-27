@@ -7393,7 +7393,6 @@ export const configManifest: ConfigManifest = {
         "maxDisplayedBpPerPx",
         "fetchSizeLimit",
         "mouseover",
-        "colorBy",
         "autoscale",
         "minScore",
         "maxScore",
@@ -12080,7 +12079,8 @@ export const configManifest: ConfigManifest = {
       "heightPreConfig"
     ],
     "LinearBasicDisplay": [
-      "jexlFiltersSetting"
+      "jexlFiltersSetting",
+      "trackDisplayMode"
     ],
     "LinearAlignmentsDisplay": [
       "PileupDisplay",
@@ -12097,6 +12097,7 @@ export const configManifest: ConfigManifest = {
       "hideMismatchesSetting",
       "scale",
       "showLegend",
+      "snpCovHeight",
       "sortedBy",
       "trackMaxHeight"
     ],

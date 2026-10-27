@@ -60,13 +60,6 @@
     },
     {
       "values": {
-        "spelling": "session LinearAlignmentsDisplay.snpCovHeight",
-        "kind": "unmapped",
-        "configs": 2
-      }
-    },
-    {
-      "values": {
         "spelling": "session LinearSyntenyDisplay.height",
         "kind": "unmapped",
         "configs": 2
@@ -221,13 +214,6 @@
     },
     {
       "values": {
-        "spelling": "session LinearBasicDisplay.trackDisplayMode",
-        "kind": "unmapped",
-        "configs": 1
-      }
-    },
-    {
-      "values": {
         "spelling": "session LinearGenomeView.bookmarkHighlightsVisible",
         "kind": "unmapped",
         "configs": 1
@@ -347,13 +333,6 @@
     },
     {
       "values": {
-        "spelling": "MultiLinearVariantDisplay.colorBy",
-        "kind": "dropped",
-        "configs": 3
-      }
-    },
-    {
-      "values": {
         "spelling": "type LinearGCContentDisplay",
         "kind": "dropped",
         "configs": 2
@@ -403,6 +382,13 @@
     },
     {
       "values": {
+        "spelling": "MultiLinearVariantDisplay.colorBy",
+        "kind": "lifted",
+        "configs": 3
+      }
+    },
+    {
+      "values": {
         "spelling": "LinearWiggleDisplay.defaultRendering",
         "kind": "lifted",
         "configs": 2
@@ -425,6 +411,13 @@
     {
       "values": {
         "spelling": "session LinearAlignmentsDisplay.SNPCoverageDisplay",
+        "kind": "lifted",
+        "configs": 2
+      }
+    },
+    {
+      "values": {
+        "spelling": "session LinearAlignmentsDisplay.snpCovHeight",
         "kind": "lifted",
         "configs": 2
       }
@@ -530,6 +523,13 @@
     {
       "values": {
         "spelling": "session LinearBasicDisplay.jexlFiltersSetting",
+        "kind": "lifted",
+        "configs": 1
+      }
+    },
+    {
+      "values": {
+        "spelling": "session LinearBasicDisplay.trackDisplayMode",
         "kind": "lifted",
         "configs": 1
       }

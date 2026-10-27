@@ -1,8 +1,8 @@
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
-import { retiredFilterState } from '@jbrowse/core/util/jexlFilters'
 import { lazyWithPreload } from '@jbrowse/core/util/lazyWithPreload'
 
 import configSchemaFactory from './configSchema.ts'
+import { retiredBasicState } from './migrateBasicSnapshot.ts'
 import { PLOT_EXAMPLES } from './plotExamples.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -31,7 +31,7 @@ export default function register(pluginManager: PluginManager) {
       ReactComponent: LinearBasicDisplayComponent,
       // #region migration
       retiredTypes: [{ type: 'LinearFeatureDisplay' }],
-      retiredState: retiredFilterState,
+      retiredState: retiredBasicState,
       // #endregion
     })
   })

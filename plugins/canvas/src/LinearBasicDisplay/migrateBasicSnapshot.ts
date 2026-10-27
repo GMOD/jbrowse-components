@@ -1,4 +1,5 @@
 import { applyRetiredSpellings } from '@jbrowse/core/configuration'
+import { retiredFilterState } from '@jbrowse/core/util/jexlFilters'
 import { isJexl } from '@jbrowse/core/util/jexlStrings'
 
 import { legacyGeneGlyphMode } from './geneGlyphMode.ts'
@@ -9,6 +10,7 @@ import {
 } from './showLabelsMode.ts'
 
 import type { ShowLabelsMode } from './showLabelsMode.ts'
+import type { RetiredDisplayState } from '@jbrowse/core/pluggableElementTypes'
 
 function isRecord(x: unknown): x is Record<string, unknown> {
   return typeof x === 'object' && x !== null
@@ -64,6 +66,21 @@ function normalizeDisplayMode(value: unknown) {
   return value === 'reducedRepresentation' || value === 'collapse'
     ? 'normal'
     : value
+}
+
+/**
+ * A v4 session's display-instance state: `jexlFiltersSetting`, and the feature
+ * height preset `trackDisplayMode`, which the config slot `displayMode` holds
+ * now.
+ */
+export const retiredBasicState: RetiredDisplayState = {
+  keys: [...retiredFilterState.keys, 'trackDisplayMode'],
+  lift: instance => ({
+    ...retiredFilterState.lift(instance),
+    ...(typeof instance.trackDisplayMode === 'string'
+      ? { displayMode: normalizeDisplayMode(instance.trackDisplayMode) }
+      : {}),
+  }),
 }
 
 /**

@@ -11,6 +11,15 @@ import { createTestEnvironment } from './testEnv.ts'
 describe('the display config schema', () => {
   const configSchema = configSchemaFactory()
 
+  it("lifts v4's colorBy into the row color's attribute", () => {
+    const config = configSchema.create({
+      type: 'LinearMultiSampleVariantDisplay',
+      displayId: 'color-by',
+      colorBy: 'population',
+    })
+    expect(readConfObject(config, ['rowColor', 'field'])).toBe('population')
+  })
+
   // `showReferenceAlleles` was a second boolean whose only job was seeding this
   // one; it is gone, and this slot is the whole setting.
   describe('referenceDrawingMode config slot', () => {

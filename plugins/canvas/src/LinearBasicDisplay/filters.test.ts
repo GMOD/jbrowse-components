@@ -154,6 +154,19 @@ describe('canvas display filters', () => {
     expect(display.configuredFilters()).toEqual([`jexl:get(feature,'score')>5`])
   })
 
+  it("a v4.3 session's trackDisplayMode lands in the displayMode slot", () => {
+    const pluginManager = new PluginManager()
+    registerLinearBasicDisplay(pluginManager)
+    pluginManager.createPluggableElements()
+    const { retiredState } = pluginManager.getDisplayType('LinearBasicDisplay')
+    expect(retiredState!.lift({ trackDisplayMode: 'compact' })).toEqual({
+      displayMode: 'compact',
+    })
+    expect(retiredState!.lift({ trackDisplayMode: 'collapse' })).toEqual({
+      displayMode: 'normal',
+    })
+  })
+
   // a bare string is a field that must hold, and a `jexl:` one is computed
   it('reads a bare field name as that field being true', () => {
     const display = createDisplay(['geneLike'])

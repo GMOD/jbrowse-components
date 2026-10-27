@@ -158,6 +158,13 @@ test('lifts the settings off the pre-4.x nested sub-nodes', () => {
   )
 })
 
+test("lifts a v4.3.0 session's snpCovHeight into the coverage band's height", () => {
+  expect(retiredState.lift({ snpCovHeight: 80 })).toEqual({
+    coverage: { height: 80 },
+  })
+  expect(retiredState.keys).toContain('snpCovHeight')
+})
+
 // what a v4.3.0 session holds: its mixin wrote the `*Setting` names back out
 test('lifts the released *Setting spelling, which wins over the bare one', () => {
   expect(
