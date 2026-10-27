@@ -36,6 +36,7 @@ import StoredHoverMixin from '@jbrowse/display-kit/StoredHoverMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import { MIN_DISPLAY_HEIGHT } from '@jbrowse/display-kit/const'
 import { editPlotMenuItems } from '@jbrowse/display-kit/plotMenu'
+import { sameAsLast } from '@jbrowse/display-kit/stableIdentityComputed'
 import { types } from '@jbrowse/mobx-state-tree'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import { maxCanvasCssPx } from '@jbrowse/render-core/canvas2dUtils'
@@ -63,7 +64,6 @@ import {
 } from '@jbrowse/wiggle-core'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
-import { compareStructural } from 'mobx'
 
 import { mafCoverageBandColors } from '../LinearMafRenderer/coverageBandColors.ts'
 import { identityOver } from '../LinearMafRenderer/identity.ts'
@@ -1380,7 +1380,7 @@ export default function stateModelFactory(
       }))
       .views(self => {
         const superConfigProblemsOf = self.configProblemsOf
-        let lastPlan: RowPlan | undefined
+        const keepPlan = sameAsLast<RowPlan>()
         return {
           /**
            * #method
@@ -1429,10 +1429,7 @@ export default function stateModelFactory(
               baseLevel: self.zoomedToBaseLevel,
               hasFrames: !!self.framesAdapterConfig,
             })
-            if (!lastPlan || !compareStructural(next, lastPlan)) {
-              lastPlan = next
-            }
-            return lastPlan
+            return keepPlan(next)
           },
         }
       })
@@ -1634,7 +1631,7 @@ export default function stateModelFactory(
         },
       }))
       .views(self => {
-        let last: ReturnType<typeof perRowRefNameRanks> | undefined
+        const keepRanks = sameAsLast<ReturnType<typeof perRowRefNameRanks>>()
         return {
           /**
            * #getter
@@ -1649,10 +1646,7 @@ export default function stateModelFactory(
               self.rowPlan.color === 'refNameRank'
                 ? perRowRefNameRanks(self.rpcDataMap.values())
                 : { ranks: new Map<number, Map<string, number>>(), maxRank: 0 }
-            if (!last || !compareStructural(next, last)) {
-              last = next
-            }
-            return last
+            return keepRanks(next)
           },
         }
       })
