@@ -1,6 +1,7 @@
 import { useState } from 'react'
 
 import { SubmitDialog } from '@jbrowse/core/ui'
+import { toBase64 } from '@jbrowse/core/util'
 import { TextField } from '@mui/material'
 import { observer } from 'mobx-react'
 
@@ -27,7 +28,10 @@ export const HTTPBasicLoginForm = observer(function HTTPBasicLoginForm({
         handleClose()
       }}
       onSubmit={() => {
-        handleClose(btoa(`${username}:${password}`))
+        // UTF-8, per RFC 7617: btoa throws on anything past Latin-1
+        handleClose(
+          toBase64(new TextEncoder().encode(`${username}:${password}`)),
+        )
       }}
     >
       <div style={{ display: 'flex', flexDirection: 'column' }}>
