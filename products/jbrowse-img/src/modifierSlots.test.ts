@@ -90,9 +90,45 @@ const SAMPLES: Record<string, string[] | Partial<Record<Category, string[]>>> =
     },
   }
 
-// runBatch hands every track `force:true`, and these displays have no size
-// gate to lift
-const UNGATED = new Set(['wiggle force', 'hic force'])
+// The displays a modifier writes nothing on, by modifier
+const WRITES_NOTHING: Record<string, readonly string[]> = {
+  // runBatch hands every track `force:true`; these have no size gate to lift
+  force: [
+    'LinearWiggleDisplay',
+    'LinearHicDisplay',
+    'LDTrackDisplay',
+    'LinearSyntenyDisplay',
+    'DotplotDisplay',
+    'ChordSyntenyDisplay',
+    'ChordVariantDisplay',
+  ],
+  // the comparative views size these
+  height: [
+    'LinearSyntenyDisplay',
+    'DotplotDisplay',
+    'ChordSyntenyDisplay',
+    'ChordVariantDisplay',
+  ],
+  color: [
+    'LDTrackDisplay',
+    'LinearReferenceSequenceDisplay',
+    'LinearSyntenyDisplay',
+    'DotplotDisplay',
+    'ChordSyntenyDisplay',
+  ],
+  // gaps: `display:multivariant heightMode:grow` writes nothing
+  heightMode: [
+    'LinearMultiRowFeatureDisplay',
+    'LinearMultiSampleVariantDisplay',
+  ],
+  featureHeight: [
+    'LinearMultiRowFeatureDisplay',
+    'LinearMultiSampleVariantDisplay',
+  ],
+}
+
+const writesNothing = (name: string, type: string) =>
+  WRITES_NOTHING[name]?.includes(type) ?? false
 
 const samplesFor = (name: string, category: Category) => {
   const samples = SAMPLES[name] ?? []
@@ -109,47 +145,59 @@ test('every display a category names is one the schema declares', () => {
   ).toEqual([])
 })
 
-describe('each modifier writes settings a display of its category takes', () => {
-  for (const name of trackModifierNames) {
-    it(name, () => {
-      const refused: string[] = []
-      let applied = 0
-      for (const category of ALL_CATEGORIES) {
-        if (UNGATED.has(`${category} ${name}`)) {
-          continue
-        }
-        for (const sample of samplesFor(name, category)) {
-          const opt = `${name}:${sample}`
-          const warnings: string[] = []
-          const result = buildDisplaySnapshot(category, [opt], message => {
-            warnings.push(message)
-          })
-          if (warnings.length > 0) {
-            continue
-          }
-          applied += 1
-          const members = memberWrites(category, [opt])
-          const settings = {
-            ...result.snap,
-            ...(result.sort
-              ? { sort: { ...result.sort, pos: 0, refName: 'chr1' } }
-              : {}),
-            ...(members.length ? memberPatch(members, () => undefined) : {}),
-          }
-          const types = result.displayType
-            ? [result.displayType]
-            : displaysOf(category)
-          if (!displayTaking(types, settings)) {
-            refused.push(
-              `${category} ${opt}: ${JSON.stringify(settings)} fits none of ${types.join(', ')}`,
-            )
-          }
+function modifierRefusals(name: string) {
+  const refused = new Set<string>()
+  let applied = 0
+  for (const category of ALL_CATEGORIES) {
+    for (const sample of samplesFor(name, category)) {
+      const opt = `${name}:${sample}`
+      const warnings: string[] = []
+      const result = buildDisplaySnapshot(category, [opt], message => {
+        warnings.push(message)
+      })
+      if (warnings.length > 0) {
+        continue
+      }
+      applied += 1
+      const members = memberWrites(category, [opt])
+      const settings = {
+        ...result.snap,
+        ...(result.sort
+          ? { sort: { ...result.sort, pos: 0, refName: 'chr1' } }
+          : {}),
+        ...(members.length ? memberPatch(members, () => undefined) : {}),
+      }
+      const types = result.displayType
+        ? [result.displayType]
+        : displaysOf(category)
+      for (const type of types) {
+        if (!displayTaking([type], settings)) {
+          refused.add(type)
         }
       }
-      expect(refused).toEqual([])
+    }
+  }
+  return { refused: [...refused], applied }
+}
+
+describe('each modifier writes settings every display of its category takes', () => {
+  for (const name of trackModifierNames) {
+    it(name, () => {
+      const { refused, applied } = modifierRefusals(name)
+      expect(refused.filter(type => !writesNothing(name, type))).toEqual([])
       expect(applied).toBeGreaterThan(0)
     })
   }
+})
+
+test('every display a modifier is listed as writing nothing on refuses it', () => {
+  const stale = Object.entries(WRITES_NOTHING).flatMap(([name, types]) => {
+    const { refused } = modifierRefusals(name)
+    return types
+      .filter(type => !refused.includes(type))
+      .map(t => `${name} ${t}`)
+  })
+  expect(stale).toEqual([])
 })
 
 const readme = fs.readFileSync(path.join(__dirname, '..', 'README.md'), 'utf8')
