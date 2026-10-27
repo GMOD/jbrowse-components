@@ -622,11 +622,14 @@ of named modifiers. Any other display setting is a
 [slot write](#any-display-setting-slotpathvalue), spelled as the display spells
 the slot.
 
-Modifiers are grouped below by the track types they apply to. Passing one to a
-track type it does not apply to (say `sashimi:up` on a BigWig) prints a warning
-naming the types it does work on. A track whose display none of these target
-(GWAS, MAF, LD, marks, synteny, sequence) takes only the all-tracks modifiers
-and [slot writes](#any-display-setting-slotpathvalue).
+Modifiers are grouped below by the track types they apply to. A modifier lands
+only where the display the track opens as has the setting it writes; anywhere
+else it prints a warning naming the display and the setting it lacks, as
+`sashimi:up` does on a BigWig and `heightMode:fit` on a multi-row feature track.
+`force:` is the exception: a display that never gates a large region, such as a
+BigWig's or a Hi-C map's, skips it without a word. A track whose display none of
+these target (GWAS, MAF, LD, marks, synteny, sequence) takes only the all-tracks
+modifiers and [slot writes](#any-display-setting-slotpathvalue).
 
 A modifier **value** the modifier can't use, such as `arcs:upp`, `height:8o` or
 `force:ture`, is an error. The tool writes one figure and exits, so a warning
