@@ -218,11 +218,6 @@ const EXCEPTIONS: readonly Exception[] = [
     'numeric field other than score, no scale',
   ),
   ...listed(
-    'synteny',
-    'declares no scale.unknown, which its closed schema refuses',
-    'ordinal domain, range, unknown, invalid',
-  ),
-  ...listed(
     'wiggle',
     WIGGLE_SCORE_ONLY,
     'numeric field other than score, no scale',

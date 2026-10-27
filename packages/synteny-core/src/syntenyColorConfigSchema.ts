@@ -14,6 +14,7 @@ import {
   colorScaleOptions,
   colorScaleTypeSlot,
   colorTitleSlot,
+  colorUnknownSlot,
 } from '@jbrowse/display-kit/colorConfigSchema'
 
 import type {
@@ -76,6 +77,7 @@ export function syntenyColorScaleSlots(scaleName: string) {
     ...colorRampSlots,
     ...colorDomainEndsSlots,
     ...colorNamesSlot,
+    ...colorUnknownSlot,
     ...colorInvalidSlot,
   }
 }

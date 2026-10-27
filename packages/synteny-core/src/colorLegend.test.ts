@@ -244,6 +244,28 @@ test('labels sharing a color are one chip naming each', () => {
   ])
 })
 
+test('scale.unknown keys the labels domain leaves out as one Other row', () => {
+  const [scale] = colorByScales('type', {
+    attributeRanges: {
+      type: {
+        labels: ['SYN', 'DUP', 'TRANS'],
+        colors: {},
+        domain: ['SYN'],
+        palette: ['#d95f02'],
+      },
+    },
+    paint: { type: 'ordinal', domain: ['SYN'], unknown: '#999999' },
+  })
+  expect(scale!.kind === 'categorical' && scale!.entries).toEqual([
+    expect.objectContaining({ value: 'SYN', label: 'SYN' }),
+    expect.objectContaining({
+      label: 'Other',
+      values: ['DUP', 'TRANS'],
+      color: expect.stringMatching(/153, ?153, ?153|#999999/),
+    }),
+  ])
+})
+
 // The scale is the swatch spec in the vocabulary the shared key draws: a ramp
 // keeps its own end labels through `format`, chips become entries composited
 // by the view's alpha, and a mode with no fixed key is one note row.

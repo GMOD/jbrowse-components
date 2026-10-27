@@ -215,6 +215,26 @@ describe('a record field', () => {
     expect(color(variant({ AF: [undefined] }))).toBe(abgr(ALT_HUE))
   })
 
+  test('runs a number along a ramp over the loaded values, reading the field alone', () => {
+    const encoding = {
+      field: 'INFO.AF',
+      scale: 'linear' as const,
+      range: ['#000000', '#ffffff'],
+      reverse: false,
+    }
+    const cellHue = cellHueOf(encoding, undefined, undefined, ['0', '0.5', '1'])
+    expect(cellHue.read).toEqual({ field: 'INFO.AF' })
+    expect(cellHue.keyOf).toBeUndefined()
+    expect(abgr(cellHue.hueOf!('0'))).toBe(abgr('#000000'))
+    expect(abgr(cellHue.hueOf!('1'))).toBe(abgr('#ffffff'))
+    expect(cellHue.hueOf!('')).toBe(NO_CATEGORY_COLOR)
+    expect(cellHue.ramp!.keyScales('recordField', 'AF')[0]).toMatchObject({
+      kind: 'ramp',
+      domain: [0, 1],
+      title: 'AF',
+    })
+  })
+
   test('deals values the hash puts on one hue a hue each, whatever their order', () => {
     const values = ['TEC', 'snRNA', 'protein_coding']
     const hues = (order: string[]) => {

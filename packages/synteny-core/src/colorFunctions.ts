@@ -288,11 +288,18 @@ function dealtScale(mode: CategoricalMode) {
  * one core's categorical channel deals it under the declared domain and range
  * (ADR-205), in the order the view first saw the labels.
  */
-export function categoricalColor(mode: CategoricalMode, label: string) {
+/** Whether `label` takes the mode's `unknown` color, `domain` leaving it out. */
+export function paintsUnknown(mode: CategoricalMode, label: string) {
   return (
-    mode.colors[label] ??
-    (label === '' ? NO_CATEGORY_COLOR : dealtScale(mode)(label))
+    mode.unknown !== undefined && label !== '' && !mode.domain.includes(label)
   )
+}
+
+export function categoricalColor(mode: CategoricalMode, label: string) {
+  return paintsUnknown(mode, label)
+    ? mode.unknown || NO_CATEGORY_COLOR
+    : (mode.colors[label] ??
+        (label === '' ? NO_CATEGORY_COLOR : dealtScale(mode)(label)))
 }
 
 /**

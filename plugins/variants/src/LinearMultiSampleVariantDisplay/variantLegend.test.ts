@@ -2,6 +2,7 @@ import { SV_TYPE_FIELD } from '@jbrowse/core/util/categoricalField'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 
 import { ALT_HUE, HET_DOSAGE, shadeByDosage } from '../shared/cellFill.ts'
+import { cellHueOf } from '../shared/cellHue.ts'
 import { NO_CALL_COLOR, REFERENCE_COLOR } from '../shared/constants.ts'
 import { PHASE_SET_FIELD } from '../shared/getPhasedColor.ts'
 import {
@@ -108,6 +109,29 @@ describe('getVariantColorScales', () => {
       color: undefined,
     })
     expect(sections.map(s => s.id)).toEqual(['genotypes'])
+  })
+
+  it('a ramp keys its bar, then the dosage note and the absent-data rows', () => {
+    const color = {
+      field: 'INFO.AF',
+      scale: 'linear' as const,
+      range: [],
+      reverse: false,
+    }
+    const sections = getVariantColorScales({
+      ...inputs({ shadeByDosage: true }),
+      color,
+      ramp: cellHueOf(color, undefined, undefined, ['0', '1']).ramp,
+    })
+    expect(sections.map(s => [s.kind, s.id])).toEqual([
+      ['ramp', 'recordField'],
+      ['categorical', 'recordFieldAbsent'],
+    ])
+    expect(sections[0]).toMatchObject({ title: 'INFO.AF', domain: [0, 1] })
+    expect(entriesOf(sections[1])!.map(i => i.label)).toEqual([
+      DOSAGE_NOTE,
+      'Homozygous reference',
+    ])
   })
 
   it('lists only the impact tiers a cell was painted for', () => {

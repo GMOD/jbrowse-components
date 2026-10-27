@@ -85,6 +85,8 @@ export interface SyntenyColorPaint {
   domainMin?: number
   domainMax?: number
   domainMid?: number
+  /** the color of a label `domain` leaves out, `''` the no-value grey */
+  unknown?: string
   /** the color of an alignment with no value for the field */
   invalid?: string
 }
@@ -108,6 +110,7 @@ export function colorPaintOf({ scale }: SyntenyColorConfig): SyntenyColorPaint {
     domainMin: readConfObject(scale, 'domainMin'),
     domainMax: readConfObject(scale, 'domainMax'),
     domainMid: readConfObject(scale, 'domainMid'),
+    unknown: readConfObject(scale, 'unknown'),
     invalid: readConfObject(scale, 'invalid'),
   }
 }
@@ -248,6 +251,8 @@ export interface CategoricalMode {
   missing: boolean
   domain: readonly string[]
   palette: readonly string[]
+  /** the color every label `domain` leaves out paints, `''` the no-value grey */
+  unknown?: string
 }
 
 const valueLabels = new WeakMap<AttributeSpan, string[]>()
@@ -292,6 +297,7 @@ export function resolveCategoricalMode(
       missing: range.missing ?? false,
       domain: range.domain ?? [],
       palette: range.palette ?? [],
+      unknown: paint.unknown,
     }
   }
   if (paint.type !== 'ordinal' || isMeasureField(field)) {
@@ -308,6 +314,7 @@ export function resolveCategoricalMode(
     missing: range.missing ?? false,
     domain,
     palette: ordinalRange(paint),
+    unknown: paint.unknown,
   }
 }
 

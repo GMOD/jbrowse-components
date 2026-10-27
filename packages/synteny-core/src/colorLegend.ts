@@ -9,7 +9,7 @@ import { thresholdKeyEntries } from '@jbrowse/core/util/thresholdScale'
 import { rampMidT } from '@jbrowse/render-core/shaders/colorRampLut'
 
 import { bandGroundColor } from './bandGround.ts'
-import { categoricalColor } from './colorFunctions.ts'
+import { categoricalColor, paintsUnknown } from './colorFunctions.ts'
 import {
   SYNTENY_FIELD_PRESETS,
   isMeasureField,
@@ -68,7 +68,12 @@ function labelChips(
 ): ColorChip[] {
   const named = keyNames(categorical.domain, names)
   const rows = new Map<number, { color: string; values: string[] }>()
+  const other: string[] = []
   for (const label of categorical.labels) {
+    if (paintsUnknown(categorical, label)) {
+      other.push(label)
+      continue
+    }
     const color = categoricalColor(categorical, label)
     const key = cssColorToABGR(color)
     const row = rows.get(key)
@@ -79,14 +84,25 @@ function labelChips(
     }
   }
   const compare = groupKeyComparator(categorical.domain)
-  return [...rows.values()].map(({ color, values }) => {
-    const sorted = values.toSorted(compare)
-    return {
-      color,
-      label: sorted.map(value => named.get(value) ?? value).join(', '),
-      values: sorted,
-    }
-  })
+  return [
+    ...[...rows.values()].map(({ color, values }) => {
+      const sorted = values.toSorted(compare)
+      return {
+        color,
+        label: sorted.map(value => named.get(value) ?? value).join(', '),
+        values: sorted,
+      }
+    }),
+    ...(other.length > 0
+      ? [
+          {
+            color: categoricalColor(categorical, other[0]!),
+            label: 'Other',
+            values: other,
+          },
+        ]
+      : []),
+  ]
 }
 
 // Bitmask over the CIGAR indel ops actually painted in the current geometry —

@@ -8,7 +8,11 @@ import {
 } from '@jbrowse/display-kit/colorConfigSchema'
 
 import { configSchemaFactory } from './configSchema.ts'
-import { geneColors } from './geneColor.ts'
+import {
+  geneColorEncodingOf,
+  geneColorRampOf,
+  geneColors,
+} from './geneColor.ts'
 
 const jexl = createJexlInstance()
 const schema = configSchemaFactory()
@@ -51,4 +55,42 @@ test('utrs.encoding.color paints every UTR over the fill', () => {
       utrs: { encoding: { color: { value: 'orange' } } },
     }),
   ).toBe(cssColorToABGR('orange'))
+})
+
+test('score runs genes along a ramp over the features shown, and a UTR takes the fill', () => {
+  const conf = schema.create({
+    type: 'MultiWaySyntenyDisplay',
+    displayId: 'ramp',
+    encoding: {
+      color: { field: 'score', scale: { range: ['black', 'white'] } },
+    },
+  })
+  const encoding = geneColorEncodingOf(colorSnapshotOf(conf.encoding.color))
+  const genes = [0, 5, 10].map(
+    score =>
+      new SimpleFeature({
+        uniqueId: `s${score}`,
+        refName: 'chr1',
+        start: 0,
+        end: 100,
+        score,
+      }),
+  )
+  const ramp = geneColorRampOf(encoding, jexl, () => genes)
+  const { fill, utr } = geneColors(
+    conf,
+    encoding,
+    undefined,
+    jexl,
+    undefined,
+    ramp,
+  )
+  const [low, , high] = genes.map(g => fill(g, undefined).packed)
+  expect(low).toBe(cssColorToABGR('black'))
+  expect(high).toBe(cssColorToABGR('white'))
+  expect(utr(genes[2]!, fill(genes[2]!, undefined))).toBe(high)
+  expect(ramp!.keyScales('genes', undefined)[0]).toMatchObject({
+    kind: 'ramp',
+    domain: [0, 10],
+  })
 })
