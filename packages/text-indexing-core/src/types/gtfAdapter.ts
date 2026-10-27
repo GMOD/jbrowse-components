@@ -54,9 +54,6 @@ export function parseGtfAttributes(attrString: string) {
         .slice(sp + 1)
         .trim()
         .replaceAll(/^"|"$/g, '')
-        // a comma separates record ids in the trix .ix format, so it can never
-        // survive into an indexed word
-        .replaceAll(',', ' ')
       if (value) {
         ;(attrs[key] ??= []).push(value)
       }

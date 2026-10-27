@@ -133,8 +133,13 @@ export async function getLocalOrRemoteStream({
   }
 }
 
+// a signed URL's query string would otherwise hide its `.gz`
+function pathOf(location: string) {
+  return isURL(location) ? new URL(location).pathname : location
+}
+
 export function createReadlineInterface(stream: Readable, inLocation: string) {
-  const inputStream = /\.b?gz$/i.test(inLocation)
+  const inputStream = /\.b?gz$/i.test(pathOf(inLocation))
     ? stream.pipe(createGunzip())
     : stream
   return readline.createInterface({ input: inputStream })
@@ -152,7 +157,10 @@ export function parseAttributes(
       if (eqIdx !== -1) {
         const key = trimmed.slice(0, eqIdx).trim()
         const val = trimmed.slice(eqIdx + 1)
-        result[key] = decodeFunc(val).trim().replaceAll(',', ' ')
+        result[key] = val
+          .split(',')
+          .map(v => decodeFunc(v).trim())
+          .join(' ')
       }
     }
   }
@@ -192,9 +200,10 @@ const adapterGuesses = [
 ]
 
 export function guessAdapterFromFileName(filePath: string): Track {
-  const guess = adapterGuesses.find(g => g.regex.test(filePath))
+  const filePathname = pathOf(filePath)
+  const guess = adapterGuesses.find(g => g.regex.test(filePathname))
   if (guess) {
-    const name = path.basename(filePath)
+    const name = path.basename(filePathname)
     const protocol = isURL(filePath) ? 'uri' : 'localPath'
     return {
       trackId: name,

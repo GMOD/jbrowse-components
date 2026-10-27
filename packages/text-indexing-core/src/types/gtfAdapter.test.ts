@@ -104,12 +104,11 @@ describe('indexGtf', () => {
   })
 
   test('commas in a value are split into separate words', async () => {
-    // a comma separates record ids in the .ix format, so it can never survive
-    // into an indexed word
     const results = await index([
       'chr1\t.\texon\t1\t9\t.\t+\t.\tgene_id "g1"; gene_name "alpha,beta";',
     ])
     expect(results.map(r => words(r))).toEqual([['alpha', 'beta', 'g1']])
+    expect(results[0]).toContain(encodeURIComponent('alpha,beta'))
   })
 
   test('a semicolon inside a quoted value does not truncate it', async () => {

@@ -32,7 +32,7 @@ export async function* indexVcf({
       continue
     }
 
-    const [ref, pos, id, , , , , info] = line.split('\t')
+    const [ref, pos, id, refAllele, , , , info] = line.split('\t')
 
     // a valid VCF data row has at least 8 tab-delimited columns; skip blank or
     // malformed/short lines that would otherwise emit garbage records or throw
@@ -40,6 +40,7 @@ export async function* indexVcf({
       ref === undefined ||
       pos === undefined ||
       id === undefined ||
+      refAllele === undefined ||
       info === undefined
     ) {
       continue
@@ -47,9 +48,12 @@ export async function* indexVcf({
 
     const fields = parseAttributes(info, decodeURIComponentNoThrow)
     // an empty `END=` parses to 0 via Number(''), which is finite; require a
-    // non-empty value before trusting it, else fall back to pos+1
+    // non-empty value before trusting it, else the REF allele spans the record
     const endNum = Number(fields.END)
-    const end = fields.END && Number.isFinite(endNum) ? endNum : Number(pos) + 1
+    const end =
+      fields.END && Number.isFinite(endNum)
+        ? endNum
+        : Number(pos) + refAllele.length - 1
     const locStr = `${ref}:${pos}..${end}`
 
     const infoAttrs = attributesToIndex

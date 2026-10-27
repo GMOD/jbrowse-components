@@ -40,9 +40,9 @@ describe('indexVcf', () => {
     return file
   }
 
-  test('an empty END= falls back to pos+1 rather than 0', async () => {
+  test('an empty END= falls back to the REF span rather than 0', async () => {
     // regression: Number('') is a finite 0, so an empty END= used to yield the
-    // location ctgA:200..0 instead of ctgA:200..201
+    // location ctgA:200..0
     const file = writeVcf([
       '##fileformat=VCFv4.2',
       '#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO',
@@ -50,7 +50,7 @@ describe('indexVcf', () => {
     ])
     const results = await indexToArray(file, tmpDir)
     expect(results).toHaveLength(1)
-    expect(results[0]).toContain(encodeURIComponent('ctgA:200..201'))
+    expect(results[0]).toContain(encodeURIComponent('ctgA:200..200'))
   })
 
   test('a valid END= is used as the location end', async () => {
@@ -63,14 +63,16 @@ describe('indexVcf', () => {
     expect(results[0]).toContain(encodeURIComponent('ctgA:300..500'))
   })
 
-  test('a missing END falls back to pos+1', async () => {
+  test('a missing END spans the REF allele', async () => {
     const file = writeVcf([
       '#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO',
       'ctgA\t100\tvar3\tA\tT\t.\t.\t.',
+      'ctgA\t200\tvar4\tACGT\tA\t.\t.\t.',
     ])
     const results = await indexToArray(file, tmpDir)
-    expect(results).toHaveLength(1)
-    expect(results[0]).toContain(encodeURIComponent('ctgA:100..101'))
+    expect(results).toHaveLength(2)
+    expect(results[0]).toContain(encodeURIComponent('ctgA:100..100'))
+    expect(results[1]).toContain(encodeURIComponent('ctgA:200..203'))
   })
 
   test('a semicolon-separated ID emits one record per variant id', async () => {

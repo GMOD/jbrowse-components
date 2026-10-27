@@ -7,13 +7,16 @@ import fs from 'node:fs'
 import http from 'node:http'
 import path from 'node:path'
 import { Readable } from 'node:stream'
+import { gzipSync } from 'node:zlib'
 
 import { indexableAdapters, isSupportedIndexingAdapter } from '../util.ts'
 import {
+  createReadlineInterface,
   getLocalOrRemoteStream,
   guessAdapterFromFileName,
   isURL,
   makeLocation,
+  parseAttributes,
 } from './common.ts'
 
 const testDataDir = path.join(
@@ -78,6 +81,32 @@ describe('utils for text indexing', () => {
     expect(() => {
       guessAdapterFromFileName('genes.gt')
     }).toThrow('Unsupported file type')
+  })
+  it('reads the suffix of a signed URL off its path', () => {
+    const conf = guessAdapterFromFileName(`${gff3}?X-Amz-Signature=abc`)
+    expect(conf.adapter?.type).toBe('Gff3TabixAdapter')
+    expect(conf.name).toBe('gencode.v36.annotation.sort.gff3.gz')
+  })
+})
+
+describe('createReadlineInterface', () => {
+  it('gunzips a signed URL', async () => {
+    const lines = []
+    for await (const line of createReadlineInterface(
+      Readable.from([gzipSync('a\nb\n')]),
+      'https://example.com/genes.gff3.gz?X-Amz-Signature=abc',
+    )) {
+      lines.push(line)
+    }
+    expect(lines).toEqual(['a', 'b'])
+  })
+})
+
+describe('parseAttributes', () => {
+  it('splits multiple values before decoding, keeping an escaped comma', () => {
+    expect(
+      parseAttributes('Name=foo%2Cbar;Alias=a,b', decodeURIComponent),
+    ).toEqual({ Name: 'foo,bar', Alias: 'a b' })
   })
 })
 
