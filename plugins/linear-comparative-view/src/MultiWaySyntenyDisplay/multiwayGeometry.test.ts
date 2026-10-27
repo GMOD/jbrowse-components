@@ -14,7 +14,13 @@ import {
   withAbgrAlpha,
 } from '@jbrowse/core/util/colorBits'
 import { UNIVERSAL_FIELD_PRESETS } from '@jbrowse/core/util/colorScale'
-import { attributeTooltipLines } from '@jbrowse/synteny-core'
+import {
+  attributeTooltipLines,
+  comparativeFilter,
+  createAttributeChannels,
+  createComparativeColorFunction,
+  writeFeatureChannels,
+} from '@jbrowse/synteny-core'
 
 import {
   KIND_BASE,
@@ -1579,4 +1585,99 @@ test('a lane-pair link across a deletion both lanes carry leaves the gap open', 
     [...piece(peach, 0, 10_000), ...piece(cacao, 0, 11_000)],
     [...piece(peach, 10_000, 20_000), ...piece(cacao, 11_000, 21_000)],
   ])
+})
+
+// The multi-way ribbons read their records on the main thread, where two-way
+// synteny paints and filters the channels its worker wrote. Each case runs
+// both over the same records, so a ribbon read that skips the worker's
+// parsing fails here.
+describe('the ribbons paint and filter as two-way synteny does', () => {
+  const RIBBON = 'rgb(130,130,130)'
+  const recordsOf = (values: unknown[]) =>
+    values.map(
+      (x, i) =>
+        new SimpleFeature({
+          ...pairFeature(`g${i}`, 50 + i * 180, 150 + i * 180).toJSON(),
+          ...(x === undefined ? {} : { x }),
+        }),
+    )
+  function twoWay(records: Feature[], filter: FieldPredicate[]) {
+    const n = records.length
+    const channels = createAttributeChannels(['x'], n)
+    for (const [i, record] of records.entries()) {
+      writeFeatureChannels(channels.list, i, record)
+    }
+    const { attributes, attributeRanges } = channels.finish(n)
+    const data = {
+      strands: new Int8Array(n).fill(1),
+      refNameDict: [],
+      refNameIds: new Uint32Array(n),
+      mateRefNameDict: [],
+      mateRefNameIds: new Uint32Array(n),
+      attributes,
+      attributeRanges,
+    }
+    const colorAt = createComparativeColorFunction({
+      field: 'x',
+      data,
+      trackColor: '#000',
+      defaultColor: cssColorToABGR(RIBBON),
+      attributeRanges,
+      // a ribbon with no value takes the ribbon grey, where two-way takes
+      // core's no-value grey
+      paint: { invalid: RIBBON },
+    })
+    const passes = comparativeFilter(filter, data)
+    return {
+      attributeRanges,
+      colors: records.map((_, i) => colorAt(i)),
+      kept: records.map((_, i) => passes?.(i) ?? true),
+    }
+  }
+  function multiWay(
+    records: Feature[],
+    filter: FieldPredicate[],
+    attributeRanges: ReturnType<typeof twoWay>['attributeRanges'],
+  ) {
+    const data = ribbonData(
+      buildRibbonGeometry({
+        stack: stack({ features: records }),
+        laneLinks: undefined,
+        ribbonColor: RIBBON,
+        opacity: { value: 1 },
+        ribbonColorField: 'x',
+        attributeRanges,
+        filter,
+        drawCurves: false,
+      }).cells,
+      'ribbons:0',
+    )
+    return [...data.colors.subarray(0, data.instanceCount)]
+  }
+
+  test.each<[string, unknown[], FieldPredicate[]]>([
+    ['text and decimal text', ['INV', '0.50', 'NA', ' core ', 'core'], []],
+    ['numbers and decimal text', [0.5, '0.50', '1e-3', 'NA', 2], []],
+    [
+      'a has-a-value filter',
+      ['INV', 'NA', '.', undefined, 'DEL'],
+      [{ field: 'x', valid: true }],
+    ],
+    [
+      'a numeric floor over text numbers',
+      ['0.4', '0.50', 2, 'NA', '7'],
+      [{ field: 'x', gte: 0.5 }],
+    ],
+    [
+      'a label list',
+      [' core ', 'core', 'shell', 'NA', 'cloud'],
+      [{ field: 'x', oneOf: ['core'] }],
+    ],
+  ])('%s', (_name, values, filter) => {
+    const records = recordsOf(values)
+    const oracle = twoWay(records, filter)
+    expect(multiWay(records, filter, oracle.attributeRanges)).toEqual(
+      oracle.colors.filter((_, i) => oracle.kept[i]),
+    )
+  })
 })
