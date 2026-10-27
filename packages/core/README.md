@@ -247,6 +247,25 @@ import { canonicalizeViewRefName } from '@jbrowse/core/util'
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/mstUtils.ts)
 
+### categoricalField
+
+`labels` names the `domain`'s values in a key, one each in order, where a config
+spells them for a reader rather than as the data does. `held` deals each key the
+domain does not list a color when the key first appears (`categoricalScale`);
+the caller keeps it for as long as the colors should hold. `unknown` paints
+every such key one color instead, `''` the no-value grey, and `invalid` paints
+the no-value key, `''` or a preset's missing level (strand's `0`), which keeps
+the grey or the level's own color while unset.
+
+```js
+import { categoricalField } from '@jbrowse/core/util/categoricalField'
+
+// type signature
+(field: string, { domain, range, labels, held, unknown, invalid }?: { domain?: readonly string[]; range?: readonly string[]; labels?: readonly string[]; held?: HeldSlots; unknown?: string; invalid?: string; }) => CategoricalField
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/categoricalField.ts)
+
 ### CategoricalField
 
 One categorical field as every channel reads it — a facet's sections, a color's
@@ -2598,23 +2617,6 @@ import { withHitIndex } from '@jbrowse/core/util/markEncoding'
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncoding.ts)
-
-### withOwnColors
-
-`labels` names the `domain`'s values in a key, one each in order, where a config
-spells them for a reader rather than as the data does. `held` deals each key the
-domain does not list a color when the key first appears (`categoricalScale`);
-the caller keeps it for as long as the colors should hold. `unknown` paints
-every such key one color instead, `''` the no-value grey, and `invalid` paints
-the no-value key, `''` or a preset's missing level (strand's `0`), which keeps
-the grey or the level's own color while unset.
-
-```js
-// type signature
-(order: readonly string[], range: readonly string[], ownOrder: readonly string[], ownRange: readonly string[]) => [string[], string[]]
-```
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/categoricalField.ts)
 
 ### writesWholeAt
 
