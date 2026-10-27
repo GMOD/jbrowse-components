@@ -17,7 +17,9 @@
 // Usage: node scripts/agent-evals/chatAgentEval.ts [--model m] [--filter name]
 //        [--runs N] [--out dir] [--build dir] [--plugin dir] [--budget usd]
 //        [--system-prompt file] [--set dev|heldout|tutorials|all] [--price-in usd/M] [--price-out usd/M]
-//        [--provider anthropic|ollama] [--ollama-url url]
+//        [--provider anthropic|ollama] [--ollama-url url] [--cpu]
+//
+// --cpu sets num_gpu 0 on each Ollama request so no layers load onto a GPU.
 import { execFileSync } from 'node:child_process'
 import fs from 'node:fs'
 import http from 'node:http'
@@ -49,6 +51,7 @@ if (provider !== 'anthropic' && provider !== 'ollama') {
   throw new Error(`unknown --provider ${provider}`)
 }
 const ollamaUrl = new URL(flag('ollama-url', 'http://127.0.0.1:11434'))
+const cpuOnly = args.includes('--cpu')
 const model = flag(
   'model',
   provider === 'ollama' ? 'qwen3:4b' : 'claude-sonnet-5-5',
@@ -232,6 +235,10 @@ function serveProxy() {
           delete doc.temperature
           body = Buffer.from(JSON.stringify(doc))
         } catch {}
+      } else if (cpuOnly && body.length > 0) {
+        const doc = JSON.parse(body.toString('utf8'))
+        doc.options = { ...doc.options, num_gpu: 0 }
+        body = Buffer.from(JSON.stringify(doc))
       }
       const upstream = upstreamRequest(req, body, up => {
         res.writeHead(up.statusCode ?? 502, {
