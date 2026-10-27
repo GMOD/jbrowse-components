@@ -540,6 +540,13 @@ two calls.
   tables, so `xStart`/`xEnd` and `yStart`/`yEnd` stop at the region, while
   `length` stays the block's whole query span. A block reaching past the
   view therefore starts at different coordinates in the two tables.
+- `multiway` lays the stack out as the display does over `display.height`
+  (240 px unless set) and returns where it put things, in px down from the
+  stack's top: `height`, each lane's `yTop` and `yBottom`, and each ribbon's
+  `yTop` and `yBottom`. A ribbon's `thin` flag and fade depend on its
+  gutter's height, so a host draws at these heights, and sets
+  `display.height` for a taller or shorter figure, rather than laying out
+  gutters of its own.
 
 ## In grammar-of-graphics terms
 

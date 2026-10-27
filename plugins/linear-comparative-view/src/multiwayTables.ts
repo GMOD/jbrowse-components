@@ -82,7 +82,7 @@ import { getMate } from './syntenyMate.ts'
 
 import type { LaneLinks } from './MultiWaySyntenyDisplay/alignmentOps.ts'
 import type { LanePin } from './MultiWaySyntenyDisplay/lanePins.ts'
-import type { Lane } from './MultiWaySyntenyDisplay/laneStack.ts'
+import type { Lane, LaneStack } from './MultiWaySyntenyDisplay/laneStack.ts'
 import type { AnchorStage } from './MultiWaySyntenyDisplay/laneStage.ts'
 import type {
   FetchRegion,
@@ -267,7 +267,11 @@ function ribbonKey(scales: ColorScale[]) {
  * spans: the anchor's regions end to end, or a mate lane's frame cut at the
  * holes it opens.
  */
-function laneTables(lanes: Lane[], axis: ComparativeAxis, width: number) {
+function laneTables(
+  { lanes, glyphHeight }: LaneStack,
+  axis: ComparativeAxis,
+  width: number,
+) {
   const lane = {
     lane: [] as number[],
     assembly: [] as string[],
@@ -277,6 +281,8 @@ function laneTables(lanes: Lane[], axis: ComparativeAxis, width: number) {
     flipped: [] as boolean[],
     bpPerPx: [] as number[],
     alsoOn: [] as string[],
+    yTop: [] as number[],
+    yBottom: [] as number[],
   }
   const segments = {
     lane: [] as number[],
@@ -314,6 +320,8 @@ function laneTables(lanes: Lane[], axis: ComparativeAxis, width: number) {
     lane.flipped.push(frame?.flipped ?? false)
     lane.bpPerPx.push(l.bpPerPx)
     lane.alsoOn.push(frame?.alsoOn.join(',') ?? '')
+    lane.yTop.push(l.glyphTop)
+    lane.yBottom.push(l.glyphTop + glyphHeight)
     if (l.isAnchor) {
       anchorRegionSpans(axis).forEach((span, k) => {
         const r = axis.regions[k]!
@@ -421,7 +429,11 @@ function alignmentRows(
  * lane to a span on its lower one, with its color and the alpha it
  * composites at; `alignments`, the records the ribbons draw; `legend`, the
  * key; and `config`, the display's config with its defaults filled. Positions are genomic on each lane, and px across the view's
- * `width`, where a lane's own frame puts them.
+ * `width`, where a lane's own frame puts them. Heights are px down from the
+ * stack's top as the display lays it out over `display.height`: `height` is
+ * the whole stack, each lane's `yTop` and `yBottom` bound its gene boxes,
+ * and each ribbon's bound its gutter, the height its `thin` flag and fade
+ * are measured at.
  */
 export async function multiwayTables(
   pluginManager: PluginManager,
@@ -609,6 +621,14 @@ export async function multiwayTables(
     : []
 
   const labels = new Map(declared.map(lane => [lane.name, lane.label]))
+  const laneGeom = laneGeometry(
+    settings.height,
+    1 + rows.length,
+    true,
+    geneLabelRowPx(settings.showGeneLabels),
+    0,
+    settings.inlineLaneNames,
+  )
   const stack = laneStackOn(stage, {
     assemblyNames: [anchor, ...rows],
     groups: [...shown, ...anchorless],
@@ -616,14 +636,7 @@ export async function multiwayTables(
     rowFrames,
     contigOf: () => undefined,
     refNameAliasOf: () => undefined,
-    geometry: laneGeometry(
-      settings.height,
-      1 + rows.length,
-      true,
-      geneLabelRowPx(settings.showGeneLabels),
-      0,
-      settings.inlineLaneNames,
-    ),
+    geometry: laneGeom,
     labelOf: name => labels.get(name) ?? name,
   })
 
@@ -685,6 +698,8 @@ export async function multiwayTables(
     upperX2: [] as number[],
     lowerX1: [] as number[],
     lowerX2: [] as number[],
+    yTop: [] as number[],
+    yBottom: [] as number[],
     color: [] as string[],
     alpha: [] as number[],
     thin: [] as boolean[],
@@ -739,6 +754,8 @@ export async function multiwayTables(
       ribbons.upperX2.push(corners.sx2)
       ribbons.lowerX1.push(corners.sx4)
       ribbons.lowerX2.push(corners.sx3)
+      ribbons.yTop.push(layer.yTop)
+      ribbons.yBottom.push(layer.yTop + layer.height)
       ribbons.color.push(color)
       ribbons.alpha.push(alpha * fade)
       ribbons.thin.push(thin)
@@ -747,7 +764,7 @@ export async function multiwayTables(
   }
 
   return {
-    ...laneTables(stack.lanes, axis, width),
+    ...laneTables(stack, axis, width),
     ribbons,
     alignments: alignmentRows(
       geometry.targets.map(t => t.feature),
@@ -766,6 +783,7 @@ export async function multiwayTables(
         against: rowsVsAnchor ? anchor : undefined,
       }),
     ),
+    height: laneGeom.contentHeight,
     tickInterval: tickIntervalFor(unitBp),
     rowsVsAnchor,
     config: settings.config,

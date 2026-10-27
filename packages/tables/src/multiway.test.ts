@@ -44,10 +44,21 @@ test('an all-vs-all PAF stacks a lane per genome, with ribbons down each gutter'
   expect(t.segments.x2[0]).toBe(800)
 
   expect(new Set(t.ribbons.gutter)).toEqual(new Set([0, 1]))
+  expect(t.height).toBe(240)
   for (let i = 0; i < t.ribbons.gutter.length; i++) {
-    expect(t.ribbons.upperLane[i]).toBe(t.ribbons.gutter[i])
-    expect(t.ribbons.lowerLane[i]).toBe(t.ribbons.gutter[i]! + 1)
+    const upper = t.ribbons.upperLane[i]!
+    const lower = t.ribbons.lowerLane[i]!
+    expect(upper).toBe(t.ribbons.gutter[i])
+    expect(lower).toBe(t.ribbons.gutter[i]! + 1)
+    expect(t.ribbons.yTop[i]).toBe(t.lanes.yBottom[upper])
+    expect(t.ribbons.yBottom[i]).toBe(t.lanes.yTop[lower])
   }
+  const tall = await engine.multiway({
+    ...ALL_VS_ALL,
+    display: { height: 900 },
+  })
+  expect(tall.height).toBe(900)
+  expect(tall.lanes.yTop[2]).toBeGreaterThan(t.lanes.yTop[2]! * 3)
   const first = rowsOf(
     t.ribbons,
     indexes(t.ribbons.gutter, g => g === 0),
