@@ -6,6 +6,7 @@ import { parseAttributeValue } from '@jbrowse/synteny-core'
 import { ComparativeAdapterBase } from '../ComparativeAdapterBase.ts'
 import {
   collectGroupedRows,
+  getBlockRefNames,
   indexBlockRows,
   joinBedPair,
   makeBlockFeatures,
@@ -427,8 +428,12 @@ export default class MCScanBlocksAdapter extends ComparativeAdapterBase<MCScanBl
         assemblyName,
         targetAssemblyName,
       )) {
-        for (const { a } of this.pairRows(qcol, mcol, setup).rows) {
-          set.add(a.refName)
+        for (const refName of getBlockRefNames(
+          [assemblyName, targetAssemblyName],
+          this.pairRows(qcol, mcol, setup),
+          assemblyName,
+        )) {
+          set.add(refName)
         }
       }
     } else {

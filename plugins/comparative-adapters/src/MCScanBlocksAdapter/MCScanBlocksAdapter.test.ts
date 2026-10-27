@@ -676,6 +676,32 @@ test('a self-comparison draws the two columns, not one against itself', async ()
   ).resolves.toBeDefined()
 })
 
+// A self-comparison draws from both columns, so a contig only the mate column
+// names is still one the track has data on.
+test('a self-comparison reports the contigs of both columns', async () => {
+  const selfAdapter = new Adapter(
+    configSchema.create({
+      mcscanBlocksLocation: bed('wheat_homoeologs.blocks'),
+      blockAssemblies: ['wheat', 'wheat'],
+      bedLocations: [bed('wheat_homoeologs.bed'), bed('wheat_homoeologs.bed')],
+    }),
+  )
+  const names = await selfAdapter.getRefNames({
+    assemblyName: 'wheat',
+    targetAssemblyName: 'wheat',
+  })
+  expect(names.sort()).toEqual(['chr1A', 'chr1B'])
+  const onB = await firstValueFrom(
+    selfAdapter
+      .getFeatures(
+        { refName: 'chr1B', start: 0, end: 100, assemblyName: 'wheat' },
+        { targetAssemblyName: 'wheat' },
+      )
+      .pipe(toArray()),
+  )
+  expect(onB).toHaveLength(1)
+})
+
 // The homoeolog tutorial's track omits assemblyNames, so the fallback has to
 // survive the case where "every other assembly" is empty: one genome in both
 // columns still mates with itself rather than answering nothing.
