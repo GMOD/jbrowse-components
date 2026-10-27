@@ -77,16 +77,11 @@ list names each divergence and can only shrink.
 ## Writers to update after each landing
 
 - **Lifts to drop once hosted configs regenerate:** display-kit's
-  `liftFlatColor` and `retiredDisplayColor`, the multi-sample variant
-  display's `retired`, `liftViewColor`, `retiredOrderSpelling` (when
-  jb2hubs' `HOST_VERSIONS` floor reads `sort`), the y channel's lifts
-  (item 1), the feature display's `basicRetired` (no writer of ours writes
-  `mouseover` or `longestCoding` any more),
-  wiggle's `resolution` lift and `retiredState` key, and the tree
-  sidebar's: `showTree`, `showBranchLength`, `showRowLabels`,
-  `showRowSeparators` and `treeAreaWidth` on each row display, the
-  multi-sample variant display's `showSidebarLabels`, and display-kit's
-  `liftRetiredRowState`.
+  `liftFlatColor` and `retiredDisplayColor`, `liftViewColor`, the MAF
+  adapters' `annotationAdapter` (the hosted mouseStrains configs write it),
+  and `retiredOrderSpelling` (jb2hubs' bovine and arabidopsis pangenome
+  configs write `rows.domain` with no `sort`). The other entries in these
+  displays' `retired` maps lift v4.3.0 spellings and stay.
 - **jb2hubs' hosted bovine config still writes the removed `variants` band**
   (ADR-250): jb2hubs stopped writing it (`19eeecbe06`), and the hosted copy
   loses the key at the next `pangenome-config/upload.sh`. A closed-schema bundle
