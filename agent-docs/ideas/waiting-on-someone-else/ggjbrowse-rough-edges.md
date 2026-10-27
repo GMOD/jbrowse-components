@@ -18,6 +18,13 @@ against ggjbrowse's main before fixing it.
   the row, which reads as fine stripes.
 - The strand facet could stack every section's coverage above every section's
   reads, the old R layout, as an option in both apps.
+- R stacks multi-way lanes `MULTIWAY_GUTTER_PX` (100) apart with its own
+  ruler and box rows, but the engine decides each ribbon's `thin` and fade at
+  the display's geometry over `display.height`. The multiway table returns
+  that geometry (`height`, `lanes.yTop`/`yBottom`, `ribbons.yTop`/`yBottom`,
+  px down from the stack's top), so `multiway_on_axis()` can draw at
+  `height - y` and drop its three constants. That changes every multi-way
+  figure, so it wants a look at the gallery before and after.
 - The `dog10k_lof` tutorial page was not re-knit at the 2026-10-23 pin: its
   callset host, kiddlabshare.med.umich.edu, serves an expired TLS certificate,
   so the knit and ggjbrowse's Docs CI fail on it. Re-knit it with ggjbrowse's
