@@ -383,7 +383,8 @@ isoforms and row height the browser gives up to fit the track; `heightMode:
   JBrowse gives a feature or decodes into its glyph (`start`, `blockSizes`)
   stay out.
 - `legend` and `legendTitle`, the color field's key (`featureColorKey`, the
-  display's own), and `ramps`, a ramp's color bar.
+  display's own), and `ramps`, a ramp's color bar, shaped by `colorKeyTables`
+  as the variant tables shape theirs, less the `section` column.
 - `sections`, under the display's `facet`: each section's `key`, `label`,
   and `top` and `height` in px, its chip row included, in stacking order.
   Each feature names its section's `label`, and a section `facet.hidden`
@@ -475,8 +476,13 @@ and paints the cells as the display does (`paintCellColors`,
   `referenceDrawingMode: 'skip'`, the default, a reference call has no cell.
 - `rows`: one per sample, or under `unit: 'haplotype'` one per haplotype,
   named as the display names them, in file order.
-- `legend` and `ramps`: the display's key, from `getVariantColorScales` over
-  what the cells painted.
+- `legend`, `legendTitle` and `ramps`: the display's key, from
+  `getVariantColorScales` over what the cells painted, shaped by
+  `colorKeyTables` as the feature tables shape theirs. Each `legend` row names
+  in `section` the title of the scale it sits under, and `legendTitle` is the
+  first categorical scale's: `Genotypes`, a record field's name, or
+  `encoding.color.legend.title`, and `''` under a ramp, whose title is the
+  ramp's.
 - `warnings`: the samples-metadata warnings the display shows, such as a
   `samplesTsvLocation` leaving out some of the VCF's samples
   (`sourcesAndWarnings`, the sources RPC's own reader).

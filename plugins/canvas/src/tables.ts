@@ -5,7 +5,7 @@ import {
   overByteLimitError,
 } from '@jbrowse/core/data_adapters/tables'
 import { resolvePalette } from '@jbrowse/core/ui/palette'
-import { rampKeyOf } from '@jbrowse/core/ui/rampKey'
+import { colorKeyTables } from '@jbrowse/core/ui/rampKey'
 import { STRAND_FIELD } from '@jbrowse/core/util/categoricalField'
 import { abgrToHex, cssColorToHex } from '@jbrowse/core/util/colorBits'
 import { facetSettingOf } from '@jbrowse/display-kit/facetConfigSchema'
@@ -504,8 +504,7 @@ export async function featureTables(
           })
         : undefined,
   })
-  const key = scales.find(scale => scale.kind === 'categorical')
-  const entries = key?.entries.filter(e => e.color !== undefined) ?? []
+  const key = colorKeyTables(scales)
   const hideChevrons = !readConfObject(conf, ['chevrons', 'show'])
   const labels = {
     showLabels: stage.showLabels,
@@ -547,12 +546,9 @@ export async function featureTables(
       top: sections.map(s => s.top),
       height: sections.map(s => s.height),
     },
-    legend: {
-      label: entries.map(e => e.label),
-      color: entries.map(e => cssColorToHex(e.color!)),
-    },
-    legendTitle: key?.title ?? '',
-    ramps: scales.filter(scale => scale.kind === 'ramp').map(rampKeyOf),
+    legend: { label: key.legend.label, color: key.legend.color },
+    legendTitle: key.legendTitle,
+    ramps: key.ramps,
     /** The px sizes the display draws its fixed-size marks at. */
     glyph: {
       fontSize,

@@ -55,6 +55,16 @@ test('a multi-sample VCF comes back as the display paints its genotypes', async 
   for (const color of new Set(t.cells.color)) {
     expect(t.legend.color).toContain(color)
   }
+  expect(t.legendTitle).toBe('Genotypes')
+  expect(new Set(t.legend.section)).toEqual(new Set(['Genotypes']))
+})
+
+test('the key takes the title encoding.color.legend gives it', async () => {
+  const t = await engine.variants({
+    ...DOG_VCF,
+    display: { encoding: { color: { legend: { title: 'Calls' } } } },
+  })
+  expect(t.legendTitle).toBe('Calls')
 })
 
 test('drawing reference calls fills the grid, one cell a sample a site', async () => {

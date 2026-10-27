@@ -6,9 +6,9 @@ import {
 } from '@jbrowse/core/data_adapters/tables'
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import { overByteBudget, totalRegionBytes } from '@jbrowse/core/rpc/byteBudget'
-import { rampKeyOf } from '@jbrowse/core/ui/rampKey'
+import { colorKeyTables } from '@jbrowse/core/ui/rampKey'
 import { capitalizeFirst } from '@jbrowse/core/util'
-import { abgrToHex, cssColorToHex } from '@jbrowse/core/util/colorBits'
+import { abgrToHex } from '@jbrowse/core/util/colorBits'
 import {
   FEATURE_FIELD_PRESETS,
   withPreset,
@@ -65,7 +65,6 @@ import type { ProcessedSource } from './shared/types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { TablesRegion } from '@jbrowse/core/data_adapters/tables'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
-import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { HeldSlots } from '@jbrowse/core/ui/colors'
 import type { Feature } from '@jbrowse/core/util'
 import type { RowAlias } from '@jbrowse/tree-sidebar/arrangeRows'
@@ -104,25 +103,6 @@ export interface VariantTablesArgs {
   byteLimit?: number
 }
 
-/** A categorical key's swatches; a ramp keys through `rampKeyOf`. */
-function legendOf(scales: ColorScale[]) {
-  const label: string[] = []
-  const color: string[] = []
-  const section: string[] = []
-  for (const scale of scales) {
-    if (scale.kind === 'categorical') {
-      for (const entry of scale.entries) {
-        if (entry.color !== undefined && !entry.hidden) {
-          label.push(entry.label)
-          color.push(cssColorToHex(entry.color))
-          section.push(scale.title ?? '')
-        }
-      }
-    }
-  }
-  return { label, color, section }
-}
-
 /**
  * #api
  * A region of a multi-sample VCF as the multi-sample variant display fetches,
@@ -136,7 +116,7 @@ function legendOf(scales: ColorScale[]) {
  * genotype, its `dosage` and the fill the display paints it; `rows`, the
  * rows the cells name, top to bottom as the display arranges them by `rows`
  * and stacks them in `facet`'s bands, each with its label and band; `bands`,
- * each band's value, label and the rows it spans; and `legend` and `ramps`,
+ * each band's value, label and the rows it spans; and `legend`, `legendTitle` and `ramps`,
  * the key the display shows. Under `referenceDrawingMode: 'skip'`, the default,
  * a reference call draws no cell. Several regions share the rows and the key,
  * as the display's regions do: a record crossing regions is listed in each,
@@ -374,8 +354,7 @@ export async function variantTables(
     ...infoColumns(records, (await vcfHeaderOf(adapter)).info, 'variant'),
     cells,
     rows,
-    legend: legendOf(scales),
-    ramps: scales.filter(s => s.kind === 'ramp').map(rampKeyOf),
+    ...colorKeyTables(scales),
     rowLegend: rowColor.legend,
     rowLegendTitle: rowColor.title,
     bands: {
