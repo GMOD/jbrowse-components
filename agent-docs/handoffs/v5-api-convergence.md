@@ -80,10 +80,13 @@ once per display that embeds it, so read the trend, not the size.
   beta-only one. No test checks the gate, since v4 shipped no JSON schema and
   so `scripts/check-config-slot-paths.ts` has no v4 baseline. A `git grep -w <key>
   v4.3.0` over the legacy keys in `website/static/schema/v5/config.json` finds
-  six missing from v4.3.0 on 2026-10-27, each from an earlier release.
+  six missing from v4.3.0 on 2026-10-27, each from an earlier release. Three
+  `retired` entries appear in no release tag, so they are beta-only and break
+  this gate: `CytobandAdapter.cytobandsLocation`, a track's
+  `textSearchIndexingAttributes` and `LinearWiggleDisplay.extent`.
 - `jbrowse validate` reports no warning outside plugin-registered types on
   hosted configs, `demos/` and the tutorials (step 3).
 - The v5 release draft and the schema use the same spellings, including the
   word "experimental" for `LinearMarkDisplay`.
-- A migration page generated from the `retired` maps exists, and CHANGELOG has
-  a v5 section.
+- CHANGELOG has a v5 section. The migration table is generated
+  (`website/docs/config_guides/v4_config_migration.md`, 146 rows).
