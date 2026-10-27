@@ -203,8 +203,8 @@ export const TASKS: EvalTask[] = [
     name: 'hide-labels',
     prompt: 'Hide the feature labels on the gene track.',
     solution: `return jb.trackModel('gff3tabix_genes').applyDisplaySettings({ labels: { name: { show: false }, description: { show: false } } })`,
-    // the label parts' `show`, not their neighbours a guess lands on:
-    // maxLabelFeatureDensity and labels.subfeatures
+    // the label parts' `show`, not the neighbour a guess lands on:
+    // labels.subfeatures
     grade: `
       const t = ${shownTrack('gff3tabix_genes')}
       const conf = t?.activeDisplay.configuration

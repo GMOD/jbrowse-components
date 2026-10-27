@@ -7,8 +7,8 @@ import { FEATURE_NAME_FIELD } from '../RenderFeatureDataRPC/featureNameField.ts'
  * #category display
  * The feature displays' `labels.name`, the name drawn beside each feature:
  * whether it `show`s, and the `field` it reads. A bare string is the field.
- * Shown names still hide where the on-screen feature density passes
- * `maxLabelFeatureDensity`.
+ * Shown names still hide where features crowd the screen, except gene names
+ * while the genes alone have room.
  *
  * #example
  * ```js

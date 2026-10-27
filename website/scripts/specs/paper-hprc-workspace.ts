@@ -52,7 +52,7 @@ const view = (
   lanesHeight: number,
   genesHeight: number,
   paneHeight = 600,
-  inlineLaneNames = false,
+  lanePlacement: 'above' | 'overlay' = 'above',
 ) => ({
   type: 'LinearGenomeView',
   assembly: 'hg38',
@@ -80,7 +80,7 @@ const view = (
         ],
       },
       height: lanesHeight,
-      inlineLaneNames,
+      labels: { lanes: { placement: lanePlacement } },
     },
     graphTrack(SEGMENTS_TRACK, {
       layoutMode,
@@ -100,12 +100,12 @@ const session = (
   lanesHeight = 460,
   genesHeight = 70,
   paneHeight = 600,
-  inlineLaneNames = false,
+  lanePlacement: 'above' | 'overlay' = 'above',
 ) =>
   sessionSpec(CONFIG, {
     sessionTracks: [LANES_PIF_TRACK],
     views: [
-      view(layoutMode, lanesHeight, genesHeight, paneHeight, inlineLaneNames),
+      view(layoutMode, lanesHeight, genesHeight, paneHeight, lanePlacement),
     ],
   })
 
@@ -155,7 +155,7 @@ export const paperHprcWorkspaceSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'paper/hprc_lanes_graph_stacked_force',
-    url: session('force', 280, 50, 380, true),
+    url: session('force', 280, 50, 380, 'overlay'),
     viewportWidth: 1500,
     viewportHeight: 1010,
     ...gates,

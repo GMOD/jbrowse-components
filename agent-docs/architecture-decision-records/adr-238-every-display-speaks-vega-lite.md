@@ -27,6 +27,13 @@ parts with `show`, `mouseover` is `tooltip`, `utrColor` is
 `utrs.encoding.color`, `longestCoding` is `representative`, and `subParts`,
 `connectorColor` and the per-feature `mark.height` callback are cut.
 
+Amended 2026-10-27, ruling the leftovers once: no `view.*` predicate field is
+built; the feature display's two label thresholds and the mark display's
+`minWidthPx` are cut for the defaults they held; a mark's zoom interval stays
+`minBpPerPx`/`maxBpPerPx`; the multi-way display's lane ticks are `axis.show`,
+its lane names `labels.lanes.placement`, and its strand split the only layout;
+view launch keys keep their pixel words.
+
 Colin's steer, on a review of the linear synteny view's settings: aim for
 ideal grammar-of-graphics terms rather than house ones ("things like
 'minLength' are exactly the types of things that concern me"), elegance over
@@ -113,7 +120,6 @@ Amended 2026-10-24:
   - `tags.XX`
   - a derived table's rows by namespace (`junction.reads`, `connection.reads`),
     which keeps ADR-232's one filter read by every part that draws those rows
-  - `view.bpPerPx`, a per-draw constant, which replaces every zoom gate
 - A field predicate compiles to one typed read and a compare. Adjacent flag
   predicates fuse into one mask. On feature objects the read is
   `feature.get(field)`, and the constant's type decides coercion.
@@ -241,13 +247,17 @@ against the code, checked the spelling twice.
   `subfeatureLabels` go.
   - The variant band's `variants.labels`, LD's `labels.name`, and the
     multi-way display's `labels.name` (from `text` and `showGeneLabels`) take
-    the same shape. The multi-way display's top-level `labels` means its gene
-    labels, as its top-level `encoding` means the gene glyphs.
-- **The density gate always runs.** A name hides above
-  `maxLabelFeatureDensity`; a description above the lower of the two
-  thresholds, whether or not names draw. No value pins labels at every zoom.
-  The two thresholds stay flat until a `view.*` predicate on each label
-  part's `filter` replaces them, with the mark display's zoom bounds.
+    the same shape. The multi-way display's top-level `labels` holds its gene
+    names and its lane names (`labels.lanes`), as its top-level `encoding`
+    means the gene glyphs.
+- **The density gate always runs, at thresholds the display fixes.** A name
+  hides above `MAX_LABEL_FEATURE_DENSITY` (`zoomThresholds.ts`, features per
+  pixel on screen), except gene names while the genes alone stay under it; a
+  description hides above the lower `MAX_DESCRIPTION_FEATURE_DENSITY`,
+  whether or not names draw. Amended 2026-10-27:
+  `maxLabelFeatureDensity` and `maxDescriptionFeatureDensity` are cut, since
+  no config, figure spec or menu wrote them, and `labels.<part>.show` is the
+  one label control.
 - **`tooltip: { show, field }`** replaces `mouseover`, as the multi-sample
   display's `tooltip` is a part. `mouseover` lifts until the hosted hub
   configs regenerate with `tooltip`.
@@ -269,6 +279,20 @@ against the code, checked the spelling twice.
   the main thread and also step font size and row padding; `geneGlyphMode`
   as a slot; `transcripts`; `containers`; and `encoding.color.value`'s
   callback, which colors per box where a `field` reads the transcript.
+
+### The multi-way display (amended 2026-10-27)
+
+- **`axis: { show }`** replaces `showLaneTicks`: the lanes' coordinate
+  ticks are the display's axis, a guide that turns off through `show`. The
+  display draws no row-axis gutter, so its top-level `axis` has no other
+  meaning to clash with.
+- **`labels.lanes: { placement: 'above' | 'overlay' }`** replaces
+  `inlineLaneNames`. `above` gives each genome's name and span a line over
+  its genes; `overlay` prints the name over the left end of the gene row, the
+  feature display's `labels.subfeatures` word for a label drawn on its glyph.
+- **The strand split is the only layout.** Genes reading rightwards on screen
+  sit above the lane line and leftwards below; a lane too short for two rows
+  already draws one, so `splitStrands` is cut.
 
 ### Mark, guides, coordinates
 
@@ -308,6 +332,9 @@ against the code, checked the spelling twice.
   - `WiggleData`: points per pixel, default 1.
   - `HicData`: binsize steps from the zoom's pick, default 0. Larger is finer
     as wiggle's is, so the old `resolutionBias` flips sign.
+
+  Kept 2026-10-27: one concept, how finely the data is read, and each
+  family's typed `data` object names its unit.
 
   Hi-C's `selectedNormalization` is `data.normalization`. BigWigAdapter's
   `resolutionMultiplier` is an adapter slot and keeps growing coarser.
@@ -391,6 +418,10 @@ predicate in the layer's own `filter`:
 | A flat `utrColor`, or `encoding.utrColor` | Flat, it is the one fill left outside an `encoding`; under `encoding` it is a part-qualified channel, which Vega-Lite never spells (no `encoding.medianColor`) |
 | `labels.subfeatures.filter` defaulting to the cleavage-product types, in place of `placement: 'auto'` | A written `placement: 'below'` would then label only the cleavage products, and labeling every part would take `filter: [{ field: 'type' }]`, today's `below` spelled obscurely |
 | `encoding.y.scale.reverse`, the successor to wiggle's v4 `inverted` | No use case justified it (Colin, 2026-10-26): it would change the shaders, their Canvas2D twins, the axis and the band compare for about 2-3 days of work. `retiredScaleSpellings` drops `inverted` |
+| A `view.*` predicate field (`view.bpPerPx`, a feature density) replacing the zoom and density gates | The label gate keeps gene names where the genes alone are sparse, which a predicate on one density cannot say, and nothing wrote the label thresholds. A mark's zoom interval keeps `[minBpPerPx, maxBpPerPx)`, the words core's adapter `zoomRange` uses for the same interval |
+| `minWidthPx` as Vega-Lite's `minBandSize`, or kept as a slot | Nothing wrote it; the floor is 1 px for every bar and rect |
+| A Vega-Lite word (`spacing`, `padding`, `strokeWidth`) for the views' pixel launch keys (`spacingPx`, `paddingPx`, `minimumRadiusPx`, `minVisibleWidth`, `overdrawPx`, dotplot `lineWidth`) | They are view state the app writes into sessions, and v4.3.0 share links carry the circular view's; this ADR settles display settings |
+| `splitStrands` kept as a switch, or as a `yOffset` channel on reading direction | One layout reads better at every lane height it fits, and a short lane already falls back to one row |
 
 ## Consequences
 

@@ -9,10 +9,6 @@ import { sectionFacetConfigSchema } from '@jbrowse/display-kit/sectionFacetConfi
 import { types } from '@jbrowse/mobx-state-tree'
 
 import { DISPLAY_MODES } from '../RenderFeatureDataRPC/renderConfig.ts'
-import {
-  MAX_DESCRIPTION_FEATURE_DENSITY,
-  MAX_LABEL_FEATURE_DENSITY,
-} from '../RenderFeatureDataRPC/zoomThresholds.ts'
 import { featureDescriptionLabelConfigSchema } from './featureDescriptionLabelConfigSchema.ts'
 import { featureMarkConfigSchema } from './featureMarkConfigSchema.ts'
 import { featureNameLabelConfigSchema } from './featureNameLabelConfigSchema.ts'
@@ -79,26 +75,6 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
        * consequence-impact / SV-type presets.
        */
       legend: legendConfigSchema,
-      /**
-       * #slot
-       */
-      maxLabelFeatureDensity: {
-        type: 'number',
-        defaultValue: MAX_LABEL_FEATURE_DENSITY,
-        description:
-          'hide the names, which `labels.name` shows, where the on-screen feature density (features per pixel) passes this; past it the gene names alone still draw while the genes are under it',
-        advanced: true,
-      },
-      /**
-       * #slot
-       */
-      maxDescriptionFeatureDensity: {
-        type: 'number',
-        defaultValue: MAX_DESCRIPTION_FEATURE_DENSITY,
-        description:
-          'hide the descriptions, which `labels.description` shows, where the on-screen feature density (features per pixel) passes this or `maxLabelFeatureDensity`, whichever is lower',
-        advanced: true,
-      },
       /**
        * #slot encoding
        * The channels the features paint through: `encoding.color`, each

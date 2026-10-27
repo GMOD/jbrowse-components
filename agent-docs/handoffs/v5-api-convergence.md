@@ -1,6 +1,6 @@
 ---
 name: v5-api-convergence
-description: "How the v5 API surface settles: no freeze date, a conformance suite and a weekly settling meter instead, beta-only compat shims deleted, v4.3.0 configs loading where a mapping exists, and `LinearMarkDisplay` allowed to keep evolving. Read before respelling a setting, amending ADR-238, or cutting a release candidate."
+description: "How the v5 API surface settles: no freeze date and no calendar window, a conformance suite and a settling meter, beta-only compat shims deleted, v4.3.0 configs loading where a mapping exists, and `LinearMarkDisplay` allowed to keep evolving. Read before respelling a setting, amending ADR-238, or cutting a release candidate."
 ---
 
 # v5 API convergence
@@ -13,11 +13,12 @@ Claim a step here before starting it.
 
 ## Rules
 
-- **No freeze date.** Churn continues while a rename still improves the
-  surface. The release candidate waits for the settling meter (step 1).
+- **No freeze date and no quiet window.** Churn continues while a rename still
+  improves the surface. The release candidate waits on the gates below, which
+  close when the work does, not on a calendar.
 - **A respell is a complete sweep.** One change updates every display, the
-  docs, the figure specs and each writer (step 5). A partial respell leaves the
-  next session a divergence to fix.
+  docs, the figure specs and each writer. A partial respell leaves the next
+  session a divergence to fix.
 - **Beta share links and display state may break.** No migration exists for
   them.
 - **v4.3.0 configs load where a mapping exists.** An edge-case slot may drop
@@ -30,64 +31,46 @@ Claim a step here before starting it.
   never respells a shared-vocabulary slot.
 - **Review rounds test conformance.** A taste item goes to `ideas/`.
 
-## Baseline, 2026-10-26
+## Measuring churn
 
-Two independent agent reviews measured this. A slot moving into a sub-schema
-counts as a remove and an add, so slot-path counts are good to about ±30%.
+`node scripts/settling-meter.ts [--days 30]` prints the config slot paths the
+committed schema gained and lost per day, shared and `LinearMarkDisplay` apart,
+with a net line; `--list <day>` names them. One shared sub-schema change counts
+once per display that embeds it, so read the trend, not the size.
 
-- Config slot paths: +506 / −386 between Oct 15 and Oct 26, against +99 / −71
-  in Oct 1–15.
-- `retired` maps: 0 files on Sep 1, 36 files (about 102 entries) on Oct 26,
-  many holding beta-only spellings.
-- ADR-238 took four dated amendments in six days.
+- 2026-10-15 to 10-26 net: +1754 / −979 shared, +168 / −79 mark display.
+  10-22 alone moved about 3000 paths each way in one sub-schema move.
 - Stable already: CLI commands and flags, session-spec format, registered type
   names, the MCP tool set.
 
 ## Next
 
-1. **Settling meter.** Build it on `slotPaths` in `scripts/configSlotPaths.ts`.
-   Each week it diffs the schema's slot paths against the previous snapshot and
-   logs paths added and removed, ADR amendments to locked ADRs, and
-   conformance failures. Mark-display-only paths count separately.
-   `scripts/check-config-slot-paths.ts` is no substitute: it compares against a
-   baseline that `scripts/release.ts` writes on a stable release, so it checks
-   nothing before 5.0.0. The release candidate comes after the meter reads near
-   zero for 14 days.
-2. **Delete the beta-only shims.** Remove each `retired*`/`lift*` map whose
-   names never shipped in v4.3.0. Keep those that map a v4.3.0 spelling.
-3. **Conformance suite.** Grow `colorConformance.test.ts` and ADR-238 into
-   checks that find divergence without review:
-   - Empty its `EXCEPTIONS`, or document each entry as intended on the config
-     page.
-   - Refuse a new `show*`, `hide*`, `min*` or `max*` slot outside an allowlist
-     that gives a reason.
-4. **Rule the leftovers once.** Decide each item in
-   `ideas/waiting-on-a-call/vega-lite-layout-and-multiway-leftovers.md`, then
-   fold the rulings into ADR-238 in one pass:
-   - pixel words (`spacingPx`, `paddingPx`, `minimumRadiusPx`,
-     `minVisibleWidth`, `overdrawPx`) and dotplot `lineWidth` against
-     `strokeWidth`
-   - the density and zoom gates (`max*FeatureDensity`, `marks[].minBpPerPx`,
-     `maxBpPerPx`) and `minWidthPx`
-   - the multi-way booleans (`showLaneTicks`, `splitStrands`,
-     `inlineLaneNames`)
-   - the contradiction on filter defaults: ADR-238 says a written list drops
-     defaults it omits; ADR-240 says it merges by field
-   - `data.resolution`, which carries three meanings after the 10-23
-     amendment
-   - `rect` against `span`: config says `rect`, render-core keeps `span`, and
-     `website/release_announcement_drafts/v5.0.0.md` still says `span`
-   - the closed-schema policy: a `displayDefaults` member fails the track and
-     a `displays` entry warns (ADR-134, ADR-221)
-5. **Generate the writers.** The jbrowse-img modifier tables, the `jb`
+1. **Delete the beta-only shims** (claimed 2026-10-27, agent branch). Remove
+   each `retired*`/`lift*` entry whose spelling never shipped in v4.3.0 (or in
+   the v4-era `jbrowse-plugin-mafviewer`). Keep those that map a shipped
+   spelling.
+2. **Conformance suite.** `scripts/slotNames.test.ts` refuses a new `show*`,
+   `hide*`, `min*` or `max*` slot outside its allowlist. Left: empty
+   `colorConformance.test.ts`'s `EXCEPTIONS`, or document each entry as
+   intended on the config page.
+3. **Generate the writers.** The jbrowse-img modifier tables, the `jb`
    surface description and the R export lag every rename because hand-kept
    copies drift. Derive each from the schema.
-6. **v4.3.0 coverage count.** Run `jbrowse validate` over the v4.3.0 demo and
-   tutorial configs and record how many load. That count is the compat claim.
-7. **Writers outside the tree.** jb2hubs and its hosted configs, the ggjbrowse
+4. **v4.3.0 validate gaps.** `reference/V4_CONFIG_COVERAGE.md` holds the
+   count and the unmapped spellings. Every v4.3.0 config opens in the app, but
+   `jbrowse validate` fails 17 of 34 files, mostly on keys the app accepts:
+   - Give the Trix adapter dropped entries for `textSearchAdapterId` and
+     `metaFilePath`, which every v4 `jbrowse text-index` run wrote.
+   - Teach validate the lifts it misses: `minorAlleleFrequencyFilter`, the
+     session's flat `LinearSyntenyView.tracks`, and the dropped
+     `LinearGCContentDisplay`.
+   - Lifts that keep a color or height, ranked last: multi-variant `colorBy`
+     to `rowColor`, session `trackDisplayMode` to `displayMode`, session
+     `snpCovHeight` to `coverage.height`.
+5. **Writers outside the tree.** jb2hubs and its hosted configs, the ggjbrowse
    pin, the graph plugin, the `apollo3` demo and the figure specs
    (`handoffs/screenshot-spec-elegance.md`).
-8. **Plugin ABI.** Curate the served list so internals nobody reads (shader
+6. **Plugin ABI.** Curate the served list so internals nobody reads (shader
    constants) stop reaching plugins. Baseline `reExports.generated.json` and
    the exports map at the release candidate
    (`reference/PLUGIN_ABI_STABILITY.md`). Decide whether `@jbrowse/tables` and
@@ -95,7 +78,7 @@ counts as a remove and an add, so slot-path counts are good to about ±30%.
 
 ## Release candidate gates
 
-- The meter reads near zero for 14 days.
+- The meter shows no shared-path change since the last respell landed.
 - Every `retired` entry maps a v4.3.0 name.
 - `jbrowse validate` reports no warning on hosted configs, `demos/` and the
   tutorials.

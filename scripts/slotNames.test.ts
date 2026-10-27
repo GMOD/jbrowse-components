@@ -8,8 +8,8 @@ import { configJsonSchema } from '../products/jbrowse-cli/src/commands/validate/
 // spelling of words the vocabulary already has. Each live one is listed here
 // with why it stays, and an entry that stops matching fails, so the list only
 // shrinks. View launch keys and app-written state are out of scope.
-const PENDING =
-  'pending a ruling: agent-docs/ideas/waiting-on-a-call/vega-lite-layout-and-multiway-leftovers.md'
+const ZOOM_INTERVAL =
+  "a mark's zoom interval, the words core's adapter zoomRange uses (ADR-238)"
 
 const ALLOWED: Record<string, string> = {
   hideUris: "the About dialog's option, not a drawn part",
@@ -19,13 +19,10 @@ const ALLOWED: Record<string, string> = {
   maxLayoutHeight: 'the pileup layout cap, unchanged by ADR-240',
   maxGapMultiple:
     'a line-break threshold, which Vega-Lite spells only as invalid data',
-  minBpPerPx: PENDING,
-  maxBpPerPx: PENDING,
-  maxFeatureScreenDensity: PENDING,
-  maxLabelFeatureDensity: PENDING,
-  maxDescriptionFeatureDensity: PENDING,
-  minWidthPx: PENDING,
-  showLaneTicks: PENDING,
+  maxFeatureScreenDensity:
+    "v4.3.0's too-many-features gate, which skips the fetch rather than a part",
+  minBpPerPx: ZOOM_INTERVAL,
+  maxBpPerPx: ZOOM_INTERVAL,
 }
 
 type Schema = Record<string, unknown>

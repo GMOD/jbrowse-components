@@ -105,11 +105,7 @@ export function configSlotViews(self: ConfigSlotSelf) {
     },
     /** #getter */
     get showLaneTicks(): boolean {
-      return getConf(self, 'showLaneTicks')
-    },
-    /** #getter */
-    get splitStrands(): boolean {
-      return getConf(self, 'splitStrands')
+      return getConf(self, ['axis', 'show'])
     },
     /** #getter */
     get showGeneLabels(): boolean {
@@ -124,7 +120,7 @@ export function configSlotViews(self: ConfigSlotSelf) {
     },
     /** #getter */
     get inlineLaneNames(): boolean {
-      return getConf(self, 'inlineLaneNames')
+      return getConf(self, ['labels', 'lanes', 'placement']) === 'overlay'
     },
     /** #getter */
     get geneLabelPx() {
@@ -231,15 +227,15 @@ export function configSlotActions(self: ConfigSlotSelf) {
     },
     /** #action */
     setShowLaneTicks(flag: boolean) {
-      setConf(self, 'showLaneTicks', flag)
-    },
-    /** #action */
-    setSplitStrands(flag: boolean) {
-      setConf(self, 'splitStrands', flag)
+      setConf(self, ['axis', 'show'], flag)
     },
     /** #action */
     setInlineLaneNames(flag: boolean) {
-      setConf(self, 'inlineLaneNames', flag)
+      setConf(
+        self,
+        ['labels', 'lanes', 'placement'],
+        flag ? 'overlay' : 'above',
+      )
     },
     /** #action */
     setShowGeneLabels(flag: boolean) {

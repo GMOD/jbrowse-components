@@ -332,7 +332,6 @@ describe('nothing animates', () => {
 
 test('split strands, a flip keeps its rows until halfway and turns them over there', async () => {
   const { display } = await settledDisplay()
-  display.setSplitStrands(true)
   redecide(display, () => ({ rung: 3 }))
   display.endAnimation()
   const old = picture(display)

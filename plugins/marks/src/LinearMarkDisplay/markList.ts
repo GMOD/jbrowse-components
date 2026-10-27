@@ -52,6 +52,9 @@ export type StoredLayer = HitIndexed<EncodedChannels> &
 
 type ChannelLane = Exclude<LaneName, 'index'> | 'x2Region'
 
+// a bar or rect narrower than a pixel still paints one
+export const MIN_MARK_WIDTH_PX = 1
+
 // Color is checked apart from these, since either of two lanes carries it.
 const MARK_VALUE_LANES = {
   bar: ['y'],

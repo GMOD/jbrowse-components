@@ -44,8 +44,10 @@ Git history has each landing.
    - The unlanded `chat-request-evals` branch writes 8 `scales.y` lines in
      `scripts/agent-evals/tasks.ts`.
 
-Layout, the multi-way leftovers and settings with no step are in
-[ideas/waiting-on-a-call/vega-lite-layout-and-multiway-leftovers.md](../ideas/waiting-on-a-call/vega-lite-layout-and-multiway-leftovers.md).
+ADR-238's 2026-10-27 amendment rules the layout words, the multi-way
+leftovers and the zoom and density gates. One multi-way gap stays open:
+off-screen mate marks honor only the `length` filter, since the worker sends
+no attribute lanes with the mates.
 
 ## Open from the 2026-10-24 pressure test
 

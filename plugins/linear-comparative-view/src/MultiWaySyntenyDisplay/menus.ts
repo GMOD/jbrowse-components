@@ -80,8 +80,6 @@ export interface MultiWayMenuModel extends LaneHeaderModel, LaneSelectionModel {
   setHideUnlabelled: (flag: boolean) => void
   showLaneTicks: boolean
   setShowLaneTicks: (flag: boolean) => void
-  splitStrands: boolean
-  setSplitStrands: (flag: boolean) => void
   showGeneLabels: boolean
   setShowGeneLabels: (flag: boolean) => void
   inlineLaneNames: boolean
@@ -252,10 +250,6 @@ export function showSubMenuItems(model: MultiWayMenuModel): MenuItem[] {
           "Print each genome's name over the left end of its genes instead of on a line above them, so more lanes fit.",
       },
     ),
-    toggleItem('Split strands', model.splitStrands, model.setSplitStrands, {
-      helpText:
-        'Genes reading rightwards above the lane line and leftwards below it.',
-    }),
     toggleItem('Curved lines', model.interpolate === 'bump', v => {
       model.setInterpolate(v ? 'bump' : 'linear')
     }),

@@ -582,8 +582,6 @@ export default function baseStateModelFactory(
           collapsed: this.displayMode === 'collapsed',
           density: self.labelDensityPerPx,
           geneDensity: () => self.geneLabelDensityPerPx,
-          maxLabelDensity: getConf(self, 'maxLabelFeatureDensity'),
-          maxDescriptionDensity: getConf(self, 'maxDescriptionFeatureDensity'),
         })
       },
 

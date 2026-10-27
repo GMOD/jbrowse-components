@@ -3227,14 +3227,6 @@ export const configManifest: ConfigManifest = {
           "writes": "members"
         },
         {
-          "name": "maxLabelFeatureDensity",
-          "type": "number"
-        },
-        {
-          "name": "maxDescriptionFeatureDensity",
-          "type": "number"
-        },
-        {
           "name": "encoding",
           "type": "FeatureEncodingConfigurationSchema",
           "subSlots": [
@@ -6122,12 +6114,20 @@ export const configManifest: ConfigManifest = {
           "writes": "members"
         },
         {
-          "name": "showLaneTicks",
-          "type": "boolean"
+          "name": "axis",
+          "type": "MultiWayLaneAxisConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "show",
+              "type": "boolean"
+            }
+          ],
+          "schema": "MultiWayLaneAxis",
+          "writes": "members"
         },
         {
           "name": "labels",
-          "type": "MultiWayGeneLabelsConfigurationSchema",
+          "type": "MultiWayLabelsConfigurationSchema",
           "subSlots": [
             {
               "name": "name",
@@ -6147,14 +6147,22 @@ export const configManifest: ConfigManifest = {
               "shorthand": {
                 "string": "field"
               }
+            },
+            {
+              "name": "lanes",
+              "type": "MultiWayLaneLabelsConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "placement",
+                  "type": "MultiWayLaneLabelPlacement"
+                }
+              ],
+              "schema": "MultiWayLaneLabels",
+              "writes": "members"
             }
           ],
-          "schema": "MultiWayGeneLabels",
+          "schema": "MultiWayLabels",
           "writes": "members"
-        },
-        {
-          "name": "inlineLaneNames",
-          "type": "boolean"
         },
         {
           "name": "laneLayers",
@@ -6553,10 +6561,6 @@ export const configManifest: ConfigManifest = {
             }
           ],
           "schema": "MultiWayLaneLayer"
-        },
-        {
-          "name": "splitStrands",
-          "type": "boolean"
         }
       ],
       "legacyKeys": [
@@ -6773,14 +6777,6 @@ export const configManifest: ConfigManifest = {
           ],
           "schema": "Legend",
           "writes": "members"
-        },
-        {
-          "name": "maxLabelFeatureDensity",
-          "type": "number"
-        },
-        {
-          "name": "maxDescriptionFeatureDensity",
-          "type": "number"
         },
         {
           "name": "encoding",
@@ -9699,10 +9695,6 @@ export const configManifest: ConfigManifest = {
           "type": "number"
         },
         {
-          "name": "minWidthPx",
-          "type": "number"
-        },
-        {
           "name": "legend",
           "type": "LegendConfigurationSchema",
           "subSlots": [
@@ -10545,10 +10537,6 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "origin",
-          "type": "number"
-        },
-        {
-          "name": "minWidthPx",
           "type": "number"
         },
         {
@@ -11397,10 +11385,6 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "origin",
-          "type": "number"
-        },
-        {
-          "name": "minWidthPx",
           "type": "number"
         },
         {

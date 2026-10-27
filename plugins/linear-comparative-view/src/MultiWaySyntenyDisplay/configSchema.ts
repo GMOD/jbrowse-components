@@ -135,55 +135,72 @@ export function configSchemaFactory() {
        */
       legend: legendConfigSchema,
       /**
-       * #slot
+       * #slot axis
+       * Each lane's coordinate ticks, at one interval shared by every lane:
+       * equal spacing between two lanes means equal bp-per-pixel, and a lane
+       * whose ticks crowd together is zoomed out.
        */
-      showLaneTicks: {
-        type: 'boolean',
-        description:
-          "draw each lane's coordinate ticks, at one interval shared by every lane. Equal spacing between two lanes means equal bp-per-pixel; a lane whose ticks crowd together is zoomed out. With this off, the header's span and multiple are the only scale shown",
-        defaultValue: true,
-      },
+      axis: ConfigurationSchema(
+        'MultiWayLaneAxis',
+        {
+          /**
+           * #slot axis.show
+           */
+          show: {
+            type: 'boolean',
+            defaultValue: true,
+            description:
+              "draw each lane's coordinate ticks; with this off, the header's span and multiple are the only scale shown",
+          },
+        },
+        { closed: true },
+      ),
       /**
        * #slot labels
-       * The gene names each lane prints in a row under its genes, dropping a
-       * name where its neighbours leave it no room. The display's top-level
-       * `labels` are its genes', as its `encoding` is.
+       * The names the display prints: each gene's, in a row under the genes,
+       * and each lane's genome.
        */
       labels: ConfigurationSchema(
-        'MultiWayGeneLabels',
+        'MultiWayLabels',
         {
           /**
            * #slot labels.name
-           * Each gene's name, a [](/docs/config/featurenamelabel) object.
+           * Each gene's name, a [](/docs/config/featurenamelabel) object,
+           * dropped where its neighbours leave it no room.
            */
           name: featureNameLabelConfigSchema,
+          /**
+           * #slot labels.lanes
+           * Each lane's genome name.
+           */
+          lanes: ConfigurationSchema(
+            'MultiWayLaneLabels',
+            {
+              /**
+               * #slot labels.lanes.placement
+               */
+              placement: {
+                type: 'stringEnum',
+                model: types.enumeration('MultiWayLaneLabelPlacement', [
+                  'above',
+                  'overlay',
+                ]),
+                defaultValue: 'above',
+                description:
+                  "`above` prints each genome's name and span on a line over its genes; `overlay` prints the name alone over the left end of its gene row, which fits 12 px more per lane",
+              },
+            },
+            { closed: true, plot: true },
+          ),
         },
         { closed: true, plot: true },
       ),
-      /**
-       * #slot
-       */
-      inlineLaneNames: {
-        type: 'boolean',
-        description:
-          "print each lane's genome name over the left end of its gene row, without its coordinates, instead of on a line above the genes. The stack then fits 12 px less per lane",
-        defaultValue: false,
-      },
       /**
        * #slot laneLayers
        * Rows of data every lane draws above its genes, each from that genome's
        * own track: a GC or conservation bigWig per genome as bars, say
        */
       laneLayers: plotList(types.array(laneLayerConfigSchema)),
-      /**
-       * #slot
-       */
-      splitStrands: {
-        type: 'boolean',
-        description:
-          "draw each lane's genes in two rows either side of its line: the ones reading rightwards on screen above, leftwards below, so a flipped lane's genes turn over with it and a collinear block keeps one row down the stack. A lane too short for two rows draws one",
-        defaultValue: true,
-      },
       /**
        * #slot
        */

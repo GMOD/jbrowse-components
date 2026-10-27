@@ -766,9 +766,9 @@ columns against the reference: one feature per run in one `state`, `match`,
 `mismatch` or `gap`, a mismatch run with its `base`, and one interbase
 `insertion` per run of inserted bases, standing at the reference base it
 precedes with the bases in `base`. A rect colored by `state` is the MAF
-display's mismatch view, an insertion painting as a sliver of the display's
-`minWidthPx` at its anchor, and a `text` over `base` letters each mismatch and
-each insertion once the zoom shows a base:
+display's mismatch view, an insertion painting as a one-pixel sliver at its
+anchor, and a `text` over `base` letters each mismatch and each insertion once
+the zoom shows a base:
 
 ```json addtrack
 {

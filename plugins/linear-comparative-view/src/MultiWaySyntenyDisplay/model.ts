@@ -1309,7 +1309,7 @@ export function stateModelFactory(
         return laneGeometry(
           self.height,
           1 + self.rowAssemblies.length,
-          self.splitStrands,
+          true,
           self.geneLabelPx,
           self.layerPx,
           self.inlineLaneNames,

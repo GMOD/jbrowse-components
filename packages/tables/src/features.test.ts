@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs'
 import path from 'node:path'
 import { pathToFileURL } from 'node:url'
 
+import { MAX_LABEL_FEATURE_DENSITY } from '../../../plugins/canvas/src/RenderFeatureDataRPC/zoomThresholds.ts'
 import { createTablesEngine } from './index.ts'
 import { BIGBED, DOG_VCF, GFF3 } from './volvox.fixture.ts'
 
@@ -440,6 +441,19 @@ test('a read past its row limit is refused, naming the table to read a region of
   ).resolves.toBeDefined()
 })
 
+// Names alone, of every isoform at every zoom, so only the name gate moves
+// with bpPerPx
+const NAMES = {
+  ...GROW,
+  geneGlyphMode: 'all',
+  labels: { description: { show: false } },
+}
+
+// The zoom that puts `count` features over ctgA:1-50000 just under the
+// density past which names hide
+const bpPerPxAtLabelLimit = (count: number) =>
+  (0.999 * 50_000 * MAX_LABEL_FEATURE_DENSITY) / count
+
 // A feature crossing two regions is one feature on screen, so it counts once
 // toward the label density the display gates labels on.
 test('label density counts a feature crossing two regions once', async () => {
@@ -451,15 +465,13 @@ test('label density counts a feature crossing two regions once', async () => {
       { refName: 'ctgA', start: 25000, end: 50000 },
     ],
   }
-  const free = await engine.features({
-    ...split,
-    display: { ...GROW, maxLabelFeatureDensity: 1000 },
-  })
+  const free = await engine.features({ ...split, bpPerPx: 1, display: NAMES })
   const unique = new Set(free.features.id).size
   expect(free.features.id.length).toBeGreaterThan(unique)
   const atTheLimit = await engine.features({
     ...split,
-    display: { ...GROW, maxLabelFeatureDensity: unique / 1000 },
+    bpPerPx: bpPerPxAtLabelLimit(unique),
+    display: NAMES,
   })
   expect(atTheLimit.labels.text).toEqual(free.labels.text)
 })
@@ -474,12 +486,14 @@ test('label density leaves out the features of a hidden section', async () => {
   const facet = { field: 'strand', hidden: [sections.key[0]!] }
   const free = await engine.features({
     ...GFF3,
-    display: { ...GROW, facet, maxLabelFeatureDensity: 1000 },
+    bpPerPx: 1,
+    display: { ...NAMES, facet },
   })
   const shown = new Set(free.features.id).size
   const atTheLimit = await engine.features({
     ...GFF3,
-    display: { ...GROW, facet, maxLabelFeatureDensity: shown / 1000 },
+    bpPerPx: bpPerPxAtLabelLimit(shown),
+    display: { ...NAMES, facet },
   })
   expect(free.labels.text.length).toBeGreaterThan(0)
   expect(atTheLimit.labels.text).toEqual(free.labels.text)

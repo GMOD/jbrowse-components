@@ -5733,26 +5733,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/Legend"
           }
         },
-        "maxLabelFeatureDensity": {
-          "description": "hide the names, which \`labels.name\` shows, where the on-screen feature density (features per pixel) passes this; past it the gene names alone still draw while the genes are under it.",
-          "default": 0.2,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "number"
-          }
-        },
-        "maxDescriptionFeatureDensity": {
-          "description": "hide the descriptions, which \`labels.description\` shows, where the on-screen feature density (features per pixel) passes this or \`maxLabelFeatureDensity\`, whichever is lower.",
-          "default": 0.1,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "number"
-          }
-        },
         "encoding": {
           "if": {
             "type": "null"
@@ -9873,8 +9853,53 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "additionalProperties": false
     },
-    "MultiWayGeneLabels": {
-      "title": "MultiWayGeneLabels",
+    "MultiWayLaneAxis": {
+      "title": "MultiWayLaneAxis",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "show": {
+          "description": "draw each lane's coordinate ticks; with this off, the header's span and multiple are the only scale shown.",
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
+    "MultiWayLaneLabels": {
+      "title": "MultiWayLaneLabels",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "placement": {
+          "description": "\`above\` prints each genome's name and span on a line over its genes; \`overlay\` prints the name alone over the left end of its gene row, which fits 12 px more per lane.",
+          "default": "above",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "enum": [
+              "above",
+              "overlay"
+            ]
+          }
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
+    "MultiWayLabels": {
+      "title": "MultiWayLabels",
       "type": "object",
       "x-closed": true,
       "properties": {
@@ -9884,6 +9909,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           },
           "else": {
             "$ref": "#/$defs/FeatureNameLabel"
+          }
+        },
+        "lanes": {
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/MultiWayLaneLabels"
           }
         }
       },
@@ -11603,14 +11636,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/Legend"
           }
         },
-        "showLaneTicks": {
-          "description": "draw each lane's coordinate ticks, at one interval shared by every lane. Equal spacing between two lanes means equal bp-per-pixel; a lane whose ticks crowd together is zoomed out. With this off, the header's span and multiple are the only scale shown.",
-          "default": true,
+        "axis": {
           "if": {
             "type": "null"
           },
           "else": {
-            "type": "boolean"
+            "$ref": "#/$defs/MultiWayLaneAxis"
           }
         },
         "labels": {
@@ -11618,17 +11649,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "null"
           },
           "else": {
-            "$ref": "#/$defs/MultiWayGeneLabels"
-          }
-        },
-        "inlineLaneNames": {
-          "description": "print each lane's genome name over the left end of its gene row, without its coordinates, instead of on a line above the genes. The stack then fits 12 px less per lane.",
-          "default": false,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "boolean"
+            "$ref": "#/$defs/MultiWayLabels"
           }
         },
         "laneLayers": {
@@ -11640,16 +11661,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "items": {
               "$ref": "#/$defs/MultiWayLaneLayer"
             }
-          }
-        },
-        "splitStrands": {
-          "description": "draw each lane's genes in two rows either side of its line: the ones reading rightwards on screen above, leftwards below, so a flipped lane's genes turn over with it and a collinear block keeps one row down the stack. A lane too short for two rows draws one.",
-          "default": true,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "boolean"
           }
         },
         "maxFeatureScreenDensity": {
@@ -11999,26 +12010,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           },
           "else": {
             "$ref": "#/$defs/Legend"
-          }
-        },
-        "maxLabelFeatureDensity": {
-          "description": "hide the names, which \`labels.name\` shows, where the on-screen feature density (features per pixel) passes this; past it the gene names alone still draw while the genes are under it.",
-          "default": 0.2,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "number"
-          }
-        },
-        "maxDescriptionFeatureDensity": {
-          "description": "hide the descriptions, which \`labels.description\` shows, where the on-screen feature density (features per pixel) passes this or \`maxLabelFeatureDensity\`, whichever is lower.",
-          "default": 0.1,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "number"
           }
         },
         "encoding": {
@@ -16029,16 +16020,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "number"
           }
         },
-        "minWidthPx": {
-          "description": "minimum bar/rect width in px.",
-          "default": 1,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "number"
-          }
-        },
         "legend": {
           "if": {
             "type": "null"
@@ -16244,16 +16225,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "origin": {
           "description": "baseline value for bars.",
           "default": 0,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "number"
-          }
-        },
-        "minWidthPx": {
-          "description": "minimum bar/rect width in px.",
-          "default": 1,
           "if": {
             "type": "null"
           },
@@ -16470,16 +16441,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "origin": {
           "description": "baseline value for bars.",
           "default": 0,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "number"
-          }
-        },
-        "minWidthPx": {
-          "description": "minimum bar/rect width in px.",
-          "default": 1,
           "if": {
             "type": "null"
           },
@@ -17165,12 +17126,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 }
               ]
             },
-            "maxLabelFeatureDensity": {
-              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/maxLabelFeatureDensity"
-            },
-            "maxDescriptionFeatureDensity": {
-              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/maxDescriptionFeatureDensity"
-            },
             "encoding": {
               "anyOf": [
                 {
@@ -17617,19 +17572,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                   "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/rowHeight"
                 }
               ]
-            },
-            "minWidthPx": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/minWidthPx"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/minWidthPx"
-                },
-                {
-                  "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/minWidthPx"
-                }
-              ]
             }
           },
           "patternProperties": {
@@ -18054,9 +17996,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "origin": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/origin"
-            },
-            "minWidthPx": {
-              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/minWidthPx"
             },
             "showTree": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/showTree"
@@ -18580,12 +18519,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 }
               ]
             },
-            "maxLabelFeatureDensity": {
-              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/maxLabelFeatureDensity"
-            },
-            "maxDescriptionFeatureDensity": {
-              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/maxDescriptionFeatureDensity"
-            },
             "displayMode": {
               "$ref": "#/$defs/LinearVariantDisplaySlots/properties/displayMode"
             },
@@ -18854,9 +18787,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "origin": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/origin"
-            },
-            "minWidthPx": {
-              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/minWidthPx"
             },
             "scales": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/scales"
@@ -19564,9 +19494,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "rowHeight": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rowHeight"
             },
-            "minWidthPx": {
-              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/minWidthPx"
-            },
             "filter": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/filter"
             }
@@ -20002,9 +19929,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "rowHeight": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rowHeight"
-            },
-            "minWidthPx": {
-              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/minWidthPx"
             },
             "filter": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/filter"
@@ -20693,9 +20617,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "origin": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/origin"
-            },
-            "minWidthPx": {
-              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/minWidthPx"
             },
             "filter": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/filter"
@@ -21393,20 +21314,21 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "laneGeneTracks": {
               "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/laneGeneTracks"
             },
-            "showLaneTicks": {
-              "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/showLaneTicks"
+            "axis": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/axis"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/axis"
+                }
+              ]
             },
             "labels": {
               "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/labels"
             },
-            "inlineLaneNames": {
-              "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/inlineLaneNames"
-            },
             "laneLayers": {
               "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/laneLayers"
-            },
-            "splitStrands": {
-              "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/splitStrands"
             },
             "drawCurves": {
               "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/drawCurves"
@@ -21438,17 +21360,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "rowGroups": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rowGroups"
             },
-            "axis": {
-              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/axis"
-            },
             "rowHeight": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rowHeight"
             },
             "origin": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/origin"
-            },
-            "minWidthPx": {
-              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/minWidthPx"
             },
             "showTree": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/showTree"
@@ -21683,9 +21599,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "origin": {
               "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/origin"
-            },
-            "minWidthPx": {
-              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/minWidthPx"
             },
             "legend": {
               "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/legend"

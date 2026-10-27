@@ -125,8 +125,8 @@ export interface MultiWayTablesArgs {
    * them: `ribbons.encoding.color` (a field such as `'strand'`, or the color
    * channel's slots such as `{ value: 'grey' }`), `ribbons.encoding.opacity`,
    * `ribbons.mark.interpolate`, `ribbons.filter`, `rows` (`sort`, the lanes
-   * that stack first, and `kept`, the lanes drawn), `splitStrands`,
-   * `labels.name.show`, `inlineLaneNames` and `height`, the stack's px.
+   * that stack first, and `kept`, the lanes drawn), `labels.name.show`,
+   * `labels.lanes.placement` and `height`, the stack's px.
    */
   display?: {
     ribbons?: {
@@ -135,9 +135,10 @@ export interface MultiWayTablesArgs {
       filter?: FieldPredicate[]
     }
     rows?: { sort?: string[]; kept?: string[] }
-    splitStrands?: boolean
-    labels?: { name?: { show?: boolean; field?: string } }
-    inlineLaneNames?: boolean
+    labels?: {
+      name?: { show?: boolean; field?: string }
+      lanes?: { placement?: 'above' | 'overlay' }
+    }
     height?: number
   }
 }
@@ -202,9 +203,9 @@ function readDisplay(slots: MultiWayTablesArgs['display'] = {}) {
     opacity: opacitySnapshotOf(conf.ribbons.encoding.opacity),
     filter: predicatesOf(conf.ribbons.filter),
     curves: readConfObject(conf, ['ribbons', 'mark', 'interpolate']) === 'bump',
-    splitStrands: readConfObject(conf, 'splitStrands'),
     showGeneLabels: readConfObject(conf, ['labels', 'name', 'show']),
-    inlineLaneNames: readConfObject(conf, 'inlineLaneNames'),
+    inlineLaneNames:
+      readConfObject(conf, ['labels', 'lanes', 'placement']) === 'overlay',
     height: readConfObject(conf, 'height'),
     config: fullConfSnapshot(conf),
   }
@@ -577,7 +578,7 @@ export async function multiwayTables(
     geometry: laneGeometry(
       settings.height,
       1 + rows.length,
-      settings.splitStrands,
+      true,
       geneLabelRowPx(settings.showGeneLabels),
       0,
       settings.inlineLaneNames,

@@ -523,19 +523,6 @@ export function configSchemaFactory() {
         plot: true,
       },
       /**
-       * #slot minWidthPx
-       * Narrowest a bar or rect is painted, in px, grown off its start edge.
-       * Not Vega-Lite's `minBandSize` (declined 2026-10-25): render-core's
-       * rule and point marks read the same floor, and `minBandSize` names
-       * bar and rect alone.
-       */
-      minWidthPx: {
-        type: 'number',
-        defaultValue: 1,
-        description: 'minimum bar/rect width in px',
-        advanced: true,
-      },
-      /**
        * #slot legend
        * The key for every mark whose color or shape is a scale; `show`
        * defaults to on.

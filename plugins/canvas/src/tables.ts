@@ -445,8 +445,6 @@ export async function featureTables(
       ).size
       return genes > 0 ? genes / widthPx : undefined
     },
-    maxLabelDensity: readConfObject(conf, 'maxLabelFeatureDensity'),
-    maxDescriptionDensity: readConfObject(conf, 'maxDescriptionFeatureDensity'),
   })
   const heightMode: string = readConfObject(conf, 'heightMode')
   const trackHeight: number = readConfObject(conf, 'height')

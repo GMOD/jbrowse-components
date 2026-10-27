@@ -1334,15 +1334,6 @@ describe('label density gate', () => {
     expect(display.densityStatsPerRegion.get(0)?.featureCount).toBe(500)
   })
 
-  it('hides shown names past the density threshold, which raising keeps them', () => {
-    const { display, view } = setup()
-    display.setDensityStats(0, { featureCount: 500, regionWidthBp: 50_000 })
-    zoomAndSettle(view, 62.5)
-    expect(display.showLabels).toBe(false)
-    setConf(display, 'maxLabelFeatureDensity', 1)
-    expect(display.showLabels).toBe(true)
-  })
-
   it('"none" hides names even at low density', () => {
     const { display, view } = setup()
     display.setDensityStats(0, { featureCount: 500, regionWidthBp: 50_000 })
@@ -1370,15 +1361,6 @@ describe('label density gate', () => {
 
     zoomAndSettle(view, 15)
     expect(display.showLabels).toBe(true)
-    expect(display.effectiveShowDescriptions).toBe(false)
-  })
-
-  it('never leaves descriptions on past the label threshold', () => {
-    const { display, view } = setup()
-    display.setDensityStats(0, { featureCount: 500, regionWidthBp: 50_000 })
-    setConf(display, 'maxDescriptionFeatureDensity', 10)
-    zoomAndSettle(view, 62.5)
-    expect(display.showLabels).toBe(false)
     expect(display.effectiveShowDescriptions).toBe(false)
   })
 
@@ -1632,8 +1614,6 @@ describe('SettingsInvalidate keys on the payload, not the reads', () => {
     ['height', 600],
     ['heightMode', 'grow'],
     ['growMaxHeight', 900],
-    ['maxLabelFeatureDensity', 0.05],
-    ['maxDescriptionFeatureDensity', 0.01],
   ])('a main-thread-only %j change does not refetch', async (slot, value) => {
     const { display, mockRpcCall } = await loadedDisplay()
     const callsBefore = mockRpcCall.mock.calls.length

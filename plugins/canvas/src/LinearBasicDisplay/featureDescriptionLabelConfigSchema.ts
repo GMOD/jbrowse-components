@@ -5,9 +5,8 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
  * #category display
  * The feature displays' `labels.description`, the line drawn under each
  * feature's name: whether it `show`s, and the `field` it reads. A bare string
- * is the field. Shown descriptions still hide where the on-screen feature
- * density passes the lower of `maxDescriptionFeatureDensity` and
- * `maxLabelFeatureDensity`, whether or not names draw.
+ * is the field. Shown descriptions still hide where features crowd the
+ * screen, a zoom step before names do, whether or not names draw.
  *
  * #example
  * ```js

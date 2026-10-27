@@ -1,3 +1,8 @@
+import {
+  MAX_DESCRIPTION_FEATURE_DENSITY,
+  MAX_LABEL_FEATURE_DENSITY,
+} from '../RenderFeatureDataRPC/zoomThresholds.ts'
+
 /**
  * @deprecated `labels.name.show` and `labels.description.show` replace the
  * five-value `showLabels`; kept for plugins that imported it.
@@ -30,9 +35,9 @@ export function modeCanShowDescription(mode: ShowLabelsMode) {
 
 /**
  * Which labels a display draws at a feature density (features per px): a
- * shown name past `maxLabelDensity` only where the genes alone are under it
- * (`geneNamesOnly`), a shown description only under the lower of the two
- * thresholds, and nothing while collapsed.
+ * shown name past `MAX_LABEL_FEATURE_DENSITY` only where the genes alone are
+ * under it (`geneNamesOnly`), a shown description only under
+ * `MAX_DESCRIPTION_FEATURE_DENSITY`, and nothing while collapsed.
  */
 export function labelVisibility({
   name,
@@ -40,25 +45,24 @@ export function labelVisibility({
   collapsed,
   density,
   geneDensity,
-  maxLabelDensity,
-  maxDescriptionDensity,
 }: {
   name: boolean
   description: boolean
   collapsed: boolean
   density: number
   geneDensity: () => number | undefined
-  maxLabelDensity: number
-  maxDescriptionDensity: number
 }) {
   const genes =
-    name && !collapsed && density > maxLabelDensity ? geneDensity() : undefined
-  const geneNamesOnly = genes !== undefined && genes <= maxLabelDensity
+    name && !collapsed && density > MAX_LABEL_FEATURE_DENSITY
+      ? geneDensity()
+      : undefined
+  const geneNamesOnly =
+    genes !== undefined && genes <= MAX_LABEL_FEATURE_DENSITY
   const showLabels =
-    name && !collapsed && (density <= maxLabelDensity || geneNamesOnly)
-  const showDescriptions =
-    description &&
+    name &&
     !collapsed &&
-    density <= Math.min(maxDescriptionDensity, maxLabelDensity)
+    (density <= MAX_LABEL_FEATURE_DENSITY || geneNamesOnly)
+  const showDescriptions =
+    description && !collapsed && density <= MAX_DESCRIPTION_FEATURE_DENSITY
   return { showLabels, geneNamesOnly, showDescriptions }
 }

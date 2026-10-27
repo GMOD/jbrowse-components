@@ -127,6 +127,7 @@ import { createLinkOwners, withMateRegions } from './linkOwners.ts'
 import { baselineReached, layerSpans } from './markAutoscale.ts'
 import { markColorOf, withMarkColors } from './markColor.ts'
 import {
+  MIN_MARK_WIDTH_PX,
   buildMarkList,
   highestRow,
   markDrawsAt,
@@ -675,12 +676,6 @@ export function stateModelFactory(
          */
         get origin(): number {
           return getConf(self, 'origin')
-        },
-        /**
-         * #getter
-         */
-        get minWidthPx(): number {
-          return getConf(self, 'minWidthPx')
         },
         /**
          * #getter
@@ -1500,7 +1495,7 @@ export function stateModelFactory(
             canvasHeight,
             bpPerPx: self.host.bpPerPx,
             origin: self.origin,
-            minWidthPx: self.minWidthPx,
+            minWidthPx: MIN_MARK_WIDTH_PX,
             markSizes: self.markSizes,
             sizeScales: this.sizeScales,
             linkRegions: this.linkRegions,

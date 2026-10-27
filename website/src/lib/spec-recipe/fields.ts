@@ -1810,10 +1810,11 @@ export const trackFields: Record<string, FieldRecipe> = {
       ? { path: `${TRACK_MENU} → Color by → Ribbons → ${label}` }
       : undefined
   },
-  inlineLaneNames: (value, { displayType }) =>
-    typeof value === 'boolean' && displayType === 'MultiWaySyntenyDisplay'
+  'labels.lanes.placement': (value, { displayType }) =>
+    (value === 'overlay' || value === 'above') &&
+    displayType === 'MultiWaySyntenyDisplay'
       ? {
-          path: `${TRACK_MENU} → Show → Lane names on the gene row (${value ? 'checked' : 'unchecked'})`,
+          path: `${TRACK_MENU} → Show → Lane names on the gene row (${value === 'overlay' ? 'checked' : 'unchecked'})`,
         }
       : undefined,
   'coverage.encoding.y': yStep(channelYMembers),
