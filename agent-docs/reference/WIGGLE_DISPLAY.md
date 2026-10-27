@@ -55,10 +55,9 @@ the correct stale.
 
 The consequence differs by backend and the rule does not: on the GPU the record
 sizes mean a pass reading the wrong one reads past the end of its instances; on
-Canvas2D the layer SET is chosen by the rendering (`filled` splits the min-max bands by
-sign) and so is `gapLimitBp`, so the new painter over the old layers is a plot
-that is neither. Canvas2D read `state` once and drew chords across every hole
-for that frame.
+Canvas2D the layer SET is chosen by the rendering (`filled` splits the min-max
+bands by sign) and so is `gapScore`, so the new painter over the old layers is
+a plot that is neither.
 
 Each pass packs its own buffer and returns **empty** for renderings that are not
 its own — an empty pack is how a pass releases its buffer.
@@ -214,8 +213,8 @@ floored at 1 or the shader seeds the row transform with Infinity.
 - **`linecenter`** connects every consecutive pair, a hole included (reduced
   BigWig data is full of non-tiling bins), and so does its min-max band. Only
   the source start takes `NO_PREV_START`.
-- A hole break on `linecenter`, a multiple of the series' mean spacing
-  (`maxGapMultiple`), shipped at 20, went off by default, and was removed on
+- A hole break on `linecenter`, at a multiple of the series' mean spacing,
+  shipped at 20, went off by default, and was removed with its slot on
   2026-10-27: a broken line reads as missing data whether or not data is
   missing there, and nothing wrote the slot.
 
