@@ -1,0 +1,594 @@
+{
+  "id": "v4-config-spellings",
+  "measured": "2026-10-27",
+  "published": false,
+  "source": {
+    "kind": "bench",
+    "repro": "node scripts/measure-v4-config-coverage.ts --tag v4.3.0 --write"
+  },
+  "columns": [
+    {
+      "key": "spelling",
+      "label": "v4.3.0 spelling"
+    },
+    {
+      "key": "kind",
+      "label": "kind"
+    },
+    {
+      "key": "configs",
+      "label": "configs",
+      "format": "int",
+      "align": "right"
+    }
+  ],
+  "rows": [
+    {
+      "values": {
+        "spelling": "TrixTextSearchAdapter.textSearchAdapterId",
+        "kind": "unmapped",
+        "configs": 8
+      }
+    },
+    {
+      "values": {
+        "spelling": "TrixTextSearchAdapter.metaFilePath",
+        "kind": "unmapped",
+        "configs": 7
+      }
+    },
+    {
+      "values": {
+        "spelling": "session.margin",
+        "kind": "unmapped",
+        "configs": 6
+      }
+    },
+    {
+      "values": {
+        "spelling": "Gff3TabixAdapter.gffLocation",
+        "kind": "unmapped",
+        "configs": 2
+      }
+    },
+    {
+      "values": {
+        "spelling": "LinearGCContentDisplay.windowDelta",
+        "kind": "unmapped",
+        "configs": 2
+      }
+    },
+    {
+      "values": {
+        "spelling": "LinearGCContentDisplay.windowSize",
+        "kind": "unmapped",
+        "configs": 2
+      }
+    },
+    {
+      "values": {
+        "spelling": "MultiLinearVariantDisplay.minorAlleleFrequencyFilter",
+        "kind": "unmapped",
+        "configs": 2
+      }
+    },
+    {
+      "values": {
+        "spelling": "OAuthInternetAccount.hasRefreshToken",
+        "kind": "unmapped",
+        "configs": 2
+      }
+    },
+    {
+      "values": {
+        "spelling": "session DotplotView.headerHeight",
+        "kind": "unmapped",
+        "configs": 2
+      }
+    },
+    {
+      "values": {
+        "spelling": "session LinearAlignmentsDisplay.lowerPanelType",
+        "kind": "unmapped",
+        "configs": 2
+      }
+    },
+    {
+      "values": {
+        "spelling": "session LinearAlignmentsDisplay.snpCovHeight",
+        "kind": "unmapped",
+        "configs": 2
+      }
+    },
+    {
+      "values": {
+        "spelling": "session LinearSyntenyView.height",
+        "kind": "unmapped",
+        "configs": 2
+      }
+    },
+    {
+      "values": {
+        "spelling": "session LinearSyntenyView.linkViews",
+        "kind": "unmapped",
+        "configs": 2
+      }
+    },
+    {
+      "values": {
+        "spelling": "session LinearSyntenyView.showIntraviewLinks",
+        "kind": "unmapped",
+        "configs": 2
+      }
+    },
+    {
+      "values": {
+        "spelling": "session LinearSyntenyView.viewTrackConfigs",
+        "kind": "unmapped",
+        "configs": 2
+      }
+    },
+    {
+      "values": {
+        "spelling": "BamAdapter.metadata",
+        "kind": "unmapped",
+        "configs": 1
+      }
+    },
+    {
+      "values": {
+        "spelling": "config.activeWidgets",
+        "kind": "unmapped",
+        "configs": 1
+      }
+    },
+    {
+      "values": {
+        "spelling": "config.connectionInstances",
+        "kind": "unmapped",
+        "configs": 1
+      }
+    },
+    {
+      "values": {
+        "spelling": "config.widgets",
+        "kind": "unmapped",
+        "configs": 1
+      }
+    },
+    {
+      "values": {
+        "spelling": "LinearArcDisplay.renderer",
+        "kind": "unmapped",
+        "configs": 1
+      }
+    },
+    {
+      "values": {
+        "spelling": "QuantitativeTrack.autoscale",
+        "kind": "unmapped",
+        "configs": 1
+      }
+    },
+    {
+      "values": {
+        "spelling": "session BreakpointSplitView.headerHeight",
+        "kind": "unmapped",
+        "configs": 1
+      }
+    },
+    {
+      "values": {
+        "spelling": "session BreakpointSplitView.trackSelectorType",
+        "kind": "unmapped",
+        "configs": 1
+      }
+    },
+    {
+      "values": {
+        "spelling": "session DotplotView.borderSize",
+        "kind": "unmapped",
+        "configs": 1
+      }
+    },
+    {
+      "values": {
+        "spelling": "session DotplotView.fontSize",
+        "kind": "unmapped",
+        "configs": 1
+      }
+    },
+    {
+      "values": {
+        "spelling": "session DotplotView.htextRotation",
+        "kind": "unmapped",
+        "configs": 1
+      }
+    },
+    {
+      "values": {
+        "spelling": "session DotplotView.hview.interRegionPaddingWidth",
+        "kind": "unmapped",
+        "configs": 1
+      }
+    },
+    {
+      "values": {
+        "spelling": "session DotplotView.tickSize",
+        "kind": "unmapped",
+        "configs": 1
+      }
+    },
+    {
+      "values": {
+        "spelling": "session DotplotView.viewTrackConfigs",
+        "kind": "unmapped",
+        "configs": 1
+      }
+    },
+    {
+      "values": {
+        "spelling": "session DotplotView.vtextRotation",
+        "kind": "unmapped",
+        "configs": 1
+      }
+    },
+    {
+      "values": {
+        "spelling": "session DotplotView.vview.interRegionPaddingWidth",
+        "kind": "unmapped",
+        "configs": 1
+      }
+    },
+    {
+      "values": {
+        "spelling": "session DotplotView.width",
+        "kind": "unmapped",
+        "configs": 1
+      }
+    },
+    {
+      "values": {
+        "spelling": "session LinearBasicDisplay.jexlFilters",
+        "kind": "unmapped",
+        "configs": 1
+      }
+    },
+    {
+      "values": {
+        "spelling": "session LinearBasicDisplay.trackDisplayMode",
+        "kind": "unmapped",
+        "configs": 1
+      }
+    },
+    {
+      "values": {
+        "spelling": "session LinearGenomeView.bookmarkHighlightsVisible",
+        "kind": "unmapped",
+        "configs": 1
+      }
+    },
+    {
+      "values": {
+        "spelling": "session LinearGenomeView.bookmarkLabelsVisible",
+        "kind": "unmapped",
+        "configs": 1
+      }
+    },
+    {
+      "values": {
+        "spelling": "session LinearGenomeView.hideControls",
+        "kind": "unmapped",
+        "configs": 1
+      }
+    },
+    {
+      "values": {
+        "spelling": "session LinearGenomeView.showGridlines",
+        "kind": "unmapped",
+        "configs": 1
+      }
+    },
+    {
+      "values": {
+        "spelling": "session LinearSyntenyView.drawCurves",
+        "kind": "unmapped",
+        "configs": 1
+      }
+    },
+    {
+      "values": {
+        "spelling": "session LinearSyntenyView.interactiveOverlay",
+        "kind": "unmapped",
+        "configs": 1
+      }
+    },
+    {
+      "values": {
+        "spelling": "session LinearSyntenyView.interactToggled",
+        "kind": "unmapped",
+        "configs": 1
+      }
+    },
+    {
+      "values": {
+        "spelling": "session LinearSyntenyView.middleComparativeHeight",
+        "kind": "unmapped",
+        "configs": 1
+      }
+    },
+    {
+      "values": {
+        "spelling": "session.connections",
+        "kind": "unmapped",
+        "configs": 1
+      }
+    },
+    {
+      "values": {
+        "spelling": "session.view",
+        "kind": "unmapped",
+        "configs": 1
+      }
+    },
+    {
+      "values": {
+        "spelling": "session.width",
+        "kind": "unmapped",
+        "configs": 1
+      }
+    },
+    {
+      "values": {
+        "spelling": "TrixTextSearchAdapter.assemblies",
+        "kind": "unmapped",
+        "configs": 1
+      }
+    },
+    {
+      "values": {
+        "spelling": "type LinearLollipopDisplay",
+        "kind": "unmapped",
+        "configs": 1
+      }
+    },
+    {
+      "values": {
+        "spelling": "session LinearSyntenyView.tracks",
+        "kind": "shape",
+        "configs": 2
+      }
+    },
+    {
+      "values": {
+        "spelling": "BamAdapter.sequenceAdapter",
+        "kind": "dropped",
+        "configs": 4
+      }
+    },
+    {
+      "values": {
+        "spelling": "CramAdapter.sequenceAdapter",
+        "kind": "dropped",
+        "configs": 3
+      }
+    },
+    {
+      "values": {
+        "spelling": "MultiLinearVariantDisplay.colorBy",
+        "kind": "dropped",
+        "configs": 3
+      }
+    },
+    {
+      "values": {
+        "spelling": "AlignmentsTrack.rpcDriverName",
+        "kind": "dropped",
+        "configs": 1
+      }
+    },
+    {
+      "values": {
+        "spelling": "HicAdapter.resolutionMultiplier",
+        "kind": "dropped",
+        "configs": 1
+      }
+    },
+    {
+      "values": {
+        "spelling": "LinearBasicDisplay.renderer",
+        "kind": "lifted",
+        "configs": 5
+      }
+    },
+    {
+      "values": {
+        "spelling": "MultiLinearVariantDisplay.showReferenceAlleles",
+        "kind": "lifted",
+        "configs": 4
+      }
+    },
+    {
+      "values": {
+        "spelling": "LinearVariantDisplay.renderer",
+        "kind": "lifted",
+        "configs": 3
+      }
+    },
+    {
+      "values": {
+        "spelling": "LinearWiggleDisplay.defaultRendering",
+        "kind": "lifted",
+        "configs": 2
+      }
+    },
+    {
+      "values": {
+        "spelling": "session LinearAlignmentsDisplay.PileupDisplay",
+        "kind": "lifted",
+        "configs": 2
+      }
+    },
+    {
+      "values": {
+        "spelling": "session LinearAlignmentsDisplay.SNPCoverageDisplay",
+        "kind": "lifted",
+        "configs": 2
+      }
+    },
+    {
+      "values": {
+        "spelling": "session LinearBasicDisplay.heightPreConfig",
+        "kind": "lifted",
+        "configs": 2
+      }
+    },
+    {
+      "values": {
+        "spelling": "session LinearGenomeView.init",
+        "kind": "lifted",
+        "configs": 2
+      }
+    },
+    {
+      "values": {
+        "spelling": "ChordVariantDisplay.renderer",
+        "kind": "lifted",
+        "configs": 1
+      }
+    },
+    {
+      "values": {
+        "spelling": "LinearAlignmentsDisplay.pileupDisplay",
+        "kind": "lifted",
+        "configs": 1
+      }
+    },
+    {
+      "values": {
+        "spelling": "LinearBasicDisplay.jexlFilters",
+        "kind": "lifted",
+        "configs": 1
+      }
+    },
+    {
+      "values": {
+        "spelling": "LinearPileupDisplay.colorBy",
+        "kind": "lifted",
+        "configs": 1
+      }
+    },
+    {
+      "values": {
+        "spelling": "LinearVariantDisplay.jexlFilters",
+        "kind": "lifted",
+        "configs": 1
+      }
+    },
+    {
+      "values": {
+        "spelling": "LinearVariantMatrixDisplay.showReferenceAlleles",
+        "kind": "lifted",
+        "configs": 1
+      }
+    },
+    {
+      "values": {
+        "spelling": "LinearWiggleDisplay.autoscale",
+        "kind": "lifted",
+        "configs": 1
+      }
+    },
+    {
+      "values": {
+        "spelling": "LinearWiggleDisplay.renderers",
+        "kind": "lifted",
+        "configs": 1
+      }
+    },
+    {
+      "values": {
+        "spelling": "MultiLinearVariantDisplay.renderingMode",
+        "kind": "lifted",
+        "configs": 1
+      }
+    },
+    {
+      "values": {
+        "spelling": "MultiLinearVariantDisplay.showSidebarLabels",
+        "kind": "lifted",
+        "configs": 1
+      }
+    },
+    {
+      "values": {
+        "spelling": "MultiLinearWiggleDisplay.defaultRendering",
+        "kind": "lifted",
+        "configs": 1
+      }
+    },
+    {
+      "values": {
+        "spelling": "session LinearBasicDisplay.jexlFiltersSetting",
+        "kind": "lifted",
+        "configs": 1
+      }
+    },
+    {
+      "values": {
+        "spelling": "type Garbage",
+        "kind": "plugin",
+        "configs": 1
+      }
+    },
+    {
+      "values": {
+        "spelling": "type MyGeneV3Adapter",
+        "kind": "plugin",
+        "configs": 1
+      }
+    },
+    {
+      "values": {
+        "spelling": "type UCSCAdapter",
+        "kind": "plugin",
+        "configs": 1
+      }
+    },
+    {
+      "values": {
+        "spelling": "config.assemblies",
+        "kind": "reference",
+        "configs": 1
+      }
+    },
+    {
+      "values": {
+        "spelling": "QuantitativeTrack.assemblyNames",
+        "kind": "reference",
+        "configs": 1
+      }
+    },
+    {
+      "values": {
+        "spelling": "SyntenyTrack.assemblyNames",
+        "kind": "reference",
+        "configs": 1
+      }
+    },
+    {
+      "values": {
+        "spelling": "VariantTrack.assemblyNames",
+        "kind": "reference",
+        "configs": 1
+      }
+    },
+    {
+      "values": {
+        "spelling": "GCContentAdapter.sequenceAdapter",
+        "kind": "lint",
+        "configs": 2
+      }
+    }
+  ]
+}

@@ -1,0 +1,59 @@
+{
+  "id": "v4-config-coverage",
+  "measured": "2026-10-27",
+  "published": false,
+  "source": {
+    "kind": "bench",
+    "repro": "node scripts/measure-v4-config-coverage.ts --tag v4.3.0 --write"
+  },
+  "columns": [
+    {
+      "key": "corpus",
+      "label": "v4.3.0 corpus"
+    },
+    {
+      "key": "configs",
+      "label": "configs",
+      "format": "int",
+      "align": "right"
+    },
+    {
+      "key": "clean",
+      "label": "clean",
+      "format": "int",
+      "align": "right"
+    },
+    {
+      "key": "warn",
+      "label": "warn",
+      "format": "int",
+      "align": "right"
+    },
+    {
+      "key": "fail",
+      "label": "fail",
+      "format": "int",
+      "align": "right"
+    }
+  ],
+  "rows": [
+    {
+      "values": {
+        "corpus": "config files",
+        "configs": 34,
+        "clean": 15,
+        "warn": 2,
+        "fail": 17
+      }
+    },
+    {
+      "values": {
+        "corpus": "doc snippets",
+        "configs": 59,
+        "clean": 49,
+        "warn": 5,
+        "fail": 5
+      }
+    }
+  ]
+}
