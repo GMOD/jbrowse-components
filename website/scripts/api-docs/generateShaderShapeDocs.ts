@@ -64,8 +64,9 @@ export function collectShapeConsumers() {
     for (const m of modules) {
       // The import statement only — not a mention in a comment, which is how
       // `diagonalGrid.slang`'s own "Imported via `import diagonalGrid;`" header
-      // would otherwise list the module as importing itself.
-      if (new RegExp(`^import ${m};`, 'm').test(text)) {
+      // would otherwise list the module as importing itself. `__exported
+      // import` is an import that also re-exports.
+      if (new RegExp(`^(?:__exported\\s+)?import ${m};`, 'm').test(text)) {
         consumers.get(m)!.push(label(file))
       }
     }
