@@ -42,7 +42,10 @@ import {
 
 import type { TagFilter } from '../../shared/types.ts'
 import type { LayerFiltersModel } from './layerFilters.ts'
-import type { FieldsPatch } from '@jbrowse/core/util/fieldPredicate'
+import type {
+  FieldPredicate,
+  FieldsPatch,
+} from '@jbrowse/core/util/fieldPredicate'
 
 const useStyles = makeStyles()(theme => ({
   tagRows: {
@@ -252,6 +255,40 @@ function tagRowsOf(tags: readonly TagFilter[]): TagRow[] {
     : [{ id: 0, tag: '', value: '' }]
 }
 
+// The read fields as the boxes hold them: tag rows and the MAPQ text. Row ids
+// start at `idBase`, so fresh ids remount the uncontrolled tag boxes.
+interface ReadsForm {
+  flagInclude: number
+  flagExclude: number
+  tagRows: TagRow[]
+  readName: string
+  minMapq: string
+  mapqStrict: boolean
+}
+
+function readsFormOf(
+  predicates: readonly FieldPredicate[],
+  idBase = 0,
+): ReadsForm {
+  const { tags, minMapq, ...rest } = readFieldsFormOf(predicates)
+  return {
+    ...rest,
+    tagRows: tagRowsOf(tags).map(r => ({ ...r, id: r.id + idBase })),
+    minMapq: minMapq === undefined ? '' : `${minMapq}`,
+  }
+}
+
+function readFieldsOf({ tagRows, minMapq, ...rest }: ReadsForm) {
+  return {
+    ...rest,
+    tags: tagsOfRows(tagRows),
+    minMapq:
+      minMapq === '' || !Number.isFinite(Number(minMapq))
+        ? undefined
+        : Number(minMapq),
+  }
+}
+
 // One row per tag filter, AND-ed: a read must carry every tag with its value.
 // TagTextField is uncontrolled, so each row is keyed by a stable id rather
 // than its index.
@@ -344,34 +381,27 @@ const MoreFiltersDialog = observer(function MoreFiltersDialog(props: {
 }) {
   const { model, handleClose } = props
   const predicates = model.filterPredicates
-  const [initial] = useState(() => readFieldsFormOf(predicates))
-  const [flagInclude, setFlagInclude] = useState(initial.flagInclude)
-  const [flagExclude, setFlagExclude] = useState(initial.flagExclude)
-  const [tagRows, setTagRows] = useState(() => tagRowsOf(initial.tags))
-  const [readName, setReadName] = useState(initial.readName)
-  const [minMapq, setMinMapq] = useState(
-    initial.minMapq === undefined ? '' : `${initial.minMapq}`,
-  )
-  const [mapqStrict, setMapqStrict] = useState(initial.mapqStrict)
+  const [initial] = useState(() => readsFormOf(predicates))
+  const [form, setForm] = useState(initial)
+  const patchForm = (patch: Partial<ReadsForm>) => {
+    setForm(f => ({ ...f, ...patch }))
+  }
   const [initialLayers] = useState(() => layerFilterStateOf(model))
   const [layers, setLayers] = useState(initialLayers)
 
   // Back to what the track's config declares, as "Clear all filters" is, for
-  // the fields this dialog shows. Fresh row ids remount the uncontrolled tag
-  // boxes.
+  // the fields this dialog shows
   const handleReset = () => {
-    const declared = readFieldsFormOf(model.declaredFilters.filterPredicates)
-    const nextId = Math.max(...tagRows.map(r => r.id)) + 1
-    setFlagInclude(declared.flagInclude)
-    setFlagExclude(declared.flagExclude)
-    setTagRows(tagRowsOf(declared.tags).map(r => ({ ...r, id: r.id + nextId })))
-    setReadName(declared.readName)
-    setMinMapq(declared.minMapq === undefined ? '' : `${declared.minMapq}`)
-    setMapqStrict(declared.mapqStrict)
+    setForm(
+      readsFormOf(
+        model.declaredFilters.filterPredicates,
+        Math.max(...form.tagRows.map(r => r.id)) + 1,
+      ),
+    )
     setLayers(declaredLayerFilterState(model))
   }
 
-  const masksConflict = masksOverlap(flagInclude, flagExclude)
+  const masksConflict = masksOverlap(form.flagInclude, form.flagExclude)
   const handleSubmit = () => {
     if (masksConflict) {
       return
@@ -379,18 +409,8 @@ const MoreFiltersDialog = observer(function MoreFiltersDialog(props: {
     model.setFilterFields({
       ...readFieldsEntries(
         predicates,
-        {
-          flagInclude,
-          flagExclude,
-          tags: tagsOfRows(tagRows),
-          readName,
-          minMapq:
-            minMapq === '' || !Number.isFinite(Number(minMapq))
-              ? undefined
-              : Number(minMapq),
-          mapqStrict,
-        },
-        { ...initial, tags: tagsOfRows(tagRowsOf(initial.tags)) },
+        readFieldsOf(form),
+        readFieldsOf(initial),
       ),
       ...layerFilterEntries(layers, initialLayers),
     })
@@ -425,21 +445,23 @@ const MoreFiltersDialog = observer(function MoreFiltersDialog(props: {
                 variant="outlined"
                 size="small"
                 fullWidth
-                value={readName}
+                value={form.readName}
                 placeholder="Any read"
                 slotProps={{ htmlInput: { 'aria-label': 'Read name' } }}
                 onChange={event => {
-                  setReadName(event.target.value)
+                  patchForm({ readName: event.target.value })
                 }}
               />
             </FormRow>
             <NumberRow
               label="Min mapping quality"
-              value={minMapq}
+              value={form.minMapq}
               min={0}
               max={254}
               placeholder="Any"
-              onChange={setMinMapq}
+              onChange={minMapq => {
+                patchForm({ minMapq })
+              }}
             />
             <CategoryRow
               label="Reads with no mate in view"
@@ -451,13 +473,22 @@ const MoreFiltersDialog = observer(function MoreFiltersDialog(props: {
                 setLayers({ ...layers, alone })
               }}
             />
-            <TagFilterRows rows={tagRows} setRows={setTagRows} />
+            <TagFilterRows
+              rows={form.tagRows}
+              setRows={tagRows => {
+                patchForm({ tagRows })
+              }}
+            />
             <LayerFilterSections state={layers} setState={setLayers} />
             <FlagFilterSection
-              flagInclude={flagInclude}
-              flagExclude={flagExclude}
-              setFlagInclude={setFlagInclude}
-              setFlagExclude={setFlagExclude}
+              flagInclude={form.flagInclude}
+              flagExclude={form.flagExclude}
+              setFlagInclude={flagInclude => {
+                patchForm({ flagInclude })
+              }}
+              setFlagExclude={flagExclude => {
+                patchForm({ flagExclude })
+              }}
             />
           </FilterForm>
         </DialogContent>
