@@ -1,4 +1,4 @@
-import { getSession } from '@jbrowse/core/util'
+import { assembleLocString, getSession } from '@jbrowse/core/util'
 import { highlightKey } from '@jbrowse/core/util/highlights'
 import { ElementId } from '@jbrowse/core/util/types/mst'
 import { types } from '@jbrowse/mobx-state-tree'
@@ -7,13 +7,12 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 import type { HighlightType } from '@jbrowse/core/util/highlights'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
-// alpha applied to highlight colors so they overlay the view rather than
-// obscure it; the color picker's presets use it
-export const HIGHLIGHT_ALPHA = 0.2
-
 export interface HighlightRow {
-  key: string
+  id: string
   highlight: HighlightType
+  locString: string
+  label: string
+  assemblyName: string
 }
 
 /**
@@ -36,11 +35,11 @@ export default function f(_pluginManager: PluginManager) {
     .volatile(() => ({
       /**
        * #volatile
-       * a row's key holds its coordinates and its place in the session's list,
-       * so a key left stale by a removal elsewhere selects nothing rather than
+       * a row's id holds its coordinates and its place in the session's list,
+       * so an id left stale by a removal elsewhere selects nothing rather than
        * a neighbour
        */
-      selectedKeys: new Set<string>(),
+      selectedIds: new Set<string>(),
     }))
     .views(self => ({
       /**
@@ -48,10 +47,16 @@ export default function f(_pluginManager: PluginManager) {
        * every highlight in the session, in the order they were added
        */
       get rows(): HighlightRow[] {
-        return getSession(self).highlights.map((highlight, i) => ({
-          key: highlightKey(highlight, i),
-          highlight,
-        }))
+        return getSession(self).highlights.map((highlight, i) => {
+          const { assemblyName, refName, start, end, label } = highlight
+          return {
+            id: highlightKey(highlight, i),
+            highlight,
+            locString: assembleLocString({ refName, start, end }),
+            label: label ?? '',
+            assemblyName,
+          }
+        })
       },
     }))
     .views(self => ({
@@ -60,7 +65,7 @@ export default function f(_pluginManager: PluginManager) {
        */
       get selectedHighlights() {
         return self.rows
-          .filter(r => self.selectedKeys.has(r.key))
+          .filter(r => self.selectedIds.has(r.id))
           .map(r => r.highlight)
       },
     }))
@@ -68,8 +73,8 @@ export default function f(_pluginManager: PluginManager) {
       /**
        * #action
        */
-      setSelectedKeys(keys: Set<string>) {
-        self.selectedKeys = keys
+      setSelectedIds(ids: Set<string>) {
+        self.selectedIds = ids
       },
       /**
        * #action
@@ -88,7 +93,7 @@ export default function f(_pluginManager: PluginManager) {
         for (const h of self.selectedHighlights) {
           session.removeHighlight(h)
         }
-        self.selectedKeys = new Set()
+        self.selectedIds = new Set()
       },
       /**
        * #action

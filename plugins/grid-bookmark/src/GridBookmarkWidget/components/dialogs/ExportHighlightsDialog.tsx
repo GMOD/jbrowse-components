@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { SubmitDialog } from '@jbrowse/core/ui'
+import { ErrorBanner, SubmitDialog } from '@jbrowse/core/ui'
 import GetAppIcon from '@mui/icons-material/GetApp'
 import { Alert, MenuItem, Select, Stack, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
@@ -8,6 +8,7 @@ import { observer } from 'mobx-react'
 import { downloadHighlightFile } from '../../utils.ts'
 
 import type { GridBookmarkModel } from '../../model.ts'
+import type { HighlightFileFormat } from '../../utils.ts'
 
 const ExportHighlightsDialog = observer(function ExportHighlightsDialog({
   model,
@@ -16,9 +17,12 @@ const ExportHighlightsDialog = observer(function ExportHighlightsDialog({
   model: GridBookmarkModel
   onClose: () => void
 }) {
-  const [fileType, setFileType] = useState('BED')
+  const [fileType, setFileType] = useState<HighlightFileFormat>('BED')
+  const [error, setError] = useState<unknown>()
   const { selectedHighlights, rows } = model
   const exportAll = selectedHighlights.length === 0
+  const highlights = exportAll ? rows.map(r => r.highlight) : selectedHighlights
+  const assemblyCount = new Set(highlights.map(h => h.assemblyName)).size
   return (
     <SubmitDialog
       open
@@ -26,12 +30,14 @@ const ExportHighlightsDialog = observer(function ExportHighlightsDialog({
       submitText="Download"
       submitStartIcon={<GetAppIcon />}
       onCancel={onClose}
-      onSubmit={() => {
-        void downloadHighlightFile(
-          fileType,
-          exportAll ? rows.map(r => r.highlight) : selectedHighlights,
-        )
-        onClose()
+      onSubmit={async () => {
+        try {
+          await downloadHighlightFile(fileType, highlights)
+          onClose()
+        } catch (e) {
+          console.error(e)
+          setError(e)
+        }
       }}
     >
       <Alert severity="info">
@@ -52,6 +58,13 @@ const ExportHighlightsDialog = observer(function ExportHighlightsDialog({
           <MenuItem value="TSV">TSV</MenuItem>
         </Select>
       </Stack>
+      {fileType === 'BED' && assemblyCount > 1 ? (
+        <Alert severity="warning" sx={{ mt: 1 }}>
+          A BED file holds one assembly, so this downloads {assemblyCount}{' '}
+          files. TSV keeps every assembly in one file.
+        </Alert>
+      ) : null}
+      {error ? <ErrorBanner error={error} /> : null}
     </SubmitDialog>
   )
 })

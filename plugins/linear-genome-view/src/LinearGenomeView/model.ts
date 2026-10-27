@@ -3205,18 +3205,24 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #action
+       * navigates to a highlight, zoomed out a little for context. Goes through
+       * a locstring so it reaches a refName the view is not displaying
+       */
+      navToHighlight(highlight: HighlightType): Promise<boolean> {
+        const { assemblyName, ...region } = highlight
+        return self.navToLocString(assembleLocString(region), assemblyName, 0.2)
+      },
+    }))
+    .actions(self => ({
+      /**
+       * #action
        * navigates to the most recently added highlight on this view's
-       * assemblies, zoomed out a little for context
+       * assemblies
        */
       async navigateNewestHighlight() {
         const newest = self.highlights.at(-1)
         if (newest) {
-          const { assemblyName, ...region } = newest
-          await self.navToLocString(
-            assembleLocString(region),
-            assemblyName,
-            0.2,
-          )
+          await self.navToHighlight(newest)
         } else {
           getSession(self).notify(
             'There are no highlights to navigate to.',

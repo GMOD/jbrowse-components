@@ -33,32 +33,25 @@ export async function navToHighlight(
 ) {
   const session = getSession(node)
   const { assemblyName, ...region } = highlight
-  const locString = assembleLocString(region)
   try {
-    // prefer the focused view when it's an LGV on the right assembly, else the
-    // first such LGV. a non-LGV (dotplot, circular) on this assembly has no
-    // navToLocString
-    const isTarget = (v: AbstractViewModel) =>
-      isLinearGenomeView(v) &&
-      isSameAssemblyName(
-        v.assemblyNames[0],
-        assemblyName,
-        session.assemblyManager,
+    // a dotplot or circular view on this assembly cannot navigate to a region
+    const targets = session.views
+      .filter(isLinearGenomeView)
+      .filter(v =>
+        isSameAssemblyName(
+          v.assemblyNames[0],
+          assemblyName,
+          session.assemblyManager,
+        ),
       )
-    const view =
-      session.views.find(v => v.id === session.focusedViewId && isTarget(v)) ??
-      session.views.find(isTarget)
-
-    // slightly zoom out (grow 0.2) so the region has context on either side
-    if (view && isLinearGenomeView(view)) {
-      await view.navToLocString(locString, assemblyName, 0.2)
+    const view = targets.find(v => v.id === session.focusedViewId) ?? targets[0]
+    if (view) {
+      await view.navToHighlight(highlight)
     } else {
-      // no view open for this assembly: launch a new one declaratively so it
-      // shows a loading spinner (not a flash of the import form) while the
-      // assembly loads, then self-navigates with the same grow
+      // a launch spec shows a spinner while the assembly loads
       session.addView('LinearGenomeView', {
         assembly: assemblyName,
-        loc: locString,
+        loc: assembleLocString(region),
         grow: 0.2,
       })
     }
@@ -68,8 +61,14 @@ export async function navToHighlight(
   }
 }
 
+export type HighlightFileFormat = 'BED' | 'TSV'
+
 function isTSVHeader(header: string) {
   return header.startsWith('chrom') && header.includes('assembly_name')
+}
+
+function isBedMetaLine(line: string) {
+  return /^(#|track\b|browser\b)/.test(line)
 }
 
 function parseCoord(value: string | undefined, field: string, line: string) {
@@ -97,15 +96,14 @@ export function parseHighlights(
   data: string,
   bedAssembly: string,
 ): HighlightType[] {
-  const lines = data.split(/\n|\r\n|\r/).filter(f => !!f.trim())
+  const lines = data
+    .split(/\n|\r\n|\r/)
+    .filter(f => !!f.trim() && !isBedMetaLine(f))
   const tsv = lines.length > 0 && isTSVHeader(lines[0]!)
   const columns = tsv
     ? lines[0]!.split('\t')
     : ['chrom', 'start', 'end', 'label']
-  const dataLines = (tsv ? lines.slice(1) : lines).filter(
-    f => !f.startsWith('#'),
-  )
-  return dataLines.map(line => {
+  return (tsv ? lines.slice(1) : lines).map(line => {
     const fields = line.split('\t')
     const field = (name: string) => fields[columns.indexOf(name)]
     const refName = field('chrom')
@@ -124,7 +122,7 @@ export function parseHighlights(
 }
 
 export async function downloadHighlightFile(
-  fileFormat: string,
+  fileFormat: HighlightFileFormat,
   highlights: readonly HighlightType[],
 ) {
   const { saveAs } = await import('@jbrowse/core/util/FileSaver')

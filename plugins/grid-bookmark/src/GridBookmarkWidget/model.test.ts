@@ -1,4 +1,7 @@
-import { createTestSession } from '@jbrowse/web/testUtils'
+import {
+  createTestSession,
+  createTestSessionAsync,
+} from '@jbrowse/web/testUtils'
 import { when } from 'mobx'
 
 import type { GridBookmarkModel } from './model.ts'
@@ -103,7 +106,7 @@ test('recoloring the selection keeps it selected', () => {
     start: 0,
     end: 100,
   })
-  widget.setSelectedKeys(new Set(widget.rows.map(r => r.key)))
+  widget.setSelectedIds(new Set(widget.rows.map(r => r.id)))
   widget.recolorSelectedHighlights('red')
   expect(widget.selectedHighlights.map(h => h.color)).toEqual(['red'])
 
@@ -121,7 +124,7 @@ test('a selection outlives a removal elsewhere without moving to a neighbour', (
       end: start + 100,
     })
   }
-  widget.setSelectedKeys(new Set([widget.rows[2]!.key]))
+  widget.setSelectedIds(new Set([widget.rows[2]!.id]))
   session.removeHighlight(session.highlights[0])
   expect(widget.selectedHighlights).toEqual([])
 })
@@ -157,4 +160,27 @@ test('a highlight named by an alias of the view assembly is listed and drawn', a
   })
   expect(widget.rows).toHaveLength(1)
   expect(view.highlights).toHaveLength(1)
+})
+
+test('a highlight chip menu opens the list from a dotplot as from a linear view', async () => {
+  const session = (await createTestSessionAsync({
+    sessionSnapshot: {
+      views: [{ type: 'LinearGenomeView' }, { type: 'DotplotView' }],
+    },
+  })) as any
+  const highlight = {
+    assemblyName: 'volvox',
+    refName: 'ctgA',
+    start: 0,
+    end: 100,
+  }
+  for (const view of session.views) {
+    const item = view
+      .highlightMenuItems(highlight)
+      .find((m: { label: string }) => m.label === 'Open highlight list')
+    item.onClick()
+  }
+  expect([...session.activeWidgets.values()].map((w: any) => w.type)).toEqual([
+    'GridBookmarkWidget',
+  ])
 })

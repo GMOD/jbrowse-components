@@ -12,7 +12,6 @@ import HighlightGrid from './HighlightGrid.tsx'
 
 import type { GridBookmarkModel } from '../model.ts'
 
-// lazies
 const ExportHighlightsDialog = lazy(
   () => import('./dialogs/ExportHighlightsDialog.tsx'),
 )
@@ -58,6 +57,16 @@ const GridBookmarkWidget = observer(function GridBookmarkWidget({
               checked: session.highlightsVisible,
               onClick: () => {
                 session.setHighlightsVisible(!session.highlightsVisible)
+              },
+            },
+            {
+              label: 'Show highlight labels',
+              type: 'checkbox',
+              checked: session.highlightLabelsVisible,
+              onClick: () => {
+                session.setHighlightLabelsVisible(
+                  !session.highlightLabelsVisible,
+                )
               },
             },
           ]}

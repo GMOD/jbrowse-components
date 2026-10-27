@@ -75,6 +75,7 @@ import type { Dotplot1DViewModel } from './1dview.ts'
 import type { Coord, DotplotViewCommands } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { ViewExportSvgOptions } from '@jbrowse/core/svg/exportViewSvg'
+import type { MenuItem } from '@jbrowse/core/ui'
 import type { PxToBpResult } from '@jbrowse/core/util/Base1DUtils'
 import type { HighlightType } from '@jbrowse/core/util/highlights'
 import type { DisplayInitialSnapshot } from '@jbrowse/core/util/tracks'
@@ -1464,6 +1465,13 @@ export default function stateModelFactory(pm: PluginManager) {
                 height: coords.width,
               }
             : undefined
+        },
+        /**
+         * #method
+         * a highlight chip's menu rows after Dismiss; extend this to add one
+         */
+        highlightMenuItems(_highlight: HighlightType): MenuItem[] {
+          return []
         },
         /**
          * #method

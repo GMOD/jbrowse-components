@@ -1,11 +1,13 @@
+import { ActionLink } from '@jbrowse/core/ui'
 import DataGridFlexContainer from '@jbrowse/core/ui/DataGridFlexContainer'
 import { useStyleTheme } from '@jbrowse/core/ui/PaletteContext'
+import PopoverPicker from '@jbrowse/core/ui/PopoverPicker'
+import { getSession, resolveSelectedIds } from '@jbrowse/core/util'
 import {
-  assembleLocString,
-  getSession,
-  resolveSelectedIds,
-} from '@jbrowse/core/util'
-import { getHighlightColor } from '@jbrowse/core/util/highlights'
+  HIGHLIGHT_ALPHA,
+  getHighlightColor,
+} from '@jbrowse/core/util/highlights'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Stack, Typography } from '@mui/material'
 import {
   DataGrid,
@@ -14,29 +16,26 @@ import {
 } from '@mui/x-data-grid'
 import { observer } from 'mobx-react'
 
-import { navToHighlight } from '../utils.ts'
+import { colWidth, navToHighlight } from '../utils.ts'
 import SelectionActions from './SelectionActions.tsx'
-import {
-  COMPACT_ROW_HEIGHT,
-  DEFAULT_PAGE_SIZE,
-  assemblyColumn,
-  colorColumn,
-  labelColumn,
-  locationColumn,
-  startLabelEditOnClick,
-  useCellStyles,
-} from './columns.tsx'
 
-import type { GridBookmarkModel } from '../model.ts'
-import type { HighlightType } from '@jbrowse/core/util/highlights'
+import type { GridBookmarkModel, HighlightRow } from '../model.ts'
+import type { GridColDef } from '@mui/x-data-grid'
 
-interface Row {
-  id: string
-  highlight: HighlightType
-  locString: string
-  label: string
-  assemblyName: string
-}
+// tighter than MUI's "compact" density (36px) for the narrow sidebar; still
+// clears the 24px color swatch
+const ROW_HEIGHT = 32
+
+// MUI DataGrid's default page size, so the pager shows only when it pages
+const PAGE_SIZE = 100
+
+const useStyles = makeStyles()({
+  cell: {
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+  },
+})
 
 const NoHighlightsOverlay = observer(function NoHighlightsOverlay() {
   return (
@@ -61,29 +60,82 @@ const HighlightGrid = observer(function HighlightGrid({
 }: {
   model: GridBookmarkModel
 }) {
-  const { classes } = useCellStyles()
+  const { classes } = useStyles()
   const apiRef = useGridApiRef()
   const theme = useStyleTheme()
   const session = getSession(model)
-  const rows = model.rows.map(({ key, highlight }): Row => {
-    const { assemblyName, refName, start, end, label } = highlight
-    return {
-      id: key,
-      highlight,
-      locString: assembleLocString({ refName, start, end }),
-      label: label ?? '',
-      assemblyName,
-    }
-  })
+  const { rows, selectedHighlights } = model
   const bandColor = (h: { color?: string }) =>
     getHighlightColor(h, theme).toRgbString()
-  const [firstSelected] = model.selectedHighlights
+  const assemblyNames = rows.map(r => r.assemblyName)
+
+  const columns: GridColDef<HighlightRow>[] = [
+    { ...GRID_CHECKBOX_SELECTION_COL_DEF, width: 50 },
+    {
+      field: 'locString',
+      headerName: 'Location',
+      flex: 1.5,
+      minWidth: 100,
+      renderCell: ({ value, row }) => (
+        <ActionLink
+          className={classes.cell}
+          title={value}
+          onClick={() => {
+            void navToHighlight(row.highlight, model)
+          }}
+        >
+          {value}
+        </ActionLink>
+      ),
+    },
+    {
+      field: 'label',
+      headerName: 'Label',
+      editable: true,
+      flex: 1,
+      minWidth: 80,
+      renderCell: ({ value }) =>
+        value ? (
+          <span className={classes.cell} title={value}>
+            {value}
+          </span>
+        ) : (
+          <span style={{ color: 'grey', fontStyle: 'italic' }}>
+            Add label...
+          </span>
+        ),
+    },
+    ...(new Set(assemblyNames).size > 1
+      ? [
+          {
+            field: 'assemblyName',
+            headerName: 'Assembly',
+            width: colWidth('Assembly', assemblyNames),
+          },
+        ]
+      : []),
+    {
+      field: 'color',
+      headerName: 'Color',
+      width: 50,
+      renderCell: ({ row }) => (
+        <PopoverPicker
+          color={bandColor(row.highlight)}
+          unset={!row.highlight.color}
+          presetAlpha={HIGHLIGHT_ALPHA}
+          onChange={color => {
+            session.updateHighlight(row.highlight, { color })
+          }}
+        />
+      ),
+    },
+  ]
 
   return (
     <DataGridFlexContainer>
       <SelectionActions
-        count={model.selectedHighlights.length}
-        color={bandColor(firstSelected ?? {})}
+        count={selectedHighlights.length}
+        color={bandColor(selectedHighlights[0] ?? {})}
         onDelete={() => {
           model.removeSelectedHighlights()
         }}
@@ -94,31 +146,22 @@ const HighlightGrid = observer(function HighlightGrid({
       <DataGrid
         apiRef={apiRef}
         density="compact"
-        rowHeight={COMPACT_ROW_HEIGHT}
+        rowHeight={ROW_HEIGHT}
         disableRowSelectionOnClick
         hideFooterSelectedRowCount
-        onCellClick={startLabelEditOnClick(apiRef)}
-        hideFooterPagination={rows.length <= DEFAULT_PAGE_SIZE}
+        hideFooterPagination={rows.length <= PAGE_SIZE}
         slots={{ noRowsOverlay: NoHighlightsOverlay }}
         rows={rows}
-        columns={[
-          { ...GRID_CHECKBOX_SELECTION_COL_DEF, width: 50 },
-          locationColumn<Row>(classes.cell, 'Location', row => {
-            void navToHighlight(row.highlight, model)
-          }),
-          labelColumn<Row>(classes.cell),
-          ...assemblyColumn<Row>(rows.map(r => r.assemblyName)),
-          colorColumn<Row>(
-            'color',
-            row => bandColor(row.highlight),
-            (row, color) => {
-              session.updateHighlight(row.highlight, { color })
-            },
-          ),
-        ]}
+        columns={columns}
         checkboxSelection
+        onCellClick={params => {
+          // MUI throws when a cell already moving between modes is told to edit
+          if (params.field === 'label' && params.cellMode === 'view') {
+            apiRef.current?.startCellEditMode({ id: params.id, field: 'label' })
+          }
+        }}
         onRowSelectionModelChange={selectionModel => {
-          model.setSelectedKeys(
+          model.setSelectedIds(
             new Set(
               [
                 ...resolveSelectedIds(
@@ -129,7 +172,7 @@ const HighlightGrid = observer(function HighlightGrid({
             ),
           )
         }}
-        rowSelectionModel={{ type: 'include', ids: model.selectedKeys }}
+        rowSelectionModel={{ type: 'include', ids: model.selectedIds }}
         processRowUpdate={row => {
           session.updateHighlight(row.highlight, {
             label: row.label || undefined,

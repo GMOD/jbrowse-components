@@ -59,6 +59,7 @@ const HighlightChip = observer(function HighlightChip({
               getSession(model).removeHighlight(highlight)
             },
           },
+          ...model.highlightMenuItems(highlight),
         ]}
       >
         <Tooltip title={highlight.label ?? 'Highlighted region'} arrow>

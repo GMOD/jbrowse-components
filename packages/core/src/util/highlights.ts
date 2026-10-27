@@ -47,13 +47,16 @@ export function highlightKey(
   return JSON.stringify([h.assemblyName, h.refName, h.start, h.end, i])
 }
 
+// low enough that the view stays readable under a band
+export const HIGHLIGHT_ALPHA = 0.2
+
 // User-supplied color is used as-is so explicit alpha is preserved; otherwise
 // fall back to the theme highlight color at the given alpha. Shared by the LGV
 // and dotplot highlight bands (which differ only in their default alpha).
 export function getHighlightColor(
   highlight: { color?: string },
   theme: { palette: Pick<JBrowsePalette, 'highlight'> },
-  alpha = 0.2,
+  alpha = HIGHLIGHT_ALPHA,
 ) {
   return highlight.color
     ? colord(highlight.color)

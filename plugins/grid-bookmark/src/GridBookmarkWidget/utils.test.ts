@@ -154,3 +154,36 @@ test('import skips comment lines and throws on malformed coordinates', () => {
     /Invalid start/,
   )
 })
+
+test('BED import skips UCSC track and browser lines', () => {
+  expect(
+    parseHighlights(
+      'browser position ctgA:1-100\ntrack name=mine\nctgA\t10\t20\n',
+      'volvox',
+    ),
+  ).toEqual([
+    {
+      assemblyName: 'volvox',
+      refName: 'ctgA',
+      start: 10,
+      end: 20,
+      label: undefined,
+    },
+  ])
+})
+
+test('a TSV whose header follows a comment line is still read as TSV', () => {
+  const tsv =
+    '# exported from somewhere\n' +
+    'chrom\tstart\tend\tlabel\tassembly_name\n' +
+    'ctgA\t101\t200\tfirst\tvolvox\n'
+  expect(parseHighlights(tsv, 'ignored')).toEqual([
+    {
+      assemblyName: 'volvox',
+      refName: 'ctgA',
+      start: 100,
+      end: 200,
+      label: 'first',
+    },
+  ])
+})
