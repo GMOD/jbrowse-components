@@ -4,7 +4,8 @@
  * Whether a release carries everything a client needs to update from it.
  *
  * - default, on `v$VERSION` before anyone publishes the draft — did every
- *   platform's upload happen.
+ *   platform's upload happen. `--platform` (repeatable) narrows it to the
+ *   platforms the release builds.
  * - `--feed`, on whatever GitHub currently calls the latest release — is that
  *   what a running Desktop resolves its check to. Publishing the draft early
  *   moves it, and so would a non-`v` release published after a `v` one.
@@ -98,8 +99,8 @@ function latestTag() {
   )
 }
 
-function check(tag: string, version: string) {
-  const expected = releaseArtifacts(ALL, { appName: APP_NAME, version })
+function check(tag: string, version: string, platforms = ALL) {
+  const expected = releaseArtifacts(platforms, { appName: APP_NAME, version })
   const assets = assetsOf(tag)
   const present = new Set(assets.map(a => a.name))
   return auditRelease({
@@ -128,7 +129,19 @@ function report(tag: string, problems: string[], consequence: string) {
 }
 
 function main() {
-  const { values } = parseArgs({ options: { feed: { type: 'boolean' } } })
+  const { values } = parseArgs({
+    options: {
+      feed: { type: 'boolean' },
+      platform: { type: 'string', multiple: true },
+    },
+  })
+  const platforms = values.platform?.map(name => {
+    const platform = ALL.find(p => p === name)
+    if (!platform) {
+      throw new Error(`--platform ${name} is not one of ${ALL.join(', ')}`)
+    }
+    return platform
+  })
 
   if (values.feed) {
     const tag = latestTag()
@@ -150,11 +163,11 @@ function main() {
   const tag = `v${VERSION}`
   report(
     tag,
-    check(tag, VERSION),
+    check(tag, VERSION, platforms),
     'Publishing it moves the release every existing client checks against, so the platforms above stop updating until another one lands.',
   )
   console.log(
-    `Release ${tag} carries every desktop artifact, and each manifest matches what is there.`,
+    `Release ${tag} carries every desktop artifact for ${(platforms ?? ALL).join(', ')}, and each manifest matches what is there.`,
   )
 }
 

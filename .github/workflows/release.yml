@@ -41,11 +41,18 @@ jobs:
     timeout-minutes: 30
     permissions:
       contents: write
-    # A prerelease tag carries a '-' (v4.4.0-beta.1).
+    # A prerelease tag carries a '-' (v4.4.0-beta.1). A stable tag always
+    # builds Windows, failing if it cannot be signed. A prerelease skips it until
+    # the repo variable WINDOWS_RELEASE_SIGNING is 'true', set once SignPath's
+    # release-signing policy exists, so betas still ship Linux and Mac.
     outputs:
       prerelease: ${{ contains(github.ref_name, '-') }}
+      windows: ${{ env.WINDOWS }}
     env:
       RELEASE_VERSION: ${{ github.ref_name }}
+      WINDOWS:
+        ${{ (!contains(github.ref_name, '-') || vars.WINDOWS_RELEASE_SIGNING ==
+        'true') && 'true' || 'false' }}
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
@@ -78,14 +85,17 @@ jobs:
       # pasting in by hand. Best-effort: a tag without a post still gets a
       # draft to collect binaries, just an empty body.
       #
-      # The signing footer goes on either body: this page is where the desktop
-      # binaries are downloaded from, and SignPath's terms ask for the
-      # attribution and the term "Code signing policy" on every such page.
+      # SignPath's terms ask for the attribution and the term "Code signing
+      # policy" on every page that offers a binary they signed, so the footer
+      # goes on exactly when a Windows build does.
       - name: Generate release notes
         run: |
           if ! node scripts/releasenotes.ts --tag "${RELEASE_VERSION}" > /tmp/notes.md; then
             echo "_Release notes pending._" > /tmp/notes.md
             echo "::warning::No blog post for ${RELEASE_VERSION}; release body left empty. Expected for a prerelease."
+          fi
+          if [ "${WINDOWS}" != true ]; then
+            exit 0
           fi
           cat >> /tmp/notes.md <<'FOOTER'
 
@@ -97,7 +107,8 @@ jobs:
       # `jbrowse create`/`upgrade`, and announce.yml gate on.
       #
       # Stays a draft: the desktop jobs upload binaries into it long after this
-      # job ends, and publishing fires announce.yml. That click is the gate.
+      # job ends, and publishing fires announce.yml. For a stable tag that click
+      # is the gate; a prerelease publishes itself once verifydesktop is green.
       #
       # Idempotent, because re-running this job is the obvious recovery from a
       # transient failure in it — and `gh release create` refuses outright once
@@ -125,6 +136,7 @@ jobs:
             ${{ contains(github.ref_name, '-') && '--prerelease' || '' }}
   buildwindows:
     needs: createrelease
+    if: ${{ needs.createrelease.outputs.windows == 'true' }}
     name: Build Windows desktop app
     permissions:
       contents: write
@@ -246,8 +258,36 @@ jobs:
       - name: Check every artifact and manifest is on the release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: pnpm check:release
+          PLATFORMS:
+            ${{ needs.createrelease.outputs.windows == 'true' && '' ||
+            '--platform linux --platform mac' }}
+        run: pnpm check:release ${PLATFORMS}
         working-directory: products/jbrowse-desktop
+
+  # A prerelease never becomes GitHub's "latest", so publishing one reaches only
+  # beta installs: electron-updater lets a prerelease install see prereleases,
+  # and a stable install resolves its check through /releases/latest, which
+  # skips them. announce.yml skips prereleases too, so no click is needed.
+  publishprerelease:
+    name: Publish the prerelease
+    needs: [createrelease, verifydesktop]
+    # Stated outright: the implicit success() reads a skipped buildwindows
+    # upstream of verifydesktop as a reason to skip this job too.
+    if: >-
+      !cancelled() && needs.verifydesktop.result == 'success' &&
+      needs.createrelease.outputs.prerelease == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - name: Publish
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_VERSION: ${{ github.ref_name }}
+        run:
+          gh release edit "${RELEASE_VERSION}" --repo "${GITHUB_REPOSITORY}"
+          --draft=false --prerelease
 
   buildjbrowseweb:
     name: Deploy jbrowse-web to latest folder on tag
