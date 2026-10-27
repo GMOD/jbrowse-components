@@ -399,6 +399,16 @@ describe('MultiPairwiseSyntenyAdapter', () => {
     await expect(star.getRefNames({ assemblyName: 'anchor' })).rejects.toThrow()
   })
 
+  it('claims no coarse tier when its lanes select no child', async () => {
+    const star = makeAdapter([
+      pif('b_vs_anchor', ['genomeB', 'anchor']),
+      pif('anchor_vs_c', ['anchor', 'genomeC']),
+    ])
+    expect(await star.getHeader({ haplotypes: ['genomeZ'] })).toMatchObject({
+      hasCoarseTier: false,
+    })
+  })
+
   it('serves the coarse tier only when every child carries one', async () => {
     const tiered = makeAdapter([
       pif('b_vs_anchor', ['genomeB', 'anchor']),

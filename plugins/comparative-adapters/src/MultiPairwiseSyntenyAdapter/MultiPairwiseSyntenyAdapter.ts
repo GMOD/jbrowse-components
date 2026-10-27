@@ -237,7 +237,8 @@ export default class MultiPairwiseSyntenyAdapter extends ComparativeAdapterBase<
       declaredLanes(this.getConf('lanes')).map(lane => [lane.name, lane]),
     )
     const info: MultiPairwiseSyntenyInfo = {
-      hasCoarseTier: tiers.every(tier => tier?.hasCoarseTier === true),
+      hasCoarseTier:
+        tiers.length > 0 && tiers.every(tier => tier?.hasCoarseTier === true),
       coarseGap: gaps.length === 0 ? undefined : Math.max(...gaps),
       anchorAssemblyName: star.anchor,
       assemblyNames,
