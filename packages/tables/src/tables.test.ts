@@ -912,8 +912,10 @@ test('the glyph hands R the splice line’s fade at the read height, and the siz
   expect(tall.glyph.intronAlpha).toBe(1)
   expect(compact.glyph.intronAlpha).toBeGreaterThan(0.25)
   expect(compact.glyph.intronAlpha).toBeLessThan(1)
-  const { minHeight, digitPx, fadeLo, fadeHi, fadeFloor } = tall.glyph.label
+  const { minHeight, minPxPerBp, digitPx, fadeLo, fadeHi, fadeFloor } =
+    tall.glyph.label
   expect(minHeight).toBeGreaterThan(3)
+  expect(minPxPerBp).toBeGreaterThan(1)
   expect(digitPx).toBeGreaterThan(3)
   expect(fadeLo).toBeGreaterThan(1)
   expect(fadeHi).toBeGreaterThan(fadeLo)

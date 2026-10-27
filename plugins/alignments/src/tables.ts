@@ -10,6 +10,7 @@ import {
   LABEL_FADE_LO_RATIO,
   LONG_INSERTION_MIN_LENGTH,
   MIN_HEIGHT_FOR_TEXT,
+  MIN_PX_PER_BP_FOR_TEXT,
   insertionBarWidth,
   insertionSizeAlpha,
   interbaseEdgePx,
@@ -1526,6 +1527,7 @@ export async function alignmentTables(
       intronAlpha: intronAlpha(featureHeight),
       label: {
         minHeight: MIN_HEIGHT_FOR_TEXT,
+        minPxPerBp: MIN_PX_PER_BP_FOR_TEXT,
         digitPx: labelFont(featureHeight).measure('0'),
         fadeLo: LABEL_FADE_LO_RATIO,
         fadeHi: LABEL_FADE_HI_RATIO,

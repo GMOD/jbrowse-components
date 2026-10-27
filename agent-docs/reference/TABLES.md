@@ -320,7 +320,18 @@ labels at `coverage.height`. Every section shares it.
 `coverageInset` (the label room the band keeps at both ends, inside which the
 depth axis runs) and `interbaseTop` (where the histogram starts below the
 band's top, at the triangle's tip). A stack of N reads hangs N / `domain[1]` of
-half the depth area, in px, whatever the axis type. The display's
+half the depth area, in px, whatever the axis type. `glyph.label` gives the
+pileup's text rules:
+
+- `minHeight`: the read height in px below which no label draws.
+- `minPxPerBp`: the px per bp below which no mismatch letter, small
+  insertion's `(N)` or clip summary draws (`MIN_PX_PER_BP_FOR_TEXT`).
+- `digitPx`: a digit's width in px at the read height.
+- `fadeLo`, `fadeHi` and `fadeFloor`: a size label draws once its feature
+  spans `fadeLo` times the label's width, at `fadeFloor` opacity, and reaches
+  full opacity at `fadeHi` times.
+
+The display's
 `sort` object (a whole-window order, or a column sort over `pos`) lays the
 rows out as the display does, through the display's own `sortOf`; a column
 sort may leave out `refName`, which then means the region's, and may name the
