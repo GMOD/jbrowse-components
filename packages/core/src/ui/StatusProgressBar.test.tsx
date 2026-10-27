@@ -27,7 +27,7 @@ test('a fraction fills that much of the track, and says so', () => {
 })
 
 // Both ends, because a caller passing a fraction of its own rather than
-// `statusFraction`'s clamped one can overshoot either way — `CurrentJobCard`
+// `statusFraction`'s clamped one can overshoot either way — `JobCard`
 // divides an external job's self-reported `progressPct`. The bar and the value
 // it announces have to clamp together: a bar parked at one end of the track
 // while `aria-valuenow` sits outside the min/max declared beside it is the

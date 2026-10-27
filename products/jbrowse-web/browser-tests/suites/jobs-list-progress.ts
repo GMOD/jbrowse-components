@@ -3,19 +3,11 @@ import { navigateToApp } from '../helpers.ts'
 import type { TestSuite } from '../types.ts'
 import type { Page } from 'puppeteer'
 
-// The determinate branch of the job card had been repaired three times without
-// anyone rendering it — c45b43aa2d most recently, where both ends of the
-// fraction turned out to be dead code. `CurrentJobCard.test.tsx` renders it in
-// jsdom now, which catches the wiring; what jsdom cannot see is the half that is
-// actually CSS: a `color-mix()` track, a `scaleX` transform on the fill, and a
-// keyframe sweep that exists only when there is no fraction. So render it in a
-// browser.
-//
-// Jobs are produced by desktop text-indexing and this is jbrowse-web, but the
-// widget is in web's core plugin set too and its model takes a job from
-// anywhere. The chain from a real indexer's byte counts to `progressPct` has its
-// own test (`indexJobsModel.test.ts`); what nothing had looked at is the
-// drawing, and the drawing does not care where the job came from.
+// `JobCard.test.tsx` renders the card in jsdom, which catches the wiring but not
+// the CSS: a `color-mix()` track, a `scaleX` transform on the fill, and a
+// keyframe sweep that exists only when there is no fraction. Desktop indexing is
+// the only producer of jobs, but the widget is registered in web too and takes a
+// job from anywhere.
 
 interface JobsWidget {
   addJob: (job: {

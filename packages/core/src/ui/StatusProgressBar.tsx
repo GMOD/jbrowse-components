@@ -80,7 +80,7 @@ const StatusProgressBar = observer(function StatusProgressBar({
   const { classes } = useStyles()
   const determinate = fraction !== undefined
   // one clamp for both halves. `statusFraction` clamps its own output, but a
-  // caller passing a fraction of its own does not — `CurrentJobCard` divides an
+  // caller passing a fraction of its own does not — `JobCard` divides an
   // external job's self-reported `progressPct` — and clamping the top alone let
   // a negative announce a value below the `aria-valuemin` declared beside it.
   const filled = Math.min(1, Math.max(0, fraction ?? 0))

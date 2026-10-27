@@ -417,7 +417,7 @@ export async function waitForIndexingToFinish(
 }
 
 // Records what the running job card actually draws while an index runs, so the
-// determinate branch of `CurrentJobCard` is observed rather than assumed. It had
+// determinate branch of `JobCard` is observed rather than assumed. It had
 // been repaired three times without anyone rendering it — c45b43aa2d most
 // recently, where `indexJobsModel` was discarding the indexer's byte counts and
 // both ends of the fraction were dead code.

@@ -6,6 +6,7 @@ export type JobState = 'running' | 'queued' | 'finished' | 'aborted'
 
 export interface JobFields {
   state: JobState
+  label?: string
   statusMessage?: string
   progressPct?: number
   cancelCallback: () => void
@@ -23,16 +24,21 @@ export const Job = types
   .model('Job', {
     /**
      * #property
+     * identifies the job; the card shows `label` instead when there is one
      */
     name: types.string,
   })
-  .volatile((): JobFields => ({
+  .volatile((): JobFields & { cancelling: boolean } => ({
     /**
      * #volatile
      * which of the widget's four sections the job is filed under. One field
      * rather than membership of one of four lists, so it cannot be in two.
      */
     state: 'queued',
+    /**
+     * #volatile
+     */
+    label: undefined,
     /**
      * #volatile
      */
@@ -47,6 +53,13 @@ export const Job = types
      * #volatile
      */
     cancelCallback: () => {},
+    /**
+     * #volatile
+     * set by `cancel` and cleared when the job changes state; a flag of its
+     * own, since the status updates that arrive before the abort lands
+     * overwrite `statusMessage`
+     */
+    cancelling: false,
   }))
   .actions(self => ({
     /**
@@ -55,7 +68,17 @@ export const Job = types
      * the message and `{}` touches nothing.
      */
     update(fields: Partial<JobFields>) {
+      if (fields.state !== undefined && fields.state !== self.state) {
+        self.cancelling = false
+      }
       Object.assign(self, fields)
+    },
+    /**
+     * #action
+     */
+    cancel() {
+      self.cancelling = true
+      self.cancelCallback()
     },
   }))
 

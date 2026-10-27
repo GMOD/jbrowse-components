@@ -1,10 +1,9 @@
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
-import CurrentJobCard from './CurrentJobCard.tsx'
-import JobCard from './JobCard.tsx'
 import JobsSection from './JobsSection.tsx'
 
+import type { JobState } from '../jobModel.ts'
 import type { JobsListModel } from '../model.ts'
 
 const useStyles = makeStyles()(theme => ({
@@ -13,45 +12,51 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
+const sections: {
+  state: JobState
+  title: string
+  emptyText: string
+  clearable?: boolean
+}[] = [
+  { state: 'running', title: 'Running jobs', emptyText: 'No running jobs' },
+  { state: 'queued', title: 'Queued jobs', emptyText: 'No queued jobs' },
+  {
+    state: 'finished',
+    title: 'Completed jobs',
+    emptyText: 'No completed jobs',
+    clearable: true,
+  },
+  {
+    state: 'aborted',
+    title: 'Aborted jobs',
+    emptyText: 'No aborted jobs',
+    clearable: true,
+  },
+]
+
 const JobsListWidget = observer(function JobsListWidget({
   model,
 }: {
   model: JobsListModel
 }) {
   const { classes } = useStyles()
-  const { jobs } = model
   return (
     <div className={classes.root}>
-      <JobsSection
-        title="Running jobs"
-        jobs={jobs.filter(j => j.state === 'running')}
-        emptyText="No running jobs"
-        renderCard={job => <CurrentJobCard key={job.name} job={job} />}
-      />
-      <JobsSection
-        title="Queued jobs"
-        jobs={jobs.filter(j => j.state === 'queued')}
-        emptyText="No queued jobs"
-        renderCard={job => <JobCard key={job.name} job={job} />}
-      />
-      <JobsSection
-        title="Completed jobs"
-        jobs={jobs.filter(j => j.state === 'finished')}
-        emptyText="No completed jobs"
-        renderCard={job => <JobCard key={job.name} job={job} />}
-        onClear={() => {
-          model.clearJobs('finished')
-        }}
-      />
-      <JobsSection
-        title="Aborted jobs"
-        jobs={jobs.filter(j => j.state === 'aborted')}
-        emptyText="No aborted jobs"
-        renderCard={job => <JobCard key={job.name} job={job} />}
-        onClear={() => {
-          model.clearJobs('aborted')
-        }}
-      />
+      {sections.map(({ state, title, emptyText, clearable }) => (
+        <JobsSection
+          key={state}
+          title={title}
+          jobs={model.jobs.filter(j => j.state === state)}
+          emptyText={emptyText}
+          onClear={
+            clearable
+              ? () => {
+                  model.clearJobs(state)
+                }
+              : undefined
+          }
+        />
+      ))}
     </div>
   )
 })

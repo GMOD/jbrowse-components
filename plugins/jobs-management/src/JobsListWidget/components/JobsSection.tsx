@@ -11,8 +11,9 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import JobCard from './JobCard.tsx'
+
 import type { JobModel } from '../jobModel.ts'
-import type { ReactNode } from 'react'
 
 const useStyles = makeStyles()({
   summaryTitle: {
@@ -28,13 +29,11 @@ const JobsSection = observer(function JobsSection({
   title,
   jobs,
   emptyText,
-  renderCard,
   onClear,
 }: {
   title: string
   jobs: JobModel[]
   emptyText: string
-  renderCard: (job: JobModel) => ReactNode
   onClear?: () => void
 }) {
   const { classes } = useStyles()
@@ -48,18 +47,13 @@ const JobsSection = observer(function JobsSection({
       <AccordionDetails>
         {onClear && jobs.length ? (
           <div className={classes.clearRow}>
-            <Button
-              size="small"
-              onClick={() => {
-                onClear()
-              }}
-            >
+            <Button size="small" onClick={onClear}>
               Clear
             </Button>
           </div>
         ) : null}
         {jobs.length ? (
-          jobs.map(job => renderCard(job))
+          jobs.map(job => <JobCard key={job.name} job={job} />)
         ) : (
           <Card variant="outlined">
             <CardContent>
