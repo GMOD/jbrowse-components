@@ -60,15 +60,12 @@ once per display that embeds it, so read the trend, not the size.
    - `heightMode:` and `featureHeight:` write slots
      `LinearMultiRowFeatureDisplay` and `LinearMultiSampleVariantDisplay`
      don't declare.
-2. **Writers outside the tree.** jb2hubs, its hosted configs and the
-   production genomes site, JBrowseR and ggjbrowse write main's spellings, so
-   the beta-only lifts are gone. Left:
-   - The graph plugin, the `apollo3` demo and the figure specs
-     (`handoffs/screenshot-spec-elegance.md`).
-   - The staging genomes site, whose links write `rows.domain` and
-     `cigarMode` until its next `run.sh`.
-   - ggjbrowse's knitted tutorials: `docs/tutorials/dog10k_lof.md` shows
-     `rows = list(domain = …)` until a re-knit.
+2. **Writers outside the tree.** jb2hubs with its hosted configs and both
+   genomes sites, JBrowseR, ggjbrowse (engine and tutorials re-knit), the
+   graph plugin and the figure specs write main's spellings. Left:
+   - The hosted apollo3 demo runs the `v5.0.0-beta.8` build and serves an
+     older config (`featureHeight`, `layoutOrder`). Move the pin and deploy
+     `demos/apollo3/config.json` together, never the config alone.
    - The Trix `textSearchAdapterId`/`metaFilePath` keys in jb2hubs' GenArk and
      UCSC writers wait on the config-merger lambda deduping by `ixFilePath`.
 3. **Plugin ABI.** The served list leaves out render-core's shader subpaths.
