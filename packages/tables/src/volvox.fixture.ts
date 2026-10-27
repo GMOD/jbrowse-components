@@ -54,6 +54,20 @@ export const SPLICED = {
   region: { refName: 'ctgA', start: 400, end: 1300 },
 } satisfies AlignmentTablesArgs
 
+/**
+ * The SAM spec's example reads, none with base qualities (QUAL `*`), as a
+ * CRAM, which reads each missing score as 255 where a BAM reads none.
+ */
+export const NO_QUALITIES = {
+  adapterConfig: {
+    type: 'CramAdapter',
+    cramLocation: uri('volvox-samspec.cram'),
+    craiLocation: uri('volvox-samspec.cram.crai'),
+  },
+  sequenceAdapter,
+  region: { refName: 'ctgA', start: 0, end: 60 },
+} satisfies AlignmentTablesArgs
+
 /** wgsim's simulated short reads, over ctgA and ctgB. */
 export const WGSIM = {
   adapterConfig: {

@@ -95,6 +95,7 @@ import { featureSpacingForHeight } from './LinearAlignmentsDisplay/menus/compact
 import { pileupConfigSchema } from './LinearAlignmentsDisplay/pileupConfigSchema.ts'
 import { pileupMismatchesOpacityConfigSchema } from './LinearAlignmentsDisplay/pileupMismatchesOpacityConfigSchema.ts'
 import {
+  NO_QUALITY_SPAN,
   baseQualitySpanAcrossGroups,
   presentMapqs,
 } from './LinearAlignmentsDisplay/qualitySpans.ts'
@@ -506,6 +507,10 @@ function colorReads(
       type => [type, getColorForModification(type)],
     ),
   )
+  const qualitySpan =
+    baseLayer?.field === 'baseQuality'
+      ? baseQualitySpanAcrossGroups(byGroup)
+      : NO_QUALITY_SPAN
   const legend = getReadDisplayLegendItems({
     overlaps,
     colorField,
@@ -525,6 +530,7 @@ function colorReads(
     refNamePosition,
     bakedScale,
     sectionOrder: keySectionOrder(facet, colorField),
+    baseQualityUnavailable: qualitySpan.unavailable,
     labels: declared,
     descending: withPreset(setting, ALIGNMENTS_FIELD_PRESETS).legend.descending,
   }).filter(item => item.color !== undefined)
@@ -534,10 +540,7 @@ function colorReads(
     baseLayer,
     bakedScale,
     linearFieldExtent: linearFieldExtent(encoding, colorField, byGroup),
-    baseQualityExtent:
-      baseLayer?.field === 'baseQuality'
-        ? baseQualitySpanAcrossGroups(byGroup).extent
-        : undefined,
+    baseQualityExtent: qualitySpan.extent,
   })
   const readRamp = ramps.some(r => r.id === READS_RAMP_ID)
   return {

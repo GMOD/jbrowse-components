@@ -9,6 +9,7 @@ import {
   GFF3,
   LONG_READS,
   METHYLATED,
+  NO_QUALITIES,
   OVERLAP,
   PAIRED_INVERSION,
   READ_GROUPS,
@@ -265,6 +266,23 @@ test('per-base quality paints each aligned base on its read through the ramp', a
   expect(scores[0]).toBeLessThan(10)
   expect(scores.at(-1)).toBeGreaterThan(30)
   expect(colorsOf.get(scores[0]!)).not.toEqual(colorsOf.get(scores.at(-1)!))
+})
+
+test('a base with no quality paints the plain read fill, keyed as unavailable', async () => {
+  const t = await engine.alignments({
+    ...NO_QUALITIES,
+    display: {
+      pileup: {
+        bases: { show: true, encoding: { color: { field: 'baseQuality' } } },
+      },
+    },
+  })
+  expect(t.qualities.position.length).toBeGreaterThan(0)
+  expect(t.legend.label).toContain('Base quality unavailable')
+  const unavailable =
+    t.legend.color[t.legend.label.indexOf('Base quality unavailable')]
+  expect(new Set(t.qualities.color)).toEqual(new Set([unavailable]))
+  expect(t.reads.color).toContain(unavailable)
 })
 
 test('the display\u2019s filter list keeps the reads it keeps', async () => {
