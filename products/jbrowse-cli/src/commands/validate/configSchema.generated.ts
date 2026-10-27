@@ -2255,14 +2255,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "sequenceAdapter": {
-          "description": "Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
           "if": {
             "type": "null"
           },
           "else": {
-            "not": {
-              "$ref": "#/$defs/JexlString"
-            }
+            "$ref": "#/$defs/Adapter"
           }
         },
         "searchForward": {
@@ -2320,14 +2317,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "sequenceAdapter": {
-          "description": "Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
           "if": {
             "type": "null"
           },
           "else": {
-            "not": {
-              "$ref": "#/$defs/JexlString"
-            }
+            "$ref": "#/$defs/Adapter"
           }
         },
         "pam": {
@@ -2461,14 +2455,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "sequenceAdapter": {
-          "description": "Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
           "if": {
             "type": "null"
           },
           "else": {
-            "not": {
-              "$ref": "#/$defs/JexlString"
-            }
+            "$ref": "#/$defs/Adapter"
           }
         },
         "searchForward": {
@@ -2973,14 +2964,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "sequenceAdapter": {
-          "description": "Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
           "if": {
             "type": "null"
           },
           "else": {
-            "not": {
-              "$ref": "#/$defs/JexlString"
-            }
+            "$ref": "#/$defs/Adapter"
           }
         },
         "op": {
@@ -3105,14 +3093,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "summaryAdapter": {
-          "description": "optional swappable sub-adapter (a BedTabixAdapter over a maf2bed --summary BED, or a BigBedAdapter over UCSC bigMafSummary.bb) used for cheap zoom-out rendering; leave it unset to disable. The \`.tai\` makes a read cost the span on screen rather than the blocks that span touches, but span is only half of the cost. Cost is span × depth, and measured against HPRC's v2.1 index the constant is about **19 compressed bytes per bp** at 464 haplotypes, flat from 100 kb up: 1 Mb is a 19 MB read and chr1 whole is 4.4 GB. So a deep alignment still runs out, just linearly instead of by block. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+          "description": "optional swappable sub-adapter (a BedTabixAdapter over a maf2bed --summary BED, or a BigBedAdapter over UCSC bigMafSummary.bb) used for cheap zoom-out rendering; leave it unset to disable. The \`.tai\` makes a read cost the span on screen rather than the blocks that span touches, but span is only half of the cost. Cost is span × depth, and measured against HPRC's v2.1 index the constant is about **19 compressed bytes per bp** at 464 haplotypes, flat from 100 kb up: 1 Mb is a 19 MB read and chr1 whole is 4.4 GB. So a deep alignment still runs out, just linearly instead of by block",
           "if": {
             "type": "null"
           },
           "else": {
-            "not": {
-              "$ref": "#/$defs/JexlString"
-            }
+            "$ref": "#/$defs/Adapter"
           }
         },
         "samplesTsvLocation": {
@@ -3125,14 +3111,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "framesAdapter": {
-          "description": "optional sub-adapter (typically a BigBedAdapter over a UCSC multiz<N>wayFrames.bb) supplying each species' CDS reading frames for the frames strip, the codon view and the codon conservation band; leave it unset to disable. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+          "description": "optional sub-adapter (typically a BigBedAdapter over a UCSC multiz<N>wayFrames.bb) supplying each species' CDS reading frames for the frames strip, the codon view and the codon conservation band; leave it unset to disable",
           "if": {
             "type": "null"
           },
           "else": {
-            "not": {
-              "$ref": "#/$defs/JexlString"
-            }
+            "$ref": "#/$defs/Adapter"
           }
         },
         "uri": {
@@ -3220,14 +3204,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "summaryAdapter": {
-          "description": "optional swappable sub-adapter (a BedTabixAdapter over a maf2bed --summary BED, or a BigBedAdapter over UCSC bigMafSummary.bb) used for cheap zoom-out rendering; leave it unset to disable. The zoom-out tier works on the same terms as \`BgzipMafAdapter\`'s: the \`.tai\` makes a read cost the span on screen rather than the number of blocks it covers, but cost is span × depth, so a deep alignment stays expensive. Measured against HPRC's published v2.0 TAF index, 464 haplotypes cost about **2 compressed bytes per bp**, flat from 100 kb up — a ninth of the same alignment's MAF, and still 354 MB for chr6 whole. TAF moves the ceiling out by about 10x; it does not remove it. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+          "description": "optional swappable sub-adapter (a BedTabixAdapter over a maf2bed --summary BED, or a BigBedAdapter over UCSC bigMafSummary.bb) used for cheap zoom-out rendering; leave it unset to disable. The zoom-out tier works on the same terms as \`BgzipMafAdapter\`'s: the \`.tai\` makes a read cost the span on screen rather than the number of blocks it covers, but cost is span × depth, so a deep alignment stays expensive. Measured against HPRC's published v2.0 TAF index, 464 haplotypes cost about **2 compressed bytes per bp**, flat from 100 kb up — a ninth of the same alignment's MAF, and still 354 MB for chr6 whole. TAF moves the ceiling out by about 10x; it does not remove it",
           "if": {
             "type": "null"
           },
           "else": {
-            "not": {
-              "$ref": "#/$defs/JexlString"
-            }
+            "$ref": "#/$defs/Adapter"
           }
         },
         "samplesTsvLocation": {
@@ -3240,14 +3222,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "framesAdapter": {
-          "description": "optional sub-adapter (typically a BigBedAdapter over a UCSC multiz<N>wayFrames.bb) supplying each species' CDS reading frames for the frames strip, the codon view and the codon conservation band; leave it unset to disable. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+          "description": "optional sub-adapter (typically a BigBedAdapter over a UCSC multiz<N>wayFrames.bb) supplying each species' CDS reading frames for the frames strip, the codon view and the codon conservation band; leave it unset to disable",
           "if": {
             "type": "null"
           },
           "else": {
-            "not": {
-              "$ref": "#/$defs/JexlString"
-            }
+            "$ref": "#/$defs/Adapter"
           }
         },
         "uri": {
@@ -3321,14 +3301,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "summaryAdapter": {
-          "description": "optional swappable sub-adapter (typically a BigBedAdapter over UCSC bigMafSummary.bb, which is published alongside the bigMaf) used for cheap zoom-out rendering; leave it unset to disable. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+          "description": "optional swappable sub-adapter (typically a BigBedAdapter over UCSC bigMafSummary.bb, which is published alongside the bigMaf) used for cheap zoom-out rendering; leave it unset to disable",
           "if": {
             "type": "null"
           },
           "else": {
-            "not": {
-              "$ref": "#/$defs/JexlString"
-            }
+            "$ref": "#/$defs/Adapter"
           }
         },
         "samplesTsvLocation": {
@@ -3341,14 +3319,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "framesAdapter": {
-          "description": "optional sub-adapter (typically a BigBedAdapter over a UCSC multiz<N>wayFrames.bb) supplying each species' CDS reading frames for the frames strip, the codon view and the codon conservation band; leave it unset to disable. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+          "description": "optional sub-adapter (typically a BigBedAdapter over a UCSC multiz<N>wayFrames.bb) supplying each species' CDS reading frames for the frames strip, the codon view and the codon conservation band; leave it unset to disable",
           "if": {
             "type": "null"
           },
           "else": {
-            "not": {
-              "$ref": "#/$defs/JexlString"
-            }
+            "$ref": "#/$defs/Adapter"
           }
         },
         "uri": {
@@ -3439,14 +3415,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "summaryAdapter": {
-          "description": "optional swappable sub-adapter (a BedTabixAdapter over a maf2bed --summary BED, or a BigBedAdapter over UCSC bigMafSummary.bb) used for cheap zoom-out rendering; leave it unset to disable. A tabix MAF holds every species' bases on one line, so a wide read downloads the whole alignment and the byte gate blocks it; without this slot the track has no zoom-out path. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+          "description": "optional swappable sub-adapter (a BedTabixAdapter over a maf2bed --summary BED, or a BigBedAdapter over UCSC bigMafSummary.bb) used for cheap zoom-out rendering; leave it unset to disable. A tabix MAF holds every species' bases on one line, so a wide read downloads the whole alignment and the byte gate blocks it; without this slot the track has no zoom-out path",
           "if": {
             "type": "null"
           },
           "else": {
-            "not": {
-              "$ref": "#/$defs/JexlString"
-            }
+            "$ref": "#/$defs/Adapter"
           }
         },
         "samplesTsvLocation": {
@@ -3459,14 +3433,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "framesAdapter": {
-          "description": "optional sub-adapter (typically a BigBedAdapter over a UCSC multiz<N>wayFrames.bb) supplying each species' CDS reading frames for the frames strip, the codon view and the codon conservation band; leave it unset to disable. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+          "description": "optional sub-adapter (typically a BigBedAdapter over a UCSC multiz<N>wayFrames.bb) supplying each species' CDS reading frames for the frames strip, the codon view and the codon conservation band; leave it unset to disable",
           "if": {
             "type": "null"
           },
           "else": {
-            "not": {
-              "$ref": "#/$defs/JexlString"
-            }
+            "$ref": "#/$defs/Adapter"
           }
         },
         "uri": {
@@ -3524,14 +3496,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "controlAdapter": {
-          "description": "sub-adapter config for the control .hic. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+          "description": "sub-adapter config for the control .hic",
           "if": {
             "type": "null"
           },
           "else": {
-            "not": {
-              "$ref": "#/$defs/JexlString"
-            }
+            "$ref": "#/$defs/Adapter"
           }
         },
         "uri": {
@@ -3962,13 +3932,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "adapters": {
-          "description": "array of pairwise synteny adapter configs sharing one assembly. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+          "description": "array of pairwise synteny adapter configs sharing one assembly",
           "if": {
             "type": "null"
           },
           "else": {
-            "not": {
-              "$ref": "#/$defs/JexlString"
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/Adapter"
             }
           }
         },
@@ -4689,14 +4660,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "ldAdapter": {
-          "description": "sub-adapter config for PLINK .ld pairwise r² data. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+          "description": "sub-adapter config for PLINK .ld pairwise r² data",
           "if": {
             "type": "null"
           },
           "else": {
-            "not": {
-              "$ref": "#/$defs/JexlString"
-            }
+            "$ref": "#/$defs/Adapter"
           }
         },
         "uri": {
@@ -11464,14 +11433,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "adapter": {
-          "description": "an adapter computing from the sequence, such as \`{ type: 'GCContentAdapter' }\`, which each lane that \`tracks\` names nothing for reads through that lane's genome. A lane reads it only while its window is under 5 Mb, since that window is the sequence it downloads, and the band's title tells the reader to zoom in past that. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+          "description": "an adapter computing from the sequence, such as \`{ type: 'GCContentAdapter' }\`, which each lane that \`tracks\` names nothing for reads through that lane's genome. A lane reads it only while its window is under 5 Mb, since that window is the sequence it downloads, and the band's title tells the reader to zoom in past that",
           "if": {
             "type": "null"
           },
           "else": {
-            "not": {
-              "$ref": "#/$defs/JexlString"
-            }
+            "$ref": "#/$defs/Adapter"
           }
         },
         "height": {

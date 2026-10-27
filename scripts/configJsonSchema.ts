@@ -29,6 +29,7 @@ export interface SlotDefinition {
   defaultValue?: unknown
   model?: MstType
   contextVariable?: string[]
+  holds?: 'adapter'
 }
 
 export interface SchemaMetadata {
@@ -214,6 +215,9 @@ const FROZEN_NOTE =
   'Any JSON value: the slot is `frozen`, so its shape is not checked here.'
 
 const ref = (name: string): JsonSchema => ({ $ref: `#/$defs/${name}` })
+
+// The dispatching def each `holds` value names
+const HELD_DEFS: Record<'adapter', string> = { adapter: 'Adapter' }
 
 function closed(
   properties: Record<string, JsonSchema>,
@@ -555,12 +559,27 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
     }
   }
 
+  // A frozen slot holding an adapter config, or a list of them where its
+  // default is a list, as the dispatching `Adapter` def
+  function heldConfigSchema(def: SlotDefinition): JsonSchema {
+    const held = ref(HELD_DEFS[def.holds!])
+    return {
+      ...(def.description ? { description: def.description.trim() } : {}),
+      ...(Array.isArray(def.defaultValue)
+        ? { type: 'array', items: held }
+        : held),
+    }
+  }
+
   function slotSchema(
     def: SlotDefinition,
     depth: number,
     legacyValues?: unknown[],
     lifts = { string: false, numbers: false, uri: false },
   ): JsonSchema {
+    if (def.holds) {
+      return heldConfigSchema(def)
+    }
     const frozen = def.type === 'frozen' || def.type === 'maybeFrozen'
     const description = [def.description?.trim(), frozen ? FROZEN_NOTE : '']
       .filter((s): s is string => Boolean(s))

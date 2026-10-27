@@ -84,6 +84,7 @@ const GWASAdapterConfigSchema = ConfigurationSchema(
      */
     ldAdapter: {
       type: 'maybeFrozen',
+      holds: 'adapter',
       description: 'sub-adapter config for PLINK .ld pairwise r² data',
     },
   },

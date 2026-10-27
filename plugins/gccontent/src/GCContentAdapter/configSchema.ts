@@ -53,6 +53,7 @@ const GCContentAdapterF = (_pluginManager: PluginManager) => {
        */
       sequenceAdapter: {
         type: 'maybeFrozen',
+        holds: 'adapter',
         advanced: true,
       },
       /**

@@ -16,6 +16,11 @@ export interface SlotEntry {
   /** present when the slot is a nested sub-schema (adapter.index and friends) */
   subSlots?: SlotEntry[]
   /**
+   * A frozen slot holding an adapter config (`adapter`) or a list of them
+   * (`adapter[]`), the slot definition's `holds`.
+   */
+  holds?: 'adapter' | 'adapter[]'
+  /**
    * A sub-schema slot: the keys an older release wrote inside it that its
    * `retired` still moves.
    */

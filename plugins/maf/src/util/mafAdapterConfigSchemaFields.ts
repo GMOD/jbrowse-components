@@ -36,6 +36,7 @@ export function mafAdapterConfigSchemaFields({
      */
     summaryAdapter: {
       type: 'maybeFrozen',
+      holds: 'adapter',
       description: summaryAdapter,
     },
     ...samplesTsvAdapterConfigSchemaFields,
@@ -44,6 +45,7 @@ export function mafAdapterConfigSchemaFields({
      */
     framesAdapter: {
       type: 'maybeFrozen',
+      holds: 'adapter',
       description:
         "optional sub-adapter (typically a BigBedAdapter over a UCSC multiz<N>wayFrames.bb) supplying each species' CDS reading frames for the frames strip, the codon view and the codon conservation band; leave it unset to disable",
     },

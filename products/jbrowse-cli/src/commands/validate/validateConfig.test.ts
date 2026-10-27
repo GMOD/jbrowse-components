@@ -104,6 +104,84 @@ describe('validateConfig', () => {
     ])
   })
 
+  it("checks a multi-way lane layer's adapter as an adapter", () => {
+    const config = baseConfig()
+    Object.assign(config.tracks[0]!, {
+      type: 'SyntenyTrack',
+      adapter: { type: 'MafTabixAdapter', uri: 'multiz.maf.gz' },
+      displays: [
+        {
+          type: 'MultiWaySyntenyDisplay',
+          displayId: 'sample_bam-MultiWaySyntenyDisplay',
+          laneLayers: [
+            {
+              name: 'GC',
+              adapter: {
+                type: 'GCContentAdapter',
+                windowSize: 100,
+                windowDelta: 50,
+                windwo: 100,
+              },
+            },
+          ],
+        },
+      ],
+    })
+    const at = 'tracks[0].displays[0].laneLayers[0].adapter'
+    expect(errorsOf(config).map(p => p.where)).toEqual([`${at}.windwo`])
+    expect(warningsOf(config).map(p => [p.where, p.message])).toEqual([
+      [
+        `${at}.windowSize`,
+        '"windowSize" is a legacy key that a migration rewrites into current slots — the config loads, but check the settings inside it landed',
+      ],
+      [
+        `${at}.windowDelta`,
+        '"windowDelta" is a legacy key that a migration rewrites into current slots — the config loads, but check the settings inside it landed',
+      ],
+    ])
+  })
+
+  it("warns on the v4 spellings of an assembly's alias and cytoband adapters", () => {
+    const config = baseConfig()
+    Object.assign(config.assemblies[0]!, {
+      refNameAliases: {
+        adapter: {
+          type: 'NcbiSequenceReportAliasAdapter',
+          uri: 'sequence_report.tsv',
+          useUcscNameOverride: true,
+        },
+      },
+      cytobands: {
+        adapter: {
+          type: 'CytobandAdapter',
+          cytobandsLocation: { uri: 'c.txt' },
+        },
+      },
+    })
+    expect(errorsOf(config)).toEqual([])
+    expect(warningsOf(config).map(p => p.where)).toEqual([
+      'assemblies[0].refNameAliases.adapter.useUcscNameOverride',
+      'assemblies[0].cytobands.adapter.cytobandsLocation',
+    ])
+  })
+
+  it("checks each of a multi-pairwise synteny adapter's adapters", () => {
+    const config = baseConfig()
+    Object.assign(config.tracks[0]!, {
+      type: 'SyntenyTrack',
+      adapter: {
+        type: 'MultiPairwiseSyntenyAdapter',
+        adapters: [
+          { type: 'PAFAdapter', uri: 'a.paf', assemblyNames: ['hg38', 'hg38'] },
+          { type: 'PAFAdapter', uri: 'b.paf', assemblyName: ['hg38'] },
+        ],
+      },
+    })
+    expect(errorsOf(config).map(p => p.where)).toEqual([
+      'tracks[0].adapter.adapters[1].assemblyName',
+    ])
+  })
+
   // A GC track needs nothing but its type now, which is the shape the warning
   // above is steering authors towards.
   it('warns on an alignments filter entry the display cannot apply, on a display and in displayDefaults', () => {

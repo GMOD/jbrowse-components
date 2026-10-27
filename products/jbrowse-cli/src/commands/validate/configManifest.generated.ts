@@ -761,7 +761,8 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "sequenceAdapter",
-          "type": "(frozen | undefined)"
+          "type": "(frozen | undefined)",
+          "holds": "adapter"
         },
         {
           "name": "searchForward",
@@ -786,7 +787,8 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "sequenceAdapter",
-          "type": "(frozen | undefined)"
+          "type": "(frozen | undefined)",
+          "holds": "adapter"
         },
         {
           "name": "pam",
@@ -843,7 +845,8 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "sequenceAdapter",
-          "type": "(frozen | undefined)"
+          "type": "(frozen | undefined)",
+          "holds": "adapter"
         },
         {
           "name": "searchForward",
@@ -1052,7 +1055,8 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "sequenceAdapter",
-          "type": "(frozen | undefined)"
+          "type": "(frozen | undefined)",
+          "holds": "adapter"
         },
         {
           "name": "op",
@@ -1097,7 +1101,8 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "summaryAdapter",
-          "type": "(frozen | undefined)"
+          "type": "(frozen | undefined)",
+          "holds": "adapter"
         },
         {
           "name": "samplesTsvLocation",
@@ -1105,7 +1110,8 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "framesAdapter",
-          "type": "(frozen | undefined)"
+          "type": "(frozen | undefined)",
+          "holds": "adapter"
         }
       ],
       "shorthandKeys": [
@@ -1138,7 +1144,8 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "summaryAdapter",
-          "type": "(frozen | undefined)"
+          "type": "(frozen | undefined)",
+          "holds": "adapter"
         },
         {
           "name": "samplesTsvLocation",
@@ -1146,7 +1153,8 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "framesAdapter",
-          "type": "(frozen | undefined)"
+          "type": "(frozen | undefined)",
+          "holds": "adapter"
         }
       ],
       "shorthandKeys": [
@@ -1175,7 +1183,8 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "summaryAdapter",
-          "type": "(frozen | undefined)"
+          "type": "(frozen | undefined)",
+          "holds": "adapter"
         },
         {
           "name": "samplesTsvLocation",
@@ -1183,7 +1192,8 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "framesAdapter",
-          "type": "(frozen | undefined)"
+          "type": "(frozen | undefined)",
+          "holds": "adapter"
         }
       ],
       "shorthandKeys": [
@@ -1232,7 +1242,8 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "summaryAdapter",
-          "type": "(frozen | undefined)"
+          "type": "(frozen | undefined)",
+          "holds": "adapter"
         },
         {
           "name": "samplesTsvLocation",
@@ -1240,7 +1251,8 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "framesAdapter",
-          "type": "(frozen | undefined)"
+          "type": "(frozen | undefined)",
+          "holds": "adapter"
         }
       ],
       "shorthandKeys": [
@@ -1262,7 +1274,8 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "controlAdapter",
-          "type": "(frozen | undefined)"
+          "type": "(frozen | undefined)",
+          "holds": "adapter"
         }
       ],
       "legacyKeys": [
@@ -1446,7 +1459,8 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "adapters",
-          "type": "frozen"
+          "type": "frozen",
+          "holds": "adapter[]"
         },
         {
           "name": "coarseBpPerPxThreshold",
@@ -1721,7 +1735,8 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "ldAdapter",
-          "type": "(frozen | undefined)"
+          "type": "(frozen | undefined)",
+          "holds": "adapter"
         }
       ],
       "shorthandKeys": [
@@ -6154,7 +6169,8 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "adapter",
-              "type": "(frozen | undefined)"
+              "type": "(frozen | undefined)",
+              "holds": "adapter"
             },
             {
               "name": "height",

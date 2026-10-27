@@ -187,6 +187,13 @@ interface ConfigSlotDefinitionCommon {
    * edits: one that changes what is drawn from the track's source.
    */
   plot?: boolean
+  /**
+   * The element a `frozen` slot holds the config of: one adapter config, or a
+   * list of them where the default is a list. The adapter reading it builds
+   * it through that adapter type's schema, so `jbrowse validate` and the
+   * published JSON schema check each entry as one.
+   */
+  holds?: 'adapter'
 }
 
 /**

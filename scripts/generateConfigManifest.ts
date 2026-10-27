@@ -169,6 +169,7 @@ function slotsOf(type) {
       : undefined
     const subOptions = subMeta?.options
     const targets = subMeta ? shorthandTargets(subMeta) : {}
+    const def = meta?.definition[name]
     return {
       name,
       // MST's own name for the slot type. Verbose for unions, but it is the real
@@ -177,6 +178,11 @@ function slotsOf(type) {
       // A sub-schema is an object slot with slots of its own (adapter.index,
       // track.displays[]); the validator recurses into these.
       subSlots: sub ? slotsOf(prop) : undefined,
+      // a frozen slot holding an adapter config, or a list where its default
+      // is one, which the validator checks as the adapter it names
+      holds: def?.holds
+        ? def.holds + (Array.isArray(def.defaultValue) ? '[]' : '')
+        : undefined,
       legacyKeys: sub ? subLegacyKeysOf(subMeta) : undefined,
       // the sub-schema by name and how a settings bag writes it, which the
       // config reference states on that schema's page

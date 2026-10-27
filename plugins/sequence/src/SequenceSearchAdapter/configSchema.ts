@@ -54,6 +54,7 @@ const configSchema = ConfigurationSchema(
      */
     sequenceAdapter: {
       type: 'maybeFrozen',
+      holds: 'adapter',
     },
     /**
      * #slot

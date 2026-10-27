@@ -96,6 +96,15 @@ const DROPPED: Record<string, string> = {
     'JBrowse takes the sequence from the assembly the track is displayed against. ',
 }
 
+// One object, or each entry of a list, with the path suffix naming it
+function entriesOf(value: unknown) {
+  return isRecord(value)
+    ? [[value, ''] as const]
+    : Array.isArray(value)
+      ? value.map((v, i) => [v, `[${i}]`] as const)
+      : []
+}
+
 // The warnings a slot table carries: a legacy key or value a migration
 // rewrites, and a declared key JBrowse fills in for itself.
 function warnSlots(
@@ -108,6 +117,7 @@ function warnSlots(
   },
   where: string,
   report: Report,
+  manifest: ConfigManifest,
 ) {
   const declared = new Set(entry.slots.map(s => s.name))
   for (const [key, value] of Object.entries(obj)) {
@@ -129,20 +139,29 @@ function warnSlots(
   }
   for (const slot of entry.slots) {
     const value = obj[slot.name]
+    if (slot.holds) {
+      for (const [item, suffix] of entriesOf(value)) {
+        checkPluggable(
+          item,
+          manifest.adapters,
+          'adapter',
+          `${where}.${slot.name}${suffix}`,
+          report,
+          manifest,
+        )
+      }
+    }
     if (!slot.subSlots) {
       continue
     }
-    for (const [item, suffix] of isRecord(value)
-      ? [[value, ''] as const]
-      : Array.isArray(value)
-        ? value.map((v, i) => [v, `[${i}]`] as const)
-        : []) {
+    for (const [item, suffix] of entriesOf(value)) {
       if (isRecord(item)) {
         warnSlots(
           item,
           { slots: slot.subSlots, legacyKeys: slot.legacyKeys },
           `${where}.${slot.name}${suffix}`,
           report,
+          manifest,
         )
       }
     }
@@ -186,13 +205,14 @@ function checkPluggable(
   groupLabel: string,
   where: string,
   report: Report,
+  manifest: ConfigManifest,
 ) {
   if (!isRecord(obj)) {
     return
   }
   const entry = resolveType(obj, group, groupLabel, `${where}.type`, report)
   if (entry) {
-    warnSlots(obj, entry, where, report)
+    warnSlots(obj, entry, where, report, manifest)
   }
 }
 
@@ -267,7 +287,7 @@ function checkTrack(
     }
   }
 
-  checkPluggable(track, manifest.tracks, 'track', where, report)
+  checkPluggable(track, manifest.tracks, 'track', where, report, manifest)
   if (!loose) {
     checkPluggable(
       track.adapter,
@@ -275,6 +295,7 @@ function checkTrack(
       'adapter',
       `${where}.adapter`,
       report,
+      manifest,
     )
   }
   const textSearching = track.textSearching
@@ -285,6 +306,7 @@ function checkTrack(
       'text search adapter',
       `${where}.textSearching.textSearchAdapter`,
       report,
+      manifest,
     )
   }
   if (Array.isArray(track.displays)) {
@@ -292,7 +314,14 @@ function checkTrack(
     for (const [i, display] of track.displays.entries()) {
       const at = `${where}.displays[${i}]`
       if (!warnDroppedDisplay(display, trackType, manifest, at, report)) {
-        checkPluggable(display, manifest.displays, 'display', at, report)
+        checkPluggable(
+          display,
+          manifest.displays,
+          'display',
+          at,
+          report,
+          manifest,
+        )
       }
     }
   }
@@ -344,6 +373,7 @@ function warnDisplayDefaults(
         entry,
         `${where}.displayDefaults`,
         found,
+        manifest,
       )
     }
   }
@@ -365,14 +395,18 @@ function checkAssembly(
 ) {
   const sequence = assembly.sequence
   const where = `assemblies[${index}].sequence`
-  if (isRecord(sequence) && isRecord(sequence.adapter)) {
-    checkPluggable(
-      sequence.adapter,
-      manifest.adapters,
-      'adapter',
-      `${where}.adapter`,
-      report,
-    )
+  for (const holder of ['sequence', 'refNameAliases', 'cytobands']) {
+    const node = assembly[holder]
+    if (isRecord(node) && isRecord(node.adapter)) {
+      checkPluggable(
+        node.adapter,
+        manifest.adapters,
+        'adapter',
+        `assemblies[${index}].${holder}.adapter`,
+        report,
+        manifest,
+      )
+    }
   }
   if (isRecord(sequence) && Array.isArray(sequence.displays)) {
     for (const [i, display] of sequence.displays.entries()) {
@@ -1133,6 +1167,7 @@ export function validateConfig(
       'connection',
       `connections[${i}]`,
       report,
+      manifest,
     )
   }
 
@@ -1146,6 +1181,7 @@ export function validateConfig(
       'text search adapter',
       `aggregateTextSearchAdapters[${i}]`,
       report,
+      manifest,
     )
   }
 

@@ -56,6 +56,7 @@ const MultiPairwiseSyntenyAdapter = ConfigurationSchema(
      */
     adapters: {
       type: 'frozen',
+      holds: 'adapter',
       defaultValue: [],
       description:
         'array of pairwise synteny adapter configs sharing one assembly',

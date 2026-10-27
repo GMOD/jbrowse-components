@@ -48,6 +48,7 @@ const HicAdapter = ConfigurationSchema(
      */
     controlAdapter: {
       type: 'maybeFrozen',
+      holds: 'adapter',
       description: 'sub-adapter config for the control .hic',
     },
   },
