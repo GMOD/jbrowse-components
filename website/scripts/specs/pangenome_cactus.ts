@@ -151,7 +151,10 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
     name: 'pangenome_cactus/synteny',
     url: sessionSpec(CONFIG, {
       views: [
-        { ...ecoliAvaStack('ecoli_cactus_ava'), color: { field: 'strand' } },
+        {
+          ...ecoliAvaStack('ecoli_cactus_ava'),
+          encoding: { color: { field: 'strand' } },
+        },
       ],
     }),
     viewportHeight: ECOLI_AVA_STACK_HEIGHT,
