@@ -768,7 +768,7 @@ interface ArcPaint {
 function arcRows(
   a: ArcsUploadData,
   { slotColor, colorField, widthOf }: ArcPaint,
-  footRegions: (start: number, end: number) => [number, number],
+  feet: (arc: number) => readonly [number, number],
 ) {
   const n = a.numArcs
   const start = Array.from(a.arcX1.subarray(0, n))
@@ -776,7 +776,7 @@ function arcRows(
   const shape = Array.from(a.arcShapeTypes.subarray(0, n))
   const colorSlot = Array.from(a.arcColorTypes.subarray(0, n), arcColorSlot)
   const support = Array.from(a.arcSupport.subarray(0, n))
-  const feet = start.map((s, i) => footRegions(s, end[i]!))
+  const arcFeet = start.map((_, i) => feet(i))
   return {
     start,
     end,
@@ -788,8 +788,8 @@ function arcRows(
     span: Array.from(a.arcSpanBp.subarray(0, n)),
     support,
     width: support.map(widthOf),
-    startRegion: feet.map(f => f[0]),
-    endRegion: feet.map(f => f[1]),
+    startRegion: arcFeet.map(f => f[0]),
+    endRegion: arcFeet.map(f => f[1]),
   }
 }
 
@@ -804,14 +804,13 @@ function sectionConnections(
   ownFeet: (start: number, end: number) => [number, number],
   paint: ArcPaint,
 ) {
-  const ownArcs = arcRows(own, paint, ownFeet)
-  const crossArcs = arcRows(arcsToRegionResult(crossing, []), paint, () => [
-    -1, -1,
+  const ownArcs = arcRows(own, paint, i =>
+    ownFeet(own.arcX1[i]!, own.arcX2[i]!),
+  )
+  const crossArcs = arcRows(arcsToRegionResult(crossing, []), paint, i => [
+    crossing[i]!.p1RegionIndex,
+    crossing[i]!.p2RegionIndex,
   ])
-  crossing.forEach((arc, i) => {
-    crossArcs.startRegion[i] = arc.p1RegionIndex
-    crossArcs.endRegion[i] = arc.p2RegionIndex
-  })
   const ticks = own.numArcLines
   return {
     arcs: Object.fromEntries(
