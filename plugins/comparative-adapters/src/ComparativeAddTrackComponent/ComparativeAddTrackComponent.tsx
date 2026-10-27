@@ -33,7 +33,10 @@ const ComparativeAddTrackComponent = observer(
     const { form, update } = useAddTrackFields(
       model,
       'ComparativeAddTrackComponent',
-      { queryAssembly: defaultAsm, targetAssembly: defaultAsm },
+      {
+        queryAssembly: defaultAsm,
+        targetAssembly: session.assemblies[1]?.name ?? defaultAsm,
+      },
       contribute,
     )
 

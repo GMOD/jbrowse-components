@@ -233,8 +233,6 @@ export function makeSyntenyFeature({
     blockLen,
     mate,
   }
-  // the tags land after the fields above rather than before them — see
-  // copyPafTags, which is also where the three it drops are accounted for
   copyPafTags(data, extra)
   return new SyntenyFeature(data)
 }
