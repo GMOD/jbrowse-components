@@ -95,16 +95,14 @@ const stateModelFactory = (
           authToken =>
             fetch(
               'https://api.dropboxapi.com/2/sharing/get_shared_link_metadata',
-              {
-                method: 'POST',
-                headers: {
-                  Authorization: `Bearer ${authToken}`,
-                  'Content-Type': 'application/json',
+              self.addAuthHeaderToInit(
+                {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ url: location.uri }),
                 },
-                body: JSON.stringify({
-                  url: location.uri,
-                }),
-              },
+                authToken,
+              ),
             ),
           getDescriptiveErrorMessage,
         )

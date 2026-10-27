@@ -17,7 +17,6 @@ const stateModelFactory = (
 ) =>
   tokenEntryModelFactory(
     'ExternalTokenInternetAccount',
-    'ExternalTokenInternetAccount',
     configSchema,
     ExternalTokenEntryForm,
   )

@@ -1,18 +1,12 @@
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { InternetAccount } from '@jbrowse/core/pluggableElementTypes/models'
-import { getRoot, types } from '@jbrowse/mobx-state-tree'
+import { types } from '@jbrowse/mobx-state-tree'
 
-import { getResponseError } from './util.ts'
+import { getAccountSession, getResponseError, proveToken } from './util.ts'
 
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
-import type { DialogHost, UriLocation } from '@jbrowse/core/util/types'
+import type { UriLocation } from '@jbrowse/core/util/types'
 import type React from 'react'
-
-// internet accounts live on the root model (a sibling of session), so read
-// session off the root rather than walking up via getSession
-interface RootWithSession {
-  session: DialogHost
-}
 
 type TokenEntryForm = React.FC<{
   internetAccountId: string
@@ -22,18 +16,17 @@ type TokenEntryForm = React.FC<{
 /**
  * #stateModel TokenEntryInternetAccount
  * Shared base for internet accounts whose token the user supplies through a
- * dialog (HTTP Basic, external token). Such accounts differ in their
- * discriminating `type` and the dialog form used to collect the token, both
- * passed here. The base is not registered itself; see HTTPBasicInternetAccount
+ * dialog (HTTP Basic, external token). Such accounts differ in their `type`,
+ * which also names the model, and the dialog form that collects the token,
+ * both passed here. The base is not registered itself; see HTTPBasicInternetAccount
  * and ExternalTokenInternetAccount.
  */
 export function tokenEntryModelFactory<Type extends string>(
-  modelName: string,
   typeName: Type,
   configSchema: AnyConfigurationSchemaType,
   LoginForm: TokenEntryForm,
 ) {
-  return InternetAccount.named(modelName)
+  return InternetAccount.named(typeName)
     .props({
       /**
        * #property
@@ -63,7 +56,12 @@ export function tokenEntryModelFactory<Type extends string>(
         resolve: (token: string) => void,
         reject: (error: Error) => void,
       ) {
-        const { session } = getRoot<RootWithSession>(self)
+        const session = getAccountSession(self)
+        if (!session) {
+          throw new Error(
+            `Internet account ${self.internetAccountId} has no session to ask for a credential in`,
+          )
+        }
         session.queueDialog((doneCallback: () => void) => [
           LoginForm,
           {
@@ -82,33 +80,23 @@ export function tokenEntryModelFactory<Type extends string>(
       /**
        * #action
        * Optionally validate the token with a HEAD request before use, per the
-       * `validateWithHEAD` config slot.
+       * `validateWithHEAD` config slot. Only a 401 drops the token: there is
+       * nothing to renew it with, so the next read re-opens the dialog.
        */
       async validateToken(token: string, location: UriLocation) {
-        if (!self.validateWithHEAD) {
-          return token
-        }
-        const response = await fetch(
-          location.uri,
-          self.addAuthHeaderToInit({ method: 'HEAD' }, token),
-        )
-        if (!response.ok) {
-          // The HEAD just proved this credential unusable, and there is nothing
-          // to renew it with — the only source is the user. Dropping it is what
-          // lets the next read re-open the dialog; keeping it meant a mistyped
-          // password threw the same error on every request for the rest of the
-          // session and was never asked for again. `getPreAuthorizationInform-
-          // ation` already dropped it on this path, so only the direct
-          // main-thread reads were affected.
-          self.removeToken()
-          throw new Error(
-            await getResponseError({
-              response,
-              reason: 'Error validating token',
-            }),
-          )
-        }
-        return token
+        return self.validateWithHEAD
+          ? proveToken({
+              account: self,
+              token,
+              probe: probeToken =>
+                fetch(
+                  location.uri,
+                  self.addAuthHeaderToInit({ method: 'HEAD' }, probeToken),
+                ),
+              describeError: (response, reason) =>
+                getResponseError({ response, reason }),
+            })
+          : token
       },
     }))
 }

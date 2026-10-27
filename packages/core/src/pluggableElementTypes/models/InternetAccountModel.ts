@@ -157,8 +157,10 @@ export const InternetAccount = types
      * so it can check that a token is valid before sending it to a worker
      * thread. It expects the token to be returned, so this action can also
      * generate a new token (e.g. with a refresh token) if the original one was
-     * invalid. Should throw an error if a token is
-     * invalid.
+     * invalid. Should throw an error if a token is invalid, and call
+     * `removeToken` first when the failure condemns the token itself (a 401),
+     * so the next `getToken` asks again; a failure for any other reason, such
+     * as a missing file, should keep it.
      *
      * @param token - Auth token
      * @param loc - UriLocation of the resource
@@ -302,17 +304,12 @@ export const InternetAccount = types
      */
     async getPreAuthorizationInformation(location: UriLocation) {
       const authToken = await self.getToken(location)
-      try {
-        return {
-          internetAccountType: self.type,
-          authInfo: {
-            token: await self.validateToken(authToken, location),
-            configuration: getConf(self),
-          },
-        }
-      } catch (error) {
-        self.removeToken()
-        throw error
+      return {
+        internetAccountType: self.type,
+        authInfo: {
+          token: await self.validateToken(authToken, location),
+          configuration: getConf(self),
+        },
       }
     },
   }))

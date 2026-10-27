@@ -11,8 +11,8 @@ import type { GoogleDriveOAuthInternetAccountConfigModel } from './configSchema.
 import type { UriLocation } from '@jbrowse/core/util/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
-// metadataOnly: signals getFetcher to request ?fields=size instead of ?alt=media,
-// used by GoogleDriveFile constructor to pre-fetch file size for stat()
+// metadataOnly: GoogleDriveFile.stat() asks getFetcher for ?fields=size
+// instead of ?alt=media
 export interface RequestInitWithMetadata extends RequestInit {
   metadataOnly?: boolean
 }
@@ -68,8 +68,6 @@ export default function stateModelFactory(
         return async (input: RequestInfo, init?: RequestInitWithMetadata) => {
           const driveUrl = new URL(getUri(String(input)))
           const searchParams = new URLSearchParams()
-          // metadataOnly: private flag used by GoogleDriveFile constructor to
-          // pre-fetch just the file size for stat() without downloading content
           if (init?.metadataOnly) {
             searchParams.append('fields', 'size')
           } else {
@@ -79,10 +77,7 @@ export default function stateModelFactory(
           const response = await self.fetchWithToken(location, authToken =>
             fetch(
               driveUrl,
-              self.addAuthHeaderToInit(
-                { ...init, method: 'GET', credentials: 'same-origin' },
-                authToken,
-              ),
+              self.addAuthHeaderToInit({ ...init, method: 'GET' }, authToken),
             ),
           )
           if (!response.ok) {
@@ -98,8 +93,7 @@ export default function stateModelFactory(
         const uri = getUri(location.uri)
         return self.validateTokenWithProbe(
           token,
-          authToken =>
-            fetch(uri, { headers: { Authorization: `Bearer ${authToken}` } }),
+          authToken => fetch(uri, self.addAuthHeaderToInit({}, authToken)),
           getDescriptiveErrorMessage,
         )
       },

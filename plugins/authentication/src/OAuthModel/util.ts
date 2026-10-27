@@ -1,6 +1,6 @@
 export interface OAuthWindowParams {
   internetAccountId: string
-  expectedState: string | undefined
+  expectedState: string
   exchangeAuthorizationCode: (
     code: string,
     redirectUri: string,
@@ -45,7 +45,7 @@ export async function finishOAuthRedirect(
       urlParams.set(key, value)
     }
   }
-  if (params.expectedState && urlParams.get('state') !== params.expectedState) {
+  if (urlParams.get('state') !== params.expectedState) {
     throw new Error('OAuth state mismatch — possible CSRF attack')
   }
   const accessToken = urlParams.get('access_token')

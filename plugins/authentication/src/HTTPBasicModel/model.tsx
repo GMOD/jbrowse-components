@@ -14,7 +14,6 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 const stateModelFactory = (configSchema: HTTPBasicInternetAccountConfigModel) =>
   tokenEntryModelFactory(
     'HTTPBasicInternetAccount',
-    'HTTPBasicInternetAccount',
     configSchema,
     HTTPBasicLoginForm,
   ).views(() => ({

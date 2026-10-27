@@ -70,3 +70,22 @@ test('with validateWithHEAD off a 401 comes back as-is, with no extra request', 
   expect(response.status).toBe(401)
   expect(fetchMock).toHaveBeenCalledTimes(1)
 })
+
+// A 404 is no fault of the password; dropping the password on one re-opens the
+// login dialog on every read of a URL that never works
+test('a HEAD failing for a reason other than a 401 keeps the credential', async () => {
+  sessionStorage.setItem('testBasic-token', 'dXNlcjpwdw==')
+  fetchMock.mockResolvedValue(new Response('missing', { status: 404 }))
+
+  await expect(
+    makeAccount().getPreAuthorizationInformation(location),
+  ).rejects.toThrow('HTTP 404 - missing')
+
+  expect(sessionStorage.getItem('testBasic-token')).toBe('dXNlcjpwdw==')
+})
+
+test('an account with no session to prompt in says so', async () => {
+  await expect(makeAccount().getToken(location)).rejects.toThrow(
+    'Internet account testBasic has no session to ask for a credential in',
+  )
+})

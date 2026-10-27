@@ -9,7 +9,7 @@ import type { OAuthWindowParams } from './util.ts'
 function makeParams(overrides?: Partial<OAuthWindowParams>): OAuthWindowParams {
   return {
     internetAccountId: 'testAccount',
-    expectedState: undefined,
+    expectedState: 'st',
     exchangeAuthorizationCode: async () => 'exchanged-token',
     storeToken: () => {},
     ...overrides,
@@ -28,7 +28,7 @@ describe('finishOAuthRedirect', () => {
   it('returns access_token from implicit flow (hash fragment)', async () => {
     const stored: string[] = []
     const token = await finishOAuthRedirect(
-      'http://localhost/auth#access_token=my-token&token_type=bearer',
+      'http://localhost/auth#access_token=my-token&token_type=bearer&state=st',
       makeParams({
         storeToken: t => {
           stored.push(t)
@@ -42,7 +42,7 @@ describe('finishOAuthRedirect', () => {
   it('exchanges code and returns token from authorization code flow', async () => {
     const stored: string[] = []
     const token = await finishOAuthRedirect(
-      'http://localhost/auth?code=auth-code',
+      'http://localhost/auth?code=auth-code&state=st',
       makeParams({
         exchangeAuthorizationCode: async (code, redirectUri) => {
           expect(code).toBe('auth-code')
@@ -88,7 +88,7 @@ describe('finishOAuthRedirect', () => {
   it('throws "OAuth flow was cancelled" for access_denied error', async () => {
     await expect(
       finishOAuthRedirect(
-        'http://localhost/auth?error=access_denied',
+        'http://localhost/auth?error=access_denied&state=st',
         makeParams(),
       ),
     ).rejects.toThrow('OAuth flow was cancelled')
@@ -97,7 +97,7 @@ describe('finishOAuthRedirect', () => {
   it('throws "OAuth flow error: X" for other errors', async () => {
     await expect(
       finishOAuthRedirect(
-        'http://localhost/auth?error=server_error',
+        'http://localhost/auth?error=server_error&state=st',
         makeParams(),
       ),
     ).rejects.toThrow('OAuth flow error: server_error')
@@ -105,14 +105,16 @@ describe('finishOAuthRedirect', () => {
 
   it('returns undefined when redirect has no token, code, or error', async () => {
     expect(
-      await finishOAuthRedirect('http://localhost/auth', makeParams()),
+      await finishOAuthRedirect('http://localhost/auth?state=st', makeParams()),
     ).toBeUndefined()
   })
 })
 
 describe('finishOAuthWindow', () => {
   it('completes the flow for this account', async () => {
-    const event = makeRedirectEvent('http://localhost/auth?code=auth-code')
+    const event = makeRedirectEvent(
+      'http://localhost/auth?code=auth-code&state=st',
+    )
     expect(await finishOAuthWindow(event, makeParams())).toBe('exchanged-token')
   })
 

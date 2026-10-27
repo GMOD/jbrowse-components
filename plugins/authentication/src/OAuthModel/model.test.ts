@@ -32,10 +32,7 @@ interface QueuedPrompt {
 
 let queuedPrompts: QueuedPrompt[] = []
 
-// isSessionModel is a duck-type check for rpcManager and configuration
 const fakeSession = {
-  rpcManager: {},
-  configuration: {},
   queueDialog: (
     callback: (doneCallback: () => void) => [unknown, QueuedPrompt],
   ) => {
@@ -233,6 +230,39 @@ test('a popup blocked despite an activation is retried behind the prompt', async
     'Could not open the testOAuth login window',
   )
   expect(window.open).toHaveBeenCalledTimes(2)
+})
+
+// Only a 401 condemns a token. Treating every failed probe as one sent a user
+// with a mistyped file URL back through the login, and an account holding a
+// refresh token spent one refresh per RPC on a file that would never load
+test('a probe failing for a reason other than a 401 keeps the token and refreshes nothing', async () => {
+  sessionStorage.setItem('testOAuth-token', 'good-token')
+  localStorage.setItem('testOAuth-refreshToken', 'refresh-token')
+  fetchMock.mockResolvedValue(new Response('missing', { status: 404 }))
+
+  await expect(
+    makeAccount().getPreAuthorizationInformation(location),
+  ).rejects.toThrow('HTTP 404 - missing')
+
+  expect(fetchMock).toHaveBeenCalledTimes(1)
+  expect(sessionStorage.getItem('testOAuth-token')).toBe('good-token')
+})
+
+test('a refreshed token is kept when the resource then fails for another reason', async () => {
+  sessionStorage.setItem('testOAuth-token', 'expired-token')
+  localStorage.setItem('testOAuth-refreshToken', 'refresh-token')
+  fetchMock
+    .mockResolvedValueOnce(new Response('', { status: 401 }))
+    .mockResolvedValueOnce(
+      new Response(JSON.stringify({ access_token: 'fresh-token' })),
+    )
+    .mockResolvedValueOnce(new Response('missing', { status: 404 }))
+
+  await expect(
+    makeAccount().getPreAuthorizationInformation(location),
+  ).rejects.toThrow('HTTP 404 - missing')
+
+  expect(sessionStorage.getItem('testOAuth-token')).toBe('fresh-token')
 })
 
 test('a 401 with no refresh token surfaces the validation error', async () => {

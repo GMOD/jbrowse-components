@@ -5,17 +5,16 @@ import {
 import { InternetAccount } from '@jbrowse/core/pluggableElementTypes/models'
 import {
   isElectron,
-  isSessionModel,
   localStorageGetItem,
   localStorageRemoveItem,
   localStorageSetItem,
   sha256Base64Url,
   toBase64Url,
 } from '@jbrowse/core/util'
-import { getRoot, types } from '@jbrowse/mobx-state-tree'
+import { types } from '@jbrowse/mobx-state-tree'
 
 import { OAuthLoginPrompt } from '../lazyLoginForms.ts'
-import { getResponseError } from '../util.ts'
+import { getAccountSession, getResponseError, proveToken } from '../util.ts'
 import {
   finishOAuthRedirect,
   finishOAuthWindow,
@@ -30,6 +29,7 @@ import type {
 } from './configSchema.ts'
 import type { OAuthWindowParams } from './util.ts'
 import type { UriLocation } from '@jbrowse/core/util'
+import type { DialogHost } from '@jbrowse/core/util/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 function randomBytes(length: number) {
@@ -56,18 +56,16 @@ function promptForLoginWindow({
   waitForToken,
 }: {
   internetAccountId: string
-  session: unknown
+  session: DialogHost | undefined
   openLoginWindow: () => Window | null
   waitForToken: (popup: Window) => Promise<string>
 }) {
   const blocked = new Error(
     `Could not open the ${internetAccountId} login window. Allow popups for this site and try again.`,
   )
-  // an embedded root need not have a session to queue the prompt on, and a
-  // popup that never opens used to leave this promise pending forever — which
-  // `getToken` caches, so the account stayed wedged for the rest of the
-  // session with nothing shown to the user
-  if (!isSessionModel(session)) {
+  // a popup that never opens would leave this promise pending forever, and
+  // `getToken` caches it, wedging the account with nothing shown to the user
+  if (!session) {
     throw blocked
   }
   return new Promise<string>((resolve, reject) => {
@@ -152,16 +150,6 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
        */
       get scopes() {
         return readConfObject(self.conf, 'scopes')
-      },
-      /**
-       * #getter
-       * OAuth state parameter:
-       * https://www.rfc-editor.org/rfc/rfc6749#section-4.1.1
-       *
-       * Can override or extend if dynamic state is needed.
-       */
-      get state() {
-        return readConfObject(self.conf, 'state')
       },
       /**
        * #getter
@@ -317,14 +305,15 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
     .actions(self => ({
       /**
        * #action
-       * Prove a token against the resource and, if that fails, refresh it once
-       * and prove the new one. Returns whichever token worked; throws if
-       * neither does. Every OAuth account validates this way and they differ
-       * only in what a probe is — a HEAD of the resource here, a metadata call
-       * for Dropbox and Google Drive.
+       * Prove a token against the resource and, if the resource answers 401,
+       * refresh it once and prove the new one. Returns whichever token worked;
+       * throws if neither does, or if the resource fails for any other reason.
+       * Every OAuth account validates this way and they differ only in what a
+       * probe is — a HEAD of the resource here, a metadata call for Dropbox
+       * and Google Drive.
        *
        * @param token - the token to prove
-       * @param probe - issues a request that succeeds iff the token is good
+       * @param probe - issues a request that answers 401 iff the token is bad
        * @param describeError - turns a failed probe into a message
        */
       async validateTokenWithProbe(
@@ -332,35 +321,18 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
         probe: (token: string) => Promise<Response>,
         describeError: (response: Response, reason?: string) => Promise<string>,
       ) {
-        const response = await probe(token)
-        if (response.ok) {
-          return token
-        }
-        // Every path out of here leaves this token unusable, so drop it before
-        // taking any of them — that is what lets the next getToken re-prompt.
-        // Without it an account with no refresh token to fall back on (Google
-        // Drive's implicit flow issues none, and its access tokens last an
-        // hour) kept handing the expired token back out of getToken's cached
-        // promise: every later request threw this same error, and nothing
-        // short of a page reload ever asked the user to log in again.
-        self.removeToken()
-        const refreshToken = self.retrieveRefreshToken()
-        if (!refreshToken) {
-          throw new Error(
-            await describeError(response, 'Error validating token'),
-          )
-        }
-        // Exactly once. Recursing here instead looped forever on a resource
-        // that fails for a reason no new token fixes — a file the account
-        // cannot see — refreshing against the token endpoint on every pass.
-        const newToken = await self.exchangeRefreshForAccessToken(refreshToken)
-        const retry = await probe(newToken)
-        if (!retry.ok) {
-          throw new Error(await describeError(retry, 'Error validating token'))
-        }
-        // removeToken above dropped the cached promise, so storing is enough
-        self.storeToken(newToken)
-        return newToken
+        return proveToken({
+          account: self,
+          token,
+          probe,
+          describeError,
+          renew: async () => {
+            const refreshToken = self.retrieveRefreshToken()
+            return refreshToken
+              ? self.exchangeRefreshForAccessToken(refreshToken)
+              : undefined
+          },
+        })
       },
       /**
        * #action
@@ -379,17 +351,12 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
         const redirectUri = isElectron
           ? 'http://localhost/auth'
           : window.location.origin + window.location.pathname
-        // RFC 6749 §10.12: without a state there is nothing tying the redirect
-        // back to the request this window started, so a page that can post to
-        // us can hand us its own authorization. A configured state is a
-        // constant and so guessable — generate a per-flow nonce unless one was
-        // set explicitly. Providers are required to echo it back.
-        const state = self.state || toBase64Url(randomBytes(16))
-        // RFC 7636 §4.1 wants one verifier per authorization request, and this
-        // is the request — so it lives here rather than on the model, where a
-        // single lazily-created one was shared by every flow the account ever
-        // ran. `state` immediately above was already rotating for the same
-        // reason.
+        // RFC 6749 §10.12: the state ties the redirect back to the request
+        // this window started, so a page that can post to us cannot hand us
+        // its own authorization. A nonce per flow, because a constant is
+        // guessable; providers are required to echo it back.
+        const state = toBase64Url(randomBytes(16))
+        // RFC 7636 §4.1: one verifier per authorization request, as with state
         const codeVerifier = self.needsPKCE
           ? toBase64Url(randomBytes(32))
           : undefined
@@ -474,7 +441,7 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
             ? waitForToken(popup)
             : promptForLoginWindow({
                 internetAccountId: self.internetAccountId,
-                session: getRoot<{ session?: unknown }>(self).session,
+                session: getAccountSession(self),
                 openLoginWindow,
                 waitForToken,
               })
