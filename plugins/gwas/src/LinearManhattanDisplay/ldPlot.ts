@@ -70,19 +70,30 @@ export const LD_MARKS = [
 
 const LD_FIELDS = new Set<unknown>([LD_FIELD, LD_ROLE_FIELD])
 
-/**
- * Whether a mark's encoding names a field the LD join writes, which is what
- * makes a fetch join the `ldAdapter`: a `y`, a `text`, or the field a color,
- * shape or stroke width scale reads.
- */
-export function readsLd({ encoding }: MarkConfig) {
-  return [
-    encoding.y,
-    encoding.text,
-    encoding.color.field,
-    encoding.shape.field,
-    encoding.strokeWidth.field,
-  ].some(field => LD_FIELDS.has(field))
+/** Channels that draw their field itself, rather than style a mark by it. */
+const PLOTTING_CHANNELS = new Set(['x', 'y', 'row', 'text'])
+
+function fieldOf(channel: unknown) {
+  return typeof channel === 'object' && channel !== null && 'field' in channel
+    ? channel.field
+    : channel
+}
+
+function valueOf(channel: unknown) {
+  return typeof channel === 'object' && channel !== null && 'value' in channel
+    ? channel.value
+    : undefined
+}
+
+function ldChannels({ encoding }: MarkSnapshot) {
+  return Object.entries(encoding ?? {})
+    .filter(([, channel]) => LD_FIELDS.has(fieldOf(channel)))
+    .map(([name]) => name)
+}
+
+/** Whether a channel of a mark's encoding reads a field the LD join writes. */
+export function readsLd(mark: MarkConfig) {
+  return ldChannels(getSnapshot(mark)).length > 0
 }
 
 /**
@@ -189,47 +200,31 @@ function sameStep(want: { expr: string }) {
     bare(step.expr) === bare(want.expr)
 }
 
-function fieldOf(channel: unknown) {
-  return typeof channel === 'object' && channel !== null && 'field' in channel
-    ? channel.field
-    : channel
-}
-
-// A width channel less a scale over an LD field, keeping the px it held.
-function withoutLdWidth(
-  channel: 'size' | 'strokeWidth',
-  width: NonNullable<MarkSnapshot['encoding']>['size'],
-) {
-  const own = typeof width === 'object' ? width.value : undefined
-  return !LD_FIELDS.has(fieldOf(width))
-    ? width !== undefined && { [channel]: width }
-    : own !== undefined && { [channel]: own }
-}
-
+// Each channel over an LD field falls back to the constant it held beside
+// the scale, or goes.
 function withoutLdScales(mark: MarkSnapshot): MarkSnapshot {
-  const { color, shape, size, strokeWidth, ...encoding } = mark.encoding ?? {}
-  const own = color?.value
+  const encoding = Object.entries(mark.encoding ?? {}).flatMap(
+    ([name, channel]): [string, unknown][] => {
+      const own = valueOf(channel)
+      return !LD_FIELDS.has(fieldOf(channel))
+        ? [[name, channel]]
+        : own !== undefined
+          ? [[name, { value: own }]]
+          : []
+    },
+  )
   return {
     ...mark,
     transform: mark.transform?.filter(s => !sameStep(LD_PARTNERS_FILTER)(s)),
-    encoding: {
-      ...encoding,
-      ...(!LD_FIELDS.has(color?.field)
-        ? color && { color }
-        : own !== undefined && { color: { value: own } }),
-      ...(!LD_FIELDS.has(fieldOf(shape)) && shape !== undefined && { shape }),
-      ...withoutLdWidth('size', size),
-      ...withoutLdWidth('strokeWidth', strokeWidth),
-    },
+    encoding: Object.fromEntries(encoding),
   }
 }
 
 /**
  * The plot with LD coloring taken off, or undefined where nothing is left,
- * which is the default plot. The index twins go, as does a mark plotting an LD
- * field as its `y` or `text`; every other mark loses the partner filter and
- * any color, shape or width scale over an LD field, a color keeping the value
- * it held beside the r² scale. No mark is left reading LD.
+ * which is the default plot. The index twins go, as does a mark drawing an LD
+ * field as its `x`, `y`, `row` or `text`; every other mark loses the partner
+ * filter and any scale over an LD field. No mark is left reading LD.
  */
 export function withoutLd(
   marks: readonly MarkSnapshot[],
@@ -238,8 +233,7 @@ export function withoutLd(
     .filter(
       m =>
         !m.transform?.some(sameStep(LD_INDEX_FILTER)) &&
-        !LD_FIELDS.has(m.encoding?.y) &&
-        !LD_FIELDS.has(m.encoding?.text),
+        !ldChannels(m).some(c => PLOTTING_CHANNELS.has(c)),
     )
     .map(withoutLdScales)
   return kept.length > 0 ? kept : undefined

@@ -265,7 +265,7 @@ export function stateModelFactory(
        * pick for the load in flight to make.
        */
       setLdColoring(on: boolean) {
-        if (on === self.conf.marks.some(readsLd)) {
+        if (on === self.ldColored) {
           return
         }
         const marks = on
@@ -275,7 +275,7 @@ export function stateModelFactory(
           setConf(self, 'marks', marks)
         }
         if (on && marks) {
-          self.indexSnp = self.settledTopSnp
+          self.indexSnp = self.settledTopSnp ?? self.indexSnp
         }
       },
     }))

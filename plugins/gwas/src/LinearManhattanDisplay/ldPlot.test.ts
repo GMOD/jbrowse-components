@@ -427,6 +427,23 @@ test('unticking a hand-edited LD plot leaves no mark reading LD', () => {
   ])
 })
 
+test('a point sized by r² ticks the item, and unticking keeps its own size', () => {
+  const { display } = createTestEnvironment({
+    marks: [
+      {
+        mark: 'point',
+        encoding: { y: 'score', size: { field: 'r2', value: 5 } },
+      },
+    ],
+  }).createDisplay()
+  expect(ldItem(display)).toMatchObject({ checked: true })
+  display.setLdColoring(false)
+  expect(display.joinsLd).toBe(false)
+  expect(marksOf(display)).toEqual([
+    { mark: { type: 'point' }, encoding: { y: 'score', size: { value: 5 } } },
+  ])
+})
+
 test('right-click offers LD to a SNP only on a mark that places each SNP', () => {
   const { display } = createTestEnvironment({
     marks: [
