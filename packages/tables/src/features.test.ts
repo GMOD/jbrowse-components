@@ -263,6 +263,26 @@ test('regions of one contig lay out together, a feature on one row in each', asy
   }
 })
 
+test('a feature crossing several regions is labelled once, in its first', async () => {
+  const { region: _, ...args } = GFF3
+  const exons = [
+    { refName: 'ctgA', start: 1000, end: 1600 },
+    { refName: 'ctgA', start: 2900, end: 4000 },
+    { refName: 'ctgA', start: 4900, end: 5600 },
+    { refName: 'ctgA', start: 6900, end: 9100 },
+  ]
+  const t = await engine.features({
+    ...args,
+    regions: exons,
+    bpPerPx: 1,
+    display: NAMES,
+  })
+  const eden = t.labels.text.flatMap((text, i) =>
+    text === 'EDEN' && t.labels.kind[i] === 'name' ? [t.labels.region[i]] : [],
+  )
+  expect(eden).toEqual([0])
+})
+
 test('a zoomed-in CDS carries its residues, lettered once a codon fits them', async () => {
   const region = { refName: 'ctgA', start: 1150, end: 1350 }
   const at = (bpPerPx: number, aminoAcids?: boolean) =>

@@ -6,7 +6,7 @@ import {
   makeSubfeatureInfo,
   packFixtureRects,
 } from './RenderFeatureDataRPC/testUtils.ts'
-import { laidOutTables } from './tables.ts'
+import { displayLabels, laidOutTables } from './tables.ts'
 
 const LABELS = {
   showLabels: true,
@@ -52,12 +52,13 @@ test('a feature the packer could not place leaves every table and is counted', (
       },
     }),
   })
+  const region = { start: 0, end: 1000 }
   const t = laidOutTables(d, {
-    region: { start: 0, end: 1000 },
+    region,
     widthPx: 1000,
     bpPerPx: 1,
     hideChevrons: false,
-    labels: LABELS,
+    labels: displayLabels([region], new Map([[0, d]]), LABELS, 1)[0]!,
   })
   expect(t.truncated).toBe(1)
   expect(t.features.id).toEqual(['kept'])

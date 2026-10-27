@@ -364,7 +364,10 @@ isoforms and row height the browser gives up to fit the track; `heightMode:
   draws one at this zoom (the shaders' `showChevrons` and `arrowDraws`), and
   `glyph` gives the px sizes they draw at.
 - `labels`, each name, description and transcript label the display shows at
-  this zoom, placed by its rule, with `position` in bp.
+  this zoom, placed by its rule, with `position` in bp. A feature crossing
+  several regions gets its labels once, under the first region showing them,
+  since one `forEachDisplayLabel` call over every region de-duplicates them
+  as it does in the display.
 - A gene's marks (`rects`, `lines`, `chevrons`, `arrows`, `aminoAcids`) name
   the transcript they draw in `subfeature`, an index into `subfeatures`, -1
   for a feature's own mark. The worker stamps each child's primitives with

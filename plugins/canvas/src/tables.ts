@@ -517,6 +517,7 @@ export async function featureTables(
     fontSize: stage.dropBelowLabelRows ? 0 : fontSize,
     colors: labelColors(palette),
   }
+  const regionLabels = displayLabels(regions, resolved, labels, bpPerPx)
   const joined = joinRegionTables(
     regions.map((r, i) =>
       laidOutTables(resolved.get(i)!, {
@@ -524,7 +525,7 @@ export async function featureTables(
         widthPx: widthsPx[i]!,
         bpPerPx,
         hideChevrons,
-        labels,
+        labels: regionLabels[i]!,
         sectionOf,
         isHidden,
       }),
@@ -568,12 +569,62 @@ export async function featureTables(
   }
 }
 
+interface TableLabel {
+  featureId: string
+  text: string
+  kind: string
+  position: number
+  y: number
+  color: string
+}
+
+/**
+ * The labels the display shows across `regions` laid end to end, each under
+ * the region `forEachDisplayLabel` emits it from: one call over every region,
+ * as the display makes, so a feature crossing several is labelled once.
+ */
+export function displayLabels(
+  regions: readonly { start: number; end: number }[],
+  dataMap: ReadonlyMap<number, FeatureDataResult>,
+  context: LabelRenderContext,
+  bpPerPx: number,
+) {
+  let screenStartPx = 0
+  const bounds = regions.map((r, displayedRegionIndex) => {
+    const startPx = screenStartPx
+    screenStartPx += (r.end - r.start) / bpPerPx
+    return {
+      start: r.start,
+      end: r.end,
+      screenStartPx: startPx,
+      screenEndPx: screenStartPx,
+      displayedRegionIndex,
+    }
+  })
+  const out = regions.map((): TableLabel[] => [])
+  forEachDisplayLabel(bounds, dataMap, context, (featureId, placed, vr) => {
+    for (const p of placed) {
+      if (p.kind !== 'more') {
+        out[vr.displayedRegionIndex]!.push({
+          featureId,
+          text: p.label.text,
+          kind: p.kind === 'desc' ? 'description' : p.kind,
+          position: vr.start + (p.labelX - vr.screenStartPx) * bpPerPx,
+          y: p.labelY,
+          color: cssColorToHex(p.color),
+        })
+      }
+    }
+  })
+  return out
+}
+
 /**
  * One laid-out region as tables, every `feature` column an index into
  * `features`: the features the packer placed, their boxes, lines, chevrons,
- * arrows and transcripts, and the labels `labels` says render, each feature
- * naming the label `sectionOf` gives it. Pure in `d`, so a test stands a
- * region up without an adapter.
+ * arrows and transcripts, and `labels` (`displayLabels`), each feature naming
+ * the label `sectionOf` gives it. Pure in `d`, so a test stands a region up
+ * without an adapter.
  */
 export function laidOutTables(
   d: FeatureDataResult,
@@ -582,7 +633,7 @@ export function laidOutTables(
     widthPx,
     bpPerPx,
     hideChevrons,
-    labels: labelContext,
+    labels: placed,
     sectionOf,
     isHidden = () => false,
   }: {
@@ -590,7 +641,7 @@ export function laidOutTables(
     widthPx: number
     bpPerPx: number
     hideChevrons: boolean
-    labels: LabelRenderContext
+    labels: readonly TableLabel[]
     sectionOf?: (item: FlatbushItem) => { label: string }
     isHidden?: (item: FlatbushItem) => boolean
   },
@@ -603,45 +654,19 @@ export function laidOutTables(
   const subfeatureIndex = new Map(subfeatures.map((s, i) => [s.featureId, i]))
   const subfeatureOf = subfeatureLookup(d, subfeatures)
   const labels = {
-    text: [] as string[],
-    kind: [] as string[],
-    position: [] as number[],
-    y: [] as number[],
-    color: [] as string[],
-    feature: [] as number[],
-    subfeature: [] as number[],
+    text: placed.map(p => p.text),
+    kind: placed.map(p => p.kind),
+    position: placed.map(p => p.position),
+    y: placed.map(p => p.y),
+    color: placed.map(p => p.color),
+    feature: placed.map(p => {
+      const sub = subfeatureIndex.get(p.featureId)
+      return featureIndex.get(
+        sub === undefined ? p.featureId : subfeatures[sub]!.parentFeatureId,
+      )!
+    }),
+    subfeature: placed.map(p => subfeatureIndex.get(p.featureId) ?? -1),
   }
-  forEachDisplayLabel(
-    [
-      {
-        start: region.start,
-        end: region.end,
-        screenStartPx: 0,
-        screenEndPx: widthPx,
-        displayedRegionIndex: 0,
-      },
-    ],
-    new Map([[0, d]]),
-    labelContext,
-    (featureId, placed) => {
-      for (const p of placed) {
-        if (p.kind !== 'more') {
-          labels.text.push(p.label.text)
-          labels.kind.push(p.kind === 'desc' ? 'description' : p.kind)
-          labels.position.push(region.start + p.labelX * bpPerPx)
-          labels.y.push(p.labelY)
-          labels.color.push(cssColorToHex(p.color))
-          const sub = subfeatureIndex.get(featureId)
-          labels.subfeature.push(sub ?? -1)
-          labels.feature.push(
-            featureIndex.get(
-              sub === undefined ? featureId : subfeatures[sub]!.parentFeatureId,
-            )!,
-          )
-        }
-      }
-    },
-  )
 
   const rects = rows.keep(d.rectFeatureIndices)
   const lines = rows.keep(d.lineFeatureIndices)
