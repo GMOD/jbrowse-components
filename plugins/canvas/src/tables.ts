@@ -872,16 +872,19 @@ type Fields = Record<string, unknown>
  * repeating one of those three replaces it. Any other feature's are its
  * serialized form less the keys JBrowse gives it.
  */
+function isGff3(
+  feature: Feature,
+): feature is Feature & { fileAttributes: () => Record<string, string[]> } {
+  return 'fileAttributes' in feature
+}
+
 function fileFields(feature: Feature): Fields {
-  const gff = feature as Feature & {
-    fileAttributes?: () => Record<string, string[]>
-  }
-  if (gff.fileAttributes) {
+  if (isGff3(feature)) {
     return {
       source: feature.get('source'),
       score: feature.get('score'),
       phase: feature.get('phase'),
-      ...gff.fileAttributes(),
+      ...feature.fileAttributes(),
     }
   }
   const fields: Fields = {}
@@ -1036,7 +1039,7 @@ export async function featureAttributeTables(
     getAutoSqlFields?: () => Promise<AutoSqlField[]>
   }
   const declared: Record<string, FieldDeclaration> = {
-    ...GFF3_COLUMNS,
+    ...(features.some(isGff3) ? GFF3_COLUMNS : {}),
     ...Object.fromEntries(
       ((await autoSql.getAutoSqlFields?.()) ?? []).map(f => [
         f.name,

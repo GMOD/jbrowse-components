@@ -421,6 +421,36 @@ test('features a config writes inline lay out as the same features in a file do'
   expect(fromConfig.missingContigs[0]).toBe('')
 })
 
+test('a field named as a GFF3 column takes no GFF3 declaration outside a GFF3', async () => {
+  const t = await engine.features({
+    adapterConfig: {
+      type: 'FromConfigAdapter',
+      features: [
+        {
+          uniqueId: 'a',
+          refName: 'ctgA',
+          start: 100,
+          end: 200,
+          name: 'A',
+          score: 7,
+          source: 'lab',
+        },
+      ],
+    },
+    region: { refName: 'ctgA', start: 0, end: 1000 },
+    bpPerPx: 1,
+  })
+  const field = (key: string) => {
+    const i = t.attributeFields.key.indexOf(key)
+    return [t.attributeFields.type[i], t.attributeFields.description[i]]
+  }
+  expect(field('score')).toEqual(['Integer', ''])
+  expect(field('source')).toEqual(['String', ''])
+  const gff = await engine.features(GFF3)
+  const i = gff.attributeFields.key.indexOf('source')
+  expect(gff.attributeFields.description[i]).toBe('GFF3 column 2')
+})
+
 test('a whole file reads as every contig it lists, each to its end', async () => {
   const { adapterConfig } = GFF3
   const whole = await engine.fileRegions({ adapterConfig })

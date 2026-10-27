@@ -427,7 +427,8 @@ type FieldValue = true | (string | number | undefined)[] | undefined
  * row lacking a non-flag key, or giving `.`, has null. The keys are the
  * header's, in its order, then any other a row uses, typed as the VCF spec
  * reserves it, else read as a flag where every use is bare and as a
- * `Number=.` string otherwise. `fields` lists each key's declaration.
+ * `Number=.` string otherwise, as is a key every row gives as `.`. `fields`
+ * lists each key's declaration.
  */
 function typedColumns(
   rows: readonly (Record<string, FieldValue> | undefined)[],
@@ -449,7 +450,8 @@ function typedColumns(
   for (const key of keys) {
     const values = rows.map(row => row?.[key])
     const declaration = meta[key]
-    const bare = values.every(v => v === undefined || v === true)
+    const bare =
+      values.includes(true) && values.every(v => v === undefined || v === true)
     const type = String(declaration?.Type ?? (bare ? 'Flag' : 'String'))
     const number = String(declaration?.Number ?? (type === 'Flag' ? 0 : '.'))
     const numeric = type === 'Integer' || type === 'Float'
@@ -674,6 +676,8 @@ function cellDosage(
     const out = new Float32Array(numAlts)
     readAltDosages(genotype, 0, genotype.length, out, 0, numAlts)
     dosage = out.reduce((sum, d) => sum + d, 0) / 2
+  } else if (!/\d/.test(genotype)) {
+    return null
   }
   return Number.isNaN(dosage) ? null : dosage
 }

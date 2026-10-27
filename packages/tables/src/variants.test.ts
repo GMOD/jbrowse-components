@@ -336,6 +336,49 @@ test('a samples file leaving out a VCF sample warns, as the display does', async
   expect(t.warnings[0]).toContain('1 of the 2 samples in the VCF')
 })
 
+test('a no-call at a site with no ALT has no dosage, and an all-missing FORMAT key is no flag', async () => {
+  const dir = mkdtempSync(path.join(tmpdir(), 'noalt-'))
+  const vcf = path.join(dir, 'noalt.vcf')
+  writeFileSync(
+    vcf,
+    [
+      '##fileformat=VCFv4.2',
+      '##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">',
+      '#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\ts1\ts2',
+      'ctgA\t100\t.\tA\t.\t50\tPASS\t.\tGT:XX\t0/0:.\t./.:.',
+      'ctgA\t200\t.\tC\tT\t50\tPASS\t.\tGT:XX\t0/1:.\t1/1:.',
+    ].join('\n'),
+  )
+  const adapterConfig = {
+    type: 'VcfAdapter',
+    vcfLocation: { uri: pathToFileURL(vcf).href },
+  }
+  const region = { refName: 'ctgA', start: 0, end: 1000 }
+  const t = await engine.variants({
+    adapterConfig,
+    region,
+    display: { referenceDrawingMode: 'draw' },
+  })
+  const noAlt = t.variants.start.indexOf(99)
+  const cell = (genotype: string) =>
+    t.cells.dosage[
+      t.cells.genotype.findIndex(
+        (gt, i) => gt === genotype && t.cells.variant[i] === noAlt,
+      )
+    ]
+  expect(cell('0/0')).toBe(0)
+  expect(cell('./.')).toBeNull()
+
+  const { vcf: records } = await engine.features({
+    adapterConfig,
+    region,
+    bpPerPx: 1,
+  })
+  const xx = records!.formatFields.key.indexOf('XX')
+  expect(records!.formatFields.type[xx]).toBe('String')
+  expect(records!.format.XX).toEqual([null, null, null, null])
+})
+
 test('VEP’s CSQ parses under its header’s Format list, one row a consequence', async () => {
   const dir = mkdtempSync(path.join(tmpdir(), 'csq-'))
   const vcf = path.join(dir, 'vep.vcf')
