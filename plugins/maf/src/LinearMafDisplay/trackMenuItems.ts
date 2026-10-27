@@ -221,26 +221,33 @@ function colorMenuItem(self: MafMenuSelf): MenuItem {
   })
 }
 
-/** Why ticked mismatches draw nothing at this zoom, plot or layer. */
-function mismatchesHint(self: MafMenuSelf) {
+/** Why no cells draw for a per-base layer at this zoom or plot. */
+function cellsHint(self: MafMenuSelf) {
   return self.coarseTierActive
     ? ZOOM_IN_FOR_BAND
     : self.rowPlan.mark === 'bar'
       ? 'the X-Y plot draws bars, not cells'
-      : self.rowPlan.bases
-        ? 'the per-base coloring draws in their place'
-        : undefined
+      : undefined
+}
+
+/** Why ticked mismatches draw nothing at this zoom, plot or layer. */
+function mismatchesHint(self: MafMenuSelf) {
+  return (
+    cellsHint(self) ??
+    (self.rowPlan.bases
+      ? 'the per-base coloring draws in their place'
+      : undefined)
+  )
 }
 
 /** Why a ticked per-position layer draws nothing at this zoom or plot. */
 function basesHint(self: MafMenuSelf, field: MafBasesField) {
-  return self.coarseTierActive
-    ? ZOOM_IN_FOR_BAND
-    : self.yField
-      ? 'the X-Y plot draws bars, not cells'
-      : field === 'codon' && !self.zoomedToBaseLevel
-        ? 'zoom in to base level'
-        : undefined
+  return (
+    cellsHint(self) ??
+    (field === 'codon' && !self.zoomedToBaseLevel
+      ? 'zoom in to base level'
+      : undefined)
+  )
 }
 
 function conservationResolutionMenuItems(self: MafMenuSelf): MenuItem[] {

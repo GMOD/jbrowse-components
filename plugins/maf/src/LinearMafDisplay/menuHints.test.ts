@@ -205,6 +205,14 @@ describe('the per-base rows say when the X-Y plot draws bars', () => {
     const { display } = createMafTestEnvironment().createDisplay()
     expect(hintOn(display.trackMenuItems(), 'Every base')).toBeUndefined()
   })
+
+  it('is quiet at base level, where the X-Y plot yields to the cells', () => {
+    const { display, view } = createMafTestEnvironment().createDisplay()
+    zoomAndSettle(view, 0.5)
+    display.setYField('identity')
+    expect(display.rowPlan.mark).toBe('rect')
+    expect(hintOn(display.trackMenuItems(), 'Every base')).toBeUndefined()
+  })
 })
 
 // The CDS strip is the one thing here that can be on, correctly on, and still
