@@ -41,7 +41,7 @@ const SYRI = {
 
 test('a source answering lane pairs on the anchor exports its lanes stacked by structure, as the display stacks them', async () => {
   const stacked = await multiwayTables(engine(['lanePairsOnAnchor']), SYRI)
-  expect(stacked.assemblyNames).toEqual([
+  expect(stacked.lanes.assembly).toEqual([
     'Col-0',
     'Kyo',
     'Sha',
