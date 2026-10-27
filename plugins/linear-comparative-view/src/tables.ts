@@ -3,15 +3,14 @@ import { lowerBoundOf } from '@jbrowse/core/util/fieldPredicate'
 import { measureText } from '@jbrowse/core/util/measureText'
 import { registerComparativeAdapters } from '@jbrowse/plugin-comparative-adapters/tables'
 import {
-  DEFAULT_RIBBON_COLOR,
   FADE_AUTO_MIN_FEATURES,
   attributeColumns,
+  axesNamePositionFor,
   axisNamePosition,
   bandGroundColor,
   cappedMeanWidthPx,
   comparativeAxis,
   comparativeLegend,
-  createComparativeColorFunction,
   fadesThinAt,
   isInstanceInvisible,
   locateCum,
@@ -26,7 +25,10 @@ import {
   drawOffscreenMates,
   offscreenMateColors,
 } from './LinearSyntenyDisplay/drawOffscreenMates.ts'
-import { computeSyntenyColors } from './LinearSyntenyDisplay/syntenyColors.ts'
+import {
+  computeSyntenyColors,
+  createSyntenyColorFunction,
+} from './LinearSyntenyDisplay/syntenyColors.ts'
 import { ribbonThinFade } from './LinearSyntenyDisplay/syntenyRibbonPath.ts'
 import { executeSyntenyFeaturesAndPositions } from './LinearSyntenyRPC/executeSyntenyFeaturesAndPositions.ts'
 import { computePresentCigarKinds } from './LinearSyntenyRPC/presentCigarKinds.ts'
@@ -377,16 +379,10 @@ export async function syntenyTables(
     defaultOpacity: DEFAULT_ALPHA,
     attributeRanges: featureData.attributeRanges,
   })
-  const namePosition =
-    settings.field === 'query'
-      ? axisNamePosition(q)
-      : settings.field === 'target'
-        ? axisNamePosition(t)
-        : undefined
   const colorArgs = {
     field: settings.field,
     trackColor: settings.trackColor,
-    namePosition,
+    namePosition: axesNamePositionFor(settings.field, [q, t]),
     attributeRanges: settings.attributeRanges,
     paint: settings.paint,
     opacity: settings.fade,
@@ -404,13 +400,10 @@ export async function syntenyTables(
     axisGrid: config.axis.grid,
     groundColor: bandGroundColor(),
   })
-  const featureColor = createComparativeColorFunction({
+  const featureColor = createSyntenyColorFunction({
     ...colorArgs,
     data: featureData,
-    defaultColor:
-      settings.valueColor === undefined
-        ? DEFAULT_RIBBON_COLOR
-        : cssColorToABGR(settings.valueColor),
+    valueColor: settings.valueColor,
   })
 
   const n = featureData.featureIds.length

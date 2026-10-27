@@ -430,6 +430,7 @@ export type { SyntenyMate } from './syntenyMate.ts'
 export { DEFAULT_MIN_ALIGNMENT_LENGTH } from './minLengthHelp.ts'
 export {
   attributeColumns,
+  axesNamePositionFor,
   axisNamePosition,
   comparativeAxis,
   comparativeLegend,

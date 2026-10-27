@@ -69,6 +69,28 @@ interface InstanceInputs {
   instanceCount: number
 }
 
+/**
+ * The view's ribbon color function: `createComparativeColorFunction` over
+ * the match block's red, or the view's `color.value` where set.
+ */
+export function createSyntenyColorFunction({
+  valueColor,
+  ...args
+}: Omit<
+  Parameters<typeof createComparativeColorFunction>[0],
+  'defaultColor'
+> & {
+  valueColor?: string
+}) {
+  return createComparativeColorFunction({
+    ...args,
+    defaultColor:
+      valueColor === undefined
+        ? DEFAULT_RIBBON_COLOR
+        : cssColorToABGR(valueColor),
+  })
+}
+
 // Pure function: produce a fresh Uint32Array of packed ABGR colors from
 // per-instance descriptors plus per-feature data and the current color
 // scheme. Called on the main thread whenever the color or featureData
@@ -119,7 +141,7 @@ export function computeSyntenyColors({
   paint?: SyntenyColorPaint
 }) {
   const { kinds, instanceFeatureIdx, instanceCount } = instanceData
-  const colorFn = createComparativeColorFunction({
+  const colorFn = createSyntenyColorFunction({
     field,
     data: featureData,
     trackColor,
@@ -129,10 +151,7 @@ export function computeSyntenyColors({
     opacity,
     filter,
     filterExtras,
-    defaultColor:
-      valueColor === undefined
-        ? DEFAULT_RIBBON_COLOR
-        : cssColorToABGR(valueColor),
+    valueColor,
   })
   const { I: colorI, D: colorD, N: colorN } = buildIndelColors(field)
   const marker = axisGrid ? markerColor(groundColor) : MARKER_COLOR_HIDDEN

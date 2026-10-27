@@ -112,6 +112,22 @@ export function axisNamePosition(axis: ComparativeAxis) {
   return (refName: string) => position.get(refName)
 }
 
+/**
+ * The `RefNamePosition` a chromosome-painting field hands its palette out by,
+ * as `refNamePositionFor` reads it off two axes a host laid out: `query`
+ * reads the first axis's contigs, `target` the second's.
+ */
+export function axesNamePositionFor(
+  field: string | undefined,
+  [query, target]: readonly [ComparativeAxis, ComparativeAxis],
+) {
+  return field === 'query'
+    ? axisNamePosition(query)
+    : field === 'target'
+      ? axisNamePosition(target)
+      : undefined
+}
+
 export type ColorArg = string | Record<string, unknown> | undefined
 export type OpacityArg = number | SyntenyOpacitySnapshot | undefined
 export type FilterArg = readonly FieldPredicate[] | undefined

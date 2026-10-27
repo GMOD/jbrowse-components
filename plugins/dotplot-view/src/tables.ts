@@ -1,13 +1,11 @@
 import { CIGAR_D, CIGAR_I, CIGAR_N } from '@jbrowse/cigar-utils'
-import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { lowerBoundOf } from '@jbrowse/core/util/fieldPredicate'
 import { registerComparativeAdapters } from '@jbrowse/plugin-comparative-adapters/tables'
 import {
   attributeColumns,
-  axisNamePosition,
+  axesNamePositionFor,
   comparativeAxis,
   comparativeLegend,
-  createComparativeColorFunction,
   isInstanceInvisible,
   locateCum,
   liftSyntenyViewSettings,
@@ -16,7 +14,10 @@ import {
   viewColorSettings,
 } from '@jbrowse/synteny-core'
 
-import { computeDotplotColors } from './DotplotDisplay/dotplotColors.ts'
+import {
+  computeDotplotColors,
+  createDotplotColorFunction,
+} from './DotplotDisplay/dotplotColors.ts'
 import { buildLineSegments } from './DotplotDisplay/dotplotGeometry.ts'
 import { executeDotplotFeaturesAndPositions } from './DotplotDisplay/executeDotplotFeaturesAndPositions.ts'
 import { DEFAULT_ALPHA, DEFAULT_LINE_WIDTH } from './DotplotView/consts.ts'
@@ -103,12 +104,7 @@ export async function dotplotTables(
     defaultOpacity: DEFAULT_ALPHA,
     attributeRanges: rpcData.attributeRanges,
   })
-  const namePosition =
-    settings.field === 'query'
-      ? axisNamePosition(h)
-      : settings.field === 'target'
-        ? axisNamePosition(v)
-        : undefined
+  const namePosition = axesNamePositionFor(settings.field, [h, v])
   const instanceData = buildLineSegments(
     rpcData,
     indels.drawing !== 'off',
@@ -135,13 +131,17 @@ export async function dotplotTables(
     filter: { predicates: config.filter, extras: filterExtras },
     valueColor: settings.valueColor,
   })
-  const featureColor = createComparativeColorFunction({
-    ...colorArgs,
-    data: rpcData,
-    defaultColor: cssColorToABGR(settings.valueColor ?? '#000'),
-    filter: config.filter,
-    filterExtras,
-  })
+  const featureColor = createDotplotColorFunction(
+    settings.field,
+    rpcData,
+    settings.trackColor,
+    settings.attributeRanges,
+    namePosition,
+    { predicates: config.filter, extras: filterExtras },
+    settings.valueColor,
+    settings.paint,
+    settings.fade,
+  )
   const level = settings.level
 
   const named = (dict: readonly string[], ids: ArrayLike<number>) =>
