@@ -642,42 +642,17 @@ function checkMarkDisplay(
   }
 }
 
-const ALIGNMENTS_DISPLAY = 'LinearAlignmentsDisplay'
-
-// What the alignments display's corner notice says of its `filter`: an entry
-// on a field it has no reading of, or a test the field does not take, by the
-// rules copied from the plugin (`alignmentsFilterRules/`).
-function checkAlignmentsFilter(
-  display: Record<string, unknown>,
-  manifest: ConfigManifest,
-  where: string,
-  report: Report,
-) {
-  const lifted = liftToSnapshot(
-    display,
-    manifest.displays[ALIGNMENTS_DISPLAY]?.slots ?? [],
-  )
-  if (!isRecord(lifted) || !Array.isArray(lifted.filter)) {
-    return
-  }
-  for (const message of filterProblems(
-    lifted.filter.filter(
-      (entry): entry is FieldPredicate =>
-        isRecord(entry) && typeof entry.field === 'string',
-    ),
-  )) {
-    report.problems.push({
-      level: 'warning',
-      where: `${where}.filter`,
-      message,
-      rule: 'alignments-filter',
-    })
-  }
-}
-
-// Each alignments layer filter and its rules copied from the plugins
-// (`alignmentsLayerRules/`), checked on every display whose schema declares it
-const LAYER_FILTERS = [
+// Each alignments filter and its rules copied from the plugins
+// (`alignmentsFilterRules/`, `alignmentsLayerRules/`), checked on every
+// display whose schema declares it: the reads' `filter` on a display of reads,
+// which declares `pileup`, where other displays' `filter` tests other fields.
+const ALIGNMENTS_FILTERS = [
+  {
+    path: ['filter'],
+    declares: ['pileup'],
+    rule: 'alignments-filter',
+    problems: filterProblems,
+  },
   {
     path: ['coverage', 'interbase', 'filter'],
     problems: interbaseEntryProblems,
@@ -717,10 +692,10 @@ function filterEntriesOf(list: unknown): FieldPredicate[] {
     : []
 }
 
-// What a display's corner notice says of its layer filters: an entry on a
-// field the layer has no reading of, a test the field does not take, or a
+// What a display's corner notice says of its alignments filters: an entry on
+// a field the filter has no reading of, a test the field does not take, or a
 // floor past the field's range.
-function checkLayerFilters(
+function checkAlignmentsFilters(
   display: Record<string, unknown>,
   type: string,
   manifest: ConfigManifest,
@@ -729,8 +704,13 @@ function checkLayerFilters(
 ) {
   const slots = manifest.displays[type]?.slots ?? []
   const lifted = liftToSnapshot(display, slots)
-  for (const { path, problems } of LAYER_FILTERS) {
-    if (declaresSlot(slots, path)) {
+  for (const {
+    path,
+    declares = path,
+    rule = 'alignments-layer-filter',
+    problems,
+  } of ALIGNMENTS_FILTERS) {
+    if (declaresSlot(slots, declares)) {
       const written = path.reduce<unknown>(
         (at, key) => (isRecord(at) ? at[key] : undefined),
         lifted,
@@ -744,7 +724,7 @@ function checkLayerFilters(
             level: 'warning',
             where: at,
             message,
-            rule: 'alignments-layer-filter',
+            rule,
           })
         }
       }
@@ -966,11 +946,8 @@ function checkMarkDisplays(
     if (slots) {
       checkScaleSlots(node, slots, where, report)
     }
-    if (node.type === ALIGNMENTS_DISPLAY) {
-      checkAlignmentsFilter(node, manifest, where, report)
-    }
     if (typeof node.type === 'string') {
-      checkLayerFilters(node, node.type, manifest, where, report)
+      checkAlignmentsFilters(node, node.type, manifest, where, report)
     }
     const trackType = trackTypeOf(node)
     if (trackType && isRecord(node.displayDefaults)) {
@@ -986,15 +963,7 @@ function checkMarkDisplays(
           `${where}.displayDefaults`,
           report,
         )
-        if (display === ALIGNMENTS_DISPLAY) {
-          checkAlignmentsFilter(
-            defaults,
-            manifest,
-            `${where}.displayDefaults`,
-            report,
-          )
-        }
-        checkLayerFilters(
+        checkAlignmentsFilters(
           defaults,
           display,
           manifest,

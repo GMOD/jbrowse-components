@@ -203,6 +203,18 @@ describe('validateConfig', () => {
     ])
   })
 
+  it("warns on a synteny display's read filter entry, as the display does", () => {
+    const config = baseConfig()
+    Object.assign(config.tracks[0]!, {
+      displays: [
+        { type: 'LGVSyntenyDisplay', filter: [{ field: 'nope', equal: 1 }] },
+      ],
+    })
+    expect(warningsOf(config).map(p => `${p.rule} ${p.where}`)).toEqual([
+      'alignments-filter tracks[0].displays[0].filter',
+    ])
+  })
+
   it('accepts a GC content track with no sequenceAdapter at all', () => {
     const config = baseConfig()
     config.tracks[0]!.type = 'QuantitativeTrack'
