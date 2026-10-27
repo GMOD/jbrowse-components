@@ -48,10 +48,10 @@ Claim a step here before starting it.
   too, and `DisplayChrome` wants to own that call. Beta.18 serves
   `DisplayChrome`, the plugin's floor.
 - **The host-compat tooling lives in the plugins.** Eight jb2plugins repos
-  carry `host-compat-probe.mjs`, in five versions. Only the graph plugin
-  carries `hostShim.mjs`, which fails the build on a name the host doesn't
-  serve and stubs a runtime miss with a throw naming it. The plugin templates
-  carry neither script.
+  carry `host-compat-probe.mjs`, in five versions. The graph plugin's
+  `hostShim.mjs`, which fails the build on a name the host doesn't serve and
+  stubs a runtime miss with a throw naming it, is now
+  `@jbrowse/core/ReExports/hostShim`. The plugin templates carry neither.
 
 ## Next
 
@@ -67,7 +67,14 @@ Claim a step here before starting it.
    `useRenderingBackend` only when standalone. `GraphStatusChrome` and its
    overlay imports go. The model's `displayPhase` gains `renderError`, and
    `painted` must cover `geometryPainted`.
-3. **Move `hostShim.mjs`, `fetch-host-names.mjs` and one
-   `host-compat-probe.mjs` into the plugin templates** (or a published build
-   helper), and point the jb2plugins copies at it. That gives every
-   plugin the graph plugin's name check in place of a load-time version gate.
+3. **Point the jb2plugins builds at `@jbrowse/core/ReExports/hostShim`** once
+   a release publishes it (beta.18 does not). Core's copy reads the installed
+   core's names, so the graph plugin drops `hostShim.mjs`,
+   `fetch-host-names.mjs` and its saved host names, and its
+   `host-names-check.mjs` calls `fetchHostNames`. Seventeen others still
+   externalize through `globalExternals` and read undefined for a missing
+   name. `plugins/blat`'s UMD build is the in-tree consumer.
+4. **Update the plugin templates**, which still build against core 4.x with
+   `globalExternals`, onto `hostShim`. A generic `host-compat-probe.mjs`
+   (boot hosted releases, fail on a plugin load failure) can go in with them;
+   each jb2plugins probe also draws its own tracks, which stays per plugin.

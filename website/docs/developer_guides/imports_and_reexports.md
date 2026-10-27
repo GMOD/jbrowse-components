@@ -158,6 +158,33 @@ yourself; what it does mean is that a plugin rebuilt against a newer
 `@jbrowse/core` externalizes whatever that version's list names, and needs a
 host at least that new.
 
+### Checking imports against the host
+
+`@jbrowse/core/ReExports/hostShim` is an esbuild plugin that does the
+externalizing and checks each import by name:
+
+- importing a name the installed `@jbrowse/core` does not serve fails the build
+  at that line
+- on an older host that lacks a name, the plugin throws an error naming it on
+  first use
+
+```js
+import { hostShim } from '@jbrowse/core/ReExports/hostShim'
+import * as esbuild from 'esbuild'
+
+await esbuild.build({
+  entryPoints: ['src/index.ts'],
+  bundle: true,
+  format: 'esm',
+  outdir: 'dist',
+  plugins: [hostShim({ pluginName: 'MyPlugin' })],
+})
+```
+
+The installed `@jbrowse/core` is the oldest host the plugin supports. To find an
+import a newer host dropped, build with `write: false` against that host's
+names: `hostShim({ pluginName, names: await fetchHostNames('main') })`.
+
 ### What your tsconfig needs
 
 `@jbrowse/core` addresses its subpaths through an `exports` map, which

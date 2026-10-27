@@ -128,10 +128,10 @@ can prove an external plugin does not use it. By leverage:
    the published set every exports-map subpath.
 2. **Fail loud at load time.** A version gate cannot do it without false alarms:
    a plugin built on one beta runs on later hosts (ARG, beta.4 on beta.18), so
-   a gate would warn on or refuse plugins that work. The graph plugin's
-   `hostShim.mjs` checks names instead. Its build fails on a name its host
-   floor does not serve, and its bundle throws naming the export when an
-   older host lacks one.
+   a gate would warn on or refuse plugins that work. Core's
+   `ReExports/hostShim` esbuild plugin checks names instead. A build fails on
+   a name the installed `@jbrowse/core` does not serve, and the bundle throws
+   naming the export when an older host lacks one.
 3. **Instrument deprecations with a warning getter.** Not built, and only worth
    it to accelerate a removal, since telemetry sees only observed deployments.
 4. **Make the blessed extension points good enough that nobody reaches into
