@@ -3,6 +3,8 @@ import { lazy } from 'react'
 import {
   HistoryManagementMixin,
   RootAppMenuMixin,
+  aboutMenuItem,
+  helpMenuItem,
   processMutableMenuActions,
   summarizeSession,
 } from '@jbrowse/app-core'
@@ -526,16 +528,14 @@ export default function rootModelFactory({
                   },
                 ],
               },
-              // The native menu bar that carries these exists on macOS alone
-              // (electron/window.ts sets it to null elsewhere), so on Windows
-              // and Linux there was no manual update check and no way to reach
-              // the MCP setup text, which is built from this install's own
-              // paths and so cannot be looked up. The links that menu also has
-              // are already in app-core's Help widget, which appends below
-              // these — hence the divider.
+              // The native menu bar exists on macOS alone (electron/window.ts
+              // sets it to null elsewhere), so on Windows and Linux these are
+              // the only route to the update check and the MCP setup text.
               {
                 label: 'Help',
                 menuItems: () => [
+                  aboutMenuItem(),
+                  helpMenuItem(),
                   {
                     label: 'Check for updates...',
                     icon: UpdateIcon,
@@ -556,7 +556,6 @@ export default function rootModelFactory({
                       })
                     },
                   },
-                  { type: 'divider' },
                 ],
               },
             ],

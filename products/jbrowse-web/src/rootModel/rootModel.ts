@@ -3,6 +3,8 @@ import { lazy } from 'react'
 import {
   HistoryManagementMixin,
   RootAppMenuMixin,
+  aboutMenuItem,
+  helpMenuItem,
   processMutableMenuActions,
 } from '@jbrowse/app-core'
 import assemblyConfigSchemaFactory from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
@@ -556,6 +558,10 @@ export default function RootModel({
 
               preferencesMenuItem(pluginManager),
             ],
+          },
+          {
+            label: 'Help',
+            menuItems: () => [aboutMenuItem(), helpMenuItem()],
           },
         ]
 

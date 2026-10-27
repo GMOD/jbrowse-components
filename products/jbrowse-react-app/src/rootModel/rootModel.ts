@@ -1,6 +1,8 @@
 import {
   JBrowseModelF,
   RootAppMenuMixin,
+  aboutMenuItem,
+  helpMenuItem,
   processMutableMenuActions,
 } from '@jbrowse/app-core'
 import assemblyConfigSchemaFactory from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
@@ -194,6 +196,10 @@ export default function RootModel({
             {
               label: 'Tools',
               menuItems: () => [preferencesMenuItem(pluginManager)],
+            },
+            {
+              label: 'Help',
+              menuItems: () => [aboutMenuItem(), helpMenuItem()],
             },
           ],
           self.mutableMenuActions,

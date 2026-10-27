@@ -31,8 +31,8 @@ function saveCount() {
 
 // The app's own order (see pluginManagers.tsx): configure() comes after the
 // root model exists and has been handed to the manager, because a plugin's
-// configure reads pluginManager.rootModel — that is how AppWidgetsPlugin adds its
-// items to the Help menu, and configuring first left them off entirely.
+// configure reads pluginManager.rootModel to add its menu items, and
+// configuring first left them off entirely.
 function createRootModel() {
   const pluginManager = new PluginManager(corePlugins.map(P => new P()))
   pluginManager.createPluggableElements()
@@ -130,46 +130,23 @@ test('flushSession reports a failed save rather than rejecting', async () => {
   expect(root.session.snackbarMessages.length).toBe(1)
 })
 
-// The native Help menu that carries these is macOS-only, so on Windows and
-// Linux they are the only route to either. AppWidgetsPlugin contributes About and
-// Help into the same menu, so the merge is what is worth pinning: a second
-// "Help" menu, or an item landing in the wrong one, takes them off the bar
-// without anything failing.
-test('both items sit above the plugin contributions in Help', () => {
+// The native Help menu is macOS-only, so on Windows and Linux this menu is the
+// only route to the update check and the MCP setup text, which the main process
+// builds from this install's own execPath and app path.
+test('Help holds the app items, then two the main process acts on', () => {
   const root = createRootModel()
   const help = root.menus().filter(m => m.label === 'Help')
-
   expect(help.length).toBe(1)
-  expect(
-    help[0]!
-      .menuItems()
-      .map(item => ('label' in item ? item.label : item.type)),
-  ).toEqual([
-    'Check for updates...',
-    'Connect an AI agent...',
-    'divider',
-    'About',
-    'Help',
-  ])
-})
 
-// Both items are the main process doing something the renderer cannot: the
-// update check, and the MCP setup text, which is built from this install's own
-// execPath and app path.
-test('the Help items ask the main process to act', () => {
-  const root = createRootModel()
-  const items = root
-    .menus()
-    .find(m => m.label === 'Help')!
-    .menuItems()
-
+  const items = help[0]!.menuItems()
+  expect(items.map(item => ('label' in item ? item.label : item.type))).toEqual(
+    ['About', 'Help', 'Check for updates...', 'Connect an AI agent...'],
+  )
   for (const [index, channel] of [
-    'checkForUpdates',
-    'showConnectAgent',
-  ].entries()) {
+    [2, 'checkForUpdates'],
+    [3, 'showConnectAgent'],
+  ] as const) {
     const item = items[index]
-    // narrowed rather than asserted: a divider reaching the front of this menu
-    // is what the test above is about, and it should say so here too
     if (!item || !('onClick' in item)) {
       throw new Error(`Help item ${index} is not clickable: ${item?.type}`)
     }
