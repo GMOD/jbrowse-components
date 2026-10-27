@@ -1130,7 +1130,7 @@ const markStep: FieldRecipe = (value, context) => {
       : typeof mark?.height === 'number'
         ? readSizeStep(mark.height, context)
         : undefined
-  const steps = [shape, extent].filter(s => s !== undefined)
+  const steps = [shape, extent].flat().filter(s => s !== undefined)
   return steps.length > 1 ? steps : steps[0]
 }
 
