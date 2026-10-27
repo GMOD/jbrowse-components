@@ -3,6 +3,7 @@ import {
   fileToLocation,
   getEnv,
   getFileName,
+  isElectron,
   makeTrackId,
 } from '@jbrowse/core/util'
 import {
@@ -145,12 +146,17 @@ function classifyLocation(
   }
 }
 
-// Two or more scheme characters, so a Windows drive letter reads as a path,
-// where `#` and `?` are part of the filename.
-function pastedLocation(item: string): FileLocation {
-  return /^[a-z][a-z\d+.-]+:/i.test(item)
-    ? { uri: item, locationType: 'UriLocation' }
-    : { localPath: item, locationType: 'LocalPathLocation' }
+/**
+ * Where a pasted string points, for its row name and its fetch alike: a URL
+ * where it has a scheme, and otherwise a local path on Desktop, where `#` and
+ * `?` belong to the filename, or a URL relative to the page on the web, as
+ * core's URL box reads it. A scheme takes two or more characters, so a
+ * Windows drive letter reads as a path.
+ */
+export function pastedLocation(item: string, local = isElectron): FileLocation {
+  return local && !/^[a-z][a-z\d+.-]+:/i.test(item)
+    ? { localPath: item, locationType: 'LocalPathLocation' }
+    : { uri: item, locationType: 'UriLocation' }
 }
 
 export function itemToName(item: TrackItem) {
@@ -162,11 +168,7 @@ export function itemToName(item: TrackItem) {
 export function classifyItem(item: TrackItem, guessers: Guessers) {
   const name = itemToName(item)
   if (typeof item === 'string') {
-    return classifyLocation(
-      { uri: item, locationType: 'UriLocation' },
-      name,
-      guessers,
-    )
+    return classifyLocation(pastedLocation(item), name, guessers)
   }
   const { type, uri, ...rest } = item
   if (type === undefined && typeof uri === 'string') {

@@ -10,6 +10,7 @@ import {
   canSubmit,
   classifyFile,
   classifyItem,
+  pastedLocation,
   itemToName,
   parseItems,
   sessionGuessers,
@@ -82,9 +83,8 @@ describe('itemToName', () => {
     expect(itemToName('https://example.com/x.bw?v=1.2')).toBe('x')
   })
 
-  it('keeps a # in a pasted local path, which a filename may hold', () => {
-    expect(itemToName('/data/sample#2.bw')).toBe('sample#2')
-    expect(itemToName('C:\\data\\sample#2.bw')).toBe('sample#2')
+  it('names a pasted path on the web as the URL it fetches, # a fragment', () => {
+    expect(itemToName('/data/sample#2.bw')).toBe('sample')
     expect(itemToName('https://example.com/sample.bw#frag')).toBe('sample')
   })
 
@@ -167,6 +167,33 @@ describe('classifyItem', () => {
   it('refuses a pasted config whose type no plugin registers', () => {
     expect(classifyItem({ type: 'NopeAdapter' }, guessers())).toMatchObject({
       reason: 'unknown adapter type "NopeAdapter"',
+    })
+  })
+})
+
+describe('pastedLocation', () => {
+  it('reads a path with no scheme as a local file on Desktop, where # is part of its name', () => {
+    expect(pastedLocation('/data/run#2/sample.bw', true)).toEqual({
+      localPath: '/data/run#2/sample.bw',
+      locationType: 'LocalPathLocation',
+    })
+    expect(pastedLocation('C:\\data\\a#b.bw', true)).toMatchObject({
+      locationType: 'LocalPathLocation',
+    })
+    expect(pastedLocation('https://host/a.bw', true)).toMatchObject({
+      locationType: 'UriLocation',
+    })
+  })
+
+  // the # starts the URL's fragment, so the row cannot name a file it would
+  // not fetch
+  it('reads it as a URL on the web, where a # cuts the path short', () => {
+    expect(pastedLocation('/data/run#2/sample.bw', false)).toMatchObject({
+      locationType: 'UriLocation',
+    })
+    expect(classifyItem('/data/sample#1.bw', guessers())).toEqual({
+      name: 'sample',
+      reason: 'not a file format JBrowse recognizes',
     })
   })
 })
