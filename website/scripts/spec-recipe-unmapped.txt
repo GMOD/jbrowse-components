@@ -12,6 +12,7 @@ encoding.color
 encoding.opacity
 geneTrackId
 height
+labels
 layers
 loadedRegion
 loadedTrackId

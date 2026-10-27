@@ -103,7 +103,6 @@ From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`sc
 | <span id="getter-hideunlabelled">**hideUnlabelled**</span><br><code>boolean</code> | whether `ribbons.filter` drops the ribbons with no value for the field they paint by, the "Hide unlabelled rows" box |
 | <span id="getter-interpolate">**interpolate**</span><br><code>"bump" &#124; "linear"</code> | The curve every ribbon side takes, `ribbons.mark.interpolate`. |
 | <span id="getter-showlaneticks">**showLaneTicks**</span><br><code>boolean</code> |  |
-| <span id="getter-splitstrands">**splitStrands**</span><br><code>boolean</code> |  |
 | <span id="getter-showgenelabels">**showGeneLabels**</span><br><code>boolean</code> |  |
 | <span id="getter-genetextfield">**geneTextField**</span><br><code>string</code> | `labels.name.field`: a field or a jexl expression, empty for no name |
 | <span id="getter-inlinelanenames">**inlineLaneNames**</span><br><code>boolean</code> |  |
@@ -315,7 +314,6 @@ From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`rendering
 | <span id="action-sethideunlabelled">**setHideUnlabelled**</span><br><code>(flag: boolean) =&gt; void</code> |  |
 | <span id="action-setinterpolate">**setInterpolate**</span><br><code>(interpolate: "bump" &#124; "linear") =&gt; void</code> |  |
 | <span id="action-setshowlaneticks">**setShowLaneTicks**</span><br><code>(flag: boolean) =&gt; void</code> |  |
-| <span id="action-setsplitstrands">**setSplitStrands**</span><br><code>(flag: boolean) =&gt; void</code> |  |
 | <span id="action-setinlinelanenames">**setInlineLaneNames**</span><br><code>(flag: boolean) =&gt; void</code> |  |
 | <span id="action-setshowgenelabels">**setShowGeneLabels**</span><br><code>(flag: boolean) =&gt; void</code> |  |
 | <span id="action-setgenetextfield">**setGeneTextField**</span><br><code>(field: string) =&gt; void</code> |  |

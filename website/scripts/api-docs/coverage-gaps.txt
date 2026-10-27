@@ -48,7 +48,7 @@ Dotplot1DView
 LinearSyntenyViewHelper
 TimeTraveller
 
-# model members with no description (1290)
+# model members with no description (1287)
 # fix: write a sentence under the member’s #property/#volatile/#getter/#method/#action tag
 AddTrackModel.adapterHint
 AddTrackModel.altAssemblyName
@@ -861,7 +861,6 @@ LinearManhattanDisplay.trackMenuItems
 LinearMarkDisplay.contextMenuItems
 LinearMarkDisplay.detailsRotation
 LinearMarkDisplay.domain
-LinearMarkDisplay.minWidthPx
 LinearMarkDisplay.origin
 LinearMarkDisplay.plotDefaultChecked
 LinearMarkDisplay.plotFields
@@ -1134,12 +1133,10 @@ MultiWaySyntenyDisplay.setRibbonColorDomain
 MultiWaySyntenyDisplay.setRibbonColorField
 MultiWaySyntenyDisplay.setShowGeneLabels
 MultiWaySyntenyDisplay.setShowLaneTicks
-MultiWaySyntenyDisplay.setSplitStrands
 MultiWaySyntenyDisplay.showGeneLabels
 MultiWaySyntenyDisplay.showHiddenLanes
 MultiWaySyntenyDisplay.showLane
 MultiWaySyntenyDisplay.showLaneTicks
-MultiWaySyntenyDisplay.splitStrands
 MultiWaySyntenyDisplay.starAnchor
 MultiWaySyntenyDisplay.startRenderingBackend
 MultiWaySyntenyDisplay.tickGeometry

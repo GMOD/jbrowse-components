@@ -9,8 +9,8 @@ Auto-generated from the config schema in the source — see the [config guide](/
 
 The feature displays' `labels.name`, the name drawn beside each feature:
 whether it `show`s, and the `field` it reads. A bare string is the field.
-Shown names still hide where the on-screen feature density passes
-`maxLabelFeatureDensity`.
+Shown names still hide where features crowd the screen, except gene names
+while the genes alone have room.
 
 ## Example usage
 
