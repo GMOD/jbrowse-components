@@ -81,10 +81,10 @@ once per display that embeds it, so read the trend, not the size.
      re-pin.
    - ggjbrowse: re-pin the bundled `inst/js/jbrowse-tables.js`.
 4. **Plugin ABI.** The served list leaves out render-core's shader subpaths.
-   Left: baseline `reExports.generated.json` and the exports map at the
-   release candidate (`reference/PLUGIN_ABI_STABILITY.md`), and Colin's call
-   on whether `@jbrowse/tables` and `@jbrowse/launch-args` ship at 5.0.0 or
-   0.x.
+   `@jbrowse/tables` and `@jbrowse/launch-args` ship with v5 at its version,
+   betas included (Colin, 2026-10-27). Left: baseline
+   `reExports.generated.json` and the exports map at the release candidate
+   (`reference/PLUGIN_ABI_STABILITY.md`).
 
 ## Release candidate gates
 
