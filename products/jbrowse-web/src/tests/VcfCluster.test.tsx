@@ -13,6 +13,8 @@ import {
   volvoxConfigWithTracks,
 } from './util.tsx'
 
+import type { LinearMultiSampleVariantDisplayModel } from '@jbrowse/plugin-variants'
+
 setup()
 
 // only the track this suite opens, so createView doesn't mount a
@@ -57,7 +59,9 @@ test('opens a vcf track and clusters genotypes', async () => {
   fireEvent.click(elt)
 
   await waitFor(() => {
-    expect(view.tracks[0].displays[0].hierarchy).toBeTruthy()
+    const display = view.tracks[0]!
+      .displays[0] as LinearMultiSampleVariantDisplayModel
+    expect(display.hierarchy).toBeTruthy()
   }, delay)
 
   await findDisplayPainted('variant-matrix-display', delay)

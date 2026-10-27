@@ -67,7 +67,7 @@ export interface RingHostView {
   displayedRegions: Region[]
   staticSlices: Slice[]
   assemblyNames: string[]
-  tracks: { displays: RingDisplay[] }[]
+  tracks: { displays: { id: string; type: string }[] }[]
 }
 
 /** One ring: a display and the annulus it is drawn on, in CSS px. */

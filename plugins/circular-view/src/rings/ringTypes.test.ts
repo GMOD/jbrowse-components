@@ -5,11 +5,14 @@ import { RING_GAP_PX, ringAxisTicks } from './ringHost.ts'
 
 import type { CircularViewModel } from '../CircularView/model.ts'
 import type { RingDisplay } from './ringHost.ts'
+import type { DisplayModel } from '@jbrowse/core/pluggableElementTypes/models'
 import type { MenuItem } from '@jbrowse/core/ui'
 
 jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
 
 const TWO_PI = 2 * Math.PI
+
+type HostedRingDisplay = DisplayModel & RingDisplay
 
 function subMenuOf(items: MenuItem[], label: string) {
   const item = items.find(i => 'label' in i && i.label === label)
@@ -81,7 +84,7 @@ async function ringTestSession(
     await session.assemblyManager.waitForAssembly(name)
   }
   await when(() => view.tracks.length > 0)
-  const display = view.tracks[0]!.displays[0] as RingDisplay & {
+  const display = view.tracks[0]!.displays[0]! as HostedRingDisplay & {
     host: unknown
     canvasWidthPx: number
     loadedRegions: ReadonlyMap<number, unknown>
@@ -401,7 +404,7 @@ test("a ring repainting or resizing leaves the other ring's cell as it was", asy
   })
   await view.launchTrack('ring2')
   const host = view.ringHost
-  const second = view.tracks[1]!.displays[0] as RingDisplay & {
+  const second = view.tracks[1]!.displays[0]! as HostedRingDisplay & {
     markCanvasDrawn: () => void
     setHeight: (height: number) => void
   }

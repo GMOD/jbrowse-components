@@ -45,6 +45,7 @@ import type { MenuItem } from '@jbrowse/core/ui'
 import type { Feature } from '@jbrowse/core/util'
 import type { AlignmentData } from '@jbrowse/core/util/diagonalizeRegions'
 import type { Region } from '@jbrowse/core/util/types'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { AttributeRange } from '@jbrowse/synteny-core'
 
 // what a ribbon paints under the view's default mode, at the view's `encoding.opacity`
@@ -686,5 +687,9 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
       },
     }))
 }
+
+export interface ChordSyntenyDisplayModel extends Instance<
+  ReturnType<typeof stateModelFactory>
+> {}
 
 export default stateModelFactory

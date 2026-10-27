@@ -2,8 +2,6 @@ import { trackBoxHeight } from '@jbrowse/plugin-linear-genome-view'
 
 import { getTrackOffsets } from './util.ts'
 
-// only the fields the offset math reads; the real MST track is a pluggable
-// union TS widens to `any`, so a plain object drives this fine
 function track(trackId: string, height: number, prefersOffset?: boolean) {
   return { configuration: { trackId }, displays: [{ height, prefersOffset }] }
 }

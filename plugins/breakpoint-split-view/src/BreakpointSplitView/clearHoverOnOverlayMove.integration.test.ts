@@ -2,6 +2,9 @@ import { createTestSession } from '@jbrowse/web/testUtils'
 import { when } from 'mobx'
 
 import type { BreakpointViewModel } from './model.ts'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+
+type LgvDisplay = LinearGenomeViewModel['tracks'][number]['activeDisplay']
 
 jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
 
@@ -139,8 +142,7 @@ test('a track above the overlay track growing clears it, one below does not', as
       view.views[1]!.tracks.length === 3,
   )
   const display = (level: number, trackId: string) =>
-    view.views[level]!.getTrack(trackId)!.displays[0]! as {
-      height: number
+    view.views[level]!.getTrack(trackId)!.displays[0]! as LgvDisplay & {
       setHeight: (n: number) => void
     }
 

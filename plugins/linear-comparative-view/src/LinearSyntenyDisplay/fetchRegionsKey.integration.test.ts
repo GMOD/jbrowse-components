@@ -11,6 +11,7 @@ import { when } from 'mobx'
 import { emptyOffscreenMates } from '../LinearSyntenyRPC/collectOffscreenMates.ts'
 
 import type { LinearSyntenyViewModel } from '../LinearSyntenyView/model.ts'
+import type { LinearSyntenyDisplayModel } from './model.ts'
 
 jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
 
@@ -64,10 +65,11 @@ async function openSynteny() {
     () => view.views.length > 0 && view.views.every(v => v.initialized),
   )
   await when(() => view.levels[0]?.tracks.length === 1, { timeout: 5000 })
-  const track = view.levels[0]!.tracks[0] as {
-    displays: { fetchRegionsKey: string | undefined }[]
+  return {
+    view,
+    display: view.levels[0]!.tracks[0]!
+      .displays[0]! as LinearSyntenyDisplayModel,
   }
-  return { view, display: track.displays[0]! }
 }
 
 test('a pan of the lower row past its buffer moves the key with the bidirectional fetch off', async () => {

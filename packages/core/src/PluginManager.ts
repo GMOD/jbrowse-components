@@ -26,6 +26,8 @@ import type TrackType from './pluggableElementTypes/TrackType.ts'
 import type ViewType from './pluggableElementTypes/ViewType.ts'
 import type WidgetType from './pluggableElementTypes/WidgetType.ts'
 import type { PluggableElementType } from './pluggableElementTypes/index.ts'
+import type { DisplayModel } from './pluggableElementTypes/models/BaseDisplayModel.tsx'
+import type { TrackModelOf } from './pluggableElementTypes/models/BaseTrackModel.ts'
 // Side-effect type imports, for the augmentations rather than for a name. Every
 // plugin's `install`/`configure` takes a PluginManager, so a declaration this
 // module pulls in is one every plugin's program contains — and a registry
@@ -54,6 +56,7 @@ import type {
   AbstractSessionModel,
   SimpleFeatureSerialized,
 } from './util/index.ts'
+import type { DisplaySnapshot, TrackSnapshot } from './util/tracks.ts'
 /* eslint-enable unicorn/require-module-specifiers */
 import type {
   IAnyModelType,
@@ -70,6 +73,18 @@ import type { ComponentType, ReactNode } from 'react'
  * itself by; a member's other slots read through `getConf`.
  */
 export type PluggableConfigSchemaType = IType<any, any, PluggableConfigNode>
+
+/**
+ * A typed `pluggableMstType(group, 'stateModel')` union, whose member reads as
+ * the base model every registered member composes. What it creates from stays
+ * `unknown`: which members a union holds is only known at runtime, and
+ * `replaceDisplay` writes a partial snapshot.
+ */
+export type PluggableStateModelUnion<NODE, SNAPSHOT> = IType<
+  unknown,
+  SNAPSHOT,
+  NODE
+>
 
 /**
  * Every pluggable element group, in the order `elementCreationSchedule` builds
@@ -974,11 +989,24 @@ export default class PluginManager {
    * Membership is late-bound, so a lazily registered state model joins when
    * its loader resolves; a snapshot naming one cannot be cast until then.
    */
+  pluggableMstType<DISPLAY extends DisplayModel = DisplayModel>(
+    groupName: 'track',
+    fieldName: 'stateModel',
+  ): PluggableStateModelUnion<TrackModelOf<DISPLAY>, TrackSnapshot>
+  pluggableMstType(
+    groupName: 'display',
+    fieldName: 'stateModel',
+  ): PluggableStateModelUnion<DisplayModel, DisplaySnapshot>
+  pluggableMstType(
+    groupName: PluggableElementTypeGroup,
+    fieldName: string,
+    fallback?: IAnyType,
+  ): IAnyType
   pluggableMstType(
     groupName: PluggableElementTypeGroup,
     fieldName: string,
     fallback: IAnyType = types.maybe(types.null),
-  ) {
+  ): IAnyType {
     const record = this.getElementTypeRecord(groupName)
     const fieldOf = (t: PluggableElementBase) =>
       isUnloadedLazyElement(t)

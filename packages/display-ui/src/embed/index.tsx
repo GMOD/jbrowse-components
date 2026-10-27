@@ -37,8 +37,10 @@ export { NavButton, Toolbar } from './toolbar.tsx'
 
 export interface EmbedDisplay {
   height: number
+  // `never`, so a display whose component takes its own model type still fits;
+  // `Track` hands it back the display it came from
   RenderingComponent: React.ComponentType<{
-    model: EmbedDisplay
+    model: never
     onHorizontalScroll?: (distance: number) => void
   }>
 }
@@ -67,7 +69,7 @@ export const Track = observer(function Track({
       <div style={{ position: 'absolute', inset: 0, contain: 'strict' }}>
         <Suspense fallback={null}>
           <RenderingComponent
-            model={display}
+            model={display as never}
             onHorizontalScroll={view.horizontalScroll}
           />
         </Suspense>

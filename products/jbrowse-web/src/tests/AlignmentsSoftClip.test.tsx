@@ -11,6 +11,8 @@ import {
   volvoxConfigWithTracks,
 } from './util.tsx'
 
+import type { LinearAlignmentsDisplayModel } from '@jbrowse/plugin-alignments'
+
 setup()
 
 // only the track this suite opens, so createView doesn't mount a
@@ -41,8 +43,10 @@ test('opens the track menu and enables soft clipping', async () => {
   // wait for data to be re-fetched with soft clipping enabled
   await waitFor(
     () => {
-      const d = view.tracks[0]?.displays[0]
-      expect(d?.rpcDataMap?.size).toBeGreaterThan(0)
+      const d = view.tracks[0]?.displays[0] as
+        | LinearAlignmentsDisplayModel
+        | undefined
+      expect(d?.rpcDataMap.size).toBeGreaterThan(0)
     },
     { timeout: 30000 },
   )

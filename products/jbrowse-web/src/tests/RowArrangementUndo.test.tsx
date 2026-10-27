@@ -11,6 +11,8 @@ import {
 } from './util.tsx'
 
 import type { WebRootModel } from '../rootModel/rootModel.ts'
+import type { LinearDisplayModel } from '@jbrowse/display-kit/types'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type { LinearMultiSampleVariantDisplayModel } from '@jbrowse/plugin-variants'
 import type { LinearWiggleDisplayModel } from '@jbrowse/plugin-wiggle/LinearWiggleDisplay/stateModel'
 
@@ -55,7 +57,7 @@ test('a row reorder lands in the session at once and stays undone across the def
   view.setNewView(5, 0)
   fireEvent.click(await findByTestId(hts(TRACK_ID), {}, delay))
   await findDisplayPainted('wiggle-display', delay)
-  const display: LinearWiggleDisplayModel = view.tracks[0]!.displays[0]
+  const display = view.tracks[0]!.displays[0] as LinearWiggleDisplayModel
   await waitFor(() => {
     expect(display.discoveredRows).toHaveLength(2)
   }, delay)
@@ -78,7 +80,7 @@ test('a row reorder lands in the session at once and stays undone across the def
   expect(rowsDomainInDelta(session.trackConfigDeltas[TRACK_ID])).toBeUndefined()
   await sleep(500)
   expect(rowsDomainInDelta(session.trackConfigDeltas[TRACK_ID])).toBeUndefined()
-  const undone: LinearWiggleDisplayModel = view.tracks[0]!.displays[0]
+  const undone = view.tracks[0]!.displays[0] as LinearWiggleDisplayModel
   expect(undone.rowSort).toEqual([])
   expect(undone.sources.map(s => s.name)).toEqual(['k1', 'k2'])
 }, 60000)
@@ -91,8 +93,8 @@ test('a variant row reorder lands in the session at once and undoes', async () =
   })
   const { history } = rootModel as WebRootModel
   await findDisplayPainted('variant-display', delay)
-  const display: LinearMultiSampleVariantDisplayModel =
-    view.tracks[0]!.displays[0]
+  const display = view.tracks[0]!
+    .displays[0] as LinearMultiSampleVariantDisplayModel
   await waitFor(() => {
     expect(display.sources.length).toBeGreaterThan(2)
   }, delay)
@@ -118,8 +120,8 @@ test('a variant row reorder lands in the session at once and undoes', async () =
   expect(
     rowsDomainInDelta(session.trackConfigDeltas.volvox_test_vcf, displayId),
   ).toBeUndefined()
-  const undone: LinearMultiSampleVariantDisplayModel =
-    view.tracks[0]!.displays[0]
+  const undone = view.tracks[0]!
+    .displays[0] as LinearMultiSampleVariantDisplayModel
   expect(undone.rowSort).toEqual([])
   expect(undone.sources.map(s => s.name)).toEqual(before)
 }, 60000)
@@ -133,6 +135,10 @@ interface MultiRowDisplay {
   setRowOrder: (rows: { name: string }[]) => void
 }
 
+function multiRowDisplay(view: LinearGenomeViewModel) {
+  return view.tracks[0]!.displays[0] as MultiRowDisplay & LinearDisplayModel
+}
+
 // The same on the multi-row feature display, whose rows are the values of a
 // feature attribute rather than subtracks or samples.
 test('a multi-row reorder lands in the session at once and undoes', async () => {
@@ -144,7 +150,7 @@ test('a multi-row reorder lands in the session at once and undoes', async () => 
   view.setNewView(50, 0)
   fireEvent.click(await findByTestId(hts(PAINTING), {}, delay))
   await findDisplayPainted('mark-display', delay)
-  const display: MultiRowDisplay = view.tracks[0]!.displays[0]
+  const display = multiRowDisplay(view)
   await waitFor(() => {
     expect(display.sources.length).toBeGreaterThan(2)
   }, delay)
@@ -170,7 +176,7 @@ test('a multi-row reorder lands in the session at once and undoes', async () => 
   expect(
     rowsDomainInDelta(session.trackConfigDeltas[PAINTING], displayId),
   ).toBeUndefined()
-  const undone: MultiRowDisplay = view.tracks[0]!.displays[0]
+  const undone = multiRowDisplay(view)
   expect(undone.rowSort).toEqual([])
   expect(undone.sources.map(s => s.name)).toEqual(before)
 }, 60000)
@@ -178,6 +184,10 @@ test('a multi-row reorder lands in the session at once and undoes', async () => 
 // The MAF display's model type is not a published export either.
 interface MafDisplay extends MultiRowDisplay {
   rowTree: string | undefined
+}
+
+function mafDisplay(view: LinearGenomeViewModel) {
+  return view.tracks[0]!.displays[0] as MafDisplay & LinearDisplayModel
 }
 
 // The same on the MAF display, whose rows are species and whose adapter
@@ -193,7 +203,7 @@ test('a MAF reorder lands in the session at once and undoes', async () => {
   view.setNewView(5, 0)
   fireEvent.click(await findByTestId(hts(MAF), {}, delay))
   await findDisplayPainted('maf-display', delay)
-  const display: MafDisplay = view.tracks[0]!.displays[0]
+  const display = mafDisplay(view)
   await waitFor(() => {
     expect(display.sources.length).toBeGreaterThan(2)
     expect(display.rowTree).toBeDefined()
@@ -221,7 +231,7 @@ test('a MAF reorder lands in the session at once and undoes', async () => {
   expect(
     rowsDomainInDelta(session.trackConfigDeltas[MAF], displayId),
   ).toBeUndefined()
-  const undone: MafDisplay = view.tracks[0]!.displays[0]
+  const undone = mafDisplay(view)
   expect(undone.rowSort).toEqual([])
   expect(undone.sources.map(s => s.name)).toEqual(before)
   expect(undone.rowTree).toBeDefined()
@@ -255,7 +265,7 @@ test('a mark display row reorder lands in the session at once and undoes', async
   view.setNewView(5, 0)
   fireEvent.click(await findByTestId(hts(MARKS), {}, delay))
   await findDisplayPainted('mark-display', delay)
-  const display: MultiRowDisplay = view.tracks[0]!.displays[0]
+  const display = multiRowDisplay(view)
   await waitFor(() => {
     expect(display.sources.length).toBeGreaterThan(2)
   }, delay)
@@ -281,7 +291,7 @@ test('a mark display row reorder lands in the session at once and undoes', async
   expect(
     rowsDomainInDelta(session.trackConfigDeltas[MARKS], displayId),
   ).toBeUndefined()
-  const undone: MultiRowDisplay = view.tracks[0]!.displays[0]
+  const undone = multiRowDisplay(view)
   expect(undone.rowSort).toEqual([])
   expect(undone.sources.map(s => s.name)).toEqual(before)
 }, 60000)

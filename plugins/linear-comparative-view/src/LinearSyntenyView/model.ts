@@ -572,7 +572,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        * Every synteny track across every level, in order.
        */
       syntenyTracks(): ComparativeTrackModel[] {
-        return self.levels.flatMap(l => l.tracks)
+        return self.levels.flatMap((l): ComparativeTrackModel[] => l.tracks)
       },
       /**
        * #getter

@@ -12,6 +12,7 @@ import {
 } from './util.tsx'
 
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
+import type { LinearDisplayModel } from '@jbrowse/display-kit/types'
 
 setup()
 
@@ -53,7 +54,8 @@ test('variant display exposes one "Color by" menu and applies a solid color', as
   fireEvent.click(await screen.findByTestId(hts('volvox_test_vcf'), ...opts))
   await findAnyDisplayPainted(delay)
 
-  const display = view.tracks[0]!.displays[0] as VariantDisplay
+  const display = view.tracks[0]!.displays[0] as VariantDisplay &
+    LinearDisplayModel
 
   const colorItems = display.colorMenuItems()
   expect(colorItems.map(item => item.label)).toEqual(['Color by'])
@@ -95,7 +97,8 @@ test('the consequence-impact color key renders, and dismissing it stops it drawi
   fireEvent.click(await screen.findByTestId(hts('volvox_test_vcf'), ...opts))
   await findAnyDisplayPainted(delay)
 
-  const display = view.tracks[0]!.displays[0] as VariantDisplay
+  const display = view.tracks[0]!.displays[0] as VariantDisplay &
+    LinearDisplayModel
   expect(display.colorScales).toEqual([])
 
   display.colorByField('impact')

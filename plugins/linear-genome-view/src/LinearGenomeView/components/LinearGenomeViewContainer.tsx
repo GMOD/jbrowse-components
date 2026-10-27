@@ -25,6 +25,7 @@ import TrackContainer from './TrackContainer.tsx'
 import TracksContainer from './TracksContainer.tsx'
 
 import type { LinearGenomeViewModel } from '../index.ts'
+import type { LinearDisplayModel } from '@jbrowse/display-kit/types'
 
 const useStyles = makeStyles()(theme => ({
   header: {
@@ -137,7 +138,7 @@ const LinearGenomeViewContainer = observer(function LinearGenomeViewContainer({
           // alone. At most one display can be under the pointer, so the first
           // non-empty answer is the answer.
           const hoverFeature = tracks
-            .flatMap(t => t.displays)
+            .flatMap((t): LinearDisplayModel[] => t.displays)
             .map(d => d.hoveredFeature)
             .find(Boolean)
           // `viewId` lets a view paired with one linear view ignore another

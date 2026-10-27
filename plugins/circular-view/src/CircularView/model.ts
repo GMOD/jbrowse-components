@@ -104,6 +104,7 @@ import type { FitInput, FitLayout } from './fitLayout.ts'
 import type { ChordAxis, PolarScale } from './slices.ts'
 import type { CircularViewCommands } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { DisplayModel } from '@jbrowse/core/pluggableElementTypes/models'
 import type { ViewExportSvgOptions } from '@jbrowse/core/svg/exportViewSvg'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { LegendSpec } from '@jbrowse/core/ui/legendSpec'
@@ -124,7 +125,9 @@ const twoPi = 2 * Math.PI
 
 const DEFAULT_RIBBON_ALPHA = 0.45
 
-function isRibbonDisplay(display: { type: string }) {
+function isRibbonDisplay<D extends { type: string }>(
+  display: D,
+): display is D & ChordSyntenyDisplaySelf {
   return display.type === 'ChordSyntenyDisplay'
 }
 
@@ -554,7 +557,10 @@ function stateModelFactory(pluginManager: PluginManager) {
       get namesFeaturesOutside() {
         return (
           this.circleRegions.length === 1 &&
-          self.tracks.some(t => isNamedFeatureHost(t.displays[0]))
+          self.tracks.some(t => {
+            const display = t.displays[0]
+            return !!display && isNamedFeatureHost(display)
+          })
         )
       },
       /**
@@ -777,9 +783,8 @@ function stateModelFactory(pluginManager: PluginManager) {
        * its alignments from these
        */
       get chordSyntenyDisplays(): ChordSyntenyDisplaySelf[] {
-        return self.tracks.flatMap(
-          track =>
-            track.displays.filter(isRibbonDisplay) as ChordSyntenyDisplaySelf[],
+        return self.tracks.flatMap(track =>
+          track.displays.filter(isRibbonDisplay),
         )
       },
       /**
@@ -969,7 +974,7 @@ function stateModelFactory(pluginManager: PluginManager) {
         return self.tracks
           .map(t => t.displays[0])
           .filter(
-            (d): d is ChordLayerDisplay =>
+            (d): d is DisplayModel & ChordLayerDisplay =>
               d !== undefined &&
               'chordCell' in d &&
               pluginManager.getDisplayType(d.type).viewType === 'CircularView',
@@ -1151,7 +1156,7 @@ function stateModelFactory(pluginManager: PluginManager) {
           const trackId = readConfObject(configuration, 'trackId') as string
           const display = displays[0]
           return [
-            display && ringDisplays.includes(display)
+            display && ringDisplays.some(ring => ring.id === display.id)
               ? { trackId, type: display.type }
               : { trackId },
           ]

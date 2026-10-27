@@ -2,6 +2,7 @@ import { Suspense, lazy, useEffect, useRef, useState } from 'react'
 
 import { ErrorBanner, ResizeHandle, ViewLoadingScreen } from '@jbrowse/core/ui'
 import { createFrameCoalescer } from '@jbrowse/core/util/frameCoalescer'
+import { getEnv } from '@jbrowse/core/util/mstUtils'
 import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
 import { normalizeWheelDelta } from '@jbrowse/core/util/wheelZoom'
 import { FloatingLegend } from '@jbrowse/display-ui'
@@ -87,12 +88,19 @@ const Slices = observer(function Slices({
       <RingStatus model={model} />
       {model.tracks.map(track => {
         const display = track.displays[0]
-        return model.ringHost.ringDisplays.includes(display) ? null : (
-          <display.RenderingComponent
-            key={display.id}
-            display={display}
-            view={model}
-          />
+        if (
+          !display ||
+          model.ringHost.ringDisplays.some(ring => ring.id === display.id)
+        ) {
+          return null
+        }
+        // a chord display's component takes its model as `display`, not as
+        // the `model` BaseDisplay's RenderingComponent names
+        const { ReactComponent } = getEnv(model).pluginManager.getDisplayType(
+          display.type,
+        )
+        return (
+          <ReactComponent key={display.id} display={display} view={model} />
         )
       })}
     </>

@@ -19,6 +19,8 @@ import {
   volvoxConfigWithTracks,
 } from './util.tsx'
 
+import type { LinearWiggleDisplayModel } from '@jbrowse/plugin-wiggle/LinearWiggleDisplay/stateModel'
+
 jest.mock('@jbrowse/core/util/FileSaver', () => ({ saveAs: jest.fn() }))
 
 setup()
@@ -178,9 +180,7 @@ test('wiggle SVG export includes cross-hatches when enabled', async () => {
   fireEvent.click(await findByTestId(hts('volvox_microarray'), ...opts))
   await findDisplayPainted('wiggle-display', delay)
 
-  const display = view.tracks[0]!.displays[0] as {
-    setGrid: (grid: boolean) => void
-  }
+  const display = view.tracks[0]!.displays[0] as LinearWiggleDisplayModel
   display.setGrid(true)
 
   await view.exportSvg({ rasterizeLayers: false })
@@ -200,10 +200,7 @@ test('multi-wiggle SVG export includes row separators and cross-hatches when ena
   )
   await findDisplayPainted('wiggle-display', delay)
 
-  const display = view.tracks[0]!.displays[0] as {
-    setGrid: (grid: boolean) => void
-    setShowRowSeparators: (arg: boolean) => void
-  }
+  const display = view.tracks[0]!.displays[0] as LinearWiggleDisplayModel
   display.setGrid(true)
   display.setShowRowSeparators(true)
 

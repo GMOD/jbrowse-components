@@ -25,13 +25,8 @@ beforeEach(() => {
 const delay = { timeout: 30000 }
 const opts = [{}, delay]
 
-// `view.tracks[0].displays[0]` is untyped, so a renamed/removed getter reads as
-// `any` and only fails as a waitFor timeout. Annotating with the real model type
-// makes that a typecheck error instead.
-function alignmentsDisplay(
-  view: LinearGenomeViewModel,
-): LinearAlignmentsDisplayModel {
-  return view.tracks[0].displays[0]
+function alignmentsDisplay(view: LinearGenomeViewModel) {
+  return view.tracks[0]!.displays[0] as LinearAlignmentsDisplayModel
 }
 
 /**

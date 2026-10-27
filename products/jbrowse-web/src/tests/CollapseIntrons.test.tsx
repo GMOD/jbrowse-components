@@ -11,6 +11,7 @@ import {
   volvoxConfigWithTracks,
 } from './util.tsx'
 
+import type { LinearBasicDisplayModel } from '@jbrowse/plugin-canvas'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 setup()
@@ -32,7 +33,8 @@ async function openGenesTrack(view: LinearGenomeViewModel) {
   await waitFor(() => {
     expect(view.tracks.length).toBe(1)
   })
-  view.tracks[0].displays[0].setHeightMode('fixed')
+  const display = view.tracks[0]!.displays[0] as LinearBasicDisplayModel
+  display.setHeightMode('fixed')
   await findAnyDisplayPainted(delay)
 }
 

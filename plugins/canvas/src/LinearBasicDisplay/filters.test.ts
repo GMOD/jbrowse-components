@@ -7,6 +7,7 @@ import {
   createBaseTrackModel,
 } from '@jbrowse/core/pluggableElementTypes/models'
 import { activeCount } from '@jbrowse/core/ui/filterMenuItems'
+import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
 import { predicatesOf } from '@jbrowse/core/util/fieldPredicate'
 import { getSnapshot, types } from '@jbrowse/mobx-state-tree'
 import { linearGenomeViewStateModelFactory as LinearGenomeViewModelFactory } from '@jbrowse/plugin-linear-genome-view'
@@ -16,6 +17,8 @@ import configSchemaFactory from './configSchema.ts'
 import registerLinearBasicDisplay from './index.ts'
 import stateModelFactory from './model.ts'
 
+import type { LinearBasicDisplayModel } from './model.ts'
+import type { ClickableMenuItem, MenuItem } from '@jbrowse/core/ui/menuItems'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 // The view's display snapshot must set `configuration: '<displayId>'`, or the
@@ -122,7 +125,7 @@ function createDisplay(
   view.setDisplayedRegions([
     { assemblyName: 'volvox', start: 0, end: 10_000, refName: 'ctgA' },
   ])
-  return view.tracks[0]!.displays[0]!
+  return view.tracks[0]!.displays[0]! as LinearBasicDisplayModel
 }
 
 describe('canvas display filters', () => {
@@ -246,23 +249,14 @@ describe('canvas display filters', () => {
   })
 })
 
-interface MenuEntry {
-  label?: string
-  onClick?: () => void
-  subMenu?: MenuEntry[]
-}
-
-function findMenuItem(
-  items: MenuEntry[],
-  label: string,
-): MenuEntry | undefined {
-  let found: MenuEntry | undefined
+function findMenuItem(items: MenuItem[], label: string): MenuItem | undefined {
+  let found: MenuItem | undefined
   for (const item of items) {
     if (found === undefined) {
-      if (item.label === label) {
+      if ('label' in item && item.label === label) {
         found = item
-      } else if (item.subMenu) {
-        found = findMenuItem(item.subMenu, label)
+      } else if ('subMenu' in item) {
+        found = findMenuItem(resolveSubMenu(item), label)
       }
     }
   }
@@ -285,11 +279,11 @@ describe('canvas display hidden-feature track menu', () => {
     const item = findMenuItem(
       display.trackMenuItems(),
       'Show 2 hidden features',
-    )
+    ) as ClickableMenuItem | undefined
     expect(item).toBeDefined()
     expect(display.rpcProps().hiddenFeatureIds).toEqual(['gene1', 'gene2'])
 
-    item!.onClick!()
+    item!.onClick()
     expect(display.hiddenFeatureIds.length).toBe(0)
     expect(display.rpcProps().hiddenFeatureIds).toBeUndefined()
   })

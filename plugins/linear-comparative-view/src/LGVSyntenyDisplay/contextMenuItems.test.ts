@@ -30,6 +30,10 @@ function makeFeature(mateAssembly: string, CIGAR?: string) {
 // The block the right-click landed in, which the move maps across and the launch
 // clips to. Every case below opens the menu the same way, so a missing item is
 // about the gate under test rather than about a missing block.
+type HitBlock = NonNullable<
+  Parameters<ReturnType<typeof createDisplay>['openContextMenu']>[0]['hit']
+>['block']
+
 function rightClick(
   display: ReturnType<typeof createDisplay>,
   feature?: SimpleFeature,
@@ -38,7 +42,17 @@ function rightClick(
     clientX: 1,
     clientY: 2,
     featureId: 'f1',
-    hit: { block: { bpRange: [0, 1000], refName: 'ctgA' }, genomicPos: 500 },
+    hit: {
+      block: {
+        rpcData: {} as HitBlock['rpcData'],
+        bpRange: [0, 1000],
+        blockStartPx: 0,
+        blockWidth: 1000,
+        refName: 'ctgA',
+        reversed: false,
+      },
+      genomicPos: 500,
+    },
   })
   if (feature) {
     display.setContextMenuFeature(feature)

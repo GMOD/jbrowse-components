@@ -4,7 +4,21 @@ import { when } from 'mobx'
 
 import { openInspector } from './testUtils.ts'
 
+import type { DisplayModel } from '@jbrowse/core/pluggableElementTypes/models'
+import type { Feature } from '@jbrowse/core/util'
+
 jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
+
+type ChordDisplay = DisplayModel & {
+  highlightedFeatureIds: string[] | undefined
+  visibleFeatureIds: string[] | undefined
+  drawnFeatures: Feature[] | undefined
+  setFeatures: (features: Feature[] | undefined) => void
+}
+
+function chordDisplay(track: { displays: DisplayModel[] }) {
+  return track.displays[0]! as ChordDisplay
+}
 
 function bnd(uniqueId: string, start: number, alt: string, event?: string) {
   return {
@@ -38,7 +52,7 @@ test('selecting a record of an event names the chords of that event', async () =
   expect(view.highlightedChordIds).toEqual(['a', 'b'])
 
   await when(() => view.circularView.tracks.length > 0)
-  const [display] = view.circularView.tracks[0]!.displays
+  const display = chordDisplay(view.circularView.tracks[0]!)
   expect(display.highlightedFeatureIds).toEqual(['a', 'b'])
 
   session.setSelection(new SimpleFeature(rows[2]!.feature))
@@ -50,7 +64,7 @@ test('a filter narrows what the chord display draws, on the same track', async (
   const { view } = await inspectorWithRows()
   await when(() => view.circularView.tracks.length > 0)
   const track = view.circularView.tracks[0]!
-  const [display] = track.displays
+  const display = chordDisplay(track)
   expect(track.configuration.adapter.features).toHaveLength(3)
   expect(display.visibleFeatureIds).toBeUndefined()
 
@@ -60,10 +74,7 @@ test('a filter narrows what the chord display draws, on the same track', async (
   expect(track.configuration.adapter.features).toHaveLength(3)
   expect(display.visibleFeatureIds).toEqual(['a', 'b'])
   display.setFeatures(rows.map(r => new SimpleFeature(r.feature)))
-  expect(display.drawnFeatures.map((f: SimpleFeature) => f.id())).toEqual([
-    'a',
-    'b',
-  ])
+  expect(display.drawnFeatures!.map(f => f.id())).toEqual(['a', 'b'])
 
   view.spreadsheetView.spreadsheet!.setSvEventFilter(undefined)
   expect(display.visibleFeatureIds).toBeUndefined()

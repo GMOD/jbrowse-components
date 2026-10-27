@@ -6,6 +6,16 @@ import { autorun, when } from 'mobx'
 
 import type { CircularViewModel } from '../../CircularView/model.ts'
 import type { Slice } from '../../CircularView/slices.ts'
+import type { RibbonShape } from '../../chords/shapes.ts'
+import type { ChordSyntenyDisplayModel } from './stateModelFactory.ts'
+
+function chordDisplay(view: CircularViewModel) {
+  return view.tracks[0]!.displays[0]! as ChordSyntenyDisplayModel
+}
+
+function ribbonFor(display: ChordSyntenyDisplayModel, featureId: string) {
+  return display.shapeFor(featureId) as RibbonShape
+}
 
 function sliceFor(
   display: {
@@ -102,7 +112,7 @@ async function setup(assemblyNames: string[]) {
     await session.assemblyManager.waitForAssembly(name)
   }
   await when(() => view.tracks.length > 0)
-  const display = view.tracks[0]!.displays[0]!
+  const display = chordDisplay(view)
   await when(() => display.ready)
   return { session, view, display }
 }
@@ -111,10 +121,16 @@ test('a self-alignment places both ends on the one assembly', async () => {
   const { display } = await setup(['volvox', 'volvox'])
   expect(display.type).toBe('ChordSyntenyDisplay')
   expect(display.features).toHaveLength(1)
-  const feature = display.features[0]!
+  const feature = display.features![0]!
   expect(assemblyOf(sliceFor(display, 'volvox', 'ctgA'))).toBe('volvox')
   expect(
-    assemblyOf(sliceFor(display, feature.get('assemblyName'), 'ctgB')),
+    assemblyOf(
+      sliceFor(
+        display,
+        feature.get('assemblyName') as string | undefined,
+        'ctgB',
+      ),
+    ),
   ).toBe('volvox')
 }, 20000)
 
@@ -146,7 +162,7 @@ test('a track spelling an assembly by its alias places and reorders by the canon
   })) as CircularViewModel
   view.setWidth(800)
   await when(() => view.tracks.length > 0)
-  const display = view.tracks[0]!.displays[0]!
+  const display = chordDisplay(view)
   await when(() => display.ready)
   expect(display.trackAssemblyNames).toEqual(['volvox', 'volvox2'])
   expect(assemblyOf(sliceFor(display, 'v2', 'ctgB'))).toBe('volvox2')
@@ -176,20 +192,22 @@ test('reload() rewakes the fetch after an error', async () => {
 // an opacity drag repaints none of them
 test("the view's color paints each ribbon, at the view's alpha", async () => {
   const { session, view, display } = await setup(['volvox', 'volvox2'])
-  const [feature] = display.features!
+  const feature = display.features![0]!
   const ideogram = (assembly: string, refName: string) =>
     colord(
       session.assemblyManager.get(assembly)!.getRefNameColor(refName)!,
     ).toHex()
 
   view.setColorField('query')
-  expect(display.shapeFor(feature.id())!.fill).toBe(ideogram('volvox', 'ctgA'))
+  expect(ribbonFor(display, feature.id()).fill).toBe(ideogram('volvox', 'ctgA'))
   view.setColorField('target')
-  expect(display.shapeFor(feature.id())!.fill).toBe(ideogram('volvox2', 'ctgB'))
+  expect(ribbonFor(display, feature.id()).fill).toBe(
+    ideogram('volvox2', 'ctgB'),
+  )
   expect(display.shapeAlpha).toBe(0.45)
   view.setColorField('strand')
   view.setOpacity(0.5)
-  expect(display.shapeFor(feature.id())!.fill).toBe(
+  expect(ribbonFor(display, feature.id()).fill).toBe(
     colord(UNIVERSAL_FIELD_PRESETS.strand.scale.range[1]).toHex(),
   )
   expect(display.shapeAlpha).toBe(0.5)
@@ -299,9 +317,10 @@ test('a two-genome fetch asks for the first genome only', async () => {
 // the hit test measures the unrotated figure, so the pointer turns instead
 test('a ribbon is hit where it is drawn, before and after a rotation', async () => {
   const { view, display } = await setup(['volvox', 'volvox2'])
-  const { a1, a2 } = display.shapeFor(
+  const { a1, a2 } = ribbonFor(
+    display,
     display.ribbonLanes.features[0]!.id(),
-  )!.angles
+  ).angles
   const onFigure = (a1 + a2) / 2
   const r = display.radiusPx - 1
   for (const turn of [0, 0.7]) {

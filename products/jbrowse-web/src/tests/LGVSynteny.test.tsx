@@ -14,7 +14,9 @@ import {
 } from './util.tsx'
 
 import type { AbstractSessionModel } from '@jbrowse/core/util'
+import type { LinearAlignmentsDisplayModel } from '@jbrowse/plugin-alignments'
 import type { LinearSyntenyViewModel } from '@jbrowse/plugin-linear-comparative-view'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type { SessionWithConnections } from '@jbrowse/product-core'
 
 setup()
@@ -33,6 +35,11 @@ const opts = [{}, delay]
 // `resolvePanel` rounds such a span outward so the launched view covers the span
 // the dialog previewed rather than stopping a base inside it.
 const ANCHOR_LOC = 'ctgA:29,222..34,670'
+
+// LGVSyntenyDisplay exports no instance type; it composes the alignments model
+function syntenyDisplay(view: LinearGenomeViewModel) {
+  return view.tracks[0]!.displays[0] as LinearAlignmentsDisplayModel
+}
 
 test('nav to synteny from right click', async () => {
   await mockConsoleWarn(async () => {
@@ -175,7 +182,7 @@ test('group by mate assembly from the Group by submenu', async () => {
     fireEvent.click(await screen.findByText('Group by'))
     fireEvent.click(await screen.findByText('Mate assembly'))
 
-    const display = view.tracks[0]!.displays[0]!
+    const display = syntenyDisplay(view)
     await waitFor(() => {
       expect(display.facet).toEqual({ field: 'mateAssembly', sort: [] })
     }, delay)
@@ -190,7 +197,7 @@ test('sort by longest features first from the Sort by submenu', async () => {
     fireEvent.click(await screen.findByTestId(hts('volvox_ins.paf'), ...opts))
     await findDisplayPainted('pileup-display', delay)
 
-    const display = view.tracks[0]!.displays[0]!
+    const display = syntenyDisplay(view)
     // `length` is the synteny config default, so flip it off through "Start
     // position" first and prove the radio brings it back.
     fireEvent.click(await screen.findByTestId('track_menu_icon', ...opts))
@@ -220,7 +227,7 @@ test('Show → Mismatches is a live layer on a synteny track', async () => {
     await view.navToLocString('ctgA:30,222..33,669')
     fireEvent.click(await screen.findByTestId(hts('volvox_ins.paf'), ...opts))
     await findDisplayPainted('pileup-display', delay)
-    const display = view.tracks[0]!.displays[0]!
+    const display = syntenyDisplay(view)
 
     const pixels = async () =>
       findCanvasIn(

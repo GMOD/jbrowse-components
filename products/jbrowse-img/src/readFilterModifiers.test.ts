@@ -17,6 +17,7 @@ import { enableStaticRendering } from 'mobx-react'
 import { applyDisplayOpts } from './applyTrackOpts.ts'
 import { renderRegionReport } from './renderRegion.ts'
 
+import type { LinearAlignmentsDisplayModel } from '@jbrowse/plugin-alignments'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 enableStaticRendering(true)
@@ -96,10 +97,7 @@ async function filtered(configured: FieldPredicate[], opts: string[]) {
     'LinearAlignmentsDisplay',
     opts,
   )
-  const display = view.tracks[0]!.displays[0] as {
-    writtenFilter: FieldPredicate[]
-    junctionFilter: Record<string, unknown>
-  }
+  const display = view.tracks[0]!.displays[0] as LinearAlignmentsDisplayModel
   return { display, spec }
 }
 

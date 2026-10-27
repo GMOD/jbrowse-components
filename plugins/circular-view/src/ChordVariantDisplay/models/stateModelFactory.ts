@@ -57,6 +57,7 @@ import type { MenuItem } from '@jbrowse/core/ui'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { Feature } from '@jbrowse/core/util'
 import type { ColorSetting } from '@jbrowse/display-kit/colorConfigSchema'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * #stateModel ChordVariantDisplay
@@ -581,5 +582,9 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
       },
     }))
 }
+
+export interface ChordVariantDisplayModel extends Instance<
+  ReturnType<typeof stateModelFactory>
+> {}
 
 export default stateModelFactory

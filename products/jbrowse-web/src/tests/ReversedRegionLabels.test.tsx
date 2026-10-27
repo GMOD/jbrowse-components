@@ -12,6 +12,8 @@ import {
   volvoxConfigWithTracks,
 } from './util.tsx'
 
+import type { LinearBasicDisplayModel } from '@jbrowse/plugin-canvas'
+
 jest.mock('@jbrowse/core/util/FileSaver', () => ({ saveAs: jest.fn() }))
 
 setup()
@@ -44,9 +46,7 @@ test('export svg of reversed region with gene labels', async () => {
   await waitFor(() => {
     expect(view.tracks.length).toBe(1)
   })
-  const display = view.tracks[0]!.displays[0] as {
-    setHeightMode: (mode: string) => void
-  }
+  const display = view.tracks[0]!.displays[0] as LinearBasicDisplayModel
   display.setHeightMode('fixed')
 
   await findAnyDisplayPainted({ timeout: 30000 })

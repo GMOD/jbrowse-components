@@ -11,6 +11,8 @@ import {
   volvoxConfigWithTracks,
 } from './util.tsx'
 
+import type { LinearDisplayModel } from '@jbrowse/display-kit/types'
+
 setup()
 
 // only the track this suite opens, so createView doesn't mount a
@@ -56,7 +58,8 @@ test('the variant track menu names controls generically, content by its noun', a
   const feature = await findAnyDisplayPainted(delay)
   expect(feature).toBeTruthy()
 
-  const display = view.tracks[0]!.displays[0] as NounDisplay
+  const display = view.tracks[0]!.displays[0] as NounDisplay &
+    LinearDisplayModel
   expect(display.featureNoun).toBe('variant')
 
   const labels = labelsIn(display.trackMenuItems())
@@ -82,7 +85,8 @@ test('a row that counts what the track holds still says "variant"', async () => 
   fireEvent.click(await screen.findByTestId(hts('volvox_test_vcf'), ...opts))
   await findAnyDisplayPainted(delay)
 
-  const display = view.tracks[0]!.displays[0] as NounDisplay
+  const display = view.tracks[0]!.displays[0] as NounDisplay &
+    LinearDisplayModel
   // the recovery row only exists once something is hidden, and it is a sentence
   // about the track's contents rather than the name of a setting
   display.hideFeature('test-vcf-1')

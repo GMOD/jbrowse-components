@@ -2,6 +2,9 @@ import { createTestSession } from '@jbrowse/web/testUtils'
 import { when } from 'mobx'
 
 import type { BreakpointViewModel } from './model.ts'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+
+type LgvDisplay = LinearGenomeViewModel['tracks'][number]['activeDisplay']
 
 jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
 
@@ -56,7 +59,7 @@ test('export track tops keep each row’s scroll', async () => {
   view.setWidth(800)
   await when(() => view.views.every(v => v.tracks.length === 1))
 
-  const display = view.views[0]!.tracks[0]!.displays[0]! as {
+  const display = view.views[0]!.tracks[0]!.displays[0]! as LgvDisplay & {
     scrollableHeight: number
     setScrollTop: (n: number) => void
   }

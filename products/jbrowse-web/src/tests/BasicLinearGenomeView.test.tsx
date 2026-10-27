@@ -95,7 +95,7 @@ test('click and drag to reorder tracks', async () => {
     expect(view.tracks.length).toBe(2)
   })
 
-  const trackId1 = view.tracks[1].id
+  const trackId1 = view.tracks[1]!.id
   const dragHandle0 = await findByTestId(
     'dragHandle-integration_test-bigbed_genes',
     {},
@@ -118,7 +118,7 @@ test('click and drag to reorder tracks', async () => {
   fireEvent.dragEnd(dragHandle0, { clientX: 10, clientY: 220 })
   fireEvent.mouseUp(dragHandle0, { clientX: 10, clientY: 220 })
   await waitFor(() => {
-    expect(view.tracks[0].id).toBe(trackId1)
+    expect(view.tracks[0]!.id).toBe(trackId1)
   })
 }, 30000)
 

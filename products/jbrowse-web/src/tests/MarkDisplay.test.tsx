@@ -16,6 +16,8 @@ import {
 } from './util.tsx'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { LinearDisplayModel } from '@jbrowse/display-kit/types'
+import type { LinearMarkDisplayModel } from '@jbrowse/plugin-marks/LinearMarkDisplay/stateModel'
 
 jest.mock('@jbrowse/core/util/FileSaver', () => ({ saveAs: jest.fn() }))
 
@@ -232,7 +234,7 @@ test('spans stacked by a row channel band the plot by the highest row', async ()
 
   const el = await findDisplayPainted('mark-display', { timeout })
   expect(el.dataset.displayDrawn).toBe('true')
-  const display = view.tracks[0]!.displays[0] as { rowCount: number }
+  const display = view.tracks[0]!.displays[0] as LinearMarkDisplayModel
   await waitFor(() => {
     expect(display.rowCount).toBe(2)
   })
@@ -278,7 +280,7 @@ test('a binned count and the raw features share one fetch, and each draws in its
       }
     >
     selectFeature: (hit: Record<string, unknown>) => void
-  }
+  } & LinearDisplayModel
   expect(display.markView.visible).toEqual([true, false])
   await waitFor(() => {
     expect(display.domain).toEqual([0, 1000])

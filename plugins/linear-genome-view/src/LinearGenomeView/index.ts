@@ -64,6 +64,7 @@ export { stateModelFactory } from './model.ts'
 export type {
   LinearGenomeViewModel,
   LinearGenomeViewStateModel,
+  LinearGenomeViewTrack,
 } from './model.ts'
 export { installLinkedViewSync } from './linkedViewSync.ts'
 export { default as HighlightChip } from './components/HighlightChip.tsx'

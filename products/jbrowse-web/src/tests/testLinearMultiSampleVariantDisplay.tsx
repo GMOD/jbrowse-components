@@ -81,8 +81,8 @@ export async function testLinearMultiSampleVariantDisplay({
     // silently captured per-sample rows. The bare label only exists once the
     // row is enabled, so matching it exactly waits for the scan.
     fireEvent.click(await findByText('Per haplotype', ...opts))
-    const display: LinearMultiSampleVariantDisplayModel =
-      view.tracks[0].displays[0]
+    const display = view.tracks[0]!
+      .displays[0] as LinearMultiSampleVariantDisplayModel
     expect(display.unit).toBe('haplotype')
   }
 

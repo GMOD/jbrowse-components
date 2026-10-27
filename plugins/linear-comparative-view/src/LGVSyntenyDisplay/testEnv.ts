@@ -19,6 +19,7 @@ import { linearGenomeViewStateModelFactory as LinearGenomeViewModelFactory } fro
 import configSchemaF from './configSchemaF.ts'
 import stateModelF from './model.ts'
 
+import type { LGVSyntenyDisplayStateModel } from './model.ts'
 import type { ConfigurationSchemaDefinition } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
@@ -217,7 +218,8 @@ export function createSyntenyEnv({
   return {
     session,
     view: panels[0]!,
-    display: panels[0]!.tracks[0]!.displays[0]!,
+    display: panels[0]!.tracks[0]!
+      .displays[0]! as Instance<LGVSyntenyDisplayStateModel>,
   }
 }
 

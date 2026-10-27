@@ -19,7 +19,7 @@ import type { ThemeOptions } from '@mui/material'
  * `height` and `resizeHeight` are required: they are what a track resize handle
  * fundamentally needs, and every display has had them since 2020.
  */
-export type LinearDisplayModel = DisplayModel & {
+export interface LinearDisplayModel extends DisplayModel {
   height: number
   resizeHeight: (distance: number) => number
   /**
@@ -30,6 +30,8 @@ export type LinearDisplayModel = DisplayModel & {
    */
   expandToContentHeight?: () => void
   prefersOffset?: boolean
+  /** The room an SVG export reserves left of the track for its sidebar. */
+  svgSidebarWidth?: (text?: ExportTextStyle) => number
 }
 
 /**

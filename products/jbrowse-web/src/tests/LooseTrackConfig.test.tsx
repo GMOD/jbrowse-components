@@ -7,6 +7,7 @@ import { utilizeFetchMockForTest, volvoxGetFile } from './generateReadBuffer.ts'
 import { getPluginManager } from './util.tsx'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { LinearAlignmentsDisplayModel } from '@jbrowse/plugin-alignments'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 jest.mock('../makeWorkerInstance', () => () => {})
@@ -40,7 +41,7 @@ test('a config track written as { trackId, uri } opens as an alignments track on
     },
     { timeout: 30000 },
   )
-  const display = view.tracks[0]!.displays[0]!
+  const display = view.tracks[0]!.displays[0] as LinearAlignmentsDisplayModel
   expect(display.type).toBe('LinearAlignmentsDisplay')
   // the track the assertions are about starts a real render, and a test that
   // returns while it is in flight resolves its lazy RPC import after the jest

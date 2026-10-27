@@ -25,7 +25,7 @@ export interface CircularLegendSource {
 
 interface LegendTrack {
   configuration: AnyConfigurationModel
-  displays: CircularLegendSource[]
+  displays: ({ id: string } & CircularLegendSource)[]
 }
 
 export interface CircularLegendHost extends IStateTreeNode {

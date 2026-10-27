@@ -18,9 +18,7 @@ import PaddingBlocks from './PaddingBlocks.tsx'
 import TrackLabel from './TrackLabel.tsx'
 import TrackRenderingContainer from './TrackRenderingContainer.tsx'
 
-import type { LinearGenomeViewModel } from '../index.ts'
-import type { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
-import type { LinearDisplayModel } from '@jbrowse/display-kit/types'
+import type { LinearGenomeViewModel, LinearGenomeViewTrack } from '../index.ts'
 
 const useStyles = makeStyles()({
   // No `overflow`: paint containment already clips to the padding box, and an
@@ -129,13 +127,12 @@ const TrackContainer = observer(function TrackContainer({
   track,
 }: {
   model: LGV
-  track: BaseTrackModel
+  track: LinearGenomeViewTrack
 }) {
   const { classes } = useStyles()
-  // an LGV track always holds at least one linear display (activeDisplay =
-  // displays[0]). The one narrowing to the linear shape, handed down rather
-  // than repeated, so a track's chrome and its body can't read two displays.
-  const display = track.activeDisplay as LinearDisplayModel
+  // read once and handed down, so a track's chrome and its body can't read two
+  // displays
+  const display = track.activeDisplay
   const { showTrackOutlines } = model
   // The Paper's 1px border, present iff outlines are on. Everything laid out in
   // the *display's* coordinates has to cancel it — the rendering container

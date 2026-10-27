@@ -129,6 +129,7 @@ import type { BlockSet, ContentBlock } from '@jbrowse/core/util/blockTypes'
 import type { Region } from '@jbrowse/core/util/types'
 import type { ViewStatus } from '@jbrowse/core/util/viewStatus'
 import type { LaunchInput } from '@jbrowse/core/util/withLaunchInput'
+import type { LinearDisplayModel } from '@jbrowse/display-kit/types'
 import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 
 /** One place a name search points at, as a picker lists it. */
@@ -487,7 +488,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
          * array of currently displayed tracks state models instances
          */
         tracks: types.array(
-          pluginManager.pluggableMstType('track', 'stateModel'),
+          pluginManager.pluggableMstType<LinearDisplayModel>(
+            'track',
+            'stateModel',
+          ),
         ),
 
         /**
@@ -1805,7 +1809,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         // splicing at newIndex after removing oldIndex lands a track dragged
         // down after its target and one dragged up before it
         const tracks = self.tracks.filter((_, idx) => idx !== oldIndex)
-        tracks.splice(newIndex, 0, self.tracks[oldIndex])
+        tracks.splice(newIndex, 0, self.tracks[oldIndex]!)
         self.tracks = cast(tracks)
       }
 
@@ -3570,8 +3574,13 @@ export function stateModelFactory(pluginManager: PluginManager) {
     })
 }
 
-export type LinearGenomeViewStateModel = ReturnType<typeof stateModelFactory>
+// an interface, so a model composing this one names it in its declaration
+// rather than inlining it (TS7056)
+export interface LinearGenomeViewStateModel extends ReturnType<
+  typeof stateModelFactory
+> {}
 export type LinearGenomeViewModel = Instance<LinearGenomeViewStateModel>
+export type LinearGenomeViewTrack = LinearGenomeViewModel['tracks'][number]
 
 // #region registry
 declare module '@jbrowse/core/PluginManager' {

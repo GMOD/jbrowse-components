@@ -41,6 +41,20 @@ function rowFeatures(rows?: { feature?: SimpleFeatureSerialized }[]) {
   return rows?.flatMap(({ feature }) => (feature ? [feature] : [])) ?? []
 }
 
+// the ChordVariantDisplay the inspector's circular view draws its rows with
+interface ChordSelectionTarget {
+  setHighlightedFeatureIds: (ids: string[] | undefined) => void
+  setVisibleFeatureIds: (ids: string[] | undefined) => void
+}
+
+function isChordSelectionTarget<D extends object>(
+  display: D,
+): display is D & ChordSelectionTarget {
+  return (
+    'setHighlightedFeatureIds' in display && 'setVisibleFeatureIds' in display
+  )
+}
+
 /**
  * #stateModel SvInspectorView
  * #category view
@@ -459,8 +473,10 @@ function SvInspectorViewF(pluginManager: PluginManager) {
                 t => t.configuration.trackId === variantTrackId,
               )
               for (const display of track?.displays ?? []) {
-                display.setHighlightedFeatureIds(highlightedChordIds)
-                display.setVisibleFeatureIds(visibleChordIds)
+                if (isChordSelectionTarget(display)) {
+                  display.setHighlightedFeatureIds(highlightedChordIds)
+                  display.setVisibleFeatureIds(visibleChordIds)
+                }
               }
             },
             { name: 'SvInspectorView chord display state binding' },

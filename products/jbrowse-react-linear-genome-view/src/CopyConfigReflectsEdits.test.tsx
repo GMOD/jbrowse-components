@@ -59,8 +59,8 @@ async function editedColor() {
   await waitFor(() => {
     expect(view.getTrack(TRACK_ID)).toBeTruthy()
   })
-  const shown = view.getTrack(TRACK_ID)
-  setConf(shown.displays[0], ['encoding', 'color'], { value: 'rgb(1,2,3)' })
+  const shown = view.getTrack(TRACK_ID)!
+  setConf(shown.displays[0]!, ['encoding', 'color'], { value: 'rgb(1,2,3)' })
   return { session: state.session, shown }
 }
 

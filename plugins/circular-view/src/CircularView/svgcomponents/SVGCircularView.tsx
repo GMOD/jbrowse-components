@@ -22,6 +22,9 @@ import { Rulers } from '../components/Ruler.tsx'
 import { figureGutterPx } from '../rulerLabels.ts'
 
 import type { CircularViewModel, ExportSvgOptions } from '../model.ts'
+import type { DisplayModel } from '@jbrowse/core/pluggableElementTypes/models'
+import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
+import type { ReactNode } from 'react'
 
 export function SvgCircularLegend({
   model,
@@ -42,6 +45,24 @@ export function SvgCircularLegend({
   )
 }
 
+type Track = CircularViewModel['tracks'][number]
+
+// a chord display and a ring's linear display each may draw itself to SVG
+type SvgDisplay = DisplayModel & {
+  renderSvg?: (opts: ExportSvgDisplayOptions) => Promise<ReactNode>
+}
+
+function drawsSvg(
+  display: SvgDisplay | undefined,
+): display is SvgDisplay & Required<Pick<SvgDisplay, 'renderSvg'>> {
+  return !!display?.renderSvg
+}
+
+function svgDisplayOf(track: Track) {
+  const display: SvgDisplay | undefined = track.displays[0]
+  return drawsSvg(display) ? display : undefined
+}
+
 export async function renderToSvg(
   model: CircularViewModel,
   opts: ExportSvgOptions,
@@ -58,20 +79,21 @@ export async function renderToSvg(
   // warped by paintRingsSvg instead
   const { ringHost } = model
   const { ringDisplays } = ringHost
-  const isRing = (t: (typeof model.tracks)[number]) =>
-    ringDisplays.includes(t.displays[0])
-  const exportable = model.tracks.filter(
-    t => t.displays[0]?.renderSvg && !isRing(t),
-  )
+  const isRing = (t: Track) =>
+    ringDisplays.some(ring => ring.id === t.displays[0]?.id)
+  const exportable = model.tracks.flatMap(t => {
+    const display = svgDisplayOf(t)
+    return display && !isRing(t) ? [{ id: t.id, display }] : []
+  })
   notifySkippedSvgTracks(
     session,
-    model.tracks.filter(t => !t.displays[0]?.renderSvg),
+    model.tracks.filter(t => !svgDisplayOf(t)),
   )
   const ringsDrawable = canRasterizeRings(opts)
   if (!ringsDrawable) {
     notifySkippedSvgTracks(
       session,
-      model.tracks.filter(t => t.displays[0]?.renderSvg && isRing(t)),
+      model.tracks.filter(t => svgDisplayOf(t) && isRing(t)),
       'Ring tracks are rasterized, and this environment cannot decode an image.',
     )
   }
@@ -79,9 +101,9 @@ export async function renderToSvg(
   // a track whose data won't load fails the export, named
   const [displayResults, ringBodies] = await awaitSvgRenders([
     awaitSvgRenders(
-      exportable.map(async track => ({
-        id: track.id,
-        result: await track.displays[0]!.renderSvg({ ...opts, theme }),
+      exportable.map(async ({ id, display }) => ({
+        id,
+        result: await display.renderSvg({ ...opts, theme }),
       })),
     ),
     ringsDrawable ? renderRingBodies(ringHost, opts, theme) : [],

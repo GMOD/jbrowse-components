@@ -42,10 +42,12 @@ import type {
   AnyConfigurationSchemaType,
 } from '../../configuration/index.ts'
 import type { MenuItem } from '../../ui/index.ts'
+import type { DisplaySnapshot } from '../../util/tracks.ts'
 import type { DisplayModel } from './BaseDisplayModel.tsx'
 import type { FileTypeExporter } from './saveTrackFileTypes/types.ts'
 import type {
   IAnyStateTreeNode,
+  IMSTArray,
   IType,
   Instance,
 } from '@jbrowse/mobx-state-tree'
@@ -111,20 +113,9 @@ export function createBaseTrackModel(
       pinned: types.stripDefault(types.boolean, false),
       /**
        * #property
-       * The runtime plugin union (`pluggableMstType`) is typed only as
-       * `IAnyType`, erasing the element to `any`. Assert the concrete
-       * `DisplayModel` instance every registered display satisfies so reads
-       * (`activeDisplay`, `trackMenuItems`) are checked;
-       * create/snapshot stay `unknown` since the union's snapshot shape is
-       * genuinely dynamic (`replaceDisplay` writes a partial snapshot).
+       * the displays drawing this track; `activeDisplay` is the first
        */
-      displays: types.array(
-        pm.pluggableMstType('display', 'stateModel') as unknown as IType<
-          unknown,
-          unknown,
-          DisplayModel
-        >,
-      ),
+      displays: types.array(pm.pluggableMstType('display', 'stateModel')),
     })
     .volatile(() => ({
       /**
@@ -614,3 +605,16 @@ export function createBaseTrackModel(
 
 export type BaseTrackStateModel = ReturnType<typeof createBaseTrackModel>
 export type BaseTrackModel = Instance<BaseTrackStateModel>
+
+/**
+ * A track in a view whose displays all satisfy `DISPLAY`. A view mounts only
+ * the displays registered for its own type, which the plugin union cannot see,
+ * so the view names that contract once on its `tracks` property:
+ * `pluginManager.pluggableMstType<LinearDisplayModel>('track', 'stateModel')`.
+ */
+export interface TrackModelOf<
+  DISPLAY extends DisplayModel = DisplayModel,
+> extends Omit<BaseTrackModel, 'displays' | 'activeDisplay'> {
+  displays: IMSTArray<IType<unknown, DisplaySnapshot, DISPLAY>>
+  activeDisplay: DISPLAY
+}

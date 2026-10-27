@@ -42,6 +42,7 @@ import type { HighlightType, InitState } from './types.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Feature, RpcStatus } from '@jbrowse/core/util'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 type LGV = LinearGenomeViewModel
 
@@ -73,6 +74,8 @@ function stubDisplayStateModel(configSchema: AnyConfigurationSchemaType) {
       },
     }))
 }
+
+type StubDisplay = Instance<ReturnType<typeof stubDisplayStateModel>>
 
 // use initializer function to avoid having console.warn jest.fn in a global
 function initialize() {
@@ -2369,7 +2372,7 @@ describe('TrackInit with display configuration', () => {
     const top2 = model.getTrackYOffset('track2')!
     const height = model.height
     const perTrack =
-      model.trackHeight(model.tracks[0]) + model.trackChromeHeight
+      model.trackHeight(model.tracks[0]!) + model.trackChromeHeight
     expect(top2 - top1).toBe(perTrack)
 
     model.setTrackLabelBand('track1', 31.14)
@@ -2402,7 +2405,7 @@ describe('TrackInit with display configuration', () => {
     await waitFor(() => {
       expect(model.tracks.length).toBe(2)
     })
-    const [short, tall] = model.tracks.map(t => t.displays[0]!)
+    const [short, tall] = model.tracks.map(t => t.displays[0]! as StubDisplay)
     short!.setHeight(120)
     tall!.setHeight(420)
 
@@ -2548,7 +2551,7 @@ describe('TrackInit with display configuration', () => {
     const model = viewWithNoTracks()
 
     await model.launchTrack('track1', {}, { scrollTop: 10 })
-    expect(model.tracks[0]!.displays[0]!.scrollTop).toBe(0)
+    expect((model.tracks[0]!.displays[0]! as StubDisplay).scrollTop).toBe(0)
     expect(warnings()).toMatch(/did not apply scrollTop/)
     expect(warnings()).toMatch(/setScrollTop/)
   })

@@ -9,6 +9,9 @@ import {
   volvoxConfigWithTracks,
 } from './util.tsx'
 
+import type { LinearMarkDisplayModel } from '@jbrowse/plugin-marks/LinearMarkDisplay/stateModel'
+import type { LinearWiggleDisplayModel } from '@jbrowse/plugin-wiggle/LinearWiggleDisplay/stateModel'
+
 setup()
 
 const timeout = 20000
@@ -38,6 +41,16 @@ async function openTrack(display: Record<string, unknown>, testid: string) {
   return { ...result, track, display: track.displays[0]! }
 }
 
+async function openManhattan(display: Record<string, unknown>) {
+  const opened = await openTrack(display, 'mark-display')
+  return { ...opened, display: opened.display as LinearMarkDisplayModel }
+}
+
+async function openWiggle(display: Record<string, unknown>) {
+  const opened = await openTrack(display, 'wiggle-display')
+  return { ...opened, display: opened.display as LinearWiggleDisplayModel }
+}
+
 beforeEach(() => {
   doBeforeEach()
 })
@@ -48,36 +61,32 @@ const points = (encoding: Record<string, unknown>) => ({
 })
 
 test('a FeatureTrack offers the Manhattan display and paints it', async () => {
-  const { track, display } = await openTrack(
-    { type: 'LinearManhattanDisplay' },
-    'mark-display',
+  const { track, display } = await openManhattan({
+    type: 'LinearManhattanDisplay',
+  })
+  expect(track.compatibleDisplays.map(d => d.type)).toContain(
+    'LinearManhattanDisplay',
   )
-  expect(
-    track.compatibleDisplays.map((d: { type: string }) => d.type),
-  ).toContain('LinearManhattanDisplay')
   expect(display.type).toBe('LinearManhattanDisplay')
   await waitFor(() => {
     expect(display.domain).toBeDefined()
   })
-  expect(display.domain[1]).toBeLessThanOrEqual(1000)
+  expect(display.domain![1]).toBeLessThanOrEqual(1000)
 }, 30000)
 
 test('a Manhattan point mark plots another column as y', async () => {
-  const { display } = await openTrack(points({ y: 'thickEnd' }), 'mark-display')
+  const { display } = await openManhattan(points({ y: 'thickEnd' }))
   await waitFor(() => {
     expect(display.domain?.[1]).toBeGreaterThanOrEqual(50001)
   })
   const scores = [...display.rpcDataMap.values()].flatMap(d =>
-    Array.from(d.layers[0].y),
+    Array.from(d.layers[0]!.y!),
   )
   expect(scores).toContain(50001)
 }, 30000)
 
 test('a Manhattan y naming no column says so in the corner', async () => {
-  const { display, findByTestId } = await openTrack(
-    points({ y: 'pvalue' }),
-    'mark-display',
-  )
+  const { display, findByTestId } = await openManhattan(points({ y: 'pvalue' }))
   const chip = await findByTestId('track-control-filter', {}, { timeout })
   expect(chip.textContent).toContain('skipped')
   expect(chip.getAttribute('aria-label')).toMatch(
@@ -109,7 +118,7 @@ test('a Manhattan colored by chromosome keys each contig', async () => {
   fireEvent.click(await findByTestId(hts('volvox_gwas'), {}, { timeout }))
   const el = await findDisplayPainted('mark-display', { timeout })
   expect(el.dataset.displayDrawn).toBe('true')
-  const display = view.tracks[0]!.displays[0]!
+  const display = view.tracks[0]!.displays[0] as LinearMarkDisplayModel
   await waitFor(
     () => {
       expect(display.colorScales).toHaveLength(1)
@@ -122,21 +131,18 @@ test('a Manhattan colored by chromosome keys each contig', async () => {
 }, 30000)
 
 test('a FeatureTrack paints the wiggle display', async () => {
-  const { display } = await openTrack(
-    { type: 'LinearWiggleDisplay' },
-    'wiggle-display',
-  )
+  const { display } = await openWiggle({ type: 'LinearWiggleDisplay' })
   await waitFor(() => {
     expect(display.domain).toBeDefined()
   })
-  expect(display.domain[1]).toBeLessThanOrEqual(1000)
+  expect(display.domain![1]).toBeLessThanOrEqual(1000)
 }, 30000)
 
 test('a wiggle y field reaches featuresToRaw', async () => {
-  const { display } = await openTrack(
-    { type: 'LinearWiggleDisplay', encoding: { y: 'thickEnd' } },
-    'wiggle-display',
-  )
+  const { display } = await openWiggle({
+    type: 'LinearWiggleDisplay',
+    encoding: { y: 'thickEnd' },
+  })
   await waitFor(() => {
     expect(display.domain?.[1]).toBeGreaterThanOrEqual(50001)
   })

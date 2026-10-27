@@ -15,7 +15,11 @@ export type {
 } from './InternetAccountModel.ts'
 export { BaseInternetAccountConfig } from './baseInternetAccountConfig.ts'
 export { createBaseTrackModel } from './BaseTrackModel.ts'
-export type { BaseTrackModel, BaseTrackStateModel } from './BaseTrackModel.ts'
+export type {
+  BaseTrackModel,
+  BaseTrackStateModel,
+  TrackModelOf,
+} from './BaseTrackModel.ts'
 export {
   createBaseTrackConfig,
   preprocessTrackConfigSnapshot,

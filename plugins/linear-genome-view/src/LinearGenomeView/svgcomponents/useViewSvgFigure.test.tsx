@@ -32,6 +32,7 @@ import type { LinearGenomeViewModel } from '../index.ts'
 import type { HighlightType } from '../types.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 // A stub session and two display types — one that can render SVG and one that
 // cannot — which is the whole of what a figure reads. Deliberately not the
@@ -107,6 +108,8 @@ function displayModel(
       }))
     : base
 }
+
+type StubDisplay = Instance<ReturnType<typeof displayModel>>
 
 function initialize() {
   const stubManager = new PluginManager()
@@ -583,7 +586,7 @@ test('changing a display setting redraws the figure', async () => {
   expect(fill()).toBe(DISPLAY_COLOR)
 
   await act(async () => {
-    setConf(view.tracks[0]!.displays[0], 'color', 'tomato')
+    setConf(view.tracks[0]!.displays[0]!, 'color', 'tomato')
     await Promise.resolve()
   })
 
@@ -595,13 +598,14 @@ test('changing a display setting redraws the figure', async () => {
 // Which legend sections a reader closed is volatile, so no snapshot holds it.
 test('dismissing a legend section redraws the figure without it', async () => {
   const view = makeView([{ trackId: 'first', name: 'first', type: 'SvgTrack' }])
+  const display = view.tracks[0]!.displays[0]! as StubDisplay
   const { svg } = await renderFigure(view)
   const sections = () =>
     svg().querySelector<SVGRectElement>('[data-testid="body"]')?.dataset.legend
   expect(sections()).toBe('tint,shade')
 
   await act(async () => {
-    view.tracks[0]!.displays[0]!.dismissLegendSection('tint')
+    display.dismissLegendSection('tint')
     await Promise.resolve()
   })
 
@@ -613,7 +617,7 @@ test('dismissing a legend section redraws the figure without it', async () => {
 // A hidden section is per-group state the key reads through `groupStateKey`.
 test('hiding a group redraws the figure without it', async () => {
   const view = makeView([{ trackId: 'first', name: 'first', type: 'SvgTrack' }])
-  const display = view.tracks[0]!.displays[0]!
+  const display = view.tracks[0]!.displays[0]! as StubDisplay
   act(() => {
     setConf(display, 'facet', 'group')
   })

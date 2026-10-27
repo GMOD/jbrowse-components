@@ -11,9 +11,7 @@ import {
   volvoxConfigWithTracks,
 } from './util.tsx'
 
-// `view.tracks[0].displays[0]` is untyped; annotating it makes a getter that
-// doesn't exist on the model a typecheck error rather than a silent undefined.
-import type { WiggleDisplayModel } from '@jbrowse/plugin-wiggle'
+import type { LinearWiggleDisplayModel } from '@jbrowse/plugin-wiggle/LinearWiggleDisplay/stateModel'
 
 setup()
 
@@ -96,7 +94,7 @@ test('right-click offers the row-order sort, and the reset once it has run', asy
     await findByTestId(hts('volvox_microarray_multi_multirowxy'), ...opts),
   )
   const container = await findDisplayPainted('wiggle-display', delay)
-  const display: WiggleDisplayModel = view.tracks[0].displays[0]
+  const display = view.tracks[0]!.displays[0] as LinearWiggleDisplayModel
   const before = display.sources.map(s => s.name)
 
   // jsdom reports a zero rect, so clientX lands as the track-local offset

@@ -11,6 +11,8 @@ import {
   volvoxConfigWithTracks,
 } from './util.tsx'
 
+import type { LinearBasicDisplayModel } from '@jbrowse/plugin-canvas'
+
 setup()
 
 // only the track this suite opens, so createView doesn't mount a
@@ -33,7 +35,8 @@ test('toggle subfeature labels and verify eden.1 label appears', async () => {
     expect(view.tracks.length).toBe(1)
   })
   // fit, the default, spends the below-label rows at this crowded window
-  view.tracks[0].displays[0].setHeightMode('fixed')
+  const genes = view.tracks[0]!.displays[0] as LinearBasicDisplayModel
+  genes.setHeightMode('fixed')
 
   fireEvent.click(await screen.findByTestId('track_menu_icon', ...opts))
   fireEvent.click(await screen.findByText('Show', ...opts))

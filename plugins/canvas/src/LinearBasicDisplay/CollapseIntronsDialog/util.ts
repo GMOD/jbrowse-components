@@ -60,7 +60,7 @@ interface SoloCapableDisplay {
   clearSolo: () => void
 }
 
-function isSoloCapable(d: unknown): d is SoloCapableDisplay {
+function isSoloCapable<D>(d: D): d is D & SoloCapableDisplay {
   return (
     typeof d === 'object' &&
     d !== null &&

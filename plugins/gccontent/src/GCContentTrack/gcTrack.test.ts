@@ -10,13 +10,23 @@ import WigglePlugin from '@jbrowse/plugin-wiggle'
 import GCContentPlugin from '../index.ts'
 import { liftGCSettings } from './liftGCSettings.ts'
 
+import type { GCStep } from '../GCContentAdapter/gcWindow.ts'
 import type {
   CheckboxMenuItem,
-  MenuItem,
   RadioMenuItem,
   SubMenuItem,
 } from '@jbrowse/core/ui'
 import type { Instance } from '@jbrowse/mobx-state-tree'
+import type { LinearWiggleDisplayModel } from '@jbrowse/plugin-wiggle/LinearWiggleDisplay/stateModel'
+
+interface GCContentTrackMembers {
+  op: 'content' | 'skew'
+  window: number
+  step: GCStep
+  setOp: (op: 'content' | 'skew') => void
+  setWindow: (window: number) => void
+  setStep: (step: GCStep) => void
+}
 
 function makePluginManager() {
   const pluginManager = new PluginManager([
@@ -88,16 +98,25 @@ async function createTrack(adapter: Record<string, unknown> = {}) {
     }),
   )
   const track = view.tracks[0]!
-  return { track, display: track.displays[0]! }
+  return {
+    track: track as typeof track & GCContentTrackMembers,
+    display: track.displays[0]! as LinearWiggleDisplayModel,
+  }
 }
 
 test('the op, window and step live on the adapter, and each refetches', async () => {
   const { track, display } = await createTrack()
   let previous = display.settingsFetchInputs
   for (const write of [
-    () => track.setOp('skew'),
-    () => track.setWindow(50),
-    () => track.setStep(10),
+    () => {
+      track.setOp('skew')
+    },
+    () => {
+      track.setWindow(50)
+    },
+    () => {
+      track.setStep(10)
+    },
   ]) {
     write()
     expect(display.settingsFetchInputs).not.toEqual(previous)
@@ -115,9 +134,9 @@ test('the step follows the zoom until a fixed one is chosen, and its reset retur
   const { track } = await createTrack()
   const params = () =>
     resolveSubMenu(
-      (track.trackMenuItems() as MenuItem[]).find(
-        i => 'label' in i && i.label === 'GC parameters',
-      ) as SubMenuItem,
+      track
+        .trackMenuItems()
+        .find(i => 'label' in i && i.label === 'GC parameters') as SubMenuItem,
     )
   const labels = () => params().map(i => ('label' in i ? i.label : i.type))
   expect(track.step).toBe('auto')
@@ -135,7 +154,7 @@ test('the step follows the zoom until a fixed one is chosen, and its reset retur
 
 test('the track menu carries the GC parameters beside the plot', async () => {
   const { track } = await createTrack()
-  const items = track.trackMenuItems() as MenuItem[]
+  const items = track.trackMenuItems()
   expect(items.map(i => ('label' in i ? i.label : undefined))).toEqual(
     expect.arrayContaining(['GC parameters', 'Y axis...']),
   )
@@ -144,9 +163,9 @@ test('the track menu carries the GC parameters beside the plot', async () => {
 
 test('GC parameters opens on a content / skew radio pair that sets the op', async () => {
   const { track } = await createTrack()
-  const params = (track.trackMenuItems() as MenuItem[]).find(
-    i => 'label' in i && i.label === 'GC parameters',
-  )!
+  const params = track
+    .trackMenuItems()
+    .find(i => 'label' in i && i.label === 'GC parameters')!
   const [content, skew] = resolveSubMenu(params as SubMenuItem)
   expect([content, skew]).toMatchObject([
     { type: 'radio', label: 'GC content', checked: true },

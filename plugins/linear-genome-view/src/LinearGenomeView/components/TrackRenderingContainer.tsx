@@ -9,8 +9,7 @@ import { observer } from 'mobx-react'
 
 import { TRACK_OUTLINE_BORDER } from '../consts.ts'
 
-import type { LinearGenomeViewModel } from '../index.ts'
-import type { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
+import type { LinearGenomeViewModel, LinearGenomeViewTrack } from '../index.ts'
 import type { LinearDisplayModel } from '@jbrowse/display-kit/types'
 
 const useStyles = makeStyles()({
@@ -85,7 +84,7 @@ const TrackDisplayRegion = observer(function TrackDisplayRegion({
   ...divProps
 }: {
   model: LGV
-  track: BaseTrackModel
+  track: LinearGenomeViewTrack
   children: React.ReactNode
 } & React.ComponentPropsWithRef<'div'>) {
   const trackName = coarseStripHTML(
@@ -112,7 +111,7 @@ const TrackRenderingContainer = observer(function TrackRenderingContainer({
   ref,
 }: {
   model: LGV
-  track: BaseTrackModel
+  track: LinearGenomeViewTrack
   display: LinearDisplayModel
   ref?: React.Ref<HTMLDivElement>
 }) {

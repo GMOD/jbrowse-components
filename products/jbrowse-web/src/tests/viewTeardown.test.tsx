@@ -137,7 +137,7 @@ test('replaceView does not read the view it swapped out', async () => {
 // being asked for.
 test('a dialog holding a node in a replaced view does not take the page', async () => {
   const { view, session } = await viewWithTrack()
-  const track = view.tracks[0]
+  const track = view.tracks[0]!
 
   const SourceReadingDialog = observer(function SourceReadingDialog() {
     // subscribed to the tree that is about to die, which is what makes the

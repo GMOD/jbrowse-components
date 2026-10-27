@@ -3,12 +3,11 @@ import {
   trackBoxOffsets,
 } from '@jbrowse/plugin-linear-genome-view'
 
-import type {
-  LinearGenomeViewModel,
-  TrackLabelMode,
-} from '@jbrowse/plugin-linear-genome-view'
+import type { TrackLabelMode } from '@jbrowse/plugin-linear-genome-view'
 
-type Track = LinearGenomeViewModel['tracks'][number]
+type Track = Parameters<typeof trackBoxOffsets>[0][number] & {
+  configuration: { trackId: string }
+}
 
 // Top of each of a view's rendered track *bodies*, keyed by trackId, for
 // anchoring the overlay ribbons. Takes an already-minimized-filtered track

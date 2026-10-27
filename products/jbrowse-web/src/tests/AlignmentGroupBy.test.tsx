@@ -17,13 +17,8 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 setup()
 
-// `view.tracks[0].displays[0]` is untyped, so a getter that doesn't exist on
-// the model reads as `any` and only fails as a waitFor timeout. Annotating it
-// with the real model type makes that a typecheck error instead.
-function alignmentsDisplay(
-  view: LinearGenomeViewModel,
-): LinearAlignmentsDisplayModel {
-  return view.tracks[0].displays[0]
+function alignmentsDisplay(view: LinearGenomeViewModel) {
+  return view.tracks[0]!.displays[0] as LinearAlignmentsDisplayModel
 }
 
 beforeEach(() => {

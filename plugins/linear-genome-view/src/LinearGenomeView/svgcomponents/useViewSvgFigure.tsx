@@ -30,6 +30,7 @@ import {
 import type { LinearGenomeViewModel } from '../index.ts'
 import type { TrackLabelMode } from '../types.ts'
 import type { SvgDisplayResult } from './util.ts'
+import type { LinearDisplayModel } from '@jbrowse/display-kit/types'
 import type { ThemeOptions } from '@mui/material'
 import type React from 'react'
 
@@ -267,6 +268,13 @@ const FrozenSvgFigure = memo(function FrozenSvgFigure({
   )
 })
 
+// state only some display types hold, each a cause to redraw where it exists
+interface FigureKeyDisplay {
+  dismissedLegendSections?: unknown
+  groupStateKey?: unknown
+  reloadCounter?: unknown
+}
+
 /**
  * What "the figure is out of date" means, as a string.
  *
@@ -324,7 +332,8 @@ function figureKey(view: LinearGenomeViewModel, themeName: string | undefined) {
     view.coarseBpPerPx,
     view.width,
     view.tracks.map(track => {
-      const display = track.displays[0]
+      const display: (LinearDisplayModel & FigureKeyDisplay) | undefined =
+        track.displays[0]
       return [
         getSnapshot(track),
         getSnapshot(track.configuration),

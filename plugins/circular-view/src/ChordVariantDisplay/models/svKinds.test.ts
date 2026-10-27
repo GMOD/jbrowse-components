@@ -2,7 +2,7 @@ import { createTestSession } from '@jbrowse/web/testUtils'
 import { when } from 'mobx'
 
 import type { CircularViewModel } from '../../CircularView/model.ts'
-import type { Feature } from '@jbrowse/core/util'
+import type { ChordVariantDisplayModel } from './stateModelFactory.ts'
 
 jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
 
@@ -54,13 +54,7 @@ async function svKindsDisplay() {
   view.setWidth(800)
   await session.assemblyManager.waitForAssembly('volvox')
   await when(() => view.tracks.length > 0)
-  const display = view.tracks[0]!.displays[0]! as {
-    ready: boolean
-    features: Feature[]
-    chordFeet: { junction: string[]; placed: Uint8Array }
-    chordLanes: { features: Feature[] }
-    laneIndexById: Map<string, number>
-  }
+  const display = view.tracks[0]!.displays[0]! as ChordVariantDisplayModel
   await when(() => display.ready)
   return display
 }
@@ -73,7 +67,7 @@ test('every SV kind draws its chord between the loci it names, a breakend pair o
   const display = await svKindsDisplay()
   const { junction, placed } = display.chordFeet
   const ends = Object.fromEntries(
-    display.features.map((f, i) => [
+    display.features!.map((f, i) => [
       String(f.get('name')),
       placed[i] ? junction[i] : undefined,
     ]),
@@ -101,7 +95,7 @@ test('every SV kind draws its chord between the loci it names, a breakend pair o
     'bnd_a',
   ])
   const idOf = (name: string) =>
-    display.features.find(f => f.get('name') === name)!.id()
+    display.features!.find(f => f.get('name') === name)!.id()
   expect(display.laneIndexById.get(idOf('bnd_b'))).toBe(
     display.laneIndexById.get(idOf('bnd_a')),
   )

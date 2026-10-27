@@ -4,6 +4,7 @@ import { when } from 'mobx'
 import { labelWidthPx } from '../rulerLabels.ts'
 import { renderToSvg } from './SVGCircularView.tsx'
 
+import type { ChordVariantDisplayModel } from '../../ChordVariantDisplay/models/stateModelFactory.ts'
 import type { CircularViewModel } from '../model.ts'
 
 jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
@@ -127,7 +128,7 @@ test('the figure geometry is measured after the tracks settle', async () => {
     tracks: ['sv'],
   })
   await when(() => view.tracks.length > 0)
-  const display = view.tracks[0]!.displays[0]!
+  const display = view.tracks[0]!.displays[0]! as ChordVariantDisplayModel
   await when(() => display.svgReady)
 
   // put the display back into "features in flight" so the export suspends
@@ -164,7 +165,7 @@ test('exporting with nothing displayed says so instead of saving a blank', async
 test('a track opened before any regions leaves the export gate terminal', async () => {
   const { view } = await setup()
   await view.launchTrack('sv')
-  const display = view.tracks[0]!.displays[0]!
+  const display = view.tracks[0]!.displays[0]! as ChordVariantDisplayModel
   expect(display.features).toBeUndefined()
   expect(display.svgReady).toBe(true)
 }, 20000)

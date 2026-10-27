@@ -5,24 +5,22 @@ import { createTestSession } from '@jbrowse/web/testUtils'
 import { when } from 'mobx'
 
 import type { CircularViewModel } from '../../CircularView/model.ts'
+import type { ChordVariantDisplayModel } from './stateModelFactory.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 
-function sliceFor(
-  display: {
-    axisSlice: (
-      a: string | undefined,
-      r: string,
-    ) => { index: number } | undefined
-    view: {
-      staticSlices: { region: { refName: string; assemblyName: string } }[]
-    }
-  },
+function chordDisplay(view: CircularViewModel) {
+  return view.tracks[0]!.displays[0]! as ChordVariantDisplayModel
+}
+
+function regionFor(
+  display: ChordVariantDisplayModel,
   assemblyName: string | undefined,
   refName: string,
 ) {
   const axis = display.axisSlice(assemblyName, refName)
-  return axis && display.view.staticSlices[axis.index]
+  const region = axis && display.view.staticSlices[axis.index]?.region
+  return region && !region.elided ? region : undefined
 }
 
 jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
@@ -100,7 +98,7 @@ async function setup(
     await session.assemblyManager.waitForAssembly(name)
   }
   await when(() => view.tracks.length > 0)
-  const display = view.tracks[0]!.displays[0]!
+  const display = chordDisplay(view)
   await when(() => display.ready)
   return { session, view, display }
 }
@@ -108,8 +106,8 @@ async function setup(
 test('a ready display places both ends of its chords', async () => {
   const { display } = await setup()
   expect(display.features).toHaveLength(1)
-  expect(sliceFor(display, undefined, 'ctgA')?.region.refName).toBe('ctgA')
-  expect(sliceFor(display, undefined, 'ctgB')?.region.refName).toBe('ctgB')
+  expect(regionFor(display, undefined, 'ctgA')?.refName).toBe('ctgA')
+  expect(regionFor(display, undefined, 'ctgB')?.refName).toBe('ctgB')
 }, 20000)
 
 test('a constant color keys as one row, a field as the values it paints', async () => {
@@ -128,7 +126,7 @@ test('a constant color keys as one row, a field as the values it paints', async 
 
   setConf(display, ['encoding', 'color'], 'svType')
   setConf(display, ['encoding', 'opacity'], 0.45)
-  const [feature] = display.chordLanes.features
+  const feature = display.chordLanes.features[0]!
   expect(display.chordStrokes.get(feature)).toBe('#e41a1c')
   expect(display.shapeAlpha).toBe(0.45)
   expect(display.legendColor).toBeUndefined()
@@ -153,8 +151,8 @@ test('a constant color keys as one row, a field as the values it paints', async 
 
 test('clicking a chord selects the record and opens its details', async () => {
   const { session, display } = await setup()
-  display.onChordClick(display.features[0])
-  expect(session.selection).toBe(display.features[0])
+  display.onChordClick(display.features![0]!)
+  expect(session.selection).toBe(display.features![0])
   expect(session.widgets.get('variantFeature')?.type).toBe(
     'VariantFeatureWidget',
   )
@@ -163,7 +161,7 @@ test('clicking a chord selects the record and opens its details', async () => {
 // the circle cannot navigate to a locus, so the details panel's link opens one
 test("the details panel's zoom link opens the locus in a linear view", async () => {
   const { session, view, display } = await setup()
-  display.onChordClick(display.features[0])
+  display.onChordClick(display.features![0]!)
   navToLoc('ctgA:101-200', session.widgets.get('variantFeature'))
   const linear = session.views.find(v => v.id === `${view.id}-linear`)
   expect(linear?.type).toBe('LinearGenomeView')
@@ -179,7 +177,7 @@ test('an onChordClick callback runs in place of the details', async () => {
     },
   )
   setConf(display, 'onChordClick', 'jexl:recordChordClick(feature)')
-  display.onChordClick(display.features[0])
+  display.onChordClick(display.features![0]!)
   expect(clicked).toHaveLength(1)
   expect(session.widgets.has('variantFeature')).toBe(false)
 }, 20000)
@@ -190,9 +188,7 @@ test('a one-genome variant track on a two-genome circle keeps to its genome', as
   const { display } = await setup(['volvox', 'volvox2'])
   expect(display.trackAssemblyNames).toEqual(['volvox'])
   expect(display.features).toHaveLength(1)
-  expect(sliceFor(display, undefined, 'ctgB')?.region.assemblyName).toBe(
-    'volvox',
-  )
+  expect(regionFor(display, undefined, 'ctgB')?.assemblyName).toBe('volvox')
 }, 20000)
 
 // `ready` is this display's whole freshness answer, so the old features must
@@ -289,11 +285,11 @@ test('a mate on a contig the file holds no record on still finds its slice', asy
   })) as CircularViewModel
   view.setWidth(800)
   await when(() => view.tracks.length > 0)
-  const display = view.tracks[0]!.displays[0]!
+  const display = chordDisplay(view)
   await when(() => display.ready)
   expect(display.features).toHaveLength(1)
-  expect(sliceFor(display, undefined, 'A')?.region.refName).toBe('ctgA')
-  expect(sliceFor(display, undefined, 'B')?.region.refName).toBe('ctgB')
+  expect(regionFor(display, undefined, 'A')?.refName).toBe('ctgA')
+  expect(regionFor(display, undefined, 'B')?.refName).toBe('ctgB')
 }, 20000)
 
 // an elided slice stands for every contig in its run, so two records that
@@ -344,7 +340,7 @@ test('chords into one elided run keep their own lanes', async () => {
   })) as CircularViewModel
   view.setWidth(800)
   await when(() => view.tracks.length > 0)
-  const display = view.tracks[0]!.displays[0]!
+  const display = chordDisplay(view)
   await when(() => display.ready)
   expect(view.elidedRegions.some(r => r.elided)).toBe(true)
   expect(display.chordLanes.count).toBe(2)
