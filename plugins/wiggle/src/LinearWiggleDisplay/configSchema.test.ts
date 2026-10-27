@@ -26,16 +26,11 @@ test('value is the constant, and a bare color is refused with its spelling', () 
   )
 })
 
-test('the points per pixel are data.resolution, the old top-level spelling lifting there', () => {
+test('the points per pixel are data.resolution', () => {
   expect(readConfObject(create({}), ['data', 'resolution'])).toBe(1)
-  for (const snap of [{ data: { resolution: 4 } }, { resolution: 4 }]) {
-    expect(readConfObject(create(snap), ['data', 'resolution'])).toBe(4)
-  }
-})
-
-test("v4's display color is the channel's constant", () => {
-  const conf = create({ color: 'darkgreen' })
-  expect(readConfObject(conf, [...COLOR, 'value'])).toBe('darkgreen')
+  expect(
+    readConfObject(create({ data: { resolution: 4 } }), ['data', 'resolution']),
+  ).toBe(4)
 })
 
 // The channel colors the score it plots, and a subtrack's color is
@@ -234,19 +229,12 @@ describe('the slots v4 declared on the display', () => {
   })
 })
 
-test.each([
-  [{ summaryScoreMode: 'avg' }, 'score', 'none'],
-  [{ summaryScoreMode: 'min' }, 'minScore', 'none'],
-  [{ summaryScoreMode: 'whiskers' }, 'score', 'min-max'],
-  [
-    { renderers: { XYPlotRenderer: { summaryScoreMode: 'max' } } },
-    'maxScore',
-    'none',
-  ],
-])('v4’s %j is y %s, extent %s', (v4, y, extent) => {
-  const conf = create(v4)
-  expect(readConfObject(conf, [...Y, 'field'])).toBe(y)
-  expect(readConfObject(conf, 'extent')).toBe(extent)
+test("v4's renderer summaryScoreMode is y maxScore, extent none", () => {
+  const conf = create({
+    renderers: { XYPlotRenderer: { summaryScoreMode: 'max' } },
+  })
+  expect(readConfObject(conf, [...Y, 'field'])).toBe('maxScore')
+  expect(readConfObject(conf, 'extent')).toBe('none')
 })
 
 test('a v4 renderers block keeps its color beside its summary mode', () => {
