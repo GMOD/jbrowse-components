@@ -2,6 +2,7 @@ import { categoricalColor } from '@jbrowse/core/ui/colors'
 import { SimpleFeature } from '@jbrowse/core/util'
 import { NO_VALUE_LABEL } from '@jbrowse/core/util/categoricalField'
 import { abgrToCssRgba, cssColorToABGR } from '@jbrowse/core/util/colorBits'
+import { ordinalRange } from '@jbrowse/display-kit/colorConfigSchema'
 
 import { widenAttributeRanges } from './TrackColorsMixin.ts'
 import {
@@ -534,6 +535,22 @@ describe('a column read off the loaded data', () => {
     expect(
       swatch?.kind === 'chips' ? swatch.chips.map(c => c.label) : [],
     ).toEqual(['3', '1', NO_VALUE_LABEL])
+  })
+
+  test('an ordinal scale over a numeric column samples its scheme, reversed under reverse', () => {
+    const ids = fetchOf('grp', [{ grp: 3 }, { grp: 1 }])
+    const view = merged(ids)
+    const domain = ['1', '3']
+    const forward = { type: 'ordinal', domain, scheme: 'viridis' } as const
+    const palette = ordinalRange({ ...forward, range: [] })
+    expect(palette).toHaveLength(2)
+    expect(resolveCategoricalMode('grp', view, forward)?.palette).toEqual(
+      palette,
+    )
+    expect(
+      resolveCategoricalMode('grp', view, { ...forward, reverse: true })
+        ?.palette,
+    ).toEqual([...palette].reverse())
   })
 
   test("a fetch of numbers paints through the view's labels when another fetch held text", () => {

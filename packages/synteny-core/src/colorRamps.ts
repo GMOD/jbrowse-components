@@ -12,7 +12,10 @@ import {
   thresholdCuts,
   thresholdPalette,
 } from '@jbrowse/core/util/thresholdScale'
-import { colorEncodingOf } from '@jbrowse/display-kit/colorConfigSchema'
+import {
+  colorEncodingOf,
+  ordinalRange,
+} from '@jbrowse/display-kit/colorConfigSchema'
 import { SCALE_TYPE_LINEAR, rampMidNorm } from '@jbrowse/render-core/scoreScale'
 
 import { labelNumber } from './attributeValue.ts'
@@ -107,6 +110,20 @@ export function colorPaintOf({ scale }: SyntenyColorConfig): SyntenyColorPaint {
     domainMid: readConfObject(scale, 'domainMid'),
     invalid: readConfObject(scale, 'invalid'),
   }
+}
+
+/**
+ * #api
+ * The colors an ordinal paint deals in domain order: its `range`, else its
+ * `scheme`, reversed under `reverse`, sampled once per domain value.
+ */
+export function paintRange({
+  domain = [],
+  range = [],
+  scheme,
+  reverse,
+}: SyntenyColorPaint): readonly string[] {
+  return ordinalRange({ domain, range, scheme, reverse })
 }
 
 /**
@@ -304,7 +321,7 @@ export function resolveCategoricalMode(
     colors: {},
     missing: range.missing ?? false,
     domain,
-    palette: paint.range ?? [],
+    palette: paintRange(paint),
   }
 }
 

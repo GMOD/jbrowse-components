@@ -6,12 +6,12 @@ import {
   colorEncodingOf,
   colorFieldOf,
   colorSnapshotOf,
-  ordinalRange,
 } from '@jbrowse/display-kit/colorConfigSchema'
 import {
   colorPaintOf,
   hidesUnlabelled,
   opacitySnapshotOf,
+  paintRange,
   withHideUnlabelled,
 } from '@jbrowse/synteny-core'
 
@@ -68,23 +68,7 @@ export function configSlotViews(self: ConfigSlotSelf) {
      * else `scale.scheme` sampled once per domain value
      */
     get ribbonColorRange(): readonly string[] {
-      return ordinalRange({
-        domain: this.ribbonColorDomain,
-        range: getConf(self, [
-          'ribbons',
-          'encoding',
-          'color',
-          'scale',
-          'range',
-        ]),
-        scheme: getConf(self, [
-          'ribbons',
-          'encoding',
-          'color',
-          'scale',
-          'scheme',
-        ]),
-      })
+      return paintRange(this.ribbonPaint)
     },
     /** #getter */
     get ribbonPaint(): SyntenyColorPaint {
