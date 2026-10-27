@@ -216,20 +216,6 @@ export function configSchemaFactory() {
        */
       baseConfiguration: baseLinearDisplayConfigSchema,
       explicitlyTyped: true,
-      retired: {
-        drawCurves: (curves: unknown) => ({
-          ribbons: { mark: { interpolate: curves ? 'bump' : 'linear' } },
-        }),
-        bridgeSkippedLanes: () => ({}),
-        hideUnlabelled: () => ({}),
-        // an empty `text` read the name, else the ID, the label's default
-        text: (field: unknown) =>
-          field ? { labels: { name: { field } } } : {},
-        showGeneLabels: (show: unknown) => ({ labels: { name: { show } } }),
-        utrColor: (value: unknown) => ({
-          utrs: { encoding: { color: { value } } },
-        }),
-      },
     },
   )
 }

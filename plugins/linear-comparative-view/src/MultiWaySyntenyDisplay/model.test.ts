@@ -1,5 +1,5 @@
 import { parseCigar2 } from '@jbrowse/cigar-utils'
-import { readConfObject, setConf } from '@jbrowse/core/configuration'
+import { setConf } from '@jbrowse/core/configuration'
 import { DEAL_COLOR_DIFFERENCE, colorDifference } from '@jbrowse/core/ui/colors'
 import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
 import { SimpleFeature, getContainingTrack } from '@jbrowse/core/util'
@@ -21,7 +21,6 @@ import { autorun, when } from 'mobx'
 
 import { KIND_BASE } from '../LinearSyntenyRPC/syntenyKinds.ts'
 import { NO_OPS } from './alignmentOps.ts'
-import { configSchemaFactory } from './configSchema.ts'
 import { LaneGene } from './geneGlyph.ts'
 import { decideLaneFrames, frameFromDecision } from './laneDecision.ts'
 import {
@@ -829,35 +828,6 @@ test('the drawing toggles write the slots the display reads back', () => {
   display.setShowLaneTicks(false)
   expect(display.interpolate).toBe('bump')
   expect(display.showLaneTicks).toBe(false)
-})
-
-test.each([
-  [true, 'bump'],
-  [false, 'linear'],
-])(
-  'a retired drawCurves %s reads as ribbons.mark.interpolate %s',
-  (drawCurves, interpolate) => {
-    const conf = configSchemaFactory().create({
-      type: 'MultiWaySyntenyDisplay',
-      displayId: 'd',
-      drawCurves,
-    })
-    expect(readConfObject(conf, ['ribbons', 'mark', 'interpolate'])).toBe(
-      interpolate,
-    )
-  },
-)
-
-test('a written bridgeSkippedLanes loads silently and drops', () => {
-  const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
-  const conf = configSchemaFactory().create({
-    type: 'MultiWaySyntenyDisplay',
-    displayId: 'd',
-    bridgeSkippedLanes: false,
-  })
-  expect(warn).not.toHaveBeenCalled()
-  warn.mockRestore()
-  expect('bridgeSkippedLanes' in getSnapshot(conf)).toBe(false)
 })
 
 describe('the anchor lane pair stays ordered', () => {
