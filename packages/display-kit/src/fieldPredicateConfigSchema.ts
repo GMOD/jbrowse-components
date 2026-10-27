@@ -66,17 +66,17 @@ function emptied(entry: unknown) {
   )
   const empty =
     written.length > 0 &&
-    !written.some(
-      key =>
+    !written.some(key => {
+      const value = record[key]
+      return (
         TESTS.has(key) &&
-        record[key] !== null &&
-        record[key] !== undefined &&
-        !(
-          key === 'range' &&
-          Array.isArray(record[key]) &&
-          !(record[key] as unknown[]).some(end => typeof end === 'number')
-        ),
-    )
+        value !== null &&
+        value !== undefined &&
+        (key !== 'range' ||
+          !Array.isArray(value) ||
+          value.some(end => typeof end === 'number'))
+      )
+    })
   if (empty) {
     const text = JSON.stringify(record)
     if (!warnedEmptied.has(text)) {
