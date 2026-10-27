@@ -191,7 +191,7 @@ function declaredPath(
       return undefined
     }
     kept.push(step)
-    const entry = at.definition[step]
+    const entry: unknown = at.definition[step]
     at = quietly(() => deps.metadataOf(entry))
   }
   return kept.join('.')

@@ -120,7 +120,7 @@ describe('validateConfig', () => {
                 type: 'GCContentAdapter',
                 windowSize: 100,
                 windowDelta: 50,
-                windwo: 100,
+                stepSize: 100,
               },
             },
           ],
@@ -128,7 +128,7 @@ describe('validateConfig', () => {
       ],
     })
     const at = 'tracks[0].displays[0].laneLayers[0].adapter'
-    expect(errorsOf(config).map(p => p.where)).toEqual([`${at}.windwo`])
+    expect(errorsOf(config).map(p => p.where)).toEqual([`${at}.stepSize`])
     expect(warningsOf(config).map(p => [p.where, p.message])).toEqual([
       [
         `${at}.windowSize`,
