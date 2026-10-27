@@ -4,11 +4,10 @@ import { types } from '@jbrowse/mobx-state-tree'
 import { ThemeProvider } from '@mui/material'
 import { render } from '@testing-library/react'
 
-import AboutWidget from './AboutWidget.tsx'
-
 describe('<AboutWidget />', () => {
-  it('renders', () => {
+  it('renders', async () => {
     jest.useFakeTimers({ now: new Date('2026-06-01') })
+    const { default: AboutWidget } = await import('./AboutWidget.tsx')
     const rpcConfig = ConfigurationSchema('NullRpc', {
       defaultDriver: {
         type: 'string',
