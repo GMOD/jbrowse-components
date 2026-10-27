@@ -140,13 +140,13 @@ function tagColorScaleOf({
 }
 
 // A field only a config names (an attribute, `mateAssembly`, a `jexl:`
-// expression) has no row to pick it from, so it gets a checked, disabled one
-// of its own, as Group by's does, rather than ticking "Tag...".
-function configFieldItems(model: ColorByModel): MenuItem[] {
+// expression, or a tag on a menu with no "Tag..." row) has no row to pick it
+// from, so it gets a checked, disabled one of its own, as Group by's does.
+function configFieldItems(model: ColorByModel, offersTag: boolean): MenuItem[] {
   const { colorField } = model
   return colorField !== undefined &&
     colorFieldKindOf(colorField) === 'tag' &&
-    fieldTag(colorField) === undefined
+    (!offersTag || fieldTag(colorField) === undefined)
     ? [
         radioItem(colorField, true, () => {}, {
           disabled: true,
@@ -292,7 +292,7 @@ function colorByItem(
         rows: [
           ...readOptions.map(o => colorRadio(model, o)),
           ...(reads ? [tagItem(model)] : []),
-          ...configFieldItems(model),
+          ...configFieldItems(model, !!reads),
           solidColorItem(paintsConstant(model), () => {
             model.pickSolidColor()
           }),

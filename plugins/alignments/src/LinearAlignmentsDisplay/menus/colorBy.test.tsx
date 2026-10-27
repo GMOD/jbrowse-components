@@ -292,6 +292,15 @@ describe('color by menu curation', () => {
     expect(labels).not.toContain('Tag...')
   })
 
+  test('a tag a config names gets a checked row of its own where no Tag... row offers it', () => {
+    const model = makeModel()
+    model.colorField = 'tags.de'
+    const rows = flatten(subMenuOf(getColorByMenuItem(model)))
+    expect(rows.find(i => 'label' in i && i.label === 'tags.de')).toMatchObject(
+      { checked: true, disabled: true },
+    )
+  })
+
   test('a display of reads offers all three', () => {
     const labels = deepLabelsFor(true)
     expect(labels).toContain('Paired end')
