@@ -139,6 +139,21 @@ describe('the More filters... layer sections', () => {
     expect(model.filterPredicates).toEqual(filter)
   })
 
+  test('a Submit that changes nothing keeps entries the dialog shows another way', () => {
+    const filter = [
+      { field: 'alone', equal: true },
+      { field: 'junction.reads', gt: 4 },
+      { field: 'breakpoint.reads', gte: 3, lte: 50 },
+    ]
+    const model = makeModel({
+      filter,
+      showSashimi: true,
+      drawnReadConnections: 'link',
+    })
+    submit(model, s => s)
+    expect(model.filterPredicates).toEqual(filter)
+  })
+
   test('hiding split-read junctions writes junction.source', () => {
     const model = makeModel({ showSashimi: true })
     submit(model, s => ({
