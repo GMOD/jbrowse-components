@@ -4897,6 +4897,7 @@
       "package": "@jbrowse/display-kit",
       "names": [
         "rowsConfigSchema",
+        "rowsForField",
         "rowsSettingOf"
       ],
       "worker": "real"

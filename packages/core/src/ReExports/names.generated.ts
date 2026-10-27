@@ -481,7 +481,7 @@ const names: Record<string, string[]> = {
   '@jbrowse/display-kit/retiredSettings': ['RETIRED_ROW_STATE_KEYS', 'liftRetiredRowState', 'moveDisplayDefaults'],
   '@jbrowse/display-kit/rowArrangementConfigSchema': ['ROW_ARRANGEMENT_MEMBERS', 'rowArrangementConfigSchema'],
   '@jbrowse/display-kit/rowColorConfigSchema': ['rowColorConfigSchema'],
-  '@jbrowse/display-kit/rowsConfigSchema': ['rowsConfigSchema', 'rowsSettingOf'],
+  '@jbrowse/display-kit/rowsConfigSchema': ['rowsConfigSchema', 'rowsForField', 'rowsSettingOf'],
   '@jbrowse/display-kit/rpcArgs': ['rpcArgs'],
   '@jbrowse/display-kit/sampleRowsConfigSchema': ['sampleRowsConfigSchema'],
   '@jbrowse/display-kit/sectionFacetConfigSchema': ['sectionFacetConfigSchema'],
