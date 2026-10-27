@@ -16,7 +16,7 @@ function subMenu(items: MenuItem[], label: string): MenuItem[] {
 }
 
 function colorRows(display: ReturnType<typeof createDisplay>) {
-  return subMenu(display.trackMenuItems() as MenuItem[], 'Color by').filter(
+  return subMenu(display.trackMenuItems(), 'Color by').filter(
     i => 'type' in i && i.type === 'radio',
   )
 }
@@ -28,9 +28,9 @@ test('the curated color schemes are the four synteny ones', () => {
 })
 
 function featureHeightDisabled(display: ReturnType<typeof createDisplay>) {
-  const item = (display.trackMenuItems() as MenuItem[]).find(
-    i => 'label' in i && i.label === 'Feature height',
-  )
+  const item = display
+    .trackMenuItems()
+    .find(i => 'label' in i && i.label === 'Feature height')
   return item && 'disabled' in item ? item.disabled : undefined
 }
 
@@ -89,7 +89,7 @@ test('a lane drop writes the drawn order as the domain, and Show offers the rese
   })
   display.facetByField('mateAssembly')
   seedSections(display, ['volvox_random', 'volvox_two'])
-  const items = () => display.trackMenuItems() as MenuItem[]
+  const items = () => display.trackMenuItems()
   expect(labelsOf(items())).not.toContain('Sections')
   expect(labelsOf(subMenu(items(), 'Show'))).not.toContain(
     'Reset section order',
