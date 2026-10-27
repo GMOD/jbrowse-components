@@ -3,8 +3,12 @@ import RpcMethodTypeWithFiltersAndRenameRegions from '@jbrowse/core/pluggableEle
 
 import type { Source } from '../shared/types.ts'
 import type { MultiSampleVariantGetSourcesArgs } from './types.ts'
-import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type {
+  BaseFeatureDataAdapter,
+  BaseOptions,
+} from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
+import type { Region } from '@jbrowse/core/util'
 
 declare module '@jbrowse/core/rpc/RpcRegistry' {
   interface RpcRegistry {
@@ -34,26 +38,29 @@ function hasSourcesAndWarnings(
   )
 }
 
+/**
+ * An adapter's samples, with the samples-metadata warnings where its
+ * `getSourcesAndWarnings` gives them. The base-class `getSources` has no index
+ * to consult, so `opts` carries the handles its full scan reports through.
+ */
+export async function sourcesAndWarnings(
+  adapter: BaseFeatureDataAdapter,
+  regions: Region[],
+  opts: BaseOptions,
+) {
+  return hasSourcesAndWarnings(adapter)
+    ? adapter.getSourcesAndWarnings(opts)
+    : { sources: await adapter.getSources(regions, opts), warnings: [] }
+}
+
 export class MultiSampleVariantGetSources extends RpcMethodTypeWithFiltersAndRenameRegions<'MultiSampleVariantGetSources'> {
   name = 'MultiSampleVariantGetSources' as const
 
   async execute(args: RpcExecuteArgs<'MultiSampleVariantGetSources'>) {
-    const { regions } = args
     const dataAdapter = await getFeatureAdapterOrThrow({
       ...args,
       pluginManager: this.pluginManager,
     })
-    if (hasSourcesAndWarnings(dataAdapter)) {
-      return dataAdapter.getSourcesAndWarnings(args)
-    }
-    // The whole deserialized bag as opts, so the handles ride along. The
-    // default `getSources` has no index to consult — it scans every feature in
-    // every region to collect the source names — and this was calling it with
-    // no opts at all, which on a large panel is a full scan that cannot be
-    // cancelled and reports nothing.
-    return {
-      sources: await dataAdapter.getSources(regions ?? [], args),
-      warnings: [],
-    }
+    return sourcesAndWarnings(dataAdapter, args.regions ?? [], args)
   }
 }

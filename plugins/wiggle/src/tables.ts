@@ -393,6 +393,7 @@ export async function wiggleTables(
     rowLayout,
     height: readConfObject(conf, 'height'),
     config: fullConfSnapshot(conf),
+    warnings: data.warnings ?? [],
   }
 }
 

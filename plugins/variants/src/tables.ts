@@ -42,6 +42,7 @@ import {
 } from './LinearMultiSampleVariantDisplay/paintCells.ts'
 import { getVariantColorScales } from './LinearMultiSampleVariantDisplay/variantLegend.ts'
 import SplitVcfTabixAdapterF from './SplitVcfTabixAdapter/index.ts'
+import { sourcesAndWarnings } from './VariantRPC/MultiSampleVariantGetSources.ts'
 import { variantCellData } from './VariantRPC/executeVariantCellData.ts'
 import { fetchVariantFeatures } from './VariantRPC/fetchVariantFeatures.ts'
 import {
@@ -194,9 +195,11 @@ export async function variantTables(
   if (overByteBudget(bytes, byteLimit)) {
     throw tooLarge(bytes)
   }
-  const sources: ProcessedSource[] = (await adapter.getSources([])).map(
-    source => ({ ...source, sampleName: resolveSampleName(source) }),
-  )
+  const listing = await sourcesAndWarnings(adapter, fetchRegions, {})
+  const sources: ProcessedSource[] = listing.sources.map(source => ({
+    ...source,
+    sampleName: resolveSampleName(source),
+  }))
   const rowAlias = rowAliasOf(sources)
   const args: RpcExecuteArgs<'MultiSampleVariantGetCellData'> = {
     sessionId: 'tables',
@@ -382,7 +385,7 @@ export async function variantTables(
       end: banded.bands.map(b => b.end),
     },
     config: fullConfSnapshot(conf),
-    warnings: [] as string[],
+    warnings: listing.warnings,
   }
 }
 

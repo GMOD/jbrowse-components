@@ -304,6 +304,33 @@ test('SnpEff’s ANN parses into a row per record and consequence, out of INFO',
   }
 })
 
+test('a samples file leaving out a VCF sample warns, as the display does', async () => {
+  const dir = mkdtempSync(path.join(tmpdir(), 'samples-'))
+  const vcf = path.join(dir, 'two.vcf')
+  const tsv = path.join(dir, 'samples.tsv')
+  writeFileSync(
+    vcf,
+    [
+      '##fileformat=VCFv4.2',
+      '##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">',
+      '#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\ts1\ts2',
+      'ctgA\t100\t.\tA\tG\t50\tPASS\t.\tGT\t0/1\t1/1',
+    ].join('\n'),
+  )
+  writeFileSync(tsv, 'name\tgroup\ns1\ta\n')
+  const t = await engine.variants({
+    adapterConfig: {
+      type: 'VcfAdapter',
+      vcfLocation: { uri: pathToFileURL(vcf).href },
+      samplesTsvLocation: { uri: pathToFileURL(tsv).href },
+    },
+    region: { refName: 'ctgA', start: 0, end: 1000 },
+  })
+  expect(t.rows.name).toEqual(['s1'])
+  expect(t.warnings).toHaveLength(1)
+  expect(t.warnings[0]).toContain('1 of the 2 samples in the VCF')
+})
+
 test('VEP’s CSQ parses under its header’s Format list, one row a consequence', async () => {
   const dir = mkdtempSync(path.join(tmpdir(), 'csq-'))
   const vcf = path.join(dir, 'vep.vcf')

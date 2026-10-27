@@ -445,6 +445,8 @@ layer encoder (`buildSourceRenderData`):
 - `ramps` holds the score's color bar where one ramp paints every row
   (`scoreGradientPaints`, the display's own rule): density, or a declared
   gradient.
+- `warnings` carries the worker's samples-metadata warnings, such as a
+  multi-wiggle's `samplesTsvLocation` leaving out a subtrack.
 
 A source paints the color the display gives it, through the tree sidebar's
 own rules (`dealValueColors`, `resolveRowColors`, `markColorOf`): its row
@@ -475,6 +477,9 @@ and paints the cells as the display does (`paintCellColors`,
   named as the display names them, in file order.
 - `legend` and `ramps`: the display's key, from `getVariantColorScales` over
   what the cells painted.
+- `warnings`: the samples-metadata warnings the display shows, such as a
+  `samplesTsvLocation` leaving out some of the VCF's samples
+  (`sourcesAndWarnings`, the sources RPC's own reader).
 
 **INFO comes back as typed columns, one per key.** A host compares a
 record's `AC` with its own genotype counts, so the value sits beside the

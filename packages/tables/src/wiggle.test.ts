@@ -1,3 +1,8 @@
+import { mkdtempSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import path from 'node:path'
+import { pathToFileURL } from 'node:url'
+
 import { rowPaletteColorAt } from '@jbrowse/core/ui/colors'
 import { cssColorToHex } from '@jbrowse/core/util/colorBits'
 
@@ -177,6 +182,22 @@ test('a line takes the color of the band between the cuts its score is in', asyn
     expect(bandOf(line.marks.low[i]!)).toBe(line.marks.color[i])
     expect(line.marks.low[i]).toBeLessThanOrEqual(line.marks.score[i]!)
   }
+})
+
+test('a samples file leaving out a subtrack warns, as the display does', async () => {
+  const tsv = path.join(mkdtempSync(path.join(tmpdir(), 'samples-')), 's.tsv')
+  writeFileSync(tsv, 'name\tgroup\nposneg_rw1\ta\nposneg_rw2\tb\n')
+  const t = await engine.wiggle({
+    ...MULTI_BIGWIG,
+    adapterConfig: {
+      ...MULTI_BIGWIG.adapterConfig,
+      samplesTsvLocation: { uri: pathToFileURL(tsv).href },
+    },
+  })
+  expect(t.sources.name).toEqual(['posneg_rw1', 'posneg_rw2'])
+  expect(t.warnings).toHaveLength(1)
+  expect(t.warnings[0]).toContain('posneg_rw3')
+  expect((await engine.wiggle(MULTI_BIGWIG)).warnings).toEqual([])
 })
 
 test('a multi-wiggle stacks its sources in the order rows.sort gives', async () => {
