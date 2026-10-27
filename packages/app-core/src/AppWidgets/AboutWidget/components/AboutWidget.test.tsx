@@ -8,6 +8,7 @@ import AboutWidget from './AboutWidget.tsx'
 
 describe('<AboutWidget />', () => {
   it('renders', () => {
+    jest.useFakeTimers({ now: new Date('2026-06-01') })
     const rpcConfig = ConfigurationSchema('NullRpc', {
       defaultDriver: {
         type: 'string',

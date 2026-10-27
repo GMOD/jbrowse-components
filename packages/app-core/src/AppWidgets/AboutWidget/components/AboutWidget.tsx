@@ -69,7 +69,7 @@ const AboutWidget = observer(function AboutWidget({
       </Typography>
       <br />
       <Typography align="center">
-        © 2019-2026 The Evolutionary Software Foundation
+        {`© 2019-${new Date().getFullYear()} The Evolutionary Software Foundation`}
       </Typography>
 
       <div className={classes.accordions}>
