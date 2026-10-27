@@ -18,10 +18,12 @@
 //        [--runs N] [--out dir] [--build dir] [--plugin dir] [--budget usd]
 //        [--system-prompt file] [--set dev|heldout|tutorials|all] [--price-in usd/M] [--price-out usd/M]
 //        [--provider anthropic|ollama] [--ollama-url url] [--cpu] [--no-think]
+//        [--num-ctx tokens]
 //
 // --cpu sets num_gpu 0 on each Ollama request and launches Chrome with
 // --disable-gpu, so nothing loads onto a GPU. --no-think turns off Ollama's
-// reasoning, which a slow CPU model can spend a whole turn on.
+// reasoning, which a slow CPU model can spend a whole turn on. --num-ctx sets
+// Ollama's context window, whose small default silently truncates the prompt.
 import { execFileSync } from 'node:child_process'
 import fs from 'node:fs'
 import http from 'node:http'
@@ -55,6 +57,7 @@ if (provider !== 'anthropic' && provider !== 'ollama') {
 const ollamaUrl = new URL(flag('ollama-url', 'http://127.0.0.1:11434'))
 const cpuOnly = args.includes('--cpu')
 const noThink = args.includes('--no-think')
+const numCtx = Number(flag('num-ctx', '0'))
 const model = flag(
   'model',
   provider === 'ollama' ? 'qwen3:4b' : 'claude-sonnet-5-5',
@@ -238,10 +241,13 @@ function serveProxy() {
           delete doc.temperature
           body = Buffer.from(JSON.stringify(doc))
         } catch {}
-      } else if ((cpuOnly || noThink) && body.length > 0) {
+      } else if ((cpuOnly || noThink || numCtx) && body.length > 0) {
         const doc = JSON.parse(body.toString('utf8'))
         if (cpuOnly) {
           doc.options = { ...doc.options, num_gpu: 0 }
+        }
+        if (numCtx) {
+          doc.options = { ...doc.options, num_ctx: numCtx }
         }
         if (noThink) {
           doc.think = false
