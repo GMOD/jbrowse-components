@@ -4,6 +4,7 @@ import {
   isAttributeLabels,
   opacityFadeOf,
   opacityLevel,
+  parseAttributeValue,
   readChannelValue,
 } from '@jbrowse/synteny-core'
 
@@ -57,11 +58,11 @@ export function ribbonOpacityOf(
     level,
     fadeOf: record => {
       if (labelIndex) {
-        const raw: unknown = record.get(attribute)
+        const parsed = parseAttributeValue(record.get(attribute))
         value[0] =
-          raw === undefined || raw === null
+          parsed === undefined
             ? Number.NaN
-            : (labelIndex.get(String(raw)) ?? Number.NaN)
+            : (labelIndex.get(String(parsed)) ?? Number.NaN)
       } else {
         value[0] = readChannelValue(record, attribute)
       }

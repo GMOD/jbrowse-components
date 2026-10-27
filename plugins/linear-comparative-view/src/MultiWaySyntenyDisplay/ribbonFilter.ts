@@ -1,5 +1,9 @@
 import { compilePredicates } from '@jbrowse/core/util/fieldPredicate'
-import { attributeOf, readChannelValue } from '@jbrowse/synteny-core'
+import {
+  attributeOf,
+  parseAttributeValue,
+  readChannelValue,
+} from '@jbrowse/synteny-core'
 
 import type { Feature } from '@jbrowse/core/util'
 import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
@@ -22,7 +26,7 @@ function ribbonField({ record, strand }: RibbonDatum, field: string): unknown {
     const value = readChannelValue(record, attribute)
     return Number.isNaN(value) ? undefined : value
   }
-  return record.get(attribute)
+  return parseAttributeValue(record.get(attribute))
 }
 
 /**

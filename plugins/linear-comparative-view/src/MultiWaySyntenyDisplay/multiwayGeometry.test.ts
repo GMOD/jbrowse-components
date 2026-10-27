@@ -729,6 +729,42 @@ describe('the ribbons', () => {
     expect(hidden.colors[1]).toBe(data.colors[1])
   })
 
+  test('a ribbon reads its tag as the worker parsed it: NA as no value, decimal text as its number', () => {
+    const s = stack({
+      features: [
+        new SimpleFeature({
+          ...pairFeature('g1', 100, 200).toJSON(),
+          x: 'INV',
+        }),
+        new SimpleFeature({
+          ...pairFeature('g2', 300, 400).toJSON(),
+          x: '0.50',
+        }),
+        new SimpleFeature({ ...pairFeature('g3', 500, 600).toJSON(), x: 'NA' }),
+      ],
+    })
+    const args = {
+      stack: s,
+      laneLinks: undefined,
+      ribbonColor: 'rgb(130,130,130)',
+      opacity: { value: 0.4 },
+      ribbonColorField: 'x',
+      attributeRanges: { x: { labels: ['INV', '0.5'], colors: {} } },
+      drawCurves: false,
+    }
+    const alpha = Math.round(0.4 * 255)
+    const data = ribbonData(buildRibbonGeometry(args).cells, 'ribbons:0')
+    expect(data.colors[1]).toBe(
+      withAbgrAlpha(cssColorToABGR(categoricalColor('0.5')), alpha),
+    )
+    const kept = ribbonData(
+      buildRibbonGeometry({ ...args, filter: [{ field: 'x', valid: true }] })
+        .cells,
+      'ribbons:0',
+    )
+    expect(kept.instanceCount).toBe(2)
+  })
+
   test('opacity by a numeric column fades each ribbon by its own pair', () => {
     const s = stack({
       features: [

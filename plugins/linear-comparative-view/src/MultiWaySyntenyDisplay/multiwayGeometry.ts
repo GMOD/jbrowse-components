@@ -21,6 +21,7 @@ import {
   colorSchemes,
   isAttributeLabels,
   makeNumericColorFunction,
+  parseAttributeValue,
   readChannelValue,
   resolveCategoricalMode,
   resolveNumericMode,
@@ -293,14 +294,10 @@ function ribbonPainter(
       ]),
     )
     return (_strand: number, feature: Feature) => {
-      const value: unknown = feature.get(categorical.attribute)
-      const label =
-        typeof value === 'string'
-          ? value
-          : typeof value === 'number'
-            ? String(value)
-            : undefined
-      return (label === undefined ? undefined : lut.get(label)) ?? slotColor
+      const value = parseAttributeValue(feature.get(categorical.attribute))
+      return (
+        (value === undefined ? undefined : lut.get(String(value))) ?? slotColor
+      )
     }
   }
   return () => slotColor
