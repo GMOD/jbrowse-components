@@ -51,8 +51,7 @@ export const wiggleEncodingConfigSchema = ConfigurationSchema(
     y: yFieldChannelSchema({ fenceQuantile: DEFAULT_CLIP_QUANTILE }),
     /**
      * #slot size
-     * A point's diameter in px. The track menu's Scatter point size writes
-     * it.
+     * A point's diameter in px. The track menu's Point size writes it.
      */
     size: wiggleSizeSchema,
     /**

@@ -433,6 +433,9 @@ layer encoder (`buildSourceRenderData`):
   under a row layout and all on row 0 in a shared panel.
 - `domain`, `scaleType` and `symlogConstant` are the axis `encoding.y`
   resolves to, and `rules` the reference lines it draws.
+- `mark` and `interpolate` are the config's `mark.type` and
+  `mark.interpolate`. `rendering`, the v4 plot name they map to, stays for
+  ggjbrowse's readers until they move.
 - `ramps` holds the score's color bar where one ramp paints every row
   (`scoreGradientPaints`, the display's own rule): density, or a declared
   gradient.

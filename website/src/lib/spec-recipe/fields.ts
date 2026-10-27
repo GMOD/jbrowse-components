@@ -1912,7 +1912,7 @@ export const trackFields: Record<string, FieldRecipe> = {
           note: 'The value the bars grow from, which a threshold color with no domain of its own also cuts at. No menu row writes it.',
         }
       : undefined,
-  'encoding.size': wiggleSizeStep('Scatter point size', 'Scatter'),
+  'encoding.size': wiggleSizeStep('Point size', 'Scatter'),
   'encoding.strokeWidth': wiggleSizeStep('Line width', 'a line'),
   'axis.tree': (value, { displayType }) => {
     if (typeof value !== 'boolean' || !displayType) {

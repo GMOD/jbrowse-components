@@ -17,7 +17,7 @@ export interface WiggleMarkObject {
 // Plot type radio per rendering the shaders draw, writing its `mark`.
 export const WIGGLE_PLOTS = [
   ['xyplot', { type: 'bar' }, 'Bar plot'],
-  ['density', { type: 'rect' }, 'Density'],
+  ['density', { type: 'rect' }, 'Heatmap'],
   ['line', { type: 'line', interpolate: 'step' }, 'Line (step)'],
   [
     'linecenter',

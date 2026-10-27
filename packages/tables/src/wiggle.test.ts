@@ -17,7 +17,11 @@ test('a BigWig region comes back as the wiggle display scales and colors it', as
   for (const table of [t.bins, t.marks]) {
     expect(new Set(Object.values(table).map(c => c.length)).size).toBe(1)
   }
-  expect(t.rendering).toBe('xyplot')
+  expect([t.mark, t.interpolate, t.rendering]).toEqual([
+    'bar',
+    'step',
+    'xyplot',
+  ])
   expect(t.marks.start).toHaveLength(n)
   const pos = new Set<string>()
   const neg = new Set<string>()
@@ -102,7 +106,7 @@ test('a zoomed-out min-max extent draws the max and min bands around the mean', 
 
 test('density fades each bin from white at the origin to the side it is on', async () => {
   const t = await engine.wiggle({ ...SIGNED_BIGWIG, display: { mark: 'rect' } })
-  expect(t.rendering).toBe('density')
+  expect(t.mark).toBe('rect')
   const lightness = (hex: string) =>
     Math.min(...[1, 3, 5].map(k => Number.parseInt(hex.slice(k, k + 2), 16)))
   for (const side of [1, -1]) {

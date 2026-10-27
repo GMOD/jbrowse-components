@@ -110,7 +110,7 @@ export function makeMarkSizeMenuItems(self: {
         step: 1,
       })
     : makeMarkSizeSubMenu({
-        label: 'Scatter point size',
+        label: 'Point size',
         applies: isScatterMode(self.renderingType),
         value: () => self.size,
         isDefault: unset('size'),

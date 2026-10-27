@@ -89,7 +89,7 @@ test('stepping finer doubles the resolution', () => {
 
 const PLOTS = [
   ['xyplot', { type: 'bar' }, 'Bar plot'],
-  ['density', { type: 'rect' }, 'Density'],
+  ['density', { type: 'rect' }, 'Heatmap'],
 ] as const
 
 // minimal stand-in for the display: the two axes a leaf writes, and the raw
@@ -130,12 +130,12 @@ test('several sources drill through the layout to the plot', () => {
 
 test('every layout offers every plot, overlapping density included', () => {
   const [multirow, overlapping] = rowsOf(plotMenu(2).item)
-  expect(labelsOf(multirow)).toEqual(['Bar plot', 'Density'])
-  expect(labelsOf(overlapping)).toEqual(['Bar plot', 'Density'])
+  expect(labelsOf(multirow)).toEqual(['Bar plot', 'Heatmap'])
+  expect(labelsOf(overlapping)).toEqual(['Bar plot', 'Heatmap'])
 })
 
 test('one source meets the plots flat, with no layout to drill through', () => {
-  expect(labelsOf(plotMenu(1).item)).toEqual(['Bar plot', 'Density'])
+  expect(labelsOf(plotMenu(1).item)).toEqual(['Bar plot', 'Heatmap'])
 })
 
 test('a faceted display keeps the groups when its sources drop to one', () => {
@@ -154,7 +154,7 @@ test('one leaf writes both axes in one action', () => {
   const { self, item } = plotMenu(2)
   const [multirow] = rowsOf(item)
   const density = rowsOf(multirow).find(
-    i => 'label' in i && i.label === 'Density',
+    i => 'label' in i && i.label === 'Heatmap',
   )
   if (!density || !('onClick' in density)) {
     throw new Error('no Density row under Multi-row')
@@ -165,7 +165,7 @@ test('one leaf writes both axes in one action', () => {
 
 test('a flat leaf writes its mark and leaves the layout alone', () => {
   const { self, item } = plotMenu(1)
-  const density = rowsOf(item).find(i => 'label' in i && i.label === 'Density')
+  const density = rowsOf(item).find(i => 'label' in i && i.label === 'Heatmap')
   if (!density || !('onClick' in density)) {
     throw new Error('no Density row')
   }

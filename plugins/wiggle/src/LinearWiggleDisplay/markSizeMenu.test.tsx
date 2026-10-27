@@ -33,9 +33,7 @@ test('a line width leaves the point size at its default', async () => {
   )
   display.setMark('point')
   expect(display.size).toBe(2)
-  expect(
-    await resetDisabled(display.trackMenuItems(), 'Scatter point size'),
-  ).toBe(true)
+  expect(await resetDisabled(display.trackMenuItems(), 'Point size')).toBe(true)
 })
 
 test('a point size writes encoding.size and leaves the line width alone', () => {

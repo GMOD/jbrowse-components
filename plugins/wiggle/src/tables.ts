@@ -48,6 +48,7 @@ import {
 } from './shared/wiggleColor.ts'
 import { WIGGLE_Y_PATHS } from './shared/wiggleYPaths.ts'
 
+import type { LineInterpolation, WiggleMark } from './renderingTypes.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 
@@ -146,10 +147,12 @@ export async function wiggleTables(
     .value
   const data = results[0]!
 
-  const renderingType = renderingOf(
-    readConfObject(conf, ['mark', 'type']),
-    readConfObject(conf, ['mark', 'interpolate']),
-  )
+  const mark: WiggleMark = readConfObject(conf, ['mark', 'type'])
+  const interpolate: LineInterpolation = readConfObject(conf, [
+    'mark',
+    'interpolate',
+  ])
+  const renderingType = renderingOf(mark, interpolate)
   const density = renderingType === 'density'
   const summaryField = summaryFieldOf(
     readConfObject(conf, ['encoding', 'y', 'field']),
@@ -389,6 +392,9 @@ export async function wiggleTables(
     domain,
     scaleType,
     symlogConstant,
+    mark,
+    interpolate,
+    /** @deprecated v4's name for the plot, which `mark` and `interpolate` say */
     rendering: renderingType,
     origin,
     rowLayout,

@@ -50,7 +50,7 @@ export const bigwigSpecs: ScreenshotSpec[] = [
     url: sessionSpec(VOLVOX, {
       sessionTracks: [
         wigModeTrack('xyplot', 'Bar plot'),
-        wigModeTrack('density', 'Density'),
+        wigModeTrack('density', 'Heatmap'),
         wigModeTrack('line', 'Line (step)'),
         wigModeTrack('linecenter', 'Line (interpolated)'),
         wigModeTrack('scatter', 'Scatter'),

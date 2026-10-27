@@ -167,12 +167,12 @@ export function WiggleCommonMixin() {
       },
       /**
        * #getter
-       * The extent actually drawn. Density maps score to color and has no
+       * The extent actually drawn. A heatmap maps score to color and has no
        * min-max presentation, so the autoscale domain reads this rather than
        * the raw slot; otherwise the color ramp spans the min and max while
        * the plot paints one summary, and the score legend reports a range
        * nothing on screen reaches. Single-wiggle defaults to min-max, so plain
-       * "plot type → Density" hit this.
+       * "Plot type → Heatmap" hit this.
        */
       get effectiveExtent(): Extent {
         return self.isDensityMode ? 'none' : this.extent

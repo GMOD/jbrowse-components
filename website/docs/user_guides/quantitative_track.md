@@ -21,7 +21,7 @@ The track menu's **Plot type** submenu (backed by the display's
 - Line (interpolated) - midpoint to midpoint, smoother for sparse signals
 - Scatter - individual points, for sparse data
 
-<Figure caption="One BigWig in every plot type: Bar plot, Density, Line (step), Line (interpolated) and Scatter." src="/img/bigwig_line.png" />
+<Figure caption="One BigWig in every plot type: Bar plot, Heatmap, Line (step), Line (interpolated) and Scatter." src="/img/bigwig_line.png" />
 
 ## Score options
 
