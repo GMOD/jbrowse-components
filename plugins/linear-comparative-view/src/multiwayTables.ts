@@ -22,8 +22,7 @@ import {
   unpack,
 } from '@jbrowse/synteny-core'
 
-import { thinWidthFade } from './LinearSyntenyDisplay/shaders/syntenyTypes.js.generated.ts'
-import { ribbonMaxPerpWidth } from './LinearSyntenyDisplay/syntenyRibbonPath.ts'
+import { ribbonThinFade } from './LinearSyntenyDisplay/syntenyRibbonPath.ts'
 import { KIND_BASE_TILE } from './LinearSyntenyRPC/syntenyKinds.ts'
 import {
   executeMultiWayFeatures,
@@ -66,6 +65,7 @@ import {
 } from './MultiWaySyntenyDisplay/layoutMultiWay.ts'
 import { ribbonColorScales } from './MultiWaySyntenyDisplay/legend.ts'
 import { buildRibbonGeometry } from './MultiWaySyntenyDisplay/multiwayGeometry.ts'
+import { MULTIWAY_FADE_THIN } from './MultiWaySyntenyDisplay/multiwayRenderTypes.ts'
 import { paintedRibbonColor } from './MultiWaySyntenyDisplay/ribbonColorConfigSchema.ts'
 import {
   laneFetchesFor,
@@ -670,8 +670,13 @@ export async function multiwayTables(
       corners.sx3 = bp3[i] ?? 0
       corners.sx4 = bp4[i] ?? 0
       const kind = kinds[i] ?? 0
-      const perp = ribbonMaxPerpWidth(corners, layer.height, layer.curves)
-      const thin = perp < 1
+      const { thin, fade } = ribbonThinFade(
+        corners,
+        layer.height,
+        layer.curves,
+        kind,
+        MULTIWAY_FADE_THIN,
+      )
       const { color, alpha } = unpack(packed)
       const target = instanceFeatureIdx[i] ?? 0
       const top = footOn(upper, corners.sx1, corners.sx2)
@@ -694,7 +699,7 @@ export async function multiwayTables(
       ribbons.lowerX1.push(corners.sx4)
       ribbons.lowerX2.push(corners.sx3)
       ribbons.color.push(color)
-      ribbons.alpha.push(alpha * (thin ? thinWidthFade(perp, kind, false) : 1))
+      ribbons.alpha.push(alpha * fade)
       ribbons.thin.push(thin)
       ribbons.bridge.push(toRow !== row + 1)
     }

@@ -1,6 +1,7 @@
 import {
   markerTravelsTooFar,
   spanOutsideBand,
+  thinWidthFade,
 } from './shaders/syntenyTypes.js.generated.ts'
 
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
@@ -281,6 +282,23 @@ export function ribbonMaxPerpWidth(
   isCurve: boolean,
 ) {
   return isCurve ? widestEdgePx(c) : ribbonPerpWidth(c, height)
+}
+
+// Whether the ribbon draws as a 1px centerline (`ribbonMaxPerpWidth` under a
+// pixel), and the alpha factor that centerline takes: the shader's own
+// `thinWidthFade` of its `ribbonPerpWidth`. A filled ribbon keeps its alpha.
+export function ribbonThinFade(
+  c: ProjectedCorners,
+  height: number,
+  isCurve: boolean,
+  kind: number,
+  fadeThin: boolean,
+) {
+  const thin = ribbonMaxPerpWidth(c, height, isCurve) < 1
+  return {
+    thin,
+    fade: thin ? thinWidthFade(ribbonPerpWidth(c, height), kind, fadeThin) : 1,
+  }
 }
 
 // Slack on the hull cull below, covering the widest thing a ribbon can paint

@@ -142,6 +142,8 @@ export function packedPx(map: LaneMap, px: number) {
   return (px - map.offset) / map.scale
 }
 
+export const MULTIWAY_FADE_THIN = true
+
 export function ribbonParams(
   layer: RibbonLayer,
   state: MultiWayRenderState,
@@ -152,7 +154,7 @@ export function ribbonParams(
     yTop: layer.yTop - state.scrollTopPx,
     height: layer.height,
     alpha: 1,
-    fadeThinAlignments: true,
+    fadeThinAlignments: MULTIWAY_FADE_THIN,
     hoveredFeatureId: state.hoveredFeatureId,
     clickedFeatureId: state.clickedFeatureId,
     offsetPx0: -(top.offset + state.dragOffsetPx),

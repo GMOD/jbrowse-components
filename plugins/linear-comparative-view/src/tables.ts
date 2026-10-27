@@ -26,12 +26,8 @@ import {
   drawOffscreenMates,
   offscreenMateColors,
 } from './LinearSyntenyDisplay/drawOffscreenMates.ts'
-import { thinWidthFade } from './LinearSyntenyDisplay/shaders/syntenyTypes.js.generated.ts'
 import { computeSyntenyColors } from './LinearSyntenyDisplay/syntenyColors.ts'
-import {
-  ribbonMaxPerpWidth,
-  ribbonPerpWidth,
-} from './LinearSyntenyDisplay/syntenyRibbonPath.ts'
+import { ribbonThinFade } from './LinearSyntenyDisplay/syntenyRibbonPath.ts'
 import { executeSyntenyFeaturesAndPositions } from './LinearSyntenyRPC/executeSyntenyFeaturesAndPositions.ts'
 import { computePresentCigarKinds } from './LinearSyntenyRPC/presentCigarKinds.ts'
 import {
@@ -495,14 +491,10 @@ export async function syntenyTables(
     corners.sx2 = c2 / q.bpPerPx
     corners.sx3 = c3 / t.bpPerPx
     corners.sx4 = c4 / t.bpPerPx
-    const thin = marker || ribbonMaxPerpWidth(corners, height, curves) < 1
+    const { thin, fade } = marker
+      ? { thin: true, fade: 1 }
+      : ribbonThinFade(corners, height, curves, kind, fadeThin)
     const { color, alpha } = unpack(packed)
-    const fade = marker
-      ? 1
-      : thin
-        ? level *
-          thinWidthFade(ribbonPerpWidth(corners, height), kind, fadeThin)
-        : level
     const qs = place(q, c1, c2)
     const ts = place(t, c4, c3)
     ribbons.alignment.push(instanceFeatureIdx[i]!)
@@ -516,7 +508,7 @@ export async function syntenyTables(
     ribbons.targetStart.push(ts.from)
     ribbons.targetEnd.push(ts.to)
     ribbons.color.push(color)
-    ribbons.alpha.push(alpha * fade)
+    ribbons.alpha.push(alpha * (marker ? 1 : level) * fade)
     ribbons.thin.push(thin)
   }
 

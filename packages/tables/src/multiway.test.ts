@@ -244,3 +244,44 @@ test('a lane reading backwards against the anchor flips, and its ribbons run str
   expect(new Set(t.ribbons.color)).toEqual(new Set([t.legend.color[1]]))
   expect(new Set(t.ribbons.gutter)).toEqual(new Set([0]))
 })
+
+test('a sub-pixel ribbon fades as the display fades it', async () => {
+  const dir = mkdtempSync(path.join(tmpdir(), 'multiway-'))
+  const file = path.join(dir, 'thin.paf')
+  const row = (start: number, length: number) =>
+    [
+      'A#1#chr1',
+      1_000_000,
+      start,
+      start + length,
+      '+',
+      'B#1#chr1',
+      1_000_000,
+      start,
+      start + length,
+      length,
+      length,
+      60,
+      `cg:Z:${length}M`,
+    ].join('\t')
+  writeFileSync(file, [row(0, 100), row(500_000, 100_000)].join('\n'))
+  const t = await engine.multiway({
+    adapterConfig: {
+      type: 'MultiGenomePAFAdapter',
+      pafLocation: {
+        uri: pathToFileURL(file).href,
+        locationType: 'UriLocation',
+      },
+    },
+    anchor: {
+      assemblyName: 'A',
+      regions: [{ refName: 'chr1', start: 0, end: 1_000_000 }],
+      width: 800,
+    },
+  })
+  const thin = t.ribbons.thin.indexOf(true)
+  const wide = t.ribbons.thin.indexOf(false)
+  expect(thin).toBeGreaterThanOrEqual(0)
+  expect(wide).toBeGreaterThanOrEqual(0)
+  expect(t.ribbons.alpha[thin]).toBeLessThan(t.ribbons.alpha[wide]! / 2)
+})

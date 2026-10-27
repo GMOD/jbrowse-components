@@ -14,7 +14,6 @@ import {
   hoverDarken,
   isCigarKind,
   isMarkerKind,
-  thinWidthFade,
 } from './shaders/syntenyTypes.js.generated.ts'
 import {
   buildFeaturePath,
@@ -22,8 +21,7 @@ import {
   isRibbonCulled,
   makeCornerScratch,
   projectCorners,
-  ribbonMaxPerpWidth,
-  ribbonPerpWidth,
+  ribbonThinFade,
   strokeCenterline,
   strokeFeatureSideEdges,
 } from './syntenyRibbonPath.ts'
@@ -254,10 +252,15 @@ export function drawSyntenyTrack(
     // two side edges coincide, so outlining one here would just overstrike the
     // centerline darker — and a sub-pixel ribbon isn't pickable in the first
     // place, so it can only be the clicked one after a zoom-out.
-    if (ribbonMaxPerpWidth(c, height, drawCurves) < 1) {
-      const perpW = ribbonPerpWidth(c, height)
-      const widthFade = thinWidthFade(perpW, kind, fadeThinAlignments)
-      style.stroke(ctx, r, g, b, fa * widthFade)
+    const { thin, fade } = ribbonThinFade(
+      c,
+      height,
+      drawCurves,
+      kind,
+      fadeThinAlignments,
+    )
+    if (thin) {
+      style.stroke(ctx, r, g, b, fa * fade)
       strokeCenterline(ctx, c, yTop, height, drawCurves)
     } else {
       style.fill(ctx, r, g, b, fa)
