@@ -12,4 +12,12 @@ The pixels are `@jbrowse/render-core`; the toolkit-free chrome contract is
 the linear genome view plugin depends on it, never the reverse.
 
 There is no barrel. The `exports` map in `package.json` is the API, pinned by
-`src/publicApi.test.ts`, and **@experimental**: pin an exact version.
+`src/publicApi.test.ts`, and **@experimental**. A runtime plugin gets the host's
+copy whatever it pins, so the version a plugin builds against fixes only its
+types.
+
+A subpath belongs in the map when an external display would import it: a
+foundation or mixin, a chrome piece, a host contract, a config-schema fragment,
+or a module whose types an exported declaration names. The foundations' own
+machinery (their autoruns and phase selectors) stays unexported, since the host
+serves every subpath to plugins (ADR-128).

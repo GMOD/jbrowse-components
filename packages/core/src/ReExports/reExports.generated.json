@@ -4559,13 +4559,6 @@
       ],
       "worker": "real"
     },
-    "@jbrowse/display-kit/foundationPaintInert": {
-      "package": "@jbrowse/display-kit",
-      "names": [
-        "foundationPaintInert"
-      ],
-      "worker": "real"
-    },
     "@jbrowse/display-kit/foundationSvgReady": {
       "package": "@jbrowse/display-kit",
       "names": [
@@ -4627,13 +4620,6 @@
       "package": "@jbrowse/display-kit",
       "names": [
         "GroupLabelChips"
-      ],
-      "worker": "real"
-    },
-    "@jbrowse/display-kit/groupLabelChipStyles": {
-      "package": "@jbrowse/display-kit",
-      "names": [
-        "useGroupLabelStyles"
       ],
       "worker": "real"
     },
@@ -4717,24 +4703,10 @@
       ],
       "worker": "real"
     },
-    "@jbrowse/display-kit/installClearHoverOnViewportChange": {
-      "package": "@jbrowse/display-kit",
-      "names": [
-        "installClearHoverOnViewportChange"
-      ],
-      "worker": "real"
-    },
     "@jbrowse/display-kit/installGlobalFetchAutorun": {
       "package": "@jbrowse/display-kit",
       "names": [
         "installGlobalFetchAutorun"
-      ],
-      "worker": "real"
-    },
-    "@jbrowse/display-kit/installPerRegionFetchAutoruns": {
-      "package": "@jbrowse/display-kit",
-      "names": [
-        "installPerRegionFetchAutoruns"
       ],
       "worker": "real"
     },
@@ -5087,13 +5059,6 @@
         "rampKeyScales",
         "rampTextColor",
         "valueRampOf"
-      ],
-      "worker": "real"
-    },
-    "@jbrowse/display-kit/viewportEmpty": {
-      "package": "@jbrowse/display-kit",
-      "names": [
-        "viewportEmpty"
       ],
       "worker": "real"
     },
