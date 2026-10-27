@@ -504,6 +504,52 @@ describe('the plot as a whole', () => {
     })
   })
 
+  it("shows the rows' order and writes a hand order as sort, dropping the tree", () => {
+    const rows = { field: 'strand', sort: ['-1', '1'], tree: '(-1,1);' }
+    const { apply, written, writes } = setup({ ...BAR, rows })
+    const order = screen.getByTestId('rows-order')
+    expect(order).toHaveValue('-1, 1')
+    fireEvent.change(order, { target: { value: '1, -1' } })
+    fireEvent.click(apply())
+    expect(written).toHaveBeenCalledWith(
+      writes({ rows: { field: 'strand', sort: ['1', '-1'] } }),
+    )
+  })
+
+  describe('the rows field, typed a keystroke at a time', () => {
+    const rows = { field: 'strand', sort: ['-1', '1'], labels: { 1: 'Plus' } }
+    const typeInto = (texts: string[]) => {
+      const field = screen.getByTestId('rows-field')
+      fireEvent.focus(field)
+      for (const value of texts) {
+        fireEvent.change(field, { target: { value } })
+      }
+    }
+
+    it('retyped to its field, keeps the arrangement', () => {
+      const { apply, written } = setup({ ...BAR, rows })
+      typeInto(['stran', 'strand'])
+      expect(screen.getByTestId('rows-order')).toHaveValue('-1, 1')
+      fireEvent.click(apply())
+      expect(written.mock.calls[0]![0]).not.toHaveProperty('rows')
+    })
+
+    it('another field drops it, and the order box with it', () => {
+      const { apply, written, writes } = setup({ ...BAR, rows })
+      typeInto(['stran', 'name'])
+      expect(screen.getByTestId('rows-order')).toHaveValue('')
+      fireEvent.click(apply())
+      expect(written).toHaveBeenCalledWith(writes({ rows: { field: 'name' } }))
+    })
+  })
+
+  it('keeps a half-typed order as typed', () => {
+    setup({ ...BAR, rows: { field: 'strand' } })
+    const order = screen.getByTestId('rows-order')
+    fireEvent.change(order, { target: { value: '1, ' } })
+    expect(order).toHaveValue('1, ')
+  })
+
   it('clears a facet when its field is emptied', () => {
     const { apply, written, writes } = setup({ ...BAR, facet: 'strand' })
     fireEvent.change(screen.getByTestId('facet-field'), {

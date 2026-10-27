@@ -39,7 +39,15 @@ const SplitControls = observer(function SplitControls({
   problems: MarkProblemIndex
   onChange: (plot: MarkPlot) => void
 }) {
-  const [order, setOrder] = useState(() => splitOrder(plot, kind))
+  // the text as typed, which "1, " must survive, until something else moves
+  // the order: a field change dropping it, or the JSON box
+  const written = splitOrder(plot, kind)
+  const [order, setOrder] = useState(written)
+  const [typedTo, setTypedTo] = useState(written)
+  if (written !== typedTo) {
+    setTypedTo(written)
+    setOrder(written)
+  }
   const field = splitField(plot, kind)
   const base = useRef<MarkPlot | undefined>(undefined)
   return (
@@ -78,8 +86,10 @@ const SplitControls = observer(function SplitControls({
           label="order (values first, comma-separated)"
           value={order}
           onChange={event => {
+            const next = withSplitOrder(plot, kind, event.target.value)
             setOrder(event.target.value)
-            onChange(withSplitOrder(plot, kind, event.target.value))
+            setTypedTo(splitOrder(next, kind))
+            onChange(next)
           }}
           slotProps={{ htmlInput: { 'data-testid': `${kind}-order` } }}
         />
