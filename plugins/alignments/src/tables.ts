@@ -133,6 +133,7 @@ import {
   sashimiArcHeightFraction,
   sashimiStrokeWidth,
 } from './features/sashimi/bandFeed.ts'
+import { visibleRegionJunctions } from './features/sashimi/computeOverlay.ts'
 import {
   junctionClass,
   junctionSource,
@@ -725,8 +726,6 @@ function junctions(
       a.start - b.start ||
       a.end - b.end,
   )
-  const footRegion = (refName: string, bp: number) =>
-    regionIndexOf(regionInfos, refName, bp) ?? -1
   return {
     start: merged.map(j => j.start),
     end: merged.map(j => j.end),
@@ -743,9 +742,14 @@ function junctions(
     ),
     strokeWidth: merged.map(j => sashimiStrokeWidth(j.count)),
     refName: merged.map(j => j.refName),
-    startRegion: merged.map(j => footRegion(j.refName, j.start)),
-    endRegion: merged.map(j => footRegion(j.refName, j.end)),
+    startRegion: merged.map(j => footRegion(regionInfos, j.refName, j.start)),
+    endRegion: merged.map(j => footRegion(regionInfos, j.refName, j.end)),
   }
+}
+
+/** The index of the region holding `bp`, -1 where none does. */
+function footRegion(regionInfos: RegionInfo[], refName: string, bp: number) {
+  return regionIndexOf(regionInfos, refName, bp) ?? -1
 }
 
 const ARC_SHAPE_NAMES = ['arc', 'flat', 'flatSplit', 'unplaced'] as const
@@ -910,8 +914,6 @@ function readConnectionTables(
       DPR_PAST_THE_ANTIALIASING_FLOOR,
     )
   const paint = { slotColor, colorField, widthOf }
-  const footRegion = (refName: string, bp: number) =>
-    regionIndexOf(regionInfos, refName, bp) ?? -1
   const bySection = new Map(
     [...dataByGroup.keys()].map(key => [
       key,
@@ -924,8 +926,8 @@ function readConnectionTables(
               arc => arc.p1RegionIndex === i,
             ),
             (start, end) => [
-              footRegion(refName, start),
-              footRegion(refName, end),
+              footRegion(regionInfos, refName, start),
+              footRegion(regionInfos, refName, end),
             ],
             paint,
           ),
@@ -1483,10 +1485,7 @@ export async function alignmentTables(
         columns: { section: label },
         tables: {
           junctions: junctions(
-            [...sectionData.get(key)!].map(([i, data]) => ({
-              refName: regions[i]!.refName,
-              data,
-            })),
+            visibleRegionJunctions(sectionData.get(key)!, regionInfos),
             regionInfos,
             paint,
             thresholds,
