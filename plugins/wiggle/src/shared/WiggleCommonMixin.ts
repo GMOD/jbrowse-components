@@ -139,14 +139,6 @@ export function WiggleCommonMixin() {
       },
       /**
        * #getter
-       * Interpolated-line gap threshold, as a multiple of the track's own mean
-       * point spacing (see gapBreakLimit). 0 keeps one connected line.
-       */
-      get maxGapMultiple(): number {
-        return getConf(confNode(self), 'maxGapMultiple')
-      },
-      /**
-       * #getter
        */
       get extent(): Extent {
         return getConf(confNode(self), 'extent')

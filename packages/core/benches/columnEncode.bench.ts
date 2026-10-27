@@ -452,7 +452,6 @@ function runEncodeScenario(fixture: SourceColumns[]) {
     summaryField: 'score',
     effectiveExtent: 'none',
     renderingType: 'xyplot',
-    maxGapMultiple: 0,
   }
 
   // Six driver literals, written out rather than shared or generated: a driver

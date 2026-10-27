@@ -174,7 +174,6 @@ function props(renderingType: string, extent: string): WiggleGpuProps {
     summaryField: 'score',
     effectiveExtent: extent,
     renderingType,
-    maxGapMultiple: 0,
   }
 }
 const xyProps = props('xyplot', 'none')

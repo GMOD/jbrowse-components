@@ -32,7 +32,6 @@ export interface WiggleDisplayViewsHost extends WiggleRenderStateModel {
   wiggleColor: ResolvedWiggleColor
   summaryField: string
   effectiveExtent: string
-  maxGapMultiple: number
   resolution: number
   yField: string
   /** `encoding.y.axis.title`, empty where it names none. */
@@ -117,7 +116,6 @@ export function wiggleDisplayViews(self: WiggleDisplayViewsHost) {
         summaryField: self.summaryField,
         effectiveExtent: self.effectiveExtent,
         renderingType: self.renderingType,
-        maxGapMultiple: self.maxGapMultiple,
       }
     },
   }

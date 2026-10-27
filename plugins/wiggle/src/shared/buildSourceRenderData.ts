@@ -2,7 +2,6 @@ import { cssColorToNormalizedRgb } from '@jbrowse/core/util/colorBits'
 import {
   RENDERING_TYPE_LINE,
   RENDERING_TYPE_LINE_CENTER,
-  gapBreakLimit,
 } from '@jbrowse/wiggle-core'
 
 import { renderingTypeToInt } from './wiggleComponentUtils.ts'
@@ -100,35 +99,6 @@ export interface WiggleGpuProps {
   // that produces it so a new caller cannot skip the resolution.
   effectiveExtent: string
   renderingType: string
-  // How many mean point spacings apart two interpolated-line points may be
-  // before the span counts as a hole (see gapBreakLimit). Lives in gpuProps,
-  // not the render state, because the break is baked into the instance buffer
-  // at encode time — so a change re-fires the per-region autorun and re-uploads
-  // rather than needing a shader uniform.
-  maxGapMultiple: number
-}
-
-// The center-to-center bp distance at which the interpolated line stops
-// connecting. Both backends read the single number computed here rather than
-// deriving their own, so an encoded break and a drawn break can't disagree.
-// Only linecenter connects across bins at all, so every other rendering leaves
-// it undefined and pays nothing.
-function layerGapLimitBp(
-  featurePositions: Uint32Array,
-  numFeatures: number,
-  multiple: number,
-  isLineCenter: boolean,
-) {
-  if (!isLineCenter || numFeatures < 3) {
-    return undefined
-  }
-  const last = (numFeatures - 1) * 2
-  return gapBreakLimit({
-    first: (featurePositions[0]! + featurePositions[1]!) / 2,
-    last: (featurePositions[last]! + featurePositions[last + 1]!) / 2,
-    count: numFeatures,
-    multiple,
-  })
 }
 
 export function encodeWiggleRegions(model: {
@@ -156,7 +126,6 @@ export function buildSourceRenderData(
     summaryField,
     effectiveExtent: extent,
     renderingType,
-    maxGapMultiple,
   } = gpuProps
   // A color per source paints both sides of the cut in it, so the plot reads
   // as one color each; otherwise the pair stands.
@@ -165,7 +134,6 @@ export function buildSourceRenderData(
     cssColorToNormalizedRgb(c),
   )
   const renderingTypeInt = renderingTypeToInt(renderingType)
-  const lineCenter = renderingTypeInt === RENDERING_TYPE_LINE_CENTER
   const defaultPosColor = cssColorToNormalizedRgb(wiggleColor.posColor)
   const defaultNegColor = cssColorToNormalizedRgb(wiggleColor.negColor)
   const sourcesByName = new Map(data.sources.map(s => [s.name, s]))
@@ -214,12 +182,6 @@ export function buildSourceRenderData(
           renderingType: renderingTypeInt,
           gapScore:
             renderingTypeInt === RENDERING_TYPE_LINE ? origin : undefined,
-          gapLimitBp: layerGapLimitBp(
-            layer.featurePositions,
-            layer.numFeatures,
-            maxGapMultiple,
-            lineCenter,
-          ),
         })
       }
     }

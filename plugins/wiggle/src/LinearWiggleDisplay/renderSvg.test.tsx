@@ -167,7 +167,6 @@ function makeModel(
       effectiveExtent: 'none',
       renderingType: 'xyplot',
       isDensityMode: false,
-      maxGapMultiple: 0,
     }),
     svgSidebar: {
       showTree: false,

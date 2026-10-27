@@ -71,7 +71,7 @@ test('a zoomed-out min-max extent draws the max and min bands around the mean', 
 
   const max = await engine.wiggle({
     ...wide,
-    display: { y: 'maxScore', extent: 'none' },
+    display: { encoding: { y: { field: 'maxScore' } }, extent: 'none' },
   })
   expect(max.marks.score).toEqual(t.bins.max)
 
@@ -257,32 +257,17 @@ describe('sources sharing one panel take the colors the display deals them', () 
   })
 })
 
-test('an interpolated line breaks into runs where the display breaks it', async () => {
-  const line = (maxGapMultiple: number) =>
-    engine.wiggle({
-      ...COVERAGE_BIGWIG,
-      bpPerPx: 5,
-      display: {
-        mark: { type: 'line', interpolate: 'linear' },
-        extent: 'none',
-        maxGapMultiple,
-      },
-    })
-  const broken = await line(1)
-  const runs = new Set(broken.marks.run)
-  expect(runs.size).toBeGreaterThan(1)
-  expect(runs.size).toBeLessThan(broken.marks.run.length)
-  const mid = (i: number) => (broken.marks.start[i]! + broken.marks.end[i]!) / 2
-  const gaps = broken.marks.run
-    .map((r, i) => i)
-    .filter(i => i > 0 && broken.marks.run[i] !== broken.marks.run[i - 1])
-    .map(i => mid(i) - mid(i - 1))
-  const links = broken.marks.run
-    .map((r, i) => i)
-    .filter(i => i > 0 && broken.marks.run[i] === broken.marks.run[i - 1])
-    .map(i => mid(i) - mid(i - 1))
-  expect(Math.min(...gaps)).toBeGreaterThan(Math.max(...links))
-  expect(new Set((await line(0)).marks.run).size).toBe(1)
+test('an interpolated line is one run, as the display draws it', async () => {
+  const { marks } = await engine.wiggle({
+    ...COVERAGE_BIGWIG,
+    bpPerPx: 5,
+    display: {
+      mark: { type: 'line', interpolate: 'linear' },
+      extent: 'none',
+    },
+  })
+  expect(marks.run.length).toBeGreaterThan(1)
+  expect(new Set(marks.run).size).toBe(1)
 })
 
 describe('several regions share the one domain the display autoscales to', () => {

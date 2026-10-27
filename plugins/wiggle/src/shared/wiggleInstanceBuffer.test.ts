@@ -48,7 +48,6 @@ function makeSource(
   scores: number[],
   starts: number[],
   ends: number[],
-  gapLimitBp?: number,
 ): SourceRenderData {
   const positions = new Uint32Array(scores.length * 2)
   for (let i = 0; i < scores.length; i++) {
@@ -62,23 +61,14 @@ function makeSource(
     color: [1, 0, 0],
     rowIndex: 0,
     renderingType,
-    gapLimitBp,
   }
 }
 
-const stepSource = (
-  scores: number[],
-  starts: number[],
-  ends: number[],
-  gapLimitBp?: number,
-) => makeSource(RENDERING_TYPE_LINE, scores, starts, ends, gapLimitBp)
+const stepSource = (scores: number[], starts: number[], ends: number[]) =>
+  makeSource(RENDERING_TYPE_LINE, scores, starts, ends)
 
-const centerSource = (
-  scores: number[],
-  starts: number[],
-  ends: number[],
-  gapLimitBp?: number,
-) => makeSource(RENDERING_TYPE_LINE_CENTER, scores, starts, ends, gapLimitBp)
+const centerSource = (scores: number[], starts: number[], ends: number[]) =>
+  makeSource(RENDERING_TYPE_LINE_CENTER, scores, starts, ends)
 
 const fillSource = (scores: number[], starts: number[], ends: number[]) =>
   makeSource(RENDERING_TYPE_XYPLOT, scores, starts, ends)
@@ -266,44 +256,16 @@ describe('packLineCenterInstances', () => {
   })
 })
 
-// The center-line connects consecutive pairs regardless of bp-adjacency, so a
-// hole is the only thing that may break the run — encoded as the same
-// NO_PREV_START the source start uses, which collapses that capsule in the
-// shader. buildSourceRenderData supplies the threshold so this and
-// drawLineCenter break in the same places.
-describe('packLineCenterInstances gap breaks', () => {
+// The center line connects consecutive pairs regardless of bp-adjacency, so
+// only the source start takes NO_PREV_START.
+test('packLineCenterInstances draws a chord across a hole', () => {
   // bins at 0..10, 10..20, then a hole, then 1000..1010
-  const starts = [0, 10, 1000]
-  const ends = [10, 20, 1010]
-  const scores = [1, 2, 3]
-
-  test('a gap past gapLimitBp restarts the run', () => {
-    const buf = packLineCenterInstances([
-      centerSource(scores, starts, ends, 50),
-    ])
-    // the in-run feature still links to its predecessor
-    expect(readCenter(buf, 1).prevStart).toBe(0)
-    expect(readCenter(buf, 1).prevScore).toBe(1)
-    // the one across the hole does not
-    expect(readCenter(buf, 2).prevStart).toBe(NO_PREV_START)
-    expect(readCenter(buf, 2).prevScore).toBe(0)
-  })
-
-  test('a gap within gapLimitBp stays connected', () => {
-    const buf = packLineCenterInstances([
-      centerSource(scores, starts, ends, 5000),
-    ])
-    expect(readCenter(buf, 2).prevStart).toBe(10)
-    expect(readCenter(buf, 2).prevScore).toBe(2)
-  })
-
-  // buildSourceRenderData leaves the limit unset for every rendering but this
-  // one, which is one connected run.
-  test('no limit means one connected run, as before', () => {
-    const buf = packLineCenterInstances([centerSource(scores, starts, ends)])
-    expect(readCenter(buf, 2).prevStart).toBe(10)
-    expect(readCenter(buf, 2).prevScore).toBe(2)
-  })
+  const buf = packLineCenterInstances([
+    centerSource([1, 2, 3], [0, 10, 1000], [10, 20, 1010]),
+  ])
+  expect(readCenter(buf, 0).prevStart).toBe(NO_PREV_START)
+  expect(readCenter(buf, 2).prevStart).toBe(10)
+  expect(readCenter(buf, 2).prevScore).toBe(2)
 })
 
 // A region's layers feed exactly one of the three packers a rendering can
@@ -383,12 +345,9 @@ describe('packBandInstances', () => {
   const starts = [0, 100, 300]
   const ends = [100, 200, 400]
 
-  function bandSource(
-    renderingType: WiggleRenderingType,
-    gapLimitBp?: number,
-  ): SourceRenderData {
+  function bandSource(renderingType: WiggleRenderingType): SourceRenderData {
     return {
-      ...makeSource(renderingType, max, starts, ends, gapLimitBp),
+      ...makeSource(renderingType, max, starts, ends),
       negColor: [0, 0, 1],
       band: { minScores: new Float32Array(min) },
     }
@@ -467,22 +426,15 @@ describe('packBandInstances', () => {
   })
 
   // The ribbon's trapezoid runs from the previous bin's midpoint, so it needs
-  // that bin's span and range, and breaks exactly where the mean stroke does.
-  test('the interpolated band links to the previous bin within the gap limit', () => {
-    const buf = packBandInstances([bandSource(RENDERING_TYPE_LINE_CENTER, 150)])
+  // that bin's span and range, across a hole as the mean stroke does.
+  test('the interpolated band links to the previous bin', () => {
+    const buf = packBandInstances([bandSource(RENDERING_TYPE_LINE_CENTER)])
     const first = readBand(buf, 0)
     const second = readBand(buf, 1)
     const third = readBand(buf, 2)
     expect(first.prevStart).toBe(NO_PREV_START)
     expect([second.prevStart, second.prevEnd]).toEqual([0, 100])
     expect([second.prevMin, second.prevMax]).toEqual([2, 9])
-    // centers 150 and 350 sit 200bp apart, past the 150bp limit
-    expect(third.prevStart).toBe(NO_PREV_START)
-
-    const line = packLineCenterInstances([
-      centerSource([5, 8, 1], starts, ends, 150),
-    ])
-    expect(readCenter(line, 2).prevStart).toBe(NO_PREV_START)
-    expect(readCenter(line, 1).prevStart).toBe(0)
+    expect([third.prevStart, third.prevEnd]).toEqual([100, 200])
   })
 })

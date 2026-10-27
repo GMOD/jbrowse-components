@@ -35,11 +35,10 @@ export const RENDERING_TYPE_SCATTER: WiggleRenderingType =
 export const RENDERING_TYPE_LINE_CENTER: WiggleRenderingType =
   GENERATED_RENDERING_TYPE_LINE_CENTER
 
-// `prevStartEnd.x` sentinel meaning "no previous feature" — the source start,
-// or a hole wider than `gapLimitBp`. Larger than any genomic coordinate, so it
-// cannot collide with a real start, and the shader collapses that quad to
-// nothing. wiggle.slang's, generated in, because the encoder writes it and the
-// shader tests for it.
+// `prevStartEnd.x` sentinel meaning "no previous feature", the source start.
+// Larger than any genomic coordinate, so it cannot collide with a real start,
+// and the shader collapses that quad to nothing. wiggle.slang's, generated in,
+// because the encoder writes it and the shader tests for it.
 export const NO_PREV_START = GENERATED_NO_PREV_START
 
 // Narrowest an xyplot bar / density column paints, in CSS px, so a bin under a
@@ -122,13 +121,6 @@ export interface SourceRenderData {
   colorsAbgr?: Uint32Array
   // A line plot's color below the pivot; `color` is above.
   negColor?: [number, number, number]
-  // Center-to-center bp distance past which the interpolated (linecenter) line
-  // treats the span as a hole and starts a new run instead of drawing a chord
-  // across it. Computed once per layer by buildSourceRenderData (see
-  // gapBreakLimit) precisely so the two backends can't derive different numbers
-  // — the Canvas2D path reads it directly, the GPU path has it baked into the
-  // instance buffer as a NO_PREV_START sentinel. `undefined` never breaks.
-  gapLimitBp?: number
   // The score a step line rises from and falls to where its bins do not abut:
   // the `origin` bars grow from, so the line traces the bars' outline. Both
   // backends read it off the layer; 0 while unset.

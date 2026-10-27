@@ -19,8 +19,6 @@ import {
 } from '@jbrowse/core/util/colorBits'
 import { NO_PREV_START, RENDERING_TYPE_LINE_CENTER } from '@jbrowse/wiggle-core'
 
-import { centerLinksToPrevious } from '../src/shared/wiggleComponentUtils.ts'
-
 import type { WiggleGpuProps } from '../src/shared/buildSourceRenderData.ts'
 import type { SourceRenderData } from '@jbrowse/wiggle-core'
 
@@ -129,10 +127,9 @@ export function packCenterLine28(sources: SourceRenderData[]) {
     const positions = source.featurePositions
     const scores = source.featureScores
     const n = source.numFeatures
-    const gapLimitBp = source.gapLimitBp ?? Number.POSITIVE_INFINITY
     for (let i = 0; i < n; i++) {
       const pi = i * 2
-      const linked = centerLinksToPrevious(positions, i, gapLimitBp)
+      const linked = i > 0
       u32[off] = positions[pi]!
       u32[off + 1] = positions[pi + 1]!
       f32[off + 2] = scores[i]!
@@ -161,10 +158,8 @@ export function packBand36(sources: SourceRenderData[]) {
       const maxScores = source.featureScores
       const { minScores } = band
       const centerLine = source.renderingType === RENDERING_TYPE_LINE_CENTER
-      const gapLimitBp = source.gapLimitBp ?? Number.POSITIVE_INFINITY
       for (let i = 0; i < source.numFeatures; i++) {
-        const linked =
-          centerLine && centerLinksToPrevious(positions, i, gapLimitBp)
+        const linked = centerLine && i > 0
         u32[off] = positions[i * 2]!
         u32[off + 1] = positions[i * 2 + 1]!
         u32[off + 2] = linked ? positions[i * 2 - 2]! : NO_PREV_START

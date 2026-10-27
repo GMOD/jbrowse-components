@@ -46,7 +46,6 @@ import {
   wiggleMarkSources,
   wiggleSharesPanel,
 } from './shared/wiggleColor.ts'
-import { centerLinksToPrevious } from './shared/wiggleComponentUtils.ts'
 import { WIGGLE_Y_PATHS } from './shared/wiggleYPaths.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -211,7 +210,6 @@ export async function wiggleTables(
     field: readConfObject(conf.rows, 'field'),
     sort: readConfObject(conf.rows, 'sort'),
   })
-  const maxGapMultiple: number = readConfObject(conf, 'maxGapMultiple')
   const sources = orderRowsByDomain(
     data.sources,
     readConfObject(conf.rows, 'sort'),
@@ -256,7 +254,6 @@ export async function wiggleTables(
       summaryField,
       effectiveExtent: extent,
       renderingType,
-      maxGapMultiple,
     }).map(layer => ({
       layer,
       source: sources[layer.rowIndex]!.name,
@@ -321,12 +318,9 @@ export async function wiggleTables(
         marks.color.push(color)
         marks.run.push(run)
       }
-      const gapLimitBp = layer.gapLimitBp ?? Number.POSITIVE_INFINITY
+      run++
       for (let i = 0; i < layer.numFeatures; i++) {
         const score = layer.featureScores[i]!
-        if (!centerLinksToPrevious(layer.featurePositions, i, gapLimitBp)) {
-          run++
-        }
         if (layer.band && bandColors) {
           const min = layer.band.minScores[i]!
           const edges = [min, ...cuts.filter(c => c > min && c < score), score]

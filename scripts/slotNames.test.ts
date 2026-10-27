@@ -17,8 +17,6 @@ const ALLOWED: Record<string, string> = {
   minGcPercent: "an adapter's guide search parameter, not a display filter",
   maxGcPercent: "an adapter's guide search parameter, not a display filter",
   maxLayoutHeight: 'the pileup layout cap, unchanged by ADR-240',
-  maxGapMultiple:
-    'a line-break threshold, which Vega-Lite spells only as invalid data',
   maxFeatureScreenDensity:
     "v4.3.0's too-many-features gate, which skips the fetch rather than a part",
   minBpPerPx: ZOOM_INTERVAL,

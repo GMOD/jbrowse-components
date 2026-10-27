@@ -426,9 +426,8 @@ layer encoder (`buildSourceRenderData`):
   color, as the display fills it. Under a gradient, a heatmap's unset pair
   included, the color is the shared ramp's (`makeDensityLutFillFn`) over the
   resolved domain.
-- `run` numbers an interpolated line's stretches, starting a new one where
-  the display breaks the line (`centerLinksToPrevious` over the encoder's
-  `gapLimitBp`).
+- `run` numbers the layers' stretches, one per layer, since the display
+  draws an interpolated line across every hole.
 - The sources stack in the order `rows.sort` gives them
   (`orderRowsByDomain`, the tree sidebar's own rule), each on its `row`
   under a row layout and all on row 0 in a shared panel.

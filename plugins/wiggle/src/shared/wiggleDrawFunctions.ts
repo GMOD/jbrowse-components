@@ -38,7 +38,6 @@ import { appendPointMarker, makeScoreNormalizer } from '@jbrowse/wiggle-core'
 import { WIGGLE_MIN_PX } from '../util.ts'
 import { makeDensityLutFillFn } from './getDensityColor.ts'
 import { WHISKER_BAND_OPACITY } from './shaders/wiggleBand.consts.generated.ts'
-import { centerLinksToPrevious } from './wiggleComponentUtils.ts'
 
 import type {
   MarkContext2D,
@@ -411,14 +410,12 @@ export function drawLine({
 // Point-to-point line: connects the score at each feature's bp midpoint to its
 // neighbor's, instead of the stepped bar-tops drawLine traces. Connects
 // consecutive pairs regardless of bp-adjacency, so sporadic non-tiling bins in
-// reduced data don't dash the line — only a hole wider than `gapLimitBp` breaks
-// the run, and that threshold is the layer's own (see buildSourceRenderData), so
-// this and the GPU's NO_PREV_START encoding break in the same places.
+// reduced data don't dash the line.
 //
-// A break opens a new subpath with a zero-length segment rather than a bare
-// moveTo: under the round caps this mode already sets, that paints a dot, which
-// is what the shader's collapsed capsule draws at the same spot. Without it an
-// isolated point between two holes would vanish on Canvas2D and show on the GPU.
+// The first point opens its subpath with a zero-length segment rather than a
+// bare moveTo: under the round caps this mode sets, that paints a dot, which is
+// what the shader's collapsed capsule draws there, so a lone point shows on
+// both backends.
 export function drawLineCenter({
   ctx,
   source,
@@ -445,7 +442,6 @@ export function drawLineCenter({
   const positions = source.featurePositions
   const scores = source.featureScores
   const toX = makeBpMapper(block)
-  const gapLimitBp = source.gapLimitBp ?? Number.POSITIVE_INFINITY
   const colorToY = makeColorToY(rowHeight, domainY, scaleType, symlogConstant)
   const rowBottom = rowTop + rowHeight
   strokeByBands(
@@ -457,7 +453,7 @@ export function drawLineCenter({
         const cx = (toX(positions[i * 2]!) + toX(positions[i * 2 + 1]!)) / 2
         const colorY = colorToY(scores[i]!) + rowTop
         const cy = Math.min(Math.max(colorY, rowTop), rowBottom)
-        if (!centerLinksToPrevious(positions, i, gapLimitBp)) {
+        if (i === 0) {
           pen.moveTo(cx, cy, colorY)
         }
         pen.lineTo(cx, cy, colorY)
@@ -493,11 +489,8 @@ export function drawMinMaxBand({
   const { minScores } = band
   const scoreToY = makeScoreToY(rowHeight, domainY, scaleType, symlogConstant)
   const toX = makeBpMapper(block)
-  const gapLimitBp = source.gapLimitBp ?? Number.POSITIVE_INFINITY
   const linked = (i: number) =>
-    interpolated
-      ? centerLinksToPrevious(positions, i, gapLimitBp)
-      : positions[i * 2 - 1] === positions[i * 2]
+    interpolated || positions[i * 2 - 1] === positions[i * 2]
 
   const polygons: [number, number][] = []
   let start = 0

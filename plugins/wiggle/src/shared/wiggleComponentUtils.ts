@@ -32,21 +32,6 @@ export function getRowTop(rowIndex: number, rowHeight: number) {
   return rowIndex * rowHeight
 }
 
-// The interpolated line's break rule, shared by its line and band on both
-// backends.
-export function centerLinksToPrevious(
-  positions: Uint32Array,
-  i: number,
-  gapLimitBp: number,
-) {
-  return (
-    i > 0 &&
-    (positions[i * 2]! + positions[i * 2 + 1]!) / 2 -
-      (positions[i * 2 - 2]! + positions[i * 2 - 1]!) / 2 <=
-      gapLimitBp
-  )
-}
-
 export function isScatterMode(renderingType: string) {
   return renderingTypeToInt(renderingType) === RENDERING_TYPE_SCATTER
 }

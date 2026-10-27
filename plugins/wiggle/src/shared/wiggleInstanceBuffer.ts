@@ -29,7 +29,6 @@ import {
   INSTANCE_STRIDE_BYTES as CENTER_STRIDE_BYTES,
   INSTANCE_STRIDE_WORDS as CENTER_STRIDE_WORDS,
 } from './shaders/wiggleLineCenter.iface.generated.ts'
-import { centerLinksToPrevious } from './wiggleComponentUtils.ts'
 
 import type { SourceRenderData } from '@jbrowse/wiggle-core'
 
@@ -155,9 +154,8 @@ export function packLineInstances(sources: SourceRenderData[]) {
 // negColor. The shader draws one segment per feature from the previous
 // feature's bp midpoint to this one's. It connects consecutive pairs regardless
 // of bp-adjacency, so the sporadic non-tiling bins reduced BigWig data is full
-// of don't dash the line — only a hole past `gapLimitBp` breaks the run,
-// encoded exactly like the source start (NO_PREV_START, the shader's own
-// constant) so the run restarts there instead of one chord spanning the hole.
+// of don't dash the line; the source's first feature takes NO_PREV_START, the
+// shader's own constant, so no chord reaches it.
 // prevStartEnd carries the previous feature's whole span, which the shader
 // averages in clip space exactly as it does the current feature's, so the joint
 // lands on one point.
@@ -179,13 +177,9 @@ export function packLineCenterInstances(sources: SourceRenderData[]) {
     const positions = source.featurePositions
     const scores = source.featureScores
     const n = source.numFeatures
-    // Read off the layer rather than recomputed here, so the sentinel this
-    // writes and the break drawLineCenter takes are one decision
-    // (buildSourceRenderData's layerGapLimitBp).
-    const gapLimitBp = source.gapLimitBp ?? Number.POSITIVE_INFINITY
     for (let i = 0; i < n; i++) {
       const pi = i * 2
-      const linked = centerLinksToPrevious(positions, i, gapLimitBp)
+      const linked = i > 0
       u32[off + CENTER_U32.startEnd] = positions[pi]!
       u32[off + CENTER_U32.startEnd + 1] = positions[pi + 1]!
       f32[off + CENTER_F32.score] = scores[i]!
@@ -221,10 +215,8 @@ export function packBandInstances(sources: SourceRenderData[]) {
       const posAbgr = colorOf(source)
       const negAbgr = negColorOf(source)
       const centerLine = source.renderingType === RENDERING_TYPE_LINE_CENTER
-      const gapLimitBp = source.gapLimitBp ?? Number.POSITIVE_INFINITY
       for (let i = 0; i < source.numFeatures; i++) {
-        const linked =
-          centerLine && centerLinksToPrevious(positions, i, gapLimitBp)
+        const linked = centerLine && i > 0
         u32[off + BAND_U32.startEnd] = positions[i * 2]!
         u32[off + BAND_U32.startEnd + 1] = positions[i * 2 + 1]!
         u32[off + BAND_U32.prevStartEnd] = linked

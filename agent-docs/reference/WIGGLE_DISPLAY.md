@@ -204,20 +204,19 @@ source collapses onto row 0.
 `effectiveRowHeight` must equal the renderer's `getRowHeight(...)`. `numRows` is
 floored at 1 or the shader seeds the row transform with Infinity.
 
-## Three gap rules, one owner each
+## Two gap rules
 
 - **Step line** breaks on bp adjacency, and at a break rises from and falls to
   the `origin` bars grow from, so the line traces the bars' outline. The layer
   carries it as `gapScore` and both backends read it there; the shader draws
   `prevScore`/`nextScore` as plain scores and tests for no sentinel.
-- **`linecenter`** connects consecutive pairs regardless of adjacency (reduced
-  BigWig data is full of non-tiling bins); only a hole past `gapLimitBp` breaks
-  it, computed once per layer and measured in **bp, not px** — px drifts from
-  the encoded break wherever a block is clipped. `centerLinksToPrevious` applies
-  it for the stroke and the min-max band on both backends, so the ribbon breaks
-  where the line does.
-- **`DEFAULT_GAP_BREAK_MULTIPLE` is 0 (off)** after shipping at 20;
-  `gapBreak.ts`.
+- **`linecenter`** connects every consecutive pair, a hole included (reduced
+  BigWig data is full of non-tiling bins), and so does its min-max band. Only
+  the source start takes `NO_PREV_START`.
+- A hole break on `linecenter`, a multiple of the series' mean spacing
+  (`maxGapMultiple`), shipped at 20, went off by default, and was removed on
+  2026-10-27: a broken line reads as missing data whether or not data is
+  missing there, and nothing wrote the slot.
 
 ## `y`, `extent`, and the effective extent
 

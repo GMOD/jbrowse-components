@@ -738,69 +738,36 @@ test('a line on a cut takes the color above it, as the shader does', () => {
   expect(mock.strokeStyles).toEqual(['rgb(128,128,128)'])
 })
 
-// The interpolated line bridges non-adjacent bins on purpose (sporadic gaps in
-// reduced BigWig data must not dash it), so only a hole past the layer's
-// gapLimitBp breaks the run. The threshold is computed once in
-// buildSourceRenderData and carried on the layer, so these breaks land in the
-// same places the GPU's NO_PREV_START encoding puts them.
-describe('drawLineCenter gap breaks', () => {
-  const centerState = {
-    ...lineState,
-    renderingType: RENDERING_TYPE_LINE_CENTER,
-  }
-  // block maps 1000bp onto 800px, so 1bp = 0.8px. Centers at 50, 150 and 700bp
-  // => 40, 120 and 560px. The last gap is 550bp, the first 100bp.
-  function drawWithLimit(gapLimitBp?: number) {
-    const mock = createMockCanvas()
-    paintWiggle(
-      mock.ctx,
-      new Map([
+// The interpolated line bridges non-adjacent bins on purpose: sporadic gaps in
+// reduced BigWig data must not dash it, and a chord across a hole reads as
+// continuous with its neighbours, so one moveTo opens the only run.
+test('drawLineCenter draws a chord across a hole', () => {
+  const mock = createMockCanvas()
+  // block maps 1000bp onto 800px: centers at 50, 150 and 700bp => 40, 120
+  // and 560px, past a 550bp hole
+  paintWiggle(
+    mock.ctx,
+    new Map([
+      [
+        0,
         [
-          0,
-          [
-            {
-              ...makeSource(
-                [5, 5, 5],
-                [0, 100, 650],
-                [100, 200, 750],
-                RENDERING_TYPE_LINE_CENTER,
-              ),
-              gapLimitBp,
-            },
-          ],
+          makeSource(
+            [5, 5, 5],
+            [0, 100, 650],
+            [100, 200, 750],
+            RENDERING_TYPE_LINE_CENTER,
+          ),
         ],
-      ]),
-      [lineBlock],
-      centerState,
-    )
-    return mock.ctx
-  }
-
-  test('no limit connects every consecutive pair (previous behavior)', () => {
-    const ctx = drawWithLimit()
-    const moves = ctx.moveTo.mock.calls as [number, number][]
-    const lines = ctx.lineTo.mock.calls as [number, number][]
-    // one moveTo to open, then a segment to each subsequent midpoint
-    expect(moves).toHaveLength(1)
-    expect(moves[0]![0]).toBeCloseTo(40)
-    expect(lines.map(l => l[0])).toEqual([40, 120, 560])
-  })
-
-  test('a hole past the limit restarts the run instead of drawing a chord', () => {
-    // 300bp limit: the 100bp gap stays connected, the 550bp one breaks
-    const ctx = drawWithLimit(300)
-    const moves = ctx.moveTo.mock.calls as [number, number][]
-    const lines = ctx.lineTo.mock.calls as [number, number][]
-    expect(moves.map(m => m[0])).toEqual([40, 560])
-    // no segment spans 120 -> 560; the second run opens with its own dot
-    expect(lines.map(l => l[0])).toEqual([40, 120, 560])
-    expect(lines.at(-1)).toEqual(moves.at(-1))
-  })
-
-  test('a limit wider than every gap leaves the line whole', () => {
-    const ctx = drawWithLimit(10_000)
-    expect(ctx.moveTo.mock.calls).toHaveLength(1)
-  })
+      ],
+    ]),
+    [lineBlock],
+    { ...lineState, renderingType: RENDERING_TYPE_LINE_CENTER },
+  )
+  const moves = mock.ctx.moveTo.mock.calls as [number, number][]
+  const lines = mock.ctx.lineTo.mock.calls as [number, number][]
+  expect(moves).toHaveLength(1)
+  expect(moves[0]![0]).toBeCloseTo(40)
+  expect(lines.map(l => l[0])).toEqual([40, 120, 560])
 })
 
 // The sub-1 log domain, end to end through the draw rather than through the
@@ -886,8 +853,7 @@ describe('a log domain entirely under 1', () => {
 // answer it the way the GPU passes do, by drawing what the layers were
 // encoded FOR. Reading `state` instead pairs the new painter with the old
 // layers, which is neither plot: the layer SET is chosen by the rendering
-// (`buildSourceRenderData`'s `filled` splits whiskers by sign) and so is
-// `gapLimitBp`.
+// (`buildSourceRenderData`'s `filled` splits whiskers by sign).
 //
 // Only this test may build a source whose rendering differs from its state.
 describe('a plot-type switch mid-frame', () => {
@@ -952,12 +918,10 @@ describe('the whiskers band', () => {
     starts: number[],
     ends: number[],
     renderingType: WiggleRenderingType,
-    gapLimitBp?: number,
   ): SourceRenderData {
     return {
       ...makeSource(max, starts, ends, renderingType),
       color: posColor,
-      gapLimitBp,
       negColor,
       band: { minScores: new Float32Array(min) },
     }
@@ -1016,9 +980,9 @@ describe('the whiskers band', () => {
     ])
   })
 
-  // Centers at 50, 150 and 700bp => 40, 120 and 560px; the 550bp hole passes
-  // the 300bp limit, so the third bin is a run of one and has no area.
-  test('an interpolated band joins bin midpoints and breaks where the stroke does', () => {
+  // Centers at 50, 150 and 700bp => 40, 120 and 560px, the band spanning the
+  // 550bp hole as the stroke does
+  test('an interpolated band joins bin midpoints across a hole', () => {
     const { ctx } = paint(
       [
         bandLayer(
@@ -1027,7 +991,6 @@ describe('the whiskers band', () => {
           [0, 100, 650],
           [100, 200, 750],
           RENDERING_TYPE_LINE_CENTER,
-          300,
         ),
       ],
       RENDERING_TYPE_LINE_CENTER,
@@ -1035,6 +998,8 @@ describe('the whiskers band', () => {
     expect(points(ctx.moveTo.mock.calls)).toEqual([[40, 40]])
     expect(points(ctx.lineTo.mock.calls)).toEqual([
       [120, 80],
+      [560, 20],
+      [560, 180],
       [120, 120],
       [40, 160],
     ])
