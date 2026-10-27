@@ -263,10 +263,10 @@ export function getAlignmentsColorScales(model: {
   const merge = drawnArcs.some(
     a => a.color !== undefined && readColors.has(a.color),
   )
-  const { ramps = [], colorTitle } = model
-  const readTitle = ramps.some(r => r.id === READS_RAMP_ID)
-    ? undefined
-    : colorTitle
+  const { ramps, readTitle } = titledReadColorKey(
+    model.ramps ?? [],
+    model.colorTitle,
+  )
   const readSection = merge
     ? {
         id: 'reads',
@@ -287,11 +287,7 @@ export function getAlignmentsColorScales(model: {
   readSection.items = oneRowPerSplitTwin(readSection.items)
   arcSection.items = oneRowPerSplitTwin(arcSection.items)
   return [
-    ...ramps.map(r =>
-      r.id === READS_RAMP_ID && colorTitle !== undefined
-        ? { ...r, title: colorTitle }
-        : r,
-    ),
+    ...ramps,
     scaleOf(readSection.id, readSection.title, readSection.items),
     scaleOf(arcSection.id, arcSection.title, arcSection.items),
     scaleOf(
@@ -301,6 +297,26 @@ export function getAlignmentsColorScales(model: {
     ),
     scaleOf('sashimi', SASHIMI_LEGEND_TITLE, sashimi),
   ]
+}
+
+/**
+ * Where `colorTitle` heads the read colors: over the read fill's color bar
+ * while the fill is a ramp, so `ramps` carries it there, else over the read
+ * rows, as `readTitle`.
+ */
+export function titledReadColorKey(
+  ramps: readonly RampScale[],
+  colorTitle: string | undefined,
+) {
+  const readRamp = ramps.some(r => r.id === READS_RAMP_ID)
+  return {
+    ramps: ramps.map(r =>
+      r.id === READS_RAMP_ID && colorTitle !== undefined
+        ? { ...r, title: colorTitle }
+        : r,
+    ),
+    readTitle: readRamp ? undefined : colorTitle,
+  }
 }
 
 // A sashimi split row whose color the read arcs key already moves into the

@@ -179,7 +179,6 @@ import { sectionOrder, workerFacet } from './shared/groupFeatures.ts'
 import { joinSections } from './shared/joinSections.ts'
 import { keySectionOrder } from './shared/keySectionOrder.ts'
 import {
-  READS_RAMP_ID,
   arcLegendTitle,
   colorRampScales,
   getArcLegendItems,
@@ -187,6 +186,7 @@ import {
   sashimiLegendItems,
   SASHIMI_LEGEND_TITLE,
   sashimiLegend,
+  titledReadColorKey,
 } from './shared/legendUtils.ts'
 import { getModificationName } from './shared/modificationData.ts'
 import {
@@ -218,6 +218,7 @@ import type {
   RegionJunctions,
 } from './features/sashimi/junctions.ts'
 import type { ColorPalette } from './shaders/colors.ts'
+import type { AlignmentsColorEncoding } from './shared/alignmentsColor.ts'
 import type {
   ArcColorField,
   BaseLayer,
@@ -410,7 +411,15 @@ function positionIn(refNames: readonly string[]): RefNamePosition {
  * display paints it, and the key the display shows beside them.
  */
 function colorReads(
-  node: AnyConfigurationModel,
+  {
+    node,
+    encoding,
+    field: colorField,
+  }: {
+    node: AnyConfigurationModel
+    encoding: AlignmentsColorEncoding
+    field: string | undefined
+  },
   baseLayer: BaseLayer | undefined,
   byGroup: ReadonlyMap<string, ReadonlyMap<number, LaidOutPileupData>>,
   readColorOpts: ReadColorOpts,
@@ -419,8 +428,7 @@ function colorReads(
   overlaps: 'chain' | undefined,
 ) {
   const setting = alignmentsColorSnapshotOf(node)
-  const encoding = alignmentsColorEncoding(setting)
-  const colorField = readColorFieldOf(encoding)
+  const preset = withPreset(setting, ALIGNMENTS_FIELD_PRESETS).legend
   const bakedScale = isBakedField(colorField)
     ? bakedColorScale(
         colorField,
@@ -500,17 +508,18 @@ function colorReads(
     sectionOrder: keySectionOrder(facet, colorField),
     baseQualityUnavailable: qualitySpan.unavailable,
     labels: declared,
-    descending: withPreset(setting, ALIGNMENTS_FIELD_PRESETS).legend.descending,
+    descending: preset.descending,
   }).filter(item => item.color !== undefined)
-  const colorTitle = withPreset(setting, ALIGNMENTS_FIELD_PRESETS).legend.title
-  const ramps = colorRampScales({
-    colorField,
-    baseLayer,
-    bakedScale,
-    linearFieldExtent: linearFieldExtent(encoding, colorField, byGroup),
-    baseQualityExtent: qualitySpan.extent,
-  })
-  const readRamp = ramps.some(r => r.id === READS_RAMP_ID)
+  const { ramps, readTitle } = titledReadColorKey(
+    colorRampScales({
+      colorField,
+      baseLayer,
+      bakedScale,
+      linearFieldExtent: linearFieldExtent(encoding, colorField, byGroup),
+      baseQualityExtent: qualitySpan.extent,
+    }),
+    preset.title,
+  )
   return {
     sections,
     palette,
@@ -520,14 +529,8 @@ function colorReads(
       label: legend.map(item => item.label),
       color: legend.map(item => cssColorToHex(item.color!)),
     },
-    legendTitle: (readRamp ? undefined : colorTitle) ?? 'Read colors',
-    ramps: ramps.map(r =>
-      rampKeyOf(
-        r.id === READS_RAMP_ID && colorTitle !== undefined
-          ? { ...r, title: colorTitle }
-          : r,
-      ),
-    ),
+    legendTitle: readTitle ?? 'Read colors',
+    ramps: ramps.map(rampKeyOf),
   }
 }
 
@@ -831,6 +834,11 @@ function sectionConnections(
   }
 }
 
+/** The display's `filter` merged over the defaults, as the display applies it. */
+function filterOf(conf: DisplayConf) {
+  return mergeFilter(predicatesOf(conf.filter))
+}
+
 /**
  * The read-connection band the display draws under `readConnections`, from
  * the display's own arc pass over every section and region at once: each
@@ -842,24 +850,15 @@ function sectionConnections(
  * arc is listed once, under the region holding its near foot, else its far
  * one, else the first its span crosses.
  */
-// The display's `filter` merged over the defaults, as the display applies it.
-function filterOf(conf: DisplayConf) {
-  return mergeFilter(predicatesOf(conf.filter))
-}
-
-// the config a table reports: the display's, its filter as it applied
-function resolvedConfig(conf: DisplayConf): Record<string, unknown> {
-  return { ...fullConfSnapshot(conf), filter: filterOf(conf) }
-}
-
 function readConnectionTables(
   conf: DisplayConf,
+  filter: ReturnType<typeof filterOf>,
   dataByGroup: ReadonlyMap<string, ReadonlyMap<number, WorkerPileupData>>,
   regionInfos: RegionInfo[],
   colors: ReturnType<typeof colorReads>,
 ) {
   const band = conf.readConnections
-  const connectionFilter = connectionFilterOf(filterOf(conf))
+  const connectionFilter = connectionFilterOf(filter)
   const mode = drawnReadConnectionsOf(
     readConfObject(band, 'show'),
     readConfObject(band, ['mark', 'type']),
@@ -1266,10 +1265,13 @@ export async function alignmentTables(
     type: 'LinearAlignmentsDisplay',
     displayId: 'tables',
   })
-  const colorEncoding = alignmentsColorEncoding(
-    alignmentsColorSettingOf(conf.encoding.color),
-  )
-  const colorField = readColorFieldOf(colorEncoding)
+  const color = {
+    node: conf.encoding.color,
+    encoding: alignmentsColorEncoding(
+      alignmentsColorSettingOf(conf.encoding.color),
+    ),
+  }
+  const colorField = readColorFieldOf(color.encoding)
   const baseLayer = baseLayerOf(
     conf.pileup.bases,
     basesFilterOf(conf.pileup.bases.filter),
@@ -1299,12 +1301,13 @@ export async function alignmentTables(
     field: readConfObject(facetNode, 'field'),
     sort: readConfObject(facetNode, 'sort'),
   })
+  const filter = filterOf(conf)
   const args: RpcExecuteArgs<'RenderAlignmentData'> = {
     sessionId: 'tables',
     adapterConfig,
     sequenceAdapter,
     regions: fetchRegions,
-    filter: readPredicatesOf(filterOf(conf)),
+    filter: readPredicatesOf(filter),
     colorField,
     baseLayer,
     sortTag: chain ? undefined : sortTag,
@@ -1351,7 +1354,7 @@ export async function alignmentTables(
   const rawByGroup = buildRawDataByGroup(
     fetched,
     hidden,
-    pinnedInsertSizeBand(colorEncoding),
+    pinnedInsertSizeBand(color.encoding),
   )
   const sectionData = new Map(
     order.map(({ key }) => [key, rawByGroup.get(key)!]),
@@ -1402,7 +1405,7 @@ export async function alignmentTables(
     featureHeight,
   })
   const colors = colorReads(
-    conf.encoding.color,
+    { ...color, field: colorField },
     baseLayer,
     laidByGroup,
     chain ? { unit, framesChainStrand } : {},
@@ -1420,10 +1423,11 @@ export async function alignmentTables(
   const paint = markColors(colors.palette, baseLayer)
   const thresholds: MarkThresholds = {
     minAlleleFraction: alleleFloorOf(conf.coverage.alleles.filter),
-    junctions: junctionFilterOf(filterOf(conf)),
+    junctions: junctionFilterOf(filter),
   }
   const connections = readConnectionTables(
     conf,
+    filter,
     sectionData,
     regionInfos,
     colors,
@@ -1538,7 +1542,7 @@ export async function alignmentTables(
       featureHeight,
       featureSpacing: featureSpacingForHeight(featureHeight),
     },
-    config: resolvedConfig(conf),
+    config: { ...fullConfSnapshot(conf), filter },
     warnings: layoutWarnings({
       sortField: readConfObject(conf.sort, 'field'),
       sortColumn,
