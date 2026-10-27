@@ -1042,6 +1042,15 @@
       ],
       "worker": "real"
     },
+    "@jbrowse/core/data_adapters/tables": {
+      "package": "@jbrowse/core",
+      "names": [
+        "DEFAULT_BYTE_LIMIT",
+        "lociOf",
+        "overByteLimitError"
+      ],
+      "worker": "real"
+    },
     "@jbrowse/core/pluggableElementTypes": {
       "package": "@jbrowse/core",
       "names": [
@@ -1399,7 +1408,8 @@
       "package": "@jbrowse/core",
       "names": [
         "canonicalLocString",
-        "groupByPlace"
+        "groupByPlace",
+        "landsInAssembly"
       ],
       "worker": "real"
     },
@@ -2047,6 +2057,7 @@
     "@jbrowse/core/ui/rampKey": {
       "package": "@jbrowse/core",
       "names": [
+        "colorKeyTables",
         "rampKeyOf"
       ],
       "worker": "real"

@@ -155,6 +155,7 @@ export default [
   '@jbrowse/core/data_adapters/dataAdapterCache',
   '@jbrowse/core/data_adapters/getFeatureAdapter',
   '@jbrowse/core/data_adapters/getSequenceSubAdapter',
+  '@jbrowse/core/data_adapters/tables',
   '@jbrowse/core/pluggableElementTypes',
   '@jbrowse/core/pluggableElementTypes/AdapterType',
   '@jbrowse/core/pluggableElementTypes/ConnectionType',
