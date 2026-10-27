@@ -11,7 +11,7 @@ packages:
 # One spec read by the root devDependency and the override below, so a bump
 # cannot split them; a split fails every frozen-lockfile install.
 catalog:
-  '@babel/core': ^8.0.7
+  '@babel/core': ^8.0.9
 overrides:
   # Load-bearing for `pnpm test`, not a tidiness pin. jest reaches babel-jest
   # through babel-preset-jest -> babel-preset-current-node-syntax, whose

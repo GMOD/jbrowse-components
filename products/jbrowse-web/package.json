@@ -72,7 +72,7 @@
     "@mui/system": "^9.5.0",
     "@mui/x-data-grid": "^9.16.0",
     "idb": "^8.0.4",
-    "mobx": "^7.1.0",
+    "mobx": "^7.1.1",
     "mobx-react": "^10.0.2",
     "react": "^19.3.1",
     "react-dom": "^19.3.1"
