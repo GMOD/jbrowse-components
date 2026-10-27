@@ -379,7 +379,7 @@ isoforms and row height the browser gives up to fit the track; `heightMode:
   them (`Gff3Feature.fileAttributes`), so `ID` and `Name` sit beside the
   table's own `id` and `name` rather than lowercased onto them, each a
   `String`, a list where the spec lets the key list several or a record
-  does. A BED or BigBed takes its autoSql's types (`getAutoSqlFields`). Keys
+  does. Only a GFF3 declares `source`, `score` and `phase` as its columns. A BED or BigBed takes its autoSql's types (`getAutoSqlFields`). Keys
   JBrowse gives a feature or decodes into its glyph (`start`, `blockSizes`)
   stay out.
 - `legend` and `legendTitle`, the color field's key (`featureColorKey`, the
@@ -475,7 +475,8 @@ and paints the cells as the display does (`paintCellColors`,
   and `infoFields`, each key's `number`, `type` and `description` off its
   header line. See the INFO shape below.
 - `cells`: each row's cell at a record, with its genotype, its alt dosage over
-  the called alleles, and the fill `shade(hue, dosage)` paints. Under
+  the called alleles (null where none is called, a site with no ALT
+  included), and the fill `shade(hue, dosage)` paints. Under
   `referenceDrawingMode: 'skip'`, the default, a reference call has no cell.
 - `rows`: one per sample, or under `unit: 'haplotype'` one per haplotype,
   named as the display names them, in file order.
@@ -505,7 +506,8 @@ strings and flags in one text column.
 - **The keys are the header's, in its order**, so every region of a file
   returns the same columns, then any key a record uses undeclared. An
   undeclared key takes the type the VCF spec reserves for it, else reads as
-  a flag where every use is bare and as a `Number=.` string otherwise.
+  a flag where every use is bare and as a `Number=.` string otherwise, as
+  does a key every record gives as `.`.
 - **`info` sits beside `variants` as an object of its own**, so an INFO key
   never shadows `start`, `type` or `color`. A host that flattens the two
   names a collision its own way: ggjbrowse prefixes the INFO column
