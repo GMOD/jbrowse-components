@@ -1,6 +1,6 @@
 ---
 name: display-kit-external-surface
-description: "What still fails silently for an external display built on @jbrowse/display-kit: a member-level contract no check outside the tree sees, a version pin that guards only types, chrome props with no check, and host-compat tooling copied across eight plugin repos. Read before changing a mixin member a plugin display reads, adding a display-kit subpath, or touching a plugin template's build."
+description: "What still fails silently for an external display built on @jbrowse/display-kit: a member-level contract no check outside the tree sees, a version pin that guards only types (a version gate at load is declined), chrome props with no check, and host-compat tooling copied across eight plugin repos. Read before changing a mixin member a plugin display reads, adding a display-kit subpath, or touching a plugin template's build."
 ---
 
 # display-kit as an external-plugin surface
@@ -9,7 +9,8 @@ description: "What still fails silently for an external display built on @jbrows
   runtime plugins, and the external displays built on it (jb2plugins' arg and
   graph displays, `example-plugins/score-example`).
 - **Out:** a check an external plugin can run for each rule the tree enforces
-  on itself, and a host that names a version mismatch at load.
+  on itself, and a plugin build that names an export its oldest supported
+  host lacks.
 
 Claim a step here before starting it.
 
@@ -33,15 +34,19 @@ Claim a step here before starting it.
   checks run in a plugin's jest, since only `NODE_ENV=production` strips them.
   They report through `console.error`, and `config/jest/contractGate.js`
   turns a report into a failure. `@jbrowse/display-test-utils` is private.
-- **A runtime plugin cannot pin display-kit.** The host serves its own copy.
-  ARG builds against `5.0.0-beta.4` and runs on beta.18 hosts. `PluginLoader`
-  reads no host version, so follow-up (2) of PLUGIN_ABI_STABILITY.md's "real
-  cure" is unbuilt.
-- **Chrome props are unchecked ABI.**
-  `jbrowse-plugin-graphgenomeviewer`'s `GraphStatusChrome.tsx` assembles its own
-  chrome from four display-kit overlays and three display-ui hooks. It passes
-  each overlay both the `{ model, visible }` props and the plain props of
-  3a5393f5a6, so one build runs on hosts either side of that change.
+- **A runtime plugin cannot pin display-kit, and a version gate is declined.**
+  The host serves its own copy. ARG builds against `5.0.0-beta.4` and runs on
+  beta.18 hosts, so a gate on version would warn on or refuse plugins that
+  work. The check is by name instead; PLUGIN_ABI_STABILITY.md's §"The real
+  cure" item 2 has the ruling.
+- **Chrome props are unchecked ABI, and the graph display needs none of
+  them.** `jbrowse-plugin-graphgenomeviewer`'s `GraphStatusChrome.tsx`
+  assembles its own chrome from four display-kit overlays and three
+  display-ui hooks. It used `DisplayStatusChrome` until d8db736896 removed
+  that. `DisplayChrome` lacks nothing it needs: `GraphCanvas` calls
+  `useRenderingBackend` itself because the standalone graph view mounts it
+  too, and `DisplayChrome` wants to own that call. Beta.18 serves
+  `DisplayChrome`, the plugin's floor.
 - **The host-compat tooling lives in the plugins.** Eight jb2plugins repos
   carry `host-compat-probe.mjs`, in five versions. Only the graph plugin
   carries `hostShim.mjs`, which fails the build on a name the host doesn't
@@ -56,11 +61,13 @@ Claim a step here before starting it.
    `shaders/*`). Then a test helper that mounts a display in a real linear
    genome view, which means publishing the parts of `display-test-utils` that
    do that.
-2. **A version contract at load.** A plugin states the display-kit version it
-   built against and the host acts on a mismatch. Whether it warns or refuses
-   is Colin's call.
-3. **Ask what `DisplayChrome` lacked for the graph display**, then either add
-   the slot or treat the overlays' props as a surface with a type snapshot.
-4. **Move `hostShim.mjs` and one `host-compat-probe.mjs` into the plugin
-   templates** (or a published build helper), and point the jb2plugins copies
-   at it.
+2. **The graph display mounts `DisplayChrome`.** `LinearGraphDisplay` passes
+   `createGraphRenderer` as the chrome's `factory`, and `GraphCanvas` takes
+   the chrome's `CanvasHandle` when a track hosts it, calling
+   `useRenderingBackend` only when standalone. `GraphStatusChrome` and its
+   overlay imports go. The model's `displayPhase` gains `renderError`, and
+   `painted` must cover `geometryPainted`.
+3. **Move `hostShim.mjs`, `fetch-host-names.mjs` and one
+   `host-compat-probe.mjs` into the plugin templates** (or a published build
+   helper), and point the jb2plugins copies at it. That gives every
+   plugin the graph plugin's name check in place of a load-time version gate.
