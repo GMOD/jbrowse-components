@@ -42,6 +42,10 @@ once per display that embeds it, so read the trend, not the size.
   10-22 alone moved about 3000 paths each way in one sub-schema move.
 - Stable already: CLI commands and flags, session-spec format, registered type
   names, the MCP tool set.
+- Conformance: `scripts/slotNames.test.ts` refuses a new `show*`, `hide*`,
+  `min*` or `max*` slot outside its allowlist, and each exception
+  `colorConformance.test.ts` still lists is intended, its config page saying
+  why.
 
 ## Next
 
@@ -54,26 +58,10 @@ once per display that embeds it, so read the trend, not the size.
    - `retiredDisplayColor`/`liftFlatColor`: no carrier found in local or
      hosted hub configs; it goes with `liftViewColor`, a view key.
    - The synteny view keys' `cigarMode`, beta-only.
-2. **Conformance suite.** _Claimed 2026-10-27 (`color-conformance`)._ `scripts/slotNames.test.ts` refuses a new `show*`,
-   `hide*`, `min*` or `max*` slot outside its allowlist. Left: empty
-   `colorConformance.test.ts`'s `EXCEPTIONS`, or document each entry as
-   intended on the config page.
-3. **Generate the writers.** _Claimed 2026-10-27 (agent worktree)._ The jbrowse-img modifier tables, the `jb`
+2. **Generate the writers.** _Claimed 2026-10-27 (agent worktree)._ The jbrowse-img modifier tables, the `jb`
    surface description and the R export lag every rename because hand-kept
    copies drift. Derive each from the schema.
-4. **v4.3.0 validate gaps.** _Claimed 2026-10-27 (`color-conformance`)._ `reference/V4_CONFIG_COVERAGE.md` holds the
-   count and the unmapped spellings. Every v4.3.0 config opens in the app;
-   `jbrowse validate` fails 14 of 34 files, mostly on keys v4.3.0 never
-   declared. Left:
-   - Validate resolves a retired display type's old name without running its
-     `migrate`, so `LinearArcDisplay.renderer` still fails.
-   - `test_data/yeast_synteny/config.json` and
-     `test_data/config_synteny_grape_peach.json` write the flat synteny
-     `tracks` layout, now a warning; move them to `levels[0].tracks`.
-   - Lifts that keep a color or height, ranked last: multi-variant `colorBy`
-     to `rowColor`, session `trackDisplayMode` to `displayMode`, session
-     `snpCovHeight` to `coverage.height`.
-5. **Writers outside the tree.** _Claimed 2026-10-27 (agent, jb2hubs/JBrowseR/ggjbrowse)._ jb2hubs and its hosted configs, the ggjbrowse
+3. **Writers outside the tree.** _Claimed 2026-10-27 (agent, jb2hubs/JBrowseR/ggjbrowse)._ jb2hubs and its hosted configs, the ggjbrowse
    pin, the graph plugin, the `apollo3` demo and the figure specs
    (`handoffs/screenshot-spec-elegance.md`). Known stale spellings:
    - jb2hubs: `hubtools/src/enhanceConfig.test.ts` writes `scales.y`, plus
@@ -83,7 +71,7 @@ once per display that embeds it, so read the trend, not the size.
      `LinearMarkDisplay`, now `encoding.y`; its bundled htmlwidgets need a
      re-pin.
    - ggjbrowse: re-pin the bundled `inst/js/jbrowse-tables.js`.
-6. **Plugin ABI.** Curate the served list so internals nobody reads (shader
+4. **Plugin ABI.** Curate the served list so internals nobody reads (shader
    constants) stop reaching plugins. Baseline `reExports.generated.json` and
    the exports map at the release candidate
    (`reference/PLUGIN_ABI_STABILITY.md`). Decide whether `@jbrowse/tables` and
