@@ -39,7 +39,7 @@ nearly never recommend it", then "do whatever you think is best".
 
 ## Consequences
 
-- A union list (ADR-150's transform steps) is edited in the JSON text, not
-  with a type picker and reorder buttons.
+- A union list (ADR-150's transform steps) loses its type picker and
+  reorder buttons; the JSON text edits it.
 - Browsing every setting with its description is the config reference's job;
   the dialog links the schema's page.
