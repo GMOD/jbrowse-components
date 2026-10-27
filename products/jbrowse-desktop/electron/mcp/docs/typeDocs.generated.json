@@ -1300,7 +1300,7 @@
   },
   "StarFusionAdapter": {
    "category": "Adapter",
-   "text": "# StarFusionAdapter (Adapter config, bed plugin)\n\nReads the gene fusions that STAR-Fusion predicts, from its `star-fusion.fusion_predictions.tsv` output.\n\nSlots go inside a track's adapter: \"adapter\": { \"type\": \"StarFusionAdapter\", ... }.\n\nShorthand: uri, baseUri may replace the location slot.\n\n```js\n{\n  type: 'StarFusionAdapter',\n  uri: 'https://example.com/star-fusion.fusion_predictions.tsv',\n}\n```\n\n## Slots\n- `starFusionLocation: fileLocation = { uri: '/path/to/star-fusion.fusion_predictions.tsv', locationType: 'UriLocation', }`: STAR-Fusion TSV output file (plain text or gzipped)"
+   "text": "# StarFusionAdapter (Adapter config, variants plugin)\n\nReads the gene fusions that STAR-Fusion predicts, from its `star-fusion.fusion_predictions.tsv` output.\n\nSlots go inside a track's adapter: \"adapter\": { \"type\": \"StarFusionAdapter\", ... }.\n\nShorthand: uri, baseUri may replace the location slot.\n\n```js\n{\n  type: 'StarFusionAdapter',\n  uri: 'https://example.com/star-fusion.fusion_predictions.tsv',\n}\n```\n\n## Slots\n- `starFusionLocation: fileLocation = { uri: '/path/to/star-fusion.fusion_predictions.tsv', locationType: 'UriLocation', }`: STAR-Fusion TSV output file (plain text or gzipped)"
   },
   "SyntenyColor": {
    "category": "View",

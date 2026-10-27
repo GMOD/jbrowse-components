@@ -85,8 +85,6 @@ explicit location slot, and derive the index location from it.
   uri, baseUri
 - [BedpeAdapter](https://jbrowse.org/jb2/docs/config/bedpeadapter.md) —
   shorthands: uri, baseUri
-- [StarFusionAdapter](https://jbrowse.org/jb2/docs/config/starfusionadapter.md)
-  — shorthands: uri, baseUri
 - [BedTabixAdapter](https://jbrowse.org/jb2/docs/config/bedtabixadapter.md) —
   shorthands: uri, baseUri, csi
 - [BedGraphAdapter](https://jbrowse.org/jb2/docs/config/bedgraphadapter.md) —
@@ -132,6 +130,8 @@ explicit location slot, and derive the index location from it.
   shorthands: uri, baseUri
 - [PlinkLDTabixAdapter](https://jbrowse.org/jb2/docs/config/plinkldtabixadapter.md)
   — shorthands: uri, baseUri, csi
+- [StarFusionAdapter](https://jbrowse.org/jb2/docs/config/starfusionadapter.md)
+  — shorthands: uri, baseUri
 - [MultiWiggleAdapter](https://jbrowse.org/jb2/docs/config/multiwiggleadapter.md)
 - [BigWigAdapter](https://jbrowse.org/jb2/docs/config/bigwigadapter.md) —
   shorthands: uri, baseUri

@@ -158,7 +158,6 @@ export const displayTable: DisplayTable = {
     "BigBedAdapter": [],
     "BedAdapter": [],
     "BedpeAdapter": [],
-    "StarFusionAdapter": [],
     "BedTabixAdapter": [],
     "BedGraphAdapter": [],
     "BedGraphTabixAdapter": [],
@@ -198,6 +197,7 @@ export const displayTable: DisplayTable = {
     ],
     "PlinkLDAdapter": [],
     "PlinkLDTabixAdapter": [],
+    "StarFusionAdapter": [],
     "MultiWiggleAdapter": [
       "hasResolution"
     ],

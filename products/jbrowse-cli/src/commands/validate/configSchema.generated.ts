@@ -931,54 +931,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "unevaluatedProperties": false
     },
-    "StarFusionAdapterSlots": {
-      "type": "object",
-      "properties": {
-        "starFusionLocation": {
-          "description": "STAR-Fusion TSV output file (plain text or gzipped).",
-          "default": {
-            "uri": "/path/to/star-fusion.fusion_predictions.tsv",
-            "locationType": "UriLocation"
-          },
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "$ref": "#/$defs/FileLocation"
-          }
-        },
-        "uri": {
-          "type": "string",
-          "description": "Shorthand: the data file, from which the location slots (and the index location) are derived."
-        },
-        "baseUri": {
-          "type": "string",
-          "description": "Shorthand: a base URL \`uri\` resolves against."
-        }
-      }
-    },
-    "StarFusionAdapter": {
-      "title": "StarFusionAdapter",
-      "type": "object",
-      "x-closed": true,
-      "allOf": [
-        {
-          "$ref": "#/$defs/StarFusionAdapterSlots"
-        }
-      ],
-      "properties": {
-        "type": {
-          "const": "StarFusionAdapter"
-        }
-      },
-      "required": [
-        "type"
-      ],
-      "patternProperties": {
-        "^_+comment": {}
-      },
-      "unevaluatedProperties": false
-    },
     "TabixIndex": {
       "title": "TabixIndex",
       "type": "object",
@@ -2814,6 +2766,54 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "type": {
           "const": "PlinkLDTabixAdapter"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "unevaluatedProperties": false
+    },
+    "StarFusionAdapterSlots": {
+      "type": "object",
+      "properties": {
+        "starFusionLocation": {
+          "description": "STAR-Fusion TSV output file (plain text or gzipped).",
+          "default": {
+            "uri": "/path/to/star-fusion.fusion_predictions.tsv",
+            "locationType": "UriLocation"
+          },
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FileLocation"
+          }
+        },
+        "uri": {
+          "type": "string",
+          "description": "Shorthand: the data file, from which the location slots (and the index location) are derived."
+        },
+        "baseUri": {
+          "type": "string",
+          "description": "Shorthand: a base URL \`uri\` resolves against."
+        }
+      }
+    },
+    "StarFusionAdapter": {
+      "title": "StarFusionAdapter",
+      "type": "object",
+      "x-closed": true,
+      "allOf": [
+        {
+          "$ref": "#/$defs/StarFusionAdapterSlots"
+        }
+      ],
+      "properties": {
+        "type": {
+          "const": "StarFusionAdapter"
         }
       },
       "required": [
@@ -21809,7 +21809,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 "BigBedAdapter",
                 "BedAdapter",
                 "BedpeAdapter",
-                "StarFusionAdapter",
                 "BedTabixAdapter",
                 "BedGraphAdapter",
                 "BedGraphTabixAdapter",
@@ -21837,6 +21836,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 "SplitVcfTabixAdapter",
                 "PlinkLDAdapter",
                 "PlinkLDTabixAdapter",
+                "StarFusionAdapter",
                 "MultiWiggleAdapter",
                 "BigWigAdapter",
                 "GCContentAdapter",
@@ -21994,22 +21994,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           },
           "then": {
             "$ref": "#/$defs/BedpeAdapter"
-          }
-        },
-        {
-          "if": {
-            "type": "object",
-            "properties": {
-              "type": {
-                "const": "StarFusionAdapter"
-              }
-            },
-            "required": [
-              "type"
-            ]
-          },
-          "then": {
-            "$ref": "#/$defs/StarFusionAdapter"
           }
         },
         {
@@ -22442,6 +22426,22 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           },
           "then": {
             "$ref": "#/$defs/PlinkLDTabixAdapter"
+          }
+        },
+        {
+          "if": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "StarFusionAdapter"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/StarFusionAdapter"
           }
         },
         {
