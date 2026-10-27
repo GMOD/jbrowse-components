@@ -18,6 +18,6 @@ types.
 
 A subpath belongs in the map when an external display would import it: a
 foundation or mixin, a chrome piece, a host contract, a config-schema fragment,
-or a module whose types an exported declaration names. The foundations' own
-machinery (their autoruns and phase selectors) stays unexported, since the host
+or a module whose types an exported declaration names. A foundation's own
+machinery, such as the autoruns it installs, stays unexported, since the host
 serves every subpath to plugins (ADR-128).
