@@ -16,7 +16,7 @@ export default observer(function WiggleSetColorDialog({
 }: {
   model: TreeLayoutModel<Source> & {
     wiggleColor: ResolvedWiggleColor
-    rowPaletteDeals: boolean
+    markSources: readonly { color?: string }[]
     colorSetting: ColorSetting
     isDensityMode: boolean
     discoveredRows: readonly unknown[]

@@ -11,9 +11,8 @@ import type { ColorSetting } from '@jbrowse/display-kit/colorConfigSchema'
 /**
  * How much of the picture two swatches can say: `edit` offers them, `read`
  * shows what paints beside the reason they cannot replace it, and `hide` is
- * where a color per subtrack paints and the grid below is already the control:
- * a shared plot's dealt colors, or a written `source` color, which a pair
- * written over it would drop.
+ * where some subtrack paints its own color, the grid below is already the
+ * control, and a pair written over it would recolor every subtrack.
  */
 export type PlotColorMode = 'edit' | 'read' | 'hide'
 
@@ -35,7 +34,7 @@ export interface PlotColorLine {
 
 export function plotColorLine(
   resolved: ResolvedWiggleColor,
-  perSource: boolean,
+  subtrackColorsPaint: boolean,
   heatmapPair = false,
 ): PlotColorLine {
   const line = {
@@ -43,7 +42,7 @@ export function plotColorLine(
     below: resolved.negColor,
     cut: resolved.pivot,
   }
-  if (perSource) {
+  if (subtrackColorsPaint) {
     return { ...line, mode: 'hide' }
   }
   if (heatmapPair) {
@@ -110,7 +109,7 @@ export function plotColorEdit(
  */
 export function plotColorOf(model: {
   wiggleColor: ResolvedWiggleColor
-  rowPaletteDeals: boolean
+  markSources: readonly { color?: string }[]
   isDensityMode: boolean
   colorSetting: ColorSetting
   parkedColor?: ColorSlots
@@ -119,7 +118,7 @@ export function plotColorOf(model: {
     model.isDensityMode && wigglePairOf(model.colorSetting) !== undefined
   const line = plotColorLine(
     model.wiggleColor,
-    model.rowPaletteDeals || model.colorSetting.field === 'source',
+    model.markSources.some(s => s.color !== undefined),
     heatmapPair,
   )
   return {

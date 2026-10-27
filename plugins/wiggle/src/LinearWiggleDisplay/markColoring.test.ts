@@ -88,13 +88,15 @@ describe('the field says what the color reads', () => {
     expect(display.scoreGradientPaints).toBe(false)
   })
 
-  it('a written source color hides the pair swatches a write would drop it with', () => {
-    const display = makeDisplay({
+  it('the pair swatches hide while some subtrack paints its own color', () => {
+    const colored = makeDisplay({ rows: true })
+    expect(plotColorOf(colored).line.mode).toBe('hide')
+    const plain = makeDisplay({
       rows: true,
       fileColors: false,
       displayConfig: { encoding: { color: 'source' } },
     })
-    expect(plotColorOf(display).line.mode).toBe('hide')
+    expect(plotColorOf(plain).line.mode).toBe('edit')
   })
 })
 

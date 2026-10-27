@@ -45,8 +45,9 @@ review's second color finding, is open below.
   `score`, the schema's `impliedField`.
 - **A heatmap over a written `source`** paints each subtrack one flat color,
   and the display's corner notice says the score goes unencoded.
-- `wiggleColorsBySource` is the one rule; the model, `wiggleTables` and the
-  plot color line read it. `perSource` leaves gpuProps, since a source's own
+- `wiggleColorsBySource` is the one rule, which the model and
+  `wiggleTables` read; the plot color line reads the colors it hands each
+  source (`markSources`). `perSource` leaves gpuProps, since a source's own
   color decides its two sides.
 
 ## Consequences
@@ -55,10 +56,15 @@ review's second color finding, is open below.
   and signed scores in one color per row. The in-tree multi-wiggles with declared colors
   plot non-negative scores, so their pictures hold; jb2hubs' hosted composites
   were not checked.
+- Two other pictures follow the same rule. A shared plot whose row colors are
+  None, or name a field no row carries, deals nothing, so its subtracks paint
+  the pair where they painted the positive color on both sides. A lone
+  subtrack with a color paints it on both sides, where its negative side was
+  red.
 - `{ field: 'score' }` keeps the pair beside colored subtracks, which before
   took a written range.
-- The arrangement dialog hides its two plot swatches under a written
-  `source`, since a pair written over it would drop the field.
+- The arrangement dialog's two plot swatches hide while some subtrack paints
+  its own color, since a pair written over it would recolor every subtrack.
 - GRAMMAR_OF_GRAPHICS.md drops its "one channel carries two variables" gap,
   and ADR-227 its last color reason.
 - The mark display's written `{ field: 'source' }` still deals the categorical
