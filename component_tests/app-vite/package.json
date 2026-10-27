@@ -42,7 +42,6 @@
     "@jbrowse/plugin-dotplot-view": "file:./packed/jbrowse-plugin-dotplot-view.tgz",
     "@jbrowse/plugin-gccontent": "file:./packed/jbrowse-plugin-gccontent.tgz",
     "@jbrowse/plugin-gff3": "file:./packed/jbrowse-plugin-gff3.tgz",
-    "@jbrowse/plugin-grid-bookmark": "file:./packed/jbrowse-plugin-grid-bookmark.tgz",
     "@jbrowse/plugin-gtf": "file:./packed/jbrowse-plugin-gtf.tgz",
     "@jbrowse/plugin-gwas": "file:./packed/jbrowse-plugin-gwas.tgz",
     "@jbrowse/plugin-hic": "file:./packed/jbrowse-plugin-hic.tgz",

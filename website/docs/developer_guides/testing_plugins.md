@@ -207,7 +207,7 @@ sequence is inline, so nothing is fetched and the assembly is ready immediately.
 React components render in jsdom with `@testing-library/react`. Build a model
 with `createTestSession`, pass it to the component, and assert on the DOM:
 
-<!-- include: plugins/grid-bookmark/src/GridBookmarkWidget/components/GridBookmarkWidget.test.tsx -->
+<!-- include: packages/app-core/src/AppWidgets/GridBookmarkWidget/components/GridBookmarkWidget.test.tsx -->
 
 ```tsx
 import { createJBrowseTheme } from '@jbrowse/core/ui'

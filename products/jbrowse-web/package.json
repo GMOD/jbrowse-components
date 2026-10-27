@@ -46,7 +46,6 @@
     "@jbrowse/plugin-dotplot-view": "workspace:^",
     "@jbrowse/plugin-gccontent": "workspace:^",
     "@jbrowse/plugin-gff3": "workspace:^",
-    "@jbrowse/plugin-grid-bookmark": "workspace:^",
     "@jbrowse/plugin-gtf": "workspace:^",
     "@jbrowse/plugin-gwas": "workspace:^",
     "@jbrowse/plugin-hic": "workspace:^",

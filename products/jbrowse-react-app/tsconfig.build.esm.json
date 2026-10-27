@@ -20,7 +20,6 @@
     { "path": "../../plugins/dotplot-view/tsconfig.build.esm.json" },
     { "path": "../../plugins/gccontent/tsconfig.build.esm.json" },
     { "path": "../../plugins/gff3/tsconfig.build.esm.json" },
-    { "path": "../../plugins/grid-bookmark/tsconfig.build.esm.json" },
     { "path": "../../plugins/gtf/tsconfig.build.esm.json" },
     { "path": "../../plugins/gwas/tsconfig.build.esm.json" },
     { "path": "../../plugins/hic/tsconfig.build.esm.json" },

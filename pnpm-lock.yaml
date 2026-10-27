@@ -356,6 +356,9 @@ importers:
       '@mui/material':
         specifier: ^9.5.0
         version: 9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+      '@mui/x-data-grid':
+        specifier: ^9.16.0
+        version: 9.16.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@mui/material@9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(@mui/system@9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       mobx:
         specifier: ^7.1.1
         version: 7.1.1
@@ -1473,45 +1476,6 @@ importers:
         specifier: ^7.8.2
         version: 7.8.2
 
-  plugins/grid-bookmark:
-    dependencies:
-      '@jbrowse/core':
-        specifier: workspace:^
-        version: link:../../packages/core
-      '@jbrowse/mobx-state-tree':
-        specifier: ^6.10.0
-        version: 6.10.0(mobx@7.1.1)
-      '@jbrowse/plugin-dotplot-view':
-        specifier: workspace:^
-        version: link:../dotplot-view
-      '@jbrowse/plugin-linear-genome-view':
-        specifier: workspace:^
-        version: link:../linear-genome-view
-      '@mui/icons-material':
-        specifier: ^9.5.0
-        version: 9.5.0(@mui/material@9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(@types/react@19.3.0)(react@19.3.1)
-      '@mui/material':
-        specifier: ^9.5.0
-        version: 9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
-      '@mui/system':
-        specifier: ^9.5.0
-        version: 9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)
-      '@mui/x-data-grid':
-        specifier: ^9.16.0
-        version: 9.16.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@mui/material@9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(@mui/system@9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
-      mobx:
-        specifier: ^7.1.1
-        version: 7.1.1
-      mobx-react:
-        specifier: ^10.0.2
-        version: 10.0.2(mobx@7.1.1)(react@19.3.1)
-      react:
-        specifier: '>=19.0.0'
-        version: 19.3.1
-      react-dom:
-        specifier: '>=19.0.0'
-        version: 19.3.1(react@19.3.1)
-
   plugins/gtf:
     dependencies:
       '@gmod/tabix':
@@ -2370,9 +2334,6 @@ importers:
       '@jbrowse/plugin-gff3':
         specifier: workspace:^
         version: link:../../plugins/gff3
-      '@jbrowse/plugin-grid-bookmark':
-        specifier: workspace:^
-        version: link:../../plugins/grid-bookmark
       '@jbrowse/plugin-gtf':
         specifier: workspace:^
         version: link:../../plugins/gtf
@@ -2636,9 +2597,6 @@ importers:
       '@jbrowse/plugin-gff3':
         specifier: workspace:^
         version: link:../../plugins/gff3
-      '@jbrowse/plugin-grid-bookmark':
-        specifier: workspace:^
-        version: link:../../plugins/grid-bookmark
       '@jbrowse/plugin-gtf':
         specifier: workspace:^
         version: link:../../plugins/gtf
@@ -3086,9 +3044,6 @@ importers:
       '@jbrowse/plugin-gff3':
         specifier: workspace:^
         version: link:../../plugins/gff3
-      '@jbrowse/plugin-grid-bookmark':
-        specifier: workspace:^
-        version: link:../../plugins/grid-bookmark
       '@jbrowse/plugin-gtf':
         specifier: workspace:^
         version: link:../../plugins/gtf

@@ -11,7 +11,6 @@ import DataManagement from '@jbrowse/plugin-data-management'
 import DotplotView from '@jbrowse/plugin-dotplot-view'
 import GCContent from '@jbrowse/plugin-gccontent'
 import Gff3 from '@jbrowse/plugin-gff3'
-import GridBookmarkPlugin from '@jbrowse/plugin-grid-bookmark'
 import GtfPlugin from '@jbrowse/plugin-gtf'
 import Gwas from '@jbrowse/plugin-gwas'
 import HicPlugin from '@jbrowse/plugin-hic'
@@ -56,7 +55,6 @@ const corePlugins = [
   BreakpointSplitView,
   HicPlugin,
   TrixPlugin,
-  GridBookmarkPlugin,
   ComparativeAdapters,
   Gwas,
   Marks,

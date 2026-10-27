@@ -4,6 +4,7 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import BaseViewModel from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
 import { exportViewSvg } from '@jbrowse/core/svg/exportViewSvg'
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
+import { highlightListMenuItems } from '@jbrowse/core/ui/menuItems'
 import {
   clamp,
   getDialogHost,
@@ -1471,7 +1472,7 @@ export default function stateModelFactory(pm: PluginManager) {
          * a highlight chip's menu rows after Dismiss; extend this to add one
          */
         highlightMenuItems(_highlight: HighlightType): MenuItem[] {
-          return []
+          return highlightListMenuItems(self)
         },
         /**
          * #method

@@ -7,7 +7,7 @@ import path from 'node:path'
 // the view comes out the same either way. This is what keeps the deprecated
 // spelling out of the tree while it is still read.
 //
-// Four launchers wrote it (grid-bookmark's bookmark navigation, maf's
+// Four launchers wrote it (the highlight list's navigation, maf's
 // open-sample and row-synteny, the synteny mate opener) plus jbrowse-img's
 // per-mode builder.
 const ROOTS = ['packages', 'plugins', 'products']

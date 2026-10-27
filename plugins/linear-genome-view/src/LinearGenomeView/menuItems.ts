@@ -2,7 +2,11 @@ import {
   Highlighter,
   TrackSelector as TrackSelectorIcon,
 } from '@jbrowse/core/ui/Icons'
-import { radioItems, subMenuIfAny } from '@jbrowse/core/ui/menuItems'
+import {
+  highlightListMenuItems,
+  radioItems,
+  subMenuIfAny,
+} from '@jbrowse/core/ui/menuItems'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import {
   assembleLocStrings,
@@ -107,6 +111,7 @@ export function buildHighlightsSubMenuItems(
         session.setHighlightLabelsVisible(!session.highlightLabelsVisible)
       },
     },
+    ...highlightListMenuItems(self),
   ]
 }
 

@@ -9,7 +9,11 @@ import { isSameAssemblyName } from '@jbrowse/core/util/tracks'
 import type { HighlightType } from '@jbrowse/core/util/highlights'
 import type { AbstractViewModel } from '@jbrowse/core/util/types'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+
+interface HighlightNavigableView {
+  assemblyNames: string[]
+  navToHighlight: (highlight: HighlightType) => Promise<boolean>
+}
 
 // DataGrid column width fitting the wider of the header text and the cell
 // values. Capped at maxWidth so long values ellipsize (via the .cell style)
@@ -23,7 +27,7 @@ export function colWidth(header: string, values: string[], maxWidth = 200) {
 
 function isLinearGenomeView(
   v: AbstractViewModel,
-): v is AbstractViewModel & LinearGenomeViewModel {
+): v is AbstractViewModel & HighlightNavigableView {
   return v.type === 'LinearGenomeView'
 }
 

@@ -158,6 +158,22 @@ test('no view input leaves the view with no launch, in a state that says so', ()
   expect(state.session.view.ready).toBe(true)
 })
 
+test('the highlight menus offer no list, since this product has no list widget', () => {
+  const { view } = createViewState({ assembly, tracks }).session
+  const highlight = {
+    assemblyName: 'volvox',
+    refName: 'ctgA',
+    start: 0,
+    end: 100,
+  }
+  const labels = [
+    ...view.highlightsSubMenuItems(),
+    ...view.highlightMenuItems(highlight),
+  ].map(m => ('label' in m ? m.label : ''))
+  expect(labels).toContain('Show highlights')
+  expect(labels).not.toContain('Open highlight list')
+})
+
 test("a view's own settings sit beside where it opens, and both reach the view", () => {
   const state = createViewState({
     assembly,

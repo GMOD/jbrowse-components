@@ -24,6 +24,7 @@ export {
 export { withHint } from './menuLabels.ts'
 export { makeRadioSubMenu } from './radioSubMenu.ts'
 export { showLegendCheckboxItem } from './legendMenuItem.ts'
+export { highlightListMenuItems } from './highlightListMenuItem.ts'
 export type { RadioOption, SettingRowOptions } from './toggleMenuItems.ts'
 export {
   TRACK_MENU_PRIORITY,

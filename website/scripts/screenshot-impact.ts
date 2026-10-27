@@ -702,9 +702,8 @@ export async function selectAffected(
   }
 
   // A plugin whose types no figure names can still be all over the corpus: the
-  // widget/menu plugins (menus, grid-bookmark, jobs-management, trix,
-  // authentication) register no track, display or adapter, so nothing about a
-  // session mentions them — they only appear in a figure that CLICKS into them.
+  // widget/menu plugins (trix, authentication) register no track, display or
+  // adapter, so nothing about a session mentions them — they only appear in a figure that CLICKS into them.
   // Matching zero specs there would mean a track-selector change never
   // re-rendered a track-selector figure, so fall back to every spec that drives
   // the UI. Derived from "owns nothing any session names" rather than a list of

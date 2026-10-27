@@ -2,6 +2,7 @@ import { canonicalLocString } from '@jbrowse/core/TextSearch/places'
 import { getConf, readConfObject } from '@jbrowse/core/configuration'
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { exportViewSvg } from '@jbrowse/core/svg/exportViewSvg'
+import { highlightListMenuItems } from '@jbrowse/core/ui/menuItems'
 import {
   assembleLocString,
   clamp,
@@ -3364,11 +3365,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #method
-       * returns menu items for a highlight context menu. plugins can extend
-       * this via Core-extendPluggableElement to add items
+       * a highlight chip's menu rows after Dismiss; extend this to add one
        */
       highlightMenuItems(_highlight: HighlightType): MenuItem[] {
-        return []
+        return highlightListMenuItems(self)
       },
     }))
     .actions(self => {
