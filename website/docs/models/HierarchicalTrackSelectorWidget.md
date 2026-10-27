@@ -95,7 +95,7 @@ favorites and recently used tracks, and a group for each connection.
 | <span id="action-setfavoritescounter">**setFavoritesCounter**</span><br><code>(val: number) =&gt; void</code> |  |
 | <span id="action-addtorecentlyused">**addToRecentlyUsed**</span><br><code>(id: string) =&gt; void</code> |  |
 | <span id="action-clearrecentlyused">**clearRecentlyUsed**</span><br><code>() =&gt; void</code> |  |
-| <span id="action-setview">**setView**</span><br><code>(view: unknown) =&gt; void</code> |  |
+| <span id="action-setview">**setView**</span><br><code>(view: IBaseViewModel &#124; undefined) =&gt; void</code> |  |
 | <span id="action-settrackcontainerid">**setTrackContainerId**</span><br><code>(id: string &#124; undefined) =&gt; void</code> |  |
 | <span id="action-setcategorymode">**setCategoryMode**</span><br><code>(id: string, mode: CategoryMode &#124; undefined) =&gt; void</code> |  |
 | <span id="action-clearcategorymodes">**clearCategoryModes**</span><br><code>() =&gt; void</code> |  |

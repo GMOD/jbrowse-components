@@ -128,6 +128,8 @@ import { createTestSession } from '@jbrowse/web/testUtils'
 
 import { doSubmit } from './components/doSubmit.ts'
 
+import type { AddTrackModel } from './model.ts'
+
 jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
 
 function addAsm(session: ReturnType<typeof createTestSession>, name: string) {
@@ -165,7 +167,7 @@ test('adding a track for an assembly not open in the view notifies the user', ()
 
   const widget = session.addWidget('AddTrackWidget', 'addTrackWidget', {
     view: view.id,
-  })
+  }) as AddTrackModel
   widget.setTrackData({ uri: 'foo.bam', locationType: 'UriLocation' })
   widget.setAssembly('asmB')
 
