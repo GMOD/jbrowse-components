@@ -446,18 +446,6 @@ through.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/syntenyColorBy.ts)
 
-## paintRange
-
-The colors an ordinal paint deals in domain order: its `range`, else its
-`scheme`, reversed under `reverse`, sampled once per domain value.
-
-```js
-// type signature
-({ domain, range, scheme, reverse, }: SyntenyColorPaint) => readonly string[]
-```
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/colorRamps.ts)
-
 ## refNamePositionFor
 
 The `RefNamePosition` a chromosome-painting field hands its palette out by:
