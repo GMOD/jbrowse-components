@@ -17,6 +17,7 @@ import {
   pairDirectionOfNum,
   readIdAt,
   readInterbaseSegments,
+  readNameAt,
   readModCovSegments,
   readSnpSegments,
 } from '@jbrowse/alignments-core'
@@ -323,15 +324,6 @@ function pairs(a: ArrayLike<number>) {
     second[i] = a[2 * i + 1]!
   }
   return [first, second] as const
-}
-
-function readNames(d: WorkerPileupData) {
-  const off = d.readNameOffsets
-  const names: string[] = []
-  for (let i = 0; i + 1 < off.length; i++) {
-    names.push(d.readNameBlock.slice(off[i], off[i + 1]))
-  }
-  return names
 }
 
 /**
@@ -1047,7 +1039,7 @@ function sectionTables(
       strand: d.readStrands,
       mapq: d.readMapqs,
       flags: d.readFlags,
-      name: readNames(d),
+      name: Array.from(readStart, (_, i) => readNameAt(d, i)),
       insertSize: d.readInsertSizes,
       pairOrientation: Array.from(
         d.readPairOrientations,
