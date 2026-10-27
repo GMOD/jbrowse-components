@@ -79,9 +79,9 @@ describe('fetchResults refname matching', () => {
     })
 
     expect(results).toHaveLength(10)
-    // resolution runs per match until the cap, so a 1000-entry all-matching
-    // list must not be walked in full — proves the loop breaks
-    expect(getCanonicalRefName).toHaveBeenCalledTimes(10)
+    // resolution runs once for the typed text and then per match until the
+    // cap, so a 1000-entry all-matching list must not be walked in full
+    expect(getCanonicalRefName).toHaveBeenCalledTimes(11)
   })
 
   it('matches the whole name for an exact search', async () => {

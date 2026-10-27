@@ -277,13 +277,14 @@ export type RefNameMatchTier = 'exact' | 'prefix' | 'substring'
 const tierRank = { exact: 0, prefix: 1, substring: 2 } as const
 
 function tierOf(name: string, query: string): RefNameMatchTier | undefined {
-  return name === query
-    ? 'exact'
-    : name.startsWith(query)
-      ? 'prefix'
-      : name.includes(query)
-        ? 'substring'
-        : undefined
+  const at = name.indexOf(query)
+  return at === -1
+    ? undefined
+    : at > 0
+      ? 'substring'
+      : name.length === query.length
+        ? 'exact'
+        : 'prefix'
 }
 
 /**
@@ -297,8 +298,8 @@ function tierOf(name: string, query: string): RefNameMatchTier | undefined {
  * box lists because its name contains the text is one Enter can reach.
  *
  * The scan stops once `limit` regions have matched by prefix, since no later
- * substring match can displace them; an exact match past that point is still
- * looked for.
+ * substring match can displace them. The exact match is looked up rather than
+ * scanned for, so stopping early cannot miss it.
  */
 export function rankRefNames(
   assembly: RefNameMatchSource | undefined,
@@ -308,35 +309,33 @@ export function rankRefNames(
   const query = inputValue.toLowerCase()
   const candidates = assembly?.allRefNames ?? []
   const best = new Map<string, RefNameMatchTier>()
-  let strong = 0
-  let stoppedEarly = false
-  const consider = (name: string, tier: RefNameMatchTier) => {
-    const canonical = assembly?.getCanonicalRefName(name) ?? name
-    const prev = best.get(canonical)
-    if (prev === undefined || tierRank[tier] < tierRank[prev]) {
-      if (
-        tier !== 'substring' &&
-        (prev === undefined || prev === 'substring')
-      ) {
-        strong++
-      }
-      best.set(canonical, tier)
-    }
+  // getCanonicalRefName THROWS before aliases load, when candidates is empty
+  const literal = candidates.length
+    ? assembly?.getCanonicalRefName(inputValue)
+    : undefined
+  if (literal !== undefined) {
+    best.set(literal, 'exact')
   }
+  // the literal is not counted: a name with no region behind it is dropped
+  // below, and the final slice bounds the list either way
+  let strong = 0
   for (const name of candidates) {
+    if (strong >= limit) {
+      break
+    }
     const tier = tierOf(name.toLowerCase(), query)
     if (tier) {
-      consider(name, tier)
-      if (strong >= limit) {
-        stoppedEarly = true
-        break
+      const canonical = assembly?.getCanonicalRefName(name) ?? name
+      const prev = best.get(canonical)
+      if (prev === undefined || tierRank[tier] < tierRank[prev]) {
+        if (
+          tier !== 'substring' &&
+          (prev === undefined || prev === 'substring')
+        ) {
+          strong++
+        }
+        best.set(canonical, tier)
       }
-    }
-  }
-  if (stoppedEarly && ![...best.values()].includes('exact')) {
-    const exact = candidates.find(name => name.toLowerCase() === query)
-    if (exact !== undefined) {
-      consider(exact, 'exact')
     }
   }
 
