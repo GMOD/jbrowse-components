@@ -76,7 +76,9 @@ function finishTestSession({
   root.setSession(snapshot)
 
   const session = root.session as WebSessionModel
-  session.views.map(view => view.setWidth(800))
+  for (const view of session.views) {
+    view.setWidth(800)
+  }
   pluginManager.setRootModel(root)
   pluginManager.configure()
   return session
