@@ -91,17 +91,6 @@ export function keyNames(
   return names
 }
 
-/**
- * #api
- * `labels` names the `domain`'s values in a key, one each in order, where a
- * config spells them for a reader rather than as the data does. `held` deals
- * each key the domain does not list a color when the key first appears
- * (`categoricalScale`); the caller keeps it for as long as the colors should
- * hold. `unknown` paints every such key one color instead, `''` the
- * no-value grey, and `invalid` paints the no-value key, `''` or a preset's
- * missing level (strand's `0`), which keeps the grey or the level's own color
- * while unset.
- */
 // The keys a field with colors of its own pairs, colored ones first: each
 // written color on its `order` key, and every level `range` leaves out on
 // its own color.
@@ -124,6 +113,17 @@ function withOwnColors(
   ]
 }
 
+/**
+ * #api
+ * `labels` names the `domain`'s values in a key, one each in order, where a
+ * config spells them for a reader rather than as the data does. `held` deals
+ * each key the domain does not list a color when the key first appears
+ * (`categoricalScale`); the caller keeps it for as long as the colors should
+ * hold. `unknown` paints every such key one color instead, `''` the
+ * no-value grey, and `invalid` paints the no-value key, `''` or a preset's
+ * missing level (strand's `0`), which keeps the grey or the level's own color
+ * while unset.
+ */
 export function categoricalField(
   field: string,
   {
