@@ -862,9 +862,24 @@ describe('validateConfig', () => {
         })
       expect(markTrack('zscore')).toEqual([])
       expect(markTrack('Score')).toEqual([])
-      for (const typo of ['scre', 'scores', 'svtype']) {
+      for (const typo of ['scre', 'scores']) {
         expect(markTrack(typo)).toEqual([`field-near-preset ${where}.field`])
       }
+    })
+
+    it('takes a case variant of svType as the column of a file that derives none', () => {
+      const svtypeOn = (adapter: Record<string, unknown>) =>
+        found({
+          type: 'FeatureTrack',
+          adapter,
+          ...display('LinearBasicDisplay', { field: 'svtype' }),
+        })
+      expect(svtypeOn({ type: 'BigBedAdapter', uri: 'gnomad_sv.bb' })).toEqual(
+        [],
+      )
+      expect(svtypeOn({ type: 'VcfTabixAdapter', uri: 'sv.vcf.gz' })).toEqual([
+        `field-near-preset ${where}.field`,
+      ])
     })
 
     it('reads a displayDefaults type as the one display it reaches', () => {

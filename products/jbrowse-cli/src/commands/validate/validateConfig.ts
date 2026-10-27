@@ -857,6 +857,30 @@ function channelMember(
 
 type ChannelProblem = Omit<ScaleProblem, 'rule'> & { rule: string }
 
+// A VCF reader derives `svType` from ALT and INFO.SVTYPE and a BEDPE reader
+// from ALT. Any other adapter's `svtype` is the file's own column, as in the
+// gnomAD-SV bigBeds.
+const PRESETS_ONLY_ADAPTERS_DERIVE: Record<string, string[]> = {
+  svType: [
+    'VcfAdapter',
+    'VcfTabixAdapter',
+    'SplitVcfTabixAdapter',
+    'BedpeAdapter',
+  ],
+}
+
+function namesOwnAttribute(field: string, near: string, adapterType?: string) {
+  const derivers = PRESETS_ONLY_ADAPTERS_DERIVE[near]
+  return (
+    (field.length > near.length && field.endsWith(near)) ||
+    field === near.charAt(0).toUpperCase() + near.slice(1) ||
+    (adapterType !== undefined &&
+      derivers !== undefined &&
+      !derivers.includes(adapterType) &&
+      field.toLowerCase() === near.toLowerCase())
+  )
+}
+
 // Each color channel under `slot`, at any depth (`encoding.color`,
 // `pileup.bases.encoding.color`), judged under its schema's fieldPresets.
 function checkChannels(
@@ -864,6 +888,7 @@ function checkChannels(
   slot: SlotEntry,
   where: string,
   warn: (at: string, problem: ChannelProblem) => void,
+  adapterType?: string,
 ) {
   if (slot.fieldPresets) {
     for (const problem of colorProblems(
@@ -888,12 +913,11 @@ function checkChannels(
       typeof field === 'string' && !presets.includes(field)
         ? suggest(field, presets, 1)
         : undefined
-    const namesOwnAttribute =
+    if (
       typeof field === 'string' &&
       near !== undefined &&
-      ((field.length > near.length && field.endsWith(near)) ||
-        field === near.charAt(0).toUpperCase() + near.slice(1))
-    if (near && !namesOwnAttribute) {
+      !namesOwnAttribute(field, near, adapterType)
+    ) {
       warn(where, {
         rule: 'field-near-preset',
         slot: 'field',
@@ -904,7 +928,13 @@ function checkChannels(
   }
   if (isRecord(written)) {
     for (const sub of slot.subSlots ?? []) {
-      checkChannels(written[sub.name], sub, `${where}.${sub.name}`, warn)
+      checkChannels(
+        written[sub.name],
+        sub,
+        `${where}.${sub.name}`,
+        warn,
+        adapterType,
+      )
     }
   }
 }
@@ -918,6 +948,7 @@ function checkScaleSlots(
   slots: SlotEntry[],
   where: string,
   report: Report,
+  adapterType?: string,
 ) {
   const lifted = liftToSnapshot(display, slots)
   if (!isRecord(lifted)) {
@@ -936,7 +967,7 @@ function checkScaleSlots(
     if (written === undefined) {
       continue
     }
-    checkChannels(written, slot, `${where}.${slot.name}`, warn)
+    checkChannels(written, slot, `${where}.${slot.name}`, warn, adapterType)
     for (const axis of valueAxesOf(written, slot, `${where}.${slot.name}`)) {
       for (const problem of scaleEndProblems(
         scaleEndsOf(name => axis.ends[name], axis.fence),
@@ -1011,18 +1042,29 @@ function checkMarkDisplays(
   manifest: ConfigManifest,
   where: string,
   report: Report,
+  outerAdapterType?: string,
 ) {
   if (Array.isArray(node)) {
     for (const [i, item] of node.entries()) {
-      checkMarkDisplays(item, manifest, `${where}[${i}]`, report)
+      checkMarkDisplays(
+        item,
+        manifest,
+        `${where}[${i}]`,
+        report,
+        outerAdapterType,
+      )
     }
   } else if (isRecord(node)) {
+    const adapterType =
+      isRecord(node.adapter) && typeof node.adapter.type === 'string'
+        ? node.adapter.type
+        : outerAdapterType
     const slots =
       typeof node.type === 'string'
         ? manifest.displays[node.type]?.slots
         : undefined
     if (slots) {
-      checkScaleSlots(node, slots, where, report)
+      checkScaleSlots(node, slots, where, report, adapterType)
     }
     if (typeof node.type === 'string') {
       checkAlignmentsFilters(node, node.type, manifest, where, report)
@@ -1040,6 +1082,7 @@ function checkMarkDisplays(
           manifest.displays[display]?.slots ?? [],
           `${where}.displayDefaults`,
           report,
+          adapterType,
         )
         checkAlignmentsFilters(
           defaults,
@@ -1062,6 +1105,7 @@ function checkMarkDisplays(
         manifest,
         where ? `${where}.${key}` : key,
         report,
+        adapterType,
       )
     }
   }
