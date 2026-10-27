@@ -186,13 +186,13 @@ test("v4's GC display settings land on the adapter, and a bare sequence adapter 
         type: 'LinearGCContentDisplay',
         displayId: 'gc-LinearGCContentDisplay',
         windowSize: 10,
-        gcMode: 'skew',
+        windowDelta: 5,
       },
     ],
   })
   expect(readConfObject(conf, ['adapter', 'type'])).toBe('GCContentAdapter')
   expect(readConfObject(conf, ['adapter', 'window'])).toBe(10)
-  expect(readConfObject(conf, ['adapter', 'op'])).toBe('skew')
+  expect(readConfObject(conf, ['adapter', 'step'])).toBe(5)
   expect(readConfObject(conf, ['adapter', 'sequenceAdapter'])).toMatchObject({
     type: 'IndexedFastaAdapter',
   })
@@ -206,10 +206,10 @@ test('displayDefaults GC settings land on the adapter too', () => {
     liftGCSettings({
       type: 'GCContentTrack',
       adapter: { type: 'GCContentAdapter' },
-      displayDefaults: { gcMode: 'skew', windowSize: 50, height: 80 },
+      displayDefaults: { windowDelta: 25, windowSize: 50, height: 80 },
     }),
   ).toMatchObject({
-    adapter: { type: 'GCContentAdapter', gcMode: 'skew', windowSize: 50 },
+    adapter: { type: 'GCContentAdapter', windowDelta: 25, windowSize: 50 },
     displayDefaults: { height: 80 },
   })
 })

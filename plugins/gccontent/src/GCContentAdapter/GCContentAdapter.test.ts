@@ -356,14 +356,13 @@ test('a fixed step serves every zoom', async () => {
   expect(await adapter.getZoomRange({ bpPerPx: 7 })).toBeUndefined()
 })
 
-test("v4's windowSize, windowDelta and gcMode load as window, step and op", () => {
+test("v4's windowSize and windowDelta load as window and step", () => {
   const conf = configSchema.create({
     type: 'GCContentAdapter',
     windowSize: 30,
     windowDelta: 10,
-    gcMode: 'skew',
   })
   expect(
-    (['window', 'step', 'op'] as const).map(k => readConfObject(conf, k)),
-  ).toEqual([30, 10, 'skew'])
+    (['window', 'step'] as const).map(k => readConfObject(conf, k)),
+  ).toEqual([30, 10])
 })

@@ -97,7 +97,6 @@ const GCContentAdapterF = (_pluginManager: PluginManager) => {
       retired: {
         windowSize: window => ({ window }),
         windowDelta: step => ({ step }),
-        gcMode: op => ({ op }),
       },
     },
   )

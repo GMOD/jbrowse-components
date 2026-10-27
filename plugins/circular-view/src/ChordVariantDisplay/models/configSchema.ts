@@ -8,17 +8,15 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 const restingColor = (value: unknown) => ({ encoding: { color: { value } } })
 
 // v4 spelt the chord colors `strokeColor*`, on the display or inside its
-// `renderer`, and session tracks in share links still carry both.
+// `renderer`, and session tracks in share links still carry both. The hover
+// and selection colors went to the shape's own color and the theme's
+// highlight.
 const dropped = () => ({})
 
-// The hover and selection colors went to the shape's own color and the
-// theme's highlight.
 const retired = {
   strokeColor: restingColor,
   strokeColorSelected: dropped,
   strokeColorHover: dropped,
-  colorSelected: dropped,
-  colorHover: dropped,
 }
 
 /**

@@ -1,7 +1,7 @@
 import type PluginManager from '@jbrowse/core/PluginManager'
 
 /** What the retired GC content display held, which the adapter computes from. */
-export const GC_SETTINGS = ['windowSize', 'windowDelta', 'gcMode'] as const
+export const GC_SETTINGS = ['windowSize', 'windowDelta'] as const
 
 type Snapshot = Record<string, unknown>
 
