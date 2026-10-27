@@ -11,27 +11,15 @@ import type { FileLocation } from './types/data.ts'
 import type { AdapterSpec } from '@jbrowse/add-track-core'
 
 /**
- * creates a new location from the provided location including the appropriate
- * suffix and location type
- *
- * @param location - the FileLocation
- * @param suffix - the file suffix (e.g. .bam)
- * @returns the constructed location object from the provided parameters
+ * `location` with `suffix` appended to its file: the sibling index of a URI
+ * or local path, keeping the parent's `baseUri` and internet account. A Blob
+ * or FileHandle has no sibling, so it comes back unchanged.
  */
 export function makeIndex(location: FileLocation, suffix: string) {
   if ('uri' in location) {
-    return {
-      uri: location.uri + suffix,
-      locationType: 'UriLocation',
-      // carry the parent's baseUri so a derived sibling index resolves against
-      // the same config location as the file it indexes
-      ...(location.baseUri ? { baseUri: location.baseUri } : {}),
-    }
+    return { ...location, uri: location.uri + suffix }
   } else if ('localPath' in location) {
-    return {
-      localPath: location.localPath + suffix,
-      locationType: 'LocalPathLocation',
-    }
+    return { ...location, localPath: location.localPath + suffix }
   } else {
     return location
   }
