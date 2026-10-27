@@ -77,7 +77,7 @@ in both realms.
 | [`@jbrowse/core`](/docs/api/core) | JBrowse 2 core libraries used by plugins | 275 | 232 of 275 subpaths; the rest stubbed |
 | `@jbrowse/display-kit` | The display integration layer a track type is built on: the fetch foundations, the byte gate, the display chrome, SVG export, and the RegionHost view contract | 98 | 79 of 98 subpaths; the rest stubbed |
 | [`@jbrowse/display-ui`](/docs/api/display-ui) | The UI a display draws that is not data: the swappable chrome contract, its toolkit-free implementations, and the track overlay layer | 5 | 3 of 5 subpaths; the rest stubbed |
-| `@jbrowse/render-core` | GPU/Canvas2D rendering primitives for JBrowse displays: the HAL, the draw-lifecycle mixin, per-region/global backend bases, and the React backend hooks | 70 | all of it |
+| `@jbrowse/render-core` | GPU/Canvas2D rendering primitives for JBrowse displays: the HAL, the draw-lifecycle mixin, per-region/global backend bases, and the React backend hooks | 40 | all of it |
 
 <!-- REEXPORT_MODULES END -->
 

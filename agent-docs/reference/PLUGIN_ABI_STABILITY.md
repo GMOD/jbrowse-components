@@ -27,6 +27,12 @@ stability policy; RFC-001 deferred one.
   callback returns its own single-element array in place of everyone else's
   entries. Nothing throws, and the plugins that lose entries are the other ones.
 
+**The served set is four packages' exports maps, less two kinds of subpath.**
+`scripts/generateReExports.ts` serves core, display-kit, display-ui and
+render-core, and leaves out the re-export registry and render-core's
+`shaders/*`. A plugin draws on the GPU through `defineMark`, and a plugin that
+imports a shader source bundles its own copy.
+
 **A baseline per surface was tried and dropped.** Maintaining one per refactor
 costs more than the removals it catches. Only `preservedExports` survives.
 

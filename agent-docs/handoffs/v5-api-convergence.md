@@ -79,11 +79,11 @@ once per display that embeds it, so read the trend, not the size.
      `LinearMarkDisplay`, now `encoding.y`; its bundled htmlwidgets need a
      re-pin.
    - ggjbrowse: re-pin the bundled `inst/js/jbrowse-tables.js`.
-4. **Plugin ABI.** Curate the served list so internals nobody reads (shader
-   constants) stop reaching plugins. Baseline `reExports.generated.json` and
-   the exports map at the release candidate
-   (`reference/PLUGIN_ABI_STABILITY.md`). Decide whether `@jbrowse/tables` and
-   `@jbrowse/launch-args` ship at 5.0.0 or 0.x.
+4. **Plugin ABI.** The served list leaves out render-core's shader subpaths.
+   Left: baseline `reExports.generated.json` and the exports map at the
+   release candidate (`reference/PLUGIN_ABI_STABILITY.md`), and Colin's call
+   on whether `@jbrowse/tables` and `@jbrowse/launch-args` ship at 5.0.0 or
+   0.x.
 
 ## Release candidate gates
 
