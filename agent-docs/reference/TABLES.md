@@ -531,6 +531,16 @@ and does not order the rows by the `rows` arrangement. A categorical
 the table deals afresh on every call, so one value can take two colors across
 two calls.
 
+**The comparative tables place a block differently on each view.**
+
+- `synteny`'s `alignments` give each block's own coordinates as the file
+  states them, and `ribbons` the part each row shows.
+- `dotplot`'s `alignments` give the part of each block the two axes show:
+  the worker trims a block crossing a region's edge before it reaches the
+  tables, so `xStart`/`xEnd` and `yStart`/`yEnd` stop at the region, while
+  `length` stays the block's whole query span. A block reaching past the
+  view therefore starts at different coordinates in the two tables.
+
 ## In grammar-of-graphics terms
 
 A host draws the tables with its own grammar, so a table hands it the parts

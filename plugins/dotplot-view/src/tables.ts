@@ -64,7 +64,8 @@ const OP_NAMES: Record<number, string> = {
 /**
  * #api
  * A dotplot as the display fetches, lays out and colors it, as tables:
- * `alignments`, each block with its span on each axis, its strand, name and
+ * `alignments`, each block with the span of it each axis shows (`length`
+ * stays the whole block's query span), its strand, name and
  * measurements, in the color the view's `encoding.color` paints it; `segments`, the
  * lines the plot draws in paint order, one per block, or one per CIGAR step
  * where a block is wide enough on screen for its CIGAR to show, each from
