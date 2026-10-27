@@ -1,4 +1,5 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import { NO_CATEGORY_COLOR } from '@jbrowse/core/util/color'
 import {
   MEASURE_FIELD_PRESETS,
   withImpliedField,
@@ -20,19 +21,22 @@ import type { SyntenyColorSnapshot } from '@jbrowse/synteny-core'
 /** The field a ribbon color naming neither a field nor a constant paints. */
 export const RIBBON_IMPLIED_FIELD = 'strand'
 
-/** Every ribbon's color under no field, and an unlabelled pair's under one. */
+/** Every ribbon's color under no field. */
 export const RIBBON_GREY = 'rgb(130,130,130)'
 
 /**
  * The ribbon color channel as it paints: the field mapped, and the color of
- * every ribbon under no field or of a pair with no value under one.
+ * every ribbon under no field or of a pair with no value under one, the
+ * no-value grey every display paints unless `scale.invalid` names another.
  */
 export function paintedRibbonColor(setting: SyntenyColorSnapshot) {
   const color = withImpliedField(setting, RIBBON_IMPLIED_FIELD)
   const field = paintedField(color)
   return {
     value:
-      (field === undefined ? color.value : color.scale?.invalid) ?? RIBBON_GREY,
+      field === undefined
+        ? (color.value ?? RIBBON_GREY)
+        : (color.scale?.invalid ?? NO_CATEGORY_COLOR),
     field,
   }
 }

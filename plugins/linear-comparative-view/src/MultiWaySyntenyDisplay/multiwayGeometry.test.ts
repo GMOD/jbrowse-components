@@ -41,6 +41,7 @@ import {
   ribbonTooltip,
 } from './multiwayGeometry.ts'
 import { PX_ORIGIN } from './multiwayRenderTypes.ts'
+import { paintedRibbonColor } from './ribbonColorConfigSchema.ts'
 
 import type { BuildLanesOpts } from './laneStack.ts'
 import type { RowFrame, Span } from './layoutMultiWay.ts'
@@ -1592,7 +1593,7 @@ test('a lane-pair link across a deletion both lanes carry leaves the gap open', 
 // both over the same records, so a ribbon read that skips the worker's
 // parsing fails here.
 describe('the ribbons paint and filter as two-way synteny does', () => {
-  const RIBBON = 'rgb(130,130,130)'
+  const RIBBON = paintedRibbonColor({ field: 'x' }).value
   const recordsOf = (values: unknown[]) =>
     values.map(
       (x, i) =>
@@ -1623,9 +1624,6 @@ describe('the ribbons paint and filter as two-way synteny does', () => {
       trackColor: '#000',
       defaultColor: cssColorToABGR(RIBBON),
       attributeRanges,
-      // a ribbon with no value takes the ribbon grey, where two-way takes
-      // core's no-value grey
-      paint: { invalid: RIBBON },
     })
     const passes = comparativeFilter(filter, data)
     return {
@@ -1680,4 +1678,12 @@ describe('the ribbons paint and filter as two-way synteny does', () => {
       oracle.colors.filter((_, i) => oracle.kept[i]),
     )
   })
+})
+
+test("a ribbon with no value under a field takes every display's no-value grey, or scale.invalid", () => {
+  expect(paintedRibbonColor({ field: 'group' }).value).toBe(NO_CATEGORY_COLOR)
+  expect(
+    paintedRibbonColor({ field: 'group', scale: { invalid: 'red' } }).value,
+  ).toBe('red')
+  expect(paintedRibbonColor({ value: 'blue' }).value).toBe('blue')
 })
