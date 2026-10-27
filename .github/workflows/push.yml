@@ -432,6 +432,11 @@ jobs:
       # this is the job that already has both.
       - name: Check generated twins against the C++ oracle
         run: pnpm check-shader-oracle
+      # The published build on a one-shader plugin tree: every step above runs
+      # src/ over this repo, where whole-tree checks hold that a plugin's tree
+      # need not satisfy.
+      - name: Check the published build works in a plugin's tree
+        run: pnpm check-shader-tools-out-of-tree
 
   # Each Lambda is a standalone project with its own lockfile, outside the root
   # workspace: the newsletter on npm, blat-proxy on pnpm (its pnpm-workspace.yaml

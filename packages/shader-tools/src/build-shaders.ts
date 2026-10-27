@@ -203,13 +203,17 @@ function tintInstalled() {
 // in render-core so any shader can `import hpmath;`. In this repo that's the
 // workspace path; for an out-of-tree plugin it's the installed package, which
 // ships src/shaders for exactly this reason.
+const WORKSPACE_SHARED_INCLUDE = path.resolve(
+  PROJECT_ROOT,
+  'packages/render-core/src/shaders',
+)
 function resolveSharedInclude() {
   const override = flagValue('shared-include')
   if (override) {
     return path.resolve(override)
   }
   const candidates = [
-    path.resolve(PROJECT_ROOT, 'packages/render-core/src/shaders'),
+    WORKSPACE_SHARED_INCLUDE,
     path.resolve(PROJECT_ROOT, 'node_modules/@jbrowse/render-core/src/shaders'),
   ]
   const found = candidates.find(c => existsSync(c))
@@ -225,6 +229,11 @@ function resolveSharedInclude() {
   return found
 }
 const SHARED_INCLUDE = resolveSharedInclude()
+
+// The "compared nothing" canaries count shaders this repo has, and the lift
+// report is one of its docs. A plugin's tree can rightly hold no shader that
+// reads the pixel ratio and no struct two shaders share.
+const BUILDING_JBROWSE = SHARED_INCLUDE === WORKSPACE_SHARED_INCLUDE
 
 // `slangc -v` reports on stderr. A path that is not a binary at all reports
 // nothing, and one that does not exist never runs — `spawnSync` sets `error`
@@ -1253,7 +1262,7 @@ async function build({ paths: argPaths, useCache, validators }: BuildOptions) {
       (n, r) => n + r.uniformBlocksCompared,
       0,
     )
-    if (uniformBlocksCompared === 0) {
+    if (BUILDING_JBROWSE && uniformBlocksCompared === 0) {
       throw new Error(
         `no shader's uniform block was compared against its emitted source. ` +
           `Every shader in the tree read as "Slang eliminated the block", which ` +
@@ -1266,7 +1275,7 @@ async function build({ paths: argPaths, useCache, validators }: BuildOptions) {
       `  ok: ${uniformBlocksCompared} uniform block(s) agree with their emitted layout`,
     )
     const dprShaders = all.reduce((n, r) => n + r.dprShaders, 0)
-    if (dprShaders === 0) {
+    if (BUILDING_JBROWSE && dprShaders === 0) {
       throw new Error(
         `no shader was found to convert CSS px to device px, so the ` +
           `devicePixelRatio check compared nothing. Nine did when it landed ` +
@@ -1280,7 +1289,7 @@ async function build({ paths: argPaths, useCache, validators }: BuildOptions) {
     console.log(
       `  ok: ${dprShaders} shader(s) converting CSS px to device px declare the ratio`,
     )
-    if (sharedStructs === 0) {
+    if (BUILDING_JBROWSE && sharedStructs === 0) {
       throw new Error(
         `no uniform struct was found to be shared by two shaders, so the ` +
           `cross-shader layout parity check compared nothing. Six ` +
@@ -1302,6 +1311,7 @@ async function build({ paths: argPaths, useCache, validators }: BuildOptions) {
     )
     assertJsSkipsResolve(scans, exported, skips)
     if (
+      BUILDING_JBROWSE &&
       writeIfChanged(
         path.join(PROJECT_ROOT, LIFT_REPORT_PATH),
         emitLiftReport(
@@ -1317,7 +1327,7 @@ async function build({ paths: argPaths, useCache, validators }: BuildOptions) {
     if (useCache) {
       pruneCache(usedKeys)
     }
-  } else {
+  } else if (BUILDING_JBROWSE) {
     // Say so, rather than skipping in silence: a shader edit that adds a
     // Candidates row would then produce no local signal at all, surfacing
     // hours later as a red CI job.
