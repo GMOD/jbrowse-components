@@ -239,9 +239,9 @@ export default function stateModelFactory(pm: PluginManager) {
           height: types.stripDefault(types.number, defaultHeight),
           /**
            * #property
-           * vestigial: the hierarchical selector is the only one that exists, so
-           * this value is ignored. Retained because saved sessions and share links
-           * persist it.
+           * ignored: the hierarchical selector is the only one. Declared because
+           * saved sessions and share links carry it.
+           * @deprecated
            */
           trackSelectorType: types.stripDefault(types.string, 'hierarchical'),
           /**

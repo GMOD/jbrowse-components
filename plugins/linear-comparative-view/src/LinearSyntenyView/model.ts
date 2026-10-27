@@ -219,8 +219,9 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         >(),
         /**
          * #property
-         * Ignored: the hierarchical selector is the only one. Declared because
-         * sessions and share links still contain it.
+         * ignored: the hierarchical selector is the only one. Declared because
+         * saved sessions and share links carry it.
+         * @deprecated
          */
         trackSelectorType: types.stripDefault(types.string, 'hierarchical'),
         /**
