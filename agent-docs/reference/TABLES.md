@@ -534,7 +534,10 @@ two calls.
 **The comparative tables place a block differently on each view.**
 
 - `synteny`'s `alignments` give each block's own coordinates as the file
-  states them, and `ribbons` the part each row shows.
+  states them, and `ribbons` the part each row shows, with its feet in px
+  as the band draws them (`queryX1`, `queryX2`, `targetX1`, `targetX2`):
+  across the row's `width`, its regions end to end with no gap, each foot
+  clamped to its region.
 - `dotplot`'s `alignments` give the part of each block the two axes show:
   the worker trims a block crossing a region's edge before it reaches the
   tables, so `xStart`/`xEnd` and `yStart`/`yEnd` stop at the region, while

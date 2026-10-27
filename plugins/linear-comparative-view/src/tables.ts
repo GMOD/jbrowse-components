@@ -1,3 +1,4 @@
+import { clamp } from '@jbrowse/core/util'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { lowerBoundOf } from '@jbrowse/core/util/fieldPredicate'
 import { measureText } from '@jbrowse/core/util/measureText'
@@ -332,7 +333,10 @@ function concatColumns<T extends Record<string, unknown[]>>(a: T, b: T) {
  * `legend` and `ramps`, the key; and `config`, the view's settings with
  * their defaults filled, `encoding.color` and `encoding.opacity` as config objects. For a host that draws
  * them itself, such as R through V8. Positions are genomic, on the axis's
- * region named by `queryRegion` and `targetRegion`.
+ * region named by `queryRegion` and `targetRegion`; a ribbon's
+ * `queryX1`/`queryX2` and `targetX1`/`targetX2` are its feet in px across
+ * the row's `width`, the regions end to end with no gap, each foot clamped
+ * to its region, X1 joining X1 along one edge and X2 joining X2.
  */
 export async function syntenyTables(
   pluginManager: PluginManager,
@@ -457,6 +461,10 @@ export async function syntenyTables(
     targetChrom: [] as string[],
     targetStart: [] as number[],
     targetEnd: [] as number[],
+    queryX1: [] as number[],
+    queryX2: [] as number[],
+    targetX1: [] as number[],
+    targetX2: [] as number[],
     color: [] as string[],
     alpha: [] as number[],
     thin: [] as boolean[],
@@ -467,7 +475,16 @@ export async function syntenyTables(
   const place = (axis: ComparativeAxis, a: number, b: number) => {
     const from = locateCum(axis, a, b)
     const to = locateCum(axis, b, a)
-    return { region: from.region, from: from.coord, to: to.coord }
+    const r = axis.regions[from.region]!
+    const lo = axis.before[from.region]!
+    const hi = lo + r.end - r.start
+    return {
+      region: from.region,
+      from: from.coord,
+      to: to.coord,
+      x1: clamp(a, lo, hi) / axis.bpPerPx,
+      x2: clamp(b, lo, hi) / axis.bpPerPx,
+    }
   }
   for (let i = 0; i < instanceData.instanceCount; i++) {
     const kind = kinds[i]!
@@ -500,6 +517,10 @@ export async function syntenyTables(
     ribbons.targetChrom.push(t.regions[ts.region]!.refName)
     ribbons.targetStart.push(ts.from)
     ribbons.targetEnd.push(ts.to)
+    ribbons.queryX1.push(qs.x1)
+    ribbons.queryX2.push(qs.x2)
+    ribbons.targetX1.push(ts.x1)
+    ribbons.targetX2.push(ts.x2)
     ribbons.color.push(color)
     ribbons.alpha.push(alpha * (marker ? 1 : level) * fade)
     ribbons.thin.push(thin)

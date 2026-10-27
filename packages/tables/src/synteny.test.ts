@@ -56,8 +56,42 @@ test('a PAF comes back as the synteny band lays out and colors it', async () => 
     expect(t.ribbons.color[i]).toBe('#ff0000')
     expect(t.ribbons.alpha[i]).toBeCloseTo(0.25)
   }
+  for (let i = 0; i < t.ribbons.kind.length; i++) {
+    expect(t.ribbons.queryX1[i]).toBeCloseTo(
+      (t.ribbons.queryStart[i]! * 800) / 49186,
+      6,
+    )
+    expect(t.ribbons.targetX2[i]).toBeCloseTo(
+      (t.ribbons.targetEnd[i]! * 800) / 50001,
+      6,
+    )
+  }
   expect(t.legend.label).toEqual(['match', 'insertion'])
   expect(t.offscreen.axis).toHaveLength(0)
+
+  const two = await engine.synteny({
+    ...INV_INDELS,
+    target: {
+      regions: [
+        { refName: 'ctgA', start: 0, end: 20_000 },
+        { refName: 'ctgA', start: 30_000, end: 50_001 },
+      ],
+      width: 800,
+    },
+  })
+  expect(new Set(two.ribbons.targetRegion)).toEqual(new Set([0, 1]))
+  const bpPerPx = 40_001 / 800
+  for (let i = 0; i < two.ribbons.kind.length; i++) {
+    const second = two.ribbons.targetRegion[i] === 1
+    const lo = second ? 20_000 / bpPerPx : 0
+    const hi = second ? 800 : 20_000 / bpPerPx
+    for (const x of [two.ribbons.targetX1[i]!, two.ribbons.targetX2[i]!]) {
+      expect(x).toBeGreaterThanOrEqual(lo - 1e-9)
+      expect(x).toBeLessThanOrEqual(hi + 1e-9)
+    }
+    const start = two.ribbons.targetStart[i]! - (second ? 30_000 : 0)
+    expect(two.ribbons.targetX1[i]).toBeCloseTo(lo + start / bpPerPx, 6)
+  }
 })
 
 test('the indels part draws the ops colored, the matches alone, or the block alone', async () => {
