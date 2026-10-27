@@ -186,6 +186,23 @@ describe('validateConfig', () => {
     ])
   })
 
+  it("warns on a synteny display's coverage layer filter entry the layer cannot apply", () => {
+    const config = baseConfig()
+    Object.assign(config.tracks[0]!, {
+      displays: [
+        {
+          type: 'LGVSyntenyDisplay',
+          coverage: { alleles: { filter: [{ field: 'depth', gte: 2 }] } },
+        },
+      ],
+    })
+    expect(
+      warningsOf(config).map(p => `${p.rule} ${p.where}: ${p.message}`),
+    ).toEqual([
+      'alignments-layer-filter tracks[0].displays[0].coverage.alleles.filter: coverage.alleles.filter: no field "depth"; it takes fraction',
+    ])
+  })
+
   it('accepts a GC content track with no sequenceAdapter at all', () => {
     const config = baseConfig()
     config.tracks[0]!.type = 'QuantitativeTrack'

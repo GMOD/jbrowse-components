@@ -675,27 +675,32 @@ function checkAlignmentsFilter(
   }
 }
 
-const MAF_DISPLAY = 'LinearMafDisplay'
-
-// Each alignments layer filter, the displays drawing its layer, and its rules
-// copied from the plugins (`alignmentsLayerRules/`)
+// Each alignments layer filter and its rules copied from the plugins
+// (`alignmentsLayerRules/`), checked on every display whose schema declares it
 const LAYER_FILTERS = [
   {
     path: ['coverage', 'interbase', 'filter'],
-    displays: [ALIGNMENTS_DISPLAY, MAF_DISPLAY],
     problems: interbaseEntryProblems,
   },
   {
     path: ['coverage', 'alleles', 'filter'],
-    displays: [ALIGNMENTS_DISPLAY, MAF_DISPLAY],
     problems: alleleEntryProblems,
   },
   {
     path: ['pileup', 'bases', 'filter'],
-    displays: [ALIGNMENTS_DISPLAY],
     problems: basesEntryProblems,
   },
 ]
+
+function declaresSlot(slots: readonly SlotEntry[], path: readonly string[]) {
+  let entry: SlotEntry | undefined
+  let level = slots
+  for (const key of path) {
+    entry = level.find(s => s.name === key)
+    level = entry?.subSlots ?? []
+  }
+  return entry !== undefined
+}
 
 // A written filter list's entries as `predicatesOf` reads them, a bare string
 // being `{ field, equal: true }`
@@ -712,9 +717,9 @@ function filterEntriesOf(list: unknown): FieldPredicate[] {
     : []
 }
 
-// What the alignments and MAF displays' corner notices say of their layer
-// filters: an entry on a field the layer has no reading of, a test the field
-// does not take, or a floor past the field's range.
+// What a display's corner notice says of its layer filters: an entry on a
+// field the layer has no reading of, a test the field does not take, or a
+// floor past the field's range.
 function checkLayerFilters(
   display: Record<string, unknown>,
   type: string,
@@ -722,9 +727,10 @@ function checkLayerFilters(
   where: string,
   report: Report,
 ) {
-  const lifted = liftToSnapshot(display, manifest.displays[type]?.slots ?? [])
-  for (const { path, displays, problems } of LAYER_FILTERS) {
-    if (displays.includes(type)) {
+  const slots = manifest.displays[type]?.slots ?? []
+  const lifted = liftToSnapshot(display, slots)
+  for (const { path, problems } of LAYER_FILTERS) {
+    if (declaresSlot(slots, path)) {
       const written = path.reduce<unknown>(
         (at, key) => (isRecord(at) ? at[key] : undefined),
         lifted,
