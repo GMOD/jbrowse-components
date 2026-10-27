@@ -10,7 +10,6 @@ import { sampleRowsConfigSchema } from '@jbrowse/display-kit/sampleRowsConfigSch
 import { trackHeightConfigSchemaFields } from '@jbrowse/display-kit/trackHeightConfigSchemaFields'
 import { rowAxisConfigSchema } from '@jbrowse/tree-sidebar/rowAxisConfigSchema'
 import { rowHeightConfigSchemaFields } from '@jbrowse/tree-sidebar/rowHeightConfigSchemaFields'
-import { retiredScalesSpelling } from '@jbrowse/wiggle-core'
 
 import { DEFAULTS } from './displayDefaults.ts'
 import { mafAlignmentsConfigSchema } from './mafAlignmentsConfigSchema.ts'
@@ -26,15 +25,12 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 /**
  * The v4 mafviewer plugin's row settings, top-level there. Letters now follow
  * `encoding.color` and keep the file's case, so the two letter settings lift
- * to nothing. v5's `y` and `scales.y` moved under `encoding.y` and
- * `coverage.encoding.y`, and its sidebar toggles into `axis`.
+ * to nothing.
  */
 const retiredMafSpellings: Record<string, RetiredSpelling> = {
   rowProportion: v => ({ alignments: { rowProportion: v } }),
   showAllLetters: () => ({}),
   showAsUpperCase: () => ({}),
-  y: field => ({ encoding: { y: { field } } }),
-  scales: retiredScalesSpelling(COVERAGE_Y_PATHS.members),
 }
 
 /**

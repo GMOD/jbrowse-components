@@ -4,23 +4,6 @@ import type { YMember, YScalePaths } from './yScalePaths.ts'
 
 type YMembers = YScalePaths['members']
 
-/**
- * The member names v5's `scales.y` used, frozen where the lifts below read
- * them. `minimalTicks` is not one: a `scales.y` naming it loses it.
- */
-const SCALES_Y_NAMES = {
-  type: 'type',
-  zero: 'zero',
-  domainMin: 'domainMin',
-  domainMax: 'domainMax',
-  fence: 'domainQuantile',
-  constant: 'symlogConstant',
-  group: 'autoscaleGroup',
-  title: 'title',
-  grid: 'grid',
-  rules: 'rules',
-} as const satisfies Record<YMember, string>
-
 const isRecord = (v: unknown): v is Record<string, unknown> =>
   !!v && typeof v === 'object' && !Array.isArray(v)
 
@@ -98,26 +81,5 @@ export function retiredScaleSpellings(members: YMembers) {
     ),
     numStdDev: () => ({}),
     inverted: () => ({}),
-  }
-}
-
-/**
- * v5's `scales.y` as the members a display moved off it, at its member paths:
- * `domainQuantile` becomes the `fence` member, `symlogConstant` the
- * `constant` and `autoscaleGroup` the `group`. A `null` for either
- * resets every member, as it reset the whole `scales.y`.
- */
-export function retiredScalesSpelling(members: YMembers) {
-  return (scales: unknown) => {
-    const y = scales === null ? null : isRecord(scales) ? scales.y : undefined
-    return y === null
-      ? nestedAt(Object.values(members).map(path => [path, null] as const))
-      : isRecord(y)
-        ? nestedAt(
-            Object.entries(SCALES_Y_NAMES).flatMap(([member, name]) =>
-              name in y ? [[members[member as YMember], y[name]] as const] : [],
-            ),
-          )
-        : {}
   }
 }

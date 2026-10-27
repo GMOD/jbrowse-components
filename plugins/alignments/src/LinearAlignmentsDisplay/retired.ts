@@ -4,7 +4,6 @@ import { isValidTag } from '@jbrowse/core/util'
 import {
   retiredAxisSpellings,
   retiredScaleSpellings,
-  retiredScalesSpelling,
   valueScaleOf,
 } from '@jbrowse/wiggle-core'
 
@@ -220,8 +219,8 @@ function subDisplaySlotsOf(block: unknown, band: 'pileup' | 'coverage') {
  * two arc classes under the draw verb, which are `connection` filter fields
  * now, and its `filterBy` the read fields; `liftV4Filter` reads those three
  * together. Its read size and layout cap are `pileup`'s `mark.height` and
- * `maxLayoutHeight`. The coverage display's scale slots, and v5's `scales.y`,
- * land on the band's `coverage.encoding.y`. `flipStrandLongReadChains` went: a split segment's
+ * `maxLayoutHeight`. The coverage display's scale slots land on the band's
+ * `coverage.encoding.y`. `flipStrandLongReadChains` went: a split segment's
  * strand against its molecule is a level of the orientation fields, which
  * `encoding.color.scale.range` recolors. v4's arc `lineWidth` stroked every
  * arc alike, which `readConnections.encoding.strokeWidth.value` does.
@@ -234,7 +233,6 @@ export const retiredConfigSpellings: Record<string, RetiredSpelling> = {
   snpCoverageDisplay: block => subDisplaySlotsOf(block, 'coverage'),
   defaultRendering: () => ({}),
   colorScheme: () => ({}),
-  scales: retiredScalesSpelling(COVERAGE_Y_PATHS.members),
   ...retiredScaleSpellings(COVERAGE_Y_PATHS.members),
   multiTicks: () => ({}),
   jitter: () => ({}),

@@ -109,23 +109,6 @@ test('the plot reaches the bar height, so Edit plot can draw the X-Y plot', () =
   expect(plotOf(conf)).toEqual({
     encoding: { color: 'identity', y: 'identity' },
   })
-  expect(plotOf(make({ y: 'identity' }))).toEqual({
-    encoding: { y: 'identity' },
-  })
-})
-
-test('a bare encoding.y keeps its field beside a lifted coverage scale', () => {
-  const conf = make({
-    encoding: { y: 'identity' },
-    scales: { y: { type: 'log', domainMin: 1 } },
-  })
-  expect(readConfObject(conf, ['encoding', 'y', 'field'])).toBe('identity')
-  expect(
-    readConfObject(conf, ['coverage', 'encoding', 'y', 'scale', 'type']),
-  ).toBe('log')
-  expect(
-    readConfObject(conf, ['coverage', 'encoding', 'y', 'scale', 'domainMin']),
-  ).toBe(1)
 })
 
 test.each(MAF_PLOT_EXAMPLES)('the example $plot lifts', ({ plot }) => {

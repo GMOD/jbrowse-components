@@ -134,7 +134,7 @@ test('a FeatureTrack paints the wiggle display', async () => {
 
 test('a wiggle y field reaches featuresToRaw', async () => {
   const { display } = await openTrack(
-    { type: 'LinearWiggleDisplay', y: 'thickEnd' },
+    { type: 'LinearWiggleDisplay', encoding: { y: 'thickEnd' } },
     'wiggle-display',
   )
   await waitFor(() => {

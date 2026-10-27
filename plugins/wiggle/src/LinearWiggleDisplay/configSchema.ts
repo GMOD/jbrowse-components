@@ -7,7 +7,6 @@ import { rowAxisWithGridConfigSchema } from '@jbrowse/tree-sidebar/rowAxisWithGr
 import {
   retiredAxisSpellings,
   retiredScaleSpellings,
-  retiredScalesSpelling,
 } from '@jbrowse/wiggle-core'
 
 import { extentConfigSchemaFields } from '../shared/extentConfigSchemaFields.ts'
@@ -201,8 +200,6 @@ const linearWiggleDisplayConfigSchema = ConfigurationSchema(
     explicitlyTyped: true,
     explicitIdentifier: 'displayId',
     retired: {
-      scales: retiredScalesSpelling(WIGGLE_Y_PATHS.members),
-      y: field => ({ encoding: { y: { field } } }),
       ...retiredBaseDisplaySpellings,
       ...retiredAxisSpellings(WIGGLE_Y_PATHS.members),
       ...retiredScaleSpellings(WIGGLE_Y_PATHS.members),

@@ -273,20 +273,6 @@ test('an instance with only live props lifts nothing', () => {
   expect(retiredState.lift({ type: 'LinearAlignmentsDisplay' })).toEqual({})
 })
 
-test('a v5 coverage scale beats the v4 key it overlaps', () => {
-  expect(
-    alignmentsEntries([
-      {
-        type: 'LinearAlignmentsDisplay',
-        scaleType: 'log',
-        scales: { y: { type: 'linear' } },
-      },
-    ]),
-  ).toMatchObject([
-    { coverage: { encoding: { y: { scale: { type: 'linear' } } } } },
-  ])
-})
-
 // v4.3.0's SNP coverage display was a wiggle display, axis state and all
 test.each([
   [

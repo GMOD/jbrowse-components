@@ -48,29 +48,3 @@ test("the corner notice reads the coverage scale's ends by the color ramp's rule
     ),
   ])
 })
-
-test('a v5 scales.y lands on the coverage axis, minimalTicks let go', () => {
-  const display = createDisplay({
-    scales: {
-      y: {
-        domainMin: 5,
-        zero: false,
-        symlogConstant: 2,
-        autoscaleGroup: 'depth',
-        domainQuantile: 0.99,
-        grid: true,
-        minimalTicks: true,
-        rules: [30],
-      },
-    },
-  })
-  expect(display.minScoreBound).toBe(5)
-  expect(display.symlogConstant).toBe(2)
-  expect(display.autoscaleGroup).toBe('depth')
-  expect(display.fenceQuantile).toBe(0.99)
-  expect(display.grid).toBe(true)
-  expect(display.configuration.coverage.encoding.y.axis).not.toHaveProperty(
-    'minimalTicks',
-  )
-  expect(display.scoreRules).toEqual([{ value: 30 }])
-})

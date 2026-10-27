@@ -1,7 +1,6 @@
 export {
   retiredAxisSpellings,
   retiredScaleSpellings,
-  retiredScalesSpelling,
   valueScaleOf,
 } from './retiredYScale.ts'
 export { yChannelSchema } from './yChannelConfigSchema.ts'

@@ -134,51 +134,6 @@ test('the old cross hatch flag lands on the axis beside a channel the config wri
   warn.mockRestore()
 })
 
-test("an early v5 scales.y and y land on encoding.y under the channel's names", () => {
-  const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
-  const conf = create({
-    y: 'maxScore',
-    scales: {
-      y: {
-        type: 'symlog',
-        domainMin: 1,
-        domainQuantile: 1,
-        symlogConstant: 2,
-        autoscaleGroup: 'depth',
-        title: 'signal',
-        grid: true,
-        minimalTicks: true,
-        rules: [30],
-      },
-    },
-  })
-  expect(readConfObject(conf, [...Y, 'field'])).toBe('maxScore')
-  expect(readConfObject(conf, [...Y, 'scale', 'type'])).toBe('symlog')
-  expect(readConfObject(conf, [...Y, 'scale', 'domainMin'])).toBe(1)
-  expect(readConfObject(conf, [...Y, 'scale', 'fenceQuantile'])).toBe(1)
-  expect(readConfObject(conf, [...Y, 'scale', 'constant'])).toBe(2)
-  expect(readConfObject(conf, [...Y, 'scale', 'group'])).toBe('depth')
-  expect(readConfObject(conf, [...Y, 'axis', 'title'])).toBe('signal')
-  expect(readConfObject(conf, [...Y, 'axis', 'grid'])).toBe(true)
-  expect(conf.encoding.y.rules.map(r => readConfObject(r, 'value'))).toEqual([
-    30,
-  ])
-  expect(warn).not.toHaveBeenCalled()
-  warn.mockRestore()
-})
-
-test('a v5 scales.y beats the v4 keys it overlaps', () => {
-  const conf = create({
-    scaleType: 'log',
-    displayCrossHatches: false,
-    autoscale: 'local',
-    scales: { y: { type: 'linear', grid: true, domainQuantile: 0.9 } },
-  })
-  expect(readConfObject(conf, [...Y, 'scale', 'type'])).toBe('linear')
-  expect(readConfObject(conf, [...Y, 'axis', 'grid'])).toBe(true)
-  expect(readConfObject(conf, [...Y, 'scale', 'fenceQuantile'])).toBe(0.9)
-})
-
 test('a bare encoding.y is the field, and the fence starts at 0.99', () => {
   const conf = create({ encoding: { y: 'minScore' } })
   expect(readConfObject(conf, [...Y, 'field'])).toBe('minScore')
@@ -186,7 +141,6 @@ test('a bare encoding.y is the field, and the fence starts at 0.99', () => {
 })
 
 test.each([
-  [{ scales: { y: { type: 'log', domainMin: 1 } } }, ['scale', 'type'], 'log'],
   [{ scaleType: 'log' }, ['scale', 'type'], 'log'],
   [{ displayCrossHatches: true }, ['axis', 'grid'], true],
 ] as const)(

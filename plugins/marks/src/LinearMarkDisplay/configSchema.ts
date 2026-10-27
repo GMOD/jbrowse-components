@@ -15,7 +15,6 @@ import { types } from '@jbrowse/mobx-state-tree'
 import { rowAxisWithGridConfigSchema } from '@jbrowse/tree-sidebar/rowAxisWithGridConfigSchema'
 import { rowGroupConfigSchema } from '@jbrowse/tree-sidebar/rowGroupConfigSchema'
 import { rowHeightConfigSchemaFields } from '@jbrowse/tree-sidebar/rowHeightConfigSchemaFields'
-import { retiredScalesSpelling } from '@jbrowse/wiggle-core'
 
 import { markColorSchema, markLegendOptions } from './markColorConfigSchema.ts'
 import { markDefSchema } from './markDefConfigSchema.ts'
@@ -537,10 +536,7 @@ export function configSchemaFactory() {
     {
       explicitlyTyped: true,
       explicitIdentifier: 'displayId',
-      retired: {
-        scales: retiredScalesSpelling(MARK_Y_PATHS.members),
-        ...retiredBaseDisplaySpellings,
-      },
+      retired: retiredBaseDisplaySpellings,
       preProcessSnapshot: checkMarks,
     },
   )

@@ -48,11 +48,10 @@ test('a default band is linear from zero, every mismatch and insertion drawn', (
   expect(display.axes[0]!.domain).toEqual(domain)
 })
 
-test.each([
-  { coverage: { encoding: { y: { scale: { type: 'log' } } } } },
-  { scales: { y: { type: 'log' } } },
-])('the y scale reaches the band, its axis and its marks alike', config => {
-  const display = displayWith(config)
+test('the y scale reaches the band, its axis and its marks alike', () => {
+  const display = displayWith({
+    coverage: { encoding: { y: { scale: { type: 'log' } } } },
+  })
   const domain = display.coverageDepthDomain!
   expect(domain[0]).toBeGreaterThanOrEqual(1)
   expect(display.coverageBandState.scaleType).toBe(scaleTypeCode('log'))
