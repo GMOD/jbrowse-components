@@ -99,7 +99,7 @@ export function ribbonPaintOf({
     trackColor: ribbonColor,
     defaultColor: cssColorToABGR(ribbonColor),
     attributeRanges,
-    paint: { ...paint, invalid: ribbonColor },
+    paint: { ...paint, invalid: paint.invalid ?? ribbonColor },
   })
   const fadeAt =
     fade &&

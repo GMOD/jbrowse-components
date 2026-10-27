@@ -264,6 +264,15 @@ test('a pair with no value is keyed in the color it paints', () => {
   expect(rows.at(-1)!.color).toBe(slot)
 })
 
+test("a text column's missing value is keyed in the color scale.invalid names", () => {
+  const rows = ribbonColorKey(
+    'group',
+    { group: { labels: ['B1'], colors: {}, missing: true } },
+    { slotColor: 'grey', paint: { invalid: 'gold' } },
+  )
+  expect(rows.at(-1)!.color).toBe('gold')
+})
+
 test('an attribute ribbon mode keys a row per label', () => {
   const rows = ribbonColorKey('group', {
     group: {

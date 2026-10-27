@@ -129,7 +129,7 @@ export function ribbonColorKey(
   const swatch = getColorBySwatch(field, {
     attributeRanges,
     hideUnlabelled,
-    missingColor: slotColor,
+    missingColor: paint.invalid ?? slotColor,
     names,
   })
   return swatch?.kind === 'chips'

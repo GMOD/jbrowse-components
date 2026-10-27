@@ -55,3 +55,18 @@ test.each(['query', 'target', 'reference'])(
     expect(paint(record, 1)).toBe(cssColorToABGR('grey'))
   },
 )
+
+test("a text column's missing value paints in the color scale.invalid names", () => {
+  const paintOf = (paint = {}) =>
+    ribbonPaintOf({
+      records: [record],
+      field: 'group',
+      ribbonColor: 'grey',
+      attributeRanges: { group: { labels: ['B1'], colors: {}, missing: true } },
+      opacity: { value: 1 },
+      filter: [],
+      paint,
+    })
+  expect(paintOf()(record, 1)).toBe(cssColorToABGR('grey'))
+  expect(paintOf({ invalid: 'gold' })(record, 1)).toBe(cssColorToABGR('gold'))
+})
