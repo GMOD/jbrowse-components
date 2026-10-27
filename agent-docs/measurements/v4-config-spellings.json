@@ -25,20 +25,6 @@
   "rows": [
     {
       "values": {
-        "spelling": "TrixTextSearchAdapter.textSearchAdapterId",
-        "kind": "unmapped",
-        "configs": 8
-      }
-    },
-    {
-      "values": {
-        "spelling": "TrixTextSearchAdapter.metaFilePath",
-        "kind": "unmapped",
-        "configs": 7
-      }
-    },
-    {
-      "values": {
         "spelling": "session.margin",
         "kind": "unmapped",
         "configs": 6
@@ -47,27 +33,6 @@
     {
       "values": {
         "spelling": "Gff3TabixAdapter.gffLocation",
-        "kind": "unmapped",
-        "configs": 2
-      }
-    },
-    {
-      "values": {
-        "spelling": "LinearGCContentDisplay.windowDelta",
-        "kind": "unmapped",
-        "configs": 2
-      }
-    },
-    {
-      "values": {
-        "spelling": "LinearGCContentDisplay.windowSize",
-        "kind": "unmapped",
-        "configs": 2
-      }
-    },
-    {
-      "values": {
-        "spelling": "MultiLinearVariantDisplay.minorAlleleFrequencyFilter",
         "kind": "unmapped",
         "configs": 2
       }
@@ -96,6 +61,13 @@
     {
       "values": {
         "spelling": "session LinearAlignmentsDisplay.snpCovHeight",
+        "kind": "unmapped",
+        "configs": 2
+      }
+    },
+    {
+      "values": {
+        "spelling": "session LinearSyntenyDisplay.height",
         "kind": "unmapped",
         "configs": 2
       }
@@ -354,9 +326,16 @@
     },
     {
       "values": {
-        "spelling": "session LinearSyntenyView.tracks",
-        "kind": "shape",
-        "configs": 2
+        "spelling": "TrixTextSearchAdapter.textSearchAdapterId",
+        "kind": "dropped",
+        "configs": 8
+      }
+    },
+    {
+      "values": {
+        "spelling": "TrixTextSearchAdapter.metaFilePath",
+        "kind": "dropped",
+        "configs": 7
       }
     },
     {
@@ -378,6 +357,13 @@
         "spelling": "MultiLinearVariantDisplay.colorBy",
         "kind": "dropped",
         "configs": 3
+      }
+    },
+    {
+      "values": {
+        "spelling": "type LinearGCContentDisplay",
+        "kind": "dropped",
+        "configs": 2
       }
     },
     {
@@ -424,6 +410,13 @@
     },
     {
       "values": {
+        "spelling": "MultiLinearVariantDisplay.minorAlleleFrequencyFilter",
+        "kind": "lifted",
+        "configs": 2
+      }
+    },
+    {
+      "values": {
         "spelling": "session LinearAlignmentsDisplay.PileupDisplay",
         "kind": "lifted",
         "configs": 2
@@ -446,6 +439,13 @@
     {
       "values": {
         "spelling": "session LinearGenomeView.init",
+        "kind": "lifted",
+        "configs": 2
+      }
+    },
+    {
+      "values": {
+        "spelling": "session LinearSyntenyView.tracks",
         "kind": "lifted",
         "configs": 2
       }

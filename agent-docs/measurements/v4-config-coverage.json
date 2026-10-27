@@ -42,8 +42,8 @@
         "corpus": "config files",
         "configs": 34,
         "clean": 15,
-        "warn": 2,
-        "fail": 17
+        "warn": 5,
+        "fail": 14
       }
     },
     {
@@ -51,8 +51,8 @@
         "corpus": "doc snippets",
         "configs": 59,
         "clean": 49,
-        "warn": 5,
-        "fail": 5
+        "warn": 8,
+        "fail": 2
       }
     }
   ]
