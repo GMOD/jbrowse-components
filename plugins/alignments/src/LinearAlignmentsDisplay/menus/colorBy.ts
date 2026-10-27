@@ -140,13 +140,12 @@ function tagColorScaleOf({
 }
 
 // A field only a config names (an attribute, `mateAssembly`, a `jexl:`
-// expression, or a tag on a menu with no "Tag..." row) has no row to pick it
-// from, so it gets a checked, disabled one of its own, as Group by's does.
-function configFieldItems(model: ColorByModel, offersTag: boolean): MenuItem[] {
+// expression, a preset or tag this menu does not offer) ticks none of `rows`,
+// so it gets a checked, disabled row of its own, as Group by's does.
+function unlistedFieldItems(model: ColorByModel, rows: MenuItem[]): MenuItem[] {
   const { colorField } = model
   return colorField !== undefined &&
-    colorFieldKindOf(colorField) === 'tag' &&
-    (!offersTag || fieldTag(colorField) === undefined)
+    !rows.some(row => 'checked' in row && row.checked)
     ? [
         radioItem(colorField, true, () => {}, {
           disabled: true,
@@ -286,13 +285,21 @@ function colorByItem(
   const layerOptions = colorOptions.filter(
     o => baseLayerOfField(o.field) !== undefined,
   )
+  const fillRows = [
+    ...readOptions.map(o => colorRadio(model, o)),
+    ...(reads ? [tagItem(model)] : []),
+  ]
+  const pairedRows = reads
+    ? pairedEndColorOptions
+        .filter(o => !o.whileActive || model.colorField === o.field)
+        .map(o => colorRadio(model, o))
+    : []
   return colorByMenuItem({
     blocks: [
       {
         rows: [
-          ...readOptions.map(o => colorRadio(model, o)),
-          ...(reads ? [tagItem(model)] : []),
-          ...configFieldItems(model, !!reads),
+          ...fillRows,
+          ...unlistedFieldItems(model, [...fillRows, ...pairedRows]),
           solidColorItem(paintsConstant(model), () => {
             model.pickSolidColor()
           }),
@@ -300,14 +307,7 @@ function colorByItem(
       },
       // the read fill again, so its radios tick one at a time with the rows
       // above
-      {
-        header: 'Paired end',
-        rows: reads
-          ? pairedEndColorOptions
-              .filter(o => !o.whileActive || model.colorField === o.field)
-              .map(o => colorRadio(model, o))
-          : [],
-      },
+      { header: 'Paired end', rows: pairedRows },
       {
         header: 'Per-base coloring',
         rows: baseLayerItems(model, layerOptions, reads),
