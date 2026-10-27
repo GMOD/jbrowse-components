@@ -22,7 +22,6 @@ export {
   interbaseFilterProblems,
   interbaseIndicatorRuleOf,
 } from './coverageInterbaseConfigSchema.ts'
-export { layerFilterProblems } from './layerFilterProblems.ts'
 export type { LayerFilterField } from './layerFilterRules.ts'
 export type { InterbaseIndicatorRule } from './coverageInterbaseConfigSchema.ts'
 
