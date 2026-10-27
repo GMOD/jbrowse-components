@@ -56,6 +56,25 @@ test.each(['query', 'target', 'reference'])(
   },
 )
 
+test('a ribbon its fade clears offers no hover target, as in two-way synteny', () => {
+  const at = (identity: number) =>
+    new SimpleFeature({ ...record.toJSON(), uniqueId: `${identity}`, identity })
+  const [low, high] = [at(0.4), at(0.6)]
+  const paint = ribbonPaintOf({
+    records: [low, high],
+    field: undefined,
+    ribbonColor: 'grey',
+    attributeRanges: { identity: { min: 0.4, max: 0.6 } },
+    opacity: {
+      field: 'identity',
+      scale: { type: 'threshold', domain: ['0.5'], range: ['0', '0.5'] },
+    },
+    filter: [],
+  })
+  expect(paint(low, 1)).toBeUndefined()
+  expect(paint(high, 1)).toBe(withAbgrAlpha(cssColorToABGR('grey'), 128))
+})
+
 test("a text column's missing value paints in the color scale.invalid names", () => {
   const paintOf = (paint = {}) =>
     ribbonPaintOf({

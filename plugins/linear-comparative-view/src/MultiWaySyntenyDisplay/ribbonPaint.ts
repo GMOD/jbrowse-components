@@ -1,10 +1,8 @@
 import { cssColorToABGR, withAbgrAlpha } from '@jbrowse/core/util/colorBits'
 import {
   attributeOf,
-  comparativeFilter,
   createAttributeChannels,
   createComparativeColorFunction,
-  createOpacityFunction,
   opacityFadeOf,
   opacityLevel,
   SYNTENY_VIEW_FIELDS,
@@ -41,8 +39,9 @@ function paintedField(field: string | undefined) {
  * as two-way synteny reads it. A record joins pairs of either strand, so each
  * call writes the pair's strand into the record's slot before reading it.
  * A paint and filter reading no attribute share one slot, and `records` go
- * unread. Undefined is a ribbon `filter` drops, which draws nothing and offers
- * no hover target.
+ * unread. Undefined is a ribbon core paints at zero alpha, one the `filter`
+ * drops or the fade clears, which draws nothing and offers no hover target,
+ * as in two-way synteny. The opacity level scales what is left.
  */
 export function ribbonPaintOf({
   records,
@@ -93,6 +92,7 @@ export function ribbonPaintOf({
     attributes,
     attributeRanges: fetchRanges,
   }
+  let current: Feature | undefined
   const colorAt = createComparativeColorFunction({
     field: paintedField(field),
     data,
@@ -100,29 +100,21 @@ export function ribbonPaintOf({
     defaultColor: cssColorToABGR(ribbonColor),
     attributeRanges,
     paint: { ...paint, invalid: paint.invalid ?? ribbonColor },
+    opacity: fade,
+    filter,
+    filterExtras: {
+      lengthOf: () => current!.get('end') - current!.get('start'),
+    },
   })
-  const fadeAt =
-    fade &&
-    createOpacityFunction({
-      setting: fade,
-      attributes,
-      viewRanges: attributeRanges,
-      fetchRanges,
-    })
   const level = opacityLevel(opacity, RIBBON_OPACITY, attributeRanges)
-  let current: Feature | undefined
-  const passes = comparativeFilter(filter, data, {
-    lengthOf: () => current!.get('end') - current!.get('start'),
-  })
   return (record, strand) => {
     const i = index.get(record) ?? 0
     current = record
     strands[i] = strand
-    if (passes && !passes(i)) {
-      return undefined
-    }
     const painted = colorAt(i)
-    const share = fadeAt ? level * fadeAt(i) : level
-    return withAbgrAlpha(painted, Math.round((painted >>> 24) * share))
+    const alpha = painted >>> 24
+    return alpha === 0
+      ? undefined
+      : withAbgrAlpha(painted, Math.round(alpha * level))
   }
 }
