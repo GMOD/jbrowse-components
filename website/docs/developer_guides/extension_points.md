@@ -1021,7 +1021,7 @@ A retired **value** in a slot the display still declares is the schema's
 
 ```typescript
 retiredTypes: [{ type: 'LinearFeatureDisplay' }],
-retiredState: retiredFilterState,
+retiredState: retiredBasicState,
 ```
 
 A config or a session naming one loads as this display, with the entry rewritten

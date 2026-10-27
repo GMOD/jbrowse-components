@@ -116,7 +116,7 @@ separate at their positions:
 <!-- prettier-ignore -->
 | Setting | Page | `scale.type` | Preset fields |
 | --- | --- | --- | --- |
-| `encoding.color` | [](/docs/config/variantcellcolor#preset-fields) | ordinal, threshold | `strand`, `svType`, `impact` |
+| `encoding.color` | [](/docs/config/variantcellcolor#preset-fields) | ordinal, threshold, linear, log | `strand`, `svType`, `impact`, `score` |
 
 ## Config slots
 
@@ -160,7 +160,7 @@ An older config may still write these. Each loads without an error, and `jbrowse
 | `showSidebarLabels` | moved into a current slot |
 | `showTree` | moved into a current slot |
 | `showReferenceAlleles` | moved into a current slot |
-| `colorBy` | ignored |
+| `colorBy` | moved into a current slot |
 | `autoscale` | ignored |
 | `minScore` | ignored |
 | `maxScore` | ignored |

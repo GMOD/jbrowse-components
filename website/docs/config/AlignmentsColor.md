@@ -12,6 +12,10 @@ The alignments displays' `encoding.color`: one color for every read in
 its levels or bins, `tags.XX` reads a SAM tag, and any other name reads
 the read as a facet over it does: `mateAssembly`, a feature attribute, a
 dotted path into one or a `jexl:` expression. A string is the field.
+Unlike a feature track, which deals colors in the order values appear, a
+tag or attribute with no `scale.domain`, `range` or `unknown` colors each
+value by its text alone, so the value keeps its color in every region and
+session.
 `split`, `spliced`, `pairing` and `svSignal` color nothing: reads keep their
 arcs' colors, and a facet sections them by those.
 The per-base layer over the reads is `pileup.bases`.

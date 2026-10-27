@@ -4269,6 +4269,7 @@
         "DISCRETE_COLOR_SCALES",
         "FEATURE_COLOR_SCALES",
         "FEATURE_FIELD_PRESETS",
+        "FIELD_COLOR_SCALES",
         "IDENTITY_SCALE",
         "categoricalColorField",
         "colorChannelOptions",
@@ -5054,6 +5055,17 @@
       "package": "@jbrowse/display-kit",
       "names": [
         "VIEW_TRACK_LABEL_MODES"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/display-kit/valueRamp": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "numericText",
+        "rampEncodingOf",
+        "rampKeyScales",
+        "rampTextColor",
+        "valueRampOf"
       ],
       "worker": "real"
     },

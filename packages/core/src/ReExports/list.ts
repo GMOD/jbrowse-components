@@ -499,6 +499,7 @@ export default [
   '@jbrowse/display-kit/TriangleMatrixSvgLayer',
   '@jbrowse/display-kit/triangleTransform',
   '@jbrowse/display-kit/types',
+  '@jbrowse/display-kit/valueRamp',
   '@jbrowse/display-kit/viewportEmpty',
   '@jbrowse/display-kit/viewRegionTable',
   '@jbrowse/display-ui',
