@@ -128,6 +128,7 @@ import {
   qualityAbgr,
 } from './features/perBaseQuality/colors.ts'
 import {
+  junctionColor,
   sashimiArcHeightFraction,
   sashimiStrokeWidth,
 } from './features/sashimi/bandFeed.ts'
@@ -140,11 +141,7 @@ import {
   passesJunctionFilter,
 } from './features/sashimi/junctions.ts'
 import { spliceMotifLabel } from './features/sashimi/motif.ts'
-import {
-  arcCategoryColor,
-  arcSlotCategory,
-  buildArcColorPalette,
-} from './shaders/palettes.ts'
+import { arcSlotCategory, buildArcColorPalette } from './shaders/palettes.ts'
 import {
   frequencyFadeGate,
   sizeAlpha,
@@ -368,8 +365,7 @@ const INTERBASE_LABELS: Record<InterbaseTypeName, string> = {
  * The colors the display paints its per-base and coverage marks in, off its
  * palette: each base through `effectiveBaseColors`, so a modifications or
  * bisulfite layer mutes them, the interbase histogram in its band variants,
- * and a splice junction in its transcript strand's, a split junction in its
- * class's read-arc color.
+ * and each junction as the sashimi band paints it (`junctionColor`).
  */
 function markColors(palette: ColorPalette, baseLayer: BaseLayer | undefined) {
   const muted = paintsModifications(baseLayer)
@@ -396,16 +392,7 @@ function markColors(palette: ColorPalette, baseLayer: BaseLayer | undefined) {
       softclip: hex(palette.colorSoftclipIndicator),
       hardclip: hex(palette.colorHardclipIndicator),
     } as Record<InterbaseTypeName, string>,
-    junction: ({ strand, split }: Pick<MergedJunction, 'strand' | 'split'>) =>
-      hex(
-        split
-          ? arcCategoryColor(palette, split)
-          : strand === 1
-            ? palette.colorFwdStrand
-            : strand === -1
-              ? palette.colorRevStrand
-              : palette.colorPairLR,
-      ),
+    junction: (j: MergedJunction) => abgrToHex(junctionColor(j, palette)),
     palette,
   }
 }
