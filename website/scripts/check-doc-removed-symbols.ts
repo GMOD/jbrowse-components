@@ -55,6 +55,10 @@ const ABSENCE_DOCS = new Set(['PLUGIN_ABI_STABILITY.md', 'R_EXPORT.md'])
 // asserts the sentence around it is still true.
 const ABSENT_ON_PURPOSE = new Map([
   [
+    'subDisplay',
+    'FEATURE_BAND_CONSUMERS dates the removal of the last shell-composition residue',
+  ],
+  [
     'BAR_OVERDRAW_PX',
     'CROSS_BACKEND_GATE names the GWAS bar pad whose removal it measures, as the worked example of what the gate cannot see',
   ],
