@@ -90,7 +90,9 @@ function submit(
 ) {
   const initial = layerFilterStateOf(model)
   const state = edit(initial)
-  model.setFilterFields(layerFilterEntries(state, initial))
+  model.setFilterFields(
+    layerFilterEntries(state, initial, model.filterPredicates),
+  )
   const patch = layerBasesPatch(state, initial)
   if (patch) {
     model.setBases(patch)
@@ -152,6 +154,20 @@ describe('the More filters... layer sections', () => {
     })
     submit(model, s => s)
     expect(model.filterPredicates).toEqual(filter)
+  })
+
+  test('a raised floor keeps the cap the field declares', () => {
+    const model = makeModel({
+      filter: [{ field: 'junction.reads', gte: 3, lte: 100 }],
+      showSashimi: true,
+    })
+    submit(model, s => ({
+      ...s,
+      junctions: { ...s.junctions!, minReads: '5' },
+    }))
+    expect(model.filterPredicates).toEqual([
+      { field: 'junction.reads', lte: 100, gte: 5 },
+    ])
   })
 
   test('hiding split-read junctions writes junction.source', () => {

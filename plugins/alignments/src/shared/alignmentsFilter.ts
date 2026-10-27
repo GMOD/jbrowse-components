@@ -150,9 +150,20 @@ function countFloorOf(predicates: readonly FieldPredicate[], field: string) {
   return floor
 }
 
-/** The entries a floor of `min` writes on a count field, none for 1 or less. */
-export function floorEntries(field: string, min: number): FieldPredicate[] {
-  return min > 1 ? [{ field, gte: min }] : []
+/**
+ * A count field's entries with its floor at `min`, none for 1 or less, each
+ * other test `written` makes on the field (an `lte` cap) kept.
+ */
+export function floorEntries(
+  written: readonly FieldPredicate[],
+  field: string,
+  min: number,
+): FieldPredicate[] {
+  return withLowerBound(
+    entriesOn(written, field),
+    field,
+    min > 1 ? min : undefined,
+  )
 }
 
 // ---- the main thread's rows ----
@@ -203,12 +214,19 @@ export function junctionFilterOf(
  */
 export function junctionEntries(
   patch: JunctionFilterPatch,
+  written: readonly FieldPredicate[] = [],
 ): Record<string, FieldPredicate[]> {
   const { classes, sources } = patch
   return {
     ...(patch.minReads === undefined
       ? {}
-      : { [JUNCTION_READS]: floorEntries(JUNCTION_READS, patch.minReads) }),
+      : {
+          [JUNCTION_READS]: floorEntries(
+            written,
+            JUNCTION_READS,
+            patch.minReads,
+          ),
+        }),
     ...('nonCanonical' in patch
       ? {
           [JUNCTION_CANONICAL]: categoryEntries(
@@ -257,6 +275,7 @@ export function connectionFilterOf(
 /** `connectionFilterOf`'s members as the entries they are. */
 export function connectionEntries(
   patch: Partial<ConnectionFilter>,
+  written: readonly FieldPredicate[] = [],
 ): Record<string, FieldPredicate[]> {
   return {
     ...('interchrom' in patch
@@ -279,6 +298,7 @@ export function connectionEntries(
       ? {}
       : {
           [BREAKPOINT_READS]: floorEntries(
+            written,
             BREAKPOINT_READS,
             patch.minInterchromReads,
           ),

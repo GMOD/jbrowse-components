@@ -412,7 +412,7 @@ const MoreFiltersDialog = observer(function MoreFiltersDialog(props: {
         readFieldsOf(form),
         readFieldsOf(initial),
       ),
-      ...layerFilterEntries(layers, initialLayers),
+      ...layerFilterEntries(layers, initialLayers, predicates),
     })
     const basesPatch = layerBasesPatch(layers, initialLayers)
     if (basesPatch) {

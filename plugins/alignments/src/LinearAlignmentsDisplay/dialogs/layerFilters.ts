@@ -250,13 +250,22 @@ function countOf(value: string, fallback: number) {
  * The `filter` entries the state writes, by field: only the fields it changed
  * from `initial`, so a declared entry the dialog shows another way (a `gt`
  * floor, an `lte` cap, a `junction.class` list under the split-read choice)
- * stays as written.
+ * stays as written. A changed floor keeps `written`'s other tests on its
+ * field.
  */
 export function layerFilterEntries(
   state: LayerFilterState,
   initial: LayerFilterState,
+  written: readonly FieldPredicate[] = [],
 ): Record<string, FieldPredicate[]> {
   const { junctions, connections } = state
+  const sashimiReads = (s: LayerFilterState) =>
+    countOf(s.junctions?.minReads ?? '', DEFAULT_MIN_SASHIMI_READS)
+  const interchromReads = (s: LayerFilterState) =>
+    countOf(
+      s.connections?.minInterchromReads ?? '',
+      DEFAULT_MIN_INTERCHROM_READS,
+    )
   return {
     ...(state.alone === initial.alone
       ? {}
@@ -266,34 +275,27 @@ export function layerFilterEntries(
           ...(junctions.split === initial.junctions?.split
             ? {}
             : junctionEntries(splitJunctionsPatch(junctions.split))),
-          ...(junctions.minReads === initial.junctions?.minReads
+          ...(sashimiReads(state) === sashimiReads(initial)
             ? {}
-            : junctionEntries({
-                minReads: countOf(
-                  junctions.minReads,
-                  DEFAULT_MIN_SASHIMI_READS,
-                ),
-              })),
+            : junctionEntries({ minReads: sashimiReads(state) }, written)),
         }
       : {}),
     ...(connections
-      ? connectionEntries({
-          ...(connections.offscreenMates === initial.connections?.offscreenMates
-            ? {}
-            : { offscreenMates: connections.offscreenMates }),
-          ...(connections.interchrom === initial.connections?.interchrom
-            ? {}
-            : { interchrom: connections.interchrom }),
-          ...(connections.minInterchromReads ===
-          initial.connections?.minInterchromReads
-            ? {}
-            : {
-                minInterchromReads: countOf(
-                  connections.minInterchromReads,
-                  DEFAULT_MIN_INTERCHROM_READS,
-                ),
-              }),
-        })
+      ? connectionEntries(
+          {
+            ...(connections.offscreenMates ===
+            initial.connections?.offscreenMates
+              ? {}
+              : { offscreenMates: connections.offscreenMates }),
+            ...(connections.interchrom === initial.connections?.interchrom
+              ? {}
+              : { interchrom: connections.interchrom }),
+            ...(interchromReads(state) === interchromReads(initial)
+              ? {}
+              : { minInterchromReads: interchromReads(state) }),
+          },
+          written,
+        )
       : {}),
   }
 }

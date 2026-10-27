@@ -723,7 +723,9 @@ export function configSlotActions(self: ConfigSlotSelf) {
      */
     setJunctionFilter(patch: JunctionFilterPatch) {
       requireReadsConf(self)
-      setFilterFields(junctionEntries(patch))
+      setFilterFields(
+        junctionEntries(patch, writtenFilterOf(self.configuration)),
+      )
     },
 
     /**
@@ -782,7 +784,9 @@ export function configSlotActions(self: ConfigSlotSelf) {
      * #action
      */
     setConnectionFilter(patch: Partial<ConnectionFilter>) {
-      setFilterFields(connectionEntries(patch))
+      setFilterFields(
+        connectionEntries(patch, writtenFilterOf(self.configuration)),
+      )
     },
   }
 }
