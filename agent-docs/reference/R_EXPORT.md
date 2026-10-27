@@ -103,6 +103,9 @@ color) land in the script header.
   all, and asserts on what its tracks read; it skips without R and
   ggjbrowse, except under `REQUIRE_R=1` (the `R export` workflow, on a push
   touching `rExport/` and nightly against ggjbrowse's main).
+- `readerSlots.test.ts` checks `READERS`, `SEQUENCE_ADAPTERS` and the table
+  above against the committed schema, and the fixture's `track()` throws on a
+  display config the schema refuses, so a respelled slot fails here.
 - Drive the real app too: the dev server
   (`products/jbrowse-web/scripts/start.ts` under `NODE_ENV=development`,
   run from `products/jbrowse-web`), a volvox view, the menu item, `Rscript` on the download, the figure beside

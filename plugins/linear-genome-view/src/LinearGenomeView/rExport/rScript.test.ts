@@ -32,7 +32,7 @@ test('each track is a ggjbrowse reader, and the figure is one jbrowse_stack call
       }),
       track('volvox_microarray', 'LinearWiggleDisplay'),
       track('volvox_alignments', 'LinearAlignmentsDisplay', {
-        color: { field: 'mapq' },
+        encoding: { color: { field: 'mapq' } },
       }),
     ],
   })
@@ -42,7 +42,7 @@ test('each track is a ggjbrowse reader, and the figure is one jbrowse_stack call
   )
   expect(script).toContain('\nwidth <- 1500\n')
   expect(script).toContain(
-    'display = list(color = list(field = "mapq")),\n  width = width)',
+    'display = list(encoding = list(color = list(field = "mapq"))),\n  width = width)',
   )
   expect(script).toContain(
     'fig <- jbrowse_stack(gff3tabix_genes, volvox_microarray, volvox_alignments)\nprint(fig)\n',

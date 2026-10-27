@@ -4,6 +4,8 @@ import { tmpdir } from 'node:os'
 import path from 'node:path'
 import { pathToFileURL } from 'node:url'
 
+import { schemaProblems } from '../../../../../products/jbrowse-cli/src/commands/validate/schemaValidate.ts'
+
 import type { RExportTrack } from './rScript.ts'
 
 export const VOLVOX = path.resolve(__dirname, '../../../../../test_data/volvox')
@@ -38,13 +40,26 @@ function located(adapter: Record<string, unknown>): Record<string, unknown> {
   return out
 }
 
-/** A volvox track as the live view hands it over, `display` standing for both the written and the resolved config. */
+/**
+ * A volvox track as the live view hands it over, `display` standing for both
+ * the written and the resolved config. Throws on a display config the
+ * committed schema refuses, which the browser could not have written.
+ */
 export function track(
   trackId: string,
   displayType: string,
   display: Record<string, unknown> = {},
   source = configTracks(),
 ): RExportTrack {
+  const problems = schemaProblems(
+    { type: displayType, ...display },
+    `/$defs/${displayType}`,
+  )
+  if (problems.length > 0) {
+    throw new Error(
+      `${trackId} as ${displayType}: ${problems.map(p => `${p.where}: ${p.message}`).join('; ')}`,
+    )
+  }
   const t = source.get(trackId)!
   return {
     trackId,

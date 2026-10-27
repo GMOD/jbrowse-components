@@ -29,7 +29,7 @@ export interface RExportTrack {
  * it opens (the slot holding the file and the extension the reader knows it
  * by).
  */
-const READERS: Record<
+export const READERS: Record<
   string,
   {
     call: string
@@ -283,7 +283,7 @@ function fileArgument(
  * Each sequence adapter `jbrowse_assembly()` builds from a path, by the
  * extension ggjbrowse reads it off, and the index each takes beside it.
  */
-const SEQUENCE_ADAPTERS: Record<
+export const SEQUENCE_ADAPTERS: Record<
   string,
   { slot: string; ext: RegExp; beside: Record<string, string> }
 > = {
