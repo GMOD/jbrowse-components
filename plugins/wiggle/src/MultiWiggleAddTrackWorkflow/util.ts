@@ -3,7 +3,6 @@ import {
   fileToLocation,
   getEnv,
   getFileName,
-  isElectron,
   makeTrackId,
 } from '@jbrowse/core/util'
 import {
@@ -146,29 +145,20 @@ function classifyLocation(
   }
 }
 
-/**
- * Where a pasted string points, for its row name and its fetch alike: a URL
- * where it has a scheme, and otherwise a local path on Desktop, where `#` and
- * `?` belong to the filename, or a URL relative to the page on the web, as
- * core's URL box reads it. A scheme takes two or more characters, so a
- * Windows drive letter reads as a path.
- */
-export function pastedLocation(item: string, local = isElectron): FileLocation {
-  return local && !/^[a-z][a-z\d+.-]+:/i.test(item)
-    ? { localPath: item, locationType: 'LocalPathLocation' }
-    : { uri: item, locationType: 'UriLocation' }
-}
-
 export function itemToName(item: TrackItem) {
   return typeof item === 'string'
-    ? withoutExtension(getFileName(pastedLocation(item)))
+    ? withoutExtension(getFileName({ uri: item, locationType: 'UriLocation' }))
     : `${item.source ?? item.name ?? getFilenameFromAdapterConfig(item) ?? 'unnamed'}`
 }
 
 export function classifyItem(item: TrackItem, guessers: Guessers) {
   const name = itemToName(item)
   if (typeof item === 'string') {
-    return classifyLocation(pastedLocation(item), name, guessers)
+    return classifyLocation(
+      { uri: item, locationType: 'UriLocation' },
+      name,
+      guessers,
+    )
   }
   const { type, uri, ...rest } = item
   if (type === undefined && typeof uri === 'string') {

@@ -74,3 +74,12 @@ test('but a local path keeps one', () => {
     }),
   ).toBe('why?not.fa')
 })
+
+// jest runs in Node, where openLocation opens these as local files, as Desktop
+// does, so `?` and `#` stay in the name
+test('a uri naming a local file names it as openLocation opens it', () => {
+  expect(getFileName(uri('/data/run#2/sample#1.bw'))).toBe('sample#1.bw')
+  expect(getFileName(uri('C:\\data\\a?b.bw'))).toBe('a?b.bw')
+  expect(getFileName(uri('file:///d/x%232.bw'))).toBe('x#2.bw')
+  expect(getFileName(uri('data/x.bw?v=1'))).toBe('x.bw')
+})

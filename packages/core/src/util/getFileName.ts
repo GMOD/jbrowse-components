@@ -1,9 +1,11 @@
+import { isElectron, isNode } from './environment.ts'
 import {
   isBlobLocation,
   isFileHandleLocation,
   isLocalPathLocation,
   isUriLocation,
 } from './types/data.ts'
+import { uriToLocalPath } from './uriToLocalPath.ts'
 
 import type { FileLocation } from './types/data.ts'
 
@@ -20,6 +22,14 @@ function withoutQuery(uri: string) {
   return uri.split(/[?#]/, 1)[0]!
 }
 
+// On Desktop and in Node, `openLocation` opens a bare absolute path or a
+// `file:` URI as a local file, so the name is that file's, `?` and `#`
+// included.
+function uriFileName(uri: string) {
+  const local = isNode || isElectron ? uriToLocalPath(uri) : undefined
+  return lastSegment(local ?? withoutQuery(uri))
+}
+
 /**
  * The bare filename a location refers to, for every location type — a Blob and
  * a FileHandle carry their name directly, a URI and a local path carry it as the
@@ -34,7 +44,7 @@ export function getFileName(location: FileLocation) {
   return isBlobLocation(location) || isFileHandleLocation(location)
     ? location.name
     : isUriLocation(location)
-      ? lastSegment(withoutQuery(location.uri))
+      ? uriFileName(location.uri)
       : isLocalPathLocation(location)
         ? lastSegment(location.localPath)
         : ''

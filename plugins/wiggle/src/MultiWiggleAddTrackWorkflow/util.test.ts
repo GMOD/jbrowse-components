@@ -10,7 +10,6 @@ import {
   canSubmit,
   classifyFile,
   classifyItem,
-  pastedLocation,
   itemToName,
   parseItems,
   sessionGuessers,
@@ -83,8 +82,7 @@ describe('itemToName', () => {
     expect(itemToName('https://example.com/x.bw?v=1.2')).toBe('x')
   })
 
-  it('names a pasted path on the web as the URL it fetches, # a fragment', () => {
-    expect(itemToName('/data/sample#2.bw')).toBe('sample')
+  it('cuts a URL at its fragment', () => {
     expect(itemToName('https://example.com/sample.bw#frag')).toBe('sample')
   })
 
@@ -171,30 +169,13 @@ describe('classifyItem', () => {
   })
 })
 
-describe('pastedLocation', () => {
-  it('reads a path with no scheme as a local file on Desktop, where # is part of its name', () => {
-    expect(pastedLocation('/data/run#2/sample.bw', true)).toEqual({
-      localPath: '/data/run#2/sample.bw',
-      locationType: 'LocalPathLocation',
-    })
-    expect(pastedLocation('C:\\data\\a#b.bw', true)).toMatchObject({
-      locationType: 'LocalPathLocation',
-    })
-    expect(pastedLocation('https://host/a.bw', true)).toMatchObject({
-      locationType: 'UriLocation',
-    })
-  })
-
-  // the # starts the URL's fragment, so the row cannot name a file it would
-  // not fetch
-  it('reads it as a URL on the web, where a # cuts the path short', () => {
-    expect(pastedLocation('/data/run#2/sample.bw', false)).toMatchObject({
-      locationType: 'UriLocation',
-    })
-    expect(classifyItem('/data/sample#1.bw', guessers())).toEqual({
-      name: 'sample',
-      reason: 'not a file format JBrowse recognizes',
-    })
+// jest runs in Node, where core opens a bare absolute path as a local file,
+// as Desktop does
+describe('a pasted local path', () => {
+  it('names its row and fetches its file with the # its filename holds', () => {
+    const m = asMember(classifyItem('/data/run#2/sample#1.bw', guessers()))
+    expect(m.name).toBe('sample#1')
+    expect(JSON.stringify(m.conf)).toContain('/data/run#2/sample#1.bw')
   })
 })
 
