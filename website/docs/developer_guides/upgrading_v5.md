@@ -21,7 +21,9 @@ before your users do.
 
 ## Migrations that happen automatically
 
-Most sessions and configs migrate through `preProcessSnapshot`:
+Most sessions and configs migrate through `preProcessSnapshot`.
+[Migrating a v4 config](/docs/config_guides/v4_config_migration) lists every
+v4.3.0 key the app rewrites and the slot each becomes. Among them:
 
 - canvas `color1` and `color3` become `encoding.color` and
   `utrs.encoding.color`; `color2` and `outline` drop, since the glyph's lines
