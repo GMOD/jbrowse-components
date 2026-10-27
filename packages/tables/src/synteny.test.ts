@@ -19,7 +19,6 @@ test('a PAF comes back as the synteny band lays out and colors it', async () => 
   expect(t.alignments.strand.filter(s => s === -1)).toHaveLength(2)
   expect(t.alignments.queryChrom).toEqual(new Array(7).fill('ctgA'))
   expect(t.assemblyNames).toEqual(['volvox_random_inv', 'volvox'])
-  expect(t.hasCigar).toBe(true)
   expect(t.alpha).toBe(0.25)
   expect(t.config).toMatchObject({
     filter: [],

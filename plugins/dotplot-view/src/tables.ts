@@ -225,7 +225,6 @@ export async function dotplotTables(
     segments,
     ...comparativeLegend(settings, { pointBased: true }),
     config: { ...config, ...settings.config },
-    field: settings.field,
     alpha: level,
     assemblyNames: [h.assemblyName, v.assemblyName],
     skipped: {

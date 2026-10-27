@@ -766,11 +766,9 @@ export async function multiwayTables(
         against: rowsVsAnchor ? anchor : undefined,
       }),
     ),
-    field: settings.field,
     tickInterval: tickIntervalFor(unitBp),
     rowsVsAnchor,
     config: settings.config,
-    assemblyNames: [anchor, ...rows],
   }
 }
 

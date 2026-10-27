@@ -33,7 +33,7 @@ test('an all-vs-all PAF stacks a lane per genome, with ribbons down each gutter'
     columnsAgree(table)
   }
   columnsAgree(t.alignments)
-  expect(t.assemblyNames).toEqual(['volvox', 'volvox_ins', 'volvox_del'])
+  expect(t.lanes.assembly).toEqual(['volvox', 'volvox_ins', 'volvox_del'])
   expect(t.lanes.anchor).toEqual([true, false, false])
   expect(t.lanes.chrom).toEqual(['ctgA', 'ctgA', 'ctgA'])
   expect(t.lanes.flipped).toEqual([false, false, false])
@@ -88,18 +88,18 @@ test('the rows slot orders the lanes and keeps the ones it names', async () => {
     ...ALL_VS_ALL,
     display: { rows: { sort: ['volvox_del'] } },
   })
-  expect(swapped.assemblyNames).toEqual(['volvox', 'volvox_del', 'volvox_ins'])
+  expect(swapped.lanes.assembly).toEqual(['volvox', 'volvox_del', 'volvox_ins'])
   const kept = await engine.multiway({
     ...ALL_VS_ALL,
     display: { rows: { kept: ['volvox_del'] } },
   })
-  expect(kept.assemblyNames).toEqual(['volvox', 'volvox_del'])
+  expect(kept.lanes.assembly).toEqual(['volvox', 'volvox_del'])
   expect(new Set(kept.ribbons.gutter)).toEqual(new Set([0]))
   const hidden = await engine.multiway({
     ...ALL_VS_ALL,
     hidden: ['volvox_ins'],
   })
-  expect(hidden.assemblyNames).toEqual(['volvox', 'volvox_del'])
+  expect(hidden.lanes.assembly).toEqual(['volvox', 'volvox_del'])
   await expect(
     engine.multiway({
       ...ALL_VS_ALL,
@@ -162,7 +162,7 @@ test('ribbons color by strand, keyed against the lane above', async () => {
 
 test('SyRI calls color their ribbons, and a lane unaligned on both sides opens no hole', async () => {
   const t = await engine.multiway(SYRI)
-  expect(t.assemblyNames).toEqual(['Col-0', 'Ler', 'Cvi', 'Eri', 'Kyo', 'Sha'])
+  expect(t.lanes.assembly).toEqual(['Col-0', 'Ler', 'Cvi', 'Eri', 'Kyo', 'Sha'])
   expect(t.legend.label).toEqual(['SYN', 'INV', 'TRANS, INVTR', 'DUP, INVDP'])
   const syri = t.ribbons.alignment.map(a => column(t.alignments, 'syri')[a])
   const inverted = indexes(syri, s => s === 'INV')
@@ -225,7 +225,7 @@ test('a gene table joins a gene across a lane that lacks it', async () => {
 test('a star of pairwise files draws each lane against the anchor', async () => {
   const t = await engine.multiway(STAR)
   expect(t.rowsVsAnchor).toBe(true)
-  expect(t.assemblyNames).toEqual(['volvox', 'volvox_ins', 'volvox_del'])
+  expect(t.lanes.assembly).toEqual(['volvox', 'volvox_ins', 'volvox_del'])
   expect(new Set(t.ribbons.upperLane)).toEqual(new Set([0]))
   expect(new Set(t.ribbons.gutter)).toEqual(new Set([0, 1]))
 })
@@ -271,7 +271,7 @@ test('a lane reading backwards against the anchor flips, and its ribbons run str
       rows: { sort: ['B'] },
     },
   })
-  expect(t.assemblyNames).toEqual(['A', 'B'])
+  expect(t.lanes.assembly).toEqual(['A', 'B'])
   expect(t.lanes.flipped).toEqual([false, true])
   expect([t.segments.x1[1], t.segments.x2[1]]).toEqual([800, 0])
   expect(t.ribbons.upperX1).toEqual(t.ribbons.lowerX1)

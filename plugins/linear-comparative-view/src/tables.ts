@@ -535,11 +535,8 @@ export async function syntenyTables(
     offscreenStrip: offscreenStrip(lanes, { width: query.width, height }),
     ...comparativeLegend(settings, { cigarOps }),
     config: { ...config, ...settings.config },
-    field: settings.field,
     alpha: level,
-    fadeThin,
     assemblyNames: [q.assemblyName, t.assemblyName],
-    hasCigar: featureData.hasCigar,
   }
 }
 
