@@ -57,6 +57,7 @@
     "./data_adapters/adapterSessionRefcount": "./src/data_adapters/adapterSessionRefcount.ts",
     "./data_adapters/dataAdapterCache": "./src/data_adapters/dataAdapterCache.ts",
     "./data_adapters/getFeatureAdapter": "./src/data_adapters/getFeatureAdapter.ts",
+    "./data_adapters/tables": "./src/data_adapters/tables.ts",
     "./data_adapters/getSequenceSubAdapter": "./src/data_adapters/getSequenceSubAdapter.ts",
     "./pluggableElementTypes": "./src/pluggableElementTypes/index.ts",
     "./pluggableElementTypes/AdapterType": "./src/pluggableElementTypes/AdapterType.ts",

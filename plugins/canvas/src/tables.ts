@@ -1,5 +1,9 @@
 import { fullConfSnapshot, readConfObject } from '@jbrowse/core/configuration'
 import { tablesFeatureAdapter } from '@jbrowse/core/data_adapters/getFeatureAdapter'
+import {
+  DEFAULT_BYTE_LIMIT,
+  overByteLimitError,
+} from '@jbrowse/core/data_adapters/tables'
 import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { rampKeyOf } from '@jbrowse/core/ui/rampKey'
 import { STRAND_FIELD } from '@jbrowse/core/util/categoricalField'
@@ -69,29 +73,21 @@ import type {
   SubfeatureInfo,
 } from './RenderFeatureDataRPC/rpcTypes.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { TablesRegion } from '@jbrowse/core/data_adapters/tables'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 import type { Feature } from '@jbrowse/core/util'
-
-interface TablesRegion {
-  refName: string
-  start: number
-  end: number
-  /** The contig's name in the reference, where the file spells it another way. */
-  originalRefName?: string
-}
 
 export interface FeatureTablesArgs {
   adapterConfig: Record<string, unknown>
   /** The assembly's sequence adapter, for a CDS painted by reading frame. */
   sequenceAdapter?: Record<string, unknown>
-  region?: TablesRegion
   /**
-   * Several regions read as a view lays them end to end, such as a gene's
+   * The regions read as a view lays them end to end, such as a gene's
    * exons with the introns collapsed: one layout across all of them, as the
    * display packs every region of a contig together, so a feature crossing
    * regions keeps its row. Each table's rows name their region's index.
    */
-  regions?: TablesRegion[]
+  regions: TablesRegion[]
   /**
    * The display's config as a track's `displays` entry writes it:
    * `encoding`, `displayMode`, `labels`, `geneGlyphMode`, `filter`, `mark`,
@@ -121,8 +117,6 @@ export interface FeatureTablesArgs {
    */
   byteLimit?: number
 }
-
-const DEFAULT_BYTE_LIMIT = 200_000_000
 
 // The packer leaves a feature past its row ceiling at `OFFSCREEN_Y`, and a
 // table row a million px up is no row: those features and their primitives
@@ -356,8 +350,7 @@ export async function featureTables(
   {
     adapterConfig,
     sequenceAdapter,
-    region,
-    regions = region ? [region] : [],
+    regions,
     display = {},
     bpPerPx,
     colorByFrame = false,
@@ -420,9 +413,7 @@ export async function featureTables(
         } satisfies RpcExecuteArgs<'RenderFeatureData'>,
       })
       if ('regionTooLarge' in result) {
-        throw new Error(
-          `${r.refName}:${r.start}-${r.end} needs ${result.bytes} bytes of features, over the ${byteLimit}-byte limit; read a smaller region or raise byteLimit`,
-        )
+        throw overByteLimitError([r], result.bytes, byteLimit, 'features')
       }
       return result.value
     }),

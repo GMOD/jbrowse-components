@@ -1,5 +1,9 @@
 import { fullConfSnapshot, readConfObject } from '@jbrowse/core/configuration'
 import { tablesFeatureAdapter } from '@jbrowse/core/data_adapters/getFeatureAdapter'
+import {
+  DEFAULT_BYTE_LIMIT,
+  overByteLimitError,
+} from '@jbrowse/core/data_adapters/tables'
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import { overByteBudget, totalRegionBytes } from '@jbrowse/core/rpc/byteBudget'
 import { rampKeyOf } from '@jbrowse/core/ui/rampKey'
@@ -58,6 +62,7 @@ import { isSiteField } from './shared/minorAlleleFrequencyUtils.ts'
 import type { VariantUnit } from './shared/constants.ts'
 import type { ProcessedSource } from './shared/types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { TablesRegion } from '@jbrowse/core/data_adapters/tables'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { HeldSlots } from '@jbrowse/core/ui/colors'
@@ -73,23 +78,15 @@ export function registerVariantAdapters(pluginManager: PluginManager) {
   SplitVcfTabixAdapterF(pluginManager)
 }
 
-interface VariantRegion {
-  refName: string
-  start: number
-  end: number
-}
-
 export interface VariantTablesArgs {
   adapterConfig: Record<string, unknown>
   /** The assembly's sequence adapter, which a reference-reading file is keyed on. */
   sequenceAdapter?: Record<string, unknown>
-  /** One region, read as `regions: [region]`. */
-  region?: VariantRegion
   /**
-   * Several regions read as a view lays them side by side: one set of rows
+   * The regions read as a view lays them side by side: one set of rows
    * and one key across them. A record crossing regions is listed in each.
    */
-  regions?: VariantRegion[]
+  regions: TablesRegion[]
   /**
    * The display's config as a track's `displays` entry writes it for a
    * `LinearMultiSampleVariantDisplay`: `encoding`, `unit` (`'allele'` or
@@ -105,8 +102,6 @@ export interface VariantTablesArgs {
    */
   byteLimit?: number
 }
-
-const DEFAULT_BYTE_LIMIT = 200_000_000
 
 /** A categorical key's swatches; a ramp keys through `rampKeyOf`. */
 function legendOf(scales: ColorScale[]) {
@@ -154,8 +149,7 @@ export async function variantTables(
   {
     adapterConfig,
     sequenceAdapter,
-    region,
-    regions = region ? [region] : [],
+    regions,
     display = {},
     byteLimit = DEFAULT_BYTE_LIMIT,
   }: VariantTablesArgs,
@@ -194,11 +188,8 @@ export async function variantTables(
     sequenceAdapter,
   )
   const fetchRegions = regions.map(r => ({ assemblyName: '', ...r }))
-  const several = regions.length > 1
   const tooLarge = (bytes: number | undefined) =>
-    new Error(
-      `${regions.map(r => `${r.refName}:${r.start}-${r.end}`).join(', ')} ${several ? 'need' : 'needs'} ${bytes} bytes of variants${several ? ' in total' : ''}, over the ${byteLimit}-byte limit; read a smaller region or raise byteLimit`,
-    )
+    overByteLimitError(regions, bytes, byteLimit, 'variants')
   const bytes = await totalRegionBytes(adapter, fetchRegions)
   if (overByteBudget(bytes, byteLimit)) {
     throw tooLarge(bytes)

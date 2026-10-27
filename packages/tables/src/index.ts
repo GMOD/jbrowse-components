@@ -38,26 +38,21 @@ import { assemblyResolver, renameRegions } from './assembly.ts'
 import { engineCache } from './cache.ts'
 import { contigNamesOf, fileRegions } from './fileRegions.ts'
 
-import type { AssemblyArgs, AssemblyConfig, TablesRegion } from './assembly.ts'
-import type { AlignmentTablesArgs } from '@jbrowse/plugin-alignments/tables'
-import type { FeatureTablesArgs } from '@jbrowse/plugin-canvas/tables'
+import type { AssemblyConfig } from './assembly.ts'
+import type { TablesRegion } from '@jbrowse/core/data_adapters/tables'
+import type { AlignmentTablesArgs as AlignmentReadArgs } from '@jbrowse/plugin-alignments/tables'
+import type { FeatureTablesArgs as FeatureReadArgs } from '@jbrowse/plugin-canvas/tables'
 import type { ContigTablesArgs } from '@jbrowse/plugin-comparative-adapters/tables'
 import type { DotplotTablesArgs } from '@jbrowse/plugin-dotplot-view/tables'
 import type {
   MultiWayTablesArgs,
   SyntenyTablesArgs,
 } from '@jbrowse/plugin-linear-comparative-view/tables'
-import type { VariantTablesArgs } from '@jbrowse/plugin-variants/tables'
-import type { WiggleTablesArgs } from '@jbrowse/plugin-wiggle/tables'
+import type { VariantTablesArgs as VariantReadArgs } from '@jbrowse/plugin-variants/tables'
+import type { WiggleTablesArgs as WiggleReadArgs } from '@jbrowse/plugin-wiggle/tables'
 
-export type {
-  AlignmentTables,
-  AlignmentTablesArgs,
-} from '@jbrowse/plugin-alignments/tables'
-export type {
-  FeatureTables,
-  FeatureTablesArgs,
-} from '@jbrowse/plugin-canvas/tables'
+export type { AlignmentTables } from '@jbrowse/plugin-alignments/tables'
+export type { FeatureTables } from '@jbrowse/plugin-canvas/tables'
 export type {
   ContigTables,
   ContigTablesArgs,
@@ -72,14 +67,8 @@ export type {
   SyntenyTables,
   SyntenyTablesArgs,
 } from '@jbrowse/plugin-linear-comparative-view/tables'
-export type {
-  VariantTables,
-  VariantTablesArgs,
-} from '@jbrowse/plugin-variants/tables'
-export type {
-  WiggleTables,
-  WiggleTablesArgs,
-} from '@jbrowse/plugin-wiggle/tables'
+export type { VariantTables } from '@jbrowse/plugin-variants/tables'
+export type { WiggleTables } from '@jbrowse/plugin-wiggle/tables'
 export type { AssemblyConfig } from './assembly.ts'
 export { alignmentColors } from './colors.ts'
 export { installBareHostGlobals } from './bareHost.ts'
@@ -90,28 +79,120 @@ export type { CacheUse } from './cache.ts'
 interface RegionArgs {
   adapterConfig: Record<string, unknown>
   sequenceAdapter?: Record<string, unknown>
-  region?: TablesRegion
-  regions?: TablesRegion[]
+  regions: TablesRegion[]
 }
 
 /**
- * A read's most rows in any one table: past it the read is refused rather
- * than answered, naming the table. A host sets it on a read of a whole file
- * (`fileRegions`), where nothing else bounds the rows.
+ * A region read's args as a host sends them: `region` reads as
+ * `regions: [region]`, `assembly` names the regions in the assembly's
+ * spelling, and `rowLimit` is a read's most rows in any one table, past
+ * which it is refused, naming the table. A host sets `rowLimit` on a read of
+ * a whole file (`fileRegions`), where nothing else bounds the rows.
  */
-interface RowLimit {
+type HostArgs<A extends RegionArgs> = Omit<A, 'regions'> & {
+  region?: TablesRegion
+  regions?: TablesRegion[]
+  assembly?: AssemblyConfig
   rowLimit?: number
 }
 
-function regionsOf({
-  region,
-  regions,
-}: {
-  region?: TablesRegion
-  regions?: TablesRegion[]
-}) {
-  return regions ?? (region ? [region] : [])
+/**
+ * Every key a call's args may hold, kept equal to its args type by the
+ * compiler (`satisfies`), so a host's misspelled or renamed key is refused
+ * rather than dropped.
+ */
+type ArgKeys<A> = Record<keyof A, true>
+
+export type AlignmentTablesArgs = HostArgs<AlignmentReadArgs>
+export type FeatureTablesArgs = HostArgs<FeatureReadArgs>
+export type WiggleTablesArgs = HostArgs<WiggleReadArgs>
+export type VariantTablesArgs = HostArgs<VariantReadArgs>
+
+function refuseUnknownArgs(call: string, args: object, keys: object) {
+  const unknown = Object.keys(args).filter(k => !Object.hasOwn(keys, k))
+  if (unknown.length > 0) {
+    throw new Error(
+      `${call} takes no ${unknown.join(', ')}; its args are ${Object.keys(keys).join(', ')}`,
+    )
+  }
 }
+
+const REGION_READ_ARGS = {
+  adapterConfig: true,
+  region: true,
+  regions: true,
+  display: true,
+  assembly: true,
+  rowLimit: true,
+} as const
+
+const ALIGNMENTS_ARGS = {
+  ...REGION_READ_ARGS,
+  sequenceAdapter: true,
+  refNames: true,
+  byteLimit: true,
+  spanLimit: true,
+} satisfies ArgKeys<AlignmentTablesArgs>
+
+const FEATURES_ARGS = {
+  ...REGION_READ_ARGS,
+  sequenceAdapter: true,
+  bpPerPx: true,
+  colorByFrame: true,
+  aminoAcids: true,
+  geneticCodeId: true,
+  byteLimit: true,
+} satisfies ArgKeys<FeatureTablesArgs>
+
+const WIGGLE_ARGS = {
+  ...REGION_READ_ARGS,
+  bpPerPx: true,
+  trackType: true,
+} satisfies ArgKeys<WiggleTablesArgs>
+
+const VARIANTS_ARGS = {
+  ...REGION_READ_ARGS,
+  sequenceAdapter: true,
+  byteLimit: true,
+} satisfies ArgKeys<VariantTablesArgs>
+
+const SYNTENY_ARGS = {
+  adapterConfig: true,
+  query: true,
+  target: true,
+  view: true,
+} satisfies ArgKeys<SyntenyTablesArgs>
+
+const DOTPLOT_ARGS = {
+  adapterConfig: true,
+  x: true,
+  y: true,
+  view: true,
+} satisfies ArgKeys<DotplotTablesArgs>
+
+const CONTIGS_ARGS = {
+  adapterConfig: true,
+} satisfies ArgKeys<ContigTablesArgs>
+
+const MULTIWAY_ARGS = {
+  adapterConfig: true,
+  anchor: true,
+  pins: true,
+  hidden: true,
+  display: true,
+} satisfies ArgKeys<MultiWayTablesArgs>
+
+const FILE_REGIONS_ARGS = { adapterConfig: true, assembly: true } as const
+
+const SEQUENCE_ARGS = {
+  sequenceAdapter: true,
+  region: true,
+  assembly: true,
+} as const
+
+const REGIONS_ARGS = { assembly: true } as const
+
+const CANONICAL_NAMES_ARGS = { assembly: true, refNames: true } as const
 
 /** The longest column of each table in `result`, a table being an object of arrays. */
 function tableRows(result: object, path = ''): [string, number][] {
@@ -141,13 +222,6 @@ function refuseOverRows(result: object, rowLimit: number | undefined) {
   }
 }
 
-/**
- * A table's args with the assembly its regions are named in: the contig a
- * region names is read under the file's own alias of it, and the reference
- * under the sequence's, so a host asks for `chr7` of a BAM spelling it `7`.
- */
-type WithAssembly<A> = A & { assembly?: AssemblyConfig }
-
 const LISTED_CONTIGS = 20
 
 /**
@@ -158,9 +232,8 @@ const LISTED_CONTIGS = 20
  */
 async function missingContigs(
   pluginManager: PluginManager,
-  { adapterConfig, sequenceAdapter, ...args }: RegionArgs,
+  { adapterConfig, sequenceAdapter, regions }: RegionArgs,
 ) {
-  const regions = regionsOf(args)
   if (regions.length === 0) {
     return []
   }
@@ -190,10 +263,10 @@ async function missingContigs(
  */
 async function featureAndRecordTables(
   pluginManager: PluginManager,
-  args: FeatureTablesArgs,
+  args: FeatureReadArgs,
 ) {
   const features = await featureTables(pluginManager, args)
-  const regions = regionsOf(args)
+  const { regions } = args
   const vcf = VCF_ADAPTER_TYPES.includes(String(args.adapterConfig.type))
   return {
     ...features,
@@ -244,51 +317,62 @@ export function createTablesEngine() {
   pluginManager.configure()
   const assemblyOf = assemblyResolver(pluginManager)
   const cache = engineCache()
-  const trimmed =
-    <A extends unknown[], R>(f: (...args: A) => Promise<R>) =>
-    (...args: A) =>
-      cache.within(() => f(...args))
-  const named = async <A extends AssemblyArgs>({
-    assembly,
-    ...args
-  }: WithAssembly<A>) =>
-    assembly
-      ? renameRegions(pluginManager, args, await assemblyOf(assembly))
-      : args
-  const onContig = async <A extends RegionArgs, T extends object>(
-    { rowLimit, ...given }: WithAssembly<A> & RowLimit,
+  const call =
+    <A extends object, R>(
+      name: string,
+      keys: ArgKeys<A>,
+      f: (args: A) => Promise<R>,
+    ) =>
+    (args: A) =>
+      cache.within(async () => {
+        refuseUnknownArgs(name, args, keys)
+        return f(args)
+      })
+  const regionRead = <A extends RegionArgs, T extends object>(
+    name: string,
+    keys: ArgKeys<HostArgs<A>>,
     table: (pm: PluginManager, args: A) => Promise<T>,
-  ) => {
-    const args = (await named(given as WithAssembly<A>)) as A
-    const [missing, tables] = await Promise.all([
-      missingContigs(pluginManager, args),
-      table(pluginManager, args),
-    ])
-    refuseOverRows(tables, rowLimit)
-    const regions = regionsOf(args)
-    return {
-      ...tables,
-      missingContig: missing.find(m => m !== '') ?? '',
-      missingContigs: missing,
-      readAs: {
-        refName: regions.map(r => r.refName),
-        originalRefName: regions.map(r => r.originalRefName ?? r.refName),
+  ) =>
+    call(
+      name,
+      keys,
+      async ({
+        region,
+        regions = region ? [region] : [],
+        assembly,
+        rowLimit,
+        ...rest
+      }: HostArgs<A>) => {
+        const given = { ...rest, regions } as A
+        const args = assembly
+          ? await renameRegions(
+              pluginManager,
+              given,
+              await assemblyOf(assembly),
+            )
+          : given
+        const [missing, tables] = await Promise.all([
+          missingContigs(pluginManager, args),
+          table(pluginManager, args),
+        ])
+        refuseOverRows(tables, rowLimit)
+        return {
+          ...tables,
+          missingContigs: missing,
+          readAs: {
+            refName: args.regions.map(r => r.refName),
+            originalRefName: args.regions.map(
+              r => r.originalRefName ?? r.refName,
+            ),
+          },
+        }
       },
-    }
-  }
+    )
   return {
-    alignments: trimmed((args: WithAssembly<AlignmentTablesArgs> & RowLimit) =>
-      onContig(args, alignmentTables),
-    ),
-    features: trimmed((args: WithAssembly<FeatureTablesArgs> & RowLimit) =>
-      onContig(args, featureAndRecordTables),
-    ),
-    wiggle: trimmed((args: WithAssembly<WiggleTablesArgs> & RowLimit) =>
-      onContig(args, wiggleTables),
-    ),
-    variants: trimmed((args: WithAssembly<VariantTablesArgs> & RowLimit) =>
-      onContig(args, variantTables),
-    ),
+    alignments: regionRead('alignments', ALIGNMENTS_ARGS, alignmentTables),
+    features: regionRead('features', FEATURES_ARGS, featureAndRecordTables),
+    wiggle: regionRead('wiggle', WIGGLE_ARGS, wiggleTables),
+    variants: regionRead('variants', VARIANTS_ARGS, variantTables),
     /**
      * Each contig a file lists, from 0 to the end of the contig: the regions
      * a read of the whole file reads, under the file's own spelling. The end
@@ -299,7 +383,9 @@ export function createTablesEngine() {
      * the assembly's name for the contig, `refName` where the call names no
      * assembly.
      */
-    fileRegions: trimmed(
+    fileRegions: call(
+      'fileRegions',
+      FILE_REGIONS_ARGS,
       async ({
         adapterConfig,
         assembly,
@@ -315,36 +401,45 @@ export function createTablesEngine() {
     ),
     variantDensityAlpha,
     alignmentMarkAlpha,
-    synteny: trimmed((args: SyntenyTablesArgs) =>
+    synteny: call('synteny', SYNTENY_ARGS, (args: SyntenyTablesArgs) =>
       syntenyTables(pluginManager, args),
     ),
-    dotplot: trimmed((args: DotplotTablesArgs) =>
+    dotplot: call('dotplot', DOTPLOT_ARGS, (args: DotplotTablesArgs) =>
       dotplotTables(pluginManager, args),
     ),
-    contigs: trimmed((args: ContigTablesArgs) =>
+    contigs: call('contigs', CONTIGS_ARGS, (args: ContigTablesArgs) =>
       contigTables(pluginManager, args),
     ),
-    multiway: trimmed((args: MultiWayTablesArgs) =>
+    multiway: call('multiway', MULTIWAY_ARGS, (args: MultiWayTablesArgs) =>
       multiwayTables(pluginManager, args),
     ),
-    sequence: trimmed(
-      async (
-        args: WithAssembly<{
-          sequenceAdapter?: Record<string, unknown>
-          region: TablesRegion
-        }>,
-      ) => {
-        const { sequenceAdapter, region } = await named(args)
+    sequence: call(
+      'sequence',
+      SEQUENCE_ARGS,
+      async ({
+        assembly,
+        region,
+        ...given
+      }: {
+        sequenceAdapter?: Record<string, unknown>
+        region: TablesRegion
+        assembly?: AssemblyConfig
+      }) => {
+        const args = { ...given, regions: [region] }
+        const { sequenceAdapter, regions } = assembly
+          ? await renameRegions(pluginManager, args, await assemblyOf(assembly))
+          : args
         if (!sequenceAdapter) {
           throw new Error(
             'a sequence reads through a sequenceAdapter, or an assembly with a sequence',
           )
         }
+        const named = regions[0] ?? region
         return referenceSequence(pluginManager, {
           sequenceAdapter,
           region: {
-            ...region,
-            refName: region.originalRefName ?? region.refName,
+            ...named,
+            refName: named.originalRefName ?? named.refName,
           },
         })
       },
@@ -353,22 +448,28 @@ export function createTablesEngine() {
      * The contigs an assembly's sequence lists, named as the sequence file
      * names them, with `canonical` the assembly's name for each.
      */
-    regions: trimmed(async ({ assembly }: { assembly: AssemblyConfig }) => {
-      const { regions, canonical } = await assemblyOf(assembly)
-      return {
-        refName: regions.map(r => r.refName),
-        canonical: regions.map(r => canonical(r.refName)),
-        start: regions.map(r => r.start),
-        end: regions.map(r => r.end),
-      }
-    }),
+    regions: call(
+      'regions',
+      REGIONS_ARGS,
+      async ({ assembly }: { assembly: AssemblyConfig }) => {
+        const { regions, canonical } = await assemblyOf(assembly)
+        return {
+          refName: regions.map(r => r.refName),
+          canonical: regions.map(r => canonical(r.refName)),
+          start: regions.map(r => r.start),
+          end: regions.map(r => r.end),
+        }
+      },
+    ),
     /**
      * Each name as the assembly's canonical name for its contig, through the
      * alias file and in any case, as the browser's location box reads it; a
      * name the assembly does not know comes back as given. `refNames` may be
      * one name, as R sends a vector of length one.
      */
-    canonicalNames: trimmed(
+    canonicalNames: call(
+      'canonicalNames',
+      CANONICAL_NAMES_ARGS,
       async ({
         assembly,
         refNames,

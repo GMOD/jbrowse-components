@@ -398,7 +398,7 @@ test('features a config writes inline lay out as the same features in a file do'
   expect(placed).toEqual(filePlaced)
   expect(fromConfig.rects).toEqual(fromFile.rects)
   expect(fromConfig.labels).toEqual(fromFile.labels)
-  expect(fromConfig.missingContig).toBe('')
+  expect(fromConfig.missingContigs[0]).toBe('')
 })
 
 test('a whole file reads as every contig it lists, each to its end', async () => {

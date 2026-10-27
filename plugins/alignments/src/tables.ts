@@ -32,6 +32,11 @@ import {
 } from '@jbrowse/core/configuration'
 import { isSequenceAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { tablesFeatureAdapter } from '@jbrowse/core/data_adapters/getFeatureAdapter'
+import {
+  DEFAULT_BYTE_LIMIT,
+  lociOf,
+  overByteLimitError,
+} from '@jbrowse/core/data_adapters/tables'
 import { overByteBudget, totalRegionBytes } from '@jbrowse/core/rpc/byteBudget'
 import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { rampKeyOf } from '@jbrowse/core/ui/rampKey'
@@ -223,6 +228,7 @@ import type {
 } from './shared/types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { TablesRegion } from '@jbrowse/core/data_adapters/tables'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
@@ -258,30 +264,16 @@ export function registerAlignmentsAdapters(pluginManager: PluginManager) {
   CramAdapterF(pluginManager)
 }
 
-export interface AlignmentRegion {
-  refName: string
-  start: number
-  end: number
-  /**
-   * The contig's name in the reference, where the file spells it another
-   * way (`1` in the BAM, `chr1` in the FASTA): what a read with no MD tag
-   * is compared against, as the browser's `originalRefName` is.
-   */
-  originalRefName?: string
-}
-
 export interface AlignmentTablesArgs {
   adapterConfig: Record<string, unknown>
   /** The assembly's sequence adapter, for CRAM and for reads without MD. */
   sequenceAdapter?: Record<string, unknown>
-  /** One region, read as `regions: [region]`. */
-  region?: AlignmentRegion
   /**
-   * Several regions read as a view lays them side by side: one pileup layout
+   * The regions read as a view lays them side by side: one pileup layout
    * across them, so a read crossing regions keeps its row, one depth axis and
    * one key. Each table's rows name their region's index.
    */
-  regions?: AlignmentRegion[]
+  regions: TablesRegion[]
   /**
    * The display's config as a track's `displays` entry writes it for a
    * `LinearAlignmentsDisplay`. The tables read its `encoding.color`,
@@ -315,7 +307,6 @@ export interface AlignmentTablesArgs {
   spanLimit?: number
 }
 
-const DEFAULT_BYTE_LIMIT = 200_000_000
 const DEFAULT_SPAN_LIMIT = 10_000_000
 
 const BASE_OF_CODE: Record<number, string> = {
@@ -1275,8 +1266,7 @@ export async function alignmentTables(
   {
     adapterConfig,
     sequenceAdapter,
-    region,
-    regions = region ? [region] : [],
+    regions,
     display = {},
     refNames,
     byteLimit = DEFAULT_BYTE_LIMIT,
@@ -1286,19 +1276,15 @@ export async function alignmentTables(
   if (regions.length === 0) {
     throw new Error('alignmentTables reads a region, or regions')
   }
-  const where = regions.map(r => `${r.refName}:${r.start}-${r.end}`).join(', ')
   const several = regions.length > 1
-  const inTotal = several ? ' in total' : ''
   const span = regions.reduce((sum, r) => sum + r.end - r.start, 0)
   if (span > spanLimit) {
     throw new Error(
-      `${where} ${several ? 'span' : 'spans'} ${span} bp of alignments${inTotal}, over the ${spanLimit}-bp limit; read a smaller region or raise spanLimit`,
+      `${lociOf(regions)} ${several ? 'span' : 'spans'} ${span} bp of alignments${several ? ' in total' : ''}, over the ${spanLimit}-bp limit; read a smaller region or raise spanLimit`,
     )
   }
   const tooLarge = (bytes: number | undefined) =>
-    new Error(
-      `${where} ${several ? 'need' : 'needs'} ${bytes} bytes of alignments${inTotal}, over the ${byteLimit}-byte limit; read a smaller region or raise byteLimit`,
-    )
+    overByteLimitError(regions, bytes, byteLimit, 'alignments')
   const dataAdapter = await tablesFeatureAdapter(
     pluginManager,
     adapterConfig,
@@ -1392,7 +1378,7 @@ export async function alignmentTables(
   )
   if (!order.length) {
     throw new Error(
-      `every section at ${where} is hidden; facet.hidden lists them all`,
+      `every section at ${lociOf(regions)} is hidden; facet.hidden lists them all`,
     )
   }
   const rawByGroup = buildRawDataByGroup(fetched, hidden)

@@ -38,11 +38,11 @@ test('an assembly reads a file under its own name for a contig and its alias', a
   const { sequenceAdapter: _, ...unnamed } = ALTNAME_BAM
   const lost = await engine.alignments(unnamed)
   expect(lost.reads.start).toHaveLength(0)
-  expect(lost.missingContig).toMatch(/^ctgA is not a contig of this file/)
+  expect(lost.missingContigs[0]).toMatch(/^ctgA is not a contig of this file/)
 
   const asked = await engine.alignments({ ...unnamed, assembly })
   const same = await engine.alignments(BAM)
-  expect(asked.missingContig).toBe('')
+  expect(asked.missingContigs[0]).toBe('')
   expect(asked.readAs).toEqual({
     refName: ['contigA'],
     originalRefName: ['ctgA'],

@@ -11,6 +11,7 @@ import {
 import { tablesAdapter } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { TablesRegion } from '@jbrowse/core/data_adapters/tables'
 
 /**
  * An assembly as a JBrowse config's `assemblies` entry writes it, shorthand
@@ -18,13 +19,6 @@ import type PluginManager from '@jbrowse/core/PluginManager'
  * `sequence` and `refNameAliases` adapters.
  */
 export type AssemblyConfig = Record<string, unknown>
-
-export interface TablesRegion {
-  refName: string
-  start: number
-  end: number
-  originalRefName?: string
-}
 
 export interface ResolvedAssembly {
   sequenceAdapter?: Record<string, unknown>
@@ -75,14 +69,10 @@ async function resolveAssembly(
     sequenceAdapter,
     regions,
     canonical: name =>
-      ownValue(refNameAliases, name) ??
-      ownValue(lowerCaseRefNameAliases, name.toLowerCase()) ??
+      refNameAliases[name] ??
+      lowerCaseRefNameAliases[name.toLowerCase()] ??
       name,
   }
-}
-
-function ownValue(map: Record<string, string>, key: string) {
-  return Object.hasOwn(map, key) ? map[key] : undefined
 }
 
 /** How many resolved assemblies the engine keeps, the most recently read. */
@@ -156,8 +146,7 @@ async function spellingIn(
 export interface AssemblyArgs {
   adapterConfig?: Record<string, unknown>
   sequenceAdapter?: Record<string, unknown>
-  region?: TablesRegion
-  regions?: TablesRegion[]
+  regions: TablesRegion[]
 }
 
 /**
@@ -190,7 +179,6 @@ export async function renameRegions<A extends AssemblyArgs>(
   return {
     ...args,
     ...(sequenceAdapter ? { sequenceAdapter } : {}),
-    ...(args.region ? { region: rename(args.region) } : {}),
-    ...(args.regions ? { regions: args.regions.map(rename) } : {}),
+    regions: args.regions.map(rename),
   }
 }

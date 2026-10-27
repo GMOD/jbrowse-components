@@ -28,14 +28,14 @@ test('a region on a contig the file lacks reads empty and names the contigs it h
     await engine.features(elsewhere(BIGBED)),
     await engine.wiggle(elsewhere(SIGNED_BIGWIG)),
   ]) {
-    expect(t.missingContig).toMatch(
+    expect(t.missingContigs[0]).toMatch(
       /^chrNope is not a contig of this file, whose contigs are .*ctgA/,
     )
   }
-  expect((await engine.variants(elsewhere(DOG_VCF))).missingContig).toMatch(
+  expect((await engine.variants(elsewhere(DOG_VCF))).missingContigs[0]).toMatch(
     /whose contigs are .*chr30/,
   )
-  expect((await engine.alignments(BAM)).missingContig).toBe('')
+  expect((await engine.alignments(BAM)).missingContigs[0]).toBe('')
 })
 
 test('an alignments table reports the settings its bands are composed from', async () => {
@@ -76,10 +76,10 @@ test('a contig of the sequence holding no records of a tabix file is empty, not 
     region: { refName: 'ctgB', start: 0, end: 6000 },
   })
   expect(emptyContig.features.start).toHaveLength(0)
-  expect(emptyContig.missingContig).toBe('')
-  expect((await engine.features(elsewhere(onlyCtgA))).missingContig).toMatch(
-    /^chrNope is not a contig of this file/,
-  )
+  expect(emptyContig.missingContigs[0]).toBe('')
+  expect(
+    (await engine.features(elsewhere(onlyCtgA))).missingContigs[0],
+  ).toMatch(/^chrNope is not a contig of this file/)
   const vcfOnlyCtgA = {
     adapterConfig: {
       type: 'VcfTabixAdapter',
@@ -89,8 +89,8 @@ test('a contig of the sequence holding no records of a tabix file is empty, not 
     sequenceAdapter: GFF3.sequenceAdapter,
     region: { refName: 'ctgB', start: 0, end: 6000 },
   }
-  expect((await engine.variants(vcfOnlyCtgA)).missingContig).toBe('')
-  expect((await engine.variants(elsewhere(vcfOnlyCtgA))).missingContig).toMatch(
-    /^chrNope is not a contig of this file/,
-  )
+  expect((await engine.variants(vcfOnlyCtgA)).missingContigs[0]).toBe('')
+  expect(
+    (await engine.variants(elsewhere(vcfOnlyCtgA))).missingContigs[0],
+  ).toMatch(/^chrNope is not a contig of this file/)
 })

@@ -50,6 +50,7 @@ import { WIGGLE_Y_PATHS } from './shared/wiggleYPaths.ts'
 
 import type { LineInterpolation, WiggleMark } from './renderingTypes.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { TablesRegion } from '@jbrowse/core/data_adapters/tables'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 
 /** Registers the adapters `wiggleTables` reads through, BigWig and multi-wiggle. */
@@ -58,21 +59,14 @@ export function registerWiggleAdapters(pluginManager: PluginManager) {
   MultiWiggleAdapterF(pluginManager)
 }
 
-interface TablesRegion {
-  refName: string
-  start: number
-  end: number
-}
-
 export interface WiggleTablesArgs {
   adapterConfig: Record<string, unknown>
-  region?: TablesRegion
   /**
-   * Several regions read as a view lays them end to end: one score domain and
+   * The regions read as a view lays them end to end: one score domain and
    * one color ramp across all of them, as the display autoscales to every
    * region it shows. Each mark and bin names its region's index.
    */
-  regions?: TablesRegion[]
+  regions: TablesRegion[]
   /**
    * The display's config as a track's `displays` entry writes it for a
    * `LinearWiggleDisplay`: `mark`, `origin`, `encoding`, `rows`,
@@ -110,8 +104,7 @@ export async function wiggleTables(
   pluginManager: PluginManager,
   {
     adapterConfig,
-    region,
-    regions = region ? [region] : [],
+    regions,
     display = {},
     bpPerPx,
     trackType = adapterConfig.type === 'MultiWiggleAdapter'

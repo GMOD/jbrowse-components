@@ -360,6 +360,5 @@ describe('several regions share the one domain the display autoscales to', () =>
     const t = await read([low, { ...high, refName: 'chrNope' }])
     expect(t.missingContigs[0]).toBe('')
     expect(t.missingContigs[1]).toMatch(/^chrNope is not a contig/)
-    expect(t.missingContig).toBe(t.missingContigs[1])
   })
 })
