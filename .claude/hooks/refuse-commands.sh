@@ -29,10 +29,10 @@ fi
 # chain) still runs the removal, so the check is on the worktree itself. Git
 # takes a worktree by any path to it or by its path's unique trailing
 # components (`git worktree remove my-branch`), so the hook matches the
-# argument against `git worktree list` instead of resolving it alone.
-# A relative path resolves against the cwd, which can be the worktree being
-# removed, or a `cd`/`pushd` in the command, each alone and stacked on the
-# ones before it. Any reading that names an unlanded worktree refuses.
+# argument against `git worktree list`. A relative path resolves against the
+# cwd, which can be the worktree being removed, or a `cd`/`pushd` in the
+# command, each alone and stacked on the ones before it. Any reading that
+# names an unlanded worktree refuses.
 expand() {
   local p=${1//[\"\']/}
   case $p in '~') p=$HOME ;; '~/'*) p=$HOME/${p:2} ;; esac
