@@ -6,7 +6,8 @@
 // The Anthropic key never reaches the browser. A local proxy holds it, adds it
 // to each request the plugin sends to its base URL, counts the tokens and
 // refuses calls once the estimated spend passes --budget. The page holds a
-// placeholder key in the plugin's encrypted vault.
+// placeholder key in the plugin's encrypted vault. With --provider ollama the
+// proxy forwards to a local Ollama instead, which needs no key and costs nothing.
 //
 // Prereqs: `pnpm --filter @jbrowse/web build`; the plugin built with
 // `npx rollup --config --environment JB_NPM:false,NODE_ENV:development`; a key
@@ -16,6 +17,7 @@
 // Usage: node scripts/agent-evals/chatAgentEval.ts [--model m] [--filter name]
 //        [--runs N] [--out dir] [--build dir] [--plugin dir] [--budget usd]
 //        [--system-prompt file] [--set dev|heldout|tutorials|all] [--price-in usd/M] [--price-out usd/M]
+//        [--provider anthropic|ollama] [--ollama-url url]
 import { execFileSync } from 'node:child_process'
 import fs from 'node:fs'
 import http from 'node:http'
@@ -42,13 +44,23 @@ function flag(name: string, fallback: string) {
   const i = args.indexOf(`--${name}`)
   return i === -1 ? fallback : (args[i + 1] ?? fallback)
 }
-const model = flag('model', 'claude-sonnet-5-5')
+const provider = flag('provider', 'anthropic')
+if (provider !== 'anthropic' && provider !== 'ollama') {
+  throw new Error(`unknown --provider ${provider}`)
+}
+const ollamaUrl = new URL(flag('ollama-url', 'http://127.0.0.1:11434'))
+const model = flag(
+  'model',
+  provider === 'ollama' ? 'qwen3:4b' : 'claude-sonnet-5-5',
+)
 const filter = flag('filter', '')
 const runs = Number(flag('runs', '1'))
 const taskSet = flag('set', 'all') as TaskSet
 const budget = Number(flag('budget', '10'))
-const priceIn = Number(flag('price-in', '2')) / 1e6
-const priceOut = Number(flag('price-out', '10')) / 1e6
+const priceIn =
+  Number(flag('price-in', provider === 'ollama' ? '0' : '2')) / 1e6
+const priceOut =
+  Number(flag('price-out', provider === 'ollama' ? '0' : '10')) / 1e6
 const buildDir = path.resolve(
   flag('build', path.join(repoRoot, 'products/jbrowse-web/build')),
 )
@@ -74,7 +86,8 @@ if (!fs.existsSync(path.join(buildDir, 'index.html'))) {
 if (!fs.existsSync(path.join(pluginDir, 'dist', PLUGIN_FILE))) {
   throw new Error(`no plugin build at ${pluginDir}/dist`)
 }
-const apiKey = fs.readFileSync(keyFile, 'utf8').trim()
+const apiKey =
+  provider === 'anthropic' ? fs.readFileSync(keyFile, 'utf8').trim() : ''
 
 const stats = {
   active: 0,
@@ -125,6 +138,61 @@ function countUsage(body: string) {
   stats.outputTokens += outputs
 }
 
+function countOllamaUsage(body: string) {
+  for (const line of body.split('\n')) {
+    try {
+      const e = JSON.parse(line)
+      for (const call of e.message?.tool_calls ?? []) {
+        stats.toolLog.push(
+          `${call.function?.name} ${JSON.stringify(call.function?.arguments)}`,
+        )
+      }
+      if (e.message?.content) {
+        stats.textTail = (stats.textTail + e.message.content).slice(-2500)
+      }
+      stats.inputTokens += e.prompt_eval_count ?? 0
+      stats.outputTokens += e.eval_count ?? 0
+    } catch {}
+  }
+}
+
+function upstreamRequest(
+  req: http.IncomingMessage,
+  body: Buffer,
+  onResponse: (up: http.IncomingMessage) => void,
+) {
+  return provider === 'ollama'
+    ? http.request(
+        {
+          host: ollamaUrl.hostname,
+          port: ollamaUrl.port,
+          path: req.url,
+          method: req.method,
+          headers: {
+            'content-type': 'application/json',
+            'content-length': body.length,
+          },
+        },
+        onResponse,
+      )
+    : https.request(
+        {
+          host: 'api.anthropic.com',
+          path: req.url,
+          method: req.method,
+          headers: {
+            'x-api-key': apiKey,
+            'anthropic-version': String(
+              req.headers['anthropic-version'] ?? '2023-06-01',
+            ),
+            'content-type': 'application/json',
+            'content-length': body.length,
+          },
+        },
+        onResponse,
+      )
+}
+
 function serveProxy() {
   const server = http.createServer((req, res) => {
     res.setHeader('access-control-allow-origin', '*')
@@ -155,48 +223,39 @@ function serveProxy() {
     req.on('data', c => chunks.push(c))
     req.on('end', () => {
       let body = Buffer.concat(chunks)
-      try {
-        const doc = JSON.parse(body.toString('utf8'))
-        if (doc.thinking?.type === 'disabled') {
-          doc.thinking = { type: 'between_tools' }
-        }
-        delete doc.temperature
-        body = Buffer.from(JSON.stringify(doc))
-      } catch {}
-      const upstream = https.request(
-        {
-          host: 'api.anthropic.com',
-          path: req.url,
-          method: req.method,
-          headers: {
-            'x-api-key': apiKey,
-            'anthropic-version': String(
-              req.headers['anthropic-version'] ?? '2023-06-01',
-            ),
-            'content-type': 'application/json',
-            'content-length': body.length,
-          },
-        },
-        up => {
-          res.writeHead(up.statusCode ?? 502, {
-            'content-type': String(
-              up.headers['content-type'] ?? 'application/json',
-            ),
-            'cache-control': 'no-cache',
-          })
-          let seen = ''
-          up.on('data', chunk => {
-            res.write(chunk)
-            seen += chunk.toString('utf8')
-          })
-          up.on('end', () => {
-            res.end()
+      if (provider === 'anthropic') {
+        try {
+          const doc = JSON.parse(body.toString('utf8'))
+          if (doc.thinking?.type === 'disabled') {
+            doc.thinking = { type: 'between_tools' }
+          }
+          delete doc.temperature
+          body = Buffer.from(JSON.stringify(doc))
+        } catch {}
+      }
+      const upstream = upstreamRequest(req, body, up => {
+        res.writeHead(up.statusCode ?? 502, {
+          'content-type': String(
+            up.headers['content-type'] ?? 'application/json',
+          ),
+          'cache-control': 'no-cache',
+        })
+        let seen = ''
+        up.on('data', chunk => {
+          res.write(chunk)
+          seen += chunk.toString('utf8')
+        })
+        up.on('end', () => {
+          res.end()
+          if (provider === 'ollama') {
+            countOllamaUsage(seen)
+          } else {
             countUsage(seen)
-            stats.active--
-            stats.lastEnd = Date.now()
-          })
-        },
-      )
+          }
+          stats.active--
+          stats.lastEnd = Date.now()
+        })
+      })
       upstream.on('error', () => {
         res.statusCode = 502
         res.end()
@@ -330,12 +389,12 @@ const systemPrompt = promptFile
   ? fs.readFileSync(promptFile, 'utf8').trim()
   : defaultPrompt
 const settings = JSON.stringify({
-  provider: 'anthropic',
+  provider,
   providerSettings: {
     openai: { model: 'gpt-4o-mini' },
     anthropic: { baseUrl: proxy.url, model },
     google: { model: 'gemini-2.5-flash-lite' },
-    ollama: { baseUrl: 'http://localhost:11434', model: 'qwen3:0.6b' },
+    ollama: { baseUrl: proxy.url, model },
   },
   defaultSystemPrompt: systemPrompt,
   useProviderSystemPrompt: false,
@@ -432,6 +491,10 @@ async function runOnce(task: EvalTask, run: number, attempt: number) {
   const work = stageWork(task)
   try {
     await page.goto(`${bridge.url}?config=${await configFor(task)}`)
+    page
+      .waitForSelector('::-p-text(Yes, I trust it)', { timeout: 60_000 })
+      .then(button => button?.click())
+      .catch(() => {})
     await bridge.waitForPage(90_000, before)
     await evaluateLive(
       `for (let i = 0; i < 400 && !window.jb; i++) { await new Promise(r => setTimeout(r, 250)) }
@@ -609,6 +672,7 @@ try {
       {
         commit,
         client: 'chat-plugin',
+        provider,
         model,
         set: taskSet,
         runs,
