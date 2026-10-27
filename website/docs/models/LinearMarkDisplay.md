@@ -168,7 +168,7 @@ From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`sc
 | <span id="getter-autoclusterready">**autoClusterReady**</span><br><code>boolean</code> | Two or more clusterable rows once the row listing settles, and a mark to compare them on. |
 | <span id="getter-svgsidebar">**svgSidebar**</span><br><code>SvgSidebarProps &#124; undefined</code> |  |
 | <span id="getter-plotscanwindow">**plotScanWindow**</span><br><code>Region[]</code> | The window a field scan reads now (`plotScanRegions`), the same array while a pan stays inside its grid step |
-| <span id="getter-plotscanlocus">**plotScanLocus**</span><br><code>string &#124; undefined</code> | The window the held field scan read, for the dialog to name. |
+| <span id="getter-plotscanlocus">**plotScanLocus**</span><br><code>string &#124; undefined</code> | The windows the held field scan read, for the dialog to name. |
 
 <details class="inherited-members" data-pagefind-ignore>
 <summary>152 inherited getters from 14 models</summary>
