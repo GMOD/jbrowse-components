@@ -54,14 +54,14 @@ once per display that embeds it, so read the trend, not the size.
    - `retiredDisplayColor`/`liftFlatColor`: no carrier found in local or
      hosted hub configs; it goes with `liftViewColor`, a view key.
    - The synteny view keys' `cigarMode`, beta-only.
-2. **Conformance suite.** `scripts/slotNames.test.ts` refuses a new `show*`,
+2. **Conformance suite.** _Claimed 2026-10-27 (`color-conformance`)._ `scripts/slotNames.test.ts` refuses a new `show*`,
    `hide*`, `min*` or `max*` slot outside its allowlist. Left: empty
    `colorConformance.test.ts`'s `EXCEPTIONS`, or document each entry as
    intended on the config page.
-3. **Generate the writers.** The jbrowse-img modifier tables, the `jb`
+3. **Generate the writers.** _Claimed 2026-10-27 (agent worktree)._ The jbrowse-img modifier tables, the `jb`
    surface description and the R export lag every rename because hand-kept
    copies drift. Derive each from the schema.
-4. **v4.3.0 validate gaps.** `reference/V4_CONFIG_COVERAGE.md` holds the
+4. **v4.3.0 validate gaps.** _Claimed 2026-10-27 (`color-conformance`)._ `reference/V4_CONFIG_COVERAGE.md` holds the
    count and the unmapped spellings. Every v4.3.0 config opens in the app;
    `jbrowse validate` fails 14 of 34 files, mostly on keys v4.3.0 never
    declared. Left:
@@ -73,7 +73,7 @@ once per display that embeds it, so read the trend, not the size.
    - Lifts that keep a color or height, ranked last: multi-variant `colorBy`
      to `rowColor`, session `trackDisplayMode` to `displayMode`, session
      `snpCovHeight` to `coverage.height`.
-5. **Writers outside the tree.** jb2hubs and its hosted configs, the ggjbrowse
+5. **Writers outside the tree.** _Claimed 2026-10-27 (agent, jb2hubs/JBrowseR/ggjbrowse)._ jb2hubs and its hosted configs, the ggjbrowse
    pin, the graph plugin, the `apollo3` demo and the figure specs
    (`handoffs/screenshot-spec-elegance.md`). Known stale spellings:
    - jb2hubs: `hubtools/src/enhanceConfig.test.ts` writes `scales.y`, plus
