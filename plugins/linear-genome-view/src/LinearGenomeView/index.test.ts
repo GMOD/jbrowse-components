@@ -296,7 +296,7 @@ function initialize() {
       },
     }))
 
-  return { Session, LinearGenomeModel, Assembly }
+  return { Session, LinearGenomeModel, Assembly, pluginManager: stubManager }
 }
 
 // Multi-region zoom: regions are laid out back to back in a single bp space, so
@@ -2893,7 +2893,7 @@ describe('move actions respect pinned/unpinned sections', () => {
 
 describe('getTrackOrderSubMenu gates items by track count and view level', () => {
   function makeView(trackCount: number, nested = false) {
-    const { Session, LinearGenomeModel } = initialize()
+    const { Session, LinearGenomeModel, pluginManager } = initialize()
     const view = LinearGenomeModel.create({
       id: nested ? 'nested' : 'topLevel',
       type: 'LinearGenomeView',
@@ -2902,7 +2902,7 @@ describe('getTrackOrderSubMenu gates items by track count and view level', () =>
         type: 'BasicTrack',
       })),
     })
-    const session = Session.create({ configuration: {} })
+    const session = Session.create({ configuration: {} }, { pluginManager })
     return nested ? session.setNestedView(view) : session.setView(view)
   }
 
