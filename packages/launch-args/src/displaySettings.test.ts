@@ -202,14 +202,14 @@ describe('feature modifiers', () => {
     ).toEqual({ facet: 'INFO.SVTYPE' })
   })
 
-  test('featureHeight preset maps to displayMode for canvas features', () => {
+  test('featureHeight preset maps to displayMode for feature displays', () => {
     const { snap } = buildDisplaySnapshot('LinearBasicDisplay', [
       'featureHeight:super-compact',
     ])
     expect(snap.displayMode).toBe('superCompact')
   })
 
-  test('featureHeight numeric sets mark.height on canvas features', () => {
+  test('featureHeight numeric sets mark.height on feature displays', () => {
     const { snap } = buildDisplaySnapshot('LinearBasicDisplay', [
       'featureHeight:4',
     ])
@@ -703,7 +703,7 @@ describe('color routing', () => {
     })
   })
 
-  // The canvas displays take a CSS color or a jexl as the same `{ value }`
+  // The feature displays take a CSS color or a jexl as the same `{ value }`
   // the wiggle display uses — never a colorBy object, which is what used to
   // be written for them and dropped as an unknown MST key.
   test('color sets a solid color on the canvas-based displays', () => {
@@ -713,7 +713,7 @@ describe('color routing', () => {
     }
   })
 
-  test('color:strand names the field the canvas displays color by', () => {
+  test('color:strand names the field the feature displays color by', () => {
     for (const category of ['feature', 'variant'] as const) {
       expect(
         buildDisplaySnapshot(DISPLAY[category], ['color:strand']).snap,

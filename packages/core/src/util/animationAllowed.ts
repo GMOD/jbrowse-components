@@ -10,7 +10,7 @@ import type { AnimationMode } from './types/index.ts'
  * is `getSession(self).animationMode`.
  *
  * In core rather than beside either caller because the two that ask are a
- * feature-layout morph in the canvas plugin and a viewport flight in the LGV,
+ * feature-layout morph in plugin-features and a viewport flight in the LGV,
  * and a second copy of this check is a second answer to "does this user want
  * motion" — the one a reduced-motion reader notices when only half the app
  * honors it.

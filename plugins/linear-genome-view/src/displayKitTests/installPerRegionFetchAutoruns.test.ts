@@ -433,7 +433,7 @@ describe('DisplayedRegionsChange', () => {
 // stops at the measurement. Skipping unconditionally froze the estimate at the
 // viewport it was captured over; running unconditionally spins, because a
 // too-large region stores nothing and the fetchGeneration bump re-fires the
-// autorun. Only canvas's own suite covered this before.
+// autorun. Only the feature display's own suite covered this before.
 describe('the too-large gate re-measures once per settled viewport', () => {
   // comfortably past the default fetchSizeLimit
   const OVER_BUDGET = 1_000_000_000

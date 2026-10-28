@@ -54,7 +54,7 @@ export function displayTestSessionModel<VIEW extends IAnyModelType>({
       assemblyManager,
       theme: createJBrowseTheme(),
       palette: resolvePalette(),
-      // `animationAllowed(getSession(self).animationMode)` gates canvas's Y
+      // `animationAllowed(getSession(self).animationMode)` gates the feature display's Y
       // morph, and absent this it read `undefined` — so every display suite ran
       // with the morph off and `installYMorphAutorun` only ever took its
       // `endAnimation` branch. The same silent shape as the `palette` gap above,

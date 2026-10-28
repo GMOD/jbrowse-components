@@ -1,5 +1,5 @@
 // Shared track-height vocabulary for displays that expose a `heightMode` config
-// slot (the canvas feature display and the alignments display). Keeping the enum
+// slot (the feature display and the alignments display). Keeping the enum
 // members, the resolved type, and the grow ceiling in one place keeps the two
 // plugins' modes identical rather than drifting.
 export const HEIGHT_MODE_VALUES = ['fixed', 'grow', 'fit'] as const
@@ -20,7 +20,7 @@ export type HeightMode = (typeof HEIGHT_MODE_VALUES)[number]
 export const GROW_MAX_HEIGHT = 800
 
 // Single source for the "Track sizing" radio options, shared by every display
-// that exposes the `heightMode` slot (canvas feature display, alignments
+// that exposes the `heightMode` slot (feature display, alignments
 // display). The three modes are three cells of a 2x2 over the per-feature
 // height axis and the track height axis (both-derived is incoherent, so there
 // is no fourth), and every label names BOTH cells rather than leaving one to be

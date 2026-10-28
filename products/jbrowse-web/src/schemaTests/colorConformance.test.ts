@@ -72,7 +72,7 @@ import type { EncodedChannels } from '@jbrowse/core/util/markEncoding'
 
 // One table of `encoding.color` specs, each run through every display's own
 // resolver, and each display's answer per sample value compared with the
-// canvas feature display's. A divergence passes only while EXCEPTIONS names
+// feature display's. A divergence passes only while EXCEPTIONS names
 // it, and a listed one that stops diverging fails, so the list only shrinks.
 // Each entry left is intended, and the display's config page says why.
 

@@ -377,6 +377,6 @@ re-aligns only when the rescaled frame no longer shows the content.
 
 **What not to reopen**: the orientation vote, the contig choice and the
 hysteresis on each; the cell/layer
-renderer and its parity tests; gene glyph parity with the canvas track; per-lane
+renderer and its parity tests; gene glyph parity with the feature track; per-lane
 staleness on the dependent fetches; the lane picker at its current scale; and the
 E. coli and primate demos as they stand.

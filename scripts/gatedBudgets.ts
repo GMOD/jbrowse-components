@@ -174,7 +174,7 @@ export function collectNonLiteralGateOverrides(): string[] {
  * above can name its subject because an adapter lives in a directory called
  * after it; a display's opt-in routinely does not. Two of these are shared
  * mixins serving several displays each (`arc/shared`, `variants/shared`), and
- * canvas's covers two displays from a file named for neither — so a
+ * plugin-features' opt-in covers two displays from a file named for neither — so a
  * directory-name heuristic yields a row called `shared` and silently omits
  * `LinearBasicDisplay`. That is the "looks complete and is short" failure a
  * generated table is supposed to make impossible, so this reports what it can

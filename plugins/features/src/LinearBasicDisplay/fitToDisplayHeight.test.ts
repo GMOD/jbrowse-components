@@ -245,7 +245,7 @@ function displaySignature(display: TestDisplay) {
   })
 }
 
-describe('canvas display fit-to-display-height', () => {
+describe('feature display fit-to-display-height', () => {
   it('fit is on by default, at scale 1 with nothing loaded', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
@@ -503,7 +503,7 @@ describe('canvas display fit-to-display-height', () => {
   })
 })
 
-describe('canvas display fit escalation ladder', () => {
+describe('feature display fit escalation ladder', () => {
   it('climbs the ladder as the track height shrinks', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
@@ -1297,7 +1297,7 @@ function geneRegionData(
   })
 }
 
-describe('canvas display fit measures the visible window', () => {
+describe('feature display fit measures the visible window', () => {
   function fitOver(offscreenGenes: number, mode: 'fit' | 'fixed' = 'fit') {
     const { createDisplay } = createTestEnvironment()
     const { display, view } = createDisplay()
@@ -1466,7 +1466,7 @@ describe('canvas display fit measures the visible window', () => {
   })
 })
 
-describe('canvas display scrolls over the visible window', () => {
+describe('feature display scrolls over the visible window', () => {
   function bufferedStack(offscreen: number) {
     const { createDisplay } = createTestEnvironment()
     const { display, view } = createDisplay()

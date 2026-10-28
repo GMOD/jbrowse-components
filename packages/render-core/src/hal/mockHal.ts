@@ -279,7 +279,7 @@ export class MockHal extends GpuHalBase<MockBuffer> implements GpuHal {
   //
   // `bufferPassId` is checked too: `drawPass(a, key, b)` runs pass `a`'s
   // pipeline over pass `b`'s buffer, and every such pair in tree names two
-  // registered passes (canvas's chevron over line, continuation over rect).
+  // registered passes (the feature display's chevron over line, continuation over rect).
   drawPass(
     passId: string,
     regionKey: number,

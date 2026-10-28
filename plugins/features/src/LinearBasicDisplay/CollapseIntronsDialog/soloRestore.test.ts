@@ -11,7 +11,7 @@ jest.mock('@jbrowse/core/configuration', () => ({
   readConfObject: (config: { trackId: string }) => config.trackId,
 }))
 
-// Minimal stand-in for the canvas display's solo set, exposing just the actions
+// Minimal stand-in for the feature display's solo set, exposing just the actions
 // soloFeatureInView reaches through the SoloCapableDisplay structural guard.
 function makeSoloDisplay(init?: { ids?: string[]; applied?: boolean }) {
   return {

@@ -154,7 +154,7 @@ describe('MAF gating below the force-load floor', () => {
   })
 
   // The budget itself, since MAF's is the whole gate: no MAF adapter declares a
-  // `fetchSizeLimit`, and `densityTooLarge` is canvas's override so there is no
+  // `fetchSizeLimit`, and `densityTooLarge` is the feature display's override so there is no
   // second axis behind it. Sizes from MAF_LARGE_BLOCKS.md § "Fetch dominates at
   // 470-way" — a 40kb buffered window is 5.3 MB uncompressed at 100 rows and
   // 25.1 MB at 470, against a measured 2.9–4.0x compression, so ~1.3–1.8 MB and

@@ -28,7 +28,7 @@ const confNode = (self: object) => self as HeightModeHost
  * #crossCuttingMixin Track-height strategy over `TrackHeightMixin()`, which it composes and whose `height` and `resizeHeight` it overrides. `growTargetHeight` (default = the allotted height). Brings `heightMode`/`autoHeight`/`fitHeightToDisplay`, `grownHeight`, the reactive `height` override, `setHeightMode`, and the grow-aware `resizeHeight`, and the grow-exit bake reaction that writes the grown height into the slot when the mode leaves grow
  *
  * The whole track-height strategy every display with a `heightMode` config slot
- * shares (the canvas feature display, the alignments display), so the
+ * shares (the feature display, the alignments display), so the
  * fixed/grow/fit vocabulary is identical by construction rather than by two call
  * sites that happen to agree. What differs between the two — canvas fits a
  * feature stack, alignments a grouped pileup — is exactly one getter,

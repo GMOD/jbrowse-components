@@ -40,7 +40,7 @@ export interface TestAdapterSpec {
    * What the track config's `adapter` becomes. Omitted, it is `{ type: name }`.
    * Present-but-`undefined` puts **no** adapter on the track while still
    * registering the type — which is how a test asserts what a display falls back
-   * to when the adapter declares nothing (canvas's `adapterFetchSizeLimit`).
+   * to when the adapter declares nothing (the feature display's `adapterFetchSizeLimit`).
    */
   config?: Record<string, unknown>
   /** e.g. `['hasResolution']`, which wiggle's resolution menu gates on. */

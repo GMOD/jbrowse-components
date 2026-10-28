@@ -12,7 +12,7 @@
 // --tiles (1000, copies of volvox's raw section), --sources (1000) and --rows
 // (14000, the multi-wiggle shape), --reads (200000, the pileup), --allow-diff.
 //
-// THE QUESTION. ADR-114 refused canvas's packer at 3.11x, ADR-118 refused the
+// THE QUESTION. ADR-114 refused the feature display's packer at 3.11x, ADR-118 refused the
 // pileup's layout at 4.23x and ADR-127 refused a `line` shape over 16 retained
 // bytes a feature. All three attribute the cost to the `Feature[]` on one or
 // both sides of the encoder, not to the grammar's rule. Wiggle's main path

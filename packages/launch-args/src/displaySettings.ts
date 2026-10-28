@@ -584,7 +584,7 @@ const modifiers: Record<string, Modifier> = {
     },
   },
 
-  // alignments write `pileup.mark.height`, the canvas displays `displayMode`
+  // alignments write `pileup.mark.height`, the feature displays `displayMode`
   // or `mark.height`
   featureHeight: {
     on: ['alignments', ...CANVAS],
@@ -729,7 +729,7 @@ const modifiers: Record<string, Modifier> = {
       })
     },
   },
-  // a constant, a read field on alignments, or `strand` on a canvas display;
+  // a constant, a read field on alignments, or `strand` on a feature display;
   // any other field is `encoding.color.field=tags.HP`
   color: {
     on: ALL_CATEGORIES,

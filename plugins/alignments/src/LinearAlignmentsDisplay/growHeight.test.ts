@@ -80,7 +80,7 @@ function createEnvWithPileup(depth: number) {
   return { view, display }
 }
 
-// Mirrors the canvas display's grow-mode contract: `height` follows the laid-out
+// Mirrors the feature display's grow-mode contract: `height` follows the laid-out
 // content reactively via the getter (no autorun writes the height config slot),
 // and leaving grow bakes the height the user was seeing into the slot.
 describe('alignments grow-mode reactive height', () => {
@@ -175,7 +175,7 @@ describe('alignments grow-mode reactive height', () => {
 describe('the grow ceiling', () => {
   // The slot default is written as a literal so the generated config doc shows a
   // number rather than an identifier; this is what keeps it equal to the shared
-  // default the canvas display's own slot uses.
+  // default the feature display's own slot uses.
   it('defaults to the shared GROW_MAX_HEIGHT', () => {
     const { display } = createEnv()
     expect(display.growMaxHeight).toBe(GROW_MAX_HEIGHT)

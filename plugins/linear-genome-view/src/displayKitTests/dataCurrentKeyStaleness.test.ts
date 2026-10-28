@@ -11,7 +11,7 @@ import type { PerRegionTestDisplay } from './perRegionTestEnv.ts'
 // spatially covered and content-stale at once: `dataCurrent` stays true across
 // the `FetchVisibleRegions` debounce plus the RPC, and an export sampling
 // `svgReady` in that window paints data the previous key was fetched under —
-// wiggle's bins, the variant matrix's columns, canvas's amino-acid wall.
+// wiggle's bins, the variant matrix's columns, the feature display's amino-acid wall.
 //
 // With the term folded one level lower — into `viewportWithinLoadedData` — the
 // loading scrim would rise on every zoom instead, which is the trade turned

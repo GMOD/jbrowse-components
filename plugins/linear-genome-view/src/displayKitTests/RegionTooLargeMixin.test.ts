@@ -19,7 +19,7 @@ import type { RegionTooLargeHost } from '@jbrowse/display-kit/RegionTooLargeMixi
 // It exists because that interaction was pinned nowhere. Five plugins carry a
 // `derivedRegionTooLarge.test.ts` between them, 1,681 lines, and dropping
 // `aboveForceLoadFloor` from `densityGateActive` left every one of them green —
-// it was caught by a single test inside canvas's fetch suite.
+// it was caught by a single test inside the feature display's fetch suite.
 
 // Room to zoom: the view clamps `bpPerPx` against the displayed region, so a
 // 100kb contig cannot hold two spans that are both above the 20kb floor and a

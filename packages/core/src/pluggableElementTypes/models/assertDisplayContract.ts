@@ -123,7 +123,7 @@ interface RetryContractHost {
 //
 // **A fetch answers an outstanding retry wherever `reload()` reached it from**,
 // which is why `noteFetchStarted` tells the ledger rather than only setting a
-// flag for the autorun to read. Canvas's `reload()` fetches directly — it clears
+// flag for the autorun to read. The feature display's `reload()` fetches directly — it clears
 // and calls `fetchNeeded` itself instead of waiting out `FetchVisibleRegions`'
 // 600ms debounce — so by the time that autorun runs, the blocks are covered and
 // the run reads as a decline. Judging only from the autorun reports a dead button
@@ -185,7 +185,7 @@ export function takeFetchStarted(self: object) {
  * rather than a silent gap, which is the right way round.
  *
  * **A fetch also answers the retry on its own** (`noteFetchStarted`), because
- * `reload()` may reach one without an autorun run in between: canvas's clears and
+ * `reload()` may reach one without an autorun run in between: the feature display's clears and
  * calls `fetchNeeded` directly rather than waiting out the 600ms debounce, and
  * the autorun's next run then finds the blocks covered.
  *

@@ -20,7 +20,7 @@ kind: measurement
 - **`mergeIntervals`/`gatherOverlaps` padding is per-side**, so the default
   merge window is 10kb, not 5kb. Three callers depend on that spacing.
 - **`hardRowLimit` stays in the layouts.** Its throw is unreachable from the
-  canvas plugin's inputs but is the only bound on `bitmap` growth for a rect of
+  plugin-features' inputs but is the only bound on `bitmap` growth for a rect of
   enormous height.
 - **No branded type for the two color-channel families.** `getRed…` (0xRRGGBBAA)
   and `abgrRed…` (ABGR u32) share `(c: number) => number`, so the wrong pair

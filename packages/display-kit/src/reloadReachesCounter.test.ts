@@ -5,7 +5,7 @@
 // (`makeRetryContractCheck`): it compares the counter across runs, so a display
 // whose `reload()` never moves it is not merely unchecked, it reads as a display
 // that never retries. Nothing about that is visible — the button still works, the
-// autoruns still fire, and the check simply never speaks again. Canvas's
+// autoruns still fire, and the check simply never speaks again. The feature display's
 // `LinearBasicDisplay` shipped in that shape and took `LinearVariantDisplay` with
 // it, while `MultiRegionDisplayMixin.reload`'s own docstring named the failure
 // mode and then named the other override as the only one.

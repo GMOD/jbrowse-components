@@ -130,7 +130,7 @@ const IMPORT_FORM_VIEWS: Record<string, ImportFormView> = {
 // on this site and the track type is unavailable — which used to leave every
 // one of them on the 'feature' fallback, and told a reader to open "Feature
 // height" on a pileup whose menu says "Read height". The alignments display
-// passes 'read' at its own call site (its model.ts) and the canvas displays
+// passes 'read' at its own call site (its model.ts) and the feature displays
 // pass 'feature' (trackMenus.ts), so naming either one answers it outright.
 // LGVSyntenyDisplay takes the noun from its own `featureNoun`, which is a
 // config slot, so it stays with the track-type reading.

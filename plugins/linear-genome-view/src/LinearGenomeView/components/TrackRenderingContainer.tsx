@@ -24,7 +24,7 @@ const useStyles = makeStyles()({
   },
 
   // Tracks never scroll natively on this outer container — every display owns
-  // its own vertical scroll: canvas displays scroll an inner sticky-canvas
+  // its own vertical scroll: feature displays scroll an inner sticky-canvas
   // container (FeatureComponent), while alignments and variants draw a custom
   // VerticalScrollbar overlay and redraw the canvas at `scrollTop`. A native
   // scroll port here only produced a *second*, spurious scrollbar whenever a

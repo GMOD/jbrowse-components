@@ -5,7 +5,7 @@ import { colorConfigSchema, encodingOptions } from './colorConfigSchema.ts'
 /**
  * #config FeatureEncoding
  * #category display
- * The canvas feature displays' `encoding`, the channels the features paint
+ * The feature displays' `encoding`, the channels the features paint
  * through.
  *
  * #example

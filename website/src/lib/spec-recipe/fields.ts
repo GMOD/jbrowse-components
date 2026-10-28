@@ -380,7 +380,7 @@ const MULTI_SAMPLE_VARIANT_DISPLAYS = new Set([
   'LinearMultiSampleVariantDisplay',
 ])
 
-// Mirrors the canvas display's own `colorByMode` getter (colorViews.ts), which
+// Mirrors the feature display's own `colorByMode` getter (colorViews.ts), which
 // is what decides which of the "Color by" radios reads as checked: an
 // `encoding.color.field` of `strand` is 'strand', any other field is
 // 'attribute', and with no field painting it is 'default', whatever
@@ -441,7 +441,7 @@ function hasChannelMenus(displayType: string | undefined) {
   return displayType !== undefined && CHANNEL_MENU_DISPLAYS.has(displayType)
 }
 
-// The canvas displays' `encoding.color`: `{ value }` is the constant, and a
+// The feature displays' `encoding.color`: `{ value }` is the constant, and a
 // field, bare or beside a `scale` with `domain` and `range`, a field through
 // a range. The dialog names the field; the order and colors it spends are the
 // JSON the same dialog opens.
@@ -638,7 +638,7 @@ function rowColorStep(
     : undefined
 }
 
-// The `facet` object: a string is the field. The canvas displays' Group by
+// The `facet` object: a string is the field. The feature displays' Group by
 // dialog has a radio for strand and a text field under Attribute for any other
 // field, and a `domain` is the Sections submenu's moves, which write the drawn
 // order. The multi-sample variant displays band their rows from one menu row
@@ -1009,13 +1009,13 @@ function geneGlyphStep(value: unknown): FieldStep | undefined {
     : undefined
 }
 
-// The canvas display's "Subfeature labels" radios, imported ('none' reads as
+// The feature display's "Subfeature labels" radios, imported ('none' reads as
 // "Off" in the menu).
 const SUBFEATURE_LABELS: Record<string, string> = Object.fromEntries(
   SUBFEATURE_LABEL_OPTIONS.map(o => [o.value, o.label]),
 )
 
-// The canvas display titles its size submenu 'Feature height' whatever the
+// The feature display titles its size submenu 'Feature height' whatever the
 // track holds, while getFeatureHeightMenuItem — the alignments display and
 // LGVSyntenyDisplay — titles it after the track's noun.
 // An entry whose display is unknown keeps the noun form.
@@ -1024,7 +1024,7 @@ const heightMenu = (noun: string, displayType?: string) =>
     ? `${TRACK_MENU} → Feature height`
     : `${TRACK_MENU} → ${noun.charAt(0).toUpperCase()}${noun.slice(1)} height`
 
-// The canvas display's size radio, imported. The recipe is gated on the
+// The feature display's size radio, imported. The recipe is gated on the
 // display type because the alignments display has its own displayMode.
 const DISPLAY_MODES: Record<string, string> = Object.fromEntries(
   DISPLAY_MODE_OPTIONS.map(o => [o.value, o.label]),
@@ -1049,7 +1049,7 @@ const READ_CONNECTIONS_PLACEMENT: Record<string, string> = {
   down: 'Below coverage',
 }
 
-// The canvas displays' `mark.height` and the alignments `pileup.mark.height`
+// The feature displays' `mark.height` and the alignments `pileup.mark.height`
 // share one size submenu, whose presets carry their own pixel heights.
 const readSizeStep: FieldRecipe = (value, { noun, displayType }) => {
   const preset = Object.values(COMPACTNESS_PRESETS).find(
@@ -1110,7 +1110,7 @@ function plotTypeStep(rendering: string): FieldStep | undefined {
   return radio ? { path: `${TRACK_MENU} → Plot type → ${radio[2]}` } : undefined
 }
 
-// A plot's `mark` names its type; the canvas displays' names the box height.
+// A plot's `mark` names its type; the feature displays' names the box height.
 function extentStep(value: unknown): FieldStep | undefined {
   return typeof value === 'string'
     ? {
@@ -1934,7 +1934,7 @@ export const trackFields: Record<string, FieldRecipe> = {
   // names its preset without a second table to keep in sync
   'pileup.mark': (value, context) =>
     readSizeStep(asRecord(value)?.height, context),
-  // The canvas display's 'Track sizing' radios sit under a subheader in its
+  // The feature display's 'Track sizing' radios sit under a subheader in its
   // size submenu; the alignments display's fit is a Read height radio and its
   // autogrow a checkbox in Advanced. A triangle display's `heightMode` is the one shared fitToHeightCheckboxItem
   // in a Layout submenu, so the path is the same for each.
@@ -1963,7 +1963,7 @@ export const trackFields: Record<string, FieldRecipe> = {
         }
       : undefined
   },
-  // Both radios sit directly in the canvas display's size submenu, above the
+  // Both radios sit directly in the feature display's size submenu, above the
   // 'Track sizing' subheader that heightMode lands under.
   displayMode: (value, { displayType }) => {
     if (typeof value !== 'string') {
@@ -1974,7 +1974,7 @@ export const trackFields: Record<string, FieldRecipe> = {
       ? { path: `${TRACK_MENU} → Feature height → ${label}` }
       : undefined
   },
-  // The label parts: the canvas display's Names and Descriptions checkboxes
+  // The label parts: the feature display's Names and Descriptions checkboxes
   // and its Subfeature labels radio, and the multi-way display's Gene labels
   // checkbox. A label's field has no menu row.
   labels: (value, { displayType }) => {

@@ -8,7 +8,7 @@
  * makes an unguarded array setter on a per-mousemove path a re-render per raw
  * pointer event, which is how both display families came to want this: the
  * pileup rewriting a chain's read ids while the cursor tracks along one chain,
- * and the canvas display rewriting its tooltip rows while the cursor sits still
+ * and the feature display rewriting its tooltip rows while the cursor sits still
  * over one feature.
  */
 export function sameStrings(a: readonly string[], b: readonly string[]) {

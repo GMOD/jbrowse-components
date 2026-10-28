@@ -97,9 +97,9 @@ is its middle.
   domain that moves on every autoscale must not touch a buffer
   ([ADR-097](../architecture-decision-records/adr-097-the-y-channel-shares-its-scale-and-not-its-anchor.md)).
 - **Two channel vocabularies remain.** The encoding says `x`, `x2`, `y`, `row`,
-  `color`, `shape`; variants' cell and canvas's rect say `startEnd`. ADR-106
+  `color`, `shape`; variants' cell and the feature display's rect say `startEnd`. ADR-106
   §Consequences parked converging them, because that array is the worker payload
-  many modules address by `2i`. Canvas's `y`/`height` are pixel geometry, so
+  many modules address by `2i`. The feature display's `y`/`height` are pixel geometry, so
   renaming them converges nothing.
 
 ## The facet stage
@@ -196,7 +196,7 @@ Declined on 2026-09-30: track- or view-level facets, and a free y per section.
   and the corner.** The base runs the schema's own `fieldPresets`
   (`schemaPlotProblems`), the rule `jbrowse validate` runs offline; a display
   adds its rules (wiggle's cut cap, MAF's codon frames, alignments' levels,
-  canvas's jexl) and the mark display replaces it with its rule list.
+  the feature display's jexl) and the mark display replaces it with its rule list.
   `plotProblems` asks it of a lifted draft and `notices` of the live config,
   then adds `liveNotices`, the lines only loaded data can say (a facet value no
   read answers, a row banding over a field no row carries). `DisplayChrome`

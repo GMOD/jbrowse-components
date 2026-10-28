@@ -37,7 +37,7 @@ function click(item: MenuItem) {
   }
 }
 
-describe('canvas track menu shape', () => {
+describe('feature track menu shape', () => {
   it('keeps the menu open for every radio and checkbox that only writes a setting', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()

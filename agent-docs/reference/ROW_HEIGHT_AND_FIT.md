@@ -76,7 +76,7 @@ fractional row height, and flooring it makes the content taller than the height
 it was asked to fit, so the track re-grows and fit mode reports a scroll it never
 has. The floor belongs only in `effectiveRowHeight`, guarding a **non-positive**
 value (consumers divide by it), and in drawing code widening a sub-pixel band
-(`rowBand` in canvas). Nothing caps or warns about rows past the pixels.
+(`rowBand` in plugin-features). Nothing caps or warns about rows past the pixels.
 `packages/core/src/util/resolveRowHeight.ts` resolves the sentinel and applies
 the floor, called once from `RowHeightMixin`; `RowHeightMixin.test.ts` is the one
 set of assertions.

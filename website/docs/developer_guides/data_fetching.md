@@ -113,9 +113,9 @@ registry's types for args and return still apply. Each region receives a
 separate `ctx`, so every region's progress aggregates into one bar.
 
 Put a batch-wide step that runs after every region has loaded in `onComplete`.
-It runs once, under the same staleness guard. Both canvas feature displays
-commit their region-too-large measurements there. Those measurements must be
-atomic across the batch, even though the payloads are not.
+It runs once, under the same staleness guard. Both feature displays commit their
+region-too-large measurements there. Those measurements must be atomic across
+the batch, even though the payloads are not.
 
 ### The two batched counterparts
 

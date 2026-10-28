@@ -285,7 +285,7 @@ deterministic under the HAL's 4x MSAA*. At 1x it is unchanged.
   45°-rotated grid (`diagonalGrid.slang`). **Every visible edge is a diagonal.**
 - The ones this list had never reached, all flat fills of an unpadded quad, all
   found by the same substitution on 2026-09-25: `arcMarker`, `connectingLine`,
-  `overlap`, `clip`, `packedColorQuad` (alignments); `line` (canvas); the mark
+  `overlap`, `clip`, `packedColorQuad` (alignments); `line` (features); the mark
   family's `spanMark`, `rowRect` and `rowTable`; the score-example's `score`.
   `barMark` is the one of them that reasons about the question in its own
   header, and its conclusion — analytic horizontals, hard verticals, no
@@ -699,7 +699,7 @@ tree:
     [reference/GPU_SHADERS.md](../../reference/GPU_SHADERS.md) §"What the
     coverage band cannot antialias" carries the worked composites.
 - **Read ends.** `read.slang`'s pointed terminus is a triangle; `chevron.slang`
-  in the canvas plugin is the same shape with `aaRamp(coreHalfPx - abs(dist),
+  in plugin-features is the same shape with `aaRamp(coreHalfPx - abs(dist),
   aaGradient(dist))` already on it. Requires a varying and the measured
   gradient, since the slope is per-instance.
 - **The strand arrowhead.** `arrow.slang`, same treatment, smallest of the three.

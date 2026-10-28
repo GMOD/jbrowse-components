@@ -11,7 +11,7 @@ import type { DotplotRenderModel } from './types.ts'
 
 // renderSvg reads the containing view for the plot size and render state, and
 // awaits svgReady through mobx `when`. The model is a plain object here, so
-// both are intercepted (same shape as the canvas display's renderSvg test).
+// both are intercepted (same shape as the feature display's renderSvg test).
 // `dotplotRenderState` is annotated rather than inferred so a field added to the
 // real getter fails to compile here instead of reaching the draw call as
 // undefined — `alpha` did, and every stroke came out `rgba(r,g,b,NaN)`.

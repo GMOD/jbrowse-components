@@ -564,7 +564,7 @@ box one feature at whatever row the track's layout puts it, set
 `featureHighlights` on the display, the same state the right-click "Highlight
 feature" item and a feature search write
 ([`LinearBasicDisplay`](/docs/models/linearbasicdisplay#property-featurehighlights),
-`LinearVariantDisplay`, and every other canvas display):
+`LinearVariantDisplay`, and every other feature display):
 
 ```json live config=test_data/volvox/config.json
 {

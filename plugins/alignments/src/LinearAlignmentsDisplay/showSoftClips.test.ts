@@ -216,7 +216,7 @@ describe('alignments legend.show (color key)', () => {
 })
 
 // `grow` is the third value of the shared `heightMode` vocabulary (with the
-// canvas display): the track resizes to fit all reads rather than scrolling
+// feature display): the track resizes to fit all reads rather than scrolling
 // (fixed) or shrinking reads (fit). autoHeight/fitHeightToDisplay are mutually
 // exclusive views of the one slot.
 describe('alignments grow (auto-height) mode', () => {

@@ -1012,7 +1012,7 @@ function readsComplete(status: StatusWithProgress) {
  * (ADR-080). Three shapes that are easy to miss, and all of them common:
  *
  * - the *enclosing* label a nested phase closes onto — a plain string, not `''`.
- *   The canvas feature fetch is exactly that, an adapter's byte-counted
+ *   The feature fetch is exactly that, an adapter's byte-counted
  *   "Downloading features" inside the RPC's own.
  * - a different phase's label, with no `''` between them.
  * - a measurement moving *backwards* under the same label, which is a second

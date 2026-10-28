@@ -1,4 +1,4 @@
-// What does canvas's hand-written packer cost, and what share of the worker's
+// What does the feature display's hand-written packer cost, and what share of the worker's
 // per-region work is it?
 //
 //   node plugins/features/benches/packRenderArrays.bench.ts

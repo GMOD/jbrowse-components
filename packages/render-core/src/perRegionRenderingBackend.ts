@@ -168,7 +168,7 @@ export abstract class GpuPerRegionRenderingBackend<
    * The passes this backend fills from one region's payload, each carrying its
    * own packer. Usually the same array handed to `createRenderingBackend` —
    * minus any pass that draws off another's buffer (wiggle's line passes,
-   * canvas's chevron), which is registered but never uploaded to.
+   * the feature display's chevron), which is registered but never uploaded to.
    */
   protected abstract regionPasses: InstancePass<UploadData>[]
 

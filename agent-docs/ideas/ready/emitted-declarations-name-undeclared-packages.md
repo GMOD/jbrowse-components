@@ -15,7 +15,7 @@ Measured after `pnpm build:esm` on 2026-10-22 (count of `import("…")` sites):
 | Package | Undeclared in its `.d.ts` |
 | --- | --- |
 | `plugins/gwas` | `@jbrowse/tree-sidebar` (41), `@gmod/newick` (4) |
-| `plugins/marks`, `canvas`, `variants`, `wiggle`, `maf` | `@gmod/newick` (4–5) |
+| `plugins/marks`, `features`, `variants`, `wiggle`, `maf` | `@gmod/newick` (4–5) |
 | `plugins/maf` | `@jbrowse/display-ui` (4) |
 | `plugins/sv-inspector` | `@mui/x-data-grid` (10), `@jbrowse/render-core` (20) |
 | `packages/tables` | `@jbrowse/alignments-core` (1) |

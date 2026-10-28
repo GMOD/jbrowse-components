@@ -15,7 +15,7 @@ both off for the track.
 
 ## How the verdict is built
 
-**Neither budget is an RPC cache key.** `resolvedByteLimit()` and canvas's
+**Neither budget is an RPC cache key.** `resolvedByteLimit()` and the feature display's
 `maxFeatureDensity` travel as call-site arguments, never in `rpcProps()`, where
 a swing at 20 kb or on force-load would be a full refetch. Raising a budget
 refetches the refused region; lowering one re-banners from the stored

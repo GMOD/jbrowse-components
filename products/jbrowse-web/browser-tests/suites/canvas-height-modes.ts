@@ -23,7 +23,7 @@ function genesTrack(display: Record<string, unknown>) {
 
 // Every label the floating-label overlay currently has in the DOM.
 //
-// The overlay is the half of a canvas display that is NOT canvas — names,
+// The overlay is the half of a feature display that is NOT canvas — names,
 // descriptions and transcript labels are divs stacked over it — so the suite's
 // canvas snapshots elsewhere are blind to all of them, and this is the only
 // thing that sees them. (An element screenshot would: `el.screenshot()` clips

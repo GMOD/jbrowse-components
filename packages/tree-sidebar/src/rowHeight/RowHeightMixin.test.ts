@@ -17,7 +17,7 @@ import type { HostChecksSlotNames } from '@jbrowse/core/configuration'
 // to 1 — so "floor it" is the plausible-looking edit and it is a bug either
 // way round. Measured against the three displays composing this mixin, dropping
 // the floor fails **only** the multi-sample variants' `rowHeightResolution`
-// suite; flooring the sub-pixel case as well fails that one and canvas's
+// suite; flooring the sub-pixel case as well fails that one and the feature display's
 // `trackHeightFloor`. maf pins neither, and `resolveRowHeight` itself has no
 // unit test of its own. This file is where one implementation gets one set of
 // assertions.

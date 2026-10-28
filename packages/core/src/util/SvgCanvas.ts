@@ -135,7 +135,7 @@ export class SvgCanvas {
   // has an SVG equivalent this class could emit, so accepting one would let a
   // painter set it, see it work on screen, and get a silently different export.
   // Absent, the same line is a compile error against `Ctx2D`. That is already
-  // the rule for `globalAlpha` — the canvas feature renderer, the dotplot
+  // the rule for `globalAlpha` — the feature display, the dotplot
   // painter and MAF's inversion hatch each fold their opacity into an `rgba()`
   // fill and say why. `globalCompositeOperation` was declared and save/restored
   // but never emitted, so it was the half-kept version of the same idea.

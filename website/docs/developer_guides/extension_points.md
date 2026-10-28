@@ -1286,8 +1286,8 @@ action, e.g. selecting a corresponding feature. It's a
 [notification point](#notification-points): the payload is in `props` (passed
 unchanged to every callback), so callbacks can't alter what later callbacks see,
 and every plugin registered on it runs. Register with `listenToExtensionPoint`;
-the canvas plugin's registration, which highlights the feature the result names,
-is the worked example in that section.
+plugin-features' registration, which highlights the feature the result names, is
+the worked example in that section.
 
 ### SyntenyImportForm-Options
 

@@ -346,7 +346,7 @@ the inherited track menu:
 Use `.volatile(() => ({ … }))` for state that should not be persisted in
 snapshots — loading flags, hover and menu state that a reload should reset.
 Fetched data is not one: it is held in the foundation's per-region store and a
-display reads it back through a getter. The canvas display's block, in full:
+display reads it back through a getter. The feature display's block, in full:
 
 <!-- include: plugins/features/src/LinearBasicDisplay/baseModel.ts#volatile -->
 

@@ -419,7 +419,7 @@ export async function pageSnapshot(page: Page, name: string, threshold = 0.1) {
   }
 }
 
-// A morph — canvas's feature rows, a multi-way lane re-aligning — draws frames
+// A morph — the feature display's rows, a multi-way lane re-aligning — draws frames
 // the settled layout never shows, and the `*-done`/canvasDrawn testid fires per
 // paint, so a capture can land mid-flight. Two independent browser runs catch
 // different frames, producing a false cross-backend diff. Wait until no display

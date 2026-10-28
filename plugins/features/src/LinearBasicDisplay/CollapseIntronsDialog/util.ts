@@ -49,7 +49,7 @@ export function buildCollapsedRegions({
     .filter(notEmpty)
 }
 
-// Only the canvas displays expose a solo set, so a view is searched
+// Only the feature displays expose a solo set, so a view is searched
 // structurally for whichever display can isolate.
 interface SoloCapableDisplay {
   soloFeatureIds: string[]

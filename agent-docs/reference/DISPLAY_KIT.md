@@ -63,7 +63,7 @@ that readable without awaiting the override. A new override that awaits first
 gets a false report, not silence.
 
 A fetch also answers the retry by itself, from `runFetch`, because a `reload()`
-can reach one with no autorun run in between — canvas's clears and calls
+can reach one with no autorun run in between — the feature display's clears and calls
 `fetchNeeded` directly rather than waiting out the 600ms debounce, and by the
 time the autorun runs the blocks are covered.
 
@@ -122,11 +122,11 @@ with the getters' real types**, not `unknown`: a rename otherwise reads
 **Only hold alive a getter whose dependencies exclude per-frame view geometry.**
 This is the whole decision, and it inverts: subscribing moves the rebuild from
 "the track under the cursor, while hovering" to "every such display, on every
-change to its inputs". Canvas's `flatbushIndexes` is safe because it keys off
+change to its inputs". The feature display's `flatbushIndexes` is safe because it keys off
 `laidOutDataMap` and the DEBOUNCED `coarseBpPerPx`. A getter that walks
 `visibleRegions` is not (see "Read a scalar off the host"): holding it buys a
 per-pan-frame index build on every such track in the session. Give a getter
-canvas's dependencies before giving it canvas's autorun.
+the feature display's dependencies before giving it the feature display's autorun.
 
 The second precondition is that the getter is **safe to evaluate before data
 lands**, which a hover-only getter has never had to be. `genotypeSampleIndex` in
@@ -213,7 +213,7 @@ buys nothing: a second derivation misses the field the args gain next, latches
   region), `callEachRegion` (fan-out only, MAF's alone). The first three own the
   `ctx.isStale()` guard; forgetting it is a stale-data write. A batch-wide step
   after the regions land is `fetchEachRegion`'s `onComplete`, handed the gate
-  state captured at issue and what the two canvas displays commit their DENSITY
+  state captured at issue and what the two feature displays commit their DENSITY
   measurements from — that, not a second loop, is what a hand-rolled
   `Promise.all` was buying.
 - **The first refusal ends a `fetchEachRegion` batch**, because the gate is a
@@ -233,7 +233,7 @@ buys nothing: a second derivation misses the field the args gain next, latches
   so a fetch cannot claim a span it never asked for. The raw writer under it,
   `setLoadedRegion`, does take one — tests stage a loaded display with it, and
   production has no reason to. Marking a region loaded that holds nothing for
-  that span is what froze canvas displays until a page reload:
+  that span is what froze feature displays until a page reload:
   REGION_TOO_LARGE.md, and `RegionFetchContext`.
 - **A fetch reads the host's lists through `onTrackAssembly`**
   (`foundationView.ts`). A view can show genomes the track does not have — a

@@ -5,7 +5,7 @@
 // dropped field is a silent runtime failure inside the lazy component.
 //
 // The component's prop type can't simply BE the model's `Instance<...>`, which
-// is how the canvas display gets this check for free. The wiggle body is
+// is how the feature display gets this check for free. The wiggle body is
 // rendered by two plugins over models built from *different config schemas* —
 // GC content composes the wiggle model factory with its own — so an `Instance<>`
 // of either excludes the other on `configuration` alone. A structural slice is

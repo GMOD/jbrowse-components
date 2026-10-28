@@ -2681,7 +2681,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
        *
        * The coarse blocks are a 500ms throttle, and every consumer trades
        * freshness for not recomputing per animation frame — the location box,
-       * canvas's on-screen feature set, and the two per-bp scans behind
+       * the feature display's on-screen feature set, and the two per-bp scans behind
        * `settledDynamicBlocks`. That trade is only sound while the answer is a
        * few frames old. **A jump makes it unrelated instead**, because there is
        * nothing to coalesce: the viewport left behind is not an approximation of

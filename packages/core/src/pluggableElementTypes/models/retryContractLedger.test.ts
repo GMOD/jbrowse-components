@@ -260,7 +260,7 @@ describe('awaitingPrerequisite is a deferral', () => {
 })
 
 // The second way in. Both fetch foundations classify their own autorun runs, but
-// a `reload()` can reach a fetch with no autorun run in between — canvas's clears
+// a `reload()` can reach a fetch with no autorun run in between — the feature display's clears
 // and calls `fetchNeeded` itself rather than waiting out the 600ms debounce — and
 // by the time the autorun does run, the blocks are covered and it reads as a
 // decline. So `FetchMixin.runFetch` answers the retry directly.

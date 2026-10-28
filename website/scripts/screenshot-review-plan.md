@@ -787,7 +787,7 @@ and the graph's cut cannot drift.
 one class II MHC bubble reports 510,105,601 and 406 of release 2's bubbles
 saturate int32, while C4 and LPA show 98 and 584 and are informative. If it ever
 needs suppressing, that is a **spec** edit with no plugin publish — the drawn
-second line is `labels.description` on the canvas display and the feature
+second line is `labels.description` on the feature display and the feature
 carries `segmentCount`, so
 `labels: { description: "jexl:get(feature,'segmentCount') + ' segments'" }`
 drops the count from the label while leaving it in the details popup.

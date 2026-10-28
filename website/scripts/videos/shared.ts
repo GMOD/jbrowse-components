@@ -57,7 +57,7 @@ export const trackMenu = (trackId: string) =>
   `[data-testid="track_menu_icon"][data-trackid="${trackId}"]`
 
 // A display by its own id rather than by type: `feature-display` is the testid
-// every canvas feature lane shares, so a lane already standing would satisfy it
+// every feature display shares, so a lane already standing would satisfy it
 // and a tour would carry on before the track it just added had fetched anything.
 // `<trackId>-<displayType>` is what a config with no explicit `displayId` gets
 // (packages/core/src/util/tracks.ts).

@@ -99,7 +99,7 @@ if (nonLiteral.length) {
 // one level up.
 //
 // Sites rather than display names, because a display's opt-in is routinely not
-// in a directory named for it: two are shared mixins and canvas's covers three
+// in a directory named for it: two are shared mixins and plugin-features' opt-in covers three
 // displays. `gatedBudgets.ts` says why guessing the name is worse than useless.
 const sites = collectGateOptInSites()
 const recorded = Object.keys(GATE_OPT_IN_SITES)

@@ -5,12 +5,12 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 jest.mock('../makeWorkerInstance', () => () => {})
 
 // Regression: on session restore the view has no measured width yet
-// (volatileWidth undefined). A canvas display's afterAttach must not read any
+// (volatileWidth undefined). A feature display's afterAttach must not read any
 // getter that transitively reads view.width — that throws, propagates out of
 // display instantiation, and made the session loader drop the display as
 // "unhydratable", leaving a track with empty displays that later crashed
 // trackHeights on displays[0].height.
-test('canvas display survives session restore before view width is measured', async () => {
+test('feature display survives session restore before view width is measured', async () => {
   const session = await createTestSessionAsync({
     jbrowseConfig: {
       assemblies: [

@@ -42,7 +42,7 @@ test('a UTR keeps the contrasting blue where nothing sets the fill', () => {
   expect(utrOf({})).toBe(cssColorToABGR(utrDefaultColor))
 })
 
-test('a UTR takes the gene fill a written color sets, as on the canvas track', () => {
+test('a UTR takes the gene fill a written color sets, as on the feature track', () => {
   expect(utrOf({ encoding: { color: { value: 'teal' } } })).toBe(
     cssColorToABGR('teal'),
   )

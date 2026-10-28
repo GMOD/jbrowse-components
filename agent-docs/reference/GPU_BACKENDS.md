@@ -46,7 +46,7 @@ kept by construction. Preserve whichever of these the display uses:
   different draw signatures warrant a second mark list, never a second backend
   registry.
 - **A per-instance vertex budget is a cap the other backend lacks.** Where one
-  instance draws an unbounded number of marks (canvas's chevron pass), the
+  instance draws an unbounded number of marks (the feature display's chevron pass), the
   draw's vertex count fixes how many the shader can address and every instance
   pays for every slot. Too high and all pay; too low and a large input silently
   loses marks past it while Canvas2D keeps drawing them. No other mechanism here

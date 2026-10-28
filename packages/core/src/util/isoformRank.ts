@@ -34,7 +34,7 @@ export const serializedIsoformReader: IsoformReader<SimpleFeatureSerializedNoId>
 
 /**
  * The attribute naming a gene's representative isoform, and the values of it
- * that do, best first. The canvas display's `canonicalTranscriptField` and
+ * that do, best first. The feature display's `canonicalTranscriptField` and
  * `canonicalTranscriptTags` slots default to these.
  */
 export interface CanonicalTranscripts {

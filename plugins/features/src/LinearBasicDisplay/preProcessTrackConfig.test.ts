@@ -70,7 +70,7 @@ test('matches the LinearFeatureDisplay alias too', () => {
   expect(out.displays![0]!.geneGlyphMode).toBe('representative')
 })
 
-test('leaves non-canvas displays untouched', () => {
+test('leaves other displays untouched', () => {
   const out = evaluate({
     type: 'FeatureTrack',
     displays: [{ type: 'SomeOtherDisplay', geneGlyphMode: 'longest' }],

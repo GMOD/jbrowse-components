@@ -5,7 +5,7 @@ import { DEFAULT_TOOLTIP } from '../RenderFeatureDataRPC/featureTooltip.ts'
 /**
  * #config FeatureTooltip
  * #category display
- * The canvas feature displays' `tooltip`, the box hovering a feature opens:
+ * The feature displays' `tooltip`, the box hovering a feature opens:
  * whether it `show`s, and the `field` its text reads. A bare string is the
  * field.
  *

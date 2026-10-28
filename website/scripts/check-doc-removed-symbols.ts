@@ -120,7 +120,7 @@ const ABSENT_ON_PURPOSE = new Map([
   ['Client', 'BAM_STACK_INTEGRATION names @gmod/bam types'],
   [
     'clientXY',
-    "DISPLAYCHROME names canvas's own retired pointer-position useState",
+    "DISPLAYCHROME names the feature display's own retired pointer-position useState",
   ],
   ['DiagonalizeRpcBase', 'a base class that left the plugin ABI'],
   [

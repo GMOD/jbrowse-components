@@ -67,7 +67,7 @@ export interface ShaderModule {
  *
  * There is deliberately no `bufferStride` / `bufferAttributes` pair. Two passes
  * sharing one instance buffer (`drawPass(id, region, bufferPassId)`) must
- * declare the same instance struct — canvas's chevron and line both take
+ * declare the same instance struct — the feature display's chevron and line both take
  * `LineInstance` from `lineInstance.slang` — so both modules reflect the same
  * stride and the same `VERTEX_ATTRIBUTES`, and copying one pass's layout onto
  * the other was restating that rather than establishing it. Worse, it *hid* the

@@ -7,7 +7,7 @@ import { VARIANT_PLOT_EXAMPLES } from './plotExamples.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 
 export default function LinearVariantDisplayF(pluginManager: PluginManager) {
-  // Registered only when the canvas plugin is installed: this display's model
+  // Registered only when plugin-features is installed: this display's model
   // extends the canvas base and borrows `LinearBasicDisplay`'s registered
   // component below, so without that plugin there is nothing to render through
   // and `getDisplayType` would throw out of `createPluggableElements`. Embedded

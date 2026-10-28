@@ -22,7 +22,7 @@
 //      slot name can be declared by many schemas and not always as the same
 //      kind — `colorBy` is a stringEnum on the Manhattan display and a plain
 //      string on the variant displays, `showLabels` is a five-way enum on the
-//      canvas displays and a boolean on LDTrackDisplay. So the value is checked
+//      feature displays and a boolean on LDTrackDisplay. So the value is checked
 //      against every declaration and only reported when all of them reject it:
 //      "karyotype" survives via `colorBy`'s string declaration, while "on" is
 //      rejected by the enums and cannot be a boolean either.

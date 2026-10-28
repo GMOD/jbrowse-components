@@ -21,7 +21,7 @@ export const TEXT_BASELINE_RATIO = 0.84
 /**
  * One line of text floated over a display, at the px `x` and `y` of its line
  * box's top-left corner: absolutely positioned, one line high, never wrapped.
- * The canvas feature labels and the mark display's text marks emit through
+ * The feature labels and the mark display's text marks emit through
  * this, so the typography of a floated label is one declaration; what places
  * each label is its display's own rule. `halo` draws {@link textHalo} under
  * the glyphs in that color. Everything else a caller passes reaches the div:

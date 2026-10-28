@@ -9,7 +9,7 @@ import { computeDisplayPhase } from '@jbrowse/render-core/displayPhase'
 // just properties, so if composition order ever stopped favoring the subclass
 // the base's value would win SILENTLY.
 //
-// That failure is severe enough to pin: `layoutReady` gates the canvas display's
+// That failure is severe enough to pin: `layoutReady` gates the feature display's
 // own layout getters, so a base `false` winning would make it lay out nothing at
 // all, and would make BreakpointSplitView drop every overlay curve. Both read as
 // "no data" rather than as an error.

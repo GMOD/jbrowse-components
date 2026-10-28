@@ -16,7 +16,7 @@ import type { RegionHost } from './regionHost.ts'
 import type { ConfigModelForFields } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 
-/** The canvas display's `heightMode` without `grow`: a triangle's height is its base's. */
+/** The feature display's `heightMode` without `grow`: a triangle's height is its base's. */
 const TRIANGLE_HEIGHT_MODES = [
   'fixed',
   'fit',

@@ -1,13 +1,13 @@
 ---
 id: featurecolor
 title: FeatureColor
-description: "The canvas feature displays' encoding.color: a CSS color or jexl: callback in value, or a field whose values each take a range color, whose numbers each take the color of the interval between cut…"
+description: "The feature displays' encoding.color: a CSS color or jexl: callback in value, or a field whose values each take a range color, whose numbers each take the color of the interval between cut points…"
 sidebar_label: Display setting -> FeatureColor
 ---
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-kit/src/colorConfigSchema.ts).
 
-The canvas feature displays' `encoding.color`: a CSS color or `jexl:`
+The feature displays' `encoding.color`: a CSS color or `jexl:`
 callback in `value`, or a field whose values each take a range color, whose
 numbers each take the color of the interval between cut points they fall
 in, or whose numbers run along a color ramp, with a key. A string is the

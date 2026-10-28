@@ -65,7 +65,7 @@ export type { LegendItem, LegendSection } from './FloatingLegend.tsx'
 export { FloatingSvgOverlay } from './FloatingSvgOverlay.tsx'
 
 // One line of text floated over a display, and its `<text>` twin for an
-// export: the canvas feature labels, the mark display's text marks and the
+// export: the feature labels, the mark display's text marks and the
 // arc labels' export emit through these, so a floated label's typography is
 // one declaration and each display keeps only where it puts them.
 export {

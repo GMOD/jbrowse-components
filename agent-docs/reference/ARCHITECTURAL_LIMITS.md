@@ -140,7 +140,7 @@ it as MAF's `maxRowsHeight` does, so its rows stay legible.
 
 ## Coupling
 
-### Canvas feature tracks bake per-feature color into worker output, so a color-slot edit refetches
+### Feature tracks bake per-feature color into worker output, so a color-slot edit refetches
 
 **Status:** Accepted.
 

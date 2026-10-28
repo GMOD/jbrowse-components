@@ -3,7 +3,7 @@
 // how much of the pileup's scroll extent is reachable, and how much is the
 // fetch buffer's rows?
 //
-// `e122978eaf` fixed this for the canvas feature display: the fetch buffers half
+// `e122978eaf` fixed this for the feature display: the fetch buffers half
 // a screen either side (`bufferedVisibleRegions`) and the pack places every
 // buffered feature, so the scrollbar and the edge shadow — two readouts of one
 // number — reported hidden content on a track showing all of it, and offered a

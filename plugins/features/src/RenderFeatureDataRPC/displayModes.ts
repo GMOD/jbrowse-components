@@ -1,5 +1,5 @@
 /**
- * The size presets a canvas display draws at. `compact` and `superCompact`
+ * The size presets a feature display draws at. `compact` and `superCompact`
  * shrink the row by `HEIGHT_MULTIPLIERS`, and `collapsed` packs every feature
  * onto one row with all labels suppressed.
  *

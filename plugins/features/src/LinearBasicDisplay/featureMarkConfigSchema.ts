@@ -3,7 +3,7 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 /**
  * #config FeatureMark
  * #category display
- * The canvas feature displays' `mark`, the box each feature draws as: its
+ * The feature displays' `mark`, the box each feature draws as: its
  * `height`, as the alignments display's `pileup.mark.height` is each read's.
  *
  * #example

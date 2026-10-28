@@ -29,7 +29,7 @@ import * as continuationShader from './continuation.iface.generated.ts'
 import * as lineShader from './line.iface.generated.ts'
 import * as rectShader from './rect.iface.generated.ts'
 
-describe('canvas feature pass geometry', () => {
+describe('feature pass geometry', () => {
   // Every assertion below compares two generated values, so all of them pass if
   // both sides go missing — the emitter drops an offset map a struct no longer
   // needs, and this becomes `undefined === undefined`. Anchor on what the

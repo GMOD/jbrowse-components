@@ -71,7 +71,7 @@ function paintedValues(
  * A FeatureColor object read as the displays painting it read it: the scale
  * each field paints through, the color a value the worker shipped paints,
  * the key's title, and what its slots say together that it cannot paint. The
- * canvas feature and multi-row displays compose it.
+ * feature and multi-row displays compose it.
  */
 export function featureColorViews(self: FeatureColorHost) {
   // Compared by value, so a region that commits inside the extent, or a

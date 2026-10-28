@@ -61,7 +61,7 @@ export interface PerRegionTestControl {
    */
   estimateBytes: number
   estimateCalls: number
-  /** the display's own density verdict, canvas's second too-large axis */
+  /** the display's own density verdict, the feature display's second too-large axis */
   densityTooLarge: boolean
   /**
    * What the next fetch stores, so a test can tell the payload a refetch
@@ -76,7 +76,7 @@ export interface PerRegionTestControl {
  * displays compose this foundation, and every one of them adds a plugin's worth
  * of behavior on top — so a test that boots one is testing that plugin as much
  * as the foundation, which is how the foundation's own autoruns came to be
- * pinned only by canvas's suite.
+ * pinned only by the feature display's suite.
  */
 /** Which of the gate's opt-in hooks this display overrides. */
 export interface GateOptIns {

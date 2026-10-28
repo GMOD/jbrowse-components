@@ -128,7 +128,7 @@ function createDisplay(
   return view.tracks[0]!.displays[0]! as LinearBasicDisplayModel
 }
 
-describe('canvas display filters', () => {
+describe('feature display filters', () => {
   it('configuredFilters() is the config filter slot', () => {
     const display = createDisplay([`jexl:get(feature,'type')=='gene'`])
     expect(display.configuredFilters()).toEqual([
@@ -263,7 +263,7 @@ function findMenuItem(items: MenuItem[], label: string): MenuItem | undefined {
   return found
 }
 
-describe('canvas display hidden-feature track menu', () => {
+describe('feature display hidden-feature track menu', () => {
   it('offers no track-level unhide when nothing is hidden', () => {
     const display = createDisplay()
     expect(

@@ -1114,7 +1114,7 @@ describe('createStatusFanOut', () => {
     expect(seen.at(-1)).toBe('Computing layout')
   })
 
-  // The shape the canvas feature RPC actually runs: the adapter's byte-counted
+  // The shape the feature RPC actually runs: the adapter's byte-counted
   // "Downloading features" nests inside the RPC's own phase of the same name, so
   // the download closes onto that enclosing label rather than onto `''`. Only
   // `''` used to retire a phase, so every region's bytes left both halves of the

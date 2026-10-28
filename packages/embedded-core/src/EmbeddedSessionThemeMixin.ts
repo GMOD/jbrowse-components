@@ -26,7 +26,7 @@ export function EmbeddedSessionThemeMixin(pluginManager: PluginManager) {
        * #getter
        * Serializable theme description (the canonical `themeOptions` contract
        * shared with the app-core/web sessions). This is what crosses the RPC
-       * worker boundary — e.g. the canvas display reads
+       * worker boundary — e.g. the feature display reads
        * `getSession(self).themeOptions` in its rpcProps so worker-baked colors
        * (CDS frames, stroke fallback) honor the config `theme` slot.
        */

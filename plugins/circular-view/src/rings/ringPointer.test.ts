@@ -22,7 +22,7 @@ function setup(hit = true) {
   return { strip, chrome, canvas, pointer: new RingPointer(host) }
 }
 
-// the canvas feature display listens on its canvas and wiggle on its chrome
+// the feature display listens on its canvas and wiggle on its chrome
 test('a move over a ring reaches the canvas and bubbles to the chrome', () => {
   const { strip, chrome, canvas, pointer } = setup()
   const heard: string[] = []

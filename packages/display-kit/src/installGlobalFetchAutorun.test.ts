@@ -76,7 +76,7 @@ const TestDisplay = types
     setting: 'a',
     // read by rpcProps() but absent from its return, the shape HiC's
     // `activeNormalization` has (it consults the fetched
-    // `availableNormalizations`) and canvas's whole-config-snapshot build has
+    // `availableNormalizations`) and the feature display's whole-config-snapshot build has
     consulted: 'x',
     // stands in for arc's `dataCurrent`. MUST be observable: the bug only
     // appears once the gate closing itself re-runs the autorun, because that
