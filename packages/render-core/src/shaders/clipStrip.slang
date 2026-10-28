@@ -4,7 +4,7 @@
 // draw it as a second quad, or a pass, off the same instance, and their
 // Canvas2D painters draw it off `clipSide`'s twin.
 //! export-consts: CLIP_STRIP_PX, CLIP_STRIP_COLOR
-//! js-export: clipSide
+//! js-export: clipSide, clipStripTopPx
 module clipStrip;
 
 import scoreScale;
@@ -31,4 +31,9 @@ public int clipSide(float value, float domainMin, float domainMax, int scaleType
     return -1;
   }
   return 0;
+}
+
+// The strip's top in a band `h` tall from `top`, across the edge `side` names.
+public float clipStripTopPx(int side, float top, float h) {
+  return side > 0 ? top : top + h - CLIP_STRIP_PX;
 }

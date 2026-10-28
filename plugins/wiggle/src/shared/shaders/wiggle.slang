@@ -91,11 +91,10 @@ VsOut clipStripVertex(WiggleFillInstance inst, uint vid, float sx1, float sx2,
     o.barInkPx = float2(0.0, 0.0);
     return o;
   }
-  float topPx = side > 0 ? rowTop : rowTop + rowHeight - CLIP_STRIP_PX;
+  float topPx = clipStripTopPx(side, rowTop, rowHeight);
   float botPx = topPx + CLIP_STRIP_PX;
   float2 q = quadLocal(vid);
-  float padPx = aaPx(u.devicePixelRatio);
-  float vy = lerp(botPx + padPx, topPx - padPx, q.y);
+  float vy = slabVertexYPx(topPx, botPx, q.y, u.devicePixelRatio);
   float x2 = extendToMinWidthX(sx1, sx2, MIN_FILL_WIDTH_PX, u.viewportWidth);
   o.position = float4(lerp(sx1, x2, q.x), 1.0 - vy * pxToClip, 0.0, 1.0);
   o.color = float4(unpackRGBA(CLIP_STRIP_COLOR).rgb, 1.0);
@@ -157,14 +156,7 @@ VsOut vs_main(WiggleFillInstance inst, uint vid : SV_VertexID) {
     float originY = rowScoreToYPx(u.origin,   rowTop, rowHeight, u);
     float topPx = min(scoreY, originY);
     float botPx = max(scoreY, originY);
-    // The bar grows one device px past each horizontal cut so the fragment's
-    // ramp has geometry to land on; the ramp is zero out there, so the extra
-    // area costs a discarded fragment and paints nothing. A FULL pixel, not the
-    // half `aaHalfPx` pads a centred edge by: the last fragment the ramp inks
-    // has its centre half a pixel out, and it must be FULLY inside the quad or
-    // the rasterizer's own coverage multiplies into the analytic one.
-    float padPx = aaPx(u.devicePixelRatio);
-    float vy = lerp(botPx + padPx, topPx - padPx, q.y);
+    float vy = slabVertexYPx(topPx, botPx, q.y, u.devicePixelRatio);
     sy = 1.0 - vy * pxToClip;
     barInkPx = float2(vy - topPx, vy - botPx);
   }
@@ -200,11 +192,7 @@ float4 fs_main(VsOut fragIn) : SV_Target {
   } else if (drawsBar()) {
     // A bar's top cut IS the datum, so it must not quantise to the output grid:
     // the reader takes the score off that edge, and rounding it to a whole
-    // device pixel rounds the value. The band is the difference of the two
-    // cuts' coverages, which is exactly the area the bar covers of the pixel at
-    // every height — including under one device px, where a single ramp applies
-    // a half-plane formula to a slab and over-inks (a bar sitting exactly on the
-    // origin would paint a half-covered row where it owes none).
+    // device pixel rounds the value.
     //
     // The VERTICAL cuts stay hard on purpose. Bins tile, so two neighbours split
     // one pixel column, and per-fragment alpha on both sides of that shared edge
@@ -221,8 +209,7 @@ float4 fs_main(VsOut fragIn) : SV_Target {
     // stretches, against the 0.277 of MSAA quantisation this replaces
     // everywhere, so the trade is worth taking and is not worth hiding.
     // barCutCoverage.test.ts pins it.
-    float alpha = edgeCoverage(fragIn.barInkPx.x, u.devicePixelRatio)
-      - edgeCoverage(fragIn.barInkPx.y, u.devicePixelRatio);
+    float alpha = slabCoverage(fragIn.barInkPx.x, fragIn.barInkPx.y, u.devicePixelRatio);
     if (alpha <= 0.0) {
       discard;
     }

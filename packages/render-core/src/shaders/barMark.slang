@@ -14,11 +14,10 @@
 // through the bound row table, as `spanMark` reads it; a pass binding none
 // (`rowTableKeys` −1) draws `row` as the band.
 //
-// The two HORIZONTAL cuts are antialiased analytically, as wiggle's xyplot bar
-// does: the top cut IS the datum, so it must not quantise to the output grid,
-// and the band is the difference of the two cuts' ramps so a bar thinner than a
-// device pixel covers exactly its area. The VERTICAL cuts stay hard on purpose
-// — intervals that tile (segments, bins) split a pixel column with their
+// The two HORIZONTAL cuts are antialiased analytically (`antialias`'s slab, as
+// wiggle's xyplot bar draws it): the top cut IS the datum, so it must not
+// quantise to the output grid. The VERTICAL cuts stay hard on purpose —
+// intervals that tile (segments, bins) split a pixel column with their
 // neighbours, and per-fragment alpha on both sides of that shared edge
 // composites to less than full ink. That fractional edge is why this shader
 // declares no `//! coverage: analytic`: the multisampled target resolves it.
@@ -102,12 +101,6 @@ float bpToClipX(uint bp, Uniforms u) {
   return hpToClipX(hpSplitUint(bp), u.bpRangeX, u.zero);
 }
 
-// One device pixel in CSS px: the ramp's full width and the geometry pad, so
-// every fragment the ramp gives ink to is fully covered by the quad.
-float barAaPx() {
-  return 2.0 * aaHalfPx(u.devicePixelRatio);
-}
-
 [shader("vertex")]
 VsOut vs_main(BarMarkInstance inst, uint vid : SV_VertexID) {
   VsOut o;
@@ -125,11 +118,8 @@ VsOut vs_main(BarMarkInstance inst, uint vid : SV_VertexID) {
   float2 q = quadLocal(vid);
 
   float bandTop = rowBandTopPx(u.rowOffsetPx, u.rowHeight, place.slot);
-  float padPx = barAaPx();
 
   if (vid >= 6u) {
-    // The clip strip: CLIP_STRIP_PX across the band edge that cut the bar,
-    // antialiased at its two horizontal cuts as the bar is.
     int side = clipSide(inst.y, u.domainMin, u.domainMax, u.valueScaleType);
     if (side == 0) {
       o.position = float4(2.0, 2.0, 0.0, 1.0);
@@ -137,9 +127,9 @@ VsOut vs_main(BarMarkInstance inst, uint vid : SV_VertexID) {
       o.barInkPx = float2(0.0);
       return o;
     }
-    float stripTop = side > 0 ? bandTop : bandTop + u.rowBandPx - CLIP_STRIP_PX;
+    float stripTop = clipStripTopPx(side, bandTop, u.rowBandPx);
     float stripBot = stripTop + CLIP_STRIP_PX;
-    float sy = lerp(stripBot + padPx, stripTop - padPx, q.y);
+    float sy = slabVertexYPx(stripTop, stripBot, q.y, u.devicePixelRatio);
     o.position = float4(lerp(sx1, sx2, q.x), yPxToClipY(sy, u.canvasHeight), 0.0, 1.0);
     o.color = float4(unpackRGBA(CLIP_STRIP_COLOR).rgb, 1.0);
     o.barInkPx = float2(sy - stripTop, sy - stripBot);
@@ -150,7 +140,7 @@ VsOut vs_main(BarMarkInstance inst, uint vid : SV_VertexID) {
   float originY = bandTop + u.originYPx;
   float topPx = min(valueY, originY);
   float botPx = max(valueY, originY);
-  float vy = lerp(botPx + padPx, topPx - padPx, q.y);
+  float vy = slabVertexYPx(topPx, botPx, q.y, u.devicePixelRatio);
 
   o.position = float4(lerp(sx1, sx2, q.x), yPxToClipY(vy, u.canvasHeight), 0.0, 1.0);
   o.color = place.color;
@@ -160,8 +150,7 @@ VsOut vs_main(BarMarkInstance inst, uint vid : SV_VertexID) {
 
 [shader("fragment")]
 float4 fs_main(VsOut v) : SV_Target {
-  float aaPx = barAaPx();
-  float alpha = aaRamp(v.barInkPx.x, aaPx) - aaRamp(v.barInkPx.y, aaPx);
+  float alpha = slabCoverage(v.barInkPx.x, v.barInkPx.y, u.devicePixelRatio);
   if (alpha <= 0.0) discard;
   return float4(v.color.rgb, v.color.a * alpha);
 }

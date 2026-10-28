@@ -1,6 +1,7 @@
-// wiggle.slang splits the xyplot bar across its two stages: the vertex shader
-// emits a quad grown one device pixel past each horizontal cut, and the fragment
-// clips that quad back with a coverage band built from two `aaRamp`s. Two
+// wiggle.slang and barMark.slang split a bar across their two stages through
+// antialias.slang's slab: the vertex shader emits a quad grown one device pixel
+// past each horizontal cut (`slabVertexYPx`), and the fragment clips that quad
+// back with a coverage band built from two ramps (`slabCoverage`). Two
 // properties hold the pair together, neither of them unit-testable in the shader
 // and neither reachable by a browser suite that does not change the display's
 // `sampleCount`:
@@ -19,29 +20,23 @@
 // the min-width floor makes neighbouring bars overlap, so a flat-topped run
 // conflates on its fringe row. Bounded, and smaller than what the ramp removes.
 //
-// SYNC: keep in step with vs_main's `padPx` and fs_main's two-ramp band.
-//
 // The dotplot and synteny twins are `shaders/dotplotCapsulePad.test.ts` and
 // `shaders/syntenyFillPad.test.ts`, which exist for the first property alone;
 // this is the first mark in the tree whose SECOND property is the point.
-//
-// The import is also what makes this file a module — see the dotplot twin for
-// why that matters — and ties the quad modelled here to the one the shader draws.
+import {
+  aaHalfPx,
+  aaPx,
+  aaRamp,
+  slabCoverage,
+  slabVertexYPx,
+} from '@jbrowse/render-core/shaders/antialias'
 import { MIN_FILL_WIDTH_PX } from '@jbrowse/wiggle-core'
 
 import { VERTS_PER_INSTANCE } from './wiggle.iface.generated.ts'
 
-// antialias.slang. `aaPx` is the ramp's FULL width and is also what vs_main pads
-// by: one device pixel, expressed in the CSS px the bar geometry is measured in.
-const aaHalfPx = (dpr: number) => 0.5 / Math.max(dpr, 1)
-const aaPx = (dpr: number) => 2 * aaHalfPx(dpr)
-const aaRamp = (signedInk: number, widthPx: number) =>
-  Math.min(Math.max(signedInk / widthPx + 0.5, 0), 1)
-
 // fs_main, given the varying vs_main sets: `barInkPx` is (vy - topPx, vy - botPx).
 function bandAlpha(vyPx: number, topPx: number, botPx: number, dpr: number) {
-  const w = aaPx(dpr)
-  return aaRamp(vyPx - topPx, w) - aaRamp(vyPx - botPx, w)
+  return slabCoverage(vyPx - topPx, vyPx - botPx, dpr)
 }
 
 // The one-sided form the doc's option 4 proposed — top ramp, hard baseline —
@@ -90,12 +85,21 @@ function rowsAround({ topPx, botPx }: Bar, dpr: number) {
   return rows
 }
 
+// The quad vs_main emits, or one padded by `pad` either side instead.
+function quadOf({ topPx, botPx }: Bar, dpr: number, pad?: number) {
+  return pad === undefined
+    ? {
+        quadTop: slabVertexYPx(topPx, botPx, 1, dpr),
+        quadBot: slabVertexYPx(topPx, botPx, 0, dpr),
+      }
+    : { quadTop: topPx - pad, quadBot: botPx + pad }
+}
+
 // Worst amount (in device px) by which a pixel carrying non-zero analytic alpha
 // sticks out of the emitted quad. Zero means the rasterizer covers every inked
 // pixel completely, so the sample count cannot change what is painted.
-function worstPartialCoverage(bar: Bar, dpr: number, pad = aaPx(dpr)) {
-  const quadTop = bar.topPx - pad
-  const quadBot = bar.botPx + pad
+function worstPartialCoverage(bar: Bar, dpr: number, pad?: number) {
+  const { quadTop, quadBot } = quadOf(bar, dpr, pad)
   let worst = 0
   for (const r of rowsAround(bar, dpr)) {
     const centre = rowCentrePx(r, dpr)
@@ -118,9 +122,8 @@ function worstPartialCoverage(bar: Bar, dpr: number, pad = aaPx(dpr)) {
 
 // Total ink the band paints down one column, in device px, counting only the
 // rows the rasterizer actually generates a fragment for.
-function totalInk(bar: Bar, dpr: number, alpha = bandAlpha, pad = aaPx(dpr)) {
-  const quadTop = bar.topPx - pad
-  const quadBot = bar.botPx + pad
+function totalInk(bar: Bar, dpr: number, alpha = bandAlpha) {
+  const { quadTop, quadBot } = quadOf(bar, dpr)
   let ink = 0
   for (const r of rowsAround(bar, dpr)) {
     const centre = rowCentrePx(r, dpr)

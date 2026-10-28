@@ -24,7 +24,10 @@ import {
   SCALE_TYPE_SYMLOG,
   makeUnclampedScoreNormalizer,
 } from '@jbrowse/render-core/scoreScale'
-import { clipSide } from '@jbrowse/render-core/shaders/clipStrip'
+import {
+  clipSide,
+  clipStripTopPx,
+} from '@jbrowse/render-core/shaders/clipStrip'
 import {
   CLIP_STRIP_COLOR,
   CLIP_STRIP_PX,
@@ -203,8 +206,12 @@ export function drawXYPlot(row: RowDraw & { rgb: string }) {
     const x1 = toX(positions[i * 2]!)
     const x2 = toX(positions[i * 2 + 1]!)
     const w = Math.max(WIGGLE_MIN_PX, Math.abs(x2 - x1) + CANVAS_SEAM_PX)
-    const top = side > 0 ? rowTop : rowTop + rowHeight - CLIP_STRIP_PX
-    ctx.fillRect(spanLeft(x1, x2, w), top, w, CLIP_STRIP_PX)
+    ctx.fillRect(
+      spanLeft(x1, x2, w),
+      clipStripTopPx(side, rowTop, rowHeight),
+      w,
+      CLIP_STRIP_PX,
+    )
   }
 }
 

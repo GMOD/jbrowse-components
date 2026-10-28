@@ -5,7 +5,7 @@ import {
   CLIP_STRIP_COLOR,
   CLIP_STRIP_PX,
 } from '../shaders/clipStrip.generated.ts'
-import { clipSide } from '../shaders/clipStrip.js.generated.ts'
+import { clipSide, clipStripTopPx } from '../shaders/clipStrip.js.generated.ts'
 import { valueToYPxScaled } from '../shaders/pointMark.js.generated.ts'
 import { rowBandTopPx } from '../shaders/rowTable.js.generated.ts'
 import { slangPass } from '../slangPass.ts'
@@ -130,7 +130,7 @@ function stripRect(
   const { left, width } = barSpan(bpToPx, x, x2, params)
   return {
     left,
-    top: side > 0 ? bandTop : bandTop + band - CLIP_STRIP_PX,
+    top: clipStripTopPx(side, bandTop, band),
     width,
     height: CLIP_STRIP_PX,
   }

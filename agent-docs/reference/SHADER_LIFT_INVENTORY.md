@@ -14,8 +14,8 @@ Read [ADR-051](../architecture-decision-records/adr-051-shader-js-codegen-is-sca
 in the export set and what deliberately does not. This file says what the
 tree currently looks like against that standard.
 
-Scanned 48 shaders with entry points. 157 functions
-are inside the emitter's subset, of which **124 are exported**.
+Scanned 48 shaders with entry points. 160 functions
+are inside the emitter's subset, of which **127 are exported**.
 
 ## Candidates
 
@@ -82,7 +82,7 @@ noticing in a diff.
 | --- | --- | --- |
 | type 'vec2' is outside the supported scalar subset | 28 | `buttSegmentCorner`, `capsuleCorner`, `capsuleFrame`, `covFlippedQuad`, `covSegQuad`, `crispSquareCornerClip`, … |
 | type 'vec4' is outside the supported scalar subset | 20 | `bandColorAt`, `colorCutAt`, `colorCutYsPx`, `cutYsPx`, `edgeSpan`, `fillEdges`, … |
-| member access (vector swizzle or struct field) is outside the supported scalar subset | 19 | `bandCoverage`, `barAaPx`, `bpToClipX`, `capVertex`, `drawsBar`, `drawsDisc`, … |
+| member access (vector swizzle or struct field) is outside the supported scalar subset | 18 | `bandCoverage`, `bpToClipX`, `capVertex`, `drawsBar`, `drawsDisc`, `flipX`, … |
 | type 'ptr' is outside the supported scalar subset | 17 | `bpToClipX`, `covAreaTop`, `covBaselinePx`, `covBpToClipX`, `covClipKindColor`, `covEffHeight`, … |
 | type 'RibbonCurves' is outside the supported scalar subset | 8 | `bandNormal`, `bandWidthAt`, `curvesCross`, `curvesMeet`, `firstCurve`, `refineCrossing`, … |
 | type 'Cubic' is outside the supported scalar subset | 6 | `armCorner`, `armEnd`, `cubicAt`, `cubicDirection`, `curveVertex`, `lengthTo` |
@@ -116,9 +116,9 @@ is no longer shared with anything.
 
 | Export | Imported by |
 | --- | --- |
-| `aaHalfPx` | tests only — `arcHull.test.ts`, `buttSegmentCoverage.test.ts`, `dotplotCapsulePad.test.ts`, `glyphEdgeAlpha.test.ts`, `pointGlyphPad.test.ts` |
-| `aaPx` | nothing |
-| `aaRamp` | tests only — `pointGlyphPad.test.ts` |
+| `aaHalfPx` | tests only — `arcHull.test.ts`, `barCutCoverage.test.ts`, `buttSegmentCoverage.test.ts`, `dotplotCapsulePad.test.ts`, `glyphEdgeAlpha.test.ts`, `pointGlyphPad.test.ts` |
+| `aaPx` | tests only — `barCutCoverage.test.ts` |
+| `aaRamp` | tests only — `barCutCoverage.test.ts`, `pointGlyphPad.test.ts` |
 | `discExpand` | tests only — `pointGlyphPad.test.ts` |
 | `edgeCoverage` | tests only — `arcHull.test.ts`, `buttSegmentCoverage.test.ts`, `dotplotCapsulePad.test.ts`, `sdEllipse.test.ts`, `strokeCoverage.test.ts` |
 | `ellipseHullPoint` | tests only — `arcHull.test.ts` |
@@ -134,6 +134,8 @@ is no longer shared with anything.
 | `rampScaleType` | tests only — `markRamp.test.ts` |
 | `ribbonEndPad` | nothing |
 | `sBlend` | tests only — `syntenyShaderParity.test.ts` |
+| `slabCoverage` | tests only — `barCutCoverage.test.ts` |
+| `slabVertexYPx` | tests only — `barCutCoverage.test.ts` |
 | `strokeCoverage` | tests only — `buttSegmentCoverage.test.ts`, `strokeCoverage.test.ts` |
 | `wideCircleHullPoint` | tests only — `arcHull.test.ts` |
 | `wideCircleLeg` | tests only — `arcHull.test.ts`, `wideCircleLeg.test.ts` |

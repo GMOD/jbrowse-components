@@ -51,7 +51,8 @@
 // edge AA — but because the alternative is every pad test re-spelling `0.5/dpr`
 // and then agreeing with its own copy, which is what dotplotCapsulePad.test.ts
 // and syntenyFillPad.test.ts each did.
-//! js-export: aaPx, aaHalfPx, aaRamp, edgeCoverage, strokeCoverage
+//! js-export: aaPx, aaHalfPx, aaRamp, edgeCoverage, strokeCoverage, slabVertexYPx, slabCoverage
+//! oracle-skip: slabVertexYPx — the probe's qy runs to 1024, which multiplies float32's rounding of the two padded cuts a thousandfold; a vertex takes qy 0 or 1, and barCutCoverage.test.ts referees the quad's edges there
 //! js-skip: dashCoverageAt — one axis along: the other two backends dash through setLineDash and stroke-dasharray, which take the period rather than a coverage, so what they must agree on is each mark's dash and gap lengths
 //! js-skip: dashCoverage — the dpr wrapper over dashCoverageAt, so it inherits that entry's reason exactly
 module antialias;
@@ -107,6 +108,25 @@ public float edgeCoverage(float signedInkCssPx, float dpr) {
 public float strokeCoverage(float halfWidthPx, float distPx, float dpr) {
   return edgeCoverage(halfWidthPx - distPx, dpr)
        - edgeCoverage(-halfWidthPx - distPx, dpr);
+}
+
+// A slab between two horizontal cuts, `topPx` and `botPx`, whose fragment
+// antialiases both: a bar and its clip strip. The quad's vertex at `qy` (0 the
+// bottom, 1 the top) sits a FULL output pixel past each cut, not the half
+// `aaHalfPx` pads a centred edge by: the last fragment the ramp inks has its
+// centre half a pixel out, and it must be fully inside the quad or the
+// rasterizer's own coverage multiplies into the analytic one.
+public float slabVertexYPx(float topPx, float botPx, float qy, float dpr) {
+  float padPx = aaPx(dpr);
+  return lerp(botPx + padPx, topPx - padPx, qy);
+}
+
+// The slab's coverage, given how far below each cut the fragment is: the
+// difference of the two cuts' ramps, which is the area the slab covers of the
+// pixel at every height. A single ramp applies a half-plane formula to a slab
+// under one output pixel tall and over-inks it.
+public float slabCoverage(float belowTopPx, float belowBotPx, float dpr) {
+  return edgeCoverage(belowTopPx, dpr) - edgeCoverage(belowBotPx, dpr);
 }
 
 // A glyph SDF's edge, measured. `coverage` is positive inside and zero on the
