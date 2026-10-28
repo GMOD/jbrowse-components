@@ -63,3 +63,30 @@ test('the message survives the fade-out', async () => {
   await user.click(screen.getByTitle('Close'))
   expect(screen.queryByText('undefined')).toBeNull()
 })
+
+test('two notifications raised together are shown one after the other', async () => {
+  const user = userEvent.setup()
+  render(
+    <NotificationProvider>
+      <NotifyContext.Consumer>
+        {notifyError => (
+          <button
+            type="button"
+            onClick={() => {
+              notifyError?.(new Error('first'))
+              notifyError?.(new Error('second'))
+            }}
+          >
+            raise
+          </button>
+        )}
+      </NotifyContext.Consumer>
+    </NotificationProvider>,
+  )
+  await user.click(screen.getByText('raise'))
+  expect(screen.getByText('Error: first')).toBeTruthy()
+
+  await user.click(screen.getByTitle('Close'))
+  expect(await screen.findByText('Error: second')).toBeTruthy()
+  expect(screen.queryByText('Error: first')).toBeNull()
+})

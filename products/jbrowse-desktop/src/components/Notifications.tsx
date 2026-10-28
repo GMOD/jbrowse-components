@@ -20,18 +20,21 @@ export const NotificationProvider = observer(function NotificationProvider({
 }: {
   children: ReactNode
 }) {
-  const [notification, setNotification] = useState<Notification>()
-  // `open` rather than the presence of `notification`: MUI keeps a Snackbar's
-  // children mounted through the fade-out, so clearing the message on the click
-  // that dismisses it drew the string "undefined" on the way out
-  const [open, setOpen] = useState(false)
+  // Queued, so two failures raised together (several global plugins failing
+  // offline) are each seen in turn rather than the last replacing the rest.
+  // The shown one leaves the queue only once its fade-out ends: MUI keeps a
+  // Snackbar's children mounted until then, and dropping it on the dismissing
+  // click drew the next message, or "undefined", on the way out.
+  const [queue, setQueue] = useState<Notification[]>([])
+  const [closing, setClosing] = useState(false)
   const notify = useCallback((error: unknown, action?: NotifyAction) => {
-    setNotification({ error, action })
-    setOpen(true)
+    setQueue(q => [...q, { error, action }])
   }, [])
   const close = () => {
-    setOpen(false)
+    setClosing(true)
   }
+  const notification = queue[0]
+  const open = !!notification && !closing
   const action = notification?.action
   return (
     <NotifyContext value={notify}>
@@ -51,7 +54,8 @@ export const NotificationProvider = observer(function NotificationProvider({
         slotProps={{
           transition: {
             onExited: () => {
-              setNotification(undefined)
+              setQueue(q => q.slice(1))
+              setClosing(false)
             },
           },
         }}
