@@ -84,25 +84,17 @@ VsOut vs_main(LineCenterInstance inst, uint vid : SV_VertexID) {
     : midCurrX;
   float currYPx = lineValueYPx(inst.y, bandTop, u);
   float prevYPx = hasPrev ? lineValueYPx(inst.prevY, bandTop, u) : currYPx;
-  // Built in px space so the capsule stays isotropic despite the differing
-  // per-axis px→clip scales.
-  float2 deltaPx = float2(
-    (midCurrX - midPrevX) * u.viewportWidth * 0.5, currYPx - prevYPx);
-  float len = length(deltaPx);
-  SegmentCorner c =
-    capsuleCorner(vid, deltaPx, u.lineWidth * 0.5, u.devicePixelRatio);
-  o.position = float4(
-    (c.atEnd ? midCurrX : midPrevX) + pxToClipLen(c.offsetPx.x, u.viewportWidth),
-    yPxToClipY((c.atEnd ? currYPx : prevYPx) + c.offsetPx.y, u.canvasHeight),
-    0.0,
-    1.0);
+  ClipXCorner c = clipXCapsuleCorner(
+    vid, midPrevX, prevYPx, midCurrX, currYPx, u.lineWidth * 0.5,
+    u.viewportWidth, u.devicePixelRatio);
+  o.position = float4(c.clipX, yPxToClipY(c.yPx, u.canvasHeight), 0.0, 1.0);
   o.color = place.color;
   o.localPos = c.local;
   float currColorYPx = lineColorYPx(inst.y, bandTop, u);
   float prevColorYPx = hasPrev ? lineColorYPx(inst.prevY, bandTop, u) : currColorYPx;
   o.colorLine = float2(
     prevColorYPx,
-    len > CAPSULE_MIN_LEN_PX ? (currColorYPx - prevColorYPx) / len : 0.0);
+    c.lenPx > CAPSULE_MIN_LEN_PX ? (currColorYPx - prevColorYPx) / c.lenPx : 0.0);
   o.cutYsLo = lineCutYsPx(0, bandTop, u);
   o.cutYsHi = lineCutYsPx(4, bandTop, u);
   o.colorAlongY =

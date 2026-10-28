@@ -84,6 +84,27 @@ public SegmentCorner capsuleCorner(
   return segmentCorner(vid, deltaPx, ext, ext);
 }
 
+// `capsuleCorner` for ends held as a clip x and a CSS px y, as the centre lines
+// hold them, built in px so the capsule stays isotropic. The y comes back in px
+// for the caller's own y→clip.
+public struct ClipXCorner {
+  public float clipX;
+  public float yPx;
+  public float3 local;
+  public float lenPx;
+};
+
+public ClipXCorner clipXCapsuleCorner(uint vid, float x1, float y1Px, float x2, float y2Px, float halfWidthPx, float viewportWidth, float dpr) {
+  float2 deltaPx = float2((x2 - x1) * viewportWidth * 0.5, y2Px - y1Px);
+  SegmentCorner c = capsuleCorner(vid, deltaPx, halfWidthPx, dpr);
+  ClipXCorner o;
+  o.clipX = (c.atEnd ? x2 : x1) + pxToClipLen(c.offsetPx.x, viewportWidth);
+  o.yPx = (c.atEnd ? y2Px : y1Px) + c.offsetPx.y;
+  o.local = c.local;
+  o.lenPx = length(deltaPx);
+  return o;
+}
+
 // The butt-capped stroke, which is what Canvas2D's default lineCap draws: the
 // ink stops at each endpoint, so the pad along is the ramp's reach alone.
 public SegmentCorner buttSegmentCorner(

@@ -16,7 +16,6 @@
 
 import antialias;
 import capsule;
-import hpmath;
 import colorPack;
 import wiggleCommon;
 
@@ -76,20 +75,12 @@ VsOut vs_main(WiggleLineCenterInstance inst, uint vid : SV_VertexID) {
   float prevYpx = hasPrev
     ? rowScoreToYPx(inst.prevScore, rowTop, rowHeight, u)
     : currYpx;
-  // Built in px space (clip x → px via viewportWidth) so the capsule stays
-  // isotropic despite the differing per-axis px→clip scales.
-  float2 deltaPx = float2(
-    (midCurrX - midPrevX) * u.viewportWidth * 0.5, currYpx - prevYpx);
-  float len = length(deltaPx);
-  SegmentCorner c =
-    capsuleCorner(vid, deltaPx, u.lineWidth * 0.5, u.devicePixelRatio);
+  ClipXCorner c = clipXCapsuleCorner(
+    vid, midPrevX, prevYpx, midCurrX, currYpx, u.lineWidth * 0.5,
+    u.viewportWidth, u.devicePixelRatio);
 
   VsOut o;
-  o.position = float4(
-    (c.atEnd ? midCurrX : midPrevX) + pxToClipLen(c.offsetPx.x, u.viewportWidth),
-    1.0 - ((c.atEnd ? currYpx : prevYpx) + c.offsetPx.y) * pxToClip,
-    0.0,
-    1.0);
+  o.position = float4(c.clipX, 1.0 - c.yPx * pxToClip, 0.0, 1.0);
   o.color = float4(unpackRGBA(inst.color).rgb, 1.0);
   o.negColor = float4(unpackRGBA(inst.negColor).rgb, 1.0);
   o.localPos = c.local;
@@ -99,7 +90,7 @@ VsOut vs_main(WiggleLineCenterInstance inst, uint vid : SV_VertexID) {
     : currColorYpx;
   o.startLine = float2(
     prevColorYpx,
-    len > CAPSULE_MIN_LEN_PX ? (currColorYpx - prevColorYpx) / len : 0.0);
+    c.lenPx > CAPSULE_MIN_LEN_PX ? (currColorYpx - prevColorYpx) / c.lenPx : 0.0);
   o.cutYsLo = cutYsPx(0, rowTop, rowHeight, u);
   o.cutYsHi = cutYsPx(4, rowTop, rowHeight, u);
   o.rowTop = rowTop;
