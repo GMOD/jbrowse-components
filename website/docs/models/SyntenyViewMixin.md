@@ -72,11 +72,11 @@ From [SyntenyFilterMixin](../syntenyfiltermixin): <span id="getter-predicates">[
 ## Methods
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>12 inherited methods from 4 models</summary>
+<summary>11 inherited methods from 4 models</summary>
 
 From [SyntenyColorsMixin](../syntenycolorsmixin): <span id="method-syntenytracks">[`syntenyTracks`](../syntenycolorsmixin#method-syntenytracks)</span>, <span id="method-colorabletrackconfigs">[`colorableTrackConfigs`](../syntenycolorsmixin#method-colorabletrackconfigs)</span>, <span id="method-colorableattributenames">[`colorableAttributeNames`](../syntenycolorsmixin#method-colorableattributenames)</span>, <span id="method-legendalpha">[`legendAlpha`](../syntenycolorsmixin#method-legendalpha)</span>
 
-From [TrackColorsMixin](../trackcolorsmixin): <span id="method-loadedattributeranges">[`loadedAttributeRanges`](../trackcolorsmixin#method-loadedattributeranges)</span>, <span id="method-legendcigarops">[`legendCigarOps`](../trackcolorsmixin#method-legendcigarops)</span>, <span id="method-colorsurface">[`colorSurface`](../trackcolorsmixin#method-colorsurface)</span>, <span id="method-offersreferencecolor">[`offersReferenceColor`](../trackcolorsmixin#method-offersreferencecolor)</span>, <span id="method-shapeshowsstrand">[`shapeShowsStrand`](../trackcolorsmixin#method-shapeshowsstrand)</span>, <span id="method-trackcolorfor">[`trackColorFor`](../trackcolorsmixin#method-trackcolorfor)</span>
+From [TrackColorsMixin](../trackcolorsmixin): <span id="method-loadedattributeranges">[`loadedAttributeRanges`](../trackcolorsmixin#method-loadedattributeranges)</span>, <span id="method-legendcigarops">[`legendCigarOps`](../trackcolorsmixin#method-legendcigarops)</span>, <span id="method-colorsurface">[`colorSurface`](../trackcolorsmixin#method-colorsurface)</span>, <span id="method-offersreferencecolor">[`offersReferenceColor`](../trackcolorsmixin#method-offersreferencecolor)</span>, <span id="method-trackcolorfor">[`trackColorFor`](../trackcolorsmixin#method-trackcolorfor)</span>
 
 From [ParkedColorMixin](../parkedcolormixin): <span id="method-parkedcolorof">[`parkedColorOf`](../parkedcolormixin#method-parkedcolorof)</span>
 

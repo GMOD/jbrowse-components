@@ -201,7 +201,6 @@ From [BaseViewModel](../baseviewmodel): <span id="getter-rendersdisplays">[`rend
 | <span id="method-syntenytracks">**syntenyTracks**</span><br><code>() =&gt; ComparativeTrackModel[]</code> | the tracks drawing ribbons, which the view's color settings paint |
 | <span id="method-loadedattributeranges">**loadedAttributeRanges**</span><br><code>() =&gt; Record&lt;string, AttributeRange&gt;[]</code> | each ribbon display's attribute spans, over the alignments it holds |
 | <span id="method-legendcigarops">**legendCigarOps**</span><br><code>() =&gt; number</code> | a ribbon draws no indel blocks, so the key lists none |
-| <span id="method-shapeshowsstrand">**shapeShowsStrand**</span><br><code>() =&gt; boolean</code> | a ribbon twists against its two arcs' directions, and nothing on the circle shows which way an arc runs |
 | <span id="method-chordat">**chordAt**</span><br><code>(dx: number, dy: number) =&gt; ChordHit &#124; undefined</code> | the chord or ribbon under a point `dx`,`dy` CSS px from the circle's centre in the screen frame |
 | <span id="method-bandat">**bandAt**</span><br><code>(dx: number, dy: number) =&gt; string &#124; undefined</code> | the place of the chromosome whose ideogram band holds a point `dx`,`dy` CSS px from the circle's centre in the screen frame |
 | <span id="method-bandcenter">**bandCenter**</span><br><code>(key: string) =&gt; [number, number] &#124; undefined</code> | the middle of the ideogram band `key` names, CSS px from the circle's centre in the screen frame: the point `bandAt` answers `key` for |

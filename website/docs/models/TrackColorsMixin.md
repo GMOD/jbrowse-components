@@ -59,7 +59,7 @@ From [SyntenyFilterMixin](../syntenyfiltermixin): <span id="property-filter">[`f
 | <span id="getter-trackcolorassignments">**trackColorAssignments**</span><br><code>Map&lt;string, string&gt;</code> | trackId -> the color it draws in under `encoding.color: 'track'`. Assigned across the whole view rather than per display, so an automatic slot can't duplicate a color pinned on a sibling. |
 | <span id="getter-colorfield">**colorField**</span><br><code>string &#124; undefined</code> | The field `encoding.color` paints by, undefined for the default color. |
 | <span id="getter-hideunlabelled">**hideUnlabelled**</span><br><code>boolean</code> | Whether the filter drops the alignments with no value for the field the view paints by, the "Hide unlabelled rows" box. |
-| <span id="getter-haslegendkey">**hasLegendKey**</span><br><code>boolean</code> | Whether the mode has a key worth a box: a track palette, a ramp, a reader-named column, or strand wherever the shape does not show it (`shapeShowsStrand`), which leaves the color the only strand cue. |
+| <span id="getter-haslegendkey">**hasLegendKey**</span><br><code>boolean</code> | Whether the mode has a key worth a box: a track palette, strand with the indel wedges it recolors, a ramp, or a reader-named column. |
 | <span id="getter-colorlegendchips">**colorLegendChips**</span><br><code>ColorChip[]</code> | Legend rows naming the overlaid tracks — one per track with its palette color, however many levels it is on, and only under `encoding.color: 'track'`, since every other mode has a fixed legend. |
 | <span id="getter-colorscales">**colorScales**</span><br><code>ColorScale[]</code> | The active mode's key, or none for a mode without one. View-wide rather than per display because the key is one box for the whole view, and the ramp domain it labels is the view's. |
 
@@ -84,7 +84,6 @@ From [SyntenyFilterMixin](../syntenyfiltermixin): <span id="getter-predicates">[
 | <span id="method-legendcigarops">**legendCigarOps**</span><br><code>() =&gt; number &#124; undefined</code> | Overridable hook: the indel ops the key lists a chip for, so it names only what the eye can find. `undefined` is the static menu preview; the dotplot draws flat points and never a CIGAR op. |
 | <span id="method-colorsurface">**colorSurface**</span><br><code>() =&gt; SyntenyColorSurface</code> | Overridable hook: what draws each alignment, a ribbon with match and indel blocks or one flat point (the dotplot). The key, the menu's help text and which fields key at all read it. |
 | <span id="method-offersreferencecolor">**offersReferenceColor**</span><br><code>() =&gt; boolean</code> | Overridable hook: whether the view has a shared reference for the `reference` field to anchor on. It needs a stack of two or more levels; below that it is query or target by another name. |
-| <span id="method-shapeshowsstrand">**shapeShowsStrand**</span><br><code>() =&gt; boolean</code> | Overridable hook: whether an alignment's shape shows its strand, which spares the strand colors a key. A linear ribbon twists against its rows' directions, which their rulers show; a whole-genome dotplot is mostly dots with no slope to read. |
 | <span id="method-trackcolorfor">**trackColorFor**</span><br><code>(trackId: string) =&gt; string</code> |  |
 
 <details class="inherited-members" data-pagefind-ignore>
