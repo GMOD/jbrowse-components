@@ -281,7 +281,7 @@ float4 fs_main(VsOut fragIn) : SV_Target {
   float dash = fragIn.dashed > 0.5 && u.dashPx > 0.0
     ? dashCoverage(fragIn.along, u.dashPx, u.gapPx, u.devicePixelRatio)
     : 1.0;
-  float alpha = edgeCoverage(fragIn.halfWidthPx - abs(fragIn.across), u.devicePixelRatio)
+  float alpha = strokeCoverage(fragIn.halfWidthPx, abs(fragIn.across), u.devicePixelRatio)
     * dash;
   return float4(fragIn.color.rgb, fragIn.color.a * alpha);
 }

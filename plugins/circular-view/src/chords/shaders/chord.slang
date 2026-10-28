@@ -64,7 +64,7 @@ VsOut vs_main(ChordInstance inst, uint vid : SV_VertexID) {
 
 [shader("fragment")]
 float4 fs_main(VsOut v) : SV_Target {
-  float cov = edgeCoverage(0.5 * u.strokeWidthPx - abs(v.across), u.devicePixelRatio);
+  float cov = strokeCoverage(0.5 * u.strokeWidthPx, abs(v.across), u.devicePixelRatio);
   float a = v.color.a * u.alpha * cov;
   if (a <= 0.0) discard;
   return float4(v.color.rgb * a, a);

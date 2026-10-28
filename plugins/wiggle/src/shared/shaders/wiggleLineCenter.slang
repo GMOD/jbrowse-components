@@ -109,7 +109,7 @@ VsOut vs_main(WiggleLineCenterInstance inst, uint vid : SV_VertexID) {
 [shader("fragment")]
 float4 fs_main(VsOut fragIn) : SV_Target {
   float dist = capsuleDist(fragIn.localPos);
-  float alpha = edgeCoverage(u.lineWidth * 0.5 - dist, u.devicePixelRatio);
+  float alpha = strokeCoverage(u.lineWidth * 0.5, dist, u.devicePixelRatio);
   if (alpha <= 0.0) {
     discard;
   }

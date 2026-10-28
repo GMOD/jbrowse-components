@@ -51,7 +51,7 @@
 // edge AA — but because the alternative is every pad test re-spelling `0.5/dpr`
 // and then agreeing with its own copy, which is what dotplotCapsulePad.test.ts
 // and syntenyFillPad.test.ts each did.
-//! js-export: aaPx, aaHalfPx, aaRamp, edgeCoverage
+//! js-export: aaPx, aaHalfPx, aaRamp, edgeCoverage, strokeCoverage
 //! js-skip: dashCoverageAt — one axis along: the other two backends dash through setLineDash and stroke-dasharray, which take the period rather than a coverage, so what they must agree on is each mark's dash and gap lengths
 //! js-skip: dashCoverage — the dpr wrapper over dashCoverageAt, so it inherits that entry's reason exactly
 module antialias;
@@ -99,6 +99,14 @@ public float aaRamp(float signedInk, float widthPx) {
 // constants, one of which no test could see double.
 public float edgeCoverage(float signedInkCssPx, float dpr) {
   return aaRamp(signedInkCssPx, aaPx(dpr));
+}
+
+// Coverage of a stroke `halfWidthPx` either side of its centre, `distPx` from
+// it: the difference of its two edges' ramps, so a stroke thinner than an
+// output pixel inks its true width instead of a whole half-plane's ramp.
+public float strokeCoverage(float halfWidthPx, float distPx, float dpr) {
+  return edgeCoverage(halfWidthPx - distPx, dpr)
+       - edgeCoverage(-halfWidthPx - distPx, dpr);
 }
 
 // A glyph SDF's edge, measured. `coverage` is positive inside and zero on the

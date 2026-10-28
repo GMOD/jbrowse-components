@@ -96,7 +96,7 @@ public SegmentCorner buttSegmentCorner(
 // Box-filter coverage of a rectangle separates per axis, so the product is
 // exact and the ends are exactly as soft as the sides.
 public float buttSegmentCoverage(float3 local, float halfWidthPx, float dpr) {
-  return edgeCoverage(halfWidthPx - abs(local.z), dpr)
+  return strokeCoverage(halfWidthPx, abs(local.z), dpr)
        * edgeCoverage(min(local.x, local.y), dpr);
 }
 

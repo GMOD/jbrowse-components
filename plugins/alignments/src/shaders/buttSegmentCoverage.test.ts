@@ -1,4 +1,8 @@
-import { aaHalfPx, edgeCoverage } from '@jbrowse/render-core/shaders/antialias'
+import {
+  aaHalfPx,
+  edgeCoverage,
+  strokeCoverage,
+} from '@jbrowse/render-core/shaders/antialias'
 
 import * as linkedReadLineGlsl from './slang/linkedReadLine.glsl.generated.ts'
 import * as linkedReadLineWgsl from './slang/linkedReadLine.wgsl.generated.ts'
@@ -10,8 +14,8 @@ import * as linkedReadLineWgsl from './slang/linkedReadLine.wgsl.generated.ts'
 // overhanging each endpoint that no other backend drew. This pins the cut.
 //
 // `buttSegmentCoverage` takes a float3, so it is outside the emitter's scalar
-// subset and has no generated twin. What it is made of does — `edgeCoverage`
-// is imported here, so the ramp arithmetic is the shader's own and only the
+// subset and has no generated twin. What it is made of does — `strokeCoverage`
+// and `edgeCoverage` are imported here, so the ramp arithmetic is the shader's own and only the
 // one-line product is restated, which is the residue adr-051 accepts (the
 // alternative, restating the ramp, is what makes a parity test pass against a
 // shader drawing something else).
@@ -27,7 +31,7 @@ function buttSegmentCoverage(
   const fromStart = halfLenPx + localX
   const fromEnd = halfLenPx - localX
   return (
-    edgeCoverage(halfWidthPx - Math.abs(localY), dpr) *
+    strokeCoverage(halfWidthPx, Math.abs(localY), dpr) *
     edgeCoverage(Math.min(fromStart, fromEnd), dpr)
   )
 }
@@ -126,7 +130,7 @@ test.each([
     // one ramp across the width, one along the length from the nearer end,
     // multiplied.
     expect(src).toMatch(
-      /return edgeCoverage_0\([^\n]*abs\(\w+\.z\)[^\n]*\* edgeCoverage_0\([^\n]*min\(\w+\.x, \w+\.y\)/,
+      /return strokeCoverage_0\([^\n]*abs\(\w+\.z\)[^\n]*\* edgeCoverage_0\([^\n]*min\(\w+\.x, \w+\.y\)/,
     )
     // The round-capped distance these passes used to measure with. Its return
     // would be a dome of ink past each endpoint that no other backend draws.

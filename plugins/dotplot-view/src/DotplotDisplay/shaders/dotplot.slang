@@ -62,8 +62,8 @@ VsOut vs_main(DotplotInstance inst, uint vid : SV_VertexID) {
 
 [shader("fragment")]
 float4 fs_main(VsOut fragIn) : SV_Target {
-  float edgeAlpha = edgeCoverage(
-    u.lineWidth * 0.5 - capsuleDist(fragIn.local), u.devicePixelRatio);
+  float edgeAlpha = strokeCoverage(
+    u.lineWidth * 0.5, capsuleDist(fragIn.local), u.devicePixelRatio);
   // Premultiplied output, so the slider scales rgb with it.
   float finalAlpha = fragIn.color.a * u.alpha * edgeAlpha;
   // The pad's fragments ramp to nothing; dropping them keeps them off the
