@@ -182,7 +182,7 @@ the message can appear at any zoom and offers only **Force load**.
 
 ### Raising the feature limit
 
-[`maxFeatureScreenDensity`](/docs/config/linearcanvasbasedisplay/#slot-maxfeaturescreendensity)
+[`maxFeatureScreenDensity`](/docs/config/linearbasicdisplay/#slot-maxfeaturescreendensity)
 is features per pixel of track width, so the budget grows with the window:
 
 ```json addtrack

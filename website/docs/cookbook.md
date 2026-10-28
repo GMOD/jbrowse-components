@@ -323,9 +323,9 @@ session-wide form, and the About dialog.
 
 A feature track fits its height by default: a crowded window drops labels and
 then squeezes the rows rather than scrolling.
-[`heightMode`](/docs/config/linearcanvasbasedisplay/#slot-heightmode) `fixed`
-keeps every label and scrolls instead. `filter` draws only the features that
-pass every `jexl:` expression, on variant tracks too:
+[`heightMode`](/docs/config/linearbasicdisplay/#slot-heightmode) `fixed` keeps
+every label and scrolls instead. `filter` draws only the features that pass
+every `jexl:` expression, on variant tracks too:
 
 ```json addtrack
 {
