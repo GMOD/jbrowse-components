@@ -37,6 +37,7 @@ function register(
   tracks: RExportTrack[],
   probe: string,
   regions: Region[] = ONE,
+  view: { colorByFrame?: boolean; showAminoAcids?: boolean } = {},
 ) {
   if (cases.some(c => c.name === name)) {
     throw new Error(`two cases named ${name} would share one script file`)
@@ -50,6 +51,7 @@ function register(
       assembly: volvoxAssembly(),
       out,
       bpPerPx: bpPerPxOf(regions),
+      ...view,
     }).script!,
     probe: `c(file.size(${JSON.stringify(out)}) > 0, ${probe})`,
   })
@@ -182,6 +184,24 @@ const lackingContig = register(
   ],
 )
 
+const titledFrames = register(
+  'titled_frames',
+  [
+    { ...track('gff3tabix_genes', 'LinearBasicDisplay'), trackName: 'width' },
+    {
+      ...track('volvox_microarray', 'LinearWiggleDisplay'),
+      trackName: 'say "hi"',
+    },
+  ],
+  `{ titles <- function(p) c(p$labels$title,
+    if (inherits(p, "patchwork")) unlist(lapply(p$patches$plots, titles)))
+  setequal(titles(fig), c("width", 'say "hi"')) },
+  NROW(gff3tabix_genes$amino_acids) == 0,
+  "#f46868" %in% gff3tabix_genes$rects$color`,
+  [{ refName: 'ctgA', start: 1100, end: 1600 }],
+  { colorByFrame: true, showAminoAcids: false },
+)
+
 const maybe = hasR() ? describe : describe.skip
 
 maybe('an exported script, run under R', () => {
@@ -229,6 +249,10 @@ maybe('an exported script, run under R', () => {
 
   it('hands the engine an adapter’s own settings', () => {
     allTrue(bigBed)
+  })
+
+  it('titles each band, and reads CDS frames and amino acids as the view shows them', () => {
+    allTrue(titledFrames)
   })
 
   it('draws a track whose file lacks one region’s contig', () => {

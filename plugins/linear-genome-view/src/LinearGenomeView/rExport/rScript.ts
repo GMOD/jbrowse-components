@@ -133,10 +133,18 @@ const RESERVED = new Set([
   'Inf',
   'NaN',
   'NA',
+  'NA_integer_',
+  'NA_real_',
+  'NA_complex_',
+  'NA_character_',
 ])
 
 function isIdentifier(s: string) {
-  return /^[A-Za-z.][A-Za-z0-9._]*$/.test(s) && !RESERVED.has(s)
+  return (
+    /^([A-Za-z]|\.(?!\d))[A-Za-z0-9._]*$/.test(s) &&
+    !/^(\.\.\.|\.\.\d+)$/.test(s) &&
+    !RESERVED.has(s)
+  )
 }
 
 /**
@@ -418,6 +426,17 @@ function trackNames(tracks: readonly RExportTrack[]) {
   })
 }
 
+/**
+ * A track's `jbrowse_stack()` argument, named as the view labels it so its
+ * band is titled. A name `width` would set the stack's own `width`, so that
+ * one goes in a list, whose names title its tracks too.
+ */
+function stackArgument(title: string, name: string) {
+  return title === 'width'
+    ? `list(width = ${name})`
+    : `${isIdentifier(title) ? title : rStr(title)} = ${name}`
+}
+
 /** What the figure cannot show of a track whose settings ggjbrowse reads. */
 function settingNotes(track: RExportTrack) {
   const { color } =
@@ -443,6 +462,8 @@ export function exportTracksToR({
   regions,
   assembly: assemblySnapshot,
   bpPerPx,
+  colorByFrame = false,
+  showAminoAcids = true,
   out = 'figure.png',
   notes: viewNotes = [],
 }: {
@@ -452,6 +473,10 @@ export function exportTracksToR({
   assembly?: Record<string, unknown>
   /** The view's zoom, which decides what a feature or quantitative display shows. */
   bpPerPx?: number
+  /** The view's "CDS reading frame colors", which a feature track takes. */
+  colorByFrame?: boolean
+  /** The view's "Amino acids when zoomed in", which a feature track takes. */
+  showAminoAcids?: boolean
   out?: string
   /** What the caller knows of the view that the figure does not show. */
   notes?: readonly string[]
@@ -470,6 +495,7 @@ export function exportTracksToR({
   const names = trackNames(tracks)
   const reads: string[] = []
   const drawn: string[] = []
+  const bands: string[] = []
   let alignments: string | undefined
   tracks.forEach((track, i) => {
     const reader = READERS[track.displayType]
@@ -494,10 +520,13 @@ export function exportTracksToR({
           }
         : track.display
     const width = viewPx !== undefined
+    const geneTrack = track.displayType === 'LinearBasicDisplay'
     const args = [
       ...(Object.keys(display).length ? [`display = ${rValue(display)}`] : []),
       ...(width ? ['width = width'] : []),
       ...(assemblyValue ? ['assembly = assembly'] : []),
+      ...(geneTrack && colorByFrame ? ['color_by_cds = TRUE'] : []),
+      ...(geneTrack && !showAminoAcids ? ['amino_acids = FALSE'] : []),
       ...(source.index ? [`index = ${rStr(source.index)}`] : []),
     ]
     const name = names[i]!
@@ -512,6 +541,7 @@ export function exportTracksToR({
       ].join('\n'),
     )
     drawn.push(name)
+    bands.push(stackArgument(track.trackName, name))
     if (reader.call === 'jbrowse_alignments') {
       alignments ??= name
     }
@@ -573,7 +603,7 @@ export function exportTracksToR({
     '',
     reads.join('\n\n'),
     '',
-    `fig <- jbrowse_stack(${drawn.join(', ')})`,
+    `fig <- jbrowse_stack(${bands.join(',\n  ')})`,
     'print(fig)',
     `ggplot2::ggsave(${rStr(out)}, fig, width = jbrowse_width(fig), height = jbrowse_height(fig))`,
     '',

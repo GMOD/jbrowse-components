@@ -82,6 +82,8 @@ export function exportLinearViewToR(view: LinearGenomeViewModel, out?: string) {
     regions: viewRegions(view),
     assembly: assemblyOf(view),
     bpPerPx: view.bpPerPx,
+    colorByFrame: view.colorByFrame,
+    showAminoAcids: view.showAminoAcids,
     out,
     notes: view.displayedRegions.some(r => r.reversed)
       ? ['view: shown right to left, where the figure runs left to right']

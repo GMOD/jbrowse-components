@@ -33,7 +33,8 @@ reads <- jbrowse_alignments("https://jbrowse.org/code/jb2/main/test_data/volvox/
   locus,
   display = list(color = list(field = "mapq")))
 
-fig <- jbrowse_stack(genes, reads)
+fig <- jbrowse_stack("GFF3Tabix genes" = genes,
+  "volvox-sorted.bam" = reads)
 print(fig)
 ```
 

@@ -45,7 +45,7 @@ test('each track is a ggjbrowse reader, and the figure is one jbrowse_stack call
     'display = list(encoding = list(color = list(field = "mapq"))),\n  width = width)',
   )
   expect(script).toContain(
-    'fig <- jbrowse_stack(gff3tabix_genes, volvox_microarray, volvox_alignments)\nprint(fig)\n',
+    'fig <- jbrowse_stack("GFF3Tabix genes" = gff3tabix_genes,\n  "wiggle_track xyplot" = volvox_microarray,\n  "volvox-sorted.bam (ctgA, larger default height, color mapq)" = volvox_alignments)\nprint(fig)\n',
   )
   expect(script).toContain(
     'ggplot2::ggsave("figure.png", fig, width = jbrowse_width(fig), height = jbrowse_height(fig))',
@@ -75,6 +75,51 @@ test("a track named width keeps the script's width", () => {
   })
   expect(script).toContain('\nwidth <- 1500\n')
   expect(script).toMatch(/^width_2 <- jbrowse_wiggle\(/m)
+})
+
+test('each band takes its track’s name as R writes it, and a name width stays off the stack’s width', () => {
+  const named = (trackName: string) => ({
+    ...track('volvox_microarray', 'LinearWiggleDisplay'),
+    trackName,
+  })
+  const script = scriptOf({
+    regions: ONE,
+    tracks: [
+      named('signal'),
+      named('say "hi"'),
+      named('..1'),
+      named('if'),
+      named('width'),
+    ],
+  })
+  expect(script).toContain(
+    [
+      'fig <- jbrowse_stack(signal = volvox_microarray,',
+      '  "say \\"hi\\"" = volvox_microarray_2,',
+      '  "..1" = volvox_microarray_3,',
+      '  "if" = volvox_microarray_4,',
+      '  list(width = volvox_microarray_5))',
+    ].join('\n'),
+  )
+})
+
+test('a feature track takes the view’s CDS frame colors and amino acids', () => {
+  const tracks = [
+    track('gff3tabix_genes', 'LinearBasicDisplay'),
+    track('volvox_filtered_vcf', 'LinearVariantDisplay'),
+  ]
+  const defaults = scriptOf({ regions: ONE, tracks })
+  expect(defaults).not.toMatch(/color_by_cds|amino_acids/)
+  const set = scriptOf({
+    regions: ONE,
+    tracks,
+    colorByFrame: true,
+    showAminoAcids: false,
+  })
+  expect(set).toMatch(
+    /gff3tabix_genes <- jbrowse_features\([^)]*,\n {2}color_by_cds = TRUE,\n {2}amino_acids = FALSE\)/,
+  )
+  expect(set.match(/color_by_cds|amino_acids/g)).toHaveLength(2)
 })
 
 test('every reader lays its track out at the view’s width, and none without a zoom', () => {
