@@ -23,6 +23,7 @@
     "check-plugin-porosity": "node --experimental-strip-types scripts/check-plugin-porosity.ts",
     "check-gated-adapter-budgets": "node --experimental-strip-types scripts/check-gated-adapter-budgets.ts",
     "check-shell-pipefail": "node --experimental-strip-types scripts/check-shell-pipefail.ts",
+    "check-unsafe-any": "scripts/heavy-run-slot.sh node --experimental-strip-types scripts/check-unsafe-any.ts",
     "check-mcp-text-caps": "node --experimental-strip-types scripts/check-mcp-text-caps.ts",
     "check-eval-graders": "node --experimental-strip-types scripts/agent-evals/selfCheck.ts",
     "check-typescript-pin": "node --experimental-strip-types scripts/check-typescript-pin.ts",

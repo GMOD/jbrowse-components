@@ -160,6 +160,8 @@ const GATES: Gate[] = [
     }),
   },
   { name: 'typecheck', argv: nodeScript('typecheck.ts') },
+  // Whole-tree, a type-aware oxlint run of its own, so it waits for --full.
+  { name: 'unsafe any', argv: pnpm('check-unsafe-any'), slow: true },
   { name: 'docs', argv: pnpm('check-docs'), slow: true },
   // Last: `build:esm` is the only thing that compiles what we PUBLISH — each
   // package's own tsconfig, without node types and without the React compiler

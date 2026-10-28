@@ -198,6 +198,11 @@ jobs:
       - name: Lint backstop (eslint — react-compiler + guards oxlint can't do)
         if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
         run: pnpm lint:eslint
+      # A ratchet over a committed baseline, so not an autogen generator, which
+      # would write a new `any` into the baseline instead of failing on it.
+      - name: Check app source gained no uses of `any`
+        if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
+        run: pnpm check-unsafe-any
       # A ratchet, not a generated artifact, so it is deliberately NOT a
       # scripts/autogen.ts generator: autogen would quietly write a new gated
       # adapter into the baseline, which is exactly the decision this exists to
