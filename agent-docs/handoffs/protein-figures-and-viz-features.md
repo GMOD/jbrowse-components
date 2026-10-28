@@ -51,6 +51,13 @@ together.
   either chain fit; at 48 Å that copy leaves the frame and 2HHB draws no
   residue label, so only the legend names Glu6. It replaced the GWAS-and-hydrophobicity
   pair of the same name.
+- **HBB E6V with an MSA**, `protein_figure_hbb_e6v_msa.ts`, published and in no
+  doc yet (the PI picks between the two): the same structures under a strip of
+  twelve UniProt beta globins, residues 1-13, each column sized to sit under
+  its codon, so the session's E6V highlight runs as one band from the codon
+  through the column. Position 6 is not acidic in every mammal: murine
+  rodents, elephants, hyrax and tenrec carry Ala, ground squirrels Gly. The
+  Mouse row says so; no reviewed mammalian beta globin carries Val.
 - **Variant pairs** `protein_figure_brca1_m1775r.ts` and
   `protein_figure_snca_e46k.ts`; the SNCA builder looks down each fibril's rung
   axis and turns the E46K layer to put Lys80 on the wild type's pixel.
