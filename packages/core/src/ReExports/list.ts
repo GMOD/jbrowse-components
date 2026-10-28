@@ -299,6 +299,8 @@ export default [
   '@jbrowse/core/util/deepEqual',
   '@jbrowse/core/util/deepMerge',
   '@jbrowse/core/util/diagonalizeRegions',
+  '@jbrowse/core/util/electron',
+  '@jbrowse/core/util/electronChannels',
   '@jbrowse/core/util/eventPoint',
   '@jbrowse/core/util/expandLooseSearchIndex',
   '@jbrowse/core/util/featureTable',

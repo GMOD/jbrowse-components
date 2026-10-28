@@ -5,13 +5,13 @@ import {
   localStorageGetItem,
   localStorageSetItem,
 } from '@jbrowse/core/util'
+import { invokeElectronMain } from '@jbrowse/core/util/electron'
 
 import {
   BlatChallengeError,
   challengeError,
   isChallengePage,
 } from './blatQuery.ts'
-import { desktopBlatFetch, openBlatChallenge } from './desktopBlat.ts'
 import { addResultTrack, resolveUcscDb } from './ucscShared.ts'
 
 import type { ResultTrackConf, UcscHost } from './ucscShared.ts'
@@ -72,7 +72,7 @@ function worthRetryingDirect(status: number) {
 
 function ucscFetch(url: string, body: string) {
   return isElectron
-    ? desktopBlatFetch({ url, body })
+    ? invokeElectronMain('blatFetch', url, body)
     : browserUcscFetch(url, body)
 }
 
@@ -241,7 +241,10 @@ export function useUcscQuery({
   // 502 the fetch retries past — so a challenge that reaches the user at all was
   // served by the fallback, not by `urlBase`.
   async function solveChallenge(retry: () => void) {
-    const solved = await openBlatChallenge(fallbackUrl ?? urlBase)
+    const solved = await invokeElectronMain(
+      'openBlatChallenge',
+      fallbackUrl ?? urlBase,
+    )
     if (solved) {
       retry()
     } else {

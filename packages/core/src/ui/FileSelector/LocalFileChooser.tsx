@@ -1,6 +1,7 @@
 import { Box, Button, FormControl, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import { invokeElectronMain } from '../../util/electron.ts'
 import { isFileSystemAccessSupported } from '../../util/fileHandleStore.ts'
 import {
   isElectron,
@@ -114,13 +115,10 @@ const FilePickerButton = observer(function FilePickerButton({
       <Button
         variant="outlined"
         onClick={async () => {
-          // @ts-ignore - electron injects require onto window, needs to be ignore for now
-          const { ipcRenderer } = window.require('electron')
-          const result: unknown = await ipcRenderer.invoke(
+          const filePath = await invokeElectronMain(
             'promptOpenLocalFile',
             getLastLocalFileDir(),
           )
-          const filePath = typeof result === 'string' ? result : undefined
           if (filePath) {
             setLastLocalFileDir(filePath)
             setLocation({

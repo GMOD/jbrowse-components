@@ -1,17 +1,20 @@
 // The contract between the two processes: every channel, its arguments, and
 // what it resolves to. Both sides depend on this and neither owns it, so it is
-// deliberately import-free — no `electron`, no `node:*`, nothing from
-// @jbrowse/core. That is what lets the renderer (src/ipc.ts, compiled for the
-// browser) and the main process (channels.ts, which needs ipcMain) share one
-// definition instead of each restating it.
+// deliberately import-free — no `electron`, no `node:*`, and from @jbrowse/core
+// only the import-free electronChannels.ts, which holds the channels code
+// outside this product calls. That is what lets the renderer (src/ipc.ts,
+// compiled for the browser) and the main process (channels.ts, which needs
+// ipcMain) share one definition instead of each restating it.
 //
 // Keep it that way: an import here would drag the main process's module graph
 // into the web typecheck, or the DOM lib into the electron one.
 //
 // It also holds the few plain constants both processes have to agree on. Those
 // make it a real module in the renderer bundle rather than one erased with its
-// `import type` — which costs nothing precisely because of the rule above: with
-// no imports of its own, the module brings nothing along with it.
+// `import type` — which costs nothing precisely because of the rule above: its
+// one import is a type, erased, so the module brings nothing along with it.
+
+import type { ElectronMainChannels } from '@jbrowse/core/util/electronChannels'
 
 /**
  * The userData subdirectory text-indexing writes its trix output into.
@@ -144,12 +147,6 @@ export interface IpcPushChannels {
   mcpRequest: { args: [request: McpBridgeRequest] }
 }
 
-export interface AuthWindowParams {
-  internetAccountId: string
-  data: { redirect_uri: string }
-  url: string
-}
-
 /**
  * One MCP tool call the bridge is relaying to the renderer, which is where the
  * session model lives. `id` correlates the mcpResponse coming back — the push
@@ -188,7 +185,7 @@ export interface McpReadyState {
   launchError?: { attempt: number; message: string }
 }
 
-export interface IpcChannels {
+export interface IpcChannels extends ElectronMainChannels {
   quit: { args: []; return: void }
   userData: { args: []; return: string }
   // Whether the Windows installer's usage-reporting box was cleared. Asked of
@@ -214,10 +211,6 @@ export interface IpcChannels {
   }
   cancelIndexFasta: { args: [jobId: string]; return: void }
   promptOpenFile: { args: []; return: string | undefined }
-  promptOpenLocalFile: {
-    args: [defaultDir?: string]
-    return: string | undefined
-  }
   promptSessionSaveAs: { args: []; return: string | undefined }
   listSessions: { args: []; return: RecentSessionInfo[] }
   loadSession: { args: [filePath: string]; return: LoadedSession }
@@ -259,10 +252,6 @@ export interface IpcChannels {
   // plugin list at load time
   getGlobalPlugins: { args: []; return: unknown[] }
   setGlobalPlugins: { args: [plugins: unknown[]]; return: void }
-  openAuthWindow: {
-    args: [params: AuthWindowParams]
-    return: string | undefined
-  }
   // Asks the user to vouch for plugins that aren't in the plugin store, before
   // a link-supplied config gets to run their javascript. Native+modal rather
   // than a React dialog so it can't be missed and needs no plumbing through the
@@ -270,14 +259,6 @@ export interface IpcChannels {
   confirmUntrustedPlugins: {
     args: [plugins: { description: string; url: string }[]]
     return: boolean
-  }
-  // opens the BLAT server in a window so the user can solve its CAPTCHA
-  openBlatChallenge: { args: [url: string]; return: boolean }
-  // POSTs a BLAT query from the main process so the solved-challenge cookie
-  // (held in the BLAT partition) attaches first-party; returns the raw body
-  blatFetch: {
-    args: [url: string, body: string]
-    return: { ok: boolean; status: number; text: string }
   }
   // The renderer's answer to an mcpRequest push
   mcpResponse: { args: [response: McpBridgeResponse]; return: void }

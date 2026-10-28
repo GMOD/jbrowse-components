@@ -15,8 +15,8 @@ import { logError } from './util.ts'
 import windowStateKeeper from './windowStateKeeper.ts'
 
 import type { Updater } from './autoUpdater.ts'
-import type { AuthWindowParams } from './ipc/channelTypes.ts'
 import type { LaunchTarget } from './launchTarget.ts'
+import type { AuthWindowParams } from '@jbrowse/core/util/electronChannels'
 
 const DEFAULT_WINDOW_WIDTH = 1400
 const DEFAULT_WINDOW_HEIGHT = 800

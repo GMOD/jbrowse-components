@@ -3009,6 +3009,19 @@
       ],
       "worker": "real"
     },
+    "@jbrowse/core/util/electron": {
+      "package": "@jbrowse/core",
+      "names": [
+        "electronRenderer",
+        "invokeElectronMain"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/electronChannels": {
+      "package": "@jbrowse/core",
+      "names": [],
+      "worker": "real"
+    },
     "@jbrowse/core/util/eventPoint": {
       "package": "@jbrowse/core",
       "names": [

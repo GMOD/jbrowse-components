@@ -299,6 +299,8 @@ const names: Record<string, string[]> = {
   '@jbrowse/core/util/deepEqual': ['deepEqual'],
   '@jbrowse/core/util/deepMerge': ['deepMerge'],
   '@jbrowse/core/util/diagonalizeRegions': ['diagonalizeRegions'],
+  '@jbrowse/core/util/electron': ['electronRenderer', 'invokeElectronMain'],
+  '@jbrowse/core/util/electronChannels': [],
   '@jbrowse/core/util/eventPoint': ['eventPoint'],
   '@jbrowse/core/util/expandLooseSearchIndex': ['expandLooseSearchIndex'],
   '@jbrowse/core/util/featureTable': ['ColumnTable', 'DerivedTable', 'NO_COLUMN', 'SelectTable', 'SourceTable', 'TableRow', 'WithTable', 'asTable', 'numberReaderOf', 'readerOf', 'selectRows', 'throughIndex', 'valueAt', 'withColumns'],

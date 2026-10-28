@@ -1,3 +1,4 @@
+import { electronRenderer } from './electron.ts'
 import { isElectron } from './environment.ts'
 import { storeBlobLocation } from './tracks.ts'
 
@@ -369,8 +370,7 @@ export {
 export function fileToLocation(file: File): FileLocation {
   if (isElectron) {
     return {
-      // @ts-ignore - electron injects require onto window, needs to be ignore not expect-error for now
-      localPath: window.require('electron').webUtils.getPathForFile(file),
+      localPath: electronRenderer().webUtils.getPathForFile(file),
       locationType: 'LocalPathLocation',
     }
   } else {

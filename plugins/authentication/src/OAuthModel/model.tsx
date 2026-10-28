@@ -11,6 +11,7 @@ import {
   sha256Base64Url,
   toBase64Url,
 } from '@jbrowse/core/util'
+import { invokeElectronMain } from '@jbrowse/core/util/electron'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import { OAuthLoginPrompt } from '../lazyLoginForms.ts'
@@ -361,7 +362,7 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
         const codeChallenge = codeVerifier
           ? await sha256Base64Url(codeVerifier)
           : undefined
-        const data: Record<string, string> = {
+        const data: Record<string, string> & { redirect_uri: string } = {
           client_id: self.clientId,
           redirect_uri: redirectUri,
           response_type: self.responseType,
@@ -385,9 +386,7 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
         }
 
         if (isElectron) {
-          // @ts-ignore - electron injects require onto window
-          const { ipcRenderer } = window.require('electron')
-          const electronRedirectUri = await ipcRenderer.invoke(
+          const electronRedirectUri = await invokeElectronMain(
             'openAuthWindow',
             {
               internetAccountId: self.internetAccountId,
