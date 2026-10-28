@@ -3,9 +3,9 @@
 - A commit to `main` whose message contains "update docs" deploys the site.
   Buckets and hosted assets: `agent-docs/reference/HOSTING.md`.
 - Screenshots: `scripts/CLAUDE.md`. Filming: `scripts/videos/CLAUDE.md`.
-- **Figures come from a fresh `@jbrowse/web` build, never a stale one.**
-  Rebuild whenever the checkout moved; `generate-screenshots.ts` does it for a
-  local build.
+- **Figures come from a fresh `@jbrowse/web` build, never a stale one.** Rebuild
+  whenever the checkout moved; `generate-screenshots.ts` does it for a local
+  build.
 
 ## Figure and media store
 

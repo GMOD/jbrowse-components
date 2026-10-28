@@ -65,7 +65,10 @@ async function startServerIfNeeded(specs: ScreenshotSpec[]) {
   if (!specs.some(s => s.mode === 'url' && !s.url.startsWith('http'))) {
     return undefined
   }
-  if (!externalPort && (!fs.existsSync(buildPath) || (await localBuildIsStale()))) {
+  if (
+    !externalPort &&
+    (!fs.existsSync(buildPath) || (await localBuildIsStale()))
+  ) {
     buildJbrowseWeb()
   }
   const server = await createTestServer(servePort, {
