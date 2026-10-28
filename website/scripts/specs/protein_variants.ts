@@ -13,9 +13,10 @@ import type {
 } from '../screenshot-spec-types.ts'
 
 // Captions name a direction; these numbers, read off the tracks' files, back it:
-//   HBB rs334 (codon 7 GAG>GTG): 182 het, 1 hom of 3,202 genomes; rs713040
-//   (His3, synonymous) 1,143 het, 1,725 hom. The GWAS filter keeps one row per
-//   trait at the codon.
+//   HBB rs334 (codon 7 GAG>GTG): 182 het, 1 hom of 3,202 genomes, 177 het and
+//   the hom among 893 AFR, 5 het among 490 AMR, none in EUR, SAS or EAS;
+//   rs713040 (His3, synonymous) 1,143 het, 1,725 hom. The GWAS filter keeps one
+//   row per trait at the codon.
 //   SOD1 E40K (canFam4): no wolf or coyote carries it; 198 of 1,987 dogs do.
 //   AGL11 codon 197: Arg in Pinot Noir, Leu in A0A217EJJ0 (cv. Sultanina);
 //   AlphaFold pLDDT 57.6 there.

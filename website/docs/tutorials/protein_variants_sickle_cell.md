@@ -135,7 +135,9 @@ edits to keep other traits.
 ## Sickle allele in 1000 Genomes
 
 The 1000 Genomes callset is a VCF with a column per genome, which JBrowse draws
-as one row per genome:
+as one row per genome. A sample table lists each genome's population and
+superpopulation, from the 1000 Genomes pedigree file, and the display draws each
+superpopulation as a band of rows, African first:
 
 ```json addtrack loc=chr11:5226956-5227046
 {
@@ -152,25 +154,35 @@ as one row per genome:
       "location": {
         "uri": "https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/working/20220422_3202_phased_SNV_INDEL_SV/1kGP_high_coverage_Illumina.chr11.filtered.SNV_INDEL_SV_phased_panel.vcf.gz.tbi"
       }
+    },
+    "samplesTsvLocation": {
+      "uri": "https://jbrowse.org/demos/1000g/1000g_3202_samples.tsv"
     }
   },
   "displays": [
     {
       "type": "LinearMultiSampleVariantDisplay",
-      "displayId": "kgp3202_chr11_snv-LinearMultiSampleVariantDisplay"
+      "displayId": "kgp3202_chr11_snv-LinearMultiSampleVariantDisplay",
+      "rowColor": "superpopulation",
+      "facet": {
+        "field": "superpopulation",
+        "sort": ["AFR", "AMR", "EUR", "SAS", "EAS"]
+      }
     }
   ]
 }
 ```
 
 rs334 sits under the highlighted codon. Right-click its column and pick **Sort
-rows by genotype here**, which gathers its carriers into one block. Nearly all
-of them carry one copy. rs713040, a synonymous change in the His3 codon four
-codons upstream, sits to its left on screen as the control: common, and carried
-as one copy or two. HbC, rs33930165, a second allele of the same codon, shares
-the highlighted column.
+rows by genotype here**, which gathers its carriers at the top of each band. Of
+the 893 African-ancestry genomes, 177 carry one copy and one carries two, an
+allele frequency of 10%. Five of the 490 admixed American genomes carry one
+copy, and no European, South Asian or East Asian genome carries it. rs713040, a
+synonymous change in the His3 codon four codons upstream, sits to its left on
+screen as the control: common, and carried as one copy or two. HbC, rs33930165,
+a second allele of the same codon, shares the highlighted column.
 
-<Figure src="/img/protein/hbb_1000_genomes.png" caption="1000 Genomes genotypes under HBB, one row per genome, sorted by genotype at rs334." />
+<Figure src="/img/protein/hbb_1000_genomes.png" caption="1000 Genomes genotypes under HBB, one row per genome, banded by superpopulation and sorted by genotype at rs334." />
 
 ## The domains across all three views
 
