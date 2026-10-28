@@ -66,9 +66,9 @@ function hbbMsaSession() {
     ]
   }
   const [top, bottom] = layout.children
-  top.size = 41
+  top.size = 46
   top.tabs[0]!.viewIds.push('msa-HBB')
-  bottom.size = 59
+  bottom.size = 54
   return `?config=${UCSC_HG38_CONFIG}&session=encoded-${deflateSync(
     JSON.stringify(session),
   ).toString('base64url')}`
@@ -101,7 +101,7 @@ export const proteinHbbE6vMsaSpecs: ScreenshotSpec[] = [
     ],
     tooltip: 'hide',
     viewportWidth: VIEW_WIDTH,
-    viewportHeight: 1450,
+    viewportHeight: 1530,
     actions: [
       { type: 'waitForAppSettled' },
       PARK_CURSOR,
