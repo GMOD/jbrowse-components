@@ -92,6 +92,10 @@ function isOpenSession(self: SessionDbHost, id: string) {
 // itself
 const capturingThumbnail = new WeakSet<object>()
 
+// per session node, the snapshot its last picture shows, so hiding the tab
+// again without an edit in between draws nothing
+const thumbnailSnapshots = new WeakMap<object, unknown>()
+
 const OPEN_ELSEWHERE =
   'That session is open in another tab, so change it from that tab'
 
@@ -399,10 +403,15 @@ export default function RootModel({
         if (!session || !sessionDB || capturingThumbnail.has(self)) {
           return
         }
+        const snap = getSnapshot(session)
+        if (thumbnailSnapshots.get(session) === snap) {
+          return
+        }
         capturingThumbnail.add(self)
         try {
           const { id } = session
           const thumbnail = await renderSessionThumbnail(session.views)
+          thumbnailSnapshots.set(session, snap)
           const meta =
             thumbnail &&
             (await patchSessionMetadataRow(sessionDB, id, { thumbnail }))
@@ -531,7 +540,6 @@ export default function RootModel({
                 label: 'Recent sessions...',
                 icon: FolderOpenIcon,
                 onClick: () => {
-                  void self.captureSessionThumbnail()
                   self.session?.openWidget('SessionManager', 'sessionManager')
                 },
               },

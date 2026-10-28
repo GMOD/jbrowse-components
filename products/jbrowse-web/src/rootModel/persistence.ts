@@ -230,24 +230,9 @@ export async function setupSessionDB(self: WebRootModel) {
   }
 }
 
-// An export costs far more than an autosave write, so pictures follow edits at
-// Desktop's thumbnail cadence rather than the autosave's, plus once when the
-// tab is hidden, which is often the last look the session gets
-const THUMBNAIL_INTERVAL_MS = 30_000
-
+// An export blocks the main thread for hundreds of milliseconds, so a picture is
+// taken only while the tab is hidden, where no frame can stutter
 function setupThumbnailCapture(self: WebRootModel) {
-  registerTeardown(
-    self,
-    autorun(
-      () => {
-        if (self.session) {
-          getSnapshot(self.session)
-          void self.captureSessionThumbnail()
-        }
-      },
-      { delay: THUMBNAIL_INTERVAL_MS },
-    ),
-  )
   const onHidden = () => {
     if (document.visibilityState === 'hidden' && isAlive(self)) {
       void self.captureSessionThumbnail()
