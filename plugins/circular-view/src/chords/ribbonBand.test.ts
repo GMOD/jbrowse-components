@@ -122,7 +122,7 @@ const polygonArea = (p: readonly Vec[]) =>
   p.reduce((s, a, i) => s + cross(a, p[(i + 1) % p.length]!), 0) / 2
 
 function clipConvex(subject: readonly Vec[], clipper: readonly Vec[]) {
-  let out = subject
+  let out: Vec[] = [...subject]
   for (let i = 0; i < clipper.length && out.length > 0; i++) {
     const a = clipper[i]!
     const edge = sub(clipper[(i + 1) % clipper.length]!, a)
