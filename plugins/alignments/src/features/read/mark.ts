@@ -266,7 +266,7 @@ function walkReads(
   // made this walk 2.3-6x slower on a counting context, which parses no
   // fillStyle; a real context parses each assignment, so the walk also skips a
   // repeated one.
-  const categoryCss = readCategoryCss(state.colors)
+  const categoryCss = ctx ? readCategoryCss(state.colors) : []
   const fillColors = region.readFillColors
   let lastPacked = 0
   let lastPackedCss = ''
@@ -292,12 +292,11 @@ function walkReads(
       region.readStrands[i]!,
       region.segmentEdgeFlags[s]!,
     )
-    const category = region.readColorCategories[i]!
     const hasChev =
       capsEdge !== 0 &&
       showChevron(
         chevronFrame,
-        category,
+        region.readColorCategories[i]!,
         region.readFlags[i]!,
         region.readInterchrom[i]!,
         region.readInsertSizes[i]!,
@@ -314,6 +313,7 @@ function walkReads(
       return true
     }
 
+    const category = region.readColorCategories[i]!
     const packed = paintsReadFillColor(category) ? fillColors[i] : 0
     let fill = categoryCss[category]!
     if (packed) {
