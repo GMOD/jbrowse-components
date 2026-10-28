@@ -1,3 +1,5 @@
+import { snapBoxCenterYPx } from '@jbrowse/render-core/shaders/hpmath'
+
 import {
   frequencyFadeGate,
   sizeAlpha,
@@ -330,6 +332,12 @@ export function pileupRowY(yRow: number, state: RenderState) {
     state.pileupTopOffset -
     state.scrollTop
   )
+}
+
+// Top of the 1px hairline on the row at screen-Y `rowY`, the intron line and
+// the chain connector: alignmentsUniforms.slang's `pileupCenterlineY`.
+export function pileupCenterlineTopPx(rowY: number, state: RenderState) {
+  return snapBoxCenterYPx(rowY + state.featureHeight / 2, 0) - 0.5
 }
 
 // A pileup row painted at screen-Y `y` spans [y, y + featureHeight]. When that

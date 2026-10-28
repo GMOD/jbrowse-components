@@ -186,6 +186,14 @@ public float pileupRowCenterPx(float row, Uniforms u) {
   return pileupRowTopPx(row, u) + u.featHeight * 0.5;
 }
 
+// (yTopClip, yBotClip) of the 1px hairline on a row's centre, the intron line
+// and the chain connector: the pixel row holding the centre, as every feature's
+// intron line lands. `pileupCenterlineTopPx` is the Canvas2D spelling.
+public float2 pileupCenterlineY(float row, Uniforms u) {
+  float mid = snapBoxCenterYPx(pileupRowCenterPx(row, u), 0.0);
+  return float2(yPxToClipY(mid - 0.5, u.canvasH), yPxToClipY(mid + 0.5, u.canvasH));
+}
+
 // Which palette slot a connector's color type reads under the field `shift`
 // selects: a clamp, not a wrap, so an out-of-range slot resolves to the last
 // color on every backend rather than to a different real one.

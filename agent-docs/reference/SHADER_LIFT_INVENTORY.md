@@ -82,7 +82,7 @@ noticing in a diff.
 | --- | --- | --- |
 | type 'vec2' is outside the supported scalar subset | 28 | `buttSegmentCorner`, `capsuleCorner`, `capsuleFrame`, `covFlippedQuad`, `covSegQuad`, `crispSquareCornerClip`, … |
 | type 'vec4' is outside the supported scalar subset | 20 | `bandColorAt`, `colorCutAt`, `colorCutYsPx`, `cutYsPx`, `edgeSpan`, `fillEdges`, … |
-| member access (vector swizzle or struct field) is outside the supported scalar subset | 18 | `bandCoverage`, `bpToClipX`, `capVertex`, `drawsBar`, `drawsDisc`, `flipX`, … |
+| member access (vector swizzle or struct field) is outside the supported scalar subset | 19 | `bandCoverage`, `bpToClipX`, `capVertex`, `drawsBar`, `drawsDisc`, `flipX`, … |
 | type 'ptr' is outside the supported scalar subset | 17 | `bpToClipX`, `covAreaTop`, `covBaselinePx`, `covBpToClipX`, `covClipKindColor`, `covEffHeight`, … |
 | type 'RibbonCurves' is outside the supported scalar subset | 8 | `bandNormal`, `bandWidthAt`, `curvesCross`, `curvesMeet`, `firstCurve`, `refineCrossing`, … |
 | type 'Cubic' is outside the supported scalar subset | 6 | `armCorner`, `armEnd`, `cubicAt`, `cubicDirection`, `curveVertex`, `lengthTo` |

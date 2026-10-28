@@ -1,6 +1,5 @@
 // Linked-read connecting line: a 1px horizontal hairline between each pair of
-// mates in a chain, in the theme's foreground. Snaps Y to nearest pixel for a
-// crisp 1px stroke.
+// mates in a chain, in the theme's foreground, on the row the intron line takes.
 //! targets: wgsl, glsl
 //! export-consts: CONNECTING_LINE_ALPHA
 
@@ -31,11 +30,9 @@ ColorVsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   float sx1 = bpToClipX(inst.startOff, u);
   float sx2 = bpToClipX(inst.endOff, u);
 
-  float yTop = floor(pileupRowCenterPx(inst.y, u) - 0.5);
-  float syTop = yPxToClipY(yTop, u.canvasH);
-  float syBot = yPxToClipY(yTop + 1.0, u.canvasH);
+  float2 yy = pileupCenterlineY(inst.y, u);
 
-  o.position = flippedQuadPos(sx1, sx2, syBot, syTop, local, u);
+  o.position = flippedQuadPos(sx1, sx2, yy.y, yy.x, local, u);
   o.color = float4(unpackRGBA(u.colorConnectingLine).xyz, CONNECTING_LINE_ALPHA);
   return o;
 }

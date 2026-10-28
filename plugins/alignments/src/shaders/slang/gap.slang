@@ -67,12 +67,9 @@ ColorVsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   float alpha = 1.0;
 
   if (inst.gapType == GAP_SKIP) {
-    // Collapse to a 1px centerline for introns / skipped regions, centered on
-    // the row's midpoint — the same band drawGaps fills at `midY - 0.5`.
-    float mid = (yTop + yBot) * 0.5;
-    float halfPx = pxToClipLen(0.5, u.canvasH);
-    yTop = mid + halfPx;
-    yBot = mid - halfPx;
+    float2 line = pileupCenterlineY(float(inst.y), u);
+    yTop = line.x;
+    yBot = line.y;
     alpha = intronAlpha(u.featHeight);
   }
   if (inst.gapType == GAP_DELETION) {

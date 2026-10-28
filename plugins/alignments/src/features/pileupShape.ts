@@ -30,6 +30,7 @@ import {
   frequencyFade,
   intronAlpha,
   pileupCellWidth,
+  pileupCenterlineTopPx,
   pileupRowOffCanvas,
   pileupRowY,
   sizeAlpha,
@@ -365,7 +366,7 @@ interface PileupFrame extends BpProjection {
   point: PointRule | undefined
   cell: { w: number; cellX: (bp: number) => number } | undefined
   decorate: PileupShapeSpec['decorate']
-  bandOffset: number
+  centerline: boolean
   bandHeight: number
   constantAlpha: number
   tables: PaintTables
@@ -403,7 +404,7 @@ function walk(
   const { positions, stride, rows, kinds, kind, freqs, quals, lengths } = c
   const { keys } = c
   const { state, pxPerBp } = f
-  const { fade, point, cell, decorate, bandOffset, bandHeight } = f
+  const { fade, point, cell, decorate, centerline, bandHeight } = f
   const { constantAlpha } = f
   const { rule, opaqueCss, fadedCss } = f.tables
   const { featureHeight } = state
@@ -481,7 +482,7 @@ function walk(
     if (!(alpha > 0)) {
       continue
     }
-    const top = rowY + bandOffset
+    const top = centerline ? pileupCenterlineTopPx(rowY, state) : rowY
     let left: number
     let width: number
     let x = 0
@@ -598,7 +599,7 @@ export function pileupShape(
           ? cellPlacement(block, pileupCellWidth(bpPerPx, contiguous))
           : undefined,
       decorate,
-      bandOffset: centerline ? featureHeight / 2 - 0.5 : 0,
+      centerline,
       bandHeight: centerline ? 1 : featureHeight,
       constantAlpha: fade === Fade.intron ? intronAlpha(featureHeight) : 1,
       tables,

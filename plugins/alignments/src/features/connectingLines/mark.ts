@@ -6,6 +6,7 @@ import { slangPass } from '@jbrowse/render-core/slangPass'
 import { rgba255 } from '../../LinearAlignmentsDisplay/colorUtils.ts'
 import { writePileupUniforms } from '../../LinearAlignmentsDisplay/renderers/pileupUniforms.ts'
 import {
+  pileupCenterlineTopPx,
   pileupRowOffCanvas,
   pileupRowY,
 } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
@@ -61,7 +62,6 @@ const connectingLineShape: MarkShape<ConnectingLinesUploadData, RenderState> = {
   paintBlock(ctx, region, block, _frame, state) {
     const toX = makeBpMapper(block)
     const numLines = region.connectingLinePositions.length / 2
-    const fH = state.featureHeight
     ctx.strokeStyle = rgba255(
       state.colors.colorConnectingLine,
       CONNECTING_LINE_ALPHA,
@@ -76,10 +76,7 @@ const connectingLineShape: MarkShape<ConnectingLinesUploadData, RenderState> = {
       const endBp = region.connectingLinePositions[i * 2 + 1]!
       const x1 = toX(startBp)
       const x2 = toX(endBp)
-      // Snap to the same pixel row the shader picks (`floor(center - 0.5)`,
-      // then a 1px-tall quad); a centered 1px stroke sits at that row's
-      // half-pixel.
-      const y = Math.floor(rowY + fH / 2 - 0.5) + 0.5
+      const y = pileupCenterlineTopPx(rowY, state) + 0.5
       ctx.beginPath()
       ctx.moveTo(x1, y)
       ctx.lineTo(x2, y)
