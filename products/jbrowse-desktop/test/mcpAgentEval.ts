@@ -53,6 +53,7 @@ import {
 import {
   BASELINE_SPEC,
   NOT_DRAWN,
+  drawnPass,
   selectTasks,
   stageWork,
 } from '../../../scripts/agent-evals/tasks.ts'
@@ -148,6 +149,7 @@ interface RunMetrics {
   run: number
   client: string
   notDrawn: unknown
+  drawnPass: boolean
   pass: boolean
   detail: unknown
   answer: string
@@ -466,6 +468,7 @@ try {
         client,
         ...verdict,
         notDrawn,
+        drawnPass: drawnPass(task, verdict.pass, notDrawn),
         ...counted,
       }
       metrics.push(row)
