@@ -36,7 +36,7 @@ import {
   MIN_DENSITY_ALPHA,
   STEM_HALF_H_PX,
   canvasEdgeFlags,
-  chevronSlotBudget,
+  chevronDrawSlots,
 } from '../components/sharedRendererConstants.ts'
 import {
   ArrowPass,
@@ -405,19 +405,39 @@ export const lineShape: MarkShape<LineChannels, FeatureGlyphParams> = {
   },
 }
 
+const longestChevronLineBp = new WeakMap<Uint32Array, number>()
+
+// Keyed on the coordinate array, which a refetch replaces with its siblings.
+function longestChevronLine({ startEnd, direction, count }: LineChannels) {
+  let longest = longestChevronLineBp.get(startEnd)
+  if (longest === undefined) {
+    longest = 0
+    for (let i = 0; i < count; i++) {
+      if (direction[i] !== 0) {
+        longest = Math.max(longest, startEnd[i * 2 + 1]! - startEnd[i * 2]!)
+      }
+    }
+    longestChevronLineBp.set(startEnd, longest)
+  }
+  return longest
+}
+
 /**
  * The GPU's chevrons: one pass over the line buffer, so a consumer declares it
- * with `bufferOf` the line mark, and each draw asks for the slots this frame's
- * canvas can hold (`chevronSlotBudget`). The painter is a no-op — the line
- * shape strokes its chevrons per line.
+ * with `bufferOf` the line mark, and each draw asks for the slots its block and
+ * its longest line can fill (`chevronDrawSlots`). The painter is a no-op — the
+ * line shape strokes its chevrons per line.
  */
 export const chevronShape: MarkShape<LineChannels, FeatureGlyphParams> = {
   id: 'chevron',
   pass: { ...ChevronPass, pack: c => lineShader.packInstances(c, c.count) },
   writeUniforms: writeFeatureGlyphUniforms,
   paintsBlock: (_block, _frame, params) => !params.hideChevrons,
-  verticesPerInstance: frame =>
-    chevronSlotBudget(frame.canvasWidth) * CHEVRON_VERTS,
+  verticesPerInstance: (_frame, _params, channels, clip) =>
+    chevronDrawSlots(
+      clip.scissorW,
+      longestChevronLine(channels) / clip.bpPerPx,
+    ) * CHEVRON_VERTS,
   paintBlock() {},
 }
 

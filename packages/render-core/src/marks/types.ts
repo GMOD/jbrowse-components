@@ -205,14 +205,17 @@ export interface MarkShape<TChannels, TParams> {
    */
   paintsBlock?(block: RenderBlock, frame: MarkFrame, params: TParams): boolean
   /**
-   * Slots the GPU addresses per instance this frame, where the pass's
-   * registered count is a worst case over canvas widths. The canvas chevron
-   * pass shades a slot per chevron a line could put on screen, which is the
-   * canvas width over the chevron pitch — a tenth of its registered budget at a
-   * laptop width, and every surplus slot is a vertex invocation that runs the
-   * whole placement before culling itself.
+   * Vertices the GPU shades per instance in this draw, where the pass's
+   * registered count is one slot. Every surplus vertex runs the whole
+   * placement before culling itself, so the chevron pass sizes this from the
+   * block's width and the region's longest line.
    */
-  verticesPerInstance?(frame: MarkFrame, params: TParams): number
+  verticesPerInstance?(
+    frame: MarkFrame,
+    params: TParams,
+    channels: TChannels,
+    clip: BlockClipResult,
+  ): number
   /**
    * The textures the pass samples that the params the painter and the hit
    * test read decide (`span`'s row table), so the two backends cannot be
@@ -478,7 +481,8 @@ export function defineMark<
       if (strip && !bandIsOpen(strip)) {
         return
       }
-      if (channels(region) === undefined) {
+      const c = channels(region)
+      if (c === undefined) {
         return
       }
       const p = params(state, region, block)
@@ -523,7 +527,7 @@ export function defineMark<
         shape.pass.id,
         regionKey,
         bufferOf,
-        shape.verticesPerInstance?.(state, p),
+        shape.verticesPerInstance?.(state, p, c, clip),
       )
       if (scissor) {
         hal.setScissor(clip.pxX, 0, clip.pxW, clip.pxH)

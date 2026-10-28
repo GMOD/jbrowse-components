@@ -1,4 +1,5 @@
 import { CHEVRON_SPACING_PX } from '../passes/shaders/chevron.consts.generated.ts'
+import { chevronCount } from '../passes/shaders/chevron.js.generated.ts'
 
 export {
   LABEL_FONT_SIZE,
@@ -12,6 +13,15 @@ export {
 // `chevronWindow.test.ts` walks the window itself against this.
 export function chevronSlotBudget(canvasWidthPx: number) {
   return Math.ceil(canvasWidthPx / CHEVRON_SPACING_PX) + 2
+}
+
+// The slots one draw shades: no line opens a window wider than its own
+// chevron count, and the spare slot absorbs the shader's float32 rounding of
+// that count. `longestLinePx` 0 means no line in the draw carries chevrons.
+export function chevronDrawSlots(viewportPx: number, longestLinePx: number) {
+  return longestLinePx > 0
+    ? Math.min(chevronSlotBudget(viewportPx), chevronCount(longestLinePx) + 1)
+    : 0
 }
 
 // Continuation markers fire only at the true canvas edge, never at an internal
