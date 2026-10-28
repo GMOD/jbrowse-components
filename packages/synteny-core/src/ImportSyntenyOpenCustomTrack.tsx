@@ -5,7 +5,6 @@ import {
   CircularProgress,
   FormControlLabel,
   FormLabel,
-  Paper,
   Radio,
   RadioGroup,
   Typography,
@@ -19,7 +18,7 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 
 const useStyles = makeStyles()(theme => ({
   panel: {
-    padding: theme.spacing(1.5),
+    paddingTop: theme.spacing(1),
   },
   // wraps rather than scrolling, but stays a left-aligned grid so the
   // extensions line up in a column the eye can run down
@@ -60,7 +59,7 @@ const ImportSyntenyOpenCustomTrack = observer(
     const selectedFormat = formats.find(f => f.extension === radioOption)
 
     return (
-      <Paper className={classes.panel}>
+      <div className={classes.panel}>
         {/* The tool that emits each format is on its own radio rather than in a
         sentence above them. A prose list has to be kept in step with the radios
         by hand (it had already lost .out, MashMap), and a plugin adding a
@@ -137,7 +136,7 @@ const ImportSyntenyOpenCustomTrack = observer(
             </Suspense>
           </div>
         ) : null}
-      </Paper>
+      </div>
     )
   },
 )

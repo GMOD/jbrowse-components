@@ -9,6 +9,10 @@ import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 const useStyles = makeStyles()(theme => ({
   toggle: {
+    display: 'flex',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    gap: theme.spacing(1, 3),
     marginBottom: theme.spacing(2),
   },
 }))
@@ -36,7 +40,9 @@ const ImportFormModes = observer(function ImportFormModes({
   onHandoverToManual,
   onQuickLaunch,
   swapTitle,
+  swapLabel,
   quickSummary,
+  manualToolbar,
   children,
 }: {
   model: IStateTreeNode
@@ -49,8 +55,11 @@ const ImportFormModes = observer(function ImportFormModes({
   /** apply Quick start's selections and submit */
   onQuickLaunch: () => void
   swapTitle: string
+  swapLabel: string
   /** the view's summary of the assemblies the chosen track implies */
   quickSummary: React.ReactNode
+  /** Manual-only controls that sit on the toggle's line */
+  manualToolbar?: React.ReactNode
   /** the manual form */
   children: React.ReactNode
 }) {
@@ -71,6 +80,7 @@ const ImportFormModes = observer(function ImportFormModes({
             quick.setMode(newMode)
           }}
         />
+        {quick.mode === 'manual' ? manualToolbar : null}
       </div>
       {quick.mode === 'quick' ? (
         <QuickStartPanel
@@ -90,6 +100,7 @@ const ImportFormModes = observer(function ImportFormModes({
             onQuickLaunch()
           }}
           swapTitle={swapTitle}
+          swapLabel={swapLabel}
         >
           {quickSummary}
         </QuickStartPanel>

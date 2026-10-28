@@ -1,5 +1,3 @@
-import { Fragment } from 'react'
-
 import { AssemblySelector } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
@@ -14,14 +12,7 @@ import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos'
 import CloseIcon from '@mui/icons-material/Close'
 import LinkOffIcon from '@mui/icons-material/LinkOff'
 import WarningAmberIcon from '@mui/icons-material/WarningAmber'
-import {
-  Button,
-  Checkbox,
-  FormControlLabel,
-  IconButton,
-  Tooltip,
-  Typography,
-} from '@mui/material'
+import { Button, IconButton, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import {
@@ -32,47 +23,71 @@ import {
 import type { LinearSyntenyViewModel } from '../../model.ts'
 import type { ImportFormRows, PairStatus } from '@jbrowse/synteny-core'
 
+const GUTTER = 32
+const ROW_GAP = 8
+const MARKER = 26
+
 const useStyles = makeStyles()(theme => ({
-  header: {
-    marginBottom: theme.spacing(1),
-  },
   buttons: {
     display: 'flex',
     flexWrap: 'wrap',
     gap: theme.spacing(1),
-    marginTop: theme.spacing(2),
+    marginTop: theme.spacing(1.5),
+    paddingLeft: GUTTER,
+  },
+  // Each pair's marker sits in a gutter left of the rows, centered on the gap
+  // between its two rows, so it joins them without a strip of its own. A rule
+  // through the gutter links the markers into one stack.
+  rows: {
+    position: 'relative',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: ROW_GAP,
+    paddingLeft: GUTTER,
+    '&::before': {
+      content: '""',
+      position: 'absolute',
+      left: MARKER / 2 - 1,
+      top: 20,
+      bottom: 20,
+      width: 2,
+      background: theme.palette.divider,
+    },
   },
   row: {
+    position: 'relative',
     display: 'flex',
     alignItems: 'center',
-    gap: theme.spacing(1),
+    gap: theme.spacing(0.5),
   },
-  // The connector is its own strip between two row strips rather than an
-  // absolutely-positioned icon hanging off the row above. Absolute placement
-  // put it at a hardcoded `top: 30` measured against AssemblySelector's height,
-  // and it landed to the right of that row's own remove button, so it read as
-  // belonging to one row instead of joining two.
-  connector: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: theme.spacing(1),
-    // indented under the Select above it, so the rule and the icon sit inside
-    // the stack rather than starting at its left edge
-    paddingLeft: theme.spacing(3),
+  marker: {
+    position: 'absolute',
+    left: -GUTTER,
+    bottom: -ROW_GAP / 2,
+    transform: 'translateY(50%)',
+    zIndex: 1,
+    width: MARKER,
+    height: MARKER,
+    padding: 0,
+    background: theme.palette.background.paper,
+    boxShadow: `0 0 0 1px ${theme.palette.divider}`,
+    '&:hover': {
+      background: theme.palette.action.hover,
+    },
+    '& svg': {
+      fontSize: 14,
+    },
   },
-  // the short vertical rule the icon sits on: what makes "between these two"
-  // legible without reading the tooltip
-  connectorLine: {
-    width: 2,
-    alignSelf: 'stretch',
-    minHeight: 24,
-    background: theme.palette.divider,
+  markerSelected: {
+    background: theme.palette.primary.main,
+    color: theme.palette.primary.contrastText,
+    boxShadow: 'none',
+    '&:hover': {
+      background: theme.palette.primary.dark,
+    },
   },
-  synbuttonUnfinished: {
+  markerUnfinished: {
     color: theme.palette.warning.main,
-  },
-  bg: {
-    background: theme.palette.divider,
   },
 }))
 
@@ -125,87 +140,84 @@ const AssemblyRows = observer(function AssemblyRows({
             : `Configure synteny track between ${rows}`
     return (
       // eslint-disable-next-line @eslint-react/no-array-index-key -- row position is the identity here; assembly names can repeat across rows
-      <Fragment key={`${assemblyName}-${idx}`}>
-        <div className={classes.row}>
-          <AssemblySelector
-            label={`Row ${idx + 1} assembly`}
-            helperText=""
-            selected={assemblyName}
-            onChange={newAssembly => {
-              // through applyRows like every other row edit: the pairs this row
-              // is part of are now different pairs, and whatever was configured
-              // for the old ones has to go with them
-              applyRows(
-                selectedAssemblyNames.map((asm, idx2) =>
-                  idx2 === idx ? newAssembly : asm,
-                ),
-                selectedRow,
-              )
+      <div key={`${assemblyName}-${idx}`} className={classes.row}>
+        <AssemblySelector
+          label={`Row ${idx + 1} assembly`}
+          helperText=""
+          selected={assemblyName}
+          onChange={newAssembly => {
+            // through applyRows like every other row edit: the pairs this row
+            // is part of are now different pairs, and whatever was configured
+            // for the old ones has to go with them
+            applyRows(
+              selectedAssemblyNames.map((asm, idx2) =>
+                idx2 === idx ? newAssembly : asm,
+              ),
+              selectedRow,
+            )
+          }}
+          session={session}
+        />
+        {chromosomes.shown ? (
+          <ChromosomeFilter
+            label={`Row ${idx + 1} chromosomes`}
+            testId={`chromosome-filter-row-${idx}`}
+            value={chromosomes.get(idx)}
+            onChange={value => {
+              chromosomes.set(idx, value)
             }}
-            session={session}
           />
-          {chromosomes.shown ? (
-            <ChromosomeFilter
-              label={`Row ${idx + 1} chromosomes`}
-              testId={`chromosome-filter-row-${idx}`}
-              value={chromosomes.get(idx)}
-              onChange={value => {
-                chromosomes.set(idx, value)
-              }}
-            />
-          ) : null}
-          <Tooltip
-            title={
-              selectedAssemblyNames.length <= 2
-                ? 'Synteny view requires at least 2 rows'
-                : 'Remove this row'
-            }
-          >
-            <span>
-              <IconButton
-                aria-label={`Remove row ${idx + 1}`}
-                disabled={selectedAssemblyNames.length <= 2}
-                onClick={() => {
-                  removeRow(idx)
-                }}
-              >
-                <CloseIcon />
-              </IconButton>
-            </span>
-          </Tooltip>
-        </div>
-        {isPairRow ? (
-          <div className={classes.connector}>
-            <div className={classes.connectorLine} />
-            <Tooltip title={title}>
-              <IconButton
-                data-testid="synbutton"
-                aria-label={title}
-                className={cx(
-                  idx === selectedRow ? classes.bg : undefined,
-                  status === 'unfinishedUpload'
-                    ? classes.synbuttonUnfinished
-                    : undefined,
-                )}
-                onClick={() => {
-                  setSelectedRow(idx)
-                }}
-              >
-                {status === 'unfinishedUpload' ? (
-                  <WarningAmberIcon />
-                ) : status === 'configured' ? (
-                  <ArrowForwardIosIcon />
-                ) : (
-                  // no ribbons here, which is a fact about the pair rather than
-                  // a problem to fix, so it reads as a broken link and not a
-                  // warning
-                  <LinkOffIcon />
-                )}
-              </IconButton>
-            </Tooltip>
-          </div>
         ) : null}
-      </Fragment>
+        <Tooltip
+          title={
+            selectedAssemblyNames.length <= 2
+              ? 'Synteny view requires at least 2 rows'
+              : 'Remove this row'
+          }
+        >
+          <span>
+            <IconButton
+              aria-label={`Remove row ${idx + 1}`}
+              disabled={selectedAssemblyNames.length <= 2}
+              onClick={() => {
+                removeRow(idx)
+              }}
+            >
+              <CloseIcon />
+            </IconButton>
+          </span>
+        </Tooltip>
+        {isPairRow ? (
+          <Tooltip title={title} placement="left">
+            <IconButton
+              data-testid="synbutton"
+              aria-label={title}
+              aria-pressed={idx === selectedRow}
+              className={cx(
+                classes.marker,
+                idx === selectedRow ? classes.markerSelected : undefined,
+                status === 'unfinishedUpload' && idx !== selectedRow
+                  ? classes.markerUnfinished
+                  : undefined,
+              )}
+              onClick={() => {
+                setSelectedRow(idx)
+              }}
+            >
+              {status === 'unfinishedUpload' ? (
+                <WarningAmberIcon />
+              ) : status === 'configured' ? (
+                <ArrowForwardIosIcon />
+              ) : (
+                // no ribbons here, which is a fact about the pair rather than
+                // a problem to fix, so it reads as a broken link and not a
+                // warning
+                <LinkOffIcon />
+              )}
+            </IconButton>
+          </Tooltip>
+        ) : null}
+      </div>
     )
   })
 })
@@ -226,7 +238,6 @@ const LeftPanel = observer(function LeftPanel({
   const {
     rows: selectedAssemblyNames,
     selectedPair: selectedRow,
-    chromosomes,
     applyRows,
   } = form
   // a reorder can only help a pair that has no dataset at all, not one the user
@@ -286,24 +297,7 @@ const LeftPanel = observer(function LeftPanel({
 
   return (
     <>
-      <Typography className={classes.header}>
-        Select assemblies for linear synteny view
-      </Typography>
-      {/* off unless asked for — see useChromosomeFilters. One box per row makes
-          this the form the disclosure matters most on: a five-row stack put five
-          empty fields between the reader and Launch. */}
-      <FormControlLabel
-        control={
-          <Checkbox
-            checked={chromosomes.shown}
-            onChange={event => {
-              chromosomes.setShown(event.target.checked)
-            }}
-          />
-        }
-        label="Show only certain chromosomes"
-      />
-      <div data-testid="synteny-assembly-rows">
+      <div data-testid="synteny-assembly-rows" className={classes.rows}>
         <AssemblyRows model={model} statusByPair={statusByPair} form={form} />
       </div>
 

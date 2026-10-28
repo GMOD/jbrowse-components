@@ -3,7 +3,7 @@ import { useId } from 'react'
 import { coarseStripHTML, getSession } from '@jbrowse/core/util'
 import { getTrackName } from '@jbrowse/core/util/tracks'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { FormControl, InputLabel, MenuItem, Paper, Select } from '@mui/material'
+import { FormControl, InputLabel, MenuItem, Select } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { pickSyntenyTrackId } from './getSyntenyTracks.ts'
@@ -14,7 +14,7 @@ import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 const useStyles = makeStyles()(theme => ({
   panel: {
-    padding: theme.spacing(1.5),
+    paddingTop: theme.spacing(1),
   },
   // same reasoning as QuickStartPanel's Select: one short control, so it stops
   // at a readable width instead of stretching the width of the window away from
@@ -56,7 +56,7 @@ const PreConfiguredSyntenyTrackSelect = observer(
     const picked = selection?.type === 'preConfigured' ? selection.value : ''
     const value = pickSyntenyTrackId(picked, tracks) ?? ''
     return (
-      <Paper className={classes.panel}>
+      <div className={classes.panel}>
         {tracks.length ? (
           <>
             <FormControl fullWidth className={classes.track}>
@@ -84,7 +84,7 @@ const PreConfiguredSyntenyTrackSelect = observer(
         ) : (
           emptyState
         )}
-      </Paper>
+      </div>
     )
   },
 )

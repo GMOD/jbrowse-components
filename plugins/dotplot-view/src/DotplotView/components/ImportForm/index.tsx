@@ -168,6 +168,7 @@ const DotplotImportForm = observer(function DotplotImportForm({
           launch(quickX, quickY, ['', ''])
         }}
         swapTitle="Put each assembly on the other axis (transposes the plot)"
+        swapLabel="Swap axes"
         quickSummary={
           /* Only the track's first two assemblies are used, since a dotplot
             is one pair; an all-vs-all track's extras are called out rather than

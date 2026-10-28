@@ -1,7 +1,6 @@
 import { useId } from 'react'
 
 import { ErrorBanner } from '@jbrowse/core/ui'
-import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import { getSession } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import {
@@ -14,7 +13,13 @@ import {
   useImportFormRows,
   useQuickStartState,
 } from '@jbrowse/synteny-core'
-import { Button, Container, Typography } from '@mui/material'
+import {
+  Button,
+  Checkbox,
+  Container,
+  FormControlLabel,
+  Typography,
+} from '@mui/material'
 import { observer } from 'mobx-react'
 
 import LeftPanel from './LeftPanel.tsx'
@@ -36,27 +41,28 @@ const useStyles = makeStyles()(theme => ({
   rightPanel: {
     flexGrow: 11,
     flexBasis: 400,
+    display: 'flex',
+    flexDirection: 'column',
+    gap: theme.spacing(1),
   },
   leftPanel: {
     flexGrow: 4,
     flexShrink: 0,
   },
-  // Launch sits below both columns rather than under the assembly rows: the
-  // last thing configured is the track for a pair, which is in the right
-  // column, and a primary action above its own last input reads as premature
+  // Launch ends the right column: the last thing configured is the track for a
+  // pair, and a primary action above its own last input reads as premature. On
+  // a narrow panel the columns stack and it still comes last.
   footer: {
     display: 'flex',
     alignItems: 'center',
     gap: theme.spacing(2),
-    marginTop: theme.spacing(3),
+    marginTop: theme.spacing(1),
   },
-  header: {
-    marginBottom: theme.spacing(1),
-  },
-  // inline-block so the row list hugs its contents rather than spanning the
-  // form, which keeps it a meaningful thing to point at
+  // hugs its contents rather than spanning the form, which keeps it a
+  // meaningful thing to point at
   rows: {
-    display: 'inline-block',
+    width: 'fit-content',
+    marginTop: theme.spacing(1),
   },
 }))
 
@@ -146,22 +152,42 @@ const LinearSyntenyViewImportForm = observer(
             launch(quick.rows, [])
           }}
           swapTitle="Reverse the row order (flips the stack top to bottom)"
+          swapLabel="Reverse rows"
           quickSummary={
             /* the rows the chosen track implies, shown where the picker is
             rather than written into a form elsewhere on the page. A synteny
             track is queryable in either direction, so the order it implies is a
             starting point the user can flip, not a property of the track. */
-            <div data-testid="quick-start-rows" className={classes.rows}>
-              <Typography variant="body2" color="text.secondary">
-                Opens {quick.rows.length} rows, top to bottom:
-              </Typography>
-              {quick.rows.map((row, idx) => (
-                // eslint-disable-next-line @eslint-react/no-array-index-key -- row position is the identity here; assembly names can repeat across rows
-                <Typography key={`${row}-${idx}`} variant="body2">
-                  {idx + 1}. {row}
-                </Typography>
-              ))}
-            </div>
+            <Typography
+              data-testid="quick-start-rows"
+              variant="body2"
+              className={classes.rows}
+            >
+              <Typography
+                component="span"
+                variant="body2"
+                color="text.secondary"
+              >
+                Rows, top to bottom:
+              </Typography>{' '}
+              {quick.rows.join(', ')}
+            </Typography>
+          }
+          manualToolbar={
+            /* off unless asked for — see useChromosomeFilters. One box per row
+            makes this the form the disclosure matters most on: a five-row stack
+            put five empty fields between the reader and Launch. */
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={chromosomes.shown}
+                  onChange={event => {
+                    chromosomes.setShown(event.target.checked)
+                  }}
+                />
+              }
+              label="Show only certain chromosomes"
+            />
           }
         >
           <div className={classes.flex}>
@@ -173,19 +199,11 @@ const LinearSyntenyViewImportForm = observer(
               />
             </div>
             <div className={classes.rightPanel}>
-              {/* names the assemblies, not just the row numbers: with five
-                similarly-named rows on screen the numbers alone make the user
-                count. aria-live so switching pairs is announced, and the id is
-                what labels the radio group below it. */}
-              <Typography
-                id={pairHeadingId}
-                className={classes.header}
-                role="status"
-                aria-live="polite"
-              >
-                Synteny dataset between {rows[selectedPair]} and{' '}
-                {rows[selectedPair + 1]} (rows {selectedPair + 1} and{' '}
-                {selectedPair + 2})
+              {/* the selected marker between the rows says which pair this is;
+                the heading names its assemblies. aria-live so switching pairs is
+                announced, and the id is what labels the radio group below it. */}
+              <Typography id={pairHeadingId} role="status" aria-live="polite">
+                {rows[selectedPair]} and {rows[selectedPair + 1]}
               </Typography>
               {/* the uploader and any plugin body below hold local state that
                 belongs to one pair, so the area remounts whenever the pair being
@@ -201,30 +219,25 @@ const LinearSyntenyViewImportForm = observer(
                 assembly1={rows[selectedPair]!}
                 assembly2={rows[selectedPair + 1]!}
                 emptyRemedy='Choose "New track" above to add one, or launch anyway to stack these rows with no ribbons between them.'
-              >
-                <Typography variant="body2" color="text.secondary">
-                  More synteny tracks can be turned on per band from the track
-                  selector <TrackSelectorIcon /> once the view is open.
-                </Typography>
-              </ImportFormSyntenyTrackPanel>
+              />
+              <div className={classes.footer}>
+                <Button
+                  disabled={launchBlocker !== undefined}
+                  onClick={() => {
+                    launch(rows)
+                  }}
+                  variant="contained"
+                  color="primary"
+                >
+                  Launch
+                </Button>
+                {launchBlocker ? (
+                  <Typography variant="body2" color="warning.main">
+                    {launchBlocker}
+                  </Typography>
+                ) : null}
+              </div>
             </div>
-          </div>
-          <div className={classes.footer}>
-            <Button
-              disabled={launchBlocker !== undefined}
-              onClick={() => {
-                launch(rows)
-              }}
-              variant="contained"
-              color="primary"
-            >
-              Launch
-            </Button>
-            {launchBlocker ? (
-              <Typography variant="body2" color="warning.main">
-                {launchBlocker}
-              </Typography>
-            ) : null}
           </div>
         </ImportFormModes>
       </Container>

@@ -269,8 +269,8 @@ export const syntenyVideos: VideoSpec[] = [
         hold: 1500,
       },
       {
-        type: 'waitForText',
-        text: 'Select assemblies for linear synteny view',
+        type: 'waitForSelector',
+        selector: '[data-testid="synteny-assembly-rows"]',
       },
       // Manual inherits Quick start's pairing, which is j99 over 26695 -- the
       // config's first synteny track, not the stack this page builds. So every

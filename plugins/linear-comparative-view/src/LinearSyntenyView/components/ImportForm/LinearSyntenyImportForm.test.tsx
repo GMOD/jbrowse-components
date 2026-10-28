@@ -191,8 +191,7 @@ test('a session with a synteny track opens on Quick start', async () => {
     'aria-pressed',
     'true',
   )
-  expect(screen.getByTestId('quick-start-rows')).toHaveTextContent('1. hg38')
-  expect(screen.getByTestId('quick-start-rows')).toHaveTextContent('2. mm39')
+  expect(screen.getByTestId('quick-start-rows')).toHaveTextContent('hg38, mm39')
 })
 
 // A track config is free to name an assembly by an alias, and the rows Quick
@@ -206,7 +205,7 @@ test('Quick start on an alias-named track hands Manual the assembly itself', asy
     tracks: [syntenyTrack('aliased', ['GRCh38', 'mm39'])],
   })
   fireEvent.click(screen.getByRole('button', { name: 'Quick start' }))
-  expect(screen.getByTestId('quick-start-rows')).toHaveTextContent('1. hg38')
+  expect(screen.getByTestId('quick-start-rows')).toHaveTextContent('hg38, mm39')
   goManual()
   expect(rowSelects().map(s => s.textContent)).toEqual(['hg38', 'mm39'])
 })
@@ -233,8 +232,7 @@ test('Swap reverses the rows the track implies', async () => {
   await setup({ tracks: [syntenyTrack('hg38_mm39', ['hg38', 'mm39'])] })
   // the Tooltip title becomes the button's accessible name
   fireEvent.click(screen.getByRole('button', { name: /Reverse the row order/ }))
-  const rows = screen.getByTestId('quick-start-rows')
-  expect(rows.textContent).toMatch(/1\. mm39.*2\. hg38/s)
+  expect(screen.getByTestId('quick-start-rows')).toHaveTextContent('mm39, hg38')
 })
 
 test('Quick start launch builds one row per assembly and shows the track', async () => {
@@ -254,7 +252,9 @@ test('an all-vs-all track stacks every assembly it names', async () => {
     assemblyNames: ['hg38', 'mm39', 'rn7'],
     tracks: [syntenyTrack('all', ['hg38', 'mm39', 'rn7'])],
   })
-  expect(screen.getByTestId('quick-start-rows')).toHaveTextContent('3. rn7')
+  expect(screen.getByTestId('quick-start-rows')).toHaveTextContent(
+    'hg38, mm39, rn7',
+  )
   fireEvent.click(launchButton())
   expect(launchedRows(model)).toEqual(['hg38', 'mm39', 'rn7'])
   // the one track backs both adjacent bands
@@ -353,7 +353,7 @@ test('a connection that loads after mount still offers Quick start', async () =>
     'aria-pressed',
     'true',
   )
-  expect(screen.getByTestId('quick-start-rows')).toHaveTextContent('1. hg38')
+  expect(screen.getByTestId('quick-start-rows')).toHaveTextContent('hg38, mm39')
 })
 
 // Clicking the button you are already on is how a derived mode gets latched, so
@@ -451,14 +451,14 @@ test('Add row selects the pair it just created', async () => {
     tracks: [syntenyTrack('hg38_mm39', ['hg38', 'mm39'])],
   })
   goManual()
-  expect(pairHeading()).toHaveTextContent('rows 1 and 2')
+  expect(pairHeading()).toHaveTextContent('hg38 and mm39')
   fireEvent.click(screen.getByRole('button', { name: 'Add row' }))
-  expect(pairHeading()).toHaveTextContent('rows 2 and 3')
+  expect(pairHeading()).toHaveTextContent('mm39 and rn7')
 })
 
-test('the pair heading names the assemblies, not only the row numbers', async () => {
+test('the pair heading names the assemblies', async () => {
   await setup({ assemblyNames: ['hg38', 'mm39'] })
-  expect(pairHeading()).toHaveTextContent('between hg38 and mm39')
+  expect(pairHeading()).toHaveTextContent('hg38 and mm39')
 })
 
 test('removing a row drops that pair selection and keeps the others', async () => {
@@ -562,7 +562,7 @@ test('Reverse rows flips the stack, keeping every pair connected', async () => {
 
   // configuring the second pair (mm39/rn7) when the reversal happens
   fireEvent.click(screen.getAllByTestId('synbutton')[1]!)
-  expect(pairHeading()).toHaveTextContent('between mm39 and rn7')
+  expect(pairHeading()).toHaveTextContent('mm39 and rn7')
 
   fireEvent.click(screen.getByRole('button', { name: /Reverse the row order/ }))
   expect(rowSelects().map(s => s.textContent)).toEqual(['rn7', 'mm39', 'hg38'])
@@ -573,7 +573,7 @@ test('Reverse rows flips the stack, keeping every pair connected', async () => {
   // and the panel stays on the pair it was configuring, which is now first.
   // Auto-arrange resets to pair 0 because its new ordering has no
   // correspondence to the old one; a reversal does, so it keeps it.
-  expect(pairHeading()).toHaveTextContent('between rn7 and mm39')
+  expect(pairHeading()).toHaveTextContent('rn7 and mm39')
 })
 
 test('Auto-arrange reorders rows so adjacent pairs share a dataset', async () => {

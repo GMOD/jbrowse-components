@@ -19,10 +19,11 @@ import type { AnyTrackConfig } from '@jbrowse/core/configuration'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 const useStyles = makeStyles()(theme => ({
-  summary: {
+  actions: {
     display: 'flex',
-    alignItems: 'center',
-    gap: theme.spacing(2.5),
+    flexWrap: 'wrap',
+    gap: theme.spacing(1),
+    marginTop: theme.spacing(1.5),
   },
   // the form is a short one, so let the Select stop at a readable width instead
   // of stretching across a wide window away from everything it controls
@@ -32,9 +33,6 @@ const useStyles = makeStyles()(theme => ({
   },
   emptyText: {
     marginBottom: theme.spacing(1),
-  },
-  launch: {
-    marginTop: theme.spacing(1),
   },
 }))
 
@@ -58,6 +56,7 @@ const QuickStartPanel = observer(function QuickStartPanel({
   onSwap,
   onSwitchToManual,
   swapTitle,
+  swapLabel,
   children,
 }: {
   // only read for getSession, so node-ness is the whole requirement.
@@ -70,6 +69,7 @@ const QuickStartPanel = observer(function QuickStartPanel({
   onSwap: () => void
   onSwitchToManual: () => void
   swapTitle: string
+  swapLabel: string
   children?: React.ReactNode
 }) {
   const { classes } = useStyles()
@@ -96,31 +96,29 @@ const QuickStartPanel = observer(function QuickStartPanel({
           ))}
         </Select>
       </FormControl>
-      <div className={classes.summary}>
-        {children}
+      {children}
+      <div className={classes.actions}>
+        <Button
+          onClick={() => {
+            onLaunch()
+          }}
+          variant="contained"
+          color="primary"
+        >
+          Launch
+        </Button>
         <Tooltip title={swapTitle}>
           <Button
             variant="outlined"
-            size="small"
             startIcon={<SwapVertIcon />}
             onClick={() => {
               onSwap()
             }}
           >
-            Swap
+            {swapLabel}
           </Button>
         </Tooltip>
       </div>
-      <Button
-        className={classes.launch}
-        onClick={() => {
-          onLaunch()
-        }}
-        variant="contained"
-        color="primary"
-      >
-        Launch
-      </Button>
     </div>
   ) : (
     // the way out is a button rather than an instruction to go press one: Quick

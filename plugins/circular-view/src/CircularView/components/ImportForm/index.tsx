@@ -173,6 +173,7 @@ const CircularImportForm = observer(function CircularImportForm({
           launch(quickRows, [], true)
         }}
         swapTitle="Swap which genome starts the circle"
+        swapLabel="Swap"
         quickSummary={
           <div data-testid="quick-start-circle">
             <Typography variant="body2">
