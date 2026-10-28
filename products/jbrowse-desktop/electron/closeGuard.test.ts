@@ -201,6 +201,18 @@ test('an unresponsive renderer un-gates the close', async () => {
   expect(win.close()).toBe(false)
 })
 
+test('a close held through a hang still closes when the flush lands', async () => {
+  const { invoke, win } = setup()
+  await invoke('setSessionOpen', true)
+  win.close()
+
+  win.emit('unresponsive')
+  win.emit('responsive')
+  await invoke('sessionFlushed')
+
+  expect(win.isDestroyed()).toBe(true)
+})
+
 test('a renderer that recovers from a hang gates the close again', async () => {
   const { invoke, win } = setup()
   await invoke('setSessionOpen', true)

@@ -3,7 +3,7 @@ import { ipcHandle, ipcSend } from './ipc/channels.ts'
 /**
  * Holds the window open long enough for the renderer to write the session.
  *
- * The autosave runs on a 1s debounce, so closing the window within a second of
+ * The autosave runs on a 1s throttle, so closing the window within a second of
  * an edit lost it — usually the last thing you did, which is the visible half:
  * add a track, close, reopen, no track. The in-app Exit and "Return to start
  * screen" menu items already flush for exactly this reason; the title-bar
@@ -140,9 +140,10 @@ export function createCloseGuard({
       // a committed page load, and not did-start-navigation, which also fires
       // for a link click that will-navigate cancels
       window.webContents.on('did-navigate', release)
+      // a held close stays held: a renderer that recovers and flushes still
+      // closes the window the user asked to close
       window.webContents.on('unresponsive', () => {
         responsive = false
-        holding = null
       })
       window.webContents.on('responsive', () => {
         responsive = true
