@@ -199,6 +199,7 @@ export async function setupSessionDB(self: WebRootModel) {
                 self.upsertSessionMetadata(meta)
                 if (savingFailed) {
                   savingFailed = false
+                  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- narrowed before the await, which the session may not outlive
                   self.session?.notify('Session auto-saving restored', 'info')
                 }
               }
@@ -206,6 +207,7 @@ export async function setupSessionDB(self: WebRootModel) {
               console.error(e)
               if (!savingFailed) {
                 savingFailed = true
+                // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- narrowed before the await, which the session may not outlive
                 self.session?.notifyError(`${e}`, e)
               }
             }

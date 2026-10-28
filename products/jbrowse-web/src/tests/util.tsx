@@ -355,7 +355,7 @@ export async function createViewNoWait(
 ): Promise<Results> {
   const { pluginManager, rootModel } = await getPluginManager(args, adminMode)
   const rest = render(<JBrowse pluginManager={pluginManager} />)
-  const session = rootModel.session! as WebSessionModel
+  const session = rootModel.session!
   const view = session.views[0] as LGV
   return { view, rootModel, session, ...rest }
 }
@@ -370,7 +370,7 @@ export async function getTestSession(
   adminMode?: boolean,
 ) {
   const { rootModel } = await getPluginManager(args, adminMode)
-  const session = rootModel.session! as WebSessionModel
+  const session = rootModel.session!
   const view = session.views[0] as LGV
   return { rootModel, session, view }
 }
