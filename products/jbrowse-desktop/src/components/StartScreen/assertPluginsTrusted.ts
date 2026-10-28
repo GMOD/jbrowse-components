@@ -9,7 +9,7 @@ import type { PluginDefinition } from '@jbrowse/core/pluginDefinitions'
 
 export class UntrustedPluginsError extends Error {
   constructor() {
-    super('Cancelled: the plugins this link loads were not trusted')
+    super('Cancelled: the plugins this session loads were not trusted')
     this.name = 'UntrustedPluginsError'
   }
 }

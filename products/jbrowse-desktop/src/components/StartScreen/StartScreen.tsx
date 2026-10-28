@@ -186,7 +186,7 @@ const StartScreen = observer(function StartScreen({
   // Global plugins get their own manager here: the start screen has no session,
   // so this is the only thing a plugin can extend before one is opened. The
   // start screen renders undecorated until it resolves.
-  const { data } = useFetch(
+  const { data, mutate: rebuildStartScreenPluginManager } = useFetch(
     'createStartScreenPluginManager',
     () => createStartScreenPluginManager(),
     {
@@ -322,6 +322,9 @@ const StartScreen = observer(function StartScreen({
         <GlobalPluginsDialog
           onClose={() => {
             setShowGlobalPlugins(false)
+            // a no-op unless the dialog changed the list, so removing the
+            // plugin that broke a panel takes effect without a relaunch
+            rebuildStartScreenPluginManager()
           }}
         />
       ) : null}

@@ -34,10 +34,12 @@ const QuickstartPanel = observer(function QuickstartPanel({
       storageKey="startScreen-quickstartMinimized"
       title="Quickstart list"
     >
-      {listError && !quickstarts ? <ErrorMessage error={listError} /> : null}
-
       {quickstarts === undefined ? (
-        <LoadingEllipses />
+        listError ? (
+          <ErrorMessage error={listError} />
+        ) : (
+          <LoadingEllipses />
+        )
       ) : quickstarts.length === 0 ? (
         <div>No quickstarts available</div>
       ) : (
