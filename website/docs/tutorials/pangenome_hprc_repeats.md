@@ -147,9 +147,13 @@ track. In the haplotypes track's menu:
 - **Haplotypes → Every haplotype in the graph** cuts the window again for the
   whole release
 
-At KIV-2 each copy a haplotype adds is a run of new nodes, so its added copies
-read as the purple stretch of its bar. The rows pack to fit the track, too thin
-to letter, so hover a bar for its haplotype, length and excess over GRCh38.
+Each copy a haplotype adds lengthens its bar, so read copy number off bar
+length. Color does not count copies: the graph routes most copies through nodes
+off GRCh38's path, so most bars are largely purple. The walk file abridges the
+costliest walks through the array, and those bars end in gold dashes;
+right-click one and take the **Load the … abridged steps** row, which counts
+them, to read it in full. The rows pack to fit the track, too thin to letter, so
+hover a bar for its haplotype, length and excess over GRCh38.
 
 <Figure caption="Every HPRC haplotype's walk across the KIV-2 array in walk rows. Purple is sequence off GRCh38's path." src="/img/pangenome/graph_kiv2_walk_rows.png" />
 
