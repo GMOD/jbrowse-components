@@ -112,9 +112,7 @@ const suite: TestSuite = {
         }
         await (await findByText(page, 'File')).click()
         await delay(400)
-        await (await findByText(page, 'Recent sessions...')).click()
-        await delay(400)
-        await (await findByText(page, 'More...')).click()
+        await (await findByText(page, 'Sessions...')).click()
         await delay(1500)
 
         await expectNoCoveredControls(page, 'SessionManager')

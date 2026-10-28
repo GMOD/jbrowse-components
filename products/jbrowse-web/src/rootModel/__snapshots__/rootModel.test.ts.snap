@@ -26,6 +26,18 @@ exports[`adds menus 1`] = `
             "render": [Function],
           },
         },
+        "label": "Sessions...",
+        "onClick": [Function],
+      },
+      {
+        "icon": {
+          "$$typeof": Symbol(react.memo),
+          "compare": null,
+          "type": {
+            "$$typeof": Symbol(react.forward_ref),
+            "render": [Function],
+          },
+        },
         "label": "Import session...",
         "onClick": [Function],
       },
@@ -52,15 +64,6 @@ exports[`adds menus 1`] = `
         },
         "label": "Duplicate session",
         "onClick": [Function],
-      },
-      {
-        "label": "Recent sessions...",
-        "subMenu": [
-          {
-            "label": "No autosaves found",
-            "onClick": [Function],
-          },
-        ],
       },
       {
         "type": "divider",
@@ -215,6 +218,18 @@ exports[`adds menus 2`] = `
             "render": [Function],
           },
         },
+        "label": "Sessions...",
+        "onClick": [Function],
+      },
+      {
+        "icon": {
+          "$$typeof": Symbol(react.memo),
+          "compare": null,
+          "type": {
+            "$$typeof": Symbol(react.forward_ref),
+            "render": [Function],
+          },
+        },
         "label": "Import session...",
         "onClick": [Function],
       },
@@ -241,15 +256,6 @@ exports[`adds menus 2`] = `
         },
         "label": "Duplicate session",
         "onClick": [Function],
-      },
-      {
-        "label": "Recent sessions...",
-        "subMenu": [
-          {
-            "label": "No autosaves found",
-            "onClick": [Function],
-          },
-        ],
       },
       {
         "type": "divider",

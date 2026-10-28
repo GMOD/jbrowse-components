@@ -11,7 +11,7 @@ import {
 import assemblyConfigSchemaFactory from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
 import { DNA } from '@jbrowse/core/ui/Icons'
 import { indexedDBAvailable } from '@jbrowse/core/util'
-import { getSnapshot, types } from '@jbrowse/mobx-state-tree'
+import { getSnapshot, isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
   BaseRootModelFactory,
   InternetAccountsRootModelMixin,
@@ -27,6 +27,7 @@ import {
 } from '@jbrowse/product-core'
 import { byLastUsedDesc } from '@jbrowse/web-core'
 import FileCopyIcon from '@mui/icons-material/FileCopy'
+import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 
 import packageJSON from '../../package.json' with { type: 'json' }
 import { gitCommit } from '../buildInfo.ts'
@@ -36,16 +37,16 @@ import { takeWorker } from '../prewarmedWorker.ts'
 import {
   deleteSessionRows,
   renameSessionRows,
-  setSessionFavoriteRow,
+  patchSessionMetadataRow,
 } from '../sessionDbOps.ts'
 import { claimSessionId, sessionIdsHeldElsewhere } from '../sessionLock.ts'
+import { renderSessionThumbnail } from '../sessionThumbnail.ts'
 import {
   saveSessionSnapshot,
   setupSessionDB,
   setupSessionLock,
   setupSessionStorageAutosave,
 } from './persistence.ts'
-import { savedSessionMenuItems } from './sessionMenus.ts'
 
 import type { SessionDBHandle } from '../sessionDbOps.ts'
 import type productSessionModelFactory from '../sessionModel/index.ts'
@@ -86,6 +87,10 @@ interface SessionDbHost {
 function isOpenSession(self: SessionDbHost, id: string) {
   return id === self.session?.id
 }
+
+// roots with an export in flight: a slow one would otherwise pile up behind
+// itself
+const capturingThumbnail = new WeakSet<object>()
 
 const OPEN_ELSEWHERE =
   'That session is open in another tab, so change it from that tab'
@@ -351,7 +356,7 @@ export default function RootModel({
           // two overwrite one row (sessionLock.ts)
           if ((await claimSessionId(id)) === 'held-elsewhere') {
             const { id: _id, ...copy } = ret
-            self.setSession(copy)
+            self.setSession({ ...copy, name: `${ret.name} (copy)` })
             self.session?.notify(
               'That session is open in another tab, so a copy was opened here',
               'info',
@@ -378,9 +383,38 @@ export default function RootModel({
        */
       async setSavedSessionFavorite(id: string, favorite: boolean) {
         await withSessionDB(self, async sessionDB => {
-          await setSessionFavoriteRow(sessionDB, id, favorite)
+          await patchSessionMetadataRow(sessionDB, id, { favorite })
           await self.fetchSessionMetadata()
         })
+      },
+      /**
+       * #action
+       * Pictures the open session for the session manager. Quiet on failure:
+       * the row keeps its previous picture, and a session swapped out
+       * mid-export is an expected way to fail.
+       */
+      async captureSessionThumbnail() {
+        const { session, sessionDB } = self
+        if (!session || !sessionDB || capturingThumbnail.has(self)) {
+          return
+        }
+        capturingThumbnail.add(self)
+        try {
+          const { id } = session
+          const thumbnail = await renderSessionThumbnail(session.views)
+          const meta =
+            thumbnail &&
+            (await patchSessionMetadataRow(sessionDB, id, { thumbnail }))
+          if (meta && isAlive(self)) {
+            self.upsertSessionMetadata(meta)
+          }
+        } catch (e) {
+          if (isAlive(session)) {
+            console.error(e)
+          }
+        } finally {
+          capturingThumbnail.delete(self)
+        }
       },
       /**
        * #action
@@ -466,6 +500,14 @@ export default function RootModel({
             label: 'File',
             menuItems: () => [
               newSessionMenuItem(self),
+              {
+                label: 'Sessions...',
+                icon: FolderOpenIcon,
+                onClick: () => {
+                  void self.captureSessionThumbnail()
+                  self.session?.openWidget('SessionManager', 'sessionManager')
+                },
+              },
               importSessionMenuItem(),
               exportSessionMenuItem(),
               {
@@ -473,9 +515,11 @@ export default function RootModel({
                 icon: FileCopyIcon,
                 onClick: () => {
                   if (self.session) {
-                    void self.openSessionCopy(
-                      getSnapshot<Session>(self.session),
-                    )
+                    const snap = getSnapshot<Session>(self.session)
+                    void self.openSessionCopy({
+                      ...snap,
+                      name: `${snap.name} (copy)`,
+                    })
                   }
                 },
               },
@@ -492,7 +536,6 @@ export default function RootModel({
                     },
                   ]
                 : []),
-              ...savedSessionMenuItems(self),
               { type: 'divider' },
               openTrackMenuItem(),
               openConnectionMenuItem(),

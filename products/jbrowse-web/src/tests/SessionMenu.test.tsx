@@ -28,37 +28,14 @@ test('duplicate session creates a new session with different id', async () => {
   await waitFor(() => {
     expect(rootModel.session!.id).not.toBe(originalSessionId)
   })
+  expect(rootModel.session!.name).toMatch(/ \(copy\)$/)
 }, 30000)
 
-test('recent sessions shows no autosaves found when empty', async () => {
-  const { findByText } = await createView(config)
-
-  // Open File menu, then Recent sessions submenu
-  fireEvent.click(await findByText('File'))
-  fireEvent.click(await findByText('Recent sessions...'))
-
-  // When there are no saved sessions, it should show "No autosaves found"
-  expect(await findByText('No autosaves found')).toBeInTheDocument()
-}, 30000)
-
-test('recent sessions more opens session manager widget', async () => {
+test('sessions opens the session manager widget', async () => {
   const { rootModel, findByText } = await createView(config)
 
-  // Mock some saved session metadata so "More..." appears
-  // @ts-expect-error
-  rootModel.setSavedSessionMetadata([
-    {
-      id: 'test-session-1',
-      name: 'Test Session 1',
-      createdAt: new Date(),
-      configPath: '',
-    },
-  ])
-
-  // Open File menu, then Recent sessions submenu, then click More
   fireEvent.click(await findByText('File'))
-  fireEvent.click(await findByText('Recent sessions...'))
-  fireEvent.click(await findByText('More...'))
+  fireEvent.click(await findByText('Sessions...'))
 
   await waitFor(
     () => {

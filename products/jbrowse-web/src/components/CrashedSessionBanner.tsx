@@ -54,8 +54,8 @@ const CrashedSessionBanner = observer(function CrashedSessionBanner({
       </div>
       <p style={{ margin: 20 }}>
         Starting a new session does not delete this one. It stays in the
-        autosave list (File &rarr; Recent sessions&hellip;), so you can come
-        back to it, export it, or send it to us with the error above.
+        autosave list (File &rarr; Sessions&hellip;), so you can come back to
+        it, export it, or send it to us with the error above.
       </p>
     </div>
   )

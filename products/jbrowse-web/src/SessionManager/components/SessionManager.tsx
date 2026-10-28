@@ -1,9 +1,7 @@
 import { useState } from 'react'
 
 import { formatSessionSummary } from '@jbrowse/app-core'
-import { LabeledCheckbox } from '@jbrowse/core/ui'
 import DataGridFlexContainer from '@jbrowse/core/ui/DataGridFlexContainer'
-import { useLocalStorage } from '@jbrowse/core/util/hooks'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { sessionLastUsed } from '@jbrowse/web-core'
 import { Button, Typography } from '@mui/material'
@@ -11,7 +9,13 @@ import { DataGrid } from '@mui/x-data-grid'
 import { observer } from 'mobx-react'
 
 import DeleteOldSessionsDialog from './DeleteOldSessionsDialog.tsx'
-import { DeleteCell, FavoriteCell, LastUsedCell, NameCell } from './cells.tsx'
+import {
+  DeleteCell,
+  FavoriteCell,
+  NameCell,
+  THUMBNAIL_WIDTH,
+  ThumbnailCell,
+} from './cells.tsx'
 
 import type { Row } from './cells.tsx'
 import type { SessionModel } from './util.ts'
@@ -42,14 +46,12 @@ const useStyles = makeStyles()(theme => ({
 
 /**
  * The rows of the grid: the saved-session metadata the root model read out of
- * IndexedDB, in display shape. `undefined` in, `undefined` out — that is the
- * "database still opening" state, and it is deliberately not the same value as
- * an empty database (see the render below).
+ * IndexedDB, in display shape, favorites first and each group by last use.
+ * `undefined` in, `undefined` out — that is the "database still opening"
+ * state, and it is deliberately not the same value as an empty database (see
+ * the render below).
  */
-function buildRows(
-  session: SessionModel,
-  showOnlyFavs: boolean,
-): Row[] | undefined {
+function buildRows(session: SessionModel): Row[] | undefined {
   return session.savedSessionMetadata
     ?.map(r => {
       const current = r.id === session.id
@@ -62,9 +64,10 @@ function buildRows(
         summary: r.summary && formatSessionSummary(r.summary),
         fav: r.favorite,
         current,
+        thumbnail: r.thumbnail,
       }
     })
-    .filter(f => !showOnlyFavs || f.fav)
+    .sort((a, b) => +b.fav - +a.fav)
 }
 
 /**
@@ -81,16 +84,14 @@ function buildRows(
 function buildColumns(session: SessionModel) {
   return [
     {
-      field: 'fav',
-      headerName: 'Fav',
-      // the header of an icon column is short, and its sort arrow and column
-      // menu are what push it into an ellipsis. Only sorting earns its space
-      // here -- grouping the favorites is a real thing to want -- so the menu
-      // goes and the header reads.
-      width: 60,
+      field: 'thumbnail',
+      headerName: '',
+      width: THUMBNAIL_WIDTH + 16,
+      sortable: false,
+      filterable: false,
       disableColumnMenu: true,
       renderCell: ({ row }: { row: Row }) => (
-        <FavoriteCell row={row} session={session} />
+        <ThumbnailCell row={row} session={session} />
       ),
     },
     {
@@ -98,17 +99,20 @@ function buildColumns(session: SessionModel) {
       headerName: 'Name',
       editable: true,
       flex: 1,
-      minWidth: 120,
+      minWidth: 100,
       renderCell: ({ row }: { row: Row }) => (
         <NameCell row={row} session={session} />
       ),
     },
     {
-      field: 'lastUsed',
-      headerName: 'Last used',
-      width: 100,
+      field: 'fav',
+      headerName: 'Fav',
+      // the header of an icon column is short, and its sort arrow and column
+      // menu are what push it into an ellipsis
+      width: 60,
+      disableColumnMenu: true,
       renderCell: ({ row }: { row: Row }) => (
-        <LastUsedCell row={row} session={session} />
+        <FavoriteCell row={row} session={session} />
       ),
     },
     {
@@ -134,22 +138,11 @@ const SessionManager = observer(function SessionManager({
 }) {
   const { classes } = useStyles()
   const [deleteOldOpen, setDeleteOldOpen] = useState(false)
-  const [showOnlyFavs, setShowOnlyFavs] = useLocalStorage(
-    'sessionManager-showOnlyFavs',
-    false,
-  )
-  const rows = buildRows(session, showOnlyFavs)
+  const rows = buildRows(session)
 
   return (
     <div className={classes.root}>
       <div className={classes.mb}>
-        <LabeledCheckbox
-          checked={showOnlyFavs}
-          onChange={val => {
-            setShowOnlyFavs(val)
-          }}
-          label="Show favorites only"
-        />
         <Button
           variant="contained"
           disabled={!rows}
@@ -165,7 +158,7 @@ const SessionManager = observer(function SessionManager({
           <DataGrid
             disableRowSelectionOnClick
             columnHeaderHeight={35}
-            rowHeight={25}
+            rowHeight={72}
             hideFooter={rows.length < 100}
             showToolbar
             slotProps={{ toolbar: { showQuickFilter: true } }}

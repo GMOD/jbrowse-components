@@ -216,6 +216,7 @@ export async function setupSessionDB(self: WebRootModel) {
         { delay: 400 },
       ),
     )
+    setupThumbnailCapture(self)
   } catch (e) {
     console.error(e)
     if (isAlive(self)) {
@@ -227,6 +228,35 @@ export async function setupSessionDB(self: WebRootModel) {
       self.session?.notifyError(`${e}`, e)
     }
   }
+}
+
+// An export costs far more than an autosave write, so pictures follow edits at
+// Desktop's thumbnail cadence rather than the autosave's, plus once when the
+// tab is hidden, which is often the last look the session gets
+const THUMBNAIL_INTERVAL_MS = 30_000
+
+function setupThumbnailCapture(self: WebRootModel) {
+  registerTeardown(
+    self,
+    autorun(
+      () => {
+        if (self.session) {
+          getSnapshot(self.session)
+          void self.captureSessionThumbnail()
+        }
+      },
+      { delay: THUMBNAIL_INTERVAL_MS },
+    ),
+  )
+  const onHidden = () => {
+    if (document.visibilityState === 'hidden' && isAlive(self)) {
+      void self.captureSessionThumbnail()
+    }
+  }
+  document.addEventListener('visibilitychange', onHidden)
+  registerTeardown(self, () => {
+    document.removeEventListener('visibilitychange', onHidden)
+  })
 }
 
 // The one place the session snapshot is written. Takes the snapshot rather than

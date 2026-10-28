@@ -57,11 +57,12 @@ async function withBothStores<T>(
 /**
  * The metadata row an autosave writes, given whatever row was already there.
  *
- * Two fields are carried over rather than recomputed, and getting either wrong
+ * Three fields are carried over rather than recomputed, and getting any wrong
  * is silent:
  *
- * - `favorite` lives only in this row, so a write that defaulted it to false
- *   would un-star a session on its next autosave tick.
+ * - `favorite` and `thumbnail` live only in this row, and their own writers set
+ *   them, so an autosave that defaulted them would un-star the session or blank
+ *   its picture on the next tick.
  * - `createdAt` is pinned to the day the session first appeared. A session id
  *   survives reloads, so that date says nothing about whether the session is
  *   still in use; `updatedAt` is what the recent list, the pruner and the
@@ -96,6 +97,7 @@ export function nextSessionMetadata(
     configPath,
     summary: summarizeSession(snap),
     edited: edited || (prev !== undefined && prev.edited !== false),
+    thumbnail: prev?.thumbnail,
   }
 }
 
@@ -162,18 +164,24 @@ export async function renameSessionRows(
 }
 
 /**
- * Read-modify-write of one metadata row. In its own transaction so the autosave
- * tick can't interleave between the read and the write (see upsertSessionRows).
+ * Read-modify-write of one metadata row, for the fields the autosave carries
+ * over rather than writes (favorite, thumbnail). In its own transaction so the
+ * autosave tick can't interleave between the read and the write (see
+ * upsertSessionRows). Resolves to the row written, or undefined when there is
+ * no row to patch.
  */
-export async function setSessionFavoriteRow(
+export async function patchSessionMetadataRow(
   db: SessionDBHandle,
   id: string,
-  favorite: boolean,
+  patch: Pick<Partial<SessionMetadata>, 'favorite' | 'thumbnail'>,
 ) {
-  await withBothStores(db, async ({ metadata }) => {
+  return withBothStores(db, async ({ metadata }) => {
     const meta = await metadata.get(id)
     if (meta) {
-      await metadata.put({ ...meta, favorite }, id)
+      const next = { ...meta, ...patch }
+      await metadata.put(next, id)
+      return next
     }
+    return undefined
   })
 }

@@ -26,6 +26,7 @@ export interface Row {
   lastUsed: Date
   fav: boolean
   current: boolean
+  thumbnail?: string
 }
 
 interface CellProps {
@@ -75,76 +76,123 @@ export const FavoriteCell = observer(function FavoriteCell({
   )
 })
 
+export const THUMBNAIL_WIDTH = 96
+const THUMBNAIL_HEIGHT = 60
+
 const useStyles = makeStyles()(theme => ({
   name: {
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     whiteSpace: 'nowrap',
+    lineHeight: 1.4,
   },
-  summary: {
+  detail: {
     color: theme.palette.text.secondary,
+    fontSize: '0.85em',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
+    lineHeight: 1.4,
+  },
+  cell: {
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center',
+    height: '100%',
+    minWidth: 0,
+  },
+  thumbnail: {
+    display: 'block',
+    width: THUMBNAIL_WIDTH,
+    height: THUMBNAIL_HEIGHT,
+    objectFit: 'cover',
+    objectPosition: 'top left',
+    border: `1px solid ${theme.palette.divider}`,
+    borderRadius: 3,
+    background: theme.palette.background.default,
   },
 }))
 
+// The open session is not offered as a link: re-opening it from IndexedDB can
+// only lose work, since that row is up to one autosave tick behind the live
+// model. A real href otherwise, so a modified or middle click opens the session
+// in a new tab the way any link does; a plain click switches this tab in place.
+const SessionLink = observer(function SessionLink({
+  row,
+  session,
+  children,
+}: CellProps & { children: React.ReactNode }) {
+  return row.current ? (
+    children
+  ) : (
+    <Link
+      href={queryParamsHref({ session: `local-${row.id}` })}
+      onClick={event => {
+        if (
+          event.button === 0 &&
+          !event.ctrlKey &&
+          !event.metaKey &&
+          !event.shiftKey &&
+          !event.altKey
+        ) {
+          event.preventDefault()
+          void session.activateSession(row.id)
+        }
+      }}
+    >
+      {children}
+    </Link>
+  )
+})
+
+export const ThumbnailCell = observer(function ThumbnailCell({
+  row,
+  session,
+}: CellProps) {
+  const { classes } = useStyles()
+  return (
+    <div className={classes.cell}>
+      <SessionLink row={row} session={session}>
+        {row.thumbnail ? (
+          <img className={classes.thumbnail} src={row.thumbnail} alt="" />
+        ) : (
+          <div className={classes.thumbnail} />
+        )}
+      </SessionLink>
+    </div>
+  )
+})
+
+// A native `title`, not a MUI Tooltip: the drawer is narrow enough that a long
+// session name ellipses, and a tooltip here would mean a popper laid over the
+// row underneath — which is exactly how this column lost its clicks once
+// already (see the scrollbar note in SessionManager's useStyles). Dated by last
+// use, since that is the order the rows arrive in.
 export const NameCell = observer(function NameCell({
   row,
   session,
 }: CellProps) {
   const { classes } = useStyles()
-  // A native `title`, not a MUI Tooltip: the drawer is narrow enough that a
-  // long session name ellipses, and a tooltip here would mean a popper laid
-  // over the row underneath — which is exactly how this column lost its clicks
-  // once already (see the scrollbar note in SessionManager's useStyles).
-  //
-  // The open session is not offered as a link: re-opening it from IndexedDB can
-  // only lose work, since that row is up to one autosave tick behind the live
-  // model. The File menu leaves it out of the recent list for the same reason.
-  //
-  // A real href, so a modified or middle click opens the session in a new tab
-  // the way any link does; a plain click switches this tab in place.
-  const title = row.summary ? `${row.label}\n${row.summary}` : row.label
+  const lastUsed = formatRelativeTime(row.lastUsed)
+  const title = [
+    row.label,
+    row.summary,
+    `Last used ${row.lastUsed.toLocaleString()}`,
+    `Created ${row.createdAt.toLocaleString()}`,
+  ]
+    .filter(Boolean)
+    .join('\n')
   return (
-    <div className={classes.name} title={title}>
-      {row.current ? (
-        row.label
-      ) : (
-        <Link
-          href={queryParamsHref({ session: `local-${row.id}` })}
-          onClick={event => {
-            if (
-              event.button === 0 &&
-              !event.ctrlKey &&
-              !event.metaKey &&
-              !event.shiftKey &&
-              !event.altKey
-            ) {
-              event.preventDefault()
-              void session.activateSession(row.id)
-            }
-          }}
-        >
+    <div className={classes.cell} title={title}>
+      <div className={classes.name}>
+        <SessionLink row={row} session={session}>
           {row.label}
-        </Link>
-      )}
-      {row.summary ? (
-        <span className={classes.summary}> · {row.summary}</span>
-      ) : null}
+        </SessionLink>
+      </div>
+      <div className={classes.detail}>
+        {row.summary ? `${row.summary} · ${lastUsed}` : lastUsed}
+      </div>
     </div>
-  )
-})
-
-// dated by last use, not creation: the rows arrive ordered by last use, so
-// showing createdAt would read as an unsorted list. Both are in the tooltip,
-// since an id survives reloads and the gap between them is often large.
-export const LastUsedCell = observer(function LastUsedCell({ row }: CellProps) {
-  return (
-    <Tooltip
-      disableInteractive
-      slotProps={{ transition: { timeout: 0 } }}
-      title={`Last used ${row.lastUsed.toLocaleString()}\nCreated ${row.createdAt.toLocaleString()}`}
-    >
-      <div>{formatRelativeTime(row.lastUsed)}</div>
-    </Tooltip>
   )
 })
 

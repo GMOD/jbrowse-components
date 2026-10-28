@@ -106,7 +106,7 @@ const suite: TestSuite = {
       },
     },
     {
-      name: 'an untouched session stays out of Recent sessions',
+      name: 'an untouched session stays out of the session manager',
       fn: async page => {
         const volvox = 'test_data/volvox/config.json'
         await navigateToApp(page, volvox, 'Edited one')
@@ -119,18 +119,15 @@ const suite: TestSuite = {
         await delay(1200)
         await (await findByText(page, 'File')).click()
         await delay(400)
-        await (await findByText(page, 'Recent sessions...')).click()
-        await delay(600)
-        const menu = await page.evaluate(() =>
-          [...document.querySelectorAll('[role="menuitem"]')].map(
+        await (await findByText(page, 'Sessions...')).click()
+        await findByText(page, 'Edited one')
+        const rows = await page.evaluate(() =>
+          [...document.querySelectorAll('.MuiDataGrid-row')].map(
             e => e.textContent,
           ),
         )
-        if (!menu.some(t => t.includes('Edited one'))) {
-          throw new Error(`edited session missing from ${JSON.stringify(menu)}`)
-        }
-        if (menu.some(t => t.includes('Untouched one'))) {
-          throw new Error(`untouched session listed in ${JSON.stringify(menu)}`)
+        if (rows.some(t => t.includes('Untouched one'))) {
+          throw new Error(`untouched session listed in ${JSON.stringify(rows)}`)
         }
       },
     },

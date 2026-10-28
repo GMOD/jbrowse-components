@@ -29,6 +29,8 @@ export interface SessionMetadata {
    * existed, which count as edited.
    */
   edited?: boolean
+  /** a WebP or PNG data URL of the session's first view, once one is taken */
+  thumbnail?: string
 }
 
 /**
