@@ -1,19 +1,26 @@
-import { getEnv, getSession } from '../util/mstUtils.ts'
-import { isSessionModelWithWidgets } from '../util/types/index.ts'
-
 import type { MenuItem } from './MenuTypes.ts'
-import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
+
+// Structural rather than the session and PluginManager types: those reach the
+// session graph, which `menuItems.ts` must not (scripts/moduleClosure.test.ts)
+interface WidgetHost {
+  openWidget?: (typeName: string, id: string) => unknown
+}
+interface WidgetRegistry {
+  widgetTypes: { has: (typeName: string) => boolean }
+}
 
 /** #menuBuilder highlightListMenuItems | "Open highlight list", or nothing in a product without the widget */
-export function highlightListMenuItems(node: IAnyStateTreeNode): MenuItem[] {
-  const session = getSession(node)
-  return isSessionModelWithWidgets(session) &&
-    getEnv(node).pluginManager.widgetTypes.has('GridBookmarkWidget')
+export function highlightListMenuItems(
+  session: WidgetHost,
+  pluginManager: WidgetRegistry,
+): MenuItem[] {
+  const { openWidget } = session
+  return openWidget && pluginManager.widgetTypes.has('GridBookmarkWidget')
     ? [
         {
           label: 'Open highlight list',
           onClick: () => {
-            session.openWidget('GridBookmarkWidget', 'GridBookmark')
+            openWidget('GridBookmarkWidget', 'GridBookmark')
           },
         },
       ]

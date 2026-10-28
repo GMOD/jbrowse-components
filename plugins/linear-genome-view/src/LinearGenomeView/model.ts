@@ -7,6 +7,7 @@ import {
   assembleLocString,
   clamp,
   getBpDisplayStr,
+  getEnv,
   getNotificationSink,
   getSession,
   isSessionModelWithWidgets,
@@ -3368,7 +3369,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * a highlight chip's menu rows after Dismiss; extend this to add one
        */
       highlightMenuItems(_highlight: HighlightType): MenuItem[] {
-        return highlightListMenuItems(self)
+        return highlightListMenuItems(
+          getSession(self),
+          getEnv(self).pluginManager,
+        )
       },
     }))
     .actions(self => {

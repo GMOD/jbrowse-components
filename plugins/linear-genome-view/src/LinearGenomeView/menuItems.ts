@@ -11,6 +11,7 @@ import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import {
   assembleLocStrings,
   getDialogHost,
+  getEnv,
   getSession,
   isSessionWithAddSessionTrack,
   toLocale,
@@ -111,7 +112,7 @@ export function buildHighlightsSubMenuItems(
         session.setHighlightLabelsVisible(!session.highlightLabelsVisible)
       },
     },
-    ...highlightListMenuItems(self),
+    ...highlightListMenuItems(session, getEnv(self).pluginManager),
   ]
 }
 

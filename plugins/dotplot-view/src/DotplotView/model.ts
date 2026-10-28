@@ -8,6 +8,7 @@ import { highlightListMenuItems } from '@jbrowse/core/ui/menuItems'
 import {
   clamp,
   getDialogHost,
+  getEnv,
   getSession,
   isSessionModelWithWidgets,
   localStorageGetItem,
@@ -1470,7 +1471,10 @@ export default function stateModelFactory(pm: PluginManager) {
          * a highlight chip's menu rows after Dismiss; extend this to add one
          */
         highlightMenuItems(_highlight: HighlightType): MenuItem[] {
-          return highlightListMenuItems(self)
+          return highlightListMenuItems(
+            getSession(self),
+            getEnv(self).pluginManager,
+          )
         },
         /**
          * #method
