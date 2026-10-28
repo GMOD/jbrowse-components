@@ -38,6 +38,7 @@ import { ecoliGraphSpecs } from './specs/graph-ecoli.ts'
 import { hprcGraphSpecs } from './specs/graph-hprc.ts'
 import { mouseCattleGraphSpecs } from './specs/graph-mouse-cattle.ts'
 import { graphReadingSpecs } from './specs/graph-reading.ts'
+import { grantCalloutSizeSpecs } from './specs/grant_callout_sizes.ts'
 import { gwasSpecs } from './specs/gwas.ts'
 import { hg002HaplotypeSpecs } from './specs/hg002_haplotypes.ts'
 import { hicSpecs } from './specs/hic.ts'
@@ -138,6 +139,7 @@ export const specs: ScreenshotSpec[] = [
   ...tcgaSpecs,
   ...cnv1000gSpecs,
   ...gwasSpecs,
+  ...grantCalloutSizeSpecs,
   ...geneDensitySpecs,
   ...proteinDomainsSpecs,
   ...organelleMapSpecs,
