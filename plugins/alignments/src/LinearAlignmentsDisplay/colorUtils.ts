@@ -291,51 +291,46 @@ function fillCategory(
   }
 }
 
-// The one place a category becomes a CSS color. read.slang's
-// `categoryPaletteColor` is the GPU twin, indexing the table `readCategoryColor`
-// resolves.
-function categoryColor(
-  cat: ReadColorCategory,
-  i: number,
-  data: ReadColorData,
-  palette: ColorPalette,
-): string {
-  switch (cat) {
-    case 'mapq':
-    case 'tag': {
-      const packed = data.readFillColors[i]
-      return packed
-        ? abgrToCssRgba(packed)
-        : rgb255(palette.readCategoryColors[cat])
-    }
-    default:
-      return rgb255(palette.readCategoryColors[cat])
-  }
+// Whether a read of this category paints its own baked color
+// (`readFillColors`) where it has one: the mapq ramp and the tag's value.
+// read.slang's `getReadColor` is the GPU twin.
+export function paintsReadFillColor(categoryIndex: number) {
+  return categoryIndex === RC_MAPQ || categoryIndex === RC_TAG
 }
 
-// Canvas2D/SVG fill for a read whose category was already baked. The twin of
-// read.slang's `getReadColor`, and like it, a painter rather than a classifier —
-// both take the index out of the same `readColorCategories` array.
+// Each category's palette color as CSS, by category index: what a read paints
+// unless `paintsReadFillColor` gives it its own. A painter builds it once per
+// frame rather than a string per read.
+export function readCategoryCss(palette: ColorPalette) {
+  return READ_COLOR_CATEGORY_BY_INDEX.map(cat =>
+    rgb255(palette.readCategoryColors[cat]),
+  )
+}
+
+// The CSS fill of read `i`, whose category was already baked: the one place a
+// category becomes a color, which the read painter inlines over
+// `readCategoryCss`.
 export function readColorFromCategoryIndex(
   categoryIndex: number,
   i: number,
   data: ReadColorData,
   palette: ColorPalette,
 ) {
-  return categoryColor(
-    READ_COLOR_CATEGORY_BY_INDEX[categoryIndex]!,
-    i,
-    data,
-    palette,
-  )
+  const packed = paintsReadFillColor(categoryIndex) ? data.readFillColors[i] : 0
+  return packed
+    ? abgrToCssRgba(packed)
+    : rgb255(
+        palette.readCategoryColors[
+          READ_COLOR_CATEGORY_BY_INDEX[categoryIndex]!
+        ],
+      )
 }
 
 // Classify-then-paint in one call. Every render path goes through
 // `readColorFromCategoryIndex` against the baked array instead, so the only
 // caller left is colorUtils.test.ts — kept because it is the seam that checks
 // the classifier and the painter agree end to end, which testing the two halves
-// separately would not. (It used to say "the arcs legend" too; the arcs legend
-// has its own category vocabulary and never called this.)
+// separately would not.
 export function getReadColor(
   i: number,
   data: ReadColorData,
@@ -343,8 +338,8 @@ export function getReadColor(
   palette: ColorPalette,
   opts?: ReadColorOpts,
 ) {
-  return categoryColor(
-    readColorCategory(i, data, colorKind, opts),
+  return readColorFromCategoryIndex(
+    READ_COLOR_CATEGORY[readColorCategory(i, data, colorKind, opts)],
     i,
     data,
     palette,

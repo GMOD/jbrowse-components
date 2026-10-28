@@ -1,3 +1,4 @@
+import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
 import {
   makeBpMapper,
   pxPerBpOf,
@@ -7,7 +8,10 @@ import {
 import { defineMark } from '@jbrowse/render-core/marks'
 import { slangPass } from '@jbrowse/render-core/slangPass'
 
-import { readColorFromCategoryIndex } from '../../LinearAlignmentsDisplay/colorUtils.ts'
+import {
+  paintsReadFillColor,
+  readCategoryCss,
+} from '../../LinearAlignmentsDisplay/colorUtils.ts'
 import { writePileupUniforms } from '../../LinearAlignmentsDisplay/renderers/pileupUniforms.ts'
 import {
   pileupRowOffCanvas,
@@ -257,10 +261,14 @@ function walkReads(
     ctx.lineWidth = READ_OUTLINE_PX
   }
 
-  // Assigning fillStyle re-parses the CSS string, which is the per-read cost
-  // that matters here. Under the default field every read resolves to the
-  // same color, so guarding the assignment collapses a deep pileup's parses
-  // to one.
+  // `readColorFromCategoryIndex` inlined over a table built once per frame,
+  // with a read's own color formatted once per run of it: a string built per
+  // read made this walk 2.3-6x slower on a counting context, which parses no
+  // fillStyle. A real one does, so the assignment is guarded too.
+  const categoryCss = readCategoryCss(state.colors)
+  const fillColors = region.readFillColors
+  let lastPacked = 0
+  let lastPackedCss = ''
   let lastFill: string | undefined
 
   // Per-exon segments, not whole reads: a spliced read contributes one body
@@ -284,11 +292,12 @@ function walkReads(
       region.readStrands[i]!,
       region.segmentEdgeFlags[s]!,
     )
+    const category = region.readColorCategories[i]!
     const hasChev =
       capsEdge !== 0 &&
       showChevron(
         chevronFrame,
-        region.readColorCategories[i]!,
+        category,
         region.readFlags[i]!,
         region.readInterchrom[i]!,
         region.readInsertSizes[i]!,
@@ -305,14 +314,15 @@ function walkReads(
       return true
     }
 
-    // The category the classification pass already decided, the byte
-    // read.slang gets as `inst.colorCategory`.
-    const fill = readColorFromCategoryIndex(
-      region.readColorCategories[i]!,
-      i,
-      region,
-      state.colors,
-    )
+    const packed = paintsReadFillColor(category) ? fillColors[i] : 0
+    let fill = categoryCss[category]!
+    if (packed) {
+      if (packed !== lastPacked) {
+        lastPacked = packed
+        lastPackedCss = abgrToCssRgba(packed)
+      }
+      fill = lastPackedCss
+    }
     if (fill !== lastFill) {
       ctx.fillStyle = fill
       lastFill = fill

@@ -32,6 +32,8 @@ interface ReadSpec {
   flags?: number
   interchrom?: number
   insertSize?: number
+  // The read's own packed ABGR color, which the mapq and tag fields bake.
+  fill?: number
 }
 
 function makeRegion(reads: ReadSpec[], ys?: number[]) {
@@ -41,6 +43,7 @@ function makeRegion(reads: ReadSpec[], ys?: number[]) {
   const readFlags = new Uint16Array(n)
   const readInterchrom = new Uint8Array(n)
   const readInsertSizes = new Float32Array(n)
+  const readFillColors = new Uint32Array(n)
   // One unspliced segment per read: spans the whole read, flagged first+last.
   const segmentPositions = new Uint32Array(n * 2)
   const segmentReadIndices = new Uint32Array(n)
@@ -52,6 +55,7 @@ function makeRegion(reads: ReadSpec[], ys?: number[]) {
     readFlags[i] = r.flags ?? 0
     readInterchrom[i] = r.interchrom ?? 0
     readInsertSizes[i] = r.insertSize ?? 0
+    readFillColors[i] = r.fill ?? 0
     segmentPositions[i * 2] = r.start
     segmentPositions[i * 2 + 1] = r.end
     segmentReadIndices[i] = i
@@ -63,7 +67,7 @@ function makeRegion(reads: ReadSpec[], ys?: number[]) {
     readStrands,
     readFlags,
     readPairOrientations: new Uint8Array(n),
-    readFillColors: new Uint32Array(n),
+    readFillColors,
     readMapqs: new Uint8Array(n),
     readInsertSizes,
     readChainHasSupp: undefined,
@@ -141,6 +145,32 @@ test('consecutive same-color reads each still paint their fill', () => {
   const svg = draw([wideFwd, wideFwd], {}, 5)
   const fills = [...svg.matchAll(/fill="(rgb\([^"]*\))"/g)].map(m => m[1])
   expect(fills).toEqual(['rgb(255,0,0)', 'rgb(255,0,0)'])
+})
+
+// Under mapq and tag a read paints the color baked for it, formatted once per
+// run of that color, and the field's palette color where none was baked.
+test('a baked read color paints per read, and its absence the palette', () => {
+  const red = 0xff0000ff
+  const blue = 0xffff0000
+  const svg = draw(
+    [
+      { ...wideFwd, fill: red },
+      { ...wideFwd, fill: red },
+      { ...wideFwd, fill: blue },
+      { ...wideFwd, fill: 0 },
+      { ...wideFwd, fill: red },
+    ],
+    { colorByType: 'mapq' },
+    5,
+  )
+  const fills = [...svg.matchAll(/fill="(rgb\([^"]*\))"/g)].map(m => m[1])
+  expect(fills).toEqual([
+    'rgb(255,0,0)',
+    'rgb(255,0,0)',
+    'rgb(0,0,255)',
+    'rgb(0,128,0)',
+    'rgb(255,0,0)',
+  ])
 })
 
 test('forward read draws an arrowhead path with apex past the right edge', () => {
