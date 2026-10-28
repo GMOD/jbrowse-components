@@ -28,7 +28,13 @@ import readline from 'node:readline'
 import { fileURLToPath } from 'node:url'
 
 import { servePageBridge } from './pageBridge.ts'
-import { BASELINE_SPEC, NOT_DRAWN, selectTasks, stageWork } from './tasks.ts'
+import {
+  BASELINE_SPEC,
+  NOT_DRAWN,
+  drawnPass,
+  selectTasks,
+  stageWork,
+} from './tasks.ts'
 
 import type { EvalTask, TaskSet } from './tasks.ts'
 
@@ -261,6 +267,7 @@ interface RunMetrics {
   run: number
   pass: boolean
   notDrawn: unknown
+  drawnPass: boolean
   detail: unknown
   answer: string
   javascript: number
@@ -314,15 +321,22 @@ try {
         }
       }
       const notDrawn = task.grade
-        ? await bridge.evaluate(NOT_DRAWN).catch((e: unknown) => [
-            { trackId: '?', phase: 'unread', reason: String(e).slice(0, 200) },
-          ])
+        ? await bridge
+            .evaluate(NOT_DRAWN)
+            .catch((e: unknown) => [
+              {
+                trackId: '?',
+                phase: 'unread',
+                reason: String(e).slice(0, 200),
+              },
+            ])
         : []
       const row: RunMetrics = {
         task: task.name,
         run,
         ...verdict,
         notDrawn,
+        drawnPass: drawnPass(task, verdict.pass, notDrawn),
         ...counted,
       }
       metrics.push(row)

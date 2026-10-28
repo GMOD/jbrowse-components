@@ -38,7 +38,13 @@ import { fileURLToPath } from 'node:url'
 import puppeteer from 'puppeteer'
 
 import { servePageBridge } from './pageBridge.ts'
-import { BASELINE_SPEC, NOT_DRAWN, selectTasks, stageWork } from './tasks.ts'
+import {
+  BASELINE_SPEC,
+  NOT_DRAWN,
+  drawnPass,
+  selectTasks,
+  stageWork,
+} from './tasks.ts'
 
 import type { EvalTask, TaskSet } from './tasks.ts'
 import type { Page } from 'puppeteer'
@@ -446,7 +452,12 @@ const only = flag('tasks', '').split(',').filter(Boolean)
 const tasks = selectTasks(taskSet, filter, 'web').filter(
   t => only.length === 0 || only.includes(t.name),
 )
-const rows: { task: string; run: number; pass: boolean }[] = []
+const rows: {
+  task: string
+  run: number
+  pass: boolean
+  drawnPass?: boolean
+}[] = []
 
 const profileStalls = args.includes('--profile-stalls')
 const waitMs = Number(flag('wait', '240')) * 1000
@@ -628,6 +639,7 @@ async function runOnce(task: EvalTask, run: number, attempt: number) {
     run,
     ...verdict,
     notDrawn,
+    drawnPass: drawnPass(task, verdict.pass, notDrawn),
     answer,
     error,
     calls: stats.started - startedBefore,
@@ -656,7 +668,12 @@ async function runOnce(task: EvalTask, run: number, attempt: number) {
       `${error} ${JSON.stringify(verdict.detail)}`,
     )
   if (!(stalled && attempt === 1 && retries)) {
-    rows.push({ task: task.name, run, pass: row.pass })
+    rows.push({
+      task: task.name,
+      run,
+      pass: row.pass,
+      drawnPass: row.drawnPass,
+    })
   }
   console.log(
     `${row.pass ? 'pass' : 'FAIL'}  ${task.name.padEnd(28)} calls=${row.calls} in=${inputTokens} out=${outputTokens} ${row.seconds}s ~$${row.usd}  total ~$${spend().toFixed(2)}`,
@@ -717,6 +734,7 @@ try {
   }
 } finally {
   const passed = rows.filter(r => r.pass).length
+  const passedDrawn = rows.filter(r => r.drawnPass).length
   fs.writeFileSync(
     path.join(outDir, 'summary.json'),
     JSON.stringify(
@@ -728,6 +746,7 @@ try {
         set: taskSet,
         runs,
         passed,
+        passedDrawn,
         total: rows.length,
         estimatedUsd: Number(spend().toFixed(2)),
         budget,
@@ -737,7 +756,7 @@ try {
     ),
   )
   console.log(
-    `\n${passed}/${rows.length} passed; estimated spend $${spend().toFixed(2)}`,
+    `\n${passed}/${rows.length} passed (${passedDrawn} with every needed track drawn); estimated spend $${spend().toFixed(2)}`,
   )
   console.log(`results: ${outDir}`)
   await browser.close()
