@@ -79,8 +79,11 @@ rotation writes the frame and no buffer.
 triangle strip: a cap over each arc and the band between the two curves,
 paired at one parameter and grown by the antialiasing ramp's reach across the
 band's own normal, not along the pairing, which slides where the curves' speeds
-differ. The fragment measures its distance from both curves across the band
-and from the rim radially. A chord is a strip along its curve, measured across
+differ. A twisted ribbon's band pinches to one vertex where its curves cross,
+each curve walking evenly to it: pairing them at one parameter there folds the
+strip, and a translucent ribbon blends twice where triangles overlap
+(`ribbonBand.test.ts`). The fragment measures its distance from both curves
+across the band and from the rim radially. A chord is a strip along its curve, measured across
 it. Both declare `//! coverage: analytic`, so the display draws at one sample,
 which the WebGL2 rung now honours as the WebGPU one did.
 

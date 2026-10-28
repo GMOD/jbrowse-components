@@ -9,13 +9,17 @@
 // The band's vertices pair the curves at one parameter and grow a device half
 // pixel outward across the band, and each fragment measures its distance from
 // both curves across it, so a ribbon thinner than a pixel draws as the fraction
-// it covers. A cap's polygon circumscribes its arc and the rim's coverage is
-// measured radially, which also trims whatever of the band reaches past the
-// rim.
+// it covers. A twisted ribbon's curves cross, and its band pinches to one
+// vertex there, each curve walking evenly to it, so no two of the strip's
+// triangles overlap and blend twice. A cap's polygon circumscribes its arc and
+// the rim's coverage is measured radially, which also trims whatever of the
+// band reaches past the rim.
 //! targets: wgsl, glsl
 //! topology: triangle-strip
 //! blend: premultiplied
 //! coverage: analytic
+//! js-export: pinchedParam
+//! export-consts: RIBBON_BAND_SEGMENTS
 
 import antialias;
 import colorPack;
@@ -99,6 +103,98 @@ float2 capVertex(float from, float to, uint i) {
   return polarPoint(reach, lerp(from, to, t));
 }
 
+// The band's two bounding curves: the first leaves the span's end for the
+// mate, the second, walked backwards, leaves the span's start for the mate's
+// other end.
+struct RibbonCurves {
+  float2 p0;
+  float2 c0;
+  float2 p1;
+  float2 q0;
+  float2 c1;
+  float2 q1;
+};
+
+RibbonCurves ribbonCurves(float a1, float a2, float m1, float m2) {
+  float r = u.radiusPx;
+  float br = u.bezierRadiusPx;
+  float outTurn = chordTurn(a2, m1);
+  RibbonCurves c;
+  c.p0 = polarPoint(r, a2);
+  c.c0 = turnControlPoint(a2, outTurn, r, br);
+  c.p1 = polarPoint(r, m1);
+  c.q0 = polarPoint(r, m2);
+  c.c1 = turnControlPoint(m2, ribbonReturnTurn(outTurn, m2, a1), r, br);
+  c.q1 = polarPoint(r, a1);
+  return c;
+}
+
+float2 firstCurve(RibbonCurves c, float t) {
+  return quadBezier(c.p0, c.c0, c.p1, t);
+}
+
+float2 secondCurve(RibbonCurves c, float t) {
+  return quadBezier(c.q0, c.c1, c.q1, 1.0 - t);
+}
+
+// The band's normal where it pairs the first curve at `tl` with the second at
+// `tq`, across the two tangents averaged: the pairing slides along the curves
+// where their speeds differ, so the pair itself is no measure of the width.
+float2 bandNormal(RibbonCurves c, float tl, float tq) {
+  float2 dl = quadBezierTangent(c.p0, c.c0, c.p1, tl);
+  float2 dq = -quadBezierTangent(c.q0, c.c1, c.q1, 1.0 - tq);
+  float2 ul = dl / max(length(dl), 1.0e-6);
+  float2 sum = ul + dq / max(length(dq), 1.0e-6);
+  float2 along = length(sum) > 1.0e-3 ? sum / length(sum) : ul;
+  return float2(-along.y, along.x);
+}
+
+float bandWidthAt(RibbonCurves c, float t) {
+  return dot(secondCurve(c, t) - firstCurve(c, t), bandNormal(c, t, t));
+}
+
+// Where a twisted ribbon's two curves cross, as each one's parameter there.
+// The band's width changes sign once between its ends, a bisection on it
+// starts Newton's method on the two curves, and a crossing it does not find
+// within a quarter pixel leaves the band as it was.
+bool curvesCross(RibbonCurves c, out float2 at) {
+  at = float2(0.0);
+  bool startNegative = bandWidthAt(c, 0.0) < 0.0;
+  if (startNegative == (bandWidthAt(c, 1.0) < 0.0)) {
+    return false;
+  }
+  float lo = 0.0;
+  float hi = 1.0;
+  for (int k = 0; k < 8; k++) {
+    float mid = 0.5 * (lo + hi);
+    if ((bandWidthAt(c, mid) < 0.0) == startNegative) {
+      lo = mid;
+    } else {
+      hi = mid;
+    }
+  }
+  at = float2(0.5 * (lo + hi));
+  for (int k = 0; k < 4; k++) {
+    float2 f = firstCurve(c, at.x) - secondCurve(c, at.y);
+    float2 dl = quadBezierTangent(c.p0, c.c0, c.p1, at.x);
+    float2 dq = quadBezierTangent(c.q0, c.c1, c.q1, 1.0 - at.y);
+    float det = dl.x * dq.y - dl.y * dq.x;
+    if (abs(det) > 1.0e-6) {
+      float2 step = float2(f.y * dq.x - f.x * dq.y, f.x * dl.y - f.y * dl.x) / det;
+      at = clamp(at + step, float2(0.0), float2(1.0));
+    }
+  }
+  return length(firstCurve(c, at.x) - secondCurve(c, at.y)) < 0.25;
+}
+
+// A twisted band's parameter on one curve at `s` of the way along the strip,
+// so that both curves reach their crossing `crossAt` at the strip's `pinchAt`
+// and each walks evenly either side of it.
+float pinchedParam(float s, float pinchAt, float crossAt) {
+  return s <= pinchAt ? crossAt * s / pinchAt
+                      : crossAt + (1.0 - crossAt) * (s - pinchAt) / (1.0 - pinchAt);
+}
+
 VsOut place(float2 p, float across, float bandPx, uint color, float fade) {
   VsOut o;
   float2 css = float2(u.centerX, u.centerY) + p;
@@ -139,39 +235,46 @@ VsOut vs_main(RibbonInstance inst, uint vid : SV_VertexID) {
                  inst.color, fade);
   }
   uint b = i - BAND_FIRST;
-  float t = float(b / 2u) / float(RIBBON_BAND_SEGMENTS);
-  float r = u.radiusPx;
-  float br = u.bezierRadiusPx;
-  // the first curve leaves the span's end for the mate; the second, walked
-  // backwards, leaves the span's start for the mate's other end
-  float2 p0 = polarPoint(r, a2);
-  float outTurn = chordTurn(a2, m1);
-  float2 c0 = turnControlPoint(a2, outTurn, r, br);
-  float2 p1 = polarPoint(r, m1);
-  float2 q0 = polarPoint(r, m2);
-  float2 c1 = turnControlPoint(m2, ribbonReturnTurn(outTurn, m2, a1), r, br);
-  float2 q1 = polarPoint(r, a1);
-  float2 l = quadBezier(p0, c0, p1, t);
-  float2 q = quadBezier(q0, c1, q1, 1.0 - t);
-  // the band's own direction here, the two curves' tangents averaged: the
-  // curves are paired at one parameter, which slides along them where their
-  // speeds differ, so the pairing itself is no measure of the band's width
-  float2 tl = quadBezierTangent(p0, c0, p1, t);
-  float2 tq = -quadBezierTangent(q0, c1, q1, 1.0 - t);
-  float2 ul = tl / max(length(tl), 1.0e-6);
-  float2 sum = ul + tq / max(length(tq), 1.0e-6);
-  float2 along = length(sum) > 1.0e-3 ? sum / length(sum) : ul;
-  float2 dir = float2(-along.y, along.x);
+  uint k = b / 2u;
+  RibbonCurves c = ribbonCurves(a1, a2, m1, m2);
+  float s = float(k) / float(RIBBON_BAND_SEGMENTS);
+  float tl = s;
+  float tq = s;
+  float2 at;
+  bool twisted = curvesCross(c, at);
+  if (twisted) {
+    uint pinch = clamp(uint(floor(float(RIBBON_BAND_SEGMENTS) * (at.x + at.y) * 0.5 + 0.5)),
+                       1u, RIBBON_BAND_SEGMENTS - 1u);
+    if (k == pinch) {
+      float2 x = 0.5 * (firstCurve(c, at.x) + secondCurve(c, at.y));
+      return place(x, 0.0, 0.0, inst.color, fade);
+    }
+    float sx = float(pinch) / float(RIBBON_BAND_SEGMENTS);
+    tl = pinchedParam(s, sx, at.x);
+    tq = pinchedParam(s, sx, at.y);
+  }
+  float2 l = firstCurve(c, tl);
+  float2 q = secondCurve(c, tq);
+  float2 dir = bandNormal(c, tl, tq);
   float signedWidth = dot(q - l, dir);
   if (signedWidth < 0.0) {
     dir = -dir;
   }
   float width = abs(signedWidth);
   float pad = aaHalfPx(u.devicePixelRatio);
-  if ((b & 1u) == 0u) {
-    return place(l - dir * pad, -pad, width, inst.color, fade);
+  float padL = pad;
+  float padQ = pad;
+  // a vertex near the crossing grows no further than the crossing, or one
+  // lobe's outward half pixel reaches over the other's
+  if (twisted) {
+    float2 x = firstCurve(c, at.x);
+    padL = min(pad, length(l - x));
+    padQ = min(pad, length(q - x));
   }
-  return place(q + dir * pad, width + pad, width, inst.color, fade);
+  if ((b & 1u) == 0u) {
+    return place(l - dir * padL, -padL, width, inst.color, fade);
+  }
+  return place(q + dir * padQ, width + padQ, width, inst.color, fade);
 }
 
 [shader("fragment")]

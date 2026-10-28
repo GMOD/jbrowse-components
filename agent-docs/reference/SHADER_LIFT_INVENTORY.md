@@ -14,8 +14,8 @@ Read [ADR-051](../architecture-decision-records/adr-051-shader-js-codegen-is-sca
 in the export set and what deliberately does not. This file says what the
 tree currently looks like against that standard.
 
-Scanned 48 shaders with entry points. 151 functions
-are inside the emitter's subset, of which **117 are exported**.
+Scanned 48 shaders with entry points. 152 functions
+are inside the emitter's subset, of which **118 are exported**.
 
 ## Candidates
 
@@ -86,6 +86,7 @@ noticing in a diff.
 | type 'vec4' is outside the supported scalar subset | 19 | `bandColorAt`, `colorCutAt`, `cutYsPx`, `edgeSpan`, `fillEdges`, `isCulled`, … |
 | type 'ptr' is outside the supported scalar subset | 17 | `bpToClipX`, `covAreaTop`, `covBaselinePx`, `covBpToClipX`, `covClipKindColor`, `covEffHeight`, … |
 | type 'Cubic' is outside the supported scalar subset | 6 | `armCorner`, `armEnd`, `cubicAt`, `cubicDirection`, `curveVertex`, `lengthTo` |
+| type 'RibbonCurves' is outside the supported scalar subset | 6 | `bandNormal`, `bandWidthAt`, `curvesCross`, `firstCurve`, `ribbonCurves`, `secondCurve` |
 | type 'vec3' is outside the supported scalar subset | 6 | `baseColor`, `bpRange`, `buttSegmentCoverage`, `capsuleDist`, `categoryPaletteColor`, `linkedReadColorByIndex` |
 | type 'Instance' is outside the supported scalar subset | 4 | `computeCorners`, `fillVsBegin`, `getReadColor`, `isClickedSilhouette` |
 | type 'LinkInstance' is outside the supported scalar subset | 4 | `curveVertex`, `footBlockStart`, `footCorner`, `footVertex` |
@@ -132,6 +133,7 @@ is no longer shared with anything.
 | `glyphExpand` | tests only — `pointGlyphPad.test.ts` |
 | `isTileKind` | tests only — `syntenyShaderParity.test.ts` |
 | `lineValueAtColorYPx` | tests only — `lineRampAlongY.test.ts` |
+| `pinchedParam` | tests only — `ribbonBand.test.ts` |
 | `rampScaleType` | tests only — `markRamp.test.ts` |
 | `sBlend` | tests only — `syntenyShaderParity.test.ts` |
 | `strokeCoverage` | tests only — `buttSegmentCoverage.test.ts`, `strokeCoverage.test.ts` |
