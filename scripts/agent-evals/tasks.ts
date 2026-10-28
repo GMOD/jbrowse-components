@@ -153,6 +153,12 @@ const SYNTENY_STACK = `
   }))
   const at = (row, chrom, from, to, maxSpan) => !!row?.regions.some(r => r.refName.replace(/^chr/, '') === chrom && r.start < to && r.end > from && r.end - r.start < maxSpan)`
 
+// Writes the Oct 21 build's settings, then the current ones when that build's
+// report says it took none of the first: each build ignores the other's keys
+const either = (track: string, older: object, newer: object) => `
+  const r0 = ${track}.applyDisplaySettings(${JSON.stringify(older)})
+  return r0.applied.length && !r0.failed.length && !r0.unapplied.length ? r0 : ${track}.applyDisplaySettings(${JSON.stringify(newer)})`
+
 export const TASKS: EvalTask[] = [
   {
     name: 'arcs',
@@ -850,8 +856,9 @@ TASKS.push(
       'In hg38 at BRCA1, show vertebrate conservation (phyloP, 100 species) and fix its scale from 0 to 5.',
     grade: `${BRCA1}
       const conf = view?.tracks.find(t => t.configuration.trackId === 'hg38-phyloP100way')?.activeDisplay.configuration
-      const min = conf && jb.readConfObject(conf, ['scales', 'y', 'domainMin'])
-      const max = conf && jb.readConfObject(conf, ['scales', 'y', 'domainMax'])
+      const slot = path => { try { return jb.readConfObject(conf, path) } catch { return undefined } }
+      const min = conf && (slot(['encoding', 'y', 'scale', 'domainMin']) ?? slot(['scales', 'y', 'domainMin']))
+      const max = conf && (slot(['encoding', 'y', 'scale', 'domainMax']) ?? slot(['scales', 'y', 'domainMax']))
       return { pass: !!view && min === 0 && max === 5, detail: { regions, ids, min, max } }`,
   },
   {
@@ -1013,14 +1020,17 @@ const HOSTED_SOLUTIONS: Record<string, string> = {
     await jb.addTrack({ location: 'https://hgdownload.soe.ucsc.edu/gbdb/hg38/jaspar/JASPAR2026.bb', name: 'JASPAR 2026 TFBS', assembly: 'hg38', settings: { forceLoad: true } })
     return jb.waitReady(180000)`,
   'hs-phylop-scale': `${lgv(BRCA1_LOC, ['hg38-ncbiRefSeq', 'hg38-phyloP100way']).replace('return ', 'await ')}
-    return jb.trackModel('hg38-phyloP100way').applyDisplaySettings({ scales: { y: { domainMin: 0, domainMax: 5 } } })`,
+    ${either("jb.trackModel('hg38-phyloP100way')", { scales: { y: { domainMin: 0, domainMax: 5 } } }, { encoding: { y: { scale: { domainMin: 0, domainMax: 5 } } } })}`,
   'hs-short-arm-chr2': lgv('chr2:1-93,900,000', []),
   'hs-synteny-mouse-brca1': `return jb.loadSessionSpec({ views: [{ type: 'LinearSyntenyView', tracks: ['hg38_to_mm39_liftOver'], views: [{ assembly: 'hg38', loc: '${BRCA1_LOC}' }, { assembly: 'mm39', loc: 'chr11:101,379,590-101,442,808' }] }] }, 90000)`,
   'hs-which-tfbs-track': `return 'hg38-jaspar2026'`,
   'rc-three-way-synteny': `return jb.loadSessionSpec({ views: [{ type: 'LinearSyntenyView', tracks: ['hg38_to_mm39_liftOver', 'mm39_to_rn7_liftOver'], views: [{ assembly: 'hg38', loc: '${BRCA1_LOC}' }, { assembly: 'mm39', loc: 'chr11:101,379,590-101,442,808' }, { assembly: 'rn7', loc: 'Brca1' }] }] }, 90000)`,
   'rc-mouse-ortholog': lgv('chr11:101,379,590-101,442,808', [], 'mm39'),
   'rc-clinvar-color': `${lgv(BRCA1_LOC, ['hg38-clinvarMain']).replace('return ', 'await ')}
-    return jb.trackModel('hg38-clinvarMain').applyDisplaySettings({ color: { field: '_clinSignCode' }, forceLoad: true })`,
+    await jb.trackModel('hg38-clinvarMain').applyDisplaySettings({ forceLoad: true })
+    ${either("jb.trackModel('hg38-clinvarMain')", { color: { field: '_clinSignCode' } }, { encoding: { color: { field: '_clinSignCode' } } }).replace('  return r0.applied', '  const r = r0.applied')}
+    await jb.waitReady(120000)
+    return r`,
   'rc-three-genes-side-by-side': `return jb.loadSessionSpec({ views: ${JSON.stringify(
     [BRCA1_LOC, 'chr13:32,315,508-32,400,268', 'chr17:7,668,421-7,687,490'].map(
       loc => ({
@@ -1037,7 +1047,7 @@ const HOSTED_SOLUTIONS: Record<string, string> = {
     const id = jb.view().tracks[0].configuration.trackId
     const newer = jb.trackModel(id).applyDisplaySettings({ pileup: { bases: { encoding: { color: { field: 'modifications' } } } }, facet: { field: 'tags.HP' } })
     return newer.failed.length ? jb.trackModel(id).applyDisplaySettings({ baseColor: { field: 'modifications' } }) : newer`,
-  'tut-synteny-tnnt3': `return jb.loadSessionSpec({ views: [{ type: 'LinearSyntenyView', tracks: ['hg38_to_hs1_liftOver'], color: { field: 'strand' }, views: [{ assembly: 'hg38', loc: 'chr11:1,919,568-1,938,706' }, { assembly: 'hs1', loc: 'TNNT3' }] }] }, 90000)`,
+  'tut-synteny-tnnt3': `return jb.loadSessionSpec({ views: [{ type: 'LinearSyntenyView', tracks: ['hg38_to_hs1_liftOver'], color: { field: 'strand' }, encoding: { color: { field: 'strand' } }, views: [{ assembly: 'hg38', loc: 'chr11:1,919,568-1,938,706' }, { assembly: 'hs1', loc: 'TNNT3' }] }] }, 90000)`,
 }
 for (const task of TASKS) {
   task.solution ??= HOSTED_SOLUTIONS[task.name]
@@ -1569,7 +1579,6 @@ const tumorPanel = (loc: string) => ({
     {
       trackId: 'COLO829_tumor_ont',
       forceLoad: true,
-      pileup: { showSoftClipping: true, readHeight: 2 },
       height: 200,
     },
   ],
@@ -1583,7 +1592,7 @@ TASKS.push(
     config: 'https://jbrowse.org/demos/grape_peach_cacao/config.json',
     prompt:
       "Reproduce the multi-way synteny tutorial's conserved block: peach stacked over grape over cacao in one synteny view, at peach chrG7:18,565,100-18,700,100, grape chr11:787,000-914,000 and cacao chr9:3,898,700-4,003,700, ribbons colored by syntenic depth.",
-    solution: `return jb.loadSessionSpec({ views: [{ type: 'LinearSyntenyView', tracks: ['grape_peach_cacao_blocks'], color: { field: 'syntenicDepth' }, views: [
+    solution: `return jb.loadSessionSpec({ views: [{ type: 'LinearSyntenyView', tracks: ['grape_peach_cacao_blocks'], color: { field: 'syntenicDepth' }, encoding: { color: { field: 'syntenicDepth' } }, views: [
       { assembly: '${PEACH}', loc: 'chrG7:18,565,100-18,700,100', tracks: ['${PEACH}-ncbiRefSeq'] },
       { assembly: '${GRAPE}', loc: 'chr11:787,000-914,000', tracks: ['${GRAPE}-ncbiRefSeq'] },
       { assembly: '${CACAO}', loc: 'chr9:3,898,700-4,003,700', tracks: ['${CACAO}-ncbiRefSeq'] } ] }] }, 120000)`,
@@ -1600,7 +1609,10 @@ TASKS.push(
     config: 'https://jbrowse.org/demos/hg38_vertebrates/config.json',
     prompt:
       'As in the hg38 vertebrates synteny tutorial, show TP53 on hg38 with the liftOver chains drawn as one lane per genome beneath it, stacked down the tree: chimp, gorilla, orangutan, macaque, marmoset, mouse, dog, then cow.',
-    solution: `return jb.loadSessionSpec({ views: [{ type: 'LinearGenomeView', assembly: 'hg38', loc: 'chr17:7,400,000-7,700,000', tracks: ['hg38-ncbiRefSeq', { trackId: 'hg38_liftover_multiway', type: 'MultiWaySyntenyDisplay', rows: { domain: ${JSON.stringify(TREE_ORDER)} }, height: 600 }] }] }, 180000)`,
+    solution: `await jb.loadSessionSpec({ views: [{ type: 'LinearGenomeView', assembly: 'hg38', loc: 'chr17:7,400,000-7,700,000', tracks: ['hg38-ncbiRefSeq', { trackId: 'hg38_liftover_multiway', type: 'MultiWaySyntenyDisplay', height: 600 }] }] }, 180000)
+      ${either("jb.trackModel('hg38_liftover_multiway')", { rows: { domain: TREE_ORDER } }, { rows: { sort: TREE_ORDER } }).replace('  return r0.applied', '  const r = r0.applied')}
+      await jb.waitReady(60000)
+      return r`,
     grade: `${atLocus('17', 7668402, 7687550, 3000000)}
       ${drew}
       const want = ${JSON.stringify(TREE_ORDER)}
@@ -1644,13 +1656,18 @@ TASKS.push(
     config: 'https://jbrowse.org/demos/cancer_sv/config.json',
     prompt:
       "As in the cancer SV tutorial, follow COLO829's der(3) rearrangement chain through chr3, chr10 and chr12 in a breakpoint split view, one panel per breakpoint, with the tumor reads drawn in every panel and their soft clipping shown.",
-    solution: `return jb.loadSessionSpec({ views: [{ type: 'BreakpointSplitView', views: ${JSON.stringify(
+    solution: `await jb.loadSessionSpec({ views: [{ type: 'BreakpointSplitView', views: ${JSON.stringify(
       [
         'chr3:25,357,000-25,362,000',
         'chr10:58,715,000-58,720,000',
         'chr12:72,270,700-72,275,700',
       ].map(tumorPanel),
-    )} }] }, 300000)`,
+    )} }] }, 300000)
+      for (const p of jb.session.views[0].views) {
+        await (async () => {${either("jb.trackModel('COLO829_tumor_ont', p.id)", { pileup: { showSoftClipping: true, readHeight: 2 } }, { pileup: { softClips: { show: true } } })}
+        })()
+      }
+      return jb.waitReady(120000)`,
     grade: `
       ${drew}
       const want = ${JSON.stringify(DER3_PANELS)}
