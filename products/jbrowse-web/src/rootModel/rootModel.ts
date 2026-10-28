@@ -499,14 +499,6 @@ export default function RootModel({
             label: 'File',
             menuItems: () => [
               newSessionMenuItem(self),
-              {
-                label: 'Sessions...',
-                icon: FolderOpenIcon,
-                onClick: () => {
-                  void self.captureSessionThumbnail()
-                  self.session?.openWidget('SessionManager', 'sessionManager')
-                },
-              },
               importSessionMenuItem(),
               exportSessionMenuItem(),
               {
@@ -535,6 +527,14 @@ export default function RootModel({
                     },
                   ]
                 : []),
+              {
+                label: 'Recent sessions...',
+                icon: FolderOpenIcon,
+                onClick: () => {
+                  void self.captureSessionThumbnail()
+                  self.session?.openWidget('SessionManager', 'sessionManager')
+                },
+              },
               { type: 'divider' },
               openTrackMenuItem(),
               openConnectionMenuItem(),

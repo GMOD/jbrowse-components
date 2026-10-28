@@ -31,11 +31,11 @@ test('duplicate session creates a new session with different id', async () => {
   expect(rootModel.session!.name).toMatch(/ \(copy\)$/)
 }, 30000)
 
-test('sessions opens the session manager widget', async () => {
+test('recent sessions opens the session manager widget', async () => {
   const { rootModel, findByText } = await createView(config)
 
   fireEvent.click(await findByText('File'))
-  fireEvent.click(await findByText('Sessions...'))
+  fireEvent.click(await findByText('Recent sessions...'))
 
   await waitFor(
     () => {

@@ -106,7 +106,7 @@ const suite: TestSuite = {
       },
     },
     {
-      name: 'an untouched session stays out of the session manager',
+      name: 'an untouched session stays out of Recent sessions',
       fn: async page => {
         const volvox = 'test_data/volvox/config.json'
         await navigateToApp(page, volvox, 'Edited one')
@@ -119,7 +119,7 @@ const suite: TestSuite = {
         await delay(1200)
         await (await findByText(page, 'File')).click()
         await delay(400)
-        await (await findByText(page, 'Sessions...')).click()
+        await (await findByText(page, 'Recent sessions...')).click()
         await findByText(page, 'Edited one')
         const rows = await page.evaluate(() =>
           [...document.querySelectorAll('.MuiDataGrid-row')].map(

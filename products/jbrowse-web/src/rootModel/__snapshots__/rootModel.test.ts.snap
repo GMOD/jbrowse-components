@@ -26,18 +26,6 @@ exports[`adds menus 1`] = `
             "render": [Function],
           },
         },
-        "label": "Sessions...",
-        "onClick": [Function],
-      },
-      {
-        "icon": {
-          "$$typeof": Symbol(react.memo),
-          "compare": null,
-          "type": {
-            "$$typeof": Symbol(react.forward_ref),
-            "render": [Function],
-          },
-        },
         "label": "Import session...",
         "onClick": [Function],
       },
@@ -63,6 +51,18 @@ exports[`adds menus 1`] = `
           },
         },
         "label": "Duplicate session",
+        "onClick": [Function],
+      },
+      {
+        "icon": {
+          "$$typeof": Symbol(react.memo),
+          "compare": null,
+          "type": {
+            "$$typeof": Symbol(react.forward_ref),
+            "render": [Function],
+          },
+        },
+        "label": "Recent sessions...",
         "onClick": [Function],
       },
       {
@@ -218,18 +218,6 @@ exports[`adds menus 2`] = `
             "render": [Function],
           },
         },
-        "label": "Sessions...",
-        "onClick": [Function],
-      },
-      {
-        "icon": {
-          "$$typeof": Symbol(react.memo),
-          "compare": null,
-          "type": {
-            "$$typeof": Symbol(react.forward_ref),
-            "render": [Function],
-          },
-        },
         "label": "Import session...",
         "onClick": [Function],
       },
@@ -255,6 +243,18 @@ exports[`adds menus 2`] = `
           },
         },
         "label": "Duplicate session",
+        "onClick": [Function],
+      },
+      {
+        "icon": {
+          "$$typeof": Symbol(react.memo),
+          "compare": null,
+          "type": {
+            "$$typeof": Symbol(react.forward_ref),
+            "render": [Function],
+          },
+        },
+        "label": "Recent sessions...",
         "onClick": [Function],
       },
       {
