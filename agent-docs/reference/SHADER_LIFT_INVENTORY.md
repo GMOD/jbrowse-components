@@ -81,7 +81,7 @@ noticing in a diff.
 
 | Refused because | Functions | For example |
 | --- | --- | --- |
-| type 'vec2' is outside the supported scalar subset | 26 | `buttSegmentCorner`, `capsuleCorner`, `capsuleFrame`, `covFlippedQuad`, `covSegQuad`, `crispSquareCornerClip`, … |
+| type 'vec2' is outside the supported scalar subset | 27 | `buttSegmentCorner`, `capsuleCorner`, `capsuleFrame`, `covFlippedQuad`, `covSegQuad`, `crispSquareCornerClip`, … |
 | member access (vector swizzle or struct field) is outside the supported scalar subset | 21 | `bandCoverage`, `barAaPx`, `bpToClipX`, `capVertex`, `cutScore`, `drawsBar`, … |
 | type 'vec4' is outside the supported scalar subset | 19 | `bandColorAt`, `colorCutAt`, `cutYsPx`, `edgeSpan`, `fillEdges`, `isCulled`, … |
 | type 'ptr' is outside the supported scalar subset | 17 | `bpToClipX`, `covAreaTop`, `covBaselinePx`, `covBpToClipX`, `covClipKindColor`, `covEffHeight`, … |
@@ -123,7 +123,7 @@ is no longer shared with anything.
 | `aaPx` | nothing |
 | `aaRamp` | tests only — `pointGlyphPad.test.ts` |
 | `discExpand` | tests only — `pointGlyphPad.test.ts` |
-| `edgeCoverage` | tests only — `arcHull.test.ts`, `buttSegmentCoverage.test.ts`, `dotplotCapsulePad.test.ts`, `sdEllipse.test.ts` |
+| `edgeCoverage` | tests only — `arcHull.test.ts`, `buttSegmentCoverage.test.ts`, `dotplotCapsulePad.test.ts`, `sdEllipse.test.ts`, `strokeCoverage.test.ts` |
 | `ellipseHullPoint` | tests only — `arcHull.test.ts` |
 | `extendToMinWidthPx` | tests only — `densityMinWidth.test.ts`, `hpmathParity.test.ts`, `markParity.test.ts`, `rectSpanParity.test.ts` |
 | `farDomeDistancePx` | tests only — `arcHull.test.ts`, `farDome.test.ts` |
@@ -134,7 +134,7 @@ is no longer shared with anything.
 | `lineValueAtColorYPx` | tests only — `lineRampAlongY.test.ts` |
 | `rampScaleType` | tests only — `markRamp.test.ts` |
 | `sBlend` | tests only — `syntenyShaderParity.test.ts` |
-| `strokeCoverage` | nothing |
+| `strokeCoverage` | tests only — `buttSegmentCoverage.test.ts`, `strokeCoverage.test.ts` |
 | `wideCircleHullPoint` | tests only — `arcHull.test.ts` |
 | `wideCircleLeg` | tests only — `arcHull.test.ts`, `wideCircleLeg.test.ts` |
 | `wideCircleLegStep` | tests only — `arcHull.test.ts`, `wideCircleLeg.test.ts` |

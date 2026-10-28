@@ -48,15 +48,20 @@ public bool ldValueComputed(float v) {
   return v > -1.5;
 }
 
-// Sample the color ramp at `ldValue`'s place in the `color` domain, via the
-// shared ramp module (render-core colorRampLut.slang) — the sentinel gate stays
-// LD's own. Returns premultiplied-alpha color. A cell nothing reported is transparent, which
-// under premultiplied blending leaves the background exactly as an out-of-band
-// cell — never emitted — leaves it.
-public float4 ldRampColor(float ldValue, Uniforms u, Sampler2D<float4> ramp) {
+// A corner of a cell the file reported, or a point off clip space for one it
+// did not, so the cell's quad has no area and leaves the background as an
+// out-of-band cell — never emitted — leaves it.
+public float4 ldCornerToClip(float2 pos, float ldValue, Uniforms u) {
   if (!ldValueComputed(ldValue)) {
-    return float4(0.0, 0.0, 0.0, 0.0);
+    return float4(2.0, 2.0, 0.0, 1.0);
   }
+  return ldCellToClip(pos, u);
+}
+
+// Sample the color ramp at `ldValue`'s place in the `color` domain, via the
+// shared ramp module (render-core colorRampLut.slang). Returns
+// premultiplied-alpha color.
+public float4 ldRampColor(float ldValue, Uniforms u, Sampler2D<float4> ramp) {
   return rampColorPremultiplied(
     ramp,
     rampMidT(

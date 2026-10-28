@@ -19,7 +19,7 @@ struct LDInstance {
 
 struct VsOut {
   float4 position : SV_Position;
-  float  ldValue  : COLOR0;
+  nointerpolation float ldValue : COLOR0;
 };
 
 [shader("vertex")]
@@ -32,7 +32,7 @@ VsOut vs_main(
   float2 pos = (float2(float(ij.y), float(ij.x)) + quadLocal(vid)) * u.uniformW;
 
   VsOut o;
-  o.position = ldCellToClip(pos, u);
+  o.position = ldCornerToClip(pos, inst.ldValue, u);
   o.ldValue = inst.ldValue;
   return o;
 }

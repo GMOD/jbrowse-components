@@ -1,7 +1,7 @@
-// LD heatmap — GENOMIC mode. One instance per cell; each cell carries its
-// own position + cellSize, in bp/√2 relative to the payload's origin
-// (variants are laid out along the genome, not at uniform pitch). Rendered as
-// a 45°-rotated square above the x-axis; fragment shader samples the color
+// LD heatmap — GENOMIC mode. One instance per computed cell, carrying its own
+// position + cellSize in bp/√2 relative to the payload's origin, as
+// `packGenomicCells` (ldMarks.ts) reads them off `boundaries`. Rendered as a
+// 45°-rotated square above the x-axis; the fragment shader samples the color
 // ramp by `ldValue`.
 //! targets: wgsl, glsl
 //! blend: premultiplied
@@ -23,7 +23,7 @@ struct LDInstance {
 
 struct VsOut {
   float4 position : SV_Position;
-  float  ldValue  : COLOR0;
+  nointerpolation float ldValue : COLOR0;
 };
 
 [shader("vertex")]
@@ -31,7 +31,7 @@ VsOut vs_main(LDInstance inst, uint vid : SV_VertexID) {
   float2 pos = inst.position + quadLocal(vid) * inst.cellSize;
 
   VsOut o;
-  o.position = ldCellToClip(pos, u);
+  o.position = ldCornerToClip(pos, inst.ldValue, u);
   o.ldValue = inst.ldValue;
   return o;
 }
