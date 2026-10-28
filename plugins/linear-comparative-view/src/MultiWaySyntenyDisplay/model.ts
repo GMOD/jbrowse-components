@@ -113,6 +113,7 @@ import {
   lanePairsOf,
   starAnchorOf,
   staleLaneSpecs,
+  unheldLanePairsOf,
 } from './laneFetch.ts'
 import { LABEL_FONT_SIZE, laneHeaderRows } from './laneHeader.ts'
 import { releaseLaneAssembly } from './laneHolders.ts'
@@ -2062,6 +2063,38 @@ export function stateModelFactory(
           const lower = lanes[i + 2]
           return pending.has(key) && upper && lower
             ? [(upper.glyphTop + glyphHeight + lower.layerTop) / 2]
+            : []
+        })
+      },
+      /**
+       * #getter
+       * the centre, in stack px, of each gutter left empty because a lane's
+       * genome is not in the session and no plugin described it, with those
+       * lanes' labels
+       */
+      get unheldGutters(): { y: number; labels: string[] }[] {
+        if (!self.laneFetchKinds.lanePairs) {
+          return []
+        }
+        const { lanes, glyphHeight } = self.laneStack
+        return unheldLanePairsOf({
+          pairs: self.lanePairs,
+          rowFrames: self.rowFrames,
+          onAnchor: self.adapterPairsOnAnchor,
+          isMissing: name =>
+            !self.holdsAssembly(name) &&
+            self.describedLanes.has(name) &&
+            !self.lanesBeingDescribed.has(name),
+        }).flatMap(({ index, missing }) => {
+          const upper = lanes[index + 1]
+          const lower = lanes[index + 2]
+          return upper && lower
+            ? [
+                {
+                  y: (upper.glyphTop + glyphHeight + lower.layerTop) / 2,
+                  labels: missing.map(name => self.laneLabel(name)),
+                },
+              ]
             : []
         })
       },

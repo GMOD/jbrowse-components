@@ -245,6 +245,31 @@ export function laneLinksFetchSpecsOf({
   return specs
 }
 
+/**
+ * Each adjacent pair, by index, that `laneLinksFetchSpecsOf` never asks for
+ * because a placed lane's genome is not in the session, with those genomes
+ */
+export function unheldLanePairsOf({
+  pairs,
+  rowFrames,
+  onAnchor,
+  isMissing,
+}: {
+  pairs: readonly LanePair[]
+  rowFrames: ReadonlyMap<string, unknown>
+  onAnchor: boolean
+  isMissing: (assemblyName: string) => boolean
+}) {
+  return onAnchor
+    ? []
+    : pairs.flatMap(({ upper, lower }, index) => {
+        const missing = [upper, lower].filter(isMissing)
+        return rowFrames.get(upper) && rowFrames.get(lower) && missing.length
+          ? [{ index, missing }]
+          : []
+      })
+}
+
 /** a star source's header `anchorAssemblyName` */
 export function starAnchorOf(header: unknown) {
   return typeof header === 'object' &&

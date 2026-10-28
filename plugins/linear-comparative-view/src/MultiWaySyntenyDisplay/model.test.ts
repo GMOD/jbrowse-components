@@ -425,6 +425,14 @@ test('lane links are asked for only between lanes the session holds', () => {
   expect(display.laneLinksFetchSpecs).toEqual([])
   expect(display.pairLinks.has('volvox_random|sample#1#undeclared')).toBe(false)
 
+  expect(display.unheldGutters).toEqual([])
+  display.beginDescribingLanes(['sample#1#undeclared'])
+  expect(display.unheldGutters).toEqual([])
+  display.endDescribingLanes(['sample#1#undeclared'], {})
+  expect(display.unheldGutters).toEqual([
+    { y: expect.any(Number), labels: ['sample#1#undeclared'] },
+  ])
+
   display.setFeatures([
     nameless('f1', 'volvox_random'),
     nameless('f2', 'volvox_ins'),

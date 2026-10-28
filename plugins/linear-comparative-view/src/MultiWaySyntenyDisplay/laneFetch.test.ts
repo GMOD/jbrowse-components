@@ -3,6 +3,7 @@ import {
   laneGroupsFetchSpecsOf,
   laneLinksFetchSpecsOf,
   regionKey,
+  unheldLanePairsOf,
 } from './laneFetch.ts'
 
 import type { LaneWindow } from './laneFetch.ts'
@@ -126,5 +127,53 @@ describe('laneGenesFetchSpecsOf', () => {
     const coding = ["jexl:get(feature,'gene_biotype')=='protein_coding'"]
     expect(specsWith(coding).filter).toEqual(coding)
     expect(specsWith(coding).key).not.toBe(specsWith([]).key)
+  })
+})
+
+describe('unheldLanePairsOf', () => {
+  const placed = new Map([
+    ['a', true],
+    ['b', true],
+    ['c', true],
+  ])
+  const missingB = (name: string) => name === 'b'
+
+  test('names the missing genome on each placed pair that needs it', () => {
+    expect(
+      unheldLanePairsOf({
+        pairs,
+        rowFrames: placed,
+        onAnchor: false,
+        isMissing: missingB,
+      }),
+    ).toEqual([
+      { index: 0, missing: ['b'] },
+      { index: 1, missing: ['b'] },
+    ])
+  })
+
+  test('a pair read on the anchor needs neither lane held', () => {
+    expect(
+      unheldLanePairsOf({
+        pairs,
+        rowFrames: placed,
+        onAnchor: true,
+        isMissing: missingB,
+      }),
+    ).toEqual([])
+  })
+
+  test('a pair with an unplaced lane draws nothing anyway', () => {
+    expect(
+      unheldLanePairsOf({
+        pairs,
+        rowFrames: new Map([
+          ['a', true],
+          ['b', true],
+        ]),
+        onAnchor: false,
+        isMissing: missingB,
+      }),
+    ).toEqual([{ index: 0, missing: ['b'] }])
   })
 })

@@ -20,6 +20,7 @@ import { laneHeaderMenuItems } from '../menus.ts'
 
 import type { MultiWaySyntenyDisplayModel } from '../model.ts'
 import type { ContextMenuAnchor } from '@jbrowse/core/ui'
+import type { ReactNode } from 'react'
 
 const CHIP_BORDER_PX = 1
 
@@ -34,6 +35,35 @@ interface LaneMenu {
   assemblyName: string
   anchor: ContextMenuAnchor
 }
+
+const GutterNote = observer(function GutterNote({
+  testId,
+  top,
+  width,
+  children,
+}: {
+  testId: string
+  top: number
+  width: number
+  children: ReactNode
+}) {
+  return (
+    <div
+      data-testid={testId}
+      style={{
+        position: 'absolute',
+        left: 0,
+        top: top - LABEL_FONT_SIZE / 2,
+        width,
+        textAlign: 'center',
+        color: bandPalette.text.secondary,
+        textShadow: textHalo(bandGroundColor()),
+      }}
+    >
+      {children}
+    </div>
+  )
+})
 
 const LaneHeaders = observer(function LaneHeaders({
   model,
@@ -160,21 +190,24 @@ const LaneHeaders = observer(function LaneHeaders({
         />
       ) : null}
       {model.loadingGutterYs.map(y => (
-        <div
+        <GutterNote
           key={`loading-${y}`}
-          data-testid="multiway-gutter-loading"
-          style={{
-            position: 'absolute',
-            left: 0,
-            top: y - scrollTop - LABEL_FONT_SIZE / 2,
-            width,
-            textAlign: 'center',
-            color: bandPalette.text.secondary,
-            textShadow: textHalo(bandGroundColor()),
-          }}
+          testId="multiway-gutter-loading"
+          top={y - scrollTop}
+          width={width}
         >
           Loading alignments…
-        </div>
+        </GutterNote>
+      ))}
+      {model.unheldGutters.map(({ y, labels }) => (
+        <GutterNote
+          key={`unheld-${y}`}
+          testId="multiway-gutter-unheld"
+          top={y - scrollTop}
+          width={width}
+        >
+          Add {labels.join(' and ')} as an assembly to draw these ribbons
+        </GutterNote>
       ))}
       {rows.map(row => (
         <div
