@@ -3,6 +3,8 @@
 # lint, format and the ESM build — over what you are about to push, so main does
 # not go red on something a local check would have caught. `pnpm install` points
 # core.hooksPath here; skip with SKIP_DOCS_CHECK=1 or `git push --no-verify`.
+# It also refuses a push onto a main that is red on CI; PUSH_ONTO_RED=1 is the
+# fix's way through, and SKIP_DOCS_CHECK does not skip that check.
 #
 # IT FIXES RATHER THAN REPORTS. Three of the five gates have an autofixer, so
 # this runs the fixer: `pnpm autogen --fix-stale` when its check says anything
@@ -77,6 +79,8 @@
 #   pnpm build:esm           1.7s  incremental
 # Every gate here is CPU-bound and this machine runs several agents, so a wall
 # number swings by a factor of two with what else is running.
+# On 2026-10-28 at load ~60 the whole hook took 4m12s, and 6m36s once it
+# also linted the whole tree and ran the four `astro check`s.
 #
 # THE FIXERS RUN IN SEQUENCE, because they write to the same files: autogen
 # emits sources the linters then lint, and both linters rewrite the same `.ts`.
@@ -98,10 +102,6 @@
 # locally here and these gates only ran on push — and main had not been pushed.
 # Every one was a one-line fix at the moment it landed.
 set -eu
-
-if [ "${SKIP_DOCS_CHECK:-}" = 1 ]; then
-  exit 0
-fi
 
 # git passes the remote's name (or its url, for an unnamed one) as $1. The
 # hook's own push reuses it so the autoheal goes exactly where the push it
@@ -143,9 +143,11 @@ zero=0000000000000000000000000000000000000000
 range_files=
 refspecs=
 found=
+to_main=
 while read -r localref localsha remoteref remotesha; do
   [ "$localsha" = "$zero" ] && continue
   found=1
+  [ "$remoteref" = refs/heads/main ] && to_main=1
   refspecs=$refspecs$localref:$remoteref'
 '
   if [ "$remotesha" = "$zero" ]; then
@@ -166,6 +168,40 @@ if [ -z "$(printf '%s' "$range_files" | tr -d '[:space:]')" ]; then
   exit 0
 fi
 
+# A push to main waits for main to be green on CI, so one break gets fixed
+# instead of carried by the next fifteen pushes. The hook reads the latest Push
+# run that passed or failed, skipping cancelled ones. A fix sets
+# PUSH_ONTO_RED=1. When gh is missing or silent for 10s, the push goes ahead.
+if [ -n "$to_main" ] && [ "${PUSH_ONTO_RED:-}" != 1 ] &&
+  command -v gh >/dev/null 2>&1; then
+  runs=$(timeout 10 gh run list --branch main --workflow Push --limit 20 \
+    --json databaseId,status,conclusion,headSha \
+    --jq '.[] | "\(.status) \(.conclusion) \(.databaseId) \(.headSha)"' \
+    2>/dev/null || true)
+  latest=$(printf '%s\n' "$runs" |
+    awk '$1 == "completed" && ($2 == "success" || $2 == "failure") { print; exit }')
+  if [ "${latest#completed failure }" != "$latest" ]; then
+    set -- $latest
+    red_id=$3
+    red_sha=$4
+    echo >&2
+    echo "pre-push: main is red on CI, at ${red_sha%"${red_sha#?????????}"} (run $red_id):" >&2
+    timeout 10 gh run view "$red_id" --json jobs \
+      --jq '.jobs[] | select(.conclusion == "failure") | "  " + .name' >&2 2>/dev/null || true
+    if printf '%s\n' "$runs" | awk '$1 != "completed"' | grep -q .; then
+      echo "A newer run is still going; if it carries a fix, wait for it." >&2
+    fi
+    echo >&2
+    echo "Fix main first: 'gh run view $red_id --log-failed' says what broke." >&2
+    echo "The push that fixes it goes out with PUSH_ONTO_RED=1 git push." >&2
+    exit 1
+  fi
+fi
+
+if [ "${SKIP_DOCS_CHECK:-}" = 1 ]; then
+  exit 0
+fi
+
 # The sources these artifacts are generated FROM. Deliberately broad — model and
 # config docs come out of plugin and package sources, so a push touching only
 # code can still leave a doc table stale. A push that is purely CI config or
@@ -175,7 +211,7 @@ if ! printf '%s' "$range_files" | grep -Eq \
   exit 0
 fi
 
-echo "pre-push: checking docs and artifacts, fixing lint and format on the pushed files, building esm (~40s, SKIP_DOCS_CHECK=1 to skip)" >&2
+echo "pre-push: checking docs and artifacts, fixing lint and format on the pushed files, building esm, linting the tree and type-checking the examples-sites (minutes under load, SKIP_DOCS_CHECK=1 to skip)" >&2
 
 tmp=$(mktemp -d)
 trap 'rm -rf "$tmp"' EXIT
@@ -283,6 +319,20 @@ diagrams_pid=$!
 slot_defaults=products/jbrowse-web/src/schemaTests/ConfigSlotDefaults.test.ts
 jest "$slot_defaults" --ci --reporters=default >"$tmp/slot-defaults.log" 2>&1 &
 slot_defaults_pid=$!
+
+# Each examples-site's `astro check`, the first step of CI's smoke-test legs,
+# since a core type change can break a site's example. The four run at once,
+# ~90s each at load, when the push changes source the sites compile against.
+astro_jobs=
+if printf '%s' "$range_files" | grep -Eq \
+  '^(packages|plugins|products/jbrowse-(react-[a-z-]+|build-your-own))/.*\.(ts|tsx|astro)$'; then
+  for site in jbrowse-react-linear-genome-view jbrowse-react-app \
+    jbrowse-react-circular-genome-view jbrowse-build-your-own; do
+    (cd "products/$site/examples-site" && node_modules/.bin/astro check) \
+      >"$tmp/astro-$site.log" 2>&1 &
+    astro_jobs="$astro_jobs $site:$!"
+  done
+fi
 
 # --- fixers, in sequence: each writes files the next one reads ---------------
 
@@ -493,6 +543,14 @@ fi
 
 # --- gates, no fixer --------------------------------------------------------
 
+# Type-aware oxlint over the whole tree, read-only, because a moved type can
+# make an unchanged file wrong and the scoped pass above never reads it. It
+# costs ~70s more than the scoped pass at load, overlapped with build:esm. An
+# error in a path with an unstaged edit is someone's work in progress and does
+# not block.
+eval "$cmd_lint -f unix" >"$tmp/lint-all.log" 2>&1 &
+lint_all_pid=$!
+
 dstatus=0
 wait "$docs_pid" || dstatus=$?
 if [ "$dstatus" != 0 ]; then
@@ -538,6 +596,41 @@ if [ "$bstatus" != 0 ]; then
   echo "pre-push: pnpm build:esm failed" >&2
   cat "$tmp/build.log" >&2
   status=$bstatus
+fi
+
+for job in $astro_jobs; do
+  site=${job%%:*}
+  xstatus=0
+  wait "${job#*:}" || xstatus=$?
+  if [ "$xstatus" != 0 ]; then
+    echo >&2
+    echo "pre-push: astro check failed in products/$site/examples-site" >&2
+    grep -E 'error|Error' "$tmp/astro-$site.log" >&2 || cat "$tmp/astro-$site.log" >&2
+    status=$xstatus
+  fi
+done
+
+lastatus=0
+wait "$lint_all_pid" || lastatus=$?
+if [ "$lastatus" != 0 ]; then
+  grep -E '^[^ :]+:[0-9]+:[0-9]+: ' "$tmp/lint-all.log" >"$tmp/lint-all.hits" || :
+  if [ -s "$tmp/wip" ]; then
+    awk -F: 'NR == FNR { wip[$0] = 1; next } !($1 in wip)' \
+      "$tmp/wip" "$tmp/lint-all.hits" >"$tmp/lint-all.block"
+  else
+    cp "$tmp/lint-all.hits" "$tmp/lint-all.block"
+  fi
+  # no parseable hit at all is oxlint itself failing, which blocks too
+  if [ -s "$tmp/lint-all.block" ] || [ ! -s "$tmp/lint-all.hits" ]; then
+    echo >&2
+    echo "pre-push: pnpm lint over the whole tree failed" >&2
+    if [ -s "$tmp/lint-all.hits" ]; then
+      cat "$tmp/lint-all.block" >&2
+    else
+      cat "$tmp/lint-all.log" >&2
+    fi
+    status=$lastatus
+  fi
 fi
 
 # --- commit and push what the fixers changed --------------------------------
