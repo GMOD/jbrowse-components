@@ -1712,7 +1712,8 @@ TASKS.push(
 // wrong, a second assembly, or a figure with many graded constraints. Each
 // grader reads its truth live from the hub.
 const HPRC_DEMO = 'https://jbrowse.org/demos/hprc/config.json'
-const sentences = `const sentences = answer.split(/(?<=[.!?\\n])\\s*/)`
+const sentences = `${FINAL}
+  const sentences = final.split(/(?<=[.!?\\n])\\s*/)`
 const TP53_EXONS = `
   const tx = (await jb.getFeatures({ trackId: 'hg38-mane', loc: 'chr17:7,661,779-7,690,000', byteLimit: 80e6 })).find(g => g.get('name') === 'TP53')?.get('subfeatures')?.[0]
   const parts = (tx?.get('subfeatures') ?? []).map(s => [s.get('start'), s.get('end')]).sort((a, b) => a[0] - b[0])
@@ -1780,7 +1781,7 @@ TASKS.push(
       ${sentences}
       const claims = sentences.filter(t => /\\bexon\\s*\\d+/i.test(t) && /most|highest|largest|greatest|top|densest|answer/i.test(t))
       const lastClaim = claims.at(-1)?.match(/\\bexon\\s*(\\d+)/i)?.[1]
-      const bare = answer.trim().match(/(\\d+)\\D*$/)?.[1]
+      const bare = final.trim().match(/(\\d+)\\D*$/)?.[1]
       const claimed = Number(lastClaim ?? bare)
       return { pass: top > 0 && best.includes(claimed), detail: { counts, best, claimed, claim: lastClaim && claims.at(-1).slice(0, 200) } }`,
   },
@@ -1793,7 +1794,8 @@ TASKS.push(
     solution: `${TP53_ATG_HS1}
       return 'On hs1 the A of the TP53 ATG is at chr17:' + hs1.toLocaleString('en-US') + '.'`,
     grade: `${TP53_ATG_HS1}
-      const near = (answer.match(/\\d[\\d,]*/g) ?? []).map(n => Number(n.replaceAll(',', ''))).filter(n => Math.abs(n - hs1) <= 50000)
+      ${FINAL}
+      const near = (final.match(/\\d[\\d,]*/g) ?? []).map(n => Number(n.replaceAll(',', ''))).filter(n => Math.abs(n - hs1) <= 50000)
       return { pass: Number.isFinite(hs1) && near.at(-1) === hs1, detail: { atg, hs1, guess, hits, near } }`,
   },
   {
@@ -2162,8 +2164,9 @@ TASKS.push(
           if (names.includes('SRR5660151_97')) { out.push({ atJunction, id: t.configuration.trackId }) }
         }
       }
-      const named = /SRR5660151_97\\b/.test(answer)
-      const junction = /e14a2|b3a2|(\\be14|\\bb3|exon\\s*14)\\b[^.]{0,120}(\\ba2|exon\\s*2)\\b|(\\ba2|exon\\s*2)\\b[^.]{0,120}(\\be14|\\bb3|exon\\s*14)\\b/i.test(answer)
-      return { pass: named && junction && out.some(o => o.atJunction), detail: { named, junction, out, answer: answer.slice(-300) } }`,
+      ${FINAL}
+      const named = /SRR5660151_97\\b/.test(final)
+      const junction = /e14a2|b3a2|(\\be14|\\bb3|exon\\s*14)\\b[^.]{0,120}(\\ba2|exon\\s*2)\\b|(\\ba2|exon\\s*2)\\b[^.]{0,120}(\\be14|\\bb3|exon\\s*14)\\b/i.test(final)
+      return { pass: named && junction && out.some(o => o.atJunction), detail: { named, junction, out, final: final.slice(-300) } }`,
   },
 )
