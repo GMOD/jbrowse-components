@@ -202,7 +202,7 @@ test('annulusRects holds every pixel warpRing writes', () => {
         expect(r.y + r.height).toBeLessThanOrEqual(h)
         for (let y = r.y; y < r.y + r.height; y++) {
           for (let x = r.x; x < r.x + r.width; x++) {
-            inside[y * w + x]++
+            inside[y * w + x] = inside[y * w + x]! + 1
           }
         }
       }
