@@ -461,6 +461,9 @@ const rows: {
 
 const profileStalls = args.includes('--profile-stalls')
 const waitMs = Number(flag('wait', '240')) * 1000
+// Longer than run_javascript's settle wait, during which no request is open
+// and the plugin shows no stop button
+const IDLE_MS = 15_000
 const retries = !args.includes('--no-retry')
 const solutions = args.includes('--solutions')
 
@@ -592,7 +595,7 @@ async function runOnce(task: EvalTask, run: number, attempt: number) {
           continue
         }
         const generating = await page.$('button[aria-label="Stop generating"]')
-        const idle = stats.active === 0 && Date.now() - stats.lastEnd > 4000
+        const idle = stats.active === 0 && Date.now() - stats.lastEnd > IDLE_MS
         if (stats.started > startedBefore && !generating && idle) {
           break
         }
