@@ -1,7 +1,5 @@
-import {
-  normalizeScore,
-  normalizeScoreUnclamped,
-} from '@jbrowse/render-core/shaders/scoreScale'
+import { valueToYPxScaled } from '@jbrowse/render-core/shaders/pointMark'
+import { valueToYPxUnclamped } from '@jbrowse/render-core/shaders/valueScale'
 import {
   SCALE_TYPE_LINEAR,
   SCALE_TYPE_LOG,
@@ -17,7 +15,7 @@ import type { ScaleTypeCode } from '@jbrowse/render-core/scoreScale'
 // float equality: the score's y and the cut's y are two evaluations of
 // scoreScale.slang's normalize, and they tie only because the GPU runs both.
 //
-// That is what stops the obvious optimization. `cutYsPx` loops every cut
+// That is what stops the obvious optimization. `colorCutYsPx` loops every cut
 // through the normalizer once PER VERTEX — 18 vertices an instance for the step
 // line — recomputing numbers derived from uniforms alone, and the tree already
 // ships one pre-normalized uniform, `rampMidNorm`, to generalize from. But
@@ -28,9 +26,9 @@ import type { ScaleTypeCode } from '@jbrowse/render-core/scoreScale'
 // and a GPU's log2/log carry an error budget JS does not. The second is not
 // reproducible here; the first is, and it is enough — see the sabotage below.
 //
-// SYNC: keep in step with wiggleCommon.slang's `rowScoreToYPx`, `rowColorYPx`
-// and `bandColorAt`. The out-of-domain half of the placement rule is
-// wiggleMarksPaint.test.ts §"a cut outside the domain parts nothing".
+// SYNC: `bandAt` keeps in step with markColor.slang's `thresholdBandAtYPx`. The
+// out-of-domain half of the placement rule is wiggleMarksPaint.test.ts §"a cut
+// outside the domain parts nothing".
 
 const ROW_HEIGHT = 100
 const ROW_TOP = 37
@@ -42,8 +40,10 @@ function rowScoreToYPx(
   scaleType: ScaleTypeCode,
   symlogConstant: number,
 ) {
-  const norm = normalizeScore(score, min, max, scaleType, symlogConstant)
-  return (1 - norm) * ROW_HEIGHT + ROW_TOP
+  return (
+    valueToYPxScaled(score, min, max, ROW_HEIGHT, scaleType, symlogConstant) +
+    ROW_TOP
+  )
 }
 
 function rowColorYPx(
@@ -53,8 +53,10 @@ function rowColorYPx(
   scaleType: ScaleTypeCode,
   symlogConstant: number,
 ) {
-  const norm = normalizeScoreUnclamped(cut, min, max, scaleType, symlogConstant)
-  return (1 - norm) * ROW_HEIGHT + ROW_TOP
+  return (
+    ROW_TOP +
+    valueToYPxUnclamped(cut, min, max, ROW_HEIGHT, scaleType, symlogConstant)
+  )
 }
 
 function bandAt(centerLineYPx: number, cutYs: number[]) {

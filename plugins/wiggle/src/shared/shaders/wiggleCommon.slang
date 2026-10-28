@@ -25,12 +25,12 @@
 // back from there.
 //! export-consts: RENDERING_TYPE_XYPLOT, RENDERING_TYPE_DENSITY, RENDERING_TYPE_LINE, RENDERING_TYPE_SCATTER, RENDERING_TYPE_LINE_CENTER, NO_PREV_START, MIN_FILL_WIDTH_PX, MAX_WIGGLE_CUTS
 //! consts-out: packages/wiggle-core/src/wiggleRenderModes.generated.ts
+//! js-skip: rowYPxToNorm — a GPU line reads its gradient position back off a y; Canvas2D and the SVG export stroke a gradient line as threshold bands placed by score (rampAsBands), so nothing there maps a y back
 module wiggleCommon;
 
 import colorRampLut;
 import hpmath;
 import markColor;
-import scoreScale;
 import valueScale;
 
 public static const int RENDERING_TYPE_XYPLOT = 0;
@@ -130,32 +130,15 @@ public float rowScoreToYPx(float score, float rowTop, float rowHeight, Uniforms 
   return valueToYPxScaled(score, u.domainYMin, u.domainYMax, rowHeight, u.scaleType, u.symlogConstant) + rowTop;
 }
 
-public float cutScore(int i, Uniforms u) {
-  return u.cuts[i / 4][i % 4];
-}
-
-// A value's y in the row for the color test, placed UNCLAMPED, where
-// `rowScoreToYPx` clamps it to draw: the cuts go through it, and so does the
-// line a line rendering is colored along. Clamped, a cut outside the domain
-// landed on the row edge out-of-domain scores are clamped onto too, and a
-// score past the domain took the side of that edge rather than its own — a
-// peak of 20 under a cut at 15 on a [0, 10] plot colored as under it, which
-// the xyplot, comparing raw scores, never did.
+// A value's y in the row for the color test, as `colorCutYsPx` places a cut.
+// Unclamped, so a peak of 20 under a cut at 15 on a [0, 10] plot colors as
+// over it, as the xyplot comparing raw scores does.
 public float rowColorYPx(float value, float rowTop, float rowHeight, Uniforms u) {
-  float norm = normalizeScoreUnclamped(value, u.domainYMin, u.domainYMax, u.scaleType, u.symlogConstant);
-  return (1.0 - norm) * rowHeight + rowTop;
+  return rowTop + valueToYPxUnclamped(value, u.domainYMin, u.domainYMax, rowHeight, u.scaleType, u.symlogConstant);
 }
 
-// Each cut's y in the row, four to a vector: placed once per vertex and handed
-// to the fragment flat, so a pixel only compares. Slots past `numCuts` are 0.
 public float4 cutYsPx(int from, float rowTop, float rowHeight, Uniforms u) {
-  float4 ys = float4(0.0);
-  for (int k = 0; k < 4; k++) {
-    if (from + k < u.numCuts) {
-      ys[k] = rowColorYPx(cutScore(from + k, u), rowTop, rowHeight, u);
-    }
-  }
-  return ys;
+  return colorCutYsPx(from, u.numCuts, u.cuts[0], u.cuts[1], rowTop, rowHeight, u.domainYMin, u.domainYMax, u.scaleType, u.symlogConstant);
 }
 
 // A line's color follows the band its centre line is in, not the pixel's, so

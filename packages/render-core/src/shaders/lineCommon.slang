@@ -75,27 +75,13 @@ public float lineValueYPx(float value, float bandTop, Uniforms u) {
   return bandTop + valueToYPxScaled(value, u.domainMin, u.domainMax, u.rowBandPx, u.valueScaleType, u.valueSymlogConstant);
 }
 
-// A value's y in the band for the color test, placed UNCLAMPED where
-// `lineValueYPx` clamps it to draw: the cuts go through it, and so does the
-// line a threshold colors along. Clamped, a cut outside the domain landed on
-// the band edge out-of-domain values are clamped onto too, and a value past
-// the domain took the side of that edge rather than its own.
+// A value's y in the band for the color test, as `colorCutYsPx` places a cut.
 public float lineColorYPx(float value, float bandTop, Uniforms u) {
-  float norm = normalizeScoreUnclamped(value, u.domainMin, u.domainMax, u.valueScaleType, u.valueSymlogConstant);
-  return bandTop + (1.0 - norm) * u.rowBandPx;
+  return bandTop + valueToYPxUnclamped(value, u.domainMin, u.domainMax, u.rowBandPx, u.valueScaleType, u.valueSymlogConstant);
 }
 
-// Each cut's y in the band, four to a vector: placed once per vertex and
-// handed to the fragment flat, so a pixel only compares. Slots past the count
-// are 0.
 public float4 lineCutYsPx(int from, float bandTop, Uniforms u) {
-  float4 ys = float4(0.0);
-  for (int k = 0; k < 4; k++) {
-    if (from + k < u.colorCutCount) {
-      ys[k] = lineColorYPx(colorCutAt(from + k, u.colorCuts[0], u.colorCuts[1]), bandTop, u);
-    }
-  }
-  return ys;
+  return colorCutYsPx(from, u.colorCutCount, u.colorCuts[0], u.colorCuts[1], bandTop, u.rowBandPx, u.domainMin, u.domainMax, u.valueScaleType, u.valueSymlogConstant);
 }
 
 // Whether a line reads its color along y: under a threshold or a ramp over the

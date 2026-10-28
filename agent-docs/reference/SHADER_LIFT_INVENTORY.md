@@ -14,8 +14,8 @@ Read [ADR-051](../architecture-decision-records/adr-051-shader-js-codegen-is-sca
 in the export set and what deliberately does not. This file says what the
 tree currently looks like against that standard.
 
-Scanned 48 shaders with entry points. 156 functions
-are inside the emitter's subset, of which **123 are exported**.
+Scanned 48 shaders with entry points. 157 functions
+are inside the emitter's subset, of which **124 are exported**.
 
 ## Candidates
 
@@ -27,7 +27,6 @@ anyone deciding which.
 | Function | Signature | Shaders |
 | --- | --- | --- |
 | `bitSet` | `(u32, u32) -> f32` | connectorMark |
-| `rowYPxToNorm` | `(f32, f32, f32) -> f32` | wiggleBand, wiggleLine, wiggleLineCenter |
 
 ## Declined
 
@@ -59,6 +58,7 @@ longer see, or one that is exported after all, fails `pnpm gen:shaders`.
 | `pxToClipLen` | `(f32, f32) -> f32` | the length half of the same conversion; a px dimension is already in px on the Canvas2D side, so there is nothing to convert |
 | `pxToClipX` | `(f32, f32) -> f32` | the inverse of clipXToPx, same reason |
 | `quadLocal` | `(u32) -> vec2f` | maps a vertex id to a quad corner — Canvas2D has no vertices, it calls fillRect |
+| `rowYPxToNorm` | `(f32, f32, f32) -> f32` | a GPU line reads its gradient position back off a y; Canvas2D and the SVG export stroke a gradient line as threshold bands placed by score (rampAsBands), so nothing there maps a y back |
 | `sBlendDeriv` | `(f32) -> f32` | the ribbon tangent, for extruding an edge normal per fragment; Canvas2D draws one bezierCurveTo and never needs the derivative |
 | `snapBoxCenterY` | `(f32, f32, f32) -> f32` | clip-space wrapper over the exported snapBoxCenterYPx |
 | `snapCellEdgePx` | `(f32) -> f32` | reached as a private helper inside the generated snappedCellWidthPx and snappedCellLeftPx, so the grid it snaps to is already shared without being public. The pair is what a consumer should ask: a snapped edge on its own has lost the record order those two read to place the 2px floor |
@@ -81,8 +81,8 @@ noticing in a diff.
 | Refused because | Functions | For example |
 | --- | --- | --- |
 | type 'vec2' is outside the supported scalar subset | 28 | `buttSegmentCorner`, `capsuleCorner`, `capsuleFrame`, `covFlippedQuad`, `covSegQuad`, `crispSquareCornerClip`, … |
-| member access (vector swizzle or struct field) is outside the supported scalar subset | 20 | `bandCoverage`, `barAaPx`, `bpToClipX`, `capVertex`, `cutScore`, `drawsBar`, … |
-| type 'vec4' is outside the supported scalar subset | 19 | `bandColorAt`, `colorCutAt`, `cutYsPx`, `edgeSpan`, `fillEdges`, `isCulled`, … |
+| type 'vec4' is outside the supported scalar subset | 20 | `bandColorAt`, `colorCutAt`, `colorCutYsPx`, `cutYsPx`, `edgeSpan`, `fillEdges`, … |
+| member access (vector swizzle or struct field) is outside the supported scalar subset | 19 | `bandCoverage`, `barAaPx`, `bpToClipX`, `capVertex`, `drawsBar`, `drawsDisc`, … |
 | type 'ptr' is outside the supported scalar subset | 17 | `bpToClipX`, `covAreaTop`, `covBaselinePx`, `covBpToClipX`, `covClipKindColor`, `covEffHeight`, … |
 | type 'RibbonCurves' is outside the supported scalar subset | 8 | `bandNormal`, `bandWidthAt`, `curvesCross`, `curvesMeet`, `firstCurve`, `refineCrossing`, … |
 | type 'Cubic' is outside the supported scalar subset | 6 | `armCorner`, `armEnd`, `cubicAt`, `cubicDirection`, `curveVertex`, `lengthTo` |

@@ -32,6 +32,7 @@ module markColor;
 import colorPack;
 import colorRampLut;
 import scoreScale;
+import valueScale;
 
 // What `rampMode` is compared against. `RAMP_NONE` is the packed arm.
 public static const int RAMP_NONE = 0;
@@ -67,6 +68,19 @@ public static const uint RAMP_NOT_A_NUMBER_COLOR = 0xFF808080u;
 // The `cuts` slot `i` names, four to a vector.
 public float colorCutAt(int i, float4 cutsLo, float4 cutsHi) {
   return i < 4 ? cutsLo[i] : cutsHi[i - 4];
+}
+
+// Cuts `from` to `from + 3` placed in the band `h` tall from `bandTop`, on the
+// y scale and unclamped: placed once per vertex and handed to the fragment
+// flat, so a pixel only compares. Slots past `cutCount` are 0.
+public float4 colorCutYsPx(int from, int cutCount, float4 cutsLo, float4 cutsHi, float bandTop, float h, float domainMin, float domainMax, int scaleType, float symlogConstant) {
+  float4 ys = float4(0.0);
+  for (int k = 0; k < 4; k++) {
+    if (from + k < cutCount) {
+      ys[k] = bandTop + valueToYPxUnclamped(colorCutAt(from + k, cutsLo, cutsHi), domainMin, domainMax, h, scaleType, symlogConstant);
+    }
+  }
+  return ys;
 }
 
 // The interval a value is in: how many of the ascending cuts it is at or past.

@@ -6,10 +6,8 @@ import { lineColorAlongY } from '../shaders/lineCommon.js.generated.ts'
 import * as stepShader from '../shaders/lineStepMark.generated.ts'
 import { valueToYPxScaled } from '../shaders/pointMark.js.generated.ts'
 import { rowBandTopPx } from '../shaders/rowTable.js.generated.ts'
-import {
-  denormalizeScore,
-  normalizeScoreUnclamped,
-} from '../shaders/scoreScale.js.generated.ts'
+import { denormalizeScore } from '../shaders/scoreScale.js.generated.ts'
+import { valueToYPxUnclamped } from '../shaders/valueScale.js.generated.ts'
 import { slangPass } from '../slangPass.ts'
 import { abgrToCssRgba } from './colorFill.ts'
 import {
@@ -223,18 +221,19 @@ function valueYPx(g: LineFrame, value: number, slot: number) {
   )
 }
 
-// A value's y in the band for the color test, placed UNCLAMPED where
-// `valueYPx` clamps it to draw: the cuts go through it, and so does the line a
-// threshold colors along, as the shader's `lineColorYPx` does.
+// A value's y in the band for the color test, as the shader's `lineColorYPx`.
 function colorYPx(g: LineFrame, value: number, slot: number) {
-  const norm = normalizeScoreUnclamped(
-    value,
-    g.domainMin,
-    g.domainMax,
-    g.scaleType,
-    g.symlogConstant,
+  return (
+    rowBandTopPx(g.rowOffsetPx, g.pitch, slot) +
+    valueToYPxUnclamped(
+      value,
+      g.domainMin,
+      g.domainMax,
+      g.band,
+      g.scaleType,
+      g.symlogConstant,
+    )
   )
-  return rowBandTopPx(g.rowOffsetPx, g.pitch, slot) + (1 - norm) * g.band
 }
 
 /**

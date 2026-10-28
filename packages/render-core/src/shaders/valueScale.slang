@@ -3,12 +3,22 @@
 // its own anchor (ADR-097). `pointMark.slang` lifts the JS twin.
 //! js-skip: valueToYPx — the linear case of valueToYPxScaled, whose twin pointMark.slang lifts; a shader reading it alone (the score example's scoreBarHeightPx) lifts the caller it sits inside
 //! js-skip: insetValueYPx — its two consumers lift it under their own anchors, pointMark.slang as pointYPx and linkMark.slang as linkValuePx, and those are the spellings the painters and hit tests read; a third twin would be one nothing calls
+//! js-export: valueToYPxUnclamped
 module valueScale;
 
 import scoreScale;
 
 public float valueToYPxScaled(float value, float domainMin, float domainMax, float h, int scaleType, float symlogConstant) {
   return (1.0 - normalizeScore(value, domainMin, domainMax, scaleType, symlogConstant)) * h;
+}
+
+// The same scale UNCLAMPED, for a color test where `valueToYPxScaled` places a
+// value to draw: a threshold's cuts go through it, and so does the line a
+// threshold colors along. Clamped, a cut outside the domain landed on the band
+// edge out-of-domain values are clamped onto too, and a value past the domain
+// took the side of that edge rather than its own.
+public float valueToYPxUnclamped(float value, float domainMin, float domainMax, float h, int scaleType, float symlogConstant) {
+  return (1.0 - normalizeScoreUnclamped(value, domainMin, domainMax, scaleType, symlogConstant)) * h;
 }
 
 public float valueToYPx(float value, float domainMin, float domainMax, float h) {
