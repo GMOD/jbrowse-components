@@ -14,6 +14,8 @@ import type { McpBridgeRequest } from '../../electron/ipc/channelTypes.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AbstractSessionModel } from '@jbrowse/core/util/types'
 
+const SETTLE_AFTER_CODE_MS = 5000
+
 // The raw primitive under all of the above: Claude-authored code against the
 // live model graph. The renderer already runs with nodeIntegration and the
 // bridge socket is user-only, so this grants what the surface as a whole
@@ -296,14 +298,21 @@ async function evaluateWith(
   }
   // read after the code ran: loadSessionSpec inside it replaces the session
   const liveSession = sessionOf(pluginManager)
+  // A navToLocString or applyDisplaySettings does not settle, so without this
+  // a track left behind a too-much-data banner reaches the agent as success
+  const settle = liveSession
+    ? await waitReady(SETTLE_AFTER_CODE_MS, liveSession)
+    : undefined
   const notifications = [
     ...consumedByCode.splice(0),
+    ...(settle?.notifications ?? []),
     ...(liveSession ? undeliveredNotifications(liveSession) : []),
   ]
   const pageErrors = drainPageErrors()
   const extras = {
     ...(logs.length > 0 ? { logs } : {}),
     ...(notifications.length > 0 ? { notifications } : {}),
+    ...(settle?.notReady ? { notReady: settle.notReady } : {}),
     ...(pageErrors.length > 0 ? { pageErrors } : {}),
   }
   if (value === undefined) {
@@ -393,6 +402,7 @@ const LOADING_NOTE =
 // What the page answers without a model: the bridge asks for these while taking
 // a picture or calling a run off, and the first three have to work on the start
 // screen, where no plugin manager is installed at all.
+
 const pageTools: Record<
   string,
   (
