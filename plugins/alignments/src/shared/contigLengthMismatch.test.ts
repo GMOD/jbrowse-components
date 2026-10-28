@@ -43,6 +43,10 @@ function cram(path: string) {
 }
 
 function detect(contigs: Contig[], regions: Record<string, number>) {
+  const columns = {
+    refNames: contigs.map(c => c.refName),
+    lengths: contigs.map(c => c.length),
+  }
   const lengths = assemblyContigLengths(
     Object.entries(regions).map(([refName, end]) => ({
       refName,
@@ -52,7 +56,7 @@ function detect(contigs: Contig[], regions: Record<string, number>) {
   )
   return detectContigLengthMismatch({
     assemblyName: 'asm',
-    contigs,
+    contigs: columns,
     assemblyLengths: lengths,
     getCanonicalRefName: name => (lengths.has(name) ? name : undefined),
   })

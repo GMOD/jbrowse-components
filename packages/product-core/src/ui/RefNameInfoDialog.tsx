@@ -17,7 +17,7 @@ import { DialogContent } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import type { AboutPanelProps } from './util.ts'
-import type { Contig } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { ContigColumns } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 
 const MAX_REF_NAMES = 10_000
@@ -41,14 +41,15 @@ const useStyles = makeStyles()(theme => ({
 function contigLines(
   session: AbstractSessionModel,
   assemblyName: string,
-  contigs: readonly Contig[],
+  { refNames, lengths }: ContigColumns,
 ) {
   const { assemblyManager } = session
   const assembly = assemblyManager.has(assemblyName)
     ? assemblyManager.get(assemblyName)
     : undefined
   const assemblyLengths = assemblyContigLengths(assembly?.regions ?? [])
-  return contigs.map(({ refName, length }) => {
+  return refNames.map((refName, i) => {
+    const length = lengths[i]
     const canonical = assembly?.getCanonicalRefName2(refName) ?? refName
     const assemblyLength = assemblyLengths.get(canonical)
     return length === undefined
@@ -117,7 +118,7 @@ const RefNameInfoDialog = observer(function RefNameInfoDialog({
   // it; an empty list at least says so
   const contigs = data ?? []
   const refNames = contigs.map(
-    ([assemblyName, list]) => [assemblyName, list.map(c => c.refName)] as const,
+    ([assemblyName, list]) => [assemblyName, list.refNames] as const,
   )
   const lines = contigs.map(
     ([assemblyName, list]) =>

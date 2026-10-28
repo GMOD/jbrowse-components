@@ -33,9 +33,10 @@ function setup({
       assemblyRefNames.map(n => [n, n] as const),
     ),
     rpcManager: {
-      call: jest.fn(async () =>
-        fileRefNames.map(refName => ({ refName, length: fileLength })),
-      ),
+      call: jest.fn(async () => ({
+        refNames: fileRefNames,
+        lengths: fileRefNames.map(() => fileLength),
+      })),
     },
     getCanonicalRefName: (name: string) =>
       assemblyRefNames.includes(name) ? name : aliases[name],

@@ -34,7 +34,7 @@ function makeSession(call: Call) {
 }
 
 function contigs(...refNames: string[]) {
-  return refNames.map(refName => ({ refName }))
+  return { refNames, lengths: [] }
 }
 
 function renderConfig(config: AnyConfigurationModel, call: Call) {
@@ -85,12 +85,10 @@ test('shows an error banner when the rpc rejects', async () => {
 })
 
 test("lists the stated lengths, and the assembly's where they differ", async () => {
-  const { findByText } = renderDialog(['volvox'], async () => [
-    { refName: 'ctgA', length: 1_078_177 },
-    { refName: 'ctgB', length: 6079 },
-    { refName: 'ctgC' },
-    { refName: 'notInVolvox', length: 10 },
-  ])
+  const { findByText } = renderDialog(['volvox'], async () => ({
+    refNames: ['ctgA', 'ctgB', 'ctgC', 'notInVolvox'],
+    lengths: [1_078_177, 6079, undefined, 10],
+  }))
   const text = (await findByText(/--- volvox ---/)).textContent
   expect(text.split('\n')).toEqual([
     '--- volvox ---',
@@ -137,7 +135,7 @@ test('says so when a config names no assembly and hangs off none', async () => {
       { trackId: 'track1' },
       { pluginManager: aboutTestPluginManager },
     ),
-    async () => [],
+    async () => contigs(),
   )
   expect(await findByText(/unknown assembly names/)).toBeTruthy()
 })

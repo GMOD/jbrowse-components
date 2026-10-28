@@ -122,7 +122,7 @@ cost is linear in lanes.
   short, so we removed it.
 - **Nothing hands an adapter its sequence**: no RPC passes one, and renaming keeps
   none a caller passes. The display holds a lane's assembly as a temporary one
-  (`installLaneAssemblies`) so `loadRefNameMap`'s `CoreGetRefNames` primes the
+  (`installLaneAssemblies`) so `loadRefNameMap`'s `CoreGetContigs` primes the
   adapter with the genome's sequence. We declined per-lane gene adapters written
   into the star config.
 - **Never call `assemblyManager.get` for a lane the session lacks.** It fires

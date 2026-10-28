@@ -7,6 +7,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 export {
   type AnyDataAdapter,
   type Contig,
+  type ContigColumns,
   type ContigSource,
   isContigSource,
   isFeatureAdapter,

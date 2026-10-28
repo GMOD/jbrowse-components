@@ -77,7 +77,7 @@ export async function loadRefNameMap(
     }),
   )
 
-  const refNames = contigs.map(c => c.refName)
+  const { refNames } = contigs
   const { refNameAliases } = assembly
   if (!refNameAliases) {
     throw new Error(`error loading assembly ${assembly.name}'s refNameAliases`)

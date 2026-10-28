@@ -40,10 +40,10 @@ function regionsOf(lengths: Record<string, number>) {
 }
 
 function contigsOf(lengths: Record<string, number>) {
-  return Object.entries(lengths).map(([refName, length]) => ({
-    refName,
-    length,
-  }))
+  return {
+    refNames: Object.keys(lengths),
+    lengths: Object.values(lengths),
+  }
 }
 
 function detect(
@@ -90,11 +90,10 @@ test('compares only contigs that resolve and state a length', () => {
   expect(
     detectContigLengthMismatch({
       assemblyName: 'asm',
-      contigs: [
-        { refName: 'chr1', length: HG38.chr1 },
-        { refName: 'chr2' },
-        { refName: 'HLA-A*01:01:01:01', length: 3503 },
-      ],
+      contigs: {
+        refNames: ['chr1', 'chr2', 'HLA-A*01:01:01:01'],
+        lengths: [HG38.chr1, undefined, 3503],
+      },
       assemblyLengths: assemblyContigLengths(regionsOf(HG19)),
       getCanonicalRefName: name => (name in HG19 ? name : undefined),
     })?.differences,
@@ -122,7 +121,7 @@ test('does not report when nothing is comparable', () => {
   expect(
     detectContigLengthMismatch({
       assemblyName: 'asm',
-      contigs: [{ refName: 'chr1' }],
+      contigs: { refNames: ['chr1'], lengths: [] },
       assemblyLengths: assemblyContigLengths(regionsOf(HG38)),
       getCanonicalRefName: name => name,
     }),

@@ -1,4 +1,4 @@
-import type { Contig } from '../data_adapters/BaseAdapter/util.ts'
+import type { ContigColumns } from '../data_adapters/BaseAdapter/util.ts'
 
 /**
  * A file made against one genome build and loaded against another with the
@@ -46,15 +46,16 @@ export function assemblyContigLengths(
 
 /** the file's contigs that resolve to an assembly contig, with both lengths */
 export function sharedContigLengths({
-  contigs,
+  contigs: { refNames, lengths },
   assemblyLengths,
   getCanonicalRefName,
 }: {
-  contigs: readonly Contig[]
+  contigs: ContigColumns
   assemblyLengths: ReadonlyMap<string, number>
   getCanonicalRefName: (refName: string) => string | undefined
 }) {
-  return contigs.flatMap(({ refName, length: fileLength }) => {
+  return refNames.flatMap((refName, i) => {
+    const fileLength = lengths[i]
     const canonical = getCanonicalRefName(refName)
     const assemblyLength =
       canonical === undefined ? undefined : assemblyLengths.get(canonical)
@@ -69,7 +70,7 @@ export function detectContigLengthMismatch({
   ...rest
 }: {
   assemblyName: string
-  contigs: readonly Contig[]
+  contigs: ContigColumns
   assemblyLengths: ReadonlyMap<string, number>
   getCanonicalRefName: (refName: string) => string | undefined
 }): ContigLengthMismatch | undefined {

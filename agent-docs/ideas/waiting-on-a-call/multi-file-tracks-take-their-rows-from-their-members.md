@@ -277,6 +277,6 @@ move only where a display's row source changes.
   a non-file adapter (GC content over the sequence), which argues for a name
   about members instead.
 - Whether the mismatch record moves worker-side with the pick. Until it does,
-  `loadRefNameMap` still makes its `CoreGetRefNames` round trip for the record,
+  `loadRefNameMap` still makes its `CoreGetContigs` round trip for the record,
   so step 4 takes the map off the fetch path without taking the stall off the
   first paint.
