@@ -720,8 +720,11 @@
     "@jbrowse/core/assemblyManager/assembly": {
       "package": "@jbrowse/core",
       "names": [
+        "assemblyContigLengths",
         "buildRefNameMaps",
+        "contigLengthMismatchMessage",
         "default",
+        "detectContigLengthMismatch",
         "getSequenceAdapterConfig",
         "lookupGeneticCodeId",
         "refNameMismatchMessage"
@@ -969,6 +972,7 @@
         "BaseFeatureDataAdapter",
         "BaseSequenceAdapter",
         "cachedSetup",
+        "isContigSource",
         "isFeatureAdapter",
         "isRefNameAliasAdapter",
         "isRegionsAdapter",

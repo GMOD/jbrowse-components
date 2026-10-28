@@ -48,7 +48,7 @@ Dotplot1DView
 LinearSyntenyViewHelper
 TimeTraveller
 
-# model members with no description (1287)
+# model members with no description (1288)
 # fix: write a sentence under the member’s #property/#volatile/#getter/#method/#action tag
 AddTrackModel.adapterHint
 AddTrackModel.altAssemblyName
@@ -127,6 +127,7 @@ Assembly.refNameColors
 Assembly.refNames
 Assembly.regions
 Assembly.rpcManager
+Assembly.setContigLengthMismatch
 Assembly.setError
 Assembly.setLoadingP
 AssemblyManager.assemblyNameMap
