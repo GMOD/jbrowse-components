@@ -62,7 +62,7 @@ test('a loose track added to the config or the session expands the same way', as
     uri: 'volvox.filtered.vcf.gz',
     assemblyNames: ['volvox'],
   })
-  expect(getSnapshot(sessionTrack)).toMatchObject({
+  expect(getSnapshot(sessionTrack as AnyConfigurationModel)).toMatchObject({
     type: 'VariantTrack',
     adapter: { type: 'VcfTabixAdapter' },
   })

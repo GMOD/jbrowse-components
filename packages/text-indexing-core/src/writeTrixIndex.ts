@@ -32,7 +32,7 @@ export async function writeTrixIndex({
   outDir: string
   name: string
   policy: IndexingPolicy
-  assemblyNames: string[]
+  assemblyNames?: string[]
   prefixSize?: number
   makeProgress?: (trackId: string) => TrackIndexProgress
   checkAbort?: () => void

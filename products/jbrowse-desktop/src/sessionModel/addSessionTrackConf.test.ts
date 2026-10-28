@@ -5,7 +5,10 @@
 // test rather than a comment because the failure is a guard going false, which
 // throws nothing and shows up as a missing track.
 import PluginManager from '@jbrowse/core/PluginManager'
-import { isSessionWithAddSessionTrack } from '@jbrowse/core/util'
+import {
+  editableConfig,
+  isSessionWithAddSessionTrack,
+} from '@jbrowse/core/util'
 
 import corePlugins from '../corePlugins.ts'
 import rootModelFactory from '../rootModel/rootModel.ts'
@@ -93,7 +96,7 @@ test('the deprecated addTrackConf alias dedupes the same way', () => {
 // own config, so undo and "Reset track settings" reach it.
 test('a desktop track edit is a delta that Reset discards', () => {
   const session = createSession()
-  session.jbrowse.addTrackConf(CONF)
+  editableConfig(session).addTrackConf(CONF)
   const base = session.jbrowse.tracks.find(
     (t: { trackId: string }) => t.trackId === CONF.trackId,
   )

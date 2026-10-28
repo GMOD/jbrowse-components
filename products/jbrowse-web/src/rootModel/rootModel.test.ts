@@ -1,13 +1,14 @@
 // we use mainthread rpc so we mock the makeWorkerInstance to an empty file
 import { resolveMenus } from '@jbrowse/app-core'
 import PluginManager from '@jbrowse/core/PluginManager'
-import { readConfObject } from '@jbrowse/core/configuration'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import { waitFor } from '@testing-library/react'
 
 import corePlugins from '../corePlugins.ts'
 import sessionModelFactory from '../sessionModel/index.ts'
 import rootModelFactory from './rootModel.ts'
+
+import type { LinearSyntenyViewModel } from '@jbrowse/plugin-linear-comparative-view'
 
 jest.mock('../makeWorkerInstance', () => () => {})
 
@@ -139,7 +140,7 @@ describe('getTrackById hydration', () => {
     const first = session.getTrackById('frozenTrack1')
     const second = session.getTrackById('frozenTrack1')
     expect(first).toBe(second)
-    expect(readConfObject(first, 'name')).toBe('first')
+    expect(first!.name).toBe('first')
   })
 
   test('yields a new instance after updateTrackConf replaces the frozen entry', () => {
@@ -153,7 +154,7 @@ describe('getTrackById hydration', () => {
     })
     const after = session.getTrackById('frozenTrack1')
     expect(after).not.toBe(before)
-    expect(readConfObject(after, 'name')).toBe('renamed')
+    expect(after!.name).toBe('renamed')
   })
 
   test('unchanged entries keep identity when a sibling is edited', () => {
@@ -262,7 +263,7 @@ describe('connection track persistence', () => {
     const session2 = root2.session!
     expect(session2.connectionInstances.length).toBe(0)
     const resolved = session2.getTrackById('connTrack1')
-    expect(readConfObject(resolved, 'name')).toBe('Conn Track 1')
+    expect(resolved!.name).toBe('Conn Track 1')
   })
 
   test('editing a connection track persists into connectionTrackConfigs', () => {
@@ -321,7 +322,7 @@ test('throws if session is invalid', () => {
   expect(() => {
     getRootModel().create({
       ...mainThreadConfig,
-      session: {},
+      session: {} as { name: string },
     })
   }).toThrow()
 })
@@ -603,7 +604,8 @@ test('keeps a synteny session whose level holds a track this build cannot make',
   root.setSession(snapshot)
   const session = root.session!
   expect(session.views.map((v: { id: string }) => v.id)).toEqual(['syn'])
-  expect(session.views[0].levels[0].tracks.length).toBe(0)
+  const view = session.views[0] as LinearSyntenyViewModel
+  expect(view.levels[0]!.tracks.length).toBe(0)
   expect(session.snackbarMessages.at(-1)?.message).toContain(
     'ImaginarySyntenyTrack',
   )

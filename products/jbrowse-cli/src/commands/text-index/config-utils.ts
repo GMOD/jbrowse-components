@@ -86,6 +86,9 @@ function canonicalAssemblyName(config: Config) {
   return (name: string) => byName.get(name) ?? name
 }
 
+// a track the index can name an assembly for
+export type PlacedTrack = Track & { assemblyNames: string[] }
+
 // why a track was left out, or undefined if it is indexable
 function skipReason(
   track: Track,
@@ -93,7 +96,9 @@ function skipReason(
   excludeSet: Set<string>,
   canonical: (name: string) => string,
 ) {
-  if (
+  if (!track.assemblyNames) {
+    return 'names no assembly'
+  } else if (
     assemblyName &&
     !track.assemblyNames.some(n => canonical(n) === canonical(assemblyName))
   ) {
@@ -114,8 +119,15 @@ export function getTrackConfigs(
   trackIds?: string[],
   assemblyName?: string,
   excludeTrackIds?: string[],
-): Track[] {
-  const tracks = config.tracks ?? []
+): PlacedTrack[] {
+  // a config with one assembly may leave a track's assemblyNames off, as the
+  // app reads it
+  const assemblies =
+    config.assemblies ?? (config.assembly ? [config.assembly] : [])
+  const only = assemblies.length === 1 ? [assemblies[0]!.name] : undefined
+  const tracks = (config.tracks ?? []).map(t =>
+    t.assemblyNames || !only ? t : { ...t, assemblyNames: only },
+  )
 
   // when specific trackIds are requested every one must exist; otherwise
   // consider all tracks in the config
@@ -134,7 +146,7 @@ export function getTrackConfigs(
 
   const excludeSet = new Set(excludeTrackIds)
   const canonical = canonicalAssemblyName(config)
-  return requested.filter(track => {
+  return requested.filter((track): track is PlacedTrack => {
     const reason = skipReason(track, assemblyName, excludeSet, canonical)
     // only narrate skips for tracks the user named: sweeping a multi-assembly
     // config otherwise prints a line per track per assembly

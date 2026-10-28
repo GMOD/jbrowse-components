@@ -33,7 +33,7 @@ async function loadedDotplotDisplay() {
     },
     { timeout: 30000 },
   )
-  const display = view.tracks[0].displays[0]
+  const display = view.dotplotDisplays[0]!
   await waitFor(
     () => {
       expect(display.instanceData).toBeDefined()
@@ -49,13 +49,13 @@ async function loadedDotplotDisplay() {
 test('a color change recolors without rebuilding geometry', async () => {
   const { view, display } = await loadedDotplotDisplay()
   const positions = display.instanceData
-  const colorsBefore = Uint32Array.from(display.geometry.colors)
+  const colorsBefore = Uint32Array.from(display.geometry!.colors)
 
   view.setColorField('strand')
 
   expect(display.instanceData).toBe(positions)
-  expect(display.geometry.colors).not.toStrictEqual(colorsBefore)
-  expect(display.geometry.colors.length).toBe(colorsBefore.length)
+  expect(display.geometry!.colors).not.toStrictEqual(colorsBefore)
+  expect(display.geometry!.colors.length).toBe(colorsBefore.length)
 }, 45000)
 
 // Alpha is the one setting that recolors *nothing*. It rides the shader's
@@ -66,14 +66,14 @@ test('a color change recolors without rebuilding geometry', async () => {
 test('an alpha change rebuilds neither geometry nor colors', async () => {
   const { view, display } = await loadedDotplotDisplay()
   const positions = display.instanceData
-  const colorsBefore = Uint32Array.from(display.geometry.colors)
+  const colorsBefore = Uint32Array.from(display.geometry!.colors)
 
   view.setOpacity(0.5)
 
   expect(display.instanceData).toBe(positions)
-  expect(display.geometry.colors).toStrictEqual(colorsBefore)
+  expect(display.geometry!.colors).toStrictEqual(colorsBefore)
   // the alpha byte stays saturated: opacity is never packed into these bytes
-  expect(display.geometry.colors[0]! >>> 24).toBe(255)
+  expect(display.geometry!.colors[0]! >>> 24).toBe(255)
   // ...and it reaches the draw path as a render-state scalar instead
   expect(view.dotplotRenderState.alpha).toBe(0.5)
 }, 45000)
@@ -96,7 +96,7 @@ test('a track shown after a settings change inherits them', async () => {
     },
     { timeout: 30000 },
   )
-  const added = view.dotplotDisplays[1]
+  const added = view.dotplotDisplays[1]!
   await waitFor(
     () => {
       expect(added.geometry).toBeDefined()
@@ -106,10 +106,10 @@ test('a track shown after a settings change inherits them', async () => {
 
   // the length filter was in force for this display's very first geometry build
   expect(view.minLength).toBe(1e9)
-  expect(added.geometry.instanceCount).toBe(0)
+  expect(added.geometry!.instanceCount).toBe(0)
 
   view.setLowerBound('length', 0)
-  expect(added.geometry.instanceCount).toBeGreaterThan(0)
+  expect(added.geometry!.instanceCount).toBeGreaterThan(0)
 
   // opacity reaches the newcomer without any per-display state to inherit: one
   // uniform covers every display the frame draws, this one included. Asserting
@@ -122,7 +122,7 @@ test('a track shown after a settings change inherits them', async () => {
     ),
   ).toContain(added.displayKey)
   // and it is a uniform, not a byte, on this display too
-  expect(added.geometry.colors[0]! >>> 24).toBe(255)
+  expect(added.geometry!.colors[0]! >>> 24).toBe(255)
 }, 45000)
 
 // Two alignment files drawn into one plot used to be indistinguishable — same
@@ -162,9 +162,11 @@ async function twoOverlaidTracks() {
 
 test('overlaid tracks get distinct colors, and a pin displaces its sibling', async () => {
   const view = await twoOverlaidTracks()
-  const [a, b] = view.tracks.map(
+  const ids = view.tracks.map(
     (t: { configuration: { trackId: string } }) => t.configuration.trackId,
   )
+  const a = ids[0]!
+  const b = ids[1]!
 
   expect(view.trackColorFor(a)).not.toBe(view.trackColorFor(b))
 

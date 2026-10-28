@@ -12,6 +12,7 @@ test('session.jbrowse and root.jbrowse are typed', () => {
     IsAny<AbstractSessionModel['jbrowse']>,
     IsAny<BaseRootModel['jbrowse']>,
     IsAny<BaseRootModel['jbrowse']['plugins']>,
-  ] = [false, false, false, false, false]
-  expect(pins).toEqual([false, false, false, false, false])
+    IsAny<BaseRootModel['session']>,
+  ] = [false, false, false, false, false, false]
+  expect(pins).toEqual([false, false, false, false, false, false])
 })

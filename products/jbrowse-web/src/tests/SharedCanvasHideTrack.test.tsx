@@ -52,6 +52,8 @@ function fakeBackend() {
         calls.rendered.push(blocks.map(b => b.displayedRegionIndex))
         return blocks.length > 0
       },
+      setErrorHandler() {},
+      releaseOffscreenTargets() {},
       dispose() {},
     },
   }
@@ -108,7 +110,7 @@ async function loadedSynteny(tracks: string[]) {
     },
     { timeout: 30000 },
   )
-  const level = view.levels[0]
+  const level = view.levels[0]!
   const { calls, backend } = fakeBackend()
   level.startRenderingBackend(backend)
   await waitFor(
@@ -159,7 +161,7 @@ test('dotplot: hiding one of two leaves the survivor drawn under its own key', a
     expect(calls.rendered.at(-1)).toStrictEqual([survivorKey])
   })
   expect(calls.deleted).toStrictEqual([hiddenKey])
-  expect(view.dotplotDisplays[0].displayKey).toBe(survivorKey)
+  expect(view.dotplotDisplays[0]!.displayKey).toBe(survivorKey)
 }, 45000)
 
 test('synteny: hiding the last track repaints the level empty', async () => {

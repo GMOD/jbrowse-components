@@ -6,6 +6,10 @@ import corePlugins from '../corePlugins.ts'
 import sessionModelFactory from '../sessionModel/index.ts'
 import rootModelFactory from './rootModel.ts'
 
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import type { LinearMultiSampleVariantDisplayModel } from '@jbrowse/plugin-variants'
+import type { LinearWiggleDisplayModel } from '@jbrowse/plugin-wiggle/LinearWiggleDisplay/stateModel'
+
 jest.mock('../makeWorkerInstance', () => () => {})
 
 // A v4 session or share link, loaded the way a product loads one, and read
@@ -166,13 +170,19 @@ async function load(snap: Record<string, unknown>) {
   const { root, pluginManager } = setup()
   await pluginManager.preloadSessionTypes(snap)
   root.setSession(snap)
-  const session = root.session
+  const session = root.session!
   return {
-    display: session.views[0].tracks[0]?.displays[0],
+    display: (session.views[0] as LinearGenomeViewModel).tracks[0]!
+      .displays[0]!,
     notifications: (session.snackbarMessages as { message: string }[]).map(
       n => n.message,
     ),
   }
+}
+
+async function loadWiggle(snap: Record<string, unknown>) {
+  const { display, notifications } = await load(snap)
+  return { display: display as LinearWiggleDisplayModel, notifications }
 }
 
 test('a v4 pileup display on a config.json track keeps its settings', async () => {
@@ -215,7 +225,7 @@ test('a v4 read-arcs display on a config.json track keeps drawing arcs', async (
 })
 
 test('a v4 multi-wiggle display opens as rows, in its order and colors', async () => {
-  const { display, notifications } = await load(
+  const { display, notifications } = await loadWiggle(
     v4Session('MultiQuantitativeTrack', 'multi', {
       type: 'MultiLinearWiggleDisplay',
       configuration: 'multi-MultiLinearWiggleDisplay',
@@ -239,7 +249,7 @@ test('a v4 multi-wiggle display opens as rows, in its order and colors', async (
 // the lifted settings land on still spells the retired type and meets the
 // retired-type fold a second time when it hydrates.
 test('a v4 multi-wiggle SESSION track opens as rows', async () => {
-  const { display } = await load({
+  const { display } = await loadWiggle({
     name: 'v4',
     sessionTracks: [
       {
@@ -290,7 +300,7 @@ test('a v4 multi-wiggle SESSION track opens as rows', async () => {
 })
 
 test('a v4 multi-wiggle SESSION track left overlaid stays overlaid', async () => {
-  const { display } = await load({
+  const { display } = await loadWiggle({
     name: 'v4',
     sessionTracks: [
       {
@@ -339,7 +349,7 @@ test('a v4 multi-wiggle SESSION track left overlaid stays overlaid', async () =>
 })
 
 test('a v4 multi-wiggle display left overlaid stays overlaid', async () => {
-  const { display } = await load(
+  const { display } = await loadWiggle(
     v4Session('MultiQuantitativeTrack', 'multi', {
       type: 'MultiLinearWiggleDisplay',
       configuration: 'multi-MultiLinearWiggleDisplay',
@@ -351,7 +361,7 @@ test('a v4 multi-wiggle display left overlaid stays overlaid', async () => {
 })
 
 test('a v4 multi-wiggle display on its default opens as rows', async () => {
-  const { display } = await load(
+  const { display } = await loadWiggle(
     v4Session('MultiQuantitativeTrack', 'multi', {
       type: 'MultiLinearWiggleDisplay',
       configuration: 'multi-MultiLinearWiggleDisplay',
@@ -363,7 +373,7 @@ test('a v4 multi-wiggle display on its default opens as rows', async () => {
 
 // the lifted arrangement names no field, and must not switch the rows off
 test('a v4 multi-wiggle display arranged on its default keeps its rows', async () => {
-  const { display } = await load(
+  const { display } = await loadWiggle(
     v4Session('MultiQuantitativeTrack', 'multi', {
       type: 'MultiLinearWiggleDisplay',
       configuration: 'multi-MultiLinearWiggleDisplay',
@@ -380,7 +390,7 @@ test('a v4 multi-wiggle display arranged on its default keeps its rows', async (
 })
 
 test("a hosted config's overlaid multi-wiggle opens overlaid", async () => {
-  const { display } = await load(
+  const { display } = await loadWiggle(
     v4Session('MultiQuantitativeTrack', 'layered', {
       type: 'LinearWiggleDisplay',
       configuration: 'layered-LinearWiggleDisplay',
@@ -391,7 +401,7 @@ test("a hosted config's overlaid multi-wiggle opens overlaid", async () => {
 })
 
 test('a v4 wiggle display keeps the scale, field, grid and colors a reader set', async () => {
-  const { display } = await load(
+  const { display } = await loadWiggle(
     v4Session('QuantitativeTrack', 'bw', {
       type: 'LinearWiggleDisplay',
       configuration: 'bw-LinearWiggleDisplay',
@@ -417,16 +427,18 @@ test('a v4 wiggle display keeps the scale, field, grid and colors a reader set',
 })
 
 test('a v4 clustered multi-sample variant display loads with its order, tree and filters', async () => {
-  const { display } = await load(
-    v4Session('VariantTrack', 'vcf', {
-      type: 'MultiLinearVariantDisplay',
-      configuration: 'vcf-MultiLinearVariantDisplay',
-      layout: [{ name: 'HG00097', color: '#e41a1c' }, { name: 'HG00096' }],
-      clusterTree: '(HG00097:1,HG00096:1);',
-      subtreeFilter: ['HG00097'],
-      jexlFilters: ["get(feature,'QUAL')>30"],
-    }),
-  )
+  const display = (
+    await load(
+      v4Session('VariantTrack', 'vcf', {
+        type: 'MultiLinearVariantDisplay',
+        configuration: 'vcf-MultiLinearVariantDisplay',
+        layout: [{ name: 'HG00097', color: '#e41a1c' }, { name: 'HG00096' }],
+        clusterTree: '(HG00097:1,HG00096:1);',
+        subtreeFilter: ['HG00097'],
+        jexlFilters: ["get(feature,'QUAL')>30"],
+      }),
+    )
+  ).display as LinearMultiSampleVariantDisplayModel
   expect(display.type).toBe('LinearMultiSampleVariantDisplay')
   expect(display.configuredFilters()).toEqual(["jexl:get(feature,'QUAL')>30"])
   expect(display.rowSort).toEqual(['HG00097', 'HG00096'])
@@ -444,10 +456,11 @@ function wiggleSlots(display: Parameters<typeof getConf>[0]) {
 }
 
 async function reload({ root, pluginManager }: ReturnType<typeof setup>) {
-  const snap = getSnapshot(root.session)
+  const snap = getSnapshot(root.session!)
   await pluginManager.preloadSessionTypes(snap)
   root.setSession(snap)
-  return root.session.views[0].tracks[0]?.displays[0]
+  return (root.session!.views[0] as LinearGenomeViewModel).tracks[0]!
+    .displays[0]!
 }
 
 test.each([
@@ -485,7 +498,8 @@ test.each([
     }
     await pluginManager.preloadSessionTypes(snap)
     root.setSession(snap)
-    const display = root.session.views[0].tracks[0]?.displays[0]
+    const display = (root.session!.views[0] as LinearGenomeViewModel).tracks[0]!
+      .displays[0]!
     expect(display.type).toBe('LinearWiggleDisplay')
     expect(wiggleSlots(display)).toEqual(expected)
     expect(wiggleSlots(await reload(harness))).toEqual(expected)
@@ -501,13 +515,13 @@ test('a multi-wiggle track a reader overlays stays overlaid after a reload', asy
   })
   await pluginManager.preloadSessionTypes(snap)
   root.setSession(snap)
-  const track = root.session.views[0].tracks[0]
-  const display = track.displays[0]
+  const track = (root.session!.views[0] as LinearGenomeViewModel).tracks[0]!
+  const display = track.displays[0] as LinearWiggleDisplayModel
   expect(display.type).toBe('LinearWiggleDisplay')
   expect(display.isRowLayout).toBe(true)
   display.setRowLayout(false)
   track.persistConfigurationNow()
-  const reloaded = await reload(harness)
+  const reloaded = (await reload(harness)) as LinearWiggleDisplayModel
   expect(reloaded.isRowLayout).toBe(false)
   expect(getConf(reloaded, ['rows', 'field'])).toBe('')
 })

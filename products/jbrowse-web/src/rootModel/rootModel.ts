@@ -48,8 +48,9 @@ import {
 import { savedSessionMenuItems } from './sessionMenus.ts'
 
 import type { SessionDBHandle } from '../sessionDbOps.ts'
+import type productSessionModelFactory from '../sessionModel/index.ts'
 import type { Session, SessionMetadata } from '../types.ts'
-import type { Menu, SessionModelFactory } from '@jbrowse/app-core'
+import type { Menu } from '@jbrowse/app-core'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
@@ -143,7 +144,7 @@ export default function RootModel({
   adminMode = false,
 }: {
   pluginManager: PluginManager
-  sessionModelFactory: SessionModelFactory
+  sessionModelFactory: typeof productSessionModelFactory
   adminMode?: boolean
 }) {
   const assemblyConfigSchema = assemblyConfigSchemaFactory(pluginManager)
@@ -542,13 +543,10 @@ export default function RootModel({
                 label: 'Assembly manager',
                 icon: DNA,
                 onClick: () => {
-                  self.session?.queueDialog((onClose: () => void) => [
+                  const { session } = self
+                  session?.queueDialog((onClose: () => void) => [
                     AssemblyManager,
-                    {
-                      onClose,
-                      session: self.session,
-                      rootModel: self,
-                    },
+                    { onClose, session, rootModel: self },
                   ])
                 },
               },

@@ -77,6 +77,25 @@ describe('getTrackConfigs', () => {
     expect(getTrackConfigs(aliased, undefined, 'hg38')).toHaveLength(1)
   })
 
+  test('a track with no assemblyNames is on the only assembly', () => {
+    const { assemblyNames: _, ...bare } = mockConfig.tracks![0]!
+    const tracks = getTrackConfigs(
+      { assemblies: mockConfig.assemblies, tracks: [bare] },
+      undefined,
+      'test_assembly',
+    )
+    expect(tracks.map(t => t.assemblyNames)).toEqual([['test_assembly']])
+  })
+
+  test('a track with no assemblyNames is skipped beside two assemblies', () => {
+    const { assemblyNames: _, ...bare } = mockConfig.tracks![0]!
+    const twoAssemblies: Config = {
+      assemblies: [{ name: 'a' } as Assembly, { name: 'b' } as Assembly],
+      tracks: [bare],
+    }
+    expect(getTrackConfigs(twoAssemblies, undefined, 'a')).toEqual([])
+  })
+
   test('returns all supported tracks when trackIds is empty array', () => {
     const tracks = getTrackConfigs(mockConfig, [], 'test_assembly')
     expect(tracks.map(t => t.trackId)).toEqual(['gff3_track', 'vcf_track'])

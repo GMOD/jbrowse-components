@@ -3,15 +3,11 @@ import type { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager/ass
 import type { IAnyType } from '@jbrowse/mobx-state-tree'
 
 /**
- * What each app product's root model takes as its `sessionModelFactory`
- * argument: the root builds the assembly config schema once and hands it to the
- * session model, so the session's assembly slots are the same type the root's
- * are rather than a second schema built from the same plugins.
+ * A session model factory taking the root's assembly config schema, so the
+ * session's assembly slots are the same type the root's are.
  *
- * One name for the three roots that take it (web, desktop, react-app). They had
- * a copy each, and two of them spelled the schema as a local
- * `ReturnType<typeof assemblyConfigSchemaFactory>` alias — which is what
- * `BaseAssemblyConfigSchema` already is.
+ * @deprecated each app root now types its `sessionModelFactory` as its own
+ * product's factory, which keeps the session's type; this erases it.
  */
 export type SessionModelFactory = (args: {
   pluginManager: PluginManager

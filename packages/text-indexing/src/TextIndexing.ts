@@ -52,7 +52,7 @@ function indexDriver({
   outDir: string
   name: string
   policy: IndexingPolicy
-  assemblyNames: string[]
+  assemblyNames?: string[]
   statusCallback: StatusCallback | undefined
   signal?: AbortSignal
 }) {

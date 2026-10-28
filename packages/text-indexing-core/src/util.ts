@@ -50,8 +50,8 @@ export interface Track {
     skipTextIndex?: boolean
     [key: string]: unknown
   }
-  name: string
-  assemblyNames: string[]
+  name?: string
+  assemblyNames?: string[]
   trackId: string
   category?: string[]
   description?: string

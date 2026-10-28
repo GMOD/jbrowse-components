@@ -1,5 +1,9 @@
 export { BaseRootModelFactory, isRootModel } from './BaseRootModel.ts'
-export type { BaseRootModel, BaseRootModelType } from './BaseRootModel.ts'
+export type {
+  BaseRootModel,
+  BaseRootModelType,
+  RootSession,
+} from './BaseRootModel.ts'
 export { InternetAccountsRootModelMixin } from './InternetAccounts.ts'
 export type {
   RootModelWithInternetAccounts,

@@ -108,7 +108,7 @@ export async function run(args?: string[]) {
     config,
     target,
     itemType: 'track',
-    itemName: trackConfig.name,
+    itemName: trackConfig.name ?? trackConfig.trackId,
     itemId: trackConfig.trackId,
     wasOverwritten,
   })

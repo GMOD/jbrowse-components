@@ -14,7 +14,8 @@ import {
   validateTrackConfigs,
 } from './validators.ts'
 
-import type { SearchIndexEntry, Track } from '../../base.ts'
+import type { SearchIndexEntry } from '../../base.ts'
+import type { PlacedTrack } from './config-utils.ts'
 import type { TextIndexFlags } from './index.ts'
 
 export async function perTrackIndex(flags: TextIndexFlags): Promise<void> {
@@ -52,7 +53,7 @@ export async function perTrackIndex(flags: TextIndexFlags): Promise<void> {
 
   // sequential, not Promise.all: each track's indexer owns the progress bar and
   // streams a whole file through ixIxx
-  const indexed: Track[] = []
+  const indexed: PlacedTrack[] = []
   for (const trackConfig of confs) {
     const { textSearching, trackId, assemblyNames } = trackConfig
     if (textSearching?.textSearchAdapter && !force) {

@@ -73,7 +73,7 @@ test('a plugin reload does not read the rootModel it just destroyed', async () =
     await act(async () => {
       oldRoot.reloadPluginManagerCallback(
         getSnapshot(oldRoot.jbrowse) as Record<string, unknown>,
-        getSnapshot(oldRoot.session),
+        getSnapshot(oldRoot.session!)!,
       )
     })
     await waitFor(() => {

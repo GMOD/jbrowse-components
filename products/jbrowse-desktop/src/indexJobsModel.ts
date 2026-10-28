@@ -23,6 +23,7 @@ import { NAME_INDICES_DIR } from '../electron/ipc/channelTypes.ts'
 import { invokeIpc } from './ipc.ts'
 
 import type { DesktopRootModel } from './rootModel/rootModel.ts'
+import type { TrackConfigEntry } from '@jbrowse/core/configuration'
 import type RpcManager from '@jbrowse/core/rpc/RpcManager'
 import type { RpcStatus, SessionWithDrawerWidgets } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -34,7 +35,9 @@ export interface JobsManagerParent {
   jbrowse: {
     rpcManager: RpcManager
   }
-  session: SessionWithDrawerWidgets & { trackBasesById: Map<string, Track> }
+  session?: SessionWithDrawerWidgets & {
+    trackBasesById: Map<string, TrackConfigEntry>
+  }
   updateTrackBase: (trackConf: {
     trackId: string
     [key: string]: unknown
@@ -42,9 +45,7 @@ export interface JobsManagerParent {
 }
 
 // getParent<JobsManagerParent> is unchecked, so this fails the build when the
-// root stops providing what the shadow claims. It cannot check `session`, which
-// BaseRootModel declares against IAnyType: those members are checked by hand
-// against sessionModel.ts, and no action here runs before a session is set.
+// root stops providing what the shadow claims.
 export type _JobsManagerParentCheck = AssertExtends<
   DesktopRootModel,
   JobsManagerParent
@@ -159,13 +160,17 @@ export default function jobsModelFactory() {
        * Each track's base: its sessionTracks entry, else its config.json entry
        */
       get tracks() {
-        return [...this.root.session.trackBasesById.values()]
+        return [...this.session.trackBasesById.values()]
       },
       /**
        * #getter
        */
       get session() {
-        return this.root.session
+        const { session } = this.root
+        if (!session) {
+          throw new Error('no session is open')
+        }
+        return session
       },
     }))
     .actions(self => ({

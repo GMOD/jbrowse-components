@@ -11,8 +11,11 @@ import { isAlive, types } from '@jbrowse/mobx-state-tree'
 
 import { BaseRootModelFactory } from './BaseRootModel.ts'
 
-import type { EditableJBrowseConfigModel } from '@jbrowse/core/util'
-import type { IType } from '@jbrowse/mobx-state-tree'
+import type {
+  AbstractSessionModel,
+  EditableJBrowseConfigModel,
+} from '@jbrowse/core/util'
+import type { IType, Instance } from '@jbrowse/mobx-state-tree'
 
 // A build with exactly one registered view type, so a snapshot naming it gets
 // past pruneUnbuildableNodes and is refused by MST instead — the malformed
@@ -62,6 +65,22 @@ function makeRootType() {
   pluginManager.createPluggableElements()
   pluginManager.configure()
   const assemblyConfigSchema = assemblyConfigSchemaFactory(pluginManager)
+  const sessionModelType = types
+    .model('TestSession', {
+      name: types.string,
+      views: types.array(pluginManager.pluggableMstType('view', 'stateModel')),
+    })
+    .volatile(() => ({
+      notifications: [] as string[],
+    }))
+    .actions(self => ({
+      notify(message: string) {
+        self.notifications.push(message)
+      },
+      setName(name: string) {
+        self.name = name
+      },
+    }))
   return BaseRootModelFactory({
     pluginManager,
     // a stub: the root under test reads only its configuration and assemblies
@@ -72,21 +91,12 @@ function makeRootType() {
       assemblies: types.array(assemblyConfigSchema),
       defaultSession: types.frozen<Record<string, unknown>>({}),
     }) as unknown as IType<any, any, EditableJBrowseConfigModel>,
-    sessionModelType: types
-      .model('TestSession', {
-        name: types.string,
-        views: types.array(
-          pluginManager.pluggableMstType('view', 'stateModel'),
-        ),
-      })
-      .volatile(() => ({
-        notifications: [] as string[],
-      }))
-      .actions(self => ({
-        notify(message: string) {
-          self.notifications.push(message)
-        },
-      })),
+    // a stub: it implements only the slice of a session this test reads
+    sessionModelType: sessionModelType as unknown as IType<
+      any,
+      any,
+      Instance<typeof sessionModelType> & AbstractSessionModel
+    >,
     assemblyConfigSchema,
   })
 }
@@ -113,14 +123,14 @@ test('a new session keeps the default session name as it is', () => {
   })
   root.setDefaultSession()
   root.setDefaultSession()
-  expect(root.session.name).toBe('Curated')
+  expect(root.session!.name).toBe('Curated')
 })
 
 test('swaps in a new session', () => {
   const root = makeRoot()
   const oldSession = root.session
   root.setSession({ name: 'new session', views: [goodView] })
-  expect(root.session.name).toBe('new session')
+  expect(root.session!.name).toBe('new session')
   expect(root.session).not.toBe(oldSession)
 })
 
@@ -135,7 +145,7 @@ test('keeps the old session when the new snapshot fails to build', () => {
     root.setSession({ name: 'new session', views: [badView] })
   }).toThrow(/not assignable to type/)
   expect(root.session).toBe(oldSession)
-  expect(root.session.name).toBe('old session')
+  expect(root.session!.name).toBe('old session')
   expect(isAlive(oldSession)).toBe(true)
 })
 

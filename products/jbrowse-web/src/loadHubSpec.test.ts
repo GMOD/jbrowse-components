@@ -6,6 +6,8 @@ import { loadHubSpec, parseHubShortLabel } from './loadHubSpec.ts'
 import rootModelFactory from './rootModel/rootModel.ts'
 import sessionModelFactory from './sessionModel/index.ts'
 
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+
 jest.mock('./makeWorkerInstance', () => () => {})
 
 // the connection's hub.txt read (loadHubSpec's own shortLabel read goes through
@@ -122,8 +124,8 @@ describe('loadHubSpec', () => {
       pluginManager,
     )
 
-    const session = rootModel.session
-    expect(session.sessionConnections[0].name).toBe('my-hub')
+    const session = rootModel.session!
+    expect(session.sessionConnections[0]!.name).toBe('my-hub')
   })
 
   it('renames the connection once hub.txt resolves with a shortLabel', async () => {
@@ -139,8 +141,8 @@ describe('loadHubSpec', () => {
       pluginManager,
     )
 
-    const session = rootModel.session
-    expect(session.sessionConnections[0].name).toBe('My Cool Hub')
+    const session = rootModel.session!
+    expect(session.sessionConnections[0]!.name).toBe('My Cool Hub')
   })
 })
 
@@ -192,8 +194,9 @@ describe('loadHubSpec with a view init', () => {
     await p
 
     expect(session.views).toHaveLength(1)
-    expect(session.views[0].type).toBe('LinearGenomeView')
-    expect(session.views[0].pendingLaunch).toMatchObject({
+    const view = session.views[0] as LinearGenomeViewModel
+    expect(view.type).toBe('LinearGenomeView')
+    expect(view.pendingLaunch).toMatchObject({
       loc: 'chr1:1-100',
       assembly: 'hubAsm',
     })
@@ -216,7 +219,9 @@ describe('loadHubSpec with a view init', () => {
 
     const session = rootModel.session!
     expect(session.views).toHaveLength(1)
-    expect(session.views[0].error).toBe('Assembly notInThisHub not found')
+    expect((session.views[0] as LinearGenomeViewModel).error).toBe(
+      'Assembly notInThisHub not found',
+    )
   })
 
   // a single-file hub's doConnect launches its own LGV at the hub's defaultPos;
@@ -230,7 +235,7 @@ describe('loadHubSpec with a view init', () => {
       pluginManager,
     )
 
-    expect(rootModel.session!.connectionInstances[0].silent).toBe(true)
+    expect(rootModel.session!.connectionInstances[0]!.silent).toBe(true)
   })
 
   it('leaves the hub to launch its own view when there is no view init', () => {
@@ -239,7 +244,7 @@ describe('loadHubSpec with a view init', () => {
 
     void loadHubSpec({ hubURL }, pluginManager)
 
-    expect(rootModel.session!.connectionInstances[0].silent).toBe(false)
+    expect(rootModel.session!.connectionInstances[0]!.silent).toBe(false)
   })
 
   // the launcher resolves against an assembly name, and a hub's genome ids are
@@ -262,7 +267,7 @@ describe('loadHubSpec with a view init', () => {
     ).toBe(true)
     // the hub itself still loaded, non-silently, so its own defaultPos launch
     // remains the best guess available
-    expect(session.connectionInstances[0].silent).toBe(false)
+    expect(session.connectionInstances[0]!.silent).toBe(false)
   })
 
   it('names whichever params an assembly-less init carried', async () => {
@@ -307,9 +312,7 @@ describe('loadHubSpec with sessionTracks', () => {
     void loadHubSpec({ hubURL, sessionTracks: [TRACK] }, pluginManager)
 
     const session = rootModel.session!
-    expect(
-      session.sessionTracks.map((t: { trackId: string }) => t.trackId),
-    ).toEqual(['url_track'])
+    expect(session.sessionTracks.map(t => t.trackId)).toEqual(['url_track'])
     // registered by the time the connection exists, which is what lets a view
     // launched after the hub's assembly resolves name the track in `&tracks=`
     expect(session.connectionInstances).toHaveLength(1)

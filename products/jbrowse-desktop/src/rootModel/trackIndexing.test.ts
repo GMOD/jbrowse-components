@@ -124,10 +124,10 @@ test('indexing a session track writes the index into its session entry', async (
   await runIndexJob(root, 'session_genes')
 
   expect(rpcCall).toHaveBeenCalledTimes(1)
-  expect(indexFileOf(getSnapshot(root.session.sessionTracks[0]))).toBe(
+  expect(indexFileOf(getSnapshot(root.session!.sessionTracks[0]!))).toBe(
     'session_genes-index.ix',
   )
-  expect(indexFileOf(root.session.getTrackById('session_genes'))).toBe(
+  expect(indexFileOf(root.session!.getTrackById('session_genes'))).toBe(
     'session_genes-index.ix',
   )
   expect(indexFileOf(root.jbrowse.tracks[0])).toBeUndefined()
@@ -141,7 +141,7 @@ test('undo and redo step over a session track index', async () => {
   const history = root.history
   await jest.advanceTimersByTimeAsync(QUEUE_DELAY_MS)
   const entryIndex = () =>
-    indexFileOf(getSnapshot(root.session.sessionTracks[0]))
+    indexFileOf(getSnapshot(root.session!.sessionTracks[0]!))
 
   await runIndexJob(root, 'session_genes')
   // the history records a change once the session has been quiet for 300ms
@@ -162,6 +162,6 @@ test('indexing a config track writes the index into jbrowse.tracks', async () =>
 
   expect(indexFileOf(root.jbrowse.tracks[0])).toBe('config_genes-index.ix')
   expect(
-    indexFileOf(getSnapshot(root.session.sessionTracks[0])),
+    indexFileOf(getSnapshot(root.session!.sessionTracks[0]!)),
   ).toBeUndefined()
 })

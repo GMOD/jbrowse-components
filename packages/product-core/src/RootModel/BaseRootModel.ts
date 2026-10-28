@@ -17,12 +17,14 @@ import {
 import { migrateSessionSnapshot } from '../sessionMigrations/index.ts'
 import { dropUnloadableTracks } from '../sessionUtils.ts'
 
-import type { BaseSession } from '../Session/BaseSession.ts'
 import type { UnbuildableNode } from '../pruneUnbuildableNodes.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager'
 import type { RpcManagerOptions } from '@jbrowse/core/rpc/RpcManager'
-import type { EditableJBrowseConfigModel } from '@jbrowse/core/util'
+import type {
+  AbstractSessionModel,
+  EditableJBrowseConfigModel,
+} from '@jbrowse/core/util'
 import type {
   IAnyType,
   IType,
@@ -30,12 +32,11 @@ import type {
   SnapshotIn,
 } from '@jbrowse/mobx-state-tree'
 
-// `session` is a `types.maybe(sessionModelType)` where `sessionModelType` is the
-// erased `IAnyType` (product-core can't name the concrete per-product session
-// type without a root↔session cycle), so `self.session` degrades to `any`. Every
-// concrete session composes BaseSessionModel + SnackbarModel, so asserting the
-// shared `BaseSession` contract restores real checking on the `setName`/`notify`
-// members the base root reaches for — without a hand-maintained shadow.
+// what the base root calls on its session; each product's root passes its own
+// session model, so `rootModel.session` reads as that product's session
+export interface RootSession extends AbstractSessionModel {
+  setName(name: string): void
+}
 
 /**
  * #stateModel BaseRootModel
@@ -43,7 +44,9 @@ import type {
  * Holds the loaded config, the session, the assembly manager and the RPC
  * manager. Every JBrowse product's root model composes this one.
  */
-export function BaseRootModelFactory({
+export function BaseRootModelFactory<
+  SESSION extends IType<any, any, RootSession>,
+>({
   pluginManager,
   jbrowseModelType,
   sessionModelType,
@@ -52,7 +55,7 @@ export function BaseRootModelFactory({
 }: {
   pluginManager: PluginManager
   jbrowseModelType: IType<any, any, EditableJBrowseConfigModel>
-  sessionModelType: IAnyType
+  sessionModelType: SESSION
   assemblyConfigSchema: BaseAssemblyConfigSchema
   /**
    * How this product drives RPC — its worker factory and default driver. Taken
@@ -215,12 +218,9 @@ export function BaseRootModelFactory({
           if (self.session) {
             const unbuildableMessage = describeUnbuildableNodes(unbuildable)
             if (unbuildableMessage) {
-              ;(self.session as BaseSession).notify(
-                unbuildableMessage,
-                'warning',
-              )
+              self.session.notify(unbuildableMessage, 'warning')
             }
-            dropUnloadableTracks(self.session as BaseSession)
+            dropUnloadableTracks(self.session)
           }
         } catch (error) {
           // put it back, and do not schedule the destroy below — this is the
@@ -261,10 +261,8 @@ export function BaseRootModelFactory({
        * #action
        */
       renameCurrentSession(newName: string) {
-        // Every concrete session model is composed from BaseSessionModel, which
-        // provides setName — avoid a full setSession rebuild here since the
-        // only field changing is `name`.
-        ;(self.session as BaseSession | undefined)?.setName(newName)
+        // a rename, not a setSession rebuild: only `name` changes
+        self.session?.setName(newName)
       },
     }))
 }

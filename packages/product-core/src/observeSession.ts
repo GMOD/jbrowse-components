@@ -14,10 +14,8 @@ import type { AbstractSessionModel } from '@jbrowse/core/util'
 // toPluginLoadRecord: every embedded controller needs it, and the ways to get
 // it wrong stay invisible until a specific combination shows up.
 
-// The root and its views are duck-typed rather than imported. product-core
-// cannot name a concrete product's session type without a root<->session cycle
-// (see BaseRootModel), and a root's `session` reads as `any`, so a real shape
-// here is what keeps these reads checked at all.
+// The root and its views are duck-typed rather than imported, so every
+// product's root satisfies one shape.
 type OpenTracks = { configuration: { trackId: string } }[]
 
 interface ObservedView {

@@ -13,7 +13,7 @@ import {
   resolveLocalFileUris,
 } from '@jbrowse/product-core'
 
-import createModel from './createModel.ts'
+import createModel, { hasSession } from './createModel.ts'
 
 import type { ViewModel } from './createModel.ts'
 import type { PluginsUpdate } from './rootModel/rootModel.ts'
@@ -119,9 +119,7 @@ function finishCreateViewState(
         : node,
     )
   }
-  // annotated so the reads below are checked: `model` erases its session type
-  // (see ViewModel), and a session is always passed here
-  const stateTree: ViewModel = model.create(
+  const stateTree = model.create(
     {
       jbrowse: {
         ...config,
@@ -154,6 +152,9 @@ function finishCreateViewState(
     },
     { pluginManager },
   )
+  if (!hasSession(stateTree)) {
+    throw new Error('createViewState built a root with no session')
+  }
 
   pluginManager.setRootModel(stateTree)
   pluginManager.configure()

@@ -128,7 +128,7 @@ test('throws if session is invalid', () => {
   expect(() => {
     getRootModel().create({
       ...mainThreadConfig,
-      session: {},
+      session: {} as never,
     })
   }).toThrow()
 })
@@ -208,7 +208,7 @@ describe('a plugin-set change', () => {
       ...mainThreadConfig,
       session: { name: 'my session' },
     })
-    const notify = jest.spyOn(root.session, 'notify')
+    const notify = jest.spyOn(root.session!, 'notify')
 
     root.setPluginsUpdated()
 

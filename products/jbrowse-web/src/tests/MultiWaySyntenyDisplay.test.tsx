@@ -12,6 +12,7 @@ import { getPluginManager, setup } from './util.tsx'
 
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { MultiWaySyntenyDisplayModel } from '@jbrowse/plugin-linear-comparative-view'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type { GenericFilehandle } from 'generic-filehandle2'
 
 setup()
@@ -543,7 +544,7 @@ test('MultiWaySyntenyDisplay opens a mate lane in a new view with the track alon
   const opened = await waitFor(
     () => {
       expect(session.views.length).toBe(2)
-      return session.views[1]
+      return session.views[1] as LinearGenomeViewModel
     },
     { timeout: 30000 },
   )

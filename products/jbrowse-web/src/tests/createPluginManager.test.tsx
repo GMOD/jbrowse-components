@@ -55,7 +55,7 @@ test('Loader.tsx reloadPluginManagerCallback restores session correctly', async 
   expect(rootModel.session!.name).toBe('Modified Session For Test')
 
   // Save the session snapshot (what Apollo does)
-  const savedSessionSnapshot = getSnapshot(rootModel.session)
+  const savedSessionSnapshot = getSnapshot(rootModel.session!)
   const configSnapshot = getSnapshot(rootModel.jbrowse)
 
   // Call reloadPluginManagerCallback (what Apollo does after fetching new config)

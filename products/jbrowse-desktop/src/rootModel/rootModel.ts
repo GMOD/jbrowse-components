@@ -46,7 +46,8 @@ import JBrowseDesktop from '../jbrowseModel.ts'
 import makeWorkerInstance from '../makeWorkerInstance.ts'
 
 import type { SessionSnap } from '../../electron/ipc/channelTypes.ts'
-import type { AppRootModel, SessionModelFactory } from '@jbrowse/app-core'
+import type productSessionModelFactory from '../sessionModel/sessionModel.ts'
+import type { AppRootModel } from '@jbrowse/app-core'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfiguration } from '@jbrowse/core/configuration'
 import type { AssemblyConf } from '@jbrowse/core/util/assemblyConfigUtils'
@@ -143,7 +144,7 @@ export default function rootModelFactory({
   sessionModelFactory,
 }: {
   pluginManager: PluginManager
-  sessionModelFactory: SessionModelFactory
+  sessionModelFactory: typeof productSessionModelFactory
 }) {
   const assemblyConfigSchema = assemblyConfigSchemaF(pluginManager)
   const sessionModelType = sessionModelFactory({
@@ -495,7 +496,7 @@ export default function rootModelFactory({
                     label: 'Jobs list',
                     icon: Indexing,
                     onClick: () => {
-                      self.session.showWidget(
+                      self.session?.showWidget(
                         self.jobsManager.getJobStatusWidget(),
                       )
                     },

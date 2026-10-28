@@ -38,14 +38,16 @@ type ViewStateModel = ReturnType<typeof createModel>['model']
 /**
  * The engine `createViewState` hands back — the app's MST root.
  *
- * `session` is restated for two reasons. Product-core's `BaseRootModel` takes
- * the session model as an erased `IAnyType` — it can't name a per-product
- * session type without a root↔session cycle — so `Instance<…>['session']`
- * degrades to `any`, and nothing anyone reads through it is checked. And the
- * property is a `types.maybe` because that base root allows a root with no
- * session yet; `createViewState` never builds one, so every consumer of a
+ * `session` is restated because the base root's is a `types.maybe`, and
+ * `createViewState` never builds a root without one, so every consumer of a
  * `ViewModel` gets the resolved value rather than a `!` at each use.
  */
 export interface ViewModel extends Omit<Instance<ViewStateModel>, 'session'> {
   session: WebSessionModel
+}
+
+export function hasSession(
+  root: Instance<ViewStateModel>,
+): root is Instance<ViewStateModel> & ViewModel {
+  return root.session !== undefined
 }

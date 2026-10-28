@@ -58,7 +58,7 @@ test('a spec registers its connections as real session connections', async () =>
 
   await loadSessionSpec({ sessionConnections: [HUB], views: [] }, pluginManager)
 
-  const { session } = rootModel
+  const session = rootModel.session!
   expect(session.sessionConnections).toHaveLength(1)
   expect(session.sessionConnections[0]!.name).toBe('my-hub')
   // the config the spec named was instantiated, not merely stored
@@ -74,7 +74,7 @@ test('an admin loading a spec keeps its connections in the session', async () =>
 
   await loadSessionSpec({ sessionConnections: [HUB], views: [] }, pluginManager)
 
-  const { session } = rootModel
+  const session = rootModel.session!
   expect(
     session.sessionConnections.map(
       (c: AnyConfigurationModel) => c.connectionId as string,
@@ -97,7 +97,7 @@ test('a spec with views silences the connections it registers', async () => {
   )
   await Promise.resolve()
 
-  expect(rootModel.session.connectionInstances[0]!.silent).toBe(true)
+  expect(rootModel.session!.connectionInstances[0]!.silent).toBe(true)
 })
 
 // the whole reason the spec waits: the assembly and the track ids a view names
@@ -117,6 +117,6 @@ test('a spec holds its views until the connection settles', async () => {
   await Promise.resolve()
   await Promise.resolve()
 
-  expect(rootModel.session.connectionInstances[0]!.loading).toBe(true)
-  expect(rootModel.session.views).toHaveLength(0)
+  expect(rootModel.session!.connectionInstances[0]!.loading).toBe(true)
+  expect(rootModel.session!.views).toHaveLength(0)
 })

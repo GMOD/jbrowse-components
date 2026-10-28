@@ -4,6 +4,11 @@ import configSnapshot from '../../test_data/volvox/config.json' with { type: 'js
 import { utilizeFetchMockForTest, volvoxGetFile } from './generateReadBuffer.ts'
 import { getPluginManager, setup } from './util.tsx'
 
+import type {
+  AddTrackModel,
+  HierarchicalTrackSelectorModel,
+} from '@jbrowse/plugin-data-management'
+
 setup()
 
 beforeEach(() => {
@@ -130,32 +135,32 @@ test('the track selector targets the level it was opened for', async () => {
 
   // A level is not a view, so the widget references the synteny view and names
   // the level it writes into; both levels share that one view reference.
-  const selector = view.activateTrackSelector(1)
+  const selector = view.activateTrackSelector(
+    1,
+  ) as HierarchicalTrackSelectorModel
   expect(selector.view).toBe(view)
-  expect(selector.trackContainerId).toBe(view.levels[1].id)
+  expect(selector.trackContainerId).toBe(view.levels[1]!.id)
   expect(selector.trackContainer).toBe(view.levels[1])
 
   // the pair the chosen band spans, not every assembly the view holds — which
   // is what filters the offered tracks down to that pair's synteny tracks
   expect(selector.assemblyNames).toEqual(['volvox', 'volvox_ins'])
-  const offered = new Set(
-    selector.allTrackConfigurations.map((t: { trackId: string }) => t.trackId),
-  )
+  const offered = new Set(selector.allTrackConfigurations.map(t => t.trackId))
   expect(offered.has('volvox_ins.paf')).toBe(true)
   expect(offered.has('volvox_del.paf')).toBe(false)
 
   // ...and opening one lands in that band, not the first
-  await selector.trackContainer.launchTrack('volvox_ins.paf')
-  expect(view.levels[1].tracks.length).toBe(1)
-  expect(view.levels[0].tracks.length).toBe(0)
+  await selector.trackContainer!.launchTrack('volvox_ins.paf')
+  expect(view.levels[1]!.tracks.length).toBe(1)
+  expect(view.levels[0]!.tracks.length).toBe(0)
   expect(selector.shownTrackIds.has('volvox_ins.paf')).toBe(true)
 
   // "Add track" from that selector inherits the same target, so a submitted
   // track defaults to the band's assembly and opens there
   const addTrack = session.addWidget('AddTrackWidget', 'addTrackWidget', {
     view: view.id,
-    trackContainerId: view.levels[1].id,
-  })
+    trackContainerId: view.levels[1]!.id,
+  }) as AddTrackModel
   expect(addTrack.trackContainer).toBe(view.levels[1])
   expect(addTrack.assembly).toBe('volvox')
 }, 40000)

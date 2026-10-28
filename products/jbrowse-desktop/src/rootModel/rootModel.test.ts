@@ -78,7 +78,7 @@ test('the autosave fires again on the next change, not just once', async () => {
     expect.objectContaining({ views: 0 }),
   )
 
-  root.session.setName('changed')
+  root.session!.setName('changed')
   await jest.advanceTimersByTimeAsync(AUTOSAVE_DELAY_MS)
 
   // the one that regressed: an autorun whose reads moved into an action tracks
@@ -127,7 +127,7 @@ test('flushSession reports a failed save rather than rejecting', async () => {
   const root = createRootModel()
 
   await expect(root.flushSession()).resolves.toBeUndefined()
-  expect(root.session.snackbarMessages.length).toBe(1)
+  expect(root.session!.snackbarMessages.length).toBe(1)
 })
 
 // The native Help menu is macOS-only, so on Windows and Linux this menu is the
@@ -177,11 +177,11 @@ test('Open genome cancels through a promise and closes the dialog', async () => 
     throw new Error('no clickable Open genome item')
   }
   item.onClick()
-  const { onClose } = root.session.DialogProps as {
+  const { onClose } = root.session!.DialogProps as {
     onClose: () => Promise<void>
   }
   await expect(onClose()).resolves.toBeUndefined()
-  expect(root.session.DialogComponent).toBeUndefined()
+  expect(root.session!.DialogComponent).toBeUndefined()
 })
 
 // the plugin store's add and remove drop setPluginsUpdated's promise, so a
@@ -195,6 +195,6 @@ test('a plugin reload that fails is reported on the session it left open', async
   await root.setPluginsUpdated()
 
   expect(
-    root.session.snackbarMessages.map((m: { message: string }) => m.message),
+    root.session!.snackbarMessages.map((m: { message: string }) => m.message),
   ).toEqual(['Error: plugin reload failed'])
 })

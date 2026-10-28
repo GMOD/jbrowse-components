@@ -7,6 +7,8 @@ import {
 } from './generateReadBuffer.ts'
 import { getPluginManager, setup } from './util.tsx'
 
+import type { LinearSyntenyViewModel } from '@jbrowse/plugin-linear-comparative-view'
+
 setup()
 
 beforeEach(() => {
@@ -60,7 +62,7 @@ test('Linear synteny view of selection from dotplot view', async () => {
     { timeout: 10000 },
   )
 
-  const syntenyView = session.views[1]!
+  const syntenyView = session.views[1] as LinearSyntenyViewModel
   expect(syntenyView.type).toBe('LinearSyntenyView')
 
   // Verify the synteny view has the tracks from the dotplot
@@ -102,10 +104,10 @@ test('Linear synteny view of selection from dotplot preserves track configuratio
     { timeout: 10000 },
   )
 
-  const syntenyView = session.views[1]!
+  const syntenyView = session.views[1] as LinearSyntenyViewModel
   expect(syntenyView.type).toBe('LinearSyntenyView')
 
   const syntenyTrack = syntenyView.levels[0]?.tracks[0]
   expect(syntenyTrack).toBeDefined()
-  expect(syntenyTrack.type).toBe('SyntenyTrack')
+  expect(syntenyTrack?.type).toBe('SyntenyTrack')
 }, 50000)

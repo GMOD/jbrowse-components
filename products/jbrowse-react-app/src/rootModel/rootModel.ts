@@ -23,7 +23,7 @@ import { autorun } from 'mobx'
 
 import { version } from '../version.ts'
 
-import type { SessionModelFactory } from '@jbrowse/app-core'
+import type productSessionModelFactory from '../sessionModel/index.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { PluginDefinition } from '@jbrowse/core/pluginDefinitions'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -56,7 +56,7 @@ export default function RootModel({
   makeWorkerInstance,
 }: {
   pluginManager: PluginManager
-  sessionModelFactory: SessionModelFactory
+  sessionModelFactory: typeof productSessionModelFactory
   makeWorkerInstance?: () => Worker
 }) {
   const assemblyConfigSchema = assemblyConfigSchemaFactory(pluginManager)

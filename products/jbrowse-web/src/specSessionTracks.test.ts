@@ -43,7 +43,7 @@ test('a spec registers its tracks as real session tracks', async () => {
 
   await loadSessionSpec({ sessionTracks: [TRACK], views: [] }, pluginManager)
 
-  const { session } = rootModel
+  const session = rootModel.session!
   expect(
     session.sessionTracks.map(
       (t: AnyConfigurationModel) => t.trackId as string,
@@ -60,7 +60,7 @@ test('an admin loading a spec keeps its tracks in the session', async () => {
 
   await loadSessionSpec({ sessionTracks: [TRACK], views: [] }, pluginManager)
 
-  const { session } = rootModel
+  const session = rootModel.session!
   expect(
     session.sessionTracks.map(
       (t: AnyConfigurationModel) => t.trackId as string,
@@ -75,9 +75,9 @@ test('an admin loading a spec keeps its tracks in the session', async () => {
 test('re-adding a session track with different content is refused, same content is not', async () => {
   const { pluginManager, rootModel } = setup()
   await loadSessionSpec({ sessionTracks: [TRACK], views: [] }, pluginManager)
-  const { session } = rootModel
+  const session = rootModel.session!
 
-  expect(session.addSessionTrackConf(TRACK).trackId).toBe('spec_track')
+  expect(session.addSessionTrackConf(TRACK)?.trackId).toBe('spec_track')
   expect(() =>
     session.addSessionTrackConf({
       ...TRACK,

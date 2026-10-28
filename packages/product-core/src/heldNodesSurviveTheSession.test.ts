@@ -15,8 +15,11 @@ import { BaseSessionModel } from './Session/BaseSession.ts'
 import { DrawerWidgetSessionMixin } from './Session/DrawerWidgets.ts'
 
 import type { BaseRootModelType } from './RootModel/BaseRootModel.ts'
-import type { EditableJBrowseConfigModel } from '@jbrowse/core/util'
-import type { IType } from '@jbrowse/mobx-state-tree'
+import type {
+  AbstractSessionModel,
+  EditableJBrowseConfigModel,
+} from '@jbrowse/core/util'
+import type { IType, Instance } from '@jbrowse/mobx-state-tree'
 
 // The whole chain, because the failure this pins is invisible to any one link
 // of it. `pruneUnbuildableNodes` holds a node under `heldForMissingPlugins` and
@@ -88,6 +91,25 @@ function makeRootType(viewTypes: string[], widgetTypes: string[] = []) {
   pluginManager.createPluggableElements()
   pluginManager.configure()
   const assemblyConfigSchema = assemblyConfigSchemaFactory(pluginManager)
+  const sessionModelType = types
+    .compose(
+      'TestSession',
+      BaseSessionModel<BaseRootModelType>(pluginManager),
+      DrawerWidgetSessionMixin(pluginManager),
+      types.model({
+        views: types.array(
+          pluginManager.pluggableMstType('view', 'stateModel'),
+        ),
+      }),
+    )
+    .volatile(() => ({
+      notifications: [] as string[],
+    }))
+    .actions(self => ({
+      notify(message: string) {
+        self.notifications.push(message)
+      },
+    }))
   return BaseRootModelFactory({
     pluginManager,
     // a stub: the root under test reads only its configuration and assemblies
@@ -97,25 +119,12 @@ function makeRootType(viewTypes: string[], widgetTypes: string[] = []) {
       }),
       assemblies: types.array(assemblyConfigSchema),
     }) as unknown as IType<any, any, EditableJBrowseConfigModel>,
-    sessionModelType: types
-      .compose(
-        'TestSession',
-        BaseSessionModel<BaseRootModelType>(pluginManager),
-        DrawerWidgetSessionMixin(pluginManager),
-        types.model({
-          views: types.array(
-            pluginManager.pluggableMstType('view', 'stateModel'),
-          ),
-        }),
-      )
-      .volatile(() => ({
-        notifications: [] as string[],
-      }))
-      .actions(self => ({
-        notify(message: string) {
-          self.notifications.push(message)
-        },
-      })),
+    // a stub: it implements only the slice of a session this test reads
+    sessionModelType: sessionModelType as unknown as IType<
+      any,
+      any,
+      Instance<typeof sessionModelType> & AbstractSessionModel
+    >,
     assemblyConfigSchema,
   })
 }
@@ -139,14 +148,14 @@ test('a session opened without the plugin keeps the node in its own snapshot', (
   const root = makeRoot(['LinearGenomeView'])
   root.setSession(shared)
 
-  expect(root.session.views.map((v: { id: string }) => v.id)).toEqual(['v1'])
-  expect(root.session.notifications).toEqual([
+  expect(root.session!.views.map((v: { id: string }) => v.id)).toEqual(['v1'])
+  expect(root.session!.notifications).toEqual([
     'Kept but not shown, pending plugins this JBrowse does not have: LinearMafView. Install them and reload to get them back.',
   ])
 
   // the half MST would have thrown away: what the autosave writes back, and
   // what a reshare carries
-  const snap = getSnapshot(root.session) as Record<string, unknown>
+  const snap = getSnapshot(root.session!) as Record<string, unknown>
   expect(snap.heldForMissingPlugins).toEqual([
     {
       group: 'view',
@@ -160,17 +169,17 @@ test('a session opened without the plugin keeps the node in its own snapshot', (
 test('the build that has the plugin gets the view back, in its own place', () => {
   const without = makeRoot(['LinearGenomeView'])
   without.setSession(shared)
-  const reshared = getSnapshot(without.session) as Record<string, unknown>
+  const reshared = getSnapshot(without.session!) as Record<string, unknown>
 
   const withPlugin = makeRoot(['LinearGenomeView', 'LinearMafView'])
   withPlugin.setSession(reshared)
 
-  expect(withPlugin.session.views.map((v: { id: string }) => v.id)).toEqual([
+  expect(withPlugin.session!.views.map((v: { id: string }) => v.id)).toEqual([
     'v1',
     'v2',
   ])
-  expect(withPlugin.session.notifications).toEqual([])
-  const snap = getSnapshot(withPlugin.session) as Record<string, unknown>
+  expect(withPlugin.session!.notifications).toEqual([])
+  const snap = getSnapshot(withPlugin.session!) as Record<string, unknown>
   expect(snap.heldForMissingPlugins).toBeUndefined()
 })
 
@@ -188,8 +197,8 @@ test('the build with the plugin gets back the drawer’s only widget', () => {
     views: [],
     widgets: { ucscResults: { id: 'ucscResults', type: 'UcscResultsWidget' } },
   })
-  expect([...without.session.widgets.keys()]).toEqual([])
-  const reshared = getSnapshot(without.session) as Record<string, unknown>
+  expect([...without.session!.widgets.keys()]).toEqual([])
+  const reshared = getSnapshot(without.session!) as Record<string, unknown>
   expect(reshared.widgets).toBeUndefined()
 
   const withPlugin = makeRoot(
@@ -198,9 +207,9 @@ test('the build with the plugin gets back the drawer’s only widget', () => {
   )
   withPlugin.setSession(reshared)
 
-  expect([...withPlugin.session.widgets.keys()]).toEqual(['ucscResults'])
-  expect(withPlugin.session.notifications).toEqual([])
-  const snap = getSnapshot(withPlugin.session) as Record<string, unknown>
+  expect([...withPlugin.session!.widgets.keys()]).toEqual(['ucscResults'])
+  expect(withPlugin.session!.notifications).toEqual([])
+  const snap = getSnapshot(withPlugin.session!) as Record<string, unknown>
   expect(snap.heldForMissingPlugins).toBeUndefined()
 })
 

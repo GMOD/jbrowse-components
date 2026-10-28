@@ -24,6 +24,7 @@ export {
 export type {
   BaseRootModel,
   BaseRootModelType,
+  RootSession,
   RootConfigurationSnapshot,
   RootModelWithInternetAccounts,
   RootModelWithInternetAccountsType,

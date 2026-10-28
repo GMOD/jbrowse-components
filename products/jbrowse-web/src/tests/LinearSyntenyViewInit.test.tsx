@@ -60,8 +60,8 @@ test('LinearSyntenyView initializes with init property', async () => {
   expect(view.views.length).toBe(2)
 
   // Check that views have correct assemblies
-  expect(view.views[0].assemblyNames[0]).toBe('peach')
-  expect(view.views[1].assemblyNames[0]).toBe('grape')
+  expect(view.views[0]!.assemblyNames[0]).toBe('peach')
+  expect(view.views[1]!.assemblyNames[0]).toBe('grape')
 
   // Check that synteny track was loaded
   expect(view.levels[0]?.tracks.length).toBe(1)
@@ -87,8 +87,8 @@ test('LinearSyntenyView init without loc shows all regions', async () => {
   expect(view.views.length).toBe(2)
 
   // Views should have displayed regions (showing all regions)
-  expect(view.views[0].displayedRegions.length).toBeGreaterThan(0)
-  expect(view.views[1].displayedRegions.length).toBeGreaterThan(0)
+  expect(view.views[0]!.displayedRegions.length).toBeGreaterThan(0)
+  expect(view.views[1]!.displayedRegions.length).toBeGreaterThan(0)
 }, 40000)
 
 test('LinearSyntenyView showImportForm is false when init is set', async () => {
