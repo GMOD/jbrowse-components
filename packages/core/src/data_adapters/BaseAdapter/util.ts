@@ -4,6 +4,7 @@ import type { BaseRefNameAliasAdapter } from './BaseRefNameAliasAdapter.ts'
 import type { BaseSequenceAdapter } from './BaseSequenceAdapter.ts'
 import type { BaseTextSearchAdapter } from './BaseTextSearchAdapter.ts'
 import type { RegionsAdapter } from './RegionsAdapter.ts'
+import type { BaseOptions } from './types.ts'
 
 export type AnyDataAdapter =
   | BaseAdapter
@@ -40,6 +41,24 @@ export function isRefNameSource(
   t: AnyDataAdapter,
 ): t is AnyDataAdapter & RefNameSource {
   return typeof (t as Partial<RefNameSource>).getRefNames === 'function'
+}
+
+export interface Contig {
+  refName: string
+  /** the length the file's header states, undefined where it states none */
+  length?: number
+  /** whether the file holds records on it, null where it cannot tell */
+  hasData?: boolean | null
+}
+
+// an adapter whose file states its contigs' lengths: a BAM/CRAM `@SQ`, a
+// bigWig/bigBed chrom table, a VCF `##contig`
+export interface ContigSource {
+  getContigs(opts?: BaseOptions): Promise<Contig[]>
+}
+
+export function isContigSource(t: object): t is ContigSource {
+  return typeof (t as Partial<ContigSource>).getContigs === 'function'
 }
 
 export function isSequenceAdapter(t: AnyDataAdapter): t is BaseSequenceAdapter {

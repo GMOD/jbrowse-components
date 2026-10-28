@@ -1,3 +1,4 @@
+import { assemblyContigLengths } from '@jbrowse/core/assemblyManager/assembly'
 import { readConfObject } from '@jbrowse/core/configuration'
 import {
   CopyToClipboardButton,
@@ -16,6 +17,8 @@ import { DialogContent } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import type { AboutPanelProps } from './util.ts'
+import type { Contig } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { AbstractSessionModel } from '@jbrowse/core/util'
 
 const MAX_REF_NAMES = 10_000
 
@@ -30,6 +33,31 @@ const useStyles = makeStyles()(theme => ({
     background: theme.palette.background.default,
   },
 }))
+
+/**
+ * Each contig on a line, then the length the file states, then the
+ * assembly's where the two differ.
+ */
+function contigLines(
+  session: AbstractSessionModel,
+  assemblyName: string,
+  contigs: readonly Contig[],
+) {
+  const { assemblyManager } = session
+  const assembly = assemblyManager.has(assemblyName)
+    ? assemblyManager.get(assemblyName)
+    : undefined
+  const assemblyLengths = assemblyContigLengths(assembly?.regions ?? [])
+  return contigs.map(({ refName, length }) => {
+    const canonical = assembly?.getCanonicalRefName2(refName) ?? refName
+    const assemblyLength = assemblyLengths.get(canonical)
+    return length === undefined
+      ? refName
+      : assemblyLength === undefined || assemblyLength === length
+        ? `${refName}\t${length}`
+        : `${refName}\t${length}\tassembly: ${assemblyLength}`
+  })
+}
 
 function formatRefNames(
   data: readonly (readonly [string, string[]])[],
@@ -58,7 +86,7 @@ const RefNameInfoDialog = observer(function RefNameInfoDialog({
   const sessionId = getConfRpcSessionId(config)
 
   const { data, error, isLoading, status } = useFetch(
-    ['CoreGetRefNames', sessionId] as const,
+    ['CoreGetContigs', sessionId] as const,
     (_name, _sessionId, signal, statusCallback) => {
       // one status slot per assembly, so N concurrent reads aggregate into one
       // bar instead of the last writer winning
@@ -72,7 +100,7 @@ const RefNameInfoDialog = observer(function RefNameInfoDialog({
           async assemblyName =>
             [
               assemblyName,
-              await rpcManager.call(sessionId, 'CoreGetRefNames', {
+              await rpcManager.call(sessionId, 'CoreGetContigs', {
                 adapterConfig,
                 assemblyName,
                 signal,
@@ -87,7 +115,10 @@ const RefNameInfoDialog = observer(function RefNameInfoDialog({
   // that one is still in flight — `isLoading` is what says that. Treating the
   // two as the same thing is what left the dialog spinning with nothing behind
   // it; an empty list at least says so
-  const refNames = data ?? []
+  const refNames = (data ?? []).map(
+    ([assemblyName, contigs]) =>
+      [assemblyName, contigLines(session, assemblyName, contigs)] as const,
+  )
 
   return (
     <Dialog

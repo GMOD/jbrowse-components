@@ -1,3 +1,4 @@
+import type { Contig } from '../data_adapters/BaseAdapter/util.ts'
 import type {
   CoreGetEncodedLayersArgs,
   EncodedLayersResult,
@@ -24,6 +25,14 @@ export interface RpcRegistry {
       haplotypes?: string[]
     }
     return: string[]
+  }
+  CoreGetContigs: {
+    args: {
+      adapterConfig: Record<string, unknown>
+      assemblyName?: string
+      haplotypes?: string[]
+    }
+    return: Contig[]
   }
   CoreGetRegions: {
     args: {

@@ -1,4 +1,5 @@
 export { default as CoreGetRefNames } from './methods/CoreGetRefNames.ts'
+export { default as CoreGetContigs } from './methods/CoreGetContigs.ts'
 export { default as CoreGetMetadata } from './methods/CoreGetMetadata.ts'
 export { default as CoreGetInfo } from './methods/CoreGetInfo.ts'
 export { default as CoreGetFeatures } from './methods/CoreGetFeatures.ts'

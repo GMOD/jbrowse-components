@@ -14,8 +14,24 @@ interface CallArgs {
 }
 type Call = (a: unknown, b: unknown, args: CallArgs) => Promise<unknown>
 
+// volvox's ctgA is 50,001 bp
+const assemblyManager = {
+  has: (name: string) => name === 'volvox',
+  get: () => ({
+    regions: [{ refName: 'ctgA', start: 0, end: 50_001 }],
+    getCanonicalRefName2: (name: string) => name,
+  }),
+}
+
 function makeSession(call: Call) {
-  return { rpcManager: { call } } as unknown as AbstractSessionModel
+  return {
+    rpcManager: { call },
+    assemblyManager,
+  } as unknown as AbstractSessionModel
+}
+
+function contigs(...refNames: string[]) {
+  return refNames.map(refName => ({ refName }))
 }
 
 function renderConfig(config: AnyConfigurationModel, call: Call) {
@@ -35,10 +51,9 @@ function renderDialog(assemblyNames: string[], call: Call) {
 }
 
 test('renders ref names grouped by assembly', async () => {
-  const { findByText, queryByText } = renderDialog(['volvox'], async () => [
-    'ctgA',
-    'ctgB',
-  ])
+  const { findByText, queryByText } = renderDialog(['volvox'], async () =>
+    contigs('ctgA', 'ctgB'),
+  )
   await waitForElementToBeRemoved(() => queryByText('Loading refNames'))
   expect(await findByText(/--- volvox ---/)).toBeTruthy()
   expect(await findByText(/ctgA/)).toBeTruthy()
@@ -46,7 +61,7 @@ test('renders ref names grouped by assembly', async () => {
 
 test('dedups repeated assembly names into a single fetch', async () => {
   const call = jest.fn<Promise<unknown>, [unknown, unknown, CallArgs]>(
-    async () => ['ctgA'],
+    async () => contigs('ctgA'),
   )
   const { findByText } = renderDialog(['volvox', 'volvox'], call)
   await findByText(/ctgA/)
@@ -55,7 +70,7 @@ test('dedups repeated assembly names into a single fetch', async () => {
 
 test('truncates long ref name lists with a copy hint', async () => {
   const names = Array.from({ length: 10_001 }, (_, i) => `ctg${i}`)
-  const { findByText } = renderDialog(['big'], async () => names)
+  const { findByText } = renderDialog(['big'], async () => contigs(...names))
   expect(await findByText(/Too many refNames to show/)).toBeTruthy()
 })
 
@@ -64,6 +79,16 @@ test('shows an error banner when the rpc rejects', async () => {
     Promise.reject(new Error('refnames boom')),
   )
   expect(await findByText(/refnames boom/)).toBeTruthy()
+})
+
+test("lists the stated lengths, and the assembly's where they differ", async () => {
+  const { findByText } = renderDialog(['volvox'], async () => [
+    { refName: 'ctgA', length: 1_078_177 },
+    { refName: 'ctgB', length: 6079 },
+  ])
+  const text = (await findByText(/--- volvox ---/)).textContent
+  expect(text).toContain('ctgA\t1078177\tassembly: 50001')
+  expect(text).toContain('ctgB\t6079')
 })
 
 // regression: a ReferenceSequenceTrack config declares no `assemblyNames` slot,
@@ -87,7 +112,7 @@ test('resolves a reference sequence track to its assembly', async () => {
     { pluginManager: aboutTestPluginManager },
   )
   const call = jest.fn<Promise<unknown>, [unknown, unknown, CallArgs]>(
-    async () => ['ctgA'],
+    async () => contigs('ctgA'),
   )
   const { findByText } = renderConfig(assembly.sequence, call)
   expect(await findByText(/--- volvox ---/)).toBeTruthy()

@@ -1,5 +1,11 @@
+import { isAlive } from '@jbrowse/mobx-state-tree'
+
 import { adapterConfigCacheKey } from '../data_adapters/dataAdapterCache.ts'
 import { updateStatus } from '../util/progress.ts'
+import {
+  assemblyContigLengths,
+  detectContigLengthMismatch,
+} from './contigLengthMismatch.ts'
 import { checkRefName } from './refNameMaps.ts'
 import { detectRefNameMismatch } from './refNameMismatch.ts'
 
@@ -21,6 +27,7 @@ export type RefNameMapAssembly = Pick<
   | 'rpcManager'
   | 'getCanonicalRefName'
   | 'setRefNameMismatch'
+  | 'setContigLengthMismatch'
 >
 
 export async function loadRefNameMap(
@@ -99,11 +106,45 @@ export async function loadRefNameMap(
     assemblyRefNames: assembly.refNames ?? [],
     getCanonicalRefName: name => assembly.getCanonicalRefName(name),
   })
+  const adapterCacheKey = adapterConfigCacheKey(
+    adapterConfig as Record<string, unknown>,
+  )
   if (mismatch) {
-    assembly.setRefNameMismatch(
-      adapterConfigCacheKey(adapterConfig as Record<string, unknown>),
-      mismatch,
-    )
+    assembly.setRefNameMismatch(adapterCacheKey, mismatch)
+  } else {
+    void checkContigLengths(assembly, adapterConfig, adapterCacheKey, options)
   }
   return result
+}
+
+// Not awaited: every fetch waits on the map, and a diagnostic must not delay
+// a first draw. A failure here says nothing about the track, so it is dropped.
+async function checkContigLengths(
+  assembly: RefNameMapAssembly,
+  adapterConfig: unknown,
+  adapterCacheKey: string,
+  { sessionId, haplotypes }: BaseOptions,
+) {
+  try {
+    const contigs = await assembly.rpcManager.call(
+      sessionId!,
+      'CoreGetContigs',
+      // background: no phase to show, and a header read is not worth cancelling
+      // eslint-disable-next-line no-restricted-syntax
+      {
+        adapterConfig: adapterConfig as Record<string, unknown>,
+        assemblyName: assembly.name,
+        haplotypes,
+      },
+    )
+    const mismatch = detectContigLengthMismatch({
+      assemblyName: assembly.name,
+      contigs,
+      assemblyLengths: assemblyContigLengths(assembly.regions ?? []),
+      getCanonicalRefName: name => assembly.getCanonicalRefName(name),
+    })
+    if (mismatch && isAlive(assembly)) {
+      assembly.setContigLengthMismatch(adapterCacheKey, mismatch)
+    }
+  } catch {}
 }

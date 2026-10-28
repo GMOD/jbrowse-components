@@ -37,6 +37,7 @@ import type RpcManager from '../rpc/RpcManager.ts'
 import type { Feature, Region } from '../util/index.ts'
 import type { RpcStatus } from '../util/progress.ts'
 import type { BaseAssemblyConfigSchema } from './assemblyConfigSchema.ts'
+import type { ContigLengthMismatch } from './contigLengthMismatch.ts'
 import type { RefNameAliases, RefNameMaps } from './refNameMaps.ts'
 import type { RefNameMismatch } from './refNameMismatch.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -47,8 +48,14 @@ export { getSequenceAdapterConfig } from './getSequenceAdapterConfig.ts'
 export { buildRefNameMaps } from './refNameMaps.ts'
 export { lookupGeneticCodeId } from './geneticCodes.ts'
 export { refNameMismatchMessage } from './refNameMismatch.ts'
+export {
+  assemblyContigLengths,
+  detectContigLengthMismatch,
+  contigLengthMismatchMessage,
+} from './contigLengthMismatch.ts'
 export type { RefNameAliases, RefNameMaps } from './refNameMaps.ts'
 export type { RefNameMismatch } from './refNameMismatch.ts'
+export type { ContigLengthMismatch } from './contigLengthMismatch.ts'
 
 type AdapterConf = Record<string, unknown>
 
@@ -167,6 +174,13 @@ export default function assemblyFactory(
          * `.set()` would leave every reader stale.
          */
         refNameMismatches: new Map<string, RefNameMismatch>(),
+        /**
+         * #volatile
+         * adapter cache key -> the different-build verdict `loadRefNameMap`
+         * reached from that adapter's contig lengths, kept like
+         * `refNameMismatches`
+         */
+        contigLengthMismatches: new Map<string, ContigLengthMismatch>(),
       }
     })
     .views(self => ({
@@ -244,6 +258,18 @@ export default function assemblyFactory(
        */
       setRefNameMismatch(adapterCacheKey: string, mismatch: RefNameMismatch) {
         self.refNameMismatches = new Map(self.refNameMismatches).set(
+          adapterCacheKey,
+          mismatch,
+        )
+      },
+      /**
+       * #action
+       */
+      setContigLengthMismatch(
+        adapterCacheKey: string,
+        mismatch: ContigLengthMismatch,
+      ) {
+        self.contigLengthMismatches = new Map(self.contigLengthMismatches).set(
           adapterCacheKey,
           mismatch,
         )
@@ -718,6 +744,15 @@ export default function assemblyFactory(
        */
       getRefNameMismatch(adapterCacheKey: string) {
         return self.refNameMismatches.get(adapterCacheKey)
+      },
+      /**
+       * #method
+       * The different-build verdict for an adapter under this assembly. Lands
+       * after the track's first fetch, since the check that reaches it runs off
+       * the load path.
+       */
+      getContigLengthMismatch(adapterCacheKey: string) {
+        return self.contigLengthMismatches.get(adapterCacheKey)
       },
     }))
 }

@@ -1,6 +1,9 @@
 import { useState } from 'react'
 
-import { refNameMismatchMessage } from '@jbrowse/core/assemblyManager/assembly'
+import {
+  contigLengthMismatchMessage,
+  refNameMismatchMessage,
+} from '@jbrowse/core/assemblyManager/assembly'
 import { InfoDialog } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import WarningIcon from '@mui/icons-material/Warning'
@@ -16,11 +19,25 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
+function warningFor(track: BaseTrackModel) {
+  const { refNameMismatch, contigLengthMismatch } = track
+  return refNameMismatch
+    ? {
+        title: 'Reference names do not match the assembly',
+        message: refNameMismatchMessage(refNameMismatch),
+      }
+    : contigLengthMismatch
+      ? {
+          title: 'Reference sequence lengths do not match the assembly',
+          message: contigLengthMismatchMessage(contigLengthMismatch),
+        }
+      : undefined
+}
+
 /**
- * The track label's warning for a file whose reference names have nothing in
- * common with the assembly's — the commonest data-configuration mistake in
- * JBrowse, and until now a silent one: the track draws nothing and reads
- * exactly like a track with no features in view.
+ * The track label's warning for a file that does not fit its assembly: its
+ * reference names have nothing in common with the assembly's, so the track
+ * draws nothing, or its contig lengths say it was made against another build.
  *
  * The label rather than the display chrome, deliberately. The chrome's states
  * are `displayPhase`'s, which are mutually exclusive and two of which replace
@@ -40,11 +57,11 @@ const TrackLabelRefNameWarning = observer(function TrackLabelRefNameWarning({
 }) {
   const { classes } = useStyles()
   const [open, setOpen] = useState(false)
-  const { refNameMismatch } = track
-  if (!refNameMismatch) {
+  const warning = warningFor(track)
+  if (!warning) {
     return null
   }
-  const message = refNameMismatchMessage(refNameMismatch)
+  const { title, message } = warning
   return (
     <>
       <IconButton
@@ -60,7 +77,7 @@ const TrackLabelRefNameWarning = observer(function TrackLabelRefNameWarning({
       {open ? (
         <InfoDialog
           open
-          title="Reference names do not match the assembly"
+          title={title}
           onClose={() => {
             setOpen(false)
           }}
@@ -68,7 +85,7 @@ const TrackLabelRefNameWarning = observer(function TrackLabelRefNameWarning({
           <Typography>{message}</Typography>
           <Typography variant="body2" style={{ marginTop: 8 }}>
             The track menu&apos;s &quot;About track&quot; shows every reference
-            name the file uses.
+            name the file uses, with the lengths it states.
           </Typography>
         </InfoDialog>
       ) : null}

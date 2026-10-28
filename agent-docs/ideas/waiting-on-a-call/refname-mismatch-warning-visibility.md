@@ -40,6 +40,11 @@ Three placements worth weighing:
 - **Draw it.** A watermark in the rendered output is the only placement that
   reaches SVG export, and export is half the reported problem.
 
+The contig-length warning (`contigLengthMismatch`, a file from another build
+with the same names) shares the button and the gap. A CRAM decoded against the
+wrong build draws reads that look right, so with labels hidden nothing shows
+the problem.
+
 The release notes claim this case is covered. Whatever lands, the claim needs
 to become true or come out.
 

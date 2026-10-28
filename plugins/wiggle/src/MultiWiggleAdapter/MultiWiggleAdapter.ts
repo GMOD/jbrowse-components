@@ -6,6 +6,7 @@ import {
 import {
   BaseFeatureDataAdapter,
   cachedSetup,
+  isContigSource,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { SimpleFeature, createStatusFanOut } from '@jbrowse/core/util'
 import { isAbortException } from '@jbrowse/core/util/aborting'
@@ -27,6 +28,7 @@ import type { RawFeatureArrays } from '../util.ts'
 import type { MemberConfig } from './memberLocation.ts'
 import type {
   BaseOptions,
+  Contig,
   ZoomRange,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type {
@@ -122,20 +124,12 @@ function restamp(feature: Feature, source: string) {
   })
 }
 
-interface Contig {
-  refName: string
-  length?: number
-  hasData?: boolean | null
-}
-
 async function contigsOf(
-  adapter: BaseFeatureDataAdapter & { getContigs?: unknown },
+  adapter: BaseFeatureDataAdapter,
   opts?: BaseOptions,
 ): Promise<Contig[]> {
-  if (typeof adapter.getContigs === 'function') {
-    return (
-      adapter as { getContigs: (o?: BaseOptions) => Promise<Contig[]> }
-    ).getContigs(opts)
+  if (isContigSource(adapter)) {
+    return adapter.getContigs(opts)
   }
   const refNames = await adapter.getRefNames(opts)
   return refNames.map(refName => ({ refName, hasData: null }))

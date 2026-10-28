@@ -1,20 +1,18 @@
-import { isRegionsAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import {
+  isContigSource,
+  isRegionsAdapter,
+} from '@jbrowse/core/data_adapters/BaseAdapter'
 import { tablesAdapter } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 
 import type { ResolvedAssembly } from './assembly.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { Contig } from '@jbrowse/core/data_adapters/BaseAdapter'
 
 /**
  * The end a whole contig reads to where nothing states its length: the most
  * an int32 holds, which each reader clamps to what its index addresses.
  */
 export const WHOLE_CONTIG_END = 2 ** 31 - 1
-
-interface Contig {
-  refName: string
-  length?: number
-  hasData?: boolean | null
-}
 
 /**
  * Adapters whose contig names come from a tabix index, which lists only the
@@ -46,8 +44,8 @@ async function contigsOf(
     adapterConfig,
     sequenceAdapter,
   )
-  if ('getContigs' in dataAdapter) {
-    return (dataAdapter as { getContigs: () => Promise<Contig[]> }).getContigs()
+  if (isContigSource(dataAdapter)) {
+    return dataAdapter.getContigs()
   }
   const refNames: string[] =
     'getRefNames' in dataAdapter

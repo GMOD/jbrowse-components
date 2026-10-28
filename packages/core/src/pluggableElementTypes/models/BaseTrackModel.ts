@@ -39,6 +39,8 @@ import { stringifyGBK } from './saveTrackFileTypes/genbank.ts'
 import { stringifyGFF3 } from './saveTrackFileTypes/gff3.ts'
 
 import type PluginManager from '../../PluginManager.ts'
+import type { Assembly } from '../../assemblyManager/assembly.ts'
+import type { ContigLengthMismatch } from '../../assemblyManager/contigLengthMismatch.ts'
 import type { RefNameMismatch } from '../../assemblyManager/refNameMismatch.ts'
 import type {
   AnyConfigurationModel,
@@ -235,34 +237,10 @@ export function createBaseTrackModel<SCHEMA extends AnyConfigurationSchemaType>(
         return getCompatibleDisplays(self)
       },
     }))
-    .views(self => ({
-      /**
-       * #getter
-       * Set when this track's file and one of its assemblies share no reference
-       * name at all — the `1/2/3` file loaded against a `chr1/chr2/chr3`
-       * assembly, which otherwise draws an empty track with no message.
-       *
-       * `loadRefNameMap` decides the mismatch, since it is the only place both
-       * name sets are in scope, and records it on the *assembly* because the
-       * assembly manager cannot reach a track (the session is a sibling
-       * subtree, so `getSession` from there finds only the root). The lookup
-       * inverts that: the record is keyed by adapter cache key, which is exactly
-       * what `rpcSessionId` already is, so a track finds its record with no
-       * plumbing in between.
-       *
-       * The names come from `getConfAssemblyNamesOrNone`, not from a raw
-       * `assemblyNames` slot read: this model is shared by every track type, and
-       * `ReferenceSequenceTrack`'s schema does not declare that slot — it names
-       * its assembly by being the `sequence` of one. A raw read there returns
-       * `undefined` with no diagnostic at any layer, which would leave the getter
-       * inert for that one track type. The `OrNone` half is
-       * what keeps this total: it runs on every render of every track label, and
-       * an unanswerable question must not become a thrown getter.
-       *
-       * Diagnostic only: a track with a mismatch still loads, fetches and draws
-       * whatever it can.
-       */
-      get refNameMismatch(): RefNameMismatch | undefined {
+    .views(self => {
+      function firstAssemblyVerdict<T>(
+        verdict: (assembly: Assembly) => T | undefined,
+      ) {
         const { assemblyManager } = getSession(self)
         for (const name of getConfAssemblyNamesOrNone(self.configuration)) {
           // screened with `has` first: `get` reports a name the session lacks
@@ -270,37 +248,83 @@ export function createBaseTrackModel<SCHEMA extends AnyConfigurationSchemaType>(
           // render of every track label. A track config is free to name an
           // assembly the session has no configuration for, and asking about it
           // must not tell every installed plugin to go resolve it.
-          const mismatch = assemblyManager.has(name)
-            ? assemblyManager.get(name)?.getRefNameMismatch(self.rpcSessionId)
+          const assembly = assemblyManager.has(name)
+            ? assemblyManager.get(name)
             : undefined
-          if (mismatch) {
-            return mismatch
+          const found = assembly ? verdict(assembly) : undefined
+          if (found) {
+            return found
           }
         }
         return undefined
-      },
-      /**
-       * #getter
-       */
-      get adapterType() {
-        // Checks the adapter's `type`, not the adapter config's presence. The
-        // config is always an object (see `adapterConfig`), so the old
-        // `if (!adapterConfig) throw` could not fire; what genuinely can be
-        // missing is `type`, and it is a string only by convention since the slot
-        // holds an arbitrary sub-config. Unchecked it reaches
-        // `getAdapterType(undefined)`, which does throw — but as
-        // `AdapterType 'undefined' is not registered`, i.e. as a missing plugin,
-        // sending the reader after a build problem instead of at the config
-        // that names no adapter type.
-        const { type } = self.adapterConfig
-        if (typeof type !== 'string') {
-          throw new Error(
-            `no adapter type in the adapter configuration for ${self.type} (got ${typeof type})`,
+      }
+      return {
+        /**
+         * #getter
+         * Set when this track's file and one of its assemblies share no reference
+         * name at all — the `1/2/3` file loaded against a `chr1/chr2/chr3`
+         * assembly, which otherwise draws an empty track with no message.
+         *
+         * `loadRefNameMap` decides the mismatch, since it is the only place both
+         * name sets are in scope, and records it on the *assembly* because the
+         * assembly manager cannot reach a track (the session is a sibling
+         * subtree, so `getSession` from there finds only the root). The lookup
+         * inverts that: the record is keyed by adapter cache key, which is exactly
+         * what `rpcSessionId` already is, so a track finds its record with no
+         * plumbing in between.
+         *
+         * The names come from `getConfAssemblyNamesOrNone`, not from a raw
+         * `assemblyNames` slot read: this model is shared by every track type, and
+         * `ReferenceSequenceTrack`'s schema does not declare that slot — it names
+         * its assembly by being the `sequence` of one. A raw read there returns
+         * `undefined` with no diagnostic at any layer, which would leave the getter
+         * inert for that one track type. The `OrNone` half is
+         * what keeps this total: it runs on every render of every track label, and
+         * an unanswerable question must not become a thrown getter.
+         *
+         * Diagnostic only: a track with a mismatch still loads, fetches and draws
+         * whatever it can.
+         */
+        get refNameMismatch(): RefNameMismatch | undefined {
+          return firstAssemblyVerdict(a =>
+            a.getRefNameMismatch(self.rpcSessionId),
           )
-        }
-        return pm.getAdapterType(type)
-      },
-    }))
+        },
+        /**
+         * #getter
+         * Set when most of the bases this track's file shares with one of its
+         * assemblies sit on contigs of different lengths: the file was made
+         * against another build with the same names. Found the way
+         * `refNameMismatch` is, after the first fetch.
+         */
+        get contigLengthMismatch(): ContigLengthMismatch | undefined {
+          return firstAssemblyVerdict(a =>
+            a.getContigLengthMismatch(self.rpcSessionId),
+          )
+        },
+        /**
+         * #getter
+         */
+        get adapterType() {
+          // Checks the adapter's `type`, not the adapter config's presence. The
+          // config is always an object (see `adapterConfig`), so the old
+          // `if (!adapterConfig) throw` could not fire; what genuinely can be
+          // missing is `type`, and it is a string only by convention since the slot
+          // holds an arbitrary sub-config. Unchecked it reaches
+          // `getAdapterType(undefined)`, which does throw — but as
+          // `AdapterType 'undefined' is not registered`, i.e. as a missing plugin,
+          // sending the reader after a build problem instead of at the config
+          // that names no adapter type.
+          const { type } = self.adapterConfig
+          if (typeof type !== 'string') {
+            throw new Error(
+              `no adapter type in the adapter configuration for ${self.type} (got ${typeof type})`,
+            )
+          }
+          return pm.getAdapterType(type)
+        },
+      }
+    })
     .actions(self => {
       let persistTimeout: ReturnType<typeof setTimeout> | undefined
       // Reads the config when it fires rather than when it was scheduled, so
