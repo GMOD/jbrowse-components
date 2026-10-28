@@ -466,6 +466,7 @@ test('the session is written without waiting for the thumbnail capture', async (
   expect(capturePage).toHaveBeenCalled()
 
   releaseCapture({
+    isEmpty: () => false,
     resize: () => ({ toDataURL: () => 'data:image/png;base64,x' }),
   })
   await save
@@ -644,4 +645,31 @@ test('an autosave is compact and a saved-as session is indented', async () => {
   const savedAs = path.join(dir, 'chosen.jbrowse')
   await invoke('saveSession', savedAs, snap)
   expect(fs.readFileSync(savedAs, 'utf8')).toContain('\n')
+})
+
+test('a minimized window keeps the thumbnail it already has', async () => {
+  const empty = {
+    isEmpty: () => true,
+    resize: () => empty,
+    toDataURL: () => 'data:image/png;base64,',
+  }
+  const capturePage = jest.fn(async () => empty)
+  const win = { capturePage } as unknown as Electron.BrowserWindow
+  const withWindow = captureHandlers(() => {
+    registerSessionHandlers(paths, () => win)
+  })
+  const sessionPath = path.join(dir, 'minimized.jbrowse')
+  const thumbnailPath = getThumbnailPath(paths, sessionPath)
+  fs.mkdirSync(path.dirname(thumbnailPath), { recursive: true })
+  fs.writeFileSync(thumbnailPath, 'data:image/png;base64,earlier')
+
+  await withWindow('saveSession', sessionPath, {
+    assemblies: [],
+    defaultSession: { name: 'minimized' },
+  })
+
+  expect(capturePage).toHaveBeenCalled()
+  expect(fs.readFileSync(thumbnailPath, 'utf8')).toBe(
+    'data:image/png;base64,earlier',
+  )
 })

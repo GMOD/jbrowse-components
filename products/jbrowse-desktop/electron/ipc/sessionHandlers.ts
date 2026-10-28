@@ -73,10 +73,18 @@ async function captureThumbnail(
   lastThumbnail = { path: sessionPath, at: now }
   // Thumbnail capture is cosmetic; a capturePage rejection must never abort the
   // session write (the 1s autosave would otherwise error every tick)
-  return win
-    .capturePage()
-    .then(page => page.resize({ width: THUMBNAIL_WIDTH }).toDataURL())
-    .catch(logError)
+  return (
+    win
+      .capturePage()
+      // a minimized window captures an empty image, which would overwrite the
+      // card's last good thumbnail with a blank one
+      .then(page =>
+        page.isEmpty()
+          ? undefined
+          : page.resize({ width: THUMBNAIL_WIDTH }).toDataURL(),
+      )
+      .catch(logError)
+  )
 }
 
 // The file exactly as it sits on disk. Anything that reads a session in order to
