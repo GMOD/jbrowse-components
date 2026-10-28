@@ -8,6 +8,7 @@ import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/rendere
 import {
   canonicalizeViewRefName,
   getDialogHost,
+  getEnv,
   getNotificationSink,
   openFeatureWidget,
   SimpleFeature,
@@ -52,7 +53,7 @@ import { heldColorSlots } from '@jbrowse/display-kit/heldColorSlots'
 import { editPlotMenuItems } from '@jbrowse/display-kit/plotMenu'
 import { rpcArgs } from '@jbrowse/display-kit/rpcArgs'
 import { stableIdentityComputed } from '@jbrowse/display-kit/stableIdentityComputed'
-import { getEnv, isAlive, types } from '@jbrowse/mobx-state-tree'
+import { isAlive, types } from '@jbrowse/mobx-state-tree'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import { installUpload } from '@jbrowse/render-core/installUpload'
 import { inkOfInstances, shiftInk } from '@jbrowse/render-core/marks'
@@ -127,7 +128,6 @@ import type {
   VariantMatrixRenderingBackend,
 } from './matrix/variantMatrixRenderingBackendTypes.ts'
 import type { Placed } from './placeVariantRows.ts'
-import type PluginManager from '@jbrowse/core/PluginManager'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { Feature } from '@jbrowse/core/util'
@@ -916,8 +916,7 @@ export function stateModelFactory(
           return filters.length
             ? new SerializableFilterChain({
                 filters,
-                jexl: getEnv<{ pluginManager: PluginManager }>(self)
-                  .pluginManager.jexl,
+                jexl: getEnv(self).pluginManager.jexl,
               })
             : undefined
         },

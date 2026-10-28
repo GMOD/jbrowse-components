@@ -1,4 +1,5 @@
 import {
+  getEnv,
   getNotificationSink,
   getSession,
   resolveNamedRegions,
@@ -7,7 +8,7 @@ import { installInitAutorun } from '@jbrowse/core/util/installInitAutorun'
 import { getConfAssemblyNamesOrNone } from '@jbrowse/core/util/tracks'
 import { whenViewsSettled } from '@jbrowse/core/util/whenViewSettled'
 import { snapshotSettings } from '@jbrowse/core/util/withLaunchInput'
-import { getEnv, isAlive } from '@jbrowse/mobx-state-tree'
+import { isAlive } from '@jbrowse/mobx-state-tree'
 import {
   applyInitHighlights,
   launchTrackInit,

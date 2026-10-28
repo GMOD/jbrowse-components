@@ -9,8 +9,9 @@ import {
   readConfObject,
 } from '@jbrowse/core/configuration'
 import SanitizedHTML from '@jbrowse/core/ui/SanitizedHTML'
+import { getEnv } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { getEnv, getMembers } from '@jbrowse/mobx-state-tree'
+import { getMembers } from '@jbrowse/mobx-state-tree'
 import DataObjectIcon from '@mui/icons-material/DataObject'
 import { Button, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
@@ -18,7 +19,6 @@ import { observer } from 'mobx-react'
 import SettingsJsonDialog from './SettingsJsonDialog.tsx'
 import SlotEditor from './SlotEditor.tsx'
 
-import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 const useStyles = makeStyles()(theme => ({
@@ -148,7 +148,7 @@ const DisplaySection = observer(function DisplaySection({
 }) {
   const { classes } = useStyles()
   const plotKeys = plotKeysOf(display)
-  const { pluginManager } = getEnv<{ pluginManager: PluginManager }>(display)
+  const { pluginManager } = getEnv(display)
   const displayType = pluginManager.displayTypes.has(display.type)
     ? pluginManager.getDisplayType(display.type)
     : undefined

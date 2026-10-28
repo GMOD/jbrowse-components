@@ -1,4 +1,4 @@
-import { getSession } from '@jbrowse/core/util'
+import { getEnv, getSession } from '@jbrowse/core/util'
 import {
   getEditableTrackConfigById,
   isSessionWithBaseTrackConfig,
@@ -6,7 +6,6 @@ import {
 import { ElementId } from '@jbrowse/core/util/types/mst'
 import {
   addDisposer,
-  getEnv,
   getSnapshot,
   getType,
   types,

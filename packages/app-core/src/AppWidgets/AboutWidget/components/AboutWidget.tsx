@@ -1,7 +1,6 @@
 import { ExternalLink } from '@jbrowse/core/ui'
-import { getSession } from '@jbrowse/core/util'
+import { getEnv, getSession } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { getEnv } from '@jbrowse/mobx-state-tree'
 import { effectiveRenderer } from '@jbrowse/render-core/graphicsCapabilities'
 import { useGraphicsCapabilities } from '@jbrowse/render-core/useGraphicsCapabilities'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
@@ -13,7 +12,6 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import type PluginManager from '@jbrowse/core/PluginManager'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 const useStyles = makeStyles()(theme => ({
@@ -40,7 +38,7 @@ const AboutWidget = observer(function AboutWidget({
   const session = getSession(model)
   const { version, gitCommit } = session
   const { pluginManager } = getEnv(model)
-  const { plugins } = pluginManager as PluginManager
+  const { plugins } = pluginManager
   const graphicsCapabilities = useGraphicsCapabilities()
   const defaultRpcDriver = session.rpcManager.driverName
   const corePlugins = new Set(

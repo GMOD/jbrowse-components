@@ -2,6 +2,7 @@ import {
   canonicalAssemblyNames,
   getConfAssemblyNamesOrNone,
 } from '@jbrowse/core/util/tracks'
+// eslint-disable-next-line no-restricted-imports -- a config node created without an env has no pluginManager, which core's getEnv types as always present
 import { getEnv, isStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 import type PluginManager from '@jbrowse/core/PluginManager'

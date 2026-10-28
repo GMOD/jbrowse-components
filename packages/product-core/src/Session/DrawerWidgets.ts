@@ -1,17 +1,12 @@
 import { isConfigurationModel } from '@jbrowse/core/configuration'
 import {
+  getEnv,
   localStorageGetItem,
   localStorageSetItem,
   scheduleDetachedDestroy,
 } from '@jbrowse/core/util'
 import { getEditableTrackConfigById } from '@jbrowse/core/util/types'
-import {
-  addDisposer,
-  detach,
-  getEnv,
-  isAlive,
-  types,
-} from '@jbrowse/mobx-state-tree'
+import { addDisposer, detach, isAlive, types } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
 import { isBaseSession } from './BaseSession.ts'

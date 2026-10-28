@@ -1,7 +1,7 @@
-import { getEnv, isStateTreeNode, types } from '@jbrowse/mobx-state-tree'
+import { isStateTreeNode, types } from '@jbrowse/mobx-state-tree'
 
 import { hydrateTrackConfig } from '../configuration/index.ts'
-import { getSession } from '../util/index.ts'
+import { getEnv, getSession } from '../util/index.ts'
 import {
   DEFAULT_CANONICAL_TRANSCRIPTS,
   isCanonicalTranscriptsHost,

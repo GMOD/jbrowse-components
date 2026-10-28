@@ -1,10 +1,9 @@
+import { getEnv } from '@jbrowse/core/util'
 import { preloadComponent } from '@jbrowse/core/util/preloadComponent'
-import { getEnv } from '@jbrowse/mobx-state-tree'
 
 import { DrawerWidget, WorkspaceContainer } from './lazyParts.ts'
 
 import type { AppSession } from './types.ts'
-import type PluginManager from '@jbrowse/core/PluginManager'
 
 /**
  * Load the views container and the drawer while the session's own view code
@@ -33,7 +32,7 @@ export function preloadAppShell(session: AppSession) {
     preloadComponent(DrawerWidget)
   }
   if (drawerVisible && visibleWidget) {
-    const { pluginManager } = getEnv<{ pluginManager: PluginManager }>(session)
+    const { pluginManager } = getEnv(session)
     try {
       preloadComponent(
         pluginManager.getWidgetType(visibleWidget.type).ReactComponent,

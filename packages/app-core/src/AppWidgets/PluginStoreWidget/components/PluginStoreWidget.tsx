@@ -2,11 +2,15 @@ import { lazy } from 'react'
 
 import { ErrorMessage, LoadingEllipses } from '@jbrowse/core/ui'
 import ClearableSearchField from '@jbrowse/core/ui/ClearableSearchField'
-import { getSession, installablePlugins, isElectron } from '@jbrowse/core/util'
+import {
+  getEnv,
+  getSession,
+  installablePlugins,
+  isElectron,
+} from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { isSessionWithPermanentPlugins } from '@jbrowse/core/util/types'
 import { useFetchPlugins } from '@jbrowse/core/util/useFetchPlugins'
-import { getEnv } from '@jbrowse/mobx-state-tree'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined'
 import {

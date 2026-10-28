@@ -9,14 +9,9 @@ import {
   MonospaceTextField,
   SubmitDialog,
 } from '@jbrowse/core/ui'
-import { isObject } from '@jbrowse/core/util'
+import { getEnv, isObject } from '@jbrowse/core/util'
 import { deepEqual } from '@jbrowse/core/util/deepEqual'
-import {
-  applySnapshot,
-  getEnv,
-  getSnapshot,
-  getType,
-} from '@jbrowse/mobx-state-tree'
+import { applySnapshot, getSnapshot, getType } from '@jbrowse/mobx-state-tree'
 import { observer } from 'mobx-react'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'

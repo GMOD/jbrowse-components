@@ -374,6 +374,12 @@ const noUseEffectEvent = {
   message:
     'useEffectEvent reads stale state inside mobx-react observer() components. Use useEventCallback from @jbrowse/core/util/useEventCallback instead.',
 }
+const noMstGetEnv = {
+  name: '@jbrowse/mobx-state-tree',
+  importNames: ['getEnv'],
+  message:
+    "MST's getEnv returns `any`, so `.pluginManager` off it is unchecked. Import getEnv from @jbrowse/core/util, which types the env.",
+}
 const noSrcImport = {
   group: ['@jbrowse/*/src', '@jbrowse/*/src/**'],
   message:
@@ -1050,6 +1056,19 @@ export default defineConfig(
       'no-restricted-imports': [
         'error',
         {
+          paths: [noUseEffectEvent, noMstGetEnv],
+          patterns: [noSrcImport, noShaderTextImport],
+        },
+      ],
+    },
+  },
+  // core's own getEnv wraps MST's, and core modules reach it by path
+  {
+    files: ['packages/core/src/**/*.{ts,tsx}'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
           paths: [noUseEffectEvent],
           patterns: [noSrcImport, noShaderTextImport],
         },
@@ -1112,6 +1131,7 @@ export default defineConfig(
         {
           paths: [
             noUseEffectEvent,
+            noMstGetEnv,
             ...[
               ['dataAdapterCache', ['getAdapter']],
               [

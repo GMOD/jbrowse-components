@@ -11,6 +11,7 @@ import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { Highlighter } from '@jbrowse/core/ui/Icons'
 import {
   getDialogHost,
+  getEnv,
   getPaletteHost,
   getSession,
   isFeature,
@@ -47,7 +48,7 @@ import { facetSettingOf } from '@jbrowse/display-kit/facetConfigSchema'
 import { GROUP_LABEL_HEIGHT } from '@jbrowse/display-kit/groupLabelStyle'
 import { openPlotDialog as queuePlotDialog } from '@jbrowse/display-kit/plotMenu'
 import { rpcArgs } from '@jbrowse/display-kit/rpcArgs'
-import { getEnv, isAlive, types } from '@jbrowse/mobx-state-tree'
+import { isAlive, types } from '@jbrowse/mobx-state-tree'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import { installUpload } from '@jbrowse/render-core/installUpload'
 import VerticalAlignTopIcon from '@mui/icons-material/VerticalAlignTop'
@@ -148,7 +149,6 @@ import type { LayoutRegionData } from './layoutInputs.ts'
 import type { GroupByScanOptions } from './scanGroupByCandidates.ts'
 import type { ShowLabelsMode } from './showLabelsMode.ts'
 import type { SequenceHoverPosition } from '@jbrowse/core/BaseFeatureWidget'
-import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel, Plot } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
@@ -1671,10 +1671,7 @@ export default function baseStateModelFactory(
         configProblemsOf(conf: AnyConfigurationModel): string[] {
           return [
             ...superConfigProblemsOf(conf),
-            ...plotJexlProblems(
-              plotOf(conf),
-              getEnv<{ pluginManager: PluginManager }>(self).pluginManager.jexl,
-            ),
+            ...plotJexlProblems(plotOf(conf), getEnv(self).pluginManager.jexl),
           ]
         },
       }
