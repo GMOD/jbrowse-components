@@ -1,19 +1,9 @@
-import { useId } from 'react'
-
-import { coarseStripHTML, getSession } from '@jbrowse/core/util'
-import { getTrackName } from '@jbrowse/core/util/tracks'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import SwapVertIcon from '@mui/icons-material/SwapVert'
-import {
-  Button,
-  FormControl,
-  InputLabel,
-  MenuItem,
-  Select,
-  Tooltip,
-  Typography,
-} from '@mui/material'
+import { Button, Tooltip, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
+
+import SyntenyTrackChoice from './SyntenyTrackChoice.tsx'
 
 import type { AnyTrackConfig } from '@jbrowse/core/configuration'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
@@ -25,12 +15,6 @@ const useStyles = makeStyles()(theme => ({
     gap: theme.spacing(1),
     marginTop: theme.spacing(1.5),
   },
-  // the form is a short one, so let the Select stop at a readable width instead
-  // of stretching across a wide window away from everything it controls
-  track: {
-    marginBottom: theme.spacing(1),
-    maxWidth: 500,
-  },
   emptyText: {
     marginBottom: theme.spacing(1),
   },
@@ -38,12 +22,12 @@ const useStyles = makeStyles()(theme => ({
 
 /**
  * Quick start: launch straight from a pre-configured synteny track, which names
- * its own assemblies. The track Select, the empty state and Launch are shared by
+ * its own assemblies. The track picker, the empty state and Launch are shared by
  * the synteny import forms; `children` is the view's summary of the assemblies
  * the chosen track implies (rows, X/Y axes, a circle's genomes), which is the
  * only part that differs.
  *
- * Unlike the selector this replaced, the Select holds its value: the assemblies
+ * Unlike the selector this replaced, the picker holds its value: the assemblies
  * it implies are shown here rather than written into a separate form below, so
  * the control's effect is visible where the control is.
  */
@@ -73,29 +57,14 @@ const QuickStartPanel = observer(function QuickStartPanel({
   children?: React.ReactNode
 }) {
   const { classes } = useStyles()
-  const session = getSession(model)
-  // two views can have an import form open at once, so a fixed id would point
-  // the label at whichever Select rendered first
-  const labelId = useId()
   return tracks.length ? (
     <div>
-      <FormControl fullWidth className={classes.track}>
-        <InputLabel id={labelId}>Synteny track</InputLabel>
-        <Select
-          labelId={labelId}
-          label="Synteny track"
-          value={trackId}
-          onChange={event => {
-            onChange(event.target.value)
-          }}
-        >
-          {tracks.map(track => (
-            <MenuItem key={track.trackId} value={track.trackId}>
-              {coarseStripHTML(getTrackName(track, session))}
-            </MenuItem>
-          ))}
-        </Select>
-      </FormControl>
+      <SyntenyTrackChoice
+        model={model}
+        tracks={tracks}
+        value={trackId}
+        onChange={onChange}
+      />
       {children}
       <div className={classes.actions}>
         <Button

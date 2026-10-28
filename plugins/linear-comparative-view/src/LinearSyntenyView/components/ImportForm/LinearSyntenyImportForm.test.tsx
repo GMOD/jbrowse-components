@@ -456,6 +456,28 @@ test('Add row selects the pair it just created', async () => {
   expect(pairHeading()).toHaveTextContent('mm39 and rn7')
 })
 
+test('a pair with one track names it, and two or more offer a choice', async () => {
+  await setup({
+    assemblyNames: ['hg38', 'mm39', 'rn7'],
+    tracks: [
+      syntenyTrack('hg38_mm39', ['hg38', 'mm39']),
+      syntenyTrack('mm39_rn7_a', ['mm39', 'rn7']),
+      syntenyTrack('mm39_rn7_b', ['mm39', 'rn7']),
+    ],
+  })
+  goManual()
+  expect(screen.getByTestId('synteny-track-name')).toHaveTextContent(
+    'hg38_mm39',
+  )
+  expect(
+    screen.queryByRole('combobox', { name: 'Synteny track' }),
+  ).not.toBeInTheDocument()
+  fireEvent.click(screen.getByRole('button', { name: 'Add row' }))
+  expect(
+    screen.getByRole('combobox', { name: 'Synteny track' }),
+  ).toHaveTextContent('mm39_rn7_a')
+})
+
 test('the pair heading names the assemblies', async () => {
   await setup({ assemblyNames: ['hg38', 'mm39'] })
   expect(pairHeading()).toHaveTextContent('hg38 and mm39')

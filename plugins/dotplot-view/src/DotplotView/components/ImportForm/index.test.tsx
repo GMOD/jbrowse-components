@@ -308,9 +308,9 @@ test('the track picker offers a connection-supplied synteny track', async () => 
   expect(
     screen.queryByText(/No pre-configured synteny track connects/),
   ).not.toBeInTheDocument()
-  expect(
-    screen.getByRole('combobox', { name: 'Synteny track' }),
-  ).toHaveTextContent('conn_track')
+  expect(screen.getByTestId('synteny-track-name')).toHaveTextContent(
+    'conn_track',
+  )
 })
 
 test('a same-assembly pair names the self-alignment case', async () => {
