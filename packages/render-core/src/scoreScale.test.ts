@@ -103,8 +103,11 @@ describe.each(CASES)('$name, unclamped', ({ scaleType, domain, c }) => {
   })
 })
 
-test('a score below the domain sits below its floor', () => {
+test('a linear or symlog score below the domain sits below its floor', () => {
   for (const { scaleType, domain, c } of CASES) {
+    if (scaleType === SCALE_TYPE_LOG) {
+      continue
+    }
     const [min, max] = domain
     const below = denormalizeScore(-0.5, min, max, scaleType, c)
     expect(normalizeScoreUnclamped(below, min, max, scaleType, c)).toBeCloseTo(
@@ -114,16 +117,19 @@ test('a score below the domain sits below its floor', () => {
   }
 })
 
-test('a log score and a cut both under the floor keep their order', () => {
+// A segment into a zero bin is colored along its unclamped y, so a zero placed
+// far under the floor moved the line's color change off the cut it crosses.
+test('a log score under the floor sits just under it, below a cut at the floor', () => {
   const hoisted = makeUnclampedScoreNormalizer(10, 1000, SCALE_TYPE_LOG, 1)
   for (const norm of [
     hoisted,
     (s: number) => normalizeScoreUnclamped(s, 10, 1000, SCALE_TYPE_LOG, 1),
   ]) {
-    expect(norm(2)).toBeLessThan(norm(5))
-    expect(norm(5)).toBeLessThan(0)
-    expect(norm(0)).toBeLessThan(norm(2))
-    expect(norm(-3)).toBe(norm(0))
+    expect(norm(10)).toBe(0)
+    for (const under of [5, 0, -3]) {
+      expect(norm(under)).toBeLessThan(0)
+      expect(norm(under)).toBeGreaterThan(-0.001)
+    }
   }
 })
 

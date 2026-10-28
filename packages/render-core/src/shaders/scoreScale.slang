@@ -5,7 +5,7 @@
 //
 // A domain with no range is a step: a score above its min maps to 1 and any
 // other to 0, so a score above a pinned domain sits off the top everywhere.
-//! export-consts: SCALE_TYPE_LOG, SCALE_TYPE_SYMLOG, LOG_SCORE_MIN
+//! export-consts: SCALE_TYPE_LOG, SCALE_TYPE_SYMLOG, LOG_UNDER_FLOOR
 //! js-export: normalizeScore, normalizeScoreUnclamped, denormalizeScore
 //! js-skip: log1pf — JS has Math.log1p, so a twin of this would be the float32 workaround spelled out where the language already answers it
 //! js-skip: symlogInverse — render-core scoreScale.ts reaches Math.expm1 directly; what both backends agree on is denormalizeScore, exported and swept against scoreScale.ts's
@@ -17,9 +17,12 @@ module scoreScale;
 public static const int SCALE_TYPE_LOG = 1;
 public static const int SCALE_TYPE_SYMLOG = 2;
 
-// FLT_MIN, 2^-126: the floor a log-scaled score alone takes, so a score below
-// the domain's own floor still orders against a cut there.
-public static const float LOG_SCORE_MIN = 1.17549435e-38;
+// What a log-scaled score under the domain's floor takes, as a fraction of the
+// floor: just under it, so it orders below a cut at the floor, and near enough
+// that a line into a zero bin changes color where the axis draws it crossing a
+// cut, at the floor rather than 126 octaves down. 1 - 2^-10, which float32
+// holds exactly, so the twins multiply by the number the shader does.
+public static const float LOG_UNDER_FLOOR = 0.9990234375;
 
 // log(1 + x) for x that `1.0 + x` rounds away: a symlog domain narrower than
 // its constant lands entirely in that region, and in float32 the rounding
@@ -56,7 +59,7 @@ public float normalizeScoreUnclamped(float score, float domainMin, float domainM
   } else if (scaleType == SCALE_TYPE_LOG) {
     // The domain's own min, so a domain entirely below 1 still spreads.
     float floorV = domainMin > 0.0 ? domainMin : 1.0;
-    t = log2(max(score, LOG_SCORE_MIN));
+    t = log2(max(score, floorV * LOG_UNDER_FLOOR));
     tMin = log2(floorV);
     tMax = log2(max(domainMax, floorV));
   }
