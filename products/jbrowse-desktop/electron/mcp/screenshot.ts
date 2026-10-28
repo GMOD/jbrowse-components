@@ -200,7 +200,7 @@ export function errorAfterSettle(
 // height. So the viewport grows by `grow`, the session's own overflow as the
 // settle measured it, for the one capture, and the app settles again at that
 // size before the shot.
-async function captureFullPage(
+export async function captureFullPage(
   contents: BrowserWindow['webContents'],
   args: Record<string, unknown>,
   scale: number,
@@ -263,10 +263,15 @@ async function captureFullPage(
       settle,
     }
   } finally {
-    if (grown) {
-      await dbg.sendCommand('Emulation.clearDeviceMetricsOverride')
+    // detached even when the reset throws (a renderer gone mid-capture): an
+    // attached debugger refuses every later fullPage capture
+    try {
+      if (grown) {
+        await dbg.sendCommand('Emulation.clearDeviceMetricsOverride')
+      }
+    } finally {
+      dbg.detach()
     }
-    dbg.detach()
   }
 }
 

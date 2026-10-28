@@ -7,6 +7,7 @@
  * it without an Electron runtime.
  */
 import {
+  captureFullPage,
   cropTo,
   documentRect,
   errorAfterSettle,
@@ -172,5 +173,35 @@ describe('errorAfterSettle', () => {
     expect(errorAfterSettle('no window', { error: 'timed out' })).toEqual({
       error: 'no window',
     })
+  })
+})
+
+describe('captureFullPage', () => {
+  // a renderer gone mid-capture fails the settle and then the viewport reset;
+  // the debugger still has to come off, or every later fullPage is refused as
+  // "something else is holding it"
+  it('detaches the debugger when resetting the viewport throws', async () => {
+    const detach = jest.fn()
+    const sendCommand = jest.fn(async (method: string) => {
+      if (method === 'Page.getLayoutMetrics') {
+        return { cssLayoutViewport: { clientWidth: 800, clientHeight: 600 } }
+      }
+      if (method === 'Emulation.clearDeviceMetricsOverride') {
+        throw new Error('target closed')
+      }
+      return {}
+    })
+    const contents = {
+      debugger: { attach: jest.fn(), detach, sendCommand },
+    } as unknown as Parameters<typeof captureFullPage>[0]
+    const relay = jest.fn(async () => {
+      throw new Error('renderer gone')
+    })
+
+    await expect(captureFullPage(contents, {}, 1, relay, 200)).rejects.toThrow()
+    expect(sendCommand).toHaveBeenCalledWith(
+      'Emulation.clearDeviceMetricsOverride',
+    )
+    expect(detach).toHaveBeenCalled()
   })
 })
