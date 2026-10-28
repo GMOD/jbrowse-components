@@ -2403,9 +2403,6 @@ importers:
       '@mui/x-data-grid':
         specifier: ^9.16.0
         version: 9.16.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@mui/material@9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(@mui/system@9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
-      electron-debug:
-        specifier: ^5.0.0
-        version: 5.0.0
       electron-updater:
         specifier: ^6.8.11
         version: 6.8.11(supports-color@8.1.1)
@@ -7494,14 +7491,6 @@ packages:
     resolution: {integrity: sha512-Q9++XE0sZefslBXsFwUnbiskt8If1PskNAmVQPvdK4N2H3RCso4j9lKj5/a+brL7p1MOQ3lPwr7ZiWht3kuskA==}
     engines: {node: '>=10.12.0'}
     hasBin: true
-
-  electron-debug@5.0.0:
-    resolution: {integrity: sha512-OJURKDBbEMcejThLVqFuTM3rvv0J4JU3OK7wp0JAV59fusU0kgZTuRqZPHSVS362onE7xuEC4VKBnziAswIXwg==}
-    engines: {node: '>=22'}
-
-  electron-is-dev@3.0.1:
-    resolution: {integrity: sha512-8TjjAh8Ec51hUi3o4TaU0mD3GMTOESi866oRNavj9A3IQJ7pmv+MJVmdZBFGw4GFT36X7bkqnuDNYvkQgvyI8Q==}
-    engines: {node: '>=18'}
 
   electron-to-chromium@1.5.464:
     resolution: {integrity: sha512-nRa65aFge40viPAKxMKULIY8tcXKwKboJWNn4RoKwyWXJ6SP7BnrDGKUTzc64818jIciH0PK7LSF8QzZes19GA==}
@@ -15485,12 +15474,6 @@ snapshots:
       extract-zip: 2.0.1(supports-color@8.1.1)
     transitivePeerDependencies:
       - supports-color
-
-  electron-debug@5.0.0:
-    dependencies:
-      electron-is-dev: 3.0.1
-
-  electron-is-dev@3.0.1: {}
 
   electron-to-chromium@1.5.464: {}
 

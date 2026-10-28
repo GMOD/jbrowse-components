@@ -125,7 +125,21 @@ function createMenu(autoUpdater: Updater) {
     { role: 'appMenu' },
     { role: 'fileMenu' },
     { role: 'editMenu' },
-    { role: 'viewMenu' },
+    {
+      label: 'View',
+      submenu: [
+        ...(app.isPackaged
+          ? []
+          : [{ role: 'reload' } as const, { role: 'forceReload' } as const]),
+        { role: 'toggleDevTools' },
+        { type: 'separator' },
+        { role: 'resetZoom' },
+        { role: 'zoomIn' },
+        { role: 'zoomOut' },
+        { type: 'separator' },
+        { role: 'togglefullscreen' },
+      ],
+    },
     { role: 'windowMenu' },
     {
       label: 'Help',

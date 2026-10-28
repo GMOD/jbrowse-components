@@ -1,12 +1,12 @@
 import path from 'node:path'
 
 import { autoUpdater as nativeAutoUpdater, app, dialog } from 'electron'
-import debug from 'electron-debug'
 import pkg from 'electron-updater'
 
 import { checkForUpdatesInBackground, setupAutoUpdater } from './autoUpdater.ts'
 import { createCloseGuard, subscribeQuitSignals } from './closeGuard.ts'
 import { registerContextMenu } from './contextMenu.ts'
+import { registerDevToolsShortcuts } from './devToolsShortcuts.ts'
 import { registerDownloadHandler } from './downloads.ts'
 import { initializeFileSystem } from './fileSystemInit.ts'
 import { registerAuthHandlers } from './ipc/authHandlers.ts'
@@ -49,7 +49,7 @@ const { autoUpdater } = pkg
 process.on('unhandledRejection', logError)
 
 registerContextMenu()
-debug({ showDevTools: false, isEnabled: true })
+registerDevToolsShortcuts()
 
 const DEV_SERVER_URL = process.env.DEV_SERVER_URL
 
