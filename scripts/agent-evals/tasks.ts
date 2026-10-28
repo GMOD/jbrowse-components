@@ -2223,7 +2223,7 @@ const NV_VIEWS = `
     }
     return out
   }
-  const GENES = /^hg38-(ncbiRefSeq\\w*|knownGene\\w*|ensGene|mane|wgEncodeGencode\\w*)$/`
+  const GENES = /^hg38-(ncbiRefSeq\\w*|refGene|knownGene\\w*|ensGene|mane|wgEncodeGencode\\w*)$/`
 // The haplotype numbers a reply calls methylated, and the ones it calls
 // paternal (a haplotype called maternal counts as the other one)
 const HAP_CLAIMS = `${FINAL}
@@ -2239,8 +2239,8 @@ const HAP_CLAIMS = `${FINAL}
     }
     return [...out]
   }
-  const methylated = claimed('\\\\b(?:(?:hyper)?methylated|(?:carries|has|holds|bears) (?:the |most )?methylation)', '\\\\b(?:hyper)?methylated', () => false)
-  const paternal = claimed('\\\\b(paternal|maternal|father|mother)', '\\\\b(?:paternal|maternal)', s => /maternal|mother/i.test(s))`
+  const methylated = claimed('\\\\b(?:(?:hyper)?methylated|(?:carries|has|holds|bears) (?:the |most )?methylation)', '\\\\b(?:hyper)?methyl(?:ated|ation)', () => false)
+  const paternal = claimed('\\\\b(paternal|maternal|father|mother)\\\\b', '\\\\b(?:paternal|maternal)', s => /maternal|mother/i.test(s))`
 
 TASKS.push(
   {
