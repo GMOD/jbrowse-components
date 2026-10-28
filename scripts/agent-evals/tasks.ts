@@ -1959,12 +1959,12 @@ TASKS.push(
         const whole = rs.reduce((n, r) => n + r.end - r.start, 0) >= 0.9 * 83257441
         for (const t of v.tracks.filter(t => /gnomad[^"]*(structural|sv)/i.test(t.configuration.trackId + JSON.stringify(jb.mst.getSnapshot(t.configuration).adapter ?? '')))) {
           const d = t.activeDisplay
-          let facet, transform
-          try { facet = jb.readConfObject(d.configuration, 'facet'); transform = jb.readConfObject(d.configuration, 'transform') } catch {}
+          let facet, transform, filter
+          try { facet = jb.readConfObject(d.configuration, 'facet'); transform = jb.readConfObject(d.configuration, 'transform'); filter = jb.readConfObject(d.configuration, 'filter') } catch {}
           const marks = marksOf(d)
           const steps = [...(transform ?? []), ...marks.flatMap(m => m.transform ?? [])]
-          const pass = JSON.stringify([...steps, ...marks.map(m => m.encoding ?? {}), facet]).match(/FILTER[^"]*PASS|PASS[^"]*FILTER/) !== null
-          const bin = steps.some(s => s.type === 'bin' && Number(s.step) === 1000000)
+          const pass = JSON.stringify([...steps, ...marks.map(m => m.encoding ?? {}), facet, filter, ...marks.map(m => m.filter ?? [])]).match(/FILTER[^"]*PASS|PASS[^"]*FILTER/) !== null
+          const bin = steps.some(s => s.type === 'bin' && [s.step, s.width, s.binWidth, s.size, s.bp].some(v => Number(v) === 1000000))
           const count = steps.some(s => s.type === 'aggregate' && (s.ops ?? [{}]).some(o => (o.op ?? 'count') === 'count'))
           const bars = marks.some(m => markType(m) === 'bar')
           const byType = /svtype|SVTYPE/.test(JSON.stringify(facet ?? ''))
