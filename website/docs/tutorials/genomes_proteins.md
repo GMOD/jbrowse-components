@@ -272,6 +272,8 @@ each protein view then lights the residue it codes for.
 
 <Figure src="/img/protein/kras_g12c.png" caption="KRAS at codon 12 with its single-base missense changes, above the KRAS surface at residue 12 in wild type (4OBE), G12C (4LDJ) and G12C bound to sotorasib (6OIM), all from one camera, with switch II colored." />
 
+<Figure src="/img/protein/hbb_e6v.png" caption="HBB at the sickle codon with its two single-base changes, above wild-type hemoglobin (2HHB) and two sickle hemoglobin molecules (2HBS), both from one camera. The sickle codon and its residue are magenta, and Phe85 and Leu88 of the neighboring molecule are teal." />
+
 <Figure src="/img/protein/ccr5_delta32.png" caption="CCR5 with the 1000 Genomes 30x reads of a Δ32/Δ32, a Δ32/+ and a +/+ sample over the 32-base deletion, above the codons the shifted frame reads, then CCR5 bound by HIV gp120, drawn green (6MEO), beside CCR5 alone, drawn only to the last residue the frameshift spares." />
 
 <Figure src="/img/protein/ccr5_delta32_gene.png" caption="CCR5 on hg38 above the Δ32 allele as its own assembly, with the deletion drawn as the pinch between the two alignment blocks and the Δ32 coding sequence ending at its premature stop." />
@@ -285,8 +287,6 @@ each protein view then lights the residue it codes for.
 <Figure src="/img/protein/braf_v600e.png" caption="BRAF with the activation loop and the ATP binding site as domain colors in the genome view, the alignment and 4MNF." />
 
 <Figure src="/img/protein/cftr_f508.png" caption="CFTR with its ortholog alignment and 5UAK colored by ClinVar pathogenic variant count." />
-
-<Figure src="/img/protein/hbb_e6v.png" caption="HBB with the GWAS Catalog records at the codon and two protein views, 2HHB and 2HBS, colored by hydrophobicity." />
 
 ## Adding the plugins to your own instance
 
