@@ -58,17 +58,24 @@ together.
   through the column. Position 6 is not acidic in every mammal: murine
   rodents, elephants, hyrax and tenrec carry Ala, ground squirrels Gly. The
   Mouse row says so; no reviewed mammalian beta globin carries Val.
-  - The strip fills UniProt's Globin domain (His2 on) as a `features` layer.
-    NCBI CDD, the plugin's own source, starts it at Glu7 and would leave Glu6
-    outside; helix A is in UniProt for half the rows only, so it stays out.
+  - Helix A (Thr4-Val18, the PDB HELIX records) is orange in all three views:
+    a genome track from domains2genome (inputs and command in
+    `specs/hbb_helix_a/`), the strip's `features` fill, and the structures'
+    `color.values`. The Globin domain it replaced spans the whole chain, so on
+    a structure it would point at nothing.
   - Structures run WILD TYPE | SICKLE, TWO MOLECULES | SICKLE CONTACT. 2HBS
     draws EFGH grey and the neighbouring ABCD as light-teal cartoon marks, and
     the pocket spheres are a darker teal, so the color names the molecule.
+  - Each molecule's second beta chain (2HHB D, 2HBS F) leaves `chains` and
+    draws as a grey cartoon mark, so the session highlight lands on the marked
+    chain only: C and E get their Glu6/Val6 labels and D loses the stray Val6.
+    A cartoon mark draws the polymer alone, so that chain's heme goes
+    undrawn; D still hides its highlight label.
   - Both close-ups roll a quarter turn so the Val6 tetramer sits below, as in
     the zoom-out. Cameras: `/var/tmp/hero2/bin/hbb_e6v_roll.py` and
     `hbb_e6v_overview.py`.
-  - Protein3d puts the zoom-out's Val6 label on chain F, away from the
-    contact, so the spec hides that view's highlight labels.
+  - Protein3d has no range site (`B:4-18`), so a sub-chain color goes through
+    `color.values`, which paints every drawn copy of the mapped entity.
 - **Variant pairs** `protein_figure_brca1_m1775r.ts` and
   `protein_figure_snca_e46k.ts`; the SNCA builder looks down each fibril's rung
   axis and turns the E46K layer to put Lys80 on the wild type's pixel.
