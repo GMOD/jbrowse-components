@@ -1,6 +1,8 @@
 import {
   chordTurn,
+  polarPoint,
   ribbonReturnTurn,
+  turnControlPoint,
 } from './shaders/chordStage.js.generated.ts'
 import { RIBBON_BAND_SEGMENTS } from './shaders/ribbon.consts.generated.ts'
 import { pinchedParam } from './shaders/ribbon.js.generated.ts'
@@ -19,12 +21,6 @@ const dot = (a: Vec, b: Vec) => a[0] * b[0] + a[1] * b[1]
 const cross = (a: Vec, b: Vec) => a[0] * b[1] - a[1] * b[0]
 const len = (a: Vec) => Math.hypot(a[0], a[1])
 
-const polarPoint = (r: number, a: number): Vec => [
-  r * Math.cos(a),
-  r * Math.sin(a),
-]
-const turnControlPoint = (from: number, turn: number, r: number, br: number) =>
-  polarPoint(r - (r - br) * Math.sin(Math.abs(turn) * 0.5), from + turn * 0.5)
 const quadBezier = (p0: Vec, c: Vec, p1: Vec, t: number) =>
   add(
     add(scale(p0, (1 - t) * (1 - t)), scale(c, 2 * (1 - t) * t)),

@@ -1,7 +1,8 @@
 import { polarToCartesian } from '@jbrowse/core/util'
 
-import { chordControlPoint, ribbonControlPoints } from './chordGeometry.ts'
+import { ribbonControlPoints } from './chordGeometry.ts'
 import { chordEndsAt, ribbonAnglesAt } from './chordStage.ts'
+import { chordControlPoint } from './shaders/chordStage.js.generated.ts'
 
 import type {
   ChordEnds,
@@ -246,12 +247,12 @@ export function chordDistanceSq(
 ) {
   const [x0, y0] = polarToCartesian(radius, startRadians)
   const [x1, y1] = polarToCartesian(radius, endRadians)
-  const [cx, cy] = chordControlPoint({
+  const [cx, cy] = chordControlPoint(
     startRadians,
     endRadians,
     radius,
     bezierRadius,
-  })
+  )
   if (
     px < Math.min(x0, cx, x1) - maxDist ||
     px > Math.max(x0, cx, x1) + maxDist ||

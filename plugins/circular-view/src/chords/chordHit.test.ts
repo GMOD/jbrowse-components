@@ -1,4 +1,3 @@
-import { chordControlPoint } from './chordGeometry.ts'
 import {
   chordDistanceSq,
   CHORD_HIT_PX,
@@ -10,6 +9,7 @@ import {
 import { ribbonAnglesAt } from './chordStage.ts'
 import { canvasPathSink } from './pathSink.ts'
 import { traceRibbon } from './ribbonGeometry.ts'
+import { chordControlPoint } from './shaders/chordStage.js.generated.ts'
 
 import type { ChordStage, RibbonAngles, RibbonLanes } from './chordStage.ts'
 
@@ -217,11 +217,12 @@ test('a turn or new lanes measure the boxes again', () => {
 
 describe('a chord', () => {
   const ends = { startRadians: 0.2, endRadians: 2.6 }
-  const [cx, cy] = chordControlPoint({
-    ...ends,
-    radius: RADIUS,
-    bezierRadius: BEZIER,
-  })
+  const [cx, cy] = chordControlPoint(
+    ends.startRadians,
+    ends.endRadians,
+    RADIUS,
+    BEZIER,
+  )
   const x0 = RADIUS * Math.cos(ends.startRadians)
   const y0 = RADIUS * Math.sin(ends.startRadians)
   const x1 = RADIUS * Math.cos(ends.endRadians)

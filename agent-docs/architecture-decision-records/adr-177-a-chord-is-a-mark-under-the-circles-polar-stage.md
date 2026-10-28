@@ -88,9 +88,9 @@ it. Both declare `//! coverage: analytic`, so the display draws at one sample,
 which the WebGL2 rung now honours as the WebGPU one did.
 
 **The decisions both sides make are the shader's.** `chordStage.slang` exports
-the short-way turn, the 2 px floor on a ribbon end and "a chord under a pixel
-draws nothing" as generated JS twins; the control point's radius uses `sin`,
-outside the emitter, and `chordGeometry.ts` mirrors it.
+the foot's angle, the short-way turn, the curves' control points, the 2 px
+floor on a ribbon end and "a chord under a pixel draws nothing" as generated
+JS twins.
 
 **The hit test is geometry.** A ribbon covers a point when its boundary's
 nonzero winding there is nonzero, the rule the canvas fills it by, so a twisted

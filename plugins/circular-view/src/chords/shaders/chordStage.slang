@@ -4,9 +4,9 @@
 // its middle — and the count of slice gaps before it. Its angle is affine in
 // the two, so a zoom writes `radiansPerBp` and `gapRadians`, a rotation writes
 // `offsetRadians`, and neither uploads a buffer.
-//! js-export: chordTurn, ribbonReturnTurn, ribbonEndPad, chordIsSpeck, ribbonThinFade, focusAlpha
+//! js-export: footRadians, chordTurn, ribbonReturnTurn, polarPoint, turnControlPoint, chordControlPoint, ribbonEndPad, widenedSpan, chordIsSpeck, ribbonThinFade, focusAlpha
 //! export-consts: MIN_RIBBON_END_PX, DIMMED_OPACITY
-//! js-skip: footRadians — the stage's two-term scale, which chordStage.ts applies with the same two uniforms
+//! oracle-skip: chordControlPoint — the probe's ends sit hundreds of radians apart, where chordTurn's float32 range reduction leaves 1e-5 rad on the turn and the radius scales it past the tolerance; a stage's angles stay within a few turns, and turnControlPoint and chordTurn, which it composes, are each refereed
 module chordStage;
 
 static const float TWO_PI = 6.283185307179586;
@@ -57,7 +57,7 @@ public float chordTurn(float from, float to) {
 }
 
 public float2 polarPoint(float radius, float radians) {
-  return radius * float2(cos(radians), sin(radians));
+  return float2(radius * cos(radians), radius * sin(radians));
 }
 
 // A curve's control point for a signed turn from `from`, on the bisector of
@@ -96,6 +96,16 @@ public float2 quadBezierTangent(float2 p0, float2 c, float2 p1, float t) {
 // both of an end's bases at its middle, and this keeps a ribbon into it drawn.
 public float ribbonEndPad(float a, float b, float radius, float minWidthPx) {
   return max(0.0, minWidthPx / max(radius, 1.0) - abs(b - a)) * 0.5;
+}
+
+// A span's two angles grown to `MIN_RIBBON_END_PX` of arc at `radius` about
+// where it sits, in its own direction, so a reversed slice's span keeps its
+// first base at the larger angle. A span of no width grows as a forward one
+// does.
+public float2 widenedSpan(float a, float b, float radius) {
+  float pad = ribbonEndPad(a, b, radius, MIN_RIBBON_END_PX);
+  float dir = b < a ? -1.0 : 1.0;
+  return float2(a - dir * pad, b + dir * pad);
 }
 
 // The alpha a ribbon keeps under the thin fade: its two ends' true width over

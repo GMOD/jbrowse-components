@@ -1,10 +1,7 @@
 import { SimpleFeature } from '@jbrowse/core/util'
 
-import {
-  chordControlPoint,
-  getEndpoint,
-  ribbonControlPoints,
-} from './chordGeometry.ts'
+import { getEndpoint, ribbonControlPoints } from './chordGeometry.ts'
+import { chordControlPoint } from './shaders/chordStage.js.generated.ts'
 
 test('falls back to the feature end on its own contig', () => {
   const feature = new SimpleFeature({
@@ -70,7 +67,15 @@ describe('chordControlPoint', () => {
     endRadians: number
     radius: number
     bezierRadius: number
-  }) => Math.hypot(...chordControlPoint(ends))
+  }) =>
+    Math.hypot(
+      ...chordControlPoint(
+        ends.startRadians,
+        ends.endRadians,
+        ends.radius,
+        ends.bezierRadius,
+      ),
+    )
 
   test('an antipodal chord keeps the full bow', () => {
     expect(
@@ -102,12 +107,12 @@ describe('chordControlPoint', () => {
   })
 
   test('the control point sits on the bisector of the short arc', () => {
-    const [x, y] = chordControlPoint({
-      startRadians: 0.05 * Math.PI,
-      endRadians: 1.95 * Math.PI,
+    const [x, y] = chordControlPoint(
+      0.05 * Math.PI,
+      1.95 * Math.PI,
       radius,
       bezierRadius,
-    })
+    )
     expect(Math.atan2(y, x)).toBeCloseTo(0)
     expect(x).toBeGreaterThan(radius / 2)
   })
@@ -174,7 +179,7 @@ describe('ribbonControlPoints', () => {
     const angles = { a1: 0, a2: 0.1, m1: 0.5, m2: 0.6 }
     const { out, back } = ribbonControlPoints(angles, radius, bezierRadius)
     const short = (startRadians: number, endRadians: number) =>
-      chordControlPoint({ startRadians, endRadians, radius, bezierRadius })
+      chordControlPoint(startRadians, endRadians, radius, bezierRadius)
     expect(out).toEqual(short(angles.a2, angles.m1))
     back.forEach((v, i) => {
       expect(v).toBeCloseTo(short(angles.m2, angles.a1)[i]!)

@@ -63,14 +63,6 @@ struct VsOut {
   float  fade       : TEXCOORD3;
 };
 
-// A span's two angles grown to the floor about where it sits, in its own
-// direction; a span of no width grows as a forward one does.
-float2 widenedSpan(float a, float b) {
-  float pad = ribbonEndPad(a, b, u.radiusPx, MIN_RIBBON_END_PX);
-  float dir = b < a ? -1.0 : 1.0;
-  return float2(a - dir * pad, b + dir * pad);
-}
-
 // Each end's two angles on the stage, before the floor widens them.
 float4 footAngles(RibbonInstance inst) {
   return float4(
@@ -83,8 +75,8 @@ float4 footAngles(RibbonInstance inst) {
 // The four angles the boundary visits: along the span, across to the mate,
 // along the mate's span, and back.
 float4 ribbonAngles(RibbonInstance inst, float4 feet) {
-  float2 a = widenedSpan(feet.x, feet.y);
-  float2 m = widenedSpan(feet.z, feet.w);
+  float2 a = widenedSpan(feet.x, feet.y, u.radiusPx);
+  float2 m = widenedSpan(feet.z, feet.w, u.radiusPx);
   float4 angles = inst.strand < 0.0 ? float4(a.x, a.y, m.x, m.y)
                                     : float4(a.x, a.y, m.y, m.x);
   return angles + u.offsetRadians;

@@ -10,10 +10,9 @@ import {
   footRadians,
   ribbonAnglesAt,
   ribbonFadeAt,
-  widenedSpan,
 } from './chordStage.ts'
 import { DIMMED_OPACITY } from './shaders/chordStage.generated.ts'
-import { focusAlpha } from './shaders/chordStage.js.generated.ts'
+import { focusAlpha, widenedSpan } from './shaders/chordStage.js.generated.ts'
 
 import type { SliceRegion } from '../CircularView/slices.ts'
 import type { ChordLanes, ChordStage, RibbonLanes } from './chordStage.ts'
@@ -142,7 +141,7 @@ test('an end spans its own slice, start to end', () => {
 // a 5kb PAF record on a 250Mb chromosome is 2e-5 of the circle: a zero-width
 // quad, invisible and with nothing to point at
 test('a sub-pixel end is widened around where it sits', () => {
-  const { start, end } = widenedSpan(5, 5.0001, radiusPx)
+  const [start, end] = widenedSpan(5, 5.0001, radiusPx)
   expect(end - start).toBeCloseTo(2 / radiusPx)
   expect((start + end) / 2).toBeCloseTo(5.00005)
 })

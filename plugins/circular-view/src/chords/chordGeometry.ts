@@ -1,56 +1,15 @@
-import { polarToCartesian } from '@jbrowse/core/util'
 import { svMateLocus } from '@jbrowse/sv-core'
 
 import {
+  chordControlPoint,
   chordTurn,
   ribbonReturnTurn,
+  turnControlPoint,
 } from './shaders/chordStage.js.generated.ts'
 
 import type { ChordEnds, RibbonAngles } from './chordStage.ts'
 import type { PathSink } from './pathSink.ts'
 import type { Feature } from '@jbrowse/core/util'
-
-/**
- * A curve's Bezier control point for a signed `turn` from `startRadians`, on
- * the bisector of the arc it turns through. Its depth scales with
- * `sin(turn/2)`, the ends' distance over the diameter: an antipodal pair bows
- * the full `bezierRadius`, and a local event stays at the rim rather than
- * drawing a spoke to the centre.
- */
-function turnControlPoint(
-  startRadians: number,
-  turn: number,
-  radius: number,
-  bezierRadius: number,
-) {
-  return polarToCartesian(
-    radius - (radius - bezierRadius) * Math.sin(Math.abs(turn) / 2),
-    startRadians + turn / 2,
-  )
-}
-
-/**
- * A chord's Bezier control point. The turn is the short way round, so two
- * ends either side of the circle's first angle are as close as they look.
- */
-export function chordControlPoint({
-  startRadians,
-  endRadians,
-  radius,
-  bezierRadius,
-}: {
-  startRadians: number
-  endRadians: number
-  radius: number
-  bezierRadius: number
-}) {
-  return turnControlPoint(
-    startRadians,
-    chordTurn(startRadians, endRadians),
-    radius,
-    bezierRadius,
-  )
-}
 
 /**
  * The control points of a ribbon's two curves: out from `a2` to `m1` the
@@ -96,12 +55,12 @@ export function traceChord(
   radius: number,
   bezierRadius: number,
 ) {
-  const [cx, cy] = chordControlPoint({
+  const [cx, cy] = chordControlPoint(
     startRadians,
     endRadians,
     radius,
     bezierRadius,
-  })
+  )
   sink.moveTo(radius, startRadians)
   sink.quadTo(cx, cy, radius, endRadians)
 }

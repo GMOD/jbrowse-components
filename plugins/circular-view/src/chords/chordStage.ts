@@ -1,8 +1,9 @@
 import { MIN_RIBBON_END_PX } from './shaders/chordStage.generated.ts'
 import {
   chordIsSpeck,
-  ribbonEndPad,
+  footRadians as footRadiansBy,
   ribbonThinFade,
+  widenedSpan,
 } from './shaders/chordStage.js.generated.ts'
 
 import type { Feature } from '@jbrowse/core/util'
@@ -34,18 +35,7 @@ export function figurePoint(
 }
 
 export function footRadians(x: number, gaps: number, stage: ChordStage) {
-  return x * stage.radiansPerBp + gaps * stage.gapRadians
-}
-
-/**
- * A span's two angles grown to `MIN_RIBBON_END_PX` of arc about where it sits,
- * in its own direction, so a reversed slice's span keeps its first base at the
- * larger angle. A span of no width grows as a forward one does.
- */
-export function widenedSpan(a: number, b: number, radiusPx: number) {
-  const pad = ribbonEndPad(a, b, radiusPx, MIN_RIBBON_END_PX)
-  const dir = b < a ? -1 : 1
-  return { start: a - dir * pad, end: b + dir * pad }
+  return footRadiansBy(x, gaps, stage.radiansPerBp, stage.gapRadians)
 }
 
 /** The four angles a ribbon's boundary visits, in the order it visits them. */
@@ -103,20 +93,20 @@ export function ribbonAnglesAt(
   const { radiusPx, offsetRadians } = stage
   const xs = lanes.xGaps[i]!
   const ys = lanes.yGaps[i]!
-  const a = widenedSpan(
+  const [a1, a2] = widenedSpan(
     footRadians(lanes.x1[i]!, xs, stage),
     footRadians(lanes.x2[i]!, xs, stage),
     radiusPx,
   )
-  const m = widenedSpan(
+  const [mStart, mEnd] = widenedSpan(
     footRadians(lanes.y1[i]!, ys, stage),
     footRadians(lanes.y2[i]!, ys, stage),
     radiusPx,
   )
-  const [m1, m2] = lanes.strand[i]! < 0 ? [m.start, m.end] : [m.end, m.start]
+  const [m1, m2] = lanes.strand[i]! < 0 ? [mStart, mEnd] : [mEnd, mStart]
   return {
-    a1: a.start + offsetRadians,
-    a2: a.end + offsetRadians,
+    a1: a1 + offsetRadians,
+    a2: a2 + offsetRadians,
     m1: m1 + offsetRadians,
     m2: m2 + offsetRadians,
   }
