@@ -85,17 +85,19 @@ export async function renderToSvg(
     const display = svgDisplayOf(t)
     return display && !isRing(t) ? [{ id: t.id, display }] : []
   })
-  notifySkippedSvgTracks(
-    session,
-    model.tracks.filter(t => !svgDisplayOf(t)),
-  )
   const ringsDrawable = canRasterizeRings(opts)
-  if (!ringsDrawable) {
+  if (opts.announceSkipped !== false) {
     notifySkippedSvgTracks(
       session,
-      model.tracks.filter(t => svgDisplayOf(t) && isRing(t)),
-      'Ring tracks are rasterized, and this environment cannot decode an image.',
+      model.tracks.filter(t => !svgDisplayOf(t)),
     )
+    if (!ringsDrawable) {
+      notifySkippedSvgTracks(
+        session,
+        model.tracks.filter(t => svgDisplayOf(t) && isRing(t)),
+        'Ring tracks are rasterized, and this environment cannot decode an image.',
+      )
+    }
   }
 
   // a track whose data won't load fails the export, named

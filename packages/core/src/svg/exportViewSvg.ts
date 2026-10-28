@@ -13,6 +13,11 @@ export interface ViewExportSvgOptions extends SvgRasterCanvasOpts {
    * for would land beside that under a name it did not choose.
    */
   save?: boolean
+  /**
+   * Whether to tell the user which tracks the export left out. Default true;
+   * false for an export nobody reads as a figure, such as a session thumbnail.
+   */
+  announceSkipped?: boolean
   Wrapper?: React.FC<{ children: React.ReactNode }>
   /** a named theme; the session's active one when absent */
   themeName?: string

@@ -389,9 +389,10 @@ export default function RootModel({
       },
       /**
        * #action
-       * Pictures the open session for the session manager. Quiet on failure:
-       * the row keeps its previous picture, and a session swapped out
-       * mid-export is an expected way to fail.
+       * Pictures the open session for the session manager. Silent on failure,
+       * since the usual ones are normal states (a view still on its import
+       * form, a session swapped out mid-export), and the row keeps its
+       * previous picture.
        */
       async captureSessionThumbnail() {
         const { session, sessionDB } = self
@@ -408,10 +409,8 @@ export default function RootModel({
           if (meta && isAlive(self)) {
             self.upsertSessionMetadata(meta)
           }
-        } catch (e) {
-          if (isAlive(session)) {
-            console.error(e)
-          }
+        } catch {
+          // see above
         } finally {
           capturingThumbnail.delete(self)
         }

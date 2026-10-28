@@ -85,10 +85,12 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
     ),
   )
   // one message for the whole stack, not one per row
-  notifySkippedSvgTracks(
-    session,
-    rowTracks.flatMap(r => r.skippedTracks),
-  )
+  if (opts.announceSkipped !== false) {
+    notifySkippedSvgTracks(
+      session,
+      rowTracks.flatMap(r => r.skippedTracks),
+    )
+  }
   const heights = rowTracks.map(r => r.tracksHeight + offset)
   // after the waits: a resize during the fetch would otherwise size the canvas
   // and the overlay clip for the old width while SVGView re-reads the new one.

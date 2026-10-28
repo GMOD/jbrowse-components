@@ -2,7 +2,7 @@ const WIDTH = 480
 const MAX_HEIGHT = 300
 
 interface SvgExportingView {
-  exportSvg?: (opts: { save: false }) => Promise<string>
+  exportSvg?: (opts: { save: false; announceSkipped: false }) => Promise<string>
 }
 
 /**
@@ -14,7 +14,10 @@ interface SvgExportingView {
 export async function renderSessionThumbnail(
   views: readonly SvgExportingView[],
 ) {
-  const svg = await views[0]?.exportSvg?.({ save: false })
+  const svg = await views[0]?.exportSvg?.({
+    save: false,
+    announceSkipped: false,
+  })
   return svg === undefined ? undefined : rasterizeSvg(svg)
 }
 

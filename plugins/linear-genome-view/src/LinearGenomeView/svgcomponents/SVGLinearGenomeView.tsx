@@ -59,7 +59,9 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
       textHeight,
       trackLabels,
     })
-  notifySkippedSvgTracks(session, skippedTracks)
+  if (opts.announceSkipped !== false) {
+    notifySkippedSvgTracks(session, skippedTracks)
+  }
 
   // read after the displays' waits, and handed to SVGHeader rather than read
   // again, so the reserved `tracksTop` and the drawn header are one layout

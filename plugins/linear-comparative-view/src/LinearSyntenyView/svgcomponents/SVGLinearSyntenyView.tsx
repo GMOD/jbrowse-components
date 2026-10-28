@@ -94,10 +94,12 @@ export async function renderToSvg(
   ])
 
   // one message for the whole stack, not one per row
-  notifySkippedSvgTracks(
-    session,
-    rowTracks.flatMap(r => r.skippedTracks),
-  )
+  if (opts.announceSkipped !== false) {
+    notifySkippedSvgTracks(
+      session,
+      rowTracks.flatMap(r => r.skippedTracks),
+    )
+  }
 
   // Deliberately read after those waits, not before. SVGView and each ribbon
   // layer re-read the view geometry for themselves once their own waits resolve,
