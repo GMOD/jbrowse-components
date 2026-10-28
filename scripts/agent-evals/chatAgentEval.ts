@@ -38,7 +38,7 @@ import { fileURLToPath } from 'node:url'
 import puppeteer from 'puppeteer'
 
 import { servePageBridge } from './pageBridge.ts'
-import { BASELINE_SPEC, selectTasks, stageWork } from './tasks.ts'
+import { BASELINE_SPEC, NOT_DRAWN, selectTasks, stageWork } from './tasks.ts'
 
 import type { EvalTask, TaskSet } from './tasks.ts'
 import type { Page } from 'puppeteer'
@@ -615,6 +615,11 @@ async function runOnce(task: EvalTask, run: number, attempt: number) {
       detail: `grader threw: ${e instanceof Error ? e.message : String(e)}`,
     }
   }
+  const notDrawn = task.grade
+    ? await evaluateLive(NOT_DRAWN, 40_000).catch((e: unknown) => [
+        { trackId: '?', phase: 'unread', reason: String(e).slice(0, 200) },
+      ])
+    : []
   await context.close().catch(() => {})
   const inputTokens = stats.inputTokens - inBefore
   const outputTokens = stats.outputTokens - outBefore
@@ -622,6 +627,7 @@ async function runOnce(task: EvalTask, run: number, attempt: number) {
     task: task.name,
     run,
     ...verdict,
+    notDrawn,
     answer,
     error,
     calls: stats.started - startedBefore,

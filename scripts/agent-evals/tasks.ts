@@ -104,6 +104,12 @@ export const BASELINE_SPEC = `
     ],
   }, 90000)`
 
+// Run after grading: the shown tracks that settled without drawing, such as a
+// "too much data" banner. A pass with any is a pass the user could not see.
+export const NOT_DRAWN = `
+  const w = await jb.waitReady(20000).catch(e => ({ notReady: [{ trackId: '?', phase: 'waitReady threw', reason: String(e) }] }))
+  return (w.notReady ?? []).filter(t => t.trackId).map(t => ({ trackId: t.trackId, phase: t.phase, reason: t.reason ?? t.error }))`
+
 // A negative task passes on an answer that declines. The cue is loose on
 // purpose: an agent that did the impossible reports success, and success has
 // none of these words, while a correct decline has many spellings.
@@ -1313,3 +1319,169 @@ TASKS.push({
     'Build a standalone JBrowse Web site in WORK/site that I can send a collaborator: hg38 with RefSeq genes, the ENCODE H3K27ac tracks WORK/k562_h3k27ac.bw and WORK/gm12878_h3k27ac.bw, and a log2((K562 + 1) / (GM12878 + 1)) ratio track, opening at the beta-globin locus. Reusing the hosted hg38 genome and annotation configs on genomes.jbrowse.org (https://jbrowse.org/ucsc/hg38/config.json, listed on genomes.jbrowse.org) is fine.',
   check: checkSite,
 })
+
+// Frontier tasks: human requests on the hosted hg38 hub that today's agents
+// are expected to miss some of the time. Answers come from the data, read live
+// by the grader, so a hub update moves the truth and the grader together.
+const said = `const said = (answer.match(/\\d[\\d,]*/g) ?? []).map(n => Number(n.replaceAll(',', '')))`
+const LCT_SNP = `
+  const snp = (await jb.getFeatures({ trackId: 'hg38-hprc-v2.0-pangenome-vcf', loc: 'chr2:135,851,070-135,851,082', byteLimit: 80e6 }))
+    .find(f => f.get('POS') === 135851076 && f.get('REF') === 'G' && f.get('ALT')?.[0] === 'A')
+  const gts = Object.values(snp?.get('samples') ?? {}).map(s => (s?.GT ?? []).join())
+  const homAlt = gts.filter(g => g === '1|1').length
+  const homRef = gts.filter(g => g === '0|0').length`
+const NEAR_LCT = `
+  const genes = await jb.getFeatures({ trackId: 'hg38-pliByGene', loc: 'chr2:134,851,076-136,851,076', byteLimit: 80e6 })
+  const top = Math.max(...genes.map(g => Number(g.get('_pli'))))
+  const best = [...new Set(genes.filter(g => Number(g.get('_pli')) === top).map(g => g.get('geneName')))]`
+const TP53_PATHOGENIC = `
+  const tp53 = (await jb.getFeatures({ trackId: 'hg38-clinvarMain', loc: 'chr17:7,661,779-7,687,546', byteLimit: 80e6 }))
+    .filter(f => f.get('clinSign') === 'Pathogenic')
+  const counts = [tp53.length, tp53.filter(f => String(f.get('geneId')).split(/[,|]/).includes('TP53')).length]`
+const BRCA1_DEL = `
+  const dels = (await jb.getFeatures({ trackId: 'hg38-gnomadStructuralVariants', loc: '${BRCA1_LOC}', byteLimit: 80e6 }))
+    .filter(f => f.get('svtype') === 'DEL' && f.get('FILTER') === 'PASS')
+  const longest = dels.reduce((a, f) => (Number(f.get('svlen')) > Number(a?.get('svlen') ?? 0) ? f : a), undefined)
+  const truth = [Number(longest?.get('svlen')), longest ? longest.get('end') - longest.get('start') : NaN]`
+const PATIENT_SVS = 'https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/working/20210124.SV_Illumina_Integration/1KGP_3202.gatksv_svtools_novelins.freeze_V3.wAF.vcf.gz'
+const RS80357906 = 43057062
+
+TASKS.push(
+  {
+    name: 'fr-lct-homozygous-hprc',
+    tutorial: true,
+    config: HG38_HUB,
+    prompt:
+      'In hg38, how many HPRC pangenome samples are homozygous for the lactase-persistence allele at rs4988235? Reply with the number.',
+    solution: `${LCT_SNP}
+      return String(homAlt)`,
+    grade: `${LCT_SNP}
+      ${said}
+      return { pass: homAlt > 0 && said.includes(homAlt) && !said.includes(homRef), detail: { homAlt, homRef, n: gts.length, said } }`,
+  },
+  {
+    name: 'fr-pli-near-lct',
+    tutorial: true,
+    config: HG38_HUB,
+    prompt:
+      'In hg38, which gene within 1 Mb of rs4988235 is the most intolerant of loss-of-function variants by gnomAD pLI? Reply with the gene symbol.',
+    solution: `${NEAR_LCT}
+      return best[0]`,
+    grade: `${NEAR_LCT}
+      return { pass: best.some(b => new RegExp('\\\\b' + b + '\\\\b').test(answer)), detail: { best, top, answer: answer.slice(0, 300) } }`,
+  },
+  {
+    name: 'fr-tp53-pathogenic-count',
+    tutorial: true,
+    config: HG38_HUB,
+    prompt:
+      'In hg38, how many ClinVar variants in TP53 are classified Pathogenic, leaving out Likely pathogenic and conflicting classifications? Reply with the number.',
+    solution: `${TP53_PATHOGENIC}
+      return String(counts[1])`,
+    grade: `${TP53_PATHOGENIC}
+      ${said}
+      return { pass: counts[0] > 0 && counts.some(c => said.includes(c)), detail: { counts, said } }`,
+  },
+  {
+    name: 'fr-brca1-longest-deletion',
+    tutorial: true,
+    config: HG38_HUB,
+    prompt:
+      'In hg38, what is the longest deletion in gnomAD structural variants that passed all filters and overlaps BRCA1? Reply with its length in base pairs.',
+    solution: `${BRCA1_DEL}
+      return String(truth[0])`,
+    grade: `${BRCA1_DEL}
+      ${said}
+      return { pass: truth.some(t => t > 0 && said.includes(t)), detail: { truth, name: longest?.get('name'), said } }`,
+  },
+  {
+    name: 'fr-brca1-wrong-chromosome',
+    tutorial: true,
+    config: HG38_HUB,
+    prompt: 'In hg38, take me to BRCA1 on chromosome 13.',
+    solution: `${lgv(BRCA1_LOC, []).replace('return ', 'await ')}
+      return 'BRCA1 is on chromosome 17, not 13, so I opened it at chr17:43,044,295-43,125,483.'`,
+    grade: `${BRCA1}
+      const corrects = /\\b(chr|chromosome )17\\b/i.test(answer)
+      return { pass: !!view && corrects, detail: { regions, answer: answer.slice(0, 300) } }`,
+  },
+  {
+    name: 'fr-brca1-variants-drawn',
+    tutorial: true,
+    config: HG38_HUB,
+    prompt:
+      'In hg38, show ClinVar and common dbSNP variants across BRCA1 and 500 kb either side, with every track actually drawn.',
+    solution: `${lgv('chr17:42,544,295-43,625,483', ['hg38-clinvarMain', 'hg38-dbSnp155Common']).replace('return ', 'await ')}
+      await jb.trackModel('hg38-clinvarMain').applyDisplaySettings({ forceLoad: true })
+      await jb.trackModel('hg38-dbSnp155Common').applyDisplaySettings({ forceLoad: true })
+      return jb.waitReady(120000)`,
+    grade: `
+      const w = await jb.waitReady(60000).catch(() => ({}))
+      const undrawn = (w.notReady ?? []).map(t => t.trackId)
+      const out = []
+      for (const v of session.views.filter(v => v.type === 'LinearGenomeView' && v.assemblyNames?.includes('hg38'))) {
+        const rs = await jb.visibleRegions(v.id)
+        const wide = rs.some(r => r.refName.replace(/^chr/, '') === '17' && r.start <= 42644295 && r.end >= 43525483)
+        const ids = v.tracks.map(t => t.configuration.trackId)
+        const want = ids.filter(i => i === 'hg38-clinvarMain' || /^hg38-dbSnp\\d+Common$/.test(i))
+        out.push({ wide, ids, drawn: want.filter(i => !undrawn.includes(i)) })
+      }
+      return { pass: out.some(o => o.wide && o.drawn.includes('hg38-clinvarMain') && o.drawn.some(i => /dbSnp/.test(i))), detail: { out, undrawn } }`,
+  },
+  {
+    name: 'fr-repair-broken-index',
+    tutorial: true,
+    config: HG38_HUB,
+    prompt:
+      "The 'Patient SVs' track at BRCA1 shows an error. Fix that track so it shows its variants.",
+    setup: `${lgv(BRCA1_LOC, []).replace('return ', 'await ')}
+      jb.session.addTrackConf({ type: 'VariantTrack', trackId: 'patient-svs', name: 'Patient SVs', assemblyNames: ['hg38'], adapter: { type: 'VcfTabixAdapter', vcfGzLocation: { uri: '${PATIENT_SVS}', locationType: 'UriLocation' }, index: { location: { uri: '${PATIENT_SVS}.tbi.bak', locationType: 'UriLocation' } } } })
+      jb.view().showTrack('patient-svs')
+      return jb.waitReady(60000).catch(e => String(e))`,
+    solution: `
+      jb.view().hideTrack('patient-svs')
+      jb.session.addTrackConf({ type: 'VariantTrack', trackId: 'patient-svs-fixed', name: 'Patient SVs', assemblyNames: ['hg38'], adapter: { type: 'VcfTabixAdapter', vcfGzLocation: { uri: '${PATIENT_SVS}', locationType: 'UriLocation' }, index: { location: { uri: '${PATIENT_SVS}.tbi', locationType: 'UriLocation' } } } })
+      jb.view().showTrack('patient-svs-fixed')
+      return jb.waitReady(60000)`,
+    grade: `
+      await jb.waitReady(60000).catch(() => undefined)
+      const out = []
+      for (const v of session.views.filter(v => v.type === 'LinearGenomeView')) {
+        for (const t of v.tracks.filter(t => t.configuration.name === 'Patient SVs')) {
+          const id = t.configuration.trackId
+          let n = 0
+          let err = String(t.activeDisplay.error ?? '')
+          try {
+            n = (await jb.getFeatures({ trackId: id, viewId: v.id, loc: '${BRCA1_LOC}', byteLimit: 80e6 })).length
+          } catch (e) {
+            err ||= String(e).slice(0, 200)
+          }
+          out.push({ id, n, err })
+        }
+      }
+      return { pass: out.length > 0 && out.every(o => !o.err) && out.some(o => o.n > 0), detail: out }`,
+  },
+  {
+    name: 'fr-brca1-founder-codon',
+    tutorial: true,
+    config: HG38_HUB,
+    prompt:
+      "In hg38, zoom to base level on BRCA1's 5382insC founder variant (rs80357906) and show the amino-acid translation of the strand BRCA1 is read from.",
+    solution: `${lgv('chr17:43,057,000-43,057,120', ['hg38-refseq']).replace('return ', 'await ')}
+      return jb.trackModel('hg38-refseq').applyDisplaySettings({ showReverse: true, showTranslation: true })`,
+    grade: `
+      const out = []
+      for (const v of session.views.filter(v => v.type === 'LinearGenomeView' && v.assemblyNames?.includes('hg38'))) {
+        const rs = await jb.visibleRegions(v.id)
+        const at = rs.some(r => r.refName.replace(/^chr/, '') === '17' && r.start < ${RS80357906} && r.end >= ${RS80357906} && r.end - r.start <= 500)
+        for (const t of v.tracks.filter(t => t.type === 'ReferenceSequenceTrack')) {
+          const d = t.activeDisplay
+          out.push({ at, span: rs.map(r => r.end - r.start), reverse: d.showReverse, translation: d.showTranslation })
+        }
+        if (!v.tracks.some(t => t.type === 'ReferenceSequenceTrack')) {
+          out.push({ at, span: rs.map(r => r.end - r.start), sequence: false })
+        }
+      }
+      return { pass: out.some(o => o.at && o.reverse === true && o.translation === true), detail: out }`,
+  },
+)

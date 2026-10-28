@@ -28,7 +28,7 @@ import readline from 'node:readline'
 import { fileURLToPath } from 'node:url'
 
 import { servePageBridge } from './pageBridge.ts'
-import { BASELINE_SPEC, selectTasks, stageWork } from './tasks.ts'
+import { BASELINE_SPEC, NOT_DRAWN, selectTasks, stageWork } from './tasks.ts'
 
 import type { EvalTask, TaskSet } from './tasks.ts'
 
@@ -260,6 +260,7 @@ interface RunMetrics {
   task: string
   run: number
   pass: boolean
+  notDrawn: unknown
   detail: unknown
   answer: string
   javascript: number
@@ -312,7 +313,18 @@ try {
           detail: `grader threw: ${e instanceof Error ? e.message : String(e)}`,
         }
       }
-      const row: RunMetrics = { task: task.name, run, ...verdict, ...counted }
+      const notDrawn = task.grade
+        ? await bridge.evaluate(NOT_DRAWN).catch((e: unknown) => [
+            { trackId: '?', phase: 'unread', reason: String(e).slice(0, 200) },
+          ])
+        : []
+      const row: RunMetrics = {
+        task: task.name,
+        run,
+        ...verdict,
+        notDrawn,
+        ...counted,
+      }
       metrics.push(row)
       fs.writeFileSync(
         path.join(outDir, `${task.name}-${run}.json`),
