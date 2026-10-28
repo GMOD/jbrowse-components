@@ -323,9 +323,8 @@ export { intronAlpha }
 // so the two backends cannot disagree (adr-051).
 export { sizeAlpha }
 
-// Canvas Y for a pileup row index, mirroring shader-side `pileupY()` in
-// alignmentsUniforms.slang. Single source of truth for the row → canvas-Y
-// formula used by every Canvas2D draw method.
+// Canvas Y for a pileup row index, which every Canvas2D pileup painter places
+// rows by: the twin of alignmentsUniforms.slang's `pileupRowTopPx`.
 export function pileupRowY(yRow: number, state: RenderState) {
   return (
     yRow * (state.featureHeight + state.featureSpacing) +

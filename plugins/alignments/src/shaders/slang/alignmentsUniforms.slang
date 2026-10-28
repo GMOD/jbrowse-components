@@ -1,6 +1,6 @@
 // Shared uniform block + helpers for every alignments-plugin shader. One
-// UBO is written per block render and re-read by every pass so the struct
-// below stays in lockstep with writeUniforms() in GpuAlignmentsRenderer.
+// UBO is written per block render and re-read by every pass; pileupUniforms.ts
+// writes the struct below.
 //
 // Colors are packed as u32 ABGR (one slot each, no std140 vec3 padding);
 // shaders read them with `unpackRGBA(u.colorX).xyz` (see colorPack.slang).
@@ -46,8 +46,7 @@ public struct Uniforms {
   // Canvas metadata
   public float canvasW;
   public float canvasH;
-  // Pileup top in scrolled px. Read by pileupY and (via pileupRowCenterPx) by
-  // the connecting/linked-read line shaders.
+  // The scroll, and pileup row 0's top before it, in px: `pileupRowTopPx`.
   public float rangeY0;
   public float covOffset;
   public float featHeight;
@@ -99,17 +98,14 @@ public struct Uniforms {
   public uint colorSoftclip;
   public uint colorHardclip;
   // The chain's mate-joining hairline (connectingLine.slang) and the
-  // collapsed-row overlap tint (overlap.slang). Same argument as the flat
-  // connector above — see colors.ts, which is where each says which neutral it
-  // wants and why.
+  // collapsed-row overlap tint (overlap.slang). colors.ts says which neutral
+  // each wants and why.
   public uint colorConnectingLine;
   public uint colorOverlapTint;
-  // The chain-layout overlap span (overlap.slang). Same argument as the flat
-  // connector above and the opposite conclusion about WHICH neutral: two
-  // segments of one molecule cover that span, so no read color is right there,
-  // but unlike a hairline over the track background this is an opaque fill
-  // between two read fills, so it takes its own theme slot (`readOverlap`)
-  // rather than the foreground.
+  // The chain-layout overlap span (overlap.slang). Two segments of one molecule
+  // cover that span, so no read color is right there, and unlike a hairline
+  // over the track background it is an opaque fill between two read fills, so
+  // it takes its own theme slot (`readOverlap`) rather than the foreground.
   public uint colorOverlap;
   // Which field's slot a connector's `colorType` paints: the field's index
   // times CONNECTOR_COLOR_BITS (`connectorColorShift` in TS).
@@ -312,7 +308,7 @@ public float sizeAlpha(float spanPx) {
 }
 
 // Shared vertex output for passes that only need clip-space position + color.
-// Passes with extra varyings (read, arc, indicator, overlap) define their own.
+// Passes with extra varyings (read, linkedReadLine) define their own.
 public struct ColorVsOut {
   public float4 position : SV_Position;
   public float4 color    : COLOR0;

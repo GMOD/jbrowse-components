@@ -29,9 +29,8 @@ export interface PileupUniformViews {
 }
 
 /**
- * The struct every pileup pass reads, and so the size of its scratch: a write
- * uploads the whole buffer it is handed, and the HAL's widest struct is the
- * read-connection band's link.
+ * The size of the struct every pileup pass reads, and so of its scratch: a
+ * write uploads the whole buffer it is handed.
  */
 export const PILEUP_UNIFORMS_SIZE_BYTES = readShader.UNIFORMS_SIZE_BYTES
 
@@ -144,8 +143,6 @@ export function writePileupFrame(
   block: RenderBlock,
   state: RenderState,
 ) {
-  // Set on every frame, not just the arc passes: a zero here would divide by
-  // zero in strokeCoverage for anything else that antialiases a stroke.
   f32[U.devicePixelRatio] = getDpr()
   f32[U.bpHi] = clip.bpStartHi
   f32[U.bpLo] = clip.bpStartLo
@@ -159,8 +156,6 @@ export function writePileupFrame(
   f32[U.canvasW] = clip.scissorW
   f32[U.pxPerBp] = clip.scissorW / clip.clippedLengthBp
   f32[U.canvasH] = state.canvasHeight
-  // The pileup top in scrolled px: pileupY and the connecting/linked-read
-  // shaders all read this as rangeY0 (via pileupRowCenterPx).
   f32[U.rangeY0] = state.scrollTop
   f32[U.covOffset] = state.pileupTopOffset
   f32[U.featHeight] = state.featureHeight
