@@ -1,7 +1,10 @@
-// Thin 1px horizontal line connecting rects within a feature (introns).
-// Instance data shared with chevron.slang — see lineInstance.slang.
+// Thin 1px horizontal line connecting rects within a feature (introns), with
+// the butt ends Canvas2D strokes it with. Instance data shared with
+// chevron.slang — see lineInstance.slang.
 //! targets: wgsl, glsl
+//! coverage: analytic
 
+import antialias;
 import hpmath;
 import colorPack;
 import lineInstance;
@@ -14,27 +17,37 @@ public static const uint VERTS_PER_INSTANCE = 6u;
 struct VsOut {
   float4 position : SV_Position;
   float4 color    : COLOR0;
+  // CSS px inside the left end, inside the right end, and from the centre row
+  float3 inside   : TEXCOORD0;
 };
 
 [shader("vertex")]
 VsOut vs_main(LineInstance inst, uint vid : SV_VertexID) {
-  float sx1 = bpToClipX(inst.startEnd.x, u);
-  float sx2 = bpToClipX(inst.startEnd.y, u);
-
-  float cy = snapBoxCenterY(inst.y, u.scrollY, u.canvasHeight);
-  float halfThickness = pxToClipH(0.5, u);
+  float cw = u.canvasWidth;
+  float x1 = clipXToPx(bpToClipX(inst.startEnd.x, u), cw);
+  float x2 = clipXToPx(bpToClipX(inst.startEnd.y, u), cw);
+  float left = min(x1, x2);
+  float right = max(x1, x2);
+  float cy = snapBoxCenterYPx(inst.y, u.scrollY);
+  float padX = aaHalfPx(u.devicePixelRatio);
+  float padY = snappedEdgePadPx(u);
 
   float2 q = quadLocal(vid);
-  float sx = lerp(sx1, sx2, q.x);
-  float sy = lerp(cy - halfThickness, cy + halfThickness, q.y);
+  float x = lerp(left - padX, right + padX, q.x);
+  float y = lerp(cy - 0.5 - padY, cy + 0.5 + padY, q.y);
 
   VsOut o;
-  o.position = float4(sx, sy, 0.0, 1.0);
+  o.position = float4(pxToClipX(x, cw), yPxToClipY(y, u.canvasHeight), 0.0, 1.0);
   o.color = unpackRGBA(inst.color);
+  o.inside = float3(x - left, right - x, y - cy);
   return o;
 }
 
 [shader("fragment")]
-float4 fs_main(VsOut fragIn) : SV_Target {
-  return fragIn.color;
+float4 fs_main(VsOut v) : SV_Target {
+  float dpr = u.devicePixelRatio;
+  float a = v.color.a * strokeCoverage(0.5, abs(v.inside.z), dpr)
+          * edgeCoverage(v.inside.x, dpr) * edgeCoverage(v.inside.y, dpr);
+  if (a <= 0.0) discard;
+  return float4(v.color.rgb, a);
 }

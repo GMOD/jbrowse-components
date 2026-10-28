@@ -1,6 +1,6 @@
 ---
 name: arc-antialiasing-without-msaa
-description: The 4x MSAA target exists because read-connection arcs looked pixelated, and the arc's stroke stopped depending on it on 2026-08-01 when the fragment started measuring an analytic conic — captured at dpr 2, MSAA 4 and MSAA 1 differ across the arc band by at most one 8-bit level. The dome's FEET were the exception until 2026-09-25: the 64-chord hull sagged inside the offset curve where the curvature radius falls under a pixel, so the strip's own silhouette carried up to alpha 0.83 there, which is what the capture's unexplained 54-pixel strip at the band anchor was; the hull now circumscribes the outer offset and follows the inner one's fold, and `arcHull.test.ts` finds no inked point outside it. The wiggle xyplot bar stopped depending on it on 2026-08-22; what still does is the alignments coverage band, read arrow tips and the tiled Hi-C/LD diamonds, and the coverage band's marks all share horizontal edges so no shader change reaches them. The lever is a per-display sample count, not a global switch — since 2026-09-05 derived from `//! coverage: analytic` on every registered pass, which flipped synteny and dotplot to 1 (cross-backend gate canvas2d vs WebGPU: 44 pairs, max 1.28%, targeted pairs ≤0.18%); `linkMark.slang` carries that directive over the same hull, which holds it now that the feet are covered.
+description: The 4x MSAA target exists because read-connection arcs looked pixelated, and the arc's stroke stopped depending on it on 2026-08-01 when the fragment started measuring an analytic conic — captured at dpr 2, MSAA 4 and MSAA 1 differ across the arc band by at most one 8-bit level. The dome's FEET were the exception until 2026-09-25: the 64-chord hull sagged inside the offset curve where the curvature radius falls under a pixel, so the strip's own silhouette carried up to alpha 0.83 there, which is what the capture's unexplained 54-pixel strip at the band anchor was; the hull now circumscribes the outer offset and follows the inner one's fold, and `arcHull.test.ts` finds no inked point outside it. The wiggle xyplot bar stopped depending on it on 2026-08-22; what still does is the alignments coverage band, read arrow tips and the tiled Hi-C/LD diamonds, and the coverage band's marks all share horizontal edges so no shader change reaches them. The lever is a per-display sample count, not a global switch — since 2026-09-05 derived from `//! coverage: analytic` on every registered pass, which flipped synteny and dotplot to 1 (cross-backend gate canvas2d vs WebGPU: 44 pairs, max 1.28%, targeted pairs ≤0.18%), and feature tracks on 2026-10-28 once `rect`, `line` and `arrow` ramped their own edges; `linkMark.slang` carries that directive over the same hull, which holds it now that the feet are covered.
 ---
 
 # Antialiasing arcs without MSAA
@@ -243,11 +243,18 @@ the crisp small-point square (`crispSquareTopLeftPx`, shared by manhattan and
 wiggle's scatter) is the same rule. Two qualifications the earlier draft of this
 row did not carry. **A whole CSS px is a whole device px only when dpr is a
 whole number** — at the 1.25 / 1.5 / 1.75 a fractionally-scaled desktop hands
-`getDpr`, every snapped edge lands mid-device-pixel and MSAA resolves it, so
-`rect.slang`'s `//! coverage: analytic` is a claim about the reader's monitor.
-And the rest of the canvas glyph family rides only the **y** helper
-(`snapBoxCenterY`): `arrow`, `chevron` and `continuation` all take x straight
-off `bpToClipX` unsnapped.
+`getDpr`, every snapped edge lands mid-device-pixel and MSAA resolved it.
+`rect.slang` now ramps its four edges in the fragment, growing its quad by half
+an output pixel only at a fractional dpr. At 1.5 its 1-sample render matches
+its old 4-sample one to 1/255, and at a whole dpr it draws the same pixels and
+fragments as before. `line` and `arrow` ramp their unsnapped ends and the
+arrowhead's slants the same way, and `chevron` and `continuation` already
+measured theirs, so a feature track draws at one sample. On the Intel UHD 630 at
+dpr 2, 20,000 instances a pass drew in 14.3 ms against 20.6 for `rect`, 10.2
+against 27.8 for `line` and 3.2 against 6.1 for `arrow`, and the arrow's error
+against its exactly-covered shape fell from 8.05 px² to 2.58. Multi-way
+synteny's lanes reuse these passes beside `barMark`, which keeps that display at
+four.
 
 **Deliberately MSAA-invariant.** `variantMatrix.slang` reconstructs the pixel
 centre (`floor(position.x) + 0.5`) and multiplies by its own sub-pixel coverage
@@ -269,12 +276,11 @@ deterministic under the HAL's 4x MSAA*. At 1x it is unchanged.
   `gap.slang`, `insertion.slang`, `coverageInterbase.slang`, `coverageMod.slang`
   — flat fills with **no** pixel snap. Read ends are pointed, so those quads
   have diagonal silhouettes.
-- `arrow.slang` — the strand arrowhead is a 5x7 CSS px triangle, flat-filled.
 - `hic.slang`, `ldGenomic.slang`, `ldUniform.slang` — cells laid out on a
   45°-rotated grid (`diagonalGrid.slang`). **Every visible edge is a diagonal.**
 - The ones this list had never reached, all flat fills of an unpadded quad, all
   found by the same substitution on 2026-09-25: `arcMarker`, `connectingLine`,
-  `overlap`, `clip`, `packedColorQuad` (alignments); `line` (features); the mark
+  `overlap`, `clip`, `packedColorQuad` (alignments); the mark
   family's `spanMark`, `rowRect` and `rowTable`; the score-example's `score`.
   `barMark` is the one of them that reasons about the question in its own
   header, and its conclusion — analytic horizontals, hard verticals, no
@@ -769,9 +775,8 @@ Concretely, in the order to take it:
   (option 4's first bullet) — so flipping it trades the band's edges permanently
   for the biggest single block of memory in the tree. That is the trade to put
   in front of someone, not to resolve here.
-- Read arrow tips and the strand arrowhead are a follow-up either way. They are
-  silhouette-only, they are small, and a look at the 10x pileup crop will say
-  whether anyone minds.
+- Read arrow tips are a follow-up either way. They are silhouette-only, they
+  are small, and a look at the 10x pileup crop will say whether anyone minds.
 - **Option 2 is no longer a change at all** — it is the `sampleCount = 4`
   default in `createRenderingBackend`, and moving it inverts which displays have
   to opt in. Don't, until a Hi-C track has been looked at.

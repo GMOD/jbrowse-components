@@ -5,6 +5,7 @@
 //! export-consts: MIN_RECT_WIDTH_PX, MIN_DENSITY_ALPHA
 //! js-export: rectSpanPx, rectDrawsOutline
 
+import antialias;
 import hpmath;
 import colorPack;
 import featureGlyphUniforms;
@@ -24,8 +25,8 @@ static const float MIN_DENSITY_ALPHA = 0.3;
 struct VsOut {
   float4 position : SV_Position;
   float4 color    : COLOR0;
-  float2 localPos : TEXCOORD0;
-  nointerpolation float2 featSizePx : TEXCOORD1;
+  // CSS px inside the box's left, right, top and bottom edges
+  float4 inside   : TEXCOORD0;
 };
 
 // The two screen-x edges a rect paints, from its unsnapped edges in px, as a
@@ -63,57 +64,47 @@ public bool rectDrawsOutline(float widthPx, float heightPx) {
 
 [shader("vertex")]
 VsOut vs_main(RectInstance inst, uint vid : SV_VertexID) {
-  float2 q = quadLocal(vid);
-  float localX = q.x, localY = q.y;
-
   float cw = u.canvasWidth;
   float2 span = rectSpanPx(
     clipXToPx(bpToClipX(inst.startEnd.x, u), cw),
     clipXToPx(bpToClipX(inst.startEnd.y, u), cw),
     inst.startEnd.x == inst.startEnd.y
   );
-  float sx1 = pxToClipX(span.x, cw);
-  float sx2 = pxToClipX(span.y, cw);
-  float sx = lerp(sx1, sx2, localX);
-
+  float left = min(span.x, span.y);
+  float right = max(span.x, span.y);
   // Not a bare round of each edge: snapBoxHeightPx gives a thin box an odd
   // height, so the 1px glyphs riding on it have a center row, and snapBoxTopPx
   // snaps about the center so a center-shrunk UTR stays on its row.
-  float yTopPx = snapBoxTopPx(inst.y, inst.height, u.scrollY);
-  float yBotPx = yTopPx + snapBoxHeightPx(inst.height);
-  float syTop = yPxToClipY(yTopPx, u.canvasHeight);
-  float syBot = yPxToClipY(yBotPx, u.canvasHeight);
-  float sy = lerp(syBot, syTop, localY);
+  float top = snapBoxTopPx(inst.y, inst.height, u.scrollY);
+  float bottom = top + snapBoxHeightPx(inst.height);
+  float pad = snappedEdgePadPx(u);
 
-  float widthPx  = abs(span.y - span.x);
-  float heightPx = abs(yBotPx - yTopPx);
-
-  float densityAlpha = inst.densityFade != 0u ? MIN_DENSITY_ALPHA : 1.0;
+  float2 q = quadLocal(vid);
+  float x = lerp(left - pad, right + pad, q.x);
+  float y = lerp(top - pad, bottom + pad, q.y);
 
   VsOut o;
-  o.position   = float4(sx, sy, 0.0, 1.0);
-  o.color      = unpackRGBA(inst.color);
-  o.color.a   *= densityAlpha;
-  o.localPos   = float2(localX, localY);
-  o.featSizePx = float2(widthPx, heightPx);
+  o.position = float4(pxToClipX(x, cw), yPxToClipY(y, u.canvasHeight), 0.0, 1.0);
+  o.color = unpackRGBA(inst.color);
+  o.color.a *= inst.densityFade != 0u ? MIN_DENSITY_ALPHA : 1.0;
+  o.inside = float4(x - left, right - x, y - top, bottom - y);
   return o;
 }
 
 [shader("fragment")]
-float4 fs_main(VsOut fragIn) : SV_Target {
+float4 fs_main(VsOut v) : SV_Target {
+  float4 color = v.color;
+  float4 d = v.inside;
   if (u.outlineColor != 0u) {
     float4 outlineRGBA = unpackRGBA(u.outlineColor);
-    if (
-      outlineRGBA.a > 0.0 &&
-      rectDrawsOutline(fragIn.featSizePx.x, fragIn.featSizePx.y)
-    ) {
-      float dxL = fragIn.localPos.x * fragIn.featSizePx.x;
-      float dxR = (1.0 - fragIn.localPos.x) * fragIn.featSizePx.x;
-      float dy  = min(fragIn.localPos.y, 1.0 - fragIn.localPos.y) * fragIn.featSizePx.y;
-      if (min(min(dxL, dxR), dy) < 1.0) {
-        return outlineRGBA;
-      }
+    if (outlineRGBA.a > 0.0 && rectDrawsOutline(d.x + d.y, d.z + d.w) &&
+        min(min(d.x, d.y), min(d.z, d.w)) < 1.0) {
+      color = outlineRGBA;
     }
   }
-  return fragIn.color;
+  float dpr = u.devicePixelRatio;
+  float a = color.a * edgeCoverage(d.x, dpr) * edgeCoverage(d.y, dpr)
+          * edgeCoverage(d.z, dpr) * edgeCoverage(d.w, dpr);
+  if (a <= 0.0) discard;
+  return float4(color.rgb, a);
 }

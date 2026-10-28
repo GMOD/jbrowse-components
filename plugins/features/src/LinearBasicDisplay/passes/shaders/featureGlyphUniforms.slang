@@ -3,6 +3,7 @@
 // renderer writes them once per block.
 module featureGlyphUniforms;
 
+import antialias;
 import hpmath;
 
 public struct FeatureGlyphUniforms {
@@ -49,4 +50,12 @@ public float pxToClipH(float px, FeatureGlyphUniforms u) {
 // Negates `x` on a reversed block, whether a clip position or a ±1 direction.
 public float flipX(float x, FeatureGlyphUniforms u) {
   return lerp(x, -x, u.reversed);
+}
+
+// How far a quad grows past an edge snapped to a whole CSS px so its fragment
+// can ramp that edge: not at all at a whole-number ratio, where the edge already
+// lies on a device pixel's boundary.
+public float snappedEdgePadPx(FeatureGlyphUniforms u) {
+  float dpr = u.devicePixelRatio;
+  return dpr == floor(dpr) ? 0.0 : aaHalfPx(dpr);
 }

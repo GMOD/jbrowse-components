@@ -1,15 +1,17 @@
-// Strand arrow off a feature's end: a stem quad (6 vertices) then a head
-// triangle (3), picked by vertex ID.
+// Strand arrow off a feature's end: a stem then a head, both measured in one
+// quad over the whole arrow, so their seam blends once.
 //! targets: wgsl, glsl
+//! coverage: analytic
 //! export-consts: ARROW_LENGTH_PX, STEM_HALF_H_PX, HEAD_HALF_H_PX, ARROW_MIN_FEATURE_WIDTH_PX, GENE_ARROW_MIN_FEATURE_WIDTH_PX
 //! js-export: arrowDraws, arrowHeadHalfHeightPx
 
+import antialias;
 import hpmath;
 import colorPack;
 import featureGlyphUniforms;
 
 
-public static const uint VERTS_PER_INSTANCE = 9u;
+public static const uint VERTS_PER_INSTANCE = 6u;
 // Stem and head together; the stem takes the first half.
 static const float ARROW_LENGTH_PX = 7.0;
 static const float STEM_HALF_H_PX = 0.5;
@@ -57,6 +59,9 @@ struct ArrowInstance {
 struct VsOut {
   float4 position : SV_Position;
   float4 color    : COLOR0;
+  // CSS px from the arrow's root along its direction, and across its axis
+  float2 local    : TEXCOORD0;
+  nointerpolation float headHalfPx : TEXCOORD1;
 };
 
 // Off-clip vertex; the GPU culls any triangle that contains it.
@@ -64,52 +69,51 @@ static const float4 OFFSCREEN = float4(2.0, 2.0, 0.0, 1.0);
 
 [shader("vertex")]
 VsOut vs_main(ArrowInstance inst, uint vid : SV_VertexID) {
-  if (!arrowDraws(float(inst.widthBp) / u.bpPerPx, inst.gene != 0u)) {
-    VsOut culled;
-    culled.position = OFFSCREEN;
-    culled.color = float4(0.0);
-    return culled;
-  }
-
-  float cx = bpToClipX(inst.x, u);
-
-  float cy = snapBoxCenterY(inst.y, u.scrollY, u.canvasHeight);
-
-  float arrowLength = pxToClipW(ARROW_LENGTH_PX, u);
-  float stemHalf = pxToClipH(STEM_HALF_H_PX, u);
-  float headHalf = pxToClipH(arrowHeadHalfHeightPx(inst.height), u);
-
-  float dir = flipX(inst.direction, u);
-
-  float sx;
-  float sy;
-  if (vid < 6u) {
-    float2 q = quadLocal(vid);
-    float localX = q.x;
-    float localY = 1.0 - 2.0 * q.y;
-    sx = cx + localX * arrowLength * 0.5 * dir;
-    sy = cy + localY * stemHalf;
-  } else {
-    uint hvid = vid - 6u;
-    if (hvid == 0u) {
-      sx = cx + arrowLength * 0.5 * dir;
-      sy = cy + headHalf;
-    } else if (hvid == 1u) {
-      sx = cx + arrowLength * 0.5 * dir;
-      sy = cy - headHalf;
-    } else {
-      sx = cx + arrowLength * dir;
-      sy = cy;
-    }
-  }
-
   VsOut o;
-  o.position = float4(sx, sy, 0.0, 1.0);
   o.color = unpackRGBA(inst.color);
+  o.local = float2(0.0);
+  o.headHalfPx = 0.0;
+  if (!arrowDraws(float(inst.widthBp) / u.bpPerPx, inst.gene != 0u)) {
+    o.position = OFFSCREEN;
+    return o;
+  }
+
+  float cw = u.canvasWidth;
+  float cx = clipXToPx(bpToClipX(inst.x, u), cw);
+  float cy = snapBoxCenterYPx(inst.y, u.scrollY);
+  float dir = flipX(inst.direction, u);
+  float headHalf = arrowHeadHalfHeightPx(inst.height);
+  float pad = aaHalfPx(u.devicePixelRatio);
+  float halfH = max(STEM_HALF_H_PX, headHalf) + pad;
+
+  float2 q = quadLocal(vid);
+  float along = lerp(-pad, ARROW_LENGTH_PX + pad, q.x);
+  float across = lerp(-halfH, halfH, q.y);
+
+  o.position = float4(
+    pxToClipX(cx + along * dir, cw), yPxToClipY(cy + across, u.canvasHeight),
+    0.0, 1.0);
+  o.local = float2(along, across);
+  o.headHalfPx = headHalf;
   return o;
 }
 
+// The stem runs half a px into the head, which holds it there, so the union
+// of the two has no seam where the head's base ramps up.
 [shader("fragment")]
-float4 fs_main(VsOut fragIn) : SV_Target {
-  return fragIn.color;
+float4 fs_main(VsOut v) : SV_Target {
+  float dpr = u.devicePixelRatio;
+  float along = v.local.x;
+  float across = abs(v.local.y);
+  float stemEnd = ARROW_LENGTH_PX * 0.5;
+  float stem = strokeCoverage(STEM_HALF_H_PX, across, dpr)
+             * edgeCoverage(along, dpr)
+             * edgeCoverage(stemEnd + 0.5 - along, dpr);
+  float hh = v.headHalfPx;
+  float slant = (hh * (ARROW_LENGTH_PX - along) - stemEnd * across)
+              / sqrt(hh * hh + stemEnd * stemEnd);
+  float head = edgeCoverage(along - stemEnd, dpr) * edgeCoverage(slant, dpr);
+  float a = v.color.a * max(stem, head);
+  if (a <= 0.0) discard;
+  return float4(v.color.rgb, a);
 }

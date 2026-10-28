@@ -3,6 +3,7 @@
 // as the draw asks for; the vertex ID picks the chevron and its corner, and the
 // shader places each chevron from the viewport and the line span.
 //! targets: wgsl, glsl
+//! coverage: analytic
 //! export-consts: CHEVRON_SPACING_PX, CHEVRON_W_PX, CHEVRON_H_PX, CHEVRON_THICKNESS_PX, CHEVRON_VERTS
 //! js-export: showChevrons, chevronCount, chevronOffset, chevronFirstVisible, chevronLastVisible
 

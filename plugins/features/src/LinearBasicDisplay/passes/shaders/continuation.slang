@@ -11,6 +11,7 @@
 // (chevronStroke.slang). An edge's pair goes OFFSCREEN unless the rect runs off
 // that edge.
 //! targets: wgsl, glsl
+//! coverage: analytic
 //! js-export: markerDirection, markerApexInsetPx, markerIsDark, markerHalfHeight, runsOffEdge
 //! js-skip: strandMatchesEdge — reached as a private helper inside the generated markerApexInsetPx, which is the only question a painter asks of it
 //! export-consts: CONT_TRI_W_PX, CONT_TRI_HALF_H_PX, CONT_EDGE_MARGIN_PX, CONT_TRI_GAP_PX, CONT_MIN_OVERHANG_PX, CONT_MARK_ALPHA, CONT_STROKE_PX
