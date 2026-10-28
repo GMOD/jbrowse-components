@@ -408,8 +408,9 @@ The config draws reference lines at the strain count and at 1:
 }
 ```
 
-The curve rises past the strain-count line over the rRNA operons (repeated
-ribosomal RNA genes), because the graph collapses their copies into one.
+The curve doubles to about 10 over the rrnC and rrnB operons (ribosomal RNA gene
+copies), because the graph folds those two copies onto each other. The other
+five operons read 5.
 
 ### Per-strain presence
 

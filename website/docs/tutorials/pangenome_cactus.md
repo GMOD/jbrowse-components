@@ -370,8 +370,8 @@ the
 with `ecoli_cactus_pav_` in each `uri`.
 
 Depth counts path **steps**, so a repeat the graph folded onto one run of nodes
-reads above the strain count. seqwish, pggb's graph builder, folds the rRNA
-copies together; the reference-first graph keeps them apart.
+reads above the strain count. seqwish, pggb's graph builder, folds the rrnC and
+rrnB operons onto each other; the reference-first graph keeps them apart.
 
 To compare the two builders, load both depth curves as rows of one track on a
 fixed axis, and type `chr:3,935,000-3,955,000`, the rrnC operon (a ribosomal RNA

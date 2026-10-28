@@ -105,21 +105,16 @@ store cannot be read ([configuring plugins](/docs/config_guides/plugins)).
 
 ## Indexing a graph with gfa-to-tabix build {#what-your-graph-can-produce}
 
-Install [`gfa-to-tabix`](https://github.com/GMOD/gfa-to-tabix) 0.12.0 or later,
-whose `build` command writes every file below (its
-[releases](https://github.com/GMOD/gfa-to-tabix/releases) have Linux and macOS
-binaries if you have no Rust toolchain):
-
-```bash
-cargo install gfa-to-tabix
-```
+The `gfa-to-tabix build` command writes every file below. Without a Rust
+toolchain, take a Linux or macOS binary from its
+[releases](https://github.com/GMOD/gfa-to-tabix/releases).
 
 An **rGFA**, from minigraph or the minigraph stage of Minigraph-Cactus, needs an
 output prefix and the assembly name your config uses. Its bubbles come from
 `gfatools bubble`, so put `gfatools` on PATH:
 
 ```bash
-gfa-to-tabix build graph.rgfa.gz -o out --assembly hg38
+gfa-to-tabix build graph.rgfa.gz -o hprc --assembly hg38
 ```
 
 A **plain GFA**, from pggb, odgi, vg or base-level Minigraph-Cactus, also needs
@@ -144,7 +139,7 @@ bcftools annotate --rename-chrs rename_chrs.tsv graph.snarls.vcf \
 ```
 
 ```bash
-gfa-to-tabix build graph.gfa -o out --reference K12 --assembly K12 --snarls graph.snarls.vcf.gz
+gfa-to-tabix build graph.gfa -o ecoli --reference K12 --assembly K12 --snarls graph.snarls.vcf.gz
 ```
 
 At human-chromosome scale, index the SV-resolution rGFA; a pggb graph's index
@@ -207,16 +202,17 @@ The config's first track is the graph. Its adapter holds:
 }
 ```
 
+`build` writes the config as `<prefix>.config.json`, here `hprc.config.json`.
+Merge its `plugins` and `tracks` entries into your own config, then run
+`jbrowse validate config.json`, which reports a misspelled or undeclared slot
+JBrowse otherwise ignores. Without a config, the plugin's Add pangenome graph
+track workflow reads `hprc.graph.json` beside `hprc.segs.bed.gz`, so a track
+opened from that url gets the coarse tier too.
+
 Turned on, the track draws as a graph. **Display types → Feature display** in
 its track menu draws the same segments as a row.
 
 <Figure caption="The HPRC graph's segment index over C4 on hg38." src="/img/pangenome/prepare_graph_segments.png" />
-
-The command writes `out.config.json`. Merge its `plugins` and `tracks` entries
-into your own config, then run `jbrowse validate config.json`, which reports a
-misspelled or undeclared slot JBrowse otherwise ignores. Without a config, the
-plugin's Add pangenome graph track workflow reads `out.graph.json` beside
-`out.segs.bed.gz`, so a track opened from that url gets the coarse tier too.
 
 The other three tracks in the config draw the bubbles as a row and as a curve,
 and the allele inventory, one row per alternative path, as an alignments track.
@@ -326,13 +322,13 @@ is per haplotype (`HG002.1`), so a diploid sample's two copies count separately.
 ## Indexing haplotype walks with gfa-to-tabix {#haplotype-walks-tabix}
 
 A **walk** is one haplotype's route through the graph. `gfa-to-tabix --walks`
-(1.1.0 or later) writes every walk to one tabix-indexed file per reference,
-which the browser reads for the graph track and for the haplotype lanes. It cuts
-each walk into pieces, one for each stretch the walk spends in a 64 kb chunk of
-a reference, and files each piece under its chunk, so the browser reads one
-range of the file per window. A chunk holds the reference's path through it
-once, each distinct route a haplotype takes off that path once, and every other
-walk's piece as the list of routes it takes.
+writes every walk to one tabix-indexed file per reference, which the browser
+reads for the graph track and for the haplotype lanes. It cuts each walk into
+pieces, one for each stretch the walk spends in a 64 kb chunk of a reference,
+and files each piece under its chunk, so the browser reads one range of the file
+per window. A chunk holds the reference's path through it once, each distinct
+route a haplotype takes off that path once, and every other walk's piece as the
+list of routes it takes.
 
 The base-level GFA holds each walk as a W line. Index it against both of HPRC's
 references:[^walks-cost]
@@ -446,8 +442,8 @@ set for its **Haplotypes** launch, for the graph it draws under a clicked row,
 and for its BandageJS link.
 
 The track menu's **Haplotypes** submenu switches the track between **The track's
-default haplotypes**, **Every haplotype in the graph** and **Chosen in
-Settings...**, whose dialog offers the names from the walk file's header. A
+default haplotypes**, **Every haplotype in the graph** and **Chosen in Graph
+settings...**, whose dialog offers the names from the walk file's header. A
 graph view opened from the track draws the same set. Where the graph collapses
 the copies of a repeat onto one set of nodes, the track draws a walk through
 them where the reference places those nodes.

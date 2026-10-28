@@ -257,7 +257,8 @@ every chromosome's coordinates:
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_omia_cattle_variants.sh
-bash build_omia_cattle_variants.sh
+# .: write the file and its index here, beside your config, instead of omia_cattle_build/
+bash build_omia_cattle_variants.sh .
 ```
 
 Add the records as a track:
@@ -293,8 +294,9 @@ under the **Layout** row of its menu.
 
 <Figure caption="Upstream of KIT with the callset and the graph track, which draws the deletion as a dashed arc." src="/img/pangenome/bovine_kit.png" />
 
-The larger box at the left of the Simmental row is an insertion the length of
-the 14.3 kb segment: Simmental has one more copy than the Hereford reference.
+Every other assembly carries the record's 20.6 kb deletion, in blue. Simmental's
+row is red, the record's second allele: 37.5 kb where the Hereford reference has
+20.6 kb, so Simmental carries more of the repeat than the reference.
 
 ### A deletion of TAS2R46 in gaur
 
@@ -304,9 +306,8 @@ deletion in gaur that removes it. Open `chr5:98,575,000-98,615,000`.
 <Figure caption="TAS2R46 with the callset and the graph track, which draws the deletion as a dashed arc." src="/img/pangenome/bovine_tas2r46.png" />
 
 Angus, Piedmontese, Brahman and Nellore, two taurine and two indicine breeds,
-share that allele, and only the gaur's deletes the span. The insertion boxed in
-each of the four rows, between _TAS2R46_ and the next gene, is most of the
-difference.
+carry an allele about 1 kb longer than the reference's 17 kb, in blue. Only the
+gaur's allele, in red, deletes the span.
 
 ## Building the bovine graph files
 

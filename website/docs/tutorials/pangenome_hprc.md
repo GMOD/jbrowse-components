@@ -308,10 +308,9 @@ sequence that haplotype lacks. Then:
 
 The VCF's widest blue block is one record, a deletion of a whole C4-CYP21-TNX
 module, which is the dashed arc in the C4 graph. Every alignment row in the
-white block has that deletion in the VCF. The narrower blocks are the 6.4 kb
-HERV-K (endogenous retrovirus) insertion in a C4 gene's intron, the difference
-between a long and a short C4. The configured track draws all the alignment
-rows.
+white block has that deletion in the VCF. The narrower blocks are haplotypes
+that lack the 6.4 kb HERV-K (endogenous retrovirus) in a C4 gene's intron, which
+GRCh38 carries: the difference between a long and a short C4.
 
 ## Reproduce it end to end
 

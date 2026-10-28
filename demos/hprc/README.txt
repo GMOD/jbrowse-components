@@ -229,9 +229,10 @@ Haplotype walks
   hprc-v2.1-mc-grch38-f5.GRCh38, and defaultHaplotypes names the lanes it
   draws unless the haplotype menu says otherwise.
 
-  Each file's first header line gives format:i:4; chunk:i:65536, the chunk
+  Each file's first header line gives format:i:5; chunk:i:65536, the chunk
   size; maxnode:i:1024, the longest node, which sets how far before a window
-  a reader queries; and stay:i:311, the --stay it was written with. The file
+  a reader queries; stay:i:311, the --stay it was written with; and abridge and
+  abridgebytes, the cost past which a chunk keeps summary rows. The file
   then names its reference on one #reference line and the 463 other
   haplotypes, the other reference included, on #haplotype lines.
 
@@ -240,7 +241,7 @@ Haplotype walks
   CHM13: 49,134,471 route rows and 23,653,408 walk rows from 23,696,899
   pieces; 3,736 paths have no row.
 
-  Built 2026-10-19 on ada with gfa-to-tabix 1.2.0, from HPRC's
+  Built 2026-10-20 on ada with gfa-to-tabix 1.4.0, from HPRC's
   hprc-v2.1-mc-grch38.gbz (5,492,627,216 bytes, the release directory above),
   so node ids match the GBZ and the gbz.db:
 

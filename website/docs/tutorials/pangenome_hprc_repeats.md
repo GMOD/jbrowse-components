@@ -420,7 +420,7 @@ structure:
   **AMY1** example, then **Haplotypes** under **More about this window**.
 - **Display types → Graph** in the track menu.
 - Enter `HG01361.1`, `HG00133.2`, `HG00133.1`, `NA18608.2` and `HG00232.1` in
-  **Settings → Haplotypes**.
+  **Graph settings... → Haplotypes**.
 - **Walk rows** under the **Layout** row and **Uniform** under the **Color** row
   draw each haplotype's route as a bar.
 

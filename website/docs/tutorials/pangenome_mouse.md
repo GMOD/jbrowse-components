@@ -8,12 +8,12 @@ tutorial_category: Pangenomes
 tutorial_subcategory: Mouse and cattle
 ---
 
-The mouse strain pangenome aligns eighteen inbred and wild-derived strain
-assemblies from the Mouse Genomes Project onto the GRCm39 reference with
-`minigraph`. GRCm39 is itself a strain, C57BL/6J, which inverts the sign of the
-best-known variant in the panel. No locus list has been published for these
-strains, so we rank the graph's bubbles, the regions where the strains' paths
-split and rejoin, by how many segments each holds, and open the densest. We:
+The mouse strain pangenome aligns eighteen assemblies of seventeen inbred and
+wild-derived strains onto the GRCm39 reference with `minigraph`. GRCm39 is
+itself a strain, C57BL/6J, which inverts the sign of the best-known variant in
+the panel. No locus list has been published for these strains, so we rank the
+graph's bubbles, the regions where the strains' paths split and rejoin, by how
+many segments each holds, and open the densest. We:
 
 - at _Nnt_, read a C57BL/6J deletion as sequence the other strains have
 - rank the bubbles in the graph and open the densest one that fits in a window,
@@ -56,7 +56,8 @@ conda install -c bioconda -c conda-forge htslib minigraph
 ## The data
 
 The reference is UCSC's mm39 and the strains are the Mouse Genomes Project
-assemblies as UCSC GenArk rehosts them.
+assemblies plus T2T builds of C57BL/6J and CAST/EiJ, as UCSC GenArk rehosts
+them.
 
 The track configs below read the index files by URL, so no download is needed.
 _Building a minigraph graph from the strain assemblies_ builds the files for
@@ -68,7 +69,7 @@ strains of your own.
 | What it is                                                                         | File                                                                                                                                                                                                                                                                       |
 | ---------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Mm39 (GRCm39)                                                                      | [mm39.fa.gz](https://hgdownload.soe.ucsc.edu/goldenPath/mm39/bigZips/mm39.fa.gz)                                                                                                                                                                                           |
-| The eighteen strains, one GenArk folder per GenBank accession                      | [GCA/](https://hgdownload.soe.ucsc.edu/hubs/GCA/)                                                                                                                                                                                                                          |
+| The eighteen assemblies, one GenArk folder per GenBank accession                   | [GCA/](https://hgdownload.soe.ucsc.edu/hubs/GCA/)                                                                                                                                                                                                                          |
 | Segments, the graph's nodes at their reference coordinates                         | [mouse-mm39-minigraph.segs.bed.gz](https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph.segs.bed.gz)                                                                                                                                                             |
 | Links, the edges between segments                                                  | [mouse-mm39-minigraph.links.bed.gz](https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph.links.bed.gz)                                                                                                                                                           |
 | Bubbles, where the strains' paths split and rejoin                                 | [mouse-mm39-minigraph.bubbles.bed.gz](https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph.bubbles.bed.gz)                                                                                                                                                       |
