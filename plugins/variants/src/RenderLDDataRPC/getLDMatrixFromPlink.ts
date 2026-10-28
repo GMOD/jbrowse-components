@@ -11,7 +11,7 @@ import type { PlinkLDRecord } from '@jbrowse/ld-core'
 
 /**
  * Cells past which a fetch refuses rather than allocates: 40 MB of `ldValues`,
- * and 200 MB with the per-cell rects of genomic positions. The tutorials' full
+ * and up to 200 MB of GPU instances at genomic positions. The tutorials' full
  * triangle of 1,258 variants is 790k cells.
  */
 export const MAX_LD_CELLS = 10_000_000

@@ -1,7 +1,5 @@
 import { bpOffsetInRegion } from '@jbrowse/core/util/Base1DUtils'
 
-import { bandCellCount, bandRowFirstColumn } from './ldBand.ts'
-
 import type { LDSnp } from './ldTypes.ts'
 import type { Region } from '@jbrowse/core/util/types'
 
@@ -49,37 +47,4 @@ export function computeBoundaries({
     }
   }
   return boundaries
-}
-
-/**
- * Interleaved per-cell x/y and width/height for the `genomic` mark in ldMarks.ts,
- * in the same cell order as `ldValues`. Uniform mode derives cells from
- * `uniformW` in the shader instead, and skips these buffers entirely.
- *
- * These are why genomic mode costs 5x what uniform mode does: 16 bytes a cell
- * here against `ldValues`' 4. The band therefore buys the most where the cost
- * is worst.
- */
-export function buildGenomicCellBuffers(
-  boundaries: Float32Array,
-  band: number,
-) {
-  const n = boundaries.length - 1
-  const numCells = bandCellCount(n, band)
-  const positions = new Float32Array(numCells * 2)
-  const cellSizes = new Float32Array(numCells * 2)
-  let cellIdx = 0
-  for (let i = 1; i < n; i++) {
-    const y = boundaries[i]!
-    const ch = boundaries[i + 1]! - y
-    for (let j = bandRowFirstColumn(i, band); j < i; j++) {
-      const x = boundaries[j]!
-      positions[cellIdx * 2] = x
-      positions[cellIdx * 2 + 1] = y
-      cellSizes[cellIdx * 2] = boundaries[j + 1]! - x
-      cellSizes[cellIdx * 2 + 1] = ch
-      cellIdx++
-    }
-  }
-  return { positions, cellSizes }
 }

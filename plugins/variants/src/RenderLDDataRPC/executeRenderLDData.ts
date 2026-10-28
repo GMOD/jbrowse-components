@@ -2,7 +2,7 @@ import { updateStatus } from '@jbrowse/core/util'
 import { rpcResultWithArrayBuffers } from '@jbrowse/core/util/librpc'
 
 import { getLDMatrixFromPlink } from './getLDMatrixFromPlink.ts'
-import { buildGenomicCellBuffers, computeBoundaries } from './ldLayout.ts'
+import { computeBoundaries } from './ldLayout.ts'
 
 import type { LDDataResult } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -50,6 +50,5 @@ export async function executeRenderLDData({
     hasR2,
     hasDprime,
     snps,
-    ...(genomicMode ? buildGenomicCellBuffers(boundaries, band) : undefined),
   })
 }

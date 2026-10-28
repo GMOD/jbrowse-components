@@ -1,28 +1,62 @@
+import { ldValueComputed } from '@jbrowse/ld-core'
 import { defineMark } from '@jbrowse/render-core/marks'
 import { slangPass } from '@jbrowse/render-core/slangPass'
 
+import { bandRowFirstColumn } from '../../RenderLDDataRPC/ldBand.ts'
 import { drawLDBlocks } from './drawLDBlocks.ts'
 import * as ldGenomicShader from './shaders/ldGenomic.generated.ts'
+import {
+  INSTANCE_OFFSET_F32 as OFF,
+  INSTANCE_STRIDE_BYTES,
+  INSTANCE_STRIDE_WORDS,
+} from './shaders/ldGenomic.iface.generated.ts'
 import * as ldUniformShader from './shaders/ldUniform.generated.ts'
 
 import type { LDRenderState, LDUploadData } from './ldRenderingBackendTypes.ts'
 import type { InstancePass } from '@jbrowse/render-core/instancePass'
 import type { MarkShape } from '@jbrowse/render-core/marks'
 
-export function interleaveLDInstances(data: {
-  positions: Float32Array
-  cellSizes: Float32Array
-  ldValues: Float32Array
-  numCells: number
-}) {
-  return ldGenomicShader.packInstances(
-    {
-      position: data.positions,
-      cellSize: data.cellSizes,
-      ldValue: data.ldValues,
-    },
-    data.numCells,
-  )
+/**
+ * One genomic-layout instance per cell the file reported, in `ldValues`' band
+ * order. A cell's rect is `[b[j], b[j+1]] x [b[i], b[i+1]]` over `boundaries`,
+ * as `drawLDBlocks` paints it; an uncomputed cell gets no instance, since its
+ * corners are explicit and dropping it shifts no other cell.
+ */
+export function packGenomicCells({
+  boundaries,
+  band,
+  ldValues,
+  numCells,
+}: Pick<LDUploadData, 'boundaries' | 'band' | 'ldValues' | 'numCells'>) {
+  let computed = 0
+  for (let k = 0; k < numCells; k++) {
+    if (ldValueComputed(ldValues[k]!)) {
+      computed++
+    }
+  }
+  const buf = new ArrayBuffer(computed * INSTANCE_STRIDE_BYTES)
+  const f32 = new Float32Array(buf)
+  const { position, cellSize, ldValue } = OFF
+  const n = boundaries.length - 1
+  let k = 0
+  let o = 0
+  for (let i = 1; i < n; i++) {
+    const y = boundaries[i]!
+    const ch = boundaries[i + 1]! - y
+    for (let j = bandRowFirstColumn(i, band); j < i; j++) {
+      const v = ldValues[k++]!
+      if (ldValueComputed(v)) {
+        const x = boundaries[j]!
+        f32[o + position] = x
+        f32[o + position + 1] = y
+        f32[o + cellSize] = boundaries[j + 1]! - x
+        f32[o + cellSize + 1] = ch
+        f32[o + ldValue] = v
+        o += INSTANCE_STRIDE_WORDS
+      }
+    }
+  }
+  return buf
 }
 
 interface LDCellParams extends LDRenderState {
@@ -33,11 +67,8 @@ interface LDCellParams extends LDRenderState {
 
 const EMPTY = new Float32Array(0)
 
-// The worker sends per-cell positions only at genomic positions.
-function isGenomic(
-  data: LDUploadData,
-): data is LDUploadData & { positions: Float32Array; cellSizes: Float32Array } {
-  return data.positions !== undefined && data.cellSizes !== undefined
+function isGenomic(data: LDUploadData) {
+  return data.appliedLayout === 'genomic'
 }
 
 /**
@@ -85,7 +116,7 @@ const uniformShape = ldShape(
 const genomicShape = ldShape(
   {
     ...slangPass({ id: 'genomic', mod: ldGenomicShader }),
-    pack: data => (isGenomic(data) ? interleaveLDInstances(data) : EMPTY),
+    pack: data => (isGenomic(data) ? packGenomicCells(data) : EMPTY),
   },
   genomic => genomic,
 )

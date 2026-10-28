@@ -9,13 +9,17 @@ import { SCALE_TYPE_LINEAR } from '@jbrowse/render-core/scoreScale'
 
 import { bandCellCount, bandPairIndex } from '../../RenderLDDataRPC/ldBand.ts'
 import { drawLDBlocks } from './drawLDBlocks.ts'
-import { LD_MARKS, interleaveLDInstances } from './ldMarks.ts'
+import { LD_MARKS, packGenomicCells } from './ldMarks.ts'
 import { GLSL_FRAGMENT as ldGenomicGlsl } from './shaders/ldGenomic.glsl.generated.ts'
 import {
   UNIFORM_OFFSET_F32 as U,
   UNIFORM_OFFSET_U32 as UU,
 } from './shaders/ldGenomic.iface.generated.ts'
 import { WGSL_SOURCE as ldGenomicWgsl } from './shaders/ldGenomic.wgsl.generated.ts'
+import {
+  GLSL_FRAGMENT as ldUniformGlslFragment,
+  GLSL_VERTEX as ldUniformGlslVertex,
+} from './shaders/ldUniform.glsl.generated.ts'
 import { INSTANCE_STRIDE_BYTES as UNIFORM_STRIDE } from './shaders/ldUniform.iface.generated.ts'
 
 import type { LDRenderState, LDUploadData } from './ldRenderingBackendTypes.ts'
@@ -73,18 +77,13 @@ function makeOneCell(overrides?: Partial<LDUploadData>): LDUploadData {
     numCells: 1,
     band: 1_000_000,
     uniformW: 10,
+    appliedLayout: 'columns',
     ...overrides,
   }
 }
 
-// That same one-cell matrix in the other layout: per-cell positions and sizes
-// in place of the uniform pitch.
 function makeGenomicCell(overrides?: Partial<LDUploadData>): LDUploadData {
-  return makeOneCell({
-    positions: new Float32Array([0, 10]),
-    cellSizes: new Float32Array([10, 10]),
-    ...overrides,
-  })
+  return makeOneCell({ appliedLayout: 'genomic', ...overrides })
 }
 
 function render(data: LDUploadData | undefined, state = makeRenderState()) {
@@ -120,16 +119,26 @@ describe('the LD mark list', () => {
     const buf = hal.getBuffer(0, 'genomic')
     expect(buf!.count).toBe(1)
     expect(new Float32Array(buf!.data)).toEqual(
-      new Float32Array(
-        interleaveLDInstances({
-          positions: data.positions!,
-          cellSizes: data.cellSizes!,
-          ldValues: data.ldValues,
-          numCells: data.numCells,
-        }),
-      ),
+      new Float32Array(packGenomicCells(data)),
     )
     expect(hal.getBufferCount(0, 'main')).toBe(0)
+  })
+
+  // The uniform shader decodes (i, j) from the instance index, so its buffer
+  // keeps every slot and the vertex stage collapses an uncomputed one; genomic
+  // instances carry their own corners, so the pack drops it.
+  it('keeps an uncomputed cell in the uniform buffer and drops it from the genomic one', () => {
+    const ldValues = new Float32Array([0.5, LD_NOT_COMPUTED, 0.25])
+    const cells = {
+      boundaries: new Float32Array([0, 10, 20, 30]),
+      ldValues,
+      numCells: 3,
+    }
+
+    expect(render(makeOneCell(cells)).hal.getBuffer(0, 'main')!.count).toBe(3)
+    expect(
+      render(makeGenomicCell(cells)).hal.getBuffer(0, 'genomic')!.count,
+    ).toBe(2)
   })
 
   // A single cell is a real two-SNP matrix — numCells is the triangular count
@@ -398,6 +407,15 @@ describe('the LD painter', () => {
     expect(src).toMatch(/rampMidNorm_0\)/)
   })
 
+  // An uncomputed cell's quad collapses off clip space in the vertex stage,
+  // so no fragment of it runs and the fragment stage needs no gate.
+  it('collapses an uncomputed uniform cell before rasterizing it', () => {
+    expect(ldUniformGlslVertex).toMatch(/if\(!ldValueComputed_0\(/)
+    expect(ldUniformGlslVertex).toMatch(/return vec4\(2\.0, 2\.0, 0\.0, 1\.0\)/)
+    expect(ldUniformGlslVertex).toMatch(/flat out float v_ldValue/)
+    expect(ldUniformGlslFragment).not.toMatch(/ldValueComputed/)
+  })
+
   // No alpha gate in the painter: both preset ramps are opaque, and the
   // shaders gate on `ldValueComputed` alone.
   it.each([
@@ -473,6 +491,7 @@ describe('drawLDBlocks over a real band', () => {
         numCells,
         band,
         uniformW: CELL,
+        appliedLayout: 'columns',
       },
       makeRenderState({
         viewScale: 1,
@@ -543,6 +562,7 @@ describe('drawLDBlocks over a cell nothing computed', () => {
         numCells: ldValues.length,
         band: BAND,
         uniformW: CELL,
+        appliedLayout: 'columns',
       },
       makeRenderState({
         viewScale: 1,

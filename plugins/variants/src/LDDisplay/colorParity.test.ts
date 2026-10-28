@@ -69,6 +69,7 @@ function boundRamp(metric: LDMetric) {
     numCells: 1,
     band: 1_000_000,
     uniformW: 10,
+    appliedLayout: 'columns',
   }
   const hal = new MockHal(LD_MARKS.map(m => m.pass))
   const backend = new GpuMarkBackend(hal, LD_MARKS)

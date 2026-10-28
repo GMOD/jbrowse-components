@@ -26,8 +26,4 @@ export interface LDDataResult {
   hasR2: boolean
   hasDprime: boolean
   snps: LDSnp[]
-  // Only present for genomic positions mode (pre-computed per-cell positions
-  // for the GPU interleaved buffer).
-  positions?: Float32Array
-  cellSizes?: Float32Array
 }

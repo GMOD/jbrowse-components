@@ -32,24 +32,29 @@ const NO_PAIRS: LDMatrixResult = {
   band: 0,
 }
 
+function execute(
+  regions: Region[],
+  useGenomicPositions: boolean,
+  matrix = NO_PAIRS,
+) {
+  jest.mocked(getLDMatrixFromPlink).mockResolvedValue(matrix)
+  return executeRenderLDData({
+    pluginManager: {} as PluginManager,
+    args: {
+      sessionId: 'test',
+      adapterConfig: { type: 'PlinkLDTabixAdapter' },
+      regions,
+      originBp: 0,
+      spanBp: regions.reduce((sum, r) => sum + r.end - r.start, 0),
+      field: 'r2',
+      layout: useGenomicPositions ? 'genomic' : 'columns',
+    },
+  })
+}
+
+// the envelope `deserializeReturn` takes off for the real caller
 async function run(regions: Region[], useGenomicPositions: boolean) {
-  jest.mocked(getLDMatrixFromPlink).mockResolvedValue(NO_PAIRS)
-  // the envelope `deserializeReturn` takes off for the real caller: the four
-  // Float32Arrays are transferred rather than cloned
-  return unwrapRpcResult(
-    await executeRenderLDData({
-      pluginManager: {} as PluginManager,
-      args: {
-        sessionId: 'test',
-        adapterConfig: { type: 'PlinkLDTabixAdapter' },
-        regions,
-        originBp: 0,
-        spanBp: regions.reduce((sum, r) => sum + r.end - r.start, 0),
-        field: 'r2',
-        layout: useGenomicPositions ? 'genomic' : 'columns',
-      },
-    }),
-  )
+  return unwrapRpcResult(await execute(regions, useGenomicPositions))
 }
 
 // `appliedLayout` is what the display branches its *chrome* on, not only its
@@ -80,4 +85,26 @@ test('an empty result still reports the metric the file can serve', async () => 
   expect(result.snps).toEqual([])
   expect(result.appliedField).toBe('r2')
   expect(result.hasDprime).toBe(true)
+})
+
+// The GPU pack builds genomic cells from `boundaries` on the main thread, so
+// the worker ships the same 4 bytes a cell at either layout.
+test('a genomic result transfers only the values and the boundaries', async () => {
+  const snps = [100, 200, 400].map(start => ({
+    id: `rs${start}`,
+    refName: 'chr1',
+    start,
+    end: start + 1,
+  }))
+  const ldValues = new Float32Array([0.1, 0.2, 0.3])
+  const { value, transferables } = await execute([region()], true, {
+    ...NO_PAIRS,
+    snps,
+    ldValues,
+    band: 2,
+  })
+  expect(value.appliedLayout).toBe('genomic')
+  expect(transferables).toHaveLength(2)
+  expect(transferables).toContain(ldValues.buffer)
+  expect(transferables).toContain(value.boundaries.buffer)
 })
