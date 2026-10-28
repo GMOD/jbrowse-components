@@ -1,8 +1,8 @@
 // The three app products' `corePlugins.ts` lists stand in an exact relation to
 // each other, and nothing else checks it:
 //
-//   desktop   = web ∪ { blat, text-indexing }
-//   react-app = web \ { jobs-management }
+//   desktop   = web ∪ { blat }
+//   react-app = web
 //
 // Each is a hand-maintained list of ~30 imports, so a plugin added to web for a
 // reason that applies to all three lands in one of them. The failure is quiet:
@@ -33,16 +33,16 @@ const BASE = 'jbrowse-web'
 const DIFFS: Record<string, { adds: string[]; drops: string[]; why: string }> =
   {
     'jbrowse-desktop': {
-      adds: ['blat', 'text-indexing'],
+      adds: ['blat'],
       drops: [],
       why:
         'Blat is desktop-only because web pays cold-load bundle size and BLAT is niche ' +
-        "(see desktopVendoredPluginNames); text-indexing needs node's fs and a local disk.",
+        '(see desktopVendoredPluginNames).',
     },
     'jbrowse-react-app': {
       adds: [],
-      drops: ['jobs-management'],
-      why: 'the jobs manager drives desktop/web indexing runs an embedded app has no shell for.',
+      drops: [],
+      why: 'an embedded app carries every plugin web does.',
     },
   }
 
