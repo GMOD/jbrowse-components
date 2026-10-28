@@ -1614,11 +1614,7 @@ TASKS.push(
       { assembly: '${PEACH}', loc: 'chrG7:18,565,100-18,700,100', tracks: ['${PEACH}-ncbiRefSeq'] },
       { assembly: '${GRAPE}', loc: 'chr11:787,000-914,000', tracks: ['${GRAPE}-ncbiRefSeq'] },
       { assembly: '${CACAO}', loc: 'chr9:3,898,700-4,003,700', tracks: ['${CACAO}-ncbiRefSeq'] } ] }] }, 120000)`,
-    grade: `${SYNTENY_STACK}
-      const order = rows.map(r => r.assembly).join() === ['${PEACH}', '${GRAPE}', '${CACAO}'].join()
-      const loci = at(rows[0], 'G7', 18565100, 18700100, 400000) && at(rows[1], '11', 787000, 914000, 400000) && at(rows[2], '9', 3898700, 4003700, 400000)
-      const field = view?.colorSetting?.field
-      return { pass: order && loci && linked.length === 2 && linked.every(Boolean) && field === 'syntenicDepth', detail: { rows, linked, field } }`,
+    grade: peachGrapeCacaoGrade(400000),
   },
   {
     name: 'tut-multiway-hg38-tp53',
@@ -1686,13 +1682,28 @@ TASKS.push(
         })()
       }
       return jb.waitReady(120000)`,
-    grade: `
+    grade: der3Grade(
+      `session.views.filter(v => v.type === 'BreakpointSplitView').map(v => v.views)`,
+    ),
+  },
+)
+
+function peachGrapeCacaoGrade(maxSpan: number) {
+  return `${SYNTENY_STACK}
+      const order = rows.map(r => r.assembly).join() === ['${PEACH}', '${GRAPE}', '${CACAO}'].join()
+      const loci = at(rows[0], 'G7', 18565100, 18700100, ${maxSpan}) && at(rows[1], '11', 787000, 914000, ${maxSpan}) && at(rows[2], '9', 3898700, 4003700, ${maxSpan})
+      const field = view?.colorSetting?.field
+      return { pass: order && loci && linked.length === 2 && linked.every(Boolean) && field === 'syntenicDepth', detail: { rows, linked, field } }`
+}
+
+function der3Grade(panelGroups: string) {
+  return `
       ${drew}
       const want = ${JSON.stringify(DER3_PANELS)}
       const out = []
-      for (const v of session.views.filter(v => v.type === 'BreakpointSplitView')) {
+      for (const group of ${panelGroups}) {
         const panels = []
-        for (const p of v.views) {
+        for (const p of group) {
           const rs = await jb.visibleRegions(p.id)
           const tumor = p.tracks.filter(t => /COLO829_tumor|COLO829_tumor\\.ht\\.cram/.test(JSON.stringify(jb.mst.getSnapshot(t.configuration)))).map(t => {
             const c = t.activeDisplay.configuration
@@ -1704,9 +1715,8 @@ TASKS.push(
         const covered = want.map(([chrom, from, to]) => panels.some(p => p.ok && p.rsRaw.some(r => r.refName.replace(/^chr/, '') === chrom && r.start < to && r.end > from && r.end - r.start < 100000)))
         out.push({ panels: panels.map(({ rsRaw, ...p }) => p), covered })
       }
-      return { pass: out.some(o => o.covered.every(Boolean)), detail: out }`,
-  },
-)
+      return { pass: out.some(o => o.covered.every(Boolean)), detail: out }`
+}
 
 // Hard tasks: several sources joined, a step where the naive path answers
 // wrong, a second assembly, or a figure with many graded constraints. Each
@@ -2176,8 +2186,9 @@ TASKS.push(
 
 // The tutorial tasks name their tutorial and spell out the figure, and the
 // docs list each tutorial's files, so they measure following a recipe. These
-// ask the question a researcher would, with the same graders: the agent has to
-// work out which data and which view answer it.
+// ask the question a researcher would: the agent has to work out which data
+// and which view answer it. Each keeps its tutorial's grader except where the
+// question leaves a tutorial choice open (window width, one view or several).
 const UNNAMED: Record<string, string> = {
   'tut-methylation-haplotypes':
     "Is SNRPN's promoter methylated on only one parental copy in HG002? Show me the per-read nanopore evidence in hg38 that would convince me.",
@@ -2192,9 +2203,20 @@ const UNNAMED: Record<string, string> = {
   'tut-cancer-sv-der3-chain':
     "COLO829's derivative chromosome 3 is stitched together from pieces of chr3, chr10 and chr12. Show me each junction side by side with the tumor reads that cross it, including the parts of reads that don't align.",
 }
+const UNNAMED_GRADE: Record<string, string> = {
+  'tut-multiway-grape-peach-cacao': peachGrapeCacaoGrade(2000000),
+  'tut-cancer-sv-der3-chain': der3Grade(
+    `[session.views.flatMap(v => v.type === 'BreakpointSplitView' ? v.views : v.type === 'LinearGenomeView' && v.assemblyNames?.includes('hg38') ? [v] : [])]`,
+  ),
+}
 for (const [name, prompt] of Object.entries(UNNAMED)) {
   const task = TASKS.find(t => t.name === name)!
-  TASKS.push({ ...task, name: name.replace(/^tut-/, 'un-'), prompt })
+  TASKS.push({
+    ...task,
+    name: name.replace(/^tut-/, 'un-'),
+    prompt,
+    grade: UNNAMED_GRADE[name] ?? task.grade,
+  })
 }
 
 // Novel tasks: questions no tutorial or doc covers, on hosted hg38 data no
