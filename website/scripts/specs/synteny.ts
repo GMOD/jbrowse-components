@@ -3381,8 +3381,8 @@ export const syntenySpecs: ScreenshotSpec[] = [
       {
         type: 'text',
         fontSize: 17,
-        maxWidth: 380,
-        text: 'Two overlaid alignments of the same sequence: to itself, and to its mirror image',
+        maxWidth: 440,
+        text: 'Two equally good alignments, overlaid: to itself, and to its mirror image',
         anchor: {
           selector: '[data-testid="synteny_canvas"]',
           alignX: 'left',
