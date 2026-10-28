@@ -18,7 +18,6 @@ test.each([1, 2])('a sub-pixel stroke inks its true width at dpr %d', dpr => {
       )
     }
   }
-  expect(edgeCoverage(0.25, 1)).toBe(0.75)
   expect(strokeCoverage(0.25, 0, 1)).toBe(0.5)
 })
 

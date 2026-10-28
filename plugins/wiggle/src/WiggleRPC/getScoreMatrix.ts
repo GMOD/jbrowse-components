@@ -1,5 +1,6 @@
 import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import { createAbortBreakpoint } from '@jbrowse/core/util/aborting'
+import { SCALE_TYPE_LOG } from '@jbrowse/render-core/scoreScale'
 import { normalizeScoreUnclamped } from '@jbrowse/render-core/shaders/scoreScale'
 import {
   binSpan,
@@ -44,18 +45,23 @@ function addValues(
 
 // Where each score sits up the axis, so a log or symlog track clusters on the
 // heights it draws and a deep sample's peaks do not outweigh every other row's.
-// Linear needs no pass: an affine map moves no average-linkage merge.
+// Linear needs no pass: an affine map moves no average-linkage merge. A log
+// axis draws every score under its floor at the floor, zero bins included.
 function toAxisSpace(row: Float32Array, scale: MatrixScale) {
   const [min, max] = scale.domain
+  const low = scale.scaleType === SCALE_TYPE_LOG ? 0 : -Infinity
   for (let x = 0; x < row.length; x++) {
     const v = row[x]!
     if (!Number.isNaN(v)) {
-      row[x] = normalizeScoreUnclamped(
-        v,
-        min,
-        max,
-        scale.scaleType,
-        scale.symlogConstant,
+      row[x] = Math.max(
+        low,
+        normalizeScoreUnclamped(
+          v,
+          min,
+          max,
+          scale.scaleType,
+          scale.symlogConstant,
+        ),
       )
     }
   }

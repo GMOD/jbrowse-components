@@ -375,12 +375,14 @@ describe('the clustering run', () => {
       feat('a', 0, 10, 1),
       feat('a', 10, 20, 10),
       feat('a', 20, 30, 100),
+      feat('a', 30, 40, 0),
+      feat('a', 40, 50, 0.5),
     ])
     const rows = await getScoreMatrix({
       pluginManager: pm,
       args: {
         ...callArgs({
-          regions: [region('chr1', 0, 30)],
+          regions: [region('chr1', 0, 50)],
           sources: ['a'],
           bpPerPx: 10,
         }),
@@ -391,6 +393,6 @@ describe('the clustering run', () => {
         },
       },
     })
-    expect(Array.from(rows.get('a')!)).toEqual([0, 0.5, 1])
+    expect(Array.from(rows.get('a')!)).toEqual([0, 0.5, 1, 0, 0])
   })
 })
