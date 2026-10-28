@@ -27,7 +27,8 @@
 # they write. It still runs, but every path that was dirty when the run started
 # is copied aside first and put back afterwards if a generator overwrote it —
 # the artifact stays stale on disk, which is reported, and the other agent's
-# edit stays theirs. Only a run that rewrote something puts anything back: on
+# edit stays theirs. A push to main whose commit is then stale in that file is
+# refused. Only a run that rewrote something puts anything back: on
 # the ordinary push the check finds nothing stale and writes nothing, so a
 # dirty path that moved during it was saved by whoever is editing it, and
 # restoring it reverted their edit. On a push that does rewrite, the window
@@ -413,14 +414,20 @@ if [ "$astatus" != 0 ]; then
 fi
 
 # A generator that rewrote a path someone had already edited gets undone: the
-# edit goes back exactly as it was, the artifact stays stale on disk, and the
-# push goes on — CI's generated job names the staleness with a patch attached.
+# edit goes back exactly as it was and the artifact stays stale on disk.
 # `--fix-stale` prints its "Rewriting" line only when it rewrites, and a run
-# without one wrote nothing to undo.
+# without one wrote nothing to undo. When the regenerated text also differs
+# from HEAD's, the commit is stale too and CI's generated job will fail, so a
+# push to main stops here rather than turning main red for everyone after it.
 restored=
+stale_in_head=
 if grep -q '^Checked in [0-9]*ms\. Rewriting ' "$tmp/autogen.log"; then
   while IFS= read -r f; do
     if [ -f "$tmp/snap/$f" ] && [ -f "$f" ] && ! cmp -s "$tmp/snap/$f" "$f"; then
+      if ! git show "HEAD:$f" 2>/dev/null | cmp -s - "$f"; then
+        stale_in_head=$stale_in_head$f'
+'
+      fi
       cp -p "$tmp/snap/$f" "$f"
       restored=$restored$f'
 '
@@ -432,6 +439,13 @@ if [ -n "$restored" ]; then
   echo "pre-push: autogen rewrote files that were already modified; put back as they were:" >&2
   printf '%s' "$restored" | sed 's/^/  /' >&2
   echo "Their generated content is stale on disk until whoever is editing them regenerates." >&2
+fi
+if [ -n "$stale_in_head" ] && [ -n "$to_main" ]; then
+  echo >&2
+  echo "pre-push: the commit is stale in these generated files, which someone has open:" >&2
+  printf '%s' "$stale_in_head" | sed 's/^/  /' >&2
+  echo "CI would fail on them. Push once their edit is committed or put aside." >&2
+  status=1
 fi
 
 # The two ratcheted lists inside check-docs that DO have a write mode, run as
