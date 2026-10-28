@@ -167,6 +167,7 @@ export function drawSyntenyTrack(
   // Every stroke this function makes is 1px (centerlines, marker ticks, the
   // clicked outline), so the width is set once for the pass.
   ctx.lineWidth = 1
+  const outlined: number[] = []
   for (let i = 0; i < data.instanceCount; i++) {
     // Read before both tests below, which each need it: a marker keeps its own
     // alpha through the opacity slider (see isInstanceInvisible), and is culled
@@ -267,9 +268,17 @@ export function drawSyntenyTrack(
       buildFeaturePath(ctx, c, yTop, height, drawCurves)
       ctx.fill()
       if (isClicked && !isCigar) {
-        style.strokeLiteral(ctx, outlineInk)
-        strokeFeatureSideEdges(ctx, c, yTop, height, drawCurves)
+        outlined.push(i)
       }
+    }
+  }
+  // After every fill, as the GPU edge pass runs after both fill passes, so a
+  // later ribbon cannot cover the outline.
+  if (outlined.length > 0) {
+    style.strokeLiteral(ctx, outlineInk)
+    for (const i of outlined) {
+      const c = projectCorners(data, i, transform, scratch)
+      strokeFeatureSideEdges(ctx, c, yTop, height, drawCurves)
     }
   }
 }
