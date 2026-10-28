@@ -179,7 +179,8 @@ export async function setupSessionDB(self: WebRootModel) {
           // read off the model rather than closing over the handle from the
           // open above: onLost clears it, and this is what makes that stick
           const db = self.sessionDB
-          if (self.session && db) {
+          const { session } = self
+          if (session && db) {
             try {
               // careful not to access self.savedSessionMetadata in the tracked
               // head of this autorun, or else it can create an infinite loop —
@@ -189,7 +190,7 @@ export async function setupSessionDB(self: WebRootModel) {
               // does its reads synchronously, which is what keeps them tracked.
               const meta = await saveSessionSnapshot(
                 db,
-                self.session,
+                session,
                 self.configPath,
               )
               if (meta && isAlive(self)) {
@@ -197,18 +198,16 @@ export async function setupSessionDB(self: WebRootModel) {
                 // in rather than re-reading every session's metadata on each
                 // autosave tick (see upsertSessionMetadata)
                 self.upsertSessionMetadata(meta)
-                if (savingFailed) {
+                if (savingFailed && isAlive(session)) {
                   savingFailed = false
-                  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- narrowed before the await, which the session may not outlive
-                  self.session?.notify('Session auto-saving restored', 'info')
+                  session.notify('Session auto-saving restored', 'info')
                 }
               }
             } catch (e) {
               console.error(e)
-              if (!savingFailed) {
+              if (!savingFailed && isAlive(session)) {
                 savingFailed = true
-                // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- narrowed before the await, which the session may not outlive
-                self.session?.notifyError(`${e}`, e)
+                session.notifyError(`${e}`, e)
               }
             }
           }

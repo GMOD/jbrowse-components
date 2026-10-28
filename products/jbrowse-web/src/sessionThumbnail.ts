@@ -2,7 +2,14 @@ const WIDTH = 480
 const MAX_HEIGHT = 300
 
 interface SvgExportingView {
-  exportSvg?: (opts: { save: false; announceSkipped: false }) => Promise<string>
+  exportSvg(opts: { save: false; announceSkipped: false }): Promise<string>
+}
+
+function exportsSvg(view: unknown): view is SvgExportingView {
+  return (
+    typeof (view as Partial<SvgExportingView> | undefined)?.exportSvg ===
+    'function'
+  )
 }
 
 /**
@@ -11,14 +18,13 @@ interface SvgExportingView {
  * does, and every view type already renders itself for export. Undefined when
  * the session has no view that exports.
  */
-export async function renderSessionThumbnail(
-  views: readonly SvgExportingView[],
-) {
-  const svg = await views[0]?.exportSvg?.({
-    save: false,
-    announceSkipped: false,
-  })
-  return svg === undefined ? undefined : rasterizeSvg(svg)
+export async function renderSessionThumbnail(views: readonly unknown[]) {
+  const view = views[0]
+  return exportsSvg(view)
+    ? rasterizeSvg(
+        await view.exportSvg({ save: false, announceSkipped: false }),
+      )
+    : undefined
 }
 
 async function rasterizeSvg(svg: string) {
