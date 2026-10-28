@@ -6,8 +6,6 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 
 export {
   type AnyDataAdapter,
-  type Contig,
-  type ContigColumns,
   type ContigSource,
   isContigSource,
   isFeatureAdapter,
@@ -16,6 +14,7 @@ export {
   isSequenceAdapter,
   isTextSearchAdapter,
 } from './util.ts'
+export type { Contig, ContigColumns } from './contig.ts'
 export type {
   BaseOptions,
   BaseTextSearchArgs,

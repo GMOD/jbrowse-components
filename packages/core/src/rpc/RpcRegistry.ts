@@ -1,4 +1,4 @@
-import type { ContigColumns } from '../data_adapters/BaseAdapter/util.ts'
+import type { ContigColumns } from '../data_adapters/BaseAdapter/contig.ts'
 import type {
   CoreGetEncodedLayersArgs,
   EncodedLayersResult,

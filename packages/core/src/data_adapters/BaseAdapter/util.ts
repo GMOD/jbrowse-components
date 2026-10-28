@@ -4,6 +4,7 @@ import type { BaseRefNameAliasAdapter } from './BaseRefNameAliasAdapter.ts'
 import type { BaseSequenceAdapter } from './BaseSequenceAdapter.ts'
 import type { BaseTextSearchAdapter } from './BaseTextSearchAdapter.ts'
 import type { RegionsAdapter } from './RegionsAdapter.ts'
+import type { Contig } from './contig.ts'
 import type { BaseOptions } from './types.ts'
 
 export type AnyDataAdapter =
@@ -43,28 +44,10 @@ export function isRefNameSource(
   return typeof (t as Partial<RefNameSource>).getRefNames === 'function'
 }
 
-export interface Contig {
-  refName: string
-  /** the length the file's header states, undefined where it states none */
-  length?: number
-  /** whether the file holds records on it, null where it cannot tell */
-  hasData?: boolean | null
-}
-
 // an adapter whose file states its contigs' lengths: a BAM/CRAM `@SQ`, a
 // bigWig/bigBed chrom table, a VCF `##contig`
 export interface ContigSource {
   getContigs(opts?: BaseOptions): Promise<Contig[]>
-}
-
-/**
- * A file's contigs as columns, which is how they cross the worker boundary:
- * structured clone copies 200,000 objects ten times slower than two arrays.
- */
-export interface ContigColumns {
-  refNames: string[]
-  /** each refName's stated length, undefined where the file states none */
-  lengths: (number | undefined)[]
 }
 
 export function isContigSource(t: object): t is ContigSource {

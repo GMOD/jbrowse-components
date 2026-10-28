@@ -1,4 +1,4 @@
-import type { ContigColumns } from '../data_adapters/BaseAdapter/util.ts'
+import type { ContigColumns } from '../data_adapters/BaseAdapter/contig.ts'
 
 /**
  * A file made against one genome build and loaded against another with the
