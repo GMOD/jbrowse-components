@@ -19,10 +19,11 @@ import type { BaseRootModelType } from '../RootModel/BaseRootModel.ts'
 import type { HeldNode } from '../pruneUnbuildableNodes.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseAssemblyConfigModel } from '@jbrowse/core/assemblyManager'
-import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type {
   AnimationMode,
   DialogComponentType,
+  JBrowseConfigModel,
   TrackConfigChange,
 } from '@jbrowse/core/util'
 import type { HighlightType } from '@jbrowse/core/util/highlights'
@@ -39,10 +40,9 @@ function isAnimationMode(val: unknown): val is AnimationMode {
  * Holds a session's name, focused view, highlights and notifications. Every
  * product's session composes this model, so add to it with care.
  */
-export function BaseSessionModel<
-  ROOT_MODEL_TYPE extends BaseRootModelType,
-  JB_CONFIG_SCHEMA extends AnyConfigurationSchemaType,
->(_pluginManager: PluginManager) {
+export function BaseSessionModel<ROOT_MODEL_TYPE extends BaseRootModelType>(
+  _pluginManager: PluginManager,
+) {
   const baseModel = types
     .model({
       /**
@@ -152,7 +152,7 @@ export function BaseSessionModel<
       /**
        * #getter
        */
-      get jbrowse() {
+      get jbrowse(): JBrowseConfigModel {
         return self.root.jbrowse
       },
       /**
@@ -164,7 +164,7 @@ export function BaseSessionModel<
       /**
        * #getter
        */
-      get configuration(): Instance<JB_CONFIG_SCHEMA> {
+      get configuration(): AnyConfigurationModel {
         return this.jbrowse.configuration
       },
       /**

@@ -22,7 +22,13 @@ import type { UnbuildableNode } from '../pruneUnbuildableNodes.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager'
 import type { RpcManagerOptions } from '@jbrowse/core/rpc/RpcManager'
-import type { IAnyType, Instance, SnapshotIn } from '@jbrowse/mobx-state-tree'
+import type { EditableJBrowseConfigModel } from '@jbrowse/core/util'
+import type {
+  IAnyType,
+  IType,
+  Instance,
+  SnapshotIn,
+} from '@jbrowse/mobx-state-tree'
 
 // `session` is a `types.maybe(sessionModelType)` where `sessionModelType` is the
 // erased `IAnyType` (product-core can't name the concrete per-product session
@@ -45,7 +51,7 @@ export function BaseRootModelFactory({
   rpcManagerOptions,
 }: {
   pluginManager: PluginManager
-  jbrowseModelType: IAnyType
+  jbrowseModelType: IType<any, any, EditableJBrowseConfigModel>
   sessionModelType: IAnyType
   assemblyConfigSchema: BaseAssemblyConfigSchema
   /**

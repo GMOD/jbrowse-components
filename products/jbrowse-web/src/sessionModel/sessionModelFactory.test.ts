@@ -270,9 +270,7 @@ describe('JBrowseWebSessionModel', () => {
       })
       session.publishTrackConf(trackSnap)
       expect(session.sessionTracks).toHaveLength(0)
-      expect(
-        session.jbrowse.tracks.map((t: AnyConfigurationModel) => t.trackId),
-      ).toEqual(['spec_track'])
+      expect(session.jbrowse.tracks.map(t => t.trackId)).toEqual(['spec_track'])
     })
 
     // An alias is a name of the assembly the catalog carries, so a track
@@ -287,9 +285,7 @@ describe('JBrowseWebSessionModel', () => {
         },
       })
       session.publishTrackConf({ ...trackSnap, assemblyNames: ['vvx'] })
-      expect(
-        session.jbrowse.tracks.map((t: AnyConfigurationModel) => t.trackId),
-      ).toEqual(['spec_track'])
+      expect(session.jbrowse.tracks.map(t => t.trackId)).toEqual(['spec_track'])
       expect(session.sessionTracks).toHaveLength(0)
     })
 
@@ -316,9 +312,9 @@ describe('JBrowseWebSessionModel', () => {
       expect(session.sessionTracks.map(t => t.trackId)).toEqual([
         'feature_track',
       ])
-      expect(
-        session.jbrowse.tracks.map((t: AnyConfigurationModel) => t.trackId),
-      ).toEqual(['catalog_track'])
+      expect(session.jbrowse.tracks.map(t => t.trackId)).toEqual([
+        'catalog_track',
+      ])
     })
 
     // The catalog may only hold configs a fresh visitor can resolve. An admin

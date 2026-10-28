@@ -1,5 +1,5 @@
 import AddCustomPluginForm from '@jbrowse/core/ui/AddCustomPluginDialog'
-import { getEnv, getSession } from '@jbrowse/core/util'
+import { editableConfig, getEnv, getSession } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
 import type { PluginStoreModel } from '../model.ts'
@@ -12,7 +12,6 @@ const AddCustomPluginDialog = observer(function AddCustomPluginDialog({
   model: PluginStoreModel
 }) {
   const session = getSession(model)
-  const { jbrowse } = session
   const { pluginManager } = getEnv(model)
 
   return (
@@ -32,7 +31,7 @@ const AddCustomPluginDialog = observer(function AddCustomPluginDialog({
           )
           added = false
         } else {
-          jbrowse.addPlugin(definition)
+          editableConfig(session).addPlugin(definition)
         }
         return added
       }}

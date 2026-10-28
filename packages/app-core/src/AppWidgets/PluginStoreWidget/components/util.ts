@@ -1,6 +1,8 @@
 import { holdsPlugin, isPluginUrl } from '@jbrowse/core/pluginDefinitions'
 import {
+  editableConfig,
   getEnv,
+  isEditableJBrowseConfig,
   isSessionWithPermanentPlugins,
   isSessionWithSessionPlugins,
 } from '@jbrowse/core/util'
@@ -14,18 +16,6 @@ import type { AbstractSessionModel, BasePlugin } from '@jbrowse/core/util/types'
  * the browser's permanent list for this config.
  */
 export type PluginHome = 'config' | 'session' | 'permanent'
-
-// session.jbrowse is IAnyStateTreeNode, which resolves to `any` — name the
-// members used here so a typo is a build error rather than a runtime no-op
-function configPlugins(session: AbstractSessionModel) {
-  return session.jbrowse as {
-    // optional: the single-view embedded products' config model declares this
-    // as a bare `types.frozen()`, which is undefined until something sets it
-    plugins?: PluginDefinition[]
-    addPlugin: (definition: PluginDefinition) => void
-    removePlugin: (definition: PluginDefinition) => void
-  }
-}
 
 /**
  * The definition a loaded plugin was actually loaded from — the resolved,
@@ -78,7 +68,8 @@ export function pluginHome(
     return 'session'
   }
   if (
-    (configPlugins(session).plugins ?? []).some(p => holdsPlugin(p, loaded))
+    isEditableJBrowseConfig(session.jbrowse) &&
+    session.jbrowse.plugins.some(p => holdsPlugin(p, loaded))
   ) {
     return session.adminMode ? 'config' : undefined
   }
@@ -144,7 +135,7 @@ export function addPluginTo(
   definition: PluginDefinition & { name: string },
 ) {
   if (home === 'config') {
-    configPlugins(session).addPlugin(definition)
+    editableConfig(session).addPlugin(definition)
   } else if (home === 'permanent' && isSessionWithPermanentPlugins(session)) {
     session.addPermanentPlugin(definition)
   } else if (home === 'session' && isSessionWithSessionPlugins(session)) {
@@ -162,7 +153,7 @@ export function removePluginFrom(
   definition: PluginDefinition,
 ) {
   if (home === 'config') {
-    configPlugins(session).removePlugin(definition)
+    editableConfig(session).removePlugin(definition)
   } else if (home === 'permanent' && isSessionWithPermanentPlugins(session)) {
     session.removePermanentPlugin(definition)
   } else if (home === 'session' && isSessionWithSessionPlugins(session)) {

@@ -23,6 +23,7 @@ import type {
 } from '@jbrowse/core/configuration'
 import type { PluginDefinition } from '@jbrowse/core/pluginDefinitions'
 import type RpcManager from '@jbrowse/core/rpc/RpcManager'
+import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 // This config model always lives at rootModel.jbrowse, so its MST parent is the
 // root model. This is the slice of the root model this file reaches for; typing
@@ -123,7 +124,7 @@ export function JBrowseModelF({
           )
         }
         const length = self.assemblies.push(conf)
-        return self.assemblies[length - 1]
+        return self.assemblies[length - 1]!
       },
       /**
        * #action
@@ -143,7 +144,7 @@ export function JBrowseModelF({
         if (!type) {
           throw new Error(`track type not specified for "${trackConf.trackId}"`)
         }
-        self.tracks = [...self.tracks, trackConf]
+        self.tracks = [...self.tracks, { ...trackConf, type }]
         return self.tracks.at(-1)
       },
       /**
@@ -159,7 +160,7 @@ export function JBrowseModelF({
           throw new Error('connection type not specified')
         }
         const length = self.connections.push(connectionConf)
-        return self.connections[length - 1]
+        return self.connections[length - 1]!
       },
       /**
        * #action
@@ -189,9 +190,10 @@ export function JBrowseModelF({
       updateTrackConf(trackConf: { trackId: string; [key: string]: unknown }) {
         const { trackId } = trackConf
         const idx = self.tracks.findLastIndex(t => t.trackId === trackId)
-        if (idx !== -1) {
+        const old = self.tracks[idx]
+        if (old) {
           const newTracks = [...self.tracks]
-          newTracks[idx] = trackConf
+          newTracks[idx] = { type: old.type, ...trackConf }
           self.tracks = newTracks
         }
       },
@@ -222,7 +224,9 @@ export function JBrowseModelF({
        * #action
        * takes the live session or a plain session snapshot
        */
-      setDefaultSessionConf(sessionConf: AnyConfigurationModel) {
+      setDefaultSessionConf(
+        sessionConf: IStateTreeNode | { name: string; [key: string]: unknown },
+      ) {
         const newDefault = isStateTreeNode(sessionConf)
           ? getSnapshot(sessionConf)
           : toJS(sessionConf)
@@ -242,7 +246,7 @@ export function JBrowseModelF({
           throw new Error('internet account type not specified')
         }
         const length = self.internetAccounts.push(internetAccountConf)
-        return self.internetAccounts[length - 1]
+        return self.internetAccounts[length - 1]!
       },
       /**
        * #action

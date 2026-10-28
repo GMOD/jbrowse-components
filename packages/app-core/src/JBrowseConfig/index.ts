@@ -3,9 +3,10 @@ import { types } from '@jbrowse/mobx-state-tree'
 import RootConfiguration from './RootConfiguration.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager'
 import type {
-  AnyConfigurationSchemaType,
   ConfigurationSchemaDefinition,
+  TrackConfigEntry,
 } from '@jbrowse/core/configuration'
 import type { PluginDefinition } from '@jbrowse/core/pluginDefinitions'
 
@@ -28,7 +29,7 @@ export function JBrowseConfigF({
   extraConfigSlots,
 }: {
   pluginManager: PluginManager
-  assemblyConfigSchema: AnyConfigurationSchemaType
+  assemblyConfigSchema: BaseAssemblyConfigSchema
   extraConfigSlots?: ConfigurationSchemaDefinition
 }) {
   return types.model('JBrowseConfig', {
@@ -61,7 +62,7 @@ export function JBrowseConfigF({
      * instances of a track can exist that use the same configuration.
      * Always uses frozen for performance - editing creates temporary MST models.
      */
-    tracks: types.frozen([] as { trackId: string; [key: string]: unknown }[]),
+    tracks: types.frozen([] as TrackConfigEntry[]),
     /**
      * #slot
      * configuration for internet accounts, see InternetAccounts

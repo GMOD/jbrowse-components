@@ -1,4 +1,3 @@
-import { readConfObject } from '@jbrowse/core/configuration'
 import { getEnv } from '@jbrowse/core/util'
 import { waitFor } from '@testing-library/react'
 
@@ -8,7 +7,6 @@ import { utilizeFetchMockForTest, volvoxGetFile } from './generateReadBuffer.ts'
 import { getPluginManager } from './util.tsx'
 
 import type { SampleConfigEntry } from '../../../../plugins/maf/src/util/getSamples.ts'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 jest.mock('../makeWorkerInstance', () => () => {})
 
@@ -19,13 +17,9 @@ async function setup() {
   rootModel.setDefaultSession()
   const session = rootModel.session!
   const track = rootModel.jbrowse.tracks.find(
-    (t: AnyConfigurationModel) =>
-      readConfObject(t, 'trackId') === 'volvox_maf_navigable',
+    t => t.trackId === 'volvox_maf_navigable',
   )!
-  const samples = readConfObject(track, [
-    'adapter',
-    'samples',
-  ]) as SampleConfigEntry[]
+  const { samples } = track.adapter as { samples: SampleConfigEntry[] }
   const reported: string[] = []
   getEnv(session).pluginManager.listenToExtensionPoint(
     'Core-handleUnrecognizedAssembly',

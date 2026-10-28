@@ -1,6 +1,7 @@
 import Plugin from '@jbrowse/core/Plugin'
 import { forgetFetchedPlugins } from '@jbrowse/core/checkPlugins'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
+import { editableConfig } from '@jbrowse/core/util'
 import { getParent, getRoot, getSnapshot } from '@jbrowse/mobx-state-tree'
 import { createTestSession } from '@jbrowse/web/testUtils'
 import { ThemeProvider } from '@mui/material'
@@ -413,11 +414,11 @@ test('plugin store admin - removes a custom plugin correctly', async () => {
       <PluginStoreWidget model={model} />
     </ThemeProvider>,
   )
-  expect(session.jbrowse.plugins).toHaveLength(1)
+  expect(editableConfig(session).plugins).toHaveLength(1)
   await user.click(await findByTestId('removePlugin-MsaView'))
   await user.click(await findByText('Remove'))
   await waitFor(() => {
-    expect(session.jbrowse.plugins).toHaveLength(0)
+    expect(editableConfig(session).plugins).toHaveLength(0)
   })
 })
 

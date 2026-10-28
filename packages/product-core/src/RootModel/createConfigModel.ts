@@ -14,7 +14,11 @@ import { HierarchicalConfigSchemaFactory } from './HierarchicalConfig.ts'
 import { PreferencesConfigSchemaFactory } from './PreferencesConfig.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { ConfigurationSnapshot } from '@jbrowse/core/configuration'
+import type {
+  AnyConfiguration,
+  AnyConfigurationModel,
+  ConfigurationSnapshot,
+} from '@jbrowse/core/configuration'
 import type { IAnyType } from '@jbrowse/mobx-state-tree'
 
 // This config model lives at rootModel.jbrowse, so its MST parent is the root
@@ -122,6 +126,21 @@ export function createConfigModel(
         },
         get rpcManager() {
           return getParent<ConfigModelParent>(self).rpcManager
+        },
+      }))
+      .actions(self => ({
+        addConnectionConf(connectionConf: AnyConfiguration) {
+          if (!connectionConf.type) {
+            throw new Error('connection type not specified')
+          }
+          const length = self.connections.push(connectionConf)
+          return self.connections[length - 1]!
+        },
+        deleteConnectionConf(configuration: AnyConfigurationModel) {
+          const elt = self.connections.find(
+            conn => conn.connectionId === configuration.connectionId,
+          )
+          return elt ? self.connections.remove(elt) : false
         },
       }))
   )

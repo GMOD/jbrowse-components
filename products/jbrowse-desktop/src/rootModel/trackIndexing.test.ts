@@ -73,7 +73,7 @@ function createRoot() {
   return root
 }
 
-function indexFileOf(track: { textSearching?: unknown } | undefined) {
+function indexFileOf(track: Record<string, unknown> | undefined) {
   const localPath = (
     track?.textSearching as
       | { textSearchAdapter?: { ixFilePath?: { localPath?: string } } }

@@ -5,6 +5,7 @@ import {
 } from '@jbrowse/app-core'
 import { getConf } from '@jbrowse/core/configuration'
 import { samePlugin } from '@jbrowse/core/pluginDefinitions'
+import { editableConfig } from '@jbrowse/core/util'
 import {
   restoreFileHandles,
   restoreFileHandlesFromSnapshot,
@@ -130,7 +131,7 @@ export function BaseWebSessionModel({
        * #action
        */
       addAssemblyConf(conf: AnyConfiguration) {
-        self.jbrowse.addAssemblyConf(conf)
+        editableConfig(self).addAssemblyConf(conf)
       },
       /**
        * #action

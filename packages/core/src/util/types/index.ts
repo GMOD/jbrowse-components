@@ -21,10 +21,10 @@ import type { HighlightType } from '../highlights.ts'
 import type { Feature } from '../simpleFeature.ts'
 import type { TrackConfigChange } from '../trackConfigDelta.ts'
 import type { UriLocation } from './data.ts'
+import type { JBrowseConfigModel } from './jbrowseConfig.ts'
 import type { RenderingServices } from './renderingServices.ts'
 import type { DialogHost, NotificationSink } from './services.ts'
 import type {
-  IAnyStateTreeNode,
   IAnyType,
   IStateTreeNode,
   SnapshotIn,
@@ -38,6 +38,11 @@ export type {
   TypeTestedByPredicate,
 } from './util.ts'
 export type { IsAny } from './isAny.ts'
+export type {
+  EditableJBrowseConfigModel,
+  JBrowseConfigModel,
+} from './jbrowseConfig.ts'
+export { editableConfig, isEditableJBrowseConfig } from './jbrowseConfig.ts'
 export { isSessionServices } from './services.ts'
 export type {
   DialogComponentType,
@@ -154,7 +159,7 @@ export interface AbstractSessionModel
     TrackCatalog {
   /** @deprecated prefer the per-id reactive `getTrackById(id)` */
   getTracksById: () => Record<string, AnyTrackConfig>
-  jbrowse: IAnyStateTreeNode
+  jbrowse: JBrowseConfigModel
   drawerPosition?: DrawerPosition
   // per-browser UI preference (localStorage-backed, stripped from snapshots by
   // MultipleViewsSessionMixin). Optional here rather than behind a guard: the
@@ -443,7 +448,7 @@ export interface SessionWithPublishTrackConf extends AbstractSessionModel {
   // snackbar) — see SessionTracks.publishTrackConf
   publishTrackConf(
     configuration: AnyConfigurationModel | SnapshotIn<AnyConfigurationModel>,
-  ): AnyConfigurationModel | undefined
+  ): AnyTrackConfig | undefined
 }
 export function isSessionWithPublishTrackConf(
   t: unknown,
@@ -485,7 +490,7 @@ export function isSessionWithSessionTracks(
 export interface SessionWithAddSessionTrack extends AbstractSessionModel {
   addSessionTrackConf(
     configuration: AnyConfigurationModel | SnapshotIn<AnyConfigurationModel>,
-  ): AnyConfigurationModel | undefined
+  ): AnyTrackConfig | undefined
 }
 export function isSessionWithAddSessionTrack(
   t: unknown,
@@ -921,7 +926,7 @@ export function isTrackViewModel(thing: unknown): thing is TrackViewModel {
 
 /** minimum interface for the root MST model of a JBrowse app */
 export interface AbstractRootModel {
-  jbrowse: IAnyStateTreeNode
+  jbrowse: JBrowseConfigModel
   session?: AbstractSessionModel
   setSession?(arg: { name: string; [key: string]: unknown }): void
   setDefaultSession?(): void

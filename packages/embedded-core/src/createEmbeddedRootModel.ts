@@ -12,6 +12,8 @@ import {
 } from '@jbrowse/product-core'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { TrackConfigEntry } from '@jbrowse/core/configuration'
+import type { JBrowseConfigModel } from '@jbrowse/core/util'
 import type { IAnyModelType, SnapshotIn } from '@jbrowse/mobx-state-tree'
 import type { SessionSnapshot } from '@jbrowse/product-core'
 
@@ -169,8 +171,14 @@ export function createEmbeddedRootModel<
           /**
            * #getter
            */
-          get jbrowse() {
-            return self.config
+          get jbrowse(): JBrowseConfigModel {
+            const { config } = self
+            // the config's snapshot preprocessor expands every loose track, so
+            // a stored entry is a TrackConfigEntry; the frozen type stays loose
+            // because it is also what an embedder passes in
+            return config as Omit<typeof config, 'tracks'> & {
+              tracks: TrackConfigEntry[]
+            }
           },
           /**
            * #getter

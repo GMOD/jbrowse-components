@@ -11,6 +11,9 @@ import { isAlive, types } from '@jbrowse/mobx-state-tree'
 
 import { BaseRootModelFactory } from './BaseRootModel.ts'
 
+import type { EditableJBrowseConfigModel } from '@jbrowse/core/util'
+import type { IType } from '@jbrowse/mobx-state-tree'
+
 // A build with exactly one registered view type, so a snapshot naming it gets
 // past pruneUnbuildableNodes and is refused by MST instead — the malformed
 // snapshot of a type this build *does* have.
@@ -61,13 +64,14 @@ function makeRootType() {
   const assemblyConfigSchema = assemblyConfigSchemaFactory(pluginManager)
   return BaseRootModelFactory({
     pluginManager,
+    // a stub: the root under test reads only its configuration and assemblies
     jbrowseModelType: types.model('TestConfig', {
       configuration: ConfigurationSchema('Root', {
         rpc: RpcManager.configSchema,
       }),
       assemblies: types.array(assemblyConfigSchema),
       defaultSession: types.frozen<Record<string, unknown>>({}),
-    }),
+    }) as unknown as IType<any, any, EditableJBrowseConfigModel>,
     sessionModelType: types
       .model('TestSession', {
         name: types.string,

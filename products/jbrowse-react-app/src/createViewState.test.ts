@@ -131,11 +131,9 @@ test('localFiles reach a loose { trackId, uri } track, index sibling and all', (
     },
   })
 
-  const { adapter } = state.jbrowse.tracks[0] as {
-    adapter: {
-      bamLocation: { locationType: string }
-      index: { location: { locationType: string } }
-    }
+  const adapter = state.jbrowse.tracks[0]!.adapter as {
+    bamLocation: { locationType: string }
+    index: { location: { locationType: string } }
   }
   expect(adapter.bamLocation.locationType).toBe('BlobLocation')
   expect(adapter.index.location.locationType).toBe('BlobLocation')

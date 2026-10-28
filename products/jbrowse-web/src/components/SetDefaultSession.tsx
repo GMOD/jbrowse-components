@@ -2,15 +2,16 @@ import { Dialog } from '@jbrowse/core/ui'
 import { Button, DialogActions, DialogContent, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import type { EditableJBrowseConfigModel } from '@jbrowse/core/util'
+import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
+
 const SetDefaultSession = observer(function SetDefaultSession({
   rootModel,
   onClose,
 }: {
   rootModel: {
-    jbrowse: {
-      setDefaultSessionConf: (arg: unknown) => void
-    }
-    session?: unknown
+    jbrowse: Pick<EditableJBrowseConfigModel, 'setDefaultSessionConf'>
+    session?: IStateTreeNode
   }
   onClose: () => void
 }) {
@@ -50,7 +51,9 @@ const SetDefaultSession = observer(function SetDefaultSession({
           color="primary"
           variant="contained"
           onClick={() => {
-            jbrowse.setDefaultSessionConf(session)
+            if (session) {
+              jbrowse.setDefaultSessionConf(session)
+            }
             onClose()
           }}
         >

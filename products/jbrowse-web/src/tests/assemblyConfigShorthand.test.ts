@@ -10,7 +10,7 @@ function adapterOf(uri: string) {
       assemblies: [{ name: 'test', sequence: { adapter: { uri } } }],
     },
   })
-  const asm = session.jbrowse.assemblies[0]
+  const asm = session.jbrowse.assemblies[0]!
   return readConfObject(asm.sequence.adapter)
 }
 
@@ -18,7 +18,7 @@ function assemblyFrom(assembly: Record<string, unknown>) {
   const session = createTestSession({
     jbrowseConfig: { assemblies: [assembly] },
   })
-  return session.jbrowse.assemblies[0]
+  return session.jbrowse.assemblies[0]!
 }
 
 test('minimal { adapter: { uri } } resolves the right sequence adapter', () => {

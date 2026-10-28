@@ -1,4 +1,5 @@
 import { readConfObject } from '@jbrowse/core/configuration'
+import { editableConfig } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 import { asSession } from '@jbrowse/product-core'
 
@@ -98,7 +99,7 @@ export function AssembliesMixin(
             return
           }
           if (self.adminMode) {
-            self.jbrowse.addAssemblyConf(conf)
+            editableConfig(self).addAssemblyConf(conf)
           } else {
             this.addSessionAssembly(conf)
           }
@@ -111,7 +112,7 @@ export function AssembliesMixin(
           if (self.sessionAssemblies.some(a => a.name === name)) {
             this.removeSessionAssembly(name)
           } else if (self.adminMode) {
-            self.jbrowse.removeAssemblyConf(name)
+            editableConfig(self).removeAssemblyConf(name)
           }
         },
 

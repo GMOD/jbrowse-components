@@ -1,6 +1,7 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import {
   diffTrackConfig,
+  editableConfig,
   flattenTrackConfigDelta,
   mergeTrackConfig,
 } from '@jbrowse/core/util'
@@ -692,7 +693,7 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
           const bases = self.trackBasesById
           for (const id of ids) {
             const base = bases.get(id)!
-            self.jbrowse.updateTrackConf(
+            editableConfig(self).updateTrackConf(
               mergedOver(toPlainConfig(base), self.trackConfigDeltas[id]!),
             )
             writeDelta(id, undefined)

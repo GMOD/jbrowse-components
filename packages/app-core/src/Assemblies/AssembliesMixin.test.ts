@@ -13,7 +13,12 @@ const assemblySchema = types.model('Assembly', {
 function makeSession(adminMode: boolean) {
   const pluginManager = new PluginManager()
   const removeAssemblyConf = jest.fn()
-  const jbrowse = { assemblies: [], removeAssemblyConf }
+  const jbrowse = {
+    assemblies: [],
+    removeAssemblyConf,
+    addTrackConf: jest.fn(),
+    updateTrackConf: jest.fn(),
+  }
   const session = types
     .compose(
       types.model({}).views(() => ({

@@ -1,4 +1,5 @@
 import { createJBrowseTheme } from '@jbrowse/core/ui'
+import { editableConfig } from '@jbrowse/core/util'
 import { createTestSession } from '@jbrowse/web/testUtils'
 import { ThemeProvider } from '@mui/material'
 import { fireEvent, render } from '@testing-library/react'
@@ -47,7 +48,7 @@ async function openTrackSelector(kind: 'session' | 'config' = 'session') {
   if (kind === 'session') {
     session.addSessionTrackConf(genes)
   } else {
-    session.jbrowse.addTrackConf(genes)
+    editableConfig(session).addTrackConf(genes)
   }
   const view = session.addView('LinearGenomeView', {
     displayedRegions: [

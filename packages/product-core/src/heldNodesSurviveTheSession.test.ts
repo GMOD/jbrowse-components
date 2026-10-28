@@ -15,7 +15,8 @@ import { BaseSessionModel } from './Session/BaseSession.ts'
 import { DrawerWidgetSessionMixin } from './Session/DrawerWidgets.ts'
 
 import type { BaseRootModelType } from './RootModel/BaseRootModel.ts'
-import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
+import type { EditableJBrowseConfigModel } from '@jbrowse/core/util'
+import type { IType } from '@jbrowse/mobx-state-tree'
 
 // The whole chain, because the failure this pins is invisible to any one link
 // of it. `pruneUnbuildableNodes` holds a node under `heldForMissingPlugins` and
@@ -89,18 +90,17 @@ function makeRootType(viewTypes: string[], widgetTypes: string[] = []) {
   const assemblyConfigSchema = assemblyConfigSchemaFactory(pluginManager)
   return BaseRootModelFactory({
     pluginManager,
+    // a stub: the root under test reads only its configuration and assemblies
     jbrowseModelType: types.model('TestConfig', {
       configuration: ConfigurationSchema('Root', {
         rpc: RpcManager.configSchema,
       }),
       assemblies: types.array(assemblyConfigSchema),
-    }),
+    }) as unknown as IType<any, any, EditableJBrowseConfigModel>,
     sessionModelType: types
       .compose(
         'TestSession',
-        BaseSessionModel<BaseRootModelType, AnyConfigurationSchemaType>(
-          pluginManager,
-        ),
+        BaseSessionModel<BaseRootModelType>(pluginManager),
         DrawerWidgetSessionMixin(pluginManager),
         types.model({
           views: types.array(

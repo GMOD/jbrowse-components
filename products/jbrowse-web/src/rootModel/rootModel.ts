@@ -9,7 +9,6 @@ import {
   processMutableMenuActions,
 } from '@jbrowse/app-core'
 import assemblyConfigSchemaFactory from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
-import { readConfObject } from '@jbrowse/core/configuration'
 import { DNA } from '@jbrowse/core/ui/Icons'
 import { indexedDBAvailable } from '@jbrowse/core/util'
 import { getSnapshot, types } from '@jbrowse/mobx-state-tree'
@@ -459,9 +458,7 @@ export default function RootModel({
        * #method
        */
       menus() {
-        const preConfiguredSessions:
-          | { name: string; [key: string]: unknown }[]
-          | undefined = readConfObject(self.jbrowse, 'preConfiguredSessions')
+        const { preConfiguredSessions } = self.jbrowse
 
         const ret: Menu[] = [
           {
@@ -481,7 +478,7 @@ export default function RootModel({
                   }
                 },
               },
-              ...(preConfiguredSessions?.length
+              ...(preConfiguredSessions.length
                 ? [
                     {
                       label: 'Pre-configured sessions...',

@@ -30,6 +30,7 @@ import type { BaseConnectionModel } from './pluggableElementTypes/models/BaseCon
 import type { DisplayModel } from './pluggableElementTypes/models/BaseDisplayModel.tsx'
 import type { TrackModelOf } from './pluggableElementTypes/models/BaseTrackModel.ts'
 import type { IBaseViewModel } from './pluggableElementTypes/models/BaseViewModel.ts'
+import type { BaseConnectionConfigModel } from './pluggableElementTypes/models/baseConnectionConfig.ts'
 // Side-effect type imports, for the augmentations rather than for a name. Every
 // plugin's `install`/`configure` takes a PluginManager, so a declaration this
 // module pulls in is one every plugin's program contains — and a registry
@@ -1085,6 +1086,13 @@ export default class PluginManager {
    * The union of every registered config schema of a pluggable element group,
    * whose instance reads as a config node naming its `type`.
    */
+  pluggableConfigSchemaType(
+    typeGroup: 'connection',
+  ): IType<any, any, PluggableConfigNode & BaseConnectionConfigModel>
+  pluggableConfigSchemaType(
+    typeGroup: PluggableElementTypeGroup,
+    fieldName?: string,
+  ): PluggableConfigSchemaType
   pluggableConfigSchemaType(
     typeGroup: PluggableElementTypeGroup,
     fieldName = 'configSchema',

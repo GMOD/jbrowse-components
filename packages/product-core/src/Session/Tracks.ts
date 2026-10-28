@@ -1,3 +1,4 @@
+import { editableConfig } from '@jbrowse/core/util'
 import { expandLooseTrackConfig } from '@jbrowse/core/util/tracks'
 import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import { autorun, computed } from 'mobx'
@@ -199,7 +200,7 @@ export function TracksManagerSessionMixin(pluginManager: PluginManager) {
           })
           return existing
         }
-        return self.jbrowse.addTrackConf(trackConf)
+        return editableConfig(self).addTrackConf(trackConf)
       }
       return {
         /**
@@ -240,7 +241,7 @@ export function TracksManagerSessionMixin(pluginManager: PluginManager) {
             trackConf,
             'jbrowse.tracks',
           )
-          return self.jbrowse.addTrackConf(trackConf)
+          return editableConfig(self).addTrackConf(trackConf)
         },
 
         /**
@@ -283,7 +284,7 @@ export function TracksManagerSessionMixin(pluginManager: PluginManager) {
           ) {
             self.updateConnectionTrackConfig(trackConf)
           } else {
-            self.jbrowse.updateTrackConf(trackConf)
+            editableConfig(self).updateTrackConf(trackConf)
           }
         },
 
@@ -294,7 +295,7 @@ export function TracksManagerSessionMixin(pluginManager: PluginManager) {
           const { trackId } = trackConf
           self.dereferenceTrack(trackId, self.getReferring(trackId))
           if (self.adminMode) {
-            return self.jbrowse.deleteTrackConf(trackConf)
+            editableConfig(self).deleteTrackConf(trackConf)
           }
         },
       }
