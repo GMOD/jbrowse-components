@@ -644,14 +644,21 @@ export const TASKS: EvalTask[] = [
     solution: `
       await jb.view().navToLocString('EDEN')
       await jb.addTrack({ trackId: 'volvox_filtered_vcf' })
-      await jb.trackModel('gff3tabix_genes').applyDisplaySettings({ color: { field: 'strand' } })
+      await jb.trackModel('gff3tabix_genes').applyDisplaySettings({ encoding: { color: 'strand' } })
       return jb.waitReady(30000)`,
     grade: `
       const ids = ['gff3tabix_genes', 'volvox_filtered_vcf']
       const v = session.views.find(v => v.type === 'LinearGenomeView' && ids.every(id => v.tracks.some(t => t.configuration.trackId === id)))
       const [r] = v ? await jb.visibleRegions(v.id) : []
       const genes = v?.tracks.find(t => t.configuration.trackId === 'gff3tabix_genes')
-      const color = genes && jb.readConfObject(genes.activeDisplay.configuration, 'color')
+      const read = slot => {
+        try {
+          return jb.readConfObject(genes.activeDisplay.configuration, slot)
+        } catch {
+          return undefined
+        }
+      }
+      const color = genes && [read(['encoding', 'color']), read('color')].find(c => c?.field === 'strand')
       const atGene = !!r && r.refName === 'ctgA' && r.start < 9000 && r.end > 1050 && r.end - r.start < 15000
       return { pass: atGene && color?.field === 'strand', detail: { r, color } }`,
   },
@@ -750,8 +757,8 @@ export const TASKS: EvalTask[] = [
 
 // Human tasks on the hosted hg38 hub, the grant's example requests with no
 // volvox stand-ins. Hosted data, so they sit with the tutorials and need the
-// network. No `solution`: selfCheck runs offline against volvox, so each grader
-// is proven only on its baseline and by reading the runs it grades.
+// network. selfCheck runs offline against volvox, so it proves each grader only
+// on its baseline; `chatAgentEval.ts --solutions` runs their solutions online.
 // `atLocus` leaves `view`, `regions` and `ids` for a grader to test.
 const atLocus = (chrom: string, from: number, to: number, maxSpan: number) => `
   const lgvs = session.views.filter(v => v.type === 'LinearGenomeView' && v.assemblyNames?.includes('hg38'))
@@ -951,6 +958,50 @@ TASKS.push(
       }`,
   },
 )
+
+const lgv = (loc: string, tracks: string[], assembly = 'hg38') =>
+  `return jb.loadSessionSpec({ views: [{ type: 'LinearGenomeView', assembly: '${assembly}', loc: '${loc}', tracks: ${JSON.stringify(tracks)} }] }, 90000)`
+const BRCA1_LOC = 'chr17:43,044,295-43,125,483'
+const HOSTED_SOLUTIONS: Record<string, string> = {
+  'hs-brca1-genes': lgv(BRCA1_LOC, ['hg38-ncbiRefSeqCurated']),
+  'hs-common-variants-brca1': lgv(BRCA1_LOC, [
+    'hg38-ncbiRefSeq',
+    'hg38-dbSnp155Common',
+  ]),
+  'hs-cftr-tracks': lgv('chr7:117,480,025-117,668,665', [
+    'hg38-ncbiRefSeq',
+    'hg38-dbSnp155Common',
+    'hg38-jaspar2026',
+  ]),
+  'hs-phylop-scale': `${lgv(BRCA1_LOC, ['hg38-ncbiRefSeq', 'hg38-phyloP100way']).replace('return ', 'await ')}
+    return jb.trackModel('hg38-phyloP100way').applyDisplaySettings({ scales: { y: { domainMin: 0, domainMax: 5 } } })`,
+  'hs-short-arm-chr2': lgv('chr2:1-93,900,000', []),
+  'hs-synteny-mouse-brca1': `return jb.loadSessionSpec({ views: [{ type: 'LinearSyntenyView', tracks: ['hg38_to_mm39_liftOver'], views: [{ assembly: 'hg38', loc: '${BRCA1_LOC}' }, { assembly: 'mm39', loc: 'chr11:101,379,590-101,442,808' }] }] }, 90000)`,
+  'hs-which-tfbs-track': `return 'hg38-jaspar2026'`,
+  'rc-three-way-synteny': `return jb.loadSessionSpec({ views: [{ type: 'LinearSyntenyView', tracks: ['hg38_to_mm39_liftOver', 'mm39_to_rn7_liftOver'], views: [{ assembly: 'hg38', loc: '${BRCA1_LOC}' }, { assembly: 'mm39', loc: 'chr11:101,379,590-101,442,808' }, { assembly: 'rn7', loc: 'Brca1' }] }] }, 90000)`,
+  'rc-mouse-ortholog': lgv('chr11:101,379,590-101,442,808', [], 'mm39'),
+  'rc-clinvar-color': `${lgv(BRCA1_LOC, ['hg38-clinvarMain']).replace('return ', 'await ')}
+    return jb.trackModel('hg38-clinvarMain').applyDisplaySettings({ encoding: { color: { field: '_clinSignCode' } } })`,
+  'rc-three-genes-side-by-side': `return jb.loadSessionSpec({ views: ${JSON.stringify(
+    [BRCA1_LOC, 'chr13:32,315,508-32,400,268', 'chr17:7,668,421-7,687,490'].map(
+      loc => ({
+        type: 'LinearGenomeView',
+        assembly: 'hg38',
+        loc,
+        tracks: ['hg38-ncbiRefSeq', 'hg38-phyloP100way'],
+      }),
+    ),
+  )} }, 90000)`,
+  'rc-protein-viewer': `return jb.loadSessionSpec({ views: [{ type: 'ProteinView', gene: 'BRCA1', connectedView: { assembly: 'hg38', tracks: ['hg38-clinvarMain'] } }] }, 90000)`,
+  'tut-methylation-haplotypes': `${lgv('chr15:24,954,000-24,957,000', []).replace('return ', 'await ')}
+    await jb.addTrack({ location: 'https://jbrowse.org/demos/methylation/HG002_SNRPN_5mC_haplotagged.bam', assembly: 'hg38' })
+    const id = jb.view().tracks[0].configuration.trackId
+    return jb.trackModel(id).applyDisplaySettings({ pileup: { bases: { encoding: { color: { field: 'modifications' } } } }, facet: { field: 'tags.HP' } })`,
+  'tut-synteny-tnnt3': `return jb.loadSessionSpec({ views: [{ type: 'LinearSyntenyView', tracks: ['hg38_to_hs1_liftOver'], color: { field: 'strand' }, views: [{ assembly: 'hg38', loc: 'chr11:1,919,568-1,938,706' }, { assembly: 'hs1', loc: 'TNNT3' }] }] }, 90000)`,
+}
+for (const task of TASKS) {
+  task.solution ??= HOSTED_SOLUTIONS[task.name]
+}
 
 // Outside tasks: real public data in local files, and steps no JBrowse tool
 // does. Each grader reads the session the agent left, or its answer.
@@ -1206,6 +1257,7 @@ TASKS.push(
     prompt:
       'WORK/na12878_brca1.bam holds NA12878 reads around BRCA1 from the 1000 Genomes 30x CRAM, on GRCh38. How many primary, non-duplicate reads with mapping quality 30 or more overlap chr17:43,119,000-43,120,000? Reply with the number.',
     grade: `return { pass: /\\b291\\b/.test(answer), detail: { answer: answer.slice(0, 300) } }`,
+    solution: `return '291'`,
   },
 )
 
