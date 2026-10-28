@@ -1,6 +1,8 @@
 import { JBrowseApp, useCreateViewState } from '@jbrowse/react-app2'
 import { observer } from 'mobx-react'
 
+import type { ViewModelOf } from '@jbrowse/core/PluginManager'
+
 const base = 'https://jbrowse.org/code/jb2/main/test_data/volvox'
 
 const config = {
@@ -40,7 +42,9 @@ const SessionSummary = observer(function SessionSummary({
       <ul style={{ margin: 0 }}>
         {views.map(view => (
           <li key={view.id}>
-            {view.type} — {view.coarseVisibleLocStrings || 'no region'}
+            {view.type} —{' '}
+            {(view as ViewModelOf<'LinearGenomeView'>)
+              .coarseVisibleLocStrings || 'no region'}
           </li>
         ))}
       </ul>

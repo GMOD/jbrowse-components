@@ -82,8 +82,12 @@ const KEYBOARD_RESIZE_STEP = 10
 
 export interface ResizableDisplay {
   height: number
-  setResizing: (resizing: boolean) => void
   resizeHeight: (distance: number) => unknown
+}
+
+export interface ResizableTrack {
+  setResizing: (resizing: boolean) => void
+  activeDisplay: ResizableDisplay
 }
 
 export const ResizeHandle = observer(function ResizeHandle({
@@ -91,24 +95,21 @@ export const ResizeHandle = observer(function ResizeHandle({
   trackId,
   style,
 }: {
-  view: {
-    getTrack: (
-      trackId: string,
-    ) => { activeDisplay: ResizableDisplay } | undefined
-  }
+  view: { getTrack: (trackId: string) => ResizableTrack | undefined }
   trackId: string
   style?: React.CSSProperties
 }) {
-  const display = view.getTrack(trackId)?.activeDisplay
+  const track = view.getTrack(trackId)
+  const display = track?.activeDisplay
   const props = useResizeDrag({
     onDragStart: () => {
-      display?.setResizing(true)
+      track?.setResizing(true)
     },
     onDrag: distance => {
       display?.resizeHeight(distance)
     },
     onDragEnd: () => {
-      display?.setResizing(false)
+      track?.setResizing(false)
     },
   })
   return display ? (

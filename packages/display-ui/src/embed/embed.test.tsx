@@ -252,11 +252,8 @@ test('a resize bar draws only under a track that has a display', () => {
     getTrack: (trackId: string) =>
       trackId === 'genes'
         ? {
-            activeDisplay: {
-              height: 40,
-              setResizing: () => {},
-              resizeHeight: () => 0,
-            },
+            setResizing: () => {},
+            activeDisplay: { height: 40, resizeHeight: () => 0 },
           }
         : undefined,
   }
@@ -274,7 +271,8 @@ test('a resize bar is a separator the arrow keys resize', () => {
   const resizeHeight = jest.fn()
   const view = {
     getTrack: () => ({
-      activeDisplay: { height: 40.4, setResizing: () => {}, resizeHeight },
+      setResizing: () => {},
+      activeDisplay: { height: 40.4, resizeHeight },
     }),
   }
   render(<ResizeHandle view={view} trackId="genes" />)
@@ -284,4 +282,19 @@ test('a resize bar is a separator the arrow keys resize', () => {
   fireEvent.keyDown(bar, { key: 'ArrowUp' })
   fireEvent.keyDown(bar, { key: 'Enter' })
   expect(resizeHeight.mock.calls).toEqual([[10], [-10]])
+})
+
+test('a resize drag marks the track resizing, not the display', () => {
+  const setResizing = jest.fn()
+  const view = {
+    getTrack: () => ({
+      setResizing,
+      activeDisplay: { height: 40, resizeHeight: () => 0 },
+    }),
+  }
+  render(<ResizeHandle view={view} trackId="genes" />)
+  const bar = screen.getByRole('separator', { name: 'Resize genes' })
+  fireEvent.pointerDown(bar, { clientY: 0, pointerId: 1, button: 0 })
+  fireEvent.pointerUp(bar, { clientY: 0, pointerId: 1 })
+  expect(setResizing.mock.calls).toEqual([[true], [false]])
 })

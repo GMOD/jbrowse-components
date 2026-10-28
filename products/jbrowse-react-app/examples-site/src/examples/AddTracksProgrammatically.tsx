@@ -2,6 +2,7 @@ import { useRef, useState } from 'react'
 
 import { JBrowse } from '@jbrowse/react-app2'
 
+import type { ViewModelOf } from '@jbrowse/core/PluginManager'
 import type { ViewModel } from '@jbrowse/react-app2'
 
 const base = 'https://jbrowse.org/code/jb2/main/test_data/volvox'
@@ -25,7 +26,10 @@ export default function AddTracksProgrammatically() {
     const state = ref.current
     if (state) {
       state.jbrowse.addTrackConf(genesTrackConf)
-      await state.session.views[0]?.launchTrack('volvox_genes')
+      const view = state.session.views[0] as
+        | ViewModelOf<'LinearGenomeView'>
+        | undefined
+      await view?.launchTrack('volvox_genes')
       setAdded(true)
     }
   }
