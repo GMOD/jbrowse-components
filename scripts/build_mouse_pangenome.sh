@@ -123,7 +123,7 @@ for strain in "${ORDER[@]}"; do
     echo "  have $strain"
   else
     echo "  bgzip $strain"
-    zcat "fasta/${strain}.fa.gz" | bgzip -@ 4 -c > "$out.tmp"
+    gzip -dc "fasta/${strain}.fa.gz" | bgzip -@ 4 -c > "$out.tmp"
     mv "$out.tmp" "$out"
     samtools faidx "$out"
   fi

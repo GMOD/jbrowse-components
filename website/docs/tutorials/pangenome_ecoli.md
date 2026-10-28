@@ -36,7 +36,7 @@ The graph view is a beta plugin. We welcome your [feedback](/contact).
 - the NCBI
   [`datasets`](https://www.ncbi.nlm.nih.gov/datasets/docs/v2/download-and-install/)
   CLI
-- [`gfa-to-tabix`](https://github.com/GMOD/gfa-to-tabix) 0.12.0 or later, for
+- [`gfa-to-tabix`](https://github.com/GMOD/gfa-to-tabix) 1.4.0 or later, for
   [the graph track](#opening-the-graph-in-the-graph-genome-view)
 - the GraphGenomeView plugin, for the same track. In your own JBrowse,
   [install it from the plugin store](/docs/user_guides/plugin_store)
@@ -83,6 +83,18 @@ the graph, supply your own set of assemblies.
 
 ## Building the graph
 
+Each strain's FASTA holds its chromosome as one record named `chr`. Fetch and
+trim one assembly with the NCBI `datasets` CLI:
+
+```bash
+# $acc: the RefSeq accession; $strain: the name the graph gives the sample
+datasets download genome accession "$acc" --filename "$strain.zip"
+unzip -o "$strain.zip" -d "$strain"
+# keep the first record, the chromosome, renamed chr; the rest are plasmids
+awk '/^>/{n++; if (n == 1) print ">chr"; next} n == 1' \
+  "$strain"/ncbi_dataset/data/*/*.fna > "$strain.fa"
+```
+
 pggb takes one FASTA of all the genomes, with
 [PanSN](https://github.com/pangenome/PanSN-spec) names,
 `sample#haplotype#contig`. Concatenate the five haploid strains as haplotype `1`
@@ -111,7 +123,7 @@ in_pggb() {
 # -p: minimum identity; -s: segment length
 # -V K12:10000: a VCF against the K12 path; -M: a MAF
 in_pggb pggb -i /data/all.fa.gz -o /data/pggb \
-  -n 5 -c 4 -p 90 -s 5000 -V K12:10000 -M -t "$(nproc)"
+  -n 5 -c 4 -p 90 -s 5000 -V K12:10000 -M -t "$(getconf _NPROCESSORS_ONLN)"
 og=$(ls pggb/*.smooth.final.og)
 ```
 
@@ -189,7 +201,7 @@ printf 'Sakai#1#chr\nCFT073#1#chr\nNCTC86#1#chr\nIAI39#1#chr\n' > query.txt
 # -j is the minimum jaccard similarity for a match
 # -e forces a segment boundary every N bp; omit it on graphs with many haplotypes
 in_pggb odgi untangle -i "/data/$og" \
-  -R /data/target.txt -Q /data/query.txt -m 1000 -j 0.5 -e 5000 -p -t "$(nproc)" \
+  -R /data/target.txt -Q /data/query.txt -m 1000 -j 0.5 -e 5000 -p -t "$(getconf _NPROCESSORS_ONLN)" \
   > ecoli_pggb_untangle.paf
 jbrowse make-pif ecoli_pggb_untangle.paf
 ```
@@ -522,7 +534,9 @@ gfa-to-tabix build pggb/*.smooth.final.gfa -o ecoli_pggb --reference K12 --snarl
 
 The command writes the segments and links, a coarse tier with variants under 50
 bp folded into the reference, and `ecoli_pggb.config.json`. The `uri`s below are
-our hosted copy; a local build uses `ecoli_pggb`:
+our hosted copy; a local build uses `ecoli_pggb.contig`, the contig layout,
+since the anchored layout at the bare prefix draws multi-megabase rows across
+every window:
 
 ```json addtrack
 {

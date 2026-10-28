@@ -138,6 +138,10 @@ chromosome over the same graph:
 <!-- from: scripts/build_bovine_pangenome.sh -->
 
 ```bash
+# rename the reference path (HER, Hereford) to the assembly's refName, so
+# deconstruct writes CHROM as chr1
+awk -F'\t' -v OFS='\t' '$1 == "P" && $2 == "HER" { $2 = "chr1" } { print }' \
+  1.gfa > chr1.gfa
 # -p: vg's PackedGraph format, which deconstruct reads
 vg convert -g chr1.gfa -p > chr1.vg
 # -p: the reference path to decompose against
@@ -325,8 +329,9 @@ runs:
   rank).
 - Deconstruct the callset with the `vg deconstruct` call above.
 
-The script stops if the reference path does not reproduce bosTau9's chromosome
-lengths, and a
+The script runs on Linux, since it needs GNU tools, and downloads the 12 GB
+Zenodo archive. It stops if the reference path does not reproduce bosTau9's
+chromosome lengths, and a
 [README.txt](https://jbrowse.org/demos/bovine_pangenome/README.txt) beside the
 hosted files records the source and every modification.
 

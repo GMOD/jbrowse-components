@@ -236,14 +236,7 @@ tabix hprc.segs.bed.gz 'GRCh38#0#chr1:103,690,000-103,700,000' | head -3
 ```
 
 Columns one to three are the contig and span, four is the segment id, and five
-is its rank (build order). Ask the graph about one of those segments:
-
-```bash
-gfatools view -l s12829 -r 0 hprc-v2.1-mc-grch38.sv.gfa.gz
-```
-
-The S-line's `SN` and `SO` tags match the row's first two columns, and `SR`
-matches the fifth.
+is its rank (build order).
 
 - **An empty result** over a tiled reference means the query used the wrong
   name: `chr1` finds nothing where `GRCh38#0#chr1` finds every segment.

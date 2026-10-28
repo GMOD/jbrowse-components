@@ -34,21 +34,20 @@ The graph view is a beta plugin. We welcome your [feedback](/contact).
   [drawing the graph as a graph](#opening-the-graph-in-the-graph-genome-view).
   In your own JBrowse,
   [install it from the plugin store](/docs/user_guides/plugin_store)
-- [`gfa-to-tabix`](https://github.com/GMOD/gfa-to-tabix) 0.12.0 or later and
-  [`gfatools`](https://github.com/lh3/gfatools), for
+- [`gfa-to-tabix`](https://github.com/GMOD/gfa-to-tabix) 1.4.0 or later, for
   [indexing the graph](#indexing-the-graph)
 - for the [whole build](#reproduce-it-end-to-end): the NCBI
   [`datasets`](https://www.ncbi.nlm.nih.gov/datasets/docs/v2/download-and-install/)
   CLI, `bedGraphToBigWig` (UCSC kentUtils), `samtools`, `unzip` and `wget`
 
-<!-- TUTORIAL_INSTALL samtools,htslib,node,jbrowse-cli,bedGraphToBigWig,datasets,gfatools,gfa-to-tabix START -->
+<!-- TUTORIAL_INSTALL samtools,htslib,node,jbrowse-cli,bedGraphToBigWig,datasets,gfa-to-tabix START -->
 
 ```bash
 # Debian/Ubuntu
 sudo apt install samtools tabix nodejs
 # or conda, which has every tool above
 conda install -c bioconda -c conda-forge samtools htslib nodejs \
-  ucsc-bedgraphtobigwig ncbi-datasets-cli gfatools
+  ucsc-bedgraphtobigwig ncbi-datasets-cli
 # or Linux x86_64 binaries for the tools apt lacks
 wget -P ~/.local/bin \
   https://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/bedGraphToBigWig \
@@ -60,7 +59,7 @@ cargo install gfa-to-tabix
 npm install -g @jbrowse/cli@next
 ```
 
-<!-- TUTORIAL_INSTALL samtools,htslib,node,jbrowse-cli,bedGraphToBigWig,datasets,gfatools,gfa-to-tabix END -->
+<!-- TUTORIAL_INSTALL samtools,htslib,node,jbrowse-cli,bedGraphToBigWig,datasets,gfa-to-tabix END -->
 
 ## The data
 
@@ -93,6 +92,18 @@ your own set of assemblies to build the graph.
 </details>
 
 ## Building the graph with cactus-pangenome
+
+Each strain's FASTA holds its chromosome as one record named `chr`. Fetch and
+trim one assembly with the NCBI `datasets` CLI:
+
+```bash
+# $acc: the RefSeq accession; $strain: the name the graph gives the sample
+datasets download genome accession "$acc" --filename "$strain.zip"
+unzip -o "$strain.zip" -d "$strain"
+# keep the first record, the chromosome, renamed chr; the rest are plasmids
+awk '/^>/{n++; if (n == 1) print ">chr"; next} n == 1' \
+  "$strain"/ncbi_dataset/data/*/*.fna > "$strain.fa"
+```
 
 [Minigraph-Cactus](https://github.com/ComparativeGenomicsToolkit/cactus/blob/master/doc/pangenome.md)
 (`cactus-pangenome`) builds a pangenome graph reference-first.
@@ -154,9 +165,8 @@ in_cactus cactus-pangenome /data/js /data/seqfile.txt \
 
 ## Load the genomes
 
-Every projection is a track on a strain's assembly, and each strain's FASTA
-holds one sequence named `chr`. We'll add K12, the reference the projections map
-to, from a bgzip-compressed, indexed FASTA:
+Every projection is a track on a strain's assembly. We'll add K12, the reference
+the projections map to, from a bgzip-compressed, indexed FASTA:
 
 ```json addassembly
 {
@@ -172,9 +182,22 @@ named as in the `assemblyNames` of the tracks below.
 
 [`halSynteny`](https://github.com/ComparativeGenomicsToolkit/hal) reads the
 HAL's base-level alignment and emits synteny blocks per genome pair as PSL with
-no sample tag in its sequence names, so the
-[build script](#reproduce-it-end-to-end) runs it for every pair and converts
-each to PAF with PanSN `sample#0#chr` names.
+no sample tag in its sequence names. Run it once per pair of strains, and append
+each pair to one PAF with PanSN `sample#0#chr` names:
+
+<!-- from: scripts/build_ecoli_pangenome_cactus.sh -->
+
+```bash
+# $q, $t: the query and target strains of one pair
+in_cactus halSynteny --queryGenome "$q" --targetGenome "$t" \
+  /data/mc/ecoli.full.hal "/data/hs_${t}_${q}.psl"
+# PSL to PAF; halSynteny keeps the query on +, so the 2nd strand character is
+# the target's
+awk -v OFS='\t' -v qn="${q}#0#chr" -v tn="${t}#0#chr" \
+  '{ strand = (substr($9, 2, 1) == "-") ? "-" : "+";
+     print qn, $11, $12, $13, strand, tn, $15, $16, $17, $1, ($13 - $12), 255 }' \
+  "hs_${t}_${q}.psl" >> ecoli_cactus_ava.paf
+```
 
 Index the combined PAF so a range query fetches only the region in view:
 
@@ -324,6 +347,9 @@ in_cactus odgi similarity -i /data/mc/ecoli.full.og -D '#' -p 1 > ecoli_cactus_s
 python3 odgi_similarity_to_newick.py ecoli_cactus_similarity.tsv ecoli_cactus.nh
 ```
 
+Then add `"nhLocation": { "uri": "ecoli_cactus.nh" }` to the MAF track's
+adapter.
+
 ## Pangenome depth and per-strain presence
 
 [`odgi depth`](https://odgi.readthedocs.io/en/latest/rst/commands/odgi_depth.html)
@@ -417,7 +443,16 @@ and stays unmapped.
 `--giraffe` wrote the indexes during the build. `vg giraffe` emits a GAM, and
 `vg surject` projects it onto one path as a BAM. The reads are _E. coli_ KTa004
 ([ENA DRR063408](https://www.ebi.ac.uk/ena/browser/view/DRR063408), Illumina
-MiSeq), a strain the graph has never seen:
+MiSeq), a strain the graph has never seen. The first 150,000 pairs of each mate
+are enough for the depth to read:
+
+```bash
+mkdir -p reads
+for r in 1 2; do
+  # awk, not head: head closes the pipe early and gzip dies of SIGPIPE
+  gzip -dc "DRR063408_$r.fastq.gz" | awk 'NR<=600000' | gzip > "reads/sub_$r.fastq.gz"
+done
+```
 
 <!-- from: scripts/build_ecoli_pangenome_cactus.sh -->
 
@@ -474,33 +509,19 @@ covers installing the plugin and the one command that indexes a graph for it.
 
 ### Indexing the graph
 
-`cactus-pangenome` also wrote `mc/ecoli.sv.gfa.gz`, the graph its minigraph
-stage built. This rGFA of the structural variation states each segment's place
-on a genome in `SN`/`SO`/`SR` tags, so
 [`gfa-to-tabix build`](https://github.com/GMOD/gfa-to-tabix/blob/main/docs/subcommands.md#build)
-indexes it with no further arguments:
-
-```bash
-# gfa-to-tabix build runs gfatools for the bubbles, so it has to be on PATH
-gfa-to-tabix build mc/ecoli.sv.gfa.gz -o ecoli_cactus_sv
-```
-
-The command writes the segments and links, the bubbles, a coarse tier (one node
-per bubble), the allele inventory (one row per alternative path),
-`ecoli_cactus_sv.config.json`, whose graph track names the tier under `coarse`,
-and `ecoli_cactus_sv.graph.json`, from which Add pangenome graph track picks up
-the tier.
-
-The figures below draw the base-level graph, where every SNP is a bubble. That
-GFA has no rGFA tags, so `--reference` makes the command place segments by
-following the reference's path lines:
+indexes the base-level graph, where every SNP is a bubble. That GFA has no rGFA
+tags, so `--reference` makes the command place segments by following the
+reference's path lines:
 
 ```bash
 gfa-to-tabix build mc/ecoli.gfa.gz -o ecoli_cactus --reference K12
 ```
 
 Without `--snarls` the command writes no bubble file. Our hosted copy of the
-index loads as one `GraphTrack` at the shared prefix:
+index loads as one `GraphTrack` at the shared prefix. A local build's track
+reads `ecoli_cactus.contig`, the contig layout, since the anchored layout at the
+bare prefix draws multi-megabase rows across every window:
 
 ```json addtrack
 {

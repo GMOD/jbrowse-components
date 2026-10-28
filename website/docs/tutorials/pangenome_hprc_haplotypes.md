@@ -69,11 +69,12 @@ adds it, and the config below is the one to adapt for your own graph:
 
 - **A lane** is one haplotype's walk, which lists in order the nodes that
   haplotype passes through.
-- **`assemblyNames`** lists an assembly per haplotype. The track finds each walk
-  through the assembly's `sample#haplotype` alias (`HG00097.1` is aliased
+- **`assemblyNames`** starts with the anchor, the assembly the walk file's
+  reference is loaded as. A haplotype needs no entry: its lane draws on an
+  assembly whose `sample#haplotype` alias matches it (`HG00097.1` is aliased
   `HG00097#1`), which
   [one assembly entry](/docs/tutorials/pangenome_hprc#opening-the-haplotype-an-allele-came-from)
-  declares.
+  declares, and a haplotype with no assembly is still a lane.
 - **`assemblyNameToPanSN`** names the walk of an assembly with no such alias,
   here GRCh38's.
 - The walk files for a graph of your own come from

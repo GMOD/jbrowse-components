@@ -59,7 +59,7 @@ fi
 
 # pggb, odgi and minigraph threads. On a shared host, also cap memory:
 # systemd-run --user --scope -p MemoryMax=64G -p MemorySwapMax=1G bash <this script>
-THREADS="${THREADS:-$(( $(nproc) < 8 ? $(nproc) : 8 ))}"
+THREADS="${THREADS:-$(( $(getconf _NPROCESSORS_ONLN) < 8 ? $(getconf _NPROCESSORS_ONLN) : 8 ))}"
 
 for h in "${HELPERS[@]}"; do
   [ -f "$SCRIPT_DIR/$h" ] || curl -fsSL -o "$SCRIPT_DIR/$h" \

@@ -166,7 +166,17 @@ The whole-chromosome overview records how many segments each bubble holds.
 Ranking the bubbles that overlap a gene by that count recovers the vomeronasal
 receptor and Speer families and the immunoglobulin heavy chain locus, each too
 wide for one window. _Dock2_ is the densest bubble that fits in one, inside one
-intron at `chr11:34,516,045-34,560,497`. To open it:
+intron at `chr11:34,516,045-34,560,497`. Rank the bubbles that fit in a 100 kb
+window:
+
+```bash
+# column 4: the bubble's segment count; the densest come first
+gzip -dc graph.bubbles.bed.gz \
+  | awk -v OFS='\t' '$3 - $2 < 100000 { print $1, $2, $3, $4 }' \
+  | sort -t "$(printf '\t')" -k4,4nr | head -20
+```
+
+To open the _Dock2_ bubble:
 
 - Paste that region into the portal page's **Gene or region** box and click
   **Graph**.
@@ -177,14 +187,6 @@ intron at `chr11:34,516,045-34,560,497`. To open it:
 Which strains have an allele is absent from the graph, because `minigraph`
 writes no path lines. The allele inventory's `firstSeenIn` lists the first
 assembly to contribute it.
-
-The _Dock2_ bubble is one row of the hosted bubbles BED, with the same segment
-count and span the figure labels:
-
-```bash
-tabix https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph.bubbles.bed.gz \
-  'mm39#0#chr11:34516044-34560497'
-```
 
 ## Building a minigraph graph from the strain assemblies
 
@@ -203,7 +205,10 @@ minigraph -cxggs -t 8 mm39.chr13.fa strain1.chr13.fa strain2.chr13.fa > chr13.gf
 [](/docs/tutorials/pangenome_prepare_graph) then turns the graph into the files
 above with one command, `gfa-to-tabix build`.
 [`build_mouse_pangenome.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_mouse_pangenome.sh)
-runs the whole build, and the alignment takes most of a day. It:
+runs the whole build on Linux, since it needs GNU tools. It downloads about 30
+GB, writes about 50 GB of per-chromosome FASTA, holds 30 GB of memory free for
+each `minigraph` job, and takes about 27 hours of `minigraph` time at two
+chromosomes at once on 8 threads each. It:
 
 1. downloads the assemblies
 2. extracts each chromosome, renamed to PanSN (`sample#haplotype#contig`)

@@ -475,6 +475,15 @@ Fetch one haplotype's copy of the locus:
 samtools faidx HG00232_hap1.fa.gz 'HG00232#1#CM089991.1:103491008-103991760' > HG00232.1.fa
 ```
 
+Cut the three genes out of GRCh38 as `genes.fa`, one record per gene:
+
+```bash
+# AMY2B, AMY2A and AMY1A as GRCh38 holds them, each record renamed to its gene
+samtools faidx GRCh38.fa chr1:103554644-103579534 | sed '1s/.*/>AMY2B/' > genes.fa
+samtools faidx GRCh38.fa chr1:103616651-103625780 | sed '1s/.*/>AMY2A/' >> genes.fa
+samtools faidx GRCh38.fa chr1:103655519-103664554 | sed '1s/.*/>AMY1/' >> genes.fa
+```
+
 Count gene copies, keeping hits over 90% of the gene at 97% identity:
 
 <!-- from: scripts/build_amylase_haplotypes.sh -->
