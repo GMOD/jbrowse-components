@@ -634,6 +634,8 @@ export const uiSpecs: ScreenshotSpec[] = [
     tooltip: 'hide',
   },
 
+  // No RHD highlight: its tint would recolor the genotype and copy-number cells
+  // the prose reads, and the gene track already labels RHD.
   {
     mode: 'url',
     name: 'multisv_rhd',

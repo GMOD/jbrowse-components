@@ -1310,6 +1310,9 @@ export const syntenySpecs: ScreenshotSpec[] = [
     ],
   },
 
+  // No highlight on the operon or the O-antigen cluster: a K-12 highlight spans
+  // every lane, and a lane on its own coordinates puts glmU, rsmG or gndA under
+  // it.
   {
     mode: 'url',
     name: 'multiway_synteny/ecoli_symbol_atp_operon',

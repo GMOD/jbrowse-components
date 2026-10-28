@@ -1,6 +1,6 @@
 ---
 name: tutorial-figure-callouts
-description: "Tutorial figures that leave a first-time reader guessing. The giab_hg002_reads pass, its two menu figures and a first sweep (gene_prediction_merge, read_marks, trio matrix, imprinted 5mC, the launch stack) are on main. Open: five sweep figures needing a callout whose anchor or meaning wants checking first (maize WGD fans, GSTT1, non-canonical junctions, E. coli operons, amylase ribbon colors)."
+description: "Tutorial figures that leave a first-time reader guessing. The callout sweep is on main. Open: hprc_amylase_stack's yellow and blue ribbons have no key, because the app hides the strand legend on ribbons and drops the indel chips with it."
 ---
 
 # Tutorial figure callouts: what is left
@@ -12,28 +12,18 @@ Rules: callouts and captions in `website/CLAUDE.md`, anchors and `highlights` in
 `website/scripts/CLAUDE.md`, capture in
 [FIGURE_CAPTURE.md](../reference/FIGURE_CAPTURE.md).
 
-## Next, most confusing first
+## Next
 
-Each needs its anchor or its claim checked against the data before writing.
+`multiway_synteny/hprc_amylase_stack` paints `encoding.color: 'strand'`: blue is
+a reverse-strand alignment, yellow the CIGAR insertion wedge and purple the
+deletion wedge (`strandCigarColors` in `packages/synteny-core/src/colorUtils.ts`).
+The app's strand key lists those chips, but `hasLegendKey` in
+`packages/synteny-core/src/TrackColorsMixin.ts` hides the strand key whenever
+`shapeShowsStrand()`, which is always on ribbons, and so drops the indel chips
+too.
 
-1. `orthofinder_synteny/grasses_maize_wgd` (`website/scripts/specs/synteny.ts`):
-   the blue and purple fans have no legend, and `encoding.color: 'target'`
-   paints them by maize chromosome. One label per fan, "Maize 1" and "Maize 5",
-   anchored by locus in the maize row.
-2. `multiway_synteny/hprc_gstt1_lanes`: GSTT1 is absent from hg38's chr22, so no
-   highlight reaches it. One `leader: true` label on the gene in the first lane
-   carrying it.
-3. `rnaseq/sashimi_all_junctions`, the top half of `rnaseq/hide_non_canonical`
-   (`website/scripts/specs/alignments.ts`): one `leader: true` "Non-canonical"
-   label on the thin red arcs.
-4. `multiway_synteny/ecoli_symbol_atp_operon` and `ecoli_symbol_oantigen`: one
-   session highlight per figure on K-12 coordinates, "atp operon" and
-   "O-antigen cluster".
-5. `multiway_synteny/hprc_amylase_stack`: the yellow and blue ribbon fills have
-   no legend. Read what each encodes (CIGAR insertion, strand) before labeling.
-
-Borderline: `pangenome/bovine_polled`'s highlight lacks a `label`; `multisv_rhd`
-could take an "RHD" highlight.
+- Keep the key on ribbons while `presentCigarKinds` is nonzero, then reshoot
+  the figure. A hand-drawn `legend` annotation would copy the app's rules.
 
 ## Colin's constraints
 
@@ -48,10 +38,5 @@ could take an "RHD" highlight.
 
 - The all-vs-all lanes now draw a "Show 1 hidden" chip on CFT073
   (`multiway_synteny/ecoli_launch_selection`), from a display change on main.
-
-## Capturing on the laptop
-
-With ada's ssh refused, a worktree build (`pnpm --filter @jbrowse/web build`)
-and `website/scripts/generate-screenshots.ts`, run from `website/` with a short
-`TMPDIR`, `--filter <names>` and a free `--localport`, worked after symlinking
-`website/static/img` and `website/static/media` to the primary's.
+- `pangenome/bovine_polled`'s variant track no longer draws its feature row
+  (">282>284 GGTATTC -> 209bp") above the matrix, as of the 2026-10-28 reshoot.
