@@ -1319,15 +1319,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
           type: 'LinearGenomeView',
           assembly: 'MG1655',
           loc: 'NC_000913.3:3,910,000-3,925,000',
-          // atpI through atpC in the demo's MG1655 annotation
-          highlight: [
-            {
-              refName: 'NC_000913.3',
-              start: 3915552,
-              end: 3922440,
-              label: 'atp operon',
-            },
-          ],
           tracks: [
             {
               trackId: 'ecoli_orthologs',
@@ -1356,15 +1347,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
           type: 'LinearGenomeView',
           assembly: 'MG1655',
           loc: 'NC_000913.3:2,095,000-2,115,000',
-          // wbbL through rfbB, between gnd and galF in the demo's annotation
-          highlight: [
-            {
-              refName: 'NC_000913.3',
-              start: 2101395,
-              end: 2113061,
-              label: 'O-antigen cluster',
-            },
-          ],
           tracks: [
             {
               trackId: 'ecoli_orthologs',
@@ -2046,7 +2028,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
           loc: '1:286,900,000',
           fracY: 0,
         },
-        dy: -60,
+        dy: -100,
       },
       {
         type: 'text',
@@ -2057,7 +2039,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
           loc: '5:6,450,000',
           fracY: 0,
         },
-        dy: -60,
+        dy: -100,
       },
     ],
   },
