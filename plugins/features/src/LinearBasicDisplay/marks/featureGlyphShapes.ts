@@ -10,6 +10,7 @@ import { bpRangeXTuple } from '@jbrowse/render-core/blockClipUtils'
 import {
   bpProjection,
   clipBlockForCanvas,
+  getDpr,
   makeBpMapper,
   projectBp,
   spanLeft,
@@ -31,6 +32,7 @@ import {
   CONT_EDGE_MARGIN_PX,
   CONT_MARK_ALPHA,
   CONT_MIN_OVERHANG_PX,
+  CONT_STROKE_PX,
   CONT_TRI_GAP_PX,
   CONT_TRI_W_PX,
   MIN_DENSITY_ALPHA,
@@ -197,6 +199,7 @@ function writeFeatureGlyphUniforms(
     outlineColor: params.outlineColor,
     leftIsCanvasEdge: edges.leftIsCanvasEdge ? 1 : 0,
     rightIsCanvasEdge: edges.rightIsCanvasEdge ? 1 : 0,
+    devicePixelRatio: getDpr(),
   })
 }
 
@@ -624,7 +627,7 @@ export const continuationShape: MarkShape<RectChannels, FeatureGlyphParams> = {
         )
           ? `rgba(0,0,0,${CONT_MARK_ALPHA})`
           : `rgba(255,255,255,${CONT_MARK_ALPHA})`
-        ctx.lineWidth = 1
+        ctx.lineWidth = CONT_STROKE_PX
         const cy = snapBoxCenterYPx(ys[i]! + height[i]! * 0.5, scrollY)
         const halfH = markerHalfHeight(height[i]!)
         const rawStrand = strands[i]!

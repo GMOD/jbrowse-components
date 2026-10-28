@@ -71,22 +71,22 @@ The recurring bug is an **AA ramp whose width was measured with `fwidth`, and/or
 whose geometry had no room for it.** `fwidth` is `|ddx| + |ddy|`, overshooting a
 true gradient by up to √2. A too-wide *linear* ramp does not thicken a mark, it
 dilutes it (the half-max contour does not move), so look for dilution, not a fat
-line. The one `fwidth(` call site is `continuation.slang`'s barycentric wireframe
-estimator, whose comment says why it stays; a second would justify a
+line. The one `fwidth(` call site is `sequenceCell.slang`'s, over an
+axis-aligned px varying, where `fwidth` is the gradient; a second would justify a
 `//! fwidth-ok:` directive.
 
 The right width depends on what the SDF is measured in:
 
 - **Distance already in pixels** (synteny `perpCoverage`, dotplot capsule, wiggle's
-  capsule, the xyplot bar's horizontal cuts): `|∇d| = 1`, so the full width is
-  `aaPx(dpr)`. Call `edgeCoverage(signedInkCssPx, dpr)`; a shader reaching it
+  capsule, the xyplot bar's horizontal cuts, the feature chevrons' arms):
+  `|∇d| = 1`, so the full width is `aaPx(dpr)`. Call `edgeCoverage(signedInkCssPx, dpr)`; a shader reaching it
   without a `devicePixelRatio` uniform fails `pnpm gen:shaders`
   ([ADR-098](../architecture-decision-records/adr-098-one-ramp-one-unit-and-the-build-checks-it.md)).
   **A varying set from the same screen y the vertex converts to clip is in this
   case** (`vertCoverage`, `barInkPx`).
 - **Not a perpendicular distance in known units** (quad-local SDFs whose scale
-  differs per shape, as in `pointGlyph` and manhattan; chevron's foreshortened
-  `dist`): measure with `aaGradient`, taken as the **full** width.
+  differs per shape, as in `pointGlyph` and manhattan): measure with
+  `aaGradient`, taken as the **full** width.
 - **Tiled cells** (hi-C bins): no per-quad AA at all, deliberately. Bins share
   exact edges, so antialiasing each produces seams. The same refusal covers marks
   that STACK (wiggle step-line quads, the coverage band's SNP/modification

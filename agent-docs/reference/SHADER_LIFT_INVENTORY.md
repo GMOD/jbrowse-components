@@ -14,8 +14,8 @@ Read [ADR-051](../architecture-decision-records/adr-051-shader-js-codegen-is-sca
 in the export set and what deliberately does not. This file says what the
 tree currently looks like against that standard.
 
-Scanned 48 shaders with entry points. 161 functions
-are inside the emitter's subset, of which **128 are exported**.
+Scanned 48 shaders with entry points. 164 functions
+are inside the emitter's subset, of which **131 are exported**.
 
 ## Candidates
 
@@ -81,7 +81,7 @@ noticing in a diff.
 | Refused because | Functions | For example |
 | --- | --- | --- |
 | type 'vec2' is outside the supported scalar subset | 27 | `buttSegmentCorner`, `capsuleCorner`, `capsuleFrame`, `covFlippedQuad`, `covSegQuad`, `crispSquareCornerClip`, … |
-| type 'vec4' is outside the supported scalar subset | 20 | `bandColorAt`, `colorCutAt`, `colorCutYsPx`, `cutYsPx`, `edgeSpan`, `fillEdges`, … |
+| type 'vec4' is outside the supported scalar subset | 21 | `bandColorAt`, `chevronCoverage`, `colorCutAt`, `colorCutYsPx`, `cutYsPx`, `edgeSpan`, … |
 | member access (vector swizzle or struct field) is outside the supported scalar subset | 19 | `bandCoverage`, `bpToClipX`, `capVertex`, `drawsBar`, `drawsDisc`, `flipX`, … |
 | type 'ptr' is outside the supported scalar subset | 17 | `bpToClipX`, `covAreaTop`, `covBaselinePx`, `covBpToClipX`, `covClipKindColor`, `covEffHeight`, … |
 | type 'RibbonCurves' is outside the supported scalar subset | 8 | `bandNormal`, `bandWidthAt`, `curvesCross`, `curvesMeet`, `firstCurve`, `refineCrossing`, … |
@@ -97,6 +97,7 @@ noticing in a diff.
 | vec2 element type 'u32' is outside the supported scalar subset | 2 | `decodeBanded`, `decodeTriangular` |
 | //! js-export: 'bpToClipX' reaches hpClipX(), which is outside the supported scalar subset | 1 | `bpToClipX` |
 | //! js-export: 'rowScoreToClipY' reaches rowScoreToYPx(), which is outside the supported scalar subset | 1 | `rowScoreToClipY` |
+| type 'ChevronCorner' is outside the supported scalar subset | 1 | `chevronCorner` |
 | type 'ClipXCorner' is outside the supported scalar subset | 1 | `clipXCapsuleCorner` |
 | type 'ColorVsOut' is outside the supported scalar subset | 1 | `discardVertex` |
 | type 'ConnectorInstance' is outside the supported scalar subset | 1 | `placeCubic` |
@@ -120,6 +121,9 @@ is no longer shared with anything.
 | `aaHalfPx` | tests only — `arcHull.test.ts`, `barCutCoverage.test.ts`, `buttSegmentCoverage.test.ts`, `dotplotCapsulePad.test.ts`, `glyphEdgeAlpha.test.ts`, `pointGlyphPad.test.ts` |
 | `aaPx` | tests only — `barCutCoverage.test.ts` |
 | `aaRamp` | tests only — `barCutCoverage.test.ts`, `pointGlyphPad.test.ts` |
+| `armCoverage` | tests only — `chevronStroke.test.ts` |
+| `armLocalPx` | tests only — `chevronStroke.test.ts` |
+| `chevronCornerPx` | tests only — `chevronStroke.test.ts` |
 | `discExpand` | tests only — `pointGlyphPad.test.ts` |
 | `edgeCoverage` | tests only — `arcHull.test.ts`, `buttSegmentCoverage.test.ts`, `dotplotCapsulePad.test.ts`, `sdEllipse.test.ts`, `strokeCoverage.test.ts` |
 | `ellipseHullPoint` | tests only — `arcHull.test.ts` |

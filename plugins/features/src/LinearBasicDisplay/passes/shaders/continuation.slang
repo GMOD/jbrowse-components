@@ -7,17 +7,18 @@
 // The marker also waits for the overhang to exceed CONT_MIN_OVERHANG_PX, so a
 // short feature clipped by a few px stays unmarked.
 //
-// 12 vertices: two edges, two chevrons each, one triangle per chevron. The
-// fragment stage drops each triangle's back edge to leave an open ">", and an
-// edge's pair goes OFFSCREEN unless the rect runs off that edge.
+// 12 vertices: two edges, two chevrons each, one triangle per chevron
+// (chevronStroke.slang). An edge's pair goes OFFSCREEN unless the rect runs off
+// that edge.
 //! targets: wgsl, glsl
 //! js-export: markerDirection, strandMatchesEdge, markerIsDark, markerHalfHeight, runsOffEdge
-//! export-consts: CONT_TRI_W_PX, CONT_TRI_HALF_H_PX, CONT_EDGE_MARGIN_PX, CONT_TRI_GAP_PX, CONT_MIN_OVERHANG_PX, CONT_MARK_ALPHA
+//! export-consts: CONT_TRI_W_PX, CONT_TRI_HALF_H_PX, CONT_EDGE_MARGIN_PX, CONT_TRI_GAP_PX, CONT_MIN_OVERHANG_PX, CONT_MARK_ALPHA, CONT_STROKE_PX
 
 import hpmath;
 import colorPack;
 import featureGlyphUniforms;
 import rectInstance;
+import chevronStroke;
 
 
 public static const uint VERTS_PER_INSTANCE = 12u;
@@ -29,13 +30,14 @@ static const float CONT_MIN_OVERHANG_PX = 20.0;
 // Near the strand arrows' visual weight, so the outline doesn't jar against the
 // fill it sits on.
 static const float CONT_MARK_ALPHA = 0.55;
+static const float CONT_STROKE_PX = 1.0;
 
 [[vk::binding(1, 0)]] ConstantBuffer<FeatureGlyphUniforms> u;
 
 struct VsOut {
   float4 position : SV_Position;
   float4 color    : COLOR0;
-  float3 bary     : TEXCOORD0;
+  float4 local    : TEXCOORD0;
 };
 
 // Off-clip vertex; the GPU culls any triangle that contains it.
@@ -97,7 +99,6 @@ VsOut vs_main(RectInstance inst, uint vid : SV_VertexID) {
   float markAlpha = CONT_MARK_ALPHA;
 
   uint chev = vid / 3u;   // 0,1 = right edge marker; 2,3 = left edge marker
-  uint tv   = vid % 3u;   // vertex within the triangle
 
   bool isRight = chev < 2u;
   float minOverhangClip = pxToClipW(CONT_MIN_OVERHANG_PX, u);
@@ -109,7 +110,7 @@ VsOut vs_main(RectInstance inst, uint vid : SV_VertexID) {
 
   VsOut o;
   o.color = float4(mark, markAlpha);
-  o.bary = float3(0.0, 0.0, 0.0);
+  o.local = float4(0.0);
   if (!visible) {
     o.position = OFFSCREEN;
     return o;
@@ -118,7 +119,6 @@ VsOut vs_main(RectInstance inst, uint vid : SV_VertexID) {
   float marginClip = pxToClipW(CONT_EDGE_MARGIN_PX, u);
   float triWClip   = pxToClipW(CONT_TRI_W_PX, u);
   float gapClip    = pxToClipW(CONT_TRI_GAP_PX, u);
-  float halfHClip  = pxToClipH(markerHalfHeight(inst.height), u);
 
   float cy = snapBoxCenterY(inst.y + inst.height * 0.5, u.scrollY, u.canvasHeight);
 
@@ -132,37 +132,21 @@ VsOut vs_main(RectInstance inst, uint vid : SV_VertexID) {
   float screenStrand = flipX(inst.strand, u);
   float matches = strandMatchesEdge(screenStrand, edgeSide);
   float apexX = anchorX - edgeSide * triWClip * (1.0 - matches);
-  float baseX = anchorX - edgeSide * triWClip * matches;
+  float dir = markerDirection(screenStrand, edgeSide);
+  ChevronCorner c = chevronCorner(
+    vid % 3u, CONT_TRI_W_PX, markerHalfHeight(inst.height),
+    CONT_STROKE_PX * 0.5, u.devicePixelRatio);
 
-  float sx;
-  float sy;
-  if (tv == 0u) {
-    sx = apexX;
-    sy = cy;
-    o.bary = float3(1.0, 0.0, 0.0);
-  } else if (tv == 1u) {
-    sx = baseX;
-    sy = cy + halfHClip;
-    o.bary = float3(0.0, 1.0, 0.0);
-  } else {
-    sx = baseX;
-    sy = cy - halfHClip;
-    o.bary = float3(0.0, 0.0, 1.0);
-  }
-
-  o.position = float4(sx, sy, 0.0, 1.0);
+  o.position = float4(
+    apexX + pxToClipW(c.offsetPx.x, u) * dir,
+    cy + pxToClipH(c.offsetPx.y, u), 0.0, 1.0);
+  o.local = c.local;
   return o;
 }
 
 [shader("fragment")]
 float4 fs_main(VsOut fragIn) : SV_Target {
-  // Draws the two arms meeting at the apex (bary.y≈0, bary.z≈0) and skips the
-  // back edge (bary.x≈0). `fwidth` rather than `aaGradient`, unlike the other
-  // passes: minBary is a barycentric wireframe estimate, not a distance field,
-  // and `aaGradient` would thin the line by up to sqrt(2) on the diagonals, a
-  // visible change the Canvas2D marker would have to match.
-  float minBary = min(fragIn.bary.y, fragIn.bary.z);
-  float edgePx = minBary / fwidth(minBary);
-  float edgeAlpha = 1.0 - smoothstep(0.5, 1.5, edgePx);
-  return float4(fragIn.color.rgb, fragIn.color.a * edgeAlpha);
+  float alpha = chevronCoverage(
+    fragIn.local, CONT_STROKE_PX * 0.5, u.devicePixelRatio);
+  return float4(fragIn.color.rgb, fragIn.color.a * alpha);
 }

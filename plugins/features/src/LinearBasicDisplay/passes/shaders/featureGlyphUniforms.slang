@@ -25,6 +25,7 @@ public struct FeatureGlyphUniforms {
   // displayedRegions. Only the continuation pass reads them.
   public float  leftIsCanvasEdge;
   public float  rightIsCanvasEdge;
+  public float  devicePixelRatio;
 };
 
 // Call these rather than hpToClipX(hpSplitUint(...), u.bpRangeX, u.zero);

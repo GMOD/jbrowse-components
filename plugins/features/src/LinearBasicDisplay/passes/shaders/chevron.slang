@@ -1,27 +1,26 @@
 // Strand chevrons along intron lines, drawn from line's vertex buffer
 // (lineInstance.slang). Each instance is one line and covers as many chevrons
-// as the draw asks for; the vertex ID picks the chevron and its arm, and the
+// as the draw asks for; the vertex ID picks the chevron and its corner, and the
 // shader places each chevron from the viewport and the line span.
 //! targets: wgsl, glsl
 //! export-consts: CHEVRON_SPACING_PX, CHEVRON_W_PX, CHEVRON_H_PX, CHEVRON_THICKNESS_PX, CHEVRON_VERTS
 //! js-export: showChevrons, chevronCount, chevronOffset, chevronFirstVisible, chevronLastVisible
 
-import antialias;
 import hpmath;
 import colorPack;
 import lineInstance;
 import featureGlyphUniforms;
+import chevronStroke;
 
 static const float CHEVRON_SPACING_PX  = 40.0;
 static const float CHEVRON_W_PX        = 4.0;
 static const float CHEVRON_H_PX        = 4.0;
 static const float CHEVRON_THICKNESS_PX = 1.0;
 
-// Two 6-vertex quad arms per chevron. The pass registers one chevron's worth;
-// each draw asks for CHEVRON_VERTS times the slots its canvas can show
-// (`chevronSlotBudget`), hence the export.
-static const uint CHEVRON_ARM_VERTS = 6u;
-static const uint CHEVRON_VERTS = CHEVRON_ARM_VERTS * 2u;
+// One triangle per chevron (chevronStroke.slang). The pass registers one
+// chevron's worth; each draw asks for CHEVRON_VERTS times the slots it can fill
+// (`chevronDrawSlots`), hence the export.
+static const uint CHEVRON_VERTS = 3u;
 public static const uint VERTS_PER_INSTANCE = CHEVRON_VERTS;
 
 [[vk::binding(1, 0)]] ConstantBuffer<FeatureGlyphUniforms> u;
@@ -29,7 +28,7 @@ public static const uint VERTS_PER_INSTANCE = CHEVRON_VERTS;
 struct VsOut {
   float4 position : SV_Position;
   float4 color    : COLOR0;
-  float  dist     : TEXCOORD0;
+  float4 local    : TEXCOORD0;
 };
 
 // Off-clip vertex; the GPU culls any triangle that contains it.
@@ -82,7 +81,7 @@ VsOut vs_main(LineInstance inst, uint vid : SV_VertexID) {
   // The OFFSCREEN early-outs never read these; the drawn path overwrites both.
   VsOut o;
   o.color = float4(0.0);
-  o.dist = 0.0;
+  o.local = float4(0.0);
 
   if (inst.direction == 0.0 || !showChevrons(lineWidthPx)) {
     o.position = OFFSCREEN;
@@ -116,55 +115,24 @@ VsOut vs_main(LineInstance inst, uint vid : SV_VertexID) {
   float cx = hpClipX(hpAddBp(splitLine, chevronOffsetBp), u);
 
   float cy = snapBoxCenterY(inst.y, u.scrollY, u.canvasHeight);
-
-  float halfW = pxToClipW(CHEVRON_W_PX * 0.5, u);
-  float halfH = pxToClipH(CHEVRON_H_PX * 0.5, u);
-  // Extrude geometry 1px per side so the fragment's AA ramp has room.
-  float coreHalfThickness = pxToClipH(CHEVRON_THICKNESS_PX * 0.5, u);
-  float aaPad = pxToClipH(1.0, u);
-  float extHalfThickness = coreHalfThickness + aaPad;
-  // `dist` is the signed vertical px offset from the arm's centerline, so the
-  // extruded edges sit at ±armHalfPx.
-  float armHalfPx = CHEVRON_THICKNESS_PX * 0.5 + 1.0;
   float dir = flipX(inst.direction, u);
+  // Canvas2D centres the chevron on its offset, so the apex is half a width on.
+  float apexX = cx + pxToClipW(CHEVRON_W_PX * 0.5, u) * dir;
+  ChevronCorner c = chevronCorner(
+    v, CHEVRON_W_PX, CHEVRON_H_PX * 0.5, CHEVRON_THICKNESS_PX * 0.5,
+    u.devicePixelRatio);
 
-  bool isTopArm = v < CHEVRON_ARM_VERTS;
-  uint qv = v % CHEVRON_ARM_VERTS;
-
-  float tipX = cx + halfW * dir;
-  float outerX = cx - halfW * dir;
-  float armY = isTopArm ? halfH : -halfH;
-
-  float sx;
-  float sy;
-  // Tip on `cy`, outer end on `cy + armY`, where the Canvas2D path strokes it.
-  float outerSide = isTopArm ? extHalfThickness : -extHalfThickness;
-  switch (qv) {
-    case 0u: sx = outerX; sy = cy + armY + outerSide; break;
-    case 1u: sx = tipX;   sy = cy + extHalfThickness; break;
-    case 2u: sx = tipX;   sy = cy - extHalfThickness; break;
-    case 3u: sx = outerX; sy = cy + armY + outerSide; break;
-    case 4u: sx = tipX;   sy = cy - extHalfThickness; break;
-    default: sx = outerX; sy = cy + armY - outerSide; break;
-  }
-
-  float d = isTopArm
-    ? ((qv == 0u || qv == 1u || qv == 3u) ? armHalfPx : -armHalfPx)
-    : ((qv == 1u || qv == 5u)             ? armHalfPx : -armHalfPx);
-
-  o.position = float4(sx, sy, 0.0, 1.0);
+  o.position = float4(
+    apexX + pxToClipW(c.offsetPx.x, u) * dir,
+    cy + pxToClipH(c.offsetPx.y, u), 0.0, 1.0);
   o.color = unpackRGBA(inst.color);
-  o.dist = d;
+  o.local = c.local;
   return o;
 }
 
 [shader("fragment")]
 float4 fs_main(VsOut fragIn) : SV_Target {
-  // `dist` is a vertical offset, not a perpendicular distance, so the ramp width
-  // is measured with `aaGradient`. On these slanted arms `fwidth` overstates the
-  // gradient by a third and would wash the chevrons out.
-  float coreHalfPx = CHEVRON_THICKNESS_PX * 0.5;
-  float alpha =
-    aaRamp(coreHalfPx - abs(fragIn.dist), aaGradient(fragIn.dist));
+  float alpha = chevronCoverage(
+    fragIn.local, CHEVRON_THICKNESS_PX * 0.5, u.devicePixelRatio);
   return float4(fragIn.color.rgb, fragIn.color.a * alpha);
 }

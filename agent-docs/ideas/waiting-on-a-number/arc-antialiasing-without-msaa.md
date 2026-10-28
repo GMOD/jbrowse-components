@@ -219,8 +219,13 @@ would cost:
   (`glyphExpand`, `pointGlyphPad.test.ts`) and substitute to 0. `SHAPE_BAR` —
   the rule, which draws through the same shader — is `coverage = 1.0` on an
   unpadded, unsnapped quad.
-- **`chevron.slang`, except at its caps** — below, where the canvas glyph family
-  is worked through.
+- **`chevronStroke.slang` (the intron chevron and the continuation marker),
+  except past Canvas2D's miter limit**, which only a marker on a box under
+  1.3 px tall reaches. One triangle per ">" whose sides and base sit the ramp's
+  reach past the ink, so every edge substitutes to 0 (`chevronStroke.test.ts`).
+  Neither pass carries `//! coverage: analytic`: `deriveSampleCount` drops the
+  display to 1 sample only when every pass declares it, and `line` and `arrow`
+  do not.
 
 **`variant.slang` does not belong on any of those lists.** Its `SHAPE_RECT`
 branch, which is every ordinary genotype cell, returns the instance color flat;
@@ -230,22 +235,6 @@ than unramped: `triSdfRight`'s `dLeft` is zero **on the quad's own right edge**,
 so the ramp reads 0.5 there and the rasterizer cuts the outer half — the
 half-alpha hard edge `capsule.slang`'s header warns about, arrived at from the
 other direction. Only its two diagonals substitute to 0.
-
-**The canvas glyph family was also on that list and neither member belongs
-there**,
-checked 2026-09-25 against this doc's own criterion — that the shader paint zero
-alpha where the primitive ends. `continuation.slang` fails it outright: its
-`edgeAlpha` is `1 - smoothstep(0.5, 1.5, minBary / fwidth(minBary))`, which is
-FULL ink at `minBary == 0`, and the two edges where `bary.y` and `bary.z` vanish
-are two of the triangle's three sides. Every marker stroke has its outer half
-cut by the rasterizer, so MSAA is doing real work on it. `chevron.slang` passes
-along each arm's length — the quad is extruded one CSS px past the core and
-`aaRamp(0.5 - |dist|, aaGradient(dist))` is 0 there at either dpr — and fails at
-the two ends, where the quad is cut square across `dist` and the ramp reaches
-alpha 1 on the cap. So a chevron at 1 sample keeps its arms and quantises its
-tip. Neither carries `//! coverage: analytic`, and neither should until that is
-looked at; annotating them alone moves no bytes anyway, since
-`deriveSampleCount` needs `line` and `arrow` too.
 
 **Pixel-snapped — MSAA has nothing to smooth, at an integer dpr.** `rect.slang`
 snaps both x (`rectSpanPx` → `floor(x + 0.5)`) and y (`floor(inst.y - scrollY +
@@ -698,10 +687,10 @@ tree:
     the only fix is the one-primitive-per-stack rewrite §5 describes.
     [reference/GPU_SHADERS.md](../../reference/GPU_SHADERS.md) §"What the
     coverage band cannot antialias" carries the worked composites.
-- **Read ends.** `read.slang`'s pointed terminus is a triangle; `chevron.slang`
-  in plugin-features is the same shape with `aaRamp(coreHalfPx - abs(dist),
-  aaGradient(dist))` already on it. Requires a varying and the measured
-  gradient, since the slope is per-instance.
+- **Read ends.** `read.slang`'s pointed terminus is a triangle, and
+  plugin-features' `chevronStroke.slang` measures the same slanted edges in px
+  with the pad already on them. Requires a varying, since the slope is
+  per-instance.
 - **The strand arrowhead.** `arrow.slang`, same treatment, smallest of the three.
 
 Two constraints from this repo. The distance must be computed in **screen px
