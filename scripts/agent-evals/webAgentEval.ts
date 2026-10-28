@@ -28,9 +28,15 @@ import readline from 'node:readline'
 import { fileURLToPath } from 'node:url'
 
 import { servePageBridge } from './pageBridge.ts'
-import { BASELINE_SPEC, selectTasks } from './tasks.ts'
+import {
+  BASELINE_SPEC,
+  NOT_DRAWN,
+  drawnPass,
+  selectTasks,
+  stageWork,
+} from './tasks.ts'
 
-import type { TaskSet } from './tasks.ts'
+import type { EvalTask, TaskSet } from './tasks.ts'
 
 const repoRoot = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
@@ -80,7 +86,9 @@ interface StreamEvent {
 
 function stripClaudeEnv() {
   return Object.fromEntries(
-    Object.entries(process.env).filter(([k]) => !k.startsWith('CLAUDE')),
+    Object.entries(process.env).filter(
+      ([k]) => k === 'CLAUDE_CONFIG_DIR' || !k.startsWith('CLAUDE'),
+    ),
   )
 }
 
@@ -89,7 +97,9 @@ function claudeChrome(
   systemPrompt: string,
   cwd: string,
   maxTurns: number,
+  outside: boolean,
 ) {
+  const shellTools = 'Bash,Read,Write,Edit,Glob,Grep,WebSearch,WebFetch'
   const events: StreamEvent[] = []
   const child = spawn(
     'claude',
@@ -103,9 +113,9 @@ function claudeChrome(
       'stream-json',
       '--verbose',
       '--allowedTools',
-      'mcp__claude-in-chrome,ToolSearch',
+      `mcp__claude-in-chrome,ToolSearch${outside ? `,${shellTools}` : ''}`,
       '--disallowedTools',
-      'Bash,Read,Write,Edit,Glob,Grep,WebSearch,WebFetch,Task,TodoWrite',
+      `Task,TodoWrite${outside ? '' : `,${shellTools}`}`,
       '--append-system-prompt',
       systemPrompt,
       '--max-turns',
@@ -133,6 +143,7 @@ async function discoverDevice(cwd: string) {
     'You are a probe. Make the one tool call asked for and reply with its raw result.',
     cwd,
     4,
+    false,
   )
   const text = events.find(ev => ev.type === 'result')?.result ?? ''
   const found = /"deviceId"\s*:\s*"([^"]+)"/.exec(text)
@@ -200,7 +211,8 @@ const cwd = fs.mkdtempSync(
   path.join(os.tmpdir(), 'jbrowse-web-agent-eval-cwd-'),
 )
 const bridge = await servePageBridge(buildDir)
-const appUrl = `${bridge.url}?config=${CONFIG}`
+const appUrlFor = (task: EvalTask) =>
+  `${bridge.url}?config=${task.config ?? CONFIG}`
 console.log(`serving ${buildDir} at ${bridge.url}`)
 
 if (!deviceId) {
@@ -211,13 +223,15 @@ if (!deviceId) {
 const guide = withGuide
   ? `\n\n# Reference for the jb library\n${fs.readFileSync(path.join(repoRoot, 'website/docs/agents_live_model.md'), 'utf8')}`
   : ''
-const systemPrompt = `You are driving JBrowse Web, a genome browser, through the Claude in Chrome tools. The JBrowse tab is already open at ${appUrl} in the only connected browser, whose deviceId is ${deviceId}: call select_browser with it before the first browser action and do not ask which browser to use. The page exposes a helper library on window.jb; evaluate jb.help for the contract, then orient with jb.sessionSummary(). javascript_tool returns the last expression of the code you pass. Do the task, verify the result, then reply with one line. Do not ask questions; do not open other sites.${guide}`
+const systemPromptFor = (appUrl: string, outside: boolean) =>
+  `You are driving JBrowse Web, a genome browser, through the Claude in Chrome tools. The JBrowse tab is already open at ${appUrl} in the only connected browser, whose deviceId is ${deviceId}: call select_browser with it before the first browser action and do not ask which browser to use. The page exposes a helper library on window.jb; evaluate jb.help for the contract, then orient with jb.sessionSummary(). javascript_tool returns the last expression of the code you pass. Do the task, verify the result, then reply with one line. Do not ask questions; ${outside ? 'you also have a shell and file tools, so keep every file you make in your working directory. JBrowse Web in the browser cannot read local file paths.' : 'do not open other sites.'}${guide}`
 
 // The tab the agent drove is reloaded at the config so every task starts from
 // the same page; a tab the agent left on another origin has no bridge to
 // reload through, so a new one is opened beside it. Either way the reset
 // waits for a load newer than itself, never for a fixed sleep.
-async function resetPage() {
+async function resetPage(task: EvalTask) {
+  const appUrl = appUrlFor(task)
   const before = Date.now()
   const page = bridge.current()
   if (page) {
@@ -231,19 +245,30 @@ async function resetPage() {
     openTab(appUrl)
   }
   await bridge.waitForPage(60_000, before)
-  await bridge.evaluate(
+  await evaluateLive(
     `for (let i = 0; i < 200 && !window.jb; i++) { await new Promise(r => setTimeout(r, 250)) }
      if (!window.jb) { throw new Error('window.jb never appeared') }
      return true`,
-    { timeoutMs: 70_000 },
+    70_000,
   )
-  await bridge.evaluate(BASELINE_SPEC, { timeoutMs: 120_000 })
+  if (!task.config) {
+    await evaluateLive(BASELINE_SPEC, 120_000)
+  }
+}
+
+// The page polls between jobs, so a call right after a long job finds no live
+// page until the next poll lands.
+async function evaluateLive(code: string, timeoutMs: number) {
+  const page = await bridge.waitForPage(30_000)
+  return bridge.evaluate(code, { timeoutMs, page })
 }
 
 interface RunMetrics {
   task: string
   run: number
   pass: boolean
+  notDrawn: unknown
+  drawnPass: boolean
   detail: unknown
   answer: string
   javascript: number
@@ -256,34 +281,63 @@ interface RunMetrics {
   usd: number
 }
 
-const tasks = selectTasks(taskSet, filter, 'web')
+const only = flag('tasks', '').split(',').filter(Boolean)
+const tasks = selectTasks(taskSet, filter, 'web').filter(
+  t => only.length === 0 || only.includes(t.name),
+)
 const metrics: RunMetrics[] = []
 try {
   for (const task of tasks) {
     for (let run = 1; run <= runs; run++) {
-      await resetPage()
+      await resetPage(task)
       if (task.setup) {
-        await bridge.evaluate(task.setup)
+        await evaluateLive(task.setup, 120_000)
       }
-      const prompt = task.prompt.replaceAll(
-        'DATA',
-        bridge.url.replace(/\/$/, ''),
+      const work = stageWork(task)
+      const prompt = task.prompt
+        .replaceAll('DATA', bridge.url.replace(/\/$/, ''))
+        .replaceAll('WORK', work)
+      const events = await claudeChrome(
+        prompt,
+        systemPromptFor(appUrlFor(task), task.outside === true),
+        work,
+        40,
+        task.outside === true,
       )
-      const events = await claudeChrome(prompt, systemPrompt, cwd, 40)
       const counted = count(events)
       let verdict: { pass: boolean; detail: unknown }
       try {
-        const graded = (await bridge.evaluate(task.grade, {
-          answer: counted.answer,
-        })) as { pass?: boolean; detail?: unknown } | null
-        verdict = { pass: graded?.pass === true, detail: graded?.detail }
+        if (task.check) {
+          verdict = task.check({ answer: counted.answer, work })
+        } else {
+          const graded = (await bridge.evaluate(task.grade!, {
+            answer: counted.answer,
+          })) as { pass?: boolean; detail?: unknown } | null
+          verdict = { pass: graded?.pass === true, detail: graded?.detail }
+        }
       } catch (e) {
         verdict = {
           pass: false,
           detail: `grader threw: ${e instanceof Error ? e.message : String(e)}`,
         }
       }
-      const row: RunMetrics = { task: task.name, run, ...verdict, ...counted }
+      const notDrawn = task.grade
+        ? await bridge.evaluate(NOT_DRAWN).catch((e: unknown) => [
+            {
+              trackId: '?',
+              phase: 'unread',
+              reason: String(e).slice(0, 200),
+            },
+          ])
+        : []
+      const row: RunMetrics = {
+        task: task.name,
+        run,
+        ...verdict,
+        notDrawn,
+        drawnPass: drawnPass(task, verdict.pass, notDrawn),
+        ...counted,
+      }
       metrics.push(row)
       fs.writeFileSync(
         path.join(outDir, `${task.name}-${run}.json`),

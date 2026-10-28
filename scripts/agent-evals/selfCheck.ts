@@ -86,6 +86,9 @@ try {
      return true`,
   )
   for (const task of tasks) {
+    if (!task.grade) {
+      continue
+    }
     const problems: string[] = []
     try {
       await stage(task.setup)
@@ -95,7 +98,7 @@ try {
           `grader passes the untouched state ${JSON.stringify(before.detail)}`,
         )
       }
-      if (task.solution) {
+      if (task.solution && !task.config) {
         await stage(task.setup)
         const answer = await run(task.solution.replaceAll('DATA', repoRoot))
         const after = await verdict(
@@ -111,9 +114,10 @@ try {
     } catch (e) {
       problems.push(`${e}`.slice(0, 400))
     }
-    const label = task.solution
-      ? 'fails baseline, passes solution'
-      : 'fails baseline only'
+    const label =
+      task.solution && !task.config
+        ? 'fails baseline, passes solution'
+        : 'fails baseline only'
     console.log(
       `${problems.length ? 'BAD ' : 'ok  '} ${task.name.padEnd(28)} ${problems.length ? problems.join('; ') : label}`,
     )

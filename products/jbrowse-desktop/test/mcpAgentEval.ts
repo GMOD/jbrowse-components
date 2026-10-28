@@ -32,7 +32,8 @@
 //
 // Usage: node test/mcpAgentEval.ts [--model sonnet|opus|haiku] [--filter name]
 //        [--runs N] [--out dir] [--client code|desktop] [--attach]
-//        [--set dev|heldout|all] [--server path/to/mcpServer.js]
+//        [--set dev|heldout|tutorials|outside|all] [--tasks a,b]
+//        [--server path/to/mcpServer.js]
 //
 // `--server` measures another stdio server against the same app: the
 // instructions, the tool descriptions and the docs all live in that one file,
@@ -51,7 +52,10 @@ import {
 } from '../../../scripts/agent-evals/jbUsage.ts'
 import {
   BASELINE_SPEC,
+  NOT_DRAWN,
+  drawnPass,
   selectTasks,
+  stageWork,
 } from '../../../scripts/agent-evals/tasks.ts'
 import { desktopRoot, openVolvox, repoRoot } from './mcpHarness.ts'
 
@@ -88,6 +92,7 @@ const outDir = path.resolve(
   ),
 )
 const attach = args.includes('--attach')
+const noDocs = args.includes('--no-docs')
 
 if (client !== 'code' && client !== 'desktop') {
   throw new Error(`--client takes "code" or "desktop", not "${client}"`)
@@ -98,6 +103,16 @@ const MCP_TOOLS = [
   'mcp__jbrowse__docs',
   'mcp__jbrowse__screenshot',
   'mcp__jbrowse__open',
+]
+const OUTSIDE_TOOLS = [
+  'Bash',
+  'Read',
+  'Write',
+  'Edit',
+  'Glob',
+  'Grep',
+  'WebFetch',
+  'WebSearch',
 ]
 
 const SYSTEM = `You are driving JBrowse Desktop over its MCP tools. A session is already open. Do the task using the tools, verify the result, then reply with one line. Do not ask questions; make reasonable choices yourself.`
@@ -134,6 +149,8 @@ interface RunMetrics {
   task: string
   run: number
   client: string
+  notDrawn: unknown
+  drawnPass: boolean
   pass: boolean
   detail: unknown
   answer: string
@@ -161,11 +178,28 @@ interface RunMetrics {
 
 function stripClaudeEnv() {
   return Object.fromEntries(
-    Object.entries(process.env).filter(([k]) => !k.startsWith('CLAUDE')),
+    Object.entries(process.env).filter(
+      ([k]) => k === 'CLAUDE_CONFIG_DIR' || !k.startsWith('CLAUDE'),
+    ),
   )
 }
 
-async function runAgent(prompt: string, cwd: string, mcpConfig: string) {
+async function runAgent(
+  prompt: string,
+  cwd: string,
+  mcpConfig: string,
+  outside: boolean,
+) {
+  const tools = noDocs
+    ? MCP_TOOLS.filter(t => t !== 'mcp__jbrowse__docs')
+    : MCP_TOOLS
+  const allowed = outside ? [...tools, ...OUTSIDE_TOOLS] : tools
+  const disallowed = [
+    'Task',
+    'TodoWrite',
+    ...(noDocs ? ['mcp__jbrowse__docs'] : []),
+    ...(outside ? [] : OUTSIDE_TOOLS),
+  ]
   const events: StreamEvent[] = []
   const child = spawn(
     'claude',
@@ -181,11 +215,13 @@ async function runAgent(prompt: string, cwd: string, mcpConfig: string) {
       mcpConfig,
       '--strict-mcp-config',
       '--allowedTools',
-      MCP_TOOLS.join(','),
+      allowed.join(','),
       '--disallowedTools',
-      'Bash,Read,Write,Edit,Glob,Grep,WebSearch,WebFetch,Task,TodoWrite',
+      disallowed.join(','),
       '--append-system-prompt',
-      SYSTEM,
+      outside
+        ? `${SYSTEM} You also have a shell and file tools; keep every file you make in your working directory.`
+        : SYSTEM,
       '--max-turns',
       '40',
     ],
@@ -348,7 +384,6 @@ function median(values: number[]) {
 }
 
 fs.mkdirSync(outDir, { recursive: true })
-const cwd = fs.mkdtempSync(path.join(os.tmpdir(), 'jbrowse-agent-eval-cwd-'))
 const serverPath = path.resolve(
   flag('server', path.join(desktopRoot, 'build/mcpServer.js')),
 )
@@ -369,7 +404,10 @@ fs.writeFileSync(
   }),
 )
 
-const tasks = selectTasks(taskSet, filter, 'desktop')
+const only = flag('tasks', '').split(',').filter(Boolean)
+const tasks = selectTasks(taskSet, filter, 'desktop').filter(
+  t => only.length === 0 || only.includes(t.name),
+)
 const metrics: RunMetrics[] = []
 const session = await openVolvox(attach)
 const briefing = (
@@ -407,24 +445,39 @@ try {
             timeoutMs: 120_000,
           })
         }
-        const prompt = task.prompt.replaceAll('DATA', repoRoot)
-        events = await runAgent(prompt, cwd, mcpConfig)
+        const cwd = stageWork(task)
+        const prompt = task.prompt
+          .replaceAll('DATA', repoRoot)
+          .replaceAll('WORK', cwd)
+        events = await runAgent(prompt, cwd, mcpConfig, task.outside === true)
         counted = count(events, routes)
         if (counted.usd === 0 && counted.tokensOut === 0) {
           refusal = counted.answer || 'no result event'
         }
-        verdict = await grade(session.client, task.grade, counted.answer)
+        verdict = task.check
+          ? task.check({ answer: counted.answer, work: cwd })
+          : await grade(session.client, task.grade!, counted.answer)
       } catch (e) {
         verdict = { pass: false, detail: { harnessError: `${e}` } }
       }
       if (refusal) {
         break
       }
+      const notDrawn = task.grade
+        ? await session.client
+            .callJson('run_javascript', { code: NOT_DRAWN, timeoutMs: 40_000 })
+            .then(r => r.value)
+            .catch((e: unknown) => [
+              { trackId: '?', phase: 'unread', reason: `${e}`.slice(0, 200) },
+            ])
+        : []
       const row: RunMetrics = {
         task: task.name,
         run,
         client,
         ...verdict,
+        notDrawn,
+        drawnPass: drawnPass(task, verdict.pass, notDrawn),
         ...counted,
       }
       metrics.push(row)
