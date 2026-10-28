@@ -1746,9 +1746,8 @@ const TP53_ATG_HS1 = `
   for (let i = win.indexOf(ctx); i >= 0; i = win.indexOf(ctx, i + 1)) { hits.push(from + i + 25) }
   if (hits.length === 1) { hs1 = hits[0] }
   } catch {}`
-const CFTR_SPAN = [117480024, 117668665]
+const CFTR_SPAN = [117480024, 117668665] as const
 const F508DEL = 117559592
-const SARS_REF = 'https://jbrowse.org/ucsc/wuhCor1/config.json'
 const CHIMP_T2T =
   'https://jbrowse.org/hubs/genark/GCF/028/858/775/GCF_028858775.2/'
 // Adds an assembly and some of its tracks from another hub's config.json to
